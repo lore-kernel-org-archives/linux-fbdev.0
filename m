@@ -1,28 +1,35 @@
-From: Edgar Hucek <hostmaster@ed-soft.at>
-Subject: Re: [PATCH 1/1] New Framebuffer for Intel based
- Macs [try #2] (fwd)
-Date: Fri, 23 Jun 2006 06:01:44 +0200
-Message-ID: <449B67A8.70500@ed-soft.at>
-References: <Pine.LNX.4.62.0606221038280.23155@pademelon.sonytel.be>
-	<9D874D8E-7EF1-4C29-98F2-AEDFD78C6676@cecropia.com>
-	<449A7FDC.2030304@gmail.com>
-	<269AA200-402D-4D9B-93AC-773C44F1AF50@cecropia.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Daniel THOMPSON <daniel.thompson@st.com>
+Subject: Re: [PATCH 2.6.17-rc6-mm2] fbdev:
+	tag	by	scantype in sysfs
+Date: Fri, 23 Jun 2006 09:04:41 +0100
+Message-ID: <1151049881.12499.18.camel@butch.bri.st.com>
+References: <4497AA7A.5050507@st.com> <4497B4FA.2080602@pol.net>
+	<4497C289.5060007@st.com>  <4497CE24.7050908@gmail.com>
+Reply-To: daniel.thompson@st.com,
+	linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Ftcrg-0001LV-3u for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jun 2006 21:01:52 -0700
-Received: from 83-64-96-243.bad-voeslau.xdsl-line.inode.at ([83.64.96.243]
-	helo=mognix.dark-green.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Ftcre-0001jt-IG
+	id 1FtggN-0004vN-Jn for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Jun 2006 01:06:27 -0700
+Received: from lon-del-03.spheriq.net ([195.46.50.99])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FtggM-0006y7-Ok
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jun 2006 21:01:52 -0700
-In-Reply-To: <269AA200-402D-4D9B-93AC-773C44F1AF50@cecropia.com>
+	Fri, 23 Jun 2006 01:06:27 -0700
+Received: from lon-out-01.spheriq.net ([195.46.50.129])
+	by lon-del-03.spheriq.net with ESMTP id k5N86LQX003587
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 23 Jun 2006 08:06:21 GMT
+Received: from lon-cus-02.spheriq.net (lon-cus-02.spheriq.net [195.46.50.38])
+	by lon-out-01.spheriq.net with ESMTP id k5N86JU0027327
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 23 Jun 2006 08:06:20 GMT
+In-Reply-To: <4497CE24.7050908@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,53 +40,73 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dennis Munsie <dmunsie@cecropia.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-The driver is needed when making a native EFI boot, it does not work
-with BootCamp.
+On Tue, 2006-06-20 at 18:29 +0800, Antonino A. Daplas wrote:
+> > I shared this worry which is why my original patch only tagged the,
+> > comparatively rare, interlaced modes. However the current approach
+> (no
+> > optional fields) is slightly cleaner and I took the view that since
+> > no-one on fbdev-devel seems to object ...
+> > 
+>         
+> Okay.  But if we are going to break this, let's break it with
+> finality.
+> Does anyone believe that the above format is final? How about
+> including
+> sync signals too?
+>         
+> #define FB_SYNC_HOR_HIGH_ACT    1  /* horizontal sync high active  */
+> #define FB_SYNC_VERT_HIGH_ACT   2  /* vertical sync high active    */
+> #define FB_SYNC_EXT             4  /* external sync                */
+> #define FB_SYNC_COMP_HIGH_ACT   8  /* composite sync high active   */
+> #define FB_SYNC_BROADCAST       16 /* broadcast video timings      */
 
-cu
+Any suggestions about how these should be added to the mode string?
 
-Edgar Hucek
+> Secondly, that attribute 'modes' violate the 'one file, one value'
+> rule of
+> sysfs (and that includes 'virtual_size', and 'pan').  We need to clean
+> these up.  How about something like this?
 
-Dennis Munsie schrieb:
-> fair enough -- i had thought about it a little more on the way to work,
-> and that makes sense.  But, once the native drivers work, it would
-> probably be a good idea to make note someplace that the other drivers
-> would provide better performance than this one.
-> 
-> btw -- the intelfb driver in it's current state might not work on the
-> intel macs anyway.  The intelfb driver doesn't do well with anything but
-> the analog output, and the MacBook and mini both have DVI ports.
-> 
-> another quick question regarding this driver -- is it only needed when a
-> native EFI boot is done?  or does it also get used when Boot Camp is
-> used?  I would think that Boot Camp would allow the VESA driver to work,
-> since it's purpose is to make it look like the machine has a true x86
-> BIOS...
-> 
-> dennis
-> 
-> On Jun 22, 2006, at 7:32 AM, Antonino A. Daplas wrote:
-> 
->> Dennis Munsie wrote:
->>> Why is a new framebuffer driver required in this case?
->>
->> It is a platform driver, much like vga16fb and vesafb are for
->> x86. They are backup drivers.
->>
->>> Why not use
->>> the intelfb driver for the mini and the MacBook and an ati driver for
->>> the iMac and the MacBook Pro?
->>
->> The same reason that people use vesafb because the chipset-specific
->> driver either conflicts with X or does not work.
->>
->> Tony
->>
-> 
-> 
+Strictly speaking so does the mode string. This is, in fact, why adding
+information to it has the potential to break existing applications.
+
+Ideally each mode should itself be a directory containing files like
+hsize, vsize, scantype, vfreq ...
+
+Given each mode directory would have a unique name we could then use
+that to switch display modes (i.e. write an enumerated name rather than
+a mode string).
+
+The problem with this approach is I can't think of any way to do the
+work currently performed by store_modes(). I would however like to know
+if anyone actually uses this?
+
+>  /sys/class/graphics---fb0
+>                     :
+>                     --fb1
+>                     :
+>                     --fbn
+>                     :
+>                     --mode0---640x480@60
+>                     :       :
+>                     :       --1024x768@60
+>                     :  
+>                     --mode1
+
+So the directory mode0 contains all the modes that fb0 is capable of
+displaying? Can't that go inside fb0?
+
+Presumably fb0's existing mode file is replaced with a soft link to the
+currently selected mode and a new file is introduced to change modes?
+
+-- 
+Daniel Thompson (STMicroelectronics) <daniel.thompson@st.com>
+1000 Aztec West, Almondsbury, Bristol, BS32 4SQ. 01454 462659
+
+If a car is a horseless carriage then is a motorcycle a horseless horse?
 
 
 Using Tomcat but need to do more? Need to support web services, security?

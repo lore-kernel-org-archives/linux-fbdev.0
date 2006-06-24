@@ -1,25 +1,26 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Geode patches for 2.6.17
-Date: Fri, 23 Jun 2006 22:19:23 +0100
-Message-ID: <1151097563.4549.90.camel@localhost.localdomain>
-References: <20060623170058.GA12819@cosmic.amd.com>
-	<449C4E3C.7000107@garzik.org> <20060623205637.GD13017@cosmic.amd.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: radeonfb: DDC read wrong?
+Date: Sat, 24 Jun 2006 20:11:46 +0800
+Message-ID: <449D2C02.8010101@gmail.com>
+References: <20060620140152.GB5414@polar.elf12.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FtsoX-0007cU-GR for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jun 2006 14:03:41 -0700
-Received: from [81.2.110.250] (helo=lxorguk.ukuu.org.uk)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FtsoW-0004dm-J7
+	id 1Fu6zS-0005PV-Gb for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 24 Jun 2006 05:11:54 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fu6zP-00060U-V4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jun 2006 14:03:41 -0700
-In-Reply-To: <20060623205637.GD13017@cosmic.amd.com>
+	Sat, 24 Jun 2006 05:11:54 -0700
+Received: by py-out-1112.google.com with SMTP id s49so1024315pyc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 24 Jun 2006 05:11:51 -0700 (PDT)
+In-Reply-To: <20060620140152.GB5414@polar.elf12.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,35 +31,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jordan Crouse <jordan.crouse@amd.com>
-Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net, Robert.Siemer@backsla.sh
 
-Ar Gwe, 2006-06-23 am 14:56 -0600, ysgrifennodd Jordan Crouse:
-> +config VGA_NOPROBE
-> +       bool "Don't probe VGA at boot" if EMBEDDED
-> +       default n
-> +       help
-> +         Saying Y here will cause the kernel to not probe VGA at boot time.
-> +         This will break everything that depends on the probed screen
-> +         data.  Say N here unless you are absolutely sure this is what you
-> +         want.
+Robert Siemer wrote:
+> Hello everybody!
+> 
+> problem: booting kernel overdrives monitor with 200Hz refresh
+> 
+> kernel: 2.6.16
+> kernel which worked fine: 2.6.14
+> 
+> Monitor: EIZO FlexScan F563-T
+> Graphic adapter: ATI Technologies Inc Radeon RV250 If [Radeon 9000]
+>  (from Xorg.log)
+> 
+> I switched to 2.6.16 and booting the kernel overdrove my monitor with
+> 200Hz refresh rate.
+> 
+> As I notice now I have a limit configured in X (I will try it without
+> limitation to see what X is doing...).
+> 
+> The only interesting line so far from X-log:
+> (II) RADEON(0): PLL parameters: rf=2700 rd=12 min=20000 max=40000;
+> xclk=20000
+> 
+> 
+> Any comments?
 
-GAK given all the ifdefs this causes wouldn't it be easier to just fix
-the firmware 8)
+Can you change #undef DEBUG to #define DEBUG in drivers/video/fbmon.c
+then post your dmesg?
 
-> @@ -81,6 +96,7 @@ static void gx_set_mode(struct fb_info *
->  	writel(((info->var.xres * info->var.bits_per_pixel/8) >> 3) + 2,
->  	       par->dc_regs + DC_LINE_SIZE);
->  
-> +
->  	/* Enable graphics and video data and unmask address lines. */
->  	dcfg |= DC_DCFG_GDEN | DC_DCFG_VDEN | DC_DCFG_A20M | DC_DCFG_A18M;
->  
+If your monitor's EDID block is faulty, we can add it to our
+monitor database for fixups.
 
-Spurious blank line
-
-Otherwise looks good
-
+Tony
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier

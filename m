@@ -1,29 +1,29 @@
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH,
- trivial] Remove about 50 unneeded #includes in fbdev
-Date: Tue, 27 Jun 2006 10:25:57 -0700
-Message-ID: <20060627102557.e595c183.rdunlap@xenotime.net>
-References: <9e4733910606270919n7819dbc0g8bd5c99f4b911583@mail.gmail.com>
-	<20060627095127.441c543e.rdunlap@xenotime.net>
-	<9e4733910606271001u2794d1e3ocb123f3cf9476266@mail.gmail.com>
+From: Luca <kronos@people.it>
+Subject: Re: radeonfb: DDC read wrong?
+Date: Tue, 27 Jun 2006 21:11:24 +0200
+Message-ID: <20060627191124.GC14392@dreamland.darkstar.lan>
+References: <20060620140152.GB5414@polar.elf12.net>
+	<449D2C02.8010101@gmail.com>
+	<20060624174731.GA6091@polar.elf12.net>
+	<449DD21E.9070906@gmail.com>
+	<20060626170158.GA2331@polar.elf12.net>
+	<44A049D5.5030702@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FvHHT-0000uf-7C for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 Jun 2006 10:23:19 -0700
-Received: from xenotime.net ([66.160.160.81])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1FvHHS-0008Fz-Ty
+	id 1FvIxs-0003Gp-CR for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 Jun 2006 12:11:12 -0700
+Received: from mail-relay-1.tiscali.it ([213.205.33.41])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FvIxp-0004gw-6Y
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 Jun 2006 10:23:19 -0700
-Received: from midway.site ([71.245.108.25]) by xenotime.net for
-	<linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 27 Jun 2006 10:23:15 -0700
-In-Reply-To: <9e4733910606271001u2794d1e3ocb123f3cf9476266@mail.gmail.com>
+	Tue, 27 Jun 2006 12:11:12 -0700
+Content-Disposition: inline
+In-Reply-To: <44A049D5.5030702@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,142 +34,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Robert Siemer <Robert.Siemer@backsla.sh>
 
-On Tue, 27 Jun 2006 13:01:16 -0400 Jon Smirl wrote:
-
-> On 6/27/06, Randy.Dunlap <rdunlap@xenotime.net> wrote:
-> > On Tue, 27 Jun 2006 12:19:07 -0400 Jon Smirl wrote:
-> >
-> > > Remove about 50 unneeded #includes in fbdev
-> >
-> > Does this that
-> > (a) these drivers build without these header files explicitly #included
+Il Tue, Jun 27, 2006 at 04:55:49AM +0800, Antonino A. Daplas ha scritto: 
+> Robert Siemer wrote:
+> > On Sun, Jun 25, 2006 at 08:00:30AM +0800, Antonino A. Daplas wrote:
+> >> Robert Siemer wrote:
+> >>> On Sat, Jun 24, 2006 at 08:11:46PM +0800, Antonino A. Daplas wrote:
+> >>>> Robert Siemer wrote:
+> >> Disregard the previous patch, I forgot to adjust the checksum.
+> >> Try this instead...
+> > 
+> > The patch works in the way that I see a console without a video= param.
+> > 
+> > Please answer my questions:
+> > -Does the EDID block that reads the kernel get somehow exported or
+> >  used somewhere else (in kernel maybe)?
 > 
-> I checked it this way. There are 2,295 explicit includes in
-> drivers/video. Do you have a tool to automatically determine which
-> APIs are directly used? Many of the fbdev drivers look to be the
-> victim of cut and paste and have a lot of unnecessary includes.
+> For drivers that use the EDID, it gets converted into struct fb_monspecs.
+> Part of this structure is a private mode database
+> (cat /sys/class/graphics/fb0/modes).
 
-Nope, I don't have such a tool.  I wish we did.
+With radeonfb you can also access the raw edid block(s):
+/sys/class/graphics/fb0/device/edid1
+/sys/class/graphics/fb0/device/edid2 (for second monitor, if any).
 
-> > or
-> > (b) these drivers don't use *any* APIs or data from these header files?
-> >
-> > They may build (a) but still use the APIs, so (b) is the requirement/target.
-> > (I.e., other header files could suck in the required headers.)
-> >
-> >
-> > > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> > >
-> > > diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-> > > index db878fd..e498a54 100644
-> > > --- a/drivers/video/aty/aty128fb.c
-> > > +++ b/drivers/video/aty/aty128fb.c
-> > > @@ -46,26 +46,14 @@
-> > >   */
-> > >
-> > >
-> > > -#include <linux/config.h>
-> > >  #include <linux/module.h>
-> > >  #include <linux/moduleparam.h>
-> > > -#include <linux/kernel.h>
-> > >  #include <linux/errno.h>
-> > > -#include <linux/string.h>
-> > > -#include <linux/mm.h>
-> > > -#include <linux/tty.h>
-> > > -#include <linux/slab.h>
-> > > -#include <linux/vmalloc.h>
-> > >  #include <linux/delay.h>
-> > > -#include <linux/interrupt.h>
-> > >  #include <asm/uaccess.h>
-> > >   #include <linux/fb.h>
-> > > -#include <linux/init.h>
-> > >  #include <linux/pci.h>
-> > > -#include <linux/ioport.h>
-> > >  #include <linux/console.h>
-> > > -#include <linux/backlight.h>
-> > > -#include <asm/io.h>
-> > >
-> > >   #ifdef CONFIG_PPC_PMAC
-> > >  #include <asm/machdep.h>
-> > > diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-> > > index c5185f7..5f4c76c 100644
-> > > --- a/drivers/video/aty/atyfb_base.c
-> > > +++ b/drivers/video/aty/atyfb_base.c
-> > > @@ -49,26 +49,13 @@
-> > >  ******************************************************************************/
-> > >
-> > >
-> > > -#include <linux/config.h>
-> > > -#include <linux/module.h>
-> > > -#include <linux/moduleparam.h>
-> > > -#include <linux/kernel.h>
-> > > -#include <linux/errno.h>
-> > > -#include <linux/string.h>
-> > > -#include <linux/mm.h>
-> > > -#include <linux/slab.h>
-> > > -#include <linux/vmalloc.h>
-> > >  #include <linux/delay.h>
-> > >  #include <linux/console.h>
-> > >   #include <linux/fb.h>
-> > > -#include <linux/init.h>
-> > >  #include <linux/pci.h>
-> > >  #include <linux/interrupt.h>
-> > > -#include <linux/spinlock.h>
-> > > -#include <linux/wait.h>
-> > >  #include <linux/backlight.h>
-> > >
-> > > -#include <asm/io.h>
-> > >  #include <asm/uaccess.h>
-> > >
-> > >  #include <video/mach64.h>
-> > > diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-> > > index c5ecbb0..56445ea 100644
-> > > --- a/drivers/video/aty/radeon_base.c
-> > > +++ b/drivers/video/aty/radeon_base.c
-> > > @@ -52,25 +52,6 @@
-> > >
-> > >  #define RADEON_VERSION       "0.2.0"
-> > >
-> > > -#include <linux/config.h>
-> > > -#include <linux/module.h>
-> > > -#include <linux/moduleparam.h>
-> > > -#include <linux/kernel.h>
-> > > -#include <linux/errno.h>
-> > > -#include <linux/string.h>
-> > > -#include <linux/mm.h>
-> > > -#include <linux/tty.h>
-> > > -#include <linux/slab.h>
-> > > -#include <linux/delay.h>
-> > > -#include <linux/time.h>
-> > > -#include <linux/fb.h>
-> > > -#include <linux/ioport.h>
-> > > -#include <linux/init.h>
-> > > -#include <linux/pci.h>
-> > > -#include <linux/vmalloc.h>
-> > > -#include <linux/device.h>
-> > > -
-> > > -#include <asm/io.h>
-> > >  #include <asm/uaccess.h>
-> > >
-> > >   #ifdef CONFIG_PPC_OF
-> > > diff --git a/drivers/video/aty/radeon_i2c.c b/drivers/video/aty/radeon_i2c.c
-> > > index a9d0414..4855c0a 100644
-> > > --- a/drivers/video/aty/radeon_i2c.c
-> > > +++ b/drivers/video/aty/radeon_i2c.c
-> > > @@ -1,9 +1,3 @@
-> > > -#include <linux/config.h>
-> > > -#include <linux/module.h>
-> > > -#include <linux/kernel.h>
-> > > -#include <linux/sched.h>
-> > > -#include <linux/delay.h>
-> > > -#include <linux/pci.h>
-> > >   #include <linux/fb.h>
+> > -Which mode gets choosen from the resulting set of resolutions? I mean,
+> >  based on what?
+> 
+> Depends on the driver. A combination of the 'first detailed timing
+> is preferred' flag and a detailed timing is the initial startup mode.
+> As for radeonfb, I think it just grabs the first detailed timing for
+> the initial mode.
 
----
-~Randy
+Yes, the selection goes like this:
+
+- mode option
+- 1st detailed block
+- 1st mode in the db
+
+
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Se alla sera, dopo una strepitosa vittoria, guardandoti allo
+specchio dovessi notare un secondo paio di palle, che il tuo 
+cuore non si riempia d'orgoglio, perche` vuol dire che ti 
+stanno inculando -- Saggio Cinese
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier

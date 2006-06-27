@@ -1,16 +1,33 @@
 From: Vitaly Wool <vitalywool@gmail.com>
-Subject: [PATCH] add framebuffer and display update module support for
- pnx4008
-Date: Tue, 27 Jun 2006 17:16:04 +0400
-Message-ID: <20060627171604.941d0538.vitalywool@gmail.com>
+Subject: [PATCH] add framebuffer and display update
+ module support for pnx4008
+Date: Tue, 27 Jun 2006 19:17:47 +0400
+Message-ID: <20060627191747.4b455b24.vitalywool@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932169AbWF0NQO@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1FvFK4-0005zl-2C for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 Jun 2006 08:17:52 -0700
+Received: from [85.21.88.2] (helo=mail.dev.rtsoft.ru)
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1FvFJz-0001v1-0L
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 Jun 2006 08:17:52 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
 
 Hi folks,
 
@@ -1619,3 +1636,8 @@ Index: linux-2.6.git/drivers/video/pnx4008/sdum.h
 +
 +int pnx4008_get_fb_addresses(int fb_type, void **virt_addr,
 +			     dma_addr_t * phys_addr, int *fb_length);
+
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

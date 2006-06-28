@@ -1,28 +1,27 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Vitaly Wool <vitalywool@gmail.com>
 Subject: Re: [PATCH] add framebuffer and display update
  module support for pnx4008
-Date: Wed, 28 Jun 2006 11:42:43 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0606281142190.29680@pademelon.sonytel.be>
+Date: Wed, 28 Jun 2006 13:36:59 +0400
+Message-ID: <20060628133659.3a6b10e9.vitalywool@gmail.com>
 References: <20060627191747.4b455b24.vitalywool@gmail.com>
 	<44A1A2A6.5080206@gmail.com>
 	<20060628114633.d96c8155.vitalywool@gmail.com>
 	<44A246E1.20801@gmail.com>
-	<20060628133659.3a6b10e9.vitalywool@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FvWZQ-0004c6-Mr for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Jun 2006 02:42:52 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FvWZP-0006NM-4H
+	id 1FvWTm-00048X-Vd for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 28 Jun 2006 02:37:03 -0700
+Received: from [85.21.88.2] (helo=mail.dev.rtsoft.ru)
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1FvWTl-0002Mw-5B
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Jun 2006 02:42:52 -0700
-In-Reply-To: <20060628133659.3a6b10e9.vitalywool@gmail.com>
+	Wed, 28 Jun 2006 02:37:02 -0700
+In-Reply-To: <44A246E1.20801@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,34 +32,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: gtolstolytkin@ru.mvista.com, "Antonino A. Daplas" <adaplas@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, gtolstolytkin@ru.mvista.com
 
-On Wed, 28 Jun 2006, Vitaly Wool wrote:
-> On Wed, 28 Jun 2006 17:07:45 +0800
-> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
-> 
-> > > Hmmm, the thing is that the frambuffer can actually be anyone of a kind.
-> > > Display Update Module provides interface to the actual device and the only difference it makes is whether it's a RGB or YUV framebuffer.
-> > > 
+On Wed, 28 Jun 2006 17:07:45 +0800
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
+
+
+> > Hmmm, the thing is that the frambuffer can actually be anyone of a kind.
+> > Display Update Module provides interface to the actual device and the only difference it makes is whether it's a RGB or YUV framebuffer.
 > > 
-> > Well, something like pnxrgbfb, pnxyuvfb? But it's your driver, so
-> > your call.
 > 
-> It's in pnx4008/ subdir, is it really reasonable to prefix the FB driver name with pnx?
+> Well, something like pnxrgbfb, pnxyuvfb? But it's your driver, so
+> your call.
 
-If it's a loadable module, the name must be unique.
+It's in pnx4008/ subdir, is it really reasonable to prefix the FB driver name with pnx?
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Vitaly
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier

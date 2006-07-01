@@ -1,9 +1,10 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Andrew Morton <akpm@osdl.org>
 Subject: Re: [PATCH 1/3] fbdev: Add framebuffer and
  display update module support for pnx4008
-Date: Sat, 01 Jul 2006 13:03:43 +0800
-Message-ID: <44A6022F.30500@gmail.com>
-References: <44A51257.10804@gmail.com> <20060630204454.4ca27a23.akpm@osdl.org>
+Date: Fri, 30 Jun 2006 22:11:36 -0700
+Message-ID: <20060630221136.6ddc1ef3.akpm@osdl.org>
+References: <44A51257.10804@gmail.com> <20060630204304.7afe6c91.akpm@osdl.org>
+	<44A601DB.5090807@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,16 +13,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FwXeB-0002uO-3a for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 Jun 2006 22:03:59 -0700
-Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FwXe9-0004e0-PP
+	id 1FwXlc-0003Wu-Gh for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 Jun 2006 22:11:40 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1FwXlc-0006PI-4k
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 Jun 2006 22:03:59 -0700
-Received: by py-out-1112.google.com with SMTP id d42so915779pyd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 30 Jun 2006 22:03:56 -0700 (PDT)
-In-Reply-To: <20060630204454.4ca27a23.akpm@osdl.org>
+	Fri, 30 Jun 2006 22:11:40 -0700
+In-Reply-To: <44A601DB.5090807@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,32 +31,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, gtolstolytkin@ru.mvista.com
 
-Andrew Morton wrote:
-> On Fri, 30 Jun 2006 20:00:23 +0800
-> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
-> 
->> +	if ((ret = put_cmd_string(cmds_c)) != 0) {
->> +		return ret;
->> +	}
-> 
-> Guys, please avoid the assign-then-test trick.  Kernel style is
-> super-simple style.  The above should be coded as:
-> 
+On Sat, 01 Jul 2006 13:02:19 +0800
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
 
-I'm kinda lax when it comes to this style, but if you insist :-)
+> Andrew Morton wrote:
+> > On Fri, 30 Jun 2006 20:00:23 +0800
+> > "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> > 
+> >> +static struct fb_var_screeninfo rgbfb_var __initdata = {
+> > 
+> > Is that right?  We later do
+> > 
+> > +       info->var = rgbfb_var;
+> > 
+> > but rgbfb_var is about to be unloaded from memory.  I suspect this'll crash
+> > if the driver is statically linked into the kernel.
+> > 
+> 
+> Should be okay, as the assignment is done during init only.
 
-> 
-> 	ret = put_cmd_string(cmds_c);
-> 	if (ret != 0)
-> 		return ret;
-> 
-> Nice and easy.
-> 
+But we're setting info->var to point at memory which will be freed up by
+free_initmem().
 
-Tony
+So if anyone _uses_ info->var after free_initmem() they'll reference random
+memory or they'll oops.
+
+Looking at, say, drivers/video/vfb.c:vfb_probe(), I see
+
+	info->var = vfb_default;
+
+vfb_default is __init and `info' has a lifetime beyond the execution of
+this function.  It looks wrong.
+
+Bear in mind that the __init and __initdata segments do not get unloaded if
+the code is compiled as a module (yet).  So the problems only become
+apparent when the driver is linked into vmlinux.
+
+Also, we'll now get section mismatch warnings from the kbuild tools.  But
+they won't help us in this case because vfb_probe() is __init.
+
+> But it should be __devinitdata, not __initdata (or vice versa).  
+
+Yes, the driver seems a bit confused about that also.
+
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier

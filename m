@@ -1,9 +1,9 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH 1/3] fbdev: Add framebuffer and
  display update module support for pnx4008
-Date: Sat, 01 Jul 2006 13:02:09 +0800
-Message-ID: <44A601D1.5070107@gmail.com>
-References: <44A51257.10804@gmail.com> <20060630204601.4f442641.akpm@osdl.org>
+Date: Sat, 01 Jul 2006 13:02:19 +0800
+Message-ID: <44A601DB.5090807@gmail.com>
+References: <44A51257.10804@gmail.com> <20060630204304.7afe6c91.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,16 +12,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FwXcg-0002p6-Gu for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 Jun 2006 22:02:26 -0700
+	id 1FwXcn-0002pC-Bl for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 Jun 2006 22:02:33 -0700
 Received: from py-out-1112.google.com ([64.233.166.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FwXcd-0006N0-V5
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FwXcm-0006N0-12
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 Jun 2006 22:02:26 -0700
+	Fri, 30 Jun 2006 22:02:33 -0700
 Received: by py-out-1112.google.com with SMTP id d42so915533pyd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 30 Jun 2006 22:02:22 -0700 (PDT)
-In-Reply-To: <20060630204601.4f442641.akpm@osdl.org>
+	Fri, 30 Jun 2006 22:02:31 -0700 (PDT)
+In-Reply-To: <20060630204304.7afe6c91.akpm@osdl.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,27 +36,26 @@ To: Andrew Morton <akpm@osdl.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, gtolstolytkin@ru.mvista.com
 
 Andrew Morton wrote:
-> +EXPORT_SYMBOL(pnx4008_get_fb_addresses);
-> +EXPORT_SYMBOL(pnx4008_alloc_dum_channel);
-> +EXPORT_SYMBOL(pnx4008_free_dum_channel);
-> +EXPORT_SYMBOL(pnx4008_put_dum_channel_uf);
-> +EXPORT_SYMBOL(pnx4008_set_dum_channel_sync);
-> +EXPORT_SYMBOL(pnx4008_set_dum_channel_dirty_detect);
-> +EXPORT_SYMBOL(pnx4008_get_dum_channel_uf);
-> +EXPORT_SYMBOL(pnx4008_get_dum_channel_config);
-> +EXPORT_SYMBOL(pnx4008_force_update_dum_channel);
-> +EXPORT_SYMBOL(pnx4008_sdum_mmap);
-> +EXPORT_SYMBOL(pnx4008_set_dum_exit_notification);
+> On Fri, 30 Jun 2006 20:00:23 +0800
+> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> 
+>> +static struct fb_var_screeninfo rgbfb_var __initdata = {
+> 
+> Is that right?  We later do
+> 
+> +       info->var = rgbfb_var;
+> 
+> but rgbfb_var is about to be unloaded from memory.  I suspect this'll crash
+> if the driver is statically linked into the kernel.
 > 
 
-The unused exports are enclosed with #if 0/#endif. That was before
-EXPORT_SYMBOL_UNUSED went in.
+Should be okay, as the assignment is done during init only.
 
-The reason why I asked him if sdum and pnxrgbfb need to be
-separate modules. But the intent was to write another driver that
-will also use the sdum module.
+But it should be __devinitdata, not __initdata (or vice versa).  
 
 Tony
+ 
+
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier

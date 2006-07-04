@@ -1,8 +1,8 @@
 From: Aristeu Sergio Rozanski Filho <aris@valeta.org>
-Subject: [PATCH] nvidiafb: don't use bl_mutex in
-	nvidiafb_blank()
-Date: Mon, 3 Jul 2006 22:39:58 -0300
-Message-ID: <20060704013958.GI27596@cathedrallabs.org>
+Subject: [PATCH] nvidiafb: fix
+	nvidia_bl_get_level_brightness() calc
+Date: Mon, 3 Jul 2006 22:39:37 -0300
+Message-ID: <20060704013937.GH27596@cathedrallabs.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,20 +11,20 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FxZtf-0007Iw-Ro for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 03 Jul 2006 18:40:16 -0700
+	id 1FxZtb-0007Il-C5 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 03 Jul 2006 18:40:11 -0700
 Received: from tinc.cathedrallabs.org ([72.9.252.66])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FxZtf-00032f-Hk
+	(Exim 4.44) id 1FxZta-0002wF-42
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 03 Jul 2006 18:40:15 -0700
+	Mon, 03 Jul 2006 18:40:11 -0700
 Received: from tate.cathedrallabs.org
 	(201-25-166-92.ctame704.dsl.brasiltelecom.net.br [201.25.166.92])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by tinc.cathedrallabs.org (Postfix) with ESMTP id DCCE51000A
+	by tinc.cathedrallabs.org (Postfix) with ESMTP id 14E6610009
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon,  3 Jul 2006 21:40:13 -0400 (EDT)
+	Mon,  3 Jul 2006 21:39:58 -0400 (EDT)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,33 +38,31 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-nvidiafb: remove usage of bl_mutex from nvidiafb_blank()
-
-struct fb_info bl_mutex is used to protect bl_curve[] only, not needed in
-nvidiafb_blank() and will cause a recursive mutex locking in
-nvidia_bl_get_level_brightness()
+nvidiafb: fix nvidia_bl_get_level_brightness() level calc
 
 Signed-off-by: Aristeu S. Rozanski F. <aris@valeta.org>
 
-Index: ppc-2.6/drivers/video/nvidia/nvidia.c
+Index: ppc-2.6/drivers/video/nvidia/nv_backlight.c
 ===================================================================
---- ppc-2.6.orig/drivers/video/nvidia/nvidia.c	2006-07-03 20:08:07.000000000 -0300
-+++ ppc-2.6/drivers/video/nvidia/nvidia.c	2006-07-03 20:08:16.000000000 -0300
-@@ -934,14 +934,12 @@
- 	NVWriteCrtc(par, 0x1a, vesa);
+--- ppc-2.6.orig/drivers/video/nvidia/nv_backlight.c	2006-07-03 17:38:06.000000000 -0300
++++ ppc-2.6/drivers/video/nvidia/nv_backlight.c	2006-07-03 20:11:08.000000000 -0300
+@@ -26,6 +26,7 @@
+  */
+ #define MIN_LEVEL 0x158
+ #define MAX_LEVEL 0x534
++#define LEVEL_STEP ((MAX_LEVEL - MIN_LEVEL) / FB_BACKLIGHT_MAX)
  
- #ifdef CONFIG_FB_NVIDIA_BACKLIGHT
--	mutex_lock(&info->bl_mutex);
- 	if (info->bl_dev) {
- 		down(&info->bl_dev->sem);
- 		info->bl_dev->props->power = blank;
- 		info->bl_dev->props->update_status(info->bl_dev);
- 		up(&info->bl_dev->sem);
- 	}
--	mutex_unlock(&info->bl_mutex);
- #endif
+ static struct backlight_properties nvidia_bl_data;
  
- 	NVTRACE_LEAVE();
+@@ -37,7 +38,7 @@
+ 
+ 	/* Get and convert the value */
+ 	mutex_lock(&info->bl_mutex);
+-	nlevel = info->bl_curve[level] * FB_BACKLIGHT_MAX / MAX_LEVEL;
++	nlevel = MIN_LEVEL + info->bl_curve[level] * LEVEL_STEP;
+ 	mutex_unlock(&info->bl_mutex);
+ 
+ 	if (nlevel < 0)
 
 
 Using Tomcat but need to do more? Need to support web services, security?

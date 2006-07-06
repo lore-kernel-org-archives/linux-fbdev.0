@@ -1,71 +1,82 @@
-From: Aristeu Sergio Rozanski Filho <aris@valeta.org>
-Subject: [PATCH] nvidiafb: fix
-	nvidia_bl_get_level_brightness() calc
-Date: Mon, 3 Jul 2006 22:39:37 -0300
-Message-ID: <20060704013937.GH27596@cathedrallabs.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+From: Mikael Pettersson <mikpe@it.uu.se>
+Subject: [PATCH 2.6.17 sparc64] 32-bit compat for Mach64 framebuffer
+Date: Thu, 6 Jul 2006 02:20:53 +0200 (MEST)
+Message-ID: <200607060020.k660Krv1009111@harpo.it.uu.se>
+Return-path: <sparclinux-owner@vger.kernel.org>
+Sender: sparclinux-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FxZtb-0007Il-C5 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 03 Jul 2006 18:40:11 -0700
-Received: from tinc.cathedrallabs.org ([72.9.252.66])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FxZta-0002wF-42
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 03 Jul 2006 18:40:11 -0700
-Received: from tate.cathedrallabs.org
-	(201-25-166-92.ctame704.dsl.brasiltelecom.net.br [201.25.166.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by tinc.cathedrallabs.org (Postfix) with ESMTP id 14E6610009
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon,  3 Jul 2006 21:39:58 -0400 (EDT)
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: davem@davemloft.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
 
-nvidiafb: fix nvidia_bl_get_level_brightness() level calc
+To: davem@davemloft.net
+Subject: [PATCH 2.6.17 sparc64] 32-bit compat for Mach64 framebuffer
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Signed-off-by: Aristeu S. Rozanski F. <aris@valeta.org>
+In recent sparc64 kernels, starting a 32-bit mode X server on
+a machine with a Mach64 framebuffer (CONFIG_FB_ATY_CT=y) like
+an Ultra5, results in the kernel complaining:
 
-Index: ppc-2.6/drivers/video/nvidia/nv_backlight.c
-===================================================================
---- ppc-2.6.orig/drivers/video/nvidia/nv_backlight.c	2006-07-03 17:38:06.000000000 -0300
-+++ ppc-2.6/drivers/video/nvidia/nv_backlight.c	2006-07-03 20:11:08.000000000 -0300
-@@ -26,6 +26,7 @@
-  */
- #define MIN_LEVEL 0x158
- #define MAX_LEVEL 0x534
-+#define LEVEL_STEP ((MAX_LEVEL - MIN_LEVEL) / FB_BACKLIGHT_MAX)
+ioctl32(X:1977): Unknown cmd fd(6) cmd(40584606){00} arg(ef8dd6d8) on /dev/fb0
+ioctl32(X:1977): Unknown cmd fd(6) cmd(40184600){00} arg(ef8dd6e0) on /dev/fb0
+
+That's FBIOGTYPE and FBIOGATTR. These errors occur because
+kernel 2.6.15-rc2 changed the way sparc64 handles SPARC-specific
+framebuffer ioctls from 32-bit processes: before 2.6.15-rc2
+arch/sparc64/kernel/ioctl32.c handled them for all devices,
+but 2.6.15-rc2 dropped that support and changed SPARC-only
+framebuffer drivers like ffb.c to set up ->compat_ioctl methods
+pointing to sbusfb_compat_ioctl in drivers/video/sbuslib.c.
+However, drivers for framebuffers like the Mach64 that can exist
+on both SPARCs and non-SPARCs were not adjusted, so in sparc64
+kernels SPARC-specific framebuffer ioctls on Mach64 devices are
+no longer accepted from 32-bit mode processes. Hence the errors.
+
+The fix is to make atyfb_base.c set up a ->compat_ioctl pointing
+to sbusfb_compat_ioctl when running in a sparc64 kernel with
+compatibility for sparc32 user-space, and to compile and link
+sbuslib.o with the frambuffer driver.
+
+A complication is that sbuslib.c doesn't compile on non-SPARC
+machines, so we must be careful to only enable it in the case
+described above. That's why the patch puts an ugly "if" statement
+in the Makefile.
+
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+
+--- linux-2.6.17/drivers/video/Makefile.~1~	2006-07-05 21:47:50.000000000 +0200
++++ linux-2.6.17/drivers/video/Makefile	2006-07-05 22:19:00.000000000 +0200
+@@ -32,6 +32,9 @@ obj-$(CONFIG_FB_MATROX)		  += matrox/
+ obj-$(CONFIG_FB_RIVA)		  += riva/ vgastate.o
+ obj-$(CONFIG_FB_NVIDIA)		  += nvidia/
+ obj-$(CONFIG_FB_ATY)		  += aty/ macmodes.o
++ifeq ($(CONFIG_SPARC64)-$(CONFIG_COMPAT),y-y)
++  obj-$(CONFIG_FB_ATY)		  += sbuslib.o
++endif
+ obj-$(CONFIG_FB_ATY128)		  += aty/ macmodes.o
+ obj-$(CONFIG_FB_RADEON)		  += aty/
+ obj-$(CONFIG_FB_SIS)		  += sis/
+--- linux-2.6.17/drivers/video/aty/atyfb_base.c.~1~	2006-07-05 21:47:50.000000000 +0200
++++ linux-2.6.17/drivers/video/aty/atyfb_base.c	2006-07-05 22:26:04.000000000 +0200
+@@ -82,6 +82,9 @@
+ #ifdef __sparc__
+ #include <asm/pbm.h>
+ #include <asm/fbio.h>
++#if defined(CONFIG_SPARC64) && defined(CONFIG_COMPAT)
++#include "../sbuslib.h"
++#endif
+ #endif
  
- static struct backlight_properties nvidia_bl_data;
- 
-@@ -37,7 +38,7 @@
- 
- 	/* Get and convert the value */
- 	mutex_lock(&info->bl_mutex);
--	nlevel = info->bl_curve[level] * FB_BACKLIGHT_MAX / MAX_LEVEL;
-+	nlevel = MIN_LEVEL + info->bl_curve[level] * LEVEL_STEP;
- 	mutex_unlock(&info->bl_mutex);
- 
- 	if (nlevel < 0)
-
-
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+ #ifdef CONFIG_ADB_PMU
+@@ -298,6 +301,9 @@ static struct fb_ops atyfb_ops = {
+ 	.fb_pan_display	= atyfb_pan_display,
+ 	.fb_blank	= atyfb_blank,
+ 	.fb_ioctl	= atyfb_ioctl,
++#if defined(CONFIG_SPARC64) && defined(CONFIG_COMPAT)
++	.fb_compat_ioctl = sbusfb_compat_ioctl,
++#endif
+ 	.fb_fillrect	= atyfb_fillrect,
+ 	.fb_copyarea	= atyfb_copyarea,
+ 	.fb_imageblit	= atyfb_imageblit,

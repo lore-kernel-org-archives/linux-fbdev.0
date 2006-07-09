@@ -1,23 +1,24 @@
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-Subject: Locking fixes for powermac backlight
-	infrastructure
-Date: Sat, 8 Jul 2006 14:06:37 +0200
-Message-ID: <20060708120637.GA23909@hansmi.ch>
+From: Mike Rapoport <mike@compulab.co.il>
+Subject: Re: [PATCH]: frame buffer driver for 2700G LCD
+ controller
+Date: Sun, 09 Jul 2006 16:40:02 +0200
+Message-ID: <44B11542.7010402@compulab.co.il>
+References: <44AD2B75.6050302@compulab.co.il> <44ADC4AE.2040903@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="------------060000040606000005090402"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FzBaC-0007KQ-LJ for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 08 Jul 2006 05:06:48 -0700
-Received: from hansmi.home.forkbomb.ch ([213.144.146.165])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FzBaA-0004RE-Nv
+	id 1FzZW8-0003Y8-KT for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 09 Jul 2006 06:40:13 -0700
+Received: from mail.linux-boards.com ([62.90.235.247])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1FzZW3-00031Q-Me
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 08 Jul 2006 05:06:48 -0700
-Content-Disposition: inline
+	Sun, 09 Jul 2006 06:40:12 -0700
+In-Reply-To: <44ADC4AE.2040903@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,302 +29,1750 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: akpm@osdl.org
-Cc: benh@kernel.crashing.org, johannes@sipsolutions.net, aris@valeta.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@killerfox.forkbomb.ch
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-VGhpcyBwYXRjaCBmaXhlcyBsb2NraW5nIGlzc3VlcyBpbiB0aGUgbmV3IHBvd2VybWFjIGJhY2ts
-aWdodAppbmZyYXN0cnVjdHVyZSBhcyByZXBvcnRlZCBieSBBcmlzdGV1IFMuIFJvemFuc2tpIEYu
-IDxhcmlzQHZhbGV0YS5vcmc+LgpJdCBhbHNvIGZpeGVzIHRoZSB3cm9uZyBjYWxjdWxhdGlvbiBv
-ZiBiYWNrbGlnaHQgdmFsdWVzIGluIHNvbWUgb2YgdGhlCmRyaXZlcnMuCgpTaWduZWQtb2ZmLWJ5
-OiBNaWNoYWVsIEhhbnNlbG1hbm4gPGxpbnV4LWtlcm5lbEBoYW5zbWkuY2g+CkFja2VkLWJ5OiBS
-ZW7DqSBOdXNzYmF1bWVyIDxsaW51eC1rZXJuZWxAa2lsbGVyZm94LmZvcmtib21iLmNoPgoKLS0t
-CmRpZmYgLU5ydXAgLS1leGNsdWRlLWZyb20gbGludXgtZXhjbHVkZS1mcm9tIGxpbnV4LTIuNi4x
-OC1yYzEub3JpZy9kcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5jIGxpbnV4LTIuNi4xOC1yYzEv
-ZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYwotLS0gbGludXgtMi42LjE4LXJjMS5vcmlnL2Ry
-aXZlcnMvdmlkZW8vYXR5L2F0eTEyOGZiLmMJMjAwNi0wNy0wOCAxMjoyNzowOS4wMDAwMDAwMDAg
-KzAyMDAKKysrIGxpbnV4LTIuNi4xOC1yYzEvZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYwky
-MDA2LTA3LTA4IDEyOjI4OjMyLjAwMDAwMDAwMCArMDIwMApAQCAtNDU2LDYgKzQ1Niw3IEBAIHN0
-YXRpYyB2b2lkIGRvX3dhaXRfZm9yX2ZpZm8odTE2IGVudHJpZXMKIHN0YXRpYyB2b2lkIHdhaXRf
-Zm9yX2ZpZm8odTE2IGVudHJpZXMsIHN0cnVjdCBhdHkxMjhmYl9wYXIgKnBhcik7CiBzdGF0aWMg
-dm9pZCB3YWl0X2Zvcl9pZGxlKHN0cnVjdCBhdHkxMjhmYl9wYXIgKnBhcik7CiBzdGF0aWMgdTMy
-IGRlcHRoX3RvX2RzdCh1MzIgZGVwdGgpOworc3RhdGljIHZvaWQgYXR5MTI4X2JsX3NldF9wb3dl
-cihzdHJ1Y3QgZmJfaW5mbyAqaW5mbywgaW50IHBvd2VyKTsKIAogI2RlZmluZSBCSU9TX0lOOCh2
-KSAgCShyZWFkYihiaW9zICsgKHYpKSkKICNkZWZpbmUgQklPU19JTjE2KHYpIAkocmVhZGIoYmlv
-cyArICh2KSkgfCBcCkBAIC0xMjU4LDI1ICsxMjU5LDExIEBAIHN0YXRpYyB2b2lkIGF0eTEyOF9z
-ZXRfbGNkX2VuYWJsZShzdHJ1Y3QKIAkJcmVnICY9IH5MVkRTX0RJU1BMQVlfRElTOwogCQlhdHlf
-c3RfbGUzMihMVkRTX0dFTl9DTlRMLCByZWcpOwogI2lmZGVmIENPTkZJR19GQl9BVFkxMjhfQkFD
-S0xJR0hUCi0JCW11dGV4X2xvY2soJmluZm8tPmJsX211dGV4KTsKLQkJaWYgKGluZm8tPmJsX2Rl
-dikgewotCQkJZG93bigmaW5mby0+YmxfZGV2LT5zZW0pOwotCQkJaW5mby0+YmxfZGV2LT5wcm9w
-cy0+dXBkYXRlX3N0YXR1cyhpbmZvLT5ibF9kZXYpOwotCQkJdXAoJmluZm8tPmJsX2Rldi0+c2Vt
-KTsKLQkJfQotCQltdXRleF91bmxvY2soJmluZm8tPmJsX211dGV4KTsKKwkJYXR5MTI4X2JsX3Nl
-dF9wb3dlcihpbmZvLCBGQl9CTEFOS19VTkJMQU5LKTsKICNlbmRpZgkKIAl9IGVsc2UgewogI2lm
-ZGVmIENPTkZJR19GQl9BVFkxMjhfQkFDS0xJR0hUCi0JCW11dGV4X2xvY2soJmluZm8tPmJsX211
-dGV4KTsKLQkJaWYgKGluZm8tPmJsX2RldikgewotCQkJZG93bigmaW5mby0+YmxfZGV2LT5zZW0p
-OwotCQkJaW5mby0+YmxfZGV2LT5wcm9wcy0+YnJpZ2h0bmVzcyA9IDA7Ci0JCQlpbmZvLT5ibF9k
-ZXYtPnByb3BzLT5wb3dlciA9IEZCX0JMQU5LX1BPV0VSRE9XTjsKLQkJCWluZm8tPmJsX2Rldi0+
-cHJvcHMtPnVwZGF0ZV9zdGF0dXMoaW5mby0+YmxfZGV2KTsKLQkJCXVwKCZpbmZvLT5ibF9kZXYt
-PnNlbSk7Ci0JCX0KLQkJbXV0ZXhfdW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7CisJCWF0eTEyOF9i
-bF9zZXRfcG93ZXIoaW5mbywgRkJfQkxBTktfUE9XRVJET1dOKTsKICNlbmRpZgkKIAkJcmVnID0g
-YXR5X2xkX2xlMzIoTFZEU19HRU5fQ05UTCk7CiAJCXJlZyB8PSBMVkRTX0RJU1BMQVlfRElTOwpA
-QCAtMTcwMyw2ICsxNjkwLDcgQEAgc3RhdGljIGludCBfX2RldmluaXQgYXR5MTI4ZmJfc2V0dXAo
-Y2hhcgogCiBzdGF0aWMgc3RydWN0IGJhY2tsaWdodF9wcm9wZXJ0aWVzIGF0eTEyOF9ibF9kYXRh
-OwogCisvKiBDYWxsIHdpdGggZmJfaW5mby0+YmxfbXV0ZXggaGVsZCAqLwogc3RhdGljIGludCBh
-dHkxMjhfYmxfZ2V0X2xldmVsX2JyaWdodG5lc3Moc3RydWN0IGF0eTEyOGZiX3BhciAqcGFyLAog
-CQlpbnQgbGV2ZWwpCiB7CkBAIC0xNzEwLDEwICsxNjk4LDggQEAgc3RhdGljIGludCBhdHkxMjhf
-YmxfZ2V0X2xldmVsX2JyaWdodG5lcwogCWludCBhdHlsZXZlbDsKIAogCS8qIEdldCBhbmQgY29u
-dmVydCB0aGUgdmFsdWUgKi8KLQltdXRleF9sb2NrKCZpbmZvLT5ibF9tdXRleCk7CiAJYXR5bGV2
-ZWwgPSBNQVhfTEVWRUwgLQogCQkoaW5mby0+YmxfY3VydmVbbGV2ZWxdICogRkJfQkFDS0xJR0hU
-X01BWCAvIE1BWF9MRVZFTCk7Ci0JbXV0ZXhfdW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7CiAKIAlp
-ZiAoYXR5bGV2ZWwgPCAwKQogCQlhdHlsZXZlbCA9IDA7CkBAIC0xNzMxLDcgKzE3MTcsOCBAQCBz
-dGF0aWMgaW50IGF0eTEyOF9ibF9nZXRfbGV2ZWxfYnJpZ2h0bmVzCiAvKiBUaGF0IG9uZSBwcmV2
-ZW50cyBwcm9wZXIgQ1JUIG91dHB1dCB3aXRoIExDRCBvZmYgKi8KICN1bmRlZiBCQUNLTElHSFRf
-REFDX09GRgogCi1zdGF0aWMgaW50IGF0eTEyOF9ibF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiYWNr
-bGlnaHRfZGV2aWNlICpiZCkKKy8qIENhbGwgd2l0aCBmYl9pbmZvLT5ibF9tdXRleCBoZWxkICov
-CitzdGF0aWMgaW50IF9fYXR5MTI4X2JsX3VwZGF0ZV9zdGF0dXMoc3RydWN0IGJhY2tsaWdodF9k
-ZXZpY2UgKmJkKQogewogCXN0cnVjdCBhdHkxMjhmYl9wYXIgKnBhciA9IGNsYXNzX2dldF9kZXZk
-YXRhKCZiZC0+Y2xhc3NfZGV2KTsKIAl1bnNpZ25lZCBpbnQgcmVnID0gYXR5X2xkX2xlMzIoTFZE
-U19HRU5fQ05UTCk7CkBAIC0xNzg0LDYgKzE3NzEsMTkgQEAgc3RhdGljIGludCBhdHkxMjhfYmxf
-dXBkYXRlX3N0YXR1cyhzdHJ1YwogCXJldHVybiAwOwogfQogCitzdGF0aWMgaW50IGF0eTEyOF9i
-bF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkKK3sKKwlzdHJ1Y3Qg
-YXR5MTI4ZmJfcGFyICpwYXIgPSBjbGFzc19nZXRfZGV2ZGF0YSgmYmQtPmNsYXNzX2Rldik7CisJ
-c3RydWN0IGZiX2luZm8gKmluZm8gPSBwY2lfZ2V0X2RydmRhdGEocGFyLT5wZGV2KTsKKwlpbnQg
-cmV0OworCisJbXV0ZXhfbG9jaygmaW5mby0+YmxfbXV0ZXgpOworCXJldCA9IF9fYXR5MTI4X2Js
-X3VwZGF0ZV9zdGF0dXMoYmQpOworCW11dGV4X3VubG9jaygmaW5mby0+YmxfbXV0ZXgpOworCisJ
-cmV0dXJuIHJldDsKK30KKwogc3RhdGljIGludCBhdHkxMjhfYmxfZ2V0X2JyaWdodG5lc3Moc3Ry
-dWN0IGJhY2tsaWdodF9kZXZpY2UgKmJkKQogewogCXJldHVybiBiZC0+cHJvcHMtPmJyaWdodG5l
-c3M7CkBAIC0xNzk2LDYgKzE3OTYsMTYgQEAgc3RhdGljIHN0cnVjdCBiYWNrbGlnaHRfcHJvcGVy
-dGllcyBhdHkxMgogCS5tYXhfYnJpZ2h0bmVzcwk9IChGQl9CQUNLTElHSFRfTEVWRUxTIC0gMSks
-CiB9OwogCitzdGF0aWMgdm9pZCBhdHkxMjhfYmxfc2V0X3Bvd2VyKHN0cnVjdCBmYl9pbmZvICpp
-bmZvLCBpbnQgcG93ZXIpCit7CisJbXV0ZXhfbG9jaygmaW5mby0+YmxfbXV0ZXgpOworCXVwKCZp
-bmZvLT5ibF9kZXYtPnNlbSk7CisJaW5mby0+YmxfZGV2LT5wcm9wcy0+cG93ZXIgPSBwb3dlcjsK
-KwlfX2F0eTEyOF9ibF91cGRhdGVfc3RhdHVzKGluZm8tPmJsX2Rldik7CisJZG93bigmaW5mby0+
-YmxfZGV2LT5zZW0pOworCW11dGV4X3VubG9jaygmaW5mby0+YmxfbXV0ZXgpOworfQorCiBzdGF0
-aWMgdm9pZCBhdHkxMjhfYmxfaW5pdChzdHJ1Y3QgYXR5MTI4ZmJfcGFyICpwYXIpCiB7CiAJc3Ry
-dWN0IGZiX2luZm8gKmluZm8gPSBwY2lfZ2V0X2RydmRhdGEocGFyLT5wZGV2KTsKQEAgLTIxOTgs
-MTIgKzIyMDgsOCBAQCBzdGF0aWMgaW50IGF0eTEyOGZiX2JsYW5rKGludCBibGFuaywgc3RyCiAJ
-CXJldHVybiAwOwogCiAjaWZkZWYgQ09ORklHX0ZCX0FUWTEyOF9CQUNLTElHSFQKLQlpZiAobWFj
-aGluZV9pcyhwb3dlcm1hYykgJiYgYmxhbmspIHsKLQkJZG93bigmZmItPmJsX2Rldi0+c2VtKTsK
-LQkJZmItPmJsX2Rldi0+cHJvcHMtPnBvd2VyID0gRkJfQkxBTktfUE9XRVJET1dOOwotCQlmYi0+
-YmxfZGV2LT5wcm9wcy0+dXBkYXRlX3N0YXR1cyhmYi0+YmxfZGV2KTsKLQkJdXAoJmZiLT5ibF9k
-ZXYtPnNlbSk7Ci0JfQorCWlmIChtYWNoaW5lX2lzKHBvd2VybWFjKSAmJiBibGFuaykKKwkJYXR5
-MTI4X2JsX3NldF9wb3dlcihmYiwgRkJfQkxBTktfUE9XRVJET1dOKTsKICNlbmRpZgogCiAJaWYg
-KGJsYW5rICYgRkJfQkxBTktfVlNZTkNfU1VTUEVORCkKQEAgLTIyMTksMTQgKzIyMjUsMTIgQEAg
-c3RhdGljIGludCBhdHkxMjhmYl9ibGFuayhpbnQgYmxhbmssIHN0cgogCQlhdHkxMjhfc2V0X2Ny
-dF9lbmFibGUocGFyLCBwYXItPmNydF9vbiAmJiAhYmxhbmspOwogCQlhdHkxMjhfc2V0X2xjZF9l
-bmFibGUocGFyLCBwYXItPmxjZF9vbiAmJiAhYmxhbmspOwogCX0KKwogI2lmZGVmIENPTkZJR19G
-Ql9BVFkxMjhfQkFDS0xJR0hUCi0JaWYgKG1hY2hpbmVfaXMocG93ZXJtYWMpICYmICFibGFuaykg
-ewotCQlkb3duKCZmYi0+YmxfZGV2LT5zZW0pOwotCQlmYi0+YmxfZGV2LT5wcm9wcy0+cG93ZXIg
-PSBGQl9CTEFOS19VTkJMQU5LOwotCQlmYi0+YmxfZGV2LT5wcm9wcy0+dXBkYXRlX3N0YXR1cyhm
-Yi0+YmxfZGV2KTsKLQkJdXAoJmZiLT5ibF9kZXYtPnNlbSk7Ci0JfQorCWlmIChtYWNoaW5lX2lz
-KHBvd2VybWFjKSAmJiAhYmxhbmspCisJCWF0eTEyOF9ibF9zZXRfcG93ZXIoZmIsIEZCX0JMQU5L
-X1VOQkxBTkspOwogI2VuZGlmCisKIAlyZXR1cm4gMDsKIH0KIApkaWZmIC1OcnVwIC0tZXhjbHVk
-ZS1mcm9tIGxpbnV4LWV4Y2x1ZGUtZnJvbSBsaW51eC0yLjYuMTgtcmMxLm9yaWcvZHJpdmVycy92
-aWRlby9hdHkvYXR5ZmJfYmFzZS5jIGxpbnV4LTIuNi4xOC1yYzEvZHJpdmVycy92aWRlby9hdHkv
-YXR5ZmJfYmFzZS5jCi0tLSBsaW51eC0yLjYuMTgtcmMxLm9yaWcvZHJpdmVycy92aWRlby9hdHkv
-YXR5ZmJfYmFzZS5jCTIwMDYtMDctMDggMTI6Mjc6MDkuMDAwMDAwMDAwICswMjAwCisrKyBsaW51
-eC0yLjYuMTgtcmMxL2RyaXZlcnMvdmlkZW8vYXR5L2F0eWZiX2Jhc2UuYwkyMDA2LTA3LTA4IDEy
-OjI4OjMyLjAwMDAwMDAwMCArMDIwMApAQCAtMjEyOSwxNSArMjEyOSwxNCBAQCBzdGF0aWMgaW50
-IGF0eWZiX3BjaV9yZXN1bWUoc3RydWN0IHBjaV9kCiAKIHN0YXRpYyBzdHJ1Y3QgYmFja2xpZ2h0
-X3Byb3BlcnRpZXMgYXR5X2JsX2RhdGE7CiAKKy8qIENhbGwgd2l0aCBmYl9pbmZvLT5ibF9tdXRl
-eCBoZWxkICovCiBzdGF0aWMgaW50IGF0eV9ibF9nZXRfbGV2ZWxfYnJpZ2h0bmVzcyhzdHJ1Y3Qg
-YXR5ZmJfcGFyICpwYXIsIGludCBsZXZlbCkKIHsKIAlzdHJ1Y3QgZmJfaW5mbyAqaW5mbyA9IHBj
-aV9nZXRfZHJ2ZGF0YShwYXItPnBkZXYpOwogCWludCBhdHlsZXZlbDsKIAogCS8qIEdldCBhbmQg
-Y29udmVydCB0aGUgdmFsdWUgKi8KLQltdXRleF9sb2NrKCZpbmZvLT5ibF9tdXRleCk7CiAJYXR5
-bGV2ZWwgPSBpbmZvLT5ibF9jdXJ2ZVtsZXZlbF0gKiBGQl9CQUNLTElHSFRfTUFYIC8gTUFYX0xF
-VkVMOwotCW11dGV4X3VubG9jaygmaW5mby0+YmxfbXV0ZXgpOwogCiAJaWYgKGF0eWxldmVsIDwg
-MCkKIAkJYXR5bGV2ZWwgPSAwOwpAQCAtMjE0Nyw3ICsyMTQ2LDggQEAgc3RhdGljIGludCBhdHlf
-YmxfZ2V0X2xldmVsX2JyaWdodG5lc3MocwogCXJldHVybiBhdHlsZXZlbDsKIH0KIAotc3RhdGlj
-IGludCBhdHlfYmxfdXBkYXRlX3N0YXR1cyhzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmQpCisv
-KiBDYWxsIHdpdGggZmJfaW5mby0+YmxfbXV0ZXggaGVsZCAqLworc3RhdGljIGludCBfX2F0eV9i
-bF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkKIHsKIAlzdHJ1Y3Qg
-YXR5ZmJfcGFyICpwYXIgPSBjbGFzc19nZXRfZGV2ZGF0YSgmYmQtPmNsYXNzX2Rldik7CiAJdW5z
-aWduZWQgaW50IHJlZyA9IGF0eV9sZF9sY2QoTENEX01JU0NfQ05UTCwgcGFyKTsKQEAgLTIxNzIs
-NiArMjE3MiwxOSBAQCBzdGF0aWMgaW50IGF0eV9ibF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiCiAJ
-cmV0dXJuIDA7CiB9CiAKK3N0YXRpYyBpbnQgYXR5X2JsX3VwZGF0ZV9zdGF0dXMoc3RydWN0IGJh
-Y2tsaWdodF9kZXZpY2UgKmJkKQoreworCXN0cnVjdCBhdHlmYl9wYXIgKnBhciA9IGNsYXNzX2dl
-dF9kZXZkYXRhKCZiZC0+Y2xhc3NfZGV2KTsKKwlzdHJ1Y3QgZmJfaW5mbyAqaW5mbyA9IHBjaV9n
-ZXRfZHJ2ZGF0YShwYXItPnBkZXYpOworCWludCByZXQ7CisKKwltdXRleF9sb2NrKCZpbmZvLT5i
-bF9tdXRleCk7CisJcmV0ID0gX19hdHlfYmxfdXBkYXRlX3N0YXR1cyhiZCk7CisJbXV0ZXhfdW5s
-b2NrKCZpbmZvLT5ibF9tdXRleCk7CisKKwlyZXR1cm4gcmV0OworfQorCiBzdGF0aWMgaW50IGF0
-eV9ibF9nZXRfYnJpZ2h0bmVzcyhzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmQpCiB7CiAJcmV0
-dXJuIGJkLT5wcm9wcy0+YnJpZ2h0bmVzczsKQEAgLTIxODQsNiArMjE5NywxNiBAQCBzdGF0aWMg
-c3RydWN0IGJhY2tsaWdodF9wcm9wZXJ0aWVzIGF0eV9iCiAJLm1heF9icmlnaHRuZXNzID0gKEZC
-X0JBQ0tMSUdIVF9MRVZFTFMgLSAxKSwKIH07CiAKK3N0YXRpYyB2b2lkIGF0eV9ibF9zZXRfcG93
-ZXIoc3RydWN0IGZiX2luZm8gKmluZm8sIGludCBwb3dlcikKK3sKKwltdXRleF9sb2NrKCZpbmZv
-LT5ibF9tdXRleCk7CisJdXAoJmluZm8tPmJsX2Rldi0+c2VtKTsKKwlpbmZvLT5ibF9kZXYtPnBy
-b3BzLT5wb3dlciA9IHBvd2VyOworCV9fYXR5X2JsX3VwZGF0ZV9zdGF0dXMoaW5mby0+YmxfZGV2
-KTsKKwlkb3duKCZpbmZvLT5ibF9kZXYtPnNlbSk7CisJbXV0ZXhfdW5sb2NrKCZpbmZvLT5ibF9t
-dXRleCk7Cit9CisKIHN0YXRpYyB2b2lkIGF0eV9ibF9pbml0KHN0cnVjdCBhdHlmYl9wYXIgKnBh
-cikKIHsKIAlzdHJ1Y3QgZmJfaW5mbyAqaW5mbyA9IHBjaV9nZXRfZHJ2ZGF0YShwYXItPnBkZXYp
-OwpAQCAtMjc5MCwxNiArMjgxMyw4IEBAIHN0YXRpYyBpbnQgYXR5ZmJfYmxhbmsoaW50IGJsYW5r
-LCBzdHJ1Y3QKIAkJcmV0dXJuIDA7CiAKICNpZmRlZiBDT05GSUdfUE1BQ19CQUNLTElHSFQKLQlp
-ZiAobWFjaGluZV9pcyhwb3dlcm1hYykgJiYgYmxhbmsgPiBGQl9CTEFOS19OT1JNQUwpIHsKLQkJ
-bXV0ZXhfbG9jaygmaW5mby0+YmxfbXV0ZXgpOwotCQlpZiAoaW5mby0+YmxfZGV2KSB7Ci0JCQlk
-b3duKCZpbmZvLT5ibF9kZXYtPnNlbSk7Ci0JCQlpbmZvLT5ibF9kZXYtPnByb3BzLT5wb3dlciA9
-IEZCX0JMQU5LX1BPV0VSRE9XTjsKLQkJCWluZm8tPmJsX2Rldi0+cHJvcHMtPnVwZGF0ZV9zdGF0
-dXMoaW5mby0+YmxfZGV2KTsKLQkJCXVwKCZpbmZvLT5ibF9kZXYtPnNlbSk7Ci0JCX0KLQkJbXV0
-ZXhfdW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0JfQorCWlmIChtYWNoaW5lX2lzKHBvd2VybWFj
-KSAmJiBibGFuayA+IEZCX0JMQU5LX05PUk1BTCkKKwkJYXR5X2JsX3NldF9wb3dlcihpbmZvLCBG
-Ql9CTEFOS19QT1dFUkRPV04pOwogI2VsaWYgZGVmaW5lZChDT05GSUdfRkJfQVRZX0dFTkVSSUNf
-TENEKQogCWlmIChwYXItPmxjZF90YWJsZSAmJiBibGFuayA+IEZCX0JMQU5LX05PUk1BTCAmJgog
-CSAgICAoYXR5X2xkX2xjZChMQ0RfR0VOX0NOVEwsIHBhcikgJiBMQ0RfT04pKSB7CkBAIC0yODMw
-LDE2ICsyODQ1LDggQEAgc3RhdGljIGludCBhdHlmYl9ibGFuayhpbnQgYmxhbmssIHN0cnVjdAog
-CWF0eV9zdF9sZTMyKENSVENfR0VOX0NOVEwsIGdlbl9jbnRsLCBwYXIpOwogCiAjaWZkZWYgQ09O
-RklHX1BNQUNfQkFDS0xJR0hUCi0JaWYgKG1hY2hpbmVfaXMocG93ZXJtYWMpICYmIGJsYW5rIDw9
-IEZCX0JMQU5LX05PUk1BTCkgewotCQltdXRleF9sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0JCWlm
-IChpbmZvLT5ibF9kZXYpIHsKLQkJCWRvd24oJmluZm8tPmJsX2Rldi0+c2VtKTsKLQkJCWluZm8t
-PmJsX2Rldi0+cHJvcHMtPnBvd2VyID0gRkJfQkxBTktfVU5CTEFOSzsKLQkJCWluZm8tPmJsX2Rl
-di0+cHJvcHMtPnVwZGF0ZV9zdGF0dXMoaW5mby0+YmxfZGV2KTsKLQkJCXVwKCZpbmZvLT5ibF9k
-ZXYtPnNlbSk7Ci0JCX0KLQkJbXV0ZXhfdW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0JfQorCWlm
-IChtYWNoaW5lX2lzKHBvd2VybWFjKSAmJiBibGFuayA8PSBGQl9CTEFOS19OT1JNQUwpCisJCWF0
-eV9ibF9zZXRfcG93ZXIoaW5mbywgRkJfQkxBTktfVU5CTEFOSyk7CiAjZWxpZiBkZWZpbmVkKENP
-TkZJR19GQl9BVFlfR0VORVJJQ19MQ0QpCiAJaWYgKHBhci0+bGNkX3RhYmxlICYmIGJsYW5rIDw9
-IEZCX0JMQU5LX05PUk1BTCAmJgogCSAgICAoYXR5X2xkX2xjZChMQ0RfR0VOX0NOVEwsIHBhcikg
-JiBMQ0RfT04pKSB7CmRpZmYgLU5ydXAgLS1leGNsdWRlLWZyb20gbGludXgtZXhjbHVkZS1mcm9t
-IGxpbnV4LTIuNi4xOC1yYzEub3JpZy9kcml2ZXJzL3ZpZGVvL2NoaXBzZmIuYyBsaW51eC0yLjYu
-MTgtcmMxL2RyaXZlcnMvdmlkZW8vY2hpcHNmYi5jCi0tLSBsaW51eC0yLjYuMTgtcmMxLm9yaWcv
-ZHJpdmVycy92aWRlby9jaGlwc2ZiLmMJMjAwNi0wNy0wOCAxMjoyNzowOC4wMDAwMDAwMDAgKzAy
-MDAKKysrIGxpbnV4LTIuNi4xOC1yYzEvZHJpdmVycy92aWRlby9jaGlwc2ZiLmMJMjAwNi0wNy0w
-OCAxMjoyODozMi4wMDAwMDAwMDAgKzAyMDAKQEAgLTE1MCwxMiArMTUwLDExIEBAIHN0YXRpYyBp
-bnQgY2hpcHNmYl9ibGFuayhpbnQgYmxhbmssIHN0cnUKIAltdXRleF9sb2NrKCZwbWFjX2JhY2ts
-aWdodF9tdXRleCk7CiAKIAlpZiAocG1hY19iYWNrbGlnaHQpIHsKLQkJZG93bigmcG1hY19iYWNr
-bGlnaHQtPnNlbSk7Ci0KIAkJLyogdXNlZCB0byBkaXNhYmxlIGJhY2tsaWdodCBvbmx5IGZvciBi
-bGFuayA+IDEsIGJ1dCBpdCBzZWVtcwogCQkgKiB1c2VmdWwgYXQgYmxhbmsgPSAxIHRvbyAoc2F2
-ZXMgYmF0dGVyeSwgZXh0ZW5kcyBiYWNrbGlnaHQKIAkJICogbGlmZSkKIAkgCSAqLworCQlkb3du
-KCZwbWFjX2JhY2tsaWdodC0+c2VtKTsKIAkJaWYgKGJsYW5rKQogCQkJcG1hY19iYWNrbGlnaHQt
-PnByb3BzLT5wb3dlciA9IEZCX0JMQU5LX1BPV0VSRE9XTjsKIAkJZWxzZQpkaWZmIC1OcnVwIC0t
-ZXhjbHVkZS1mcm9tIGxpbnV4LWV4Y2x1ZGUtZnJvbSBsaW51eC0yLjYuMTgtcmMxLm9yaWcvZHJp
-dmVycy92aWRlby9udmlkaWEvbnZfYmFja2xpZ2h0LmMgbGludXgtMi42LjE4LXJjMS9kcml2ZXJz
-L3ZpZGVvL252aWRpYS9udl9iYWNrbGlnaHQuYwotLS0gbGludXgtMi42LjE4LXJjMS5vcmlnL2Ry
-aXZlcnMvdmlkZW8vbnZpZGlhL252X2JhY2tsaWdodC5jCTIwMDYtMDctMDggMTI6Mjc6MDkuMDAw
-MDAwMDAwICswMjAwCisrKyBsaW51eC0yLjYuMTgtcmMxL2RyaXZlcnMvdmlkZW8vbnZpZGlhL252
-X2JhY2tsaWdodC5jCTIwMDYtMDctMDggMTI6Mjg6MzIuMDAwMDAwMDAwICswMjAwCkBAIC0yNiw5
-ICsyNiwxMSBAQAogICovCiAjZGVmaW5lIE1JTl9MRVZFTCAweDE1OAogI2RlZmluZSBNQVhfTEVW
-RUwgMHg1MzQKKyNkZWZpbmUgTEVWRUxfU1RFUCAoKE1BWF9MRVZFTCAtIE1JTl9MRVZFTCkgLyBG
-Ql9CQUNLTElHSFRfTUFYKQogCiBzdGF0aWMgc3RydWN0IGJhY2tsaWdodF9wcm9wZXJ0aWVzIG52
-aWRpYV9ibF9kYXRhOwogCisvKiBDYWxsIHdpdGggZmJfaW5mby0+YmxfbXV0ZXggaGVsZCAqLwog
-c3RhdGljIGludCBudmlkaWFfYmxfZ2V0X2xldmVsX2JyaWdodG5lc3Moc3RydWN0IG52aWRpYV9w
-YXIgKnBhciwKIAkJaW50IGxldmVsKQogewpAQCAtMzYsOSArMzgsNyBAQCBzdGF0aWMgaW50IG52
-aWRpYV9ibF9nZXRfbGV2ZWxfYnJpZ2h0bmVzCiAJaW50IG5sZXZlbDsKIAogCS8qIEdldCBhbmQg
-Y29udmVydCB0aGUgdmFsdWUgKi8KLQltdXRleF9sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0Jbmxl
-dmVsID0gaW5mby0+YmxfY3VydmVbbGV2ZWxdICogRkJfQkFDS0xJR0hUX01BWCAvIE1BWF9MRVZF
-TDsKLQltdXRleF91bmxvY2soJmluZm8tPmJsX211dGV4KTsKKwlubGV2ZWwgPSBNSU5fTEVWRUwg
-KyBpbmZvLT5ibF9jdXJ2ZVtsZXZlbF0gKiBMRVZFTF9TVEVQOwogCiAJaWYgKG5sZXZlbCA8IDAp
-CiAJCW5sZXZlbCA9IDA7CkBAIC01MCw3ICs1MCw4IEBAIHN0YXRpYyBpbnQgbnZpZGlhX2JsX2dl
-dF9sZXZlbF9icmlnaHRuZXMKIAlyZXR1cm4gbmxldmVsOwogfQogCi1zdGF0aWMgaW50IG52aWRp
-YV9ibF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkKKy8qIENhbGwg
-d2l0aCBmYl9pbmZvLT5ibF9tdXRleCBoZWxkICovCitzdGF0aWMgaW50IF9fbnZpZGlhX2JsX3Vw
-ZGF0ZV9zdGF0dXMoc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmJkKQogewogCXN0cnVjdCBudmlk
-aWFfcGFyICpwYXIgPSBjbGFzc19nZXRfZGV2ZGF0YSgmYmQtPmNsYXNzX2Rldik7CiAJdTMyIHRt
-cF9wY3J0LCB0bXBfcG1jLCBmcGNvbnRyb2w7CkBAIC04NCw2ICs4NSwxOSBAQCBzdGF0aWMgaW50
-IG52aWRpYV9ibF91cGRhdGVfc3RhdHVzKHN0cnVjCiAJcmV0dXJuIDA7CiB9CiAKK3N0YXRpYyBp
-bnQgbnZpZGlhX2JsX3VwZGF0ZV9zdGF0dXMoc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmJkKQor
-eworCXN0cnVjdCBudmlkaWFfcGFyICpwYXIgPSBjbGFzc19nZXRfZGV2ZGF0YSgmYmQtPmNsYXNz
-X2Rldik7CisJc3RydWN0IGZiX2luZm8gKmluZm8gPSBwY2lfZ2V0X2RydmRhdGEocGFyLT5wY2lf
-ZGV2KTsKKwlpbnQgcmV0OworCisJbXV0ZXhfbG9jaygmaW5mby0+YmxfbXV0ZXgpOworCXJldCA9
-IF9fbnZpZGlhX2JsX3VwZGF0ZV9zdGF0dXMoYmQpOworCW11dGV4X3VubG9jaygmaW5mby0+Ymxf
-bXV0ZXgpOworCisJcmV0dXJuIHJldDsKK30KKwogc3RhdGljIGludCBudmlkaWFfYmxfZ2V0X2Jy
-aWdodG5lc3Moc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgKmJkKQogewogCXJldHVybiBiZC0+cHJv
-cHMtPmJyaWdodG5lc3M7CkBAIC05Niw2ICsxMTAsMTYgQEAgc3RhdGljIHN0cnVjdCBiYWNrbGln
-aHRfcHJvcGVydGllcyBudmlkaQogCS5tYXhfYnJpZ2h0bmVzcyA9IChGQl9CQUNLTElHSFRfTEVW
-RUxTIC0gMSksCiB9OwogCit2b2lkIG52aWRpYV9ibF9zZXRfcG93ZXIoc3RydWN0IGZiX2luZm8g
-KmluZm8sIGludCBwb3dlcikKK3sKKwltdXRleF9sb2NrKCZpbmZvLT5ibF9tdXRleCk7CisJdXAo
-JmluZm8tPmJsX2Rldi0+c2VtKTsKKwlpbmZvLT5ibF9kZXYtPnByb3BzLT5wb3dlciA9IHBvd2Vy
-OworCV9fbnZpZGlhX2JsX3VwZGF0ZV9zdGF0dXMoaW5mby0+YmxfZGV2KTsKKwlkb3duKCZpbmZv
-LT5ibF9kZXYtPnNlbSk7CisJbXV0ZXhfdW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7Cit9CisKIHZv
-aWQgbnZpZGlhX2JsX2luaXQoc3RydWN0IG52aWRpYV9wYXIgKnBhcikKIHsKIAlzdHJ1Y3QgZmJf
-aW5mbyAqaW5mbyA9IHBjaV9nZXRfZHJ2ZGF0YShwYXItPnBjaV9kZXYpOwpkaWZmIC1OcnVwIC0t
-ZXhjbHVkZS1mcm9tIGxpbnV4LWV4Y2x1ZGUtZnJvbSBsaW51eC0yLjYuMTgtcmMxLm9yaWcvZHJp
-dmVycy92aWRlby9udmlkaWEvbnZpZGlhLmMgbGludXgtMi42LjE4LXJjMS9kcml2ZXJzL3ZpZGVv
-L252aWRpYS9udmlkaWEuYwotLS0gbGludXgtMi42LjE4LXJjMS5vcmlnL2RyaXZlcnMvdmlkZW8v
-bnZpZGlhL252aWRpYS5jCTIwMDYtMDctMDggMTI6Mjc6MDkuMDAwMDAwMDAwICswMjAwCisrKyBs
-aW51eC0yLjYuMTgtcmMxL2RyaXZlcnMvdmlkZW8vbnZpZGlhL252aWRpYS5jCTIwMDYtMDctMDgg
-MTI6Mjg6MzIuMDAwMDAwMDAwICswMjAwCkBAIC05MzMsMTYgKzkzMyw3IEBAIHN0YXRpYyBpbnQg
-bnZpZGlhZmJfYmxhbmsoaW50IGJsYW5rLCBzdHIKIAlOVldyaXRlU2VxKHBhciwgMHgwMSwgdG1w
-KTsKIAlOVldyaXRlQ3J0YyhwYXIsIDB4MWEsIHZlc2EpOwogCi0jaWZkZWYgQ09ORklHX0ZCX05W
-SURJQV9CQUNLTElHSFQKLQltdXRleF9sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0JaWYgKGluZm8t
-PmJsX2RldikgewotCQlkb3duKCZpbmZvLT5ibF9kZXYtPnNlbSk7Ci0JCWluZm8tPmJsX2Rldi0+
-cHJvcHMtPnBvd2VyID0gYmxhbms7Ci0JCWluZm8tPmJsX2Rldi0+cHJvcHMtPnVwZGF0ZV9zdGF0
-dXMoaW5mby0+YmxfZGV2KTsKLQkJdXAoJmluZm8tPmJsX2Rldi0+c2VtKTsKLQl9Ci0JbXV0ZXhf
-dW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0jZW5kaWYKKwludmlkaWFfYmxfc2V0X3Bvd2VyKGlu
-Zm8sIGJsYW5rKTsKIAogCU5WVFJBQ0VfTEVBVkUoKTsKIApkaWZmIC1OcnVwIC0tZXhjbHVkZS1m
-cm9tIGxpbnV4LWV4Y2x1ZGUtZnJvbSBsaW51eC0yLjYuMTgtcmMxLm9yaWcvZHJpdmVycy92aWRl
-by9udmlkaWEvbnZfcHJvdG8uaCBsaW51eC0yLjYuMTgtcmMxL2RyaXZlcnMvdmlkZW8vbnZpZGlh
-L252X3Byb3RvLmgKLS0tIGxpbnV4LTIuNi4xOC1yYzEub3JpZy9kcml2ZXJzL3ZpZGVvL252aWRp
-YS9udl9wcm90by5oCTIwMDYtMDctMDggMTI6Mjc6MDkuMDAwMDAwMDAwICswMjAwCisrKyBsaW51
-eC0yLjYuMTgtcmMxL2RyaXZlcnMvdmlkZW8vbnZpZGlhL252X3Byb3RvLmgJMjAwNi0wNy0wOCAx
-MjoyODozMi4wMDAwMDAwMDAgKzAyMDAKQEAgLTY4LDkgKzY4LDExIEBAIGV4dGVybiB1OCBieXRl
-X3JldlsyNTZdOwogI2lmZGVmIENPTkZJR19GQl9OVklESUFfQkFDS0xJR0hUCiBleHRlcm4gdm9p
-ZCBudmlkaWFfYmxfaW5pdChzdHJ1Y3QgbnZpZGlhX3BhciAqcGFyKTsKIGV4dGVybiB2b2lkIG52
-aWRpYV9ibF9leGl0KHN0cnVjdCBudmlkaWFfcGFyICpwYXIpOworZXh0ZXJuIHZvaWQgbnZpZGlh
-X2JsX3NldF9wb3dlcihzdHJ1Y3QgZmJfaW5mbyAqaW5mbywgaW50IHBvd2VyKTsKICNlbHNlCiBz
-dGF0aWMgaW5saW5lIHZvaWQgbnZpZGlhX2JsX2luaXQoc3RydWN0IG52aWRpYV9wYXIgKnBhcikg
-e30KIHN0YXRpYyBpbmxpbmUgdm9pZCBudmlkaWFfYmxfZXhpdChzdHJ1Y3QgbnZpZGlhX3BhciAq
-cGFyKSB7fQorc3RhdGljIGlubGluZSB2b2lkIG52aWRpYV9ibF9zZXRfcG93ZXIoc3RydWN0IGZi
-X2luZm8gKmluZm8sIGludCBwb3dlcikge30KICNlbmRpZgogCiAjZW5kaWYJCQkJLyogX19OVl9Q
-Uk9UT19IX18gKi8KZGlmZiAtTnJ1cCAtLWV4Y2x1ZGUtZnJvbSBsaW51eC1leGNsdWRlLWZyb20g
-bGludXgtMi42LjE4LXJjMS5vcmlnL2RyaXZlcnMvdmlkZW8vcml2YS9mYmRldi5jIGxpbnV4LTIu
-Ni4xOC1yYzEvZHJpdmVycy92aWRlby9yaXZhL2ZiZGV2LmMKLS0tIGxpbnV4LTIuNi4xOC1yYzEu
-b3JpZy9kcml2ZXJzL3ZpZGVvL3JpdmEvZmJkZXYuYwkyMDA2LTA3LTA4IDEyOjI3OjA4LjAwMDAw
-MDAwMCArMDIwMAorKysgbGludXgtMi42LjE4LXJjMS9kcml2ZXJzL3ZpZGVvL3JpdmEvZmJkZXYu
-YwkyMDA2LTA3LTA4IDEyOjI4OjMyLjAwMDAwMDAwMCArMDIwMApAQCAtMjc4LDkgKzI3OCwxMSBA
-QCBzdGF0aWMgY29uc3Qgc3RydWN0IHJpdmFfcmVncyByZWdfdGVtcGxhCiAgKi8KICNkZWZpbmUg
-TUlOX0xFVkVMIDB4MTU4CiAjZGVmaW5lIE1BWF9MRVZFTCAweDUzNAorI2RlZmluZSBMRVZFTF9T
-VEVQICgoTUFYX0xFVkVMIC0gTUlOX0xFVkVMKSAvIEZCX0JBQ0tMSUdIVF9NQVgpCiAKIHN0YXRp
-YyBzdHJ1Y3QgYmFja2xpZ2h0X3Byb3BlcnRpZXMgcml2YV9ibF9kYXRhOwogCisvKiBDYWxsIHdp
-dGggZmJfaW5mby0+YmxfbXV0ZXggaGVsZCAqLwogc3RhdGljIGludCByaXZhX2JsX2dldF9sZXZl
-bF9icmlnaHRuZXNzKHN0cnVjdCByaXZhX3BhciAqcGFyLAogCQlpbnQgbGV2ZWwpCiB7CkBAIC0y
-ODgsOSArMjkwLDcgQEAgc3RhdGljIGludCByaXZhX2JsX2dldF9sZXZlbF9icmlnaHRuZXNzKAog
-CWludCBubGV2ZWw7CiAKIAkvKiBHZXQgYW5kIGNvbnZlcnQgdGhlIHZhbHVlICovCi0JbXV0ZXhf
-bG9jaygmaW5mby0+YmxfbXV0ZXgpOwotCW5sZXZlbCA9IGluZm8tPmJsX2N1cnZlW2xldmVsXSAq
-IEZCX0JBQ0tMSUdIVF9NQVggLyBNQVhfTEVWRUw7Ci0JbXV0ZXhfdW5sb2NrKCZpbmZvLT5ibF9t
-dXRleCk7CisJbmxldmVsID0gTUlOX0xFVkVMICsgaW5mby0+YmxfY3VydmVbbGV2ZWxdICogTEVW
-RUxfU1RFUDsKIAogCWlmIChubGV2ZWwgPCAwKQogCQlubGV2ZWwgPSAwOwpAQCAtMzAyLDcgKzMw
-Miw4IEBAIHN0YXRpYyBpbnQgcml2YV9ibF9nZXRfbGV2ZWxfYnJpZ2h0bmVzcygKIAlyZXR1cm4g
-bmxldmVsOwogfQogCi1zdGF0aWMgaW50IHJpdmFfYmxfdXBkYXRlX3N0YXR1cyhzdHJ1Y3QgYmFj
-a2xpZ2h0X2RldmljZSAqYmQpCisvKiBDYWxsIHdpdGggZmJfaW5mby0+YmxfbXV0ZXggaGVsZCAq
-Lworc3RhdGljIGludCBfX3JpdmFfYmxfdXBkYXRlX3N0YXR1cyhzdHJ1Y3QgYmFja2xpZ2h0X2Rl
-dmljZSAqYmQpCiB7CiAJc3RydWN0IHJpdmFfcGFyICpwYXIgPSBjbGFzc19nZXRfZGV2ZGF0YSgm
-YmQtPmNsYXNzX2Rldik7CiAJVTAzMiB0bXBfcGNydCwgdG1wX3BtYzsKQEAgLTMyNyw2ICszMjgs
-MTkgQEAgc3RhdGljIGludCByaXZhX2JsX3VwZGF0ZV9zdGF0dXMoc3RydWN0IAogCXJldHVybiAw
-OwogfQogCitzdGF0aWMgaW50IHJpdmFfYmxfdXBkYXRlX3N0YXR1cyhzdHJ1Y3QgYmFja2xpZ2h0
-X2RldmljZSAqYmQpCit7CisJc3RydWN0IHJpdmFfcGFyICpwYXIgPSBjbGFzc19nZXRfZGV2ZGF0
-YSgmYmQtPmNsYXNzX2Rldik7CisJc3RydWN0IGZiX2luZm8gKmluZm8gPSBwY2lfZ2V0X2RydmRh
-dGEocGFyLT5wZGV2KTsKKwlpbnQgcmV0OworCisJbXV0ZXhfbG9jaygmaW5mby0+YmxfbXV0ZXgp
-OworCXJldCA9IF9fcml2YV9ibF91cGRhdGVfc3RhdHVzKGJkKTsKKwltdXRleF91bmxvY2soJmlu
-Zm8tPmJsX211dGV4KTsKKworCXJldHVybiByZXQ7Cit9CisKIHN0YXRpYyBpbnQgcml2YV9ibF9n
-ZXRfYnJpZ2h0bmVzcyhzdHJ1Y3QgYmFja2xpZ2h0X2RldmljZSAqYmQpCiB7CiAJcmV0dXJuIGJk
-LT5wcm9wcy0+YnJpZ2h0bmVzczsKQEAgLTMzOSw2ICszNTMsMTYgQEAgc3RhdGljIHN0cnVjdCBi
-YWNrbGlnaHRfcHJvcGVydGllcyByaXZhXwogCS5tYXhfYnJpZ2h0bmVzcyA9IChGQl9CQUNLTElH
-SFRfTEVWRUxTIC0gMSksCiB9OwogCitzdGF0aWMgdm9pZCByaXZhX2JsX3NldF9wb3dlcihzdHJ1
-Y3QgZmJfaW5mbyAqaW5mbywgaW50IHBvd2VyKQoreworCW11dGV4X2xvY2soJmluZm8tPmJsX211
-dGV4KTsKKwl1cCgmaW5mby0+YmxfZGV2LT5zZW0pOworCWluZm8tPmJsX2Rldi0+cHJvcHMtPnBv
-d2VyID0gcG93ZXI7CisJX19yaXZhX2JsX3VwZGF0ZV9zdGF0dXMoaW5mby0+YmxfZGV2KTsKKwlk
-b3duKCZpbmZvLT5ibF9kZXYtPnNlbSk7CisJbXV0ZXhfdW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7
-Cit9CisKIHN0YXRpYyB2b2lkIHJpdmFfYmxfaW5pdChzdHJ1Y3Qgcml2YV9wYXIgKnBhcikKIHsK
-IAlzdHJ1Y3QgZmJfaW5mbyAqaW5mbyA9IHBjaV9nZXRfZHJ2ZGF0YShwYXItPnBkZXYpOwpAQCAt
-NDE5LDYgKzQ0Myw3IEBAIHN0YXRpYyB2b2lkIHJpdmFfYmxfZXhpdChzdHJ1Y3Qgcml2YV9wYXIK
-ICNlbHNlCiBzdGF0aWMgaW5saW5lIHZvaWQgcml2YV9ibF9pbml0KHN0cnVjdCByaXZhX3BhciAq
-cGFyKSB7fQogc3RhdGljIGlubGluZSB2b2lkIHJpdmFfYmxfZXhpdChzdHJ1Y3Qgcml2YV9wYXIg
-KnBhcikge30KK3N0YXRpYyBpbmxpbmUgdm9pZCByaXZhX2JsX3NldF9wb3dlcihzdHJ1Y3QgZmJf
-aW5mbyAqaW5mbywgaW50IHBvd2VyKSB7fQogI2VuZGlmIC8qIENPTkZJR19GQl9SSVZBX0JBQ0tM
-SUdIVCAqLwogCiAvKiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tICoKQEAgLTEzMzcsMTYgKzEzNjIsNyBAQCBz
-dGF0aWMgaW50IHJpdmFmYl9ibGFuayhpbnQgYmxhbmssIHN0cnVjCiAJU0VRb3V0KHBhciwgMHgw
-MSwgdG1wKTsKIAlDUlRDb3V0KHBhciwgMHgxYSwgdmVzYSk7CiAKLSNpZmRlZiBDT05GSUdfRkJf
-UklWQV9CQUNLTElHSFQKLQltdXRleF9sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0JaWYgKGluZm8t
-PmJsX2RldikgewotCQlkb3duKCZpbmZvLT5ibF9kZXYtPnNlbSk7Ci0JCWluZm8tPmJsX2Rldi0+
-cHJvcHMtPnBvd2VyID0gYmxhbms7Ci0JCWluZm8tPmJsX2Rldi0+cHJvcHMtPnVwZGF0ZV9zdGF0
-dXMoaW5mby0+YmxfZGV2KTsKLQkJdXAoJmluZm8tPmJsX2Rldi0+c2VtKTsKLQl9Ci0JbXV0ZXhf
-dW5sb2NrKCZpbmZvLT5ibF9tdXRleCk7Ci0jZW5kaWYKKwlyaXZhX2JsX3NldF9wb3dlcihpbmZv
-LCBibGFuayk7CiAKIAlOVlRSQUNFX0xFQVZFKCk7CiAKClVzaW5nIFRvbWNhdCBidXQgbmVlZCB0
-byBkbyBtb3JlPyBOZWVkIHRvIHN1cHBvcnQgd2ViIHNlcnZpY2VzLCBzZWN1cml0eT8KR2V0IHN0
-dWZmIGRvbmUgcXVpY2tseSB3aXRoIHByZS1pbnRlZ3JhdGVkIHRlY2hub2xvZ3kgdG8gbWFrZSB5
-b3VyIGpvYiBlYXNpZXIKRG93bmxvYWQgSUJNIFdlYlNwaGVyZSBBcHBsaWNhdGlvbiBTZXJ2ZXIg
-di4xLjAuMSBiYXNlZCBvbiBBcGFjaGUgR2Vyb25pbW8KaHR0cDovL3NlbC5hcy11cy5mYWxrYWcu
-bmV0L3NlbD9jbWQ9bG5rJmtpZD0xMjA3MDkmYmlkPTI2MzA1NyZkYXQ9MTIxNjQyCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVs
-IG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0
-cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2
-ZWwK
+This is a multi-part message in MIME format.
+--------------060000040606000005090402
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Antonino A. Daplas wrote:
+
+>Mike Rapoport wrote:
+>  
+>
+>>This patch adds frame buffer driver for 2700G LCD controller present on
+>>CompuLab CM-X270 computer module.
+>>This pacth is versus current Linus git tree.
+>>
+>>Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+>>
+>>
+>>    
+>>
+>
+>  
+>
+>>+
+>>+static int
+>>+mbxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+>>+		   u_int trans, struct fb_info *info)
+>>    
+>>
+>
+>Coding style, "static int" and "mbxfb_setcolreg" in one line.
+>
+>  
+>
+I've tried hard to remove all the coding styles mistakes and misprints, 
+but some maybe still in there.
+
+>>+{
+>>+	uint val, ret = 1;
+>>    
+>>
+>
+>If you can, avoid u_int and family and just use u32 and family.
+>
+>  
+>
+Done
+
+>>+
+>>+	if ( regno < 255 ) {
+>>+		val = (red & 0xff) << 16;
+>>+		val |= (green & 0xff) << 8;
+>>+		val |= (blue & 0xff) << 0;
+>>+		GPLUT = Gplut_Lutadr(regno) | Gplut_Lutdata(val);
+>>+		udelay(1000);
+>>+		ret = 0;
+>>    
+>>
+>
+>If you want this to work as a console driver, make sure you also
+>write 'val' to info->pseudo_palette (for bpp 16 and above) and only
+>for regno's 0-15.
+>  
+>
+>
+I've tried to use this driver as console, but all I see is a blank 
+screen. So, at least for now it cannot be used as a console :(
+
+>>+#include "mbxsysfs.c"
+>>+
+>>+#define res_size(_r) (((_r)->end - (_r)->start) + 1)
+>>    
+>>
+>
+>No arch-specific function/macro's to determine the resource length?
+>  
+>
+I searched for one but in vain.
+
+>>+static struct platform_driver mbxfb_driver = {
+>>+	.probe		= mbxfb_probe,
+>>+	.remove		= mbxfb_remove,
+>>+
+>>+#ifdef CONFIG_PM
+>>    
+>>
+>
+>Redundant #ifdef, suspend and resume are already defined as NULL if
+>CONFIG_PM is false.
+>
+>  
+>
+>>+	},
+>>+};
+>>+
+>>diff --git a/drivers/video/mbx/mbxsysfs.c b/drivers/video/mbx/mbxsysfs.c
+>>new file mode 100644
+>>index 0000000..4b9571a
+>>--- /dev/null
+>>+++ b/drivers/video/mbx/mbxsysfs.c
+>>@@ -0,0 +1,129 @@
+>>    
+>>
+>
+>Most of the attributes violate the "one file, one value" rule. GregKH won't
+>like it. Try using debugfs if you cannot separate them.
+>
+>  
+>
+Changed to debugfs implementation.
+
+>Tony
+>
+>
+>
+>  
+>
+
+
+-- 
+Sincerely yours,
+Mike Rapoport
+
+
+--------------060000040606000005090402
+Content-Type: text/x-diff;
+ name="cm_x2xx_mbx.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cm_x2xx_mbx.patch"
+
+ drivers/video/Kconfig          |   10 +
+ drivers/video/Makefile         |    1 
+ drivers/video/mbx/Makefile     |    3 
+ drivers/video/mbx/mbxdebugfs.c |  188 +++++++++++
+ drivers/video/mbx/mbxfb.c      |  680 ++++++++++++++++++++++++++++++++++++++++
+ drivers/video/mbx/reg_bits.h   |  418 +++++++++++++++++++++++++
+ drivers/video/mbx/regs.h       |  192 +++++++++++
+ include/video/mbxfb.h          |   28 ++
+ 8 files changed, 1520 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 17de4c8..3f472d4 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1518,6 +1518,16 @@ config FB_PXA_PARAMETERS
+ 
+ 	  <file:Documentation/fb/pxafb.txt> describes the available parameters.
+ 
++config FB_MBX
++	tristate "2700G LCD framebuffer support"
++	depends on FB && ARCH_PXA
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	---help---
++
++	  If unsure, say N.
++
+ config FB_W100
+ 	tristate "W100 frame buffer support"
+ 	depends on FB && PXA_SHARPSL
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index c335e9b..eabb5be 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_FB_SIS)		  += sis/
+ obj-$(CONFIG_FB_KYRO)             += kyro/
+ obj-$(CONFIG_FB_SAVAGE)		  += savage/
+ obj-$(CONFIG_FB_GEODE)		  += geode/
++obj-$(CONFIG_FB_MBX)		  += mbx/
+ obj-$(CONFIG_FB_I810)             += vgastate.o
+ obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o vgastate.o
+ obj-$(CONFIG_FB_VIRGE)            += virgefb.o
+diff --git a/drivers/video/mbx/Makefile b/drivers/video/mbx/Makefile
+new file mode 100644
+index 0000000..ad042f5
+--- /dev/null
++++ b/drivers/video/mbx/Makefile
+@@ -0,0 +1,3 @@
++# Makefile for the 2700G controller driver.
++
++obj-$(CONFIG_FB_MBX)	+= mbxfb.o
+diff --git a/drivers/video/mbx/mbxdebugfs.c b/drivers/video/mbx/mbxdebugfs.c
+new file mode 100644
+index 0000000..84aab3a
+--- /dev/null
++++ b/drivers/video/mbx/mbxdebugfs.c
+@@ -0,0 +1,188 @@
++#include <linux/debugfs.h>
++
++#define BIG_BUFFER_SIZE	(1024)
++
++static char big_buffer[BIG_BUFFER_SIZE];
++
++struct mbxfb_debugfs_data {
++	struct dentry *dir;
++	struct dentry *sysconf;
++	struct dentry *clock;
++	struct dentry *display;
++	struct dentry *gsctl;
++};
++
++static int open_file_generic(struct inode *inode, struct file *file)
++{
++	file->private_data = inode->u.generic_ip;
++	return 0;
++}
++
++static ssize_t write_file_dummy(struct file *file, const char __user *buf,
++				size_t count, loff_t *ppos)
++{
++	return count;
++}
++
++static ssize_t sysconf_read_file(struct file *file, char __user *userbuf,
++				 size_t count, loff_t *ppos)
++{
++	char * s = big_buffer;
++
++	s += sprintf(s, "SYSCFG = %08lx\n", SYSCFG);
++	s += sprintf(s, "PFBASE = %08lx\n", PFBASE);
++	s += sprintf(s, "PFCEIL = %08lx\n", PFCEIL);
++	s += sprintf(s, "POLLFLAG = %08lx\n", POLLFLAG);
++	s += sprintf(s, "SYSRST = %08lx\n", SYSRST);
++
++	return  simple_read_from_buffer(userbuf, count, ppos,
++					big_buffer, s-big_buffer);
++}
++
++
++static ssize_t gsctl_read_file(struct file *file, char __user *userbuf,
++			       size_t count, loff_t *ppos)
++{
++	char * s = big_buffer;
++
++	s += sprintf(s, "GSCTRL = %08lx\n", GSCTRL);
++	s += sprintf(s, "VSCTRL = %08lx\n", VSCTRL);
++	s += sprintf(s, "GBBASE = %08lx\n", GBBASE);
++	s += sprintf(s, "VBBASE = %08lx\n", VBBASE);
++	s += sprintf(s, "GDRCTRL = %08lx\n", GDRCTRL);
++	s += sprintf(s, "VCMSK = %08lx\n", VCMSK);
++	s += sprintf(s, "GSCADR = %08lx\n", GSCADR);
++	s += sprintf(s, "VSCADR = %08lx\n", VSCADR);
++	s += sprintf(s, "VUBASE = %08lx\n", VUBASE);
++	s += sprintf(s, "VVBASE = %08lx\n", VVBASE);
++	s += sprintf(s, "GSADR = %08lx\n", GSADR);
++	s += sprintf(s, "VSADR = %08lx\n", VSADR);
++	s += sprintf(s, "HCCTRL = %08lx\n", HCCTRL);
++	s += sprintf(s, "HCSIZE = %08lx\n", HCSIZE);
++	s += sprintf(s, "HCPOS = %08lx\n", HCPOS);
++	s += sprintf(s, "HCBADR = %08lx\n", HCBADR);
++	s += sprintf(s, "HCCKMSK = %08lx\n", HCCKMSK);
++	s += sprintf(s, "GPLUT = %08lx\n", GPLUT);
++
++	return  simple_read_from_buffer(userbuf, count, ppos,
++					big_buffer, s-big_buffer);
++}
++
++static ssize_t display_read_file(struct file *file, char __user *userbuf,
++				 size_t count, loff_t *ppos)
++{
++	char * s = big_buffer;
++
++	s += sprintf(s, "DSCTRL = %08lx\n", DSCTRL);
++	s += sprintf(s, "DHT01 = %08lx\n", DHT01);
++	s += sprintf(s, "DHT02 = %08lx\n", DHT02);
++	s += sprintf(s, "DHT03 = %08lx\n", DHT03);
++	s += sprintf(s, "DVT01 = %08lx\n", DVT01);
++	s += sprintf(s, "DVT02 = %08lx\n", DVT02);
++	s += sprintf(s, "DVT03 = %08lx\n", DVT03);
++	s += sprintf(s, "DBCOL = %08lx\n", DBCOL);
++	s += sprintf(s, "BGCOLOR = %08lx\n", BGCOLOR);
++	s += sprintf(s, "DINTRS = %08lx\n", DINTRS);
++	s += sprintf(s, "DINTRE = %08lx\n", DINTRE);
++	s += sprintf(s, "DINTRCNT = %08lx\n", DINTRCNT);
++	s += sprintf(s, "DSIG = %08lx\n", DSIG);
++	s += sprintf(s, "DMCTRL = %08lx\n", DMCTRL);
++	s += sprintf(s, "CLIPCTRL = %08lx\n", CLIPCTRL);
++	s += sprintf(s, "SPOCTRL = %08lx\n", SPOCTRL);
++	s += sprintf(s, "SVCTRL = %08lx\n", SVCTRL);
++	s += sprintf(s, "DLSTS = %08lx\n", DLSTS);
++	s += sprintf(s, "DLLCTRL = %08lx\n", DLLCTRL);
++	s += sprintf(s, "DVLNUM = %08lx\n", DVLNUM);
++	s += sprintf(s, "DUCTRL = %08lx\n", DUCTRL);
++	s += sprintf(s, "DVECTRL = %08lx\n", DVECTRL);
++	s += sprintf(s, "DHDET = %08lx\n", DHDET);
++	s += sprintf(s, "DVDET = %08lx\n", DVDET);
++	s += sprintf(s, "DODMSK = %08lx\n", DODMSK);
++	s += sprintf(s, "CSC01 = %08lx\n", CSC01);
++	s += sprintf(s, "CSC02 = %08lx\n", CSC02);
++	s += sprintf(s, "CSC03 = %08lx\n", CSC03);
++	s += sprintf(s, "CSC04 = %08lx\n", CSC04);
++	s += sprintf(s, "CSC05 = %08lx\n", CSC05);
++
++	return  simple_read_from_buffer(userbuf, count, ppos,
++					big_buffer, s-big_buffer);
++}
++
++static ssize_t clock_read_file(struct file *file, char __user *userbuf,
++			       size_t count, loff_t *ppos)
++{
++	char * s = big_buffer;
++
++	s += sprintf(s, "SYSCLKSRC = %08lx\n", SYSCLKSRC);
++	s += sprintf(s, "PIXCLKSRC = %08lx\n", PIXCLKSRC);
++	s += sprintf(s, "CLKSLEEP = %08lx\n", CLKSLEEP);
++	s += sprintf(s, "COREPLL = %08lx\n", COREPLL);
++	s += sprintf(s, "DISPPLL = %08lx\n", DISPPLL);
++	s += sprintf(s, "PLLSTAT = %08lx\n", PLLSTAT);
++	s += sprintf(s, "VOVRCLK = %08lx\n", VOVRCLK);
++	s += sprintf(s, "PIXCLK = %08lx\n", PIXCLK);
++	s += sprintf(s, "MEMCLK = %08lx\n", MEMCLK);
++	s += sprintf(s, "M24CLK = %08lx\n", M24CLK);
++	s += sprintf(s, "MBXCLK = %08lx\n", MBXCLK);
++	s += sprintf(s, "SDCLK = %08lx\n", SDCLK);
++	s += sprintf(s, "PIXCLKDIV = %08lx\n", PIXCLKDIV);
++
++	return  simple_read_from_buffer(userbuf, count, ppos,
++					big_buffer, s-big_buffer);
++}
++
++static struct file_operations sysconf_fops = {
++	.read = sysconf_read_file,
++	.write = write_file_dummy,
++	.open = open_file_generic,
++};
++
++static struct file_operations clock_fops = {
++	.read = clock_read_file,
++	.write = write_file_dummy,
++	.open = open_file_generic,
++};
++
++static struct file_operations display_fops = {
++	.read = display_read_file,
++	.write = write_file_dummy,
++	.open = open_file_generic,
++};
++
++static struct file_operations gsctl_fops = {
++	.read = gsctl_read_file,
++	.write = write_file_dummy,
++	.open = open_file_generic,
++};
++
++
++static void __devinit mbxfb_debugfs_init(struct fb_info *fbi)
++{
++	struct mbxfb_info *mfbi = fbi->par;
++	struct mbxfb_debugfs_data *dbg;
++
++	dbg = kzalloc(sizeof(struct mbxfb_debugfs_data), GFP_KERNEL);
++	mfbi->debugfs_data = dbg;
++
++	dbg->dir = debugfs_create_dir("mbxfb", NULL);
++	dbg->sysconf = debugfs_create_file("sysconf", 0444, dbg->dir,
++				      fbi, &sysconf_fops);
++	dbg->clock = debugfs_create_file("clock", 0444, dbg->dir,
++				    fbi, &clock_fops);
++	dbg->display = debugfs_create_file("display", 0444, dbg->dir,
++				      fbi, &display_fops);
++	dbg->gsctl = debugfs_create_file("gsctl", 0444, dbg->dir,
++				    fbi, &gsctl_fops);
++}
++
++static void __devexit mbxfb_debugfs_remove(struct fb_info *fbi)
++{
++	struct mbxfb_info *mfbi = fbi->par;
++	struct mbxfb_debugfs_data *dbg = mfbi->debugfs_data;
++
++	debugfs_remove(dbg->gsctl);
++	debugfs_remove(dbg->display);
++	debugfs_remove(dbg->clock);
++	debugfs_remove(dbg->sysconf);
++	debugfs_remove(dbg->dir);
++}
+diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
+new file mode 100644
+index 0000000..45c61c0
+--- /dev/null
++++ b/drivers/video/mbx/mbxfb.c
+@@ -0,0 +1,680 @@
++/*
++ *  linux/drivers/video/mbx/mbxfb.c
++ *
++ *  Copyright (C) 2006 Compulab, Ltd.
++ *  Mike Rapoport <mike@compulab.co.il>
++ *
++ *   Based on pxafb.c
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive for
++ * more details.
++ *
++ *   Intel 2700G (Marathon) Graphics Accelerator Frame Buffer Driver
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/fb.h>
++#include <linux/delay.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++
++#include <video/mbxfb.h>
++
++#include <asm/io.h>
++
++#undef DEBUG
++
++static unsigned long virt_base_2700;
++#include "regs.h"
++#include "reg_bits.h"
++
++#define MIN_XRES	16
++#define MIN_YRES	16
++#define MAX_XRES	2048
++#define MAX_YRES	2048
++
++/* FIXME: take care of different chip reivsions with different sizes
++   of ODFB */
++#define MEMORY_OFFSET	0x60000
++
++struct mbxfb_info {
++	struct device *dev;
++
++	struct resource *fb_res;
++	struct resource *fb_req;
++
++	struct resource *reg_res;
++	struct resource *reg_req;
++
++	void __iomem *fb_virt_addr;
++	unsigned long fb_phys_addr;
++
++	void __iomem *reg_virt_addr;
++	unsigned long reg_phys_addr;
++
++	int (*platform_probe) (struct fb_info * fb);
++	int (*platform_remove) (struct fb_info * fb);
++
++#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
++	void *debugfs_data;
++#endif
++
++};
++
++static struct fb_var_screeninfo mbxfb_default __devinitdata = {
++	.xres = 640,
++	.yres = 480,
++	.xres_virtual = 640,
++	.yres_virtual = 480,
++	.bits_per_pixel = 16,
++	.red = {11, 5, 0},
++	.green = {5, 6, 0},
++	.blue = {0, 5, 0},
++	.activate = FB_ACTIVATE_TEST,
++	.height = -1,
++	.width = -1,
++	.pixclock = 40000,
++	.left_margin = 48,
++	.right_margin = 16,
++	.upper_margin = 33,
++	.lower_margin = 10,
++	.hsync_len = 96,
++	.vsync_len = 2,
++	.vmode = FB_VMODE_NONINTERLACED,
++	.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++};
++
++static struct fb_fix_screeninfo mbxfb_fix  __devinitdata = {
++	.id = "MBX",
++	.type = FB_TYPE_PACKED_PIXELS,
++	.visual = FB_VISUAL_TRUECOLOR,
++	.xpanstep = 0,
++	.ypanstep = 0,
++	.ywrapstep = 0,
++	.accel = FB_ACCEL_NONE,
++};
++
++struct pixclock_div {
++	u8 m;
++	u8 n;
++	u8 p;
++};
++
++static unsigned int mbxfb_get_pixclock(unsigned int pixclock_ps,
++				       struct pixclock_div *div)
++{
++	u8 m, n, p;
++	unsigned int err = 0;
++	unsigned int min_err = ~0x0;
++	unsigned int clk;
++	unsigned int best_clk = 0;
++	unsigned int ref_clk = 13000;	/* FIXME: take from platform data */
++	unsigned int pixclock;
++
++	/* convert pixclock to KHz */
++	pixclock = PICOS2KHZ(pixclock_ps);
++
++	for (m = 1; m < 64; m++) {
++		for (n = 1; n < 8; n++) {
++			for (p = 0; p < 8; p++) {
++				clk = (ref_clk * m) / (n * (1 << p));
++				err = (clk > pixclock) ? (clk - pixclock) :
++					(pixclock - clk);
++				if (err < min_err) {
++					min_err = err;
++					best_clk = clk;
++					div->m = m;
++					div->n = n;
++					div->p = p;
++				}
++			}
++		}
++	}
++	return KHZ2PICOS(best_clk);
++}
++
++static int mbxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
++			   u_int trans, struct fb_info *info)
++{
++	u32 val, ret = 1;
++
++	if (regno < 255) {
++		val = (red & 0xff) << 16;
++		val |= (green & 0xff) << 8;
++		val |= (blue & 0xff) << 0;
++		GPLUT = Gplut_Lutadr(regno) | Gplut_Lutdata(val);
++		udelay(1000);
++		ret = 0;
++	}
++
++	return ret;
++}
++
++static int mbxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
++{
++	struct pixclock_div div;
++
++	var->pixclock = mbxfb_get_pixclock(var->pixclock, &div);
++
++	if (var->xres < MIN_XRES)
++		var->xres = MIN_XRES;
++	if (var->yres < MIN_YRES)
++		var->yres = MIN_YRES;
++	if (var->xres > MAX_XRES)
++		return -EINVAL;
++	if (var->yres > MAX_YRES)
++		return -EINVAL;
++	var->xres_virtual = max(var->xres_virtual, var->xres);
++	var->yres_virtual = max(var->yres_virtual, var->yres);
++
++	switch (var->bits_per_pixel) {
++		/* 8 bits-per-pixel is not supported yet */
++	case 8:
++		return -EINVAL;
++	case 16:
++		var->green.length = (var->green.length == 5) ? 5 : 6;
++		var->red.length = 5;
++		var->blue.length = 5;
++		var->transp.length = 6 - var->green.length;
++		var->blue.offset = 0;
++		var->green.offset = 5;
++		var->red.offset = 5 + var->green.length;
++		var->transp.offset = (5 + var->red.offset) & 15;
++		break;
++	case 24:		/* RGB 888   */
++	case 32:		/* RGBA 8888 */
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		var->transp.length = var->bits_per_pixel - 24;
++		var->transp.offset = (var->transp.length) ? 24 : 0;
++		break;
++	}
++	var->red.msb_right = 0;
++	var->green.msb_right = 0;
++	var->blue.msb_right = 0;
++	var->transp.msb_right = 0;
++
++	return 0;
++}
++
++static int mbxfb_set_par(struct fb_info *info)
++{
++	struct fb_var_screeninfo *var = &info->var;
++	struct pixclock_div div;
++	ushort hbps, ht, hfps, has;
++	ushort vbps, vt, vfps, vas;
++
++	info->fix.line_length = var->xres_virtual * var->bits_per_pixel / 8;
++
++	/* setup color mode */
++	GSCTRL &= ~(FMsk(GSCTRL_GPIXFMT));
++	/* FIXME: add *WORKING* support for 8-bits per color */
++	if (info->var.bits_per_pixel == 8) {
++		return -EINVAL;
++		GSCTRL |= GSCTRL_GPIXFMT_INDEXED;
++		GSCTRL |= GSCTRL_LUT_EN;
++		GSCTRL &= ~GSCTRL_GAMMA_EN;
++		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
++		fb_alloc_cmap(&info->cmap, 1 << info->var.bits_per_pixel, 0);
++	} else {
++		fb_dealloc_cmap(&info->cmap);
++		GSCTRL &= ~GSCTRL_LUT_EN;
++		info->fix.visual = FB_VISUAL_TRUECOLOR;
++		switch (info->var.bits_per_pixel) {
++		case 16:
++			if (info->var.green.length == 5)
++				GSCTRL |= GSCTRL_GPIXFMT_ARGB1555;
++			else
++				GSCTRL |= GSCTRL_GPIXFMT_RGB565;
++			break;
++		case 24:
++			GSCTRL |= GSCTRL_GPIXFMT_RGB888;
++			break;
++		case 32:
++			GSCTRL |= GSCTRL_GPIXFMT_ARGB8888;
++			break;
++		}
++	}
++
++	/* setup resolution */
++	GSCTRL &= ~(FMsk(GSCTRL_GSWIDTH) | FMsk(GSCTRL_GSHEIGHT));
++	GSCTRL |= Gsctrl_Width(info->var.xres - 1) |
++		Gsctrl_Height(info->var.yres - 1);
++
++	GSADR &= ~(FMsk(GSADR_SRCSTRIDE));
++	udelay(1000);
++	GSADR |= Gsadr_Srcstride(info->var.xres * info->var.bits_per_pixel /
++				 (8 * 16) - 1);
++	udelay(1000);
++
++	/* setup timings */
++	var->pixclock = mbxfb_get_pixclock(info->var.pixclock, &div);
++
++	DISPPLL = 
++		Disp_Pll_M(div.m) | Disp_Pll_N(div.n) |
++		Disp_Pll_P(div.p) | DISP_PLL_EN;
++
++	hbps = var->hsync_len;
++	has = hbps + var->left_margin;
++	hfps = has + var->xres;
++	ht = hfps + var->right_margin;
++
++	vbps = var->vsync_len;
++	vas = vbps + var->upper_margin;
++	vfps = vas + var->yres;
++	vt = vfps + var->lower_margin;
++
++	DHT01 = Dht01_Hbps(hbps) | Dht01_Ht(ht);
++	DHT02 = Dht02_Hlbs(has) | Dht02_Has(has);
++	DHT03 = Dht03_Hfps(hfps) | Dht03_Hrbs(hfps);
++	DHDET = Dhdet_Hdes(has) | Dhdet_Hdef(hfps);
++
++	DVT01 = Dvt01_Vbps(vbps) | Dvt01_Vt(vt);
++	DVT02 = Dvt02_Vtbs(vas) | Dvt02_Vas(vas);
++	DVT03 = Dvt03_Vfps(vfps) | Dvt03_Vbbs(vfps);
++	DVDET = Dvdet_Vdes(vas) | Dvdet_Vdef(vfps);
++	DVECTRL = Dvectrl_Vevent(vfps) | Dvectrl_Vfetch(vbps);
++	DSCTRL |= DSCTRL_SYNCGEN_EN;
++
++	return 0;
++}
++
++static int mbxfb_blank(int blank, struct fb_info *info)
++{
++	switch (blank) {
++	case FB_BLANK_POWERDOWN:
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
++	case FB_BLANK_NORMAL:
++		DSCTRL &= ~DSCTRL_SYNCGEN_EN;
++		udelay(1000);
++		PIXCLK &= ~PIXCLK_EN;
++		udelay(1000);
++		VOVRCLK &= ~VOVRCLK_EN;
++		udelay(1000);
++		break;
++	case FB_BLANK_UNBLANK:
++		DSCTRL |= DSCTRL_SYNCGEN_EN;
++		udelay(1000);
++		PIXCLK |= PIXCLK_EN;
++		udelay(1000);
++		break;
++	}
++	return 0;
++}
++
++static struct fb_ops mbxfb_ops = {
++	.owner = THIS_MODULE,
++	.fb_check_var = mbxfb_check_var,
++	.fb_set_par = mbxfb_set_par,
++	.fb_setcolreg = mbxfb_setcolreg,
++	.fb_fillrect = cfb_fillrect,
++	.fb_copyarea = cfb_copyarea,
++	.fb_imageblit = cfb_imageblit,
++	.fb_blank = mbxfb_blank,
++};
++
++/*
++  Enable external SDRAM controller. Assume that all clocks are active
++  by now. 
++*/
++static void __devinit setup_memc(struct fb_info *fbi)
++{
++	unsigned long tmp;
++
++	/* FIXME: use platfrom specific parameters */
++	/* setup SDRAM controller */
++	LMCFG = LMCFG_LMC_DS | LMCFG_LMC_TS | LMCFG_LMD_TS | LMCFG_LMA_TS;
++	udelay(1000);
++	LMPWR = LMPWR_MC_PWR_ACT;
++	udelay(1000);
++	/* setup SDRAM timings */
++	LMTIM = Lmtim_Tras(7) | Lmtim_Trp(3) | Lmtim_Trcd(3) | Lmtim_Trc(9) |
++		Lmtim_Tdpl(2);
++	udelay(1000);
++	/* setup SDRAM refresh rate */
++	LMREFRESH = 0xc2b;
++	udelay(1000);
++	/* setup SDRAM type parameters */
++	LMTYPE = LMTYPE_CASLAT_3 | LMTYPE_BKSZ_2 | LMTYPE_ROWSZ_11 |
++		LMTYPE_COLSZ_8;
++	udelay(1000);
++	/* enable memory controller */
++	LMPWR = LMPWR_MC_PWR_ACT;
++	udelay(1000);
++
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++	tmp = *(unsigned long *)(virt_base_2700 + MEMORY_OFFSET);
++}
++
++static void enable_clocks(struct fb_info *fbi)
++{
++	/* enable clocks */
++	SYSCLKSRC = SYSCLKSRC_PLL_2;
++	udelay(1000);
++	PIXCLKSRC = PIXCLKSRC_PLL_1;
++	udelay(1000);
++	CLKSLEEP = 0x00000000;
++	udelay(1000);
++	COREPLL =
++		Core_Pll_M(0x17) | Core_Pll_N(0x3) | Core_Pll_P(0x0) |
++		CORE_PLL_EN;
++	udelay(1000);
++	DISPPLL =
++		Disp_Pll_M(0x1b) | Disp_Pll_N(0x7) | Disp_Pll_P(0x1) |
++		DISP_PLL_EN;
++
++	VOVRCLK = 0x00000000;
++	udelay(1000);
++	PIXCLK = PIXCLK_EN;
++	udelay(1000);
++	MEMCLK = MEMCLK_EN;
++	udelay(1000);
++	M24CLK = 0x00000006;
++	udelay(1000);
++	MBXCLK = 0x00000006;
++	udelay(1000);
++	SDCLK = SDCLK_EN;
++	udelay(1000);
++	PIXCLKDIV = 0x00000001;
++	udelay(1000);
++}
++
++static void __devinit setup_graphics(struct fb_info *fbi)
++{
++	unsigned long gsctrl;
++
++	gsctrl = GSCTRL_GAMMA_EN | Gsctrl_Width(fbi->var.xres - 1) |
++		Gsctrl_Height(fbi->var.yres - 1);
++	switch (fbi->var.bits_per_pixel) {
++	case 16:
++		if (fbi->var.green.length == 5)
++			gsctrl |= GSCTRL_GPIXFMT_ARGB1555;
++		else
++			gsctrl |= GSCTRL_GPIXFMT_RGB565;
++		break;
++	case 24:
++		gsctrl |= GSCTRL_GPIXFMT_RGB888;
++		break;
++	case 32:
++		gsctrl |= GSCTRL_GPIXFMT_ARGB8888;
++		break;
++	}
++
++	GSCTRL = gsctrl;
++	udelay(1000);
++	GBBASE = 0x00000000;
++	udelay(1000);
++	GDRCTRL = 0x00ffffff;
++	udelay(1000);
++	GSCADR = GSCADR_STR_EN | Gscadr_Gbase_Adr(0x6000);
++	udelay(1000);
++	GPLUT = 0x00000000;
++	udelay(1000);
++}
++
++static void __devinit setup_display(struct fb_info *fbi)
++{
++	unsigned long dsctrl = 0;
++
++	dsctrl = DSCTRL_BLNK_POL;
++	if (fbi->var.sync & FB_SYNC_HOR_HIGH_ACT)
++		dsctrl |= DSCTRL_HS_POL;
++	if (fbi->var.sync & FB_SYNC_VERT_HIGH_ACT)
++		dsctrl |= DSCTRL_VS_POL;
++	DSCTRL = dsctrl;
++	udelay(1000);
++	DMCTRL = 0xd0303010;
++	udelay(1000);
++	DSCTRL |= DSCTRL_SYNCGEN_EN;
++}
++
++static void __devinit enable_controller(struct fb_info *fbi)
++{
++	SYSRST = SYSRST_RST;
++	udelay(1000);
++
++	enable_clocks(fbi);
++	setup_memc(fbi);
++	setup_graphics(fbi);
++	setup_display(fbi);
++}
++
++#ifdef CONFIG_PM
++/*
++ * Power management hooks.  Note that we won't be called from IRQ context,
++ * unlike the blank functions above, so we may sleep.
++ */
++static int mbxfb_suspend(struct platform_device *dev, pm_message_t state)
++{
++	/* make frame buffer memory enter self-refresh mode */
++	LMPWR = LMPWR_MC_PWR_SRM;
++	while (LMPWRSTAT != LMPWRSTAT_MC_PWR_SRM)
++		; /* empty statement */
++
++	/* reset the device, since it's initial state is 'mostly sleeping' */
++	SYSRST = SYSRST_RST;
++	return 0;
++}
++
++static int mbxfb_resume(struct platform_device *dev)
++{
++	struct fb_info *fbi = (struct fb_info *)platform_get_drvdata(dev);
++
++	enable_clocks(fbi);
++/* 	setup_graphics(fbi); */
++/* 	setup_display(fbi); */
++
++	DSCTRL |= DSCTRL_SYNCGEN_EN;
++	return 0;
++}
++#else
++#define mbxfb_suspend	NULL
++#define mbxfb_resume	NULL
++#endif
++
++/* debugfs entries */
++#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
++#include "mbxdebugfs.c"
++#else
++#define mbxfb_debugfs_init(x)	do {} while(0)
++#define mbxfb_debugfs_remove(x)	do {} while(0)
++#endif
++
++#define res_size(_r) (((_r)->end - (_r)->start) + 1)
++
++static int __devinit mbxfb_probe(struct platform_device *dev)
++{
++	int ret;
++	struct fb_info *fbi;
++	struct mbxfb_info *mfbi;
++	struct mbxfb_platform_data *pdata;
++
++	dev_dbg(dev, "mbxfb_probe\n");
++
++	fbi = framebuffer_alloc(sizeof(struct mbxfb_info), &dev->dev);
++	if (fbi == NULL) {
++		dev_err(&dev->dev, "framebuffer_alloc failed\n");
++		return -ENOMEM;
++	}
++
++	mfbi = fbi->par;
++	pdata = dev->dev.platform_data;
++	if (pdata->probe)
++		mfbi->platform_probe = pdata->probe;
++	if (pdata->remove)
++		mfbi->platform_remove = pdata->remove;
++
++	mfbi->fb_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	mfbi->reg_res = platform_get_resource(dev, IORESOURCE_MEM, 1);
++
++	if (!mfbi->fb_res || !mfbi->reg_res) {
++		dev_err(&dev->dev, "no resources found\n");
++		ret = -ENODEV;
++		goto err1;
++	}
++
++	mfbi->fb_req = request_mem_region(mfbi->fb_res->start,
++					  res_size(mfbi->fb_res), dev->name);
++	if (mfbi->fb_req == NULL) {
++		dev_err(&dev->dev, "failed to claim framebuffer memory\n");
++		ret = -EINVAL;
++		goto err1;
++	}
++	mfbi->fb_phys_addr = mfbi->fb_res->start;
++
++	mfbi->reg_req = request_mem_region(mfbi->reg_res->start,
++					   res_size(mfbi->reg_res), dev->name);
++	if (mfbi->reg_req == NULL) {
++		dev_err(&dev->dev, "failed to claim Marathon registers\n");
++		ret = -EINVAL;
++		goto err2;
++	}
++	mfbi->reg_phys_addr = mfbi->reg_res->start;
++
++	mfbi->reg_virt_addr = ioremap_nocache(mfbi->reg_phys_addr,
++					      res_size(mfbi->reg_req));
++	if (!mfbi->reg_virt_addr) {
++		dev_err(&dev->dev, "failed to ioremap Marathon registers\n");
++		ret = -EINVAL;
++		goto err3;
++	}
++	virt_base_2700 = (unsigned long)mfbi->reg_virt_addr;
++
++	mfbi->fb_virt_addr = ioremap_nocache(mfbi->fb_phys_addr,
++					     res_size(mfbi->fb_req));
++	if (!mfbi->reg_virt_addr) {
++		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
++		ret = -EINVAL;
++		goto err4;
++	}
++
++	/* FIXME: get from platform */
++	fbi->screen_base = (char __iomem *)(mfbi->fb_virt_addr + 0x60000);
++	fbi->screen_size = 8 * 1024 * 1024;	/* 8 Megs */
++	fbi->fbops = &mbxfb_ops;
++
++	fbi->var = mbxfb_default;
++	fbi->fix = mbxfb_fix;
++	fbi->fix.smem_start = mfbi->fb_phys_addr + 0x60000;
++	fbi->fix.smem_len = 8 * 1024 * 1024;
++	fbi->fix.line_length = 640 * 2;
++
++	ret = fb_alloc_cmap(&fbi->cmap, 256, 0);
++	if (ret < 0) {
++		dev_err(&dev->dev, "fb_alloc_cmap failed\n");
++		ret = -EINVAL;
++		goto err5;
++	}
++
++	ret = register_framebuffer(fbi);
++	if (ret < 0) {
++		dev_err(&dev->dev, "register_framebuffer failed\n");
++		ret = -EINVAL;
++		goto err6;
++	}
++
++	platform_set_drvdata(dev, fbi);
++
++	printk(KERN_INFO "fb%d: mbx frame buffer device\n", fbi->node);
++
++	if (mfbi->platform_probe)
++		mfbi->platform_probe(fbi);
++
++	enable_controller(fbi);
++
++	mbxfb_debugfs_init(fbi);
++
++	return 0;
++
++err6:
++	fb_dealloc_cmap(&fbi->cmap);
++err5:
++	iounmap(mfbi->fb_virt_addr);
++err4:
++	iounmap(mfbi->reg_virt_addr);
++err3:
++	release_mem_region(mfbi->reg_res->start, res_size(mfbi->reg_res));
++err2:
++	release_mem_region(mfbi->fb_res->start, res_size(mfbi->fb_res));
++err1:
++	framebuffer_release(fbi);
++
++	return ret;
++}
++
++static int __devexit mbxfb_remove(struct platform_device *dev)
++{
++	struct fb_info *fbi = (struct fb_info *)platform_get_drvdata(dev);
++
++	SYSRST = SYSRST_RST;
++	udelay(1000);
++
++	mbxfb_debugfs_remove(fbi);
++
++	if (fbi) {
++		struct mbxfb_info *mfbi = fbi->par;
++
++		unregister_framebuffer(fbi);
++		if (mfbi) {
++			if (mfbi->platform_remove)
++				mfbi->platform_remove(fbi);
++
++			if (mfbi->fb_virt_addr)
++				iounmap(mfbi->fb_virt_addr);
++			if (mfbi->reg_virt_addr)
++				iounmap(mfbi->reg_virt_addr);
++			if (mfbi->reg_req)
++				release_mem_region(mfbi->reg_req->start,
++						   res_size(mfbi->reg_req));
++			if (mfbi->fb_req)
++				release_mem_region(mfbi->fb_req->start,
++						   res_size(mfbi->fb_req));
++		}
++		framebuffer_release(fbi);
++	}
++
++	return 0;
++}
++
++static struct platform_driver mbxfb_driver = {
++	.probe = mbxfb_probe,
++	.remove = mbxfb_remove,
++	.suspend = mbxfb_suspend,
++	.resume = mbxfb_resume,
++	.driver = {
++		.name = "mbx-fb",
++	},
++};
++
++int __devinit mbxfb_init(void)
++{
++	return platform_driver_register(&mbxfb_driver);
++}
++
++static void __devexit mbxfb_exit(void)
++{
++	platform_driver_unregister(&mbxfb_driver);
++}
++
++module_init(mbxfb_init);
++module_exit(mbxfb_exit);
++
++MODULE_DESCRIPTION("loadable framebuffer driver for Marathon device");
++MODULE_AUTHOR("Mike Rapoport, Compulab");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/video/mbx/reg_bits.h b/drivers/video/mbx/reg_bits.h
+new file mode 100644
+index 0000000..a2e9b3a
+--- /dev/null
++++ b/drivers/video/mbx/reg_bits.h
+@@ -0,0 +1,418 @@
++#ifndef __REG_BITS_2700G_
++#define __REG_BITS_2700G_
++
++/* use defines from asm-arm/arch-pxa/bitfields.h for bit fields access */
++#define UData(Data)	((unsigned long) (Data))
++#define Fld(Size, Shft)	(((Size) << 16) + (Shft))
++#define FSize(Field)	((Field) >> 16)
++#define FShft(Field)	((Field) & 0x0000FFFF)
++#define FMsk(Field)	(((UData (1) << FSize (Field)) - 1) << FShft (Field))
++#define FAlnMsk(Field)	((UData (1) << FSize (Field)) - 1)
++#define F1stBit(Field)	(UData (1) << FShft (Field))
++
++#define SYSRST_RST	(1 << 0)
++
++/* SYSCLKSRC - SYSCLK Source Control Register */
++#define SYSCLKSRC_SEL	Fld(2,0)
++#define SYSCLKSRC_REF	((0x0) << FShft(SYSCLKSRC_SEL))
++#define SYSCLKSRC_PLL_1	((0x1) << FShft(SYSCLKSRC_SEL))
++#define SYSCLKSRC_PLL_2	((0x2) << FShft(SYSCLKSRC_SEL))
++
++/* PIXCLKSRC - PIXCLK Source Control Register */
++#define PIXCLKSRC_SEL	Fld(2,0)
++#define PIXCLKSRC_REF	((0x0) << FShft(PIXCLKSRC_SEL))
++#define PIXCLKSRC_PLL_1	((0x1) << FShft(PIXCLKSRC_SEL))
++#define PIXCLKSRC_PLL_2	((0x2) << FShft(PIXCLKSRC_SEL))
++
++/* Clock Disable Register */
++#define CLKSLEEP_SLP	(1 << 0)
++
++/* Core PLL Control Register */
++#define CORE_PLL_M	Fld(6,7)
++#define Core_Pll_M(x)	((x) << FShft(CORE_PLL_M))
++#define CORE_PLL_N	Fld(3,4)
++#define Core_Pll_N(x)	((x) << FShft(CORE_PLL_N))
++#define CORE_PLL_P	Fld(3,1)
++#define Core_Pll_P(x)	((x) << FShft(CORE_PLL_P))
++#define CORE_PLL_EN	(1 << 0)
++
++/* Display PLL Control Register */
++#define DISP_PLL_M	Fld(6,7)
++#define Disp_Pll_M(x)	((x) << FShft(DISP_PLL_M))
++#define DISP_PLL_N	Fld(3,4)
++#define Disp_Pll_N(x)	((x) << FShft(DISP_PLL_N))
++#define DISP_PLL_P	Fld(3,1)
++#define Disp_Pll_P(x)	((x) << FShft(DISP_PLL_P))
++#define DISP_PLL_EN	(1 << 0)
++
++/* PLL status register */
++#define PLLSTAT_CORE_PLL_LOST_L	(1 << 3)
++#define PLLSTAT_CORE_PLL_LSTS	(1 << 2)
++#define PLLSTAT_DISP_PLL_LOST_L	(1 << 1)
++#define PLLSTAT_DISP_PLL_LSTS	(1 << 0)
++
++/* Video and scale clock control register */
++#define VOVRCLK_EN	(1 << 0)
++
++/* Pixel clock control register */
++#define PIXCLK_EN	(1 << 0)
++
++/* Memory clock control register */
++#define MEMCLK_EN	(1 << 0)
++
++/* MBX clock control register */
++#define MBXCLK_DIV	Fld(2,2)
++#define MBXCLK_DIV_1	((0x0) << FShft(MBXCLK_DIV))
++#define MBXCLK_DIV_2	((0x1) << FShft(MBXCLK_DIV))
++#define MBXCLK_DIV_3	((0x2) << FShft(MBXCLK_DIV))
++#define MBXCLK_DIV_4	((0x3) << FShft(MBXCLK_DIV))
++#define MBXCLK_EN	Fld(2,0)
++#define MBXCLK_EN_NONE	((0x0) << FShft(MBXCLK_EN))
++#define MBXCLK_EN_2D	((0x1) << FShft(MBXCLK_EN))
++#define MBXCLK_EN_BOTH	((0x2) << FShft(MBXCLK_EN))
++
++/* M24 clock control register */
++#define M24CLK_DIV	Fld(2,1)
++#define M24CLK_DIV_1	((0x0) << FShft(M24CLK_DIV))
++#define M24CLK_DIV_2	((0x1) << FShft(M24CLK_DIV))
++#define M24CLK_DIV_3	((0x2) << FShft(M24CLK_DIV))
++#define M24CLK_DIV_4	((0x3) << FShft(M24CLK_DIV))
++#define M24CLK_EN	(1 << 0)
++
++/* SDRAM clock control register */
++#define SDCLK_EN	(1 << 0)
++
++/* PixClk Divisor Register */
++#define PIXCLKDIV_PD	Fld(9,0)
++#define Pixclkdiv_Pd(x)	((x) << FShft(PIXCLKDIV_PD))
++
++/* LCD Config control register */ 
++#define LCDCFG_IN_FMT	Fld(3,28)
++#define Lcdcfg_In_Fmt(x)	((x) << FShft(LCDCFG_IN_FMT))
++#define LCDCFG_LCD1DEN_POL	(1 << 27)
++#define LCDCFG_LCD1FCLK_POL	(1 << 26)
++#define LCDCFG_LCD1LCLK_POL	(1 << 25)
++#define LCDCFG_LCD1D_POL	(1 << 24)
++#define LCDCFG_LCD2DEN_POL	(1 << 23)
++#define LCDCFG_LCD2FCLK_POL	(1 << 22)
++#define LCDCFG_LCD2LCLK_POL	(1 << 21)
++#define LCDCFG_LCD2D_POL	(1 << 20)
++#define LCDCFG_LCD1_TS		(1 << 19)
++#define LCDCFG_LCD1D_DS		(1 << 18)
++#define LCDCFG_LCD1C_DS		(1 << 17)
++#define LCDCFG_LCD1_IS_IN	(1 << 16)
++#define LCDCFG_LCD2_TS		(1 << 3)
++#define LCDCFG_LCD2D_DS		(1 << 2)
++#define LCDCFG_LCD2C_DS		(1 << 1)
++#define LCDCFG_LCD2_IS_IN	(1 << 0)
++
++/* On-Die Frame Buffer Power Control Register */
++#define ODFBPWR_SLOW	(1 << 2)
++#define ODFBPWR_MODE	Fld(2,0)
++#define ODFBPWR_MODE_ACT	((0x0) << FShft(ODFBPWR_MODE))
++#define ODFBPWR_MODE_ACT_LP	((0x1) << FShft(ODFBPWR_MODE))
++#define ODFBPWR_MODE_SLEEP	((0x2) << FShft(ODFBPWR_MODE))
++#define ODFBPWR_MODE_SHUTD	((0x3) << FShft(ODFBPWR_MODE))
++
++/* On-Die Frame Buffer Power State Status Register */
++#define ODFBSTAT_ACT	(1 << 2)
++#define ODFBSTAT_SLP	(1 << 1)
++#define ODFBSTAT_SDN	(1 << 0)
++
++/* LMRST - Local Memory (SDRAM) Reset */
++#define LMRST_MC_RST	(1 << 0)
++
++/* LMCFG - Local Memory (SDRAM) Configuration Register */
++#define LMCFG_LMC_DS	(1 << 5)
++#define LMCFG_LMD_DS	(1 << 4)
++#define LMCFG_LMA_DS	(1 << 3)
++#define LMCFG_LMC_TS	(1 << 2)
++#define LMCFG_LMD_TS	(1 << 1)
++#define LMCFG_LMA_TS	(1 << 0)
++
++/* LMPWR - Local Memory (SDRAM) Power Control Register */
++#define LMPWR_MC_PWR_CNT	Fld(2,0)
++#define LMPWR_MC_PWR_ACT	((0x0) << FShft(LMPWR_MC_PWR_CNT)) /* Active */
++#define LMPWR_MC_PWR_SRM	((0x1) << FShft(LMPWR_MC_PWR_CNT)) /* Self-refresh */
++#define LMPWR_MC_PWR_DPD	((0x3) << FShft(LMPWR_MC_PWR_CNT)) /* deep power down */
++
++/* LMPWRSTAT - Local Memory (SDRAM) Power Status Register */
++#define LMPWRSTAT_MC_PWR_CNT	Fld(2,0)
++#define LMPWRSTAT_MC_PWR_ACT	((0x0) << FShft(LMPWRSTAT_MC_PWR_CNT)) /* Active */
++#define LMPWRSTAT_MC_PWR_SRM	((0x1) << FShft(LMPWRSTAT_MC_PWR_CNT)) /* Self-refresh */
++#define LMPWRSTAT_MC_PWR_DPD	((0x3) << FShft(LMPWRSTAT_MC_PWR_CNT)) /* deep power down */
++
++/* LMTYPE - Local Memory (SDRAM) Type Register */
++#define LMTYPE_CASLAT	Fld(3,10)
++#define LMTYPE_CASLAT_1	((0x1) << FShft(LMTYPE_CASLAT))
++#define LMTYPE_CASLAT_2	((0x2) << FShft(LMTYPE_CASLAT))
++#define LMTYPE_CASLAT_3	((0x3) << FShft(LMTYPE_CASLAT))
++#define LMTYPE_BKSZ	Fld(2,8)
++#define LMTYPE_BKSZ_1	((0x1) << FShft(LMTYPE_BKSZ))
++#define LMTYPE_BKSZ_2	((0x2) << FShft(LMTYPE_BKSZ))
++#define LMTYPE_ROWSZ	Fld(4,4)
++#define LMTYPE_ROWSZ_11	((0xb) << FShft(LMTYPE_ROWSZ))
++#define LMTYPE_ROWSZ_12	((0xc) << FShft(LMTYPE_ROWSZ))
++#define LMTYPE_ROWSZ_13	((0xd) << FShft(LMTYPE_ROWSZ))
++#define LMTYPE_COLSZ	Fld(4,0)
++#define LMTYPE_COLSZ_7	((0x7) << FShft(LMTYPE_COLSZ))
++#define LMTYPE_COLSZ_8	((0x8) << FShft(LMTYPE_COLSZ))
++#define LMTYPE_COLSZ_9	((0x9) << FShft(LMTYPE_COLSZ))
++#define LMTYPE_COLSZ_10	((0xa) << FShft(LMTYPE_COLSZ))
++#define LMTYPE_COLSZ_11	((0xb) << FShft(LMTYPE_COLSZ))
++#define LMTYPE_COLSZ_12	((0xc) << FShft(LMTYPE_COLSZ))
++
++/* LMTIM - Local Memory (SDRAM) Timing Register */
++#define LMTIM_TRAS	Fld(4,16)
++#define Lmtim_Tras(x)	((x) << FShft(LMTIM_TRAS))
++#define LMTIM_TRP	Fld(4,12)
++#define Lmtim_Trp(x)	((x) << FShft(LMTIM_TRP))
++#define LMTIM_TRCD	Fld(4,8)
++#define Lmtim_Trcd(x)	((x) << FShft(LMTIM_TRCD))
++#define LMTIM_TRC	Fld(4,4)
++#define Lmtim_Trc(x)	((x) << FShft(LMTIM_TRC))
++#define LMTIM_TDPL	Fld(4,0)
++#define Lmtim_Tdpl(x)	((x) << FShft(LMTIM_TDPL))
++
++/* LMREFRESH - Local Memory (SDRAM) tREF Control Register */
++#define LMREFRESH_TREF	Fld(2,0)
++#define Lmrefresh_Tref(x)	((x) << FShft(LMREFRESH_TREF))
++
++/* GSCTRL - Graphics surface control register */
++#define GSCTRL_LUT_EN	(1 << 31)
++#define GSCTRL_GPIXFMT	Fld(4,27)
++#define GSCTRL_GPIXFMT_INDEXED	((0x0) << FShft(GSCTRL_GPIXFMT))
++#define GSCTRL_GPIXFMT_ARGB4444	((0x4) << FShft(GSCTRL_GPIXFMT))
++#define GSCTRL_GPIXFMT_ARGB1555	((0x5) << FShft(GSCTRL_GPIXFMT))
++#define GSCTRL_GPIXFMT_RGB888	((0x6) << FShft(GSCTRL_GPIXFMT))
++#define GSCTRL_GPIXFMT_RGB565	((0x7) << FShft(GSCTRL_GPIXFMT))
++#define GSCTRL_GPIXFMT_ARGB8888	((0x8) << FShft(GSCTRL_GPIXFMT))
++#define GSCTRL_GAMMA_EN	(1 << 26)
++
++#define GSCTRL_GSWIDTH Fld(11,11)
++#define Gsctrl_Width(Pixel)	/* Display Width [1..2048 pix.]  */ \
++                        (((Pixel) - 1) << FShft(GSCTRL_GSWIDTH))
++
++#define GSCTRL_GSHEIGHT Fld(11,0)
++#define Gsctrl_Height(Pixel)	/* Display Height [1..2048 pix.]  */ \
++                        (((Pixel) - 1) << FShft(GSCTRL_GSHEIGHT))
++
++/* GBBASE fileds */
++#define GBBASE_GLALPHA Fld(8,24)
++#define Gbbase_Glalpha(x)	((x) << FShft(GBBASE_GLALPHA))
++
++#define GBBASE_COLKEY Fld(24,0)
++#define Gbbase_Colkey(x)	((x) << FShft(GBBASE_COLKEY))
++
++/* GDRCTRL fields */
++#define GDRCTRL_PIXDBL	(1 << 31)
++#define GDRCTRL_PIXHLV	(1 << 30)
++#define GDRCTRL_LNDBL	(1 << 29)
++#define GDRCTRL_LNHLV	(1 << 28)
++#define GDRCTRL_COLKEYM	Fld(24,0)
++#define Gdrctrl_Colkeym(x)	((x) << FShft(GDRCTRL_COLKEYM))
++
++/* GSCADR graphics stream control address register fields */
++#define GSCADR_STR_EN	(1 << 31)
++#define GSCADR_COLKEY_EN	(1 << 30)
++#define GSCADR_COLKEYSCR	(1 << 29)
++#define GSCADR_BLEND_M	Fld(2,27)
++#define GSCADR_BLEND_NONE	((0x0) << FShft(GSCADR_BLEND_M))
++#define GSCADR_BLEND_INV	((0x1) << FShft(GSCADR_BLEND_M))
++#define GSCADR_BLEND_GLOB	((0x2) << FShft(GSCADR_BLEND_M))
++#define GSCADR_BLEND_PIX	((0x3) << FShft(GSCADR_BLEND_M))
++#define GSCADR_BLEND_POS	Fld(2,24)
++#define GSCADR_BLEND_GFX	((0x0) << FShft(GSCADR_BLEND_POS))
++#define GSCADR_BLEND_VID	((0x1) << FShft(GSCADR_BLEND_POS))
++#define GSCADR_BLEND_CUR	((0x2) << FShft(GSCADR_BLEND_POS))
++#define GSCADR_GBASE_ADR	Fld(23,0)
++#define Gscadr_Gbase_Adr(x)	((x) << FShft(GSCADR_GBASE_ADR))
++
++/* GSADR graphics stride address register fields */
++#define GSADR_SRCSTRIDE	Fld(10,22)
++#define Gsadr_Srcstride(x)	((x) << FShft(GSADR_SRCSTRIDE))
++#define GSADR_XSTART	Fld(11,11)
++#define Gsadr_Xstart(x)		((x) << FShft(GSADR_XSTART))
++#define GSADR_YSTART	Fld(11,0)
++#define Gsadr_Ystart(y)		((y) << FShft(GSADR_YSTART))
++
++/* GPLUT graphics palette register fields */
++#define GPLUT_LUTADR	Fld(8,24)
++#define Gplut_Lutadr(x)	((x) << FShft(GPLUT_LUTADR))
++#define GPLUT_LUTDATA	Fld(24,0)
++#define Gplut_Lutdata(x)	((x) << FShft(GPLUT_LUTDATA))
++
++/* HCCTRL - Hardware Cursor Register fields */
++#define HCCTRL_CUR_EN	(1 << 31)
++#define HCCTRL_COLKEY_EN	(1 << 29)
++#define HCCTRL_COLKEYSRC	(1 << 28)
++#define HCCTRL_BLEND_M	Fld(2,26)
++#define HCCTRL_BLEND_NONE	((0x0) << FShft(HCCTRL_BLEND_M))
++#define HCCTRL_BLEND_INV	((0x1) << FShft(HCCTRL_BLEND_M))
++#define HCCTRL_BLEND_GLOB	((0x2) << FShft(HCCTRL_BLEND_M))
++#define HCCTRL_BLEND_PIX	((0x3) << FShft(HCCTRL_BLEND_M))
++#define HCCTRL_CPIXFMT	Fld(3,23)
++#define HCCTRL_CPIXFMT_RGB332	((0x3) << FShft(HCCTRL_CPIXFMT))
++#define HCCTRL_CPIXFMT_ARGB4444	((0x4) << FShft(HCCTRL_CPIXFMT))
++#define HCCTRL_CPIXFMT_ARGB1555	((0x5) << FShft(HCCTRL_CPIXFMT))
++#define HCCTRL_CBASE_ADR	Fld(23,0)
++#define Hcctrl_Cbase_Adr(x)	((x) << FShft(HCCTRL_CBASE_ADR))
++
++/* HCSIZE Hardware Cursor Size Register fields */
++#define HCSIZE_BLEND_POS	Fld(2,29)
++#define HCSIZE_BLEND_GFX	((0x0) << FShft(HCSIZE_BLEND_POS))
++#define HCSIZE_BLEND_VID	((0x1) << FShft(HCSIZE_BLEND_POS))
++#define HCSIZE_BLEND_CUR	((0x2) << FShft(HCSIZE_BLEND_POS))
++#define HCSIZE_CWIDTH	Fld(3,16)
++#define Hcsize_Cwidth(x)	((x) << FShft(HCSIZE_CWIDTH))
++#define HCSIZE_CHEIGHT	Fld(3,0)
++#define Hcsize_Cheight(x)	((x) << FShft(HCSIZE_CHEIGHT))
++
++/* HCPOS Hardware Cursor Position Register fields */
++#define HCPOS_SWITCHSRC	(1 << 30)
++#define HCPOS_CURBLINK	Fld(6,24)
++#define Hcpos_Curblink(x)	((x) << FShft(HCPOS_CURBLINK))
++#define HCPOS_XSTART	Fld(12,12)
++#define Hcpos_Xstart(x)	((x) << FShft(HCPOS_XSTART))
++#define HCPOS_YSTART	Fld(12,0)
++#define Hcpos_Ystart(y)	((y) << FShft(HCPOS_YSTART))
++
++/* HCBADR Hardware Cursor Blend Address Register */
++#define HCBADR_GLALPHA	Fld(8,24)
++#define Hcbadr_Glalpha(x)	((x) << FShft(HCBADR_GLALPHA))
++#define HCBADR_COLKEY	Fld(24,0)
++#define Hcbadr_Colkey(x)	((x) << FShft(HCBADR_COLKEY))
++
++/* HCCKMSK - Hardware Cursor Color Key Mask Register */
++#define HCCKMSK_COLKEY_M	Fld(24,0)
++#define Hcckmsk_Colkey_M(x)	((x) << FShft(HCCKMSK_COLKEY_M))
++
++/* DSCTRL - Display sync control register */
++#define DSCTRL_SYNCGEN_EN	(1 << 31)
++#define DSCTRL_DPL_RST		(1 << 29)
++#define DSCTRL_PWRDN_M		(1 << 28)
++#define DSCTRL_UPDSYNCCNT	(1 << 26)
++#define DSCTRL_UPDINTCNT	(1 << 25)
++#define DSCTRL_UPDCNT		(1 << 24)
++#define DSCTRL_UPDWAIT	Fld(4,16)
++#define Dsctrl_Updwait(x)	((x) << FShft(DSCTRL_UPDWAIT))
++#define DSCTRL_CLKPOL		(1 << 11)
++#define DSCTRL_CSYNC_EN		(1 << 10)
++#define DSCTRL_VS_SLAVE		(1 << 7)
++#define DSCTRL_HS_SLAVE		(1 << 6)
++#define DSCTRL_BLNK_POL		(1 << 5)
++#define DSCTRL_BLNK_DIS		(1 << 4)
++#define DSCTRL_VS_POL		(1 << 3)
++#define DSCTRL_VS_DIS		(1 << 2)
++#define DSCTRL_HS_POL		(1 << 1)
++#define DSCTRL_HS_DIS		(1 << 0)
++
++/* DHT01 - Display horizontal timing register 01 */
++#define DHT01_HBPS	Fld(12,16)
++#define Dht01_Hbps(x)	((x) << FShft(DHT01_HBPS))
++#define DHT01_HT	Fld(12,0)
++#define Dht01_Ht(x)	((x) << FShft(DHT01_HT))
++
++/* DHT02 - Display horizontal timing register 02 */
++#define DHT02_HAS	Fld(12,16)
++#define Dht02_Has(x)	((x) << FShft(DHT02_HAS))
++#define DHT02_HLBS	Fld(12,0)
++#define Dht02_Hlbs(x)	((x) << FShft(DHT02_HLBS))
++
++/* DHT03 - Display horizontal timing register 03 */
++#define DHT03_HFPS	Fld(12,16)
++#define Dht03_Hfps(x)	((x) << FShft(DHT03_HFPS))
++#define DHT03_HRBS	Fld(12,0)
++#define Dht03_Hrbs(x)	((x) << FShft(DHT03_HRBS))
++
++/* DVT01 - Display vertical timing register 01 */
++#define DVT01_VBPS	Fld(12,16)
++#define Dvt01_Vbps(x)	((x) << FShft(DVT01_VBPS))
++#define DVT01_VT	Fld(12,0)
++#define Dvt01_Vt(x)	((x) << FShft(DVT01_VT))
++
++/* DVT02 - Display vertical timing register 02 */
++#define DVT02_VAS	Fld(12,16)
++#define Dvt02_Vas(x)	((x) << FShft(DVT02_VAS))
++#define DVT02_VTBS	Fld(12,0)
++#define Dvt02_Vtbs(x)	((x) << FShft(DVT02_VTBS))
++
++/* DVT03 - Display vertical timing register 03 */
++#define DVT03_VFPS	Fld(12,16)
++#define Dvt03_Vfps(x)	((x) << FShft(DVT03_VFPS))
++#define DVT03_VBBS	Fld(12,0)
++#define Dvt03_Vbbs(x)	((x) << FShft(DVT03_VBBS))
++
++/* DVECTRL - display vertical event control register */
++#define DVECTRL_VEVENT	Fld(12,16)
++#define Dvectrl_Vevent(x)	((x) << FShft(DVECTRL_VEVENT))
++#define DVECTRL_VFETCH	Fld(12,0)
++#define Dvectrl_Vfetch(x)	((x) << FShft(DVECTRL_VFETCH))
++
++/* DHDET - display horizontal DE timing register */
++#define DHDET_HDES	Fld(12,16)
++#define Dhdet_Hdes(x)	((x) << FShft(DHDET_HDES))
++#define DHDET_HDEF	Fld(12,0)
++#define Dhdet_Hdef(x)	((x) << FShft(DHDET_HDEF))
++
++/* DVDET - display vertical DE timing register */
++#define DVDET_VDES	Fld(12,16)
++#define Dvdet_Vdes(x)	((x) << FShft(DVDET_VDES))
++#define DVDET_VDEF	Fld(12,0)
++#define Dvdet_Vdef(x)	((x) << FShft(DVDET_VDEF))
++
++/* DODMSK - display output data mask register */
++#define DODMSK_MASK_LVL	(1 << 31)
++#define DODMSK_BLNK_LVL	(1 << 30)
++#define DODMSK_MASK_B	Fld(8,16)
++#define Dodmsk_Mask_B(x)	((x) << FShft(DODMSK_MASK_B))
++#define DODMSK_MASK_G	Fld(8,8)
++#define Dodmsk_Mask_G(x)	((x) << FShft(DODMSK_MASK_G))
++#define DODMSK_MASK_R	Fld(8,0)
++#define Dodmsk_Mask_R(x)	((x) << FShft(DODMSK_MASK_R))
++
++/* DBCOL - display border color control register */
++#define DBCOL_BORDCOL	Fld(24,0)
++#define Dbcol_Bordcol(x)	((x) << FShft(DBCOL_BORDCOL))	
++
++/* DVLNUM - display vertical line number register */
++#define DVLNUM_VLINE	Fld(12,0)
++#define Dvlnum_Vline(x)	((x) << FShft(DVLNUM_VLINE))
++
++/* DMCTRL - Display Memory Control Register */
++#define DMCTRL_MEM_REF	Fld(2,30)
++#define DMCTRL_MEM_REF_ACT	((0x0) << FShft(DMCTRL_MEM_REF))
++#define DMCTRL_MEM_REF_HB	((0x1) << FShft(DMCTRL_MEM_REF))
++#define DMCTRL_MEM_REF_VB	((0x2) << FShft(DMCTRL_MEM_REF))
++#define DMCTRL_MEM_REF_BOTH	((0x3) << FShft(DMCTRL_MEM_REF))
++#define DMCTRL_UV_THRHLD	Fld(6,24)
++#define Dmctrl_Uv_Thrhld(x)	((x) << FShft(DMCTRL_UV_THRHLD))
++#define DMCTRL_V_THRHLD		Fld(7,16)
++#define Dmctrl_V_Thrhld(x)	((x) << FShft(DMCTRL_V_THRHLD))
++#define DMCTRL_D_THRHLD		Fld(7,8)
++#define Dmctrl_D_Thrhld(x)	((x) << FShft(DMCTRL_D_THRHLD))
++#define DMCTRL_BURSTLEN	Fld(6,0)
++#define Dmctrl_Burstlen(x)	((x) << FShft(DMCTRL_BURSTLEN))
++
++
++/* DLSTS - display load status register */
++#define DLSTS_RLD_ADONE	(1 << 23)
++/* #define DLSTS_RLD_ADOUT	Fld(23,0) */
++
++/* DLLCTRL - display list load control register */
++#define DLLCTRL_RLD_ADRLN	Fld(8,24)
++#define Dllctrl_Rld_Adrln(x)	((x) << FShft(DLLCTRL_RLD_ADRLN))
++
++/* SPOCTRL - Scale Pitch/Order Control Register */
++#define SPOCTRL_H_SC_BP		(1 << 31)
++#define SPOCTRL_V_SC_BP		(1 << 30)
++#define SPOCTRL_HV_SC_OR	(1 << 29)
++#define SPOCTRL_VS_UR_C		(1 << 27)
++#define SPOCTRL_VORDER	Fld(2,16)
++#define SPOCTRL_VORDER_1TAP	((0x0) << FShft(SPOCTRL_VORDER))
++#define SPOCTRL_VORDER_2TAP	((0x1) << FShft(SPOCTRL_VORDER))
++#define SPOCTRL_VORDER_4TAP	((0x3) << FShft(SPOCTRL_VORDER))
++#define SPOCTRL_VPITCH	Fld(16,0)
++#define Spoctrl_Vpitch(x)	((x) << FShft(SPOCTRL_VPITCH))
++
++#endif /* __REG_BITS_2700G_ */
+diff --git a/drivers/video/mbx/regs.h b/drivers/video/mbx/regs.h
+new file mode 100644
+index 0000000..edf0f14
+--- /dev/null
++++ b/drivers/video/mbx/regs.h
+@@ -0,0 +1,192 @@
++#ifndef __REGS_2700G_
++#define __REGS_2700G_
++
++/* extern unsigned long virt_base_2700; */
++#define __REG_2700G(x)	(*(volatile unsigned long*)((x)+virt_base_2700))
++
++/* System Configuration Registers (0x0000_0000  0x0000_0010) */
++#define SYSCFG		__REG_2700G(0x00000000)
++#define PFBASE		__REG_2700G(0x00000004)
++#define PFCEIL		__REG_2700G(0x00000008)
++#define POLLFLAG	__REG_2700G(0x0000000c)
++#define SYSRST		__REG_2700G(0x00000010)
++
++/* Interrupt Control Registers (0x0000_0014  0x0000_002F) */
++#define NINTPW		__REG_2700G(0x00000014)
++#define MINTENABLE	__REG_2700G(0x00000018)
++#define MINTSTAT	__REG_2700G(0x0000001c)
++#define SINTENABLE	__REG_2700G(0x00000020)
++#define SINTSTAT	__REG_2700G(0x00000024)
++#define SINTCLR		__REG_2700G(0x00000028)
++
++/* Clock Control Registers (0x0000_002C  0x0000_005F) */
++#define SYSCLKSRC	__REG_2700G(0x0000002c)
++#define PIXCLKSRC	__REG_2700G(0x00000030)
++#define CLKSLEEP	__REG_2700G(0x00000034)
++#define COREPLL		__REG_2700G(0x00000038)
++#define DISPPLL		__REG_2700G(0x0000003c)
++#define PLLSTAT		__REG_2700G(0x00000040)
++#define VOVRCLK		__REG_2700G(0x00000044)
++#define PIXCLK		__REG_2700G(0x00000048)
++#define MEMCLK		__REG_2700G(0x0000004c)
++#define M24CLK		__REG_2700G(0x00000054)
++#define MBXCLK		__REG_2700G(0x00000054)
++#define SDCLK		__REG_2700G(0x00000058)
++#define PIXCLKDIV	__REG_2700G(0x0000005c)
++
++/* LCD Port Control Register (0x0000_0060  0x0000_006F) */
++#define LCD_CONFIG	__REG_2700G(0x00000060)
++
++/* On-Die Frame Buffer Registers (0x0000_0064  0x0000_006B) */
++#define ODFBPWR		__REG_2700G(0x00000064)
++#define ODFBSTAT	__REG_2700G(0x00000068)
++
++/* GPIO Registers (0x0000_006C  0x0000_007F) */
++#define GPIOCGF		__REG_2700G(0x0000006c)
++#define GPIOHI		__REG_2700G(0x00000070)
++#define GPIOLO		__REG_2700G(0x00000074)
++#define GPIOSTAT	__REG_2700G(0x00000078)
++
++/* Pulse Width Modulator (PWM) Registers (0x0000_0200  0x0000_02FF) */
++#define PWMRST		__REG_2700G(0x00000200)
++#define PWMCFG		__REG_2700G(0x00000204)
++#define PWM0DIV		__REG_2700G(0x00000210)
++#define PWM0DUTY	__REG_2700G(0x00000214)
++#define PWM0PER		__REG_2700G(0x00000218)
++#define PWM1DIV		__REG_2700G(0x00000220)
++#define PWM1DUTY	__REG_2700G(0x00000224)
++#define PWM1PER		__REG_2700G(0x00000228)
++
++/* Identification (ID) Registers (0x0000_0300  0x0000_0FFF) */
++#define ID		__REG_2700G(0x00000FF0)
++
++/* Local Memory (SDRAM) Interface Registers (0x0000_1000  0x0000_1FFF) */
++#define LMRST		__REG_2700G(0x00001000)
++#define LMCFG		__REG_2700G(0x00001004)
++#define LMPWR		__REG_2700G(0x00001008)
++#define LMPWRSTAT	__REG_2700G(0x0000100c)
++#define LMCEMR		__REG_2700G(0x00001010)
++#define LMTYPE		__REG_2700G(0x00001014)
++#define LMTIM		__REG_2700G(0x00001018)
++#define LMREFRESH	__REG_2700G(0x0000101c)
++#define LMPROTMIN	__REG_2700G(0x00001020)
++#define LMPROTMAX	__REG_2700G(0x00001024)
++#define LMPROTCFG	__REG_2700G(0x00001028)
++#define LMPROTERR	__REG_2700G(0x0000102c)
++
++/* Plane Controller Registers (0x0000_2000  0x0000_2FFF) */
++#define GSCTRL		__REG_2700G(0x00002000)
++#define VSCTRL		__REG_2700G(0x00002004)
++#define GBBASE		__REG_2700G(0x00002020)
++#define VBBASE		__REG_2700G(0x00002024)
++#define GDRCTRL		__REG_2700G(0x00002040)
++#define VCMSK		__REG_2700G(0x00002044)
++#define GSCADR		__REG_2700G(0x00002060)
++#define VSCADR		__REG_2700G(0x00002064)
++#define VUBASE		__REG_2700G(0x00002084)
++#define VVBASE		__REG_2700G(0x000020a4)
++#define GSADR		__REG_2700G(0x000020c0)
++#define VSADR		__REG_2700G(0x000020c4)
++#define HCCTRL		__REG_2700G(0x00002100)
++#define HCSIZE		__REG_2700G(0x00002110)
++#define HCPOS		__REG_2700G(0x00002120)
++#define HCBADR		__REG_2700G(0x00002130)
++#define HCCKMSK		__REG_2700G(0x00002140)
++#define GPLUT		__REG_2700G(0x00002150)
++#define DSCTRL		__REG_2700G(0x00002154)
++#define DHT01		__REG_2700G(0x00002158)
++#define DHT02		__REG_2700G(0x0000215c)
++#define DHT03		__REG_2700G(0x00002160)
++#define DVT01		__REG_2700G(0x00002164)
++#define DVT02		__REG_2700G(0x00002168)
++#define DVT03		__REG_2700G(0x0000216c)
++#define DBCOL		__REG_2700G(0x00002170)
++#define BGCOLOR		__REG_2700G(0x00002174)
++#define DINTRS		__REG_2700G(0x00002178)
++#define DINTRE		__REG_2700G(0x0000217c)
++#define DINTRCNT	__REG_2700G(0x00002180)
++#define DSIG		__REG_2700G(0x00002184)
++#define DMCTRL		__REG_2700G(0x00002188)
++#define CLIPCTRL	__REG_2700G(0x0000218c)
++#define SPOCTRL		__REG_2700G(0x00002190)
++#define SVCTRL		__REG_2700G(0x00002194)
++
++/* 0x0000_2198 */
++/* 0x0000_21A8 VSCOEFF[0:4] Video Scalar Vertical Coefficient [0:4] 4.14.5 */
++#define VSCOEFF0	__REG_2700G(0x00002198)
++#define VSCOEFF1	__REG_2700G(0x0000219c)
++#define VSCOEFF2	__REG_2700G(0x000021a0)
++#define VSCOEFF3	__REG_2700G(0x000021a4)
++#define VSCOEFF4	__REG_2700G(0x000021a8)
++
++#define SHCTRL		__REG_2700G(0x000021b0)
++
++/* 0x0000_21B4 */
++/* 0x0000_21D4 HSCOEFF[0:8] Video Scalar Horizontal Coefficient [0:8] 4.14.7 */
++#define HSCOEFF0	__REG_2700G(0x000021b4)
++#define HSCOEFF1	__REG_2700G(0x000021b8)
++#define HSCOEFF2	__REG_2700G(0x000021bc)
++#define HSCOEFF3	__REG_2700G(0x000021b0)
++#define HSCOEFF4	__REG_2700G(0x000021c4)
++#define HSCOEFF5	__REG_2700G(0x000021c8)
++#define HSCOEFF6	__REG_2700G(0x000021cc)
++#define HSCOEFF7	__REG_2700G(0x000021d0)
++#define HSCOEFF8	__REG_2700G(0x000021d4)
++
++#define SSSIZE		__REG_2700G(0x000021D8)
++
++/* 0x0000_2200 */
++/* 0x0000_2240 VIDGAM[0:16] Video Gamma LUT Index [0:16] 4.15.2 */
++#define VIDGAM0		__REG_2700G(0x00002200)
++#define VIDGAM1		__REG_2700G(0x00002204)
++#define VIDGAM2		__REG_2700G(0x00002208)
++#define VIDGAM3		__REG_2700G(0x0000220c)
++#define VIDGAM4		__REG_2700G(0x00002210)
++#define VIDGAM5		__REG_2700G(0x00002214)
++#define VIDGAM6		__REG_2700G(0x00002218)
++#define VIDGAM7		__REG_2700G(0x0000221c)
++#define VIDGAM8		__REG_2700G(0x00002220)
++#define VIDGAM9		__REG_2700G(0x00002224)
++#define VIDGAM10	__REG_2700G(0x00002228)
++#define VIDGAM11	__REG_2700G(0x0000222c)
++#define VIDGAM12	__REG_2700G(0x00002230)
++#define VIDGAM13	__REG_2700G(0x00002234)
++#define VIDGAM14	__REG_2700G(0x00002238)
++#define VIDGAM15	__REG_2700G(0x0000223c)
++#define VIDGAM16	__REG_2700G(0x00002240)
++
++/* 0x0000_2250 */
++/* 0x0000_2290 GFXGAM[0:16] Graphics Gamma LUT Index [0:16] 4.15.3 */
++#define GFXGAM0		__REG_2700G(0x00002250)
++#define GFXGAM1		__REG_2700G(0x00002254)
++#define GFXGAM2		__REG_2700G(0x00002258)
++#define GFXGAM3		__REG_2700G(0x0000225c)
++#define GFXGAM4		__REG_2700G(0x00002260)
++#define GFXGAM5		__REG_2700G(0x00002264)
++#define GFXGAM6		__REG_2700G(0x00002268)
++#define GFXGAM7		__REG_2700G(0x0000226c)
++#define GFXGAM8		__REG_2700G(0x00002270)
++#define GFXGAM9		__REG_2700G(0x00002274)
++#define GFXGAM10	__REG_2700G(0x00002278)
++#define GFXGAM11	__REG_2700G(0x0000227c)
++#define GFXGAM12	__REG_2700G(0x00002280)
++#define GFXGAM13	__REG_2700G(0x00002284)
++#define GFXGAM14	__REG_2700G(0x00002288)
++#define GFXGAM15	__REG_2700G(0x0000228c)
++#define GFXGAM16	__REG_2700G(0x00002290)
++
++#define DLSTS		__REG_2700G(0x00002300)
++#define DLLCTRL		__REG_2700G(0x00002304)
++#define DVLNUM		__REG_2700G(0x00002308)
++#define DUCTRL		__REG_2700G(0x0000230c)
++#define DVECTRL		__REG_2700G(0x00002310)
++#define DHDET		__REG_2700G(0x00002314)
++#define DVDET		__REG_2700G(0x00002318)
++#define DODMSK		__REG_2700G(0x0000231c)
++#define CSC01		__REG_2700G(0x00002330)
++#define CSC02		__REG_2700G(0x00002334)
++#define CSC03		__REG_2700G(0x00002338)
++#define CSC04		__REG_2700G(0x0000233c)
++#define CSC05		__REG_2700G(0x00002340)
++
++#endif /* __REGS_2700G_ */
+diff --git a/include/video/mbxfb.h b/include/video/mbxfb.h
+new file mode 100644
+index 0000000..3bde0f5
+--- /dev/null
++++ b/include/video/mbxfb.h
+@@ -0,0 +1,28 @@
++#ifndef __MBX_FB_H
++#define __MBX_FB_H
++
++struct mbxfb_val {
++	unsigned int	defval;
++	unsigned int	min;
++	unsigned int	max;
++};
++
++struct fb_info;
++
++struct mbxfb_platform_data {
++		/* Screen info */
++		struct mbxfb_val xres;
++		struct mbxfb_val yres;
++		struct mbxfb_val bpp;
++
++		/* Memory info */
++		unsigned long memsize; /* if 0 use ODFB? */
++		unsigned long timings1;
++		unsigned long timings2;
++		unsigned long timings3;
++
++		int (*probe)(struct fb_info *fb);
++		int (*remove)(struct fb_info *fb);
++};
++
++#endif /* __MBX_FB_H */
+
+--------------060000040606000005090402
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+
+--------------060000040606000005090402
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--------------060000040606000005090402--

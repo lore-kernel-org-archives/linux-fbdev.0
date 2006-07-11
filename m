@@ -1,26 +1,29 @@
-From: Mike Rapoport <mike@compulab.co.il>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH]: frame buffer driver for 2700G LCD
  controller
-Date: Tue, 11 Jul 2006 12:08:40 +0200
-Message-ID: <44B378A8.3060906@compulab.co.il>
+Date: Tue, 11 Jul 2006 17:33:47 +0800
+Message-ID: <44B3707B.7010402@gmail.com>
 References: <44AD2B75.6050302@compulab.co.il> <44ADC4AE.2040903@gmail.com>
 	<44B11542.7010402@compulab.co.il> <44B18F68.2080802@gmail.com>
+	<44B378A8.3060906@compulab.co.il>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G0EEv-0004zU-Te for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Jul 2006 02:09:09 -0700
-Received: from mail.linux-boards.com ([62.90.235.247])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1G0EEt-0003vQ-Rh
+	id 1G0Ed2-0007KM-JO for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Jul 2006 02:34:04 -0700
+Received: from py-out-1112.google.com ([64.233.166.183])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G0Ecz-0002o3-3d
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Jul 2006 02:09:09 -0700
-In-Reply-To: <44B18F68.2080802@gmail.com>
+	Tue, 11 Jul 2006 02:34:04 -0700
+Received: by py-out-1112.google.com with SMTP id c31so4242472pyd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 11 Jul 2006 02:33:59 -0700 (PDT)
+In-Reply-To: <44B378A8.3060906@compulab.co.il>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,76 +34,67 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Mike Rapoport <mike@compulab.co.il>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Antonino A. Daplas wrote:
-
->Mike Rapoport wrote:
->  
->
->>Antonino A. Daplas wrote:
+Mike Rapoport wrote:
+> Antonino A. Daplas wrote:
+> 
+>> Mike Rapoport wrote:
+>>  
 >>
->>    
->>
->>>Mike Rapoport wrote:
->>> 
+>>> Antonino A. Daplas wrote:
 >>>
->>>      
->>>
->>>>This patch adds frame buffer driver for 2700G LCD controller present on
->>>>CompuLab CM-X270 computer module.
->>>>This pacth is versus current Linus git tree.
->>>>
->>>>Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+>>>   
+>>>> Mike Rapoport wrote:
 >>>>
 >>>>
->>>>        
->>>>
->>+/* extern unsigned long virt_base_2700; */
->>+#define __REG_2700G(x)	(*(volatile unsigned long*)((x)+virt_base_2700))
->>    
+>>>>     
+>>>>> This patch adds frame buffer driver for 2700G LCD controller
+>>>>> present on
+>>>>> CompuLab CM-X270 computer module.
+>>>>> This pacth is versus current Linus git tree.
+>>>>>
+>>>>> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+>>>>>
+>>>>>
+>>>>>       
+>>> +/* extern unsigned long virt_base_2700; */
+>>> +#define __REG_2700G(x)    (*(volatile unsigned
+>>> long*)((x)+virt_base_2700))
+>>>   
 >>
->
->BTW, you will need to use generic accessors (readb|w|l, writeb|w|l or
->__raw_readb|w|l, __raw_writeb|w|l, etc). This will entail a lot of changes.
->Otherwise, this driver won't get past Andrew Morton and Rusty.
->
->See include/asm/io.h.
->  
->
-What's the better way?
-{
-    ...
-    writel((readl(REG) | bits), REG);
-    ...
-}
+>> BTW, you will need to use generic accessors (readb|w|l, writeb|w|l or
+>> __raw_readb|w|l, __raw_writeb|w|l, etc). This will entail a lot of
+>> changes.
+>> Otherwise, this driver won't get past Andrew Morton and Rusty.
+>>
+>> See include/asm/io.h.
+>>  
+>>
+> What's the better way?
+> {
+>    ...
+>    writel((readl(REG) | bits), REG);
+>    ...
+> }
+> 
+> or
+> 
+> {
+>    ...
+>    u32 some_reg = readl(REG);
+>    ...
+>    some_reg |= bits;
+>    ...
+>    writel(some_reg, REG)
+>    ...
+> }
 
-or
-
-{
-    ...
-    u32 some_reg = readl(REG);
-    ...
-    some_reg |= bits;
-    ...
-    writel(some_reg, REG)
-    ...
-}
-
->Tony
->
->
->
->
->  
->
+Both are okay, but I prefer the first one for its brevity.
 
 
--- 
-Sincerely yours,
-Mike Rapoport
-
+Tony
 
 
 -------------------------------------------------------------------------

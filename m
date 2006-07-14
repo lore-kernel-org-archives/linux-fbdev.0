@@ -1,30 +1,26 @@
-From: Ondrej Zajicek <santiago@mail.cz>
-Subject: struct fb_ops functions and sleeping
-Date: Fri, 14 Jul 2006 22:47:49 +0200
-Message-ID: <20060714204749.GA27737@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: struct fb_ops functions and sleeping
+Date: Sat, 15 Jul 2006 07:33:57 +0800
+Message-ID: <44B829E5.6050608@gmail.com>
+References: <20060714204749.GA27737@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1552765926=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G1Ua4-0004tT-D0 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Jul 2006 13:48:12 -0700
-Received: from gateway.crfreenet.org
-	([82.113.54.238] helo=mail.crfreenet.org ident=postfix)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G1Ua2-0003f2-07
+	id 1G1XGl-0003MU-O2 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Jul 2006 16:40:27 -0700
+Received: from py-out-1112.google.com ([64.233.166.176])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G1XGk-0004Kr-2D
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Jul 2006 13:48:12 -0700
-Received: from localhost.localdomain (feanor.newtown.chrudimsko.czf
-	[192.168.3.10])
-	by mail.crfreenet.org (Postfix) with ESMTP id 50BFC8EB98
+	Fri, 14 Jul 2006 16:40:27 -0700
+Received: by py-out-1112.google.com with SMTP id c31so1072829pyd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Jul 2006 22:48:01 +0200 (CEST)
-Received: from santiago by localhost.localdomain with local (Exim 4.50)
-	id 1G1UZi-0007WB-6M for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Jul 2006 22:47:50 +0200
+	Fri, 14 Jul 2006 16:40:24 -0700 (PDT)
+In-Reply-To: <20060714204749.GA27737@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,59 +32,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Ondrej Zajicek <santiago@mail.cz>
 
+Ondrej Zajicek wrote:
+> Hello
+> 
+> I would like to ask whether there are any rules about context in which
+> functions from struct fb_ops are called, particularly whether they can
+> sleep
 
---===============1552765926==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
-Content-Disposition: inline
+Most of the functions can be called in process context (can sleep), except
+in some unlikely cases (printing an oops).
 
+Of all the functions in there, make sure that fb_blank() cannot sleep.
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ and which functions may be called only between some fb_open
+> and fb_release (for example from fbcon).
 
-Hello
+It's guaranteed that none of the functions will get called before
+an fb_open() or after a successful fb_release().
 
-I would like to ask whether there are any rules about context in which
-functions from struct fb_ops are called, particularly whether they can
-sleep and which functions may be called only between some fb_open
-and fb_release (for example from fbcon).
-
-I tried to get working two graphics cards using VGA arbiter patch
-(http://www.ussg.iu.edu/hypermail/linux/kernel/0503.1/0054.html)
-After some hacking it worked, but without proper locking.
-
---=20
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.ne=
-tlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
-
---huq684BweRXVnRxX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iEYEARECAAYFAkS4AvUACgkQw1GB2RHercN4aQCfTAn/8VLStXaaVb44zINtSoIc
-UBkAn2HQk/SDh3Bx7xZzr5sTBxzEVmMn
-=iCwy
------END PGP SIGNATURE-----
-
---huq684BweRXVnRxX--
-
-
---===============1552765926==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Tony
 
 
 -------------------------------------------------------------------------
@@ -96,16 +60,3 @@ Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-
---===============1552765926==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1552765926==--

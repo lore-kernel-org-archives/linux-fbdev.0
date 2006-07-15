@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: struct fb_ops functions and sleeping
-Date: Sat, 15 Jul 2006 07:33:57 +0800
-Message-ID: <44B829E5.6050608@gmail.com>
-References: <20060714204749.GA27737@localhost.localdomain>
+Subject: Re: please disconsider bl_mutex patch
+Date: Sat, 15 Jul 2006 20:39:32 +0800
+Message-ID: <44B8E204.30807@gmail.com>
+References: <20060704015311.GJ27596@cathedrallabs.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,16 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G1XGl-0003MU-O2 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Jul 2006 16:40:27 -0700
-Received: from py-out-1112.google.com ([64.233.166.176])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G1XGk-0004Kr-2D
+	id 1G1jQy-0000VO-13 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 15 Jul 2006 05:39:48 -0700
+Received: from py-out-1112.google.com ([64.233.166.183])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G1jQw-00007U-Al
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Jul 2006 16:40:27 -0700
-Received: by py-out-1112.google.com with SMTP id c31so1072829pyd
+	Sat, 15 Jul 2006 05:39:48 -0700
+Received: by py-out-1112.google.com with SMTP id c31so1299510pyd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Jul 2006 16:40:24 -0700 (PDT)
-In-Reply-To: <20060714204749.GA27737@localhost.localdomain>
+	Sat, 15 Jul 2006 05:39:45 -0700 (PDT)
+In-Reply-To: <20060704015311.GJ27596@cathedrallabs.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,25 +32,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Ondrej Zajicek <santiago@mail.cz>
+Cc: aris@cathedrallabs.org
 
-Ondrej Zajicek wrote:
-> Hello
+Aristeu Sergio Rozanski Filho wrote:
+> Hi,
+> 	just noticed that the bl_mutex removal from nvidiafb_blank() is
+> 	wrong. while at that, noticed that recursive bl_mutex retrieval
+> 	is also present at least on aty128fb and riva. checking how to
+> 	fix it properly now.
 > 
-> I would like to ask whether there are any rules about context in which
-> functions from struct fb_ops are called, particularly whether they can
-> sleep
 
-Most of the functions can be called in process context (can sleep), except
-in some unlikely cases (printing an oops).
-
-Of all the functions in there, make sure that fb_blank() cannot sleep.
-
- and which functions may be called only between some fb_open
-> and fb_release (for example from fbcon).
-
-It's guaranteed that none of the functions will get called before
-an fb_open() or after a successful fb_release().
+What's the status of this patch?
 
 Tony
 

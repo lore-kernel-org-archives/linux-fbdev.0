@@ -1,23 +1,26 @@
-From: dmunsie@cecropia.com (Dennis Munsie)
-Subject: [PATCH 2.6.18-rc2] intelfb: cleanup constant
-	usage
-Date: Thu, 20 Jul 2006 12:54:18 -0400 (EDT)
-Message-ID: <20060720165418.686CD118E7E@xenon>
+From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Subject: Re: please disconsider bl_mutex patch
+Date: Sat, 15 Jul 2006 11:22:42 -0300
+Message-ID: <20060715142242.GA4969@cathedrallabs.org>
+References: <20060704015311.GJ27596@cathedrallabs.org>
+	<44B8E204.30807@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G3blR-0002JR-E4 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 20 Jul 2006 09:52:41 -0700
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3])
+	id 1G1l2g-0000tS-Il for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 15 Jul 2006 07:22:50 -0700
+Received: from tinc.cathedrallabs.org ([72.9.252.66])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G3blR-0007hP-5O
+	(Exim 4.44) id 1G1l2e-0003KP-L2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 20 Jul 2006 09:52:41 -0700
+	Sat, 15 Jul 2006 07:22:50 -0700
+Content-Disposition: inline
+In-Reply-To: <44B8E204.30807@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,39 +31,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: ehustvedt@cecropia.com, airlied@skynet.ie
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Michael Hanselmann <linux-kernel@hansmi.ch>, linux-fbdev-devel@lists.sourceforge.net
 
-From: Dennis Munsie <dmunsie@cecropia.com>
+> > 	just noticed that the bl_mutex removal from nvidiafb_blank() is
+> > 	wrong. while at that, noticed that recursive bl_mutex retrieval
+> > 	is also present at least on aty128fb and riva. checking how to
+> > 	fix it properly now.
+> > 
+> 
+> What's the status of this patch?
+Michael Hanselmann is working in an improved version. How's the status
+on this Michael?
 
-Uses the correct constants for shifting in the intelfb driver.  Since the
-constants are the same value, this patch is only for consistency purposes.
+-- 
+Aristeu
 
-Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-
----
-
- drivers/video/intelfb/intelfbhw.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -Naurp -X linux-2.6.18-rc2-patched/Documentation/dontdiff linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbhw.c linux-2.6.18-rc2-cleanup/drivers/video/intelfb/intelfbhw.c
---- linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbhw.c	2006-07-17 02:37:38.000000000 -0500
-+++ linux-2.6.18-rc2-cleanup/drivers/video/intelfb/intelfbhw.c	2006-07-18 04:53:55.000000000 -0500
-@@ -1187,12 +1187,12 @@ intelfbhw_mode_to_hw(struct intelfb_info
- 
- 	*ht = (htotal << HTOTAL_SHIFT) | (hactive << HACTIVE_SHIFT);
- 	*hb = (hblank_start << HBLANKSTART_SHIFT) |
--	      (hblank_end << HSYNCEND_SHIFT);
-+	      (hblank_end << HBLANKEND_SHIFT);
- 	*hs = (hsync_start << HSYNCSTART_SHIFT) | (hsync_end << HSYNCEND_SHIFT);
- 
- 	*vt = (vtotal << VTOTAL_SHIFT) | (vactive << VACTIVE_SHIFT);
- 	*vb = (vblank_start << VBLANKSTART_SHIFT) |
--	      (vblank_end << VSYNCEND_SHIFT);
-+	      (vblank_end << VBLANKEND_SHIFT);
- 	*vs = (vsync_start << VSYNCSTART_SHIFT) | (vsync_end << VSYNCEND_SHIFT);
- 	*ss = (hactive << SRC_SIZE_HORIZ_SHIFT) |
- 	      (vactive << SRC_SIZE_VERT_SHIFT);
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

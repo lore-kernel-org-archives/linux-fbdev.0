@@ -1,32 +1,30 @@
-From: Dennis Munsie <dmunsie@cecropia.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH 2.6.17-1] fbmon: add generic
-	ddc	read functionality
-Date: Sat, 15 Jul 2006 09:29:16 -0400
-Message-ID: <A05EFD86-EE99-4252-B99B-8E684905B0BB@cecropia.com>
+ ddc	read functionality
+Date: Sun, 16 Jul 2006 11:23:44 +0800
+Message-ID: <44B9B140.5090701@gmail.com>
 References: <CCAD6957-F582-48B5-AD3F-E93330489913@cecropia.com>
 	<04D28BB4-A610-486B-B314-9D6D44E0B09B@cecropia.com>
 	<44B8EA8E.3070808@gmail.com>
+	<A05EFD86-EE99-4252-B99B-8E684905B0BB@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: multipart/mixed; boundary=Apple-Mail-1-716781000
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G1kD3-0004hu-OW for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 15 Jul 2006 06:29:29 -0700
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G1kD0-000257-Eq
+	id 1G1xF4-0002kn-LV for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 15 Jul 2006 20:24:26 -0700
+Received: from py-out-1112.google.com ([64.233.166.183])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G1xF3-00053H-FI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 15 Jul 2006 06:29:29 -0700
-Received: from pool-71-126-243-234.bstnma.fios.verizon.net (HELO
-	[192.168.0.100]) (dmunsie@cecropia.com@[71.126.243.234])
-	(envelope-sender <dmunsie@cecropia.com>)
-	by mail8.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
-	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
-	15 Jul 2006 13:29:20 -0000
-In-Reply-To: <44B8EA8E.3070808@gmail.com>
+	Sat, 15 Jul 2006 20:24:26 -0700
+Received: by py-out-1112.google.com with SMTP id c31so1817057pyd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 15 Jul 2006 20:23:51 -0700 (PDT)
+In-Reply-To: <A05EFD86-EE99-4252-B99B-8E684905B0BB@cecropia.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,34 +35,59 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Dennis Munsie <dmunsie@cecropia.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
+Dennis Munsie wrote:
+> I've attached both patches -- the fb-ddc-read.patch adds the generic ddc
+> functionality, and the other patches the radeonfb driver to use the
+> generic functionality instead.
+> 
+> There are other drivers that should be patched to use the generic
+> functionality as well, but since I didn't have any other cards to test
+> with, I just did the patch for the radeon (and intelfb as well, but
+> that's not ready yet).
+> 
+> dennis
+> 
+> On Jul 15, 2006, at 9:15 AM, Antonino A. Daplas wrote:
+> 
+>> Dennis Munsie wrote:
+>>> did anyone have any problems with this patch?  Just wondering if it
+>>> was going to be flipped upstream or if I need to make some changes to
+>>> it.
 
---Apple-Mail-1-716781000
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	delsp=yes;
-	format=flowed
+Okay, just tested it. At least fb_ddc_read works() also with nvidiafb, and I'm
+assuming it would also work with savage and i810, so I'll begin converting
+them to that.
 
-I've attached both patches -- the fb-ddc-read.patch adds the generic  
-ddc functionality, and the other patches the radeonfb driver to use  
-the generic functionality instead.
+A few problems:
 
-There are other drivers that should be patched to use the generic  
-functionality as well, but since I didn't have any other cards to  
-test with, I just did the patch for the radeon (and intelfb as well,  
-but that's not ready yet).
+This:
 
-dennis
++#if defined(CONFIG_I2C) && defined(CONFIG_I2C_ALGOBIT)
 
---Apple-Mail-1-716781000
-Content-Transfer-Encoding: 7bit
-Content-Type: application/octet-stream; x-unix-mode=0644;
-	name=fb-ddc-read.patch
-Content-Disposition: attachment;
-	filename=fb-ddc-read.patch
+will compile the dummy version fb_ddc_read() if i2c support is enabled as
+a module (CONFIG_I2C will not be defined, CONFIG_I2C_MODULE will be defined
+instead).
+
+So, I removed this particular line from the code. Also, I created a new file
+for it (fb_ddc.c) instead of placing it in fbmon.c. I also created a Kconfig
+option for it, so drivers that need it will need to have a 'select FB_DDC'
+line in Kconfig.
+
+I'm attaching an update patch. The authorship will be in your name (so people
+can hunt you down when they have problems :-)). Anyway, check the version,
+and let me know of any changes you want.
+
+Now for a wishlist. Perhaps we can make the creation and deletion of the
+i2c bus generic also, so we can maximize the size reduction and make it much
+simpler for driver writers to add i2c support.
+
+Tony 
+
+
+fbdev: Add generic ddc read functionality
 
 From: Dennis Munsie <dmunsie@cecropia.com>
 
@@ -72,30 +95,74 @@ Adds functionality to read the EDID information over the DDC bus in a
 generic way.  This code is based on the DDC implementation in the radeon
 driver.
 
-Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
+[adaplas]
+- separate from fbmon.c and place in new file fb_ddc.c
+- remove dependency to CONFIG_I2C and CONFIG_I2C_ALGOBIT, otherwise, feature
+  will not compile if i2c support is compiled as a module
+- feature is selectable only by drivers needing it. It must have a
+  'select FB_DDC if xxx' in Kconfig
+- change printk's to dev_*, the i2c people prefers it
 
+Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/fbmon.c |  110 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    2 
- 2 files changed, 112 insertions(+)
+ drivers/video/Kconfig  |    5 ++
+ drivers/video/Makefile |    1 
+ drivers/video/fb_ddc.c |  116 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h     |    2 +
+ 4 files changed, 124 insertions(+), 0 deletions(-)
 
-diff -Naurp -X linux-2.6.17.1-patched/Documentation/dontdiff linux-2.6.17.1-patched/drivers/video/fbmon.c linux/drivers/video/fbmon.c
---- linux-2.6.17.1-patched/drivers/video/fbmon.c	2006-06-21 12:03:41.000000000 -0500
-+++ linux/drivers/video/fbmon.c	2006-06-21 14:45:43.000000000 -0500
-@@ -1314,6 +1314,116 @@ const unsigned char *fb_firmware_edid(st
- #endif
- EXPORT_SYMBOL(fb_firmware_edid);
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index be4b50a..8846262 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -53,6 +53,11 @@ config FB
+ 	  (e.g. an accelerated X server) and that are not frame buffer
+ 	  device-aware may cause unexpected results. If unsure, say N.
  
++config FB_DDC
++       tristate
++       depends on FB && I2C && I2C_ALGOBIT
++       default n
++
+ config FB_CFB_FILLRECT
+ 	tristate
+ 	depends on FB
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 481c6c9..a6980e9 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -18,6 +18,7 @@ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfil
+ obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
+ obj-$(CONFIG_FB_CFB_IMAGEBLIT) += cfbimgblt.o
+ obj-$(CONFIG_FB_MACMODES)      += macmodes.o
++obj-$(CONFIG_FB_DDC)           += fb_ddc.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
+diff --git a/drivers/video/fb_ddc.c b/drivers/video/fb_ddc.c
+new file mode 100644
+index 0000000..3aa6ebf
+--- /dev/null
++++ b/drivers/video/fb_ddc.c
+@@ -0,0 +1,116 @@
 +/*
-+ * DDC/EDID read support.
++ * driver/vide/fb_ddc.c - DDC/EDID read support.
 + *
-+ * You must pass in an i2c_adapter that uses the bit algorithm, or
-+ * there will be a panic.
++ *  Copyright (C) 2006 Dennis Munsie <dmunsie@cecropia.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
 + */
-+#if defined(CONFIG_I2C) && defined(CONFIG_I2C_ALGOBIT)
-+#include <linux/i2c-algo-bit.h>
++
 +#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/fb.h>
++#include <linux/i2c-algo-bit.h>
++
++#include "edid.h"
 +
 +#define DDC_ADDR	0x50
 +
@@ -117,15 +184,16 @@ diff -Naurp -X linux-2.6.17.1-patched/Documentation/dontdiff linux-2.6.17.1-patc
 +
 +	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
 +	if (!buf) {
-+		printk(KERN_ERR "fbmon: unable to allocate memory for EDID block.\n");
-+		return NULL;		
++		dev_warn(&adapter->dev, "unable to allocate memory for EDID "
++			 "block.\n");
++		return NULL;
 +	}
 +	msgs[1].buf = buf;
 +
 +	if (i2c_transfer(adapter, msgs, 2) == 2)
 +		return buf;
 +
-+	printk(KERN_WARNING "fbmon: unable to read EDID block.\n");
++	dev_warn(&adapter->dev, "unable to read EDID block.\n");
 +	kfree(buf);
 +	return NULL;
 +}
@@ -135,7 +203,7 @@ diff -Naurp -X linux-2.6.17.1-patched/Documentation/dontdiff linux-2.6.17.1-patc
 +	struct i2c_algo_bit_data *algo_data = adapter->algo_data;
 +	unsigned char *edid = NULL;
 +	int i, j;
-+	
++
 +	algo_data->setscl(algo_data->data, 1);
 +	algo_data->setscl(algo_data->data, 0);
 +
@@ -189,29 +257,25 @@ diff -Naurp -X linux-2.6.17.1-patched/Documentation/dontdiff linux-2.6.17.1-patc
 +
 +	return edid;
 +}
-+#else
-+unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
-+{
-+	return NULL;
-+}
-+#endif
-+EXPORT_SYMBOL(fb_ddc_read);
 +
- EXPORT_SYMBOL(fb_parse_edid);
- EXPORT_SYMBOL(fb_edid_to_monspecs);
- EXPORT_SYMBOL(fb_get_mode);
-diff -Naurp -X linux-2.6.17.1-patched/Documentation/dontdiff linux-2.6.17.1-patched/include/linux/fb.h linux/include/linux/fb.h
---- linux-2.6.17.1-patched/include/linux/fb.h	2006-06-21 12:03:42.000000000 -0500
-+++ linux/include/linux/fb.h	2006-06-21 14:46:06.000000000 -0500
-@@ -2,6 +2,7 @@
- #define _LINUX_FB_H
++EXPORT_SYMBOL_GPL(fb_ddc_read);
++
++MODULE_AUTHOR("Dennis Munsie <dmunsie@cecropia.com>");
++MODULE_DESCRIPTION("DDC/EDID reading support");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 4ad0673..a49ba06 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -3,6 +3,7 @@ #define _LINUX_FB_H
  
+ #include <linux/backlight.h>
  #include <asm/types.h>
 +#include <linux/i2c.h>
  
  /* Definitions of frame buffers						*/
  
-@@ -924,6 +925,7 @@ extern void fb_edid_to_monspecs(unsigned
+@@ -940,6 +941,7 @@ extern void fb_edid_to_monspecs(unsigned
  				struct fb_monspecs *specs);
  extern void fb_destroy_modedb(struct fb_videomode *modedb);
  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
@@ -220,189 +284,9 @@ diff -Naurp -X linux-2.6.17.1-patched/Documentation/dontdiff linux-2.6.17.1-patc
  /* drivers/video/modedb.c */
  #define VESA_MODEDB_SIZE 34
 
---Apple-Mail-1-716781000
-Content-Transfer-Encoding: 7bit
-Content-Type: application/octet-stream; x-unix-mode=0644;
-	name=radeonfb-use-generic-ddc-read.patch
-Content-Disposition: attachment; filename=radeonfb-use-generic-ddc-read.patch
-
-From: Dennis Munsie <dmunsie@cecropia.com>
-
-Uses the generic ddc read functionality in fbmon.c instead of the
-previous functionality.
-
-Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-
----
-
- drivers/video/aty/radeon_i2c.c |  104 -----------------------------------------
- 1 file changed, 1 insertion(+), 103 deletions(-)
-
-diff -Naurp -X linux-2.6.17.1-patched/Documentation/dontdiff linux-2.6.17.1-patched/drivers/video/aty/radeon_i2c.c linux/drivers/video/aty/radeon_i2c.c
---- linux-2.6.17.1-patched/drivers/video/aty/radeon_i2c.c	2006-03-20 00:53:29.000000000 -0500
-+++ linux/drivers/video/aty/radeon_i2c.c	2006-06-21 15:45:53.000000000 -0500
-@@ -17,8 +17,6 @@
- #include "radeonfb.h"
- #include "../edid.h"
- 
--#define RADEON_DDC 	0x50
--
- static void radeon_gpio_setscl(void* data, int state)
- {
- 	struct radeon_i2c_chan 	*chan = data;
-@@ -139,109 +137,9 @@ void radeon_delete_i2c_busses(struct rad
- 	rinfo->i2c[3].rinfo = NULL;
- }
- 
--
--static u8 *radeon_do_probe_i2c_edid(struct radeon_i2c_chan *chan)
--{
--	u8 start = 0x0;
--	struct i2c_msg msgs[] = {
--		{
--			.addr	= RADEON_DDC,
--			.len	= 1,
--			.buf	= &start,
--		}, {
--			.addr	= RADEON_DDC,
--			.flags	= I2C_M_RD,
--			.len	= EDID_LENGTH,
--		},
--	};
--	u8 *buf;
--
--	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(&chan->rinfo->pdev->dev, "Out of memory!\n");
--		return NULL;
--	}
--	msgs[1].buf = buf;
--
--	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
--		return buf;
--	dev_dbg(&chan->rinfo->pdev->dev, "Unable to read EDID block.\n");
--	kfree(buf);
--	return NULL;
--}
--
--
- int radeon_probe_i2c_connector(struct radeonfb_info *rinfo, int conn, u8 **out_edid)
- {
--	u32 reg = rinfo->i2c[conn-1].ddc_reg;
--	u8 *edid = NULL;
--	int i, j;
--
--	OUTREG(reg, INREG(reg) & 
--			~(VGA_DDC_DATA_OUTPUT | VGA_DDC_CLK_OUTPUT));
--
--	OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN));
--	(void)INREG(reg);
--
--	for (i = 0; i < 3; i++) {
--		/* For some old monitors we need the
--		 * following process to initialize/stop DDC
--		 */
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_DATA_OUT_EN));
--		(void)INREG(reg);
--		msleep(13);
--
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		for (j = 0; j < 5; j++) {
--			msleep(10);
--			if (INREG(reg) & VGA_DDC_CLK_INPUT)
--				break;
--		}
--		if (j == 5)
--			continue;
--
--		OUTREG(reg, INREG(reg) | VGA_DDC_DATA_OUT_EN);
--		(void)INREG(reg);
--		msleep(15);
--		OUTREG(reg, INREG(reg) | VGA_DDC_CLK_OUT_EN);
--		(void)INREG(reg);
--		msleep(15);
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_DATA_OUT_EN));
--		(void)INREG(reg);
--		msleep(15);
--
--		/* Do the real work */
--		edid = radeon_do_probe_i2c_edid(&rinfo->i2c[conn-1]);
--
--		OUTREG(reg, INREG(reg) | 
--				(VGA_DDC_DATA_OUT_EN | VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		msleep(15);
--		
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		for (j = 0; j < 10; j++) {
--			msleep(10);
--			if (INREG(reg) & VGA_DDC_CLK_INPUT)
--				break;
--		}
--
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_DATA_OUT_EN));
--		(void)INREG(reg);
--		msleep(15);
--		OUTREG(reg, INREG(reg) |
--				(VGA_DDC_DATA_OUT_EN | VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		if (edid)
--			break;
--	}
--	/* Release the DDC lines when done or the Apple Cinema HD display
--	 * will switch off
--	 */
--	OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN | VGA_DDC_DATA_OUT_EN));
--	(void)INREG(reg);
--
-+	u8 *edid = fb_ddc_read(&rinfo->i2c[conn-1].adapter);
- 	if (out_edid)
- 		*out_edid = edid;
- 	if (!edid) {
-
---Apple-Mail-1-716781000
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
-
-
-On Jul 15, 2006, at 9:15 AM, Antonino A. Daplas wrote:
-
-> Dennis Munsie wrote:
->> did anyone have any problems with this patch?  Just wondering if it
->> was going to be flipped upstream or if I need to make some changes to
->> it.
->
-> Can you resend? I'm getting "malformed patch". An attachment is fine.
->
-> Tony
-
-
---Apple-Mail-1-716781000
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-
---Apple-Mail-1-716781000
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---Apple-Mail-1-716781000--

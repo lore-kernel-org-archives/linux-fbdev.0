@@ -1,30 +1,35 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
 Subject: Re: [PATCH 2.6.17-1] fbmon: add generic
- ddc	read functionality
-Date: Sun, 16 Jul 2006 11:25:25 +0800
-Message-ID: <44B9B1A5.4010003@gmail.com>
+	ddc	read functionality
+Date: Mon, 17 Jul 2006 10:27:49 -0400
+Message-ID: <37BAF066-F9CF-4F0F-97F0-C06F27486EE8@cecropia.com>
 References: <CCAD6957-F582-48B5-AD3F-E93330489913@cecropia.com>
 	<04D28BB4-A610-486B-B314-9D6D44E0B09B@cecropia.com>
 	<44B8EA8E.3070808@gmail.com>
 	<A05EFD86-EE99-4252-B99B-8E684905B0BB@cecropia.com>
+	<44B9B140.5090701@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G1xG7-0002qd-J5 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 15 Jul 2006 20:25:31 -0700
-Received: from py-out-1112.google.com ([64.233.166.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G1xG7-0004Q4-7y
+	id 1G2U18-000219-19 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 17 Jul 2006 07:24:14 -0700
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1G2U16-0003E5-P3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 15 Jul 2006 20:25:31 -0700
-Received: by py-out-1112.google.com with SMTP id c31so1817518pyd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 15 Jul 2006 20:25:30 -0700 (PDT)
-In-Reply-To: <A05EFD86-EE99-4252-B99B-8E684905B0BB@cecropia.com>
+	Mon, 17 Jul 2006 07:24:13 -0700
+Received: from lex098.cecropia.com (HELO [192.168.3.132])
+	(dmunsie@cecropia.com@[63.138.212.98])
+	(envelope-sender <dmunsie@cecropia.com>)
+	by mail4.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
+	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
+	17 Jul 2006 14:24:06 -0000
+In-Reply-To: <44B9B140.5090701@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,114 +40,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dennis Munsie <dmunsie@cecropia.com>
+To: "Antonino A.Daplas" <adaplas@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Dennis Munsie wrote:
-> I've attached both patches -- the fb-ddc-read.patch adds the generic ddc
-> functionality, and the other patches the radeonfb driver to use the
-> generic functionality instead.
-> 
-> There are other drivers that should be patched to use the generic
-> functionality as well, but since I didn't have any other cards to test
-> with, I just did the patch for the radeon (and intelfb as well, but
-> that's not ready yet).
-> 
-> dennis
-> 
-> On Jul 15, 2006, at 9:15 AM, Antonino A. Daplas wrote:
-> 
->> Dennis Munsie wrote:
->>> did anyone have any problems with this patch?  Just wondering if it
->>> was going to be flipped upstream or if I need to make some changes to
->>> it.
+It looks good, but the copyright should be in my company's name, not  
+mine -- Cecropia, Inc.  My name and email can still be there, though,  
+for contact purposes.
 
-And here's the updated nvidiafb driver...
+Also, I looked on the original file in the radeon driver for a  
+copyright, but there wasn't one there -- whoever wrote that original  
+code should also be listed in the copyright.
 
-Tony
+BTW -- are you going to modify the radeon patch to account for the  
+Kconfig change or should I send up a new version?
 
-nvidiafb: Use generic DDC reading
+dennis
 
-Update driver to use generic DDC reading
+On Jul 15, 2006, at 11:23 PM, Antonino A. Daplas wrote:
+> I'm attaching an update patch. The authorship will be in your name  
+> (so people
+> can hunt you down when they have problems :-)). Anyway, check the  
+> version,
+> and let me know of any changes you want.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
-
- drivers/video/Kconfig         |    1 +
- drivers/video/nvidia/nv_i2c.c |   45 +++--------------------------------------
- 2 files changed, 4 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 8846262..215ad28 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -699,6 +699,7 @@ config FB_NVIDIA
- 	depends on FB && PCI
- 	select I2C_ALGOBIT if FB_NVIDIA_I2C
- 	select I2C if FB_NVIDIA_I2C
-+	select FB_DDC if FB_NVIDIA_I2C
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
-index 19eef3a..e48de3c 100644
---- a/drivers/video/nvidia/nv_i2c.c
-+++ b/drivers/video/nvidia/nv_i2c.c
-@@ -160,51 +160,12 @@ void nvidia_delete_i2c_busses(struct nvi
- 
- }
- 
--static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
--{
--	u8 start = 0x0;
--	struct i2c_msg msgs[] = {
--		{
--		 .addr = 0x50,
--		 .len = 1,
--		 .buf = &start,
--		 }, {
--		     .addr = 0x50,
--		     .flags = I2C_M_RD,
--		     .len = EDID_LENGTH,
--		     },
--	};
--	u8 *buf;
--
--	if (!chan->par)
--		return NULL;
--
--	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(&chan->par->pci_dev->dev, "Out of memory!\n");
--		return NULL;
--	}
--	msgs[1].buf = buf;
--
--	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
--		return buf;
--	dev_dbg(&chan->par->pci_dev->dev, "Unable to read EDID block.\n");
--	kfree(buf);
--	return NULL;
--}
--
- int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
- {
- 	struct nvidia_par *par = info->par;
--	u8 *edid = NULL;
--	int i;
--
--	for (i = 0; i < 3; i++) {
--		/* Do the real work */
--		edid = nvidia_do_probe_i2c_edid(&par->chan[conn - 1]);
--		if (edid)
--			break;
--	}
-+	u8 *edid;
-+
-+	edid = fb_ddc_read(&par->chan[conn - 1].adapter);
- 
- 	if (!edid && conn == 1) {
- 		/* try to get from firmware */
 
 
 -------------------------------------------------------------------------

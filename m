@@ -1,31 +1,28 @@
-From: Luca <kronos@people.it>
-Subject: Re: [PATCH 2.6.17-1] fbmon: add generic ddc
-	read functionality
-Date: Tue, 18 Jul 2006 21:36:21 +0200
-Message-ID: <20060718193621.GA17928@dreamland.darkstar.lan>
-References: <CCAD6957-F582-48B5-AD3F-E93330489913@cecropia.com>
-	<04D28BB4-A610-486B-B314-9D6D44E0B09B@cecropia.com>
-	<44B8EA8E.3070808@gmail.com>
-	<A05EFD86-EE99-4252-B99B-8E684905B0BB@cecropia.com>
-	<44B9B140.5090701@gmail.com>
-	<37BAF066-F9CF-4F0F-97F0-C06F27486EE8@cecropia.com>
-	<44BC16B2.7020407@gmail.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: printk change in 2.6.18?
+Date: Tue, 18 Jul 2006 17:05:18 -0400
+Message-ID: <1756A939-0BF4-48F1-9CEC-DB468306073C@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G2vMq-0007rG-6l for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Jul 2006 12:36:28 -0700
-Received: from mail-relay-1.tiscali.it ([213.205.33.41])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G2vMn-0003Ao-II
+	id 1G2wjT-0006xl-Ez for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 18 Jul 2006 14:03:55 -0700
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1G2wjS-0004Z5-6P
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Jul 2006 12:36:28 -0700
-Content-Disposition: inline
-In-Reply-To: <44BC16B2.7020407@gmail.com>
+	Tue, 18 Jul 2006 14:03:55 -0700
+Received: from lex098.cecropia.com (HELO [192.168.3.132])
+	(dmunsie@cecropia.com@[63.138.212.98])
+	(envelope-sender <dmunsie@cecropia.com>)
+	by mail8.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
+	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
+	18 Jul 2006 21:03:48 -0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,27 +33,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Dennis Munsie <dmunsie@cecropia.com>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Il Tue, Jul 18, 2006 at 07:01:06AM +0800, Antonino A. Daplas ha scritto: 
-> > Also, I looked on the original file in the radeon driver for a
-> > copyright, but there wasn't one there -- whoever wrote that original
-> > code should also be listed in the copyright.
-> > 
-> 
-> I guess that would be Luca.
+I just migrated my development over to 2.6.18-rc2, and I've now  
+noticed that some of the printk's that used to work under 2.6.17  
+stopped working under 2.6.18.  The printk's that I'm referring to are  
+in intelfbhw_mode_to_hw() which is ultimately called by  
+intelfb_set_par() which is called by fb_set_var().
 
-Ah yes, I started writing that code back when James Simmons was still
-around ;) There's a notice in radeon_base.c.
+I can put a printk() at the top of fb_set_var(), and it shows up.   
+But anything else in there fails to show up.
 
-Anyway BenH put a great deal of work in it too.
+Have there been any changes in the framebuffer that would suppress  
+printk's in fb_set_var()?  I didn't see anything obvious, but I'm  
+probably missing something.
 
-Luca
--- 
-Home: http://kronoz.cjb.net
-Il dottore mi ha detto di smettere di fare cene intime per quattro.
-A meno che non ci siamo altre tre persone.
+dennis
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

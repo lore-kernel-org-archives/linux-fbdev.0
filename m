@@ -1,28 +1,33 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
 Subject: Re: printk change in 2.6.18?
-Date: Wed, 19 Jul 2006 19:57:38 +0800
-Message-ID: <44BE1E32.9060407@gmail.com>
+Date: Wed, 19 Jul 2006 11:38:35 -0400
+Message-ID: <8FFCA31D-B54F-4686-A5B0-0D9F7B2B9C20@cecropia.com>
 References: <1756A939-0BF4-48F1-9CEC-DB468306073C@cecropia.com>
 	<44BD72BB.2090000@gmail.com>
 	<93DE4F1B-CF8B-4E72-8323-7869C9098728@cecropia.com>
+	<44BE1E32.9060407@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G3AgX-0006G5-N3 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Jul 2006 04:57:49 -0700
-Received: from py-out-1112.google.com ([64.233.166.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G3AgV-0005aM-6i
+	id 1G3E6k-0002S7-LC for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 19 Jul 2006 08:37:06 -0700
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1G3E6j-00039B-CY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Jul 2006 04:57:49 -0700
-Received: by py-out-1112.google.com with SMTP id e30so228055pya
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 19 Jul 2006 04:57:43 -0700 (PDT)
-In-Reply-To: <93DE4F1B-CF8B-4E72-8323-7869C9098728@cecropia.com>
+	Wed, 19 Jul 2006 08:37:06 -0700
+Received: from lex098.cecropia.com (HELO [192.168.3.132])
+	(dmunsie@cecropia.com@[63.138.212.98])
+	(envelope-sender <dmunsie@cecropia.com>)
+	by mail6.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
+	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
+	19 Jul 2006 15:36:59 -0000
+In-Reply-To: <44BE1E32.9060407@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,51 +38,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dennis Munsie <dmunsie@cecropia.com>
+To: "Antonino A.Daplas" <adaplas@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Dennis Munsie wrote:
-> The weirdness just goes on and on.... it seems that even though
-> intelfb_mode_to_hw() is only called by intelfb_set_par() and that is
-> only (as far as I can tell) called by fb_set_var(), the calls to
-> fb_set_var() that I am seeing are not the ones calling
-> intelfb_set_par().  Those ones either seem to be masked out completely,
-> or they don't seem to be happening at all.
-> 
-> Except, that I know that they are happening, because I have some test
-> code in there that I know very well is working and that if I comment
-> that code out, everything breaks.
-> 
-> Is it possible for intelfb_set_par() to be called from anywhere else? 
 
-Yes, fb_set_par() can be called directly by fbcon. See
-drivers/video/console/fbcon.c
+On Jul 19, 2006, at 7:57 AM, Antonino A. Daplas wrote:
 
-> Or is it only called by fb_set_var()?
+> You mean, if you type 'dmesg', you don't see the printk's? All  
+> printk's
+> should at least reach the logbuffer, but if it doesn't even reach the
+> logbuffer level, then the problem is very high up.
 
-No.
+ok, i just took a look at dmesg -- i had to expand the buffer for  
+dmesg, but the printk's are showing up there.  So, something is  
+causing them to not be sent to earlyprintk (i don't have any kernel  
+output going to the console).
 
-> 
-> On Jul 18, 2006, at 7:46 PM, Antonino A. Daplas wrote:
-> 
->> Does the printk's show up in syslog (dmesg)? How about when intelfb
->> and fbcon are just loaded? How about while doing an fbset?
-> 
-> the printk's don't seem to show up anywhere... I've tried all kinds of
-> variations -- using the DBG_MSG() macro in the intelfb, using printk()
-> with KERN_ERR, KERN_CRIT, and without anything (which should be KERN_WARN).
-> 
-> I have a serial connection with earlyprintk turned on -- I can see all
-> of the messages back to the first line in the boot.  None of my messages
-> show up.  I also have loglevel set to a ridiculous 255 -- it was at 8
-> before.  I even have debug turned on in the intelfb driver.  At one
-> point, I had verbose turned on as well, but that gets way too chatty.
+either way, i'm okay for now -- i'll take a look at this again once I  
+have some spare cycles.
 
-You mean, if you type 'dmesg', you don't see the printk's? All printk's
-should at least reach the logbuffer, but if it doesn't even reach the
-logbuffer level, then the problem is very high up.
-
-Tony
+dennis
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

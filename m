@@ -1,29 +1,23 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Subject: [simple patch] touchup virtual frame buffer
-	docs for modules
-Date: Wed, 19 Jul 2006 23:04:38 -0400
-Message-ID: <200607192304.39235.vapier@gentoo.org>
+From: dmunsie@cecropia.com (Dennis Munsie)
+Subject: [PATCH 2.6.18-rc2] intelfb: fix vblank_end
+	calculation
+Date: Thu, 20 Jul 2006 12:24:49 -0400 (EDT)
+Message-ID: <20060720162449.061B6118E23@xenon>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_HLvvEW7/WNv3OQv"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G3OqA-0004mU-Jk for Linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Jul 2006 20:04:42 -0700
-Received: from smtp.gentoo.org ([140.211.166.183])
+	id 1G3bIu-00088F-WB for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 20 Jul 2006 09:23:13 -0700
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G3OqA-0006Z2-7U
-	for Linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Jul 2006 20:04:42 -0700
-Received: from home.wh0rd.org (localhost [127.0.0.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtp.gentoo.org (Postfix) with ESMTP id 7DAA764B41
-	for <Linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 20 Jul 2006 03:04:41 +0000 (UTC)
+	(Exim 4.44) id 1G3bIs-0008Gv-IO
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 20 Jul 2006 09:23:12 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,93 +28,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: ehustvedt@cecropia.com, airlied@skynet.ie
 
---Boundary-00=_HLvvEW7/WNv3OQv
-Content-Type: multipart/signed; boundary="nextPart3810473.hQM1jtfTi3";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+From: Dennis Munsie <dmunsie@cecropia.com>
 
---nextPart3810473.hQM1jtfTi3
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Removes bad vblank_end calculation in favor of the correct one on the line 
+above.  This makes the vblank_end now include both the upper and lower margin,
+and the vsync.  Before, the upper margin was not being included which caused 
+problems with DVI monitors.  This patch shouldn't affect analog monitors,
+but vertical adjustments may need to be made.
 
-the Kconfig help text doesnt mention that in order to load the vfb module, =
-you=20
-have to pass in the parameter vfb_enable=3D1
+This now brings the vblank_end value to be consistent with what the BIOS is
+setting when using VBE calls.
 
-patch attached to document this and hopefully save someone else some time :)
-=2Dmike
+Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
 
---nextPart3810473.hQM1jtfTi3
-Content-Type: application/pgp-signature
+---
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (GNU/Linux)
+ drivers/video/intelfb/intelfbhw.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-iQIVAwUARL7yxkFjO5/oN/WBAQIfFw//RKGGXz102QLtpS1Gadj7Y6ZHoyucBSHS
-xfFi16G32ssWl+xKLCSxEpkXIM0sla4RCLtxQDt6yZ0GztwSZpiFm+jH7u/TBBd7
-8MFObULqj5vnqtldnwJ+fgBFSqX13Y0mWi7B62pKdOVZj6rlF6/4s5iGQmZrVr3n
-q2FqBFOXTAlTDeWGCBeOqSSHqfVVZlQaWqVppCuaPRFaNHGCI1MH/zpn1TzxxAAl
-grtxqwTWsh0GzBD7PfoJJaaetliiKmnTGJYWjAqa3s/Q/1Kvsva5uM0WYazCB0mG
-pEKFmZWmpgtb4of5V4yEjHJFLk45q+XOP2CxkTcMc0XsdghZyJrHY5CC2/ZIiE5j
-8l4odz58LWhmqmuIRd1PmThASxSpwgdc2rlVDvZ3v99VCxuYbkvRptQ4Em27QLVx
-XMrDpXTdX+14WeK8eJNgyOaPgRHTmvXG1lCstjiBA9k4JvjgoySFoWriNuIGV89A
-OR/tdsq/Vb/lxYXKGVW3nZYZqr5IDOipGggPC052fgyN+Q/v4ZfsFD0yYjFmwsCe
-l2LDXe3tYCt7n9TCJQPG04HJ0pyF4ZLE22PwzZKAL1wA3nj43obKh7rCR0rdcDzQ
-7h8iZV4s0OtcVrmwLtPjTqDWAFqq1hMHrytSQvJ5ZwzBVDv2sSHJt2sXRjx35MnT
-BLmwQ05q0bo=
-=/T52
------END PGP SIGNATURE-----
-
---nextPart3810473.hQM1jtfTi3--
-
---Boundary-00=_HLvvEW7/WNv3OQv
-Content-Type: text/x-diff; charset="us-ascii";
-	name="vfb-module-kconfig-docs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="vfb-module-kconfig-docs.patch"
-
-Document required module options in Kconfig for loading the vfb module.
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 6533b0f..6a68a43 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1609,7 +1609,8 @@ config FB_VIRTUAL
- 	  kernel option `video=vfb:'.
+diff -Naurp -X linux-2.6.18-rc2-patched/Documentation/dontdiff linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbhw.c linux-2.6.18-rc2-debugging/drivers/video/intelfb/intelfbhw.c
+--- linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbhw.c	2006-07-18 05:15:21.000000000 -0500
++++ linux-2.6.18-rc2-debugging/drivers/video/intelfb/intelfbhw.c	2006-07-20 03:39:52.000000000 -0500
+@@ -1140,7 +1140,6 @@ intelfbhw_mode_to_hw(struct intelfb_info
+ 	vtotal = vsync_end + var->upper_margin;
+ 	vblank_start = vactive;
+ 	vblank_end = vtotal;
+-	vblank_end = vsync_end + 1;
  
- 	  To compile this driver as a module, choose M here: the
--	  module will be called vfb.
-+	  module will be called vfb. In order to load it, you must use
-+	  the vfb_enable=1 option.
- 
- 	  If unsure, say N.
- if VT
-
---Boundary-00=_HLvvEW7/WNv3OQv
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ 	DBG_MSG("V: act %d, ss %d, se %d, tot %d bs %d, be %d\n",
+ 		vactive, vsync_start, vsync_end, vtotal, vblank_start,
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---Boundary-00=_HLvvEW7/WNv3OQv
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---Boundary-00=_HLvvEW7/WNv3OQv--

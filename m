@@ -1,33 +1,29 @@
-From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: Re: printk change in 2.6.18?
-Date: Wed, 19 Jul 2006 11:38:35 -0400
-Message-ID: <8FFCA31D-B54F-4686-A5B0-0D9F7B2B9C20@cecropia.com>
-References: <1756A939-0BF4-48F1-9CEC-DB468306073C@cecropia.com>
-	<44BD72BB.2090000@gmail.com>
-	<93DE4F1B-CF8B-4E72-8323-7869C9098728@cecropia.com>
-	<44BE1E32.9060407@gmail.com>
+From: Mike Frysinger <vapier@gentoo.org>
+Subject: [simple patch] touchup virtual frame buffer
+	docs for modules
+Date: Wed, 19 Jul 2006 23:04:38 -0400
+Message-ID: <200607192304.39235.vapier@gentoo.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_HLvvEW7/WNv3OQv"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G3E6k-0002S7-LC for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Jul 2006 08:37:06 -0700
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8])
+	id 1G3OqA-0004mU-Jk for Linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 19 Jul 2006 20:04:42 -0700
+Received: from smtp.gentoo.org ([140.211.166.183])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G3E6j-00039B-CY
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Jul 2006 08:37:06 -0700
-Received: from lex098.cecropia.com (HELO [192.168.3.132])
-	(dmunsie@cecropia.com@[63.138.212.98])
-	(envelope-sender <dmunsie@cecropia.com>)
-	by mail6.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
-	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
-	19 Jul 2006 15:36:59 -0000
-In-Reply-To: <44BE1E32.9060407@gmail.com>
+	(Exim 4.44) id 1G3OqA-0006Z2-7U
+	for Linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 19 Jul 2006 20:04:42 -0700
+Received: from home.wh0rd.org (localhost [127.0.0.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtp.gentoo.org (Postfix) with ESMTP id 7DAA764B41
+	for <Linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 20 Jul 2006 03:04:41 +0000 (UTC)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,29 +34,93 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A.Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel@lists.sourceforge.net
 
+--Boundary-00=_HLvvEW7/WNv3OQv
+Content-Type: multipart/signed; boundary="nextPart3810473.hQM1jtfTi3";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-On Jul 19, 2006, at 7:57 AM, Antonino A. Daplas wrote:
+--nextPart3810473.hQM1jtfTi3
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> You mean, if you type 'dmesg', you don't see the printk's? All  
-> printk's
-> should at least reach the logbuffer, but if it doesn't even reach the
-> logbuffer level, then the problem is very high up.
+the Kconfig help text doesnt mention that in order to load the vfb module, =
+you=20
+have to pass in the parameter vfb_enable=3D1
 
-ok, i just took a look at dmesg -- i had to expand the buffer for  
-dmesg, but the printk's are showing up there.  So, something is  
-causing them to not be sent to earlyprintk (i don't have any kernel  
-output going to the console).
+patch attached to document this and hopefully save someone else some time :)
+=2Dmike
 
-either way, i'm okay for now -- i'll take a look at this again once I  
-have some spare cycles.
+--nextPart3810473.hQM1jtfTi3
+Content-Type: application/pgp-signature
 
-dennis
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (GNU/Linux)
+
+iQIVAwUARL7yxkFjO5/oN/WBAQIfFw//RKGGXz102QLtpS1Gadj7Y6ZHoyucBSHS
+xfFi16G32ssWl+xKLCSxEpkXIM0sla4RCLtxQDt6yZ0GztwSZpiFm+jH7u/TBBd7
+8MFObULqj5vnqtldnwJ+fgBFSqX13Y0mWi7B62pKdOVZj6rlF6/4s5iGQmZrVr3n
+q2FqBFOXTAlTDeWGCBeOqSSHqfVVZlQaWqVppCuaPRFaNHGCI1MH/zpn1TzxxAAl
+grtxqwTWsh0GzBD7PfoJJaaetliiKmnTGJYWjAqa3s/Q/1Kvsva5uM0WYazCB0mG
+pEKFmZWmpgtb4of5V4yEjHJFLk45q+XOP2CxkTcMc0XsdghZyJrHY5CC2/ZIiE5j
+8l4odz58LWhmqmuIRd1PmThASxSpwgdc2rlVDvZ3v99VCxuYbkvRptQ4Em27QLVx
+XMrDpXTdX+14WeK8eJNgyOaPgRHTmvXG1lCstjiBA9k4JvjgoySFoWriNuIGV89A
+OR/tdsq/Vb/lxYXKGVW3nZYZqr5IDOipGggPC052fgyN+Q/v4ZfsFD0yYjFmwsCe
+l2LDXe3tYCt7n9TCJQPG04HJ0pyF4ZLE22PwzZKAL1wA3nj43obKh7rCR0rdcDzQ
+7h8iZV4s0OtcVrmwLtPjTqDWAFqq1hMHrytSQvJ5ZwzBVDv2sSHJt2sXRjx35MnT
+BLmwQ05q0bo=
+=/T52
+-----END PGP SIGNATURE-----
+
+--nextPart3810473.hQM1jtfTi3--
+
+--Boundary-00=_HLvvEW7/WNv3OQv
+Content-Type: text/x-diff; charset="us-ascii";
+	name="vfb-module-kconfig-docs.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="vfb-module-kconfig-docs.patch"
+
+Document required module options in Kconfig for loading the vfb module.
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 6533b0f..6a68a43 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1609,7 +1609,8 @@ config FB_VIRTUAL
+ 	  kernel option `video=vfb:'.
+ 
+ 	  To compile this driver as a module, choose M here: the
+-	  module will be called vfb.
++	  module will be called vfb. In order to load it, you must use
++	  the vfb_enable=1 option.
+ 
+ 	  If unsure, say N.
+ if VT
+
+--Boundary-00=_HLvvEW7/WNv3OQv
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+--Boundary-00=_HLvvEW7/WNv3OQv
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--Boundary-00=_HLvvEW7/WNv3OQv--

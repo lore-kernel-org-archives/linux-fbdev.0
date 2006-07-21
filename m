@@ -1,23 +1,28 @@
-From: apgo@patchbomb.org (Arthur Othieno)
-Subject: [PATCH] nvidiafb: remove redundant CONFIG_PCI
-	check
-Date: Fri, 21 Jul 2006 04:08:47 -0400
-Message-ID: <20060721080847.GF8584@krypton>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: YUV support
+Date: Fri, 21 Jul 2006 17:08:53 -0400
+Message-ID: <A52F3235-4BC6-4B97-921D-5FFD642AA044@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G3q83-0004zp-3K for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 21 Jul 2006 01:12:59 -0700
-Received: from mailrelay3.sunrise.ch ([194.158.229.31] helo=obelix.sunrise.ch)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G3q81-0001Dd-FU
+	id 1G42DF-0007Pz-2F for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 21 Jul 2006 14:07:09 -0700
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1G42DE-0000X8-Nt
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 21 Jul 2006 01:12:59 -0700
-Content-Disposition: inline
+	Fri, 21 Jul 2006 14:07:08 -0700
+Received: from lex098.cecropia.com (HELO [192.168.3.132])
+	(dmunsie@cecropia.com@[63.138.212.98])
+	(envelope-sender <dmunsie@cecropia.com>)
+	by mail2.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
+	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
+	21 Jul 2006 21:07:00 -0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,36 +33,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@osdl.org
-Cc: Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-CONFIG_FB_NVIDIA already depends on CONFIG_PCI in drivers/video/Kconfig.
-Driver does an extra ``sanity check'' which is then redundant.
+Hi again,
 
-Signed-off-by: Arthur Othieno <apgo@patchbomb.org>
-Cc: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
----
- drivers/video/nvidia/nvidia.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+I'm starting to investigate adding YUV support to the intelfb driver,  
+and I was wondering what support is already in the framebuffer  
+subsystem for YUV.  Doing a quick grep for YUV only yielded a handful  
+of references -- all in drivers.  Nothing seems to be there for  
+generic YUV support.
 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index 9f2066f..d0ca0d8 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -34,10 +34,6 @@ #include "nv_type.h"
- #include "nv_proto.h"
- #include "nv_dma.h"
- 
--#ifndef CONFIG_PCI		/* sanity check */
--#error This driver requires PCI support.
--#endif
--
- #undef CONFIG_FB_NVIDIA_DEBUG
- #ifdef CONFIG_FB_NVIDIA_DEBUG
- #define NVTRACE          printk
--- 
-1.4.0
+Am I correct in this assumption?  And, if so, what would be the best  
+way to expose YUV support?  Driver specific ioctl's?  Separate fb  
+device for the YUV overlay?  Give up and use X? (just kidding on that  
+last one -- I hope).
+
+dennis
 
 
 -------------------------------------------------------------------------

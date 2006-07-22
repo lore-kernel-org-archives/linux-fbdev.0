@@ -1,8 +1,8 @@
-From: Guido Guenther <agx@sigxcpu.org>
-Subject: [patch] rivafb: use constants instead of magic
-	values
-Date: Sat, 22 Jul 2006 18:40:50 +0200
-Message-ID: <20060722164050.GA5630@bogon.ms20.nix>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: radeonfb and newer radeons (Patch)
+Date: Sat, 22 Jul 2006 19:20:36 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0607221919040.23027@pademelon.sonytel.be>
+References: <44C23E93.2000805@users.sf.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,28 +11,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G4KXk-0007gR-0o for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 22 Jul 2006 09:41:32 -0700
-Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G4KXj-00035g-EN
+	id 1G4L9h-0002Wf-Ce for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 22 Jul 2006 10:20:45 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G4L9f-0001kZ-PD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 22 Jul 2006 09:41:32 -0700
-Received: from localhost (localhost.localnet [127.0.0.1])
-	by honk1.physik.uni-konstanz.de (Postfix) with ESMTP id 09C643A993
+	Sat, 22 Jul 2006 10:20:45 -0700
+Received: from pademelon.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id k6MHKbQe026810
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 22 Jul 2006 18:41:22 +0200 (CEST)
-Received: from honk1.physik.uni-konstanz.de ([127.0.0.1])
-	by localhost (honk [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 18067-12 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 22 Jul 2006 18:41:21 +0200 (CEST)
-Received: from bogon.sigxcpu.org (p54A8DF3C.dip.t-dialin.net [84.168.223.60])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by honk1.physik.uni-konstanz.de (Postfix) with ESMTP id 934FE3A992
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 22 Jul 2006 18:41:19 +0200 (CEST)
-Content-Disposition: inline
+	Sat, 22 Jul 2006 19:20:37 +0200 (MEST)
+In-Reply-To: <44C23E93.2000805@users.sf.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -43,51 +32,58 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi,
-this minor patch against current git uses (MIN/MAX)_LEVEL and
-FB_(UN)BLANK instead of the valuees they are defined to. Please apply.
-Cheers,
- -- Guido
+On Sat, 22 Jul 2006, Claudio Ciccani wrote:
+> the attached patch fixes some issues with R300 based chipsets and
+> adds support for a number of new devices (mostly X800/X850).
+> It also enlarges the mmio size to 0x8000 because many 3d registers
+> of the R300 are located after offset 0x4000 and we need them for
+> DirectFB (DRI needs too).
+> The patch applies to linux-2.6.18-rc2, hope there have not been changes
+> in the meanwhile.
 
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index 33dddba..2ae214b 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -389,8 +389,8 @@ #endif
- 	mutex_lock(&info->bl_mutex);
- 	info->bl_dev = bd;
- 	fb_bl_default_curve(info, 0,
--		0x158 * FB_BACKLIGHT_MAX / MAX_LEVEL,
--		0x534 * FB_BACKLIGHT_MAX / MAX_LEVEL);
-+		MIN_LEVEL * FB_BACKLIGHT_MAX / MAX_LEVEL,
-+		FB_BACKLIGHT_MAX);
- 	mutex_unlock(&info->bl_mutex);
- 
- 	up(&bd->sem);
-@@ -780,7 +780,7 @@ static void riva_load_video_mode(struct 
- 	
- 	NVTRACE_ENTER();
- 	/* time to calculate */
--	rivafb_blank(1, info);
-+	rivafb_blank(FB_BLANK_NORMAL, info);
- 
- 	bpp = info->var.bits_per_pixel;
- 	if (bpp == 16 && info->var.green.length == 5)
-@@ -913,7 +913,7 @@ static void riva_load_video_mode(struct 
- 	par->current_state = newmode;
- 	riva_load_state(par, &par->current_state);
- 	par->riva.LockUnlock(&par->riva, 0); /* important for HW cursor */
--	rivafb_blank(0, info);
-+	rivafb_blank(FB_BLANK_UNBLANK, info);
- 	NVTRACE_LEAVE();
- }
- 
+> --- linux-2.6.18-rc2/drivers/video/aty/radeon_accel.c	2006-01-03 04:21:10.000000000 +0100
+> +++ /usr/src/linux-2.6.18-rc2/drivers/video/aty/radeon_accel.c	2006-07-22 12:49:43.000000000 +0200
+> @@ -203,9 +203,7 @@
+>  	host_path_cntl = INREG(HOST_PATH_CNTL);
+>  	rbbm_soft_reset = INREG(RBBM_SOFT_RESET);
+>  
+> -	if (rinfo->family == CHIP_FAMILY_R300 ||
+> -	    rinfo->family == CHIP_FAMILY_R350 ||
+> -	    rinfo->family == CHIP_FAMILY_RV350) {
+> +	if (IS_R300_VARIANT(rinfo)) {
+>  		u32 tmp;
+>  
+>  		OUTREG(RBBM_SOFT_RESET, (rbbm_soft_reset |
+> @@ -241,9 +239,7 @@
+>  	INREG(HOST_PATH_CNTL);
+>  	OUTREG(HOST_PATH_CNTL, host_path_cntl);
+>  
+> -	if (rinfo->family != CHIP_FAMILY_R300 ||
+                          ^^                  ^^
+> -	    rinfo->family != CHIP_FAMILY_R350 ||
+                          ^^                  ^^
+> -	    rinfo->family != CHIP_FAMILY_RV350)
+                          ^^
+> +	if (IS_R300_VARIANT(rinfo))
+            ^^
+These trigger a warning in my head...
 
-Signed-Off-By: Guido Guenther <agx@sigxcpu.org>
+>  		OUTREG(RBBM_SOFT_RESET, rbbm_soft_reset);
+>  
+>  	OUTREG(CLOCK_CNTL_INDEX, clock_cntl_index);
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

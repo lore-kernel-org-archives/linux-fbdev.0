@@ -1,25 +1,25 @@
 From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: [PATCH 1/4] FB: Get the Geode GX frambuffer
-	size from the BIOS
-Date: Mon, 24 Jul 2006 10:56:00 -0600
-Message-ID: <20060724165600.18822.56476.stgit@cosmic.amd.com>
+Subject: [PATCH 4/4] [PATCH] gxfb: Add timings for the
+	OLPC LCD
+Date: Mon, 24 Jul 2006 10:56:07 -0600
+Message-ID: <20060724165607.18822.38609.stgit@cosmic.amd.com>
 References: <20060724165454.18822.30310.stgit@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G547x-0006RX-ST for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 24 Jul 2006 10:21:58 -0700
+	id 1G548v-0006Xp-Gk for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 24 Jul 2006 10:22:57 -0700
 Received: from outbound-fra.frontbridge.com ([62.209.45.174]
-	helo=outbound1-fra-R.bigfish.com)
+	helo=outbound2-fra-R.bigfish.com)
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1G547u-0008A5-V2
+	(Exim 4.44) id 1G548u-0004p8-Lg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 24 Jul 2006 10:21:57 -0700
+	Mon, 24 Jul 2006 10:22:57 -0700
 In-Reply-To: <20060724165454.18822.30310.stgit@cosmic.amd.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,56 +36,28 @@ Cc: blizzard@redhat.com, dwmw2@redhat.com, linux-fbdev-devel@lists.sourceforge.n
 
 From: Jordan Crouse <jordan.crouse@amd.com>
 
-Use the Geode GX BIOS virtual registers to get the actual size of the
-framebuffer.
+Add a mode for the OLPC LCD.
 
 Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
 ---
 
- drivers/video/geode/display_gx.c |   15 ++++++++++++---
- drivers/video/geode/display_gx.h |    2 +-
- 2 files changed, 13 insertions(+), 4 deletions(-)
+ drivers/video/geode/gxfb_core.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
-index 825c340..0245169 100644
---- a/drivers/video/geode/display_gx.c
-+++ b/drivers/video/geode/display_gx.c
-@@ -21,10 +21,19 @@ #include <asm/delay.h>
- #include "geodefb.h"
- #include "display_gx.h"
+diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
+index 1e0d47e..75c7fd9 100644
+--- a/drivers/video/geode/gxfb_core.c
++++ b/drivers/video/geode/gxfb_core.c
+@@ -103,6 +103,9 @@ static const struct fb_videomode __initd
+ 	{ NULL, 85, 1600, 1200, 4357, 304, 64, 46, 1, 192, 3,
+ 	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ 	  FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
++	{ "OLPC-1", 50, 1200, 900, 17460, 24, 8, 4, 5, 8, 3,
++	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	  FB_VMODE_NONINTERLACED, 0 }
+ };
  
--int gx_frame_buffer_size(void)
-+unsigned int gx_frame_buffer_size(void)
- {
--	/* Assuming 16 MiB. */
--	return 16*1024*1024;
-+	unsigned int val;
-+
-+	/* FB size is reported by a virtual register */
-+	/* Virtual register class = 0x02 */
-+	/* VG_MEM_SIZE(512Kb units) = 0x00 */
-+
-+	outw(0xFC53, 0xAC1C);
-+	outw(0x0200, 0xAC1C);
-+
-+	val = (unsigned int)(inw(0xAC1E)) & 0xFFl;
-+	return (val << 19);
- }
- 
- int gx_line_delta(int xres, int bpp)
-diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
-index 86c6233..41e79f4 100644
---- a/drivers/video/geode/display_gx.h
-+++ b/drivers/video/geode/display_gx.h
-@@ -11,7 +11,7 @@
- #ifndef __DISPLAY_GX_H__
- #define __DISPLAY_GX_H__
- 
--int gx_frame_buffer_size(void);
-+unsigned int gx_frame_buffer_size(void);
- int gx_line_delta(int xres, int bpp);
- 
- extern struct geode_dc_ops gx_dc_ops;
+ static int gxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 
 
 

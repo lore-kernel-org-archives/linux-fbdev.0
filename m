@@ -1,24 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 4/13] au1100fb: Fix startup sequence
-Date: Tue, 01 Aug 2006 07:27:03 +0800
-Message-ID: <44CE91C7.5070807@gmail.com>
+Subject: [PATCH 3/13] au1100fb: Add option to
+	enable/disable the cursor
+Date: Tue, 01 Aug 2006 07:26:08 +0800
+Message-ID: <44CE9190.4020202@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G7hOF-000385-G5 for linux-fbdev-devel@lists.sourceforge.net;
+	id 1G7hOG-000387-OF for linux-fbdev-devel@lists.sourceforge.net;
 	Mon, 31 Jul 2006 16:41:41 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7hOF-0004Mn-7l
+Received: from ug-out-1314.google.com ([66.249.92.171])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7hOG-0002fQ-5c
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 16:41:39 -0700
-Received: by py-out-1112.google.com with SMTP id d42so802545pyd
+	Mon, 31 Jul 2006 16:41:40 -0700
+Received: by ug-out-1314.google.com with SMTP id s2so1007827uge
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 31 Jul 2006 16:41:39 -0700 (PDT)
+	Mon, 31 Jul 2006 16:41:38 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,65 +31,118 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Rodolfo Giometti <giometti@linux.it>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Rodolfo Giometti <giometti@linux.it>
 
-- fix up the start up sequence.
+- add cursor enable/disable, very useful if you wish a
+full screen boot logo.
 
-This new sequence allow you to correctly enable the LCD controller
-even if the bootloader has already did it.
+Cursor can be disabled from kernel command line:
 
-- fix up a wrong indentation issue.
+   video=au1100fb:nocursor,panel:Toppoly_TD035STED4
+
+or from sysfs interface:
+
+   echo 1 > /sys/module/au1100fb/parameters/nocursor
+
+- fix up some wrong indentation issues.
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/au1100fb.c |   13 +++++--------
- 1 files changed, 5 insertions(+), 8 deletions(-)
+ drivers/video/au1100fb.c |   30 ++++++++++++++++++++++++++----
+ 1 files changed, 26 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-index ef221cc..ef5c16f 100644
+index 26086bf..ef221cc 100644
 --- a/drivers/video/au1100fb.c
 +++ b/drivers/video/au1100fb.c
-@@ -161,7 +161,7 @@ int au1100fb_setmode(struct au1100fb_dev
+@@ -8,6 +8,7 @@
+  *  	<c.pellegrin@exadron.com>
+  *
+  * PM support added by Rodolfo Giometti <giometti@linux.it>
++ * Cursor enable/disable by Rodolfo Giometti <giometti@linux.it>
+  *
+  * Copyright 2002 MontaVista Software
+  * Author: MontaVista Software, Inc.
+@@ -110,6 +111,10 @@ static struct fb_var_screeninfo au1100fb
  
- 			info->fix.visual = FB_VISUAL_TRUECOLOR;
- 			info->fix.line_length = info->var.xres_virtual << 1; /* depth=16 */
--	}
-+		}
- 	} else {
- 		/* mono */
- 		info->fix.visual = FB_VISUAL_MONO10;
-@@ -174,16 +174,11 @@ int au1100fb_setmode(struct au1100fb_dev
+ static struct au1100fb_drv_info drv_info;
  
- 	/* Determine BPP mode and format */
- 	fbdev->regs->lcd_control = fbdev->panel->control_base;
--
--	fbdev->regs->lcd_intenable = 0;
--	fbdev->regs->lcd_intstatus = 0;
--
- 	fbdev->regs->lcd_horztiming = fbdev->panel->horztiming;
--
- 	fbdev->regs->lcd_verttiming = fbdev->panel->verttiming;
--
- 	fbdev->regs->lcd_clkcontrol = fbdev->panel->clkcontrol_base;
--
-+	fbdev->regs->lcd_intenable = 0;
-+	fbdev->regs->lcd_intstatus = 0;
- 	fbdev->regs->lcd_dmaaddr0 = LCD_DMA_SA_N(fbdev->fb_phys);
- 
- 	if (panel_is_dual(fbdev->panel)) {
-@@ -212,6 +207,8 @@ int au1100fb_setmode(struct au1100fb_dev
- 
- 	/* Resume controller */
- 	fbdev->regs->lcd_control |= LCD_CONTROL_GO;
-+	mdelay(10);
-+	au1100fb_fb_blank(VESA_NO_BLANKING, info);
- 
++static int nocursor = 0;
++module_param(nocursor, int, 0644);
++MODULE_PARM_DESC(nocursor, "cursor enable/disable");
++
+ /*
+  * Set hardware with var settings. This will enable the controller with a specific
+  * mode, normally validated with the fb_check_var method
+@@ -425,6 +430,17 @@ int au1100fb_fb_mmap(struct fb_info *fbi
  	return 0;
  }
+ 
++/* fb_cursor
++ * Used to disable cursor drawing...
++ */
++int au1100fb_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++	if (nocursor)
++		return 0;
++	else
++		return -EINVAL;	/* just to force soft_cursor() call */
++}
++
+ static struct fb_ops au1100fb_ops =
+ {
+ 	.owner			= THIS_MODULE,
+@@ -436,6 +452,7 @@ static struct fb_ops au1100fb_ops =
+ 	.fb_imageblit		= cfb_imageblit,
+ 	.fb_rotate		= au1100fb_fb_rotate,
+ 	.fb_mmap		= au1100fb_fb_mmap,
++	.fb_cursor		= au1100fb_fb_cursor,
+ };
+ 
+ 
+@@ -680,7 +697,7 @@ int au1100fb_setup(char *options)
+ 	if (options) {
+ 		while ((this_opt = strsep(&options,",")) != NULL) {
+ 			/* Panel option */
+-		if (!strncmp(this_opt, "panel:", 6)) {
++			if (!strncmp(this_opt, "panel:", 6)) {
+ 				int i;
+ 				this_opt += 6;
+ 				for (i = 0; i < num_panels; i++) {
+@@ -688,13 +705,18 @@ int au1100fb_setup(char *options)
+ 					      	     known_lcd_panels[i].name,
+ 							strlen(this_opt))) {
+ 						panel_idx = i;
+-					break;
++						break;
++					}
+ 				}
+-			}
+ 				if (i >= num_panels) {
+  					print_warn("Panel %s not supported!", this_opt);
+ 				}
+ 			}
++			if (!strncmp(this_opt, "nocursor", 8)) {
++				this_opt += 8;
++				nocursor = 1;
++				print_info("Cursor disabled");
++			}
+ 			/* Mode option (only option that start with digit) */
+ 			else if (isdigit(this_opt[0])) {
+ 				mode = kmalloc(strlen(this_opt) + 1, GFP_KERNEL);
+@@ -703,7 +725,7 @@ int au1100fb_setup(char *options)
+ 			/* Unsupported option */
+ 			else {
+ 				print_warn("Unsupported option \"%s\"", this_opt);
+-		}
++			}
+ 		}
+ 	}
+ 
 
 
 -------------------------------------------------------------------------

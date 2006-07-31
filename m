@@ -1,7 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 10/13] rivafb: Use generic DDC reading
-Date: Tue, 01 Aug 2006 07:36:34 +0800
-Message-ID: <44CE9402.7090608@gmail.com>
+Subject: [PATCH 9/13] nvidiafb: Use generic DDC reading
+Date: Tue, 01 Aug 2006 07:35:43 +0800
+Message-ID: <44CE93CF.5040401@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G7hOq-0003Ds-Gh for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 16:42:16 -0700
-Received: from ug-out-1314.google.com ([66.249.92.173])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7hOp-0004hN-UL
+	id 1G7hOi-0003DY-3x for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 31 Jul 2006 16:42:08 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7hOh-0004Mn-RI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 16:42:16 -0700
-Received: by ug-out-1314.google.com with SMTP id s2so1008066uge
+	Mon, 31 Jul 2006 16:42:08 -0700
+Received: by py-out-1112.google.com with SMTP id d42so802545pyd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 31 Jul 2006 16:42:12 -0700 (PDT)
+	Mon, 31 Jul 2006 16:42:07 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,52 +37,43 @@ Update driver to use generic DDC reading
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/Kconfig           |    1 +
- drivers/video/riva/rivafb-i2c.c |   44 ++-------------------------------------
- 2 files changed, 3 insertions(+), 42 deletions(-)
+ drivers/video/Kconfig         |    1 +
+ drivers/video/nvidia/nv_i2c.c |   45 +++--------------------------------------
+ 2 files changed, 4 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 736556a..a838924 100644
+index 3bacde1..736556a 100644
 --- a/drivers/video/Kconfig
 +++ b/drivers/video/Kconfig
-@@ -740,6 +740,7 @@ config FB_RIVA
+@@ -701,6 +701,7 @@ config FB_NVIDIA
  	depends on FB && PCI
- 	select I2C_ALGOBIT if FB_RIVA_I2C
- 	select I2C if FB_RIVA_I2C
-+	select FB_DDC if FB_RIVA_I2C
+ 	select I2C_ALGOBIT if FB_NVIDIA_I2C
+ 	select I2C if FB_NVIDIA_I2C
++	select FB_DDC if FB_NVIDIA_I2C
  	select FB_MODE_HELPERS
  	select FB_CFB_FILLRECT
  	select FB_CFB_COPYAREA
-diff --git a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
-index 9751c37..c15b259 100644
---- a/drivers/video/riva/rivafb-i2c.c
-+++ b/drivers/video/riva/rivafb-i2c.c
-@@ -25,8 +25,6 @@ #include <asm/io.h>
- #include "rivafb.h"
- #include "../edid.h"
+diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+index 19eef3a..e48de3c 100644
+--- a/drivers/video/nvidia/nv_i2c.c
++++ b/drivers/video/nvidia/nv_i2c.c
+@@ -160,51 +160,12 @@ void nvidia_delete_i2c_busses(struct nvi
  
--#define RIVA_DDC 	0x50
--
- static void riva_gpio_setscl(void* data, int state)
- {
- 	struct riva_i2c_chan 	*chan = data;
-@@ -158,50 +156,12 @@ void riva_delete_i2c_busses(struct riva_
- 	par->chan[2].par = NULL;
  }
  
--static u8 *riva_do_probe_i2c_edid(struct riva_i2c_chan *chan)
+-static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
 -{
 -	u8 start = 0x0;
 -	struct i2c_msg msgs[] = {
 -		{
--			.addr	= RIVA_DDC,
--			.len	= 1,
--			.buf	= &start,
--		}, {
--			.addr	= RIVA_DDC,
--			.flags	= I2C_M_RD,
--			.len	= EDID_LENGTH,
--		},
+-		 .addr = 0x50,
+-		 .len = 1,
+-		 .buf = &start,
+-		 }, {
+-		     .addr = 0x50,
+-		     .flags = I2C_M_RD,
+-		     .len = EDID_LENGTH,
+-		     },
 -	};
 -	u8 *buf;
 -
@@ -91,34 +82,36 @@ index 9751c37..c15b259 100644
 -
 -	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
 -	if (!buf) {
--		dev_warn(&chan->par->pdev->dev, "Out of memory!\n");
+-		dev_warn(&chan->par->pci_dev->dev, "Out of memory!\n");
 -		return NULL;
 -	}
 -	msgs[1].buf = buf;
 -
 -	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
 -		return buf;
--	dev_dbg(&chan->par->pdev->dev, "Unable to read EDID block.\n");
+-	dev_dbg(&chan->par->pci_dev->dev, "Unable to read EDID block.\n");
 -	kfree(buf);
 -	return NULL;
 -}
 -
- int riva_probe_i2c_connector(struct riva_par *par, int conn, u8 **out_edid)
+ int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
  {
- 	u8 *edid = NULL;
+ 	struct nvidia_par *par = info->par;
+-	u8 *edid = NULL;
 -	int i;
- 
+-
 -	for (i = 0; i < 3; i++) {
 -		/* Do the real work */
--		edid = riva_do_probe_i2c_edid(&par->chan[conn-1]);
+-		edid = nvidia_do_probe_i2c_edid(&par->chan[conn - 1]);
 -		if (edid)
 -			break;
 -	}
-+	edid = fb_ddc_read(&par->chan[conn-1].adapter);
++	u8 *edid;
 +
- 	if (out_edid)
- 		*out_edid = edid;
- 	if (!edid)
++	edid = fb_ddc_read(&par->chan[conn - 1].adapter);
+ 
+ 	if (!edid && conn == 1) {
+ 		/* try to get from firmware */
 
 
 -------------------------------------------------------------------------

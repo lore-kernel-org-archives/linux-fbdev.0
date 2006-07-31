@@ -1,25 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/13] au1100fb: Add option to
-	enable/disable the cursor
-Date: Tue, 01 Aug 2006 07:26:08 +0800
-Message-ID: <44CE9190.4020202@gmail.com>
+Subject: [PATCH 5/13] intelfb: Documentation update
+Date: Tue, 01 Aug 2006 07:28:07 +0800
+Message-ID: <44CE9207.1030500@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G7hOG-000387-OF for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 16:41:41 -0700
-Received: from ug-out-1314.google.com ([66.249.92.171])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7hOG-0002fQ-5c
+	id 1G7hOP-00038j-EK for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 31 Jul 2006 16:41:49 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7hON-0004Mn-5Z
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 16:41:40 -0700
-Received: by ug-out-1314.google.com with SMTP id s2so1007827uge
+	Mon, 31 Jul 2006 16:41:49 -0700
+Received: by py-out-1112.google.com with SMTP id d42so802545pyd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 31 Jul 2006 16:41:38 -0700 (PDT)
+	Mon, 31 Jul 2006 16:41:46 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,118 +30,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Ph. Marek" <philipp.marek@bmlv.gv.at>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Rodolfo Giometti <giometti@linux.it>
+From: Ph. Marek <philipp.marek@bmlv.gv.at>
 
-- add cursor enable/disable, very useful if you wish a
-full screen boot logo.
+Correct sample boot line and add a remark on mode setting.
 
-Cursor can be disabled from kernel command line:
-
-   video=au1100fb:nocursor,panel:Toppoly_TD035STED4
-
-or from sysfs interface:
-
-   echo 1 > /sys/module/au1100fb/parameters/nocursor
-
-- fix up some wrong indentation issues.
-
-Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/au1100fb.c |   30 ++++++++++++++++++++++++++----
- 1 files changed, 26 insertions(+), 4 deletions(-)
+ Documentation/fb/intelfb.txt |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-index 26086bf..ef221cc 100644
---- a/drivers/video/au1100fb.c
-+++ b/drivers/video/au1100fb.c
-@@ -8,6 +8,7 @@
-  *  	<c.pellegrin@exadron.com>
-  *
-  * PM support added by Rodolfo Giometti <giometti@linux.it>
-+ * Cursor enable/disable by Rodolfo Giometti <giometti@linux.it>
-  *
-  * Copyright 2002 MontaVista Software
-  * Author: MontaVista Software, Inc.
-@@ -110,6 +111,10 @@ static struct fb_var_screeninfo au1100fb
+diff --git a/Documentation/fb/intelfb.txt b/Documentation/fb/intelfb.txt
+index c12d39a..0489b6b 100644
+--- a/Documentation/fb/intelfb.txt
++++ b/Documentation/fb/intelfb.txt
+@@ -85,12 +85,20 @@ Sample Usage
  
- static struct au1100fb_drv_info drv_info;
+ In /etc/lilo.conf, add the line:
  
-+static int nocursor = 0;
-+module_param(nocursor, int, 0644);
-+MODULE_PARM_DESC(nocursor, "cursor enable/disable");
+-append="video=intelfb:800x600-32@75,accel,hwcursor,vram=8"
++append="video=intelfb:mode=800x600-32@75,accel,hwcursor,vram=8"
+ 
+ This will initialize the framebuffer to 800x600 at 32bpp and 75Hz. The
+ framebuffer will use 8 MB of System RAM. hw acceleration of text and cursor
+ will be enabled.
+ 
++Remarks
++-------
 +
- /*
-  * Set hardware with var settings. This will enable the controller with a specific
-  * mode, normally validated with the fb_check_var method
-@@ -425,6 +430,17 @@ int au1100fb_fb_mmap(struct fb_info *fbi
- 	return 0;
- }
- 
-+/* fb_cursor
-+ * Used to disable cursor drawing...
-+ */
-+int au1100fb_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-+{
-+	if (nocursor)
-+		return 0;
-+	else
-+		return -EINVAL;	/* just to force soft_cursor() call */
-+}
++If setting this parameter doesn't work (you stay in a 80x25 text-mode),
++you might need to set the "vga=<mode>" parameter too - see vesafb.txt
++in this directory.
 +
- static struct fb_ops au1100fb_ops =
- {
- 	.owner			= THIS_MODULE,
-@@ -436,6 +452,7 @@ static struct fb_ops au1100fb_ops =
- 	.fb_imageblit		= cfb_imageblit,
- 	.fb_rotate		= au1100fb_fb_rotate,
- 	.fb_mmap		= au1100fb_fb_mmap,
-+	.fb_cursor		= au1100fb_fb_cursor,
- };
++
+ D.  Module options
  
- 
-@@ -680,7 +697,7 @@ int au1100fb_setup(char *options)
- 	if (options) {
- 		while ((this_opt = strsep(&options,",")) != NULL) {
- 			/* Panel option */
--		if (!strncmp(this_opt, "panel:", 6)) {
-+			if (!strncmp(this_opt, "panel:", 6)) {
- 				int i;
- 				this_opt += 6;
- 				for (i = 0; i < num_panels; i++) {
-@@ -688,13 +705,18 @@ int au1100fb_setup(char *options)
- 					      	     known_lcd_panels[i].name,
- 							strlen(this_opt))) {
- 						panel_idx = i;
--					break;
-+						break;
-+					}
- 				}
--			}
- 				if (i >= num_panels) {
-  					print_warn("Panel %s not supported!", this_opt);
- 				}
- 			}
-+			if (!strncmp(this_opt, "nocursor", 8)) {
-+				this_opt += 8;
-+				nocursor = 1;
-+				print_info("Cursor disabled");
-+			}
- 			/* Mode option (only option that start with digit) */
- 			else if (isdigit(this_opt[0])) {
- 				mode = kmalloc(strlen(this_opt) + 1, GFP_KERNEL);
-@@ -703,7 +725,7 @@ int au1100fb_setup(char *options)
- 			/* Unsupported option */
- 			else {
- 				print_warn("Unsupported option \"%s\"", this_opt);
--		}
-+			}
- 		}
- 	}
- 
+ 	The module parameters are essentially similar to the kernel
 
 
 -------------------------------------------------------------------------

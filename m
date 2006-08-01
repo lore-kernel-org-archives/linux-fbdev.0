@@ -1,24 +1,26 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 13/13] radeonfb: Use generic DDC reading
-Date: Tue, 01 Aug 2006 07:40:02 +0800
-Message-ID: <44CE94D2.1000907@gmail.com>
+Subject: Re: Driver for Sharp LH155BA
+Date: Tue, 01 Aug 2006 08:35:57 +0800
+Message-ID: <44CEA1ED.8030103@gmail.com>
+References: <170385E48B041543AC99CCD09E325AD1952BB0@mail.rogermanagement.com.au>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G7i6s-0007NX-Be for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 17:27:46 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7hP1-0004Mn-3e
+	id 1G7iEz-00089t-KH for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 31 Jul 2006 17:36:09 -0700
+Received: from ug-out-1314.google.com ([66.249.92.171])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7iEy-00057o-7T
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 16:42:27 -0700
-Received: by py-out-1112.google.com with SMTP id d42so802545pyd
+	Mon, 31 Jul 2006 17:36:09 -0700
+Received: by ug-out-1314.google.com with SMTP id s2so1026008uge
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 31 Jul 2006 16:42:26 -0700 (PDT)
+	Mon, 31 Jul 2006 17:36:04 -0700 (PDT)
+In-Reply-To: <170385E48B041543AC99CCD09E325AD1952BB0@mail.rogermanagement.com.au>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,159 +31,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dennis Munsie <dmunsie@cecropia.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Dennis Munsie <dmunsie@cecropia.com>
+Richard Wolf wrote:
+> Hi,
+> 
+> I'm writing a driver for the Sharp LH155BA LCD driver.  This is a driver
+> designed for controlling small/medium lcd panels (up to 128 x 64 pixels).  
+> 
+> I'm trying to decide whether it is sensible to write a frame buffer driver
+> for a device of this nature.  Does the frame buffer abstraction make sense
+> for a display this small?  
 
-Uses the generic ddc read functionality in fbmon.c instead of the
-previous functionality.
+The dimensions of the display does not matter.
 
-Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+> 
+> On our target hardware it is not possible to access the display memory
+> directly.  Rather, all accesses to display memory and other control
+> registers are through a small number of io ports.  Therefore it is not
+> possible to map display memory.  Is this relevant?  
 
- drivers/video/Kconfig          |    1 
- drivers/video/aty/radeon_i2c.c |  106 +---------------------------------------
- 2 files changed, 4 insertions(+), 103 deletions(-)
+Yes, if the display memory is not mappable, then it won't be usable as
+a driver for X, for example.
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index efc6912..522cb37 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1018,6 +1018,7 @@ config FB_RADEON
- 	depends on FB && PCI
- 	select I2C_ALGOBIT if FB_RADEON_I2C
- 	select I2C if FB_RADEON_I2C
-+	select FB_DDC if FB_RADEON_I2C
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-diff --git a/drivers/video/aty/radeon_i2c.c b/drivers/video/aty/radeon_i2c.c
-index 9aaca58..6767545 100644
---- a/drivers/video/aty/radeon_i2c.c
-+++ b/drivers/video/aty/radeon_i2c.c
-@@ -16,8 +16,6 @@ #include <video/radeon.h>
- #include "radeonfb.h"
- #include "../edid.h"
- 
--#define RADEON_DDC 	0x50
--
- static void radeon_gpio_setscl(void* data, int state)
- {
- 	struct radeon_i2c_chan 	*chan = data;
-@@ -138,108 +136,10 @@ void radeon_delete_i2c_busses(struct rad
- 	rinfo->i2c[3].rinfo = NULL;
- }
- 
--
--static u8 *radeon_do_probe_i2c_edid(struct radeon_i2c_chan *chan)
--{
--	u8 start = 0x0;
--	struct i2c_msg msgs[] = {
--		{
--			.addr	= RADEON_DDC,
--			.len	= 1,
--			.buf	= &start,
--		}, {
--			.addr	= RADEON_DDC,
--			.flags	= I2C_M_RD,
--			.len	= EDID_LENGTH,
--		},
--	};
--	u8 *buf;
--
--	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(&chan->rinfo->pdev->dev, "Out of memory!\n");
--		return NULL;
--	}
--	msgs[1].buf = buf;
--
--	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
--		return buf;
--	dev_dbg(&chan->rinfo->pdev->dev, "Unable to read EDID block.\n");
--	kfree(buf);
--	return NULL;
--}
--
--
--int radeon_probe_i2c_connector(struct radeonfb_info *rinfo, int conn, u8 **out_edid)
-+int radeon_probe_i2c_connector(struct radeonfb_info *rinfo, int conn,
-+			       u8 **out_edid)
- {
--	u32 reg = rinfo->i2c[conn-1].ddc_reg;
--	u8 *edid = NULL;
--	int i, j;
--
--	OUTREG(reg, INREG(reg) & 
--			~(VGA_DDC_DATA_OUTPUT | VGA_DDC_CLK_OUTPUT));
--
--	OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN));
--	(void)INREG(reg);
--
--	for (i = 0; i < 3; i++) {
--		/* For some old monitors we need the
--		 * following process to initialize/stop DDC
--		 */
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_DATA_OUT_EN));
--		(void)INREG(reg);
--		msleep(13);
--
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		for (j = 0; j < 5; j++) {
--			msleep(10);
--			if (INREG(reg) & VGA_DDC_CLK_INPUT)
--				break;
--		}
--		if (j == 5)
--			continue;
--
--		OUTREG(reg, INREG(reg) | VGA_DDC_DATA_OUT_EN);
--		(void)INREG(reg);
--		msleep(15);
--		OUTREG(reg, INREG(reg) | VGA_DDC_CLK_OUT_EN);
--		(void)INREG(reg);
--		msleep(15);
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_DATA_OUT_EN));
--		(void)INREG(reg);
--		msleep(15);
--
--		/* Do the real work */
--		edid = radeon_do_probe_i2c_edid(&rinfo->i2c[conn-1]);
--
--		OUTREG(reg, INREG(reg) | 
--				(VGA_DDC_DATA_OUT_EN | VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		msleep(15);
--		
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		for (j = 0; j < 10; j++) {
--			msleep(10);
--			if (INREG(reg) & VGA_DDC_CLK_INPUT)
--				break;
--		}
--
--		OUTREG(reg, INREG(reg) & ~(VGA_DDC_DATA_OUT_EN));
--		(void)INREG(reg);
--		msleep(15);
--		OUTREG(reg, INREG(reg) |
--				(VGA_DDC_DATA_OUT_EN | VGA_DDC_CLK_OUT_EN));
--		(void)INREG(reg);
--		if (edid)
--			break;
--	}
--	/* Release the DDC lines when done or the Apple Cinema HD display
--	 * will switch off
--	 */
--	OUTREG(reg, INREG(reg) & ~(VGA_DDC_CLK_OUT_EN | VGA_DDC_DATA_OUT_EN));
--	(void)INREG(reg);
-+	u8 *edid = fb_ddc_read(&rinfo->i2c[conn-1].adapter);
- 
- 	if (out_edid)
- 		*out_edid = edid;
+You can however allocate a shadow buffer in system RAM which can be mmapp'ed.
+Then on intervals, perhaps by interrupt or timer, update the physical screen.
+Unfortunately, this is inefficient, as you may be updating the screen even if
+the shadow buffer haven't changed.  But that is the best you can do without
+hacking the kernel.
+
+Another option is to just forget about mmap, and create your own fb_read and
+fb_write hooks.  This is more efficient, but not all apps use this method to
+update the framebuffer. The driver will be usable as a console though.
+
+Tony
 
 
 -------------------------------------------------------------------------

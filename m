@@ -1,26 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Driver for Sharp LH155BA
-Date: Tue, 01 Aug 2006 09:18:19 +0800
-Message-ID: <44CEABDB.3040702@gmail.com>
-References: <170385E48B041543AC99CCD09E325AD1952BB9@mail.rogermanagement.com.au>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 1/13] vt: printk: Fix framebuffer
+ console triggering might_sleep assertion
+Date: Mon, 31 Jul 2006 23:51:00 -0700
+Message-ID: <20060731235100.9f792539.akpm@osdl.org>
+References: <44CE9108.1030606@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G7itu-0003AW-8b for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 18:18:26 -0700
-Received: from py-out-1112.google.com ([64.233.166.180])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7its-000837-Vd
+	id 1G7o5o-00049D-Cr for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 31 Jul 2006 23:51:04 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1G7o5o-00038K-3w
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 18:18:26 -0700
-Received: by py-out-1112.google.com with SMTP id d42so834011pyd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 31 Jul 2006 18:18:23 -0700 (PDT)
-In-Reply-To: <170385E48B041543AC99CCD09E325AD1952BB9@mail.rogermanagement.com.au>
+	Mon, 31 Jul 2006 23:51:04 -0700
+In-Reply-To: <44CE9108.1030606@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,17 +30,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, Richard Wolf <rwolf@cardaccess.com.au>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Richard Wolf wrote:
-> 
-> Presumably if I take the shadow buffer route then I could maintain _two_
-> shadow buffers.  This would allow me to detect whether the user accessible
-> buffer had been changed and update the display only when necessary.  
 
-Yes, that will work too.
+hm, which (if any) of these would be considered 2.6.18 material?
 
-Tony
+*vt-printk-fix-framebuffer-console-triggering-might_sleep.patch
+*au1100fb-info-varrotate-fix.patch
+ au1100fb-add-option-to-enable-disable-the-cursor.patch
+*au1100fb-fix-startup-sequence.patch
+ intelfb-documentation-update.patch
+ rivafb-use-constants-instead-of-magic-values.patch
+ vfb-document-option-to-enable-the-driver.patch
+ fbdev-add-generic-ddc-read-functionality.patch
+ nvidiafb-use-generic-ddc-reading.patch
+ rivafb-use-generic-ddc-reading.patch
+ i810fb-use-generic-ddc-reading.patch
+ savagefb-use-generic-ddc-reading.patch
+ radeonfb-use-generic-ddc-reading.patch
+
+I've asterisked my guesses.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

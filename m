@@ -1,28 +1,28 @@
-From: Markus Schorer <ms@plain.de>
-Subject: Re: Driver for Sharp LH155BA
-Date: Tue, 01 Aug 2006 08:58:20 +0200
-Message-ID: <44CEFB8C.70009@plain.de>
-References: <170385E48B041543AC99CCD09E325AD1952BB9@mail.rogermanagement.com.au>
-	<44CEABDB.3040702@gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 1/13] vt: printk: Fix framebuffer
+ console triggering might_sleep assertion
+Date: Wed, 02 Aug 2006 07:10:31 +0800
+Message-ID: <44CFDF67.4030206@gmail.com>
+References: <44CE9108.1030606@gmail.com>
+	<20060731235100.9f792539.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G7o9f-0004Ri-BJ for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 23:55:03 -0700
-Received: from black.plain.de ([212.18.1.2])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G7o9c-0003xM-RF
+	id 1G83Nm-0005Ae-Vd for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 01 Aug 2006 16:10:39 -0700
+Received: from py-out-1112.google.com ([64.233.166.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G83Nl-0007jQ-B1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Jul 2006 23:55:03 -0700
-Received: from [192.168.1.10] (p3E9E2BE3.dip0.t-ipconnect.de [62.158.43.227])
-	by black.plain.de (Postfix) with ESMTP id 42A0E5C131F8
+	Tue, 01 Aug 2006 16:10:38 -0700
+Received: by py-out-1112.google.com with SMTP id d42so1295146pyd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue,  1 Aug 2006 10:26:12 +0200 (CEST)
-In-Reply-To: <44CEABDB.3040702@gmail.com>
+	Tue, 01 Aug 2006 16:10:36 -0700 (PDT)
+In-Reply-To: <20060731235100.9f792539.akpm@osdl.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,35 +33,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Rodolfo Giometti <giometti@linux.it>, linux-fbdev-devel@lists.sourceforge.net
 
-Antonino A. Daplas wrote:
-> Richard Wolf wrote:
->> Presumably if I take the shadow buffer route then I could maintain _two_
->> shadow buffers.  This would allow me to detect whether the user accessib=
-le
->> buffer had been changed and update the display only when necessary.  =
+Andrew Morton wrote:
+> hm, which (if any) of these would be considered 2.6.18 material?
+> 
+> *vt-printk-fix-framebuffer-console-triggering-might_sleep.patch
+> *au1100fb-info-varrotate-fix.patch
+>  au1100fb-add-option-to-enable-disable-the-cursor.patch
+> *au1100fb-fix-startup-sequence.patch
+>  intelfb-documentation-update.patch
+>  rivafb-use-constants-instead-of-magic-values.patch
+>  vfb-document-option-to-enable-the-driver.patch
+>  fbdev-add-generic-ddc-read-functionality.patch
+>  nvidiafb-use-generic-ddc-reading.patch
+>  rivafb-use-generic-ddc-reading.patch
+>  i810fb-use-generic-ddc-reading.patch
+>  savagefb-use-generic-ddc-reading.patch
+>  radeonfb-use-generic-ddc-reading.patch
+> 
+> I've asterisked my guesses.
+> 
 
-> =
+The first and third guesses, I believe, are 2.6.18 material. Not sure on
+the second...
 
-> Yes, that will work too.
-> =
-
-
-check for the epson SED15xx (not sure) driver. sounds like similar =
-
-hardware, same approach.
-
-markus
--- =
-
-_______________________________________________________________________
-plain GmbH        | daiserstrasse 15      | 81371 m=FCnchen
-fon 089.540.149.0 | fax 089.540.149.44    | http://www.plain.de
+Tony
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

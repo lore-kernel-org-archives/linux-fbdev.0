@@ -1,28 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 1/13] vt: printk: Fix framebuffer
- console triggering might_sleep assertion
-Date: Wed, 02 Aug 2006 07:10:31 +0800
-Message-ID: <44CFDF67.4030206@gmail.com>
-References: <44CE9108.1030606@gmail.com>
-	<20060731235100.9f792539.akpm@osdl.org>
+From: Richard Wolf <rwolf@cardaccess.com.au>
+Subject: Re: Driver for Sharp LH155BA
+Date: Wed, 2 Aug 2006 11:00:42 +1000
+Message-ID: <170385E48B041543AC99CCD09E325AD1952C32@mail.elevenonline.com.au>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G83Nm-0005Ae-Vd for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 01 Aug 2006 16:10:39 -0700
-Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G83Nl-0007jQ-B1
+	id 1G84ph-00046l-IY for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 01 Aug 2006 17:43:33 -0700
+Received: from [203.166.87.76] (helo=mail1.cardaccess.com.au)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G84pg-0003Op-5s
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 01 Aug 2006 16:10:38 -0700
-Received: by py-out-1112.google.com with SMTP id d42so1295146pyd
+	Tue, 01 Aug 2006 17:43:33 -0700
+Received: from MAIL.cardaccess.com.au (mail.fivestarstudios.com.au
+	[203.41.80.28])
+	by mail1.cardaccess.com.au (Postfix) with ESMTP id A4836D3437
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 01 Aug 2006 16:10:36 -0700 (PDT)
-In-Reply-To: <20060731235100.9f792539.akpm@osdl.org>
+	Wed,  2 Aug 2006 10:42:39 +1000 (EST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,33 +31,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Rodolfo Giometti <giometti@linux.it>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Andrew Morton wrote:
-> hm, which (if any) of these would be considered 2.6.18 material?
-> 
-> *vt-printk-fix-framebuffer-console-triggering-might_sleep.patch
-> *au1100fb-info-varrotate-fix.patch
->  au1100fb-add-option-to-enable-disable-the-cursor.patch
-> *au1100fb-fix-startup-sequence.patch
->  intelfb-documentation-update.patch
->  rivafb-use-constants-instead-of-magic-values.patch
->  vfb-document-option-to-enable-the-driver.patch
->  fbdev-add-generic-ddc-read-functionality.patch
->  nvidiafb-use-generic-ddc-reading.patch
->  rivafb-use-generic-ddc-reading.patch
->  i810fb-use-generic-ddc-reading.patch
->  savagefb-use-generic-ddc-reading.patch
->  radeonfb-use-generic-ddc-reading.patch
-> 
-> I've asterisked my guesses.
-> 
+ 
 
-The first and third guesses, I believe, are 2.6.18 material. Not sure on
-the second...
+> -----Original Message-----
+> From: linux-fbdev-devel-bounces@lists.sourceforge.net 
+> [mailto:linux-fbdev-devel-bounces@lists.sourceforge.net] On 
+> Behalf Of Markus Schorer
+> Sent: Tuesday, 1 August 2006 4:58 PM
+> To: linux-fbdev-devel@lists.sourceforge.net
+> Subject: Re: [Linux-fbdev-devel] Driver for Sharp LH155BA
+> 
+> Antonino A. Daplas wrote:
+> > Richard Wolf wrote:
+> >> Presumably if I take the shadow buffer route then I could maintain 
+> >> _two_ shadow buffers.  This would allow me to detect 
+> whether the user 
+> >> accessible buffer had been changed and update the display 
+> only when necessary.
+> > 
+> > Yes, that will work too.
+> > 
+> 
+> check for the epson SED15xx (not sure) driver. sounds like 
+> similar hardware, same approach.
+> 
+> markus
+> --
 
-Tony
+Excellent, thanks.
+
+Richard
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

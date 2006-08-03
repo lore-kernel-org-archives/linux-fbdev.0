@@ -1,7 +1,8 @@
-From: Richard Wolf <rwolf@cardaccess.com.au>
-Subject: cfb_fillrect and friends undefined
-Date: Thu, 3 Aug 2006 12:39:33 +1000
-Message-ID: <170385E48B041543AC99CCD09E325AD1AC54B4@mail.elevenonline.com.au>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: cfb_fillrect and friends undefined
+Date: Thu, 03 Aug 2006 14:20:21 +0800
+Message-ID: <44D195A5.8050605@gmail.com>
+References: <170385E48B041543AC99CCD09E325AD1AC54B4@mail.elevenonline.com.au>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,17 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G8Sqi-0001KO-P6 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Aug 2006 19:22:12 -0700
-Received: from [203.166.87.76] (helo=mail1.cardaccess.com.au)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G8Sqh-0002HQ-Aj
+	id 1G8WZL-0003XS-Mb for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 Aug 2006 23:20:31 -0700
+Received: from qb-out-0506.google.com ([72.14.204.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G8WZK-0002tT-5W
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Aug 2006 19:22:12 -0700
-Received: from MAIL.cardaccess.com.au (mail.rogermanagement.com.au
-	[203.41.80.28])
-	by mail1.cardaccess.com.au (Postfix) with ESMTP id 6F434D33C8
+	Wed, 02 Aug 2006 23:20:31 -0700
+Received: by qb-out-0506.google.com with SMTP id q12so48482qbq
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu,  3 Aug 2006 12:21:22 +1000 (EST)
+	Wed, 02 Aug 2006 23:20:27 -0700 (PDT)
+In-Reply-To: <170385E48B041543AC99CCD09E325AD1AC54B4@mail.elevenonline.com.au>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,34 +31,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+Richard Wolf wrote:
+> Hi,
+> 
+> I'm trying to write a frame buffer driver, basing it on the vfb virtual
+> driver.  When I try to load the module I get an error message:
+> 
+> lh155ba: Unknown symbol platform_driver_unregister
+> lh155ba: Unknown symbol cfb_copyarea
+> lh155ba: Unknown symbol platform_device_register
+> lh155ba: Unknown symbol platform_driver_register
+> lh155ba: Unknown symbol platform_device_unregister
+> lh155ba: Unknown symbol cfb_imageblit
+> lh155ba: Unknown symbol cfb_fillrect
+> 
+> I can't work out what config options to enable to define these symbols.  I
+> can get cfb_* to appear by selecting the vfb driver, but I don't want that
+> driver, just the cfb_* functions.  Any help?
 
-I'm trying to write a frame buffer driver, basing it on the vfb virtual
-driver.  When I try to load the module I get an error message:
+Add:
 
-lh155ba: Unknown symbol platform_driver_unregister
-lh155ba: Unknown symbol cfb_copyarea
-lh155ba: Unknown symbol platform_device_register
-lh155ba: Unknown symbol platform_driver_register
-lh155ba: Unknown symbol platform_device_unregister
-lh155ba: Unknown symbol cfb_imageblit
-lh155ba: Unknown symbol cfb_fillrect
+select FB_CFB_IMAGEBLIT
+select FB_CFB_COPYAREA
+select FB_CFB_FILLRECT
 
-I can't work out what config options to enable to define these symbols.  I
-can get cfb_* to appear by selecting the vfb driver, but I don't want that
-driver, just the cfb_* functions.  Any help?
+in drivers/video/Kconfig (under your driver, of course).
 
-Thanks,
+As for the platform_*, add #include <linux/platform_device.h>
 
-Richard Wolf
-Card Access Services Pty Ltd
-Level 2, 7-9 Albany Street
-Crows Nest  NSW  2065
-Phone: +612 9906 7209
-Fax: +612 9906 7218
-www.cardaccess.com.au
+Tony
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

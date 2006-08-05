@@ -1,210 +1,129 @@
-From: dmunsie@cecropia.com (Dennis Munsie)
-Subject: [PATCH 2.6.18-rc2-mm1] intelfb: cleanup pci IDs
-Date: Fri,  4 Aug 2006 13:28:13 -0400 (EDT)
-Message-ID: <20060804172813.B60A9126C95@xenon>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Christian Heim <phreak@gentoo.org>
+Subject: [PATCH] Updating Documentation/fb/vesafb.txt
+Date: Sat, 5 Aug 2006 09:02:17 +0200
+Message-ID: <200608050902.20163.phreak@gentoo.org>
+Reply-To: phreak@gentoo.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart4599528.H8neQ0G2lL";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G93Pi-0006Nu-Vc for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 04 Aug 2006 10:24:47 -0700
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G93Pi-00014F-Hk
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 04 Aug 2006 10:24:46 -0700
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: ehustvedt@cecropia.com, airlied@skynet.ie
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161588AbWHEHCZ@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: Antonino Daplas <adaplas@pol.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, trivial@kernel.org
 
-From: Dennis Munsie <dmunsie@cecropia.com>
+--nextPart4599528.H8neQ0G2lL
+Content-Type: multipart/mixed;
+  boundary="Boundary-01=_5JE1E04fVF/j45q"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Little patch to the intelfb that uses include/linux/pci_ids.h instead of locally defining the PCI ids.
+--Boundary-01=_5JE1E04fVF/j45q
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
+Hello Antonino,
 
----
+I recently tried to figure how to get my vesafb to 1600x1200 and updated th=
+e=20
+vesafb.txt documentation accordingly. I'm still not sure about the video mo=
+de=20
+for 256, since it doesn't seem to follow the algorithm the other vga-modes=
+=20
+seem to follow.
 
- drivers/video/intelfb/intelfb.h    |   10 ----------
- drivers/video/intelfb/intelfbdrv.c |   24 ++++++++++++------------
- drivers/video/intelfb/intelfbhw.c  |   30 +++++++++++++++---------------
- 3 files changed, 27 insertions(+), 37 deletions(-)
+Example:
+    | 640x480  800x600  1024x768 1280x1024
+=2D---+-------------------------------------
+256 |  0x301    0x303    0x305    0x307     | +0x002
+32k |  0x310    0x313    0x316    0x319
+      -------  -------  -------  -------
+      +0x009    +0x010   +0x011   +0x012
 
-diff -Naurp -X linux-2.6.18-rc2-patched/Documentation/dontdiff linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfb.h linux-2.6.18-rc2-device-id/drivers/video/intelfb/intelfb.h
---- linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfb.h	2006-07-18 05:15:21.000000000 -0500
-+++ linux-2.6.18-rc2-device-id/drivers/video/intelfb/intelfb.h	2006-08-04 20:15:01.000000000 -0500
-@@ -49,16 +49,6 @@
- #define INTELFB_FB_ACQUIRED                 1
- #define INTELFB_MMIO_ACQUIRED               2
- 
--/* PCI ids for supported devices */
--#define PCI_DEVICE_ID_INTEL_830M	0x3577
--#define PCI_DEVICE_ID_INTEL_845G	0x2562
--#define PCI_DEVICE_ID_INTEL_85XGM	0x3582
--#define PCI_DEVICE_ID_INTEL_865G	0x2572
--#define PCI_DEVICE_ID_INTEL_915G	0x2582
--#define PCI_DEVICE_ID_INTEL_915GM	0x2592
--#define PCI_DEVICE_ID_INTEL_945G	0x2772
--#define PCI_DEVICE_ID_INTEL_945GM	0x27A2
--
- /* Size of MMIO region */
- #define INTEL_REG_SIZE			0x80000
- 
-diff -Naurp -X linux-2.6.18-rc2-patched/Documentation/dontdiff linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbdrv.c linux-2.6.18-rc2-device-id/drivers/video/intelfb/intelfbdrv.c
---- linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbdrv.c	2006-07-18 05:15:21.000000000 -0500
-+++ linux-2.6.18-rc2-device-id/drivers/video/intelfb/intelfbdrv.c	2006-08-04 20:14:57.000000000 -0500
-@@ -179,14 +179,14 @@ static int __devinit intelfb_set_fbinfo(
- #endif
- 
- static struct pci_device_id intelfb_pci_table[] __devinitdata = {
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_830M, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_830M },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_845G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_845G },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_85XGM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_85XGM },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_865G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_865G },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_915G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915G },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_915GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915GM },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945G },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GM },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82830_CGC, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_830M },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82845G_IG, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_845G },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82855GM_IG, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_85XGM },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82865_IG, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_865G },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82915G_IG, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915G },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82915GM_IG, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915GM },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945G_IG, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945G },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945GM_IG, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GM },
- 	{ 0, }
- };
- 
-@@ -559,10 +559,10 @@ intelfb_pci_register(struct pci_dev *pde
- 	}
- 
- 	/* Set base addresses. */
--	if ((ent->device == PCI_DEVICE_ID_INTEL_915G) ||
--	    (ent->device == PCI_DEVICE_ID_INTEL_915GM) ||
--	    (ent->device == PCI_DEVICE_ID_INTEL_945G)  ||
--	    (ent->device == PCI_DEVICE_ID_INTEL_945GM)) {
-+	if ((ent->device == PCI_DEVICE_ID_INTEL_82915G_IG) ||
-+	    (ent->device == PCI_DEVICE_ID_INTEL_82915GM_IG) ||
-+	    (ent->device == PCI_DEVICE_ID_INTEL_82945G_IG)  ||
-+	    (ent->device == PCI_DEVICE_ID_INTEL_82945GM_IG)) {
- 		aperture_bar = 2;
- 		mmio_bar = 0;
- 	}
-diff -Naurp -X linux-2.6.18-rc2-patched/Documentation/dontdiff linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbhw.c linux-2.6.18-rc2-device-id/drivers/video/intelfb/intelfbhw.c
---- linux-2.6.18-rc2-patched/drivers/video/intelfb/intelfbhw.c	2006-07-24 16:47:39.000000000 -0500
-+++ linux-2.6.18-rc2-device-id/drivers/video/intelfb/intelfbhw.c	2006-08-04 20:14:47.000000000 -0500
-@@ -73,19 +73,19 @@ intelfbhw_get_chipset(struct pci_dev *pd
- 		return 1;
- 
- 	switch (pdev->device) {
--	case PCI_DEVICE_ID_INTEL_830M:
-+	case PCI_DEVICE_ID_INTEL_82830_CGC:
- 		dinfo->name = "Intel(R) 830M";
- 		dinfo->chipset = INTEL_830M;
- 		dinfo->mobile = 1;
- 		dinfo->pll_index = PLLS_I8xx;
- 		return 0;
--	case PCI_DEVICE_ID_INTEL_845G:
-+	case PCI_DEVICE_ID_INTEL_82845G_IG:
- 		dinfo->name = "Intel(R) 845G";
- 		dinfo->chipset = INTEL_845G;
- 		dinfo->mobile = 0;
- 		dinfo->pll_index = PLLS_I8xx;
- 		return 0;
--	case PCI_DEVICE_ID_INTEL_85XGM:
-+	case PCI_DEVICE_ID_INTEL_82855GM_IG:
- 		tmp = 0;
- 		dinfo->mobile = 1;
- 		dinfo->pll_index = PLLS_I8xx;
-@@ -114,31 +114,31 @@ intelfbhw_get_chipset(struct pci_dev *pd
- 			return 0;
- 		}
- 		break;
--	case PCI_DEVICE_ID_INTEL_865G:
-+	case PCI_DEVICE_ID_INTEL_82865_IG:
- 		dinfo->name = "Intel(R) 865G";
- 		dinfo->chipset = INTEL_865G;
- 		dinfo->mobile = 0;
- 		dinfo->pll_index = PLLS_I8xx;
- 		return 0;
--	case PCI_DEVICE_ID_INTEL_915G:
-+	case PCI_DEVICE_ID_INTEL_82915G_IG:
- 		dinfo->name = "Intel(R) 915G";
- 		dinfo->chipset = INTEL_915G;
- 		dinfo->mobile = 0;
- 		dinfo->pll_index = PLLS_I9xx;
- 		return 0;
--	case PCI_DEVICE_ID_INTEL_915GM:
-+	case PCI_DEVICE_ID_INTEL_82915GM_IG:
- 		dinfo->name = "Intel(R) 915GM";
- 		dinfo->chipset = INTEL_915GM;
- 		dinfo->mobile = 1;
- 		dinfo->pll_index = PLLS_I9xx;
- 		return 0;
--	case PCI_DEVICE_ID_INTEL_945G:
-+	case PCI_DEVICE_ID_INTEL_82945G_IG:
- 		dinfo->name = "Intel(R) 945G";
- 		dinfo->chipset = INTEL_945G;
- 		dinfo->mobile = 0;
- 		dinfo->pll_index = PLLS_I9xx;
- 		return 0;
--	case PCI_DEVICE_ID_INTEL_945GM:
-+	case PCI_DEVICE_ID_INTEL_82945GM_IG:
- 		dinfo->name = "Intel(R) 945GM";
- 		dinfo->chipset = INTEL_945GM;
- 		dinfo->mobile = 1;
-@@ -170,10 +170,10 @@ intelfbhw_get_memory(struct pci_dev *pde
- 	tmp = 0;
- 	pci_read_config_word(bridge_dev, INTEL_GMCH_CTRL, &tmp);
- 	switch (pdev->device) {
--	case PCI_DEVICE_ID_INTEL_915G:
--	case PCI_DEVICE_ID_INTEL_915GM:
--	case PCI_DEVICE_ID_INTEL_945G:
--	case PCI_DEVICE_ID_INTEL_945GM:
-+	case PCI_DEVICE_ID_INTEL_82915G_IG:
-+	case PCI_DEVICE_ID_INTEL_82915GM_IG:
-+	case PCI_DEVICE_ID_INTEL_82945G_IG:
-+	case PCI_DEVICE_ID_INTEL_82945GM_IG:
- 		/* 915 and 945 chipsets support a 256MB aperture.
- 		   Aperture size is determined by inspected the
- 		   base address of the aperture. */
-@@ -194,8 +194,8 @@ intelfbhw_get_memory(struct pci_dev *pde
- 	   GTT is 1K per MB of aperture size, and popup is 4K. */
- 	stolen_overhead = (*aperture_size / MB(1)) + 4;
- 	switch(pdev->device) {
--	case PCI_DEVICE_ID_INTEL_830M:
--	case PCI_DEVICE_ID_INTEL_845G:
-+	case PCI_DEVICE_ID_INTEL_82830_CGC:
-+	case PCI_DEVICE_ID_INTEL_82845G_IG:
- 		switch (tmp & INTEL_830_GMCH_GMS_MASK) {
- 		case INTEL_830_GMCH_GMS_STOLEN_512:
- 			*stolen_size = KB(512) - KB(stolen_overhead);
-@@ -1387,7 +1387,7 @@ intelfbhw_program_mode(struct intelfb_in
- 	OUTREG(ADPA, tmp);
- 
- 	/* setup display plane */
--	if (dinfo->pdev->device == PCI_DEVICE_ID_INTEL_830M) {
-+	if (dinfo->pdev->device == PCI_DEVICE_ID_INTEL_82830_CGC) {
- 		/*
- 		 *      i830M errata: the display plane must be enabled
- 		 *      to allow writes to the other bits in the plane
+So accordingly to that algorithm, the mode for 1600x1200@256 should either =
+be=20
+0x309 or 0x360 which both don't work.
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+=46ind attached the mentioned patch to update vesafb.txt.
+
+Please CC me on replies, since I'm not subscribed to the list.
+
+=2D-=20
+Christian Heim <phreak at gentoo.org>
+GPG: 9A9F68E6 / AEC4 87B8 32B8 4922 B3A9  DF79 CAE3 556F 9A9F 68E6
+
+Your friendly mobile/kernel/vserver/openvz monkey
+
+Signed-off-by: Christian Heim <phreak@gentoo.org>
+=2D-
+
+--Boundary-01=_5JE1E04fVF/j45q
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="vesafb-document-1600x1200-video-mode.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="vesafb-document-1600x1200-video-mode.patch"
+
+diff --git a/Documentation/fb/vesafb.txt b/Documentation/fb/vesafb.txt
+index ee277dd..9565543 100644
+=2D-- a/Documentation/fb/vesafb.txt
++++ b/Documentation/fb/vesafb.txt
+@@ -40,12 +40,12 @@ The graphic modes are NOT in the list wh
+ vga=3Dask and hit return. The mode you wish to use is derived from the
+ VESA mode number. Here are those VESA mode numbers:
+=20
+=2D    | 640x480  800x600  1024x768 1280x1024
+=2D----+-------------------------------------
+=2D256 |  0x101    0x103    0x105    0x107  =20
+=2D32k |  0x110    0x113    0x116    0x119  =20
+=2D64k |  0x111    0x114    0x117    0x11A  =20
+=2D16M |  0x112    0x115    0x118    0x11B  =20
++    | 640x480  800x600  1024x768 1280x1024 1600x1200
++----+-----------------------------------------------
++256 |  0x101    0x103    0x105    0x107     0x???  =20
++32k |  0x110    0x113    0x116    0x119     0x173  =20
++64k |  0x111    0x114    0x117    0x11A     0x174  =20
++16M |  0x112    0x115    0x118    0x11B     0x175  =20
+=20
+ The video mode number of the Linux kernel is the VESA mode number plus
+ 0x200.
+@@ -54,12 +54,12 @@ The video mode number of the Linux kerne
+=20
+ So the table for the Kernel mode numbers are:
+=20
+=2D    | 640x480  800x600  1024x768 1280x1024
+=2D----+-------------------------------------
+=2D256 |  0x301    0x303    0x305    0x307  =20
+=2D32k |  0x310    0x313    0x316    0x319  =20
+=2D64k |  0x311    0x314    0x317    0x31A  =20
+=2D16M |  0x312    0x315    0x318    0x31B  =20
++    | 640x480  800x600  1024x768 1280x1024 1600x1200
++----+-----------------------------------------------
++256 |  0x301    0x303    0x305    0x307     0x???  =20
++32k |  0x310    0x313    0x316    0x319     0x373  =20
++64k |  0x311    0x314    0x317    0x31A     0x374  =20
++16M |  0x312    0x315    0x318    0x31B     0x375  =20
+=20
+ To enable one of those modes you have to specify "vga=3Dask" in the
+ lilo.conf file and rerun LILO. Then you can type in the desired
+
+--Boundary-01=_5JE1E04fVF/j45q--
+
+--nextPart4599528.H8neQ0G2lL
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBE1EJ8yuNVb5qfaOYRAkzPAJ9jle2DLjnEG1QR7FOEhAzmhe1jwQCeLNLX
+a1n1AYq0FQJCPO8nULDkNqI=
+=myaG
+-----END PGP SIGNATURE-----
+
+--nextPart4599528.H8neQ0G2lL--

@@ -1,129 +1,64 @@
-From: Christian Heim <phreak@gentoo.org>
-Subject: [PATCH] Updating Documentation/fb/vesafb.txt
-Date: Sat, 5 Aug 2006 09:02:17 +0200
-Message-ID: <200608050902.20163.phreak@gentoo.org>
-Reply-To: phreak@gentoo.org
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] Updating Documentation/fb/vesafb.txt
+Date: Sat, 05 Aug 2006 20:48:04 +0800
+Message-ID: <44D49384.9060701@gmail.com>
+References: <200608050902.20163.phreak@gentoo.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4599528.H8neQ0G2lL";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161588AbWHEHCZ@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, trivial@kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1G9LZf-0000Ko-Qp for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 05 Aug 2006 05:48:15 -0700
+Received: from py-out-1112.google.com ([64.233.166.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1G9LZe-0007t8-C1
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 05 Aug 2006 05:48:15 -0700
+Received: by py-out-1112.google.com with SMTP id c31so493456pyd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 05 Aug 2006 05:48:13 -0700 (PDT)
+In-Reply-To: <200608050902.20163.phreak@gentoo.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: phreak@gentoo.org
+Cc: trivial@kernel.org, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
---nextPart4599528.H8neQ0G2lL
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_5JE1E04fVF/j45q"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Christian Heim wrote:
+> Hello Antonino,
+> 
+> +    | 640x480  800x600  1024x768 1280x1024 1600x1200
+> +----+-----------------------------------------------
+> +256 |  0x301    0x303    0x305    0x307     0x???   
+> +32k |  0x310    0x313    0x316    0x319     0x373   
+> +64k |  0x311    0x314    0x317    0x31A     0x374   
+> +16M |  0x312    0x315    0x318    0x31B     0x375   
+>  
+>  To enable one of those modes you have to specify "vga=ask" in the
+>  lilo.conf file and rerun LILO. Then you can type in the desired
 
---Boundary-01=_5JE1E04fVF/j45q
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is not correct. VESA did not define 1600x1200 as part of
+its DVT standard. And starting with VBE 2.0, VESA is not going to
+define new mode ID's. Thus the mode ID that you get for 1600x1200 may
+be unique only for your particular hardware/Video BIOS.
 
-Hello Antonino,
+You may use X's 'vesa' driver to get a list of modes that your
+BIOS supports. It will be written to /var/log/X*.0.log.
 
-I recently tried to figure how to get my vesafb to 1600x1200 and updated th=
-e=20
-vesafb.txt documentation accordingly. I'm still not sure about the video mo=
-de=20
-for 256, since it doesn't seem to follow the algorithm the other vga-modes=
-=20
-seem to follow.
+Tony
 
-Example:
-    | 640x480  800x600  1024x768 1280x1024
-=2D---+-------------------------------------
-256 |  0x301    0x303    0x305    0x307     | +0x002
-32k |  0x310    0x313    0x316    0x319
-      -------  -------  -------  -------
-      +0x009    +0x010   +0x011   +0x012
-
-So accordingly to that algorithm, the mode for 1600x1200@256 should either =
-be=20
-0x309 or 0x360 which both don't work.
-
-=46ind attached the mentioned patch to update vesafb.txt.
-
-Please CC me on replies, since I'm not subscribed to the list.
-
-=2D-=20
-Christian Heim <phreak at gentoo.org>
-GPG: 9A9F68E6 / AEC4 87B8 32B8 4922 B3A9  DF79 CAE3 556F 9A9F 68E6
-
-Your friendly mobile/kernel/vserver/openvz monkey
-
-Signed-off-by: Christian Heim <phreak@gentoo.org>
-=2D-
-
---Boundary-01=_5JE1E04fVF/j45q
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="vesafb-document-1600x1200-video-mode.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="vesafb-document-1600x1200-video-mode.patch"
-
-diff --git a/Documentation/fb/vesafb.txt b/Documentation/fb/vesafb.txt
-index ee277dd..9565543 100644
-=2D-- a/Documentation/fb/vesafb.txt
-+++ b/Documentation/fb/vesafb.txt
-@@ -40,12 +40,12 @@ The graphic modes are NOT in the list wh
- vga=3Dask and hit return. The mode you wish to use is derived from the
- VESA mode number. Here are those VESA mode numbers:
-=20
-=2D    | 640x480  800x600  1024x768 1280x1024
-=2D----+-------------------------------------
-=2D256 |  0x101    0x103    0x105    0x107  =20
-=2D32k |  0x110    0x113    0x116    0x119  =20
-=2D64k |  0x111    0x114    0x117    0x11A  =20
-=2D16M |  0x112    0x115    0x118    0x11B  =20
-+    | 640x480  800x600  1024x768 1280x1024 1600x1200
-+----+-----------------------------------------------
-+256 |  0x101    0x103    0x105    0x107     0x???  =20
-+32k |  0x110    0x113    0x116    0x119     0x173  =20
-+64k |  0x111    0x114    0x117    0x11A     0x174  =20
-+16M |  0x112    0x115    0x118    0x11B     0x175  =20
-=20
- The video mode number of the Linux kernel is the VESA mode number plus
- 0x200.
-@@ -54,12 +54,12 @@ The video mode number of the Linux kerne
-=20
- So the table for the Kernel mode numbers are:
-=20
-=2D    | 640x480  800x600  1024x768 1280x1024
-=2D----+-------------------------------------
-=2D256 |  0x301    0x303    0x305    0x307  =20
-=2D32k |  0x310    0x313    0x316    0x319  =20
-=2D64k |  0x311    0x314    0x317    0x31A  =20
-=2D16M |  0x312    0x315    0x318    0x31B  =20
-+    | 640x480  800x600  1024x768 1280x1024 1600x1200
-+----+-----------------------------------------------
-+256 |  0x301    0x303    0x305    0x307     0x???  =20
-+32k |  0x310    0x313    0x316    0x319     0x373  =20
-+64k |  0x311    0x314    0x317    0x31A     0x374  =20
-+16M |  0x312    0x315    0x318    0x31B     0x375  =20
-=20
- To enable one of those modes you have to specify "vga=3Dask" in the
- lilo.conf file and rerun LILO. Then you can type in the desired
-
---Boundary-01=_5JE1E04fVF/j45q--
-
---nextPart4599528.H8neQ0G2lL
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBE1EJ8yuNVb5qfaOYRAkzPAJ9jle2DLjnEG1QR7FOEhAzmhe1jwQCeLNLX
-a1n1AYq0FQJCPO8nULDkNqI=
-=myaG
------END PGP SIGNATURE-----
-
---nextPart4599528.H8neQ0G2lL--
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys -- and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

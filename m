@@ -1,29 +1,28 @@
-From: Sean D'Epagnier <sean@depagnier.com>
-Subject: Multihead support
-Date: Sun, 6 Aug 2006 03:35:04 -0600
-Message-ID: <20060806093504.GA30519@inferno.domain.actdsltmp>
-References: <170385E48B041543AC99CCD09E325AD1952C32@mail.elevenonline.com.au>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: fixed point math
+Date: Wed, 9 Aug 2006 17:31:49 -0400
+Message-ID: <5FB9F032-0325-44A3-902D-234BB8589D50@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1G9f1U-0007lH-9n for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 06 Aug 2006 02:34:16 -0700
-Received: from mercury.lunarpages.com ([216.227.217.101])
+	id 1GAvaZ-0008OX-HS for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 09 Aug 2006 14:27:43 -0700
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1G9f1S-0004mE-2D
+	(Exim 4.44) id 1GAvaY-0000Iv-AT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 06 Aug 2006 02:34:16 -0700
-Received: from 71-208-204-50.hlrn.qwest.net ([71.208.204.50] helo=localhost)
-	by mercury.lunarpages.com with esmtp (Exim 4.52) id 1G9f2w-0002SQ-KZ
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 06 Aug 2006 02:35:46 -0700
-Content-Disposition: inline
-In-Reply-To: <170385E48B041543AC99CCD09E325AD1952C32@mail.elevenonline.com.au>
+	Wed, 09 Aug 2006 14:27:43 -0700
+Received: from lex098.cecropia.com (HELO [192.168.3.132])
+	(dmunsie@cecropia.com@[63.138.212.98])
+	(envelope-sender <dmunsie@cecropia.com>)
+	by mail4.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
+	SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>; 9 Aug 2006 21:27:36 -0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,41 +35,16 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-I think multihead support is slightly broken with fbdev.
+before I go off writing a bunch of code, is there any generic fixed  
+point code for use in the kernel someplace?  I need to convert some  
+code using float/double to fixed point, and would like to do it  
+without re-inventing the wheel.
 
-I have multihead working with nvidiafb and matroxfb. I had to patch the
-kernel to get console text to update on the non-active vt.
-
-In userspace programs, I know how to  register signal handlers to notify
-a program when it gains or loses the active vt, but I don't think there is
-a way to correctly detect when a framebuffer device becomes visible or
-hidden.   The FBIOGET_CON2FBMAP ioctl provides a means to find which 
-fbdev devices is mapped to a given console, but as far as I know to do
-the reverse lookup (find the vt attached to a given fbdev) can't be done.
-There are really 3 states a vt can be in:
-1. active/visible
-2. inactive/visible   (only applies to multihead)
-3. inactive/invisible
-
-If it were possible to register a signal handler for visible changes the
-same way as active changes, this would fix the problem.
-
-Xorg for example won't run on /dev/fb0 and allow me to run something else
-on /dev/fb1  I have in my own programs written hacks to poll con2fb, at
-a timed interval.  This is a terrible solution, and it has a high probability
-of corrupting the screen output (until refresh)
-
-I think in the future this will be come a bigger concern as x11 is slowly
-being separated from the hardware, and it will become useful to run
-multiple sessions of x11.  I would like to discuss all possible solutions,
-and hopefully implement a simple working solution.
-
-
-Thanks,
-Sean D'Epagnier
+thanks!
+dennis
 
 -------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

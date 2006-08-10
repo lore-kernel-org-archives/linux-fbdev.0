@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/8] vt: Honor the return value of
+Subject: [PATCH 3/8] fbdev: Honor the return value of
 	device_create_file
-Date: Thu, 10 Aug 2006 19:48:12 +0800
-Message-ID: <44DB1CFC.8030008@gmail.com>
+Date: Thu, 10 Aug 2006 19:49:09 +0800
+Message-ID: <44DB1D35.6040901@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GB9AT-0003Cp-Qn for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:57:42 -0700
+	id 1GB9AZ-0003Cw-CS for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 10 Aug 2006 04:57:47 -0700
 Received: from nz-out-0102.google.com ([64.233.162.196])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9AR-0006Ho-Hd
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9AY-0006Ho-46
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:57:41 -0700
+	Thu, 10 Aug 2006 04:57:47 -0700
 Received: by nz-out-0102.google.com with SMTP id m22so116768nzf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 10 Aug 2006 04:57:39 -0700 (PDT)
+	Thu, 10 Aug 2006 04:57:45 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,39 +39,40 @@ attributes by calling device_remove_file().
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/char/vt.c |   34 +++++++++++++++++++++++++++-------
- 1 files changed, 27 insertions(+), 7 deletions(-)
+ drivers/video/fbsysfs.c |   35 ++++++++++++++++++++++++++++-------
+ include/linux/fb.h      |    1 +
+ 2 files changed, 29 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 587aa9f..2470331 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -106,7 +106,8 @@ #include <asm/uaccess.h>
- #define MAX_NR_CON_DRIVER 16
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index 4f78f23..60e69e3 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -20,6 +20,8 @@ #include <linux/fb.h>
+ #include <linux/console.h>
+ #include <linux/module.h>
  
- #define CON_DRIVER_FLAG_MODULE 1
--#define CON_DRIVER_FLAG_INIT 2
-+#define CON_DRIVER_FLAG_INIT   2
-+#define CON_DRIVER_FLAG_ATTR   4
- 
- struct con_driver {
- 	const struct consw *con;
-@@ -3060,21 +3061,39 @@ static struct device_attribute device_at
- 
- static int vtconsole_init_device(struct con_driver *con)
- {
--	int i;
-+	int i, error = 0;
- 
- 	dev_set_drvdata(con->dev, con);
--	for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
--		device_create_file(con->dev, &device_attrs[i]);
- 
--	return 0;
-+	con->flag |= CON_DRIVER_FLAG_ATTR;
++#define FB_SYSFS_FLAG_ATTR 1
 +
-+	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
-+		error = device_create_file(con->dev, &device_attrs[i]);
+ /**
+  * framebuffer_alloc - creates a new frame buffer info structure
+  *
+@@ -471,12 +473,27 @@ #endif
+ 
+ int fb_init_class_device(struct fb_info *fb_info)
+ {
+-	unsigned int i;
++	int i, error = 0;
++
+ 	class_set_devdata(fb_info->class_device, fb_info);
+ 
+-	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
+-		class_device_create_file(fb_info->class_device,
+-					 &class_device_attrs[i]);
++	fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
++
++	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++) {
++		error = class_device_create_file(fb_info->class_device,
++						 &class_device_attrs[i]);
 +
 +		if (error)
 +			break;
@@ -79,37 +80,43 @@ index 587aa9f..2470331 100644
 +
 +	if (error) {
 +		while (--i >= 0)
-+			device_remove_file(con->dev, &device_attrs[i]);
-+
-+		con->flag &= ~CON_DRIVER_FLAG_ATTR;
++			class_device_remove_file(fb_info->class_device,
++						 &class_device_attrs[i]);
++		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
 +	}
 +
-+	return error;
+ 	return 0;
  }
  
- static void vtconsole_deinit_device(struct con_driver *con)
+@@ -484,9 +501,13 @@ void fb_cleanup_class_device(struct fb_i
  {
- 	int i;
+ 	unsigned int i;
  
--	for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
--		device_remove_file(con->dev, &device_attrs[i]);
-+	if (con->flag & CON_DRIVER_FLAG_ATTR) {
-+		for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
-+			device_remove_file(con->dev, &device_attrs[i]);
+-	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
+-		class_device_remove_file(fb_info->class_device,
+-					 &class_device_attrs[i]);
++	if (fb_info->class_flag & FB_SYSFS_FLAG_ATTR) {
++		for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
++			class_device_remove_file(fb_info->class_device,
++						 &class_device_attrs[i]);
 +
-+		con->flag &= ~CON_DRIVER_FLAG_ATTR;
++		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
 +	}
  }
  
- /**
-@@ -3172,6 +3191,7 @@ int register_con_driver(const struct con
- 	} else {
- 		vtconsole_init_device(con_driver);
- 	}
-+
- err:
- 	release_console_sem();
- 	module_put(owner);
+ #ifdef CONFIG_FB_BACKLIGHT
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a49ba06..10838d3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -776,6 +776,7 @@ #endif
+ 	struct fb_ops *fbops;
+ 	struct device *device;
+ 	struct class_device *class_device; /* sysfs per device attrs */
++	int class_flag;                    /* private sysfs flags */
+ #ifdef CONFIG_FB_TILEBLITTING
+ 	struct fb_tile_ops *tileops;    /* Tile Blitting */
+ #endif
 
 
 -------------------------------------------------------------------------

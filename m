@@ -1,28 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/8 RESEND] atyfb: Honor the return
-	value of pci_register_driver
-Date: Thu, 10 Aug 2006 20:56:13 +0800
-Message-ID: <44DB2CED.60509@gmail.com>
-References: <44DB1DA4.3000703@gmail.com>
-	<Pine.LNX.4.62.0608101410390.718@pademelon.sonytel.be>
+From: "Bui Sy Phong" <buisyphong@gmail.com>
+Subject: Framebuffer vs X11 - Question
+Date: Thu, 10 Aug 2006 16:17:14 +0200
+Message-ID: <9160f4850608100717h7c8b874en8f3251302ae70e67@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0157767113=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GBA5I-0008A2-T3 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 05:56:25 -0700
-Received: from nz-out-0102.google.com ([64.233.162.195])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GBA5E-0006T7-FZ
+	id 1GBBLf-0006x2-BO for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 10 Aug 2006 07:17:23 -0700
+Received: from nf-out-0910.google.com ([64.233.182.184])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GBBLY-0007aA-Ro
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 05:56:21 -0700
-Received: by nz-out-0102.google.com with SMTP id m22so122392nzf
+	Thu, 10 Aug 2006 07:17:20 -0700
+Received: by nf-out-0910.google.com with SMTP id a27so545660nfc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 10 Aug 2006 05:56:19 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.62.0608101410390.718@pademelon.sonytel.be>
+	Thu, 10 Aug 2006 07:17:14 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,58 +29,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Check return value of pci_register_driver().
+--===============0157767113==
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_61380_3367566.1155219434597"
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
-Geert Uytterhoeven wrote:
-> On Thu, 10 Aug 2006, Antonino A. Daplas wrote:
-> 
-> Actually it's a bit more complicated, as some Ataris do have PCI (although
-> currently Atari Hades PCI support is broken).
-> 
+------=_Part_61380_3367566.1155219434597
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This one may be better.
+Hi everybody,
 
-Tony
+I'm working on a projet which uses Framebuffer to display text, image and so
+many other things on computer screen. I'm on Linux and Linux Embedded.
 
- drivers/video/aty/atyfb_base.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+Now, i can display a pixel, a rectangle, a window by using framebuffer. But,
+i have a problem : My pixel, my rectangle are always hided by the window of
+X11.
+So, my question is : How to display all the things in framebuffer on the top
+level of screen ?
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index 053ff63..d6be4c7 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -3859,6 +3859,7 @@ #endif  /*  MODULE  */
- 
- static int __devinit atyfb_init(void)
- {
-+    int err1 = 1, err2 = 1;
- #ifndef MODULE
-     char *option = NULL;
- 
-@@ -3868,12 +3869,13 @@ #ifndef MODULE
- #endif
- 
- #ifdef CONFIG_PCI
--    pci_register_driver(&atyfb_driver);
-+    err1 = pci_register_driver(&atyfb_driver);
- #endif
- #ifdef CONFIG_ATARI
--    atyfb_atari_probe();
-+    err2 = atyfb_atari_probe();
- #endif
--    return 0;
-+
-+    return (err1 && err2) ? -ENODEV : 0;
- }
- 
- static void __exit atyfb_exit(void)
+Thanks so much !!!
+
+------=_Part_61380_3367566.1155219434597
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi everybody,<br><br>I'm working on a projet which uses Framebuffer to display text, image and so many other things on computer screen. I'm on Linux and Linux Embedded.<br><br>Now, i can display a pixel, a rectangle, a window by using framebuffer. But, i have a problem : My pixel, my rectangle are always hided by the window of X11. 
+<br>So, my question is : How to display all the things in framebuffer on the top level of screen ? <br><br>Thanks so much !!!<br>
+
+------=_Part_61380_3367566.1155219434597--
+
+
+--===============0157767113==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+--===============0157767113==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============0157767113==--

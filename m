@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 7/8] nvidiafb: Honor the return value of
+Subject: [PATCH 8/8] i810fb: Honor the return value of
 	pci_enable_device
-Date: Thu, 10 Aug 2006 19:52:45 +0800
-Message-ID: <44DB1E0D.9080808@gmail.com>
+Date: Thu, 10 Aug 2006 19:53:24 +0800
+Message-ID: <44DB1E34.4050902@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GB9Au-0003Hj-UD for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:58:09 -0700
-Received: from nz-out-0102.google.com ([64.233.162.196])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9At-0006Ho-NJ
+	id 1GB9Az-0003Hu-Qb for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 10 Aug 2006 04:58:13 -0700
+Received: from py-out-1112.google.com ([64.233.166.176])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9Ay-0002fu-JM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:58:08 -0700
-Received: by nz-out-0102.google.com with SMTP id m22so116768nzf
+	Thu, 10 Aug 2006 04:58:13 -0700
+Received: by py-out-1112.google.com with SMTP id c31so811494pyd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 10 Aug 2006 04:58:07 -0700 (PDT)
+	Thu, 10 Aug 2006 04:58:12 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,29 +38,29 @@ Check the return value of pci_enable_device().
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/nvidia/nvidia.c |    6 +++++-
+ drivers/video/i810/i810_main.c |    6 +++++-
  1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index f8cd4c5..731edf7 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -984,7 +984,10 @@ static int nvidiafb_resume(struct pci_de
- 
- 	if (par->pm_state != PM_EVENT_FREEZE) {
- 		pci_restore_state(dev);
--		pci_enable_device(dev);
+diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+index d42edac..b55a12d 100644
+--- a/drivers/video/i810/i810_main.c
++++ b/drivers/video/i810/i810_main.c
+@@ -1602,7 +1602,10 @@ static int i810fb_resume(struct pci_dev 
+ 	acquire_console_sem();
+ 	pci_set_power_state(dev, PCI_D0);
+ 	pci_restore_state(dev);
+-	pci_enable_device(dev);
 +
-+		if (pci_enable_device(dev))
-+			goto fail;
++	if (pci_enable_device(dev))
++		goto fail;
 +
- 		pci_set_master(dev);
- 	}
- 
-@@ -993,6 +996,7 @@ static int nvidiafb_resume(struct pci_de
+ 	pci_set_master(dev);
+ 	agp_bind_memory(par->i810_gtt.i810_fb_memory,
+ 			par->fb.offset);
+@@ -1611,6 +1614,7 @@ static int i810fb_resume(struct pci_dev 
+ 	i810fb_set_par(info);
  	fb_set_suspend (info, 0);
- 	nvidiafb_blank(FB_BLANK_UNBLANK, info);
- 
+ 	info->fbops->fb_blank(VESA_NO_BLANKING, info);
 +fail:
  	release_console_sem();
  	return 0;

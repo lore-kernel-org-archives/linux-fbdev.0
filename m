@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 4/8] fbcon: Honor the return value of
-	device_create_file
-Date: Thu, 10 Aug 2006 19:49:58 +0800
-Message-ID: <44DB1D66.7010402@gmail.com>
+Subject: [PATCH 5/8] atyfb: Honor the return value of
+	pci_register_driver
+Date: Thu, 10 Aug 2006 19:51:00 +0800
+Message-ID: <44DB1DA4.3000703@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GB9Ag-0003D6-Qx for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:57:55 -0700
-Received: from nz-out-0102.google.com ([64.233.162.206])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9Af-0002Y7-Id
+	id 1GB9An-0003E3-PX for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 10 Aug 2006 04:58:01 -0700
+Received: from nz-out-0102.google.com ([64.233.162.196])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9Ak-0006Ho-EF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:57:54 -0700
-Received: by nz-out-0102.google.com with SMTP id 9so129306nzo
+	Thu, 10 Aug 2006 04:58:01 -0700
+Received: by nz-out-0102.google.com with SMTP id m22so116768nzf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 10 Aug 2006 04:57:52 -0700 (PDT)
+	Thu, 10 Aug 2006 04:57:57 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,75 +33,33 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Check the return value of device_create_file(). If return is 'fail', remove
-attributes by calling device_remove_file().
+Do not ignore the return value of pci_register_driver().
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/fbcon.c |   34 +++++++++++++++++++++++++++-------
- 1 files changed, 27 insertions(+), 7 deletions(-)
+ drivers/video/aty/atyfb_base.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index cf4c999..b8c7724 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -133,6 +133,7 @@ static int info_idx = -1;
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 053ff63..605fb7e 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -3868,12 +3868,11 @@ #ifndef MODULE
+ #endif
  
- /* console rotation */
- static int rotate;
-+static int fbcon_has_sysfs;
- 
- static const struct consw fb_con;
- 
-@@ -3166,11 +3167,26 @@ static struct class_device_attribute cla
- 
- static int fbcon_init_class_device(void)
- {
--	int i;
-+	int i, error = 0;
-+
-+	fbcon_has_sysfs = 1;
-+
-+	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++) {
-+		error = class_device_create_file(fbcon_class_device,
-+						 &class_device_attrs[i]);
-+
-+		if (error)
-+			break;
-+	}
-+
-+	if (error) {
-+		while (--i >= 0)
-+			class_device_remove_file(fbcon_class_device,
-+						 &class_device_attrs[i]);
-+
-+		fbcon_has_sysfs = 0;
-+	}
- 
--	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
--		class_device_create_file(fbcon_class_device,
--					 &class_device_attrs[i]);
- 	return 0;
+ #ifdef CONFIG_PCI
+-    pci_register_driver(&atyfb_driver);
++    return pci_register_driver(&atyfb_driver);
+ #endif
+ #ifdef CONFIG_ATARI
+-    atyfb_atari_probe();
++    return atyfb_atari_probe();
+ #endif
+-    return 0;
  }
  
-@@ -3279,9 +3295,13 @@ static void __exit fbcon_deinit_class_de
- {
- 	int i;
- 
--	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
--		class_device_remove_file(fbcon_class_device,
--					 &class_device_attrs[i]);
-+	if (fbcon_has_sysfs) {
-+		for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
-+			class_device_remove_file(fbcon_class_device,
-+						 &class_device_attrs[i]);
-+
-+		fbcon_has_sysfs = 0;
-+	}
- }
- 
- static void __exit fb_console_exit(void)
+ static void __exit atyfb_exit(void)
 
 
 -------------------------------------------------------------------------

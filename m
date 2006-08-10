@@ -1,28 +1,24 @@
-From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: fixed point math
-Date: Wed, 9 Aug 2006 17:31:49 -0400
-Message-ID: <5FB9F032-0325-44A3-902D-234BB8589D50@cecropia.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 1/8] fbcon: Remove cursor timer if unused
+Date: Thu, 10 Aug 2006 19:47:20 +0800
+Message-ID: <44DB1CC8.3000302@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v752.2)
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GAvaZ-0008OX-HS for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 Aug 2006 14:27:43 -0700
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GAvaY-0000Iv-AT
+	id 1GB9AP-0003Cg-TI for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 10 Aug 2006 04:57:38 -0700
+Received: from nz-out-0102.google.com ([64.233.162.196])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9AM-0006Ho-KY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 Aug 2006 14:27:43 -0700
-Received: from lex098.cecropia.com (HELO [192.168.3.132])
-	(dmunsie@cecropia.com@[63.138.212.98])
-	(envelope-sender <dmunsie@cecropia.com>)
-	by mail4.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
-	SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>; 9 Aug 2006 21:27:36 -0000
+	Thu, 10 Aug 2006 04:57:37 -0700
+Received: by nz-out-0102.google.com with SMTP id m22so116768nzf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 10 Aug 2006 04:57:32 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,15 +29,67 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-before I go off writing a bunch of code, is there any generic fixed  
-point code for use in the kernel someplace?  I need to convert some  
-code using float/double to fixed point, and would like to do it  
-without re-inventing the wheel.
+Remove the cursor timer (cursor flashing) on the following conditions:
 
-thanks!
-dennis
+- if vc is in KD_GRAPHICS mode, ie, when X owns the console
+- if vc is blanked
+
+This misbehavior was exposed by Dave Jones.
+
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+
+ drivers/video/console/fbcon.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 6165fd9..cf4c999 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -396,9 +396,8 @@ static void fb_flashcursor(void *private
+ 		vc = vc_cons[ops->currcon].d;
+ 
+ 	if (!vc || !CON_IS_VISIBLE(vc) ||
+-	    fbcon_is_inactive(vc, info) ||
+  	    registered_fb[con2fb_map[vc->vc_num]] != info ||
+-	    vc_cons[ops->currcon].d->vc_deccm != 1) {
++	    vc->vc_deccm != 1) {
+ 		release_console_sem();
+ 		return;
+ 	}
+@@ -2166,7 +2165,12 @@ static int fbcon_switch(struct vc_data *
+ 			fbcon_del_cursor_timer(old_info);
+ 	}
+ 
+-	fbcon_add_cursor_timer(info);
++	if (fbcon_is_inactive(vc, info) ||
++	    ops->blank_state != FB_BLANK_UNBLANK)
++		fbcon_del_cursor_timer(info);
++	else
++		fbcon_add_cursor_timer(info);
++
+ 	set_blitting_type(vc, info);
+ 	ops->cursor_reset = 1;
+ 
+@@ -2276,10 +2280,11 @@ static int fbcon_blank(struct vc_data *v
+ 			update_screen(vc);
+ 	}
+ 
+-	if (!blank)
+-		fbcon_add_cursor_timer(info);
+-	else
++	if (fbcon_is_inactive(vc, info) ||
++	    ops->blank_state != FB_BLANK_UNBLANK)
+ 		fbcon_del_cursor_timer(info);
++	else
++		fbcon_add_cursor_timer(info);
+ 
+ 	return 0;
+ }
+
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

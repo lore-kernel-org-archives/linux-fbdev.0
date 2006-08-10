@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/8] fbdev: Honor the return value of
+Subject: [PATCH 4/8] fbcon: Honor the return value of
 	device_create_file
-Date: Thu, 10 Aug 2006 19:49:09 +0800
-Message-ID: <44DB1D35.6040901@gmail.com>
+Date: Thu, 10 Aug 2006 19:49:58 +0800
+Message-ID: <44DB1D66.7010402@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GB9AZ-0003Cw-CS for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:57:47 -0700
-Received: from nz-out-0102.google.com ([64.233.162.196])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9AY-0006Ho-46
+	id 1GB9Ag-0003D6-Qx for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 10 Aug 2006 04:57:55 -0700
+Received: from nz-out-0102.google.com ([64.233.162.206])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GB9Af-0002Y7-Id
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 Aug 2006 04:57:47 -0700
-Received: by nz-out-0102.google.com with SMTP id m22so116768nzf
+	Thu, 10 Aug 2006 04:57:54 -0700
+Received: by nz-out-0102.google.com with SMTP id 9so129306nzo
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 10 Aug 2006 04:57:45 -0700 (PDT)
+	Thu, 10 Aug 2006 04:57:52 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,39 +39,32 @@ attributes by calling device_remove_file().
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/fbsysfs.c |   35 ++++++++++++++++++++++++++++-------
- include/linux/fb.h      |    1 +
- 2 files changed, 29 insertions(+), 7 deletions(-)
+ drivers/video/console/fbcon.c |   34 +++++++++++++++++++++++++++-------
+ 1 files changed, 27 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index 4f78f23..60e69e3 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -20,6 +20,8 @@ #include <linux/fb.h>
- #include <linux/console.h>
- #include <linux/module.h>
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index cf4c999..b8c7724 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -133,6 +133,7 @@ static int info_idx = -1;
  
-+#define FB_SYSFS_FLAG_ATTR 1
-+
- /**
-  * framebuffer_alloc - creates a new frame buffer info structure
-  *
-@@ -471,12 +473,27 @@ #endif
+ /* console rotation */
+ static int rotate;
++static int fbcon_has_sysfs;
  
- int fb_init_class_device(struct fb_info *fb_info)
+ static const struct consw fb_con;
+ 
+@@ -3166,11 +3167,26 @@ static struct class_device_attribute cla
+ 
+ static int fbcon_init_class_device(void)
  {
--	unsigned int i;
+-	int i;
 +	int i, error = 0;
 +
- 	class_set_devdata(fb_info->class_device, fb_info);
- 
--	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
--		class_device_create_file(fb_info->class_device,
--					 &class_device_attrs[i]);
-+	fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
++	fbcon_has_sysfs = 1;
 +
 +	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++) {
-+		error = class_device_create_file(fb_info->class_device,
++		error = class_device_create_file(fbcon_class_device,
 +						 &class_device_attrs[i]);
 +
 +		if (error)
@@ -80,43 +73,35 @@ index 4f78f23..60e69e3 100644
 +
 +	if (error) {
 +		while (--i >= 0)
-+			class_device_remove_file(fb_info->class_device,
++			class_device_remove_file(fbcon_class_device,
 +						 &class_device_attrs[i]);
-+		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
-+	}
 +
++		fbcon_has_sysfs = 0;
++	}
+ 
+-	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
+-		class_device_create_file(fbcon_class_device,
+-					 &class_device_attrs[i]);
  	return 0;
  }
  
-@@ -484,9 +501,13 @@ void fb_cleanup_class_device(struct fb_i
+@@ -3279,9 +3295,13 @@ static void __exit fbcon_deinit_class_de
  {
- 	unsigned int i;
+ 	int i;
  
 -	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
--		class_device_remove_file(fb_info->class_device,
+-		class_device_remove_file(fbcon_class_device,
 -					 &class_device_attrs[i]);
-+	if (fb_info->class_flag & FB_SYSFS_FLAG_ATTR) {
++	if (fbcon_has_sysfs) {
 +		for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
-+			class_device_remove_file(fb_info->class_device,
++			class_device_remove_file(fbcon_class_device,
 +						 &class_device_attrs[i]);
 +
-+		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
++		fbcon_has_sysfs = 0;
 +	}
  }
  
- #ifdef CONFIG_FB_BACKLIGHT
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a49ba06..10838d3 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -776,6 +776,7 @@ #endif
- 	struct fb_ops *fbops;
- 	struct device *device;
- 	struct class_device *class_device; /* sysfs per device attrs */
-+	int class_flag;                    /* private sysfs flags */
- #ifdef CONFIG_FB_TILEBLITTING
- 	struct fb_tile_ops *tileops;    /* Tile Blitting */
- #endif
+ static void __exit fb_console_exit(void)
 
 
 -------------------------------------------------------------------------

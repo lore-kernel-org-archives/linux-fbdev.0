@@ -1,25 +1,22 @@
-From: "Mitsuhiro KOGA" <shiena.jp@gmail.com>
-Subject: [PATCH 2.6.18-rc4] sisusbvga: fix sisusb.c
-Date: Mon, 14 Aug 2006 06:13:49 +0900
-Message-ID: <6cb5f1c10608131413n2f710b51lb060bade7110a1d2@mail.gmail.com>
+From: Raphael Assenat <raph@8d.com>
+Subject: [PATCH 2/2] mbxfb: Fix framebuffer size smaller
+	than requested
+Date: Mon, 14 Aug 2006 14:40:12 -0400
+Message-ID: <44E0C38C.4030001@8d.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="------------000605060404010603080101"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GCNHM-0004Dm-4N for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Aug 2006 14:13:52 -0700
-Received: from nf-out-0910.google.com ([64.233.182.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GCNHK-0001uw-MP
+	id 1GChL6-0004CG-8a for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 14 Aug 2006 11:39:04 -0700
+Received: from roc.holo.8d.com ([64.254.227.115])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GChL4-0003De-S3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Aug 2006 14:13:52 -0700
-Received: by nf-out-0910.google.com with SMTP id a27so1490080nfc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 13 Aug 2006 14:13:49 -0700 (PDT)
-Content-Disposition: inline
+	Mon, 14 Aug 2006 11:39:04 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,92 +27,85 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-usb-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
-
-I had a problem with usb2vga and ppc linux.
-The background of the console greens, and the font is not displayed.
-
-This patch can be normally displayed by the Big endian machine.
-Moreover, because KAIREN's usb2vga has two or more devices id, it adds it.
-
-Signed-off-by: Mitsuhiro Koga <shiena.jp@gmail.com>
-Cc: linux-usb-devel@lists.sourceforge.net
+To: Mike Rapoport <mike@compulab.co.il>
 Cc: linux-fbdev-devel@lists.sourceforge.net
----
- drivers/usb/misc/sisusbvga/sisusb.c      |   27 ++++++++++++++++++++++++++-
- 1 files changed, 26 insertions(+), 1 deletions(-)
---- a/drivers/usb/misc/sisusbvga/sisusb.c
-+++ b/drivers/usb/misc/sisusbvga/sisusb.c
-@@ -76,6 +76,16 @@
 
- DEFINE_MUTEX(disconnect_mutex);
+This is a multi-part message in MIME format.
+--------------000605060404010603080101
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-+#ifdef __BIG_ENDIAN
-+static void
-+correct_endianness_buffer(u16* data, const int length)
-+{
-+   int i;
-+   for (i = 0; i < length; i++)
-+       *(data+i) = cpu_to_le16(*(data+i));
-+}
-+#endif
-+
- static void
- sisusb_free_buffers(struct sisusb_usb_data *sisusb)
+This patch fixes a bug where we obtain a smaller resolution than requested.
+(eg: in 640x480, only 639x479 usable pixels).
+
+This was due to 1 being substracted from the xres and yres vars
+two times: first in mbxfb.c and then in the macros from reg_bits.h.
+
+This patch removes the minus ones from the mbxfb.c file. Tested and works.
+
+
+--------------000605060404010603080101
+Content-Type: text/plain;
+ name="mbxfb-size.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mbxfb-size.diff"
+
+This patch fixes a bug where we obtain a smaller resolution than requested. 
+(eg: in 640x480, only 639x479 usable pixels). 
+
+This was due to 1 being substracted from the xres and yres vars 
+two times: first in mbxfb.c and then in the macros from reg_bits.h.
+
+This patch removes the minus ones from the mbxfb.c file. Tested and works.
+
+Signed-off-by: Raphael Assenat <raph@8d.com>
+
+--- mbxfb.c-disppll-workaound	2006-08-14 14:08:56.000000000 -0400
++++ ../linux-2.6.18-rc2-8d/drivers/video/mbx/mbxfb.c	2006-08-14 14:23:40.000000000 -0400
+@@ -255,8 +255,8 @@
+ 
+ 	/* setup resolution */
+ 	gsctrl &= ~(FMsk(GSCTRL_GSWIDTH) | FMsk(GSCTRL_GSHEIGHT));
+-	gsctrl |= Gsctrl_Width(info->var.xres - 1) |
+-		Gsctrl_Height(info->var.yres - 1);
++	gsctrl |= Gsctrl_Width(info->var.xres) |
++		Gsctrl_Height(info->var.yres);
+ 	writel(gsctrl, GSCTRL);
+ 	udelay(1000);
+ 
+@@ -413,8 +413,8 @@
  {
-@@ -411,6 +421,10 @@
-           memcpy(buffer, kernbuffer, passsize);
-           kernbuffer += passsize;
+ 	unsigned long gsctrl;
+ 
+-	gsctrl = GSCTRL_GAMMA_EN | Gsctrl_Width(fbi->var.xres - 1) |
+-		Gsctrl_Height(fbi->var.yres - 1);
++	gsctrl = GSCTRL_GAMMA_EN | Gsctrl_Width(fbi->var.xres) |
++		Gsctrl_Height(fbi->var.yres);
+ 	switch (fbi->var.bits_per_pixel) {
+ 	case 16:
+ 		if (fbi->var.green.length == 5)
 
-+#ifdef __BIG_ENDIAN
-+           if ((len & 3) == 0)
-+               correct_endianness_buffer((u16 *)buffer, thispass/2);
-+#endif
-       }
-
-       retry = 5;
-@@ -906,9 +920,13 @@
-           if (userbuffer) {
-               if (get_user(swap32, (u32 __user *)userbuffer))
-                   return -EFAULT;
--           } else
-+           } else {
-               swap32 = *((u32 *)kernbuffer);
-
-+#ifdef __BIG_ENDIAN
-+               swap32 = ((swap32 << 16) & 0xffff0000) | ((swap32 >>
-16) & 0xffff);
-+#endif
-+           }
-           ret = sisusb_write_memio_long(sisusb,
-                           SISUSB_TYPE_MEM,
-                           addr,
-@@ -1259,7 +1277,11 @@
-
-                   userbuffer += 4;
-               } else {
-+#ifdef __BIG_ENDIAN
-+                   *((u32 *)kernbuffer) = ((swap32 << 16) &
-0xffff0000) | ((swap32 >> 16) & 0xffff);
-+#else
-                   *((u32 *)kernbuffer) = swap32;
-+#endif
-                   kernbuffer += 4;
-               }
-               addr += 4;
-@@ -3435,6 +3457,9 @@
-
- static struct usb_device_id sisusb_table [] = {
-   { USB_DEVICE(0x0711, 0x0900) },
-+   { USB_DEVICE(0x0711, 0x0901) },
-+   { USB_DEVICE(0x0711, 0x0902) },
-+   { USB_DEVICE(0x0711, 0x0920) },
-   { USB_DEVICE(0x182d, 0x021c) },
-   { USB_DEVICE(0x182d, 0x0269) },
-   { }
+--------------000605060404010603080101
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+--------------000605060404010603080101
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--------------000605060404010603080101--

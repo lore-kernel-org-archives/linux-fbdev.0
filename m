@@ -1,23 +1,25 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [RFC: 2.6 patch] drivers/video/aty/: possible
-	cleanups
-Date: Tue, 15 Aug 2006 02:41:01 +0200
-Message-ID: <20060815004101.GE3543@stusta.de>
+From: Raphael Assenat <raph@8d.com>
+Subject: Re: [PATCH 1/2] mbxfb: Fix a chip bug?
+ resulting in	wrong pixclock
+Date: Tue, 15 Aug 2006 08:47:03 -0400
+Message-ID: <44E1C247.8040004@8d.com>
+References: <44E0C3A4.6050407@8d.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GCn0E-0002Td-Pt for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 14 Aug 2006 17:41:54 -0700
-Received: from mailout.stusta.mhn.de ([141.84.69.5])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1GCn0D-00047Y-5p
+	id 1GCyIt-0004r3-Dt for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 15 Aug 2006 05:45:55 -0700
+Received: from roc.holo.8d.com ([64.254.227.115])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GCyIr-0005QM-0a
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 14 Aug 2006 17:41:54 -0700
-Content-Disposition: inline
+	Tue, 15 Aug 2006 05:45:55 -0700
+In-Reply-To: <44E0C3A4.6050407@8d.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,62 +30,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
 
-This patch contains the following possible cleanups:
-- make the following needlessly global function static:
-  - mach64_ct.c: aty_st_pll_ct()
-- proper prototypes for the following functions:
-  - atyfb_base.c: atyfb_copyarea()
-  - atyfb_base.c: atyfb_fillrect()
-  - atyfb_base.c: atyfb_imageblit()
+Raphael Assenat wrote:
+> This is a workaround for what I think is a bug in the 2700G chip.
+> 
+> The PLL output frequency is adustable using 3 values (M, N and P. See
+> code for formula). The N value range is documented to be 1 to 7 but when
+> it is set to 1, the output frequency is lower than it should be (divided 
+> by 2),
+> giving unexpected results such as no sync on a CRT display.
+I just thought it might be useful to post information about how to reproduce this:
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Install fbset and link /etc/fb.modes to the fb.modes.ATI distributed with fbset.
 
----
+Do 'fbset "800x600-70" -depth 16' and the generated pixel clock will result in a v-sync 
+around 25 hz. The 800x600-60 and 800x600-72 modes will work correctly, with the expected 
+v-sync values.
 
- drivers/video/aty/atyfb.h      |    6 +++++-
- drivers/video/aty/atyfb_base.c |    3 ---
- drivers/video/aty/mach64_ct.c  |    2 +-
- 3 files changed, 6 insertions(+), 5 deletions(-)
+After applying the patch, the "800x600-70" mode works correctly.
 
---- linux-2.6.18-rc4-mm1/drivers/video/aty/atyfb.h.old	2006-08-13 23:45:13.000000000 +0200
-+++ linux-2.6.18-rc4-mm1/drivers/video/aty/atyfb.h	2006-08-13 23:50:36.000000000 +0200
-@@ -355,5 +355,9 @@
- 
- extern void aty_reset_engine(const struct atyfb_par *par);
- extern void aty_init_engine(struct atyfb_par *par, struct fb_info *info);
--extern void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par);
- extern u8   aty_ld_pll_ct(int offset, const struct atyfb_par *par);
-+
-+void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
-+void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
-+void atyfb_imageblit(struct fb_info *info, const struct fb_image *image);
-+
---- linux-2.6.18-rc4-mm1/drivers/video/aty/mach64_ct.c.old	2006-08-13 23:45:31.000000000 +0200
-+++ linux-2.6.18-rc4-mm1/drivers/video/aty/mach64_ct.c	2006-08-13 23:45:36.000000000 +0200
-@@ -27,7 +27,7 @@
- 	return res;
- }
- 
--void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par)
-+static void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par)
- {
- 	/* write addr byte */
- 	aty_st_8(CLOCK_CNTL_ADDR, ((offset << 2) & PLL_ADDR) | PLL_WR_EN, par);
---- linux-2.6.18-rc4-mm1/drivers/video/aty/atyfb_base.c.old	2006-08-13 23:48:29.000000000 +0200
-+++ linux-2.6.18-rc4-mm1/drivers/video/aty/atyfb_base.c	2006-08-13 23:50:25.000000000 +0200
-@@ -240,9 +240,6 @@
- static int atyfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info);
- static int atyfb_blank(int blank, struct fb_info *info);
- static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg);
--extern void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
--extern void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
--extern void atyfb_imageblit(struct fb_info *info, const struct fb_image *image);
- #ifdef __sparc__
- static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma);
- #endif
+Here are the modelines from my fb.modes file, just in case:
+mode "800x600-70"
+     # D: 44.90 MHz, H: 44.544 kHz, V: 70.04 Hz
+     geometry 800 600 800 600 8
+     timings 22272 40 24 15 9 144 12
+     hsync high
+endmode
+
+mode "800x600-60"
+     # D: 40.00 MHz, H: 37.879 kHz, V: 60.32 Hz
+     geometry 800 600 800 600 8
+     timings 25000 88 40 23 1 128 4
+     hsync high
+     vsync high
+endmode
+
+mode "800x600-72"
+     # D: 50.00 MHz, H: 48.090 kHz, V: 72.19 Hz
+     geometry 800 600 800 600 8
+     timings 20000 64 56 23 37 120 6
+     hsync high
+     vsync high
+endmode
 
 
 

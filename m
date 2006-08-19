@@ -1,26 +1,26 @@
-From: "Steve Spano" <steve@flconsult.com>
-Subject: ##3 Frame Buffer Questions?
-Date: Fri, 18 Aug 2006 10:30:20 -0400
-Message-ID: <010701c6c2d2$e04cd450$6400a8c0@fleballnchain>
-Reply-To: steve@flconsult.com,
-	linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: ##3 Frame Buffer Questions?
+Date: Sat, 19 Aug 2006 08:19:34 +0800
+Message-ID: <1155946775.9630.5.camel@daplas.org>
+References: <010701c6c2d2$e04cd450$6400a8c0@fleballnchain>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1121748470=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GE5O1-0002fH-Qm for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 18 Aug 2006 07:31:49 -0700
-Received: from mail.danica.com ([205.232.74.72] helo=danicacomputing.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GE5Nz-0002sC-3i
+	id 1GEEZ7-0008Nj-5w for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 18 Aug 2006 17:19:53 -0700
+Received: from py-out-1112.google.com ([64.233.166.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GEEZ4-0002Ho-G1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 18 Aug 2006 07:31:49 -0700
-Received: from fleballnchain (cpe-24-59-110-67.twcny.res.rr.com [24.59.110.67])
-	by danicacomputing.com (mail2.danicacomputing.com)
-	(MDaemon PRO v9.0.4) with ESMTP id md50001158051.msg
+	Fri, 18 Aug 2006 17:19:53 -0700
+Received: by py-out-1112.google.com with SMTP id x31so1266852pye
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 18 Aug 2006 10:30:54 -0400
+	Fri, 18 Aug 2006 17:19:48 -0700 (PDT)
+In-Reply-To: <010701c6c2d2$e04cd450$6400a8c0@fleballnchain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,311 +31,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-
-This is a multi-part message in MIME format.
-
---===============1121748470==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0108_01C6C2B1.593B3450"
-
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0108_01C6C2B1.593B3450
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-Hi Folks,
-
- 
-
-I have a question.
-
-
-Working on a "semi-custom" frame buffer for a Xilinx FPGA with the
-Microblaze.
-
- 
-
-The specific file we started with is already in the
-uclinux/drivers/video and is called xilinxfb.c
-
- 
-
-We can register the driver and a debug trace in the driver shows that it
-registers as FB0 29-0, so that should be right.
-
- 
-
-However, if I do a cat /dev/fb0  the linux responds by saying it can't
-open the device. It appears that somehow the default file pointer in
-dev/fb0 cannot connect to the actual driver?
-
- 
-
-MKNODing the driver also fails.
-
- 
-
-I do have other drivers that we have made that do install, so this isn't
-the first attempt at a driver.
-
- 
-
-Any thoughts on where I may look for some ideas on this?
-
- 
-
-Thanks!
-
- 
-
-Steve Spano, President
-
-Finger Lakes Engineering
-
-119 South Cayuga #200
-
-Ithaca, Ny 14850
-
-(V) 607-277-1614 x223
-
-(C) 607-342-1150
-
-www.FL-ENG.com - FLE's Main Website
-
-www.FLEDEVFORUM.com - FLE's Developer Forum
-
- 
-
- 
-
-
-------=_NextPart_000_0108_01C6C2B1.593B3450
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-
-
-<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
-
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p.MsoAutoSig, li.MsoAutoSig, div.MsoAutoSig
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-span.EmailStyle17
-	{font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi Folks,</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I have a question.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><br>
-Working on a &#8220;semi-custom&#8221; frame buffer for a Xilinx FPGA =
-with the Microblaze.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>The specific file we started with is already in the =
-uclinux/drivers/video
-and is called xilinxfb.c</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>We can register the driver and a debug trace in the =
-driver
-shows that it registers as FB0 29-0, so that should be =
-right.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>However, if I do a cat /dev/fb0&nbsp; the linux =
-responds by
-saying it can&#8217;t open the device. It appears that somehow the =
-default file
-pointer in dev/fb0 cannot connect to the actual =
-driver?</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>MKNODing the driver also fails.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I do have other drivers that we have made that do =
-install,
-so this isn&#8217;t the first attempt at a driver.</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Any thoughts on where I may look for some ideas on =
-this?</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks!</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D2 face=3D"Times New Roman"><span =
-style=3D'font-size:
-10.0pt'>Steve Spano, President</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D2 face=3D"Times New Roman"><span =
-style=3D'font-size:
- 10.0pt'>Finger Lakes</span></font><font size=3D2><span =
-style=3D'font-size:10.0pt'>
-Engineering</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D2 face=3D"Times New Roman"><span =
-style=3D'font-size:
-10.0pt'>119 South Cayuga #200</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D2 face=3D"Times New Roman"><span =
-style=3D'font-size:
-  10.0pt'>Ithaca</span></font><font size=3D2><span =
-style=3D'font-size:10.0pt'>, </span></font><font
-  size=3D2><span style=3D'font-size:10.0pt'>Ny</span></font><font =
-size=3D2><span
- style=3D'font-size:10.0pt'> </span></font><font size=3D2><span =
-style=3D'font-size:
-  10.0pt'>14850</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D2 face=3D"Times New Roman"><span =
-style=3D'font-size:
-10.0pt'>(V) 607-277-1614 x223</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D2 face=3D"Times New Roman"><span =
-style=3D'font-size:
-10.0pt'>(C) 607-342-1150</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><a =
-href=3D"http://www.FL-ENG.com">www.FL-ENG.com</a></span></font><font
-face=3DArial><span style=3D'font-family:Arial'>&nbsp;- FLE's Main =
-Website</span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3DArial><span =
-style=3D'font-size:12.0pt;
-font-family:Arial'><a =
-href=3D"http://www.FLEDEVFORUM.com">www.FLEDEVFORUM.com</a>
-- FLE's Developer Forum</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>&nbsp;</span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0108_01C6C2B1.593B3450--
-
-
-
---===============1121748470==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---===============1121748470==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1121748470==--
+To: steve@flconsult.com, linux-fbdev-devel@lists.sourceforge.net
+
+T24gRnJpLCAyMDA2LTA4LTE4IGF0IDEwOjMwIC0wNDAwLCBTdGV2ZSBTcGFubyB3cm90ZToKPiBI
+aSBGb2xrcywKPiAKPiAgCj4gCj4gSSBoYXZlIGEgcXVlc3Rpb24uCj4gCj4gCj4gV29ya2luZyBv
+biBhIOKAnHNlbWktY3VzdG9t4oCdIGZyYW1lIGJ1ZmZlciBmb3IgYSBYaWxpbnggRlBHQSB3aXRo
+IHRoZQo+IE1pY3JvYmxhemUuCj4gCj4gIAo+IAo+IFRoZSBzcGVjaWZpYyBmaWxlIHdlIHN0YXJ0
+ZWQgd2l0aCBpcyBhbHJlYWR5IGluIHRoZQo+IHVjbGludXgvZHJpdmVycy92aWRlbyBhbmQgaXMg
+Y2FsbGVkIHhpbGlueGZiLmMKPiAKPiAgCj4gCj4gV2UgY2FuIHJlZ2lzdGVyIHRoZSBkcml2ZXIg
+YW5kIGEgZGVidWcgdHJhY2UgaW4gdGhlIGRyaXZlciBzaG93cyB0aGF0Cj4gaXQgcmVnaXN0ZXJz
+IGFzIEZCMCAyOS0wLCBzbyB0aGF0IHNob3VsZCBiZSByaWdodC4KPiAKPiAgCj4gCj4gSG93ZXZl
+ciwgaWYgSSBkbyBhIGNhdCAvZGV2L2ZiMCAgdGhlIGxpbnV4IHJlc3BvbmRzIGJ5IHNheWluZyBp
+dCBjYW7igJl0Cj4gb3BlbiB0aGUgZGV2aWNlLiBJdCBhcHBlYXJzIHRoYXQgc29tZWhvdyB0aGUg
+ZGVmYXVsdCBmaWxlIHBvaW50ZXIgaW4KPiBkZXYvZmIwIGNhbm5vdCBjb25uZWN0IHRvIHRoZSBh
+Y3R1YWwgZHJpdmVyPwo+IAo+ICAKPiAKPiBNS05PRGluZyB0aGUgZHJpdmVyIGFsc28gZmFpbHMu
+Cj4gCj4gIAo+IAo+IEkgZG8gaGF2ZSBvdGhlciBkcml2ZXJzIHRoYXQgd2UgaGF2ZSBtYWRlIHRo
+YXQgZG8gaW5zdGFsbCwgc28gdGhpcwo+IGlzbuKAmXQgdGhlIGZpcnN0IGF0dGVtcHQgYXQgYSBk
+cml2ZXIuCj4gCj4gIAo+IAo+IEFueSB0aG91Z2h0cyBvbiB3aGVyZSBJIG1heSBsb29rIGZvciBz
+b21lIGlkZWFzIG9uIHRoaXM/CgpXaGF0IGtlcm5lbCB2ZXJzaW9uIGFyZSB5b3UgdXNpbmc/CkRv
+ZXMgaXQgc2hvdyB1cCBpbiAvcHJvYy9mYj8gSWYgaXQgZG9lcywgdGhlIGRldmljZSBub2RlIGl0
+J3MgYm91bmQgdG9vCnNob3VsZCBhbHNvIHNob3cgdXAuCgpJZiBpdCBkb2VzIHNob3cgdXAgaW4g
+L3Byb2MvZmIsIHRoZW4gbWFrZSBzdXJlIHRoYXQgaW5mby0+c2NyZWVuX2Jhc2UKKGluIDIuNikg
+b3IgaW5mby0+ZGlzcC0+c2NyZWVuX2Jhc2UgKGluIDIuNCkgaXMgcG9pbnRpbmcgdG8gdGhlIHZp
+cnR1YWwKYWRkcmVzcyBvZiB0aGUgZnJhbWVidWZmZXIuCgpJZiBwdWJsaWNseSBhdmFpbGFibGUs
+IGNhbiB5b3UgcG9pbnQgdXMgdG8gdGhlIHNvdXJjZT8KClRvbnkKCgoKCi0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0KVXNpbmcgVG9tY2F0IGJ1dCBuZWVkIHRvIGRvIG1vcmU/IE5lZWQgdG8gc3VwcG9ydCB3ZWIg
+c2VydmljZXMsIHNlY3VyaXR5PwpHZXQgc3R1ZmYgZG9uZSBxdWlja2x5IHdpdGggcHJlLWludGVn
+cmF0ZWQgdGVjaG5vbG9neSB0byBtYWtlIHlvdXIgam9iIGVhc2llcgpEb3dubG9hZCBJQk0gV2Vi
+U3BoZXJlIEFwcGxpY2F0aW9uIFNlcnZlciB2LjEuMC4xIGJhc2VkIG9uIEFwYWNoZSBHZXJvbmlt
+bwpodHRwOi8vc2VsLmFzLXVzLmZhbGthZy5uZXQvc2VsP2NtZD1sbmsma2lkPTEyMDcwOSZiaWQ9
+MjYzMDU3JmRhdD0xMjE2NDIKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVs
+QGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0
+cy9saXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=

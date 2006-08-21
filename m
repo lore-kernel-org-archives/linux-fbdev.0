@@ -1,25 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/5] mbxfb: Fix a chip bug? resulting in
-	wrong pixclock
-Date: Mon, 21 Aug 2006 18:54:00 +0800
-Message-ID: <1156157640.6254.26.camel@daplas.org>
+Subject: [PATCH 1/5] atyfb: Possible cleanups
+Date: Mon, 21 Aug 2006 18:53:54 +0800
+Message-ID: <1156157635.6254.25.camel@daplas.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GF7Q0-0001HR-UQ for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Aug 2006 03:54:09 -0700
-Received: from nz-out-0102.google.com ([64.233.162.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GF7Pz-0005UP-Jy
+	id 1GF7Q0-0001HK-3u for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Aug 2006 03:54:08 -0700
+Received: from py-out-1112.google.com ([64.233.166.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GF7Pw-0004ga-5b
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Mon, 21 Aug 2006 03:54:08 -0700
-Received: by nz-out-0102.google.com with SMTP id l8so688649nzf
+Received: by py-out-1112.google.com with SMTP id x31so2248314pye
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 21 Aug 2006 03:54:05 -0700 (PDT)
+	Mon, 21 Aug 2006 03:54:00 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,52 +30,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Raphael Assenat <raph@8d.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adrian Bunk <bunk@stusta.de>
 
-From: Raphael Assenat <raph@8d.com>
+From: Adrian Bunk <bunk@stusta.de>
 
-This is a workaround for what I think is a bug in the 2700G chip.
+- make the following needlessly global function static:
+  - mach64_ct.c: aty_st_pll_ct()
+- proper prototypes for the following functions:
+  - atyfb_base.c: atyfb_copyarea()
+  - atyfb_base.c: atyfb_fillrect()
+  - atyfb_base.c: atyfb_imageblit()
 
-The PLL output frequency is adustable using 3 values (M, N and P. See
-code for formula). The N value range is documented to be 1 to 7 but when
-it is set to 1, the output frequency is lower than it should be (divided by 2),
-giving unexpected results such as no sync on a CRT display.
-
-This patch prevents N=1 when searching for the best value for the requested
-pixclock.
-
-Signed-off-by: Raphael Assenat <raph@8d.com>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/mbx/mbxfb.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ drivers/video/aty/atyfb.h      |    6 +++++-
+ drivers/video/aty/atyfb_base.c |    3 ---
+ drivers/video/aty/mach64_ct.c  |    2 +-
+ 3 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
-index 6849ab7..cfc6bf3 100644
---- a/drivers/video/mbx/mbxfb.c
-+++ b/drivers/video/mbx/mbxfb.c
-@@ -118,8 +118,19 @@ static unsigned int mbxfb_get_pixclock(u
- 	/* convert pixclock to KHz */
- 	pixclock = PICOS2KHZ(pixclock_ps);
+diff --git a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+index 55fb8b0..b04f49f 100644
+--- a/drivers/video/aty/atyfb.h
++++ b/drivers/video/aty/atyfb.h
+@@ -355,5 +355,9 @@ static inline void wait_for_idle(struct 
  
-+	/* PLL output freq = (ref_clk * M) / (N * 2^P)
-+	 *
-+	 * M: 1 to 63
-+	 * N: 1 to 7
-+	 * P: 0 to 7
-+	 */
+ extern void aty_reset_engine(const struct atyfb_par *par);
+ extern void aty_init_engine(struct atyfb_par *par, struct fb_info *info);
+-extern void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par);
+ extern u8   aty_ld_pll_ct(int offset, const struct atyfb_par *par);
 +
-+	/* RAPH: When N==1, the resulting pixel clock appears to
-+	 * get divided by 2. Preventing N=1 by starting the following
-+	 * loop at 2 prevents this. Is this a bug with my chip
-+	 * revision or something I dont understand? */
- 	for (m = 1; m < 64; m++) {
--		for (n = 1; n < 8; n++) {
-+		for (n = 2; n < 8; n++) {
- 			for (p = 0; p < 8; p++) {
- 				clk = (ref_clk * m) / (n * (1 << p));
- 				err = (clk > pixclock) ? (clk - pixclock) :
++void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
++void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
++void atyfb_imageblit(struct fb_info *info, const struct fb_image *image);
++
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index d6be4c7..f295005 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -240,9 +240,6 @@ static int atyfb_setcolreg(u_int regno, 
+ static int atyfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info);
+ static int atyfb_blank(int blank, struct fb_info *info);
+ static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg);
+-extern void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+-extern void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
+-extern void atyfb_imageblit(struct fb_info *info, const struct fb_image *image);
+ #ifdef __sparc__
+ static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma);
+ #endif
+diff --git a/drivers/video/aty/mach64_ct.c b/drivers/video/aty/mach64_ct.c
+index e705693..5080816 100644
+--- a/drivers/video/aty/mach64_ct.c
++++ b/drivers/video/aty/mach64_ct.c
+@@ -27,7 +27,7 @@ u8 aty_ld_pll_ct(int offset, const struc
+ 	return res;
+ }
+ 
+-void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par)
++static void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par)
+ {
+ 	/* write addr byte */
+ 	aty_st_8(CLOCK_CNTL_ADDR, ((offset << 2) & PLL_ADDR) | PLL_WR_EN, par);
 
 
 

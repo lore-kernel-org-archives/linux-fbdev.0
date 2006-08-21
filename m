@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/5] vt: proper prototypes for some
-	console functions
-Date: Mon, 21 Aug 2006 18:54:19 +0800
-Message-ID: <1156157659.6254.29.camel@daplas.org>
+Subject: [PATCH 4/5] fbcon:: make 3 functions static
+Date: Mon, 21 Aug 2006 18:54:14 +0800
+Message-ID: <1156157655.6254.28.camel@daplas.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GF7QY-0001IV-He for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Aug 2006 03:54:42 -0700
+	id 1GF7QU-0001IM-AR for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Aug 2006 03:54:38 -0700
 Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GF7QY-0004ga-7V
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GF7QU-0004ga-0F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Aug 2006 03:54:42 -0700
+	Mon, 21 Aug 2006 03:54:38 -0700
 Received: by py-out-1112.google.com with SMTP id x31so2248314pye
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 21 Aug 2006 03:54:41 -0700 (PDT)
+	Mon, 21 Aug 2006 03:54:36 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,60 +34,56 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adri
 
 From: Adrian Bunk <bunk@stusta.de>
 
-This patch adds proper prototypes to header files for three console init
-functions used on drivers/char/vt.c
+This patch makes three needlessly global functions static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/char/vt.c          |    8 --------
- include/linux/console.h    |    3 +++
- include/linux/consolemap.h |    1 +
- 3 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/video/console/fbcon_ccw.c |    2 +-
+ drivers/video/console/fbcon_cw.c  |    2 +-
+ drivers/video/console/fbcon_ud.c  |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index e122d16..0037682 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -139,14 +139,6 @@ #define DEFAULT_BELL_DURATION	(HZ/8)
- extern void vcs_make_sysfs(struct tty_struct *tty);
- extern void vcs_remove_sysfs(struct tty_struct *tty);
+diff --git a/drivers/video/console/fbcon_ccw.c b/drivers/video/console/fbcon_ccw.c
+index 4481c80..825e6d6 100644
+--- a/drivers/video/console/fbcon_ccw.c
++++ b/drivers/video/console/fbcon_ccw.c
+@@ -391,7 +391,7 @@ static void ccw_cursor(struct vc_data *v
+ 	ops->cursor_reset = 0;
+ }
  
--extern void console_map_init(void);
--#ifdef CONFIG_PROM_CONSOLE
--extern void prom_con_init(void);
--#endif
--#ifdef CONFIG_MDA_CONSOLE
--extern int mda_console_init(void);
--#endif
--
- struct vc vc_cons [MAX_NR_CONSOLES];
+-int ccw_update_start(struct fb_info *info)
++static int ccw_update_start(struct fb_info *info)
+ {
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 	u32 yoffset;
+diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon_cw.c
+index 7f92c06..c637e63 100644
+--- a/drivers/video/console/fbcon_cw.c
++++ b/drivers/video/console/fbcon_cw.c
+@@ -375,7 +375,7 @@ static void cw_cursor(struct vc_data *vc
+ 	ops->cursor_reset = 0;
+ }
  
- #ifndef VT_SINGLE_DRIVER
-diff --git a/include/linux/console.h b/include/linux/console.h
-index 76a1807..7d04202 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -129,6 +129,9 @@ static inline void suspend_console(void)
- static inline void resume_console(void) {}
- #endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
+-int cw_update_start(struct fb_info *info)
++static int cw_update_start(struct fb_info *info)
+ {
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 	u32 vxres = GETVXRES(ops->p->scrollmode, info);
+diff --git a/drivers/video/console/fbcon_ud.c b/drivers/video/console/fbcon_ud.c
+index ab91005..1473506 100644
+--- a/drivers/video/console/fbcon_ud.c
++++ b/drivers/video/console/fbcon_ud.c
+@@ -415,7 +415,7 @@ static void ud_cursor(struct vc_data *vc
+ 	ops->cursor_reset = 0;
+ }
  
-+int mda_console_init(void);
-+void prom_con_init(void);
-+
- /* Some debug stub to catch some of the obvious races in the VT code */
- #if 1
- #define WARN_CONSOLE_UNLOCKED()	WARN_ON(!is_console_locked() && !oops_in_progress)
-diff --git a/include/linux/consolemap.h b/include/linux/consolemap.h
-index 65842ef..82c9a1f 100644
---- a/include/linux/consolemap.h
-+++ b/include/linux/consolemap.h
-@@ -13,3 +13,4 @@ struct vc_data;
- extern unsigned char inverse_translate(struct vc_data *conp, int glyph);
- extern unsigned short *set_translate(int m, struct vc_data *vc);
- extern int conv_uni_to_pc(struct vc_data *conp, long ucs);
-+void console_map_init(void);
+-int ud_update_start(struct fb_info *info)
++static int ud_update_start(struct fb_info *info)
+ {
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 	int xoffset, yoffset;
 
 
 

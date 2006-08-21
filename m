@@ -1,24 +1,25 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] proper prototypes for some console
-	functions
-Date: Mon, 21 Aug 2006 12:44:05 +0200
-Message-ID: <20060821104405.GI11651@stusta.de>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 3/5] mbxfb: Fix framebuffer size smaller
+	than requested
+Date: Mon, 21 Aug 2006 18:54:05 +0800
+Message-ID: <1156157645.6254.27.camel@daplas.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GF7GO-0000KP-3P for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Aug 2006 03:44:12 -0700
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]
-	helo=mailout.stusta.mhn.de)
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1GF7GM-0002Cp-Fx
+	id 1GF7Q6-0001Hi-9z for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Aug 2006 03:54:14 -0700
+Received: from nz-out-0102.google.com ([64.233.162.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GF7Q4-0005UP-Vm
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Aug 2006 03:44:12 -0700
-Content-Disposition: inline
+	Mon, 21 Aug 2006 03:54:14 -0700
+Received: by nz-out-0102.google.com with SMTP id l8so688649nzf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 21 Aug 2006 03:54:12 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,57 +30,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Raphael Assenat <raph@8d.com>
 
-This patch adds proper prototypes to header files for three console init 
-functions used on drivers/char/vt.c
+From: Raphael Assenat <raph@8d.com>
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+This patch fixes a bug where we obtain a smaller resolution than requested.
+(eg: in 640x480, only 639x479 usable pixels).
 
+This was due to 1 being substracted from the xres and yres vars
+two times: first in mbxfb.c and then in the macros from reg_bits.h.
+
+This patch removes the minus ones from the mbxfb.c file. Tested and works.
+
+Signed-off-by: Raphael Assenat <raph@8d.com>
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/char/vt.c          |    8 --------
- include/linux/console.h    |    3 +++
- include/linux/consolemap.h |    1 +
- 3 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/video/mbx/mbxfb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.18-rc4-mm1/include/linux/consolemap.h.old	2006-08-14 00:30:56.000000000 +0200
-+++ linux-2.6.18-rc4-mm1/include/linux/consolemap.h	2006-08-14 00:31:10.000000000 +0200
-@@ -13,3 +13,4 @@
- extern unsigned char inverse_translate(struct vc_data *conp, int glyph);
- extern unsigned short *set_translate(int m, struct vc_data *vc);
- extern int conv_uni_to_pc(struct vc_data *conp, long ucs);
-+void console_map_init(void);
---- linux-2.6.18-rc4-mm1/include/linux/console.h.old	2006-08-14 00:31:33.000000000 +0200
-+++ linux-2.6.18-rc4-mm1/include/linux/console.h	2006-08-14 00:32:42.000000000 +0200
-@@ -124,6 +124,9 @@
- extern void suspend_console(void);
- extern void resume_console(void);
+diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
+index cfc6bf3..a32d1af 100644
+--- a/drivers/video/mbx/mbxfb.c
++++ b/drivers/video/mbx/mbxfb.c
+@@ -255,8 +255,8 @@ static int mbxfb_set_par(struct fb_info 
  
-+int mda_console_init(void);
-+void prom_con_init(void);
-+
- /* Some debug stub to catch some of the obvious races in the VT code */
- #if 1
- #define WARN_CONSOLE_UNLOCKED()	WARN_ON(!is_console_locked() && !oops_in_progress)
---- linux-2.6.18-rc4-mm1/drivers/char/vt.c.old	2006-08-14 00:29:47.000000000 +0200
-+++ linux-2.6.18-rc4-mm1/drivers/char/vt.c	2006-08-14 00:30:01.000000000 +0200
-@@ -139,14 +139,6 @@
- extern void vcs_make_sysfs(struct tty_struct *tty);
- extern void vcs_remove_sysfs(struct tty_struct *tty);
+ 	/* setup resolution */
+ 	gsctrl &= ~(FMsk(GSCTRL_GSWIDTH) | FMsk(GSCTRL_GSHEIGHT));
+-	gsctrl |= Gsctrl_Width(info->var.xres - 1) |
+-		Gsctrl_Height(info->var.yres - 1);
++	gsctrl |= Gsctrl_Width(info->var.xres) |
++		Gsctrl_Height(info->var.yres);
+ 	writel(gsctrl, GSCTRL);
+ 	udelay(1000);
  
--extern void console_map_init(void);
--#ifdef CONFIG_PROM_CONSOLE
--extern void prom_con_init(void);
--#endif
--#ifdef CONFIG_MDA_CONSOLE
--extern int mda_console_init(void);
--#endif
--
- struct vc vc_cons [MAX_NR_CONSOLES];
+@@ -413,8 +413,8 @@ static void __devinit setup_graphics(str
+ {
+ 	unsigned long gsctrl;
  
- #ifndef VT_SINGLE_DRIVER
+-	gsctrl = GSCTRL_GAMMA_EN | Gsctrl_Width(fbi->var.xres - 1) |
+-		Gsctrl_Height(fbi->var.yres - 1);
++	gsctrl = GSCTRL_GAMMA_EN | Gsctrl_Width(fbi->var.xres) |
++		Gsctrl_Height(fbi->var.yres);
+ 	switch (fbi->var.bits_per_pixel) {
+ 	case 16:
+ 		if (fbi->var.green.length == 5)
+
 
 
 -------------------------------------------------------------------------

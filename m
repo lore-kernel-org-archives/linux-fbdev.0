@@ -1,24 +1,31 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 4/5] fbcon:: make 3 functions static
-Date: Mon, 21 Aug 2006 18:54:14 +0800
-Message-ID: <1156157655.6254.28.camel@daplas.org>
+From: "Mitsuhiro KOGA" <shiena.jp@gmail.com>
+Subject: Re: [PATCH 2.6.18-rc4] sisusbvga: fix sisusb.c
+Date: Thu, 24 Aug 2006 15:34:04 +0900
+Message-ID: <6cb5f1c10608232334p65bead07v21a3035bc9f23d03@mail.gmail.com>
+References: <6cb5f1c10608131347s69e2c1adgf0a72041314d6bf0@mail.gmail.com>
+	<1155600551.3917.25.camel@daplas.org>
+	<6cb5f1c10608160431w1b294780yee3404a779da38ff@mail.gmail.com>
+	<1155733001.15309.13.camel@daplas.org>
+	<6cb5f1c10608160833w4aba9f94va5b011fe49a7aef2@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GF7QU-0001IM-AR for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Aug 2006 03:54:38 -0700
-Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GF7QU-0004ga-0F
+	id 1GG8n1-0001qg-Vq for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Aug 2006 23:34:08 -0700
+Received: from nf-out-0910.google.com ([64.233.182.185])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GG8n0-0001t7-TQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Aug 2006 03:54:38 -0700
-Received: by py-out-1112.google.com with SMTP id x31so2248314pye
+	Wed, 23 Aug 2006 23:34:07 -0700
+Received: by nf-out-0910.google.com with SMTP id m19so529725nfc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 21 Aug 2006 03:54:36 -0700 (PDT)
+	Wed, 23 Aug 2006 23:34:04 -0700 (PDT)
+In-Reply-To: <6cb5f1c10608160833w4aba9f94va5b011fe49a7aef2@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,63 +36,75 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adrian Bunk <bunk@stusta.de>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: akpm@osdl.org, thomas@winischhofer.net, linux-fbdev-devel@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net
 
-From: Adrian Bunk <bunk@stusta.de>
+I'm sorry. Because the mistake and lack were found in the explanation,
+a postscript is added to it.
 
-This patch makes three needlessly global functions static.
+2006/8/17, Mitsuhiro KOGA <shiena.jp@gmail.com>:
+> 2006/8/16, Antonino A. Daplas <adaplas@gmail.com>:
+> > On Wed, 2006-08-16 at 20:31 +0900, Mitsuhiro KOGA wrote:
+> > > Hi,
+> > >
+> >
+> > >  static void
+> > >  sisusb_free_buffers(struct sisusb_usb_data *sisusb)
+> > >  {
+> > > @@ -408,7 +465,11 @@ static int sisusb_send_bulk_msg(struct s
+> > >
+> > >               } else if (fromkern) {
+> > >
+> > > -                     memcpy(buffer, kernbuffer, passsize);
+> > > +                     if ((len & 3) == 0)
+> > > +                             sisusb_memcpy((u16 *)buffer, (u16 *)kernbuffer, passsize / 2);
+> > > +                     else
+> > > +                             memcpy(buffer, kernbuffer, passsize);
+> >
+> > What happens if (len & 3) != 0? It ends up doing a regular memcpy()
+> > without the reordering.  Better if you move the if (len & 3) == 0 check
+> > to sisusb_memcpy(), so instead of
+> >
+> >                        if ((len & 3) == 0)
+> >                                sisusb_memcpy((u16 *)buffer, (u16 )kernbuffer, passsize / 2);
+> >                        else
+> >                                memcpy(buffer, kernbuffer, passsize);
+> >
+>
+> (a) if (len & 3) != 0
+> When former data length is 4 or less, struct sisusb_packet is used.
+> It becomes 10 in length for writing.
+> Because data is not used, it becomes 6 in length for reading.
+>
+> struct sisusb_packet {
+>     unsigned short header;
+>     u32 address;
+>     u32 data;
+> } __attribute__((__packed__));
+>
+> (b) if (len & 3) == 0
+> When former data length is larger than 4,
+> it corresponds to this case because the length of (data & ~3) is passed.
+> As for the data of the remainder, the logic of (a) is used.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+The length passed here is not (data & ~3) but (former data length & ~3).
 
- drivers/video/console/fbcon_ccw.c |    2 +-
- drivers/video/console/fbcon_cw.c  |    2 +-
- drivers/video/console/fbcon_ud.c  |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+And, variable buffer becomes a character string displayed in the monitor
+a couple of byte sequence by two bytes (the character-code and the delimiter).
+Because this order reverses for the Big endian, variable buffer is
+being replaced.
 
-diff --git a/drivers/video/console/fbcon_ccw.c b/drivers/video/console/fbcon_ccw.c
-index 4481c80..825e6d6 100644
---- a/drivers/video/console/fbcon_ccw.c
-+++ b/drivers/video/console/fbcon_ccw.c
-@@ -391,7 +391,7 @@ static void ccw_cursor(struct vc_data *v
- 	ops->cursor_reset = 0;
- }
- 
--int ccw_update_start(struct fb_info *info)
-+static int ccw_update_start(struct fb_info *info)
- {
- 	struct fbcon_ops *ops = info->fbcon_par;
- 	u32 yoffset;
-diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon_cw.c
-index 7f92c06..c637e63 100644
---- a/drivers/video/console/fbcon_cw.c
-+++ b/drivers/video/console/fbcon_cw.c
-@@ -375,7 +375,7 @@ static void cw_cursor(struct vc_data *vc
- 	ops->cursor_reset = 0;
- }
- 
--int cw_update_start(struct fb_info *info)
-+static int cw_update_start(struct fb_info *info)
- {
- 	struct fbcon_ops *ops = info->fbcon_par;
- 	u32 vxres = GETVXRES(ops->p->scrollmode, info);
-diff --git a/drivers/video/console/fbcon_ud.c b/drivers/video/console/fbcon_ud.c
-index ab91005..1473506 100644
---- a/drivers/video/console/fbcon_ud.c
-+++ b/drivers/video/console/fbcon_ud.c
-@@ -415,7 +415,7 @@ static void ud_cursor(struct vc_data *vc
- 	ops->cursor_reset = 0;
- }
- 
--int ud_update_start(struct fb_info *info)
-+static int ud_update_start(struct fb_info *info)
- {
- 	struct fbcon_ops *ops = info->fbcon_par;
- 	int xoffset, yoffset;
+In the case of (a), sisusb_pack->data is being replaced with
+cpu_to_le32 in existing processing,
+and because the order of the character reverses for four bytes, data
+is being replaced
+with sisusb_order_mem_32 further.
 
+Regards,
 
+-- 
+Mitsuhiro KOGA
+<shiena.jp@gmail.com>
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

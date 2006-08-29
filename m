@@ -1,9 +1,10 @@
-From: "ankur maheshwari" <ankur_maheshwari@procsys.com>
-Subject: how to enable logo
-Date: Tue, 29 Aug 2006 20:29:34 +0530
-Message-ID: <005601c6cb7b$bd9592b0$f301a8c0@procsys>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: how to enable logo
+Date: Tue, 29 Aug 2006 17:03:26 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0608291700130.3907@pademelon.sonytel.be>
 References: <0ab101c69042$ed73d330$f301a8c0@procsys>
 	<Pine.LNX.4.62.0606151037450.19321@pademelon.sonytel.be>
+	<005601c6cb7b$bd9592b0$f301a8c0@procsys>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,17 +13,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GI4zx-0008BM-BK for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Aug 2006 07:55:29 -0700
-Received: from [61.95.199.26] (helo=mailsvr.procsys.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GI4zr-0005Zn-Jz
+	id 1GI57u-0000Un-BT for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 29 Aug 2006 08:03:42 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GI57j-0007gh-Qr
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Aug 2006 07:55:29 -0700
-Received: from ankurmaheshwari ([192.168.1.243])
-	by mailsvr.procsys.com (8.12.10/8.12.10) with SMTP id k7TErtsX006652
+	Tue, 29 Aug 2006 08:03:39 -0700
+Received: from pademelon.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id k7TF3RQe029926
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 29 Aug 2006 20:23:55 +0530
+	Tue, 29 Aug 2006 17:03:27 +0200 (MEST)
+In-Reply-To: <005601c6cb7b$bd9592b0$f301a8c0@procsys>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,61 +34,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-hi,
+On Tue, 29 Aug 2006, ankur maheshwari wrote:
+> I have written a framebuffer driver of my own, which is base on virtual
+> framebuffer driver (vfb.c).
+> After linux boot up I can see my framebuffer in /proc/fb as device 0
+> 
+> 0 myfbdriver
+> 
+> I am working on 2.6.11 uclinux.
+> What I want to know is ----
+> what are the option I need to enable in menuconfig in 2.6 kernel for
+> displaying logo on bootup.
+> 
+> 
+> Currently I tried
+> Device Driver -> Character device -> Virtual Terminal
+> Device Driver -> Character device -> Serial Driver -> Support for console on
+> serial device.
+> Graphic support -> Support of frame buffer devices
+> Graphic support ->Console display driver support -> Frame buffer console
+> support
+> Graphic support ->Logo configuration -> Standard 224-color Linux logo.
+> and My framebuffer driver.
+> 
+> 
+> After boot linux when I do cat /dev/fb0, I get a logo on my hyperterminal.
+> But console remains blank, I copied other files (.ppm) on /dev/fb0 and its
+> getting written on /dev/fb0 but console remains blank.
 
-I have written a framebuffer driver of my own, which is base on virtual
-framebuffer driver (vfb.c).
-After linux boot up I can see my framebuffer in /proc/fb as device 0
+So the correct image is there.
 
-0 myfbdriver
+Hence the memory it's writing to is not the actual frame buffer memory of your
+graphics controller.
 
-I am working on 2.6.11 uclinux.
-What I want to know is ----
-what are the option I need to enable in menuconfig in 2.6 kernel for
-displaying logo on bootup.
+> I observed that while boot up console gives print ....
+> Console: Dummy colour device 80x25 .....
 
+Yep, that's the dummy console, which is used if there's no real console device
+(yet).
 
-Currently I tried
-Device Driver -> Character device -> Virtual Terminal
-Device Driver -> Character device -> Serial Driver -> Support for console on
-serial device.
-Graphic support -> Support of frame buffer devices
-Graphic support ->Console display driver support -> Frame buffer console
-support
-Graphic support ->Logo configuration -> Standard 224-color Linux logo.
-and My framebuffer driver.
+> later when fb driver get loaded, I get following prints
+> Console: switching to frame buffer device 80x30
+> 
+> I have given fix. params as 640x480 but even then it switchs to 80x30.
 
+80x30 is the text console, so the units are character cells.
+Since the default font is VGA 8x16, the actual resolution is 80x8 = 640 times
+30x16 = 480 pixels, which is exactly what you asked for.
 
-After boot linux when I do cat /dev/fb0, I get a logo on my hyperterminal.
-But console remains blank, I copied other files (.ppm) on /dev/fb0 and its
-getting written on /dev/fb0 but console remains blank.
+Gr{oetje,eeting}s,
 
-Can anyone share basic steps for logo display on linux 2.6 ???
+						Geert
 
-I observed that while boot up console gives print ....
-Console: Dummy colour device 80x25 .....
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-later when fb driver get loaded, I get following prints
-Console: switching to frame buffer device 80x30
-
-I have given fix. params as 640x480 but even then it switchs to 80x30.
-
-Can any one explain me what going wrong ???? I am not passing any command
-line params at present also I am not using _setup for command line parsing,
-is that must ??
-
-One more observation I made when I enable support for logo16 or black&white
-logo, my driver gets loaded after fbcon and other fb modules, so doing cat
-/dev/fb0 does not show me anything.
-
-
-thanks
-Ankur
-
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

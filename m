@@ -1,18 +1,19 @@
 From: syrjala@sci.fi
-Subject: [patch 7/9] atyfb: Remove aty_cmap_regs
-Date: Mon, 04 Sep 2006 01:06:54 +0300
-Message-ID: <20060903220703.645688335@proteus.korsu.shacknet.nu>
+Subject: [patch 5/9] atyfb: Remove pointless aty_init()
+	argument
+Date: Mon, 04 Sep 2006 01:06:52 +0300
+Message-ID: <20060903220702.367122502@proteus.korsu.shacknet.nu>
 References: <20060903220646.894202994@proteus.korsu.shacknet.nu>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1148165764=="
+Content-Type: multipart/mixed; boundary="===============1477616203=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GK00v-0008RF-Fu for linux-fbdev-devel@lists.sourceforge.net;
+	id 1GK00v-0008RE-F2 for linux-fbdev-devel@lists.sourceforge.net;
 	Sun, 03 Sep 2006 15:00:25 -0700
-Received: from smtp4.pp.htv.fi ([213.243.153.38])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GK00u-0004ql-8c
+Received: from smtp5.pp.htv.fi ([213.243.153.39])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GK00v-0004qS-9V
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sun, 03 Sep 2006 15:00:25 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -28,107 +29,68 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: alex.kern@gmx.de, Ville Syrjala <syrjala@sci.fi>
 
---===============1148165764==
-Content-Disposition: inline; filename=atyfb_remove_aty_cmap_regs.patch
+--===============1477616203==
+Content-Disposition: inline;
+	filename=atyfb_remove_pointless_aty_init_argument.patch
 
-Remove aty_cmap_regs. Access the LUT in the same way as other registers.
+The 'name' argument of aty_init() is pointless because the bus type can
+be queried from the hardware.
 
 Signed-off-by: Ville Syrjala <syrjala@sci.fi>
 ---
 
- drivers/video/aty/atyfb.h      |    1 
- drivers/video/aty/atyfb_base.c |   45 ++++++++++-------------------------------
- 2 files changed, 12 insertions(+), 34 deletions(-)
+ drivers/video/aty/atyfb_base.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 Index: linux-2.6.18-rc4/drivers/video/aty/atyfb_base.c
 ===================================================================
 --- linux-2.6.18-rc4.orig/drivers/video/aty/atyfb_base.c
 +++ linux-2.6.18-rc4/drivers/video/aty/atyfb_base.c
-@@ -203,14 +203,6 @@ static void ATIReduceRatio(int *Numerato
-      *  The Hardware parameters for each card
+@@ -249,7 +249,7 @@ static int atyfb_sync(struct fb_info *in
+      *  Internal routines
       */
  
--struct aty_cmap_regs {
--	u8 windex;
--	u8 lut;
--	u8 mask;
--	u8 rindex;
--	u8 cntl;
--};
--
- struct pci_mmap_map {
- 	unsigned long voff;
- 	unsigned long poff;
-@@ -1937,17 +1929,14 @@ static void atyfb_save_palette(struct at
- 		aty_st_8(DAC_CNTL, tmp, par);
- 		aty_st_8(DAC_MASK, 0xff, par);
- 
--		writeb(i, &par->aty_cmap_regs->rindex);
--		atyfb_save.r[enter][i] = readb(&par->aty_cmap_regs->lut);
--		atyfb_save.g[enter][i] = readb(&par->aty_cmap_regs->lut);
--		atyfb_save.b[enter][i] = readb(&par->aty_cmap_regs->lut);
--		writeb(i, &par->aty_cmap_regs->windex);
--		writeb(atyfb_save.r[1 - enter][i],
--		       &par->aty_cmap_regs->lut);
--		writeb(atyfb_save.g[1 - enter][i],
--		       &par->aty_cmap_regs->lut);
--		writeb(atyfb_save.b[1 - enter][i],
--		       &par->aty_cmap_regs->lut);
-+		aty_st_8(DAC_R_INDEX, i, par);
-+		atyfb_save.r[enter][i] = aty_ld_8(DAC_DATA, par);
-+		atyfb_save.g[enter][i] = aty_ld_8(DAC_DATA, par);
-+		atyfb_save.b[enter][i] = aty_ld_8(DAC_DATA, par);
-+		aty_st_8(DAC_W_INDEX, i, par);
-+		aty_st_8(DAC_DATA, atyfb_save.r[1 - enter][i], par);
-+		aty_st_8(DAC_DATA, atyfb_save.g[1 - enter][i], par);
-+		aty_st_8(DAC_DATA, atyfb_save.b[1 - enter][i], par);
- 	}
+-static int aty_init(struct fb_info *info, const char *name);
++static int aty_init(struct fb_info *info);
+ #ifdef CONFIG_ATARI
+ static int store_video_par(char *videopar, unsigned char m64_num);
+ #endif
+@@ -2340,7 +2340,7 @@ static int __devinit atyfb_get_timings_f
  }
+ #endif /* defined(__i386__) && defined(CONFIG_FB_ATY_GENERIC_LCD) */
  
-@@ -2351,9 +2340,6 @@ static int __devinit aty_init(struct fb_
- 	init_waitqueue_head(&par->vblank.wait);
- 	spin_lock_init(&par->int_lock);
- 
--	par->aty_cmap_regs =
--	    (struct aty_cmap_regs __iomem *) (par->ati_regbase + 0xc0);
--
- #ifdef CONFIG_PPC_PMAC
- 	/* The Apple iBook1 uses non-standard memory frequencies. We detect it
- 	 * and set the frequency manually. */
-@@ -2858,17 +2844,10 @@ static int atyfb_blank(int blank, struct
- static void aty_st_pal(u_int regno, u_int red, u_int green, u_int blue,
- 		       const struct atyfb_par *par)
+-static int __devinit aty_init(struct fb_info *info, const char *name)
++static int __devinit aty_init(struct fb_info *info)
  {
--#ifdef CONFIG_ATARI
--	out_8(&par->aty_cmap_regs->windex, regno);
--	out_8(&par->aty_cmap_regs->lut, red);
--	out_8(&par->aty_cmap_regs->lut, green);
--	out_8(&par->aty_cmap_regs->lut, blue);
--#else
--	writeb(regno, &par->aty_cmap_regs->windex);
--	writeb(red, &par->aty_cmap_regs->lut);
--	writeb(green, &par->aty_cmap_regs->lut);
--	writeb(blue, &par->aty_cmap_regs->lut);
--#endif
-+	aty_st_8(DAC_W_INDEX, regno, par);
-+	aty_st_8(DAC_DATA, red, par);
-+	aty_st_8(DAC_DATA, green, par);
-+	aty_st_8(DAC_DATA, blue, par);
- }
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	const char *ramname = NULL, *xtal;
+@@ -2744,7 +2744,7 @@ static int __devinit aty_init(struct fb_
+ 	fb_list = info;
  
-     /*
-Index: linux-2.6.18-rc4/drivers/video/aty/atyfb.h
-===================================================================
---- linux-2.6.18-rc4.orig/drivers/video/aty/atyfb.h
-+++ linux-2.6.18-rc4/drivers/video/aty/atyfb.h
-@@ -126,7 +126,6 @@ union aty_pll {
-      */
+ 	PRINTKI("fb%d: %s frame buffer device on %s\n",
+-	       info->node, info->fix.id, name);
++		info->node, info->fix.id, par->bus_type == ISA ? "ISA" : "PCI");
+ 	return 0;
  
- struct atyfb_par {
--	struct aty_cmap_regs __iomem *aty_cmap_regs;
- 	struct { u8 red, green, blue; } palette[256];
- 	const struct aty_dac_ops *dac_ops;
- 	const struct aty_pll_ops *pll_ops;
+ aty_init_exit:
+@@ -3589,7 +3589,7 @@ static int __devinit atyfb_pci_probe(str
+ 	pci_set_drvdata(pdev, info);
+ 
+ 	/* Init chip & register framebuffer */
+-	if (aty_init(info, "PCI"))
++	if (aty_init(info))
+ 		goto err_release_io;
+ 
+ #ifdef __sparc__
+@@ -3689,7 +3689,7 @@ static int __devinit atyfb_atari_probe(v
+ 			break;
+ 		}
+ 
+-		if (aty_init(info, "ISA bus")) {
++		if (aty_init(info)) {
+ 			framebuffer_release(info);
+ 			/* This is insufficient! kernel_map has added two large chunks!! */
+ 			return -ENXIO;
 
 -- 
 Ville Syrj������l������
@@ -136,7 +98,7 @@ syrjala@sci.fi
 http://www.sci.fi/~syrjala/
 
 
---===============1148165764==
+--===============1477616203==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -147,7 +109,7 @@ Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---===============1148165764==
+--===============1477616203==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -158,4 +120,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1148165764==--
+--===============1477616203==--

@@ -1,31 +1,25 @@
-From: "David Klempner" <klempner@imsanet.org>
-Subject: fbcon can call fb_set_logo after boot
-Date: Sun, 3 Sep 2006 22:34:35 -0500 (CDT)
-Message-ID: <46559.24.14.83.75.1157340875.squirrel@mail.imsanet.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [patch 8/9] atyfb: Improve
+	atyfb_atari_probe()
+Date: Mon, 4 Sep 2006 11:20:44 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0609041119520.6741@pademelon.sonytel.be>
+References: <20060903220646.894202994@proteus.korsu.shacknet.nu>
+	<20060903220704.533694946@proteus.korsu.shacknet.nu>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GK5EL-0001yj-IW for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Sep 2006 20:34:37 -0700
-Received: from imsanet.org ([63.223.46.122])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GK5EL-00024a-8L
+	id 1GKAdP-0005ip-3n for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 Sep 2006 02:20:51 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GKAdP-0000fp-DM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Sep 2006 20:34:38 -0700
-Received: from localhost (unknown [127.0.0.1])
-	by imsanet.org (Postfix) with ESMTP id 4935312004CE
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon,  4 Sep 2006 03:34:35 +0000 (UTC)
-Received: from imsanet.org ([127.0.0.1])
-	by localhost (imsanet.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id HSlJz4wO5qXV
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun,  3 Sep 2006 22:34:35 -0500 (CDT)
+	Mon, 04 Sep 2006 02:20:52 -0700
+In-Reply-To: <20060903220704.533694946@proteus.korsu.shacknet.nu>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,20 +30,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: alex.kern@gmx.de, Ville Syrjala <syrjala@sci.fi>
 
-It would appear that the first time fbcon fbcon_takeover()'s a
-framebuffer, it displays the logo on that buffer. The problem is, the
-logo data is __initdata, and the first framebuffer might be from a
-module loaded after the kernel frees __init stuff.
+On Mon, 4 Sep 2006 syrjala@sci.fi wrote:
+> Improve atyfb_atari_probe():
+> * Call correct_chipset() so that more par members, par->features in
+>   particular, get initialized.
 
-I believe this has only oops'ed on me once thusfar in the dozens of
-times I've loaded the driver I'm working on, but it should probably be
-fixed. I'd do it myself, but I don't yet grok the fbcon code enough to
-see the best fix...
+Thanks! This call was indeed missing for the Atari case.
 
--- 
-David Klempner
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

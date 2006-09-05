@@ -1,25 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [patch 8/9] atyfb: Improve
-	atyfb_atari_probe()
-Date: Mon, 4 Sep 2006 11:20:44 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0609041119520.6741@pademelon.sonytel.be>
-References: <20060903220646.894202994@proteus.korsu.shacknet.nu>
-	<20060903220704.533694946@proteus.korsu.shacknet.nu>
+From: Raphael Assenat <raph@8d.com>
+Subject: [PATCH 1/5] mbxfb: Fix HSCOEFF3 register address
+Date: Tue, 05 Sep 2006 10:55:42 -0400
+Message-ID: <44FD8FEE.7080606@8d.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="------------020708090601090907000208"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GKAdP-0005ip-3n for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 Sep 2006 02:20:51 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GKAdP-0000fp-DM
+	id 1GKcK2-0004xg-IG for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 05 Sep 2006 07:54:42 -0700
+Received: from roc.holo.8d.com ([64.254.227.115])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GKcK5-0000LS-GK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 Sep 2006 02:20:52 -0700
-In-Reply-To: <20060903220704.533694946@proteus.korsu.shacknet.nu>
+	Tue, 05 Sep 2006 07:54:47 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,29 +26,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: alex.kern@gmx.de, Ville Syrjala <syrjala@sci.fi>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 4 Sep 2006 syrjala@sci.fi wrote:
-> Improve atyfb_atari_probe():
-> * Call correct_chipset() so that more par members, par->features in
->   particular, get initialized.
+This is a multi-part message in MIME format.
+--------------020708090601090907000208
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Thanks! This call was indeed missing for the Atari case.
+This patch corrects the address for register HSCOEFF3.
 
-Gr{oetje,eeting}s,
+Signed-off-by: Raphael Assenat <raph@8d.com>
 
-						Geert
+--------------020708090601090907000208
+Content-Type: text/plain;
+ name="mbxfb-regs-fixhscoeff3.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mbxfb-regs-fixhscoeff3.diff"
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+This patch corrects the address for register HSCOEFF3.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Signed-off-by: Raphael Assenat <raph@8d.com>
+
+--- linux-2.6.18-rc2-mbx/drivers/video/mbx/regs.h	2006-09-01 16:10:58.000000000 -0400
++++ linux-2.6.18-rc2-8d/drivers/video/mbx/regs.h	2006-08-30 10:32:17.000000000 -0400
+@@ -127,7 +127,7 @@
+ #define HSCOEFF0	__REG_2700G(0x000021b4)
+ #define HSCOEFF1	__REG_2700G(0x000021b8)
+ #define HSCOEFF2	__REG_2700G(0x000021bc)
+-#define HSCOEFF3	__REG_2700G(0x000021b0)
++#define HSCOEFF3	__REG_2700G(0x000021c0)
+ #define HSCOEFF4	__REG_2700G(0x000021c4)
+ #define HSCOEFF5	__REG_2700G(0x000021c8)
+ #define HSCOEFF6	__REG_2700G(0x000021cc)
+
+--------------020708090601090907000208
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+--------------020708090601090907000208
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--------------020708090601090907000208--

@@ -1,21 +1,26 @@
 From: Raphael Assenat <raph@8d.com>
-Subject: [PATCH 5/5] mbxfb: Document the new ioctl
-Date: Tue, 05 Sep 2006 11:02:46 -0400
-Message-ID: <44FD9196.7050505@8d.com>
+Subject: [PATCH 2/5] mbxfb: Add more registers bits
+	access macros
+Date: Tue, 05 Sep 2006 11:04:40 -0400
+Message-ID: <44FD9208.9020205@8d.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------070809000302070705070106"
+Content-Type: multipart/mixed; boundary="------------000202010904040709090408"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GKcQk-0005nP-VU for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Sep 2006 08:01:39 -0700
+	id 1GKcSb-0006FW-6z for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 05 Sep 2006 08:03:33 -0700
 Received: from roc.holo.8d.com ([64.254.227.115])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GKcQn-0002vn-1X
+	(Exim 4.44) id 1GKcSf-0003tX-RL
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Sep 2006 08:01:41 -0700
+	Tue, 05 Sep 2006 08:03:38 -0700
+Received: from trivia.8d.com ([209.47.172.20] helo=[192.168.142.55])
+	by roc.holo.8d.com with esmtp (Exim 4.50) id 1GKcSS-0002jz-1z
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 05 Sep 2006 11:03:28 -0400
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,36 +34,174 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
 This is a multi-part message in MIME format.
---------------070809000302070705070106
+--------------000202010904040709090408
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-This patch adds a new ioctl range for the mbxfb driver.
+This patch adds register bits access macros for chip's Video Plane, Scaling
+and interrupt registers.
 
 Signed-off-by: Raphael Assenat <raph@8d.com>
 
-
---------------070809000302070705070106
+--------------000202010904040709090408
 Content-Type: text/plain;
- name="mbxfb-doc-ioctl.diff"
+ name="mbxfb-add-regbits.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="mbxfb-doc-ioctl.diff"
+ filename="mbxfb-add-regbits.diff"
 
-This patch adds a new ioctl range for the mbxfb driver.
+This patch adds register bits access macros for chip's Video Plane, Scaling 
+and interrupt registers.
 
 Signed-off-by: Raphael Assenat <raph@8d.com>
 
---- linux-2.6.18-rc2-mbx/Documentation/ioctl-number.txt	2006-09-01 16:11:14.000000000 -0400
-+++ linux-2.6.18-rc2-8d2/Documentation/ioctl-number.txt	2006-09-05 10:50:59.000000000 -0400
-@@ -191,3 +191,5 @@
- 					<mailto:aherrman@de.ibm.com>
- 0xF3	00-3F	video/sisfb.h		sisfb (in development)
- 					<mailto:thomas@winischhofer.net>
-+0xF4	00-1F	video/mbxfb.h		mbxfb
-+					<mailto:raph@8d.com>
+--- linux-2.6.18-rc2-mbx/drivers/video/mbx/reg_bits.h	2006-09-01 16:10:58.000000000 -0400
++++ linux-2.6.18-rc2-8d/drivers/video/mbx/reg_bits.h	2006-08-31 16:51:44.000000000 -0400
+@@ -242,6 +242,67 @@
+ #define GPLUT_LUTDATA	Fld(24,0)
+ #define Gplut_Lutdata(x)	((x) << FShft(GPLUT_LUTDATA))
+ 
++/* VSCTRL - Video Surface Control Register */
++#define VSCTRL_VPIXFMT		Fld(4,27)
++#define VSCTRL_VPIXFMT_YUV12	((0x9) << FShft(VSCTRL_VPIXFMT))
++#define VSCTRL_VPIXFMT_UY0VY1	((0xc) << FShft(VSCTRL_VPIXFMT))
++#define VSCTRL_VPIXFMT_VY0UY1	((0xd) << FShft(VSCTRL_VPIXFMT))
++#define VSCTRL_VPIXFMT_Y0UY1V	((0xe) << FShft(VSCTRL_VPIXFMT))
++#define VSCTRL_VPIXFMT_Y0VY1U	((0xf) << FShft(VSCTRL_VPIXFMT))
++#define VSCTRL_GAMMA_EN		(1 << 26)
++#define VSCTRL_CSC_EN		(1 << 25)
++#define VSCTRL_COSITED		(1 << 22)
++#define VSCTRL_VSWIDTH		Fld(11,11)
++#define Vsctrl_Width(Pixels) /* Video Width [1-2048] */ \
++			(((Pixels) - 1) << FShft(VSCTRL_VSWIDTH))
++#define VSCTRL_VSHEIGHT		Fld(11,0)
++#define Vsctrl_Height(Pixels) /* Video Height [1-2048] */ \
++			(((Pixels) - 1) << FShft(VSCTRL_VSHEIGHT))
++
++/* VBBASE - Video Blending Base Register */
++#define VBBASE_GLALPHA		Fld(8,24)
++#define Vbbase_Glalpha(x)	((x) << FShft(VBBASE_GLALPHA))
++
++#define VBBASE_COLKEY		Fld(24,0)
++#define Vbbase_Colkey(x)	((x) << FShft(VBBASE_COLKEY))
++
++/* VCMSK - Video Color Key Mask Register */
++#define VCMSK_COLKEY_M		Fld(24,0)
++#define Vcmsk_colkey_m(x)	((x) << FShft(VCMSK_COLKEY_M))
++
++/* VSCADR - Video Stream Control Rddress Register */
++#define VSCADR_STR_EN		(1 << 31)
++#define VSCADR_COLKEY_EN	(1 << 30)
++#define VSCADR_COLKEYSRC	(1 << 29)
++#define VSCADR_BLEND_M		Fld(2,27)
++#define VSCADR_BLEND_NONE	((0x0) << FShft(VSCADR_BLEND_M))
++#define VSCADR_BLEND_INV	((0x1) << FShft(VSCADR_BLEND_M))
++#define VSCADR_BLEND_GLOB	((0x2) << FShft(VSCADR_BLEND_M))
++#define VSCADR_BLEND_PIX	((0x3) << FShft(VSCADR_BLEND_M))
++#define VSCADR_BLEND_POS	Fld(2,24)
++#define VSCADR_BLEND_GFX	((0x0) << FShft(VSCADR_BLEND_POS))
++#define VSCADR_BLEND_VID	((0x1) << FShft(VSCADR_BLEND_POS))
++#define VSCADR_BLEND_CUR	((0x2) << FShft(VSCADR_BLEND_POS))
++#define VSCADR_VBASE_ADR	Fld(23,0)
++#define Vscadr_Vbase_Adr(x)	((x) << FShft(VSCADR_VBASE_ADR))
++
++/* VUBASE - Video U Base Register */
++#define VUBASE_UVHALFSTR	(1 << 31)
++#define VUBASE_UBASE_ADR	Fld(24,0)
++#define Vubase_Ubase_Adr(x)	((x) << FShft(VUBASE_UBASE_ADR))
++
++/* VVBASE - Video V Base Register */
++#define VVBASE_VBASE_ADR	Fld(24,0)
++#define Vvbase_Vbase_Adr(x)	((x) << FShft(VVBASE_VBASE_ADR))
++
++/* VSADR - Video Stride Address Register */
++#define VSADR_SRCSTRIDE		Fld(10,22)
++#define Vsadr_Srcstride(x)	((x) << FShft(VSADR_SRCSTRIDE))
++#define VSADR_XSTART		Fld(11,11)
++#define Vsadr_Xstart(x)		((x) << FShft(VSADR_XSTART))
++#define VSADR_YSTART		Fld(11,0)
++#define Vsadr_Ystart(x)		((x) << FShft(VSADR_YSTART))
++
+ /* HCCTRL - Hardware Cursor Register fields */
+ #define HCCTRL_CUR_EN	(1 << 31)
+ #define HCCTRL_COLKEY_EN	(1 << 29)
+@@ -394,6 +455,30 @@
+ #define DMCTRL_BURSTLEN	Fld(6,0)
+ #define Dmctrl_Burstlen(x)	((x) << FShft(DMCTRL_BURSTLEN))
+ 
++/* DINTRS - Display Interrupt Status Register */
++#define DINTRS_CUR_OR_S		(1 << 18)
++#define DINTRS_STR2_OR_S	(1 << 17)
++#define DINTRS_STR1_OR_S	(1 << 16)
++#define DINTRS_CUR_UR_S		(1 << 6)
++#define DINTRS_STR2_UR_S	(1 << 5)
++#define DINTRS_STR1_UR_S	(1 << 4)
++#define DINTRS_VEVENT1_S	(1 << 3)
++#define DINTRS_VEVENT0_S	(1 << 2)
++#define DINTRS_HBLNK1_S		(1 << 1)
++#define DINTRS_HBLNK0_S		(1 << 0)
++
++/* DINTRE - Display Interrupt Enable Register */
++#define DINTRE_CUR_OR_EN	(1 << 18)
++#define DINTRE_STR2_OR_EN	(1 << 17)
++#define DINTRE_STR1_OR_EN	(1 << 16)
++#define DINTRE_CUR_UR_EN	(1 << 6)
++#define DINTRE_STR2_UR_EN	(1 << 5)
++#define DINTRE_STR1_UR_EN	(1 << 4)
++#define DINTRE_VEVENT1_EN	(1 << 3)
++#define DINTRE_VEVENT0_EN	(1 << 2)
++#define DINTRE_HBLNK1_EN	(1 << 1)
++#define DINTRE_HBLNK0_EN	(1 << 0)
++
+ 
+ /* DLSTS - display load status register */
+ #define DLSTS_RLD_ADONE	(1 << 23)
+@@ -403,16 +488,41 @@
+ #define DLLCTRL_RLD_ADRLN	Fld(8,24)
+ #define Dllctrl_Rld_Adrln(x)	((x) << FShft(DLLCTRL_RLD_ADRLN))
+ 
++/* CLIPCTRL - Clipping Control Register */
++#define CLIPCTRL_HSKIP		Fld(11,16)
++#define Clipctrl_Hskip		((x) << FShft(CLIPCTRL_HSKIP))
++#define CLIPCTRL_VSKIP		Fld(11,0)
++#define Clipctrl_Vskip		((x) << FShft(CLIPCTRL_VSKIP))
++
+ /* SPOCTRL - Scale Pitch/Order Control Register */
+ #define SPOCTRL_H_SC_BP		(1 << 31)
+ #define SPOCTRL_V_SC_BP		(1 << 30)
+ #define SPOCTRL_HV_SC_OR	(1 << 29)
+ #define SPOCTRL_VS_UR_C		(1 << 27)
+-#define SPOCTRL_VORDER	Fld(2,16)
++#define SPOCTRL_VORDER		Fld(2,16)
+ #define SPOCTRL_VORDER_1TAP	((0x0) << FShft(SPOCTRL_VORDER))
+ #define SPOCTRL_VORDER_2TAP	((0x1) << FShft(SPOCTRL_VORDER))
+ #define SPOCTRL_VORDER_4TAP	((0x3) << FShft(SPOCTRL_VORDER))
+-#define SPOCTRL_VPITCH	Fld(16,0)
++#define SPOCTRL_VPITCH		Fld(16,0)
+ #define Spoctrl_Vpitch(x)	((x) << FShft(SPOCTRL_VPITCH))
+ 
++/* SVCTRL - Scale Vertical Control Register */
++#define SVCTRL_INITIAL1		Fld(16,16)
++#define Svctrl_Initial1(x)	((x) << FShft(SVCTRL_INITIAL1))
++#define SVCTRL_INITIAL2		Fld(16,0)	
++#define Svctrl_Initial2(x)	((x) << FShft(SVCTRL_INITIAL2))
++
++/* SHCTRL - Scale Horizontal Control Register */
++#define SHCTRL_HINITIAL		Fld(16,16)
++#define Shctrl_Hinitial(x)	((x) << FShft(SHCTRL_HINITIAL))
++#define SHCTRL_HDECIM		(1 << 15)
++#define SHCTRL_HPITCH		Fld(15,0)
++#define Shctrl_Hpitch(x)	((x) << FShft(SHCTRL_HPITCH))
++
++/* SSSIZE - Scale Surface Size Register */
++#define SSSIZE_SC_WIDTH		Fld(11,16)
++#define Sssize_Sc_Width(x)	((x) << FShft(SSSIZE_SC_WIDTH))
++#define SSSIZE_SC_HEIGHT	Fld(11,0)
++#define Sssize_Sc_Height(x)	((x) << FShft(SSSIZE_SC_HEIGHT))
++
+ #endif /* __REG_BITS_2700G_ */
 
---------------070809000302070705070106
+--------------000202010904040709090408
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -69,7 +212,7 @@ Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---------------070809000302070705070106
+--------------000202010904040709090408
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -80,4 +223,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---------------070809000302070705070106--
+--------------000202010904040709090408--

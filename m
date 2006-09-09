@@ -1,26 +1,23 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [patch 1/9] atyfb: Remove FIXME
-Date: Sat, 9 Sep 2006 10:46:39 +0300
-Message-ID: <20060909074639.GA2616@sci.fi>
+Date: Sat, 9 Sep 2006 10:20:25 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0609091017450.24057@pademelon.sonytel.be>
 References: <20060903220646.894202994@proteus.korsu.shacknet.nu>
-	<200609090002.54186.alex.kern@gmx.de>
+	<200609090002.54186.alex.kern@gmx.de> <20060909074639.GA2616@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-14224166-1157790025=:24057"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GLxY8-0003CK-So for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 09 Sep 2006 00:46:48 -0700
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GLxY6-0002XC-FE
+	id 1GLy4l-00064q-Nj for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 09 Sep 2006 01:20:31 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GLy4j-0000o3-O2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 09 Sep 2006 00:46:48 -0700
-Content-Disposition: inline
-In-Reply-To: <200609090002.54186.alex.kern@gmx.de>
+	Sat, 09 Sep 2006 01:20:31 -0700
+In-Reply-To: <20060909074639.GA2616@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,62 +28,91 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Alexander Kern <alex.kern@gmx.de>
 
-On Sat, Sep 09, 2006 at 12:02:54AM +0200, Alexander Kern wrote:
-> Good work Ville,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks.
+---584337861-14224166-1157790025=:24057
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by witte.sonytel.be id
+	k898KQQe006313
 
-> have checked this patches  on my RAGE MOBILITY =
+On Sat, 9 Sep 2006, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> > have checked this patches  on my RAGE MOBILITY=20
+> > on top of 2.6.17.11(added with some fuzzies)
+> >=20
+> > Signed-off-by: Alexander Kern <alex.kern@gmx.de>
+> > for all 9 patches
+> >=20
+> > Best Wishes
+> > Mit freundlichen Gr=FC=DFen
+> >=20
+> > P.S. I would like to iron out the long standing issue on my laptop
+> > I saw about for along time. I can shutdown but reboot. At least TFT g=
+oes=20
+>                                                 ^
+> There should be a "not" here, right?
+>=20
+> > black, leds go off and than nothing. Have you any infos about special=
+=20
+> > register state for MOBILITY before reboot?
+>=20
+> No. My OmniBook 500 does the same thing BTW. I can shutdown but reboot=20
+> just hangs the laptop. I'm guessing the BIOS doesn't like the state in=20
+> which atyfb leaves the card. The reason I'm thinking it's the BIOS is=20
+> that my OB6000, which has nearly the same hardware, reboots just fine.
+> I also tried all of the reboot=3D kernel options but none helped.
+>=20
+> Maybe we just need to restore some of the original state before reboot.=
+=20
+> But I don't know if that's even possible. Do drivers get any kind of=20
+> notification about reboot?
 
-> on top of 2.6.17.11(added with some fuzzies)
-> =
+I used to have the same problem (shutdown works, reboot hangs with black
+screen) on my Vaio Z600 (Z505 in US/JP), but recent 2.6 (I use a Debian k=
+ernel)
+seems to have this fixed.
 
-> Signed-off-by: Alexander Kern <alex.kern@gmx.de>
-> for all 9 patches
-> =
+But I still decided to use vgacon instead of atyfb on this laptop, as X s=
+hows
+some noise when launched from atyfb.
 
-> Best Wishes
-> Mit freundlichen Gr=FC=DFen
-> =
+Gr{oetje,eeting}s,
 
-> P.S. I would like to iron out the long standing issue on my laptop
-> I saw about for along time. I can shutdown but reboot. At least TFT goes =
+						Geert
 
-                                                ^
-There should be a "not" here, right?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
 
-> black, leds go off and than nothing. Have you any infos about special =
-
-> register state for MOBILITY before reboot?
-
-No. My OmniBook 500 does the same thing BTW. I can shutdown but reboot =
-
-just hangs the laptop. I'm guessing the BIOS doesn't like the state in =
-
-which atyfb leaves the card. The reason I'm thinking it's the BIOS is =
-
-that my OB6000, which has nearly the same hardware, reboots just fine.
-I also tried all of the reboot=3D kernel options but none helped.
-
-Maybe we just need to restore some of the original state before reboot. =
-
-But I don't know if that's even possible. Do drivers get any kind of =
-
-notification about reboot?
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
+---584337861-14224166-1157790025=:24057
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easi=
-er
+Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D120709&bid=3D263057&dat=3D1=
-21642
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+---584337861-14224166-1157790025=:24057
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+---584337861-14224166-1157790025=:24057--

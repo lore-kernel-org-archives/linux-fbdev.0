@@ -1,24 +1,26 @@
-From: Alexander Kern <alex.kern@gmx.de>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: [patch 1/9] atyfb: Remove FIXME
-Date: Sat, 9 Sep 2006 00:02:54 +0200
-Message-ID: <200609090002.54186.alex.kern@gmx.de>
+Date: Sat, 9 Sep 2006 10:46:39 +0300
+Message-ID: <20060909074639.GA2616@sci.fi>
 References: <20060903220646.894202994@proteus.korsu.shacknet.nu>
+	<200609090002.54186.alex.kern@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GLoLv-0007SX-TR for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Sep 2006 14:57:36 -0700
-Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1GLoLu-0003GX-Oz
+	id 1GLxY8-0003CK-So for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 09 Sep 2006 00:46:48 -0700
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GLxY6-0002XC-FE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Sep 2006 14:57:35 -0700
-In-Reply-To: <20060903220646.894202994@proteus.korsu.shacknet.nu>
+	Sat, 09 Sep 2006 00:46:48 -0700
 Content-Disposition: inline
+In-Reply-To: <200609090002.54186.alex.kern@gmx.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,43 +31,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: syrjala@sci.fi
+To: Alexander Kern <alex.kern@gmx.de>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-R29vZCB3b3JrIFZpbGxlLAoKaGF2ZSBjaGVja2VkIHRoaXMgcGF0Y2hlcyAgb24gbXkgUkFHRSBN
-T0JJTElUWSAKb24gdG9wIG9mIDIuNi4xNy4xMShhZGRlZCB3aXRoIHNvbWUgZnV6emllcykKClNp
-Z25lZC1vZmYtYnk6IEFsZXhhbmRlciBLZXJuIDxhbGV4Lmtlcm5AZ214LmRlPgpmb3IgYWxsIDkg
-cGF0Y2hlcwoKQmVzdCBXaXNoZXMKTWl0IGZyZXVuZGxpY2hlbiBHcsO8w59lbgoKUC5TLiBJIHdv
-dWxkIGxpa2UgdG8gaXJvbiBvdXQgdGhlIGxvbmcgc3RhbmRpbmcgaXNzdWUgb24gbXkgbGFwdG9w
-Ckkgc2F3IGFib3V0IGZvciBhbG9uZyB0aW1lLiBJIGNhbiBzaHV0ZG93biBidXQgcmVib290LiBB
-dCBsZWFzdCBURlQgZ29lcyAKYmxhY2ssIGxlZHMgZ28gb2ZmIGFuZCB0aGFuIG5vdGhpbmcuIEhh
-dmUgeW91IGFueSBpbmZvcyBhYm91dCBzcGVjaWFsIApyZWdpc3RlciBzdGF0ZSBmb3IgTU9CSUxJ
-VFkgYmVmb3JlIHJlYm9vdD8KCkFtIE1vbnRhZyAwNCBTZXB0ZW1iZXIgMjAwNiAwMDowNiBzY2hy
-aWViIHN5cmphbGFAc2NpLmZpOgo+IGF0eWZiIGhhcyB1c2VkIHRoZSBhdXhpbGlhcnkgcmVnaXN0
-ZXIgYXBlcnR1cmUgZm9yIGEgbG9uZyB0aW1lLgo+IFJlbW92ZSBhIHJlbGF0ZWQgRklYTUUgd2hp
-Y2ggd2FzIGFjY2lkZW50YWxseSBsZWZ0IGluLgo+Cj4gU2lnbmVkLW9mZi1ieTogVmlsbGUgU3ly
-amFsYSA8c3lyamFsYUBzY2kuZmk+Cj4gLS0tCj4KPiAgZHJpdmVycy92aWRlby9hdHkvYXR5ZmJf
-YmFzZS5jIHwgICAgNSArKy0tLQo+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAz
-IGRlbGV0aW9ucygtKQo+Cj4gSW5kZXg6IGxpbnV4LTIuNi4xOC1yYzQvZHJpdmVycy92aWRlby9h
-dHkvYXR5ZmJfYmFzZS5jCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBsaW51eC0yLjYuMTgtcmM0Lm9yaWcv
-ZHJpdmVycy92aWRlby9hdHkvYXR5ZmJfYmFzZS5jCj4gKysrIGxpbnV4LTIuNi4xOC1yYzQvZHJp
-dmVycy92aWRlby9hdHkvYXR5ZmJfYmFzZS5jCj4gQEAgLTI2MDAsOSArMjYwMCw4IEBAIHN0YXRp
-YyBpbnQgX19kZXZpbml0IGF0eV9pbml0KHN0cnVjdCBmYl8KPiAgCQlwYXItPnBsbF9vcHMtPmlu
-aXRfcGxsKGluZm8sICZwYXItPnBsbCk7Cj4KPiAgCS8qCj4gLQkgKiAgTGFzdCBwYWdlIG9mIDgg
-TUIgKDQgTUIgb24gSVNBKSBhcGVydHVyZSBpcyBNTUlPCj4gLQkgKiAgRklYTUU6IHdlIHNob3Vs
-ZCB1c2UgdGhlIGF1eGlsaWFyeSBhcGVydHVyZSBpbnN0ZWFkIHNvIHdlIGNhbiBhY2Nlc3MKPiAt
-CSAqICB0aGUgZnVsbCA4IE1CIG9mIHZpZGVvIFJBTSBvbiA4IE1CIGJvYXJkcwo+ICsJICogIExh
-c3QgcGFnZSBvZiA4IE1CICg0IE1CIG9uIElTQSkgYXBlcnR1cmUgaXMgTU1JTywKPiArCSAqICB1
-bmxlc3MgdGhlIGF1eGlsaWFyeSByZWdpc3RlciBhcGVydHVyZSBpcyB1c2VkLgo+ICAJICovCj4K
-PiAgCWlmICghcGFyLT5hdXhfc3RhcnQgJiYKCi0tIAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpVc2luZyBU
-b21jYXQgYnV0IG5lZWQgdG8gZG8gbW9yZT8gTmVlZCB0byBzdXBwb3J0IHdlYiBzZXJ2aWNlcywg
-c2VjdXJpdHk/CkdldCBzdHVmZiBkb25lIHF1aWNrbHkgd2l0aCBwcmUtaW50ZWdyYXRlZCB0ZWNo
-bm9sb2d5IHRvIG1ha2UgeW91ciBqb2IgZWFzaWVyCkRvd25sb2FkIElCTSBXZWJTcGhlcmUgQXBw
-bGljYXRpb24gU2VydmVyIHYuMS4wLjEgYmFzZWQgb24gQXBhY2hlIEdlcm9uaW1vCmh0dHA6Ly9z
-ZWwuYXMtdXMuZmFsa2FnLm5ldC9zZWw/Y21kPWxuayZraWQ9MTIwNzA5JmJpZD0yNjMwNTcmZGF0
-PTEyMTY0MgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpM
-aW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291
-cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZv
-L2xpbnV4LWZiZGV2LWRldmVsCg==
+On Sat, Sep 09, 2006 at 12:02:54AM +0200, Alexander Kern wrote:
+> Good work Ville,
+
+Thanks.
+
+> have checked this patches  on my RAGE MOBILITY =
+
+> on top of 2.6.17.11(added with some fuzzies)
+> =
+
+> Signed-off-by: Alexander Kern <alex.kern@gmx.de>
+> for all 9 patches
+> =
+
+> Best Wishes
+> Mit freundlichen Gr=FC=DFen
+> =
+
+> P.S. I would like to iron out the long standing issue on my laptop
+> I saw about for along time. I can shutdown but reboot. At least TFT goes =
+
+                                                ^
+There should be a "not" here, right?
+
+> black, leds go off and than nothing. Have you any infos about special =
+
+> register state for MOBILITY before reboot?
+
+No. My OmniBook 500 does the same thing BTW. I can shutdown but reboot =
+
+just hangs the laptop. I'm guessing the BIOS doesn't like the state in =
+
+which atyfb leaves the card. The reason I'm thinking it's the BIOS is =
+
+that my OB6000, which has nearly the same hardware, reboots just fine.
+I also tried all of the reboot=3D kernel options but none helped.
+
+Maybe we just need to restore some of the original state before reboot. =
+
+But I don't know if that's even possible. Do drivers get any kind of =
+
+notification about reboot?
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
+
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easi=
+er
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D120709&bid=3D263057&dat=3D1=
+21642

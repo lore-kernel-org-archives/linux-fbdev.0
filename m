@@ -1,25 +1,27 @@
-From: "Jorge Luis Zapata Muga" <jorgeluis.zapata@gmail.com>
-Subject: overlay support
-Date: Tue, 12 Sep 2006 15:27:00 +0200
-Message-ID: <eb77d7060609120627x2466d68fle0912cbee96f223e@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: overlay support
+Date: Tue, 12 Sep 2006 15:34:34 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0609121531120.27586@pademelon.sonytel.be>
+References: <eb77d7060609120627x2466d68fle0912cbee96f223e@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GN8I3-0006L0-Kk for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Sep 2006 06:27:03 -0700
-Received: from wr-out-0506.google.com ([64.233.184.224])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GN8I1-0007Ol-R2
+	id 1GN8PQ-000719-38 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 12 Sep 2006 06:34:40 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GN8PO-0004Rh-FW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Sep 2006 06:27:03 -0700
-Received: by wr-out-0506.google.com with SMTP id 67so527468wri
+	Tue, 12 Sep 2006 06:34:40 -0700
+Received: from pademelon.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id k8CDYYQe006659
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 12 Sep 2006 06:27:00 -0700 (PDT)
-Content-Disposition: inline
+	Tue, 12 Sep 2006 15:34:34 +0200 (MEST)
+In-Reply-To: <eb77d7060609120627x2466d68fle0912cbee96f223e@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,35 +32,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-hi all,
+On Tue, 12 Sep 2006, Jorge Luis Zapata Muga wrote:
+> i coded a while ago a framebuffer driver for an old video card i have
+> (a SiS 6326, just for learning) but now i would like to support its
+> video extension (overlay support, this card can also capture from an
+> external input, but my version doesnt has the input connectors). ive
+> read on the mailing list and on external projects about how to support
+> overlay on the fb device, but i still dont find a good way to do it,
+> maybe you can help me out.
+> 
+> one way is to add another fb device, but it is good only if the device
+> has a different memory space assigned to it, if you only have a chunk
+> of memory for both layers (the overlay and the normal rgb which is
+> this case) there should be a way to resize the memory space assigned
+> to each of them. i dont like this way because is adding a policy on
+> kernel space to manage the memory. am i correct with this assumptions?
 
-i coded a while ago a framebuffer driver for an old video card i have
-(a SiS 6326, just for learning) but now i would like to support its
-video extension (overlay support, this card can also capture from an
-external input, but my version doesnt has the input connectors). ive
-read on the mailing list and on external projects about how to support
-overlay on the fb device, but i still dont find a good way to do it,
-maybe you can help me out.
+If there are just 2 users of the memory (i.e. 2 frame buffers), you can avoid
+adding a policy to the kernel by making the split dynamic.
+Let the first frame buffer `allocate' (based on xres_virtual, yres_virtual, and
+bits_per_pixel) from the bottom of memory, and the second frame buffer from the
+top of memory. Each frame buffer can shrink whatever it wants, or grow, as long
+as it doesn't conflict with the memory size of the other.
 
-one way is to add another fb device, but it is good only if the device
-has a different memory space assigned to it, if you only have a chunk
-of memory for both layers (the overlay and the normal rgb which is
-this case) there should be a way to resize the memory space assigned
-to each of them. i dont like this way because is adding a policy on
-kernel space to manage the memory. am i correct with this assumptions?
+Gr{oetje,eeting}s,
 
-another way is to support a video4linux device (overlay type) for it,
-in this case there are other problems too. does the v4l device should
-be dependant to the fb device? i mean, make the fb device map all the
-display memory and support the common mmap, then the v4l has to
-receive the fb mem pointer to setup the registers, and finally from
-userspace open both devices to actually support overlaying?
+						Geert
 
-is there other solution?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-thanks for your comments.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

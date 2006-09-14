@@ -1,20 +1,19 @@
 From: Helge Deller <deller@gmx.de>
-Subject: [PATCH 4/5] annotate some variables in vesafb
-	driver as __read_mostly
-Date: Thu, 14 Sep 2006 22:06:44 +0200
-Message-ID: <200609142206.45148.deller@gmx.de>
+Subject: [PATCH 5/5] constify vga16fb.c
+Date: Thu, 14 Sep 2006 22:08:22 +0200
+Message-ID: <200609142208.22957.deller@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_VZbCF1Jfqa33ISQ"
+  boundary="Boundary-00=_2abCFdYSDjPVYu7"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GNxXp-000767-My for linux-fbdev-devel@lists.sourceforge.net;
+	id 1GNxXp-000763-Ad for linux-fbdev-devel@lists.sourceforge.net;
 	Thu, 14 Sep 2006 13:10:45 -0700
-Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1GNxXm-0007q3-MP
+Received: from mail.gmx.net ([213.165.64.20])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1GNxXm-0002k3-VM
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Thu, 14 Sep 2006 13:10:45 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -29,75 +28,89 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_VZbCF1Jfqa33ISQ
+--Boundary-00=_2abCFdYSDjPVYu7
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-- annotate some variables in vesafb driver as __read_mostly
+- move some static data into the .rodata section
+- simplify source code for transl_l[] and transl_h[] which makes it more readable
 
 Signed-off-by: Helge Deller <deller@gmx.de>
 
 
---Boundary-00=_VZbCF1Jfqa33ISQ
+--Boundary-00=_2abCFdYSDjPVYu7
 Content-Type: text/plain;
   charset="us-ascii";
-  name="patch4.diff"
+  name="patch5.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="patch4.diff"
+	filename="patch5.diff"
 
-- annotate some variables in vesafb driver as __read_mostly
+- move some static data into the .rodata section
+- simplify source code for transl_l[] and transl_h[] which makes it more readable
 
 Signed-off-by: Helge Deller <deller@gmx.de>
 
-
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-index 2196448..ff01d48 100644
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -47,17 +47,16 @@ static struct fb_fix_screeninfo vesafb_f
- 	.accel	= FB_ACCEL_NONE,
- };
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 43d5a6d..6aff63d 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -264,7 +264,7 @@ static void vga16fb_clock_chip(struct vg
+ 			       const struct fb_info *info,
+ 			       int mul, int div)
+ {
+-	static struct {
++	static const struct {
+ 		u32 pixclock;
+ 		u8  misc;
+ 		u8  seq_clock_mode;
+@@ -652,7 +652,7 @@ static int vga16fb_set_par(struct fb_inf
  
--static int             inverse   = 0;
--static int             mtrr      = 0; /* disable mtrr */
--static int	       vram_remap __initdata = 0; /* Set amount of memory to be used */
--static int	       vram_total __initdata = 0; /* Set total amount of memory */
--static int             pmi_setpal = 1;	/* pmi for palette changes ??? */
--static int             ypan       = 0;  /* 0..nothing, 1..ypan, 2..ywrap */
--static unsigned short  *pmi_base  = NULL;
--static void            (*pmi_start)(void);
--static void            (*pmi_pal)(void);
--static int             depth;
--static int             vga_compat;
-+static int   inverse    __read_mostly;
-+static int   mtrr       __read_mostly;		/* disable mtrr */
-+static int   vram_remap __initdata;		/* Set amount of memory to be used */
-+static int   vram_total __initdata;		/* Set total amount of memory */
-+static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
-+static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
-+static void  (*pmi_start)(void) __read_mostly;
-+static void  (*pmi_pal)  (void) __read_mostly;
-+static int   depth      __read_mostly;
-+static int   vga_compat __read_mostly;
- /* --------------------------------------------------------------------- */
+ static void ega16_setpalette(int regno, unsigned red, unsigned green, unsigned blue)
+ {
+-	static unsigned char map[] = { 000, 001, 010, 011 };
++	static const unsigned char map[] = { 000, 001, 010, 011 };
+ 	int val;
+ 	
+ 	if (regno >= 16)
+@@ -1139,23 +1139,19 @@ static void vga16fb_copyarea(struct fb_i
+ 	}
+ }
  
- static int vesafb_pan_display(struct fb_var_screeninfo *var,
-@@ -312,6 +311,7 @@ static int __init vesafb_probe(struct pl
- 		ypan = pmi_setpal = 0; /* not available or some DOS TSR ... */
+-#ifdef __LITTLE_ENDIAN
+-static unsigned int transl_l[] =
+-{0x0,0x8,0x4,0xC,0x2,0xA,0x6,0xE,0x1,0x9,0x5,0xD,0x3,0xB,0x7,0xF};
+-static unsigned int transl_h[] =
+-{0x000, 0x800, 0x400, 0xC00, 0x200, 0xA00, 0x600, 0xE00,
+- 0x100, 0x900, 0x500, 0xD00, 0x300, 0xB00, 0x700, 0xF00};
+-#else
+-#ifdef __BIG_ENDIAN
+-static unsigned int transl_h[] =
+-{0x0,0x8,0x4,0xC,0x2,0xA,0x6,0xE,0x1,0x9,0x5,0xD,0x3,0xB,0x7,0xF};
+-static unsigned int transl_l[] =
+-{0x000, 0x800, 0x400, 0xC00, 0x200, 0xA00, 0x600, 0xE00,
+- 0x100, 0x900, 0x500, 0xD00, 0x300, 0xB00, 0x700, 0xF00};
++#define TRANS_MASK_LOW  {0x0,0x8,0x4,0xC,0x2,0xA,0x6,0xE,0x1,0x9,0x5,0xD,0x3,0xB,0x7,0xF}
++#define TRANS_MASK_HIGH {0x000, 0x800, 0x400, 0xC00, 0x200, 0xA00, 0x600, 0xE00, \
++			 0x100, 0x900, 0x500, 0xD00, 0x300, 0xB00, 0x700, 0xF00}
++
++#if defined(__LITTLE_ENDIAN)
++static const u16 transl_l[] = TRANS_MASK_LOW;
++static const u16 transl_h[] = TRANS_MASK_HIGH;
++#elif defined(__BIG_ENDIAN)
++static const u16 transl_l[] = TRANS_MASK_HIGH;
++static const u16 transl_h[] = TRANS_MASK_LOW;
+ #else
+ #error "Only __BIG_ENDIAN and __LITTLE_ENDIAN are supported in vga-planes"
+ #endif
+-#endif
  
- 	if (ypan || pmi_setpal) {
-+		unsigned short *pmi_base;
- 		pmi_base  = (unsigned short*)phys_to_virt(((unsigned long)screen_info.vesapm_seg << 4) + screen_info.vesapm_off);
- 		pmi_start = (void*)((char*)pmi_base + pmi_base[1]);
- 		pmi_pal   = (void*)((char*)pmi_base + pmi_base[2]);
+ static void vga_8planes_imageblit(struct fb_info *info, const struct fb_image *image)
+ {
 
-
-
-
---Boundary-00=_VZbCF1Jfqa33ISQ
+--Boundary-00=_2abCFdYSDjPVYu7
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -108,7 +121,7 @@ Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---Boundary-00=_VZbCF1Jfqa33ISQ
+--Boundary-00=_2abCFdYSDjPVYu7
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -119,4 +132,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---Boundary-00=_VZbCF1Jfqa33ISQ--
+--Boundary-00=_2abCFdYSDjPVYu7--

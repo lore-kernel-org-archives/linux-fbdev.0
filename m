@@ -1,21 +1,22 @@
 From: Helge Deller <deller@gmx.de>
-Subject: [PATCH 5/5] constify vga16fb.c
-Date: Thu, 14 Sep 2006 22:08:22 +0200
-Message-ID: <200609142208.22957.deller@gmx.de>
+Subject: [PATCH 1/5] fbcmap.c: mark structs const or
+	__read_mostly
+Date: Thu, 14 Sep 2006 21:59:55 +0200
+Message-ID: <200609142159.55936.deller@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_2abCFdYSDjPVYu7"
+  boundary="Boundary-00=_7SbCFOPGEcWUOWc"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GNxXp-000763-Ad for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 Sep 2006 13:10:45 -0700
-Received: from mail.gmx.net ([213.165.64.20])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1GNxXm-0002k3-VM
+	id 1GNxXq-00076P-En for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 14 Sep 2006 13:10:46 -0700
+Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1GNxXo-0002jd-Bu
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 Sep 2006 13:10:45 -0700
+	Thu, 14 Sep 2006 13:10:46 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,89 +29,204 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_2abCFdYSDjPVYu7
+--Boundary-00=_7SbCFOPGEcWUOWc
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-- move some static data into the .rodata section
-- simplify source code for transl_l[] and transl_h[] which makes it more readable
+- Mark the default colormaps read-only, as nobody should be allowed to modify them
+- Additionally mark color values as __read_mostly since they will only be modified (very seldom) by fb_invert_cmaps()
+- Add named initializers in fb_cmap structs and use the ARRAY_SIZE() macro
 
 Signed-off-by: Helge Deller <deller@gmx.de>
 
 
---Boundary-00=_2abCFdYSDjPVYu7
+--Boundary-00=_7SbCFOPGEcWUOWc
 Content-Type: text/plain;
   charset="us-ascii";
-  name="patch5.diff"
+  name="patch1.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="patch5.diff"
+	filename="patch1.diff"
 
-- move some static data into the .rodata section
-- simplify source code for transl_l[] and transl_h[] which makes it more readable
+- Mark the default colormaps read-only, as nobody should be allowed to modify them
+- Additionally mark color values as __read_mostly since they will only be modified (very seldom) by fb_invert_cmaps()
+- Add named initializers in fb_cmap structs and use the ARRAY_SIZE() macro
 
 Signed-off-by: Helge Deller <deller@gmx.de>
 
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 43d5a6d..6aff63d 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -264,7 +264,7 @@ static void vga16fb_clock_chip(struct vg
- 			       const struct fb_info *info,
- 			       int mul, int div)
- {
--	static struct {
-+	static const struct {
- 		u32 pixclock;
- 		u8  misc;
- 		u8  seq_clock_mode;
-@@ -652,7 +652,7 @@ static int vga16fb_set_par(struct fb_inf
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 2f335e9..15eaf4b 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -967,11 +967,11 @@ extern struct fb_videomode *fb_find_best
+ /* drivers/video/fbcmap.c */
+ extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
+ extern void fb_dealloc_cmap(struct fb_cmap *cmap);
+-extern int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to);
+-extern int fb_cmap_to_user(struct fb_cmap *from, struct fb_cmap_user *to);
++extern int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to);
++extern int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to);
+ extern int fb_set_cmap(struct fb_cmap *cmap, struct fb_info *fb_info);
+ extern int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *fb_info);
+-extern struct fb_cmap *fb_default_cmap(int len);
++extern const struct fb_cmap *fb_default_cmap(int len);
+ extern void fb_invert_cmaps(void);
  
- static void ega16_setpalette(int regno, unsigned red, unsigned green, unsigned blue)
+ struct fb_videomode {
+
+
+diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+index e8b135f..4e30a34 100644
+--- a/drivers/video/fbcmap.c
++++ b/drivers/video/fbcmap.c
+@@ -18,63 +18,64 @@
+ 
+ #include <asm/uaccess.h>
+ 
+-static u16 red2[] = {
++static u16 red2[] __read_mostly = {
+     0x0000, 0xaaaa
+ };
+-static u16 green2[] = {
++static u16 green2[] __read_mostly = {
+     0x0000, 0xaaaa
+ };
+-static u16 blue2[] = {
++static u16 blue2[] __read_mostly = {
+     0x0000, 0xaaaa
+ };
+ 
+-static u16 red4[] = {
++static u16 red4[] __read_mostly = {
+     0x0000, 0xaaaa, 0x5555, 0xffff
+ };
+-static u16 green4[] = {
++static u16 green4[] __read_mostly = {
+     0x0000, 0xaaaa, 0x5555, 0xffff
+ };
+-static u16 blue4[] = {
++static u16 blue4[] __read_mostly = {
+     0x0000, 0xaaaa, 0x5555, 0xffff
+ };
+ 
+-static u16 red8[] = {
++static u16 red8[] __read_mostly = {
+     0x0000, 0x0000, 0x0000, 0x0000, 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa
+ };
+-static u16 green8[] = {
++static u16 green8[] __read_mostly = {
+     0x0000, 0x0000, 0xaaaa, 0xaaaa, 0x0000, 0x0000, 0x5555, 0xaaaa
+ };
+-static u16 blue8[] = {
++static u16 blue8[] __read_mostly = {
+     0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa
+ };
+ 
+-static u16 red16[] = {
++static u16 red16[] __read_mostly = {
+     0x0000, 0x0000, 0x0000, 0x0000, 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa,
+     0x5555, 0x5555, 0x5555, 0x5555, 0xffff, 0xffff, 0xffff, 0xffff
+ };
+-static u16 green16[] = {
++static u16 green16[] __read_mostly = {
+     0x0000, 0x0000, 0xaaaa, 0xaaaa, 0x0000, 0x0000, 0x5555, 0xaaaa,
+     0x5555, 0x5555, 0xffff, 0xffff, 0x5555, 0x5555, 0xffff, 0xffff
+ };
+-static u16 blue16[] = {
++static u16 blue16[] __read_mostly = {
+     0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa,
+     0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff
+ };
+ 
+-static struct fb_cmap default_2_colors = {
+-    0, 2, red2, green2, blue2, NULL
++static const struct fb_cmap default_2_colors = {
++    len:2, red:red2, green:green2, blue:blue2
+ };
+-static struct fb_cmap default_8_colors = {
+-    0, 8, red8, green8, blue8, NULL
++static const struct fb_cmap default_8_colors = {
++    len:8, red:red8, green:green8, blue:blue8
+ };
+-static struct fb_cmap default_4_colors = {
+-    0, 4, red4, green4, blue4, NULL
++static const struct fb_cmap default_4_colors = {
++    len:4, red:red4, green:green4, blue:blue4
+ };
+-static struct fb_cmap default_16_colors = {
+-    0, 16, red16, green16, blue16, NULL
++static const struct fb_cmap default_16_colors = {
++    len:16, red:red16, green:green16, blue:blue16
+ };
+ 
+ 
++
+ /**
+  *	fb_alloc_cmap - allocate a colormap
+  *	@cmap: frame buffer colormap structure
+@@ -146,7 +147,7 @@ void fb_dealloc_cmap(struct fb_cmap *cma
+  *	Copy contents of colormap from @from to @to.
+  */
+ 
+-int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to)
++int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to)
  {
--	static unsigned char map[] = { 000, 001, 010, 011 };
-+	static const unsigned char map[] = { 000, 001, 010, 011 };
- 	int val;
- 	
- 	if (regno >= 16)
-@@ -1139,23 +1139,19 @@ static void vga16fb_copyarea(struct fb_i
- 	}
+ 	int tooff = 0, fromoff = 0;
+ 	int size;
+@@ -170,7 +171,7 @@ int fb_copy_cmap(struct fb_cmap *from, s
+ 	return 0;
  }
  
--#ifdef __LITTLE_ENDIAN
--static unsigned int transl_l[] =
--{0x0,0x8,0x4,0xC,0x2,0xA,0x6,0xE,0x1,0x9,0x5,0xD,0x3,0xB,0x7,0xF};
--static unsigned int transl_h[] =
--{0x000, 0x800, 0x400, 0xC00, 0x200, 0xA00, 0x600, 0xE00,
-- 0x100, 0x900, 0x500, 0xD00, 0x300, 0xB00, 0x700, 0xF00};
--#else
--#ifdef __BIG_ENDIAN
--static unsigned int transl_h[] =
--{0x0,0x8,0x4,0xC,0x2,0xA,0x6,0xE,0x1,0x9,0x5,0xD,0x3,0xB,0x7,0xF};
--static unsigned int transl_l[] =
--{0x000, 0x800, 0x400, 0xC00, 0x200, 0xA00, 0x600, 0xE00,
-- 0x100, 0x900, 0x500, 0xD00, 0x300, 0xB00, 0x700, 0xF00};
-+#define TRANS_MASK_LOW  {0x0,0x8,0x4,0xC,0x2,0xA,0x6,0xE,0x1,0x9,0x5,0xD,0x3,0xB,0x7,0xF}
-+#define TRANS_MASK_HIGH {0x000, 0x800, 0x400, 0xC00, 0x200, 0xA00, 0x600, 0xE00, \
-+			 0x100, 0x900, 0x500, 0xD00, 0x300, 0xB00, 0x700, 0xF00}
-+
-+#if defined(__LITTLE_ENDIAN)
-+static const u16 transl_l[] = TRANS_MASK_LOW;
-+static const u16 transl_h[] = TRANS_MASK_HIGH;
-+#elif defined(__BIG_ENDIAN)
-+static const u16 transl_l[] = TRANS_MASK_HIGH;
-+static const u16 transl_h[] = TRANS_MASK_LOW;
- #else
- #error "Only __BIG_ENDIAN and __LITTLE_ENDIAN are supported in vga-planes"
- #endif
--#endif
- 
- static void vga_8planes_imageblit(struct fb_info *info, const struct fb_image *image)
+-int fb_cmap_to_user(struct fb_cmap *from, struct fb_cmap_user *to)
++int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to)
  {
+ 	int tooff = 0, fromoff = 0;
+ 	int size;
+@@ -282,7 +283,7 @@ int fb_set_user_cmap(struct fb_cmap_user
+  *
+  */
+ 
+-struct fb_cmap *fb_default_cmap(int len)
++const struct fb_cmap *fb_default_cmap(int len)
+ {
+     if (len <= 2)
+ 	return &default_2_colors;
+@@ -305,22 +306,22 @@ void fb_invert_cmaps(void)
+ {
+     u_int i;
+ 
+-    for (i = 0; i < 2; i++) {
++    for (i = 0; i < ARRAY_SIZE(red2); i++) {
+ 	red2[i] = ~red2[i];
+ 	green2[i] = ~green2[i];
+ 	blue2[i] = ~blue2[i];
+     }
+-    for (i = 0; i < 4; i++) {
++    for (i = 0; i < ARRAY_SIZE(red4); i++) {
+ 	red4[i] = ~red4[i];
+ 	green4[i] = ~green4[i];
+ 	blue4[i] = ~blue4[i];
+     }
+-    for (i = 0; i < 8; i++) {
++    for (i = 0; i < ARRAY_SIZE(red8); i++) {
+ 	red8[i] = ~red8[i];
+ 	green8[i] = ~green8[i];
+ 	blue8[i] = ~blue8[i];
+     }
+-    for (i = 0; i < 16; i++) {
++    for (i = 0; i < ARRAY_SIZE(red16); i++) {
+ 	red16[i] = ~red16[i];
+ 	green16[i] = ~green16[i];
+ 	blue16[i] = ~blue16[i];
 
---Boundary-00=_2abCFdYSDjPVYu7
+
+
+
+
+
+--Boundary-00=_7SbCFOPGEcWUOWc
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -121,7 +237,7 @@ Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---Boundary-00=_2abCFdYSDjPVYu7
+--Boundary-00=_7SbCFOPGEcWUOWc
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -132,4 +248,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---Boundary-00=_2abCFdYSDjPVYu7--
+--Boundary-00=_7SbCFOPGEcWUOWc--

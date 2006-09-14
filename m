@@ -1,20 +1,20 @@
 From: Helge Deller <deller@gmx.de>
-Subject: [PATCH 2/5] various fbdev files: mark structs
-	and array read-only
-Date: Thu, 14 Sep 2006 22:01:34 +0200
-Message-ID: <200609142201.34219.deller@gmx.de>
+Subject: [PATCH 3/5] constify and annotate __read_mostly
+	in vgacon.c and fbmem.c
+Date: Thu, 14 Sep 2006 22:03:45 +0200
+Message-ID: <200609142203.46116.deller@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_eUbCFKvC3fppn8w"
+  boundary="Boundary-00=_iWbCFEt2MuA7ogp"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GNxXp-00076A-RB for linux-fbdev-devel@lists.sourceforge.net;
+	id 1GNxXp-000764-Ad for linux-fbdev-devel@lists.sourceforge.net;
 	Thu, 14 Sep 2006 13:10:45 -0700
 Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1GNxXm-0002js-WC
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1GNxXm-0002jx-P3
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Thu, 14 Sep 2006 13:10:45 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -29,159 +29,139 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_eUbCFKvC3fppn8w
+--Boundary-00=_iWbCFEt2MuA7ogp
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-- move some structs and arrays to the read-only (.rodata) section
+- annotate some variables from vgacon.c and fbmem.c as __read_mostly
+- move the mask[] array in fb_set_logo_truepalette() into the .rodata section
 
 Signed-off-by: Helge Deller <deller@gmx.de>
 
---Boundary-00=_eUbCFKvC3fppn8w
+--Boundary-00=_iWbCFEt2MuA7ogp
 Content-Type: text/plain;
   charset="us-ascii";
-  name="patch2.diff"
+  name="patch3.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="patch2.diff"
+	filename="patch3.diff"
 
-- move some structs and arrays to the read-only (.rodata) section
+- annotate some variables from vgacon.c and fbmem.c as __read_mostly
+- move the mask[] array in fb_set_logo_truepalette() into the .rodata section
 
 Signed-off-by: Helge Deller <deller@gmx.de>
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index 27597c5..f439a58 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -142,7 +142,7 @@ static struct class backlight_class = {
- 	.store	= _store,					\
- }
+
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 0a2c10a..4a9bde2 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -93,27 +93,27 @@ static void vgacon_invert_region(struct 
+ static unsigned long vgacon_uni_pagedir[2];
  
--static struct class_device_attribute bl_class_device_attributes[] = {
-+static const struct class_device_attribute bl_class_device_attributes[] = {
- 	DECLARE_ATTR(power, 0644, backlight_show_power, backlight_store_power),
- 	DECLARE_ATTR(brightness, 0644, backlight_show_brightness,
- 		     backlight_store_brightness),
-diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-index bc8ab00..58c37d4 100644
---- a/drivers/video/backlight/lcd.c
-+++ b/drivers/video/backlight/lcd.c
-@@ -121,7 +121,7 @@ static struct class lcd_class = {
- 	.store	= _store,					\
- }
+ /* Description of the hardware situation */
+-static unsigned long	vga_vram_base;		/* Base of video memory */
+-static unsigned long	vga_vram_end;		/* End of video memory */
+-static int		vga_vram_size;		/* Size of video memory */
+-static u16		vga_video_port_reg;	/* Video register select port */
+-static u16		vga_video_port_val;	/* Video register value port */
+-static unsigned int	vga_video_num_columns;	/* Number of text columns */
+-static unsigned int	vga_video_num_lines;	/* Number of text lines */
+-static int		vga_can_do_color = 0;	/* Do we support colors? */
+-static unsigned int	vga_default_font_height;/* Height of default screen font */
+-static unsigned char	vga_video_type;		/* Card type */
+-static unsigned char	vga_hardscroll_enabled;
+-static unsigned char	vga_hardscroll_user_enable = 1;
++static int		vga_init_done		__read_mostly;
++static unsigned long	vga_vram_base		__read_mostly;	/* Base of video memory */
++static unsigned long	vga_vram_end		__read_mostly;	/* End of video memory */
++static unsigned int	vga_vram_size		__read_mostly;	/* Size of video memory */
++static u16		vga_video_port_reg	__read_mostly;	/* Video register select port */
++static u16		vga_video_port_val	__read_mostly;	/* Video register value port */
++static unsigned int	vga_video_num_columns;			/* Number of text columns */
++static unsigned int	vga_video_num_lines;			/* Number of text lines */
++static int		vga_can_do_color	__read_mostly;	/* Do we support colors? */
++static unsigned int	vga_default_font_height __read_mostly;	/* Height of default screen font */
++static unsigned char	vga_video_type		__read_mostly;	/* Card type */
++static unsigned char	vga_hardscroll_enabled	__read_mostly;
++static unsigned char	vga_hardscroll_user_enable __read_mostly = 1;
+ static unsigned char	vga_font_is_default = 1;
+ static int		vga_vesa_blanked;
+ static int 		vga_palette_blanked;
+ static int 		vga_is_gfx;
+ static int 		vga_512_chars;
+ static int 		vga_video_font_height;
+-static int 		vga_scan_lines;
+-static unsigned int 	vga_rolled_over = 0;
+-static int              vga_init_done;
++static int 		vga_scan_lines		__read_mostly;
++static unsigned int 	vga_rolled_over;
  
--static struct class_device_attribute lcd_class_device_attributes[] = {
-+static const struct class_device_attribute lcd_class_device_attributes[] = {
- 	DECLARE_ATTR(power, 0644, lcd_show_power, lcd_store_power),
- 	DECLARE_ATTR(contrast, 0644, lcd_show_contrast, lcd_store_contrast),
- 	DECLARE_ATTR(max_contrast, 0444, lcd_show_max_contrast, NULL),
-
-
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index 4f78f23..f6cc623 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -451,7 +451,7 @@ static ssize_t show_bl_curve(struct clas
- /* When cmap is added back in it should be a binary attribute
-  * not a text one. Consideration should also be given to converting
-  * fbdev to use configfs instead of sysfs */
--static struct class_device_attribute class_device_attrs[] = {
-+static const struct class_device_attribute class_device_attrs[] = {
- 	__ATTR(bits_per_pixel, S_IRUGO|S_IWUSR, show_bpp, store_bpp),
- 	__ATTR(blank, S_IRUGO|S_IWUSR, show_blank, store_blank),
- 	__ATTR(console, S_IRUGO|S_IWUSR, show_console, store_console),
-
-
-
-diff --git a/drivers/video/console/sticon.c b/drivers/video/console/sticon.c
-index 45586aa..57b21e5 100644
---- a/drivers/video/console/sticon.c
-+++ b/drivers/video/console/sticon.c
-@@ -345,7 +345,7 @@ static void sticon_save_screen(struct vc
+ static int __init no_scroll(char *str)
  {
+
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 17961e3..65bd06a 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -52,8 +52,8 @@
+ 
+ #define FBPIXMAPSIZE	(1024 * 8)
+ 
+-struct fb_info *registered_fb[FB_MAX];
+-int num_registered_fb;
++struct fb_info *registered_fb[FB_MAX] __read_mostly;
++int num_registered_fb __read_mostly;
+ 
+ /*
+  * Helpers
+@@ -202,7 +202,7 @@ static void  fb_set_logo_truepalette(str
+ 					    const struct linux_logo *logo,
+ 					    u32 *palette)
+ {
+-	unsigned char mask[9] = { 0,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff };
++	static const unsigned char mask[] = { 0,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff };
+ 	unsigned char redmask, greenmask, bluemask;
+ 	int redshift, greenshift, blueshift;
+ 	int i;
+@@ -317,7 +317,7 @@ static struct logo_data {
+ 	int needs_truepalette;
+ 	int needs_cmapreset;
+ 	const struct linux_logo *logo;
+-} fb_logo;
++} fb_logo __read_mostly;
+ 
+ static void fb_rotate_logo_ud(const u8 *in, u8 *out, u32 width, u32 height)
+ {
+@@ -1252,7 +1252,7 @@ fb_release(struct inode *inode, struct f
+ 	return 0;
  }
  
--static struct consw sti_con = {
-+static const struct consw sti_con = {
- 	.owner			= THIS_MODULE,
- 	.con_startup		= sticon_startup,
- 	.con_init		= sticon_init,
-
-
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index de93139..6b385c3 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -58,7 +58,7 @@ struct broken_edid {
- 	u32 fix;
- };
+-static struct file_operations fb_fops = {
++static const struct file_operations fb_fops = {
+ 	.owner =	THIS_MODULE,
+ 	.read =		fb_read,
+ 	.write =	fb_write,
+@@ -1458,8 +1458,8 @@ int fb_new_modelist(struct fb_info *info
+ 	return err;
+ }
  
--static struct broken_edid brokendb[] = {
-+static const struct broken_edid brokendb[] = {
- 	/* DEC FR-PCXAV-YZ */
- 	{
- 		.manufacturer = "DEC",
-diff --git a/drivers/video/fbcvt.c b/drivers/video/fbcvt.c
-index b549899..0847c5e 100644
---- a/drivers/video/fbcvt.c
-+++ b/drivers/video/fbcvt.c
-@@ -57,7 +57,7 @@ struct fb_cvt_data {
- 	u32 status;
- };
+-static char *video_options[FB_MAX];
+-static int ofonly;
++static char *video_options[FB_MAX] __read_mostly;
++static int ofonly __read_mostly;
  
--static int fb_cvt_vbi_tab[] = {
-+static const unsigned char fb_cvt_vbi_tab[] = {
- 	4,        /* 4:3      */
- 	5,        /* 16:9     */
- 	6,        /* 16:10    */
-diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
-index 51d3538..2610044 100644
---- a/drivers/video/cfbimgblt.c
-+++ b/drivers/video/cfbimgblt.c
-@@ -42,7 +42,7 @@
- #define DPRINTK(fmt, args...)
- #endif
+ extern const char *global_mode_option;
  
--static u32 cfb_tab8[] = {
-+static const u32 cfb_tab8[] = {
- #if defined(__BIG_ENDIAN)
-     0x00000000,0x000000ff,0x0000ff00,0x0000ffff,
-     0x00ff0000,0x00ff00ff,0x00ffff00,0x00ffffff,
-@@ -58,7 +58,7 @@ static u32 cfb_tab8[] = {
- #endif
- };
- 
--static u32 cfb_tab16[] = {
-+static const u32 cfb_tab16[] = {
- #if defined(__BIG_ENDIAN)
-     0x00000000, 0x0000ffff, 0xffff0000, 0xffffffff
- #elif defined(__LITTLE_ENDIAN)
-@@ -68,7 +68,7 @@ static u32 cfb_tab16[] = {
- #endif
- };
- 
--static u32 cfb_tab32[] = {
-+static const u32 cfb_tab32[] = {
- 	0x00000000, 0xffffffff
- };
- 
-@@ -218,7 +218,7 @@ static inline void fast_imageblit(const 
- 	u32 bit_mask, end_mask, eorx, shift;
- 	const char *s = image->data, *src;
- 	u32 __iomem *dst;
--	u32 *tab = NULL;
-+	const u32 *tab = NULL;
- 	int i, j, k;
- 		
- 	switch (bpp) {
 
 
 
 
 
---Boundary-00=_eUbCFKvC3fppn8w
+--Boundary-00=_iWbCFEt2MuA7ogp
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -192,7 +172,7 @@ Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---Boundary-00=_eUbCFKvC3fppn8w
+--Boundary-00=_iWbCFEt2MuA7ogp
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -203,4 +183,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---Boundary-00=_eUbCFKvC3fppn8w--
+--Boundary-00=_iWbCFEt2MuA7ogp--

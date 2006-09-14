@@ -1,23 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Helge Deller <deller@gmx.de>
 Subject: Re: [PATCH 1/5] fbcmap.c: mark structs const or
- __read_mostly
-Date: Thu, 14 Sep 2006 22:42:16 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0609142239590.12534@pademelon.sonytel.be>
+	__read_mostly
+Date: Thu, 14 Sep 2006 23:13:52 +0200
+Message-ID: <200609142313.52601.deller@gmx.de>
 References: <200609142159.55936.deller@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_QYcCFT16OhXXgtT"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GNy2R-0001Yb-GY for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 Sep 2006 13:42:23 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GNy2P-0006Lf-Ub
+	id 1GNyX3-0004LA-SF for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 14 Sep 2006 14:14:02 -0700
+Received: from mail.gmx.net ([213.165.64.20])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1GNyX2-00084e-Sm
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 Sep 2006 13:42:23 -0700
+	Thu, 14 Sep 2006 14:14:01 -0700
 In-Reply-To: <200609142159.55936.deller@gmx.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,49 +29,224 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Helge Deller <deller@gmx.de>
-Cc: adaplas@pol.net, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: adaplas@pol.net
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 14 Sep 2006, Helge Deller wrote:
-> - Add named initializers in fb_cmap structs and use the ARRAY_SIZE() macro
+--Boundary-00=_QYcCFT16OhXXgtT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> -static struct fb_cmap default_2_colors = {
-> -    0, 2, red2, green2, blue2, NULL
-> +static const struct fb_cmap default_2_colors = {
-> +    len:2, red:red2, green:green2, blue:blue2
->  };
-> -static struct fb_cmap default_8_colors = {
-> -    0, 8, red8, green8, blue8, NULL
-> +static const struct fb_cmap default_8_colors = {
-> +    len:8, red:red8, green:green8, blue:blue8
->  };
-> -static struct fb_cmap default_4_colors = {
-> -    0, 4, red4, green4, blue4, NULL
-> +static const struct fb_cmap default_4_colors = {
-> +    len:4, red:red4, green:green4, blue:blue4
->  };
-> -static struct fb_cmap default_16_colors = {
-> -    0, 16, red16, green16, blue16, NULL
-> +static const struct fb_cmap default_16_colors = {
-> +    len:16, red:red16, green:green16, blue:blue16
->  };
+(resent with fixed C99 style inizializers as noticed by Geert Uytterhoeven)
 
-Please use the C99 variant instead of the obsolete GNU variant.
+- Mark the default colormaps read-only, as nobody should be allowed to modify them
+- Additionally mark color values as __read_mostly since they will only be modified (very seldom) by fb_invert_cmaps()
+- Add named C99-initializers in fb_cmap structs and use the ARRAY_SIZE() macro
 
-Gr{oetje,eeting}s,
+Signed-off-by: Helge Deller <deller@gmx.de>
 
-						Geert
 
-P.S. Please inline your patches, to facilitate adding review comments.
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--Boundary-00=_QYcCFT16OhXXgtT
+Content-Type: text/plain;
+  charset="utf-8";
+  name="patch1.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="patch1.diff"
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+- Mark the default colormaps read-only, as nobody should be allowed to modify them
+- Additionally mark color values as __read_mostly since they will only be modified (very seldom) by fb_invert_cmaps()
+- Add named C99-initializers in fb_cmap structs and use the ARRAY_SIZE() macro
+
+Signed-off-by: Helge Deller <deller@gmx.de>
+
+
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 2f335e9..15eaf4b 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -967,11 +967,11 @@ extern struct fb_videomode *fb_find_best
+ /* drivers/video/fbcmap.c */
+ extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
+ extern void fb_dealloc_cmap(struct fb_cmap *cmap);
+-extern int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to);
+-extern int fb_cmap_to_user(struct fb_cmap *from, struct fb_cmap_user *to);
++extern int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to);
++extern int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to);
+ extern int fb_set_cmap(struct fb_cmap *cmap, struct fb_info *fb_info);
+ extern int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *fb_info);
+-extern struct fb_cmap *fb_default_cmap(int len);
++extern const struct fb_cmap *fb_default_cmap(int len);
+ extern void fb_invert_cmaps(void);
+ 
+ struct fb_videomode {
+
+
+diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+index e8b135f..148108a 100644
+--- a/drivers/video/fbcmap.c
++++ b/drivers/video/fbcmap.c
+@@ -18,63 +18,64 @@
+ 
+ #include <asm/uaccess.h>
+ 
+-static u16 red2[] = {
++static u16 red2[] __read_mostly = {
+     0x0000, 0xaaaa
+ };
+-static u16 green2[] = {
++static u16 green2[] __read_mostly = {
+     0x0000, 0xaaaa
+ };
+-static u16 blue2[] = {
++static u16 blue2[] __read_mostly = {
+     0x0000, 0xaaaa
+ };
+ 
+-static u16 red4[] = {
++static u16 red4[] __read_mostly = {
+     0x0000, 0xaaaa, 0x5555, 0xffff
+ };
+-static u16 green4[] = {
++static u16 green4[] __read_mostly = {
+     0x0000, 0xaaaa, 0x5555, 0xffff
+ };
+-static u16 blue4[] = {
++static u16 blue4[] __read_mostly = {
+     0x0000, 0xaaaa, 0x5555, 0xffff
+ };
+ 
+-static u16 red8[] = {
++static u16 red8[] __read_mostly = {
+     0x0000, 0x0000, 0x0000, 0x0000, 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa
+ };
+-static u16 green8[] = {
++static u16 green8[] __read_mostly = {
+     0x0000, 0x0000, 0xaaaa, 0xaaaa, 0x0000, 0x0000, 0x5555, 0xaaaa
+ };
+-static u16 blue8[] = {
++static u16 blue8[] __read_mostly = {
+     0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa
+ };
+ 
+-static u16 red16[] = {
++static u16 red16[] __read_mostly = {
+     0x0000, 0x0000, 0x0000, 0x0000, 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa,
+     0x5555, 0x5555, 0x5555, 0x5555, 0xffff, 0xffff, 0xffff, 0xffff
+ };
+-static u16 green16[] = {
++static u16 green16[] __read_mostly = {
+     0x0000, 0x0000, 0xaaaa, 0xaaaa, 0x0000, 0x0000, 0x5555, 0xaaaa,
+     0x5555, 0x5555, 0xffff, 0xffff, 0x5555, 0x5555, 0xffff, 0xffff
+ };
+-static u16 blue16[] = {
++static u16 blue16[] __read_mostly = {
+     0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa,
+     0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff
+ };
+ 
+-static struct fb_cmap default_2_colors = {
+-    0, 2, red2, green2, blue2, NULL
++static const struct fb_cmap default_2_colors = {
++    .len=2, .red=red2, .green=green2, .blue=blue2
+ };
+-static struct fb_cmap default_8_colors = {
+-    0, 8, red8, green8, blue8, NULL
++static const struct fb_cmap default_8_colors = {
++    .len=8, .red=red8, .green=green8, .blue=blue8
+ };
+-static struct fb_cmap default_4_colors = {
+-    0, 4, red4, green4, blue4, NULL
++static const struct fb_cmap default_4_colors = {
++    .len=4, .red=red4, .green=green4, .blue=blue4
+ };
+-static struct fb_cmap default_16_colors = {
+-    0, 16, red16, green16, blue16, NULL
++static const struct fb_cmap default_16_colors = {
++    .len=16, .red=red16, .green=green16, .blue=blue16
+ };
+ 
+ 
++
+ /**
+  *	fb_alloc_cmap - allocate a colormap
+  *	@cmap: frame buffer colormap structure
+@@ -146,7 +147,7 @@ void fb_dealloc_cmap(struct fb_cmap *cma
+  *	Copy contents of colormap from @from to @to.
+  */
+ 
+-int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to)
++int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to)
+ {
+ 	int tooff = 0, fromoff = 0;
+ 	int size;
+@@ -170,7 +171,7 @@ int fb_copy_cmap(struct fb_cmap *from, s
+ 	return 0;
+ }
+ 
+-int fb_cmap_to_user(struct fb_cmap *from, struct fb_cmap_user *to)
++int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to)
+ {
+ 	int tooff = 0, fromoff = 0;
+ 	int size;
+@@ -282,7 +283,7 @@ int fb_set_user_cmap(struct fb_cmap_user
+  *
+  */
+ 
+-struct fb_cmap *fb_default_cmap(int len)
++const struct fb_cmap *fb_default_cmap(int len)
+ {
+     if (len <= 2)
+ 	return &default_2_colors;
+@@ -305,22 +306,22 @@ void fb_invert_cmaps(void)
+ {
+     u_int i;
+ 
+-    for (i = 0; i < 2; i++) {
++    for (i = 0; i < ARRAY_SIZE(red2); i++) {
+ 	red2[i] = ~red2[i];
+ 	green2[i] = ~green2[i];
+ 	blue2[i] = ~blue2[i];
+     }
+-    for (i = 0; i < 4; i++) {
++    for (i = 0; i < ARRAY_SIZE(red4); i++) {
+ 	red4[i] = ~red4[i];
+ 	green4[i] = ~green4[i];
+ 	blue4[i] = ~blue4[i];
+     }
+-    for (i = 0; i < 8; i++) {
++    for (i = 0; i < ARRAY_SIZE(red8); i++) {
+ 	red8[i] = ~red8[i];
+ 	green8[i] = ~green8[i];
+ 	blue8[i] = ~blue8[i];
+     }
+-    for (i = 0; i < 16; i++) {
++    for (i = 0; i < ARRAY_SIZE(red16); i++) {
+ 	red16[i] = ~red16[i];
+ 	green16[i] = ~green16[i];
+ 	blue16[i] = ~blue16[i];
+
+--Boundary-00=_QYcCFT16OhXXgtT
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+--Boundary-00=_QYcCFT16OhXXgtT
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--Boundary-00=_QYcCFT16OhXXgtT--

@@ -1,32 +1,25 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 7176] New: Mach64
- framebuffer console hangs when compiled with gcc 4.1
-Date: Thu, 21 Sep 2006 10:09:36 -0700
-Message-ID: <20060921100936.6bfad4ba.akpm@osdl.org>
+Subject: Re: backlight: oops in __mutex_lock_slowpath
+ during head /sys/class/graphics/fb0/* in 2.6.18
+Date: Thu, 21 Sep 2006 12:37:42 -0700
+Message-ID: <20060921123742.ec225cc2.akpm@osdl.org>
+References: <20060921121952.GA16927@aepfle.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GQS3R-0005bU-4h for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Sep 2006 10:09:41 -0700
+	id 1GQUNF-0002iW-Gy for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 21 Sep 2006 12:38:17 -0700
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GQS3P-00067F-NA
+	(Exim 4.44) id 1GQUNE-00034e-3D
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Sep 2006 10:09:41 -0700
-Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
-	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id k8LH9bnW004677
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 21 Sep 2006 10:09:37 -0700
-Received: from akpm.corp.google.com (shell0.pdx.osdl.net [10.9.0.31])
-	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id k8LH9aUH015586
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 21 Sep 2006 10:09:37 -0700
+	Thu, 21 Sep 2006 12:38:17 -0700
+In-Reply-To: <20060921121952.GA16927@aepfle.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,52 +30,84 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Olaf Hering <olaf@aepfle.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Daniel R Thompson <daniel.thompson@st.com>, Michael Hanselmann <linux-kernel@hansmi.ch>, linux-kernel@vger.kernel.org, Smirl <jonsmirl@gmail.com>, "Antonino A. Daplas" <adaplas@pol.net>, Jon@sc8-sf-spam2.sourceforge.net
 
+On Thu, 21 Sep 2006 14:19:52 +0200
+Olaf Hering <olaf@aepfle.de> wrote:
 
+> The bl_curve code has some room for improvement.
+> 
+> ...
+> <6>Monitor sense value = 0x60b
+> <6>using video mode 13 and color mode 0.
+> <4>Console: switching to colour frame buffer device 104x39
+> <6>fb0: valkyrie frame buffer device
+> ...
+> 
+> inst-sys:~ # cat /proc/fb
+> 0 valkyrie
+> inst-sys:~ # l /sys/class/graphics/fb0/
+> total 0
+> drwxr-xr-x 2 root root    0 Sep 21 11:54 ./
+> drwxr-xr-x 4 root root    0 Sep 21 11:53 ../
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 bits_per_pixel
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 bl_curve
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 blank
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 console
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 cursor
+> -r--r--r-- 1 root root 4096 Sep 21 12:15 dev
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 mode
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 modes
+> -r--r--r-- 1 root root 4096 Sep 21 12:15 name
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 pan
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 rotate
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 state
+> -r--r--r-- 1 root root 4096 Sep 21 12:15 stride
+> lrwxrwxrwx 1 root root    0 Sep 21 12:15 subsystem -> ../../../class/graphics/
+> --w------- 1 root root 4096 Sep 21 12:15 uevent
+> -rw-r--r-- 1 root root 4096 Sep 21 12:15 virtual_size
+> inst-sys:~ # head /sys/class/graphics/fb0/*
+> ==> /sys/class/graphics/fb0/bits_per_pixel <==
+> 8
+> 
+> ==> /sys/class/graphics/fb0/bl_curve <==
+> Segmentation fault
+> inst-sys:~ # dmesg
+> valkyriefb: vmode 13 does not support cmode 1.
+> Unable to handle kernel paging request for data at address 0x00000000
+> Faulting instruction address: 0xc02c7bd8
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> 
+> Modules linked in: tulip mesh cpufreq_ondemand loop nfs nfs_acl lockd sunrpc sg st sd_mod sr_mod scsi_mod ide_cd cdrom
+> NIP: C02C7BD8 LR: C0170EBC CTR: C0170E90
+> REGS: c4209db0 TRAP: 0300   Not tainted  (2.6.18-rc7-git1-2-default)
+> MSR: 00009032 <EE,ME,IR,DR>  CR: 28042488  XER: 00000000
+> DAR: 00000000, DSISR: 22000000
+> TASK = c7fc8190[2853] 'head' THREAD: c4208000
+> GPR00: C4209E6C C4209E60 C7FC8190 C0B77614 C41D5000 C41D5000 00000000 00008000
+> GPR08: 00000000 C0B77618 00000000 00000000 00000000 100200C8 10020000 00000001
+> GPR16: 10006D08 7FDF9B3C 100A0000 10080000 00000003 7FDF9CAB C4209F20 C2FCDC78
+> GPR24: C038BC14 C01EF568 7FDF7858 C41D5000 C0B77614 C0B77400 C7FC8190 C0B77614
+> NIP [C02C7BD8] __mutex_lock_slowpath+0x2c/0xa4
+> LR [C0170EBC] show_bl_curve+0x2c/0xa0
+> Call Trace:  
+> [C4209E60] [C02C7A54] mutex_lock+0x18/0x5c (unreliable)
+> [C4209E80] [C0170EBC] show_bl_curve+0x2c/0xa0
+> [C4209EB0] [C01EF594] class_device_attr_show+0x2c/0x44
+> [C4209EC0] [C00CC3BC] sysfs_read_file+0xb8/0x204
+> [C4209EF0] [C0083FE4] vfs_read+0xec/0x1c8
+> [C4209F10] [C0084444] sys_read+0x4c/0x8c
+> [C4209F40] [C00125F8] ret_from_syscall+0x0/0x40
+> --- Exception: c01 at 0xff589f8
+>     LR = 0x100045e0
+> Instruction dump:
+> 4e800020 9421ffe0 7c0802a6 39230004 bfc10018 7c7f1b78 7c5e1378 90010024
+> 3801000c 9121000c 81690004 90090004 <900b0000> 91610010 90410014 3800ffff
+> 
 
-Begin forwarded message:
+cc's added.
 
-Date: Thu, 21 Sep 2006 05:51:41 -0700
-From: bugme-daemon@bugzilla.kernel.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 7176] New: Mach64 framebuffer console hangs when compiled with gcc 4.1
-
-
-http://bugzilla.kernel.org/show_bug.cgi?id=7176
-
-           Summary: Mach64 framebuffer console hangs when compiled with gcc
-                    4.1
-    Kernel Version: 2.6.18
-            Status: NEW
-          Severity: normal
-             Owner: jsimmons@infradead.org
-         Submitter: jernej-bugzilla.kernel@ena.si
-
-
-Most recent kernel where this bug did not occur: ?
-Distribution: Gentoo
-Hardware Environment: 1) Compaq ProLiant ML330 G2 server [Pentium III 1066MHz] 
-2) HP ML350G4 [Xeon 3GHz EM64T]
-Software Environment:
-Problem Description: I first noticed the problem with Gentoo's 2.6.16-r8 kernel 
-on ML330 server (running Debian Etch, but with Gentoo kernel) - kernel compiled 
-with GCC 4.0, worked fine, but when I recompiled the same kernel with gcc 
-4.1.2, the kernel locks up at bootup, when it's supposed to switch to graphic 
-console. I confirmed the same lockup with vanilla 2.6.18 kernel (which is why 
-I'm reporting here).
-The same thing also happens on ML350G4 server with kernel 2.6.17-gentoo-r8 
-[running in 64bit mode] (previous kernel, compiled with gcc 3.4.6 works, but 
-when recompiled with gcc 4.1.1, it too locks up in apparently the same way; 
-unfortunately I'm not able to test with a vanilla kernel there).
-
-Steps to reproduce: Enable Device Drivers -> Graphics support -> <*> Support 
-for frame buffer devices -> <*> ATI Mach64 display support, [*]   Mach64 CT/VT/
-GT/LT (incl. 3D RAGE) support, [*]   Mach64 GX support; compile with gcc 4.1.1 
-or 4.1.2, boot.
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

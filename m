@@ -1,66 +1,64 @@
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
+From: Olaf Hering <olaf@aepfle.de>
 Subject: Re: backlight: oops in __mutex_lock_slowpath during head /sys/class/graphics/fb0/* in 2.6.18
-Date: Thu, 21 Sep 2006 23:56:20 +0200
-Message-ID: <20060921215620.GA9518@hansmi.ch>
-References: <20060921121952.GA16927@aepfle.de> <20060921123742.ec225cc2.akpm@osdl.org>
+Date: Fri, 22 Sep 2006 13:26:22 +0200
+Message-ID: <20060922112622.GA26724@aepfle.de>
+References: <20060921121952.GA16927@aepfle.de> <20060921123742.ec225cc2.akpm@osdl.org> <20060921215620.GA9518@hansmi.ch>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751640AbWIUV4X@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751093AbWIVL1R@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20060921123742.ec225cc2.akpm@osdl.org>
+In-Reply-To: <20060921215620.GA9518@hansmi.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: olaf@aepfle.de
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
 Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@pol.net>, Daniel R Thompson <daniel.thompson@st.com>, Jon Smirl <jonsmirl@gmail.com>, akpm@osdl.org
 
-On Thu, Sep 21, 2006 at 12:37:42PM -0700, Andrew Morton wrote:
-> On Thu, 21 Sep 2006 14:19:52 +0200
-> Olaf Hering <olaf@aepfle.de> wrote:
-> > The bl_curve code has some room for improvement.
+On Thu, Sep 21, Michael Hanselmann wrote:
 
-Agreed.
+> What about the patch below? Does it work for you?
 
-> > inst-sys:~ # dmesg
-> > valkyriefb: vmode 13 does not support cmode 1.
-> > Unable to handle kernel paging request for data at address 0x00000000
-> > Faulting instruction address: 0xc02c7bd8
+Appears to work.
 
-Seems like not all drivers use the framebuffer_alloc() function and
-won't have an initialized mutex. But those don't have a backlight,
-anyway.
+tangerine:~ # head /sys/class/graphics/fb0/*
+==> /sys/class/graphics/fb0/bits_per_pixel <==
+8
 
-What about the patch below? Does it work for you?
+==> /sys/class/graphics/fb0/bl_curve <==
+head: error reading `/sys/class/graphics/fb0/bl_curve': No such device
 
-Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+==> /sys/class/graphics/fb0/blank <==
 
----
-diff -Nrup --exclude-from linux-exclude-from linux-2.6.18.orig/drivers/video/fbsysfs.c linux-2.6.18/drivers/video/fbsysfs.c
---- linux-2.6.18.orig/drivers/video/fbsysfs.c	2006-09-21 23:40:06.000000000 +0200
-+++ linux-2.6.18/drivers/video/fbsysfs.c	2006-09-21 23:50:00.000000000 +0200
-@@ -397,6 +397,12 @@ static ssize_t store_bl_curve(struct cla
- 	u8 tmp_curve[FB_BACKLIGHT_LEVELS];
- 	unsigned int i;
- 
-+	/* Some drivers don't use framebuffer_alloc(), but those also
-+	 * don't have backlights.
-+	 */
-+	if (!fb_info || !fb_info->bl_dev)
-+		return -ENODEV;
-+
- 	if (count != (FB_BACKLIGHT_LEVELS / 8 * 24))
- 		return -EINVAL;
- 
-@@ -430,6 +436,12 @@ static ssize_t show_bl_curve(struct clas
- 	ssize_t len = 0;
- 	unsigned int i;
- 
-+	/* Some drivers don't use framebuffer_alloc(), but those also
-+	 * don't have backlights.
-+	 */
-+	if (!fb_info || !fb_info->bl_dev)
-+		return -ENODEV;
-+
- 	mutex_lock(&fb_info->bl_mutex);
- 	for (i = 0; i < FB_BACKLIGHT_LEVELS; i += 8)
- 		len += snprintf(&buf[len], PAGE_SIZE,
+==> /sys/class/graphics/fb0/console <==
+
+==> /sys/class/graphics/fb0/cursor <==
+
+==> /sys/class/graphics/fb0/dev <==
+29:0
+
+==> /sys/class/graphics/fb0/mode <==
+
+==> /sys/class/graphics/fb0/modes <==
+U:832x624p-74
+
+==> /sys/class/graphics/fb0/name <==
+valkyrie
+
+==> /sys/class/graphics/fb0/pan <==
+0,0
+
+==> /sys/class/graphics/fb0/rotate <==
+0
+
+==> /sys/class/graphics/fb0/state <==
+0
+
+==> /sys/class/graphics/fb0/stride <==
+832
+
+==> /sys/class/graphics/fb0/subsystem <==
+head: error reading `/sys/class/graphics/fb0/subsystem': Is a directory
+head: cannot open `/sys/class/graphics/fb0/uevent' for reading: Permission denied
+
+==> /sys/class/graphics/fb0/virtual_size <==
+832,624

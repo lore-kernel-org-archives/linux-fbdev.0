@@ -1,55 +1,58 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: 2.6.18 - vesafb unaiavilable if fbcon
-	compiled as module
-Date: Sat, 23 Sep 2006 01:44:23 -0700
-Message-ID: <20060923014423.e57b2fae.akpm@osdl.org>
-References: <200609231140.50220.arvidjaar@mail.ru>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] more get_property() fallout
+Date: Sat, 23 Sep 2006 20:57:10 +0100
+Message-ID: <20060923195710.GM29920@ftp.linux.org.uk>
+References: <20060923172135.GL29920@ftp.linux.org.uk>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751513AbWIWT5N@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060923172135.GL29920@ftp.linux.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GR37b-0004y4-RE for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Sep 2006 01:44:27 -0700
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GR37a-00081q-HT
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Sep 2006 01:44:27 -0700
-In-Reply-To: <200609231140.50220.arvidjaar@mail.ru>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: "Antonino A. Daplas" <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 23 Sep 2006 11:40:49 +0400
-Andrey Borzenkov <arvidjaar@mail.ru> wrote:
-
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Sat, Sep 23, 2006 at 06:21:35PM +0100, Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  drivers/video/riva/fbdev.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Is it intentional? In Kconfig:
-> 
-> config FB_VESA
->         bool "VESA VGA graphics support"
->         depends on (FB = y) && X86
-> 
+> diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+> index 61a4665..4acde4f 100644
+> --- a/drivers/video/riva/fbdev.c
+> +++ b/drivers/video/riva/fbdev.c
+> @@ -1826,7 +1826,7 @@ static int __devinit riva_get_EDID_OF(st
+>  {
+>  	struct riva_par *par = info->par;
+>  	struct device_node *dp;
+> -	unsigned char *pedid = NULL;
+> +	const unsigned char *pedid = NULL;
 
-cc's added.
+Ho-hum...  Actually, that looks like a genuine bug.  Look:
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+rivafb_probe():
+	riva_get_EDID(info, pd);
+	riva_get_edidinfo(info);
+
+riva_get_EDID() -> riva_get_EDID_OF() ->
+                        pedid = get_property(dp, propnames[i], NULL);
+                        if (pedid != NULL) {
+                                par->EDID = pedid;
+                                NVTRACE("LCD found.\n");
+                                return 1;
+                        }
+then in 
+riva_get_edidinfo():
+        struct riva_par *par = info->par;
+
+        fb_edid_to_monspecs(par->EDID, &info->monspecs);
+
+fb_edid_to_monspecs() -> edid_checksum() -> fix_edid() -> modifies the string.
+
+What's worse, fb_edid_to_monspecs() appears to assume that the string it
+got is long enough.  So... what the hell is going on there?  I'd probably
+did kmalloc() and copy that sucker there, making sure that it _is_ long
+enough for fbmon.c while we are at it.  Other suggestions?

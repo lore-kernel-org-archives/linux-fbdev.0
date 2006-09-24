@@ -1,25 +1,33 @@
-From: jfj <jfj@freemail.gr>
-Subject: Status of WAITFORVSYNC (waitretrace)
-Date: Sun, 24 Sep 2006 02:53:10 -0700
-Message-ID: <45165586.2@freemail.gr>
+From: Torgeir Veimo <torgeir@pobox.com>
+Subject: Re: Status of WAITFORVSYNC (waitretrace)
+Date: Sun, 24 Sep 2006 12:57:27 +0100
+Message-ID: <96AEB292-5B41-4436-80C4-104EE418556C@pobox.com>
+References: <45165586.2@freemail.gr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GRRbJ-000546-8i for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Sep 2006 03:52:45 -0700
-Received: from aiolos.otenet.gr ([195.170.0.93] ident=OTEnet-mail-system)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRRbI-0003Hg-MQ
+	id 1GRSc8-0004hV-GC for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 24 Sep 2006 04:57:41 -0700
+Received: from proof.pobox.com ([207.106.133.28] ident=postfix)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRSc5-0004Zz-RJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Sep 2006 03:52:45 -0700
-Received: from [85.75.150.73] (athedsl-155307.otenet.gr [85.75.150.73])
-	by aiolos.otenet.gr (8.13.4.20060308/8.13.4/Debian-9) with ESMTP id
-	k8O9pkDc031487 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 24 Sep 2006 12:51:46 +0300
+	Sun, 24 Sep 2006 04:57:40 -0700
+Received: from proof (localhost [127.0.0.1])
+	by proof.pobox.com (Postfix) with ESMTP id DA14929D4D
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 24 Sep 2006 07:57:54 -0400 (EDT)
+Received: from [192.168.1.11] (iampivot.plus.com [80.229.27.41])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(No client certificate requested)
+	by proof.sasl.smtp.pobox.com (Postfix) with ESMTP id 5513A790B3
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 24 Sep 2006 07:57:54 -0400 (EDT)
+In-Reply-To: <45165586.2@freemail.gr>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,32 +40,27 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi.
 
-I have kernel 2.6.17
-It seems that the matrox card implements FBIO_WAITFORVSYNC ioctl.
+On 24 Sep 2006, at 10:53, jfj wrote:
 
-Also, in the archives of the list I saw that there have been
-patches that implement WAITFORVSYNC for radeonfb, intelfb and
-omapfb.  And for the SiS card there is a static inline
-waitforretrace() function that uses the polling+watchdog
-method, as well as a sisfb_accelsync() [but I don't know if
-.fb_sync is the same as WAITFORVSYNC].
+>
+> I have kernel 2.6.17
+> It seems that the matrox card implements FBIO_WAITFORVSYNC ioctl.
 
-So, um, what's the status of the ioctl()?
-Are they in 2.6.18?
+My patch for radeonfb was turned down since using that ioctl might  
+freeze kernel if the drm kernel module is active and is using the  
+same interrupt. I think an alternative option would be to disable it  
+by default unless a kernel module param is set when loading radeonfb,  
+since it's currently a bit difficult to get inter module  
+communication between the drm and radeonfb modules. I never got  
+around to resubmit a modified patch though.
 
-It would be really useful to have this for DirectFB (which
-currently tries to get iolp() and do the polling method)
-*and* SDL (which calls the ioctl if FBIOWAITRETRACE is
-defined, based on a patch Sam sent implementing FBIOWAITRETRACE).
-Then DirectFB and SDL would be able to run on framebuffer
-consoles nicely, without root privs (actually hyperuser privs
-which is root+DMA)
 
-Thanks,
+-- 
+Torgeir Veimo
+torgeir@pobox.com
 
-jerald
+
 
 
 -------------------------------------------------------------------------

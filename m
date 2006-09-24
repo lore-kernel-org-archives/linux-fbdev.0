@@ -1,24 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Fw: [Bugme-new] [Bug 7189] New:
- Inconsistent /proc/fb behavior
-Date: Sun, 24 Sep 2006 12:31:30 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0609241221410.24615@anakin>
-References: <20060922194700.c581fa72.akpm@osdl.org>
+From: jfj <jfj@freemail.gr>
+Subject: Status of WAITFORVSYNC (waitretrace)
+Date: Sun, 24 Sep 2006 02:53:10 -0700
+Message-ID: <45165586.2@freemail.gr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GRRGr-0003Ic-Ka for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Sep 2006 03:31:37 -0700
-Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRRGq-0005f8-VZ
+	id 1GRRbJ-000546-8i for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 24 Sep 2006 03:52:45 -0700
+Received: from aiolos.otenet.gr ([195.170.0.93] ident=OTEnet-mail-system)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRRbI-0003Hg-MQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Sep 2006 03:31:37 -0700
-In-Reply-To: <20060922194700.c581fa72.akpm@osdl.org>
+	Sun, 24 Sep 2006 03:52:45 -0700
+Received: from [85.75.150.73] (athedsl-155307.otenet.gr [85.75.150.73])
+	by aiolos.otenet.gr (8.13.4.20060308/8.13.4/Debian-9) with ESMTP id
+	k8O9pkDc031487 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 24 Sep 2006 12:51:46 +0300
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,84 +30,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: jurij@wooyd.org
-Cc: Andrew Morton <akpm@osdl.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 22 Sep 2006, Andrew Morton wrote:
-> Begin forwarded message:
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=7189
-> 
->            Summary: Inconsistent /proc/fb behavior
->     Kernel Version: 2.6.17.13
->             Status: NEW
->           Severity: normal
->              Owner: jsimmons@infradead.org
->          Submitter: jurij@wooyd.org
-> 
-> 
-> Distribution: Debian unstable
-> Hardware environment: Sparc Ultra60 workstation
-> 
-> Problem Description:
-> It appears that the function fbmem_read_proc, which serves as a backend for the
-> /proc/fb file, has a problem. When constructing the list of available frame
-> buffers to return to the user, it uses the following for-cycle;
-> 
-> for (fi = registered_fb; fi < &registered_fb[FB_MAX] && len < 4000; fi++)
-> 
-> Here len is the parameter passed to the function, that it the amount of data the
-> user is requesting from the file. So if the user requests a chunk larger than
-> 4000 bytes, nothing is returned, leading to the peculiar behaviour described below.
-> 
-> Steps to reproduce:
-> 
-> $ cat /proc/fb
-> 0 Creator 3D
-> 
-> This works fine, because strace shows that cat is reading data in 1024-byte chunks:
-> [..]
-> read(3, "0 Creator 3D\n", 1024)         = 13
-> 
-> OTOH, grep is reading data in 32kB chunks:
-> [..]
-> read(3, "", 32768)                      = 0
-> 
-> so the command 'grep Creator /proc/fb' returns nothing (quite unexpectingly). I
-> suspect that for-loop should have 'clen' rather than 'len', the local variable
-> which tracks the size of the buffer (even though I am not sure why one would
-> want to impose a 4000 byte limit here).
+Hi.
 
-I guess it should check `clen', not `len'. Can you please try this
-patch? It should apply to 2.4.34-pre3, too.
+I have kernel 2.6.17
+It seems that the matrox card implements FBIO_WAITFORVSYNC ioctl.
 
-[PATCH] Correct buffer size limit in fbmem_read_proc()
+Also, in the archives of the list I saw that there have been
+patches that implement WAITFORVSYNC for radeonfb, intelfb and
+omapfb.  And for the SiS card there is a static inline
+waitforretrace() function that uses the polling+watchdog
+method, as well as a sisfb_accelsync() [but I don't know if
+.fb_sync is the same as WAITFORVSYNC].
 
-Signed-Off-By: Geert Uytterhoeven <geert@linux-m68k.org>
+So, um, what's the status of the ioctl()?
+Are they in 2.6.18?
 
---- linux-2.6.18/drivers/video/fbmem.c.orig	2006-09-04 11:02:45.000000000 +0200
-+++ linux-2.6.18/drivers/video/fbmem.c	2006-09-24 12:17:07.000000000 +0200
-@@ -554,7 +554,8 @@ static int fbmem_read_proc(char *buf, ch
- 	int clen;
- 
- 	clen = 0;
--	for (fi = registered_fb; fi < &registered_fb[FB_MAX] && len < 4000; fi++)
-+	for (fi = registered_fb; fi < &registered_fb[FB_MAX] && clen < 4000;
-+	     fi++)
- 		if (*fi)
- 			clen += sprintf(buf + clen, "%d %s\n",
- 				        (*fi)->node,
+It would be really useful to have this for DirectFB (which
+currently tries to get iolp() and do the polling method)
+*and* SDL (which calls the ioctl if FBIOWAITRETRACE is
+defined, based on a patch Sam sent implementing FBIOWAITRETRACE).
+Then DirectFB and SDL would be able to run on framebuffer
+consoles nicely, without root privs (actually hyperuser privs
+which is root+DMA)
 
-Gr{oetje,eeting}s,
+Thanks,
 
-						Geert
+jerald
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

@@ -1,27 +1,28 @@
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Subject: Re: [PATCH] remove tx3912fb
-Date: Mon, 25 Sep 2006 11:47:28 +0900
-Message-ID: <20060925114728.3c82b654.yoichi_yuasa@tripeaks.co.jp>
-References: <20060922020202.31b2b537.yoichi_yuasa@tripeaks.co.jp>
-	<816d36d30609221012j452e6b03raa1ef1c72bb494d@mail.gmail.com>
-	<20060924214306.40133dee.yoichi_yuasa@tripeaks.co.jp>
-	<816d36d30609240819q59edce51p91a7aa66dbc8dc43@mail.gmail.com>
-	<816d36d30609240821x31035d3cw8170ace7de43abe5@mail.gmail.com>
+From: jfj <jfj@freemail.gr>
+Subject: Re: Status of WAITFORVSYNC (waitretrace)
+Date: Mon, 25 Sep 2006 06:23:44 -0700
+Message-ID: <4517D860.8080603@freemail.gr>
+References: <45165586.2@freemail.gr>
+	<96AEB292-5B41-4436-80C4-104EE418556C@pobox.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GRgVQ-0001gP-IN for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Sep 2006 19:47:40 -0700
-Received: from mo30.po.2iij.net ([210.128.50.53])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRgVO-0008Lm-2O
+	id 1GRqPf-00074V-RU for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 25 Sep 2006 06:22:24 -0700
+Received: from rosebud.otenet.gr ([195.170.0.94] ident=OTEnet-mail-system)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRqPf-0006nn-5U
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Sep 2006 19:47:40 -0700
-In-Reply-To: <816d36d30609240821x31035d3cw8170ace7de43abe5@mail.gmail.com>
+	Mon, 25 Sep 2006 06:22:23 -0700
+Received: from [85.75.141.31] (athedsl-152961.otenet.gr [85.75.141.31])
+	by rosebud.otenet.gr (8.13.4.20060308/8.13.4/Debian-9) with ESMTP id
+	k8PDMG4S010370 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 25 Sep 2006 16:22:16 +0300
+In-Reply-To: <96AEB292-5B41-4436-80C4-104EE418556C@pobox.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,51 +34,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Ricardo Mendoza <mendoza.ricardo@gmail.com>, linux-mips@linux-mips.org
 
-Hi,
+Torgeir Veimo wrote:
 
-Ricardo will add support of Nino and others again.
-Please ignore this patch.
+>My patch for radeonfb was turned down since using that ioctl might  
+>freeze kernel if the drm kernel module is active and is using the  
+>same interrupt. I think an alternative option would be to disable it  
+>by default unless a kernel module param is set when loading radeonfb,  
+>since it's currently a bit difficult to get inter module  
+>communication between the drm and radeonfb modules. I never got  
+>around to resubmit a modified patch though.
+>
+>  
+>
 
-Yoichi
+Wow. What a mess.  If two different subsystems (fb and drm) implement
+access to the same hardware, serious problems like this can happen
+(at least if one is using X and fb programs at the same time), as
+well as duplicate work, increasing size of the kernel, maintenance
+troubles, etc.
 
-On Sun, 24 Sep 2006 11:21:37 -0400
-"Ricardo Mendoza" <mendoza.ricardo@gmail.com> wrote:
+The right way to solve this, would be a common sub-subsystem which
+should be shared between drm and fb, but that's very hairy and
+nobody is going to do it.
 
-> On 9/24/06, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
-> > Hello,
-> >
-> > On Fri, 22 Sep 2006 13:12:44 -0400
-> > "Ricardo Mendoza" <mendoza.ricardo@gmail.com> wrote:
-> >
-> > > On 9/21/06, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
-> > > > Hi,
-> > > >
-> > > > NINO support has already dropped.
-> > > > Nothing is using tx3912fb.
-> > > >
-> > > > Yoichi
-> > > >
-> > > > Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-> > > >
-> > > > ...
-> > >
-> > > Hello Yoichi!
-> > >
-> > > If you don't mind I would ask to keep this driver up, I will soon add
-> > > tx3912 support back up because I have a couple PDAs that use it, and
-> > > there are still a few boards that run on it.
-> >
-> > Do you add the support of which PDA?
-> 
-> Philips Nino and Velo series and the old Sharp Mobilon series; both
-> run on PR31700/TX3912 SoCs. Steven Hill had a port for the Nino board
-> on early 2.4, but it was dropped as of 2.4.17 if I recall correctly,
-> it never made it to 2.6.
-> 
->      Ricardo
-> 
+It's a pity though because WAITFORVSYNC is an important function
+to do nice stuff with the framebuffer, there is interest from people
+to implement this for the various cards, there is interest from the
+userspace to use it, it adds very little code to the kernel and it
+improves the overall functionallity of the framebuffer system :(
+
+(and even the polling & watchdog method would be acceptable, because
+that's what people do in the end from userland, with iopl() and inb()).
+
+jf
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

@@ -1,7 +1,8 @@
-From: "Michal Suchanek" <hramrach@centrum.cz>
-Subject: Matrox (g450) DVI problems in 2.6.17
-Date: Mon, 25 Sep 2006 19:57:33 +0200
-Message-ID: <a5d587fb0609251057h4468f72aw826a37c9250cb28a@mail.gmail.com>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: Re: Matrox (g450) DVI problems in 2.6.17
+Date: Mon, 25 Sep 2006 20:08:01 +0200
+Message-ID: <45181B01.2080203@vc.cvut.cz>
+References: <a5d587fb0609251057h4468f72aw826a37c9250cb28a@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,16 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GRui0-0000dt-59 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 25 Sep 2006 10:57:36 -0700
-Received: from nf-out-0910.google.com ([64.233.182.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRuhz-000334-Rt
+	id 1GRusI-0001g3-5p for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 25 Sep 2006 11:08:14 -0700
+Received: from mailgw.cvut.cz ([147.32.3.235])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRusG-0005HG-ME
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 25 Sep 2006 10:57:36 -0700
-Received: by nf-out-0910.google.com with SMTP id p46so2033128nfa
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 25 Sep 2006 10:57:33 -0700 (PDT)
-Content-Disposition: inline
+	Mon, 25 Sep 2006 11:08:14 -0700
+In-Reply-To: <a5d587fb0609251057h4468f72aw826a37c9250cb28a@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,47 +28,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: vandrove@vc.cvut.cz, linux-fbdev-devel@lists.sourceforge.net
+To: Michal Suchanek <hramrach@centrum.cz>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hello from the Matrox DVI land
+Michal Suchanek wrote:
+> Hello from the Matrox DVI land
+> 
+> For me matrox DVI framebuffer (sort of) works on Linux 2.6.16.19 and
+> fails on 2.6.17.13.
+> 
+> The DVI support on Matroxes is quite flaky I'd guess.
 
-For me matrox DVI framebuffer (sort of) works on Linux 2.6.16.19 and
-fails on 2.6.17.13.
+Ask Matrox to release documentation for their hardware...
 
-The DVI support on Matroxes is quite flaky I'd guess.
+> I got a matrox g450
+> 
+> 01:00.0 VGA compatible controller: Matrox Graphics, Inc. G400/G450 (rev 85)
+> 
+> and I connect it with DVI to a flat panel.
 
-I got a matrox g450
+> For X to work I have to use kernel framebuffer to set the videomode
+> (UseFBDev in X). Otherwise X fails to set the timings correctly
+> (nothing is visible).
+> With kernel framebuffer I get an usable videomode in two steps. First
+> I start the X server, and there is only a message from the monitor
+> about bad timings. However, after switching to the console and back X
+> works well. Sometimes the switch is not needed (usually if started
+> from an already running X server). Works with software suspend as well
+> (as long as dri is not used).
 
-01:00.0 VGA compatible controller: Matrox Graphics, Inc. G400/G450 (rev 85)
+Are not you using ACER's monitor?  Try just powering monitor off and back on 
+instead of doing mode switch.
 
-and I connect it with DVI to a flat panel.
+> With 2.6.17.13 the picture I get is noisy. The lines shift a few
+> pixels horizontally in various directions. It is much like the results
+> I got with g550 when there was no screen connected to DVI at startup.
+> only much more noise (there must be a screen connected to DVI at boot
+> for the framebuffer to work correctly with DVI - at least it had to
+> last time I tried).
 
-For X to work I have to use kernel framebuffer to set the videomode
-(UseFBDev in X). Otherwise X fails to set the timings correctly
-(nothing is visible).
-With kernel framebuffer I get an usable videomode in two steps. First
-I start the X server, and there is only a message from the monitor
-about bad timings. However, after switching to the console and back X
-works well. Sometimes the switch is not needed (usually if started
-from an already running X server). Works with software suspend as well
-(as long as dri is not used).
+Upgrade to 2.6.18, it should behave like 2.6.16 does.
+						Petr
 
-With 2.6.17.13 the picture I get is noisy. The lines shift a few
-pixels horizontally in various directions. It is much like the results
-I got with g550 when there was no screen connected to DVI at startup.
-only much more noise (there must be a screen connected to DVI at boot
-for the framebuffer to work correctly with DVI - at least it had to
-last time I tried).
-
-I use Gentoo kernels but it does not look like there are new patches
-in 2.6.17. The ones that are in both are only for splash and vesa.
-
-I am not sure what other information would be helpful for diagnosing
-the problem.
-
-Thanks
-
-Michal
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

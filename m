@@ -1,28 +1,25 @@
-From: jfj <jfj@freemail.gr>
-Subject: Re: Status of WAITFORVSYNC (waitretrace)
-Date: Mon, 25 Sep 2006 06:23:44 -0700
-Message-ID: <4517D860.8080603@freemail.gr>
-References: <45165586.2@freemail.gr>
-	<96AEB292-5B41-4436-80C4-104EE418556C@pobox.com>
+From: "Michal Suchanek" <hramrach@centrum.cz>
+Subject: Matrox (g450) DVI problems in 2.6.17
+Date: Mon, 25 Sep 2006 19:57:33 +0200
+Message-ID: <a5d587fb0609251057h4468f72aw826a37c9250cb28a@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GRqPf-00074V-RU for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 25 Sep 2006 06:22:24 -0700
-Received: from rosebud.otenet.gr ([195.170.0.94] ident=OTEnet-mail-system)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRqPf-0006nn-5U
+	id 1GRui0-0000dt-59 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 25 Sep 2006 10:57:36 -0700
+Received: from nf-out-0910.google.com ([64.233.182.189])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GRuhz-000334-Rt
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 25 Sep 2006 06:22:23 -0700
-Received: from [85.75.141.31] (athedsl-152961.otenet.gr [85.75.141.31])
-	by rosebud.otenet.gr (8.13.4.20060308/8.13.4/Debian-9) with ESMTP id
-	k8PDMG4S010370 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 25 Sep 2006 16:22:16 +0300
-In-Reply-To: <96AEB292-5B41-4436-80C4-104EE418556C@pobox.com>
+	Mon, 25 Sep 2006 10:57:36 -0700
+Received: by nf-out-0910.google.com with SMTP id p46so2033128nfa
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 25 Sep 2006 10:57:33 -0700 (PDT)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,42 +30,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: vandrove@vc.cvut.cz, linux-fbdev-devel@lists.sourceforge.net
 
-Torgeir Veimo wrote:
+Hello from the Matrox DVI land
 
->My patch for radeonfb was turned down since using that ioctl might  
->freeze kernel if the drm kernel module is active and is using the  
->same interrupt. I think an alternative option would be to disable it  
->by default unless a kernel module param is set when loading radeonfb,  
->since it's currently a bit difficult to get inter module  
->communication between the drm and radeonfb modules. I never got  
->around to resubmit a modified patch though.
->
->  
->
+For me matrox DVI framebuffer (sort of) works on Linux 2.6.16.19 and
+fails on 2.6.17.13.
 
-Wow. What a mess.  If two different subsystems (fb and drm) implement
-access to the same hardware, serious problems like this can happen
-(at least if one is using X and fb programs at the same time), as
-well as duplicate work, increasing size of the kernel, maintenance
-troubles, etc.
+The DVI support on Matroxes is quite flaky I'd guess.
 
-The right way to solve this, would be a common sub-subsystem which
-should be shared between drm and fb, but that's very hairy and
-nobody is going to do it.
+I got a matrox g450
 
-It's a pity though because WAITFORVSYNC is an important function
-to do nice stuff with the framebuffer, there is interest from people
-to implement this for the various cards, there is interest from the
-userspace to use it, it adds very little code to the kernel and it
-improves the overall functionallity of the framebuffer system :(
+01:00.0 VGA compatible controller: Matrox Graphics, Inc. G400/G450 (rev 85)
 
-(and even the polling & watchdog method would be acceptable, because
-that's what people do in the end from userland, with iopl() and inb()).
+and I connect it with DVI to a flat panel.
 
-jf
+For X to work I have to use kernel framebuffer to set the videomode
+(UseFBDev in X). Otherwise X fails to set the timings correctly
+(nothing is visible).
+With kernel framebuffer I get an usable videomode in two steps. First
+I start the X server, and there is only a message from the monitor
+about bad timings. However, after switching to the console and back X
+works well. Sometimes the switch is not needed (usually if started
+from an already running X server). Works with software suspend as well
+(as long as dri is not used).
 
+With 2.6.17.13 the picture I get is noisy. The lines shift a few
+pixels horizontally in various directions. It is much like the results
+I got with g550 when there was no screen connected to DVI at startup.
+only much more noise (there must be a screen connected to DVI at boot
+for the framebuffer to work correctly with DVI - at least it had to
+last time I tried).
+
+I use Gentoo kernels but it does not look like there are new patches
+in 2.6.17. The ones that are in both are only for splash and vesa.
+
+I am not sure what other information would be helpful for diagnosing
+the problem.
+
+Thanks
+
+Michal
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

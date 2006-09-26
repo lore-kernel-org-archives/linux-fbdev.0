@@ -1,9 +1,10 @@
-From: "Michal Suchanek" <hramrach@centrum.cz>
-Subject: Re: Matrox (g450) DVI problems in 2.6.17
-Date: Tue, 26 Sep 2006 09:12:44 +0200
-Message-ID: <a5d587fb0609260012u3e63fc40k1890fa45e374288b@mail.gmail.com>
-References: <a5d587fb0609251057h4468f72aw826a37c9250cb28a@mail.gmail.com>
-	<45181B01.2080203@vc.cvut.cz>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Fw: [Bugme-new] [Bug 7189] New:
+ Inconsistent /proc/fb behavior
+Date: Tue, 26 Sep 2006 13:58:09 -0700
+Message-ID: <20060926135809.9c74e7db.akpm@osdl.org>
+References: <20060922194700.c581fa72.akpm@osdl.org>
+	<Pine.LNX.4.64.0609241221410.24615@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,17 +13,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GS77Y-0003zQ-BU for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Sep 2006 00:12:48 -0700
-Received: from nf-out-0910.google.com ([64.233.182.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GS77W-0006Zn-TM
+	id 1GSK0f-00074y-MS for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Sep 2006 13:58:33 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1GSK0e-0007MH-5E
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Sep 2006 00:12:48 -0700
-Received: by nf-out-0910.google.com with SMTP id p46so176071nfa
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 26 Sep 2006 00:12:45 -0700 (PDT)
-In-Reply-To: <45181B01.2080203@vc.cvut.cz>
-Content-Disposition: inline
+	Tue, 26 Sep 2006 13:58:33 -0700
+In-Reply-To: <Pine.LNX.4.64.0609241221410.24615@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,41 +31,79 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Willy Tarreau <w@1wt.eu>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, jurij@wooyd.org
 
-On 9/25/06, Petr Vandrovec <vandrove@vc.cvut.cz> wrote:
-> Michal Suchanek wrote:
-> > Hello from the Matrox DVI land
-> >
+On Sun, 24 Sep 2006 12:31:30 +0200 (CEST)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-> > With kernel framebuffer I get an usable videomode in two steps. First
-> > I start the X server, and there is only a message from the monitor
-> > about bad timings. However, after switching to the console and back X
-> > works well. Sometimes the switch is not needed (usually if started
-> > from an already running X server). Works with software suspend as well
-> > (as long as dri is not used).
->
-> Are not you using ACER's monitor?  Try just powering monitor off and back on
-> instead of doing mode switch.
+> On Fri, 22 Sep 2006, Andrew Morton wrote:
+> > Begin forwarded message:
+> > 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=7189
+> > 
+> >            Summary: Inconsistent /proc/fb behavior
+> >     Kernel Version: 2.6.17.13
+> >             Status: NEW
+> >           Severity: normal
+> >              Owner: jsimmons@infradead.org
+> >          Submitter: jurij@wooyd.org
+> > 
+> > 
+> > Distribution: Debian unstable
+> > Hardware environment: Sparc Ultra60 workstation
+> > 
+> > Problem Description:
+> > It appears that the function fbmem_read_proc, which serves as a backend for the
+> > /proc/fb file, has a problem. When constructing the list of available frame
+> > buffers to return to the user, it uses the following for-cycle;
+> > 
+> > for (fi = registered_fb; fi < &registered_fb[FB_MAX] && len < 4000; fi++)
+> > 
+> > Here len is the parameter passed to the function, that it the amount of data the
+> > user is requesting from the file. So if the user requests a chunk larger than
+> > 4000 bytes, nothing is returned, leading to the peculiar behaviour described below.
+> > 
+> > Steps to reproduce:
+> > 
+> > $ cat /proc/fb
+> > 0 Creator 3D
+> > 
+> > This works fine, because strace shows that cat is reading data in 1024-byte chunks:
+> > [..]
+> > read(3, "0 Creator 3D\n", 1024)         = 13
+> > 
+> > OTOH, grep is reading data in 32kB chunks:
+> > [..]
+> > read(3, "", 32768)                      = 0
+> > 
+> > so the command 'grep Creator /proc/fb' returns nothing (quite unexpectingly). I
+> > suspect that for-loop should have 'clen' rather than 'len', the local variable
+> > which tracks the size of the buffer (even though I am not sure why one would
+> > want to impose a 4000 byte limit here).
+> 
+> I guess it should check `clen', not `len'. Can you please try this
+> patch? It should apply to 2.4.34-pre3, too.
+> 
+> [PATCH] Correct buffer size limit in fbmem_read_proc()
+> 
+> Signed-Off-By: Geert Uytterhoeven <geert@linux-m68k.org>
+> 
+> --- linux-2.6.18/drivers/video/fbmem.c.orig	2006-09-04 11:02:45.000000000 +0200
+> +++ linux-2.6.18/drivers/video/fbmem.c	2006-09-24 12:17:07.000000000 +0200
+> @@ -554,7 +554,8 @@ static int fbmem_read_proc(char *buf, ch
+>  	int clen;
+>  
+>  	clen = 0;
+> -	for (fi = registered_fb; fi < &registered_fb[FB_MAX] && len < 4000; fi++)
+> +	for (fi = registered_fb; fi < &registered_fb[FB_MAX] && clen < 4000;
+> +	     fi++)
+>  		if (*fi)
+>  			clen += sprintf(buf + clen, "%d %s\n",
+>  				        (*fi)->node,
+> 
 
-For the EIZO monitor it works as well.
-
->
-> > With 2.6.17.13 the picture I get is noisy. The lines shift a few
-> > pixels horizontally in various directions. It is much like the results
-> > I got with g550 when there was no screen connected to DVI at startup.
-> > only much more noise (there must be a screen connected to DVI at boot
-> > for the framebuffer to work correctly with DVI - at least it had to
-> > last time I tried).
->
-> Upgrade to 2.6.18, it should behave like 2.6.16 does.
-
-yes, 2.6.18 works again.
-
-Thanks
-
-Michal
+Thanks.   Do we have confirmation that this patch fixes the bug?
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

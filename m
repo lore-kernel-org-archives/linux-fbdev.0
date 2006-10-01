@@ -1,22 +1,31 @@
 From: Amol Lad <amol@verismonetworks.com>
 Subject: [PATCH] ioremap balanced with iounmap for
 	drivers/video
-Date: Fri, 29 Sep 2006 18:39:02 +0530
-Message-ID: <1159535342.7264.44.camel@amol.verismonetworks.com>
+Date: Sun, 01 Oct 2006 12:33:55 +0530
+Message-ID: <1159686235.19143.2.camel@amol.verismonetworks.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GTI3o-00069j-TU for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 29 Sep 2006 06:05:49 -0700
+	id 1GTvJT-0001zA-PQ for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 01 Oct 2006 00:00:36 -0700
 Received: from mail01.verismonetworks.com ([164.164.99.228])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GTI3m-0002Wy-Ai
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GTvJR-0002fn-CE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 29 Sep 2006 06:05:48 -0700
+	Sun, 01 Oct 2006 00:00:35 -0700
+Received: from romer.verismonetworks.com (romer.verismonetworks.com
+	[192.168.1.8])
+	by mail01.verismonetworks.com (Postfix) with ESMTP id BC7F0346CC
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun,  1 Oct 2006 12:30:31 +0530 (IST)
+Received: from [192.168.1.159] (unknown [192.168.1.159])
+	by romer.verismonetworks.com (Postfix) with ESMTP id AD752207074
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun,  1 Oct 2006 12:30:31 +0530 (IST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,7 +36,8 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net
+To: linux-fbdev-devel@lists.sourceforge.net
+
 
 ioremap must be balanced by an iounmap and failing to do so can result
 in a memory leak.
@@ -38,8 +48,6 @@ Tested (compilation only) with:
 compiling without error/warning
 
 Signed-off-by: Amol Lad <amol@verismonetworks.com>
----
-Please CC me. I'm not on linux-fbdev-devel
 ---
  S3triofb.c            |    7 +++++--
  amifb.c               |    8 +++++---

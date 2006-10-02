@@ -1,26 +1,24 @@
 From: palmax@gmail.com
-Subject: Fwd: I need some help with linux
-Date: Wed, 4 Oct 2006 15:17:00 +0200
-Message-ID: <209499a0610040616hc4e325q6e1a03d9233d15e4@mail.gmail.com>
-References: <209499a0610021305g79881f7j3534e5a4460fec88@mail.gmail.com>
+Subject: I need some help with linux
+Date: Mon, 2 Oct 2006 22:05:53 +0200
+Message-ID: <209499a0610021305g79881f7j3534e5a4460fec88@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_103916_7177411.1159967820125"
+	boundary="----=_Part_63080_31855924.1159819553164"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GV6cS-0005wn-2P for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Oct 2006 06:17:04 -0700
-Received: from ug-out-1314.google.com ([66.249.92.170])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GV6cQ-0001dW-Pr
+	id 1GUztY-0004AT-UL for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Oct 2006 23:06:16 -0700
+Received: from ug-out-1314.google.com ([66.249.92.172])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GUztX-0001CR-On
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Oct 2006 06:17:03 -0700
-Received: by ug-out-1314.google.com with SMTP id p27so48107ugc
+	Tue, 03 Oct 2006 23:06:16 -0700
+Received: by ug-out-1314.google.com with SMTP id p27so17901ugc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 04 Oct 2006 06:17:00 -0700 (PDT)
-In-Reply-To: <209499a0610021305g79881f7j3534e5a4460fec88@mail.gmail.com>
+	Tue, 03 Oct 2006 23:06:14 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,17 +31,10 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: sylvain.meyer@worldonline.fr, linux-fbdev-devel@lists.sourceforge.net
 
-------=_Part_103916_7177411.1159967820125
+------=_Part_63080_31855924.1159819553164
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-
----------- Forwarded message ----------
-From: palmax@gmail.com <palmax@gmail.com>
-Date: 02-oct-2006 22:05
-Subject: I need some help with linux
-To: sylvain.meyer@worldonline.fr, linux-fbdev-devel@lists.sourceforge.net
-
 
 Hello
 I have a problem with linux intel-agp module. It break my alsa
@@ -118,7 +109,7 @@ Linux Fenris 2.6.17-gentoo-r8 #1 SMP PREEMPT Fri Sep 29 13:31:09 CEST
 2006 i686 Intel(R) Pentium(R) 4 CPU 3.40GHz GNU/Linux
 ------------------------------------
 
-------=_Part_103916_7177411.1159967820125
+------=_Part_63080_31855924.1159819553164
 Content-Type: application/octet-stream; name=.config
 Content-Transfer-Encoding: base64
 X-Attachment-Id: f_estalp4f
@@ -765,7 +756,7 @@ PXkKQ09ORklHX0dFTkVSSUNfSEFSRElSUVM9eQpDT05GSUdfR0VORVJJQ19JUlFfUFJPQkU9eQpD
 T05GSUdfR0VORVJJQ19QRU5ESU5HX0lSUT15CkNPTkZJR19YODZfU01QPXkKQ09ORklHX1g4Nl9I
 VD15CkNPTkZJR19YODZfQklPU19SRUJPT1Q9eQpDT05GSUdfWDg2X1RSQU1QT0xJTkU9eQpDT05G
 SUdfS1RJTUVfU0NBTEFSPXkK
-------=_Part_103916_7177411.1159967820125
+------=_Part_63080_31855924.1159819553164
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -776,7 +767,7 @@ Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-------=_Part_103916_7177411.1159967820125
+------=_Part_63080_31855924.1159819553164
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -787,4 +778,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-------=_Part_103916_7177411.1159967820125--
+------=_Part_63080_31855924.1159819553164--

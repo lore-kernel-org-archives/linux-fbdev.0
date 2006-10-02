@@ -1,22 +1,22 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: fbdev development status?
-Date: Sun, 1 Oct 2006 19:28:29 +0300
-Message-ID: <20061001162829.GE452@sci.fi>
+From: Mike Wolfram <wolfram@microdatec.de>
+Subject: Endianess problem in fbcon and cfbimgblt when
+	using monochrome fb
+Date: Mon, 2 Oct 2006 14:03:32 +0200
+Message-ID: <200610021403.33691.wolfram@microdatec.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GU4BB-0007MB-4S for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Oct 2006 09:28:37 -0700
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GU4B9-0007Q6-O8
+	id 1GUMW7-0004Nx-8J for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 02 Oct 2006 05:03:27 -0700
+Received: from moutng.kundenserver.de ([212.227.126.188])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GUMW6-0001iv-IE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Oct 2006 09:28:37 -0700
+	Mon, 02 Oct 2006 05:03:27 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,23 +30,41 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-What's going on with fbdev development these days? My latest atyfb =
 
-patches received an ACK from Alex but that was it. They haven't =
+Hi,
 
-been applied to any tree.
+I have written a framebuffer driver for an Epson SED1335 based LCD for the ARM 
+platform. The LCD is monochrome, so the driver currently only supports 1 bpp. 
+The ARM is little-endian.
 
-I don't think I've seen any messages from Tony in month or so...
+Everything works fine except when using the fbcon. All text printed to that 
+console appears with having each character mirrored on the y axis. So it 
+looks like an endian problem.
 
--- =
+I found a message from April ("[patch 19/26] fbcon: Fix big-endian bogosity in 
+slow_imageblit()") which fixes a problem for big-endian machines. After 
+reverting that patch and changing
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+#define FB_BIT_NR(b)              (b)
+
+to
+
+#define FB_BIT_NR(b)              (7 - (b))
+
+the text appears as expected. So my question is if the patch might be wrong 
+and should only change the defines for FB_BIT_NR? Or could the problem be 
+somewhere else?
+
+Regards,
+Mike Wolfram
+-- 
+MicroDatec GmbH
+Zeulenrodaer Str. 17, 99091 Erfurt, Germany
+fon +49-361-77821-0, fax +49-361-77821-30
+mobile +49-179-4902190
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

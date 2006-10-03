@@ -1,82 +1,111 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] video: Get the default mode from
- the right database
-Date: Tue, 3 Oct 2006 09:04:38 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0610030901070.28197@pademelon.sonytel.be>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: video: Get the default mode from the right database
+Date: Tue, 3 Oct 2006 09:07:23 -0600
+Message-ID: <20061003150723.GG7716@cosmic.amd.com>
 References: <20061002225738.GD7716@cosmic.amd.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+	<Pine.LNX.4.62.0610030901070.28197@pademelon.sonytel.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GUeKg-000229-9n for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Oct 2006 00:04:50 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GUeKf-000321-H6
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Oct 2006 00:04:50 -0700
-In-Reply-To: <20061002225738.GD7716@cosmic.amd.com>
+Content-Type: multipart/mixed;
+ boundary="E39vaYmALEf/7YXx"
+Return-path: <devel-bounces@laptop.org>
+In-Reply-To: <Pine.LNX.4.62.0610030901070.28197@pademelon.sonytel.be>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+List-Unsubscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
+	<mailto:devel-request@laptop.org?subject=unsubscribe>
+List-Archive: <http://mailman.laptop.org/pipermail/devel>
+List-Post: <mailto:devel@laptop.org>
+List-Help: <mailto:devel-request@laptop.org?subject=help>
+List-Subscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
+	<mailto:devel-request@laptop.org?subject=subscribe>
+Sender: devel-bounces@laptop.org
+Errors-To: devel-bounces@laptop.org
+To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, devel@laptop.org
 
-On Mon, 2 Oct 2006, Jordan Crouse wrote:
-> fb_find_mode() is behaving in an non-intuitive way.  When I specify my
-> own video mode database, and no default mode, I would have expected it
-> to assume the first mode in my database as the default mode.  Instead, it
-> uses the built in database:
+
+--E39vaYmALEf/7YXx
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+On 03/10/06 09:04 +0200, Geert Uytterhoeven wrote:
+> >      if (!default_mode)
+> > -	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
+> > +	default_mode = &db[DEFAULT_MODEDB_INDEX];
+> >      if (!default_bpp)
+> >  	default_bpp = 8;
 > 
-> > if (!db) {
-> >     db = modedb;
-> >     dbsize = ARRAY_SIZE(modedb);
-> > }
-> > if (!default_mode)
-> >     default_mode = &modedb[DEFAULT_MODEDB_INDEX];
-> 
-> Personally, I think this is incorrect - if an alternate database is
-> specified, it should be always using that.  Patch is attached.
+> Although currently DEFAULT_MODEDB_INDEX is defined to be 0, perhaps we need a
+> more rigorous check now it may apply to the custom video mode database?
+> Probably you always want the first mode of your custom video mode database to
+> be the default?
 
-> --- a/drivers/video/modedb.c
-> +++ b/drivers/video/modedb.c
-> @@ -506,7 +506,7 @@ int fb_find_mode(struct fb_var_screeninf
->  	dbsize = ARRAY_SIZE(modedb);
->      }
->      if (!default_mode)
-> -	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
-> +	default_mode = &db[DEFAULT_MODEDB_INDEX];
->      if (!default_bpp)
->  	default_bpp = 8;
+Indeed.  I'm not sure how many people out there actually change
+DEFAULT_MODEDB_INDEX to be non zero, but can't think of a reason why the
+default shouldn't just always use the first index in the database.  
 
-Although currently DEFAULT_MODEDB_INDEX is defined to be 0, perhaps we need a
-more rigorous check now it may apply to the custom video mode database?
-Probably you always want the first mode of your custom video mode database to
-be the default?
+At least, thats the way I thought fb_find_mode() worked before I looked into 
+the internals. Still, there might be some people attached to 
+DEFAULT_MODEDB_INDEX, so I've attached a new patch that should make everybody 
+happy.
 
-Gr{oetje,eeting}s,
+Jordan
 
-						Geert
+-- 
+Jordan Crouse
+Senior Linux Engineer
+Advanced Micro Devices, Inc.
+<www.amd.com/embeddedprocessors>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--E39vaYmALEf/7YXx
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline;
+ filename=modedb-fix.patch
+Content-Transfer-Encoding: 7bit
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+[PATCH] video: Get the default mode from the right database
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+From: Jordan Crouse <jordan.crouse@amd.com>
+
+If no default mode is specified, it should be grabbed from the supplied
+database, not the default one.  
+
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+---
+
+ drivers/video/modedb.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index d126790..4c04413 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -505,8 +505,11 @@ int fb_find_mode(struct fb_var_screeninf
+ 	db = modedb;
+ 	dbsize = ARRAY_SIZE(modedb);
+     }
+-    if (!default_mode)
++    if (!default_mode && db != modedb)
++	default_mode = &db[0];
++    else
+ 	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
++
+     if (!default_bpp)
+ 	default_bpp = 8;
+ 
+
+--E39vaYmALEf/7YXx
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Devel mailing list
+Devel@laptop.org
+http://mailman.laptop.org/mailman/listinfo/devel
+
+--E39vaYmALEf/7YXx--

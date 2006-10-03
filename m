@@ -1,111 +1,77 @@
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: Re: video: Get the default mode from the right database
-Date: Tue, 3 Oct 2006 09:07:23 -0600
-Message-ID: <20061003150723.GG7716@cosmic.amd.com>
-References: <20061002225738.GD7716@cosmic.amd.com>
-	<Pine.LNX.4.62.0610030901070.28197@pademelon.sonytel.be>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [patch] 2.6.18: pmagb-b-fb: Fix a default clock
+	frequency
+Date: Tue, 3 Oct 2006 16:54:15 +0100 (BST)
+Message-ID: <Pine.LNX.4.64N.0610031649000.4642@blysk.ds.pg.gda.pl>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="E39vaYmALEf/7YXx"
-Return-path: <devel-bounces@laptop.org>
-In-Reply-To: <Pine.LNX.4.62.0610030901070.28197@pademelon.sonytel.be>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
-	<mailto:devel-request@laptop.org?subject=unsubscribe>
-List-Archive: <http://mailman.laptop.org/pipermail/devel>
-List-Post: <mailto:devel@laptop.org>
-List-Help: <mailto:devel-request@laptop.org?subject=help>
-List-Subscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
-	<mailto:devel-request@laptop.org?subject=subscribe>
-Sender: devel-bounces@laptop.org
-Errors-To: devel-bounces@laptop.org
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, devel@laptop.org
-
-
---E39vaYmALEf/7YXx
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-On 03/10/06 09:04 +0200, Geert Uytterhoeven wrote:
-> >      if (!default_mode)
-> > -	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
-> > +	default_mode = &db[DEFAULT_MODEDB_INDEX];
-> >      if (!default_bpp)
-> >  	default_bpp = 8;
-> 
-> Although currently DEFAULT_MODEDB_INDEX is defined to be 0, perhaps we need a
-> more rigorous check now it may apply to the custom video mode database?
-> Probably you always want the first mode of your custom video mode database to
-> be the default?
-
-Indeed.  I'm not sure how many people out there actually change
-DEFAULT_MODEDB_INDEX to be non zero, but can't think of a reason why the
-default shouldn't just always use the first index in the database.  
-
-At least, thats the way I thought fb_find_mode() worked before I looked into 
-the internals. Still, there might be some people attached to 
-DEFAULT_MODEDB_INDEX, so I've attached a new patch that should make everybody 
-happy.
-
-Jordan
-
--- 
-Jordan Crouse
-Senior Linux Engineer
-Advanced Micro Devices, Inc.
-<www.amd.com/embeddedprocessors>
-
---E39vaYmALEf/7YXx
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline;
- filename=modedb-fix.patch
-Content-Transfer-Encoding: 7bit
-
-[PATCH] video: Get the default mode from the right database
-
-From: Jordan Crouse <jordan.crouse@amd.com>
-
-If no default mode is specified, it should be grabbed from the supplied
-database, not the default one.  
-
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
----
-
- drivers/video/modedb.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index d126790..4c04413 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -505,8 +505,11 @@ int fb_find_mode(struct fb_var_screeninf
- 	db = modedb;
- 	dbsize = ARRAY_SIZE(modedb);
-     }
--    if (!default_mode)
-+    if (!default_mode && db != modedb)
-+	default_mode = &db[0];
-+    else
- 	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
-+
-     if (!default_bpp)
- 	default_bpp = 8;
- 
-
---E39vaYmALEf/7YXx
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GUmbG-0005vY-29 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Oct 2006 08:54:30 -0700
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GUmbE-0001Yz-M1
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Oct 2006 08:54:30 -0700
+Received: from localhost (localhost [127.0.0.1])
+	by pollux.ds.pg.gda.pl (Postfix) with ESMTP id B08D0F62FA
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue,  3 Oct 2006 17:54:12 +0200 (CEST)
+Received: from pollux.ds.pg.gda.pl ([127.0.0.1])
+	by localhost (pollux.ds.pg.gda.pl [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id bwbo4HlUe1UD
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue,  3 Oct 2006 17:54:12 +0200 (CEST)
+Received: from piorun.ds.pg.gda.pl (piorun.ds.pg.gda.pl [153.19.208.8])
+	by pollux.ds.pg.gda.pl (Postfix) with ESMTP id 6CC6AE1C79
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue,  3 Oct 2006 17:54:12 +0200 (CEST)
+Received: from blysk.ds.pg.gda.pl (macro@blysk.ds.pg.gda.pl [153.19.208.6])
+	by piorun.ds.pg.gda.pl (8.13.8/8.13.1) with ESMTP id k93FsKRN018430
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 3 Oct 2006 17:54:20 +0200
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-_______________________________________________
-Devel mailing list
-Devel@laptop.org
-http://mailman.laptop.org/mailman/listinfo/devel
+Hello,
 
---E39vaYmALEf/7YXx--
+ Inspection of real hardware has revealed one of the clock frequencies 
+known to be supported by PMAGB-B hardware is off by 3kHz.  Following is a 
+fix.  Please apply.
+
+  Maciej
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+
+patch-mips-2.6.12-rc4-20050526-pmagb-b-74M-0
+diff -up --recursive --new-file linux-mips-2.6.12-rc4-20050526.macro/drivers/video/pmagb-b-fb.c linux-mips-2.6.12-rc4-20050526/drivers/video/pmagb-b-fb.c
+--- linux-mips-2.6.12-rc4-20050526.macro/drivers/video/pmagb-b-fb.c	2005-07-11 15:59:17.000000000 +0000
++++ linux-mips-2.6.12-rc4-20050526/drivers/video/pmagb-b-fb.c	2005-10-23 00:54:49.000000000 +0000
+@@ -188,7 +188,7 @@ static void __init pmagbbfb_screen_setup
+ static void __init pmagbbfb_osc_setup(struct fb_info *info)
+ {
+ 	static unsigned int pmagbbfb_freqs[] __initdata = {
+-		130808, 119843, 104000, 92980, 74367, 72800,
++		130808, 119843, 104000, 92980, 74370, 72800,
+ 		69197, 66000, 65000, 50350, 36000, 32000, 25175
+ 	};
+ 	struct pmagbbfb_par *par = info->par;
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys -- and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

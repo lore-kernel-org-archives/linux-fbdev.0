@@ -1,98 +1,82 @@
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: [PATCH] video: Get the default mode from the right database
-Date: Mon, 2 Oct 2006 16:57:38 -0600
-Message-ID: <20061002225738.GD7716@cosmic.amd.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] video: Get the default mode from
+ the right database
+Date: Tue, 3 Oct 2006 09:04:38 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0610030901070.28197@pademelon.sonytel.be>
+References: <20061002225738.GD7716@cosmic.amd.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary=OXfL5xGRrasGEqWY
-Return-path: <devel-bounces@laptop.org>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
-	<mailto:devel-request@laptop.org?subject=unsubscribe>
-List-Archive: <http://mailman.laptop.org/pipermail/devel>
-List-Post: <mailto:devel@laptop.org>
-List-Help: <mailto:devel-request@laptop.org?subject=help>
-List-Subscribe: <http://mailman.laptop.org/mailman/listinfo/devel>,
-	<mailto:devel-request@laptop.org?subject=subscribe>
-Sender: devel-bounces@laptop.org
-Errors-To: devel-bounces@laptop.org
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, devel@laptop.org
-
-
---OXfL5xGRrasGEqWY
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-fb_find_mode() is behaving in an non-intuitive way.  When I specify my
-own video mode database, and no default mode, I would have expected it
-to assume the first mode in my database as the default mode.  Instead, it
-uses the built in database:
-
-> if (!db) {
->     db = modedb;
->     dbsize = ARRAY_SIZE(modedb);
-> }
-> if (!default_mode)
->     default_mode = &modedb[DEFAULT_MODEDB_INDEX];
-
-Personally, I think this is incorrect - if an alternate database is
-specified, it should be always using that.  Patch is attached.
-
-Regards,
-Jordan
-
--- 
-Jordan Crouse
-Senior Linux Engineer
-Advanced Micro Devices, Inc.
-<www.amd.com/embeddedprocessors>
-
---OXfL5xGRrasGEqWY
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline;
- filename=modedb-fix.patch
-Content-Transfer-Encoding: 7bit
-
-[PATCH] video: Get the default mode from the right database
-
-From: Jordan Crouse <jordan.crouse@amd.com>
-
-If no default mode is specified, it should be grabbed from the supplied
-database, not the default one.  
-
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
----
-
- drivers/video/modedb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index d126790..e068f52 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -506,7 +506,7 @@ int fb_find_mode(struct fb_var_screeninf
- 	dbsize = ARRAY_SIZE(modedb);
-     }
-     if (!default_mode)
--	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
-+	default_mode = &db[DEFAULT_MODEDB_INDEX];
-     if (!default_bpp)
- 	default_bpp = 8;
- 
-
---OXfL5xGRrasGEqWY
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GUeKg-000229-9n for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Oct 2006 00:04:50 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GUeKf-000321-H6
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Oct 2006 00:04:50 -0700
+In-Reply-To: <20061002225738.GD7716@cosmic.amd.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, devel@laptop.org
 
-_______________________________________________
-Devel mailing list
-Devel@laptop.org
-http://mailman.laptop.org/mailman/listinfo/devel
+On Mon, 2 Oct 2006, Jordan Crouse wrote:
+> fb_find_mode() is behaving in an non-intuitive way.  When I specify my
+> own video mode database, and no default mode, I would have expected it
+> to assume the first mode in my database as the default mode.  Instead, it
+> uses the built in database:
+> 
+> > if (!db) {
+> >     db = modedb;
+> >     dbsize = ARRAY_SIZE(modedb);
+> > }
+> > if (!default_mode)
+> >     default_mode = &modedb[DEFAULT_MODEDB_INDEX];
+> 
+> Personally, I think this is incorrect - if an alternate database is
+> specified, it should be always using that.  Patch is attached.
 
---OXfL5xGRrasGEqWY--
+> --- a/drivers/video/modedb.c
+> +++ b/drivers/video/modedb.c
+> @@ -506,7 +506,7 @@ int fb_find_mode(struct fb_var_screeninf
+>  	dbsize = ARRAY_SIZE(modedb);
+>      }
+>      if (!default_mode)
+> -	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
+> +	default_mode = &db[DEFAULT_MODEDB_INDEX];
+>      if (!default_bpp)
+>  	default_bpp = 8;
+
+Although currently DEFAULT_MODEDB_INDEX is defined to be 0, perhaps we need a
+more rigorous check now it may apply to the custom video mode database?
+Probably you always want the first mode of your custom video mode database to
+be the default?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys -- and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

@@ -1,39 +1,23 @@
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [patch] 2.6.18: pmagb-b-fb: Fix a default clock
-	frequency
-Date: Tue, 3 Oct 2006 16:54:15 +0100 (BST)
-Message-ID: <Pine.LNX.4.64N.0610031649000.4642@blysk.ds.pg.gda.pl>
+From: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: Silicon motion 501 driver
+Date: Wed, 04 Oct 2006 15:31:13 +0200
+Message-ID: <4523B7A1.5070504@anagramm.de>
+References: <20060514223741.GB20765@kyllikki.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GUmbG-0005vY-29 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Oct 2006 08:54:30 -0700
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GUmbE-0001Yz-M1
+	id 1GV6qM-00077m-OK for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 04 Oct 2006 06:31:26 -0700
+Received: from moutng.kundenserver.de ([212.227.126.183])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GV6qI-0006zS-57
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Oct 2006 08:54:30 -0700
-Received: from localhost (localhost [127.0.0.1])
-	by pollux.ds.pg.gda.pl (Postfix) with ESMTP id B08D0F62FA
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue,  3 Oct 2006 17:54:12 +0200 (CEST)
-Received: from pollux.ds.pg.gda.pl ([127.0.0.1])
-	by localhost (pollux.ds.pg.gda.pl [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bwbo4HlUe1UD
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue,  3 Oct 2006 17:54:12 +0200 (CEST)
-Received: from piorun.ds.pg.gda.pl (piorun.ds.pg.gda.pl [153.19.208.8])
-	by pollux.ds.pg.gda.pl (Postfix) with ESMTP id 6CC6AE1C79
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue,  3 Oct 2006 17:54:12 +0200 (CEST)
-Received: from blysk.ds.pg.gda.pl (macro@blysk.ds.pg.gda.pl [153.19.208.6])
-	by piorun.ds.pg.gda.pl (8.13.8/8.13.1) with ESMTP id k93FsKRN018430
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 3 Oct 2006 17:54:20 +0200
+	Wed, 04 Oct 2006 06:31:26 -0700
+In-Reply-To: <20060514223741.GB20765@kyllikki.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -46,29 +30,40 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello,
+Hello, Vincent,
 
- Inspection of real hardware has revealed one of the clock frequencies 
-known to be supported by PMAGB-B hardware is off by 3kHz.  Following is a 
-fix.  Please apply.
+Vincent Sanders wrote:
+> Attached you will find a first cut of a driver for the silicon motion
+> SM501 mobile multimedia companion chip.
 
-  Maciej
+Good to see, I was working on the SM501 also for a while and
+I am looking now to get it into the kernel, too.
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> The driver actually breaks down into a "base" driver for all the
+> available functions and a framebuffer driver for the video elements.
 
-patch-mips-2.6.12-rc4-20050526-pmagb-b-74M-0
-diff -up --recursive --new-file linux-mips-2.6.12-rc4-20050526.macro/drivers/video/pmagb-b-fb.c linux-mips-2.6.12-rc4-20050526/drivers/video/pmagb-b-fb.c
---- linux-mips-2.6.12-rc4-20050526.macro/drivers/video/pmagb-b-fb.c	2005-07-11 15:59:17.000000000 +0000
-+++ linux-mips-2.6.12-rc4-20050526/drivers/video/pmagb-b-fb.c	2005-10-23 00:54:49.000000000 +0000
-@@ -188,7 +188,7 @@ static void __init pmagbbfb_screen_setup
- static void __init pmagbbfb_osc_setup(struct fb_info *info)
- {
- 	static unsigned int pmagbbfb_freqs[] __initdata = {
--		130808, 119843, 104000, 92980, 74367, 72800,
-+		130808, 119843, 104000, 92980, 74370, 72800,
- 		69197, 66000, 65000, 50350, 36000, 32000, 25175
- 	};
- 	struct pmagbbfb_par *par = info->par;
+What is the status of your development? Did you push it upstream already?
+
+> Comments and patches gratefully received, I don't know how much more
+> complete a driver has to be for consideration for mainline merge but
+> that is the ultimate aim.
+
+Any help needed? Please give me an update about your progress.
+
+Best greets,
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

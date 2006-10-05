@@ -1,8 +1,7 @@
-From: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: Silicon motion 501 driver
-Date: Wed, 04 Oct 2006 15:31:13 +0200
-Message-ID: <4523B7A1.5070504@anagramm.de>
-References: <20060514223741.GB20765@kyllikki.org>
+From: James Cloos <cloos@jhcloos.com>
+Subject: Non-blinking Cursor?
+Date: Wed, 04 Oct 2006 23:12:49 -0400
+Message-ID: <m3fye3pi9j.fsf@lugabout.jhcloos.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +10,21 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GV6qM-00077m-OK for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Oct 2006 06:31:26 -0700
-Received: from moutng.kundenserver.de ([212.227.126.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GV6qI-0006zS-57
+	id 1GVJfw-0000d7-Sh for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 04 Oct 2006 20:13:33 -0700
+Received: from ore.jhcloos.com ([64.240.156.239])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1GVJfu-0003Y4-RT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Oct 2006 06:31:26 -0700
-In-Reply-To: <20060514223741.GB20765@kyllikki.org>
+	Wed, 04 Oct 2006 20:13:32 -0700
+Received: from lugabout.jhcloos.org (ppp13.pm3-15.buf-ch.ny.localnet.com
+	[69.48.15.13])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "lugabout.jhcloos.org",
+	Issuer "ca.jhcloos.com" (verified OK))
+	by ore.jhcloos.com (Postfix) with ESMTP id 410CB1C57D
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed,  4 Oct 2006 22:11:57 -0500 (CDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,40 +37,20 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello, Vincent,
+Is there a way to get the cursor to stop blinking w/ a frambuffer
+console?  The escape sequence in the docs (for a vga cons) does
+not work.
 
-Vincent Sanders wrote:
-> Attached you will find a first cut of a driver for the silicon motion
-> SM501 mobile multimedia companion chip.
+To be clear, I'm not asking about hinding the cursor.  It is just
+that flashing cursors give me headaches.
 
-Good to see, I was working on the SM501 also for a while and
-I am looking now to get it into the kernel, too.
+(I use radeonfb.)
 
-> The driver actually breaks down into a "base" driver for all the
-> available functions and a framebuffer driver for the video elements.
+Thanks.
 
-What is the status of your development? Did you push it upstream already?
-
-> Comments and patches gratefully received, I don't know how much more
-> complete a driver has to be for consideration for mainline merge but
-> that is the ultimate aim.
-
-Any help needed? Please give me an update about your progress.
-
-Best greets,
-
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
-
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 0xED7DAEA6
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

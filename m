@@ -1,21 +1,23 @@
-From: Bill Gatliff <bgat@billgatliff.com>
-Subject: SM501 framebuffer driver
-Date: Fri, 06 Oct 2006 11:11:46 -0500
-Message-ID: <45268042.8050207@billgatliff.com>
+From: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: SM501 framebuffer driver
+Date: Fri, 06 Oct 2006 19:25:54 +0200
+Message-ID: <452691A2.2020209@anagramm.de>
+References: <45268042.8050207@billgatliff.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GVsIa-0004C8-FZ for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 09:11:44 -0700
-Received: from smtp2.mtco.com ([207.179.226.205])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVsIZ-0002wm-4y
+	id 1GVtSQ-0002Tn-00 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Oct 2006 10:25:58 -0700
+Received: from moutng.kundenserver.de ([212.227.126.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVtSN-0000ta-Cd
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 09:11:44 -0700
+	Fri, 06 Oct 2006 10:25:57 -0700
+In-Reply-To: <45268042.8050207@billgatliff.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,40 +31,77 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Robert Whaley <rwhaley@applieddata.net>
 
-Guys:
+Hello, Bill,
 
+> Sorry about starting a new thread, but I was referred to this 
+> list/thread by a colleague just a few minutes ago.  (OT: it isn't in the 
+> archives in SF, either!).
 
-Sorry about starting a new thread, but I was referred to this 
-list/thread by a colleague just a few minutes ago.  (OT: it isn't in the 
-archives in SF, either!).
+Okay, fine! I'll be glad to join the party because we are using the SM501
+on PCI of an MPC8540 embedded PowerPC.
 
-I hate to play "me too!", but I also have an SM501 framebuffer driver in 
-a partial state of development.  I'd love to collaborate with others to 
-get a good version pushed upstream.
+Searching the list archives, about ten people have had (at least) some
+hands on the SM501 during the last year. I also got several questions about
+the driver status off list.
 
-One of the challenges I've encountered with this chip is dealing with 
-all the "other stuff" it has onboard.  In my driver, I addressed that by 
-creating a whole new bus similar to what Nico did for the UCB1400.  I 
-was in the process of getting AC97 working when I figured out that that 
-part of the chip is so braindead, it isn't worth using--- at least on 
-ARM platforms that don't have DMA (which was my case).
+> I hate to play "me too!", but I also have an SM501 framebuffer driver in 
+> a partial state of development.  I'd love to collaborate with others to 
+> get a good version pushed upstream.
 
-In an upcoming project I need to use the USBH, so I'll be revisiting 
-this issue again soon.  I have also cc'd others who have worked with me 
-on this chip.
+Great! Where shall we collect the code?
+I have some 
 
-I'd be happy to post code if that makes sense.  Or to host a CVS repo or 
-something.
+- a working fb driver kernel module
+	(I did lots of code cleanup, but still needs a lot)
 
+- older Xfree86 driver (partially accelerated!?, never tried but code looks good)
 
-Kindest regards,
+- some collected MMCC (Multi Media Companion Chip) drivers/snippets
+	for the other periperals besides the graphics part.
 
+- kernel code for an functional complete(?) SM501 implementation for
+	an RTS7751R2D Renesas SH-4 Board running Linux.
 
-b.g.
+I am working on the latest 2.6.18 Kernels on PowerPC.
+But I can also test the SM501 on PCI in an x86 since we have
+this PCI Demo Board with an SM501G8 AA.
+On our PPC we use the SM501GF8 AB Chip Revision (F means: RoHS Version). 
 
--- 
-Bill Gatliff
-bgat@billgatliff.com
+I also mirrored the Silicon Motion's FTP server with lots of
+Datasheets and reference designs.
+
+> One of the challenges I've encountered with this chip is dealing with 
+> all the "other stuff" it has onboard.  In my driver, I addressed that by 
+> creating a whole new bus similar to what Nico did for the UCB1400.  I 
+> was in the process of getting AC97 working when I figured out that that 
+> part of the chip is so braindead, it isn't worth using--- at least on 
+> ARM platforms that don't have DMA (which was my case).
+
+Oh, I will need to get the AC97 working, too :-/
+(my hardware is more or less ready to test some software)
+
+> In an upcoming project I need to use the USBH, so I'll be revisiting 
+> this issue again soon.  I have also cc'd others who have worked with me 
+> on this chip.
+> 
+> I'd be happy to post code if that makes sense.  Or to host a CVS repo or 
+> something.
+
+Can you host a CVS repo at your place? I don't like SF much.
+
+Best greets,
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
 
 
 -------------------------------------------------------------------------

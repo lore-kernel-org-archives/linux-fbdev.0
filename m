@@ -1,26 +1,21 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: Silicon motion 501 driver
-Date: Fri, 6 Oct 2006 17:22:30 +0300
-Message-ID: <20061006142230.GA2723@sci.fi>
-References: <20060514223741.GB20765@kyllikki.org>
-	<4523B7A1.5070504@anagramm.de>
+From: Bill Gatliff <bgat@billgatliff.com>
+Subject: SM501 framebuffer driver
+Date: Fri, 06 Oct 2006 11:11:46 -0500
+Message-ID: <45268042.8050207@billgatliff.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GVqb1-000878-5f for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 07:22:39 -0700
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GVqay-0008Oe-Ld
+	id 1GVsIa-0004C8-FZ for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Oct 2006 09:11:44 -0700
+Received: from smtp2.mtco.com ([207.179.226.205])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVsIZ-0002wm-4y
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 07:22:39 -0700
-Content-Disposition: inline
-In-Reply-To: <4523B7A1.5070504@anagramm.de>
+	Fri, 06 Oct 2006 09:11:44 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,34 +27,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Robert Whaley <rwhaley@applieddata.net>
 
-On Wed, Oct 04, 2006 at 03:31:13PM +0200, Clemens Koller wrote:
-> Hello, Vincent,
-> =
+Guys:
 
-> Vincent Sanders wrote:
-> > Attached you will find a first cut of a driver for the silicon motion
-> > SM501 mobile multimedia companion chip.
-> =
 
-> Good to see, I was working on the SM501 also for a while and
-> I am looking now to get it into the kernel, too.
+Sorry about starting a new thread, but I was referred to this 
+list/thread by a colleague just a few minutes ago.  (OT: it isn't in the 
+archives in SF, either!).
 
-I have been hacking the sm501 driver as well :) I modified it quite a =
+I hate to play "me too!", but I also have an SM501 framebuffer driver in 
+a partial state of development.  I'd love to collaborate with others to 
+get a good version pushed upstream.
 
-lot. I also wrote a DirectFB gfxdriver. See =
+One of the challenges I've encountered with this chip is dealing with 
+all the "other stuff" it has onboard.  In my driver, I addressed that by 
+creating a whole new bus similar to what Nico did for the UCB1400.  I 
+was in the process of getting AC97 working when I figured out that that 
+part of the chip is so braindead, it isn't worth using--- at least on 
+ARM platforms that don't have DMA (which was my case).
 
-http://www.sci.fi/~syrjala/arm
+In an upcoming project I need to use the USBH, so I'll be revisiting 
+this issue again soon.  I have also cc'd others who have worked with me 
+on this chip.
 
--- =
+I'd be happy to post code if that makes sense.  Or to host a CVS repo or 
+something.
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+
+Kindest regards,
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

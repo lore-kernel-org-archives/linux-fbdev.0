@@ -1,27 +1,25 @@
-From: "Alex Deucher" <alexdeucher@gmail.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: SM501 framebuffer driver
-Date: Fri, 6 Oct 2006 19:14:17 +0100
-Message-ID: <a728f9f90610061114g56283168se68e030381b779e8@mail.gmail.com>
+Date: Fri, 6 Oct 2006 21:55:35 +0300
+Message-ID: <20061006185535.GA7649@sci.fi>
 References: <45268042.8050207@billgatliff.com> <452691A2.2020209@anagramm.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GVuDG-0006ws-5I for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 11:14:22 -0700
-Received: from ug-out-1314.google.com ([66.249.92.170])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVuDD-0005UK-Jx
+	id 1GVurH-0002J2-14 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Oct 2006 11:55:44 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GVurF-0008NO-5c
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 11:14:22 -0700
-Received: by ug-out-1314.google.com with SMTP id p27so363509ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 06 Oct 2006 11:14:18 -0700 (PDT)
-In-Reply-To: <452691A2.2020209@anagramm.de>
+	Fri, 06 Oct 2006 11:55:43 -0700
 Content-Disposition: inline
+In-Reply-To: <452691A2.2020209@anagramm.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,100 +33,79 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Robert Whaley <rwhaley@applieddata.net>
 
-On 10/6/06, Clemens Koller <clemens.koller@anagramm.de> wrote:
+On Fri, Oct 06, 2006 at 07:25:54PM +0200, Clemens Koller wrote:
 > Hello, Bill,
->
-> > Sorry about starting a new thread, but I was referred to this
-> > list/thread by a colleague just a few minutes ago.  (OT: it isn't in the
+> =
+
+> > Sorry about starting a new thread, but I was referred to this =
+
+> > list/thread by a colleague just a few minutes ago.  (OT: it isn't in th=
+e =
+
 > > archives in SF, either!).
->
+> =
+
 > Okay, fine! I'll be glad to join the party because we are using the SM501
 > on PCI of an MPC8540 embedded PowerPC.
->
-> Searching the list archives, about ten people have had (at least) some
-> hands on the SM501 during the last year. I also got several questions about
-> the driver status off list.
->
-> > I hate to play "me too!", but I also have an SM501 framebuffer driver in
-> > a partial state of development.  I'd love to collaborate with others to
+
+I'm using an ARM board. The CPU is an Atmel AT91RM9200, and the SM501 is =
+
+connected to it via a CPLD.
+
+> > I hate to play "me too!", but I also have an SM501 framebuffer driver i=
+n =
+
+> > a partial state of development.  I'd love to collaborate with others to =
+
 > > get a good version pushed upstream.
->
+> =
+
 > Great! Where shall we collect the code?
-> I have some
->
+> I have some =
+
+> =
+
 > - a working fb driver kernel module
->        (I did lots of code cleanup, but still needs a lot)
->
-> - older Xfree86 driver (partially accelerated!?, never tried but code looks good)
->
+> 	(I did lots of code cleanup, but still needs a lot)
 
-As I mentioned earlier, with the exception of dualhead, I've got a
-working xorg smi501 driver.  I'll be adding it to xorg git once I get
-dualhead working and a few other odds and ends worked out.
+Me too here :) My changes to the original sm501 fb driver include:
+ - Use dev_dbg instead of custom macro
+ - video=3D command line parsing
+ - Better checking in check_var
+ - Started to implement setcolreg and panning, not finished
+ - Removed duplicated code
+ - Tried to make code more readable :)
+ - Maybe something else (I didn't keep track
 
-Alex
+I also started to write an ALSA driver for the audio part. I wrote the =
 
-> - some collected MMCC (Multi Media Companion Chip) drivers/snippets
->        for the other periperals besides the graphics part.
->
-> - kernel code for an functional complete(?) SM501 implementation for
->        an RTS7751R2D Renesas SH-4 Board running Linux.
->
-> I am working on the latest 2.6.18 Kernels on PowerPC.
-> But I can also test the SM501 on PCI in an x86 since we have
-> this PCI Demo Board with an SM501G8 AA.
-> On our PPC we use the SM501GF8 AB Chip Revision (F means: RoHS Version).
->
-> I also mirrored the Silicon Motion's FTP server with lots of
-> Datasheets and reference designs.
->
-> > One of the challenges I've encountered with this chip is dealing with
-> > all the "other stuff" it has onboard.  In my driver, I addressed that by
-> > creating a whole new bus similar to what Nico did for the UCB1400.  I
-> > was in the process of getting AC97 working when I figured out that that
-> > part of the chip is so braindead, it isn't worth using--- at least on
-> > ARM platforms that don't have DMA (which was my case).
->
-> Oh, I will need to get the AC97 working, too :-/
-> (my hardware is more or less ready to test some software)
->
-> > In an upcoming project I need to use the USBH, so I'll be revisiting
-> > this issue again soon.  I have also cc'd others who have worked with me
-> > on this chip.
-> >
-> > I'd be happy to post code if that makes sense.  Or to host a CVS repo or
-> > something.
->
-> Can you host a CVS repo at your place? I don't like SF much.
->
-> Best greets,
->
-> Clemens Koller
-> _______________________________
-> R&D Imaging Devices
-> Anagramm GmbH
-> Rupert-Mayer-Str. 45/1
-> 81379 Muenchen
-> Germany
->
-> http://www.anagramm.de
-> Phone: +49-89-741518-50
-> Fax: +49-89-741518-19
->
->
-> -------------------------------------------------------------------------
-> Take Surveys. Earn Cash. Influence the Future of IT
-> Join SourceForge.net's Techsay panel and you'll get the chance to share your
-> opinions on IT & business topics through brief surveys -- and earn cash
-> http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
+basic driver skeleton, and my next step was going to be the 8051, but =
+
+then I got distracted by other stuff. My plan was to start off with some =
+
+very simple code for the 8051 which would just issue an interrupt at =
+
+some interval so I could just see how the CPU<->8051 communication =
+
+works. I'll try dig up the code in case someone wants to take a look.
+
+Like I mentioned in the other thread I also wrote a DirectFB gfxdriver. =
+
+It does basic blitting and filling for now. I tried to make it draw =
+
+lines too but that caused the chip to lock up, and I tried to use alpha =
+
+bleded blits but those seem to make the chip really sluggish to respond.
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

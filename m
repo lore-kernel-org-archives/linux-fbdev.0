@@ -1,9 +1,8 @@
-From: Bill Gatliff <bgat@billgatliff.com>
+From: Ben Dooks <ben-linux@fluff.org>
 Subject: Re: SM501 framebuffer driver
-Date: Fri, 06 Oct 2006 14:03:47 -0500
-Message-ID: <4526A893.3070708@billgatliff.com>
-References: <45268042.8050207@billgatliff.com> <452691A2.2020209@anagramm.de>
-	<45269AAA.9020001@billgatliff.com> <4526A37F.6040002@anagramm.de>
+Date: Fri, 6 Oct 2006 17:26:44 +0100
+Message-ID: <20061006162644.GA15499@home.fluff.org>
+References: <45268042.8050207@billgatliff.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,13 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GVuz0-0002zm-IJ for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 12:03:42 -0700
-Received: from smtp2.mtco.com ([207.179.226.205])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVuyz-0004kh-2z
+	id 1GVsXa-0005gq-52 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Oct 2006 09:27:15 -0700
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=aeryn.fluff.org.uk)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVsXY-0006O5-Mp
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 12:03:42 -0700
-In-Reply-To: <4526A37F.6040002@anagramm.de>
+	Fri, 06 Oct 2006 09:27:14 -0700
+Content-Disposition: inline
+In-Reply-To: <45268042.8050207@billgatliff.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,36 +29,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Clemens Koller <clemens.koller@anagramm.de>, linux-fbdev-devel@lists.sourceforge.net, Robert Whaley <rwhaley@applieddata.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Robert Whaley <rwhaley@applieddata.net>
 
-Clemens:
+On Fri, Oct 06, 2006 at 11:11:46AM -0500, Bill Gatliff wrote:
+> Guys:
+> 
+> 
+> Sorry about starting a new thread, but I was referred to this 
+> list/thread by a colleague just a few minutes ago.  (OT: it isn't in the 
+> archives in SF, either!).
+> 
+> I hate to play "me too!", but I also have an SM501 framebuffer driver in 
+> a partial state of development.  I'd love to collaborate with others to 
+> get a good version pushed upstream.
+> 
+> One of the challenges I've encountered with this chip is dealing with 
+> all the "other stuff" it has onboard.  In my driver, I addressed that by 
+> creating a whole new bus similar to what Nico did for the UCB1400.  I 
+> was in the process of getting AC97 working when I figured out that that 
+> part of the chip is so braindead, it isn't worth using--- at least on 
+> ARM platforms that don't have DMA (which was my case).
+> 
+> In an upcoming project I need to use the USBH, so I'll be revisiting 
+> this issue again soon.  I have also cc'd others who have worked with me 
+> on this chip.
+> 
+> I'd be happy to post code if that makes sense.  Or to host a CVS repo or 
+> something.
 
-
-Clemens Koller wrote:
-
->
-> If you want I can spend an hour on that stuff if you give me an 
-> account on your machine.
-
-
-Done.  See your Inbox.
-
-I think what makes sense is to have a public_html directory with 
-subdirectories for each contribution that's been mentioned so far.  Then 
-we can collaborate on a CVS repository that blends the best bits of all 
-the contributed code into one place.
-
-
-Any volunteers?  :)
-
-
-
-b.g.
+We have a solution based on an central device in drivers/mfd
+which creates a set of sub-devices that are used by the invidicual
+drivers
 
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+Ben (ben@fluff.org, http://www.fluff.org/)
 
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

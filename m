@@ -1,8 +1,9 @@
-From: Ben Dooks <ben-linux@fluff.org>
+From: Bill Gatliff <bgat@billgatliff.com>
 Subject: Re: SM501 framebuffer driver
-Date: Fri, 6 Oct 2006 17:26:44 +0100
-Message-ID: <20061006162644.GA15499@home.fluff.org>
+Date: Fri, 06 Oct 2006 14:19:42 -0500
+Message-ID: <4526AC4E.7090003@billgatliff.com>
 References: <45268042.8050207@billgatliff.com>
+	<20061006162644.GA15499@home.fluff.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,14 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GVsXa-0005gq-52 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 09:27:15 -0700
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=aeryn.fluff.org.uk)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVsXY-0006O5-Mp
+	id 1GVvEM-0004m1-6k for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Oct 2006 12:19:34 -0700
+Received: from smtp2.mtco.com ([207.179.226.205])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GVvEJ-0001E2-SP
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Oct 2006 09:27:14 -0700
-Content-Disposition: inline
-In-Reply-To: <45268042.8050207@billgatliff.com>
+	Fri, 06 Oct 2006 12:19:34 -0700
+In-Reply-To: <20061006162644.GA15499@home.fluff.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,40 +32,29 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Robert Whaley <rwhaley@applieddata.net>
 
-On Fri, Oct 06, 2006 at 11:11:46AM -0500, Bill Gatliff wrote:
-> Guys:
-> 
-> 
-> Sorry about starting a new thread, but I was referred to this 
-> list/thread by a colleague just a few minutes ago.  (OT: it isn't in the 
-> archives in SF, either!).
-> 
-> I hate to play "me too!", but I also have an SM501 framebuffer driver in 
-> a partial state of development.  I'd love to collaborate with others to 
-> get a good version pushed upstream.
-> 
-> One of the challenges I've encountered with this chip is dealing with 
-> all the "other stuff" it has onboard.  In my driver, I addressed that by 
-> creating a whole new bus similar to what Nico did for the UCB1400.  I 
-> was in the process of getting AC97 working when I figured out that that 
-> part of the chip is so braindead, it isn't worth using--- at least on 
-> ARM platforms that don't have DMA (which was my case).
-> 
-> In an upcoming project I need to use the USBH, so I'll be revisiting 
-> this issue again soon.  I have also cc'd others who have worked with me 
-> on this chip.
-> 
-> I'd be happy to post code if that makes sense.  Or to host a CVS repo or 
-> something.
+Ben Dooks wrote:
 
-We have a solution based on an central device in drivers/mfd
-which creates a set of sub-devices that are used by the invidicual
-drivers
+>On Fri, Oct 06, 2006 at 11:11:46AM -0500, Bill Gatliff wrote:
+>
+>We have a solution based on an central device in drivers/mfd
+>which creates a set of sub-devices that are used by the invidicual
+>drivers
+>  
+>
+
+Yes, I've seen your code. My SM501 code does something very similar. I 
+don't know if there's any opportunity for reuse or to create a 
+"standard", given that the SM501 is all over the place functionality 
+(USB, AC97, framebuffer, UART, ...)-wise and bus (PCI, MMIO)-wise. But 
+the general idea of your approach is definitely the right way to go.
+
+
+b.g.
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+Bill Gatliff
+bgat@billgatliff.com
 
-  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

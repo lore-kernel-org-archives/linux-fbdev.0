@@ -1,28 +1,12 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Hang in fb_notifier_call_chain with nvidia
-	framebuffer
-Date: Sat, 7 Oct 2006 23:01:29 -0700
-Message-ID: <20061007230129.323ac807.akpm@osdl.org>
-References: <45206777.7020405@saville.com> <1159808447.4652.6.camel@mhcln03>
-	<4521E326.2000406@saville.com>
-	<1159882225.2891.525.camel@laptopd505.fenrus.org>
-	<4523E09C.9000609@saville.com>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: 2.6.19-rc1: known regressions (v2)
+Date: 7 Oct 2006 21:43:51 -0700
+Message-ID: <EXSVLRB01xe0ymQ1WE900000265__25756.0194157579$1160293900$gmane$org@exsvlrb01.hq.netapp.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GWRjN-0004Za-3p for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Oct 2006 23:01:45 -0700
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GWRjL-0007fy-P9
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Oct 2006 23:01:45 -0700
-In-Reply-To: <4523E09C.9000609@saville.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,41 +17,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Wink Saville <wink@saville.com>
-Cc: Matthias Hentges <oe@hentges.net>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@stusta.de>
 
-On Wed, 04 Oct 2006 09:26:04 -0700
-Wink Saville <wink@saville.com> wrote:
+Cc: Linus Torvalds <torvalds@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, art@usfltd.com, ak@suse.de, discuss@x86-64.org,  Prakash Punnoor <prakash@punnoor.de>, perex@suse.cz, alsa-devel@alsa-project.org, Steve Fox <drfickle@us.ibm.com>,  netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>,  len.brown@intel.com, linux-acpi@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,  Olaf Hering <olaf@aepfle.de>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net,  Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Ernst Herzberg <list-lkml@net4u.de>, Matthieu Castet <castet.matthieu@free.fr>,  linux-usb-devel@lists.sourceforge.net, Jens Axboe <axboe@oracle.com>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@osdl.org, linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@suse.de>,  Mel Gorman <mel
+ @skynet.ie>, Alex Romosan <romosan@sycorax.lbl.gov>, Sukadev Bhattiprolu <sukadev@us.ibm.!
+ com>, Dave Kleikamp <shaggy@austin.ibm.com>, Torsten Kaiser <kernel@bardioc.dyndns.org>, Magnus Damm <magnus.damm@gmail.com>, Vivek Goyal <vgoyal@in.ibm.com>, ebiederm@xmission.com, fastboot@osdl.org, Alistair John Strachan <s0348365@sms.ed.ac.uk>, Stefan Richter <stefanr@s5r6.in-berlin.de>,  linux1394-devel@lists.sourceforge.net
+In-Reply-To: <20061007214620.GB8810@stusta.de>
+References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
+	 <20061007214620.GB8810@stusta.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Sun, 08 Oct 2006 00:43:35 -0400
+Message-Id: <1160282615.5506.9.camel@lade.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 
-> Attached in the zip file is:
-> 
-> log-hang1.txt	-> log showing hang
-> cfg-hang1	-> config file for hang condition
-> cfg-ok		-> config file that works
-> fbmem.c		-> Modifications to register_framebuffer
-> 
-> To possibly assist I turned on debugging in nvidia.c and found that it 
-> hung in the call to register_framebuffer. I then added some additional 
-> debug in that routine and it appears the hang occurs in the call to 
-> fb_notifier_call_chain.
-> 
-> Please let me know what else maybe needed.
+On Sat, 2006-10-07 at 23:46 +0200, Adrian Bunk wrote:
 
-Please:
+> Subject    : NFSv4 fails to mount (timeout)
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=7274
+> Submitter  : Torsten Kaiser <kernel@bardioc.dyndns.org>
+> Guilty     : Trond Myklebust <Trond.Myklebust@netapp.com>
+>              commit 51b6ded4d9a94a61035deba1d8f51a54e3a3dd86
+> Handled-By : Trond Myklebust <Trond.Myklebust@netapp.com>
+> Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7274
+> Status     : patch available
 
-- get sysrq working:
+Thanks... Always nice to hear that you have been judged and found
+guilty. Now go and reread that fucking bug report...
 
-	set CONFIG_MAGIC_SYSRQ=y, rebuild, reboot
-	echo 1 > /proc/sys/kernel/sysrq
-	dmesg -n 8
-
-- make it hang
-
-- Hit alt-sysrq-T
-
-- Send us the resulting output
-
-Thanks.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

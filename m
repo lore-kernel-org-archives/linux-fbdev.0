@@ -1,55 +1,81 @@
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: Re: 2.6.19-rc1: known regressions (v2)
-Date: 7 Oct 2006 21:43:51 -0700
-Message-ID: <EXSVLRB01xe0ymQ1WE900000265__25756.0194157579$1160293900$gmane$org@exsvlrb01.hq.netapp.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Wink Saville <wink@saville.com>
+Subject: Re: Hang in fb_notifier_call_chain with nvidia framebuffer
+Date: Sun, 08 Oct 2006 01:14:47 -0700
+Message-ID: <4528B377.2050104@saville.com>
+References: <45206777.7020405@saville.com>	<1159808447.4652.6.camel@mhcln03>	<4521E326.2000406@saville.com>	<1159882225.2891.525.camel@laptopd505.fenrus.org>	<4523E09C.9000609@saville.com> <20061007230129.323ac807.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Adrian Bunk <bunk@stusta.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750905AbWJHIOt@vger.kernel.org>
+In-Reply-To: <20061007230129.323ac807.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Matthias Hentges <oe@hentges.net>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Cc: Linus Torvalds <torvalds@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, art@usfltd.com, ak@suse.de, discuss@x86-64.org,  Prakash Punnoor <prakash@punnoor.de>, perex@suse.cz, alsa-devel@alsa-project.org, Steve Fox <drfickle@us.ibm.com>,  netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@mellanox.co.il>,  len.brown@intel.com, linux-acpi@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,  Olaf Hering <olaf@aepfle.de>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net,  Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Ernst Herzberg <list-lkml@net4u.de>, Matthieu Castet <castet.matthieu@free.fr>,  linux-usb-devel@lists.sourceforge.net, Jens Axboe <axboe@oracle.com>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-pm@osdl.org, linuxppc-dev@ozlabs.org, Andreas Schwab <schwab@suse.de>,  Mel Gorman <mel
- @skynet.ie>, Alex Romosan <romosan@sycorax.lbl.gov>, Sukadev Bhattiprolu <sukadev@us.ibm.!
- com>, Dave Kleikamp <shaggy@austin.ibm.com>, Torsten Kaiser <kernel@bardioc.dyndns.org>, Magnus Damm <magnus.damm@gmail.com>, Vivek Goyal <vgoyal@in.ibm.com>, ebiederm@xmission.com, fastboot@osdl.org, Alistair John Strachan <s0348365@sms.ed.ac.uk>, Stefan Richter <stefanr@s5r6.in-berlin.de>,  linux1394-devel@lists.sourceforge.net
-In-Reply-To: <20061007214620.GB8810@stusta.de>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
-	 <20061007214620.GB8810@stusta.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Sun, 08 Oct 2006 00:43:35 -0400
-Message-Id: <1160282615.5506.9.camel@lade.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Andrew Morton wrote:
+> On Wed, 04 Oct 2006 09:26:04 -0700
+> Wink Saville <wink@saville.com> wrote:
+> 
+>> Attached in the zip file is:
+>>
+>> log-hang1.txt	-> log showing hang
+>> cfg-hang1	-> config file for hang condition
+>> cfg-ok		-> config file that works
+>> fbmem.c		-> Modifications to register_framebuffer
+>>
+>> To possibly assist I turned on debugging in nvidia.c and found that it 
+>> hung in the call to register_framebuffer. I then added some additional 
+>> debug in that routine and it appears the hang occurs in the call to 
+>> fb_notifier_call_chain.
+>>
+>> Please let me know what else maybe needed.
+> 
+> Please:
+> 
+> - get sysrq working:
+> 
+> 	set CONFIG_MAGIC_SYSRQ=y, rebuild, reboot
+> 	echo 1 > /proc/sys/kernel/sysrq
+> 	dmesg -n 8
+> 
+> - make it hang
+> 
+> - Hit alt-sysrq-T
+> 
+> - Send us the resulting output
+> 
+> Thanks.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-On Sat, 2006-10-07 at 23:46 +0200, Adrian Bunk wrote:
+Andrew,
 
-> Subject    : NFSv4 fails to mount (timeout)
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=7274
-> Submitter  : Torsten Kaiser <kernel@bardioc.dyndns.org>
-> Guilty     : Trond Myklebust <Trond.Myklebust@netapp.com>
->              commit 51b6ded4d9a94a61035deba1d8f51a54e3a3dd86
-> Handled-By : Trond Myklebust <Trond.Myklebust@netapp.com>
-> Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=7274
-> Status     : patch available
+Thank you for the reply, I believe I've found the reason frame buffer doesn't
+work on my system, there is a divide by zero occurring at line 157 of
+nvGetClocks in ./drivers/video/nvidia/nv_hw.c.
 
-Thanks... Always nice to hear that you have been judged and found
-guilty. Now go and reread that fucking bug report...
+(Note: The screwy output below is due to hacking drivers/serial/8250.c to add two
+routines serial_putchar and serial_putchars so that I could make progress looking
+for the bug, as printk stopped working at acquire_console_sem called from bind_con_driver.)
 
+Last portion of the output:
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+@[   97.643286] take_over_console: call bind_con_driver csw=ffffffff805d8600 first=0, last=62, deflt=1
+@[   97.652521] bind_con_driver: E
+@[   97.655774] bind_con_driver: acquire_console_sem
+@1[   97.660604] acquire_console_sem: drivers/char/vt.c:bind_con_driver:2752
+@!2345689abABCDEF<fb_con_init>abcdefghij<nvidiafb_set_par>abcd<nvidia_calc_regs>bdjkl<NVCalcStateExt>acei<nv30UpdateArbitrationSettings>a<nv
+GetClocks>N=83 NB=0 freq=27000 M=3 MB=0 P=0
+
+From the above output we see MB=0 and hence death at line 157:
+
+*MClk = ((N * NB * par->CrystalFreqKHz) / (M * MB)) >> P;
+
+It would seem that my hardware (7600 GT K0) is not supported by the driver?
+It should also be noted that there are quite a number of divisions
+in the nv_hw.c that have no protection against divide by zeros.

@@ -1,67 +1,208 @@
-From: matthieu castet <castet.matthieu@free.fr>
-Subject: Re: 2.6.19-rc1: known regressions (v2)
-Date: Sun, 08 Oct 2006 10:56:39 +0200
-Message-ID: <4528BD47.5030509@free.fr>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
-	<20061007214620.GB8810@stusta.de>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Hang in fb_notifier_call_chain with nvidia
+	framebuffer
+Date: Sun, 8 Oct 2006 02:07:11 -0700
+Message-ID: <20061008020711.1e7b77c4.akpm@osdl.org>
+References: <45206777.7020405@saville.com> <1159808447.4652.6.camel@mhcln03>
+	<4521E326.2000406@saville.com>
+	<1159882225.2891.525.camel@laptopd505.fenrus.org>
+	<4523E09C.9000609@saville.com>
+	<20061007230129.323ac807.akpm@osdl.org>
+	<4528B377.2050104@saville.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <fastboot-bounces@lists.osdl.org>
-In-Reply-To: <20061007214620.GB8810@stusta.de>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
-	<mailto:fastboot-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/fastboot>
-List-Post: <mailto:fastboot@lists.osdl.org>
-List-Help: <mailto:fastboot-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
-	<mailto:fastboot-request@lists.osdl.org?subject=subscribe>
-Sender: fastboot-bounces@lists.osdl.org
-Errors-To: fastboot-bounces@lists.osdl.org
 Content-Type: text/plain; charset="us-ascii"
-To: Adrian Bunk <bunk@stusta.de>
-Cc: len.brown@intel.com, alsa-devel@alsa-project.org, Thierry Vignaud <tvignaud@mandriva.com>, linux-pm@osdl.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alex Romosan <romosan@sycorax.lbl.gov>, Torsten Kaiser <kernel@bardioc.dyndns.org>, Olaf Hering <olaf@aepfle.de>, ak@suse.de, linux-ide@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>, fastboot@osdl.org, Dave Kleikamp <shaggy@austin.ibm.com>, Pavel Machek <pavel@ucw.cz>, Antonino Daplas <adaplas@pol.net>, linux1394-devel@lists.sourceforge.net, perex@suse.cz, Alistair John Strachan <s0348365@sms.ed.ac.uk>, discuss@x86-64.org, linux-fbdev-devel@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>, linuxppc-dev@ozlabs.org, Steve Fox <drfickle@us.ibm.com>, netdev@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Linux
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GWUd2-00035U-6n for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Oct 2006 02:07:24 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1GWUd0-0001af-KD
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Oct 2006 02:07:24 -0700
+In-Reply-To: <4528B377.2050104@saville.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Wink Saville <wink@saville.com>
+Cc: Matthias Hentges <oe@hentges.net>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
 
-Hi,
+On Sun, 08 Oct 2006 01:14:47 -0700
+Wink Saville <wink@saville.com> wrote:
 
-Adrian Bunk wrote:
-> This email lists some known regressions in 2.6.19-rc1 compared to 2.6.18
-> that are not yet fixed Linus' tree.
-> =
+> Andrew Morton wrote:
+> > On Wed, 04 Oct 2006 09:26:04 -0700
+> > Wink Saville <wink@saville.com> wrote:
+> > 
+> >> Attached in the zip file is:
+> >>
+> >> log-hang1.txt	-> log showing hang
+> >> cfg-hang1	-> config file for hang condition
+> >> cfg-ok		-> config file that works
+> >> fbmem.c		-> Modifications to register_framebuffer
+> >>
+> >> To possibly assist I turned on debugging in nvidia.c and found that it 
+> >> hung in the call to register_framebuffer. I then added some additional 
+> >> debug in that routine and it appears the hang occurs in the call to 
+> >> fb_notifier_call_chain.
+> >>
+> >> Please let me know what else maybe needed.
+> > 
+> > Please:
+> > 
+> > - get sysrq working:
+> > 
+> > 	set CONFIG_MAGIC_SYSRQ=y, rebuild, reboot
+> > 	echo 1 > /proc/sys/kernel/sysrq
+> > 	dmesg -n 8
+> > 
+> > - make it hang
+> > 
+> > - Hit alt-sysrq-T
+> > 
+> > - Send us the resulting output
+> > 
+> > Thanks.
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> 
+> Andrew,
+> 
+> Thank you for the reply, I believe I've found the reason frame buffer doesn't
+> work on my system, there is a divide by zero occurring at line 157 of
+> nvGetClocks in ./drivers/video/nvidia/nv_hw.c.
+> 
+> (Note: The screwy output below is due to hacking drivers/serial/8250.c to add two
+> routines serial_putchar and serial_putchars so that I could make progress looking
+> for the bug, as printk stopped working at acquire_console_sem called from bind_con_driver.)
+> 
+> Last portion of the output:
+> 
+> @[   97.643286] take_over_console: call bind_con_driver csw=ffffffff805d8600 first=0, last=62, deflt=1
+> @[   97.652521] bind_con_driver: E
+> @[   97.655774] bind_con_driver: acquire_console_sem
+> @1[   97.660604] acquire_console_sem: drivers/char/vt.c:bind_con_driver:2752
+> @!2345689abABCDEF<fb_con_init>abcdefghij<nvidiafb_set_par>abcd<nvidia_calc_regs>bdjkl<NVCalcStateExt>acei<nv30UpdateArbitrationSettings>a<nv
+> GetClocks>N=83 NB=0 freq=27000 M=3 MB=0 P=0
+> 
+> >From the above output we see MB=0 and hence death at line 157:
+> 
+> *MClk = ((N * NB * par->CrystalFreqKHz) / (M * MB)) >> P;
+> 
+> It would seem that my hardware (7600 GT K0) is not supported by the driver?
+> It should also be noted that there are quite a number of divisions
+> in the nv_hw.c that have no protection against divide by zeros.
 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you was declared guilty for a breakage or I'm considering you in any
-> other way possibly involved with one or more of these issues.
-> =
+OK.  Does the below reversion fix it?
 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> =
-
-> =
+It's a bit sad that printk doesn't work inside console_sem.  It's hard to
+avoid, really.  I suppose we could cheat and let the message through if
+oops_in_progress is set.  But the fbcon layer is obviously doing too much
+stuff inside that lock.
 
 
-> =
 
-> Subject    : ueagle-atm Oops
-> References : http://lkml.org/lkml/2006/10/6/390
-> Submitter  : Ernst Herzberg <list-lkml@net4u.de>
-> Handled-By : Matthieu Castet <castet.matthieu@free.fr>
-> Status     : unknown
-> =
+From: Andrew Morton <akpm@osdl.org>
 
-> =
+Olaf reports that this gave him a black screen.
 
-Guilty     :
-http://www.kernel.org/git/gitweb.cgi?p=3Dlinux/kernel/git/torvalds/linux-2.=
-6.git;a=3Dcommitdiff;h=3De7ccdfec087f02930c5cdc81143d4a045ae8d361
+Cc: Olaf Hering <olaf@aepfle.de>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
 
-Patch available at =
+ drivers/video/Kconfig         |    1 
+ drivers/video/nvidia/nv_i2c.c |   43 ++++++++++++++++++++++++++++++--
+ 2 files changed, 41 insertions(+), 3 deletions(-)
 
-https://mail.gna.org/public/ueagleatm-dev/2006-10/msg00022.html , but =
+diff -puN drivers/video/Kconfig~revert-nvidiafb-use-generic-ddc-reading drivers/video/Kconfig
+--- a/drivers/video/Kconfig~revert-nvidiafb-use-generic-ddc-reading
++++ a/drivers/video/Kconfig
+@@ -701,7 +701,6 @@ config FB_NVIDIA
+ 	depends on FB && PCI
+ 	select I2C_ALGOBIT if FB_NVIDIA_I2C
+ 	select I2C if FB_NVIDIA_I2C
+-	select FB_DDC if FB_NVIDIA_I2C
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+diff -puN drivers/video/nvidia/nv_i2c.c~revert-nvidiafb-use-generic-ddc-reading drivers/video/nvidia/nv_i2c.c
+--- a/drivers/video/nvidia/nv_i2c.c~revert-nvidiafb-use-generic-ddc-reading
++++ a/drivers/video/nvidia/nv_i2c.c
+@@ -160,12 +160,51 @@ void nvidia_delete_i2c_busses(struct nvi
+ 
+ }
+ 
++static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
++{
++	u8 start = 0x0;
++	struct i2c_msg msgs[] = {
++		{
++		 .addr = 0x50,
++		 .len = 1,
++		 .buf = &start,
++		 }, {
++		     .addr = 0x50,
++		     .flags = I2C_M_RD,
++		     .len = EDID_LENGTH,
++		     },
++	};
++	u8 *buf;
++
++	if (!chan->par)
++		return NULL;
++
++	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
++	if (!buf) {
++		dev_warn(&chan->par->pci_dev->dev, "Out of memory!\n");
++		return NULL;
++	}
++	msgs[1].buf = buf;
++
++	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
++		return buf;
++	dev_dbg(&chan->par->pci_dev->dev, "Unable to read EDID block.\n");
++	kfree(buf);
++	return NULL;
++}
++
+ int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
+ {
+ 	struct nvidia_par *par = info->par;
+-	u8 *edid;
++	u8 *edid = NULL;
++	int i;
+ 
+-	edid = fb_ddc_read(&par->chan[conn - 1].adapter);
++	for (i = 0; i < 3; i++) {
++		/* Do the real work */
++		edid = nvidia_do_probe_i2c_edid(&par->chan[conn - 1]);
++		if (edid)
++			break;
++	}
+ 
+ 	if (!edid && conn == 1) {
+ 		/* try to get from firmware */
+_
 
-some cleaning is need (I wasn't aware of "USB: fix __must_check warnings =
 
-in drivers/usb/atm/" patch).
-
-Matthieu
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys -- and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

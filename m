@@ -1,24 +1,24 @@
 From: Guillem Jover <guillem@debian.org>
-Subject: [PATCH 6/7] fbset: fix build system
-Date: Mon, 9 Oct 2006 05:49:52 +0300
-Message-ID: <20061009024952.GF9011@zulo.hadrons.org>
+Subject: [PATCH 4/7] fbset: add new accelerators
+Date: Mon, 9 Oct 2006 05:42:59 +0300
+Message-ID: <20061009024259.GD9011@zulo.hadrons.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="4VrXvz3cwkc87Wze"
+Content-Type: multipart/mixed; boundary="GyRA7555PLgSTuth"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GWmgS-0004r9-QY for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Oct 2006 21:24:08 -0700
+	id 1GWmgY-0004rM-Hy for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Oct 2006 21:24:14 -0700
 Received: from 159.red-81-184-118.user.auna.net ([81.184.118.159]
 	helo=pulsar.hadrons.org)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GWmgR-0003eq-W3
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GWmgX-0003g9-R9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Oct 2006 21:24:08 -0700
+	Sun, 08 Oct 2006 21:24:14 -0700
 Received: from guillem by pulsar.hadrons.org with local (Exim 4.50)
-	id 1GWlFn-00069z-L3 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Oct 2006 04:52:31 +0200
+	id 1GWl9B-00069Y-A1 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Oct 2006 04:45:41 +0200
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,88 +33,78 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
 
---4VrXvz3cwkc87Wze
+--GyRA7555PLgSTuth
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi,
 
-This one fixes the build system by splitting CFLAGS from CC so that
-the user can override it from command-line, using DESTDIR so that it
-can be installed in a staging area for packaging, splitting the device
-creation from the install target and by using the "semi-standard"
-INSTALL_foo variables.
-
-Those changes are needed by distributions.
+With this one, the list of accelerators is synced with latest kernel.
 
 regards,
 guillem
 
---4VrXvz3cwkc87Wze
+--GyRA7555PLgSTuth
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="fbset_06_build.patch"
+Content-Disposition: attachment; filename="fbset_04_new_accels.patch"
 
-Index: Makefile
-===================================================================
---- Makefile.orig	2006-10-09 04:46:54.000000000 +0300
-+++ Makefile	2006-10-09 04:47:13.000000000 +0300
-@@ -2,10 +2,14 @@
- # Linux Frame Buffer Device Configuration
- #
+--- fbset.c	2006-10-09 03:25:59.000000000 +0300
++++ fbset.c	2006-10-09 03:26:48.000000000 +0300
+@@ -199,6 +199,52 @@ static struct accelentry {
+     { FB_ACCEL_SUN_CGTHREE, "Sun cg3" },
+     { FB_ACCEL_SUN_TCX, "Sun tcx" },
+     { FB_ACCEL_MATROX_MGAG400, "Matrox G400" },
++    { FB_ACCEL_NV3, "nVidia RIVA 128" },
++    { FB_ACCEL_NV4, "nVidia RIVA TNT" },
++    { FB_ACCEL_NV5, "nVidia RIVA TNT2" },
++    { FB_ACCEL_CT_6555x, "C&T 6555x" },
++    { FB_ACCEL_3DFX_BANSHEE, "3Dfx Banshee" },
++    { FB_ACCEL_ATI_RAGE128, "ATI Rage128 family" },
++    { FB_ACCEL_ATI_RADEON, "ATI Radeon family" },
++    { FB_ACCEL_IGS_CYBER2000, "CyberPro 2000" },
++    { FB_ACCEL_IGS_CYBER2010, "CyberPro 2010" },
++    { FB_ACCEL_IGS_CYBER5000, "CyberPro 5000" },
++    { FB_ACCEL_SIS_GLAMOUR, "SiS 300/630/540" },
++    { FB_ACCEL_SIS_GLAMOUR_2, "SiS 315/650/740" },
++    { FB_ACCEL_SIS_XABRE, "SiS 330 (Xabre)" },
++    { FB_ACCEL_3DLABS_PERMEDIA3, "3Dlabs Permedia 3" },
++    { FB_ACCEL_I810, "Intel 810/815" },
++    { FB_ACCEL_I830, "Intel 830M/845G/85x/865G" },
++    { FB_ACCEL_NEOMAGIC_NM2070, "NeoMagic NM2070" },
++    { FB_ACCEL_NEOMAGIC_NM2090, "NeoMagic NM2090" },
++    { FB_ACCEL_NEOMAGIC_NM2093, "NeoMagic NM2093" },
++    { FB_ACCEL_NEOMAGIC_NM2097, "NeoMagic NM2097" },
++    { FB_ACCEL_NEOMAGIC_NM2160, "NeoMagic NM2160" },
++    { FB_ACCEL_NEOMAGIC_NM2200, "NeoMagic NM2200" },
++    { FB_ACCEL_NEOMAGIC_NM2230, "NeoMagic NM2230" },
++    { FB_ACCEL_NEOMAGIC_NM2360, "NeoMagic NM2360" },
++    { FB_ACCEL_NEOMAGIC_NM2380, "NeoMagic NM2380" },
++    { FB_ACCEL_SAVAGE4, "S3 Savage4" },
++    { FB_ACCEL_SAVAGE3D, "S3 Savage3D" },
++    { FB_ACCEL_SAVAGE3D_MV, "S3 Savage3D-MV" },
++    { FB_ACCEL_SAVAGE2000, "S3 Savage2000" },
++    { FB_ACCEL_SAVAGE_MX_MV, "S3 Savage/MX-MV" },
++    { FB_ACCEL_SAVAGE_MX, "S3 Savage/MX" },
++    { FB_ACCEL_SAVAGE_IX_MV, "S3 Savage/IX-MV" },
++    { FB_ACCEL_SAVAGE_IX, "S3 Savage/IX" },
++    { FB_ACCEL_PROSAVAGE_PM, "S3 ProSavage PM133" },
++    { FB_ACCEL_PROSAVAGE_KM, "S3 ProSavage KM133" },
++    { FB_ACCEL_S3TWISTER_P, "S3 Twister" },
++    { FB_ACCEL_S3TWISTER_K, "S3 TwisterK" },
++    { FB_ACCEL_SUPERSAVAGE, "S3 Supersavage" },
++    { FB_ACCEL_PROSAVAGE_DDR, "S3 ProSavage DDR" },
++    { FB_ACCEL_PROSAVAGE_DDRK, "S3 ProSavage DDR-K" },
++    { FB_ACCEL_NV_10, "nVidia Arch 10" },
++    { FB_ACCEL_NV_20, "nVidia Arch 20" },
++    { FB_ACCEL_NV_30, "nVidia Arch 30" },
++    { FB_ACCEL_NV_40, "nVidia Arch 40" },
++    { FB_ACCEL_XGI_VOLARI_V, "XGI Volari V3XT, V5, V8" },
++    { FB_ACCEL_XGI_VOLARI_Z, "XGI Volari Z7" },
+ };
  
--CC =		gcc -Wall -O2 -I.
-+CC =		gcc
-+CFLAGS =	-Wall -O2
- BISON =		bison -d
- FLEX =		flex
- INSTALL =	install
-+INSTALL_DIR =	$(INSTALL) -d
-+INSTALL_PROGRAM = $(INSTALL) -m 755
-+INSTALL_DATA =	$(INSTALL) -m 644
- RM =		rm -f
  
- All:		fbset
-@@ -24,18 +28,26 @@ modes.tab.c:	modes.y
- 		$(BISON) modes.y
- 
- install:	fbset
--		if [ -f /sbin/fbset ]; then rm /sbin/fbset; fi
--		$(INSTALL) fbset /usr/sbin
--		$(INSTALL) fbset.8 /usr/man/man8
--		$(INSTALL) fb.modes.5 /usr/man/man5
--		if [ ! -c /dev/fb0 ]; then mknod /dev/fb0 c 29 0; fi
--		if [ ! -c /dev/fb1 ]; then mknod /dev/fb1 c 29 32; fi
--		if [ ! -c /dev/fb2 ]; then mknod /dev/fb2 c 29 64; fi
--		if [ ! -c /dev/fb3 ]; then mknod /dev/fb3 c 29 96; fi
--		if [ ! -c /dev/fb4 ]; then mknod /dev/fb4 c 29 128; fi
--		if [ ! -c /dev/fb5 ]; then mknod /dev/fb5 c 29 160; fi
--		if [ ! -c /dev/fb6 ]; then mknod /dev/fb6 c 29 192; fi
--		if [ ! -c /dev/fb7 ]; then mknod /dev/fb7 c 29 224; fi
-+		$(INSTALL_DIR) $(DESTDIR)/etc
-+		$(INSTALL_DATA) etc/fb.modes.ATI $(DESTDIR)/etc/fb.modes
-+		$(INSTALL_DIR) $(DESTDIR)/usr/share/man/man5
-+		$(INSTALL_DATA) fb.modes.5 $(DESTDIR)/usr/share/man/man5
-+		$(INSTALL_DIR) $(DESTDIR)/bin
-+		$(INSTALL_PROGRAM) fbset $(DESTDIR)/bin
-+		$(INSTALL_DIR) $(DESTDIR)/usr/share/man/man1
-+		$(INSTALL_DATA) fbset.8 $(DESTDIR)/usr/share/man/man1/fbset.1
-+		$(INSTALL_PROGRAM) modeline2fb $(DESTDIR)/bin
-+		$(INSTALL_DATA) modeline2fb.1 $(DESTDIR)/usr/share/man/man1
-+
-+install-devices:
-+		if [ ! -c /dev/fb0 ]; then mknod $(DESTDIR)/dev/fb0 c 29 0; fi
-+		if [ ! -c /dev/fb1 ]; then mknod $(DESTDIR)/dev/fb1 c 29 32; fi
-+		if [ ! -c /dev/fb2 ]; then mknod $(DESTDIR)/dev/fb2 c 29 64; fi
-+		if [ ! -c /dev/fb3 ]; then mknod $(DESTDIR)/dev/fb3 c 29 96; fi
-+		if [ ! -c /dev/fb4 ]; then mknod $(DESTDIR)/dev/fb4 c 29 128; fi
-+		if [ ! -c /dev/fb5 ]; then mknod $(DESTDIR)/dev/fb5 c 29 160; fi
-+		if [ ! -c /dev/fb6 ]; then mknod $(DESTDIR)/dev/fb6 c 29 192; fi
-+		if [ ! -c /dev/fb7 ]; then mknod $(DESTDIR)/dev/fb7 c 29 224; fi
- 
- clean:
- 		$(RM) *.o fbset lex.yy.c modes.tab.c modes.tab.h
 
---4VrXvz3cwkc87Wze
+--GyRA7555PLgSTuth
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -125,7 +115,7 @@ Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---4VrXvz3cwkc87Wze
+--GyRA7555PLgSTuth
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -136,4 +126,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---4VrXvz3cwkc87Wze--
+--GyRA7555PLgSTuth--

@@ -1,25 +1,24 @@
 From: Guillem Jover <guillem@debian.org>
-Subject: [PATCH 3/7] fbset: send usage to stdout and fix
-	its exit code
-Date: Mon, 9 Oct 2006 05:40:59 +0300
-Message-ID: <20061009024059.GC9011@zulo.hadrons.org>
+Subject: [PATCH 5/7] fbset: fix parsing of rgba keyword
+Date: Mon, 9 Oct 2006 05:45:26 +0300
+Message-ID: <20061009024526.GE9011@zulo.hadrons.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="mvpLiMfbWzRoNl4x"
+Content-Type: multipart/mixed; boundary="19uQFt6ulqmgNgg1"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GWmgD-0004mL-Eu for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Oct 2006 21:23:53 -0700
+	id 1GWmgM-0004nb-NB for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Oct 2006 21:24:02 -0700
 Received: from 159.red-81-184-118.user.auna.net ([81.184.118.159]
 	helo=pulsar.hadrons.org)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GWmgC-0003XJ-I4
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GWmgL-0000Xd-VH
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Oct 2006 21:23:53 -0700
+	Sun, 08 Oct 2006 21:24:02 -0700
 Received: from guillem by pulsar.hadrons.org with local (Exim 4.50)
-	id 1GWl7C-00069N-6T for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Oct 2006 04:43:38 +0200
+	id 1GWlBV-00069e-FG for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Oct 2006 04:48:05 +0200
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,103 +33,65 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
 
---mvpLiMfbWzRoNl4x
+--19uQFt6ulqmgNgg1
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi,
 
-This one makes Usage output to stdout instead of stderr, it also sends
-a proper exit code, depending if it has been called due to an error or
-the user asking for it via --help.
+This fixes the parsing of the rgba keyword in the db.
 
 regards,
 guillem
 
---mvpLiMfbWzRoNl4x
+--19uQFt6ulqmgNgg1
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="fbset_03_usage.patch"
+Content-Disposition: attachment; filename="fbset_05_rgba_keyword.patch"
 
-Index: fbset.c
-===================================================================
---- fbset.c.orig	2006-10-09 05:29:45.000000000 +0300
-+++ fbset.c	2006-10-09 05:33:33.000000000 +0300
-@@ -229,7 +229,7 @@ static void ModifyVideoMode(struct Video
- static void DisplayVModeInfo(struct VideoMode *vmode);
- static void DisplayFBInfo(struct fb_fix_screeninfo *fix);
- static int FillScanRates(struct VideoMode *vmode);
--static void Usage(void) __attribute__ ((noreturn));
-+static void Usage(int status) __attribute__ ((noreturn));
- int main(int argc, char *argv[]);
+--- modes.l	1999-06-23 17:09:48.000000000 +0300
++++ modes.l	2006-10-09 03:27:58.000000000 +0300
+@@ -99,6 +99,7 @@ static const char *CopyString(const char
  
+ keyword	[a-zA-Z][a-zA-Z0-9]*
+ number	[0-9]*
++colors	[0-9/,]*
+ string	\"[^\"\n]*\"
+ comment	\#([^\n]*)
+ space	[ \t]+
+@@ -115,6 +116,11 @@ junk	.
+ 		return NUMBER;
+ 	    }
  
-@@ -829,10 +829,12 @@ static int FillScanRates(struct VideoMod
-      *  Print the Usage Template and Exit
-      */
++{colors}    {
++		yylval = (unsigned long)CopyString(yytext);
++		return COLORS;
++	    }
++
+ {string}    {
+ 		yylval = (unsigned long)CopyString(yytext);
+ 		return STRING;
+--- modes.y	1999-06-23 17:09:48.000000000 +0300
++++ modes.y	2006-10-09 03:27:58.000000000 +0300
+@@ -42,7 +42,7 @@ static void ClearVideoMode(void)
  
--static void Usage(void)
-+static void Usage(int status)
- {
-     puts(VERSION);
--    Die("\nUsage: %s [options] [mode]\n\n"
-+    printf(
-+	"Usage: %s [options] [mode]\n"
-+	"\n"
- 	"Valid options:\n"
- 	"  General options:\n"
- 	"    -h, --help         : display this usage information\n"
-@@ -887,6 +889,7 @@ static void Usage(void)
- 	"    -step <value>      : step increment (in pixels or pixel lines)\n"
- 	"                         (default is 8 horizontal, 2 vertical)\n",
- 	ProgramName);
-+	exit(status);
- }
+ %token MODE GEOMETRY TIMINGS HSYNC VSYNC CSYNC GSYNC EXTSYNC BCAST LACED DOUBLE
+        RGBA NONSTD ACCEL GRAYSCALE
+-       ENDMODE POLARITY BOOLEAN STRING NUMBER 
++       ENDMODE POLARITY BOOLEAN STRING NUMBER COLORS
  
+ %%
  
-@@ -910,7 +913,7 @@ int main(int argc, char *argv[])
-     while (--argc > 0) {
- 	argv++;
- 	if (!strcmp(argv[0], "-h") || !strcmp(argv[0], "--help"))
--	    Usage();
-+	    Usage(0);
- 	else if (!strcmp(argv[0], "-v") || !strcmp(argv[0], "--verbose"))
- 	    Opt_verbose = 1;
- 	else if (!strcmp(argv[0], "-V") || !strcmp(argv[0], "--version"))
-@@ -937,7 +940,7 @@ int main(int argc, char *argv[])
- 		argc -= 5;
- 		argv += 5;
- 	    } else
--		Usage();
-+		Usage(1);
- 	} else if (!strcmp(argv[0], "-t") || !strcmp(argv[0], "--timings")) {
- 	    if (argc > 7) {
- 		Opt_pixclock = argv[1];
-@@ -951,7 +954,7 @@ int main(int argc, char *argv[])
- 		argc -= 7;
- 		argv += 7;
- 	    } else
--		Usage();
-+		Usage(1);
- 	} else if (!strcmp(argv[0], "-match")) {
- 	    Opt_matchyres = argv[0];
- 	    Opt_change = 1;
-@@ -965,12 +968,12 @@ int main(int argc, char *argv[])
- 		    Opt_change |= Options[i].change;
- 		    argv++;
- 		} else
--		    Usage();
-+		    Usage(1);
- 	    } else if (!Opt_modename) {
- 		Opt_modename = argv[0];
- 		Opt_change = 1;
- 	    } else
--		Usage();
-+		Usage(1);
- 	}
-     }
+@@ -148,7 +148,7 @@ double	  : DOUBLE BOOLEAN
+ 	    }
+ 	  ;
  
+-rgba      : RGBA STRING
++rgba      : RGBA COLORS
+             {
+ 		makeRGBA(&VideoMode, (const char*)$2);
+ 	    }
 
---mvpLiMfbWzRoNl4x
+--19uQFt6ulqmgNgg1
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -141,7 +102,7 @@ Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---mvpLiMfbWzRoNl4x
+--19uQFt6ulqmgNgg1
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -152,4 +113,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---mvpLiMfbWzRoNl4x--
+--19uQFt6ulqmgNgg1--

@@ -1,24 +1,25 @@
 From: Guillem Jover <guillem@debian.org>
-Subject: [PATCH 4/7] fbset: add new accelerators
-Date: Mon, 9 Oct 2006 05:42:59 +0300
-Message-ID: <20061009024259.GD9011@zulo.hadrons.org>
+Subject: [PATCH 7/7] fbset: update manpages
+Date: Mon, 9 Oct 2006 06:01:07 +0300
+Message-ID: <20061009030107.GG9011@zulo.hadrons.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="GyRA7555PLgSTuth"
+Content-Type: multipart/mixed; boundary="4eRLI4hEmsdu6Npr"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GWmgY-0004rM-Hy for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Oct 2006 21:24:14 -0700
+	id 1GWmgb-0004rW-UO for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Oct 2006 21:24:17 -0700
 Received: from 159.red-81-184-118.user.auna.net ([81.184.118.159]
 	helo=pulsar.hadrons.org)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GWmgX-0003g9-R9
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GWmgb-0000dy-0d
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Oct 2006 21:24:14 -0700
+	Sun, 08 Oct 2006 21:24:17 -0700
 Received: from guillem by pulsar.hadrons.org with local (Exim 4.50)
-	id 1GWl9B-00069Y-A1 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Oct 2006 04:45:41 +0200
+	id 1GWlQg-0006LO-8Z for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Oct 2006 05:03:46 +0200
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,78 +34,261 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
 
---GyRA7555PLgSTuth
-Content-Type: text/plain; charset=us-ascii
+--4eRLI4hEmsdu6Npr
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-With this one, the list of accelerators is synced with latest kernel.
+And the last one for now, updates to the man pages by:
+
+ Osamu Aoki <debian@aokiconsulting.com>,
+ Andr=E9 Dahlqvist <andre@debian.org>,
+ and me.
+
+Kevin Kreamer contributed the modeline2fb manpage.
+
+As fbset can be used by normal users I've moved it from section 8
+to 1, but to not make the diff useless I let the move to who commits
+this (fbset.8 -> fbset.1).
 
 regards,
 guillem
 
---GyRA7555PLgSTuth
+--4eRLI4hEmsdu6Npr
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="fbset_04_new_accels.patch"
+Content-Disposition: attachment; filename="fbset_07_manpages.patch"
 
---- fbset.c	2006-10-09 03:25:59.000000000 +0300
-+++ fbset.c	2006-10-09 03:26:48.000000000 +0300
-@@ -199,6 +199,52 @@ static struct accelentry {
-     { FB_ACCEL_SUN_CGTHREE, "Sun cg3" },
-     { FB_ACCEL_SUN_TCX, "Sun tcx" },
-     { FB_ACCEL_MATROX_MGAG400, "Matrox G400" },
-+    { FB_ACCEL_NV3, "nVidia RIVA 128" },
-+    { FB_ACCEL_NV4, "nVidia RIVA TNT" },
-+    { FB_ACCEL_NV5, "nVidia RIVA TNT2" },
-+    { FB_ACCEL_CT_6555x, "C&T 6555x" },
-+    { FB_ACCEL_3DFX_BANSHEE, "3Dfx Banshee" },
-+    { FB_ACCEL_ATI_RAGE128, "ATI Rage128 family" },
-+    { FB_ACCEL_ATI_RADEON, "ATI Radeon family" },
-+    { FB_ACCEL_IGS_CYBER2000, "CyberPro 2000" },
-+    { FB_ACCEL_IGS_CYBER2010, "CyberPro 2010" },
-+    { FB_ACCEL_IGS_CYBER5000, "CyberPro 5000" },
-+    { FB_ACCEL_SIS_GLAMOUR, "SiS 300/630/540" },
-+    { FB_ACCEL_SIS_GLAMOUR_2, "SiS 315/650/740" },
-+    { FB_ACCEL_SIS_XABRE, "SiS 330 (Xabre)" },
-+    { FB_ACCEL_3DLABS_PERMEDIA3, "3Dlabs Permedia 3" },
-+    { FB_ACCEL_I810, "Intel 810/815" },
-+    { FB_ACCEL_I830, "Intel 830M/845G/85x/865G" },
-+    { FB_ACCEL_NEOMAGIC_NM2070, "NeoMagic NM2070" },
-+    { FB_ACCEL_NEOMAGIC_NM2090, "NeoMagic NM2090" },
-+    { FB_ACCEL_NEOMAGIC_NM2093, "NeoMagic NM2093" },
-+    { FB_ACCEL_NEOMAGIC_NM2097, "NeoMagic NM2097" },
-+    { FB_ACCEL_NEOMAGIC_NM2160, "NeoMagic NM2160" },
-+    { FB_ACCEL_NEOMAGIC_NM2200, "NeoMagic NM2200" },
-+    { FB_ACCEL_NEOMAGIC_NM2230, "NeoMagic NM2230" },
-+    { FB_ACCEL_NEOMAGIC_NM2360, "NeoMagic NM2360" },
-+    { FB_ACCEL_NEOMAGIC_NM2380, "NeoMagic NM2380" },
-+    { FB_ACCEL_SAVAGE4, "S3 Savage4" },
-+    { FB_ACCEL_SAVAGE3D, "S3 Savage3D" },
-+    { FB_ACCEL_SAVAGE3D_MV, "S3 Savage3D-MV" },
-+    { FB_ACCEL_SAVAGE2000, "S3 Savage2000" },
-+    { FB_ACCEL_SAVAGE_MX_MV, "S3 Savage/MX-MV" },
-+    { FB_ACCEL_SAVAGE_MX, "S3 Savage/MX" },
-+    { FB_ACCEL_SAVAGE_IX_MV, "S3 Savage/IX-MV" },
-+    { FB_ACCEL_SAVAGE_IX, "S3 Savage/IX" },
-+    { FB_ACCEL_PROSAVAGE_PM, "S3 ProSavage PM133" },
-+    { FB_ACCEL_PROSAVAGE_KM, "S3 ProSavage KM133" },
-+    { FB_ACCEL_S3TWISTER_P, "S3 Twister" },
-+    { FB_ACCEL_S3TWISTER_K, "S3 TwisterK" },
-+    { FB_ACCEL_SUPERSAVAGE, "S3 Supersavage" },
-+    { FB_ACCEL_PROSAVAGE_DDR, "S3 ProSavage DDR" },
-+    { FB_ACCEL_PROSAVAGE_DDRK, "S3 ProSavage DDR-K" },
-+    { FB_ACCEL_NV_10, "nVidia Arch 10" },
-+    { FB_ACCEL_NV_20, "nVidia Arch 20" },
-+    { FB_ACCEL_NV_30, "nVidia Arch 30" },
-+    { FB_ACCEL_NV_40, "nVidia Arch 40" },
-+    { FB_ACCEL_XGI_VOLARI_V, "XGI Volari V3XT, V5, V8" },
-+    { FB_ACCEL_XGI_VOLARI_Z, "XGI Volari Z7" },
- };
- 
- 
+Index: fb.modes.5
+===================================================================
+--- fb.modes.5.orig	2006-10-09 04:47:33.000000000 +0300
++++ fb.modes.5	2006-10-09 04:55:36.000000000 +0300
+@@ -1,4 +1,4 @@
+-.TH fb.modes 8 "Aug 1996" local "Linux frame buffer utils"
++.TH fb.modes 5 2006-10-09 2.1 "Linux frame buffer utils"
+ .SH NAME
+ fb.modes \- frame buffer modes file
+ .SH DESCRIPTION
+@@ -27,6 +27,9 @@ timings
+ .br
+ .B options
+ .RI < value >
++.br
++.B rgba
++.RI < red , green , blue , alpha >
+ .RE
+ endmode
+ .SH OPTIONS
+@@ -74,6 +77,22 @@ horizontal sync length (in pixels)
+ vertical sync length (in pixel lines)
+ .RE
+ .PP
++rgba options (only valid with truecolor):
++.RS
++.TP
++.I red
++red color bitfields (in length or length/offset)
++.TP
++.I green
++green color bitfields (in length or length/offset)
++.TP
++.I blue
++blue color bitfields (in length or length/offset)
++.TP
++.I alpha
++alpha color bitfields (in length or length/offset)
++.RE
++.PP
+ other options:
+ .RS
+ the first value of this options is the default
+@@ -87,6 +106,14 @@ the vertical sync polarity
+ .IR \fBcsync "\ {" low | high }
+ the composite sync polarity
+ .TP
++.IR \fBgsync "\ {" low | high }
++the sync on green polarity
++.TP
++.IR \fBbcast "\ {" false | true }
++enable or disable broadcast modes. If enabled the frame buffer generates
++the exact timings fot several broadcast modes (e.g. PAL or NTSC). Note that
++this option may not be supported by every frame buffer
++.TP
+ .IR \fBextsync "\ {" false | true }
+ enable or disable external resync. If enabled the sync timings are not
+ generated by the frame buffer device and must be provided externally
+@@ -106,6 +133,15 @@ and this way the horizontal frequency ca
+ same resolution can be displayed on different monitors, even if the
+ horizontal frequency specification differs. Note that this option may not be
+ supported by every frame buffer device
++.TP
++.IR \fBnostd "\ <" number >
++select nonstandard video mode
++.TP
++.IR \fBaccel "\ {" false | true }
++enable or disable hardware text acceleration
++.TP
++.IR \fBgrayscale "\ {" false | true }
++enable or disable graylevels instead of colors
+ .RE
+ .SH INTERNALS
+ Generally a frame buffer display is organized as follows:
+Index: fbset.8
+===================================================================
+--- fbset.8.orig	2006-10-09 04:47:33.000000000 +0300
++++ fbset.8	2006-10-09 04:54:14.000000000 +0300
+@@ -1,4 +1,4 @@
+-.TH fbset 8 "July 1998" local "Linux frame buffer utils"
++.TH fbset 1 2006-10-09 2.1 "Linux frame buffer utils"
+ .SH NAME
+ fbset \- show and modify frame buffer device settings
+ .SH SYNOPSIS
+@@ -6,8 +6,6 @@ fbset \- show and modify frame buffer de
+ .RI [ options ]
+ .RI [ mode ]
+ .SH DESCRIPTION
+-.B This documentation is out of date!!
+-.PP
+ .B fbset
+ is a system utility to show or change the settings of the frame buffer
+ device. The frame buffer device provides a simple and unique interface to
+@@ -36,10 +34,8 @@ General options:
+ .BR \-\-help ",\ " \-h
+ display an usage information
+ .TP
+-.BR \-\-now ",\ " \-n
+-change the video mode immediately. If no frame buffer device is given via
+-.B \-fb
+-, then this option is activated by default
++.BR \-\-test
++don't change, just test whether the mode is valid
+ .TP
+ .BR \-\-show ",\ " \-s
+ display the video mode settings. This is default if no further option or
+@@ -66,14 +62,18 @@ display the timing information as it's n
+ Frame buffer device nodes:
+ .RS
+ .TP
++.BR \-\-all ",\ "  \-a
++change all virtual consoles on this device
++.TP
+ .BR \-fb "\ <" \fIdevice >
+ .I device
+ gives the frame buffer device node. If no device via
+ .B \-fb
+ is given, 
++.I /dev/fb/0
++or
+ .I /dev/fb0
+ is used
+-.TP
+ .RE
+ .PP
+ Video mode database:
+@@ -86,6 +86,13 @@ see also
+ .BR fb.modes (5)
+ .RE
+ .PP
++Display bitfield colors:
++.RS
++.TP
++.BR \-rgba "\ <" \fIred , \fIgreen , \fIblue , \fIalpha >
++each in length or length/offset color format
++.RE
++.PP
+ Display geometry:
+ .RS
+ .TP
+@@ -104,6 +111,10 @@ set virtual vertical resolution (in pixe
+ .BR \-depth "\ <" \fIvalue >
+ set display depth (in bits per pixel)
+ .TP
++.TP
++.BR \-nonstd "\ <" \fIvalue >
++select nonstandard video mode
++.TP
+ .BR \-\-geometry ",\ " \-g "\ ..."
+ set all geometry parameters at once in the order
+ .RI < xres >
+@@ -154,13 +165,16 @@ set all timing parameters at once in the
+ .RI < hslen >
+ .RI < vslen >,
+ e.g.
+-.B \-g
++.B \-t
+ .I 35242 64 96 35 12 112 2
+ .RE
+ .PP
+ Display flags:
+ .RS
+ .TP
++.IR \fB\-accel "\ {" false | true }
++set hardware text acceleration enable
++.TP
+ .IR \fB\-hsync "\ {" low | high }
+ set the horizontal sync polarity
+ .TP
+@@ -170,6 +184,9 @@ set the vertical sync polarity
+ .IR \fB\-csync "\ {" low | high }
+ set the composite sync polarity
+ .TP
++.IR \fB\-gsync "\ {" false | true }
++set synch on green
++.TP
+ .IR \fB\-extsync "\ {" false | true }
+ enable or disable external resync. If enabled the sync timings are not
+ generated by the frame buffer device and must be provided externally
+Index: modeline2fb.1
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ modeline2fb.1	2006-10-09 04:52:58.000000000 +0300
+@@ -0,0 +1,43 @@
++.TH modeline2fb 1 2006-10-09 2.1 "Linux frame buffer utils"
++.SH NAME
++modeline2fb \- simple modeline to fb.modes translator
++.SH SYNOPSIS
++.B modeline2fb
++[\fIoption\fR] [\fIfiles\fR]
++.SH DESCRIPTION
++.PP
++.I modeline2fb
++is a simple Perl script that converts xorg.conf style modelines to options
++suitable for a fb.modes file.
++.PP
++Note that only one option can be successfully enabled at any particular time.
++.SH OPTIONS
++.TP
++\fB\-d\fR, \fB\-\-depth\fR \fIdepth\fR
++Use the given display depth (default is 8).
++.TP
++\fB\-r\fR, \fB\-\-rounding\fR \fIdiv\fR
++Sets the vxres divisor (default is 128).
++.TP
++\fB\-x\fR, \fB\-\-vxres\fR \fIX\fR,\fIX\fR,\fIX\fR,\fI...\fR
++Sets extra vxres values.
++.TP
++\fB\-h\fR, \fB\-\-help\fR
++Print out a help screen and exit.
++.PP
++[\fIfiles\fR] refers to one or more xorg.conf files. Note that all modelines
++must be in single-line format. If no files are given on the command line,
++this program reads from standard in. This program will also write to
++standard out.
++.SH EXAMPLE
++modeline2fb \-d 16 /etc/X11/xorg.conf
++.SH "SEE ALSO"
++.BR fb.modes(5),
++.BR xorg.conf(5)
++.SH AUTHOR
++.TP
++Patrick Reynolds
++.TP
++Kevin Kreamer <kkreamer@etherhogz.org>
++.br
++man files
 
---GyRA7555PLgSTuth
+--4eRLI4hEmsdu6Npr
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -115,7 +299,7 @@ Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys -- and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---GyRA7555PLgSTuth
+--4eRLI4hEmsdu6Npr
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -126,4 +310,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---GyRA7555PLgSTuth--
+--4eRLI4hEmsdu6Npr--

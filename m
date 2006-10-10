@@ -1,61 +1,35 @@
-From: Bill Gatliff <bgat@billgatliff.com>
-Subject: Re: SM501 framebuffer driver
-Date: Tue, 10 Oct 2006 07:06:29 -0500
-Message-ID: <452B8CC5.8080104@billgatliff.com>
-References: <45268042.8050207@billgatliff.com>	<20061006162644.GA15499@home.fluff.org>
-	<452B371D.90400@varma-el.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: 2.6.19-rc1: known regressions (v3)
+Date: Wed, 11 Oct 2006 08:58:45 +1000
+Message-ID: <17708.9637.569670.824121@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
+	<20061010051019.GB3650@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GXGND-0005t5-2g for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 10 Oct 2006 05:06:15 -0700
-Received: from smtp2.mtco.com ([207.179.226.205])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GXGNA-0005Jc-LE
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 10 Oct 2006 05:06:14 -0700
-In-Reply-To: <452B371D.90400@varma-el.com>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <fastboot-bounces@lists.osdl.org>
+In-Reply-To: <20061010051019.GB3650@stusta.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Robert Whaley <rwhaley@applieddata.net>
+List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
+	<mailto:fastboot-request@lists.osdl.org?subject=unsubscribe>
+List-Archive: <http://lists.osdl.org/pipermail/fastboot>
+List-Post: <mailto:fastboot@lists.osdl.org>
+List-Help: <mailto:fastboot-request@lists.osdl.org?subject=help>
+List-Subscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
+	<mailto:fastboot-request@lists.osdl.org?subject=subscribe>
+Sender: fastboot-bounces@lists.osdl.org
+Errors-To: fastboot-bounces@lists.osdl.org
+Content-Type: text/plain; charset="us-ascii"
+To: Adrian Bunk <bunk@stusta.de>
+Cc: fastboot@osdl.org, alsa-devel@alsa-project.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thierry Vignaud <tvignaud@mandriva.com>, discuss@x86-64.org, Trond Myklebust <Trond.Myklebust@netapp.com>, Alex Romosan <romosan@sycorax.lbl.gov>, Torsten Kaiser <kernel@bardioc.dyndns.org>, Olaf Hering <olaf@aepfle.de>, ak@suse.de, linuxppc-dev@ozlabs.org, Andrew de Quincey <adq_dvb@lidskialf.net>, Dave Kleikamp <shaggy@austin.ibm.com>, Jens Axboe <jens.axboe@oracle.com>, Sukadev Bhattiprolu <sukadev@us.ibm.com>, Antonino Daplas <adaplas@pol.net>, v4l-dvb-maintainer@linuxtv.org, perex@suse.cz, Linus Torvalds <torvalds@osdl.org>, linux-pm@osdl.org, linux-fbdev-devel@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ide@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>, netdev@vger.kernel.org, Greg Kroah-Hartman <gregkh>
 
-Andrey:
+Adrian Bunk writes:
 
-Andrey Volkov wrote:
+> Subject    : sleep/wakeup on powerbooks apparently busted
+> References : http://lkml.org/lkml/2006/10/5/13
+> Submitter  : Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Handled-By : Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Status     : Benjamin will investigate
 
->We too ;), and use on our board: http://www.varma-el.com/en/prod?cls=sbc
->
->Anyone have objections about berlios.de SVN for a sm501 staff?
->  
->
+Should be fixed once Linus pulls the powerpc.git tree.
 
-Works for me!  :)
-
-Please post the URL when you have it.
-
-
-b.g.
-
--- 
-Bill Gatliff
-bgat@billgatliff.com
-
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys -- and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+Paul.

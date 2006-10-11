@@ -1,8 +1,9 @@
-From: Andrey Volkov <avolkov@varma-el.com>
-Subject: FYI: SM5xx toolchain project berliOS
-	registration
-Date: Wed, 11 Oct 2006 18:36:34 +0400
-Message-ID: <452D0172.1010806@varma-el.com>
+From: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: SM501 framebuffer driver
+Date: Wed, 11 Oct 2006 17:17:07 +0200
+Message-ID: <452D0AF3.8040206@anagramm.de>
+References: <45268042.8050207@billgatliff.com>	<20061006162644.GA15499@home.fluff.org>	<452B371D.90400@varma-el.com>
+	<452B8CC5.8080104@billgatliff.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GXfCZ-0007aF-Fz for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Oct 2006 07:36:55 -0700
-Received: from amanaus.varma-el.com ([195.144.240.154])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GXfCV-0003KQ-1L
+	id 1GXfpX-0004yt-LD for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 11 Oct 2006 08:17:11 -0700
+Received: from moutng.kundenserver.de ([212.227.126.187])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GXfpV-0001cu-Rv
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Oct 2006 07:36:52 -0700
+	Wed, 11 Oct 2006 08:17:11 -0700
+In-Reply-To: <452B8CC5.8080104@billgatliff.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,54 +29,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: bgat@billgatliff.com
-Cc: clemens.koller@anagramm.de, linux-fbdev-devel@lists.sourceforge.net, vince@simtec.co.uk, ben-linux@fluff.org, linuxppc-embedded@ozlabs.org, alexdeucher@gmail.com, gewang@siliconmotion.com, syrjala@sci.fi
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi all,
+Hello, Andrey!
 
-Yesterday I issued new SiliconMotion SM501 drivers
-project request to berlios, and receive
-approvement couple hours ago.
+>>We too ;), and use on our board: http://www.varma-el.com/en/prod?cls=sbc
+>>
+>>Anyone have objections about berlios.de SVN for a sm501 staff?
 
-So project home page is:
+Good start!
+I am with berlios.de, too. For all the SM501 interested developers, please see:
 
- http://developer.berlios.de/projects/sm5xx/
+https://developer.berlios.de/projects/sm5xx/
 
-Anyone who wants admin/write-access, please register with
-berlios and tell me your account.
+Best greets,
 
-SVN will be activated in nearest hours.
-Berlios has direct shell access to your repos.
-So if there are any svn/CVS-dumps to import or any
-scripts to set up...
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-The central mailing list
-
-	sm5xx-devel@lists.berlios.de
-
-will be active soon too.
-
---
-Happy hacking ;),
-
-Andrey Volkov
-Varma Electronics Oy
-
--------- Original Message --------
-Subject: BerliOS Developer Project Approved
-Date: Wed, 11 Oct 2006 12:49:58 +0200 (CEST)
-From: admin@berlios.de
-To: avolkov@varma-el.com
-
-Your project registration for BerliOS Developer has been approved.
-
-Project Full Name:  SM5xx Toolchain
-Project Unix Name:  sm5xx
-CVS Server:         cvs.berlios.de
-SVN Server:         svn.berlios.de
-Shell Server:       shell.berlios.de
-Web Server:         sm5xx.berlios.de
-
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
 
 
 -------------------------------------------------------------------------

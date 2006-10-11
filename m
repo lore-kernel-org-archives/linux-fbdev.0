@@ -1,35 +1,85 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.19-rc1: known regressions (v3)
-Date: Wed, 11 Oct 2006 08:58:45 +1000
-Message-ID: <17708.9637.569670.824121@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0610042017340.3952@g5.osdl.org>
-	<20061010051019.GB3650@stusta.de>
+From: Andrey Volkov <avolkov@varma-el.com>
+Subject: FYI: SM5xx toolchain project berliOS
+	registration
+Date: Wed, 11 Oct 2006 18:36:34 +0400
+Message-ID: <452D0172.1010806@varma-el.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <fastboot-bounces@lists.osdl.org>
-In-Reply-To: <20061010051019.GB3650@stusta.de>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
-	<mailto:fastboot-request@lists.osdl.org?subject=unsubscribe>
-List-Archive: <http://lists.osdl.org/pipermail/fastboot>
-List-Post: <mailto:fastboot@lists.osdl.org>
-List-Help: <mailto:fastboot-request@lists.osdl.org?subject=help>
-List-Subscribe: <https://lists.osdl.org/mailman/listinfo/fastboot>,
-	<mailto:fastboot-request@lists.osdl.org?subject=subscribe>
-Sender: fastboot-bounces@lists.osdl.org
-Errors-To: fastboot-bounces@lists.osdl.org
 Content-Type: text/plain; charset="us-ascii"
-To: Adrian Bunk <bunk@stusta.de>
-Cc: fastboot@osdl.org, alsa-devel@alsa-project.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thierry Vignaud <tvignaud@mandriva.com>, discuss@x86-64.org, Trond Myklebust <Trond.Myklebust@netapp.com>, Alex Romosan <romosan@sycorax.lbl.gov>, Torsten Kaiser <kernel@bardioc.dyndns.org>, Olaf Hering <olaf@aepfle.de>, ak@suse.de, linuxppc-dev@ozlabs.org, Andrew de Quincey <adq_dvb@lidskialf.net>, Dave Kleikamp <shaggy@austin.ibm.com>, Jens Axboe <jens.axboe@oracle.com>, Sukadev Bhattiprolu <sukadev@us.ibm.com>, Antonino Daplas <adaplas@pol.net>, v4l-dvb-maintainer@linuxtv.org, perex@suse.cz, Linus Torvalds <torvalds@osdl.org>, linux-pm@osdl.org, linux-fbdev-devel@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ide@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>, netdev@vger.kernel.org, Greg Kroah-Hartman <gregkh>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GXfCZ-0007aF-Fz for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 11 Oct 2006 07:36:55 -0700
+Received: from amanaus.varma-el.com ([195.144.240.154])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GXfCV-0003KQ-1L
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 11 Oct 2006 07:36:52 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: bgat@billgatliff.com
+Cc: clemens.koller@anagramm.de, linux-fbdev-devel@lists.sourceforge.net, vince@simtec.co.uk, ben-linux@fluff.org, linuxppc-embedded@ozlabs.org, alexdeucher@gmail.com, gewang@siliconmotion.com, syrjala@sci.fi
 
-Adrian Bunk writes:
+Hi all,
 
-> Subject    : sleep/wakeup on powerbooks apparently busted
-> References : http://lkml.org/lkml/2006/10/5/13
-> Submitter  : Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Handled-By : Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Status     : Benjamin will investigate
+Yesterday I issued new SiliconMotion SM501 drivers
+project request to berlios, and receive
+approvement couple hours ago.
 
-Should be fixed once Linus pulls the powerpc.git tree.
+So project home page is:
 
-Paul.
+ http://developer.berlios.de/projects/sm5xx/
+
+Anyone who wants admin/write-access, please register with
+berlios and tell me your account.
+
+SVN will be activated in nearest hours.
+Berlios has direct shell access to your repos.
+So if there are any svn/CVS-dumps to import or any
+scripts to set up...
+
+The central mailing list
+
+	sm5xx-devel@lists.berlios.de
+
+will be active soon too.
+
+--
+Happy hacking ;),
+
+Andrey Volkov
+Varma Electronics Oy
+
+-------- Original Message --------
+Subject: BerliOS Developer Project Approved
+Date: Wed, 11 Oct 2006 12:49:58 +0200 (CEST)
+From: admin@berlios.de
+To: avolkov@varma-el.com
+
+Your project registration for BerliOS Developer has been approved.
+
+Project Full Name:  SM5xx Toolchain
+Project Unix Name:  sm5xx
+CVS Server:         cvs.berlios.de
+SVN Server:         svn.berlios.de
+Shell Server:       shell.berlios.de
+Web Server:         sm5xx.berlios.de
+
+
+
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

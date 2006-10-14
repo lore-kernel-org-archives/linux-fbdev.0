@@ -1,73 +1,102 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [Sm5xx-devel]  SM501 framebuffer driver
-Date: Fri, 13 Oct 2006 22:35:27 +0900
-Message-ID: <20061013133527.GA4452@linux-sh.org>
-References: <45268042.8050207@billgatliff.com> <452691A2.2020209@anagramm.de>
-	<20061013121138.GA21744@linux-sh.org>
-	<452F90A4.3040603@varma-el.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [1/3] 2.6.19-rc2: known unfixed regressions
+Date: Sat, 14 Oct 2006 13:22:26 +0200
+Message-ID: <20061014112226.GJ30596@stusta.de>
+References: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org> <20061014111458.GI30596@stusta.de>
 Mime-Version: 1.0
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20061014111458.GI30596@stusta.de>
+Sender: linux-ide-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GYNDU-0002EY-3Y for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Oct 2006 06:36:48 -0700
-Received: from smtp.ocgnet.org ([64.20.243.3])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GYNDP-00070b-Gc
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Oct 2006 06:36:48 -0700
-Content-Disposition: inline
-In-Reply-To: <452F90A4.3040603@varma-el.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrey Volkov <avolkov@varma-el.com>
-Cc: Robert Whaley <rwhaley@applieddata.net>, sm5xx-devel@lists.berlios.de, linux-fbdev-devel@lists.sourceforge.net
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jesper Juhl <jesper.juhl@gmail.com>, David Howells <dhowells@redhat.com>, James.Bottomley@HansenPartnership.com, pazke@donpac.ru, linux-visws-devel@lists.sf.net, Alex Romosan <romosan@sycorax.lbl.gov>, Jens Axboe <jens.axboe@oracle.com>, Thierry Vignaud <tvignaud@mandriva.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org, Olaf Hering <olaf@aepfle.de>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, art@usfltd.com, ak@suse.de, discuss@x86-64.org, Robert Hancock <hancockr@shaw.ca>, "Eric W. Biederman" <ebiederm@xmission.com>, David Gerber <dg-kernel-bug@zapek.com>, Dmitry Torokhov <dtor@insightbb.com>, John Stultz <johnstul@us.ibm.com>, linux-input@atrey.karlin.mff.cuni.cz, Kenny Graunke <kenny@whitecape.org>, Patrick Jefferson <henj@hp.com>, Alan Cox <alan@redhat.com>
 
-On Fri, Oct 13, 2006 at 05:12:04PM +0400, Andrey Volkov wrote:
-> Paul Mundt wrote:
-> > There's at least half a dozen of these floating around, with some
-> > disagreement on the actual implementation. We had one in the old SH tree
-> > that specifically registered a different framebuffer device for each
-> > plane, which we had some code in DirectFB and mplayer for making use of
-> > for overlays and so on.
-> IMHO, its very awkward implementation for real world application,
-> especially since, as ex, alpha/video planes is coupled with panel plane
-> but not with CRT plane. We currently try use sm501 as two fb (crt/panel)
-> devices.
-> 
-Awkward as it may be, there are plenty of users going with this
-approach, and DirectFB has been using it for quite some time. If you
-don't care for this approach, do you have a better idea for exposing
-individual planes to userspace and fine-grained overlay control?
-Multiple device nodes are a lot more pleasant to look at than an ioctl
-abortion.
+This email lists some known unfixed regressions in 2.6.19-rc2 compared 
+to 2.6.18.
 
-> PCI and MMIO modes of SM501 is mutually exclusive, so it should be
-> selected at configure time (as I already does, check my implementation
-> in svn).
-> 
-The driver still requires visibility of these two things. Looking at the
-fb driver, it's clear you have no transparent means for gauging the
-aperture size. With PCI this comes down to sizing the membar, and in the
-platform case it can be statically defined at registration time too.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-This will never work on a system where you have a platform bus SM501
-with an SM501 on a PCI add-in board, you simply can not gaurantee that
-they are exclusive.
+Due to the huge amount of recipients, please trim the Cc when answering.
 
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+
+Subject    : CONFIG_X86_VOYAGER=y, CONFIG_SMP=n compile error
+References : http://lkml.org/lkml/2006/10/7/51
+Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
+Caused-By  : David Howells <dhowells@redhat.com>
+             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
+Status     : unknown
+
+
+Subject    : CONFIG_X86_VISWS=y, CONFIG_SMP=n compile error
+References : http://lkml.org/lkml/2006/10/7/51
+Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
+Caused-By  : David Howells <dhowells@redhat.com>
+             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
+Status     : unknown
+
+
+Subject    : unable to rip cd
+References : http://lkml.org/lkml/2006/10/13/100
+Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
+Status     : unknown
+
+
+Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
+Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
+Status     : unknown
+
+
+Subject    : monitor not active after boot
+References : http://lkml.org/lkml/2006/10/5/338
+Submitter  : Olaf Hering <olaf@aepfle.de>
+Caused-By  : Antonino Daplas <adaplas@pol.net>
+             commit 346bc21026e7a92e1d7a4a1b3792c5e8b686133d
+Status     : unknown
+
+
+Subject    : SMP x86_64 boot problem
+References : http://lkml.org/lkml/2006/9/28/330
+             http://lkml.org/lkml/2006/10/5/289
+Submitter  : art@usfltd.com
+Status     : submitter was asked to git bisect
+             result of bisecting seems to be wrong
+
+
+Subject    : do_IRQ: No irq handler for vector
+References : http://lkml.org/lkml/2006/10/11/13
+Submitter  : Robert Hancock <hancockr@shaw.ca>
+Handled-By : "Eric W. Biederman" <ebiederm@xmission.com>
+Status     : Andrew: a few people are seeing this. Eric is working it.
+
+
+Subject    : messed up keyboard events, TSC related
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7291
+Submitter  : David Gerber <dg-kernel-bug@zapek.com>
+Handled-By : Dmitry Torokhov <dtor@insightbb.com>
+             John Stultz <johnstul@us.ibm.com>
+Status     : Dmitry and John are investigating
+
+
+Subject    : ide-generic no longer finds marvell controller
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7353
+Submitter  : Kenny Graunke <kenny@whitecape.org>
+Caused-By  : Patrick Jefferson <henj@hp.com>
+             commit a4bea10eca68152e84ffc4eaeb9d20ec2ac34664
+Handled-By : Alan Cox <alan@redhat.com>
+Status     : Alan is investigating
+
+
+Subject    : cpufreq not working on AMD K8
+References : http://lkml.org/lkml/2006/10/10/114
+Submitter  : Christian <christiand59@web.de>
+Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
+Status     : Mark is investigating
+
+

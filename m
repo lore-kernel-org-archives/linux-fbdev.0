@@ -1,10 +1,7 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [Sm5xx-devel]  SM501 framebuffer driver
-Date: Mon, 16 Oct 2006 12:01:54 +0900
-Message-ID: <20061016030154.GA6301@linux-sh.org>
-References: <45268042.8050207@billgatliff.com> <452691A2.2020209@anagramm.de>
-	<20061013121138.GA21744@linux-sh.org>
-	<45327124.6040301@billgatliff.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] igafb: switch to pci_get API
+Date: Mon, 16 Oct 2006 16:57:24 +0100
+Message-ID: <1161014244.24237.108.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,14 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GZIk6-0006FV-Sr for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Oct 2006 20:02:19 -0700
-Received: from smtp.ocgnet.org ([64.20.243.3])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GZIk3-0001F2-Sw
+	id 1GZUQS-0001RQ-R3 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 16 Oct 2006 08:30:48 -0700
+Received: from [81.2.110.250] (helo=lxorguk.ukuu.org.uk)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GZUQM-00032r-5Q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Oct 2006 20:02:17 -0700
-Content-Disposition: inline
-In-Reply-To: <45327124.6040301@billgatliff.com>
+	Mon, 16 Oct 2006 08:30:48 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,46 +27,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: Robert Whaley <rwhaley@applieddata.net>, sm5xx-devel@lists.berlios.de, linux-fbdev-devel@lists.sourceforge.net
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hi Bill, fancy seeing you in this thread ;-)
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-On Sun, Oct 15, 2006 at 12:34:28PM -0500, William A. Gatliff wrote:
-> One thing that concerns me about all of the ALSA implementations I've
-> seen so far is that the source code for the 8051 side is never
-> included.  GPL questions aside, for legacy reasons alone we've got to
-> make sure that stuff gets in too.
-> 
-We want the 8051 blob in userspace if anything, there's little reason to
-tie this in to the module specifically, and it's handy to expose the
-interface for people that are specifically interested in loading in
-alternate code on the 8051.
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.19-rc1-mm1/drivers/video/igafb.c linux-2.6.19-rc1-mm1/drivers/video/igafb.c
+--- linux.vanilla-2.6.19-rc1-mm1/drivers/video/igafb.c	2006-10-13 15:06:57.000000000 +0100
++++ linux-2.6.19-rc1-mm1/drivers/video/igafb.c	2006-10-13 17:21:18.000000000 +0100
+@@ -384,19 +384,21 @@
+         if (!con_is_present())
+                 return -ENXIO;
+ 
+-        pdev = pci_find_device(PCI_VENDOR_ID_INTERG, 
++        pdev = pci_get_device(PCI_VENDOR_ID_INTERG, 
+                                PCI_DEVICE_ID_INTERG_1682, 0);
+ 	if (pdev == NULL) {
+ 		/*
+ 		 * XXX We tried to use cyber2000fb.c for IGS 2000.
+ 		 * But it does not initialize the chip in JavaStation-E, alas.
+ 		 */
+-        	pdev = pci_find_device(PCI_VENDOR_ID_INTERG, 0x2000, 0);
++        	pdev = pci_get_device(PCI_VENDOR_ID_INTERG, 0x2000, 0);
+         	if(pdev == NULL) {
+         	        return -ENXIO;
+ 		}
+ 		iga2000 = 1;
+ 	}
++	/* We leak a reference here but as it cannot be unloaded this is
++	   fine. If you write unload code remember to free it in unload */
+ 	
+ 	size = sizeof(struct fb_info) + sizeof(struct iga_par) + sizeof(u32)*16;
+ 
 
-As far as including source for the 8051 code itself, that would be nice
-to have, but I doubt it's something the majority of users are going to
-care about. I've certainly never seen any.
-
-> But then again, there's the question of where the source code is at all,
-> and what toolsystem you use to produce the binary image...
-> 
-I suspect it's just a simple binary blob and little else, there's
-certainly no infrastructure in the loading side for dealing with
-anything more elaborate, and it is just a stupid 8051 after all. Taking
-and disassembling the thing will likely get you as close as to what the
-real source looks like as anything else, but again, most people aren't
-going to have a use for this.
-
-Kbuild also doesn't have a simple facility for mapping in multiple cross
-compilers depending on target preference, which is one of the things we
-hit when trying to figure out how to interface the ARM7 firmware build
-for the AICA on the Dreamcast (prior to the request_firmware() interface
-being added). This is now handled by pushing everything to userspace,
-which seems the obvious choice for the 8051, too.
-
-On that note, do you have a pointer to some of the various ALSA
-implementations that are floating around? I've only seen the OSS driver
-we had in CVS, and that provides a rather dysmal starting point..
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

@@ -1,22 +1,26 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] intel fb: switch to pci_get API
-Date: Mon, 16 Oct 2006 16:59:12 +0100
-Message-ID: <1161014353.24237.111.camel@localhost.localdomain>
+From: Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: [Sm5xx-devel]  SM501 framebuffer driver
+Date: Mon, 16 Oct 2006 14:28:27 -0500
+Message-ID: <4533DD5B.4020804@billgatliff.com>
+References: <45268042.8050207@billgatliff.com> <452691A2.2020209@anagramm.de>
+	<20061013121138.GA21744@linux-sh.org>
+	<45327124.6040301@billgatliff.com>
+	<20061016030154.GA6301@linux-sh.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GZUS0-0001d1-CD for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Oct 2006 08:32:24 -0700
-Received: from [81.2.110.250] (helo=lxorguk.ukuu.org.uk)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GZURx-0003ZK-NJ
+	id 1GZY7m-0006zh-QO for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 16 Oct 2006 12:27:47 -0700
+Received: from smtp2.mtco.com ([207.179.226.205])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GZY7l-0001li-2p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Oct 2006 08:32:24 -0700
+	Mon, 16 Oct 2006 12:27:46 -0700
+In-Reply-To: <20061016030154.GA6301@linux-sh.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,31 +31,59 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Robert Whaley <rwhaley@applieddata.net>, sm5xx-devel@lists.berlios.de, linux-fbdev-devel@lists.sourceforge.net
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Paul:
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.19-rc1-mm1/drivers/video/intelfb/intelfbhw.c linux-2.6.19-rc1-mm1/drivers/video/intelfb/intelfbhw.c
---- linux.vanilla-2.6.19-rc1-mm1/drivers/video/intelfb/intelfbhw.c	2006-10-13 15:10:07.000000000 +0100
-+++ linux-2.6.19-rc1-mm1/drivers/video/intelfb/intelfbhw.c	2006-10-13 17:21:18.000000000 +0100
-@@ -161,7 +161,7 @@
- 		return 1;
- 
- 	/* Find the bridge device.  It is always 0:0.0 */
--	if (!(bridge_dev = pci_find_slot(0, PCI_DEVFN(0, 0)))) {
-+	if (!(bridge_dev = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0)))) {
- 		ERR_MSG("cannot find bridge device\n");
- 		return 1;
- 	}
-@@ -169,6 +169,8 @@
- 	/* Get the fb aperture size and "stolen" memory amount. */
- 	tmp = 0;
- 	pci_read_config_word(bridge_dev, INTEL_GMCH_CTRL, &tmp);
-+	pci_dev_put(bridge_dev);
-+	
- 	switch (pdev->device) {
- 	case PCI_DEVICE_ID_INTEL_915G:
- 	case PCI_DEVICE_ID_INTEL_915GM:
+Paul Mundt wrote:
+
+>Hi Bill, fancy seeing you in this thread ;-)
+>  
+>
+
+Heh, you need to talk to the guy at the door.  He'll let anyone in, I'm 
+proof!  :)
+
+>We want the 8051 blob in userspace if anything, there's little reason to
+>tie this in to the module specifically, and it's handy to expose the
+>interface for people that are specifically interested in loading in
+>alternate code on the 8051.
+>
+>As far as including source for the 8051 code itself, that would be nice
+>to have, but I doubt it's something the majority of users are going to
+>care about. I've certainly never seen any.
+>  
+>
+
+I totally agree on all points.  But I hate blobs.  If the source code is 
+around, I'd love to have it recorded somewhere even though we all know 
+that Kbuild and most users won't know what to do with it.  Just In Case.
+
+Do we even know where this blob came from originally?
+
+>On that note, do you have a pointer to some of the various ALSA
+>implementations that are floating around? I've only seen the OSS driver
+>we had in CVS, and that provides a rather dysmal starting point..
+>  
+>
+
+Whaley sent me one just last week (hi Robert!).  Given that, I don't 
+suppose he'd mind my forwarding the patch on.  What makes it tricky to 
+do so is that the patch is against his highly-evolved sm501 driver 
+stack, so there will be some mending required.
+
+Yet another reason why we've all got to get all this stuff together.  
+The SM501 is a decent chip, and there's too few of us to go around 
+re-inventing the wheel.
+
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
 
 
 -------------------------------------------------------------------------

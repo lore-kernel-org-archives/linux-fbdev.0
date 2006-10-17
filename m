@@ -1,90 +1,139 @@
-From: Kimball Murray <kimball.murray@gmail.com>
-Subject: Resend2 [GIT PATCH 1/1] support 24bpp (32bpp
-	minus alpha) in radeonfb driver
-Date: Tue, 17 Oct 2006 10:55:26 -0400
-Message-ID: <20061017145258.17779.56528.sendpatchset@dhcp83-86.boston.redhat.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.19-rc2: known unfixed regressions (v2)
+Date: Tue, 17 Oct 2006 17:59:34 +0200
+Message-ID: <20061017155934.GC3502@stusta.de>
+References: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GZqLx-0002XN-IK for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Oct 2006 07:55:37 -0700
-Received: from mx1.redhat.com ([66.187.233.31])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GZqLs-0003lk-J0
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Oct 2006 07:55:37 -0700
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: benh@kernel.crashing.org, Kimball Murray <kimball.murray@gmail.com>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Thierry Vignaud <tvignaud@mandriva.com>, Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>, linuxppc-dev@ozlabs.org, paulus@samba.org, Jens Axboe <jens.axboe@oracle.com>, linux-visws-devel@lists.sf.net, Greg Banks <gnb@melbourne.sgi.com>, Patrick Jefferson <henj@hp.com>, Meelis Roos <mroos@linux.ee>, Christian <christiand59@web.de>, art@usfltd.com, linux-acpi@vger.kernel.org, Alan Cox <alan@redhat.com>, "Michael S. Tsirkin" <mst@mellanox.co.il>, Ingo Molnar <mingo@elte.hu>, jgarzik@pobox.com, Martin Lorenz <martin@lorenz.eu.org>, len.brown@intel.com, Olaf Hering <olaf@aepfle.de>, discuss@x86-64.org, cpufreq@lists.linux.org.uk, Alex Romosan <romosan@sycorax.lbl.gov>, Kenny Graunke <kenny@whitecape.org>, James.Bottomley@HansenPartnership.com, linux-fbdev-devel@lists.sourceforge.net, linux-ide@vger.kernel.org, pazke@donp
 
-Trying yet again with a new list address.  Sorry Ben, you'll see this 3 times
-now :)
+This email lists some known unfixed regressions in 2.6.19-rc2 compared 
+to 2.6.18 that are not yet fixed Linus' tree.
 
-This simple patch allows unpacked, 24bpp mode to work in the radeonfb driver.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-The patch is against the mainline (Linus) git tree.  I am submitting this on
-behalf of Charlotte Richardson at Stratus Technologies, to support one of the
-Stratus hardware platforms.
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-Signed-off-by: Charlotte Richardson (charlotte.richardson@stratus.com)
 
---------------------------- snip -----------------------
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 0ed577e..aef12f5 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -719,11 +719,8 @@ static int radeonfb_check_var (struct fb
- 			v.bits_per_pixel = 16;
- 			break;
- 		case 17 ... 24:
--#if 0 /* Doesn't seem to work */
- 			v.bits_per_pixel = 24;
- 			break;
--#endif			
--			return -EINVAL;
- 		case 25 ... 32:
- 			v.bits_per_pixel = 32;
- 			break;
-diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
-index d5ff224..989f468 100644
---- a/drivers/video/aty/radeonfb.h
-+++ b/drivers/video/aty/radeonfb.h
-@@ -517,6 +517,8 @@ static inline int round_div(int num, int
- 
- static inline int var_to_depth(const struct fb_var_screeninfo *var)
- {
-+	if (var->bits_per_pixel == 32)
-+	       return (var->transp.length == 8) ? 32 : 24;
- 	if (var->bits_per_pixel != 16)
- 		return var->bits_per_pixel;
- 	return (var->green.length == 5) ? 15 : 16;
-@@ -531,7 +533,9 @@ static inline u32 radeon_get_dstbpp(u16 
-        		return DST_15BPP;
-        	case 16:
-        		return DST_16BPP;
--       	case 32:
-+	case 24:
-+       		return DST_24BPP;
-+	case 32:
-        		return DST_32BPP;
-        	default:
-        		return 0;
+Subject    : ppc prep boot hang
+References : http://lkml.org/lkml/2006/10/14/58
+Submitter  : Meelis Roos <mroos@linux.ee>
+Status     : unknown
 
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+
+Subject    : X60s: BUG()s, lose ACPI events after suspend/resume
+References : http://lkml.org/lkml/2006/10/10/39
+Submitter  : Martin Lorenz <martin@lorenz.eu.org>
+Status     : unknown
+
+
+Subject    : T60 stops triggering any ACPI events
+References : http://lkml.org/lkml/2006/10/4/425
+             http://lkml.org/lkml/2006/10/16/262
+Submitter  : "Michael S. Tsirkin" <mst@mellanox.co.il>
+Status     : unknown
+
+
+Subject    : x86_64: build error: unknown pseudo-op: `.cfi_signal_frame'
+References : http://lkml.org/lkml/2006/10/16/8
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Caused-By  : Jan Beulich <jbeulich@novell.com>
+             Andi Kleen <ak@suse.de>
+             commit adf1423698f00d00b267f7dca8231340ce7d65ef
+Status     : Jan: That is nothing I added, I suppose Andi did.
+                  But the fix is obvious and trivial.
+
+
+Subject    : undefined reference to highest_possible_node_id
+References : http://lkml.org/lkml/2006/9/4/233
+             http://lkml.org/lkml/2006/10/15/11
+Submitter  : Olaf Hering <olaf@aepfle.de>
+Caused-By  : Greg Banks <gnb@melbourne.sgi.com>
+             commit 0f532f3861d2c4e5aa7dcd33fb18e9975eb28457
+Status     : unknown
+
+
+Subject    : many ARM compile failures after the post -rc1 IRQ patches
+References : http://lkml.org/lkml/2006/10/15/29
+             http://armlinux.simtec.co.uk/kautobuild/2.6.19-rc2/index.html
+Submitter  : Russell King <rmk+lkml@arm.linux.org.uk>
+Caused-By  : David Howells <dhowells@redhat.com>
+Status     : unknown
+
+
+Subject    : CONFIG_X86_VOYAGER=y, CONFIG_SMP=n compile error
+References : http://lkml.org/lkml/2006/10/7/51
+Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
+Caused-By  : David Howells <dhowells@redhat.com>
+             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
+Status     : unknown
+
+
+Subject    : CONFIG_X86_VISWS=y, CONFIG_SMP=n compile error
+References : http://lkml.org/lkml/2006/10/7/51
+Submitter  : Jesper Juhl <jesper.juhl@gmail.com>
+Caused-By  : David Howells <dhowells@redhat.com>
+             commit 7d12e780e003f93433d49ce78cfedf4b4c52adc5
+Status     : unknown
+
+
+Subject    : sata-via doesn't detect anymore disks attached to VIA vt6421
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7255
+Submitter  : Thierry Vignaud <tvignaud@mandriva.com>
+Status     : unknown
+
+
+Subject    : SMP x86_64 boot problem
+References : http://lkml.org/lkml/2006/9/28/330
+             http://lkml.org/lkml/2006/10/5/289
+Submitter  : art@usfltd.com
+Status     : submitter was asked to git bisect
+             result of bisecting seems to be wrong
+
+
+Subject    : monitor not active after boot
+References : http://lkml.org/lkml/2006/10/5/338
+Submitter  : Olaf Hering <olaf@aepfle.de>
+Caused-By  : Antonino Daplas <adaplas@pol.net>
+             commit 346bc21026e7a92e1d7a4a1b3792c5e8b686133d
+Status     : unknown
+
+
+Subject    : unable to rip cd
+References : http://lkml.org/lkml/2006/10/13/100
+Submitter  : Alex Romosan <romosan@sycorax.lbl.gov>
+Status     : unknown
+
+
+Subject    : ide-generic no longer finds marvell controller
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7353
+Submitter  : Kenny Graunke <kenny@whitecape.org>
+Caused-By  : Patrick Jefferson <henj@hp.com>
+             commit a4bea10eca68152e84ffc4eaeb9d20ec2ac34664
+Handled-By : Alan Cox <alan@redhat.com>
+Status     : Alan is investigating
+
+
+Subject    : cpufreq not working on AMD K8
+References : http://lkml.org/lkml/2006/10/10/114
+Submitter  : Christian <christiand59@web.de>
+Handled-By : Mark Langsdorf <mark.langsdorf@amd.com>
+Status     : Mark is investigating

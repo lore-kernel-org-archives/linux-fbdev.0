@@ -1,25 +1,23 @@
-From: Bill Gatliff <bgat@billgatliff.com>
-Subject: Framebuffer "hangs" at startup
-Date: Tue, 17 Oct 2006 21:43:49 -0500
-Message-ID: <453594E5.4060606@billgatliff.com>
+From: "Ramya Segar" <ramya.segar@gmail.com>
+Subject: Double buffering amba-clcd fb driver
+Date: Wed, 18 Oct 2006 15:57:47 +0530
+Message-ID: <55a8df6f0610180327o2fe790actcfca77c94b067919@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1894644539=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Ga1OX-0005Hi-3N for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Oct 2006 19:43:01 -0700
-Received: from smtp2.mtco.com ([207.179.226.205])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Ga1OV-0000k8-OD
+	id 1Ga8eN-0003Yy-79 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Oct 2006 03:27:51 -0700
+Received: from ug-out-1314.google.com ([66.249.92.172])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Ga8eL-0000Hg-Ox
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Oct 2006 19:43:01 -0700
-Received: from [192.168.2.10] (ghillsrb1-pool1-32.mtco.com [207.179.227.32])
-	by smtp2.mtco.com (Spam Firewall) with ESMTP id A734A12393B
+	Wed, 18 Oct 2006 03:27:51 -0700
+Received: by ug-out-1314.google.com with SMTP id p27so116645ugc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 17 Oct 2006 21:42:56 -0500 (CDT)
+	Wed, 18 Oct 2006 03:27:48 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,41 +30,62 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Guys:
+--===============1894644539==
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_61205_6067663.1161167267501"
+
+------=_Part_61205_6067663.1161167267501
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,
+I m a realtive newcomer to linux and device drivers in particular.
+I have doubts regrading how to enable double buffering in the fb driver for
+amba-clcd.
+I m interested in knowing how to enable double bufefring, where two buffers
+are allocated and swapped during vertical blanking period (this is how i
+understood it).
+As I understand it, the dbe extension of XFree86 X server provides software
+double buffering, where each window has two buffers, a front and back..
+If you can point me to any documentation on this, it would be a great help..
+
+Thanks in adavnce,
+Ramya.
+
+------=_Part_61205_6067663.1161167267501
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br>I m a realtive newcomer to linux and device drivers in particular.<br>I have doubts regrading how to enable double buffering in the fb driver for amba-clcd.<br>I m interested in knowing how to enable double bufefring, where two buffers are allocated and swapped during vertical blanking period (this is how i understood it).
+<br>As I understand it, the dbe extension of XFree86 X server provides
+software double buffering, where each window has two buffers, a front
+and back..<br>If you can point me to any documentation on this, it would be a great help..<br><br>Thanks in adavnce,<br>Ramya.<br>
+
+------=_Part_61205_6067663.1161167267501--
 
 
-Bear with me, this one is a bit tricky to describe...  :)
-
-I'm testing a 2.6.12 kernel and a 2.6.18.1 kernel, and a few in between, 
-and they all do it.  All on ARM targets: PXA255 with onboard LCD 
-framebuffer, and AT91RM9200 with an S1D13xxx framebuffer.  Duplicated 
-with Qt 4.x and SDL 1.2-debian.
-
-The first time I start up a framebuffer-based application, say Qt or 
-Antigrain/SDL, things appear to go fine.  But if I abort said program 
-with a CTRL-C and restart it, then the application appears to start up 
-fine but there's no screen output.  I don't see any output until I do a 
-CTRL-Z and then restore the program to the foreground with "fg".  Then 
-the screen clears and things start drawing as usual.  The screen also 
-draws if I do a CTRL-C instead of -Z, but then the program aborts as you 
-would expect.
-
-If I'm running the program under strace then the screen never recovers 
-whether I do a CTRL-Z or not.  I see the code hanging in an 
-ioctl(KGDKBENT) on /dev/tty8.
-
-Honestly, I'm totally stumped.  Anyone have any suggestions?
-
-
-b.g.
-
--- 
-Bill Gatliff
-bgat@billgatliff.com
-
+--===============1894644539==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+--===============1894644539==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1894644539==--

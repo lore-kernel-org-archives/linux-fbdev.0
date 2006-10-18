@@ -1,40 +1,72 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.19-rc2: known unfixed regressions (v2)
-Date: Tue, 17 Oct 2006 18:29:05 +0200
-Message-ID: <20061017162905.GD3502@stusta.de>
-References: <Pine.LNX.4.64.0610130941550.3952@g5.osdl.org> <20061017155934.GC3502@stusta.de> <20061017162323.GA6467@aepfle.de>
+From: Bill Gatliff <bgat@billgatliff.com>
+Subject: Framebuffer "hangs" at startup
+Date: Tue, 17 Oct 2006 21:43:49 -0500
+Message-ID: <453594E5.4060606@billgatliff.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751305AbWJQQ3L@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20061017162323.GA6467@aepfle.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Olaf Hering <olaf@aepfle.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Ga1OX-0005Hi-3N for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 17 Oct 2006 19:43:01 -0700
+Received: from smtp2.mtco.com ([207.179.226.205])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Ga1OV-0000k8-OD
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 17 Oct 2006 19:43:01 -0700
+Received: from [192.168.2.10] (ghillsrb1-pool1-32.mtco.com [207.179.227.32])
+	by smtp2.mtco.com (Spam Firewall) with ESMTP id A734A12393B
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 17 Oct 2006 21:42:56 -0500 (CDT)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Oct 17, 2006 at 06:23:23PM +0200, Olaf Hering wrote:
-> On Tue, Oct 17, Adrian Bunk wrote:
-> 
-> > Subject    : monitor not active after boot
-> > References : http://lkml.org/lkml/2006/10/5/338
-> > Submitter  : Olaf Hering <olaf@aepfle.de>
-> > Caused-By  : Antonino Daplas <adaplas@pol.net>
-> >              commit 346bc21026e7a92e1d7a4a1b3792c5e8b686133d
-> > Status     : unknown
-> 
-> The nvidiafb change was removed again. I will see if I can figure out
-> why the EDID is lost.
+Guys:
 
-Thanks for the information, I missed this patch.
 
-cu
-Adrian
+Bear with me, this one is a bit tricky to describe...  :)
+
+I'm testing a 2.6.12 kernel and a 2.6.18.1 kernel, and a few in between, 
+and they all do it.  All on ARM targets: PXA255 with onboard LCD 
+framebuffer, and AT91RM9200 with an S1D13xxx framebuffer.  Duplicated 
+with Qt 4.x and SDL 1.2-debian.
+
+The first time I start up a framebuffer-based application, say Qt or 
+Antigrain/SDL, things appear to go fine.  But if I abort said program 
+with a CTRL-C and restart it, then the application appears to start up 
+fine but there's no screen output.  I don't see any output until I do a 
+CTRL-Z and then restore the program to the foreground with "fg".  Then 
+the screen clears and things start drawing as usual.  The screen also 
+draws if I do a CTRL-C instead of -Z, but then the program aborts as you 
+would expect.
+
+If I'm running the program under strace then the screen never recovers 
+whether I do a CTRL-Z or not.  I see the code hanging in an 
+ioctl(KGDKBENT) on /dev/tty8.
+
+Honestly, I'm totally stumped.  Anyone have any suggestions?
+
+
+b.g.
 
 -- 
+Bill Gatliff
+bgat@billgatliff.com
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

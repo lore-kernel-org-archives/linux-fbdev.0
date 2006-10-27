@@ -1,25 +1,28 @@
-From: "Robert Bragg" <robert@sixbynine.org>
-Subject: How can I hide flip latency?
-Date: Wed, 25 Oct 2006 17:37:39 +0100
-Message-ID: <e04d66f60610250937m1936b942o6a8716cd79551916@mail.gmail.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: fbdev development status?
+Date: Sat, 28 Oct 2006 00:24:44 +0100 (BST)
+Message-ID: <Pine.LNX.4.64.0610271947270.9615@pentafluge.infradead.org>
+References: <20061001162829.GE452@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-1831524198-570734909-1161991484=:9615"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GcllG-0005gE-Ba for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Oct 2006 09:37:50 -0700
-Received: from nz-out-0102.google.com ([64.233.162.196])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GcllC-00059Y-0P
+	id 1Gdb4H-000227-AK for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 27 Oct 2006 16:24:53 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Gdb4G-00008U-K7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Oct 2006 09:37:50 -0700
-Received: by nz-out-0102.google.com with SMTP id 9so188329nzo
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Oct 2006 09:37:40 -0700 (PDT)
-Content-Disposition: inline
+	Fri, 27 Oct 2006 16:24:53 -0700
+Received: from localhost ([127.0.0.1])
+	by pentafluge.infradead.org with esmtps (Exim 4.63 #1 (Red Hat Linux))
+	id 1Gdb48-0006HT-Ul for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 28 Oct 2006 00:24:45 +0100
+In-Reply-To: <20061001162829.GE452@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,62 +35,53 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I'm trying to find a way to support double/triple buffering using
-fbdev such that when an application finishes rendering a frame it
-doesn't need to immediately block and wait for a flip to really
-happen, and can defer blocking until the last moment - which is the
-point that you want to start rendering to a buffer that _might_ still
-be visible.
-
-Put another way; I want to hide vsync flip/pan latency by letting the
-app do other things.
-
-So for a double buffering app that is doing:
-
-* process frame 1
-* draw frame 1
-* flip from 2->1
-* process frame 2
-* draw frame 2
-* flip from 1->2
-* process frame 1
-* draw frame 1
-* flip from 2->1
-* etc
-
-The application above should be able to e.g execute "process frame 2"
-before it really needs to block for "flip from 2->1" to actually
-complete on the hardware.
-
-So in pseudo code I was imagining an API something like:
+---1831524198-570734909-1161991484=:9615
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
 
-/* request pan/flip - getting back a token/handle
- * for this request
- */
-ioctl(fb0, FBIO_FLIP_DISPLAY, &details, &token);
+Since the beginning of this project there has been a rotation of=20
+maintainers. Unfortunely this project is not supported ($) by anyone
+so it is entirely voluntery. Our jobs often go over the normal hours of=20
+work to complete a project so our free time is taken away. That has been=20
+the case for me for the last several years. I have just left my job doing=
+=20
+middleware to go back to kernel development. So in the next few weeks I=20
+will be coming back to working on the fbdev layer. Right now Geert seems=20
+to be picking up the work. Thank you.
 
-/* prepare the next frame */
-process_frame();
+On Sun, 1 Oct 2006, Ville Syrj=E4l=E4 wrote:
 
-/* make sure our previous flip request has finished */
-ioctl(fb0, FBIO_FLIP_BLOCK, &token);
-
-render_frame();
-
-
-Can someone recommend a preferred way for me to achieve this using the
-current interfaces or suggest another way to extend the interface to
-allow this.
-
-kind regards,
---
-Robert
+> What's going on with fbdev development these days? My latest atyfb
+> patches received an ACK from Alex but that was it. They haven't
+> been applied to any tree.
+>
+> I don't think I've seen any messages from Tony in month or so...
+>
+>
+---1831524198-570734909-1161991484=:9615
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+---1831524198-570734909-1161991484=:9615
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+---1831524198-570734909-1161991484=:9615--

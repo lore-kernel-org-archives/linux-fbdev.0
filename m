@@ -1,23 +1,33 @@
-From: akpm@osdl.org
-Subject: [patch 14/25] mbxfb: add more registers to
-	debugfs
-Date: Wed, 01 Nov 2006 21:50:26 -0800
-Message-ID: <200611020550.kA25oRtv002330@shell0.pdx.osdl.net>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: fbdev maintenance
+Date: Wed, 1 Nov 2006 21:52:09 -0800
+Message-ID: <20061101215209.2e1e18d1.akpm@osdl.org>
+References: <20061101214953.48dc7e17.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GfVUX-0007gl-Sg for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Nov 2006 21:51:54 -0800
+	id 1GfVUp-0007mW-UL for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 01 Nov 2006 21:52:11 -0800
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GfVUX-0000Ky-9s
+	(Exim 4.44) id 1GfVUo-0007pq-L2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Nov 2006 21:51:53 -0800
+	Wed, 01 Nov 2006 21:52:11 -0800
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id kA25q9Po004690
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 1 Nov 2006 21:52:09 -0800
+Received: from box (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id kA25q9xI002383
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 1 Nov 2006 21:52:09 -0800
+In-Reply-To: <20061101214953.48dc7e17.akpm@osdl.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,279 +39,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, adaplas@pol.net, raph@8d.com
 
-From: Raphael Assenat <raph@8d.com>
+On Wed, 1 Nov 2006 21:49:53 -0800
+Andrew Morton <akpm@osdl.org> wrote:
 
-This patch fixes debugfs for mbxfb and adds some missing registers.
+> For the longer term, well, it would be good if someone else could step up
+> to take over Tony's role.  If nobody has the knowledge/time/inclination to
+> do that then can we please all spend more effort than we usually would in
+> reviewing and testing each other's work?
 
-The way registers were read was out of sync with the rest of the driver (direct
-access instead of using readl())
-
-sdram controller registers are now accessible in the sdram/ subdirectory and
-some other registers are grouped in the misc/ subdirectory.
-
-Signed-off-by: Raphael Assenat <raph@8d.com>
-Cc: "Antonino A. Daplas" <adaplas@pol.net>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
-
- drivers/video/mbx/mbxdebugfs.c |  188 ++++++++++++++++++++-----------
- 1 file changed, 122 insertions(+), 66 deletions(-)
-
-diff -puN drivers/video/mbx/mbxdebugfs.c~mbxfb-add-more-registers-to-debugfs drivers/video/mbx/mbxdebugfs.c
---- a/drivers/video/mbx/mbxdebugfs.c~mbxfb-add-more-registers-to-debugfs
-+++ a/drivers/video/mbx/mbxdebugfs.c
-@@ -10,6 +10,8 @@ struct mbxfb_debugfs_data {
- 	struct dentry *clock;
- 	struct dentry *display;
- 	struct dentry *gsctl;
-+	struct dentry *sdram;
-+	struct dentry *misc;
- };
- 
- static int open_file_generic(struct inode *inode, struct file *file)
-@@ -29,11 +31,11 @@ static ssize_t sysconf_read_file(struct 
- {
- 	char * s = big_buffer;
- 
--	s += sprintf(s, "SYSCFG = %08lx\n", SYSCFG);
--	s += sprintf(s, "PFBASE = %08lx\n", PFBASE);
--	s += sprintf(s, "PFCEIL = %08lx\n", PFCEIL);
--	s += sprintf(s, "POLLFLAG = %08lx\n", POLLFLAG);
--	s += sprintf(s, "SYSRST = %08lx\n", SYSRST);
-+	s += sprintf(s, "SYSCFG = %08x\n", readl(SYSCFG));
-+	s += sprintf(s, "PFBASE = %08x\n", readl(PFBASE));
-+	s += sprintf(s, "PFCEIL = %08x\n", readl(PFCEIL));
-+	s += sprintf(s, "POLLFLAG = %08x\n", readl(POLLFLAG));
-+	s += sprintf(s, "SYSRST = %08x\n", readl(SYSRST));
- 
- 	return  simple_read_from_buffer(userbuf, count, ppos,
- 					big_buffer, s-big_buffer);
-@@ -45,24 +47,24 @@ static ssize_t gsctl_read_file(struct fi
- {
- 	char * s = big_buffer;
- 
--	s += sprintf(s, "GSCTRL = %08lx\n", GSCTRL);
--	s += sprintf(s, "VSCTRL = %08lx\n", VSCTRL);
--	s += sprintf(s, "GBBASE = %08lx\n", GBBASE);
--	s += sprintf(s, "VBBASE = %08lx\n", VBBASE);
--	s += sprintf(s, "GDRCTRL = %08lx\n", GDRCTRL);
--	s += sprintf(s, "VCMSK = %08lx\n", VCMSK);
--	s += sprintf(s, "GSCADR = %08lx\n", GSCADR);
--	s += sprintf(s, "VSCADR = %08lx\n", VSCADR);
--	s += sprintf(s, "VUBASE = %08lx\n", VUBASE);
--	s += sprintf(s, "VVBASE = %08lx\n", VVBASE);
--	s += sprintf(s, "GSADR = %08lx\n", GSADR);
--	s += sprintf(s, "VSADR = %08lx\n", VSADR);
--	s += sprintf(s, "HCCTRL = %08lx\n", HCCTRL);
--	s += sprintf(s, "HCSIZE = %08lx\n", HCSIZE);
--	s += sprintf(s, "HCPOS = %08lx\n", HCPOS);
--	s += sprintf(s, "HCBADR = %08lx\n", HCBADR);
--	s += sprintf(s, "HCCKMSK = %08lx\n", HCCKMSK);
--	s += sprintf(s, "GPLUT = %08lx\n", GPLUT);
-+	s += sprintf(s, "GSCTRL = %08x\n", readl(GSCTRL));
-+	s += sprintf(s, "VSCTRL = %08x\n", readl(VSCTRL));
-+	s += sprintf(s, "GBBASE = %08x\n", readl(GBBASE));
-+	s += sprintf(s, "VBBASE = %08x\n", readl(VBBASE));
-+	s += sprintf(s, "GDRCTRL = %08x\n", readl(GDRCTRL));
-+	s += sprintf(s, "VCMSK = %08x\n", readl(VCMSK));
-+	s += sprintf(s, "GSCADR = %08x\n", readl(GSCADR));
-+	s += sprintf(s, "VSCADR = %08x\n", readl(VSCADR));
-+	s += sprintf(s, "VUBASE = %08x\n", readl(VUBASE));
-+	s += sprintf(s, "VVBASE = %08x\n", readl(VVBASE));
-+	s += sprintf(s, "GSADR = %08x\n", readl(GSADR));
-+	s += sprintf(s, "VSADR = %08x\n", readl(VSADR));
-+	s += sprintf(s, "HCCTRL = %08x\n", readl(HCCTRL));
-+	s += sprintf(s, "HCSIZE = %08x\n", readl(HCSIZE));
-+	s += sprintf(s, "HCPOS = %08x\n", readl(HCPOS));
-+	s += sprintf(s, "HCBADR = %08x\n", readl(HCBADR));
-+	s += sprintf(s, "HCCKMSK = %08x\n", readl(HCCKMSK));
-+	s += sprintf(s, "GPLUT = %08x\n", readl(GPLUT));
- 
- 	return  simple_read_from_buffer(userbuf, count, ppos,
- 					big_buffer, s-big_buffer);
-@@ -73,36 +75,36 @@ static ssize_t display_read_file(struct 
- {
- 	char * s = big_buffer;
- 
--	s += sprintf(s, "DSCTRL = %08lx\n", DSCTRL);
--	s += sprintf(s, "DHT01 = %08lx\n", DHT01);
--	s += sprintf(s, "DHT02 = %08lx\n", DHT02);
--	s += sprintf(s, "DHT03 = %08lx\n", DHT03);
--	s += sprintf(s, "DVT01 = %08lx\n", DVT01);
--	s += sprintf(s, "DVT02 = %08lx\n", DVT02);
--	s += sprintf(s, "DVT03 = %08lx\n", DVT03);
--	s += sprintf(s, "DBCOL = %08lx\n", DBCOL);
--	s += sprintf(s, "BGCOLOR = %08lx\n", BGCOLOR);
--	s += sprintf(s, "DINTRS = %08lx\n", DINTRS);
--	s += sprintf(s, "DINTRE = %08lx\n", DINTRE);
--	s += sprintf(s, "DINTRCNT = %08lx\n", DINTRCNT);
--	s += sprintf(s, "DSIG = %08lx\n", DSIG);
--	s += sprintf(s, "DMCTRL = %08lx\n", DMCTRL);
--	s += sprintf(s, "CLIPCTRL = %08lx\n", CLIPCTRL);
--	s += sprintf(s, "SPOCTRL = %08lx\n", SPOCTRL);
--	s += sprintf(s, "SVCTRL = %08lx\n", SVCTRL);
--	s += sprintf(s, "DLSTS = %08lx\n", DLSTS);
--	s += sprintf(s, "DLLCTRL = %08lx\n", DLLCTRL);
--	s += sprintf(s, "DVLNUM = %08lx\n", DVLNUM);
--	s += sprintf(s, "DUCTRL = %08lx\n", DUCTRL);
--	s += sprintf(s, "DVECTRL = %08lx\n", DVECTRL);
--	s += sprintf(s, "DHDET = %08lx\n", DHDET);
--	s += sprintf(s, "DVDET = %08lx\n", DVDET);
--	s += sprintf(s, "DODMSK = %08lx\n", DODMSK);
--	s += sprintf(s, "CSC01 = %08lx\n", CSC01);
--	s += sprintf(s, "CSC02 = %08lx\n", CSC02);
--	s += sprintf(s, "CSC03 = %08lx\n", CSC03);
--	s += sprintf(s, "CSC04 = %08lx\n", CSC04);
--	s += sprintf(s, "CSC05 = %08lx\n", CSC05);
-+	s += sprintf(s, "DSCTRL = %08x\n", readl(DSCTRL));
-+	s += sprintf(s, "DHT01 = %08x\n", readl(DHT01));
-+	s += sprintf(s, "DHT02 = %08x\n", readl(DHT02));
-+	s += sprintf(s, "DHT03 = %08x\n", readl(DHT03));
-+	s += sprintf(s, "DVT01 = %08x\n", readl(DVT01));
-+	s += sprintf(s, "DVT02 = %08x\n", readl(DVT02));
-+	s += sprintf(s, "DVT03 = %08x\n", readl(DVT03));
-+	s += sprintf(s, "DBCOL = %08x\n", readl(DBCOL));
-+	s += sprintf(s, "BGCOLOR = %08x\n", readl(BGCOLOR));
-+	s += sprintf(s, "DINTRS = %08x\n", readl(DINTRS));
-+	s += sprintf(s, "DINTRE = %08x\n", readl(DINTRE));
-+	s += sprintf(s, "DINTRCNT = %08x\n", readl(DINTRCNT));
-+	s += sprintf(s, "DSIG = %08x\n", readl(DSIG));
-+	s += sprintf(s, "DMCTRL = %08x\n", readl(DMCTRL));
-+	s += sprintf(s, "CLIPCTRL = %08x\n", readl(CLIPCTRL));
-+	s += sprintf(s, "SPOCTRL = %08x\n", readl(SPOCTRL));
-+	s += sprintf(s, "SVCTRL = %08x\n", readl(SVCTRL));
-+	s += sprintf(s, "DLSTS = %08x\n", readl(DLSTS));
-+	s += sprintf(s, "DLLCTRL = %08x\n", readl(DLLCTRL));
-+	s += sprintf(s, "DVLNUM = %08x\n", readl(DVLNUM));
-+	s += sprintf(s, "DUCTRL = %08x\n", readl(DUCTRL));
-+	s += sprintf(s, "DVECTRL = %08x\n", readl(DVECTRL));
-+	s += sprintf(s, "DHDET = %08x\n", readl(DHDET));
-+	s += sprintf(s, "DVDET = %08x\n", readl(DVDET));
-+	s += sprintf(s, "DODMSK = %08x\n", readl(DODMSK));
-+	s += sprintf(s, "CSC01 = %08x\n", readl(CSC01));
-+	s += sprintf(s, "CSC02 = %08x\n", readl(CSC02));
-+	s += sprintf(s, "CSC03 = %08x\n", readl(CSC03));
-+	s += sprintf(s, "CSC04 = %08x\n", readl(CSC04));
-+	s += sprintf(s, "CSC05 = %08x\n", readl(CSC05));
- 
- 	return  simple_read_from_buffer(userbuf, count, ppos,
- 					big_buffer, s-big_buffer);
-@@ -113,24 +115,61 @@ static ssize_t clock_read_file(struct fi
- {
- 	char * s = big_buffer;
- 
--	s += sprintf(s, "SYSCLKSRC = %08lx\n", SYSCLKSRC);
--	s += sprintf(s, "PIXCLKSRC = %08lx\n", PIXCLKSRC);
--	s += sprintf(s, "CLKSLEEP = %08lx\n", CLKSLEEP);
--	s += sprintf(s, "COREPLL = %08lx\n", COREPLL);
--	s += sprintf(s, "DISPPLL = %08lx\n", DISPPLL);
--	s += sprintf(s, "PLLSTAT = %08lx\n", PLLSTAT);
--	s += sprintf(s, "VOVRCLK = %08lx\n", VOVRCLK);
--	s += sprintf(s, "PIXCLK = %08lx\n", PIXCLK);
--	s += sprintf(s, "MEMCLK = %08lx\n", MEMCLK);
--	s += sprintf(s, "M24CLK = %08lx\n", M24CLK);
--	s += sprintf(s, "MBXCLK = %08lx\n", MBXCLK);
--	s += sprintf(s, "SDCLK = %08lx\n", SDCLK);
--	s += sprintf(s, "PIXCLKDIV = %08lx\n", PIXCLKDIV);
-+	s += sprintf(s, "SYSCLKSRC = %08x\n", readl(SYSCLKSRC));
-+	s += sprintf(s, "PIXCLKSRC = %08x\n", readl(PIXCLKSRC));
-+	s += sprintf(s, "CLKSLEEP = %08x\n", readl(CLKSLEEP));
-+	s += sprintf(s, "COREPLL = %08x\n", readl(COREPLL));
-+	s += sprintf(s, "DISPPLL = %08x\n", readl(DISPPLL));
-+	s += sprintf(s, "PLLSTAT = %08x\n", readl(PLLSTAT));
-+	s += sprintf(s, "VOVRCLK = %08x\n", readl(VOVRCLK));
-+	s += sprintf(s, "PIXCLK = %08x\n", readl(PIXCLK));
-+	s += sprintf(s, "MEMCLK = %08x\n", readl(MEMCLK));
-+	s += sprintf(s, "M24CLK = %08x\n", readl(M24CLK));
-+	s += sprintf(s, "MBXCLK = %08x\n", readl(MBXCLK));
-+	s += sprintf(s, "SDCLK = %08x\n", readl(SDCLK));
-+	s += sprintf(s, "PIXCLKDIV = %08x\n", readl(PIXCLKDIV));
- 
- 	return  simple_read_from_buffer(userbuf, count, ppos,
- 					big_buffer, s-big_buffer);
- }
- 
-+static ssize_t sdram_read_file(struct file *file, char __user *userbuf,
-+			       size_t count, loff_t *ppos)
-+{
-+	char * s = big_buffer;
-+
-+	s += sprintf(s, "LMRST = %08x\n", readl(LMRST));
-+	s += sprintf(s, "LMCFG = %08x\n", readl(LMCFG));
-+	s += sprintf(s, "LMPWR = %08x\n", readl(LMPWR));
-+	s += sprintf(s, "LMPWRSTAT = %08x\n", readl(LMPWRSTAT));
-+	s += sprintf(s, "LMCEMR = %08x\n", readl(LMCEMR));
-+	s += sprintf(s, "LMTYPE = %08x\n", readl(LMTYPE));
-+	s += sprintf(s, "LMTIM = %08x\n", readl(LMTIM));
-+	s += sprintf(s, "LMREFRESH = %08x\n", readl(LMREFRESH));
-+	s += sprintf(s, "LMPROTMIN = %08x\n", readl(LMPROTMIN));
-+	s += sprintf(s, "LMPROTMAX = %08x\n", readl(LMPROTMAX));
-+	s += sprintf(s, "LMPROTCFG = %08x\n", readl(LMPROTCFG));
-+	s += sprintf(s, "LMPROTERR = %08x\n", readl(LMPROTERR));
-+
-+	return  simple_read_from_buffer(userbuf, count, ppos,
-+					big_buffer, s-big_buffer);
-+}
-+
-+static ssize_t misc_read_file(struct file *file, char __user *userbuf,
-+			       size_t count, loff_t *ppos)
-+{
-+	char * s = big_buffer;
-+
-+	s += sprintf(s, "LCD_CONFIG = %08x\n", readl(LCD_CONFIG));
-+	s += sprintf(s, "ODFBPWR = %08x\n", readl(ODFBPWR));
-+	s += sprintf(s, "ODFBSTAT = %08x\n", readl(ODFBSTAT));
-+	s += sprintf(s, "ID = %08x\n", readl(ID));
-+
-+	return  simple_read_from_buffer(userbuf, count, ppos,
-+					big_buffer, s-big_buffer);
-+}
-+
-+
- static struct file_operations sysconf_fops = {
- 	.read = sysconf_read_file,
- 	.write = write_file_dummy,
-@@ -155,6 +194,17 @@ static struct file_operations gsctl_fops
- 	.open = open_file_generic,
- };
- 
-+static struct file_operations sdram_fops = {
-+	.read = sdram_read_file,
-+	.write = write_file_dummy,
-+	.open = open_file_generic,
-+};
-+
-+static struct file_operations misc_fops = {
-+	.read = misc_read_file,
-+	.write = write_file_dummy,
-+	.open = open_file_generic,
-+};
- 
- static void __devinit mbxfb_debugfs_init(struct fb_info *fbi)
- {
-@@ -173,6 +223,10 @@ static void __devinit mbxfb_debugfs_init
- 				      fbi, &display_fops);
- 	dbg->gsctl = debugfs_create_file("gsctl", 0444, dbg->dir,
- 				    fbi, &gsctl_fops);
-+	dbg->sdram = debugfs_create_file("sdram", 0444, dbg->dir,
-+					fbi, &sdram_fops);
-+	dbg->misc = debugfs_create_file("misc", 0444, dbg->dir,
-+					fbi, &misc_fops);
- }
- 
- static void __devexit mbxfb_debugfs_remove(struct fb_info *fbi)
-@@ -180,6 +234,8 @@ static void __devexit mbxfb_debugfs_remo
- 	struct mbxfb_info *mfbi = fbi->par;
- 	struct mbxfb_debugfs_data *dbg = mfbi->debugfs_data;
- 
-+	debugfs_remove(dbg->misc);
-+	debugfs_remove(dbg->sdram);
- 	debugfs_remove(dbg->gsctl);
- 	debugfs_remove(dbg->display);
- 	debugfs_remove(dbg->clock);
-_
+oh, and if you have a patch which is presently in -mm, or if there are
+patches in -mm which affect hardware which you own then please do test the
+-mm tree to make sure that we're not about to add bugs to the mainline
+kernel, thanks.
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

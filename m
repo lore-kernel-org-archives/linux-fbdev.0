@@ -1,8 +1,8 @@
 From: akpm@osdl.org
-Subject: [patch 09/25] annotate some variables in vesafb
-	driver as __read_mostly
-Date: Wed, 01 Nov 2006 21:50:23 -0800
-Message-ID: <200611020550.kA25oNaj002306@shell0.pdx.osdl.net>
+Subject: [patch 04/25] video: Get the default mode from
+	the right database
+Date: Wed, 01 Nov 2006 21:50:19 -0800
+Message-ID: <200611020550.kA25oKGS002291@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,11 +11,11 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GfVUQ-0007gK-7G for linux-fbdev-devel@lists.sourceforge.net;
+	id 1GfVUQ-0007gP-T8 for linux-fbdev-devel@lists.sourceforge.net;
 	Wed, 01 Nov 2006 21:51:46 -0800
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GfVUP-0007bd-VE
+	(Exim 4.44) id 1GfVUQ-0007bF-KO
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Wed, 01 Nov 2006 21:51:46 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -29,58 +29,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, deller@gmx.de
+Cc: akpm@osdl.org, jordan.crouse@amd.com, geert@linux-m68k.org, adaplas@pol.net
 
-From: Helge Deller <deller@gmx.de>
+From: Jordan Crouse <jordan.crouse@amd.com>
 
-- annotate some variables in vesafb driver as __read_mostly
+If no default mode is specified, it should be grabbed from the supplied
+database, not the default one.
 
-Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- drivers/video/vesafb.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/video/modedb.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff -puN drivers/video/vesafb.c~annotate-some-variables-in-vesafb drivers/video/vesafb.c
---- a/drivers/video/vesafb.c~annotate-some-variables-in-vesafb
-+++ a/drivers/video/vesafb.c
-@@ -47,17 +47,16 @@ static struct fb_fix_screeninfo vesafb_f
- 	.accel	= FB_ACCEL_NONE,
- };
+diff -puN drivers/video/modedb.c~video-get-the-default-mode-from-the-right-database drivers/video/modedb.c
+--- a/drivers/video/modedb.c~video-get-the-default-mode-from-the-right-database
++++ a/drivers/video/modedb.c
+@@ -505,8 +505,11 @@ int fb_find_mode(struct fb_var_screeninf
+ 	db = modedb;
+ 	dbsize = ARRAY_SIZE(modedb);
+     }
+-    if (!default_mode)
++    if (!default_mode && db != modedb)
++	default_mode = &db[0];
++    else
+ 	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
++
+     if (!default_bpp)
+ 	default_bpp = 8;
  
--static int             inverse   = 0;
--static int             mtrr      = 0; /* disable mtrr */
--static int	       vram_remap __initdata = 0; /* Set amount of memory to be used */
--static int	       vram_total __initdata = 0; /* Set total amount of memory */
--static int             pmi_setpal = 1;	/* pmi for palette changes ??? */
--static int             ypan       = 0;  /* 0..nothing, 1..ypan, 2..ywrap */
--static unsigned short  *pmi_base  = NULL;
--static void            (*pmi_start)(void);
--static void            (*pmi_pal)(void);
--static int             depth;
--static int             vga_compat;
-+static int   inverse    __read_mostly;
-+static int   mtrr       __read_mostly;		/* disable mtrr */
-+static int   vram_remap __initdata;		/* Set amount of memory to be used */
-+static int   vram_total __initdata;		/* Set total amount of memory */
-+static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
-+static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
-+static void  (*pmi_start)(void) __read_mostly;
-+static void  (*pmi_pal)  (void) __read_mostly;
-+static int   depth      __read_mostly;
-+static int   vga_compat __read_mostly;
- /* --------------------------------------------------------------------- */
- 
- static int vesafb_pan_display(struct fb_var_screeninfo *var,
-@@ -312,6 +311,7 @@ static int __init vesafb_probe(struct pl
- 		ypan = pmi_setpal = 0; /* not available or some DOS TSR ... */
- 
- 	if (ypan || pmi_setpal) {
-+		unsigned short *pmi_base;
- 		pmi_base  = (unsigned short*)phys_to_virt(((unsigned long)screen_info.vesapm_seg << 4) + screen_info.vesapm_off);
- 		pmi_start = (void*)((char*)pmi_base + pmi_base[1]);
- 		pmi_pal   = (void*)((char*)pmi_base + pmi_base[2]);
 _
 
 -------------------------------------------------------------------------

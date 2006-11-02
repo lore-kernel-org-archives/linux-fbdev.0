@@ -1,26 +1,25 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: fbdev development status?
-Date: Sat, 28 Oct 2006 11:57:32 +0300
-Message-ID: <20061028085732.GA16559@sci.fi>
-References: <20061001162829.GE452@sci.fi>
-	<Pine.LNX.4.64.0610271947270.9615@pentafluge.infradead.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Patch for nvidia divide by zero error for
+ 7600 pci-express card
+Date: Wed, 1 Nov 2006 21:17:31 -0800
+Message-ID: <20061101211731.9d5db6ca.akpm@osdl.org>
+References: <45313ECA.4070801@saville.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gdk0b-0000U5-RU for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Oct 2006 01:57:42 -0700
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gdk0a-00078L-8y
+	id 1GfUxS-0004iN-JI for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 01 Nov 2006 21:17:42 -0800
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1GfUxQ-0008Sc-Bl
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Oct 2006 01:57:41 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0610271947270.9615@pentafluge.infradead.org>
+	Wed, 01 Nov 2006 21:17:42 -0800
+In-Reply-To: <45313ECA.4070801@saville.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,44 +32,22 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, Oct 28, 2006 at 12:24:44AM +0100, James Simmons wrote:
-> =
+On Sat, 14 Oct 2006 12:47:22 -0700
+Wink Saville <wink@saville.com> wrote:
 
-> Since the beginning of this project there has been a rotation of =
+> The following patch resolves the divide by zero error I encountered on my system:
+> 
+> 	http://marc.10east.com/?l=linux-fbdev-devel&m=116058257024413&w=2
+> 
+> I accomplished this by merging what I thought was appropriate from:
+> 
+> 	http://webcvs.freedesktop.org/xorg/driver/xf86-video-nv/src/
 
-> maintainers. Unfortunely this project is not supported ($) by anyone
-> so it is entirely voluntery. Our jobs often go over the normal hours of =
-
-> work to complete a project so our free time is taken away.
-
-I understand completely.
-
-> That has been =
-
-> the case for me for the last several years. I have just left my job doing =
-
-> middleware to go back to kernel development. So in the next few weeks I =
-
-> will be coming back to working on the fbdev layer. Right now Geert seems =
-
-> to be picking up the work. Thank you.
-
-OK. I'm just wondering who to pester to get my pactches included.
-
-Does anyone know what happened to Tony? It looks like he simply =
-
-disappeared and I don't remember seeing any "I quit" notice...
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+I added this to -mm, minus the drivers/serial/8250.c change, which
+appears to have snuck in accidentally.
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easi=
-er
+Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D120709&bid=3D263057&dat=3D1=
-21642
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

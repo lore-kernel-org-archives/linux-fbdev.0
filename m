@@ -1,23 +1,22 @@
 From: akpm@osdl.org
-Subject: [patch 21/25] atyfb: Remove pointless
-	aty_init() argument
-Date: Wed, 01 Nov 2006 21:50:31 -0800
-Message-ID: <200611020550.kA25oWvA002351@shell0.pdx.osdl.net>
+Subject: [patch 11/25] au11oofb: fix to remove flickering
+Date: Wed, 01 Nov 2006 21:50:24 -0800
+Message-ID: <200611020550.kA25oO72002321@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GfVUO-0007g5-UD for linux-fbdev-devel@lists.sourceforge.net;
+	id 1GfVUM-0007g4-RT for linux-fbdev-devel@lists.sourceforge.net;
 	Wed, 01 Nov 2006 21:51:44 -0800
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GfVUN-0000Hf-Jd
+	(Exim 4.44) id 1GfVUM-0007am-Il
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Nov 2006 21:51:43 -0800
+	Wed, 01 Nov 2006 21:51:42 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,69 +28,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, adaplas@pol.net, syrjala@sci.fi
+Cc: akpm@osdl.org, adaplas@pol.net, freddy@dusktilldawn.nl
 
-From: Ville Syrjala <syrjala@sci.fi>
+From: Freddy Spierenburg <freddy@dusktilldawn.nl>
 
-The 'name' argument of aty_init() is pointless because the bus type can be
-queried from the hardware.
+Currently a lot of flickering is seen on the VGA and LCD port when one
+starts a DBAu1100 board, with 'CONFIG_PRINTK=3Dy'.
 
-Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+This patch removes the flickering and as a result all kernel messages come
+by in a nice steady fashion.
+
+Signed-off-by: Freddy Spierenburg <freddy@dusktilldawn.nl>
 Cc: "Antonino A. Daplas" <adaplas@pol.net>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- drivers/video/aty/atyfb_base.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/video/au1100fb.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -puN drivers/video/aty/atyfb_base.c~atyfb-remove-pointless-aty_init drivers/video/aty/atyfb_base.c
---- a/drivers/video/aty/atyfb_base.c~atyfb-remove-pointless-aty_init
-+++ a/drivers/video/aty/atyfb_base.c
-@@ -249,7 +249,7 @@ static int atyfb_sync(struct fb_info *in
-      *  Internal routines
-      */
- 
--static int aty_init(struct fb_info *info, const char *name);
-+static int aty_init(struct fb_info *info);
- #ifdef CONFIG_ATARI
- static int store_video_par(char *videopar, unsigned char m64_num);
- #endif
-@@ -2344,7 +2344,7 @@ static int __devinit atyfb_get_timings_f
- }
- #endif /* defined(__i386__) && defined(CONFIG_FB_ATY_GENERIC_LCD) */
- 
--static int __devinit aty_init(struct fb_info *info, const char *name)
-+static int __devinit aty_init(struct fb_info *info)
- {
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 	const char *ramname = NULL, *xtal;
-@@ -2748,7 +2748,7 @@ static int __devinit aty_init(struct fb_
- 	fb_list = info;
- 
- 	PRINTKI("fb%d: %s frame buffer device on %s\n",
--	       info->node, info->fix.id, name);
-+		info->node, info->fix.id, par->bus_type == ISA ? "ISA" : "PCI");
- 	return 0;
- 
- aty_init_exit:
-@@ -3597,7 +3597,7 @@ static int __devinit atyfb_pci_probe(str
- 	pci_set_drvdata(pdev, info);
- 
- 	/* Init chip & register framebuffer */
--	if (aty_init(info, "PCI"))
-+	if (aty_init(info))
- 		goto err_release_io;
- 
- #ifdef __sparc__
-@@ -3697,7 +3697,7 @@ static int __devinit atyfb_atari_probe(v
- 			break;
- 		}
- 
--		if (aty_init(info, "ISA bus")) {
-+		if (aty_init(info)) {
- 			if (info->screen_base)
- 				iounmap(info->screen_base);
- 			if (par->ati_regbase)
+diff -puN drivers/video/au1100fb.h~au1100fb-fix-to-remove-flickering drivers/video/au1100fb.h
+--- a/drivers/video/au1100fb.h~au1100fb-fix-to-remove-flickering
++++ a/drivers/video/au1100fb.h
+@@ -274,7 +274,7 @@ static struct au1100fb_panel known_lcd_p
+ 		.bpp = 16,
+ 		.control_base =	0x0004886A |
+ 			LCD_CONTROL_DEFAULT_PO | LCD_CONTROL_DEFAULT_SBPPF |
+-			LCD_CONTROL_BPP_16,
++			LCD_CONTROL_BPP_16 | LCD_CONTROL_SBB_4,
+ 		.clkcontrol_base = 0x00020000,
+ 		.horztiming = 0x005aff1f,
+ 		.verttiming = 0x16000e57,
 _
 
 -------------------------------------------------------------------------

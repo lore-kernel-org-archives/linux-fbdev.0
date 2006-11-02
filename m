@@ -1,21 +1,20 @@
 From: akpm@osdl.org
-Subject: [patch 06/25] fbcmap.c: mark structs const or
-	__read_mostly
-Date: Wed, 01 Nov 2006 21:50:21 -0800
-Message-ID: <200611020550.kA25oLlL002297@shell0.pdx.osdl.net>
+Subject: [patch 16/25] mbxfb: Document the new ioctl
+Date: Wed, 01 Nov 2006 21:50:28 -0800
+Message-ID: <200611020550.kA25oSxX002336@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GfVUV-0007ga-UD for linux-fbdev-devel@lists.sourceforge.net;
+	id 1GfVUV-0007gb-VZ for linux-fbdev-devel@lists.sourceforge.net;
 	Wed, 01 Nov 2006 21:51:52 -0800
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GfVUV-0000I8-Hf
+	(Exim 4.44) id 1GfVUV-0007bp-HH
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Wed, 01 Nov 2006 21:51:51 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -29,187 +28,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, deller@gmx.de
+Cc: akpm@osdl.org, adaplas@pol.net, raph@8d.com
 
-From: Helge Deller <deller@gmx.de>
+From: Raphael Assenat <raph@8d.com>
 
-- Mark the default colormaps read-only, as nobody should be allowed to
-  modify them
+This patch adds a new ioctl range for the mbxfb driver.
 
-- Additionally mark color values as __read_mostly since they will only be
-  modified (very seldom) by fb_invert_cmaps()
-
-- Add named C99-initializers in fb_cmap structs and use the ARRAY_SIZE()
-  macro
-
-Signed-off-by: Helge Deller <deller@gmx.de>
+Signed-off-by: Raphael Assenat <raph@8d.com>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- drivers/video/fbcmap.c |   55 +++++++++++++++++++--------------------
- include/linux/fb.h     |    6 ++--
- 2 files changed, 31 insertions(+), 30 deletions(-)
+ Documentation/ioctl-number.txt |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff -puN drivers/video/fbcmap.c~fbcmapc-mark-structs-const-or drivers/video/fbcmap.c
---- a/drivers/video/fbcmap.c~fbcmapc-mark-structs-const-or
-+++ a/drivers/video/fbcmap.c
-@@ -18,63 +18,64 @@
- 
- #include <asm/uaccess.h>
- 
--static u16 red2[] = {
-+static u16 red2[] __read_mostly = {
-     0x0000, 0xaaaa
- };
--static u16 green2[] = {
-+static u16 green2[] __read_mostly = {
-     0x0000, 0xaaaa
- };
--static u16 blue2[] = {
-+static u16 blue2[] __read_mostly = {
-     0x0000, 0xaaaa
- };
- 
--static u16 red4[] = {
-+static u16 red4[] __read_mostly = {
-     0x0000, 0xaaaa, 0x5555, 0xffff
- };
--static u16 green4[] = {
-+static u16 green4[] __read_mostly = {
-     0x0000, 0xaaaa, 0x5555, 0xffff
- };
--static u16 blue4[] = {
-+static u16 blue4[] __read_mostly = {
-     0x0000, 0xaaaa, 0x5555, 0xffff
- };
- 
--static u16 red8[] = {
-+static u16 red8[] __read_mostly = {
-     0x0000, 0x0000, 0x0000, 0x0000, 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa
- };
--static u16 green8[] = {
-+static u16 green8[] __read_mostly = {
-     0x0000, 0x0000, 0xaaaa, 0xaaaa, 0x0000, 0x0000, 0x5555, 0xaaaa
- };
--static u16 blue8[] = {
-+static u16 blue8[] __read_mostly = {
-     0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa
- };
- 
--static u16 red16[] = {
-+static u16 red16[] __read_mostly = {
-     0x0000, 0x0000, 0x0000, 0x0000, 0xaaaa, 0xaaaa, 0xaaaa, 0xaaaa,
-     0x5555, 0x5555, 0x5555, 0x5555, 0xffff, 0xffff, 0xffff, 0xffff
- };
--static u16 green16[] = {
-+static u16 green16[] __read_mostly = {
-     0x0000, 0x0000, 0xaaaa, 0xaaaa, 0x0000, 0x0000, 0x5555, 0xaaaa,
-     0x5555, 0x5555, 0xffff, 0xffff, 0x5555, 0x5555, 0xffff, 0xffff
- };
--static u16 blue16[] = {
-+static u16 blue16[] __read_mostly = {
-     0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa, 0x0000, 0xaaaa,
-     0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff, 0x5555, 0xffff
- };
- 
--static struct fb_cmap default_2_colors = {
--    0, 2, red2, green2, blue2, NULL
-+static const struct fb_cmap default_2_colors = {
-+    .len=2, .red=red2, .green=green2, .blue=blue2
- };
--static struct fb_cmap default_8_colors = {
--    0, 8, red8, green8, blue8, NULL
-+static const struct fb_cmap default_8_colors = {
-+    .len=8, .red=red8, .green=green8, .blue=blue8
- };
--static struct fb_cmap default_4_colors = {
--    0, 4, red4, green4, blue4, NULL
-+static const struct fb_cmap default_4_colors = {
-+    .len=4, .red=red4, .green=green4, .blue=blue4
- };
--static struct fb_cmap default_16_colors = {
--    0, 16, red16, green16, blue16, NULL
-+static const struct fb_cmap default_16_colors = {
-+    .len=16, .red=red16, .green=green16, .blue=blue16
- };
- 
- 
-+
- /**
-  *	fb_alloc_cmap - allocate a colormap
-  *	@cmap: frame buffer colormap structure
-@@ -146,7 +147,7 @@ void fb_dealloc_cmap(struct fb_cmap *cma
-  *	Copy contents of colormap from @from to @to.
-  */
- 
--int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to)
-+int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to)
- {
- 	int tooff = 0, fromoff = 0;
- 	int size;
-@@ -170,7 +171,7 @@ int fb_copy_cmap(struct fb_cmap *from, s
- 	return 0;
- }
- 
--int fb_cmap_to_user(struct fb_cmap *from, struct fb_cmap_user *to)
-+int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to)
- {
- 	int tooff = 0, fromoff = 0;
- 	int size;
-@@ -282,7 +283,7 @@ int fb_set_user_cmap(struct fb_cmap_user
-  *
-  */
- 
--struct fb_cmap *fb_default_cmap(int len)
-+const struct fb_cmap *fb_default_cmap(int len)
- {
-     if (len <= 2)
- 	return &default_2_colors;
-@@ -305,22 +306,22 @@ void fb_invert_cmaps(void)
- {
-     u_int i;
- 
--    for (i = 0; i < 2; i++) {
-+    for (i = 0; i < ARRAY_SIZE(red2); i++) {
- 	red2[i] = ~red2[i];
- 	green2[i] = ~green2[i];
- 	blue2[i] = ~blue2[i];
-     }
--    for (i = 0; i < 4; i++) {
-+    for (i = 0; i < ARRAY_SIZE(red4); i++) {
- 	red4[i] = ~red4[i];
- 	green4[i] = ~green4[i];
- 	blue4[i] = ~blue4[i];
-     }
--    for (i = 0; i < 8; i++) {
-+    for (i = 0; i < ARRAY_SIZE(red8); i++) {
- 	red8[i] = ~red8[i];
- 	green8[i] = ~green8[i];
- 	blue8[i] = ~blue8[i];
-     }
--    for (i = 0; i < 16; i++) {
-+    for (i = 0; i < ARRAY_SIZE(red16); i++) {
- 	red16[i] = ~red16[i];
- 	green16[i] = ~green16[i];
- 	blue16[i] = ~blue16[i];
-diff -puN include/linux/fb.h~fbcmapc-mark-structs-const-or include/linux/fb.h
---- a/include/linux/fb.h~fbcmapc-mark-structs-const-or
-+++ a/include/linux/fb.h
-@@ -970,11 +970,11 @@ extern struct fb_videomode *fb_find_best
- /* drivers/video/fbcmap.c */
- extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
- extern void fb_dealloc_cmap(struct fb_cmap *cmap);
--extern int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to);
--extern int fb_cmap_to_user(struct fb_cmap *from, struct fb_cmap_user *to);
-+extern int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to);
-+extern int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to);
- extern int fb_set_cmap(struct fb_cmap *cmap, struct fb_info *fb_info);
- extern int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *fb_info);
--extern struct fb_cmap *fb_default_cmap(int len);
-+extern const struct fb_cmap *fb_default_cmap(int len);
- extern void fb_invert_cmaps(void);
- 
- struct fb_videomode {
+diff -puN Documentation/ioctl-number.txt~mbxfb-document-the-new-ioctl Documentation/ioctl-number.txt
+--- a/Documentation/ioctl-number.txt~mbxfb-document-the-new-ioctl
++++ a/Documentation/ioctl-number.txt
+@@ -191,3 +191,5 @@ Code	Seq#	Include File		Comments
+ 					<mailto:aherrman@de.ibm.com>
+ 0xF3	00-3F	video/sisfb.h		sisfb (in development)
+ 					<mailto:thomas@winischhofer.net>
++0xF4	00-1F	video/mbxfb.h		mbxfb
++					<mailto:raph@8d.com>
 _
 
 -------------------------------------------------------------------------

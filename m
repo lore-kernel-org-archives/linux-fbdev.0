@@ -1,57 +1,78 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [patch 17/25] atyfb: Remove FIXME
-Date: Thu, 2 Nov 2006 10:03:10 +0200
-Message-ID: <20061102080310.GA15108@sci.fi>
-References: <200611020550.kA25oTR1002339@shell0.pdx.osdl.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Subject: [PATCH] fbcon: Re-fix little-endian bogosity in slow_imageblit()
+Date: Fri, 03 Nov 2006 15:55:34 +0100
+Message-ID: <454B5866.6000207@innova-card.com>
+Reply-To: Franck <vagabon.xyz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GfXXk-0002do-GX for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 02 Nov 2006 00:03:20 -0800
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GfXXj-0004iK-17
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 02 Nov 2006 00:03:20 -0800
-Content-Disposition: inline
-In-Reply-To: <200611020550.kA25oTR1002339@shell0.pdx.osdl.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, adaplas@pol.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753255AbWKCOzD@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, adaplas@pol.net, gregkh@suse.de
 
-On Wed, Nov 01, 2006 at 09:50:29PM -0800, akpm@osdl.org wrote:
-> From: Ville Syrjala <syrjala@sci.fi>
-> =
+From: Franck Bui-Huu <fbuihuu@gmail.com>
 
-> atyfb has used the auxiliary register aperture for a long time.  Remove a
-> related FIXME which was accidentally left in.
+This bug has been introduced by commit:
 
-None of my atyfb patches are critical so they can wait for 2.6.20.
+	a536093a2f07007aa572e922752b7491b9ea8ff2
 
--- =
+This commit fixed the big-endian case but broke the little-endian one.
+This patch revert the previous change and swap the definition of
+FB_BIT_NR() macro between big and little endian. It should work for
+both endianess now.
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
+---
 
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easi=
-er
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D120709&bid=3D263057&dat=3D1=
-21642
+ This is the most obvious fix for me although it's a bit weird
+ that bit ordering depend on platform endianess. I don't know
+ fb code so I prefer submitting this trivial fix rather than
+ breaking every thing else ;)
+
+ drivers/video/cfbimgblt.c |    4 ++--
+ include/linux/fb.h        |    2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
+index 51d3538..8f47bf4 100644
+--- a/drivers/video/cfbimgblt.c
++++ b/drivers/video/cfbimgblt.c
+@@ -168,7 +168,7 @@ static inline void slow_imageblit(const
+ 
+ 		while (j--) {
+ 			l--;
+-			color = (*s & (1 << l)) ? fgcolor : bgcolor;
++			color = (*s & (1 << FB_BIT_NR(l))) ? fgcolor : bgcolor;
+ 			val |= FB_SHIFT_HIGH(color, shift);
+ 			
+ 			/* Did the bitshift spill bits to the next long? */
+@@ -258,7 +258,7 @@ static inline void fast_imageblit(const
+ 		s += spitch;
+ 	}
+ }	
+-	
++
+ void cfb_imageblit(struct fb_info *p, const struct fb_image *image)
+ {
+ 	u32 fgcolor, bgcolor, start_index, bitstart, pitch_index = 0;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 3e69241..6ca18b8 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -854,10 +854,12 @@ #define fb_memset memset
+ #endif
+ 
+ #if defined (__BIG_ENDIAN)
++#define FB_BIT_NR(b)              (b)
+ #define FB_LEFT_POS(bpp)          (32 - bpp)
+ #define FB_SHIFT_HIGH(val, bits)  ((val) >> (bits))
+ #define FB_SHIFT_LOW(val, bits)   ((val) << (bits))
+ #else
++#define FB_BIT_NR(b)              (7 - (b))
+ #define FB_LEFT_POS(bpp)          (0)
+ #define FB_SHIFT_HIGH(val, bits)  ((val) << (bits))
+ #define FB_SHIFT_LOW(val, bits)   ((val) >> (bits))
+-- 
+1.4.3.2

@@ -1,67 +1,41 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: radeonfb: Add ATOM BIOS parsing (rebased
- patch)
-Date: Mon, 6 Nov 2006 11:04:13 -0800
-Message-ID: <20061106110413.b77d318c.akpm@osdl.org>
-References: <20060905153713.GA22789@shaftnet.org>
-	<20061101213346.2d3bb82f.akpm@osdl.org>
-	<20061106141719.GA28143@shaftnet.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Andrew Wade" <andrew.j.wade@gmail.com>
+Subject: Re: 2.6.19-rc4-mm2
+Date: Mon, 6 Nov 2006 17:02:26 -0500
+Message-ID: <610823610611061402g1d7811abhbf2479fa63f2970d@mail.gmail.com>
+References: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A040@EXNA.corp.stratus.com>
+Reply-To: ajwade@alumni.uwaterloo.ca
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gh9lZ-0000UY-6D for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 06 Nov 2006 11:04:17 -0800
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1Gh9lX-00007F-OL
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 06 Nov 2006 11:04:17 -0800
-In-Reply-To: <20061106141719.GA28143@shaftnet.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Stuffed Crust <pizza@shaftnet.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753841AbWKFWCa@vger.kernel.org>
+In-Reply-To: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A040@EXNA.corp.stratus.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Richardson, Charlotte" <Charlotte.Richardson@stratus.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, Kimball Murray <kimball.murray@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 6 Nov 2006 09:17:19 -0500
-Stuffed Crust <pizza@shaftnet.org> wrote:
+On 11/6/06, Richardson, Charlotte <Charlotte.Richardson@stratus.com> wrote:
+> What's the device id of your VC1?
 
-> On Wed, Nov 01, 2006 at 09:33:46PM -0800, Andrew Morton wrote:
-> > > From: Stuffed Crust <pizza@shaftnet.org>
-> > > ...
-> > > Signed-Off-By:  Solomon Peachy <pizza@shaftnet.org>
-> > 
-> > Problem.  We've decided to not take contributions from
-> > anonymous/pseudonymous contributors, as it weakens the intent of the
-> > Developer's Certificate of Origin.  I don't think either of those are your
-> > real name ;)  Sorry.
-> 
-> The former is what I've used as a handle for um, eight years or so now,
-> but the latter is what it says on my passport.  Really.  
+I presume lscpi -n -v will tell you what you need to know. I don't know
+how to read the output myself:
 
-Oh, OK.  Sorry, I thought it was a pseudonym ;)
+0000:01:00.0 0300: 1002:5157
+        Subsystem: 1002:013a
+        Flags: bus master, stepping, 66MHz, medium devsel, latency 64, IRQ 16
+        Memory at d8000000 (32-bit, prefetchable) [size=128M]
+        I/O ports at d800 [size=256]
+        Memory at d7000000 (32-bit, non-prefetchable) [size=64K]
+        Expansion ROM at d7fe0000 [disabled] [size=128K]
+        Capabilities: [58] AGP version 2.0
+        Capabilities: [50] Power Management version 2
 
-> The current version of the patch (v6a) is linked to kernel bugzilla
-> #6215, but it doesn't have the "correct" format either, but that's a 
-> trivial thing to fix.
-> 
+My card is a dual-head card, but I'm only using one head. On that head, if
+I switch to virtual console 1, everything is fine, but if I switch to any
+other vitual console, the display is "garbled": each row of pixels is offset
+from the row before, producing interlaced "ghost" images.
 
-yup, please prepare a new patch, send it over.
+I hope this helps; feel free to ask further questions.
 
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+-ajw

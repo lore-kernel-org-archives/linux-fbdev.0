@@ -1,130 +1,95 @@
-From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
-Subject: Re: [PATCH] fbcon: Re-fix little-endian bogosity in slow_imageblit()
-Date: Sat, 4 Nov 2006 10:22:54 +0100
-Message-ID: <cda58cb80611040122w6cf42014vf17f48edda97e797@mail.gmail.com>
-References: <454B5866.6000207@innova-card.com>
-	 <20061103105857.874f566c.akpm@osdl.org>
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Subject: [PATCH] fbcon: ReRe-fix little-endian bogosity in slow_imageblit()
+Date: Mon, 06 Nov 2006 10:28:16 +0100
+Message-ID: <454F0030.80101@innova-card.com>
+References: <454B5866.6000207@innova-card.com>	 <20061103105857.874f566c.akpm@osdl.org> <cda58cb80611040122w6cf42014vf17f48edda97e797@mail.gmail.com>
+Reply-To: Franck <vagabon.xyz@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964973AbWKDJW5@vger.kernel.org>
-In-Reply-To: <20061103105857.874f566c.akpm@osdl.org>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1423183AbWKFJ1n@vger.kernel.org>
+In-Reply-To: <cda58cb80611040122w6cf42014vf17f48edda97e797@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, gregkh@suse.de
 
-On 11/3/06, Andrew Morton <akpm@osdl.org> wrote:
-> On Fri, 03 Nov 2006 15:55:34 +0100
-> Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
->
-> > From: Franck Bui-Huu <fbuihuu@gmail.com>
-> >
-> > This bug has been introduced by commit:
-> >
-> >       a536093a2f07007aa572e922752b7491b9ea8ff2
-> >
-> > This commit fixed the big-endian case but broke the little-endian one.
-> > This patch revert the previous change and swap the definition of
-> > FB_BIT_NR() macro between big and little endian. It should work for
-> > both endianess now.
-> >
->
-> I get worried when I see the word "should" in a changelog.
->
+From: Franck Bui-Huu <fbuihuu@gmail.com>
 
-The change log is incorrect, sorry. I should have said:
+It seems that this piece of code has already been fixed twice...
 
-"""
-Commit a536093a2f07007aa572e922752b7491b9ea8ff2 fixed only the big
-endian case but left the little endian one broken.
+The first fix has been made by the following commit:
 
-To fix this for both endianess, this patch reverts the previous change
-and swaps the little-endian and bit-endian implementations of
-FB_BIT_NR().
-"""
+	81d3e147ec9ffc6ef04b5f05afa4bef22487b32b
 
-I only tested this patch on a little endian machine only. But the code
-is the same for big endian platform, so I presume that it's still
-working. What make me doubt is the change log of the initial fix:
+by introducing FB_BIT_NR() macro to fix a 'potential' endianess
+bug. It appears that change was broken for big endian platforms,
+but I suspect it was for little-endian ones too.
 
-"""
-This patch may deserve to go to the stable tree.  The code has already been
-well tested in little-endian machines.  It's only in big-endian where there is
-uncertainty and Herbert confirmed that this is the correct way to go.
+Then a second fix has been made to fix the previous change for
+big-endian platform, see commit:
 
-It should not introduce regressions.
-"""
+	a536093a2f07007aa572e922752b7491b9ea8ff2
 
-It said that the code was well tested on little endian... On the other
-hand if you look at the change log of commit
-81d3e147ec9ffc6ef04b5f05afa4bef22487b32b, it said
+This commit actually reverted the first fix and thus makes the
+big-endian case works but leaves the little-endian case broken.
+Therefore it seems that the very first state was broken only
+on little-endian platform...
 
-"""
-Fix possible endian bug(?) when bit testing in slow_imageblit().  This
-function is rarely called (only if (width * bpp) % 32 != 0) thus the bug is
-not triggered.
-"""
+This patch is the third and hopefully the last attempt to fix
+this bug correctly. It restores the first fix _and_ swaps the
+little-endian and bit-endian implementations of FB_BIT_NR().
 
-Notice how it sounds unsure. Actually I don't know if it has been tested at all.
+Now, it should work for both endianness but has been tested on
+little-endian machine only.
 
-> > ---
-> >
-> >  This is the most obvious fix for me although it's a bit weird
-> >  that bit ordering depend on platform endianess. I don't know
-> >  fb code so I prefer submitting this trivial fix rather than
-> >  breaking every thing else ;)
-> >
-> >  drivers/video/cfbimgblt.c |    4 ++--
-> >  include/linux/fb.h        |    2 ++
-> >  2 files changed, 4 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
-> > index 51d3538..8f47bf4 100644
-> > --- a/drivers/video/cfbimgblt.c
-> > +++ b/drivers/video/cfbimgblt.c
-> > @@ -168,7 +168,7 @@ static inline void slow_imageblit(const
-> >
-> >               while (j--) {
-> >                       l--;
-> > -                     color = (*s & (1 << l)) ? fgcolor : bgcolor;
-> > +                     color = (*s & (1 << FB_BIT_NR(l))) ? fgcolor : bgcolor;
-> >                       val |= FB_SHIFT_HIGH(color, shift);
->
-> So that takes us back to the pre-March 31 code, which was allegedly broken
-> on big-endian.
->
+Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
+---
 
-yes exept definition of FB_BIT_NR() has changed as you noticed.
+ Same patch with change log updated.
 
->
-> > --- a/include/linux/fb.h
-> > +++ b/include/linux/fb.h
-> > @@ -854,10 +854,12 @@ #define fb_memset memset
-> >  #endif
-> >
-> >  #if defined (__BIG_ENDIAN)
-> > +#define FB_BIT_NR(b)              (b)
-> >  #define FB_LEFT_POS(bpp)          (32 - bpp)
-> >  #define FB_SHIFT_HIGH(val, bits)  ((val) >> (bits))
-> >  #define FB_SHIFT_LOW(val, bits)   ((val) << (bits))
-> >  #else
-> > +#define FB_BIT_NR(b)              (7 - (b))
-> >  #define FB_LEFT_POS(bpp)          (0)
-> >  #define FB_SHIFT_HIGH(val, bits)  ((val) << (bits))
-> >  #define FB_SHIFT_LOW(val, bits)   ((val) >> (bits))
->
-> And that swaps the little-endian and bit-endian implementations of
-> FB_BIT_NR().  So if it was previously broken on big-endian and was working
-> on little-endian then it's presumably now broken on little-endian and
-> working on big-endian.  Or something.
->
+ drivers/video/cfbimgblt.c |    4 ++--
+ include/linux/fb.h        |    2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Sorry my own fault, the change log of this patch is not correct. See
-above. Please tell me if you want me to resend this patch with the
-change log fixed.
-
-Thanks
+diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
+index 51d3538..8f47bf4 100644
+--- a/drivers/video/cfbimgblt.c
++++ b/drivers/video/cfbimgblt.c
+@@ -168,7 +168,7 @@ static inline void slow_imageblit(const
+ 
+ 		while (j--) {
+ 			l--;
+-			color = (*s & (1 << l)) ? fgcolor : bgcolor;
++			color = (*s & (1 << FB_BIT_NR(l))) ? fgcolor : bgcolor;
+ 			val |= FB_SHIFT_HIGH(color, shift);
+ 			
+ 			/* Did the bitshift spill bits to the next long? */
+@@ -258,7 +258,7 @@ static inline void fast_imageblit(const
+ 		s += spitch;
+ 	}
+ }	
+-	
++
+ void cfb_imageblit(struct fb_info *p, const struct fb_image *image)
+ {
+ 	u32 fgcolor, bgcolor, start_index, bitstart, pitch_index = 0;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 3e69241..6ca18b8 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -854,10 +854,12 @@ struct fb_info {
+ #endif
+ 
+ #if defined (__BIG_ENDIAN)
++#define FB_BIT_NR(b)              (b)
+ #define FB_LEFT_POS(bpp)          (32 - bpp)
+ #define FB_SHIFT_HIGH(val, bits)  ((val) >> (bits))
+ #define FB_SHIFT_LOW(val, bits)   ((val) << (bits))
+ #else
++#define FB_BIT_NR(b)              (7 - (b))
+ #define FB_LEFT_POS(bpp)          (0)
+ #define FB_SHIFT_HIGH(val, bits)  ((val) << (bits))
+ #define FB_SHIFT_LOW(val, bits)   ((val) >> (bits))
 -- 
-               Franck
+1.4.3.4

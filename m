@@ -1,156 +1,74 @@
-From: Stuffed Crust <pizza@shaftnet.org>
-Subject: Re: radeonfb: Add ATOM BIOS parsing (rebased
-	patch)
-Date: Mon, 6 Nov 2006 09:17:19 -0500
-Message-ID: <20061106141719.GA28143@shaftnet.org>
-References: <20060905153713.GA22789@shaftnet.org>
-	<20061101213346.2d3bb82f.akpm@osdl.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Richardson, Charlotte" <Charlotte.Richardson@stratus.com>
+Subject: RE: 2.6.19-rc4-mm2
+Date: Mon, 6 Nov 2006 13:27:12 -0500
+Message-ID: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A040@EXNA.corp.stratus.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1894826363=="
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gh6zs-0006Bw-Df for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 06 Nov 2006 08:06:52 -0800
-Received: from rrcs-24-73-230-86.se.biz.rr.com ([24.73.230.86]
-	helo=shaft.shaftnet.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gh6zm-0008Rd-UC
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 06 Nov 2006 08:06:52 -0800
-In-Reply-To: <20061101213346.2d3bb82f.akpm@osdl.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>
-
-
---===============1894826363==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
-Content-Disposition: inline
-
-
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Nov 01, 2006 at 09:33:46PM -0800, Andrew Morton wrote:
-> > From: Stuffed Crust <pizza@shaftnet.org>
-> > ...
-> > Signed-Off-By:  Solomon Peachy <pizza@shaftnet.org>
->=20
-> Problem.  We've decided to not take contributions from
-> anonymous/pseudonymous contributors, as it weakens the intent of the
-> Developer's Certificate of Origin.  I don't think either of those are your
-> real name ;)  Sorry.
-
-The former is what I've used as a handle for um, eight years or so now,
-but the latter is what it says on my passport.  Really. =20
-
-The first hundred links (of over 30K) that googling my name link back to
-me; I stopped counting after that.  These links go back as far as '98
-and include contributions I've made to half a dozen FOSS projects, my
-Advodato user page (with its trust metrics), DaveM telling me off a
-couple of times on lkml, my employer (AbsoluteValue Systems of
-linux-wlan[-ng] "fame"), and my alma matter (Georgia Tech).=20
-
-If you finger me I even have full contact information published,
-complete with the phone number of my employer (although Google will
-provide that too).
-
-I realize that none of this technically establishes *my* identity, but I
-think the only mutual aquaintance I've met in person is Jean Torrilhes,=20
-and he didn't check my ID either.  :)
-
-So.  Probably the most expedient manner of establishing I am who google
-and I say I am is by calling my employer at +1(321)259-0737, ask my boss
-(Mark Mathews) about my credentials, then you can then put me on the
-line to establish I know about this conversation.  Or I/we can call you.
-
-I could fax you a copy of my ID or something, but that would only tell=20
-you that I may have l33t photoshop skillz... :)  I'm also not in the=20
-local phone book (I ditched the land line two years ago) so you can't go=20
-that route.
-
-(Gee, remote identity verification is a difficult problem, isn't it?  :)
-
-> If you can sort that out then please ensure that future patches are
-> prepared in `patch -p1' form, as per
-
-I did it the way I did to avoid diffing two complete kernel trees (the=20
-editor was running on a much slower machine than the test boxes.. the=20
-extensive reboot-required nature of fbdev development is not condusive=20
-to editor state)
-
-The current version of the patch (v6a) is linked to kernel bugzilla
-#6215, but it doesn't have the "correct" format either, but that's a=20
-trivial thing to fix.
-
-Is there anything else you'd like me to do to this patch before you
-take it into -mm?  I can break it down a little bit, but unfortunately
-the bulk of it is fairly atomic (no pun intended) and nearly all of the
-changes would need to be applied at once, broken down or not.
-
-I also don't know if this patch will apply to (or work on) 2.6.19-rc,=20
-but that should be a straightforward merge.  I'm assuming you'd like me=20
-to sort that out too.
-
-Cheers,
-
- - Solomon (really)
---=20
-Solomon Peachy        		       pizza at shaftnet dot org	=20
-Melbourne, FL                          ^^ (mail/jabber/gtalk) ^^
-Quidquid latine dictum sit, altum viditur.          ICQ: 1318344
-
-
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
-
-iD8DBQFFT0PvPuLgii2759ARAhZRAJwJkqEmwDcBFE+xcIkiPCivbcHYpACcCKXu
-LeYKt8GUaq3bTbHdqyZP4c4=
-=PVw3
------END PGP SIGNATURE-----
-
---AhhlLboLdkugWU4S--
-
-
---===============1894826363==
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753779AbWKFS1g@vger.kernel.org>
+Content-class: urn:content-classes:message
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Andrew Morton <akpm@osdl.org>, andrew.j.wade@gmail.com
+Cc: linux-kernel@vger.kernel.org, Kimball Murray <kimball.murray@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---===============1894826363==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi, Andrew & Andrew -
 
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+Kimball said to work this through you; I modified this fix so that it
+only applies to RV100-based Radeons, since evidently some of them (like
+your RV200-based Radeon) really do NOT do 24bpp, as retro as that seems
+to me. I'm certain this is actually overly-restrictive, but the only
+Radeon chips I have here are ES1000s (RN50, device id 0x515E): I did
+drivers
+for three earlier Radeon chips at my previous job several years ago, all
+of which did 24bpp just fine, but I do not recall what their device ids
+were
+anymore. What's the device id of your VC1? What I'd ideally like to do
+is
+to allow 24bpp for all the Radeons for which it works and disallow it
+for
+all the ones where it doesn't, rather than disallow it for ALL of them,
+or
+only allow it for the ES1000 (RN50) that we happen to have in our
+hardware
+here. Your thoughts?
 
---===============1894826363==--
+/Charlotte
+
+> -----Original Message-----
+> From: Andrew Morton [mailto:akpm@osdl.org]
+> Sent: Friday, November 03, 2006 4:52 PM
+> To: andrew.j.wade@gmail.com
+> Cc: linux-kernel@vger.kernel.org; Richardson, Charlotte; Kimball
+Murray;
+> linux-fbdev-devel@lists.sourceforge.net
+> Subject: Re: 2.6.19-rc4-mm2
+> 
+> On Fri, 3 Nov 2006 16:42:33 -0500
+> Andrew James Wade <andrew.j.wade@gmail.com> wrote:
+> 
+> > On Thursday 02 November 2006 02:54, Andrew Morton wrote:
+> > > - Lots of fbdev updates.  We haven't heard from Tony in several
+> months, so I
+> > >   went on a linux-fbdev-devel fishing expedition.
+> >
+> > radeonfb-support-24bpp-32bpp-minus-alpha.patch broke my video: my
+> > screen ended up garbled. (vc1 was ok, strangely enough). Reverting
+> > fixed things.
+> >
+> > lspci -v:
+> >
+> > 0000:01:00.0 VGA compatible controller: ATI Technologies Inc Radeon
+> RV200 QW [Radeon 7500] (prog-if 00 [VGA])
+> >         Subsystem: ATI Technologies Inc Radeon 7500
+> >         Flags: bus master, stepping, 66MHz, medium devsel, latency
+64,
+> IRQ 16
+> >         Memory at d8000000 (32-bit, prefetchable) [size=128M]
+> >         I/O ports at d800 [size=256]
+> >         Memory at d7000000 (32-bit, non-prefetchable) [size=64K]
+> >         Expansion ROM at d7fe0000 [disabled] [size=128K]
+> >         Capabilities: <available only to root>
+> >
+> 
+> Great, thanks for working that out.  I'll drop the patch.

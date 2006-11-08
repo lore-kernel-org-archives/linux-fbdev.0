@@ -1,25 +1,23 @@
-From: Wink Saville <wink@saville.com>
-Subject: Re: [patch 01/25] Patch for nvidia divide by
- zero error for 7600 pci-express card
-Date: Tue, 07 Nov 2006 08:16:42 -0800
-Message-ID: <4550B16A.2010201@saville.com>
-References: <200611020550.kA25oHED002282@shell0.pdx.osdl.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: 2.6.19-rc4-mm2
+Date: Wed, 8 Nov 2006 03:01:34 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0611080259340.28657@pademelon.sonytel.be>
+References: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A051@EXNA.corp.stratus.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GhTd3-0007cz-TP for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Nov 2006 08:16:50 -0800
-Received: from [70.91.206.233] (helo=saville.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GhTd1-0001lU-8V
+	id 1GhclF-0001yS-4Q for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 07 Nov 2006 18:01:53 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GhclC-0000Sk-EM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Nov 2006 08:16:49 -0800
-In-Reply-To: <200611020550.kA25oHED002282@shell0.pdx.osdl.net>
+	Tue, 07 Nov 2006 18:01:53 -0800
+In-Reply-To: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A051@EXNA.corp.stratus.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,55 +28,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@osdl.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: ajwade@alumni.uwaterloo.ca, Andrew Morton <akpm@osdl.org>, Kimball Murray <kimball.murray@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-akpm@osdl.org wrote:
-> From: Wink Saville <wink@saville.com>
-> 
-> The following patch resolves the divide by zero error I encountered on my system:
-> 
-> 	http://marc.10east.com/?l=linux-fbdev-devel&m=116058257024413&w=2
-> 
-> I accomplished this by merging what I thought was appropriate from:
-> 
-> 	http://webcvs.freedesktop.org/xorg/driver/xf86-video-nv/src/
-> 
-> 
-> 
-> Signed-off-by: Andrew Morton <akpm@osdl.org>
-> ---
-> 
->  drivers/video/nvidia/nv_hw.c    |   12 +++++++++---
->  drivers/video/nvidia/nv_setup.c |   18 +++++++++++++++++-
->  drivers/video/nvidia/nv_type.h  |    1 +
->  drivers/video/nvidia/nvidia.c   |   24 ++++++++++++------------
->  4 files changed, 39 insertions(+), 16 deletions(-)
-> 
-> diff -puN drivers/video/nvidia/nv_hw.c~patch-for-nvidia-divide-by-zero-error-for-7600 drivers/video/nvidia/nv_hw.c
-> --- a/drivers/video/nvidia/nv_hw.c~patch-for-nvidia-divide-by-zero-error-for-7600
-> +++ a/drivers/video/nvidia/nv_hw.c
-> @@ -145,12 +145,18 @@ static void nvGetClocks(struct nvidia_pa
->  
+On Tue, 7 Nov 2006, Richardson, Charlotte wrote:
+> If I can't repro it with this chip, if you want to mess around with it
+> on yours, here's what I think we had to do... I believe the trick was
+> to use 16bpp mode as far as what mode you write to the chip, and then
+> double all the x coordinate values for things like offset, width, and
+> pitch. You would have to do that to the accelerated routines also.
 
-<snip>
+> > From: Andrew Wade [mailto:andrew.j.wade@gmail.com]
+> > On 11/6/06, Richardson, Charlotte <Charlotte.Richardson@stratus.com>
+> > wrote:
+> > ...
+> > > How much is each line offset when you have the garbled stuff? I
+> mean,
+> > > is it a couple pixels, half the total width, something else? And is
+> > > it always the same for each line (or can you tell)?
+> > 
+> > Each ghost is 1/3 of a screen horizontally from the other ghosts. I've
+> > been looking carefully at test patterns to figure out what is going
+> on.
 
-> +	case 0x0290:		/* GeForce 7900 */
-> +	case 0x0390:		/* GeForce 7600 */
->  		arch = NV_ARCH_40;
->  		break;
->  	case 0x0020:		/* TNT, TNT2 */
-> _
-> 
+Since the ghosts are 1/3 of a screen apart and not 1/2...
 
-After some trials and tribulations and help from Andrew Morton and Junio Hamano (thanks), I was able to successfully test this patch as sourced from v2.6.19-rc4-mm2. There is still the problem that the framebuffer console doesn't work, the display is blank until X comes up, but at least it doesn't crash.
+If this is similar to the old Mach64, for 24-bit you have to use 8-bit mode and
+multiply all horizontal values by _3_.
 
-I'm suspecting a configuration problem, my configuration file can be seen in my post from 10/14/2006 as seen here; http://marc.10east.com/?l=linux-fbdev-devel&m=116085527611531&w=2, if anyone has some suggestions I'll be glad to investigate further.
+Gr{oetje,eeting}s,
 
-Regards,
+						Geert
 
-Wink Saville
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

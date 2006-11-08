@@ -1,75 +1,32 @@
-From: "Richardson, Charlotte" <Charlotte.Richardson@stratus.com>
-Subject: RE: 2.6.19-rc4-mm2
-Date: Wed, 8 Nov 2006 09:01:16 -0500
-Message-ID: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A05C@EXNA.corp.stratus.com>
+From: Nathan Lynch <ntl@pobox.com>
+Subject: [PATCH] nvidiafb: fix unreachable code in nv10GetConfig
+Date: Wed, 8 Nov 2006 13:55:11 -0600
+Message-ID: <20061108195511.GK17028@localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965768AbWKHOBt@vger.kernel.org>
-Content-class: urn:content-classes:message
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1422717AbWKHTzT@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: ajwade@alumni.uwaterloo.ca, andrew.j.wade@gmail.com
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, Kimball Murray <kimball.murray@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hi, Andrew -
+Fix binary/logical operator typo which leads to unreachable code.
+Noticed while looking at other issues; I don't have the relevant
+hardware to test this.
 
-I messed around with trying to recreate the workaround for the 24bpp
-Radeon stuff for chips that have the problem (like yours does) all
-afternoon yesterday, but I never did get it to work. I can't spend any
-more time on this right now (boss is after me!) but I will try to do
-some more poking around later or next week. Do you think I should submit
-a patch that at least enables 24bpp for the chip I have where it
-definitely does work? I'm sure that is overly restrictive, but I don't
-know which ones work and which are broken at this point. I tried going
-to the ATI web site (we have an OEM agreement with them, so I can get
-more data that way) but their documents are no better now that they are
-part of AMD than they ever were, and I didn't find anything useful.
-Grumble! Actually, as more people use linux and Xfree86, they may have
-to do a bit better with the specs. One can hope!
 
-If you get a chance before I do, you might look at what Xfree86 does -
-they might have the workaround.
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 
-/Charlotte
-
-PS - You have your reply-to email address set to
-ajwade@alumni.uwaterloo.ca
-which evidently is stale, 'cause replying to that bounces.
-
-> -----Original Message-----
-> From: Andrew Wade [mailto:andrew.j.wade@gmail.com]
-> Sent: Tuesday, November 07, 2006 10:58 AM
-> To: Richardson, Charlotte
-> Cc: Andrew Morton; linux-kernel@vger.kernel.org; Kimball Murray;
-linux-
-> fbdev-devel@lists.sourceforge.net
-> Subject: Re: 2.6.19-rc4-mm2
-> 
-> Hello Charlotte,
-> 
-> > (Sorry, I don't know what timezone you're in, but I went home,
-cooked
-> > supper, ate supper, did two loads of laundry, slept for about seven
-> > hours, ate breakfast, did another load of laundry, and voted, and
-now
-> > I'm back!)
-> 
-> I'm EST (GMT-5). But the hours I'm online are somewhat erratic.
-> 
-> ...
-> > If I can't repro it with this chip, if you want to mess around with
-it
-> > on yours, here's what I think we had to do... I believe the trick
-was
-> > to use 16bpp mode as far as what mode you write to the chip, and
-then
-> > double all the x coordinate values for things like offset, width,
-and
-> > pitch. You would have to do that to the accelerated routines also.
-> 
-> I'd be happy to mess around with the driver, but I won't have much
-> time to do so until tomorrow. I'll let you know if I find anything,
-> and of course I'll be happy to test patches.
-> 
-> -ajw
+--- linux-2.6-powerpc.git.orig/drivers/video/nvidia/nv_setup.c
++++ linux-2.6-powerpc.git/drivers/video/nvidia/nv_setup.c
+@@ -262,7 +262,7 @@ static void nv10GetConfig(struct nvidia_
+ #endif
+ 
+ 	dev = pci_find_slot(0, 1);
+-	if ((par->Chipset && 0xffff) == 0x01a0) {
++	if ((par->Chipset & 0xffff) == 0x01a0) {
+ 		int amt = 0;
+ 
+ 		pci_read_config_dword(dev, 0x7c, &amt);

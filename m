@@ -1,78 +1,44 @@
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Subject: fbmem: is bootup logo broken for monochrome LCD ?
-Date: Thu, 09 Nov 2006 17:49:12 +0100
-Message-ID: <45535C08.5020607@innova-card.com>
-Reply-To: Franck <vagabon.xyz@gmail.com>
+From: Andrew James Wade <andrew.j.wade@gmail.com>
+Subject: Re: 2.6.19-rc4-mm2
+Date: Thu, 9 Nov 2006 13:44:45 -0500
+Message-ID: <200611091344.47145.ajwade@cpe001346162bf9-cm0011ae8cd564.cpe.net.cable.rogers.com>
+References: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A05C@EXNA.corp.stratus.com>
+Reply-To: andrew.j.wade@gmail.com
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1424109AbWKIQse@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753787AbWKISoy@vger.kernel.org>
+In-Reply-To: <1C68BCE03F80CD46A821B5B9C5F2163E01D7A05C@EXNA.corp.stratus.com>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+To: "Richardson, Charlotte" <Charlotte.Richardson@stratus.com>
+Cc: andrew.j.wade@gmail.com, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, Kimball Murray <kimball.murray@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 
-I'm trying to display the bootup logo on a monochrome LCD (1 bit per
-pixel). I had to hack fbmem.c in a couple of place to make it
-works. I'm wondering now if these changes are correct since I'm not
-familiar with this code. Could anybody take a look and tell me ?
+Hello Charlotte,
 
-Thanks
-		Franck
+     I have just noticed that the garbled X-server mode is different
+than what I thought it was. rinfo->depth is 24, but rinfo->bpp is 32.
+(measured in radeon_write_mode). I haven't yet thought through the
+implications of this. I've been unable to get the display correct, but
+I've been trying to fix the wrong mode.
+     The console mode is ->depth==8, ->bpp==8, and presumably the same
+when it's garbled, but I've been unable to reproduce the problem since
+instrumenting the kernel.
 
--- >8 --
+On Wednesday 08 November 2006 09:01, Richardson, Charlotte wrote:
+> ... Do you think I should submit
+> a patch that at least enables 24bpp for the chip I have where it
+> definitely does work? I'm sure that is overly restrictive, but I don't
+> know which ones work and which are broken at this point.
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 17961e3..8c9d51f 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -247,6 +247,7 @@ static void fb_set_logo(struct fb_info *
- 			       const struct linux_logo *logo, u8 *dst,
- 			       int depth)
- {
-+	u32 bpp = info->var.bits_per_pixel;
- 	int i, j, k;
- 	const u8 *src = logo->data;
- 	u8 xor = (info->fix.visual == FB_VISUAL_MONO01) ? 0xff : 0;
-@@ -275,9 +276,14 @@ static void fb_set_logo(struct fb_info *
- 		for (i = 0; i < logo->height; i++) {
- 			for (j = 0; j < logo->width; src++) {
- 				d = *src ^ xor;
--				for (k = 7; k >= 0; k--) {
--					*dst++ = ((d >> k) & 1) ? fg : 0;
-+				if (bpp == 1) {
-+					*dst++ = d;
- 					j++;
-+				} else {
-+					for (k = 7; k >= 0; k--) {
-+						*dst++ = ((d >> k) & 1) ? fg : 0;
-+						j++;
-+					}
- 				}
- 			}
- 		}
-@@ -487,7 +493,6 @@ int fb_show_logo(struct fb_info *info, i
- 	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING)
- 		return 0;
- 
--	image.depth = 8;
- 	image.data = fb_logo.logo->data;
- 
- 	if (fb_logo.needs_cmapreset)
-@@ -506,6 +511,9 @@ int fb_show_logo(struct fb_info *info, i
- 
- 		saved_pseudo_palette = info->pseudo_palette;
- 		info->pseudo_palette = palette;
-+	} else {
-+		image.fg_color = 1;
-+		image.bg_color = 0;
- 	}
- 
- 	if (fb_logo.depth <= 4) {
-@@ -525,6 +533,7 @@ int fb_show_logo(struct fb_info *info, i
- 	image.dy = 0;
- 	image.width = fb_logo.logo->width;
- 	image.height = fb_logo.logo->height;
-+	image.depth = fb_logo.depth;
- 
- 	if (rotate) {
- 		logo_rotate = kmalloc(fb_logo.logo->width *
+That sounds like a good idea to me, but I'm not very familiar with the
+programming practices here.
+
+...
+> If you get a chance before I do, you might look at what Xfree86 does -
+> they might have the workaround.
+
+It looks like the X.org radeon driver doesn't support 24bpp.
+
+-ajw

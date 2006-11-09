@@ -1,21 +1,21 @@
 From: vwool@ru.mvista.com (Vitaly Wool)
-Subject: [PATCH] pnx4008:fix NULL dereference in rgbfb
-Date: Thu, 9 Nov 2006 19:42:44 +0300
-Message-ID: <20061109164244.GB13505@ru.mvista.com>
+Subject: [PATCH] pnx4008: rename driver
+Date: Thu, 9 Nov 2006 19:46:27 +0300
+Message-ID: <20061109164627.GC13505@ru.mvista.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GiD0D-0005yM-SV for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Nov 2006 08:43:46 -0800
+	id 1GiD2x-0006GB-3y for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 09 Nov 2006 08:46:35 -0800
 Received: from [85.21.88.2] (helo=localhost.localdomain)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GiD04-0003w8-DM
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GiD2q-00072P-Ke
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Nov 2006 08:43:42 -0800
+	Thu, 09 Nov 2006 08:46:35 -0800
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,10 +31,12 @@ To: linux-fbdev-devel@lists.sourceforge.net
 
 Hello folks,
 
-the patch inlined fixes possible NULL dereference in pnxrgbfb.
+the patch inlined below makes the drivers' names less generic to avoid
+possible confusion in future, as was requested by Russell King.
 
- drivers/video/pnx4008/pnxrgbfb.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/pnx4008/pnxrgbfb.c |    2 +-
+ drivers/video/pnx4008/sdum.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
 
@@ -42,16 +44,28 @@ Index: linux-2.6.18/drivers/video/pnx4008/pnxrgbfb.c
 ===================================================================
 --- linux-2.6.18.orig/drivers/video/pnx4008/pnxrgbfb.c
 +++ linux-2.6.18/drivers/video/pnx4008/pnxrgbfb.c
-@@ -154,7 +154,8 @@ static int __devinit rgbfb_probe(struct 
- 			goto err1;
- 	}
+@@ -191,7 +191,7 @@ err:
  
--	if (!fb_get_options("pnxrgbfb", &option) && !strcmp(option, "nocursor"))
-+	if (!fb_get_options("pnxrgbfb", &option) && option &&
-+			!strcmp(option, "nocursor"))
- 		rgbfb_ops.fb_cursor = no_cursor;
+ static struct platform_driver rgbfb_driver = {
+ 	.driver = {
+-		.name = "rgbfb",
++		.name = "pnx4008-rgbfb",
+ 	},
+ 	.probe = rgbfb_probe,
+ 	.remove = rgbfb_remove,
+Index: linux-2.6.18/drivers/video/pnx4008/sdum.c
+===================================================================
+--- linux-2.6.18.orig/drivers/video/pnx4008/sdum.c
++++ linux-2.6.18/drivers/video/pnx4008/sdum.c
+@@ -848,7 +848,7 @@ static int sdum_remove(struct platform_d
  
- 	info->node = -1;
+ static struct platform_driver sdum_driver = {
+ 	.driver = {
+-		.name = "sdum",
++		.name = "pnx4008-sdum",
+ 	},
+ 	.probe = sdum_probe,
+ 	.remove = sdum_remove,
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

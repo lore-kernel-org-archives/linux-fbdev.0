@@ -1,7 +1,7 @@
-From: vwool@ru.mvista.com (Vitaly Wool)
-Subject: [PATCH] pnx4008: rename driver
-Date: Thu, 9 Nov 2006 19:46:27 +0300
-Message-ID: <20061109164627.GC13505@ru.mvista.com>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH] nvidiafb: Fix nv10 device setup
+Date: Fri, 10 Nov 2006 08:30:02 +0100
+Message-ID: <20061110083002.178878df.khali@linux-fr.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,13 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GiD2x-0006GB-3y for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Nov 2006 08:46:35 -0800
-Received: from [85.21.88.2] (helo=localhost.localdomain)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GiD2q-00072P-Ke
+	id 1GiQq3-0007XZ-DX for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 09 Nov 2006 23:30:11 -0800
+Received: from smtp-105-friday.nerim.net ([62.4.16.105] helo=kraid.nerim.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GiQq1-0006Ys-W9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Nov 2006 08:46:35 -0800
-Content-Disposition: inline
+	Thu, 09 Nov 2006 23:30:11 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,45 +26,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Antonino Daplas <adaplas@pol.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hello folks,
+This "&&" was obviously meant to be a "&".
 
-the patch inlined below makes the drivers' names less generic to avoid
-possible confusion in future, as was requested by Russell King.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/nvidia/nv_setup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/pnx4008/pnxrgbfb.c |    2 +-
- drivers/video/pnx4008/sdum.c     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Signed-off-by: Vitaly Wool <vwool@ru.mvista.com>
-
-Index: linux-2.6.18/drivers/video/pnx4008/pnxrgbfb.c
-===================================================================
---- linux-2.6.18.orig/drivers/video/pnx4008/pnxrgbfb.c
-+++ linux-2.6.18/drivers/video/pnx4008/pnxrgbfb.c
-@@ -191,7 +191,7 @@ err:
+--- linux-2.6.19-rc5.orig/drivers/video/nvidia/nv_setup.c	2006-09-21 21:23:53.000000000 +0200
++++ linux-2.6.19-rc5/drivers/video/nvidia/nv_setup.c	2006-11-10 08:21:53.000000000 +0100
+@@ -262,7 +262,7 @@
+ #endif
  
- static struct platform_driver rgbfb_driver = {
- 	.driver = {
--		.name = "rgbfb",
-+		.name = "pnx4008-rgbfb",
- 	},
- 	.probe = rgbfb_probe,
- 	.remove = rgbfb_remove,
-Index: linux-2.6.18/drivers/video/pnx4008/sdum.c
-===================================================================
---- linux-2.6.18.orig/drivers/video/pnx4008/sdum.c
-+++ linux-2.6.18/drivers/video/pnx4008/sdum.c
-@@ -848,7 +848,7 @@ static int sdum_remove(struct platform_d
+ 	dev = pci_find_slot(0, 1);
+-	if ((par->Chipset && 0xffff) == 0x01a0) {
++	if ((par->Chipset & 0xffff) == 0x01a0) {
+ 		int amt = 0;
  
- static struct platform_driver sdum_driver = {
- 	.driver = {
--		.name = "sdum",
-+		.name = "pnx4008-sdum",
- 	},
- 	.probe = sdum_probe,
- 	.remove = sdum_remove,
+ 		pci_read_config_dword(dev, 0x7c, &amt);
+
+
+-- 
+Jean Delvare
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

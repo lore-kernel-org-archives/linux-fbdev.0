@@ -1,27 +1,97 @@
 From: "Christian Hoffmann" <Christian.Hoffmann@wallstreetsystems.com>
 Subject: RE: Fwd: [Suspend-devel] resume not working on acer ferrari 4005 with radeonfb enabled
-Date: Sat, 11 Nov 2006 11:17:03 +0100
-Message-ID: <D0233BCDB5857443B48E64A79E24B8CE6B5437@labex2.corp.trema.com>
+Date: Sat, 11 Nov 2006 12:36:54 +0100
+Message-ID: <D0233BCDB5857443B48E64A79E24B8CE6B5438@labex2.corp.trema.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754363AbWKKK0d@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1424554AbWKKLwN@vger.kernel.org>
 content-class: urn:content-classes:message
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>, Christian@ogre.sisk.pl, Hoffmann@albercik.sisk.pl
+To: Andrew Morton <akpm@osdl.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Solomon Peachy <pizza@shaftnet.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>, Christian@ogre.sisk.pl, Hoffmann@albercik.sisk.pl
 
 
->There are many possible reasons for that. The most likely is that the
->BIOS isn't bringing the chip back on resume, causing radeonfb to
->crash when trying to access it.
 
->Ben.
-Is there any possible workaround for this, or some tracing possible so
-we can prove the hypothesis?
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@osdl.org] 
+Sent: Saturday, November 11, 2006 3:03 AM
+To: Benjamin Herrenschmidt; Solomon Peachy
+Cc: Rafael J. Wysocki; linux-fbdev-devel@lists.sourceforge.net; LKML;
+Christian@ogre.sisk.pl; Hoffmann@albercik.sisk.pl; Christian Hoffmann
+Subject: Re: Fwd: [Suspend-devel] resume not working on acer ferrari
+4005 with radeonfb enabled
+
+On Sat, 11 Nov 2006 12:49:06 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Sat, 2006-11-11 at 00:31 +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > We've just got the appended report.  Could you please have a look at
+this?
+> 
+> There are many possible reasons for that. The most likely is that the
+> BIOS isn't bringing the chip back on resume, causing radeonfb to
+> crash when trying to access it.
+> 
+
+I assume from this:
+
+> > Greetings,
+> > Rafael
+> > 
+> > 
+> > ----------  Forwarded Message  ----------
+> > 
+> > Subject: [Suspend-devel] resume not working on acer ferrari 4005
+with radeonfb enabled
+> > Date: Friday, 10 November 2006 20:44
+> > From: "Christian Hoffmann"
+<Christian.Hoffmann@wallstreetsystems.com>
+> > To: suspend-devel@lists.sourceforge.net
+> > 
+> > Hello,
+> >  
+> > when I have radeonfb enabled, my laptop (X700 ati mobility) doesnt
+resume
+> > anymore. Screen stays black and nothing works anymore, no capslock
+light, no
+    ^^^^^^^
+
+>that it's a regression, from some unknown-previous-kernel-version.
+
+
+
+> > ctrl alt sysreq b etc. I tried all kind of things vbetool, passing
+> > acpi_sleep=s3_bios,s3_mode to the kernel. Nothing seems to work.
+> >  
+> > You can see dmesg output and lspci -vv output here 
+> >  http://christianhoffmann.de/temp/radeon.log
+> >  http://christianhoffmann.de/temp/lspci.log
+> >  
+> > Thanks a lot for any input.
+> >  
+> > Chris
+> >  
+> > PS: I use kernel 2.18.1 + patch for radeonfb from
+> > http://bugzilla.kernel.org/attachment.cgi?id=9408&action=view
+
+>That's http://www.shaftnet.org/~pizza/radeonfb-atom-2.6.18-v6a.diff.
+
+>What happens when that patch isn't applied?
+
+
+Then the radeonfb doesn't kick in at all (guess some pci ids are added
+in that patch).
+
+BTW: resume/suspend works ok if I have the vesa fb enabled.
 
 Chris
+
+
+
 
 
 

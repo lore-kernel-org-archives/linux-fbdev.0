@@ -1,99 +1,76 @@
-From: "Christian Hoffmann" <Christian.Hoffmann@wallstreetsystems.com>
-Subject: resume not working on acer ferrari 4005 with
-	radeonfb enabled
-Date: Sat, 11 Nov 2006 14:34:10 +0100
-Message-ID: <D0233BCDB5857443B48E64A79E24B8CE043CB3@labex2.corp.trema.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Stuffed Crust <pizza@shaftnet.org>
+Subject: Re: [Linux-fbdev-devel] Fwd: [Suspend-devel] resume not working on acer ferrari 4005	with radeonfb enabled
+Date: Sat, 11 Nov 2006 08:45:51 -0500
+Message-ID: <20061111134551.GA9947@shaftnet.org>
+References: <200611110031.16173.rjw@sisk.pl> <1163209746.4982.203.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Giszu-00066A-Ci for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 11 Nov 2006 05:34:14 -0800
-Received: from wshld2.trema.com ([194.103.215.196]
-	helo=webshieldout.corp.trema.com)
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1Giszs-0006C2-LJ
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 11 Nov 2006 05:34:14 -0800
-content-class: urn:content-classes:message
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1947223AbWKKNm7@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1163209746.4982.203.camel@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Christian.Hoffmann@wallstreetsystems.com, LKML <linux-kernel@vger.kernel.org>, Christian@ogre.sisk.pl, Hoffmann@albercik.sisk.pl
 
 
+--huq684BweRXVnRxX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-(Sorry maybe you receive that twice as parts of the email seemed to bounce back)
+On Sat, Nov 11, 2006 at 12:49:06PM +1100, Benjamin Herrenschmidt wrote:
+> There are many possible reasons for that. The most likely is that the
+> BIOS isn't bringing the chip back on resume, causing radeonfb to
+> crash when trying to access it.
 
-I asked, if it s possible to confirm that this is a BIOS issue and how to workaround it... BTW: suspend resume works fine with vesa (and under windows xp as well)
+I have the same laptop, and it also crashes for me on resume when=20
+radeonfb is loaded.  However, it also crashes on a resume when radeonfb=20
+*isn't* loaded, so I hardly considered that a regression.  :)
 
-Chris
+> On Thu, Nov 09, 2006 at 07:50:17PM +0100, Christian Hoffmann wrote:
+> > when I have radeonfb enabled, my laptop (X700 ati mobility) doesnt resu=
+me
+> > anymore. Screen stays black and nothing works anymore, no capslock ligh=
+t, no
+> > ctrl alt sysreq b etc. I tried all kind of things vbetool, passing
+> > acpi_sleep=3Ds3_bios,s3_mode to the kernel. Nothing seems to work.
 
------Original Message-----
-From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org] 
-Sent: Saturday, November 11, 2006 2:49 AM
-To: Rafael J. Wysocki
-Cc: linux-fbdev-devel@lists.sourceforge.net; LKML; Christian@ogre.sisk.pl; Hoffmann@albercik.sisk.pl; Christian Hoffmann
-Subject: Re: Fwd: [Suspend-devel] resume not working on acer ferrari 4005 with radeonfb enabled
+=2E..but it used to work?  Now that's interesting; this is the first=20
+report I've heard of a suspend-to-RAM (and subsequent resumes) working=20
+on that machine.
 
-On Sat, 2006-11-11 at 00:31 +0100, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> We've just got the appended report.  Could you please have a look at this?
+> > You can see dmesg output and lspci -vv output here=20
+> >  http://christianhoffmann.de/temp/radeon.log
+> >  http://christianhoffmann.de/temp/lspci.log
 
-There are many possible reasons for that. The most likely is that the
-BIOS isn't bringing the chip back on resume, causing radeonfb to
-crash when trying to access it.
+Can you send the *full* bootup log, including the command lines you=20
+used?
 
-Ben.
- 
-> Greetings,
-> Rafael
-> 
-> 
-> ----------  Forwarded Message  ----------
-> 
-> Subject: [Suspend-devel] resume not working on acer ferrari 4005 with radeonfb enabled
-> Date: Friday, 10 November 2006 20:44
-> From: "Christian Hoffmann" <Christian.Hoffmann@wallstreetsystems.com>
-> To: suspend-devel@lists.sourceforge.net
-> 
-> Hello,
->  
-> when I have radeonfb enabled, my laptop (X700 ati mobility) doesnt resume
-> anymore. Screen stays black and nothing works anymore, no capslock light, no
-> ctrl alt sysreq b etc. I tried all kind of things vbetool, passing
-> acpi_sleep=s3_bios,s3_mode to the kernel. Nothing seems to work.
->  
-> You can see dmesg output and lspci -vv output here 
->  http://christianhoffmann.de/temp/radeon.log
->  http://christianhoffmann.de/temp/lspci.log
->  
-> Thanks a lot for any input.
->  
-> Chris
->  
-> PS: I use kernel 2.18.1 + patch for radeonfb from
-> http://bugzilla.kernel.org/attachment.cgi?id=9408&action=view
+I noticed that you have the 'radeon' drm module loading too; that may be=20
+causing problems.  Are you running X when you try to suspend/resume?
+
+Also, since you're using a Ferarri 4000, are you using the stock 3A23=20
+BIOS/DSDT, or are you using the patched DSDT from http://acpi.sf.net?
+
+ - Solomon
+--=20
+Solomon Peachy        		       pizza at shaftnet dot org	=20
+Melbourne, FL                          ^^ (mail/jabber/gtalk) ^^
+Quidquid latine dictum sit, altum viditur.          ICQ: 1318344
 
 
+--huq684BweRXVnRxX
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
 
+iD8DBQFFVdQPPuLgii2759ARAuQsAJ9uiN4Nv2eumng9JGfioAk10jqYeACfTlNg
+78KNbDJlL+aVriUynUKBLqg=
+=Efxv
+-----END PGP SIGNATURE-----
 
-Privileged or confidential information may be contained in this message.  If you are not the addressee of this message please notify the sender by return and thereafter delete the message, and you may not use, copy, disclose or rely on the information contained in it. Internet e-mail may be susceptible to data corruption, interception and unauthorised amendment for which Wall Street Systems does not accept liability. Whilst we have taken reasonable precautions to ensure that this e-mail and any attachments have been swept for viruses, Wall Street Systems does not accept liability for any damage sustained as a result of viruses.  Statements in this message or attachments that do not relate to the business of  Wall Street Systems are neither given nor endorsed by the company or its Directors.
-
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+--huq684BweRXVnRxX--

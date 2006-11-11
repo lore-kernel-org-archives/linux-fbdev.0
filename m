@@ -1,9 +1,8 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: "Christian Hoffmann" <Christian.Hoffmann@wallstreetsystems.com>
 Subject: Re: Fwd: [Suspend-devel] resume not working on
 	acer ferrari 4005	with radeonfb enabled
-Date: Sun, 12 Nov 2006 09:49:39 +1100
-Message-ID: <1163285379.4982.233.camel@localhost.localdomain>
-References: <D0233BCDB5857443B48E64A79E24B8CE6B5438@labex2.corp.trema.com>
+Date: Sun, 12 Nov 2006 00:02:00 +0100
+Message-ID: <D0233BCDB5857443B48E64A79E24B8CE043CB5@labex2.corp.trema.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,15 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gj1fa-0000Sn-D4 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 11 Nov 2006 14:49:50 -0800
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1+C8zjzqwcSO6fx8YUHIGbVmLCjVw8MJzQ=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gj1fY-00030q-US
+	id 1Gj1zD-0002FW-Ql for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 11 Nov 2006 15:10:07 -0800
+Received: from wshld2.trema.com ([194.103.215.196]
+	helo=webshieldout.corp.trema.com)
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1Gj1zA-0007So-V7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 11 Nov 2006 14:49:50 -0800
-In-Reply-To: <D0233BCDB5857443B48E64A79E24B8CE6B5438@labex2.corp.trema.com>
+	Sat, 11 Nov 2006 15:10:07 -0800
+content-class: urn:content-classes:message
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,8 +29,15 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>
 Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Christian@ogre.sisk.pl, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Solomon Peachy <pizza@shaftnet.org>, Hoffmann@albercik.sisk.pl
+
+
+-----Original Message-----
+From:	linux-fbdev-devel-bounces@lists.sourceforge.net on behalf of Benjamin Herrenschmidt
+Sent:	Sat 11/11/2006 11:49 PM
+To:	Christian Hoffmann
+Cc:	Andrew Morton; linux-fbdev-devel@lists.sourceforge.net; Christian@ogre.sisk.pl; LKML; Rafael J. Wysocki; Solomon Peachy; Hoffmann@albercik.sisk.pl
+Subject:	Re: [Linux-fbdev-devel] Fwd: [Suspend-devel] resume not working on acer ferrari 4005	with radeonfb enabled
 
 
 > Then the radeonfb doesn't kick in at all (guess some pci ids are added
@@ -47,7 +52,15 @@ back ?
 
 Ben.
 
+---
+With vesafb X comes back even without vbetool. The console has to be reactivated by switching back and forth between X and console or by using vbetool. But it never completely freezes the machine.
 
+Chris
+
+
+
+
+Privileged or confidential information may be contained in this message.  If you are not the addressee of this message please notify the sender by return and thereafter delete the message, and you may not use, copy, disclose or rely on the information contained in it. Internet e-mail may be susceptible to data corruption, interception and unauthorised amendment for which Wall Street Systems does not accept liability. Whilst we have taken reasonable precautions to ensure that this e-mail and any attachments have been swept for viruses, Wall Street Systems does not accept liability for any damage sustained as a result of viruses.  Statements in this message or attachments that do not relate to the business of  Wall Street Systems are neither given nor endorsed by the company or its Directors.
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

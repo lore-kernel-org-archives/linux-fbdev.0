@@ -1,8 +1,11 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] nvidiafb: Fix nv10 device setup
-Date: Sun, 12 Nov 2006 22:18:53 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611122217430.9472@pentafluge.infradead.org>
-References: <20061110083002.178878df.khali@linux-fr.org>
+Subject: Re: [PATCH] nvidiafb: fix unreachable code in
+	nv10GetConfig
+Date: Sun, 12 Nov 2006 22:20:51 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611122220240.9472@pentafluge.infradead.org>
+References: <20061108195511.GK17028@localdomain>
+	<20061108121311.29dd0bda.akpm@osdl.org>
+	<20061108220422.GL17028@localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,14 +14,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GjNfG-0000by-6o for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 12 Nov 2006 14:18:58 -0800
+	id 1GjNhH-0000p5-RN for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 12 Nov 2006 14:21:03 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GjNfF-0000Rf-RW
+	(Exim 4.44) id 1GjNhF-0000uN-LC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 12 Nov 2006 14:18:58 -0800
-In-Reply-To: <20061110083002.178878df.khali@linux-fr.org>
+	Sun, 12 Nov 2006 14:21:03 -0800
+In-Reply-To: <20061108220422.GL17028@localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,33 +32,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Fri, 10 Nov 2006, Jean Delvare wrote:
 
-> This "&&" was obviously meant to be a "&".
+> Andrew Morton wrote:
+>> On Wed, 8 Nov 2006 13:55:11 -0600
+>> Nathan Lynch <ntl@pobox.com> wrote:
+>>
+>>> Fix binary/logical operator typo which leads to unreachable code.
+>>> Noticed while looking at other issues; I don't have the relevant
+>>> hardware to test this.
+>>>
+>>>
+>>> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+>>>
+>>> --- linux-2.6-powerpc.git.orig/drivers/video/nvidia/nv_setup.c
+>>> +++ linux-2.6-powerpc.git/drivers/video/nvidia/nv_setup.c
+>>> @@ -262,7 +262,7 @@ static void nv10GetConfig(struct nvidia_
+>>>  #endif
+>>>
+>>>  	dev = pci_find_slot(0, 1);
+>>> -	if ((par->Chipset && 0xffff) == 0x01a0) {
+>>> +	if ((par->Chipset & 0xffff) == 0x01a0) {
+>>>  		int amt = 0;
+>>>
+>>>  		pci_read_config_dword(dev, 0x7c, &amt);
+>>
+>> That looks like a pretty significant bug.  It'll cause the kernel to
+>> potentially map the wrong amount of memory for all cards except the
+>> NV_ARCH_04 type.  Has been there for over a year though.  hmm..
 >
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> ---
-> drivers/video/nvidia/nv_setup.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+> Did some searching, and assuming that chipset == PCI device id
+> (dubious?), I think the bug would affect only some integrated GeForce2
+> cards, which are somewhat old.
 >
-> --- linux-2.6.19-rc5.orig/drivers/video/nvidia/nv_setup.c	2006-09-21 21:23:53.000000000 +0200
-> +++ linux-2.6.19-rc5/drivers/video/nvidia/nv_setup.c	2006-11-10 08:21:53.000000000 +0100
-> @@ -262,7 +262,7 @@
-> #endif
->
-> 	dev = pci_find_slot(0, 1);
-> -	if ((par->Chipset && 0xffff) == 0x01a0) {
-> +	if ((par->Chipset & 0xffff) == 0x01a0) {
-> 		int amt = 0;
->
-> 		pci_read_config_dword(dev, 0x7c, &amt);
->
->
+> It looks to me like the other devices handled by nv10GetConfig would
+> still be handled as intended, but I'm not familiar with this code.
 >
 
-Acked-by: James Simmons <jsimmons@infradead.org>
+Your assumption is correct :-)
+
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

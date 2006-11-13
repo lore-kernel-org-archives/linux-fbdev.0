@@ -1,73 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Fwd: [Suspend-devel] resume not working on acer ferrari 4005 with radeonfb enabled
-Date: Mon, 13 Nov 2006 15:06:26 +0100
-Message-ID: <200611131506.27698.rjw@sisk.pl>
-References: <D0233BCDB5857443B48E64A79E24B8CE6B5441@labex2.corp.trema.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: fbmem: is bootup logo broken for monochrome
+ LCD ?
+Date: Mon, 13 Nov 2006 14:17:58 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org>
+References: <45535C08.5020607@innova-card.com> 
+	<Pine.LNX.4.64.0611122138030.9472@pentafluge.infradead.org>
+	<cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754732AbWKMOJM@vger.kernel.org>
-In-Reply-To: <D0233BCDB5857443B48E64A79E24B8CE6B5441@labex2.corp.trema.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@osdl.org>, Solomon Peachy <pizza@shaftnet.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-
-On Monday, 13 November 2006 11:51, Christian Hoffmann wrote:
-> 
-> > -----Original Message-----
-> > From: Pavel Machek [mailto:pavel@ucw.cz] 
-> > Sent: Sunday, November 12, 2006 1:14 PM
-> > To: Benjamin Herrenschmidt
-> > Cc: Christian Hoffmann; Andrew Morton; Solomon Peachy; Rafael 
-> > J. Wysocki; linux-fbdev-devel@lists.sourceforge.net; LKML; 
-> > Christian@ogre.sisk.pl; Hoffmann@albercik.sisk.pl
-> > Subject: Re: Fwd: [Suspend-devel] resume not working on acer 
-> > ferrari 4005 with radeonfb enabled
-> > 
-> > Hi!
-> > 
-> > > > Then the radeonfb doesn't kick in at all (guess some pci ids are 
-> > > > added in that patch).
-> > > > 
-> > > > BTW: resume/suspend works ok if I have the vesa fb enabled.
-> > > 
-> > > In that case (vesafb), when does the screen come back 
-> > precisely ? Do 
-> > > you get console mode back and then X ? Or it only comes back when 
-> > > going back to X ? Do you have some userland-type vbetool 
-> > thingy that 
-> > > bring it back ?
-> > 
-> > He's using s3_bios+s3_mode, so kernel does some BIOS calls to 
-> > reinit the video. It should come out in text mode, too.
-> > 
-> > Christian, can you unload radeonfb before suspend/reload it 
-> > after resume?
-> 
-> Will it work if radeonfb is compiled as module? I think I had problems
-> with that, but I'll try again.
-> 
-> > 
-> > Next possibility is setting up serial console and adding some 
-> > printks to radeon...
-> 
-> Unfortunatly, the laptop doesn't have serial port. I tried to get a USB
-> device (pocketpc) read the USB serial, but I only partially succeeded. I
-> can pass console=ttyUSB0 to the kernel and load the ipaq serial console
-> driver as it oopses. I am able to echo strings to /dev/ttyUSB0  and read
-> them on the ipaq, but I am not able to "deviate" the kernel messages to
-> that port. Any hints on how to do that would be very appreciated, I
-> didn't find anything usefull on the web. (I tried with setconsole
-> /dev/ttyUSB0 but it gives error msg about device busy or something) 
-
-Would it be practicable to use netconsole on your box?  If so, it should work.
-
-Greetings,
-Rafael
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GjcdV-0004EE-Tn for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Nov 2006 06:18:09 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GjcdT-0003MF-9C
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Nov 2006 06:18:09 -0800
+In-Reply-To: <cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
--- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+>> There are quite a few bugs in the code. I have a patch I have been working
+>> on for some time. The patch does the following:
+>> 
+>
+> I'd like to give your patch a try but have some trouble to apply it
+> cleanly. Care to resend it ?
+
+Which tree are you working off ?> The patch is against linus git tree.
+
+>> I.
+>>         Merge slow_imageblit and color_imageblit into one function.
+>> II.
+>>         The same code works on both big endian and little endian machines
+>
+> Does this suppose to fix this issue I encountered:
+>
+> http://marc.theaimsgroup.com/?l=linux-kernel&m=116315548626875&w=2
+
+This should fix the problems you reported. I tested this patch on a big 
+endian and little endian framebuffer on a little endian machine.
+
+
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

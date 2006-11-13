@@ -1,67 +1,98 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: who is writing to my framebuffer?
-Date: Mon, 13 Nov 2006 19:52:55 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611131950360.2366@pentafluge.infradead.org>
-References: <bb9a78950611131119r163c4beci5559b7e6e84c3e84@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Christian Hoffmann" <Christian.Hoffmann@wallstreetsystems.com>
+Subject: RE: Fwd: [Suspend-devel] resume not working on acer ferrari 4005 with radeonfb enabled
+Date: Mon, 13 Nov 2006 23:08:36 +0100
+Message-ID: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754606AbWKMWIp@vger.kernel.org>
+content-class: urn:content-classes:message
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gjhrc-0008CE-GF for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 11:53:04 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gjhra-0000uj-UM
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 11:53:04 -0800
-Received: from localhost ([127.0.0.1])
-	by pentafluge.infradead.org with esmtps (Exim 4.63 #1 (Red Hat Linux))
-	id 1GjhrT-0008Bh-RS for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 19:52:55 +0000
-In-Reply-To: <bb9a78950611131119r163c4beci5559b7e6e84c3e84@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@osdl.org>, Solomon Peachy <pizza@shaftnet.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
 
+ 
 
-> > > > Looking at the code all cursor control from the driver level has been
-> > > > removed. It been put into fbcon. So if you enable fbcon then it will
-> > > > activate the cursor and have full control of the cursor. Only terminal
-> > > > codes will turn it off. Any reason to fbcon enabled?
-> > > >
-> > >
-> > > Well, without fbcon I'm not too sure how we could see any of our output.
-> > To
-> > > view our graphics data we're reading from the framebuffer and sending
-> > that
-> > > data to another piece of hardware that puts it on a screen.
-> > 
-> > No serial port or network avaliable?
-> > 
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+> Sent: Monday, November 13, 2006 3:06 PM
+> To: Christian Hoffmann
+> Cc: Pavel Machek; Benjamin Herrenschmidt; Andrew Morton; 
+> Solomon Peachy; linux-fbdev-devel@lists.sourceforge.net; LKML
+> Subject: Re: Fwd: [Suspend-devel] resume not working on acer 
+> ferrari 4005 with radeonfb enabled
 > 
-> There is, but we don't want that, we'd like to put our output on a monitor
-> attached to the machine.
+> On Monday, 13 November 2006 11:51, Christian Hoffmann wrote:
+> > 
+> > > -----Original Message-----
+> > > From: Pavel Machek [mailto:pavel@ucw.cz]
+> > > Sent: Sunday, November 12, 2006 1:14 PM
+> > > To: Benjamin Herrenschmidt
+> > > Cc: Christian Hoffmann; Andrew Morton; Solomon Peachy; Rafael J. 
+> > > Wysocki; linux-fbdev-devel@lists.sourceforge.net; LKML; 
+> > > Christian@ogre.sisk.pl; Hoffmann@albercik.sisk.pl
+> > > Subject: Re: Fwd: [Suspend-devel] resume not working on 
+> acer ferrari 
+> > > 4005 with radeonfb enabled
+> > > 
+> > > Hi!
+> > > 
+> > > > > Then the radeonfb doesn't kick in at all (guess some 
+> pci ids are 
+> > > > > added in that patch).
+> > > > > 
+> > > > > BTW: resume/suspend works ok if I have the vesa fb enabled.
+> > > > 
+> > > > In that case (vesafb), when does the screen come back
+> > > precisely ? Do
+> > > > you get console mode back and then X ? Or it only comes 
+> back when 
+> > > > going back to X ? Do you have some userland-type vbetool
+> > > thingy that
+> > > > bring it back ?
+> > > 
+> > > He's using s3_bios+s3_mode, so kernel does some BIOS 
+> calls to reinit 
+> > > the video. It should come out in text mode, too.
+> > > 
+> > > Christian, can you unload radeonfb before suspend/reload it after 
+> > > resume?
+> > 
+> > Will it work if radeonfb is compiled as module? I think I 
+> had problems 
+> > with that, but I'll try again.
+> > 
+> > > 
+> > > Next possibility is setting up serial console and adding some 
+> > > printks to radeon...
+> > 
+> > Unfortunatly, the laptop doesn't have serial port. I tried to get a 
+> > USB device (pocketpc) read the USB serial, but I only partially 
+> > succeeded. I can pass console=ttyUSB0 to the kernel and 
+> load the ipaq 
+> > serial console driver as it oopses. I am able to echo strings to 
+> > /dev/ttyUSB0  and read them on the ipaq, but I am not able to 
+> > "deviate" the kernel messages to that port. Any hints on how to do 
+> > that would be very appreciated, I didn't find anything 
+> usefull on the 
+> > web. (I tried with setconsole /dev/ttyUSB0 but it gives error msg 
+> > about device busy or something)
+> 
+> Would it be practicable to use netconsole on your box?  If 
+> so, it should work.
+> 
+I tried netconsole, and it somehow works, but when suspending it says in
+an "infinite" loop:
 
-I have noticed that alot of people work that way. The problem is for VT 
-terminals the terminal code and console code are together. For example you 
-can have a printer console but there is no printer tty. Unfortunely you 
-can't have a VT console only. This is on my to do list. 
+unregister_netdevice: waiting for eth2 to become free. Usage count = 1
+
+And then it never goes to sleep. 
+BTW: same if I use radeonfb as a module and try to blacklist this
+module. It complains that radeonfb is still in use. 
+Arghhh :)
+
+Chris
 
 
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+Privileged or confidential information may be contained in this message.  If you are not the addressee of this message please notify the sender by return and thereafter delete the message, and you may not use, copy, disclose or rely on the information contained in it. Internet e-mail may be susceptible to data corruption, interception and unauthorised amendment for which Wall Street Systems does not accept liability. Whilst we have taken reasonable precautions to ensure that this e-mail and any attachments have been swept for viruses, Wall Street Systems does not accept liability for any damage sustained as a result of viruses.  Statements in this message or attachments that do not relate to the business of  Wall Street Systems are neither given nor endorsed by the company or its Directors.

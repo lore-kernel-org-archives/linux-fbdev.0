@@ -1,15 +1,15 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [Linux-fbdev-users] who is writing to my
 	framebuffer?
-Date: Mon, 13 Nov 2006 17:10:29 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611131701130.2366@pentafluge.infradead.org>
-References: <bb9a78950610180759o7e923c90tc2e17c0dd72ed6a5@mail.gmail.com>
+Date: Mon, 13 Nov 2006 17:24:19 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611131719270.2366@pentafluge.infradead.org>
+References: <bb9a78950611130800m6b10fd0ek888c15cff7e6f1fe@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <bb9a78950610180759o7e923c90tc2e17c0dd72ed6a5@mail.gmail.com>
+In-Reply-To: <bb9a78950611130800m6b10fd0ek888c15cff7e6f1fe@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,36 +23,24 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-users@lists.sourceforge.net
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 18 Oct 2006, Nathan King wrote:
 
-> Hey folks,
+> I'm not sure how to use the information in that link. Everything I'm doing
+> is in kernelspace and that tutorial appears to be for userspace programming.
+> Also it seems to be for a system with VGA hardware and ours has none, we've
+> got a virtual framebuffer that sits in system RAM.
 >
-> I'm using a virtual framebuffer on some embedded hardware, and I'm trying to
-> keep track of all changes to the framebuffer. I know when the three biggies,
-> cfb_imageblit, cfb_fillrect, and cfb_copyarea write to it, but there's
-> somebody else out there monkeying with it. These mystery writes happen
-> during scrolling, which makes me think its somebody in fbcon. And I know its
-> nothing from userspace, because this is happening during boot before we ever
-> get to userspace. Is somebody in fbcon writing to my framebuffer behind my
-> back?
+> I'd considered that the cursor could be at fault somehow, but the cursor
+> drawing code that fbcon points to (softcursor if I recall correctly) just
+> points back again to the cfb* functions.
 >
-> My mystery writes ARE cursor sized (8x16 pixels). I can't find any, but do
-> any cursor functions operate directly on info->screen_base, without going
-> through one of cfb*?
->
-> What I'm seeing is that cfb_imageblit will receive a block of text from
-> fbcon to draw at, say, (0,72), with a width of 64 pixels. Then the next
-> block it receives is for (72,72). An eight pixel gap, and there should be
-> some data between the two blocks. In fact if I look at the data after its
-> finished with the line the data is somehow there. This happens at exactly
-> the same locations every run.
->
-> Much thanks,
-> Nathan
+> I don't suppose you have any other thoughts on this? I'm going to start
+> feeling pretty stupid if I can't solve it soon. ;)
 
-Sorry about the late reply. You are right. The cursor code uses a timer to 
-blink the cursor. Is this a embedded system? You really don't need fbcon 
-in that case.
+Looking at the code all cursor control from the driver level has been 
+removed. It been put into fbcon. So if you enable fbcon then it will 
+activate the cursor and have full control of the cursor. Only terminal 
+codes will turn it off. Any reason to fbcon enabled?
+
 
 
 -------------------------------------------------------------------------

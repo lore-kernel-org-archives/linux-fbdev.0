@@ -1,23 +1,31 @@
-From: "Nathan King" <natetheking@gmail.com>
-Subject: Re: who is writing to my framebuffer?
-Date: Mon, 13 Nov 2006 12:06:58 -0600
-Message-ID: <bb9a78950611131006j55e89ce3k2cf9485e28961acc@mail.gmail.com>
+From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
+Subject: Re: fbmem: is bootup logo broken for monochrome
+	LCD ?
+Date: Mon, 13 Nov 2006 19:27:46 +0100
+Message-ID: <cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com>
+References: <45535C08.5020607@innova-card.com>
+	<Pine.LNX.4.64.0611122138030.9472@pentafluge.infradead.org>
+	<cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com>
+	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0311149224=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GjgDA-0005sX-Gl for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 10:07:12 -0800
-Received: from nf-out-0910.google.com ([64.233.182.190])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GjgD9-0007yk-Pp
+	id 1GjgXG-0007td-6i for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Nov 2006 10:27:58 -0800
+Received: from ug-out-1314.google.com ([66.249.92.175])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GjgXE-0006oz-Gi
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 10:07:12 -0800
-Received: by nf-out-0910.google.com with SMTP id c31so1249104nfb
+	Mon, 13 Nov 2006 10:27:58 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so1155086ugc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 13 Nov 2006 10:06:59 -0800 (PST)
+	Mon, 13 Nov 2006 10:27:47 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,78 +36,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
---===============0311149224==
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_25818_632375.1163441218940"
-
-------=_Part_25818_632375.1163441218940
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-> > I'm not sure how to use the information in that link. Everything I'm
-> doing
-> > is in kernelspace and that tutorial appears to be for userspace
-> programming.
-> > Also it seems to be for a system with VGA hardware and ours has none,
-> we've
-> > got a virtual framebuffer that sits in system RAM.
-> >
-> > I'd considered that the cursor could be at fault somehow, but the cursor
-> > drawing code that fbcon points to (softcursor if I recall correctly)
-> just
-> > points back again to the cfb* functions.
-> >
-> > I don't suppose you have any other thoughts on this? I'm going to start
-> > feeling pretty stupid if I can't solve it soon. ;)
+On 11/13/06, James Simmons <jsimmons@infradead.org> wrote:
 >
-> Looking at the code all cursor control from the driver level has been
-> removed. It been put into fbcon. So if you enable fbcon then it will
-> activate the cursor and have full control of the cursor. Only terminal
-> codes will turn it off. Any reason to fbcon enabled?
+> >> There are quite a few bugs in the code. I have a patch I have been working
+> >> on for some time. The patch does the following:
+> >>
+> >
+> > I'd like to give your patch a try but have some trouble to apply it
+> > cleanly. Care to resend it ?
+>
+> Which tree are you working off ?> The patch is against linus git tree.
 >
 
-Well, without fbcon I'm not too sure how we could see any of our output. To
-view our graphics data we're reading from the framebuffer and sending that
-data to another piece of hardware that puts it on a screen.
+It seems that you use "format=flowed" with your mailer. Can you try to
+disable it ?
 
-------=_Part_25818_632375.1163441218940
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Even if I save the message to a file, the patch is still corrupted...
 
-<br><br><div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>&gt; I'm not sure how to use the information in that link. Everything I'm doing
-<br>&gt; is in kernelspace and that tutorial appears to be for userspace programming.<br>&gt; Also it seems to be for a system with VGA hardware and ours has none, we've<br>&gt; got a virtual framebuffer that sits in system RAM.
-<br>&gt;<br>&gt; I'd considered that the cursor could be at fault somehow, but the cursor<br>&gt; drawing code that fbcon points to (softcursor if I recall correctly) just<br>&gt; points back again to the cfb* functions.<br>
-&gt;<br>&gt; I don't suppose you have any other thoughts on this? I'm going to start<br>&gt; feeling pretty stupid if I can't solve it soon. ;)<br><br>Looking at the code all cursor control from the driver level has been<br>
-removed. It been put into fbcon. So if you enable fbcon then it will<br>activate the cursor and have full control of the cursor. Only terminal<br>codes will turn it off. Any reason to fbcon enabled?<br></blockquote></div>
-<br>Well, without fbcon I'm not too sure how we could see any of our output. To view our graphics data we're reading from the framebuffer and sending that data to another piece of hardware that puts it on a screen. <br>
-
-------=_Part_25818_632375.1163441218940--
-
-
---===============0311149224==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Thanks
+-- 
+               Franck
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
 Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
---===============0311149224==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0311149224==--

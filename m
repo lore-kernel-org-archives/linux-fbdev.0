@@ -1,99 +1,94 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Fwd: [Suspend-devel] resume not working on acer ferrari 4005 with radeonfb enabled
-Date: Tue, 14 Nov 2006 00:08:54 +0100
-Message-ID: <200611140008.55059.rjw@sisk.pl>
-References: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
+From: Kimball Murray <kimball.murray@gmail.com>
+Subject: Reworked [GIT PATCH 1/1] support 24bpp (32bpp
+	minus alpha) in radeonfb driver
+Date: Mon, 13 Nov 2006 14:23:56 -0500
+Message-ID: <20061113192006.27852.45907.sendpatchset@dhcp83-86.boston.redhat.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933144AbWKMXLm@vger.kernel.org>
-In-Reply-To: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@osdl.org>, Solomon Peachy <pizza@shaftnet.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GjhPa-0005ND-MZ for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Nov 2006 11:24:06 -0800
+Received: from mx1.redhat.com ([66.187.233.31])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GjhPa-0007ze-9e
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Nov 2006 11:24:06 -0800
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: benh@kernel.crashing.org, Kimball Murray <kimball.murray@gmail.com>, charlotte.richardson@stratus.com
 
-On Monday, 13 November 2006 23:08, Christian Hoffmann wrote:
-> 
-> > -----Original Message-----
-> > From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-> > Sent: Monday, November 13, 2006 3:06 PM
-> > To: Christian Hoffmann
-> > Cc: Pavel Machek; Benjamin Herrenschmidt; Andrew Morton; 
-> > Solomon Peachy; linux-fbdev-devel@lists.sourceforge.net; LKML
-> > Subject: Re: Fwd: [Suspend-devel] resume not working on acer 
-> > ferrari 4005 with radeonfb enabled
-> > 
-> > On Monday, 13 November 2006 11:51, Christian Hoffmann wrote:
-> > > 
-> > > > -----Original Message-----
-> > > > From: Pavel Machek [mailto:pavel@ucw.cz]
-> > > > Sent: Sunday, November 12, 2006 1:14 PM
-> > > > To: Benjamin Herrenschmidt
-> > > > Cc: Christian Hoffmann; Andrew Morton; Solomon Peachy; Rafael J. 
-> > > > Wysocki; linux-fbdev-devel@lists.sourceforge.net; LKML; 
-> > > > Christian@ogre.sisk.pl; Hoffmann@albercik.sisk.pl
-> > > > Subject: Re: Fwd: [Suspend-devel] resume not working on 
-> > acer ferrari 
-> > > > 4005 with radeonfb enabled
-> > > > 
-> > > > Hi!
-> > > > 
-> > > > > > Then the radeonfb doesn't kick in at all (guess some 
-> > pci ids are 
-> > > > > > added in that patch).
-> > > > > > 
-> > > > > > BTW: resume/suspend works ok if I have the vesa fb enabled.
-> > > > > 
-> > > > > In that case (vesafb), when does the screen come back
-> > > > precisely ? Do
-> > > > > you get console mode back and then X ? Or it only comes 
-> > back when 
-> > > > > going back to X ? Do you have some userland-type vbetool
-> > > > thingy that
-> > > > > bring it back ?
-> > > > 
-> > > > He's using s3_bios+s3_mode, so kernel does some BIOS 
-> > calls to reinit 
-> > > > the video. It should come out in text mode, too.
-> > > > 
-> > > > Christian, can you unload radeonfb before suspend/reload it after 
-> > > > resume?
-> > > 
-> > > Will it work if radeonfb is compiled as module? I think I 
-> > had problems 
-> > > with that, but I'll try again.
-> > > 
-> > > > 
-> > > > Next possibility is setting up serial console and adding some 
-> > > > printks to radeon...
-> > > 
-> > > Unfortunatly, the laptop doesn't have serial port. I tried to get a 
-> > > USB device (pocketpc) read the USB serial, but I only partially 
-> > > succeeded. I can pass console=ttyUSB0 to the kernel and 
-> > load the ipaq 
-> > > serial console driver as it oopses. I am able to echo strings to 
-> > > /dev/ttyUSB0  and read them on the ipaq, but I am not able to 
-> > > "deviate" the kernel messages to that port. Any hints on how to do 
-> > > that would be very appreciated, I didn't find anything 
-> > usefull on the 
-> > > web. (I tried with setconsole /dev/ttyUSB0 but it gives error msg 
-> > > about device busy or something)
-> > 
-> > Would it be practicable to use netconsole on your box?  If 
-> > so, it should work.
-> > 
-> I tried netconsole, and it somehow works, but when suspending it says in
-> an "infinite" loop:
-> 
-> unregister_netdevice: waiting for eth2 to become free. Usage count = 1
+Here is a rework of patch sent before which fixed 24-bit mode on a
+particular vernsion of the Radeon card, but broke it on others.
 
-Hm.  Is your kernel compiled with CONFIG_DISABLE_CONSOLE_SUSPEND set?
+This rework simply adds an additional check on the card version so that
+the code only affects our model.  Other models will behave as before.
 
-Rafael
+This patch was generated against Linus' git tree.
 
+Signed-off-by: Charlotte Richardson (charlotte.richardson@stratus.com
 
--- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+--------------------------- snip -----------------------
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+index 0ed577e..d190631 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -719,11 +719,11 @@ static int radeonfb_check_var (struct fb
+ 			v.bits_per_pixel = 16;
+ 			break;
+ 		case 17 ... 24:
+-#if 0 /* Doesn't seem to work */
+-			v.bits_per_pixel = 24;
+-			break;
+-#endif			
+-			return -EINVAL;
++			if (rinfo->chipset == PCI_CHIP_RN50) {
++				v.bits_per_pixel = 24;
++				break;
++			} else
++				return -EINVAL;
+ 		case 25 ... 32:
+ 			v.bits_per_pixel = 32;
+ 			break;
+diff --git a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
+index d5ff224..989f468 100644
+--- a/drivers/video/aty/radeonfb.h
++++ b/drivers/video/aty/radeonfb.h
+@@ -517,6 +517,8 @@ static inline int round_div(int num, int
+ 
+ static inline int var_to_depth(const struct fb_var_screeninfo *var)
+ {
++	if (var->bits_per_pixel == 32)
++	       return (var->transp.length == 8) ? 32 : 24;
+ 	if (var->bits_per_pixel != 16)
+ 		return var->bits_per_pixel;
+ 	return (var->green.length == 5) ? 15 : 16;
+@@ -531,7 +533,9 @@ static inline u32 radeon_get_dstbpp(u16 
+        		return DST_15BPP;
+        	case 16:
+        		return DST_16BPP;
+-       	case 32:
++	case 24:
++       		return DST_24BPP;
++	case 32:
+        		return DST_32BPP;
+        	default:
+        		return 0;
+
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

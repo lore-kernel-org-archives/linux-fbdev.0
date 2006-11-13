@@ -1,28 +1,29 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: who is writing to my framebuffer?
-Date: Mon, 13 Nov 2006 18:52:02 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611131851340.2366@pentafluge.infradead.org>
-References: <bb9a78950611131006j55e89ce3k2cf9485e28961acc@mail.gmail.com>
+Subject: Re: fbmem: is bootup logo broken for monochrome
+ LCD ?
+Date: Mon, 13 Nov 2006 18:55:06 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611131853250.2366@pentafluge.infradead.org>
+References: <45535C08.5020607@innova-card.com> 
+	<Pine.LNX.4.64.0611122138030.9472@pentafluge.infradead.org> 
+	<cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com> 
+	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org>
+	<cda58cb80611130631v1d560a2chcfcee904f6be317d@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gjgue-0002CM-JO for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 10:52:08 -0800
+	id 1Gjgxf-0002WT-T8 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Nov 2006 10:55:15 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gjgud-0006LB-1J
+	(Exim 4.44) id 1Gjgxd-00084t-I4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 10:52:08 -0800
-Received: from localhost ([127.0.0.1])
-	by pentafluge.infradead.org with esmtps (Exim 4.63 #1 (Red Hat Linux))
-	id 1GjguY-0006Qh-8b for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 18:52:02 +0000
-In-Reply-To: <bb9a78950611131006j55e89ce3k2cf9485e28961acc@mail.gmail.com>
+	Mon, 13 Nov 2006 10:55:15 -0800
+In-Reply-To: <cda58cb80611130631v1d560a2chcfcee904f6be317d@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,21 +34,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-> > Looking at the code all cursor control from the driver level has been
-> > removed. It been put into fbcon. So if you enable fbcon then it will
-> > activate the cursor and have full control of the cursor. Only terminal
-> > codes will turn it off. Any reason to fbcon enabled?
+> > > Does this suppose to fix this issue I encountered:
+> > >
+> > > http://marc.theaimsgroup.com/?l=linux-kernel&m=116315548626875&w=2
+> > 
+> > This should fix the problems you reported. I tested this patch on a big
+> > endian and little endian framebuffer on a little endian machine.
 > > 
 > 
-> Well, without fbcon I'm not too sure how we could see any of our output. To
-> view our graphics data we're reading from the framebuffer and sending that
-> data to another piece of hardware that puts it on a screen.
+> Something I'm still missing hope you can shed some light there. Why
+> does the current code work on Rafael's machine (little endian one
+> using vesa driver) but not on mine which is a little endian one as
+> well ?
 
-No serial port or network avaliable? 
- 
+Both of you are using vesafb? 
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

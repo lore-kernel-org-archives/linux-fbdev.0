@@ -1,10 +1,9 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbdev development status?
-Date: Mon, 13 Nov 2006 15:48:56 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611131543300.2366@pentafluge.infradead.org>
-References: <20061001162829.GE452@sci.fi>
-	<Pine.LNX.4.64.0610271947270.9615@pentafluge.infradead.org>
-	<20061028085732.GA16559@sci.fi>
+Subject: Re: [patch 03/25] pmagb-b-fb: Fix a default
+ clock frequency
+Date: Mon, 13 Nov 2006 16:02:56 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611131602450.2366@pentafluge.infradead.org>
+References: <200611020550.kA25oJKo002288@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,18 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gje3a-0004cl-7B for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 07:49:10 -0800
+	id 1GjeH4-0006Lq-5e for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Nov 2006 08:03:06 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gje3X-00058k-F9
+	(Exim 4.44) id 1GjeGy-0002ZO-VJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 07:49:10 -0800
-Received: from localhost ([127.0.0.1])
-	by pentafluge.infradead.org with esmtps (Exim 4.63 #1 (Red Hat Linux))
-	id 1Gje3N-0000zK-3H for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Nov 2006 15:48:57 +0000
-In-Reply-To: <20061028085732.GA16559@sci.fi>
+	Mon, 13 Nov 2006 08:03:02 -0800
+In-Reply-To: <200611020550.kA25oJKo002288@shell0.pdx.osdl.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,32 +31,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@osdl.org, macro@linux-mips.org
 
 
->> Since the beginning of this project there has been a rotation of
->> maintainers. Unfortunely this project is not supported ($) by anyone
->> so it is entirely voluntery. Our jobs often go over the normal hours of
->> work to complete a project so our free time is taken away.
+On Wed, 1 Nov 2006, akpm@osdl.org wrote:
+
+> From: "Maciej W. Rozycki" <macro@linux-mips.org>
 >
-> I understand completely.
-
-I'm looking at the patches now. It will take a few days looking at 
-everything plus several purposals on the lkml.
-
->> That has been
->> the case for me for the last several years. I have just left my job doing
->> middleware to go back to kernel development. So in the next few weeks I
->> will be coming back to working on the fbdev layer. Right now Geert seems
->> to be picking up the work. Thank you.
+> Inspection of real hardware has revealed one of the clock frequencies known
+> to be supported by PMAGB-B hardware is off by 3kHz.  Following is a fix.
+> Please apply.
 >
-> OK. I'm just wondering who to pester to get my pactches included.
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
+> ---
 >
-> Does anyone know what happened to Tony? It looks like he simply
-> disappeared and I don't remember seeing any "I quit" notice...
+> drivers/video/pmagb-b-fb.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff -puN drivers/video/pmagb-b-fb.c~pmagb-b-fb-fix-a-default-clock drivers/video/pmagb-b-fb.c
+> --- a/drivers/video/pmagb-b-fb.c~pmagb-b-fb-fix-a-default-clock
+> +++ a/drivers/video/pmagb-b-fb.c
+> @@ -186,7 +186,7 @@ static void __init pmagbbfb_screen_setup
+> static void __init pmagbbfb_osc_setup(struct fb_info *info)
+> {
+> 	static unsigned int pmagbbfb_freqs[] __initdata = {
+> -		130808, 119843, 104000, 92980, 74367, 72800,
+> +		130808, 119843, 104000, 92980, 74370, 72800,
+> 		69197, 66000, 65000, 50350, 36000, 32000, 25175
+> 	};
+> 	struct pmagbbfb_par *par = info->par;
+> _
 
-I'm a bit worried myself. Is he in good health or has work kept him 
-occupied? We lost Brad Douglas to poor heath. I haven't heard from him in 
-a long time. Sometimes I think about him as well.
+Acked-by: James Simmons <jsimmons@infradead.org>
 
 
 -------------------------------------------------------------------------

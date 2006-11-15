@@ -1,11 +1,9 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Fwd: [Suspend-devel] resume not working on
-	acer ferrari 4005 with radeonfb enabled
-Date: Wed, 15 Nov 2006 00:12:56 +0100
-Message-ID: <20061114231256.GC2676@elf.ucw.cz>
-References: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
-	<200611142247.55137.chrmhoffmann@gmail.com>
-	<20061114225629.GA2676@elf.ucw.cz> <200611142358.00616.rjw@sisk.pl>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: ACPI output/lcd/auxdisplay mess
+Date: Wed, 15 Nov 2006 00:54:51 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org>
+	<653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,14 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gk7T0-0007lN-6U for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 14 Nov 2006 15:13:22 -0800
-Received: from gprs189-60.eurotel.cz ([160.218.189.60] helo=amd.ucw.cz)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Gk7Sr-0006tg-JE
+	id 1Gk93K-00019E-00 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 14 Nov 2006 16:54:59 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Gk93I-0002QT-Ls
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 14 Nov 2006 15:13:22 -0800
-Content-Disposition: inline
-In-Reply-To: <200611142358.00616.rjw@sisk.pl>
+	Tue, 14 Nov 2006 16:54:58 -0800
+In-Reply-To: <653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,43 +30,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, Solomon Peachy <pizza@shaftnet.org>
+To: Miguel Ojeda <maxextreme@gmail.com>
+Cc: Luming Yu <Luming.yu@intel.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andrew Zabolotny <zap@homelink.ru>, Jamey Hicks <jamey.hicks@hp.com>
 
 
-On Tue 2006-11-14 23:57:59, Rafael J. Wysocki wrote:
-> On Tuesday, 14 November 2006 23:56, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > > I tried netconsole, and it somehow works, but when suspending it says in
-> > > > > an "infinite" loop:
-> > > > >
-> > > > > unregister_netdevice: waiting for eth2 to become free. Usage count = 1
-> > > >
-> > > > Hm.  Is your kernel compiled with CONFIG_DISABLE_CONSOLE_SUSPEND set?
-> > > >
-> > > > Rafael
-> > > 
-> > > I tried that patch, but the last message I see over netconsole (using tg3) is:
-> > > Suspending console(s)
-> > > and then nothing. Nothing on resume at all :(
-> > > 
-> > > Adding some printks in the radeonfb_pci_suspend and radeonfb_pci_resume 
-> > > (radeon_pm.c) didn't help: I don't see them. But I am not a kernel programmer 
-> > > at all, so I might do something wrong or in the wrong place.
-> > 
-> > Linus has crazy "write some info to CMOS" hack... which should be
-> > usable here.
-> 
-> No, it's i386-only.
+> Well, we were aware of video/backlight/* (read below). Anyway,
+> auxdisplay doesn't create a class; it did in first versions, but right
+> now it behaves just like a framebuffer, no classes in the playground
+> (maybe you read a old version?).
+...
+> However, auxdisplay means "auxiliary display device drivers", not _the
+> display_. In such folder we can put every
+> auxiliar-optional-secundary-rare display (not just LCDs, framebuffers,
+> ...) who has special requirements (like parport wiring, fixed refresh
+> rate, different properties...). Also, things like "set_contrast",
+> "max_constrast", "set_power"... didn't seem very appropriate.
 
-Ok, so you could debug it on i386 kernel :-). Actually trying if s2ram
-works in 32-bit mode _would_ be interesting.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Is it a framebuffer device ? The framebuffer layer is abstracted to work 
+with such devices.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

@@ -1,68 +1,85 @@
-From: "Ben Gardner" <gardner.ben@gmail.com>
-Subject: 2.6.19-rc5: Geode GX frame buffer takes 13
-	seconds to initialize
-Date: Thu, 16 Nov 2006 10:29:53 -0600
-Message-ID: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+Subject: Re: ACPI output/lcd/auxdisplay mess
+Date: Thu, 16 Nov 2006 22:48:20 +0100
+Message-ID: <653402b90611161348k163a004ax483f1c2bc6928fd9@mail.gmail.com>
+References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org>
+	 <653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
+	 <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
+	 <653402b90611160045s6ddf1305jdb262ee55b0f16bf@mail.gmail.com>
+	 <Pine.LNX.4.64.0611161450180.31960@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gkk7m-0005of-Lc for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 16 Nov 2006 08:30:02 -0800
-Received: from wx-out-0506.google.com ([66.249.82.227])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Gkk7i-0007ye-OZ
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 16 Nov 2006 08:30:02 -0800
-Received: by wx-out-0506.google.com with SMTP id i30so952006wxd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 16 Nov 2006 08:29:54 -0800 (PST)
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0611161450180.31960@pentafluge.infradead.org>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, Jordan Crouse <jordan.crouse@amd.com>
+Sender: linux-acpi-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Luming Yu <Luming.yu@intel.com>, Andrew Zabolotny <zap@homelink.ru>, linux-acpi@vger.kernel.org
 
-Hi all,
+On 11/16/06, James Simmons <jsimmons@infradead.org> wrote:
+>
+> >
+> > cfag12864bcfb is a "fbdev" (actually, it is a "fb wrapper" for
+> > cfag12864b, so it behaves like a framebuffer, although it is not an
+> > usual framebuffer. f.e. it has asynchronous refresh rate, a mmaped
+> > page to appear to be a fb...).
+>
+> BTW to use it as a fb you need to set the FILLRECT etc. See Kconfig in the
+> drivers/video directory and look at one of the graphic card examples.
 
-I'm using the Geode GX processor and the associated frame buffer
-driver in 2.6.19-rc5.
-I have a 640x480 LCD attached, without DDC support (not sure if that matters).
+I see, thanks you. I will take care of that.
 
-The frame buffer driver takes 12.5 seconds to initialize.
+>
+> > Still, it is not the front panel lcd of any specific device like PDA,
+> > so people that expects only their primary video/ displays may be
+> > confused if it appears at such section. So we decided to go away from
+> > video/. Maybe we can change the description, as right now it only
+> > refers to front panel lcds.
+>
+>   Neither is a monitor for a PC desktop. That is why we have ddc. If I
+> take a desktop with more than one video card and swap the lcd monitors
+> the lcd monitor data remains the same. As soon as the display device is
+> attached to the graphics card the graphics card will then communicate
+> with the monitor to retrieve data. For example if the mode of the
+> graphics card is set to 1900x1080 which is supported by the current
+> monitor. Then we swap it for a CRT that supports only 1280x1024 then in
+> that case when the graphics card probes the CRT it will change the
+> resolution to the maximum that is supported by the CRT.
+>   Currently the fbdev layer handles all this with struct fb_monspecs. Now
+> I know that structure doesn't cover everything. Nor does it handle
+> multiple displays attached to one piece of hardware. These where things I
+> was hoping to fix. Now that there are display devices that can handle
+> there own power management I have no problem having another sysfs device
+> to handle it. A representation that is more generic than lcd in the
+> backlight directory. Like the output device suggested by Yu. Of course I'm
+> not fond of that name. Display would be better.
+>
 
-Is this normal?
+Yep, indeed it would be better to have both generic place and sysfs
+device to put all these generic displays, however, I think they
+shouldn't be at video/* (maybe video/something/* or outside). I mean,
+we can do something like:
 
-Relevant kernel log:
-[   18.516093] io scheduler deadline registered (default)
-[   18.539818] gxfb 0000:00:01.1: 16384 Kibyte of video memory at 0x41000000
-[   31.052135] Console: switching to colour frame buffer device 80x30
-[   31.070906] fb0: Geode GX frame buffer device
-[   31.094200] Real Time Clock Driver v1.12ac
+1. First, we move auxiliary-special displays (including cfag12864b,
+[*]"Arc Monochrome LCD board" and stuff like that: they aren't really
+primary video displays) to another folder outside video/, maybe
+"drivers/display/" ("drivers/auxdisplay/"...).
+2. Then we create a sysfs device, called "display" ("auxdisplay"...)
+for all of them, which must be generic as you suggested, not just lcds
+or "front panels".
 
-I tried building the driver as a module, but that makes no difference
--- modprobe 'hangs' for 13 seconds.
+So finally we will have usual-primary fbdevs and video drivers at
+"drivers/video/*", and all the other stuff at "drivers/display/*" or
+some similar place.
 
-I looked through the Geode driver code and didn't see anything obvious
-that would eat up 13 seconds.
+Is that a good suggestion?
 
-Any idea as to what is going on?
+[*] I saw fbdevs like "Arc Monochorme LCD board support" that can be
+put there the same way like auxdisplay/cfag12864b, as they look pretty
+similar.
 
-Thanks,
-Ben
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm

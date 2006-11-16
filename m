@@ -1,85 +1,151 @@
-From: "Miguel Ojeda" <maxextreme@gmail.com>
-Subject: Re: ACPI output/lcd/auxdisplay mess
-Date: Thu, 16 Nov 2006 22:48:20 +0100
-Message-ID: <653402b90611161348k163a004ax483f1c2bc6928fd9@mail.gmail.com>
-References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org>
-	 <653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
-	 <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
-	 <653402b90611160045s6ddf1305jdb262ee55b0f16bf@mail.gmail.com>
-	 <Pine.LNX.4.64.0611161450180.31960@pentafluge.infradead.org>
+From: Christian Hoffmann <chrmhoffmann@gmail.com>
+Subject: Re: Fwd: [Suspend-devel] resume not working on
+	acer ferrari 4005 with radeonfb enabled
+Date: Thu, 16 Nov 2006 23:17:26 +0100
+Message-ID: <200611162317.30880.chrmhoffmann@gmail.com>
+References: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
+	<1163555308.5940.177.camel@localhost.localdomain>
+	<200611151109.06956.rjw@sisk.pl>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============1816279729=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GkpYK-0006yL-CA for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 16 Nov 2006 14:17:48 -0800
+Received: from ug-out-1314.google.com ([66.249.92.171])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GkpYJ-000869-NT
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 16 Nov 2006 14:17:48 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so550009ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 16 Nov 2006 14:17:46 -0800 (PST)
+In-Reply-To: <200611151109.06956.rjw@sisk.pl>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, Solomon Peachy <pizza@shaftnet.org>, Pavel Machek <pavel@ucw.cz>
+
+--===============1816279729==
+Content-Type: multipart/signed; boundary="nextPart2539656.VEzSQKyLSm";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0611161450180.31960@pentafluge.infradead.org>
+
+--nextPart2539656.VEzSQKyLSm
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Luming Yu <Luming.yu@intel.com>, Andrew Zabolotny <zap@homelink.ru>, linux-acpi@vger.kernel.org
 
-On 11/16/06, James Simmons <jsimmons@infradead.org> wrote:
->
+
 > >
-> > cfag12864bcfb is a "fbdev" (actually, it is a "fb wrapper" for
-> > cfag12864b, so it behaves like a framebuffer, although it is not an
-> > usual framebuffer. f.e. it has asynchronous refresh rate, a mmaped
-> > page to appear to be a fb...).
+> > Well, if you acquire the console sem you need to release it too :-)
 >
-> BTW to use it as a fb you need to set the FILLRECT etc. See Kconfig in the
-> drivers/video directory and look at one of the graphic card examples.
-
-I see, thanks you. I will take care of that.
-
+> Or the console semaphore is acquired too many times.
 >
-> > Still, it is not the front panel lcd of any specific device like PDA,
-> > so people that expects only their primary video/ displays may be
-> > confused if it appears at such section. So we decided to go away from
-> > video/. Maybe we can change the description, as right now it only
-> > refers to front panel lcds.
->
->   Neither is a monitor for a PC desktop. That is why we have ddc. If I
-> take a desktop with more than one video card and swap the lcd monitors
-> the lcd monitor data remains the same. As soon as the display device is
-> attached to the graphics card the graphics card will then communicate
-> with the monitor to retrieve data. For example if the mode of the
-> graphics card is set to 1900x1080 which is supported by the current
-> monitor. Then we swap it for a CRT that supports only 1280x1024 then in
-> that case when the graphics card probes the CRT it will change the
-> resolution to the maximum that is supported by the CRT.
->   Currently the fbdev layer handles all this with struct fb_monspecs. Now
-> I know that structure doesn't cover everything. Nor does it handle
-> multiple displays attached to one piece of hardware. These where things I
-> was hoping to fix. Now that there are display devices that can handle
-> there own power management I have no problem having another sysfs device
-> to handle it. A representation that is more generic than lcd in the
-> backlight directory. Like the output device suggested by Yu. Of course I'm
-> not fond of that name. Display would be better.
->
+> Christian, could you please add release_console_sem() before 'return 0'
+> and see if that makes the code work again?  If not, could you add a
+> printk() in kernel/printk.c/acquire_console_sem() to see how many times it
+> is called?
 
-Yep, indeed it would be better to have both generic place and sysfs
-device to put all these generic displays, however, I think they
-shouldn't be at video/* (maybe video/something/* or outside). I mean,
-we can do something like:
+Ok, I did that and the machine resumes OK. Now I have the impression that=20
+accessing the rinfo struct here:
 
-1. First, we move auxiliary-special displays (including cfag12864b,
-[*]"Arc Monochrome LCD board" and stuff like that: they aren't really
-primary video displays) to another folder outside video/, maybe
-"drivers/display/" ("drivers/auxdisplay/"...).
-2. Then we create a sysfs device, called "display" ("auxdisplay"...)
-for all of them, which must be generic as you suggested, not just lcds
-or "front panels".
+if (pdev->dev.power.power_state.event =3D=3D PM_EVENT_SUSPEND) {
+                /* Wakeup chip. Check from config space if we were powered =
+off
+                 * (todo: additionally, check CLK_PIN_CNTL too)
+                 */
+                if ((rinfo->pm_mode & radeon_pm_off) &&
+                        radeon_restore_pci_cfg(rinfo)) {
+                        if (rinfo->reinit_func !=3D NULL) {
+                                rinfo->reinit_func(rinfo);
+                                }
+                        else {
+                                goto bail;
+                        }
+                }
+                /* If we support D2, try to resume... we should check what =
+was=20
+our
+                 * state though... (were we really in D2 state ?). Right no=
+w,=20
+this code
+                 * is only enable on Macs so it's fine.
+                 */
+                else if (rinfo->pm_mode & radeon_pm_d2){
+                        radeon_set_suspend(rinfo, 0);
+                }
+                rinfo->asleep =3D 0; ////makes it crash
+        } else {
+                radeon_engine_idle();
+        }
 
-So finally we will have usual-primary fbdevs and video drivers at
-"drivers/video/*", and all the other stuff at "drivers/display/*" or
-some similar place.
+makes the resume fail. The machine locks up. I started xorg without drm/dri=
+=20
+and then it goes a little further and locks up in the next steps:       =20
 
-Is that a good suggestion?
+/* Restore display & engine */
+radeon_write_mode (rinfo, &rinfo->state, 1);
 
-[*] I saw fbdevs like "Arc Monochorme LCD board support" that can be
-put there the same way like auxdisplay/cfag12864b, as they look pretty
-similar.
+But it starts to get too complicated for me :(
 
--- 
-Miguel Ojeda
-http://maxextreme.googlepages.com/index.htm
+Chris
+
+--nextPart2539656.VEzSQKyLSm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iQIVAwUARVzjetonrF4PGGDNAQKMRg/+KXgOaXQ9P8k8OZ0hZWGoZafBm/6q7Czw
+ugfiBETifwbqRN1vEJD3aTKghJ/UFkItKssV4kqdkhssrxvAhPXW8YaGR3+JWkPv
+YMmLxlMaY+KuFNd81KgUz0ogcVX736pH9CMVjyCmP1ex7+sQQJD2ZVDcm2hde3UL
+9R+Fsj+osDe79GJzTr1PuZ+ZWIc8/F0xTXzM7zvLz9HzYW7SgEmYI3v9mGOBsAGv
+JSlhzwLNgtz04JLB9VDbvypxriudPxIsFqws2Vd6N23JXQ/47KTCjvGFMV7Z5PxG
+aCftdxz97fnRt/DnFz85jRrku8+fVVg/Rlj3EHsAu+UbrFn6fQgGFH95kJEjF9/V
+fX2rCC2xgLJK9Mm2MCQ+KJ5IJXPyLQO8yHDIFs/5ZGRdPafaH7OqNIy49/vaxQ7I
+ynCo7ga8Q3rq/tqXemdT6x8YKnjiH7VPIlFbiHggWBWmt+2Mef6ThSJc1Zfx3CwU
+QxEF79cooefW3vX/9sGUgyS4d2L+HTR6YYm+a5ys3wHjh2v87H2iTL7GtZEP8Ocy
+zvNVbChiQNFuvpZyS2iuMgnrZoRqf+j85AENfbx5jPJc3t+Xj7In/+jG5g/Pcz5F
+8uN+EhyrAoe95GsRw9wGP4jQnUiCSaltUxxvhnhmsU1QoOgk4yvJDO9FfHtxoscX
+HofHrY8rX1w=
+=Ba+c
+-----END PGP SIGNATURE-----
+
+--nextPart2539656.VEzSQKyLSm--
+
+
+--===============1816279729==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+--===============1816279729==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1816279729==--

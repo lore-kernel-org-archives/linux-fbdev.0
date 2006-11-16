@@ -1,65 +1,50 @@
-From: "=?UTF-8?Q?Jaya_Kumar_?=  =?UTF-8?Q?(=E0=AE=9C=E0=AF=86=E0=AE=AF=E0=AE=BE=E0=AE=95?=  =?UTF-8?Q?=E0=AF=81=E0=AE=AE=E0=AE=BE=E0=AE=B0=E0=AF=8D)?=" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.18.1 1/1] Framebuffer driver for
-	Hecuba/E-Ink display
-Date: Thu, 16 Nov 2006 04:49:10 +0100
-Message-ID: <45a44e480611151949n1afe3252n1864ced2a430d3a6@mail.gmail.com>
-References: <45a44e480611142315k33d8df02y73f73ce9b3a3b111@mail.gmail.com>
-	<Pine.LNX.4.62.0611160239180.16998@pademelon.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+Subject: Re: ACPI output/lcd/auxdisplay mess
+Date: Thu, 16 Nov 2006 09:45:03 +0100
+Message-ID: <653402b90611160045s6ddf1305jdb262ee55b0f16bf@mail.gmail.com>
+References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org>
+	 <653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
+	 <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GkYFU-0006HK-Vy for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 15 Nov 2006 19:49:13 -0800
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GkYFT-0007cV-Oj
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 15 Nov 2006 19:49:13 -0800
-Received: by py-out-1112.google.com with SMTP id a29so242521pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 15 Nov 2006 19:49:11 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.62.0611160239180.16998@pademelon.sonytel.be>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1031015AbWKPIpH@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Luming Yu <Luming.yu@intel.com>, Andrew Zabolotny <zap@homelink.ru>
 
-On 11/16/06, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On 11/15/06, James Simmons <jsimmons@infradead.org> wrote:
 >
-> Yep, sounds like a nice idea to try, and compare with other methods, like e.g.
-> copying the frame buffer to the external device every vsync.
+> > Well, we were aware of video/backlight/* (read below). Anyway,
+> > auxdisplay doesn't create a class; it did in first versions, but right
+> > now it behaves just like a framebuffer, no classes in the playground
+> > (maybe you read a old version?).
+> ...
+> > However, auxdisplay means "auxiliary display device drivers", not _the
+> > display_. In such folder we can put every
+> > auxiliar-optional-secundary-rare display (not just LCDs, framebuffers,
+> > ...) who has special requirements (like parport wiring, fixed refresh
+> > rate, different properties...). Also, things like "set_contrast",
+> > "max_constrast", "set_power"... didn't seem very appropriate.
 >
-> But I guess the `every vsync' is not a good idea for e-ink, as it's very slow
-> to update?
+> Is it a framebuffer device ? The framebuffer layer is abstracted to work
+> with such devices.
 >
 
-Yes, you are right. The typical display update for this particular
-display is about 500ms to 800 ms. To clarify, the display is static
-(non-volatile pixels basically) and thereby is not refresh associated.
+cfag12864bcfb is a "fbdev" (actually, it is a "fb wrapper" for
+cfag12864b, so it behaves like a framebuffer, although it is not an
+usual framebuffer. f.e. it has asynchronous refresh rate, a mmaped
+page to appear to be a fb...).
 
-One of the common concerns when using this display is power. This is
-where I think the method of only updating the display (and waking up
-the controller) when triggered by the page fault may help. Also
-differencing is made easier because we would know which pages have
-been touched.
+Still, it is not the front panel lcd of any specific device like PDA,
+so people that expects only their primary video/ displays may be
+confused if it appears at such section. So we decided to go away from
+video/. Maybe we can change the description, as right now it only
+refers to front panel lcds.
 
-Thanks,
-jaya
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm

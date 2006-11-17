@@ -1,83 +1,94 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [patch 12/25] mbxfb: Fix HSCOEFF3 register
- address
-Date: Fri, 17 Nov 2006 18:56:36 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611171856300.32200@pentafluge.infradead.org>
-References: <200611020550.kA25oPx3002324@shell0.pdx.osdl.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] fb: modedb uses wrong default_mode
+Date: Fri, 17 Nov 2006 20:08:47 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611171919090.9851@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0611151933070.12799@jalava.cc.jyu.fi>
+ <20061115152952.0e92c50d.akpm@osdl.org> <20061115234456.GB3674@cosmic.amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753013AbWKQUIz@vger.kernel.org>
+In-Reply-To: <20061115234456.GB3674@cosmic.amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gl8tF-0001qB-DT for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 10:56:41 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gl8tC-0003yN-Qs
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 10:56:41 -0800
-In-Reply-To: <200611020550.kA25oPx3002324@shell0.pdx.osdl.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, adaplas@pol.net, raph@8d.com
+Cc: Andrew Morton <akpm@osdl.org>, Tero Roponen <teanropo@jyu.fi>, linux-kernel@vger.kernel.org
 
 
-Acked-by: James Simmons <jsimmons@infradead.org>
+> > > It seems that default_mode is always overwritten in
+> > > fb_find_mode() if caller gives its own modedb; this
+> > > patch should fix it.
+> 
+> > Sigh.
+> > 
+> > 2.6.19-rc5 has:
+> > 
+> >     if (!default_mode)
+> > 	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
+> > 
+> > and Jordan changed it to
+> > 
+> >     if (!default_mode && db != modedb)
+> > 	default_mode = &db[0];
+> >     else
+> > 	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
+> 
+> 
+> > and you want to change it to
+> > 
+> >     if (!default_mode && db != modedb)
+> > 	default_mode = &db[0];
+> >     else if (!default_mode)
+> > 	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
+> > 
+> > which is actually a complicated way of doing
+> > 
+> >     if (!default_mode)
+> > 	default_mode = &db[DEFAULT_MODEDB_INDEX];
+> 
+> Unless DEFAULT_MODEDB_INDEX for some reason gets set to non-zero, then
+> it could be dangerous. If we agree that the default entry should aways be 
+> at 0, then nuke the define and hard code the zero.  That way, nobody will be 
+> tempted to change it.
+
+Taking a look at modedb.c and neofb.c I noticed the bug is in the neofb.c 
+driver. The problem is the confusion with the fb_find_mode function 
+itself.
+
+int fb_find_mode(struct fb_var_screeninfo *var,
+                 struct fb_info *info, const char *mode_option,
+                 const struct fb_videomode *db, unsigned int dbsize,
+                 const struct fb_videomode *default_mode,
+                 unsigned int default_bpp)
+
+db is the database but default_mode is the mode we want to run. As you 
+can see neofb.c does
+
+	if (!fb_find_mode(&info->var, info, mode_option, NULL, 0,
+                        info->monspecs.modedb, 16)) {
+                printk(KERN_ERR "neofb: Unable to find usable video mode.\n");
+                goto err_map_video;
+        }
 
 
-On Wed, 1 Nov 2006, akpm@osdl.org wrote:
+it should be
+	if (!fb_find_mode(&info->var, info, mode_option, info->monspecs.modedb,
+			0, NULL, 16)) {
+		
+Who knows how many drivers get this wrong. BTW Jordan is right. 
+DEFAULT_MODEDB_INDEX is unless. Also we don't need dbsize anymore. 
+Jordan did point out a error in fb_find_mode. It should be
 
-> From: Raphael Assenat <raph@8d.com>
-> 
-> This patch corrects the address for register HSCOEFF3.
-> 
-> Signed-off-by: Raphael Assenat <raph@8d.com>
-> Cc: "Antonino A. Daplas" <adaplas@pol.net>
-> Signed-off-by: Andrew Morton <akpm@osdl.org>
-> ---
-> 
->  drivers/video/mbx/regs.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -puN drivers/video/mbx/regs.h~mbxfb-fix-hscoeff3-register-address drivers/video/mbx/regs.h
-> --- a/drivers/video/mbx/regs.h~mbxfb-fix-hscoeff3-register-address
-> +++ a/drivers/video/mbx/regs.h
-> @@ -127,7 +127,7 @@
->  #define HSCOEFF0	__REG_2700G(0x000021b4)
->  #define HSCOEFF1	__REG_2700G(0x000021b8)
->  #define HSCOEFF2	__REG_2700G(0x000021bc)
-> -#define HSCOEFF3	__REG_2700G(0x000021b0)
-> +#define HSCOEFF3	__REG_2700G(0x000021c0)
->  #define HSCOEFF4	__REG_2700G(0x000021c4)
->  #define HSCOEFF5	__REG_2700G(0x000021c8)
->  #define HSCOEFF6	__REG_2700G(0x000021cc)
-> _
-> 
-> -------------------------------------------------------------------------
-> Using Tomcat but need to do more? Need to support web services, security?
-> Get stuff done quickly with pre-integrated technology to make your job easier
-> Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-> http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+	if (!db)
+	    db = modedb;
+	dbsize = ARRAY_SIZE(modedb);
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+	if (!default_mode)
+	    default_mode = &db[DEFAULT_MODEDB_INDEX];
+	if (!default_bpp)
+	    default_bpp = 8;
+
+db will always be set.
+
+
+ 

@@ -1,105 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Fwd: [Suspend-devel] resume not working on
-	acer ferrari 4005 with radeonfb enabled
-Date: Thu, 16 Nov 2006 23:44:40 +0100
-Message-ID: <200611162344.41622.rjw@sisk.pl>
-References: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
-	<200611151109.06956.rjw@sisk.pl>
-	<200611162317.30880.chrmhoffmann@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Stuffed Crust <pizza@shaftnet.org>
+Subject: Re: [Linux-fbdev-devel] Fwd: [Suspend-devel] resume not working on acer ferrari 4005 with radeonfb enabled
+Date: Fri, 17 Nov 2006 00:27:55 -0500
+Message-ID: <20061117052755.GA23831@shaftnet.org>
+References: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com> <200611151109.06956.rjw@sisk.pl> <200611162317.30880.chrmhoffmann@gmail.com> <200611162344.41622.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gkq1W-0001KL-MX for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 16 Nov 2006 14:47:58 -0800
-Received: from ogre.sisk.pl ([217.79.144.158])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Gkq1V-0008Nc-WF
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 16 Nov 2006 14:47:58 -0800
-In-Reply-To: <200611162317.30880.chrmhoffmann@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1424761AbWKQFZJ@vger.kernel.org>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Christian Hoffmann <chrmhoffmann@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, Solomon Peachy <pizza@shaftnet.org>, Pavel Machek <pavel@ucw.cz>
-
-On Thursday, 16 November 2006 23:17, Christian Hoffmann wrote:
-> 
-> > >
-> > > Well, if you acquire the console sem you need to release it too :-)
-> >
-> > Or the console semaphore is acquired too many times.
-> >
-> > Christian, could you please add release_console_sem() before 'return 0'
-> > and see if that makes the code work again?  If not, could you add a
-> > printk() in kernel/printk.c/acquire_console_sem() to see how many times it
-> > is called?
-> 
-> Ok, I did that and the machine resumes OK. Now I have the impression that 
-> accessing the rinfo struct here:
-> 
-> if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
->                 /* Wakeup chip. Check from config space if we were powered off
->                  * (todo: additionally, check CLK_PIN_CNTL too)
->                  */
->                 if ((rinfo->pm_mode & radeon_pm_off) &&
->                         radeon_restore_pci_cfg(rinfo)) {
-
-I think the call to radeon_restore_pci_cfg(rinfo) causes the problem to happen.
-
->                         if (rinfo->reinit_func != NULL) {
->                                 rinfo->reinit_func(rinfo);
->                                 }
->                         else {
->                                 goto bail;
->                         }
->                 }
->                 /* If we support D2, try to resume... we should check what was 
-> our
->                  * state though... (were we really in D2 state ?). Right now, 
-> this code
->                  * is only enable on Macs so it's fine.
->                  */
->                 else if (rinfo->pm_mode & radeon_pm_d2){
->                         radeon_set_suspend(rinfo, 0);
->                 }
->                 rinfo->asleep = 0; ////makes it crash
->         } else {
->                 radeon_engine_idle();
->         }
-> 
-> makes the resume fail. The machine locks up. I started xorg without drm/dri 
-> and then it goes a little further and locks up in the next steps:        
-> 
-> /* Restore display & engine */
-> radeon_write_mode (rinfo, &rinfo->state, 1);
-> 
-> But it starts to get too complicated for me :(
-
-Unfortunately for me too.  Someone who knows the radeonfb code is needed.
-
-Greetings,
-Rafael
+In-Reply-To: <200611162344.41622.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Christian Hoffmann <chrmhoffmann@gmail.com>, Andrew Morton <akpm@osdl.org>, Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
 
--- 
-You never change things by fighting the existing reality.
-		R. Buckminster Fuller
+--r5Pyd7+fXNt84Ff3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+On Thu, Nov 16, 2006 at 11:44:40PM +0100, Rafael J. Wysocki wrote:
+> I think the call to radeon_restore_pci_cfg(rinfo) causes the problem to h=
+appen.
+
+radeonfb is still using its own code for saving and restoring PCI=20
+registers; I'm in the process of fixing it up to use proper PCI
+subsystem calls.  That will hopefully work better.  =20
+
+It's possible there's a good reason (other than "nobody's ported it over=20
+yet") that the radeonfb driver is doing it manually, but I don't know=20
+why that would be the case. =20
+
+ - Solomon
+--=20
+Solomon Peachy        		       pizza at shaftnet dot org	=20
+Melbourne, FL                          ^^ (mail/jabber/gtalk) ^^
+Quidquid latine dictum sit, altum viditur.          ICQ: 1318344
+
+
+--r5Pyd7+fXNt84Ff3
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
+
+iD8DBQFFXUhbPuLgii2759ARAoM7AJ92AH2t3kpROkjO2Pwtx7sWt5U1xQCgvUx1
+T00pEpjZeRpDE3iOB7ZgqWQ=
+=a402
+-----END PGP SIGNATURE-----
+
+--r5Pyd7+fXNt84Ff3--

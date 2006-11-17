@@ -1,9 +1,9 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [patch 11/25] au11oofb: fix to remove
- flickering
-Date: Fri, 17 Nov 2006 18:50:12 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611171850060.32200@pentafluge.infradead.org>
-References: <200611020550.kA25oO72002321@shell0.pdx.osdl.net>
+Subject: Re: [patch 09/25] annotate some variables in
+ vesafb driver as __read_mostly
+Date: Fri, 17 Nov 2006 18:51:29 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611171851190.32200@pentafluge.infradead.org>
+References: <200611020550.kA25oNaj002306@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,14 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gl8n1-0001Co-LL for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 10:50:15 -0800
+	id 1Gl8oL-0001JA-MS for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 17 Nov 2006 10:51:37 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Gl8n1-00021C-32
+	(Exim 4.44) id 1Gl8oI-0002OB-T9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 10:50:15 -0800
-In-Reply-To: <200611020550.kA25oO72002321@shell0.pdx.osdl.net>
+	Fri, 17 Nov 2006 10:51:37 -0800
+In-Reply-To: <200611020550.kA25oNaj002306@shell0.pdx.osdl.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,41 +31,65 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, adaplas@pol.net, freddy@dusktilldawn.nl
+Cc: akpm@osdl.org, deller@gmx.de
 
 
 Acked-by: James Simmons <jsimmons@infradead.org>
 
+tested as well.
+
 On Wed, 1 Nov 2006, akpm@osdl.org wrote:
 
-> From: Freddy Spierenburg <freddy@dusktilldawn.nl>
+> From: Helge Deller <deller@gmx.de>
 > 
-> Currently a lot of flickering is seen on the VGA and LCD port when one
-> starts a DBAu1100 board, with 'CONFIG_PRINTK=3Dy'.
+> - annotate some variables in vesafb driver as __read_mostly
 > 
-> This patch removes the flickering and as a result all kernel messages come
-> by in a nice steady fashion.
-> 
-> Signed-off-by: Freddy Spierenburg <freddy@dusktilldawn.nl>
-> Cc: "Antonino A. Daplas" <adaplas@pol.net>
+> Signed-off-by: Helge Deller <deller@gmx.de>
 > Signed-off-by: Andrew Morton <akpm@osdl.org>
 > ---
 > 
->  drivers/video/au1100fb.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/video/vesafb.c |   22 +++++++++++-----------
+>  1 file changed, 11 insertions(+), 11 deletions(-)
 > 
-> diff -puN drivers/video/au1100fb.h~au1100fb-fix-to-remove-flickering drivers/video/au1100fb.h
-> --- a/drivers/video/au1100fb.h~au1100fb-fix-to-remove-flickering
-> +++ a/drivers/video/au1100fb.h
-> @@ -274,7 +274,7 @@ static struct au1100fb_panel known_lcd_p
->  		.bpp = 16,
->  		.control_base =	0x0004886A |
->  			LCD_CONTROL_DEFAULT_PO | LCD_CONTROL_DEFAULT_SBPPF |
-> -			LCD_CONTROL_BPP_16,
-> +			LCD_CONTROL_BPP_16 | LCD_CONTROL_SBB_4,
->  		.clkcontrol_base = 0x00020000,
->  		.horztiming = 0x005aff1f,
->  		.verttiming = 0x16000e57,
+> diff -puN drivers/video/vesafb.c~annotate-some-variables-in-vesafb drivers/video/vesafb.c
+> --- a/drivers/video/vesafb.c~annotate-some-variables-in-vesafb
+> +++ a/drivers/video/vesafb.c
+> @@ -47,17 +47,16 @@ static struct fb_fix_screeninfo vesafb_f
+>  	.accel	= FB_ACCEL_NONE,
+>  };
+>  
+> -static int             inverse   = 0;
+> -static int             mtrr      = 0; /* disable mtrr */
+> -static int	       vram_remap __initdata = 0; /* Set amount of memory to be used */
+> -static int	       vram_total __initdata = 0; /* Set total amount of memory */
+> -static int             pmi_setpal = 1;	/* pmi for palette changes ??? */
+> -static int             ypan       = 0;  /* 0..nothing, 1..ypan, 2..ywrap */
+> -static unsigned short  *pmi_base  = NULL;
+> -static void            (*pmi_start)(void);
+> -static void            (*pmi_pal)(void);
+> -static int             depth;
+> -static int             vga_compat;
+> +static int   inverse    __read_mostly;
+> +static int   mtrr       __read_mostly;		/* disable mtrr */
+> +static int   vram_remap __initdata;		/* Set amount of memory to be used */
+> +static int   vram_total __initdata;		/* Set total amount of memory */
+> +static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
+> +static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
+> +static void  (*pmi_start)(void) __read_mostly;
+> +static void  (*pmi_pal)  (void) __read_mostly;
+> +static int   depth      __read_mostly;
+> +static int   vga_compat __read_mostly;
+>  /* --------------------------------------------------------------------- */
+>  
+>  static int vesafb_pan_display(struct fb_var_screeninfo *var,
+> @@ -312,6 +311,7 @@ static int __init vesafb_probe(struct pl
+>  		ypan = pmi_setpal = 0; /* not available or some DOS TSR ... */
+>  
+>  	if (ypan || pmi_setpal) {
+> +		unsigned short *pmi_base;
+>  		pmi_base  = (unsigned short*)phys_to_virt(((unsigned long)screen_info.vesapm_seg << 4) + screen_info.vesapm_off);
+>  		pmi_start = (void*)((char*)pmi_base + pmi_base[1]);
+>  		pmi_pal   = (void*)((char*)pmi_base + pmi_base[2]);
 > _
 > 
 > -------------------------------------------------------------------------

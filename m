@@ -1,28 +1,27 @@
-From: Christian Hoffmann <chrmhoffmann@gmail.com>
-Subject: Re: Fwd: [Suspend-devel] resume not working on
-	acer ferrari 4005 with radeonfb enabled
-Date: Fri, 17 Nov 2006 21:33:44 +0100
-Message-ID: <200611172133.50049.chrmhoffmann@gmail.com>
-References: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
-	<20061117060758.GB25413@shaftnet.org>
-	<20061117154119.GC5158@shaftnet.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: fb: modedb uses wrong default_mode
+Date: Fri, 17 Nov 2006 12:40:13 -0800
+Message-ID: <20061117124013.b6e4183d.akpm@osdl.org>
+References: <Pine.LNX.4.64.0611151933070.12799@jalava.cc.jyu.fi>
+	<20061115152952.0e92c50d.akpm@osdl.org>
+	<20061115234456.GB3674@cosmic.amd.com>
+	<Pine.LNX.4.64.0611171919090.9851@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0370787429=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GlAPb-0002xa-DE for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 12:34:11 -0800
-Received: from ug-out-1314.google.com ([66.249.92.168])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GlAPZ-0003vB-HN
+	id 1GlAVj-0003XB-4Y for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 17 Nov 2006 12:40:31 -0800
+Received: from smtp.osdl.org ([65.172.181.25])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1GlAVh-0007ea-PC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 12:34:11 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so791345ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 17 Nov 2006 12:34:04 -0800 (PST)
-In-Reply-To: <20061117154119.GC5158@shaftnet.org>
+	Fri, 17 Nov 2006 12:40:31 -0800
+In-Reply-To: <Pine.LNX.4.64.0611171919090.9851@pentafluge.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,145 +32,103 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Stuffed Crust <pizza@shaftnet.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Tero Roponen <teanropo@jyu.fi>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
---===============0370787429==
-Content-Type: multipart/signed; boundary="nextPart13388101.dHyx3xWdGv";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Fri, 17 Nov 2006 20:08:47 +0000 (GMT)
+James Simmons <jsimmons@infradead.org> wrote:
 
---nextPart13388101.dHyx3xWdGv
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> Who knows how many drivers get this wrong. BTW Jordan is right. 
+> DEFAULT_MODEDB_INDEX is unless. Also we don't need dbsize anymore. 
+> Jordan did point out a error in fb_find_mode. It should be
+> 
+> 	if (!db)
+> 	    db = modedb;
+> 	dbsize = ARRAY_SIZE(modedb);
+> 
+> 	if (!default_mode)
+> 	    default_mode = &db[DEFAULT_MODEDB_INDEX];
+> 	if (!default_bpp)
+> 	    default_bpp = 8;
+> 
+> db will always be set.
 
-On Friday 17 November 2006 16:41, Stuffed Crust wrote:
-> On Fri, Nov 17, 2006 at 01:07:58AM -0500, Stuffed Crust wrote:
-> >   http://www.shaftnet.org/users/pizza/radeonfb-atom-2.6.19-v7-WIP1.diff
->
->  http://www.shaftnet.org/users/pizza/radeonfb-atom-2.6.19-v7-WIP2.diff
->
-> This incorporates the latest round of BenH's fixes and changes, but
-> backs out the PCI suspend changes, which need independent review and
-> testing.
->
-> (BenH has promised a little more work before he's ready to sign off,
->  hence the -WIP2 designation)
->
-> The following patch contains a rewrite of radeonfb's suspend/resume code
-> to use standard PCI subsystem calls.  It applies to 2.6.19-rc6 and also
-> on top of the v7-WIP2 patch.
->
->  http://www.shaftnet.org/users/pizza/radeonfb-atom-2.6.19-suspend.diff
->
-> Christian, if you could see if the latter patch (on top of the -v6b or
-> -WIP2 patches) makes a difference for your suspend/resume problems..
->
-> And with these patches, I'm going to drop offline for a camping trip
-> over the weekend.  I'll pick this stuff back up on Monday.
->
->  - Solomon
+I think we do need dbsize, and that the code which I have now:
 
-Hlo,
+int fb_find_mode(struct fb_var_screeninfo *var,
+		 struct fb_info *info, const char *mode_option,
+		 const struct fb_videomode *db, unsigned int dbsize,
+		 const struct fb_videomode *default_mode,
+		 unsigned int default_bpp)
+{
+    int i;
 
-it still locks up.=20
-=2E..          =20
-    pci_set_power_state(pdev, PCI_D0);
-    pci_restore_state(pdev);
-    if (pci_enable_device(pdev)) {
-                rc =3D -ENODEV;
-                printk(KERN_ERR "radeonfb (%s): can't enable PCI device !\n=
-",
-                       pci_name(pdev));
-                goto bail;
-        }
-        pci_set_master(pdev);
-        if (pdev->dev.power.power_state.event =3D=3D PM_EVENT_SUSPEND) {
-                /* Wakeup chip. Check from config space if we were powered =
-off
-                 * (todo: additionally, check CLK_PIN_CNTL too)
-                 */
-                if (rinfo->pm_mode & radeon_pm_off) {
-                        if (rinfo->reinit_func !=3D NULL)
-                                rinfo->reinit_func(rinfo);
-                        else {
-                                printk(KERN_ERR "radeonfb (%s): can't resum=
-e=20
-radeon from"
-                                       " D3 cold, need softboot !",=20
-pci_name(pdev));
-                                rc =3D -EIO;
-                                goto bail;
-                        }
-                }
-                /* If we support D2, try to resume... we should check what =
-was=20
-our
-                 * state though... (were we really in D2 state ?). Right no=
-w,=20
-this code
-                 * is only enable on Macs so it's fine.
-                 */
-                else if (rinfo->pm_mode & radeon_pm_d2)
-                        radeon_set_suspend(rinfo, 0);
+    /* Set up defaults */
+    if (!db) {
+	db = modedb;
+	dbsize = ARRAY_SIZE(modedb);
+    }
 
-                rinfo->asleep =3D 0;
-        } else
-                radeon_engine_idle();
-        goto bail;
+    if (!default_mode)
+	default_mode = &db[0];
 
-When I comment out the rinfo->asleep =3D 0; line, the machine comes back. S=
-o it=20
-seems that rinfo struct is still corrupted somehow.
-
-Chris
-
---nextPart13388101.dHyx3xWdGv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iQIVAwUARV4crdonrF4PGGDNAQL9UQ/+LvvXhR0AdmyKcde/i05KOpDkcfLZnGUd
-ElR1tGM++Qr2z2kukvAQINnh0nT3FmEfBjTE1CYASXzDPVYIk5f+8t0p17XxbvGC
-PD/a8b8ya0FmoS18QvhnfKiaBzGvLSrSkZXpVMWVnGW/MPF8bomfa/6ZXUbJuele
-0eh+iqLdrBhlM0BxsqKUozRpLM2z4yo+1yikdl6lEH8Gjz2LFFMKIZPtLQ+MGXq1
-Bi5RGN8ti2qdJsNpd36Log+wnOhXpHBCflAb/L9mhNblxOVk8+85xZqtrw2NCE6J
-Qa3n4trfmiFprv6XKqS849I4ZBNHdsD8R3RtGCRzEqF8n97rU/7692f4abZqtpoz
-3bz6vJORQyc/FcosEI9KSbgWa9rXVw7Q1DKNgd3Bh7usSZSMMs7lUGSjrU1zvy3q
-l+WKa883shOelkh3oB/GZfPvoHPgKY+mRJBVK6N1TLliYK+GW9LM7Xli6qNteYKl
-jLAtiIM8Q7WYnVmUS/kUZWDt/xOBCirOhT/5NjlPm9+YkswW/UWtInXEJaXwnzGJ
-O7InFVEp/kX1yFfwA5ZpSW1QI+VVo4KeClIzjVQ3cXHh6OQLRQ8lSMcwhL2FqM/c
-3MJ8DFFgb2e4N8RUj0TQZVN6hmAPqmakak2tbf8Sa0DD0Pe4+yLjVrXKWdB6LJj1
-4jQJWSe5yPs=
-=Vjel
------END PGP SIGNATURE-----
-
---nextPart13388101.dHyx3xWdGv--
+    if (!default_bpp)
+	default_bpp = 8;
 
 
---===============0370787429==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+is appropriate?
+
+
+Here's the current version of this monster patch:
+
+From: Jordan Crouse <jordan.crouse@amd.com>
+
+If no default mode is specified, it should be grabbed from the supplied
+database, not the default one.
+
+[teanropo@jyu.fi: fix it]
+[akpm@osdl.org: simplify it]
+[akpm@osdl.org: remove pointless DEFAULT_MODEDB_INDEX]
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Signed-off-by: Tero Roponen <teanropo@jyu.fi>
+Cc: James Simmons <jsimmons@infradead.org>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ drivers/video/modedb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff -puN drivers/video/modedb.c~video-get-the-default-mode-from-the-right-database drivers/video/modedb.c
+--- a/drivers/video/modedb.c~video-get-the-default-mode-from-the-right-database
++++ a/drivers/video/modedb.c
+@@ -34,8 +34,6 @@ const char *global_mode_option;
+      *  Standard video mode definitions (taken from XFree86)
+      */
+ 
+-#define DEFAULT_MODEDB_INDEX	0
+-
+ static const struct fb_videomode modedb[] = {
+     {
+ 	/* 640x400 @ 70 Hz, 31.5 kHz hsync */
+@@ -505,8 +503,10 @@ int fb_find_mode(struct fb_var_screeninf
+ 	db = modedb;
+ 	dbsize = ARRAY_SIZE(modedb);
+     }
++
+     if (!default_mode)
+-	default_mode = &modedb[DEFAULT_MODEDB_INDEX];
++	default_mode = &db[0];
++
+     if (!default_bpp)
+ 	default_bpp = 8;
+ 
+_
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---===============0370787429==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0370787429==--

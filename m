@@ -1,31 +1,29 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Fwd: [Suspend-devel] resume not working
 	on	acer ferrari 4005 with radeonfb enabled
-Date: Sat, 18 Nov 2006 08:57:55 +1100
-Message-ID: <1163800675.5826.19.camel@localhost.localdomain>
+Date: Sat, 18 Nov 2006 08:59:28 +1100
+Message-ID: <1163800768.5826.21.camel@localhost.localdomain>
 References: <D0233BCDB5857443B48E64A79E24B8CE6B544C@labex2.corp.trema.com>
-	<200611151109.06956.rjw@sisk.pl>
-	<200611162317.30880.chrmhoffmann@gmail.com>
-	<200611162344.41622.rjw@sisk.pl> <20061117052755.GA23831@shaftnet.org>
-	<1163744220.5940.443.camel@localhost.localdomain>
-	<20061117143658.GB5158@shaftnet.org>
+	<20061117060758.GB25413@shaftnet.org>
+	<20061117154119.GC5158@shaftnet.org>
+	<200611172133.50049.chrmhoffmann@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GlBiV-0002xo-Oe for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 13:57:47 -0800
+	id 1GlBjz-00039M-NP for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 17 Nov 2006 13:59:19 -0800
 Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1+9SnzIbAmBRjOgtHgYPHO7AkD4PWwWetE=])
+	ident=[U2FsdGVkX19WEY5hYHoxercj1CL7Mnf32fOVDJ1xRqg=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GlBiT-00039Y-G6
+	(Exim 4.44) id 1GlBjy-0002GO-Nz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 13:57:47 -0800
-In-Reply-To: <20061117143658.GB5158@shaftnet.org>
+	Fri, 17 Nov 2006 13:59:19 -0800
+In-Reply-To: <200611172133.50049.chrmhoffmann@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,18 +34,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Stuffed Crust <pizza@shaftnet.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Christian Hoffmann <chrmhoffmann@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Christian Hoffmann <Christian.Hoffmann@wallstreetsystems.com>, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Stuffed Crust <pizza@shaftnet.org>, Pavel Machek <pavel@ucw.cz>
 
 
-> If I understand what you're saying correctly, if we re-write a valid set
-> of pci registers, we'll trash the radeon state?   Why _wouldn't_ a D3 
-> resume be trashed?
+> When I comment out the rinfo->asleep = 0; line, the machine comes back. So it 
+> seems that rinfo struct is still corrupted somehow.
 
-No, we determine in advance what we support. On resume, we don't want to
-do a full reset of the chip if it was not powered down. (Among others,
-this isn't tested and we might not be doing it properly from a non
-poweron-reset state).
+No, I don't think the rinfo is corrupted, I think the chip is in a state
+the driver can't cope with. Possibly related to some PCI-Express
+specific bits or to the memory map.
+
+At this point, we'll need to do register dumps.
 
 Ben.
 

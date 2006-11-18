@@ -1,55 +1,60 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fwd: [Suspend-devel] resume not
-	working	onacer ferrari 4005 with radeonfb enabled
-Date: Sat, 18 Nov 2006 09:34:42 +1100
-Message-ID: <1163802883.5826.51.camel@localhost.localdomain>
-References: <000701c70a94$1d9c2b40$6700a8c0@r2d2>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [RFC: 2.6 patch] remove broken video drivers
+Date: Sat, 18 Nov 2006 01:02:35 +0100
+Message-ID: <20061118000235.GV31879@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GlCIA-0006g6-NQ for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 14:34:38 -0800
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX18NSDFgXtcQ9BMXzu4DN15tof9Njc1veyo=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GlCI9-00056P-Jh
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Nov 2006 14:34:38 -0800
-In-Reply-To: <000701c70a94$1d9c2b40$6700a8c0@r2d2>
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Christian Hoffmann <email@christianhoffmann.info>
-Cc: 'Andrew Morton' <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, 'Christian Hoffmann' <Christian.Hoffmann@wallstreetsystems.com>, 'LKML' <linux-kernel@vger.kernel.org>, "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Stuffed Crust' <pizza@shaftnet.org>, 'Pavel Machek' <pavel@ucw.cz>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: adaplas@pol.net, James Simmons <jsimmons@infradead.org>
+Cc: sammy@sammy.net, linux-fbdev-devel@lists.sourceforge.net, sun3-list@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-m68k@lists.linux-m68k.org, geert@linux-m68k.org
 
+This patch removes video drivers that:
+- had already been marked as BROKEN in 2.6.0 three years ago and
+- are still marked as BROKEN.
 
-> Sorry, but how do I do that? 
-> 
-> Chris
-> 
-> BTW: yes, it's a PCI-express card.
+These are the following drivers:
+- FB_CYBER
+- FB_VIRGE
+- FB_RETINAZ3
+- FB_ATARI
+- FB_SUN3
+- FB_PM3
 
-You need to wit a bit for me to check wether we have added the PCI-E
-specific registers to radeontool dump :-)
+Drivers that had been marked as BROKEN for such a long time seem to be 
+unlikely to be revived in the forseeable future.
 
-Ben.
+But if anyone wants to ever revive any of these drivers, the code is 
+still present in the older kernel releases.
 
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
+---
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+Due to it's size, the patch is available at
+  http://ftp.kernel.org/pub/linux/kernel/people/bunk/misc/patch-remove-broken-video.gz
+
+ drivers/video/Kconfig   |   62 
+ drivers/video/Makefile  |    6 
+ drivers/video/atafb.c   | 3107 ----------------------------------
+ drivers/video/cyberfb.c | 2297 -------------------------
+ drivers/video/cyberfb.h |  415 ----
+ drivers/video/pm3fb.c   | 3641 ----------------------------------------
+ drivers/video/retz3fb.c | 1588 -----------------
+ drivers/video/retz3fb.h |  286 ---
+ drivers/video/sun3fb.c  |  702 -------
+ drivers/video/virgefb.c | 2526 ---------------------------
+ drivers/video/virgefb.h |  288 ---
+ include/video/pm3fb.h   | 1235 -------------
+ 12 files changed, 3 insertions(+), 16150 deletions(-)

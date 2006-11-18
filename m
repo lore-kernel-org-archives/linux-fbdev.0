@@ -1,60 +1,31 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [RFC: 2.6 patch] remove broken video drivers
-Date: Sat, 18 Nov 2006 01:02:35 +0100
-Message-ID: <20061118000235.GV31879@stusta.de>
+From: Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de>
+Subject: Re: [RFC: 2.6 patch] remove broken video drivers
+Date: Sat, 18 Nov 2006 11:34:41 +0100 (CET)
+Message-ID: <Pine.LNX.4.58.0611181132230.7667@xplor.biophys.uni-duesseldorf.de>
+References: <20061118000235.GV31879@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754366AbWKRKfq@vger.kernel.org>
+In-Reply-To: <20061118000235.GV31879@stusta.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: adaplas@pol.net, James Simmons <jsimmons@infradead.org>
-Cc: sammy@sammy.net, linux-fbdev-devel@lists.sourceforge.net, sun3-list@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-m68k@lists.linux-m68k.org, geert@linux-m68k.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: adaplas@pol.net, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org, sammy@sammy.net, sun3-list@redhat.com
 
-This patch removes video drivers that:
-- had already been marked as BROKEN in 2.6.0 three years ago and
-- are still marked as BROKEN.
+On Sat, 18 Nov 2006, Adrian Bunk wrote:
 
-These are the following drivers:
-- FB_CYBER
-- FB_VIRGE
-- FB_RETINAZ3
-- FB_ATARI
-- FB_SUN3
-- FB_PM3
+> This patch removes video drivers that:
+> - had already been marked as BROKEN in 2.6.0 three years ago and
+> - are still marked as BROKEN.
+>
+> These are the following drivers:
+> - FB_CYBER
+> - FB_VIRGE
+> - FB_RETINAZ3
+> - FB_ATARI
 
-Drivers that had been marked as BROKEN for such a long time seem to be 
-unlikely to be revived in the forseeable future.
+FB_ATARI has just been revived. Geert has a preliminary patch; I'll send
+the final one soonish.
 
-But if anyone wants to ever revive any of these drivers, the code is 
-still present in the older kernel releases.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
-
-Due to it's size, the patch is available at
-  http://ftp.kernel.org/pub/linux/kernel/people/bunk/misc/patch-remove-broken-video.gz
-
- drivers/video/Kconfig   |   62 
- drivers/video/Makefile  |    6 
- drivers/video/atafb.c   | 3107 ----------------------------------
- drivers/video/cyberfb.c | 2297 -------------------------
- drivers/video/cyberfb.h |  415 ----
- drivers/video/pm3fb.c   | 3641 ----------------------------------------
- drivers/video/retz3fb.c | 1588 -----------------
- drivers/video/retz3fb.h |  286 ---
- drivers/video/sun3fb.c  |  702 -------
- drivers/video/virgefb.c | 2526 ---------------------------
- drivers/video/virgefb.h |  288 ---
- include/video/pm3fb.h   | 1235 -------------
- 12 files changed, 3 insertions(+), 16150 deletions(-)
+	Michael

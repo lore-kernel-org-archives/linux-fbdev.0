@@ -1,9 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: 2.6.19-rc5: Geode GX frame buffer takes 13
- seconds to initialize
-Date: Mon, 20 Nov 2006 16:34:15 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611201633240.17639@pentafluge.infradead.org>
-References: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
+Subject: Re: fbmem: is bootup logo broken for monochrome
+ LCD ?
+Date: Mon, 20 Nov 2006 16:42:58 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org>
+References: <45535C08.5020607@innova-card.com> 
+	<Pine.LNX.4.64.0611122138030.9472@pentafluge.infradead.org> 
+	<cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com> 
+	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org> 
+	<cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com> 
+	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org> 
+	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com> 
+	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org>
+	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,14 +20,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GmC6s-0001pE-7i for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Nov 2006 08:35:06 -0800
+	id 1GmCEv-000305-Gx for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 20 Nov 2006 08:43:25 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GmC6p-0007KQ-Fb
+	(Exim 4.44) id 1GmCEZ-0002nQ-4G
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Nov 2006 08:35:06 -0800
-In-Reply-To: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
+	Mon, 20 Nov 2006 08:43:04 -0800
+In-Reply-To: <cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,39 +38,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ben Gardner <gardner.ben@gmail.com>
-Cc: Jordan Crouse <jordan.crouse@amd.com>, linux-fbdev-devel@lists.sourceforge.net
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-> Hi all,
+> On 11/17/06, James Simmons <jsimmons@infradead.org> wrote:
+> > 
+> > Are those actually numbers? If they are the problem isn't byte reversal
+> > but bit shifting.
+> > 
+> > 1010100 = 54
+> > 0101010 = 2A
 > 
-> I'm using the Geode GX processor and the associated frame buffer
-> driver in 2.6.19-rc5.
-> I have a 640x480 LCD attached, without DDC support (not sure if that matters).
-> 
-> The frame buffer driver takes 12.5 seconds to initialize.
-> 
-> Is this normal?
-> 
-> Relevant kernel log:
-> [   18.516093] io scheduler deadline registered (default)
-> [   18.539818] gxfb 0000:00:01.1: 16384 Kibyte of video memory at 0x41000000
-> [   31.052135] Console: switching to colour frame buffer device 80x30
-> [   31.070906] fb0: Geode GX frame buffer device
-> [   31.094200] Real Time Clock Driver v1.12ac
-> 
-> I tried building the driver as a module, but that makes no difference
-> -- modprobe 'hangs' for 13 seconds.
-> 
-> I looked through the Geode driver code and didn't see anything obvious
-> that would eat up 13 seconds.
-> 
-> Any idea as to what is going on?
+> It's not byte reversal, but _bits_ of each bytes have been inversed
+> (bit7->bit0, bit6->bit1, bit5->bit2, bit4->bit3, bit3->bit4, ...)
+> after calling slow_imageblit(). Is it something expected ?
 
-No idea. I do have hardware with this chipset altho I don't have a 2.6.X 
-kernel running on it. So I will see what the problem is in the next few 
-weeks.
-
+Yipes!! Bit reversal. I have never seen that before. Is only the logo
+messed up? Slow_imageblit can be called if there is no dword alignment 
+for the font bitmaps. So the question is do most if not all our fonts 
+look okay?
+ 
+> > I really don't understand why fbmem.c has its own routines to handle the
+> > logo for the color > map. I can set creating a fbcmap and calling
+> > fb_set_cmap instead.
+> 
+> Unfortunately I cannot help you on this point...
+> 
+> > That will be a  separte patch.
+> > 
+> 
+> Thanks
+> 
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

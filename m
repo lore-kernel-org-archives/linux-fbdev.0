@@ -1,66 +1,30 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] fb: modedb uses wrong default_mode
-Date: Mon, 20 Nov 2006 16:48:05 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611201643460.17639@pentafluge.infradead.org>
-References: <Pine.LNX.4.64.0611151933070.12799@jalava.cc.jyu.fi>
- <20061115152952.0e92c50d.akpm@osdl.org> <20061115234456.GB3674@cosmic.amd.com>
- <Pine.LNX.4.64.0611171919090.9851@pentafluge.infradead.org>
- <20061117124013.b6e4183d.akpm@osdl.org>
+Subject: Re: [RFC: 2.6 patch] remove broken video drivers
+Date: Mon, 20 Nov 2006 16:51:39 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611201648550.17639@pentafluge.infradead.org>
+References: <20061118000235.GV31879@stusta.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S934264AbWKTQsM@vger.kernel.org>
-In-Reply-To: <20061117124013.b6e4183d.akpm@osdl.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S966201AbWKTQv5@vger.kernel.org>
+In-Reply-To: <20061118000235.GV31879@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Tero Roponen <teanropo@jyu.fi>, linux-kernel@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@ozlabs.org, sammy@sammy.net, sun3-list@redhat.com
 
 
-> James Simmons <jsimmons@infradead.org> wrote:
+> This patch removes video drivers that:
+> - had already been marked as BROKEN in 2.6.0 three years ago and
+> - are still marked as BROKEN.
 > 
-> > Who knows how many drivers get this wrong. BTW Jordan is right. 
-> > DEFAULT_MODEDB_INDEX is unless. Also we don't need dbsize anymore. 
-> > Jordan did point out a error in fb_find_mode. It should be
-> > 
-> > 	if (!db)
-> > 	    db = modedb;
-> > 	dbsize = ARRAY_SIZE(modedb);
-> > 
-> > 	if (!default_mode)
-> > 	    default_mode = &db[DEFAULT_MODEDB_INDEX];
-> > 	if (!default_bpp)
-> > 	    default_bpp = 8;
-> > 
-> > db will always be set.
-> 
-> I think we do need dbsize, and that the code which I have now:
+> These are the following drivers:
+> - FB_CYBER
+> - FB_VIRGE
+> - FB_RETINAZ3
+> - FB_ATARI
+> - FB_SUN3
+> - FB_PM3
 
-I really don't trust dbsize. The driver writer can pass in the wrong 
-number. Whereas ARRAY_SIZE will always be correct. Lets take the position 
-that we use dbsize then we need to test if dbsize is greater than the 
-really size of the modedb. The dbsize parameter was for the days before we
-had ARRAY_SIZE.
-
-> int fb_find_mode(struct fb_var_screeninfo *var,
-> 		 struct fb_info *info, const char *mode_option,
-> 		 const struct fb_videomode *db, unsigned int dbsize,
-> 		 const struct fb_videomode *default_mode,
-> 		 unsigned int default_bpp)
-> {
->     int i;
-> 
->     /* Set up defaults */
->     if (!db) {
-> 	db = modedb;
-> 	dbsize = ARRAY_SIZE(modedb);
->     }
-
-      if (dbsize > ARRAY_SIZE(db))
-	dbsize = ARRAY_SIZE(db);
-
->     if (!default_mode)
-> 	default_mode = &db[0];
-> 
->     if (!default_bpp)
-> 	default_bpp = 8;
+If someone is willing to send me a Permedia3 card I can port the driver. 
+The rest are m68k drivers. I do have S3Trio and a Virge card but no specs.

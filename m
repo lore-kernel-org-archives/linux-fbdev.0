@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 Subject: Re: [RFC: 2.6 patch] remove broken video drivers
-Date: Sun, 19 Nov 2006 12:46:41 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0611191246150.31733@pademelon.sonytel.be>
+Date: Mon, 20 Nov 2006 10:17:28 +0100 (CET)
+Message-ID: <Pine.LNX.4.58.0611201014280.24134@xplor.biophys.uni-duesseldorf.de>
 References: <20061118000235.GV31879@stusta.de>
 	<Pine.LNX.4.58.0611181132230.7667@xplor.biophys.uni-duesseldorf.de>
 	<20061118195519.GZ31879@stusta.de>
@@ -13,12 +13,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gll8Q-0005az-Lc for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 19 Nov 2006 03:46:54 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Gll8Q-0001e1-9w
+	id 1Gm5Ho-0004Kn-4l for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 20 Nov 2006 01:17:56 -0800
+Received: from opal.biophys.uni-duesseldorf.de ([134.99.176.7])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Gm5Hl-0001SW-8m
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 19 Nov 2006 03:46:54 -0800
+	Mon, 20 Nov 2006 01:17:55 -0800
 In-Reply-To: <20061118195519.GZ31879@stusta.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,32 +32,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-m68k@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Roman Zippel <zippel@linux-m68k.org>, Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>, Linux Kernel Development <linux-kernel@vger.kernel.org>, adaplas@pol.net, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: linux-m68k@vger.kernel.org, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, zippel@linux-m68k.org, linux-kernel@vger.kernel.org, geert@linux-m68k.org, adaplas@pol.net, Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 
-On Sat, 18 Nov 2006, Adrian Bunk wrote:
-> On Sat, Nov 18, 2006 at 11:34:41AM +0100, Michael Schmitz wrote:
-> > On Sat, 18 Nov 2006, Adrian Bunk wrote:
+> > > - FB_ATARI
+> >
+> > FB_ATARI has just been revived. Geert has a preliminary patch; I'll send
+> > the final one soonish.
+>
+> Thanks for this information.
+>
 > Are any of the following Atari options that are also on my
 > "BROKEN since at least 2.6.0" list also being revived?
-> 
+>
 > - HADES (arch/m68k/Kconfig)
 > - ATARI_ACSI (drivers/net/Kconfig)
 > - ATARI_BIONET (drivers/net/Kconfig)
+
+These three I can try to 'revive' without actually being able to test
+them.
+
 > - ATARI_PAMSNET (drivers/net/Kconfig)
 > - ATARI_SCSI (drivers/scsi/Kconfig)
 
-AFAIK, Michael is also working on ATARI_SCSI.
+These two (assuming PAMSNET is the VME ethercard) I can even test myself.
+So you can mark them 'being worked on'...
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Michael
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

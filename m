@@ -1,78 +1,66 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbmem: is bootup logo broken for monochrome
- LCD ?
-Date: Mon, 20 Nov 2006 16:42:58 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org>
-References: <45535C08.5020607@innova-card.com> 
-	<Pine.LNX.4.64.0611122138030.9472@pentafluge.infradead.org> 
-	<cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com> 
-	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org> 
-	<cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com> 
-	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org> 
-	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com> 
-	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org>
-	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] fb: modedb uses wrong default_mode
+Date: Mon, 20 Nov 2006 16:48:05 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611201643460.17639@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0611151933070.12799@jalava.cc.jyu.fi>
+ <20061115152952.0e92c50d.akpm@osdl.org> <20061115234456.GB3674@cosmic.amd.com>
+ <Pine.LNX.4.64.0611171919090.9851@pentafluge.infradead.org>
+ <20061117124013.b6e4183d.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S934264AbWKTQsM@vger.kernel.org>
+In-Reply-To: <20061117124013.b6e4183d.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GmCEv-000305-Gx for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Nov 2006 08:43:25 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GmCEZ-0002nQ-4G
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Nov 2006 08:43:04 -0800
-In-Reply-To: <cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Tero Roponen <teanropo@jyu.fi>, linux-kernel@vger.kernel.org
 
 
-> On 11/17/06, James Simmons <jsimmons@infradead.org> wrote:
+> James Simmons <jsimmons@infradead.org> wrote:
+> 
+> > Who knows how many drivers get this wrong. BTW Jordan is right. 
+> > DEFAULT_MODEDB_INDEX is unless. Also we don't need dbsize anymore. 
+> > Jordan did point out a error in fb_find_mode. It should be
 > > 
-> > Are those actually numbers? If they are the problem isn't byte reversal
-> > but bit shifting.
+> > 	if (!db)
+> > 	    db = modedb;
+> > 	dbsize = ARRAY_SIZE(modedb);
 > > 
-> > 1010100 = 54
-> > 0101010 = 2A
-> 
-> It's not byte reversal, but _bits_ of each bytes have been inversed
-> (bit7->bit0, bit6->bit1, bit5->bit2, bit4->bit3, bit3->bit4, ...)
-> after calling slow_imageblit(). Is it something expected ?
-
-Yipes!! Bit reversal. I have never seen that before. Is only the logo
-messed up? Slow_imageblit can be called if there is no dword alignment 
-for the font bitmaps. So the question is do most if not all our fonts 
-look okay?
- 
-> > I really don't understand why fbmem.c has its own routines to handle the
-> > logo for the color > map. I can set creating a fbcmap and calling
-> > fb_set_cmap instead.
-> 
-> Unfortunately I cannot help you on this point...
-> 
-> > That will be a  separte patch.
+> > 	if (!default_mode)
+> > 	    default_mode = &db[DEFAULT_MODEDB_INDEX];
+> > 	if (!default_bpp)
+> > 	    default_bpp = 8;
 > > 
+> > db will always be set.
 > 
-> Thanks
-> 
+> I think we do need dbsize, and that the code which I have now:
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+I really don't trust dbsize. The driver writer can pass in the wrong 
+number. Whereas ARRAY_SIZE will always be correct. Lets take the position 
+that we use dbsize then we need to test if dbsize is greater than the 
+really size of the modedb. The dbsize parameter was for the days before we
+had ARRAY_SIZE.
+
+> int fb_find_mode(struct fb_var_screeninfo *var,
+> 		 struct fb_info *info, const char *mode_option,
+> 		 const struct fb_videomode *db, unsigned int dbsize,
+> 		 const struct fb_videomode *default_mode,
+> 		 unsigned int default_bpp)
+> {
+>     int i;
+> 
+>     /* Set up defaults */
+>     if (!db) {
+> 	db = modedb;
+> 	dbsize = ARRAY_SIZE(modedb);
+>     }
+
+      if (dbsize > ARRAY_SIZE(db))
+	dbsize = ARRAY_SIZE(db);
+
+>     if (!default_mode)
+> 	default_mode = &db[0];
+> 
+>     if (!default_bpp)
+> 	default_bpp = 8;

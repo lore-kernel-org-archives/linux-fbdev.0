@@ -1,153 +1,50 @@
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: Re: 2.6.19-rc5: Geode GX frame buffer takes 13
- seconds to initialize
-Date: Mon, 20 Nov 2006 17:34:47 -0700
-Message-ID: <20061121003447.GD5160@cosmic.amd.com>
-References: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
-	<Pine.LNX.4.64.0611201633240.17639@pentafluge.infradead.org>
-	<808c8e9d0611201447y6e053e89m9a5333af91a235aa@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH] backlight: do not power off backlight when unregistering
+Date: Tue, 21 Nov 2006 01:01:46 -0200
+Message-ID: <20061121030146.GA31304@khazad-dum.debian.net>
+References: <20061105225429.GE14295@khazad-dum.debian.net> <1162773394.5473.18.camel@localhost.localdomain> <20061110000829.GA9021@khazad-dum.debian.net> <Pine.LNX.4.64.0611201928310.17639@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary=IJpNTDwzlM2Ie8A6
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GmJXS-0008WR-DP for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Nov 2006 16:31:02 -0800
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]
-	helo=outbound3-fra-R.bigfish.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GmJXR-00073P-7M
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Nov 2006 16:31:02 -0800
-In-Reply-To: <808c8e9d0611201447y6e053e89m9a5333af91a235aa@mail.gmail.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ben Gardner <gardner.ben@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
-
-
---IJpNTDwzlM2Ie8A6
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-On 20/11/06 16:47 -0600, Ben Gardner wrote:
-> I tracked it down to the memset_io() call in gxfb_core.c that clears
-> all the video memory.
-> 
-> It take 12.5 seconds to memset() a mere 16,384 Kibyte of memory.
-> That seems a bit strange to me.
-> 
-> What's stranger is the time it takes to clear the fb memory:
-> The first 4 MB clear in 0.01 s each.
-> The last 12MB are SLOW.
- 
-Hmmm - thats interesting.  One thing about the current gxfb driver is that
-it assumes a 16Mb framebuffer, which may or may not be what you have, since 
-the amount of memory that is assigned to the graphics engine is configurable.
-
-Its possible that you only have 4Mb of memory assigned to the graphics
-engine, and that memsetting further is out being subtractively decoded on
-the PCI bus and going nowhere slowly.
-
-The attached patch queries the BIOS for the true amount of memory that
-is configured.  The patch has been kicking around in the Geode git tree and 
--mm for a while so it should be sane.  Give it a try and see if it helps.
-
-Jordan
-
---IJpNTDwzlM2Ie8A6
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline;
- filename=patch_011
-Content-Transfer-Encoding: 7bit
-
-Author: Jordan Crouse <jordan.crouse@amd.com>
-Date:   Mon May 15 20:54:51 2006 -0600
-
-    FB: Get the Geode GX frambuffer size from the BIOS
-    
-    Use the Geode GX BIOS virtual registers to get the actual size of the
-    framebuffer.
-    
-    Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
-
-diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
-index 825c340..0245169 100644
---- a/drivers/video/geode/display_gx.c
-+++ b/drivers/video/geode/display_gx.c
-@@ -21,10 +21,19 @@ #include <asm/delay.h>
- #include "geodefb.h"
- #include "display_gx.h"
- 
--int gx_frame_buffer_size(void)
-+unsigned int gx_frame_buffer_size(void)
- {
--	/* Assuming 16 MiB. */
--	return 16*1024*1024;
-+	unsigned int val;
-+
-+	/* FB size is reported by a virtual register */
-+	/* Virtual register class = 0x02 */
-+	/* VG_MEM_SIZE(512Kb units) = 0x00 */
-+
-+	outw(0xFC53, 0xAC1C);
-+	outw(0x0200, 0xAC1C);
-+
-+	val = (unsigned int)(inw(0xAC1E)) & 0xFFl;
-+	return (val << 19);
- }
- 
- int gx_line_delta(int xres, int bpp)
-diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
-index 86c6233..41e79f4 100644
---- a/drivers/video/geode/display_gx.h
-+++ b/drivers/video/geode/display_gx.h
-@@ -11,7 +11,7 @@
- #ifndef __DISPLAY_GX_H__
- #define __DISPLAY_GX_H__
- 
--int gx_frame_buffer_size(void);
-+unsigned int gx_frame_buffer_size(void);
- int gx_line_delta(int xres, int bpp);
- 
- extern struct geode_dc_ops gx_dc_ops;
-
-
---IJpNTDwzlM2Ie8A6
+In-Reply-To: <Pine.LNX.4.64.0611201928310.17639@pentafluge.infradead.org>
+Sender: linux-acpi-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: James Simmons <jsimmons@infradead.org>
+Cc: Richard Purdie <rpurdie@rpsys.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org, Lennart Poettering <mzxreary@0pointer.de>, Andriy Skulysh <askulysh@image.kiev.ua>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Antonino Daplas <adaplas@pol.net>, Holger Macht <hmacht@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---IJpNTDwzlM2Ie8A6
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, 20 Nov 2006, James Simmons wrote:
+> > The following in-tree (latest linux-2.6 git tree) drivers are desktop/laptop
+> > devices and likely do not want the "dim and power off backlight on
+> > backlight_device_unregister" behavior:
+> > 
+> > drivers/video/aty/*
+> > drivers/video/riva/fbdev.c
+> > drivers/video/nvidia/nv_backlight.c
+> > drivers/misc/msi-laptop.c
+> 
+> ...
+>  
+> > I have CC'ed the relevant people (please forgive me any ommissions) for the
+> > drivers listed above, so they can chime in if their driver should retain the
+> > "dim and power off backlight on backlight_device_unregister" behaviour.
+> 
+> Hm. In the case of some drivers the hardware state on x86 is set back to 
+> text mode in some cases. So do we in that case dim the backlight?
 
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+I would very much *hate* that happening on any x86 box of mine.  I won't
+presume I understand enough of the usage pattern on weird devices, and it
+would make some sense to power off the display if you are removing the
+*only* way to talk to the video device (but I still think this is naively
+assuming the local admin don't want to just leave the display as-is).
 
---IJpNTDwzlM2Ie8A6--
+But as you said yourself, in regular desktop/laptops (at least x86 ones)
+textmode is there, and works just fine, so killing the display on module
+removal is wrong IMO.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh

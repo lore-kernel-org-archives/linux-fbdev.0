@@ -1,69 +1,278 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: Siemens sx1: merge framebuffer support
-Date: Tue, 21 Nov 2006 16:47:25 +0000
-Message-ID: <20061121164723.GB8193@atomide.com>
-References: <20061118181607.GA15275@elf.ucw.cz> <20061120190404.GD4597@atomide.com> <ce55079f0611202306l3cd57e48t68fe28e7e076d39a@mail.gmail.com> <Pine.LNX.4.64.0611211503190.32103@pentafluge.infradead.org> <3a5b1be00611210734k79c81305q7b229139c2b17ef6@mail.gmail.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: [PATCH] backlight: lcd: Remove dependenct from
+	the framebuffer layer
+Date: Tue, 21 Nov 2006 17:00:43 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611211641570.13421@pentafluge.infradead.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1031210AbWKUQtj@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3a5b1be00611210734k79c81305q7b229139c2b17ef6@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Imre Deak <imre.deak@solidboot.com>, Komal Shah <komal.shah802003@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>, Vladimir <vovan888@gmail.com>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GmYzJ-0001lU-DX for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 21 Nov 2006 09:00:49 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GmYzI-0002Hp-3D
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 21 Nov 2006 09:00:49 -0800
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi,
 
-* Komal Shah <komal.shah802003@gmail.com> [061121 15:35]:
-> On 11/21/06, James Simmons <jsimmons@infradead.org> wrote:
-> >
-> >Can you post the framebufer driver to the framebuffer list. We like to do
-> >peer review. Thank you :-)
+The backlight and layer should be independent from the framebuffer layer.
+It can use the services offered by the framebuffer, but its absence should
+not prevent the backlight/lcd layer from functioning. 
 
-It would be nice to get the framebuffer integrated. I think it would be
-best if Imre submitted the patches as it's mostly his work.
+Signed-off-by: James Simmons <jsimmons@infradead.org>
+---
 
-Imre, do you have time to send the patches to framebuffer list? If not,
-I can send them.
+ drivers/video/backlight/backlight.c |   85 ++++++++++++++++++++++-------------
+ drivers/video/backlight/lcd.c       |   76 +++++++++++++++++++------------
+ 4 files changed, 103 insertions(+), 64 deletions(-)
 
-> >On Tue, 21 Nov 2006, Vladimir wrote:
-> >
-> >> 2006/11/20, Tony Lindgren <tony@atomide.com>:
-> >> > * Pavel Machek <pavel@ucw.cz> [061118 18:16]:
-> >> > > From: Vladimir Ananiev <vovan888@gmail.com>
-> >> > >
-> >> > > Framebuffer support for Siemens SX1; this is second big patch. (Third
-> >> > > one will be mixer/sound support). Support is simple / pretty minimal,
-> >> > > but seems to work okay (and is somehow important for a cell phone 
-> >:-).
-> >> >
-> >> > Pushed to linux-omap. I guess you're planning to send the missing
-> >> > Kconfig + Makefile patch for this?
-> >> >
-> >> > Also, it would be better to use omap_mcbsp_xmit_word() or
-> >> > omap_mcsbsp_spi_master_xmit_word_poll() instead of OMAP_MCBSP_WRITE as
-> >> > it does not do any checking that it worked. The aic23 and tsc2101
-> >> > audio in linux-omap tree in general has the same problem.
-> >> >
-> >> > Regards,
-> >> >
-> >> > Tony
-> >> >
-> >>
-> >> Hmm. McBSP3 in SX1 is used in "GPIO mode". The only line used is CLKX,
-> >> so I think OMAP_MCBSP_WRITE would be enough. Am I wrong ?
-> >> -
-> 
-> Again, framebuffer support patch is based on the omap framebuffer
-> driver, which is not yet submitted to upstream/fbdevel list. sx1
-> framebuffer support just fill up the hooks required by -omap fb driver
-> framework.
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 27597c5..6766dfb 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -14,6 +14,57 @@ #include <linux/ctype.h>
+ #include <linux/err.h>
+ #include <linux/fb.h>
+ 
++
++#if defined(CONFIG_FB) || (defined(CONFIG_FB_MODULE) && \
++			   defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
++/* This callback gets called when something important happens inside a
++ * framebuffer driver. We're looking if that important event is blanking,
++ * and if it is, we're switching backlight power as well ...
++ */
++static int fb_notifier_callback(struct notifier_block *self,
++				unsigned long event, void *data)
++{
++	struct backlight_device *bd;
++	struct fb_event *evdata =(struct fb_event *)data;
++
++	/* If we aren't interested in this event, skip it immediately ... */
++	if (event != FB_EVENT_BLANK)
++		return 0;
++
++	bd = container_of(self, struct backlight_device, fb_notif);
++	down(&bd->sem);
++	if (bd->props)
++		if (!bd->props->check_fb ||
++		    bd->props->check_fb(evdata->info)) {
++			bd->props->fb_blank = *(int *)evdata->data;
++			if (likely(bd->props && bd->props->update_status))
++				bd->props->update_status(bd);
++		}
++	up(&bd->sem);
++	return 0;
++}
++
++static int backlight_register_fb(struct backlight_device *bd)
++{
++	memset(&bd->fb_notif, 0, sizeof(bd->fb_notif));
++	bd->fb_notif.notifier_call = fb_notifier_callback;
++
++	return fb_register_client(&bd->fb_notif);
++}
++
++static void backlight_unregister_fb(struct backlight_device *bd)
++{
++	fb_unregister_client(&bd->fb_notif);
++}
++#else
++static inline int backlight_register_fb(struct backlight_device *bd)
++{
++	return 0;
++}
++
++#define backlight_unregister_fb(...) do { } while (0)
++#endif /* CONFIG_FB */
++
+ static ssize_t backlight_show_power(struct class_device *cdev, char *buf)
+ {
+ 	int rc = -ENXIO;
+@@ -151,33 +202,6 @@ static struct class_device_attribute bl_
+ 	DECLARE_ATTR(max_brightness, 0444, backlight_show_max_brightness, NULL),
+ };
+ 
+-/* This callback gets called when something important happens inside a
+- * framebuffer driver. We're looking if that important event is blanking,
+- * and if it is, we're switching backlight power as well ...
+- */
+-static int fb_notifier_callback(struct notifier_block *self,
+-				unsigned long event, void *data)
+-{
+-	struct backlight_device *bd;
+-	struct fb_event *evdata =(struct fb_event *)data;
+-
+-	/* If we aren't interested in this event, skip it immediately ... */
+-	if (event != FB_EVENT_BLANK)
+-		return 0;
+-
+-	bd = container_of(self, struct backlight_device, fb_notif);
+-	down(&bd->sem);
+-	if (bd->props)
+-		if (!bd->props->check_fb ||
+-		    bd->props->check_fb(evdata->info)) {
+-			bd->props->fb_blank = *(int *)evdata->data;
+-			if (likely(bd->props && bd->props->update_status))
+-				bd->props->update_status(bd);
+-		}
+-	up(&bd->sem);
+-	return 0;
+-}
+-
+ /**
+  * backlight_device_register - create and register a new object of
+  *   backlight_device class.
+@@ -215,10 +239,7 @@ error:		kfree(new_bd);
+ 		return ERR_PTR(rc);
+ 	}
+ 
+-	memset(&new_bd->fb_notif, 0, sizeof(new_bd->fb_notif));
+-	new_bd->fb_notif.notifier_call = fb_notifier_callback;
+-
+-	rc = fb_register_client(&new_bd->fb_notif);
++	rc = backlight_register_fb(new_bd);
+ 	if (unlikely(rc))
+ 		goto error;
+ 
+@@ -268,7 +289,7 @@ void backlight_device_unregister(struct 
+ 	bd->props = NULL;
+ 	up(&bd->sem);
+ 
+-	fb_unregister_client(&bd->fb_notif);
++	backlight_unregister_fb(bd);
+ 
+ 	class_device_unregister(&bd->class_dev);
+ }
+diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+index bc8ab00..cab36a4 100644
+--- a/drivers/video/backlight/lcd.c
++++ b/drivers/video/backlight/lcd.c
+@@ -14,6 +14,51 @@ #include <linux/ctype.h>
+ #include <linux/err.h>
+ #include <linux/fb.h>
+ 
++#if defined(CONFIG_FB) || (defined(CONFIG_FB_MODULE) && \
++			   defined(CONFIG_LCD_CLASS_DEVICE_MODULE))
++/* This callback gets called when something important happens inside a
++ * framebuffer driver. We're looking if that important event is blanking,
++ * and if it is, we're switching lcd power as well ...
++ */
++static int fb_notifier_callback(struct notifier_block *self,
++				 unsigned long event, void *data)
++{
++	struct lcd_device *ld;
++	struct fb_event *evdata =(struct fb_event *)data;
++
++	/* If we aren't interested in this event, skip it immediately ... */
++	if (event != FB_EVENT_BLANK)
++		return 0;
++
++	ld = container_of(self, struct lcd_device, fb_notif);
++	down(&ld->sem);
++	if (ld->props)
++		if (!ld->props->check_fb || ld->props->check_fb(evdata->info))
++			ld->props->set_power(ld, *(int *)evdata->data);
++	up(&ld->sem);
++	return 0;
++}
++
++static int lcd_register_fb(struct lcd_device *ld)
++{
++	memset(&ld->fb_notif, 0, sizeof(&ld->fb_notif));
++	ld->fb_notif.notifier_call = fb_notifier_callback;
++	return fb_register_client(&ld->fb_notif);
++}
++
++static void lcd_unregister_fb(struct lcd_device *ld)
++{
++	fb_unregister_client(&ld->fb_notif);
++}
++#else
++static int lcd_register_fb(struct lcd_device *ld)
++{
++	return 0;
++}
++
++#define lcd_unregister_fb(...) do { } while (0)
++#endif /* CONFIG_FB */
++
+ static ssize_t lcd_show_power(struct class_device *cdev, char *buf)
+ {
+ 	int rc;
+@@ -127,29 +172,6 @@ static struct class_device_attribute lcd
+ 	DECLARE_ATTR(max_contrast, 0444, lcd_show_max_contrast, NULL),
+ };
+ 
+-/* This callback gets called when something important happens inside a
+- * framebuffer driver. We're looking if that important event is blanking,
+- * and if it is, we're switching lcd power as well ...
+- */
+-static int fb_notifier_callback(struct notifier_block *self,
+-				 unsigned long event, void *data)
+-{
+-	struct lcd_device *ld;
+-	struct fb_event *evdata =(struct fb_event *)data;
+-
+-	/* If we aren't interested in this event, skip it immediately ... */
+-	if (event != FB_EVENT_BLANK)
+-		return 0;
+-
+-	ld = container_of(self, struct lcd_device, fb_notif);
+-	down(&ld->sem);
+-	if (ld->props)
+-		if (!ld->props->check_fb || ld->props->check_fb(evdata->info))
+-			ld->props->set_power(ld, *(int *)evdata->data);
+-	up(&ld->sem);
+-	return 0;
+-}
+-
+ /**
+  * lcd_device_register - register a new object of lcd_device class.
+  * @name: the name of the new object(must be the same as the name of the
+@@ -186,10 +208,8 @@ error:		kfree(new_ld);
+ 		return ERR_PTR(rc);
+ 	}
+ 
+-	memset(&new_ld->fb_notif, 0, sizeof(new_ld->fb_notif));
+-	new_ld->fb_notif.notifier_call = fb_notifier_callback;
++	rc = lcd_register_fb(new_ld);
+ 
+-	rc = fb_register_client(&new_ld->fb_notif);
+ 	if (unlikely(rc))
+ 		goto error;
+ 
+@@ -232,9 +252,7 @@ void lcd_device_unregister(struct lcd_de
+ 	down(&ld->sem);
+ 	ld->props = NULL;
+ 	up(&ld->sem);
+-
+-	fb_unregister_client(&ld->fb_notif);
+-
++	lcd_unregister_fb(ld);
+ 	class_device_unregister(&ld->class_dev);
+ }
+ EXPORT_SYMBOL(lcd_device_unregister);
+-
 
-Yes, but the framebuffer code is in pretty much ready to be sent
-upstream :)
-
-Regards,
-
-Tony
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

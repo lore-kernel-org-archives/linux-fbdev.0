@@ -1,18 +1,12 @@
-From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
-Subject: Re: fbmem: is bootup logo broken for monochrome
-	LCD ?
-Date: Tue, 21 Nov 2006 10:45:41 +0100
-Message-ID: <cda58cb80611210145ic52001cr38aed6e38797e3a@mail.gmail.com>
-References: <45535C08.5020607@innova-card.com>
-	<Pine.LNX.4.64.0611122138030.9472@pentafluge.infradead.org>
-	<cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com>
-	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org>
-	<cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com>
-	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org>
-	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com>
-	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org>
-	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
-	<Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org>
+From: "Ben Gardner" <gardner.ben@gmail.com>
+Subject: Re: 2.6.19-rc5: Geode GX frame buffer takes 13
+	seconds to initialize
+Date: Tue, 21 Nov 2006 08:18:59 -0600
+Message-ID: <808c8e9d0611210618n2d54aaft1e2afb1c73dcf74a@mail.gmail.com>
+References: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
+	<Pine.LNX.4.64.0611201633240.17639@pentafluge.infradead.org>
+	<808c8e9d0611201447y6e053e89m9a5333af91a235aa@mail.gmail.com>
+	<20061121003447.GD5160@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,16 +15,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GmSCH-0004jr-6z for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 21 Nov 2006 01:45:45 -0800
-Received: from ug-out-1314.google.com ([66.249.92.170])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GmSCF-0003u3-Kx
+	id 1GmWr4-0001gI-60 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 21 Nov 2006 06:44:10 -0800
+Received: from wx-out-0506.google.com ([66.249.82.233])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GmWr3-0007rh-SI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 21 Nov 2006 01:45:45 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so1409321ugc
+	Tue, 21 Nov 2006 06:44:10 -0800
+Received: by wx-out-0506.google.com with SMTP id i30so3303287wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 21 Nov 2006 01:45:41 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org>
+	Tue, 21 Nov 2006 06:44:09 -0800 (PST)
+In-Reply-To: <20061121003447.GD5160@cosmic.amd.com>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -42,83 +36,105 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-On 11/20/06, James Simmons <jsimmons@infradead.org> wrote:
->
-> > On 11/17/06, James Simmons <jsimmons@infradead.org> wrote:
-> > >
-> > > Are those actually numbers? If they are the problem isn't byte reversal
-> > > but bit shifting.
-> > >
-> > > 1010100 = 54
-> > > 0101010 = 2A
+Hi Jordan,
+
+Now that you mention it, the kernel logs say it has 123 MB of LOWMEM,
+so it must have 4 MB allocated to video memory. (128 MB total).
+
+I'll try the patch on Monday -- I'm on holiday and don't have access
+to the hardware.
+
+If it works, (and I assume it will), can we get this pushed into the
+main kernel tree?
+IMO, this is a bug fix, not a new feature. =)
+
+Thanks,
+Ben
+
+On 11/20/06, Jordan Crouse <jordan.crouse@amd.com> wrote:
+> On 20/11/06 16:47 -0600, Ben Gardner wrote:
+> > I tracked it down to the memset_io() call in gxfb_core.c that clears
+> > all the video memory.
 > >
-> > It's not byte reversal, but _bits_ of each bytes have been inversed
-> > (bit7->bit0, bit6->bit1, bit5->bit2, bit4->bit3, bit3->bit4, ...)
-> > after calling slow_imageblit(). Is it something expected ?
+> > It take 12.5 seconds to memset() a mere 16,384 Kibyte of memory.
+> > That seems a bit strange to me.
+> >
+> > What's stranger is the time it takes to clear the fb memory:
+> > The first 4 MB clear in 0.01 s each.
+> > The last 12MB are SLOW.
 >
-> Yipes!! Bit reversal. I have never seen that before. Is only the logo
-> messed up? Slow_imageblit can be called if there is no dword alignment
-> for the font bitmaps. So the question is do most if not all our fonts
-> look okay?
+> Hmmm - thats interesting.  One thing about the current gxfb driver is that
+> it assumes a 16Mb framebuffer, which may or may not be what you have, since
+> the amount of memory that is assigned to the graphics engine is configurable.
 >
-
-No, it's not an only logo issue. Bit reversals happen for all images
-which are passed to slow_imageblit() including all fonts.
-
-Can it be a 'bit_per_pixel = 1' issue ? It seems that this config has
-not been widely tested.
-
-If you look at slow_imageblit() current implementation and for example
-let's say that at the begining of the function we have:
-
-	- __LITTLE_ENDIAN is defined
-	- bpp = 1
-	- fgcolor = 1
-	- bgcolor = 0
-	- start_index = 0
-
-The function core can be simplified into:
-
-	for (i = image->height; i--; ) {
-		shift = val = 0;
-		l = 8;
-		j = image->width;
-		dst = (u32 __iomem *) dst1;
-		s = src;
-
-		while (j--) {
-			l--;
-			color = (*s & (1 << l)) ? 1 : 0;
-			val |= color << shift;
-			
-			/* Did the bitshift spill bits to the next long? */
-			if (shift >= null_bits) {
-				FB_WRITEL(val, dst++);
-				val = (shift == null_bits) ? 0 :
-					FB_SHIFT_LOW(color,32 - shift);
-			}
-			shift += 1;
-			shift &= (32 - 1);
-			if (!l) { l = 8; s++; };
-		}
-
-		[ ...]
-
-Doesn't this bit of code do a bit reversal ? Specially these 2
-following lines of code:
-
-	color = (*s & (1 << l)) ? 1 : 0;
-	val |= color << shift;
-
-
-with 'l' taking values from 7 to 0, and 'shift' taking values from 0
-to 31.
-
-Thanks
-		Franck
+> Its possible that you only have 4Mb of memory assigned to the graphics
+> engine, and that memsetting further is out being subtractively decoded on
+> the PCI bus and going nowhere slowly.
+>
+> The attached patch queries the BIOS for the true amount of memory that
+> is configured.  The patch has been kicking around in the Geode git tree and
+> -mm for a while so it should be sane.  Give it a try and see if it helps.
+>
+> Jordan
+>
+>
+> Author: Jordan Crouse <jordan.crouse@amd.com>
+> Date:   Mon May 15 20:54:51 2006 -0600
+>
+>     FB: Get the Geode GX frambuffer size from the BIOS
+>
+>     Use the Geode GX BIOS virtual registers to get the actual size of the
+>     framebuffer.
+>
+>     Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+>
+> diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
+> index 825c340..0245169 100644
+> --- a/drivers/video/geode/display_gx.c
+> +++ b/drivers/video/geode/display_gx.c
+> @@ -21,10 +21,19 @@ #include <asm/delay.h>
+>  #include "geodefb.h"
+>  #include "display_gx.h"
+>
+> -int gx_frame_buffer_size(void)
+> +unsigned int gx_frame_buffer_size(void)
+>  {
+> -       /* Assuming 16 MiB. */
+> -       return 16*1024*1024;
+> +       unsigned int val;
+> +
+> +       /* FB size is reported by a virtual register */
+> +       /* Virtual register class = 0x02 */
+> +       /* VG_MEM_SIZE(512Kb units) = 0x00 */
+> +
+> +       outw(0xFC53, 0xAC1C);
+> +       outw(0x0200, 0xAC1C);
+> +
+> +       val = (unsigned int)(inw(0xAC1E)) & 0xFFl;
+> +       return (val << 19);
+>  }
+>
+>  int gx_line_delta(int xres, int bpp)
+> diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
+> index 86c6233..41e79f4 100644
+> --- a/drivers/video/geode/display_gx.h
+> +++ b/drivers/video/geode/display_gx.h
+> @@ -11,7 +11,7 @@
+>  #ifndef __DISPLAY_GX_H__
+>  #define __DISPLAY_GX_H__
+>
+> -int gx_frame_buffer_size(void);
+> +unsigned int gx_frame_buffer_size(void);
+>  int gx_line_delta(int xres, int bpp);
+>
+>  extern struct geode_dc_ops gx_dc_ops;
+>
+>
+>
+>
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

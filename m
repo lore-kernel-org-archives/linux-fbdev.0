@@ -1,175 +1,77 @@
-From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
-Subject: Re: fbmem: is bootup logo broken for monochrome
-	LCD ?
-Date: Wed, 22 Nov 2006 09:48:11 +0100
-Message-ID: <cda58cb80611220048p73bb54e3w414f1c0a5ce178d3@mail.gmail.com>
-References: <45535C08.5020607@innova-card.com>
-	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org>
-	<cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com>
-	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org>
-	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com>
-	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org>
-	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
-	<Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org>
-	<cda58cb80611210145ic52001cr38aed6e38797e3a@mail.gmail.com>
-	<Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Imre =?iso-8859-1?Q?De=E1k?= <imre.deak@solidboot.com>
+Subject: Re: Siemens sx1: merge framebuffer support
+Date: Wed, 22 Nov 2006 14:08:08 +0200
+Message-ID: <20061122120808.GA28102@mammoth.research.nokia.com>
+References: <20061118181607.GA15275@elf.ucw.cz> <20061120190404.GD4597@atomide.com> <ce55079f0611202306l3cd57e48t68fe28e7e076d39a@mail.gmail.com> <Pine.LNX.4.64.0611211503190.32103@pentafluge.infradead.org> <3a5b1be00611210734k79c81305q7b229139c2b17ef6@mail.gmail.com> <20061121164723.GB8193@atomide.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753946AbWKVMMO@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20061121164723.GB8193@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GmnmE-0001Dz-Oe for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 22 Nov 2006 00:48:18 -0800
-Received: from ug-out-1314.google.com ([66.249.92.172])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GmnmE-000090-Ar
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 22 Nov 2006 00:48:18 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so94463ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 22 Nov 2006 00:48:12 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Imre Deak <imre.deak@solidboot.com>, Komal Shah <komal.shah802003@gmail.com>, James Simmons <jsimmons@infradead.org>, Vladimir <vovan888@gmail.com>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-James Simmons wrote:
-> Lets look at the new code that I have done with your above parameters.
->
->        for (i = image->height; i--; ) {
->                shift = val = 0;
->                n = image->width;
->                dst = (u32 __iomem *) dst1;
->
-> 		while (n--) {
-> 			if (!s) { src++; s = 32; }
-> 			s -= 1;
-> 			color = (swapb32p(src) & (1 << s)) ? 1 : 0;
-> 			val |= color << shift;
->
-> 		       /* Did the bitshift spill bits to the next long? */
->                        if (shift >= 31) {
->                                FB_WRITEL(val, dst++);
->                                val = (shift == 31) ? 0 :(color >> (32 - shift));
->                        }
->                        shift += 1;
->                        shift &= (32 - 1);
->                }
->
->                [ ...]
->
-> with 's' taking values from 31 to 0, and 'shift' taking values from 0 to
-> 31. In the case of bits_per_pixel = 1 we have
->
-> s -= 1;
-> color = (swapb32p(src) & (1 << s)) ? 1 : 0;
-> val |= color << shift;
+Hi Tony and all,
 
-I suppose here that you meant 'swab32p' instead of 'swapb32p'. I can't
-find any definition of 'swapb32p' and in your last patch you sent you
-is using 'swab32p' which converts a 32-bits little endian word into a
-32-bits big endian one.
+On Tue, Nov 21, 2006 at 04:47:25PM +0000, Tony Lindgren wrote:
+> Hi,
+> 
+> * Komal Shah <komal.shah802003@gmail.com> [061121 15:35]:
+> > On 11/21/06, James Simmons <jsimmons@infradead.org> wrote:
+> > >
+> > >Can you post the framebufer driver to the framebuffer list. We like to do
+> > >peer review. Thank you :-)
+> 
+> It would be nice to get the framebuffer integrated. I think it would be
+> best if Imre submitted the patches as it's mostly his work.
+> 
+> Imre, do you have time to send the patches to framebuffer list? If not,
+> I can send them.
 
->
-> which reduces to val = color;
->
-> I'm I seeing it wrong?
+Yes, I'm going to post it this week.
 
-Well, I would say yes you are. If src = { 0xa3, 0x30, 0xef, 0x72 ...}
+--Imre
 
-	swab32p(src) -> 0x72ef30a3 -> 01110010 11101111 00110000 10100011
-
-
-during loop #1 (s=31, shift=0):
-
-	color = 0x72ef30a3 & (1<<31) ? 1 : 0;	color is 0
-	val |= 0 << 0;				val is 0
-
-during loop #2 (s=30, shift=1):
-
-	color = 0x72ef30a3 & (1<<30) ? 1 : 0;	color is 1
-	val |= 1 << 1;				val is 2
-	
-during loop #3 (s=29, shift=2):
-
-	color = 0x72ef30a3 & (1<<29) ? 1 : 0;	color is 1
-	val |= 1 << 2;				val is 6
-
-during loop #4 (s=28, shift=3):
-
-	color = 0x72ef30a3 & (1<<28) ? 1 : 0;	color is 1
-	val |= 1 << 3;				val is 0xe
-
-during loop #5 (s=27, shift=4):
-
-	color = 0x72ef30a3 & (1<<27) ? 1 : 0;	color is 0
-	val |= 0 << 4;				val is 0xe
-
-during loop #6 (s=26, shift=5):
-
-	color = 0x72ef30a3 & (1<<26) ? 1 : 0;	color is 0
-	val |= 0 << 5;				val is 0xe
-
-during loop #7 (s=25, shift=6):
-
-	color = 0x72ef30a3 & (1<<25) ? 1 : 0;	color is 1
-	val |= 1 << 6;				val is 0x4e
-
-during loop #8 (s=24, shift=7):
-
-	color = 0x72ef30a3 & (1<<24) ? 1 : 0;	color is 0
-	val |= 0 << 7;				val is 0x4e
-
-and so on...
-
-Finally val -> 11000101 00001100 11110111 01001110 -> 0xc50cf74e
-
-and FB_WRITEL(val, dst++) will write { 0x4e, 0xf7, 0x0c, 0xc5} into
-the frame buffer.
-
-Am I seeing it wrong ?
-
-> BTW what is your visual?
->
-
-FYI, I give you all screen info, maybe something is miss-initialized...
-
-static struct fb_fix_screeninfo t6963c_fb_fix __initdata = {
-	.id		= DRIVER_NAME,
-	.type		= FB_TYPE_PACKED_PIXELS,
-	.visual		= FB_VISUAL_MONO01,
-	.accel		= FB_ACCEL_NONE,
-};
-
-static struct fb_var_screeninfo t6963c_fb_var __initdata = {
-	.bits_per_pixel	= 1,
-	.red		= {0, 1, 0},
-	.green		= {0, 1, 0},
-	.blue		= {0, 1, 0},
-	.transp		= {0, 0, 0},
-	.activate	= FB_ACTIVATE_NOW,
-	.height		= -1,		/* height of picture in mm */
-	.width		= -1,		/* width of picture in mm */
-	.accel_flags	= 0,
-	.vmode		= FB_VMODE_NONINTERLACED,
-};
-
-		Franck
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+> 
+> > >On Tue, 21 Nov 2006, Vladimir wrote:
+> > >
+> > >> 2006/11/20, Tony Lindgren <tony@atomide.com>:
+> > >> > * Pavel Machek <pavel@ucw.cz> [061118 18:16]:
+> > >> > > From: Vladimir Ananiev <vovan888@gmail.com>
+> > >> > >
+> > >> > > Framebuffer support for Siemens SX1; this is second big patch. (Third
+> > >> > > one will be mixer/sound support). Support is simple / pretty minimal,
+> > >> > > but seems to work okay (and is somehow important for a cell phone 
+> > >:-).
+> > >> >
+> > >> > Pushed to linux-omap. I guess you're planning to send the missing
+> > >> > Kconfig + Makefile patch for this?
+> > >> >
+> > >> > Also, it would be better to use omap_mcbsp_xmit_word() or
+> > >> > omap_mcsbsp_spi_master_xmit_word_poll() instead of OMAP_MCBSP_WRITE as
+> > >> > it does not do any checking that it worked. The aic23 and tsc2101
+> > >> > audio in linux-omap tree in general has the same problem.
+> > >> >
+> > >> > Regards,
+> > >> >
+> > >> > Tony
+> > >> >
+> > >>
+> > >> Hmm. McBSP3 in SX1 is used in "GPIO mode". The only line used is CLKX,
+> > >> so I think OMAP_MCBSP_WRITE would be enough. Am I wrong ?
+> > >> -
+> > 
+> > Again, framebuffer support patch is based on the omap framebuffer
+> > driver, which is not yet submitted to upstream/fbdevel list. sx1
+> > framebuffer support just fill up the hooks required by -omap fb driver
+> > framework.
+> 
+> Yes, but the framebuffer code is in pretty much ready to be sent
+> upstream :)
+> 
+> Regards,
+> 
+> Tony

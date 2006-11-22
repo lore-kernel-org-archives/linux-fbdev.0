@@ -1,19 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
+From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
 Subject: Re: fbmem: is bootup logo broken for monochrome
- LCD ?
-Date: Tue, 21 Nov 2006 18:02:12 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org>
-References: <45535C08.5020607@innova-card.com> 
-	<Pine.LNX.4.64.0611122138030.9472@pentafluge.infradead.org> 
-	<cda58cb80611130153n60579de0w2ebb59b050595b3b@mail.gmail.com> 
-	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org> 
-	<cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com> 
-	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org> 
-	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com> 
-	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org> 
-	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com> 
+	LCD ?
+Date: Wed, 22 Nov 2006 09:48:11 +0100
+Message-ID: <cda58cb80611220048p73bb54e3w414f1c0a5ce178d3@mail.gmail.com>
+References: <45535C08.5020607@innova-card.com>
+	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org>
+	<cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com>
+	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org>
+	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com>
+	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org>
+	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
 	<Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org>
 	<cda58cb80611210145ic52001cr38aed6e38797e3a@mail.gmail.com>
+	<Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,14 +21,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GmZwm-0008QA-36 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 21 Nov 2006 10:02:16 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GmZwl-00061K-3o
+	id 1GmnmE-0001Dz-Oe for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 22 Nov 2006 00:48:18 -0800
+Received: from ug-out-1314.google.com ([66.249.92.172])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GmnmE-000090-Ar
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 21 Nov 2006 10:02:16 -0800
-In-Reply-To: <cda58cb80611210145ic52001cr38aed6e38797e3a@mail.gmail.com>
+	Wed, 22 Nov 2006 00:48:18 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so94463ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 22 Nov 2006 00:48:12 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,109 +42,131 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+To: James Simmons <jsimmons@infradead.org>
 Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-
-> > Yipes!! Bit reversal. I have never seen that before. Is only the logo
-> > messed up? Slow_imageblit can be called if there is no dword alignment
-> > for the font bitmaps. So the question is do most if not all our fonts
-> > look okay?
-> > 
-> 
-> No, it's not an only logo issue. Bit reversals happen for all images
-> which are passed to slow_imageblit() including all fonts.
-
-I thought so. 
-
-> Can it be a 'bit_per_pixel = 1' issue ? It seems that this config has
-> not been widely tested.
-
-Nope. I have tested it on 4bpp and above. No monochrome. 
- 
-> If you look at slow_imageblit() current implementation and for example
-> let's say that at the begining of the function we have:
-> 
-> 	- __LITTLE_ENDIAN is defined
-> 	- bpp = 1
-> 	- fgcolor = 1
-> 	- bgcolor = 0
-> 	- start_index = 0
-> 
-> The function core can be simplified into:
-> 
-> 	for (i = image->height; i--; ) {
-> 		shift = val = 0;
-> 		l = 8;
-> 		j = image->width;
-> 		dst = (u32 __iomem *) dst1;
-> 		s = src;
-> 
-> 		while (j--) {
-> 			l--;
-> 			color = (*s & (1 << l)) ? 1 : 0;
+James Simmons wrote:
+> Lets look at the new code that I have done with your above parameters.
+>
+>        for (i = image->height; i--; ) {
+>                shift = val = 0;
+>                n = image->width;
+>                dst = (u32 __iomem *) dst1;
+>
+> 		while (n--) {
+> 			if (!s) { src++; s = 32; }
+> 			s -= 1;
+> 			color = (swapb32p(src) & (1 << s)) ? 1 : 0;
 > 			val |= color << shift;
-> 						/* Did the bitshift spill bits
-> to the next long? */
-> 			if (shift >= null_bits) {
-> 				FB_WRITEL(val, dst++);
-> 				val = (shift == null_bits) ? 0 :
-> 					FB_SHIFT_LOW(color,32 - shift);
-> 			}
-> 			shift += 1;
-> 			shift &= (32 - 1);
-> 			if (!l) { l = 8; s++; };
-> 		}
-> 
-> 		[ ...]
-> 
-> Doesn't this bit of code do a bit reversal ? Specially these 2
-> following lines of code:
-> 
-> 	color = (*s & (1 << l)) ? 1 : 0;
-> 	val |= color << shift;
-> 
-> 
-> with 'l' taking values from 7 to 0, and 'shift' taking values from 0
-> to 31.
+>
+> 		       /* Did the bitshift spill bits to the next long? */
+>                        if (shift >= 31) {
+>                                FB_WRITEL(val, dst++);
+>                                val = (shift == 31) ? 0 :(color >> (32 - shift));
+>                        }
+>                        shift += 1;
+>                        shift &= (32 - 1);
+>                }
+>
+>                [ ...]
+>
+> with 's' taking values from 31 to 0, and 'shift' taking values from 0 to
+> 31. In the case of bits_per_pixel = 1 we have
+>
+> s -= 1;
+> color = (swapb32p(src) & (1 << s)) ? 1 : 0;
+> val |= color << shift;
 
-Lets look at the new code that I have done with your above parameters. 
+I suppose here that you meant 'swab32p' instead of 'swapb32p'. I can't
+find any definition of 'swapb32p' and in your last patch you sent you
+is using 'swab32p' which converts a 32-bits little endian word into a
+32-bits big endian one.
 
-       for (i = image->height; i--; ) {
-               shift = val = 0;
-               n = image->width;
-               dst = (u32 __iomem *) dst1;
+>
+> which reduces to val = color;
+>
+> I'm I seeing it wrong?
 
-		while (n--) {
-			if (!s) { src++; s = 32; }
-			s -= 1;
-			color = (swapb32p(src) & (1 << s)) ? 1 : 0;
-			val |= color << shift;
+Well, I would say yes you are. If src = { 0xa3, 0x30, 0xef, 0x72 ...}
 
-		       /* Did the bitshift spill bits to the next long? */
-                       if (shift >= 31) {
-                               FB_WRITEL(val, dst++);
-                               val = (shift == 31) ? 0 :(color >> (32 - shift));
-                       }
-                       shift += 1;
-                       shift &= (32 - 1);
-               }
-
-               [ ...]
-
-with 's' taking values from 31 to 0, and 'shift' taking values from 0 to 
-31. In the case of bits_per_pixel = 1 we have 
-
-s -= 1;
-color = (swapb32p(src) & (1 << s)) ? 1 : 0;
-val |= color << shift;
-
-which reduces to val = color;
-
-I'm I seeing it wrong? BTW what is your visual? 
+	swab32p(src) -> 0x72ef30a3 -> 01110010 11101111 00110000 10100011
 
 
+during loop #1 (s=31, shift=0):
 
+	color = 0x72ef30a3 & (1<<31) ? 1 : 0;	color is 0
+	val |= 0 << 0;				val is 0
+
+during loop #2 (s=30, shift=1):
+
+	color = 0x72ef30a3 & (1<<30) ? 1 : 0;	color is 1
+	val |= 1 << 1;				val is 2
+	
+during loop #3 (s=29, shift=2):
+
+	color = 0x72ef30a3 & (1<<29) ? 1 : 0;	color is 1
+	val |= 1 << 2;				val is 6
+
+during loop #4 (s=28, shift=3):
+
+	color = 0x72ef30a3 & (1<<28) ? 1 : 0;	color is 1
+	val |= 1 << 3;				val is 0xe
+
+during loop #5 (s=27, shift=4):
+
+	color = 0x72ef30a3 & (1<<27) ? 1 : 0;	color is 0
+	val |= 0 << 4;				val is 0xe
+
+during loop #6 (s=26, shift=5):
+
+	color = 0x72ef30a3 & (1<<26) ? 1 : 0;	color is 0
+	val |= 0 << 5;				val is 0xe
+
+during loop #7 (s=25, shift=6):
+
+	color = 0x72ef30a3 & (1<<25) ? 1 : 0;	color is 1
+	val |= 1 << 6;				val is 0x4e
+
+during loop #8 (s=24, shift=7):
+
+	color = 0x72ef30a3 & (1<<24) ? 1 : 0;	color is 0
+	val |= 0 << 7;				val is 0x4e
+
+and so on...
+
+Finally val -> 11000101 00001100 11110111 01001110 -> 0xc50cf74e
+
+and FB_WRITEL(val, dst++) will write { 0x4e, 0xf7, 0x0c, 0xc5} into
+the frame buffer.
+
+Am I seeing it wrong ?
+
+> BTW what is your visual?
+>
+
+FYI, I give you all screen info, maybe something is miss-initialized...
+
+static struct fb_fix_screeninfo t6963c_fb_fix __initdata = {
+	.id		= DRIVER_NAME,
+	.type		= FB_TYPE_PACKED_PIXELS,
+	.visual		= FB_VISUAL_MONO01,
+	.accel		= FB_ACCEL_NONE,
+};
+
+static struct fb_var_screeninfo t6963c_fb_var __initdata = {
+	.bits_per_pixel	= 1,
+	.red		= {0, 1, 0},
+	.green		= {0, 1, 0},
+	.blue		= {0, 1, 0},
+	.transp		= {0, 0, 0},
+	.activate	= FB_ACTIVATE_NOW,
+	.height		= -1,		/* height of picture in mm */
+	.width		= -1,		/* width of picture in mm */
+	.accel_flags	= 0,
+	.vmode		= FB_VMODE_NONINTERLACED,
+};
+
+		Franck
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

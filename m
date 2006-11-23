@@ -1,10 +1,10 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Jes Sorensen <jes@sgi.com>
 Subject: Re: [RFC: 2.6 patch] remove broken video drivers
-Date: Thu, 23 Nov 2006 10:39:31 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0611231038370.8000@pademelon.sonytel.be>
+Date: 23 Nov 2006 04:15:56 -0500
+Message-ID: <yq0fycav7zn.fsf@jaguar.mkp.net>
 References: <20061118000235.GV31879@stusta.de>
 	<Pine.LNX.4.58.0611181132230.7667@xplor.biophys.uni-duesseldorf.de>
-	<yq0k61mv8c2.fsf@jaguar.mkp.net> <yq0fycav7zn.fsf@jaguar.mkp.net>
+	<yq0k61mv8c2.fsf@jaguar.mkp.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,13 +13,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GnB3P-0006AZ-Dc for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Nov 2006 01:39:35 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GnB3P-0008L0-1c
+	id 1GnAgX-0003jG-Fp for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 23 Nov 2006 01:16:00 -0800
+Received: from jaguar.mkp.net ([192.139.46.146])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GnAgX-0001qs-5J
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Nov 2006 01:39:35 -0800
-In-Reply-To: <yq0fycav7zn.fsf@jaguar.mkp.net>
+	Thu, 23 Nov 2006 01:15:57 -0800
+In-Reply-To: <yq0k61mv8c2.fsf@jaguar.mkp.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,33 +30,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jes Sorensen <jes@sgi.com>
-Cc: Sam Creasey <sammy@sammy.net>, linux-m68k@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Roman Zippel <zippel@linux-m68k.org>, Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>, Adrian Bunk <bunk@stusta.de>, adaplas@pol.net, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de>
+Cc: sammy@sammy.net, linux-m68k@vger.kernel.org, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, zippel@linux-m68k.org, Adrian Bunk <bunk@stusta.de>, geert@linux-m68k.org, adaplas@pol.net
 
-On Thu, 23 Nov 2006, Jes Sorensen wrote:
-> Grrrrrrrrrr
-> 
-> Someone cross posted this to one of those idiotic messed up
-> members-only lists, namely linux-fbdev-devel.
-> 
-> I don't know who did that, but please leave that broken list off the
-> CC list when cross postings to properly configured mailing lists such
-> as linux-m68k and linux-kernel, until the admin of linux-fbdev-devel
-> gets a clue.
 
-Thank you for offering to take over my job of rejecting spam on the linux-fbdev
-mailing lists!
+Grrrrrrrrrr
 
-Gr{oetje,eeting}s,
+Someone cross posted this to one of those idiotic messed up
+members-only lists, namely linux-fbdev-devel.
 
-						Geert
+I don't know who did that, but please leave that broken list off the
+CC list when cross postings to properly configured mailing lists such
+as linux-m68k and linux-kernel, until the admin of linux-fbdev-devel
+gets a clue.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Jes
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

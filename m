@@ -1,26 +1,37 @@
-From: Jes Sorensen <jes@sgi.com>
-Subject: Re: [RFC: 2.6 patch] remove broken video drivers
-Date: Thu, 23 Nov 2006 10:49:20 +0100
-Message-ID: <45656EA0.4060104@sgi.com>
-References: <20061118000235.GV31879@stusta.de>
-	<Pine.LNX.4.58.0611181132230.7667@xplor.biophys.uni-duesseldorf.de>
-	<yq0k61mv8c2.fsf@jaguar.mkp.net> <yq0fycav7zn.fsf@jaguar.mkp.net>
-	<Pine.LNX.4.62.0611231038370.8000@pademelon.sonytel.be>
+From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
+Subject: Re: fbmem: is bootup logo broken for monochrome
+	LCD ?
+Date: Thu, 23 Nov 2006 15:53:16 +0100
+Message-ID: <cda58cb80611230653x2951d9d8x41b193f0101f9fdf@mail.gmail.com>
+References: <45535C08.5020607@innova-card.com>
+	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org>
+	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com>
+	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org>
+	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com>
+	<Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org>
+	<cda58cb80611210145ic52001cr38aed6e38797e3a@mail.gmail.com>
+	<Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org>
+	<cda58cb80611220048p73bb54e3w414f1c0a5ce178d3@mail.gmail.com>
+	<Pine.LNX.4.64.0611222101220.14604@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GnBDC-0007D6-6W for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Nov 2006 01:49:42 -0800
-Received: from omx2-ext.sgi.com ([192.48.171.19] helo=omx2.sgi.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GnBDA-0003Fu-V3
+	id 1GnFx2-0005vc-0U for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 23 Nov 2006 06:53:20 -0800
+Received: from ug-out-1314.google.com ([66.249.92.169])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GnFx1-0005sb-6U
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Nov 2006 01:49:42 -0800
-In-Reply-To: <Pine.LNX.4.62.0611231038370.8000@pademelon.sonytel.be>
+	Thu, 23 Nov 2006 06:53:19 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so453793ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 23 Nov 2006 06:53:16 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0611222101220.14604@pentafluge.infradead.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,24 +42,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sam Creasey <sammy@sammy.net>, linux-m68k@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Roman Zippel <zippel@linux-m68k.org>, Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>, Adrian Bunk <bunk@stusta.de>, adaplas@pol.net, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Geert Uytterhoeven wrote:
-> On Thu, 23 Nov 2006, Jes Sorensen wrote:
->> I don't know who did that, but please leave that broken list off the
->> CC list when cross postings to properly configured mailing lists such
->> as linux-m68k and linux-kernel, until the admin of linux-fbdev-devel
->> gets a clue.
-> 
-> Thank you for offering to take over my job of rejecting spam on the linux-fbdev
-> mailing lists!
+On 11/22/06, James Simmons <jsimmons@infradead.org> wrote:
+> Replace the below line in my patch I sent
+>
+> > >                     val |= color << shift;
+>
+> with
+>                         val <<= shift;
+>                         val |= color;
 
-And thats any different from lists on other servers, such as kernel.org?
-If the sourceforce people can't run list, just talk to Matti or DaveM
-and move it to kernel.org.
+I think it can't work since shift is 0 to 31, you'll end up with 'val
+<<= 31' which I don't think is what you want.
 
-Jes
+doing
+                         val <<= 1;
+
+make it works but it's still very fragile. Code which deals with
+trailing bit seems bogus since new value of 'val' is simply discarded
+here.
+
+                /* write trailing bits */
+                if (shift) {
+                        u32 end_mask = (~(u32)0 << shift);
+
+                        val = FB_READL(dst1);
+                        val &= end_mask;
+                        FB_WRITEL(val, dst1);
+                }
+
+Another thing is that I don't see how very small images (for example
+when image->width = 4) will be handled.
+
+> > >                    /* Did the bitshift spill bits to the next long? */
+> > >                        if (shift >= 31) {
+> > >                                FB_WRITEL(val, dst++);
+> > >                                val = (shift == 31) ? 0 :(color >> (32 - shift));
+> > >                        }
+> > >                        shift += 1;
+> > >                        shift &= (32 - 1);
+> > >                }
+> > >
+> > >                [ ...]
+>
+> Let me know if that works.
+
+I'm wondering if working with 32 bits words really worth... I mean the
+code is quite hard to follow because it needs to deal with endianess,
+heading bits, trailings bits whereas working with 8 bits would be so
+much easier, wouldn't it ? Are writings in video RAM very long ?
+
+-- 
+               Franck
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

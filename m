@@ -1,86 +1,34 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbmem: is bootup logo broken for monochrome
- LCD ?
-Date: Wed, 22 Nov 2006 21:04:50 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611222101220.14604@pentafluge.infradead.org>
-References: <45535C08.5020607@innova-card.com> 
-	<Pine.LNX.4.64.0611131415270.25397@pentafluge.infradead.org> 
-	<cda58cb80611131027h5052bf80va06003c23b844fe@mail.gmail.com> 
-	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org> 
-	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com> 
-	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org> 
-	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com> 
-	<Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org> 
-	<cda58cb80611210145ic52001cr38aed6e38797e3a@mail.gmail.com> 
-	<Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org>
-	<cda58cb80611220048p73bb54e3w414f1c0a5ce178d3@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jes Sorensen <jes@sgi.com>
+Subject: Re: [RFC: 2.6 patch] remove broken video drivers
+Date: 23 Nov 2006 04:08:29 -0500
+Message-ID: <yq0k61mv8c2.fsf@jaguar.mkp.net>
+References: <20061118000235.GV31879@stusta.de>
+	<Pine.LNX.4.58.0611181132230.7667@xplor.biophys.uni-duesseldorf.de>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933316AbWKWJIc@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.58.0611181132230.7667@xplor.biophys.uni-duesseldorf.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GmzH8-000514-1c for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 22 Nov 2006 13:04:58 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GmzH5-0000pX-FP
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 22 Nov 2006 13:04:57 -0800
-In-Reply-To: <cda58cb80611220048p73bb54e3w414f1c0a5ce178d3@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de>
+Cc: Adrian Bunk <bunk@stusta.de>, adaplas@pol.net, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org, sammy@sammy.net, sun3-list@redhat.com
 
+>>>>> "Michael" == Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> writes:
 
-> James Simmons wrote:
-> > Lets look at the new code that I have done with your above parameters.
-> >
-> >        for (i = image->height; i--; ) {
-> >                shift = val = 0;
-> >                n = image->width;
-> >                dst = (u32 __iomem *) dst1;
-> >
-> > 		while (n--) {
-> > 			if (!s) { src++; s = 32; }
-> > 			s -= 1;
-> > 			color = (swapb32p(src) & (1 << s)) ? 1 : 0;
+Michael> On Sat, 18 Nov 2006, Adrian Bunk wrote:
+>> This patch removes video drivers that: - had already been marked as
+>> BROKEN in 2.6.0 three years ago and - are still marked as BROKEN.
+>> 
+>> These are the following drivers: - FB_CYBER - FB_VIRGE -
+>> FB_RETINAZ3 - FB_ATARI
 
-Replace the below line in my patch I sent 
+Michael> FB_ATARI has just been revived. Geert has a preliminary
+Michael> patch; I'll send the final one soonish.
 
-> > 			val |= color << shift;
+I'm probably the only one with a RetinaZ3 left but the machine hasn't
+been booted for quite a while..... not sure if I'll get to it in the
+near future, but I can always resurrect the patches from an old kernel
+and start from there if I do.
 
-with
-			val <<= shift;
-			val |= color;
-
-> > 		       /* Did the bitshift spill bits to the next long? */
-> >                        if (shift >= 31) {
-> >                                FB_WRITEL(val, dst++);
-> >                                val = (shift == 31) ? 0 :(color >> (32 - shift));
-> >                        }
-> >                        shift += 1;
-> >                        shift &= (32 - 1);
-> >                }
-> >
-> >                [ ...]
-
-Let me know if that works.
-
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+Jes

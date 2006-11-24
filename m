@@ -1,22 +1,22 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] Remove references to non-existent
-	fbmon_valid_timings()
-Date: Fri, 24 Nov 2006 15:50:17 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0611241549470.13870@pademelon.sonytel.be>
+Subject: [PATCH] <linux/fb.h>: Use `unsigned int'
+	instead of plain `unsigned'
+Date: Fri, 24 Nov 2006 15:52:30 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0611241552130.15930@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GncNq-0000nX-To for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 24 Nov 2006 06:50:31 -0800
+	id 1GncPp-0000ze-8Y for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 24 Nov 2006 06:52:33 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GncNp-0001wi-H6
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GncPo-0000eg-Ss
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 24 Nov 2006 06:50:30 -0800
+	Fri, 24 Nov 2006 06:52:33 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,57 +31,39 @@ To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Remove references to non-existent fbmon_valid_timings()
+<linux/fb.h>: Use `unsigned int' instead of plain `unsigned'
 
 Signed-Off-By: Geert Uytterhoeven <geert@linux-m68k.org>
 
 ---
- drivers/video/amifb.c          |    8 --------
- drivers/video/aty/atyfb_base.c |    4 ----
- include/linux/fb.h             |    2 --
- 3 files changed, 14 deletions(-)
+ include/linux/fb.h |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
---- ps3-linux-src.orig/drivers/video/amifb.c
-+++ ps3-linux-src/drivers/video/amifb.c
-@@ -2904,14 +2904,6 @@
- 	par->crsr.spot_x = par->crsr.spot_y = 0;
- 	par->crsr.height = par->crsr.width = 0;
+--- linux.orig/include/linux/fb.h
++++ linux/include/linux/fb.h
+@@ -581,8 +581,9 @@
+ 	int (*fb_set_par)(struct fb_info *info);
  
--#if 0	/* fbmon not done.  uncomment for 2.5.x -brad */
--	if (!fbmon_valid_timings(pixclock[clk_shift], htotal, vtotal,
--				 &fb_info)) {
--		DPRINTK("mode doesn't fit for monitor\n");
--		return -EINVAL;
--	}
--#endif
--
- 	return 0;
- }
+ 	/* set color register */
+-	int (*fb_setcolreg)(unsigned regno, unsigned red, unsigned green,
+-			    unsigned blue, unsigned transp, struct fb_info *info);
++	int (*fb_setcolreg)(unsigned int regno, unsigned int red,
++			    unsigned int green, unsigned int blue,
++			    unsigned int transp, struct fb_info *info);
  
---- ps3-linux-src.orig/drivers/video/aty/atyfb_base.c
-+++ ps3-linux-src/drivers/video/aty/atyfb_base.c
-@@ -1495,10 +1495,6 @@
- 	else
- 		info->var.accel_flags = 0;
+ 	/* set color registers in batch */
+ 	int (*fb_setcmap)(struct fb_cmap *cmap, struct fb_info *info);
+@@ -614,8 +615,8 @@
+ 			unsigned long arg);
  
--#if 0 /* fbmon is not done. uncomment for 2.5.x -brad */
--	if (!fbmon_valid_timings(pixclock, htotal, vtotal, info))
--		return -EINVAL;
--#endif
- 	aty_crtc_to_var(&crtc, var);
- 	var->pixclock = par->pll_ops->pll_to_var(info, &pll);
- 	return 0;
---- ps3-linux-src.orig/include/linux/fb.h
-+++ ps3-linux-src/include/linux/fb.h
-@@ -929,8 +929,6 @@
- #define FB_MODE_IS_FIRST	16
- #define FB_MODE_IS_FROM_VAR     32
+ 	/* Handle 32bit compat ioctl (optional) */
+-	int (*fb_compat_ioctl)(struct fb_info *info, unsigned cmd,
+-			unsigned long arg);
++	int (*fb_compat_ioctl)(struct fb_info *info, unsigned int cmd,
++			       unsigned long arg);
  
--extern int fbmon_valid_timings(u_int pixclock, u_int htotal, u_int vtotal,
--			       const struct fb_info *fb_info);
- extern int fbmon_dpms(const struct fb_info *fb_info);
- extern int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var,
- 		       struct fb_info *info);
+ 	/* perform fb specific mmap */
+ 	int (*fb_mmap)(struct fb_info *info, struct vm_area_struct *vma);
 
 Gr{oetje,eeting}s,
 

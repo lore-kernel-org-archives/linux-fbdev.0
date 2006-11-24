@@ -1,31 +1,31 @@
 From: Ondrej Zajicek <santiago@mail.cz>
-Subject: [PATCH] driver for S3 Trio
-Date: Fri, 24 Nov 2006 00:41:52 +0100
-Message-ID: <20061123234152.GA11933@localhost.localdomain>
+Subject: [PATCH] driver for S3 Trio, correction
+Date: Fri, 24 Nov 2006 01:16:54 +0100
+Message-ID: <20061124001653.GA15988@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GnOCC-0004ej-RW for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Nov 2006 15:41:33 -0800
+	id 1GnOk9-0008F1-EQ for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 23 Nov 2006 16:16:37 -0800
 Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GnOCB-0006LW-Rv
+	(Exim 4.44) id 1GnOk4-0003sC-BE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Nov 2006 15:41:32 -0800
+	Thu, 23 Nov 2006 16:16:37 -0800
 Received: from localhost.localdomain (feanorr.kolej.mff.cuni.cz
 	[195.113.26.209])
-	by smtp1.kolej.mff.cuni.cz (8.13.6/8.13.6) with ESMTP id kANNfQHY043330
+	by smtp1.kolej.mff.cuni.cz (8.13.6/8.13.6) with ESMTP id kAO0GRCY044522
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 24 Nov 2006 00:41:27 +0100 (CET)
+	Fri, 24 Nov 2006 01:16:29 +0100 (CET)
 	(envelope-from zajio1am@artax.karlin.mff.cuni.cz)
 Received: from santiago by localhost.localdomain with local (Exim 4.50)
-	id 1GnOCW-0003S5-C6 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 24 Nov 2006 00:41:52 +0100
+	id 1GnOkQ-0004Bh-7Z for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 24 Nov 2006 01:16:54 +0100
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -41,26 +41,8 @@ To: linux-fbdev-devel@lists.sourceforge.net
 
 Hello
 
-This is first draft of (PCI) S3 Trio fbdev driver. There are already
-two drivers for S3 Trio chips (cyberfb.c and S3trio.c) in kernel.
-Both are broken and targetted to uncommon variants.
-
-Features:
- * 8, 16 and 32 bpp modes
- * interlaced and doublescan modes
- * text mode (activated by bpp = 0), used by tileblit fbcon functions 
- * panning in both direction
- * no support for accelerated bitblit functions
- 
-I tested it only on S3 Trio32 and S3 Trio64 cards with 1 MB RAM. 
-I suppose there will be problems on S3 Trio64 cards with more memory.
-If there is anybody willing to test this driver on such card, i will
-modified driver ASAP.
-
-Driver is separated to s3fb.c and svgalib.c . In svgalib.c there are
-generic functions which can be useful to other drivers for VGA-based
-cards. 
-
+I am sorry for mangled patch i sent before,
+this one should be correct:
 
 Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 
@@ -68,7 +50,7 @@ Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 
 diff -uprN -X linux-2.6.18/Documentation/dontdiff linux-2.6.18/drivers/video/Kconfig linux-2.6.18-feanor/drivers/video/Kconfig
 --- linux-2.6.18/drivers/video/Kconfig	2006-09-20 05:42:06.000000000 +0200
-+++ linux-2.6.18-feanor/drivers/video/Kconfig	2006-11-11 23:15:44.000000000 +0100
++++ linux-2.6.18-feanor/drivers/video/Kconfig	2006-11-24 01:00:18.000000000 +0100
 @@ -80,6 +80,14 @@ config FB_CFB_IMAGEBLIT
  	  blitting. This is used by drivers that don't provide their own
  	  (accelerated) version.
@@ -84,7 +66,7 @@ diff -uprN -X linux-2.6.18/Documentation/dontdiff linux-2.6.18/drivers/video/Kco
  config FB_MACMODES
         tristate
         depends on FB
-@@ -1303,6 +1311,27 @@ config FB_TRIDENT_ACCEL
+@@ -1303,6 +1311,16 @@ config FB_TRIDENT_ACCEL
  	This will compile the Trident frame buffer device with
  	acceleration functions.
  
@@ -103,7 +85,7 @@ diff -uprN -X linux-2.6.18/Documentation/dontdiff linux-2.6.18/drivers/video/Kco
  	depends on FB && PCI && BROKEN
 diff -uprN -X linux-2.6.18/Documentation/dontdiff linux-2.6.18/drivers/video/Makefile linux-2.6.18-feanor/drivers/video/Makefile
 --- linux-2.6.18/drivers/video/Makefile	2006-09-20 05:42:06.000000000 +0200
-+++ linux-2.6.18-feanor/drivers/video/Makefile	2006-11-11 23:07:05.000000000 +0100
++++ linux-2.6.18-feanor/drivers/video/Makefile	2006-11-24 01:00:28.000000000 +0100
 @@ -18,6 +18,7 @@ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfil
  obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
  obj-$(CONFIG_FB_CFB_IMAGEBLIT) += cfbimgblt.o
@@ -112,7 +94,7 @@ diff -uprN -X linux-2.6.18/Documentation/dontdiff linux-2.6.18/drivers/video/Mak
  
  # Hardware specific drivers go first
  obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
-@@ -53,6 +54,8 @@ obj-$(CONFIG_FB_S3TRIO)           += S3t
+@@ -53,6 +54,7 @@ obj-$(CONFIG_FB_S3TRIO)           += S3t
  obj-$(CONFIG_FB_FM2)              += fm2fb.o
  obj-$(CONFIG_FB_CYBLA)            += cyblafb.o
  obj-$(CONFIG_FB_TRIDENT)          += tridentfb.o
@@ -190,7 +172,7 @@ diff -uprN -X linux-2.6.18/Documentation/dontdiff linux-2.6.18/drivers/video/s3f
 +			"S3 Plato/PX", "S3 Aurora64VP"};
 +
 +#define CHIP_UNKNOWN		0x00
-+#define CHIP_732_TRIO32		0x01
++#define CHIP_732_TRIO32 	0x01
 +#define CHIP_764_TRIO64		0x02
 +#define CHIP_765_TRIO64VP	0x03
 +#define CHIP_767_TRIO64UVP	0x04

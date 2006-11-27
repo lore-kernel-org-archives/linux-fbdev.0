@@ -1,9 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] Remove references to non-existent
- fbmon_valid_timings()
-Date: Thu, 30 Nov 2006 16:03:33 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611301600460.11840@pentafluge.infradead.org>
-References: <Pine.LNX.4.62.0611241549470.13870@pademelon.sonytel.be>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: Re: 2.6.19-rc5: Geode GX frame buffer takes 13
+ seconds to initialize
+Date: Mon, 27 Nov 2006 14:07:41 -0700
+Message-ID: <20061127210741.GB5169@cosmic.amd.com>
+References: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
+	<Pine.LNX.4.64.0611201633240.17639@pentafluge.infradead.org>
+	<808c8e9d0611201447y6e053e89m9a5333af91a235aa@mail.gmail.com>
+	<20061121003447.GD5160@cosmic.amd.com>
+	<808c8e9d0611210618n2d54aaft1e2afb1c73dcf74a@mail.gmail.com>
+	<808c8e9d0611270828m4ff91349mdc7bf03fd6875e91@mail.gmail.com>
+	<Pine.LNX.4.64.0611271820450.16234@pentafluge.infradead.org>
+	<20061127183930.GF588@cosmic.amd.com>
+	<20061127115403.059e5f19.akpm@osdl.org>
+	<20061127123502.4253210c.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,18 +21,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GpoNw-0005xk-Ig for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 30 Nov 2006 08:03:40 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
+	id 1GoncN-0002c8-Oc for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Nov 2006 13:02:23 -0800
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]
+	helo=outbound2-blu-R.bigfish.com)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GpoNt-0002Wj-Je
+	(Exim 4.44) id 1GoncK-0001co-TJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 30 Nov 2006 08:03:40 -0800
-Received: from localhost ([127.0.0.1])
-	by pentafluge.infradead.org with esmtps (Exim 4.63 #1 (Red Hat Linux))
-	id 1GpoNp-0006z3-Im for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 30 Nov 2006 16:03:33 +0000
-In-Reply-To: <Pine.LNX.4.62.0611241549470.13870@pademelon.sonytel.be>
+	Mon, 27 Nov 2006 13:02:23 -0800
+In-Reply-To: <20061127123502.4253210c.akpm@osdl.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,89 +41,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+
+On 27/11/06 12:35 -0800, Andrew Morton wrote:
+ 
+> It seems that there's duplication between Herbert's git-cryptodev tree
+> and your git-geode tree.
+> 
+> What's the story here?
+
+Does - I'm an idiot count as an explanation?  I committed the crime of
+a duplicate commit (well, actually several crimes).
+
+Go ahead and pull the tree from your list.  I've decided to rebuild the
+tree from scratch without the newbie behavior.  I'll let you know when
+its clean again.
+
+Jordan
+
+-- 
+Jordan Crouse
+Senior Linux Engineer
+Advanced Micro Devices, Inc.
+<www.amd.com/embeddedprocessors>
 
 
-I agree that we should remove fbmon_valid_timings. It has been replaced by 
-code in fbmon.c. We should convert amifb and atyfb_base to use the code in
-fbmon.c. rivafb_check_var is a example example of fbmon usage.
-
-On Fri, 24 Nov 2006, Geert Uytterhoeven wrote:
-
-> 
-> Remove references to non-existent fbmon_valid_timings()
-> 
-> Signed-Off-By: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
-> ---
->  drivers/video/amifb.c          |    8 --------
->  drivers/video/aty/atyfb_base.c |    4 ----
->  include/linux/fb.h             |    2 --
->  3 files changed, 14 deletions(-)
-> 
-> --- ps3-linux-src.orig/drivers/video/amifb.c
-> +++ ps3-linux-src/drivers/video/amifb.c
-> @@ -2904,14 +2904,6 @@
->  	par->crsr.spot_x = par->crsr.spot_y = 0;
->  	par->crsr.height = par->crsr.width = 0;
->  
-> -#if 0	/* fbmon not done.  uncomment for 2.5.x -brad */
-> -	if (!fbmon_valid_timings(pixclock[clk_shift], htotal, vtotal,
-> -				 &fb_info)) {
-> -		DPRINTK("mode doesn't fit for monitor\n");
-> -		return -EINVAL;
-> -	}
-> -#endif
-> -
->  	return 0;
->  }
->  
-> --- ps3-linux-src.orig/drivers/video/aty/atyfb_base.c
-> +++ ps3-linux-src/drivers/video/aty/atyfb_base.c
-> @@ -1495,10 +1495,6 @@
->  	else
->  		info->var.accel_flags = 0;
->  
-> -#if 0 /* fbmon is not done. uncomment for 2.5.x -brad */
-> -	if (!fbmon_valid_timings(pixclock, htotal, vtotal, info))
-> -		return -EINVAL;
-> -#endif
->  	aty_crtc_to_var(&crtc, var);
->  	var->pixclock = par->pll_ops->pll_to_var(info, &pll);
->  	return 0;
-> --- ps3-linux-src.orig/include/linux/fb.h
-> +++ ps3-linux-src/include/linux/fb.h
-> @@ -929,8 +929,6 @@
->  #define FB_MODE_IS_FIRST	16
->  #define FB_MODE_IS_FROM_VAR     32
->  
-> -extern int fbmon_valid_timings(u_int pixclock, u_int htotal, u_int vtotal,
-> -			       const struct fb_info *fb_info);
->  extern int fbmon_dpms(const struct fb_info *fb_info);
->  extern int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var,
->  		       struct fb_info *info);
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
-> -------------------------------------------------------------------------
-> Take Surveys. Earn Cash. Influence the Future of IT
-> Join SourceForge.net's Techsay panel and you'll get the chance to share your
-> opinions on IT & business topics through brief surveys - and earn cash
-> http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

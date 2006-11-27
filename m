@@ -1,14 +1,15 @@
 From: "Jordan Crouse" <jordan.crouse@amd.com>
 Subject: Re: 2.6.19-rc5: Geode GX frame buffer takes 13
  seconds to initialize
-Date: Mon, 27 Nov 2006 11:36:57 -0700
-Message-ID: <20061127183657.GE588@cosmic.amd.com>
+Date: Mon, 27 Nov 2006 11:39:30 -0700
+Message-ID: <20061127183930.GF588@cosmic.amd.com>
 References: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
 	<Pine.LNX.4.64.0611201633240.17639@pentafluge.infradead.org>
 	<808c8e9d0611201447y6e053e89m9a5333af91a235aa@mail.gmail.com>
 	<20061121003447.GD5160@cosmic.amd.com>
 	<808c8e9d0611210618n2d54aaft1e2afb1c73dcf74a@mail.gmail.com>
 	<808c8e9d0611270828m4ff91349mdc7bf03fd6875e91@mail.gmail.com>
+	<Pine.LNX.4.64.0611271820450.16234@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -17,15 +18,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GolGD-0003lb-NH for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Nov 2006 10:31:21 -0800
-Received: from outbound-cpk.frontbridge.com ([207.46.163.16]
-	helo=outbound2-cpk-R.bigfish.com)
+	id 1GolLm-0004MZ-Jp for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Nov 2006 10:37:06 -0800
+Received: from outbound-red.frontbridge.com ([216.148.222.49]
+	helo=outbound3-red-R.bigfish.com)
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GolGA-0007Sg-As
+	(Exim 4.44) id 1GolLj-0000eH-Tg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Nov 2006 10:31:21 -0800
-In-Reply-To: <808c8e9d0611270828m4ff91349mdc7bf03fd6875e91@mail.gmail.com>
+	Mon, 27 Nov 2006 10:37:06 -0800
+In-Reply-To: <Pine.LNX.4.64.0611271820450.16234@pentafluge.infradead.org>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,31 +39,15 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: James Simmons <jsimmons@infradead.org>
+Cc: akpm@osdl.org
 
-On 27/11/06 10:28 -0600, Ben Gardner wrote:
-> Out of curiosity, where are the magic registers (0xAC1C, 0xAC1E) documented?
-> I searched "AMD Geode GX Processors Data Book", but had no luck...
+> Jordan can you repost the patch and CC andrew morton with it so the patch 
+> will be in the -mm tree. Thank you.
 
-Those are virtual magic registers courtesy of our VSA.  The document is
-on the Developers website, though its probably time that I go down and throw
-things until the technical marketing department agrees to put that document
-on the public site as well.
-
-> Also, I notice that the pci_resource_len() shows 16 MB, even though
-> the resource should only cover 4 MB.  I assume this is a BIOS bug...
-> =)
-
-You say bug, I say limitation... :)  IIRC, PCI resource sizes can only
-be powers of two, but the video memory doesn't nessesarly need to be a power
-of two.    So the VSA just sets the PCI resource to 16MB and expects the
-code to access the virtual register, as you have experienced.
-
-> Is there anything I can do to help get this pushed into the 2.6.19 kernel?
-
-Ask folks more important then me... :)  I don't know if this really
-qualifies for a -rc release.  There should be nothing standing in our way
-for 2.6.20, though (I hope).
+Its in the geode GIT tree
+(http://git.infradead.org/?p=users/jcrouse/geode.git;a=summary), and I
+believe that Andrew already pulls from there - so all should be 
+well.  Am I right in saying that?
 
 Jordan
 

@@ -1,26 +1,35 @@
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-Subject: Endian issue
-Date: Mon, 27 Nov 2006 15:59:00 +0100
-Message-ID: <000001c71234$95079550$5201a8c0@GEG2400>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: fbmem: is bootup logo broken for monochrome
+ LCD ?
+Date: Mon, 27 Nov 2006 16:01:21 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611271558550.11317@pentafluge.infradead.org>
+References: <45535C08.5020607@innova-card.com> 
+	<Pine.LNX.4.64.0611131850410.2366@pentafluge.infradead.org> 
+	<cda58cb80611140144q79718798p40f2762955c1d91@mail.gmail.com> 
+	<Pine.LNX.4.64.0611171825520.32200@pentafluge.infradead.org> 
+	<cda58cb80611171242sb40a53bvd02145364551b5a2@mail.gmail.com> 
+	<Pine.LNX.4.64.0611201636500.17639@pentafluge.infradead.org> 
+	<cda58cb80611210145ic52001cr38aed6e38797e3a@mail.gmail.com> 
+	<Pine.LNX.4.64.0611211507290.32103@pentafluge.infradead.org> 
+	<cda58cb80611220048p73bb54e3w414f1c0a5ce178d3@mail.gmail.com> 
+	<Pine.LNX.4.64.0611222101220.14604@pentafluge.infradead.org>
+	<cda58cb80611230653x2951d9d8x41b193f0101f9fdf@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gohss-0003zd-Hf for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Nov 2006 06:55:02 -0800
-Received: from smtp19.msg.oleane.net ([62.161.4.19])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Gohsq-0006qL-DE
+	id 1Goiw2-0003Gh-SG for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Nov 2006 08:02:22 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Goivv-00051J-6w
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Nov 2006 06:55:02 -0800
-Received: from GEG2400 ([194.3.133.184]) (authenticated)
-	by smtp19.msg.oleane.net (MTA) with ESMTP id kAREstlZ002100
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 27 Nov 2006 15:54:57 +0100
-In-Reply-To: 
+	Mon, 27 Nov 2006 08:02:21 -0800
+In-Reply-To: <cda58cb80611230653x2951d9d8x41b193f0101f9fdf@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,35 +40,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-Hi
+> > Replace the below line in my patch I sent
+> > 
+> > > >                     val |= color << shift;
+> > 
+> > with
+> >                         val <<= shift;
+> >                         val |= color;
+> 
+> I think it can't work since shift is 0 to 31, you'll end up with 'val
+> <<= 31' which I don't think is what you want.
  
-I'm writing a framebuffer driver and I have some endian problems. 
-My board is big endian (powerpc inside) and I use a little endian 
-graphic card. I try to get a 16 bpp RGBA (5/5/5/1) true color mode 
-working. Nevertheless, I have troubles with the framebuffer layer.
- 
-For example, in the color_imageblit function of cfbimgblt.c, if I 
-want to draw two 16bpp rgba pixels P0 (0xFFFE) and P1 (0x0001), 
-they are packed together like this 0xFFFE_0001. 
-In memory, 0xFF is LSB, 0x01 is MSB (big endian). Then this 32bit 
-value is "__raw_writel" to the memory of the video card. 
+> doing
+>                         val <<= 1;
+> 
+> make it works but it's still very fragile. Code which deals with
+> trailing bit seems bogus since new value of 'val' is simply discarded
+> here.
 
-As my videocard works in little endian, I get 0x0100_FEFF. So the 
-pixels are at the correct place, but don't have the correct color. 
-It would be OK if it was 0x0001_FFFE.
- 
-My question is :
-- is it possible to use generic drawing function (blit, fillrect...) 
-on a big endian board with a little endian graphics card ?
-- if yes, how can I describe the colors bitfields, without 
-patching the kernel code, to get the correct color ?
- 
-Thanks
-Laurent
- 
+I'm going to test the code in depth over the next few days. I managed to 
+fix most of the problems with fast_imageblit. Now to fix the slow image 
+blit code.
+
+> I'm wondering if working with 32 bits words really worth... I mean the
+> code is quite hard to follow because it needs to deal with endianess,
+> heading bits, trailings bits whereas working with 8 bits would be so
+> much easier, wouldn't it ? Are writings in video RAM very long ?
+
+Yes. We need to minimize the writes over the PCI bus. Its really really 
+slow.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

@@ -1,8 +1,8 @@
-From: "Jordan Crouse" <jordan.crouse@amd.com>
+From: Andrew Morton <akpm@osdl.org>
 Subject: Re: 2.6.19-rc5: Geode GX frame buffer takes 13
  seconds to initialize
-Date: Mon, 27 Nov 2006 11:39:30 -0700
-Message-ID: <20061127183930.GF588@cosmic.amd.com>
+Date: Mon, 27 Nov 2006 11:54:03 -0800
+Message-ID: <20061127115403.059e5f19.akpm@osdl.org>
 References: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
 	<Pine.LNX.4.64.0611201633240.17639@pentafluge.infradead.org>
 	<808c8e9d0611201447y6e053e89m9a5333af91a235aa@mail.gmail.com>
@@ -10,24 +10,23 @@ References: <808c8e9d0611160829k28a8fdf9mafb9c7e27163cf4b@mail.gmail.com>
 	<808c8e9d0611210618n2d54aaft1e2afb1c73dcf74a@mail.gmail.com>
 	<808c8e9d0611270828m4ff91349mdc7bf03fd6875e91@mail.gmail.com>
 	<Pine.LNX.4.64.0611271820450.16234@pentafluge.infradead.org>
+	<20061127183930.GF588@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GolLm-0004MZ-Jp for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Nov 2006 10:37:06 -0800
-Received: from outbound-red.frontbridge.com ([216.148.222.49]
-	helo=outbound3-red-R.bigfish.com)
+	id 1GomZR-00043K-1H for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Nov 2006 11:55:17 -0800
+Received: from smtp.osdl.org ([65.172.181.25])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GolLj-0000eH-Tg
+	(Exim 4.44) id 1GomZJ-0007fi-Ru
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Nov 2006 10:37:06 -0800
-In-Reply-To: <Pine.LNX.4.64.0611271820450.16234@pentafluge.infradead.org>
-Content-Disposition: inline
+	Mon, 27 Nov 2006 11:55:14 -0800
+In-Reply-To: <20061127183930.GF588@cosmic.amd.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,26 +37,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-> Jordan can you repost the patch and CC andrew morton with it so the patch 
-> will be in the -mm tree. Thank you.
+On Mon, 27 Nov 2006 11:39:30 -0700
+"Jordan Crouse" <jordan.crouse@amd.com> wrote:
 
-Its in the geode GIT tree
-(http://git.infradead.org/?p=users/jcrouse/geode.git;a=summary), and I
-believe that Andrew already pulls from there - so all should be 
-well.  Am I right in saying that?
+> > Jordan can you repost the patch and CC andrew morton with it so the patch 
+> > will be in the -mm tree. Thank you.
+> 
+> Its in the geode GIT tree
+> (http://git.infradead.org/?p=users/jcrouse/geode.git;a=summary), and I
+> believe that Andrew already pulls from there - so all should be 
+> well.  Am I right in saying that?
+> 
 
-Jordan
+I was including git://git.infradead.org/users/jcrouse/geode.git but I
+tossed it out a few weeks back due, I think, to unpleasant interactions
+with git-cryptodev.
 
--- 
-Jordan Crouse
-Senior Linux Engineer
-Advanced Micro Devices, Inc.
-<www.amd.com/embeddedprocessors>
-
-
+I'll bring git-geode back, see what happens.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

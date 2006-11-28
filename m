@@ -1,25 +1,25 @@
 From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: [PATCH 4/6] [PATCH] gxfb: Support command line
-	options
-Date: Tue, 28 Nov 2006 16:15:07 -0700
-Message-ID: <20061128231507.25769.75366.stgit@cosmic.amd.com>
+Subject: [PATCH 5/6] [PATCH] gxfb: Fixup flatpanel
+	detection
+Date: Tue, 28 Nov 2006 16:15:17 -0700
+Message-ID: <20061128231517.25769.43800.stgit@cosmic.amd.com>
 References: <20061128230639.25769.43.stgit@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GpC4Y-0004BX-Rn for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 28 Nov 2006 15:09:06 -0800
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]
-	helo=outbound1-sin-R.bigfish.com)
+	id 1GpC4j-0004C9-GO for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 28 Nov 2006 15:09:17 -0800
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]
+	helo=outbound3-fra-R.bigfish.com)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GpC4X-0006qv-Sf
+	(Exim 4.44) id 1GpC4h-0001hA-Kn
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 28 Nov 2006 15:09:06 -0800
+	Tue, 28 Nov 2006 15:09:17 -0800
 In-Reply-To: <20061128230639.25769.43.stgit@cosmic.amd.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,89 +36,55 @@ Cc: akpm@osdl.org
 
 From: Jordan Crouse <jordan.crouse@amd.com>
 
-Add support for command line options for setting the mode and various
-settings.
+Use the right MSR and bits to detect if the GX is strapped for TFT or CRT
 
 Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
 ---
 
- drivers/video/geode/gxfb_core.c |   36 ++++++++++++++++++++++++++++++------
- 1 files changed, 30 insertions(+), 6 deletions(-)
+ drivers/video/geode/display_gx.h |    2 +-
+ drivers/video/geode/gxfb_core.c  |    2 +-
+ drivers/video/geode/video_gx.h   |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
+index ba0ccc8..0af33f3 100644
+--- a/drivers/video/geode/display_gx.h
++++ b/drivers/video/geode/display_gx.h
+@@ -18,7 +18,7 @@ extern struct geode_dc_ops gx_dc_ops;
+ 
+ /* MSR that tells us if a TFT or CRT is attached */
+ #define GLD_MSR_CONFIG   0xC0002001
+-#define GLD_MSR_CONFIG_FMT_FP 0x01
++#define GLD_MSR_CONFIG_DM_FP 0x40
+ 
+ /* Display controller registers */
+ 
 diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-index ccc50fc..d404f56 100644
+index d404f56..83ab18a 100644
 --- a/drivers/video/geode/gxfb_core.c
 +++ b/drivers/video/geode/gxfb_core.c
-@@ -35,10 +35,10 @@ #include "geodefb.h"
- #include "display_gx.h"
- #include "video_gx.h"
+@@ -328,7 +328,7 @@ static int __init gxfb_probe(struct pci_
  
--static char mode_option[32] = "640x480-16@60";
-+static char *mode_option;
+ 	rdmsrl(GLD_MSR_CONFIG, val);
  
- /* Modes relevant to the GX (taken from modedb.c) */
--static const struct fb_videomode __initdata gx_modedb[] = {
-+static const struct fb_videomode gx_modedb[] __initdata = {
- 	/* 640x480-60 VESA */
- 	{ NULL, 60, 640, 480, 39682,  48, 16, 33, 10, 96, 2,
- 	  0, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
-@@ -341,7 +341,8 @@ static int __init gxfb_probe(struct pci_
- 		goto err;
- 	}
+-	if (val & GLD_MSR_CONFIG_FMT_FP)
++	if ((val & GLD_MSR_CONFIG_DM_FP) == GLD_MSR_CONFIG_DM_FP)
+ 		par->enable_crt = 0;
+ 	else
+ 		par->enable_crt = 1;
+diff --git a/drivers/video/geode/video_gx.h b/drivers/video/geode/video_gx.h
+index 8f1e85b..119d0ab 100644
+--- a/drivers/video/geode/video_gx.h
++++ b/drivers/video/geode/video_gx.h
+@@ -14,7 +14,7 @@ #define __VIDEO_GX_H__
+ extern struct geode_vid_ops gx_vid_ops;
  
--        /* Clear the frame buffer of garbage. */
-+       
-+	/* Clear the frame buffer of garbage. */
-         memset_io(info->screen_base, 0, info->fix.smem_len);
+ /* GX Flatpanel control MSR */
+-#define GX_VP_MSR_PAD_SELECT           0x2011
++#define GX_VP_MSR_PAD_SELECT           0xC0002011
+ #define GX_VP_PAD_SELECT_MASK          0x3FFFFFFF
+ #define GX_VP_PAD_SELECT_TFT           0x1FFFFFFF
  
- 	gxfb_check_var(&info->var, info);
-@@ -411,11 +412,34 @@ static struct pci_driver gxfb_driver = {
- 	.remove		= gxfb_remove,
- };
- 
-+#ifndef MODULE
-+static int __init gxfb_setup(char *options) {
-+
-+	char *opt;
-+
-+	if (!options || !*options)
-+		return 0;
-+
-+	while((opt = strsep(&options, ",")) != NULL) {
-+		if (!*opt)
-+			continue;
-+
-+		mode_option = opt;
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
- static int __init gxfb_init(void)
- {
- #ifndef MODULE
--	if (fb_get_options("gxfb", NULL))
-+	char *option = NULL;
-+
-+	if (fb_get_options("gxfb", &option))
- 		return -ENODEV;
-+
-+	gxfb_setup(option);
- #endif
- 	return pci_register_driver(&gxfb_driver);
- }
-@@ -428,8 +452,8 @@ static void __exit gxfb_cleanup(void)
- module_init(gxfb_init);
- module_exit(gxfb_cleanup);
- 
--module_param_string(mode, mode_option, sizeof(mode_option), 0444);
--MODULE_PARM_DESC(mode, "video mode (<x>x<y>[-<bpp>][@<refr>])");
-+module_param(mode_option, charp, 0);
-+MODULE_PARM_DESC(mode_option, "video mode (<x>x<y>[-<bpp>][@<refr>])");
- 
- MODULE_DESCRIPTION("Framebuffer driver for the AMD Geode GX");
- MODULE_LICENSE("GPL");
 
 
 

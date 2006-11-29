@@ -1,26 +1,25 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH 5/6] [PATCH] gxfb: Fixup flatpanel
- detection
-Date: Wed, 29 Nov 2006 14:22:04 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611291422000.26581@pentafluge.infradead.org>
-References: <20061128230639.25769.43.stgit@cosmic.amd.com>
-	<20061128231517.25769.43800.stgit@cosmic.amd.com>
+Subject: Re: [PATCH] <linux/fb.h>: Use `unsigned int'
+ instead of plain `unsigned'
+Date: Wed, 29 Nov 2006 14:30:51 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611291430190.26581@pentafluge.infradead.org>
+References: <Pine.LNX.4.62.0611241552130.15930@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GpQKB-0000fi-9z for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:22:11 -0800
+	id 1GpQSm-0001cQ-JZ for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 29 Nov 2006 06:31:04 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GpQK6-0004KW-OI
+	(Exim 4.44) id 1GpQSg-0006Oi-Vu
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:22:11 -0800
-In-Reply-To: <20061128231517.25769.43800.stgit@cosmic.amd.com>
+	Wed, 29 Nov 2006 06:31:01 -0800
+In-Reply-To: <Pine.LNX.4.62.0611241552130.15930@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,68 +30,59 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: info-linux@ldcmail.amd.com, akpm@osdl.org
-
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
 Acked-By: James Simmons <jsimmons@infradead.org>
 
-On Tue, 28 Nov 2006, Jordan Crouse wrote:
+On Fri, 24 Nov 2006, Geert Uytterhoeven wrote:
 
-> From: Jordan Crouse <jordan.crouse@amd.com>
 > 
-> Use the right MSR and bits to detect if the GX is strapped for TFT or CRT
+> <linux/fb.h>: Use `unsigned int' instead of plain `unsigned'
 > 
-> Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+> Signed-Off-By: Geert Uytterhoeven <geert@linux-m68k.org>
+> 
 > ---
+>  include/linux/fb.h |    9 +++++----
+>  1 files changed, 5 insertions(+), 4 deletions(-)
 > 
->  drivers/video/geode/display_gx.h |    2 +-
->  drivers/video/geode/gxfb_core.c  |    2 +-
->  drivers/video/geode/video_gx.h   |    2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
+> --- linux.orig/include/linux/fb.h
+> +++ linux/include/linux/fb.h
+> @@ -581,8 +581,9 @@
+>  	int (*fb_set_par)(struct fb_info *info);
+>  
+>  	/* set color register */
+> -	int (*fb_setcolreg)(unsigned regno, unsigned red, unsigned green,
+> -			    unsigned blue, unsigned transp, struct fb_info *info);
+> +	int (*fb_setcolreg)(unsigned int regno, unsigned int red,
+> +			    unsigned int green, unsigned int blue,
+> +			    unsigned int transp, struct fb_info *info);
+>  
+>  	/* set color registers in batch */
+>  	int (*fb_setcmap)(struct fb_cmap *cmap, struct fb_info *info);
+> @@ -614,8 +615,8 @@
+>  			unsigned long arg);
+>  
+>  	/* Handle 32bit compat ioctl (optional) */
+> -	int (*fb_compat_ioctl)(struct fb_info *info, unsigned cmd,
+> -			unsigned long arg);
+> +	int (*fb_compat_ioctl)(struct fb_info *info, unsigned int cmd,
+> +			       unsigned long arg);
+>  
+>  	/* perform fb specific mmap */
+>  	int (*fb_mmap)(struct fb_info *info, struct vm_area_struct *vma);
 > 
-> diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
-> index ba0ccc8..0af33f3 100644
-> --- a/drivers/video/geode/display_gx.h
-> +++ b/drivers/video/geode/display_gx.h
-> @@ -18,7 +18,7 @@ extern struct geode_dc_ops gx_dc_ops;
->  
->  /* MSR that tells us if a TFT or CRT is attached */
->  #define GLD_MSR_CONFIG   0xC0002001
-> -#define GLD_MSR_CONFIG_FMT_FP 0x01
-> +#define GLD_MSR_CONFIG_DM_FP 0x40
->  
->  /* Display controller registers */
->  
-> diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-> index d404f56..83ab18a 100644
-> --- a/drivers/video/geode/gxfb_core.c
-> +++ b/drivers/video/geode/gxfb_core.c
-> @@ -328,7 +328,7 @@ static int __init gxfb_probe(struct pci_
->  
->  	rdmsrl(GLD_MSR_CONFIG, val);
->  
-> -	if (val & GLD_MSR_CONFIG_FMT_FP)
-> +	if ((val & GLD_MSR_CONFIG_DM_FP) == GLD_MSR_CONFIG_DM_FP)
->  		par->enable_crt = 0;
->  	else
->  		par->enable_crt = 1;
-> diff --git a/drivers/video/geode/video_gx.h b/drivers/video/geode/video_gx.h
-> index 8f1e85b..119d0ab 100644
-> --- a/drivers/video/geode/video_gx.h
-> +++ b/drivers/video/geode/video_gx.h
-> @@ -14,7 +14,7 @@ #define __VIDEO_GX_H__
->  extern struct geode_vid_ops gx_vid_ops;
->  
->  /* GX Flatpanel control MSR */
-> -#define GX_VP_MSR_PAD_SELECT           0x2011
-> +#define GX_VP_MSR_PAD_SELECT           0xC0002011
->  #define GX_VP_PAD_SELECT_MASK          0x3FFFFFFF
->  #define GX_VP_PAD_SELECT_TFT           0x1FFFFFFF
->  
+> Gr{oetje,eeting}s,
 > 
+> 						Geert
 > 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
 > 
 > -------------------------------------------------------------------------
 > Take Surveys. Earn Cash. Influence the Future of IT

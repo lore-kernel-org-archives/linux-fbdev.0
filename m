@@ -1,26 +1,26 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH 2/6] [PATCH] gxfb: Fixups for the
- AMD Geode GX framebuffer driver
-Date: Wed, 29 Nov 2006 14:21:34 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611291421260.26581@pentafluge.infradead.org>
+Subject: Re: [PATCH 6/6] [PATCH] gxfb: Turn on the
+ flatpanel power and data
+Date: Wed, 29 Nov 2006 14:22:21 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611291422140.26581@pentafluge.infradead.org>
 References: <20061128230639.25769.43.stgit@cosmic.amd.com>
-	<20061128231456.25769.10433.stgit@cosmic.amd.com>
+	<20061128231522.25769.75989.stgit@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GpQJf-0000a4-6D for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:21:39 -0800
+	id 1GpQKT-0000ha-AP for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 29 Nov 2006 06:22:29 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GpQJe-00046n-FK
+	(Exim 4.44) id 1GpQKQ-00041z-54
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:21:39 -0800
-In-Reply-To: <20061128231456.25769.10433.stgit@cosmic.amd.com>
+	Wed, 29 Nov 2006 06:22:29 -0800
+In-Reply-To: <20061128231522.25769.75989.stgit@cosmic.amd.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,179 +37,67 @@ Cc: info-linux@ldcmail.amd.com, akpm@osdl.org
 
 Acked-By: James Simmons <jsimmons@infradead.org>
 
+
 On Tue, 28 Nov 2006, Jordan Crouse wrote:
 
 > From: Jordan Crouse <jordan.crouse@amd.com>
 > 
-> We cannot assume that the BIOS will be correctly setting up the hardware,
-> so set some bits in various display registers to enable video output.
-> Allow an advanced user to specify a frambuffer size, rather then probing
-> the BIOS.  All of these fixes were prompted by the OLPC effort.
+> For Geode devices without a flatpanel aware BIOS, this enables the flatpanel
+> power and data.
 > 
 > Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
 > ---
 > 
->  drivers/video/geode/Kconfig      |   20 ++++++++++++++++++++
->  drivers/video/geode/display_gx.c |    7 +++++++
->  drivers/video/geode/display_gx.h |    1 +
->  drivers/video/geode/gxfb_core.c  |    6 ++++++
->  drivers/video/geode/video_gx.c   |   24 +++++++++++++++++++++++-
->  drivers/video/geode/video_gx.h   |    7 +++++++
->  6 files changed, 64 insertions(+), 1 deletions(-)
+>  drivers/video/geode/video_gx.c |   13 +++++++++++--
+>  drivers/video/geode/video_gx.h |    2 ++
+>  2 files changed, 13 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/video/geode/Kconfig b/drivers/video/geode/Kconfig
-> index 4e173ef..5704879 100644
-> --- a/drivers/video/geode/Kconfig
-> +++ b/drivers/video/geode/Kconfig
-> @@ -23,6 +23,26 @@ config FB_GEODE_GX
->  
->  	  If unsure, say N.
->  
-> +config FB_GEODE_GX_SET_FBSIZE
-> +	bool "Manually specify the Geode GX framebuffer size"
-> +	depends on FB_GEODE_GX
-> +	default n
-> +	---help---
-> +	  If you want to manually specify the size of your GX framebuffer,
-> +	  say Y here, otherwise say N to dynamically probe it.
-> +	  
-> +	  Say N unless you know what you are doing.
-> +
-> +config FB_GEODE_GX_FBSIZE
-> +	hex "Size of the GX framebuffer, in bytes"
-> +	depends on FB_GEODE_GX_SET_FBSIZE
-> +	default "0x1600000"
-> +	---help---
-> +	  Specify the size of the GX framebuffer.  Normally, you will
-> +	  want this to be MB aligned.  Common values are 0x80000 (8MB)
-> +	  and 0x1600000 (16MB).  Don't change this unless you know what
-> +	  you are doing
-> +
->  config FB_GEODE_GX1
->  	tristate "AMD Geode GX1 framebuffer support (EXPERIMENTAL)"
->  	depends on FB && FB_GEODE && EXPERIMENTAL
-> diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
-> index 0245169..7faf62a 100644
-> --- a/drivers/video/geode/display_gx.c
-> +++ b/drivers/video/geode/display_gx.c
-> @@ -21,6 +21,11 @@ #include <asm/delay.h>
->  #include "geodefb.h"
->  #include "display_gx.h"
->  
-> +#ifdef CONFIG_FB_GEODE_GX_SET_FBSIZE
-> +unsigned int gx_frame_buffer_size(void) {
-> +	return CONFIG_FB_GEODE_GX_FBSIZE;
-> +}
-> +#else
->  unsigned int gx_frame_buffer_size(void)
->  {
->  	unsigned int val;
-> @@ -35,6 +40,7 @@ unsigned int gx_frame_buffer_size(void)
->  	val = (unsigned int)(inw(0xAC1E)) & 0xFFl;
->  	return (val << 19);
->  }
-> +#endif
->  
->  int gx_line_delta(int xres, int bpp)
->  {
-> @@ -90,6 +96,7 @@ static void gx_set_mode(struct fb_info *
->  	writel(((info->var.xres * info->var.bits_per_pixel/8) >> 3) + 2,
->  	       par->dc_regs + DC_LINE_SIZE);
->  
-> +
->  	/* Enable graphics and video data and unmask address lines. */
->  	dcfg |= DC_DCFG_GDEN | DC_DCFG_VDEN | DC_DCFG_A20M | DC_DCFG_A18M;
->  
-> diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
-> index 41e79f4..e962c76 100644
-> --- a/drivers/video/geode/display_gx.h
-> +++ b/drivers/video/geode/display_gx.h
-> @@ -93,4 +93,5 @@ #define DC_V_SYNC_TIMING   0x58
->  #define DC_PAL_ADDRESS 0x70
->  #define DC_PAL_DATA    0x74
->  
-> +#define DC_GLIU0_MEM_OFFSET 0x84
->  #endif /* !__DISPLAY_GX1_H__ */
-> diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-> index 0d3643f..16b7393 100644
-> --- a/drivers/video/geode/gxfb_core.c
-> +++ b/drivers/video/geode/gxfb_core.c
-> @@ -240,6 +240,12 @@ static int __init gxfb_map_video_memory(
->  	if (!info->screen_base)
->  		return -ENOMEM;
->  
-> +	/* Set the 16MB aligned base address of the graphics memory region
-> +	 * in the display controller */
-> +
-> +	writel(info->fix.smem_start & 0xFF000000,
-> +			par->dc_regs + DC_GLIU0_MEM_OFFSET);
-> +
->  	dev_info(&dev->dev, "%d Kibyte of video memory at 0x%lx\n",
->  		 info->fix.smem_len / 1024, info->fix.smem_start);
->  
 > diff --git a/drivers/video/geode/video_gx.c b/drivers/video/geode/video_gx.c
-> index 2b2a788..616ce33 100644
+> index e6a4c70..ed6a174 100644
 > --- a/drivers/video/geode/video_gx.c
 > +++ b/drivers/video/geode/video_gx.c
-> @@ -178,7 +178,21 @@ static void gx_set_dclk_frequency(struct
->  static void gx_configure_display(struct fb_info *info)
->  {
->  	struct geodefb_par *par = info->par;
-> -	u32 dcfg, fp_pm;
-> +	u32 dcfg, fp_pm, misc;
-> +
-> +	/* Set up the MISC register */
-> +
-> +	misc = readl(par->vid_regs + GX_MISC);
-> +
-> +	/* Power up the DAC */
-> +	misc &= ~(GX_MISC_A_PWRDN | GX_MISC_DAC_PWRDN);
-> +
-> +	/* Disable gamma correction */
-> +	misc |= GX_MISC_GAM_EN;
-> +
-> +	writel(misc, par->vid_regs + GX_MISC);
-> +
-> +	/* Write the display configuration */
+> @@ -220,7 +220,13 @@ gx_configure_tft(struct fb_info *info) {
+>  	/*  Set the dither control */
+>  	writel(0x70, par->vid_regs + GX_FP_DFC);
 >  
+> -	/* Turn on the device */
+> +	/* Enable the FP data and power (in case the BIOS didn't) */
+> +
+> +	fp = readl(par->vid_regs + GX_DCFG);
+> +	fp |= GX_DCFG_FP_PWR_EN | GX_DCFG_FP_DATA_EN;
+> +	writel(fp, par->vid_regs + GX_DCFG);
+> +
+> +	/* Unblank the panel */
+>  
+>  	fp = readl(par->vid_regs + GX_FP_PM);
+>  	fp |= GX_FP_PM_P;
+> @@ -245,9 +251,12 @@ static void gx_configure_display(struct
+>  	writel(misc, par->vid_regs + GX_MISC);
+>  
+>  	/* Write the display configuration */
+> -
 >  	dcfg = readl(par->vid_regs + GX_DCFG);
 >  
-> @@ -199,9 +213,17 @@ static void gx_configure_display(struct
->  	if (info->var.sync & FB_SYNC_VERT_HIGH_ACT)
->  		dcfg |= GX_DCFG_CRT_VSYNC_POL;
->  
-> +	/* Enable the display logic */
-> +	/* Set up the DACS to blank normally */
+> +	/* Disable hsync and vsync */
+> +	dcfg &= ~(GX_DCFG_VSYNC_EN | GX_DCFG_HSYNC_EN);
+> +	writel(dcfg, par->vid_regs + GX_DCFG);
 > +
-> +	dcfg |= GX_DCFG_CRT_EN | GX_DCFG_DAC_BL_EN;
-> +
-> +	/* Enable the external DAC VREF? */
-> +
->  	writel(dcfg, par->vid_regs + GX_DCFG);
->  
->  	/* Power on flat panel. */
-> +
->  	fp_pm = readl(par->vid_regs + GX_FP_PM);
->  	fp_pm |= GX_FP_PM_P;
->  	writel(fp_pm, par->vid_regs + GX_FP_PM);
+>  	/* Clear bits from existing mode. */
+>  	dcfg &= ~(GX_DCFG_CRT_SYNC_SKW_MASK
+>  		  | GX_DCFG_CRT_HSYNC_POL   | GX_DCFG_CRT_VSYNC_POL
 > diff --git a/drivers/video/geode/video_gx.h b/drivers/video/geode/video_gx.h
-> index 2d9211f..238181a 100644
+> index 119d0ab..ce28d8f 100644
 > --- a/drivers/video/geode/video_gx.h
 > +++ b/drivers/video/geode/video_gx.h
-> @@ -28,6 +28,13 @@ #  define GX_DCFG_VG_CK			0x00100000
->  #  define GX_DCFG_GV_GAM		0x00200000
->  #  define GX_DCFG_DAC_VREF		0x04000000
->  
-> +/* Geode GX MISC video configuration */
-> +
-> +#define GX_MISC 0x50
-> +#define GX_MISC_GAM_EN     0x00000001
-> +#define GX_MISC_DAC_PWRDN  0x00000400
-> +#define GX_MISC_A_PWRDN    0x00000800
-> +
->  /* Geode GX flat panel display control registers */
->  #define GX_FP_PM 0x410
->  #  define GX_FP_PM_P 0x01000000
+> @@ -25,6 +25,8 @@ #  define GX_DCFG_CRT_EN		0x00000001
+>  #  define GX_DCFG_HSYNC_EN		0x00000002
+>  #  define GX_DCFG_VSYNC_EN		0x00000004
+>  #  define GX_DCFG_DAC_BL_EN		0x00000008
+> +#  define GX_DCFG_FP_PWR_EN		0x00000040
+> +#  define GX_DCFG_FP_DATA_EN		0x00000080
+>  #  define GX_DCFG_CRT_HSYNC_POL		0x00000100
+>  #  define GX_DCFG_CRT_VSYNC_POL		0x00000200
+>  #  define GX_DCFG_CRT_SYNC_SKW_MASK	0x0001C000
 > 
 > 
 > 

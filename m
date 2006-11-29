@@ -1,26 +1,26 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH 6/6] [PATCH] gxfb: Turn on the
- flatpanel power and data
-Date: Wed, 29 Nov 2006 14:22:21 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611291422140.26581@pentafluge.infradead.org>
+Subject: Re: [PATCH 5/6] [PATCH] gxfb: Fixup flatpanel
+ detection
+Date: Wed, 29 Nov 2006 14:22:04 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611291422000.26581@pentafluge.infradead.org>
 References: <20061128230639.25769.43.stgit@cosmic.amd.com>
-	<20061128231522.25769.75989.stgit@cosmic.amd.com>
+	<20061128231517.25769.43800.stgit@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GpQKT-0000ha-AP for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:22:29 -0800
+	id 1GpQKB-0000fi-9z for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 29 Nov 2006 06:22:11 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GpQKQ-00041z-54
+	(Exim 4.44) id 1GpQK6-0004KW-OI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:22:29 -0800
-In-Reply-To: <20061128231522.25769.75989.stgit@cosmic.amd.com>
+	Wed, 29 Nov 2006 06:22:11 -0800
+In-Reply-To: <20061128231517.25769.43800.stgit@cosmic.amd.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,69 +35,62 @@ To: linux-fbdev-devel@lists.sourceforge.net
 Cc: info-linux@ldcmail.amd.com, akpm@osdl.org
 
 
-Acked-By: James Simmons <jsimmons@infradead.org>
 
+Acked-By: James Simmons <jsimmons@infradead.org>
 
 On Tue, 28 Nov 2006, Jordan Crouse wrote:
 
 > From: Jordan Crouse <jordan.crouse@amd.com>
 > 
-> For Geode devices without a flatpanel aware BIOS, this enables the flatpanel
-> power and data.
+> Use the right MSR and bits to detect if the GX is strapped for TFT or CRT
 > 
 > Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
 > ---
 > 
->  drivers/video/geode/video_gx.c |   13 +++++++++++--
->  drivers/video/geode/video_gx.h |    2 ++
->  2 files changed, 13 insertions(+), 2 deletions(-)
+>  drivers/video/geode/display_gx.h |    2 +-
+>  drivers/video/geode/gxfb_core.c  |    2 +-
+>  drivers/video/geode/video_gx.h   |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/video/geode/video_gx.c b/drivers/video/geode/video_gx.c
-> index e6a4c70..ed6a174 100644
-> --- a/drivers/video/geode/video_gx.c
-> +++ b/drivers/video/geode/video_gx.c
-> @@ -220,7 +220,13 @@ gx_configure_tft(struct fb_info *info) {
->  	/*  Set the dither control */
->  	writel(0x70, par->vid_regs + GX_FP_DFC);
+> diff --git a/drivers/video/geode/display_gx.h b/drivers/video/geode/display_gx.h
+> index ba0ccc8..0af33f3 100644
+> --- a/drivers/video/geode/display_gx.h
+> +++ b/drivers/video/geode/display_gx.h
+> @@ -18,7 +18,7 @@ extern struct geode_dc_ops gx_dc_ops;
 >  
-> -	/* Turn on the device */
-> +	/* Enable the FP data and power (in case the BIOS didn't) */
-> +
-> +	fp = readl(par->vid_regs + GX_DCFG);
-> +	fp |= GX_DCFG_FP_PWR_EN | GX_DCFG_FP_DATA_EN;
-> +	writel(fp, par->vid_regs + GX_DCFG);
-> +
-> +	/* Unblank the panel */
+>  /* MSR that tells us if a TFT or CRT is attached */
+>  #define GLD_MSR_CONFIG   0xC0002001
+> -#define GLD_MSR_CONFIG_FMT_FP 0x01
+> +#define GLD_MSR_CONFIG_DM_FP 0x40
 >  
->  	fp = readl(par->vid_regs + GX_FP_PM);
->  	fp |= GX_FP_PM_P;
-> @@ -245,9 +251,12 @@ static void gx_configure_display(struct
->  	writel(misc, par->vid_regs + GX_MISC);
+>  /* Display controller registers */
 >  
->  	/* Write the display configuration */
-> -
->  	dcfg = readl(par->vid_regs + GX_DCFG);
+> diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
+> index d404f56..83ab18a 100644
+> --- a/drivers/video/geode/gxfb_core.c
+> +++ b/drivers/video/geode/gxfb_core.c
+> @@ -328,7 +328,7 @@ static int __init gxfb_probe(struct pci_
 >  
-> +	/* Disable hsync and vsync */
-> +	dcfg &= ~(GX_DCFG_VSYNC_EN | GX_DCFG_HSYNC_EN);
-> +	writel(dcfg, par->vid_regs + GX_DCFG);
-> +
->  	/* Clear bits from existing mode. */
->  	dcfg &= ~(GX_DCFG_CRT_SYNC_SKW_MASK
->  		  | GX_DCFG_CRT_HSYNC_POL   | GX_DCFG_CRT_VSYNC_POL
+>  	rdmsrl(GLD_MSR_CONFIG, val);
+>  
+> -	if (val & GLD_MSR_CONFIG_FMT_FP)
+> +	if ((val & GLD_MSR_CONFIG_DM_FP) == GLD_MSR_CONFIG_DM_FP)
+>  		par->enable_crt = 0;
+>  	else
+>  		par->enable_crt = 1;
 > diff --git a/drivers/video/geode/video_gx.h b/drivers/video/geode/video_gx.h
-> index 119d0ab..ce28d8f 100644
+> index 8f1e85b..119d0ab 100644
 > --- a/drivers/video/geode/video_gx.h
 > +++ b/drivers/video/geode/video_gx.h
-> @@ -25,6 +25,8 @@ #  define GX_DCFG_CRT_EN		0x00000001
->  #  define GX_DCFG_HSYNC_EN		0x00000002
->  #  define GX_DCFG_VSYNC_EN		0x00000004
->  #  define GX_DCFG_DAC_BL_EN		0x00000008
-> +#  define GX_DCFG_FP_PWR_EN		0x00000040
-> +#  define GX_DCFG_FP_DATA_EN		0x00000080
->  #  define GX_DCFG_CRT_HSYNC_POL		0x00000100
->  #  define GX_DCFG_CRT_VSYNC_POL		0x00000200
->  #  define GX_DCFG_CRT_SYNC_SKW_MASK	0x0001C000
+> @@ -14,7 +14,7 @@ #define __VIDEO_GX_H__
+>  extern struct geode_vid_ops gx_vid_ops;
+>  
+>  /* GX Flatpanel control MSR */
+> -#define GX_VP_MSR_PAD_SELECT           0x2011
+> +#define GX_VP_MSR_PAD_SELECT           0xC0002011
+>  #define GX_VP_PAD_SELECT_MASK          0x3FFFFFFF
+>  #define GX_VP_PAD_SELECT_TFT           0x1FFFFFFF
+>  
 > 
 > 
 > 

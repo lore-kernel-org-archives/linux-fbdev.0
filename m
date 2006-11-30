@@ -1,25 +1,22 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] <linux/fb.h>: Use `unsigned int'
- instead of plain `unsigned'
-Date: Wed, 29 Nov 2006 14:30:51 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0611291430190.26581@pentafluge.infradead.org>
-References: <Pine.LNX.4.62.0611241552130.15930@pademelon.sonytel.be>
+Subject: [PATCH] Video Select set for VESA FB
+Date: Thu, 30 Nov 2006 15:12:44 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0611301509300.11840@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GpQSm-0001cQ-JZ for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:31:04 -0800
+	id 1Gpnak-0000T0-6H for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 30 Nov 2006 07:12:50 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GpQSg-0006Oi-Vu
+	(Exim 4.44) id 1Gpnai-0002J5-Ho
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 29 Nov 2006 06:31:01 -0800
-In-Reply-To: <Pine.LNX.4.62.0611241552130.15930@pademelon.sonytel.be>
+	Thu, 30 Nov 2006 07:12:49 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,70 +27,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-Acked-By: James Simmons <jsimmons@infradead.org>
+ 
+	This patch automatically set VIDEO_SELECT when you select VESA FB. 
+Currently if you select VESA FB with fbcon but don't select VGA console 
+the box will not have its video mode set. Thus you get a blank screen.
+Please apply.
 
-On Fri, 24 Nov 2006, Geert Uytterhoeven wrote:
+Signed-off-by: James Simmons <jsimmons@infradead.org>
 
-> 
-> <linux/fb.h>: Use `unsigned int' instead of plain `unsigned'
-> 
-> Signed-Off-By: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
-> ---
->  include/linux/fb.h |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> --- linux.orig/include/linux/fb.h
-> +++ linux/include/linux/fb.h
-> @@ -581,8 +581,9 @@
->  	int (*fb_set_par)(struct fb_info *info);
->  
->  	/* set color register */
-> -	int (*fb_setcolreg)(unsigned regno, unsigned red, unsigned green,
-> -			    unsigned blue, unsigned transp, struct fb_info *info);
-> +	int (*fb_setcolreg)(unsigned int regno, unsigned int red,
-> +			    unsigned int green, unsigned int blue,
-> +			    unsigned int transp, struct fb_info *info);
->  
->  	/* set color registers in batch */
->  	int (*fb_setcmap)(struct fb_cmap *cmap, struct fb_info *info);
-> @@ -614,8 +615,8 @@
->  			unsigned long arg);
->  
->  	/* Handle 32bit compat ioctl (optional) */
-> -	int (*fb_compat_ioctl)(struct fb_info *info, unsigned cmd,
-> -			unsigned long arg);
-> +	int (*fb_compat_ioctl)(struct fb_info *info, unsigned int cmd,
-> +			       unsigned long arg);
->  
->  	/* perform fb specific mmap */
->  	int (*fb_mmap)(struct fb_info *info, struct vm_area_struct *vma);
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
-> -------------------------------------------------------------------------
-> Take Surveys. Earn Cash. Influence the Future of IT
-> Join SourceForge.net's Techsay panel and you'll get the chance to share your
-> opinions on IT & business topics through brief surveys - and earn cash
-> http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 7a43020..c3fcf04 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -551,6 +551,7 @@ config FB_VESA
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
++	select VIDEO_SELECT
+ 	help
+ 	  This is the frame buffer device driver for generic VESA 2.0
+ 	  compliant graphic cards. The older VESA 1.2 cards are not supported.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

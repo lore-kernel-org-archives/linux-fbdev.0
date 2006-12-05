@@ -1,643 +1,551 @@
-From: Helge Deller <deller@gmx.de>
-Subject: [PATCH] sstfb: add sysfs interface
-Date: Sun, 3 Dec 2006 16:01:48 +0100
-Message-ID: <200612031601.48302.deller@gmx.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: James Simmons <jsimmons@infradead.org>
+Subject: Display class
+Date: Tue, 5 Dec 2006 18:03:39 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0612051740250.2925@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org>
+ <653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
+ <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
+Sender: linux-acpi-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gqsrg-0003RZ-99 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Dec 2006 07:02:48 -0800
-Received: from mail.gmx.net ([213.165.64.20])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1Gqsrc-0007Ie-Jp
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Dec 2006 07:02:48 -0800
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
-
-Hi James,
-
-the following patch modifies the sstfb (Voodoo1/2) driver and:
-- fixes a memleak when removing the sstfb module
-- fixes sstfb to use the fbdev default videomode database
-- adds module option "mode_option" to set initial screen mode
-- adds sysfs-interface to turn VGA-passthrough on/off via /sys/class/graphics/fbX/vgapass
-- removes old debug functions from ioctl interface
-
-please apply.
-
-Signed-off-by: Helge Deller <deller@gmx.de>
+To: Miguel Ojeda <maxextreme@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Luming Yu <Luming.yu@intel.com>, Andrew Zabolotny <zap@homelink.ru>, linux-acpi@vger.kernel.org, kernel-discuss@handhelds.org
 
 
- drivers/video/sstfb.c |  335 +++++++++++++++-----------------------------------
- include/video/sstfb.h |   13 +
- 2 files changed, 114 insertions(+), 234 deletions(-)
+This is the pass at a display class to meet the needs of the output class 
+of Mr. Yu for acpi. Also this class could in time replace the lcd class 
+located in the backlight directory since a lcd is a type of display.
+The final hope is that the purpose auxdisplay could fall under this 
+catergory.
+
+P.S
+   I know the edid parsing would have to be pulled out of the fbdev layer.
 
 
-diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
-index 711cb11..9a2ad37 100644
---- a/drivers/video/sstfb.c
-+++ b/drivers/video/sstfb.c
-@@ -21,6 +21,11 @@
-  *	Remove never finished and bogus 24/32bit support
-  *	Clean up macro abuse
-  *	Minor tidying for format.
-+ * 12/2006 Helge Deller    <deller@gmx.de>
-+ *	add /sys/class/graphics/fbX/vgapass sysfs-interface
-+ *	add module option "mode_option" to set initial screen mode
-+ *	use fbdev default videomode database
-+ *	remove debug functions from ioctl
-  */
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/acpi/video.c fbdev-2.6/drivers/acpi/video.c
+--- linus-2.6/drivers/acpi/video.c	2006-11-07 05:38:34.000000000 -0500
++++ fbdev-2.6/drivers/acpi/video.c	2006-12-04 10:40:48.000000000 -0500
+@@ -30,6 +30,9 @@
+ #include <linux/list.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
++#if defined(CONFIG_DISPLAY_DDC)
++#include <linux/display.h> 
++#endif
  
- /*
-@@ -65,19 +70,10 @@
-  *
-  * sstfb specific ioctls:
-  *   		toggle vga (0x46db) : toggle vga_pass_through
-- *   		fill fb    (0x46dc) : fills fb
-- *   		test disp  (0x46de) : draws a test image
-  */
- 
- #undef SST_DEBUG
- 
--/*
--  Default video mode .
--  0 800x600@60  took from glide
--  1 640x480@75  took from glide
--  2 1024x768@76 std fb.mode
--  3 640x480@60  glide default */
--#define DEFAULT_MODE 3 
- 
- /*
-  * Includes
-@@ -92,20 +88,24 @@ #include <linux/delay.h>
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <asm/io.h>
--#include <asm/ioctl.h>
  #include <asm/uaccess.h>
- #include <video/sstfb.h>
  
- 
- /* initialized by setup */
- 
--static int vgapass;		/* enable Vga passthrough cable */
-+static int vgapass;		/* enable VGA passthrough cable */
- static int mem;			/* mem size in MB, 0 = autodetect */
- static int clipping = 1;	/* use clipping (slower, safer) */
- static int gfxclk;		/* force FBI freq in Mhz . Dangerous */
- static int slowpci;		/* slow PCI settings */
- 
--static char *mode_option __devinitdata;
-+/*
-+  Possible default video modes: 800x600@60, 640x480@75, 1024x768@76, 640x480@60
-+*/
-+#define DEFAULT_VIDEO_MODE "640x480@60"
-+
-+static char *mode_option __devinitdata = DEFAULT_VIDEO_MODE;
- 
- enum {
- 	ID_VOODOO1 = 0,
-@@ -119,48 +119,11 @@ static struct sst_spec voodoo_spec[] __d
-  { .name = "Voodoo2",	      .default_gfx_clock = 75000, .max_gfxclk = 85 },
+@@ -154,6 +157,20 @@
+ 	int *levels;
  };
  
--static struct fb_var_screeninfo	sstfb_default =
--#if ( DEFAULT_MODE == 0 )
--    { /* 800x600@60, 16 bpp .borowed from glide/sst1/include/sst1init.h */
--    800, 600, 800, 600, 0, 0, 16, 0,
--    {11, 5, 0}, {5, 6, 0}, {0, 5, 0}, {0, 0, 0},
--    0, 0, -1, -1, 0,
--    25000, 86, 41, 23, 1, 127, 4,
--    0, FB_VMODE_NONINTERLACED };
--#elif ( DEFAULT_MODE == 1 )
--    {/* 640x480@75, 16 bpp .borowed from glide/sst1/include/sst1init.h */
--    640, 480, 640, 480, 0, 0, 16, 0,
--    {11, 5, 0}, {5, 6, 0}, {0, 5, 0}, {0, 0, 0},
--    0, 0, -1, -1, 0,
--    31746, 118, 17, 16, 1, 63, 3,
--    0, FB_VMODE_NONINTERLACED };
--#elif ( DEFAULT_MODE == 2 )
--    { /* 1024x768@76 took from my /etc/fb.modes */
--    1024, 768, 1024, 768,0, 0, 16,0,
--    {11, 5, 0}, {5, 6, 0}, {0, 5, 0}, {0, 0, 0},
--    0, 0, -1, -1, 0,
--    11764, 208, 8, 36, 16, 120, 3 ,
--    0, FB_VMODE_NONINTERLACED };
--#elif ( DEFAULT_MODE == 3 )
--    { /* 640x480@60 , 16bpp glide default ?*/
--    640, 480, 640, 480, 0, 0, 16, 0,
--    {11, 5, 0}, {5, 6, 0}, {0, 5, 0}, {0, 0, 0},
--    0, 0, -1, -1, 0,
--    39721 ,  38, 26 ,  25 ,18  , 96 ,2,
--    0, FB_VMODE_NONINTERLACED };
--#elif
--    #error "Invalid DEFAULT_MODE value !"
--#endif
--
- 
- /*
-  * debug functions
-  */
- 
--static void sstfb_drawdebugimage(struct fb_info *info);
--static int sstfb_dump_regs(struct fb_info *info);
--
--
- #if (SST_DEBUG_REG > 0)
- static void sst_dbg_print_read_reg(u32 reg, u32 val) {
- 	const char *regname;
-@@ -726,51 +689,77 @@ static int sstfb_setcolreg(u_int regno, 
- 	return 0;
- }
- 
--static int sstfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
-+static void sstfb_setvgapass( struct fb_info *info, int enable )
- {
- 	struct sstfb_par *par = info->par;
- 	struct pci_dev *sst_dev = par->dev;
--	u32 fbiinit0, tmp, val;
--	u_long p;
-+	u32 fbiinit0, tmp;
-+
-+	enable = enable ? 1:0;
-+	if (par->vgapass == enable)
-+		return;
-+	par->vgapass = enable;
-+
-+	pci_read_config_dword(sst_dev, PCI_INIT_ENABLE, &tmp);
-+	pci_write_config_dword(sst_dev, PCI_INIT_ENABLE,
-+			       tmp | PCI_EN_INIT_WR );
-+	fbiinit0 = sst_read (FBIINIT0);
-+	if (par->vgapass) {
-+		sst_write(FBIINIT0, fbiinit0 & ~DIS_VGA_PASSTHROUGH);
-+		printk(KERN_INFO "fb%d: Enabling VGA pass-through\n", info->node );
-+	} else {
-+		sst_write(FBIINIT0, fbiinit0 | DIS_VGA_PASSTHROUGH);
-+		printk(KERN_INFO "fb%d: Disabling VGA pass-through\n", info->node );
-+	}
-+	pci_write_config_dword(sst_dev, PCI_INIT_ENABLE, tmp);
++#if defined(CONFIG_DISPLAY_DDC)
++static int
++acpi_display_get_power(struct display_device *dev)
++{
++	return 0;
 +}
 +
-+static ssize_t store_vgapass(struct device *device, struct device_attribute *attr,
-+			const char *buf, size_t count)
++static int
++acpi_display_set_power(struct display_device *dev)
 +{
-+	struct fb_info *info = dev_get_drvdata(device);
-+	char ** last = NULL;
-+	int val;
++	return 0;
++}
++#endif
 +
-+	val = simple_strtoul(buf, last, 0);
-+	sstfb_setvgapass(info, val);
+ struct acpi_video_device {
+ 	unsigned long device_id;
+ 	struct acpi_video_device_flags flags;
+@@ -162,6 +179,10 @@
+ 	struct acpi_video_bus *video;
+ 	struct acpi_device *dev;
+ 	struct acpi_video_device_brightness *brightness;
++#if defined(CONFIG_DISPLAY_DDC)
++	struct display_properties acpi_display_properties;
++	struct display_device *display;
++#endif
+ };
+ 
+ /* bus */
+@@ -399,6 +420,27 @@
+ 	return status;
+ }
+ 
++#if defined(CONFIG_DISPLAY_DDC)
++static void*
++acpi_display_get_EDID(struct acpi_video_device *dev)
++{
++	union acpi_object *edid = NULL;
++	void *data = NULL;
++	int status;
 +
++	status = acpi_video_device_EDID(dev, &edid, 128);
++	if (ACPI_FAILURE(status))
++		status = acpi_video_device_EDID(dev, &edid, 256);
++
++	if (ACPI_SUCCESS(status)) {
++		if (edid && edid->type == ACPI_TYPE_BUFFER) {
++			data = edid->buffer.pointer;
++		}
++	}
++	return data;
++}
++#endif
++
+ /* bus */
+ 
+ static int
+@@ -1255,7 +1297,6 @@
+ 	int status;
+ 	struct acpi_video_device *data;
+ 
+-
+ 	if (!device || !video)
+ 		return -EINVAL;
+ 
+@@ -1263,12 +1304,10 @@
+ 	    acpi_evaluate_integer(device->handle, "_ADR", NULL, &device_id);
+ 	if (ACPI_SUCCESS(status)) {
+ 
+-		data = kmalloc(sizeof(struct acpi_video_device), GFP_KERNEL);
++		data = kzalloc(sizeof(struct acpi_video_device), GFP_KERNEL);
+ 		if (!data)
+ 			return -ENOMEM;
+ 
+-		memset(data, 0, sizeof(struct acpi_video_device));
+-
+ 		strcpy(acpi_device_name(device), ACPI_VIDEO_DEVICE_NAME);
+ 		strcpy(acpi_device_class(device), ACPI_VIDEO_CLASS);
+ 		acpi_driver_data(device) = data;
+@@ -1295,6 +1334,13 @@
+ 		acpi_video_device_bind(video, data);
+ 		acpi_video_device_find_cap(data);
+ 
++#ifdef CONFIG_DISPLAY_DDC
++		data->acpi_display_properties.get_power = acpi_display_get_power;
++		data->acpi_display_properties.set_power = acpi_display_set_power;
++		data->acpi_display_properties.probe = probe_edid;
++		data->display = display_device_register(NULL, acpi_display_get_EDID(data),
++							&data->acpi_display_properties);		
++#endif
+ 		status = acpi_install_notify_handler(device->handle,
+ 						     ACPI_DEVICE_NOTIFY,
+ 						     acpi_video_device_notify,
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/display-ddc.c fbdev-2.6/drivers/video/display/display-ddc.c
+--- linus-2.6/drivers/video/display/display-ddc.c	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/display-ddc.c	2006-12-03 05:27:00.000000000 -0500
+@@ -0,0 +1,45 @@
++/*
++ *  display-ddc.c - EDID paring code
++ *
++ *  Copyright (C) 2006 James Simmons <jsimmons@infradead.org>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++#include <linux/module.h>
++#include <linux/display.h>
++#include <linux/err.h>
++#include <linux/ctype.h>
++
++#include <linux/fb.h>
++
++int probe_edid(struct display_device *dev, void *data)
++{
++	struct fb_monspecs spec;
++	ssize_t size = 45;
++
++	dev->name = kzalloc(size, GFP_KERNEL);
++	fb_edid_to_monspecs((unsigned char *) data, &spec);
++	strcpy(dev->name, spec.manufacturer);
++	return snprintf(dev->name, size, "%s %s %s\n", spec.manufacturer, spec.monitor, spec.ascii);
++}
++EXPORT_SYMBOL(probe_edid);
++
++MODULE_DESCRIPTION("Display Hardware handling");
++MODULE_AUTHOR("James Simmons <jsimmons@infradead.org>");
++MODULE_LICENSE("GPL");
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/display-sysfs.c fbdev-2.6/drivers/video/display/display-sysfs.c
+--- linus-2.6/drivers/video/display/display-sysfs.c	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/display-sysfs.c	2006-12-04 07:48:34.000000000 -0500
+@@ -0,0 +1,164 @@
++/*
++ *  display.c - Display output driver
++ *
++ *  Copyright (C) 2006 James Simmons <jsimmons@infradead.org>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++#include <linux/module.h>
++#include <linux/display.h>
++#include <linux/err.h>
++#include <linux/ctype.h>
++
++static ssize_t display_show_name(struct class_device *dev, char *buf)
++{
++	struct display_device *dsp = to_display_device(dev);
++	return snprintf(buf, PAGE_SIZE, "%s\n", dsp->name);
++}
++
++static ssize_t display_show_power(struct class_device *dev, char *buf)
++{
++	struct display_device *dsp = to_display_device(dev);
++	ssize_t ret = -ENXIO;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver->get_power))
++		ret = sprintf(buf,"%.8x\n", dsp->driver->get_power(dsp));
++	mutex_unlock(&dsp->lock);
++	return ret;
++}
++
++static ssize_t display_store_power(struct class_device *dev,
++	const char *buf,size_t count)
++{
++	struct display_device *dsp = to_display_device(dev);
++	size_t size;
++	char *endp;
++	int power;
++
++	power = simple_strtoul(buf, &endp, 0);
++	size = endp - buf;
++	if (*endp && isspace(*endp))
++		size++;
++	if (size != count)
++		return -EINVAL;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver->set_power)) {
++		dsp->request_state = power;
++		dsp->driver->set_power(dsp);
++	}
++	mutex_unlock(&dsp->lock);
 +	return count;
 +}
 +
-+static ssize_t show_vgapass(struct device *device, struct device_attribute *attr,
-+			char *buf)
++static void display_class_release(struct class_device *dev)
 +{
-+	struct fb_info *info = dev_get_drvdata(device);
-+	struct sstfb_par *par = info->par;
-+	return snprintf(buf, PAGE_SIZE, "%d\n", par->vgapass);
++	struct display_device *dsp = to_display_device(dev);
++	kfree(dsp);
 +}
 +
-+static struct device_attribute device_attrs[] = {
-+	__ATTR(vgapass, S_IRUGO|S_IWUSR, show_vgapass, store_vgapass)
-+	};
++static struct class_device_attribute display_attributes[] = {
++	__ATTR(name, S_IRUGO, display_show_name, NULL),
++	__ATTR(power, S_IRUGO | S_IWUSR, display_show_power, display_store_power),
++};
 +
-+static int sstfb_ioctl(struct fb_info *info, unsigned int cmd,
-+			unsigned long arg)
++static struct class display_class = {
++	.name = "display",
++	.release = display_class_release,
++	.class_dev_attrs = display_attributes,
++};
++
++static int index;
++
++struct display_device *display_device_register(struct display_driver *driver,
++						struct device *dev, void *devdata)
 +{
-+	struct sstfb_par *par;
-+	u32 val;
++	struct display_device *new_dev;
++	int ret = -ENOMEM, i;
++
++	if (unlikely(!driver))
++		return ERR_PTR(-EINVAL);
++
++	new_dev = kzalloc(sizeof(struct display_device), GFP_KERNEL);
++	if (likely(new_dev)) {
++		driver->probe(new_dev, devdata);
++
++		mutex_init(&new_dev->lock);
++		new_dev->driver = driver;
++		new_dev->class_dev.class = &display_class;
++		new_dev->class_dev.dev = dev;
++		sprintf(new_dev->class_dev.class_id, "display%d", index++);
++		class_set_devdata(&new_dev->class_dev, devdata);
++		ret = class_device_register(&new_dev->class_dev);
++
++		if (likely(ret)) {
++			for (i = 0; i < ARRAY_SIZE(display_attributes); i++) {
++				ret = class_device_create_file(&new_dev->class_dev,
++								&display_attributes[i]);
++				if (unlikely(ret)) {
++					while (--i >= 0)
++						class_device_remove_file(&new_dev->class_dev,
++								&display_attributes[i]);
++					class_device_unregister(&new_dev->class_dev);
++				}
++			}
++		}
++	}
++	if (unlikely(ret)) {
++		printk("failed to register display device\n");
++		kfree(new_dev);
++		new_dev = ERR_PTR(ret);
++	}
++	return new_dev;
++}
++EXPORT_SYMBOL(display_device_register);
++
++void display_device_unregister(struct display_device *dev)
++{
++	int i;
++
++	if (!dev)
++		return;
++	mutex_lock(&dev->lock);
++	dev->driver = NULL;
++	for (i = 0; i < ARRAY_SIZE(display_attributes); i++)
++		class_device_remove_file(&dev->class_dev,
++					&display_attributes[i]);
++	mutex_unlock(&dev->lock);
++	class_device_unregister(&dev->class_dev);
++}
++EXPORT_SYMBOL(display_device_unregister);
++
++static void __exit display_class_exit(void)
++{
++	class_unregister(&display_class);
++}
++
++static int __init display_class_init(void)
++{
++	return class_register(&display_class);
++}
++
++postcore_initcall(display_class_init);
++module_exit(display_class_exit);
++
++MODULE_DESCRIPTION("Display Hardware handling");
++MODULE_AUTHOR("James Simmons <jsimmons@infradead.org>");
++MODULE_LICENSE("GPL");
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Kconfig fbdev-2.6/drivers/video/display/Kconfig
+--- linus-2.6/drivers/video/display/Kconfig	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/Kconfig	2006-12-04 11:41:03.000000000 -0500
+@@ -0,0 +1,29 @@
++#
++# Display drivers configuration
++#
++
++menu "Display device support"
++
++config DISPLAY_SUPPORT
++	tristate "Display panel/monitor support"
++	---help---
++	  This framework adds support for low-level control of a display. 
++	  This includes support for power.
++
++	  Enable this to be able to choose the drivers for controlling the
++	  physical display panel/monitor on some platforms. This not only
++	  covers LCD displays for PDAs but also other types of displays
++	  such as CRT, TVout etc.
++
++	  To have support for your specific display panel you will have to
++	  select the proper drivers which depend on this option.
++
++config DISPLAY_DDC
++	tristate "Enable EDID parsing"
++	---help---
++	  Enable EDID parsing
++
++comment "Display hardware drivers"
++	depends on DISPLAY_SUPPORT
++
++endmenu
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Makefile fbdev-2.6/drivers/video/display/Makefile
+--- linus-2.6/drivers/video/display/Makefile	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/Makefile	2006-12-03 05:02:07.000000000 -0500
+@@ -0,0 +1,7 @@
++# Display drivers
++
++display-objs				:= display-sysfs.o 
++
++obj-$(CONFIG_DISPLAY_SUPPORT)		+= display.o
++
++obj-$(CONFIG_DISPLAY_DDC)		+= display-ddc.o
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Kconfig fbdev-2.6/drivers/video/Kconfig
+--- linus-2.6/drivers/video/Kconfig	2006-11-30 05:06:13.000000000 -0500
++++ fbdev-2.6/drivers/video/Kconfig	2006-12-04 10:40:48.000000000 -0500
+@@ -4,21 +4,6 @@
  
- 	switch (cmd) {
--		
--	/* dump current FBIINIT values to system log */
--	case _IO('F', 0xdb):            /* 0x46db */
--		return sstfb_dump_regs(info);
--		
--	/* fills lfb with #arg pixels */
--	case _IOW('F', 0xdc, u32):	/* 0x46dc */
-+	/* set/get VGA pass_through mode */
-+	case SSTFB_SET_VGAPASS:
- 		if (copy_from_user(&val, (void __user *)arg, sizeof(val)))
- 			return -EFAULT;
--		if (val > info->fix.smem_len)
--			val = info->fix.smem_len;
--		for (p = 0 ; p < val; p += 2)
--			writew(p >> 6, info->screen_base + p);
-+		sstfb_setvgapass(info, val);
- 		return 0;
--		
--	/* change VGA pass_through mode */
--	case _IOW('F', 0xdd, u32):	/* 0x46dd */
--		if (copy_from_user(&val, (void __user *)arg, sizeof(val)))
-+	case SSTFB_GET_VGAPASS:
-+		par = info->par;
-+		val = par->vgapass;
-+		if (copy_to_user((void __user *)arg, &val, sizeof(val)))
- 			return -EFAULT;
--		pci_read_config_dword(sst_dev, PCI_INIT_ENABLE, &tmp);
--		pci_write_config_dword(sst_dev, PCI_INIT_ENABLE,
--				       tmp | PCI_EN_INIT_WR );
--		fbiinit0 = sst_read (FBIINIT0);
--		if (val)
--			sst_write(FBIINIT0, fbiinit0 & ~EN_VGA_PASSTHROUGH);
--		else
--			sst_write(FBIINIT0, fbiinit0 | EN_VGA_PASSTHROUGH);
--		pci_write_config_dword(sst_dev, PCI_INIT_ENABLE, tmp);
--		return 0;
--		
--	/* draw test image  */
--	case _IO('F', 0xde):		/* 0x46de */
--		f_dprintk("test color display at %d bpp\n",
--					info->var.bits_per_pixel);
--		sstfb_drawdebugimage(info);
- 		return 0;
- 	}
-+		
- 	return -EINVAL;
- }
+ menu "Graphics support"
  
-@@ -804,6 +793,7 @@ #endif
- /*
-  * FillRect 2D command (solidfill or invert (via ROP_XOR)) - Voodoo2 only
-  */
-+#if 0
- static void sstfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) 
- {
- 	struct sstfb_par *par = info->par;
-@@ -825,6 +815,7 @@ static void sstfb_fillrect(struct fb_inf
- 		 | (BLT_16BPP_FMT << 3) /* | BIT(14) */ | BIT(15) | BIT(16) );
- 	sst_wait_idle();
- }
+-config FIRMWARE_EDID
+-       bool "Enable firmware EDID"
+-       default y
+-       ---help---
+-         This enables access to the EDID transferred from the firmware.
+-	 On the i386, this is from the Video BIOS. Enable this if DDC/I2C
+-	 transfers do not work for your driver and if you are using
+-	 nvidiafb, i810fb or savagefb.
+-
+-	 In general, choosing Y for this option is safe.  If you
+-	 experience extremely long delays while booting before you get
+-	 something on your display, try setting this to N.  Matrox cards in
+-	 combination with certain motherboards and monitors are known to
+-	 suffer from this problem.
+-
+ config FB
+ 	tristate "Support for frame buffer devices"
+ 	---help---
+@@ -53,6 +38,22 @@
+ 	  (e.g. an accelerated X server) and that are not frame buffer
+ 	  device-aware may cause unexpected results. If unsure, say N.
+ 
++config FIRMWARE_EDID
++       bool "Enable firmware EDID"
++       depends on FB
++       default n 
++       ---help---
++         This enables access to the EDID transferred from the firmware.
++	 On the i386, this is from the Video BIOS. Enable this if DDC/I2C
++	 transfers do not work for your driver and if you are using
++	 nvidiafb, i810fb or savagefb.
++
++	 In general, choosing Y for this option is safe.  If you
++	 experience extremely long delays while booting before you get
++	 something on your display, try setting this to N.  Matrox cards in
++	 combination with certain motherboards and monitors are known to
++	 suffer from this problem.
++
+ config FB_DDC
+        tristate
+        depends on FB && I2C && I2C_ALGOBIT
+@@ -126,6 +127,9 @@
+ 	 This is particularly important to one driver, matroxfb.  If
+ 	 unsure, say N.
+ 
++comment "Frambuffer hardware drivers"
++	depends on FB
++
+ config FB_CIRRUS
+ 	tristate "Cirrus Logic support"
+ 	depends on FB && (ZORRO || PCI)
+@@ -1641,6 +1647,7 @@
+ endif
+ 
+ if SYSFS
++	source "drivers/video/display/Kconfig"
+ 	source "drivers/video/backlight/Kconfig"
+ endif
+ 
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Makefile fbdev-2.6/drivers/video/Makefile
+--- linus-2.6/drivers/video/Makefile	2006-11-07 05:38:36.000000000 -0500
++++ fbdev-2.6/drivers/video/Makefile	2006-12-04 10:40:48.000000000 -0500
+@@ -12,7 +12,7 @@
+ 
+ obj-$(CONFIG_VT)		  += console/
+ obj-$(CONFIG_LOGO)		  += logo/
+-obj-$(CONFIG_SYSFS)		  += backlight/
++obj-$(CONFIG_SYSFS)		  += backlight/ display/
+ 
+ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
+ obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/include/linux/display.h fbdev-2.6/include/linux/display.h
+--- linus-2.6/include/linux/display.h	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/include/linux/display.h	2006-12-04 07:42:29.000000000 -0500
+@@ -0,0 +1,55 @@
++/*
++ *  Copyright (C) 2006 James Simmons <jsimmons@infradead.org>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#ifndef _LINUX_DISPLAY_H
++#define _LINUX_DISPLAY_H
++
++#include <linux/device.h>
++
++struct display_device;
++
++/* This structure defines all the properties of a Display. */
++struct display_driver {
++	int (*set_power)(struct display_device *);
++	int (*get_power)(struct display_device *);
++	int (*probe)(struct display_device *, void *);
++	int (*remove)(struct display_device *);
++};
++
++struct display_device {
++	struct module *owner;	/* Owner module */
++	char *name;
++	struct mutex lock;	
++	int request_state;
++	struct display_driver *driver;
++	struct class_device class_dev;		/* The class device structure */
++};
++
++extern struct display_device *display_device_register(struct display_driver *driver,
++					struct device *dev, void *devdata);
++extern void display_device_unregister(struct display_device *dev);
++
++extern int probe_edid(struct display_device *dev, void *devdata);
++
++#define to_display_device(obj) container_of(obj, struct display_device, class_dev)
++
 +#endif
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/MAINTAINERS fbdev-2.6/MAINTAINERS
+--- linus-2.6/MAINTAINERS	2006-12-04 04:11:38.000000000 -0500
++++ fbdev-2.6/MAINTAINERS	2006-12-04 10:40:48.000000000 -0500
+@@ -911,6 +923,12 @@
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
  
- 
- 
-@@ -1156,6 +1147,7 @@ static int __devinit sst_init(struct fb_
- 	struct pll_timing gfx_timings;
- 	struct sst_spec *spec;
- 	int Fout;
-+	int gfx_clock;
- 
- 	spec = &voodoo_spec[par->type];
- 	f_ddprintk(" fbiinit0   fbiinit1   fbiinit2   fbiinit3   fbiinit4  "
-@@ -1196,15 +1188,15 @@ static int __devinit sst_init(struct fb_
- 	}
- 
- 	/* set graphic clock */
--	par->gfx_clock = spec->default_gfx_clock;
-+	gfx_clock = spec->default_gfx_clock;
- 	if ((gfxclk >10 ) && (gfxclk < spec->max_gfxclk)) {
- 		printk(KERN_INFO "sstfb: Using supplied graphic freq : %dMHz\n", gfxclk);
--		 par->gfx_clock = gfxclk *1000;
-+		 gfx_clock = gfxclk *1000;
- 	} else if (gfxclk) {
- 		printk(KERN_WARNING "sstfb: %dMhz is way out of spec! Using default\n", gfxclk);
- 	}
- 
--	sst_calc_pll(par->gfx_clock, &Fout, &gfx_timings);
-+	sst_calc_pll(gfx_clock, &Fout, &gfx_timings);
- 	par->dac_sw.set_pll(info, &gfx_timings, GFX_CLOCK);
- 
- 	/* disable fbiinit remap */
-@@ -1215,10 +1207,11 @@ static int __devinit sst_init(struct fb_
- 	fbiinit0 = FBIINIT0_DEFAULT;
- 	fbiinit1 = FBIINIT1_DEFAULT;
- 	fbiinit4 = FBIINIT4_DEFAULT;
--	if (vgapass)
--		fbiinit0 &= ~EN_VGA_PASSTHROUGH;
-+	par->vgapass = vgapass;
-+	if (par->vgapass)
-+		fbiinit0 &= ~DIS_VGA_PASSTHROUGH;
- 	else
--		fbiinit0 |= EN_VGA_PASSTHROUGH;
-+		fbiinit0 |= DIS_VGA_PASSTHROUGH;
- 	if (slowpci) {
- 		fbiinit1 |= SLOW_PCI_WRITES;
- 		fbiinit4 |= SLOW_PCI_READS;
-@@ -1267,7 +1260,7 @@ static void  __devexit sst_shutdown(stru
- 	/* TODO maybe shutdown the dac, vrefresh and so on... */
- 	pci_write_config_dword(dev, PCI_INIT_ENABLE,
- 	                       PCI_EN_INIT_WR);
--	sst_unset_bits(FBIINIT0, FBI_RESET | FIFO_RESET | EN_VGA_PASSTHROUGH);
-+	sst_unset_bits(FBIINIT0, FBI_RESET | FIFO_RESET | DIS_VGA_PASSTHROUGH);
- 	pci_write_config_dword(dev, PCI_VCLK_DISABLE,0);
- 	/* maybe keep fbiinit* and PCI_INIT_enable in the fb_info struct
- 	 * from start ? */
-@@ -1278,8 +1271,7 @@ static void  __devexit sst_shutdown(stru
- /*
-  * Interface to the world
-  */
--#ifndef MODULE
--static int  __init sstfb_setup(char *options)
-+static int  __devinit sstfb_setup(char *options)
- {
- 	char *this_opt;
- 
-@@ -1312,7 +1304,7 @@ static int  __init sstfb_setup(char *opt
- 	}
- 	return 0;
- }
--#endif
++DISPLAY SUBSYSTEM
++P:	James Simmons
++M:	jsimmons@infradead.org
++L:	linux-kernel@vger.kernel.org
++S:	Maintained
 +
- 
- static struct fb_ops sstfb_ops = {
- 	.owner		= THIS_MODULE,
-@@ -1416,15 +1408,10 @@ static int __devinit sstfb_probe(struct 
- 	 */
- 	fix->line_length = 2048; /* default value, for 24 or 32bit: 4096 */
- 	
--	if ( mode_option &&
--	     fb_find_mode(&info->var, info, mode_option, NULL, 0, NULL, 16)) {
--		printk(KERN_ERR "sstfb: can't set supplied video mode. Using default\n");
--		info->var = sstfb_default;
--	} else
--		info->var = sstfb_default;
-+	fb_find_mode(&info->var, info, mode_option, NULL, 0, NULL, 16);
- 
- 	if (sstfb_check_var(&info->var, info)) {
--		printk(KERN_ERR "sstfb: invalid default video mode.\n");
-+		printk(KERN_ERR "sstfb: invalid video mode.\n");
- 		goto fail;
- 	}
- 
-@@ -1442,10 +1429,11 @@ static int __devinit sstfb_probe(struct 
- 		goto fail;
- 	}
- 
--	if (1) /* set to 0 to see an initial bitmap instead */
--		sstfb_clear_screen(info);
--	else
--		sstfb_drawdebugimage(info);
-+	sstfb_clear_screen(info);
-+
-+	if (device_create_file(info->dev, &device_attrs[0]))
-+		printk(KERN_WARNING "sstfb: can't create sysfs entry.\n");
-+	
- 
- 	printk(KERN_INFO "fb%d: %s frame buffer device at 0x%p\n",
- 	       info->node, fix->id, info->screen_base);
-@@ -1453,6 +1441,7 @@ static int __devinit sstfb_probe(struct 
- 	return 0;
- 
- fail:
-+	fb_dealloc_cmap(&info->cmap);
- 	iounmap(info->screen_base);
- fail_fb_remap:
- 	iounmap(par->mmio_vbase);
-@@ -1473,21 +1462,23 @@ static void __devexit sstfb_remove(struc
- 	info = pci_get_drvdata(pdev);
- 	par = info->par;
- 	
-+	device_remove_file(info->dev, &device_attrs[0]);
- 	sst_shutdown(info);
--	unregister_framebuffer(info);
- 	iounmap(info->screen_base);
- 	iounmap(par->mmio_vbase);
- 	release_mem_region(info->fix.smem_start, 0x400000);
- 	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
-+	fb_dealloc_cmap(&info->cmap);
-+	unregister_framebuffer(info);
- 	framebuffer_release(info);
- }
- 
- 
--static struct pci_device_id sstfb_id_tbl[] = {
--	{ PCI_VENDOR_ID_3DFX, PCI_DEVICE_ID_3DFX_VOODOO,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, ID_VOODOO1 },
--	{ PCI_VENDOR_ID_3DFX, PCI_DEVICE_ID_3DFX_VOODOO2,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, ID_VOODOO2 },
-+static const struct pci_device_id sstfb_id_tbl[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_3DFX, PCI_DEVICE_ID_3DFX_VOODOO ),
-+		.driver_data = ID_VOODOO1, },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_3DFX, PCI_DEVICE_ID_3DFX_VOODOO2),
-+		.driver_data = ID_VOODOO2, },
- 	{ 0 },
- };
- 
-@@ -1501,142 +1492,23 @@ static struct pci_driver sstfb_driver = 
- 
- static int __devinit sstfb_init(void)
- {
--#ifndef MODULE
- 	char *option = NULL;
- 
- 	if (fb_get_options("sstfb", &option))
- 		return -ENODEV;
- 	sstfb_setup(option);
--#endif
-+
- 	return pci_register_driver(&sstfb_driver);
- }
- 
--#ifdef MODULE
- static void __devexit sstfb_exit(void)
- {
- 	pci_unregister_driver(&sstfb_driver);
- }
--#endif
--
--
--/*
-- * testing and debugging functions
-- */
--
--static int sstfb_dump_regs(struct fb_info *info)
--{
--#ifdef SST_DEBUG
--	static struct { u32 reg ; const char *reg_name;}  pci_regs[] = {
--		{ PCI_INIT_ENABLE, "initenable"},
--		{ PCI_VCLK_ENABLE, "enable vclk"},
--		{ PCI_VCLK_DISABLE, "disable vclk"},
--	};
--
--	static struct { u32 reg ; const char *reg_name;}  sst_regs[] = {
--		{FBIINIT0,"fbiinit0"},
--		{FBIINIT1,"fbiinit1"},
--		{FBIINIT2,"fbiinit2"},
--		{FBIINIT3,"fbiinit3"},
--		{FBIINIT4,"fbiinit4"},
--		{FBIINIT5,"fbiinit5"},
--		{FBIINIT6,"fbiinit6"},
--		{FBIINIT7,"fbiinit7"},
--		{LFBMODE,"lfbmode"},
--		{FBZMODE,"fbzmode"},
--	};
--
--	const int pci_s = ARRAY_SIZE(pci_regs);
--	const int sst_s = ARRAY_SIZE(sst_regs);
--	struct sstfb_par *par = info->par;
--	struct pci_dev *dev = par->dev;
--	u32 pci_res[pci_s];
--	u32 sst_res[sst_s];
--	int i;
--
--	for (i=0; i<pci_s; i++) {
--		pci_read_config_dword(dev, pci_regs[i].reg, &pci_res[i]);
--	}
--	for (i=0; i<sst_s; i++) {
--		sst_res[i] = sst_read(sst_regs[i].reg);
--	}
--
--	dprintk("hardware register dump:\n");
--	for (i=0; i<pci_s; i++) {
--		dprintk("%s %0#10x\n", pci_regs[i].reg_name, pci_res[i]);
--	}
--	for (i=0; i<sst_s; i++) {
--		dprintk("%s %0#10x\n", sst_regs[i].reg_name, sst_res[i]);
--	}
--	return 0;
--#else
--	return -EINVAL;
--#endif
--}
- 
--static void sstfb_fillrect_softw( struct fb_info *info, const struct fb_fillrect *rect)
--{
--	u8 __iomem *fbbase_virt = info->screen_base;
--	int x, y, w = info->var.bits_per_pixel == 16 ? 2 : 4;
--	u32 color = rect->color, height = rect->height;
--	u8 __iomem *p;
--	
--	if (w==2) color |= color<<16;
--	for (y=rect->dy; height; y++, height--) {
--		p = fbbase_virt + y*info->fix.line_length + rect->dx*w;
--		x = rect->width;
--		if (w==2) x>>=1;
--		while (x) {
--			writel(color, p);
--			p += 4;
--			x--;
--		}
--	}
--}
--
--static void sstfb_drawrect_XY( struct fb_info *info, int x, int y,
--		int w, int h, int color, int hwfunc)
--{
--	struct fb_fillrect rect;
--	rect.dx = x;
--	rect.dy = y;
--	rect.height = h;
--	rect.width = w;
--	rect.color = color;
--	rect.rop = ROP_COPY;
--	if (hwfunc)
--		sstfb_fillrect(info, &rect);
--	else
--		sstfb_fillrect_softw(info, &rect);
--}
--
--/* print some squares on the fb */
--static void sstfb_drawdebugimage(struct fb_info *info)
--{
--	static int idx;
--
--	/* clear screen */
--	sstfb_clear_screen(info);
--	
--   	idx = (idx+1) & 1;
--
--	/* white rect */
--	sstfb_drawrect_XY(info, 0, 0, 50, 50, 0xffff, idx);
--	
--	/* blue rect */
--	sstfb_drawrect_XY(info, 50, 50, 50, 50, 0x001f, idx);
--
--	/* green rect */
--	sstfb_drawrect_XY(info, 100, 100, 80, 80, 0x07e0, idx);
--	
--	/* red rect */
--	sstfb_drawrect_XY(info, 250, 250, 120, 100, 0xf800, idx);
--}
- 
- module_init(sstfb_init);
--
--#ifdef MODULE
- module_exit(sstfb_exit);
--#endif
- 
- MODULE_AUTHOR("(c) 2000,2002 Ghozlane Toumi <gtoumi@laposte.net>");
- MODULE_DESCRIPTION("FBDev driver for 3dfx Voodoo Graphics and Voodoo2 based video boards");
-@@ -1652,3 +1524,6 @@ module_param(gfxclk, int, 0);
- MODULE_PARM_DESC(gfxclk, "Force graphic chip frequency in MHz. DANGEROUS. (default=auto)");
- module_param(slowpci, bool, 0);
- MODULE_PARM_DESC(slowpci, "Uses slow PCI settings (0 or 1) (default=0)");
-+module_param(mode_option, charp, 0);
-+MODULE_PARM_DESC(mode_option, "Initial video mode (default=" DEFAULT_VIDEO_MODE ")");
-+
-diff --git a/include/video/sstfb.h b/include/video/sstfb.h
-index 5dbf5e7..baa163f 100644
---- a/include/video/sstfb.h
-+++ b/include/video/sstfb.h
-@@ -119,7 +119,7 @@ #  define LFB_READ_AHEAD	  BIT(1)
- #define BACKPORCH		0x0208
- #define VIDEODIMENSIONS		0x020c
- #define FBIINIT0		0x0210		/* misc+fifo  controls */
--#  define EN_VGA_PASSTHROUGH	  BIT(0)
-+#  define DIS_VGA_PASSTHROUGH	  BIT(0)
- #  define FBI_RESET		  BIT(1)
- #  define FIFO_RESET		  BIT(2)
- #define FBIINIT1		0x0214		/* PCI + video controls */
-@@ -251,7 +251,7 @@ #  define DACREG_ICS_CLK0_0	  0
- #  define DACREG_ICS_CLK1_A	  0	/* bit4 */
- 
- /* sst default init registers */
--#define FBIINIT0_DEFAULT EN_VGA_PASSTHROUGH
-+#define FBIINIT0_DEFAULT DIS_VGA_PASSTHROUGH
- 
- #define FBIINIT1_DEFAULT 	\
- 	(			\
-@@ -296,6 +296,11 @@ #define FBIINIT6_DEFAULT	(0x0)
-  *
-  */
- 
-+/* ioctl to enable/disable VGA passthrough */
-+#define SSTFB_SET_VGAPASS	_IOW('F', 0xdd, __u32)
-+#define SSTFB_GET_VGAPASS	_IOR('F', 0xdd, __u32)
-+
-+
- /* used to know witch clock to set */
- enum {
- 	VID_CLOCK=0,
-@@ -317,7 +322,7 @@ struct pll_timing {
- };
- 
- struct dac_switch {
--	char * name;
-+	const char *name;
- 	int (*detect) (struct fb_info *info);
- 	int (*set_pll) (struct fb_info *info, const struct pll_timing *t, const int clock);
- 	void (*set_vidmod) (struct fb_info *info, const int bpp);
-@@ -345,7 +350,7 @@ struct sstfb_par {
- 	struct pci_dev		*dev;
- 	int	type;
- 	u8	revision;
--	int	gfx_clock;	/* status */
-+	u8	vgapass;	/* VGA pass through: 1=enabled, 0=disabled */
- };
- 
- #endif /* _SSTFB_H_ */
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+ DISTRIBUTED LOCK MANAGER
+ P:	Patrick Caulfield
+ M:	pcaulfie@redhat.com

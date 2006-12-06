@@ -1,55 +1,53 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Randy Dunlap <randy.dunlap-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
 Subject: Re: Display class
-Date: Wed, 6 Dec 2006 19:13:51 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0612061859320.28745@pentafluge.infradead.org>
+Date: Wed, 6 Dec 2006 12:28:30 -0800
+Message-ID: <20061206122830.1c5fda5b.randy.dunlap@oracle.com>
 References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org>
- <653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
- <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
- <Pine.LNX.4.64.0612051740250.2925@pentafluge.infradead.org>
- <20061205171401.fd11160d.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0612061443180.28745@pentafluge.infradead.org>
- <20061206101434.8acb229a.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0612061818540.28745@pentafluge.infradead.org>
- <20061206105724.cf7b39bc.randy.dunlap@oracle.com>
+	<653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
+	<Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
+	<Pine.LNX.4.64.0612051740250.2925@pentafluge.infradead.org>
+	<20061205171401.fd11160d.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0612061443180.28745@pentafluge.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20061206105724.cf7b39bc.randy.dunlap@oracle.com>
-Sender: linux-acpi-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Miguel Ojeda <maxextreme@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Luming Yu <Luming.yu@intel.com>, Andrew Zabolotny <zap@homelink.ru>, linux-acpi@vger.kernel.org, kernel-discuss@handhelds.org
+Return-path: <kernel-discuss-bounces-CN5wO63fgwogsBAKwltoeQ@public.gmane.org>
+In-Reply-To: <Pine.LNX.4.64.0612061443180.28745-nGpKsS7K33UUkNsaar8edxWb9i9o6OzJ@public.gmane.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://handhelds.org/mailman/listinfo/kernel-discuss>,
+	<mailto:kernel-discuss-request-CN5wO63fgwogsBAKwltoeQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://www.handhelds.org/hypermail/kernel-discuss/current>
+List-Post: <mailto:kernel-discuss-CN5wO63fgwogsBAKwltoeQ@public.gmane.org>
+List-Help: <mailto:kernel-discuss-request-CN5wO63fgwogsBAKwltoeQ@public.gmane.org?subject=help>
+List-Subscribe: <https://handhelds.org/mailman/listinfo/kernel-discuss>,
+	<mailto:kernel-discuss-request-CN5wO63fgwogsBAKwltoeQ@public.gmane.org?subject=subscribe>
+Sender: kernel-discuss-bounces-CN5wO63fgwogsBAKwltoeQ@public.gmane.org
+Errors-To: kernel-discuss-bounces-CN5wO63fgwogsBAKwltoeQ@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, Miguel Ojeda <maxextreme-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kernel-discuss-CN5wO63fgwogsBAKwltoeQ@public.gmane.org, Luming Yu <Luming.yu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
+On Wed, 6 Dec 2006 15:10:44 +0000 (GMT) James Simmons wrote:
 
-> > > > That patch was rought draft for feedback. I applied your comments. This 
-> > > > patch actually works. It includes my backlight fix as well.
+> 
+> > > of Mr. Yu for acpi. Also this class could in time replace the lcd class 
+> > > located in the backlight directory since a lcd is a type of display.
+> > > The final hope is that the purpose auxdisplay could fall under this 
+> > > catergory.
 > > > 
-> > > Glad to hear it.  I had to make the following changes
-> > > in order for it to build.
-> > > However, I still have build errors for aty.
-> > 
-> > Ug. I see another problem. I had backlight completly compiled as a 
-> > module! Thus it hid these compile errors. So we need also a 
-> > CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE check as well. Can sysfs handle this 
-> > well or would it be better the the backlight class be a boolean instead?
+> > > P.S
+> > >    I know the edid parsing would have to be pulled out of the fbdev layer.
 > 
-> SCSI works as a module and it uses sysfs.
-> See drivers/scsi/scsi_sysfs.c.
-> Does that answer your question?  I wasn't quite sure what
-> the question was.
+> That patch was rought draft for feedback. I applied your comments. This 
+> patch actually works. It includes my backlight fix as well.
 
-I'm scratching my head on how to configure a modular driver and 
-two modular sysfs classes. 
- 
-> Next question, based on:
-> drivers/built-in.o: In function `probe_edid':
-> (.text.probe_edid+0x42): undefined reference to `fb_edid_to_monspecs'
-> 
-> Should backlight and/or display support depend on
-> CONFIG_FB?  Right now they don't, so the above can happen...
+BTW, this patch version contains trailing whitespace
+which should be cleaned up:
 
-I already sent a patch to Andrew to make backlight/lcd work independent of
-CONFIG_FB. Display is still in the alpha stage. In time it will work 
-independent of CONFIG_FB.
+Warning: trailing whitespace in lines 33,158 of drivers/acpi/video.c
+Warning: trailing whitespace in line 10 of drivers/video/display/Kconfig
+Warning: trailing whitespace in line 41 of include/linux/display.h
+Warning: trailing whitespace in lines 49,1053,1084,1133 of drivers/video/Kconfig
+Warning: trailing whitespace in line 3 of drivers/video/display/Makefile
 
+---
+~Randy

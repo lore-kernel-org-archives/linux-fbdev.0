@@ -1,53 +1,70 @@
-From: Randy Dunlap <randy.dunlap-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
-Subject: Re: Display class
-Date: Wed, 6 Dec 2006 12:28:30 -0800
-Message-ID: <20061206122830.1c5fda5b.randy.dunlap@oracle.com>
-References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org>
-	<653402b90611141426y6db15a3bh8ea59f89c8f1bb39@mail.gmail.com>
-	<Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org>
-	<Pine.LNX.4.64.0612051740250.2925@pentafluge.infradead.org>
-	<20061205171401.fd11160d.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0612061443180.28745@pentafluge.infradead.org>
+From: "Paul A. Clarke" <pc@us.ibm.com>
+Subject: Re: [PATCH] Fbdev driver for IBM GXT4500P video
+ cards
+Date: Thu, 07 Dec 2006 00:12:23 -0600
+Message-ID: <4577B0C7.80502@us.ibm.com>
+References: <17766.24132.505274.631108@cargo.ozlabs.ibm.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-discuss-bounces-CN5wO63fgwogsBAKwltoeQ@public.gmane.org>
-In-Reply-To: <Pine.LNX.4.64.0612061443180.28745-nGpKsS7K33UUkNsaar8edxWb9i9o6OzJ@public.gmane.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://handhelds.org/mailman/listinfo/kernel-discuss>,
-	<mailto:kernel-discuss-request-CN5wO63fgwogsBAKwltoeQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://www.handhelds.org/hypermail/kernel-discuss/current>
-List-Post: <mailto:kernel-discuss-CN5wO63fgwogsBAKwltoeQ@public.gmane.org>
-List-Help: <mailto:kernel-discuss-request-CN5wO63fgwogsBAKwltoeQ@public.gmane.org?subject=help>
-List-Subscribe: <https://handhelds.org/mailman/listinfo/kernel-discuss>,
-	<mailto:kernel-discuss-request-CN5wO63fgwogsBAKwltoeQ@public.gmane.org?subject=subscribe>
-Sender: kernel-discuss-bounces-CN5wO63fgwogsBAKwltoeQ@public.gmane.org
-Errors-To: kernel-discuss-bounces-CN5wO63fgwogsBAKwltoeQ@public.gmane.org
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, Miguel Ojeda <maxextreme-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kernel-discuss-CN5wO63fgwogsBAKwltoeQ@public.gmane.org, Luming Yu <Luming.yu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GsCUj-0006Hu-3y for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 06 Dec 2006 22:12:33 -0800
+Received: from e5.ny.us.ibm.com ([32.97.182.145])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GsCUh-0001CW-KD
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 06 Dec 2006 22:12:33 -0800
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB76COmS005818
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 7 Dec 2006 01:12:24 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	kB76COkR222848 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 7 Dec 2006 01:12:24 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	kB76CORV022971 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 7 Dec 2006 01:12:24 -0500
+In-Reply-To: <17766.24132.505274.631108@cargo.ozlabs.ibm.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linuxppc-dev@ozlabs.org, adaplas@pol.net
 
-On Wed, 6 Dec 2006 15:10:44 +0000 (GMT) James Simmons wrote:
+Paul,
 
-> 
-> > > of Mr. Yu for acpi. Also this class could in time replace the lcd class 
-> > > located in the backlight directory since a lcd is a type of display.
-> > > The final hope is that the purpose auxdisplay could fall under this 
-> > > catergory.
-> > > 
-> > > P.S
-> > >    I know the edid parsing would have to be pulled out of the fbdev layer.
-> 
-> That patch was rought draft for feedback. I applied your comments. This 
-> patch actually works. It includes my backlight fix as well.
+Paul Mackerras wrote:
+> This is an fbdev driver for the IBM GXT4500P display card found in
+> some IBM System P (pSeries) machines.  These cards have hardware 2D
+> and 3D capabilities, but the driver does not use them; it just exports
+> a dumb framebuffer.
 
-BTW, this patch version contains trailing whitespace
-which should be cleaned up:
+Any reason to believe this wouldn't work with a GXT6500P as well?  It's almost 
+identical to the GXT4500P except for an added geometry engine.
 
-Warning: trailing whitespace in lines 33,158 of drivers/acpi/video.c
-Warning: trailing whitespace in line 10 of drivers/video/display/Kconfig
-Warning: trailing whitespace in line 41 of include/linux/display.h
-Warning: trailing whitespace in lines 49,1053,1084,1133 of drivers/video/Kconfig
-Warning: trailing whitespace in line 3 of drivers/video/display/Makefile
+I have one, but won't be near it again until mid-January.
 
----
-~Randy
+(This is very cool, BTW!)
+-- 
+Regards,
+Paul Clarke
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

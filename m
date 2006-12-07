@@ -1,70 +1,122 @@
-From: "Paul A. Clarke" <pc@us.ibm.com>
-Subject: Re: [PATCH] Fbdev driver for IBM GXT4500P video
- cards
-Date: Thu, 07 Dec 2006 00:12:23 -0600
-Message-ID: <4577B0C7.80502@us.ibm.com>
-References: <17766.24132.505274.631108@cargo.ozlabs.ibm.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: James Simmons <jsimmons@infradead.org>
+Subject: [PATCH] backlight argument change for fbdev take 2
+Date: Thu, 7 Dec 2006 16:13:30 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0612071555020.31668@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1032377AbWLGQNc@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GsCUj-0006Hu-3y for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Dec 2006 22:12:33 -0800
-Received: from e5.ny.us.ibm.com ([32.97.182.145])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1GsCUh-0001CW-KD
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Dec 2006 22:12:33 -0800
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id kB76COmS005818
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 7 Dec 2006 01:12:24 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	kB76COkR222848 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 7 Dec 2006 01:12:24 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	kB76CORV022971 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 7 Dec 2006 01:12:24 -0500
-In-Reply-To: <17766.24132.505274.631108@cargo.ozlabs.ibm.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linuxppc-dev@ozlabs.org, adaplas@pol.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Paul,
 
-Paul Mackerras wrote:
-> This is an fbdev driver for the IBM GXT4500P display card found in
-> some IBM System P (pSeries) machines.  These cards have hardware 2D
-> and 3D capabilities, but the driver does not use them; it just exports
-> a dumb framebuffer.
+After I managed to get the backlight configuration sorted out for the 
+framebuffer drivers a couple of errors showed up in a patch I sent you 
+earlier to update the frambuffer drivers to the backlight_device_registers
+changes in the -mm tree. Please apply.
 
-Any reason to believe this wouldn't work with a GXT6500P as well?  It's almost 
-identical to the GXT4500P except for an added geometry engine.
+Signed-Off: James Simmons <jsimmons@infradead.org>
 
-I have one, but won't be near it again until mid-January.
-
-(This is very cool, BTW!)
--- 
-Regards,
-Paul Clarke
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index 276a215..981bab4 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -1829,7 +1829,7 @@ static void aty128_bl_init(struct aty128
+ 
+ 	snprintf(name, sizeof(name), "aty128bl%d", info->node);
+ 
+-	bd = backlight_device_register(name, par, &aty128_bl_data);
++	bd = backlight_device_register(name, info->dev, par, &aty128_bl_data);
+ 	if (IS_ERR(bd)) {
+ 		info->bl_dev = NULL;
+ 		printk(KERN_WARNING "aty128: Backlight registration failed\n");
+@@ -2210,7 +2210,7 @@ static int aty128fb_blank(int blank, str
+ 		return 0;
+ 
+ #ifdef CONFIG_FB_ATY128_BACKLIGHT
+-	if (machine_is(powermac) && blank)
++	if (blank)
+ 		aty128_bl_set_power(fb, FB_BLANK_POWERDOWN);
+ #endif
+ 
+@@ -2229,7 +2229,7 @@ static int aty128fb_blank(int blank, str
+ 	}
+ 
+ #ifdef CONFIG_FB_ATY128_BACKLIGHT
+-	if (machine_is(powermac) && !blank)
++	if (blank)
+ 		aty128_bl_set_power(fb, FB_BLANK_UNBLANK);
+ #endif
+ 
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index e815b35..da070b0 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -2221,7 +2221,7 @@ static void aty_bl_init(struct atyfb_par
+ 
+ 	snprintf(name, sizeof(name), "atybl%d", info->node);
+ 
+-	bd = backlight_device_register(name, par, &aty_bl_data);
++	bd = backlight_device_register(name, info->dev, par, &aty_bl_data);
+ 	if (IS_ERR(bd)) {
+ 		info->bl_dev = NULL;
+ 		printk(KERN_WARNING "aty: Backlight registration failed\n");
+@@ -2814,7 +2814,7 @@ static int atyfb_blank(int blank, struct
+ 		return 0;
+ 
+ #ifdef CONFIG_FB_ATY_BACKLIGHT
+-	if (machine_is(powermac) && blank > FB_BLANK_NORMAL)
++	if (blank > FB_BLANK_NORMAL)
+ 		aty_bl_set_power(info, FB_BLANK_POWERDOWN);
+ #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
+ 	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
+@@ -2846,7 +2846,7 @@ static int atyfb_blank(int blank, struct
+ 	aty_st_le32(CRTC_GEN_CNTL, gen_cntl, par);
+ 
+ #ifdef CONFIG_FB_ATY_BACKLIGHT
+-	if (machine_is(powermac) && blank <= FB_BLANK_NORMAL)
++	if (blank <= FB_BLANK_NORMAL)
+ 		aty_bl_set_power(info, FB_BLANK_UNBLANK);
+ #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
+ 	if (par->lcd_table && blank <= FB_BLANK_NORMAL &&
+diff --git a/drivers/video/aty/radeon_backlight.c b/drivers/video/aty/radeon_backlight.c
+index 585eb7b..3abfd4a 100644
+--- a/drivers/video/aty/radeon_backlight.c
++++ b/drivers/video/aty/radeon_backlight.c
+@@ -163,7 +163,7 @@ void radeonfb_bl_init(struct radeonfb_in
+ 
+ 	snprintf(name, sizeof(name), "radeonbl%d", rinfo->info->node);
+ 
+-	bd = backlight_device_register(name, pdata, &radeon_bl_data);
++	bd = backlight_device_register(name, rinfo->info->dev, pdata, &radeon_bl_data);
+ 	if (IS_ERR(bd)) {
+ 		rinfo->info->bl_dev = NULL;
+ 		printk("radeonfb: Backlight registration failed\n");
+diff --git a/drivers/video/nvidia/nv_backlight.c b/drivers/video/nvidia/nv_backlight.c
+index 5b75ae4..df934bd 100644
+--- a/drivers/video/nvidia/nv_backlight.c
++++ b/drivers/video/nvidia/nv_backlight.c
+@@ -141,7 +141,7 @@ void nvidia_bl_init(struct nvidia_par *p
+ 
+ 	snprintf(name, sizeof(name), "nvidiabl%d", info->node);
+ 
+-	bd = backlight_device_register(name, par, &nvidia_bl_data);
++	bd = backlight_device_register(name, info->dev, par, &nvidia_bl_data);
+ 	if (IS_ERR(bd)) {
+ 		info->bl_dev = NULL;
+ 		printk(KERN_WARNING "nvidia: Backlight registration failed\n");
+diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+index a433cc7..a160c4d 100644
+--- a/drivers/video/riva/fbdev.c
++++ b/drivers/video/riva/fbdev.c
+@@ -383,7 +383,7 @@ static void riva_bl_init(struct riva_par
+ 
+ 	snprintf(name, sizeof(name), "rivabl%d", info->node);
+ 
+-	bd = backlight_device_register(name, par, &riva_bl_data);
++	bd = backlight_device_register(name, info->dev, par, &riva_bl_data);
+ 	if (IS_ERR(bd)) {
+ 		info->bl_dev = NULL;
+ 		printk(KERN_WARNING "riva: Backlight registration failed\n");

@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Ondrej Zajicek <santiago@crfreenet.org>
 Subject: Re: fbdev driver for S3 Trio/Virge
-Date: Tue, 12 Dec 2006 09:42:58 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0612120938550.18306@pademelon.sonytel.be>
+Date: Tue, 12 Dec 2006 00:39:03 +0100
+Message-ID: <20061211233903.GA1235@localhost.localdomain>
 References: <20061206100601.GA1408@localhost.localdomain>
 	<20061211143041.d42aff3b.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
@@ -9,15 +9,17 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gu3ER-0000GY-Uh for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Dec 2006 00:43:24 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Gu3EN-0004pu-H9
+	id 1Gtujv-0000JL-RC for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 Dec 2006 15:39:20 -0800
+Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Gtujr-0002lT-6b
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Dec 2006 00:43:23 -0800
+	Mon, 11 Dec 2006 15:39:19 -0800
+Content-Disposition: inline
 In-Reply-To: <20061211143041.d42aff3b.akpm@osdl.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,10 +31,10 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, James Simmons <jsimmons@infradead.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 11 Dec 2006, Andrew Morton wrote:
+On Mon, Dec 11, 2006 at 02:30:41PM -0800, Andrew Morton wrote:
 > On Wed, 6 Dec 2006 11:06:01 +0100
 > Ondrej Zajicek <santiago@crfreenet.org> wrote:
 > 
@@ -40,28 +42,24 @@ On Mon, 11 Dec 2006, Andrew Morton wrote:
 > 
 > Confused.  Don't S3triofb.c and virgefb.c already do that?
 
-S3triofb is a dumb frame buffer device for an S3 Trio card initialized by Open
-Firmware (i.e. no mode setting). It's practical use is very limited these days
-(how many of the handful CHRP LongTrail boards are still alive and have an S3
-Trio card?).
+virgefb.c
+  - amiga/zorro specific,
+  - broken (according to Kconfig),
+  - uses obsolete/nonexistent interface (struct display_switch)
+  - recent Adrian Bunk's patch removes this driver
+  
+S3triofb.c
+  - ppc/openfirmware specific
+  - minimal functionality
+  - broken (according to Kconfig),
+  - uses obsolete/nonexistent interface (struct display_switch)
 
-Cyberfb and Virgefb are frame buffer devices for S3 Trio and ViRGE chips tied
-to Zorro-to-PCI bridges on Zorro graphics cards for Amiga. But they were never
-converted to the 2.6 fbdev kernel API and Adrian wants to remove them.
+-- 
+Elen sila lumenn' omentielvo
 
-So yes, it would be nice to finally have a full-featured driver for S3 Trio and
-ViRGE in the kernel ;-)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

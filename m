@@ -1,8 +1,10 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: fbdev driver for S3 Trio/Virge
-Date: Mon, 11 Dec 2006 14:30:41 -0800
-Message-ID: <20061211143041.d42aff3b.akpm@osdl.org>
-References: <20061206100601.GA1408@localhost.localdomain>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.19 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver v2
+Date: Mon, 11 Dec 2006 18:54:05 -0500
+Message-ID: <45a44e480612111554j1450f35ub4d9932e5cd32d4@mail.gmail.com>
+References: <200612111046.kBBAkV8Y029087@localhost.localdomain>
+	<457D895D.4010500@innova-card.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,14 +13,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gtthg-0001Xi-LE for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 Dec 2006 14:32:56 -0800
-Received: from smtp.osdl.org ([65.172.181.25])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1Gttfu-00057t-Br
+	id 1GtuyG-0001le-72 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 Dec 2006 15:54:11 -0800
+Received: from an-out-0708.google.com ([209.85.132.242])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GtuyE-0006ag-I1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 Dec 2006 14:31:08 -0800
-In-Reply-To: <20061206100601.GA1408@localhost.localdomain>
+	Mon, 11 Dec 2006 15:54:07 -0800
+Received: by an-out-0708.google.com with SMTP id d40so644206and
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 11 Dec 2006 15:54:05 -0800 (PST)
+In-Reply-To: <457D895D.4010500@innova-card.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,15 +34,98 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, James Simmons <jsimmons@infradead.org>
+To: Franck <vagabon.xyz@gmail.com>
+Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Wed, 6 Dec 2006 11:06:01 +0100
-Ondrej Zajicek <santiago@crfreenet.org> wrote:
+On 12/11/06, Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
+> jayakumar.lkml@gmail.com wrote:
+> > +     atomic_t ref_count;
+> > +     atomic_t vma_count;
+>
+> what purpose do these counters deserve ?
 
-> This patch adds driver for S3 Trio / S3 Virge.
+You are right. I can remove them.
 
-Confused.  Don't S3triofb.c and virgefb.c already do that?
+> > +
+> > +void hcb_wait_for_ack(struct hecubafb_par *par)
+> > +{
+> > +
+> > +     int timeout;
+> > +     unsigned char ctl;
+> > +
+> > +     timeout=500;
+> > +     do {
+> > +             ctl = hcb_get_ctl(par);
+> > +             if ((ctl & HCB_ACK_BIT))
+> > +                     return;
+> > +             udelay(1);
+> > +     } while (timeout--);
+> > +     printk(KERN_ERR "timed out waiting for ack\n");
+> > +}
+>
+> When timeout occur this function does not return any error values.
+> the callers needn't to be warn in this case ?
+
+You are right. I need to figure out what exactly to do. Currently, if
+a timeout is observed it normally means the display controller is
+hung. However, in some cases  the controller does seem to recover
+after some period of time. I guess I should probably return an error
+and terminate pending activity.
+
+> > +
+> > +/* this is to find and return the vmalloc-ed fb pages */
+> > +static struct page* hecubafb_vm_nopage(struct vm_area_struct *vma,
+> > +                                     unsigned long vaddr, int *type)
+> > +{
+> > +     unsigned long offset;
+> > +     struct page *page;
+> > +     struct fb_info *info = vma->vm_private_data;
+> > +
+> > +     offset = (vaddr - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
+> > +     if (offset >= (DPY_W*DPY_H)/8)
+> > +             return NOPAGE_SIGBUS;
+> > +
+> > +     page = vmalloc_to_page(info->screen_base + offset);
+> > +     if (!page)
+> > +             return NOPAGE_OOM;
+> > +
+> > +     get_page(page);
+> > +     if (type)
+> > +             *type = VM_FAULT_MINOR;
+> > +     return page;
+> > +}
+> > +
+>
+> so page can be accessed by using vma->start virtual address....
+
+The userspace app would be doing:
+
+ioctl(fd, FBIOGET_FSCREENINFO, &finfo);
+ioctl(fd, FBIOGET_VSCREENINFO, &vinfo);
+screensize = ( vinfo.xres * vinfo.yres * vinfo.bits_per_pixel) / 8;
+maddr = mmap(finfo.mmio_start, screensize, PROT_WRITE, MAP_SHARED, fd, 0);
+
+>
+> > +static int hecubafb_page_mkwrite(struct vm_area_struct *vma,
+>
+> [snip]
+>
+> > +
+> > +     if (!(videomemory = vmalloc(videomemorysize)))
+> > +             return retval;
+>
+> and here the kernel access to the same page by using address returned
+> by vmalloc which are different from the previous one. So 2 different
+> addresses map the same physical page. In this case are there any cache
+> aliasing issues specially for x86 arch ?
+
+I think that PTEs set up by vmalloc are marked cacheable and via the
+above nopage end up as cacheable. I'm not doing DMA. So the accesses
+are through the cache so I don't think cache aliasing is an issue for
+this case. Please let me know if I misunderstood.
+
+Thanks,
+jayakumar
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

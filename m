@@ -1,45 +1,55 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: SM501: core (mfd) driver
-Date: Wed, 13 Dec 2006 20:04:06 +0100
-Message-ID: <1166036646.27217.870.camel@laptopd505.fenrus.org>
-References: <20061213155134.GA10097@home.fluff.org>
-	 <1166030491.27217.844.camel@laptopd505.fenrus.org>
-	 <20061213175143.GA11394@home.fluff.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Proper backlight selection for
+ fbdev drivers
+Date: Wed, 13 Dec 2006 11:25:08 -0800
+Message-ID: <20061213112508.e1bad3fa.akpm@osdl.org>
+References: <Pine.LNX.4.64.0612071757230.949@pentafluge.infradead.org>
+	<20061213000029.edd9c91e.akpm@osdl.org>
+	<Pine.LNX.4.64.0612131442440.4484@pentafluge.infradead.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965077AbWLMTEM@vger.kernel.org>
-In-Reply-To: <20061213175143.GA11394@home.fluff.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Ben Dooks <ben-fbdev@fluff.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GuZjV-00045t-KR for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 13 Dec 2006 11:25:37 -0800
+Received: from smtp.osdl.org ([65.172.181.25])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1GuZjU-0003oe-Qe
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 13 Dec 2006 11:25:37 -0800
+In-Reply-To: <Pine.LNX.4.64.0612131442440.4484@pentafluge.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, 2006-12-13 at 17:51 +0000, Ben Dooks wrote:
-> > > +
-> > > +	writel(mode, sm->regs + SM501_POWER_MODE_CONTROL);
-> > > +
-> > > +	dev_dbg(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
-> > > +		gate, clock, mode);
-> > > +
-> > > +	msleep(16);
-> > 
-> > you're missing a PCI posting flush here
-> > (if you don't know what this is please ask)
+On Wed, 13 Dec 2006 14:58:26 +0000 (GMT)
+James Simmons <jsimmons@infradead.org> wrote:
+
+> The problem is the overlap of the patches 
 > 
-> Is this a read from an device register to cause the PCI writes
-> to happen?
+> fbdev-update-after-backlight-argument-change.diff
+> proper-backlight-selection-forfbdev-drivers.patch
+> 
+> The machine_is change is in the argument change patch. It should be in 
+> this patch. I can send updates of both patches.
 
-yup
+oh ok, I wondered why -mm1 worked OK.  Let me put things back...
 
->  Would reading SM501_POWER_MODE_CONTROL be ok, or does
-> it require a different register?
-
-any register is ok, you can read the same one just fine.
-
-
-greetings,
-   Arjan van de Ven
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

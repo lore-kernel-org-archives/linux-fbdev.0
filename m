@@ -1,11 +1,7 @@
-From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
-Subject: Re: [RFC 2.6.19 1/1] fbdev,
-	mm: hecuba/E-Ink fbdev driver v2
-Date: Wed, 13 Dec 2006 09:38:26 +0100
-Message-ID: <cda58cb80612130038x6b81a00dv813d10726d495eda@mail.gmail.com>
-References: <200612111046.kBBAkV8Y029087@localhost.localdomain>
-	<457D895D.4010500@innova-card.com>
-	<45a44e480612111554j1450f35ub4d9932e5cd32d4@mail.gmail.com>
+From: James Cloos <cloos@jhcloos.com>
+Subject: drivers/video/aty/radeon_backlight.c
+Date: Wed, 13 Dec 2006 08:46:24 -0500
+Message-ID: <m3irgflxh4.fsf@lugabout.jhcloos.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,17 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GuPdE-0002cR-Rs for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 13 Dec 2006 00:38:28 -0800
-Received: from ug-out-1314.google.com ([66.249.92.174])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GuPdD-0001rj-GQ
+	id 1GuURx-0007dx-M9 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 13 Dec 2006 05:47:09 -0800
+Received: from ore.jhcloos.com ([64.240.156.239])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1GuURv-0000WS-9E
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 13 Dec 2006 00:38:28 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so106813ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 13 Dec 2006 00:38:27 -0800 (PST)
-In-Reply-To: <45a44e480612111554j1450f35ub4d9932e5cd32d4@mail.gmail.com>
-Content-Disposition: inline
+	Wed, 13 Dec 2006 05:47:09 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,26 +27,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
 
-On 12/12/06, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> I think that PTEs set up by vmalloc are marked cacheable and via the
-> above nopage end up as cacheable. I'm not doing DMA. So the accesses
-> are through the cache so I don't think cache aliasing is an issue for
-> this case. Please let me know if I misunderstood.
->
+Are there any dependencies in $subject which would preclude changing
+drivers/video/Kconfig with:
 
-This issue is not related to DMA: there are 2 different virtual
-addresses that can map the same physical address. If these 2 virtual
-addresses use 2 different data cache entries then you have a cache
-aliasing issue. In your case the 2 different virtual addresses are (1)
-the one got by the kernel (returned by vmalloc) (2) the one got by the
-application (returned by mmap).
+ config FB_RADEON_BACKLIGHT
+         bool "Support for backlight control"
+-        depends on FB_RADEON && PMAC_BACKLIGHT
++        depends on FB_RADEON
+         select FB_BACKLIGHT
+         default y
+         help
+           Say Y here if you want to control the backlight of your display.
 
-Hope that helps.
+or is radeon_backlight.c only functional when -DCONFIG_PMAC_BACKLIGHT,
+even though the pmac routines are all ifdef'ed?
+
+-JimC
 -- 
-               Franck
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

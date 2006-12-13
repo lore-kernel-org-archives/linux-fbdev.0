@@ -1,9 +1,11 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Proper backlight selection for
-	fbdev drivers
-Date: Wed, 13 Dec 2006 00:00:29 -0800
-Message-ID: <20061213000029.edd9c91e.akpm@osdl.org>
-References: <Pine.LNX.4.64.0612071757230.949@pentafluge.infradead.org>
+From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
+Subject: Re: [RFC 2.6.19 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver v2
+Date: Wed, 13 Dec 2006 09:38:26 +0100
+Message-ID: <cda58cb80612130038x6b81a00dv813d10726d495eda@mail.gmail.com>
+References: <200612111046.kBBAkV8Y029087@localhost.localdomain>
+	<457D895D.4010500@innova-card.com>
+	<45a44e480612111554j1450f35ub4d9932e5cd32d4@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,14 +14,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GuP2h-0007Ng-TF for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 13 Dec 2006 00:00:43 -0800
-Received: from smtp.osdl.org ([65.172.181.25])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1GuP2g-0007xO-Hs
+	id 1GuPdE-0002cR-Rs for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 13 Dec 2006 00:38:28 -0800
+Received: from ug-out-1314.google.com ([66.249.92.174])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GuPdD-0001rj-GQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 13 Dec 2006 00:00:43 -0800
-In-Reply-To: <Pine.LNX.4.64.0612071757230.949@pentafluge.infradead.org>
+	Wed, 13 Dec 2006 00:38:28 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so106813ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 13 Dec 2006 00:38:27 -0800 (PST)
+In-Reply-To: <45a44e480612111554j1450f35ub4d9932e5cd32d4@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,28 +35,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Thu, 7 Dec 2006 17:59:01 +0000 (GMT)
-James Simmons <jsimmons@infradead.org> wrote:
+On 12/12/06, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> I think that PTEs set up by vmalloc are marked cacheable and via the
+> above nopage end up as cacheable. I'm not doing DMA. So the accesses
+> are through the cache so I don't think cache aliasing is an issue for
+> this case. Please let me know if I misunderstood.
+>
 
-> Try this patch. This should fix any module/built-in dependencys.
+This issue is not related to DMA: there are 2 different virtual
+addresses that can map the same physical address. If these 2 virtual
+addresses use 2 different data cache entries then you have a cache
+aliasing issue. In your case the 2 different virtual addresses are (1)
+the one got by the kernel (returned by vmalloc) (2) the one got by the
+application (returned by mmap).
 
-drivers/video/aty/atyfb_base.c: In function 'atyfb_blank':
-drivers/video/aty/atyfb_base.c:2817: warning: implicit declaration of function 'machine_is'
-drivers/video/aty/atyfb_base.c:2817: error: 'powermac' undeclared (first use in this function)
-drivers/video/aty/atyfb_base.c:2817: error: (Each undeclared identifier is reported only once
-drivers/video/aty/atyfb_base.c:2817: error: for each function it appears in.)
-
-This is i386 build.
-
-#ifdef CONFIG_FB_ATY_BACKLIGHT
-	if (machine_is(powermac) && blank > FB_BLANK_NORMAL)
-		aty_bl_set_power(info, FB_BLANK_POWERDOWN);
-#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
-
-It assumes that only pmacs have backlights.
+Hope that helps.
+-- 
+               Franck
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

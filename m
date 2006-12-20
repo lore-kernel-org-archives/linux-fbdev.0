@@ -1,268 +1,33 @@
-From: Mark Pustjens <pustjens@dds.nl>
-Subject: Re: [PATCH] savagefb: vsync for twisterP
-Date: Wed, 20 Dec 2006 10:59:32 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0612201059100.2728@localhost.localdomain>
-References: <Pine.LNX.4.64.0612201036130.2728@localhost.localdomain>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [PATCH 2.6.20-rc1 00/10] TURBOchannel update to the driver model
+Date: Wed, 20 Dec 2006 12:01:19 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64N.0612182115550.10069@blysk.ds.pg.gda.pl>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-663157060-1166608772=:2728"
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GwyEs-0008Sh-Mq for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Dec 2006 01:59:54 -0800
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GwyEq-0005xk-Ri
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Dec 2006 01:59:54 -0800
-Received: from [213.51.130.190] (port=47569 helo=smtp1.groni1.gr.home.nl)
-	by smtpq1.groni1.gr.home.nl with esmtp (Exim 4.30)
-	id 1GwyGj-0001sq-0n for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Dec 2006 11:01:49 +0100
-Received: from cp210686-b.roemd1.lb.home.nl ([84.28.106.175]:36403
-	helo=[192.168.1.100])
-	by smtp1.groni1.gr.home.nl with esmtp (Exim 4.30) id 1GwxzF-0004tB-CP
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Dec 2006 10:43:45 +0100
-In-Reply-To: <Pine.LNX.4.64.0612201036130.2728@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-663157060-1166608772=:2728
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-
-Ofcourse, I have to actually *add* the patch :)
-
-On Wed, 20 Dec 2006, Mark Pustjens wrote:
-
-> Hi,
->
-> This patch add support to the savagefb driver for
-> waiting for vsync for the TwisterP chipset.
->
-> The patch adds an ioctl FBIO_WAITFORVSYNC just like the
-> matroxfb driver.
->
-> It probably needs some work.
->
-> Merry Greetings,
->
-> Mark Pustjens
->
->
-
--- 
-Racism was not a problem on the Discworld, because -- what with trolls and
-dwarfs and so on -- speciesism was more interesting. Black and white lived
-in perfect harmony and ganged up on green.
-   (Witches Abroad)
---8323328-663157060-1166608772=:2728
-Content-Type: TEXT/PLAIN; charset=US-ASCII;
-	name=linux-2.6.19.1-savagefb-vsync.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0612201059320.2728@localhost.localdomain>
-Content-Description: 
-Content-Disposition: attachment; filename=linux-2.6.19.1-savagefb-vsync.patch
-
-ZGlmZiAtTmF1ciBsaW51eC0yLjYuMTkuMS1vcmcvZHJpdmVycy92aWRlby9z
-YXZhZ2Uvc2F2YWdlZmJfZHJpdmVyLmMgbGludXgtMi42LjE5LjEtbmV3L2Ry
-aXZlcnMvdmlkZW8vc2F2YWdlL3NhdmFnZWZiX2RyaXZlci5jDQotLS0gbGlu
-dXgtMi42LjE5LjEtb3JnL2RyaXZlcnMvdmlkZW8vc2F2YWdlL3NhdmFnZWZi
-X2RyaXZlci5jCTIwMDYtMTItMTEgMjA6MzI6NTMuMDAwMDAwMDAwICswMTAw
-DQorKysgbGludXgtMi42LjE5LjEtbmV3L2RyaXZlcnMvdmlkZW8vc2F2YWdl
-L3NhdmFnZWZiX2RyaXZlci5jCTIwMDYtMTItMTkgMTA6MTc6MDYuMDAwMDAw
-MDAwICswMTAwDQpAQCAtNCw2ICs0LDkgQEANCiAgKiBDb3B5cmlnaHQgKGMp
-IDIwMDEtMjAwMiAgRGVuaXMgT2xpdmVyIEtyb3BwIDxkb2tAZGlyZWN0ZmIu
-b3JnPg0KICAqICAgICAgICAgICAgICAgICAgICAgICAgICBTdmVuIE5ldW1h
-bm4gPG5lb0BkaXJlY3RmYi5vcmc+DQogICoNCisgKiBDb3B5cmlnaHQgKGMp
-IDIwMDYgVFBPIERpc3BsYXlzIENvcnANCisgKgkJICAgICAgIGFkYXB0ZWQg
-YnkgTWFyayBQdXN0amVucyA8cHVzdGplbnNAZGRzLm5sPiB0bw0KKyAqCQkg
-ICAgICAgaW5jbHVkZSB2c3luYyBpbnRlcnJ1cHQgc3VwcG9ydC4NCiAgKg0K
-ICAqIENhcmQgc3BlY2lmaWMgY29kZSBpcyBiYXNlZCBvbiBYRnJlZTg2J3Mg
-c2F2YWdlIGRyaXZlci4NCiAgKiBGcmFtZWJ1ZmZlciBmcmFtZXdvcmsgY29k
-ZSBpcyBiYXNlZCBvbiBjb2RlIG9mIGN5YmVyMjAwMGZiIGFuZCB0ZGZ4ZmIu
-DQpAQCAtNTI2LDYgKzUyOSwxMjEgQEANCiB9DQogI2VuZGlmDQogDQorc3Rh
-dGljIGlycXJldHVybl90IHNhdmFnZWZiX2lycShpbnQgaXJxLCB2b2lkICpk
-ZXZfaWQsIHN0cnVjdCBwdF9yZWdzICpmcCkNCit7DQorCXN0cnVjdCBzYXZh
-Z2VmYl9wYXIgKnBhciA9IGRldl9pZDsNCisgICAgICAgIHVfaW50MzJfdCBz
-dGF0dXM7DQorICAgICAgICBpbnQgaGFuZGxlZCA9IDA7DQorCXVuc2lnbmVk
-IGNoYXIgYjsNCisNCisJdmdhX291dDgoMHgzZDQsIDB4MTEsIHBhcik7DQor
-CWlmICgoKChiID0gdmdhX2luOCgweDNkNSwgcGFyKSkgJiAweDMwKSA9PSAw
-eDEwKSAmJiAodmdhX2luOCgweDNkYSwgcGFyKSAmIDB4MDgpKSB7DQorCQlw
-YXItPnZzeW5jLmNudCsrOw0KKwkJd2FrZV91cF9pbnRlcnJ1cHRpYmxlKCZw
-YXItPnZzeW5jLndhaXQpOw0KKwkJdmdhX291dDgoMHgzZDUsIChiICYgMHhl
-ZikgfCAweDIwLCBwYXIpOw0KKwkJaGFuZGxlZCA9IDE7DQorCX0NCisNCisg
-ICAgICAgIHJldHVybiBJUlFfUkVUVkFMKGhhbmRsZWQpOw0KK30NCisNCitp
-bnQgc2F2YWdlZmJfZW5hYmxlX2lycShzdHJ1Y3QgZmJfaW5mbyAqaW5mbywg
-aW50IHJlZW5hYmxlKSB7DQorCXN0cnVjdCBzYXZhZ2VmYl9wYXIgKnBhciA9
-IChzdHJ1Y3Qgc2F2YWdlZmJfcGFyICopaW5mby0+cGFyOw0KKw0KKyAgICAg
-ICAgaWYgKGluZm8tPmZpeC5hY2NlbCAhPSBGQl9BQ0NFTF9TM1RXSVNURVJf
-UCkNCisgICAgICAgICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQorDQorICAg
-ICAgICBpZiAoIXRlc3RfYW5kX3NldF9iaXQoMCwgJnBhci0+aXJxX2ZsYWdz
-KSkgew0KKyAgICAgICAgICAgICAgICBpZiAocmVxdWVzdF9pcnEocGFyLT5w
-Y2lkZXYtPmlycSwgc2F2YWdlZmJfaXJxLA0KKyAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgU0FfU0hJUlEsICJzYXZhZ2VmYiIsIHBhcikpIHsN
-CisgICAgICAgICAgICAgICAgICAgICAgICBjbGVhcl9iaXQoMCwgJnBhci0+
-aXJxX2ZsYWdzKTsNCisgICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4g
-LUVJTlZBTDsNCisgICAgICAgICAgICAgICAgfQ0KKwkJdmdhX291dDgoMHgz
-ZDQsIDB4MTEsIHBhcik7DQorCQl2Z2Ffb3V0OCgweDNkNSwgKHZnYV9pbjgo
-MHgzZDUsIHBhcikgfCAweDEwKSAmIDB4ZGYsIHBhcik7DQorICAgICAgICB9
-IGVsc2UgaWYgKHJlZW5hYmxlKSB7DQorCQl1bnNpZ25lZCBjaGFyIGI7DQor
-CQl2Z2Ffb3V0OCgweDNkNCwgMHgxMSwgcGFyKTsNCisJCWIgPSB2Z2FfaW44
-KDB4M2Q1LCBwYXIpOw0KKyAgICAgICAgICAgICAgICBpZiAoKGIgJiAweDIw
-KSA9PSAweDIwKSB7DQorICAgICAgICAgICAgICAgICAgICAgICAgcHJpbnRr
-KEtFUk5fREVCVUcgInNhdmFnZWZiOiBzb21lb25lIGRpc2FibGVkIHZlcnRp
-Y2FsIHJldHJhY2UgaW50ZXJydXB0IFsweCUwMlhdXG4iLCBiKTsNCisgICAg
-ICAgICAgICAgICAgfSBlbHNlIGlmICgoYiAmIDB4MTApID09IDB4MDApIHsN
-CisgICAgICAgICAgICAgICAgICAgICAgICBwcmludGsoS0VSTl9ERUJVRyAi
-c2F2YWdlZmI6IGludGVycnVwdCBlbmFibGVkIGJ1dCBpbnRlcnJ1cHQgY2xl
-YXJlZCBbMHglMDJYXVxuIiwgYik7DQorCQl9DQorCQl2Z2Ffb3V0OCgweDNk
-NSwgKGIgfCAweDEwKSAmIDB4ZGYsIHBhcik7DQorICAgICAgICB9DQorICAg
-ICAgICByZXR1cm4gMDsNCit9DQorDQorc3RhdGljIHZvaWQgc2F2YWdlZmJf
-ZGlzYWJsZV9pcnEoc3RydWN0IGZiX2luZm8gKmluZm8pIHsNCisJc3RydWN0
-IHNhdmFnZWZiX3BhciAqcGFyID0gKHN0cnVjdCBzYXZhZ2VmYl9wYXIgKilp
-bmZvLT5wYXI7DQorDQorICAgICAgICBpZiAodGVzdF9hbmRfY2xlYXJfYml0
-KDAsICZwYXItPmlycV9mbGFncykpIHsNCisJCS8qIGRpc2FibGluZyB0aGUg
-aW50ZXJydXB0IGluIGhhcmR3YXJlIHdhcyBkb25lIGluIHRoZSBpbnRlcnJ1
-cHQgaGFuZGxlciAqLw0KKwkJdmdhX291dDgoMHgzZDQsIDB4MTcsIHBhcik7
-DQorCQl3aGlsZSAoKHZnYV9pbjgoMHgzZGEsIHBhcikgJiAweDA4KSA9PSAw
-eDAwKTsNCisNCisJLy8JVmVydGljYWxSZXRyYWNlV2FpdChwYXIpOyAvKiB3
-YWl0IHVudGlsIGl0IGlzIHNhdmUgdG8gY2FsbCBmcmVlX2lycSAqLw0KKyAg
-ICAgICAgICAgICAgICBmcmVlX2lycShwYXItPnBjaWRldi0+aXJxLCBwYXIp
-Ow0KKyAgICAgICAgfQ0KK30NCisNCitpbnQgc2F2YWdlZmJfd2FpdF9mb3Jf
-dnN5bmMoc3RydWN0IGZiX2luZm8gKmluZm8sIHUzMiBjcnRjKSB7DQorCXN0
-cnVjdCBzYXZhZ2VmYl9wYXIgKnBhciA9IChzdHJ1Y3Qgc2F2YWdlZmJfcGFy
-ICopaW5mby0+cGFyOw0KKwlzdHJ1Y3Qgc2F2YWdlZmJfdnN5bmMgKnZzOw0K
-Kwl1bnNpZ25lZCBpbnQgY250Ow0KKwlpbnQgcmV0Ow0KKw0KKwlzd2l0Y2gg
-KGNydGMpIHsNCisgICAgICAgIAljYXNlIDA6IA0KKyAgICAgICAgICAgICAg
-ICAJdnMgPSAmcGFyLT52c3luYzsNCisJICAgICAgICAgICAgICAgIGJyZWFr
-Ow0KKyAgICAgICAgCWRlZmF1bHQ6DQorICAgICAgICAgICAgICAgIAlyZXR1
-cm4gLUVOT0RFVjsNCisgICAgICAgIH0NCisJDQorCXJldCA9IHNhdmFnZWZi
-X2VuYWJsZV9pcnEoaW5mbywgMCk7DQorICAgICAgICBpZiAocmV0KSB7DQor
-ICAgICAgICAgICAgICAgIHJldHVybiByZXQ7DQorICAgICAgICB9DQorDQor
-CWNudCA9IHZzLT5jbnQ7DQorCXJldCA9IHdhaXRfZXZlbnRfaW50ZXJydXB0
-aWJsZV90aW1lb3V0KHZzLT53YWl0LCBjbnQgIT0gdnMtPmNudCwgSFoqMTAp
-Ow0KKwlzYXZhZ2VmYl9kaXNhYmxlX2lycShpbmZvKTsNCisJaWYgKHJldCA8
-IDApIHsNCisgICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCisgICAgICAg
-IH0NCisgICAgICAgIGlmIChyZXQgPT0gMCkgew0KKyAgICAgICAgICAgICAg
-ICBzYXZhZ2VmYl9lbmFibGVfaXJxKGluZm8sIDEpOw0KKwkJcHJpbnRrIChL
-RVJOX0VSUiAic2F2YWdlZmIgdGltZW91dCB3aGlsZSB3YWl0aW5nIGZvciB2
-c3luY1xuIik7DQorICAgICAgICAgICAgICAgIHJldHVybiAtRVRJTUVET1VU
-Ow0KKyAgICAgICAgfQ0KKyAgICAgICAgcmV0dXJuIDA7DQorfQ0KKw0KK3N0
-YXRpYyBpbnQgc2F2YWdlZmJfaW9jdGwoc3RydWN0IGlub2RlICppbm9kZSwg
-c3RydWN0IGZpbGUgKmZpbGUsDQorICAgICAgICAgICAgICAgICAgICAgICAg
-ICB1bnNpZ25lZCBpbnQgY21kLCB1bnNpZ25lZCBsb25nIGFyZywNCisgICAg
-ICAgICAgICAgICAgICAgICAgICAgIHN0cnVjdCBmYl9pbmZvICppbmZvKQ0K
-K3sNCisgICAgICAgIHZvaWQgX191c2VyICphcmdwID0gKHZvaWQgX191c2Vy
-ICopYXJnOw0KKwlzdHJ1Y3Qgc2F2YWdlZmJfcGFyICpwYXIgPSAoc3RydWN0
-IHNhdmFnZWZiX3BhciAqKWluZm8tPnBhcjsNCisNCisgICAgICAgIERCRyhf
-X0ZVTkNUSU9OX18pDQorDQorICAgICAgICBzd2l0Y2ggKGNtZCkgew0KKyAg
-ICAgICAgICAgICAgICBjYXNlIEZCSU9fV0FJVEZPUlZTWU5DOg0KKwkJCXsN
-CisJCQkJdV9pbnQzMl90IGNydDsNCisNCisJICAgICAgICAgICAgICAgICAg
-ICAgICAgaWYgKGdldF91c2VyKGNydCwgKF9fdTMyIF9fdXNlciAqKSBhcmcp
-KQ0KKyAgICAgICAgCSAgICAgICAgICAgICAgICAgICAgICAgIHJldHVybiAt
-RUZBVUxUOw0KKw0KKwkJCQlyZXR1cm4gc2F2YWdlZmJfd2FpdF9mb3JfdnN5
-bmMoaW5mbywgY3J0KTsNCisgICAgICAgICAgICAgICAgICAgICAgICB9DQor
-CX0NCisJcmV0dXJuIC1FTk9UVFk7DQorfQ0KKw0KIC8qIC0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLSAqLw0KIA0KIHN0YXRpYyB2b2lkIHNhdmFnZV9nZXRf
-ZGVmYXVsdF9wYXIoc3RydWN0IHNhdmFnZWZiX3BhciAqcGFyLCBzdHJ1Y3Qg
-c2F2YWdlX3JlZyAqcmVnKQ0KQEAgLTE0NTgsNiArMTU3NiwxMCBAQA0KIAl2
-Z2Ffb3V0OCgweDNkNCwgMHgzYSwgcGFyKTsNCiAJdmdhX291dDgoMHgzZDUs
-IGNyM2EsIHBhcik7DQogDQorCS8qIGVuYWJsZSB0aGUgcG9zc2liaWxpdHkg
-b2YgaXJxcyAqLw0KKwl2Z2Ffb3V0OCAoMHgzZDQsIDB4MzIsIHBhcik7DQor
-CXZnYV9vdXQ4ICgweDNkNSwgdmdhX2luOCgweDNkNSwgcGFyKSB8IDB4MTAs
-IHBhcik7DQorDQogCVNhdmFnZVNldHVwMkRFbmdpbmUocGFyKTsNCiAJdmdh
-SFdQcm90ZWN0KHBhciwgMCk7DQogfQ0KQEAgLTE2MTYsNiArMTczOCw3IEBA
-DQogCS5mYl9zZXRjb2xyZWcgICA9IHNhdmFnZWZiX3NldGNvbHJlZywNCiAJ
-LmZiX3Bhbl9kaXNwbGF5ID0gc2F2YWdlZmJfcGFuX2Rpc3BsYXksDQogCS5m
-Yl9ibGFuayAgICAgICA9IHNhdmFnZWZiX2JsYW5rLA0KKwkuZmJfaW9jdGwg
-ICAgICAgPSBzYXZhZ2VmYl9pb2N0bCwNCiAJLmZiX3NhdmVfc3RhdGUgID0g
-c2F2YWdlZmJfc2F2ZV9zdGF0ZSwNCiAJLmZiX3Jlc3RvcmVfc3RhdGUgPSBz
-YXZhZ2VmYl9yZXN0b3JlX3N0YXRlLA0KICNpZiBkZWZpbmVkKENPTkZJR19G
-Ql9TQVZBR0VfQUNDRUwpDQpAQCAtMjE2OSw2ICsyMjkyLDkgQEANCiAJCWdv
-dG8gZmFpbGVkX2VuYWJsZTsNCiAJfQ0KIA0KKwlpbml0X3dhaXRxdWV1ZV9o
-ZWFkKCZwYXItPnZzeW5jLndhaXQpOw0KKwlwYXItPmlycV9mbGFncyA9IDA7
-DQorDQogCWVyciA9IC1FTk9NRU07DQogDQogCWlmICgoZXJyID0gc2F2YWdl
-X2luaXRfZmJfaW5mbyhpbmZvLCBkZXYsIGlkKSkpDQpkaWZmIC1OYXVyIGxp
-bnV4LTIuNi4xOS4xLW9yZy9kcml2ZXJzL3ZpZGVvL3NhdmFnZS9zYXZhZ2Vm
-Yi5oIGxpbnV4LTIuNi4xOS4xLW5ldy9kcml2ZXJzL3ZpZGVvL3NhdmFnZS9z
-YXZhZ2VmYi5oDQotLS0gbGludXgtMi42LjE5LjEtb3JnL2RyaXZlcnMvdmlk
-ZW8vc2F2YWdlL3NhdmFnZWZiLmgJMjAwNi0xMi0xMSAyMDozMjo1My4wMDAw
-MDAwMDAgKzAxMDANCisrKyBsaW51eC0yLjYuMTkuMS1uZXcvZHJpdmVycy92
-aWRlby9zYXZhZ2Uvc2F2YWdlZmIuaAkyMDA2LTEyLTE5IDA5OjM5OjA2LjAw
-MDAwMDAwMCArMDEwMA0KQEAgLTUwLDcgKzUwLDE2IEBADQogI2RlZmluZSBQ
-Q0lfQ0hJUF9TVVBTQVZfSVhDU0RSCQkweDhjMmUNCiAjZGVmaW5lIFBDSV9D
-SElQX1NVUFNBVl9JWENERFIJCTB4OGMyZg0KIA0KLQ0KKyNkZWZpbmUgUzNf
-VFdJU1RFUlBfSU5UX1ZTWU5DCTB4MDAwMDAwMDENCisjZGVmaW5lIFMzX1RX
-SVNURVJQX0lOVF9HRUJTWQkweDAwMDAwMDAyIC8vIDJEIGdyYXBoaWNzIGVu
-Z2luZSBidXN5DQorI2RlZmluZSBTM19UV0lTVEVSUF9JTlRfQkZGCTB4MDAw
-MDAwMDQgLy8gYmZpZm8gZnVsbA0KKyNkZWZpbmUgUzNfVFdJU1RFUlBfSU5U
-X0JGRQkweDAwMDAwMDA4IC8vIGJmaWZvIGVtcHR5DQorI2RlZmluZSBTM19U
-V0lTVEVSUF9JTlRfQ0ZGCTB4MDAwMDAwMTAgLy8gY2ZpZm8gZnVsbA0KKyNk
-ZWZpbmUgUzNfVFdJU1RFUlBfSU5UX0NGRQkweDAwMDAwMDIwIC8vIGNmaWZv
-IGVtcHR5DQorI2RlZmluZSBTM19UV0lTVEVSUF9JTlRfQkNJCTB4MDAwMDAw
-NDANCisjZGVmaW5lIFMzX1RXSVNURVJQX0lOVF9DQlVUCTB4MDAwMTAwMDAg
-Ly8gY29tbWFuZCBvdmVyZmxvdyB1cHBlciB0cmVzaG9sZA0KKyNkZWZpbmUg
-UzNfVFdJU1RFUlBfSU5UX0NCTFQJMHgwMDAyMDAwMCAvLyBjb21tYW5kIG92
-ZXJmbG93IGxvd2VyIHRyZXNob2xkDQorI2RlZmluZSBTM19UV0lTVEVSUF9J
-TlRfTUFTSwkweDAwMDMwMDdGDQogDQogI2RlZmluZSBTM19TQVZBR0UzRF9T
-RVJJRVMoY2hpcCkgICgoY2hpcD49UzNfU0FWQUdFM0QpICYmIChjaGlwPD1T
-M19TQVZBR0VfTVgpKQ0KIA0KQEAgLTYwLDYgKzY5LDkgQEANCiANCiAjZGVm
-aW5lIFMzX1NBVkFHRV9TRVJJRVMoY2hpcCkgICAgKChjaGlwPj1TM19TQVZB
-R0UzRCkgJiYgKGNoaXA8PVMzX1NBVkFHRTIwMDApKQ0KIA0KKyAvKiBpb2N0
-bHMgKi8NCisjZGVmaW5lIEZCSU9fV0FJVEZPUlZTWU5DICAgICBfSU9XKCdG
-JywgMHgyMCwgdV9pbnQzMl90KQ0KKw0KIC8qIENoaXAgdGFncy4gIFRoZXNl
-IGFyZSB1c2VkIHRvIGdyb3VwIHRoZSBhZGFwdGVycyBpbnRvDQogICogcmVs
-YXRlZCBmYW1pbGllcy4NCiAgKi8NCkBAIC0xODMsMTAgKzE5NSwxNyBAQA0K
-IAl1MzIgICByZWc7DQogfTsNCiANCisrIHN0cnVjdCBzYXZhZ2VmYl92c3lu
-YyB7DQorKyAgICAgICAgIHdhaXRfcXVldWVfaGVhZF90ICAgICAgIHdhaXQ7
-DQorKyAgICAgICAgIHVuc2lnbmVkIGludCAgICAgICAgICAgIGNudDsNCisr
-IH07DQorKyANCisNCiBzdHJ1Y3Qgc2F2YWdlZmJfcGFyIHsNCiAJc3RydWN0
-IHBjaV9kZXYgKnBjaWRldjsNCiAJc2F2YWdlX2NoaXBzZXQgIGNoaXA7DQog
-CXN0cnVjdCBzYXZhZ2VmYl9pMmNfY2hhbiBjaGFuOw0KKwlzdHJ1Y3Qgc2F2
-YWdlZmJfdnN5bmMgdnN5bmM7DQogCXN0cnVjdCBzYXZhZ2VfcmVnIHN0YXRl
-Ow0KIAlzdHJ1Y3Qgc2F2YWdlX3JlZyBzYXZlOw0KIAl1bnNpZ25lZCBjaGFy
-ICAgKmVkaWQ7DQpAQCAtMjIzLDYgKzI0Miw4IEBADQogCXUzMiAgICAgICAg
-ICAgY29iX3NpemU7DQogCWludCAgICAgICAgICAgY29iX2luZGV4Ow0KIA0K
-Kwl1bnNpZ25lZCBsb25nIGlycV9mbGFnczsNCisNCiAJdm9pZCAoKlNhdmFn
-ZVdhaXRJZGxlKSAoc3RydWN0IHNhdmFnZWZiX3BhciAqcGFyKTsNCiAJdm9p
-ZCAoKlNhdmFnZVdhaXRGaWZvKSAoc3RydWN0IHNhdmFnZWZiX3BhciAqcGFy
-LCBpbnQgc3BhY2UpOw0KIA0K
-
---8323328-663157060-1166608772=:2728
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754627AbWLTMB2@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Andrew Morton <akpm@osdl.org>, Ralf Baechle <ralf@linux-mips.org>, Jeff Garzik <jgarzik@pobox.com>, Antonino Daplas <adaplas@pol.net>, James.Bottomley@SteelEye.com
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---8323328-663157060-1166608772=:2728
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello,
 
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+ It has been much longer than expected, but finally it is here!  This 
+series of patches converts support for the TURBOchannel bus to the driver 
+model.  As a nice side effect, the generic part of the code is now really 
+generic, that is no more dependencies on MIPS specifics under drivers/tc/ 
+and platform specific code for MIPS got moved where it belongs.  As to 
+whether other relevant platforms will add TURBOchannel support or not I 
+cannot tell right now. ;-)
 
---8323328-663157060-1166608772=:2728--
+ All the changes have been successfully tested with a DECstation 5000/133 
+and the necessary bits of additional hardware as appropriate.  Where 
+drivers supporting different bus attachments were concerned, they were 
+built for configurations enabling all the other buses supported and 
+run-time checked if possible.
+
+ And last but not least, thanks to James Simmons for beginning this work a 
+while ago as his code was great to start with.
+
+  Maciej

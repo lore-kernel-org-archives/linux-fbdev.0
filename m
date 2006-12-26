@@ -1,59 +1,73 @@
-From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
-Subject: Re: [RFC 2.6.19 1/1] fbdev,
-	mm: hecuba/E-Ink fbdev driver v2
-Date: Fri, 22 Dec 2006 10:57:31 +0100
-Message-ID: <cda58cb80612220157q5433c346pccd06b8b7cbaadba@mail.gmail.com>
-References: <200612111046.kBBAkV8Y029087@localhost.localdomain>
-	<457D895D.4010500@innova-card.com>
-	<45a44e480612111554j1450f35ub4d9932e5cd32d4@mail.gmail.com>
-	<cda58cb80612130038x6b81a00dv813d10726d495eda@mail.gmail.com>
-	<45a44e480612162025n5d7c77bdkc825e94f1fb37904@mail.gmail.com>
-	<cda58cb80612200050h6def9866nf1798753da9d842d@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Elimar Riesebieter <riesebie@lxtec.de>
+Subject: radeonfb: Can't use the dvi port
+Date: Tue, 26 Dec 2006 14:59:57 +0100
+Message-ID: <20061226135957.GB4403@frodo.home.lxtec.de>
+Reply-To: linux-fbdev-users@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Gxh9h-0004r3-RO for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 22 Dec 2006 01:57:34 -0800
-Received: from ug-out-1314.google.com ([66.249.92.174])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Gxh9h-0003Co-Ez
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 22 Dec 2006 01:57:33 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so2843494ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 22 Dec 2006 01:57:32 -0800 (PST)
-In-Reply-To: <cda58cb80612200050h6def9866nf1798753da9d842d@mail.gmail.com>
+Return-path: <linux-fbdev-users-bounces@lists.sourceforge.net>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
+	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
+List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
+	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-users-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-users-bounces@lists.sourceforge.net
+To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, linux-fbdev-users <linux-fbdev-users@lists.sourceforge.net>
 
-On 12/20/06, Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
 
->     - when mmaping your frame buffer , be sure that the virtual
->       address returned by mmap() to the application shares the
->       same cache lines than the ones the kernel
->       is using.
+Hi all,
 
-Well thinking more about it, this wouldn't work for all cache types.
-For example, if your cache is not a direct maped one, this workaround
-won't work. So this is definitely not a portable solution.
+I replaced my old monitor with a brandnew LCD one (Samsung
+SyncMaster 204B). Booting 2.6.(19|20-rc2) aknowledge the dvi port
+but after a while the screen is blank. The monitor claims:
+
+"Not Optimum Mode, Recommended mode : 1600 X 1200 60 Hz"
+
+$ fbset
+
+mode "1600x1200-60"
+    # D: 162.022 MHz, H: 75.010 kHz, V: 60.008 Hz
+    geometry 1600 1200 1600 1200 8
+    timings 6172 304 64 46 1 192 3
+    hsync high
+    vsync high
+    rgba 8/0,8/0,8/0,0/0
+endmode
+
+
+I`ve compiled raeonfb debug in the kernel:
+Dec 26 14:52:05 frodo kernel: hStart = 1664, hEnd = 1856, hTotal = 2160
+Dec 26 14:52:05 frodo kernel: vStart = 1201, vEnd = 1204, vTotal = 1250
+Dec 26 14:52:05 frodo kernel: h_total_disp = 0xc7010d hsync_strt_wid = 0x18067a
+Dec 26 14:52:05 frodo kernel: v_total_disp = 0x4af04e1 vsync_strt_wid = 0x304b0
+Dec 26 14:52:05 frodo kernel: pixclock = 6172
+Dec 26 14:52:05 frodo kernel: freq = 16202
+Dec 26 14:52:05 frodo kernel: freq = 16202, PLL min = 20000, PLL max = 40000
+Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
+Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
+Dec 26 14:52:05 frodo kernel: post div = 0x1
+Dec 26 14:52:05 frodo kernel: fb_div = 0x90
+Dec 26 14:52:05 frodo kernel: ppll_div_3 = 0x10090
+
+My card:
+01:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV250 If [Radeon 9000] (rev 01)
+
+Switching to the analog port works well.
+
+Any hints?
+
+Elimar
+
 
 -- 
-               Franck
+  You cannot propel yourself forward by
+  patting yourself on the back.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

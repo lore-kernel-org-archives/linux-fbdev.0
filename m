@@ -1,76 +1,110 @@
-From: Elimar Riesebieter <riesebie@lxtec.de>
-Subject: radeonfb: Can't use the dvi port
-Date: Tue, 26 Dec 2006 14:59:57 +0100
-Message-ID: <20061226135957.GB4403@frodo.home.lxtec.de>
-Reply-To: linux-fbdev-users@lists.sourceforge.net
+From: "Chris Stones" <chris.stones@gmail.com>
+Subject: Framebuffer newbie looking for documentation.
+Date: Wed, 27 Dec 2006 02:14:05 +0000
+Message-ID: <8d502f960612261814l6c219339ifa7a0c1467ef4401@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-users-bounces@lists.sourceforge.net>
-Content-Disposition: inline
+Content-Type: multipart/mixed; boundary="===============0724870309=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GzOIw-0002zG-Ab for Linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Dec 2006 18:14:06 -0800
+Received: from nz-out-0506.google.com ([64.233.162.229])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GzOIv-0000gv-WD
+	for Linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Dec 2006 18:14:06 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so2855978nzi
+	for <Linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 26 Dec 2006 18:14:05 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
-List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-users-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-users-bounces@lists.sourceforge.net
-To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, linux-fbdev-users <linux-fbdev-users@lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux-fbdev-devel@lists.sourceforge.net
+
+--===============0724870309==
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_63472_13644456.1167185645451"
+
+------=_Part_63472_13644456.1167185645451
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Greetings.....
+
+As this is my first post, i will intorduce myself... my name is Chris, and i
+work for a small games company.
+I am attempting to write a small simple 2d game engine for fairly limited
+embedded x86 hardware running the linux kernel.
+
+Unfortunatly, I am having a little trouble with the basics ( this is the
+first time I have coded uside of an X11 environment )
+
+My Problems are mainly image tearing / flickering.
+Obviously I need to implement double buffering.
+
+The First step, is  to wait for a suitable time to page flip ( VBLANC ? )
+
+I am strugling to find documentation, but from reading linux/fb.h it seems
+the only way to do this is with the FBIOGET_VBLANK ioctl.... however, for
+unknown reasons, this is always returning -1 ( ERROR ! )
+
+I'm sorry to say im a complete beginner in frame buffers, and after spending
+a few hours crawling through SDL_fbvideo.c
+source code, I can think of nothing else but to cower before ye' olde Frame
+Buffer gods... and ask for enlightenment.
+
+Thanks in advance for any advice / links / documentation / code snippets /
+anything that may be of use to me.
+
+Farewell.
+
+------=_Part_63472_13644456.1167185645451
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Greetings.....<br><br>As this is my first post, i will intorduce myself... my name is Chris, and i work for a small games company.<br>I am attempting to write a small simple 2d game engine for fairly limited embedded x86 hardware running the linux kernel.
+<br><br>Unfortunatly, I am having a little trouble with the basics ( this is the first time I have coded uside of an X11 environment )<br><br>My Problems are mainly image tearing / flickering.<br>Obviously I need to implement double buffering.
+<br><br>The First step, is&nbsp; to wait for a suitable time to page flip ( VBLANC ? )<br><br>I
+am strugling to find documentation, but from reading linux/fb.h it
+seems the only way to do this is with the FBIOGET_VBLANK ioctl....
+however, for unknown reasons, this is always returning -1 ( ERROR ! )
+<br><br>I&#39;m sorry to say im a complete beginner in frame buffers, and after spending a few hours crawling through SDL_fbvideo.c<br>source code, I can think of nothing else but to cower before ye&#39; olde Frame Buffer gods... and ask for enlightenment.
+<br><br>Thanks in advance for any advice / links / documentation / code snippets / anything that may be of use to me.<br><br>Farewell.
+
+------=_Part_63472_13644456.1167185645451--
 
 
-Hi all,
-
-I replaced my old monitor with a brandnew LCD one (Samsung
-SyncMaster 204B). Booting 2.6.(19|20-rc2) aknowledge the dvi port
-but after a while the screen is blank. The monitor claims:
-
-"Not Optimum Mode, Recommended mode : 1600 X 1200 60 Hz"
-
-$ fbset
-
-mode "1600x1200-60"
-    # D: 162.022 MHz, H: 75.010 kHz, V: 60.008 Hz
-    geometry 1600 1200 1600 1200 8
-    timings 6172 304 64 46 1 192 3
-    hsync high
-    vsync high
-    rgba 8/0,8/0,8/0,0/0
-endmode
-
-
-I`ve compiled raeonfb debug in the kernel:
-Dec 26 14:52:05 frodo kernel: hStart = 1664, hEnd = 1856, hTotal = 2160
-Dec 26 14:52:05 frodo kernel: vStart = 1201, vEnd = 1204, vTotal = 1250
-Dec 26 14:52:05 frodo kernel: h_total_disp = 0xc7010d hsync_strt_wid = 0x18067a
-Dec 26 14:52:05 frodo kernel: v_total_disp = 0x4af04e1 vsync_strt_wid = 0x304b0
-Dec 26 14:52:05 frodo kernel: pixclock = 6172
-Dec 26 14:52:05 frodo kernel: freq = 16202
-Dec 26 14:52:05 frodo kernel: freq = 16202, PLL min = 20000, PLL max = 40000
-Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
-Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
-Dec 26 14:52:05 frodo kernel: post div = 0x1
-Dec 26 14:52:05 frodo kernel: fb_div = 0x90
-Dec 26 14:52:05 frodo kernel: ppll_div_3 = 0x10090
-
-My card:
-01:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV250 If [Radeon 9000] (rev 01)
-
-Switching to the analog port works well.
-
-Any hints?
-
-Elimar
-
-
--- 
-  You cannot propel yourself forward by
-  patting yourself on the back.
+--===============0724870309==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+--===============0724870309==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============0724870309==--

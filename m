@@ -1,23 +1,29 @@
-From: "Chris Stones" <chris.stones@gmail.com>
-Subject: Framebuffer newbie looking for documentation.
-Date: Wed, 27 Dec 2006 02:14:05 +0000
-Message-ID: <8d502f960612261814l6c219339ifa7a0c1467ef4401@mail.gmail.com>
+From: Torgeir Veimo <torgeir@pobox.com>
+Subject: Re: Framebuffer newbie looking for
+	documentation.
+Date: Wed, 27 Dec 2006 13:40:16 +0000
+Message-ID: <414D467D-3306-4174-A834-2DD58D972508@pobox.com>
+References: <8d502f960612261814l6c219339ifa7a0c1467ef4401@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0724870309=="
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: multipart/mixed; boundary="===============1284718716=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1GzOIw-0002zG-Ab for Linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Dec 2006 18:14:06 -0800
-Received: from nz-out-0506.google.com ([64.233.162.229])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GzOIv-0000gv-WD
-	for Linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Dec 2006 18:14:06 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so2855978nzi
-	for <Linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 26 Dec 2006 18:14:05 -0800 (PST)
+	id 1GzZ17-00051e-6f for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Dec 2006 05:40:25 -0800
+Received: from mail.netenviron.com ([212.18.24.150])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1GzZ13-00065g-Lm
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Dec 2006 05:40:25 -0800
+Received: from unknown (HELO [192.168.15.100]) (torgeir@[80.212.172.125])
+	(envelope-sender <torgeir@pobox.com>)
+	by mail.netenviron.com (qmail-ldap-1.03) with AES128-SHA encrypted SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	27 Dec 2006 13:39:05 -0000
+In-Reply-To: <8d502f960612261814l6c219339ifa7a0c1467ef4401@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,64 +34,100 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
---===============0724870309==
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_63472_13644456.1167185645451"
 
-------=_Part_63472_13644456.1167185645451
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--===============1284718716==
+Content-Type: multipart/alternative; boundary=Apple-Mail-1--58944635
+
+
+--Apple-Mail-1--58944635
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Greetings.....
-
-As this is my first post, i will intorduce myself... my name is Chris, and i
-work for a small games company.
-I am attempting to write a small simple 2d game engine for fairly limited
-embedded x86 hardware running the linux kernel.
-
-Unfortunatly, I am having a little trouble with the basics ( this is the
-first time I have coded uside of an X11 environment )
-
-My Problems are mainly image tearing / flickering.
-Obviously I need to implement double buffering.
-
-The First step, is  to wait for a suitable time to page flip ( VBLANC ? )
-
-I am strugling to find documentation, but from reading linux/fb.h it seems
-the only way to do this is with the FBIOGET_VBLANK ioctl.... however, for
-unknown reasons, this is always returning -1 ( ERROR ! )
-
-I'm sorry to say im a complete beginner in frame buffers, and after spending
-a few hours crawling through SDL_fbvideo.c
-source code, I can think of nothing else but to cower before ye' olde Frame
-Buffer gods... and ask for enlightenment.
-
-Thanks in advance for any advice / links / documentation / code snippets /
-anything that may be of use to me.
-
-Farewell.
-
-------=_Part_63472_13644456.1167185645451
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Greetings.....<br><br>As this is my first post, i will intorduce myself... my name is Chris, and i work for a small games company.<br>I am attempting to write a small simple 2d game engine for fairly limited embedded x86 hardware running the linux kernel.
-<br><br>Unfortunatly, I am having a little trouble with the basics ( this is the first time I have coded uside of an X11 environment )<br><br>My Problems are mainly image tearing / flickering.<br>Obviously I need to implement double buffering.
-<br><br>The First step, is&nbsp; to wait for a suitable time to page flip ( VBLANC ? )<br><br>I
-am strugling to find documentation, but from reading linux/fb.h it
-seems the only way to do this is with the FBIOGET_VBLANK ioctl....
-however, for unknown reasons, this is always returning -1 ( ERROR ! )
-<br><br>I&#39;m sorry to say im a complete beginner in frame buffers, and after spending a few hours crawling through SDL_fbvideo.c<br>source code, I can think of nothing else but to cower before ye&#39; olde Frame Buffer gods... and ask for enlightenment.
-<br><br>Thanks in advance for any advice / links / documentation / code snippets / anything that may be of use to me.<br><br>Farewell.
-
-------=_Part_63472_13644456.1167185645451--
+Content-Type: text/plain;
+	charset=US-ASCII;
+	delsp=yes;
+	format=flowed
 
 
---===============0724870309==
+On 27 Dec 2006, at 02:14, Chris Stones wrote:
+
+>
+> I am strugling to find documentation, but from reading linux/fb.h  
+> it seems the only way to do this is with the FBIOGET_VBLANK  
+> ioctl.... however, for unknown reasons, this is always returning -1  
+> ( ERROR ! )
+
+That means that the framebuffer module used doesn't support that  
+ioctl. It's not implemented for all framebuffer modules. The matrox  
+framebuffer has it, and I have posted a patch in the past for the  
+radeon framebuffer.
+
+Which framebuffer module are you using?
+
+-- 
+Torgeir Veimo
+torgeir@pobox.com
+
+
+
+
+--Apple-Mail-1--58944635
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=ISO-8859-1
+
+<HTML><BODY style=3D"word-wrap: break-word; -khtml-nbsp-mode: space; =
+-khtml-line-break: after-white-space; "><BR><DIV><DIV>On 27 Dec 2006, at =
+02:14, Chris Stones wrote:</DIV><BR =
+class=3D"Apple-interchange-newline"><BLOCKQUOTE type=3D"cite"><SPAN =
+class=3D"Apple-style-span" style=3D"border-collapse: separate; =
+border-spacing: 0px 0px; color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant: normal; font-weight: =
+normal; letter-spacing: normal; line-height: normal; text-align: auto; =
+-khtml-text-decorations-in-effect: none; text-indent: 0px; =
+-apple-text-size-adjust: auto; text-transform: none; orphans: 2; =
+white-space: normal; widows: 2; word-spacing: 0px; "><BR>I am strugling =
+to find documentation, but from reading linux/fb.h it seems the only way =
+to do this is with the FBIOGET_VBLANK ioctl.... however, for unknown =
+reasons, this is always returning -1 ( ERROR ! )<SPAN =
+class=3D"Apple-converted-space">=A0</SPAN><BR></SPAN></BLOCKQUOTE></DIV><D=
+IV><BR class=3D"khtml-block-placeholder"></DIV>That means that the =
+framebuffer module used doesn't support that ioctl. It's not implemented =
+for all framebuffer modules. The matrox framebuffer has it, and I have =
+posted a patch in the past for the radeon framebuffer.=A0<DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>Which framebuffer module =
+are you using?</DIV><DIV><BR><DIV> <SPAN class=3D"Apple-style-span" =
+style=3D"border-collapse: separate; border-spacing: 0px 0px; color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant: normal; font-weight: normal; letter-spacing: =
+normal; line-height: normal; text-align: auto; =
+-khtml-text-decorations-in-effect: none; text-indent: 0px; =
+-apple-text-size-adjust: auto; text-transform: none; orphans: 2; =
+white-space: normal; widows: 2; word-spacing: 0px; "><SPAN =
+class=3D"Apple-style-span" style=3D"border-collapse: separate; =
+border-spacing: 0px 0px; color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant: normal; font-weight: =
+normal; letter-spacing: normal; line-height: normal; text-align: auto; =
+-khtml-text-decorations-in-effect: none; text-indent: 0px; =
+-apple-text-size-adjust: auto; text-transform: none; orphans: 2; =
+white-space: normal; widows: 2; word-spacing: 0px; "><SPAN =
+class=3D"Apple-style-span" style=3D"border-collapse: separate; =
+border-spacing: 0px 0px; color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant: normal; font-weight: =
+normal; letter-spacing: normal; line-height: normal; text-align: auto; =
+-khtml-text-decorations-in-effect: none; text-indent: 0px; =
+-apple-text-size-adjust: auto; text-transform: none; orphans: 2; =
+white-space: normal; widows: 2; word-spacing: 0px; =
+"><DIV>--=A0</DIV><DIV>Torgeir Veimo</DIV><DIV><A =
+href=3D"mailto:torgeir@pobox.com">torgeir@pobox.com</A></DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><BR =
+class=3D"Apple-interchange-newline"></SPAN></SPAN></SPAN> =
+</DIV><BR></DIV></BODY></HTML>=
+
+--Apple-Mail-1--58944635--
+
+
+--===============1284718716==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -96,7 +138,7 @@ Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---===============0724870309==
+--===============1284718716==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -107,4 +149,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0724870309==--
+--===============1284718716==--

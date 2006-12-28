@@ -1,22 +1,67 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH 2.6.20-rc1 00/10] TURBOchannel update to the driver model
-Date: Wed, 27 Dec 2006 22:19:19 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0612272207010.19264@pentafluge.infradead.org>
-References: <Pine.LNX.4.64N.0612182115550.10069@blysk.ds.pg.gda.pl>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.19 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver v2
+Date: Thu, 28 Dec 2006 04:53:13 +0100
+Message-ID: <45a44e480612271953we6fe8adg118560161579b7f9@mail.gmail.com>
+References: <200612111046.kBBAkV8Y029087@localhost.localdomain>
+	<457D895D.4010500@innova-card.com>
+	<45a44e480612111554j1450f35ub4d9932e5cd32d4@mail.gmail.com>
+	<cda58cb80612130038x6b81a00dv813d10726d495eda@mail.gmail.com>
+	<45a44e480612162025n5d7c77bdkc825e94f1fb37904@mail.gmail.com>
+	<cda58cb80612200050h6def9866nf1798753da9d842d@mail.gmail.com>
+	<cda58cb80612220157q5433c346pccd06b8b7cbaadba@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64N.0612182115550.10069@blysk.ds.pg.gda.pl>
-Sender: netdev-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Andrew Morton <akpm@osdl.org>, Ralf Baechle <ralf@linux-mips.org>, Jeff Garzik <jgarzik@pobox.com>, Antonino Daplas <adaplas@pol.net>, James.Bottomley@SteelEye.com, linux-mips@linux-mips.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-scsi@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1GzmKQ-0003Xz-R8 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Dec 2006 19:53:14 -0800
+Received: from an-out-0708.google.com ([209.85.132.251])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1GzmKQ-0007uw-FH
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Dec 2006 19:53:14 -0800
+Received: by an-out-0708.google.com with SMTP id d40so2006308and
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 27 Dec 2006 19:53:13 -0800 (PST)
+In-Reply-To: <cda58cb80612220157q5433c346pccd06b8b7cbaadba@mail.gmail.com>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
+On 12/22/06, Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
+>
+> Well thinking more about it, this wouldn't work for all cache types.
+> For example, if your cache is not a direct maped one, this workaround
+> won't work. So this is definitely not a portable solution.
+>
 
->  And last but not least, thanks to James Simmons for beginning this work a 
-> while ago as his code was great to start with.
+From asking peterz on #mm, I think page_mkclean will do the right
+thing and call something like flush_cache_page. I think that resolves
+the issue which I think you identified where the end symptom on archs
+with virtually tagged caches could be a line of pixels written by
+userspace through one PTE remain in-cache and therefore "undisplayed"
+when the kernel reads through another PTE that may fall on a different
+cacheline.
 
-Wow!! I thought the work was dropped along time ago. Thanks for bring it 
-back. 
-  
+Thanks,
+jayakumar
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

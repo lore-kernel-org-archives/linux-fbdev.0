@@ -1,30 +1,21 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>
-Subject: Re: Bug#389433: Probable fix for fbdev shadow
-	framebuffer issues
-Date: Sat, 30 Dec 2006 13:34:02 +0100
-Message-ID: <1167482042.6321.64.camel__27095.5589054667$1167491352$gmane$org@thor.sulgenrain.local>
-References: <Pine.LNX.4.61.0612211543030.27246@mayday.local>
-	<1166770773.4504.358.camel@thor.sulgenrain.local>
-	<Pine.LNX.4.61.0612242224030.27246@mayday.local>
-	<1167222340.16632.188.camel@thor.sulgenrain.local>
-	<4593C572.8030703@ens-lyon.org>
-	<Pine.LNX.4.61.0612282051281.27246@mayday.local>
-	<1167388994.2750.66.camel@thor.sulgenrain.local>
-	<Pine.LNX.4.61.0612291148580.27246@mayday.local>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH] matroxfb: Use kzalloc
+Date: Sun, 31 Dec 2006 17:06:05 +0100
+Message-ID: <20061231170605.30fd7005.khali@linux-fr.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1H0dPq-0000Nv-6z for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Dec 2006 04:34:22 -0800
-Received: from darkcity.gna.ch ([195.226.6.42] helo=mail.gna.ch)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1H0dPo-0003TD-Hi
+	id 1H1Tt7-0001mi-Eb for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Jan 2007 12:36:05 -0800
+Received: from smtp-101-monday.nerim.net ([62.4.16.101] helo=kraid.nerim.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1H1Tt7-0004TX-2S
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Dec 2006 04:34:22 -0800
-In-Reply-To: <Pine.LNX.4.61.0612291148580.27246@mayday.local>
+	Mon, 01 Jan 2007 12:36:05 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,56 +26,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Robert de Bath <robert$@debath.co.uk>
-Cc: 389433@bugs.debian.org, linux-fbdev-devel@lists.sf.net
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-T24gRnJpLCAyMDA2LTEyLTI5IGF0IDEzOjA0ICswMDAwLCBSb2JlcnQgZGUgQmF0aCB3cm90ZTog
-Cj4gPiBUaGF0J3MgYnVnICMzMzgyNDEuIEknbSBwb25kZXJpbmcgY2hhbmdpbmcgdGhlIGZiZGV2
-IGRyaXZlciB0byBkZWZhdWx0Cj4gPiB0byAzMmJwcCB0aG91Z2guCj4gV2VsbCBJIHN1cHBvc2Ug
-MzJicHAgaXMgbW9yZSBsaWtlbHkgd2l0aCBtb2Rlcm4gaGFyZHdhcmUuCgpGV0lXLCB4Zjg2LXZp
-ZGVvLWZiZGV2IDAuMy4xIGRlZmF1bHRzIHRvIDMyLgoKPiBTdGlsbCBldmVuIGlmIHlvdSBjYW4n
-dCBlYXNpbHkgZ2V0IGZiX3Zhcl9zY3JlZW5pbmZvLmJpdHNfcGVyX3BpeGVsIGFzCj4geW91ciBk
-ZWZhdWx0IGEgYmlnIGZhdCB3YXJuaW5nIHRoYXQgdGhleSBkb24ndCBtYXRjaCBhbmQgaG93IHRv
-IGZpeCBpdAo+IHdvdWxkIGJlIGluIG9yZGVyIElNTy4KCkkgZG9uJ3Qga25vdyBhbnkgd2F5IHRv
-IGRldGVybWluZSB0aGF0J3MgdGhlIHNwZWNpZmljIHJlYXNvbiBmb3IgdGhlCkZCSU9QVVRfVlND
-UkVFTklORk8gaW9jdGwgZmFpbGluZy4gSWYgdGhlcmUgYXJlIGFueSBmcmFtZWJ1ZmZlciBkZXZp
-Y2VzCnRoYXQgYWNjZXB0IDI0IGJwcCBidXQgbm90IDMyIGJwcCwgSSBndWVzcyB0aGUgZmJkZXYg
-ZHJpdmVyIGNvdWxkIGNoZWNrCmZvciB0aGF0LCBidXQgSSBkb24ndCBwYXJ0aWN1bGFybHkgZmVl
-bCBsaWtlIHNwZW5kaW5nIG1vcmUgdGltZSBvbiB0aGlzCnJpZ2h0IG5vdy4KCgo+ID4gSSBub3Rp
-Y2VkIHRoYXQsIGJ1dCBpdCdzIG1vcmUgbGlrZWx5IGEgYnVnIGluIHZlc2FmYi4gQXMgdGhlIGxv
-Zwo+ID4gaW5kaWNhdGVzLCB0aGUgZmJkZXYgZHJpdmVyIGFjdHVhbGx5IHF1ZXJpZXMgdGhlIGZy
-YW1lYnVmZmVyIGRldmljZSBvbgo+ID4gdGhlIHVzYWJpbGl0eSBvZiBlYWNoIG1vZGUuCj4gCj4g
-SSd2ZSBoYWQgYSBsb29rIGF0IHRoZSBrZXJuZWwgY29kZSAuLi4KPiBXZWxsIGl0IHNlZW1zIHRo
-YXQgdGhlIHZlc2FmYiBkb2Vzbid0IGhhdmUgYW4gZmJfY2hlY2tfdmFyIGZ1bmN0aW9uIHRvCj4g
-Y2FsbCBzbyB0aGUgRkJJT1BVVF9WU0NSRUVOSU5GTyBpb2N0bCBpcyBkZWZpbmVkIGJ5IGZibWVt
-LmMgdG8gYmUgdGhlCj4gc2FtZSBhcyBGQklPR0VUX1ZTQ1JFRU5JTkZPLgo+IAo+IFRoaXMgaXMg
-YWN0dWFsbHkgcmVhc29uYWJsZSwgaXQncyB0cnlpbmcgdG8gdGVsbCB5b3UgdGhlIGNsb3Nlc3Qg
-bW9kZQo+IHRvIHRoZSBvbmUgeW91IGFza2VkIGZvci4gQnV0IFggd2lsbCBoYXZlIHRvIGNoZWNr
-IHRoYXQgdGhlIG1vZGUgaXQgZ2V0cwo+IGJhY2sgaXMgInRoZSBzYW1lIiBhcyB0aGUgb25lIGl0
-IGFza2VkIGZvciBhbmQgcmVqZWN0IGl0IGlmIG5vdC4KPiAoRXNwZWNpYWxseSBpZiB0aGUgcmV0
-dXJuZWQgbW9kZSBpcyBTTUFMTEVSIHRoYW4gdGhlIHJlcXVlc3QhKQoKWCBjb25zaWRlcnMgbW9k
-ZXMgdG8gYmUgZGlmZmVyZW50IGV2ZW4gaWYgb25seSBhIHNpbmdsZSBwYXJhbWV0ZXIKZGlmZmVy
-cywgc28gSSd2ZSBjaGFuZ2VkIGZiZGV2aHcgdG8gcmVwb3J0IGZhaWx1cmUgaW4gdGhhdCBjYXNl
-IGluCgpodHRwOi8vZ2l0d2ViLmZyZWVkZXNrdG9wLm9yZy8/cD14b3JnL3hzZXJ2ZXIuZ2l0O2E9
-Y29tbWl0ZGlmZjtoPWY2ODE1Y2I2OGIwZjY2OTg0OTczNDhmYzZlNDIxNGRhY2VmMzNiOTUKCgo+
-IEFsc28gdGhlIFRFU1QgZnVuY3Rpb24gZG9lc24ndCBsb29rIGxpa2UgaXQncyBpbXBsZW1lbnRl
-ZCBwcm9wZXJseSBpbgo+IGFsbCB0aGUgZHJpdmVyczsgSSdkIG1ha2Ugc3VyZSB5b3UgJ0dFVCcg
-dGhlIG9yaWdpbmFsIHNldHVwIGFuZCAnVEVTVCcKPiBpdCBhZnRlciB5b3UndmUgdGVzdGVkIGFs
-bCB5b3VyIGNvbmZpZ3VyZWQgbW9kZXMhCgpJIGRvbid0IHVuZGVyc3RhbmQgd2hhdCB5b3UncmUg
-c2F5aW5nIGhlcmUsIHBsZWFzZSBlbGFib3JhdGUuCgoKPiA+IC4uLgo+IAo+IEJ1dCBiYWNrIHRv
-IHRoZSBiZWdpbm5pbmc7IHRoZSBidWcgdGhpcyByZXBvcnQgd2FzIG9wZW5lZCBmb3IgbG9va3Mg
-Zml4ZWQgCj4gdG8gbWUuCgpZZXMsIHNvIHBsZWFzZSBmb2xsb3cgdXAgdG8gdGhlIGxpbnV4LWZi
-ZGV2LWRldmVsIGxpc3QgKG9yIGFub3RoZXIKYXBwcm9wcmlhdGUgcGxhY2UpIG9ubHkuCgoKLS0g
-CkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAgICAgICAgICAgfCAgICAgICAgICBodHRwOi8vdHVu
-Z3N0ZW5ncmFwaGljcy5jb20KTGlicmUgc29mdHdhcmUgZW50aHVzaWFzdCAgICAgICAgIHwgICAg
-ICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2ZWxvcGVyCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRha2Ug
-U3VydmV5cy4gRWFybiBDYXNoLiBJbmZsdWVuY2UgdGhlIEZ1dHVyZSBvZiBJVApKb2luIFNvdXJj
-ZUZvcmdlLm5ldCdzIFRlY2hzYXkgcGFuZWwgYW5kIHlvdSdsbCBnZXQgdGhlIGNoYW5jZSB0byBz
-aGFyZSB5b3VyCm9waW5pb25zIG9uIElUICYgYnVzaW5lc3MgdG9waWNzIHRocm91Z2ggYnJpZWYg
-c3VydmV5cyAtIGFuZCBlYXJuIGNhc2gKaHR0cDovL3d3dy50ZWNoc2F5LmNvbS9kZWZhdWx0LnBo
-cD9wYWdlPWpvaW4ucGhwJnA9c291cmNlZm9yZ2UmQ0lEPURFVkRFVgpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5n
-IGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlz
-dHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+Use kzalloc instead of kmalloc+memset, twice.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/matrox/i2c-matroxfb.c   |    4 +---
+ drivers/video/matrox/matroxfb_crtc2.c |    3 +--
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+--- linux-2.6.20-rc2.orig/drivers/video/matrox/i2c-matroxfb.c	2006-12-31 17:01:35.000000000 +0100
++++ linux-2.6.20-rc2/drivers/video/matrox/i2c-matroxfb.c	2006-12-31 17:03:01.000000000 +0100
+@@ -146,7 +146,7 @@ static void* i2c_matroxfb_probe(struct m
+ 	unsigned long flags;
+ 	struct matroxfb_dh_maven_info* m2info;
+ 
+-	m2info = kmalloc(sizeof(*m2info), GFP_KERNEL);
++	m2info = kzalloc(sizeof(*m2info), GFP_KERNEL);
+ 	if (!m2info)
+ 		return NULL;
+ 
+@@ -155,8 +155,6 @@ static void* i2c_matroxfb_probe(struct m
+ 	matroxfb_DAC_out(PMINFO DAC_XGENIOCTRL, 0x00);
+ 	matroxfb_DAC_unlock_irqrestore(flags);
+ 
+-	memset(m2info, 0, sizeof(*m2info));
+-
+ 	switch (ACCESS_FBINFO(chip)) {
+ 		case MGA_2064:
+ 		case MGA_2164:
+--- linux-2.6.20-rc2.orig/drivers/video/matrox/matroxfb_crtc2.c	2006-12-31 17:01:34.000000000 +0100
++++ linux-2.6.20-rc2/drivers/video/matrox/matroxfb_crtc2.c	2006-12-31 17:03:01.000000000 +0100
+@@ -694,12 +694,11 @@ static void* matroxfb_crtc2_probe(struct
+ 	/* hardware is CRTC2 incapable... */
+ 	if (!ACCESS_FBINFO(devflags.crtc2))
+ 		return NULL;
+-	m2info = kmalloc(sizeof(*m2info), GFP_KERNEL);
++	m2info = kzalloc(sizeof(*m2info), GFP_KERNEL);
+ 	if (!m2info) {
+ 		printk(KERN_ERR "matroxfb_crtc2: Not enough memory for CRTC2 control structs\n");
+ 		return NULL;
+ 	}
+-	memset(m2info, 0, sizeof(*m2info));
+ 	m2info->primary_dev = MINFO;
+ 	if (matroxfb_dh_registerfb(m2info)) {
+ 		kfree(m2info);
+
+
+-- 
+Jean Delvare
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

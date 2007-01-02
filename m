@@ -1,27 +1,30 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Luca <kronos.it@gmail.com>
 Subject: Re: [PATCH] radeonfb: add support for newer
 	cards
-Date: Tue, 02 Jan 2007 11:14:13 +1100
-Message-ID: <1167696853.23340.156.camel@localhost.localdomain>
+Date: Tue, 2 Jan 2007 01:38:17 +0100
+Message-ID: <68676e00701011638h55264e00g16504b0e3acdad7f@mail.gmail.com>
 References: <20070101212551.GA19598@dreamland.darkstar.lan>
 	<20070101214442.GA21950@dreamland.darkstar.lan>
+	<1167696853.23340.156.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1H1XIK-0006D4-25 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jan 2007 16:14:20 -0800
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1+ODWY0l+RR1Y4XDPACwBOKNOiqBRS53OM=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1H1XIJ-0004lb-Ia
+	id 1H1XfW-0008NJ-CT for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Jan 2007 16:38:18 -0800
+Received: from nf-out-0910.google.com ([64.233.182.190])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1H1XfW-0007Sq-0S
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jan 2007 16:14:20 -0800
-In-Reply-To: <20070101214442.GA21950@dreamland.darkstar.lan>
+	Mon, 01 Jan 2007 16:38:18 -0800
+Received: by nf-out-0910.google.com with SMTP id c31so10881548nfb
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 01 Jan 2007 16:38:17 -0800 (PST)
+In-Reply-To: <1167696853.23340.156.camel@localhost.localdomain>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,26 +35,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Luca Tettamanti <kronos.it@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Solomon Peachy <pizza@shaftnet.org>, linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-01 at 22:44 +0100, Luca Tettamanti wrote:
-> Il Mon, Jan 01, 2007 at 10:25:51PM +0100, Luca Tettamanti ha scritto: 
-> > Hi Ben, Andrew,
-> > I've rebased 'ATOM BIOS patch' from Solomon Peachy to apply to 2.6.20.
-> > The patch adds support for newer Radeon cards and is mainly based on
-> > X.Org code.
-> 
-> And - for an easier review - this is the diff between
-> radeonfb-atom-2.6.19-v6a.diff from Solomon and my patch (whitespace-only
-> changes not included).
+On 1/2/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Mon, 2007-01-01 at 22:44 +0100, Luca Tettamanti wrote:
+> > Il Mon, Jan 01, 2007 at 10:25:51PM +0100, Luca Tettamanti ha scritto:
+> > > Hi Ben, Andrew,
+> > > I've rebased 'ATOM BIOS patch' from Solomon Peachy to apply to 2.6.20.
+> > > The patch adds support for newer Radeon cards and is mainly based on
+> > > X.Org code.
+> >
+> > And - for an easier review - this is the diff between
+> > radeonfb-atom-2.6.19-v6a.diff from Solomon and my patch (whitespace-only
+> > changes not included).
+>
+> Ah good, what I was asking for :-) I'll try to get a new patch combining
+> everything out asap.
 
-Ah good, what I was asking for :-) I'll try to get a new patch combining
-everything out asap.
+Great, I didn't know you were working on this, I feared that the patch
+had been forgotten.
+I've a X850 (R480) here, feel free to send me any patch for testing.
 
-Ben.
-
-
+Luca
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

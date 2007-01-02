@@ -1,9 +1,10 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] radeonfb: add support for newer
 	cards
-Date: Tue, 02 Jan 2007 11:13:35 +1100
-Message-ID: <1167696815.23340.154.camel@localhost.localdomain>
+Date: Tue, 02 Jan 2007 11:14:13 +1100
+Message-ID: <1167696853.23340.156.camel@localhost.localdomain>
 References: <20070101212551.GA19598@dreamland.darkstar.lan>
+	<20070101214442.GA21950@dreamland.darkstar.lan>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,15 +13,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1H1XHm-00067F-3Y for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jan 2007 16:13:46 -0800
+	id 1H1XIK-0006D4-25 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Jan 2007 16:14:20 -0800
 Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX19Ha1U11+5KD9A2VFYL2vJb/oZzx0A3QZA=])
+	ident=[U2FsdGVkX1+ODWY0l+RR1Y4XDPACwBOKNOiqBRS53OM=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1H1XHk-0004bz-KK
+	(Exim 4.44) id 1H1XIJ-0004lb-Ia
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jan 2007 16:13:46 -0800
-In-Reply-To: <20070101212551.GA19598@dreamland.darkstar.lan>
+	Mon, 01 Jan 2007 16:14:20 -0800
+In-Reply-To: <20070101214442.GA21950@dreamland.darkstar.lan>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,27 +35,19 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Luca Tettamanti <kronos.it@gmail.com>
 Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Solomon Peachy <pizza@shaftnet.org>, linux-kernel@vger.kernel.org
 
-On Mon, 2007-01-01 at 22:25 +0100, Luca Tettamanti wrote:
-> Hi Ben, Andrew,
-> I've rebased 'ATOM BIOS patch' from Solomon Peachy to apply to 2.6.20.
-> The patch adds support for newer Radeon cards and is mainly based on
-> X.Org code.
+On Mon, 2007-01-01 at 22:44 +0100, Luca Tettamanti wrote:
+> Il Mon, Jan 01, 2007 at 10:25:51PM +0100, Luca Tettamanti ha scritto: 
+> > Hi Ben, Andrew,
+> > I've rebased 'ATOM BIOS patch' from Solomon Peachy to apply to 2.6.20.
+> > The patch adds support for newer Radeon cards and is mainly based on
+> > X.Org code.
 > 
-> I've fixed a few things:
-> - Port sharing in radeon_get_conn_info_atom; old code didn't actually
->   deal with it leading to wrong monitor detection
-> - Don't try to use I2C bus if BIOS says that there's no DDC channel,
->   otherwise bad things happen:
->   http://marc.theaimsgroup.com/?l=linux-fbdev-devel&m=116455601620186&w=2
-> - Make it compile on PPC (hopefully...)
-> - Cleanup whitespaces and coding style (only in the code alreay affected
->   by the patch, I didn't touched all the driver...)
-> 
-> Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
-> Signed-Off-By: Solomon Peachy <pizza@shaftnet.org> (I guess...)
+> And - for an easier review - this is the diff between
+> radeonfb-atom-2.6.19-v6a.diff from Solomon and my patch (whitespace-only
+> changes not included).
 
-I've done my own changes here. Can you send me a patch against Solomon's
-version of the driver instead of a combined patch ?
+Ah good, what I was asking for :-) I'll try to get a new patch combining
+everything out asap.
 
 Ben.
 

@@ -1,25 +1,29 @@
-From: Andrew Morton <akpm@osdl.org>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
 Subject: Re: [PATCH/RFC 2.6.20-rc4 1/1] fbdev,
 	mm: hecuba/E-Ink fbdev driver
-Date: Thu, 11 Jan 2007 13:37:59 -0800
-Message-ID: <20070111133759.d17730a4.akpm@osdl.org>
+Date: Thu, 11 Jan 2007 19:22:45 -0500
+Message-ID: <45a44e480701111622i32fffddcn3b4270d539620743@mail.gmail.com>
 References: <20070111142427.GA1668@localhost>
+	<20070111133759.d17730a4.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1H57dD-0007xu-Bu for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Jan 2007 13:38:43 -0800
-Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1H57d8-0004Di-0N
+	id 1H5AC0-0007UK-SY for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 11 Jan 2007 16:22:48 -0800
+Received: from an-out-0708.google.com ([209.85.132.244])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1H5ABy-0006jC-50
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Jan 2007 13:38:43 -0800
-In-Reply-To: <20070111142427.GA1668@localhost>
+	Thu, 11 Jan 2007 16:22:48 -0800
+Received: by an-out-0708.google.com with SMTP id d40so753484and
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 11 Jan 2007 16:22:45 -0800 (PST)
+In-Reply-To: <20070111133759.d17730a4.akpm@osdl.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,111 +34,108 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
 Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Thu, 11 Jan 2007 15:24:27 +0100
-Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+On 1/11/07, Andrew Morton <akpm@osdl.org> wrote:
+> That's all very interesting.
+>
+> Please don't dump a bunch of new implementation concepts like this on us
+> with no description of what it does, why it does it and why it does it in
+> this particular manner.
 
-> +/* this is to find and return the vmalloc-ed fb pages */
-> +static struct page* hecubafb_vm_nopage(struct vm_area_struct *vma, 
-> +					unsigned long vaddr, int *type)
-> +{
-> +	unsigned long offset;
-> +	struct page *page;
-> +	struct fb_info *info = vma->vm_private_data;
-> +
-> +	offset = (vaddr - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
-> +	if (offset >= (DPY_W*DPY_H)/8)
-> +		return NOPAGE_SIGBUS;
-> +
-> +	page = vmalloc_to_page(info->screen_base + offset);
-> +	if (!page)
-> +		return NOPAGE_OOM;
-> +
-> +	get_page(page);
-> +	if (type)
-> +		*type = VM_FAULT_MINOR;
-> +	return page;
-> +}
-> +
-> +static void hecubafb_work(struct work_struct *work)
-> +{
-> +	struct hecubafb_par *par = container_of(work, struct hecubafb_par,
-> +					deferred_work.work);
-> +	struct list_head *node, *next;
-> +	struct page_list *cur;
-> +
-> +	/* here we unmap the pages, then do all deferred IO */
-> +	spin_lock(&par->lock);
-> +	list_for_each_safe(node, next, &par->pagelist) {
-> +		cur = list_entry(node, struct page_list, list);
-> +		list_del(node);
-> +		lock_page_nosync(cur->page);
-> +		page_mkclean(cur->page);
-> +		unlock_page(cur->page);
-> +		kfree(cur);
-> +	}
-> +	spin_unlock(&par->lock);
-> +	hecubafb_dpy_update(par);
-> +}
-> +
-> +static int hecubafb_page_mkwrite(struct vm_area_struct *vma, 
-> +					struct page *page)
-> +{
-> +	struct fb_info *info = vma->vm_private_data;
-> +	struct hecubafb_par *par = info->par;
-> +	struct page_list *new;
-> +
-> +	/* this is a callback we get when userspace first tries to 
-> +	write to the page. we schedule a workqueue. that workqueue 
-> +	will eventually unmap the touched pages and execute the 
-> +	deferred framebuffer IO. then if userspace touches a page 
-> +	again, we repeat the same scheme */
-> +
-> +	new = kzalloc(sizeof(struct page_list), GFP_KERNEL);
-> +	if (!new)
-> +		return -ENOMEM;
-> +	new->page = page;
-> +
-> +	/* protect against the workqueue changing the page list */
-> +	spin_lock(&par->lock);
-> +	list_add(&new->list, &par->pagelist);
-> +	spin_unlock(&par->lock);
-> +
-> +	/* come back in 1s to process the deferred IO */
-> +	schedule_delayed_work(&par->deferred_work, HZ);
-> +	return 0;
-> +}
+Hi Andrew,
 
-That's all very interesting.
+Actually, I didn't dump without description. :-) I had posted an RFC
+and an explanation of the design to the lists. Here's an archive link
+to that post. http://marc.theaimsgroup.com/?l=linux-kernel&m=116583546411423&w=2
+I wasn't sure whether to include that description with the patch email
+because it was long.
 
-Please don't dump a bunch of new implementation concepts like this on us
-with no description of what it does, why it does it and why it does it in
-this particular manner.
+From that email:
+---
+This is there in order to hide the latency
+associated with updating the display (500ms to 800ms). The method used
+is to fake a framebuffer in memory. Then use pagefaults followed by delayed
+unmaping and only then do the actual framebuffer update. To explain this
+better, the usage scenario is like this:
 
-What is the "theory of operation" here?
+- userspace app like Xfbdev mmaps framebuffer
+- driver handles and sets up nopage and page_mkwrite handlers
+- app tries to write to mmaped vaddress
+- get pagefault and reaches driver's nopage handler
+- driver's nopage handler finds and returns physical page ( no
+  actual framebuffer )
+- write so get page_mkwrite where we add this page to a list
+- also schedules a workqueue task to be run after a delay
+- app continues writing to that page with no additional cost
+- the workqueue task comes in and unmaps the pages on the list, then
+  completes the work associated with updating the framebuffer
+- app tries to write to the address (that has now been unmapped)
+- get pagefault and the above sequence occurs again
 
-Presumably this is a performance optimisation to permit batching of the
-copying from user memory into the frambuffer card?  If so, how much
-performance does it gain?
+The desire is roughly to allow bursty framebuffer writes to occur.
+Then after some time when hopefully things have gone quiet, we go and
+really update the framebuffer. For this type of nonvolatile high latency
+display, the desired image is the final image rather than intermediate
+stages which is why it's okay to not update for each write that is
+occuring.
+---
 
-I expect the benefit will be large, and could be increased if you were to
-add a small delay between first-touch and writeback to the display.  Let's
-talk about that a bit.
+>
+> What is the "theory of operation" here?
+>
+> Presumably this is a performance optimisation to permit batching of the
+> copying from user memory into the frambuffer card?  If so, how much
+> performance does it gain?
 
-Is the optimisation applicable to other drivers?  If so, should it be
-generalised into library code somewhere?
+Yes, you are right. Updating the E-Ink display currently requires
+about 500ms - 800ms. It is a non-volatile display and as such it is
+typically used in a manner where only the final image is important. As
+a result, being able to avoid the bursts of IO associated with screen
+activity and only write the final result is attractive.
 
-I guess the export of page_mkclean() makes sense for this application.
+I have not done any performance benchmarks. I'm not sure exactly what
+to compare. I imagine in one case would be using write() to deliver
+the image updates and the other case would be mmap(), memcpy(). The
+latter would win because it's hiding all the intermediate "writes".
 
-The use of lock_page_nosync() is wrong.  It can still sleep, and here it's
-inside spinlock.  And we don't want to export __lock_page_nosync() to
-modules.  I suggest you convert the list locking here to a mutex and use
-lock_page().
+>
+> I expect the benefit will be large, and could be increased if you were to
+> add a small delay between first-touch and writeback to the display.  Let's
+> talk about that a bit.
 
+Agreed. Though I may be misunderstanding what you mean by first-touch.
+Currently, I do a schedule_delayed_work and leave 1s between when the
+page_mkwrite callback indicating the first touch is received and when
+the deferred IO is processed to actually deliver the data to the
+display. I picked 1s because it rounds up the display latency. I
+imagine increasing the delay further may make it miss some desirable
+display activity. For example, a slider indicating progress of music
+may be slower than optimal. Perhaps I should make the delay a module
+parameter and leave the choice to the user?
 
+>
+> Is the optimisation applicable to other drivers?  If so, should it be
+> generalised into library code somewhere?
 
+I think the deferred IO code would be useful to devices that have slow
+updates and where only the final result is important. So far, this is
+the only device I've encountered that has this characteristic.
+
+>
+> I guess the export of page_mkclean() makes sense for this application.
+>
+> The use of lock_page_nosync() is wrong.  It can still sleep, and here it's
+> inside spinlock.  And we don't want to export __lock_page_nosync() to
+> modules.  I suggest you convert the list locking here to a mutex and use
+> lock_page().
+>
+
+Oops, sorry about that. I will correct it.
+
+Thanks,
+jayakumar
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

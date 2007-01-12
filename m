@@ -1,33 +1,50 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH/RFC 2.6.20-rc4 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
-Date: Fri, 12 Jan 2007 08:15:45 +0100
-Message-ID: <1168586145.26496.35.camel@twins>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH/RFC 2.6.20-rc4 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver
+Date: Thu, 11 Jan 2007 23:25:22 -0800
+Message-ID: <20070111232522.491e57fb.akpm@osdl.org>
 References: <20070111142427.GA1668@localhost>
-	 <20070111133759.d17730a4.akpm@osdl.org>
-	 <45a44e480701111622i32fffddcn3b4270d539620743@mail.gmail.com>
+	<20070111133759.d17730a4.akpm@osdl.org>
+	<45a44e480701111622i32fffddcn3b4270d539620743@mail.gmail.com>
+	<1168586145.26496.35.camel@twins>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161014AbXALHRJ@vger.kernel.org>
-In-Reply-To: <45a44e480701111622i32fffddcn3b4270d539620743@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1H5Gn6-000489-AH for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 11 Jan 2007 23:25:32 -0800
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1H5Gn5-0003Lt-1h
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 11 Jan 2007 23:25:32 -0800
+In-Reply-To: <1168586145.26496.35.camel@twins>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 
-On Thu, 2007-01-11 at 19:22 -0500, Jaya Kumar wrote:
+On Fri, 12 Jan 2007 08:15:45 +0100
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> Agreed. Though I may be misunderstanding what you mean by first-touch.
-> Currently, I do a schedule_delayed_work and leave 1s between when the
-> page_mkwrite callback indicating the first touch is received and when
-> the deferred IO is processed to actually deliver the data to the
-> display. I picked 1s because it rounds up the display latency. I
-> imagine increasing the delay further may make it miss some desirable
-> display activity. For example, a slider indicating progress of music
-> may be slower than optimal. Perhaps I should make the delay a module
-> parameter and leave the choice to the user?
+> How about implementing the sync_page() aop?
 
-How about implementing the sync_page() aop? Then you could force the
-flush using msync(MS_SYNC). 
+That got deleted in Jens's tree - the unplugging rework.
 
-Hmm... that might require more surgery but the idea would work I think.
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

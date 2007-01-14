@@ -1,10 +1,10 @@
 From: Greg KH <greg@kroah.com>
 Subject: Re: Display class
-Date: Sat, 13 Jan 2007 23:54:18 -0800
-Message-ID: <20070114075418.GD10585@kroah.com>
+Date: Sat, 13 Jan 2007 23:55:14 -0800
+Message-ID: <20070114075514.GE10585@kroah.com>
 References: <Pine.LNX.4.64.0611141939050.6957@pentafluge.infradead.org> <Pine.LNX.4.64.0611150052180.13800@pentafluge.infradead.org> <Pine.LNX.4.64.0612051740250.2925@pentafluge.infradead.org> <200612292232.44122.dtor@insightbb.com> <Pine.LNX.4.64.0701132225530.18652@pentafluge.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751154AbXANIFX@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751165AbXANIFj@vger.kernel.org>
 Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0701132225530.18652@pentafluge.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,12 +31,8 @@ On Sat, Jan 13, 2007 at 10:40:55PM +0000, James Simmons wrote:
 > displays such as LCD, CRT, LVDS etc. It is a expansion of the lcd
 > class to include other types of displays.
 
-Any chance you can change this to use "struct device" instead of "struct
-class_device" so I don't have to convert it myself in the next few weeks
-if it ever gets merged?  :)
-
-The functionality will be the same, if not, please let me know what
-problems you have with the change.
+Have you worked with the DRM developers who also need to tie into this
+CRT class somehow?
 
 thanks,
 

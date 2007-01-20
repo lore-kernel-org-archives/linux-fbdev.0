@@ -1,83 +1,56 @@
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Subject: Re: i2c adapter on i852/855
-Date: Thu, 18 Jan 2007 18:39:35 +0100
-Message-ID: <200701181839.35532.hjk@linutronix.de>
-References: <200701181535.53546.hjk@linutronix.de>
-	<200701181742.50806.hjk@linutronix.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Stuart Anderson <anderson@netsweng.com>
+Subject: Re: PATCH: cyber2010 framebuffer on ARM Netwinder fix...
+Date: Fri, 19 Jan 2007 19:38:06 -0500 (EST)
+Message-ID: <Pine.LNX.4.64.0701191937110.25957@trantor.stuart.netsweng.com>
+References: <459D368F.2030204@xandros.com> <45A3D05F.7060409@xandros.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1H7bEl-00082U-Pf for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Jan 2007 09:39:44 -0800
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1H7bEk-0002ha-Cz
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Jan 2007 09:39:43 -0800
-In-Reply-To: <200701181742.50806.hjk@linutronix.de>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Benedikt Spranger <b.spranger@linutronix.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965076AbXATBIJ@vger.kernel.org>
+In-Reply-To: <45A3D05F.7060409@xandros.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
+Content-Transfer-Encoding: 7bit
+To: Woody Suwalski <woodys@xandros.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Martin Michlmayr <tbm@cyrius.com>, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
 
-Am Donnerstag, 18. Januar 2007 17:42 schrieb Hans-J=FCrgen Koch:
-> Am Donnerstag, 18. Januar 2007 15:35 schrieb Hans-J=FCrgen Koch:
-> > I'm using intelfb from 2.6.20-rc3 on an embedded board with an i852/855
-> > and an i801. My .config contains
-> >
-> > CONFIG_FB_INTEL=3Dy
-> > CONFIG_FB_INTEL_I2C=3Dy
-> > CONFIG_I2C=3Dy
-> > CONFIG_I2C_ALGOBIT=3Dy
-> >
-> > Problem is that no i2c adapter from this driver shows up
-> > in /sys/class/i2c-adapter, while the adapter registered by i2c_i801 is
-> > there.
-> >
-> > I can make the i2c adapter of the i852/855 work with a modified version
-> > of i2c-i810, but this module is deprecated, so I'd like to use intelfb
-> > only.
-> >
-> > Can somebody confirm that it actually works? What could be wrong?
-> >
-> > Hans
+
+
+Just wondering, did the rtc change for the arm get sent up also?
+
+
+On Tue, 9 Jan 2007, Woody Suwalski wrote:
+
+> Martin Michlmayr wrote:
+>> * Stuart Anderson <anderson@netsweng.com> [2007-01-05 09:40]:
+>> 
+>>> shark w/o any changes to the kernel. I dug a bit further, both in the
+>>> driver, and in the HW spec for the shark, and discovered that the video
+>>> chip on the shark is connected via the VL bus, not the PCI bus. The
+>>> shark does have a VL-PCI bridge, but there doesn't seem to be anything
+>>> connected to the PCI side of it (which matches what lspci says). The
+>>> function containing the patch in question doesn't appear to even run on
+>>> the shark (there is a VL version that is #ifdef SHARK'd), so I'd have
+>>> to say the patch would have not impact on the shark.
+>>> 
+>> 
+>> OK, good news.  Thanks for checking.  Woody, can you submit the patch
+>> (with proper intentation) to linux-fbdev-devel@lists.sourceforge.net
+>> 
 >
-> Alright, should have had a look at the logs first. There's a message sayi=
-ng
+> As suggested - I am sending this patch to fbdev-devel....
 >
-> intelfb: Cannot reserve FB region.
+> The Netwinder machines with Cyber2010 crash badly when starting Xserver.
+> The workaround is to disable pci burst option for this revision of video 
+> chip.
 >
-> So intelfb is probably not running at all. Video comes from a vesafb or
-> vga16fb that are also loaded...
+> Thanks, Woody
 >
-> Hans
+>
 
-I compiled a new kernel without vesafb and vga16fb, now intelfb initializes =
 
-cleanly, and the i2c adapter is visible. These drivers don't work together =
+                                 Stuart
 
-too well...
-
-Problem is solved for me, sorry for the noise.
-
-Hans
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+Stuart R. Anderson                               anderson@netsweng.com
+Network & Software Engineering                   http://www.netsweng.com/
+1024D/37A79149:                                  0791 D3B8 9A4C 2CDC A31F
+                                                  BD03 0A62 E534 37A7 9149

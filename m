@@ -1,107 +1,53 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Recognize video=gx1fb:... option
-Date: Wed, 24 Jan 2007 00:48:26 -0800
-Message-ID: <20070124004826.0d1adffe.akpm@osdl.org>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] Recognize video=gx1fb:... option
+Date: Wed, 24 Jan 2007 07:51:45 -0800
+Message-ID: <20070124075145.8481a9c3.randy.dunlap@oracle.com>
 References: <20070119211051.GC5013@martell.zuzino.mipt.ru>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+	<20070124004826.0d1adffe.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1H9do3-0002LA-Da for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 24 Jan 2007 00:48:36 -0800
-Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1H9do2-0000yz-41
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 24 Jan 2007 00:48:35 -0800
-In-Reply-To: <20070119211051.GC5013@martell.zuzino.mipt.ru>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Jordan Crouse <jordan.crouse@amd.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751546AbXAXP4g@vger.kernel.org>
+In-Reply-To: <20070124004826.0d1adffe.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, Alexey Dobriyan <adobriyan@gmail.com>, adaplas@pol.net, linux-kernel@vger.kernel.org, Jordan Crouse <jordan.crouse@amd.com>
 
-On Sat, 20 Jan 2007 00:10:51 +0300
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Wed, 24 Jan 2007 00:48:26 -0800 Andrew Morton wrote:
 
-> Juergen Beisert reported that the following option doesn't work for him
+> On Sat, 20 Jan 2007 00:10:51 +0300
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> 	video=gx1fb:1024x768-16@60
+> > Juergen Beisert reported that the following option doesn't work for him
+> > 
+> > 	video=gx1fb:1024x768-16@60
+> > 
+> > though sisfb was able to parse similar option correctly.
+> > 
 > 
-> though sisfb was able to parse similar option correctly.
-> 
+> And does this patch fix it for him? ;)
 
-And does this patch fix it for him? ;)
+Yes, Juergen replied to the patch:
 
-> ---
-> 
->  drivers/video/geode/gx1fb_core.c |   29 ++++++++++++++++++++++++++++-
->  1 file changed, 28 insertions(+), 1 deletion(-)
-> 
-> --- a/drivers/video/geode/gx1fb_core.c
-> +++ b/drivers/video/geode/gx1fb_core.c
-> @@ -401,6 +401,30 @@ static void gx1fb_remove(struct pci_dev 
->  	framebuffer_release(info);
->  }
->  
-> +#ifndef MODULE
-> +static void __init gx1fb_setup(char *options)
-> +{
-> +	char *this_opt;
-> +
-> +	if (!options || !*options)
-> +		return;
-> +
-> +	while ((this_opt = strsep(&options, ","))) {
-> +		if (!*this_opt)
-> +			continue;
-> +
-> +		if (!strncmp(this_opt, "mode:", 5))
-> +			strlcpy(mode_option, this_opt + 5, sizeof(mode_option));
-> +		else if (!strncmp(this_opt, "crt:", 4))
-> +			crt_option = !!simple_strtoul(this_opt + 4, NULL, 0);
-> +		else if (!strncmp(this_opt, "panel:", 6))
-> +			strlcpy(panel_option, this_opt + 6, sizeof(panel_option));
-> +		else
-> +			strlcpy(mode_option, this_opt, sizeof(mode_option));
-> +	}
-> +}
-> +#endif
-> +
->  static struct pci_device_id gx1fb_id_table[] = {
->  	{ PCI_VENDOR_ID_CYRIX, PCI_DEVICE_ID_CYRIX_5530_VIDEO,
->  	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
-> @@ -420,8 +444,11 @@ static struct pci_driver gx1fb_driver = 
->  static int __init gx1fb_init(void)
->  {
->  #ifndef MODULE
-> -	if (fb_get_options("gx1fb", NULL))
-> +	char *option = NULL;
-> +
-> +	if (fb_get_options("gx1fb", &option))
->  		return -ENODEV;
-> +	gx1fb_setup(option);
->  #endif
->  	return pci_register_driver(&gx1fb_driver);
->  }
+Thank you very much. Yes it works. I tried these kernel parameters:
 
-Possibly this should go through Jordan's git-geode tree.  But that tree
-seems to be kinda dead, so I'll file this under fbdev.
+1) video=gx1fb:mode:1280x1024-16@60,crt:1
+  -> CRT was active, 160x64 console
+2) video=gx1fb:mode:1024x768-16@60,crt:1
+  -> CRT was active, 128x48 console
+3) video=gx1fb:mode:800x600-16@60,crt:0,panel:800x600
+  -> CRT was disabled, 100x37 console
+4) video=gx1fb:mode:1024x768-16@60,crt:0,panel:800x600
+  -> CRT was disabled, 80x25 console
+
+Sorry, I have no flatpanel, so I cannot test if the "panel" option works 
+correctly. But somethings changes when I tried different values (see 3 and 
+4).
+
+Regards
+Juergen
 
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+---
+~Randy

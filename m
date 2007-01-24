@@ -1,53 +1,59 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] Recognize video=gx1fb:... option
-Date: Wed, 24 Jan 2007 07:51:45 -0800
-Message-ID: <20070124075145.8481a9c3.randy.dunlap@oracle.com>
-References: <20070119211051.GC5013@martell.zuzino.mipt.ru>
-	<20070124004826.0d1adffe.akpm@osdl.org>
+From: Matthieu CASTET <castet.matthieu@free.fr>
+Subject: s3c2412fb status
+Date: Wed, 24 Jan 2007 22:34:02 +0000 (UTC)
+Message-ID: <ep8msq$ibf$1@sea.gmane.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751546AbXAXP4g@vger.kernel.org>
-In-Reply-To: <20070124004826.0d1adffe.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HA0O6-0000xw-5j for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 25 Jan 2007 00:55:19 -0800
+Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HA0O2-0001Ok-LV
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 25 Jan 2007 00:55:18 -0800
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1HA0Nq-0006NC-A9 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 25 Jan 2007 09:55:02 +0100
+Received: from cac94-1-81-57-151-96.fbx.proxad.net ([81.57.151.96])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 25 Jan 2007 09:55:02 +0100
+Received: from castet.matthieu by cac94-1-81-57-151-96.fbx.proxad.net with
+	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 25 Jan 2007 09:55:02 +0100
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Alexey Dobriyan <adobriyan@gmail.com>, adaplas@pol.net, linux-kernel@vger.kernel.org, Jordan Crouse <jordan.crouse@amd.com>
 
-On Wed, 24 Jan 2007 00:48:26 -0800 Andrew Morton wrote:
+Hi,
 
-> On Sat, 20 Jan 2007 00:10:51 +0300
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > Juergen Beisert reported that the following option doesn't work for him
-> > 
-> > 	video=gx1fb:1024x768-16@60
-> > 
-> > though sisfb was able to parse similar option correctly.
-> > 
-> 
-> And does this patch fix it for him? ;)
+according to http://www.fluff.org/ben/linux-26/s3c2412.html, s3c2412 lcd
+support was in progress 4 months ago.
 
-Yes, Juergen replied to the patch:
+What's the status of this driver ?
 
-Thank you very much. Yes it works. I tried these kernel parameters:
+thanks,
 
-1) video=gx1fb:mode:1280x1024-16@60,crt:1
-  -> CRT was active, 160x64 console
-2) video=gx1fb:mode:1024x768-16@60,crt:1
-  -> CRT was active, 128x48 console
-3) video=gx1fb:mode:800x600-16@60,crt:0,panel:800x600
-  -> CRT was disabled, 100x37 console
-4) video=gx1fb:mode:1024x768-16@60,crt:0,panel:800x600
-  -> CRT was disabled, 80x25 console
-
-Sorry, I have no flatpanel, so I cannot test if the "panel" option works 
-correctly. But somethings changes when I tried different values (see 3 and 
-4).
-
-Regards
-Juergen
+Matthieu
 
 
----
-~Randy
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

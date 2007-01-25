@@ -1,23 +1,23 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 7/9] ps3: disable display flipping
-	during mode changes
-Date: Thu, 25 Jan 2007 18:51:13 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701251850470.24610@pademelon.sonytel.be>
+Subject: [PATCH 8/9] ps3: cleanup ps3fb before clearing
+	HPTE
+Date: Thu, 25 Jan 2007 18:51:50 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701251851160.24610@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HA8ku-0007pc-TY for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 25 Jan 2007 09:51:26 -0800
+	id 1HA8lY-0007u9-6X for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 25 Jan 2007 09:52:04 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HA8kt-0000kK-H5
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HA8lU-0004qD-Q1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 25 Jan 2007 09:51:24 -0800
+	Thu, 25 Jan 2007 09:52:01 -0800
 In-Reply-To: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,46 +32,25 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-If ps3fb is available, we have to disable display flipping while changing the
-audio or video mode.
+PS3: Cleanup the frame buffer device before clearing the HPTE mapping
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av_cmd.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/htab.c |    5 +++++
+ 1 files changed, 5 insertions(+)
 
---- ps3-linux.orig/drivers/ps3/ps3av_cmd.c
-+++ ps3-linux/drivers/ps3/ps3av_cmd.c
-@@ -33,6 +33,12 @@
- #define DPRINTK(fmt, args...) do { } while (0)
- #endif
+--- ps3-linux.orig/arch/powerpc/platforms/ps3/htab.c
++++ ps3-linux/arch/powerpc/platforms/ps3/htab.c
+@@ -234,6 +234,11 @@ static void ps3_hpte_invalidate(unsigned
  
-+#ifdef CONFIG_FB_PS3
-+extern int ps3fb_flip_ctl(int);
-+#else
-+#define ps3fb_flip_ctl(x)
-+#endif
-+
- static const struct video_fmt {
- 	u32 format;
- 	u32 order;
-@@ -884,8 +890,9 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ static void ps3_hpte_clear(void)
  {
- 	int res;
- 
--	/* avb packet */
-+	ps3fb_flip_ctl(0);	/* flip off */
- 
-+	/* avb packet */
- 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
- 			   &avb->send_hdr);
- 	if (res < 0)
-@@ -896,6 +903,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
- 		DPRINTK("PS3AV_CID_AVB_PARAM: failed %x\n", res);
- 
-       out:
-+	ps3fb_flip_ctl(1);	/* flip on */
- 	return res;
++	extern void ps3fb_cleanup(void);
++
++#ifdef CONFIG_FB_PS3
++	ps3fb_cleanup();
++#endif
+ 	lv1_unmap_htab(htab_addr);
  }
  
 

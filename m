@@ -1,7 +1,8 @@
-From: Matthieu CASTET <castet.matthieu@free.fr>
-Subject: s3c2412fb status
-Date: Wed, 24 Jan 2007 22:34:02 +0000 (UTC)
-Message-ID: <ep8msq$ibf$1@sea.gmane.org>
+From: Ben Dooks <ben-fbdev@fluff.org>
+Subject: Re: s3c2412fb status
+Date: Thu, 25 Jan 2007 11:43:20 +0000
+Message-ID: <20070125114320.GB19392@home.fluff.org>
+References: <ep8msq$ibf$1@sea.gmane.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,24 +11,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HA0O6-0000xw-5j for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 25 Jan 2007 00:55:19 -0800
-Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HA0O2-0001Ok-LV
+	id 1HA315-0000di-5X for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 25 Jan 2007 03:43:43 -0800
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=aeryn.fluff.org.uk)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HA313-0005Gb-Nk
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 25 Jan 2007 00:55:18 -0800
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1HA0Nq-0006NC-A9 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 25 Jan 2007 09:55:02 +0100
-Received: from cac94-1-81-57-151-96.fbx.proxad.net ([81.57.151.96])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 25 Jan 2007 09:55:02 +0100
-Received: from castet.matthieu by cac94-1-81-57-151-96.fbx.proxad.net with
-	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 25 Jan 2007 09:55:02 +0100
+	Thu, 25 Jan 2007 03:43:43 -0800
+Received: from ben by aeryn.fluff.org.uk with local (Exim 3.36 #1 (Debian))
+	id 1HA30i-0004U9-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 25 Jan 2007 11:43:20 +0000
+Content-Disposition: inline
+In-Reply-To: <ep8msq$ibf$1@sea.gmane.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,17 +34,23 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+On Wed, Jan 24, 2007 at 10:34:02PM +0000, Matthieu CASTET wrote:
+> Hi,
+> 
+> according to http://www.fluff.org/ben/linux-26/s3c2412.html, s3c2412 lcd
+> support was in progress 4 months ago.
+> 
+> What's the status of this driver ?
 
-according to http://www.fluff.org/ben/linux-26/s3c2412.html, s3c2412 lcd
-support was in progress 4 months ago.
+The original customer decided it was not a priority, so
+we put it onto the back burner. I will have another look
+at it over the weekend and see if I can get the LCD on
+my SMDK2412 working.
 
-What's the status of this driver ?
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-thanks,
-
-Matthieu
-
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

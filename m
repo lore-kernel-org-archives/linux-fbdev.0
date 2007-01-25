@@ -1,45 +1,56 @@
-From: "Jan Beulich" <jbeulich@novell.com>
-Subject: cyblafb selecting VIDEO_SELECT
-Date: Thu, 25 Jan 2007 16:22:46 +0000
-Message-ID: <45B8E766.76E4.0078.0@novell.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 0/9] ps3av/fb drivers for 2.6.21
+Date: Thu, 25 Jan 2007 18:46:39 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HA7LZ-00058v-RJ for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 25 Jan 2007 08:21:09 -0800
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HA7LX-0003iq-6M
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 25 Jan 2007 08:21:09 -0800
-Content-Disposition: inline
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, Knut_Petersen@t-online.de
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi,
+	Hi James, Paul,
 
-what is the reason for this? I would think that at best, this should be a "depends on"
-(if it really needs the functionality which, according to the doc, it doesn't seem like it
-does), especially given that it may be entirely unneeded when built as a module.
+This is the first submission of the PS3 AV Settings Driver and the PS3 Virtual
+Frame Buffer Driver.
 
-Thanks, Jan
+To ease the review, I'm sending all patches to both relevant maintaines and
+mailing lists.
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+[PATCH 1/9] ps3: AV Settings Driver
+[PATCH 2/9] fbdev modedb: allow refresh rates for named video modes
+[PATCH 3/9] fbdev modedb: make more pointer parameters const
+[PATCH 4/9] fb_videomode_to_var: reset virtual screen parameters
+[PATCH 5/9] ps3: Preallocate bootmem memory for ps3fb
+[PATCH 6/9] ps3: Virtual Frame Buffer Driver
+[PATCH 7/9] ps3: disable display flipping during mode changes
+[PATCH 8/9] ps3: cleanup ps3fb before clearing HPTE
+[PATCH 9/9] ps3: ps3av/fb defconfig updates
+
+PowerPC-specific patches (1, 5, 7, 8 and 9) apply on top of the patches sent
+by Geoff Levand to linuxppc-dev yesterday.
+Frame buffer specific-patches (2, 3, 4, and 6) apply on Linus' current tree.
+
+Please review. All comments are welcome.
+Our goal is to get these drivers integrated into 2.6.21.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium

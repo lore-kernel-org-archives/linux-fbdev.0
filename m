@@ -1,27 +1,25 @@
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: [RFC]: s3c2410fb conversion
-Date: Fri, 26 Jan 2007 09:06:44 +0100
-Message-ID: <45b9b69474f01@wp.pl>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
+Date: Fri, 26 Jan 2007 15:56:58 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701261535180.30062@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
+	<200701260513.24010.arnd@arndb.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HAM6n-0004e6-Cl for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Jan 2007 00:06:53 -0800
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1HAM6l-0002JT-S1
+	id 1HASVq-00078T-8h for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 26 Jan 2007 06:57:10 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HASVn-0006uV-Qw
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Jan 2007 00:06:53 -0800
-Received: from poczta-2.free.wp-sa.pl (HELO localhost) ([10.1.1.167])
-	(envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	26 Jan 2007 09:06:44 +0100
-Content-Disposition: inline
+	Fri, 26 Jan 2007 06:57:10 -0800
+In-Reply-To: <200701260513.24010.arnd@arndb.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,46 +30,80 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Paul Mackerras <paulus@samba.org>
 
-Hello,
+On Fri, 26 Jan 2007, Arnd Bergmann wrote:
+> > +} video_mode_table[] = {
+> > +	{     0, }, /* auto */
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480, 1, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480, 0, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720, 0, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080, 1, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080, 0, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576, 1, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576, 0, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720, 0, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080, 1, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080, 0, 50},
+> > +	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768, 0, 60},
+> > +	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024, 0, 60},
+> > +	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200, 0, 60},
+> > +};
+> 
+> Is there a fundamental reason why 1280x768 is not supported as YUV? That is
+> the resolution that my TV set at home has natively, and I'd like to use it.
 
-The s3c2410fb driver needs register values set for every
-platform. A way of conversion is to move as many values to
-particular fields (e.g. resolution, bit depth, etc.) and
-calculate the register values from them.
+Analog YUV (Component and composite/S-video) video timings are dictated by
+broadcast standards.
 
-I want to ask how far one should move in conversion of the
-driver. Should enumerated values also be moved to separate fields
-or they can be set with "or" operator (I) into existing register
-fields? I mean values (usually bits) like display type (STN/TFT
-bit), etc.
+The last 3 resolutions are supported through the HDMI output only. Hence if
+your TV has HDMI or DVI-D (_with_ HDCP, else you get a black screen) inputs,
+you can use 1280x768.
 
-E.g., the pxafb driver works with the latter approach. Most of
-values are calculated but some of them are set as or-ed values
-into register-like fields (the bits from fields are directly
-copied to register's bits and completed by bits from calculated
-values).
+If your TV doesn't have HDMI or DVI-D with HDCP, but it has component inputs,
+you can use analog 720p.
 
-The s3c2410fb driver does not work currently because some
-conversion started and was not finished (no platform code support
-it). I need to know how to fix it - either modify platform or fb
-code depending on the approach.
+> > +	msleep(100);
+> > +
+> > +	/* video mute on */
+> > +	for (i = 0; i < num_of_av_port; i++) {
+> > +		res = ps3av_cmd_av_video_disable_sig(ps3av.av_port[i]);
+> > +		if (res < 0)
+> > +			return -1;
+> > +		if (i < num_of_hdmi_port) {
+> > +			res = ps3av_cmd_av_tv_mute(ps3av.av_port[i],
+> > +						   PS3AV_CMD_MUTE_OFF);
+> > +			if (res < 0)
+> > +				return -1;
+> > +		}
+> > +	}
+> > +	msleep(300);
+> 
+> 400 ms total wait time is very noticeable to the user. Is it possible to
+> reduce that time?
+> 
+> > +
+> > +	msleep(1500);
+> > +	/* av video mute */
+> > +	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_OFF);
+> 
+> This is an even longer time to wait for. What about this one?
 
-Regards,
-Krzysztof
+Reducing these values may cause video noise to be seen when changing video
+modes.
 
-----------------------------------------------------
-Odkryj drug=B1 stron=EA ciemnego portalu - "World of War Craft" premiera:
-http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fd59.html&sid=
-=3D1000
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

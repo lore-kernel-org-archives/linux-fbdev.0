@@ -1,15 +1,15 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 7/9] ps3: disable display flipping during mode changes
-Date: Fri, 26 Jan 2007 03:13:36 +0100
-Message-ID: <200701260313.36700.arnd@arndb.de>
+From: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
+Date: Fri, 26 Jan 2007 04:12:36 +0100
+Message-ID: <20070126031236.GG18537@lst.de>
 References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251850470.24610@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <Pine.LNX.4.62.0701251850470.24610@pademelon.sonytel.be>
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,29 +20,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
 Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: linuxppc-dev@ozlabs.org
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-On Thursday 25 January 2007 18:51, Geert Uytterhoeven wrote:
-> @@ -33,6 +33,12 @@
->  #define DPRINTK(fmt, args...) do { } while (0)
->  #endif
->  
-> +#ifdef CONFIG_FB_PS3
-> +extern int ps3fb_flip_ctl(int);
-> +#else
-> +#define ps3fb_flip_ctl(x)
-> +#endif
+On Thu, Jan 25, 2007 at 06:48:04PM +0100, Geert Uytterhoeven wrote:
+> +EXPORT_SYMBOL(ps3av_set_audio_mode);
 
-The empty function should by convention be defined as
-'do { } while (0)', like the DPRINTK above.
-Even better might be an empty inline function
+not _GPL?  This module seems like a very deeply internal helper for
+other ps3 driver and not a general kernel API.
 
-static inline int ps3fb_flip_ctl(int arg)
-{
-	return 0;
-}
+Btw, the Kconfig and/or top of file comment really needs a better
+explanation what this "driver" is for.  I also wonder why it's
+selectable in Kconfig at all given it has no visible user interface.
+Shouldn't the users of the exported symbols simply pull it in or the
+code made part of the unconditional build bits in the ps3 platform
+directory?
 
-that enables type checking in gcc.
+> +static int ps3av_at_exit(struct notifier_block *self,
+> +			 unsigned long state, void *data)
+> +{
+> +	/* fin avsetting modules */
+> +	ps3av_cmd_fin();
+> +
+> +	if (!ps3av.available)
+> +		return NOTIFY_OK;
+> +
+> +	ps3av.available = 0;
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block ps3av_reboot_nb = {
+> +	.notifier_call = ps3av_at_exit
+> +};
 
-	Arnd <><
+Please implement this as ->shutdown method of the driver instead.
+In case ps3_vuart_port_driver doesn't have that method yet please
+add it as a forwarder for the generic driver model ->shutdown method.
+
+> +#ifdef __KERNEL__
+
+Why would you want to export the rest of this header to userspace?
+(And in case you really want that you also have to add it to the Kbuild
+file to actually be exported..)
+
+
+
+and btw, please beat up the folks who designed this awfully stupid API..

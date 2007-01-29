@@ -1,28 +1,25 @@
-From: "Dave Airlie" <airlied@gmail.com>
+From: Andrew Morton <akpm@osdl.org>
 Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Mon, 29 Jan 2007 11:12:57 +1100
-Message-ID: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+Date: Sun, 28 Jan 2007 16:27:56 -0800
+Message-ID: <20070128162756.0b123062.akpm@osdl.org>
 References: <ephv35$4i3$1@sea.gmane.org>
 	<20070128160831.fb51347f.akpm@osdl.org>
+	<21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBK8p-0004Mt-9H for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 28 Jan 2007 16:12:59 -0800
-Received: from ug-out-1314.google.com ([66.249.92.169])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBK8o-0002v8-SV
+	id 1HBKNO-0005zD-71 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 28 Jan 2007 16:28:02 -0800
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBKNM-0003pb-RF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 28 Jan 2007 16:12:59 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so1089254ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 28 Jan 2007 16:12:57 -0800 (PST)
-In-Reply-To: <20070128160831.fb51347f.akpm@osdl.org>
-Content-Disposition: inline
+	Sun, 28 Jan 2007 16:28:02 -0800
+In-Reply-To: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,37 +30,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, linux-kernel@vger.kernel.org
+To: Dave Airlie <airlied@gmail.com>
+Cc: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-> > Some nVidia video cards have broken EDID information. Using nvidiafb
-> > with CONFIG_FB_NVIDIA_I2C enabled on these systems causes the console
-> > framebuffer to use wrong timing information, causing the display to be
-> > extremely 'snowy'. Since most distribution kernels are compiled with
-> > CONFIG_FB_NVIDIA_I2C enabled, this prevents usage of the nvidia
-> > framebuffer on said broken system without recompiling the kernel
-> > (or at least the nvidiafb module).
-> >
-> > Solve the issue by introducing a new boolean module parameter (useedid)
-> > which can be set to 0 to prevent the driver from using the EDID
-> > information.
-> >
-> > If this patch is accepted, we can probably get rid of CONFIG_FB_NVIDIA_I2C
-> > altogether.
-> >
->
-> That's a pretty sad solution.  Is it possible to detect these bad cards at
-> runtime via ther behaviour?  If not, can we generate a blacklist for the
-> known-bad cards based on PCI IDs or something?
->
-> Because most users won't even be aware of the module option: they'll just
-> know that their card doesn't work right.
+On Mon, 29 Jan 2007 11:12:57 +1100
+"Dave Airlie" <airlied@gmail.com> wrote:
 
-This isn't a card problem this is a monitor problem, the card just
-passes through the edid data from the monitor... or else the
-programming of the card registers from edid is wrong..
+> > > Some nVidia video cards have broken EDID information. Using nvidiafb
+> > > with CONFIG_FB_NVIDIA_I2C enabled on these systems causes the console
+> > > framebuffer to use wrong timing information, causing the display to be
+> > > extremely 'snowy'. Since most distribution kernels are compiled with
+> > > CONFIG_FB_NVIDIA_I2C enabled, this prevents usage of the nvidia
+> > > framebuffer on said broken system without recompiling the kernel
+> > > (or at least the nvidiafb module).
+> > >
+> > > Solve the issue by introducing a new boolean module parameter (useedid)
+> > > which can be set to 0 to prevent the driver from using the EDID
+> > > information.
+> > >
+> > > If this patch is accepted, we can probably get rid of CONFIG_FB_NVIDIA_I2C
+> > > altogether.
+> > >
+> >
+> > That's a pretty sad solution.  Is it possible to detect these bad cards at
+> > runtime via ther behaviour?  If not, can we generate a blacklist for the
+> > known-bad cards based on PCI IDs or something?
+> >
+> > Because most users won't even be aware of the module option: they'll just
+> > know that their card doesn't work right.
+> 
+> This isn't a card problem this is a monitor problem, the card just
+> passes through the edid data from the monitor... or else the
+> programming of the card registers from edid is wrong..
+> 
 
-Dave.
+oh.  I'll take that as an ack :(
+
+(where'd my cc go?)
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

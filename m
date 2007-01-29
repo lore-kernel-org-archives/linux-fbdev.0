@@ -1,7 +1,7 @@
 From: Andrew Morton <akpm@osdl.org>
 Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Sun, 28 Jan 2007 16:27:56 -0800
-Message-ID: <20070128162756.0b123062.akpm@osdl.org>
+Date: Sun, 28 Jan 2007 16:29:07 -0800
+Message-ID: <20070128162907.370f5476.akpm@osdl.org>
 References: <ephv35$4i3$1@sea.gmane.org>
 	<20070128160831.fb51347f.akpm@osdl.org>
 	<21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
@@ -10,15 +10,16 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBKNO-0005zD-71 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 28 Jan 2007 16:28:02 -0800
+	id 1HBKOX-00069N-2c for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 28 Jan 2007 16:29:13 -0800
 Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBKNM-0003pb-RF
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1HBKOU-0006PK-Ng
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 28 Jan 2007 16:28:02 -0800
+	Sun, 28 Jan 2007 16:29:13 -0800
 In-Reply-To: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -62,12 +63,9 @@ On Mon, 29 Jan 2007 11:12:57 +1100
 > This isn't a card problem this is a monitor problem, the card just
 > passes through the edid data from the monitor... or else the
 > programming of the card registers from edid is wrong..
-> 
 
-oh.  I'll take that as an ack :(
-
-(where'd my cc go?)
-
+In which case the same problem would occur with different video cards, so
+this patch should be some generic thing, available to all drivers, no?
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

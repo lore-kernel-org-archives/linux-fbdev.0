@@ -1,68 +1,47 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-Date: Mon, 29 Jan 2007 15:10:16 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
-	<20070126031236.GG18537@lst.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Date: Mon, 29 Jan 2007 15:37:22 +0100
+Message-ID: <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <20070128160831.fb51347f.akpm@osdl.org>
+	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+	 <20070128162907.370f5476.akpm@osdl.org>
+	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBXDI-0006qM-6j for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Jan 2007 06:10:28 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBXDH-0000Mh-Nf
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Jan 2007 06:10:28 -0800
-In-Reply-To: <20070126031236.GG18537@lst.de>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Christoph Hellwig <hch@lst.de>
-Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752503AbXA2OhZ@vger.kernel.org>
+In-Reply-To: <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Dave Airlie <airlied@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Fri, 26 Jan 2007, Christoph Hellwig wrote:
-> Btw, the Kconfig and/or top of file comment really needs a better
-> explanation what this "driver" is for.  I also wonder why it's
+On 1/29/07, Dave Airlie <airlied@gmail.com> wrote:
+> > > > Because most users won't even be aware of the module option: they'll just
+> > > > know that their card doesn't work right.
+> > >
+> > > This isn't a card problem this is a monitor problem, the card just
+> > > passes through the edid data from the monitor... or else the
+> > > programming of the card registers from edid is wrong..
+> >
+> > In which case the same problem would occur with different video cards, so
+> > this patch should be some generic thing, available to all drivers, no?
+>
+> It should be in the fb layer not card specific.. as it may happen on any card...
 
-What about `PS3 AV settings driver library' instead of `PS3 AV controller
-support'?
+Although solving the problem at the fb layer level is probably the
+correct/best way to do it, I am not aware of people having problems
+with broken EDIDs and non-nVidia cards. By contrast, workarounds for
+nVidia and broken EDIDs is a very common thing to do even on Windows.
+Both the Windows and the Linux proprietary drivers need SoftEDID
+specifications to work around these problems. I don't know if this is
+just because of the way the driver are written, though, or if nVidia
+cards are particularly unable to handle monitors with broken EDIDs.
 
-> selectable in Kconfig at all given it has no visible user interface.
-> Shouldn't the users of the exported symbols simply pull it in or the
-> code made part of the unconditional build bits in the ps3 platform
-> directory?
+Plus, providing an fb-layer-level solution is way beyond my kernel
+programming experience :)
 
-We can make FB_PS3 (and SND_PS3 later) select PS3_PS3AV. Is that better?
-I prefer not to make it unconditional, as people who want to run their PS3s
-headless don't need it.
-
-I guess you want us to do the same for the virtual uart, i.e. let PS3_PS3AV and
-PS3_SYS_MANAGER select PS3_VUART?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+-- 
+Giuseppe "Oblomov" Bilotta

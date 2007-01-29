@@ -1,30 +1,25 @@
-From: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Mon, 29 Jan 2007 11:39:16 +1100
-Message-ID: <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-References: <ephv35$4i3$1@sea.gmane.org>
-	<20070128160831.fb51347f.akpm@osdl.org>
-	<21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	<20070128162907.370f5476.akpm@osdl.org>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
+Date: Mon, 29 Jan 2007 15:10:16 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
+	<20070126031236.GG18537@lst.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBKYJ-0007FR-Fb for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 28 Jan 2007 16:39:20 -0800
-Received: from ug-out-1314.google.com ([66.249.92.168])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBKYI-0000Jl-3n
+	id 1HBXDI-0006qM-6j for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Jan 2007 06:10:28 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBXDH-0000Mh-Nf
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 28 Jan 2007 16:39:19 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so1092753ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 28 Jan 2007 16:39:16 -0800 (PST)
-In-Reply-To: <20070128162907.370f5476.akpm@osdl.org>
-Content-Disposition: inline
+	Mon, 29 Jan 2007 06:10:28 -0800
+In-Reply-To: <20070126031236.GG18537@lst.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,23 +30,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Christoph Hellwig <hch@lst.de>
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-> > > Because most users won't even be aware of the module option: they'll just
-> > > know that their card doesn't work right.
-> >
-> > This isn't a card problem this is a monitor problem, the card just
-> > passes through the edid data from the monitor... or else the
-> > programming of the card registers from edid is wrong..
->
-> In which case the same problem would occur with different video cards, so
-> this patch should be some generic thing, available to all drivers, no?
->
+On Fri, 26 Jan 2007, Christoph Hellwig wrote:
+> Btw, the Kconfig and/or top of file comment really needs a better
+> explanation what this "driver" is for.  I also wonder why it's
 
-It should be in the fb layer not card specific.. as it may happen on any card...
+What about `PS3 AV settings driver library' instead of `PS3 AV controller
+support'?
 
-Dave.
+> selectable in Kconfig at all given it has no visible user interface.
+> Shouldn't the users of the exported symbols simply pull it in or the
+> code made part of the unconditional build bits in the ps3 platform
+> directory?
+
+We can make FB_PS3 (and SND_PS3 later) select PS3_PS3AV. Is that better?
+I prefer not to make it unconditional, as people who want to run their PS3s
+headless don't need it.
+
+I guess you want us to do the same for the virtual uart, i.e. let PS3_PS3AV and
+PS3_SYS_MANAGER select PS3_VUART?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

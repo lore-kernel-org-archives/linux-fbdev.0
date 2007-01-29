@@ -1,10 +1,11 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+From: Christoph Hellwig <hch@lst.de>
 Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-Date: Mon, 29 Jan 2007 16:14:43 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701291611300.19906@pademelon.sonytel.be>
+Date: Mon, 29 Jan 2007 17:15:02 +0100
+Message-ID: <20070129161502.GA32313@lst.de>
 References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
 	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
-	<200701260513.24010.arnd@arndb.de>
+	<20070126031236.GG18537@lst.de>
+	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,13 +14,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBYDf-0005BF-JV for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Jan 2007 07:14:55 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBYDd-0002D1-Rc
+	id 1HBZAV-0003pI-4V for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Jan 2007 08:15:43 -0800
+Received: from verein.lst.de ([213.95.11.210] helo=mail.lst.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBZAR-0003xc-36
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Jan 2007 07:14:55 -0800
-In-Reply-To: <200701260513.24010.arnd@arndb.de>
+	Mon, 29 Jan 2007 08:15:42 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,32 +32,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Paul Mackerras <paulus@samba.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Paul Mackerras <paulus@samba.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>, Christoph Hellwig <hch@lst.de>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-On Fri, 26 Jan 2007, Arnd Bergmann wrote:
-> On Thursday 25 January 2007 18:48, Geert Uytterhoeven wrote:
-> > +#ifdef PS3AV_DEBUG
-> > +#define DPRINTK(fmt, args...) \
-> > +	do { printk("ps3av " fmt, ## args); } while (0)
-> > +#else
-> > +#define DPRINTK(fmt, args...) do { } while (0)
-> > +#endif
+On Mon, Jan 29, 2007 at 03:10:16PM +0100, Geert Uytterhoeven wrote:
+> On Fri, 26 Jan 2007, Christoph Hellwig wrote:
+> > Btw, the Kconfig and/or top of file comment really needs a better
+> > explanation what this "driver" is for.  I also wonder why it's
 > 
-> You should probably use the provided pr_debug or (better) dev_dbg
-> macros to do that now.
+> What about `PS3 AV settings driver library' instead of `PS3 AV controller
+> support'?
 
-Except that it's difficult to get a struct device * in drivers/ps3/ps3av_cmd.c.
-And I prefer not to make ps3av_dev (which is currently static) global.
+Makes a little more sense, yes.
 
-Gr{oetje,eeting}s,
+> We can make FB_PS3 (and SND_PS3 later) select PS3_PS3AV. Is that better?
+> I prefer not to make it unconditional, as people who want to run their PS3s
+> headless don't need it.
 
-						Geert
+Ok.  Even better would be handling it on the makefile level, by doing
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+obj-$(CONFIG_FB_PS3)	+= ps3_av.o
+obj-$(CONFIG_SND_PS3)	+= ps3_av.o
+
+> I guess you want us to do the same for the virtual uart, i.e. let PS3_PS3AV and
+> PS3_SYS_MANAGER select PS3_VUART?
+
+Yes, that probably makes sense aswell.
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

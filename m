@@ -1,9 +1,7 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 3/10] fbdev modedb: allow refresh rates
-	for named video modes
-Date: Tue, 30 Jan 2007 18:06:05 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701301805480.29487@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+Subject: [PATCH 0/6] RFC Cell SPE logos
+Date: Tue, 30 Jan 2007 19:00:44 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,13 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBwR1-0008Kg-L6 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 09:06:21 -0800
+	id 1HBxIA-00062d-HA for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jan 2007 10:01:14 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBwQy-0001EO-HG
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBxI7-00013d-0j
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 09:06:19 -0800
-In-Reply-To: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+	Tue, 30 Jan 2007 10:01:14 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,32 +26,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 
-fbdev modedb: Take into account the specified refresh rates for video modes
-specified by name, so e.g. all of `720p', `720p@60', and `720p@50' work.
+	Hi,
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/video/modedb.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+I would like to hear your opinions about the patchset below.
 
---- ps3-linux-2.6.20-rc6.orig/drivers/video/modedb.c
-+++ ps3-linux-2.6.20-rc6/drivers/video/modedb.c
-@@ -610,10 +610,8 @@ done:
- 	diff = refresh;
- 	best = -1;
- 	for (i = 0; i < dbsize; i++) {
--		if ((name_matches(db[i], name, namelen) &&
--			!fb_try_mode(var, info, &db[i], bpp)))
--			return 1;
--		if (res_specified && res_matches(db[i], xres, yres)) {
-+		if (name_matches(db[i], name, namelen) ||
-+		    (res_specified && res_matches(db[i], xres, yres))) {
- 			if(!fb_try_mode(var, info, &db[i], bpp)) {
- 				if(!refresh_specified || db[i].refresh == refresh)
- 					return 1;
+The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
+threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
+When booting Linux, 2 penguins logos are shown on the graphical console.
+
+To emphasize the existence of the SPEs (which can be used under Linux), we
+added a second row of (smaller) helper Penguin logos, one for each SPE.
+
+Summaries:
+[PATCH 1/6] fbdev: Avoid vertical overflow when making space for the logo
+[PATCH 2/6] fbdev: fb_do_show_logo() updates
+[PATCH 3/6] fbdev: extract fb_show_logo_line()
+[PATCH 4/6] fbdev: Add fb_append_extra_logo()
+[PATCH 5/6] fbdev: SPE helper penguin logo
+[PATCH 6/6] Cell: Draw SPE helper penguin logos
+
+Thanks for your comments!
 
 Gr{oetje,eeting}s,
 

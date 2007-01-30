@@ -1,31 +1,55 @@
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+From: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-Date: Mon, 29 Jan 2007 11:24:50 -0800
-Message-ID: <45BE4A02.3070206@am.sony.com>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>	<20070126031236.GG18537@lst.de>	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-	<20070129161502.GA32313@lst.de>
+Date: Tue, 30 Jan 2007 01:16:57 +0100
+Message-ID: <200701300116.57606.arnd@arndb.de>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<200701260513.24010.arnd@arndb.de>
+	<Pine.LNX.4.62.0701291611300.19906@pademelon.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <20070129161502.GA32313@lst.de>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HBggg-0006bK-Pn for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Jan 2007 16:17:27 -0800
+Received: from moutng.kundenserver.de ([212.227.126.186])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBggf-00011C-5H
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Jan 2007 16:17:26 -0800
+In-Reply-To: <Pine.LNX.4.62.0701291611300.19906@pademelon.sonytel.be>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Christoph Hellwig <hch@lst.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linuxppc-dev@ozlabs.org, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Paul Mackerras <paulus@samba.org>
 
-Christoph Hellwig wrote:
->> I guess you want us to do the same for the virtual uart, i.e. let PS3_PS3AV and
->> PS3_SYS_MANAGER select PS3_VUART?
+On Monday 29 January 2007 16:14, Geert Uytterhoeven wrote:
 > 
-> Yes, that probably makes sense aswell.
+> > You should probably use the provided pr_debug or (better) dev_dbg
+> > macros to do that now.
+> 
+> Except that it's difficult to get a struct device * in drivers/ps3/ps3av_cmd.c.
+> And I prefer not to make ps3av_dev (which is currently static) global.
 
-I'll start work on sys-manager soon, so I'll set this up.
+Ok, as I said, dev_dbg is the preferred way, but of course it only
+works when you carry a device along. If you don't have one, use
+pr_debug().
+
+	Arnd <><
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

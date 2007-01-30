@@ -1,77 +1,105 @@
-From: Luca Tettamanti <kronos@people.it>
-Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Tue, 30 Jan 2007 21:33:01 +0100
-Message-ID: <20070130203301.GA15067@dreamland.darkstar.lan>
-References: <ephv35$4i3$1@sea.gmane.org>
-	<20070128160831.fb51347f.akpm@osdl.org>
-	<21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	<20070128162907.370f5476.akpm@osdl.org>
-	<21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	<cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 5/9] ps3: Preallocate bootmem memory for ps3fb
+Date: Wed, 31 Jan 2007 09:37:24 +1100
+Message-ID: <1170196644.19887.124.camel@concordia.ozlabs.ibm.com>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701251849550.24610@pademelon.sonytel.be>
+	<1170124157.19887.116.camel@concordia.ozlabs.ibm.com>
+	<Pine.LNX.4.62.0701300914580.4728@pademelon.sonytel.be>
+Reply-To: michael@ellerman.id.au
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBzq5-0006jU-HH for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 12:44:25 -0800
-Received: from jack.tiscali.it ([213.205.33.53])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBzq2-0000jR-Rw
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 12:44:25 -0800
-Content-Disposition: inline
-In-Reply-To: <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="===============0772915212=="
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <Pine.LNX.4.62.0701300914580.4728@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Mime-version: 1.0
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-Il Mon, Jan 29, 2007 at 03:37:22PM +0100, Giuseppe Bilotta ha scritto: 
-> On 1/29/07, Dave Airlie <airlied@gmail.com> wrote:
-> > > > > Because most users won't even be aware of the module option: they'll just
-> > > > > know that their card doesn't work right.
-> > > >
-> > > > This isn't a card problem this is a monitor problem, the card just
-> > > > passes through the edid data from the monitor... or else the
-> > > > programming of the card registers from edid is wrong..
-> > >
-> > > In which case the same problem would occur with different video cards, so
-> > > this patch should be some generic thing, available to all drivers, no?
-> >
-> > It should be in the fb layer not card specific.. as it may happen on any card...
-> 
-> Although solving the problem at the fb layer level is probably the
-> correct/best way to do it, I am not aware of people having problems
-> with broken EDIDs and non-nVidia cards. By contrast, workarounds for
-> nVidia and broken EDIDs is a very common thing to do even on Windows.
 
-Not all drivers have support for reading EDID information, so in many
-cases it just "works". My old monitor had garbage in the EDID eeprom and
-I had to pass "ignore_edid" to radeonfb (before I reprogrammed the
-eeprom that is :P).
+--===============0772915212==
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zvACceYACJP231muZBsm"
 
-> Plus, providing an fb-layer-level solution is way beyond my kernel
-> programming experience :)
 
-I'll try to code something in the weekend.
+--=-zvACceYACJP231muZBsm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Luca
--- 
-Do, or do not. There is no try.
+On Tue, 2007-01-30 at 09:16 +0100, Geert Uytterhoeven wrote:
+> On Tue, 30 Jan 2007, Michael Ellerman wrote:
+> > On Thu, 2007-01-25 at 18:50 +0100, Geert Uytterhoeven wrote:
+> > > Preallocate bootmem memory for the PS3 frame buffer device, which nee=
+ds a
+> > > large block of physically-contiguous memory. The size of this memory =
+block is
+> > > configurable:
+> > >   - The config option CONFIG_FB_PS3_DEFAULT_SIZE_M allows to specify =
+the
+> > >     default amount of memory (in MiB) allocated to the virtual frame =
+buffer.
+> > >   - The early boot parameter `ps3fb=3Dxxx' allows to override the def=
+ault value.
+> > >     It will be rounded up to a multiple of 1 MiB, if needed.
+> > >=20
+> > > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> >=20
+> > Rather than doing the alloc in setup.c, defining a structure to the hol=
+d
+> > the params, and then exporting the structure - why don't you just do th=
+e
+> > alloc in the ps3 fb driver code, and have it all private in there?
+>=20
+> Because at that time it's no longer possible to allocate such a big block=
+ of
+> memory.
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+When it's built as a module, yeah I thought you'd say that. Oh well.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-zvACceYACJP231muZBsm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFv8ikdSjSd0sB4dIRAtKTAJ91xMLoD2mOK2uoW4I5nRWNem9FhwCgng8y
+1b/gvifPJiWjxWzk47TuKWY=
+=rZln
+-----END PGP SIGNATURE-----
+
+--=-zvACceYACJP231muZBsm--
+
+
+--===============0772915212==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============0772915212==--

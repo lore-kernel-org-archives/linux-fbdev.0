@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 4/6] fbdev: Add fb_append_extra_logo()
-Date: Tue, 30 Jan 2007 19:02:20 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701301902040.2830@pademelon.sonytel.be>
+Subject: [PATCH 6/6] Cell: Draw SPE helper penguin logos
+Date: Tue, 30 Jan 2007 19:02:57 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701301902410.2830@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
@@ -11,12 +11,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBxJa-00069y-Tr for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 10:02:42 -0800
+	id 1HBxJz-0006Bx-4N for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jan 2007 10:03:08 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBxJO-0004Uf-QP
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBxJw-0004ge-ED
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 10:02:39 -0800
+	Tue, 30 Jan 2007 10:03:07 -0800
 In-Reply-To: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,118 +31,92 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 
-Add fb_append_extra_logo(), to append extra lines of logos below the standard
-Linux logo.
+Let spu_management_ops.enumerate_spus() return the number of found SPEs
+and use that information to draw some little helper penguin logos.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- drivers/video/fbmem.c      |   50 +++++++++++++++++++++++++++++++++++++++++----
- include/linux/linux_logo.h |    1 
- 2 files changed, 47 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/cell/spu_base.c       |   11 +++++++++--
+ arch/powerpc/platforms/cell/spu_priv1_mmio.c |    4 +++-
+ arch/powerpc/platforms/ps3/spu.c             |    6 ++++--
+ 3 files changed, 16 insertions(+), 5 deletions(-)
 
---- geert-linux-src.orig/drivers/video/fbmem.c
-+++ geert-linux-src/drivers/video/fbmem.c
-@@ -319,6 +319,13 @@ static struct logo_data {
- 	const struct linux_logo *logo;
- } fb_logo __read_mostly;
+--- geert-linux-src.orig/arch/powerpc/platforms/cell/spu_base.c
++++ geert-linux-src/arch/powerpc/platforms/cell/spu_base.c
+@@ -31,6 +31,7 @@
+ #include <linux/mm.h>
+ #include <linux/io.h>
+ #include <linux/mutex.h>
++#include <linux/linux_logo.h>
+ #include <asm/spu.h>
+ #include <asm/spu_priv1.h>
+ #include <asm/xmon.h>
+@@ -676,16 +677,22 @@ static int __init init_spu_base(void)
  
-+#define FB_LOGO_EX_NUM_MAX 10
-+static struct logo_data_extra {
-+	const struct linux_logo *logo;
-+	int n;
-+} fb_logo_ex[FB_LOGO_EX_NUM_MAX];
-+static int fb_logo_ex_num = 0;
-+
- static void fb_rotate_logo_ud(const u8 *in, u8 *out, u32 width, u32 height)
- {
- 	u32 size = width * height, i;
-@@ -408,10 +415,20 @@ static void fb_do_show_logo(struct fb_in
+ 	ret = spu_enumerate_spus(create_spu);
+ 
+-	if (ret) {
++	if (ret < 0) {
+ 		printk(KERN_WARNING "%s: Error initializing spus\n",
+ 			__FUNCTION__);
+ 		cleanup_spu_base();
+ 		return ret;
  	}
- }
- 
-+void fb_append_extra_logo(const struct linux_logo *logo, int n)
-+{
-+	if (n <= 0 || fb_logo_ex_num == FB_LOGO_EX_NUM_MAX)
-+		return;
-+
-+	fb_logo_ex[fb_logo_ex_num].logo = logo;
-+	fb_logo_ex[fb_logo_ex_num].n = n;
-+	fb_logo_ex_num++;
-+}
-+
- int fb_prepare_logo(struct fb_info *info, int rotate)
- {
- 	int depth = fb_get_color_depth(&info->var, &info->fix);
--	int yres;
-+	int yres, height, i;
- 
- 	memset(&fb_logo, 0, sizeof(struct logo_data));
- 
-@@ -470,7 +487,21 @@ int fb_prepare_logo(struct fb_info *info
- 		fb_logo.depth = 4;
- 	else
- 		fb_logo.depth = 1;		
--	return fb_logo.logo->height;
-+
-+	/* FIXME: logo_ex supports only truecolor fb. */
-+	if (info->fix.visual != FB_VISUAL_TRUECOLOR)
-+		fb_logo_ex_num = 0;
-+
-+	height = fb_logo.logo->height;
-+	for (i = 0; i < fb_logo_ex_num; i++) {
-+		height += fb_logo_ex[i].logo->height;
-+		if (height > yres) {
-+			height -= fb_logo_ex[i].logo->height;
-+			fb_logo_ex_num = i;
-+			break;
-+		}
++#ifdef CONFIG_LOGO
++	if (ret > 0) {
++		extern const struct linux_logo logo_spe_clut224;
++		fb_append_extra_logo(&logo_spe_clut224, ret);
 +	}
-+	return height;
++#endif
+ 
+ 	xmon_register_spus(&spu_full_list);
+ 
+-	return ret;
++	return 0;
  }
+ module_init(init_spu_base);
  
- static int fb_show_logo_line(struct fb_info *info, int rotate,
-@@ -541,10 +572,20 @@ static int fb_show_logo_line(struct fb_i
- 
- int fb_show_logo(struct fb_info *info, int rotate)
+--- geert-linux-src.orig/arch/powerpc/platforms/cell/spu_priv1_mmio.c
++++ geert-linux-src/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+@@ -331,6 +331,7 @@ static int __init of_enumerate_spus(int 
  {
--	return fb_show_logo_line(info, rotate, fb_logo.logo, 0,
--				 num_online_cpus());
-+	int y, i;
-+
-+	y = fb_show_logo_line(info, rotate, fb_logo.logo, 0,
-+			      num_online_cpus());
-+
-+	for (i = 0; i < fb_logo_ex_num; i++) {
-+		y += fb_show_logo_line(info, rotate,
-+				       fb_logo_ex[i].logo, y, fb_logo_ex[i].n);
-+	}
-+
-+	return y;
+ 	int ret;
+ 	struct device_node *node;
++	unsigned int n = 0;
+ 
+ 	ret = -ENODEV;
+ 	for (node = of_find_node_by_type(NULL, "spe");
+@@ -341,8 +342,9 @@ static int __init of_enumerate_spus(int 
+ 				__FUNCTION__, node->name);
+ 			break;
+ 		}
++		n++;
+ 	}
+-	return ret;
++	return ret ? ret : n;
  }
- #else
-+void fb_append_extra_logo(const struct linux_logo *logo, int n) {}
- int fb_prepare_logo(struct fb_info *info, int rotate) { return 0; }
- int fb_show_logo(struct fb_info *info, int rotate) { return 0; }
- #endif /* CONFIG_LOGO */
-@@ -1560,6 +1601,7 @@ EXPORT_SYMBOL(register_framebuffer);
- EXPORT_SYMBOL(unregister_framebuffer);
- EXPORT_SYMBOL(num_registered_fb);
- EXPORT_SYMBOL(registered_fb);
-+EXPORT_SYMBOL(fb_append_extra_logo);
- EXPORT_SYMBOL(fb_prepare_logo);
- EXPORT_SYMBOL(fb_show_logo);
- EXPORT_SYMBOL(fb_set_var);
---- geert-linux-src.orig/include/linux/linux_logo.h
-+++ geert-linux-src/include/linux/linux_logo.h
-@@ -33,5 +33,6 @@ struct linux_logo {
- };
  
- extern const struct linux_logo *fb_find_logo(int depth);
-+extern void fb_append_extra_logo(const struct linux_logo *logo, int n);
+ static int __init of_create_spu(struct spu *spu, void *data)
+--- geert-linux-src.orig/arch/powerpc/platforms/ps3/spu.c
++++ geert-linux-src/arch/powerpc/platforms/ps3/spu.c
+@@ -437,11 +437,13 @@ static int __init ps3_enumerate_spus(int
+ 		}
+ 	}
  
- #endif /* _LINUX_LINUX_LOGO_H */
+-	if (result)
++	if (result) {
+ 		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
+ 			__func__, __LINE__);
++		return result;
++	}
+ 
+-	return result;
++	return num_resource_id;
+ }
+ 
+ const struct spu_management_ops spu_management_ps3_ops = {
 
 Gr{oetje,eeting}s,
 

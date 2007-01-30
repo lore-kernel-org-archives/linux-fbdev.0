@@ -1,11 +1,12 @@
-From: Arnd Bergmann <arnd@arndb.de>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Subject: Re: [PATCH 5/9] ps3: Preallocate bootmem memory
 	for ps3fb
-Date: Tue, 30 Jan 2007 09:27:51 +0100
-Message-ID: <200701300927.52087.arnd@arndb.de>
+Date: Tue, 30 Jan 2007 09:36:09 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701300934270.4728@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
 	<1170124157.19887.116.camel@concordia.ozlabs.ibm.com>
 	<Pine.LNX.4.62.0701300914580.4728@pademelon.sonytel.be>
+	<200701300927.52087.arnd@arndb.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,14 +15,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBoLk-0002aM-0a for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 00:28:20 -0800
-Received: from moutng.kundenserver.de ([212.227.126.188])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBoLj-0005pg-FV
+	id 1HBoTR-0003KX-Pg for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jan 2007 00:36:17 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBoTR-0007vB-Dt
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 00:28:19 -0800
-In-Reply-To: <Pine.LNX.4.62.0701300914580.4728@pademelon.sonytel.be>
-Content-Disposition: inline
+	Tue, 30 Jan 2007 00:36:17 -0800
+In-Reply-To: <200701300927.52087.arnd@arndb.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,21 +32,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linuxppc-dev@ozlabs.org
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Michael Ellerman <michael@ellerman.id.au>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>
 
-On Tuesday 30 January 2007 09:16, Geert Uytterhoeven wrote:
-> We have a similar problem with the storage driver, which needs a block of 256
-> KiB of contiguous memory.
+On Tue, 30 Jan 2007, Arnd Bergmann wrote:
+> On Tuesday 30 January 2007 09:16, Geert Uytterhoeven wrote:
+> > We have a similar problem with the storage driver, which needs a block of 256
+> > KiB of contiguous memory.
+> 
+> I guess at least that one should be solveable. If the 256kb is only
+> internal flash access, it is should not be part of the storage driver
+> but of whatever else is used to drive this.
 
-I guess at least that one should be solveable. If the 256kb is only
-internal flash access, it is should not be part of the storage driver
-but of whatever else is used to drive this.
+If we convert the FLASH part to a character device driver, the 256 KiB will be
+internal to the character device driver.
 
-Assuming the module gets loaded shortly after boot, you can still allocate
-256kb practically always, using get_free_pages().
+> Assuming the module gets loaded shortly after boot, you can still allocate
+> 256kb practically always, using get_free_pages().
 
-	Arnd <><
+I'm afraid that assumption is usually false, as you only need to access the
+FLASH when you want to change boot flags or update the boot loader.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

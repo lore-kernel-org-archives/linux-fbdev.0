@@ -1,21 +1,24 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 0/6] RFC Cell SPE logos
-Date: Tue, 30 Jan 2007 19:00:44 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
+Subject: [PATCH 1/6] fbdev: Avoid vertical overflow when
+ making space for the logo
+Date: Tue, 30 Jan 2007 19:01:23 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701301900530.2830@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HBxIA-00062d-HA for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 10:01:14 -0800
+	id 1HBxIe-000632-89 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jan 2007 10:01:44 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBxI7-00013d-0j
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HBxIb-0004Dh-MF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 10:01:14 -0800
+	Tue, 30 Jan 2007 10:01:44 -0800
+In-Reply-To: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,26 +32,33 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 
-	Hi,
+fbcon_prepare_logo(): Avoid vertical overflow when making space for the logo
 
-I would like to hear your opinions about the patchset below.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
-threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
-When booting Linux, 2 penguins logos are shown on the graphical console.
+---
+ drivers/video/console/fbcon.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-To emphasize the existence of the SPEs (which can be used under Linux), we
-added a second row of (smaller) helper Penguin logos, one for each SPE.
-
-Summaries:
-[PATCH 1/6] fbdev: Avoid vertical overflow when making space for the logo
-[PATCH 2/6] fbdev: fb_do_show_logo() updates
-[PATCH 3/6] fbdev: extract fb_show_logo_line()
-[PATCH 4/6] fbdev: Add fb_append_extra_logo()
-[PATCH 5/6] fbdev: SPE helper penguin logo
-[PATCH 6/6] Cell: Draw SPE helper penguin logos
-
-Thanks for your comments!
+--- geert-linux-src.orig/drivers/video/console/fbcon.c
++++ geert-linux-src/drivers/video/console/fbcon.c
+@@ -619,8 +619,13 @@ static void fbcon_prepare_logo(struct vc
+ 			r -= cols;
+ 		}
+ 		if (!save) {
+-			vc->vc_y += logo_lines;
+-			vc->vc_pos += logo_lines * vc->vc_size_row;
++			int lines;
++			if (vc->vc_y + logo_lines >= rows)
++				lines = rows - vc->vc_y -1;
++			else
++				lines = logo_lines;
++			vc->vc_y += lines;
++			vc->vc_pos += lines * vc->vc_size_row;
+ 		}
+ 	}
+ 	scr_memsetw((unsigned short *) vc->vc_origin,
 
 Gr{oetje,eeting}s,
 

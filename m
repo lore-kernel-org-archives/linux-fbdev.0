@@ -1,25 +1,23 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [PATCH 6/6] Cell: Draw SPE
-	helper penguin logos
-Date: Wed, 31 Jan 2007 02:15:39 +0100
-Message-ID: <200701310215.39837.arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] [PATCH 0/6] RFC Cell SPE logos
+Date: Wed, 31 Jan 2007 02:19:00 +0100
+Message-ID: <200701310219.00795.arnd@arndb.de>
 References: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701301902410.2830@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HC44q-0008D4-K3 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 17:15:57 -0800
-Received: from moutng.kundenserver.de ([212.227.126.187])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HC44o-00031T-Ll
+	id 1HC480-00008J-SZ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jan 2007 17:19:16 -0800
+Received: from moutng.kundenserver.de ([212.227.126.186])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HC480-0003mR-BE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jan 2007 17:15:56 -0800
-In-Reply-To: <Pine.LNX.4.62.0701301902410.2830@pademelon.sonytel.be>
+	Tue, 30 Jan 2007 17:19:12 -0800
+In-Reply-To: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,29 +32,21 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: cbe-oss-dev@ozlabs.org
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
-On Tuesday 30 January 2007 19:02, Geert Uytterhoeven wrote:
-> +#ifdef CONFIG_LOGO
-> +=A0=A0=A0=A0=A0=A0=A0if (ret > 0) {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0extern const struct linux_l=
-ogo logo_spe_clut224;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0fb_append_extra_logo(&logo_=
-spe_clut224, ret);
-> +=A0=A0=A0=A0=A0=A0=A0}
-> +#endif
+On Tuesday 30 January 2007 19:00, Geert Uytterhoeven wrote:
+> The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
+> threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
+> When booting Linux, 2 penguins logos are shown on the graphical console.
+> 
+> To emphasize the existence of the SPEs (which can be used under Linux), we
+> added a second row of (smaller) helper Penguin logos, one for each SPE.
 
-You should not have the #ifdef nor the extern declaration in here.
-A better way to do it would be to have in include/linux/linux_logo.h
-(or similar):
+I love the small penguins, they're cute!
 
-extern const struct linux_logo logo_spe_clut224;
-#ifdef CONFIG_LOGO
-extern void fb_append_extra_logo(const struct linux_logo *logo, int n);
-#else
-static inline void fb_append_extra_logo(const struct linux_logo *logo, int =
-n)
-{
-}
-#endif
+You should probably run this patch set through linux-kernel@vger though,
+so see if there are people around there objecting to the idea. The patches
+all look good from a technical point, except for the fact that the existing
+fb boot logo is a gross hack to start with, but I don't think anyone is
+arguing for getting rid of that.
 
 	Arnd <><
 
@@ -64,5 +54,4 @@ n)
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

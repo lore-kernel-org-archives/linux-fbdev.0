@@ -1,29 +1,27 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-Date: Wed, 31 Jan 2007 09:45:13 +0100
-Message-ID: <20070131084513.GB5596@lst.de>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
-	<20070126031236.GG18537@lst.de>
-	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-	<20070129161502.GA32313@lst.de>
-	<E674F9E5-3FFC-4291-A03B-0C3BF0F833A6@kernel.crashing.org>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [PATCH] matroxfb: another attempt to
+	rectify jitter (G450/G550)
+Date: Wed, 31 Jan 2007 13:54:30 +0200
+Message-ID: <20070131115430.GB5039@sci.fi>
+References: <45B55422.4070401@us.ibm.com> <45BC58E9.9020306@vandrovec.name>
+	<45BFA90D.5050207@us.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HCB61-00004z-G0 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 00:45:40 -0800
-Received: from verein.lst.de ([213.95.11.210] helo=mail.lst.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HCB5z-0004GB-Q4
+	id 1HCE31-0001FD-BV for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 31 Jan 2007 03:54:43 -0800
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HCE2w-0003Fo-R0
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 00:45:37 -0800
+	Wed, 31 Jan 2007 03:54:43 -0800
 Content-Disposition: inline
-In-Reply-To: <E674F9E5-3FFC-4291-A03B-0C3BF0F833A6@kernel.crashing.org>
+In-Reply-To: <45BFA90D.5050207@us.ibm.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,21 +32,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, James Simmons <jsimmons@infradead.org>, Christoph Hellwig <hch@lst.de>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Petr Vandrovec <petr@vandrovec.name>, jsimmons@infradead.org
 
-On Tue, Jan 30, 2007 at 07:39:40PM +0100, Segher Boessenkool wrote:
-> >obj-$(CONFIG_FB_PS3)	+= ps3_av.o
-> >obj-$(CONFIG_SND_PS3)	+= ps3_av.o
-> 
-> I don't think Kbuild will be too happy with that.  Or does
-> it filter out duplicate files everywhere (dep, build, link)?
+On Tue, Jan 30, 2007 at 02:22:37PM -0600, Paul A. Clarke wrote:
+snip...
+> +				/* DVI PLL preferred for frequencies up to panellink max, standard P=
+LL
+> otherwise */
+> +				if (fout >=3D MINFO->max_pixel_clock_panellink) tmp =3D 0;
+> +				else tmp =3D
+> +					M1064_XDVICLKCTRL_DVIDATAPATHSEL |
+> +					M1064_XDVICLKCTRL_C1DVICLKSEL |
+> +					M1064_XDVICLKCTRL_C1DVICLKEN |
 
-Yes, it's a feature stamming from the first predecessor of the current
-kbuild system (drivers/sound/Makefile in late 2.2.x).
+Shouldn't this check which CRTC is driving the DVI?
+
+> +					M1064_XDVICLKCTRL_DVILOOPCTL |
+> +					M1064_XDVICLKCTRL_P1LOOPBWDTCTL;
+> +				matroxfb_DAC_out(PMINFO M1064_XDVICLKCTRL,tmp);
+>    				matroxfb_DAC_out(PMINFO M1064_XPWRCTRL, xpwrctrl);
+> =
+
+>    				matroxfb_DAC_unlock_irqrestore(flags);
+> =
+
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

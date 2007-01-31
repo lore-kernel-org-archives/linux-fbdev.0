@@ -1,23 +1,22 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 4/7] fbdev: move logo externs to header
-	file
-Date: Wed, 31 Jan 2007 13:44:07 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701311339110.15066@pademelon.sonytel.be>
+Subject: [PATCH 7/7] Cell: Draw SPE helper penguin logos
+Date: Wed, 31 Jan 2007 13:44:19 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701311341480.15066@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HCEox-0007kj-W2 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 04:44:16 -0800
+	id 1HCEp5-0007ly-2R for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 31 Jan 2007 04:44:23 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HCEow-0002jn-5Y
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HCEp2-0008Ul-Hy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 04:44:15 -0800
+	Wed, 31 Jan 2007 04:44:23 -0800
 In-Reply-To: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,74 +31,87 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Move the external declarations for the various linux logo structures to
-<linux/linux_logo.h>. As a consequence, I had to remove the `const', as `const'
-is incompatible with `__initdata'.
+Let spu_management_ops.enumerate_spus() return the number of found SPEs
+and use that information to draw some little helper penguin logos.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/kernel/prom_init.c |    3 ---
- drivers/video/logo/logo.c       |   13 -------------
- include/linux/linux_logo.h      |   13 +++++++++++++
- 3 files changed, 13 insertions(+), 16 deletions(-)
+ arch/powerpc/platforms/cell/spu_base.c       |    7 +++++--
+ arch/powerpc/platforms/cell/spu_priv1_mmio.c |    4 +++-
+ arch/powerpc/platforms/ps3/spu.c             |    6 ++++--
+ 3 files changed, 12 insertions(+), 5 deletions(-)
 
---- ps3-linux-2.6.20-rc7.orig/arch/powerpc/kernel/prom_init.c
-+++ ps3-linux-2.6.20-rc7/arch/powerpc/kernel/prom_init.c
-@@ -44,10 +44,7 @@
- #include <asm/sections.h>
- #include <asm/machdep.h>
+--- ps3-linux-2.6.20-rc7.orig/arch/powerpc/platforms/cell/spu_base.c
++++ ps3-linux-2.6.20-rc7/arch/powerpc/platforms/cell/spu_base.c
+@@ -31,6 +31,7 @@
+ #include <linux/mm.h>
+ #include <linux/io.h>
+ #include <linux/mutex.h>
++#include <linux/linux_logo.h>
+ #include <asm/spu.h>
+ #include <asm/spu_priv1.h>
+ #include <asm/xmon.h>
+@@ -676,16 +677,18 @@ static int __init init_spu_base(void)
  
--#ifdef CONFIG_LOGO_LINUX_CLUT224
- #include <linux/linux_logo.h>
--extern const struct linux_logo logo_linux_clut224;
--#endif
+ 	ret = spu_enumerate_spus(create_spu);
  
- /*
-  * Properties whose value is longer than this get excluded from our
---- ps3-linux-2.6.20-rc7.orig/drivers/video/logo/logo.c
-+++ ps3-linux-2.6.20-rc7/drivers/video/logo/logo.c
-@@ -21,19 +21,6 @@
- #include <asm/bootinfo.h>
- #endif
+-	if (ret) {
++	if (ret < 0) {
+ 		printk(KERN_WARNING "%s: Error initializing spus\n",
+ 			__FUNCTION__);
+ 		cleanup_spu_base();
+ 		return ret;
+ 	}
++	if (ret > 0)
++		fb_append_extra_logo(&logo_spe_clut224, ret);
  
--extern const struct linux_logo logo_linux_mono;
--extern const struct linux_logo logo_linux_vga16;
--extern const struct linux_logo logo_linux_clut224;
--extern const struct linux_logo logo_dec_clut224;
--extern const struct linux_logo logo_mac_clut224;
--extern const struct linux_logo logo_parisc_clut224;
--extern const struct linux_logo logo_sgi_clut224;
--extern const struct linux_logo logo_sun_clut224;
--extern const struct linux_logo logo_superh_mono;
--extern const struct linux_logo logo_superh_vga16;
--extern const struct linux_logo logo_superh_clut224;
--extern const struct linux_logo logo_m32r_clut224;
--
+ 	xmon_register_spus(&spu_full_list);
  
- const struct linux_logo *fb_find_logo(int depth)
+-	return ret;
++	return 0;
+ }
+ module_init(init_spu_base);
+ 
+--- ps3-linux-2.6.20-rc7.orig/arch/powerpc/platforms/cell/spu_priv1_mmio.c
++++ ps3-linux-2.6.20-rc7/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+@@ -331,6 +331,7 @@ static int __init of_enumerate_spus(int 
  {
---- ps3-linux-2.6.20-rc7.orig/include/linux/linux_logo.h
-+++ ps3-linux-2.6.20-rc7/include/linux/linux_logo.h
-@@ -32,6 +32,19 @@ struct linux_logo {
- 	const unsigned char *data;
- };
+ 	int ret;
+ 	struct device_node *node;
++	unsigned int n = 0;
  
-+extern struct linux_logo logo_linux_mono;
-+extern struct linux_logo logo_linux_vga16;
-+extern struct linux_logo logo_linux_clut224;
-+extern struct linux_logo logo_dec_clut224;
-+extern struct linux_logo logo_mac_clut224;
-+extern struct linux_logo logo_parisc_clut224;
-+extern struct linux_logo logo_sgi_clut224;
-+extern struct linux_logo logo_sun_clut224;
-+extern struct linux_logo logo_superh_mono;
-+extern struct linux_logo logo_superh_vga16;
-+extern struct linux_logo logo_superh_clut224;
-+extern struct linux_logo logo_m32r_clut224;
-+
- extern const struct linux_logo *fb_find_logo(int depth);
+ 	ret = -ENODEV;
+ 	for (node = of_find_node_by_type(NULL, "spe");
+@@ -341,8 +342,9 @@ static int __init of_enumerate_spus(int 
+ 				__FUNCTION__, node->name);
+ 			break;
+ 		}
++		n++;
+ 	}
+-	return ret;
++	return ret ? ret : n;
+ }
  
- #endif /* _LINUX_LINUX_LOGO_H */
+ static int __init of_create_spu(struct spu *spu, void *data)
+--- ps3-linux-2.6.20-rc7.orig/arch/powerpc/platforms/ps3/spu.c
++++ ps3-linux-2.6.20-rc7/arch/powerpc/platforms/ps3/spu.c
+@@ -438,11 +438,13 @@ static int __init ps3_enumerate_spus(int
+ 		}
+ 	}
+ 
+-	if (result)
++	if (result) {
+ 		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
+ 			__func__, __LINE__);
++		return result;
++	}
+ 
+-	return result;
++	return num_resource_id;
+ }
+ 
+ const struct spu_management_ops spu_management_ps3_ops = {
 
 Gr{oetje,eeting}s,
 

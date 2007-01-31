@@ -1,105 +1,68 @@
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/9] ps3: Preallocate bootmem memory for ps3fb
-Date: Wed, 31 Jan 2007 09:37:24 +1100
-Message-ID: <1170196644.19887.124.camel@concordia.ozlabs.ibm.com>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251849550.24610@pademelon.sonytel.be>
-	<1170124157.19887.116.camel@concordia.ozlabs.ibm.com>
-	<Pine.LNX.4.62.0701300914580.4728@pademelon.sonytel.be>
-Reply-To: michael@ellerman.id.au
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] [PATCH 6/6] Cell: Draw SPE
+	helper penguin logos
+Date: Wed, 31 Jan 2007 02:15:39 +0100
+Message-ID: <200701310215.39837.arnd@arndb.de>
+References: <Pine.LNX.4.62.0701301854060.2509@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701301902410.2830@pademelon.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0772915212=="
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <Pine.LNX.4.62.0701300914580.4728@pademelon.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
-
-
---===============0772915212==
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zvACceYACJP231muZBsm"
-
-
---=-zvACceYACJP231muZBsm
-Content-Type: text/plain
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2007-01-30 at 09:16 +0100, Geert Uytterhoeven wrote:
-> On Tue, 30 Jan 2007, Michael Ellerman wrote:
-> > On Thu, 2007-01-25 at 18:50 +0100, Geert Uytterhoeven wrote:
-> > > Preallocate bootmem memory for the PS3 frame buffer device, which nee=
-ds a
-> > > large block of physically-contiguous memory. The size of this memory =
-block is
-> > > configurable:
-> > >   - The config option CONFIG_FB_PS3_DEFAULT_SIZE_M allows to specify =
-the
-> > >     default amount of memory (in MiB) allocated to the virtual frame =
-buffer.
-> > >   - The early boot parameter `ps3fb=3Dxxx' allows to override the def=
-ault value.
-> > >     It will be rounded up to a multiple of 1 MiB, if needed.
-> > >=20
-> > > Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> > > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> >=20
-> > Rather than doing the alloc in setup.c, defining a structure to the hol=
-d
-> > the params, and then exporting the structure - why don't you just do th=
-e
-> > alloc in the ps3 fb driver code, and have it all private in there?
->=20
-> Because at that time it's no longer possible to allocate such a big block=
- of
-> memory.
-
-When it's built as a module, yeah I thought you'd say that. Oh well.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-zvACceYACJP231muZBsm
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFv8ikdSjSd0sB4dIRAtKTAJ91xMLoD2mOK2uoW4I5nRWNem9FhwCgng8y
-1b/gvifPJiWjxWzk47TuKWY=
-=rZln
------END PGP SIGNATURE-----
-
---=-zvACceYACJP231muZBsm--
-
-
---===============0772915212==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HC44q-0008D4-K3 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jan 2007 17:15:57 -0800
+Received: from moutng.kundenserver.de ([212.227.126.187])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HC44o-00031T-Ll
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jan 2007 17:15:56 -0800
+In-Reply-To: <Pine.LNX.4.62.0701301902410.2830@pademelon.sonytel.be>
 Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: cbe-oss-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============0772915212==--
+On Tuesday 30 January 2007 19:02, Geert Uytterhoeven wrote:
+> +#ifdef CONFIG_LOGO
+> +=A0=A0=A0=A0=A0=A0=A0if (ret > 0) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0extern const struct linux_l=
+ogo logo_spe_clut224;
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0fb_append_extra_logo(&logo_=
+spe_clut224, ret);
+> +=A0=A0=A0=A0=A0=A0=A0}
+> +#endif
+
+You should not have the #ifdef nor the extern declaration in here.
+A better way to do it would be to have in include/linux/linux_logo.h
+(or similar):
+
+extern const struct linux_logo logo_spe_clut224;
+#ifdef CONFIG_LOGO
+extern void fb_append_extra_logo(const struct linux_logo *logo, int n);
+#else
+static inline void fb_append_extra_logo(const struct linux_logo *logo, int =
+n)
+{
+}
+#endif
+
+	Arnd <><
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys - and earn cash
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

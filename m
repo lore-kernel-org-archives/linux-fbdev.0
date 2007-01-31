@@ -1,27 +1,21 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH] matroxfb: another attempt to
-	rectify jitter (G450/G550)
-Date: Wed, 31 Jan 2007 13:54:30 +0200
-Message-ID: <20070131115430.GB5039@sci.fi>
-References: <45B55422.4070401@us.ibm.com> <45BC58E9.9020306@vandrovec.name>
-	<45BFA90D.5050207@us.ibm.com>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 0/7] RFC: Cell SPE logos
+Date: Wed, 31 Jan 2007 13:27:52 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HCE31-0001FD-BV for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 03:54:43 -0800
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HCE2w-0003Fo-R0
+	id 1HCEZL-0004Vs-AK for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 31 Jan 2007 04:28:08 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HCEZJ-00035o-RS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 03:54:43 -0800
-Content-Disposition: inline
-In-Reply-To: <45BFA90D.5050207@us.ibm.com>
+	Wed, 31 Jan 2007 04:28:07 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,41 +26,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Petr Vandrovec <petr@vandrovec.name>, jsimmons@infradead.org
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On Tue, Jan 30, 2007 at 02:22:37PM -0600, Paul A. Clarke wrote:
-snip...
-> +				/* DVI PLL preferred for frequencies up to panellink max, standard P=
-LL
-> otherwise */
-> +				if (fout >=3D MINFO->max_pixel_clock_panellink) tmp =3D 0;
-> +				else tmp =3D
-> +					M1064_XDVICLKCTRL_DVIDATAPATHSEL |
-> +					M1064_XDVICLKCTRL_C1DVICLKSEL |
-> +					M1064_XDVICLKCTRL_C1DVICLKEN |
+	Hi,
 
-Shouldn't this check which CRTC is driving the DVI?
+I would like to hear your opinions about the patchset below (updated version
+compared to yesterday, lkml added to the CC list).
 
-> +					M1064_XDVICLKCTRL_DVILOOPCTL |
-> +					M1064_XDVICLKCTRL_P1LOOPBWDTCTL;
-> +				matroxfb_DAC_out(PMINFO M1064_XDVICLKCTRL,tmp);
->    				matroxfb_DAC_out(PMINFO M1064_XPWRCTRL, xpwrctrl);
-> =
+The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
+threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
+When booting Linux, 2 penguins logos are shown on the graphical console by
+the standard frame buffer console logo code.
 
->    				matroxfb_DAC_unlock_irqrestore(flags);
-> =
+To emphasize the existence of the SPEs (which can be used under Linux), we
+added a second row of (smaller) helper penguin logos, one for each SPE.
+I attached a PNG version of the helper penguin logo for reference.
 
+Summaries:
+[PATCH 1/7] fbdev: Avoid vertical overflow when making space for the logo
+[PATCH 2/7] fbdev: fb_do_show_logo() updates
+[PATCH 3/7] fbdev: extract fb_show_logo_line()
+[PATCH 4/7] fbdev: move logo externs to header file
+[PATCH 5/7] fbdev: Add fb_append_extra_logo()
+[PATCH 6/7] fbdev: SPE helper penguin logo
+[PATCH 7/7] Cell: Draw SPE helper penguin logos
 
--- =
+Thanks for your comments!
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys - and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

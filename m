@@ -1,22 +1,23 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 2/7] fbdev: fb_do_show_logo() updates
-Date: Wed, 31 Jan 2007 13:43:59 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0701311338180.15066@pademelon.sonytel.be>
+Subject: [PATCH 1/7] fbdev: Avoid vertical overflow when
+ making space for the logo
+Date: Wed, 31 Jan 2007 13:43:55 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0701311328170.15066@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HCEox-0007kc-3H for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 04:44:15 -0800
+	id 1HCEoo-0007iK-4V for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 31 Jan 2007 04:44:06 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HCEou-0002eW-JB
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HCEok-0008LT-Nj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Jan 2007 04:44:15 -0800
+	Wed, 31 Jan 2007 04:44:06 -0800
 In-Reply-To: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,80 +32,32 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-fb_do_show_logo() updates:
-  - Use width and height of the passed image instead of the global variable
-    fb_logo
-  - Explicitly pass the number of logos to draw
+fbcon_prepare_logo(): Avoid vertical overflow when making space for the logo
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/video/fbmem.c |   34 +++++++++++++++-------------------
- 1 files changed, 15 insertions(+), 19 deletions(-)
+ drivers/video/console/fbcon.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
---- ps3-linux-2.6.20-rc7.orig/drivers/video/fbmem.c
-+++ ps3-linux-2.6.20-rc7/drivers/video/fbmem.c
-@@ -377,37 +377,33 @@ static void fb_rotate_logo(struct fb_inf
- }
- 
- static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
--			    int rotate)
-+			    int rotate, unsigned int num)
- {
--	int x;
-+	unsigned int x;
- 
- 	if (rotate == FB_ROTATE_UR) {
--		for (x = 0; x < num_online_cpus() &&
--			     x * (fb_logo.logo->width + 8) <=
--			     info->var.xres - fb_logo.logo->width; x++) {
-+		for (x = 0;
-+		     x < num && image->dx + image->width <= info->var.xres;
-+		     x++) {
- 			info->fbops->fb_imageblit(info, image);
--			image->dx += fb_logo.logo->width + 8;
-+			image->dx += image->width + 8;
+--- ps3-linux-2.6.20-rc7.orig/drivers/video/console/fbcon.c
++++ ps3-linux-2.6.20-rc7/drivers/video/console/fbcon.c
+@@ -619,8 +619,13 @@ static void fbcon_prepare_logo(struct vc
+ 			r -= cols;
  		}
- 	} else if (rotate == FB_ROTATE_UD) {
--		for (x = 0; x < num_online_cpus() &&
--			     x * (fb_logo.logo->width + 8) <=
--			     info->var.xres - fb_logo.logo->width; x++) {
-+		for (x = 0; x < num && image->dx >= 0; x++) {
- 			info->fbops->fb_imageblit(info, image);
--			image->dx -= fb_logo.logo->width + 8;
-+			image->dx -= image->width + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_CW) {
--		for (x = 0; x < num_online_cpus() &&
--			     x * (fb_logo.logo->width + 8) <=
--			     info->var.yres - fb_logo.logo->width; x++) {
-+		for (x = 0;
-+		     x < num && image->dy + image->height <= info->var.yres;
-+		     x++) {
- 			info->fbops->fb_imageblit(info, image);
--			image->dy += fb_logo.logo->width + 8;
-+			image->dy += image->height + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_CCW) {
--		for (x = 0; x < num_online_cpus() &&
--			     x * (fb_logo.logo->width + 8) <=
--			     info->var.yres - fb_logo.logo->width; x++) {
-+		for (x = 0; x < num && image->dy >= 0; x++) {
- 			info->fbops->fb_imageblit(info, image);
--			image->dy -= fb_logo.logo->width + 8;
-+			image->dy -= image->height + 8;
+ 		if (!save) {
+-			vc->vc_y += logo_lines;
+-			vc->vc_pos += logo_lines * vc->vc_size_row;
++			int lines;
++			if (vc->vc_y + logo_lines >= rows)
++				lines = rows - vc->vc_y - 1;
++			else
++				lines = logo_lines;
++			vc->vc_y += lines;
++			vc->vc_pos += lines * vc->vc_size_row;
  		}
  	}
- }
-@@ -533,7 +529,7 @@ int fb_show_logo(struct fb_info *info, i
- 			fb_rotate_logo(info, logo_rotate, &image, rotate);
- 	}
- 
--	fb_do_show_logo(info, &image, rotate);
-+	fb_do_show_logo(info, &image, rotate, num_online_cpus());
- 
- 	kfree(palette);
- 	if (saved_pseudo_palette != NULL)
+ 	scr_memsetw((unsigned short *) vc->vc_origin,
 
 Gr{oetje,eeting}s,
 

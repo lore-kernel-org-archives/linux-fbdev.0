@@ -1,60 +1,74 @@
-From: Luca Tettamanti <kronos@people.it>
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
 Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Date: Sun, 4 Feb 2007 21:17:13 +0100
-Message-ID: <20070204201713.GA12867@dreamland.darkstar.lan>
-References: <ephv35$4i3$1@sea.gmane.org> <20070128160831.fb51347f.akpm@osdl.org> <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com> <20070128162907.370f5476.akpm@osdl.org> <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com> <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com> <20070130203301.GA15067@dreamland.darkstar.lan>
+Date: Sun, 4 Feb 2007 22:17:08 +0100
+Message-ID: <cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <20070128160831.fb51347f.akpm@osdl.org>
+	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+	 <20070128162907.370f5476.akpm@osdl.org>
+	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+	 <20070130203301.GA15067@dreamland.darkstar.lan>
+	 <20070204201713.GA12867@dreamland.darkstar.lan>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752519AbXBDURh@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752561AbXBDVRL@vger.kernel.org>
+In-Reply-To: <20070204201713.GA12867@dreamland.darkstar.lan>
 Content-Disposition: inline
-In-Reply-To: <20070130203301.GA15067@dreamland.darkstar.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Luca Tettamanti <kronos@people.it>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
 
-Il Tue, Jan 30, 2007 at 09:33:01PM +0100, Luca Tettamanti ha scritto: 
-> Il Mon, Jan 29, 2007 at 03:37:22PM +0100, Giuseppe Bilotta ha scritto: 
-> > On 1/29/07, Dave Airlie <airlied@gmail.com> wrote:
-> > > > > > Because most users won't even be aware of the module option: they'll just
-> > > > > > know that their card doesn't work right.
-> > > > >
-> > > > > This isn't a card problem this is a monitor problem, the card just
-> > > > > passes through the edid data from the monitor... or else the
-> > > > > programming of the card registers from edid is wrong..
-> > > >
-> > > > In which case the same problem would occur with different video cards, so
-> > > > this patch should be some generic thing, available to all drivers, no?
-> > >
-> > > It should be in the fb layer not card specific.. as it may happen on any card...
-> > 
-> > Although solving the problem at the fb layer level is probably the
-> > correct/best way to do it, I am not aware of people having problems
-> > with broken EDIDs and non-nVidia cards. By contrast, workarounds for
-> > nVidia and broken EDIDs is a very common thing to do even on Windows.
-> 
-> Not all drivers have support for reading EDID information, so in many
-> cases it just "works". My old monitor had garbage in the EDID eeprom and
-> I had to pass "ignore_edid" to radeonfb (before I reprogrammed the
-> eeprom that is :P).
-> 
-> > Plus, providing an fb-layer-level solution is way beyond my kernel
-> > programming experience :)
-> 
-> I'll try to code something in the weekend.
+On 2/4/07, Luca Tettamanti <kronos@people.it> wrote:
+> Giuseppe, can you send me the EDID block of your monitor?
 
-I'm somewhat stuck. fbmon has the library functions to parse and
-optionally fix EDID block, but it lacks the knowledge of the source of
-the data; IOW it's not possible to ignore the EDID coming from a certain
-head, the flag would be global (which may be less that optimal with
-multi-head setups).
-So instead of adding an option I'd use the existing broken EDID db,
-adding another state (say 'unfixable') which causes the data to be
-discarded. Comments?
+I'd gladly do it, if I knew how to retrieve it ... because apparently,
+get-edid doesn't work, even though both the nv driver for X and
+nvidiafb manage to retrieve it.
 
-Giuseppe, can you send me the EDID block of your monitor?
+This is the output from get-edid
 
-Luca
+"""
+get-edid: get-edid version 1.4.1
+
+	Performing real mode VBE call
+	Interrupt 0x10 ax=0x4f00 bx=0x0 cx=0x0
+	Function supported
+	Call successful
+
+	VBE version 300
+	VBE string at 0x11110 "NVidia"
+
+VBE/DDC service about to be called
+	Report DDC capabilities
+
+	Performing real mode VBE call
+	Interrupt 0x10 ax=0x4f15 bx=0x0 cx=0x0
+	Function supported
+	Call successful
+
+	Monitor and video card combination does not support DDC1 transfers
+	Monitor and video card combination does not support DDC2 transfers
+	0 seconds per 128 byte EDID block transfer
+	Screen is not blanked during DDC transfer
+
+Reading next EDID block
+
+VBE/DDC service about to be called
+	Read EDID
+
+	Performing real mode VBE call
+	Interrupt 0x10 ax=0x4f15 bx=0x1 cx=0x0
+	Function supported
+	Call failed
+
+The EDID data should not be trusted as the VBE call failed
+Error: output block unchanged
+"""
+
+Anything else I can try?
+
 -- 
-Sbagliare ? umano, ma per incasinare davvero le cose serve un computer.
+Giuseppe "Oblomov" Bilotta

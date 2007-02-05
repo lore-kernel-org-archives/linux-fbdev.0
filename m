@@ -1,24 +1,27 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb: Can't use the dvi port
-Date: Mon, 05 Feb 2007 08:32:13 +1100
-Message-ID: <1170624733.2620.41.camel@localhost.localdomain>
-References: <20070204161521.GA9623@frodo.home.lxtec.de>
+Subject: Re: [Cbe-oss-dev] [PATCH 0/7] RFC: Cell SPE
+	logos
+Date: Mon, 05 Feb 2007 13:14:11 +1100
+Message-ID: <1170641652.2620.89.camel@localhost.localdomain>
+References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
+	<20070204133212.GA2032@elf.ucw.cz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HDoy6-0003KR-K1 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Feb 2007 13:32:16 -0800
+	id 1HDtPG-0005Ym-5b for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 04 Feb 2007 18:16:34 -0800
 Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX18vVhs9KRl84EecbyQzwNsQsc554Hlfs8I=])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HDoy4-0001hW-2y
+	ident=[U2FsdGVkX1+g0AKvdpyM7kwQD9m32TwlGwygiiBriyU=])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HDtPE-0001rg-Ik
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Feb 2007 13:32:14 -0800
-In-Reply-To: <20070204161521.GA9623@frodo.home.lxtec.de>
+	Sun, 04 Feb 2007 18:16:34 -0800
+In-Reply-To: <20070204133212.GA2032@elf.ucw.cz>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,32 +32,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-
-> I`ve compiled raeonfb debug in the kernel:
-> Dec 26 14:52:05 frodo kernel: hStart = 1664, hEnd = 1856, hTotal = 2160
-> Dec 26 14:52:05 frodo kernel: vStart = 1201, vEnd = 1204, vTotal = 1250
-> Dec 26 14:52:05 frodo kernel: h_total_disp = 0xc7010d hsync_strt_wid = 0x18067a
-> Dec 26 14:52:05 frodo kernel: v_total_disp = 0x4af04e1 vsync_strt_wid = 0x304b0
-> Dec 26 14:52:05 frodo kernel: pixclock = 6172
-> Dec 26 14:52:05 frodo kernel: freq = 16202
-> Dec 26 14:52:05 frodo kernel: freq = 16202, PLL min = 20000, PLL max = 40000
-> Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
-> Dec 26 14:52:05 frodo kernel: ref_div = 12, ref_clk = 2700, output_freq = 32404
-> Dec 26 14:52:05 frodo kernel: post div = 0x1
-> Dec 26 14:52:05 frodo kernel: fb_div = 0x90
-> Dec 26 14:52:05 frodo kernel: ppll_div_3 = 0x10090
+On Sun, 2007-02-04 at 14:32 +0100, Pavel Machek wrote:
+> Hi1
 > 
-> My card:
-> 01:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV250 If [Radeon 9000] (rev 01)
+> > I would like to hear your opinions about the patchset below (updated version
+> > compared to yesterday, lkml added to the CC list).
 > 
-> Switching to the analog port works well.
+> Can you just blast these pictures from userspace? There's really no
+> excuse to advertise SPEs from kernel....
+> 
+> What's next, I have powerful Intel graphics chipset in here, perhaps
+> it is as powerful as SPE, shall I start adding little pictures for its
+> pipelines?
 
-Can I have the -full- dmesg log ?
+By the same token, there is no excuse to have the logo code at all in
+the kernel in the first place... it's cool though :-) And it's a config
+option, so you don't have to have it....
 
-Ben.
+Ben
 
 
 

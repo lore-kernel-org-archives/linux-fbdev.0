@@ -1,29 +1,64 @@
-From: Philippe De Muyter <phdm@macqel.be>
-Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge
-Date: Tue, 6 Feb 2007 22:23:32 +0100
-Message-ID: <20070206212332.GE2649@ingate.macqel.be>
-References: <20070205195130.GB5206@localhost.localdomain>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [Cbe-oss-dev] [PATCH 0/7] RFC: Cell SPE
+ logos
+Date: Tue, 6 Feb 2007 21:42:58 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702062141170.9224@pentafluge.infradead.org>
+References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
+	<20070204133212.GA2032@elf.ucw.cz>
+	<1170641652.2620.89.camel@localhost.localdomain>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965481AbXBFVXf@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070205195130.GB5206@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HEY5r-0003B2-W4 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Feb 2007 13:43:17 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HEY5q-0005cs-9N
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Feb 2007 13:43:15 -0800
+In-Reply-To: <1170641652.2620.89.camel@localhost.localdomain>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Pavel Machek <pavel@ucw.cz>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On Mon, Feb 05, 2007 at 08:51:30PM +0100, Ondrej Zajicek wrote:
-> This patch adds driver for S3 Trio / S3 Virge. Driver is tested
-> with most versions of S3 Trio and S3 Virge, on i386.
-> It is tested both as compiled-in and module. It is against
-> linux-2.6.20 .
 
-I would like to test your patch, because I have such boards.
-How would you suggest to test, because of course, If I loose my screen,
-I won't be able to test further.
+> On Sun, 2007-02-04 at 14:32 +0100, Pavel Machek wrote:
+> > Hi1
+> > 
+> > > I would like to hear your opinions about the patchset below (updated version
+> > > compared to yesterday, lkml added to the CC list).
+> > 
+> > Can you just blast these pictures from userspace? There's really no
+> > excuse to advertise SPEs from kernel....
+> > 
+> > What's next, I have powerful Intel graphics chipset in here, perhaps
+> > it is as powerful as SPE, shall I start adding little pictures for its
+> > pipelines?
+> 
+> By the same token, there is no excuse to have the logo code at all in
+> the kernel in the first place... it's cool though :-) And it's a config
+> option, so you don't have to have it....
 
-Currently my X server is configured for VESA.
+True. Of course we would need a userland interface to splash a logo. I 
+found the logo to be useful to know if the graphics device is alive and 
+working properly.
 
-Philippe
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier.
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

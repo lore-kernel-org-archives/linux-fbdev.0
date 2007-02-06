@@ -1,34 +1,81 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/10] ps3av/fb drivers for 2.6.21
-Date: Wed, 07 Feb 2007 07:49:13 +1100
-Message-ID: <1170794953.2620.253.camel@localhost.localdomain>
-References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702051624410.18405@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
+From: Ondrej Zajicek <santiago@crfreenet.org>
+Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge
+Date: Tue, 6 Feb 2007 22:17:46 +0100
+Message-ID: <20070206211746.GA31501@localhost.localdomain>
+References: <20070205195130.GB5206@localhost.localdomain> <45C7B0A8.50707@gmail.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965517AbXBFVTM@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <45C7B0A8.50707@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 
-> ps3av: Use a kernel thread to handle the actual video mode setting, as this
-> involves some quite big delays.
+On Mon, Feb 05, 2007 at 11:33:12PM +0100, Jiri Slaby wrote:                                                             
+> Ondrej Zajicek napsal(a):
+> >This patch adds driver for S3 Trio / S3 Virge. Driver is tested
+> >with most versions of S3 Trio and S3 Virge, on i386.
+> >It is tested both as compiled-in and module. It is against
+> >linux-2.6.20 .
 
-The ps3 fbdev already has it's own kernel thread no ? Why use a second
-one ? We could just have the ps3av code keep the delays but be called by
-a thread ?
+Thank you for comments. I appreciated them.
 
-Ben.
+> >+#ifdef CONFIG_MTRR
+> >+#include <asm/mtrr.h>
+> >+#endif
+> 
+> Why ifdef? It's ifdeffed in the header itself.
+
+But this header is only available on some archs, isn't it?
+
+> >+static int s3fb_open(struct fb_info *info, int user)
+> >+{
+> >+	struct s3fb_info *par = (struct s3fb_info *) info;
+> >+	unsigned int count = atomic_read(&(par->ref_count));
+> >+
+> >+	if (!count) {
+> 
+> bad
+> 
+> >+		memset(&(par->state), 0, sizeof(struct vgastate));
+> >+		par->state.flags = VGA_SAVE_MODE | VGA_SAVE_FONTS | 
+> >VGA_SAVE_CMAP;
+> >+		par->state.num_crtc = 0x70;
+> >+		par->state.num_seq = 0x20;
+> >+		save_vga(&(par->state));
+> >+	}
+> >+
+> >+	atomic_inc(&(par->ref_count));
+> >+
+> >+	return 0;
+> >+}
+
+This pattern is in several fbdev drivers (neofb, i810fb, rivafb, vga16fb).
+I understand the problem but i am not sure what is the best solution.
+Maybe acquire/release console semaphore before/after s3fb_open?
+
+> >+static int s3fb_release(struct fb_info *info, int user)
+> >+{
+> >+	struct s3fb_info *par = (struct s3fb_info *) info;
+> 
+> Use container_of for this (and below/above).
+
+Isn't container_of overkill for this case?
+
+> >+struct vga_regset {
+> >+	__u8 regnum;
+> >+	__u8 lowbit;
+> >+	__u8 highbit;
+> 
+> You use no __ variants, why __u8 here?
+
+No reason. I will replace it to u8, which is more appropriate.
+
+-- 
+Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."

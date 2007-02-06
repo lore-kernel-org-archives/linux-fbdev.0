@@ -1,84 +1,45 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge
-Date: Tue, 06 Feb 2007 23:51:06 +0100
-Message-ID: <45C9065A.7010102@gmail.com>
-References: <20070205195130.GB5206@localhost.localdomain> <45C7B0A8.50707@gmail.com> <20070206211746.GA31501@localhost.localdomain>
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Date: Wed, 7 Feb 2007 00:08:26 +0100
+Message-ID: <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <20070128160831.fb51347f.akpm@osdl.org>
+	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+	 <20070128162907.370f5476.akpm@osdl.org>
+	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+	 <20070130203301.GA15067@dreamland.darkstar.lan>
+	 <20070204201713.GA12867@dreamland.darkstar.lan>
+	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030196AbXBFWuu@vger.kernel.org>
-In-Reply-To: <20070206211746.GA31501@localhost.localdomain>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030519AbXBFXI2@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Luca Tettamanti <kronos@people.it>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
 
-Ondrej Zajicek napsal(a):
-> On Mon, Feb 05, 2007 at 11:33:12PM +0100, Jiri Slaby wrote:                                                             
->> Ondrej Zajicek napsal(a):
->>> +#ifdef CONFIG_MTRR
->>> +#include <asm/mtrr.h>
->>> +#endif
->> Why ifdef? It's ifdeffed in the header itself.
-> 
-> But this header is only available on some archs, isn't it?
+On 2/6/07, James Simmons <jsimmons@infradead.org> wrote:
+>
+> If you can find post the manufacturer and model number we can place it on
+> the backlist in fbmon. Also we should figure out what is wrong and fix it.
 
-Yup, I stand corrected.
+It's the UltraSharp UXGA display that used to come with Dell Inspiron
+8200, 15" with a resolution of 1600x1200. I've been looking all around
+for more info on it, but the only things I could find were posts that
+remarked the problems Windows nVidia drivers have with some of these
+(no image when running at 1600x1200), and other posts about banded
+gradients with Windows drivers on Radeon video cards (but I get banded
+gradients also win my nVidia card, on Linux, regardless of which
+driver I use, binary, nv or nouveau).
 
->>> +		memset(&(par->state), 0, sizeof(struct vgastate));
->>> +		par->state.flags = VGA_SAVE_MODE | VGA_SAVE_FONTS | 
->>> VGA_SAVE_CMAP;
->>> +		par->state.num_crtc = 0x70;
->>> +		par->state.num_seq = 0x20;
->>> +		save_vga(&(par->state));
->>> +	}
->>> +
->>> +	atomic_inc(&(par->ref_count));
->>> +
->>> +	return 0;
->>> +}
-> 
-> This pattern is in several fbdev drivers (neofb, i810fb, rivafb, vga16fb).
-> I understand the problem but i am not sure what is the best solution.
+As mentioned in another post in this thread, I can't get any info out
+of the i2c busses, because even when I have them available (i.e. after
+loading nvidiafb) I get XXXX all around (on all three of them).
+Suggestions on how to get the information welcome.
 
-Blah. It should be fixed, then.
-
-> Maybe acquire/release console semaphore before/after s3fb_open?
-
-Kick atomic_t-s off and use mutexes to protect simple uint or something like this.
-
->>> +static int s3fb_release(struct fb_info *info, int user)
->>> +{
->>> +	struct s3fb_info *par = (struct s3fb_info *) info;
->> Use container_of for this (and below/above).
-> 
-> Isn't container_of overkill for this case?
-
-Hmm, maybe yes. Anyway it's not so clean way to do it.
-
-I can see, they have void *par in fb_info. I would do:
-struct s3fb_info {
-	int chip, rev, mclk_freq;
-	int mtrr_reg;
-	struct vgastate state;
-	atomic_t ref_count;
-	u32 pseudo_palette[16];
-};
-I.e. no struct fb_info inside, since you allocate the space twice by 
-framebuffer_alloc() -- 2*sizeof(struct fb_info) + sizeof(struct s3fb_info) + 
-padding.
-Then normally
-framebuffer_alloc(sizeof(struct s3fb_info), NULL);
-and happily use
-struct s3fb_info *s = info->par;
-since par member is set directly to aligned space after fb_info when size is 
-nonzero inside the framebuffer_alloc().
-
-Is there any problem with this approach?
-
-regards,
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Giuseppe "Oblomov" Bilotta

@@ -1,141 +1,84 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 0/10] ps3av/fb drivers for 2.6.21
-Date: Wed, 7 Feb 2007 17:51:12 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702071743040.29060@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702051624410.18405@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
-	<1170794953.2620.253.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0702070859050.31772@pademelon.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mfd: SM501 core driver
+Date: Wed, 7 Feb 2007 08:52:25 -0800
+Message-ID: <20070207085225.c2371cfd.akpm@linux-foundation.org>
+References: <20070206192628.GA13644@fluff.org.uk>
+	<20070206210930.fc814bf6.akpm@linux-foundation.org>
+	<20070207114825.GA21120@fluff.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HEq13-0008Eb-QW for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Feb 2007 08:51:29 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HEq11-0004Sk-1Y
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Feb 2007 08:51:29 -0800
-In-Reply-To: <Pine.LNX.4.62.0702070859050.31772@pademelon.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161377AbXBGQwx@vger.kernel.org>
+In-Reply-To: <20070207114825.GA21120@fluff.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
 
-On Wed, 7 Feb 2007, Geert Uytterhoeven wrote:
-> On Wed, 7 Feb 2007, Benjamin Herrenschmidt wrote:
-> > > ps3av: Use a kernel thread to handle the actual video mode setting, as this
-> > > involves some quite big delays.
+On Wed, 7 Feb 2007 11:48:25 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
+
+> On Tue, Feb 06, 2007 at 09:09:30PM -0800, Andrew Morton wrote:
+> > On Tue, 6 Feb 2007 19:26:28 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
 > > 
-> > The ps3 fbdev already has it's own kernel thread no ? Why use a second
-> > one ? We could just have the ps3av code keep the delays but be called by
-> > a thread ?
+> > > This patch is an update patch, ready for merging
+> > > for the Silicon Motion SM501 multi-function device
+> > > core.
+> > > 
+> > > This driver handles the core function of the chip,
+> > > including the clock, power control and allocation
+> > > of resources for drivers. It also exports a series
+> > > of platform devices for the function drivers to
+> > > attach to.
+> > > 
+> > > This patch supports both platform and PCI bus
+> > > attached devices.
+> > > 
+> > > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> > 
+> > Can we get Vincent's signoff here?
+> > 
+> > > +#ifdef CONFIG_DEBUG
+> > 
+> > This doesn't appear to be defined anywhere, and nor should it be. 
+> > Something subsystem-specific should be used here?
 > 
-> That's another possibility.  And since the screen is blanked during mode
-> change, there's no need to refresh it, and I may even get rid of the call to
-> ps3fb_flip_ctl() in ps3av.
+> This protects the code being used by dev_dbg() only from being
+> warned as not being used.
+
+I know what is does, but I query the use of "CONFIG_DEBUG".  I don't think
+there's a CONFIG_DEBUG defined in existing Kconfig, and your patch doesn't
+add a CONFIG_DEBUG and nor should it, because that would be an
+inappropriate identifier to use.
+
+So I'd suggest you just use DEBUG, as many other drivers do.  Or call it
+CONFIG_SM501_DEBUG and add the Kconfig record to enable it.
+
+> > > +#define fmt_freq(x) ((x) / MHZ), ((x) % MHZ), (x)
+> > 
+> > eww.
 > 
-> I'll look into it...
+> Do you have a better way of printing a nice formatted MHz with
+> fractional parts?
 
-Below's a new patch (take 3).
+Nope.
 
-But it doesn't work well: after each mode change, the old contents of the
-screen are visible for a (noticable) fraction of a second.
-Ps3fbd doesn't refresh the screen contents until ps3av_set_video_mode()
-returns, which is longer than my display needs to sync to the new video mode
-(this was actually the reason behind the msleep() calls).
+>  Is it going to be necessary to remove this?
 
-I also could not get rid of the calls to ps3fb_flip_ctl() in ps3av, as screen
-updates have to be disabled while sending other AV packets, too.
+Nope.  But ewww.
 
-So I prefer the previous solution, using a new ps3av kernel thread.
-Unless anyone has a better solution, of course :-)
-----
+> > > +		(void)readl(sm->regs);
+> > 
+> > Is there any benefit in all those casts?  Generally we prefer to avoid
+> > them.
+> 
+> I thoguht they where necessary to stop the compiler optimising
+> away the readl() ?
 
---- ps3-linux-2.6.20.orig/drivers/video/ps3fb.c
-+++ ps3-linux-2.6.20/drivers/video/ps3fb.c
-@@ -138,6 +138,7 @@ struct ps3fb_priv {
- 	u32 num_frames;		/* num of frame buffers */
- 	atomic_t ext_flip;	/* on/off flip with vsync */
- 	atomic_t f_count;	/* fb_open count */
-+	atomic_t change_mode;	/* tell ps3fb to change the video mode */
- 	int is_blanked;
- };
- static struct ps3fb_priv ps3fb;
-@@ -294,7 +295,7 @@ static const struct fb_videomode ps3fb_m
- #define VP_OFF(i)	(WIDTH(i) * Y_OFF(i) * BPP + X_OFF(i) * BPP)
- #define FB_OFF(i)	(GPU_OFFSET - VP_OFF(i) % GPU_OFFSET)
- 
--static int ps3fb_mode = 0;
-+static int ps3fb_mode;
- module_param(ps3fb_mode, bool, 0);
- 
- static char *mode_option __initdata = NULL;
-@@ -542,7 +543,6 @@ static int ps3fb_set_par(struct fb_info 
- 	unsigned int mode;
- 	int i;
- 	unsigned long offset;
--	static int first = 1;
- 
- 	DPRINTK("xres:%d xv:%d yres:%d yv:%d clock:%d\n",
- 		info->var.xres, info->var.xres_virtual,
-@@ -565,10 +565,10 @@ static int ps3fb_set_par(struct fb_info 
- 	/* Keep the special bits we cannot set using fb_var_screeninfo */
- 	ps3fb_mode = (ps3fb_mode & ~PS3AV_MODE_MASK) | mode;
- 
--	if (ps3av_set_video_mode(ps3fb_mode, first))
--		return -EINVAL;
-+	/* Wake up ps3fbd to do the actual mode change */
-+	atomic_inc(&ps3fb.change_mode);
-+	up(&ps3fb.sem);
- 
--	first = 0;
- 	return 0;
- }
- 
-@@ -805,9 +805,17 @@ static int ps3fb_ioctl(struct fb_info *i
- 
- static int ps3fbd(void *arg)
- {
-+	int first = 1;
-+
- 	daemonize("ps3fbd");
- 	for (;;) {
- 		down(&ps3fb.sem);
-+		if (atomic_dec_if_positive(&ps3fb.change_mode) >= 0) {
-+			if (ps3av_set_video_mode(ps3fb_mode, first))
-+				printk(KERN_ERR
-+				       "ps3fbd: ps3av_set_video_mode failed\n");
-+			first = 0;
-+		}
- 		if (atomic_read(&ps3fb.ext_flip) == 0)
- 			ps3fb_sync(0);	/* single buffer */
- 	}
+No, that shuldn't be necessary.  If it was, the compiler would optimise
+away the first readl() in 
 
-Gr{oetje,eeting}s,
+	my_local = readl(foo);
+	my_local = readl(bar);
 
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
-
--------------------------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier.
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+which would break stuff.  readl() implementations use volatile to prevent
+this.

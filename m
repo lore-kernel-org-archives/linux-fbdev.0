@@ -1,23 +1,26 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mfd: SM501 core driver
-Date: Tue, 6 Feb 2007 21:09:30 -0800
-Message-ID: <20070206210930.fc814bf6.akpm@linux-foundation.org>
-References: <20070206192628.GA13644@fluff.org.uk>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 0/10] ps3av/fb drivers for 2.6.21
+Date: Wed, 7 Feb 2007 09:01:08 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702070859050.31772@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702051624410.18405@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
+	<1170794953.2620.253.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HEf3w-0004sX-GR for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Feb 2007 21:09:44 -0800
-Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HEf3u-0000K3-PA
+	id 1HEhk1-0004S9-6T for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 Feb 2007 00:01:21 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HEhjz-0001Ng-Pp
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Feb 2007 21:09:44 -0800
-In-Reply-To: <20070206192628.GA13644@fluff.org.uk>
+	Wed, 07 Feb 2007 00:01:21 -0800
+In-Reply-To: <1170794953.2620.253.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,145 +31,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Greg KH <greg@kroah.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-On Tue, 6 Feb 2007 19:26:28 +0000 Ben Dooks <ben-linux@fluff.org> wrote:
-
-> This patch is an update patch, ready for merging
-> for the Silicon Motion SM501 multi-function device
-> core.
+On Wed, 7 Feb 2007, Benjamin Herrenschmidt wrote:
+> > ps3av: Use a kernel thread to handle the actual video mode setting, as this
+> > involves some quite big delays.
 > 
-> This driver handles the core function of the chip,
-> including the clock, power control and allocation
-> of resources for drivers. It also exports a series
-> of platform devices for the function drivers to
-> attach to.
-> 
-> This patch supports both platform and PCI bus
-> attached devices.
-> 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> The ps3 fbdev already has it's own kernel thread no ? Why use a second
+> one ? We could just have the ps3av code keep the delays but be called by
+> a thread ?
 
-Can we get Vincent's signoff here?
+That's another possibility.  And since the screen is blanked during mode
+change, there's no need to refresh it, and I may even get rid of the call to
+ps3fb_flip_ctl() in ps3av.
 
-> +#ifdef CONFIG_DEBUG
+I'll look into it...
 
-This doesn't appear to be defined anywhere, and nor should it be. 
-Something subsystem-specific should be used here?
+Gr{oetje,eeting}s,
 
-> +static const unsigned int misc_div[] = {
-> +	[0]		= 1,
-> +	[1]		= 2,
-> +	[2]		= 4,
-> +	[3]		= 8,
-> +	[4]		= 16,
-> +	[5]		= 32,
-> +	[6]		= 64,
-> +	[7]		= 128,
-> +	[8]		= 3,
-> +	[9]		= 6,
-> +	[10]		= 12,
-> +	[11]		= 24,
-> +	[12]		= 48,
-> +	[13]		= 96,
-> +	[14]		= 192,
-> +	[15]		= 384,
-> +};
-> +
-> +static const unsigned int px_div[] = {
-> +	[0]		= 1,
-> +	[1]		= 2,
-> +	[2]		= 4,
-> +	[3]		= 8,
-> +	[4]		= 16,
-> +	[5]		= 32,
-> +	[6]		= 64,
-> +	[7]		= 128,
-> +	[8]		= 3,
-> +	[9]		= 6,
-> +	[10]	        = 12,
-> +	[11]		= 24,
-> +	[12]		= 48,
-> +	[13]		= 96,
-> +	[14]		= 192,
-> +	[15]		= 384,
-> +	[16]		= 5,
-> +	[17]		= 10,
-> +	[18]		= 20,
-> +	[19]		= 40,
-> +	[20]		= 80,
-> +	[21]		= 160,
-> +	[22]		= 320,
-> +	[23]		= 604,
-> +};
-> +#endif
-> +
-> +#define decode_div(val, lshft, selbit, mask, dtab) \
-> +	((((val) & (selbit)) ? pll2 : 288 * MHZ) / dtab[(((val) >> (lshft)) & (mask))])
+						Geert
 
-A C function would be nicer here, if poss.
-
-> +#define fmt_freq(x) ((x) / MHZ), ((x) % MHZ), (x)
-
-eww.
-
-> +		(void)readl(sm->regs);
-
-Is there any benefit in all those casts?  Generally we prefer to avoid
-them.
-
-> +EXPORT_SYMBOL_GPL(sm501_misc_control);
-
-The driver exports a lot of symbols.  Does it really need to?
-
-> +	down(&sm->clock_lock);
-
-Please convert to a mutex, if possible.
-
-> +/* sm501_null_release
-> + *
-> + * A release function for the platform devices we create to keep the
-> + * driver core happy, and stop any crashed when the devices are removed
-> +*/
-> +
-> +static void sm501_null_release(struct device *dev)
-> +{
-> +}
-
-Greg might have an opinion on that ;)
-
-> +static void sm501_create_mem(struct sm501_devdata *sm,
-> +			     struct resource *res,
-> +			     unsigned long *offs,
-> +			     unsigned long size)
-> +{
-> +	*offs -= size;		/* adjust memory size */
-> +
-> +	res->flags = IORESOURCE_MEM;
-> +	res->parent = sm->mem_res;
-> +	res->start = sm->mem_res->start + *offs;
-> +	res->end = res->start + size - 1;
-> +}
-
-Please use resource_size_t throughout, test with CONFIG_RESOURCES_64BIT on
-and off.
-
-> +static inline void sm501_init_reg(struct sm501_devdata *sm,
-> +				  unsigned long reg,
-> +				  struct sm501_reg_init *r)
-> +{
-> +	unsigned long tmp;
-> +
-> +	tmp = readl(sm->regs + reg);
-> +	tmp |= r->set;
-> +	tmp &= ~r->mask;
-> +	writel(tmp, sm->regs + reg);
-> +}
-
-This might be too large to inline.
-
-
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

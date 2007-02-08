@@ -1,32 +1,21 @@
-From: Marcus Better <marcus@better.se>
-Subject: intelfb not working on Thinkpad R60
-Date: Thu, 08 Feb 2007 11:34:42 +0100
-Message-ID: <eqeuc6$irv$1@sea.gmane.org>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 0/10] ps3av/fb drivers for 2.6.21
+Date: Thu, 8 Feb 2007 14:56:21 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HF71A-0000e0-AE for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 03:00:44 -0800
-Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HF719-0004Dv-KW
+	id 1HF9lK-0001Ym-Mj for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Feb 2007 05:56:35 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HF9lJ-0002a5-6p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 03:00:44 -0800
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1HF70U-0007Sa-32 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 12:00:02 +0100
-Received: from 67.152.216.81.static.g-va.siw.siwnet.net ([81.216.152.67])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 08 Feb 2007 12:00:02 +0100
-Received: from marcus by 67.152.216.81.static.g-va.siw.siwnet.net with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 08 Feb 2007 12:00:02 +0100
+	Thu, 08 Feb 2007 05:56:34 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,52 +26,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-SGksCgooSSdtIHJlLXBvc3RpbmcgdGhpcyB0byBzaW5jZSB0aGUgLXVzZXJzIGxpc3Qgc2VlbXMg
-dG8gYmUgbGVzcyBhY3RpdmUuKQoKSSdtIHRyeWluZyB0byB1c2UgYSBmcmFtZWJ1ZmZlciBjb25z
-b2xlIHdpdGggaW50ZWxmYiBvbiBteSBUaGlua3BhZCBSNjAgd2l0aApJbnRlbCA5NDVHTSBjaGlw
-c2V0IGFuZCBrZXJuZWwgMi42LjIwLXJjNi4gSSBnZXQgZWl0aGVyIG5vIGZyYW1lIGJ1ZmZlcgpj
-b25zb2xlIG9yIGdhcmJhZ2UgZGVwZW5kaW5nIG9uIHRoZSBjb25maWd1cmF0aW9uLgoKSGVyZSdz
-IHRoZSBrZXJuZWwgY29tbWFuZCBsaW5lOgoKfiQgY2F0IC9wcm9jL2NtZGxpbmUKcm9vdD0vZGV2
-L21hcHBlci9yb290IHJvIGV4ZWMtc2hpZWxkPTEgcmVzdW1lPS9kZXYvbWFwcGVyL3N3YXAKdmlk
-ZW89aW50ZWxmYjptb2RlPTEwMjR4NzY4IGZiY29uPXNjcm9sbGJhY2s6NjRrIHZnYT03OTIKCkkg
-dHJpZWQgc2V2ZXJhbCBrZXJuZWwgY29uZmlndXJhdGlvbiBvcHRpb25zOgoKKkZpcnN0LCBpZiBJ
-IGNvbXBpbGUgaW50ZWxmYiBhbmQgZmJjb24gaW50byB0aGUga2VybmVsLCBhbmQgbm8gb3RoZXIg
-ZnJhbWUKYnVmZmVyIG1vZHVsZXMsIEkgZG9uJ3QgdGhpbmsgdGhlICJ2Z2EiIHBhcmFtZXRlciBp
-cyBldmVyIHByb2Nlc3NlZC4gSSBnZXQgYQpibGFuayBjb25zb2xlIGFuZCB0aGUgZmFtb3VzIG1l
-c3NhZ2UKwqAgaW50ZWxmYjogVmlkZW8gbW9kZSBtdXN0IGJlIHByb2dyYW1tZWQgYXQgYm9vdCB0
-aW1lLgppbiB0aGUgbG9nLgoKKklmIEkgYWxzbyBzZWxlY3QgQ09ORklHX1ZJREVPX1NFTEVDVCAo
-d2hpY2ggZm9yY2VzIG1lIHRvIGFsc28gaW5jbHVkZQpDT05GSUdfVkdBX0NPTlNPTEUpLCB0aGVu
-IGl0IGFwcGVhcnMgdG8gc3dpdGNoIHRvIHZpZGVvIG1vZGUgYXQgYm9vdCwgYnV0CnRoZSBzY3Jl
-ZW4gaXMgZ2FyYmxlZCB3aXRoIGhvcml6b250YWwgbXVsdGktY29sb3VyZWQgc3RyaXBlcyBhbmQg
-dGhlIHN5c3RlbQpsb2NrcyB1cCBiZWZvcmUgZXZlbiBib290aW5nLgoKKFNpZGUgcXVlc3Rpb246
-IFNob3VsZCBDT05GSUdfVklERU9fU0VMRUNUIHJlYWxseSBkZXBlbmQgb24KQ09ORklHX1ZHQV9D
-T05TT0xFPykKCipJZiBJIGFkZGl0aW9uYWxseSBjb21waWxlIGluIHRoZSB2ZXNhZmIgZHJpdmVy
-LCB0aGVuIGl0IHNlZW1zIHRvIGdyYWIgdGhlCmNvbnNvbGUgZGVzcGl0ZSB0aGUgInZpZGVvPWlu
-dGVsZmI6Li4uIiBjb21tYW5kIGxpbmUgYXJndW1lbnQsIGFuZCBJIGdldCBhCndvcmtpbmcgdmVz
-YWZiIGNvbnNvbGUuCgp+JCBkbWVzZ3xncmVwIF5bYS16XSpmYjoKdmVzYWZiOiBmcmFtZWJ1ZmZl
-ciBhdCAweGQwMDAwMDAwLCBtYXBwZWQgdG8gMHhmODg4MDAwMCwgdXNpbmcgNjE0NGssIHRvdGFs
-Cjc4NzJrCnZlc2FmYjogbW9kZSBpcyAxMDI0eDc2OHgzMiwgbGluZWxlbmd0aD00MDk2LCBwYWdl
-cz0xCnZlc2FmYjogcHJvdGVjdGVkIG1vZGUgaW50ZXJmYWNlIGluZm8gYXQgMDBmZjo0NGYwCnZl
-c2FmYjogc2Nyb2xsaW5nOiByZWRyYXcKdmVzYWZiOiBUcnVlY29sb3I6IHNpemU9ODo4Ojg6OCwg
-c2hpZnQ9MjQ6MTY6ODowCmludGVsZmI6IGludGVsZmJfaW5pdAppbnRlbGZiOiBGcmFtZWJ1ZmZl
-ciBkcml2ZXIgZm9yIEludGVsKFIpCjgzME0vODQ1Ry84NTJHTS84NTVHTS84NjVHLzkxNUcvOTE1
-R00vOTQ1Ry85NDVHTSBjaGlwc2V0cwppbnRlbGZiOiBWZXJzaW9uIDAuOS40CmludGVsZmI6IGlu
-dGVsZmJfc2V0dXAKaW50ZWxmYjogb3B0aW9uczogbW9kZT0xMDI0eDc2OAppbnRlbGZiOiBpbnRl
-bGZiX3BjaV9yZWdpc3RlcgppbnRlbGZiOiBmYiBhcGVydHVyZTogMHhkMDAwMDAwMC8weDEwMDAw
-MDAwLCBNTUlPIHJlZ2lvbjogMHhlZTEwMDAwMC8weDgwMDAwCmludGVsZmI6IENhbm5vdCByZXNl
-cnZlIEZCIHJlZ2lvbi4KaW50ZWxmYjogY2xlYW51cAoKKFRoaXMgaXMgd2l0aCB0aGUgc2FtZSBj
-b21tYW5kIGxpbmUgYXMgYWJvdmUuKQoKUmVnYXJkcywKCk1hcmN1cwoKWzFdIGh0dHA6Ly90aHJl
-YWQuZ21hbmUub3JnL2dtYW5lLmxpbnV4LmZiZGV2LmRldmVsLzkyNjQvZm9jdXM9OTI4NQoKCgot
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tClVzaW5nIFRvbWNhdCBidXQgbmVlZCB0byBkbyBtb3JlPyBOZWVkIHRv
-IHN1cHBvcnQgd2ViIHNlcnZpY2VzLCBzZWN1cml0eT8KR2V0IHN0dWZmIGRvbmUgcXVpY2tseSB3
-aXRoIHByZS1pbnRlZ3JhdGVkIHRlY2hub2xvZ3kgdG8gbWFrZSB5b3VyIGpvYiBlYXNpZXIuCkRv
-d25sb2FkIElCTSBXZWJTcGhlcmUgQXBwbGljYXRpb24gU2VydmVyIHYuMS4wLjEgYmFzZWQgb24g
-QXBhY2hlIEdlcm9uaW1vCmh0dHA6Ly9zZWwuYXMtdXMuZmFsa2FnLm5ldC9zZWw/Y21kPWxuayZr
-aWQ9MTIwNzA5JmJpZD0yNjMwNTcmZGF0PTEyMTY0MgpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGlu
-dXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNl
-Zm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+	Hi Andrew,
+
+This is the third submission of the PS3 AV Settings Driver and the PS3 Virtual
+Frame Buffer Driver.
+
+Patch summaries:
+[PATCH 1/10] ps3: Add shutdown to virtual uart port driver framework
+[PATCH 2/10] ps3: AV Settings Driver
+[PATCH 3/10] fbdev modedb: allow refresh rates for named video modes
+[PATCH 4/10] fbdev modedb: make more pointer parameters const
+[PATCH 5/10] fb_videomode_to_var: reset virtual screen parameters
+[PATCH 6/10] ps3: Preallocate bootmem memory for ps3fb
+[PATCH 7/10] ps3: Virtual Frame Buffer Driver
+[PATCH 8/10] ps3: disable display flipping during mode changes
+[PATCH 9/10] ps3: cleanup ps3fb before clearing HPTE
+[PATCH 10/10] ps3: ps3av/fb defconfig updates
+
+All patches apply to current linux-2.6.git.
+
+Note that the first 3 frame buffer-specific patches are not PS3-specific:
+  - Without patch 3 you cannot select all available video modes through the
+    kernel command line,
+  - Patch 4 is just a cleanup while I was working on the code,
+  - Without patch 5 you cannot use the ps3videomode command line tool or
+    /sys/class/graphics/fb0/mode to switch to a video mode with a lower
+    resolution.
+
+Please apply, so we can have this in 2.6.21. Thanks!
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier.
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

@@ -1,7 +1,9 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 0/10] ps3av/fb drivers for 2.6.21
-Date: Thu, 8 Feb 2007 14:56:21 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
+Subject: [PATCH 1/10] ps3: Add shutdown to virtual uart
+	port driver framework
+Date: Thu, 8 Feb 2007 14:58:17 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702081456450.19437@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,12 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HF9lK-0001Ym-Mj for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 05:56:35 -0800
+	id 1HF9n7-0001lZ-W9 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Feb 2007 05:58:26 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HF9lJ-0002a5-6p
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HF9n5-0003TN-J2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 05:56:34 -0800
+	Thu, 08 Feb 2007 05:58:26 -0800
+In-Reply-To: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,34 +32,59 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-	Hi Andrew,
+PS3: Add a shutdown method to the PS3's virtual uart port driver framework
 
-This is the third submission of the PS3 AV Settings Driver and the PS3 Virtual
-Frame Buffer Driver.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Patch summaries:
-[PATCH 1/10] ps3: Add shutdown to virtual uart port driver framework
-[PATCH 2/10] ps3: AV Settings Driver
-[PATCH 3/10] fbdev modedb: allow refresh rates for named video modes
-[PATCH 4/10] fbdev modedb: make more pointer parameters const
-[PATCH 5/10] fb_videomode_to_var: reset virtual screen parameters
-[PATCH 6/10] ps3: Preallocate bootmem memory for ps3fb
-[PATCH 7/10] ps3: Virtual Frame Buffer Driver
-[PATCH 8/10] ps3: disable display flipping during mode changes
-[PATCH 9/10] ps3: cleanup ps3fb before clearing HPTE
-[PATCH 10/10] ps3: ps3av/fb defconfig updates
+---
+ drivers/ps3/vuart.c |   17 +++++++++++++++++
+ drivers/ps3/vuart.h |    1 +
+ 2 files changed, 18 insertions(+)
 
-All patches apply to current linux-2.6.git.
-
-Note that the first 3 frame buffer-specific patches are not PS3-specific:
-  - Without patch 3 you cannot select all available video modes through the
-    kernel command line,
-  - Patch 4 is just a cleanup while I was working on the code,
-  - Without patch 5 you cannot use the ps3videomode command line tool or
-    /sys/class/graphics/fb0/mode to switch to a video mode with a lower
-    resolution.
-
-Please apply, so we can have this in 2.6.21. Thanks!
+--- ps3-linux-2.6.20.orig/drivers/ps3/vuart.c
++++ ps3-linux-2.6.20/drivers/ps3/vuart.c
+@@ -867,6 +867,22 @@ static int ps3_vuart_remove(struct devic
+ 	return 0;
+ }
+ 
++static void ps3_vuart_shutdown(struct device *_dev)
++{
++	struct ps3_vuart_port_device *dev = to_ps3_vuart_port_device(_dev);
++	struct ps3_vuart_port_driver *drv =
++		to_ps3_vuart_port_driver(_dev->driver);
++
++	dev_dbg(&dev->core, "%s:%d: %s\n", __func__, __LINE__,
++		dev->core.bus_id);
++
++	if (drv->shutdown)
++		drv->shutdown(dev);
++	else
++		dev_dbg(&dev->core, "%s:%d: %s no shutdown method\n", __func__,
++			__LINE__, dev->core.bus_id);
++}
++
+ /**
+  * ps3_vuart - The vuart instance.
+  *
+@@ -878,6 +894,7 @@ struct bus_type ps3_vuart = {
+ 	.match = ps3_vuart_match,
+ 	.probe = ps3_vuart_probe,
+ 	.remove = ps3_vuart_remove,
++	.shutdown = ps3_vuart_shutdown,
+ };
+ 
+ int __init ps3_vuart_init(void)
+--- ps3-linux-2.6.20.orig/drivers/ps3/vuart.h
++++ ps3-linux-2.6.20/drivers/ps3/vuart.h
+@@ -61,6 +61,7 @@ struct ps3_vuart_port_driver {
+ 	struct device_driver core;
+ 	int (*probe)(struct ps3_vuart_port_device *);
+ 	int (*remove)(struct ps3_vuart_port_device *);
++	void (*shutdown)(struct ps3_vuart_port_device *);
+ 	int (*tx_event)(struct ps3_vuart_port_device *dev);
+ 	int (*rx_event)(struct ps3_vuart_port_device *dev);
+ 	int (*disconnect_event)(struct ps3_vuart_port_device *dev);
 
 Gr{oetje,eeting}s,
 

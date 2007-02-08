@@ -1,18 +1,8 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Thu, 8 Feb 2007 17:56:57 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702081756270.7686@pentafluge.infradead.org>
-References: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	<20070128162907.370f5476.akpm@osdl.org>
-	<21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	<cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	<20070130203301.GA15067@dreamland.darkstar.lan>
-	<20070204201713.GA12867@dreamland.darkstar.lan>
-	<cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com>
-	<20070205201824.GA13431@dreamland.darkstar.lan>
-	<cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
-	<Pine.LNX.4.64.0702062118450.9224@pentafluge.infradead.org>
-	<20070207234837.GA27822@dreamland.darkstar.lan>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Fw: [Bugme-new] [Bug 7966] New: atyfb
+ (mach64_ct) framebuffer hangs at boot time
+Date: Thu, 8 Feb 2007 10:33:43 -0800
+Message-ID: <20070208103343.b93f27d1.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,13 +11,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HFDWA-0004fq-Np for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 09:57:11 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HFDW7-0002EG-Ag
+	id 1HFE5w-0000Dq-N3 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Feb 2007 10:34:09 -0800
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HFE5v-0006Hd-7s
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 09:57:10 -0800
-In-Reply-To: <20070207234837.GA27822@dreamland.darkstar.lan>
+	Thu, 08 Feb 2007 10:34:08 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,19 +28,75 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+Cc: Ville Syrjala <syrjala@sci.fi>, "bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>, rootshell@web.de
 
 
-> > There is no stand alone nvidia card i2c driver. Its the issue of sharing 
-> > device interfaces with the same hardware problem again!!! 
-> 
-> Nah, nvidiafb registers the I2C busses, you can drive them with whatever
-> you want through the devices exported by I2C core.
-> The fact the none of them work makes me think that the EDID is coming
-> from the BIOS, we do VBE calls in real mode during early kernel setup.
 
-What I meant is we can't load the i2c code seperate from the fbdev driver.
+Begin forwarded message:
 
+Date: Thu, 8 Feb 2007 06:59:27 -0800
+From: bugme-daemon@bugzilla.kernel.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 7966] New: atyfb (mach64_ct) framebuffer hangs at boot time
+
+
+http://bugzilla.kernel.org/show_bug.cgi?id=7966
+
+           Summary: atyfb (mach64_ct) framebuffer hangs at boot time
+    Kernel Version: 2.6.20 (2.6.19.2)
+            Status: NEW
+          Severity: normal
+             Owner: jsimmons@infradead.org
+         Submitter: rootshell@web.de
+
+
+Distribution: OpenSuse 10.2
+
+Hardware Environment:
+ Machine: FujitsuSiemens Primergy TX150
+ Board: ServerWorks D1501 
+ Chipset: Broadcom CSB6
+ Graphic: ati 3d rage xl (mach64 gr) (onBoard) 
+
+Problem Description:
+System hangs at boot time, when it tries to switch to frame buffer console. Last
+messages are:
+atyfb: using auxiliary register aperture
+atyfb: 3D RAGE XL (Mach64 GR, PCI-33) [0x4752 rev 0x27]
+atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+atyfb: BIOS frequency table:
+atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+atyfb: MCLK_pwd 4200, MCLK_max_freq 8300, XCLK_max_freq 6250, SCLK_freq 0
+atyfb: 8M SDRAM (2:1) (32-bit), 29.498928 MHz XTAL, 236 MHz PLL, 83 Mhz MCLK, 62
+MHz XCLK
+atyfb: atyfb(aty_init_pll_ct): mckl_fb_mult=4, xclk_post_div=1
+atyfb: atyfb(aty_init_pll_ct): pllmclk=247 MHz, xclk=61 MHz
+atyfb: atyfb(aty_init_pll_ct): use sclk, pllsclk=165 MHz, sclk=mclk=82 MHz
+
+Work around:
+After enabling and adding some debugging outputs it suddenly works. After
+disabling one to one the debugging printk I found this small patch for me. But I
+don't understand why it works.
+
+mach64_ct.c.patch:
+--- linux-2.6.20/drivers/video/aty/mach64_ct.c.orig     2007-02-04
+19:44:54.000000000 +0100
++++ linux-2.6.20/drivers/video/aty/mach64_ct.c  2007-02-07 14:07:09.000000000 +0100
+@@ -29,6 +29,8 @@ u8 aty_ld_pll_ct(int offset, const struc
+ 
+ static void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par)
+ {
++       printk( " atyfb(%s): \n", __FUNCTION__ );
++
+        /* write addr byte */
+        aty_st_8(CLOCK_CNTL_ADDR, ((offset << 2) & PLL_ADDR) | PLL_WR_EN, par);
+        /* write the register value */
+
+misc:
+Maybe it's at the end the same bug as http://bugme.osdl.org/show_bug.cgi?id=7176
+
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

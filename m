@@ -1,8 +1,7 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 10/10] ps3: ps3av/fb defconfig updates
-Date: Thu, 8 Feb 2007 15:00:08 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702081459590.19437@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH]: change nvidiafb_remove to __devexit
+Date: Thu, 8 Feb 2007 11:29:52 -0500
+Message-ID: <20070208162952.17679.45127.sendpatchset@prarit.boston.redhat.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +10,21 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HF9oy-0001yk-9m for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 06:00:36 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HF9ov-0008ON-SD
+	id 1HFCA2-0002NK-KF for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Feb 2007 08:30:14 -0800
+Received: from mx1.redhat.com ([66.187.233.31])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HFC9u-0003J7-Cl
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 06:00:20 -0800
-In-Reply-To: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
+	Thu, 08 Feb 2007 08:30:11 -0800
+Received: from int-mx1.corp.redhat.com (int-mx1.corp.redhat.com
+	[172.16.52.254])
+	by mx1.redhat.com (8.13.1/8.13.1) with ESMTP id l18GTs5e007066
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 8 Feb 2007 11:29:54 -0500
+Received: from mail.boston.redhat.com (mail.boston.redhat.com [172.16.76.12])
+	by int-mx1.corp.redhat.com (8.13.1/8.13.1) with ESMTP id
+	l18GTrmH024761 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 8 Feb 2007 11:29:53 -0500
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,77 +35,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+To: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net
+Cc: Prarit Bhargava <prarit@redhat.com>
 
-PS3: defconfig updates for ps3av and ps3fb
+Change nvidiafb_remove to __devexit to fix MODPOST warnings:
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/powerpc/configs/ps3_defconfig |   29 ++++++++++++++++++++++++++++-
- 1 files changed, 28 insertions(+), 1 deletion(-)
+WARNING: drivers/video/nvidia/nvidiafb.o - Section mismatch: reference to
+.exit.text:nvidiafb_remove from .data.rel.local after 'nvidiafb_driver' (at
+offset 0x28)
 
---- ps3-linux-2.6.20.orig/arch/powerpc/configs/ps3_defconfig
-+++ ps3-linux-2.6.20/arch/powerpc/configs/ps3_defconfig
-@@ -163,6 +163,7 @@ CONFIG_PS3_HTAB_SIZE=20
- CONFIG_PS3_DYNAMIC_DMA=y
- CONFIG_PS3_USE_LPAR_ADDR=y
- CONFIG_PS3_VUART=y
-+CONFIG_PS3_PS3AV=y
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+
+--- linux-2.6.19.ia64.orig/drivers/video/nvidia/nvidia.c	2007-02-07 09:56:37.000000000 -0500
++++ linux-2.6.19.ia64/drivers/video/nvidia/nvidia.c	2007-02-08 11:14:13.000000000 -0500
+@@ -1347,7 +1347,7 @@ err_out:
+ 	return -ENODEV;
+ }
  
- #
- # Kernel options
-@@ -603,14 +604,40 @@ CONFIG_GEN_RTC=y
- # Graphics support
- #
- # CONFIG_FIRMWARE_EDID is not set
--# CONFIG_FB is not set
-+CONFIG_FB=y
-+CONFIG_FB_CFB_FILLRECT=y
-+CONFIG_FB_CFB_COPYAREA=y
-+CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_MACMODES is not set
-+# CONFIG_FB_BACKLIGHT is not set
-+# CONFIG_FB_MODE_HELPERS is not set
-+# CONFIG_FB_TILEBLITTING is not set
-+# CONFIG_FB_OF is not set
-+# CONFIG_FB_VGA16 is not set
-+# CONFIG_FB_S1D13XXX is not set
- # CONFIG_FB_IBM_GXT4500 is not set
-+CONFIG_FB_PS3=y
-+CONFIG_FB_PS3_DEFAULT_SIZE_M=18
-+# CONFIG_FB_VIRTUAL is not set
+-static void __exit nvidiafb_remove(struct pci_dev *pd)
++static void __devexit nvidiafb_remove(struct pci_dev *pd)
+ {
+ 	struct fb_info *info = pci_get_drvdata(pd);
+ 	struct nvidia_par *par = info->par;
+@@ -1433,7 +1433,7 @@ static struct pci_driver nvidiafb_driver
+ 	.probe    = nvidiafb_probe,
+ 	.suspend  = nvidiafb_suspend,
+ 	.resume   = nvidiafb_resume,
+-	.remove   = __exit_p(nvidiafb_remove),
++	.remove   = __devexit_p(nvidiafb_remove),
+ };
  
- #
- # Console display driver support
- #
- # CONFIG_VGA_CONSOLE is not set
- CONFIG_DUMMY_CONSOLE=y
-+CONFIG_FRAMEBUFFER_CONSOLE=y
-+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
-+# CONFIG_FONTS is not set
-+CONFIG_FONT_8x8=y
-+CONFIG_FONT_8x16=y
-+
-+#
-+# Logo configuration
-+#
-+CONFIG_LOGO=y
-+# CONFIG_LOGO_LINUX_MONO is not set
-+# CONFIG_LOGO_LINUX_VGA16 is not set
-+CONFIG_LOGO_LINUX_CLUT224=y
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
- 
- #
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+ /* ------------------------------------------------------------------------- *
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

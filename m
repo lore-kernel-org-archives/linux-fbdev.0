@@ -1,8 +1,7 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 9/10] ps3: cleanup ps3fb before clearing
-	HPTE
-Date: Thu, 8 Feb 2007 14:59:58 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702081459470.19437@pademelon.sonytel.be>
+Subject: [PATCH 10/10] ps3: ps3av/fb defconfig updates
+Date: Thu, 8 Feb 2007 15:00:08 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702081459590.19437@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
@@ -12,12 +11,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HF9om-0001yR-BC for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 06:00:08 -0800
+	id 1HF9oy-0001yk-9m for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Feb 2007 06:00:36 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HF9oj-0008Gv-66
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HF9ov-0008ON-SD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Feb 2007 06:00:07 -0800
+	Thu, 08 Feb 2007 06:00:20 -0800
 In-Reply-To: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,56 +31,65 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-PS3: Cleanup the frame buffer device before clearing the HPTE mapping
+PS3: defconfig updates for ps3av and ps3fb
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- arch/powerpc/platforms/ps3/htab.c |    6 +++++-
- include/asm-powerpc/ps3fb.h       |    2 ++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/configs/ps3_defconfig |   29 ++++++++++++++++++++++++++++-
+ 1 files changed, 28 insertions(+), 1 deletion(-)
 
---- ps3-linux-2.6.20.orig/arch/powerpc/platforms/ps3/htab.c
-+++ ps3-linux-2.6.20/arch/powerpc/platforms/ps3/htab.c
-@@ -2,7 +2,7 @@
-  *  PS3 pagetable management routines.
-  *
-  *  Copyright (C) 2006 Sony Computer Entertainment Inc.
-- *  Copyright 2006 Sony Corp.
-+ *  Copyright 2006, 2007 Sony Corporation
-  *
-  *  This program is free software; you can redistribute it and/or modify
-  *  it under the terms of the GNU General Public License as published by
-@@ -25,6 +25,7 @@
- #include <asm/udbg.h>
- #include <asm/ps3.h>
- #include <asm/lv1call.h>
-+#include <asm/ps3fb.h>
+--- ps3-linux-2.6.20.orig/arch/powerpc/configs/ps3_defconfig
++++ ps3-linux-2.6.20/arch/powerpc/configs/ps3_defconfig
+@@ -163,6 +163,7 @@ CONFIG_PS3_HTAB_SIZE=20
+ CONFIG_PS3_DYNAMIC_DMA=y
+ CONFIG_PS3_USE_LPAR_ADDR=y
+ CONFIG_PS3_VUART=y
++CONFIG_PS3_PS3AV=y
  
- #include "platform.h"
+ #
+ # Kernel options
+@@ -603,14 +604,40 @@ CONFIG_GEN_RTC=y
+ # Graphics support
+ #
+ # CONFIG_FIRMWARE_EDID is not set
+-# CONFIG_FB is not set
++CONFIG_FB=y
++CONFIG_FB_CFB_FILLRECT=y
++CONFIG_FB_CFB_COPYAREA=y
++CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++# CONFIG_FB_OF is not set
++# CONFIG_FB_VGA16 is not set
++# CONFIG_FB_S1D13XXX is not set
+ # CONFIG_FB_IBM_GXT4500 is not set
++CONFIG_FB_PS3=y
++CONFIG_FB_PS3_DEFAULT_SIZE_M=18
++# CONFIG_FB_VIRTUAL is not set
  
-@@ -234,6 +235,9 @@ static void ps3_hpte_invalidate(unsigned
- 
- static void ps3_hpte_clear(void)
- {
-+	/* Make sure to clean up the frame buffer device first */
-+	ps3fb_cleanup();
+ #
+ # Console display driver support
+ #
+ # CONFIG_VGA_CONSOLE is not set
+ CONFIG_DUMMY_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE=y
++# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
++# CONFIG_FONTS is not set
++CONFIG_FONT_8x8=y
++CONFIG_FONT_8x16=y
 +
- 	lv1_unmap_htab(htab_addr);
- }
++#
++# Logo configuration
++#
++CONFIG_LOGO=y
++# CONFIG_LOGO_LINUX_MONO is not set
++# CONFIG_LOGO_LINUX_VGA16 is not set
++CONFIG_LOGO_LINUX_CLUT224=y
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
  
---- ps3-linux-2.6.20.orig/include/asm-powerpc/ps3fb.h
-+++ ps3-linux-2.6.20/include/asm-powerpc/ps3fb.h
-@@ -45,8 +45,10 @@ struct ps3fb_ioctl_res {
- 
- #ifdef CONFIG_FB_PS3
- extern void ps3fb_flip_ctl(int on);
-+extern void ps3fb_cleanup(void);
- #else
- static inline void ps3fb_flip_ctl(int on) {}
-+static inline void ps3fb_cleanup(void) {}
- #endif
- 
- #endif /* __KERNEL__ */
+ #
 
 Gr{oetje,eeting}s,
 

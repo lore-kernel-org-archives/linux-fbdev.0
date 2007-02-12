@@ -1,17 +1,8 @@
-From: Luca Tettamanti <kronos@people.it>
-Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Sun, 11 Feb 2007 19:17:43 +0100
-Message-ID: <20070211181743.GA15801@dreamland.darkstar.lan>
-References: <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	<cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	<20070130203301.GA15067@dreamland.darkstar.lan>
-	<20070204201713.GA12867@dreamland.darkstar.lan>
-	<cb7bb73a0702041317u4ca2fbabp45cf56526e57c982@mail.gmail.com>
-	<20070205201824.GA13431@dreamland.darkstar.lan>
-	<cb7bb73a0702051328n50c889d9o461ac2bb9f9ea75e@mail.gmail.com>
-	<Pine.LNX.4.64.0702062118450.9224@pentafluge.infradead.org>
-	<20070207234837.GA27822@dreamland.darkstar.lan>
-	<cb7bb73a0702071619p5984c39fs16e3d05c11d45585@mail.gmail.com>
+From: Ben Dooks <ben-fbdev@fluff.org>
+Subject: Re: [RFC]: s3c2410fb conversion
+Date: Mon, 12 Feb 2007 10:06:27 +0000
+Message-ID: <20070212100627.GD19392@home.fluff.org>
+References: <45b9b69474f01@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,14 +11,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HGJHA-00045z-Sd for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Feb 2007 10:18:13 -0800
-Received: from averell.tiscali.it ([213.205.33.55])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HGJH7-0003EC-UI
+	id 1HGY5B-0003TT-5h for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Feb 2007 02:06:49 -0800
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=aeryn.fluff.org.uk)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HGY57-0004Pg-F3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Feb 2007 10:18:12 -0800
+	Mon, 12 Feb 2007 02:06:49 -0800
+Received: from ben by aeryn.fluff.org.uk with local (Exim 4.63)
+	(envelope-from <ben@fluff.org.uk>) id 1HGY4p-00061B-4o
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Feb 2007 10:06:27 +0000
 Content-Disposition: inline
-In-Reply-To: <cb7bb73a0702071619p5984c39fs16e3d05c11d45585@mail.gmail.com>
+In-Reply-To: <45b9b69474f01@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,120 +33,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Sorry for the delay.
-
-Il Thu, Feb 08, 2007 at 01:19:08AM +0100, Giuseppe Bilotta ha scritto: 
-> On 2/8/07, Luca Tettamanti <kronos@people.it> wrote:
-> >Il Tue, Feb 06, 2007 at 09:22:00PM +0000, James Simmons ha scritto:
-> >> There is no stand alone nvidia card i2c driver. Its the issue of sharing
-> >> device interfaces with the same hardware problem again!!!
-> >
-> >Nah, nvidiafb registers the I2C busses, you can drive them with whatever
-> >you want through the devices exported by I2C core.
-> >The fact the none of them work makes me think that the EDID is coming
-> >from the BIOS, we do VBE calls in real mode during early kernel setup.
+On Fri, Jan 26, 2007 at 09:06:44AM +0100, Krzysztof Helt wrote:
+> Hello,
 > 
-> So what am I supposed to do to dump it, since neither i2cdump neither
-> get-edid seem to work?
+> The s3c2410fb driver needs register values set for every
+> platform. A way of conversion is to move as many values to
+> particular fields (e.g. resolution, bit depth, etc.) and
+> calculate the register values from them.
 
-Good question :)
+I definetly think we should be passing a number of items as
+more generic info, such as the pixel clock range, and anything
+that can be set from a mode info structure.
 
-The following patch fixes a real bug in SCL control and add a few debug
-info. Can you try it?
+This should possibly be the first stage of development, and then
+we can see what else can be done.
 
-diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
-index 8454adf..ca8bd7e 100644
---- a/drivers/video/nvidia/nv_i2c.c
-+++ b/drivers/video/nvidia/nv_i2c.c
-@@ -25,6 +25,12 @@
- 
- #include "../edid.h"
- 
-+#define DDC_SDA_READ_MASK  (1 << 3)
-+#define DDC_SCL_READ_MASK  (1 << 2)
-+#define DDC_SDA_WRITE_MASK (1 << 4)
-+#define DDC_SCL_WRITE_MASK (1 << 5)
-+
-+
- static void nvidia_gpio_setscl(void *data, int state)
- {
- 	struct nvidia_i2c_chan *chan = data;
-@@ -35,9 +41,9 @@ static void nvidia_gpio_setscl(void *data, int state)
- 	val = VGA_RD08(par->PCIO, 0x3d5) & 0xf0;
- 
- 	if (state)
--		val |= 0x20;
-+		val |= DDC_SDA_WRITE_MASK;
- 	else
--		val &= ~0x20;
-+		val &= ~DDC_SDA_WRITE_MASK;
- 
- 	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base + 1);
- 	VGA_WR08(par->PCIO, 0x3d5, val | 0x1);
-@@ -53,9 +59,9 @@ static void nvidia_gpio_setsda(void *data, int state)
- 	val = VGA_RD08(par->PCIO, 0x3d5) & 0xf0;
- 
- 	if (state)
--		val |= 0x10;
-+		val |= DDC_SDA_WRITE_MASK;
- 	else
--		val &= ~0x10;
-+		val &= ~DDC_SDA_WRITE_MASK;
- 
- 	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base + 1);
- 	VGA_WR08(par->PCIO, 0x3d5, val | 0x1);
-@@ -68,11 +74,9 @@ static int nvidia_gpio_getscl(void *data)
- 	u32 val = 0;
- 
- 	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base);
--	if (VGA_RD08(par->PCIO, 0x3d5) & 0x04)
-+	if (VGA_RD08(par->PCIO, 0x3d5) & DDC_SCL_READ_MASK)
- 		val = 1;
- 
--	val = VGA_RD08(par->PCIO, 0x3d5);
--
- 	return val;
- }
- 
-@@ -83,7 +87,7 @@ static int nvidia_gpio_getsda(void *data)
- 	u32 val = 0;
- 
- 	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base);
--	if (VGA_RD08(par->PCIO, 0x3d5) & 0x08)
-+	if (VGA_RD08(par->PCIO, 0x3d5) & DDC_SDA_READ_MASK)
- 		val = 1;
- 
- 	return val;
-@@ -188,7 +192,7 @@ static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
- 
- 	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
- 		return buf;
--	dev_dbg(&chan->par->pci_dev->dev, "Unable to read EDID block.\n");
-+	dev_warn(&chan->par->pci_dev->dev, "Unable to read EDID block.\n");
- 	kfree(buf);
- 	return NULL;
- }
-@@ -208,7 +212,10 @@ int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
- 
- 	if (!edid && conn == 1) {
- 		/* try to get from firmware */
--		const u8 *e = fb_firmware_edid(info->device);
-+		const u8 *e;
-+		printk("I2C probe failed for connector %d, falling back to firmware\n", conn);
-+		
-+		e = fb_firmware_edid(info->device);
- 
- 		if (e != NULL)
- 			edid = kmemdup(e, EDID_LENGTH, GFP_KERNEL);
+> I want to ask how far one should move in conversion of the
+> driver. Should enumerated values also be moved to separate fields
+> or they can be set with "or" operator (I) into existing register
+> fields? I mean values (usually bits) like display type (STN/TFT
+> bit), etc.
+> 
+> E.g., the pxafb driver works with the latter approach. Most of
+> values are calculated but some of them are set as or-ed values
+> into register-like fields (the bits from fields are directly
+> copied to register's bits and completed by bits from calculated
+> values).
 
-Luca
+It might be easier to pass lcdcon1 through, and calculate the
+rest from a mode info structure.
+
 -- 
-"La teoria e` quando sappiamo come funzionano le cose ma non funzionano.
- La pratica e` quando le cose funzionano ma non sappiamo perche`.
- Abbiamo unito la teoria e la pratica: le cose non funzionano piu` e non
- sappiamo il perche`." -- A. Einstein
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

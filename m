@@ -1,92 +1,50 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 0/7] RFC: Cell SPE logos
-Date: Mon, 12 Feb 2007 14:54:35 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702121452480.4624@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] class device cleanup for fbdev
+Date: Mon, 12 Feb 2007 11:46:39 -0800
+Message-ID: <20070212194639.GA789@kroah.com>
+References: <Pine.LNX.4.64.0702071950110.9071@pentafluge.infradead.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964919AbXBLNyi@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.62.0701311325480.14996@pademelon.sonytel.be>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HGh95-0007ek-Mo for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Feb 2007 11:47:27 -0800
+Received: from mail.kroah.org ([69.55.234.183] helo=perch.kroah.org)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HGh94-0002Ps-56
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Feb 2007 11:47:27 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0702071950110.9071@pentafluge.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, 31 Jan 2007, Geert Uytterhoeven wrote:
-> I would like to hear your opinions about the patchset below (updated version
-> compared to yesterday, lkml added to the CC list).
+On Wed, Feb 07, 2007 at 07:53:09PM +0000, James Simmons wrote:
 > 
-> The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
-> threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
-> When booting Linux, 2 penguins logos are shown on the graphical console by
-> the standard frame buffer console logo code.
-> 
-> To emphasize the existence of the SPEs (which can be used under Linux), we
-> added a second row of (smaller) helper penguin logos, one for each SPE.
-> I attached a PNG version of the helper penguin logo for reference.
-> 
-> Summaries:
-> [PATCH 1/7] fbdev: Avoid vertical overflow when making space for the logo
-> [PATCH 2/7] fbdev: fb_do_show_logo() updates
-> [PATCH 3/7] fbdev: extract fb_show_logo_line()
-> [PATCH 4/7] fbdev: move logo externs to header file
-> [PATCH 5/7] fbdev: Add fb_append_extra_logo()
-> [PATCH 6/7] fbdev: SPE helper penguin logo
-> [PATCH 7/7] Cell: Draw SPE helper penguin logos
+> Let me know if this is the right approach. This patch uses the class field 
+> in struct device.
 
-The helper penguins overlap with the main penguins when using console rotation
-(fbcon=rotate:x, with x != 0). Here's a fix:
+Yes, it looks like the correct thing to do.
 
----
+thanks,
 
-Correct the image offsets when rotating the logo. Before image->dx and
-image->dy were always zero, so nobody ever noticed.
+greg k-h
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/video/fbmem.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
-
---- ps3-linux-2.6.20.orig/drivers/video/fbmem.c
-+++ ps3-linux-2.6.20/drivers/video/fbmem.c
-@@ -355,22 +355,26 @@ static void fb_rotate_logo(struct fb_inf
- 	if (rotate == FB_ROTATE_UD) {
- 		fb_rotate_logo_ud(image->data, dst, image->width,
- 				  image->height);
--		image->dx = info->var.xres - image->width;
--		image->dy = info->var.yres - image->height;
-+		image->dx = info->var.xres - image->width - image->dx;
-+		image->dy = info->var.yres - image->height - image->dy;
- 	} else if (rotate == FB_ROTATE_CW) {
- 		fb_rotate_logo_cw(image->data, dst, image->width,
- 				  image->height);
- 		tmp = image->width;
- 		image->width = image->height;
- 		image->height = tmp;
--		image->dx = info->var.xres - image->width;
-+		tmp = image->dy;
-+		image->dy = image->dx;
-+		image->dx = info->var.xres - image->width - tmp;
- 	} else if (rotate == FB_ROTATE_CCW) {
- 		fb_rotate_logo_ccw(image->data, dst, image->width,
- 				   image->height);
- 		tmp = image->width;
- 		image->width = image->height;
- 		image->height = tmp;
--		image->dy = info->var.yres - image->height;
-+		tmp = image->dx;
-+		image->dx = image->dy;
-+		image->dy = info->var.yres - image->height - tmp;
- 	}
- 
- 	image->data = dst;
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+-------------------------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier.
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

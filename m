@@ -1,8 +1,10 @@
-From: Raphael Assenat <raph@8d.com>
-Subject: Re: ohci: USB devices only detected at boot time
-Date: Tue, 13 Feb 2007 08:35:50 -0500
-Message-ID: <45D1BEB6.60107@8d.com>
-References: <45D1BE46.80100@8d.com>
+From: "Alex Deucher" <alexdeucher@gmail.com>
+Subject: Re: intelfb with 855GME and DVI?
+Date: Tue, 13 Feb 2007 09:29:07 -0500
+Message-ID: <a728f9f90702130629g5e05865ayc787084bf1c0a165@mail.gmail.com>
+References: <Pine.LNX.4.64.0702130101030.16307@phoenix.arasphere.net>
+	<21d7e9970702121733n2a6dc1d6wa2ad2afa03ce7af0@mail.gmail.com>
+	<eqruu3$3s0$1@sea.gmane.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,17 +13,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HGxpC-0002cM-I9 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 Feb 2007 05:36:02 -0800
-Received: from roc.holo.8d.com ([64.254.227.115])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HGxp8-0000Q8-TX
+	id 1HGyeh-0007sW-LZ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 13 Feb 2007 06:29:15 -0800
+Received: from wr-out-0506.google.com ([64.233.184.225])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HGyeg-0007bY-27
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 Feb 2007 05:35:59 -0800
-Received: from darkstar.usine.8d.com ([192.168.142.55])
-	by roc.holo.8d.com with esmtp (Exim 4.50) id 1HGxp3-0006XG-Ff
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 Feb 2007 08:35:55 -0500
-In-Reply-To: <45D1BE46.80100@8d.com>
+	Tue, 13 Feb 2007 06:29:15 -0800
+Received: by wr-out-0506.google.com with SMTP id i20so2046318wra
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 13 Feb 2007 06:29:11 -0800 (PST)
+In-Reply-To: <eqruu3$3s0$1@sea.gmane.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,72 +36,20 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Oops, wrong mailing list.
+On 2/13/07, Marcus Better <marcus@better.se> wrote:
+> Dave Airlie wrote:
+> > No, there is no support for non-crt devices in intelfb...
+>
+> Does that mean that a laptop display (Thinkpad) won't work either?
+>
 
-Sorry about that.
+correct.
 
-Raphael Assenat wrote:
-> Hello,
-> I have some pxa270 based single board computers which have an 
-> IT8152G companion chip. This chip has a built-in USB Host controller 
-> which is (according to the datasheet) register compatible with OHCI 
-> specification version 1.0.
-> 
-> During boot, I see that the OHCI controller is detected properly. 
-> Devices that were already connected to the USB ports handled by this 
-> chip are also detected at boot time. And they work correcly.
-> 
-> But when I connect a new device to a free port, nothing happens. No 
-> messages in dmesg, and the device does not seem to initialize. (eg: 
-> Led under optical mouse does not turn on). I have verified, and 
-> there is power on the USB power pins. If I disconnect a device that 
-> was present at boot time and reconnect it, it is not re-detected.
-> 
-> Here is a list of kernel version I was able to test with, and the 
-> results:
-> 2.6.20 -> Same problems as described above.
-> 2.6.18 -> Same problems as described above.
-> 2.6.17.5 -> Same problems as described above.
-> 2.6.16.12 -> Everything works fine.
-> 
-> Suspecting that this could be a bug in the chip's implementation 
-> exposed by some new features, I started looking at the code in the 
-> hope to find stuff like controller specific work arounds, quirks, 
-> etc to try. but I found nothing that was applicable to my problem...
-> 
-> I eventually decided to try the modification below, and now it works 
-> correctly! But I dont understand why as I have very little knowledge 
-> on the subject.
-> 
-> Any ideas?
-> 
-> --- linux-2.6.20/drivers/usb/host/ohci-hub.c
-> +++ linux-2.6.20-8d/drivers/usb/host/ohci-hub.c
-> @@ -413,7 +413,7 @@
->   {
->      struct ohci_hcd *ohci = hcd_to_ohci (hcd);
->      int     i, changed = 0, length = 1;
-> -   int     any_connected = 0;
-> +   int     any_connected = RH_PS_CCS;
->      unsigned long   flags;
-> 
->      spin_lock_irqsave (&ohci->lock, flags);
-> 
-> 
-> Detection messages:
-> ohci_hcd: 2006 August 04 USB 1.1 'Open' Host Controller (OHCI) 
-> Driver (PCI)
-> ohci_hcd 0000:00:01.4: OHCI Host Controller
-> ohci_hcd 0000:00:01.4: new USB bus registered, assigned bus number 2
-> ohci_hcd 0000:00:01.4: irq 167, io mem 0x10000000
-> 
-> 
-> Best regards,
+Alex
 
-
--- 
-Raphael Assenat
-8D Technologies Inc.
+> Marcus
+>
+>
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

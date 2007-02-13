@@ -1,10 +1,11 @@
-From: "Alex Deucher" <alexdeucher@gmail.com>
+From: Marcus Better <marcus@better.se>
 Subject: Re: intelfb with 855GME and DVI?
-Date: Tue, 13 Feb 2007 09:29:07 -0500
-Message-ID: <a728f9f90702130629g5e05865ayc787084bf1c0a165@mail.gmail.com>
+Date: Tue, 13 Feb 2007 18:41:09 +0100
+Message-ID: <eqst7l$sak$1@sea.gmane.org>
 References: <Pine.LNX.4.64.0702130101030.16307@phoenix.arasphere.net>
 	<21d7e9970702121733n2a6dc1d6wa2ad2afa03ce7af0@mail.gmail.com>
 	<eqruu3$3s0$1@sea.gmane.org>
+	<a728f9f90702130629g5e05865ayc787084bf1c0a165@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,17 +14,23 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HGyeh-0007sW-LZ for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 Feb 2007 06:29:15 -0800
-Received: from wr-out-0506.google.com ([64.233.184.225])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HGyeg-0007bY-27
+	id 1HH1f2-0005U3-4G for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 13 Feb 2007 09:41:48 -0800
+Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HH1ey-0000HQ-IG
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 Feb 2007 06:29:15 -0800
-Received: by wr-out-0506.google.com with SMTP id i20so2046318wra
+	Tue, 13 Feb 2007 09:41:47 -0800
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1HH1eb-0001CU-75 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 13 Feb 2007 18:41:21 +0100
+Received: from 67.152.216.81.static.g-va.siw.siwnet.net ([81.216.152.67])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 13 Feb 2007 18:41:21 +0100
+Received: from marcus by 67.152.216.81.static.g-va.siw.siwnet.net with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 13 Feb 2007 06:29:11 -0800 (PST)
-In-Reply-To: <eqruu3$3s0$1@sea.gmane.org>
-Content-Disposition: inline
+	Tue, 13 Feb 2007 18:41:21 +0100
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,20 +43,22 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On 2/13/07, Marcus Better <marcus@better.se> wrote:
-> Dave Airlie wrote:
-> > No, there is no support for non-crt devices in intelfb...
->
-> Does that mean that a laptop display (Thinkpad) won't work either?
->
+Alex Deucher wrote:
 
-correct.
+>> Does that mean that a laptop display (Thinkpad) won't work either?
+> 
+> correct.
 
-Alex
+Well, that explains my problems then. :-)
 
-> Marcus
->
->
+Shouldn't this be documented somewhere (like in Kconfig or
+Documentation/fb/intelfb.txt), or am I missing something obvious?
+
+And didn't the i810fb driver work with laptops?
+
+Marcus
+
+
 
 -------------------------------------------------------------------------
 Using Tomcat but need to do more? Need to support web services, security?

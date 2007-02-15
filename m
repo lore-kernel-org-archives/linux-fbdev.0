@@ -1,46 +1,39 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH] MAINTAINERS: mark framebuffer as Orphan
-Date: Thu, 15 Feb 2007 13:25:49 -0800
-Message-ID: <20070215132549.c182f7bf.randy.dunlap@oracle.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 1/4] ps3fb: thread updates
+Date: Fri, 16 Feb 2007 08:43:37 +1100
+Message-ID: <1171575817.5644.44.camel@localhost.localdomain>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com> <20070215175007.GA10817@lst.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161383AbXBOVa3@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <20070215175007.GA10817@lst.de>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Christoph Hellwig <hch@lst.de>
+Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, 2007-02-15 at 18:50 +0100, Christoph Hellwig wrote:
+> On Thu, Feb 15, 2007 at 04:23:02PM +0100, Geert.Uytterhoeven@sonycom.com wrote:
+> > +	do {
+> > +		try_to_freeze();
+> > +		error = down_interruptible(&ps3fb.sem);
+> > +		if (!error && !atomic_read(&ps3fb.ext_flip))
+> >  			ps3fb_sync(0);	/* single buffer */
+> 
+> this still can deadlock when calling kthread_stop.  You really want
+> to use wake_up_process to kick this thread or use a workqueue.
 
-Are we ready to do this?
-I'd love for Tony to return, but he's been missing for awhile now.
+kthread_stop does wake_up_process no ? However, that might not get you
+out of interruptible if you don't also have signal_pending...
 
-So this give us the following major areas that are marked as Orphan:
-
-Firmware loader
-Framebuffer
-Serial (8250/16x50)
-
-and PCMCIA has a Team.  It doesn't seem to be hurting.  :)
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- MAINTAINERS |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
---- linux-2.6.20-git9.orig/MAINTAINERS
-+++ linux-2.6.20-git9/MAINTAINERS
-@@ -1321,11 +1321,9 @@ W:	http://www.farsite.co.uk/
- S:	Supported
- 
- FRAMEBUFFER LAYER
--P:	Antonino Daplas
--M:	adaplas@pol.net
- L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
- W:	http://linux-fbdev.sourceforge.net/
--S:	Maintained
-+S:	Orphan
- 
- FREESCALE SOC FS_ENET DRIVER
- P:	Pantelis Antoniou
+Ben.

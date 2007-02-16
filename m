@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH extra] ps3fb: atomic fixes
-Date: Fri, 16 Feb 2007 17:03:58 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702161700040.8263@pademelon.sonytel.be>
+From: Christoph Hellwig <hch@lst.de>
+Subject: Re: [patch 1/4] ps3fb: thread updates
+Date: Fri, 16 Feb 2007 17:36:15 +0100
+Message-ID: <20070216163615.GA32051@lst.de>
 References: <20070215152301.573853000@sonycom.com>
 	<20070215152432.264415000@sonycom.com>
 	<20070215175007.GA10817@lst.de>
@@ -15,12 +15,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HI5ZD-0000oI-QB for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 08:04:11 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HI5ZC-0002D8-9g
+	id 1HI64k-0006jH-5Y for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 16 Feb 2007 08:36:48 -0800
+Received: from verein.lst.de ([213.95.11.210] helo=mail.lst.de)
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1HI64j-0006y6-Iy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 08:04:11 -0800
+	Fri, 16 Feb 2007 08:36:46 -0800
+Content-Disposition: inline
 In-Reply-To: <20070215165916.de546f0d.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,54 +35,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net, Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org
+Cc: Geert.Uytterhoeven@sonycom.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net, Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org
 
-ps3fb: Use atomic_dec_if_positive() instead of bogus atomic_read()/atomic_dec()
-combinations
+On Thu, Feb 15, 2007 at 04:59:16PM -0800, Andrew Morton wrote:
+> No, it won't get you out of down_interruptible().  But the code would have
+> failed trivial testing so perhaps we're missing something.
+> 
+> It seems crufty to use semaphores in this manner.  afaict all we're doing
+> here is poking a kernel thread and asking it to do a bit of work.  The
+> standard way of doing this is to go to sleep on a waitqueue_head.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/video/ps3fb.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+We don't even need the waitqueue.  Because it's just a single thread
+waiting we can simply use wake_up_process.  (.. which you actually
+used in the second half of the example, humm..)
 
---- ps3-linux-2.6.20.orig/drivers/video/ps3fb.c
-+++ ps3-linux-2.6.20/drivers/video/ps3fb.c
-@@ -680,13 +680,10 @@ EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
- 
- void ps3fb_flip_ctl(int on)
- {
--	if (on) {
--		if (atomic_read(&ps3fb.ext_flip) > 0) {
--			atomic_dec(&ps3fb.ext_flip);
--		}
--	} else {
-+	if (on)
-+		atomic_dec_if_positive(&ps3fb.ext_flip);
-+	else
- 		atomic_inc(&ps3fb.ext_flip);
--	}
- }
- 
- EXPORT_SYMBOL_GPL(ps3fb_flip_ctl);
-@@ -786,8 +783,7 @@ static int ps3fb_ioctl(struct fb_info *i
- 
- 	case PS3FB_IOCTL_OFF:
- 		DPRINTK("PS3FB_IOCTL_OFF:\n");
--		if (atomic_read(&ps3fb.ext_flip) > 0)
--			atomic_dec(&ps3fb.ext_flip);
-+		atomic_dec_if_positive(&ps3fb.ext_flip);
- 		retval = 0;
- 		break;
- 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

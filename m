@@ -1,30 +1,28 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/4 (updated)] ps3fb: thread updates
-Date: Fri, 16 Feb 2007 17:38:11 +0100
-Message-ID: <20070216163811.GB32051@lst.de>
-References: <20070215152301.573853000@sonycom.com>
-	<20070215152432.264415000@sonycom.com>
-	<20070215175007.GA10817@lst.de>
-	<1171575817.5644.44.camel@localhost.localdomain>
-	<20070215165916.de546f0d.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [PATCH] matroxfb: another attempt to
+	rectify jitter (G450/G550)
+Date: Fri, 16 Feb 2007 19:29:52 +0200
+Message-ID: <20070216172952.GA7827@sci.fi>
+References: <45B55422.4070401@us.ibm.com> <45BC58E9.9020306@vandrovec.name>
+	<45BFA90D.5050207@us.ibm.com> <20070131115430.GB5039@sci.fi>
+	<45C110F3.10202@us.ibm.com> <20070131222500.GA16283@sci.fi>
+	<45D4C6DF.5050002@us.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HI66H-00073W-LI for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 08:38:21 -0800
-Received: from verein.lst.de ([213.95.11.210] helo=mail.lst.de)
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1HI66H-0007Wp-3W
+	id 1HI6uH-00043u-9P for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 16 Feb 2007 09:30:01 -0800
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HI6uF-0006Ee-KU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 08:38:21 -0800
+	Fri, 16 Feb 2007 09:30:01 -0800
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+In-Reply-To: <45D4C6DF.5050002@us.ibm.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,33 +33,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Petr Vandrovec <petr@vandrovec.name>, jsimmons@infradead.org
 
-> +	DEFINE_WAIT(wait);
-> +	DECLARE_WAIT_QUEUE_HEAD(wq);
-> +
-> +	while (!kthread_should_stop()) {
-> +		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
-> +		if (!ps3fb.is_kicked)
-> +			schedule();
-> +		finish_wait(&wq, &wait);
-> +		ps3fb.is_kicked = 0;
-> +		ps3fb_sync(0);	/* single buffer */
+On Thu, Feb 15, 2007 at 02:47:27PM -0600, Paul A. Clarke wrote:
+> =
 
-should probably be just:
+> It also appears that this area still needs work, but any objections to mo=
+ving =
 
-	while (!kthread_should_stop()) {
-		ps3fb_sync(0);
-		schedule();
-	}
+> the suggested patch into -mm ?  It provides clean signals and removes the =
 
-given that you don't need a waitqueue and a spurious wakeup here
-seems harmless.
-		
+> platform-specific hacked ifdefs.
+
+No objections from me at least.
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

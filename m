@@ -1,27 +1,31 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: Re: [PATCH] matroxfb: another attempt to
- rectify jitter (G450/G550)
-Date: Fri, 16 Feb 2007 22:34:08 -0800
-Message-ID: <45D6A1E0.4090400@vc.cvut.cz>
-References: <45B55422.4070401@us.ibm.com> <45BC58E9.9020306@vandrovec.name>
-	<45BFA90D.5050207@us.ibm.com> <20070131115430.GB5039@sci.fi>
-	<45C110F3.10202@us.ibm.com> <20070131222500.GA16283@sci.fi>
-	<45D4C6DF.5050002@us.ibm.com> <20070216172952.GA7827@sci.fi>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [PATCH/RFC 2.6.20-rc4 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver
+Date: Sat, 17 Feb 2007 10:47:54 +0100
+Message-ID: <45a44e480702170147x73d1e5c8v6439ac412b952a7@mail.gmail.com>
+References: <20070111142427.GA1668@localhost>
+	<20070111133759.d17730a4.akpm@osdl.org>
+	<45a44e480701111622i32fffddcn3b4270d539620743@mail.gmail.com>
+	<45A6DAA2.8070605@yahoo.com.au>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HIJ9D-0000dh-JE for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 22:34:16 -0800
-Received: from mailgw.cvut.cz ([147.32.3.235])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HIJ9C-0007Qo-6Q
+	id 1HIMAi-00078a-J8 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 17 Feb 2007 01:48:04 -0800
+Received: from nf-out-0910.google.com ([64.233.182.184])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HIMAh-0001vL-8M
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 22:34:15 -0800
-In-Reply-To: <20070216172952.GA7827@sci.fi>
+	Sat, 17 Feb 2007 01:48:00 -0800
+Received: by nf-out-0910.google.com with SMTP id c31so3461976nfb
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 17 Feb 2007 01:47:55 -0800 (PST)
+In-Reply-To: <45A6DAA2.8070605@yahoo.com.au>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,29 +36,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Ville Syrj=E4l=E4 wrote:
-> On Thu, Feb 15, 2007 at 02:47:27PM -0600, Paul A. Clarke wrote:
->> It also appears that this area still needs work, but any objections to m=
-oving =
+On 1/12/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> Jaya Kumar wrote:
+> > - write so get page_mkwrite where we add this page to a list
+> > - also schedules a workqueue task to be run after a delay
+> > - app continues writing to that page with no additional cost
+> > - the workqueue task comes in and unmaps the pages on the list, then
+> >  completes the work associated with updating the framebuffer
+>
+> Have you thought about implementing a traditional write-back cache using
+> the dirty bits, rather than unmapping the page?
+>
 
->> the suggested patch into -mm ?  It provides clean signals and removes th=
-e =
+Ah, sorry, I erred in my description. I'm not unmapping pages, I'm
+calling page_mkclean which uses the dirty bits.
 
->> platform-specific hacked ifdefs.
-> =
-
-> No objections from me at least.
-
-I'm fine with this as well, as I announced earlier...
-								Petr
-
-
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

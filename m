@@ -1,37 +1,89 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
-Date: Sat, 17 Feb 2007 13:34:12 +0100
-Message-ID: <1171715652.5186.7.camel@lappy>
-References: <20070217104215.GB25512@localhost>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver
+Date: Sat, 17 Feb 2007 08:25:07 -0500
+Message-ID: <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965219AbXBQMeS@vger.kernel.org>
-In-Reply-To: <20070217104215.GB25512@localhost>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HIPYr-0008Tu-D4 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 17 Feb 2007 05:25:11 -0800
+Received: from ug-out-1314.google.com ([66.249.92.171])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HIPYq-0006z5-TK
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 17 Feb 2007 05:25:09 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so347558ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 17 Feb 2007 05:25:07 -0800 (PST)
+In-Reply-To: <1171715652.5186.7.camel@lappy>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sat, 2007-02-17 at 11:42 +0100, Jaya Kumar wrote:
-> Hi James, Geert, lkml and mm,
+On 2/17/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Sat, 2007-02-17 at 11:42 +0100, Jaya Kumar wrote:
+> > Hi James, Geert, lkml and mm,
+>
+> Hi Jaya,
+>
+> > This patch adds support for the Hecuba/E-Ink display with deferred IO.
+> > The changes from the previous version are to switch to using a mutex
+> > and lock_page. I welcome your feedback and advice.
+>
+> This changelog ought to be a little more extensive; esp. because you're
+> using these fancy new functions ->page_mkwrite() and page_mkclean() in a
+> novel way.
 
-Hi Jaya,
+Hi Peter,
 
-> This patch adds support for the Hecuba/E-Ink display with deferred IO.
-> The changes from the previous version are to switch to using a mutex
-> and lock_page. I welcome your feedback and advice.
+I had put the comment explaining the usage of mkwrite/mkclean in the
+.c file. Oh, I see, in the changelog message. Ok, I'll update with a
+changelog message mentioning mkwrite/mkclean.
 
-This changelog ought to be a little more extensive; esp. because you're
-using these fancy new functions ->page_mkwrite() and page_mkclean() in a
-novel way.
+>
+> Also, I'd still like to see a way to call msync() on the mmap'ed region
+> to force a flush. I think providing a fb_fsync() method in fbmem.c and a
+> hook down to the driver ought to work.
 
-Also, I'd still like to see a way to call msync() on the mmap'ed region
-to force a flush. I think providing a fb_fsync() method in fbmem.c and a
-hook down to the driver ought to work.
+I'm hoping fbdev folk will give feedback if this is okay. James,
+Geert, what do you think?
 
-Also, you now seem to use a fixed 1 second delay, perhaps provide an
-ioctl or something to customize this?
+>
+> Also, you now seem to use a fixed 1 second delay, perhaps provide an
+> ioctl or something to customize this?
 
-And, as Andrew suggested last time around, could you perhaps push this
-fancy new idea into the FB layer so that more drivers can make us of it?
+Ok. Will do.
+
+>
+> And, as Andrew suggested last time around, could you perhaps push this
+> fancy new idea into the FB layer so that more drivers can make us of it?
+
+I would like to do that very much. I have some ideas how it could work
+for devices that support clean partial updates by tracking touched
+pages. But I wonder if it is too early to try to abstract this out.
+James, Geert, what do you think?
+
+Thanks,
+jaya
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

@@ -1,29 +1,27 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 1/4 (updated)] ps3fb: thread updates
-Date: Fri, 16 Feb 2007 18:33:14 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
-References: <20070215152301.573853000@sonycom.com>
-	<20070215152432.264415000@sonycom.com>
-	<20070215175007.GA10817@lst.de>
-	<1171575817.5644.44.camel@localhost.localdomain>
-	<20070215165916.de546f0d.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
-	<20070216163811.GB32051@lst.de>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: Re: [PATCH] matroxfb: another attempt to
+ rectify jitter (G450/G550)
+Date: Fri, 16 Feb 2007 22:34:08 -0800
+Message-ID: <45D6A1E0.4090400@vc.cvut.cz>
+References: <45B55422.4070401@us.ibm.com> <45BC58E9.9020306@vandrovec.name>
+	<45BFA90D.5050207@us.ibm.com> <20070131115430.GB5039@sci.fi>
+	<45C110F3.10202@us.ibm.com> <20070131222500.GA16283@sci.fi>
+	<45D4C6DF.5050002@us.ibm.com> <20070216172952.GA7827@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HI6xW-0004T6-TD for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 09:33:23 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HI6xV-0007Dk-1g
+	id 1HIJ9D-0000dh-JE for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 16 Feb 2007 22:34:16 -0800
+Received: from mailgw.cvut.cz ([147.32.3.235])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HIJ9C-0007Qo-6Q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Feb 2007 09:33:22 -0800
-In-Reply-To: <20070216163811.GB32051@lst.de>
+	Fri, 16 Feb 2007 22:34:15 -0800
+In-Reply-To: <20070216172952.GA7827@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,47 +32,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+To: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org
 
-On Fri, 16 Feb 2007, Christoph Hellwig wrote:
-> > +	DEFINE_WAIT(wait);
-> > +	DECLARE_WAIT_QUEUE_HEAD(wq);
-> > +
-> > +	while (!kthread_should_stop()) {
-> > +		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
-> > +		if (!ps3fb.is_kicked)
-> > +			schedule();
-> > +		finish_wait(&wq, &wait);
-> > +		ps3fb.is_kicked = 0;
-> > +		ps3fb_sync(0);	/* single buffer */
-> 
-> should probably be just:
-> 
-> 	while (!kthread_should_stop()) {
-> 		ps3fb_sync(0);
-> 		schedule();
-> 	}
-> 
-> given that you don't need a waitqueue and a spurious wakeup here
-> seems harmless.
+Ville Syrj=E4l=E4 wrote:
+> On Thu, Feb 15, 2007 at 02:47:27PM -0600, Paul A. Clarke wrote:
+>> It also appears that this area still needs work, but any objections to m=
+oving =
 
-Not always. If flipping is disabled, or external flip is enabled, you don't
-want a spurious flip.
+>> the suggested patch into -mm ?  It provides clean signals and removes th=
+e =
 
-I'll send a new patch after the weekend.
+>> platform-specific hacked ifdefs.
+> =
 
-Gr{oetje,eeting}s,
+> No objections from me at least.
 
-						Geert
+I'm fine with this as well, as I announced earlier...
+								Petr
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

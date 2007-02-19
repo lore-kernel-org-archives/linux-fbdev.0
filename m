@@ -1,28 +1,24 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 2.6.20 1/1] fbdev,
-	mm: hecuba/E-Ink fbdev driver
-Date: Mon, 19 Feb 2007 08:57:41 +0900
-Message-ID: <20070218235741.GA22298@linux-sh.org>
-References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
-	<45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
-	<20070217135922.GA15373@linux-sh.org>
-	<45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: no backlight on radeon after recent kernel
+	"upgrade"s
+Date: Mon, 19 Feb 2007 00:04:12 -0800
+Message-ID: <20070219000412.acad13de.akpm@linux-foundation.org>
+References: <20070219044616.GC25659@washoe.onerussian.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HIvwx-0004t1-TH for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Feb 2007 16:00:12 -0800
-Received: from smtp.ocgnet.org ([64.20.243.3])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HIvwk-0002Lt-Vp
+	id 1HJ3Vc-0002Q8-CL for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Feb 2007 00:04:28 -0800
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJ3Va-0005Sx-Qo
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Feb 2007 16:00:02 -0800
-Content-Disposition: inline
-In-Reply-To: <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	Mon, 19 Feb 2007 00:04:28 -0800
+In-Reply-To: <20070219044616.GC25659@washoe.onerussian.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,44 +29,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+To: Yaroslav Halchenko <kernel@onerussian.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sun, Feb 18, 2007 at 06:31:23AM -0500, Jaya Kumar wrote:
-> On 2/17/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> >This would also provide an interesting hook for setting up chained DMA
-> >for the real framebuffer updates when there's more than a couple of pages
-> >that have been touched, which would also be nice to have. There's more
-> >than a few drivers that could take advantage of that.
-> 
-> I could benefit from knowing which driver and display device you are
-> considering to be applicable.
-> 
-> I was thinking the method used in hecubafb would only be useful to
-> devices with very slow update paths, where "losing" some of the
-> display activity is not an issue since the device would not have been
-> able to update fast enough to show that activity anyway.
-> 
-> What you described with chained DMA sounds different to this. I
-> suppose one could use this technique to coalesce framebuffer IO to get
-> better performance/utilization even for fast display devices. Sounds
-> interesting to try. Did I understand you correctly?
-> 
-Yes, that's what I'm interested in trying. In the SH case we can
-basically make use of the on-chip DMAC for any non-PCI device. Some of
-these permit scatterlists and chained DMA in hardware, others do not. The
-general problem is that since we have to go and poke at the dcache prior
-to kicking off the DMA, it's rarely a win for a small number of pages,
-memory bursts just end up being faster.
+On Sun, 18 Feb 2007 23:46:16 -0500 Yaroslav Halchenko <kernel@onerussian.com> wrote:
 
-The other issue is that most of the "big" writers are doing so via mmap()
-anyways, so it's futile to attempt to handle the DMA case in the
-->write() path. Your approach seems like it might be an appropriate
-interface for building something like this on top of.
+> Dear Kernel Developers,
+> 
+> Since the most recent successful for me kernel 2.6.19-rc6-mm1, I've
+> tried few times to build more recent snapshots and now finally
+> 2.6.20-mm2. In all those cases I have a sad outcome -- kernel boots but
+> at some point during boot (few moments after Penguin icon in the top left
+> corner appears), light turns off... I still can see something, especially
+> if I light a strong flashlight at a sharp angle.
+> 
+> I've enabled back-light support and lcd support for those unsuccessful
+> kernels (with all backlight support features disabled kernel boots
+> ok and backlight shines as bright as always)
+> 
+> All my changes of values for files under
+> /sys/class/backlight/radeonbl0
+> had no impact on the screen. Also I had no files under /sys/class/lcd.
+> 
+> Running 
+> radeontool light off
+> caused complete turning off of LCD - I could not see
+> anything anymore.
+> 
+> sony's spictl -b had no effect as well.
+> 
+> Config can be found at
+> http://www.onerussian.com/Linux/bugs/nobacklight.1/config-2.6.20-mm2
+> lshw
+> http://www.onerussian.com/Linux/bugs/nobacklight.1/lshw
+> other details are available from
+> http://www.onerussian.com/Linux/bugs/nobacklight.1/
+> 
+> Could you please advise?
 
-Given that, this would have to be something that's dealt with at the
-subsystem level rather than in individual drivers, hence the desire to
-see something like this more generically visible.
+(cc's added)
+
+Is 2.6.20 broken?  I assume the latest 2.6.20-gitN snapshot are failing..
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

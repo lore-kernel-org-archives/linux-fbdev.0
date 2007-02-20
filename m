@@ -1,12 +1,15 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: mark framebuffer
-	as	Orphan
-Date: Tue, 20 Feb 2007 13:17:37 +0800
-Message-ID: <1171948658.12306.6.camel@daplas>
-References: <20070215132549.c182f7bf.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0702152224570.6415@pentafluge.infradead.org>
-	<20070215150526.1fd63b3e.randy.dunlap@oracle.com>
-	<20070216122403.GM13958@stusta.de>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver
+Date: Tue, 20 Feb 2007 01:11:19 -0500
+Message-ID: <45a44e480702192211i78b8f4b1lecb3dfc284fb9eea@mail.gmail.com>
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+	<45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	<20070217135922.GA15373@linux-sh.org>
+	<45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	<20070218235741.GA22298@linux-sh.org>
+	<45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	<20070220043848.GA4092@linux-sh.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,16 +18,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HJNKx-0007lg-EV for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Feb 2007 21:14:50 -0800
-Received: from nz-out-0506.google.com ([64.233.162.230])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJNKv-0006nn-CM
+	id 1HJODh-0004mf-N9 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Feb 2007 22:11:23 -0800
+Received: from nf-out-0910.google.com ([64.233.182.184])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJODh-0003oX-9O
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Feb 2007 21:14:46 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so3226866nzi
+	Mon, 19 Feb 2007 22:11:21 -0800
+Received: by nf-out-0910.google.com with SMTP id c31so4903778nfb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 19 Feb 2007 21:14:44 -0800 (PST)
-In-Reply-To: <20070216122403.GM13958@stusta.de>
+	Mon, 19 Feb 2007 22:11:19 -0800 (PST)
+In-Reply-To: <20070220043848.GA4092@linux-sh.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,30 +39,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>, lkml <linux-kernel@vger.kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-mm@kvack.org, jsimmons@infradead.org, Geert.Uytterhoeven@sonycom.com
 
-On Fri, 2007-02-16 at 13:24 +0100, Adrian Bunk wrote:
-> On Thu, Feb 15, 2007 at 03:05:26PM -0800, Randy Dunlap wrote:
-> > On Thu, 15 Feb 2007 22:26:10 +0000 (GMT) James Simmons wrote:
-> > 
-> > > 
-> > > I wouldn't say it orphan. I just can't spend 8 hours a day on it. 
-> > > Alot of patches have been flowing into the layer.
+On 2/19/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> On Mon, Feb 19, 2007 at 11:13:04PM -0500, Jaya Kumar wrote:
+> >
+> > Ok. Here's what I'm thinking for abstracting this:
+> >
+> > fbdev drivers would setup fb_mmap with their own_mmap as usual. In
+> > own_mmap, they would do what they normally do and setup a vm_ops. They
+> > are free to have their own nopage handler but would set the
+> > page_mkwrite handler to be fbdev_deferred_io_mkwrite().
+>
+> The vast majority of drivers do not implement ->fb_mmap(), and with
+> proper abstraction, this should be something that's possible as a direct
+> alternative to drivers/video/fbmem.c:fb_mmap() for the people that want
+> it. Of course it's just as easy to do something like the sbuslib.c route
+> and then have drivers set their ->fb_mmap() from that too.
+>
 
-No need.
+I was thinking about having that fb_mmap replacement too. But then I
+got worried because that generic implementation of nopage/etc would
+need to handle whether the driver's fb memory was vmalloced, kmalloced
+or a mixture if some do that. So I figured let's aim low and just pull
+in the core part that does the setup and page tracking stuff. I hope
+that's okay.
 
-My apologies for the long absence. I volunteered to serve in a remote,
-underserved area (no internet connection, no cellular site, with only a
-computer running Windows 95). I thought it would last only a few weeks
-but due to unforeseen circumstances, lasted half a year.
+> That works for me, though I'd prefer for struct page_list to be done with
+> a scatterlist, then it's trivial to setup from the workqueue context
+> without having to shuffle things around.
+>
 
-Give me several days to read my inbox and update my tree and I should be
-back on track.
+Ok. Will check out when implementing.
 
-Tony
-
-
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

@@ -1,93 +1,72 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 2.6.20 1/1] fbdev,
-	mm: hecuba/E-Ink fbdev driver
-Date: Tue, 20 Feb 2007 09:07:56 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
-References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
-	<45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
-	<20070217135922.GA15373@linux-sh.org>
-	<45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
-	<20070218235741.GA22298@linux-sh.org>
-	<45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/4 (updated)] ps3fb: thread updates
+Date: Tue, 20 Feb 2007 11:33:31 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com>
+	<20070215175007.GA10817@lst.de>
+	<1171575817.5644.44.camel@localhost.localdomain>
+	<20070215165916.de546f0d.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+	<20070216163811.GB32051@lst.de>
+	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HJQ2j-0007XM-FJ for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Feb 2007 00:08:09 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJQ2i-00068r-W8
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Feb 2007 00:08:09 -0800
-In-Reply-To: <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Development <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 
-On Mon, 19 Feb 2007, Jaya Kumar wrote:
-> On 2/18/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> > Given that, this would have to be something that's dealt with at the
-> > subsystem level rather than in individual drivers, hence the desire to
-> > see something like this more generically visible.
+On Mon, 19 Feb 2007, Geert Uytterhoeven wrote:
+> On Fri, 16 Feb 2007, Geert Uytterhoeven wrote:
+> > On Fri, 16 Feb 2007, Christoph Hellwig wrote:
+> > > > +	DEFINE_WAIT(wait);
+> > > > +	DECLARE_WAIT_QUEUE_HEAD(wq);
+> > > > +
+> > > > +	while (!kthread_should_stop()) {
+> > > > +		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
+> > > > +		if (!ps3fb.is_kicked)
+> > > > +			schedule();
+> > > > +		finish_wait(&wq, &wait);
+> > > > +		ps3fb.is_kicked = 0;
+> > > > +		ps3fb_sync(0);	/* single buffer */
+> > > 
+> > > should probably be just:
+> > > 
+> > > 	while (!kthread_should_stop()) {
+> > > 		ps3fb_sync(0);
+> > > 		schedule();
+> > > 	}
+> > > 
+> > > given that you don't need a waitqueue and a spurious wakeup here
+> > > seems harmless.
 > > 
+> > Not always. If flipping is disabled, or external flip is enabled, you don't
+> > want a spurious flip.
 > 
-> Hi Peter, Paul, fbdev folk,
-> 
-> Ok. Here's what I'm thinking for abstracting this:
-> 
-> fbdev drivers would setup fb_mmap with their own_mmap as usual. In
-> own_mmap, they would do what they normally do and setup a vm_ops. They
-> are free to have their own nopage handler but would set the
-> page_mkwrite handler to be fbdev_deferred_io_mkwrite().
-> fbdev_deferred_io_mkwrite would build up the list of touched pages and
-> pass it to a delayed workqueue which would then mkclean on each page
-> and then pass a copy of that page list down to a driver's callback
-> function. The fbdev driver's callback function can then do the actual
-> IO to the framebuffer or coalesce DMA based on the provided page list.
-> 
-> I would like to add something like the following to struct fb_info:
-> 
-> #ifdef CONFIG_FB_DEFERRED_IO
-> struct fb_deferred_io *defio;
-> #endif
+> Looks like the waitqueue is needed. Without it ps3fbd runs at 100% CPU and +15
+> million loops per second.
 
-Don't you need a way to specify the maximum deferral time? E.g. a field in
-fb_info.
-
-> to store the mutex (to protect the page list), the touched page list,
-> and the driver's callback function.
-> 
-> I hope this sounds sufficiently generic to meet everyone's (the two of
-> us? :) needs.
-
-Looks fine!
+Nope, adding `set_current_state(TASK_INTERRUPTIBLE);' fixed it. Stay tuned for
+a new patch.
 
 Gr{oetje,eeting}s,
 
 						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium

@@ -1,65 +1,91 @@
-From: Yaroslav Halchenko <lists@onerussian.com>
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Date: Wed, 21 Feb 2007 00:56:48 -0500
-Message-ID: <20070221055648.GM25659@washoe.onerussian.com>
-References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain>
+From: Aitor Garcia <carrierphasejitter@yahoo.com>
+Subject: enquiry about 4 bpp frame buffer with nibbles
+	swapped
+Date: Tue, 20 Feb 2007 04:11:56 -0800 (PST)
+Message-ID: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751020AbXBUF46@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1171876788.6046.3.camel@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HJTqm-0006sX-Ow for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 Feb 2007 04:12:04 -0800
+Received: from web51601.mail.yahoo.com ([206.190.38.206])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1HJTqk-0002c8-8F
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 Feb 2007 04:12:04 -0800
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-I am sorry on the delay
+Hi all,
 
-> > On Sun, 18 Feb 2007 23:46:16 -0500 Yaroslav Halchenko <kernel@onerussian.com> wrote:
-> > > Since the most recent successful for me kernel 2.6.19-rc6-mm1, I've
-> > > tried few times to build more recent snapshots and now finally
-> > > 2.6.20-mm2. In all those cases I have a sad outcome -- kernel boots but
-> > > >...<
-> > Is 2.6.20 broken?  I assume the latest 2.6.20-gitN snapshot are failing..
--mm's have been failing since some time after .19-rc6-mm1. I believe
-I've tried 2.6.19-mm? with the same luck
+I am trying to design a 4 bpp FB driver for iMX1 using
+imxfb.c code as 
+an starting point.
+The problem that I have found is that MX1 video memory
+is organised as
+follows:
 
-> It would be extremely useful to know which kernel versions you tested
-> and which ones failed. There are a number of backlight changes which are
-> just in 2.6.20-mm1 and -mm2 which it would be useful to rule out or
-> identify as the cause.
-I didn't mention 2.6.20-mm1 and got to see -mm2 so it is the one which
-Iv'e tried, but, once again, I experienced the same issue with 19-mm?
-kernels.
+b7 b6 b5 b4  --> pixel 0.
+b3 b2 b1 b0  --> pixel 1.
 
-I built 2.6.20-mm2 without backlight support
-$> grep BACKLIGH /boot/config-2.6.20-mm2 
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-# CONFIG_FB_BACKLIGHT is not set
-# CONFIG_FB_RIVA_BACKLIGHT is not set
-# CONFIG_FB_RADEON_BACKLIGHT is not set
+The software that I'm using to display things (Qtopia
+Core) assumes a 
+different scheme of memory to pixel mapping:
 
-that "eliminated" the problem. Also I can see the screen with pure
-2.6.20 with backlight support (whatever it does since after
-loading lcd, backlight modules, my /sys/class/{lcd,backlight} are empty):
+b7 b6 b5 b4 ---> pixel 1.
+b3 b2 b1 b0 ---> pixel 0.
 
-*$> grep BACKLIGH /boot/config-2.6.20 
-# CONFIG_FB_BACKLIGHT is not set
-CONFIG_BACKLIGHT_LCD_SUPPORT=y
-CONFIG_BACKLIGHT_CLASS_DEVICE=m
-CONFIG_BACKLIGHT_DEVICE=y
+The solution to overcome this problem is apparently
+easy:
+
+#define SWAP_NIBBLES(in,out) (out=((in&0xf)<<4) |
+((in&0xf0)>>4) |\
+                                  ((in&0xf00)<<4) |
+((in&0xf000)>>4) |\
+		                  ((in&0xf0000)<<4) |
+((in&0xf00000)>>4) |\
+		                  ((in&0xf000000)<<4) |
+((in&0xf0000000)>>4))
+
+But I do not know where to do it. 
+Frame Buffer has 3 functions cfb_fillrect,
+cfb_copyarea and cfb_imageblit which I thought were
+the key to solve my problems but Qtopia Core does not
+make use
+of them.  
+imxfb_map_video_memory function or fb_mmap, seem to be
+good candidates but I do not know how to progress
+further.
+
+I would be very grateful if I could receive some kind
+of help.
+
+Best wishes,
+
+Aitor
 
 
-> Also, do you normally see files under /sys/class/lcd?
-nope... after I load lcd module, no files under :-/ regardless either it
-is mm or not. But there are files under /sys/class/backlight/ for mm2
-compiled with backlight support (whenever the screen is dark as per my
-original email)
+ 
+____________________________________________________________________________________
+It's here! Your new message!  
+Get new email alerts with the free Yahoo! Toolbar.
+http://tools.search.yahoo.com/toolbar/features/mail/
 
--- 
-                                  .-.
-=------------------------------   /v\  ----------------------------=
-Keep in touch                    // \\     (yoh@|www.)onerussian.com
-Yaroslav Halchenko              /(   )\               ICQ#: 60653192
-                   Linux User    ^^-^^    [175555]
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

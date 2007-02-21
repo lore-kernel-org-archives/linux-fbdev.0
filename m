@@ -1,24 +1,27 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH]: change rivafb_remove to __devexit
-Date: Wed, 21 Feb 2007 21:32:21 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702212131530.20620@pentafluge.infradead.org>
-References: <20070220161306.23688.53776.sendpatchset@prarit.boston.redhat.com>
+Subject: Re: [PATCH] MAINTAINERS: mark framebuffer as
+	Orphan
+Date: Wed, 21 Feb 2007 21:37:50 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702212136360.20620@pentafluge.infradead.org>
+References: <20070215132549.c182f7bf.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0702152224570.6415@pentafluge.infradead.org>
+	<20070215150526.1fd63b3e.randy.dunlap@oracle.com>
+	<20070216122403.GM13958@stusta.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HJz4h-0006bT-7q for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 13:32:31 -0800
+	id 1HJzAK-0007Dr-J8 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 13:38:20 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HJz4g-0000b0-4S
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJzAH-0006Ac-GH
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 13:32:31 -0800
-In-Reply-To: <20070220161306.23688.53776.sendpatchset@prarit.boston.redhat.com>
+	Wed, 21 Feb 2007 13:38:20 -0800
+In-Reply-To: <20070216122403.GM13958@stusta.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,49 +32,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: adaplas@pol.net, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
 
 
-Acked-By: James Simmons <jsimmons@infradead.org>
+> > > Alot of patches have been flowing into the layer.
+> > 
+> > So would you like to leave it as Maintained or change it to
+> > "Odd Fixes"?  (Maintained => a maintainer)  From the MAINTAINTERS file:
+> > 
+> > 	Supported:	Someone is actually paid to look after this.
+> > 	Maintained:	Someone actually looks after it.
+> > 	Odd Fixes:	It has a maintainer but they don't have time to do
+> > 			much other than throw the odd patch in. See below..
+> > 	Orphan:		No current maintainer [but maybe you could take the
+> > 			role as you write your new code].
+> > 	Obsolete:	Old code. Something tagged obsolete generally means
+> > 			it has been replaced by a better system and you
+> > 			should be using that.
+> >...
+> 
+> If you start doing this, there are a lot more entries that need to be 
+> changed...
+> 
+> Which of Supported/Maintained/"Odd Fixes" is written doesn't matter in 
+> practice.
+> 
+> What matters is that James' email address gets into the entry so that 
+> patches and bug reports reach him.
+> 
+> James' work is definitely no below the average of entries marked as 
+> Maintained.
 
-On Tue, 20 Feb 2007, Prarit Bhargava wrote:
-
-> Resubmitting with wider audience (akpm & lkml).
-> 
-> Change rivafb_remove to __deviexit to fix MODPOST warnings:
-> 
-> WARNING: drivers/video/riva/rivafb.o - Section mismatch: reference to
-> .exit.text:rivafb_remove from .data.rel.local after 'rivafb_driver' (at offset 0x28)
-> 
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> 
-> --- linux-2.6.19.ia64.orig/drivers/video/riva/fbdev.c	2007-02-07 09:56:37.000000000 -0500
-> +++ linux-2.6.19.ia64/drivers/video/riva/fbdev.c	2007-02-08 11:39:35.000000000 -0500
-> @@ -2154,7 +2154,7 @@ err_ret:
->  	return ret;
->  }
->  
-> -static void __exit rivafb_remove(struct pci_dev *pd)
-> +static void __devexit rivafb_remove(struct pci_dev *pd)
->  {
->  	struct fb_info *info = pci_get_drvdata(pd);
->  	struct riva_par *par = info->par;
-> @@ -2232,7 +2232,7 @@ static struct pci_driver rivafb_driver =
->  	.name		= "rivafb",
->  	.id_table	= rivafb_pci_tbl,
->  	.probe		= rivafb_probe,
-> -	.remove		= __exit_p(rivafb_remove),
-> +	.remove		= __devexit_p(rivafb_remove),
->  };
->  
->  
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+At this point I would say maintained. Plus Tony is coming back :-)
+Its just recently I have been working on various other things like the 
+display class.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

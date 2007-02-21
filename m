@@ -1,24 +1,20 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: enquiry about 4 bpp frame buffer with
- nibbles swapped
-Date: Wed, 21 Feb 2007 08:34:44 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702210832300.7944@pademelon.sonytel.be>
-References: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+Subject: linux 2.6.21-rc1 : FB Kconfig error
+Date: Wed, 21 Feb 2007 09:46:25 +0100
+Message-ID: <200702210946.27758.toralf.foerster@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1809416029=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HJm0A-00004r-4s for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Feb 2007 23:34:58 -0800
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJm09-0003zk-Oe
+	id 1HJn7W-0007D2-9j for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 00:46:38 -0800
+Received: from mail.gmx.net ([213.165.64.20])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1HJn7U-0000E2-J6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Feb 2007 23:34:58 -0800
-In-Reply-To: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
+	Wed, 21 Feb 2007 00:46:38 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,68 +25,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Aitor Garcia <carrierphasejitter@yahoo.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 20 Feb 2007, Aitor Garcia wrote:
-> I am trying to design a 4 bpp FB driver for iMX1 using
-> imxfb.c code as 
-> an starting point.
-> The problem that I have found is that MX1 video memory
-> is organised as
-> follows:
-> 
-> b7 b6 b5 b4  --> pixel 0.
-> b3 b2 b1 b0  --> pixel 1.
-> 
-> The software that I'm using to display things (Qtopia
-> Core) assumes a 
-> different scheme of memory to pixel mapping:
-> 
-> b7 b6 b5 b4 ---> pixel 1.
-> b3 b2 b1 b0 ---> pixel 0.
-> 
-> The solution to overcome this problem is apparently
-> easy:
-> 
-> #define SWAP_NIBBLES(in,out) (out=((in&0xf)<<4) |
-> ((in&0xf0)>>4) |\
->                                   ((in&0xf00)<<4) |
-> ((in&0xf000)>>4) |\
-> 		                  ((in&0xf0000)<<4) |
-> ((in&0xf00000)>>4) |\
-> 		                  ((in&0xf000000)<<4) |
-> ((in&0xf0000000)>>4))
-> 
-> But I do not know where to do it. 
-> Frame Buffer has 3 functions cfb_fillrect,
-> cfb_copyarea and cfb_imageblit which I thought were
-> the key to solve my problems but Qtopia Core does not
-> make use
-> of them.  
+--===============1809416029==
+Content-Type: multipart/signed; boundary="nextPart4222036.I8NucCBXZR";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
 
-Indeed, cfb_{fillrect,copyarea,imageblit}() are used by the kernel only.
+--nextPart4222036.I8NucCBXZR
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> imxfb_map_video_memory function or fb_mmap, seem to be
-> good candidates but I do not know how to progress
-> further.
+With latest sources I get :
 
-If the order of the nibbles can be configured in hardware, you should do that.
-Else I'm afraid you will have to modify Qtopia Core.
+=2E..
+ make mrproper ...
+ make rndconfig ...drivers/video/Kconfig:1604:warning: 'select' used by con=
+fig symbol 'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
+ make oldconfig ...
 
-Gr{oetje,eeting}s,
+=2D-=20
+MfG/Sincerely
 
-						Geert
+Toralf F=F6rster
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--nextPart4222036.I8NucCBXZR
+Content-Type: application/pgp-signature
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBF3AbjhyrlCH22naMRAoJAAJ4m3E1xJAKtViMZ5BKSGVcquZy7SACfXfyj
+wmr723TOm0ayl5xt0osBhSA=
+=9Tc/
+-----END PGP SIGNATURE-----
+
+--nextPart4222036.I8NucCBXZR--
+
+
+--===============1809416029==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+--===============1809416029==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1809416029==--

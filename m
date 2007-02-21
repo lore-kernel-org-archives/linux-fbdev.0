@@ -1,23 +1,26 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-users] atyfb - system hangs at
- bootup prior to enabling framebuffer console -- linux 2.6.18 (fwd)
-Date: Wed, 21 Feb 2007 21:44:20 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702212143180.20620@pentafluge.infradead.org>
+Subject: Re: enquiry about 4 bpp frame buffer with
+ nibbles swapped
+Date: Wed, 21 Feb 2007 21:50:22 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702212148500.20620@pentafluge.infradead.org>
+References: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
+	<Pine.LNX.4.62.0702210832300.7944@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-1831524198-554861201-1172094242=:20620"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HJzGJ-0007tv-4p for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 13:44:31 -0800
+	id 1HJzM4-00005s-Sz for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 13:50:29 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJzGG-0007o9-1l
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HJzM2-00054z-S5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 13:44:30 -0800
-Content-ID: <Pine.LNX.4.64.0702212144170.20620@pentafluge.infradead.org>
+	Wed, 21 Feb 2007 13:50:28 -0800
+In-Reply-To: <Pine.LNX.4.62.0702210832300.7944@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,115 +31,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ville Syrjala <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1831524198-554861201-1172094242=:20620
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-1
-Content-ID: <Pine.LNX.4.64.0702212144171.20620@pentafluge.infradead.org>
-Content-Transfer-Encoding: quoted-printable
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Aitor Garcia <carrierphasejitter@yahoo.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 
 
-Andrew please apply.
+> > But I do not know where to do it. 
+> > Frame Buffer has 3 functions cfb_fillrect,
+> > cfb_copyarea and cfb_imageblit which I thought were
+> > the key to solve my problems but Qtopia Core does not
+> > make use
+> > of them.  
+> 
+> Indeed, cfb_{fillrect,copyarea,imageblit}() are used by the kernel only.
 
-Acked-By: James Simmons <jsimmons@infradead.org>
+Speaking of. Are you using fbcon? If that is the case then your console 
+should look messed up.
+ 
+> > imxfb_map_video_memory function or fb_mmap, seem to be
+> > good candidates but I do not know how to progress
+> > further.
+> 
+> If the order of the nibbles can be configured in hardware, you should do that.
+> Else I'm afraid you will have to modify Qtopia Core.
 
----------- Forwarded message ----------
-Date: Sat, 17 Feb 2007 15:19:12 +0200
-From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
-Reply-To: linux-fbdev-users@lists.sourceforge.net
-To: linux-fbdev-users@lists.sourceforge.net
-Subject: Re: [Linux-fbdev-users] atyfb - system hangs at bootup prior to
-    enabling framebuffer console -- linux 2.6.18
+Can fb_bitfield handle that case ?
 
-On Fri, Feb 16, 2007 at 06:37:31PM -0500, cga2000 wrote:
-> More than 50% of the time my laptop hangs when booting with=20
->=20
-> ... video=3Datyfb:1400x1050.
->=20
-> I have seen similar occurrences reported here and there with recent 2.6
-> kernels but nothing very clear as to whether this is a known problem or
-> whether a patch or workaround has already been provided.
-
-I was just able to reproduce the problem by switching from drivers/ide=20
-to libata. In my case the laptop would hang on every boot. Apparently=20
-using libata changed the timing enough to trigger the bug.
-
-Try this patch:
-
----
- drivers/video/aty/mach64_ct.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.20/drivers/video/aty/mach64_ct.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.20.orig/drivers/video/aty/mach64_ct.c
-+++ linux-2.6.20/drivers/video/aty/mach64_ct.c
-@@ -598,7 +598,6 @@ static void aty_resume_pll_ct(const stru
- 	struct atyfb_par *par =3D info->par;
-=20
- 	if (par->mclk_per !=3D par->xclk_per) {
--		int i;
- 		/*
- 		* This disables the sclk, crashes the computer as reported:
- 		* aty_st_pll_ct(SPLL_CNTL2, 3, info);
-@@ -609,12 +608,10 @@ static void aty_resume_pll_ct(const stru
- 		aty_st_pll_ct(SCLK_FB_DIV, pll->ct.sclk_fb_div, par);
- 		aty_st_pll_ct(SPLL_CNTL2, pll->ct.spll_cntl2, par);
- 		/*
--		 * The sclk has been started. However, I believe the first clock
--		 * ticks it generates are not very stable. Hope this primitive loop
--		 * helps for Rage Mobilities that sometimes crash when
--		 * we switch to sclk. (Daniel Mantione, 13-05-2003)
-+		 * The sclk has been started. Wait for the PLL to lock. 5 ms
-+		 * should be enough according to mach64 programmers guide.
- 		 */
--		for (i=3D0;i<=3D0x1ffff;i++);
-+		mdelay(5);
- 	}
-=20
- 	aty_st_pll_ct(PLL_REF_DIV, pll->ct.pll_ref_div, par);
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share y=
-our
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3D=
-DEVDEV
-_______________________________________________
-Linux-fbdev-users mailing list
-Linux-fbdev-users@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users
----1831524198-554861201-1172094242=:20620
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
----1831524198-554861201-1172094242=:20620
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
----1831524198-554861201-1172094242=:20620--

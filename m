@@ -1,98 +1,56 @@
 From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH 2.6.20 1/1] fbdev,
-	mm: hecuba/E-Ink fbdev driver
-Date: Wed, 21 Feb 2007 11:46:21 -0500
-Message-ID: <45a44e480702210846u218045bmfe6854fb894d7bbd@mail.gmail.com>
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,mm: hecuba/E-Ink fbdev driver
+Date: Wed, 21 Feb 2007 11:55:17 -0500
+Message-ID: <45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
 References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
-	<45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
-	<20070217135922.GA15373@linux-sh.org>
-	<45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
-	<20070218235741.GA22298@linux-sh.org>
-	<45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
-	<20070220043848.GA4092@linux-sh.org>
-	<45a44e480702192211i78b8f4b1lecb3dfc284fb9eea@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+	 <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	 <20070217135922.GA15373@linux-sh.org>
+	 <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	 <20070218235741.GA22298@linux-sh.org>
+	 <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	 <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HJubs-00007L-I0 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 08:46:29 -0800
-Received: from ug-out-1314.google.com ([66.249.92.169])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJubr-0003vN-Ao
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 08:46:28 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so1053673ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 21 Feb 2007 08:46:21 -0800 (PST)
-In-Reply-To: <45a44e480702192211i78b8f4b1lecb3dfc284fb9eea@mail.gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1422680AbXBUQzU@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mundt <lethal@linux-sh.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-mm@kvack.org, jsimmons@infradead.org, Geert.Uytterhoeven@sonycom.com
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, James Simmons <jsimmons@infradead.org>
 
-On 2/20/07, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> On 2/19/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> > That works for me, though I'd prefer for struct page_list to be done with
-> > a scatterlist, then it's trivial to setup from the workqueue context
-> > without having to shuffle things around.
-> >
->
-> Ok. Will check out when implementing.
+On 2/20/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Don't you need a way to specify the maximum deferral time? E.g. a field in
+> fb_info.
 >
 
-Took  a quick look. If I used scatterlist, I'd still need to build a
-list of scatterlist to pass to the driver callback. The alternative
-being a preallocated array of scatterlist based on the page count of
-the framebuffer, which seems expensive since scatterlist has page,
-offset, dma and length.
+You are right. I will need that. I could put that into struct
+fb_deferred_io. So drivers would setup like:
 
-On a separate note, Peter pointed out that it may be possible to reuse
-page->lru instead of using a struct page_list. This would enable
-something like:
+static struct fb_deferred_io hecubafb_defio = {
+        .delay          = HZ,
+        .deferred_io    = hecubafb_dpy_update,
+};
 
-in mkwrite:
-mutex_lock
-list_add(page->lru, defio->pagelist)
-mutex_unlock
+where that would be:
+struct fb_deferred_io {
+        unsigned long delay;    /* delay between mkwrite and deferred handler */
+        struct mutex lock;      /* mutex that protects the page list */
+        struct list_head pagelist;      /* list of touched pages */
+        struct delayed_work deferred_work;
+        void (*deferred_io)(struct fb_info *info, struct list_head
+*pagelist); /* callback */
+};
 
-in deferred handler:
-mutex_lock
-for_each page {
-lock_page
-mkclean
-unlock_page
-}
-callback(fb_info, pagelist)
-for_each page {
-list_del
-}
-mutex_unlock
+and the driver would do:
+...
+info->fbdefio = hecubafb_defio;
+register_framebuffer...
 
-The advantage of reusing page->lru is that avoids needing the struct
-page_list and allocation in mkwrite. Is the above exploitation of
-->lru ok with mm folk?
-
-In above, we're iterating over the page list twice. I have to mkclean
-before calling the callback to avoid the situation where a touched
-page is missed by the callback. I don't see a way around that part.
+When the driver calls register_framebuffer and unregister_framebuffer,
+I can then do the init and destruction of the other members of that
+struct. Does this sound okay?
 
 Thanks,
 jaya
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

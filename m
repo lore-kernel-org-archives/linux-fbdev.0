@@ -1,18 +1,17 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4 (final?)] ps3fb: thread updates
-Date: Wed, 21 Feb 2007 15:20:47 -0800
-Message-ID: <20070221152047.0d3da74c.akpm@linux-foundation.org>
-References: <20070215152301.573853000@sonycom.com>
-	<20070215152432.264415000@sonycom.com>
-	<20070215175007.GA10817@lst.de>
-	<1171575817.5644.44.camel@localhost.localdomain>
-	<20070215165916.de546f0d.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
-	<20070216163811.GB32051@lst.de>
-	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver
+Date: Wed, 21 Feb 2007 18:22:58 -0500
+Message-ID: <45a44e480702211522q6225d4fbx3f7d99fcef5fe93c@mail.gmail.com>
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+	<45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	<20070217135922.GA15373@linux-sh.org>
+	<45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	<20070218235741.GA22298@linux-sh.org>
+	<45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	<Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
+	<45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
+	<Pine.LNX.4.64.0702212151190.20620@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,14 +20,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK0lZ-0000eM-5x for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 15:20:54 -0800
-Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1HK0lY-0000zS-Rq
+	id 1HK0nf-0000tf-5d for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 15:23:03 -0800
+Received: from ug-out-1314.google.com ([66.249.92.175])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK0ne-0001U9-N2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 15:20:53 -0800
-In-Reply-To: <Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
+	Wed, 21 Feb 2007 15:23:03 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so1147301ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 21 Feb 2007 15:22:58 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0702212151190.20620@pentafluge.infradead.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,57 +41,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Christoph Hellwig <hch@lst.de>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Development <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Tue, 20 Feb 2007 11:42:04 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On 2/21/07, James Simmons <jsimmons@infradead.org> wrote:
+>
+> Could you make it work without the framebuffer. There are embedded LCD
+> displays that have internal memory that need data flushed to them.
+>
 
-> ps3fb: Replace the kernel_thread and the semaphore by a proper kthread, which is
-> simply woken up when the screen must be updated
+I'm not sure I understand. What the current implementation does is to
+use host based framebuffer memory. Apps mmap that memory and draw to
+that. Then after the delay, that framebuffer is written to the
+device's memory. That's the scenario for hecubafb where the Apollo
+controller maintains it's own internal framebuffer.
 
-<goes off and generates the incremental diff again so we can see what changed>
+When you say without the framebuffer, if you meant without the host
+memory, then this method doesn't work. If you mean without the
+device's internal memory, then yes, I think we can do that, because it
+would be up to the driver to use the touched pagelist to then perform
+IO as suitable for its device.
 
-
-diff -puN drivers/video/ps3fb.c~ps3fb-thread-updates-2 drivers/video/ps3fb.c
---- a/drivers/video/ps3fb.c~ps3fb-thread-updates-2
-+++ a/drivers/video/ps3fb.c
-@@ -32,7 +32,6 @@
- #include <linux/ioctl.h>
- #include <linux/notifier.h>
- #include <linux/reboot.h>
--#include <linux/freezer.h>
- #include <linux/kthread.h>
- 
- #include <asm/uaccess.h>
-@@ -808,16 +807,13 @@ static int ps3fb_ioctl(struct fb_info *i
- 
- static int ps3fbd(void *arg)
- {
--	DEFINE_WAIT(wait);
--	DECLARE_WAIT_QUEUE_HEAD(wq);
--
- 	while (!kthread_should_stop()) {
--		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
--		if (!ps3fb.is_kicked)
--			schedule();
--		finish_wait(&wq, &wait);
--		ps3fb.is_kicked = 0;
--		ps3fb_sync(0);	/* single buffer */
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		if (ps3fb.is_kicked) {
-+			ps3fb.is_kicked = 0;
-+			ps3fb_sync(0);	/* single buffer */
-+		}
-+		schedule();
- 	}
- 	return 0;
- }
-_
-
-There's still no try_to_freeze() in there.  Shouldn't we have one?
-
-
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

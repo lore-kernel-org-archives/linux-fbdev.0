@@ -1,36 +1,35 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH 2.6.20 1/1] fbdev,
-	mm: hecuba/E-Ink fbdev driver
-Date: Wed, 21 Feb 2007 18:22:58 -0500
-Message-ID: <45a44e480702211522q6225d4fbx3f7d99fcef5fe93c@mail.gmail.com>
-References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
-	<45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
-	<20070217135922.GA15373@linux-sh.org>
-	<45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
-	<20070218235741.GA22298@linux-sh.org>
-	<45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
-	<Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
-	<45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
-	<Pine.LNX.4.64.0702212151190.20620@pentafluge.infradead.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
+Date: Thu, 22 Feb 2007 07:43:26 +0800
+Message-ID: <1172101406.4217.16.camel@daplas>
+References: <ephv35$4i3$1@sea.gmane.org>
+	<20070128160831.fb51347f.akpm@osdl.org>
+	<21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+	<20070128162907.370f5476.akpm@osdl.org>
+	<21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+	<cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+	<20070130203301.GA15067@dreamland.darkstar.lan>
+	<20070204201713.GA12867@dreamland.darkstar.lan>
+	<Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	<cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK0nf-0000tf-5d for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 15:23:03 -0800
-Received: from ug-out-1314.google.com ([66.249.92.175])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK0ne-0001U9-N2
+	id 1HK14k-0002fR-9e for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 15:40:43 -0800
+Received: from nz-out-0506.google.com ([64.233.162.225])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK14i-0002rP-1m
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 15:23:03 -0800
-Received: by ug-out-1314.google.com with SMTP id z38so1147301ugc
+	Wed, 21 Feb 2007 15:40:41 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so4195668nzi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 21 Feb 2007 15:22:58 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.64.0702212151190.20620@pentafluge.infradead.org>
-Content-Disposition: inline
+	Wed, 21 Feb 2007 15:40:39 -0800 (PST)
+In-Reply-To: <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -41,29 +40,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Development <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Luca Tettamanti <kronos@people.it>, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Dave Airlie <airlied@gmail.com>
 
-On 2/21/07, James Simmons <jsimmons@infradead.org> wrote:
->
-> Could you make it work without the framebuffer. There are embedded LCD
-> displays that have internal memory that need data flushed to them.
->
+On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote: 
+> On 2/6/07, James Simmons <jsimmons@infradead.org> wrote:
+> >
+> > If you can find post the manufacturer and model number we can place it on
+> > the backlist in fbmon. Also we should figure out what is wrong and fix it.
+> 
+> It's the UltraSharp UXGA display that used to come with Dell Inspiron
+> 8200, 15" with a resolution of 1600x1200. I've been looking all around
+> for more info on it, but the only things I could find were posts that
+> remarked the problems Windows nVidia drivers have with some of these
+> (no image when running at 1600x1200), and other posts about banded
+> gradients with Windows drivers on Radeon video cards (but I get banded
+> gradients also win my nVidia card, on Linux, regardless of which
+> driver I use, binary, nv or nouveau).
+> 
+> As mentioned in another post in this thread, I can't get any info out
+> of the i2c busses, because even when I have them available (i.e. after
+> loading nvidiafb) I get XXXX all around (on all three of them).
+> Suggestions on how to get the information welcome.
 
-I'm not sure I understand. What the current implementation does is to
-use host based framebuffer memory. Apps mmap that memory and draw to
-that. Then after the delay, that framebuffer is written to the
-device's memory. That's the scenario for hecubafb where the Apollo
-controller maintains it's own internal framebuffer.
+Is this the same monitor you posted here?
 
-When you say without the framebuffer, if you meant without the host
-memory, then this method doesn't work. If you mean without the
-device's internal memory, then yes, I think we can do that, because it
-would be up to the driver to use the touched pagelist to then perform
-IO as suitable for its device.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=112807065616218&w=2
 
-Thanks,
-jaya
+If yes, we already have the manufacturer and model code. The main
+problem is that the EDID of this display has no sync range (H: 75-75kHz
+and V: 60-60Hz).  Extending Hsync from 30-75kHz as a fix to the EDID
+block shouldn't be too hard.
+
+I already have a patch for this which I forgot to send to you
+before :-).  If you can confirm that this is still the same hardware,
+I'll send you a test patch
+
+Tony
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

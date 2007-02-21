@@ -1,34 +1,98 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Date: Wed, 21 Feb 2007 21:17:06 -0200
-Message-ID: <20070221231706.GA3336@khazad-dum.debian.net>
-References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4 (final?)] ps3fb: thread updates
+Date: Wed, 21 Feb 2007 15:20:47 -0800
+Message-ID: <20070221152047.0d3da74c.akpm@linux-foundation.org>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com>
+	<20070215175007.GA10817@lst.de>
+	<1171575817.5644.44.camel@localhost.localdomain>
+	<20070215165916.de546f0d.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+	<20070216163811.GB32051@lst.de>
+	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1423199AbXBUXRP@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Alex Romosan <romosan@sycorax.lbl.gov>, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HK0lZ-0000eM-5x for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 15:20:54 -0800
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1HK0lY-0000zS-Rq
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 15:20:53 -0800
+In-Reply-To: <Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Christoph Hellwig <hch@lst.de>
 
-On Wed, 21 Feb 2007, Richard Purdie wrote:
-> enabled. On a thinkpad, the backlight is probably under ACPI control.
+On Tue, 20 Feb 2007 11:42:04 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-BIOS+ACPI, actually.  Without ACPI video loaded, the firmware does
-everything correctly.  With ACPI video, the firmware does it, then its
-changes are clobbered over by ACPI video's.
+> ps3fb: Replace the kernel_thread and the semaphore by a proper kthread, which is
+> simply woken up when the screen must be updated
 
-If ibm-acpi is loaded, a backlight device "ibm" is added.  ibm-acpi's ibm
-backlight device can change the display brightness.  It is *not* capable of
-turning the backlight on or off, AFAIK.
+<goes off and generates the incremental diff again so we can see what changed>
 
-BTW, some ThinkPads don't have a Radeon, but rather an Intel GM/GMX device.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+diff -puN drivers/video/ps3fb.c~ps3fb-thread-updates-2 drivers/video/ps3fb.c
+--- a/drivers/video/ps3fb.c~ps3fb-thread-updates-2
++++ a/drivers/video/ps3fb.c
+@@ -32,7 +32,6 @@
+ #include <linux/ioctl.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+-#include <linux/freezer.h>
+ #include <linux/kthread.h>
+ 
+ #include <asm/uaccess.h>
+@@ -808,16 +807,13 @@ static int ps3fb_ioctl(struct fb_info *i
+ 
+ static int ps3fbd(void *arg)
+ {
+-	DEFINE_WAIT(wait);
+-	DECLARE_WAIT_QUEUE_HEAD(wq);
+-
+ 	while (!kthread_should_stop()) {
+-		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
+-		if (!ps3fb.is_kicked)
+-			schedule();
+-		finish_wait(&wq, &wait);
+-		ps3fb.is_kicked = 0;
+-		ps3fb_sync(0);	/* single buffer */
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (ps3fb.is_kicked) {
++			ps3fb.is_kicked = 0;
++			ps3fb_sync(0);	/* single buffer */
++		}
++		schedule();
+ 	}
+ 	return 0;
+ }
+_
+
+There's still no try_to_freeze() in there.  Shouldn't we have one?
+
+
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

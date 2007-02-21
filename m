@@ -1,22 +1,24 @@
-From: Aitor Garcia <carrierphasejitter@yahoo.com>
-Subject: enquiry about 4 bpp frame buffer with nibbles
-	swapped
-Date: Tue, 20 Feb 2007 04:11:56 -0800 (PST)
-Message-ID: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: enquiry about 4 bpp frame buffer with
+ nibbles swapped
+Date: Wed, 21 Feb 2007 08:34:44 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702210832300.7944@pademelon.sonytel.be>
+References: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HJTqm-0006sX-Ow for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Feb 2007 04:12:04 -0800
-Received: from web51601.mail.yahoo.com ([206.190.38.206])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1HJTqk-0002c8-8F
+	id 1HJm0A-00004r-4s for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 Feb 2007 23:34:58 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJm09-0003zk-Oe
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Feb 2007 04:12:04 -0800
+	Tue, 20 Feb 2007 23:34:58 -0800
+In-Reply-To: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,62 +29,65 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Aitor Garcia <carrierphasejitter@yahoo.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi all,
+On Tue, 20 Feb 2007, Aitor Garcia wrote:
+> I am trying to design a 4 bpp FB driver for iMX1 using
+> imxfb.c code as 
+> an starting point.
+> The problem that I have found is that MX1 video memory
+> is organised as
+> follows:
+> 
+> b7 b6 b5 b4  --> pixel 0.
+> b3 b2 b1 b0  --> pixel 1.
+> 
+> The software that I'm using to display things (Qtopia
+> Core) assumes a 
+> different scheme of memory to pixel mapping:
+> 
+> b7 b6 b5 b4 ---> pixel 1.
+> b3 b2 b1 b0 ---> pixel 0.
+> 
+> The solution to overcome this problem is apparently
+> easy:
+> 
+> #define SWAP_NIBBLES(in,out) (out=((in&0xf)<<4) |
+> ((in&0xf0)>>4) |\
+>                                   ((in&0xf00)<<4) |
+> ((in&0xf000)>>4) |\
+> 		                  ((in&0xf0000)<<4) |
+> ((in&0xf00000)>>4) |\
+> 		                  ((in&0xf000000)<<4) |
+> ((in&0xf0000000)>>4))
+> 
+> But I do not know where to do it. 
+> Frame Buffer has 3 functions cfb_fillrect,
+> cfb_copyarea and cfb_imageblit which I thought were
+> the key to solve my problems but Qtopia Core does not
+> make use
+> of them.  
 
-I am trying to design a 4 bpp FB driver for iMX1 using
-imxfb.c code as 
-an starting point.
-The problem that I have found is that MX1 video memory
-is organised as
-follows:
+Indeed, cfb_{fillrect,copyarea,imageblit}() are used by the kernel only.
 
-b7 b6 b5 b4  --> pixel 0.
-b3 b2 b1 b0  --> pixel 1.
+> imxfb_map_video_memory function or fb_mmap, seem to be
+> good candidates but I do not know how to progress
+> further.
 
-The software that I'm using to display things (Qtopia
-Core) assumes a 
-different scheme of memory to pixel mapping:
+If the order of the nibbles can be configured in hardware, you should do that.
+Else I'm afraid you will have to modify Qtopia Core.
 
-b7 b6 b5 b4 ---> pixel 1.
-b3 b2 b1 b0 ---> pixel 0.
+Gr{oetje,eeting}s,
 
-The solution to overcome this problem is apparently
-easy:
+						Geert
 
-#define SWAP_NIBBLES(in,out) (out=((in&0xf)<<4) |
-((in&0xf0)>>4) |\
-                                  ((in&0xf00)<<4) |
-((in&0xf000)>>4) |\
-		                  ((in&0xf0000)<<4) |
-((in&0xf00000)>>4) |\
-		                  ((in&0xf000000)<<4) |
-((in&0xf0000000)>>4))
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-But I do not know where to do it. 
-Frame Buffer has 3 functions cfb_fillrect,
-cfb_copyarea and cfb_imageblit which I thought were
-the key to solve my problems but Qtopia Core does not
-make use
-of them.  
-imxfb_map_video_memory function or fb_mmap, seem to be
-good candidates but I do not know how to progress
-further.
-
-I would be very grateful if I could receive some kind
-of help.
-
-Best wishes,
-
-Aitor
-
-
- 
-____________________________________________________________________________________
-It's here! Your new message!  
-Get new email alerts with the free Yahoo! Toolbar.
-http://tools.search.yahoo.com/toolbar/features/mail/
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

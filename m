@@ -1,110 +1,98 @@
-From: Paul Sokolovsky <pmiscml@gmail.com>
-Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
-Date: Wed, 21 Feb 2007 18:26:08 +0200
-Message-ID: <1741775233.20070221182608@gmail.com>
-References: <20070221145353.GA23916@enneenne.com> <1056908425.20070221180037@gmail.com> <20070221161210.GL4641@enneenne.com>
-Reply-To: Paul Sokolovsky <pmiscml@gmail.com>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [PATCH 2.6.20 1/1] fbdev,
+	mm: hecuba/E-Ink fbdev driver
+Date: Wed, 21 Feb 2007 11:46:21 -0500
+Message-ID: <45a44e480702210846u218045bmfe6854fb894d7bbd@mail.gmail.com>
+References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
+	<45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
+	<20070217135922.GA15373@linux-sh.org>
+	<45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
+	<20070218235741.GA22298@linux-sh.org>
+	<45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
+	<20070220043848.GA4092@linux-sh.org>
+	<45a44e480702192211i78b8f4b1lecb3dfc284fb9eea@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1422662AbXBUQ0J@vger.kernel.org>
-In-Reply-To: <20070221161210.GL4641@enneenne.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Richard Purdie <rpurdie@rpsys.net>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HJubs-00007L-I0 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 08:46:29 -0800
+Received: from ug-out-1314.google.com ([66.249.92.169])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HJubr-0003vN-Ao
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 08:46:28 -0800
+Received: by ug-out-1314.google.com with SMTP id z38so1053673ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 21 Feb 2007 08:46:21 -0800 (PST)
+In-Reply-To: <45a44e480702192211i78b8f4b1lecb3dfc284fb9eea@mail.gmail.com>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Paul Mundt <lethal@linux-sh.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-mm@kvack.org, jsimmons@infradead.org, Geert.Uytterhoeven@sonycom.com
 
-Hello Rodolfo,
+On 2/20/07, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> On 2/19/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> > That works for me, though I'd prefer for struct page_list to be done with
+> > a scatterlist, then it's trivial to setup from the workqueue context
+> > without having to shuffle things around.
+> >
+>
+> Ok. Will check out when implementing.
+>
 
-Wednesday, February 21, 2007, 6:12:10 PM, you wrote:
+Took  a quick look. If I used scatterlist, I'd still need to build a
+list of scatterlist to pass to the driver callback. The alternative
+being a preallocated array of scatterlist based on the page count of
+the framebuffer, which seems expensive since scatterlist has page,
+offset, dma and length.
 
-> On Wed, Feb 21, 2007 at 06:00:37PM +0200, Paul Sokolovsky wrote:
->> 
->>   On the other hand, there's already
->> drivers/video/backlight/backlight.c which provides generic BL support,
->> implemented using notifier callback for FB core. Moreover, there's
+On a separate note, Peter pointed out that it may be possible to reuse
+page->lru instead of using a struct page_list. This would enable
+something like:
 
-> My patch _uses_ that support.
+in mkwrite:
+mutex_lock
+list_add(page->lru, defio->pagelist)
+mutex_unlock
 
-  Sorry if I missed it in quick review, as I told, there's a bit much
-code ;-I
-
->> corgi_bl.c driver which, contrary to its name is a generic driver for
->> embedded/PDA device backlight. It essentially subclassses pretty
->> abstract backlight.c, and provides good implementation for most BL
->> implementation. What you really need to do to use it, is to supply
->> single machine-dependent method, set_bl_intensity(). That method is
->> usually <10 lines.
-
-> I see, but in this manner you need to make a complete file for each
-> board, while with my patch you can just put few lines into machine's
-> definition file (a struct and 2 functions).
-
-  Why? It's the same, except that it already exists, generic one (not
-limited to pxafb), and requires 1 function (too bad that C doesn't
-support lambda's):
-
-==============
-static void h4000_set_bl_intensity(int intensity)
-{
-        /* LCD brightness is driven by PWM0.
-         * We'll set the pre-scaler to 8, and the period to 1024, this
-         * means the backlight refresh rate will be 3686400/(8*1024) =
-         * 450 Hz which is quite enough.
-         */
-        PWM_CTRL0 = 7;            /* pre-scaler */
-        PWM_PWDUTY0 = intensity; /* duty cycle */
-        PWM_PERVAL0 = H4000_MAX_INTENSITY;      /* period */
-
-        if (intensity > 0) {
-                pxa_set_cken(CKEN0_PWM0, 1);
-                asic3_set_gpio_out_b(&h4000_asic3.dev,
-                        GPIOB_BACKLIGHT_POWER_ON, GPIOB_BACKLIGHT_POWER_ON);
-        } else {
-                pxa_set_cken(CKEN0_PWM0, 0);
-                asic3_set_gpio_out_b(&h4000_asic3.dev,
-                        GPIOB_BACKLIGHT_POWER_ON, 0);
-        }
+in deferred handler:
+mutex_lock
+for_each page {
+lock_page
+mkclean
+unlock_page
 }
+callback(fb_info, pagelist)
+for_each page {
+list_del
+}
+mutex_unlock
 
-static struct corgibl_machinfo h4000_bl_machinfo = {
-        .default_intensity = H4000_MAX_INTENSITY / 4,
-        .limit_mask = 0x0fff,
-        .max_intensity = H4000_MAX_INTENSITY,
-        .set_bl_intensity = h4000_set_bl_intensity,
-};
+The advantage of reusing page->lru is that avoids needing the struct
+page_list and allocation in mkwrite. Is the above exploitation of
+->lru ok with mm folk?
 
-struct platform_device h4000_bl = {
-        .name = "corgi-bl",
-        .dev = {
-                .platform_data = &h4000_bl_machinfo,
-        },
-};
-==============
+In above, we're iterating over the page list twice. I have to mkclean
+before calling the callback to avoid the situation where a touched
+page is missed by the callback. I don't see a way around that part.
 
->>   With this in mind, adhoc backlight handlers in pxafb and few other
->> drivers are artifacts of older times. And it's sad they are tried to
->> be resurrected instead of being removed.
+Thanks,
+jaya
 
-> IMHO, the actual backlight support is not so much, infact I'd like to
-> generalize it to support also backlighted keyboards (or input
-> devices). :)
-
-  I sent a bit of criticism for that too ;-). YMMV, but kernel
-solutions are just bound to be pretty simple and generic and lack
-any "niceties", which you'd likely want to do anyway eventually. For
-example, what if you'll want to implement "fade out" effect for
-keyboard backlight? Doing it in adhoc manner in kernel? Whereas with
-the LCD classdev, you can write generic "fade out" trigger and
-attach/detach it from userspace.
-
-> Ciao,
-
-> Rodolfo
-
-
-
-
--- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

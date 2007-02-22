@@ -1,24 +1,34 @@
-From: "Orczykowski, Juergen" <juergen.orczykowski@siemens.com>
-Subject: Re: bug in intelfbhw.c
-Date: Thu, 22 Feb 2007 13:02:16 +0100
-Message-ID: <3E56BFF2E134A44A98D9FFDB710688DF011D40E1@ERLD151A.ww004.siemens.net>
-References: <1172136478.4086.19.camel@daplas>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 1/4 (final?)] ps3fb: thread updates
+Date: Thu, 22 Feb 2007 13:16:41 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702221315530.25919@pademelon.sonytel.be>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com>
+	<20070215175007.GA10817@lst.de>
+	<1171575817.5644.44.camel@localhost.localdomain>
+	<20070215165916.de546f0d.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+	<20070216163811.GB32051@lst.de>
+	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
+	<20070221152047.0d3da74c.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKCej-0006K0-6a for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 04:02:37 -0800
-Received: from dragon3.automation.siemens.com ([194.138.39.158])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKCeh-0007db-8y
+	id 1HKCsW-0007iO-TP for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 04:16:53 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKCsW-0006dX-FK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 04:02:36 -0800
-Content-class: urn:content-classes:message
-In-Reply-To: <1172136478.4086.19.camel@daplas>
+	Thu, 22 Feb 2007 04:16:52 -0800
+In-Reply-To: <20070221152047.0d3da74c.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,70 +39,80 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Dave Airlie <airlied@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Christoph Hellwig <hch@lst.de>
 
-Hi Tony,
-Sorry, but in the diff, we miss our (similar) change in the function refres=
-h_ring.
+On Wed, 21 Feb 2007, Andrew Morton wrote:
+> On Tue, 20 Feb 2007 11:42:04 +0100 (CET)
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> @@ -808,16 +807,13 @@ static int ps3fb_ioctl(struct fb_info *i
+>  
+>  static int ps3fbd(void *arg)
+>  {
+> -	DEFINE_WAIT(wait);
+> -	DECLARE_WAIT_QUEUE_HEAD(wq);
+> -
+>  	while (!kthread_should_stop()) {
+> -		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
+> -		if (!ps3fb.is_kicked)
+> -			schedule();
+> -		finish_wait(&wq, &wait);
+> -		ps3fb.is_kicked = 0;
+> -		ps3fb_sync(0);	/* single buffer */
+> +		set_current_state(TASK_INTERRUPTIBLE);
+> +		if (ps3fb.is_kicked) {
+> +			ps3fb.is_kicked = 0;
+> +			ps3fb_sync(0);	/* single buffer */
+> +		}
+> +		schedule();
+>  	}
+>  	return 0;
+>  }
+> _
+> 
+> There's still no try_to_freeze() in there.  Shouldn't we have one?
 
-Best regards
+Here it is. I'll also resend the whole patch for completeness.
 
-Juergen Orczykowski
+Subject: ps3fb: add missing try_to_freeze()
 
-Siemens AG
-Automation and Drives, A&D MC RD 37
-Tel.  : +49 (9131) 98-3599
-Fax.  : +49 (9131) 98-2360
-mailto:juergen.orczykowski@siemens.com
+ps3fb: add missing try_to_freeze()
 
-Siemens Aktiengesellschaft: Chairman of the Supervisory Board: Heinrich v. =
-Pierer; =
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/ps3fb.c |    2 ++
+ 1 files changed, 2 insertions(+)
 
-Managing Board: Klaus Kleinfeld, Chairman, President and Chief Executive Of=
-ficer;
-Johannes Feldmayer, Joe Kaeser, Rudi Lamprecht, Eduardo Montes, Juergen Rad=
-omski,
-Erich R. Reinhardt, Hermann Requardt, Uriel J. Sharef, Klaus Wucherer
-Registered offices: Berlin and Munich
-Commercial registries: Berlin Charlottenburg, HRB 12300, Munich, HRB 6684
-WEEE Reg. No. DE 23691322
+--- ps3-linux-2.6.21-rc1.orig/drivers/video/ps3fb.c
++++ ps3-linux-2.6.21-rc1/drivers/video/ps3fb.c
+@@ -33,6 +33,7 @@
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/kthread.h>
++#include <linux/freezer.h>
+ 
+ #include <asm/uaccess.h>
+ #include <linux/fb.h>
+@@ -808,6 +809,7 @@ static int ps3fb_ioctl(struct fb_info *i
+ static int ps3fbd(void *arg)
+ {
+ 	while (!kthread_should_stop()) {
++		try_to_freeze();
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		if (ps3fb.is_kicked) {
+ 			ps3fb.is_kicked = 0;
 
+Gr{oetje,eeting}s,
 
------Urspr=FCngliche Nachricht-----
-Von: Antonino A. Daplas [mailto:adaplas@gmail.com] =
+						Geert
 
-Gesendet: Donnerstag, 22. Februar 2007 10:28
-An: linux-fbdev-devel@lists.sourceforge.net
-Cc: Dave Airlie; Orczykowski, Juergen
-Betreff: Re: [Linux-fbdev-devel] bug in intelfbhw.c
-
-On Thu, 2007-02-22 at 09:14 +0100, Orczykowski, Juergen wrote:
-> Hello,
-> =
-
-> we would like to use your drivers in our software. While debugging we
-> found a bug in calculating the ring_space.
-> =
-
-> If there is less then RING_MIN_FREE available in the ring buffer,
-> dinfo->ring_space is set to a big value forcing wait_ring to return.
-> =
-
-> We have attached a possible solution to solve this bug.
-> =
-
-
-Dave,
-
-I created a patch based on the source.  I don't have the hardware so do
-you want to look at this?
-
-Tony
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

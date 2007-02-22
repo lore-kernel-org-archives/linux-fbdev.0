@@ -1,37 +1,65 @@
-From: Alex Romosan <romosan@sycorax.lbl.gov>
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Date: Wed, 21 Feb 2007 15:51:42 -0800
-Message-ID: <87fy8z6pdd.fsf@sycorax.lbl.gov>
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	<20070219000412.acad13de.akpm@linux-foundation.org>
-	<1171876788.6046.3.camel@localhost.localdomain>
-	<877iub9mu2.fsf@sycorax.lbl.gov>
-	<1172097718.5790.29.camel@localhost.localdomain>
+From: Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: linux 2.6.21-rc1 : FB Kconfig error
+Date: Thu, 22 Feb 2007 01:01:46 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0702220052020.14457@scrub.home>
+References: <200702210946.27758.toralf.foerster@gmx.de>
+	<Pine.LNX.4.62.0702211102000.340@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702211238400.14457@scrub.home>
+	<Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751364AbXBUXw2@vger.kernel.org>
-In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain> (message from
-	Richard Purdie on Wed, 21 Feb 2007 22:41:57 +0000)
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HK1Pe-0004pS-MH for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 16:02:18 -0800
+Received: from scrub.xs4all.nl ([194.109.195.176] ident=mail)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK1Pd-0007rl-6j
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 16:02:18 -0800
+In-Reply-To: <Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Richard Purdie <rpurdie@rpsys.net> writes:
+Hi,
 
-> If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
-> with that option disabled?
+On Wed, 21 Feb 2007, Geert Uytterhoeven wrote:
 
-i don't have my laptop with me but i am pretty sure
-FB_RADEON_BACKLIGHT wasn't set for 2.6.20 (i think it showed up as a
-new option when i did make oldconfig). i'll post the difference when i
-get home tonight and also try disabling it.
+> Why doesn't it obey dependencies?
 
---alex--
+It was initially created to any override dependencies.
 
--- 
-| I believe the moment is at hand when, by a paranoiac and active |
-|  advance of the mind, it will be possible (simultaneously with  |
-|  automatism and other passive states) to systematize confusion  |
-|  and thus to help to discredit completely the world of reality. |
+> > In this case it looks like someone went a little overboard with the select 
+> > usage. It looks like most of the PS3 options could be hidden behind an 
+> > advanced option, then you can also use normal dependencies.
+> 
+> We wanted to have PS3FB and PS3SND (not yet submitted) to select PS3AV, so it
+> gets enabled automatically. Else we need dependencies on things the user
+> shouldn't really need to care about.
+> 
+> What other solution do you propose?
+
+As I said most PS3 could be hidden behind a PS3_ADVANCED option and use 
+normal dependencies for the rest. Normal users don't care about all 
+the options and advanced users should know what they're doing.
+
+bye, Roman
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

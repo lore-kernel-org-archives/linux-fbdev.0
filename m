@@ -1,8 +1,11 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH]
-Date: Thu, 22 Feb 2007 09:03:54 +0800
-Message-ID: <1172106234.4217.50.camel@daplas>
-References: <Pine.LNX.4.64.0702212105280.20620@pentafluge.infradead.org>
+Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge,
+	updated
+Date: Thu, 22 Feb 2007 09:08:25 +0800
+Message-ID: <1172106505.4217.54.camel@daplas>
+References: <20070209193405.GB2637@localhost.localdomain>
+	<1172102733.4217.38.camel@daplas>
+	<Pine.LNX.4.64.0702220049320.17121@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,16 +14,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK2KW-00026f-F6 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 17:01:04 -0800
-Received: from nz-out-0506.google.com ([64.233.162.229])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK2KV-0003n3-0S
+	id 1HK2Ou-0002YB-75 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 17:05:36 -0800
+Received: from nz-out-0506.google.com ([64.233.162.236])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK2Os-0004wk-SI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 17:01:04 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so24951nzi
+	Wed, 21 Feb 2007 17:05:36 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so26422nzi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 21 Feb 2007 17:01:02 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.64.0702212105280.20620@pentafluge.infradead.org>
+	Wed, 21 Feb 2007 17:05:34 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0702220049320.17121@pentafluge.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,94 +34,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>, Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
 
-On Wed, 2007-02-21 at 21:23 +0000, James Simmons wrote:
-> This is the new display intreface. Its goal is to provide a standard 
-> interface to various types of displays. Currently we have auxdisplay, 
-> output acpi device and the now defunct lcd class in the backlight directory.
-> Please apply.
-
-Is this an attempt to consolidate all display hardware and drivers?
-
+On Thu, 2007-02-22 at 00:53 +0000, James Simmons wrote:
+> > > +/* image data is MSB-first, fb structure is MSB-first too */
+> > > +static inline u32 expand_color(u32 c)
+> > > +{
+> > > +	return ((c & 1) | ((c & 2) << 7) | ((c & 4) << 14) | ((c & 8) << 21)) * 0xFF;
+> > > +}
+> > > +
+> > > +/* s3fb_iplan_imageblit silently assumes that almost everything is 8-pixel aligned */
+> > 
+> > Hmn, same thing with vga16fb... Perhaps we should bring back the
+> > fontwidth flag of 2.2 and 2.4 kernels.
 > 
-[snip]
-> +struct class *display_class;
-> +EXPORT_SYMBOL(display_class);
-> +static int index;
-> +
-> +struct display_device *display_device_register(struct display_driver *driver,
-> +						struct device *dev, void *devdata)
-> +{
-> +	struct display_device *new_dev = NULL;
-> +	int ret = -EINVAL;
-> +
-> +	if (unlikely(!driver))
-> +		return ERR_PTR(ret);
-> +
-> +	new_dev = kzalloc(sizeof(struct display_device), GFP_KERNEL);
-> +	if (likely(new_dev) && unlikely(driver->probe(new_dev, devdata))) {
-> +		new_dev->dev = device_create(display_class, dev, 0,
-> +						"display%d", index);
-> +
-> +		if (!IS_ERR(new_dev->dev)) {
-> +			dev_set_drvdata(new_dev->dev, new_dev);
-> +			new_dev->driver = driver;
-> +			new_dev->parent = dev;
-> +			mutex_init(&new_dev->lock);
-> +			index++;
-> +		} else {
-> +			new_dev->dev = NULL;
-> +			kfree(new_dev);
+> Ug no. It is possible to get 12,6 bit width fonts working with vga 
+> interleaved planes. I got it paritally working but never got back to it.
+> Its in my queue of this to do. Now that I finished the display class I 
+> need to get around to makeing drm/fbdev work together :-)
+> 
 
-Set new_dev to NULL on failure.
+Of course, not fontwidth exactly, but to allow the driver to specify the
+alignment of the blit engine, in this case 8 pixels. I do believe X also
+has similar functionality to compensate for the limitation of the
+hardware.
 
-> +		}
-> +	}
-> +	return new_dev;
-> +}
-> +EXPORT_SYMBOL(display_device_register);
-> +
-> +void display_device_unregister(struct display_device *ddev)
-> +{
-> +	if (!ddev)
-> +		return;
-> +	mutex_lock(&ddev->lock);
-> +	device_del(ddev->dev);
-> +	ddev->driver = NULL;
-> +	index--;
-
-display0
-display1
-index = 2
-unregister display0
-index = 1
-display_device_register() as device1
-device1 <-- BUG, already used.
-
-[snip]
-
-> +
-> +struct display_device;
-> +
-> +/* This structure defines all the properties of a Display. */
-> +struct display_driver {
-> +	int  (*set_contrast)(struct display_device *, unsigned int);
-> +	int  (*get_contrast)(struct display_device *);
-> +	void (*suspend)(struct display_device *, pm_message_t state);
-> +	void (*resume)(struct display_device *);
-> +	int  (*probe)(struct display_device *, void *);
-> +	int  (*remove)(struct display_device *);
-> +	int  max_contrast;
-
-If this is an attempt to consolidate, I don't see the 'brightness'
-hook of backlight and lcd.
-
-If this is not a consolidation, why don't we just extend the lcd class?
-
-Tony 
-
+Tony
 
 
 -------------------------------------------------------------------------

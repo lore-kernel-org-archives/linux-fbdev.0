@@ -1,58 +1,77 @@
-From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Date: Thu, 22 Feb 2007 09:01:52 +0100
-Message-ID: <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-References: <ephv35$4i3$1@sea.gmane.org>
-	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
-	 <20070128162907.370f5476.akpm@osdl.org>
-	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
-	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
-	 <20070130203301.GA15067@dreamland.darkstar.lan>
-	 <20070204201713.GA12867@dreamland.darkstar.lan>
-	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
-	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
-	 <1172101406.4217.16.camel@daplas>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: enquiry about 4 bpp frame buffer with
+ nibbles swapped
+Date: Thu, 22 Feb 2007 09:08:02 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702220906410.32271@pademelon.sonytel.be>
+References: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
+	<Pine.LNX.4.62.0702210832300.7944@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702212148500.20620@pentafluge.infradead.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932823AbXBVIBz@vger.kernel.org>
-In-Reply-To: <1172101406.4217.16.camel@daplas>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HK8zs-0008WM-Ot for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 00:08:13 -0800
+Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK8zr-00082A-Af
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 00:08:12 -0800
+In-Reply-To: <Pine.LNX.4.64.0702212148500.20620@pentafluge.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Aitor Garcia <carrierphasejitter@yahoo.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote:
-> >
-> > As mentioned in another post in this thread, I can't get any info out
-> > of the i2c busses, because even when I have them available (i.e. after
-> > loading nvidiafb) I get XXXX all around (on all three of them).
-> > Suggestions on how to get the information welcome.
->
-> Is this the same monitor you posted here?
->
-> http://marc.theaimsgroup.com/?l=linux-kernel&m=112807065616218&w=2
->
-> If yes, we already have the manufacturer and model code. The main
-> problem is that the EDID of this display has no sync range (H: 75-75kHz
-> and V: 60-60Hz).  Extending Hsync from 30-75kHz as a fix to the EDID
-> block shouldn't be too hard.
+On Wed, 21 Feb 2007, James Simmons wrote:
+> > > But I do not know where to do it. 
+> > > Frame Buffer has 3 functions cfb_fillrect,
+> > > cfb_copyarea and cfb_imageblit which I thought were
+> > > the key to solve my problems but Qtopia Core does not
+> > > make use
+> > > of them.  
+> > 
+> > Indeed, cfb_{fillrect,copyarea,imageblit}() are used by the kernel only.
+> 
+> Speaking of. Are you using fbcon? If that is the case then your console 
+> should look messed up.
+>  
+> > > imxfb_map_video_memory function or fb_mmap, seem to be
+> > > good candidates but I do not know how to progress
+> > > further.
+> > 
+> > If the order of the nibbles can be configured in hardware, you should do that.
+> > Else I'm afraid you will have to modify Qtopia Core.
+> 
+> Can fb_bitfield handle that case ?
 
-Yes, that's it! Jeepers, I can't believe that even re-reading the past
-LKML posts (even those!) I couldn't find the EDID info and how we had
-gotten them. I guess I need stronger glasses.
+No, it only handles bits within a pixel. It doesn't handle the order of
+pixels within a byte (or word).
 
-Wonder why Luca's proposed patch makes the EDID undetectable, now, and
-why can't it be retrieved at a later time via i2c. Timeouts too small?
+Gr{oetje,eeting}s,
 
-> I already have a patch for this which I forgot to send to you
-> before :-).  If you can confirm that this is still the same hardware,
-> I'll send you a test patch
+						Geert
 
-Yes, it's the same hardware. I can try the patch, with or without Luca's.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
--- 
-Giuseppe "Oblomov" Bilotta
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

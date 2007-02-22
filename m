@@ -1,55 +1,38 @@
 From: Rodolfo Giometti <giometti@enneenne.com>
 Subject: Re: [PATCH 1/1] PXAFB: Support for backlight control
-Date: Thu, 22 Feb 2007 09:28:49 +0100
-Message-ID: <20070222082848.GM4641@enneenne.com>
-References: <20070221145353.GA23916@enneenne.com> <1172105946.5790.78.camel@localhost.localdomain>
+Date: Thu, 22 Feb 2007 09:32:04 +0100
+Message-ID: <20070222083204.GN4641@enneenne.com>
+References: <20070221145353.GA23916@enneenne.com> <1056908425.20070221180037@gmail.com> <20070221161210.GL4641@enneenne.com> <1741775233.20070221182608@gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751458AbXBVI2d@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932598AbXBVIbp@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1172105946.5790.78.camel@localhost.localdomain>
+In-Reply-To: <1741775233.20070221182608@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Paul Sokolovsky <pmiscml@gmail.com>
+To: Paul Sokolovsky <pmiscml@gmail.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Richard Purdie <rpurdie@rpsys.net>
 
-On Thu, Feb 22, 2007 at 12:59:06AM +0000, Richard Purdie wrote:
-> 
-> Reading through the patch its:
-> 
-> 1) Not against any mainline kernel
-> 2) Not against a recent kernel
+On Wed, Feb 21, 2007 at 06:26:08PM +0200, Paul Sokolovsky wrote:
+k>   Why? It's the same, except that it already exists, generic one (not
+> limited to pxafb), and requires 1 function (too bad that C doesn't
+> support lambda's):
 
-I'm sorry, but the patch applay against the latest kernel. Please, try
-it.
+Ah, ok.
 
-> There were a number of backlight class changes just merged into mainline
-> and you need to sync up any patch against them.
+>   I sent a bit of criticism for that too ;-). YMMV, but kernel
+> solutions are just bound to be pretty simple and generic and lack
+> any "niceties", which you'd likely want to do anyway eventually. For
+> example, what if you'll want to implement "fade out" effect for
+> keyboard backlight? Doing it in adhoc manner in kernel? Whereas with
+> the LCD classdev, you can write generic "fade out" trigger and
+> attach/detach it from userspace.
 
-My patch uses current backlight class support in the kernel.
+I agree. I just wish to add a backlight support for my LCD and
+minikeypad.
 
-> As mentioned by others, there is no need to tie the backlight driver
-> into the framebuffer any more. Have a look at
-> drivers/video/backlight/corgi_bl.c for an example (its used by PXA
-> devices).
-
-That driver uses the backlight class support as my patch does into
-pxafb.
-
-> I have said elsewhere I will take patches to make corgi_bl a more
-> generic driver (or maybe create a simple generic backlight driver) along
-> the lines of what Paul mentioned.
-
-I see.
-
-I suppose you are the backlight support mantainer, so what do you
-suggest to do to "make corgi_bl a more generic driver"?
-
-I have to rename and modify it? Or just copy it to have backward
-compatibility and the modify the new file?
-
-I should mv backlight directory from the video one?
+What do you suggest to me in order to accomplish such task?
 
 Thanks for your suggestions,
 

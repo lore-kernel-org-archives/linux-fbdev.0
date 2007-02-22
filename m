@@ -1,35 +1,58 @@
-From: Alex Romosan <romosan@sycorax.lbl.gov>
-Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Date: Wed, 21 Feb 2007 20:58:29 -0800
-Message-ID: <87vehurdoq.fsf@sycorax.lbl.gov>
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	<20070219000412.acad13de.akpm@linux-foundation.org>
-	<1171876788.6046.3.camel@localhost.localdomain>
-	<877iub9mu2.fsf@sycorax.lbl.gov>
-	<1172097718.5790.29.camel@localhost.localdomain>
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Date: Thu, 22 Feb 2007 09:01:52 +0100
+Message-ID: <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+	 <20070128162907.370f5476.akpm@osdl.org>
+	 <21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+	 <cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+	 <20070130203301.GA15067@dreamland.darkstar.lan>
+	 <20070204201713.GA12867@dreamland.darkstar.lan>
+	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+	 <1172101406.4217.16.camel@daplas>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750870AbXBVE6x@vger.kernel.org>
-In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain> (message from
-	Richard Purdie on Wed, 21 Feb 2007 22:41:57 +0000)
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932823AbXBVIBz@vger.kernel.org>
+In-Reply-To: <1172101406.4217.16.camel@daplas>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
 
-Richard Purdie <rpurdie@rpsys.net> writes:
+On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote:
+> >
+> > As mentioned in another post in this thread, I can't get any info out
+> > of the i2c busses, because even when I have them available (i.e. after
+> > loading nvidiafb) I get XXXX all around (on all three of them).
+> > Suggestions on how to get the information welcome.
+>
+> Is this the same monitor you posted here?
+>
+> http://marc.theaimsgroup.com/?l=linux-kernel&m=112807065616218&w=2
+>
+> If yes, we already have the manufacturer and model code. The main
+> problem is that the EDID of this display has no sync range (H: 75-75kHz
+> and V: 60-60Hz).  Extending Hsync from 30-75kHz as a fix to the EDID
+> block shouldn't be too hard.
 
-> If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
-> with that option disabled?
+Yes, that's it! Jeepers, I can't believe that even re-reading the past
+LKML posts (even those!) I couldn't find the EDID info and how we had
+gotten them. I guess I need stronger glasses.
 
-i've disabled FB_RADEON_BACKLIGHT (FB_BACKLIGHT also got deselected)
-and i managed to boot into 2.6.21-rc1 and have a working backlight.
+Wonder why Luca's proposed patch makes the EDID undetectable, now, and
+why can't it be retrieved at a later time via i2c. Timeouts too small?
 
---alex--
+> I already have a patch for this which I forgot to send to you
+> before :-).  If you can confirm that this is still the same hardware,
+> I'll send you a test patch
+
+Yes, it's the same hardware. I can try the patch, with or without Luca's.
+
 
 -- 
-| I believe the moment is at hand when, by a paranoiac and active |
-|  advance of the mind, it will be possible (simultaneously with  |
-|  automatism and other passive states) to systematize confusion  |
-|  and thus to help to discredit completely the world of reality. |
+Giuseppe "Oblomov" Bilotta

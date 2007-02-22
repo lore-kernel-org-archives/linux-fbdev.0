@@ -1,11 +1,19 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: enquiry about 4 bpp frame buffer with
- nibbles swapped
-Date: Thu, 22 Feb 2007 09:08:02 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702220906410.32271@pademelon.sonytel.be>
-References: <20070220121156.41538.qmail@web51601.mail.yahoo.com>
-	<Pine.LNX.4.62.0702210832300.7944@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702212148500.20620@pentafluge.infradead.org>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 1/4 (final?)] ps3fb: thread updates
+Date: Thu, 22 Feb 2007 09:21:36 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0702220918150.32271@pademelon.sonytel.be>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com>
+	<20070215175007.GA10817@lst.de>
+	<1171575817.5644.44.camel@localhost.localdomain>
+	<20070215165916.de546f0d.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+	<20070216163811.GB32051@lst.de>
+	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
+	<20070221152047.0d3da74c.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,13 +22,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK8zs-0008WM-Ot for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 00:08:13 -0800
+	id 1HK9Cx-0001LB-Fb for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 00:21:43 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK8zr-00082A-Af
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK9Cx-0003F4-2N
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 00:08:12 -0800
-In-Reply-To: <Pine.LNX.4.64.0702212148500.20620@pentafluge.infradead.org>
+	Thu, 22 Feb 2007 00:21:43 -0800
+In-Reply-To: <20070221152047.0d3da74c.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,44 +39,58 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: Aitor Garcia <carrierphasejitter@yahoo.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Christoph Hellwig <hch@lst.de>
 
-On Wed, 21 Feb 2007, James Simmons wrote:
-> > > But I do not know where to do it. 
-> > > Frame Buffer has 3 functions cfb_fillrect,
-> > > cfb_copyarea and cfb_imageblit which I thought were
-> > > the key to solve my problems but Qtopia Core does not
-> > > make use
-> > > of them.  
-> > 
-> > Indeed, cfb_{fillrect,copyarea,imageblit}() are used by the kernel only.
+On Wed, 21 Feb 2007, Andrew Morton wrote:
+> On Tue, 20 Feb 2007 11:42:04 +0100 (CET)
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 > 
-> Speaking of. Are you using fbcon? If that is the case then your console 
-> should look messed up.
+> > ps3fb: Replace the kernel_thread and the semaphore by a proper kthread, which is
+> > simply woken up when the screen must be updated
+> 
+> <goes off and generates the incremental diff again so we can see what changed>
+
+Sorry, I thought you were just going to replace the patch you already had in
+your queue/heap/stack.
+
+> @@ -808,16 +807,13 @@ static int ps3fb_ioctl(struct fb_info *i
 >  
-> > > imxfb_map_video_memory function or fb_mmap, seem to be
-> > > good candidates but I do not know how to progress
-> > > further.
-> > 
-> > If the order of the nibbles can be configured in hardware, you should do that.
-> > Else I'm afraid you will have to modify Qtopia Core.
+>  static int ps3fbd(void *arg)
+>  {
+> -	DEFINE_WAIT(wait);
+> -	DECLARE_WAIT_QUEUE_HEAD(wq);
+> -
+>  	while (!kthread_should_stop()) {
+> -		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
+> -		if (!ps3fb.is_kicked)
+> -			schedule();
+> -		finish_wait(&wq, &wait);
+> -		ps3fb.is_kicked = 0;
+> -		ps3fb_sync(0);	/* single buffer */
+> +		set_current_state(TASK_INTERRUPTIBLE);
+> +		if (ps3fb.is_kicked) {
+> +			ps3fb.is_kicked = 0;
+> +			ps3fb_sync(0);	/* single buffer */
+> +		}
+> +		schedule();
+>  	}
+>  	return 0;
+>  }
+> _
 > 
-> Can fb_bitfield handle that case ?
+> There's still no try_to_freeze() in there.  Shouldn't we have one?
 
-No, it only handles bits within a pixel. It doesn't handle the order of
-pixels within a byte (or word).
+Thanks, I'll add it.
 
 Gr{oetje,eeting}s,
 
 						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

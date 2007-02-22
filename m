@@ -1,15 +1,11 @@
-From: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH 1/1] PXAFB: Support for backlight
-	control
-Date: Thu, 22 Feb 2007 17:11:56 +0000
-Message-ID: <1172164316.5837.102.camel@localhost.localdomain>
-References: <20070221145353.GA23916@enneenne.com>
-	<1056908425.20070221180037@gmail.com>
-	<20070221161210.GL4641@enneenne.com>
-	<1741775233.20070221182608@gmail.com>
-	<20070222083204.GN4641@enneenne.com>
-	<1868738509.20070222123335@gmail.com>
-	<20070222163727.GV13924@enneenne.com>
+From: David Miller <davem@davemloft.net>
+Subject: Re: no backlight on radeon after recent kernel
+ "upgrade"s
+Date: Thu, 22 Feb 2007 09:28:12 -0800 (PST)
+Message-ID: <20070222.092812.112620509.davem@davemloft.net>
+References: <Pine.LNX.4.64.0702220109450.17121@pentafluge.infradead.org>
+	<20070222020951.GR7920@ca-server1.us.oracle.com>
+	<Pine.LNX.4.64.0702221549530.29542@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,14 +14,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKHUa-0006J1-2m for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 09:12:28 -0800
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HKHUX-00044B-8L
+	id 1HKHjx-00083r-5F for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 09:28:21 -0800
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKHjs-0000KQ-T0
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 09:12:27 -0800
-In-Reply-To: <20070222163727.GV13924@enneenne.com>
+	Thu, 22 Feb 2007 09:28:17 -0800
+In-Reply-To: <Pine.LNX.4.64.0702221549530.29542@pentafluge.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,32 +31,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Paul Sokolovsky <pmiscml@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk
+To: jsimmons@infradead.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, Joel.Becker@oracle.com, linux-kernel@vger.kernel.org, rpurdie@rpsys.net, akpm@linux-foundation.org, lists@onerussian.com
 
-On Thu, 2007-02-22 at 17:37 +0100, Rodolfo Giometti wrote:
-> On Thu, Feb 22, 2007 at 12:33:35PM +0200, Paul Sokolovsky wrote:
-> > 
-> >   We in handhelds.org codebase have attached patch* to make corgi_bl
-> > more suitable for general use. This patch was submitted to Richard
-> > (so, more votes needed ;-) ). Otherwise, snippet I pasted is from real
-> > machine implementation, HP iPaq h4000.
-> 
-> You have my vote! :)
-> 
-> So let me suggest this patch who allows multiple driver instances (I
-> use it for both LCD and keypad backlighti devices).
-> 
-> Hope it could be merged into main line (maybe without the "corgi"
-> prefix ;-).
+From: James Simmons <jsimmons@infradead.org>
+Date: Thu, 22 Feb 2007 15:55:24 +0000 (GMT)
 
-Doing something along these lines is on my todo list but not at the top
-since its 2.6.22 material now. Something should appear in -mm within a
-few weeks but I don't have the time just at the moment.
+> I just tested various confirations of backlight support. Backlight is 
+> ALWAYS selected by default when you select a particular fbdev driver that 
+> has backlight support. You just have the option to turn it off if you 
+> want. These problems are showing up because of stale .config files.
 
-Richard
+BTW, enabling the backlight option broke things for me with
+Radeon on sparc64 too, FWIW.
 
+And when the option was presented to me for the first time,
+the default was yes, so that's what I gave it.
 
+This is what a lot of users would see.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

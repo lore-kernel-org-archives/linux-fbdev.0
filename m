@@ -1,36 +1,36 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Fri, 23 Feb 2007 07:34:09 +0800
-Message-ID: <1172187249.4279.7.camel@daplas>
-References: <ephv35$4i3$1@sea.gmane.org>
+Date: Fri, 23 Feb 2007 07:34:11 +0800
+Message-ID: <1172187251.4279.9.camel@daplas>
+References: <21d7e9970701281612q56b694edp6efd1a5556dea3fe@mail.gmail.com>
+	<20070128162907.370f5476.akpm@osdl.org>
+	<21d7e9970701281639w57edc2efw4ba620d4c1bdcee7@mail.gmail.com>
+	<cb7bb73a0701290637q2ce0ff16t28f82d0c0339a2ba@mail.gmail.com>
+	<20070130203301.GA15067@dreamland.darkstar.lan>
+	<20070204201713.GA12867@dreamland.darkstar.lan>
 	<Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
 	<cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
 	<1172101406.4217.16.camel@daplas>
 	<cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-	<1172133646.4086.5.camel@daplas>
-	<cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
-	<1172153358.4306.17.camel@daplas>
-	<cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
-	<1172161290.4198.12.camel@daplas>
-	<cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+	<20070222203904.GA15349@dreamland.darkstar.lan>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKNPV-0005Zz-3l for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 15:31:37 -0800
-Received: from py-out-1112.google.com ([64.233.166.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKNPT-0005kv-Jw
+	id 1HKNQ8-0005fr-EW for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 15:32:16 -0800
+Received: from nz-out-0506.google.com ([64.233.162.226])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKNQ7-0000ss-5r
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 15:31:37 -0800
-Received: by py-out-1112.google.com with SMTP id a29so160125pyi
+	Thu, 22 Feb 2007 15:32:16 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so557314nzi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 22 Feb 2007 15:31:35 -0800 (PST)
-In-Reply-To: <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+	Thu, 22 Feb 2007 15:32:14 -0800 (PST)
+In-Reply-To: <20070222203904.GA15349@dreamland.darkstar.lan>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -41,41 +41,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Luca Tettamanti <kronos@people.it>, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Dave Airlie <airlied@gmail.com>
+To: Luca Tettamanti <kronos@people.it>
+Cc: Andrew Morton <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Giuseppe Bilotta <giuseppe.bilotta@gmail.com>, Dave Airlie <airlied@gmail.com>
 
-On Thu, 2007-02-22 at 20:08 +0100, Giuseppe Bilotta wrote:
-> On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > On Thu, 2007-02-22 at 16:55 +0100, Giuseppe Bilotta wrote:
-> > >
-> > > However, I'm still getting the same snowy effects, which doesn't come
-> > > as a surprise since the actual mode timings used are just the same ...
-> >
-> > Yes, because the EDID has only 1 mode entry. But now you can use 'fbset
-> > 1024x768-60' (or any mode smaller than 1600x1200-60) for example and it
-> > should work.
-> 
-> No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
-> and they /all/ come up snowy. This is starting to look queerer and
-> queerer. I've also tried changing vf min and max as you suggested:
-
-Before we proceed, do you agree that the patch will allow you to change
-video modes without disabling DDC support?  So this is still a valid
-fix?
+On Thu, 2007-02-22 at 21:39 +0100, Luca Tettamanti wrote:
+> Il Thu, Feb 22, 2007 at 09:01:52AM +0100, Giuseppe Bilotta ha scritto: 
+> > On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> > >On Wed, 2007-02-07 at 00:08 +0100, Giuseppe Bilotta wrote:
 
 > 
-> >  You might want to change  vfmin and vfmax to 59 and 61
+> Still scratching my head :|
 > 
-> and even the M and MR methods which you suggested in the other email.
-> Since nvidiafb is being loaded from the command line because it's a
-> blacklisted module otherwise, I've been using the mode_option option.
-> However, neither the mode_option nor fbset seem to give me anything
-> not snowy.
+> Tony,
+> this is the patch (modulo cosmetic stuff) that I sent to Giuseppe. I
+> believe it's correct (I cross checked with X.org driver):
+> 
 
-When does your display become snowy? Is the snow constant or does it
-only snow when doing heavy text operations, such as scrolling?
-
-I presume that X's nv driver or vesafb does not exhibit this problem?
+Yes, the patch does look correct.  I also don't understand why
+Giuseppe's hardware failed to do i2c with this...
 
 Tony
 

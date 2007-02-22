@@ -1,63 +1,46 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH]
-Date: Thu, 22 Feb 2007 16:49:36 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702221648540.29542@pentafluge.infradead.org>
-References: <Pine.LNX.4.64.0702212105280.20620@pentafluge.infradead.org> 
-	<1172106234.4217.50.camel@daplas>
-	<Pine.LNX.4.64.0702220119060.17121@pentafluge.infradead.org>
-	<1172109206.4217.61.camel@daplas>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Date: Fri, 23 Feb 2007 01:03:31 +0800
+Message-ID: <1172163811.4198.19.camel@daplas>
+References: <ephv35$4i3$1@sea.gmane.org>
+	 <20070130203301.GA15067@dreamland.darkstar.lan>
+	 <20070204201713.GA12867@dreamland.darkstar.lan>
+	 <Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	 <cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+	 <1172101406.4217.16.camel@daplas>
+	 <cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	 <1172133646.4086.5.camel@daplas>
+	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	 <1172153358.4306.17.camel@daplas>
+	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKH8c-0003uJ-82 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 08:49:46 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HKH8Z-00064T-SG
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 08:49:46 -0800
-In-Reply-To: <1172109206.4217.61.camel@daplas>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751717AbXBVRAs@vger.kernel.org>
+In-Reply-To: <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
 
-On Thu, 22 Feb 2007, Antonino A. Daplas wrote:
-
-> On Thu, 2007-02-22 at 01:35 +0000, James Simmons wrote:
-> > > On Wed, 2007-02-21 at 21:23 +0000, James Simmons wrote:
+On Thu, 2007-02-22 at 16:55 +0100, Giuseppe Bilotta wrote:
+> On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> However, I'm still getting the same snowy effects, which doesn't come
+> as a surprise since the actual mode timings used are just the same ...
 > 
-> > > If this is an attempt to consolidate, I don't see the 'brightness'
-> > > hook of backlight and lcd.
-> > > 
-> > > If this is not a consolidation, why don't we just extend the lcd class?
-> > 
-> > Its is a replacement for lcd. Is brightness universal for all display 
-> > types?
-> 
-> Well, if you're adding a universal interface, you need hooks for more
-> than that (brightness, contrast, hue, saturation, tint, etc).  Then we
-> just let the drivers cherry pick from the list on what it's going to
-> support.
 
-Ah. Thats the power of sysfs groups :-)
+BTW, you can also use CVT modes for nvidiafb, even if the mode in
+question is not present in the EDID block.  For example:
 
+video=nvidiafb:1024x768M@60 or 1600x1200M@60 
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+(The 'M' tells fb_find_mode to do a CVT calculation instead).
+
+If you use a reduced-blanking CVT mode, it might even reduce the snow of
+your DVI even at the highest resolution.  So:
+
+video=nvidiafb:1600x1200MR@60
+
+(The additional 'R' will do reduced-blanking CVT calculation)
+
+Tony

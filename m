@@ -1,61 +1,42 @@
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: ACPI: ibm-acpi: fix initial status of backlight device
-Date: Thu, 22 Feb 2007 12:45:11 -0200
-Message-ID: <20070222144511.GC25887@khazad-dum.debian.net>
-References: <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <20070222011017.GA8845@khazad-dum.debian.net> <20070222011643.GB8845@khazad-dum.debian.net> <1172138587.5837.37.camel@localhost.localdomain>
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+Date: Thu, 22 Feb 2007 12:56:13 -0200
+Message-ID: <20070222145613.GD25887@khazad-dum.debian.net>
+References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <20070222011017.GA8845@khazad-dum.debian.net> <1172138450.5837.34.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932151AbXBVO4S@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1172138587.5837.37.camel@localhost.localdomain>
-Sender: linux-acpi-owner@vger.kernel.org
+In-Reply-To: <1172138450.5837.34.camel@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org
+Cc: Alex Romosan <romosan@sycorax.lbl.gov>, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-The brightness class core does not update the initial status of the
-device's brightness at register time.  Do it by ourselves.
+On Thu, 22 Feb 2007, Richard Purdie wrote:
+> > it to Len Brown for merging into 2.6.21, or NACK it if you'd rather do it in
+> > the backlight class core.
+> 
+> We can't change the backlight class code since some hardware can't read
+> from the device, only write to it. Initialisation in that case is a bit
+> different.
 
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Richard Purdie <rpurdie@rpsys.net>
----
+Initializing stuff after registering is also racy as the device is not
+locked but we are going to clobber data in its properties struct.  I don't
+particularly care about that race, but...
 
-Waiting ACK from Richard Purdie, applies on top of 2.6.21-rc1.  Also fixes a
-whitespace problem.
+Anyway, you have the 2.6.21-rc patch now, to ACK or NACK.  I still think the
+class should be handling this.  If a device is write-only, it should have no
+_get ops handler, which means that the class can easily differentiate the
+two cases and do the right thing for both.  There's less code duplication
+that way.
 
- drivers/acpi/ibm_acpi.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
-index 4cc534e..c59ebff 100644
---- a/drivers/acpi/ibm_acpi.c
-+++ b/drivers/acpi/ibm_acpi.c
-@@ -1711,6 +1711,12 @@ static struct backlight_ops ibm_backlight_data = {
- 
- static int brightness_init(void)
- {
-+	int b;
-+
-+	b = brightness_get(NULL);
-+	if (b < 0)
-+		return b;
-+
- 	ibm_backlight_device = backlight_device_register("ibm", NULL, NULL,
- 							 &ibm_backlight_data);
- 	if (IS_ERR(ibm_backlight_device)) {
-@@ -1718,7 +1724,8 @@ static int brightness_init(void)
- 		return PTR_ERR(ibm_backlight_device);
- 	}
- 
--        ibm_backlight_device->props.max_brightness = 7;
-+	ibm_backlight_device->props.max_brightness = 7;
-+	ibm_backlight_device->props.brightness = b;
- 
- 	return 0;
- }
--- 
-1.4.4.4
+Howerver, I *do* strongly wish for a way to combine various drivers into a
+single backlight device, where radeon/intelfb takes care of some stuff,
+ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
+standard naming for the builtin screen(s) would help, calling it "ibm",
+"asus", "sony" is not good IMHO.
 
 -- 
   "One disk to rule them all, One disk to find them. One disk to bring

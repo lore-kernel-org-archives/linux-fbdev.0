@@ -1,25 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: bug in intelfbhw.c
-Date: Thu, 22 Feb 2007 17:27:58 +0800
-Message-ID: <1172136478.4086.19.camel@daplas>
-References: <3E56BFF2E134A44A98D9FFDB710688DF011D3DF7@ERLD151A.ww004.siemens.net>
+From: Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 1/1] PXAFB: Support for backlight
+	control
+Date: Thu, 22 Feb 2007 09:27:09 +0000
+Message-ID: <1172136430.5837.9.camel@localhost.localdomain>
+References: <20070221145353.GA23916@enneenne.com>
+	<1172105946.5790.78.camel@localhost.localdomain>
+	<20070222082848.GM4641@enneenne.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-xDEzhBQxNEOnZdgM8goU"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKACN-0007ac-7r for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 01:25:11 -0800
-Received: from nz-out-0506.google.com ([64.233.162.231])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKACM-0002Rg-TY
+	id 1HKAFR-0007sV-5R for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 01:28:21 -0800
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKAFP-0003KT-Ae
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 01:25:11 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so164489nzi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 22 Feb 2007 01:25:10 -0800 (PST)
-In-Reply-To: <3E56BFF2E134A44A98D9FFDB710688DF011D3DF7@ERLD151A.ww004.siemens.net>
+	Thu, 22 Feb 2007 01:28:21 -0800
+In-Reply-To: <20070222082848.GM4641@enneenne.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,119 +31,63 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Orczykowski, Juergen" <juergen.orczykowski@siemens.com>, Dave Airlie <airlied@gmail.com>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org
 
+On Thu, 2007-02-22 at 09:28 +0100, Rodolfo Giometti wrote:
+> On Thu, Feb 22, 2007 at 12:59:06AM +0000, Richard Purdie wrote:
+> > 
+> > Reading through the patch its:
+> > 
+> > 1) Not against any mainline kernel
 
---=-xDEzhBQxNEOnZdgM8goU
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Sorry, I'd missed a patch entering mainline,
 
-On Thu, 2007-02-22 at 09:14 +0100, Orczykowski, Juergen wrote:
-> Hello,
+> > 2) Not against a recent kernel
 > 
-> we would like to use your drivers in our software. While debugging we
-> found a bug in calculating the ring_space.
+> I'm sorry, but the patch applay against the latest kernel. Please, try
+> it.
+
+but this still applies as there were a number of backlight changes
+merged just before 2.6.21-rc1 and your driver will not work with
+2.6.21-rc1.
+
+> > As mentioned by others, there is no need to tie the backlight driver
+> > into the framebuffer any more. Have a look at
+> > drivers/video/backlight/corgi_bl.c for an example (its used by PXA
+> > devices).
+> z
+> That driver uses the backlight class support as my patch does into
+> pxafb.
+
+Yes, my point is that you shouldn't need to touch pxafb if you use the
+backlight class. I know pxafb has backlight hooks but they are probably
+going to get removed at some point as they should no longer be needed.
+
+> > I have said elsewhere I will take patches to make corgi_bl a more
+> > generic driver (or maybe create a simple generic backlight driver) along
+> > the lines of what Paul mentioned.
 > 
-> If there is less then RING_MIN_FREE available in the ring buffer,
-> dinfo->ring_space is set to a big value forcing wait_ring to return.
+> I see.
 > 
-> We have attached a possible solution to solve this bug.
-> 
+> I suppose you are the backlight support mantainer, so what do you
+> suggest to do to "make corgi_bl a more generic driver"?
 
-Dave,
+What changes do you need to it to be able to use it as a generic driver?
 
-I created a patch based on the source.  I don't have the hardware so do
-you want to look at this?
+The main issue is that the structure definition is in one of the
+sharpsl.h files at the moment so most drivers can't get to it. Fix that
+and it should make a good generic driver.
 
-Tony
+Ideally I'd prefer to leave the name alone since there is broken
+userspace on the Zaurus that uses that name but I can see why people
+want it renamed if its to be used as a generic driver...
 
---=-xDEzhBQxNEOnZdgM8goU
-Content-Disposition: attachment; filename=intelfb_fix_ring_space_bug
-Content-Type: text/plain; name=intelfb_fix_ring_space_bug; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Richard
 
-intelfb: Fix ring space calculation
-
-From: Orczykowski, Juergen <juergen.orczykowski@siemens.com>
-
-If there is less then RING_MIN_FREE available in the ring buffer,
-dinfo->ring_space is set to a big value forcing wait_ring to return.
-
-Fix by making ring space = 0 if ring space < RING_MIN_FREE.
-
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
-
- drivers/video/intelfb/intelfbhw.c |   27 ++++++++++++++++++++-------
- 1 files changed, 20 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
-index c1eb18b..05d07c1 100644
---- a/drivers/video/intelfb/intelfbhw.c
-+++ b/drivers/video/intelfb/intelfbhw.c
-@@ -1428,6 +1428,24 @@ static void refresh_ring(struct intelfb_
- static void reset_state(struct intelfb_info *dinfo);
- static void do_flush(struct intelfb_info *dinfo);
- 
-+static  u32 get_ring_space(struct intelfb_info *dinfo)
-+{
-+	u32 ring_space;
-+
-+	if (dinfo->ring_tail >= dinfo->ring_head)
-+		ring_space = dinfo->ring.size -
-+			(dinfo->ring_tail - dinfo->ring_head);
-+	else
-+		ring_space = dinfo->ring_head - dinfo->ring_tail;
-+
-+	if (ring_space > RING_MIN_FREE)
-+		ring_space -= RING_MIN_FREE;
-+	else
-+		ring_space = 0;
-+
-+	return ring_space;
-+}
-+
- static int
- wait_ring(struct intelfb_info *dinfo, int n)
- {
-@@ -1442,13 +1460,8 @@ #endif
- 	end = jiffies + (HZ * 3);
- 	while (dinfo->ring_space < n) {
- 		dinfo->ring_head = INREG(PRI_RING_HEAD) & RING_HEAD_MASK;
--		if (dinfo->ring_tail + RING_MIN_FREE < dinfo->ring_head)
--			dinfo->ring_space = dinfo->ring_head
--				- (dinfo->ring_tail + RING_MIN_FREE);
--		else
--			dinfo->ring_space = (dinfo->ring.size +
--					     dinfo->ring_head)
--				- (dinfo->ring_tail + RING_MIN_FREE);
-+		dinfo->ring_space = get_ring_space(dinfo);
-+
- 		if (dinfo->ring_head != last_head) {
- 			end = jiffies + (HZ * 3);
- 			last_head = dinfo->ring_head;
-
---=-xDEzhBQxNEOnZdgM8goU
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---=-xDEzhBQxNEOnZdgM8goU
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---=-xDEzhBQxNEOnZdgM8goU--

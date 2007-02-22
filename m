@@ -1,57 +1,56 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: no backlight on radeon after recent kernel
-	"upgrade"s
-Date: Thu, 22 Feb 2007 01:13:15 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702220112440.17121@pentafluge.infradead.org>
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	<20070219000412.acad13de.akpm@linux-foundation.org>
-	<1171876788.6046.3.camel@localhost.localdomain>
-	<877iub9mu2.fsf@sycorax.lbl.gov>
-	<1172097718.5790.29.camel@localhost.localdomain>
-	<87fy8z6pdd.fsf@sycorax.lbl.gov>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: ACPI: ibm-acpi: fix initial status of backlight device
+Date: Wed, 21 Feb 2007 23:16:43 -0200
+Message-ID: <20070222011643.GB8845@khazad-dum.debian.net>
+References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <20070222011017.GA8845@khazad-dum.debian.net>
 Mime-Version: 1.0
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20070222011017.GA8845@khazad-dum.debian.net>
+Sender: linux-acpi-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK2WS-0003KU-C3 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 17:13:26 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK2WQ-0006ZQ-VT
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 17:13:24 -0800
-In-Reply-To: <87fy8z6pdd.fsf@sycorax.lbl.gov>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alex Romosan <romosan@sycorax.lbl.gov>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Yaroslav Halchenko <kernel@onerussian.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org
 
+The brightness class core does not update the initial status of
+the device's brightness at register time.  Do it by ourselves
+before we register the class device.
 
-> Richard Purdie <rpurdie@rpsys.net> writes:
-> 
-> > If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
-> > with that option disabled?
-> 
-> i don't have my laptop with me but i am pretty sure
-> FB_RADEON_BACKLIGHT wasn't set for 2.6.20 (i think it showed up as a
-> new option when i did make oldconfig). i'll post the difference when i
-> get home tonight and also try disabling it.
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
 
-Correct. You need to enable the backlight for the radeon card.
+NOTE: This patch needs an ACK from Richard Purdie before it can be merged,
+as he might want to change the backlight class code instead.
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+ drivers/acpi/ibm_acpi.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
+index 2429e11..6875421 100644
+--- a/drivers/acpi/ibm_acpi.c
++++ b/drivers/acpi/ibm_acpi.c
+@@ -1713,6 +1713,13 @@ static struct backlight_properties ibm_backlight_data = {
+ 
+ static int brightness_init(void)
+ {
++	int b;
++
++	b = brightness_get(NULL);
++	if (b < 0)
++		return b;
++	ibm_backlight_data.brightness = b;
++
+ 	ibm_backlight_device = backlight_device_register("ibm", NULL, NULL,
+ 							 &ibm_backlight_data);
+ 	if (IS_ERR(ibm_backlight_device)) {
+-- 
+1.4.4.4
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh

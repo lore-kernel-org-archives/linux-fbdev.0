@@ -1,30 +1,23 @@
-From: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: no backlight on radeon after recent kernel
-	"upgrade"s
-Date: Thu, 22 Feb 2007 00:12:39 +0000
-Message-ID: <1172103159.5790.45.camel@localhost.localdomain>
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	<20070219000412.acad13de.akpm@linux-foundation.org>
-	<1171876788.6046.3.camel@localhost.localdomain>
-	<877iub9mu2.fsf@sycorax.lbl.gov>
-	<1172097718.5790.29.camel@localhost.localdomain>
-	<20070221231706.GA3336@khazad-dum.debian.net>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: [PATCH] atyfb: Replace busy loop with mdelay()
+Date: Thu, 22 Feb 2007 02:20:33 +0200
+Message-ID: <20070222002033.GA26166@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK1Zy-0005qn-FV for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 16:13:01 -0800
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	id 1HK1hc-0006dA-7Q for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 16:20:53 -0800
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HK1Zw-0006Fs-KY
+	(Exim 4.44) id 1HK1hZ-0008Ds-MJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 16:12:58 -0800
-In-Reply-To: <20070221231706.GA3336@khazad-dum.debian.net>
+	Wed, 21 Feb 2007 16:20:52 -0800
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,53 +28,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: James Simmons <jsimmons@infradead.org>, Alex Romosan <romosan@sycorax.lbl.gov>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@osdl.org, alex.kern@gmx.de, jsimmons@infradead.org, stable@kernel.org, adaplas@gmail.com
 
-On Wed, 2007-02-21 at 21:17 -0200, Henrique de Moraes Holschuh wrote:
-> On Wed, 21 Feb 2007, Richard Purdie wrote:
-> > enabled. On a thinkpad, the backlight is probably under ACPI control.
-> 
-> BIOS+ACPI, actually.  Without ACPI video loaded, the firmware does
-> everything correctly.  With ACPI video, the firmware does it, then its
-> changes are clobbered over by ACPI video's.
-> 
-> If ibm-acpi is loaded, a backlight device "ibm" is added.  ibm-acpi's ibm
-> backlight device can change the display brightness.  It is *not* capable of
-> turning the backlight on or off, AFAIK.
-> 
-> BTW, some ThinkPads don't have a Radeon, but rather an Intel GM/GMX device.
+Replace a busy loop with mdelay() in atyfb clock setup code. This fixes
+boot hangs several people have experienced.
 
-I have a thinkpad with Intel GM graphics ;-). I need it to work so I try
-not to experiment too much on it. I've just tried the ibm-acpi driver
-and it doesn't work well :-(.
+Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+---
 
-So far I've noticed:
+This patch was already forwareded by James to some of you, but here it =
 
-* 'cat brightness' != 'cat actual_brightness' upon bootup (doesn't have
-to be true if there is hardware brightness limiting or level changing in
-action but that wouldn't be the case here and this could be fixed
-easily).
-* 'echo 0 > brightness' lowered the intensity but by a level or two, not
-set it to level 0. A couple of more attempts and it did jump from 7 -> 1
-and so on, it seems erratic.
+is with the proper changelog, signed-off-by line, and a language fix in =
 
-actual_brightness always seems to be correct, as does brightness so it
-looks like its not updating the hardware correctly.
+the comment part. Also Cc:d stable@kernel.org as this seems like -stable =
 
-Regards,
+material to me.
 
-Richard
+ drivers/video/aty/mach64_ct.c |    9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
+Index: linux-2.6.20.1/drivers/video/aty/mach64_ct.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.20.1.orig/drivers/video/aty/mach64_ct.c
++++ linux-2.6.20.1/drivers/video/aty/mach64_ct.c
+@@ -598,7 +598,6 @@ static void aty_resume_pll_ct(const stru
+ 	struct atyfb_par *par =3D info->par;
+ =
 
+ 	if (par->mclk_per !=3D par->xclk_per) {
+-		int i;
+ 		/*
+ 		* This disables the sclk, crashes the computer as reported:
+ 		* aty_st_pll_ct(SPLL_CNTL2, 3, info);
+@@ -609,12 +608,10 @@ static void aty_resume_pll_ct(const stru
+ 		aty_st_pll_ct(SCLK_FB_DIV, pll->ct.sclk_fb_div, par);
+ 		aty_st_pll_ct(SPLL_CNTL2, pll->ct.spll_cntl2, par);
+ 		/*
+-		 * The sclk has been started. However, I believe the first clock
+-		 * ticks it generates are not very stable. Hope this primitive loop
+-		 * helps for Rage Mobilities that sometimes crash when
+-		 * we switch to sclk. (Daniel Mantione, 13-05-2003)
++		 * SCLK has been started. Wait for the PLL to lock. 5 ms
++		 * should be enough according to mach64 programmer's guide.
+ 		 */
+-		for (i=3D0;i<=3D0x1ffff;i++);
++		mdelay(5);
+ 	}
+ =
 
+ 	aty_st_pll_ct(PLL_REF_DIV, pll->ct.pll_ref_div, par);
 
+-- =
 
-
-
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

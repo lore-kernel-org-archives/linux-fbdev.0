@@ -1,155 +1,41 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: bug in intelfbhw.c
-Date: Thu, 22 Feb 2007 21:47:58 +0800
-Message-ID: <1172152079.4306.15.camel@daplas>
-References: <3E56BFF2E134A44A98D9FFDB710688DF011D40E1@ERLD151A.ww004.siemens.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+Date: Thu, 22 Feb 2007 12:38:27 -0200
+Message-ID: <20070222143827.GB25887@khazad-dum.debian.net>
+References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <87fy8z6pdd.fsf@sycorax.lbl.gov> <Pine.LNX.4.64.0702220112440.17121@pentafluge.infradead.org> <1172138176.5837.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-IxvOR0FEyR1zjPBicD4P"
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKEG2-0008Jn-64 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 05:45:14 -0800
-Received: from nz-out-0506.google.com ([64.233.162.231])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKEG1-0004So-R1
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 05:45:14 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so237300nzi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 22 Feb 2007 05:45:13 -0800 (PST)
-In-Reply-To: <3E56BFF2E134A44A98D9FFDB710688DF011D40E1@ERLD151A.ww004.siemens.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Orczykowski, Juergen" <juergen.orczykowski@siemens.com>
-Cc: Dave Airlie <airlied@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
-
-
---=-IxvOR0FEyR1zjPBicD4P
-Content-Type: text/plain
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933085AbXBVOie@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1172138176.5837.27.camel@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: James Simmons <jsimmons@infradead.org>, Alex Romosan <romosan@sycorax.lbl.gov>, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2007-02-22 at 13:02 +0100, Orczykowski, Juergen wrote:
-> Hi Tony,
-> Sorry, but in the diff, we miss our (similar) change in the function refresh_ring.
+On Thu, 22 Feb 2007, Richard Purdie wrote:
+> On Thu, 2007-02-22 at 01:13 +0000, James Simmons wrote:
+> > > Richard Purdie <rpurdie@rpsys.net> writes:
+> > > 
+> > > > If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
+> > > > with that option disabled?
+> > > 
+> > > i don't have my laptop with me but i am pretty sure
+> > > FB_RADEON_BACKLIGHT wasn't set for 2.6.20 (i think it showed up as a
+> > > new option when i did make oldconfig). i'll post the difference when i
+> > > get home tonight and also try disabling it.
+> > 
+> > Correct. You need to enable the backlight for the radeon card.
 > 
+> The problem is when that is set, the device doesn't work as they need
+> the ibm ACPI driver, not the raedon one.
 
-Ah, okay.
+They need the ibm-acpi one for brightness, and the radeon one for on/off.  I
+want a way to join that all together in a single place, if at all possible.
 
-Dave, here's an updated patch.
-
-Tony
-
-
---=-IxvOR0FEyR1zjPBicD4P
-Content-Disposition: attachment; filename=intelfb_fix_ring_space_bug
-Content-Type: text/plain; name=intelfb_fix_ring_space_bug; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-intelfb: Fix ring space calculation
-
-From: Orczykowski, Juergen <juergen.orczykowski@siemens.com>
-
-If there is less then RING_MIN_FREE available in the ring buffer,
-dinfo->ring_space is set to a big value forcing wait_ring to return.
-
-Fix by making ring space = 0 if ring space < RING_MIN_FREE.
-
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
-
- drivers/video/intelfb/intelfbhw.c |   34 +++++++++++++++++++++-------------
- 1 files changed, 21 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
-index c1eb18b..16bc8d7 100644
---- a/drivers/video/intelfb/intelfbhw.c
-+++ b/drivers/video/intelfb/intelfbhw.c
-@@ -1428,6 +1428,24 @@ static void refresh_ring(struct intelfb_
- static void reset_state(struct intelfb_info *dinfo);
- static void do_flush(struct intelfb_info *dinfo);
- 
-+static  u32 get_ring_space(struct intelfb_info *dinfo)
-+{
-+	u32 ring_space;
-+
-+	if (dinfo->ring_tail >= dinfo->ring_head)
-+		ring_space = dinfo->ring.size -
-+			(dinfo->ring_tail - dinfo->ring_head);
-+	else
-+		ring_space = dinfo->ring_head - dinfo->ring_tail;
-+
-+	if (ring_space > RING_MIN_FREE)
-+		ring_space -= RING_MIN_FREE;
-+	else
-+		ring_space = 0;
-+
-+	return ring_space;
-+}
-+
- static int
- wait_ring(struct intelfb_info *dinfo, int n)
- {
-@@ -1442,13 +1460,8 @@ #endif
- 	end = jiffies + (HZ * 3);
- 	while (dinfo->ring_space < n) {
- 		dinfo->ring_head = INREG(PRI_RING_HEAD) & RING_HEAD_MASK;
--		if (dinfo->ring_tail + RING_MIN_FREE < dinfo->ring_head)
--			dinfo->ring_space = dinfo->ring_head
--				- (dinfo->ring_tail + RING_MIN_FREE);
--		else
--			dinfo->ring_space = (dinfo->ring.size +
--					     dinfo->ring_head)
--				- (dinfo->ring_tail + RING_MIN_FREE);
-+		dinfo->ring_space = get_ring_space(dinfo);
-+
- 		if (dinfo->ring_head != last_head) {
- 			end = jiffies + (HZ * 3);
- 			last_head = dinfo->ring_head;
-@@ -1513,12 +1526,7 @@ #endif
- 
- 	dinfo->ring_head = INREG(PRI_RING_HEAD) & RING_HEAD_MASK;
- 	dinfo->ring_tail = INREG(PRI_RING_TAIL) & RING_TAIL_MASK;
--	if (dinfo->ring_tail + RING_MIN_FREE < dinfo->ring_head)
--		dinfo->ring_space = dinfo->ring_head
--			- (dinfo->ring_tail + RING_MIN_FREE);
--	else
--		dinfo->ring_space = (dinfo->ring.size + dinfo->ring_head)
--			- (dinfo->ring_tail + RING_MIN_FREE);
-+	dinfo->ring_space = get_ring_space(dinfo);
- }
- 
- static void
-
---=-IxvOR0FEyR1zjPBicD4P
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---=-IxvOR0FEyR1zjPBicD4P
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---=-IxvOR0FEyR1zjPBicD4P--
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh

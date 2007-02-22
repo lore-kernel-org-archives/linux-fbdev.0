@@ -1,14 +1,14 @@
 From: Alex Romosan <romosan@sycorax.lbl.gov>
 Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Date: Wed, 21 Feb 2007 20:03:57 -0800
-Message-ID: <877iuaalea.fsf@sycorax.lbl.gov>
+Date: Wed, 21 Feb 2007 20:58:29 -0800
+Message-ID: <87vehurdoq.fsf@sycorax.lbl.gov>
 References: <20070219044616.GC25659@washoe.onerussian.com>
 	<20070219000412.acad13de.akpm@linux-foundation.org>
 	<1171876788.6046.3.camel@localhost.localdomain>
 	<877iub9mu2.fsf@sycorax.lbl.gov>
 	<1172097718.5790.29.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965137AbXBVEEs@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750870AbXBVE6x@vger.kernel.org>
 In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain> (message from
 	Richard Purdie on Wed, 21 Feb 2007 22:41:57 +0000)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -18,88 +18,13 @@ Content-Transfer-Encoding: 7bit
 To: Richard Purdie <rpurdie@rpsys.net>
 Cc: Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-Richard Purdie writes:
-
-> Can you have a look at the differences between the defconfigs for
-> 2.6.20 and 2.6.21-rc1?
-
-this is probably the relevant part:
-
---- config-2.6.20	2007-02-04 12:09:28.000000000 -0800
-+++ config-2.6.21-rc1	2007-02-21 08:37:53.000000000 -0800
-@@ -1270,16 +1302,25 @@
- #
- # Graphics support
- #
--CONFIG_FIRMWARE_EDID=y
-+CONFIG_BACKLIGHT_LCD_SUPPORT=y
-+CONFIG_BACKLIGHT_CLASS_DEVICE=y
-+CONFIG_LCD_CLASS_DEVICE=y
-+# CONFIG_BACKLIGHT_PROGEAR is not set
- CONFIG_FB=y
-+CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_DDC=y
- CONFIG_FB_CFB_FILLRECT=y
- CONFIG_FB_CFB_COPYAREA=y
- CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_SVGALIB is not set
- # CONFIG_FB_MACMODES is not set
--# CONFIG_FB_BACKLIGHT is not set
-+CONFIG_FB_BACKLIGHT=y
- CONFIG_FB_MODE_HELPERS=y
- CONFIG_FB_TILEBLITTING=y
-+
-+#
-+# Frambuffer hardware drivers
-+#
- # CONFIG_FB_CIRRUS is not set
- # CONFIG_FB_PM2 is not set
- # CONFIG_FB_CYBER2000 is not set
-@@ -1297,9 +1338,11 @@
- # CONFIG_FB_MATROX is not set
- CONFIG_FB_RADEON=y
- CONFIG_FB_RADEON_I2C=y
-+CONFIG_FB_RADEON_BACKLIGHT=y
- # CONFIG_FB_RADEON_DEBUG is not set
- # CONFIG_FB_ATY128 is not set
- # CONFIG_FB_ATY is not set
-+# CONFIG_FB_S3 is not set
- # CONFIG_FB_SAVAGE is not set
- # CONFIG_FB_SIS is not set
- # CONFIG_FB_NEOMAGIC is not set
-@@ -1333,11 +1376,6 @@
- # CONFIG_LOGO_LINUX_MONO is not set
- # CONFIG_LOGO_LINUX_VGA16 is not set
- CONFIG_LOGO_LINUX_CLUT224=y
--CONFIG_BACKLIGHT_LCD_SUPPORT=y
--CONFIG_BACKLIGHT_CLASS_DEVICE=y
--CONFIG_BACKLIGHT_DEVICE=y
--CONFIG_LCD_CLASS_DEVICE=m
--CONFIG_LCD_DEVICE=y
- 
- #
- # Sound
-
-
-> If the backlight changes are at fault, I'm guessing James' Kconfig
-> changes to the video Kconfig would be the culprit since
-> FB_RADEON_BACKLIGHT only used to be selectable if PMAC_BACKLIGHT was
-> enabled. On a thinkpad, the backlight is probably under ACPI
-> control.
-
-there was no FB_RADEON_BACKLIGHT in 2.6.20 and CONFIG_FB_BACKLIGHT
-wasn't set.
+Richard Purdie <rpurdie@rpsys.net> writes:
 
 > If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
 > with that option disabled?
 
-i'll try recompiling without this option and let you know what happened.
-
-> An ls /sys/class/backlight under 2.6.20 will tell us which driver it
-> was using...
-
-ls /sys/class/backlight/
-0 ./  0 ../  0 ibm/
+i've disabled FB_RADEON_BACKLIGHT (FB_BACKLIGHT also got deselected)
+and i managed to boot into 2.6.21-rc1 and have a working backlight.
 
 --alex--
 

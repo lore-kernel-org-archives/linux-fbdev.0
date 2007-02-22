@@ -1,27 +1,29 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] atyfb: Replace busy loop with
-	mdelay()
-Date: Thu, 22 Feb 2007 09:14:37 +0800
-Message-ID: <1172106878.4217.57.camel@daplas>
-References: <20070222002033.GA26166@sci.fi>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: no backlight on radeon after recent kernel
+	"upgrade"s
+Date: Thu, 22 Feb 2007 01:13:15 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702220112440.17121@pentafluge.infradead.org>
+References: <20070219044616.GC25659@washoe.onerussian.com>
+	<20070219000412.acad13de.akpm@linux-foundation.org>
+	<1171876788.6046.3.camel@localhost.localdomain>
+	<877iub9mu2.fsf@sycorax.lbl.gov>
+	<1172097718.5790.29.camel@localhost.localdomain>
+	<87fy8z6pdd.fsf@sycorax.lbl.gov>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK2Uv-00038p-E1 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 17:11:49 -0800
-Received: from nz-out-0506.google.com ([64.233.162.231])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK2Ut-0002Oj-Js
+	id 1HK2WS-0003KU-C3 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 17:13:26 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK2WQ-0006ZQ-VT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 17:11:49 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so28302nzi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 21 Feb 2007 17:11:47 -0800 (PST)
-In-Reply-To: <20070222002033.GA26166@sci.fi>
+	Wed, 21 Feb 2007 17:13:24 -0800
+In-Reply-To: <87fy8z6pdd.fsf@sycorax.lbl.gov>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,21 +34,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: akpm@osdl.org, jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net, stable@kernel.org, alex.kern@gmx.de
+To: Alex Romosan <romosan@sycorax.lbl.gov>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Yaroslav Halchenko <kernel@onerussian.com>, Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 
-T24gVGh1LCAyMDA3LTAyLTIyIGF0IDAyOjIwICswMjAwLCBWaWxsZSBTeXJqw6Rsw6Qgd3JvdGU6
-Cj4gUmVwbGFjZSBhIGJ1c3kgbG9vcCB3aXRoIG1kZWxheSgpIGluIGF0eWZiIGNsb2NrIHNldHVw
-IGNvZGUuIFRoaXMgZml4ZXMKPiBib290IGhhbmdzIHNldmVyYWwgcGVvcGxlIGhhdmUgZXhwZXJp
-ZW5jZWQuCgpBZ3JlZSB0aGF0IGlzIGEgY2FuZGlkYXRlIGZvciB0aGUgc3RhYmxlIHRyZWUuIElm
-IG5vdCwgSSdsbCB0YWtlIGNhcmUgb2YKdGhpcyBwYXRjaC4KClRvbnkgCgoKCi0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0KVGFrZSBTdXJ2ZXlzLiBFYXJuIENhc2guIEluZmx1ZW5jZSB0aGUgRnV0dXJlIG9mIElU
-CkpvaW4gU291cmNlRm9yZ2UubmV0J3MgVGVjaHNheSBwYW5lbCBhbmQgeW91J2xsIGdldCB0aGUg
-Y2hhbmNlIHRvIHNoYXJlIHlvdXIKb3BpbmlvbnMgb24gSVQgJiBidXNpbmVzcyB0b3BpY3MgdGhy
-b3VnaCBicmllZiBzdXJ2ZXlzLWFuZCBlYXJuIGNhc2gKaHR0cDovL3d3dy50ZWNoc2F5LmNvbS9k
-ZWZhdWx0LnBocD9wYWdlPWpvaW4ucGhwJnA9c291cmNlZm9yZ2UmQ0lEPURFVkRFVgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZl
-bCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
-dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRl
-dmVsCg==
+
+> Richard Purdie <rpurdie@rpsys.net> writes:
+> 
+> > If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
+> > with that option disabled?
+> 
+> i don't have my laptop with me but i am pretty sure
+> FB_RADEON_BACKLIGHT wasn't set for 2.6.20 (i think it showed up as a
+> new option when i did make oldconfig). i'll post the difference when i
+> get home tonight and also try disabling it.
+
+Correct. You need to enable the backlight for the radeon card.
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

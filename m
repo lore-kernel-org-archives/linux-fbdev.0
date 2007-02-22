@@ -1,88 +1,47 @@
-From: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: no backlight on radeon after recent kernel
-	"upgrade"s
-Date: Thu, 22 Feb 2007 00:34:31 +0000
-Message-ID: <1172104471.5790.57.camel@localhost.localdomain>
-References: <20070219044616.GC25659@washoe.onerussian.com>
-	<20070219000412.acad13de.akpm@linux-foundation.org>
-	<1171876788.6046.3.camel@localhost.localdomain>
-	<20070221055648.GM25659@washoe.onerussian.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: no backlight on radeon after recent kernel "upgrade"s
+Date: Wed, 21 Feb 2007 22:51:22 -0200
+Message-ID: <20070222005122.GA7928@khazad-dum.debian.net>
+References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932775AbXBVAve@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1172103159.5790.45.camel@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HK1v4-0007zO-7a for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 16:34:46 -0800
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HK1v3-0002kg-Hl
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Feb 2007 16:34:46 -0800
-In-Reply-To: <20070221055648.GM25659@washoe.onerussian.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Yaroslav Halchenko <lists@onerussian.com>, James Simmons <jsimmons@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Alex Romosan <romosan@sycorax.lbl.gov>, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-On Wed, 2007-02-21 at 00:56 -0500, Yaroslav Halchenko wrote:
-> I didn't mention 2.6.20-mm1 and got to see -mm2 so it is the one which
-> Iv'e tried, but, once again, I experienced the same issue with 19-mm?
-> kernels.
-> 
-> I built 2.6.20-mm2 without backlight support
-> $> grep BACKLIGH /boot/config-2.6.20-mm2 
-> # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-> # CONFIG_FB_BACKLIGHT is not set
-> # CONFIG_FB_RIVA_BACKLIGHT is not set
-> # CONFIG_FB_RADEON_BACKLIGHT is not set
-> 
-> that "eliminated" the problem. Also I can see the screen with pure
-> 2.6.20 with backlight support (whatever it does since after
-> loading lcd, backlight modules, my /sys/class/{lcd,backlight} are empty):
-> 
-> *$> grep BACKLIGH /boot/config-2.6.20 
-> # CONFIG_FB_BACKLIGHT is not set
-> CONFIG_BACKLIGHT_LCD_SUPPORT=y
-> CONFIG_BACKLIGHT_CLASS_DEVICE=m
-> CONFIG_BACKLIGHT_DEVICE=y
-> 
-> 
-> > Also, do you normally see files under /sys/class/lcd?
-> nope... after I load lcd module, no files under :-/ regardless either it
-> is mm or not. But there are files under /sys/class/backlight/ for mm2
-> compiled with backlight support (whenever the screen is dark as per my
-> original email)
+On Thu, 22 Feb 2007, Richard Purdie wrote:
+> I have a thinkpad with Intel GM graphics ;-). I need it to work so I try
+> not to experiment too much on it. I've just tried the ibm-acpi driver
+> and it doesn't work well :-(.
 
-There should be no files appearing under /sys/class/lcd, so thats all
-normal. There is another report with similar symptoms which also sounds
-like enabling the following options are at fault:
+2.6.21-rc, or 2.6.20?  If it is in 2.6.21, could you give me a report of how
+it fares on 2.6.20?
 
-# CONFIG_FB_RIVA_BACKLIGHT is not set
-# CONFIG_FB_RADEON_BACKLIGHT is not set
+> * 'cat brightness' != 'cat actual_brightness' upon bootup (doesn't have
 
-I suspect these options only work on certain hardware and aren't
-generic. James, any idea what hardware these do/don't work with?
+Hmm, I see this in 2.6.20 too.  And brightness is the one that is buggy.  I
+will look into it.
 
-Worst case, we set them to depend on PMAC_BACKLIGHT again I guess...
+> * 'echo 0 > brightness' lowered the intensity but by a level or two, not
+> set it to level 0. A couple of more attempts and it did jump from 7 -> 1
+> and so on, it seems erratic.
 
-Richard
+I know it used to work fine before 2.6.20.  Let me check...  works fine on a
+T43, 2.6.20 (Radeon X300).  I need more data to fix it :-)
 
+> actual_brightness always seems to be correct, as does brightness so it
+> looks like its not updating the hardware correctly.
 
+Well, if you have the ACPI video module loaded, unload it.  Does it work
+now?
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh

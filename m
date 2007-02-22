@@ -1,40 +1,52 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] no backlight on radeon after recent kernel
- "upgrade"s
-Date: Thu, 22 Feb 2007 01:11:18 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702220109450.17121@pentafluge.infradead.org>
-References: <20070219044616.GC25659@washoe.onerussian.com>
- <20070219000412.acad13de.akpm@linux-foundation.org>
- <1171876788.6046.3.camel@localhost.localdomain> <20070221055648.GM25659@washoe.onerussian.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] atyfb: Replace busy loop with
+	mdelay()
+Date: Thu, 22 Feb 2007 09:14:37 +0800
+Message-ID: <1172106878.4217.57.camel@daplas>
+References: <20070222002033.GA26166@sci.fi>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932964AbXBVBL2@vger.kernel.org>
-In-Reply-To: <20070221055648.GM25659@washoe.onerussian.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Yaroslav Halchenko <lists@onerussian.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HK2Uv-00038p-E1 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 17:11:49 -0800
+Received: from nz-out-0506.google.com ([64.233.162.231])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HK2Ut-0002Oj-Js
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Feb 2007 17:11:49 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so28302nzi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 21 Feb 2007 17:11:47 -0800 (PST)
+In-Reply-To: <20070222002033.GA26166@sci.fi>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: akpm@osdl.org, jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net, stable@kernel.org, alex.kern@gmx.de
 
-
-> I built 2.6.20-mm2 without backlight support
-> $> grep BACKLIGH /boot/config-2.6.20-mm2 
-> # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-> # CONFIG_FB_BACKLIGHT is not set
-> # CONFIG_FB_RIVA_BACKLIGHT is not set
-> # CONFIG_FB_RADEON_BACKLIGHT is not set
-> 
-> that "eliminated" the problem. Also I can see the screen with pure
-> 2.6.20 with backlight support (whatever it does since after
-> loading lcd, backlight modules, my /sys/class/{lcd,backlight} are empty):
-> 
-> *$> grep BACKLIGH /boot/config-2.6.20 
-> # CONFIG_FB_BACKLIGHT is not set
-> CONFIG_BACKLIGHT_LCD_SUPPORT=y
-> CONFIG_BACKLIGHT_CLASS_DEVICE=m
-> CONFIG_BACKLIGHT_DEVICE=y
-
-You need to explictly enable the backlight for your fbdev driver. It 
-doesn't do the selecting magically for you.
-Jus do a make "favorite"config and go to the fbdev menu and select the 
-backlight option for your fbdev driver.
+T24gVGh1LCAyMDA3LTAyLTIyIGF0IDAyOjIwICswMjAwLCBWaWxsZSBTeXJqw6Rsw6Qgd3JvdGU6
+Cj4gUmVwbGFjZSBhIGJ1c3kgbG9vcCB3aXRoIG1kZWxheSgpIGluIGF0eWZiIGNsb2NrIHNldHVw
+IGNvZGUuIFRoaXMgZml4ZXMKPiBib290IGhhbmdzIHNldmVyYWwgcGVvcGxlIGhhdmUgZXhwZXJp
+ZW5jZWQuCgpBZ3JlZSB0aGF0IGlzIGEgY2FuZGlkYXRlIGZvciB0aGUgc3RhYmxlIHRyZWUuIElm
+IG5vdCwgSSdsbCB0YWtlIGNhcmUgb2YKdGhpcyBwYXRjaC4KClRvbnkgCgoKCi0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0KVGFrZSBTdXJ2ZXlzLiBFYXJuIENhc2guIEluZmx1ZW5jZSB0aGUgRnV0dXJlIG9mIElU
+CkpvaW4gU291cmNlRm9yZ2UubmV0J3MgVGVjaHNheSBwYW5lbCBhbmQgeW91J2xsIGdldCB0aGUg
+Y2hhbmNlIHRvIHNoYXJlIHlvdXIKb3BpbmlvbnMgb24gSVQgJiBidXNpbmVzcyB0b3BpY3MgdGhy
+b3VnaCBicmllZiBzdXJ2ZXlzLWFuZCBlYXJuIGNhc2gKaHR0cDovL3d3dy50ZWNoc2F5LmNvbS9k
+ZWZhdWx0LnBocD9wYWdlPWpvaW4ucGhwJnA9c291cmNlZm9yZ2UmQ0lEPURFVkRFVgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZl
+bCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
+dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRl
+dmVsCg==

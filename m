@@ -1,45 +1,64 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Date: Thu, 22 Feb 2007 12:56:13 -0200
-Message-ID: <20070222145613.GD25887@khazad-dum.debian.net>
-References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <20070222011017.GA8845@khazad-dum.debian.net> <1172138450.5837.34.camel@localhost.localdomain>
+Date: Thu, 22 Feb 2007 15:18:25 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702221502190.29542@pentafluge.infradead.org>
+References: <20070219044616.GC25659@washoe.onerussian.com> 
+ <20070219000412.acad13de.akpm@linux-foundation.org> 
+ <1171876788.6046.3.camel@localhost.localdomain>  <20070221055648.GM25659@washoe.onerussian.com>
+  <1172104471.5790.57.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0702220054460.17121@pentafluge.infradead.org>
+ <1172137565.5837.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932151AbXBVO4S@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1172138450.5837.34.camel@localhost.localdomain>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750913AbXBVPSf@vger.kernel.org>
+In-Reply-To: <1172137565.5837.24.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Alex Romosan <romosan@sycorax.lbl.gov>, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
+Cc: Yaroslav Halchenko <lists@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 22 Feb 2007, Richard Purdie wrote:
-> > it to Len Brown for merging into 2.6.21, or NACK it if you'd rather do it in
-> > the backlight class core.
+
+> >    Ug. Previously it did the selecting for you. If you selected 
+> > backlight support the fbdev backlight would just come to life. This caused 
+> > problems for the case of having ACPI backlight and a fbdev driver with 
+> > backlight support. Two drivers controling the same hardware is not the
+> > greatest idea. I made it so that people explictly had to pick the backlight
+> > with a fbdev device. The other reason for this change was not every 
+> > one is using a LCD display. I have a system at home that uses a CRT. 
+> >    Plus their is the case of "standard" PC graphics cards being used 
+> > in embedded devices. In this case even tho the graphics card has backlight 
+> > support the external lcd/backlight is routed through gpio independent of 
+> > the embedded graphics card. In such case we don't want to enable the
+> > backlight for the graphics card but enable it.
+> >     In a nut shell the solution is select the backlight support for your
+> > fbdev driver if you need it.
 > 
-> We can't change the backlight class code since some hardware can't read
-> from the device, only write to it. Initialisation in that case is a bit
-> different.
+> This is ugly for distribution maintainers as pick the wrong Kconfig
+> options and your device breaks. You need a different build depending on
+> the hardware you have. 
 
-Initializing stuff after registering is also racy as the device is not
-locked but we are going to clobber data in its properties struct.  I don't
-particularly care about that race, but...
+Distros would have to enable "standard" backlights to maximize their 
+target machines. In other words they will aim for backlights from the ACPI layer 
+for x86_64/ia32 machine and pmac_backlights for select ppc machines.
+Specially since most default kernels on distros use only vgacon for intel 
+type machines.
 
-Anyway, you have the 2.6.21-rc patch now, to ACK or NACK.  I still think the
-class should be handling this.  If a device is write-only, it should have no
-_get ops handler, which means that the class can easily differentiate the
-two cases and do the right thing for both.  There's less code duplication
-that way.
+> I understand some people need to be able to turn these things on but it
+> sounds like the majority of users don't need it and it will break things
+> for them. The config option sounds tempting to them though...
+> 
+> In case anyone else is wondering, the commit in question is
+> http://git.o-hand.com/?p=linux-rpurdie-backlight;a=commitdiff;h=e0e34ef7f02915cfe50e501e9f32c24217177a96
+> and previously, all the appropriate entries had "depends PMAC_BACKLIGHT"
+> 
+> I think the way forward is going to be to have the backlights disabled
+> by default at runtime and require enabling through a framebuffer module
+> parameter. The should be enabled by default in the PMAC_BACKLIGHT case.
+> Anyone needing it can then pass the appropriate parameter. Does that
+> sound like the best solution?
 
-Howerver, I *do* strongly wish for a way to combine various drivers into a
-single backlight device, where radeon/intelfb takes care of some stuff,
-ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
-standard naming for the builtin screen(s) would help, calling it "ibm",
-"asus", "sony" is not good IMHO.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+That is the correct solution. Basically people that select PMAC_BACKLIGHT
+expect there driver to automatically to work. Basically they want 
+PMAC_BACKLIGHT to work as a generic selectfor there card. I will work up a 
+patch.

@@ -1,20 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: no backlight on radeon after recent kernel
-	"upgrade"s
-Date: Thu, 22 Feb 2007 16:00:16 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702221558550.29542@pentafluge.infradead.org>
-References: <20070219044616.GC25659@washoe.onerussian.com> 
-	<20070219000412.acad13de.akpm@linux-foundation.org> 
-	<1171876788.6046.3.camel@localhost.localdomain>
-	<877iub9mu2.fsf@sycorax.lbl.gov>
-	<1172097718.5790.29.camel@localhost.localdomain>
-	<20070221231706.GA3336@khazad-dum.debian.net>
-	<1172103159.5790.45.camel@localhost.localdomain>
-	<20070222005122.GA7928@khazad-dum.debian.net>
-	<20070222011017.GA8845@khazad-dum.debian.net>
-	<1172138450.5837.34.camel@localhost.localdomain>
-	<20070222145613.GD25887@khazad-dum.debian.net>
-	<1172157592.5837.89.camel@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
+Date: Fri, 23 Feb 2007 00:21:30 +0800
+Message-ID: <1172161290.4198.12.camel@daplas>
+References: <ephv35$4i3$1@sea.gmane.org>
+	<20070130203301.GA15067@dreamland.darkstar.lan>
+	<20070204201713.GA12867@dreamland.darkstar.lan>
+	<Pine.LNX.4.64.0702062034380.9224@pentafluge.infradead.org>
+	<cb7bb73a0702061508x767882dcia1b13f85d898b6e7@mail.gmail.com>
+	<1172101406.4217.16.camel@daplas>
+	<cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	<1172133646.4086.5.camel@daplas>
+	<cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	<1172153358.4306.17.camel@daplas>
+	<cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,13 +21,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKGN2-0005MN-RR for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 08:00:37 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKGMy-0000GL-Fq
+	id 1HKGed-0007x4-TI for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Feb 2007 08:18:48 -0800
+Received: from py-out-1112.google.com ([64.233.166.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKGed-0007EG-54
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Feb 2007 08:00:33 -0800
-In-Reply-To: <1172157592.5837.89.camel@localhost.localdomain>
+	Thu, 22 Feb 2007 08:18:47 -0800
+Received: by py-out-1112.google.com with SMTP id a29so105380pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 22 Feb 2007 08:18:46 -0800 (PST)
+In-Reply-To: <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,28 +41,110 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Alex Romosan <romosan@sycorax.lbl.gov>, linux-kernel@vger.kernel.org, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Luca Tettamanti <kronos@people.it>, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Dave Airlie <airlied@gmail.com>
 
-
-> > Howerver, I *do* strongly wish for a way to combine various drivers into a
-> > single backlight device, where radeon/intelfb takes care of some stuff,
-> > ibm-acpi/asus-laptop/sony-laptop takes care of other stuff, etc.  Also, a
-> > standard naming for the builtin screen(s) would help, calling it "ibm",
-> > "asus", "sony" is not good IMHO.
+On Thu, 2007-02-22 at 16:55 +0100, Giuseppe Bilotta wrote:
+> On 2/22/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> >
+> > Ah, my fault.  Apply this patch on top.
 > 
-> I wasn't aware of this problem. If some devices need bits from both
-> raedon/whatever and acpi, the current implementations are just plain
-> wrong. Its not really a backlight class problem and more of an
-> implementation and interaction problem between acpi and the framebuffer
-> drivers. They should be presenting and registering *one* backlight class
-> device, not two. Without knowing more about the circumstances and
-> how/when to combine which drivers its hard for me to help further...
+> We're getting closer! The patch now works, and the dmesg has the following info:
 
-This is always been a problem. For the fbdev layer you can run vesafb with 
-a specific fbdev driver and they both access the same hardware. There is 
-no really way around this. The user has to be smart enough to not enable 
-bothe drivers.
+Okay.
+
+> 
+> 
+> ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] -> GSI 11 (level,
+> low) -> IRQ 11
+> nvidiafb: Device ID: 10de0112
+> fbmon: The EDID Block of Manufacturer: SHP Model: 0x138e is known to be broken,
+> fbmon: trying to fix monitor timings
+> nvidiafb: EDID found from BUS2
+> ========================================
+> Display Information (EDID)
+> ========================================
+>    EDID Version 1.3
+>    Manufacturer: SHP
+>    Model: 138e
+>    Serial#: 0
+>    Year: 1990 Week 0
+>    Display Characteristics:
+>       Monitor Operating Limits: From EDID
+>            H: 30-75KHz V: 60-60Hz DCLK: 170MHz
+>       Digital Display Input
+>       Sync:
+>       Max H-size in cm: 30
+>       Max V-size in cm: 23
+>       Gamma: 2.20
+>       DPMS: Active no, Suspend yes, Standby yes
+>       RGB Color Display
+>       Chroma
+>          RedX:     0.599 RedY:     0.335
+>          GreenX:   0.313 GreenY:   0.552
+>          BlueX:    0.150 BlueY:    0.145
+>          WhiteX:   0.313 WhiteY:   0.328
+>       First DETAILED Timing is preferred
+>    Detailed Timings
+>       160 MHz 1600 1664 1856 2112 1200 1201 1204 1250 -HSync -VSync
+> 
+>    Supported VESA Modes
+>       Manufacturer's mask: 0
+>    Standard Timings
+>       1600x1200@60Hz
+> ========================================
+> nvidiafb: CRTC 1 is currently programmed for DFP
+> nvidiafb: Using DFP on CRTC 1
+> nvidiafb: Panel size is 1600 x 1200
+> nvidiafb: Panel is TMDS
+> nvidiafb: MTRR set to ON
+> nvidiafb: Flat panel dithering disabled
+> Console: switching to colour frame buffer device 200x75
+> nvidiafb: PCI nVidia NV11 framebuffer (32MB @ 0xE0000000)
+> 
+> 
+> 
+> 
+> However, I'm still getting the same snowy effects, which doesn't come
+> as a surprise since the actual mode timings used are just the same ...
+> 
+
+Yes, because the EDID has only 1 mode entry. But now you can use 'fbset
+1024x768-60' (or any mode smaller than 1600x1200-60) for example and it
+should work.  You might want to change  vfmin and vfmax to 59 and 61
+respectively just to get leeway for mode calculation errors. This is in
+drivers/video/fbmon.c, particularly b[5] and b[6] in this code:
+
+	case FBMON_FIX_TIMINGS:
+		printk("fbmon: trying to fix monitor timings\n");
+		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+		for (i = 0; i < 4; i++) {
+			if (!(edid_is_serial_block(b) ||
+			      edid_is_ascii_block(b) ||
+			      edid_is_monitor_block(b) ||
+			      edid_is_timing_block(b))) {
+				b[0] = 0x00; 
+				b[1] = 0x00;  
+				b[2] = 0x00;
+				b[3] = 0xfd;   
+				b[4] = 0x00;
+				b[5] = 60;   /* vfmin */
+				b[6] = 60;   /* vfmax */
+				b[7] = 30;   /* hfmin */
+				b[8] = 75;   /* hfmax */
+				b[9] = 17;   /* pixclock - 170 MHz*/
+				b[10] = 0;   /* GTF */
+				break;
+			}
+
+			b += DETAILED_TIMING_DESCRIPTION_SIZE; 
+		}
+
+Also try doing fbset 640x480-60, 800x600-60, 1024x768-60 and
+1280x1024-60, and if they displayed correctly, we can add these modes to
+your EDID block.
+
+Tony
 
 
 -------------------------------------------------------------------------

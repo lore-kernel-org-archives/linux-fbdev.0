@@ -1,87 +1,110 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: Alex Romosan <romosan@sycorax.lbl.gov>
 Subject: Re: no backlight on radeon after recent kernel "upgrade"s
-Date: Thu, 22 Feb 2007 00:13:56 -0200
-Message-ID: <20070222021356.GC8845@khazad-dum.debian.net>
-References: <20070219044616.GC25659@washoe.onerussian.com> <20070219000412.acad13de.akpm@linux-foundation.org> <1171876788.6046.3.camel@localhost.localdomain> <877iub9mu2.fsf@sycorax.lbl.gov> <1172097718.5790.29.camel@localhost.localdomain> <20070221231706.GA3336@khazad-dum.debian.net> <1172103159.5790.45.camel@localhost.localdomain> <20070222005122.GA7928@khazad-dum.debian.net> <1172106616.5790.90.camel@localhost.localdomain>
+Date: Wed, 21 Feb 2007 20:03:57 -0800
+Message-ID: <877iuaalea.fsf@sycorax.lbl.gov>
+References: <20070219044616.GC25659@washoe.onerussian.com>
+	<20070219000412.acad13de.akpm@linux-foundation.org>
+	<1171876788.6046.3.camel@localhost.localdomain>
+	<877iub9mu2.fsf@sycorax.lbl.gov>
+	<1172097718.5790.29.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751358AbXBVCOO@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1172106616.5790.90.camel@localhost.localdomain>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965137AbXBVEEs@vger.kernel.org>
+In-Reply-To: <1172097718.5790.29.camel@localhost.localdomain> (message from
+	Richard Purdie on Wed, 21 Feb 2007 22:41:57 +0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Alex Romosan <romosan@sycorax.lbl.gov>, Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
+Cc: Yaroslav Halchenko <kernel@onerussian.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-On Thu, 22 Feb 2007, Richard Purdie wrote:
-> The following sequence is reproducible:
-> 
-> echo 7 > brightness (repeat until actual_brightness reads 7)
-> echo 0 > brightness (brightness reads 0, actual_brightness reads 4)
-> echo 0 > brightness (brightness reads 0, actual_brightness reads 0)
+Richard Purdie writes:
 
-As I said, it works fine on 2.6.20 on the hardware I have.  I will see if I
-can test on 2.6.21, but it is something non-trivial for me to do right now.
+> Can you have a look at the differences between the defconfigs for
+> 2.6.20 and 2.6.21-rc1?
 
-> I suspect this is interference from software on the machine as it does
-> show an onscreen display when I change the values in sysfs and the
+this is probably the relevant part:
 
-Yes, I am using something like that here too, and it doesn't break anything.
+--- config-2.6.20	2007-02-04 12:09:28.000000000 -0800
++++ config-2.6.21-rc1	2007-02-21 08:37:53.000000000 -0800
+@@ -1270,16 +1302,25 @@
+ #
+ # Graphics support
+ #
+-CONFIG_FIRMWARE_EDID=y
++CONFIG_BACKLIGHT_LCD_SUPPORT=y
++CONFIG_BACKLIGHT_CLASS_DEVICE=y
++CONFIG_LCD_CLASS_DEVICE=y
++# CONFIG_BACKLIGHT_PROGEAR is not set
+ CONFIG_FB=y
++CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_DDC=y
+ CONFIG_FB_CFB_FILLRECT=y
+ CONFIG_FB_CFB_COPYAREA=y
+ CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_SVGALIB is not set
+ # CONFIG_FB_MACMODES is not set
+-# CONFIG_FB_BACKLIGHT is not set
++CONFIG_FB_BACKLIGHT=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_TILEBLITTING=y
++
++#
++# Frambuffer hardware drivers
++#
+ # CONFIG_FB_CIRRUS is not set
+ # CONFIG_FB_PM2 is not set
+ # CONFIG_FB_CYBER2000 is not set
+@@ -1297,9 +1338,11 @@
+ # CONFIG_FB_MATROX is not set
+ CONFIG_FB_RADEON=y
+ CONFIG_FB_RADEON_I2C=y
++CONFIG_FB_RADEON_BACKLIGHT=y
+ # CONFIG_FB_RADEON_DEBUG is not set
+ # CONFIG_FB_ATY128 is not set
+ # CONFIG_FB_ATY is not set
++# CONFIG_FB_S3 is not set
+ # CONFIG_FB_SAVAGE is not set
+ # CONFIG_FB_SIS is not set
+ # CONFIG_FB_NEOMAGIC is not set
+@@ -1333,11 +1376,6 @@
+ # CONFIG_LOGO_LINUX_MONO is not set
+ # CONFIG_LOGO_LINUX_VGA16 is not set
+ CONFIG_LOGO_LINUX_CLUT224=y
+-CONFIG_BACKLIGHT_LCD_SUPPORT=y
+-CONFIG_BACKLIGHT_CLASS_DEVICE=y
+-CONFIG_BACKLIGHT_DEVICE=y
+-CONFIG_LCD_CLASS_DEVICE=m
+-CONFIG_LCD_DEVICE=y
+ 
+ #
+ # Sound
 
-> values on the OSD don't match what's really going on.  The
-> actual_brightness does match the screen.
 
-So something is screwing with what gets written to the EC, and it does it
-AFTER ibm-acpi started processing the brightness change request.
+> If the backlight changes are at fault, I'm guessing James' Kconfig
+> changes to the video Kconfig would be the culprit since
+> FB_RADEON_BACKLIGHT only used to be selectable if PMAC_BACKLIGHT was
+> enabled. On a thinkpad, the backlight is probably under ACPI
+> control.
 
-actual_brightness asks the *EC* what the current brightness value is, so it
-will never be wrong on a new-enough ThinkPad.
+there was no FB_RADEON_BACKLIGHT in 2.6.20 and CONFIG_FB_BACKLIGHT
+wasn't set.
 
-> I guess this just means we need to get userspace to agree on one method
-> of access for this kind of thing. It makes me wondering where the
-> hardware brightness keys fit into things though...
+> If FB_RADEON_BACKLIGHT wasn't set for 2.6.20, can you try 2.6.21-rc1
+> with that option disabled?
 
-For ThinkPads:
+i'll try recompiling without this option and let you know what happened.
 
-The Golden Rule: never talk to the EC or write to firmware-command-space in
-the CMOS NVRAM in userspace.  If you do, bad things could happen and it is
-your fault.
+> An ls /sys/class/backlight under 2.6.20 will tell us which driver it
+> was using...
 
-Here's how brightness control works in ThinkPads:
+ls /sys/class/backlight/
+0 ./  0 ../  0 ibm/
 
-0. Brightness and backlight on/off state are decoupled.  Turning the
-backlight on or off is done through DPMS or something else video-card
-specific.  Newer models shut the backlight off by EC firmware (or maybe even
-on hardware) when the lid is closed, too.
-
-1. The thinkpad does everything brightness-related in firmware (EC+BIOS).
-If you keep your hands off, it works correctly on every O.S.
-
-2. The brightness up key exports hotkey events (all models) and a brightness
-up ACPI event (*60 and newer thinkpads, with 2.x BIOS).  It is a bad idea to
-use those events to change the backlight brightness, because the firmware
-will be doing just that too.
-
-3. It doesn't export anything for brightness down.  You find it happened
-snooping the CMOS nvram.
-
-4. Ibm-acpi doesn't care about the ACPI events much, it just asks the EC
-what the brightness level is when it needs to do something, then it issues
-both CMOS commands and EC writes to make damn sure the level is changed.
-The CMOS commands are step-style, so to go from 4 to 7, you issue 3x
-brightness up.
-
-> > Well, if you have the ACPI video module loaded, unload it.  Does it work
-> > now?
-> 
-> No change if unloaded.
-
-I am out of ideas. But blacklist that module on your ThinkPad, it just gets
-in the way, even if you are not using ibm-acpi.
+--alex--
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |

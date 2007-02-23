@@ -1,88 +1,79 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge, updated
-Date: Fri, 23 Feb 2007 13:45:57 +0100
-Message-ID: <20070223124557.GA13443@localhost.localdomain>
-References: <20070209193405.GB2637@localhost.localdomain> <1172102733.4217.38.camel@daplas>
+From: "Giuseppe Bilotta" <giuseppe.bilotta@gmail.com>
+Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
+Date: Fri, 23 Feb 2007 14:34:15 +0100
+Message-ID: <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
+References: <ephv35$4i3$1@sea.gmane.org> <1172101406.4217.16.camel@daplas>
+	<cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
+	<1172133646.4086.5.camel@daplas>
+	<cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	<1172153358.4306.17.camel@daplas>
+	<cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+	<1172161290.4198.12.camel@daplas>
+	<cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+	<1172187249.4279.7.camel@daplas>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932309AbXBWMrE@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1172102733.4217.38.camel@daplas>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HKaYz-00045C-Ki for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Feb 2007 05:34:17 -0800
+Received: from nz-out-0506.google.com ([64.233.162.230])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKaYz-0005CM-9v
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Feb 2007 05:34:17 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so803642nzi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 23 Feb 2007 05:34:16 -0800 (PST)
+In-Reply-To: <1172187249.4279.7.camel@daplas>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Luca Tettamanti <kronos@people.it>, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Dave Airlie <airlied@gmail.com>
 
-On Thu, Feb 22, 2007 at 08:05:33AM +0800, Antonino A. Daplas wrote:
-> On Fri, 2007-02-09 at 20:34 +0100, Ondrej Zajicek wrote: 
-> > This patch adds driver for S3 Trio / S3 Virge. Driver is tested
-> > with most versions of S3 Trio and S3 Virge, on i386.
-> > It is tested both as compiled-in and module. It is against
-> > linux-2.6.20 .
-> > 
-> > This is version 3. There are some minor modifications from version 2
-> > (mostly coding style cleanups).
-> 
-> Nice, the first driver to use tileblit :-)
-> 
-> Since this driver is already in the -mm tree, can you resubmit a diff
-> against that? 
+On 2/23/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Thu, 2007-02-22 at 20:08 +0100, Giuseppe Bilotta wrote:
+> > No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
+> > and they /all/ come up snowy. This is starting to look queerer and
+> > queerer. I've also tried changing vf min and max as you suggested:
+>
+> Before we proceed, do you agree that the patch will allow you to change
+> video modes without disabling DDC support?  So this is still a valid
+> fix?
 
-This driver was removed from -mm tree, because it is in 2.6.21-rc1 .
-So it is probably unnnecessary to resubmit a diff, isn't it?
+You're right, I hadn't realized that. I can now access all the sizes
+from 640 to 1600, so I would say the fix is valid.
 
-> > +
-> > +static int s3fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
-> > +				u_int transp, struct fb_info *fb)
-> > +{
-...
-> > +	case 16:
-> > +		if (regno >= 16)
-> > +			return -EINVAL;
-> 
-> Just return success without doing anything. I presume this is
-> truecolor.
+> When does your display become snowy? Is the snow constant or does it
+> only snow when doing heavy text operations, such as scrolling?
 
-OK
+The snowy is constant and abundant, and it seems to be independent of
+video size (640 through 1600) and screen occupation (single prompt
+line to fullscreen mc session) and usage.
 
-> > +static int s3fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info) {
-> > +
-> > +	unsigned int offset;
-> > +
-> > +	/* Validate the offsets */
-> > +	if ((var->xoffset + var->xres) > var->xres_virtual)
-> > +		return -EINVAL;
-> > +	if ((var->yoffset + var->yres) > var->yres_virtual)
-> > +		return -EINVAL;
-> 
-> You need not validate the offsets, fb_pan_display() does this for you.
+> I presume that X's nv driver or vesafb does not exhibit this problem?
 
-OK
-
-> > +/* Frame buffer operations */
-> > +
-> > +static struct fb_ops s3fb_ops = {
-> > +	.owner		= THIS_MODULE,
-> > +	.fb_open	= s3fb_open,
-> > +	.fb_release	= s3fb_release,
-> > +	.fb_check_var	= s3fb_check_var,
-> > +	.fb_set_par	= s3fb_set_par,
-> > +	.fb_setcolreg	= s3fb_setcolreg,
-> > +	.fb_blank	= s3fb_blank,
-> > +	.fb_pan_display	= s3fb_pan_display,
-> > +	.fb_fillrect	= s3fb_fillrect,
-> > +	.fb_copyarea	= cfb_copyarea,
-> 
-> No s3fb_copyarea :-). Usually it's the other way around,
-> imageblit is unaccelerated.
-
-This driver is unaccelerated (if i don't consider text mode support as
-acceleration). s3fb_fillrect and s3fb_imageblit are here because of supported
-4bpp modes are not handled by cfb_* functions. cfb_copyarea works for that
-modes by coincidence.
+X's nv gives a very clean display, /unless/ I load nvidiafb before: if
+I modprobe nvidiafb (it's a module, and it's blacklisted precisely for
+this reason), then the screen is very snowy with X's nv too.
 
 -- 
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+Giuseppe "Oblomov" Bilotta
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

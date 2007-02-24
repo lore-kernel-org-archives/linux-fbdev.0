@@ -1,71 +1,143 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge,
-	updated
-Date: Sun, 25 Feb 2007 05:04:28 +0800
-Message-ID: <1172351068.4415.1.camel@daplas>
-References: <20070209193405.GB2637@localhost.localdomain>
-	<1172102733.4217.38.camel@daplas>
-	<20070223124557.GA13443@localhost.localdomain>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
+Date: Sun, 25 Feb 2007 05:16:08 +0800
+Message-ID: <1172351769.4415.5.camel@daplas>
+References: <ephv35$4i3$1@sea.gmane.org> <1172133646.4086.5.camel@daplas>
+	 <cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
+	 <1172153358.4306.17.camel@daplas>
+	 <cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
+	 <1172161290.4198.12.camel@daplas>
+	 <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
+	 <1172187249.4279.7.camel@daplas>
+	 <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
+	 <1172300694.4109.50.camel@daplas>
+	 <cb7bb73a0702240116g33a9b5bv2e3668a536a70938@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/mixed; boundary="=-ClI4Ucv+fel4FdgErrnv"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933563AbXBXVNj@vger.kernel.org>
+In-Reply-To: <cb7bb73a0702240116g33a9b5bv2e3668a536a70938@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+
+
+--=-ClI4Ucv+fel4FdgErrnv
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HL41s-0005qp-Ja for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 24 Feb 2007 13:02:05 -0800
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HL41s-0005FS-0j
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 24 Feb 2007 13:02:04 -0800
-Received: by py-out-1112.google.com with SMTP id a29so455899pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 24 Feb 2007 13:02:03 -0800 (PST)
-In-Reply-To: <20070223124557.GA13443@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>, linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
 
-On Fri, 2007-02-23 at 13:45 +0100, Ondrej Zajicek wrote:
-> On Thu, Feb 22, 2007 at 08:05:33AM +0800, Antonino A. Daplas wrote:
-> > On Fri, 2007-02-09 at 20:34 +0100, Ondrej Zajicek wrote: 
-> > > This patch adds driver for S3 Trio / S3 Virge. Driver is tested
-> > > with most versions of S3 Trio and S3 Virge, on i386.
-> > > It is tested both as compiled-in and module. It is against
-> > > linux-2.6.20 .
-> > > 
-> > > This is version 3. There are some minor modifications from version 2
-> > > (mostly coding style cleanups).
-> > 
-> > Nice, the first driver to use tileblit :-)
-> > 
-> > Since this driver is already in the -mm tree, can you resubmit a diff
-> > against that? 
+On Sat, 2007-02-24 at 10:16 +0100, Giuseppe Bilotta wrote:
+> On 2/24/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> > On Fri, 2007-02-23 at 14:34 +0100, Giuseppe Bilotta wrote:
+> > >
+> > > The snowy is constant and abundant, and it seems to be independent of
+> > > video size (640 through 1600) and screen occupation (single prompt
+> > > line to fullscreen mc session) and usage.
+> > >
+> > > > I presume that X's nv driver or vesafb does not exhibit this problem?
+> > >
+> > > X's nv gives a very clean display, /unless/ I load nvidiafb before: if
+> > > I modprobe nvidiafb (it's a module, and it's blacklisted precisely for
+> > > this reason), then the screen is very snowy with X's nv too.
+> > >
+> >
+> > Hmm..., I really don't know how to fix this except to look at Xorg's
+> > code and look for a difference.
 > 
-> This driver was removed from -mm tree, because it is in 2.6.21-rc1 .
-> So it is probably unnnecessary to resubmit a diff, isn't it?
-> 
+> Keep in mind that setting nvidiafb to totally ignore the EDID (either
+> by not compiling in EDID support or by using e.g. the ignoreedid patch
+> I had proposed) the snow effect is extremely reduced,
 
-Okay, I thought the one in the tree was an older version. Thanks for
-clarifying.
+I did not know that, just scanned the entire thread. Try this patch, it
+makes use of fb_ddc_read*() which I believe has extra steps to prevent
+display corruption.  It also incorporates Luca's i2c fix.
 
 Tony
 
 
+--=-ClI4Ucv+fel4FdgErrnv
+Content-Disposition: attachment; filename=nvidafb_generic_ddc
+Content-Type: text/plain; name=nvidafb_generic_ddc; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+nvidiafb: Bring back generic ddc reading
+
+Make nvidiafb use fb_ddc_read().  This patch was submitted before but was
+reverted due to problems in a non-x86 platform.  This includes a fix for that
+where ddc reading is bypassed if there is no DDC bus (duh).
+
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
+
+ drivers/video/nvidia/nv_i2c.c |   44 ++---------------------------------------
+ 1 files changed, 2 insertions(+), 42 deletions(-)
+
+diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+index b858897..b91d404 100644
+--- a/drivers/video/nvidia/nv_i2c.c
++++ b/drivers/video/nvidia/nv_i2c.c
+@@ -70,8 +70,6 @@ static int nvidia_gpio_getscl(void *data
+ 	if (VGA_RD08(par->PCIO, 0x3d5) & 0x04)
+ 		val = 1;
+ 
+-	val = VGA_RD08(par->PCIO, 0x3d5);
+-
+ 	return val;
+ }
+ 
+@@ -159,51 +157,13 @@ void nvidia_delete_i2c_busses(struct nvi
+ 
+ }
+ 
+-static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
+-{
+-	u8 start = 0x0;
+-	struct i2c_msg msgs[] = {
+-		{
+-		 .addr = 0x50,
+-		 .len = 1,
+-		 .buf = &start,
+-		 }, {
+-		     .addr = 0x50,
+-		     .flags = I2C_M_RD,
+-		     .len = EDID_LENGTH,
+-		     },
+-	};
+-	u8 *buf;
+-
+-	if (!chan->par)
+-		return NULL;
+-
+-	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
+-	if (!buf) {
+-		dev_warn(&chan->par->pci_dev->dev, "Out of memory!\n");
+-		return NULL;
+-	}
+-	msgs[1].buf = buf;
+-
+-	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
+-		return buf;
+-	dev_dbg(&chan->par->pci_dev->dev, "Unable to read EDID block.\n");
+-	kfree(buf);
+-	return NULL;
+-}
+-
+ int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
+ {
+ 	struct nvidia_par *par = info->par;
+ 	u8 *edid = NULL;
+-	int i;
+ 
+-	for (i = 0; i < 3; i++) {
+-		/* Do the real work */
+-		edid = nvidia_do_probe_i2c_edid(&par->chan[conn - 1]);
+-		if (edid)
+-			break;
+-	}
++	if (par->chan[conn - 1].par)
++		edid = fb_ddc_read(&par->chan[conn - 1].adapter);
+ 
+ 	if (!edid && conn == 1) {
+ 		/* try to get from firmware */
+
+--=-ClI4Ucv+fel4FdgErrnv--

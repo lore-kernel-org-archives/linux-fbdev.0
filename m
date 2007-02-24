@@ -1,35 +1,28 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] nvidiafb: allow ignoring EDID info
-Date: Sat, 24 Feb 2007 15:04:54 +0800
-Message-ID: <1172300694.4109.50.camel@daplas>
-References: <ephv35$4i3$1@sea.gmane.org> <1172101406.4217.16.camel@daplas>
-	<cb7bb73a0702220001u6acbdd95ncdc9fad10d06b421@mail.gmail.com>
-	<1172133646.4086.5.camel@daplas>
-	<cb7bb73a0702220548s55380f7fk995726ffd349823b@mail.gmail.com>
-	<1172153358.4306.17.camel@daplas>
-	<cb7bb73a0702220755y3eb2e5b1r8e7908ae0c1720c9@mail.gmail.com>
-	<1172161290.4198.12.camel@daplas>
-	<cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
-	<1172187249.4279.7.camel@daplas>
-	<cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.20 1/1] fbdev,
+	mm: Deferred IO and hecubafb driver
+Date: Sat, 24 Feb 2007 03:14:21 -0500
+Message-ID: <45a44e480702240014p52c98667tf06626b52716b3e7@mail.gmail.com>
+References: <20070223063228.GA9906@localhost> <1172299914.4109.47.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HKqvI-0003qX-QY for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Feb 2007 23:02:25 -0800
-Received: from nz-out-0506.google.com ([64.233.162.231])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKqvH-0007tt-Du
+	id 1HKs2x-00021w-Fm for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 24 Feb 2007 00:14:23 -0800
+Received: from nf-out-0910.google.com ([64.233.182.187])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HKs2w-0002zw-MG
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Feb 2007 23:02:24 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so1243103nzi
+	Sat, 24 Feb 2007 00:14:23 -0800
+Received: by nf-out-0910.google.com with SMTP id c31so2072656nfb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 23 Feb 2007 23:02:23 -0800 (PST)
-In-Reply-To: <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
+	Sat, 24 Feb 2007 00:14:21 -0800 (PST)
+In-Reply-To: <1172299914.4109.47.camel@daplas>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,45 +33,87 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Luca Tettamanti <kronos@people.it>, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Dave Airlie <airlied@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Fri, 2007-02-23 at 14:34 +0100, Giuseppe Bilotta wrote:
-> On 2/23/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > On Thu, 2007-02-22 at 20:08 +0100, Giuseppe Bilotta wrote:
-> > > No, it doesn't. I've tried all the methods from 640x480 to 1600x1200,
-> > > and they /all/ come up snowy. This is starting to look queerer and
-> > > queerer. I've also tried changing vf min and max as you suggested:
-> >
-> > Before we proceed, do you agree that the patch will allow you to change
-> > video modes without disabling DDC support?  So this is still a valid
-> > fix?
-> 
-> You're right, I hadn't realized that. I can now access all the sizes
-> from 640 to 1600, so I would say the fix is valid.
+On 2/24/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Fri, 2007-02-23 at 07:32 +0100, Jaya Kumar wrote:
+> Can you create 2 separate patches, one for the deferred_io and another
+> for the driver that uses it?
 
-Okay, thanks.
+Will do.
 
-> 
-> > When does your display become snowy? Is the snow constant or does it
-> > only snow when doing heavy text operations, such as scrolling?
-> 
-> The snowy is constant and abundant, and it seems to be independent of
-> video size (640 through 1600) and screen occupation (single prompt
-> line to fullscreen mc session) and usage.
-> 
-> > I presume that X's nv driver or vesafb does not exhibit this problem?
-> 
-> X's nv gives a very clean display, /unless/ I load nvidiafb before: if
-> I modprobe nvidiafb (it's a module, and it's blacklisted precisely for
-> this reason), then the screen is very snowy with X's nv too.
-> 
+> > +static struct vm_operations_struct hecubafb_vm_ops = {
+> > +     .nopage         = hecubafb_vm_nopage,
+> > +     .page_mkwrite   = fb_deferred_io_mkwrite,
+> > +};
+> > +
+>
+> It would seem to me that the above can be made generic, so we have this
+> instead:
 
-Hmm..., I really don't know how to fix this except to look at Xorg's
-code and look for a difference.
+We could. But I think fb_deferred_io_vm_nopage would then have to
+handle the different types or possible combinations of framebuffer
+allocations, if they kmalloced or vmalloced or maybe combinations. Ok.
+I'll try to implement that. Maybe we'll need a flag where the driver
+informs us of the type of allocation.
 
-Tony
+>
+> > +static struct fb_deferred_io hecubafb_defio = {
+> > +     .delay          = HZ,
+> > +     .deferred_io    = hecubafb_dpy_deferred_io,
+> > +};
+>
+> Leaving the drivers to just fill up the above. This would result in a
+> decrease of code duplication and it will be easier for driver writers.
 
+I agree it'll be much cleaner that way but was worried if having
+fb_defio do that would prevent driver writers from having their own
+nopage and controlling other vm related functionality. Looking at
+drivers/video/* shows no one touching vm_ops, so I guess we'll be
+fine. If fb_defio takes ownership of the driver's nopage, vm_ops, etc,
+then it could be just the above struct and the
+fb_deferred_io_init/cleanup functions that are exposed to the driver.
+ie: if an fbdev driver calls fb_deferred_io_init, we setup their mmap,
+vm_ops and the necessary bits. I'll give that a shot.
+
+>
+> I would prefer to have the init and cleanup functions called by the
+> driver themselves, instead of piggy-backing them to the
+> framebuffer_register/unregister.
+>
+
+Understood. I had done it that way originally but changed just before
+posting. I'll revert back. :)
+
+> This basically dumps the entire framebuffer to the hardware, doesn't it?
+> This framebuffer has only 2 pages at the most, so it doesn't matter. But
+> for hardware with MB's of RAM, I don't think this is feasible.
+
+Yup, hecuba doesn't have clean partial update functionality. But the
+callback exposed to drivers is:
+
++       void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
+
+which gives the drivers the list of dirty pages in pagelist. So other
+drivers for hardware with the right capabilities can implement
+selective or partial updates. As you mentioned, I imagine that the
+drivers internally could have a bit array to enable them to mark and
+find sequential partial updates. I would leave the page bitmap for
+drivers to do since it would be specific to their hardware.
+
+Thanks,
+jaya
+
+>
+> Is there a way to selectively update only the touched pages, ie from the
+> fbdevio->pagelist? struct page has a field (pgoff_t index), is this
+> usable? If not, can we just create a bit array, just to tell the driver
+> which are the dirty pages?
+>
+> Tony
+>
+>
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

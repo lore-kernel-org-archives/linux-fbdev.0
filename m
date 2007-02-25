@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH RESEND 3/9] nvidiafb: Bring back generic
-	ddc reading
-Date: Sun, 25 Feb 2007 18:16:06 +0800
-Message-ID: <45E161E6.4000006@gmail.com>
+Subject: [PATCH RESEND 4/9] fbdev: Ignore VESA modes if
+	framebuffer is disabled
+Date: Sun, 25 Feb 2007 18:17:08 +0800
+Message-ID: <45E16224.8030309@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLGat-00067R-2s for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 02:27:03 -0800
+	id 1HLGay-0006AS-PZ for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Feb 2007 02:27:08 -0800
 Received: from nz-out-0506.google.com ([64.233.162.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLGas-0001zz-45
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLGax-0001zz-0R
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 02:27:02 -0800
+	Sun, 25 Feb 2007 02:27:08 -0800
 Received: by nz-out-0506.google.com with SMTP id i11so1731052nzi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 25 Feb 2007 02:27:01 -0800 (PST)
+	Sun, 25 Feb 2007 02:27:06 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,83 +33,57 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Make nvidiafb use fb_ddc_read().  This patch was submitted before but was
-reverted due to problems in a non-x86 platform.  This includes a fix for that
-where ddc reading is bypassed if there is no DDC bus (duh).
+If the option vga=<VESA graphics mode> is added to the boot parameter, it will
+activate graphics mode, but without any framebuffer support, the user is left
+with an unusable display.
 
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+Change the behavior such that the user is instead prompted for another  mode
+(ala vga=ask).
+
+NOTE: People can always use vbetool to set a graphics mode if this is really
+desired, but the number of people doing this approaches zero.
+
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/nvidia/nv_i2c.c |   44 ++---------------------------------------
- 1 files changed, 2 insertions(+), 42 deletions(-)
+ arch/i386/boot/video.S   |    4 +++-
+ arch/x86_64/boot/video.S |    4 +++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
-index b858897..b91d404 100644
---- a/drivers/video/nvidia/nv_i2c.c
-+++ b/drivers/video/nvidia/nv_i2c.c
-@@ -70,8 +70,6 @@ static int nvidia_gpio_getscl(void *data
- 	if (VGA_RD08(par->PCIO, 0x3d5) & 0x04)
- 		val = 1;
- 
--	val = VGA_RD08(par->PCIO, 0x3d5);
--
- 	return val;
- }
- 
-@@ -159,51 +157,13 @@ void nvidia_delete_i2c_busses(struct nvi
- 
- }
- 
--static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
--{
--	u8 start = 0x0;
--	struct i2c_msg msgs[] = {
--		{
--		 .addr = 0x50,
--		 .len = 1,
--		 .buf = &start,
--		 }, {
--		     .addr = 0x50,
--		     .flags = I2C_M_RD,
--		     .len = EDID_LENGTH,
--		     },
--	};
--	u8 *buf;
--
--	if (!chan->par)
--		return NULL;
--
--	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(&chan->par->pci_dev->dev, "Out of memory!\n");
--		return NULL;
--	}
--	msgs[1].buf = buf;
--
--	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
--		return buf;
--	dev_dbg(&chan->par->pci_dev->dev, "Unable to read EDID block.\n");
--	kfree(buf);
--	return NULL;
--}
--
- int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
- {
- 	struct nvidia_par *par = info->par;
- 	u8 *edid = NULL;
--	int i;
- 
--	for (i = 0; i < 3; i++) {
--		/* Do the real work */
--		edid = nvidia_do_probe_i2c_edid(&par->chan[conn - 1]);
--		if (edid)
--			break;
--	}
-+	if (par->chan[conn - 1].par)
-+		edid = fb_ddc_read(&par->chan[conn - 1].adapter);
- 
- 	if (!edid && conn == 1) {
- 		/* try to get from firmware */
+diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
+index 9101969..78573da 100644
+--- a/arch/i386/boot/video.S
++++ b/arch/i386/boot/video.S
+@@ -496,9 +496,11 @@ mode_set:
+ 	cmpb	$VIDEO_FIRST_V7>>8, %ah
+ 	jz	setv7
+ 	
++#ifdef CONFIG_FB
+ 	cmpb	$VIDEO_FIRST_VESA>>8, %ah
+ 	jnc	check_vesa
+-	
++#endif
++		
+ 	orb	%ah, %ah
+ 	jz	setmenu
+ 	
+diff --git a/arch/x86_64/boot/video.S b/arch/x86_64/boot/video.S
+index 6af75a7..d58aa0b 100644
+--- a/arch/x86_64/boot/video.S
++++ b/arch/x86_64/boot/video.S
+@@ -496,9 +496,11 @@ mode_set:
+ 	cmpb	$VIDEO_FIRST_V7>>8, %ah
+ 	jz	setv7
+ 	
++#ifdef CONFIG_FB
+ 	cmpb	$VIDEO_FIRST_VESA>>8, %ah
+ 	jnc	check_vesa
+-	
++#endif
++		
+ 	orb	%ah, %ah
+ 	jz	setmenu
+ 	
 
 
 -------------------------------------------------------------------------

@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 7/9] atyfb: Kill dead code
-Date: Sun, 25 Feb 2007 17:07:42 +0800
-Message-ID: <1172394462.16179.44.camel@daplas>
+Subject: [PATCH 8/9] fbdev: mm: Deferred IO support
+Date: Sun, 25 Feb 2007 17:09:26 +0800
+Message-ID: <1172394566.16179.47.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0867389281=="
+Content-Type: multipart/mixed; boundary="===============1231304648=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLFOZ-00074R-Id for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 01:10:15 -0800
+	id 1HLFOg-00074e-Kt for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Feb 2007 01:10:22 -0800
 Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLFOY-0005hh-OI
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLFOf-0005hh-Hz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 01:10:15 -0800
+	Sun, 25 Feb 2007 01:10:22 -0800
 Received: by py-out-1112.google.com with SMTP id a29so528629pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 25 Feb 2007 01:10:14 -0800 (PST)
+	Sun, 25 Feb 2007 01:10:21 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,48 +29,353 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
---===============0867389281==
-Content-Type: multipart/alternative; boundary="=-0gkiFwANWUWwFfhmz47G"
+--===============1231304648==
+Content-Type: multipart/alternative; boundary="=-lCbQDIS0JZwtHTPcWETV"
 
 
---=-0gkiFwANWUWwFfhmz47G
+--=-lCbQDIS0JZwtHTPcWETV
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Coverity Bug 68, kill dead code.
+From:  Jaya Kumar <jayakumar.lkml@gmail.com>
 
+This implements deferred IO support in fbdev. Deferred IO is a way to
+delay and repurpose IO. This implementation is done using mm's page_mkwrite
+and page_mkclean hooks in order to detect, delay and then rewrite IO. This
+functionality is used by hecubafb.
+
+[adaplas]
+This is useful for graphics hardware with no directly addressable/mappable
+framebuffer. Implementing this will allow the "framebuffer" to be accesible
+from user space via mmap().
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/aty/atyfb_base.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ Documentation/fb/deferred_io.txt |   75 +++++++++++++++++++++
+ drivers/video/Kconfig            |    5 +
+ drivers/video/Makefile           |    1 
+ drivers/video/fb_defio.c         |  137 ++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h               |   20 ++++++
+ mm/rmap.c                        |    1 
+ 6 files changed, 239 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index a7e0062..56b38f5 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -2331,6 +2331,7 @@ #endif
- 		case DAC_IBMRGB514:
- 			par->dac_ops = &aty_dac_ibm514;
- 			break;
-+#ifdef CONFIG_ATARI
- 		case DAC_ATI68860_B:
- 		case DAC_ATI68860_C:
- 			par->dac_ops = &aty_dac_ati68860b;
-@@ -2339,6 +2340,7 @@ #endif
- 		case DAC_ATT21C498:
- 			par->dac_ops = &aty_dac_att21c498;
- 			break;
+diff --git a/Documentation/fb/deferred_io.txt b/Documentation/fb/deferred_io.txt
+new file mode 100644
+index 0000000..73cf9fb
+--- /dev/null
++++ b/Documentation/fb/deferred_io.txt
+@@ -0,0 +1,75 @@
++Deferred IO
++-----------
++
++Deferred IO is a way to delay and repurpose IO. It uses host memory as a
++buffer and the MMU pagefault as a pretrigger for when to perform the device
++IO. The following example may be a useful explaination of how one such setup
++works:
++
++- userspace app like Xfbdev mmaps framebuffer
++- deferred IO and driver sets up nopage and page_mkwrite handlers
++- userspace app tries to write to mmaped vaddress
++- we get pagefault and reach nopage handler
++- nopage handler finds and returns physical page
++- we get page_mkwrite where we add this page to a list
++- schedule a workqueue task to be run after a delay
++- app continues writing to that page with no additional cost. this is
++  the key benefit.
++- the workqueue task comes in and mkcleans the pages on the list, then
++ completes the work associated with updating the framebuffer. this is
++  the real work talking to the device.
++- app tries to write to the address (that has now been mkcleaned)
++- get pagefault and the above sequence occurs again
++
++As can be seen from above, one benefit is roughly to allow bursty framebuffer
++writes to occur at minimum cost. Then after some time when hopefully things
++have gone quiet, we go and really update the framebuffer which would be
++a relatively more expensive operation.
++
++For some types of nonvolatile high latency displays, the desired image is
++the final image rather than the intermediate stages which is why it's okay
++to not update for each write that is occuring.
++
++It may be the case that this is useful in other scenarios as well. Paul Mundt
++has mentioned a case where it is beneficial to use the page count to decide
++whether to coalesce and issue SG DMA or to do memory bursts.
++
++Another one may be if one has a device framebuffer that is in an usual format,
++say diagonally shifting RGB, this may then be a mechanism for you to allow
++apps to pretend to have a normal framebuffer but reswizzle for the device
++framebuffer at vsync time based on the touched pagelist.
++
++How to use it: (for applications)
++---------------------------------
++No changes needed. mmap the framebuffer like normal and just use it.
++
++How to use it: (for fbdev drivers)
++----------------------------------
++The following example may be helpful.
++
++1. Setup your structure. Eg:
++
++static struct fb_deferred_io hecubafb_defio = {
++	.delay		= HZ,
++	.deferred_io	= hecubafb_dpy_deferred_io,
++};
++
++The delay is the minimum delay between when the page_mkwrite trigger occurs
++and when the deferred_io callback is called. The deferred_io callback is
++explained below.
++
++2. Setup your deferred IO callback. Eg:
++static void hecubafb_dpy_deferred_io(struct fb_info *info,
++				struct list_head *pagelist)
++
++The deferred_io callback is where you would perform all your IO to the display
++device. You receive the pagelist which is the list of pages that were written
++to during the delay. You must not modify this list. This callback is called
++from a workqueue.
++
++3. Call init
++	info->fbdefio = &hecubafb_defio;
++	fb_deferred_io_init(info);
++
++4. Call cleanup
++	fb_deferred_io_cleanup(info);
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 9fcd67f..dd9541f 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -92,6 +92,11 @@ config FB_CFB_IMAGEBLIT
+ 	  blitting. This is used by drivers that don't provide their own
+ 	  (accelerated) version.
+ 
++config FB_DEFERRED_IO
++	bool
++	depends on FB
++	default y
++
+ config FB_SVGALIB
+ 	tristate
+ 	depends on FB
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index f6a2b60..b1020c3 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_FB_CFB_IMAGEBLIT) += cfbimg
+ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_MACMODES)      += macmodes.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
++obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+new file mode 100644
+index 0000000..cc780f4
+--- /dev/null
++++ b/drivers/video/fb_defio.c
+@@ -0,0 +1,137 @@
++/*
++ *  linux/drivers/video/fb_defio.c
++ *
++ *  Copyright (C) 2006 Jaya Kumar
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/fb.h>
++#include <linux/list.h>
++#include <asm/uaccess.h>
++
++/* to support deferred IO */
++#include <linux/rmap.h>
++#include <linux/pagemap.h>
++
++/* this is to find and return the vmalloc-ed fb pages */
++static struct page* fb_deferred_io_nopage(struct vm_area_struct *vma,
++					unsigned long vaddr, int *type)
++{
++	unsigned long offset;
++	struct page *page;
++	struct fb_info *info = vma->vm_private_data;
++
++	offset = (vaddr - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
++	if (offset >= info->fix.smem_len)
++		return NOPAGE_SIGBUS;
++
++	page = vmalloc_to_page(info->screen_base + offset);
++	if (!page)
++		return NOPAGE_OOM;
++
++	get_page(page);
++	if (type)
++		*type = VM_FAULT_MINOR;
++	return page;
++}
++
++/* vm_ops->page_mkwrite handler */
++static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
++					struct page *page)
++{
++	struct fb_info *info = vma->vm_private_data;
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	/* this is a callback we get when userspace first tries to
++	write to the page. we schedule a workqueue. that workqueue
++	will eventually mkclean the touched pages and execute the
++	deferred framebuffer IO. then if userspace touches a page
++	again, we repeat the same scheme */
++
++	/* protect against the workqueue changing the page list */
++	mutex_lock(&fbdefio->lock);
++	list_add(&page->lru, &fbdefio->pagelist);
++	mutex_unlock(&fbdefio->lock);
++
++	/* come back after delay to process the deferred IO */
++	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
++	return 0;
++}
++
++static struct vm_operations_struct fb_deferred_io_vm_ops = {
++	.nopage   	= fb_deferred_io_nopage,
++	.page_mkwrite	= fb_deferred_io_mkwrite,
++};
++
++static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	vma->vm_ops = &fb_deferred_io_vm_ops;
++	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
++	vma->vm_private_data = info;
++	return 0;
++}
++
++/* workqueue callback */
++static void fb_deferred_io_work(struct work_struct *work)
++{
++	struct fb_info *info = container_of(work, struct fb_info,
++						deferred_work.work);
++	struct list_head *node, *next;
++	struct page *cur;
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	/* here we mkclean the pages, then do all deferred IO */
++	mutex_lock(&fbdefio->lock);
++	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++		lock_page(cur);
++		page_mkclean(cur);
++		unlock_page(cur);
++	}
++
++	/* driver's callback with pagelist */
++	fbdefio->deferred_io(info, &fbdefio->pagelist);
++
++	/* clear the list */
++	list_for_each_safe(node, next, &fbdefio->pagelist) {
++		list_del(node);
++	}
++	mutex_unlock(&fbdefio->lock);
++}
++
++void fb_deferred_io_init(struct fb_info *info)
++{
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	BUG_ON(!fbdefio);
++	mutex_init(&fbdefio->lock);
++	info->fbops->fb_mmap = fb_deferred_io_mmap;
++	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
++	INIT_LIST_HEAD(&fbdefio->pagelist);
++	if (fbdefio->delay == 0) /* set a default of 1 s */
++		fbdefio->delay = HZ;
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_init);
++
++void fb_deferred_io_cleanup(struct fb_info *info)
++{
++	struct fb_deferred_io *fbdefio = info->fbdefio;
++
++	BUG_ON(!fbdefio);
++	cancel_delayed_work(&info->deferred_work);
++	flush_scheduled_work();
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
++
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index be913ec..8a8255b 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -561,6 +561,16 @@ struct fb_pixmap {
+ 	void (*readio) (struct fb_info *info, void *dst, void __iomem *src, unsigned int size);
+ };
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++struct fb_deferred_io {
++	/* delay between mkwrite and deferred handler */
++	unsigned long delay;
++	struct mutex lock; /* mutex that protects the page list */
++	struct list_head pagelist; /* list of touched pages */
++	/* callback */
++	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
++};
 +#endif
- 		default:
- 			PRINTKI("aty_init: DAC type not implemented yet!\n");
- 			par->dac_ops = &aty_dac_unsupported;
+ 
+ /*
+  * Frame buffer operations
+@@ -778,6 +788,10 @@ #ifdef CONFIG_FB_BACKLIGHT
+ 	struct mutex bl_curve_mutex;	
+ 	u8 bl_curve[FB_BACKLIGHT_LEVELS];
+ #endif
++#ifdef CONFIG_FB_DEFERRED_IO
++	struct delayed_work deferred_work;
++	struct fb_deferred_io *fbdefio;
++#endif
+ 
+ 	struct fb_ops *fbops;
+ 	struct device *device;		/* This is the parent */
+@@ -913,6 +927,12 @@ static inline void __fb_pad_aligned_buff
+ 	}
+ }
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++/* drivers/video/fb_defio.c */
++extern void fb_deferred_io_init(struct fb_info *info);
++extern void fb_deferred_io_cleanup(struct fb_info *info);
++#endif
++
+ /* drivers/video/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
+ extern void framebuffer_release(struct fb_info *info);
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 3bffd67..7d58c77 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -496,6 +496,7 @@ int page_mkclean(struct page *page)
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(page_mkclean);
+ 
+ /**
+  * page_set_anon_rmap - setup new anonymous rmap
 
 
---=-0gkiFwANWUWwFfhmz47G
+--=-lCbQDIS0JZwtHTPcWETV
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -82,44 +387,349 @@ Content-Transfer-Encoding: 7bit
 </HEAD>
 <BODY>
 <PRE>
-<!--+GtkHTML:<DATA class="ClueFlow" key="orig" value="0">-->Coverity Bug 68, kill dead code.
+<!--+GtkHTML:<DATA class="ClueFlow" key="orig" value="0">-->From:&nbsp; Jaya Kumar &lt;<A HREF="mailto:jayakumar.lkml@gmail.com">jayakumar.lkml@gmail.com</A>&gt;
 
+This implements deferred IO support in fbdev. Deferred IO is a way to
+delay and repurpose IO. This implementation is done using mm's page_mkwrite
+and page_mkclean hooks in order to detect, delay and then rewrite IO. This
+functionality is used by hecubafb.
+
+[adaplas]
+This is useful for graphics hardware with no directly addressable/mappable
+framebuffer. Implementing this will allow the &quot;framebuffer&quot; to be accesible
+from user space via mmap().
+
+Signed-off-by: Jaya Kumar &lt;<A HREF="mailto:jayakumar.lkml@gmail.com">jayakumar.lkml@gmail.com</A>&gt;
 Signed-off-by: Antonino Daplas &lt;<A HREF="mailto:adaplas@gmail.com">adaplas@gmail.com</A>&gt;
 ---
 
- drivers/video/aty/atyfb_base.c |&nbsp;&nbsp;&nbsp; 2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ Documentation/fb/deferred_io.txt |&nbsp;&nbsp; 75 +++++++++++++++++++++
+ drivers/video/Kconfig&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; 5 +
+ drivers/video/Makefile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; 1 
+ drivers/video/fb_defio.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp; 137 ++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 20 ++++++
+ mm/rmap.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; 1 
+ 6 files changed, 239 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index a7e0062..56b38f5 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -2331,6 +2331,7 @@ #endif
- 		case DAC_IBMRGB514:
- 			par-&gt;dac_ops = &amp;aty_dac_ibm514;
- 			break;
-+#ifdef CONFIG_ATARI
- 		case DAC_ATI68860_B:
- 		case DAC_ATI68860_C:
- 			par-&gt;dac_ops = &amp;aty_dac_ati68860b;
-@@ -2339,6 +2340,7 @@ #endif
- 		case DAC_ATT21C498:
- 			par-&gt;dac_ops = &amp;aty_dac_att21c498;
- 			break;
+diff --git a/Documentation/fb/deferred_io.txt b/Documentation/fb/deferred_io.txt
+new file mode 100644
+index 0000000..73cf9fb
+--- /dev/null
++++ b/Documentation/fb/deferred_io.txt
+@@ -0,0 +1,75 @@
++Deferred IO
++-----------
++
++Deferred IO is a way to delay and repurpose IO. It uses host memory as a
++buffer and the MMU pagefault as a pretrigger for when to perform the device
++IO. The following example may be a useful explaination of how one such setup
++works:
++
++- userspace app like Xfbdev mmaps framebuffer
++- deferred IO and driver sets up nopage and page_mkwrite handlers
++- userspace app tries to write to mmaped vaddress
++- we get pagefault and reach nopage handler
++- nopage handler finds and returns physical page
++- we get page_mkwrite where we add this page to a list
++- schedule a workqueue task to be run after a delay
++- app continues writing to that page with no additional cost. this is
++&nbsp; the key benefit.
++- the workqueue task comes in and mkcleans the pages on the list, then
++ completes the work associated with updating the framebuffer. this is
++&nbsp; the real work talking to the device.
++- app tries to write to the address (that has now been mkcleaned)
++- get pagefault and the above sequence occurs again
++
++As can be seen from above, one benefit is roughly to allow bursty framebuffer
++writes to occur at minimum cost. Then after some time when hopefully things
++have gone quiet, we go and really update the framebuffer which would be
++a relatively more expensive operation.
++
++For some types of nonvolatile high latency displays, the desired image is
++the final image rather than the intermediate stages which is why it's okay
++to not update for each write that is occuring.
++
++It may be the case that this is useful in other scenarios as well. Paul Mundt
++has mentioned a case where it is beneficial to use the page count to decide
++whether to coalesce and issue SG DMA or to do memory bursts.
++
++Another one may be if one has a device framebuffer that is in an usual format,
++say diagonally shifting RGB, this may then be a mechanism for you to allow
++apps to pretend to have a normal framebuffer but reswizzle for the device
++framebuffer at vsync time based on the touched pagelist.
++
++How to use it: (for applications)
++---------------------------------
++No changes needed. mmap the framebuffer like normal and just use it.
++
++How to use it: (for fbdev drivers)
++----------------------------------
++The following example may be helpful.
++
++1. Setup your structure. Eg:
++
++static struct fb_deferred_io hecubafb_defio = {
++	.delay		= HZ,
++	.deferred_io	= hecubafb_dpy_deferred_io,
++};
++
++The delay is the minimum delay between when the page_mkwrite trigger occurs
++and when the deferred_io callback is called. The deferred_io callback is
++explained below.
++
++2. Setup your deferred IO callback. Eg:
++static void hecubafb_dpy_deferred_io(struct fb_info *info,
++				struct list_head *pagelist)
++
++The deferred_io callback is where you would perform all your IO to the display
++device. You receive the pagelist which is the list of pages that were written
++to during the delay. You must not modify this list. This callback is called
++from a workqueue.
++
++3. Call init
++	info-&gt;fbdefio = &amp;hecubafb_defio;
++	fb_deferred_io_init(info);
++
++4. Call cleanup
++	fb_deferred_io_cleanup(info);
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 9fcd67f..dd9541f 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -92,6 +92,11 @@ config FB_CFB_IMAGEBLIT
+ 	&nbsp; blitting. This is used by drivers that don't provide their own
+ 	&nbsp; (accelerated) version.
+ 
++config FB_DEFERRED_IO
++	bool
++	depends on FB
++	default y
++
+ config FB_SVGALIB
+ 	tristate
+ 	depends on FB
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index f6a2b60..b1020c3 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_FB_CFB_IMAGEBLIT) += cfbimg
+ obj-$(CONFIG_FB_SVGALIB)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += svgalib.o
+ obj-$(CONFIG_FB_MACMODES)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += macmodes.o
+ obj-$(CONFIG_FB_DDC)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += fb_ddc.o
++obj-$(CONFIG_FB_DEFERRED_IO)&nbsp;&nbsp; += fb_defio.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_AMIGA)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += amifb.o c2p.o
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+new file mode 100644
+index 0000000..cc780f4
+--- /dev/null
++++ b/drivers/video/fb_defio.c
+@@ -0,0 +1,137 @@
++/*
++ *&nbsp; linux/drivers/video/fb_defio.c
++ *
++ *&nbsp; Copyright (C) 2006 Jaya Kumar
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.&nbsp; See the file COPYING in the main directory of this archive
++ * for more details.
++ */
++
++#include &lt;linux/module.h&gt;
++#include &lt;linux/kernel.h&gt;
++#include &lt;linux/errno.h&gt;
++#include &lt;linux/string.h&gt;
++#include &lt;linux/mm.h&gt;
++#include &lt;linux/slab.h&gt;
++#include &lt;linux/vmalloc.h&gt;
++#include &lt;linux/delay.h&gt;
++#include &lt;linux/interrupt.h&gt;
++#include &lt;linux/fb.h&gt;
++#include &lt;linux/list.h&gt;
++#include &lt;asm/uaccess.h&gt;
++
++/* to support deferred IO */
++#include &lt;linux/rmap.h&gt;
++#include &lt;linux/pagemap.h&gt;
++
++/* this is to find and return the vmalloc-ed fb pages */
++static struct page* fb_deferred_io_nopage(struct vm_area_struct *vma,
++					unsigned long vaddr, int *type)
++{
++	unsigned long offset;
++	struct page *page;
++	struct fb_info *info = vma-&gt;vm_private_data;
++
++	offset = (vaddr - vma-&gt;vm_start) + (vma-&gt;vm_pgoff &lt;&lt; PAGE_SHIFT);
++	if (offset &gt;= info-&gt;fix.smem_len)
++		return NOPAGE_SIGBUS;
++
++	page = vmalloc_to_page(info-&gt;screen_base + offset);
++	if (!page)
++		return NOPAGE_OOM;
++
++	get_page(page);
++	if (type)
++		*type = VM_FAULT_MINOR;
++	return page;
++}
++
++/* vm_ops-&gt;page_mkwrite handler */
++static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
++					struct page *page)
++{
++	struct fb_info *info = vma-&gt;vm_private_data;
++	struct fb_deferred_io *fbdefio = info-&gt;fbdefio;
++
++	/* this is a callback we get when userspace first tries to
++	write to the page. we schedule a workqueue. that workqueue
++	will eventually mkclean the touched pages and execute the
++	deferred framebuffer IO. then if userspace touches a page
++	again, we repeat the same scheme */
++
++	/* protect against the workqueue changing the page list */
++	mutex_lock(&amp;fbdefio-&gt;lock);
++	list_add(&amp;page-&gt;lru, &amp;fbdefio-&gt;pagelist);
++	mutex_unlock(&amp;fbdefio-&gt;lock);
++
++	/* come back after delay to process the deferred IO */
++	schedule_delayed_work(&amp;info-&gt;deferred_work, fbdefio-&gt;delay);
++	return 0;
++}
++
++static struct vm_operations_struct fb_deferred_io_vm_ops = {
++	.nopage&nbsp;&nbsp; 	= fb_deferred_io_nopage,
++	.page_mkwrite	= fb_deferred_io_mkwrite,
++};
++
++static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	vma-&gt;vm_ops = &amp;fb_deferred_io_vm_ops;
++	vma-&gt;vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
++	vma-&gt;vm_private_data = info;
++	return 0;
++}
++
++/* workqueue callback */
++static void fb_deferred_io_work(struct work_struct *work)
++{
++	struct fb_info *info = container_of(work, struct fb_info,
++						deferred_work.work);
++	struct list_head *node, *next;
++	struct page *cur;
++	struct fb_deferred_io *fbdefio = info-&gt;fbdefio;
++
++	/* here we mkclean the pages, then do all deferred IO */
++	mutex_lock(&amp;fbdefio-&gt;lock);
++	list_for_each_entry(cur, &amp;fbdefio-&gt;pagelist, lru) {
++		lock_page(cur);
++		page_mkclean(cur);
++		unlock_page(cur);
++	}
++
++	/* driver's callback with pagelist */
++	fbdefio-&gt;deferred_io(info, &amp;fbdefio-&gt;pagelist);
++
++	/* clear the list */
++	list_for_each_safe(node, next, &amp;fbdefio-&gt;pagelist) {
++		list_del(node);
++	}
++	mutex_unlock(&amp;fbdefio-&gt;lock);
++}
++
++void fb_deferred_io_init(struct fb_info *info)
++{
++	struct fb_deferred_io *fbdefio = info-&gt;fbdefio;
++
++	BUG_ON(!fbdefio);
++	mutex_init(&amp;fbdefio-&gt;lock);
++	info-&gt;fbops-&gt;fb_mmap = fb_deferred_io_mmap;
++	INIT_DELAYED_WORK(&amp;info-&gt;deferred_work, fb_deferred_io_work);
++	INIT_LIST_HEAD(&amp;fbdefio-&gt;pagelist);
++	if (fbdefio-&gt;delay == 0) /* set a default of 1 s */
++		fbdefio-&gt;delay = HZ;
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_init);
++
++void fb_deferred_io_cleanup(struct fb_info *info)
++{
++	struct fb_deferred_io *fbdefio = info-&gt;fbdefio;
++
++	BUG_ON(!fbdefio);
++	cancel_delayed_work(&amp;info-&gt;deferred_work);
++	flush_scheduled_work();
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
++
++MODULE_LICENSE(&quot;GPL&quot;);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index be913ec..8a8255b 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -561,6 +561,16 @@ struct fb_pixmap {
+ 	void (*readio) (struct fb_info *info, void *dst, void __iomem *src, unsigned int size);
+ };
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++struct fb_deferred_io {
++	/* delay between mkwrite and deferred handler */
++	unsigned long delay;
++	struct mutex lock; /* mutex that protects the page list */
++	struct list_head pagelist; /* list of touched pages */
++	/* callback */
++	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
++};
 +#endif
- 		default:
- 			PRINTKI(&quot;aty_init: DAC type not implemented yet!\n&quot;);
- 			par-&gt;dac_ops = &amp;aty_dac_unsupported;
+ 
+ /*
+&nbsp; * Frame buffer operations
+@@ -778,6 +788,10 @@ #ifdef CONFIG_FB_BACKLIGHT
+ 	struct mutex bl_curve_mutex;	
+ 	u8 bl_curve[FB_BACKLIGHT_LEVELS];
+ #endif
++#ifdef CONFIG_FB_DEFERRED_IO
++	struct delayed_work deferred_work;
++	struct fb_deferred_io *fbdefio;
++#endif
+ 
+ 	struct fb_ops *fbops;
+ 	struct device *device;		/* This is the parent */
+@@ -913,6 +927,12 @@ static inline void __fb_pad_aligned_buff
+ 	}
+ }
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++/* drivers/video/fb_defio.c */
++extern void fb_deferred_io_init(struct fb_info *info);
++extern void fb_deferred_io_cleanup(struct fb_info *info);
++#endif
++
+ /* drivers/video/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
+ extern void framebuffer_release(struct fb_info *info);
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 3bffd67..7d58c77 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -496,6 +496,7 @@ int page_mkclean(struct page *page)
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(page_mkclean);
+ 
+ /**
+&nbsp; * page_set_anon_rmap - setup new anonymous rmap
 
 </PRE>
 </BODY>
 </HTML>
 
---=-0gkiFwANWUWwFfhmz47G--
+--=-lCbQDIS0JZwtHTPcWETV--
 
 
 
---===============0867389281==
+--===============1231304648==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -130,7 +740,7 @@ Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---===============0867389281==
+--===============1231304648==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -141,4 +751,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0867389281==--
+--===============1231304648==--

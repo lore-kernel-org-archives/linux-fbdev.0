@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 4/9] fbdev: Ignore VESA modes if
-	framebuffer is disabled
-Date: Sun, 25 Feb 2007 16:54:32 +0800
-Message-ID: <1172393672.16179.33.camel@daplas>
+Subject: [PATCH 1/9] fbdev: Add Ultrasharp UXGA to
+	broken monitor database
+Date: Sun, 25 Feb 2007 16:48:49 +0800
+Message-ID: <1172393329.16179.27.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1115989527=="
+Content-Type: multipart/mixed; boundary="===============1049773165=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLFP4-00075W-0n for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 01:10:46 -0800
+	id 1HLFPA-00075k-Fl for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Feb 2007 01:10:52 -0800
 Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLFP3-0005hh-IU
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLFP9-0005hh-Mn
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 01:10:45 -0800
+	Sun, 25 Feb 2007 01:10:52 -0800
 Received: by py-out-1112.google.com with SMTP id a29so528629pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 25 Feb 2007 01:10:45 -0800 (PST)
+	Sun, 25 Feb 2007 01:10:51 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,68 +33,270 @@ To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
---===============1115989527==
-Content-Type: multipart/alternative; boundary="=-ycRhf/UUNrb9jHHWhRp1"
+--===============1049773165==
+Content-Type: multipart/alternative; boundary="=-T8ULzMjVhreFyn2N3t7Q"
 
 
---=-ycRhf/UUNrb9jHHWhRp1
+--=-T8ULzMjVhreFyn2N3t7Q
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-If the option vga=<VESA graphics mode> is added to the boot parameter, it will
-activate graphics mode, but without any framebuffer support, the user is left
-with an unusable display.
+This particular monitor does not have a limits block and has only one set of
+monitor timings. Fix by adding a limits block to the EDID and extend the
+horizontal sync frequency range to 30 kHz and 75 Khz.
 
-Change the behavior such that the user is instead prompted for another  mode
-(ala vga=ask).
-
-NOTE: People can always use vbetool to set a graphics mode if this is really
-desired, but the number of people doing this approaches zero.
-
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- arch/i386/boot/video.S   |    4 +++-
- arch/x86_64/boot/video.S |    4 +++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/video/fbmon.c |  168 +++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 112 insertions(+), 56 deletions(-)
 
-diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
-index 9101969..78573da 100644
---- a/arch/i386/boot/video.S
-+++ b/arch/i386/boot/video.S
-@@ -496,9 +496,11 @@ mode_set:
- 	cmpb	$VIDEO_FIRST_V7>>8, %ah
- 	jz	setv7
- 	
-+#ifdef CONFIG_FB
- 	cmpb	$VIDEO_FIRST_VESA>>8, %ah
- 	jnc	check_vesa
--	
-+#endif
-+		
- 	orb	%ah, %ah
- 	jz	setmenu
- 	
-diff --git a/arch/x86_64/boot/video.S b/arch/x86_64/boot/video.S
-index 6af75a7..d58aa0b 100644
---- a/arch/x86_64/boot/video.S
-+++ b/arch/x86_64/boot/video.S
-@@ -496,9 +496,11 @@ mode_set:
- 	cmpb	$VIDEO_FIRST_V7>>8, %ah
- 	jz	setv7
- 	
-+#ifdef CONFIG_FB
- 	cmpb	$VIDEO_FIRST_VESA>>8, %ah
- 	jnc	check_vesa
--	
-+#endif
-+		
- 	orb	%ah, %ah
- 	jz	setmenu
- 	
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 6b385c3..05a9464 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -48,8 +48,9 @@ #else
+ #define DPRINTK(fmt, args...)
+ #endif
+ 
+-#define FBMON_FIX_HEADER 1
+-#define FBMON_FIX_INPUT  2
++#define FBMON_FIX_HEADER  1
++#define FBMON_FIX_INPUT   2
++#define FBMON_FIX_TIMINGS 3
+ 
+ #ifdef CONFIG_FB_MODE_HELPERS
+ struct broken_edid {
+@@ -71,6 +72,12 @@ static const struct broken_edid brokendb
+ 		.model        = 0x5a44,
+ 		.fix          = FBMON_FIX_INPUT,
+ 	},
++	/* Sharp UXGA? */
++	{
++		.manufacturer = "SHP",
++		.model        = 0x138e,
++		.fix          = FBMON_FIX_TIMINGS,
++	},
+ };
+ 
+ static const unsigned char edid_v1_header[] = { 0x00, 0xff, 0xff, 0xff,
+@@ -87,6 +94,55 @@ static void copy_string(unsigned char *c
+   while (i-- && (*--s == 0x20)) *s = 0;
+ }
+ 
++static int edid_is_serial_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xff) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_ascii_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xfe) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_limits_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xfd) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_monitor_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xfc) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_timing_block(unsigned char *block)
++{
++	if ((block[0] != 0x00) || (block[1] != 0x00) ||
++	    (block[2] != 0x00) || (block[4] != 0x00))
++		return 1;
++	else
++		return 0;
++}
++
+ static int check_edid(unsigned char *edid)
+ {
+ 	unsigned char *block = edid + ID_MANUFACTURER_NAME, manufacturer[4];
+@@ -104,9 +160,6 @@ static int check_edid(unsigned char *edi
+ 	for (i = 0; i < ARRAY_SIZE(brokendb); i++) {
+ 		if (!strncmp(manufacturer, brokendb[i].manufacturer, 4) &&
+ 			brokendb[i].model == model) {
+-			printk("fbmon: The EDID Block of "
+-			       "Manufacturer: %s Model: 0x%x is known to "
+-			       "be broken,\n",  manufacturer, model);
+  			fix = brokendb[i].fix;
+  			break;
+ 		}
+@@ -115,8 +168,10 @@ static int check_edid(unsigned char *edi
+ 	switch (fix) {
+ 	case FBMON_FIX_HEADER:
+ 		for (i = 0; i < 8; i++) {
+-			if (edid[i] != edid_v1_header[i])
++			if (edid[i] != edid_v1_header[i]) {
+ 				ret = fix;
++				break;
++			}
+ 		}
+ 		break;
+ 	case FBMON_FIX_INPUT:
+@@ -126,14 +181,33 @@ static int check_edid(unsigned char *edi
+ 		if (b[4] & 0x01 && b[0] & 0x80)
+ 			ret = fix;
+ 		break;
++	case FBMON_FIX_TIMINGS:
++		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
++
++		for (i = 0; i < 4; i++) {
++			if (edid_is_limits_block(b)) {
++				ret = fix;
++				break;
++			}
++
++			b += DETAILED_TIMING_DESCRIPTION_SIZE;
++		}
++
++		break;
+ 	}
+ 
++	if (ret)
++		printk("fbmon: The EDID Block of "
++		       "Manufacturer: %s Model: 0x%x is known to "
++		       "be broken,\n",  manufacturer, model);
++
+ 	return ret;
+ }
+ 
+ static void fix_edid(unsigned char *edid, int fix)
+ {
+-	unsigned char *b;
++	int i;
++	unsigned char *b, csum = 0;
+ 
+ 	switch (fix) {
+ 	case FBMON_FIX_HEADER:
+@@ -145,6 +219,37 @@ static void fix_edid(unsigned char *edid
+ 		b = edid + EDID_STRUCT_DISPLAY;
+ 		b[0] &= ~0x80;
+ 		edid[127] += 0x80;
++		break;
++	case FBMON_FIX_TIMINGS:
++		printk("fbmon: trying to fix monitor timings\n");
++		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
++		for (i = 0; i < 4; i++) {
++			if (!(edid_is_serial_block(b) ||
++			      edid_is_ascii_block(b) ||
++			      edid_is_monitor_block(b) ||
++			      edid_is_timing_block(b))) {
++				b[0] = 0x00;
++				b[1] = 0x00;
++				b[2] = 0x00;
++				b[3] = 0xfd;
++				b[4] = 0x00;
++				b[5] = 60;   /* vfmin */
++				b[6] = 60;   /* vfmax */
++				b[7] = 30;   /* hfmin */
++				b[8] = 75;   /* hfmax */
++				b[9] = 17;   /* pixclock - 170 MHz*/
++				b[10] = 0;   /* GTF */
++				break;
++			}
++
++			b += DETAILED_TIMING_DESCRIPTION_SIZE;
++		}
++
++		for (i = 0; i < EDID_LENGTH - 1; i++)
++			csum += edid[i];
++
++		edid[127] = 256 - csum;
++		break;
+ 	}
+ }
+ 
+@@ -273,46 +378,6 @@ static void get_chroma(unsigned char *bl
+ 	DPRINTK("WhiteY:   0.%03d\n", specs->chroma.whitey);
+ }
+ 
+-static int edid_is_serial_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xff) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_ascii_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xfe) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_limits_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xfd) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_monitor_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xfc) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+ static void calc_mode_timings(int xres, int yres, int refresh,
+ 			      struct fb_videomode *mode)
+ {
+@@ -795,15 +860,6 @@ static void get_monspecs(unsigned char *
+ 	}
+ }
+ 
+-static int edid_is_timing_block(unsigned char *block)
+-{
+-	if ((block[0] != 0x00) || (block[1] != 0x00) ||
+-	    (block[2] != 0x00) || (block[4] != 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+ 	int i;
 
 
---=-ycRhf/UUNrb9jHHWhRp1
+--=-T8ULzMjVhreFyn2N3t7Q
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -106,67 +308,269 @@ Content-Transfer-Encoding: 7bit
 </HEAD>
 <BODY>
 <PRE>
-<!--+GtkHTML:<DATA class="ClueFlow" key="orig" value="0">-->If the option vga=&lt;VESA graphics mode&gt; is added to the boot parameter, it will
-activate graphics mode, but without any framebuffer support, the user is left
-with an unusable display.
+<!--+GtkHTML:<DATA class="ClueFlow" key="orig" value="0">-->This particular monitor does not have a limits block and has only one set of
+monitor timings. Fix by adding a limits block to the EDID and extend the
+horizontal sync frequency range to 30 kHz and 75 Khz.
 
-Change the behavior such that the user is instead prompted for another&nbsp; mode
-(ala vga=ask).
-
-NOTE: People can always use vbetool to set a graphics mode if this is really
-desired, but the number of people doing this approaches zero.
-
-Signed-off-by: Antonino Daplas &lt;<A HREF="mailto:adaplas@pol.net">adaplas@pol.net</A>&gt;
+Signed-off-by: Antonino Daplas &lt;<A HREF="mailto:adaplas@gmail.com">adaplas@gmail.com</A>&gt;
 ---
 
- arch/i386/boot/video.S&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; 4 +++-
- arch/x86_64/boot/video.S |&nbsp;&nbsp;&nbsp; 4 +++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/video/fbmon.c |&nbsp; 168 +++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 112 insertions(+), 56 deletions(-)
 
-diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
-index 9101969..78573da 100644
---- a/arch/i386/boot/video.S
-+++ b/arch/i386/boot/video.S
-@@ -496,9 +496,11 @@ mode_set:
- 	cmpb	$VIDEO_FIRST_V7&gt;&gt;8, %ah
- 	jz	setv7
- 	
-+#ifdef CONFIG_FB
- 	cmpb	$VIDEO_FIRST_VESA&gt;&gt;8, %ah
- 	jnc	check_vesa
--	
-+#endif
-+		
- 	orb	%ah, %ah
- 	jz	setmenu
- 	
-diff --git a/arch/x86_64/boot/video.S b/arch/x86_64/boot/video.S
-index 6af75a7..d58aa0b 100644
---- a/arch/x86_64/boot/video.S
-+++ b/arch/x86_64/boot/video.S
-@@ -496,9 +496,11 @@ mode_set:
- 	cmpb	$VIDEO_FIRST_V7&gt;&gt;8, %ah
- 	jz	setv7
- 	
-+#ifdef CONFIG_FB
- 	cmpb	$VIDEO_FIRST_VESA&gt;&gt;8, %ah
- 	jnc	check_vesa
--	
-+#endif
-+		
- 	orb	%ah, %ah
- 	jz	setmenu
- 	
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 6b385c3..05a9464 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -48,8 +48,9 @@ #else
+ #define DPRINTK(fmt, args...)
+ #endif
+ 
+-#define FBMON_FIX_HEADER 1
+-#define FBMON_FIX_INPUT&nbsp; 2
++#define FBMON_FIX_HEADER&nbsp; 1
++#define FBMON_FIX_INPUT&nbsp;&nbsp; 2
++#define FBMON_FIX_TIMINGS 3
+ 
+ #ifdef CONFIG_FB_MODE_HELPERS
+ struct broken_edid {
+@@ -71,6 +72,12 @@ static const struct broken_edid brokendb
+ 		.model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0x5a44,
+ 		.fix&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = FBMON_FIX_INPUT,
+ 	},
++	/* Sharp UXGA? */
++	{
++		.manufacturer = &quot;SHP&quot;,
++		.model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0x138e,
++		.fix&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = FBMON_FIX_TIMINGS,
++	},
+ };
+ 
+ static const unsigned char edid_v1_header[] = { 0x00, 0xff, 0xff, 0xff,
+@@ -87,6 +94,55 @@ static void copy_string(unsigned char *c
+&nbsp;&nbsp; while (i-- &amp;&amp; (*--s == 0x20)) *s = 0;
+ }
+ 
++static int edid_is_serial_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xff) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_ascii_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xfe) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_limits_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xfd) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_monitor_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xfc) &amp;&amp;
++	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_timing_block(unsigned char *block)
++{
++	if ((block[0] != 0x00) || (block[1] != 0x00) ||
++	&nbsp;&nbsp;&nbsp; (block[2] != 0x00) || (block[4] != 0x00))
++		return 1;
++	else
++		return 0;
++}
++
+ static int check_edid(unsigned char *edid)
+ {
+ 	unsigned char *block = edid + ID_MANUFACTURER_NAME, manufacturer[4];
+@@ -104,9 +160,6 @@ static int check_edid(unsigned char *edi
+ 	for (i = 0; i &lt; ARRAY_SIZE(brokendb); i++) {
+ 		if (!strncmp(manufacturer, brokendb[i].manufacturer, 4) &amp;&amp;
+ 			brokendb[i].model == model) {
+-			printk(&quot;fbmon: The EDID Block of &quot;
+-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;Manufacturer: %s Model: 0x%x is known to &quot;
+-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;be broken,\n&quot;,&nbsp; manufacturer, model);
+&nbsp; 			fix = brokendb[i].fix;
+&nbsp; 			break;
+ 		}
+@@ -115,8 +168,10 @@ static int check_edid(unsigned char *edi
+ 	switch (fix) {
+ 	case FBMON_FIX_HEADER:
+ 		for (i = 0; i &lt; 8; i++) {
+-			if (edid[i] != edid_v1_header[i])
++			if (edid[i] != edid_v1_header[i]) {
+ 				ret = fix;
++				break;
++			}
+ 		}
+ 		break;
+ 	case FBMON_FIX_INPUT:
+@@ -126,14 +181,33 @@ static int check_edid(unsigned char *edi
+ 		if (b[4] &amp; 0x01 &amp;&amp; b[0] &amp; 0x80)
+ 			ret = fix;
+ 		break;
++	case FBMON_FIX_TIMINGS:
++		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
++
++		for (i = 0; i &lt; 4; i++) {
++			if (edid_is_limits_block(b)) {
++				ret = fix;
++				break;
++			}
++
++			b += DETAILED_TIMING_DESCRIPTION_SIZE;
++		}
++
++		break;
+ 	}
+ 
++	if (ret)
++		printk(&quot;fbmon: The EDID Block of &quot;
++		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;Manufacturer: %s Model: 0x%x is known to &quot;
++		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;be broken,\n&quot;,&nbsp; manufacturer, model);
++
+ 	return ret;
+ }
+ 
+ static void fix_edid(unsigned char *edid, int fix)
+ {
+-	unsigned char *b;
++	int i;
++	unsigned char *b, csum = 0;
+ 
+ 	switch (fix) {
+ 	case FBMON_FIX_HEADER:
+@@ -145,6 +219,37 @@ static void fix_edid(unsigned char *edid
+ 		b = edid + EDID_STRUCT_DISPLAY;
+ 		b[0] &amp;= ~0x80;
+ 		edid[127] += 0x80;
++		break;
++	case FBMON_FIX_TIMINGS:
++		printk(&quot;fbmon: trying to fix monitor timings\n&quot;);
++		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
++		for (i = 0; i &lt; 4; i++) {
++			if (!(edid_is_serial_block(b) ||
++			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; edid_is_ascii_block(b) ||
++			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; edid_is_monitor_block(b) ||
++			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; edid_is_timing_block(b))) {
++				b[0] = 0x00;
++				b[1] = 0x00;
++				b[2] = 0x00;
++				b[3] = 0xfd;
++				b[4] = 0x00;
++				b[5] = 60;&nbsp;&nbsp; /* vfmin */
++				b[6] = 60;&nbsp;&nbsp; /* vfmax */
++				b[7] = 30;&nbsp;&nbsp; /* hfmin */
++				b[8] = 75;&nbsp;&nbsp; /* hfmax */
++				b[9] = 17;&nbsp;&nbsp; /* pixclock - 170 MHz*/
++				b[10] = 0;&nbsp;&nbsp; /* GTF */
++				break;
++			}
++
++			b += DETAILED_TIMING_DESCRIPTION_SIZE;
++		}
++
++		for (i = 0; i &lt; EDID_LENGTH - 1; i++)
++			csum += edid[i];
++
++		edid[127] = 256 - csum;
++		break;
+ 	}
+ }
+ 
+@@ -273,46 +378,6 @@ static void get_chroma(unsigned char *bl
+ 	DPRINTK(&quot;WhiteY:&nbsp;&nbsp; 0.%03d\n&quot;, specs-&gt;chroma.whitey);
+ }
+ 
+-static int edid_is_serial_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp; 
+-	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xff) &amp;&amp;
+-	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_ascii_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp; 
+-	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xfe) &amp;&amp;
+-	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_limits_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp; 
+-	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xfd) &amp;&amp;
+-	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_monitor_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) &amp;&amp; (block[1] == 0x00) &amp;&amp; 
+-	&nbsp;&nbsp;&nbsp; (block[2] == 0x00) &amp;&amp; (block[3] == 0xfc) &amp;&amp;
+-	&nbsp;&nbsp;&nbsp; (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+ static void calc_mode_timings(int xres, int yres, int refresh,
+ 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct fb_videomode *mode)
+ {
+@@ -795,15 +860,6 @@ static void get_monspecs(unsigned char *
+ 	}
+ }
+ 
+-static int edid_is_timing_block(unsigned char *block)
+-{
+-	if ((block[0] != 0x00) || (block[1] != 0x00) ||
+-	&nbsp;&nbsp;&nbsp; (block[2] != 0x00) || (block[4] != 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+ 	int i;
 
 </PRE>
 </BODY>
 </HTML>
 
---=-ycRhf/UUNrb9jHHWhRp1--
+--=-T8ULzMjVhreFyn2N3t7Q--
 
 
 
---===============1115989527==
+--===============1049773165==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -177,7 +581,7 @@ Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---===============1115989527==
+--===============1049773165==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -188,4 +592,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1115989527==--
+--===============1049773165==--

@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH RESEND 6/9] neofb: Fill
- transp->msb_right with the correct value
-Date: Sun, 25 Feb 2007 18:19:25 +0800
-Message-ID: <45E162AD.40307@gmail.com>
+Subject: [PATCH RESEND 5/9] fbdev: Fix obvious bug in
+	show_pan()
+Date: Sun, 25 Feb 2007 18:18:06 +0800
+Message-ID: <45E1625E.7060602@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLGb7-0006CG-Go for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 02:27:17 -0800
+	id 1HLGb3-0006C2-1c for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Feb 2007 02:27:13 -0800
 Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLGb6-00021L-7e
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLGb1-00021L-In
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 02:27:17 -0800
+	Sun, 25 Feb 2007 02:27:12 -0800
 Received: by py-out-1112.google.com with SMTP id a29so536398pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 25 Feb 2007 02:27:16 -0800 (PST)
+	Sun, 25 Feb 2007 02:27:11 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,27 +33,28 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Fill transp->msb_right with the correct value.  fbcon ignores this, but user
-apps may not.
+show_pan will display the value of the xoffset twice, instead of the xoffset
+and yoffset. Fix.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/neofb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/fbsysfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
-index 395cced..bd30aba 100644
---- a/drivers/video/neofb.c
-+++ b/drivers/video/neofb.c
-@@ -665,6 +665,7 @@ neofb_check_var(struct fb_var_screeninfo
- 	var->red.msb_right = 0;
- 	var->green.msb_right = 0;
- 	var->blue.msb_right = 0;
-+	var->transp.msb_right = 0;
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index 40c80c8..d4a2c11 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -376,7 +376,7 @@ static ssize_t show_pan(struct device *d
+ {
+ 	struct fb_info *fb_info = dev_get_drvdata(device);
+ 	return snprintf(buf, PAGE_SIZE, "%d,%d\n", fb_info->var.xoffset,
+-			fb_info->var.xoffset);
++			fb_info->var.yoffset);
+ }
  
- 	switch (var->bits_per_pixel) {
- 	case 8:		/* PSEUDOCOLOUR, 256 */
+ static ssize_t show_name(struct device *device,
 
 
 -------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH RESEND 4/9] fbdev: Ignore VESA modes if
-	framebuffer is disabled
-Date: Sun, 25 Feb 2007 18:17:08 +0800
-Message-ID: <45E16224.8030309@gmail.com>
+Subject: [PATCH RESEND 6/9] neofb: Fill
+ transp->msb_right with the correct value
+Date: Sun, 25 Feb 2007 18:19:25 +0800
+Message-ID: <45E162AD.40307@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLGay-0006AS-PZ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 02:27:08 -0800
-Received: from nz-out-0506.google.com ([64.233.162.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLGax-0001zz-0R
+	id 1HLGb7-0006CG-Go for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Feb 2007 02:27:17 -0800
+Received: from py-out-1112.google.com ([64.233.166.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLGb6-00021L-7e
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 02:27:08 -0800
-Received: by nz-out-0506.google.com with SMTP id i11so1731052nzi
+	Sun, 25 Feb 2007 02:27:17 -0800
+Received: by py-out-1112.google.com with SMTP id a29so536398pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 25 Feb 2007 02:27:06 -0800 (PST)
+	Sun, 25 Feb 2007 02:27:16 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,57 +33,27 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-If the option vga=<VESA graphics mode> is added to the boot parameter, it will
-activate graphics mode, but without any framebuffer support, the user is left
-with an unusable display.
+Fill transp->msb_right with the correct value.  fbcon ignores this, but user
+apps may not.
 
-Change the behavior such that the user is instead prompted for another  mode
-(ala vga=ask).
-
-NOTE: People can always use vbetool to set a graphics mode if this is really
-desired, but the number of people doing this approaches zero.
-
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- arch/i386/boot/video.S   |    4 +++-
- arch/x86_64/boot/video.S |    4 +++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/video/neofb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
-index 9101969..78573da 100644
---- a/arch/i386/boot/video.S
-+++ b/arch/i386/boot/video.S
-@@ -496,9 +496,11 @@ mode_set:
- 	cmpb	$VIDEO_FIRST_V7>>8, %ah
- 	jz	setv7
- 	
-+#ifdef CONFIG_FB
- 	cmpb	$VIDEO_FIRST_VESA>>8, %ah
- 	jnc	check_vesa
--	
-+#endif
-+		
- 	orb	%ah, %ah
- 	jz	setmenu
- 	
-diff --git a/arch/x86_64/boot/video.S b/arch/x86_64/boot/video.S
-index 6af75a7..d58aa0b 100644
---- a/arch/x86_64/boot/video.S
-+++ b/arch/x86_64/boot/video.S
-@@ -496,9 +496,11 @@ mode_set:
- 	cmpb	$VIDEO_FIRST_V7>>8, %ah
- 	jz	setv7
- 	
-+#ifdef CONFIG_FB
- 	cmpb	$VIDEO_FIRST_VESA>>8, %ah
- 	jnc	check_vesa
--	
-+#endif
-+		
- 	orb	%ah, %ah
- 	jz	setmenu
- 	
+diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
+index 395cced..bd30aba 100644
+--- a/drivers/video/neofb.c
++++ b/drivers/video/neofb.c
+@@ -665,6 +665,7 @@ neofb_check_var(struct fb_var_screeninfo
+ 	var->red.msb_right = 0;
+ 	var->green.msb_right = 0;
+ 	var->blue.msb_right = 0;
++	var->transp.msb_right = 0;
+ 
+ 	switch (var->bits_per_pixel) {
+ 	case 8:		/* PSEUDOCOLOUR, 256 */
 
 
 -------------------------------------------------------------------------

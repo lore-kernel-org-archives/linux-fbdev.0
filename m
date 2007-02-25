@@ -1,23 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 9/9] fbdev: Hecuba framebuffer driver
-Date: Sun, 25 Feb 2007 17:09:55 +0800
-Message-ID: <1172394595.16179.48.camel@daplas>
+Subject: [PATCH RESEND 1/9] fbdev: Add Ultrasharp UXGA
+	to broken monitor database
+Date: Sun, 25 Feb 2007 18:13:00 +0800
+Message-ID: <45E1612C.1020702@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0774942846=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLFPO-0007BF-Hx for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 01:11:06 -0800
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLFPJ-0005hh-T9
+	id 1HLGai-00065g-OA for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Feb 2007 02:26:52 -0800
+Received: from nz-out-0506.google.com ([64.233.162.226])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLGai-0001zz-6Z
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Feb 2007 01:11:06 -0800
-Received: by py-out-1112.google.com with SMTP id a29so528629pyi
+	Sun, 25 Feb 2007 02:26:52 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so1731052nzi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 25 Feb 2007 01:11:01 -0800 (PST)
+	Sun, 25 Feb 2007 02:26:51 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,1134 +31,267 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+This particular monitor does not have a limits block and has only one set of
+monitor timings. Fix by adding a limits block to the EDID and extend the
+horizontal sync frequency range to 30 kHz and 75 Khz.
 
---===============0774942846==
-Content-Type: multipart/alternative; boundary="=-PVN3ifXxKTkbYTiqIrXa"
-
-
---=-PVN3ifXxKTkbYTiqIrXa
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-
-This patch implements support for the E-Ink/hecuba display device. It uses
-deferred IO support.
-
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/Kconfig    |   14 +
- drivers/video/Makefile   |    1 
- drivers/video/hecubafb.c |  480 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 495 insertions(+), 0 deletions(-)
+ drivers/video/fbmon.c |  168 +++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 112 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index dd9541f..6123d92 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -555,6 +555,20 @@ config FB_IMAC
- 	help
- 	  This is the frame buffer device driver for the Intel-based Macintosh
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 6b385c3..05a9464 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -48,8 +48,9 @@ #else
+ #define DPRINTK(fmt, args...)
+ #endif
  
-+config FB_HECUBA
-+       tristate "Hecuba board support"
-+       depends on FB && X86 && MMU
-+       select FB_CFB_FILLRECT
-+       select FB_CFB_COPYAREA
-+       select FB_CFB_IMAGEBLIT
-+       select FB_DEFERRED_IO
-+       help
-+         This enables support for the Hecuba board. This driver was tested
-+         with an E-Ink 800x600 display and x86 SBCs through a 16 bit GPIO
-+         interface (8 bit data, 4 bit control). If you anticpate using
-+         this driver, say Y or M; otherwise say N. You must specify the
-+         GPIO IO address to be used for setting control and data.
-+
- config FB_HGA
- 	tristate "Hercules mono graphics support"
- 	depends on FB && X86
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index b1020c3..df0e196 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -66,6 +66,7 @@ obj-$(CONFIG_FB_SGIVW)            += sgi
- obj-$(CONFIG_FB_ACORN)            += acornfb.o
- obj-$(CONFIG_FB_ATARI)            += atafb.o
- obj-$(CONFIG_FB_MAC)              += macfb.o
-+obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
- obj-$(CONFIG_FB_HGA)              += hgafb.o
- obj-$(CONFIG_FB_IGA)              += igafb.o
- obj-$(CONFIG_FB_APOLLO)           += dnfb.o
-diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
-new file mode 100644
-index 0000000..a32e1b9
---- /dev/null
-+++ b/drivers/video/hecubafb.c
-@@ -0,0 +1,480 @@
-+/*
-+ * linux/drivers/video/hecubafb.c -- FB driver for Hecuba controller
-+ *
-+ * Copyright (C) 2006, Jaya Kumar
-+ * This work was sponsored by CIS(M) Sdn Bhd
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file COPYING in the main directory of this archive for
-+ * more details.
-+ *
-+ * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
-+ * This work was possible because of apollo display code from E-Ink's website
-+ * http://support.eink.com/community
-+ * All information used to write this code is from public material made
-+ * available by E-Ink on its support site. Some commands such as 0xA4
-+ * were found by looping through cmd=0x00 thru 0xFF and supplying random
-+ * values. There are other commands that the display is capable of,
-+ * beyond the 5 used here but they are more complex.
-+ *
-+ * This driver is written to be used with the Hecuba display controller
-+ * board, and tested with the EInk 800x600 display in 1 bit mode.
-+ * The interface between Hecuba and the host is TTL based GPIO. The
-+ * GPIO requirements are 8 writable data lines and 6 lines for control.
-+ * Only 4 of the controls are actually used here but 6 for future use.
-+ * The driver requires the IO addresses for data and control GPIO at
-+ * load time. It is also possible to use this display with a standard
-+ * PC parallel port.
-+ *
-+ * General notes:
-+ * - User must set hecubafb_enable=1 to enable it
-+ * - User must set dio_addr=0xIOADDR cio_addr=0xIOADDR c2io_addr=0xIOADDR
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/fb.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/list.h>
-+#include <asm/uaccess.h>
-+
-+/* Apollo controller specific defines */
-+#define APOLLO_START_NEW_IMG	0xA0
-+#define APOLLO_STOP_IMG_DATA	0xA1
-+#define APOLLO_DISPLAY_IMG	0xA2
-+#define APOLLO_ERASE_DISPLAY	0xA3
-+#define APOLLO_INIT_DISPLAY	0xA4
-+
-+/* Hecuba interface specific defines */
-+/* WUP is inverted, CD is inverted, DS is inverted */
-+#define HCB_NWUP_BIT	0x01
-+#define HCB_NDS_BIT 	0x02
-+#define HCB_RW_BIT 	0x04
-+#define HCB_NCD_BIT 	0x08
-+#define HCB_ACK_BIT 	0x80
-+
-+/* Display specific information */
-+#define DPY_W 600
-+#define DPY_H 800
-+
-+struct hecubafb_par {
-+	unsigned long dio_addr;
-+	unsigned long cio_addr;
-+	unsigned long c2io_addr;
-+	unsigned char ctl;
-+	struct fb_info *info;
-+	unsigned int irq;
-+};
-+
-+static struct fb_fix_screeninfo hecubafb_fix __initdata = {
-+	.id =		"hecubafb",
-+	.type =		FB_TYPE_PACKED_PIXELS,
-+	.visual =	FB_VISUAL_MONO01,
-+	.xpanstep =	0,
-+	.ypanstep =	0,
-+	.ywrapstep =	0,
-+	.accel =	FB_ACCEL_NONE,
-+};
-+
-+static struct fb_var_screeninfo hecubafb_var __initdata = {
-+	.xres		= DPY_W,
-+	.yres		= DPY_H,
-+	.xres_virtual	= DPY_W,
-+	.yres_virtual	= DPY_H,
-+	.bits_per_pixel	= 1,
-+	.nonstd		= 1,
-+};
-+
-+static unsigned long dio_addr;
-+static unsigned long cio_addr;
-+static unsigned long c2io_addr;
-+static unsigned long splashval;
-+static unsigned int nosplash;
-+static unsigned int hecubafb_enable;
-+static unsigned int irq;
-+
-+static DECLARE_WAIT_QUEUE_HEAD(hecubafb_waitq);
-+
-+static void hcb_set_ctl(struct hecubafb_par *par)
-+{
-+	outb(par->ctl, par->cio_addr);
-+}
-+
-+static unsigned char hcb_get_ctl(struct hecubafb_par *par)
-+{
-+	return inb(par->c2io_addr);
-+}
-+
-+static void hcb_set_data(struct hecubafb_par *par, unsigned char value)
-+{
-+	outb(value, par->dio_addr);
-+}
-+
-+static int __devinit apollo_init_control(struct hecubafb_par *par)
-+{
-+	unsigned char ctl;
-+	/* for init, we want the following setup to be set:
-+	WUP = lo
-+	ACK = hi
-+	DS = hi
-+	RW = hi
-+	CD = lo
-+	*/
-+
-+	/* write WUP to lo, DS to hi, RW to hi, CD to lo */
-+	par->ctl = HCB_NWUP_BIT | HCB_RW_BIT | HCB_NCD_BIT ;
-+	par->ctl &= ~HCB_NDS_BIT;
-+	hcb_set_ctl(par);
-+
-+	/* check ACK is not lo */
-+	ctl = hcb_get_ctl(par);
-+	if ((ctl & HCB_ACK_BIT)) {
-+		printk(KERN_ERR "Fail because ACK is already low\n");
-+		return -ENXIO;
-+	}
-+
-+	return 0;
-+}
-+
-+void hcb_wait_for_ack(struct hecubafb_par *par)
-+{
-+
-+	int timeout;
-+	unsigned char ctl;
-+
-+	timeout=500;
-+	do {
-+		ctl = hcb_get_ctl(par);
-+		if ((ctl & HCB_ACK_BIT))
-+			return;
-+		udelay(1);
-+	} while (timeout--);
-+	printk(KERN_ERR "timed out waiting for ack\n");
-+}
-+
-+void hcb_wait_for_ack_clear(struct hecubafb_par *par)
-+{
-+
-+	int timeout;
-+	unsigned char ctl;
-+
-+	timeout=500;
-+	do {
-+		ctl = hcb_get_ctl(par);
-+		if (!(ctl & HCB_ACK_BIT))
-+			return;
-+		udelay(1);
-+	} while (timeout--);
-+	printk(KERN_ERR "timed out waiting for clear\n");
-+}
-+
-+void apollo_send_data(struct hecubafb_par *par, unsigned char data)
-+{
-+	/* set data */
-+	hcb_set_data(par, data);
-+
-+	/* set DS low */
-+	par->ctl |= HCB_NDS_BIT;
-+	hcb_set_ctl(par);
-+
-+	hcb_wait_for_ack(par);
-+
-+	/* set DS hi */
-+	par->ctl &= ~(HCB_NDS_BIT);
-+	hcb_set_ctl(par);
-+
-+	hcb_wait_for_ack_clear(par);
-+}
-+
-+void apollo_send_command(struct hecubafb_par *par, unsigned char data)
-+{
-+	/* command so set CD to high */
-+	par->ctl &= ~(HCB_NCD_BIT);
-+	hcb_set_ctl(par);
-+
-+	/* actually strobe with command */
-+	apollo_send_data(par, data);
-+
-+	/* clear CD back to low */
-+	par->ctl |= (HCB_NCD_BIT);
-+	hcb_set_ctl(par);
-+}
-+
-+/* main hecubafb functions */
-+
-+static void hecubafb_dpy_update(struct hecubafb_par *par)
-+{
-+	int i;
-+	unsigned char *buf = par->info->screen_base;
-+
-+	apollo_send_command(par, 0xA0);
-+
-+	for (i=0; i < (DPY_W*DPY_H/8); i++) {
-+		apollo_send_data(par, *(buf++));
-+	}
-+
-+	apollo_send_command(par, 0xA1);
-+	apollo_send_command(par, 0xA2);
-+}
-+
-+/* this is called back from the deferred io workqueue */
-+static void hecubafb_dpy_deferred_io(struct fb_info *info,
-+				struct list_head *pagelist)
-+{
-+	hecubafb_dpy_update(info->par);
-+}
-+
-+static void hecubafb_fillrect(struct fb_info *info,
-+				   const struct fb_fillrect *rect)
-+{
-+	struct hecubafb_par *par = info->par;
-+
-+	cfb_fillrect(info, rect);
-+
-+	hecubafb_dpy_update(par);
-+}
-+
-+static void hecubafb_copyarea(struct fb_info *info,
-+				   const struct fb_copyarea *area)
-+{
-+	struct hecubafb_par *par = info->par;
-+
-+	cfb_copyarea(info, area);
-+
-+	hecubafb_dpy_update(par);
-+}
-+
-+static void hecubafb_imageblit(struct fb_info *info,
-+				const struct fb_image *image)
-+{
-+	struct hecubafb_par *par = info->par;
-+
-+	cfb_imageblit(info, image);
-+
-+	hecubafb_dpy_update(par);
-+}
-+
-+/*
-+ * this is the slow path from userspace. they can seek and write to
-+ * the fb. it's inefficient to do anything less than a full screen draw
-+ */
-+static ssize_t hecubafb_write(struct file *file, const char __user *buf,
-+				size_t count, loff_t *ppos)
-+{
-+	struct inode *inode;
-+	int fbidx;
-+	struct fb_info *info;
-+	unsigned long p;
-+	int err=-EINVAL;
-+	struct hecubafb_par *par;
-+	unsigned int xres;
-+	unsigned int fbmemlength;
-+
-+	p = *ppos;
-+	inode = file->f_dentry->d_inode;
-+	fbidx = iminor(inode);
-+	info = registered_fb[fbidx];
-+
-+	if (!info || !info->screen_base)
-+		return -ENODEV;
-+
-+	par = info->par;
-+	xres = info->var.xres;
-+	fbmemlength = (xres * info->var.yres)/8;
-+
-+	if (p > fbmemlength)
-+		return -ENOSPC;
-+
-+	err = 0;
-+	if ((count + p) > fbmemlength) {
-+		count = fbmemlength - p;
-+		err = -ENOSPC;
-+	}
-+
-+	if (count) {
-+		char *base_addr;
-+
-+		base_addr = info->screen_base;
-+		count -= copy_from_user(base_addr + p, buf, count);
-+		*ppos += count;
-+		err = -EFAULT;
-+	}
-+
-+	hecubafb_dpy_update(par);
-+
-+	if (count)
-+		return count;
-+
-+	return err;
-+}
-+
-+static struct fb_ops hecubafb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_write	= hecubafb_write,
-+	.fb_fillrect	= hecubafb_fillrect,
-+	.fb_copyarea	= hecubafb_copyarea,
-+	.fb_imageblit	= hecubafb_imageblit,
-+};
-+
-+static struct fb_deferred_io hecubafb_defio = {
-+	.delay		= HZ,
-+	.deferred_io	= hecubafb_dpy_deferred_io,
-+};
-+
-+static int __devinit hecubafb_probe(struct platform_device *dev)
-+{
-+	struct fb_info *info;
-+	int retval = -ENOMEM;
-+	int videomemorysize;
-+	unsigned char *videomemory;
-+	struct hecubafb_par *par;
-+
-+	videomemorysize = (DPY_W*DPY_H)/8;
-+
-+	if (!(videomemory = vmalloc(videomemorysize)))
-+		return retval;
-+
-+	memset(videomemory, 0, videomemorysize);
-+
-+	info = framebuffer_alloc(sizeof(struct hecubafb_par), &dev->dev);
-+	if (!info)
-+		goto err;
-+
-+	info->screen_base = (char __iomem *) videomemory;
-+	info->fbops = &hecubafb_ops;
-+
-+	info->var = hecubafb_var;
-+	info->fix = hecubafb_fix;
-+	info->fix.smem_len = videomemorysize;
-+	par = info->par;
-+	par->info = info;
-+
-+	if (!dio_addr || !cio_addr || !c2io_addr) {
-+		printk(KERN_WARNING "no IO addresses supplied\n");
-+		goto err1;
-+	}
-+	par->dio_addr = dio_addr;
-+	par->cio_addr = cio_addr;
-+	par->c2io_addr = c2io_addr;
-+	info->flags = FBINFO_FLAG_DEFAULT;
-+
-+	info->fbdefio = &hecubafb_defio;
-+	fb_deferred_io_init(info);
-+
-+	retval = register_framebuffer(info);
-+	if (retval < 0)
-+		goto err1;
-+	platform_set_drvdata(dev, info);
-+
-+	printk(KERN_INFO
-+	       "fb%d: Hecuba frame buffer device, using %dK of video memory\n",
-+	       info->node, videomemorysize >> 10);
-+
-+	/* this inits the dpy */
-+	apollo_init_control(par);
-+
-+	apollo_send_command(par, APOLLO_INIT_DISPLAY);
-+	apollo_send_data(par, 0x81);
-+
-+	/* have to wait while display resets */
-+	udelay(1000);
-+
-+	/* if we were told to splash the screen, we just clear it */
-+	if (!nosplash) {
-+		apollo_send_command(par, APOLLO_ERASE_DISPLAY);
-+		apollo_send_data(par, splashval);
-+	}
-+
-+	return 0;
-+err1:
-+	framebuffer_release(info);
-+err:
-+	vfree(videomemory);
-+	return retval;
-+}
-+
-+static int __devexit hecubafb_remove(struct platform_device *dev)
-+{
-+	struct fb_info *info = platform_get_drvdata(dev);
-+
-+	if (info) {
-+		fb_deferred_io_cleanup(info);
-+		unregister_framebuffer(info);
-+		vfree(info->screen_base);
-+		framebuffer_release(info);
-+	}
-+	return 0;
-+}
-+
-+static struct platform_driver hecubafb_driver = {
-+	.probe	= hecubafb_probe,
-+	.remove = hecubafb_remove,
-+	.driver	= {
-+		.name	= "hecubafb",
-+	},
-+};
-+
-+static struct platform_device *hecubafb_device;
-+
-+static int __init hecubafb_init(void)
-+{
-+	int ret;
-+
-+	if (!hecubafb_enable) {
-+		printk(KERN_ERR "Use hecubafb_enable to enable the device\n");
-+		return -ENXIO;
-+	}
-+
-+	ret = platform_driver_register(&hecubafb_driver);
-+	if (!ret) {
-+		hecubafb_device = platform_device_alloc("hecubafb", 0);
-+		if (hecubafb_device)
-+			ret = platform_device_add(hecubafb_device);
-+		else
-+			ret = -ENOMEM;
-+
-+		if (ret) {
-+			platform_device_put(hecubafb_device);
-+			platform_driver_unregister(&hecubafb_driver);
-+		}
-+	}
-+	return ret;
-+
-+}
-+
-+static void __exit hecubafb_exit(void)
-+{
-+	platform_device_unregister(hecubafb_device);
-+	platform_driver_unregister(&hecubafb_driver);
-+}
-+
-+module_param(nosplash, uint, 0);
-+MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
-+module_param(hecubafb_enable, uint, 0);
-+MODULE_PARM_DESC(hecubafb_enable, "Enable communication with Hecuba board");
-+module_param(dio_addr, ulong, 0);
-+MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
-+module_param(cio_addr, ulong, 0);
-+MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
-+module_param(c2io_addr, ulong, 0);
-+MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
-+module_param(splashval, ulong, 0);
-+MODULE_PARM_DESC(splashval, "Splash pattern: 0x00 is black, 0x01 is white");
-+module_param(irq, uint, 0);
-+MODULE_PARM_DESC(irq, "IRQ for the Hecuba board");
-+
-+module_init(hecubafb_init);
-+module_exit(hecubafb_exit);
-+
-+MODULE_DESCRIPTION("fbdev driver for Hecuba board");
-+MODULE_AUTHOR("Jaya Kumar");
-+MODULE_LICENSE("GPL");
-
-
---=-PVN3ifXxKTkbYTiqIrXa
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.12.2">
-</HEAD>
-<BODY>
-<PRE>
-<!--+GtkHTML:<DATA class="ClueFlow" key="orig" value="0">-->From: Jaya Kumar &lt;<A HREF="mailto:jayakumar.lkml@gmail.com">jayakumar.lkml@gmail.com</A>&gt;
-
-This patch implements support for the E-Ink/hecuba display device. It uses
-deferred IO support.
-
-Signed-off-by: Jaya Kumar &lt;<A HREF="mailto:jayakumar.lkml@gmail.com">jayakumar.lkml@gmail.com</A>&gt;
-Signed-off-by: Antonino Daplas &lt;<A HREF="mailto:adaplas@gmail.com">adaplas@gmail.com</A>&gt;
----
-
- drivers/video/Kconfig&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; 14 +
- drivers/video/Makefile&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp; 1 
- drivers/video/hecubafb.c |&nbsp; 480 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 495 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index dd9541f..6123d92 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -555,6 +555,20 @@ config FB_IMAC
- 	help
- 	&nbsp; This is the frame buffer device driver for the Intel-based Macintosh
+-#define FBMON_FIX_HEADER 1
+-#define FBMON_FIX_INPUT  2
++#define FBMON_FIX_HEADER  1
++#define FBMON_FIX_INPUT   2
++#define FBMON_FIX_TIMINGS 3
  
-+config FB_HECUBA
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tristate &quot;Hecuba board support&quot;
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; depends on FB &amp;&amp; X86 &amp;&amp; MMU
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; select FB_CFB_FILLRECT
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; select FB_CFB_COPYAREA
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; select FB_CFB_IMAGEBLIT
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; select FB_DEFERRED_IO
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; help
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; This enables support for the Hecuba board. This driver was tested
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with an E-Ink 800x600 display and x86 SBCs through a 16 bit GPIO
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interface (8 bit data, 4 bit control). If you anticpate using
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this driver, say Y or M; otherwise say N. You must specify the
-+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GPIO IO address to be used for setting control and data.
-+
- config FB_HGA
- 	tristate &quot;Hercules mono graphics support&quot;
- 	depends on FB &amp;&amp; X86
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index b1020c3..df0e196 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -66,6 +66,7 @@ obj-$(CONFIG_FB_SGIVW)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += sgi
- obj-$(CONFIG_FB_ACORN)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += acornfb.o
- obj-$(CONFIG_FB_ATARI)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += atafb.o
- obj-$(CONFIG_FB_MAC)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += macfb.o
-+obj-$(CONFIG_FB_HECUBA)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += hecubafb.o
- obj-$(CONFIG_FB_HGA)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += hgafb.o
- obj-$(CONFIG_FB_IGA)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += igafb.o
- obj-$(CONFIG_FB_APOLLO)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; += dnfb.o
-diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
-new file mode 100644
-index 0000000..a32e1b9
---- /dev/null
-+++ b/drivers/video/hecubafb.c
-@@ -0,0 +1,480 @@
-+/*
-+ * linux/drivers/video/hecubafb.c -- FB driver for Hecuba controller
-+ *
-+ * Copyright (C) 2006, Jaya Kumar
-+ * This work was sponsored by CIS(M) Sdn Bhd
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file COPYING in the main directory of this archive for
-+ * more details.
-+ *
-+ * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
-+ * This work was possible because of apollo display code from E-Ink's website
-+ * <A HREF="http://support.eink.com/community">http://support.eink.com/community</A>
-+ * All information used to write this code is from public material made
-+ * available by E-Ink on its support site. Some commands such as 0xA4
-+ * were found by looping through cmd=0x00 thru 0xFF and supplying random
-+ * values. There are other commands that the display is capable of,
-+ * beyond the 5 used here but they are more complex.
-+ *
-+ * This driver is written to be used with the Hecuba display controller
-+ * board, and tested with the EInk 800x600 display in 1 bit mode.
-+ * The interface between Hecuba and the host is TTL based GPIO. The
-+ * GPIO requirements are 8 writable data lines and 6 lines for control.
-+ * Only 4 of the controls are actually used here but 6 for future use.
-+ * The driver requires the IO addresses for data and control GPIO at
-+ * load time. It is also possible to use this display with a standard
-+ * PC parallel port.
-+ *
-+ * General notes:
-+ * - User must set hecubafb_enable=1 to enable it
-+ * - User must set dio_addr=0xIOADDR cio_addr=0xIOADDR c2io_addr=0xIOADDR
-+ *
-+ */
-+
-+#include &lt;linux/module.h&gt;
-+#include &lt;linux/kernel.h&gt;
-+#include &lt;linux/errno.h&gt;
-+#include &lt;linux/string.h&gt;
-+#include &lt;linux/mm.h&gt;
-+#include &lt;linux/slab.h&gt;
-+#include &lt;linux/vmalloc.h&gt;
-+#include &lt;linux/delay.h&gt;
-+#include &lt;linux/interrupt.h&gt;
-+#include &lt;linux/fb.h&gt;
-+#include &lt;linux/init.h&gt;
-+#include &lt;linux/platform_device.h&gt;
-+#include &lt;linux/list.h&gt;
-+#include &lt;asm/uaccess.h&gt;
-+
-+/* Apollo controller specific defines */
-+#define APOLLO_START_NEW_IMG	0xA0
-+#define APOLLO_STOP_IMG_DATA	0xA1
-+#define APOLLO_DISPLAY_IMG	0xA2
-+#define APOLLO_ERASE_DISPLAY	0xA3
-+#define APOLLO_INIT_DISPLAY	0xA4
-+
-+/* Hecuba interface specific defines */
-+/* WUP is inverted, CD is inverted, DS is inverted */
-+#define HCB_NWUP_BIT	0x01
-+#define HCB_NDS_BIT 	0x02
-+#define HCB_RW_BIT 	0x04
-+#define HCB_NCD_BIT 	0x08
-+#define HCB_ACK_BIT 	0x80
-+
-+/* Display specific information */
-+#define DPY_W 600
-+#define DPY_H 800
-+
-+struct hecubafb_par {
-+	unsigned long dio_addr;
-+	unsigned long cio_addr;
-+	unsigned long c2io_addr;
-+	unsigned char ctl;
-+	struct fb_info *info;
-+	unsigned int irq;
-+};
-+
-+static struct fb_fix_screeninfo hecubafb_fix __initdata = {
-+	.id =		&quot;hecubafb&quot;,
-+	.type =		FB_TYPE_PACKED_PIXELS,
-+	.visual =	FB_VISUAL_MONO01,
-+	.xpanstep =	0,
-+	.ypanstep =	0,
-+	.ywrapstep =	0,
-+	.accel =	FB_ACCEL_NONE,
-+};
-+
-+static struct fb_var_screeninfo hecubafb_var __initdata = {
-+	.xres		= DPY_W,
-+	.yres		= DPY_H,
-+	.xres_virtual	= DPY_W,
-+	.yres_virtual	= DPY_H,
-+	.bits_per_pixel	= 1,
-+	.nonstd		= 1,
-+};
-+
-+static unsigned long dio_addr;
-+static unsigned long cio_addr;
-+static unsigned long c2io_addr;
-+static unsigned long splashval;
-+static unsigned int nosplash;
-+static unsigned int hecubafb_enable;
-+static unsigned int irq;
-+
-+static DECLARE_WAIT_QUEUE_HEAD(hecubafb_waitq);
-+
-+static void hcb_set_ctl(struct hecubafb_par *par)
-+{
-+	outb(par-&gt;ctl, par-&gt;cio_addr);
-+}
-+
-+static unsigned char hcb_get_ctl(struct hecubafb_par *par)
-+{
-+	return inb(par-&gt;c2io_addr);
-+}
-+
-+static void hcb_set_data(struct hecubafb_par *par, unsigned char value)
-+{
-+	outb(value, par-&gt;dio_addr);
-+}
-+
-+static int __devinit apollo_init_control(struct hecubafb_par *par)
-+{
-+	unsigned char ctl;
-+	/* for init, we want the following setup to be set:
-+	WUP = lo
-+	ACK = hi
-+	DS = hi
-+	RW = hi
-+	CD = lo
-+	*/
-+
-+	/* write WUP to lo, DS to hi, RW to hi, CD to lo */
-+	par-&gt;ctl = HCB_NWUP_BIT | HCB_RW_BIT | HCB_NCD_BIT ;
-+	par-&gt;ctl &amp;= ~HCB_NDS_BIT;
-+	hcb_set_ctl(par);
-+
-+	/* check ACK is not lo */
-+	ctl = hcb_get_ctl(par);
-+	if ((ctl &amp; HCB_ACK_BIT)) {
-+		printk(KERN_ERR &quot;Fail because ACK is already low\n&quot;);
-+		return -ENXIO;
-+	}
-+
-+	return 0;
-+}
-+
-+void hcb_wait_for_ack(struct hecubafb_par *par)
-+{
-+
-+	int timeout;
-+	unsigned char ctl;
-+
-+	timeout=500;
-+	do {
-+		ctl = hcb_get_ctl(par);
-+		if ((ctl &amp; HCB_ACK_BIT))
-+			return;
-+		udelay(1);
-+	} while (timeout--);
-+	printk(KERN_ERR &quot;timed out waiting for ack\n&quot;);
-+}
-+
-+void hcb_wait_for_ack_clear(struct hecubafb_par *par)
-+{
-+
-+	int timeout;
-+	unsigned char ctl;
-+
-+	timeout=500;
-+	do {
-+		ctl = hcb_get_ctl(par);
-+		if (!(ctl &amp; HCB_ACK_BIT))
-+			return;
-+		udelay(1);
-+	} while (timeout--);
-+	printk(KERN_ERR &quot;timed out waiting for clear\n&quot;);
-+}
-+
-+void apollo_send_data(struct hecubafb_par *par, unsigned char data)
-+{
-+	/* set data */
-+	hcb_set_data(par, data);
-+
-+	/* set DS low */
-+	par-&gt;ctl |= HCB_NDS_BIT;
-+	hcb_set_ctl(par);
-+
-+	hcb_wait_for_ack(par);
-+
-+	/* set DS hi */
-+	par-&gt;ctl &amp;= ~(HCB_NDS_BIT);
-+	hcb_set_ctl(par);
-+
-+	hcb_wait_for_ack_clear(par);
-+}
-+
-+void apollo_send_command(struct hecubafb_par *par, unsigned char data)
-+{
-+	/* command so set CD to high */
-+	par-&gt;ctl &amp;= ~(HCB_NCD_BIT);
-+	hcb_set_ctl(par);
-+
-+	/* actually strobe with command */
-+	apollo_send_data(par, data);
-+
-+	/* clear CD back to low */
-+	par-&gt;ctl |= (HCB_NCD_BIT);
-+	hcb_set_ctl(par);
-+}
-+
-+/* main hecubafb functions */
-+
-+static void hecubafb_dpy_update(struct hecubafb_par *par)
-+{
-+	int i;
-+	unsigned char *buf = par-&gt;info-&gt;screen_base;
-+
-+	apollo_send_command(par, 0xA0);
-+
-+	for (i=0; i &lt; (DPY_W*DPY_H/8); i++) {
-+		apollo_send_data(par, *(buf++));
-+	}
-+
-+	apollo_send_command(par, 0xA1);
-+	apollo_send_command(par, 0xA2);
-+}
-+
-+/* this is called back from the deferred io workqueue */
-+static void hecubafb_dpy_deferred_io(struct fb_info *info,
-+				struct list_head *pagelist)
-+{
-+	hecubafb_dpy_update(info-&gt;par);
-+}
-+
-+static void hecubafb_fillrect(struct fb_info *info,
-+				&nbsp;&nbsp; const struct fb_fillrect *rect)
-+{
-+	struct hecubafb_par *par = info-&gt;par;
-+
-+	cfb_fillrect(info, rect);
-+
-+	hecubafb_dpy_update(par);
-+}
-+
-+static void hecubafb_copyarea(struct fb_info *info,
-+				&nbsp;&nbsp; const struct fb_copyarea *area)
-+{
-+	struct hecubafb_par *par = info-&gt;par;
-+
-+	cfb_copyarea(info, area);
-+
-+	hecubafb_dpy_update(par);
-+}
-+
-+static void hecubafb_imageblit(struct fb_info *info,
-+				const struct fb_image *image)
-+{
-+	struct hecubafb_par *par = info-&gt;par;
-+
-+	cfb_imageblit(info, image);
-+
-+	hecubafb_dpy_update(par);
-+}
-+
-+/*
-+ * this is the slow path from userspace. they can seek and write to
-+ * the fb. it's inefficient to do anything less than a full screen draw
-+ */
-+static ssize_t hecubafb_write(struct file *file, const char __user *buf,
-+				size_t count, loff_t *ppos)
-+{
-+	struct inode *inode;
-+	int fbidx;
-+	struct fb_info *info;
-+	unsigned long p;
-+	int err=-EINVAL;
-+	struct hecubafb_par *par;
-+	unsigned int xres;
-+	unsigned int fbmemlength;
-+
-+	p = *ppos;
-+	inode = file-&gt;f_dentry-&gt;d_inode;
-+	fbidx = iminor(inode);
-+	info = registered_fb[fbidx];
-+
-+	if (!info || !info-&gt;screen_base)
-+		return -ENODEV;
-+
-+	par = info-&gt;par;
-+	xres = info-&gt;var.xres;
-+	fbmemlength = (xres * info-&gt;var.yres)/8;
-+
-+	if (p &gt; fbmemlength)
-+		return -ENOSPC;
-+
-+	err = 0;
-+	if ((count + p) &gt; fbmemlength) {
-+		count = fbmemlength - p;
-+		err = -ENOSPC;
-+	}
-+
-+	if (count) {
-+		char *base_addr;
-+
-+		base_addr = info-&gt;screen_base;
-+		count -= copy_from_user(base_addr + p, buf, count);
-+		*ppos += count;
-+		err = -EFAULT;
-+	}
-+
-+	hecubafb_dpy_update(par);
-+
-+	if (count)
-+		return count;
-+
-+	return err;
-+}
-+
-+static struct fb_ops hecubafb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_write	= hecubafb_write,
-+	.fb_fillrect	= hecubafb_fillrect,
-+	.fb_copyarea	= hecubafb_copyarea,
-+	.fb_imageblit	= hecubafb_imageblit,
-+};
-+
-+static struct fb_deferred_io hecubafb_defio = {
-+	.delay		= HZ,
-+	.deferred_io	= hecubafb_dpy_deferred_io,
-+};
-+
-+static int __devinit hecubafb_probe(struct platform_device *dev)
-+{
-+	struct fb_info *info;
-+	int retval = -ENOMEM;
-+	int videomemorysize;
-+	unsigned char *videomemory;
-+	struct hecubafb_par *par;
-+
-+	videomemorysize = (DPY_W*DPY_H)/8;
-+
-+	if (!(videomemory = vmalloc(videomemorysize)))
-+		return retval;
-+
-+	memset(videomemory, 0, videomemorysize);
-+
-+	info = framebuffer_alloc(sizeof(struct hecubafb_par), &amp;dev-&gt;dev);
-+	if (!info)
-+		goto err;
-+
-+	info-&gt;screen_base = (char __iomem *) videomemory;
-+	info-&gt;fbops = &amp;hecubafb_ops;
-+
-+	info-&gt;var = hecubafb_var;
-+	info-&gt;fix = hecubafb_fix;
-+	info-&gt;fix.smem_len = videomemorysize;
-+	par = info-&gt;par;
-+	par-&gt;info = info;
-+
-+	if (!dio_addr || !cio_addr || !c2io_addr) {
-+		printk(KERN_WARNING &quot;no IO addresses supplied\n&quot;);
-+		goto err1;
-+	}
-+	par-&gt;dio_addr = dio_addr;
-+	par-&gt;cio_addr = cio_addr;
-+	par-&gt;c2io_addr = c2io_addr;
-+	info-&gt;flags = FBINFO_FLAG_DEFAULT;
-+
-+	info-&gt;fbdefio = &amp;hecubafb_defio;
-+	fb_deferred_io_init(info);
-+
-+	retval = register_framebuffer(info);
-+	if (retval &lt; 0)
-+		goto err1;
-+	platform_set_drvdata(dev, info);
-+
-+	printk(KERN_INFO
-+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;fb%d: Hecuba frame buffer device, using %dK of video memory\n&quot;,
-+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; info-&gt;node, videomemorysize &gt;&gt; 10);
-+
-+	/* this inits the dpy */
-+	apollo_init_control(par);
-+
-+	apollo_send_command(par, APOLLO_INIT_DISPLAY);
-+	apollo_send_data(par, 0x81);
-+
-+	/* have to wait while display resets */
-+	udelay(1000);
-+
-+	/* if we were told to splash the screen, we just clear it */
-+	if (!nosplash) {
-+		apollo_send_command(par, APOLLO_ERASE_DISPLAY);
-+		apollo_send_data(par, splashval);
-+	}
-+
-+	return 0;
-+err1:
-+	framebuffer_release(info);
-+err:
-+	vfree(videomemory);
-+	return retval;
-+}
-+
-+static int __devexit hecubafb_remove(struct platform_device *dev)
-+{
-+	struct fb_info *info = platform_get_drvdata(dev);
-+
-+	if (info) {
-+		fb_deferred_io_cleanup(info);
-+		unregister_framebuffer(info);
-+		vfree(info-&gt;screen_base);
-+		framebuffer_release(info);
-+	}
-+	return 0;
-+}
-+
-+static struct platform_driver hecubafb_driver = {
-+	.probe	= hecubafb_probe,
-+	.remove = hecubafb_remove,
-+	.driver	= {
-+		.name	= &quot;hecubafb&quot;,
+ #ifdef CONFIG_FB_MODE_HELPERS
+ struct broken_edid {
+@@ -71,6 +72,12 @@ static const struct broken_edid brokendb
+ 		.model        = 0x5a44,
+ 		.fix          = FBMON_FIX_INPUT,
+ 	},
++	/* Sharp UXGA? */
++	{
++		.manufacturer = "SHP",
++		.model        = 0x138e,
++		.fix          = FBMON_FIX_TIMINGS,
 +	},
-+};
-+
-+static struct platform_device *hecubafb_device;
-+
-+static int __init hecubafb_init(void)
+ };
+ 
+ static const unsigned char edid_v1_header[] = { 0x00, 0xff, 0xff, 0xff,
+@@ -87,6 +94,55 @@ static void copy_string(unsigned char *c
+   while (i-- && (*--s == 0x20)) *s = 0;
+ }
+ 
++static int edid_is_serial_block(unsigned char *block)
 +{
-+	int ret;
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xff) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
 +
-+	if (!hecubafb_enable) {
-+		printk(KERN_ERR &quot;Use hecubafb_enable to enable the device\n&quot;);
-+		return -ENXIO;
-+	}
++static int edid_is_ascii_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xfe) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
 +
-+	ret = platform_driver_register(&amp;hecubafb_driver);
-+	if (!ret) {
-+		hecubafb_device = platform_device_alloc(&quot;hecubafb&quot;, 0);
-+		if (hecubafb_device)
-+			ret = platform_device_add(hecubafb_device);
-+		else
-+			ret = -ENOMEM;
++static int edid_is_limits_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xfd) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
 +
-+		if (ret) {
-+			platform_device_put(hecubafb_device);
-+			platform_driver_unregister(&amp;hecubafb_driver);
++static int edid_is_monitor_block(unsigned char *block)
++{
++	if ((block[0] == 0x00) && (block[1] == 0x00) &&
++	    (block[2] == 0x00) && (block[3] == 0xfc) &&
++	    (block[4] == 0x00))
++		return 1;
++	else
++		return 0;
++}
++
++static int edid_is_timing_block(unsigned char *block)
++{
++	if ((block[0] != 0x00) || (block[1] != 0x00) ||
++	    (block[2] != 0x00) || (block[4] != 0x00))
++		return 1;
++	else
++		return 0;
++}
++
+ static int check_edid(unsigned char *edid)
+ {
+ 	unsigned char *block = edid + ID_MANUFACTURER_NAME, manufacturer[4];
+@@ -104,9 +160,6 @@ static int check_edid(unsigned char *edi
+ 	for (i = 0; i < ARRAY_SIZE(brokendb); i++) {
+ 		if (!strncmp(manufacturer, brokendb[i].manufacturer, 4) &&
+ 			brokendb[i].model == model) {
+-			printk("fbmon: The EDID Block of "
+-			       "Manufacturer: %s Model: 0x%x is known to "
+-			       "be broken,\n",  manufacturer, model);
+  			fix = brokendb[i].fix;
+  			break;
+ 		}
+@@ -115,8 +168,10 @@ static int check_edid(unsigned char *edi
+ 	switch (fix) {
+ 	case FBMON_FIX_HEADER:
+ 		for (i = 0; i < 8; i++) {
+-			if (edid[i] != edid_v1_header[i])
++			if (edid[i] != edid_v1_header[i]) {
+ 				ret = fix;
++				break;
++			}
+ 		}
+ 		break;
+ 	case FBMON_FIX_INPUT:
+@@ -126,14 +181,33 @@ static int check_edid(unsigned char *edi
+ 		if (b[4] & 0x01 && b[0] & 0x80)
+ 			ret = fix;
+ 		break;
++	case FBMON_FIX_TIMINGS:
++		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
++
++		for (i = 0; i < 4; i++) {
++			if (edid_is_limits_block(b)) {
++				ret = fix;
++				break;
++			}
++
++			b += DETAILED_TIMING_DESCRIPTION_SIZE;
 +		}
-+	}
-+	return ret;
 +
-+}
++		break;
+ 	}
+ 
++	if (ret)
++		printk("fbmon: The EDID Block of "
++		       "Manufacturer: %s Model: 0x%x is known to "
++		       "be broken,\n",  manufacturer, model);
 +
-+static void __exit hecubafb_exit(void)
-+{
-+	platform_device_unregister(hecubafb_device);
-+	platform_driver_unregister(&amp;hecubafb_driver);
-+}
+ 	return ret;
+ }
+ 
+ static void fix_edid(unsigned char *edid, int fix)
+ {
+-	unsigned char *b;
++	int i;
++	unsigned char *b, csum = 0;
+ 
+ 	switch (fix) {
+ 	case FBMON_FIX_HEADER:
+@@ -145,6 +219,37 @@ static void fix_edid(unsigned char *edid
+ 		b = edid + EDID_STRUCT_DISPLAY;
+ 		b[0] &= ~0x80;
+ 		edid[127] += 0x80;
++		break;
++	case FBMON_FIX_TIMINGS:
++		printk("fbmon: trying to fix monitor timings\n");
++		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
++		for (i = 0; i < 4; i++) {
++			if (!(edid_is_serial_block(b) ||
++			      edid_is_ascii_block(b) ||
++			      edid_is_monitor_block(b) ||
++			      edid_is_timing_block(b))) {
++				b[0] = 0x00;
++				b[1] = 0x00;
++				b[2] = 0x00;
++				b[3] = 0xfd;
++				b[4] = 0x00;
++				b[5] = 60;   /* vfmin */
++				b[6] = 60;   /* vfmax */
++				b[7] = 30;   /* hfmin */
++				b[8] = 75;   /* hfmax */
++				b[9] = 17;   /* pixclock - 170 MHz*/
++				b[10] = 0;   /* GTF */
++				break;
++			}
 +
-+module_param(nosplash, uint, 0);
-+MODULE_PARM_DESC(nosplash, &quot;Disable doing the splash screen&quot;);
-+module_param(hecubafb_enable, uint, 0);
-+MODULE_PARM_DESC(hecubafb_enable, &quot;Enable communication with Hecuba board&quot;);
-+module_param(dio_addr, ulong, 0);
-+MODULE_PARM_DESC(dio_addr, &quot;IO address for data, eg: 0x480&quot;);
-+module_param(cio_addr, ulong, 0);
-+MODULE_PARM_DESC(cio_addr, &quot;IO address for control, eg: 0x400&quot;);
-+module_param(c2io_addr, ulong, 0);
-+MODULE_PARM_DESC(c2io_addr, &quot;IO address for secondary control, eg: 0x408&quot;);
-+module_param(splashval, ulong, 0);
-+MODULE_PARM_DESC(splashval, &quot;Splash pattern: 0x00 is black, 0x01 is white&quot;);
-+module_param(irq, uint, 0);
-+MODULE_PARM_DESC(irq, &quot;IRQ for the Hecuba board&quot;);
++			b += DETAILED_TIMING_DESCRIPTION_SIZE;
++		}
 +
-+module_init(hecubafb_init);
-+module_exit(hecubafb_exit);
++		for (i = 0; i < EDID_LENGTH - 1; i++)
++			csum += edid[i];
 +
-+MODULE_DESCRIPTION(&quot;fbdev driver for Hecuba board&quot;);
-+MODULE_AUTHOR(&quot;Jaya Kumar&quot;);
-+MODULE_LICENSE(&quot;GPL&quot;);
++		edid[127] = 256 - csum;
++		break;
+ 	}
+ }
+ 
+@@ -273,46 +378,6 @@ static void get_chroma(unsigned char *bl
+ 	DPRINTK("WhiteY:   0.%03d\n", specs->chroma.whitey);
+ }
+ 
+-static int edid_is_serial_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xff) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_ascii_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xfe) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_limits_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xfd) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+-static int edid_is_monitor_block(unsigned char *block)
+-{
+-	if ((block[0] == 0x00) && (block[1] == 0x00) && 
+-	    (block[2] == 0x00) && (block[3] == 0xfc) &&
+-	    (block[4] == 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+ static void calc_mode_timings(int xres, int yres, int refresh,
+ 			      struct fb_videomode *mode)
+ {
+@@ -795,15 +860,6 @@ static void get_monspecs(unsigned char *
+ 	}
+ }
+ 
+-static int edid_is_timing_block(unsigned char *block)
+-{
+-	if ((block[0] != 0x00) || (block[1] != 0x00) ||
+-	    (block[2] != 0x00) || (block[4] != 0x00))
+-		return 1;
+-	else
+-		return 0;
+-}
+-
+ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
+ {
+ 	int i;
 
-</PRE>
-</BODY>
-</HTML>
-
---=-PVN3ifXxKTkbYTiqIrXa--
 
 
-
---===============0774942846==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---===============0774942846==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0774942846==--

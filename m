@@ -1,117 +1,60 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH] ps3: Introduce CONFIG_PS3_ADVANCED
-Date: Mon, 26 Feb 2007 16:48:49 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0702261644310.5716@pademelon.sonytel.be>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH] ps3: Introduce CONFIG_PS3_ADVANCED
+Date: Mon, 26 Feb 2007 08:35:10 -0800
+Message-ID: <45E30C3E.80006@am.sony.com>
 References: <200702210946.27758.toralf.foerster@gmx.de>
- <Pine.LNX.4.62.0702211102000.340@pademelon.sonytel.be>
- <Pine.LNX.4.64.0702211238400.14457@scrub.home> <Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
- <Pine.LNX.4.64.0702220052020.14457@scrub.home>
- <Pine.LNX.4.62.0702221854520.25919@pademelon.sonytel.be>
- <Pine.LNX.4.64.0702232343330.14457@scrub.home>
+	<Pine.LNX.4.62.0702211102000.340@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702211238400.14457@scrub.home>
+	<Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702220052020.14457@scrub.home>
+	<Pine.LNX.4.62.0702221854520.25919@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702232343330.14457@scrub.home>
+	<Pine.LNX.4.62.0702261644310.5716@pademelon.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751288AbXBZPsx@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0702232343330.14457@scrub.home>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>, Paul Mackerras <paulus@samba.org>, Roman Zippel <zippel@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HLip7-0001in-J0 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 08:35:37 -0800
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]
+	helo=outbound4-fra-R.bigfish.com)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HLip5-0007YN-LY
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 08:35:37 -0800
+In-Reply-To: <Pine.LNX.4.62.0702261644310.5716@pademelon.sonytel.be>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Roman Zippel <zippel@linux-m68k.org>, =?UTF-8?B?77+9?= <toralf.foerster@gmx.de>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Andrew Morton <akpm@linux-foundation.org>
 
-ps3: Introduce CONFIG_PS3_ADVANCED, as suggested by Roman Zippel, and use it to
-control questions about PS3 subsystems that may not be obvious for the casual
-user.
+Geert Uytterhoeven wrote:
+> ps3: Introduce CONFIG_PS3_ADVANCED, as suggested by Roman Zippel, and use it to
+> control questions about PS3 subsystems that may not be obvious for the casual
+> user.
+> 
+> This gets rid of the following warning on non-powerpc platforms:
+> | drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
 
-This gets rid of the following warning on non-powerpc platforms:
-| drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
+Please apply, fixes build warning in 2.6.21-rc1.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>
----
- arch/powerpc/platforms/ps3/Kconfig |   28 +++++++++++++++++++++-------
- drivers/video/Kconfig              |    3 +--
- 2 files changed, 22 insertions(+), 9 deletions(-)
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
---- ps3-linux-2.6.21-rc1.orig/arch/powerpc/platforms/ps3/Kconfig
-+++ ps3-linux-2.6.21-rc1/arch/powerpc/platforms/ps3/Kconfig
-@@ -1,9 +1,24 @@
- menu "PS3 Platform Options"
- 	depends on PPC_PS3
- 
-+config PS3_ADVANCED
-+	depends on PPC_PS3
-+	bool "PS3 Advanced configuration options"
-+	help
-+	  This gives you access to some advanced options for the PS3. The
-+	  defaults should be fine for most users, but these options may make
-+	  it possible to better control the kernel configuration if you know
-+	  what you are doing.
-+
-+	  Note that the answer to this question won't directly affect the
-+	  kernel: saying N will just cause the configurator to skip all
-+	  the questions about these options.
-+
-+	  Most users should say N to this question.
-+
- config PS3_HTAB_SIZE
- 	depends on PPC_PS3
--	int "PS3 Platform pagetable size"
-+	int "PS3 Platform pagetable size" if PS3_ADVANCED
- 	range 18 20
- 	default 20
- 	help
-@@ -42,7 +57,7 @@ config PS3_USE_LPAR_ADDR
- 
- config PS3_VUART
- 	depends on PPC_PS3
--	bool "PS3 Virtual UART support"
-+	bool "PS3 Virtual UART support" if PS3_ADVANCED
- 	default y
- 	help
- 	  Include support for the PS3 Virtual UART.
-@@ -52,9 +67,8 @@ config PS3_VUART
- 	  general, all users will say Y.
- 
- config PS3_PS3AV
--	tristate "PS3 AV settings driver"
--	depends on PPC_PS3
--	select PS3_VUART
-+	tristate "PS3 AV settings driver" if PS3_ADVANCED
-+	depends on PS3_VUART
- 	default y
- 	help
- 	  Include support for the PS3 AV Settings driver.
-@@ -63,8 +77,8 @@ config PS3_PS3AV
- 	  general, all users will say Y or M.
- 
- config PS3_SYS_MANAGER
--	bool "PS3 System Manager driver"
--	select PS3_VUART
-+	bool "PS3 System Manager driver" if PS3_ADVANCED
-+	depends on PS3_VUART
- 	default y
- 	help
- 	  Include support for the PS3 System Manager.
---- ps3-linux-2.6.21-rc1.orig/drivers/video/Kconfig
-+++ ps3-linux-2.6.21-rc1/drivers/video/Kconfig
-@@ -1618,8 +1618,7 @@ config FB_IBM_GXT4500
- 
- config FB_PS3
- 	bool "PS3 GPU framebuffer driver"
--	depends on FB && PPC_PS3
--	select PS3_PS3AV
-+	depends on FB && PS3_PS3AV
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

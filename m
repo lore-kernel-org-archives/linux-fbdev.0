@@ -1,52 +1,103 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] nvidiafb: allow ignoring EDID info
-Date: Mon, 26 Feb 2007 20:46:25 +0800
-Message-ID: <1172493985.20842.11.camel@daplas>
-References: <ephv35$4i3$1@sea.gmane.org> <1172161290.4198.12.camel@daplas>
-	 <cb7bb73a0702221108r161441ebt61886ce67746f389@mail.gmail.com>
-	 <1172187249.4279.7.camel@daplas>
-	 <cb7bb73a0702230534o4e2c7e9frd5f2b05accf18c05@mail.gmail.com>
-	 <1172300694.4109.50.camel@daplas>
-	 <cb7bb73a0702240116g33a9b5bv2e3668a536a70938@mail.gmail.com>
-	 <1172351769.4415.5.camel@daplas>
-	 <cb7bb73a0702250226k53369655vc9c4e5a71c337a8c@mail.gmail.com>
-	 <1172401825.6187.2.camel@daplas>
-	 <cb7bb73a0702250516p4e64ec64ueca3128f752bb421@mail.gmail.com>
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+Subject: Re: linux-2.6.21-rc1-g9654640d build #241
+	failed with WARNING: "aty_st_lcd"
+	[drivers/video/aty/atyfb.ko] undefined!
+Date: Mon, 26 Feb 2007 14:22:00 +0100
+Message-ID: <200702261422.02802.toralf.foerster@gmx.de>
+References: <200702261143.28770.toralf.foerster@gmx.de>
+	<1172493351.20842.1.camel@daplas>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============0785164800=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HLfo2-0004XR-5M for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 05:22:18 -0800
+Received: from mail.gmx.net ([213.165.64.20])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1HLfo1-0004Cv-Jc
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 05:22:18 -0800
+In-Reply-To: <1172493351.20842.1.camel@daplas>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+
+--===============0785164800==
+Content-Type: multipart/signed; boundary="nextPart7672934.gbbvuZhikh";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965254AbXBZMoM@vger.kernel.org>
-In-Reply-To: <cb7bb73a0702250516p4e64ec64ueca3128f752bb421@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+
+--nextPart7672934.gbbvuZhikh
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Am Montag, 26. Februar 2007 13:35 schrieb Antonino A. Daplas:
+> On Mon, 2007-02-26 at 11:43 +0100, Toralf F=F6rster wrote:
+> >   MODPOST 327 modules
+> > WARNING: "aty_st_lcd" [drivers/video/aty/atyfb.ko] undefined!
+> > WARNING: "aty_ld_lcd" [drivers/video/aty/atyfb.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > make: *** [modules] Error 2=20
+>=20
+> Try the attached patch:
+>=20
+> Tony
+>=20
+
+compiles fine now :-)
+
+=2D-=20
+MfG/Sincerely
+
+Toralf F=F6rster
+
+--nextPart7672934.gbbvuZhikh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBF4t76hyrlCH22naMRAli/AKCrM2LtvPUvfBNmb7kEXbGfh6CkjQCeNP3n
+REOz/6pirXIyRvdkKJlFGMM=
+=BiUD
+-----END PGP SIGNATURE-----
+
+--nextPart7672934.gbbvuZhikh--
+
+
+--===============0785164800==
 Content-Type: text/plain; charset="us-ascii"
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>, Luca Tettamanti <kronos@people.it>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Sun, 2007-02-25 at 14:16 +0100, Giuseppe Bilotta wrote:
-> On 2/25/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > On Sun, 2007-02-25 at 11:26 +0100, Giuseppe Bilotta wrote:
-> > >
-> > > Applied. No noticeable difference, in the sense that the EDID debug
-> > > output is still the same and so is the snow effect.
-> >
-> > Here's a temporary workaround:
-> >
-> > In drivers/video/nvidia/nv_i2c.c:nvidia_probe_i2c_connector(),comment
-> > this out:
-> >
-> >         if (par->chan[conn - 1].par)
-> >                 edid = fb_ddc_read(&par->chan[conn - 1].adapter);
-> >
-> > and make sure CONFIG_FIRMWARE_EDID=y.
-> 
-> With this patch, I don't get any dmesg info about my monitor EDID, but
-> I still get the snow. Could it be that there's something else on my
-> system which is setting the video to some absurd timings when I
-> switchg on the framebuffer console? I'm running an up-to-date debian
-> unstable.
-> 
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+--===============0785164800==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-At this point, I don't know.  You're the first person to report this
-kind of problem. I'm still studying the nvidiafb and Xorg source code.
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-Tony
+--===============0785164800==--

@@ -1,54 +1,69 @@
-From: DervishD <lkml@dervishd.net>
-Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Date: Mon, 26 Feb 2007 21:32:23 +0100
-Message-ID: <20070226203223.GA161@DervishD>
-References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH] atyfb: Fix kconfig error
+Date: Tue, 27 Feb 2007 05:52:56 +0800
+Message-ID: <45E356B8.8000707@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161015AbXBZUbA@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1172510654.7101.11.camel@daplas>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HLnkn-0003vq-I7 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 13:51:29 -0800
+Received: from wx-out-0506.google.com ([66.249.82.234])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLnkn-0003eJ-2s
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 13:51:29 -0800
+Received: by wx-out-0506.google.com with SMTP id i30so2361616wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 26 Feb 2007 13:51:28 -0800 (PST)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-    Hi Antonino :)
+Fix the following compile error:
 
- * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> On Mon, 2007-02-26 at 18:13 +0100, DervishD wrote:
-> > > Try fbset -a -vyres 600 first and let us know of the result.
-> >=20
-> > After doing this, I no longer can garble the display (before, just =
-a
-> > "ls -lR /" was enough to do it, in fact, any big output garbled the
-> > display). The only problem with this solution is that the scroll
-> > speed has decreased a bit. In fact, the scroll speed is affected by
-> > the vyres parameter a lot! The highter the vyres, the faster the
-> > scroll, and I cannot reproduce the problem anymore after changing i=
-t
-> > once!
->=20
-> Display panning is what makes scrolling fast which is the default
-> scroll method if vyres > yres.  Unfortunately, tdfxfb occasionally
-> have problems with this method, the higher the vyres, the greater the
-> likelihood of screen corruption.
+  MODPOST 327 modules
+WARNING: "aty_st_lcd" [drivers/video/aty/atyfb.ko] undefined!
+WARNING: "aty_ld_lcd" [drivers/video/aty/atyfb.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-    Then I'll try with 4096 and will diminish the number until the
-display is stable.
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
 
-> That's why tdfxb limits the vyres to a maximum of 4096. As to why the
-> problem disappeared just by changing this parameter, that I too don't
-> know.
+ drivers/video/aty/atyfb_base.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-    Probably setting it back to 4096 will make the problem reappear.
-Right now I cannot test, but I'll make some experiments.
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 56b38f5..9ebc4a0 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -131,7 +131,8 @@ #endif
+ #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
+ #define PRINTKE(fmt, args...)	 printk(KERN_ERR "atyfb: " fmt, ## args)
+ 
+-#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD)
++#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
++defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
+ static const u32 lt_lcd_regs[] = {
+ 	CONFIG_PANEL_LG,
+ 	LCD_GEN_CNTL_LG,
 
-    Thanks a lot!
 
-    Ra=FAl N=FA=F1ez de Arenas Coronado
-
---=20
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

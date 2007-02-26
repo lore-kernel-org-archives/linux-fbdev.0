@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] atyfb: Fix kconfig error
-Date: Tue, 27 Feb 2007 05:52:56 +0800
-Message-ID: <45E356B8.8000707@gmail.com>
+Subject: [PATCH] hecubafb: Fix section mismatch warnings
+Date: Tue, 27 Feb 2007 05:48:38 +0800
+Message-ID: <45E355B6.50303@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLnkn-0003vq-I7 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Feb 2007 13:51:29 -0800
-Received: from wx-out-0506.google.com ([66.249.82.234])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLnkn-0003eJ-2s
+	id 1HLnkX-0003vQ-It for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 13:51:13 -0800
+Received: from py-out-1112.google.com ([64.233.166.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLnkW-0003Pq-QW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Feb 2007 13:51:29 -0800
-Received: by wx-out-0506.google.com with SMTP id i30so2361616wxd
+	Mon, 26 Feb 2007 13:51:13 -0800
+Received: by py-out-1112.google.com with SMTP id a29so781365pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 26 Feb 2007 13:51:28 -0800 (PST)
+	Mon, 26 Feb 2007 13:51:12 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,36 +30,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Fix the following compile error:
+Fix the following compile warnings:
 
-  MODPOST 327 modules
-WARNING: "aty_st_lcd" [drivers/video/aty/atyfb.ko] undefined!
-WARNING: "aty_ld_lcd" [drivers/video/aty/atyfb.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+WARNING: drivers/video/hecubafb.o - Section mismatch: reference to .init.data:hecubafb_var from .text between 'hecubafb_probe' (at offset 0x17c) and 'hecubafb_dpy_update'
+WARNING: drivers/video/hecubafb.o - Section mismatch: reference to .init.data:hecubafb_var from .text between 'hecubafb_probe' (at offset 0x19e) and 'hecubafb_dpy_update'
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/aty/atyfb_base.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/hecubafb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index 56b38f5..9ebc4a0 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -131,7 +131,8 @@ #endif
- #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
- #define PRINTKE(fmt, args...)	 printk(KERN_ERR "atyfb: " fmt, ## args)
+diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
+index a32e1b9..396dc27 100644
+--- a/drivers/video/hecubafb.c
++++ b/drivers/video/hecubafb.c
+@@ -75,7 +75,7 @@ struct hecubafb_par {
+ 	unsigned int irq;
+ };
  
--#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD)
-+#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
-+defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
- static const u32 lt_lcd_regs[] = {
- 	CONFIG_PANEL_LG,
- 	LCD_GEN_CNTL_LG,
+-static struct fb_fix_screeninfo hecubafb_fix __initdata = {
++static struct fb_fix_screeninfo hecubafb_fix __devinitdata = {
+ 	.id =		"hecubafb",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_MONO01,
+@@ -85,7 +85,7 @@ static struct fb_fix_screeninfo hecubafb
+ 	.accel =	FB_ACCEL_NONE,
+ };
+ 
+-static struct fb_var_screeninfo hecubafb_var __initdata = {
++static struct fb_var_screeninfo hecubafb_var __devinitdata = {
+ 	.xres		= DPY_W,
+ 	.yres		= DPY_H,
+ 	.xres_virtual	= DPY_W,
 
 
 -------------------------------------------------------------------------

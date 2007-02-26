@@ -1,25 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Date: Mon, 26 Feb 2007 23:24:31 +0800
-Message-ID: <1172503471.20842.14.camel@daplas>
+Date: Mon, 26 Feb 2007 15:24:38 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702261520420.27244@pentafluge.infradead.org>
 References: <20070226144744.GA3615@DervishD>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLhg6-0000vH-7Z for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Feb 2007 07:22:14 -0800
-Received: from wx-out-0506.google.com ([66.249.82.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLhg5-0004iK-S4
+	id 1HLhiW-00019b-Rl for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 07:24:44 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLhiV-0005Sm-G9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Feb 2007 07:22:14 -0800
-Received: by wx-out-0506.google.com with SMTP id i30so2166598wxd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 26 Feb 2007 07:22:11 -0800 (PST)
+	Mon, 26 Feb 2007 07:24:44 -0800
 In-Reply-To: <20070226144744.GA3615@DervishD>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,24 +31,23 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: DervishD <privado@dervishd.net>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux-kernel <linux-kernel@vger.kernel.org>
 
-T24gTW9uLCAyMDA3LTAyLTI2IGF0IDE1OjQ3ICswMTAwLCBEZXJ2aXNoRCB3cm90ZToKPiAgICAg
-SGkgYWxsIDopCj4gCj4gICAgIEZyb20gdGltZSB0byB0aW1lLCB0aGUgdGRmeGZiIGRyaXZlciBm
-cm9tIDIuNi4xOS41IChzb3JyeSwgSSBjYW5ub3QKPiB0ZXN0IGluIDIuNi4yMC54IGJlY2F1c2Ug
-aXQgZG9lc24ndCBjb21waWxlLCB0aGUgaW5mYW1vdXMgQkRGIG5lZ2F0aXZlCj4gb2Zmc2V0IHBy
-b2JsZW0pIGdhcmJsZXMgdGhlIGRpc3BsYXksIGxlYXZpbmcgb25seSBhIGxvdCBvZiB0aGluIGxp
-bmVzLAo+IGp1c3QgbGlrZSBzeW5jIHdhcyBsb3N0LiBUaGUgZGlzcGxheSBjYW4gYmUgcmVwYWly
-ZWQgYnkgc3dpdGNoaW5nIHRvCj4gYW5vdGhlciBjb25zb2xlLCBidXQgdGhpcyBpcyBhbm5veWlu
-Zy4gVGhpcyBoYXBwZW5zIHdpdGggYSBWb29kb28gMwo+IDMwMDAsIHVzaW5nIDgwMHg2MDB4OEAx
-MDAgbW9kZS4KPiAKPiAgICAgQW55b25lIGhhcyB0aGlzIHByb2JsZW0/IENhbiBpdCBiZSBzb2x2
-ZWQgY2hhbmdpbmcgYW55dGhpbmc/Cj4gCj4gICAgIFJhw7psIE7DusOxZXogZGUgQXJlbmFzIENv
-cm9uYWRvCgpUcnkgZmJzZXQgLWEgLXZ5cmVzIDYwMCBmaXJzdCBhbmQgbGV0IHVzIGtub3cgb2Yg
-dGhlIHJlc3VsdC4KClRvbnkKCgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUYWtlIFN1cnZleXMuIEVhcm4g
-Q2FzaC4gSW5mbHVlbmNlIHRoZSBGdXR1cmUgb2YgSVQKSm9pbiBTb3VyY2VGb3JnZS5uZXQncyBU
-ZWNoc2F5IHBhbmVsIGFuZCB5b3UnbGwgZ2V0IHRoZSBjaGFuY2UgdG8gc2hhcmUgeW91cgpvcGlu
-aW9ucyBvbiBJVCAmIGJ1c2luZXNzIHRvcGljcyB0aHJvdWdoIGJyaWVmIHN1cnZleXMtYW5kIGVh
-cm4gY2FzaApodHRwOi8vd3d3LnRlY2hzYXkuY29tL2RlZmF1bHQucGhwP3BhZ2U9am9pbi5waHAm
-cD1zb3VyY2Vmb3JnZSZDSUQ9REVWREVWCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRl
-di1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5u
-ZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+
+>     Hi all :)
+> 
+>     From time to time, the tdfxfb driver from 2.6.19.5 (sorry, I cannot
+> test in 2.6.20.x because it doesn't compile, the infamous BDF negative
+> offset problem) garbles the display, leaving only a lot of thin lines,
+> just like sync was lost. The display can be repaired by switching to
+> another console, but this is annoying. This happens with a Voodoo 3
+> 3000, using 800x600x8@100 mode.
+> 
+>     Anyone has this problem? Can it be solved changing anything?
+
+Does not compile? Can you post the compile error. For my setup it does 
+compile. 
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

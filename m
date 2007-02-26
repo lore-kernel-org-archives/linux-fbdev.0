@@ -1,32 +1,32 @@
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH] ps3: Introduce CONFIG_PS3_ADVANCED
-Date: Mon, 26 Feb 2007 08:35:10 -0800
-Message-ID: <45E30C3E.80006@am.sony.com>
-References: <200702210946.27758.toralf.foerster@gmx.de>
-	<Pine.LNX.4.62.0702211102000.340@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702211238400.14457@scrub.home>
-	<Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702220052020.14457@scrub.home>
-	<Pine.LNX.4.62.0702221854520.25919@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702232343330.14457@scrub.home>
-	<Pine.LNX.4.62.0702261644310.5716@pademelon.sonytel.be>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: 2.6.21-rc1 dims my LCD
+Date: Tue, 27 Feb 2007 01:13:59 +0800
+Message-ID: <1172510039.7101.3.camel@daplas>
+References: <Pine.LNX.4.64.0702260154460.10496@twin.jikos.cz>
+	<1172490091.5824.30.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0702261329270.10496@twin.jikos.cz>
+	<20070226142157.GA2909@khazad-dum.debian.net>
+	<1172501357.5824.91.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0702261617240.10496@twin.jikos.cz>
+	<1172504617.5824.102.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HLip7-0001in-J0 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Feb 2007 08:35:37 -0800
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]
-	helo=outbound4-fra-R.bigfish.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HLip5-0007YN-LY
+	id 1HLjO4-00069P-Rx for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Feb 2007 09:11:45 -0800
+Received: from py-out-1112.google.com ([64.233.166.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HLjO3-0005Wr-Fc
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Feb 2007 08:35:37 -0800
-In-Reply-To: <Pine.LNX.4.62.0702261644310.5716@pademelon.sonytel.be>
+	Mon, 26 Feb 2007 09:11:44 -0800
+Received: by py-out-1112.google.com with SMTP id a29so737856pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 26 Feb 2007 09:11:43 -0800 (PST)
+In-Reply-To: <1172504617.5824.102.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,20 +37,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Roman Zippel <zippel@linux-m68k.org>, =?UTF-8?B?77+9?= <toralf.foerster@gmx.de>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Jiri Kosina <jikos@jikos.cz>
 
-Geert Uytterhoeven wrote:
-> ps3: Introduce CONFIG_PS3_ADVANCED, as suggested by Roman Zippel, and use it to
-> control questions about PS3 subsystems that may not be obvious for the casual
-> user.
+On Mon, 2007-02-26 at 15:43 +0000, Richard Purdie wrote:
+> On Mon, 2007-02-26 at 16:24 +0100, Jiri Kosina wrote:
+> > On Mon, 26 Feb 2007, Richard Purdie wrote:
+> > 
+> > > Jiri: I've appended a patch that should already be queued, could you
+> > > test and see if it solves the problem.
+> > 
+> > Thanks. In the meantime I have gone through the code and I can confirm 
+> > that this is the root cause of what I am observing.
+> > 
+> > Now regarding the patch - at the time when the dim happened previously, 
+> > currently there is a observable blink (after which the brightness is 
+> > correct). 
 > 
-> This gets rid of the following warning on non-powerpc platforms:
-> | drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
+> The reason for the behaviour is that its turning the backlight down/off
+> to save power as it thinks the screen is blank. The blink therefore
+> makes sense as far as the backlight class is concerned and its working
+> as intended now.
+> 
+> > I have put some debugging printk() into fb_notifier_callback(), 
+> > and it turns out that on FB_EVENT_CONBLANK, there are two successive calls 
+> > to backlight_update_status(), second immediately following the first one:
+> > 
+> > Feb 26 15:11:14 thunder kernel: calling backlight_update_status() with bd->props.fb_blank == 1, bd->props.brightness == 0
+> > Feb 26 15:11:14 thunder kernel: calling backlight_update_status() with bd->props.fb_blank == 0, bd->props.brightness == 0
+> > 
+> > Is this really a right thing to do?
 
-Please apply, fixes build warning in 2.6.21-rc1.
+Well, no, the console should not blank and immediately unblank. Of
+course, the console can blank after some time and can be induced to
+unblank after a keyboard event, for example.
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Besides the debugging printk's, can you also add something like
+WARN_ON(1); so you can get a tracing too.
+
+Tony
+
 
 
 -------------------------------------------------------------------------

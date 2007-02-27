@@ -1,25 +1,27 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] display class
-Date: Tue, 27 Feb 2007 21:46:42 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702272133170.21161@pentafluge.infradead.org>
-References: <Pine.LNX.4.64.0702251833500.30828@pentafluge.infradead.org>
-	<20070227122531.542a2c33.akpm@linux-foundation.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
+Date: Wed, 28 Feb 2007 07:09:15 +0800
+Message-ID: <1172617755.13422.0.camel@daplas>
+References: <20070226144744.GA3615@DervishD>
+	<1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD>
+	<1172510654.7101.11.camel@daplas>  <20070226203223.GA161@DervishD>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="=-7bvyZxsUGVkF1nVmq7lq"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HMA9t-0004B2-Jb for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 Feb 2007 13:46:53 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HMA9r-000670-Pv
+	id 1HMBPW-00041Z-0Y for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 Feb 2007 15:07:06 -0800
+Received: from py-out-1112.google.com ([64.233.166.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HMBPU-0004dX-D4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 Feb 2007 13:46:53 -0800
-In-Reply-To: <20070227122531.542a2c33.akpm@linux-foundation.org>
+	Tue, 27 Feb 2007 15:07:05 -0800
+Received: by py-out-1112.google.com with SMTP id a29so976469pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 27 Feb 2007 15:07:01 -0800 (PST)
+In-Reply-To: <20070226203223.GA161@DervishD>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,42 +32,83 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: DervishD <lkml@dervishd.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux-kernel <linux-kernel@vger.kernel.org>
 
 
-> this stuff looks el-crappo in an 80-col display.
+--=-7bvyZxsUGVkF1nVmq7lq
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Cleaning up....
-
-> This guy can have static scope.
+On Mon, 2007-02-26 at 21:32 +0100, DervishD wrote:
+>     Hi Antonino :)
 > 
-> It's a bit awkward having a fixed size.  I think lib/idr.c would suit for
-> this.
->
-> Also, we do set_bit() and clear_bit() on this, which are needlessly atomic. 
-> If we hold a suitable lock then we can use __set_bit() and __clear_bit().
+>  * Antonino A. Daplas <adaplas@gmail.com> dixit:
+> > On Mon, 2007-02-26 at 18:13 +0100, DervishD wrote:
+> > That's why tdfxb limits the vyres to a maximum of 4096. As to why the
+> > problem disappeared just by changing this parameter, that I too don't
+> > know.
 > 
-> And we do need a suitable lock.
-
-Fixing... Never knew about idr. Hum nice :-) I will have a new patch your 
-way. I just need to do some teste first.
-
-> Why all the ifdeffery?  I think plain old
+>     Probably setting it back to 4096 will make the problem reappear.
+> Right now I cannot test, but I'll make some experiments.
 > 
-> 
-> static void __exit display_class_exit(void)
-> {
-> 	class_destroy(display_class);
-> }
-> module_exit(display_class_exit);
-> module_init(display_class_init);
 
-That is from the hunting of the bug with the broken symlinks in /sys. Will 
-go back to sanity.
+Can you try this patch?  It might help with the screen corruption.
+
+Tony
+
+
+--=-7bvyZxsUGVkF1nVmq7lq
+Content-Disposition: attachment; filename=tdfxfb_delay.diff
+Content-Type: text/x-patch; name=tdfxfb_delay.diff; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
+index 689ce02..bb3ca71 100644
+--- a/drivers/video/tdfxfb.c
++++ b/drivers/video/tdfxfb.c
+@@ -284,7 +284,8 @@ static inline void banshee_make_room(str
+ {
+ 	/* Note: The Voodoo3's onboard FIFO has 32 slots. This loop
+ 	 * won't quit if you ask for more. */
+-	while((tdfx_inl(par, STATUS) & 0x1f) < size-1);
++	while((tdfx_inl(par, STATUS) & 0x1f) < size-1)
++		mdelay(5);
+ }
+  
+ static int banshee_wait_idle(struct fb_info *info)
+@@ -297,7 +298,9 @@ static int banshee_wait_idle(struct fb_i
+ 
+ 	while(1) {
+ 		i = (tdfx_inl(par, STATUS) & STATUS_BUSY) ? 0 : i + 1;
+-		if(i == 3) break;
++		if(i == 3)
++			break;
++		mdelay(5);
+ 	}
+ 	return 0;
+ }
+
+--=-7bvyZxsUGVkF1nVmq7lq
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+--=-7bvyZxsUGVkF1nVmq7lq
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--=-7bvyZxsUGVkF1nVmq7lq--

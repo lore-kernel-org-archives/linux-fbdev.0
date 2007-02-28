@@ -1,38 +1,42 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 2.6.20 1/1] fbdev, mm: hecuba/E-Ink
- fbdev driver
-Date: Wed, 28 Feb 2007 16:50:05 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702281648510.14127@pentafluge.infradead.org>
-References: <20070217104215.GB25512@localhost> <1171715652.5186.7.camel@lappy>
- <45a44e480702170525n9a15fafpb370cb93f1c1fcba@mail.gmail.com>
- <20070217135922.GA15373@linux-sh.org> <45a44e480702180331t7e76c396j1a9861f689d4186b@mail.gmail.com>
- <20070218235741.GA22298@linux-sh.org> <45a44e480702192013s7d49d05ai31e576f0448a485e@mail.gmail.com>
- <Pine.LNX.4.62.0702200906070.2082@pademelon.sonytel.be>
- <45a44e480702210855t344441c1xf8e081c82ece4e63@mail.gmail.com>
- <Pine.LNX.4.64.0702212151190.20620@pentafluge.infradead.org>
- <45a44e480702211522q6225d4fbx3f7d99fcef5fe93c@mail.gmail.com>
+Subject: Re: [PATCH] fbdev driver for S3 Trio/Virge, updated
+Date: Wed, 28 Feb 2007 16:53:22 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702281652290.14127@pentafluge.infradead.org>
+References: <20070209193405.GB2637@localhost.localdomain> 
+ <1172102733.4217.38.camel@daplas>  <Pine.LNX.4.64.0702220049320.17121@pentafluge.infradead.org>
+ <1172106505.4217.54.camel@daplas>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752258AbXB1Qug@vger.kernel.org>
-In-Reply-To: <45a44e480702211522q6225d4fbx3f7d99fcef5fe93c@mail.gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752379AbXB1Qxi@vger.kernel.org>
+In-Reply-To: <1172106505.4217.54.camel@daplas>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel Development <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Jiri Slaby <jirislaby@gmail.com>
 
 
-> I'm not sure I understand. What the current implementation does is to
-> use host based framebuffer memory. Apps mmap that memory and draw to
-> that. Then after the delay, that framebuffer is written to the
-> device's memory. That's the scenario for hecubafb where the Apollo
-> controller maintains it's own internal framebuffer.
+> On Thu, 2007-02-22 at 00:53 +0000, James Simmons wrote:
+> > > > +/* image data is MSB-first, fb structure is MSB-first too */
+> > > > +static inline u32 expand_color(u32 c)
+> > > > +{
+> > > > +	return ((c & 1) | ((c & 2) << 7) | ((c & 4) << 14) | ((c & 8) << 21)) * 0xFF;
+> > > > +}
+> > > > +
+> > > > +/* s3fb_iplan_imageblit silently assumes that almost everything is 8-pixel aligned */
+> > > 
+> > > Hmn, same thing with vga16fb... Perhaps we should bring back the
+> > > fontwidth flag of 2.2 and 2.4 kernels.
+> > 
+> > Ug no. It is possible to get 12,6 bit width fonts working with vga 
+> > interleaved planes. I got it paritally working but never got back to it.
+> > Its in my queue of this to do. Now that I finished the display class I 
+> > need to get around to makeing drm/fbdev work together :-)
+> > 
 > 
-> When you say without the framebuffer, if you meant without the host
-> memory, then this method doesn't work. If you mean without the
-> device's internal memory, then yes, I think we can do that, because it
-> would be up to the driver to use the touched pagelist to then perform
-> IO as suitable for its device.
+> Of course, not fontwidth exactly, but to allow the driver to specify the
+> alignment of the blit engine, in this case 8 pixels. I do believe X also
+> has similar functionality to compensate for the limitation of the
+> hardware.
 
-I meant for it to work for non framebuffer devices. I realized that not 
-such a great idea.
+Isn't scan_align in pixmap for this? Or do we need more.

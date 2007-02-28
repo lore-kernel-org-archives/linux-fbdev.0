@@ -1,39 +1,369 @@
-From: DervishD <lkml@dervishd.net>
-Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Date: Wed, 28 Feb 2007 11:49:36 +0100
-Message-ID: <20070228104936.GA4523@DervishD>
-References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD> <1172617755.13422.0.camel@daplas>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] display class
+Date: Wed, 28 Feb 2007 15:17:48 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0702281516360.1757@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0702251833500.30828@pentafluge.infradead.org>
+ <20070227122531.542a2c33.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752109AbXB1KsN@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1172617755.13422.0.camel@daplas>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933090AbXB1PR6@vger.kernel.org>
+In-Reply-To: <20070227122531.542a2c33.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-    Hi Antonino :)
 
- * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> On Mon, 2007-02-26 at 21:32 +0100, DervishD wrote:
-> >     Probably setting it back to 4096 will make the problem reappear=
-=2E
-> > Right now I cannot test, but I'll make some experiments.
->=20
-> Can you try this patch?  It might help with the screen corruption.
+How does this look? The new and improved display class.
 
-    I'm doing system maintenance now, and won't have spare time until
-friday, probably, but as soon as possible I'll test the patch. Thanks a
-lot for your invaluable help :)
+Signed-Off: James Simmons <jsimmons@infradead.org>
 
-    If you want me to test more patches, feel free. I'll test them ASAP=
-,
-probably this weekend if I can afford the time.
 
-    Ra=FAl N=FA=F1ez de Arenas Coronado
-
---=20
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/display-sysfs.c fbdev-2.6/drivers/video/display/display-sysfs.c
+--- linus-2.6/drivers/video/display/display-sysfs.c	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/display-sysfs.c	2007-02-28 10:09:47.000000000 -0500
+@@ -0,0 +1,217 @@
++/*
++ *  display-sysfs.c - Display output driver sysfs interface
++ *
++ *  Copyright (C) 2007 James Simmons <jsimmons@infradead.org>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++#include <linux/module.h>
++#include <linux/display.h>
++#include <linux/ctype.h>
++#include <linux/idr.h>
++#include <linux/err.h>
++
++static ssize_t display_show_name(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	return snprintf(buf, PAGE_SIZE, "%s\n", dsp->name);
++}
++
++static ssize_t display_show_type(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	return snprintf(buf, PAGE_SIZE, "%s\n", dsp->type);
++}
++
++static ssize_t display_show_contrast(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	ssize_t rc = -ENXIO;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver) && dsp->driver->get_contrast)
++		rc = sprintf(buf, "%d\n", dsp->driver->get_contrast(dsp));
++	mutex_unlock(&dsp->lock);
++	return rc;
++}
++
++static ssize_t display_store_contrast(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	ssize_t ret = -EINVAL, size;
++	int contrast;
++	char *endp;
++
++	contrast = simple_strtoul(buf, &endp, 0);
++	size = endp - buf;
++
++	if (*endp && isspace(*endp))
++		size++;
++
++	if (size != count)
++		return ret;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver && dsp->driver->set_contrast)) {
++		pr_debug("display: set contrast to %d\n", contrast);
++		dsp->driver->set_contrast(dsp, contrast);
++		ret = count;
++	}
++	mutex_unlock(&dsp->lock);
++	return ret;
++}
++
++static ssize_t display_show_max_contrast(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++	ssize_t rc = -ENXIO;
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver))
++		rc = sprintf(buf, "%d\n", dsp->driver->max_contrast);
++	mutex_unlock(&dsp->lock);
++	return rc;
++}
++
++static struct device_attribute display_attrs[] = {
++	__ATTR(name, S_IRUGO, display_show_name, NULL),
++	__ATTR(type, S_IRUGO, display_show_type, NULL),
++	__ATTR(contrast, S_IRUGO | S_IWUSR, display_show_contrast, display_store_contrast),
++	__ATTR(max_contrast, S_IRUGO, display_show_max_contrast, NULL),
++};
++
++static int display_suspend(struct device *dev, pm_message_t state)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver->suspend))
++		dsp->driver->suspend(dsp, state);
++	mutex_unlock(&dsp->lock);
++	return 0;
++};
++
++static int display_resume(struct device *dev)
++{
++	struct display_device *dsp = dev_get_drvdata(dev);
++
++	mutex_lock(&dsp->lock);
++	if (likely(dsp->driver->resume))
++		dsp->driver->resume(dsp);
++	mutex_unlock(&dsp->lock);
++	return 0;
++};
++
++static struct mutex allocated_dsp_lock;
++static DEFINE_IDR(allocated_dsp);
++struct class *display_class;
++
++struct display_device *display_device_register(struct display_driver *driver,
++						struct device *parent, void *devdata)
++{
++	struct display_device *new_dev = NULL;
++	int ret = -EINVAL;
++
++	if (unlikely(!driver))
++		return ERR_PTR(ret);
++
++	mutex_lock(&allocated_dsp_lock);
++	ret = idr_pre_get(&allocated_dsp, GFP_KERNEL);
++	mutex_unlock(&allocated_dsp_lock);
++	if (!ret)
++		return ERR_PTR(ret);
++
++	new_dev = kzalloc(sizeof(struct display_device), GFP_KERNEL);
++	if (likely(new_dev) && unlikely(driver->probe(new_dev, devdata))) {
++		// Reserve the index for this display
++		mutex_lock(&allocated_dsp_lock);
++		ret = idr_get_new(&allocated_dsp, new_dev, &new_dev->idx);
++		mutex_unlock(&allocated_dsp_lock);
++
++		if (!ret) {
++			new_dev->dev = device_create(display_class, parent, 0,
++						"display%d", new_dev->idx);
++			if (!IS_ERR(new_dev->dev)) {
++				dev_set_drvdata(new_dev->dev, new_dev);
++				new_dev->parent = parent;
++				new_dev->driver = driver;
++				mutex_init(&new_dev->lock);
++				return new_dev;
++			}
++			mutex_lock(&allocated_dsp_lock);
++			idr_remove(&allocated_dsp, new_dev->idx);
++			mutex_unlock(&allocated_dsp_lock);
++			ret = -EINVAL;
++		}
++	}
++	kfree(new_dev);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL(display_device_register);
++
++void display_device_unregister(struct display_device *ddev)
++{
++	if (!ddev)
++		return;
++	// Free device
++	mutex_lock(&ddev->lock);
++	device_unregister(ddev->dev);
++	mutex_unlock(&ddev->lock);
++	// Mark device index as avaliable
++	mutex_lock(&allocated_dsp_lock);
++	idr_remove(&allocated_dsp, ddev->idx);
++	mutex_unlock(&allocated_dsp_lock);
++	kfree(ddev);
++}
++EXPORT_SYMBOL(display_device_unregister);
++
++static int __init display_class_init(void)
++{
++	display_class = class_create(THIS_MODULE, "display");
++	if (IS_ERR(display_class)) {
++		printk(KERN_ERR "Failed to create display class\n");
++		display_class = NULL;
++		return -EINVAL;
++	}
++	display_class->dev_attrs = display_attrs;
++	display_class->suspend = display_suspend;
++	display_class->resume = display_resume;
++	mutex_init(&allocated_dsp_lock);
++	return 0;
++}
++
++static void __exit display_class_exit(void)
++{
++	class_destroy(display_class);
++}
++
++module_init(display_class_init);
++module_exit(display_class_exit);
++
++MODULE_DESCRIPTION("Display Hardware handling");
++MODULE_AUTHOR("James Simmons <jsimmons@infradead.org>");
++MODULE_LICENSE("GPL");
++
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Kconfig fbdev-2.6/drivers/video/display/Kconfig
+--- linus-2.6/drivers/video/display/Kconfig	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/Kconfig	2007-02-28 10:06:38.000000000 -0500
+@@ -0,0 +1,24 @@
++#
++# Display drivers configuration
++#
++
++menu "Display device support"
++
++config DISPLAY_SUPPORT
++	tristate "Display panel/monitor support"
++	---help---
++	  This framework adds support for low-level control of a display.
++	  This includes support for power.
++
++	  Enable this to be able to choose the drivers for controlling the
++	  physical display panel/monitor on some platforms. This not only
++	  covers LCD displays for PDAs but also other types of displays
++	  such as CRT, TVout etc.
++
++	  To have support for your specific display panel you will have to
++	  select the proper drivers which depend on this option.
++
++comment "Display hardware drivers"
++	depends on DISPLAY_SUPPORT
++
++endmenu
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/display/Makefile fbdev-2.6/drivers/video/display/Makefile
+--- linus-2.6/drivers/video/display/Makefile	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/drivers/video/display/Makefile	2007-02-28 10:06:30.000000000 -0500
+@@ -0,0 +1,6 @@
++# Display drivers
++
++display-objs				:= display-sysfs.o
++
++obj-$(CONFIG_DISPLAY_SUPPORT)		+= display.o
++
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Kconfig fbdev-2.6/drivers/video/Kconfig
+--- linus-2.6/drivers/video/Kconfig	2007-02-21 10:59:24.000000000 -0500
++++ fbdev-2.6/drivers/video/Kconfig	2007-02-28 09:10:14.000000000 -0500
+@@ -5,6 +5,7 @@
+ menu "Graphics support"
+ 
+ source "drivers/video/backlight/Kconfig"
++source "drivers/video/display/Kconfig"
+ 
+ config FB
+ 	tristate "Support for frame buffer devices"
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/drivers/video/Makefile fbdev-2.6/drivers/video/Makefile
+--- linus-2.6/drivers/video/Makefile	2007-02-21 10:59:24.000000000 -0500
++++ fbdev-2.6/drivers/video/Makefile	2007-02-28 09:10:14.000000000 -0500
+@@ -12,7 +12,7 @@
+ 
+ obj-$(CONFIG_VT)		  += console/
+ obj-$(CONFIG_LOGO)		  += logo/
+-obj-y				  += backlight/
++obj-y				  += backlight/ display/
+ 
+ obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
+ obj-$(CONFIG_FB_CFB_COPYAREA)  += cfbcopyarea.o
+diff -urN -X fbdev-2.6/Documentation/dontdiff linus-2.6/include/linux/display.h fbdev-2.6/include/linux/display.h
+--- linus-2.6/include/linux/display.h	1969-12-31 19:00:00.000000000 -0500
++++ fbdev-2.6/include/linux/display.h	2007-02-24 11:09:13.000000000 -0500
+@@ -0,0 +1,61 @@
++/*
++ *  Copyright (C) 2006 James Simmons <jsimmons@infradead.org>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or (at
++ *  your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#ifndef _LINUX_DISPLAY_H
++#define _LINUX_DISPLAY_H
++
++#include <linux/device.h>
++
++struct display_device;
++
++/* This structure defines all the properties of a Display. */
++struct display_driver {
++	int  (*set_contrast)(struct display_device *, unsigned int);
++	int  (*get_contrast)(struct display_device *);
++	void (*suspend)(struct display_device *, pm_message_t state);
++	void (*resume)(struct display_device *);
++	int  (*probe)(struct display_device *, void *);
++	int  (*remove)(struct display_device *);
++	int  max_contrast;
++};
++
++struct display_device {
++	struct module *owner;			/* Owner module */
++	struct display_driver *driver;
++	struct device *parent;			/* This is the parent */
++	struct device *dev;			/* This is this display device */
++	struct mutex lock;
++	void *priv_data;
++	char type[16];
++	char *name;
++	int idx;
++};
++
++extern struct display_device *display_device_register(struct display_driver *driver,
++					struct device *dev, void *devdata);
++extern void display_device_unregister(struct display_device *dev);
++
++extern int probe_edid(struct display_device *dev, void *devdata);
++
++#define to_display_device(obj) container_of(obj, struct display_device, class_dev)
++
++#endif

@@ -1,23 +1,23 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] fb: sm501fb off-by-1 sysfs store
-Date: Thu, 1 Mar 2007 14:25:55 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0703011423060.766@pademelon.sonytel.be>
-References: <20070301082456.GA3701@linux-sh.org>
+Subject: Re: matroxfb returning incorrect fix.smem_len?
+Date: Thu, 1 Mar 2007 14:21:32 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0703011420461.766@pademelon.sonytel.be>
+References: <45E5D610.5060807@us.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HMlIN-0004Sp-IP for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Mar 2007 05:26:07 -0800
+	id 1HMlE7-0003xU-GQ for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 01 Mar 2007 05:21:43 -0800
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HMlIJ-0002UR-1V
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HMlE6-0004k9-1O
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Mar 2007 05:26:04 -0800
-In-Reply-To: <20070301082456.GA3701@linux-sh.org>
+	Thu, 01 Mar 2007 05:21:43 -0800
+In-Reply-To: <45E5D610.5060807@us.ibm.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,40 +28,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Ben Dooks <ben@fluff.org.uk>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Ian Romanick <idr@us.ibm.com>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 1 Mar 2007, Paul Mundt wrote:
-> Currently sm501fb_crtsrc_store() won't allow the routing to be changed
-> via echos from userspace in to the sysfs file. The reason for this is
-> that the strnicmp() for both heads uses a sizeof() for the string length,
-> which ends up being strlen() + 1 (\0 in the normal case, but the echo
-> gives a newline, which is where the issue occurs), this then causes a
-> mismatch and subsequently bails with the -EINVAL.
+On Wed, 28 Feb 2007, Ian Romanick wrote:
+> While doing some work on the pci-rework branch of X.org, I noticed
+> something strange.  matroxfb correctly detects that my card has 16MiB,
+> but fix.smem_len is only 8MiB.
+> 
+> I looked around the matroxfb code and some of the other driver's code,
+> and I believe that matroxfb is incorrectly setting fix.smem_len.
+> Matroxfb sets fix.smem_len to (total_memory_size -
+> memory_used_by_current_mode).  Other drivers, such as nvidiafb do not do
+> this.
 
-> sizeof("string") is great for making sure you have space in your buffer,
-> but rather less so for string comparisons :-)
-
-> diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-> index 02b290c..72b5358 100644
-> --- a/drivers/video/sm501fb.c
-> +++ b/drivers/video/sm501fb.c
-> @@ -1074,9 +1074,9 @@ static ssize_t sm501fb_crtsrc_store(struct device *dev,
->  	if (len < 1)
->  		return -EINVAL;
->  
-> -	if (strnicmp(buf, "crt", sizeof("crt")) == 0)
-> +	if (strnicmp(buf, "crt", 3) == 0)
->  		head = HEAD_CRT;
-> -	else if (strnicmp(buf, "panel", sizeof("panel")) == 0)
-> +	else if (strnicmp(buf, "panel", 5) == 0)
->  		head = HEAD_PANEL;
->  	else
->  		return -EINVAL;
-
-What about using just `strlen("string")' instead? ISTR gcc optimizes this to a
-constant. Not that it matters that much, as the actual string won't be
-duplicated.
+Did matroxfb detect a dual-head capable card?
 
 Gr{oetje,eeting}s,
 

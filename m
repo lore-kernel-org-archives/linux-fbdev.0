@@ -1,21 +1,30 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: [PATCH] sysfs improvements for fbdev
-Date: Thu, 1 Mar 2007 20:55:17 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0702281518120.1757@pentafluge.infradead.org>
+Subject: Re: no backlight on radeon after recent kernel
+ "upgrade"s
+Date: Thu, 1 Mar 2007 21:08:29 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0703012107590.14408@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0702220109450.17121@pentafluge.infradead.org> 
+	<20070222020951.GR7920@ca-server1.us.oracle.com> 
+	<Pine.LNX.4.64.0702221549530.29542@pentafluge.infradead.org> 
+	<20070222.092812.112620509.davem@davemloft.net> 
+	<Pine.LNX.4.64.0702281654230.14127@pentafluge.infradead.org>
+	<1172746678.19220.48.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HMsJB-0004UF-W6 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Mar 2007 12:55:26 -0800
+	id 1HMsWJ-0005mz-9l for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 01 Mar 2007 13:08:59 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HMsJ9-0000pq-AP
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HMsWI-0000Uj-TS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Mar 2007 12:55:26 -0800
+	Thu, 01 Mar 2007 13:08:59 -0800
+In-Reply-To: <1172746678.19220.48.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,222 +35,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Dave Airlie <airlied@linux.ie>, Greg KH <greg@kroah.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, lists@onerussian.com, Joel.Becker@oracle.com, akpm@linux-foundation.org, David Miller <davem@davemloft.net>
 
 
-This patch dooes a little house cleaning for the syfs registering. The 
-goal to be able to share the graphics hardware between more than one 
-interfaces i.e fbdev, drm, backlight. I'm hoping that when a parent 
-device is powered down i.e pci device, that all the child devices get 
-powered down first. The two very important things it does is:
+Could you. Right now I'm busy with the DRM/fbdev device management.
 
-1) Have struct fb_info be data for the created sysfs device for fbX.
-   This enables moving away from device on the bus. 
+On Thu, 1 Mar 2007, Richard Purdie wrote:
 
-2) Have suspend and resume functions for the fb class.
-
-3) Have dev_release method for the class for cleanup.
-
-The is a inital patch. What I needed to know is do we need hooks for fbdev 
-drivers for power management and for unregistering the framebuffer. I CC 
-Dave for his input on splitting up the release/power management functions.
-
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 2822526..2cff39c 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1268,8 +1268,6 @@ static const struct file_operations fb_fops = {
- #endif
- };
- 
--struct class *fb_class;
--EXPORT_SYMBOL(fb_class);
- /**
-  *	register_framebuffer - registers a frame buffer device
-  *	@fb_info: frame buffer info structure
-@@ -1295,14 +1293,9 @@ register_framebuffer(struct fb_info *fb_info)
- 			break;
- 	fb_info->node = i;
- 
--	fb_info->dev = device_create(fb_class, fb_info->device,
--				     MKDEV(FB_MAJOR, i), "fb%d", i);
--	if (IS_ERR(fb_info->dev)) {
--		/* Not fatal */
-+	/* Not fatal */
-+	if (fb_init_device(fb_info))
- 		printk(KERN_WARNING "Unable to create device for framebuffer %d; errno = %ld\n", i, PTR_ERR(fb_info->dev));
--		fb_info->dev = NULL;
--	} else
--		fb_init_device(fb_info);
- 
- 	if (fb_info->pixmap.addr == NULL) {
- 		fb_info->pixmap.addr = kmalloc(FBPIXMAPSIZE, GFP_KERNEL);
-@@ -1356,7 +1349,6 @@ unregister_framebuffer(struct fb_info *fb_info)
- 	registered_fb[i]=NULL;
- 	num_registered_fb--;
- 	fb_cleanup_device(fb_info);
--	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
- 	return 0;
-@@ -1402,11 +1394,7 @@ fbmem_init(void)
- 	if (register_chrdev(FB_MAJOR,"fb",&fb_fops))
- 		printk("unable to get major %d for fb devs\n", FB_MAJOR);
- 
--	fb_class = class_create(THIS_MODULE, "graphics");
--	if (IS_ERR(fb_class)) {
--		printk(KERN_WARNING "Unable to create fb class; errno = %ld\n", PTR_ERR(fb_class));
--		fb_class = NULL;
--	}
-+	fb_create_class();
- 	return 0;
- }
- 
-@@ -1415,8 +1403,8 @@ module_init(fbmem_init);
- static void __exit
- fbmem_exit(void)
- {
--	class_destroy(fb_class);
- 	unregister_chrdev(FB_MAJOR, "fb");
-+	fb_destroy_class();
- }
- 
- module_exit(fbmem_exit);
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index 40c80c8..30279e2 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -505,42 +505,95 @@ static struct device_attribute device_attrs[] = {
- #endif
- };
- 
-+struct class *fb_class;
-+EXPORT_SYMBOL(fb_class);
-+
- int fb_init_device(struct fb_info *fb_info)
- {
--	int i, error = 0;
-+	int error = 0;
- 
--	dev_set_drvdata(fb_info->dev, fb_info);
-+	fb_info->dev = device_create(fb_class, fb_info->device,
-+                                     MKDEV(FB_MAJOR, fb_info->node),
-+				     "fb%d", fb_info->node);
-+        if (IS_ERR(fb_info->dev)) {
-+		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
-+		fb_info->dev = NULL;
-+		error = -EINVAL;
-+	} else {
-+		dev_set_drvdata(fb_info->dev, fb_info);
-+		fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
-+	}
-+	return error;
-+}
- 
--	fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
-+void fb_cleanup_device(struct fb_info *fb_info)
-+{
-+	fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
-+	dev_set_drvdata(fb_info->dev, NULL);
-+	device_destroy(fb_class, MKDEV(FB_MAJOR, fb_info->node));
-+}
- 
--	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
--		error = device_create_file(fb_info->dev, &device_attrs[i]);
-+static int fb_class_suspend(struct device *dev, pm_message_t state)
-+{
-+	struct fb_info *fb_info = dev_get_drvdata(dev);
- 
--		if (error)
--			break;
--	}
-+	acquire_console_sem();
-+	fb_set_suspend(fb_info, 1);
- 
--	if (error) {
--		while (--i >= 0)
--			device_remove_file(fb_info->dev, &device_attrs[i]);
--		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
--	}
-+	// Should we have private driver hooks?
- 
-+	release_console_sem();
- 	return 0;
- }
- 
--void fb_cleanup_device(struct fb_info *fb_info)
-+static int fb_class_resume(struct device *dev)
- {
--	unsigned int i;
-+	struct fb_info *fb_info = dev_get_drvdata(dev);
-+
-+	acquire_console_sem();
-+	fb_set_suspend(fb_info, 0);
- 
--	if (fb_info->class_flag & FB_SYSFS_FLAG_ATTR) {
--		for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
--			device_remove_file(fb_info->dev, &device_attrs[i]);
-+	// Should we have private driver hooks?
- 
--		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
-+	release_console_sem();
-+	return 0;
-+}
-+
-+static void fb_class_device_release(struct device *dev)
-+{
-+	struct fb_info *fb_info = dev_get_drvdata(dev);
-+
-+	if (fb_info) {
-+		acquire_console_sem();
-+		// Should we have a private hook here ?
-+
-+		fb_dealloc_cmap(&fb_info->cmap);
-+		unregister_framebuffer(fb_info);
-+		//framebuffer_release(info); Not every driver does this yet
-+		release_console_sem();
-+	}
-+}
-+
-+void fb_create_class()
-+{
-+	fb_class = class_create(THIS_MODULE, "graphics");
-+	if (IS_ERR(fb_class)) {
-+		printk(KERN_WARNING "Unable to create fb class; errno = %ld\n", PTR_ERR(fb_class));
-+		fb_class = NULL;
-+	} else {
-+		fb_class->dev_release = fb_class_device_release;
-+		fb_class->suspend = fb_class_suspend;
-+		fb_class->resume = fb_class_resume;
-+		fb_class->dev_attrs = device_attrs;
- 	}
- }
- 
-+void fb_destroy_class()
-+{
-+	if (fb_class)
-+		class_destroy(fb_class);
-+}
-+
- #ifdef CONFIG_FB_BACKLIGHT
- /* This function generates a linear backlight curve
-  *
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index be913ec..30d76ad 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -919,6 +919,8 @@ extern void framebuffer_release(struct fb_info *info);
- extern int fb_init_device(struct fb_info *fb_info);
- extern void fb_cleanup_device(struct fb_info *head);
- extern void fb_bl_default_curve(struct fb_info *fb_info, u8 off, u8 min, u8 max);
-+extern void fb_destroy_class(void);
-+extern void fb_create_class(void);
- 
- /* drivers/video/fbmon.c */
- #define FB_MAXTIMINGS		0
-
+> On Wed, 2007-02-28 at 16:55 +0000, James Simmons wrote:
+> > So the problem is not the configuration but that for some reason the 
+> > backlight state is set to off by default.
+> 
+> Maybe, maybe not. I'm not sure there's been enough information to
+> conclude that.
+> 
+> At the moment, I'd like a patch which makes backlight usage configurable
+> at runtime though a module parameter and defaults to off in all cases
+> except the powermac one. I'd like to get something into the tree,
+> preferably before the next -rc, since at the moment things are breaking
+> for people. If you haven't time, say so and I'll have a look and see if
+> I can work one out.
+> 
+> Cheers,
+> 
+> Richard
+> 
+> 
+> 
+> 
+> 
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

@@ -1,49 +1,43 @@
-From: Valdis.Kletnieks@vt.edu
-Subject: Re: 2.6.21-rc2-mm1 - fb_ddc_read() not defined
-Date: Fri, 02 Mar 2007 11:51:51 -0500
-Message-ID: <200703021651.l22Gpp01008083@turing-police.cc.vt.edu>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <200703021603.l22G37Sa022890@turing-police.cc.vt.edu>
-            <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+Subject: Re: 2.6.21-rc2 radeon backlight
+Date: Fri, 02 Mar 2007 09:24:03 -0800
+Message-ID: <87tzx35zkc.fsf@sycorax.lbl.gov>
+References: <87ps7uutsk.fsf@sycorax.lbl.gov>
+	<20070301184531.b3aeafe3.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1172854311_6664P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2992610AbXCBQwL@vger.kernel.org>
-In-Reply-To: Your message of "Fri, 02 Mar 2007 16:31:02 GMT."
-             <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2992656AbXCBRZP@vger.kernel.org>
+In-Reply-To: <20070301184531.b3aeafe3.akpm@linux-foundation.org> (message from
+	Andrew Morton on Thu, 1 Mar 2007 18:45:31 -0800)
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Antonino Daplas <adaplas@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Richard Purdie <rpurdie@rpsys.net>
 
---==_Exmh_1172854311_6664P
-Content-Type: text/plain; charset=us-ascii
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-On Fri, 02 Mar 2007 16:31:02 GMT, James Simmons said:
+> On Wed, 28 Feb 2007 08:32:43 -0800
+> Alex Romosan <romosan@sycorax.lbl.gov> wrote:
+>
+>> the backlight on my thinkpad still (2.6.20 worked fine) doesn't come
+>> on if i have the radeon backlight enabled. without it, i guess it's
+>> the ibm acpi modules that controls the backlight and it seems to work
+>> fine.
+>> 
+>
+> Unclear. Are you saying that the backlight comes on OK if you use
+> the IBM acpi module?
 
-> > > nvidiafb-bring-back-generic-ddc-reading.patch
+yes, if i disable the radeon backlight and use the ibm acpi module,
+than the backlight works. if i enable the radeon backlight, the screen
+stays dark and i can't turn it on (i tried using radeontool to control
+it but nothing happened).
 
-> To have a patch to cleans things up. Give it a try
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index b8f0a11..855a09e 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
+--alex--
 
-Queued up for the next time I build a -mm kernel.  This build of 21-rc2-mm1
-has been up for 33 minutes already, so it may be later tonight (when I try
-to get my Intel 3945 wireless card working with the new 80211 stack).
-
---==_Exmh_1172854311_6664P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFF6FYncC3lWbTT17ARArtCAKDLHmajzcRE5CDN0faKZvFWXkJcsQCgwvy8
-oRtvBZN3tAQK69JKF4ep2L0=
-=E5W8
------END PGP SIGNATURE-----
-
---==_Exmh_1172854311_6664P--
+-- 
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |

@@ -1,95 +1,143 @@
-From: "Paul A. Clarke" <pc@us.ibm.com>
-Subject: Re: [PATCH] fb: sm501fb off-by-1 sysfs store
-Date: Fri, 02 Mar 2007 08:34:22 -0600
-Message-ID: <45E835EE.2060901@us.ibm.com>
-References: <20070301082456.GA3701@linux-sh.org>
-	<Pine.LNX.4.62.0703011423060.766@pademelon.sonytel.be>
-	<20070301133528.GA6504@linux-sh.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: 2.6.21-rc2-mm1 - fb_ddc_read() not defined
+Date: Fri, 2 Mar 2007 16:31:02 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
+ <200703021603.l22G37Sa022890@turing-police.cc.vt.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2992584AbXCBQbL@vger.kernel.org>
+In-Reply-To: <200703021603.l22G37Sa022890@turing-police.cc.vt.edu>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HN8st-0007nT-Du for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 02 Mar 2007 06:37:26 -0800
-Received: from e1.ny.us.ibm.com ([32.97.182.141])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HN8sq-0001AO-ML
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 02 Mar 2007 06:37:22 -0800
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l22Eb14M001402
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 2 Mar 2007 09:37:01 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l22EYNZS227810 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 2 Mar 2007 09:34:23 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l22EYNkw000378 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 2 Mar 2007 09:34:23 -0500
-In-Reply-To: <20070301133528.GA6504@linux-sh.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, Antonino Daplas <adaplas@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Paul Mundt wrote:
-> On Thu, Mar 01, 2007 at 02:25:55PM +0100, Geert Uytterhoeven wrote:
->> On Thu, 1 Mar 2007, Paul Mundt wrote:
->>> @@ -1074,9 +1074,9 @@ static ssize_t sm501fb_crtsrc_store(struct device *dev,
->>>  	if (len < 1)
->>>  		return -EINVAL;
->>>  
->>> -	if (strnicmp(buf, "crt", sizeof("crt")) == 0)
->>> +	if (strnicmp(buf, "crt", 3) == 0)
->>>  		head = HEAD_CRT;
->>> -	else if (strnicmp(buf, "panel", sizeof("panel")) == 0)
->>> +	else if (strnicmp(buf, "panel", 5) == 0)
->>>  		head = HEAD_PANEL;
->>>  	else
->>>  		return -EINVAL;
->> What about using just `strlen("string")' instead? ISTR gcc optimizes this to a
->> constant. Not that it matters that much, as the actual string won't be
->> duplicated.
->>
-> I stuck with the constants since they were already referenced in the
-> function, and there are enough other places in the kernel where they're
-> used for these things. I didn't figure that 5 was a terribly high number
-> to count to, but if there's expected difficulty, strlen() is of course an
-> option.
+
+> On Fri, 02 Mar 2007 03:00:26 PST, Andrew Morton said:
 > 
-> Personally I find it less visually offensive with constants, but as long
-> as the end number is the same, I'm not too concerned with how we get
-> there. Feel free to change it if you wish.
+> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
+> 
+> > nvidiafb-bring-back-generic-ddc-reading.patch
+> 
+> Building with FB_DDC=N results in:
+> 
+> Kernel: arch/x86_64/boot/bzImage is ready  (#1)
+>   Building modules, stage 2.
+>   MODPOST 229 modules
+> WARNING: "fb_ddc_read" [drivers/video/nvidia/nvidiafb.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> 
+> makes-it-build patch (not sure if it should be "select FB_DDC if MUMBLE"):
+> 
+> --- linux-2.6.21-rc2-mm1/drivers/video/Kconfig.nvidia	2007-03-02 09:27:48.000000000 -0500
+> +++ linux-2.6.21-rc2-mm1/drivers/video/Kconfig	2007-03-02 10:56:54.000000000 -0500
+> @@ -710,6 +710,7 @@ config FB_NVIDIA
+>  	select I2C_ALGOBIT if FB_NVIDIA_I2C
+>  	select I2C if FB_NVIDIA_I2C
+>  	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
+> +	select FB_DDC
+>  	select FB_MODE_HELPERS
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
 
-My personal preference is to use sizeof("string")-1:
-- guaranteed to be optimized to a constant (better than strlen)
-- less likely to be left alone when "string" becomes "a different string" 
-(better than magic numbers)
+To have a patch to cleans things up. Give it a try
 
-I also prefer for repeated constants, either preprocessor macros (#define 
-OPTION_CRT "crt") or constant char arrays (static const char Option_CRT[] = 
-"crt"), or something like that, to ensure one copy of the string in the object. 
-  But having the indirection here could add confusion for somebody trying to 
-quickly determine what "crt" does.
--- 
-Regards,
-Paul Clarke
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index b8f0a11..855a09e 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -677,8 +678,6 @@ config FB_S1D13XXX
+ config FB_NVIDIA
+ 	tristate "nVidia Framebuffer Support"
+ 	depends on FB && PCI
+-	select I2C_ALGOBIT if FB_NVIDIA_I2C
+-	select I2C if FB_NVIDIA_I2C
+ 	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+@@ -697,6 +696,7 @@ config FB_NVIDIA
+ config FB_NVIDIA_I2C
+        bool "Enable DDC Support"
+        depends on FB_NVIDIA
++       select FB_DDC
+        help
+ 	  This enables I2C support for nVidia Chipsets.  This is used
+ 	  only for getting EDID information from the attached display
+@@ -716,7 +716,6 @@ config FB_NVIDIA_BACKLIGHT
+ config FB_RIVA
+ 	tristate "nVidia Riva support"
+ 	depends on FB && PCI
+-	select FB_DDC if FB_RIVA_I2C
+ 	select FB_BACKLIGHT if FB_RIVA_BACKLIGHT
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+@@ -734,6 +733,7 @@ config FB_RIVA
+ config FB_RIVA_I2C
+        bool "Enable DDC Support"
+        depends on FB_RIVA
++       select FB_DDC
+        help
+ 	  This enables I2C support for nVidia Chipsets.  This is used
+ 	  only for getting EDID information from the attached display
+@@ -812,8 +812,6 @@ config FB_INTEL
+ 	depends on FB && EXPERIMENTAL && PCI && X86
+ 	select AGP
+ 	select AGP_INTEL
+-	select I2C_ALGOBIT if FB_INTEL_I2C
+-	select I2C if FB_INTEL_I2C
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -846,6 +844,7 @@ config FB_INTEL_DEBUG
+ config FB_INTEL_I2C
+ 	bool "DDC/I2C for Intel framebuffer support"
+ 	depends on FB_INTEL
++	select FB_DDC
+ 	default y
+ 	help
+ 	  Say Y here if you want DDC/I2C support for your on-board Intel graphics.
+@@ -924,8 +923,8 @@ config FB_MATROX_G
+ 
+ config FB_MATROX_I2C
+ 	tristate "Matrox I2C support"
+-	depends on FB_MATROX && I2C
+-	select I2C_ALGOBIT
++	depends on FB_MATROX
++	select FB_DDC
+ 	---help---
+ 	  This drivers creates I2C buses which are needed for accessing the
+ 	  DDC (I2C) bus present on all Matroxes, an I2C bus which
+@@ -993,7 +992,6 @@ config FB_MATROX_MULTIHEAD
+ config FB_RADEON
+ 	tristate "ATI Radeon display support"
+ 	depends on FB && PCI
+-	select FB_DDC if FB_RADEON_I2C
+ 	select FB_BACKLIGHT if FB_RADEON_BACKLIGHT
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+@@ -1018,6 +1016,7 @@ config FB_RADEON
+ config FB_RADEON_I2C
+ 	bool "DDC/I2C for ATI Radeon support"
+ 	depends on FB_RADEON
++	select FB_DDC
+ 	default y
+ 	help
+ 	  Say Y here if you want DDC/I2C support for your Radeon board. 
+@@ -1125,7 +1124,6 @@ config FB_S3
+ config FB_SAVAGE
+ 	tristate "S3 Savage support"
+ 	depends on FB && PCI && EXPERIMENTAL
+-	select FB_DDC if FB_SAVAGE_I2C
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -1142,6 +1140,7 @@ config FB_SAVAGE
+ config FB_SAVAGE_I2C
+        bool "Enable DDC2 Support"
+        depends on FB_SAVAGE
++       select FB_DDC
+        help
+ 	  This enables I2C support for S3 Savage Chipsets.  This is used
+ 	  only for getting EDID information from the attached display

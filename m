@@ -1,143 +1,49 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Valdis.Kletnieks@vt.edu
 Subject: Re: 2.6.21-rc2-mm1 - fb_ddc_read() not defined
-Date: Fri, 2 Mar 2007 16:31:02 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
-References: <20070302030026.5eef0c92.akpm@linux-foundation.org>
- <200703021603.l22G37Sa022890@turing-police.cc.vt.edu>
+Date: Fri, 02 Mar 2007 11:51:51 -0500
+Message-ID: <200703021651.l22Gpp01008083@turing-police.cc.vt.edu>
+References: <20070302030026.5eef0c92.akpm@linux-foundation.org> <200703021603.l22G37Sa022890@turing-police.cc.vt.edu>
+            <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2992584AbXCBQbL@vger.kernel.org>
-In-Reply-To: <200703021603.l22G37Sa022890@turing-police.cc.vt.edu>
+Content-Type: multipart/signed; boundary="==_Exmh_1172854311_6664P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S2992610AbXCBQwL@vger.kernel.org>
+In-Reply-To: Your message of "Fri, 02 Mar 2007 16:31:02 GMT."
+             <Pine.LNX.4.64.0703021630040.3216@pentafluge.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Valdis.Kletnieks@vt.edu
+To: James Simmons <jsimmons@infradead.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Antonino Daplas <adaplas@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+--==_Exmh_1172854311_6664P
+Content-Type: text/plain; charset=us-ascii
 
-> On Fri, 02 Mar 2007 03:00:26 PST, Andrew Morton said:
-> 
-> >   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/
-> 
-> > nvidiafb-bring-back-generic-ddc-reading.patch
-> 
-> Building with FB_DDC=N results in:
-> 
-> Kernel: arch/x86_64/boot/bzImage is ready  (#1)
->   Building modules, stage 2.
->   MODPOST 229 modules
-> WARNING: "fb_ddc_read" [drivers/video/nvidia/nvidiafb.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> 
-> makes-it-build patch (not sure if it should be "select FB_DDC if MUMBLE"):
-> 
-> --- linux-2.6.21-rc2-mm1/drivers/video/Kconfig.nvidia	2007-03-02 09:27:48.000000000 -0500
-> +++ linux-2.6.21-rc2-mm1/drivers/video/Kconfig	2007-03-02 10:56:54.000000000 -0500
-> @@ -710,6 +710,7 @@ config FB_NVIDIA
->  	select I2C_ALGOBIT if FB_NVIDIA_I2C
->  	select I2C if FB_NVIDIA_I2C
->  	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
-> +	select FB_DDC
->  	select FB_MODE_HELPERS
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
+On Fri, 02 Mar 2007 16:31:02 GMT, James Simmons said:
 
-To have a patch to cleans things up. Give it a try
+> > > nvidiafb-bring-back-generic-ddc-reading.patch
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index b8f0a11..855a09e 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -677,8 +678,6 @@ config FB_S1D13XXX
- config FB_NVIDIA
- 	tristate "nVidia Framebuffer Support"
- 	depends on FB && PCI
--	select I2C_ALGOBIT if FB_NVIDIA_I2C
--	select I2C if FB_NVIDIA_I2C
- 	select FB_BACKLIGHT if FB_NVIDIA_BACKLIGHT
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
-@@ -697,6 +696,7 @@ config FB_NVIDIA
- config FB_NVIDIA_I2C
-        bool "Enable DDC Support"
-        depends on FB_NVIDIA
-+       select FB_DDC
-        help
- 	  This enables I2C support for nVidia Chipsets.  This is used
- 	  only for getting EDID information from the attached display
-@@ -716,7 +716,6 @@ config FB_NVIDIA_BACKLIGHT
- config FB_RIVA
- 	tristate "nVidia Riva support"
- 	depends on FB && PCI
--	select FB_DDC if FB_RIVA_I2C
- 	select FB_BACKLIGHT if FB_RIVA_BACKLIGHT
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
-@@ -734,6 +733,7 @@ config FB_RIVA
- config FB_RIVA_I2C
-        bool "Enable DDC Support"
-        depends on FB_RIVA
-+       select FB_DDC
-        help
- 	  This enables I2C support for nVidia Chipsets.  This is used
- 	  only for getting EDID information from the attached display
-@@ -812,8 +812,6 @@ config FB_INTEL
- 	depends on FB && EXPERIMENTAL && PCI && X86
- 	select AGP
- 	select AGP_INTEL
--	select I2C_ALGOBIT if FB_INTEL_I2C
--	select I2C if FB_INTEL_I2C
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-@@ -846,6 +844,7 @@ config FB_INTEL_DEBUG
- config FB_INTEL_I2C
- 	bool "DDC/I2C for Intel framebuffer support"
- 	depends on FB_INTEL
-+	select FB_DDC
- 	default y
- 	help
- 	  Say Y here if you want DDC/I2C support for your on-board Intel graphics.
-@@ -924,8 +923,8 @@ config FB_MATROX_G
- 
- config FB_MATROX_I2C
- 	tristate "Matrox I2C support"
--	depends on FB_MATROX && I2C
--	select I2C_ALGOBIT
-+	depends on FB_MATROX
-+	select FB_DDC
- 	---help---
- 	  This drivers creates I2C buses which are needed for accessing the
- 	  DDC (I2C) bus present on all Matroxes, an I2C bus which
-@@ -993,7 +992,6 @@ config FB_MATROX_MULTIHEAD
- config FB_RADEON
- 	tristate "ATI Radeon display support"
- 	depends on FB && PCI
--	select FB_DDC if FB_RADEON_I2C
- 	select FB_BACKLIGHT if FB_RADEON_BACKLIGHT
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
-@@ -1018,6 +1016,7 @@ config FB_RADEON
- config FB_RADEON_I2C
- 	bool "DDC/I2C for ATI Radeon support"
- 	depends on FB_RADEON
-+	select FB_DDC
- 	default y
- 	help
- 	  Say Y here if you want DDC/I2C support for your Radeon board. 
-@@ -1125,7 +1124,6 @@ config FB_S3
- config FB_SAVAGE
- 	tristate "S3 Savage support"
- 	depends on FB && PCI && EXPERIMENTAL
--	select FB_DDC if FB_SAVAGE_I2C
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-@@ -1142,6 +1140,7 @@ config FB_SAVAGE
- config FB_SAVAGE_I2C
-        bool "Enable DDC2 Support"
-        depends on FB_SAVAGE
-+       select FB_DDC
-        help
- 	  This enables I2C support for S3 Savage Chipsets.  This is used
- 	  only for getting EDID information from the attached display
+> To have a patch to cleans things up. Give it a try
+> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index b8f0a11..855a09e 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+
+Queued up for the next time I build a -mm kernel.  This build of 21-rc2-mm1
+has been up for 33 minutes already, so it may be later tonight (when I try
+to get my Intel 3945 wireless card working with the new 80211 stack).
+
+--==_Exmh_1172854311_6664P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFF6FYncC3lWbTT17ARArtCAKDLHmajzcRE5CDN0faKZvFWXkJcsQCgwvy8
+oRtvBZN3tAQK69JKF4ep2L0=
+=E5W8
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1172854311_6664P--

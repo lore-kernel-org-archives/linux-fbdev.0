@@ -1,29 +1,25 @@
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Subject: Warnings from matroxfb i2c driver
-Date: Fri, 2 Mar 2007 21:00:57 +0100
-Message-ID: <200703022100.58028.hjk@linutronix.de>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc2 radeon backlight
+Date: Fri, 2 Mar 2007 12:29:20 -0800
+Message-ID: <20070302122920.a2967ebf.akpm@linux-foundation.org>
+References: <87ps7uutsk.fsf@sycorax.lbl.gov>
+	<20070301184531.b3aeafe3.akpm@linux-foundation.org>
+	<87tzx35zkc.fsf@sycorax.lbl.gov>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HNDw6-0003LD-Rh for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 02 Mar 2007 12:01:03 -0800
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HNDw5-0002yD-8U
+	id 1HNENZ-0006f2-6S for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Mar 2007 12:29:25 -0800
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HNENX-0007ug-Sh
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 02 Mar 2007 12:01:02 -0800
-Received: from hanslin.local.208.168.192.in-addr.arpa
-	(HSI-KBW-085-216-099-221.hsi.kabelbw.de [85.216.99.221])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mail.tglx.de (Postfix) with ESMTP id BA15165C065
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri,  2 Mar 2007 21:00:59 +0100 (CET)
-Content-Disposition: inline
+	Fri, 02 Mar 2007 12:29:25 -0800
+In-Reply-To: <87tzx35zkc.fsf@sycorax.lbl.gov>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,30 +30,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Alex Romosan <romosan@sycorax.lbl.gov>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-In my boot logs I find the following warnings:
+On Fri, 02 Mar 2007 09:24:03 -0800
+Alex Romosan <romosan@sycorax.lbl.gov> wrote:
 
-matroxfb: Matrox G550 detected
-PInS memtype = 5
-matroxfb: MTRR's turned on
-matroxfb: 1280x1024x24bpp (virtual: 1280x4369)
-matroxfb: framebuffer at 0xD4000000, mapped to 0xf8880000, size 33554432
-Console: switching to colour frame buffer device 160x64
-fb0: MATROX frame buffer device
-matroxfb_crtc2: secondary head of fb0 was registered as fb1
-**WARNING** I2C adapter driver [DDC:fb0 #0] forgot to specify physical device; 
-fix it!
-**WARNING** I2C adapter driver [DDC:fb0 #1] forgot to specify physical device; 
-fix it!
-**WARNING** I2C adapter driver [MAVEN:fb0] forgot to specify physical device; 
-fix it!
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > On Wed, 28 Feb 2007 08:32:43 -0800
+> > Alex Romosan <romosan@sycorax.lbl.gov> wrote:
+> >
+> >> the backlight on my thinkpad still (2.6.20 worked fine) doesn't come
+> >> on if i have the radeon backlight enabled. without it, i guess it's
+> >> the ibm acpi modules that controls the backlight and it seems to work
+> >> fine.
+> >> 
+> >
+> > Unclear. Are you saying that the backlight comes on OK if you use
+> > the IBM acpi module?
+> 
+> yes, if i disable the radeon backlight and use the ibm acpi module,
+> than the backlight works. if i enable the radeon backlight, the screen
+> stays dark and i can't turn it on (i tried using radeontool to control
+> it but nothing happened).
 
-Kernel is a vanilla 2.6.20.1. Can somebody please explain this to me? Can I 
-ignore these warnings?
+Richard, is this actually a bug, or is it a config error or something like that?
 
-Thanks,
-Hans
+And should we track it as a post-2.6.20 regression?
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

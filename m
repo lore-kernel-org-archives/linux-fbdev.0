@@ -1,50 +1,57 @@
-From: Alex Romosan <romosan@sycorax.lbl.gov>
+From: David Miller <davem@davemloft.net>
 Subject: Re: 2.6.21-rc2 radeon backlight
-Date: Fri, 02 Mar 2007 13:22:27 -0800
-Message-ID: <87mz2v5oj0.fsf@sycorax.lbl.gov>
-References: <20070301184531.b3aeafe3.akpm@linux-foundation.org>
-	<87tzx35zkc.fsf@sycorax.lbl.gov>
-	<20070302122920.a2967ebf.akpm@linux-foundation.org>
-	<20070302.123514.35465791.davem@davemloft.net>
+Date: Fri, 02 Mar 2007 13:40:05 -0800 (PST)
+Message-ID: <20070302.134005.55727374.davem@davemloft.net>
+References: <20070302.123514.35465791.davem@davemloft.net>
 	<20070302210157.GA11786@khazad-dum.debian.net>
+	<87mz2v5oj0.fsf@sycorax.lbl.gov>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965661AbXCBVWj@vger.kernel.org>
-In-Reply-To: <20070302210157.GA11786@khazad-dum.debian.net> (message from
-	Henrique de Moraes Holschuh on Fri, 2 Mar 2007 18:01:57 -0300)
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, rpurdie@rpsys.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HNFTz-0005a5-8D for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Mar 2007 13:40:07 -0800
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HNFTy-0007Fk-QY
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Mar 2007 13:40:07 -0800
+In-Reply-To: <87mz2v5oj0.fsf@sycorax.lbl.gov>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: romosan@sycorax.lbl.gov
+Cc: rpurdie@rpsys.net, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, hmh@hmh.eng.br
 
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> writes:
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+Date: Fri, 02 Mar 2007 13:22:27 -0800
 
-> On Fri, 02 Mar 2007, David Miller wrote:
->> Why don't we compromise for 2.6.21 by marking the Radeon backlight
->> stuff EXPERIMENTAL until the cases where IBM ACPI works and the
->> Radeon backlight stuff does not are worked out?
->
-> What ibm-acpi backlight control does is *very* different from what the
-> radeon backlight control does.
->
-> ibm-acpi talks to the ThinkPad EC to change the brightness of the backlight,
-> it has *NO* on/off support.  Radeon talks to the video chipset to turn the
-> LVDS output on/off (or something to that effect), and thus to turn the
-> backlight on/off.
+> if i don't enable the radeon backlight support the backlight works and
+> i can turn it on and off using radeontool. if i enable the radeon
+> backlight support the screen stays dark (although i can log on my
+> laptop remotely). if i try to use radeontool to turn the backlight on
+> nothing happens. so, at least on the thinkpad, the radeon backlight
+> support disables some other kind of backlight support that works
+> otherwise.
 
-if i don't enable the radeon backlight support the backlight works and
-i can turn it on and off using radeontool. if i enable the radeon
-backlight support the screen stays dark (although i can log on my
-laptop remotely). if i try to use radeontool to turn the backlight on
-nothing happens. so, at least on the thinkpad, the radeon backlight
-support disables some other kind of backlight support that works
-otherwise.
+Right, that's the crux of the problem.
 
---alex--
+The Radeon backlight support conflicts somehow with the
+way the ACPI code programs the same hardware, and until
+we figure out exactly what's going on, this is a regression.
 
--- 
-| I believe the moment is at hand when, by a paranoiac and active |
-|  advance of the mind, it will be possible (simultaneously with  |
-|  automatism and other passive states) to systematize confusion  |
-|  and thus to help to discredit completely the world of reality. |
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

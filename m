@@ -1,23 +1,29 @@
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] tgafb accelerated code
-Date: Fri, 2 Mar 2007 19:14:08 +0000 (GMT)
-Message-ID: <Pine.LNX.4.64N.0703021911270.5941@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64.0703021753450.6236@pentafluge.infradead.org>
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Subject: Warnings from matroxfb i2c driver
+Date: Fri, 2 Mar 2007 21:00:57 +0100
+Message-ID: <200703022100.58028.hjk@linutronix.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HNDDm-00078J-AW for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 02 Mar 2007 11:15:14 -0800
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7] ident=postfix)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HNDDh-0000dw-Qn
+	id 1HNDw6-0003LD-Rh for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Mar 2007 12:01:03 -0800
+Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HNDw5-0002yD-8U
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 02 Mar 2007 11:15:11 -0800
-In-Reply-To: <Pine.LNX.4.64.0703021753450.6236@pentafluge.infradead.org>
+	Fri, 02 Mar 2007 12:01:02 -0800
+Received: from hanslin.local.208.168.192.in-addr.arpa
+	(HSI-KBW-085-216-099-221.hsi.kabelbw.de [85.216.99.221])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mail.tglx.de (Postfix) with ESMTP id BA15165C065
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri,  2 Mar 2007 21:00:59 +0100 (CET)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,21 +34,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 2 Mar 2007, James Simmons wrote:
+In my boot logs I find the following warnings:
 
-> This patch adds accelerated panning and accelerated color and mono image 
-> drawing. Please apply.
-> 
-> Signed-off-by: James Simmons <jsimmons@infradead.org>
+matroxfb: Matrox G550 detected
+PInS memtype = 5
+matroxfb: MTRR's turned on
+matroxfb: 1280x1024x24bpp (virtual: 1280x4369)
+matroxfb: framebuffer at 0xD4000000, mapped to 0xf8880000, size 33554432
+Console: switching to colour frame buffer device 160x64
+fb0: MATROX frame buffer device
+matroxfb_crtc2: secondary head of fb0 was registered as fb1
+**WARNING** I2C adapter driver [DDC:fb0 #0] forgot to specify physical device; 
+fix it!
+**WARNING** I2C adapter driver [DDC:fb0 #1] forgot to specify physical device; 
+fix it!
+**WARNING** I2C adapter driver [MAVEN:fb0] forgot to specify physical device; 
+fix it!
 
-Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
+Kernel is a vanilla 2.6.20.1. Can somebody please explain this to me? Can I 
+ignore these warnings?
 
- Tested with a 24-plane and a 8-plane TURBOchannel board.
-
-  Maciej
+Thanks,
+Hans
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

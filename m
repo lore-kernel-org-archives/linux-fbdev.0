@@ -1,28 +1,28 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH/RFC 2.6.20 1/2] fbdev,
-	mm: Deferred IO support
-Date: Thu, 1 Mar 2007 19:02:34 -0500
-Message-ID: <45a44e480703011602j698f67dev469b49d6b527f502@mail.gmail.com>
-References: <20070225051312.17454.80741.sendpatchset@localhost>
-	<20070301140131.GA6603@linux-sh.org>
+From: "Alex Deucher" <alexdeucher@gmail.com>
+Subject: Re: Matrox G550, dual head, 1680x1050
+Date: Thu, 1 Mar 2007 20:49:55 -0500
+Message-ID: <a728f9f90703011749t7f015c55tec91bb1eccd20c16@mail.gmail.com>
+References: <200703020025.13174.hjk@linutronix.de>
+	<a728f9f90703011529r1cb92c10y2fbe503f34693507@mail.gmail.com>
+	<200703020049.55005.hjk@linutronix.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HMvEO-0006J7-UK for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Mar 2007 16:02:45 -0800
-Received: from nf-out-0910.google.com ([64.233.182.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HMvEN-0000O4-8E
+	id 1HMwuD-0008HB-QU for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 01 Mar 2007 17:49:57 -0800
+Received: from wx-out-0506.google.com ([66.249.82.233])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HMwuD-0000kV-Ha
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Mar 2007 16:02:40 -0800
-Received: by nf-out-0910.google.com with SMTP id c31so1903675nfb
+	Thu, 01 Mar 2007 17:49:57 -0800
+Received: by wx-out-0506.google.com with SMTP id i30so988095wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 01 Mar 2007 16:02:35 -0800 (PST)
-In-Reply-To: <20070301140131.GA6603@linux-sh.org>
+	Thu, 01 Mar 2007 17:49:56 -0800 (PST)
+In-Reply-To: <200703020049.55005.hjk@linutronix.de>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,33 +34,73 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mundt <lethal@linux-sh.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On 3/1/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Sun, Feb 25, 2007 at 06:13:12AM +0100, Jaya Kumar wrote:
-> > This patch implements deferred IO support in fbdev. Deferred IO is a way to
-> > delay and repurpose IO. This implementation is done using mm's page_mkwrite
-> > and page_mkclean hooks in order to detect, delay and then rewrite IO. This
-> > functionality is used by hecubafb.
+On 3/1/07, Hans-J=FCrgen Koch <hjk@linutronix.de> wrote:
+> Am Freitag, 2. M=E4rz 2007 00:29 schrieb Alex Deucher:
+> > On 3/1/07, Hans-J=FCrgen Koch <hjk@linutronix.de> wrote:
+> > > Hi,
+> > > I'm the proud owner of two NEC MultiSync 2070WNX monitors (1680x1050)=
+ and
+> > > a Matrox G550 dual DVI card. I'm now trying to set up a dual head
+> > > configuration with this equipment.
+> > >
+> > > I'm booting with video=3Dmatroxfb:vesa:0x1BB, as there is no 1680x105=
+0 vesa
+> > > mode. This works, both monitors show the same and complain about the
+> > > wrong resolution.
+> > >
+> > > Now I start my X server (xorg.conf below) and wish to get a xinerama
+> > > setup. Monitor 1 switches to 1680x1050 and shows a nice clean screen.
+> > > Monitor 2 seems to have problems, though. I guess the card still outp=
+uts
+> > > the 1280x1024 set up at boot time. Colours are correct, but the image=
+ is
+> > > heavily distorted. It looks like the X server thinks it's 1680x1050 b=
+ut
+> > > in fact it's still 1280x1024.
+> > >
+> > > I spent some time googling, but to no avail. Now my questions:
+> > >
+> > > Is this a known limitation of matroxfb?
+> > > If yes, is it considered a bug? I could spend some time looking into =
+the
+> > > code. Do I have any chance to get this working in a reasonable dual h=
+ead
+> > > configuration? Any hints?
 > >
-> Any updates on this? If there are no other concerns, it would be nice to
-> at least get this in to -mm for testing if nothing else.
-
-I think Andrew merged it into -mm.
-
+> > IIRC, the current mga X server doesn't know how to deal with DVI
+> > (single or dual ports).  DVI was only supported with matrox' binary
+> > module.
+> >
 >
-> Jaya, can you roll the fsync() patch in to your defio patch? There's not
-> much point in keeping them separate.
+> Hi Alex,
+> thanks for your fast reply.
+> Currently, I've got both monitors connected with VGA cables. The card has=
+ some
+> proprietary 60-pin or so connector, and I've got an adapter caple from th=
+at
+> plug to 2xVGA. Both monitors show a stable picture, but only the picture =
+on
+> monitor #1 is usable. It really looks like the X server is trying to swit=
+ch
+> both channels to 1680x1050, but only succeeds with the first one.
 >
 
-I forgot to add that. Sorry about that. Should I resubmit with it or
-would you prefer to post it?
+you should probably ask on the xorg mailing list :)
+Dualhead is a bit flakey in the xorg driver at the moment, although
+work is being done to fix that.  IIRC, the ordering is wrong when
+programming one of the PLLs.
 
-Thanks,
-jaya
+Alex
+
+> Hans
+>
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

@@ -1,15 +1,15 @@
-From: Tilman Sauerbeck <tilman@code-monkey.de>
-Subject: Re: Matrox G550, dual head, 1680x1050
-Date: Mon, 5 Mar 2007 07:59:12 +0100
-Message-ID: <20070305065911.GA1017@code-monkey.de>
+From: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Subject: Re: [Linux-fbdev-devel] Matrox G550, dual head, 1680x1050
+Date: Mon, 5 Mar 2007 08:34:57 +0100
+Message-ID: <200703050834.57831.hjk@linutronix.de>
 References: <200703021053.00955.hjk@linutronix.de>
-	<200703021610.58188.hjk@linutronix.de>
-	<20070302152414.GC907@code-monkey.de>
 	<200703042247.21590.hjk@linutronix.de>
+	<45EBA3B6.3060701@vc.cvut.cz>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0591808832=="
+Content-Transfer-Encoding: quoted-printable
 Return-path: <xorg-bounces@lists.freedesktop.org>
-In-Reply-To: <200703042247.21590.hjk@linutronix.de>
+In-Reply-To: <45EBA3B6.3060701@vc.cvut.cz>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -18,78 +18,42 @@ List-Post: <mailto:xorg@lists.freedesktop.org>
 List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
 List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Mime-version: 1.0
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
-To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
 Cc: linux-fbdev-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
 
+Am Montag, 5. M=E4rz 2007 05:59 schrieb Petr Vandrovec:
+> Hans-J=FCrgen Koch wrote:
+> > Am Freitag, 2. M=E4rz 2007 16:24 schrieb Tilman Sauerbeck:
+> > Meanwhile I doubt this explanation. Here's what fbset has to say:
+> >
+> > $ fbset -fb /dev/fb1 --show
+> >
+> > mode "1680x1050-60"
+> >     # D: 135.501 MHz, H: 65.396 kHz, V: 59.997 Hz
+> >     geometry 1680 1050 1680 1050 32
+> >     timings 7380 32 224 32 4 136 4
+> >     rgba 8/16,8/8,8/0,8/24
+> > endmode
+> >
+> > So, even fbset thinks it's 1680x1050. But where does the distortion come
+> > from???
+>
+> Can you try setting vxres for second head from 1680 to 1696, or 1728?
+> Maybe X look at vxres and not at framebuffer line length (what fbset -i
+> reports for line length?)
 
---===============0591808832==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0OAP2g/MAC+5xKAE"
-Content-Disposition: inline
+Thanks a lot, Petr, you're on the right track! With
 
+fbset -fb /dev/fb1 -g 1680 1050 1696 1050 32 -t 7380 224 32 32 4 136 4
 
---0OAP2g/MAC+5xKAE
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hans-J=FCrgen Koch [2007-03-04 22:47]:
-> @matroxfb developers: Thanks a lot, guys! Well done! Most people I asked =
-about=20
-> having a dual-head framebuffer console at 1680x1050 thought it would be=
+the distortion disappears. At the moment I have to do this manually after X=
 =20
-> impossible.
->=20
-> @mga xorg developers: Well... Can you tell me why the kernel guys can=20
-> initialize and use the second head and you can't? If you can give me hint=
-s=20
-> where in the source I can start to look for the bug, I'm willing to spend=
-=20
-> some time there. Is there something I could try in my configuration?
+has started. I'll have to experiment a bit with my configurations, but at=20
+least now I have working xinerama.
 
-matroxfb is much better organized wrt dual-head configurations. It also
-has support for some hardware that xf86-video-mga doesn't support yet.
-I'm working on that.
+Thanks again for your help.
 
-I think you might be hitting this bug:
-https://bugs.freedesktop.org/show_bug.cgi?id=3D9854
-
-I just attached a temporary fix that you could try.
-
-Regards,
-Tilman
-
---=20
-A: Because it messes up the order in which people normally read text.
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing on usenet and in e-mail?
-
---0OAP2g/MAC+5xKAE
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.2 (GNU/Linux)
-
-iD8DBQFF67+/27uLisrW2w8RAp1WAKCHK5kgiEYMeWoP7j2ZiCNmRMSjwgCfYqTw
-qJ9UAIaJy9xhFOjif5pPkk0=
-=aK8D
------END PGP SIGNATURE-----
-
---0OAP2g/MAC+5xKAE--
-
---===============0591808832==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-xorg mailing list
-xorg@lists.freedesktop.org
-http://lists.freedesktop.org/mailman/listinfo/xorg
---===============0591808832==--
+Hans

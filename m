@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/4] nvidiafb backlight: Fix implicit
-	declaration in nv_backlight
-Date: Mon, 05 Mar 2007 17:50:58 +0800
-Message-ID: <45EBE802.5080704@gmail.com>
+Subject: [PATCH 3/4] atyfb: Fix kconfig error part 2
+Date: Mon, 05 Mar 2007 17:52:36 +0800
+Message-ID: <45EBE864.5000707@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HO9rl-0000aV-Ob for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 Mar 2007 01:52:26 -0800
+	id 1HO9rx-0000ax-6c for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 Mar 2007 01:52:37 -0800
 Received: from nz-out-0506.google.com ([64.233.162.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HO9rl-0003eB-Fr
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HO9rw-0003eB-SB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 Mar 2007 01:52:25 -0800
+	Mon, 05 Mar 2007 01:52:37 -0800
 Received: by nz-out-0506.google.com with SMTP id i11so2494886nzi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 05 Mar 2007 01:52:25 -0800 (PST)
+	Mon, 05 Mar 2007 01:52:36 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,37 +30,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Dave Jones <davej@redhat.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Dave Jones <davej@redhat.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-drivers/video/nvidia/nv_backlight.c: In function 'nvidia_bl_init':
-drivers/video/nvidia/nv_backlight.c:103: error: implicit declaration of function 'pmac_has_backlight_type'
+Fix implicit declarations and missing code in atyfb.
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+drivers/video/aty/atyfb_base.c:2137: warning: implicit declaration of function 'a
+ty_ld_lcd'
+drivers/video/aty/atyfb_base.c:2154: warning: implicit declaration of function 'a
+ty_st_lcd'
+atyfb_base.c:(.text+0x33e5c): undefined reference to `aty_ld_lcd'
+atyfb_base.c:(.text+0x33eb2): undefined reference to `aty_st_lcd'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/nvidia/nv_backlight.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/video/aty/atyfb.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_backlight.c b/drivers/video/nvidia/nv_backlight.c
-index a50b303..43f62d8 100644
---- a/drivers/video/nvidia/nv_backlight.c
-+++ b/drivers/video/nvidia/nv_backlight.c
-@@ -12,6 +12,11 @@
- #include <linux/backlight.h>
- #include <linux/fb.h>
- #include <linux/pci.h>
-+
-+#ifdef CONFIG_PMAC_BACKLIGHT
-+#include <asm/backlight.h>
-+#endif
-+
- #include "nv_local.h"
- #include "nv_type.h"
- #include "nv_proto.h"
-
+diff --git a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+index f72faff..dc62f8e 100644
+--- a/drivers/video/aty/atyfb.h
++++ b/drivers/video/aty/atyfb.h
+@@ -284,7 +284,8 @@ #else
+ #endif
+ }
+ 
+-#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD)
++#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
++defined (CONFIG_FB_ATY_GENERIC_LCD) || defined (CONFIG_FB_ATY_BACKLIGHT)
+ extern void aty_st_lcd(int index, u32 val, const struct atyfb_par *par);
+ extern u32 aty_ld_lcd(int index, const struct atyfb_par *par);
+ #endif
 
 
 -------------------------------------------------------------------------

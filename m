@@ -1,25 +1,25 @@
-From: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Subject: Re: Matrox G550, dual head, 1680x1050
-Date: Mon, 5 Mar 2007 21:02:31 +0100
-Message-ID: <200703052102.31786.hjk@linutronix.de>
-References: <200703021053.00955.hjk@linutronix.de>
-	<200703042247.21590.hjk@linutronix.de>
-	<45EBA3B6.3060701@vc.cvut.cz>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] atyfb: Replace busy loop with
+	mdelay()
+Date: Mon, 5 Mar 2007 15:53:18 -0800
+Message-ID: <20070305155318.23fff053.akpm@linux-foundation.org>
+References: <20070222002033.GA26166@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HOJOK-00015M-Hn for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 Mar 2007 12:02:40 -0800
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HOJOI-0006g9-R7
+	id 1HON18-0000Kk-Bx for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 Mar 2007 15:54:58 -0800
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1HON15-0003jF-PU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 Mar 2007 12:02:40 -0800
-In-Reply-To: <45EBA3B6.3060701@vc.cvut.cz>
-Content-Disposition: inline
+	Mon, 05 Mar 2007 15:54:58 -0800
+In-Reply-To: <20070222002033.GA26166@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,110 +30,107 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: Tilman Sauerbeck <tilman@code-monkey.de>, linux-fbdev-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net, stable@kernel.org, adaplas@gmail.com, alex.kern@gmx.de
 
-Am Montag, 5. M=E4rz 2007 05:59 schrieb Petr Vandrovec:
+On Thu, 22 Feb 2007 02:20:33 +0200
+Ville Syrj__l__ <syrjala@sci.fi> wrote:
 
->
-> Can you try setting vxres for second head from 1680 to 1696, or 1728?
-> Maybe X look at vxres and not at framebuffer line length (what fbset -i
-> reports for line length?)
->
+> Replace a busy loop with mdelay() in atyfb clock setup code. This fixes
+> boot hangs several people have experienced.
+> 
+> Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+> ---
+> 
+> This patch was already forwareded by James to some of you, but here it 
+> is with the proper changelog, signed-off-by line, and a language fix in 
+> the comment part. Also Cc:d stable@kernel.org as this seems like -stable 
+> material to me.
+> 
+>  drivers/video/aty/mach64_ct.c |    9 +++------
+>  1 file changed, 3 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6.20.1/drivers/video/aty/mach64_ct.c
+> ===================================================================
+> --- linux-2.6.20.1.orig/drivers/video/aty/mach64_ct.c
+> +++ linux-2.6.20.1/drivers/video/aty/mach64_ct.c
+> @@ -598,7 +598,6 @@ static void aty_resume_pll_ct(const stru
+>  	struct atyfb_par *par = info->par;
+>  
+>  	if (par->mclk_per != par->xclk_per) {
+> -		int i;
+>  		/*
+>  		* This disables the sclk, crashes the computer as reported:
+>  		* aty_st_pll_ct(SPLL_CNTL2, 3, info);
+> @@ -609,12 +608,10 @@ static void aty_resume_pll_ct(const stru
+>  		aty_st_pll_ct(SCLK_FB_DIV, pll->ct.sclk_fb_div, par);
+>  		aty_st_pll_ct(SPLL_CNTL2, pll->ct.spll_cntl2, par);
+>  		/*
+> -		 * The sclk has been started. However, I believe the first clock
+> -		 * ticks it generates are not very stable. Hope this primitive loop
+> -		 * helps for Rage Mobilities that sometimes crash when
+> -		 * we switch to sclk. (Daniel Mantione, 13-05-2003)
+> +		 * SCLK has been started. Wait for the PLL to lock. 5 ms
+> +		 * should be enough according to mach64 programmer's guide.
+>  		 */
+> -		for (i=0;i<=0x1ffff;i++);
+> +		mdelay(5);
+>  	}
+>  
+>  	aty_st_pll_ct(PLL_REF_DIV, pll->ct.pll_ref_div, par);
+> 
 
-Here are more details:
-
-1.) I boot my kernel (vanilla 2.6.20.1) with the following parameters:
-
-video=3Dmatroxfb:outputs:120,pixclock:7380,xres:1680,yres:1050,upper:32,
-               lower:4,left:32,right:224,hslen:136,vslen:4,depth:32
-
-This initializes the primary head correctly. The second head is probably =
-
-wrong, because the monitor's on screen message complains about a non-ideal =
-
-resolution.
-
-2.) X starts with Xinerama=3DOn, using this modeline for each monitor:
-
-Modeline "1680x1050@60" 154.20 1680 1712 2296 2328 1050 1071 1081 1103
-
-3.) After that, fbset -i reports this:
-
-$ fbset -i -fb /dev/fb0
-
-mode "1680x1050-60"
-    # D: 135.501 MHz, H: 65.396 kHz, V: 59.997 Hz
-    geometry 1680 1050 1696 2473 32
-    timings 7380 32 224 32 4 136 4
-    accel true
-    rgba 8/16,8/8,8/0,8/24
-endmode
-
-Frame buffer device information:
-    Name        : MATROX
-    Address     : 0xd4000000
-    Size        : 16777216
-    Type        : PACKED PIXELS
-    Visual      : TRUECOLOR
-    XPanStep    : 8
-    YPanStep    : 1
-    YWrapStep   : 0
-    LineLength  : 6784
-    MMIO Address: 0xd6000000
-    MMIO Size   : 16384
-    Accelerator : Matrox G400
+A similar but different patch just got merged into mainline:
 
 
-$ fbset -i -fb /dev/fb1
+commit 8690ba446defe2e2b81803756c099d2943dfd5fd
+Author: David Miller <davem@davemloft.net>
+Date:   Mon Mar 5 01:35:36 2007 -0800
 
-mode "640x480-60"
-    # D: 25.176 MHz, H: 31.469 kHz, V: 59.942 Hz
-    geometry 640 480 640 480 32
-    timings 39721 48 16 33 10 96 2
-    rgba 8/16,8/8,8/0,8/24
-endmode
+    [PATCH] video/aty/mach64_ct.c: fix bogus delay loop
+    
+    CT based mach64 cards were reported to hang on sparc64 boxes when
+    compiled with gcc-4.1.x and later.
+    
+    Looking at this piece of code, it's no surprise.  A critical
+    delay was implemented as an empty for() loop, and gcc 4.0.x
+    and previous did not optimize it away, so we did get a delay.
+    
+    But gcc-4.1.x and later can optimize it away, and we get crashes.
+    
+    Use a real udelay() to fix this.  Fix verified on SunBlade100.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Frame buffer device information:
-    Name        : MATROX DH
-    Address     : 0xd5800000
-    Size        : 8388608
-    Type        : PACKED PIXELS
-    Visual      : TRUECOLOR
-    XPanStep    : 8
-    YPanStep    : 1
-    YWrapStep   : 0
-    LineLength  : 2560
-    MMIO Address: 0xd6000000
-    MMIO Size   : 16384
-    Accelerator : No
+diff --git a/drivers/video/aty/mach64_ct.c b/drivers/video/aty/mach64_ct.c
+index f3b487b..1fdcfdb 100644
+--- a/drivers/video/aty/mach64_ct.c
++++ b/drivers/video/aty/mach64_ct.c
+@@ -598,7 +598,6 @@ static void aty_resume_pll_ct(const stru
+        struct atyfb_par *par = info->par;
+ 
+        if (par->mclk_per != par->xclk_per) {
+-               int i;
+                /*
+                * This disables the sclk, crashes the computer as reported:
+                * aty_st_pll_ct(SPLL_CNTL2, 3, info);
+@@ -614,7 +613,7 @@ static void aty_resume_pll_ct(const stru
+                 * helps for Rage Mobilities that sometimes crash when
+                 * we switch to sclk. (Daniel Mantione, 13-05-2003)
+                 */
+-               for (i=0;i<=0x1ffff;i++);
++               udelay(500);
+        }
+ 
+        aty_st_pll_ct(PLL_REF_DIV, pll->ct.pll_ref_div, par);
 
-As you can see, the second monitor fell back to VGA resolution, but the log=
-s =
 
-tell that X thinks it successfully switched to 1680x1050. The KDE control =
+hopefully that works OK for you.
 
-center reports the same. The image on the second monitor is distorted.
-
-4.) I then issue the following command:
-
-$ fbset -fb /dev/fb1 -g 1680 1050 1696 1050 32 -t 7380 224 32 32 4 136 4
-
-With that, the image on the second monitor immediately becomes clear, and I =
-
-have a fully working xinerama configuration then.
-
-As far as I can see, fbset is the only way to initialize the second head =
-
-properly. Neither matroxfb nor mga do it correctly with 1680x1050.
-
-Cheers,
-Hans
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

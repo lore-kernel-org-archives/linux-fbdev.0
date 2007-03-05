@@ -1,64 +1,67 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Subject: Re: [Linux-fbdev-devel] Matrox G550, dual head, 1680x1050
-Date: Mon, 05 Mar 2007 09:09:58 +0100
-Message-ID: <1173082199.28557.149.camel@thor.sulgenrain.local>
-References: <200703021053.00955.hjk@linutronix.de>
-	<200703021610.58188.hjk@linutronix.de>
-	<20070302152414.GC907@code-monkey.de>
-	<200703042247.21590.hjk@linutronix.de> <45EBA3B6.3060701@vc.cvut.cz>
-	<Pine.LNX.4.62.0703050732340.15476@pademelon.sonytel.be>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 1/4] fbdev: Fix Sharp UXGA checking
+Date: Mon, 05 Mar 2007 17:49:30 +0800
+Message-ID: <45EBE7AA.8050601@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <xorg-bounces@lists.freedesktop.org>
-In-Reply-To: <Pine.LNX.4.62.0703050732340.15476@pademelon.sonytel.be>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HO9re-0000a6-9c for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 Mar 2007 01:52:18 -0800
+Received: from nz-out-0506.google.com ([64.233.162.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HO9rc-0003eB-Ol
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 Mar 2007 01:52:18 -0800
+Received: by nz-out-0506.google.com with SMTP id i11so2494886nzi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 05 Mar 2007 01:52:16 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: xorg@lists.freedesktop.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2007-03-05 at 07:33 +0100, Geert Uytterhoeven wrote:
-> On Sun, 4 Mar 2007, Petr Vandrovec wrote:
-> > Hans-Jrgen Koch wrote:
-> > > Am Freitag, 2. Mrz 2007 16:24 schrieb Tilman Sauerbeck:
-> > > Meanwhile I doubt this explanation. Here's what fbset has to say:
-> > >=20
-> > > $ fbset -fb /dev/fb1 --show
-> > >=20
-> > > mode "1680x1050-60"
-> > >     # D: 135.501 MHz, H: 65.396 kHz, V: 59.997 Hz
-> > >     geometry 1680 1050 1680 1050 32
-> > >     timings 7380 32 224 32 4 136 4
-> > >     rgba 8/16,8/8,8/0,8/24
-> > > endmode
-> > >=20
-> > > So, even fbset thinks it's 1680x1050. But where does the distortion=
- come=20
-> > > from???
-> >=20
-> > Can you try setting vxres for second head from 1680 to 1696, or 1728?=
-=20
-> > Maybe X look at vxres and not at framebuffer line length (what fbset =
--i=20
-> > reports for line length?)
->=20
-> These days at least the X server in Debian looks correctly at the frame=
- buffer
-> line length, else it wouldn't work on PS3 with non-fullscreen modes.
+If the Ultrasharp UXGA is detected, the check function returns a nonzero
+value.  It should return the type of fix instead.
 
-It depends on the driver. The fbdev and radeon drivers should handle it
-correctly, not sure about others.
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
+
+ drivers/video/fbmon.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 05a9464..438b941 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -183,10 +183,11 @@ static int check_edid(unsigned char *edi
+ 		break;
+ 	case FBMON_FIX_TIMINGS:
+ 		b = edid + DETAILED_TIMING_DESCRIPTIONS_START;
++		ret = fix;
+ 
+ 		for (i = 0; i < 4; i++) {
+ 			if (edid_is_limits_block(b)) {
+-				ret = fix;
++				ret = 0;
+ 				break;
+ 			}
+ 
 
 
---=20
-Earthling Michel D=C3=A4nzer           |          http://tungstengraphics=
-.com
-Libre software enthusiast         |          Debian, X and DRI developer
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

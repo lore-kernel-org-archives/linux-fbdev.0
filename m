@@ -1,70 +1,78 @@
-From: DervishD <lkml@dervishd.net>
-Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Date: Tue, 6 Mar 2007 12:17:03 +0100
-Message-ID: <20070306111703.GD25349@DervishD>
-References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD> <1172617755.13422.0.camel@daplas> <20070301160139.GA102@DervishD> <1173144817.7219.1.camel@daplas> <20070306062528.GF20292@DervishD> <1173164006.6285.8.camel@daplas>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: Re: Matrox G550, dual head, 1680x1050
+Date: Tue, 06 Mar 2007 03:35:20 -0800
+Message-ID: <45ED51F8.2080907@vc.cvut.cz>
+References: <200703021053.00955.hjk@linutronix.de>
+	<200703042247.21590.hjk@linutronix.de>
+	<45EBA3B6.3060701@vc.cvut.cz>
+	<200703052102.31786.hjk@linutronix.de>
+	<45ED337B.6010209@vc.cvut.cz>
+	<Pine.LNX.4.62.0703061046190.4463@pademelon.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964944AbXCFLPq@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1173164006.6285.8.camel@daplas>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HOXx8-0000cK-9f for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Mar 2007 03:35:34 -0800
+Received: from mailgw.cvut.cz ([147.32.3.235])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HOXx5-00010G-R3
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Mar 2007 03:35:34 -0800
+In-Reply-To: <Pine.LNX.4.62.0703061046190.4463@pademelon.sonytel.be>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Tilman Sauerbeck <tilman@code-monkey.de>, xorg@lists.freedesktop.org
 
-    Hi Antonino :)
-
- * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> On Tue, 2007-03-06 at 07:25 +0100, DervishD wrote:
-> >  * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> > > On Thu, 2007-03-01 at 17:01 +0100, DervishD wrote:
-> > > >  * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> > > > > Can you try this patch?  It might help with the screen
-> > > > > corruption.
-> > > >=20
-> > > >     With the patch, the scroll slows to a crawl and the system =
-is
-> > > >     unusable. The time to scroll 30 lines is about a minute or =
-so
-> > > >     (probably more, I just measured for a while).
-> > > >=20
-> > > >     If you want me to test other patches, just tell :)
-> > >=20
-> > > Can you change the mdelay to udelay and use higher/lower delay va=
-lues
-> > > to see if there's any improvement?
-> >=20
-> >     Yes, as soon as I can build a new kernel and reboot. Any sugges=
-ted
-> > value?
->=20
-> You can start with 5 and increment by 5.  So you need not reboot each
-> time, compile tdfxfb as a module, and set CONFIG_HW_CONSOLE_BINDING=3D=
-y
-> (under drivers->char).
-
-    I've done that for testing, but I haven't build that kernel yet (no=
-t
-spare time by now).
-
-> Make sure you have vbetool, and use the attached script.
-
-    I don't have vbetool, but I'll get it.
-=20
-> The script assumes vbetool is in /usr/sbin, if not just edit. Also,
-> unbinding will only work if X (or any graphics app, for that matter) =
-is
-> not loaded.
-
-    No problem, it will be off while I test. I'll try to make the tests
-probably this friday or the weekend, as soon as I can.
-
-    Thanks a lot for your interest :)
-
-    Ra=FAl N=FA=F1ez de Arenas Coronado
-
---=20
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+R2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOgo+IE9uIFR1ZSwgNiBNYXIgMjAwNywgUGV0ciBWYW5k
+cm92ZWMgd3JvdGU6Cj4+IEhhbnMtSu+/vXJnZW4gS29jaCB3cm90ZToKPj4+IFRoaXMgaW5pdGlh
+bGl6ZXMgdGhlIHByaW1hcnkgaGVhZCBjb3JyZWN0bHkuIFRoZSBzZWNvbmQgaGVhZCBpcyBwcm9i
+YWJseSAKPj4+IHdyb25nLCBiZWNhdXNlIHRoZSBtb25pdG9yJ3Mgb24gc2NyZWVuIG1lc3NhZ2Ug
+Y29tcGxhaW5zIGFib3V0IGEgbm9uLWlkZWFsIAo+Pj4gcmVzb2x1dGlvbi4KPj4gU2Vjb25kIGhl
+YWQgYWx3YXlzIHN0YXJ0cyBpbiA2NDB4NDgwLzMyYnBwLiAgWW91IGhhdmUgdG8gdXNlIGZic2V0
+IHRvIAo+PiBzd2l0Y2ggaXQgdG8gZGlmZmVyZW50IG1vZGUsIHNvIG1hdHJveGZiIHdvcmtzIGZp
+bmUgYXMgZmFyIGFzIEkgY2FuIHRlbGwuCj4gCj4+PiAkIGZic2V0IC1mYiAvZGV2L2ZiMSAtZyAx
+NjgwIDEwNTAgMTY5NiAxMDUwIDMyIC10IDczODAgMjI0IDMyIDMyIDQgMTM2IDQKPiAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF5eXl4KPj4+IFdpdGggdGhhdCwgdGhlIGlt
+YWdlIG9uIHRoZSBzZWNvbmQgbW9uaXRvciBpbW1lZGlhdGVseSBiZWNvbWVzIGNsZWFyLCBhbmQg
+SSAKPj4+IGhhdmUgYSBmdWxseSB3b3JraW5nIHhpbmVyYW1hIGNvbmZpZ3VyYXRpb24gdGhlbi4K
+Pj4gWWVzLCBhbmQgdGhpcyBjb3JyZWN0cyBYIHByb2dyYW1taW5nIG1pc3Rha2UuCj4+Cj4+PiBB
+cyBmYXIgYXMgSSBjYW4gc2VlLCBmYnNldCBpcyB0aGUgb25seSB3YXkgdG8gaW5pdGlhbGl6ZSB0
+aGUgc2Vjb25kIGhlYWQgCj4+PiBwcm9wZXJseS4gTmVpdGhlciBtYXRyb3hmYiBub3IgbWdhIGRv
+IGl0IGNvcnJlY3RseSB3aXRoIDE2ODB4MTA1MC4KPj4gV2VsbCwgZmJzZXQgPT0gbWF0cm94ZmIs
+IHNvIEkgZG8gbm90IHF1aXRlIHVuZGVyc3RhbmQgeW91ciBjb21wbGFpbnQuCj4gCj4gSWYgSSBm
+b2xsb3dlZCB0aGlzIGRpc2N1c3Npb24gY29ycmVjdGx5LCB0aGVyZSdzIHN0aWxsIGFuIGlzc3Vl
+IHdpdGggbWF0cm94ZmIsCj4gYXMgaXQgZG9lc24ndCBzZWVtIHRvIHJvdW5kIHVwIHhyZXNfdmly
+dHVhbCB0byAxNjk2IGF1dG9tYXRpY2FsbHkuCj4gWW91IGhhdmUgdG8gZG8gdGhhdCB5b3Vyc2Vs
+Zi4KCldlbGwsIGFzIGZhciBhcyBJIGNhbiB0ZWxsIDE2ODAgaXMgbGVnYWwgbGluZSBsZW5ndGgg
+Zm9yIDMyYml0IGNvbG9yIAptb2RlLiAgSW4gSGFucy1KdXJnZW4gc2NlbmFyaW8gWCBwcm9ncmFt
+IGRpc3BsYXkgdGhlbXNlbHZlcyAob3RoZXJ3aXNlIApmYnNldCB3b3VsZCBub3QgcmVwb3J0IDY0
+MHg0ODAgb24gL2Rldi9mYjEgb25jZSBYIHN0YXJ0KSwgYW5kIGFwcGFyZW50bHkgCnNjcmV3IHVw
+IHJvdW5kaW5nLiAgSGF2aW5nIHRvIHVzZSAxNjk2IHNob3VsZCBiZSBuZWNlc3Nhcnkgb25seSBm
+b3IgCjE2YnBwLCBhbmQgZm9yIHN1Y2ggY2FzZSBtYXRyb3hmYiBhbHJlYWR5IGNvbnRhaW5zIGNv
+ZGUgdG8gcm91bmQgdXAgCnZhbHVlIHRvIG11bHRpcGxlIG9mIDMyLi4uCgpTbyB1bmxlc3Mgc29t
+ZWJvZHkgY2FuIHJlcHJvZHVjZSBwcm9ibGVtIHdpdGggdXNpbmcgZmJkZXYgZHJpdmVyIG9uIGJv
+dGggCnByaW1hcnkgYW5kIHNlY29uZGFyeSBoZWFkIEkgZG8gbm90IGJlbGlldmUgdGhlcmUgaXMg
+YW55IHByb2JsZW0gdG8gZml4IApvbiBtYXRyb3hmYiBzaWRlLgoJCQkJCQkJCVBldHIKCgoKLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLQpUYWtlIFN1cnZleXMuIEVhcm4gQ2FzaC4gSW5mbHVlbmNlIHRoZSBGdXR1
+cmUgb2YgSVQKSm9pbiBTb3VyY2VGb3JnZS5uZXQncyBUZWNoc2F5IHBhbmVsIGFuZCB5b3UnbGwg
+Z2V0IHRoZSBjaGFuY2UgdG8gc2hhcmUgeW91cgpvcGluaW9ucyBvbiBJVCAmIGJ1c2luZXNzIHRv
+cGljcyB0aHJvdWdoIGJyaWVmIHN1cnZleXMtYW5kIGVhcm4gY2FzaApodHRwOi8vd3d3LnRlY2hz
+YXkuY29tL2RlZmF1bHQucGhwP3BhZ2U9am9pbi5waHAmcD1zb3VyY2Vmb3JnZSZDSUQ9REVWREVW
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZi
+ZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3Jn
+ZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgt
+ZmJkZXYtZGV2ZWwK

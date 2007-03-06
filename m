@@ -1,95 +1,103 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: tdfx framebuffer garbles display in 2.6.19.5
-Date: Tue, 06 Mar 2007 14:53:25 +0800
-Message-ID: <1173164006.6285.8.camel@daplas>
-References: <20070226144744.GA3615@DervishD>
-	 <1172503471.20842.14.camel@daplas> <20070226171334.GB13496@DervishD>
-	 <1172510654.7101.11.camel@daplas> <20070226203223.GA161@DervishD>
-	 <1172617755.13422.0.camel@daplas> <20070301160139.GA102@DervishD>
-	 <1173144817.7219.1.camel@daplas>  <20070306062528.GF20292@DervishD>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: Re: Matrox G550, dual head, 1680x1050
+Date: Tue, 06 Mar 2007 01:25:15 -0800
+Message-ID: <45ED337B.6010209@vc.cvut.cz>
+References: <200703021053.00955.hjk@linutronix.de>
+	<200703042247.21590.hjk@linutronix.de>
+	<45EBA3B6.3060701@vc.cvut.cz>
+	<200703052102.31786.hjk@linutronix.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-pIIGclcRZxlYKt1EbrGS"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S965808AbXCFGvh@vger.kernel.org>
-In-Reply-To: <20070306062528.GF20292@DervishD>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: DervishD <lkml@dervishd.net>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HOVvr-0004TR-0M for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Mar 2007 01:26:07 -0800
+Received: from mailgw.cvut.cz ([147.32.3.235])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HOVvm-0006tp-Go
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Mar 2007 01:26:04 -0800
+In-Reply-To: <200703052102.31786.hjk@linutronix.de>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?ISO-8859-15?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Cc: Tilman Sauerbeck <tilman@code-monkey.de>, linux-fbdev-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+
+Hans-J=FCrgen Koch wrote:
+> Am Montag, 5. M=E4rz 2007 05:59 schrieb Petr Vandrovec:
+> =
+
+>> Can you try setting vxres for second head from 1680 to 1696, or 1728?
+>> Maybe X look at vxres and not at framebuffer line length (what fbset -i
+>> reports for line length?)
+>>
+> =
+
+> Here are more details:
+> =
+
+> 1.) I boot my kernel (vanilla 2.6.20.1) with the following parameters:
+> =
+
+> video=3Dmatroxfb:outputs:120,pixclock:7380,xres:1680,yres:1050,upper:32,
+>                lower:4,left:32,right:224,hslen:136,vslen:4,depth:32
+> =
+
+> This initializes the primary head correctly. The second head is probably =
+
+> wrong, because the monitor's on screen message complains about a non-idea=
+l =
+
+> resolution.
+
+Second head always starts in 640x480/32bpp.  You have to use fbset to =
+
+switch it to different mode, so matroxfb works fine as far as I can tell.
+
+> As you can see, the second monitor fell back to VGA resolution, but the l=
+ogs =
+
+> tell that X thinks it successfully switched to 1680x1050. The KDE control =
+
+> center reports the same. The image on the second monitor is distorted.
+
+Because X (mga driver) was programming hardware...
+
+> 4.) I then issue the following command:
+> =
+
+> $ fbset -fb /dev/fb1 -g 1680 1050 1696 1050 32 -t 7380 224 32 32 4 136 4
+> =
+
+> With that, the image on the second monitor immediately becomes clear, and=
+ I =
+
+> have a fully working xinerama configuration then.
+
+Yes, and this corrects X programming mistake.
+
+> As far as I can see, fbset is the only way to initialize the second head =
+
+> properly. Neither matroxfb nor mga do it correctly with 1680x1050.
+
+Well, fbset =3D=3D matroxfb, so I do not quite understand your complaint.
+							Petr
 
 
---=-pIIGclcRZxlYKt1EbrGS
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Tue, 2007-03-06 at 07:25 +0100, DervishD wrote:
->     Hi Antonino :)
-> 
->  * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> > On Thu, 2007-03-01 at 17:01 +0100, DervishD wrote:
-> > >  * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> > > > Can you try this patch?  It might help with the screen
-> > > > corruption.
-> > > 
-> > >     With the patch, the scroll slows to a crawl and the system is
-> > >     unusable. The time to scroll 30 lines is about a minute or so
-> > >     (probably more, I just measured for a while).
-> > > 
-> > >     If you want me to test other patches, just tell :)
-> > 
-> > Can you change the mdelay to udelay and use higher/lower delay values
-> > to see if there's any improvement?
-> 
->     Yes, as soon as I can build a new kernel and reboot. Any suggested
-> value?
-
-You can start with 5 and increment by 5.  So you need not reboot each
-time, compile tdfxfb as a module, and set CONFIG_HW_CONSOLE_BINDING=y
-(under drivers->char). Make sure you have vbetool, and use the attached
-script.  Thus:
-
-modprobe tdfxfb
-unbind.sh
-rmmod tdfxfb
-edit, make, make modules_install
-modprobe tdfxfb
-repeat
-
-The script assumes vbetool is in /usr/sbin, if not just edit. Also,
-unbinding will only work if X (or any graphics app, for that matter) is
-not loaded.
-
-Tony
-
-
---=-pIIGclcRZxlYKt1EbrGS
-Content-Disposition: attachment; filename=unbind.sh
-Content-Type: application/x-shellscript; name=unbind.sh
-Content-Transfer-Encoding: 7bit
-
-#!/bin/bash
-# Unbind fbcon
-
-# Change this to where your actual vgastate file is located
-# Or Use VGASTATE=$1 to indicate the state file at runtime
-VGASTATE=/usr/local/share/vgastate/vgastate
-
-# path to vbetool
-VBETOOL=/usr/sbin
-
-
-for (( i = 0; i < 16; i++))
-do
-  if test -x /sys/class/vtconsole/vtcon$i; then
-      if [ `cat /sys/class/vtconsole/vtcon$i/name | grep -c "frame buffer"` \
-           = 1 ]; then
-	    if test -x $VBETOOL/vbetool; then
-	       echo Unbinding vtcon$i
-	       $VBETOOL/vbetool vbemode set 3
-	       echo 0 > /sys/class/vtconsole/vtcon$i/bind
-	    fi
-      fi
-  fi
-done
-
-
---=-pIIGclcRZxlYKt1EbrGS--
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

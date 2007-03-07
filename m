@@ -1,27 +1,28 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: Re: Matrox G550, dual head, 1680x1050
-Date: Tue, 06 Mar 2007 03:35:20 -0800
-Message-ID: <45ED51F8.2080907@vc.cvut.cz>
-References: <200703021053.00955.hjk@linutronix.de>
-	<200703042247.21590.hjk@linutronix.de>
-	<45EBA3B6.3060701@vc.cvut.cz>
-	<200703052102.31786.hjk@linutronix.de>
-	<45ED337B.6010209@vc.cvut.cz>
-	<Pine.LNX.4.62.0703061046190.4463@pademelon.sonytel.be>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [stable] [PATCH] atyfb: Replace busy loop
+	with mdelay()
+Date: Tue, 6 Mar 2007 17:13:58 -0800
+Message-ID: <20070307011358.GB13624@kroah.com>
+References: <20070222002033.GA26166@sci.fi>
+	<20070305155318.23fff053.akpm@linux-foundation.org>
+	<20070306002943.GA9193@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HOXx8-0000cK-9f for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Mar 2007 03:35:34 -0800
-Received: from mailgw.cvut.cz ([147.32.3.235])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HOXx5-00010G-R3
+	id 1HOkkj-0006Ao-Fj for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Mar 2007 17:15:37 -0800
+Received: from mail.suse.de ([195.135.220.2] helo=mx1.suse.de)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HOkkh-0000LS-Px
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Mar 2007 03:35:34 -0800
-In-Reply-To: <Pine.LNX.4.62.0703061046190.4463@pademelon.sonytel.be>
+	Tue, 06 Mar 2007 17:15:37 -0800
+Content-Disposition: inline
+In-Reply-To: <20070306002943.GA9193@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,47 +33,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Tilman Sauerbeck <tilman@code-monkey.de>, xorg@lists.freedesktop.org
+To: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org, stable@kernel.org, adaplas@gmail.com, alex.kern@gmx.de
 
-R2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOgo+IE9uIFR1ZSwgNiBNYXIgMjAwNywgUGV0ciBWYW5k
-cm92ZWMgd3JvdGU6Cj4+IEhhbnMtSu+/vXJnZW4gS29jaCB3cm90ZToKPj4+IFRoaXMgaW5pdGlh
-bGl6ZXMgdGhlIHByaW1hcnkgaGVhZCBjb3JyZWN0bHkuIFRoZSBzZWNvbmQgaGVhZCBpcyBwcm9i
-YWJseSAKPj4+IHdyb25nLCBiZWNhdXNlIHRoZSBtb25pdG9yJ3Mgb24gc2NyZWVuIG1lc3NhZ2Ug
-Y29tcGxhaW5zIGFib3V0IGEgbm9uLWlkZWFsIAo+Pj4gcmVzb2x1dGlvbi4KPj4gU2Vjb25kIGhl
-YWQgYWx3YXlzIHN0YXJ0cyBpbiA2NDB4NDgwLzMyYnBwLiAgWW91IGhhdmUgdG8gdXNlIGZic2V0
-IHRvIAo+PiBzd2l0Y2ggaXQgdG8gZGlmZmVyZW50IG1vZGUsIHNvIG1hdHJveGZiIHdvcmtzIGZp
-bmUgYXMgZmFyIGFzIEkgY2FuIHRlbGwuCj4gCj4+PiAkIGZic2V0IC1mYiAvZGV2L2ZiMSAtZyAx
-NjgwIDEwNTAgMTY5NiAxMDUwIDMyIC10IDczODAgMjI0IDMyIDMyIDQgMTM2IDQKPiAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF5eXl4KPj4+IFdpdGggdGhhdCwgdGhlIGlt
-YWdlIG9uIHRoZSBzZWNvbmQgbW9uaXRvciBpbW1lZGlhdGVseSBiZWNvbWVzIGNsZWFyLCBhbmQg
-SSAKPj4+IGhhdmUgYSBmdWxseSB3b3JraW5nIHhpbmVyYW1hIGNvbmZpZ3VyYXRpb24gdGhlbi4K
-Pj4gWWVzLCBhbmQgdGhpcyBjb3JyZWN0cyBYIHByb2dyYW1taW5nIG1pc3Rha2UuCj4+Cj4+PiBB
-cyBmYXIgYXMgSSBjYW4gc2VlLCBmYnNldCBpcyB0aGUgb25seSB3YXkgdG8gaW5pdGlhbGl6ZSB0
-aGUgc2Vjb25kIGhlYWQgCj4+PiBwcm9wZXJseS4gTmVpdGhlciBtYXRyb3hmYiBub3IgbWdhIGRv
-IGl0IGNvcnJlY3RseSB3aXRoIDE2ODB4MTA1MC4KPj4gV2VsbCwgZmJzZXQgPT0gbWF0cm94ZmIs
-IHNvIEkgZG8gbm90IHF1aXRlIHVuZGVyc3RhbmQgeW91ciBjb21wbGFpbnQuCj4gCj4gSWYgSSBm
-b2xsb3dlZCB0aGlzIGRpc2N1c3Npb24gY29ycmVjdGx5LCB0aGVyZSdzIHN0aWxsIGFuIGlzc3Vl
-IHdpdGggbWF0cm94ZmIsCj4gYXMgaXQgZG9lc24ndCBzZWVtIHRvIHJvdW5kIHVwIHhyZXNfdmly
-dHVhbCB0byAxNjk2IGF1dG9tYXRpY2FsbHkuCj4gWW91IGhhdmUgdG8gZG8gdGhhdCB5b3Vyc2Vs
-Zi4KCldlbGwsIGFzIGZhciBhcyBJIGNhbiB0ZWxsIDE2ODAgaXMgbGVnYWwgbGluZSBsZW5ndGgg
-Zm9yIDMyYml0IGNvbG9yIAptb2RlLiAgSW4gSGFucy1KdXJnZW4gc2NlbmFyaW8gWCBwcm9ncmFt
-IGRpc3BsYXkgdGhlbXNlbHZlcyAob3RoZXJ3aXNlIApmYnNldCB3b3VsZCBub3QgcmVwb3J0IDY0
-MHg0ODAgb24gL2Rldi9mYjEgb25jZSBYIHN0YXJ0KSwgYW5kIGFwcGFyZW50bHkgCnNjcmV3IHVw
-IHJvdW5kaW5nLiAgSGF2aW5nIHRvIHVzZSAxNjk2IHNob3VsZCBiZSBuZWNlc3Nhcnkgb25seSBm
-b3IgCjE2YnBwLCBhbmQgZm9yIHN1Y2ggY2FzZSBtYXRyb3hmYiBhbHJlYWR5IGNvbnRhaW5zIGNv
-ZGUgdG8gcm91bmQgdXAgCnZhbHVlIHRvIG11bHRpcGxlIG9mIDMyLi4uCgpTbyB1bmxlc3Mgc29t
-ZWJvZHkgY2FuIHJlcHJvZHVjZSBwcm9ibGVtIHdpdGggdXNpbmcgZmJkZXYgZHJpdmVyIG9uIGJv
-dGggCnByaW1hcnkgYW5kIHNlY29uZGFyeSBoZWFkIEkgZG8gbm90IGJlbGlldmUgdGhlcmUgaXMg
-YW55IHByb2JsZW0gdG8gZml4IApvbiBtYXRyb3hmYiBzaWRlLgoJCQkJCQkJCVBldHIKCgoKLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLQpUYWtlIFN1cnZleXMuIEVhcm4gQ2FzaC4gSW5mbHVlbmNlIHRoZSBGdXR1
-cmUgb2YgSVQKSm9pbiBTb3VyY2VGb3JnZS5uZXQncyBUZWNoc2F5IHBhbmVsIGFuZCB5b3UnbGwg
-Z2V0IHRoZSBjaGFuY2UgdG8gc2hhcmUgeW91cgpvcGluaW9ucyBvbiBJVCAmIGJ1c2luZXNzIHRv
-cGljcyB0aHJvdWdoIGJyaWVmIHN1cnZleXMtYW5kIGVhcm4gY2FzaApodHRwOi8vd3d3LnRlY2hz
-YXkuY29tL2RlZmF1bHQucGhwP3BhZ2U9am9pbi5waHAmcD1zb3VyY2Vmb3JnZSZDSUQ9REVWREVW
-Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZi
-ZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3Jn
-ZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgt
-ZmJkZXYtZGV2ZWwK
+On Tue, Mar 06, 2007 at 02:29:43AM +0200, Ville Syrj?l? wrote:
+> On Mon, Mar 05, 2007 at 03:53:18PM -0800, Andrew Morton wrote:
+> > @@ -614,7 +613,7 @@ static void aty_resume_pll_ct(const stru
+> >                  * helps for Rage Mobilities that sometimes crash when
+> >                  * we switch to sclk. (Daniel Mantione, 13-05-2003)
+> >                  */
+> > -               for (i=0;i<=0x1ffff;i++);
+> > +               udelay(500);
+> 
+> I'm not sure if 500 us is enough. The programmer's guide says you should 
+> allow 5 ms for the PLL to lock.
+
+Then can you correct the patch in mainline, and forward what gets
+accepted there to the stable team if you wish the change to also be made
+there?
+
+thanks,
+
+greg k-h
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV

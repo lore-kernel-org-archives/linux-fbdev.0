@@ -1,7 +1,9 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: [PATCH] fix pixclock setting on Voodoo 1/2 cards
-Date: Wed, 7 Mar 2007 21:45:23 +0100
-Message-ID: <20070307204523.GC2142@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Gives Bus error in memcpy() in
+	coping	/dev/fb0 to a file.
+Date: Thu, 08 Mar 2007 21:05:45 +0800
+Message-ID: <1173359145.11105.1.camel@daplas>
+References: <426888a60703070350x48ee4d0eoa017bdb859e70f73@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,14 +12,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HP30v-0001Xv-VX for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Mar 2007 12:45:34 -0800
-Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HP30u-0006ZN-6V
+	id 1HPII2-0007Ip-03 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Mar 2007 05:04:15 -0800
+Received: from wx-out-0506.google.com ([66.249.82.224])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HPII1-0006hp-B4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Mar 2007 12:45:33 -0800
-Content-Disposition: inline
+	Thu, 08 Mar 2007 05:04:13 -0800
+Received: by wx-out-0506.google.com with SMTP id i30so722882wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 08 Mar 2007 05:04:12 -0800 (PST)
+In-Reply-To: <426888a60703070350x48ee4d0eoa017bdb859e70f73@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,37 +33,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: gtoumi@laposte.net
+Cc: Vishal Soni <vishal.soni@samsung.com>
 
-Pixclock setting in sstfb didn't work with my Voodoo 2 card
-with ICS 5342 DAC (this DAC requires two consecutive writes
-to one of its registers to program pixclock - maybe first
-write merged with second).
+On Wed, 2007-03-07 at 17:20 +0530, Vishal Soni wrote:
+> hello,
+> 
+> I am trying to get the snapshot of the screen through a c program by mmaping
+> the framebuffer device /dev/fb0 .
+> For this i compiled kernel with virtual framebuffer support and passing
+> vga=791 as boot line argument.
+> 
+> Though i am able to get snapshot by
+> [root@tw pcapp]# cat /dev/fb0 > frame
+> 
+> and see it on the screen by
+> [root@tw pcapp]# cat frame > /dev/fb0
+> 
+> But when i try to capture the frame buffer using the below c code, It gives
+> bus error @ memcpy()
+> 
+> Output :::::::::
+> 
+> [root@tw pcapp]# ./pcapp
+> 1024x768, 16bpp
+> framebuffer device mapped to memory @ 0xb7db3000.
+> FB_FRAME mapped to memory @ 0xb7c33000.
+> Bus error
 
-This patch fixes bug with pixclock setting. It is against 
-2.6.21-rc1 .
+I don't think vfb's framebuffer can be mmapped.  It's fixable, but
+nobody seems to have a need for it,  yet.
 
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
-
----
-
-diff -uprN -X linux-2.6.21-rc1-not/Documentation/dontdiff linux-2.6.21-rc1-not/drivers/video/sstfb.c linux-2.6.21-rc1-fix/drivers/video/sstfb.c
---- linux-2.6.21-rc1-not/drivers/video/sstfb.c	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.21-rc1-fix/drivers/video/sstfb.c	2007-03-07 21:03:08.000000000 +0100
-@@ -257,6 +257,7 @@ static void __sst_dac_write(u8 __iomem *
- 	r_dprintk("sst_dac_write(%#x, %#x)\n", reg, val);
- 	reg &= 0x07;
- 	__sst_write(vbase, DAC_DATA,(((u32)reg << 8)) | (u32)val);
-+	__sst_wait_idle(vbase);
- }
- 
- /* indexed access to ti/att dacs */
+Tony
 
 
--- 
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

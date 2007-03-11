@@ -1,25 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/3] savagefb: Fix black screen on load
-	in Savage IX
-Date: Sun, 11 Mar 2007 18:21:16 +0800
-Message-ID: <45F3D81C.2080306@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] sstfb: fix pixclock setting on
+	Voodoo 1/2 cards
+Date: Sun, 11 Mar 2007 04:36:38 -0800
+Message-ID: <20070311043638.901c3f42.akpm@linux-foundation.org>
+References: <45F3D87F.10805@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HQLBk-0001Xl-Dy for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 03:22:05 -0700
-Received: from wx-out-0506.google.com ([66.249.82.229])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HQLBg-00047E-EZ
+	id 1HQNI7-0005J8-NW for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 Mar 2007 05:36:48 -0700
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1HQNI6-0001kw-8n
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 03:22:01 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so2002488wxd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 11 Mar 2007 03:21:57 -0700 (PDT)
+	Sun, 11 Mar 2007 05:36:47 -0700
+In-Reply-To: <45F3D87F.10805@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,44 +30,10 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: santiago@mail.cz, linux-fbdev-devel@lists.sourceforge.net
 
-This is a hack that seems to kick start the 2D engine of the Savage IX in some
-Toshiba laptops. Without this, the laptop starts with a black screen and
-occasionally crashes X.
-
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
-
- drivers/video/savage/savagefb_driver.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 4afa305..d952bf3 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -384,6 +384,19 @@ SavageSetup2DEngine(struct savagefb_par 
- 	BCI_SEND(0);
- 	BCI_SEND(BCI_CMD_SETREG | (1 << 16) | BCI_GBD2);
- 	BCI_SEND(GlobalBitmapDescriptor);
-+
-+	/*
-+	 * I don't know why, sending this twice fixes the intial black screen,
-+	 * prevents X from crashing at least in Toshiba laptops with SavageIX.
-+	 * --Tony
-+	 */
-+	par->bci_ptr = 0;
-+	par->SavageWaitFifo(par, 4);
-+
-+	BCI_SEND(BCI_CMD_SETREG | (1 << 16) | BCI_GBD1);
-+	BCI_SEND(0);
-+	BCI_SEND(BCI_CMD_SETREG | (1 << 16) | BCI_GBD2);
-+	BCI_SEND(GlobalBitmapDescriptor);
- }
- 
- static void savagefb_set_clip(struct fb_info *info)
-
+These three patches look 2.6.21ish to me?
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

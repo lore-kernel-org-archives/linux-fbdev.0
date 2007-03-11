@@ -1,25 +1,28 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH 1/3] sstfb: fix pixclock setting on
 	Voodoo 1/2 cards
-Date: Sun, 11 Mar 2007 04:36:38 -0800
-Message-ID: <20070311043638.901c3f42.akpm@linux-foundation.org>
+Date: Sun, 11 Mar 2007 21:03:00 +0800
+Message-ID: <1173618180.5806.0.camel@daplas>
 References: <45F3D87F.10805@gmail.com>
+	<20070311043638.901c3f42.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HQNI7-0005J8-NW for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 05:36:48 -0700
-Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1HQNI6-0001kw-8n
+	id 1HQNg8-0000ca-Fp for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 Mar 2007 06:01:36 -0700
+Received: from wx-out-0506.google.com ([66.249.82.224])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HQNg7-0002Ky-2W
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 05:36:47 -0700
-In-Reply-To: <45F3D87F.10805@gmail.com>
+	Sun, 11 Mar 2007 06:01:36 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so2034087wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 11 Mar 2007 06:01:34 -0700 (PDT)
+In-Reply-To: <20070311043638.901c3f42.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,10 +33,16 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: santiago@mail.cz, linux-fbdev-devel@lists.sourceforge.net
 
-These three patches look 2.6.21ish to me?
+On Sun, 2007-03-11 at 04:36 -0800, Andrew Morton wrote:
+> These three patches look 2.6.21ish to me?
+
+They are safe for 2.6.21.
+
+Tony
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

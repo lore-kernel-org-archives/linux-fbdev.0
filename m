@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/3] savagefb: Fix compile error if
-	debugging is enabled
-Date: Sun, 11 Mar 2007 18:22:21 +0800
-Message-ID: <45F3D85D.7030002@gmail.com>
+Subject: [PATCH 2/3] savagefb: Fix black screen on load
+	in Savage IX
+Date: Sun, 11 Mar 2007 18:21:16 +0800
+Message-ID: <45F3D81C.2080306@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HQLBk-0001Xo-Dz for linux-fbdev-devel@lists.sourceforge.net;
+	id 1HQLBk-0001Xl-Dy for linux-fbdev-devel@lists.sourceforge.net;
 	Sun, 11 Mar 2007 03:22:05 -0700
 Received: from wx-out-0506.google.com ([66.249.82.229])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HQLBi-00047E-VW
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HQLBg-00047E-EZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 03:22:03 -0700
+	Sun, 11 Mar 2007 03:22:01 -0700
 Received: by wx-out-0506.google.com with SMTP id i30so2002488wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 11 Mar 2007 03:22:02 -0700 (PDT)
+	Sun, 11 Mar 2007 03:21:57 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,44 +33,40 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-SavagePrintRegs() requires struct savagefb_par.
+This is a hack that seems to kick start the 2D engine of the Savage IX in some
+Toshiba laptops. Without this, the laptop starts with a black screen and
+occasionally crashes X.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/savage/savagefb_driver.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/savage/savagefb_driver.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index d952bf3..0166ec2 100644
+index 4afa305..d952bf3 100644
 --- a/drivers/video/savage/savagefb_driver.c
 +++ b/drivers/video/savage/savagefb_driver.c
-@@ -509,7 +509,7 @@ static int common_calc_clock(long freq, 
- #ifdef SAVAGEFB_DEBUG
- /* This function is used to debug, it prints out the contents of s3 regs */
- 
--static void SavagePrintRegs(void)
-+static void SavagePrintRegs(struct savagefb_par *par)
- {
- 	unsigned char i;
- 	int vgaCRIndex = 0x3d4;
-@@ -1538,7 +1538,7 @@ static int savagefb_set_par(struct fb_in
- 	savagefb_set_fix(info);
- 	savagefb_set_clip(info);
- 
--	SavagePrintRegs();
-+	SavagePrintRegs(par);
- 	return 0;
+@@ -384,6 +384,19 @@ SavageSetup2DEngine(struct savagefb_par 
+ 	BCI_SEND(0);
+ 	BCI_SEND(BCI_CMD_SETREG | (1 << 16) | BCI_GBD2);
+ 	BCI_SEND(GlobalBitmapDescriptor);
++
++	/*
++	 * I don't know why, sending this twice fixes the intial black screen,
++	 * prevents X from crashing at least in Toshiba laptops with SavageIX.
++	 * --Tony
++	 */
++	par->bci_ptr = 0;
++	par->SavageWaitFifo(par, 4);
++
++	BCI_SEND(BCI_CMD_SETREG | (1 << 16) | BCI_GBD1);
++	BCI_SEND(0);
++	BCI_SEND(BCI_CMD_SETREG | (1 << 16) | BCI_GBD2);
++	BCI_SEND(GlobalBitmapDescriptor);
  }
  
-@@ -2168,7 +2168,6 @@ static int __devinit savagefb_probe(stru
- 	int video_len;
- 
- 	DBG("savagefb_probe");
--	SavagePrintRegs();
- 
- 	info = framebuffer_alloc(sizeof(struct savagefb_par), &dev->dev);
- 	if (!info)
+ static void savagefb_set_clip(struct fb_info *info)
 
 
 -------------------------------------------------------------------------

@@ -1,30 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 1/3] sstfb: fix pixclock setting on
-	Voodoo 1/2 cards
-Date: Sun, 11 Mar 2007 18:22:55 +0800
-Message-ID: <45F3D87F.10805@gmail.com>
+Subject: [PATCH 3/3] savagefb: Fix compile error if
+	debugging is enabled
+Date: Sun, 11 Mar 2007 18:22:21 +0800
+Message-ID: <45F3D85D.7030002@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HQMsp-000233-EY for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 05:10:39 -0700
-Received: from externalmx-1.sourceforge.net ([12.152.184.25])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HQMso-0002jr-1Q
+	id 1HQLBk-0001Xo-Dz for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 Mar 2007 03:22:05 -0700
+Received: from wx-out-0506.google.com ([66.249.82.229])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HQLBi-00047E-VW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 05:10:39 -0700
-Received: from ik-out-1112.google.com ([66.249.90.181])
-	by externalmx-1.sourceforge.net with esmtp (Exim 4.41)
-	id 1HQLBz-0006rr-A7 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Mar 2007 02:22:20 -0800
-Received: by ik-out-1112.google.com with SMTP id c30so1528307ika
+	Sun, 11 Mar 2007 03:22:03 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so2002488wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 11 Mar 2007 03:22:08 -0700 (PDT)
+	Sun, 11 Mar 2007 03:22:02 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,38 +31,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Ondrej Zajicek <santiago@mail.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Ondrej Zajicek <santiago@crfreenet.org>
+SavagePrintRegs() requires struct savagefb_par.
 
-Pixclock setting in sstfb didn't work with my Voodoo 2 card
-with ICS 5342 DAC (this DAC requires two consecutive writes
-to one of its registers to program pixclock - maybe first
-write merged with second).
-
-This patch fixes bug with pixclock setting. It is against
-2.6.21-rc1 .
-
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/sstfb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/savage/savagefb_driver.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
-index 59cd1e7..62fa550 100644
---- a/drivers/video/sstfb.c
-+++ b/drivers/video/sstfb.c
-@@ -257,6 +257,7 @@ static void __sst_dac_write(u8 __iomem *
- 	r_dprintk("sst_dac_write(%#x, %#x)\n", reg, val);
- 	reg &= 0x07;
- 	__sst_write(vbase, DAC_DATA,(((u32)reg << 8)) | (u32)val);
-+	__sst_wait_idle(vbase);
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+index d952bf3..0166ec2 100644
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -509,7 +509,7 @@ static int common_calc_clock(long freq, 
+ #ifdef SAVAGEFB_DEBUG
+ /* This function is used to debug, it prints out the contents of s3 regs */
+ 
+-static void SavagePrintRegs(void)
++static void SavagePrintRegs(struct savagefb_par *par)
+ {
+ 	unsigned char i;
+ 	int vgaCRIndex = 0x3d4;
+@@ -1538,7 +1538,7 @@ static int savagefb_set_par(struct fb_in
+ 	savagefb_set_fix(info);
+ 	savagefb_set_clip(info);
+ 
+-	SavagePrintRegs();
++	SavagePrintRegs(par);
+ 	return 0;
  }
  
- /* indexed access to ti/att dacs */
-
+@@ -2168,7 +2168,6 @@ static int __devinit savagefb_probe(stru
+ 	int video_len;
+ 
+ 	DBG("savagefb_probe");
+-	SavagePrintRegs();
+ 
+ 	info = framebuffer_alloc(sizeof(struct savagefb_par), &dev->dev);
+ 	if (!info)
 
 
 -------------------------------------------------------------------------

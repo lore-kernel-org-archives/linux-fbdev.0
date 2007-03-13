@@ -1,25 +1,21 @@
 From: Geert.Uytterhoeven@sonycom.com
-Subject: [patch 1/3] fbdev: Avoid vertical overflow when
-	making space for the logo
-Date: Tue, 13 Mar 2007 15:14:40 +0100
-Message-ID: <20070313141512.172882000@sonycom.com>
-References: <20070313141439.295232000@sonycom.com>
+Subject: [patch 0/5] PS3 AV/FB updates
+Date: Tue, 13 Mar 2007 15:19:10 +0100
+Message-ID: <20070313141910.001573000@sonycom.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HR7o1-00075y-Kh for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 Mar 2007 07:16:49 -0700
+	id 1HR7tN-0007j1-M5 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 13 Mar 2007 07:22:21 -0700
 Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HR7nw-0000Va-Nw
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HR7tM-0005Nz-8a
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 Mar 2007 07:16:49 -0700
-Content-Disposition: inline;
-	filename=spe-logo/logo-avoid-vertical-overflow.diff
+	Tue, 13 Mar 2007 07:22:21 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,37 +27,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>, Geoff Levand <geoffrey.levand@am.sony.com>, "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, linuxppc-dev@ozlabs.org
 
-fbcon_prepare_logo(): Avoid vertical overflow when making space for the logo
+These are a few updates for the PS3 Audio/Video Settings Driver and the PS3
+Virtual Frame Buffer Driver:
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-Acked-By: James Simmons <jsimmons@infradead.org>
----
- drivers/video/console/fbcon.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+[PATCH 1/5] ps3fb: thread updates
+[PATCH 2/5] ps3fb: atomic fixes
+[PATCH 3/5] ps3av: thread updates
+[PATCH 4/5] ps3fb: kill superfluous zero initializations
+[PATCH 5/5] ps3av: misc updates
 
---- ps3-linux-2.6.21-rc3.orig/drivers/video/console/fbcon.c
-+++ ps3-linux-2.6.21-rc3/drivers/video/console/fbcon.c
-@@ -618,8 +618,13 @@ static void fbcon_prepare_logo(struct vc
- 			r -= cols;
- 		}
- 		if (!save) {
--			vc->vc_y += logo_lines;
--			vc->vc_pos += logo_lines * vc->vc_size_row;
-+			int lines;
-+			if (vc->vc_y + logo_lines >= rows)
-+				lines = rows - vc->vc_y - 1;
-+			else
-+				lines = logo_lines;
-+			vc->vc_y += lines;
-+			vc->vc_pos += lines * vc->vc_size_row;
- 		}
- 	}
- 	scr_memsetw((unsigned short *) vc->vc_origin,
+Please apply for 2.6.21. Thx!
 
---
 Gr{oetje,eeting}s,
 
 						Geert

@@ -1,29 +1,23 @@
-From: DervishD <lkml@dervishd.net>
-Subject: Re: [TESTED] tdfx framebuffer garbles display
-	in 2.6.19.5
-Date: Wed, 14 Mar 2007 10:06:55 +0100
-Message-ID: <20070314090655.GA2466@DervishD>
-References: <20070226144744.GA3615@DervishD> <1172503471.20842.14.camel@daplas>
-	<20070226171334.GB13496@DervishD> <1172510654.7101.11.camel@daplas>
-	<20070226203223.GA161@DervishD> <1172617755.13422.0.camel@daplas>
-	<20070301160139.GA102@DervishD> <1173144817.7219.1.camel@daplas>
-	<20070306062528.GF20292@DervishD> <1173164006.6285.8.camel@daplas>
+From: "krishna priya" <priyark1@gmail.com>
+Subject: direct frame buffer application
+Date: Thu, 15 Mar 2007 15:50:27 +0530
+Message-ID: <24a0517a0703150320h610546c8q8aa6fe0a4a4b0c0a@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============1873925341=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HRPQR-0001Vh-L4 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Mar 2007 02:05:39 -0700
-Received: from smtp01.cdmon.com ([86.109.99.230])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HRPQQ-0003ar-44
+	id 1HRn4P-00009W-AB for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 15 Mar 2007 03:20:29 -0700
+Received: from an-out-0708.google.com ([209.85.132.250])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HRn4O-0002iR-TC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Mar 2007 02:05:39 -0700
-Content-Disposition: inline
-In-Reply-To: <1173164006.6285.8.camel@daplas>
+	Thu, 15 Mar 2007 03:20:29 -0700
+Received: by an-out-0708.google.com with SMTP id d40so167941and
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 15 Mar 2007 03:20:28 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,67 +28,71 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux-kernel <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-    Hi Antonino :)
+--===============1873925341==
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_64374_15251731.1173954027904"
 
-    NEW INFORMATION ABOUT THE PROBLEM
+------=_Part_64374_15251731.1173954027904
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
- * Antonino A. Daplas <adaplas@gmail.com> dixit:
-> On Tue, 2007-03-06 at 07:25 +0100, DervishD wrote:
-> > > >     With the patch, the scroll slows to a crawl and the system is
-> > > >     unusable. The time to scroll 30 lines is about a minute or so
-> > > >     (probably more, I just measured for a while).
-> > > > =
+Hi everybody
 
-> > > >     If you want me to test other patches, just tell :)
-> > > =
+This is priya working on linux-2.6.12 kernel on omapldk5912 board.I am
+trying load direct librraies on ldk board using 2.6.12 kernel.I am able to
+load the libraries successfully  but i am not able to run the Direct Frame
+buffer application with the libraries.that application is direclty entering
+in to Error messages that the driver is not opening for this
+application.That means the frame buffer driver itself is not initializing
+for this application.
 
-> > > Can you change the mdelay to udelay and use higher/lower delay values
-> > > to see if there's any improvement?
-> > =
 
-> >     Yes, as soon as I can build a new kernel and reboot. Any suggested
-> > value?
-> =
+Version of DirectFB-0.9.20
 
-> You can start with 5 and increment by 5.  So you need not reboot each
-> time, compile tdfxfb as a module, and set CONFIG_HW_CONSOLE_BINDING=3Dy
-> (under drivers->char).
 
-    Until I discovered how to reproduce the bug, I had to reboot for
-each test. But I discovered the real problem...
+Any one can suggest me how to use the frame buffer driver to run the
+directFB application using  /dev/fb0 device.
 
-    The garbling doesn't happen, no matter the udelay, until I start X.
-Once X is started, even with an udelay(100) (which for me makes the
-display untolerably slow) the problem happens.
+-- 
+Thanks
+Krishna Priya
 
-    This doesn't happen in latest 2.4.x, but I remember that some
-characters "dissappeared" from the screen at some 2.4.x when X was
-running. That was a known bug in the X driver of this card, so I'm not
-sure if the last X.Org driver has this problem or not. Unfortunately, I
-cannot test this directly, the most I can do is to test under Ubuntu,
-which uses an older 2.6.x kernel.
+------=_Part_64374_15251731.1173954027904
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-    If this new discovery doesn't ring any bell for you, I'll make a
-test under Ubuntu and after that I'll just wait until I can upgrade X
-(which I cannot do now) to latest X.Org (I'm now using 7.0.22).
+Hi everybody<br><br>This is priya working on linux-2.6.12 kernel on omapldk5912 board.I am trying load direct librraies on ldk board using 2.6.12 kernel.I am able to load the libraries successfully&nbsp; but i am not able to run the Direct Frame buffer application with the 
+libraries.that application is direclty entering in to Error messages that the driver is not opening for this application.That means the frame buffer driver itself is not initializing for this application.<br><br><br>Version of 
+DirectFB-0.9.20<br><br><br>Any one can suggest me how to use the frame buffer driver to run the directFB application using&nbsp; /dev/fb0 device.<br>
+<br>-- <br>Thanks <br>Krishna Priya
 
-    Thanks for all your help. I'll keep you informed of any change I
-notice, and (although I won't be very fast doing it...) you can count on
-me to test any patch you want.
+------=_Part_64374_15251731.1173954027904--
 
-    Ra=FAl N=FA=F1ez de Arenas Coronado
 
--- =
-
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+--===============1873925341==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
-VDEV
+http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
+--===============1873925341==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1873925341==--

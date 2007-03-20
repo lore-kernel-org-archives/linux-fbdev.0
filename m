@@ -1,24 +1,22 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 8232] New: Creator3D
- Framebuffer (sparc64) on Sbus/UPA workstation
-Date: Mon, 19 Mar 2007 03:34:25 -0800
-Message-ID: <20070319033425.b0be2d95.akpm@linux-foundation.org>
-References: <200703191019.l2JAJVH5018137@fire-2.osdl.org>
+From: James Simmons <jsimmons@infradead.org>
+Subject: [PATCH] fbdev sysfs imrovements
+Date: Tue, 20 Mar 2007 14:25:49 +0000 (GMT)
+Message-ID: <Pine.LNX.4.64.0703192055090.27580@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HTG98-0005Lp-D1 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Mar 2007 04:35:26 -0700
-Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HTG97-0000nI-UF
+	id 1HTfHj-0006hV-7a for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 Mar 2007 07:25:59 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HTfHi-0008Bw-6k
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Mar 2007 04:35:26 -0700
-In-Reply-To: <200703191019.l2JAJVH5018137@fire-2.osdl.org>
+	Tue, 20 Mar 2007 07:25:59 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,57 +27,225 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>
-Cc: mt1@systella.fr, "bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Dave Airlie <airlied@linux.ie>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
 
-On Mon, 19 Mar 2007 03:19:31 -0700 bugme-daemon@bugzilla.kernel.org wrote:
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8232
-> 
->            Summary: Creator3D Framebuffer (sparc64) on Sbus/UPA workstation
->     Kernel Version: ALL 2.6
->             Status: NEW
->           Severity: normal
->              Owner: jsimmons@infradead.org
->          Submitter: mt1@systella.fr
-> 
-> 
-> Most recent kernel where this bug did *NOT* occur: 2.4.34.1
-> Distribution: Debian/testing
-> Hardware Environment: U1E/170 with Creator3D (UPA), U2 with creator3D
-> Software Environment: debian without X on U1E, debian with Xorg on U2
-> Problem Description: Console is white foreground and blanck background by
-> default. Sometimes, the screen is cut like this :
-> 
-> N | N | N | N
-> --+---+---+---
-> N | G | G | G
-> --+---+---+---
-> N | W | W | W
-> --+---+---+---
-> N | G | G | G
-> 
-> 
-> where N is a 'normal' console, 'G' a 'like grey' console (black and white pixels
-> like snow), and 'W' a white console (many white pixels). I have tested some
-> differents Creator3D fb and this trouble only occurs on Sbus/UPA workstation. On
-> a U60 (PCI/UPA), I never see it.
-> 
-> When I launch Xorg, problem goes away.
-> 
-> Sometimes, on the same configuration, when X is running, console is not usable
-> because foreground _and_ background are black (and a signal is given by the
-> framebuffer, screen remains on).
-> 
-> Steps to reproduce: U1 or U2 with 2.6 kernel and Creator3D fb on UPA Slot.
-> I have tested with Creator3D Rev1.
-> 
-> Regards,
-> 
-> JKB
-> 
-> ------- You are receiving this mail because: -------
-> You are on the CC list for the bug, or are watching someone who is.
+This patch does several things to allow the underlying hardware to be 
+shared amount many devices. The most important thing is the use of
+the created device via device_create instead of the hardware device. No 
+longer should fbdev drivers use the xxx_set_drvdata with the parent
+bus device. The second change is having a bus independent power management
+for the framebuffer driver. The final change is using the release method 
+to cleanup the device. The reason again is to make the fbdev driver 
+independent of the bus parent device. Feedback is welcomed.
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 2822526..2cff39c 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1268,8 +1268,6 @@ static const struct file_operations fb_fops = {
+ #endif
+ };
+ 
+-struct class *fb_class;
+-EXPORT_SYMBOL(fb_class);
+ /**
+  *	register_framebuffer - registers a frame buffer device
+  *	@fb_info: frame buffer info structure
+@@ -1295,14 +1293,9 @@ register_framebuffer(struct fb_info *fb_info)
+ 			break;
+ 	fb_info->node = i;
+ 
+-	fb_info->dev = device_create(fb_class, fb_info->device,
+-				     MKDEV(FB_MAJOR, i), "fb%d", i);
+-	if (IS_ERR(fb_info->dev)) {
+-		/* Not fatal */
++	/* Not fatal */
++	if (fb_init_device(fb_info))
+ 		printk(KERN_WARNING "Unable to create device for framebuffer %d; errno = %ld\n", i, PTR_ERR(fb_info->dev));
+-		fb_info->dev = NULL;
+-	} else
+-		fb_init_device(fb_info);
+ 
+ 	if (fb_info->pixmap.addr == NULL) {
+ 		fb_info->pixmap.addr = kmalloc(FBPIXMAPSIZE, GFP_KERNEL);
+@@ -1356,7 +1349,6 @@ unregister_framebuffer(struct fb_info *fb_info)
+ 	registered_fb[i]=NULL;
+ 	num_registered_fb--;
+ 	fb_cleanup_device(fb_info);
+-	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
+ 	event.info = fb_info;
+ 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
+ 	return 0;
+@@ -1402,11 +1394,7 @@ fbmem_init(void)
+ 	if (register_chrdev(FB_MAJOR,"fb",&fb_fops))
+ 		printk("unable to get major %d for fb devs\n", FB_MAJOR);
+ 
+-	fb_class = class_create(THIS_MODULE, "graphics");
+-	if (IS_ERR(fb_class)) {
+-		printk(KERN_WARNING "Unable to create fb class; errno = %ld\n", PTR_ERR(fb_class));
+-		fb_class = NULL;
+-	}
++	fb_create_class();
+ 	return 0;
+ }
+ 
+@@ -1415,8 +1403,8 @@ module_init(fbmem_init);
+ static void __exit
+ fbmem_exit(void)
+ {
+-	class_destroy(fb_class);
+ 	unregister_chrdev(FB_MAJOR, "fb");
++	fb_destroy_class();
+ }
+ 
+ module_exit(fbmem_exit);
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index 40c80c8..d3caba6 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -505,42 +505,99 @@ static struct device_attribute device_attrs[] = {
+ #endif
+ };
+ 
+-int fb_init_device(struct fb_info *fb_info)
++struct class *fb_class;
++EXPORT_SYMBOL(fb_class);
++
++static void fb_device_release(struct device *dev)
+ {
+-	int i, error = 0;
++	struct fb_info *fb_info = dev_get_drvdata(dev);
+ 
+-	dev_set_drvdata(fb_info->dev, fb_info);
++	if (fb_info) {
++		acquire_console_sem();
+ 
+-	fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
++		// shutdown the hardware.
++		if (fb_info->fbops->fb_release)
++			fb_info->fbops->fb_release(fb_info, 0);
+ 
+-	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
+-		error = device_create_file(fb_info->dev, &device_attrs[i]);
++		fb_dealloc_cmap(&fb_info->cmap);
++		unregister_framebuffer(fb_info);
+ 
+-		if (error)
+-			break;
++		//framebuffer_release(info); Not every driver does this yet
++		release_console_sem();
+ 	}
++}
+ 
+-	if (error) {
+-		while (--i >= 0)
+-			device_remove_file(fb_info->dev, &device_attrs[i]);
++int fb_init_device(struct fb_info *fb_info)
++{
++	int error = 0;
++
++	fb_info->dev = device_create(fb_class, fb_info->device,
++					MKDEV(FB_MAJOR, fb_info->node),
++					"fb%d", fb_info->node);
++	if (IS_ERR(fb_info->dev)) {
+ 		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
++		fb_info->dev = NULL;
++		error = -EINVAL;
++	} else {
++		dev_set_drvdata(fb_info->dev, fb_info);
++		fb_info->dev->release = fb_device_release;
++		fb_info->class_flag |= FB_SYSFS_FLAG_ATTR;
+ 	}
+-
+-	return 0;
++	return error;
+ }
+ 
+ void fb_cleanup_device(struct fb_info *fb_info)
+ {
+-	unsigned int i;
++	fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
++	dev_set_drvdata(fb_info->dev, NULL);
++	device_destroy(fb_class, MKDEV(FB_MAJOR, fb_info->node));
++}
+ 
+-	if (fb_info->class_flag & FB_SYSFS_FLAG_ATTR) {
+-		for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
+-			device_remove_file(fb_info->dev, &device_attrs[i]);
++static int fb_class_suspend(struct device *dev, pm_message_t state)
++{
++	struct fb_info *fb_info = dev_get_drvdata(dev);
++	int ret = 0;
+ 
+-		fb_info->class_flag &= ~FB_SYSFS_FLAG_ATTR;
++	acquire_console_sem();
++	fb_set_suspend(fb_info, 1);
++	if (fb_info->fbops->fb_power)
++		ret = fb_info->fbops->fb_power(fb_info, state);
++	release_console_sem();
++	return ret;
++}
++
++static int fb_class_resume(struct device *dev)
++{
++	struct fb_info *fb_info = dev_get_drvdata(dev);
++	int ret = 0;
++
++	acquire_console_sem();
++	fb_set_suspend(fb_info, 0);
++	if (fb_info->fbops->fb_power)
++		ret = fb_info->fbops->fb_power(fb_info, PMSG_ON);
++	release_console_sem();
++	return ret;
++}
++
++void fb_create_class()
++{
++	fb_class = class_create(THIS_MODULE, "graphics");
++	if (IS_ERR(fb_class)) {
++		printk(KERN_WARNING "Unable to create fb class; errno = %ld\n", PTR_ERR(fb_class));
++		fb_class = NULL;
++	} else {
++		fb_class->suspend = fb_class_suspend;
++		fb_class->resume = fb_class_resume;
++		fb_class->dev_attrs = device_attrs;
+ 	}
+ }
+ 
++void fb_destroy_class()
++{
++	if (fb_class)
++		class_destroy(fb_class);
++}
++
+ #ifdef CONFIG_FB_BACKLIGHT
+ /* This function generates a linear backlight curve
+  *
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index be913ec..ab01e0e 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -629,6 +629,9 @@ struct fb_ops {
+ 	/* perform fb specific mmap */
+ 	int (*fb_mmap)(struct fb_info *info, struct vm_area_struct *vma);
+ 
++	/* Power management */
++	int (*fb_power)(struct fb_info *info, pm_message_t state);
++
+ 	/* save current hardware state */
+ 	void (*fb_save_state)(struct fb_info *info);
+ 
+@@ -919,6 +922,8 @@ extern void framebuffer_release(struct fb_info *info);
+ extern int fb_init_device(struct fb_info *fb_info);
+ extern void fb_cleanup_device(struct fb_info *head);
+ extern void fb_bl_default_curve(struct fb_info *fb_info, u8 off, u8 min, u8 max);
++extern void fb_destroy_class(void);
++extern void fb_create_class(void);
+ 
+ /* drivers/video/fbmon.c */
+ #define FB_MAXTIMINGS		0
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

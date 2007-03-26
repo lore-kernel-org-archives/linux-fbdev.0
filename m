@@ -1,201 +1,96 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: nvidiafb, monitor A & B and CRTC 0 & 1
-Date: Sun, 25 Mar 2007 06:01:53 -0700
-Message-ID: <460672C1.3080303@vc.cvut.cz>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: David Miller <davem@davemloft.net>
+Subject: Re: [Bugme-new] [Bug 8232] New: Creator3D Framebuffer (sparc64) on
+ Sbus/UPA workstation
+Date: Mon, 26 Mar 2007 16:12:15 -0700 (PDT)
+Message-ID: <20070326.161215.74749546.davem@davemloft.net>
+References: <200703191019.l2JAJVH5018137@fire-2.osdl.org>
+	<20070319033425.b0be2d95.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------010701020004010908000002"
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HVSMG-0005UD-Dr for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Mar 2007 06:02:04 -0700
-Received: from mailgw.cvut.cz ([147.32.3.235])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HVSMF-0005YT-CH
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Mar 2007 06:02:04 -0700
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com
-Cc: linux-fbdev-devel@lists.sourceforge.net
-
-This is a multi-part message in MIME format.
---------------010701020004010908000002
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Return-path: <sparclinux-owner@vger.kernel.org>
+In-Reply-To: <20070319033425.b0be2d95.akpm@linux-foundation.org>
+Sender: sparclinux-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: Text/Plain; charset="us-ascii"
+To: akpm@linux-foundation.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, sparclinux@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, mt1@systella.fr
 
-Hello,
-   how much are you sure that monitor A i2c should use ddc_base 0x3E, 
-and monitor B base 0x36 ?  Yesterday I connected TV (using HDMI cable) 
-to my box, and ... it came up in 720x480 resolution, and fbset allowed 
-me to go only up to 1920x540.  Which was quite surprising as when 
-nvidiafb gets loaded second output stays in whatever mode it was before 
-(720x400, text), displaying garbage, and only primary output does something.
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 19 Mar 2007 03:34:25 -0800
 
-After I added some debugging printks I've found that code became a bit 
-confused because it believed that primary monitor is 1920x540, but later 
-it found in CRTC0's registers that panel size is 1920x1200 (Windows also 
-agree that 1920x1200 is primary monitor, and 1920x1080i secondary one).
+> On Mon, 19 Mar 2007 03:19:31 -0700 bugme-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8232
+> > 
+> >            Summary: Creator3D Framebuffer (sparc64) on Sbus/UPA workstation
+> >     Kernel Version: ALL 2.6
+> >             Status: NEW
+> >           Severity: normal
+> >              Owner: jsimmons@infradead.org
+> >          Submitter: mt1@systella.fr
+> > 
+> > 
+> > Most recent kernel where this bug did *NOT* occur: 2.4.34.1
+> > Distribution: Debian/testing
+> > Hardware Environment: U1E/170 with Creator3D (UPA), U2 with creator3D
+> > Software Environment: debian without X on U1E, debian with Xorg on U2
+> > Problem Description: Console is white foreground and blanck background by
+> > default. Sometimes, the screen is cut like this :
+> > 
+> > N | N | N | N
+> > --+---+---+---
+> > N | G | G | G
+> > --+---+---+---
+> > N | W | W | W
+> > --+---+---+---
+> > N | G | G | G
+> > 
+> > 
+> > where N is a 'normal' console, 'G' a 'like grey' console (black and white pixels
+> > like snow), and 'W' a white console (many white pixels). I have tested some
+> > differents Creator3D fb and this trouble only occurs on Sbus/UPA workstation. On
+> > a U60 (PCI/UPA), I never see it.
+> > 
+> > When I launch Xorg, problem goes away.
 
-When I applied attached patch then my monitor became as happy as it was 
-before I connected HDMI cable to secondary output.
-					Thanks,
-						Petr
+A quick audit found that we're using the ->dac_rev value before
+setting it properly.  One difference between the older creator
+cards and the newer ones is the DAC, so perhaps this was the
+bug.
 
-[just in case]
-Signed-off-by: Petr Vandrovec <vandrove@vc.cvut.cz>
+Can you test the following patch?  Thanks.  I'll fire up some of
+my older systems to see if I can reproduce this one.
 
-Before patch:
+commit 2c4f1add7dd2747cd79c220c24e1dbc3dc4a315f
+Author: David S. Miller <davem@sunset.davemloft.net>
+Date:   Mon Mar 26 16:10:52 2007 -0700
 
-ACPI: PCI Interrupt Link [APC8] enabled at IRQ 16
-ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [APC8] -> GSI 16 (level, 
-low) -> IRQ 16
-nvidiafb: Device ID: 10de0295
-nvidiafb: CRTC0 analog not found
-nvidiafb: CRTC1 analog not found
-edid: 1920 x 540, 13468
-nvidiafb: EDID found from BUS1
-edid: 1920 x 1200, 6493
-nvidiafb: EDID found from BUS2
-nvidiafb: CRTC 0 is currently programmed for DFP
-nvidiafb: Using DFP on CRTC 0
-nvidiafb: Panel size is 1920 x 1200
-nvidiafb: Panel is TMDS
-nvidiafb: MTRR set to ON
-nvidiafb: Flat panel dithering disabled
-Console: switching to colour frame buffer device 90x30
-nvidiafb: PCI nVidia NV29 framebuffer (64MB @ 0xE0000000)
+    [FFB]: Initialize dac_rev before using it.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-After patch:
-
-ACPI: PCI Interrupt Link [APC8] enabled at IRQ 16
-ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [APC8] -> GSI 16 (level, 
-low) -> IRQ 16
-nvidiafb: Device ID: 10de0295
-nvidiafb: CRTC0 analog not found
-nvidiafb: CRTC1 analog not found
-edid: 1920 x 1200, 6493
-nvidiafb: EDID found from BUS1
-edid: 1920 x 540, 13468
-nvidiafb: EDID found from BUS2
-nvidiafb: CRTC 0 is currently programmed for DFP
-nvidiafb: Using DFP on CRTC 0
-nvidiafb: Panel size is 1920 x 1200
-nvidiafb: Panel is TMDS
-nvidiafb: MTRR set to ON
-nvidiafb: Flat panel dithering disabled
-Console: switching to colour frame buffer device 240x75
-nvidiafb: PCI nVidia NV29 framebuffer (64MB @ 0xE0000000)
-
-Monitor:
-	# EDID version 1 revision 3
-Section "Monitor"
-	# Block type: 2:0 3:fc
-	Identifier "FPD2485W"
-	VendorName "GWY"
-	ModelName "FPD2485W"
-	# Block type: 2:0 3:fc
-	# Block type: 2:0 3:fd
-	HorizSync 30-83
-	VertRefresh 56-76
-	# Max dot clock (video bandwidth) 160 MHz
-	# Block type: 2:0 3:ff
-	# DPMS capabilities: Active off:yes  Suspend:no  Standby:no
-
-	Mode 	"1920x1200"	# vfreq 59.950Hz, hfreq 74.038kHz
-		DotClock	154.000000
-		HTimings	1920 1968 2000 2080
-		VTimings	1200 1203 1209 1235
-		Flags	"-HSync" "+VSync"
-	EndMode
-	# Block type: 2:0 3:fc
-	# Block type: 2:0 3:fd
-	# Block type: 2:0 3:ff
-EndSection
-
-TV:
-	# EDID version 1 revision 3
-Section "Monitor"
-	# Block type: 2:0 3:fc
-	Identifier "LT-40FN97"
-	VendorName "JVC"
-	ModelName "LT-40FN97"
-	# Block type: 2:0 3:fc
-	# Block type: 2:0 3:fd
-	HorizSync 15-46
-	VertRefresh 59-61
-	# Max dot clock (video bandwidth) 80 MHz
-	# DPMS capabilities: Active off:yes  Suspend:no  Standby:no
-
-	Mode 	"1920x540"	# vfreq 60.053Hz, hfreq 33.750kHz
-		DotClock	74.250000
-		HTimings	1920 2008 2052 2200
-		VTimings	540 542 547 562
-		Flags	"Interlace" "+HSync" "+VSync"
-	EndMode
-	Mode 	"720x480"	# vfreq 59.940Hz, hfreq 31.469kHz
-		DotClock	27.000000
-		HTimings	720 736 798 858
-		VTimings	480 489 495 525
-		Flags	"-HSync" "-VSync"
-	EndMode
-	# Block type: 2:0 3:fc
-	# Block type: 2:0 3:fd
-EndSection
-
---------------010701020004010908000002
-Content-Type: text/x-patch;
- name="nvidia-swap-mona-monb.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="nvidia-swap-mona-monb.diff"
-
-diff -uN -r linux-2.6.21-rc4-f33b.dist/drivers/video/nvidia/nv_i2c.c linux-2.6.21-rc4-f33b/drivers/video/nvidia/nv_i2c.c
---- linux-2.6.21-rc4-f33b.dist/drivers/video/nvidia/nv_i2c.c	2007-03-24 03:46:16.000000000 -0700
-+++ linux-2.6.21-rc4-f33b/drivers/video/nvidia/nv_i2c.c	2007-03-25 04:52:09.000000000 -0700
-@@ -133,10 +133,10 @@
- 	par->chan[1].par = par;
- 	par->chan[2].par = par;
+diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
+index 15854ae..3c01f45 100644
+--- a/drivers/video/ffb.c
++++ b/drivers/video/ffb.c
+@@ -948,8 +948,9 @@ static int ffb_init_one(struct of_device *op)
+ 	if ((upa_readl(&fbc->ucsr) & FFB_UCSR_ALL_ERRORS) != 0)
+ 		upa_writel(FFB_UCSR_ALL_ERRORS, &fbc->ucsr);
  
--	par->chan[0].ddc_base = 0x3e;
-+	par->chan[0].ddc_base = 0x36;
- 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0");
+-	ffb_switch_from_graph(&all->par);
+-
++	/* Determine the DAC revision, we must do this before calling
++	 * ffb_switch_from_graph().
++	 */
+ 	dac = all->par.dac;
+ 	upa_writel(0x8000, &dac->type);
+ 	all->par.dac_rev = upa_readl(&dac->value) >> 0x1c;
+@@ -960,6 +961,8 @@ static int ffb_init_one(struct of_device *op)
+ 	if (all->par.flags & FFB_FLAG_AFB)
+ 		all->par.dac_rev = 10;
  
--	par->chan[1].ddc_base = 0x36;
-+	par->chan[1].ddc_base = 0x3e;
- 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1");
- 
- 	par->chan[2].ddc_base = 0x50;
-
---------------010701020004010908000002
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---------------010701020004010908000002
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---------------010701020004010908000002--
++	ffb_switch_from_graph(&all->par);
++
+ 	/* Unblank it just to be sure.  When there are multiple
+ 	 * FFB/AFB cards in the system, or it is not the OBP
+ 	 * chosen console, it will have video outputs off in

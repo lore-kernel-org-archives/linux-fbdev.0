@@ -1,116 +1,57 @@
-From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-Subject: Re: [Bugme-new] [Bug 8232] New: Creator3D Framebuffer (sparc64) on
- Sbus/UPA workstation
-Date: Tue, 27 Mar 2007 09:54:45 +0200
-Message-ID: <4608CDC5.6020202@systella.fr>
-References: <200703191019.l2JAJVH5018137@fire-2.osdl.org>	<20070319033425.b0be2d95.akpm@linux-foundation.org> <20070326.161215.74749546.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [Bugme-new] [Bug 8232] New: Creator3D
+ Framebuffer (sparc64) on Sbus/UPA workstation
+Date: Tue, 27 Mar 2007 01:04:56 -0700 (PDT)
+Message-ID: <20070327.010456.26278286.davem@davemloft.net>
+References: <20070319033425.b0be2d95.akpm@linux-foundation.org>
+	<20070326.161215.74749546.davem@davemloft.net>
+	<4608CDC5.6020202@systella.fr>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <sparclinux-owner@vger.kernel.org>
-In-Reply-To: <20070326.161215.74749546.davem@davemloft.net>
-Sender: sparclinux-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, sparclinux@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, mt1@systella.fr
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HW6fq-0001pa-DZ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 Mar 2007 01:04:58 -0700
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HW6fq-0000xl-5I
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 Mar 2007 01:04:58 -0700
+In-Reply-To: <4608CDC5.6020202@systella.fr>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: joel.bertrand@systella.fr
+Cc: sparclinux@vger.kernel.org, mt1@systella.fr, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
 
-David Miller a =E9crit :
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Mon, 19 Mar 2007 03:34:25 -0800
->=20
->> On Mon, 19 Mar 2007 03:19:31 -0700 bugme-daemon@bugzilla.kernel.org =
-wrote:
->>
->>> http://bugzilla.kernel.org/show_bug.cgi?id=3D8232
->>>
->>>            Summary: Creator3D Framebuffer (sparc64) on Sbus/UPA wor=
-kstation
->>>     Kernel Version: ALL 2.6
->>>             Status: NEW
->>>           Severity: normal
->>>              Owner: jsimmons@infradead.org
->>>          Submitter: mt1@systella.fr
->>>
->>>
->>> Most recent kernel where this bug did *NOT* occur: 2.4.34.1
->>> Distribution: Debian/testing
->>> Hardware Environment: U1E/170 with Creator3D (UPA), U2 with creator=
-3D
->>> Software Environment: debian without X on U1E, debian with Xorg on =
-U2
->>> Problem Description: Console is white foreground and blanck backgro=
-und by
->>> default. Sometimes, the screen is cut like this :
->>>
->>> N | N | N | N
->>> --+---+---+---
->>> N | G | G | G
->>> --+---+---+---
->>> N | W | W | W
->>> --+---+---+---
->>> N | G | G | G
->>>
->>>
->>> where N is a 'normal' console, 'G' a 'like grey' console (black and=
- white pixels
->>> like snow), and 'W' a white console (many white pixels). I have tes=
-ted some
->>> differents Creator3D fb and this trouble only occurs on Sbus/UPA wo=
-rkstation. On
->>> a U60 (PCI/UPA), I never see it.
->>>
->>> When I launch Xorg, problem goes away.
->=20
-> A quick audit found that we're using the ->dac_rev value before
-> setting it properly.  One difference between the older creator
-> cards and the newer ones is the DAC, so perhaps this was the
-> bug.
->=20
-> Can you test the following patch?  Thanks.  I'll fire up some of
-> my older systems to see if I can reproduce this one.
->=20
-> commit 2c4f1add7dd2747cd79c220c24e1dbc3dc4a315f
-> Author: David S. Miller <davem@sunset.davemloft.net>
-> Date:   Mon Mar 26 16:10:52 2007 -0700
->=20
->     [FFB]: Initialize dac_rev before using it.
->    =20
->     Signed-off-by: David S. Miller <davem@davemloft.net>
->=20
-> diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
-> index 15854ae..3c01f45 100644
-> --- a/drivers/video/ffb.c
-> +++ b/drivers/video/ffb.c
-> @@ -948,8 +948,9 @@ static int ffb_init_one(struct of_device *op)
->  	if ((upa_readl(&fbc->ucsr) & FFB_UCSR_ALL_ERRORS) !=3D 0)
->  		upa_writel(FFB_UCSR_ALL_ERRORS, &fbc->ucsr);
-> =20
-> -	ffb_switch_from_graph(&all->par);
-> -
-> +	/* Determine the DAC revision, we must do this before calling
-> +	 * ffb_switch_from_graph().
-> +	 */
->  	dac =3D all->par.dac;
->  	upa_writel(0x8000, &dac->type);
->  	all->par.dac_rev =3D upa_readl(&dac->value) >> 0x1c;
-> @@ -960,6 +961,8 @@ static int ffb_init_one(struct of_device *op)
->  	if (all->par.flags & FFB_FLAG_AFB)
->  		all->par.dac_rev =3D 10;
-> =20
-> +	ffb_switch_from_graph(&all->par);
-> +
->  	/* Unblank it just to be sure.  When there are multiple
->  	 * FFB/AFB cards in the system, or it is not the OBP
->  	 * chosen console, it will have video outputs off in
+From: BERTRAND_Jo=EBl <joel.bertrand@systella.fr>
+Date: Tue, 27 Mar 2007 09:54:45 +0200
 
-	Thanks for your work, David. Unfortunately, I cannot test this patch=20
-because my U2 randomly freeze... Any news about this bug ?
+> 	Thanks for your work, David. Unfortunately, I cannot test this patch =
 
-	Regards,
+> because my U2 randomly freeze... Any news about this bug ?
 
-	JKB
--
-To unsubscribe from this list: send the line "unsubscribe sparclinux" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+My U2 works perfectly fine here, sorry, there is nothing I can do
+about that bug until I can reproduce it.
+
+It's extremely unfortunate that I spent most of today working on this
+bug only for you to let me know that you can't even test the fix :-/
+Please don't report bugs you can't even test the fix for, it wastes
+everyone's time.
+
+-------------------------------------------------------------------------
+Take Surveys. Earn Cash. Influence the Future of IT
+Join SourceForge.net's Techsay panel and you'll get the chance to share your
+opinions on IT & business topics through brief surveys-and earn cash
+http://www.techsay.com/default.php?page=3Djoin.php&p=3Dsourceforge&CID=3DDE=
+VDEV

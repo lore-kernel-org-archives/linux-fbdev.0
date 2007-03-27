@@ -1,24 +1,26 @@
-From: Paul Mackerras <paulus@samba.org>
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH] fbdev sysfs imrovements
-Date: Tue, 27 Mar 2007 16:14:21 +1000
-Message-ID: <17928.46653.30238.153536@cargo.ozlabs.ibm.com>
+Date: Mon, 26 Mar 2007 22:20:39 -0800
+Message-ID: <20070326222039.feb9216d.akpm@linux-foundation.org>
 References: <Pine.LNX.4.64.0703192055090.27580@pentafluge.infradead.org>
 	<20070326195807.184474d7.akpm@linux-foundation.org>
+	<17928.46653.30238.153536@cargo.ozlabs.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HW4x1-0007bY-CE for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Mar 2007 23:14:35 -0700
-Received: from ozlabs.org ([203.10.76.45])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HW4wz-0004kn-UA
+	id 1HW533-0008A0-V4 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Mar 2007 23:20:52 -0700
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1HW533-00055r-Kg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Mar 2007 23:14:35 -0700
-In-Reply-To: <20070326195807.184474d7.akpm@linux-foundation.org>
+	Mon, 26 Mar 2007 23:20:49 -0700
+In-Reply-To: <17928.46653.30238.153536@cargo.ozlabs.ibm.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,17 +31,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>, Dave Airlie <airlied@linux.ie>, Greg KH <greg@kroah.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>, Dave Airlie <airlied@linux.ie>, Greg KH <greg@kroah.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Uytterhoeven <geert@linux-m68k.org>, Geert@sc8-sf-spam2.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-Andrew Morton writes:
+On Tue, 27 Mar 2007 16:14:21 +1000 Paul Mackerras <paulus@samba.org> wrote:
 
-> http://userweb.kernel.org/~akpm/s5000489.jpg (the oops is the usual powerpc
-> mess)
+> Andrew Morton writes:
+> 
+> > http://userweb.kernel.org/~akpm/s5000489.jpg (the oops is the usual powerpc
+> > mess)
+> 
+> Why do you have xmon enabled if you don't have any way to talk to it?
+> 
 
-Why do you have xmon enabled if you don't have any way to talk to it?
+gawd knows - I've been dragging that config along for over a year.
 
-Paul.
+Maybe I subconsciously like seeing the mess it makes?
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

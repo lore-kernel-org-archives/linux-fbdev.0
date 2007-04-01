@@ -1,26 +1,25 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fbdev sysfs imrovements
-Date: Sat, 31 Mar 2007 18:24:00 -0700
-Message-ID: <20070331182400.317728d7.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0703192055090.27580@pentafluge.infradead.org>
-	<20070326195807.184474d7.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704010156001.5314@pentafluge.infradead.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH] vt: fix a potential race in the
+	VT_WAITACTIVE handler
+Date: Sun, 01 Apr 2007 17:34:46 +0800
+Message-ID: <460F7CB6.10106@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HXonu-0001Dp-R4 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 31 Mar 2007 18:24:23 -0700
-Received: from smtp.osdl.org ([65.172.181.24])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1HXont-0000SV-94
+	id 1HXwUG-0003Az-Uq for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 01 Apr 2007 02:36:37 -0700
+Received: from nz-out-0506.google.com ([64.233.162.231])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HXwUF-0000qr-B9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 31 Mar 2007 18:24:22 -0700
-In-Reply-To: <Pine.LNX.4.64.0704010156001.5314@pentafluge.infradead.org>
+	Sun, 01 Apr 2007 02:36:36 -0700
+Received: by nz-out-0506.google.com with SMTP id i11so1525056nzi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 01 Apr 2007 02:36:34 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,40 +30,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, airlied@linux.ie, greg@kroah.com, linux-kernel@vger.kernel.org, geert@linux-m68k.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: Michal Januszewski <spock@gentoo.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-> On Sun, 1 Apr 2007 01:56:28 +0100 (BST) James Simmons <jsimmons@infradead.org> wrote:
-> 
-> I can't seem to duplicate this error.
+From: Michal Januszewski <spock@gentoo.org>
 
-OK, I'll poke at it some more.
+On a multiprocessor machine the VT_WAITACTIVE ioctl call may return 0
+if fg_console has already been updated in redraw_screen(), but the
+console switch itself hasn't been completed. Fix this by checking
+fg_console in vt_waitactive() with the console sem held.
 
->  Do you have any patches applied to 
-> the nvidia driver?
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
 
-I don't think so - whatever's in -mm.
+ drivers/char/vt_ioctl.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-> On Mon, 26 Mar 2007, Andrew Morton wrote:
-> 
-> > On Tue, 20 Mar 2007 14:25:49 +0000 (GMT) James Simmons <jsimmons@infradead.org> wrote:
-> > 
-> > > This patch does several things to allow the underlying hardware to be 
-> > > shared amount many devices. The most important thing is the use of
-> > > the created device via device_create instead of the hardware device. No 
-> > > longer should fbdev drivers use the xxx_set_drvdata with the parent
-> > > bus device. The second change is having a bus independent power management
-> > > for the framebuffer driver. The final change is using the release method 
-> > > to cleanup the device. The reason again is to make the fbdev driver 
-> > > independent of the bus parent device. Feedback is welcomed.
-> > 
-> > Causes an early crash on the powermac G5.
-> > 
-> > http://userweb.kernel.org/~akpm/s5000489.jpg (the oops is the usual powerpc
-> > mess)
-> > 
-> > config at http://userweb.kernel.org/~akpm/config-g5.txt
-> > 
+diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
+index 1fa2da8..6db3088 100644
+--- a/drivers/char/vt_ioctl.c
++++ b/drivers/char/vt_ioctl.c
+@@ -1041,8 +1041,12 @@ int vt_waitactive(int vt)
+ 	for (;;) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		retval = 0;
+-		if (vt == fg_console)
++		acquire_console_sem();
++		if (vt == fg_console) {
++			release_console_sem();
+ 			break;
++		}
++		release_console_sem();
+ 		retval = -EINTR;
+ 		if (signal_pending(current))
+ 			break;
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

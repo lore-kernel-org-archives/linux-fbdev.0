@@ -1,9 +1,9 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] fbcon: don't draw cursor when it's
-	disabled
-Date: Sun, 1 Apr 2007 14:47:44 +0200
-Message-ID: <20070401124744.GB4040@spock.one.pl>
-Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+From: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: [PATCH] nvidiafb: Fix reversed DDC port
+Date: Mon, 2 Apr 2007 09:07:57 +1000
+Message-ID: <21d7e9970704011607h3d901car4cdfe466396e7797@mail.gmail.com>
+References: <460F7CF4.60006@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,12 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HXzTP-0001RX-9m for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Apr 2007 05:47:55 -0700
-Received: from ipn26-148.piekary.net ([83.238.26.148])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HXzTN-0006As-SA
+	id 1HY99U-0005P9-9k for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 01 Apr 2007 16:08:00 -0700
+Received: from ug-out-1314.google.com ([66.249.92.173])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HY99S-00088t-Se
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Apr 2007 05:47:55 -0700
+	Sun, 01 Apr 2007 16:08:00 -0700
+Received: by ug-out-1314.google.com with SMTP id z38so1731885ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 01 Apr 2007 16:07:57 -0700 (PDT)
+In-Reply-To: <460F7CF4.60006@gmail.com>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,35 +33,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@osdl.org>, Petr Vandrovec <vandrove@vc.cvut.cz>
 
-From: Michal Januszewski <spock@gentoo.org>
+> After I added some debugging printks I've found that code became a bit
+> confused because it believed that primary monitor is 1920x540, but later
+> it found in CRTC0's registers that panel size is 1920x1200 (Windows also
+> agree that 1920x1200 is primary monitor, and 1920x1080i secondary one).
+>
+> When I applied attached patch then my monitor became as happy as it was
+> before I connected HDMI cable to secondary output.
+>
 
-When the cursor and echo are disabled on the current console, pressing a
-key will cause a black rectangle to be painted in the cursor's position.
-Fix this by not touching the framebuffer in fbcon_cursor() when the
-cursor is off.
+I don't think this will do much except break other peoples cards,
+different nvidia cards map the i2c to outputs differently, the correct
+way to fix it is to read a table in the BIOS called the DCB table (for
+NV4x and above...) guess what? we don't know how to do that properly
+because nvidia are very unfriendly...
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-
- drivers/video/console/fbcon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index f721341..7089aa8 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -1330,7 +1330,7 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
- 	int y;
-  	int c = scr_readw((u16 *) vc->vc_pos);
- 
--	if (fbcon_is_inactive(vc, info))
-+	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
- 		return;
- 
- 	ops->cursor_flash = (mode == CM_ERASE) ? 0 : 1;
-
+Dave.
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

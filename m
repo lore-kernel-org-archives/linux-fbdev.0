@@ -1,25 +1,25 @@
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: [PATCH] skeletonfb correction
-Date: Mon, 09 Apr 2007 06:58:51 +0200
-Message-ID: <4619c80b1068a@wp.pl>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 1/7] fbdev: Don't show logo if driver or
+	fbcon are modular
+Date: Mon, 09 Apr 2007 19:36:40 +0800
+Message-ID: <461A2548.2080008@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="part4619c80b12d9a"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Halxx-0002sz-SR for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Apr 2007 21:58:58 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Halxw-0003P6-99
+	id 1HasJV-0001dw-D0 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 04:45:37 -0700
+Received: from wx-out-0506.google.com ([66.249.82.226])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HasJT-0005z9-Lu
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Apr 2007 21:58:57 -0700
-Received: from poczta-10.free.wp-sa.pl (HELO localhost) ([10.1.1.28])
-	(envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>; 9 Apr 2007 06:58:51 +0200
+	Mon, 09 Apr 2007 04:45:37 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so2484654wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 09 Apr 2007 04:45:35 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,192 +30,106 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-This is a multi-part message in MIME format.
+It was always intended for the logo to be drawn only if both fbcon and the
+driver that is mapped to it are both compiled statically.  Currently, if fbcon
+is loaded prior to the driver, the logo is not shown.  Reverse the order, and
+the code may attempt to draw the logo which is __initdata.  By accident, this
+bug is rarely seen because this method of loading the modules is not common
+and secondly, a code in fb_prepare_logo() that checks the height of the logo
+(now a random value) rarely succeeds.
 
---part4619c80b12d9a
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fix by drawing the logo only if both fbcon and the driver are statically
+compiled.
 
-This is mainly correction of types, typos and missing characters=20
-in the skeletonfb.c file found while trying to prepare a new fb=20
-driver.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
+ drivers/video/console/fbcon.c |   17 +++++++++++++++++
+ drivers/video/fbmem.c         |    6 ++++--
+ 2 files changed, 21 insertions(+), 2 deletions(-)
 
-----------------------------------------------------
-Zobacz Scarlett Johansson i Hugh Jackmana=20
-w najnowszej komedii Woody'ego Allena
-SCOOP - GOR=A1CY TEMAT - w kinach od 13 kwietnia!
-http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fscoop.html=
-&sid=3D1094
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index f1e3e3c..0d8e107 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -107,7 +107,9 @@ static struct display fb_display[MAX_NR_
+ 
+ static signed char con2fb_map[MAX_NR_CONSOLES];
+ static signed char con2fb_map_boot[MAX_NR_CONSOLES];
++#ifndef MODULE
+ static int logo_height;
++#endif
+ static int logo_lines;
+ /* logo_shown is an index to vc_cons when >= 0; otherwise follows FBCON_LOGO
+    enums.  */
+@@ -576,6 +578,13 @@ static int fbcon_takeover(int show_logo)
+ 	return err;
+ }
+ 
++#ifdef MODULE
++static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
++			       int cols, int rows, int new_cols, int new_rows)
++{
++	logo_shown = FBCON_LOGO_DONTSHOW;
++}
++#else
+ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 			       int cols, int rows, int new_cols, int new_rows)
+ {
+@@ -584,6 +593,11 @@ static void fbcon_prepare_logo(struct vc
+ 	int cnt, erase = vc->vc_video_erase_char, step;
+ 	unsigned short *save = NULL, *r, *q;
+ 
++	if (info->flags & FBINFO_MODULE) {
++		logo_shown = FBCON_LOGO_DONTSHOW;
++		goto done;
++	}
++
+ 	/*
+ 	 * remove underline attribute from erase character
+ 	 * if black and white framebuffer.
+@@ -654,7 +668,10 @@ static void fbcon_prepare_logo(struct vc
+ 		logo_shown = FBCON_LOGO_DRAW;
+ 		vc->vc_top = logo_lines;
+ 	}
++
++done:
+ }
++#endif /* MODULE */
+ 
+ #ifdef CONFIG_FB_TILEBLITTING
+ static void set_blitting_type(struct vc_data *vc, struct fb_info *info)
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 45f3839..08c292d 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -418,7 +418,8 @@ int fb_prepare_logo(struct fb_info *info
+ 
+ 	memset(&fb_logo, 0, sizeof(struct logo_data));
+ 
+-	if (info->flags & FBINFO_MISC_TILEBLITTING)
++	if (info->flags & FBINFO_MISC_TILEBLITTING ||
++	    info->flags & FBINFO_MODULE)
+ 		return 0;
+ 
+ 	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
+@@ -483,7 +484,8 @@ int fb_show_logo(struct fb_info *info, i
+ 	struct fb_image image;
+ 
+ 	/* Return if the frame buffer is not mapped or suspended */
+-	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING)
++	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING ||
++	    info->flags & FBINFO_MODULE)
+ 		return 0;
+ 
+ 	image.depth = 8;
 
---part4619c80b12d9a
-Content-Type: application/octet-stream; name="skeletonfb-fixes.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="skeletonfb-fixes.diff"
-
-ZGlmZiAtdXJwIGxpbnV4LTIuNi4yMS5vcmlnL2RyaXZlcnMvdmlkZW8vc2tlbGV0b25mYi5jIGxp
-bnV4LTIuNi4yMS9kcml2ZXJzL3ZpZGVvL3NrZWxldG9uZmIuYwotLS0gbGludXgtMi42LjIxLm9y
-aWcvZHJpdmVycy92aWRlby9za2VsZXRvbmZiLmMJMjAwNy0wMy0yNiAwMDo1NjoyMy4wMDAwMDAw
-MDAgKzAyMDAKKysrIGxpbnV4LTIuNi4yMS9kcml2ZXJzL3ZpZGVvL3NrZWxldG9uZmIuYwkyMDA3
-LTA0LTA4IDIzOjMzOjI0LjAwMDAwMDAwMCArMDIwMApAQCAtNTEsNiArNTEsOSBAQAogI2luY2x1
-ZGUgPGxpbnV4L2RlbGF5Lmg+CiAjaW5jbHVkZSA8bGludXgvZmIuaD4KICNpbmNsdWRlIDxsaW51
-eC9pbml0Lmg+CisjaWZkZWYgQ09ORklHX1BDSQorI2luY2x1ZGUgPGxpbnV4L3BjaS5oPgorI2Vu
-ZGlmCiAKICAgICAvKgogICAgICAqICBUaGlzIGlzIGp1c3Qgc2ltcGxlIHNhbXBsZSBjb2RlLgpA
-QCAtNjAsNiArNjMsMTEgQEAKICAgICAgKi8KIAogLyoKKyAqIERyaXZlciBkYXRhCisgKi8KK3N0
-YXRpYyBjaGFyICptb2RlX29wdGlvbiBfX2RldmluaXRkYXRhID0gTlVMTDsKKworLyoKICAqICBJ
-ZiB5b3VyIGRyaXZlciBzdXBwb3J0cyBtdWx0aXBsZSBib2FyZHMsIHlvdSBzaG91bGQgbWFrZSB0
-aGUgIAogICogIGJlbG93IGRhdGEgdHlwZXMgYXJyYXlzLCBvciBhbGxvY2F0ZSB0aGVtIGR5bmFt
-aWNhbGx5ICh1c2luZyBrbWFsbG9jKCkpLiAKICAqLyAKQEAgLTI3OCw3ICsyODYsNyBAQCBzdGF0
-aWMgaW50IHh4eGZiX3NldF9wYXIoc3RydWN0IGZiX2luZm8gCiAgKi8KIHN0YXRpYyBpbnQgeHh4
-ZmJfc2V0Y29scmVnKHVuc2lnbmVkIHJlZ25vLCB1bnNpZ25lZCByZWQsIHVuc2lnbmVkIGdyZWVu
-LAogCQkJICAgdW5zaWduZWQgYmx1ZSwgdW5zaWduZWQgdHJhbnNwLAotCQkJICAgY29uc3Qgc3Ry
-dWN0IGZiX2luZm8gKmluZm8pCisJCQkgICBzdHJ1Y3QgZmJfaW5mbyAqaW5mbykKIHsKICAgICBp
-ZiAocmVnbm8gPj0gMjU2KSAgLyogbm8uIG9mIGh3IHJlZ2lzdGVycyAqLwogICAgICAgIHJldHVy
-biAtRUlOVkFMOwpAQCAtNDE2LDcgKzQyNCw3IEBAIHN0YXRpYyBpbnQgeHh4ZmJfc2V0Y29scmVn
-KHVuc2lnbmVkIHJlZ24KICAqICAgICAgUmV0dXJucyBuZWdhdGl2ZSBlcnJubyBvbiBlcnJvciwg
-b3IgemVybyBvbiBzdWNjZXNzLgogICovCiBzdGF0aWMgaW50IHh4eGZiX3Bhbl9kaXNwbGF5KHN0
-cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLAotCQkJICAgICBjb25zdCBzdHJ1Y3QgZmJfaW5m
-byAqaW5mbykKKwkJCSAgICAgc3RydWN0IGZiX2luZm8gKmluZm8pCiB7CiAgICAgLyoKICAgICAg
-KiBJZiB5b3VyIGhhcmR3YXJlIGRvZXMgbm90IHN1cHBvcnQgcGFubmluZywgX2RvXyBfbm90XyBp
-bXBsZW1lbnQgdGhpcwpAQCAtNDU0LDcgKzQ2Miw3IEBAIHN0YXRpYyBpbnQgeHh4ZmJfcGFuX2Rp
-c3BsYXkoc3RydWN0IGZiX3YKICAqICAgICAgUmV0dXJuICEwIGZvciBhbnkgbW9kZXMgdGhhdCBh
-cmUgdW5pbXBsZW1lbnRlZC4KICAqCiAgKi8KLXN0YXRpYyBpbnQgeHh4ZmJfYmxhbmsoaW50IGJs
-YW5rX21vZGUsIGNvbnN0IHN0cnVjdCBmYl9pbmZvICppbmZvKQorc3RhdGljIGludCB4eHhmYl9i
-bGFuayhpbnQgYmxhbmtfbW9kZSwgc3RydWN0IGZiX2luZm8gKmluZm8pCiB7CiAgICAgLyogLi4u
-ICovCiAgICAgcmV0dXJuIDA7CkBAIC00ODMsNyArNDkxLDcgQEAgc3RhdGljIGludCB4eHhmYl9i
-bGFuayhpbnQgYmxhbmtfbW9kZSwgYwogICoJZGVwZW5kaW5nIG9uIHRoZSByYXN0ZXJpbmcgb3Bl
-cmF0aW9uIHdpdGggdGhlIHZhbHVlIG9mIGNvbG9yIHdoaWNoCiAgKglpcyBpbiB0aGUgY3VycmVu
-dCBjb2xvciBkZXB0aCBmb3JtYXQuCiAgKi8KLXZvaWQgeHhmYl9maWxscmVjdChzdHJ1Y3QgZmJf
-aW5mbyAqcCwgY29uc3Qgc3RydWN0IGZiX2ZpbGxyZWN0ICpyZWdpb24pCit2b2lkIHh4eGZiX2Zp
-bGxyZWN0KHN0cnVjdCBmYl9pbmZvICpwLCBjb25zdCBzdHJ1Y3QgZmJfZmlsbHJlY3QgKnJlZ2lv
-bikKIHsKIC8qCU1lYW5pbmcgb2Ygc3RydWN0IGZiX2ZpbGxyZWN0CiAgKgpAQCAtNjQ3LDIxICs2
-NTUsNTAgQEAgdm9pZCB4eHhmYl9wb2xsKHN0cnVjdCBmYl9pbmZvICppbmZvLCBwbwogICogICAg
-ICBJZiB0aGUgZHJpdmVyIGhhcyBpbXBsZW1lbnRlZCBpdHMgb3duIGhhcmR3YXJlLWJhc2VkIGRy
-YXdpbmcgZnVuY3Rpb24sCiAgKiAgICAgIGltcGxlbWVudGluZyB0aGlzIGZ1bmN0aW9uIGlzIGhp
-Z2hseSByZWNvbW1lbmRlZC4KICAqLwotdm9pZCB4eHhmYl9zeW5jKHN0cnVjdCBmYl9pbmZvICpp
-bmZvKQoraW50IHh4eGZiX3N5bmMoc3RydWN0IGZiX2luZm8gKmluZm8pCiB7CisJcmV0dXJuIDA7
-CiB9CiAKICAgICAvKgorICAgICAqICBGcmFtZSBidWZmZXIgb3BlcmF0aW9ucworICAgICAqLwor
-CitzdGF0aWMgc3RydWN0IGZiX29wcyB4eHhmYl9vcHMgPSB7CisJLm93bmVyCQk9IFRISVNfTU9E
-VUxFLAorCS5mYl9vcGVuCT0geHh4ZmJfb3BlbiwKKwkuZmJfcmVhZAk9IHh4eGZiX3JlYWQsCisJ
-LmZiX3dyaXRlCT0geHh4ZmJfd3JpdGUsCisJLmZiX3JlbGVhc2UJPSB4eHhmYl9yZWxlYXNlLAor
-CS5mYl9jaGVja192YXIJPSB4eHhmYl9jaGVja192YXIsCisJLmZiX3NldF9wYXIJPSB4eHhmYl9z
-ZXRfcGFyLAkKKwkuZmJfc2V0Y29scmVnCT0geHh4ZmJfc2V0Y29scmVnLAorCS5mYl9ibGFuawk9
-IHh4eGZiX2JsYW5rLAorCS5mYl9wYW5fZGlzcGxheQk9IHh4eGZiX3Bhbl9kaXNwbGF5LAkKKwku
-ZmJfZmlsbHJlY3QJPSB4eHhmYl9maWxscmVjdCwgCS8qIE5lZWRlZCAhISEgKi8gCisJLmZiX2Nv
-cHlhcmVhCT0geHh4ZmJfY29weWFyZWEsCS8qIE5lZWRlZCAhISEgKi8gCisJLmZiX2ltYWdlYmxp
-dAk9IHh4eGZiX2ltYWdlYmxpdCwJLyogTmVlZGVkICEhISAqLworCS5mYl9jdXJzb3IJPSB4eHhm
-Yl9jdXJzb3IsCQkvKiBPcHRpb25hbCAhISEgKi8KKwkuZmJfcm90YXRlCT0geHh4ZmJfcm90YXRl
-LAorCS5mYl9wb2xsCT0geHh4ZmJfcG9sbCwKKwkuZmJfc3luYwk9IHh4eGZiX3N5bmMsCisJLmZi
-X2lvY3RsCT0geHh4ZmJfaW9jdGwsCisJLmZiX21tYXAJPSB4eHhmYl9tbWFwLAkKK307CisKKy8q
-IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0gKi8KKworICAgIC8qCiAgICAgICogIEluaXRpYWxpemF0aW9uCiAg
-ICAgICovCiAKIC8qIHN0YXRpYyBpbnQgX19pbml0IHh4ZmJfcHJvYmUgKHN0cnVjdCBkZXZpY2Ug
-KmRldmljZSkgLS0gZm9yIHBsYXRmb3JtIGRldnMgKi8KLXN0YXRpYyBpbnQgX19pbml0IHh4eGZi
-X3Byb2JlKHN0cnVjdCBwY2lfZGV2ICpkZXYsCitzdGF0aWMgaW50IF9fZGV2aW5pdCB4eHhmYl9w
-cm9iZShzdHJ1Y3QgcGNpX2RldiAqZGV2LAogCQkJICAgICAgY29uc3Rfc3RydWN0IHBjaV9kZXZp
-Y2VfaWQgKmVudCkKIHsKICAgICBzdHJ1Y3QgZmJfaW5mbyAqaW5mbzsKICAgICBzdHJ1Y3QgeHh4
-X3BhciAqcGFyOwotICAgIHN0cnVjdCBkZXZpY2UgPSAmZGV2LT5kZXY7IC8qIGZvciBwY2kgZHJp
-dmVycyAqLworICAgIHN0cnVjdCBkZXZpY2UqIGRldmljZSA9ICZkZXYtPmRldjsgLyogZm9yIHBj
-aSBkcml2ZXJzICovCiAgICAgaW50IGNtYXBfbGVuLCByZXR2YWw7CQogICAgCiAgICAgLyoKQEAg
-LTc2MCw3ICs3OTcsNyBAQCBzdGF0aWMgaW50IF9faW5pdCB4eHhmYl9wcm9iZShzdHJ1Y3QgcGNp
-CiAgICAgICoKICAgICAgKiBOT1RFOiBUaGlzIGZpZWxkIGlzIGN1cnJlbnRseSB1bnVzZWQuCiAg
-ICAgICovCi0gICAgaW5mby0+cGl4bWFwLnNjYW5fYWxpZ24gPSAzMgorICAgIGluZm8tPnBpeG1h
-cC5zY2FuX2FsaWduID0gMzI7CiAvKioqKioqKioqKioqKioqKioqKioqKioqKioqKiogRW5kIG9w
-dGlvbmFsIHN0YWdlICoqKioqKioqKioqKioqKioqKioqKioqKioqKi8KIAogICAgIC8qCkBAIC03
-NzAsMTMgKzgwNywxMyBAQCBzdGF0aWMgaW50IF9faW5pdCB4eHhmYl9wcm9iZShzdHJ1Y3QgcGNp
-CiAgICAgaWYgKCFtb2RlX29wdGlvbikKIAltb2RlX29wdGlvbiA9ICI2NDB4NDgwQDYwIjsJIAkK
-IAotICAgIHJldHZhbCA9IGZiX2ZpbmRfbW9kZShpbmZvLT52YXIsIGluZm8sIG1vZGVfb3B0aW9u
-LCBOVUxMLCAwLCBOVUxMLCA4KTsKKyAgICByZXR2YWwgPSBmYl9maW5kX21vZGUoJmluZm8tPnZh
-ciwgaW5mbywgbW9kZV9vcHRpb24sIE5VTEwsIDAsIE5VTEwsIDgpOwogICAKICAgICBpZiAoIXJl
-dHZhbCB8fCByZXR2YWwgPT0gNCkKIAlyZXR1cm4gLUVJTlZBTDsJCQkKIAogICAgIC8qIFRoaXMg
-aGFzIHRvIGJlZW4gZG9uZSAhISEgKi8JCi0gICAgZmJfYWxsb2NfY21hcChpbmZvLT5jbWFwLCBj
-bWFwX2xlbiwgMCk7CisgICAgZmJfYWxsb2NfY21hcCgmaW5mby0+Y21hcCwgY21hcF9sZW4sIDAp
-OwogCQogICAgIC8qIAogICAgICAqIFRoZSBmb2xsb3dpbmcgaXMgZG9uZSBpbiB0aGUgY2FzZSBv
-ZiBoYXZpbmcgaGFyZHdhcmUgd2l0aCBhIHN0YXRpYyAKQEAgLTgxMSwxNSArODQ4LDE1IEBAIHN0
-YXRpYyBpbnQgX19pbml0IHh4eGZiX3Byb2JlKHN0cnVjdCBwY2kKICAgICAvKgogICAgICAqICBD
-bGVhbnVwCiAgICAgICovCi0vKiBzdGF0aWMgdm9pZCBfX2V4aXQgeHh4ZmJfcmVtb3ZlKHN0cnVj
-dCBkZXZpY2UgKmRldmljZSkgKi8KLXN0YXRpYyB2b2lkIF9fZXhpdCB4eHhmYl9yZW1vdmUoc3Ry
-dWN0IHBjaV9kZXYgKmRldikKKy8qIHN0YXRpYyB2b2lkIF9fZGV2ZXhpdCB4eHhmYl9yZW1vdmUo
-c3RydWN0IGRldmljZSAqZGV2aWNlKSAqLworc3RhdGljIHZvaWQgX19kZXZleGl0IHh4eGZiX3Jl
-bW92ZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQogewotCXN0cnVjdCBmYl9pbmZvICppbmZvID0gcGNp
-X2dldF9kcnZfZGF0YShkZXYpOwotCS8qIG9yIGRldl9nZXRfZHJ2X2RhdGEoZGV2aWNlKTsgKi8K
-KwlzdHJ1Y3QgZmJfaW5mbyAqaW5mbyA9IHBjaV9nZXRfZHJ2ZGF0YShkZXYpOworCS8qIG9yIGRl
-dl9nZXRfZHJ2ZGF0YShkZXZpY2UpOyAqLwogCiAJaWYgKGluZm8pIHsKIAkJdW5yZWdpc3Rlcl9m
-cmFtZWJ1ZmZlcihpbmZvKTsKLQkJZmJfZGVhbGxvY19jbWFwKCZpbmZvLmNtYXApOworCQlmYl9k
-ZWFsbG9jX2NtYXAoJmluZm8tPmNtYXApOwogCQkvKiAuLi4gKi8KIAkJZnJhbWVidWZmZXJfcmVs
-ZWFzZShpbmZvKTsKIAl9CkBAIC04MjcsMTggKzg2NCwyNSBAQCBzdGF0aWMgdm9pZCBfX2V4aXQg
-eHh4ZmJfcmVtb3ZlKHN0cnVjdCBwCiAJcmV0dXJuIDA7CiB9CiAKLSNpZiBDT05GSUdfUENJCisj
-aWZkZWYgQ09ORklHX1BDSQorc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIHh4eGZiX2lkX3Rh
-YmxlW10gPSB7CisJeyBQQ0lfVkVORE9SX0lEX1hYWCwgUENJX0RFVklDRV9JRF9YWFgsCisJICBQ
-Q0lfQU5ZX0lELCBQQ0lfQU5ZX0lELCBQQ0lfQkFTRV9DTEFTU19ESVNQTEFZIDw8IDE2LAorCSAg
-QUREUiwgMCB9LAorCXsgMCwgfQorfTsKKwogLyogRm9yIFBDSSBkcml2ZXJzICovCiBzdGF0aWMg
-c3RydWN0IHBjaV9kcml2ZXIgeHh4ZmJfZHJpdmVyID0gewogCS5uYW1lID0JCSJ4eHhmYiIsCi0J
-LmlkX3RhYmxlID0JeHh4ZmJfZGV2aWNlcywKKwkuaWRfdGFibGUgPQl4eHhmYl9pZF90YWJsZSwK
-IAkucHJvYmUgPQl4eHhmYl9wcm9iZSwKIAkucmVtb3ZlID0JX19kZXZleGl0X3AoeHh4ZmJfcmVt
-b3ZlKSwKIAkuc3VzcGVuZCA9ICAgICAgeHh4ZmJfc3VzcGVuZCwgLyogb3B0aW9uYWwgKi8KIAku
-cmVzdW1lID0gICAgICAgeHh4ZmJfcmVzdW1lLCAgLyogb3B0aW9uYWwgKi8KIH07CiAKLXN0YXRp
-YyBpbnQgX19pbml0IHh4eGZiX2luaXQodm9pZCkKK2ludCBfX2luaXQgeHh4ZmJfaW5pdCh2b2lk
-KQogewogCS8qCiAJICogIEZvciBrZXJuZWwgYm9vdCBvcHRpb25zIChpbiAndmlkZW89eHh4ZmI6
-PG9wdGlvbnM+JyBmb3JtYXQpCkBAIC04NTQsMTAgKzg5OCwxMiBAQCBzdGF0aWMgaW50IF9faW5p
-dCB4eHhmYl9pbml0KHZvaWQpCiAJcmV0dXJuIHBjaV9yZWdpc3Rlcl9kcml2ZXIoJnh4eGZiX2Ry
-aXZlcik7CiB9CiAKKyNpZmRlZiBNT0RVTEUKIHN0YXRpYyB2b2lkIF9fZXhpdCB4eHhmYl9leGl0
-KHZvaWQpCiB7CiAJcGNpX3VucmVnaXN0ZXJfZHJpdmVyKCZ4eHhmYl9kcml2ZXIpOwogfQorI2Vu
-ZGlmCiAjZWxzZQogI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPgogLyogZm9yIHBs
-YXRmb3JtIGRldmljZXMgKi8KQEAgLTg5OCwxMyArOTQ0LDE2IEBAIHN0YXRpYyBpbnQgX19pbml0
-IHh4eGZiX2luaXQodm9pZCkKIAlyZXR1cm4gcmV0OwogfQogCisjaWZkZWYgTU9EVUxFCiBzdGF0
-aWMgdm9pZCBfX2V4aXQgeHh4ZmJfZXhpdCh2b2lkKQogewogCXBsYXRmb3JtX2RldmljZV91bnJl
-Z2lzdGVyKCZ4eHhmYl9kZXZpY2UpOwogCWRyaXZlcl91bnJlZ2lzdGVyKCZ4eHhmYl9kcml2ZXIp
-OwogfQogI2VuZGlmCisjZW5kaWYKIAorI2lmZGVmIE1PRFVMRQogICAgIC8qCiAgICAgICogIFNl
-dHVwCiAgICAgICovCkBAIC05MTcsMzQgKzk2Niw3IEBAIGludCBfX2luaXQgeHh4ZmJfc2V0dXAo
-Y2hhciAqb3B0aW9ucykKIHsKICAgICAvKiBQYXJzZSB1c2VyIHNwZWZpY2llZCBvcHRpb25zIChg
-dmlkZW89eHh4ZmI6JykgKi8KIH0KLQotLyogLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSAqLwotCi0gICAgLyoK
-LSAgICAgKiAgRnJhbWUgYnVmZmVyIG9wZXJhdGlvbnMKLSAgICAgKi8KLQotc3RhdGljIHN0cnVj
-dCBmYl9vcHMgeHh4ZmJfb3BzID0gewotCS5vd25lcgkJPSBUSElTX01PRFVMRSwKLQkuZmJfb3Bl
-bgk9IHh4eGZiX29wZW4sCi0JLmZiX3JlYWQJPSB4eHhmYl9yZWFkLAotCS5mYl93cml0ZQk9IHh4
-eGZiX3dyaXRlLAotCS5mYl9yZWxlYXNlCT0geHh4ZmJfcmVsZWFzZSwKLQkuZmJfY2hlY2tfdmFy
-CT0geHh4ZmJfY2hlY2tfdmFyLAotCS5mYl9zZXRfcGFyCT0geHh4ZmJfc2V0X3BhciwJCi0JLmZi
-X3NldGNvbHJlZwk9IHh4eGZiX3NldGNvbHJlZywKLQkuZmJfYmxhbmsJPSB4eHhmYl9ibGFuaywK
-LQkuZmJfcGFuX2Rpc3BsYXkJPSB4eHhmYl9wYW5fZGlzcGxheSwJCi0JLmZiX2ZpbGxyZWN0CT0g
-eHh4ZmJfZmlsbHJlY3QsIAkvKiBOZWVkZWQgISEhICovIAotCS5mYl9jb3B5YXJlYQk9IHh4eGZi
-X2NvcHlhcmVhLAkvKiBOZWVkZWQgISEhICovIAotCS5mYl9pbWFnZWJsaXQJPSB4eHhmYl9pbWFn
-ZWJsaXQsCS8qIE5lZWRlZCAhISEgKi8KLQkuZmJfY3Vyc29yCT0geHh4ZmJfY3Vyc29yLAkJLyog
-T3B0aW9uYWwgISEhICovCi0JLmZiX3JvdGF0ZQk9IHh4eGZiX3JvdGF0ZSwKLQkuZmJfcG9sbAk9
-IHh4eGZiX3BvbGwsCi0JLmZiX3N5bmMJPSB4eHhmYl9zeW5jLAotCS5mYl9pb2N0bAk9IHh4eGZi
-X2lvY3RsLAotCS5mYl9tbWFwCT0geHh4ZmJfbW1hcCwJCi19OworI2VuZGlmCiAKIC8qIC0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0gKi8KIApAQCAtOTU0LDYgKzk3Niw4IEBAIHN0YXRpYyBzdHJ1Y3QgZmJfb3Bz
-IHh4eGZiX29wcyA9IHsKICAgICAgKi8KIAogbW9kdWxlX2luaXQoeHh4ZmJfaW5pdCk7Ci1tb2R1
-bGVfZXhpdCh4eHhmYl9jbGVhbnVwKTsKKyNpZmRlZiBNT0RVTEUKK21vZHVsZV9leGl0KHh4eGZi
-X3JlbW92ZSk7CiAKIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsKKyNlbmRpZgo=
-
---part4619c80b12d9a
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT
 Join SourceForge.net's Techsay panel and you'll get the chance to share your
 opinions on IT & business topics through brief surveys-and earn cash
 http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---part4619c80b12d9a
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---part4619c80b12d9a--

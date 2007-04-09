@@ -1,27 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/7][RESEND] rivafb: Fixed reversed DDC
-	ports
-Date: Tue, 10 Apr 2007 00:24:29 +0800
-Message-ID: <461A68BD.8030205@gmail.com>
-References: <461A267E.6030804@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] skeletonfb: Various corrections
+Date: Mon, 9 Apr 2007 13:00:05 -0700
+Message-ID: <20070409130005.0581867d.akpm@linux-foundation.org>
+References: <461A2BED.2050501@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hawfg-0000XF-A3 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 09:24:48 -0700
-Received: from wx-out-0506.google.com ([66.249.82.228])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hawfg-0001gl-08
+	id 1Hb02A-0006gt-8d for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 13:00:14 -0700
+Received: from smtp.osdl.org ([65.172.181.24])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hb029-0007rf-Qy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 09:24:48 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so2615898wxd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 09 Apr 2007 09:24:47 -0700 (PDT)
-In-Reply-To: <461A267E.6030804@gmail.com>
+	Mon, 09 Apr 2007 13:00:14 -0700
+In-Reply-To: <461A2BED.2050501@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,41 +29,139 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Jean Delvare <khali@linux-fr.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Gerd Hoffmann <kraxel@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andi Kleen <ak@suse.de>, Krzysztof Halasa <khc@pm.waw.pl>
 
-Fixed reversed DDC port so assignments are congruent with nvidiafb's and
-X's nv driver.
+On Mon, 09 Apr 2007 20:05:01 +0800
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> This is mainly correction of types, typos and missing characters
+> in the skeletonfb.c file found while trying to prepare a new fb
+> driver.
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+> ---
+> 
+>  drivers/video/skeletonfb.c |  118 ++++++++++++++++++++++++++------------------
+>  1 files changed, 71 insertions(+), 47 deletions(-)
+> 
+> diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
+> index bb96cb6..30eb964 100644
+> --- a/drivers/video/skeletonfb.c
+> +++ b/drivers/video/skeletonfb.c
+> @@ -51,6 +51,9 @@ #include <linux/slab.h>
+>  #include <linux/delay.h>
+>  #include <linux/fb.h>
+>  #include <linux/init.h>
+> +#ifdef CONFIG_PCI
+> +#include <linux/pci.h>
+> +#endif
 
-It must be my stupid typo day.  Thanks Jean.
+pci.h shouldn't need these include guards?
 
-Tony
+>      /*
+>       *  This is just simple sample code.
+> @@ -60,6 +63,11 @@ #include <linux/init.h>
+>       */
+>  
+>  /*
+> + * Driver data
+> + */
+> +static char *mode_option __devinitdata = NULL;
 
- drivers/video/riva/rivafb-i2c.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+The initialisation to NULL is unneeded and undesirable (it increases
+vmlinux size).
 
-diff --git a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
-index bcb2096..76e6ce3 100644
---- a/drivers/video/riva/rivafb-i2c.c
-+++ b/drivers/video/riva/rivafb-i2c.c
-@@ -133,11 +133,11 @@ void __devinit riva_create_i2c_busses(st
- 	par->chan[1].par	= par;
- 	par->chan[2].par        = par;
- 
--	par->chan[0].ddc_base = 0x3e;
--	par->chan[1].ddc_base = 0x36;
-+	par->chan[0].ddc_base = 0x36;
-+	par->chan[1].ddc_base = 0x3e;
- 	par->chan[2].ddc_base = 0x50;
--	riva_setup_i2c_bus(&par->chan[0], "BUS1", 0);
--	riva_setup_i2c_bus(&par->chan[1], "BUS2", I2C_CLASS_HWMON);
-+	riva_setup_i2c_bus(&par->chan[0], "BUS1", I2C_CLASS_HWMON);
-+	riva_setup_i2c_bus(&par->chan[1], "BUS2", 0);
- 	riva_setup_i2c_bus(&par->chan[2], "BUS3", 0);
- }
- 
+>  
+> -#if CONFIG_PCI
+> +#ifdef CONFIG_PCI
+> +static struct pci_device_id xxxfb_id_table[] = {
+> +	{ PCI_VENDOR_ID_XXX, PCI_DEVICE_ID_XXX,
+> +	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+> +	  ADDR, 0 },
+> +	{ 0, }
+> +};
+> +
+>  /* For PCI drivers */
+>  static struct pci_driver xxxfb_driver = {
+>  	.name =		"xxxfb",
+> -	.id_table =	xxxfb_devices,
+> +	.id_table =	xxxfb_id_table,
+>  	.probe =	xxxfb_probe,
+>  	.remove =	__devexit_p(xxxfb_remove),
+>  	.suspend =      xxxfb_suspend, /* optional */
+>  	.resume =       xxxfb_resume,  /* optional */
+>  };
+
+I think this example still need to handle the CONFIG_PM=n case?
+
+Something like
+
+#ifdef CONFIG_PM
+void xxxfb_suspend(args)
+{
+	...
+}
+#else
+#define xxxfb_suspend NULL
+#define xxxfb_resume NULL
+#endif
+
+
+> -static int __init xxxfb_init(void)
+> +int __init xxxfb_init(void)
+>  {
+>  	/*
+>  	 *  For kernel boot options (in 'video=xxxfb:<options>' format)
+> @@ -854,10 +898,12 @@ #endif
+>  	return pci_register_driver(&xxxfb_driver);
+>  }
+>  
+> +#ifdef MODULE
+>  static void __exit xxxfb_exit(void)
+>  {
+>  	pci_unregister_driver(&xxxfb_driver);
+>  }
+> +#endif
+>  #else
+>  #include <linux/platform_device.h>
+>  /* for platform devices */
+> @@ -898,13 +944,16 @@ #endif
+>  	return ret;
+>  }
+>  
+> +#ifdef MODULE
+>  static void __exit xxxfb_exit(void)
+>  {
+>  	platform_device_unregister(&xxxfb_device);
+>  	driver_unregister(&xxxfb_driver);
+>  }
+>  #endif
+> +#endif
+>  
+
+Are these ifdefs around the __exit functions really recommended fbdev
+practice?  I hope not.
+
+
+There are two types of exit code:
+
+__exit: discarded at boot time, via free_initmem() (except for uml, which
+does run exitcalls (or used to)).
+
+__exit_call: discarded at link time via /DISCARD/ in vmlinux.lds.S.
+
+So it is I think better to leave the __exit code in place so that the
+compiler gets to check it.  It will increase vmlinux size, but that memory
+gets reclaimed at runtime.
+
+The __exit_call memory gets discarded at link-time, so I do think we should
+always compile __exit_call functions.
+
+(We don't actually _have_ any __exit_call functions in the kernel, which
+makes one wonder why we bothered creating it)
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

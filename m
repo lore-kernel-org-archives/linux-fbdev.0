@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/7] rivafb: Fixed reversed DDC ports
-Date: Mon, 09 Apr 2007 19:41:50 +0800
-Message-ID: <461A267E.6030804@gmail.com>
+Subject: [PATCH 6/7] nvidiafb: Ensure that CRTC
+	registers are accessible
+Date: Mon, 09 Apr 2007 19:43:09 +0800
+Message-ID: <461A26CD.4060502@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HasKj-0001lH-BI for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 04:46:56 -0700
+	id 1HasL1-0001qh-8Z for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 04:47:11 -0700
 Received: from py-out-1112.google.com ([64.233.166.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HasKj-0006Kz-32
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HasL0-0006Kz-UE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 04:46:53 -0700
+	Mon, 09 Apr 2007 04:47:11 -0700
 Received: by py-out-1112.google.com with SMTP id a29so1005416pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 09 Apr 2007 04:46:52 -0700 (PDT)
+	Mon, 09 Apr 2007 04:47:10 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,37 +31,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jean Delvare <khali@linux-fr.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Fixed reversed DDC port so the assignments are congruent with nvidiafb's and
-X's nv driver.
+- Ensure that CRTC registers are accessible by unlocking them on
+  set_par(), otherwise i2c reading will fail.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
+- The function nvidia_vga_protect(), does not protect the VGA
+  registers, but turns off the screen.  Rename it to
+  nvidia_screen_off().
+
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/riva/rivafb-i2c.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/nvidia/nvidia.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
-index bcb2096..b9f1590 100644
---- a/drivers/video/riva/rivafb-i2c.c
-+++ b/drivers/video/riva/rivafb-i2c.c
-@@ -133,11 +133,11 @@ void __devinit riva_create_i2c_busses(st
- 	par->chan[1].par	= par;
- 	par->chan[2].par        = par;
- 
--	par->chan[0].ddc_base = 0x3e;
--	par->chan[1].ddc_base = 0x36;
-+	par->chan[0].ddc_base = 0x36;
-+	par->chan[1].ddc_base = 0x3e;
- 	par->chan[2].ddc_base = 0x50;
--	riva_setup_i2c_bus(&par->chan[0], "BUS1", 0);
--	riva_setup_i2c_bus(&par->chan[1], "BUS2", I2C_CLASS_HWMON);
-+	riva_setup_i2c_bus(&par->chan[1], "BUS1", I2C_CLASS_HWMON);
-+	riva_setup_i2c_bus(&par->chan[0], "BUS2", 0);
- 	riva_setup_i2c_bus(&par->chan[2], "BUS3", 0);
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index b97ec69..c6afafc 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -200,7 +200,7 @@ static int nvidia_panel_tweak(struct nvi
+    return tweak;
  }
  
+-static void nvidia_vga_protect(struct nvidia_par *par, int on)
++static void nvidia_screen_off(struct nvidia_par *par, int on)
+ {
+ 	unsigned char tmp;
+ 
+@@ -649,7 +649,7 @@ static int nvidiafb_set_par(struct fb_in
+ 		NVLockUnlock(par, 0);
+ 	}
+ 
+-	nvidia_vga_protect(par, 1);
++	nvidia_screen_off(par, 1);
+ 
+ 	nvidia_write_regs(par, &par->ModeReg);
+ 	NVSetStartAddress(par, 0);
+@@ -687,7 +687,7 @@ #endif
+ 
+ 	par->cursor_reset = 1;
+ 
+-	nvidia_vga_protect(par, 0);
++	nvidia_screen_off(par, 0);
+ 
+ #ifdef CONFIG_BOOTX_TEXT
+ 	/* Update debug text engine */
+@@ -696,6 +696,7 @@ #ifdef CONFIG_BOOTX_TEXT
+ 			     info->var.bits_per_pixel, info->fix.line_length);
+ #endif
+ 
++	NVLockUnlock(par, 0);
+ 	NVTRACE_LEAVE();
+ 	return 0;
+ }
 
 
 -------------------------------------------------------------------------

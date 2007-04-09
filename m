@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/7] rivafb: Handle I2C bus creation
-	failure
-Date: Mon, 09 Apr 2007 19:38:58 +0800
-Message-ID: <461A25D2.3020404@gmail.com>
+Subject: [PATCH 2/7] rivafb/nvidiafb: Enable hardware
+	monitoring
+Date: Mon, 09 Apr 2007 19:37:58 +0800
+Message-ID: <461A2596.4090609@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HasKB-0001kP-Ai for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 04:46:19 -0700
-Received: from nz-out-0506.google.com ([64.233.162.231])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HasKB-0002tn-2l
+	id 1HasJn-0001er-Gw for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 04:45:55 -0700
+Received: from wx-out-0506.google.com ([66.249.82.226])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HasJm-0005z9-LO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 04:46:19 -0700
-Received: by nz-out-0506.google.com with SMTP id i11so2386484nzi
+	Mon, 09 Apr 2007 04:45:55 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so2484654wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 09 Apr 2007 04:46:18 -0700 (PDT)
+	Mon, 09 Apr 2007 04:45:54 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,30 +33,91 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Jean Delvare <khali@linux-fr.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Jean Delvare <khali@linux-fr>
 
-I2C bus creation may fail, let rivafb handle that case properly.
+Let the hardware monitoring drivers probe the second rivafb/nvidiafb
+I2C bus for devices.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Jean Delvare <khali@linux-fr>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/riva/fbdev.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/video/nvidia/nv_i2c.c   |   10 ++++++----
+ drivers/video/riva/rivafb-i2c.c |   10 ++++++----
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index a37189a..b8d50f1 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -1789,6 +1789,8 @@ static int __devinit riva_get_EDID_i2c(s
- 	NVTRACE_ENTER();
- 	riva_create_i2c_busses(par);
- 	for (i = 0; i < par->bus; i++) {
-+		if (!par->chan[i].par)
-+			continue;
- 		riva_probe_i2c_connector(par, i+1, &par->EDID);
- 		if (par->EDID && !fb_parse_edid(par->EDID, &var)) {
- 			printk(PFX "Found EDID Block from BUS %i\n", i);
+diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+index bcde013..2674259 100644
+--- a/drivers/video/nvidia/nv_i2c.c
++++ b/drivers/video/nvidia/nv_i2c.c
+@@ -86,13 +86,15 @@ static int nvidia_gpio_getsda(void *data
+ 	return val;
+ }
+ 
+-static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name)
++static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name,
++				unsigned int i2c_class)
+ {
+ 	int rc;
+ 
+ 	strcpy(chan->adapter.name, name);
+ 	chan->adapter.owner = THIS_MODULE;
+ 	chan->adapter.id = I2C_HW_B_NVIDIA;
++	chan->adapter.class = i2c_class;
+ 	chan->adapter.algo_data = &chan->algo;
+ 	chan->adapter.dev.parent = &chan->par->pci_dev->dev;
+ 	chan->algo.setsda = nvidia_gpio_setsda;
+@@ -132,13 +134,13 @@ void nvidia_create_i2c_busses(struct nvi
+ 	par->chan[2].par = par;
+ 
+ 	par->chan[0].ddc_base = 0x36;
+-	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0");
++ 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", I2C_CLASS_HWMON);
+ 
+ 	par->chan[1].ddc_base = 0x3e;
+-	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1");
++ 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #0", 1);
+ 
+ 	par->chan[2].ddc_base = 0x50;
+-	nvidia_setup_i2c_bus(&par->chan[2], "nvidia #2");
++ 	nvidia_setup_i2c_bus(&par->chan[2], "nvidia #2", 0);
+ }
+ 
+ void nvidia_delete_i2c_busses(struct nvidia_par *par)
+diff --git a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
+index 0405e83..ca9e7e8 100644
+--- a/drivers/video/riva/rivafb-i2c.c
++++ b/drivers/video/riva/rivafb-i2c.c
+@@ -88,13 +88,15 @@ static int riva_gpio_getsda(void* data)
+ 	return val;
+ }
+ 
+-static int riva_setup_i2c_bus(struct riva_i2c_chan *chan, const char *name)
++static int riva_setup_i2c_bus(struct riva_i2c_chan *chan, const char *name,
++			      unsigned int i2c_class)
+ {
+ 	int rc;
+ 
+ 	strcpy(chan->adapter.name, name);
+ 	chan->adapter.owner		= THIS_MODULE;
+ 	chan->adapter.id		= I2C_HW_B_RIVA;
++	chan->adapter.class		= i2c_class;
+ 	chan->adapter.algo_data		= &chan->algo;
+ 	chan->adapter.dev.parent	= &chan->par->pdev->dev;
+ 	chan->algo.setsda		= riva_gpio_setsda;
+@@ -135,9 +137,9 @@ void riva_create_i2c_busses(struct riva_
+ 	par->chan[0].ddc_base = 0x3e;
+ 	par->chan[1].ddc_base = 0x36;
+ 	par->chan[2].ddc_base = 0x50;
+-	riva_setup_i2c_bus(&par->chan[0], "BUS1");
+-	riva_setup_i2c_bus(&par->chan[1], "BUS2");
+-	riva_setup_i2c_bus(&par->chan[2], "BUS3");
++	riva_setup_i2c_bus(&par->chan[0], "BUS1", 0);
++	riva_setup_i2c_bus(&par->chan[1], "BUS2", I2C_CLASS_HWMON);
++	riva_setup_i2c_bus(&par->chan[2], "BUS3", 0);
+ }
+ 
+ void riva_delete_i2c_busses(struct riva_par *par)
 
 
 -------------------------------------------------------------------------

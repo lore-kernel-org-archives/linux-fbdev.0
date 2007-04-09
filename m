@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 7/7] nvidiafb: Access CRT registers
-	safely
-Date: Mon, 09 Apr 2007 19:44:19 +0800
-Message-ID: <461A2713.9060700@gmail.com>
+Subject: [PATCH] skeletonfb: Various corrections
+Date: Mon, 09 Apr 2007 20:05:01 +0800
+Message-ID: <461A2BED.2050501@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HasLI-0001rC-M3 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 04:47:28 -0700
-Received: from py-out-1112.google.com ([64.233.166.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HasLI-0006Kz-Cr
+	id 1Hascr-0003i9-0w for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 05:05:37 -0700
+Received: from py-out-1112.google.com ([64.233.166.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hascq-0003mC-DN
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 04:47:28 -0700
-Received: by py-out-1112.google.com with SMTP id a29so1005416pyi
+	Mon, 09 Apr 2007 05:05:36 -0700
+Received: by py-out-1112.google.com with SMTP id a29so1008436pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 09 Apr 2007 04:47:28 -0700 (PDT)
+	Mon, 09 Apr 2007 05:05:35 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,80 +30,288 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Krzysztof Halasa <khc@pm.waw.pl>
 
-Use Read/WriteCrtc() to access CRTC registers in nv_i2c.c.
-These are safer because it uses the correct CRTC base
-(0x3bx or 0x3dx).
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
+This is mainly correction of types, typos and missing characters
+in the skeletonfb.c file found while trying to prepare a new fb
+driver.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/nvidia/nv_i2c.c |   18 ++++++------------
- 1 files changed, 6 insertions(+), 12 deletions(-)
+ drivers/video/skeletonfb.c |  118 ++++++++++++++++++++++++++------------------
+ 1 files changed, 71 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
-index 93615d2..3961c4a 100644
---- a/drivers/video/nvidia/nv_i2c.c
-+++ b/drivers/video/nvidia/nv_i2c.c
-@@ -30,16 +30,14 @@ static void nvidia_gpio_setscl(void *dat
- 	struct nvidia_par *par = chan->par;
- 	u32 val;
+diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
+index bb96cb6..30eb964 100644
+--- a/drivers/video/skeletonfb.c
++++ b/drivers/video/skeletonfb.c
+@@ -51,6 +51,9 @@ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/fb.h>
+ #include <linux/init.h>
++#ifdef CONFIG_PCI
++#include <linux/pci.h>
++#endif
  
--	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base + 1);
--	val = VGA_RD08(par->PCIO, 0x3d5) & 0xf0;
-+	val = NVReadCrtc(par, chan->ddc_base + 1) & 0xf0;
+     /*
+      *  This is just simple sample code.
+@@ -60,6 +63,11 @@ #include <linux/init.h>
+      */
  
- 	if (state)
- 		val |= 0x20;
- 	else
- 		val &= ~0x20;
- 
--	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base + 1);
--	VGA_WR08(par->PCIO, 0x3d5, val | 0x1);
-+	NVWriteCrtc(par, chan->ddc_base + 1, val | 0x01);
+ /*
++ * Driver data
++ */
++static char *mode_option __devinitdata = NULL;
++
++/*
+  *  If your driver supports multiple boards, you should make the  
+  *  below data types arrays, or allocate them dynamically (using kmalloc()). 
+  */ 
+@@ -278,7 +286,7 @@ static int xxxfb_set_par(struct fb_info 
+  */
+ static int xxxfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			   unsigned blue, unsigned transp,
+-			   const struct fb_info *info)
++			   struct fb_info *info)
+ {
+     if (regno >= 256)  /* no. of hw registers */
+        return -EINVAL;
+@@ -416,7 +424,7 @@ #undef CNVT_TOHW
+  *      Returns negative errno on error, or zero on success.
+  */
+ static int xxxfb_pan_display(struct fb_var_screeninfo *var,
+-			     const struct fb_info *info)
++			     struct fb_info *info)
+ {
+     /*
+      * If your hardware does not support panning, _do_ _not_ implement this
+@@ -454,7 +462,7 @@ static int xxxfb_pan_display(struct fb_v
+  *      Return !0 for any modes that are unimplemented.
+  *
+  */
+-static int xxxfb_blank(int blank_mode, const struct fb_info *info)
++static int xxxfb_blank(int blank_mode, struct fb_info *info)
+ {
+     /* ... */
+     return 0;
+@@ -483,7 +491,7 @@ static int xxxfb_blank(int blank_mode, c
+  *	depending on the rastering operation with the value of color which
+  *	is in the current color depth format.
+  */
+-void xxfb_fillrect(struct fb_info *p, const struct fb_fillrect *region)
++void xxxfb_fillrect(struct fb_info *p, const struct fb_fillrect *region)
+ {
+ /*	Meaning of struct fb_fillrect
+  *
+@@ -647,21 +655,50 @@ void xxxfb_poll(struct fb_info *info, po
+  *      If the driver has implemented its own hardware-based drawing function,
+  *      implementing this function is highly recommended.
+  */
+-void xxxfb_sync(struct fb_info *info)
++int xxxfb_sync(struct fb_info *info)
+ {
++	return 0;
  }
  
- static void nvidia_gpio_setsda(void *data, int state)
-@@ -48,16 +46,14 @@ static void nvidia_gpio_setsda(void *dat
- 	struct nvidia_par *par = chan->par;
- 	u32 val;
+     /*
++     *  Frame buffer operations
++     */
++
++static struct fb_ops xxxfb_ops = {
++	.owner		= THIS_MODULE,
++	.fb_open	= xxxfb_open,
++	.fb_read	= xxxfb_read,
++	.fb_write	= xxxfb_write,
++	.fb_release	= xxxfb_release,
++	.fb_check_var	= xxxfb_check_var,
++	.fb_set_par	= xxxfb_set_par,
++	.fb_setcolreg	= xxxfb_setcolreg,
++	.fb_blank	= xxxfb_blank,
++	.fb_pan_display	= xxxfb_pan_display,
++	.fb_fillrect	= xxxfb_fillrect, 	/* Needed !!! */
++	.fb_copyarea	= xxxfb_copyarea,	/* Needed !!! */
++	.fb_imageblit	= xxxfb_imageblit,	/* Needed !!! */
++	.fb_cursor	= xxxfb_cursor,		/* Optional !!! */
++	.fb_rotate	= xxxfb_rotate,
++	.fb_poll	= xxxfb_poll,
++	.fb_sync	= xxxfb_sync,
++	.fb_ioctl	= xxxfb_ioctl,
++	.fb_mmap	= xxxfb_mmap,
++};
++
++/* ------------------------------------------------------------------------- */
++
++    /*
+      *  Initialization
+      */
  
--	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base + 1);
--	val = VGA_RD08(par->PCIO, 0x3d5) & 0xf0;
-+	val = NVReadCrtc(par, chan->ddc_base + 1) & 0xf0;
+ /* static int __init xxfb_probe (struct device *device) -- for platform devs */
+-static int __init xxxfb_probe(struct pci_dev *dev,
++static int __devinit xxxfb_probe(struct pci_dev *dev,
+ 			      const_struct pci_device_id *ent)
+ {
+     struct fb_info *info;
+     struct xxx_par *par;
+-    struct device = &dev->dev; /* for pci drivers */
++    struct device* device = &dev->dev; /* for pci drivers */
+     int cmap_len, retval;	
+    
+     /*
+@@ -760,7 +797,7 @@ static int __init xxxfb_probe(struct pci
+      *
+      * NOTE: This field is currently unused.
+      */
+-    info->pixmap.scan_align = 32
++    info->pixmap.scan_align = 32;
+ /***************************** End optional stage ***************************/
  
- 	if (state)
- 		val |= 0x10;
- 	else
- 		val &= ~0x10;
+     /*
+@@ -770,13 +807,13 @@ static int __init xxxfb_probe(struct pci
+     if (!mode_option)
+ 	mode_option = "640x480@60";	 	
  
--	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base + 1);
--	VGA_WR08(par->PCIO, 0x3d5, val | 0x1);
-+	NVWriteCrtc(par, chan->ddc_base + 1, val | 0x01);
+-    retval = fb_find_mode(info->var, info, mode_option, NULL, 0, NULL, 8);
++    retval = fb_find_mode(&info->var, info, mode_option, NULL, 0, NULL, 8);
+   
+     if (!retval || retval == 4)
+ 	return -EINVAL;			
+ 
+     /* This has to been done !!! */	
+-    fb_alloc_cmap(info->cmap, cmap_len, 0);
++    fb_alloc_cmap(&info->cmap, cmap_len, 0);
+ 	
+     /* 
+      * The following is done in the case of having hardware with a static 
+@@ -811,15 +848,15 @@ static int __init xxxfb_probe(struct pci
+     /*
+      *  Cleanup
+      */
+-/* static void __exit xxxfb_remove(struct device *device) */
+-static void __exit xxxfb_remove(struct pci_dev *dev)
++/* static void __devexit xxxfb_remove(struct device *device) */
++static void __devexit xxxfb_remove(struct pci_dev *dev)
+ {
+-	struct fb_info *info = pci_get_drv_data(dev);
+-	/* or dev_get_drv_data(device); */
++	struct fb_info *info = pci_get_drvdata(dev);
++	/* or dev_get_drvdata(device); */
+ 
+ 	if (info) {
+ 		unregister_framebuffer(info);
+-		fb_dealloc_cmap(&info.cmap);
++		fb_dealloc_cmap(&info->cmap);
+ 		/* ... */
+ 		framebuffer_release(info);
+ 	}
+@@ -827,18 +864,25 @@ static void __exit xxxfb_remove(struct p
+ 	return 0;
  }
  
- static int nvidia_gpio_getscl(void *data)
-@@ -66,8 +62,7 @@ static int nvidia_gpio_getscl(void *data
- 	struct nvidia_par *par = chan->par;
- 	u32 val = 0;
+-#if CONFIG_PCI
++#ifdef CONFIG_PCI
++static struct pci_device_id xxxfb_id_table[] = {
++	{ PCI_VENDOR_ID_XXX, PCI_DEVICE_ID_XXX,
++	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
++	  ADDR, 0 },
++	{ 0, }
++};
++
+ /* For PCI drivers */
+ static struct pci_driver xxxfb_driver = {
+ 	.name =		"xxxfb",
+-	.id_table =	xxxfb_devices,
++	.id_table =	xxxfb_id_table,
+ 	.probe =	xxxfb_probe,
+ 	.remove =	__devexit_p(xxxfb_remove),
+ 	.suspend =      xxxfb_suspend, /* optional */
+ 	.resume =       xxxfb_resume,  /* optional */
+ };
  
--	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base);
--	if (VGA_RD08(par->PCIO, 0x3d5) & 0x04)
-+	if (NVReadCrtc(par, chan->ddc_base) & 0x04)
- 		val = 1;
+-static int __init xxxfb_init(void)
++int __init xxxfb_init(void)
+ {
+ 	/*
+ 	 *  For kernel boot options (in 'video=xxxfb:<options>' format)
+@@ -854,10 +898,12 @@ #endif
+ 	return pci_register_driver(&xxxfb_driver);
+ }
  
- 	return val;
-@@ -79,8 +74,7 @@ static int nvidia_gpio_getsda(void *data
- 	struct nvidia_par *par = chan->par;
- 	u32 val = 0;
++#ifdef MODULE
+ static void __exit xxxfb_exit(void)
+ {
+ 	pci_unregister_driver(&xxxfb_driver);
+ }
++#endif
+ #else
+ #include <linux/platform_device.h>
+ /* for platform devices */
+@@ -898,13 +944,16 @@ #endif
+ 	return ret;
+ }
  
--	VGA_WR08(par->PCIO, 0x3d4, chan->ddc_base);
--	if (VGA_RD08(par->PCIO, 0x3d5) & 0x08)
-+	if (NVReadCrtc(par, chan->ddc_base) & 0x08)
- 		val = 1;
++#ifdef MODULE
+ static void __exit xxxfb_exit(void)
+ {
+ 	platform_device_unregister(&xxxfb_device);
+ 	driver_unregister(&xxxfb_driver);
+ }
+ #endif
++#endif
  
- 	return val;
++#ifdef MODULE
+     /*
+      *  Setup
+      */
+@@ -917,34 +966,7 @@ int __init xxxfb_setup(char *options)
+ {
+     /* Parse user speficied options (`video=xxxfb:') */
+ }
+-
+-/* ------------------------------------------------------------------------- */
+-
+-    /*
+-     *  Frame buffer operations
+-     */
+-
+-static struct fb_ops xxxfb_ops = {
+-	.owner		= THIS_MODULE,
+-	.fb_open	= xxxfb_open,
+-	.fb_read	= xxxfb_read,
+-	.fb_write	= xxxfb_write,
+-	.fb_release	= xxxfb_release,
+-	.fb_check_var	= xxxfb_check_var,
+-	.fb_set_par	= xxxfb_set_par,	
+-	.fb_setcolreg	= xxxfb_setcolreg,
+-	.fb_blank	= xxxfb_blank,
+-	.fb_pan_display	= xxxfb_pan_display,	
+-	.fb_fillrect	= xxxfb_fillrect, 	/* Needed !!! */ 
+-	.fb_copyarea	= xxxfb_copyarea,	/* Needed !!! */ 
+-	.fb_imageblit	= xxxfb_imageblit,	/* Needed !!! */
+-	.fb_cursor	= xxxfb_cursor,		/* Optional !!! */
+-	.fb_rotate	= xxxfb_rotate,
+-	.fb_poll	= xxxfb_poll,
+-	.fb_sync	= xxxfb_sync,
+-	.fb_ioctl	= xxxfb_ioctl,
+-	.fb_mmap	= xxxfb_mmap,	
+-};
++#endif
+ 
+ /* ------------------------------------------------------------------------- */
+ 
+@@ -954,6 +976,8 @@ static struct fb_ops xxxfb_ops = {
+      */
+ 
+ module_init(xxxfb_init);
+-module_exit(xxxfb_cleanup);
++#ifdef MODULE
++module_exit(xxxfb_remove);
+ 
+ MODULE_LICENSE("GPL");
++#endif
 
 
 -------------------------------------------------------------------------

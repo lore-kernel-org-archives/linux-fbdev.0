@@ -1,21 +1,28 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH 5/7] rivafb: Fixed reversed DDC ports
-Date: Mon, 9 Apr 2007 17:51:45 +0200
-Message-ID: <20070409175145.4cb788cd@hyperion.delvare>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 2/7] rivafb/nvidiafb: Enable
+	hardware monitoring
+Date: Mon, 09 Apr 2007 23:32:22 +0800
+Message-ID: <1176132743.6230.3.camel@daplas>
+References: <461A2596.4090609@gmail.com>
+	<20070409171419.6c2b9ccb@hyperion.delvare>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HawAN-0005Sl-LB for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 08:52:27 -0700
-Received: from smtp-101-monday.nerim.net ([62.4.16.101] helo=kraid.nerim.net)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HawAN-00081r-7t
+	id 1Havr7-00020k-Iu for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 08:32:33 -0700
+Received: from wx-out-0506.google.com ([66.249.82.225])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Havr5-0002Ko-8E
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 08:52:27 -0700
+	Mon, 09 Apr 2007 08:32:32 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so2585354wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 09 Apr 2007 08:32:30 -0700 (PDT)
+In-Reply-To: <20070409171419.6c2b9ccb@hyperion.delvare>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,47 +33,67 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Antonino Daplas <adaplas@pol.net>
+To: Jean Delvare <khali@linux-fr.org>
 Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-(Sorry for the referenceless reply, but I am not subscribed to
-linux-fbdev-devel.)
-
-> Fixed reversed DDC port so the assignments are congruent with nvidiafb's and
-> X's nv driver.
+On Mon, 2007-04-09 at 17:14 +0200, Jean Delvare wrote:
+> Hi Antonino,
 > 
-> Signed-off-by: Antonino Daplas <adaplas@pol.net>
-> ---
+> On Mon, 09 Apr 2007 19:37:58 +0800, Antonino A. Daplas wrote:
+> > From: Jean Delvare <khali@linux-fr>
+> > 
+> > Let the hardware monitoring drivers probe the second rivafb/nvidiafb
+> > I2C bus for devices.
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr>
+> > Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+> > ---
+> > 
+> >  drivers/video/nvidia/nv_i2c.c   |   10 ++++++----
+> >  drivers/video/riva/rivafb-i2c.c |   10 ++++++----
+> >  2 files changed, 12 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+> > index bcde013..2674259 100644
+> > --- a/drivers/video/nvidia/nv_i2c.c
+> > +++ b/drivers/video/nvidia/nv_i2c.c
+> > @@ -86,13 +86,15 @@ static int nvidia_gpio_getsda(void *data
+> >  	return val;
+> >  }
+> >  
+> > -static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name)
+> > +static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name,
+> > +				unsigned int i2c_class)
+> >  {
+> >  	int rc;
+> >  
+> >  	strcpy(chan->adapter.name, name);
+> >  	chan->adapter.owner = THIS_MODULE;
+> >  	chan->adapter.id = I2C_HW_B_NVIDIA;
+> > +	chan->adapter.class = i2c_class;
+> >  	chan->adapter.algo_data = &chan->algo;
+> >  	chan->adapter.dev.parent = &chan->par->pci_dev->dev;
+> >  	chan->algo.setsda = nvidia_gpio_setsda;
+> > @@ -132,13 +134,13 @@ void nvidia_create_i2c_busses(struct nvi
+> >  	par->chan[2].par = par;
+> >  
+> >  	par->chan[0].ddc_base = 0x36;
+> > -	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0");
+> > + 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", I2C_CLASS_HWMON);
+> >  
+> >  	par->chan[1].ddc_base = 0x3e;
+> > -	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1");
+> > + 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #0", 1);
 > 
->  drivers/video/riva/rivafb-i2c.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
-> index bcb2096..b9f1590 100644
-> --- a/drivers/video/riva/rivafb-i2c.c
-> +++ b/drivers/video/riva/rivafb-i2c.c
-> @@ -133,11 +133,11 @@ void __devinit riva_create_i2c_busses(st
->  	par->chan[1].par	= par;
->  	par->chan[2].par        = par;
->  
-> -	par->chan[0].ddc_base = 0x3e;
-> -	par->chan[1].ddc_base = 0x36;
-> +	par->chan[0].ddc_base = 0x36;
-> +	par->chan[1].ddc_base = 0x3e;
->  	par->chan[2].ddc_base = 0x50;
-> -	riva_setup_i2c_bus(&par->chan[0], "BUS1", 0);
-> -	riva_setup_i2c_bus(&par->chan[1], "BUS2", I2C_CLASS_HWMON);
-> +	riva_setup_i2c_bus(&par->chan[1], "BUS1", I2C_CLASS_HWMON);
-> +	riva_setup_i2c_bus(&par->chan[0], "BUS2", 0);
->  	riva_setup_i2c_bus(&par->chan[2], "BUS3", 0);
->  }
+> Err, this is not correct, and not what my original patch did.
 
-Do you really want to swap &par->chan[0] and &par->chan[1] here? I
-don't think so, otherwise it almost reverts the change you are doing -
-and it breaks the classes, too.
+I submitted a previous patch to akpm where I reversed the order of
+assignment of the ddc_bases (from 0x3e, 0x36 to 0x36, 0x3e). Just made
+your patch match that.
 
--- 
-Jean Delvare
+Tony
+
+
 
 -------------------------------------------------------------------------
 Take Surveys. Earn Cash. Influence the Future of IT

@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH 2/7] rivafb/nvidiafb: Enable
 	hardware monitoring
-Date: Mon, 09 Apr 2007 23:32:22 +0800
-Message-ID: <1176132743.6230.3.camel@daplas>
+Date: Mon, 09 Apr 2007 23:39:13 +0800
+Message-ID: <1176133153.6230.6.camel@daplas>
 References: <461A2596.4090609@gmail.com>
 	<20070409171419.6c2b9ccb@hyperion.delvare>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
@@ -10,18 +10,18 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Havr7-00020k-Iu for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 08:32:33 -0700
-Received: from wx-out-0506.google.com ([66.249.82.225])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Havr5-0002Ko-8E
+	id 1Havxg-0003NJ-PT for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 08:39:20 -0700
+Received: from wx-out-0506.google.com ([66.249.82.224])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Havxg-0002wq-FZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 08:32:32 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so2585354wxd
+	Mon, 09 Apr 2007 08:39:20 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so2589212wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 09 Apr 2007 08:32:30 -0700 (PDT)
+	Mon, 09 Apr 2007 08:39:19 -0700 (PDT)
 In-Reply-To: <20070409171419.6c2b9ccb@hyperion.delvare>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -87,12 +87,9 @@ On Mon, 2007-04-09 at 17:14 +0200, Jean Delvare wrote:
 > 
 > Err, this is not correct, and not what my original patch did.
 
-I submitted a previous patch to akpm where I reversed the order of
-assignment of the ddc_bases (from 0x3e, 0x36 to 0x36, 0x3e). Just made
-your patch match that.
+Oops, yeah, I just made a typo :-(. I will submit a follow-up patch.
 
 Tony
-
 
 
 -------------------------------------------------------------------------

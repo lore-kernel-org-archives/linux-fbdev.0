@@ -1,9 +1,10 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 1/7] [RESEND] bdev: Don't show logo if
- driver or fbcon are modular
-Date: Tue, 10 Apr 2007 00:11:24 +0800
-Message-ID: <461A65AC.802@gmail.com>
-References: <461A2548.2080008@gmail.com>
+Subject: [PATCH 2/7] [RESEND] rivafb/nvidiafb: Enable
+	hardware monitoring
+Date: Tue, 10 Apr 2007 00:05:11 +0800
+Message-ID: <461A6437.3010505@gmail.com>
+References: <461A2596.4090609@gmail.com>
+	<20070409171419.6c2b9ccb@hyperion.delvare>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,16 +13,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HawVE-0007pU-Bk for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 09:14:00 -0700
+	id 1HawUx-0007pA-Cc for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Apr 2007 09:13:44 -0700
 Received: from wx-out-0506.google.com ([66.249.82.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HawVB-0006P0-Sf
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HawUv-0006P0-Vx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Apr 2007 09:14:00 -0700
+	Mon, 09 Apr 2007 09:13:43 -0700
 Received: by wx-out-0506.google.com with SMTP id i30so2609259wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 09 Apr 2007 09:13:57 -0700 (PDT)
-In-Reply-To: <461A2548.2080008@gmail.com>
+	Mon, 09 Apr 2007 09:13:41 -0700 (PDT)
+In-Reply-To: <20070409171419.6c2b9ccb@hyperion.delvare>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,100 +33,103 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Jean Delvare <khali@linux-fr.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+From: Jean Delvare <khali@linux-fr>
 
-It was always intended for the logo to be drawn only if both fbcon and the
-driver that is mapped to it are both compiled statically.  Currently, if fbcon
-is loaded prior to the driver, the logo is not shown.  Reverse the order, and
-the code may attempt to draw the logo which is __initdata.  By accident, this
-bug is rarely seen because this method of loading the modules is not common
-and secondly, a code in fb_prepare_logo() that checks the height of the logo
-(now a random value) rarely succeeds.
+Let the hardware monitoring drivers probe the second rivafb/nvidiafb
+I2C bus for devices.
 
-Fix by drawing the logo only if both fbcon and the driver are statically
-compiled.
-
+Signed-off-by: Jean Delvare <khali@linux-fr>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
+>>	par->chan[1].ddc_base = 0x3e;
+>> -	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1");
+>> + 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #0", 1);
+> 
+> Err, this is not correct, and not what my original patch did.
 
- drivers/video/console/fbcon.c |   15 +++++++++++++++
- drivers/video/fbmem.c         |    6 ++++--
- 2 files changed, 19 insertions(+), 2 deletions(-)
+Andrew, please use this instead. Fixes a stupid typo I made.
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index f1e3e3c..c8b4ae6 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -107,7 +107,9 @@ static struct display fb_display[MAX_NR_
- 
- static signed char con2fb_map[MAX_NR_CONSOLES];
- static signed char con2fb_map_boot[MAX_NR_CONSOLES];
-+#ifndef MODULE
- static int logo_height;
-+#endif
- static int logo_lines;
- /* logo_shown is an index to vc_cons when >= 0; otherwise follows FBCON_LOGO
-    enums.  */
-@@ -576,6 +578,13 @@ static int fbcon_takeover(int show_logo)
- 	return err;
+Tony
+
+ drivers/video/nvidia/nv_i2c.c   |   10 ++++++----
+ drivers/video/riva/rivafb-i2c.c |   10 ++++++----
+ 2 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+index bcde013..badc1a6 100644
+--- a/drivers/video/nvidia/nv_i2c.c
++++ b/drivers/video/nvidia/nv_i2c.c
+@@ -86,13 +86,15 @@ static int nvidia_gpio_getsda(void *data
+ 	return val;
  }
  
-+#ifdef MODULE
-+static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
-+			       int cols, int rows, int new_cols, int new_rows)
-+{
-+	logo_shown = FBCON_LOGO_DONTSHOW;
-+}
-+#else
- static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
- 			       int cols, int rows, int new_cols, int new_rows)
+-static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name)
++static int nvidia_setup_i2c_bus(struct nvidia_i2c_chan *chan, const char *name,
++				unsigned int i2c_class)
  {
-@@ -584,6 +593,11 @@ static void fbcon_prepare_logo(struct vc
- 	int cnt, erase = vc->vc_video_erase_char, step;
- 	unsigned short *save = NULL, *r, *q;
+ 	int rc;
  
-+	if (info->flags & FBINFO_MODULE) {
-+		logo_shown = FBCON_LOGO_DONTSHOW;
-+		return;
-+	}
-+
- 	/*
- 	 * remove underline attribute from erase character
- 	 * if black and white framebuffer.
-@@ -655,6 +669,7 @@ static void fbcon_prepare_logo(struct vc
- 		vc->vc_top = logo_lines;
- 	}
+ 	strcpy(chan->adapter.name, name);
+ 	chan->adapter.owner = THIS_MODULE;
+ 	chan->adapter.id = I2C_HW_B_NVIDIA;
++	chan->adapter.class = i2c_class;
+ 	chan->adapter.algo_data = &chan->algo;
+ 	chan->adapter.dev.parent = &chan->par->pci_dev->dev;
+ 	chan->algo.setsda = nvidia_gpio_setsda;
+@@ -132,13 +134,13 @@ void nvidia_create_i2c_busses(struct nvi
+ 	par->chan[2].par = par;
+ 
+ 	par->chan[0].ddc_base = 0x36;
+-	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0");
++ 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", I2C_CLASS_HWMON);
+ 
+ 	par->chan[1].ddc_base = 0x3e;
+-	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1");
++ 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1", 0);
+ 
+ 	par->chan[2].ddc_base = 0x50;
+-	nvidia_setup_i2c_bus(&par->chan[2], "nvidia #2");
++ 	nvidia_setup_i2c_bus(&par->chan[2], "nvidia #2", 0);
  }
-+#endif /* MODULE */
  
- #ifdef CONFIG_FB_TILEBLITTING
- static void set_blitting_type(struct vc_data *vc, struct fb_info *info)
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 45f3839..08c292d 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -418,7 +418,8 @@ int fb_prepare_logo(struct fb_info *info
+ void nvidia_delete_i2c_busses(struct nvidia_par *par)
+diff --git a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
+index 0405e83..ca9e7e8 100644
+--- a/drivers/video/riva/rivafb-i2c.c
++++ b/drivers/video/riva/rivafb-i2c.c
+@@ -88,13 +88,15 @@ static int riva_gpio_getsda(void* data)
+ 	return val;
+ }
  
- 	memset(&fb_logo, 0, sizeof(struct logo_data));
+-static int riva_setup_i2c_bus(struct riva_i2c_chan *chan, const char *name)
++static int riva_setup_i2c_bus(struct riva_i2c_chan *chan, const char *name,
++			      unsigned int i2c_class)
+ {
+ 	int rc;
  
--	if (info->flags & FBINFO_MISC_TILEBLITTING)
-+	if (info->flags & FBINFO_MISC_TILEBLITTING ||
-+	    info->flags & FBINFO_MODULE)
- 		return 0;
+ 	strcpy(chan->adapter.name, name);
+ 	chan->adapter.owner		= THIS_MODULE;
+ 	chan->adapter.id		= I2C_HW_B_RIVA;
++	chan->adapter.class		= i2c_class;
+ 	chan->adapter.algo_data		= &chan->algo;
+ 	chan->adapter.dev.parent	= &chan->par->pdev->dev;
+ 	chan->algo.setsda		= riva_gpio_setsda;
+@@ -135,9 +137,9 @@ void riva_create_i2c_busses(struct riva_
+ 	par->chan[0].ddc_base = 0x3e;
+ 	par->chan[1].ddc_base = 0x36;
+ 	par->chan[2].ddc_base = 0x50;
+-	riva_setup_i2c_bus(&par->chan[0], "BUS1");
+-	riva_setup_i2c_bus(&par->chan[1], "BUS2");
+-	riva_setup_i2c_bus(&par->chan[2], "BUS3");
++	riva_setup_i2c_bus(&par->chan[0], "BUS1", 0);
++	riva_setup_i2c_bus(&par->chan[1], "BUS2", I2C_CLASS_HWMON);
++	riva_setup_i2c_bus(&par->chan[2], "BUS3", 0);
+ }
  
- 	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
-@@ -483,7 +484,8 @@ int fb_show_logo(struct fb_info *info, i
- 	struct fb_image image;
- 
- 	/* Return if the frame buffer is not mapped or suspended */
--	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING)
-+	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING ||
-+	    info->flags & FBINFO_MODULE)
- 		return 0;
- 
- 	image.depth = 8;
+ void riva_delete_i2c_busses(struct riva_par *par)
 
 
 -------------------------------------------------------------------------

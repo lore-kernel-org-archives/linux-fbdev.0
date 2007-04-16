@@ -1,305 +1,140 @@
-From: Jimmy Jazz <Jimmy.Jazz@gmx.net>
-Subject: Re: radeonfb doesn't work with an ati X800 pcie
- card
-Date: Sat, 14 Apr 2007 12:17:36 +0200
-Message-ID: <4620AA40.4080306@gmx.net>
-References: <46093D22.3090401@gmx.net> <461BD18E.5020706@gmx.net>	
-	<461CD1F7.40004@gmx.net>	
-	<1176329514.8061.106.camel@localhost.localdomain>
-	<68676e00704121638o6e723806ue163fbd17af4b246@mail.gmail.com>
-Reply-To: Jimmy.Jazz@gmx.net, linux-fbdev-devel@lists.sourceforge.net
+From: <vignesh.babu@wipro.com>
+Subject: [KJ] [PATCH]vfc_dev.c-kzalloc
+Date: Mon, 16 Apr 2007 11:35:28 +0530
+Message-ID: <1176703528.13066.9.camel@wriver-t81fb058.linuxcoe>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------080205040701090005090804"
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HcfKB-000437-6c for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 14 Apr 2007 03:17:43 -0700
-Received: from ip-62-241-114-101.evc.net ([62.241.114.101]
-	helo=snowman.cryosphere.shacknet.nu)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HcfK9-0003Ua-R7
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 14 Apr 2007 03:17:43 -0700
-In-Reply-To: <68676e00704121638o6e723806ue163fbd17af4b246@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="===============1808680994=="
+Return-path: <kernel-janitors-bounces@lists.linux-foundation.org>
+Content-class: urn:content-classes:message
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net, pizza@shaftnet.org, kofboy@163.com
+List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/kernel-janitors>,
+	<mailto:kernel-janitors-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linux-foundation.org/pipermail/kernel-janitors>
+List-Post: <mailto:kernel-janitors@lists.linux-foundation.org>
+List-Help: <mailto:kernel-janitors-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/kernel-janitors>,
+	<mailto:kernel-janitors-request@lists.linux-foundation.org?subject=subscribe>
+Sender: kernel-janitors-bounces@lists.linux-foundation.org
+Errors-To: kernel-janitors-bounces@lists.linux-foundation.org
+To: adaplas@gmail.com
+Cc: kernel-janitors@lists.osdl.org, linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format.
---------------080205040701090005090804
-Content-Type: text/plain; charset=UTF-8; format=flowed
+
+--===============1808680994==
+Content-Type: multipart/signed; micalg=sha1;
+	protocol="application/x-pkcs7-signature";
+	boundary="=-sn7SySsS40V7zNNCGs+G"
+Content-class: urn:content-classes:message
+
+
+--=-sn7SySsS40V7zNNCGs+G
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Luca Tettamanti a =C3=A9crit :
-> On 4/12/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->> On Wed, 2007-04-11 at 14:17 +0200, Jimmy Jazz wrote:
->> > Hello,
->> >
->> > i sent it without care and i forgot to add some diff files you will=20
->> have
->> > to apply to radeonfb.h, ati_ids.h and radeon_base.c with both
->> > radeon_accel.c and radeon_monitor.c patches. Otherwise, you won't be
->> > able to compile the kernel anymore. Sorry for the inconvenient.
->> >
->> > Thank you all of you who contributed to these patches, the initiator=
- of
->> > the radeonfb driver and of course the Xorg team who made ATI cards
->> > compatible with the xorg server.
->>
->> There are already patches from Solomon for Atom BIOSes.
->=20
-> I'm attaching the usual patch for the OP, rediffed against
-> git-current. Works here on a X850.
->=20
->> I admit that I never found the time to fully cleanup, split, test,
->> etc... those along with other fixes I have in my queue. I could use a
->> co-maintainer for radeonfb...
->=20
-> Splitting the ATOM patch is PITA, the changes are very interdependent.
-> For other stuff: I can do testing and cleanup ;-)
->=20
-> Luca
 
-Hi Luca,
+Replacing kmalloc/memset combination with kzalloc.
 
-I added some lines to your code to make my ATI X800 work (it doesn't=20
-otherwise). Also DVI Flat panel owners will probably be happy :)
+Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
+---
+diff --git a/drivers/sbus/char/vfc_dev.c b/drivers/sbus/char/vfc_dev.c
+index 8bfb67c..c3135e2 100644
+--- a/drivers/sbus/char/vfc_dev.c
++++ b/drivers/sbus/char/vfc_dev.c
+@@ -259,11 +259,10 @@ static int vfc_debug(struct vfc_dev *dev, int cmd, vo=
+id __user *argp)
+ 		if (copy_from_user(&inout, argp, sizeof(inout)))
+ 			return -EFAULT;
+=20
+-		buffer =3D kmalloc(inout.len, GFP_KERNEL);
++		buffer =3D kzalloc(inout.len, GFP_KERNEL);
+ 		if (buffer =3D=3D NULL)
+ 			return -ENOMEM;
+=20
+-		memset(buffer,0,inout.len);
+ 		vfc_lock_device(dev);
+ 		inout.ret=3D
+ 			vfc_i2c_recvbuf(dev,inout.addr & 0xff
 
-I made the test on linux 2.6.21-rc6-r1 Andrew Morton's kernel release.
+--=20
+Regards, =20
+Vignesh Babu BM =20
+_____________________________________________________________ =20
+"Why is it that every time I'm with you, makes me believe in magic?"
 
-Here have a look at the differences before and after i added my patch.
-As you can see, before applying the patch, the monitor isn't detected=20
-and is defaulted to CRT even if EDID data returns the right informations=20
-about the display connected.
+--=-sn7SySsS40V7zNNCGs+G
+Content-Type: application/x-pkcs7-signature; name=smime.p7s
+Content-Disposition: attachment; filename=smime.p7s
+Content-Transfer-Encoding: base64
 
-# cat /var/log/kern.log (THE BAD)
-Apr 13 21:58:01 seal Starting monitor auto detection...
-Apr 13 21:58:01 seal i2c-adapter i2c-3: unable to read EDID block.
-Apr 13 21:58:01 seal i2c-adapter i2c-3: unable to read EDID block.
-Apr 13 21:58:01 seal i2c-adapter i2c-3: unable to read EDID block.
-Apr 13 21:58:01 seal radeonfb: I2C (port 1) ... not found
-Apr 13 21:58:01 seal radeonfb: I2C (port 0) ... found CRT display
-Apr 13 21:58:01 seal * Connector 1 is VGA. Head -1, Monitor: None
-Apr 13 21:58:01 seal ddc port: 1, dac: 0, tmds: -1
-Apr 13 21:58:01 seal * Connector 2 is DVI-I. Head 0, Monitor: CRT (EDID=20
-probed)
-Apr 13 21:58:01 seal ddc port: 0, dac: 1, tmds: 0
-
-# cat /var/log/kern.log (THE GOOD)
-
-Apr 13 23:39:54 seal i2c-adapter i2c-1: nForce2 SMBus adapter at 0x4c40
-Apr 13 23:39:54 seal radeonfb_pci_register BEGIN
-Apr 13 23:39:54 seal ACPI: PCI Interrupt Link [APC3] enabled at IRQ 18
-Apr 13 23:39:54 seal ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [APC3]=20
--> GSI 18 (level, low) -> IRQ 18
-Apr 13 23:39:54 seal radeonfb (0000:01:00.0): Found 131072k of DDR 256=20
-bits wide videoram
-Apr 13 23:39:54 seal radeonfb (0000:01:00.0): mapped 16384k videoram
-Apr 13 23:39:54 seal radeonfb: Found Intel x86 BIOS ROM Image
-Apr 13 23:39:54 seal Retrieved PLL infos from ATOM BIOS
-Apr 13 23:39:54 seal radeonfb: Reference=3D27.00 MHz (RefDiv=3D2)=20
-Memory=3D500.00 Mhz, System=3D500.00 MHz
-Apr 13 23:39:54 seal PLL min 20000 max 50000
-Apr 13 23:39:54 seal TMDS PLL from BIOS: 16500 b011c
-Apr 13 23:39:54 seal id=3D1 GPIO: 0xbac4+0x64
-Apr 13 23:39:54 seal id=3D2 GPIO: 0xbac4+0x68
-Apr 13 23:39:54 seal Port 0: DDCType-1, DACType-0, TMDSType--1,=20
-ConnectorType-1
-Apr 13 23:39:54 seal Port 1: DDCType-0, DACType-1, TMDSType-0,=20
-ConnectorType-2
-Apr 13 23:39:54 seal Starting monitor auto detection...
-Apr 13 23:39:54 seal i2c-adapter i2c-3: unable to read EDID block.
-Apr 13 23:39:54 seal i2c-adapter i2c-3: unable to read EDID block.
-Apr 13 23:39:54 seal i2c-adapter i2c-3: unable to read EDID block.
-Apr 13 23:39:54 seal radeonfb: I2C (port 1) ... not found
-Apr 13 23:39:54 seal radeonfb: I2C (port 0) ... found TMDS panel
-Apr 13 23:39:54 seal * Connector 1 is VGA. Head -1, Monitor: None
-Apr 13 23:39:54 seal ddc port: 1, dac: 0, tmds: -1
-Apr 13 23:39:54 seal * Connector 2 is DVI-I. Head 0, Monitor: DVI Flat=20
-panel (EDID probed)
-Apr 13 23:39:54 seal ddc port: 0, dac: 1, tmds: 0
-
-You will find in attachment the diff code source. (AND THE UGLY)
-
-A lot of code was altered recently in xf86-video-ati-6.6.191. I think=20
-xorg team made the cleanup Benh asks for ;)
-
-IMHO that would have been great to unify kernel and xorg code regarding=20
-display drivers.
+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
+CQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UE
+AxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0EwgZ8wDQYJKoZIhvcNAQEBBQAD
+gY0AMIGJAoGBAMSmPFVzVftOucqZWh5owHUEcJ3f6f+jHuy9zfVb8hp2vX8MOmHyv1HOAdTlUAow
+1wJjWiyJFXCO3cnwK4Vaqj9xVsuvPAsH5/EfkTYkKhPPK9Xzgnc9A74r/rsYPge/QIACZNenpruf
+ZdHFKlSFD0gEf6e20TxhBEAeZBlyYLf7AgMBAAGjgZQwgZEwEgYDVR0TAQH/BAgwBgEB/wIBADBD
+BgNVHR8EPDA6MDigNqA0hjJodHRwOi8vY3JsLnRoYXd0ZS5jb20vVGhhd3RlUGVyc29uYWxGcmVl
+bWFpbENBLmNybDALBgNVHQ8EBAMCAQYwKQYDVR0RBCIwIKQeMBwxGjAYBgNVBAMTEVByaXZhdGVM
+YWJlbDItMTM4MA0GCSqGSIb3DQEBBQUAA4GBAEiM0VCD6gsuzA2jZqxnD3+vrL7CF6FDlpSdf0wh
+uPg2H6otnzYvwPQcUCCTcDz9reFhYsPZOhl+hLGZGwDFGguCdJ4lUJRix9sncVcljd2pnDmOjCBP
+ZV+V2vf3h9bGCE6u9uo05RAaWzVNd+NWIXiC3CEZNd4ksdMdRv9dX2VPMYIDEDCCAwwCAQEwdjBi
+MQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoG
+A1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0ECEBRBWlnPDDQELOU4iM67
+/5AwCQYFKw4DAhoFAKCCAW8wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUx
+DxcNMDcwNDE2MDYwNTI4WjAjBgkqhkiG9w0BCQQxFgQUr0bHT/+LO7NtNIcSdLl3hLnWZ68wgYUG
+CSsGAQQBgjcQBDF4MHYwYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5n
+IChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENB
+AhAUQVpZzww0BCzlOIjOu/+QMIGHBgsqhkiG9w0BCRACCzF4oHYwYjELMAkGA1UEBhMCWkExJTAj
+BgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJz
+b25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAhAUQVpZzww0BCzlOIjOu/+QMA0GCSqGSIb3DQEBAQUA
+BIIBAIlCrCqbWZUS9P7UvvhEyEFRimNjCmnc1uAWzlPBDHS5v5VGE7hA0OzUp6zp9ypmt9SkbXhv
+prqAFUJCluelQ/Z77HPCf/z7d2UOThsEkW80OwiuIdo6pjCAJzJCyVxY6wlpNZ7QorrQPupV71J4
+f0rbx0FtlRTzGe7dvUiwfN7OsN2DZ6xf4u6evAHmMYNubzXVBjF+tRH1cfjV63GL/JimkNTcoLew
+G2WRxuH/RFbI9OsszatvKXGXkXd6Ea6YX+NawD6sON3dUPjG/DT4vN2wgWvfC3bWKQkqlUp6HpAd
+misdeKhW0ejTK2rrRQlWdf6AoFR4rbx8JroYFjwmgUMAAAAAAAA=
 
 
-@kofboy
+--=-sn7SySsS40V7zNNCGs+G--
 
-I'm unable to send you more than one mail a day. There should be=20
-something wrong with your ISP. Please join us on the list :)
-
-Jj
-
---------------080205040701090005090804
-Content-Type: text/x-patch;
- name="aty.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="aty.patch"
-
---- /usr/src/model_with-radeon-r400/aty/radeon_i2c.c	2007-04-13 13:35:49.000000000 +0200
-+++ radeon_i2c.c	2007-04-13 22:07:16.000000000 +0200
-@@ -163,7 +163,7 @@
- 		mon_type = MT_NONE;
- 		goto done;
- 	}
--	if ((edid[EDID_STRUCT_DISPLAY] & 0x80) && (conn->ddc_type == ddc_dvi)) {
-+	if ((edid[EDID_STRUCT_DISPLAY] & 0x80) && ((conn->ddc_type == ddc_dvi) || (conn->ddc_type == ddc_monid))) {
- 		RTRACE("radeonfb: I2C (port %d) ... found TMDS panel\n", conn->ddc_type);
- 		mon_type = MT_DFP;
- 		goto done;
---- /usr/src/model_with-radeon-r400/aty/radeon_monitor.c	2007-04-13 13:35:49.000000000 +0200
-+++ radeon_monitor.c	2007-04-13 14:00:11.000000000 +0200
-@@ -610,6 +610,105 @@
- }
- #endif /* CONFIG_PPC_OF */
- 
-+#if 1
-+int __devinit radeon_get_conn_info_atom(struct radeonfb_info *rinfo)
-+{
-+    int i = 0, j, tmp, tmp0=0, tmp1=0;
-+
-+    if(!rinfo->bios_seg) return -ENODEV;
-+
-+    if (rinfo->is_atom_bios) {
-+        if((tmp = BIOS_IN16 (rinfo->atom_data_start + 22))) {
-+            int crtc = 0, id[2];
-+            tmp1 = BIOS_IN16 (tmp + 4);
-+            for (i=0; i<8; i++) {
-+                if(tmp1 & (1<<i)) {
-+                    u16 portinfo = BIOS_IN16(tmp+6+i*2);
-+                    if (crtc < 2) {
-+                        if ((i==2) || (i==6)) continue; /* ignore TV here */
-+
-+                        if (crtc == 1) {
-+                            /* sharing same port with id[0] */
-+                            if (((portinfo>>8) & 0xf) == id[0]) {
-+                                if (i == 3)
-+                                    rinfo->connectors[0].tmds_type = tmds_internal;
-+                                else if (i == 7)
-+                                    rinfo->connectors[0].tmds_type = tmds_external;
-+
-+                                if (rinfo->connectors[0].dac_type == dac_unknown)
-+                                    rinfo->connectors[0].dac_type = (portinfo & 0xf) - 1;
-+                                continue;
-+                            }
-+                        }
-+
-+                        /* crtc == 0 */
-+                        id[crtc] = (portinfo>>8) & 0xf;
-+                        rinfo->connectors[crtc].dac_type = (portinfo & 0xf) - 1;
-+                        rinfo->connectors[crtc].conn_type = (portinfo>>4) & 0xf;
-+                        if (i == 3)
-+                            rinfo->connectors[crtc].tmds_type = tmds_internal;
-+                        else if (i == 7)
-+                            rinfo->connectors[crtc].tmds_type = tmds_external;
-+
-+                        if((tmp0 = BIOS_IN16 (rinfo->atom_data_start + 24)) && id[crtc]) {
-+                            int gpio;
-+                            switch (gpio = BIOS_IN16 (tmp0 + 4 + 27 * id[crtc]) * 4)
-+                            {
-+                            case GPIO_MONID:
-+                                rinfo->connectors[crtc].ddc_type = ddc_monid;
-+                                break;
-+                            case GPIO_DVI_DDC:
-+                                rinfo->connectors[crtc].ddc_type = ddc_dvi;
-+                                break;
-+                            case GPIO_VGA_DDC:
-+                                rinfo->connectors[crtc].ddc_type = ddc_vga;
-+                                break;
-+                            case GPIO_CRT2_DDC:
-+                                rinfo->connectors[crtc].ddc_type = ddc_crt2;
-+                                break;
-+                            default:
-+                                rinfo->connectors[crtc].ddc_type = ddc_none;
-+                                break;
-+                            }
-+                            RTRACE("id=%d GPIO: 0x%x+0x%x\n",id[crtc],tmp0,gpio);
-+
-+                        } else {
-+                            rinfo->connectors[crtc].ddc_type = ddc_none;
-+                        }
-+                        crtc++;
-+                    } else {
-+                        /* we have already had two CRTCs assigned. the rest may share the same
-+ *                          * port with the existing connector, fill in them accordingly.
-+ *                                                   */
-+                        for (j=0; j<2; j++) {
-+                            if (((portinfo>>8) & 0xf) == id[j]) {
-+                                if (i == 3)
-+                                    rinfo->connectors[j].tmds_type = tmds_internal;
-+                                else if (i == 7)
-+                                    rinfo->connectors[j].tmds_type = tmds_external;
-+
-+                                if (rinfo->connectors[j].dac_type == dac_unknown)
-+                                    rinfo->connectors[j].dac_type = (portinfo & 0xf) - 1;
-+                            }
-+                        }
-+                    }
-+                }
-+            }
-+
-+            for (i=0; i<2; i++) {
-+                        RTRACE("Port %d: DDCType-%d, DACType-%d, TMDSType-%d, ConnectorType-%d\n", i,
-+                        rinfo->connectors[i].ddc_type, rinfo->connectors[i].dac_type,
-+                        rinfo->connectors[i].tmds_type, rinfo->connectors[i].conn_type);
-+            }
-+        } else {
-+                RTRACE("No Device Info Table found!\n");
-+            return -ENODEV;
-+        }
-+    }
-+    return 0;
-+}
-+#endif
-+#if 0
- int __devinit radeon_get_conn_info_atom(struct radeonfb_info *rinfo)
- {
- 	int i, j, offset, valids;
-@@ -727,6 +826,7 @@
- 
- 	return 0;
- }
-+#endif
- 
- /* Try to extract the connector informations from the BIOS. This
-  * doesn't quite work yet, but it's output is still useful for
-
---------------080205040701090005090804
-Content-Type: text/plain; charset="us-ascii"
+--===============1808680994==
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
--------------------------------------------------------------------------
-Take Surveys. Earn Cash. Influence the Future of IT
-Join SourceForge.net's Techsay panel and you'll get the chance to share your
-opinions on IT & business topics through brief surveys-and earn cash
-http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
---------------080205040701090005090804
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
 _______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+Kernel-janitors mailing list
+Kernel-janitors@lists.linux-foundation.org
+https://lists.linux-foundation.org/mailman/listinfo/kernel-janitors
 
---------------080205040701090005090804--
+--===============1808680994==--

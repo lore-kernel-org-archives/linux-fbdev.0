@@ -1,73 +1,89 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Subject: Re: Radeon X300, radeonfb, dual head
-Date: Wed, 18 Apr 2007 15:45:31 +0200
-Message-ID: <1176903932.10554.248.camel@thor.sulgenrain.local>
+From: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
+Subject: Re: [Linux-fbdev-devel] Radeon X300, radeonfb, dual head
+Date: Wed, 18 Apr 2007 17:02:20 +0200
+Message-ID: <200704181702.21359.hjk@linutronix.de>
 References: <200704181409.51475.hjk@linutronix.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+	<1176903932.10554.248.camel@thor.sulgenrain.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HeAUp-00089X-M1 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Apr 2007 06:46:55 -0700
-Received: from ug-out-1314.google.com ([66.249.92.170])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HeAUl-0001uZ-Nz
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Apr 2007 06:46:55 -0700
-Received: by ug-out-1314.google.com with SMTP id z38so360231ugc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 18 Apr 2007 06:46:50 -0700 (PDT)
-In-Reply-To: <200704181409.51475.hjk@linutronix.de>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <xorg-bounces@lists.freedesktop.org>
+In-Reply-To: <1176903932.10554.248.camel@thor.sulgenrain.local>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: xorg@lists.freedesktop.org
+Cc: Michel =?utf-8?q?D=C3=A4nzer?= <michel@tungstengraphics.com>, xorg@lists.freedesktop.org
 
-T24gV2VkLCAyMDA3LTA0LTE4IGF0IDE0OjA5ICswMjAwLCBIYW5zLUrDvHJnZW4gS29jaCB3cm90
-ZToKPiAKPiAxLikgSSBjb21waWxlZCByYWRlb25mYiBzdGF0aWNhbGx5IGludG8gbXkga2VybmVs
-IGFuZCBib290ZWQgd2l0aAo+IHZpZGVvPXJhZGVvbmZiOjEyODB4MTAyNC0zMkA2MC4gVGhpcyB3
-b3JrcyBmaW5lLCB0aGUgZnJhbWVidWZmZXIKPiBjb25zb2xlIHdvcmtzIGFzIGV4cGVjdGVkLiBC
-dXQgdGhlIFggc2VydmVyIGRvZXNuJ3QgY29tZSB1cAo+IHByb3Blcmx5LiBYb3JnLjAubG9nIGVu
-ZHMgbGlrZSB0aGlzOgo+IAo+IFsuLi5dCj4gKCoqKSBSQURFT04oMCk6IFJBREVPTlNhdmVTY3Jl
-ZW4oMikKPiAoKiopIFJBREVPTigwKTogRklGTyB0aW1lZCBvdXQ6IDIgZW50cmllcywgc3RhdD0w
-eDgwMDI2MTAyCj4gKEVFKSBSQURFT04oMCk6IEZJRk8gdGltZWQgb3V0LCByZXNldHRpbmcgZW5n
-aW5lLi4uCgpQbGVhc2UgZmlsZSBhIGJ1ZyBmb3IgdGhpcyBhdCBodHRwOi8vYnVncy5mcmVlZGVz
-a3RvcC5vcmcgaWYgaXQgaGFzbid0CmJlZW4gcmVwb3J0ZWQgeWV0LiBEb2VzIHRoaXMgYWxzbyBo
-YXBwZW4gaWYgeW91IGRvbid0IGVuYWJsZSB0aGUgRFJJPwoKCj4gMi4pIEkgY29tcGlsZWQgdmVz
-YWZiIHN0YXRpY2FsbHksIHJhZGVvbmZiIG9ubHkgYXMgbW9kdWxlLiBJZiBJIGJvb3QKPiB3aXRo
-IHZnYT0weDMxOCwgdGhlIGZyYW1lYnVmZmVyIGNvbnNvbGUgd29ya3MgYXMgZXhwZWN0ZWQuIFRo
-ZQo+IFggc2VydmVyIHN0YXJ0cyB1cCwgWG9yZy4wLmxvZyBsb29rcyBnb29kIChleGNlcHQgdGhh
-dCBEUkkgaXMgZGlzYWJsZWQpLgo+IAo+IEJ1dCB3aGVuIGtkbSBjb21lcyB1cCwgSSBzZWUgdGhl
-IHNhbWUgcGljdHVyZSBvbiBib3RoIG1vbml0b3JzLiBXaGF0IEkKPiBzZWUgbG9va3MgbGlrZSB0
-aGUgcmlnaHQgaGFsZiBvZiB0aGUgMzM2MHgxMDUwIGRlc2t0b3AgKG1vdXNlIGNhbiBiZQo+IG1v
-dmVkIGFjcm9zcyB0aGUgbGVmdCBib3JkZXIgb2YgdGhlIHNjcmVlbiwgc3RvcHMgYXQgdGhlIHJp
-Z2h0IGJvcmRlcikuCj4gQm90aCBzY3JlZW5zIGFyZSBkcml2ZW4gcHJvcGVybHkgd2l0aCAxNjgw
-eDEwNTAuIEkgdHJpZWQgc2V2ZXJhbAo+IG1vZGlmaWNhdGlvbnMgb2YgbXkgeG9yZy5jb25mLCBi
-dXQgbmV2ZXIgbWFuYWdlZCB0byBnZXQgZGlmZmVyZW50Cj4gaW1hZ2VzIG9uIHRoZSB0d28gbW9u
-aXRvcnMsIHRoZXkgYWx3YXlzIHNob3cgdGhlIHNhbWUuIAoKWy4uLl0KCj4gICAgICAgICBPcHRp
-b24gICAgICAgICAgIk1vbml0b3JMYXlvdXQiICJUTURTLFRNRFMiCgpUaGUgZHJpdmVyIGRvZXNu
-J3Qgc3VwcG9ydCB0aGlzIGNvbWJpbmF0aW9uIHlldCwgYW5kIGl0IGRvZXNuJ3QgbWF0Y2gKeW91
-ciBzZXR1cCBhbnl3YXkuIFdoYXQgaGFwcGVucyBpZiB5b3UgY29tbWVudCBvdXQgdGhpcyBvcHRp
-b24gb3IgY2hhbmdlCml0IHRvICJDUlQsQ1JUIj8KCgotLSAKRWFydGhsaW5nIE1pY2hlbCBEw6Ru
-emVyICAgICAgICAgICB8ICAgICAgICAgIGh0dHA6Ly90dW5nc3RlbmdyYXBoaWNzLmNvbQpMaWJy
-ZSBzb2Z0d2FyZSBlbnRodXNpYXN0ICAgICAgICAgfCAgICAgICAgICBEZWJpYW4sIFggYW5kIERS
-SSBkZXZlbG9wZXIKCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRoaXMgU0YubmV0IGVtYWlsIGlzIHNwb25z
-b3JlZCBieSBEQjIgRXhwcmVzcwpEb3dubG9hZCBEQjIgRXhwcmVzcyBDIC0gdGhlIEZSRUUgdmVy
-c2lvbiBvZiBEQjIgZXhwcmVzcyBhbmQgdGFrZQpjb250cm9sIG9mIHlvdXIgWE1MLiBObyBsaW1p
-dHMuIEp1c3QgZGF0YS4gQ2xpY2sgdG8gZ2V0IGl0IG5vdy4KaHR0cDovL3NvdXJjZWZvcmdlLm5l
-dC9wb3dlcmJhci9kYjIvCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBs
-aXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMv
-bGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+Am Mittwoch, 18. April 2007 15:45 schrieb Michel D=C3=A4nzer:
+> On Wed, 2007-04-18 at 14:09 +0200, Hans-J=C3=BCrgen Koch wrote:
+> >=20
+> > 1.) I compiled radeonfb statically into my kernel and booted with
+> > video=3Dradeonfb:1280x1024-32@60. This works fine, the framebuffer
+> > console works as expected. But the X server doesn't come up
+> > properly. Xorg.0.log ends like this:
+> >=20
+> > [...]
+> > (**) RADEON(0): RADEONSaveScreen(2)
+> > (**) RADEON(0): FIFO timed out: 2 entries, stat=3D0x80026102
+> > (EE) RADEON(0): FIFO timed out, resetting engine...
+>=20
+> Please file a bug for this at http://bugs.freedesktop.org if it hasn't
+> been reported yet.=20
+
+I'll do that, but want to experiment a little bit more first.
+
+> Does this also happen if you don't enable the DRI?
+
+Thanks for reminding me - I didn't enable DRM in my kernel yet, so DRI
+was always off. I now enabled it, and (to answer your question), this is
+no issue. Even AIGLX starts up properly, but everything else is as before.
+
+I still have the same picture on both monitors.
+
+>=20
+>=20
+> > 2.) I compiled vesafb statically, radeonfb only as module. If I boot
+> > with vga=3D0x318, the framebuffer console works as expected. The
+> > X server starts up, Xorg.0.log looks good (except that DRI is disabled).
+> >=20
+> > But when kdm comes up, I see the same picture on both monitors. What I
+> > see looks like the right half of the 3360x1050 desktop (mouse can be
+> > moved across the left border of the screen, stops at the right border).
+> > Both screens are driven properly with 1680x1050. I tried several
+> > modifications of my xorg.conf, but never managed to get different
+> > images on the two monitors, they always show the same.=20
+>=20
+> [...]
+>=20
+> >         Option          "MonitorLayout" "TMDS,TMDS"
+>=20
+> The driver doesn't support this combination yet, and it doesn't match
+> your setup anyway.=20
+
+Well, the manpage says:
+
+CRT -- Analog CRT monitor=20
+TMDS -- Desktop flat panel
+
+So I thought the latter would be appropriate for two LCD monitors.
+The manpage also doesn't mention any illegal combinations.=20
+
+> What happens if you comment out this option or change=20
+> it to "CRT,CRT"?
+
+Nothing, no change.
+
+Thanks,
+Hans
+
+
+=20

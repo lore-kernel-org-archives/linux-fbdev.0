@@ -1,25 +1,26 @@
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
 Subject: Re: Radeon X300, radeonfb, dual head
-Date: Wed, 18 Apr 2007 15:26:57 +0200
-Message-ID: <200704181526.57746.hjk@linutronix.de>
+Date: Wed, 18 Apr 2007 15:45:31 +0200
+Message-ID: <1176903932.10554.248.camel@thor.sulgenrain.local>
 References: <200704181409.51475.hjk@linutronix.de>
-	<4240b9160704180558t6a81f81eoe4a8c768ae6d0929@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HeABk-00064t-48 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Apr 2007 06:27:12 -0700
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HeABi-00058s-MB
+	id 1HeAUp-00089X-M1 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Apr 2007 06:46:55 -0700
+Received: from ug-out-1314.google.com ([66.249.92.170])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HeAUl-0001uZ-Nz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Apr 2007 06:27:12 -0700
-In-Reply-To: <4240b9160704180558t6a81f81eoe4a8c768ae6d0929@mail.gmail.com>
-Content-Disposition: inline
+	Wed, 18 Apr 2007 06:46:55 -0700
+Received: by ug-out-1314.google.com with SMTP id z38so360231ugc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 18 Apr 2007 06:46:50 -0700 (PDT)
+In-Reply-To: <200704181409.51475.hjk@linutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,41 +31,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jerome Glisse <j.glisse@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: xorg@lists.freedesktop.org
 
-Am Mittwoch, 18. April 2007 14:58 schrieb Jerome Glisse:
-
-> 
-> I am not at all an expert in this radeonfb + X things (somethings i avoid
-> to use :)) but i think that radeonfb might get in the way of the X server
-
-That's obvious, but why? Is it a X problem, or is it a radeonfb problem?
-Several pages I found on the web suggest that somebody got these working
-together. Where does the regression come from? What can I do to help?
-
-> does mergedfb work with a kernel without any framebuffer driver ?
-
-No, I just tried that. I only compiled in vga16, no vesafb, no radeonfb,
-but no change in X server behaviour.
-
-But one more interesting thing:
-
-I added 
-Option "MergedXineramaCRT2IsScreen0" "true"
-to my Section "Device". This made kdm show its login window on my screens,
-so I could login to KDE. The KDE control center displays everything as it
-should be: Desktop 3360x1050, two displays with 1680x1050 each, first display
-at 0,0 and second display at 1680,1050.
-
-So obviously the X server "thinks" everything is configured as it should be.
-Unfortunately, that's not reality. I still got the same content on both screens.
-
-Hans
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+T24gV2VkLCAyMDA3LTA0LTE4IGF0IDE0OjA5ICswMjAwLCBIYW5zLUrDvHJnZW4gS29jaCB3cm90
+ZToKPiAKPiAxLikgSSBjb21waWxlZCByYWRlb25mYiBzdGF0aWNhbGx5IGludG8gbXkga2VybmVs
+IGFuZCBib290ZWQgd2l0aAo+IHZpZGVvPXJhZGVvbmZiOjEyODB4MTAyNC0zMkA2MC4gVGhpcyB3
+b3JrcyBmaW5lLCB0aGUgZnJhbWVidWZmZXIKPiBjb25zb2xlIHdvcmtzIGFzIGV4cGVjdGVkLiBC
+dXQgdGhlIFggc2VydmVyIGRvZXNuJ3QgY29tZSB1cAo+IHByb3Blcmx5LiBYb3JnLjAubG9nIGVu
+ZHMgbGlrZSB0aGlzOgo+IAo+IFsuLi5dCj4gKCoqKSBSQURFT04oMCk6IFJBREVPTlNhdmVTY3Jl
+ZW4oMikKPiAoKiopIFJBREVPTigwKTogRklGTyB0aW1lZCBvdXQ6IDIgZW50cmllcywgc3RhdD0w
+eDgwMDI2MTAyCj4gKEVFKSBSQURFT04oMCk6IEZJRk8gdGltZWQgb3V0LCByZXNldHRpbmcgZW5n
+aW5lLi4uCgpQbGVhc2UgZmlsZSBhIGJ1ZyBmb3IgdGhpcyBhdCBodHRwOi8vYnVncy5mcmVlZGVz
+a3RvcC5vcmcgaWYgaXQgaGFzbid0CmJlZW4gcmVwb3J0ZWQgeWV0LiBEb2VzIHRoaXMgYWxzbyBo
+YXBwZW4gaWYgeW91IGRvbid0IGVuYWJsZSB0aGUgRFJJPwoKCj4gMi4pIEkgY29tcGlsZWQgdmVz
+YWZiIHN0YXRpY2FsbHksIHJhZGVvbmZiIG9ubHkgYXMgbW9kdWxlLiBJZiBJIGJvb3QKPiB3aXRo
+IHZnYT0weDMxOCwgdGhlIGZyYW1lYnVmZmVyIGNvbnNvbGUgd29ya3MgYXMgZXhwZWN0ZWQuIFRo
+ZQo+IFggc2VydmVyIHN0YXJ0cyB1cCwgWG9yZy4wLmxvZyBsb29rcyBnb29kIChleGNlcHQgdGhh
+dCBEUkkgaXMgZGlzYWJsZWQpLgo+IAo+IEJ1dCB3aGVuIGtkbSBjb21lcyB1cCwgSSBzZWUgdGhl
+IHNhbWUgcGljdHVyZSBvbiBib3RoIG1vbml0b3JzLiBXaGF0IEkKPiBzZWUgbG9va3MgbGlrZSB0
+aGUgcmlnaHQgaGFsZiBvZiB0aGUgMzM2MHgxMDUwIGRlc2t0b3AgKG1vdXNlIGNhbiBiZQo+IG1v
+dmVkIGFjcm9zcyB0aGUgbGVmdCBib3JkZXIgb2YgdGhlIHNjcmVlbiwgc3RvcHMgYXQgdGhlIHJp
+Z2h0IGJvcmRlcikuCj4gQm90aCBzY3JlZW5zIGFyZSBkcml2ZW4gcHJvcGVybHkgd2l0aCAxNjgw
+eDEwNTAuIEkgdHJpZWQgc2V2ZXJhbAo+IG1vZGlmaWNhdGlvbnMgb2YgbXkgeG9yZy5jb25mLCBi
+dXQgbmV2ZXIgbWFuYWdlZCB0byBnZXQgZGlmZmVyZW50Cj4gaW1hZ2VzIG9uIHRoZSB0d28gbW9u
+aXRvcnMsIHRoZXkgYWx3YXlzIHNob3cgdGhlIHNhbWUuIAoKWy4uLl0KCj4gICAgICAgICBPcHRp
+b24gICAgICAgICAgIk1vbml0b3JMYXlvdXQiICJUTURTLFRNRFMiCgpUaGUgZHJpdmVyIGRvZXNu
+J3Qgc3VwcG9ydCB0aGlzIGNvbWJpbmF0aW9uIHlldCwgYW5kIGl0IGRvZXNuJ3QgbWF0Y2gKeW91
+ciBzZXR1cCBhbnl3YXkuIFdoYXQgaGFwcGVucyBpZiB5b3UgY29tbWVudCBvdXQgdGhpcyBvcHRp
+b24gb3IgY2hhbmdlCml0IHRvICJDUlQsQ1JUIj8KCgotLSAKRWFydGhsaW5nIE1pY2hlbCBEw6Ru
+emVyICAgICAgICAgICB8ICAgICAgICAgIGh0dHA6Ly90dW5nc3RlbmdyYXBoaWNzLmNvbQpMaWJy
+ZSBzb2Z0d2FyZSBlbnRodXNpYXN0ICAgICAgICAgfCAgICAgICAgICBEZWJpYW4sIFggYW5kIERS
+SSBkZXZlbG9wZXIKCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRoaXMgU0YubmV0IGVtYWlsIGlzIHNwb25z
+b3JlZCBieSBEQjIgRXhwcmVzcwpEb3dubG9hZCBEQjIgRXhwcmVzcyBDIC0gdGhlIEZSRUUgdmVy
+c2lvbiBvZiBEQjIgZXhwcmVzcyBhbmQgdGFrZQpjb250cm9sIG9mIHlvdXIgWE1MLiBObyBsaW1p
+dHMuIEp1c3QgZGF0YS4gQ2xpY2sgdG8gZ2V0IGl0IG5vdy4KaHR0cDovL3NvdXJjZWZvcmdlLm5l
+dC9wb3dlcmJhci9kYjIvCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBs
+aXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMv
+bGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

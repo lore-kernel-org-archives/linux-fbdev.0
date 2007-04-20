@@ -1,62 +1,147 @@
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Subject: Re: Radeon X300, radeonfb, dual head
-Date: Thu, 19 Apr 2007 10:44:06 +0200
-Message-ID: <200704191044.07083.hjk@linutronix.de>
-References: <200704181409.51475.hjk@linutronix.de>
-	<46272535.5040303@cryosphere.shacknet.nu>
+From: Ondrej Zajicek <santiago@crfreenet.org>
+Subject: Fix for s3fb driver
+Date: Fri, 20 Apr 2007 13:34:05 +0200
+Message-ID: <20070420113405.GA2116@localhost.localdomain>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <xorg-bounces@lists.freedesktop.org>
-In-Reply-To: <46272535.5040303@cryosphere.shacknet.nu>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HerNe-0005ZV-Kk for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 20 Apr 2007 04:34:22 -0700
+Received: from gateway.crfreenet.org
+	([81.92.146.254] helo=mail.crfreenet.org ident=postfix)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HerNd-0001y2-M8
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 20 Apr 2007 04:34:22 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="us-ascii"
-To: Wanda <wanda@cryosphere.shacknet.nu>
-Cc: linux-fbdev-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: torvalds@linux-foundation.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
 
-Am Donnerstag, 19. April 2007 10:15 schrieb Wanda:
-> 
-> Hello,
-> 
-> i had the same issue about fifo timeout. You certainly get very random
-> refresh of the screen too if you activate dri. That is not a Xorg bug
-> but rather a radeonfb one. It comes from radeonfb_accel.c, if i remember
-> well. Just try and read the patch i send to the list (thread "radeonfb
-> doesn't work with an ati X800 pcie", file: radeon_accel.c.2.6.20.diff) 
-> Also, you will certainly need all the xxx.c.2.6.20.diff as well. You
-> will find them in the april archive. If that doesn't help you try luca's
-> one + aty.patch (same thread) In that case you are integrated a bunch of
-> xorg code in radeonfb :). Luca's patch isn't compatible with mine except
-> when applyed with aty.patch. I need it for my card, otherwise it doesn't
-> work. But it could be incompatible with your card. Luca's patch still
-> generates 2 *.rej file. You can install them manually and very easily by
-> reading the rej file.
-> 
-> If nothing works for you , you have certainly a legacy instead an atom
-> bios. In that case most of the patches won't help you. But keep trying.
-> I get finally my x800  working with them. xorg and radeonfb work now
-> together without a problem. Indeed, i don't have black screens or screen
-> corruptions any more ;)
+This patch fixes broken fbcon on Virge VX in 24 bpp mode,
+and contains several other small updates.
 
-Hi,
-thanks for your hints. But at the moment, I'd be lucky if I could get xorg
-working with dual head even without radeonfb. It would be nice if I could
-have a framebuffer console, though. Is one of these patches about to get
-in mainline? I (have to) work with new kernels all the time, so it would 
-be quite inconvenient if I had to apply (and maintain) an out-of-tree
-patch every time I compile a new kernel.
+It is against linux-2.6.21-rc7
 
-If one of these patches looks acceptable for the fb-devel folks, I'm
-willing to review, test, and submit updated patches if it works.
+Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 
-Thanks,
-Hans
+---
+
+diff -uprN -X linux-2.6.21-rc7-base/Documentation/dontdiff linux-2.6.21-rc7-base/Documentation/fb/s3fb.txt linux-2.6.21-rc7-s3fb/Documentation/fb/s3fb.txt
+--- linux-2.6.21-rc7-base/Documentation/fb/s3fb.txt	2007-04-16 01:50:57.000000000 +0200
++++ linux-2.6.21-rc7-s3fb/Documentation/fb/s3fb.txt	2007-04-20 02:52:51.000000000 +0200
+@@ -35,10 +35,12 @@ Supported Features
+ 	* suspend/resume support
+ 	* DPMS support
+ 
+-Text mode is supported even in higher resolutions, but there is limitation
+-to lower pixclocks (maximum between 50-60 MHz, depending on specific hardware).
+-This limitation is not enforced by driver. Text mode supports 8bit wide fonts
+-only (hardware limitation) and 16bit tall fonts (driver limitation).
++Text mode is supported even in higher resolutions, but there is limitation to
++lower pixclocks (maximum usually between 50-60 MHz, depending on specific
++hardware, i get best results from plain S3 Trio32 card - about 75 MHz). This
++limitation is not enforced by driver. Text mode supports 8bit wide fonts only
++(hardware limitation) and 16bit tall fonts (driver limitation). Text mode
++support is broken on S3 Trio64 V2/DX.
+ 
+ There are two 4 bpp modes. First mode (selected if nonstd == 0) is mode with
+ packed pixels, high nibble first. Second mode (selected if nonstd == 1) is mode
+@@ -73,6 +75,8 @@ Known bugs
+ ==========
+ 
+ 	* cursor disable in text mode doesn't work
++	* text mode broken on S3 Trio64 V2/DX
++
+ 
+ --
+ Ondrej Zajicek <santiago@crfreenet.org>
+diff -uprN -X linux-2.6.21-rc7-base/Documentation/dontdiff linux-2.6.21-rc7-base/drivers/video/s3fb.c linux-2.6.21-rc7-s3fb/drivers/video/s3fb.c
+--- linux-2.6.21-rc7-base/drivers/video/s3fb.c	2007-04-16 01:50:57.000000000 +0200
++++ linux-2.6.21-rc7-s3fb/drivers/video/s3fb.c	2007-04-19 11:17:24.000000000 +0200
+@@ -65,7 +65,7 @@ static const struct svga_fb_format s3fb_
+ 
+ 
+ static const struct svga_pll s3_pll = {3, 129, 3, 33, 0, 3,
+-	60000, 240000, 14318};
++	35000, 240000, 14318};
+ 
+ static const int s3_memsizes[] = {4096, 0, 3072, 8192, 2048, 6144, 1024, 512};
+ 
+@@ -326,8 +326,13 @@ static void s3_set_pixclock(struct fb_in
+ {
+ 	u16 m, n, r;
+ 	u8 regval;
++	int rv;
+ 
+-	svga_compute_pll(&s3_pll, 1000000000 / pixclock, &m, &n, &r, info->node);
++	rv = svga_compute_pll(&s3_pll, 1000000000 / pixclock, &m, &n, &r, info->node);
++	if (rv < 0) {
++		printk(KERN_ERR "fb%d: cannot set requested pixclock, keeping old value\n", info->node);
++		return;
++	}
+ 
+ 	/* Set VGA misc register  */
+ 	regval = vga_r(NULL, VGA_MIS_R);
+@@ -699,7 +704,7 @@ static int s3fb_setcolreg(u_int regno, u
+ 		break;
+ 	case 16:
+ 		if (regno >= 16)
+-			return -EINVAL;
++			return 0;
+ 
+ 		if (fb->var.green.length == 5)
+ 			((u32*)fb->pseudo_palette)[regno] = ((red & 0xF800) >> 1) |
+@@ -712,9 +717,9 @@ static int s3fb_setcolreg(u_int regno, u
+ 	case 24:
+ 	case 32:
+ 		if (regno >= 16)
+-			return -EINVAL;
++			return 0;
+ 
+-		((u32*)fb->pseudo_palette)[regno] = ((transp & 0xFF00) << 16) | ((red & 0xFF00) << 8) |
++		((u32*)fb->pseudo_palette)[regno] = ((red & 0xFF00) << 8) |
+ 			(green & 0xFF00) | ((blue & 0xFF00) >> 8);
+ 		break;
+ 	default:
+@@ -767,12 +772,6 @@ static int s3fb_pan_display(struct fb_va
+ 
+ 	unsigned int offset;
+ 
+-	/* Validate the offsets */
+-	if ((var->xoffset + var->xres) > var->xres_virtual)
+-		return -EINVAL;
+-	if ((var->yoffset + var->yres) > var->yres_virtual)
+-		return -EINVAL;
+-
+ 	/* Calculate the offset */
+ 	if (var->bits_per_pixel == 0) {
+ 		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
+
+
+-- 
+Elen sila lumenn' omentielvo
+
+Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

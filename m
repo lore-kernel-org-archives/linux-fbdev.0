@@ -1,22 +1,26 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Console unregistration questions
-Date: Tue, 24 Apr 2007 14:59:29 -0700
-Message-ID: <200704241459.29297.jbarnes@virtuousgeek.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Console unregistration questions
+Date: Wed, 25 Apr 2007 07:19:47 +0800
+Message-ID: <1177456787.10465.29.camel@daplas>
+References: <200704241459.29297.jbarnes@virtuousgeek.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgT2z-0005Ya-C3 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Apr 2007 14:59:41 -0700
-Received: from outbound-mail-07.bluehost.com ([69.89.17.207])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1HgT2y-0000Rr-1d
+	id 1HgUIp-0002yF-2S for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 24 Apr 2007 16:20:07 -0700
+Received: from py-out-1112.google.com ([64.233.166.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgUIn-0006d7-Bt
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Apr 2007 14:59:41 -0700
-Content-Disposition: inline
+	Tue, 24 Apr 2007 16:20:06 -0700
+Received: by py-out-1112.google.com with SMTP id a29so16746pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 24 Apr 2007 16:20:02 -0700 (PDT)
+In-Reply-To: <200704241459.29297.jbarnes@virtuousgeek.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,49 +34,79 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Dave Airlie <airlied@linux.ie>, Jakob Bornecrantz <wallbraker@gmail.com>
 
-In doing the DRM modesetting work, we've been using the FB layer to manage 
-regular FB devices and provide a DRM based console to the user (iow DRM 
-owns the PCI device but the FB layer is used as a console and to provide 
-the familiar /dev/fb interface to existing software).
+On Tue, 2007-04-24 at 14:59 -0700, Jesse Barnes wrote:
+> In doing the DRM modesetting work, we've been using the FB layer to manage 
+> regular FB devices and provide a DRM based console to the user (iow DRM 
+> owns the PCI device but the FB layer is used as a console and to provide 
+> the familiar /dev/fb interface to existing software).
+> 
+> However, in doing development we noticed that when we remove the new DRM 
+> based fb driver, our machines tend to hang.  This appears to be due to 
+> bugs in console unregistration.
+> 
+> The DRM fb driver's cleanup routine is normal, I think:
+> 
+> int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
+> {
+> 	struct fb_info *info = fb->fbdev;
+> 	
+> 	unregister_framebuffer(info);
+> 	framebuffer_release(info);
+> 	/* Unmap framebuffer */
+> 	drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
+> 
+> 	return 0;
+> }
+> 
+> But since we're using drmfb as a console, the unregister_framebuffer call 
+> silently fails.  fbcon is builtin to the kernel, so when drmfb exits, 
+> unregister_framebuffer will end up calling fbcon's fbcon_fb_unregistered() 
+> function via the notifier chain.  However, when fbcon_fb_unregistered 
+> calls unregister_con_driver(&fb_con) it ignores the return value, which is 
+> bad since unregister_con_driver left fbcon's routines active (due to fbcon 
+> still being bound to the console) even while unregister_framebuffer freed 
+> their underlying structures.
 
-However, in doing development we noticed that when we remove the new DRM 
-based fb driver, our machines tend to hang.  This appears to be due to 
-bugs in console unregistration.
+Okay, we can do that. This was not done before because
+unregister_framebuffer was only called on rmmod <module>.  But checking
+for the return error and have it propagate to the driver should not be a
+problem.
 
-The DRM fb driver's cleanup routine is normal, I think:
+I'll send a patch to you and to akpm soon.
 
-int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
-{
-	struct fb_info *info = fb->fbdev;
-	
-	unregister_framebuffer(info);
-	framebuffer_release(info);
-	/* Unmap framebuffer */
-	drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
+>   So when unregister_framebuffer returns, the 
+> very next console operation causes an oops or worse (I usually see 
+> hide_cursor->fbcon_cursor die when it tries to get at info->fbcon_par).
+> 
+> However, it doesn't appear that there's a way for fb drivers to unbind 
+> themselves from the console at unload time, so we have to do it manually.  
 
-	return 0;
-}
+You cannot unbind framebuffer drivers independently from the console
+layer because the console is holding a reference count on them. 
 
-But since we're using drmfb as a console, the unregister_framebuffer call 
-silently fails.  fbcon is builtin to the kernel, so when drmfb exits, 
-unregister_framebuffer will end up calling fbcon's fbcon_fb_unregistered() 
-function via the notifier chain.  However, when fbcon_fb_unregistered 
-calls unregister_con_driver(&fb_con) it ignores the return value, which is 
-bad since unregister_con_driver left fbcon's routines active (due to fbcon 
-still being bound to the console) even while unregister_framebuffer freed 
-their underlying structures.  So when unregister_framebuffer returns, the 
-very next console operation causes an oops or worse (I usually see 
-hide_cursor->fbcon_cursor die when it tries to get at info->fbcon_par).
+FYI: this was what I did initially, but akpm objected :-).
 
-However, it doesn't appear that there's a way for fb drivers to unbind 
-themselves from the console at unload time, so we have to do it manually.  
-Should there be a way to unbind it from driver code?  Maybe by exporting a 
-wrapper to unbind_con_driver?  Also, shouldn't callers of 
-unregister_con_driver be checking return values?  That would have made 
-this bug a lot easier to find at least. :)
+> Should there be a way to unbind it from driver code?  Maybe by exporting a 
+> wrapper to unbind_con_driver? 
 
-Thanks,
-Jesse
+Yes, you can expose unbind_con_driver(), I don't mind. You can do it
+first in your tree, then when you need it for mainline, let me know.
+
+(The kernel has someone who hunts for unused EXPORT_SYMBOLs and removes
+them without remorse :-)
+
+
+>  Also, shouldn't callers of 
+> unregister_con_driver be checking return values?  That would have made 
+> this bug a lot easier to find at least. :)
+> 
+
+Okay.
+
+Tony
+
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 27/41] fbdev: Advertise limitation of
-	drawing engine
-Date: Wed, 25 Apr 2007 14:56:52 +0800
-Message-ID: <462EFBB4.1080900@gmail.com>
+Subject: [PATCH 28/41] fbcon: Font setting should check
+	limitation of driver
+Date: Wed, 25 Apr 2007 14:58:54 +0800
+Message-ID: <462EFC2E.5030403@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgcA6-0001MN-Fc for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:43:38 -0700
-Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgcA6-00044I-3j
+	id 1HgcAH-0001MZ-M2 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:43:49 -0700
+Received: from wx-out-0506.google.com ([66.249.82.230])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgcAH-0006v4-3v
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:43:38 -0700
-Received: by py-out-1112.google.com with SMTP id a29so117101pyi
+	Wed, 25 Apr 2007 00:43:49 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so295780wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:43:37 -0700 (PDT)
+	Wed, 25 Apr 2007 00:43:48 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,54 +33,138 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Ondrej Zajicek <santiago@mail.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-A few drivers are not capable of blitting rectangles of any dimension.
-vga16fb can only blit 8-pixel wide rectangles, while s3fb (in tileblitting
-mode) can only blit 8x16 rectangles.  For example, loading a 12x22 font in
-vga16fb will result in a corrupt display.
-
-Advertise this limitation/capability in info->pixmap.blit_x and blit_y.  These
-fields are 32-bit arrays (font max is 32x32 only), ie, if bit 7 is set, then
-width/height of 7+1 is supported.
+fbcon_set_font() will now check if the new font dimensions can be drawn by the
+driver (by checking pixmap.blit_x and blit_y).  Similarly, add 2 new
+parameters to get_default_font(), font_w and font_h, to further aid in the
+font selection process.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/fbmem.c |    6 ++++++
- include/linux/fb.h    |    4 ++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/video/console/fbcon.c   |   17 ++++++++++++++---
+ drivers/video/console/fonts.c   |   10 +++++++++-
+ drivers/video/console/sticore.c |    2 +-
+ include/linux/font.h            |    3 ++-
+ 4 files changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 7b72841..c4ce3e4 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1321,6 +1321,12 @@ register_framebuffer(struct fb_info *fb_
- 	}	
- 	fb_info->pixmap.offset = 0;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 19dfdfb..c71a88d 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -988,7 +988,9 @@ static const char *fbcon_startup(void)
+ 	if (!p->fontdata) {
+ 		if (!fontname[0] || !(font = find_font(fontname)))
+ 			font = get_default_font(info->var.xres,
+-						info->var.yres);
++						info->var.yres,
++						info->pixmap.blit_x,
++						info->pixmap.blit_y);
+ 		vc->vc_font.width = font->width;
+ 		vc->vc_font.height = font->height;
+ 		vc->vc_font.data = (void *)(p->fontdata = font->data);
+@@ -1108,7 +1110,9 @@ static void fbcon_init(struct vc_data *v
  
-+	if (!fb_info->pixmap.blit_x)
-+		fb_info->pixmap.blit_x = ~(u32)0;
-+
-+	if (!fb_info->pixmap.blit_y)
-+		fb_info->pixmap.blit_y = ~(u32)0;
-+
- 	if (!fb_info->modelist.prev || !fb_info->modelist.next)
- 		INIT_LIST_HEAD(&fb_info->modelist);
+ 			if (!fontname[0] || !(font = find_font(fontname)))
+ 				font = get_default_font(info->var.xres,
+-							info->var.yres);
++							info->var.yres,
++							info->pixmap.blit_x,
++							info->pixmap.blit_y);
+ 			vc->vc_font.width = font->width;
+ 			vc->vc_font.height = font->height;
+ 			vc->vc_font.data = (void *)(p->fontdata = font->data);
+@@ -2495,6 +2499,7 @@ static int fbcon_copy_font(struct vc_dat
  
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 70d154a..619ba1e 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -558,6 +558,10 @@ struct fb_pixmap {
- 	u32 scan_align;		/* alignment per scanline		*/
- 	u32 access_align;	/* alignment per read/write (bits)	*/
- 	u32 flags;		/* see FB_PIXMAP_*			*/
-+	u32 blit_x;             /* supported bit block dimensions (1-32)*/
-+	u32 blit_y;             /* Format: blit_x = 1 << (width - 1)    */
-+	                        /*         blit_y = 1 << (height - 1)   */
-+	                        /* if 0, will be set to 0xffffffff (all)*/
- 	/* access methods */
- 	void (*writeio)(struct fb_info *info, void __iomem *dst, void *src, unsigned int size);
- 	void (*readio) (struct fb_info *info, void *dst, void __iomem *src, unsigned int size);
+ static int fbcon_set_font(struct vc_data *vc, struct console_font *font, unsigned flags)
+ {
++	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	unsigned charcount = font->charcount;
+ 	int w = font->width;
+ 	int h = font->height;
+@@ -2508,6 +2513,11 @@ static int fbcon_set_font(struct vc_data
+ 	if (charcount != 256 && charcount != 512)
+ 		return -EINVAL;
+ 
++	/* Make sure drawing engine can handle the font */
++	if (!(info->pixmap.blit_x & (1 << (font->width - 1))) ||
++	    !(info->pixmap.blit_y & (1 << (font->height - 1))))
++		return -EINVAL;
++
+ 	size = h * pitch * charcount;
+ 
+ 	new_data = kmalloc(FONT_EXTRA_WORDS * sizeof(int) + size, GFP_USER);
+@@ -2552,7 +2562,8 @@ static int fbcon_set_def_font(struct vc_
+ 	const struct font_desc *f;
+ 
+ 	if (!name)
+-		f = get_default_font(info->var.xres, info->var.yres);
++		f = get_default_font(info->var.xres, info->var.yres,
++				     info->pixmap.blit_x, info->pixmap.blit_y);
+ 	else if (!(f = find_font(name)))
+ 		return -ENOENT;
+ 
+diff --git a/drivers/video/console/fonts.c b/drivers/video/console/fonts.c
+index c960728..a6828d0 100644
+--- a/drivers/video/console/fonts.c
++++ b/drivers/video/console/fonts.c
+@@ -98,6 +98,8 @@ const struct font_desc *find_font(const 
+  *	get_default_font - get default font
+  *	@xres: screen size of X
+  *	@yres: screen size of Y
++ *      @font_w: bit array of supported widths (1 - 32)
++ *      @font_h: bit array of supported heights (1 - 32)
+  *
+  *	Get the default font for a specified screen size.
+  *	Dimensions are in pixels.
+@@ -107,7 +109,8 @@ const struct font_desc *find_font(const 
+  *
+  */
+ 
+-const struct font_desc *get_default_font(int xres, int yres)
++const struct font_desc *get_default_font(int xres, int yres, u32 font_w,
++					 u32 font_h)
+ {
+     int i, c, cc;
+     const struct font_desc *f, *g;
+@@ -129,6 +132,11 @@ #endif
+ #endif
+ 	if ((yres < 400) == (f->height <= 8))
+ 	    c += 1000;
++
++	if (!(font_w & (1 << (f->width - 1))) ||
++	    !(font_w & (1 << (f->height - 1))))
++	    c += 1000;
++
+ 	if (c > cc) {
+ 	    cc = c;
+ 	    g = f;
+diff --git a/drivers/video/console/sticore.c b/drivers/video/console/sticore.c
+index 88e7038..717b360 100644
+--- a/drivers/video/console/sticore.c
++++ b/drivers/video/console/sticore.c
+@@ -495,7 +495,7 @@ sti_select_fbfont(struct sti_cooked_rom 
+ 		return NULL;
+ 	fbfont = find_font(fbfont_name);
+ 	if (!fbfont)
+-		fbfont = get_default_font(1024,768);
++		fbfont = get_default_font(1024,768, ~(u32)0, ~(u32)0);
+ 	if (!fbfont)
+ 		return NULL;
+ 
+diff --git a/include/linux/font.h b/include/linux/font.h
+index 53b129f..40a24ab 100644
+--- a/include/linux/font.h
++++ b/include/linux/font.h
+@@ -49,7 +49,8 @@ extern const struct font_desc *find_font
+ 
+ /* Get the default font for a specific screen size */
+ 
+-extern const struct font_desc *get_default_font(int xres, int yres);
++extern const struct font_desc *get_default_font(int xres, int yres,
++						u32 font_w, u32 font_h);
+ 
+ /* Max. length for the name of a predefined font */
+ #define MAX_FONT_NAME	32
 
 
 -------------------------------------------------------------------------

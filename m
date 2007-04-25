@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 19/41] hecubafb: Use sys instead of cfb
-	drawing functions
-Date: Wed, 25 Apr 2007 14:43:36 +0800
-Message-ID: <462EF898.4090307@gmail.com>
+Subject: [PATCH 23/41] arcfb: Us fb_sys_read()
+Date: Wed, 25 Apr 2007 14:50:20 +0800
+Message-ID: <462EFA2C.8060102@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgcFM-0001xp-Pl for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:49:04 -0700
+	id 1HgcPR-00038x-ET for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:59:29 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc8a-0002pB-H8
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc9N-0002pB-FO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:42:04 -0700
+	Wed, 25 Apr 2007 00:42:53 -0700
 Received: by py-out-1112.google.com with SMTP id a29so116192pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:42:04 -0700 (PDT)
+	Wed, 25 Apr 2007 00:42:53 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,64 +32,39 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Since hecubafb's framebuffer is vmalloc'ed, use the sys_* drawing functions
-instead of cfb_*.
+Since arcfb's framebuffer is vmalloc'ed, use the fb_sys_read().
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/Kconfig    |    6 +++---
- drivers/video/hecubafb.c |    6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/Kconfig |    1 +
+ drivers/video/arcfb.c |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 9c49f4f..2a571f9 100644
+index 5b6350d..6ec096a 100644
 --- a/drivers/video/Kconfig
 +++ b/drivers/video/Kconfig
-@@ -599,9 +599,9 @@ config FB_IMAC
- config FB_HECUBA
-        tristate "Hecuba board support"
-        depends on FB && X86 && MMU
--       select FB_CFB_FILLRECT
--       select FB_CFB_COPYAREA
--       select FB_CFB_IMAGEBLIT
-+       select FB_SYS_FILLRECT
-+       select FB_SYS_COPYAREA
-+       select FB_SYS_IMAGEBLIT
-        select FB_DEFERRED_IO
-        help
-          This enables support for the Hecuba board. This driver was tested
-diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
-index dc12e2d..0ade725 100644
---- a/drivers/video/hecubafb.c
-+++ b/drivers/video/hecubafb.c
-@@ -238,7 +238,7 @@ static void hecubafb_fillrect(struct fb_
- {
- 	struct hecubafb_par *par = info->par;
- 
--	cfb_fillrect(info, rect);
-+	sys_fillrect(info, rect);
- 
- 	hecubafb_dpy_update(par);
- }
-@@ -248,7 +248,7 @@ static void hecubafb_copyarea(struct fb_
- {
- 	struct hecubafb_par *par = info->par;
- 
--	cfb_copyarea(info, area);
-+	sys_copyarea(info, area);
- 
- 	hecubafb_dpy_update(par);
- }
-@@ -258,7 +258,7 @@ static void hecubafb_imageblit(struct fb
- {
- 	struct hecubafb_par *par = info->par;
- 
--	cfb_imageblit(info, image);
-+	sys_imageblit(info, image);
- 
- 	hecubafb_dpy_update(par);
- }
+@@ -420,6 +420,7 @@ config FB_ARC
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
++	select FB_SYS_FOPS
+ 	help
+ 	  This enables support for the Arc Monochrome LCD board. The board
+ 	  is based on the KS-108 lcd controller and is typically a matrix
+diff --git a/drivers/video/arcfb.c b/drivers/video/arcfb.c
+index c668e56..db15bac 100644
+--- a/drivers/video/arcfb.c
++++ b/drivers/video/arcfb.c
+@@ -494,6 +494,7 @@ static ssize_t arcfb_write(struct fb_inf
+ static struct fb_ops arcfb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_open	= arcfb_open,
++	.fb_read        = fb_sys_read,
+ 	.fb_write	= arcfb_write,
+ 	.fb_release	= arcfb_release,
+ 	.fb_pan_display	= arcfb_pan_display,
 
 
 -------------------------------------------------------------------------

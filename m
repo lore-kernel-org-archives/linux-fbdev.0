@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 18/41] arcfb: Use sys instead of cfb
+Subject: [PATCH 20/41] vfb: Use sys instead of cfb
 	drawing functions
-Date: Wed, 25 Apr 2007 14:42:29 +0800
-Message-ID: <462EF855.5050007@gmail.com>
+Date: Wed, 25 Apr 2007 14:44:18 +0800
+Message-ID: <462EF8C2.8090207@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hgc8F-0001A6-K4 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:41:43 -0700
-Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc8F-0002pB-Av
+	id 1Hgc8o-0001Fu-D3 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:42:18 -0700
+Received: from wx-out-0506.google.com ([66.249.82.231])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc8o-0003kc-3q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:41:43 -0700
-Received: by py-out-1112.google.com with SMTP id a29so116192pyi
+	Wed, 25 Apr 2007 00:42:18 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so295188wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:41:43 -0700 (PDT)
+	Wed, 25 Apr 2007 00:42:17 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,67 +30,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Since arcfb's framebuffer is vmalloc'ed, use the sys_* drawing functions
+Since vfb's framebuffer is vmalloc'ed, use the sys_* drawing functions
 instead of cfb_*.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
  drivers/video/Kconfig |    6 +++---
- drivers/video/arcfb.c |    6 +++---
+ drivers/video/vfb.c   |    6 +++---
  2 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 234502d..9c49f4f 100644
+index 2a571f9..60e3ceb 100644
 --- a/drivers/video/Kconfig
 +++ b/drivers/video/Kconfig
-@@ -412,9 +412,9 @@ config FB_FM2
- config FB_ARC
- 	tristate "Arc Monochrome LCD board support"
- 	depends on FB && X86
+@@ -1704,9 +1704,9 @@ config FB_PS3_DEFAULT_SIZE_M
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+ 	depends on FB
 -	select FB_CFB_FILLRECT
 -	select FB_CFB_COPYAREA
 -	select FB_CFB_IMAGEBLIT
 +	select FB_SYS_FILLRECT
 +	select FB_SYS_COPYAREA
 +	select FB_SYS_IMAGEBLIT
- 	help
- 	  This enables support for the Arc Monochrome LCD board. The board
- 	  is based on the KS-108 lcd controller and is typically a matrix
-diff --git a/drivers/video/arcfb.c b/drivers/video/arcfb.c
-index 66e0bd1..740b83b 100644
---- a/drivers/video/arcfb.c
-+++ b/drivers/video/arcfb.c
-@@ -369,7 +369,7 @@ static void arcfb_fillrect(struct fb_inf
- {
- 	struct arcfb_par *par = info->par;
+ 	---help---
+ 	  This is a `virtual' frame buffer device. It operates on a chunk of
+ 	  unswappable kernel memory instead of on the memory of a graphics
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index a9b99b0..1293c20 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -88,9 +88,9 @@ static struct fb_ops vfb_ops = {
+ 	.fb_set_par	= vfb_set_par,
+ 	.fb_setcolreg	= vfb_setcolreg,
+ 	.fb_pan_display	= vfb_pan_display,
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++	.fb_imageblit	= sys_imageblit,
+ 	.fb_mmap	= vfb_mmap,
+ };
  
--	cfb_fillrect(info, rect);
-+	sys_fillrect(info, rect);
- 
- 	/* update the physical lcd */
- 	arcfb_lcd_update(par, rect->dx, rect->dy, rect->width, rect->height);
-@@ -380,7 +380,7 @@ static void arcfb_copyarea(struct fb_inf
- {
- 	struct arcfb_par *par = info->par;
- 
--	cfb_copyarea(info, area);
-+	sys_copyarea(info, area);
- 
- 	/* update the physical lcd */
- 	arcfb_lcd_update(par, area->dx, area->dy, area->width, area->height);
-@@ -390,7 +390,7 @@ static void arcfb_imageblit(struct fb_in
- {
- 	struct arcfb_par *par = info->par;
- 
--	cfb_imageblit(info, image);
-+	sys_imageblit(info, image);
- 
- 	/* update the physical lcd */
- 	arcfb_lcd_update(par, image->dx, image->dy, image->width,
 
 
 -------------------------------------------------------------------------

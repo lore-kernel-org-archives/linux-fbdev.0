@@ -1,24 +1,28 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH 27/41] fbdev: Advertise limitation
-	of drawing engine
-Date: Wed, 25 Apr 2007 23:23:27 +0200
-Message-ID: <20070425212327.GA7956@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 27/41] fbdev: Advertise
+	limitation	of drawing engine
+Date: Thu, 26 Apr 2007 07:10:24 +0800
+Message-ID: <1177542624.4655.6.camel@daplas>
 References: <462EFBB4.1080900@gmail.com>
+	<20070425212327.GA7956@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1399946326=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hgoxf-0001jz-Js for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 14:23:39 -0700
-Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Hgoxe-0007V5-0S
+	id 1HgqdF-0008NR-3N for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 16:10:41 -0700
+Received: from nz-out-0506.google.com ([64.233.162.236])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgqdE-0000ZG-If
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 14:23:39 -0700
-In-Reply-To: <462EFBB4.1080900@gmail.com>
+	Wed, 25 Apr 2007 16:10:41 -0700
+Received: by nz-out-0506.google.com with SMTP id i11so1209988nzi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 25 Apr 2007 16:10:40 -0700 (PDT)
+In-Reply-To: <20070425212327.GA7956@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,75 +33,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Ondrej Zajicek <santiago@crfreenet.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Wed, 2007-04-25 at 23:23 +0200, Ondrej Zajicek wrote:
+> On Wed, Apr 25, 2007 at 02:56:52PM +0800, Antonino A. Daplas wrote:
+> > A few drivers are not capable of blitting rectangles of any dimension.
+> > vga16fb can only blit 8-pixel wide rectangles, while s3fb (in tileblitting
+> > mode) can only blit 8x16 rectangles.
+> 
+> I have two new drivers which use tileblit. Where i can get diff of your
+> tree (not splitted to fifty parts and mixed with mail) to be able to
 
---===============1399946326==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
-Content-Disposition: inline
+No public tree, and I don't have CVS access to fbdev-devel.
 
+> update that drivers to new interfaces? Or should i send it in current
+> form (againts 2.6.21-rc7)?
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You can submit it based on Linus's tree.  And then we'll just create
+another patch on top of that (once akpm merges my changes to his tree).
+This way, if your driver gets to Linus's tree prior to my changes, your
+driver will stay working.
 
-On Wed, Apr 25, 2007 at 02:56:52PM +0800, Antonino A. Daplas wrote:
-> A few drivers are not capable of blitting rectangles of any dimension.
-> vga16fb can only blit 8-pixel wide rectangles, while s3fb (in tileblitting
-> mode) can only blit 8x16 rectangles.
-
-I have two new drivers which use tileblit. Where i can get diff of your
-tree (not splitted to fifty parts and mixed with mail) to be able to
-update that drivers to new interfaces? Or should i send it in current
-form (againts 2.6.21-rc7)?
-
---=20
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.ne=
-tlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
-
---jRHKVT23PllUwdXP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iEYEARECAAYFAkYvxs8ACgkQw1GB2RHercOSmgCcC/R//9CxoMwO6XHYieIaJuB9
-icEAn15bPiibQjbS8+cpBTQBrrTF11ZN
-=j5LK
------END PGP SIGNATURE-----
-
---jRHKVT23PllUwdXP--
+Tony
 
 
---===============1399946326==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---===============1399946326==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1399946326==--

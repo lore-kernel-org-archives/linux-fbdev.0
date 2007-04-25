@@ -1,10 +1,10 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Console unregistration questions
-Date: Wed, 25 Apr 2007 08:04:24 +0800
-Message-ID: <1177459464.4829.10.camel@daplas>
+Date: Wed, 25 Apr 2007 08:07:11 +0800
+Message-ID: <1177459631.4829.14.camel@daplas>
 References: <200704241459.29297.jbarnes@virtuousgeek.org>
-	<1177456787.10465.29.camel@daplas>
-	<200704241642.39638.jbarnes@virtuousgeek.org>
+	<1177456787.10465.29.camel@daplas> <1177458135.4829.5.camel@daplas>
+	<200704241646.34556.jbarnes@virtuousgeek.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,16 +13,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgUzr-0007LE-2d for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Apr 2007 17:04:35 -0700
-Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgUzq-0001T1-Kj
+	id 1HgV2U-0007dZ-8x for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 24 Apr 2007 17:07:18 -0700
+Received: from py-out-1112.google.com ([64.233.166.180])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgV2T-00026U-UY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Apr 2007 17:04:34 -0700
-Received: by py-out-1112.google.com with SMTP id a29so25875pyi
+	Tue, 24 Apr 2007 17:07:18 -0700
+Received: by py-out-1112.google.com with SMTP id a29so26422pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 24 Apr 2007 17:04:33 -0700 (PDT)
-In-Reply-To: <200704241642.39638.jbarnes@virtuousgeek.org>
+	Tue, 24 Apr 2007 17:07:17 -0700 (PDT)
+In-Reply-To: <200704241646.34556.jbarnes@virtuousgeek.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,63 +36,35 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
 Cc: Dave Airlie <airlied@linux.ie>, Jakob Bornecrantz <wallbraker@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 2007-04-24 at 16:42 -0700, Jesse Barnes wrote:
+On Tue, 2007-04-24 at 16:46 -0700, Jesse Barnes wrote:
 > On Tuesday, April 24, 2007, Antonino A. Daplas wrote:
-> > > But since we're using drmfb as a console, the unregister_framebuffer
-> > > call silently fails.  fbcon is builtin to the kernel, so when drmfb
-> > > exits, unregister_framebuffer will end up calling fbcon's
-> > > fbcon_fb_unregistered() function via the notifier chain.  However,
-> > > when fbcon_fb_unregistered calls unregister_con_driver(&fb_con) it
-> > > ignores the return value, which is bad since unregister_con_driver
-> > > left fbcon's routines active (due to fbcon still being bound to the
-> > > console) even while unregister_framebuffer freed their underlying
-> > > structures.
+> > > >  Also, shouldn't callers of
+> > > > unregister_con_driver be checking return values?  That would have
+> > > > made this bug a lot easier to find at least. :)
 > >
-> > Okay, we can do that. This was not done before because
-> > unregister_framebuffer was only called on rmmod <module>.  But checking
-> > for the return error and have it propagate to the driver should not be a
-> > problem.
+> > Replying to myself:
 > >
-> > I'll send a patch to you and to akpm soon.
+> > At this point, if unregister_con_driver() fails, it is too late for
+> > fbcon, the best thing to do is issue a BUG().
 > 
-> Great!  Thanks.
+> I guess there's no way to propagate the error back to 
+> unregister_framebuffer?  If we did, then it could return -EBUSY or 
+> something, keeping the module loaded instead of unsafely allowing it to be 
+> removed...
+
+We can, by doing the method mentioned below.  By the time fbcon is
+notified of the unregistration, it's too late and the error is
+unrecoverable.
+
 > 
-> > >   So when unregister_framebuffer returns, the
-> > > very next console operation causes an oops or worse (I usually see
-> > > hide_cursor->fbcon_cursor die when it tries to get at
-> > > info->fbcon_par).
-> > >
-> > > However, it doesn't appear that there's a way for fb drivers to unbind
-> > > themselves from the console at unload time, so we have to do it
-> > > manually.
-> >
-> > You cannot unbind framebuffer drivers independently from the console
-> > layer because the console is holding a reference count on them.
-> >
-> > FYI: this was what I did initially, but akpm objected :-).
-> >
-> > > Should there be a way to unbind it from driver code?  Maybe by
-> > > exporting a wrapper to unbind_con_driver?
-> >
-> > Yes, you can expose unbind_con_driver(), I don't mind. You can do it
-> > first in your tree, then when you need it for mainline, let me know.
-> 
-> So using unbind_con_driver is ok since we go through the console layer and 
-> all the refcounting is kosher?
+> > However, I'll add extra code to unregister_framebuffer() that will check
+> > if it's safe for the driver to unload.  The drivers may then choose to
+> > check it or not.
 
-Yes.
-
->   The only other thing with 
-> unbind_con_driver is I'm not sure about the other arguments (first, last, 
-> & default) should be if called from a driver context.
-
-No, they're only for the console.  So, if you're writing a pure fbdev
-driver, then the user has to unbind the console from the VT layer
-manually.  If you are writing an fbdev/console-combo driver, then you
-can do that by calling unbind_con_driver() first before
-unregister_framebuffer().
+Yes, this should not be too hard to implement.
 
 Tony
+
 
 
 -------------------------------------------------------------------------

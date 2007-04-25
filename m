@@ -1,23 +1,22 @@
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Subject: Re: Ekiga-video conferencing-Gtk warning
-Date: Wed, 25 Apr 2007 12:18:51 +0200
-Message-ID: <20070425101851.GQ25077@lug-owl.de>
-References: <20070425153734.CJC76756@mail.tataelxsi.co.in>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Radeonfb doesn't work on Radeon Xpress 200M
+	(RS485) (fwd)
+Date: Wed, 25 Apr 2007 13:41:18 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0704251340470.2730@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2101855409=="
+Content-Type: MULTIPART/Mixed; BOUNDARY="----_=_NextPart_001_01C78729.795C7AE3"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgeaW-0000uH-Dz for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 03:19:06 -0700
-Received: from lug-owl.de ([195.71.106.12])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HgeaV-0000kS-Oa
+	id 1HgfsC-0001DU-G4 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 04:41:24 -0700
+Received: from assei2bl6.telenet-ops.be ([195.130.133.69])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgfsA-00089e-TV
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 03:19:04 -0700
-In-Reply-To: <20070425153734.CJC76756@mail.tataelxsi.co.in>
+	Wed, 25 Apr 2007 04:41:24 -0700
+Content-ID: <Pine.LNX.4.64.0704251340471.2730@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,75 +27,89 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Dheepan A.P" <dheepan@tataelxsi.co.in>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, WolfSt.External@qimonda.com
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---===============2101855409==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="i13qRg9tmWEwo36p"
-Content-Disposition: inline
-
-
---i13qRg9tmWEwo36p
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+------_=_NextPart_001_01C78729.795C7AE3
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
+Content-ID: <Pine.LNX.4.64.0704251340472.2730@anakin>
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2007-04-25 15:37:34 +0530, Dheepan A.P <dheepan@tataelxsi.co.in> wr=
-ote:
->   I am involving in a video conferencing project where
->   i m in need to port an open source application(PC
->   based application) to TI-davinci board.
->   I cross compiled the source code to arm platform.Its
->   done well.
->=20
->   But after porting it to the board it shows an error
->   "GTK warning:cannot open display".
->=20
->   I suspects that when we are trying to get the
->   display on PAL tv instead of pc monitor(the
->   application is meant for Pc based), it get struck
->   with  to the  configuation settings related to the
->   frame buffer.
 
-This message usually means that GTK cannot open the X11 display. (It's
-probably irrelevant whether this is on a VGA or TV output.)
+linux-fbdev-devel@lists.sourceforge.net is the correct address!
 
-You'd check that your application is started with the DISPLAY variable
-being properly set. I guess it gets lost somewhere. An alternative
-error would be that the security cookies cannot be accessed by the X11
-client libraries (used by GTK) so that the application is actually
-denied to access the X11 display.
+---------- Forwarded message ----------
+Date: Wed, 25 Apr 2007 13:04:17 +0200
+From: WolfSt.External@qimonda.com
+To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Subject: Radeonfb doesn't work on Radeon Xpress 200M (RS485)
 
-Try starting with strace. That should show you where the error
-actually is.
+Hi,
 
-MfG, JBG
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:  The course of history shows that as a government grows, libe=
-rty
-the second  : decreases."  (Thomas Jefferson)
-
---i13qRg9tmWEwo36p
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGLysLHb1edYOZ4bsRAhX2AJ9K9TAMxZUvYbFUJqhtv4CeiUMj3ACeKMrJ
-91WnSrPqufENkaIQXfiTs7w=
-=wzSx
------END PGP SIGNATURE-----
-
---i13qRg9tmWEwo36p--
+I bought a notebook HP nx6325 where a ATI Radeon Xpress 200M chipset is b=
+uild in. I just add the pci ids of this card to get the radeonfb working.=
+ Please find the attached patch. I only add the patch against the 2.6.20 =
+kernel tree. But it also works for the 2.6.21 which I tested it first.
 
 
---===============2101855409==
+Regards,
+
+Stephan Wolf
+AIS Automation Dresden GmbH=20
+Softwaredesigner
+
+Qimonda AG:
+Office:         D412
+Phone:          +49 (0)351 / 886-7696
+mailto: WolfSt.External@qimonda.com
+
+Tel. / Phone: +49 (0)351 / 2166-136
+Fax:              +49 (0)351 / 2166-336
+mailto:wolf@ais-dresden.de
+http://www.ais-automation.com
+Otto-Mohr-Stra=DFe 6=20
+01237 Dresden=20
+Germany
+
+Sitz der Gesellschaft: Dresden
+Registergericht: Amtsgericht Dresden, HRB 126
+Gesch=E4ftsf=FChrer: Dipl.-Ing. Eckhard Sch=F6bel,
+Dipl.-Ing. Gottfried Gerlach, Dipl.-Ing. Rainer Strau=DF
+
+------_=_NextPart_001_01C78729.795C7AE3
+Content-Type: APPLICATION/OCTET-STREAM; NAME=radeonfb-Xpress200M.patch
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0704251340473.2730@anakin>
+Content-Description: radeonfb-Xpress200M.patch
+Content-Disposition: ATTACHMENT; FILENAME=radeonfb-Xpress200M.patch
+
+ZGlmZiAtdSBsaW51eC0yLjYuMjEtcmMzLW1tMi9kcml2ZXJzL3ZpZGVvL2F0eS9hdGlfaWRzLmgg
+bGludXgvZHJpdmVycy92aWRlby9hdHkvYXRpX2lkcy5oDQotLS0gbGludXgtMi42LjIxLXJjMy1t
+bTIvZHJpdmVycy92aWRlby9hdHkvYXRpX2lkcy5oCTIwMDctMDMtMTEgMDc6NDY6NTAuMDAwMDAw
+MDAwICswMTAwDQorKysgbGludXgvZHJpdmVycy92aWRlby9hdHkvYXRpX2lkcy5oCTIwMDctMDMt
+MDcgMjE6MjY6MDMuMDAwMDAwMDAwICswMTAwDQpAQCAtMjA0LDYgKzIwNCw3IEBADQogI2RlZmlu
+ZSBQQ0lfQ0hJUF9SVjI4MF81OTYxCQkweDU5NjENCiAjZGVmaW5lIFBDSV9DSElQX1JWMjgwXzU5
+NjIJCTB4NTk2Mg0KICNkZWZpbmUgUENJX0NISVBfUlYyODBfNTk2NAkJMHg1OTY0DQorI2RlZmlu
+ZSBQQ0lfQ0hJUF9SUzQ4NV81OTc1CQkweDU5NzUNCiAjZGVmaW5lIFBDSV9DSElQX1JWMjgwXzVD
+NjEJCTB4NUM2MQ0KICNkZWZpbmUgUENJX0NISVBfUlYyODBfNUM2MwkJMHg1QzYzDQogI2RlZmlu
+ZSBQQ0lfQ0hJUF9SNDIzXzVENTcgICAgICAgICAgICAgIDB4NUQ1Nw0KZGlmZiAtdSBsaW51eC0y
+LjYuMjEtcmMzLW1tMi9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFzZS5jIGxpbnV4L2RyaXZl
+cnMvdmlkZW8vYXR5L3JhZGVvbl9iYXNlLmMNCi0tLSBsaW51eC0yLjYuMjEtcmMzLW1tMi9kcml2
+ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFzZS5jCTIwMDctMDMtMTEgMDc6NDY6NTAuMDAwMDAwMDAw
+ICswMTAwDQorKysgbGludXgvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwkyMDA3LTAz
+LTA3IDIxOjMwOjEyLjAwMDAwMDAwMCArMDEwMA0KQEAgLTE1MSw2ICsxNTEsOCBAQA0KIAkvKiBN
+b2JpbGl0eSA5MjAwIChNOSspICovDQogCUNISVBfREVGKFBDSV9DSElQX1JWMjgwXzVDNjEsCVJW
+MjgwLAlDSElQX0hBU19DUlRDMiB8IENISVBfSVNfTU9CSUxJVFkpLA0KIAlDSElQX0RFRihQQ0lf
+Q0hJUF9SVjI4MF81QzYzLAlSVjI4MCwJQ0hJUF9IQVNfQ1JUQzIgfCBDSElQX0lTX01PQklMSVRZ
+KSwNCisJLypNb2JpbGl0eSBYcHJlc3MgMjAwICovDQorCUNISVBfREVGKFBDSV9DSElQX1JTNDg1
+XzU5NzUsCVIzMDAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19JR1AgfCBDSElQX0lTX01PQklM
+SVRZKSwNCiAJLyogOTIwMCAqLw0KIAlDSElQX0RFRihQQ0lfQ0hJUF9SVjI4MF81OTYwLAlSVjI4
+MCwJQ0hJUF9IQVNfQ1JUQzIpLA0KIAlDSElQX0RFRihQQ0lfQ0hJUF9SVjI4MF81OTYxLAlSVjI4
+MCwJQ0hJUF9IQVNfQ1JUQzIpLA0KDQo=
+
+------_=_NextPart_001_01C78729.795C7AE3
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -107,7 +120,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---===============2101855409==
+------_=_NextPart_001_01C78729.795C7AE3
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -118,4 +131,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============2101855409==--
+------_=_NextPart_001_01C78729.795C7AE3--

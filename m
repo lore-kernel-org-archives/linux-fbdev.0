@@ -1,7 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 11/41] arcfb: Kill sparse warning
-Date: Wed, 25 Apr 2007 14:30:53 +0800
-Message-ID: <462EF59D.7030100@gmail.com>
+Subject: [PATCH 12/41] s3fb: Add sparse annotations
+Date: Wed, 25 Apr 2007 14:32:26 +0800
+Message-ID: <462EF5FA.4080506@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hgc63-0000wM-RF for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:39:27 -0700
-Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc63-0002pB-IG
+	id 1Hgc6F-0000x8-Fq for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:39:39 -0700
+Received: from nz-out-0506.google.com ([64.233.162.225])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc6F-00035g-6w
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:39:27 -0700
-Received: by py-out-1112.google.com with SMTP id a29so116192pyi
+	Wed, 25 Apr 2007 00:39:39 -0700
+Received: by nz-out-0506.google.com with SMTP id i11so416511nzi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:39:27 -0700 (PDT)
+	Wed, 25 Apr 2007 00:39:38 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,49 +30,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-The framebuffer memory is allocated from system RAM (vmalloc'ed). Add __force
-annotations.
+Add sparse annotations and use fb_read/fb_write and family to access the
+framebuffer.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/arcfb.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/video/s3fb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/arcfb.c b/drivers/video/arcfb.c
-index 30a8369..66e0bd1 100644
---- a/drivers/video/arcfb.c
-+++ b/drivers/video/arcfb.c
-@@ -262,7 +262,8 @@ static void arcfb_lcd_update_page(struct
- 	ks108_set_yaddr(par, chipindex, upper/8);
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index c348813..f3470bb 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -164,7 +164,7 @@ MODULE_PARM_DESC(fasttext, "Enable S3 fa
+ static void s3fb_settile_fast(struct fb_info *info, struct fb_tilemap *map)
+ {
+ 	const u8 *font = map->data;
+-	u8* fb = (u8 *) info->screen_base;
++	u8 __iomem *fb = (u8 __iomem *) info->screen_base;
+ 	int i, c;
  
- 	linesize = par->info->var.xres/8;
--	src = par->info->screen_base + (left/8) + (upper * linesize);
-+	src = (unsigned char __force *) par->info->screen_base + (left/8) +
-+		(upper * linesize);
- 	ks108_set_xaddr(par, chipindex, left);
- 
- 	bitmask=1;
-@@ -477,7 +478,7 @@ static ssize_t arcfb_write(struct file *
- 	if (count) {
- 		char *base_addr;
- 
--		base_addr = info->screen_base;
-+		base_addr = (char __force *)info->screen_base;
- 		count -= copy_from_user(base_addr + p, buf, count);
- 		*ppos += count;
- 		err = -EFAULT;
-@@ -603,7 +604,7 @@ static int arcfb_remove(struct platform_
- 
- 	if (info) {
- 		unregister_framebuffer(info);
--		vfree(info->screen_base);
-+		vfree((void __force *)info->screen_base);
- 		framebuffer_release(info);
+ 	if ((map->width != 8) || (map->height != 16) ||
+@@ -177,7 +177,7 @@ static void s3fb_settile_fast(struct fb_
+ 	fb += 2;
+ 	for (i = 0; i < map->height; i++) {
+ 		for (c = 0; c < map->length; c++) {
+-			fb[c * 4] = font[c * map->height + i];
++			fb_writeb(font[c * map->height + i], fb + c * 4);
+ 		}
+ 		fb += 1024;
  	}
- 	return 0;
+@@ -656,7 +656,7 @@ static int s3fb_set_par(struct fb_info *
+ 	value = ((value * hmul) / 8) - 5;
+ 	vga_wcrt(NULL, 0x3C, (value + 1) / 2);
+ 
+-	memset((u8*)info->screen_base, 0x00, screen_size);
++	memset_io(info->screen_base, 0x00, screen_size);
+ 	/* Device and screen back on */
+ 	svga_wcrt_mask(0x17, 0x80, 0x80);
+ 	svga_wseq_mask(0x01, 0x00, 0x20);
 
 
 -------------------------------------------------------------------------

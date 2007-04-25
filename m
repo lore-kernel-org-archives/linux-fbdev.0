@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 13/41] hecubafb: Kill sparse warnings
-Date: Wed, 25 Apr 2007 14:33:36 +0800
-Message-ID: <462EF640.3000106@gmail.com>
+Subject: [PATCH 14/41] i810fb: Fix incorrect frequency
+	mask
+Date: Wed, 25 Apr 2007 14:34:16 +0800
+Message-ID: <462EF668.5030701@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hgc6Q-0000xj-ID for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:39:50 -0700
+	id 1Hgc6a-0000xy-A1 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:40:01 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc6Q-0002pB-8j
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc6a-0002pB-0T
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:39:50 -0700
+	Wed, 25 Apr 2007 00:40:00 -0700
 Received: by py-out-1112.google.com with SMTP id a29so116192pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:39:50 -0700 (PDT)
+	Wed, 25 Apr 2007 00:39:59 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,48 +31,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-The framebuffer memory is allocated from system RAM (vmalloc'ed).  Add __force
-annotations.
+Fix a long-standing bug.  The mask used to detect a 100Mhz or 133Mhz chipset
+is incorrect. (The only side effect of this bug is that it will choose an
+incorrect watermark).
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/hecubafb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/i810/i810.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
-index ea5a6c9..dc12e2d 100644
---- a/drivers/video/hecubafb.c
-+++ b/drivers/video/hecubafb.c
-@@ -214,7 +214,7 @@ static void apollo_send_command(struct h
- static void hecubafb_dpy_update(struct hecubafb_par *par)
- {
- 	int i;
--	unsigned char *buf = par->info->screen_base;
-+	unsigned char *buf = (unsigned char __force *)par->info->screen_base;
- 
- 	apollo_send_command(par, 0xA0);
- 
-@@ -303,7 +303,7 @@ static ssize_t hecubafb_write(struct fil
- 	if (count) {
- 		char *base_addr;
- 
--		base_addr = info->screen_base;
-+		base_addr = (char __force *)info->screen_base;
- 		count -= copy_from_user(base_addr + p, buf, count);
- 		*ppos += count;
- 		err = -EFAULT;
-@@ -409,7 +409,7 @@ static int __devexit hecubafb_remove(str
- 	if (info) {
- 		fb_deferred_io_cleanup(info);
- 		unregister_framebuffer(info);
--		vfree(info->screen_base);
-+		vfree((void __force *)info->screen_base);
- 		framebuffer_release(info);
- 	}
- 	return 0;
+diff --git a/drivers/video/i810/i810.h b/drivers/video/i810/i810.h
+index aa65ffc..889e4ea 100644
+--- a/drivers/video/i810/i810.h
++++ b/drivers/video/i810/i810.h
+@@ -133,7 +133,7 @@ #define FONTDATAMAX                 8192
+ /* Masks (AND ops) and OR's */
+ #define FB_START_MASK               (0x3f << (32 - 6))
+ #define MMIO_ADDR_MASK              (0x1FFF << (32 - 13))
+-#define FREQ_MASK                   0x1EF
++#define FREQ_MASK                   (1 << 4)
+ #define SCR_OFF                     0x20
+ #define DRAM_ON                     0x08            
+ #define DRAM_OFF                    0xE7
 
 
 -------------------------------------------------------------------------

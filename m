@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 29/41] vga16fb: Restrict to blit
- rectangles with widths of multiples of 8 pixels
-Date: Wed, 25 Apr 2007 15:02:31 +0800
-Message-ID: <462EFD07.4000802@gmail.com>
+Subject: [PATCH 30/41] s3fb: Limit 8x16 rectangles when
+	tileblitting is enabled
+Date: Wed, 25 Apr 2007 15:09:24 +0800
+Message-ID: <462EFEA4.6050809@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgcAR-0001Mz-UD for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:44:00 -0700
-Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgcAR-00044I-LR
+	id 1HgcAw-0001TO-3h for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:44:30 -0700
+Received: from wx-out-0506.google.com ([66.249.82.229])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgcAv-0004Ih-Q7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:43:59 -0700
-Received: by py-out-1112.google.com with SMTP id a29so117101pyi
+	Wed, 25 Apr 2007 00:44:30 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so296021wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:43:59 -0700 (PDT)
+	Wed, 25 Apr 2007 00:44:29 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,44 +31,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Ondrej Zajicek <santiago@mail.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Advertise that vga16fb can only handle widths that are 8-pixel-multiple only
-(software limitation). To ensure that a legal font is available, SELECT an
-8x16 font in Kconfig.
+If tileblitting is enabled (text mode), the hardware can only accept 8x16
+bitmaps. Advertise this to the upper layer. And to ensure that an appropriate
+font is always available, select an 8x16 font in Kconfig.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/Kconfig   |    1 +
- drivers/video/vga16fb.c |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/video/Kconfig |    1 +
+ drivers/video/s3fb.c  |    6 ++++++
+ 2 files changed, 7 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 61931da..e440caf 100644
+index e440caf..4958493 100644
 --- a/drivers/video/Kconfig
 +++ b/drivers/video/Kconfig
-@@ -516,6 +516,7 @@ config FB_VGA16
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+@@ -1191,6 +1191,7 @@ config FB_S3
+ 	select FB_TILEBLITTING
+ 	select FB_SVGALIB
  	select VGASTATE
 +	select FONT_8x16 if FRAMEBUFFER_CONSOLE
- 	help
- 	  This is the frame buffer device driver for VGA 16 color graphic
- 	  cards. Say Y if you have such a card.
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index ec4c7dc..6c580a0 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -1378,6 +1378,8 @@ static int __init vga16fb_probe(struct p
- 	info->fbops = &vga16fb_ops;
- 	info->var = vga16fb_defined;
- 	info->fix = vga16fb_fix;
-+	/* supports 8-pixel wide blit rectangles only */
-+	info->pixmap.blit_x = 1 << (8 - 1);
- 	info->flags = FBINFO_FLAG_DEFAULT |
- 		FBINFO_HWACCEL_YPAN;
+ 	---help---
+ 	  Driver for graphics boards with S3 Trio / S3 Virge chip.
  
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index f3470bb..53f1eb9 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -449,6 +449,9 @@ static int s3fb_set_par(struct fb_info *
+ 		info->flags &= ~FBINFO_MISC_TILEBLITTING;
+ 		info->tileops = NULL;
+ 
++		/* supports blit rectangles of any dimension */
++		info->pixmap.blit_x = ~(u32)0;
++		info->pixmap.blit_y = ~(u32)0;
+ 		offset_value = (info->var.xres_virtual * bpp) / 64;
+ 		screen_size = info->var.yres_virtual * info->fix.line_length;
+ 	} else {
+@@ -457,6 +460,9 @@ static int s3fb_set_par(struct fb_info *
+ 
+ 		info->flags |= FBINFO_MISC_TILEBLITTING;
+ 		info->tileops = fasttext ? &s3fb_fast_tile_ops : &s3fb_tile_ops;
++		/* supports 8x16 tiles only */
++		info->pixmap.blit_x = 1 << (8 - 1);
++		info->pixmap.blit_y = 1 << (16 - 1);
+ 
+ 		offset_value = info->var.xres_virtual / 16;
+ 		screen_size = (info->var.xres_virtual * info->var.yres_virtual) / 64;
 
 
 -------------------------------------------------------------------------

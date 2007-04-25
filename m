@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 34/41] fbdev: Save the activate field
-	before calling fb_check_var()
-Date: Wed, 25 Apr 2007 15:14:18 +0800
-Message-ID: <462EFFCA.50900@gmail.com>
+Subject: [PATCH 35/41] s3fb: Driver fixes
+Date: Wed, 25 Apr 2007 15:15:33 +0800
+Message-ID: <462F0015.3030300@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgcCr-0001g6-Ii for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:46:29 -0700
-Received: from wx-out-0506.google.com ([66.249.82.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgcCq-0004jf-9t
+	id 1HgcD5-0001gP-Ds for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:46:43 -0700
+Received: from py-out-1112.google.com ([64.233.166.180])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgcD5-0004lH-39
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:46:29 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so296822wxd
+	Wed, 25 Apr 2007 00:46:43 -0700
+Received: by py-out-1112.google.com with SMTP id a29so117686pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:46:27 -0700 (PDT)
+	Wed, 25 Apr 2007 00:46:42 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,40 +30,113 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Ondrej Zajicek <santiago@mail.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Some drivers may reset the var->activate field on fb_check_var(). This can
-lead to undefined behavior. For example, doing fbset -a <option> with vga16fb
-will only modify the active console instead of modifying all.
+From: Ondrej Zajicek <santiago@crfreenet.org>
 
+This fixes broken fbcon on Virge VX in 24 bpp mode, and contains several
+other small updates.
+
+Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/fbmem.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ Documentation/fb/s3fb.txt |   12 ++++++++----
+ drivers/video/s3fb.c      |   21 ++++++++++-----------
+ 2 files changed, 18 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index c4ce3e4..cd14079 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -803,6 +803,8 @@ fb_set_var(struct fb_info *info, struct 
+diff --git a/Documentation/fb/s3fb.txt b/Documentation/fb/s3fb.txt
+index 8a04c0d..2c97770 100644
+--- a/Documentation/fb/s3fb.txt
++++ b/Documentation/fb/s3fb.txt
+@@ -35,10 +35,12 @@ Supported Features
+ 	* suspend/resume support
+ 	* DPMS support
  
- 	if ((var->activate & FB_ACTIVATE_FORCE) ||
- 	    memcmp(&info->var, var, sizeof(struct fb_var_screeninfo))) {
-+		u32 activate = var->activate;
+-Text mode is supported even in higher resolutions, but there is limitation
+-to lower pixclocks (maximum between 50-60 MHz, depending on specific hardware).
+-This limitation is not enforced by driver. Text mode supports 8bit wide fonts
+-only (hardware limitation) and 16bit tall fonts (driver limitation).
++Text mode is supported even in higher resolutions, but there is limitation to
++lower pixclocks (maximum usually between 50-60 MHz, depending on specific
++hardware, i get best results from plain S3 Trio32 card - about 75 MHz). This
++limitation is not enforced by driver. Text mode supports 8bit wide fonts only
++(hardware limitation) and 16bit tall fonts (driver limitation). Text mode
++support is broken on S3 Trio64 V2/DX.
+ 
+ There are two 4 bpp modes. First mode (selected if nonstd == 0) is mode with
+ packed pixels, high nibble first. Second mode (selected if nonstd == 1) is mode
+@@ -73,6 +75,8 @@ Known bugs
+ ==========
+ 
+ 	* cursor disable in text mode doesn't work
++	* text mode broken on S3 Trio64 V2/DX
 +
- 		if (!info->fbops->fb_check_var) {
- 			*var = info->var;
- 			return 0;
-@@ -831,7 +833,7 @@ fb_set_var(struct fb_info *info, struct 
  
- 			if (!err && (flags & FBINFO_MISC_USEREVENT)) {
- 				struct fb_event event;
--				int evnt = (var->activate & FB_ACTIVATE_ALL) ?
-+				int evnt = (activate & FB_ACTIVATE_ALL) ?
- 					FB_EVENT_MODE_CHANGE_ALL :
- 					FB_EVENT_MODE_CHANGE;
+ --
+ Ondrej Zajicek <santiago@crfreenet.org>
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index 2a8d7d3..dfa717b 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -65,7 +65,7 @@ static const struct svga_fb_format s3fb_
  
+ 
+ static const struct svga_pll s3_pll = {3, 129, 3, 33, 0, 3,
+-	60000, 240000, 14318};
++	35000, 240000, 14318};
+ 
+ static const int s3_memsizes[] = {4096, 0, 3072, 8192, 2048, 6144, 1024, 512};
+ 
+@@ -331,8 +331,13 @@ static void s3_set_pixclock(struct fb_in
+ {
+ 	u16 m, n, r;
+ 	u8 regval;
++	int rv;
+ 
+-	svga_compute_pll(&s3_pll, 1000000000 / pixclock, &m, &n, &r, info->node);
++	rv = svga_compute_pll(&s3_pll, 1000000000 / pixclock, &m, &n, &r, info->node);
++	if (rv < 0) {
++		printk(KERN_ERR "fb%d: cannot set requested pixclock, keeping old value\n", info->node);
++		return;
++	}
+ 
+ 	/* Set VGA misc register  */
+ 	regval = vga_r(NULL, VGA_MIS_R);
+@@ -710,7 +715,7 @@ static int s3fb_setcolreg(u_int regno, u
+ 		break;
+ 	case 16:
+ 		if (regno >= 16)
+-			return -EINVAL;
++			return 0;
+ 
+ 		if (fb->var.green.length == 5)
+ 			((u32*)fb->pseudo_palette)[regno] = ((red & 0xF800) >> 1) |
+@@ -723,9 +728,9 @@ static int s3fb_setcolreg(u_int regno, u
+ 	case 24:
+ 	case 32:
+ 		if (regno >= 16)
+-			return -EINVAL;
++			return 0;
+ 
+-		((u32*)fb->pseudo_palette)[regno] = ((transp & 0xFF00) << 16) | ((red & 0xFF00) << 8) |
++		((u32*)fb->pseudo_palette)[regno] = ((red & 0xFF00) << 8) |
+ 			(green & 0xFF00) | ((blue & 0xFF00) >> 8);
+ 		break;
+ 	default:
+@@ -778,12 +783,6 @@ static int s3fb_pan_display(struct fb_va
+ 
+ 	unsigned int offset;
+ 
+-	/* Validate the offsets */
+-	if ((var->xoffset + var->xres) > var->xres_virtual)
+-		return -EINVAL;
+-	if ((var->yoffset + var->yres) > var->yres_virtual)
+-		return -EINVAL;
+-
+ 	/* Calculate the offset */
+ 	if (var->bits_per_pixel == 0) {
+ 		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
 
 
 -------------------------------------------------------------------------

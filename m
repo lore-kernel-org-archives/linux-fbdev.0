@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 05/41] fbdev: Link vgastate.o using
-	Kconfig
-Date: Wed, 25 Apr 2007 14:20:12 +0800
-Message-ID: <462EF31C.7070605@gmail.com>
+Subject: [PATCH 06/41] fbcon: Delay screen update when
+ setting the mode of all consoles
+Date: Wed, 25 Apr 2007 14:21:08 +0800
+Message-ID: <462EF354.2030504@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hgc4z-0000oq-AS for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:38:21 -0700
+	id 1Hgc5A-0000p2-2M for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 00:38:32 -0700
 Received: from wx-out-0506.google.com ([66.249.82.230])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc4y-0005O7-By
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgc59-0005O7-M7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 00:38:21 -0700
+	Wed, 25 Apr 2007 00:38:32 -0700
 Received: by wx-out-0506.google.com with SMTP id i30so293585wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 00:38:20 -0700 (PDT)
+	Wed, 25 Apr 2007 00:38:31 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,140 +33,73 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Instead of directly linking vgastate.o by individual drivers, create a Kconfig
-option VGASTATE which can be 'SELECT'ed by individual drivers instead.
+If the current framebuffer console is rotated (rotate != 0), doing an
+"fbset -a" will corrupt the current console.  Fix by updating the current
+console only after all non-visible consoles have been updated.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/Kconfig  |   11 +++++++++++
- drivers/video/Makefile |   14 +++++++-------
- 2 files changed, 18 insertions(+), 7 deletions(-)
+ drivers/video/console/fbcon.c |   31 ++++++++++---------------------
+ 1 files changed, 10 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 55f4ffd..4f6ee88 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -7,6 +7,10 @@ menu "Graphics support"
- source "drivers/video/backlight/Kconfig"
- source "drivers/video/display/Kconfig"
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index c8b4ae6..19dfdfb 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2849,7 +2849,7 @@ static void fbcon_set_all_vcs(struct fb_
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 	struct vc_data *vc;
+ 	struct display *p;
+-	int i, rows, cols;
++	int i, rows, cols, fg = -1;
  
-+config VGASTATE
-+       tristate
-+       default n
+ 	if (!ops || ops->currcon < 0)
+ 		return;
+@@ -2860,34 +2860,23 @@ static void fbcon_set_all_vcs(struct fb_
+ 		    registered_fb[con2fb_map[i]] != info)
+ 			continue;
+ 
++		if (CON_IS_VISIBLE(vc)) {
++			fg = i;
++			continue;
++		}
 +
- config FB
- 	tristate "Support for frame buffer devices"
- 	---help---
-@@ -478,6 +482,7 @@ config FB_VGA16
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select VGASTATE
- 	help
- 	  This is the frame buffer device driver for VGA 16 color graphic
- 	  cards. Say Y if you have such a card.
-@@ -713,6 +718,7 @@ config FB_NVIDIA
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select BITREVERSE
-+	select VGASTATE
- 	help
- 	  This driver supports graphics boards with the nVidia chips, TNT
- 	  and newer. For very old chipsets, such as the RIVA128, then use
-@@ -751,6 +757,7 @@ config FB_RIVA
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select BITREVERSE
-+	select VGASTATE
- 	help
- 	  This driver supports graphics boards with the nVidia Riva/Geforce
- 	  chips.
-@@ -797,6 +804,7 @@ config FB_I810
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select VGASTATE
- 	help
- 	  This driver supports the on-board graphics built in to the Intel 810 
-           and 815 chipsets.  Say Y if you have and plan to use such a board.
-@@ -1147,6 +1155,7 @@ config FB_S3
- 	select FB_CFB_IMAGEBLIT
- 	select FB_TILEBLITTING
- 	select FB_SVGALIB
-+	select VGASTATE
- 	---help---
- 	  Driver for graphics boards with S3 Trio / S3 Virge chip.
+ 		p = &fb_display[vc->vc_num];
+ 		set_blitting_type(vc, info);
+ 		var_to_display(p, &info->var, info);
+-		cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
+-		rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
++		cols = FBCON_SWAP(p->rotate, info->var.xres, info->var.yres);
++		rows = FBCON_SWAP(p->rotate, info->var.yres, info->var.xres);
+ 		cols /= vc->vc_font.width;
+ 		rows /= vc->vc_font.height;
+ 		vc_resize(vc, cols, rows);
+-
+-		if (CON_IS_VISIBLE(vc)) {
+-			updatescrollmode(p, info, vc);
+-			scrollback_max = 0;
+-			scrollback_current = 0;
+-
+-			if (!fbcon_is_inactive(vc, info)) {
+-			    ops->var.xoffset = ops->var.yoffset =
+-				p->yscroll = 0;
+-			    ops->update_start(info);
+-			}
+-
+-			fbcon_set_palette(vc, color_table);
+-			update_screen(vc);
+-			if (softback_buf)
+-				fbcon_update_softback(vc);
+-		}
+ 	}
  
-@@ -1157,6 +1166,7 @@ config FB_SAVAGE
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select VGASTATE
- 	help
- 	  This driver supports notebooks and computers with S3 Savage PCI/AGP
- 	  chips.
-@@ -1223,6 +1233,7 @@ config FB_NEOMAGIC
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select VGASTATE
- 	help
- 	  This driver supports notebooks with NeoMagic PCI chips.
- 	  Say Y if you have such a graphics card. 
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 4fa1529..3ff0a70 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -4,6 +4,7 @@ # Rewritten to use lists instead of if-s
+-	ops->p = &fb_display[ops->currcon];
++	if (fg != -1)
++		fbcon_modechanged(info);
+ }
  
- # Each configuration option enables a list of files.
- 
-+obj-$(CONFIG_VGASTATE)            += vgastate.o
- obj-y                             += fb_notify.o
- obj-$(CONFIG_FB)                  += fb.o
- fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
-@@ -31,18 +32,17 @@ obj-$(CONFIG_FB_PM2)              += pm2
- obj-$(CONFIG_FB_PM3)		  += pm3fb.o
- 
- obj-$(CONFIG_FB_MATROX)		  += matrox/
--obj-$(CONFIG_FB_RIVA)		  += riva/ vgastate.o
--obj-$(CONFIG_FB_NVIDIA)		  += nvidia/ vgastate.o
-+obj-$(CONFIG_FB_RIVA)		  += riva/
-+obj-$(CONFIG_FB_NVIDIA)		  += nvidia/
- obj-$(CONFIG_FB_ATY)		  += aty/ macmodes.o
- obj-$(CONFIG_FB_ATY128)		  += aty/ macmodes.o
- obj-$(CONFIG_FB_RADEON)		  += aty/
- obj-$(CONFIG_FB_SIS)		  += sis/
- obj-$(CONFIG_FB_KYRO)             += kyro/
--obj-$(CONFIG_FB_SAVAGE)		  += savage/ vgastate.o
-+obj-$(CONFIG_FB_SAVAGE)		  += savage/
- obj-$(CONFIG_FB_GEODE)		  += geode/
- obj-$(CONFIG_FB_MBX)		  += mbx/
--obj-$(CONFIG_FB_I810)             += vgastate.o
--obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o vgastate.o
-+obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o
- obj-$(CONFIG_FB_3DFX)             += tdfxfb.o
- obj-$(CONFIG_FB_CONTROL)          += controlfb.o
- obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o
-@@ -52,7 +52,7 @@ obj-$(CONFIG_FB_IMSTT)            += ims
- obj-$(CONFIG_FB_FM2)              += fm2fb.o
- obj-$(CONFIG_FB_CYBLA)            += cyblafb.o
- obj-$(CONFIG_FB_TRIDENT)          += tridentfb.o
--obj-$(CONFIG_FB_S3)               += s3fb.o vgastate.o
-+obj-$(CONFIG_FB_S3)               += s3fb.o
- obj-$(CONFIG_FB_STI)              += stifb.o
- obj-$(CONFIG_FB_FFB)              += ffb.o sbuslib.o
- obj-$(CONFIG_FB_CG6)              += cg6.o sbuslib.o
-@@ -105,7 +105,7 @@ obj-$(CONFIG_FB_SM501)            += sm5
- # Platform or fallback drivers go here
- obj-$(CONFIG_FB_VESA)             += vesafb.o
- obj-$(CONFIG_FB_IMAC)             += imacfb.o
--obj-$(CONFIG_FB_VGA16)            += vga16fb.o vgastate.o
-+obj-$(CONFIG_FB_VGA16)            += vga16fb.o
- obj-$(CONFIG_FB_OF)               += offb.o
- 
- # the test framebuffer is last
+ static int fbcon_mode_deleted(struct fb_info *info,
 
 
 -------------------------------------------------------------------------

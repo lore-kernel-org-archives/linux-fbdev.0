@@ -1,10 +1,9 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 27/41] fbdev: Advertise
-	limitation	of drawing engine
-Date: Thu, 26 Apr 2007 07:10:24 +0800
-Message-ID: <1177542624.4655.6.camel@daplas>
-References: <462EFBB4.1080900@gmail.com>
-	<20070425212327.GA7956@localhost.localdomain>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 21/41] fbdev: Pass struct fb_info to
+	fb_read and fb_write
+Date: Thu, 26 Apr 2007 09:01:10 +0900
+Message-ID: <20070426000110.GA12889@linux-sh.org>
+References: <462EF97C.2050209@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,16 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgqdF-0008NR-3N for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 16:10:41 -0700
-Received: from nz-out-0506.google.com ([64.233.162.236])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgqdE-0000ZG-If
+	id 1HgrQN-000786-Gg for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 17:01:28 -0700
+Received: from smtp.ocgnet.org ([64.20.243.3])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgrQM-0006DF-72
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 16:10:41 -0700
-Received: by nz-out-0506.google.com with SMTP id i11so1209988nzi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 16:10:40 -0700 (PDT)
-In-Reply-To: <20070425212327.GA7956@localhost.localdomain>
+	Wed, 25 Apr 2007 17:01:27 -0700
+Content-Disposition: inline
+In-Reply-To: <462EF97C.2050209@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,31 +30,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Christopher Hoover <ch@hpl.hp.com>
 
-On Wed, 2007-04-25 at 23:23 +0200, Ondrej Zajicek wrote:
-> On Wed, Apr 25, 2007 at 02:56:52PM +0800, Antonino A. Daplas wrote:
-> > A few drivers are not capable of blitting rectangles of any dimension.
-> > vga16fb can only blit 8-pixel wide rectangles, while s3fb (in tileblitting
-> > mode) can only blit 8x16 rectangles.
+On Wed, Apr 25, 2007 at 02:47:24PM +0800, Antonino A. Daplas wrote:
+> It is unnecessary to pass struct file to fb_read() and fb_write() in struct
+> fb_ops. For consistency with the other methods, pass struct fb_info instead.
 > 
-> I have two new drivers which use tileblit. Where i can get diff of your
-> tree (not splitted to fifty parts and mixed with mail) to be able to
+> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 
-No public tree, and I don't have CVS access to fbdev-devel.
+pvr2fb bits look fine.
 
-> update that drivers to new interfaces? Or should i send it in current
-> form (againts 2.6.21-rc7)?
-
-You can submit it based on Linus's tree.  And then we'll just create
-another patch on top of that (once akpm merges my changes to his tree).
-This way, if your driver gets to Linus's tree prior to my changes, your
-driver will stay working.
-
-Tony
-
-
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

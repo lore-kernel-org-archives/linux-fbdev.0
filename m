@@ -1,28 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 01/41] epson1355fb.c: Fix error
-	handling code
-Date: Thu, 26 Apr 2007 08:42:26 +0800
-Message-ID: <1177548146.4660.2.camel@daplas>
-References: <462EF229.4080903@gmail.com>
-	<20070425173330.8901c396.akpm@linux-foundation.org>
+From: <WolfSt.External@qimonda.com>
+Subject: Re: Radeonfb doesn't work on Radeon Xpress 200M
+	(RS485) (fwd)
+Date: Thu, 26 Apr 2007 04:01:31 +0200
+Message-ID: <BFB8162493C31249AA1B625A18CD62FF015052F6@drsse603.eu.infineon.com>
+References: <Pine.LNX.4.64.0704251340470.2730@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hgs4A-0004bX-NX for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 17:42:35 -0700
-Received: from qb-out-0506.google.com ([72.14.204.236])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgs49-00054r-E4
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 17:42:34 -0700
-Received: by qb-out-0506.google.com with SMTP id e21so144933qba
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Apr 2007 17:42:32 -0700 (PDT)
-In-Reply-To: <20070425173330.8901c396.akpm@linux-foundation.org>
+	id 1HgtIn-0006tK-V9 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 19:01:50 -0700
+Received: from smtp1.infineon.com ([217.10.60.22])
+	by mail.sourceforge.net with esmtps (TLSv1:RC4-SHA:128) (Exim 4.44)
+	id 1HgtIm-0002VR-7c for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 19:01:45 -0700
+Content-class: urn:content-classes:message
+In-Reply-To: <Pine.LNX.4.64.0704251340470.2730@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,24 +30,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland Stigge <stigge@antcom.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2007-04-25 at 17:33 -0700, Andrew Morton wrote:
-> Well that was a bad day for fbdev bugs.
+Hi,
 
-Still way better than -mm though :-)
+I bought a notebook HP nx6325 where a ATI Radeon Xpress 200M =
 
-> 
-> If you think any of these should be in 2.6.21, please identify
-> which ones, asap.
-> 
+chipset is build in. I just add the pci ids of this card to =
 
-Nothing critical, maybe the first one, but even that can wait.
+get the radeonfb working. Please find the attached patch. I =
 
-Tony
+only add the patch against the 2.6.20 kernel tree. But it =
+
+also works for the 2.6.21 which I tested it first.
 
 
+Regards,
+
+Stephan Wolf
+AIS Automation Dresden GmbH
+Softwaredesigner
+
+Qimonda AG:
+Office:         D412
+Phone:          +49 (0)351 / 886-7696
+mailto: WolfSt.External@qimonda.com
+
+Tel. / Phone: +49 (0)351 / 2166-136
+Fax:              +49 (0)351 / 2166-336
+mailto:wolf@ais-dresden.de
+http://www.ais-automation.com
+Otto-Mohr-Stra=DFe 6
+01237 Dresden
+Germany
+
+Sitz der Gesellschaft: Dresden
+Registergericht: Amtsgericht Dresden, HRB 126
+Gesch=E4ftsf=FChrer: Dipl.-Ing. Eckhard Sch=F6bel, Dipl.-Ing. =
+
+Gottfried Gerlach, Dipl.-Ing. Rainer Strau=DF
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

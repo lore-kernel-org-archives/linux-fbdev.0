@@ -1,26 +1,26 @@
-From: <WolfSt.External@qimonda.com>
-Subject: Re: Radeonfb doesn't work on Radeon Xpress
-	200M(RS485) (fwd)
-Date: Thu, 26 Apr 2007 04:20:06 +0200
-Message-ID: <BFB8162493C31249AA1B625A18CD62FF015052F8@drsse603.eu.infineon.com>
-References: <Pine.LNX.4.64.0704251340470.2730@anakin>
-	<BFB8162493C31249AA1B625A18CD62FF015052F6@drsse603.eu.infineon.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 27/41] fbdev: Advertise limitation
+ of drawing engine
+Date: Thu, 26 Apr 2007 08:38:21 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0704260836150.9880@anakin>
+References: <462EFBB4.1080900@gmail.com>
+	<20070425212327.GA7956@localhost.localdomain>
+	<1177542624.4655.6.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hgtan-0000xQ-Hh for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 19:20:21 -0700
-Received: from smtp1.infineon.com ([217.10.60.22])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hgtam-0004Qb-0p
+	id 1HgxcY-0002KS-D9 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Apr 2007 23:38:26 -0700
+Received: from astra.telenet-ops.be ([195.130.132.58])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgxcX-0007kG-NK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Apr 2007 19:20:21 -0700
-Content-class: urn:content-classes:message
-In-Reply-To: <BFB8162493C31249AA1B625A18CD62FF015052F6@drsse603.eu.infineon.com>
+	Wed, 25 Apr 2007 23:38:26 -0700
+In-Reply-To: <1177542624.4655.6.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,85 +31,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-I forgot to add the patch, Sorry
- =
+On Thu, 26 Apr 2007, Antonino A. Daplas wrote:
+> On Wed, 2007-04-25 at 23:23 +0200, Ondrej Zajicek wrote:
+> > On Wed, Apr 25, 2007 at 02:56:52PM +0800, Antonino A. Daplas wrote:
+> > > A few drivers are not capable of blitting rectangles of any dimension.
+> > > vga16fb can only blit 8-pixel wide rectangles, while s3fb (in tileblitting
+> > > mode) can only blit 8x16 rectangles.
+> > 
+> > I have two new drivers which use tileblit. Where i can get diff of your
+> > tree (not splitted to fifty parts and mixed with mail) to be able to
+> 
+> No public tree, and I don't have CVS access to fbdev-devel.
 
+That can be arranged, if you want it... ;-)
 
-> -----Urspr=FCngliche Nachricht-----
-> Von: linux-fbdev-devel-bounces@lists.sourceforge.net =
+Another option is a subdirectory on
+http://www.kernel.org/pub/linux/kernel/people/, where you can host a git
+tree, patches, ...?
 
-> [mailto:linux-fbdev-devel-bounces@lists.sourceforge.net] Im =
+Gr{oetje,eeting}s,
 
-> Auftrag von Wolf Stephan (QD IT PA ES External)
-> Gesendet: Donnerstag, 26. April 2007 10:02
-> An: linux-fbdev-devel@lists.sourceforge.net
-> Betreff: Re: [Linux-fbdev-devel] Radeonfb doesn't work on =
+						Geert
 
-> Radeon Xpress 200M(RS485) (fwd)
-> =
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> Hi,
-> =
-
-> I bought a notebook HP nx6325 where a ATI Radeon Xpress 200M =
-
-> chipset is build in. I just add the pci ids of this card to =
-
-> get the radeonfb working. Please find the attached patch. I =
-
-> only add the patch against the 2.6.20 kernel tree. But it =
-
-> also works for the 2.6.21 which I tested it first.
-> =
-
-> =
-
-> Regards,
-> =
-
-> Stephan Wolf
-> AIS Automation Dresden GmbH
-> Softwaredesigner
-> =
-
-> Qimonda AG:
-> Office:         D412
-> Phone:          +49 (0)351 / 886-7696
-> mailto: WolfSt.External@qimonda.com
-> =
-
-> Tel. / Phone: +49 (0)351 / 2166-136
-> Fax:              +49 (0)351 / 2166-336
-> mailto:wolf@ais-dresden.de
-> http://www.ais-automation.com
-> Otto-Mohr-Stra=DFe 6
-> 01237 Dresden
-> Germany
-> =
-
-> Sitz der Gesellschaft: Dresden
-> Registergericht: Amtsgericht Dresden, HRB 126
-> Gesch=E4ftsf=FChrer: Dipl.-Ing. Eckhard Sch=F6bel, Dipl.-Ing. =
-
-> Gottfried Gerlach, Dipl.-Ing. Rainer Strau=DF
-> =
-
-> --------------------------------------------------------------
-> -----------
-> This SF.net email is sponsored by DB2 Express Download DB2 =
-
-> Express C - the FREE version of DB2 express and take control =
-
-> of your XML. No limits. Just data. Click to get it now.
-> http://sourceforge.net/powerbar/db2/
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> =
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

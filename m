@@ -1,7 +1,12 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: vgastate fix
-Date: Thu, 26 Apr 2007 09:13:26 +0200
-Message-ID: <20070426071326.GA5247@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 27/41] fbdev: Advertise
+	limitation	of drawing engine
+Date: Thu, 26 Apr 2007 15:17:05 +0800
+Message-ID: <1177571825.4685.18.camel@daplas>
+References: <462EFBB4.1080900@gmail.com>
+	<20070425212327.GA7956@localhost.localdomain>
+	<1177542624.4655.6.camel@daplas>
+	<Pine.LNX.4.64.0704260836150.9880@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,14 +15,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HgyAW-0007F6-BS for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Apr 2007 00:13:35 -0700
-Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HgyAV-0007V9-Fi
+	id 1HgyEL-0007nr-1u for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Apr 2007 00:17:29 -0700
+Received: from wx-out-0506.google.com ([66.249.82.230])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HgyEJ-00007W-HC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Apr 2007 00:13:32 -0700
-Content-Disposition: inline
+	Thu, 26 Apr 2007 00:17:29 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so863758wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 26 Apr 2007 00:17:26 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0704260836150.9880@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,129 +35,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+
+On Thu, 2007-04-26 at 08:38 +0200, Geert Uytterhoeven wrote:
+> On Thu, 26 Apr 2007, Antonino A. Daplas wrote:
+> > On Wed, 2007-04-25 at 23:23 +0200, Ondrej Zajicek wrote:
+> > > On Wed, Apr 25, 2007 at 02:56:52PM +0800, Antonino A. Daplas wrote:
+> > > > A few drivers are not capable of blitting rectangles of any dimension.
+> > > > vga16fb can only blit 8-pixel wide rectangles, while s3fb (in tileblitting
+> > > > mode) can only blit 8x16 rectangles.
+> > > 
+> > > I have two new drivers which use tileblit. Where i can get diff of your
+> > > tree (not splitted to fifty parts and mixed with mail) to be able to
+> > 
+> > No public tree, and I don't have CVS access to fbdev-devel.
+> 
+> That can be arranged, if you want it... ;-)
+
+Frankly, no, I don't want the additional work of maintaining a public
+tree :-). Plus, fbdev is pretty much in a stable state. so merging
+patches based on Linus's or akpm's tree is not a problem.
+
+But if people really want a public tree, I won't mind maintaining one.
+
+Tony
 
 
-Hello
-
-This patch do 3 updates to vgastate.c :
-
-1) sets 'palette access disabled' during read from AR10.
-   This is usually documented as needed for access AR01-AR0F,
-   but on ARK Logic card it is needed for AR10 (otherwise read
-   returns some nonsence and save_vga_text() returns before do
-   anything).
-
-2) do not restore AR10, because it was not changed during
-
-3) remove modification of misc reg:
-	/* force graphics mode */
-	vga_w(state->vgabase, VGA_MIS_W, misc | 1);
-	
-   as comment is misleading - LSB of misc reg does not set/reset graphics
-   mode, but set color/mono adresses of CRT and some other regs.
-   but these regs are not used during save/restore fonts.
-   (it worked even when (misc | 1) was replaced by (misc & ~1) ).
-
-
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
-
----
-
-diff -uprN -X linux-2.6.21-rc6-base/Documentation/dontdiff linux-2.6.21-rc6-base/drivers/video/vgastate.c linux-2.6.21-rc6/drivers/video/vgastate.c
---- linux-2.6.21-rc6-base/drivers/video/vgastate.c	2007-04-06 04:36:56.000000000 +0200
-+++ linux-2.6.21-rc6/drivers/video/vgastate.c	2007-04-26 00:53:58.000000000 +0200
-@@ -50,23 +50,28 @@ static void save_vga_text(struct vgastat
- 	struct regstate *saved = (struct regstate *) state->vidstate;
- 	int i;
- 	u8 misc, attr10, gr4, gr5, gr6, seq1, seq2, seq4;
-+	unsigned short iobase;
- 
- 	/* if in graphics mode, no need to save */
-+	misc = vga_r(state->vgabase, VGA_MIS_R);
-+	iobase = (misc & 1) ? 0x3d0 : 0x3b0;
-+
-+	vga_r(state->vgabase, iobase + 0xa); 
-+	vga_w(state->vgabase, VGA_ATT_W, 0x00);
- 	attr10 = vga_rattr(state->vgabase, 0x10);
-+	vga_r(state->vgabase, iobase + 0xa);
-+	vga_w(state->vgabase, VGA_ATT_W, 0x20);
-+
- 	if (attr10 & 1)
- 		return;
--	
-+
- 	/* save regs */
--	misc = vga_r(state->vgabase, VGA_MIS_R);
- 	gr4 = vga_rgfx(state->vgabase, VGA_GFX_PLANE_READ);
- 	gr5 = vga_rgfx(state->vgabase, VGA_GFX_MODE);
- 	gr6 = vga_rgfx(state->vgabase, VGA_GFX_MISC);
- 	seq2 = vga_rseq(state->vgabase, VGA_SEQ_PLANE_WRITE);
- 	seq4 = vga_rseq(state->vgabase, VGA_SEQ_MEMORY_MODE);
- 	
--	/* force graphics mode */
--	vga_w(state->vgabase, VGA_MIS_W, misc | 1);
--
- 	/* blank screen */
- 	seq1 = vga_rseq(state->vgabase, VGA_SEQ_CLOCK_MODE);
- 	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x1);
-@@ -115,15 +120,12 @@ static void save_vga_text(struct vgastat
- 	}
- 
- 	/* restore regs */
--	vga_wattr(state->vgabase, 0x10, attr10);
--
- 	vga_wseq(state->vgabase, VGA_SEQ_PLANE_WRITE, seq2);
- 	vga_wseq(state->vgabase, VGA_SEQ_MEMORY_MODE, seq4);
- 
- 	vga_wgfx(state->vgabase, VGA_GFX_PLANE_READ, gr4);
- 	vga_wgfx(state->vgabase, VGA_GFX_MODE, gr5);
- 	vga_wgfx(state->vgabase, VGA_GFX_MISC, gr6);
--	vga_w(state->vgabase, VGA_MIS_W, misc);
- 
- 	/* unblank screen */
- 	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x1);
-@@ -137,11 +139,10 @@ static void restore_vga_text(struct vgas
- {
- 	struct regstate *saved = (struct regstate *) state->vidstate;
- 	int i;
--	u8 misc, gr1, gr3, gr4, gr5, gr6, gr8; 
-+	u8 gr1, gr3, gr4, gr5, gr6, gr8; 
- 	u8 seq1, seq2, seq4;
- 
- 	/* save regs */
--	misc = vga_r(state->vgabase, VGA_MIS_R);
- 	gr1 = vga_rgfx(state->vgabase, VGA_GFX_SR_ENABLE);
- 	gr3 = vga_rgfx(state->vgabase, VGA_GFX_DATA_ROTATE);
- 	gr4 = vga_rgfx(state->vgabase, VGA_GFX_PLANE_READ);
-@@ -151,9 +152,6 @@ static void restore_vga_text(struct vgas
- 	seq2 = vga_rseq(state->vgabase, VGA_SEQ_PLANE_WRITE);
- 	seq4 = vga_rseq(state->vgabase, VGA_SEQ_MEMORY_MODE);
- 	
--	/* force graphics mode */
--	vga_w(state->vgabase, VGA_MIS_W, misc | 1);
--
- 	/* blank screen */
- 	seq1 = vga_rseq(state->vgabase, VGA_SEQ_CLOCK_MODE);
- 	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x1);
-@@ -213,8 +211,6 @@ static void restore_vga_text(struct vgas
- 	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x3);
- 
- 	/* restore regs */
--	vga_w(state->vgabase, VGA_MIS_W, misc);
--
- 	vga_wgfx(state->vgabase, VGA_GFX_SR_ENABLE, gr1);
- 	vga_wgfx(state->vgabase, VGA_GFX_DATA_ROTATE, gr3);
- 	vga_wgfx(state->vgabase, VGA_GFX_PLANE_READ, gr4);
-
-
--- 
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

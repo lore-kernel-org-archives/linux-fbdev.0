@@ -1,18 +1,18 @@
 From: Ville Syrjala <syrjala@sci.fi>
-Subject: [patch 2/3] atyfb: Reorganize clock init
-Date: Sat, 28 Apr 2007 21:17:15 +0300
-Message-ID: <20070428181817.770768679@ob6000.korsu.shacknet.nu>
+Subject: [patch 1/3] atyfb: Increase SPLL delay
+Date: Sat, 28 Apr 2007 21:17:14 +0300
+Message-ID: <20070428181816.861058919@ob6000.korsu.shacknet.nu>
 References: <20070428181713.086211486@ob6000.korsu.shacknet.nu>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0899965035=="
+Content-Type: multipart/mixed; boundary="===============1476645112=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HhrV0-0007lj-Iw for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Apr 2007 11:18:22 -0700
-Received: from smtp4.pp.htv.fi ([213.243.153.38])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HhrUz-0004jS-W1
+	id 1HhrV1-0007lo-0Q for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 28 Apr 2007 11:18:23 -0700
+Received: from smtp6.pp.htv.fi ([213.243.153.40])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HhrUz-00032F-GF
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 28 Apr 2007 11:18:22 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -28,68 +28,36 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: adaplas@gmail.com
 
---===============0899965035==
-Content-Disposition: inline; filename=atyfb_reorganize_clock_init.patch
+--===============1476645112==
+Content-Disposition: inline; filename=atyfb_increase_spll_delay.patch
 
-Reorganize atyfb clock init code so command line clock overrides are
-effective for all chips. The old code would silently ignore some of the
-command line clock overrides with some chips.
+Wait 5 ms instead of 500 us for the SPLL to lock. This matches the
+recommendation in mach64 programmer's guide.
 
 ---
- drivers/video/aty/atyfb_base.c |   32 ++++++++++++++++++--------------
- 1 file changed, 18 insertions(+), 14 deletions(-)
+ drivers/video/aty/mach64_ct.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.20.7/drivers/video/aty/atyfb_base.c
+Index: linux-2.6.20.7/drivers/video/aty/mach64_ct.c
 ===================================================================
---- linux-2.6.20.7.orig/drivers/video/aty/atyfb_base.c
-+++ linux-2.6.20.7/drivers/video/aty/atyfb_base.c
-@@ -2352,20 +2352,6 @@ static int __devinit aty_init(struct fb_
- 		par->pll_limits.xclk = 53;
+--- linux-2.6.20.7.orig/drivers/video/aty/mach64_ct.c
++++ linux-2.6.20.7/drivers/video/aty/mach64_ct.c
+@@ -608,12 +608,10 @@ static void aty_resume_pll_ct(const stru
+ 		aty_st_pll_ct(SCLK_FB_DIV, pll->ct.sclk_fb_div, par);
+ 		aty_st_pll_ct(SPLL_CNTL2, pll->ct.spll_cntl2, par);
+ 		/*
+-		 * The sclk has been started. However, I believe the first clock
+-		 * ticks it generates are not very stable. Hope this primitive loop
+-		 * helps for Rage Mobilities that sometimes crash when
+-		 * we switch to sclk. (Daniel Mantione, 13-05-2003)
++		 * SCLK has been started. Wait for the PLL to lock. 5 ms
++		 * should be enough according to mach64 programmer's guide.
+ 		 */
+-		udelay(500);
++		mdelay(5);
  	}
- #endif
--	if (pll)
--		par->pll_limits.pll_max = pll;
--	if (mclk)
--		par->pll_limits.mclk = mclk;
--	if (xclk)
--		par->pll_limits.xclk = xclk;
--
--	aty_calc_mem_refresh(par, par->pll_limits.xclk);
--	par->pll_per = 1000000/par->pll_limits.pll_max;
--	par->mclk_per = 1000000/par->pll_limits.mclk;
--	par->xclk_per = 1000000/par->pll_limits.xclk;
--
--	par->ref_clk_per = 1000000000000ULL / 14318180;
--	xtal = "14.31818";
  
- #ifdef CONFIG_FB_ATY_GX
- 	if (!M64_HAS(INTEGRATED)) {
-@@ -2445,7 +2431,25 @@ static int __devinit aty_init(struct fb_
- 		if (par->pll_limits.mclk == 67 && par->ram_type < SDRAM)
- 			par->pll_limits.mclk = 63;
- 	}
-+#endif
- 
-+	/* Allow command line to override clocks. */
-+	if (pll)
-+		par->pll_limits.pll_max = pll;
-+	if (mclk)
-+		par->pll_limits.mclk = mclk;
-+	if (xclk)
-+		par->pll_limits.xclk = xclk;
-+
-+	aty_calc_mem_refresh(par, par->pll_limits.xclk);
-+	par->pll_per = 1000000/par->pll_limits.pll_max;
-+	par->mclk_per = 1000000/par->pll_limits.mclk;
-+	par->xclk_per = 1000000/par->pll_limits.xclk;
-+
-+	par->ref_clk_per = 1000000000000ULL / 14318180;
-+	xtal = "14.31818";
-+
-+#ifdef CONFIG_FB_ATY_CT
- 	if (M64_HAS(GTB_DSP)) {
- 		u8 pll_ref_div = aty_ld_pll_ct(PLL_REF_DIV, par);
- 
+ 	aty_st_pll_ct(PLL_REF_DIV, pll->ct.pll_ref_div, par);
 
 -- 
 Ville Syrj������l������
@@ -97,7 +65,7 @@ syrjala@sci.fi
 http://www.sci.fi/~syrjala/
 
 
---===============0899965035==
+--===============1476645112==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -108,7 +76,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---===============0899965035==
+--===============1476645112==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -119,4 +87,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0899965035==--
+--===============1476645112==--

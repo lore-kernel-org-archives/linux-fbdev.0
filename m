@@ -1,19 +1,18 @@
 From: Ville Syrjala <syrjala@sci.fi>
-Subject: [patch 3/3] atyfb: Halve XCLK with Mobility and
-	32bit memory
-Date: Sat, 28 Apr 2007 21:17:16 +0300
-Message-ID: <20070428181818.683056217@ob6000.korsu.shacknet.nu>
+Subject: [patch 2/3] atyfb: Reorganize clock init
+Date: Sat, 28 Apr 2007 21:17:15 +0300
+Message-ID: <20070428181817.770768679@ob6000.korsu.shacknet.nu>
 References: <20070428181713.086211486@ob6000.korsu.shacknet.nu>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1614978221=="
+Content-Type: multipart/mixed; boundary="===============0899965035=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HhrV0-0007le-7v for linux-fbdev-devel@lists.sourceforge.net;
+	id 1HhrV0-0007lj-Iw for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 28 Apr 2007 11:18:22 -0700
-Received: from smtp6.pp.htv.fi ([213.243.153.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HhrUy-0004jj-HU
+Received: from smtp4.pp.htv.fi ([213.243.153.38])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HhrUz-0004jS-W1
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 28 Apr 2007 11:18:22 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -29,44 +28,68 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: adaplas@gmail.com
 
---===============1614978221==
-Content-Disposition: inline;
-	filename=atyfb_halve_xclk_with_mobility_and_32bit_memory.patch
+--===============0899965035==
+Content-Disposition: inline; filename=atyfb_reorganize_clock_init.patch
 
-Laptops with Rage Mobility and 32bit memory interface seem to require
-halved XCLK to operate correctly.
+Reorganize atyfb clock init code so command line clock overrides are
+effective for all chips. The old code would silently ignore some of the
+command line clock overrides with some chips.
 
 ---
- drivers/video/aty/atyfb_base.c |    3 +++
- include/video/mach64.h         |    1 +
- 2 files changed, 4 insertions(+)
+ drivers/video/aty/atyfb_base.c |   32 ++++++++++++++++++--------------
+ 1 file changed, 18 insertions(+), 14 deletions(-)
 
 Index: linux-2.6.20.7/drivers/video/aty/atyfb_base.c
 ===================================================================
 --- linux-2.6.20.7.orig/drivers/video/aty/atyfb_base.c
 +++ linux-2.6.20.7/drivers/video/aty/atyfb_base.c
-@@ -2430,6 +2430,9 @@ static int __devinit aty_init(struct fb_
- 		/* for many chips, the mclk is 67 MHz for SDRAM, 63 MHz otherwise */
- 		if (par->pll_limits.mclk == 67 && par->ram_type < SDRAM)
- 			par->pll_limits.mclk = 63;
-+		/* Mobility + 32bit memory interface need halved XCLK. */
-+		if (M64_HAS(MOBIL_BUS) && par->ram_type == SDRAM32)
-+			par->pll_limits.xclk = (par->pll_limits.xclk + 1) >> 1;
+@@ -2352,20 +2352,6 @@ static int __devinit aty_init(struct fb_
+ 		par->pll_limits.xclk = 53;
  	}
  #endif
+-	if (pll)
+-		par->pll_limits.pll_max = pll;
+-	if (mclk)
+-		par->pll_limits.mclk = mclk;
+-	if (xclk)
+-		par->pll_limits.xclk = xclk;
+-
+-	aty_calc_mem_refresh(par, par->pll_limits.xclk);
+-	par->pll_per = 1000000/par->pll_limits.pll_max;
+-	par->mclk_per = 1000000/par->pll_limits.mclk;
+-	par->xclk_per = 1000000/par->pll_limits.xclk;
+-
+-	par->ref_clk_per = 1000000000000ULL / 14318180;
+-	xtal = "14.31818";
  
-Index: linux-2.6.20.7/include/video/mach64.h
-===================================================================
---- linux-2.6.20.7.orig/include/video/mach64.h
-+++ linux-2.6.20.7/include/video/mach64.h
-@@ -885,6 +885,7 @@
- #define SDRAM			4
- #define SGRAM			5
- #define WRAM			6
-+#define SDRAM32			6
+ #ifdef CONFIG_FB_ATY_GX
+ 	if (!M64_HAS(INTEGRATED)) {
+@@ -2445,7 +2431,25 @@ static int __devinit aty_init(struct fb_
+ 		if (par->pll_limits.mclk == 67 && par->ram_type < SDRAM)
+ 			par->pll_limits.mclk = 63;
+ 	}
++#endif
  
- #define DAC_INTERNAL		0x00
- #define DAC_IBMRGB514		0x01
++	/* Allow command line to override clocks. */
++	if (pll)
++		par->pll_limits.pll_max = pll;
++	if (mclk)
++		par->pll_limits.mclk = mclk;
++	if (xclk)
++		par->pll_limits.xclk = xclk;
++
++	aty_calc_mem_refresh(par, par->pll_limits.xclk);
++	par->pll_per = 1000000/par->pll_limits.pll_max;
++	par->mclk_per = 1000000/par->pll_limits.mclk;
++	par->xclk_per = 1000000/par->pll_limits.xclk;
++
++	par->ref_clk_per = 1000000000000ULL / 14318180;
++	xtal = "14.31818";
++
++#ifdef CONFIG_FB_ATY_CT
+ 	if (M64_HAS(GTB_DSP)) {
+ 		u8 pll_ref_div = aty_ld_pll_ct(PLL_REF_DIV, par);
+ 
 
 -- 
 Ville Syrj������l������
@@ -74,7 +97,7 @@ syrjala@sci.fi
 http://www.sci.fi/~syrjala/
 
 
---===============1614978221==
+--===============0899965035==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -85,7 +108,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---===============1614978221==
+--===============0899965035==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -96,4 +119,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1614978221==--
+--===============0899965035==--

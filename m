@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 6/7] atyfb: Reorganize clock init
-Date: Sun, 29 Apr 2007 11:51:14 +0800
-Message-ID: <46341632.7060306@gmail.com>
+Subject: [PATCH 7/7] atyfb: Halve XCLK with Mobility and
+	32bit memory
+Date: Sun, 29 Apr 2007 11:51:50 +0800
+Message-ID: <46341656.9040308@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hi0U4-0003cd-Mu for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Apr 2007 20:54:00 -0700
+	id 1Hi0UE-0003i6-S1 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 28 Apr 2007 20:54:11 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hi0U4-000446-ER
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hi0UD-000446-AK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Apr 2007 20:54:00 -0700
+	Sat, 28 Apr 2007 20:54:10 -0700
 Received: by py-out-1112.google.com with SMTP id a29so1108343pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 28 Apr 2007 20:54:00 -0700 (PDT)
+	Sat, 28 Apr 2007 20:54:09 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,67 +35,42 @@ Cc: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development
 
 From: Ville Syrjala <syrjala@sci.fi>
 
-Reorganize atyfb clock init code so command line clock overrides are
-effective for all chips. The old code would silently ignore some of the
-command line clock overrides with some chips.
+Laptops with Rage Mobility and 32bit memory interface seem to require
+halved XCLK to operate correctly.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/aty/atyfb_base.c |   32 ++++++++++++++++++--------------
- 1 files changed, 18 insertions(+), 14 deletions(-)
+ drivers/video/aty/atyfb_base.c |    3 +++
+ include/video/mach64.h         |    1 +
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index e330480..617dc0c 100644
+index 617dc0c..f594b9c 100644
 --- a/drivers/video/aty/atyfb_base.c
 +++ b/drivers/video/aty/atyfb_base.c
-@@ -2297,20 +2297,6 @@ #ifdef CONFIG_PPC_PMAC
- 		par->pll_limits.xclk = 53;
- 	}
- #endif
--	if (pll)
--		par->pll_limits.pll_max = pll;
--	if (mclk)
--		par->pll_limits.mclk = mclk;
--	if (xclk)
--		par->pll_limits.xclk = xclk;
--
--	aty_calc_mem_refresh(par, par->pll_limits.xclk);
--	par->pll_per = 1000000/par->pll_limits.pll_max;
--	par->mclk_per = 1000000/par->pll_limits.mclk;
--	par->xclk_per = 1000000/par->pll_limits.xclk;
--
--	par->ref_clk_per = 1000000000000ULL / 14318180;
--	xtal = "14.31818";
- 
- #ifdef CONFIG_FB_ATY_GX
- 	if (!M64_HAS(INTEGRATED)) {
-@@ -2392,7 +2378,25 @@ #ifdef CONFIG_FB_ATY_CT
+@@ -2377,6 +2377,9 @@ #ifdef CONFIG_FB_ATY_CT
+ 		/* for many chips, the mclk is 67 MHz for SDRAM, 63 MHz otherwise */
  		if (par->pll_limits.mclk == 67 && par->ram_type < SDRAM)
  			par->pll_limits.mclk = 63;
++		/* Mobility + 32bit memory interface need halved XCLK. */
++		if (M64_HAS(MOBIL_BUS) && par->ram_type == SDRAM32)
++			par->pll_limits.xclk = (par->pll_limits.xclk + 1) >> 1;
  	}
-+#endif
+ #endif
  
-+	/* Allow command line to override clocks. */
-+	if (pll)
-+		par->pll_limits.pll_max = pll;
-+	if (mclk)
-+		par->pll_limits.mclk = mclk;
-+	if (xclk)
-+		par->pll_limits.xclk = xclk;
-+
-+	aty_calc_mem_refresh(par, par->pll_limits.xclk);
-+	par->pll_per = 1000000/par->pll_limits.pll_max;
-+	par->mclk_per = 1000000/par->pll_limits.mclk;
-+	par->xclk_per = 1000000/par->pll_limits.xclk;
-+
-+	par->ref_clk_per = 1000000000000ULL / 14318180;
-+	xtal = "14.31818";
-+
-+#ifdef CONFIG_FB_ATY_CT
- 	if (M64_HAS(GTB_DSP)) {
- 		u8 pll_ref_div = aty_ld_pll_ct(PLL_REF_DIV, par);
+diff --git a/include/video/mach64.h b/include/video/mach64.h
+index 09a7f4a..a8332e5 100644
+--- a/include/video/mach64.h
++++ b/include/video/mach64.h
+@@ -885,6 +885,7 @@ #define PSEUDO_EDO		3
+ #define SDRAM			4
+ #define SGRAM			5
+ #define WRAM			6
++#define SDRAM32			6
  
+ #define DAC_INTERNAL		0x00
+ #define DAC_IBMRGB514		0x01
 
 
 -------------------------------------------------------------------------

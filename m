@@ -1,25 +1,27 @@
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: [PATCH] pm2fb: accelerated fillrect and copyarea
-Date: Mon, 30 Apr 2007 20:57:04 +0200
-Message-ID: <46363c001f8a0@wp.pl>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] pm2fb: accelerated fillrect
+	and	copyarea
+Date: Tue, 01 May 2007 05:21:49 +0800
+Message-ID: <1177968109.4372.4.camel@daplas>
+References: <46363c001f8a0@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="part46363c0021f90"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hib3r-0006c8-43 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 11:57:23 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hib3p-0002dT-Hy
+	id 1HidJm-0002t9-Ta for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 30 Apr 2007 14:21:59 -0700
+Received: from py-out-1112.google.com ([64.233.166.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HidJl-0004S2-Aa
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 11:57:23 -0700
-Received: from poczta-15.free.wp-sa.pl (HELO localhost) ([10.1.1.43])
-	(envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
+	Mon, 30 Apr 2007 14:21:58 -0700
+Received: by py-out-1112.google.com with SMTP id a29so1443788pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	30 Apr 2007 20:57:04 +0200
+	Mon, 30 Apr 2007 14:21:56 -0700 (PDT)
+In-Reply-To: <46363c001f8a0@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,133 +32,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format.
+On Mon, 2007-04-30 at 20:57 +0200, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> This is port of accelerated functions from 2.4 kernel. Only
+> fillrect and copyarea are accelerated. Fillrect is not
+> accelerated in 24-bit mode.
 
---part46363c0021f90
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For the best scrolling mode, you would want to advertise the driver's
+capability with:
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN |
+FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT;
 
-This is port of accelerated functions from 2.4 kernel. Only
-fillrect and copyarea are accelerated. Fillrect is not
-accelerated in 24-bit mode.
+I'll add this myself.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Tony
 
----
 
-This is patch against 2.6.21 kernel.
-
-----------------------------------------------------
-Sprawd=BC ile wart jest Tw=F3j samoch=F3d.=20
-Wycena aut jak na d=B3oni: http://klik.wp.pl/?adr=3Dwww.wycenyaut.wp.pl&s=
-id=3D1117
-
---part46363c0021f90
-Content-Type: application/octet-stream; name="pm2fb-fillrect.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="pm2fb-fillrect.diff"
-
-LS0tIGxpbnV4LTIuNi4yMS5uZXcvZHJpdmVycy92aWRlby9wbTJmYi5jCTIwMDctMDQtMjkgMjE6
-MDE6NDguMDc5Nzg0MTE4ICswMjAwCisrKyBsaW51eC0yLjYuMjEvZHJpdmVycy92aWRlby9wbTJm
-Yi5jCTIwMDctMDQtMjkgMjE6MDc6MzcuMTgyNTI2NzgxICswMjAwCkBAIC0xMDMsNyArMTAzLDcg
-QEAgc3RhdGljIHN0cnVjdCBmYl9maXhfc2NyZWVuaW5mbyBwbTJmYl9maQogCS54cGFuc3RlcCA9
-CTEsCiAJLnlwYW5zdGVwID0JMSwKIAkueXdyYXBzdGVwID0JMCwgCi0JLmFjY2VsID0JRkJfQUND
-RUxfTk9ORSwKKwkuYWNjZWwgPQlGQl9BQ0NFTF8zRExBQlNfUEVSTUVESUEyLAogfTsKIAogLyoK
-QEAgLTIwNiw2ICsyMDYsMTcgQEAgc3RhdGljIGlubGluZSB2b2lkIFdBSVRfRklGTyhzdHJ1Y3Qg
-cG0yZgogfQogI2VuZGlmCiAKK3N0YXRpYyB2b2lkIHdhaXRfcG0yKHN0cnVjdCBwbTJmYl9wYXIq
-IHBhcikgeworCisJV0FJVF9GSUZPKHBhciwgMSk7CisJcG0yX1dSKHBhciwgUE0yUl9TWU5DLCAw
-KTsKKwltYigpOworCWRvIHsKKwkJd2hpbGUgKHBtMl9SRChwYXIsIFBNMlJfT1VUX0ZJRk9fV09S
-RFMpID09IDApOworCQlybWIoKTsKKwl9IHdoaWxlIChwbTJfUkQocGFyLCBQTTJSX09VVF9GSUZP
-KSAhPSBQTTJUQUcoUE0yUl9TWU5DKSk7Cit9CisKIC8qCiAgKiBwYXJ0aWFsIHByb2R1Y3RzIGZv
-ciB0aGUgc3VwcG9ydGVkIGhvcml6b250YWwgcmVzb2x1dGlvbnMuCiAgKi8KQEAgLTEwMzksNiAr
-MTA1MiwxMTcgQEAgc3RhdGljIGludCBwbTJmYl9ibGFuayhpbnQgYmxhbmtfbW9kZSwgcwogCXJl
-dHVybiAwOwogfQogCisvKgorICogYmxvY2sgb3BlcmF0aW9uLiBjb3B5PTA6IHJlY3RhbmdsZSBm
-aWxsLCBjb3B5PTE6IHJlY3RhbmdsZSBjb3B5LgorICovCitzdGF0aWMgdm9pZCBwbTJmYl9ibG9j
-a19vcChzdHJ1Y3QgcG0yZmJfcGFyKiBwYXIsIGludCBjb3B5LAorCQkJCXMzMiB4c3JjLCBzMzIg
-eXNyYywKKwkJCQlzMzIgeCwgczMyIHksIHMzMiB3LCBzMzIgaCwKKwkJCQl1MzIgY29sb3IpIHsK
-KworCWlmICghdyB8fCAhaCkKKwkJcmV0dXJuOworCVdBSVRfRklGTyhwYXIsIDYpOworCXBtMl9X
-UihwYXIsIFBNMlJfQ09ORklHLCBQTTJGX0NPTkZJR19GQl9XUklURV9FTkFCTEUgfAorCQlQTTJG
-X0NPTkZJR19GQl9SRUFEX1NPVVJDRV9FTkFCTEUpOworCXBtMl9XUihwYXIsIFBNMlJfRkJfUElY
-RUxfT0ZGU0VULCAwKTsKKwlpZiAoY29weSkKKwkJcG0yX1dSKHBhciwgUE0yUl9GQl9TT1VSQ0Vf
-REVMVEEsCisJCQkoKHlzcmMteSkgJiAweGZmZikgPDwgMTYgfCAoKHhzcmMteCkgJiAweGZmZikp
-OworCWVsc2UKKwkJcG0yX1dSKHBhciwgUE0yUl9GQl9CTE9DS19DT0xPUiwgY29sb3IpOworCXBt
-Ml9XUihwYXIsIFBNMlJfUkVDVEFOR0xFX09SSUdJTiwgKHkgPDwgMTYpIHwgeCk7CisJcG0yX1dS
-KHBhciwgUE0yUl9SRUNUQU5HTEVfU0laRSwgKGggPDwgMTYpIHwgdyk7CisJd21iKCk7CisJcG0y
-X1dSKHBhciwgUE0yUl9SRU5ERVIsUE0yRl9SRU5ERVJfUkVDVEFOR0xFIHwKKwkJCQkoeDx4c3Jj
-ID8gUE0yRl9JTkNSRUFTRV9YIDogMCkgfAorCQkJCSh5PHlzcmMgPyBQTTJGX0lOQ1JFQVNFX1kg
-OiAwKSB8CisJCQkJKGNvcHkgPyAwIDogUE0yRl9SRU5ERVJfRkFTVEZJTEwpKTsKKwl3YWl0X3Bt
-MihwYXIpOworfQorCitzdGF0aWMgdm9pZCBwbTJmYl9maWxscmVjdCAoc3RydWN0IGZiX2luZm8g
-KmluZm8sIAorCQkJCWNvbnN0IHN0cnVjdCBmYl9maWxscmVjdCAqcmVnaW9uKQoreworCXN0cnVj
-dCBwbTJmYl9wYXIgKnBhciA9IGluZm8tPnBhcjsKKwlzdHJ1Y3QgZmJfZmlsbHJlY3QgbW9kZGVk
-OworCWludCB2eHJlcywgdnlyZXM7CisJdTMyIGNvbG9yID0gKGluZm8tPmZpeC52aXN1YWwgPT0g
-RkJfVklTVUFMX1RSVUVDT0xPUikgPworCQkoKHUzMiopaW5mby0+cHNldWRvX3BhbGV0dGUpW3Jl
-Z2lvbi0+Y29sb3JdIDogcmVnaW9uLT5jb2xvcjsKKworCWlmIChpbmZvLT5zdGF0ZSAhPSBGQklO
-Rk9fU1RBVEVfUlVOTklORykKKwkJcmV0dXJuOworCWlmICgoaW5mby0+ZmxhZ3MgJiBGQklORk9f
-SFdBQ0NFTF9ESVNBQkxFRCkgfHwKKwkJcmVnaW9uLT5yb3AgIT0gUk9QX0NPUFkgKSB7CisJCWNm
-Yl9maWxscmVjdChpbmZvLCByZWdpb24pOworCQlyZXR1cm47CisJfQorCisJdnhyZXMgPSBpbmZv
-LT52YXIueHJlc192aXJ0dWFsOworCXZ5cmVzID0gaW5mby0+dmFyLnlyZXNfdmlydHVhbDsKKwor
-CW1lbWNweSgmbW9kZGVkLCByZWdpb24sIHNpemVvZihzdHJ1Y3QgZmJfZmlsbHJlY3QpKTsKKwor
-CWlmKCFtb2RkZWQud2lkdGggfHwgIW1vZGRlZC5oZWlnaHQgfHwKKwkgICBtb2RkZWQuZHggPj0g
-dnhyZXMgfHwgbW9kZGVkLmR5ID49IHZ5cmVzKQorCQlyZXR1cm47CisKKwlpZihtb2RkZWQuZHgg
-KyBtb2RkZWQud2lkdGggID4gdnhyZXMpCisJCW1vZGRlZC53aWR0aCAgPSB2eHJlcyAtIG1vZGRl
-ZC5keDsKKwlpZihtb2RkZWQuZHkgKyBtb2RkZWQuaGVpZ2h0ID4gdnlyZXMpCisJCW1vZGRlZC5o
-ZWlnaHQgPSB2eXJlcyAtIG1vZGRlZC5keTsKKworCWlmKGluZm8tPnZhci5iaXRzX3Blcl9waXhl
-bCA9PSA4KQorCQljb2xvciB8PSBjb2xvciA8PCA4OworCWlmKGluZm8tPnZhci5iaXRzX3Blcl9w
-aXhlbCA8PSAxNikKKwkJY29sb3IgfD0gY29sb3IgPDwgMTY7CisKKwlpZihpbmZvLT52YXIuYml0
-c19wZXJfcGl4ZWwgIT0gMjQpCisJCXBtMmZiX2Jsb2NrX29wKHBhciwgMCwgMCwgMCwKKwkJCQlt
-b2RkZWQuZHgsIG1vZGRlZC5keSwKKwkJCQltb2RkZWQud2lkdGgsIG1vZGRlZC5oZWlnaHQsIGNv
-bG9yKTsKKwllbHNlCisJCWNmYl9maWxscmVjdChpbmZvLCByZWdpb24pOworfQorCitzdGF0aWMg
-dm9pZCBwbTJmYl9jb3B5YXJlYShzdHJ1Y3QgZmJfaW5mbyAqaW5mbywKKwkJCQljb25zdCBzdHJ1
-Y3QgZmJfY29weWFyZWEgKmFyZWEpCit7CisJc3RydWN0IHBtMmZiX3BhciAqcGFyID0gaW5mby0+
-cGFyOworCXN0cnVjdCBmYl9jb3B5YXJlYSBtb2RkZWQ7CisJdTMyIHZ4cmVzLCB2eXJlczsKKwor
-CWlmIChpbmZvLT5zdGF0ZSAhPSBGQklORk9fU1RBVEVfUlVOTklORykKKwkJcmV0dXJuOworCWlm
-IChpbmZvLT5mbGFncyAmIEZCSU5GT19IV0FDQ0VMX0RJU0FCTEVEKSB7CisJCWNmYl9jb3B5YXJl
-YShpbmZvLCBhcmVhKTsKKwkJcmV0dXJuOworCX0KKworCW1lbWNweSgmbW9kZGVkLCBhcmVhLCBz
-aXplb2Yoc3RydWN0IGZiX2NvcHlhcmVhKSk7CisKKwl2eHJlcyA9IGluZm8tPnZhci54cmVzX3Zp
-cnR1YWw7CisJdnlyZXMgPSBpbmZvLT52YXIueXJlc192aXJ0dWFsOworCisJaWYoIW1vZGRlZC53
-aWR0aCB8fCAhbW9kZGVkLmhlaWdodCB8fAorCSAgIG1vZGRlZC5zeCA+PSB2eHJlcyB8fCBtb2Rk
-ZWQuc3kgPj0gdnlyZXMgfHwKKwkgICBtb2RkZWQuZHggPj0gdnhyZXMgfHwgbW9kZGVkLmR5ID49
-IHZ5cmVzKQorCQlyZXR1cm47CisKKwlpZihtb2RkZWQuc3ggKyBtb2RkZWQud2lkdGggPiB2eHJl
-cykKKwkJbW9kZGVkLndpZHRoID0gdnhyZXMgLSBtb2RkZWQuc3g7CisJaWYobW9kZGVkLmR4ICsg
-bW9kZGVkLndpZHRoID4gdnhyZXMpCisJCW1vZGRlZC53aWR0aCA9IHZ4cmVzIC0gbW9kZGVkLmR4
-OworCWlmKG1vZGRlZC5zeSArIG1vZGRlZC5oZWlnaHQgPiB2eXJlcykKKwkJbW9kZGVkLmhlaWdo
-dCA9IHZ5cmVzIC0gbW9kZGVkLnN5OworCWlmKG1vZGRlZC5keSArIG1vZGRlZC5oZWlnaHQgPiB2
-eXJlcykKKwkJbW9kZGVkLmhlaWdodCA9IHZ5cmVzIC0gbW9kZGVkLmR5OworCisJcG0yZmJfYmxv
-Y2tfb3AocGFyLCAxLCBtb2RkZWQuc3gsIG1vZGRlZC5zeSwKKwkJCW1vZGRlZC5keCwgbW9kZGVk
-LmR5LAorCQkJbW9kZGVkLndpZHRoLCBtb2RkZWQuaGVpZ2h0LCAwKTsKK30KKwogLyogLS0tLS0t
-LS0tLS0tIEhhcmR3YXJlIEluZGVwZW5kZW50IEZ1bmN0aW9ucyAtLS0tLS0tLS0tLS0gKi8KIAog
-LyoKQEAgLTEwNTIsOCArMTE3Niw4IEBAIHN0YXRpYyBzdHJ1Y3QgZmJfb3BzIHBtMmZiX29wcyA9
-IHsKIAkuZmJfc2V0Y29scmVnCT0gcG0yZmJfc2V0Y29scmVnLAogCS5mYl9ibGFuawk9IHBtMmZi
-X2JsYW5rLAogCS5mYl9wYW5fZGlzcGxheQk9IHBtMmZiX3Bhbl9kaXNwbGF5LAotCS5mYl9maWxs
-cmVjdAk9IGNmYl9maWxscmVjdCwKLQkuZmJfY29weWFyZWEJPSBjZmJfY29weWFyZWEsCisJLmZi
-X2ZpbGxyZWN0CT0gcG0yZmJfZmlsbHJlY3QsCisJLmZiX2NvcHlhcmVhCT0gcG0yZmJfY29weWFy
-ZWEsCiAJLmZiX2ltYWdlYmxpdAk9IGNmYl9pbWFnZWJsaXQsCiB9OwogCg==
-
---part46363c0021f90
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---part46363c0021f90
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---part46363c0021f90--

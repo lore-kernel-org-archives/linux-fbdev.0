@@ -1,9 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 2/5] viafb: Framebuffer driver for
-	VIA UniChrome/Chrome9 HC
-Date: Mon, 30 Apr 2007 14:54:23 +0800
-Message-ID: <1177916063.4735.1.camel@daplas>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB803720772@exchtp03.taipei.via.com.tw>
+Subject: Re: [PATCH] pm2fb: Reset transparency settings
+Date: Mon, 30 Apr 2007 14:58:45 +0800
+Message-ID: <1177916325.4735.3.camel@daplas>
+References: <4634ee8d7d1b2@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,16 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HiPmW-0004Tl-7V for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 29 Apr 2007 23:54:44 -0700
-Received: from py-out-1112.google.com ([64.233.166.176])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HiPmU-0004yK-16
+	id 1HiPr2-0004vw-H3 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 29 Apr 2007 23:59:24 -0700
+Received: from py-out-1112.google.com ([64.233.166.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HiPr2-0006kR-9B
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 29 Apr 2007 23:54:44 -0700
-Received: by py-out-1112.google.com with SMTP id a29so1267945pyi
+	Sun, 29 Apr 2007 23:59:24 -0700
+Received: by py-out-1112.google.com with SMTP id a29so1268436pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 29 Apr 2007 23:54:41 -0700 (PDT)
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB803720772@exchtp03.taipei.via.com.tw>
+	Sun, 29 Apr 2007 23:59:24 -0700 (PDT)
+In-Reply-To: <4634ee8d7d1b2@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,18 +31,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: EddyFu@via.com.tw
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 2007-04-30 at 09:36 +0800, EddyFu@via.com.tw wrote:
-> Dear All,
+On Sun, 2007-04-29 at 21:14 +0200, Krzysztof Helt wrote:
+> From: Krzysztof Helt < krzysztof.h1@wp.pl>
 > 
-> I made the issue of size limitation.
-> I will resend the codes with 7 parts.
+> This patch resets transparency settings when depth changes.
+> Otherwise the 16 and 24-bit modes work incorrectly after
+> switching from 32-bit mode.
+> 
+> ---
+> This is a patch against 2.6.21 kernel.
 
-You can send it as a tar/gzipped/bzipped attachment if necessary. It
-will be more work for us when commenting on your code, but that's okay,
-I guess.
+You're forgetting your signed-off-line.
 
 Tony
 

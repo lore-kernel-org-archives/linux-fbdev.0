@@ -1,26 +1,25 @@
 From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: [RESENT] [PATCH] pm2fb: memclock setting
-	corrections
-Date: Mon, 30 Apr 2007 14:16:09 +0200
-Message-ID: <4635de0972357@wp.pl>
+Subject: [PATCH] pm2fb: accelerated fillrect and copyarea
+Date: Mon, 30 Apr 2007 20:57:04 +0200
+Message-ID: <46363c001f8a0@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="part4635de0974a55"
+Content-Type: multipart/mixed; boundary="part46363c0021f90"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HiUnq-0003EO-Po for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 05:16:27 -0700
+	id 1Hib3r-0006c8-43 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 30 Apr 2007 11:57:23 -0700
 Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HiUnq-0006Jw-3G
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hib3p-0002dT-Hy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 05:16:26 -0700
-Received: from poczta-7.free.wp-sa.pl (HELO localhost) ([10.1.1.16])
+	Mon, 30 Apr 2007 11:57:23 -0700
+Received: from poczta-15.free.wp-sa.pl (HELO localhost) ([10.1.1.43])
 	(envelope-sender <krzysztof.h1@wp.pl>)
 	by smtp.wp.pl (WP-SMTPD) with SMTP
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	30 Apr 2007 14:16:09 +0200
+	30 Apr 2007 20:57:04 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,59 +34,110 @@ To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 This is a multi-part message in MIME format.
 
---part4635de0974a55
+--part46363c0021f90
 Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch disables a memory clock setting if a board has been
-initialized by BIOS. This allows using the memory clock set by
-manufacturer of the board.
-This patch also sets default clock for 3dlabs Permedia 2V
-reference board's clock to 75MHz (BIOS setting for EONtronic
-Permedia 2Vboard), because the default 83MHz can be too high.
+This is port of accelerated functions from 2.4 kernel. Only
+fillrect and copyarea are accelerated. Fillrect is not
+accelerated in 24-bit mode.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
-This patch requires the patch
-pm2fb-3dlabs-permedia-2v-reference-board-added.patch
-from mm tree to be applied first.
 
+---
+
+This is patch against 2.6.21 kernel.
 
 ----------------------------------------------------
-Poznaj nowa milo=B6=E6! HOLIDAY - ciep=B3y i pe=B3en humoru=20
-film tw=F3rc=F3w "Czego pragn=B1 kobiety". Cameron Diaz, Kate Winslet,=20
-Jude Law w romantycznej komedii HOLIDAY. Ju=BF na DVD!
-http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fholiday2.h=
-tml&sid=3D1120
+Sprawd=BC ile wart jest Tw=F3j samoch=F3d.=20
+Wycena aut jak na d=B3oni: http://klik.wp.pl/?adr=3Dwww.wycenyaut.wp.pl&s=
+id=3D1117
 
---part4635de0974a55
-Content-Type: text/x-patch; name="pm2fb-clock-corrections.diff"
+--part46363c0021f90
+Content-Type: application/octet-stream; name="pm2fb-fillrect.diff"
 Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="pm2fb-clock-corrections.diff"
+Content-Disposition: attachment; filename="pm2fb-fillrect.diff"
 
-ZGlmZiAtdXJwIGxpbnV4LTIuNi4yMS5vcmlnL2RyaXZlcnMvdmlkZW8vcG0yZmIuYyBsaW51eC0y
-LjYuMjEub2xkL2RyaXZlcnMvdmlkZW8vcG0yZmIuYwotLS0gbGludXgtMi42LjIxLm9yaWcvZHJp
-dmVycy92aWRlby9wbTJmYi5jCTIwMDctMDQtMjYgMjI6NTk6MjEuNjk3Nzc3NjY4ICswMjAwCisr
-KyBsaW51eC0yLjYuMjEub2xkL2RyaXZlcnMvdmlkZW8vcG0yZmIuYwkyMDA3LTA0LTIyIDE5OjQy
-OjI5LjcxNTIxNDI2NSArMDIwMApAQCAtMTEzOSwxMCArMTE0NCwxMCBAQCBzdGF0aWMgaW50IF9f
-ZGV2aW5pdCBwbTJmYl9wcm9iZShzdHJ1Y3QgCiAJCWRlZmF1bHRfcGFyLT5tZW1fY29udHJvbCwg
-ZGVmYXVsdF9wYXItPmJvb3RfYWRkcmVzcywKIAkJZGVmYXVsdF9wYXItPm1lbV9jb25maWcpOwog
-Ci0JZGVmYXVsdF9wYXItPm1lbWNsb2NrID0gQ1ZQUENfTUVNQ0xPQ0s7CiAJaWYoZGVmYXVsdF9w
-YXItPm1lbV9jb250cm9sID09IDAgJiYKIAkJZGVmYXVsdF9wYXItPmJvb3RfYWRkcmVzcyA9PSAw
-eDMxICYmCiAJCWRlZmF1bHRfcGFyLT5tZW1fY29uZmlnID09IDB4MjU5ZmZmZmYpIHsKKwkJZGVm
-YXVsdF9wYXItPm1lbWNsb2NrID0gQ1ZQUENfTUVNQ0xPQ0s7CiAJCWRlZmF1bHRfcGFyLT5tZW1f
-Y29udHJvbD0wOwogCQlkZWZhdWx0X3Bhci0+Ym9vdF9hZGRyZXNzPTB4MjA7CiAJCWRlZmF1bHRf
-cGFyLT5tZW1fY29uZmlnPTB4ZTYwMDIwMjE7CkBAIC0xMTYyLDcgKzExNjcsNyBAQCBzdGF0aWMg
-aW50IF9fZGV2aW5pdCBwbTJmYl9wcm9iZShzdHJ1Y3QgCiAJCQlEUFJJTlRLKCJXZSBoYXZlIG5v
-dCBiZWVuIGluaXRpYWxpemVkIGJ5IFZHQSBCSU9TICIKIAkJCQkiYW5kIGFyZSBydW5uaW5nIG9u
-IGFuIDNkbGFicyByZWZlcmVuY2UgYm9hcmRcbiIpOwogCQkJRFBSSU5USygiSW5pdGlhbGl6aW5n
-IGNhcmQgdGltaW5ncyBtYW51YWxseS4uLlxuIik7Ci0JCQlkZWZhdWx0X3Bhci0+bWVtY2xvY2s9
-NzAwMDA7CisJCQlkZWZhdWx0X3Bhci0+bWVtY2xvY2s9NzQ4OTQ7CiAJCX0KIAl9CiAK
+LS0tIGxpbnV4LTIuNi4yMS5uZXcvZHJpdmVycy92aWRlby9wbTJmYi5jCTIwMDctMDQtMjkgMjE6
+MDE6NDguMDc5Nzg0MTE4ICswMjAwCisrKyBsaW51eC0yLjYuMjEvZHJpdmVycy92aWRlby9wbTJm
+Yi5jCTIwMDctMDQtMjkgMjE6MDc6MzcuMTgyNTI2NzgxICswMjAwCkBAIC0xMDMsNyArMTAzLDcg
+QEAgc3RhdGljIHN0cnVjdCBmYl9maXhfc2NyZWVuaW5mbyBwbTJmYl9maQogCS54cGFuc3RlcCA9
+CTEsCiAJLnlwYW5zdGVwID0JMSwKIAkueXdyYXBzdGVwID0JMCwgCi0JLmFjY2VsID0JRkJfQUND
+RUxfTk9ORSwKKwkuYWNjZWwgPQlGQl9BQ0NFTF8zRExBQlNfUEVSTUVESUEyLAogfTsKIAogLyoK
+QEAgLTIwNiw2ICsyMDYsMTcgQEAgc3RhdGljIGlubGluZSB2b2lkIFdBSVRfRklGTyhzdHJ1Y3Qg
+cG0yZgogfQogI2VuZGlmCiAKK3N0YXRpYyB2b2lkIHdhaXRfcG0yKHN0cnVjdCBwbTJmYl9wYXIq
+IHBhcikgeworCisJV0FJVF9GSUZPKHBhciwgMSk7CisJcG0yX1dSKHBhciwgUE0yUl9TWU5DLCAw
+KTsKKwltYigpOworCWRvIHsKKwkJd2hpbGUgKHBtMl9SRChwYXIsIFBNMlJfT1VUX0ZJRk9fV09S
+RFMpID09IDApOworCQlybWIoKTsKKwl9IHdoaWxlIChwbTJfUkQocGFyLCBQTTJSX09VVF9GSUZP
+KSAhPSBQTTJUQUcoUE0yUl9TWU5DKSk7Cit9CisKIC8qCiAgKiBwYXJ0aWFsIHByb2R1Y3RzIGZv
+ciB0aGUgc3VwcG9ydGVkIGhvcml6b250YWwgcmVzb2x1dGlvbnMuCiAgKi8KQEAgLTEwMzksNiAr
+MTA1MiwxMTcgQEAgc3RhdGljIGludCBwbTJmYl9ibGFuayhpbnQgYmxhbmtfbW9kZSwgcwogCXJl
+dHVybiAwOwogfQogCisvKgorICogYmxvY2sgb3BlcmF0aW9uLiBjb3B5PTA6IHJlY3RhbmdsZSBm
+aWxsLCBjb3B5PTE6IHJlY3RhbmdsZSBjb3B5LgorICovCitzdGF0aWMgdm9pZCBwbTJmYl9ibG9j
+a19vcChzdHJ1Y3QgcG0yZmJfcGFyKiBwYXIsIGludCBjb3B5LAorCQkJCXMzMiB4c3JjLCBzMzIg
+eXNyYywKKwkJCQlzMzIgeCwgczMyIHksIHMzMiB3LCBzMzIgaCwKKwkJCQl1MzIgY29sb3IpIHsK
+KworCWlmICghdyB8fCAhaCkKKwkJcmV0dXJuOworCVdBSVRfRklGTyhwYXIsIDYpOworCXBtMl9X
+UihwYXIsIFBNMlJfQ09ORklHLCBQTTJGX0NPTkZJR19GQl9XUklURV9FTkFCTEUgfAorCQlQTTJG
+X0NPTkZJR19GQl9SRUFEX1NPVVJDRV9FTkFCTEUpOworCXBtMl9XUihwYXIsIFBNMlJfRkJfUElY
+RUxfT0ZGU0VULCAwKTsKKwlpZiAoY29weSkKKwkJcG0yX1dSKHBhciwgUE0yUl9GQl9TT1VSQ0Vf
+REVMVEEsCisJCQkoKHlzcmMteSkgJiAweGZmZikgPDwgMTYgfCAoKHhzcmMteCkgJiAweGZmZikp
+OworCWVsc2UKKwkJcG0yX1dSKHBhciwgUE0yUl9GQl9CTE9DS19DT0xPUiwgY29sb3IpOworCXBt
+Ml9XUihwYXIsIFBNMlJfUkVDVEFOR0xFX09SSUdJTiwgKHkgPDwgMTYpIHwgeCk7CisJcG0yX1dS
+KHBhciwgUE0yUl9SRUNUQU5HTEVfU0laRSwgKGggPDwgMTYpIHwgdyk7CisJd21iKCk7CisJcG0y
+X1dSKHBhciwgUE0yUl9SRU5ERVIsUE0yRl9SRU5ERVJfUkVDVEFOR0xFIHwKKwkJCQkoeDx4c3Jj
+ID8gUE0yRl9JTkNSRUFTRV9YIDogMCkgfAorCQkJCSh5PHlzcmMgPyBQTTJGX0lOQ1JFQVNFX1kg
+OiAwKSB8CisJCQkJKGNvcHkgPyAwIDogUE0yRl9SRU5ERVJfRkFTVEZJTEwpKTsKKwl3YWl0X3Bt
+MihwYXIpOworfQorCitzdGF0aWMgdm9pZCBwbTJmYl9maWxscmVjdCAoc3RydWN0IGZiX2luZm8g
+KmluZm8sIAorCQkJCWNvbnN0IHN0cnVjdCBmYl9maWxscmVjdCAqcmVnaW9uKQoreworCXN0cnVj
+dCBwbTJmYl9wYXIgKnBhciA9IGluZm8tPnBhcjsKKwlzdHJ1Y3QgZmJfZmlsbHJlY3QgbW9kZGVk
+OworCWludCB2eHJlcywgdnlyZXM7CisJdTMyIGNvbG9yID0gKGluZm8tPmZpeC52aXN1YWwgPT0g
+RkJfVklTVUFMX1RSVUVDT0xPUikgPworCQkoKHUzMiopaW5mby0+cHNldWRvX3BhbGV0dGUpW3Jl
+Z2lvbi0+Y29sb3JdIDogcmVnaW9uLT5jb2xvcjsKKworCWlmIChpbmZvLT5zdGF0ZSAhPSBGQklO
+Rk9fU1RBVEVfUlVOTklORykKKwkJcmV0dXJuOworCWlmICgoaW5mby0+ZmxhZ3MgJiBGQklORk9f
+SFdBQ0NFTF9ESVNBQkxFRCkgfHwKKwkJcmVnaW9uLT5yb3AgIT0gUk9QX0NPUFkgKSB7CisJCWNm
+Yl9maWxscmVjdChpbmZvLCByZWdpb24pOworCQlyZXR1cm47CisJfQorCisJdnhyZXMgPSBpbmZv
+LT52YXIueHJlc192aXJ0dWFsOworCXZ5cmVzID0gaW5mby0+dmFyLnlyZXNfdmlydHVhbDsKKwor
+CW1lbWNweSgmbW9kZGVkLCByZWdpb24sIHNpemVvZihzdHJ1Y3QgZmJfZmlsbHJlY3QpKTsKKwor
+CWlmKCFtb2RkZWQud2lkdGggfHwgIW1vZGRlZC5oZWlnaHQgfHwKKwkgICBtb2RkZWQuZHggPj0g
+dnhyZXMgfHwgbW9kZGVkLmR5ID49IHZ5cmVzKQorCQlyZXR1cm47CisKKwlpZihtb2RkZWQuZHgg
+KyBtb2RkZWQud2lkdGggID4gdnhyZXMpCisJCW1vZGRlZC53aWR0aCAgPSB2eHJlcyAtIG1vZGRl
+ZC5keDsKKwlpZihtb2RkZWQuZHkgKyBtb2RkZWQuaGVpZ2h0ID4gdnlyZXMpCisJCW1vZGRlZC5o
+ZWlnaHQgPSB2eXJlcyAtIG1vZGRlZC5keTsKKworCWlmKGluZm8tPnZhci5iaXRzX3Blcl9waXhl
+bCA9PSA4KQorCQljb2xvciB8PSBjb2xvciA8PCA4OworCWlmKGluZm8tPnZhci5iaXRzX3Blcl9w
+aXhlbCA8PSAxNikKKwkJY29sb3IgfD0gY29sb3IgPDwgMTY7CisKKwlpZihpbmZvLT52YXIuYml0
+c19wZXJfcGl4ZWwgIT0gMjQpCisJCXBtMmZiX2Jsb2NrX29wKHBhciwgMCwgMCwgMCwKKwkJCQlt
+b2RkZWQuZHgsIG1vZGRlZC5keSwKKwkJCQltb2RkZWQud2lkdGgsIG1vZGRlZC5oZWlnaHQsIGNv
+bG9yKTsKKwllbHNlCisJCWNmYl9maWxscmVjdChpbmZvLCByZWdpb24pOworfQorCitzdGF0aWMg
+dm9pZCBwbTJmYl9jb3B5YXJlYShzdHJ1Y3QgZmJfaW5mbyAqaW5mbywKKwkJCQljb25zdCBzdHJ1
+Y3QgZmJfY29weWFyZWEgKmFyZWEpCit7CisJc3RydWN0IHBtMmZiX3BhciAqcGFyID0gaW5mby0+
+cGFyOworCXN0cnVjdCBmYl9jb3B5YXJlYSBtb2RkZWQ7CisJdTMyIHZ4cmVzLCB2eXJlczsKKwor
+CWlmIChpbmZvLT5zdGF0ZSAhPSBGQklORk9fU1RBVEVfUlVOTklORykKKwkJcmV0dXJuOworCWlm
+IChpbmZvLT5mbGFncyAmIEZCSU5GT19IV0FDQ0VMX0RJU0FCTEVEKSB7CisJCWNmYl9jb3B5YXJl
+YShpbmZvLCBhcmVhKTsKKwkJcmV0dXJuOworCX0KKworCW1lbWNweSgmbW9kZGVkLCBhcmVhLCBz
+aXplb2Yoc3RydWN0IGZiX2NvcHlhcmVhKSk7CisKKwl2eHJlcyA9IGluZm8tPnZhci54cmVzX3Zp
+cnR1YWw7CisJdnlyZXMgPSBpbmZvLT52YXIueXJlc192aXJ0dWFsOworCisJaWYoIW1vZGRlZC53
+aWR0aCB8fCAhbW9kZGVkLmhlaWdodCB8fAorCSAgIG1vZGRlZC5zeCA+PSB2eHJlcyB8fCBtb2Rk
+ZWQuc3kgPj0gdnlyZXMgfHwKKwkgICBtb2RkZWQuZHggPj0gdnhyZXMgfHwgbW9kZGVkLmR5ID49
+IHZ5cmVzKQorCQlyZXR1cm47CisKKwlpZihtb2RkZWQuc3ggKyBtb2RkZWQud2lkdGggPiB2eHJl
+cykKKwkJbW9kZGVkLndpZHRoID0gdnhyZXMgLSBtb2RkZWQuc3g7CisJaWYobW9kZGVkLmR4ICsg
+bW9kZGVkLndpZHRoID4gdnhyZXMpCisJCW1vZGRlZC53aWR0aCA9IHZ4cmVzIC0gbW9kZGVkLmR4
+OworCWlmKG1vZGRlZC5zeSArIG1vZGRlZC5oZWlnaHQgPiB2eXJlcykKKwkJbW9kZGVkLmhlaWdo
+dCA9IHZ5cmVzIC0gbW9kZGVkLnN5OworCWlmKG1vZGRlZC5keSArIG1vZGRlZC5oZWlnaHQgPiB2
+eXJlcykKKwkJbW9kZGVkLmhlaWdodCA9IHZ5cmVzIC0gbW9kZGVkLmR5OworCisJcG0yZmJfYmxv
+Y2tfb3AocGFyLCAxLCBtb2RkZWQuc3gsIG1vZGRlZC5zeSwKKwkJCW1vZGRlZC5keCwgbW9kZGVk
+LmR5LAorCQkJbW9kZGVkLndpZHRoLCBtb2RkZWQuaGVpZ2h0LCAwKTsKK30KKwogLyogLS0tLS0t
+LS0tLS0tIEhhcmR3YXJlIEluZGVwZW5kZW50IEZ1bmN0aW9ucyAtLS0tLS0tLS0tLS0gKi8KIAog
+LyoKQEAgLTEwNTIsOCArMTE3Niw4IEBAIHN0YXRpYyBzdHJ1Y3QgZmJfb3BzIHBtMmZiX29wcyA9
+IHsKIAkuZmJfc2V0Y29scmVnCT0gcG0yZmJfc2V0Y29scmVnLAogCS5mYl9ibGFuawk9IHBtMmZi
+X2JsYW5rLAogCS5mYl9wYW5fZGlzcGxheQk9IHBtMmZiX3Bhbl9kaXNwbGF5LAotCS5mYl9maWxs
+cmVjdAk9IGNmYl9maWxscmVjdCwKLQkuZmJfY29weWFyZWEJPSBjZmJfY29weWFyZWEsCisJLmZi
+X2ZpbGxyZWN0CT0gcG0yZmJfZmlsbHJlY3QsCisJLmZiX2NvcHlhcmVhCT0gcG0yZmJfY29weWFy
+ZWEsCiAJLmZiX2ltYWdlYmxpdAk9IGNmYl9pbWFnZWJsaXQsCiB9OwogCg==
 
---part4635de0974a55
+--part46363c0021f90
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -98,7 +148,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---part4635de0974a55
+--part46363c0021f90
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -109,4 +159,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---part4635de0974a55--
+--part46363c0021f90--

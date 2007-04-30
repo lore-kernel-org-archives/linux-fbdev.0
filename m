@@ -1,8 +1,8 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 8/12] viafb: Framebuffer driver for VIA
+Subject: [PATCH 9/12] viafb: Framebuffer driver for VIA
  UniChrome/Chrome9 HC (fwd)
-Date: Mon, 30 Apr 2007 10:37:32 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0704301037260.27246@anakin>
+Date: Mon, 30 Apr 2007 10:37:42 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0704301037370.27246@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,29 +11,29 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HiRO8-0006XT-Gr for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 01:37:43 -0700
-Received: from europa.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HiRO7-0001qp-2I
+	id 1HiROG-0006Xe-MM for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 30 Apr 2007 01:37:48 -0700
+Received: from adicia.telenet-ops.be ([195.130.132.56])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HiROF-0001xT-Jg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 01:37:40 -0700
+	Mon, 30 Apr 2007 01:37:48 -0700
 Received: from localhost (localhost.localdomain [127.0.0.1])
-	by europa.telenet-ops.be (Postfix) with SMTP id 278A341A3
+	by adicia.telenet-ops.be (Postfix) with SMTP id 760A02300CF
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 30 Apr 2007 10:37:38 +0200 (CEST)
+	Mon, 30 Apr 2007 10:37:46 +0200 (CEST)
 Received: from anakin.of.borg (d54C15D55.access.telenet.be [84.193.93.85])
-	by europa.telenet-ops.be (Postfix) with ESMTP id 08B88417B
+	by adicia.telenet-ops.be (Postfix) with ESMTP id 334ED2300DC
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 30 Apr 2007 10:37:33 +0200 (CEST)
+	Mon, 30 Apr 2007 10:37:43 +0200 (CEST)
 Received: from anakin.of.borg (geert@localhost [127.0.0.1])
-	by anakin.of.borg (8.13.8/8.13.8/Debian-3) with ESMTP id l3U8bWH4020418
+	by anakin.of.borg (8.13.8/8.13.8/Debian-3) with ESMTP id l3U8bh7S020431
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 30 Apr 2007 10:37:32 +0200
+	Mon, 30 Apr 2007 10:37:43 +0200
 Received: from localhost (geert@localhost)
-	by anakin.of.borg (8.13.8/8.13.8/Submit) with ESMTP id l3U8bWPu020415
+	by anakin.of.borg (8.13.8/8.13.8/Submit) with ESMTP id l3U8bgnB020428
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 30 Apr 2007 10:37:32 +0200
+	Mon, 30 Apr 2007 10:37:43 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -47,23 +47,23 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 ---------- Forwarded message ----------
-Date: Mon, 30 Apr 2007 13:20:36 +0800
+Date: Mon, 30 Apr 2007 13:20:40 +0800
 From: EddyFu@via.com.tw
 To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Subject: [Linux-fbdev-devel] [PATCH 8/12] viafb: Framebuffer driver for VIA
+Subject: [Linux-fbdev-devel] [PATCH 9/12] viafb: Framebuffer driver for VIA
     UniChrome/Chrome9 HC
 
 Dear All, 
  
-Here is the part 8/12 of viafb.
+Here is the part 9/12 of viafb.
  
 Best Regards,
 Eddy Fu 
  
-diff -Nur linux-2.6.21-rc7/drivers/video/via/tbl1625.h linux-2.6.21-rc7.viafb/drivers/video/via/tbl1625.h
---- linux-2.6.21-rc7/drivers/video/via/tbl1625.h 1969-12-31 19:00:00.000000000 -0500
-+++ linux-2.6.21-rc7.viafb/drivers/video/via/tbl1625.h 2007-04-26 19:52:32.000000000 -0400
-@@ -0,0 +1,2006 @@
+diff -Nur linux-2.6.21-rc7/drivers/video/via/tv.h linux-2.6.21-rc7.viafb/drivers/video/via/tv.h
+--- linux-2.6.21-rc7/drivers/video/via/tv.h 1969-12-31 19:00:00.000000000 -0500
++++ linux-2.6.21-rc7.viafb/drivers/video/via/tv.h 2007-04-26 19:52:32.000000000 -0400
+@@ -0,0 +1,163 @@
 +/*
 + * Copyright 1998-2007 VIA Technologies, Inc. All Rights Reserved.
 + * Copyright 2001-2007 S3 Graphics, Inc. All Rights Reserved.
@@ -88,1988 +88,2029 @@ diff -Nur linux-2.6.21-rc7/drivers/video/via/tbl1625.h linux-2.6.21-rc7.viafb/dr
 + * DEALINGS IN THE SOFTWARE.
 + */
 +
-+#ifndef __TBL1625_H__
-+#define __TBL1625_H__
++#ifndef __TV_H__
++#define __TV_H__
 +
-+#include "share.h"
++#include <linux/ioport.h>
++#include <asm/io.h>
++
++/* Definition TV System */
++#define     TVTYPE_NONE     0x00
++#define     TVTYPE_NTSC     0x01
++#define     TVTYPE_PAL      0x02
++#define     TVTYPE_480P     0x04
++#define     TVTYPE_576P     0x08
++#define     TVTYPE_720P     0x10
++#define     TVTYPE_1080I    0x20
++
++/* Definition TV Level */
++#define     TV_SIZE_NORMAL_SCAN                    0
++#define     TV_SIZE_FIT_SCAN                       1
++#define     TV_SIZE_OVER_SCAN                      2
++
++/* Definition TV Ouput Signal */
++#define     TV_OUTPUT_NONE                      0x00
++#define     TV_OUTPUT_COMPOSITE                 0x01
++#define     TV_OUTPUT_SVIDEO                    0x02
++#define     TV_OUTPUT_RGB                       0x04
++#define     TV_OUTPUT_YPBPR                     0x08
++#define     TV_OUTPUT_COMPOSITE_SVIDEO          0x10
++#define     TV_OUTPUT_RGB_COMPOSITE             0x20
++#define     TV_OUTPUT_YPBPR_COMPOSITE           0x40
++#define     TV_OUTPUT_RGB_COMPOSITE_SVIDEO      0x80
++#define     TV_OUTPUT_YPBPR_COMPOSITE_SVIDEO   0x100
++
++
++
++/* Define TV Function Index */
++#define TV_BASE_FUNC                0
++#define TV_RGB_FUNC                 1
++#define TV_YPBPR_FUNC               2
++#define TV_SDTV_RGB_FUNC            3
++#define TV_SDTV_YPBPR_FUNC          4
++#define TV_DeDotCrawl_FUNC          5
++
++
++
++#define NUM_CRTC_TIMING         12
++
++/* TV Table Relative Definition */
++#define     VT1622A_REG_NUM             75
++#define     FS454_REG_NUM               82
++#define     SAA7108A_REG_NUM            67
++#define     CH7019_REG_NUM              24
++#define     GFX_IGA1_CRT_NUM            14              /* number of setting CRTC's registers on IGA1 in TV table */
++#define     GFX_IGA2_CRT_NUM            16              /* number of setting CRTC's registers on IGA2 in TV table */
++
++/* define TV DeDotCrawl Register */
++#define     VT1622_DEDOTCRAWL_REG       0x11
++#define     VT1622A_DEDOTCRAWL_REG      0x11
++#define     VT1625_DEDOTCRAWL_REG       0x11
++
++/* define TV Version register */
++#define     VT1622_VERSION_REG          0x1B
++#define     VT1622_VERSION              0x03
++
++#define     VT1622A_VERSION_REG         0x1B
++#define     VT1622A_VERSION             0x10
++
++#define     VT1625_VERSION_REG          0x1B
++#define     VT1625_VERSION              0x50
++
++
++/* Define TV DAC */
++#define     VT1622_DAC_REG              0x0E
++#define     VT1622_DAC_A                BIT3
++#define     VT1622_DAC_B                BIT2
++#define     VT1622_DAC_C                BIT1
++#define     VT1622_DAC_D                BIT0
++
++#define     VT1622A_DAC_REG             0x0E
++#define     VT1622A_DAC_A               BIT3
++#define     VT1622A_DAC_B               BIT2
++#define     VT1622A_DAC_C               BIT1
++#define     VT1622A_DAC_D               BIT0
++
++#define     VT1625_DAC_REG              0x0E
++#define     VT1625_DAC_A                BIT5
++#define     VT1625_DAC_B                BIT4
++#define     VT1625_DAC_C                BIT3
++#define     VT1625_DAC_D                BIT2
++#define     VT1625_DAC_E                BIT1
++#define     VT1625_DAC_F                BIT0
++
++
++
++
++/* TV MACRO */
++#define     GET_HIGH_BYTE(x)       (unsigned char)((x) >> 8)
++#define     GET_LOW_BYTE(x)        (unsigned char)((x) & 0x00FF)
++
++/* We divide shift range into 11 partitions, so 6 is the center position. */
++#define TV_POS_DEFAULT_HOR_VALUE    6
++#define TV_POS_DEFAULT_VER_VALUE    6
++
++/* Definition TV Flicker Filter Type */
++#define TV_FFILTER_TYPE_NORMAL      0
++#define TV_FFILTER_TYPE_ADAPTIVE    1
++
++
++/* TV Common Function */
++int  tv_encoder_identify(void);
++void tv_disable(void);
++void tv_load_timing_init(void);
++void tv_load_timing(int TVModeIndex);
++void tv_load_timing_modify(void);
++void tv_patch(int tv_mode_index);
++void tv_enable(void);
++void tv_register_write(int, u8);
++int tv_register_read(int);
++void tv_patch_skew_K800(void);
++void tv_patch_skew_cn900(int tv_mode_index);
++void tv_patch_skew_cx700(int tv_mode_index);
++void tv_patch_skew_p880(int tv_mode_index);
++void tv_set_color(void);
++void tv_set_brightness(u32 value);
++void tv_set_contrast(u32 value);
++void tv_set_saturation(u32 value);
++void tv_set_tint(u32 value);
++void tv_set_ffilter(u32 state, u32 value);
++void tv_set_adaptive_ffilter(u32 status, u32 value);
++int tv_get_ffilter(int ffilter_type, int* ffilter_state); 
++void tv_set_position(u32 HPos, u32 VPos);
++void tv_get_position(u32* HPos, u32* VPos);
++void tv_set_size(u32 HPos, u32 VPos);
++void set_tv_clock_source(void);
++void tv_patch_skew_p4m900(int tv_mode_index);
++void tv_patch_skew_k8m890(int tv_mode_index);
++void tv_patch_skew_p4m890(int tv_mode_index);
++
++#endif /* __TV_H__ */
+diff -Nur linux-2.6.21-rc7/drivers/video/via/tblIntegratedTV.h linux-2.6.21-rc7.viafb/drivers/video/via/tblIntegratedTV.h
+--- linux-2.6.21-rc7/drivers/video/via/tblIntegratedTV.h 1969-12-31 19:00:00.000000000 -0500
++++ linux-2.6.21-rc7.viafb/drivers/video/via/tblIntegratedTV.h 2007-04-26 19:52:32.000000000 -0400
+@@ -0,0 +1,1208 @@
++/*
++ * Copyright 1998-2007 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2007 S3 Graphics, Inc. All Rights Reserved.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sub license,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the
++ * next paragraph) shall be included in all copies or substantial portions
++ * of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHOR(S) OR COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
++ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#ifndef _TBLINTEGRATEDTV_H_
++#define _TBLINTEGRATEDTV_H_ 1
++
++#define INTEGRATED_TVCLK_27MHZ     0x01865884
++#define INTEGRATED_TVCLK_54MHZ     0x00C65884
++#define INTEGRATED_TVCLK_74_25MHZ  0x01043084
++#define INTEGRATED_TVCLK_148_5MHZ  0x00843084
++
 +
 +/***************************/
-+/* VT1625 TV Encoder Table */
++/*  Integrated TV Table    */
 +/***************************/
-+typedef struct _vt1625_func_table {
-+    int     tv_func_index;
-+    u16     *tv_underscan;
-+    u16     *tv_fitscan;
-+    u16     *tv_overscan;
-+} vt1625_func_table;
 +
-+struct vt1625_table {
-+    int     tv_index;
-+    vt1625_func_table   *tv_mode_ntsc;
-+    vt1625_func_table   *tv_mode_pal;
-+    vt1625_func_table   *tv_mode_720p;
-+    vt1625_func_table   *tv_mode_1080i;
++struct integrated_tv_mode_table {
++    int              mode_index;
++    unsigned long    *std_ntsc;
++    unsigned long    *std_pal;
++    unsigned long    *std_720p;
++    unsigned long    *std_1080i;
++};
++
++struct integrated_tv_hdtv_patch_table {
++    int             mode_index;
++    unsigned short  *std_480p;
++    unsigned short  *std_576p;
++    unsigned short  *std_720p;
++    unsigned short  *std_1080i;
++};
++
++unsigned short ITV_INIT_TABLE_OFFSET[] = {
++    0x0000,
++    0x001C,
++    0x00DC,
++    0xFFFF  /*End*/
++};
++ 
++unsigned long ITV_INIT_TABLE_VALUE[] = {
++    0x40412000,     /* 00-03 */
++    0x40000000,     /* 1C-1F */
++
++    /* TVCLK PLL. */
++    0xA0000000,     /* DC-DF */
++};
++
++unsigned short ITV_MODE_TABLE_OFFSET[] = {
++    0x0014,
++    0x0018,
++    0x0020,
++    0x0024,
++    0x0028,
++    0x0034,
++    0x0038,
++    0x003C,
++    0x0040,
++    0x0044,
++    0x0048,
++    0x004C,
++    0x0050,
++    0x0054,
++    0x0058,
++    0x005C,
++    0x0060,
++    0x00E0,
++    0xFFFF  /*End*/
++};
++
++/**************************************************************************************/
++/************************************* NTSC *******************************************/
++/**************************************************************************************/
++unsigned long ITV_MODE_TABLE_NTSC_640x480[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770500,                 /* 14-17 */
++
++    /* Src Image Size and Position. */
++    0x09D3F9DF,                 /* 18-1B */
++    0x027F01DF,                 /* 20-23 */
++
++    /* Scaling Factor and De-Flicker. */
++    0x63EB48FA,                 /* 24-27 */        
++
++    /* Dst Image Size. */
++    0x141461AA,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E0500,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC000A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06B3,                 /* 3C-3F */
++    0x00F400B1,                 /* 40-43 */
++    0x06910100,                 /* 44-47 */
++    0x01000000,                 /* 48-4B */
++    0x088680C0,                 /* 4C-4F */
++    0x488F08C8,                 /* 50-53 */
++    
++    /* Luma Data */
++    0x0A9AA886,                 /* 54-57 */
++
++    /* FSCI */
++    0x21F07C16,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x00F01010,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00000000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_27MHZ      /* E0-E3 */
++};
++
++unsigned long ITV_CRTC_TABLE_NTSC_640x480[] = {
++    858,    /* H_Total */
++    640,    /* H_Display_End */
++    640,    /* H_Blanking_Start */
++    218,    /* H_Blanking_End */
++    688,    /* H_Sync_Start */
++    56,     /* H_Sync_End */
++    525,    /* V_Total */
++    480,    /* V_Display_End */
++    480,    /* V_Blanking_Start */
++    45,     /* V_Blanking_End */
++    488,    /* V_Sync_Start */
++    7       /* V_Sync_End */
 +};
 +
 +
-+/* Underscan table */
-+static u16 VT1625_N640x480_VN[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x2907, 0x4008, 0x0B09,     /* Tv.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0xFA12, 0x2113,     /* TV.0F-13 */
-+    0xE014, 0x6815, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x2A21, 0xCB22,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
++unsigned long ITV_MODE_TABLE_NTSC_720x480[] = {
++    /* Src Buffer Line Pitch. */    
++    0x007705C0,                 /* 14-17 */
 +
++    /* Src Image Size and Position. */
++    0x09D679DF,                 /* 18-1B */
++    0x02CF01DF,                 /* 20-23 */
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x00F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
++    /* Scaling Factor and De-Flicker. */
++    0x646C4903,                 /* 24-27 */        
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x0F50, 0x8151, 0x2352, 0x5753, 0x2254,     /* TV.50-54 */
-+    0x5955, 0x8156, 0x7F57, 0x2358, 0x9159,     /* TV.55-59 */
-+    0xD25A, 0x135B, 0x7C5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x495E, 0x005F, 0x9260, 0x2061, 0xFF62,     /* TV.5E-62 */
-+    0x7F63, 0x0364, 0x5165,                     /* TV.63-65 */
++    /* Dst Image Size. */
++    0x169451A9,                 /* 28-2B */
 +
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    784, 640, 640, 144, 688, 56,  600, 480, 480, 120, 488, 7
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E05C0,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC000A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06B3,                 /* 3C-3F */
++    0x00F400B1,                 /* 40-43 */
++    0x06910100,                 /* 44-47 */
++    0x01A00000,                 /* 48-4B */
++    0x088680C0,                 /* 4C-4F */
++    0x488F08C8,                 /* 50-53 */
++    
++    /* Luma Data */
++    0x0A9AA886,                 /* 54-57 */
++
++    /* FSCI */
++    0x21F07C16,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x00F01010,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00000000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_27MHZ      /* E0-E3 */
 +};
 +
-+#define NUM_TOTAL_VT1625_REG ARRAY_SIZE(VT1625_N640x480_VN) -NUM_CRTC_TIMING
-+
-+static u16 VT1625_N800x600_VN[] = {
-+
-+    0x0300, 0x0001, 0x1002, 0x9003, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x5807, 0x4508, 0x0909,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0xED12, 0x2113,     /* TV.0F-13 */
-+    0xBE14, 0x3415, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x0A21, 0xC922,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x2750, 0x2251, 0x3452, 0xED53, 0x2254,     /* TV.50-54 */
-+    0x5955, 0x7B56, 0x7F57, 0x2358, 0x8C59,     /* TV.55-59 */
-+    0xD25A, 0x135B, 0x7A5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xDB5E, 0x1A5F, 0xB660, 0xAA61, 0xFF62,     /* TV.5E-62 */
-+    0xEF63, 0x0564, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,   HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1064, 800, 800, 264, 840, 136, 750, 600, 600, 150, 606, 15
-+};
-+
-+static u16 VT1625_N1024x768_VN[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x9A03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x1107, 0x7A08, 0x0C09,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x2812, 0x0D13,     /* TV.0F-13 */
-+    0x2814, 0x1415, 0xB416, 0x8317, 0x0F18,     /* TV.14-18 */
-+    0x1619,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x001F, 0x1220, 0xFF21, 0xA522,     /* TV.1E-22 */
-+    0x7723, 0x0C24,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x5F50, 0x0251, 0x4452, 0xDD53, 0x0354,     /* TV.50-54 */
-+    0x2755, 0xA456, 0xC357, 0x3558, 0xE259,     /* TV.55-59 */
-+    0x475A, 0xA05B, 0xFF5C, 0x595D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x5F5E, 0xCC5F, 0xF160, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x3F63, 0x0864, 0x5165,                     /* TV.63-65 */
-+
-+  /*  HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1120, 1024, 1024, 96, 1080, 24, 990, 768, 768, 222, 800, 6
-+};
-+
-+static u16 VT1625_N720x480_VN[] = {
-+                                               
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x2A07, 0x4108, 0x0A09,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0xB70F, 0x0010, 0x8011, 0xAB12, 0x2713,     /* TV.0F-13 */
-+    0x7014, 0x2C15, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x0821, 0xCB22,     /* TV.1E-22 */
-+    0x7723, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x0F50, 0xCF51, 0x2352, 0x5753, 0x2254,     /* TV.50-54 */
-+    0x5955, 0x8356, 0x7F57, 0x2358, 0x9159,     /* TV.55-59 */
-+    0xD25A, 0x135B, 0x7A5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x495E, 0xF15F, 0x9260, 0xA861, 0xFF62,     /* TV.5E-62 */
-+    0x7F63, 0x0364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    784, 720, 720, 64,  728,  16, 600, 480, 480, 120, 490, 6
-+};
-+
-+static u16 VT1625_P640x480_VN[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0xF207, 0x4208, 0x0A09,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0x0A12, 0x0913,     /* TV.0F-13 */
-+    0x1914, 0x2815, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x1C21, 0x3522,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0x8151, 0x2352, 0x5753, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0x6F56, 0x7F57, 0x2358, 0x9459,     /* TV.55-59 */
-+    0xD05A, 0x1C5B, 0x8F5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xE15E, 0x385F, 0x7A60, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0xBF63, 0x0364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1000, 640, 640, 360, 704, 56,  600, 480, 480, 120, 500, 6
-+};
-+
-+static u16 VT1625_P800x600_VN[] = {
-+                                                   
-+    0x0300, 0x0001, 0x1002, 0x9003, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x2807, 0x4108, 0x0F09,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x1212, 0x0413,     /* TV.0F-13 */
-+    0x1714, 0x4815, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x1C21, 0x3122,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x9750, 0x2251, 0x3352, 0xED53, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0x7356, 0x7F57, 0x2358, 0x9459,     /* TV.55-59 */
-+    0xD05A, 0x275B, 0x8F5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x995E, 0x385F, 0x9960, 0xAA61, 0xFF62,     /* TV.5E-62 */
-+    0x4F63, 0x0464, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    920, 800, 800, 120, 816, 64,  750, 600, 600, 150, 606, 16
-+};
-+
-+static u16 VT1625_P1024x768_VN[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x9A03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x8907, 0x6408, 0x0D09,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x2D12, 0x0813,     /* TV.0F-13 */
-+    0x2714, 0x2415, 0x8716, 0x5C17, 0x0618,     /* TV.14-18 */
-+    0x1C19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x001F, 0x1D20, 0x1C21, 0x8922,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAF50, 0x0251, 0x4452, 0xCE53, 0x0354,     /* TV.50-54 */
-+    0x0F55, 0xA456, 0xBE57, 0x3558, 0xDC59,     /* TV.55-59 */
-+    0x3E5A, 0xB55B, 0xDB5C, 0x595D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xAE5E, 0xCD5F, 0xC760, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x4F63, 0x0764, 0x5165,                     /* TV.63-65 */
-+
-+    /*  HT,   HA,  HBS, HBE,  HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1200, 1024, 1024, 176, 1048, 16, 975, 768, 768, 107, 800, 6
-+};
-+
-+static u16 VT1625_P720x576_VN[] = {
-+                                               
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0xC907, 0x4C08, 0x1009,     /* TV.05-09 */
-+    0x7C0A, 0x000B, 0x560C, 0x570D, 0x030E,     /* TV.0A-0E */
-+    0xBF0F, 0x0010, 0x8011, 0x0912, 0x0813,     /* TV.0F-13 */
-+    0x1714, 0x2415, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1420, 0x0C21, 0x3222,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x4B4F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0xD251, 0x2352, 0xB153, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0x6156, 0x7F57, 0x2358, 0x9059,     /* TV.55-59 */
-+    0xCD5A, 0x355B, 0x835C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x4F5E, 0x765F, 0x8D60, 0xA961, 0xFF62,     /* TV.5E-62 */
-+    0x4F63, 0x0464, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,   HA, HBS, HBE, HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1000, 720, 720, 280, 760, 40, 690, 576, 576, 114, 577, 3
++unsigned long ITV_CRTC_TABLE_NTSC_720x480[] = {
++    858,    /* H_Total */
++    720,    /* H_Display_End */
++    720,    /* H_Blanking_Start */
++    138,    /* H_Blanking_End */
++    736,    /* H_Sync_Start */
++    72,     /* H_Sync_End */
++    525,    /* V_Total */
++    480,    /* V_Display_End */
++    480,    /* V_Blanking_Start */
++    45,     /* V_Blanking_End */
++    481,    /* V_Sync_Start */
++    3       /* V_Sync_End */
 +};
 +
 +
-+/* Fit Industry TV Screen Mode */
-+static u16 VT1625_N640x480_VF[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x5807, 0x3708, 0x0B09,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x070E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xF612, 0x2713,     /* TV.0F-13 */
-+    0xCD14, 0x5815, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x2A21, 0xCB22,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
++unsigned long ITV_MODE_TABLE_NTSC_800x600[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770640,                 /* 14-17 */
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
++    /* Src Image Size and Position. */
++    0x09D8FA57,                 /* 18-1B */
++    0x031F0257,                 /* 20-23 */
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xED50, 0x8151, 0x2252, 0x3D53, 0x2254,     /* TV.50-54 */
-+    0x5955, 0x9156, 0x7F57, 0x2358, 0x9059,     /* TV.55-59 */
-+    0xD35A, 0x135B, 0x7A5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xF25E, 0xCE5F, 0x8B60, 0x2761, 0xFF62,     /* TV.5E-62 */
-+    0x3363, 0x0364, 0x5165,                     /* TV.63-65 */
++    /* Scaling Factor and De-Flicker. */
++    0x64E84B3D,                 /* 24-27 */        
 +
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    750, 640, 640, 110, 648, 16,  574, 480, 480, 94,  490, 6
++    /* Dst Image Size. */
++    0x191459AA,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E0640,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC000A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06B3,                 /* 3C-3F */
++    0x00F400B1,                 /* 40-43 */
++    0x06910100,                 /* 44-47 */
++    0x01000000,                 /* 48-4B */
++    0x088680C0,                 /* 4C-4F */
++    0x488F08C8,                 /* 50-53 */
++
++    /* Luma Data */
++    0x0A9AA886,                 /* 54-57 */
++    
++    /* FSCI */
++    0x21F07C16,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x00F01010,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00000000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_54MHZ      /* E0-E3 */
 +};
 +
-+static u16 VT1625_N800x600_VF[] = {
-+                                                  
-+    0x0300, 0x0001, 0x1002, 0x9003, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x8707, 0x3708, 0xFE09,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0xB70F, 0x0010, 0x8011, 0x2912, 0x0B13,     /* TV.0F-13 */
-+    0x3014, 0x2415, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x2A21, 0xC822,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAF50, 0x2351, 0x3452, 0xD753, 0x2254,     /* TV.50-54 */
-+    0x5955, 0x9156, 0x7F57, 0x2358, 0x9059,     /* TV.55-59 */
-+    0xD25A, 0x135B, 0x7A5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x7E5E, 0xC55F, 0xB160, 0xA961, 0xFF62,     /* TV.5E-62 */
-+    0x7F63, 0x0664, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1200,800, 800, 400, 848, 216, 728, 600, 600, 128, 656, 9
++unsigned long ITV_CRTC_TABLE_NTSC_800x600[] = {
++    1092,   /* H_Total */
++    800,    /* H_Display_End */
++    800,    /* H_Blanking_Start */
++    292,    /* H_Blanking_End */
++    840,    /* H_Sync_Start */
++    136,    /* H_Sync_End */
++    825,    /* V_Total */
++    600,    /* V_Display_End */
++    600,    /* V_Blanking_Start */
++    225,    /* V_Blanking_End */
++    606,    /* V_Sync_Start */
++    15      /* V_Sync_End */
 +};
 +
-+static u16 VT1625_N1024x768_VF[] = {
-+                                                  
-+    0x0300, 0x0001, 0x1002, 0x9A03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x9707, 0x4008, 0x1009,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xF612, 0x2713,     /* TV.0F-13 */
-+    0x0C14, 0x2D15, 0x6D16, 0x0717, 0x2A18,     /* TV.14-18 */
-+    0x1B19,                                     /* TV.19 */
-+    0x501B, 0x031C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x0C1F, 0x1620, 0xFF21, 0x1B22,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
++unsigned long ITV_MODE_TABLE_NTSC_1024x768[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770800,                 /* 14-17 */
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAF50, 0x0351, 0x4452, 0xA953, 0x0354,     /* TV.50-54 */
-+    0x2F55, 0x3B56, 0x9F57, 0x3458, 0xB659,     /* TV.55-59 */
-+    0x095A, 0x545B, 0x1D5C, 0x585D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xB15E, 0xEC5F, 0xE460, 0xA961, 0xFF62,     /* TV.5E-62 */
-+    0x5F63, 0x0864, 0x5165,                     /* TV.63-65 */
++    /* Src Image Size and Position. */
++    0x09DFFAFF,                 /* 18-1B */
++    0x03FF02FF,                 /* 20-23 */
 +
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1200,1024,1024,176, 1032,16,  938, 768, 768, 170, 777, 9
++    /* Scaling Factor and De-Flicker. */
++    0x66454E58,                 /* 24-27 */        
++
++    /* Dst Image Size. */
++    0x201461AA,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E0800,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC000A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06B3,                 /* 3C-3F */
++    0x00F400B1,                 /* 40-43 */
++    0x06910100,                 /* 44-47 */
++    0x01000000,                 /* 48-4B */
++    0x088680C0,                 /* 4C-4F */
++    0x488F08C8,                 /* 50-53 */
++
++    /* Luma Data */
++    0x0A9AA886,                 /* 54-57 */
++    
++    /* FSCI */
++    0x21F07C16,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x00F01010,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00000000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_54MHZ      /* E0-E3 */
 +};
 +
-+static u16 VT1625_N720x480_VF[] = {
-+                                                  
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x4107, 0x3B08, 0x0B09,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0xB70F, 0x0010, 0x8011, 0xCD12, 0x2113,     /* TV.0F-13 */
-+    0x7314, 0x3415, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x031C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x0821, 0xCA22,     /* TV.1E-22 */
-+    0x7723, 0x0224,                             /* TV.23-24 */
++unsigned long ITV_CRTC_TABLE_NTSC_1024x768[] = {
++    1092,   /* H_Total */
++    1024,   /* H_Display_End */
++    1024,   /* H_Blanking_Start */
++    68,     /* H_Blanking_End */
++    1032,   /* H_Sync_Start */
++    52,     /* H_Sync_End */
++    825,    /* V_Total */
++    768,    /* V_Display_End */
++    768,    /* V_Blanking_Start */
++    57,     /* V_Blanking_End */
++    800,    /* V_Sync_Start */
++    6       /* V_Sync_End */
++};
++        
++/**************************************************************************************/
++/************************************* PAL ********************************************/
++/**************************************************************************************/
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
++unsigned long ITV_MODE_TABLE_PAL_640x480[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770500,                 /* 14-17 */
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x4750, 0xCF51, 0x2352, 0x3E53, 0x2254,     /* TV.50-54 */
-+    0x5955, 0x8B56, 0x7F57, 0x2358, 0x9159,     /* TV.55-59 */
-+    0xD25A, 0x135B, 0x7A5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x305E, 0xD45F, 0x8C60, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x9763, 0x0364, 0x5165,                     /* TV.63-65 */
++    /* Src Image Size and Position. */
++    0x09D3F9DF,                 /* 18-1B */
++    0x227F01DF,                 /* 20-23 */
 +
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    840, 720, 720, 120, 728, 48,  575, 480, 480, 95,  484, 15
++    /* Scaling Factor and De-Flicker. */
++    0x6405478E,                 /* 24-27 */        
++
++    /* Dst Image Size. */
++    0x1413D9FA,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E0500,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC048A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06BF,                 /* 3C-3F */
++    0x00EF00B2,                 /* 40-43 */
++    0x06990120,                 /* 44-47 */
++    0x01200010,                 /* 48-4B */
++    0x0A0680C0,                 /* 4C-4F */
++    0x489608D3,                 /* 50-53 */
++    
++    /* Luma Data */
++    0x001C0090,                 /* 54-57 */
++
++    /* FSCI */
++    0x2A08D01C,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x01081011,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00120000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_27MHZ      /* E0-E3 */
 +};
 +
-+static u16 VT1625_P640x480_VF[] = {
-+                                                  
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x5207, 0x3A08, 0x0509,     /* Tv.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB70F, 0x0010, 0x8011, 0xCC12, 0x2413,     /* TV.0F-13 */
-+    0x7314, 0x3015, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x1C21, 0x3522,     /* TV.1E-22 */
-+    0x7D23, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0x8151, 0x2352, 0x3E53, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0x8056, 0x7F57, 0x2358, 0x9459,     /* TV.55-59 */
-+    0xD15A, 0x275B, 0x8F5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xC25E, 0x005F, 0x7560, 0x2061, 0xFF62,     /* TV.5E-62 */
-+    0x9763, 0x0364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1000,640, 640, 360, 840, 80,  575, 480, 480, 95,  501, 3
++unsigned long ITV_CRTC_TABLE_PAL_640x480[] = {
++    864,    /* H_Total */
++    640,    /* H_Display_End */
++    640,    /* H_Blanking_Start */
++    224,    /* H_Blanking_End */
++    704,    /* H_Sync_Start */
++    56,     /* H_Sync_End */
++    625,    /* V_Total */
++    480,    /* V_Display_End */
++    480,    /* V_Blanking_Start */
++    145,    /* V_Blanking_End */
++    500,    /* V_Sync_Start */
++    6       /* V_Sync_End */
 +};
 +
-+static u16 VT1625_P800x600_VF[] = {
-+                                                  
-+    0x0300, 0x0001, 0x1002, 0x9003, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x4807, 0x3708, 0x1309,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xE912, 0x3013,     /* TV.0F-13 */
-+    0x9114, 0x2415, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x1C21, 0x3222,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
++unsigned long ITV_MODE_TABLE_PAL_720x576[] = {
++    /* Src Buffer Line Pitch. */    
++    0x007705C0,                 /* 14-17 */
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0x2151, 0x3352, 0xD453, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0x8756, 0x7F57, 0x2358, 0x9459,     /* TV.55-59 */
-+    0xD15A, 0x275B, 0x8F5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x7A5E, 0xE85F, 0x9460, 0xA961, 0xFF62,     /* TV.5E-62 */
-+    0x8763, 0x0464, 0x5165,                     /* TV.63-65 */
++    /* Src Image Size and Position. */
++    0x09D67A3F,                 /* 18-1B */
++    0x22CF023F,                 /* 20-23 */
 +
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1000,800, 800, 200, 848, 80,  725, 600, 600, 125, 602, 1
++    /* Scaling Factor and De-Flicker. */
++    0x64834916,                 /* 24-27 */        
++
++    /* Dst Image Size. */
++    0x1693E9FA,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E05C0,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC048A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06BF,                 /* 3C-3F */
++    0x00EF00B2,                 /* 40-43 */
++    0x06990120,                 /* 44-47 */
++    0x01200010,                 /* 48-4B */
++    0x0A0680C0,                 /* 4C-4F */
++    0x489608D3,                 /* 50-53 */
++    
++    /* Luma Data */
++    0x001C0090,                 /* 54-57 */
++
++    /* FSCI */
++    0x2A08D01C,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x01081011,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00120000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_27MHZ      /* E0-E3 */
 +};
 +
-+static u16 VT1625_P1024x768_VF[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x9A03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x9807, 0x4008, 0x0F09,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB50F, 0x0010, 0x8011, 0xF812, 0x2413,     /* TV.0F-13 */
-+    0x0314, 0x3915, 0x7A16, 0xE017, 0x0E18,     /* TV.14-18 */
-+    0x2319,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1D20, 0x1C21, 0xBA22,     /* TV.1E-22 */
-+    0x7D23, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAF50, 0x0251, 0x4452, 0x9C53, 0x0354,     /* TV.50-54 */
-+    0x0B55, 0x0756, 0x9857, 0x3458, 0xB259,     /* TV.55-59 */
-+    0xFB5A, 0x4E5B, 0xF55C, 0x175D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x705E, 0x945F, 0xBD60, 0xAA61, 0xFF62,     /* TV.5E-62 */
-+    0xEF63, 0x0664, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1200,1024,1024,176, 1032,16,  925, 768, 768, 157, 778, 6
++unsigned long ITV_CRTC_TABLE_PAL_720x576[] = {
++    864,    /* H_Total */
++    720,    /* H_Display_End */
++    720,    /* H_Blanking_Start */
++    144,    /* H_Blanking_End */
++    760,    /* H_Sync_Start */
++    40,     /* H_Sync_End */
++    625,    /* V_Total */
++    576,    /* V_Display_End */
++    576,    /* V_Blanking_Start */
++    49,    /* V_Blanking_End */
++    577,    /* V_Sync_Start */
++    3       /* V_Sync_End */
 +};
 +
-+static u16 VT1625_P720x576_VF[] = {
-+                                                  
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x1006, 0x0307, 0x3908, 0x0609,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0x6912, 0x1813,     /* TV.0F-13 */
-+    0x4314, 0x2415, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x0C21, 0x3222,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
++unsigned long ITV_MODE_TABLE_PAL_800x600[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770640,                 /* 14-17 */
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0xCF51, 0x2352, 0x9D53, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0x8356, 0x7E57, 0x2358, 0x9459,     /* TV.55-59 */
-+    0xD05A, 0x275B, 0x8F5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x375E, 0xF35F, 0x8960, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x2F63, 0x0464, 0x5165,                     /* TV.63-65 */
++    /* Src Image Size and Position. */
++    0x09D8FA57,                 /* 18-1B */
++    0x231F0257,                 /* 20-23 */
 +
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1000, 720, 720, 280, 736, 16,  670, 576, 576, 94,  586, 6
++    /* Scaling Factor and De-Flicker. */
++    0x6503497A,                 /* 24-27 */        
++
++    /* Dst Image Size. */
++    0x1913E9F9,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E0640,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC048A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06BF,                 /* 3C-3F */
++    0x00EF00B2,                 /* 40-43 */
++    0x06990120,                 /* 44-47 */
++    0x01200010,                 /* 48-4B */
++    0x0A0680C0,                 /* 4C-4F */
++    0x489608D3,                 /* 50-53 */
++    
++    /* Luma Data */
++    0x001C0090,                 /* 54-57 */
++
++    /* FSCI */
++    0x2A08D01C,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x01081011,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00120000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_54MHZ      /* E0-E3 */
 +};
 +
-+/* TV Overscan Table */
-+
-+static u16 VT1625_N640x480_VO[] = {
-+                                               
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x9207, 0x2A08, 0x0109,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x3F0E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xAD12, 0x2113,     /* TV.0F-13 */
-+    0x6514, 0x3415, 0x3916, 0x2317, 0x0A18,     /* TV.14-18 */
-+    0x2419,                                     /* TV.19 */
-+    0x501B, 0x031C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x141F, 0x1C20, 0x2A21, 0xDB22,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x2750, 0x8251, 0x2352, 0x0C53, 0x0254,     /* TV.50-54 */
-+    0x2755, 0x8056, 0x7757, 0x2358, 0x8359,     /* TV.55-59 */
-+    0xC35A, 0xFB5B, 0x115C, 0x065D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x005E, 0x005F, 0x8060, 0x2061, 0xFF62,     /* TV.5E-62 */
-+    0x2763, 0x0364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE, VT,  VA, VBS, VBE,VSS, VSE */
-+    808, 640, 640, 168, 688, 24, 525, 480, 480, 45, 490, 6
++unsigned long ITV_CRTC_TABLE_PAL_800x600[] = {
++    1350,   /* H_Total */
++    800,    /* H_Display_End */
++    800,    /* H_Blanking_Start */
++    550,    /* H_Blanking_End */
++    816,    /* H_Sync_Start */
++    64,     /* H_Sync_End */
++    800,    /* V_Total */
++    600,    /* V_Display_End */
++    600,    /* V_Blanking_Start */
++    200,    /* V_Blanking_End */
++    606,    /* V_Sync_Start */
++    15      /* V_Sync_End */
 +};
 +
-+static u16 VT1625_N800x600_VO[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x9003, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x1006, 0x0107, 0x1E08, 0x0309,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xED12, 0x2113,     /* TV.0F-13 */
-+    0xBC14, 0x3415, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x031C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x2A21, 0xCA22,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
 +
++unsigned long ITV_MODE_TABLE_PAL_1024x768[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770800,                 /* 14-17 */
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
++    /* Src Image Size and Position. */
++    0x09DFFAFF,                 /* 18-1B */
++    0x13FF02FF,                 /* 20-23 */
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAF50, 0x2251, 0x3452, 0x9153, 0x2254,     /* TV.50-54 */
-+    0x5955, 0xC656, 0x7F57, 0x2358, 0x9059,     /* TV.55-59 */
-+    0xD25A, 0xEE5B, 0x7A5C, 0x065D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x6D5E, 0x065F, 0xA060, 0x2961, 0xFF62,     /* TV.5E-62 */
-+    0xDF63, 0x0564, 0x5165,                     /* TV.63-65 */
++    /* Scaling Factor and De-Flicker. */
++    0x66704C2A,                 /* 24-27 */        
 +
-+    /* HT,  HA, HBS, HBE, HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1200, 800, 800, 400, 880, 66, 658, 600, 600,  58, 610, 6
++    /* Dst Image Size. */
++    0x2013D9F8,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x008E0800,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC048A214,                 /* 38-3B */
++    
++    /* Encoder CRTC. */
++    0x427F06BF,                 /* 3C-3F */
++    0x00EF00B2,                 /* 40-43 */
++    0x06990120,                 /* 44-47 */
++    0x01200010,                 /* 48-4B */
++    0x0A0680C0,                 /* 4C-4F */
++    0x489608D3,                 /* 50-53 */
++    
++    /* Luma Data */
++    0x001C0090,                 /* 54-57 */
++
++    /* FSCI */
++    0x2A08D01C,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x01081011,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00120000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_54MHZ      /* E0-E3 */
 +};
 +
-+static u16 VT1625_N1024x768_VO[] = {
-+                                               
-+    0x0300, 0x0001, 0x1002, 0x9A03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x4807, 0x2308, 0x0509,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0x2A12, 0x0D13,     /* TV.0F-13 */
-+    0x2814, 0x1815, 0xA116, 0x6417, 0x9318,     /* TV.14-18 */
-+    0x1B19,                                     /* TV.19 */
-+    0x501B, 0x051C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x0C1F, 0x1720, 0xFF21, 0x3722,     /* TV.1E-22 */
-+    0x7723, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x5F50, 0x0351, 0x4452, 0x3853, 0x0354,     /* TV.50-54 */
-+    0x1F55, 0x6056, 0x9C57, 0x3458, 0xB359,     /* TV.55-59 */
-+    0x045A, 0x2D5B, 0x005C, 0x585D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x245E, 0x7F5F, 0xC960, 0x2961, 0xFF62,     /* TV.5E-62 */
-+    0xDF63, 0x0664, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1120, 1024, 1024, 96, 1032, 16, 825, 768, 768, 57,  777, 9
++unsigned long ITV_CRTC_TABLE_PAL_1024x768[] = {
++    1200,   /* H_Total */
++    1024,   /* H_Display_End */
++    1024,   /* H_Blanking_Start */
++    176,    /* H_Blanking_End */
++    1048,   /* H_Sync_Start */
++    16,     /* H_Sync_End */
++    900,    /* V_Total */
++    768,    /* V_Display_End */
++    768,    /* V_Blanking_Start */
++    132,    /* V_Blanking_End */
++    800,    /* V_Sync_Start */
++    6       /* V_Sync_End */
 +};
 +
-+static u16 VT1625_N720x480_VO[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0004,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0207, 0x1008, 0x0009,     /* TV.05-09 */
-+    0x7B0A, 0x150B, 0x500C, 0x570D, 0x3F0E,     /* TV.0A-0E */
-+    0xB70F, 0x0010, 0x8011, 0xAD12, 0x2113,     /* TV.0F-13 */
-+    0x6414, 0x3415, 0xD616, 0x7B17, 0xF018,     /* TV.14-18 */
-+    0x2119,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1C20, 0x0821, 0x0E22,     /* TV.1E-22 */
-+    0x7723, 0x0224,                             /* TV.23-24 */
++/**************************************************************************************/
++/************************************* HDTV: 720P *************************************/
++/**************************************************************************************/
++unsigned long ITV_MODE_TABLE_720P_1280x720[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770A00,                 /* 14-17 */
 +
++    /* Src Image Size and Position. */
++    0x09E7FACF,                 /* 18-1B */
++    0x24FF02CF,                 /* 20-23 */
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x4A4F,                                     /* TV.4F */
++    /* Scaling Factor and De-Flicker. */
++    0x045A27FF,                 /* 24-27 */        
 +
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x1F50, 0xD251, 0x2352, 0x0C53, 0x2254,     /* TV.50-54 */
-+    0x5955, 0xC056, 0x7E57, 0x2358, 0x8C59,     /* TV.55-59 */
-+    0xD05A, 0xF65B, 0x7C5C, 0x065D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x005E, 0x345F, 0x8060, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x1F63, 0x0364, 0x5165,                     /* TV.63-65 */
++    /* Dst Image Size. */
++    0x2827FACF,                 /* 28-2B */
 +
-+    /* HT,  HA, HBS, HBE, HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    800, 720, 720, 80,  760, 40, 525, 480, 480, 45,  482, 3
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x00770A00,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC0E0A214,                 /* 38-3B */
++
++    /* Encoder CRTC. */
++    0x42280671,                 /* 3C-3F */
++    0x00000000,                 /* 40-43 */
++    0x062C0117,                 /* 44-47 */
++    0x000C592C,                 /* 48-4B */
++    0x0608527D,                 /* 4C-4F */
++    0x48CD18CD,                 /* 50-53 */
++
++    /* Luma Data */
++    0x009CA891,                 /* 54-57 */
++
++    /* FSCI */
++    0x21F02016,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x00F0102F,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00000000,                 /* 60-63 */
++
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_74_25MHZ   /* E0-E3 */
 +};
 +
-+static u16 VT1625_P640x480_VO[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0306, 0x4307, 0x5F08, 0x3109,     /* Tv.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB70F, 0x0010, 0x8011, 0x0D12, 0x0913,     /* TV.0F-13 */
-+    0x1A14, 0x3015, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x031C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x1C21, 0x2D22,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0x8751, 0x2352, 0x0753, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0xDF56, 0x7F57, 0x2358, 0x9459,     /* TV.55-59 */
-+    0xD15A, 0x135B, 0x9E5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x7F5E, 0x3A5F, 0x6A60, 0x2761, 0xFF62,     /* TV.5E-62 */
-+    0x3F63, 0x0364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1000, 640, 640, 360, 816, 112, 520, 480, 480, 40,  490, 6
++unsigned long ITV_CRTC_TABLE_720P_1280x720[] = {
++    1650,   /* H_Total          */
++    1280,   /* H_Display_End    */
++    1280,   /* H_Blanking_Start */
++    370,    /* H_Blanking_End   */
++    1296,   /* H_Sync_Start     */
++    48,     /* H_Sync_End       */
++    750,    /* V_Total          */
++    720,    /* V_Display_End    */
++    720,    /* V_Blanking_Start */
++    30,     /* V_Blanking_End   */
++    721,    /* V_Sync_Start     */
++    5       /* V_Sync_End       */
 +};
 +
-+static u16 VT1625_P800x600_VO[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x9003, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x4607, 0x0008, 0x3209,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB70F, 0x0010, 0x8011, 0x6C12, 0x1213,     /* TV.0F-13 */
-+    0x4114, 0x3015, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x031C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x1C21, 0x3422,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0x8751, 0x3352, 0x8953, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0xE056, 0x7F57, 0x2358, 0x9459,     /* TV.55-59 */
-+    0xD15A, 0x055B, 0x855C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x1E5E, 0x1F5F, 0x8560, 0xA961, 0xFF62,     /* TV.5E-62 */
-+    0x0F63, 0x0464, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1000, 800, 800, 200, 872, 56, 650, 600, 600, 50,  608, 12
++unsigned long ITV_CRTC_TABLE_720P_640x480[] = {
++    900,    /* H_Total          */
++    640,    /* H_Display_End    */
++    640,    /* H_Blanking_Start */
++    260,    /* H_Blanking_End   */
++    656,    /* H_Sync_Start     */
++    72,     /* H_Sync_End       */
++    500,    /* V_Total          */
++    480,    /* V_Display_End    */
++    480,    /* V_Blanking_Start */
++    20,     /* V_Blanking_End   */
++    481,    /* V_Sync_Start     */
++    2       /* V_Sync_End       */
 +};
 +
-+static u16 VT1625_P1024x768_VO[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x9A03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x1006, 0xCF07, 0x1E08, 0x3709,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xE412, 0x3613,     /* TV.0F-13 */
-+    0xA714, 0x1015, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x031C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1D20, 0x1C21, 0xEE22,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xCF50, 0x0351, 0x4752, 0x4253, 0x2354,     /* TV.50-54 */
-+    0x5F55, 0xBF56, 0x7F57, 0x2358, 0x9359,     /* TV.55-59 */
-+    0xD05A, 0x085B, 0xF05C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x025E, 0xAB5F, 0xAB60, 0xAB61, 0xFF62,     /* TV.5E-62 */
-+    0x6F63, 0x0A64, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,   HA,  HBS,  HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    2000, 1024, 1024, 976, 1504, 32, 835, 768, 768, 67,  778, 6
++unsigned long ITV_CRTC_TABLE_720P_720x480[] = {
++    900,    /* H_Total          */
++    720,    /* H_Display_End    */
++    720,    /* H_Blanking_Start */
++    180,    /* H_Blanking_End   */
++    736,    /* H_Sync_Start     */
++    72,     /* H_Sync_End       */
++    500,    /* V_Total          */
++    480,    /* V_Display_End    */
++    480,    /* V_Blanking_Start */
++    20,     /* V_Blanking_End   */
++    481,    /* V_Sync_Start     */
++    3       /* V_Sync_End       */
 +};
 +
-+static u16 VT1625_P720x576_VO[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x1F03, 0x0304,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x3907, 0x1908, 0x0109,     /* TV.05-09 */
-+    0x880A, 0x000B, 0x550C, 0x5E0D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x0412, 0x0813,     /* TV.0F-13 */
-+    0x0814, 0x1015, 0xCB16, 0x8A17, 0x0918,     /* TV.14-18 */
-+    0x2A19,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x101F, 0x1720, 0x0C21, 0x3222,     /* TV.1E-22 */
-+    0x7D23, 0x0224,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x104E,     /* TV.4A-4E */
-+    0x514F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x5F50, 0xCF51, 0x2352, 0x7053, 0x2254,     /* TV.50-54 */
-+    0x5F55, 0xD056, 0x7F57, 0x2358, 0x9259,     /* TV.55-59 */
-+    0xCE5A, 0x0C5B, 0x8E5C, 0x165D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x005E, 0x005F, 0x8060, 0x2061, 0xFF62,     /* TV.5E-62 */
-+    0x5F63, 0x0364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    864, 720, 720, 144, 760, 40,  625, 576, 576, 49,  578, 3
++unsigned long ITV_CRTC_TABLE_720P_720x576[] = {
++    1440,   /* H_Total          */
++    720,    /* H_Display_End    */
++    720,    /* H_Blanking_Start */
++    720,    /* H_Blanking_End   */
++    736,    /* H_Sync_Start     */
++    80,     /* H_Sync_End       */
++    625,    /* V_Total          */
++    576,    /* V_Display_End    */
++    576,    /* V_Blanking_Start */
++    49,     /* V_Blanking_End   */
++    577,    /* V_Sync_Start     */
++    3       /* V_Sync_End       */
 +};
 +
-+/***********************************/
-+/* VT1625 output RGB Table         */
-+/***********************************/
++unsigned long ITV_CRTC_TABLE_720P_800x600[] = {
++    1440,   /* H_Total          */
++    800,    /* H_Display_End    */
++    800,    /* H_Blanking_Start */
++    640,    /* H_Blanking_End   */
++    840,    /* H_Sync_Start     */
++    136,    /* H_Sync_End       */
++    625,    /* V_Total          */
++    600,    /* V_Display_End    */
++    600,    /* V_Blanking_Start */
++    25,     /* V_Blanking_End   */
++    606,    /* V_Sync_Start     */
++    15      /* V_Sync_End       */
++};
 +
-+static u16 TV_OUT_RGB[] = {
-+    0x1202,                     /* SYNC on G */
-+    0x7E23,                     /* Blank Level */
-+    0x854A, 0x0A4B,             /* DAC Selection */
-+    0x004E,                     /* YUV Delay Control */
-+    0x5565, 0x3766, 0x5C67,     /* adjust SDTV_RGB Amplitude factor */
++unsigned long ITV_CRTC_TABLE_720P_1024x768[] = {
++    1250,   /* H_Total          */
++    1024,   /* H_Display_End    */
++    1024,   /* H_Blanking_Start */
++     226,   /* H_Blanking_End   */
++    1064,   /* H_Sync_Start     */
++     120,   /* H_Sync_End       */
++     880,   /* V_Total          */
++     768,   /* V_Display_End    */
++     768,   /* V_Blanking_Start */
++     112,   /* V_Blanking_End   */
++     774,   /* V_Sync_Start     */
++       3    /* V_Sync_End       */
++};
++
++/**************************************************************************************/
++/************************************* HDTV: 1080I *************************************/
++/**************************************************************************************/
++unsigned long ITV_MODE_TABLE_1080I_1920x1080[] = {
++    /* Src Buffer Line Pitch. */    
++    0x00770F00,                 /* 14-17 */
++
++    /* Src Image Size and Position. */
++    0x09FBFC37,                 /* 18-1B */
++    0x277F0437,                 /* 20-23 */
++
++    /* Scaling Factor and De-Flicker. */
++    0x68002803,                 /* 24-27 */        
++
++    /* Dst Image Size. */
++    0x3C3BFC37,                 /* 28-2B */
++
++    /* Dst Buffer Line Pitch & DQWord. */
++    0x00770F00,                 /* 34-37 */
++
++    /* Encoder Control. */
++    0xC0D0A214,                 /* 38-3B */
++
++    /* Encoder CRTC. */
++    0x422C0897,                 /* 3C-3F */
++    0x00000000,                 /* 40-43 */
++    0x087100EC,                 /* 44-47 */
++    0x000840B0,                 /* 48-4B */
++    0x0506B1E2,                 /* 4C-4F */
++    0x48B208F7,                 /* 50-53 */
++
++    /* Luma Data */
++    0x00A0A0A5,                 /* 54-57 */
++
++    /* FSCI */
++    0x21F02016,                 /* 58-5B */
++
++    /* Burst and Sync Shape */
++    0x01281010,                 /* 5C-5F */
++
++    /* Hue and Sub-Carrier */
++    0x00000000,                 /* 60-63 */
++    
++    /* TVCLK PLL */
++    INTEGRATED_TVCLK_148_5MHZ   /* E0-E3 */
++};
++
++unsigned long ITV_CRTC_TABLE_1080I_1920x1080[] = {
++    2200,   /* H_Total          */ 
++    1920,   /* H_Display_End    */
++    1920,   /* H_Blanking_Start */
++    280,    /* H_Blanking_End   */
++    1960,   /* H_Sync_Start     */
++    104,    /* H_Sync_End       */
++    1125,   /* V_Total          */
++    1080,   /* V_Display_End    */
++    1080,   /* V_Blanking_Start */
++    45,     /* V_Blanking_End   */
++    1083,   /* V_Sync_Start     */
++    4       /* V_Sync_End       */
++};
++
++unsigned long ITV_CRTC_TABLE_1080I_640x480[] = {
++    900,    /* H_Total          */
++    640,    /* H_Display_End    */
++    640,    /* H_Blanking_Start */
++    260,    /* H_Blanking_End   */
++    656,    /* H_Sync_Start     */
++    72,     /* H_Sync_End       */
++    500,    /* V_Total          */
++    480,    /* V_Display_End    */
++    480,    /* V_Blanking_Start */
++    20,     /* V_Blanking_End   */
++    481,    /* V_Sync_Start     */
++    2       /* V_Sync_End       */
++};
++
++unsigned long ITV_CRTC_TABLE_1080I_720x480[] = {
++    900,    /* H_Total          */
++    720,    /* H_Display_End    */
++    720,    /* H_Blanking_Start */
++    180,    /* H_Blanking_End   */
++    736,    /* H_Sync_Start     */
++    96,     /* H_Sync_End       */
++    500,    /* V_Total          */
++    480,    /* V_Display_End    */
++    480,    /* V_Blanking_Start */
++    20,     /* V_Blanking_End   */
++    485,    /* V_Sync_Start     */
++    6       /* V_Sync_End       */
++};
++
++unsigned long ITV_CRTC_TABLE_1080I_720x576[] = {
++    1440,   /* H_Total          */
++    720,    /* H_Display_End    */
++    720,    /* H_Blanking_Start */
++    720,    /* H_Blanking_End   */
++    736,    /* H_Sync_Start     */
++    96,     /* H_Sync_End       */
++    625,    /* V_Total          */
++    576,    /* V_Display_End    */
++    576,    /* V_Blanking_Start */
++    49,     /* V_Blanking_End   */
++    577,    /* V_Sync_Start     */
++    2       /* V_Sync_End       */
++};
++
++unsigned long ITV_CRTC_TABLE_1080I_800x600[] = {
++    1440,   /* H_Total          */ 
++    800,    /* H_Display_End    */
++    800,    /* H_Blanking_Start */
++    640,    /* H_Blanking_End   */
++    824,    /* H_Sync_Start     */
++    56,     /* H_Sync_End       */
++    625,    /* V_Total          */
++    600,    /* V_Display_End    */
++    600,    /* V_Blanking_Start */
++    25,     /* V_Blanking_End   */
++    605,    /* V_Sync_Start     */
++    6       /* V_Sync_End       */
++};
++
++unsigned long ITV_CRTC_TABLE_1080I_1024x768[] = {
++    1250,   /* H_Total          */ 
++    1024,   /* H_Display_End    */
++    1024,   /* H_Blanking_Start */
++    226,    /* H_Blanking_End   */
++    1032,   /* H_Sync_Start     */
++    64,     /* H_Sync_End       */
++    792,    /* V_Total          */
++    768,    /* V_Display_End    */
++    768,    /* V_Blanking_Start */
++    24,     /* V_Blanking_End   */
++    770,    /* V_Sync_Start     */
++    3       /* V_Sync_End       */
++};
++
++unsigned long ITV_NULL_TABLE[] = {
++    0xFFFF
++};
++
++
++struct integrated_tv_mode_table ITV_MODE_TABLE[] = {
++    {VIA_RES_640X480,   ITV_MODE_TABLE_NTSC_640x480,  ITV_MODE_TABLE_PAL_640x480,  ITV_MODE_TABLE_720P_1280x720, ITV_MODE_TABLE_1080I_1920x1080},
++    {VIA_RES_720X480,   ITV_MODE_TABLE_NTSC_720x480,  ITV_MODE_TABLE_NTSC_720x480, ITV_MODE_TABLE_720P_1280x720, ITV_MODE_TABLE_1080I_1920x1080},
++    {VIA_RES_720X576,   ITV_MODE_TABLE_PAL_720x576,   ITV_MODE_TABLE_PAL_720x576,  ITV_MODE_TABLE_720P_1280x720, ITV_MODE_TABLE_1080I_1920x1080},
++    {VIA_RES_800X600,   ITV_MODE_TABLE_NTSC_800x600,  ITV_MODE_TABLE_PAL_800x600,  ITV_MODE_TABLE_720P_1280x720, ITV_MODE_TABLE_1080I_1920x1080},
++    {VIA_RES_1024X768,  ITV_MODE_TABLE_NTSC_1024x768, ITV_MODE_TABLE_PAL_1024x768, ITV_MODE_TABLE_720P_1280x720, ITV_MODE_TABLE_1080I_1920x1080},
++    {VIA_RES_1280X720,  ITV_NULL_TABLE,               ITV_NULL_TABLE,              ITV_MODE_TABLE_720P_1280x720, ITV_NULL_TABLE},
++    {VIA_RES_1920X1080, ITV_NULL_TABLE,               ITV_NULL_TABLE,              ITV_NULL_TABLE,               ITV_MODE_TABLE_1080I_1920x1080}
++};
++
++
++struct integrated_tv_mode_table ITV_CRTC_TABLE[] = {
++    {VIA_RES_640X480,   ITV_CRTC_TABLE_NTSC_640x480,  ITV_CRTC_TABLE_PAL_640x480,  ITV_CRTC_TABLE_720P_640x480,  ITV_CRTC_TABLE_1080I_640x480},
++    {VIA_RES_720X480,   ITV_CRTC_TABLE_NTSC_720x480,  ITV_CRTC_TABLE_NTSC_720x480, ITV_CRTC_TABLE_720P_720x480,  ITV_CRTC_TABLE_1080I_720x480},
++    {VIA_RES_720X576,   ITV_CRTC_TABLE_PAL_720x576,   ITV_CRTC_TABLE_PAL_720x576,  ITV_CRTC_TABLE_720P_720x576,  ITV_CRTC_TABLE_1080I_720x576},
++    {VIA_RES_800X600,   ITV_CRTC_TABLE_NTSC_800x600,  ITV_CRTC_TABLE_PAL_800x600,  ITV_CRTC_TABLE_720P_800x600,  ITV_CRTC_TABLE_1080I_800x600},
++    {VIA_RES_1024X768,  ITV_CRTC_TABLE_NTSC_1024x768, ITV_CRTC_TABLE_PAL_1024x768, ITV_CRTC_TABLE_720P_1024x768, ITV_CRTC_TABLE_1080I_1024x768},
++    {VIA_RES_1280X720,  ITV_NULL_TABLE,               ITV_NULL_TABLE,              ITV_CRTC_TABLE_720P_1280x720, ITV_NULL_TABLE},
++    {VIA_RES_1920X1080, ITV_NULL_TABLE,               ITV_NULL_TABLE,              ITV_NULL_TABLE,               ITV_CRTC_TABLE_1080I_1920x1080}
++};
++
++
++#define NUM_TOTAL_INTEGRATEDTV_MODE_TABLE ARRAY_SIZE(ITV_MODE_TABLE)
++
++/**************************************************************************************/
++/********************************** Patch Table for RGB *******************************/
++/**************************************************************************************/
++unsigned short ITV_PATCH_TABLE_RGB_NTSC[] = {
++    0xE342,     /* BST_ED   */
++    0x8D46,     /* VID_ED   */
++    0x404A,     /* HSD      */
++    0x7F50,     /* VR_GAIN  */
++    0x1851,     /* SC_ON_VR */
++    0x7C52,     /* UB_GAIN  */
++    0x5853,     /* SC_ON_UB */
++    0x7254,     /* YG_GAIN  */
++    0x165C,     /* SYNC_SP  */
++    0x285E,     /* BRST_AMP */
++    0x015F,     /* BRST_AMP */
 +    0xffff
 +};
 +
-+static u16 HDTV_OUT_RGB[] = {
-+    0x1202,                     /* output SDTV_RGB type */
-+    0x854A, 0x0A4B,             /* DAC Selection */
-+    0x5565, 0x3966, 0x6667,     /* adjust SDTV_RGB Amplitude factor */
++unsigned short ITV_PATCH_TABLE_RGB_PAL[] = {
++    0xF442,     /* BST_ED       */
++    0x1E44,     /* VID_ST       */
++    0x004A,     /* HSD          */
++    0x9C50,     /* VR_GAIN      */
++    0x9852,     /* UB_GAIN      */
++    0xA554,     /* YG_GAIN      */
++    0xA055,     /* Blank Level  */
++    0x285E,     /* BRST_AMP     */
++    0xffff
++};
++
++
++/**************************************************************************************/
++/******************************** Patch Table for YPbPr *******************************/
++/**************************************************************************************/
++unsigned short ITV_PATCH_TABLE_YPBPR_NTSC[] = {
++    0xE342,     /* BST_ED       */
++    0x8D46,     /* VID_ED       */
++    0x404A,     /* HSD          */
++    0x9750,     /* VR_GAIN      */
++    0x9952,     /* UB_GAIN      */
++    0x8B54,     /* YG_GAIN      */
++    0x0057,     /* Blank Level  */
++    0x285E,     /* BRST_AMP     */
++    0x015F,     /* BRST_AMP     */
++    0x76E8,
++    0xffff
++};
++
++unsigned short ITV_PATCH_TABLE_YPBPR_PAL[] = {
++    0xF442,     /* BST_ED       */
++    0x1E44,     /* VID_ST       */
++    0x9C46,     /* VID_ED       */
++    0x004A,     /* HSD          */
++    0x9C50,     /* VR_GAIN      */
++    0x9852,     /* UB_GAIN      */
++    0x285E,     /* BRST_AMP     */
++    0xffff
++};
++
++
++
++/**************************************************************************************/
++/******************************** Patch Table for 480P ********************************/
++/**************************************************************************************/
++unsigned short ITV_PATCH_TABLE_480P_640x480[] = {
++    0xC424, 0x0825, 0xE526, 0x0327,     /* Scaling Factor            */
++    0xB528, 0x0129, 0x292A,             /* DST H/V size              */
++    0x803A,                             /* TV's Standard             */
++    0x0040, 0x0042,                     /* BST_ST, BST_ED            */
++    0xFE44, 0x0045, 0x8F46,             /* VID_ST, VID_ED            */
++    0x404A,                             /* HSD                       */
++    0xCC4C, 0x814D, 0x0F4F,             /* HP, VP, VSD               */
++    0x6B50, 0x6B52,                     /* Chroma Ctrl               */
++    0x9054, 0xA055, 0x1C56, 0x0057,     /* Luma Ctrl                 */
++    0x175C, 0x005D, 0x005E, 0x005F,     /* Burst and Sync Shape Ctrl */
++    0x83E2,
 +    0xFFFF
 +};
 +
-+/***********************************/
-+/* VT1625 output YPBPR Table       */
-+/***********************************/
-+
-+static u16 TV_OUT_YPBPR[] = {
-+    0x7E23, 0x004E,
-+    0x5565, 0x5466, 0x5667,
-+    0xFFFF                      /* End symbol */
-+};
-+
-+unsigned short HDTV_OUT_YPBPR[] = {
-+    0x5565, 0x5666, 0x5567,     /* adjust YPbPr Amplitude factor */
++unsigned short ITV_PATCH_TABLE_480P_720x480[] = {
++    0xC424, 0x0825, 0x6226, 0x0427,     /* Scaling Factor            */
++    0xB528, 0x0129, 0xA92A,             /* DST H/V size              */
++    0x803A,                             /* TV's Standard             */
++    0x0040, 0x0042,                     /* BST_ST, BST_ED            */
++    0xFE44, 0x0045, 0x8F46,             /* VID_ST, VID_ED            */
++    0x404A,                             /* HSD                       */
++    0xA74C, 0x814D, 0x0F4F,             /* HP, VP, VSD               */
++    0x6B50, 0x6B52,                     /* Chroma Ctrl               */
++    0x9054, 0xA055, 0x1C56, 0x0057,     /* Luma Ctrl                 */
++    0x175C, 0x005D, 0x005E, 0x005F,     /* Burst and Sync Shape Ctrl */
++    0x83E2,
 +    0xFFFF
 +};
 +
-+/***********************************/
-+/* VT1625 output SDTV_RGB Table    */
-+/***********************************/
-+
-+/* NTSC */
-+
-+static u16 VT1625_N640x480_SDTV_RGB_VN[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x2807,                          /* Start Active Video               */
-+    0x4708, 0x1509,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x001C,
-+    0x8351, 0x8356,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N800x600_SDTV_RGB_VN[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x5607,                          /* Start Active Video               */
-+    0x4B08, 0x1409,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x2F20,                          /* TV Sync step                     */
-+    0x2551, 0x7D56,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N1024x768_SDTV_RGB_VN[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x0F07,                          /* Start Active Video               */
-+    0x8008, 0x1409,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x2520,                          /* TV Sync step                     */
-+    0x0451, 0xA756,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N720x480_SDTV_RGB_VN[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x1409,                          /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x2F20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N640x480_SDTV_RGB_VF[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x5607,                          /* Start Active Video               */
-+    0x3808,                          /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x011F,                          /* Filter Switch                    */
-+    0x8451,                          /* TV Timing                        */
-+    0x0254, 0x3355, 0x7956, 0x7957,  /* TV Timing                        */
-+    0x8559, 0xCA5A, 0x075B,          /* TV Timing                        */
-+    0x325C, 0x165D, 0xF25E, 0x225F,  /* TV Timing                        */
-+    0x8B60, 0x2861,                  /* Scaling                          */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N800x600_SDTV_RGB_VF[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x8607,                          /* Start Active Video               */
-+    0x3F08, 0xFC09,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x021C,
-+    0x2F20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N1024x768_SDTV_RGB_VF[]={
-+    0xC003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x9607,                          /* Start Active Video               */
-+    0x4608, 0x0D09,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x2520,                          /* TV Sync step                     */
-+    0x0551, 0x3D56,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N720x480_SDTV_RGB_VF[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x4308, 0x0709,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x2F20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N640x480_SDTV_RGB_VO[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x8407,                          /* Start Active Video               */
-+    0x1D08,                          /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x041C, 
-+    0x011F,                          /* Filter Switch                    */
-+    0x8351,                          /* TV Timing                        */
-+    0x0254, 0x1B55, 0x8356, 0x7557,  /* TV Timing                        */
-+    0x8159, 0xC45A, 0x005B,          /* TV Timing                        */
-+    0x045C, 0x005F,                  /* TV Timing                        */
-+    0x2061,                          /* Scaling                          */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N800x600_SDTV_RGB_VO[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x0006, 0xFB07,                  /* Start Active Video               */
-+    0x2208, 0x0409,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x041C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x2920,                          /* TV Sync step                     */
-+    0x2751, 0xCB56, 0xEB5B,          /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N1024x768_SDTV_RGB_VO[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x4707,                          /* Start Active Video               */
-+    0x2908, 0x0009,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x041C, 
-+    0x011F,                          /* Filter Switch                    */
-+    0x2820,                          /* TV Sync step                     */
-+    0x0551, 0x6156,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_N720x480_SDTV_RGB_VO[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1004,                          /* Output Mode                      */
-+    0x2008, 0x0009,                  /* adjust TV's Position             */
-+    0x000B,                          /* Blanking Level set to zero       */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x2F20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+
-+/* PAL */
-+
-+static u16 VT1625_P640x480_SDTV_RGB_VN[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0xF007,                          /* Start Active Video               */
-+    0x4E08, 0x1409,                  /* adjust TV's Position             */
-+    0x001C, 
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x8351, 0x7156,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P800x600_SDTV_RGB_VN[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x2607,                          /* Start Active Video               */
-+    0x4A08, 0x1909,                  /* adjust TV's Position             */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x2551, 0x7556,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P1024x768_SDTV_RGB_VN[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x8707,                          /* Start Active Video               */
-+    0x6C08, 0x1909,                  /* adjust TV's Position             */
-+    0x001C, 
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x0451, 0xA556,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P720x576_SDTV_RGB_VN[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x4D08, 0x1B09,                  /* adjust TV's Position             */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P640x480_SDTV_RGB_VF[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x5007, 0x4308, 0x0A09,          /* adjust TV's Position             */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x8351, 0x8356,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P800x600_SDTV_RGB_VF[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x4607,                          /* Start Active Video               */
-+    0x4108, 0x2409,                  /* adjust TV's Position             */
-+    0x0810,                          /* Hue Adjustment                   */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x2451, 0x8956,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P1024x768_SDTV_RGB_VF[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x9507,                          /* Start Active Video               */
-+    0x4B08, 0x1A09,                  /* adjust TV's Position             */
-+    0x001C,
-+    0x001F,                          /* Filter Switch                    */
-+    0x0451, 0x0956,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+
-+};
-+
-+static u16 VT1625_P720x576_SDTV_RGB_VF[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x4308, 0x0D09,                  /* adjust TV's Position             */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P640x480_SDTV_RGB_VO[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x4807,                          /* Start Active Video               */
-+    0x6409,                          /* adjust TV's Position             */
-+    0x041C,   
-+    0x011F,                          /* Filter Switch                    */
-+    0x0254, 0xFF55, 0x9C56, 0x7057,  /* TV Timing                        */
-+    0x2258, 0x8359, 0xB95A, 0xD35B,  /* TV Timing                        */
-+    0xD45C, 0x055D, 0x7E5E, 0x005F,  /* TV Timing                        */
-+    0x2061,                          /* Scaling                          */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P800x600_SDTV_RGB_VO[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x6509,                          /* adjust TV's Position             */
-+    0x041C, 
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P1024x768_SDTV_RGB_VO[] = {
-+    0xC003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0xCC07,                          /* Start Active Video               */
-+    0x2408, 0x6E09,                  /* adjust TV's Position             */
-+    0x041C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x0651, 0xC156,                  /* TV Timing                        */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+static u16 VT1625_P720x576_SDTV_RGB_VO[] = {
-+    0x4003,                          /* Filter Selection                 */
-+    0x1304,                          /* Output Mode                      */
-+    0x0309,                          /* adjust TV's Position             */
-+    0x001C,
-+    0x011F,                          /* Filter Switch                    */
-+    0x1C20,                          /* TV Sync step                     */
-+    0x0062,                          /* Adaptive Deflicker Disable       */
-+    0xFFFF                           /* End symbol                       */
-+};
-+
-+/***********************************/
-+/* VT1625 DeDotCrawl Table         */
-+/***********************************/
-+
-+/* NTSC */
-+
-+static u16 VT1625_N640x480_DeDotCrawl_VN[] = {
-+    0xBE16, 0x8717,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N800x600_DeDotCrawl_VN[] = {
-+    0x1216, 0x4917,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N1024x768_DeDotCrawl_VN[] = {
-+    0x1816, 0x6117,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N720x480_DeDotCrawl_VN[] = {
-+    0xC316, 0x4C17,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N640x480_DeDotCrawl_VF[] = {
-+    0x5016, 0x7B17,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N800x600_DeDotCrawl_VF[] = {
-+    0xD116, 0xF617,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N1024x768_DeDotCrawl_VF[] = {
-+    0x0616, 0x8417,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N720x480_DeDotCrawl_VF[] = {
-+    0xE816, 0xEB17,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N640x480_DeDotCrawl_VO[] = {
-+    0xE516, 0xA017,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N800x600_DeDotCrawl_VO[] = {
-+    0xA116, 0x5917,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N1024x768_DeDotCrawl_VO[] = {
-+    0x1116, 0xE217,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_N720x480_DeDotCrawl_VO[] = {
-+    0x1E16, 0x5C17,             /* adjust TV FSCI */
-+    0xFFFF                      /* End symbol */
-+};
-+
-+static u16 VT1625_NULL_FUNC[] = {
++unsigned short ITV_PATCH_TABLE_480P_800x600[] = {
++    0xF624, 0x0A25, 0xDF26, 0x0427,     /* Scaling Factor            */
++    0xB528, 0x0129, 0x292A,             /* DST H/V size              */
++    0x8436,                             /* DST_BUF_LINE              */
++    0x803A,                             /* TV's Standard             */
++    0x0040, 0x0042,                     /* BST_ST, BST_ED            */
++    0xFE44, 0x0045, 0x8F46,             /* VID_ST, VID_ED            */
++    0x404A,                             /* HSD                       */
++    0xA04C, 0x814D, 0x0F4F,             /* HP, VP, VSD               */
++    0x6B50, 0x6B52,                     /* Chroma Ctrl               */
++    0x9054, 0xA055, 0x1C56, 0x0057,     /* Luma Ctrl                 */
++    0x175C, 0x005D, 0x005E, 0x005F,     /* Burst and Sync Shape Ctrl */
++    0xC3E2,
 +    0xFFFF
 +};
 +
-+static vt1625_func_table vt1625_ntsc_640x480_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_N640x480_VN,             VT1625_N640x480_VF,             VT1625_N640x480_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_N640x480_SDTV_RGB_VN,    VT1625_N640x480_SDTV_RGB_VF,    VT1625_N640x480_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_N640x480_SDTV_RGB_VN,    VT1625_N640x480_SDTV_RGB_VF,    VT1625_N640x480_SDTV_RGB_VO},
-+    {TV_DeDotCrawl_FUNC,   VT1625_N640x480_DeDotCrawl_VN,  VT1625_N640x480_DeDotCrawl_VF,  VT1625_N640x480_DeDotCrawl_VO}
-+};
-+
-+static vt1625_func_table vt1625_ntsc_800x600_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_N800x600_VN,             VT1625_N800x600_VF,             VT1625_N800x600_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_N800x600_SDTV_RGB_VN,    VT1625_N800x600_SDTV_RGB_VF,    VT1625_N800x600_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_N800x600_SDTV_RGB_VN,    VT1625_N800x600_SDTV_RGB_VF,    VT1625_N800x600_SDTV_RGB_VO},
-+    {TV_DeDotCrawl_FUNC,   VT1625_N800x600_DeDotCrawl_VN,  VT1625_N800x600_DeDotCrawl_VF,  VT1625_N800x600_DeDotCrawl_VO}
-+};
-+
-+static vt1625_func_table vt1625_ntsc_1024x768_tbl[]= {
-+    {TV_BASE_FUNC,         VT1625_N1024x768_VN,            VT1625_N1024x768_VF,            VT1625_N1024x768_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_N1024x768_SDTV_RGB_VN,   VT1625_N1024x768_SDTV_RGB_VF,   VT1625_N1024x768_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_N1024x768_SDTV_RGB_VN,   VT1625_N1024x768_SDTV_RGB_VF,   VT1625_N1024x768_SDTV_RGB_VO},
-+    {TV_DeDotCrawl_FUNC,   VT1625_N1024x768_DeDotCrawl_VN, VT1625_N1024x768_DeDotCrawl_VF, VT1625_N1024x768_DeDotCrawl_VO}
-+};
-+
-+static vt1625_func_table vt1625_ntsc_720x480_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_N720x480_VN,             VT1625_N720x480_VF,             VT1625_N720x480_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_N720x480_SDTV_RGB_VN,    VT1625_N720x480_SDTV_RGB_VF,    VT1625_N720x480_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_N720x480_SDTV_RGB_VN,    VT1625_N720x480_SDTV_RGB_VF,    VT1625_N720x480_SDTV_RGB_VO},
-+    {TV_DeDotCrawl_FUNC,   VT1625_N720x480_DeDotCrawl_VN,  VT1625_N720x480_DeDotCrawl_VF,  VT1625_N720x480_DeDotCrawl_VO}
-+};
-+
-+static vt1625_func_table vt1625_pal_640x480_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_P640x480_VN,             VT1625_P640x480_VF,             VT1625_P640x480_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_P640x480_SDTV_RGB_VN,    VT1625_P640x480_SDTV_RGB_VF,    VT1625_P640x480_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_P640x480_SDTV_RGB_VN,    VT1625_P640x480_SDTV_RGB_VF,    VT1625_P640x480_SDTV_RGB_VO}
-+};
-+
-+static vt1625_func_table vt1625_pal_800x600_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_P800x600_VN,             VT1625_P800x600_VF,             VT1625_P800x600_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_P800x600_SDTV_RGB_VN,    VT1625_P800x600_SDTV_RGB_VF,    VT1625_P800x600_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_P800x600_SDTV_RGB_VN,    VT1625_P800x600_SDTV_RGB_VF,    VT1625_P800x600_SDTV_RGB_VO}
-+};
-+
-+static vt1625_func_table vt1625_pal_1024x768_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_P1024x768_VN,            VT1625_P1024x768_VF,            VT1625_P1024x768_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_P1024x768_SDTV_RGB_VN,   VT1625_P1024x768_SDTV_RGB_VF,   VT1625_P1024x768_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_P1024x768_SDTV_RGB_VN,   VT1625_P1024x768_SDTV_RGB_VF,   VT1625_P1024x768_SDTV_RGB_VO}
-+};
-+
-+static vt1625_func_table vt1625_pal_720x576_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_P720x576_VN,             VT1625_P720x576_VF,             VT1625_P720x576_VO},
-+    {TV_RGB_FUNC,          TV_OUT_RGB,                     TV_OUT_RGB,                     TV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        TV_OUT_YPBPR,                   TV_OUT_YPBPR,                   TV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_P720x576_SDTV_RGB_VN,    VT1625_P720x576_SDTV_RGB_VF,    VT1625_P720x576_SDTV_RGB_VO},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_P720x576_SDTV_RGB_VN,    VT1625_P720x576_SDTV_RGB_VF,    VT1625_P720x576_SDTV_RGB_VO}
++unsigned short ITV_PATCH_TABLE_480P_1024x768[] = {
++    0x0A24, 0x4126, 0x0627,             /* Scaling Factor            */
++    0xB528, 0xE129, 0x282A,             /* DST H/V size              */
++    0x803A,                             /* TV's Standard             */
++    0x0040, 0x0042,                     /* BST_ST, BST_ED            */
++    0xFE44, 0x0045, 0x8F46,             /* VID_ST, VID_ED            */
++    0x404A,                             /* HSD                       */
++    0xD44C, 0x814D, 0x0F4F,             /* HP, VP, VSD               */
++    0x6B50, 0x6B52,                     /* Chroma Ctrl               */
++    0x9054, 0xA055, 0x1C56, 0x0057,     /* Luma Ctrl                 */
++    0x175C, 0x005D, 0x005E, 0x005F,     /* Burst and Sync Shape Ctrl */
++    0xC3E2,
++    0xFFFF
 +};
 +
 +
-+/* 720P Under Scan */
-+static u16 VT1625_HDTV_720P_640x480_VN[] = {
-+                                                 
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x5007, 0x5608, 0x2209,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xAC12, 0x1913,     /* TV.0F-13 */
-+    0x6D14, 0x3015, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x4220, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7823, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAF50, 0x8251, 0x2452, 0x2053, 0x1254,     /* TV.50-54 */
-+    0x6755, 0x6B56, 0x2A57, 0x2358, 0x9E59,     /* TV.55-59 */
-+    0x455A, 0xA05B, 0x455C, 0x435D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x035E, 0x4B5F, 0x5D60, 0x2861, 0x0062,     /* TV.5E-62 */
-+    0x6763, 0x1364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1200, 640, 640, 560, 1040, 80,  545, 480, 480, 65, 481, 2
++/**************************************************************************************/
++/******************************** Patch Table for 576P ********************************/
++/**************************************************************************************/
++unsigned short ITV_PATCH_TABLE_576P_640x480[] = {
++    0x6924, 0xF726, 0x0327,             /* Scaling Factor            */
++    0x0528, 0x3A29, 0x282A,             /* DST H/V size              */
++    0x883A,                             /* TV's Standard             */
++    0xF442,                             /* BST_ST, BST_ED            */
++    0x2144, 0x9C46,                     /* VID_ST, VID_ED            */
++    0x0048,                             /* BRD_ST                    */
++    0x104C, 0x824D, 0x124F,             /* HP, VP, VSD               */
++    0x9050, 0x9052,                     /* Chroma Ctrl               */
++    0x8F54, 0xA055,                     /* Luma Ctrl                 */
++    0x105C, 0x005E, 0x005F,             /* Burst and Sync Shape Ctrl */
++    0x83E2,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_720P_800x600_VN[] = {
-+                                                  
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x2807, 0x6508, 0x1109,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xA912, 0x1913,     /* TV.0F-13 */
-+    0x6614, 0x2415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x4220, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7823, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAF50, 0x2351, 0x3452, 0xA753, 0x1254,     /* TV.50-54 */
-+    0x3F55, 0x0756, 0x3457, 0x3458, 0xC559,     /* TV.55-59 */
-+    0x115A, 0xC85B, 0x145C, 0x045D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x0D5E, 0x4C5F, 0x7460, 0x2861, 0x0062,     /* TV.5E-62 */
-+    0x3F63, 0x2464, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1200, 800, 800, 400, 1120, 40, 680, 600, 600, 80, 610, 6
++unsigned short ITV_PATCH_TABLE_576P_720x576[] = {
++    0xE524, 0x0825, 0x7826, 0x0427,     /* Scaling Factor            */
++    0x0528, 0x3A29, 0xA82A,             /* DST H/V size              */
++    0x883A,                             /* TV's Standard             */
++    0xF442,                             /* BST_ST, BST_ED            */
++    0x2144, 0x9C46,                     /* VID_ST, VID_ED            */
++    0x0048,                             /* BRD_ST                    */
++    0x104C, 0x824D, 0x124F,             /* HP, VP, VSD               */
++    0x9050, 0x9052,                     /* Chroma Ctrl               */
++    0x8F54, 0xA055,                     /* Luma Ctrl                 */
++    0x105C, 0x005E, 0x005F,             /* Burst and Sync Shape Ctrl */
++    0x83E2,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_720P_1024x768_VN[] = {
-+                                                 
-+    0x8300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x1F05, 0x1006, 0x9307, 0x8008, 0x1E09,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x6612, 0x1913,     /* TV.0F-13 */
-+    0x5814, 0x1015, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x0750, 0x0251, 0x4752, 0x6F53, 0x1354,     /* TV.50-54 */
-+    0x7F55, 0xE356, 0x4457, 0x3558, 0x0059,     /* TV.55-59 */
-+    0x435A, 0x035B, 0x475C, 0xD55D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x2F5E, 0x395F, 0x9660, 0x2861, 0x0062,     /* TV.5E-62 */
-+    0x3F63, 0x2864, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,   HA,  HBS, HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1800, 1024, 1024, 776, 1360,  40, 880, 768, 768, 112, 770, 8
++unsigned short ITV_PATCH_TABLE_576P_800x600[] = {
++    0x4424, 0xF726, 0x0427,             /* Scaling Factor            */
++    0x0528, 0x3A29, 0x282A,             /* DST H/V size              */
++    0x0F36, 0x0137,                     /* DST_BUF_LINE              */
++    0x883A,                             /* TV's Standard             */
++    0xF442,                             /* BST_ST, BST_ED            */
++    0x2144, 0x9C46,                     /* VID_ST, VID_ED            */
++    0x0048,                             /* BRD_ST                    */
++    0xA04C, 0x814D, 0x124F,             /* HP, VP, VSD               */
++    0x9050, 0x9052,                     /* Chroma Ctrl               */
++    0x8F54, 0xA055,                     /* Luma Ctrl                 */
++    0x105C, 0x005E, 0x005F,             /* Burst and Sync Shape Ctrl */
++    0xC3E2,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_720P_720x480_VN[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0807, 0x6408, 0x2409,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xEB12, 0x3213,     /* TV.0F-13 */
-+    0xE714, 0x3815, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x011C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x4220, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7823, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x3750, 0xD251, 0x2452, 0x2553, 0x1254,     /* TV.50-54 */
-+    0xEF55, 0xC756, 0x3057, 0x2358, 0xB759,     /* TV.55-59 */
-+    0xC75A, 0xB95B, 0xC75C, 0x435D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xDD5E, 0x205F, 0x5D60, 0x2861, 0x0062,     /* TV.5E-62 */
-+    0x1763, 0x1364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1080, 720, 720, 360, 1040, 32,  550, 480, 480, 70, 482, 2
++unsigned short ITV_PATCH_TABLE_576P_1024x768[] = {
++    0xEA24, 0x0B25, 0x5D26, 0x0627,     /* Scaling Factor            */
++    0x0328, 0x3A29, 0x282A,             /* DST H/V size              */
++    0x883A,                             /* TV's Standard             */
++    0x0040, 0x0042,                     /* BST_ST, BST_ED            */
++    0x2144, 0x9C46,                     /* VID_ST, VID_ED            */
++    0x0048,                             /* BRD_ST                    */
++    0x204C, 0x824D, 0x124F,             /* HP, VP, VSD               */
++    0x9050, 0x9052,                     /* Chroma Ctrl               */
++    0x9054, 0xA055,                     /* Luma Ctrl                 */
++    0x105C, 0x005E, 0x005F,             /* Burst and Sync Shape Ctrl */
++    0xC3E2,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_720P_720x576_VN[] = {
-+                                                
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0E07, 0x4408, 0x0409,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x8812, 0x1E13,     /* TV.0F-13 */
-+    0x6114, 0x2815, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xC950, 0xD151, 0x2352, 0x5753, 0x1254,     /* TV.50-54 */
-+    0xC955, 0xD156, 0x3057, 0x2358, 0xB259,     /* TV.55-59 */
-+    0xA35A, 0xB75B, 0x895C, 0x435D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x665E, 0x005F, 0x6660, 0x2061, 0x0062,     /* TV.5E-62 */
-+    0x0763, 0x1364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE, HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    970, 720, 720, 250, 928,  28, 600, 576, 576,  24, 577, 3
++/**************************************************************************************/
++/******************************** Patch Table for 720P ********************************/
++/**************************************************************************************/
++unsigned short ITV_PATCH_TABLE_720P_640x480[] = {
++    0x0515, 0xDF18, 0xF919,
++    0xD31A, 0xDF20, 0x0121,
++    0x7F22, 0x2223,
++    0x5424, 0x0525,
++    0x5826,
++    0xCA29, 0x142B,
++    0x0535,
++    0x4C4A, 0x8A4C,
++    0x00DC,
++    0xC4E2,
++    0x02E3,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_720P_1280x720_VN[] = {
-+                                                
-+    0x8300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x1006, 0x3307, 0x4A08, 0x0109,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xA512, 0x1E13,     /* TV.0F-13 */
-+    0x6714, 0x1415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x4220, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7823, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x6F50, 0xFF51, 0x4652, 0xED53, 0x1254,     /* TV.50-54 */
-+    0x6F55, 0xFF56, 0x5057, 0x4658, 0x2E59,     /* TV.55-59 */
-+    0x275A, 0x275B, 0x275C, 0x965D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x005E, 0x005F, 0x8060, 0x2861, 0x0062,     /* TV.5E-62 */
-+    0x6F63, 0x3664, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,   HA,  HBS, HBE,  HSS, HSE, VT,  VA, VBS, VBE,VSS, VSE */
-+    1648, 1280, 1280, 368, 1296, 48, 750, 720, 720, 30, 720, 5
++unsigned short ITV_PATCH_TABLE_720P_720x480[] = {
++    0xC014, 0x0515, 0xDF18,
++    0x7919, 0xD61A, 0xDF20,
++    0x0121, 0xCF22, 0x2223,
++    0x5524, 0x0525, 0x8726,
++    0x0427, 0x272A, 0x172B,
++    0xC034, 0x0535, 0x7C4C,
++    0xC4E2, 0x02E3,
++    0xFFFF
 +};
 +
-+/* 1080I Under Scan */
-+static u16 VT1625_HDTV_1080I_640x480_VN[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4F03, 0x8604,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x2A07, 0x3908, 0x1209,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x8812, 0x1913,     /* TV.0F-13 */
-+    0x6314, 0x2415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x9F50, 0x8251, 0x2552, 0x2553, 0x1254,     /* TV.50-54 */
-+    0x1755, 0x7356, 0x4057, 0x2358, 0x7E59,     /* TV.55-59 */
-+    0xF85A, 0xA95B, 0x105C, 0x065D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x935E, 0x2A5F, 0x3E60, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0xBF63, 0x1264, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1440, 640, 640, 800, 1360, 40,  550, 480, 480, 70,  485, 6
++unsigned short ITV_PATCH_TABLE_720P_720x576[] = {
++    0xC014, 0x0515, 0x3F18,
++    0x7A19, 0xD61A, 0x3F20,
++    0xCF22, 0x2223,
++    0x6524, 0x0625, 0x8826,
++    0x0427, 0x272A, 0x172B,
++    0xC034, 0x0535,        
++    0x64E2,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_1080I_800x600_VN[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4F03, 0x8604,     /* TV.00-04 */
-+    0x2005, 0x0006, 0x7A07, 0x8608, 0x1B09,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x6612, 0x1413,     /* TV.0F-13 */
-+    0x4514, 0x1415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x0750, 0x2251, 0x3752, 0xB153, 0x1254,     /* TV.50-54 */
-+    0x2F55, 0xAD56, 0x4A57, 0x5758, 0x9259,     /* TV.55-59 */
-+    0x735A, 0xC55B, 0x0B5C, 0x475D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x815E, 0xD15F, 0x4E60, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x4F63, 0x1464, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE,  HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1800, 800, 800, 1000, 1600, 80, 690, 600, 600, 90, 605, 6
++unsigned short ITV_PATCH_TABLE_720P_800x600[] = {
++    0x4014, 0x0615, 0x8F16,
++    0x5718, 0xD81A, 0x0A1B,
++    0x5720, 0x1F22, 0x2323,
++    0xAE24, 0x0625, 0x0726,
++    0x0527, 0x192B,
++    0x4034, 0x0635, 0xF036, 0x074C,
++    0x64E2,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_1080I_1024x768_VN[] = {
-+    0x0300, 0x0001, 0x1002, 0x4F03, 0x8604,     /* TV.00-04 */
-+    0x3A05, 0x0006, 0x0207, 0xA008, 0x0609,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0xE612, 0x2813,     /* TV.0F-13 */
-+    0xB114, 0x1415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x0750, 0x0251, 0x4752, 0x7453, 0x1354,     /* TV.50-54 */
-+    0x3755, 0x4956, 0x5E57, 0x7958, 0xBC59,     /* TV.55-59 */
-+    0x6C5A, 0xFD5B, 0x085C, 0x095D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xB15E, 0xC95F, 0x6460, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x8763, 0x2564, 0x5165,                     /* TV.63-65 */
-+
-+  /*  HT,   HA,  HBS,  HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1800, 1024, 1024, 776, 1720, 80,  885, 768, 768, 117, 800, 5
++unsigned short ITV_PATCH_TABLE_720P_1024x768[] = {
++    0x0815, 0x8F16,
++    0xFF18, 0xDF1A, 0x0A1B,
++    0xFF20, 0x2323,
++    0x8724, 0x2825, 0x0926,
++    0x0727, 0x202B,
++    0x0835, 0xF036, 0x074C,
++    0x00DC, 
++    0x21E0, 0x0CE1, 0x24E2, 0x01E3, /* 66MHZ */
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_1080I_720x480_VN[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4F03, 0x8604,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x4207, 0x3F08, 0x4809,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x0612, 0x0A13,     /* TV.0F-13 */
-+    0x2114, 0x1815, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x041C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x0750, 0xD251, 0x2752, 0x2553, 0x1254,     /* TV.50-54 */
-+    0x6F55, 0xBB56, 0x4657, 0x2358, 0x8D59,     /* TV.55-59 */
-+    0x4C5A, 0xBC5B, 0xBC5C, 0x465D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x935E, 0x3D5F, 0x3E60, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x6F63, 0x1364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA, HBS,  HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
-+    1800, 720, 720, 1016, 1680,  56, 550, 480, 480,  70, 485, 6
++/**************************************************************************************/
++/******************************** Patch Table for 1080I ********************************/
++/**************************************************************************************/
++unsigned short ITV_PATCH_TABLE_1080I_640x480[] = {
++    0x0515, 0xDF18, 0xF919,
++    0xD31A, 0xDF20, 0x0121,
++    0x2223, 0x8E24, 0x2325,
++    0xAB26, 0x6227, 0x142B,
++    0x0535, 0x0936, 0x0137,
++    0xEB4C,
++    0xC4E2, 0x02E3,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_1080I_720x576_VN[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4A03, 0x8604,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x1A07, 0x3908, 0x0209,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0xED12, 0x1913,     /* TV.0F-13 */
-+    0xB614, 0x3815, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024, 0x5165,                     /* TV.23-24 */
-+
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x1750, 0xCF51, 0x2652, 0x5753, 0x1254,     /* TV.50-54 */
-+    0x7F55, 0xCF56, 0x4857, 0x2358, 0x8F59,     /* TV.55-59 */
-+    0x5C5A, 0xF05B, 0x935C, 0x465D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x445E, 0x005F, 0x4460, 0x2061, 0xFF62,     /* TV.5E-62 */
-+    0x3F63, 0x1364,                             /* TV.63-65 */
-+
-+    /* HT,  HA, HBS, HBE,  HSS, HSE, VT,  VA, VBS, VBE, VSS, VSE */
-+    1560, 720, 720, 840, 1520, 16, 600, 576, 576,  24, 577, 2
++unsigned short ITV_PATCH_TABLE_1080I_720x480[] = {
++    0xC014, 0x0515, 0xDF18,
++    0x7919, 0xD61A, 0xDF20,
++    0x0121, 0xCF22, 0x2223,
++    0x8E24, 0x2325, 0x0226,
++    0x6327, 0x172B, 
++    0xC034, 0x0535, 
++    0xC4E2, 0x02E3,
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_1080I_1920x1080_VN[] = {
-+                                                /* Non-Macrovision Registeris */
-+    0x8300, 0x0001, 0x1002, 0x4A03, 0x8604,     /* TV.00-04 */
-+    0x3905, 0x0006, 0x8B07, 0x3D08, 0x3209,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x4A12, 0x0813,     /* TV.0F-13 */
-+    0x3714, 0x1415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x041C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
++unsigned short ITV_PATCH_TABLE_1080I_720x576[] = {
++    0xC014, 0x0515, 0x3F18,
++    0x7A19, 0xD61A, 0x3F20,
++    0x0221, 0xCF22, 0x2223,
++    0x4524, 0x2425, 0x0226,
++    0x6327, 0x172B,
++    0xC034, 0x0535,         
++    0x64E2, 0x01E3,
++    0xFFFF
++};
 +
++unsigned short ITV_PATCH_TABLE_1080I_800x600[] = {
++    0x4014, 0x0615, 0xFA19,
++    0x5718, 0xD81A, 0x0221,
++    0x5720, 0x1F22, 0x2323,
++    0x7324, 0x2425, 0x5626,
++    0x6327, 0x192B, 
++    0x4034, 0x0635,
++    0x0936, 0x0137, 0xEB4C,
++    0x64E2, 0x01E3,
++    0xFFFF
++};
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x9750, 0x7F51, 0x7852, 0x6453, 0x1454,     /* TV.50-54 */
-+    0x9755, 0x7F56, 0x5957, 0x7858, 0xB059,     /* TV.55-59 */
-+    0x1A5A, 0xEC5B, 0xFA5C, 0x085D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x005E, 0x005F, 0x8060, 0x2061, 0xFF62,     /* TV.5E-62 */
-+    0x9763, 0x2864, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,   HA,  HBS, HBE,  HSS, HSE,   VT,   VA,  VBS, VBE,  VSS, VSE */
-+    2200, 1920, 1920, 280, 1960, 104, 1125, 1080, 1080,  45, 1083, 4
++unsigned short ITV_PATCH_TABLE_1080I_1024x768[] = {
++    0x0815, 0xFF18, 0xFA19,
++    0xDF1A, 0x0221,
++    0xFF20, 0xFF22, 0x2323,
++    0xB224, 0x2525, 0x4626,
++    0x6427, 0x202B,        
++    0x0835,                        
++    0x44E2, 0x01E3,
++    0xFFFF
 +};
 +
 +
-+/* 720P Over Scan */
-+static u16 VT1625_HDTV_720P_640x480_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0007, 0x3808, 0x0409,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0x2C12, 0x0A13,     /* TV.0F-13 */
-+    0x2914, 0x3C15, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xD750, 0x8351, 0x2352, 0xF353, 0x1154,     /* TV.50-54 */
-+    0x3355, 0x7B56, 0x2857, 0x2358, 0x9559,     /* TV.55-59 */
-+    0x135A, 0x895B, 0x135C, 0x435D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x555E, 0x165F, 0x5560, 0x2861, 0x0062,     /* TV.5E-62 */
-+    0x8F63, 0x1264, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    984, 640, 640, 344, 920, 64,  500, 480, 480, 20, 481, 2
++unsigned short ITV_PATCH_TABLE_NULL[] = {
++    0xFFFF
 +};
 +
-+static u16 VT1625_HDTV_720P_800x600_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x1007, 0x3908, 0x0209,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0x4F12, 0x0A13,     /* TV.0F-13 */
-+    0x3F14, 0x4815, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x001F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
++struct integrated_tv_hdtv_patch_table ITV_HDTV_PATCH_TABLE[] = {
++    {VIA_RES_640X480,   ITV_PATCH_TABLE_480P_640x480,  ITV_PATCH_TABLE_576P_640x480,  ITV_PATCH_TABLE_720P_640x480, ITV_PATCH_TABLE_1080I_640x480},
++    {VIA_RES_720X480,   ITV_PATCH_TABLE_480P_720x480,  ITV_PATCH_TABLE_480P_720x480,  ITV_PATCH_TABLE_720P_720x480, ITV_PATCH_TABLE_1080I_720x480},
++    {VIA_RES_720X576,   ITV_PATCH_TABLE_576P_720x576,  ITV_PATCH_TABLE_576P_720x576,  ITV_PATCH_TABLE_720P_720x576, ITV_PATCH_TABLE_1080I_720x576},
++    {VIA_RES_800X600,   ITV_PATCH_TABLE_480P_800x600,  ITV_PATCH_TABLE_576P_800x600,  ITV_PATCH_TABLE_720P_800x600, ITV_PATCH_TABLE_1080I_800x600},
++    {VIA_RES_1024X768,  ITV_PATCH_TABLE_480P_1024x768, ITV_PATCH_TABLE_576P_1024x768, ITV_PATCH_TABLE_720P_1024x768, ITV_PATCH_TABLE_1080I_1024x768},
++    {VIA_RES_1280X720,  ITV_PATCH_TABLE_NULL,          ITV_PATCH_TABLE_NULL,          ITV_PATCH_TABLE_NULL,         ITV_PATCH_TABLE_NULL},
++    {VIA_RES_1920X1080, ITV_PATCH_TABLE_NULL,          ITV_PATCH_TABLE_NULL,          ITV_PATCH_TABLE_NULL,         ITV_PATCH_TABLE_NULL}
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xEF50, 0x1F51, 0x3352, 0x7053, 0x1254,     /* TV.50-54 */
-+    0xEF55, 0x1F56, 0x3057, 0x3358, 0xB759,     /* TV.55-59 */
-+    0xC75A, 0x9B5B, 0xC75C, 0x435D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xAA5E, 0x005F, 0x6A60, 0x2061, 0x0062,     /* TV.5E-62 */
-+    0x4763, 0x1364, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1008, 800, 800, 208, 936, 56, 625, 600, 600, 25, 603, 2
-+};
-+
-+static u16 VT1625_HDTV_720P_1024x768_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0307, 0x3508, 0xEE09,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB80F, 0x0010, 0x8011, 0x6812, 0x1913,     /* TV.0F-13 */
-+    0x5414, 0x1C15, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x041C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x1C20, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x3750, 0x0851, 0x4452, 0x1F53, 0x0354,     /* TV.50-54 */
-+    0xEF55, 0x1756, 0x3557, 0x3358, 0xB959,     /* TV.55-59 */
-+    0xC75A, 0xAA5B, 0xB95C, 0x435D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x885E, 0x7B5F, 0x8860, 0xAA61, 0x0062,     /* TV.5E-62 */
-+    0x7F63, 0x1464, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1080, 1024, 1024, 56, 1040, 32,  800, 768, 768, 32, 770, 13
-+};
-+
-+static u16 VT1625_HDTV_720P_720x480_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0007, 0x3108, 0x0309,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0x2812, 0x0F13,     /* TV.0F-13 */
-+    0x2E14, 0x2815, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x4F50, 0xD351, 0x2452, 0xF353, 0x1154,     /* TV.50-54 */
-+    0x9755, 0xD156, 0x2C57, 0x2358, 0xA759,     /* TV.55-59 */
-+    0x725A, 0x995B, 0x735C, 0x435D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x555E, 0x005F, 0x5560, 0x0061, 0x0062,     /* TV.5E-62 */
-+    0xDF63, 0x1264, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1104, 720, 720, 384, 1040, 64,  500, 480, 480, 20, 482, 2
-+};
-+
-+static u16 VT1625_HDTV_720P_1280x720_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x8300, 0x0001, 0x1002, 0x4003, 0x9404,     /* TV.00-04 */
-+    0x0005, 0x0006, 0xFF07, 0x5308, 0x0009,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x8912, 0x1013,     /* TV.0F-13 */
-+    0x6314, 0x2415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x7150, 0xFF51, 0x4652, 0xED53, 0x1254,     /* TV.50-54 */
-+    0x7155, 0xFF56, 0x5057, 0x4658, 0x3059,     /* TV.55-59 */
-+    0x305A, 0x1C5B, 0x475C, 0x965D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x005E, 0x005F, 0x8060, 0x2861, 0x0062,     /* TV.5E-62 */
-+    0x7163, 0x3664, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1650, 1280, 1280, 370, 1328, 72,  750, 720, 720, 30, 723, 4
 +};
 +
 +
-+/* 1080I Over Scan */
-+static u16 VT1625_HDTV_1080I_640x480_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4F03, 0x8604,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0A07, 0x1708, 0x0209,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xEC12, 0x3213,     /* TV.0F-13 */
-+    0x1114, 0x3515, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
++#endif
+diff -Nur linux-2.6.21-rc7/drivers/video/via/vt1636.c linux-2.6.21-rc7.viafb/drivers/video/via/vt1636.c
+--- linux-2.6.21-rc7/drivers/video/via/vt1636.c 1969-12-31 19:00:00.000000000 -0500
++++ linux-2.6.21-rc7.viafb/drivers/video/via/vt1636.c 2007-04-26 19:52:32.000000000 -0400
+@@ -0,0 +1,327 @@
++/*
++ * Copyright 1998-2007 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2007 S3 Graphics, Inc. All Rights Reserved.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sub license,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the
++ * next paragraph) shall be included in all copies or substantial portions
++ * of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHOR(S) OR COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
++ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++#include "hw.h"
++#include "tbl1636.h"
++#include "vt1636.h"
++#include "tblDPASetting.h"
++#include "chip.h"
++#include "via_i2c.h"
++#include "debug.h"
 +
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+ 
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0x8351, 0x2552, 0xF353, 0x1154,     /* TV.50-54 */
-+    0xD755, 0x7B56, 0x3A57, 0x2258, 0x7459,     /* TV.55-59 */
-+    0xBA5A, 0x8E5B, 0x925C, 0x055D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xE35E, 0x105F, 0x3860, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x9F63, 0x1264, 0x5165,                     /* TV.63-65 */
++/* Extern Functions Prototypes Declaration */
++extern int i2cWriteByte(u8 slave_addr, u8 index, u8 data);
++extern int i2cReadByte(u8 slave_addr, u8 index, u8 *pData);
++extern void write_reg_mask(u8 index, int io_port, u8 data, u8 mask);
++extern void set_dpa_gfx(int output_interface, GFXDPASETTINGPTR p_gfx_dpa_setting);
++extern struct chip_information      chip_info;
 +
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1512, 640, 640, 872, 1440, 64,  500, 480, 480, 20, 481, 2
++
++u8 gpio_i2c_read_lvds(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info, u8 index)
++{
++    u8 data;
++    int tmp;
++    tmp = chip_info.tv_chip_info.tv_chip_on_slot;
++    switch(plvds_chip_info->i2c_port)
++    {
++        case TVI2CPORTINDEX:
++            chip_info.tv_chip_info.tv_chip_on_slot = TV_ON_AMR;
++            break;
++        case TVGPIOPORTINDEX:
++        default:
++            chip_info.tv_chip_info.tv_chip_on_slot = TV_ON_AGP;
++            break;
++    }
++    i2cReadByte(plvds_chip_info->lvds_chip_slave_addr, index, &data);
++    chip_info.tv_chip_info.tv_chip_on_slot = tmp;
++    return data;
++}
++
++void gpio_i2c_write_mask_lvds(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info, IODATA io_data)
++{
++    int index, data, tmp;
++    tmp = chip_info.tv_chip_info.tv_chip_on_slot;
++    switch(plvds_chip_info->i2c_port)
++    {
++        case TVI2CPORTINDEX:
++            chip_info.tv_chip_info.tv_chip_on_slot = TV_ON_AMR;
++            break;
++        case TVGPIOPORTINDEX:
++        default:
++            chip_info.tv_chip_info.tv_chip_on_slot = TV_ON_AGP;
++            break;
++    }
++
++    index = io_data.Index;
++    data = gpio_i2c_read_lvds(plvds_setting_info, plvds_chip_info, index);
++    data = (data & (~io_data.Mask)) | io_data.Data;
++
++    i2cWriteByte(plvds_chip_info->lvds_chip_slave_addr, index, data);
++    chip_info.tv_chip_info.tv_chip_on_slot = tmp;
++}
++
++void init_lvds_vt1636(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info)
++{
++    int reg_num, i;
++
++    /* Common settings: */
++    reg_num = ARRAY_SIZE(COMMON_INIT_TBL_VT1636);
++
++    for (i = 0; i < reg_num; i++)
++    {
++        gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, COMMON_INIT_TBL_VT1636[i]);
++    }
++
++    /* Input Data Mode Select */
++    if (plvds_setting_info->LCDDualEdge)
++    {
++        gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, DUAL_CHANNEL_ENABLE_TBL_VT1636[0]);
++    }
++    else
++    {
++        gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, SINGLE_CHANNEL_ENABLE_TBL_VT1636[0]);
++    }
++
++    if (plvds_setting_info->LCDDithering)
++    {
++        gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, DITHERING_ENABLE_TBL_VT1636[0]);
++    }
++    else
++    {
++        gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, DITHERING_DISABLE_TBL_VT1636[0]);
++    }
++}
++
++void enable_lvds_vt1636(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info)
++{
++    
++    gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, VDD_ON_TBL_VT1636[0]);
++
++    /* Pad on: */
++    switch (plvds_chip_info->output_interface)
++    {
++        case INTERFACE_DVP0:
++        {
++            write_reg_mask(SR1E, VIASR, 0xC0, 0xC0);
++            break;
++        }
++        
++        case INTERFACE_DVP1:
++        {
++            write_reg_mask(SR1E, VIASR, 0x30, 0x30);
++            break;
++        }
++
++        case INTERFACE_DFP_LOW:
++        {
++            write_reg_mask(SR2A, VIASR, 0x03, 0x03);
++            break;
++        }
++
++        case INTERFACE_DFP_HIGH:
++        {
++            write_reg_mask(SR2A, VIASR, 0x03, 0x0C);
++            break;
++        }
++    }
++}
++
++void disable_lvds_vt1636(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info)
++{
++    
++    gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, VDD_OFF_TBL_VT1636[0]);
++
++    /* Pad off: */
++    switch (plvds_chip_info->output_interface)
++    {
++        case INTERFACE_DVP0:
++        {
++            write_reg_mask(SR1E, VIASR, 0x00, 0xC0);
++            break;
++        }
++
++        case INTERFACE_DVP1:
++        {
++            write_reg_mask(SR1E, VIASR, 0x00, 0x30);
++            break;
++        }
++
++        case INTERFACE_DFP_LOW:
++        {
++            write_reg_mask(SR2A, VIASR, 0x00, 0x03);
++            break;
++        }
++
++        case INTERFACE_DFP_HIGH:
++        {
++            write_reg_mask(SR2A, VIASR, 0x00, 0x0C);
++            break;
++        }
++    }
++}
++
++bool lvds_identify_vt1636(void)
++{
++    u8 Buffer[2];
++
++    DEBUG_MSG(KERN_INFO "lvds_identify_vt1636.\n");
++    
++    /* Sense VT1636 LVDS Transmiter */
++    chip_info.lvds_chip_info.lvds_chip_slave_addr = VT1636_LVDS_I2C_ADDR ;
++    
++    /* Check vendor ID first: */
++    i2cReadByte((u8)chip_info.lvds_chip_info.lvds_chip_slave_addr, 0x00, &Buffer[0]);
++    i2cReadByte((u8)chip_info.lvds_chip_info.lvds_chip_slave_addr, 0x01, &Buffer[1]);
++
++    if (!((Buffer[0] == 0x06) && (Buffer[1] == 0x11)))
++    {      
++        return FALSE;
++    }
++
++    /* Check Chip ID: */
++    i2cReadByte((u8)chip_info.lvds_chip_info.lvds_chip_slave_addr, 0x02, &Buffer[0]);
++    i2cReadByte((u8)chip_info.lvds_chip_info.lvds_chip_slave_addr, 0x03, &Buffer[1]);
++    if ((Buffer[0] == 0x45) && (Buffer[1] == 0x33))
++    {
++        chip_info.lvds_chip_info.lvds_chip_name = VT1636_LVDS;
++        return TRUE;
++    }
++    
++    return FALSE;
++}
++
++int get_clk_range_index(u32 Clk)
++{
++    if (Clk < DPA_CLK_30M)
++    {
++        return DPA_CLK_RANGE_30M;
++    }
++    else if ((DPA_CLK_30M < Clk) && (Clk < DPA_CLK_50M))
++    {
++        return DPA_CLK_RANGE_30_50M;
++    }
++    else if ((DPA_CLK_50M < Clk) && (Clk < DPA_CLK_70M))
++    {
++        return DPA_CLK_RANGE_50_70M;
++    }
++    else if ((DPA_CLK_70M < Clk) && (Clk < DPA_CLK_100M))
++    {
++        return DPA_CLK_RANGE_70_100M;
++    }
++    else if ((DPA_CLK_100M < Clk) && (Clk < DPA_CLK_150M))
++    {
++        return DPA_CLK_RANGE_100_150M;
++    }
++    else
++    {
++        return DPA_CLK_RANGE_150M;
++    }
++}
++
++int get_lvds_dpa_setting_index(int panel_size_id, VT1636DPASETTINGPTR p_vt1636_dpasetting_tbl, int tbl_size)
++{
++    int i;
++
++    for (i = 0; i < tbl_size; i++)
++    {
++        if (panel_size_id == p_vt1636_dpasetting_tbl->PanelSizeID)
++        {
++            return i;
++        }
++
++        p_vt1636_dpasetting_tbl++;
++    }
++
++    return 0;
++}
++
++void set_dpa_vt1636(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info, VT1636DPASETTINGPTR p_vt1636_dpa_setting)
++{
++    IODATA io_data;
++
++    io_data.Index = 0x09;
++    io_data.Mask = 0x1F;
++    io_data.Data = p_vt1636_dpa_setting->CLK_SEL_ST1;
++    gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, io_data);
++
++    io_data.Index = 0x08;
++    io_data.Mask = 0x0F;
++    io_data.Data = p_vt1636_dpa_setting->CLK_SEL_ST2;
++    gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info, io_data);
++}
++
++void vt1636_patch_skew_on_vt3324(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info)
++{
++    int index, size;
++
++    DEBUG_MSG(KERN_INFO "vt1636_patch_skew_on_vt3324.\n");
++    
++    /* Graphics DPA settings: */
++    index = get_clk_range_index(plvds_setting_info->vclk);
++    set_dpa_gfx(plvds_chip_info->output_interface, &GFX_DPA_SETTING_TBL_VT3324[index]);
++
++    /* LVDS Transmitter DPA settings: */
++    size = ARRAY_SIZE(VT1636_DPA_SETTING_TBL_VT3324);
++    index = get_lvds_dpa_setting_index(plvds_setting_info->lcd_panel_id, VT1636_DPA_SETTING_TBL_VT3324, size);
++    set_dpa_vt1636(plvds_setting_info, plvds_chip_info, &VT1636_DPA_SETTING_TBL_VT3324[index]);
++}
++
++void vt1636_patch_skew_on_vt3327(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info)
++{
++    int index, size;
++
++    DEBUG_MSG(KERN_INFO "vt1636_patch_skew_on_vt3327.\n");
++    
++    /* Graphics DPA settings: */
++    index = get_clk_range_index(plvds_setting_info->vclk);
++    set_dpa_gfx(plvds_chip_info->output_interface, &GFX_DPA_SETTING_TBL_VT3327[index]);
++
++    /* LVDS Transmitter DPA settings: */
++    size = ARRAY_SIZE(VT1636_DPA_SETTING_TBL_VT3327);
++    index = get_lvds_dpa_setting_index(plvds_setting_info->lcd_panel_id, VT1636_DPA_SETTING_TBL_VT3327, size);
++    set_dpa_vt1636(plvds_setting_info, plvds_chip_info, &VT1636_DPA_SETTING_TBL_VT3327[index]);
++}
++
++void vt1636_patch_skew_on_vt3364(struct lvds_setting_information *plvds_setting_info, struct lvds_chip_information *plvds_chip_info)
++{
++    int index;
++
++    DEBUG_MSG(KERN_INFO "vt1636_patch_skew_on_vt3364.\n");
++    
++    /* Graphics DPA settings: */
++    index = get_clk_range_index(plvds_setting_info->vclk);
++    set_dpa_gfx(plvds_chip_info->output_interface, &GFX_DPA_SETTING_TBL_VT3364[index]);
++}
+diff -Nur linux-2.6.21-rc7/drivers/video/via/viamode.h linux-2.6.21-rc7.viafb/drivers/video/via/viamode.h
+--- linux-2.6.21-rc7/drivers/video/via/viamode.h 1969-12-31 19:00:00.000000000 -0500
++++ linux-2.6.21-rc7.viafb/drivers/video/via/viamode.h 2007-04-26 19:52:32.000000000 -0400
+@@ -0,0 +1,351 @@
++/*
++ * Copyright 1998-2007 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2007 S3 Graphics, Inc. All Rights Reserved.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sub license,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the
++ * next paragraph) shall be included in all copies or substantial portions
++ * of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHOR(S) OR COPYRIGHT HOLDER(S) BE LIABLE FOR ANY CLAIM, DAMAGES OR
++ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
++ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#ifndef __VIAMODE_H__
++#define __VIAMODE_H__
++
++#include "share.h"
++
++
++struct VPITTable {
++  unsigned char  Misc;
++  unsigned char  SR[StdSR];
++  unsigned char  GR[StdGR];
++  unsigned char  AR[StdAR];
 +};
 +
-+static u16 VT1625_HDTV_1080I_800x600_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4F03, 0x8604,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x1207, 0x1508, 0x0309,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0x0812, 0x0513,     /* TV.0F-13 */
-+    0x1514, 0x2015, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x001C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+ 
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xE750, 0x2151, 0x3552, 0x7053, 0x1254,     /* TV.50-54 */
-+    0x4755, 0xDD56, 0x4357, 0x2358, 0x8559,     /* TV.55-59 */
-+    0x245A, 0xA35B, 0x6E5C, 0x465D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x1C5E, 0xBD5F, 0x4760, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0x4763, 0x1364, 0x5165,                     /* TV.63-65 */
-+
-+  /*HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1512, 800, 800, 712, 1440, 56,  625, 600, 600, 25, 600, 2
++struct VideoModeTable {
++  int                               ModeIndex;
++  struct crt_mode_table             *crtc;
++  int                               mode_array;
 +};
 +
-+static u16 VT1625_HDTV_1080I_1024x768_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4503, 0x8604,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x2007, 0x1D08, 0x3109,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB80F, 0x0010, 0x8011, 0xE812, 0x1913,     /* TV.0F-13 */
-+    0x8514, 0x1C15, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x041C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x1C20, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0xAD50, 0x0151, 0x4652, 0x1F53, 0x1354,     /* TV.50-54 */
-+    0x2755, 0x9F56, 0x5557, 0x3458, 0xAA59,     /* TV.55-59 */
-+    0xFD5A, 0xD95B, 0x195C, 0x485D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x055E, 0xD75F, 0x5B60, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0xBF63, 0x1464, 0x5165,                     /* TV.63-65 */
-+
-+  /*HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1710, 1024, 1024, 56, 1584, 96,  800, 768, 768, 32, 770, 13
++struct patch_table {
++  int           mode_index;
++  int           table_length;
++  struct io_reg *io_reg_table;
 +};
 +
-+static u16 VT1625_HDTV_1080I_720x480_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x0300, 0x0001, 0x1002, 0x4F03, 0x8604,     /* TV.00-04 */
-+    0x0005, 0x0006, 0x0007, 0x1A08, 0x2B09,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0xB00F, 0x0010, 0x8011, 0xE812, 0x3213,     /* TV.0F-13 */
-+    0xCF14, 0x2415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x041C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+ 
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x7750, 0xD351, 0x2652, 0xF353, 0x1154,     /* TV.50-54 */
-+    0x3B55, 0xD156, 0x4257, 0x2358, 0x8459,     /* TV.55-59 */
-+    0x1A5A, 0xA25B, 0x565C, 0x465D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0xE35E, 0x005F, 0x3860, 0x2861, 0xFF62,     /* TV.5E-62 */
-+    0xDF63, 0x1264, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    1656, 720, 720, 936, 1584, 72,  500, 480, 480, 20, 485, 6
-+};
-+
-+static u16 VT1625_HDTV_1080I_1920x1080_VO[] = {
-+                                                /* Non-Macrovision Registers */
-+    0x8300, 0x0001, 0x1002, 0x4A03, 0x8604,     /* TV.00-04 */
-+    0x3905, 0x0006, 0x8B07, 0x3D08, 0x3209,     /* TV.05-09 */
-+    0x000A, 0x000B, 0x000C, 0x000D, 0x000E,     /* TV.0A-0E */
-+    0x9E0F, 0x0010, 0x8011, 0x4A12, 0x0813,     /* TV.0F-13 */
-+    0x3714, 0x1415, 0x0016, 0x0017, 0x0018,     /* TV.14-18 */
-+    0x0019,                                     /* TV.19 */
-+    0x501B, 0x041C, 0x801D,                     /* TV.1B-1D */
-+    0x001E, 0x031F, 0x2520, 0x0021, 0x0022,     /* TV.1E-22 */
-+    0x7E23, 0x0024,                             /* TV.23-24 */
-+ 
-+                                                /* Filter registers */
-+    0xC54A, 0x0F4B, 0x004C, 0x014D, 0x004E,     /* TV.4A-4E */
-+    0x004F,                                     /* TV.4F */
-+
-+                                                /* Set Video Timing (TV Timing Regsiter ) */
-+    0x9750, 0x7F51, 0x7852, 0x6453, 0x1454,     /* TV.50-54 */
-+    0x9755, 0x7F56, 0x5957, 0x7858, 0xB059,     /* TV.55-59 */
-+    0x1A5A, 0xEC5B, 0xFA5C, 0x085D,             /* TV.5A-5D */
-+                                                /* Set Video Timing (TV CRTC Regsiter ) */
-+    0x005E, 0x005F, 0x8060, 0x2061, 0xFF62,     /* TV.5E-62 */
-+    0x9763, 0x2864, 0x5165,                     /* TV.63-65 */
-+
-+    /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
-+    2200, 1920, 1920, 280, 1960, 104,  1125, 1080, 1080, 45, 1083, 4
++struct res_map_refresh {
++  int       hres;
++  int       vres;
++  int       pixclock;
++  int       vmode_refresh;
 +};
 +
 +
-+vt1625_func_table VT1625_HDTV_720P_640x480_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_720P_640x480_VN,     VT1625_NULL_FUNC,   VT1625_HDTV_720P_640x480_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/********************/
++/* Mode Table       */
++/********************/
++
++/* 640x480 */
++static struct crt_mode_table CRTM640x480[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60, CLK_25_175M ,M640X480_R60_HSP, M640X480_R60_VSP,\
++  {800, 640, 648, 144, 656, 96,  525, 480, 480, 45,  490, 2}},
++  {REFRESH_75, CLK_31_500M ,M640X480_R75_HSP, M640X480_R75_VSP,\
++  {840, 640, 640, 200, 656, 64,  500, 480, 480, 20,  481, 3}},
++  {REFRESH_85, CLK_36_000M ,M640X480_R85_HSP, M640X480_R85_VSP,\
++  {832, 640, 640, 192, 696, 56,  509, 480, 480, 29,  481, 3}},
++  {REFRESH_100,CLK_43_163M ,M640X480_R100_HSP, M640X480_R100_VSP,\
++  {848, 640, 640, 208, 680, 64,  509, 480, 480, 29,  481, 3}}, /* GTF */
++  {REFRESH_120,CLK_52_406M ,M640X480_R120_HSP, M640X480_R120_VSP,\
++  {848, 640, 640, 208, 680, 64,  515, 480, 480, 35,  481, 3}}  /* GTF */
 +};
 +
-+vt1625_func_table VT1625_HDTV_720P_800x600_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_720P_800x600_VN,     VT1625_NULL_FUNC,   VT1625_HDTV_720P_800x600_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 720x480 (GTF) */
++static struct crt_mode_table CRTM720x480[] = {
++  /* r_rate,vclk,hsp,vsp */     
++  /* HT, HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_26_880M ,M720X480_R60_HSP, M720X480_R60_VSP,\
++  {896, 720, 720, 176, 736, 72,  497, 480, 480, 17,  481, 3}}
++
 +};
 +
-+vt1625_func_table VT1625_HDTV_720P_1024x768_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_720P_1024x768_VN,    VT1625_NULL_FUNC,   VT1625_HDTV_720P_1024x768_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 720x576 (GTF) */
++static struct crt_mode_table CRTM720x576[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_32_668M ,M720X576_R60_HSP, M720X576_R60_VSP,\
++  {912, 720, 720, 192, 744, 72,  597, 576, 576, 21,  577, 3}}
 +};
 +
-+vt1625_func_table VT1625_HDTV_720P_720x480_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_720P_720x480_VN,     VT1625_NULL_FUNC,   VT1625_HDTV_720P_720x480_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 800x480 (GTF) */
++static struct crt_mode_table CRTM800x480[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_29_581M ,M800X480_R60_HSP,M800X480_R60_VSP,\
++  {992, 800, 800, 192, 816, 80,  497, 480, 480, 17,  481, 3}}
++};
++/* 800x600 */
++static struct crt_mode_table CRTM800x600[] = {
++  /* r_rate,vclk,hsp,vsp */     
++  /* HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60, CLK_40_000M ,M800X600_R60_HSP, M800X600_R60_VSP,\
++  {1056, 800, 800, 256, 840, 128, 628, 600, 600, 28,  601, 4}},
++  {REFRESH_75, CLK_49_500M ,M800X600_R75_HSP, M800X600_R75_VSP,\
++  {1056, 800, 800, 256, 816, 80,  625, 600, 600, 25,  601, 3}},
++  {REFRESH_85, CLK_56_250M ,M800X600_R85_HSP, M800X600_R85_VSP,\
++  {1048, 800, 800, 248, 832, 64,  631, 600, 600, 31,  601, 3}},
++  {REFRESH_100,CLK_68_179M ,M800X600_R100_HSP, M800X600_R100_VSP,\
++  {1072, 800, 800, 272, 848, 88,  636, 600, 600, 36,  601, 3}},
++  {REFRESH_120,CLK_83_950M ,M800X600_R120_HSP, M800X600_R120_VSP,\
++  {1088, 800, 800, 288, 856, 88,  643, 600, 600, 43,  601, 3}}
++};
++/* 848x480 (GTF) */
++static struct crt_mode_table CRTM848x480[] = {
++  /* r_rate,vclk,hsp,vsp */     
++  /* HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_31_490M ,M848X480_R60_HSP, M848X480_R60_VSP,\
++  {1056, 848, 848, 208, 864, 88,  497, 480, 480, 17,  481, 3}}
 +};
 +
-+vt1625_func_table VT1625_HDTV_720P_720x576_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_720P_720x576_VN,     VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 856x480 (GTF) convert to 852x480 */
++static struct crt_mode_table CRTM852x480[] = {
++  /* r_rate,vclk,hsp,vsp */    
++  /* HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_31_728M ,M852X480_R60_HSP, M852X480_R60_VSP,\
++  {1064, 856, 856, 208, 872, 88,  497, 480, 480, 17,  481, 3}}
++
 +};
 +
-+vt1625_func_table VT1625_HDTV_720P_1280x720_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_720P_1280x720_VN,    VT1625_NULL_FUNC,   VT1625_HDTV_720P_1280x720_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 1024x512 (GTF) */
++static struct crt_mode_table CRTM1024x512[] = {
++  /* r_rate,vclk,hsp,vsp */    
++  /* HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_41_291M ,M1024X512_R60_HSP, M1024X512_R60_VSP,\
++  {1296, 1024,1024,272, 1056,104, 531, 512, 512, 19,  513, 3}}
++
 +};
 +
-+vt1625_func_table VT1625_HDTV_1080I_640x480_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_1080I_640x480_VN,    VT1625_NULL_FUNC,   VT1625_HDTV_1080I_640x480_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 1024x576 (GTF) */
++/*static struct crt_mode_table CRTM1024x576[] = {
++  //r_rate,vclk,     HT,   HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE
++  { 60,CLK_46_996M ,{1312, 1024,1024,288, 1064,104, 597, 576, 576, 21,  577, 3}}
++
++};*/
++
++/* 1024x768 */
++static struct crt_mode_table CRTM1024x768[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_65_000M ,M1024X768_R60_HSP, M1024X768_R60_VSP,\
++  {1344, 1024, 1024, 320, 1048, 136, 806, 768, 768, 38,  771, 6}},
++  {REFRESH_75,CLK_78_750M ,M1024X768_R75_HSP, M1024X768_R75_VSP,\
++  {1312, 1024, 1024, 288, 1040, 96,  800, 768, 768, 32,  769, 3}},
++  {REFRESH_85,CLK_94_500M ,M1024X768_R85_HSP, M1024X768_R85_VSP,\
++  {1376, 1024, 1024, 352, 1072, 96,  808, 768, 768, 40,  769, 3}},
++  {REFRESH_100,CLK_133_308M,M1024X768_R100_HSP, M1024X768_R100_VSP,\
++  {1392, 1024, 1024, 368, 1096, 112, 814, 768, 768, 46,  769, 3}} //GTF
 +};
 +
-+vt1625_func_table VT1625_HDTV_1080I_800x600_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_1080I_800x600_VN,    VT1625_NULL_FUNC,   VT1625_HDTV_1080I_800x600_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 1152x864 */
++static struct crt_mode_table CRTM1152x864[] = {
++  /* r_rate,vclk,hsp,vsp */      
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_75,CLK_108_000M ,M1152X864_R75_HSP, M1152X864_R75_VSP,\
++  {1600, 1152,1152, 448, 1216, 128, 900, 864, 864, 36,  865, 3}}
++
 +};
 +
-+vt1625_func_table VT1625_HDTV_1080I_1024x768_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_1080I_1024x768_VN,   VT1625_NULL_FUNC,   VT1625_HDTV_1080I_1024x768_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 1280x720 (GTF) */
++static struct crt_mode_table CRTM1280x720[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */      
++  {REFRESH_60,CLK_74_481M ,M1280X720_R60_HSP, M1280X720_R60_VSP,\
++  {1664,1280, 1280, 384, 1336, 136, 746, 720, 720, 26,  721, 3}}
 +};
 +
-+vt1625_func_table VT1625_HDTV_1080I_720x480_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_1080I_720x480_VN,    VT1625_NULL_FUNC,   VT1625_HDTV_1080I_720x480_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 1280x768 (GTF) */
++static struct crt_mode_table CRTM1280x768[] = {
++  /* r_rate,vclk,hsp,vsp */     
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_80_136M ,M1280X768_R60_HSP, M1280X768_R60_VSP,\
++  {1680,1280, 1280, 400, 1344, 136, 795, 768, 768, 27,  769, 3}}
 +};
 +
-+vt1625_func_table VT1625_HDTV_1080I_720x576_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_1080I_720x576_VN,    VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/*1280x960 */
++static struct crt_mode_table CRTM1280x960[] = {
++  /* r_rate,vclk,hsp,vsp */ 
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_108_000M ,M1280X960_R60_HSP, M1280X960_R60_VSP,\
++  {1800,1280, 1280, 520, 1376, 112, 1000,960, 960, 40,  961, 3}}  
 +};
 +
-+vt1625_func_table VT1625_HDTV_1080I_1920x1080_tbl[] = {
-+    {TV_BASE_FUNC,         VT1625_HDTV_1080I_1920x1080_VN,  VT1625_NULL_FUNC,   VT1625_HDTV_1080I_1920x1080_VO},
-+    {TV_RGB_FUNC,          HDTV_OUT_RGB,                    VT1625_NULL_FUNC,   HDTV_OUT_RGB},
-+    {TV_YPBPR_FUNC,        HDTV_OUT_YPBPR,                  VT1625_NULL_FUNC,   HDTV_OUT_YPBPR},
-+    {TV_SDTV_RGB_FUNC,     VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_SDTV_YPBPR_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC},
-+    {TV_DeDotCrawl_FUNC,   VT1625_NULL_FUNC,                VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 1280x1024 */
++static struct crt_mode_table CRTM1280x1024[] = {
++  /* r_rate,vclk,,hsp,vsp */
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_108_000M ,M1280X1024_R60_HSP, M1280X1024_R60_VSP,\
++  {1688,1280, 1280, 408, 1328, 112, 1066,1024,1024,42,  1025,3}},
++  {REFRESH_75,CLK_135_000M ,M1280X1024_R75_HSP, M1280X1024_R75_VSP,\
++  {1688,1280, 1280, 408, 1296, 144, 1066,1024,1024,42,  1025,3}},
++  {REFRESH_85,CLK_157_500M ,M1280X1024_R85_HSP, M1280X1024_R85_VSP,\
++  {1728,1280, 1280, 448, 1344, 160, 1072,1024,1024,48,  1025,3}}
 +};
 +
-+vt1625_func_table VT1625_NULL_TBL[] = {
-+    {0xFFFF,   VT1625_NULL_FUNC,   VT1625_NULL_FUNC,   VT1625_NULL_FUNC}
++/* 1368x768 (GTF) */
++static struct crt_mode_table CRTM1368x768[] = {
++  /* r_rate,  vclk, hsp, vsp */
++  /* HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60, CLK_85_860M, M1368X768_R60_HSP, M1368X768_R60_VSP,\
++  {1800,1368, 1368, 432, 1440, 144, 795, 768, 768, 27,  769, 3}}
 +};
 +
-+static struct vt1625_table vt1625_tbl[] = {
-+    {VIA_RES_640X480,   vt1625_ntsc_640x480_tbl,  vt1625_pal_640x480_tbl,  VT1625_HDTV_720P_640x480_tbl,  VT1625_HDTV_1080I_640x480_tbl  },
-+    {VIA_RES_800X600,   vt1625_ntsc_800x600_tbl,  vt1625_pal_800x600_tbl,  VT1625_HDTV_720P_800x600_tbl,  VT1625_HDTV_1080I_800x600_tbl  },
-+    {VIA_RES_1024X768,  vt1625_ntsc_1024x768_tbl, vt1625_pal_1024x768_tbl, VT1625_HDTV_720P_1024x768_tbl, VT1625_HDTV_1080I_1024x768_tbl },
-+    {VIA_RES_720X480,   vt1625_ntsc_720x480_tbl,  vt1625_ntsc_720x480_tbl, VT1625_HDTV_720P_720x480_tbl,  VT1625_HDTV_1080I_720x480_tbl  },
-+    {VIA_RES_720X576,   vt1625_pal_720x576_tbl,   vt1625_pal_720x576_tbl,  VT1625_HDTV_720P_720x576_tbl,  VT1625_HDTV_1080I_720x576_tbl  },
-+    {VIA_RES_1280X720,  VT1625_NULL_TBL,          VT1625_NULL_TBL,         VT1625_HDTV_720P_1280x720_tbl, VT1625_NULL_TBL                },
-+    {VIA_RES_1920X1080, VT1625_NULL_TBL,          VT1625_NULL_TBL,         VT1625_NULL_TBL,               VT1625_HDTV_1080I_1920x1080_tbl}
++/* 1368x768 (GTF) */
++/*static struct crt_mode_table CRTM1368x768[] = {
++  //r_rate,vclk,     HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE 
++  { 60,CLK_85_860M ,{1800,1368, 1368, 432, 1440, 144, 795, 768, 768, 27,  769, 3}}
++};*/
++
++/* 1440x1050 (GTF) */
++static struct crt_mode_table CRTM1440x1050[] = {
++  /* r_rate,vclk,hsp,vsp */       
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60 ,CLK_125_104M ,M1440X1050_R60_HSP, M1440X1050_R60_VSP,\
++  {1936,1440, 1440, 496, 1536, 152, 1077,1040,1040,37,  1041,3}}
 +};
 +
-+#define NUM_TOTAL_VT1625_TABLE ARRAY_SIZE(vt1625_tbl)
++/* 1600x1200 */
++static struct crt_mode_table CRTM1600x1200[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */      
++  {REFRESH_60 ,CLK_162_000M ,M1600X1200_R60_HSP, M1600X1200_R60_VSP,\
++  {2160,1600, 1600, 560, 1664, 192, 1250,1200,1200,50,  1201,3}},
++  {REFRESH_75 ,CLK_202_500M ,M1600X1200_R75_HSP, M1600X1200_R75_VSP,\
++  {2160,1600, 1600, 560, 1664, 192, 1250,1200,1200,50,  1201,3}}
 +
-+#define IS_VT1625_NULL_TBL(tbl) tbl[0].tv_func_index == 0xFFFF ? TRUE : FALSE
-+#define IS_VT1625_NULL_FUNC(func) func[0] == 0xFFFF ? TRUE : FALSE
-+
-+static u16 VT1625_CGMS_TBL[] = {
-+    0x006b, 0x006c, 0x006d, 0x006e, 0x006f, /* TV 0x6b-0x6f */
-+    0x0070, 0x0071, 0x0072, 0x0073              /* TV0x70-0x73 */
 +};
-+#define NUM_TOTAL_VT1625_CGMS_TBL ARRAY_SIZE(VT1625_CGMS_TBL)
 +
-+#endif /* __TBL1625_H__ */
++/* 1920x1080 (GTF) */
++static struct crt_mode_table CRTM1920x1080[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */                            
++  {REFRESH_60,CLK_172_798M ,M1920X1080_R60_HSP, M1920X1080_R60_VSP,\
++  {2576,1920, 1920, 656, 2040, 208, 1118,1080,1080,38, 1081, 3}}
++};
++
++/* 1920x1440 */
++static struct crt_mode_table CRTM1920x1440[] = {
++  /* r_rate,vclk,hsp,vsp */
++  /* HT,  HA,   HBS,  HBE, HSS,  HSE, VT,  VA,  VBS, VBE, VSS, VSE */
++  {REFRESH_60,CLK_234_000M ,M1920X1440_R60_HSP, M1920X1440_R60_VSP,\
++  {2600,1920, 1920, 680, 2048, 208, 1500,1440,1440,60,  1441,3}},
++  {REFRESH_75,CLK_297_500M ,M1920X1440_R75_HSP, M1920X1440_R75_VSP,\
++  {2640,1920, 1920, 720, 2064, 224, 1500,1440,1440,60,  1441,3}}
++};
++
++#if 0
++/* 1400x1050 (VESA) */
++static struct crt_mode_table CRTM1400x1050[] = {
++  /* r_rate,          vclk,              hsp,             vsp   */
++  /* HT,  HA,  HBS, HBE, HSS, HSE,    VT,  VA,  VBS, VBE,  VSS, VSE */
++  {REFRESH_60,CLK_108_000M, M1400X1050_R60_HSP, M1400X1050_R60_VSP,
++  {1688,1400, 1400, 288, 1448, 112, 1066,1050, 1050,  16, 1051, 3}}
++};
++#endif
++
++/* 1400x1050 (GTF) */
++static struct crt_mode_table CRTM1400x1050[] = {
++  /* r_rate,          vclk,              hsp,             vsp   */
++  /* HT,  HA,  HBS, HBE,  HSS, HSE,   VT,  VA,  VBS, VBE,  VSS, VSE */
++  {REFRESH_60,CLK_122_614M, M1400X1050_R60_HSP, M1400X1050_R60_VSP,
++  {1880,1400, 1400, 480, 1488, 152, 1087,1050, 1050,  37, 1051, 3}}
++};
++
++static struct VideoModeTable CLE266Modes[] = {
++   /* Display : 640x480 */
++   { VIA_RES_640X480,  CRTM640x480, ARRAY_SIZE(CRTM640x480)},
++
++   /* Display : 720x480 (GTF) */
++   { VIA_RES_720X480,  CRTM720x480, ARRAY_SIZE(CRTM720x480)},
++
++   /* Display : 720x576 (GTF) */
++   { VIA_RES_720X576,  CRTM720x576, ARRAY_SIZE(CRTM720x576)},
++
++   /* Display : 800x600 */
++   { VIA_RES_800X600,  CRTM800x600, ARRAY_SIZE(CRTM800x600)},
++
++   /* Display : 800x480 (GTF) */
++   { VIA_RES_800X480,  CRTM800x480, ARRAY_SIZE(CRTM800x480)},
++
++   /* Display : 848x480 (GTF) */
++   { VIA_RES_848X480,  CRTM848x480, ARRAY_SIZE(CRTM848x480)},
++
++   /* Display : 852x480 (GTF) */
++   { VIA_RES_856X480,  CRTM852x480, ARRAY_SIZE(CRTM852x480)},
++
++   /* Display : 1024x512 (GTF) */
++   { VIA_RES_1024X512, CRTM1024x512, ARRAY_SIZE(CRTM1024x512)},
++
++    /* Display : 1024x576 (GTF) */
++   /*{ VIA_RES_1024X576, CRTM1024x576, ARRAY_SIZE(CRTM1024x576)},*/
++
++   /* Display : 1024x768 */
++   { VIA_RES_1024X768, CRTM1024x768, ARRAY_SIZE(CRTM1024x768)},
++
++   /* Display : 1152x864 */
++   { VIA_RES_1152X864, CRTM1152x864, ARRAY_SIZE(CRTM1152x864)},
++
++   /* Display : 1280x768 (GTF) */
++   { VIA_RES_1280X768, CRTM1280x768, ARRAY_SIZE(CRTM1280x768)},
++
++   /* Display : 1280x800 (GTF) */
++   /*{ M1280x800, CRTM1280x800, ARRAY_SIZE(CRTM1280x800)},*/ 
++
++   /* Display : 1280x960 */
++   { VIA_RES_1280X960, CRTM1280x960, ARRAY_SIZE(CRTM1280x960)},
++
++   /* Display : 1280x1024 */
++   { VIA_RES_1280X1024, CRTM1280x1024,ARRAY_SIZE(CRTM1280x1024)},
++
++   /* Display : 1368x768 (GTF) */
++   /*{ M1368x768,CRTM1368x768,ARRAY_SIZE(CRTM1368x768)},*/ 
++   /* Display : 1368x768 (GTF) */
++   { VIA_RES_1368X768,CRTM1368x768,ARRAY_SIZE(CRTM1368x768)},
++
++   /* Display : 1440x1050 (GTF) */
++   { VIA_RES_1440X1050, CRTM1440x1050, ARRAY_SIZE(CRTM1440x1050)},
++
++   /* Display : 1600x1200 */
++   { VIA_RES_1600X1200, CRTM1600x1200, ARRAY_SIZE(CRTM1600x1200)},
++
++   /* Display : 1920x1440 */
++   { VIA_RES_1920X1440, CRTM1920x1440, ARRAY_SIZE(CRTM1920x1440)},
++
++   /* Display : 1280x720 */
++   { VIA_RES_1280X720, CRTM1280x720, ARRAY_SIZE(CRTM1280x720)},
++
++   /* Display : 1920x1080 */
++   { VIA_RES_1920X1080, CRTM1920x1080, ARRAY_SIZE(CRTM1920x1080)},
++
++   /* Display : 1400x1050 */
++   { VIA_RES_1400X1050, CRTM1400x1050, ARRAY_SIZE(CRTM1400x1050)}
++};
++
++#define NUM_TOTAL_MODETABLE ARRAY_SIZE(CLE266Modes)
++
++
++#endif /* __VIAMODE_H__ */
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

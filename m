@@ -1,24 +1,24 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] skeletonfb: More corrections
-Date: Tue, 1 May 2007 16:14:33 +0100 (BST)
-Message-ID: <Pine.LNX.4.64.0705011611530.5345@pentafluge.infradead.org>
-References: <4637557596419@wp.pl>
+Subject: Re: [PATCH] sm501fb: fix printk format warnings
+Date: Tue, 1 May 2007 16:15:14 +0100 (BST)
+Message-ID: <Pine.LNX.4.64.0705011614580.5345@pentafluge.infradead.org>
+References: <20070430175853.4f315a1e.randy.dunlap@oracle.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-1831524198-922097047-1178032342=:5345"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hiu3q-0005Mg-FX for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 01 May 2007 08:14:39 -0700
+	id 1Hiu4W-0005VY-WC for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 01 May 2007 08:15:21 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hiu3o-0002SI-PT
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Hiu4W-0003kP-JY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 01 May 2007 08:14:38 -0700
-In-Reply-To: <4637557596419@wp.pl>
-Content-ID: <Pine.LNX.4.64.0705011613400.5345@pentafluge.infradead.org>
+	Tue, 01 May 2007 08:15:20 -0700
+In-Reply-To: <20070430175853.4f315a1e.randy.dunlap@oracle.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,67 +29,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm <akpm@linux-foundation.org>, adaplas@gmail.com
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1831524198-922097047-1178032342=:5345
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-1
-Content-ID: <Pine.LNX.4.64.0705011613401.5345@pentafluge.infradead.org>
-Content-Transfer-Encoding: quoted-printable
-
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix printk format warnings:
+> drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
+> drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/video/sm501fb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.21-git3.orig/drivers/video/sm501fb.c
+> +++ linux-2.6.21-git3/drivers/video/sm501fb.c
+> @@ -989,7 +989,7 @@ static int sm501fb_cursor(struct fb_info
+>  			((info->cmap.green[fg_col] & 0xFC) << 3) |
+>  			((info->cmap.blue[fg_col] & 0xF8) >> 3);
+>  
+> -		dev_dbg(fbi->dev, "fgcol %08x, bgcol %08x\n", fg, bg);
+> +		dev_dbg(fbi->dev, "fgcol %08lx, bgcol %08lx\n", fg, bg);
+>  
+>  		writel(bg, base + SM501_OFF_HWC_COLOR_1_2);
+>  		writel(fg, base + SM501_OFF_HWC_COLOR_3);
 
 Acked-By: James Simmons <jsimmons@infradead.org>
 
-One thing. Please don't make your patches a attachement.
-
-On Tue, 1 May 2007, Krzysztof Helt wrote:
-
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
->=20
-> More corrections to skeletonfb.c file:
-> - fixed types of more arguments
-> - removed returned values in void functions
-> - removed not existing fb_poll function
-> - fixed closing comment typo
-> - corrected misleading constant name ADDR
->=20
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
->=20
-> ---
->=20
-> This patch requires patches already sent to mm tree.
->=20
-> Somehow not all fixes went previously into my patch. Some of=20
-> fixes correct changes in the last patch.
->=20
-> ----------------------------------------------------
-> Skorzystaj ze staro?ytnej chi?skiej m?dro?ci. Tw=F3j horoskop wiosenny
-> - http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fchinsk=
-i2.html&sid=3D1121
->=20
----1831524198-922097047-1178032342=:5345
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
----1831524198-922097047-1178032342=:5345
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
----1831524198-922097047-1178032342=:5345--

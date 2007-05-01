@@ -1,9 +1,7 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] pm2fb: accelerated fillrect
-	and	copyarea
-Date: Tue, 01 May 2007 05:21:49 +0800
-Message-ID: <1177968109.4372.4.camel@daplas>
-References: <46363c001f8a0@wp.pl>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH] sm501fb: fix printk format warnings
+Date: Mon, 30 Apr 2007 17:58:53 -0700
+Message-ID: <20070430175853.4f315a1e.randy.dunlap@oracle.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,16 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HidJm-0002t9-Ta for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 14:21:59 -0700
-Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HidJl-0004S2-Aa
+	id 1HigeQ-0006F7-Oq for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 30 Apr 2007 17:55:30 -0700
+Received: from agminet01.oracle.com ([141.146.126.228])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HigeQ-0003UW-GU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Apr 2007 14:21:58 -0700
-Received: by py-out-1112.google.com with SMTP id a29so1443788pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 30 Apr 2007 14:21:56 -0700 (PDT)
-In-Reply-To: <46363c001f8a0@wp.pl>
+	Mon, 30 Apr 2007 17:55:30 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,25 +28,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm <akpm@linux-foundation.org>, adaplas@gmail.com
 
-On Mon, 2007-04-30 at 20:57 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> This is port of accelerated functions from 2.4 kernel. Only
-> fillrect and copyarea are accelerated. Fillrect is not
-> accelerated in 24-bit mode.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-For the best scrolling mode, you would want to advertise the driver's
-capability with:
+Fix printk format warnings:
+drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
+drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
 
-info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN |
-FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT;
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/video/sm501fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I'll add this myself.
-
-Tony
-
-
+--- linux-2.6.21-git3.orig/drivers/video/sm501fb.c
++++ linux-2.6.21-git3/drivers/video/sm501fb.c
+@@ -989,7 +989,7 @@ static int sm501fb_cursor(struct fb_info
+ 			((info->cmap.green[fg_col] & 0xFC) << 3) |
+ 			((info->cmap.blue[fg_col] & 0xF8) >> 3);
+ 
+-		dev_dbg(fbi->dev, "fgcol %08x, bgcol %08x\n", fg, bg);
++		dev_dbg(fbi->dev, "fgcol %08lx, bgcol %08lx\n", fg, bg);
+ 
+ 		writel(bg, base + SM501_OFF_HWC_COLOR_1_2);
+ 		writel(fg, base + SM501_OFF_HWC_COLOR_3);
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

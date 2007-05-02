@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] fbdev sysfs updates.
-Date: Thu, 03 May 2007 05:36:09 +0800
-Message-ID: <1178141769.4606.48.camel@daplas>
-References: <Pine.LNX.4.64.0705022040200.28169@pentafluge.infradead.org>
+Subject: Re: [PATCH] sm501fb: fix printk format warnings
+Date: Thu, 03 May 2007 07:16:56 +0800
+Message-ID: <1178147816.4606.50.camel@daplas>
+References: <20070430175853.4f315a1e.randy.dunlap@oracle.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,16 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HjMUi-0007Zx-Ab for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 14:36:16 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjMUi-0005wq-0c
+	id 1HjO4G-0005zb-N8 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 May 2007 16:17:04 -0700
+Received: from py-out-1112.google.com ([64.233.166.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjO4G-0008ME-6w
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 14:36:16 -0700
-Received: by py-out-1112.google.com with SMTP id a29so238827pyi
+	Wed, 02 May 2007 16:17:04 -0700
+Received: by py-out-1112.google.com with SMTP id a29so259771pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 02 May 2007 14:36:15 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0705022040200.28169@pentafluge.infradead.org>
+	Wed, 02 May 2007 16:17:03 -0700 (PDT)
+In-Reply-To: <20070430175853.4f315a1e.randy.dunlap@oracle.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,17 +31,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2007-05-02 at 20:45 +0100, James Simmons wrote:
-> Andrew can you try this patch. The goal of the patch is to allow the 
-> hardware behind fbdev to be shared with out types of devices i.e 
-> backlight, drm, and display. Please give it a try.
+On Mon, 2007-04-30 at 17:58 -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
+> Fix printk format warnings:
+> drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
+> drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Any real world examples on how this patch can allow sharing with DRM?
-I'm not sure if your changelog reflects the content of this patch.
+This is already in the -mm tree.
 
 Tony
 

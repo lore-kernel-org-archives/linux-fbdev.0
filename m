@@ -1,8 +1,8 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 17/41] fbdev: Add drawing functions
- forframebuffers in system RAM
-Date: Wed, 2 May 2007 22:31:14 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0705022230470.29177@anakin>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 17/41] fbdev: Add drawing
+	functions	forframebuffers in system RAM
+Date: Thu, 03 May 2007 04:32:34 +0800
+Message-ID: <1178137954.4606.36.camel@daplas>
 References: <462EF7F0.6050606@gmail.com>
 	<CA6404BA52C51146981195CF9A147C1C01A9A04D@GBISE0BASMSX01.eu.sony.com>
 	<Pine.LNX.4.64.0705022119090.6403@pentafluge.infradead.org>
@@ -11,15 +11,18 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HjLTr-00014K-LL for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 13:31:19 -0700
-Received: from europa.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjLTr-0001SI-17
+	id 1HjLVS-0001DK-7v for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 May 2007 13:32:58 -0700
+Received: from py-out-1112.google.com ([64.233.166.176])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjLVC-0005pu-E7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 13:31:19 -0700
+	Wed, 02 May 2007 13:32:58 -0700
+Received: by py-out-1112.google.com with SMTP id a29so222411pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 02 May 2007 13:32:41 -0700 (PDT)
 In-Reply-To: <Pine.LNX.4.64.0705022119090.6403@pentafluge.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,10 +34,12 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2 May 2007, James Simmons wrote:
+On Wed, 2007-05-02 at 21:22 +0100, James Simmons wrote:
+> > 	Hi Tony,
+> > 
 > > > The generic drawing functions (cfbimgblt, cfbcopyarea, 
 > > > cfbfillrect) assume
 > > > that the framebuffer is in IO memory.  However, we have 3 
@@ -48,23 +53,22 @@ On Wed, 2 May 2007, James Simmons wrote:
 > > This is also true for ps3fb. I'll update the support for that once this
 > > patch has hit mainline.
 > 
-> Bloat. It would be much easier to replace the FB_WRITEL and FB_READL 
-> macros. Last year I was working on a general solution that I wanted to 
-> submit but I have been pushing other patches I considered higher priority.
-> Perhaps I should move them up the que.
+> Bloat.
 
-That's true: just replace those macros and recompile...
+Only the source gets larger.  Only drivers that need it will compile it.
 
-Gr{oetje,eeting}s,
+>  It would be much easier to replace the FB_WRITEL and FB_READL 
+> macros.
 
-						Geert
+Of course it's not as simple as replacing FB_WRITEL and FB_READL. Think
+very carefully. 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Hint1: #define FB_MAX 32
+Hint2: sparse
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Tony  
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

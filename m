@@ -1,66 +1,55 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] sm501fb: fix printk format warnings
-Date: Tue, 1 May 2007 16:15:14 +0100 (BST)
-Message-ID: <Pine.LNX.4.64.0705011614580.5345@pentafluge.infradead.org>
-References: <20070430175853.4f315a1e.randy.dunlap@oracle.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [patch 4/8] ps3fb: kill superfluous zero initializations
+Date: Wed, 02 May 2007 14:48:34 +0200
+Message-ID: <20070502124840.447618000@pademelon.sonytel.be>
+References: <20070502124830.911142000@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hiu4W-0005VY-WC for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 01 May 2007 08:15:21 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Hiu4W-0003kP-JY
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 01 May 2007 08:15:20 -0700
-In-Reply-To: <20070430175853.4f315a1e.randy.dunlap@oracle.com>
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+Content-Disposition: inline; filename=ps3-stable/ps3fb-zero-init.diff
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm <akpm@linux-foundation.org>, adaplas@gmail.com
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: James Simmons <jsimmons@infradead.org>, Antonino Daplas <adaplas@gmail.com>, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net
 
+ps3fb: kill superfluous zero initializations
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix printk format warnings:
-> drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
-> drivers/video/sm501fb.c:992: warning: format '%08x' expects type 'unsigned int', but argument 4 has type 'long unsigned int'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/video/sm501fb.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.21-git3.orig/drivers/video/sm501fb.c
-> +++ linux-2.6.21-git3/drivers/video/sm501fb.c
-> @@ -989,7 +989,7 @@ static int sm501fb_cursor(struct fb_info
->  			((info->cmap.green[fg_col] & 0xFC) << 3) |
->  			((info->cmap.blue[fg_col] & 0xF8) >> 3);
->  
-> -		dev_dbg(fbi->dev, "fgcol %08x, bgcol %08x\n", fg, bg);
-> +		dev_dbg(fbi->dev, "fgcol %08lx, bgcol %08lx\n", fg, bg);
->  
->  		writel(bg, base + SM501_OFF_HWC_COLOR_1_2);
->  		writel(fg, base + SM501_OFF_HWC_COLOR_3);
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/ps3fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Acked-By: James Simmons <jsimmons@infradead.org>
+--- ps3-linux-2.6.21.orig/drivers/video/ps3fb.c
++++ ps3-linux-2.6.21/drivers/video/ps3fb.c
+@@ -297,10 +297,10 @@ static const struct fb_videomode ps3fb_m
+ #define VP_OFF(i)	(WIDTH(i) * Y_OFF(i) * BPP + X_OFF(i) * BPP)
+ #define FB_OFF(i)	(GPU_OFFSET - VP_OFF(i) % GPU_OFFSET)
+ 
+-static int ps3fb_mode = 0;
++static int ps3fb_mode;
+ module_param(ps3fb_mode, bool, 0);
+ 
+-static char *mode_option __initdata = NULL;
++static char *mode_option __initdata;
+ 
+ 
+ static int ps3fb_get_res_table(u32 xres, u32 yres)
 
+--
+Gr{oetje,eeting}s,
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium

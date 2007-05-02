@@ -1,24 +1,26 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 7/8] ps3fb: Use __func__ instead of
-	__FUNCTION__
-Date: Wed, 02 May 2007 14:48:37 +0200
-Message-ID: <20070502124840.741663000@pademelon.sonytel.be>
-References: <20070502124830.911142000@pademelon.sonytel.be>
+From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
+Subject: [PATCH] pm2fb: removal of pm2fb_par fields
+Date: Wed, 02 May 2007 21:39:17 +0200
+Message-ID: <4638e8e5cd83c@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HjEHn-0007Nk-Qp for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 05:50:26 -0700
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjEHm-0005xt-Sm
+	id 1HjKfc-0004rk-PF for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 May 2007 12:39:24 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1HjKfZ-0007KY-VB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 05:50:23 -0700
-Content-Disposition: inline; filename=ps3-stable/ps3fb-__func__.diff
+	Wed, 02 May 2007 12:39:24 -0700
+Received: from poczta-1.free.wp-sa.pl (HELO localhost) ([10.1.1.170])
+	(envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>; 2 May 2007 21:39:17 +0200
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,204 +31,112 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: James Simmons <jsimmons@infradead.org>, Antonino Daplas <adaplas@gmail.com>, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-ps3fb: Replace GNU extension `__FUNCTION__' by C99 `__func__'
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+This patch removes two redudant fields in the pm2fb_par =
+
+structure.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
 ---
- drivers/video/ps3fb.c |   54 +++++++++++++++++++++++++++-----------------------
- 1 files changed, 30 insertions(+), 24 deletions(-)
 
---- ps3-linux-2.6.21.orig/drivers/video/ps3fb.c
-+++ ps3-linux-2.6.21/drivers/video/ps3fb.c
-@@ -47,7 +47,7 @@
- #include <asm/ps3.h>
- 
- #ifdef PS3FB_DEBUG
--#define DPRINTK(fmt, args...) printk("%s: " fmt, __FUNCTION__ , ##args)
-+#define DPRINTK(fmt, args...) printk("%s: " fmt, __func__ , ##args)
- #else
- #define DPRINTK(fmt, args...)
- #endif
-@@ -396,7 +396,7 @@ static int ps3fb_sync(u32 frame)
- 
- 	if (frame > ps3fb.num_frames - 1) {
- 		printk(KERN_WARNING "%s: invalid frame number (%u)\n",
--		       __FUNCTION__, frame);
-+		       __func__, frame);
- 		return -EINVAL;
- 	}
- 	offset = xres * yres * BPP * frame;
-@@ -409,23 +409,26 @@ static int ps3fb_sync(u32 frame)
- 					   (xres << 16) | yres,
- 					   xres * BPP);	/* line_length */
- 	if (status)
--		printk(KERN_ERR "%s: lv1_gpu_context_attribute FB_BLIT failed: %d\n",
--		       __FUNCTION__, status);
-+		printk(KERN_ERR
-+		       "%s: lv1_gpu_context_attribute FB_BLIT failed: %d\n",
-+		       __func__, status);
- #ifdef HEAD_A
- 	status = lv1_gpu_context_attribute(ps3fb.context_handle,
- 					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP,
- 					   0, offset, 0, 0);
- 	if (status)
--		printk(KERN_ERR "%s: lv1_gpu_context_attribute FLIP failed: %d\n",
--		       __FUNCTION__, status);
-+		printk(KERN_ERR
-+		       "%s: lv1_gpu_context_attribute FLIP failed: %d\n",
-+		       __func__, status);
- #endif
- #ifdef HEAD_B
- 	status = lv1_gpu_context_attribute(ps3fb.context_handle,
- 					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP,
- 					   1, offset, 0, 0);
- 	if (status)
--		printk(KERN_ERR "%s: lv1_gpu_context_attribute FLIP failed: %d\n",
--		       __FUNCTION__, status);
-+		printk(KERN_ERR
-+		       "%s: lv1_gpu_context_attribute FLIP failed: %d\n",
-+		       __func__, status);
- #endif
- 	return 0;
- }
-@@ -634,7 +637,7 @@ static int ps3fb_blank(int blank, struct
+This is a patch against mm tree with already sent pm2fb patches =
+
+applied.
+
+Regards,
+Krzysztof
+
+--- linux-2.6.21.orig/drivers/video/pm2fb.c	2007-05-01 11:38:
+55.000000000 +0200
++++ linux-2.6.21/drivers/video/pm2fb.c	2007-05-02 21:14:25.
+000000000 +0200
+@@ -81,8 +81,6 @@ static int lowvsync;
+ struct pm2fb_par
  {
- 	int retval;
- 
--	DPRINTK("%s: blank:%d\n", __FUNCTION__, blank);
-+	DPRINTK("%s: blank:%d\n", __func__, blank);
- 	switch (blank) {
- 	case FB_BLANK_POWERDOWN:
- 	case FB_BLANK_HSYNC_SUSPEND:
-@@ -830,7 +833,7 @@ static irqreturn_t ps3fb_vsync_interrupt
- 	status = lv1_gpu_context_intr(ps3fb.context_handle, &v1);
- 	if (status) {
- 		printk(KERN_ERR "%s: lv1_gpu_context_intr failed: %d\n",
--		       __FUNCTION__, status);
-+		       __func__, status);
- 		return IRQ_NONE;
- 	}
- 
-@@ -889,7 +892,7 @@ static int ps3fb_vsync_settings(struct g
- 		dinfo->nvcore_frequency/1000000, dinfo->memory_frequency/1000000);
- 
- 	if (dinfo->version_driver != GPU_DRIVER_INFO_VERSION) {
--		printk(KERN_ERR "%s: version_driver err:%x\n", __FUNCTION__,
-+		printk(KERN_ERR "%s: version_driver err:%x\n", __func__,
- 		       dinfo->version_driver);
- 		return -EINVAL;
- 	}
-@@ -898,7 +901,7 @@ static int ps3fb_vsync_settings(struct g
- 	error = ps3_alloc_irq(PS3_BINDING_CPU_ANY, dinfo->irq.irq_outlet,
- 			      &ps3fb.irq_no);
- 	if (error) {
--		printk(KERN_ERR "%s: ps3_alloc_irq failed %d\n", __FUNCTION__,
-+		printk(KERN_ERR "%s: ps3_alloc_irq failed %d\n", __func__,
- 		       error);
- 		return error;
- 	}
-@@ -906,7 +909,7 @@ static int ps3fb_vsync_settings(struct g
- 	error = request_irq(ps3fb.irq_no, ps3fb_vsync_interrupt, IRQF_DISABLED,
- 			    "ps3fb vsync", ps3fb.dev);
- 	if (error) {
--		printk(KERN_ERR "%s: request_irq failed %d\n", __FUNCTION__,
-+		printk(KERN_ERR "%s: request_irq failed %d\n", __func__,
- 		       error);
- 		ps3_free_irq(ps3fb.irq_no);
- 		return error;
-@@ -925,7 +928,7 @@ static int ps3fb_xdr_settings(u64 xdr_lp
- 				       xdr_lpar, ps3fb_videomemory.size, 0);
- 	if (status) {
- 		printk(KERN_ERR "%s: lv1_gpu_context_iomap failed: %d\n",
--		       __FUNCTION__, status);
-+		       __func__, status);
- 		return -ENXIO;
- 	}
- 	DPRINTK("video:%p xdr_ea:%p ioif:%lx lpar:%lx phys:%lx size:%lx\n",
-@@ -937,8 +940,9 @@ static int ps3fb_xdr_settings(u64 xdr_lp
- 					   xdr_lpar, ps3fb_videomemory.size,
- 					   GPU_IOIF, 0);
- 	if (status) {
--		printk(KERN_ERR "%s: lv1_gpu_context_attribute FB_SETUP failed: %d\n",
--		       __FUNCTION__, status);
-+		printk(KERN_ERR
-+		       "%s: lv1_gpu_context_attribute FB_SETUP failed: %d\n",
-+		       __func__, status);
- 		return -ENXIO;
- 	}
- 	return 0;
-@@ -985,7 +989,7 @@ static int __init ps3fb_probe(struct pla
- 					 &ps3fb.memory_handle, &ddr_lpar);
- 	if (status) {
- 		printk(KERN_ERR "%s: lv1_gpu_memory_allocate failed: %d\n",
--		       __FUNCTION__, status);
-+		       __func__, status);
- 		goto err;
- 	}
- 	DPRINTK("ddr:lpar:0x%lx\n", ddr_lpar);
-@@ -996,14 +1000,14 @@ static int __init ps3fb_probe(struct pla
- 					  &lpar_reports, &lpar_reports_size);
- 	if (status) {
- 		printk(KERN_ERR "%s: lv1_gpu_context_attribute failed: %d\n",
--		       __FUNCTION__, status);
-+		       __func__, status);
- 		goto err_gpu_memory_free;
- 	}
- 
- 	/* vsync interrupt */
- 	ps3fb.dinfo = ioremap(lpar_driver_info, 128 * 1024);
- 	if (!ps3fb.dinfo) {
--		printk(KERN_ERR "%s: ioremap failed\n", __FUNCTION__);
-+		printk(KERN_ERR "%s: ioremap failed\n", __func__);
- 		goto err_gpu_context_free;
- 	}
- 
-@@ -1162,8 +1166,9 @@ int ps3fb_set_sync(void)
- 					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
- 					   0, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
- 	if (status) {
--		printk(KERN_ERR "%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: %d\n",
--		       __FUNCTION__, status);
-+		printk(KERN_ERR
-+		       "%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: %d\n",
-+		       __func__, status);
- 		return -1;
- 	}
- #endif
-@@ -1173,8 +1178,9 @@ int ps3fb_set_sync(void)
- 					   1, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
- 
- 	if (status) {
--		printk(KERN_ERR "%s: lv1_gpu_context_attribute DISPLAY_MODE failed: %d\n",
--		       __FUNCTION__, status);
-+		printk(KERN_ERR
-+		       "%s: lv1_gpu_context_attribute DISPLAY_MODE failed: %d\n",
-+		       __func__, status);
- 		return -1;
- 	}
- #endif
-@@ -1199,7 +1205,7 @@ static int __init ps3fb_init(void)
- 
- 	error = ps3av_dev_open();
- 	if (error) {
--		printk(KERN_ERR "%s: ps3av_dev_open failed\n", __FUNCTION__);
-+		printk(KERN_ERR "%s: ps3av_dev_open failed\n", __func__);
- 		goto err;
- 	}
- 
+ 	pm2type_t	type;		/* Board type */
+-	u32		fb_size;	/* framebuffer memory size */
+-	unsigned char	__iomem *v_fb;  /* virtual address of =
 
---
-Gr{oetje,eeting}s,
+frame buffer */
+ 	unsigned char	__iomem *v_regs;/* virtual address of =
 
-						Geert
+p_regs */
+ 	u32 	   	memclock;	/* memclock */
+ 	u32		video;		/* video flags before blanking */
+@@ -1169,20 +1167,20 @@ static int __devinit pm2fb_probe(struct =
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+ 	/* Now work out how big lfb is going to be. */
+ 	switch(default_par->mem_config & PM2F_MEM_CONFIG_RAM_MASK) =
+
+{
+ 	case PM2F_MEM_BANKS_1:
+-		default_par->fb_size=3D0x200000;
++		pm2fb_fix.smem_len=3D0x200000;
+ 		break;
+ 	case PM2F_MEM_BANKS_2:
+-		default_par->fb_size=3D0x400000;
++		pm2fb_fix.smem_len=3D0x400000;
+ 		break;
+ 	case PM2F_MEM_BANKS_3:
+-		default_par->fb_size=3D0x600000;
++		pm2fb_fix.smem_len=3D0x600000;
+ 		break;
+ 	case PM2F_MEM_BANKS_4:
+-		default_par->fb_size=3D0x800000;
++		pm2fb_fix.smem_len=3D0x800000;
+ 		break;
+ 	}
+ 	pm2fb_fix.smem_start =3D pci_resource_start(pdev, 1);
+-	pm2fb_fix.smem_len =3D default_par->fb_size;
++	pm2fb_fix.smem_len =3D pm2fb_fix.smem_len;
+ =
+
+ 	/* Linear frame buffer - request region and map it. */
+ 	if ( !request_mem_region(pm2fb_fix.smem_start, pm2fb_fix.
+smem_len,
+@@ -1190,9 +1188,9 @@ static int __devinit pm2fb_probe(struct =
+
+ 		printk(KERN_WARNING "pm2fb: Can't reserve smem.\n");
+ 		goto err_exit_mmio;
+ 	}
+-	info->screen_base =3D default_par->v_fb =3D
++	info->screen_base =3D
+ 		ioremap_nocache(pm2fb_fix.smem_start, pm2fb_fix.
+smem_len);
+-	if ( !default_par->v_fb ) {
++	if ( !info->screen_base ) {
+ 		printk(KERN_WARNING "pm2fb: Can't ioremap smem area.\n")
+;
+ 		release_mem_region(pm2fb_fix.smem_start, pm2fb_fix.
+smem_len);
+ 		goto err_exit_mmio;
+@@ -1218,7 +1216,7 @@ static int __devinit pm2fb_probe(struct =
+
+ 		goto err_exit_both;
+ =
+
+ 	printk(KERN_INFO "fb%d: %s frame buffer device, memory =3D %
+dK.\n",
+-	       info->node, info->fix.id, default_par->fb_size / 1024)
+;
++	       info->node, info->fix.id, pm2fb_fix.smem_len / 1024);
+ =
+
+ 	/*
+ 	 * Our driver data
+
+
+----------------------------------------------------
+P.S.
+Masz bardzo du=BFe szanse, aby wygra=E6 nawet kilka z 1200 nagr=F3d!
+Kino domowe, kamery cyfrowe, internetowe, filmy DVD... Kliknij:
+http://klik.wp.pl/?adr=3Dwww.poczta.wp.pl%2Fkonkursintro.html&sid=3D1123
+
 
 
 -------------------------------------------------------------------------

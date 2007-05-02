@@ -1,9 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] packed pixel image
-	blit	optimizations.
-Date: Thu, 03 May 2007 05:33:23 +0800
-Message-ID: <1178141603.4606.44.camel@daplas>
-References: <Pine.LNX.4.64.0705022123490.12422@pentafluge.infradead.org>
+Subject: Re: [PATCH] fbdev sysfs updates.
+Date: Thu, 03 May 2007 05:36:09 +0800
+Message-ID: <1178141769.4606.48.camel@daplas>
+References: <Pine.LNX.4.64.0705022040200.28169@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,16 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HjMS2-0007Rj-TU for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 14:33:31 -0700
-Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjMS1-0005J8-Iy
+	id 1HjMUi-0007Zx-Ab for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 May 2007 14:36:16 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjMUi-0005wq-0c
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 May 2007 14:33:30 -0700
-Received: by py-out-1112.google.com with SMTP id a29so238161pyi
+	Wed, 02 May 2007 14:36:16 -0700
+Received: by py-out-1112.google.com with SMTP id a29so238827pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 02 May 2007 14:33:28 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0705022123490.12422@pentafluge.infradead.org>
+	Wed, 02 May 2007 14:36:15 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0705022040200.28169@pentafluge.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,19 +32,16 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: James Simmons <jsimmons@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>
 
-On Wed, 2007-05-02 at 21:50 +0100, James Simmons wrote:
-> This patch is the start of my original work. The goal was:
+On Wed, 2007-05-02 at 20:45 +0100, James Simmons wrote:
+> Andrew can you try this patch. The goal of the patch is to allow the 
+> hardware behind fbdev to be shared with out types of devices i.e 
+> backlight, drm, and display. Please give it a try.
 > 
-> 1) One function for to draw at any color depth.
-> 
-> 2) 16 color image data does need special padding.
-> 
-> 3) Use fb_pixmap to control drawing to the hardware.
 
-I'm getting rejects with this patch.  Did you benchmark this and
-compared the performance with the old one?
+Any real world examples on how this patch can allow sharing with DRM?
+I'm not sure if your changelog reflects the content of this patch.
 
 Tony
 

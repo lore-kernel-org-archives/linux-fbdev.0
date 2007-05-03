@@ -1,28 +1,29 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] fbdev sysfs updates.
-Date: Fri, 04 May 2007 03:22:06 +0800
-Message-ID: <1178220126.28617.3.camel@daplas>
-References: <Pine.LNX.4.64.0705022040200.28169@pentafluge.infradead.org>
-	<1178141769.4606.48.camel@daplas>
-	<Pine.LNX.4.64.0705031456330.15445@pentafluge.infradead.org>
+Subject: Re: [PATCH] packed pixel image
+	blit	optimizations.
+Date: Fri, 04 May 2007 03:24:37 +0800
+Message-ID: <1178220277.28617.7.camel@daplas>
+References: <Pine.LNX.4.64.0705022123490.12422@pentafluge.infradead.org>
+	<1178141603.4606.44.camel@daplas>
+	<Pine.LNX.4.64.0705031503300.15445@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hjgsb-0002Ml-9s for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 May 2007 12:22:17 -0700
+	id 1Hjguy-0002VE-PD for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 03 May 2007 12:24:44 -0700
 Received: from py-out-1112.google.com ([64.233.166.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hjgsa-00080P-Lb
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hjgux-00006V-ED
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 May 2007 12:22:17 -0700
-Received: by py-out-1112.google.com with SMTP id a29so502411pyi
+	Thu, 03 May 2007 12:24:44 -0700
+Received: by py-out-1112.google.com with SMTP id a29so503022pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 03 May 2007 12:22:15 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0705031456330.15445@pentafluge.infradead.org>
+	Thu, 03 May 2007 12:24:42 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0705031503300.15445@pentafluge.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,29 +35,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2007-05-03 at 15:03 +0100, James Simmons wrote:
-> > On Wed, 2007-05-02 at 20:45 +0100, James Simmons wrote:
-> > > Andrew can you try this patch. The goal of the patch is to allow the 
-> > > hardware behind fbdev to be shared with out types of devices i.e 
-> > > backlight, drm, and display. Please give it a try.
+On Thu, 2007-05-03 at 15:04 +0100, James Simmons wrote:
+> > On Wed, 2007-05-02 at 21:50 +0100, James Simmons wrote:
+> > > This patch is the start of my original work. The goal was:
 > > > 
+> > > 1) One function for to draw at any color depth.
+> > > 
+> > > 2) 16 color image data does need special padding.
+> > > 
+> > > 3) Use fb_pixmap to control drawing to the hardware.
 > > 
-> > Any real world examples on how this patch can allow sharing with DRM?
-> > I'm not sure if your changelog reflects the content of this patch.
+> > I'm getting rejects with this patch.  Did you benchmark this and
+> > compared the performance with the old one?
 > 
-> DRM would need to be updated to use a child device. The idea is simple. 
-> Use the device created with device_create instead of the parent device.
-> The conflict was storing our private data with the parent device. Now it 
-> is stored in the child device. Other subsystems already use this approach. 
-> The drivers would need to be be cleaned up. Right now they use the parent 
-> device to stored fb_info. 
+> Need to update patch to newest kernel. Not yet, there are still bugs to 
+> hammer away on.
 
-What I basically see in this patch, unless I miss something, is moving
-device code from fbmem.c to fbsysfs.c and the creation of fb_power()
-hook. I have nothing against the patch in principle, I just think the
-changelog is not very clear. 
+I don't have to test the patch to see that it is not endian-correct and
+that it will be many times slower than the old code.
 
 Tony
 

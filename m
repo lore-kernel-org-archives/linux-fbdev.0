@@ -1,580 +1,519 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: [PATCH] cfbimgblt updates.
-Date: Thu, 3 May 2007 16:48:52 +0100 (BST)
-Message-ID: <Pine.LNX.4.64.0705031648050.25194@pentafluge.infradead.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
+Subject: [PATCH] Xilinx framebuffer device driver - 3d version
+Date: Thu, 03 May 2007 21:26:48 +0400
+Message-ID: <463A1B58.8000804@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HjdY7-000455-Pd for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 May 2007 08:48:56 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HjdY6-0007mg-JI
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 May 2007 08:48:55 -0700
-Received: from localhost ([127.0.0.1])
-	by pentafluge.infradead.org with esmtps (Exim 4.63 #1 (Red Hat Linux))
-	id 1HjdY4-0000JI-TE for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 May 2007 16:48:52 +0100
+Content-Type: multipart/mixed; boundary="------------050704060908000105000604"
+Return-path: <linuxppc-embedded-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-embedded-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-embedded-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+To: linuxppc-embedded@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
 
+This is a multi-part message in MIME format.
+--------------050704060908000105000604
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
+Add support for the video controller IP block included into Xilinx ML300
+and ML403 reference designs.
 
-Here is the second run at the patch. Updated to the 2.6.21.
+Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
 
-diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
-index 2610044..304cc57 100644
---- a/drivers/video/cfbimgblt.c
-+++ b/drivers/video/cfbimgblt.c
-@@ -1,7 +1,7 @@
- /*
-  *  Generic BitBLT function for frame buffer with packed pixels of any depth.
-  *
-- *      Copyright (C)  June 1999 James Simmons
-+ *      Copyright (C)  June 1999 - 2006 James Simmons
-  *
-  *  This file is subject to the terms and conditions of the GNU General Public
-  *  License.  See the file COPYING in the main directory of this archive for
-@@ -17,7 +17,7 @@
-  *  their are cards with hardware that coverts images of various depths to the
-  *  framebuffer depth. But not every card has this. All images must be rounded
-  *  up to the nearest byte. For example a bitmap 12 bits wide must be two 
-- *  bytes width. 
-+ *  bytes width.
-  *
-  *  Tony: 
-  *  Incorporate mask tables similar to fbcon-cfb*.c in 2.4 API.  This speeds 
-@@ -32,6 +32,7 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/fb.h>
-+#include <asm/byteorder.h>
- #include <asm/types.h>
+-----
+The driver has been tested with Xilinx ML300 and ML403 reference designs.
+
+The two first version has been posted to linuxppc-embedded, and this
+version tries to address all the comments and criticism received.
+
+The platform device registration for Xilinx ML300 and ML403
+moved into separate patch (will be posted to linuxppc-embedded
+in couple minutes).
+
+Would be nice to get this driver into mainline for the 2.6.22.
+Reviews and comments are welcome.
+
+Thanks,
+Andrei
+
+--------------050704060908000105000604
+Content-Type: text/x-patch;
+ name="xilinx_fb.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="xilinx_fb.patch"
+
+Add support for the video controller IP block included into Xilinx ML300 and
+ML403 reference designs.
+
+ arch/ppc/syslib/virtex_devices.h |    7 
+ drivers/video/Kconfig            |   11 +
+ drivers/video/Makefile           |    1 
+ drivers/video/xilinxfb.c         |  389 +++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 408 insertions(+)
+
+Index: linux-2.6.20/drivers/video/Kconfig
+===================================================================
+--- linux-2.6.20.orig/drivers/video/Kconfig
++++ linux-2.6.20/drivers/video/Kconfig
+@@ -1633,6 +1633,17 @@ config FB_PS3_DEFAULT_SIZE_M
+ 	  The default value can be overridden on the kernel command line
+ 	  using the "ps3fb" option (e.g. "ps3fb=9M");
  
- #define DEBUG
-@@ -43,161 +44,100 @@
- #endif
- 
- static const u32 cfb_tab8[] = {
--#if defined(__BIG_ENDIAN)
--    0x00000000,0x000000ff,0x0000ff00,0x0000ffff,
--    0x00ff0000,0x00ff00ff,0x00ffff00,0x00ffffff,
--    0xff000000,0xff0000ff,0xff00ff00,0xff00ffff,
--    0xffff0000,0xffff00ff,0xffffff00,0xffffffff
--#elif defined(__LITTLE_ENDIAN)
--    0x00000000,0xff000000,0x00ff0000,0xffff0000,
--    0x0000ff00,0xff00ff00,0x00ffff00,0xffffff00,
--    0x000000ff,0xff0000ff,0x00ff00ff,0xffff00ff,
--    0x0000ffff,0xff00ffff,0x00ffffff,0xffffffff
--#else
--#error FIXME: No endianness??
--#endif
-+	0x00000000,0x000000ff,0x0000ff00,0x0000ffff,
-+	0x00ff0000,0x00ff00ff,0x00ffff00,0x00ffffff,
-+	0xff000000,0xff0000ff,0xff00ff00,0xff00ffff,
-+	0xffff0000,0xffff00ff,0xffffff00,0xffffffff
- };
- 
- static const u32 cfb_tab16[] = {
--#if defined(__BIG_ENDIAN)
--    0x00000000, 0x0000ffff, 0xffff0000, 0xffffffff
--#elif defined(__LITTLE_ENDIAN)
--    0x00000000, 0xffff0000, 0x0000ffff, 0xffffffff
--#else
--#error FIXME: No endianness??
--#endif
-+	0x00000000, 0x0000ffff, 0xffff0000, 0xffffffff
- };
- 
- static const u32 cfb_tab32[] = {
- 	0x00000000, 0xffffffff
- };
- 
--#define FB_WRITEL fb_writel
--#define FB_READL  fb_readl
-+#define FB_WRITEL		fb_writel
-+#define FB_READL		fb_readl
- 
--static inline void color_imageblit(const struct fb_image *image, 
--				   struct fb_info *p, u8 __iomem *dst1, 
--				   u32 start_index,
--				   u32 pitch_index)
-+static inline void slow_imageblit(const struct fb_image *image, 
-+				  struct fb_info *p, u8 __iomem *dst, 
-+				  u32 start_index, u32 pitch_index)
- {
- 	/* Draw the penguin */
--	u32 __iomem *dst, *dst2;
--	u32 color = 0, val, shift;
--	int i, n, bpp = p->var.bits_per_pixel;
--	u32 null_bits = 32 - bpp;
-+	int spitch = (image->width * image->depth + 7) >> 3;
-+	const u32 *src = (const u32 *) image->data;
-+	int scan_align = p->pixmap.scan_align - 1;
- 	u32 *palette = (u32 *) p->pseudo_palette;
--	const u8 *src = image->data;
-+	int bpp = p->var.bits_per_pixel, i, n;
-+	int access = p->pixmap.access_align;
-+	int mask = (1 << image->depth) - 1;
-+	int bpw = access >> 3, s = 32;
-+	int null_bits = access - bpp;
-+	u32 color = 0, val, shift;
-+	u32 __iomem *dst2;
-+	u8 __iomem *dst1;
- 
--	dst2 = (u32 __iomem *) dst1;
-+	spitch = (spitch + scan_align) & ~scan_align;
-+	dst2 = (u32 __iomem *) dst;
- 	for (i = image->height; i--; ) {
- 		n = image->width;
--		dst = (u32 __iomem *) dst1;
--		shift = 0;
--		val = 0;
--		
-+		shift = val = 0;
-+		dst1 = dst;
++config FB_XILINX
++	tristate "Xilinx frame buffer support"
++	depends on FB && XILINX_VIRTEX
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	---help---
++	  Include support for the Xilinx ML300/ML403 reference design
++	  framebuffer. ML300 carries a 640*480 LCD display on the board,
++	  ML403 uses a standard DB15 VGA connector.
 +
-+		/* write leading bits */
- 		if (start_index) {
--			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0, start_index));
--			val = FB_READL(dst) & start_mask;
-+			u32 start_mask = (~(u32)0 << start_index);
-+			val = FB_READL(dst1);
-+			val &= start_mask;
- 			shift = start_index;
- 		}
--		while (n--) {
--			if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
--			    p->fix.visual == FB_VISUAL_DIRECTCOLOR )
--				color = palette[*src];
--			else
--				color = *src;
--			color <<= FB_LEFT_POS(bpp);
--			val |= FB_SHIFT_HIGH(color, shift);
--			if (shift >= null_bits) {
--				FB_WRITEL(val, dst++);
--	
--				val = (shift == null_bits) ? 0 : 
--					FB_SHIFT_LOW(color, 32 - shift);
--			}
--			shift += bpp;
--			shift &= (32 - 1);
--			src++;
--		}
--		if (shift) {
--			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
--
--			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
--		}
--		dst1 += p->fix.line_length;
--		if (pitch_index) {
--			dst2 += p->fix.line_length;
--			dst1 = (u8 __iomem *)((long __force)dst2 & ~(sizeof(u32) - 1));
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+ 	depends on FB
+Index: linux-2.6.20/drivers/video/Makefile
+===================================================================
+--- linux-2.6.20.orig/drivers/video/Makefile
++++ linux-2.6.20/drivers/video/Makefile
+@@ -99,6 +99,7 @@ obj-$(CONFIG_FB_PNX4008_DUM_RGB)  += pnx
+ obj-$(CONFIG_FB_IBM_GXT4500)	  += gxt4500.o
+ obj-$(CONFIG_FB_PS3)		  += ps3fb.o
+ obj-$(CONFIG_FB_SM501)            += sm501fb.o
++obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
  
--			start_index += pitch_index;
--			start_index &= 32 - 1;
--		}
--	}
--}
-+		while (n--) {
-+			if (!s) { src++; s = 32; }
-+			s -= image->depth;
- 
--static inline void slow_imageblit(const struct fb_image *image, struct fb_info *p, 
--				  u8 __iomem *dst1, u32 fgcolor,
--				  u32 bgcolor, 
--				  u32 start_index,
--				  u32 pitch_index)
--{
--	u32 shift, color = 0, bpp = p->var.bits_per_pixel;
--	u32 __iomem *dst, *dst2;
--	u32 val, pitch = p->fix.line_length;
--	u32 null_bits = 32 - bpp;
--	u32 spitch = (image->width+7)/8;
--	const u8 *src = image->data, *s;
--	u32 i, j, l;
--	
--	dst2 = (u32 __iomem *) dst1;
--	fgcolor <<= FB_LEFT_POS(bpp);
--	bgcolor <<= FB_LEFT_POS(bpp);
-+			color = (swab32p(src) & (mask << s));
-+			if (image->depth == 1)
-+				color = color ? image->fg_color : image->bg_color;
-+			else
-+				color >>= s;
- 
--	for (i = image->height; i--; ) {
--		shift = val = 0;
--		l = 8;
--		j = image->width;
--		dst = (u32 __iomem *) dst1;
--		s = src;
-+			if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
-+			    p->fix.visual == FB_VISUAL_DIRECTCOLOR)
-+				color = palette[color];
- 
--		/* write leading bits */
--		if (start_index) {
--			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0,start_index));
--			val = FB_READL(dst) & start_mask;
--			shift = start_index;
--		}
-+			val <<= shift;
-+			val |= color;
- 
--		while (j--) {
--			l--;
--			color = (*s & (1 << l)) ? fgcolor : bgcolor;
--			val |= FB_SHIFT_HIGH(color, shift);
--			
--			/* Did the bitshift spill bits to the next long? */
-+			/* Did the bitshift spill bits into the next long? */
- 			if (shift >= null_bits) {
--				FB_WRITEL(val, dst++);
--				val = (shift == null_bits) ? 0 :
--					FB_SHIFT_LOW(color,32 - shift);
-+				FB_WRITEL(val, dst1);
-+				dst1 += bpw;
-+				val = (shift == null_bits) ? 0 : (color >> (access - shift));
- 			}
- 			shift += bpp;
--			shift &= (32 - 1);
--			if (!l) { l = 8; s++; };
-+			shift &= (access - 1);
- 		}
-+		s -= (spitch << 3) - image->width * image->depth;
- 
- 		/* write trailing bits */
-- 		if (shift) {
--			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
-+		if (shift) {
-+			u32 end_mask = (~(u32)0 << shift);
- 
--			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
-+			val = FB_READL(dst1);
-+			val &= end_mask;
-+			FB_WRITEL(val, dst1);
- 		}
--		
--		dst1 += pitch;
--		src += spitch;	
+ # Platform or fallback drivers go here
+ obj-$(CONFIG_FB_VESA)             += vesafb.o
+Index: linux-2.6.20/drivers/video/xilinxfb.c
+===================================================================
+--- /dev/null
++++ linux-2.6.20/drivers/video/xilinxfb.c
+@@ -0,0 +1,389 @@
++/*
++ * xilinxfb.c
++ *
++ * Xilinx TFT LCD frame buffer driver
++ *
++ * Author: MontaVista Software, Inc.
++ *         source@mvista.com
++ *
++ * 2002-2007 (c) MontaVista Software, Inc.  This file is licensed under the
++ * terms of the GNU General Public License version 2.  This program is licensed
++ * "as is" without any warranty of any kind, whether express or implied.
++ */
 +
-+		dst += p->fix.line_length;
- 		if (pitch_index) {
--			dst2 += pitch;
--			dst1 = (u8 __iomem *)((long __force)dst2 & ~(sizeof(u32) - 1));
-+			dst2 += p->fix.line_length;
-+			dst = (u8 __iomem *)((long __force)dst2 & ~(bpw - 1));
- 			start_index += pitch_index;
--			start_index &= 32 - 1;
-+			start_index &= access - 1;
- 		}
--		
- 	}
- }
- 
-@@ -210,101 +150,105 @@ static inline void slow_imageblit(const struct fb_image *image, struct fb_info *
-  *           beginning and end of a scanline is dword aligned
-  */
- static inline void fast_imageblit(const struct fb_image *image, struct fb_info *p, 
--				  u8 __iomem *dst1, u32 fgcolor, 
--				  u32 bgcolor) 
-+				  u8 __iomem *dst) 
- {
--	u32 fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
--	u32 ppw = 32/bpp, spitch = (image->width + 7)/8;
--	u32 bit_mask, end_mask, eorx, shift;
-+	u32 bit_mask, end_mask = 0, mask = -1, eorx, fgx, fgcolor, bgx, bgcolor, val;
-+	int scan_align = p->pixmap.scan_align - 1, spitch = (image->width + 7) >> 3;
-+	int access = 16, bpw = access >> 3, bits;
-+	int bpp = p->var.bits_per_pixel, ppw, shift, i, j;
- 	const char *s = image->data, *src;
--	u32 __iomem *dst;
- 	const u32 *tab = NULL;
--	int i, j, k;
--		
-+	u8 __iomem *dst1;
++/*
++ * This driver was based on au1100fb.c by MontaVista rewritten for 2.6
++ * by Embedded Alley Solutions <source@embeddedalley.com>, which in turn
++ * was based on skeletonfb.c, Skeleton for a frame buffer device by
++ * Geert Uytterhoeven.
++ */
 +
-+	spitch = (spitch + scan_align) & ~scan_align;
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/version.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/fb.h>
++#include <linux/init.h>
++#include <linux/dma-mapping.h>
++#include <linux/platform_device.h>
 +
-+	if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
-+	    p->fix.visual == FB_VISUAL_DIRECTCOLOR) {
-+		fgx = fgcolor = ((u32*)(p->pseudo_palette))[image->fg_color];
-+		bgx = bgcolor = ((u32*)(p->pseudo_palette))[image->bg_color];
-+	} else {
-+		fgx = fgcolor = image->fg_color;
-+		bgx = bgcolor = image->bg_color;
++#include <asm/io.h>
++#include <syslib/virtex_devices.h>
++
++#define DRIVER_NAME		"xilinxfb"
++#define DRIVER_DESCRIPTION	"Xilinx TFT LCD frame buffer driver"
++
++/*
++ * Xilinx calls it "PLB TFT LCD Controller" though it can also be used for
++ * the VGA port on the Xilinx ML40x board. This is a hardware display controller
++ * for a 640x480 resolution TFT or VGA screen.
++ *
++ * The interface to the framebuffer is nice and simple.  There are two
++ * control registers.  The first tells the LCD interface where in memory
++ * the frame buffer is (only the 11 most significant bits are used, so
++ * don't start thinking about scrolling).  The second allows the LCD to
++ * be turned on or off as well as rotated 180 degrees.
++ */
++#define NUM_REGS	2
++#define REG_FB_ADDR	0
++#define REG_CTRL	1
++#define REG_CTRL_ENABLE	 0x0001
++#define REG_CTRL_ROTATE	 0x0002
++
++/*
++ * The hardware only handles a single mode: 640x480 24 bit true
++ * color. Each pixel gets a word (32 bits) of memory.  Within each word,
++ * the 8 most significant bits are ignored, the next 8 bits are the red
++ * level, the next 8 bits are the green level and the 8 least
++ * significant bits are the blue level.  Each row of the LCD uses 1024
++ * words, but only the first 640 pixels are displayed with the other 384
++ * words being ignored.  There are 480 rows.
++ */
++#define BYTES_PER_PIXEL	4
++#define BITS_PER_PIXEL	(BYTES_PER_PIXEL * 8)
++#define XRES		640
++#define YRES		480
++#define XRES_VIRTUAL	1024
++#define YRES_VIRTUAL	YRES
++#define LINE_LENGTH	(XRES_VIRTUAL * BYTES_PER_PIXEL)
++#define FB_SIZE		(YRES_VIRTUAL * LINE_LENGTH)
++
++#define RED_SHIFT	16
++#define GREEN_SHIFT	8
++#define BLUE_SHIFT	0
++
++#define PALETTE_ENTRIES_NO	16	/* passed to fb_alloc_cmap() */
++
++/*
++ * Here are the default fb_fix_screeninfo and fb_var_screeninfo structures
++ */
++static struct fb_fix_screeninfo xilinx_fb_fix __initdata = {
++	.id =		"Xilinx",
++	.type =		FB_TYPE_PACKED_PIXELS,
++	.visual =	FB_VISUAL_TRUECOLOR,
++	.smem_len =	FB_SIZE,
++	.line_length =	LINE_LENGTH,
++	.accel =	FB_ACCEL_NONE
++};
++
++static struct fb_var_screeninfo xilinx_fb_var __initdata = {
++	.xres =			XRES,
++	.yres =			YRES,
++	.xres_virtual =		XRES_VIRTUAL,
++	.yres_virtual =		YRES_VIRTUAL,
++
++	.bits_per_pixel =	BITS_PER_PIXEL,
++
++	.red =		{ RED_SHIFT, 8, 0 },
++	.green =	{ GREEN_SHIFT, 8, 0 },
++	.blue =		{ BLUE_SHIFT, 8, 0 },
++	.transp =	{ 0, 0, 0 },
++
++	.activate =	FB_ACTIVATE_NOW
++};
++
++struct xilinxfb_drvdata {
++
++	struct fb_info	info;		/* FB driver info record */
++
++	u32		regs_phys;	/* phys. address of the control registers */
++	u32 __iomem	*regs;		/* virt. address of the control registers */
++
++	unsigned char __iomem	*fb_virt;	/* virt. address of the frame buffer */
++	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
++
++	u32		reg_ctrl_default;
++
++	u32		pseudo_palette[PALETTE_ENTRIES_NO];
++					/* Fake palette of 16 colors */
++};
++
++#define to_xilinxfb_drvdata(_info) \
++	container_of(_info, struct xilinxfb_drvdata, info)
++
++/*
++ * The LCD controller has DCR interface to its registers, but all
++ * the boards and configurations the driver has been tested with
++ * use opb2dcr bridge. So the registers are seen as memory mapped.
++ * This macro is to make it simple to add the direct DCR access
++ * when it's needed.
++ */
++#define xilinx_fb_out_be32(driverdata, offset, val) \
++	out_be32(driverdata->regs + offset, val)
++
++static int
++xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
++	unsigned transp, struct fb_info *fbi)
++{
++	u32 *palette = fbi->pseudo_palette;
++
++	if (regno >= PALETTE_ENTRIES_NO)
++		return -EINVAL;
++
++	if (fbi->var.grayscale) {
++		/* Convert color to grayscale.
++		 * grayscale = 0.30*R + 0.59*G + 0.11*B */
++		red = green = blue =
++			(red * 77 + green * 151 + blue * 28 + 127) >> 8;
 +	}
 +
- 	switch (bpp) {
- 	case 8:
- 		tab = cfb_tab8;
-+		ppw = 4;
- 		break;
- 	case 16:
- 		tab = cfb_tab16;
-+		ppw = 2;
- 		break;
- 	case 32:
- 	default:
- 		tab = cfb_tab32;
-+		ppw = 1;
- 		break;
- 	}
- 
--	for (i = ppw-1; i--; ) {
-+	for (i = 0; i < 32; i += bpp) {
- 		fgx <<= bpp;
- 		bgx <<= bpp;
- 		fgx |= fgcolor;
- 		bgx |= bgcolor;
- 	}
--	
++	/* fbi->fix.visual is always FB_VISUAL_TRUECOLOR */
 +
- 	bit_mask = (1 << ppw) - 1;
-+	mask >>= (32 - access);
- 	eorx = fgx ^ bgx;
--	k = image->width/ppw;
- 
- 	for (i = image->height; i--; ) {
--		dst = (u32 __iomem *) dst1, shift = 8; src = s;
--		
--		for (j = k; j--; ) {
--			shift -= ppw;
--			end_mask = tab[(*src >> shift) & bit_mask];
--			FB_WRITEL((end_mask & eorx)^bgx, dst++);
--			if (!shift) { shift = 8; src++; }		
-+		dst1 = dst, shift = 8, bits = 0; src = s;
++	/* We only handle 8 bits of each color. */
++	red >>= 8;
++	green >>= 8;
++	blue >>= 8;
++	palette[regno] = (red << RED_SHIFT) | (green << GREEN_SHIFT) |
++			 (blue << BLUE_SHIFT);
 +
-+		for (j = image->width*bpp; j > 0; j -= access) {
-+			if (bits <= 0) {
-+				shift -= ppw, bits = 32;
-+				end_mask = (swab32(tab[(*src >> shift) & bit_mask]) & eorx)^bgx;
-+				if (!shift) { shift = 8; src++; }
-+			}
-+			bits -= access;
-+			val = (end_mask >> bits) & mask;
-+			FB_WRITEL(val, dst1);
-+			dst1 += bpw;
- 		}
--		dst1 += p->fix.line_length;
-+		dst += p->fix.line_length;
- 		s += spitch;
- 	}
--}	
--	
++	return 0;
 +}
 +
- void cfb_imageblit(struct fb_info *p, const struct fb_image *image)
- {
--	u32 fgcolor, bgcolor, start_index, bitstart, pitch_index = 0;
--	u32 bpl = sizeof(u32), bpp = p->var.bits_per_pixel;
--	u32 width = image->width;
--	u32 dx = image->dx, dy = image->dy;
-+	int bits = p->pixmap.access_align, bpp = p->var.bits_per_pixel;
-+	u32 start_index, bitstart, pitch_index = 0;
-+	int dx = image->dx, dy = image->dy;
- 	u8 __iomem *dst1;
- 
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
- 
--	bitstart = (dy * p->fix.line_length * 8) + (dx * bpp);
--	start_index = bitstart & (32 - 1);
--	pitch_index = (p->fix.line_length & (bpl - 1)) * 8;
-+	bitstart = ((dy * p->fix.line_length) << 3) + (dx * bpp);
-+	pitch_index = p->fix.line_length & 3;
-+	start_index = bitstart & 31;
- 
--	bitstart /= 8;
--	bitstart &= ~(bpl - 1);
--	dst1 = p->screen_base + bitstart;
-+	bitstart &= ~(bits-1);
-+	dst1 = p->screen_base + (bitstart >> 3);
- 
- 	if (p->fbops->fb_sync)
- 		p->fbops->fb_sync(p);
- 
--	if (image->depth == 1) {
--		if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
--		    p->fix.visual == FB_VISUAL_DIRECTCOLOR) {
--			fgcolor = ((u32*)(p->pseudo_palette))[image->fg_color];
--			bgcolor = ((u32*)(p->pseudo_palette))[image->bg_color];
--		} else {
--			fgcolor = image->fg_color;
--			bgcolor = image->bg_color;
--		}	
--		
--		if (32 % bpp == 0 && !start_index && !pitch_index && 
--		    ((width & (32/bpp-1)) == 0) &&
--		    bpp >= 8 && bpp <= 32) 			
--			fast_imageblit(image, p, dst1, fgcolor, bgcolor);
--		else 
--			slow_imageblit(image, p, dst1, fgcolor, bgcolor,
--					start_index, pitch_index);
-+	if (image->depth != 1 || start_index || pitch_index || bpp < 8 || bpp > 32 ||
-+	   (32 % bpp) || (image->width * bpp % 32)) {
-+		pitch_index = (p->fix.line_length << 3) & bits;
-+		start_index = bitstart & (bits - 1);
-+		slow_imageblit(image, p, dst1, start_index, pitch_index);
- 	} else
--		color_imageblit(image, p, dst1, start_index, pitch_index);
-+		fast_imageblit(image, p, dst1);
- }
- 
- EXPORT_SYMBOL(cfb_imageblit);
- 
--MODULE_AUTHOR("James Simmons <jsimmons@users.sf.net>");
-+MODULE_AUTHOR("James Simmons <jsimmons@infradead.org>");
- MODULE_DESCRIPTION("Generic software accelerated imaging drawing");
- MODULE_LICENSE("GPL");
- 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 2822526..ed22487 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -242,48 +242,6 @@ static void fb_set_logo_directpalette(struct fb_info *info,
- 		palette[i] = i << redshift | i << greenshift | i << blueshift;
- }
- 
--static void fb_set_logo(struct fb_info *info,
--			       const struct linux_logo *logo, u8 *dst,
--			       int depth)
--{
--	int i, j, k;
--	const u8 *src = logo->data;
--	u8 xor = (info->fix.visual == FB_VISUAL_MONO01) ? 0xff : 0;
--	u8 fg = 1, d;
--
--	if (fb_get_color_depth(&info->var, &info->fix) == 3)
--		fg = 7;
--
--	if (info->fix.visual == FB_VISUAL_MONO01 ||
--	    info->fix.visual == FB_VISUAL_MONO10)
--		fg = ~((u8) (0xfff << info->var.green.length));
--
--	switch (depth) {
--	case 4:
--		for (i = 0; i < logo->height; i++)
--			for (j = 0; j < logo->width; src++) {
--				*dst++ = *src >> 4;
--				j++;
--				if (j < logo->width) {
--					*dst++ = *src & 0x0f;
--					j++;
--				}
--			}
--		break;
--	case 1:
--		for (i = 0; i < logo->height; i++) {
--			for (j = 0; j < logo->width; src++) {
--				d = *src ^ xor;
--				for (k = 7; k >= 0; k--) {
--					*dst++ = ((d >> k) & 1) ? fg : 0;
--					j++;
--				}
--			}
--		}
--		break;
--	}
--}
--
- /*
-  * Three (3) kinds of logo maps exist.  linux_logo_clut224 (>16 colors),
-  * linux_logo_vga16 (16 colors) and linux_logo_mono (2 colors).  Depending on
-@@ -452,10 +410,9 @@ int fb_prepare_logo(struct fb_info *info, int rotate)
- 	/* Return if no suitable logo was found */
- 	fb_logo.logo = fb_find_logo(depth);
- 
--	if (!fb_logo.logo) {
-+	if (!fb_logo.logo)
- 		return 0;
--	}
--	
++static int
++xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
++{
++	struct xilinxfb_drvdata *drvdata = to_xilinxfb_drvdata(fbi);
 +
- 	if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
- 		yres = info->var.yres;
- 	else
-@@ -479,14 +436,13 @@ int fb_prepare_logo(struct fb_info *info, int rotate)
- int fb_show_logo(struct fb_info *info, int rotate)
- {
- 	u32 *palette = NULL, *saved_pseudo_palette = NULL;
--	unsigned char *logo_new = NULL, *logo_rotate = NULL;
- 	struct fb_image image;
- 
- 	/* Return if the frame buffer is not mapped or suspended */
- 	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING)
- 		return 0;
- 
--	image.depth = 8;
-+	image.depth = fb_logo.depth;
- 	image.data = fb_logo.logo->data;
- 
- 	if (fb_logo.needs_cmapreset)
-@@ -507,17 +463,13 @@ int fb_show_logo(struct fb_info *info, int rotate)
- 		info->pseudo_palette = palette;
- 	}
- 
--	if (fb_logo.depth <= 4) {
--		logo_new = kmalloc(fb_logo.logo->width * fb_logo.logo->height, 
--				   GFP_KERNEL);
--		if (logo_new == NULL) {
--			kfree(palette);
--			if (saved_pseudo_palette)
--				info->pseudo_palette = saved_pseudo_palette;
--			return 0;
-+	if (fb_logo.depth == 1) {
-+		if (info->fix.visual == FB_VISUAL_MONO01) {
-+			u32 fg = image.fg_color;
++	switch (blank_mode) {
++	case VESA_NO_BLANKING:
++		/* turn on panel */
++		xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
++		break;
 +
-+			image.fg_color = image.bg_color;
-+			image.bg_color = fg;
- 		}
--		image.data = logo_new;
--		fb_set_logo(info, fb_logo.logo, logo_new, fb_logo.depth);
- 	}
++	case VESA_VSYNC_SUSPEND:
++	case VESA_HSYNC_SUSPEND:
++	case VESA_POWERDOWN:
++		/* turn off panel */
++		xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++	default:
++		break;
++
++	}
++	return 0; /* success */
++}
++
++static int
++xilinx_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
++{
++	if (var->xoffset != 0 || var->yoffset != 0)
++		return -EINVAL;
++
++	return 0;
++}
++
++static struct fb_ops xilinxfb_ops =
++{
++	.owner			= THIS_MODULE,
++	.fb_setcolreg		= xilinx_fb_setcolreg,
++	.fb_blank		= xilinx_fb_blank,
++	.fb_pan_display		= xilinx_fb_pan_display,
++	.fb_fillrect		= cfb_fillrect,
++	.fb_copyarea		= cfb_copyarea,
++	.fb_imageblit		= cfb_imageblit,
++};
++
++/* === The device driver === */
++
++static int
++xilinxfb_drv_probe(struct device *dev)
++{
++	struct platform_device *pdev;
++	struct xilinxfb_platform_data *pdata;
++	struct xilinxfb_drvdata *drvdata;
++	struct resource *regs_res;
++	int retval;
++
++	if (!dev)
++		return -EINVAL;
++
++	pdev = to_platform_device(dev);
++	pdata = (struct xilinxfb_platform_data *)pdev->dev.platform_data;
++
++	if (pdata == NULL) {
++		printk(KERN_ERR "Couldn't find platform data.\n");
++		return -EFAULT;
++	}
++
++	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
++	if (!drvdata) {
++		printk(KERN_ERR "Couldn't allocate device private record\n");
++		return -ENOMEM;
++	}
++	dev_set_drvdata(dev, (void *)drvdata);
++
++	/* Map the control registers in */
++	regs_res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (!regs_res || (regs_res->end - regs_res->start + 1 < 8)) {
++		printk(KERN_ERR "Couldn't get registers resource\n");
++		retval = -EFAULT;
++		goto failed1;
++	}
++
++	if (!request_mem_region(regs_res->start, 8, DRIVER_NAME)) {
++		printk(KERN_ERR
++		       "Couldn't lock memory region at 0x%08X\n",
++		       regs_res->start);
++		retval = -EBUSY;
++		goto failed1;
++	}
++	drvdata->regs = (u32 __iomem*) ioremap(regs_res->start, 8);
++	drvdata->regs_phys = regs_res->start;
++
++	/* Allocate the framebuffer memory */
++	drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(FB_SIZE),
++				&drvdata->fb_phys, GFP_KERNEL);
++	if (!drvdata->fb_virt) {
++		printk(KERN_ERR "Could not allocate frame buffer memory\n");
++		retval = -ENOMEM;
++		goto failed2;
++	}
++
++	/* Clear (turn to black) the framebuffer */
++	memset((void *) drvdata->fb_virt, 0, FB_SIZE);
++
++	/* Tell the hardware where the frame buffer is */
++	xilinx_fb_out_be32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
++
++	/* Turn on the display */
++	if (pdata->rotate_screen) {
++		drvdata->reg_ctrl_default = REG_CTRL_ENABLE | REG_CTRL_ROTATE;
++	} else {
++		drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
++	}
++	xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
++
++	/* Fill struct fb_info */
++	drvdata->info.screen_base = drvdata->fb_virt;
++	drvdata->info.fbops = &xilinxfb_ops;
++	drvdata->info.fix = xilinx_fb_fix;
++	drvdata->info.fix.smem_start = drvdata->fb_phys;
++	drvdata->info.pseudo_palette = drvdata->pseudo_palette;
++
++	if (fb_alloc_cmap(&drvdata->info.cmap, PALETTE_ENTRIES_NO, 0) < 0) {
++		printk(KERN_ERR "Fail to allocate colormap (%d entries)\n",
++			PALETTE_ENTRIES_NO);
++		retval = -EFAULT;
++		goto failed3;
++	}
++
++	drvdata->info.flags = FBINFO_DEFAULT;
++	xilinx_fb_var.height = pdata->screen_height_mm;
++	xilinx_fb_var.width = pdata->screen_width_mm;
++	drvdata->info.var = xilinx_fb_var;
++
++	/* Register new frame buffer */
++	if (register_framebuffer(&drvdata->info) < 0) {
++		printk(KERN_ERR "Could not register frame buffer\n");
++		retval = -EINVAL;
++		goto failed4;
++	}
++
++	return 0;	/* success */
++
++failed4:
++	fb_dealloc_cmap(&drvdata->info.cmap);
++
++failed3:
++	dma_free_coherent(dev, PAGE_ALIGN(FB_SIZE), drvdata->fb_virt,
++		drvdata->fb_phys);
++
++	/* Turn off the display */
++	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++	iounmap(drvdata->regs);
++
++failed2:
++	release_mem_region(regs_res->start, 8);
++
++failed1:
++	kfree(drvdata);
++	dev_set_drvdata(dev, NULL);
++
++	return retval;
++}
++
++static int
++xilinxfb_drv_remove(struct device *dev)
++{
++	struct xilinxfb_drvdata *drvdata;
++
++	if (!dev)
++		return -ENODEV;
++
++	drvdata = (struct xilinxfb_drvdata *) dev_get_drvdata(dev);
++
++#if !defined(CONFIG_FRAMEBUFFER_CONSOLE) && defined(CONFIG_LOGO)
++	xilinx_fb_blank(VESA_POWERDOWN, &drvdata->info);
++#endif
++
++	unregister_framebuffer(&drvdata->info);
++
++	fb_dealloc_cmap(&drvdata->info.cmap);
++
++	dma_free_coherent(dev, PAGE_ALIGN(FB_SIZE), drvdata->fb_virt,
++		drvdata->fb_phys);
++
++	/* Turn off the display */
++	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
++	iounmap(drvdata->regs);
++
++	release_mem_region(drvdata->regs_phys, 8);
++
++	kfree(drvdata);
++	dev_set_drvdata(dev, NULL);
++
++	return 0;
++}
++
++
++static struct device_driver xilinxfb_driver = {
++	.name		= DRIVER_NAME,
++	.bus		= &platform_bus_type,
++
++	.probe		= xilinxfb_drv_probe,
++	.remove		= xilinxfb_drv_remove
++};
++
++static int __init
++xilinxfb_init(void)
++{
++	/*
++	 * No kernel boot options used,
++	 * so we just need to register the driver
++	 */
++	return driver_register(&xilinxfb_driver);
++}
++
++static void __exit
++xilinxfb_cleanup(void)
++{
++	driver_unregister(&xilinxfb_driver);
++}
++
++module_init(xilinxfb_init);
++module_exit(xilinxfb_cleanup);
++
++MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
++MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
++MODULE_LICENSE("GPL");
+Index: linux-2.6.20/arch/ppc/syslib/virtex_devices.h
+===================================================================
+--- linux-2.6.20.orig/arch/ppc/syslib/virtex_devices.h
++++ linux-2.6.20/arch/ppc/syslib/virtex_devices.h
+@@ -13,6 +13,13 @@
  
- 	image.dx = 0;
-@@ -526,10 +478,11 @@ int fb_show_logo(struct fb_info *info, int rotate)
- 	image.height = fb_logo.logo->height;
+ #include <linux/platform_device.h>
  
- 	if (rotate) {
--		logo_rotate = kmalloc(fb_logo.logo->width *
-+		unsigned char *logo_rotate = kzalloc(fb_logo.logo->width *
- 				      fb_logo.logo->height, GFP_KERNEL);
- 		if (logo_rotate)
- 			fb_rotate_logo(info, logo_rotate, &image, rotate);
-+		kfree(logo_rotate);
- 	}
++/* ML300/403 reference design framebuffer driver platform data struct */
++struct xilinxfb_platform_data {
++	u32 rotate_screen;
++	u32 screen_height_mm;
++	u32 screen_width_mm;
++};
++
+ void __init virtex_early_serial_map(void);
  
- 	fb_do_show_logo(info, &image, rotate);
-@@ -537,8 +490,6 @@ int fb_show_logo(struct fb_info *info, int rotate)
- 	kfree(palette);
- 	if (saved_pseudo_palette != NULL)
- 		info->pseudo_palette = saved_pseudo_palette;
--	kfree(logo_new);
--	kfree(logo_rotate);
- 	return fb_logo.logo->height;
- }
- #else
+ /* Prototype for device fixup routine.  Implement this routine in the
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+--------------050704060908000105000604
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+--------------050704060908000105000604--

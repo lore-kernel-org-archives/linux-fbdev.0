@@ -1,26 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] pm2fb: removal of pm2fb_par fields
-Date: Thu, 03 May 2007 16:17:05 +0800
-Message-ID: <1178180225.4606.56.camel@daplas>
-References: <4638e8e5cd83c@wp.pl>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] fbdev sysfs updates.
+Date: Thu, 3 May 2007 15:03:07 +0100 (BST)
+Message-ID: <Pine.LNX.4.64.0705031456330.15445@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0705022040200.28169@pentafluge.infradead.org>
+	<1178141769.4606.48.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HjWUy-0003dP-4t for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 May 2007 01:17:12 -0700
-Received: from py-out-1112.google.com ([64.233.166.176])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HjWUw-0000N0-Mn
+	id 1Hjbto-0002V6-87 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 03 May 2007 07:03:12 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Hjbtn-00055P-Kn
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 May 2007 01:17:12 -0700
-Received: by py-out-1112.google.com with SMTP id a29so340922pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 03 May 2007 01:17:10 -0700 (PDT)
-In-Reply-To: <4638e8e5cd83c@wp.pl>
+	Thu, 03 May 2007 07:03:12 -0700
+In-Reply-To: <1178141769.4606.48.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,20 +30,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2007-05-02 at 21:39 +0200, Krzysztof Helt wrote:
 
->  	pm2fb_fix.smem_start = pci_resource_start(pdev, 1);
-> -	pm2fb_fix.smem_len = default_par->fb_size;
-> +	pm2fb_fix.smem_len = pm2fb_fix.smem_len;
+> On Wed, 2007-05-02 at 20:45 +0100, James Simmons wrote:
+> > Andrew can you try this patch. The goal of the patch is to allow the 
+> > hardware behind fbdev to be shared with out types of devices i.e 
+> > backlight, drm, and display. Please give it a try.
+> > 
+> 
+> Any real world examples on how this patch can allow sharing with DRM?
+> I'm not sure if your changelog reflects the content of this patch.
 
-We don't need this assignment, correct?
-
-No need to resend, I'll just remove that line.
-
-Tony
-
+DRM would need to be updated to use a child device. The idea is simple. 
+Use the device created with device_create instead of the parent device.
+The conflict was storing our private data with the parent device. Now it 
+is stored in the child device. Other subsystems already use this approach. 
+The drivers would need to be be cleaned up. Right now they use the parent 
+device to stored fb_info. 
 
 
 -------------------------------------------------------------------------

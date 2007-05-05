@@ -1,24 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 18/20] skeletonfb: improvements
-Date: Sat, 05 May 2007 23:05:17 +0800
-Message-ID: <463C9D2D.4020305@gmail.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [PATCH 06/20] vt8623fb: New framebuffer
+	driver for VIA VT8623
+Date: Sat, 5 May 2007 21:15:51 +0300
+Message-ID: <20070505181551.GB6016@sci.fi>
+References: <463C996A.9050005@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HkNx5-0000b4-2C for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 05 May 2007 10:21:47 -0700
-Received: from py-out-1112.google.com ([64.233.166.180])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HkMEY-0008EN-Gc
+	id 1HkOnU-0003Q8-FJ for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 05 May 2007 11:15:56 -0700
+Received: from smtp5.pp.htv.fi ([213.243.153.39])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HkOnT-000398-Uy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 05 May 2007 08:31:43 -0700
-Received: by py-out-1112.google.com with SMTP id a29so906538pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 05 May 2007 08:31:42 -0700 (PDT)
+	Sat, 05 May 2007 11:15:56 -0700
+Content-Disposition: inline
+In-Reply-To: <463C996A.9050005@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,53 +30,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Sat, May 05, 2007 at 10:49:14PM +0800, Antonino A. Daplas wrote:
+> From: Ondrej Zajicek <santiago@crfreenet.org>
+> =
 
-This patch adds a macro to register PCI ids table and corrects
-type of xxxfb_fix variable to avoid modpost warnings.
+> This patch adds fbdev driver for graphics core in VIA VT8623
+> =
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
+> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+> ---
+> =
 
- drivers/video/skeletonfb.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+>  Documentation/fb/vt8623fb.txt |   64 +++
+>  drivers/video/Kconfig         |   14 +
+>  drivers/video/Makefile        |    1 =
 
-diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
-index c15b6fe..842b5cd 100644
---- a/drivers/video/skeletonfb.c
-+++ b/drivers/video/skeletonfb.c
-@@ -84,7 +84,7 @@ struct xxx_par;
-  * if we don't use modedb. If we do use modedb see xxxfb_init how to use it
-  * to get a fb_var_screeninfo. Otherwise define a default var as well. 
-  */
--static struct fb_fix_screeninfo xxxfb_fix __initdata = {
-+static struct fb_fix_screeninfo xxxfb_fix __devinitdata = {
- 	.id =		"FB's name", 
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_PSEUDOCOLOR,
-@@ -705,7 +705,7 @@ static int __devinit xxxfb_probe(struct 
-     info->screen_base = framebuffer_virtual_memory;
-     info->fbops = &xxxfb_ops;
-     info->fix = xxxfb_fix; /* this will be the only time xxxfb_fix will be
--			    * used, so mark it as __initdata
-+			    * used, so mark it as __devinitdata
- 			    */
-     info->pseudo_palette = pseudo_palette; /* The pseudopalette is an
- 					    * 16-member array
-@@ -900,6 +900,8 @@ static struct pci_driver xxxfb_driver = 
- 	.resume =       xxxfb_resume,  /* optional but recommended */
- };
- 
-+MODULE_DEVICE_TABLE(pci, xxxfb_id_table);
-+
- int __init xxxfb_init(void)
- {
- 	/*
+>  drivers/video/vt8623fb.c      |  920 +++++++++++++++++++++++++++++++++++=
+++++++
+>  4 files changed, 999 insertions(+), 0 deletions(-)
+> =
 
+> diff --git a/Documentation/fb/vt8623fb.txt b/Documentation/fb/vt8623fb.txt
+> new file mode 100644
+> index 0000000..f654576
+> --- /dev/null
+> +++ b/Documentation/fb/vt8623fb.txt
+> @@ -0,0 +1,64 @@
+> +
+> +	vt8623fb - fbdev driver for graphics core in VIA VT8623 chipset
+> +	=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+Doesn't viafb support this hardware?
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

@@ -1,8 +1,9 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: pm2fb with acceleration is slow
-Date: Mon, 07 May 2007 17:09:01 +0800
-Message-ID: <1178528941.4815.7.camel@daplas>
-References: <463ed4f8341d4@wp.pl>
+From: romain@dolbeau.org (Romain Dolbeau)
+Subject: Re: [PATCH] pm3fb: preliminary support for
+	2.6	kernel
+Date: Mon, 7 May 2007 14:08:56 +0200
+Message-ID: <1hxqxt8.1dr1xgy136212oM%romain@dolbeau.org>
+References: <463e3edaad7a2@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,16 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HkzDV-0004UJ-J8 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 May 2007 02:09:15 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HkzDT-00038s-Nx
+	id 1Hl22J-0008Vi-8a for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 07 May 2007 05:09:51 -0700
+Received: from gandalf.caps-entreprise.com ([212.180.111.10])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Hl22G-0007EM-J2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 May 2007 02:09:13 -0700
-Received: by py-out-1112.google.com with SMTP id a29so1132840pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 07 May 2007 02:09:10 -0700 (PDT)
-In-Reply-To: <463ed4f8341d4@wp.pl>
+	Mon, 07 May 2007 05:09:51 -0700
+In-Reply-To: <463e3edaad7a2@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,37 +30,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2007-05-07 at 09:27 +0200, Krzysztof Helt wrote:
-> Hi,
-> 
-> Recently, I have added accelerated methods for fillrect and
-> copyarea. Scrolling has become very slow (about ten times slower).
-> 
-> The fillrect function speeds ups things - the clear command is
-> few times faster and scrolling is few percent faster.
-> 
-> The copyarea method makes scrolling much slower. Any hints?
+Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
 
-Without any acceleration, the default scrolling is redraw, basically
-it's all framebuffer writes with minimal reads.  With copyarea, reads
-generally equal writes.
+> This is a basic port from 2.4 kernel to 2.6. Acceleration is lost
+> and big endian support probably too. The driver works in 8, 16
+> and 32 bit mode.
 
-So one possibility is slow bus reads, even with acceleration. Another
-possibility is that wait_pm2() is taking a long time, so you can try
-removing that from copyarea.
+> - *  CHANGELOG:
+> - *  Mon Feb 11 10:35:48 MET 2002, v 1.4.11B: Cosmetic update.
 
-Another possibility is that you're wait_pm2() function is also waiting
-for vblank which can really slow it down.
+There was a 1.4.11C, which I believe was included in 2.4.26-pre2 .
 
-You can also try to instrument copyarea, ie by making a private ioctl
-that calls your copyarea function. Then compare how long it takes to say
-copy 1000 500x500 rectangles, with and without the wait_pm2() function.
+And if my IRISA e-mail address is still in the source, it's probably
+best to update it to <romain@dolbeau.org>.
 
-Tony
-
-
+-- 
+Romain Dolbeau
+<romain@dolbeau.org>
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

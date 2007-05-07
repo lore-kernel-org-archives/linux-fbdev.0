@@ -1,102 +1,214 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] pm3fb: preliminary support for
-	2.6	kernel
-Date: Tue, 08 May 2007 05:07:54 +0800
-Message-ID: <1178572074.4674.3.camel@daplas>
-References: <463e3edaad7a2@wp.pl>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: AT91/AT32 LCD
+	Controller framebuffer driver
+Date: Tue, 08 May 2007 05:40:17 +0800
+Message-ID: <1178574017.4674.30.camel@daplas>
+References: <463F3388.7020102@rfo.atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlAR8-0005jQ-9C for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 May 2007 14:08:03 -0700
-Received: from py-out-1112.google.com ([64.233.166.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlAR7-00010N-3e
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 May 2007 14:08:02 -0700
-Received: by py-out-1112.google.com with SMTP id a29so1308818pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 07 May 2007 14:08:00 -0700 (PDT)
-In-Reply-To: <463e3edaad7a2@wp.pl>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S967010AbXEGVkg@vger.kernel.org>
+In-Reply-To: <463F3388.7020102@rfo.atmel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Victor <andrew@sanpeople.com>, Linux Kernel list <linux-kernel@vger.kernel.org>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>, Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 
-On Sun, 2007-05-06 at 22:47 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Mon, 2007-05-07 at 16:11 +0200, Nicolas Ferre wrote:
+> From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 > 
-> This is a basic port from 2.4 kernel to 2.6. Acceleration is lost
-> and big endian support probably too. The driver works in 8, 16
-> and 32 bit mode.
+> Adds a framebuffer driver to ATMEL AT91SAM9x and AT32 
+> aka AVR32 platforms. Those chips share quite the same
+> IP and this code is suitable for both architectures.
 > 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+> ---
+> 
+> +#if defined(CONFIG_ARCH_AT91)
+> +#define	ATMEL_LCDFB_FBINFO_DEFAULT	FBINFO_DEFAULT
+> +
+> +static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
+> +					struct fb_var_screeninfo *var)
+> +{
+> +
+> +}
 
-Thanks for doing this.  I change the VESA_* constants to FB_BLANK_*
-constants. It's just a simple substitution, but let me know if it's
-correct. (I don't know what to do with FB_BLANK_UNBLANK.)
+Or
+
+#define atmel_lcdfb_update(...) do {} while (0)
+
+?
+
+
+> +
+> +static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
+> +	.type		= FB_TYPE_PACKED_PIXELS,
+> +	.visual		= FB_VISUAL_TRUECOLOR,
+> +	.xpanstep	= 0,
+> +	.ypanstep	= 0,
+> +	.ywrapstep	= 0,
+> +	.accel		= FB_ACCEL_NONE,
+> +};
+> +
+
+This driver has fb_pan_display() which I assume works. However, you also
+need to set ypanstep and/or xpanstep and/or ywrapstep to a nonzero
+value, depending on the hardware/drive capability.
+
+> +static u32 pseudo_palette[16] = {
+> +	0x000000,
+> +	0xaa0000,
+> +	0x00aa00,
+> +	0xaa5500,
+> +	0x0000aa,
+> +	0xaa00aa,
+> +	0x00aaaa,
+> +	0xaaaaaa,
+> +	0x555555,
+> +	0xff5555,
+> +	0x55ff55,
+> +	0xffff55,
+> +	0x5555ff,
+> +	0xff55ff,
+> +	0x55ffff,
+> +	0xffffff
+> +};
+> +
+
+Do you really need to pre-fill pseudo_palette[]? The contents are going
+to be overwritten by the console anyway (The pseudo_palette is for
+fbcon's use only).
+
+You can also include pseudo_palette[] as part of struct
+atmel_lcdfb_info, then in your probe routine:
+
+info->pseudo_palette = par->pseudo_palette;
+
+to reduce the size of the kernel image. 
+
+
+> +
+> +static inline u_int chan_to_field(u_int chan, const struct fb_bitfield *bf)
+
+Might as well change u_int to u32 or unsigned int, for consistency.
+
+> +{
+> +	chan &= 0xffff;
+> +	chan >>= 16 - bf->length;
+> +	return chan << bf->offset;
+> +}
+> +
+> +
+> +
+> +
+> +static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
+> +{
+> +	struct fb_info *info = sinfo->info;
+> +	int ret = 0;
+> +
+> +	memset(info->screen_base, 0, info->fix.smem_len);
+
+memset_io?
+
+> +	info->var.activate |= FB_ACTIVATE_FORCE | FB_ACTIVATE_NOW;
+> +
+> +	dev_info(info->device,
+> +	       "%luKiB frame buffer at %08lx (mapped at %p)\n",
+> +	       (unsigned long)info->fix.smem_len / 1024,
+> +	       (unsigned long)info->fix.smem_start,
+> +	       info->screen_base);
+> +
+> +	/* Allocate colormap */
+> +	ret = fb_alloc_cmap(&info->cmap, 256, 0);
+> +	if (ret < 0)
+> +		dev_err(info->device, "Alloc color map failed\n");
+> +
+> +	return ret;
+> +}
+> +
+
+> +
+> +
+> +static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct fb_info *info;
+> +	struct atmel_lcdfb_info *sinfo;
+> +	struct atmel_lcdfb_info *pdata_sinfo;
+> +	struct resource *regs = NULL;
+> +	struct resource *map = NULL;
+> +	int ret;
+> +
+> +	dev_dbg(dev, "%s BEGIN\n", __func__);
+> +
+> +	ret = -ENOMEM;
+> +	info = framebuffer_alloc(sizeof(struct atmel_lcdfb_info), dev);
+> +	if (!info) {
+> +		dev_err(dev, "cannot allocate memory\n");
+> +		goto out;
+> +	}
+> +
+> +	sinfo = info->par;
+> +
+> +	if (dev->platform_data) {
+> +		pdata_sinfo = (struct atmel_lcdfb_info *)dev->platform_data;
+> +		sinfo->default_bpp = pdata_sinfo->default_bpp;
+> +		sinfo->default_dmacon = pdata_sinfo->default_dmacon;
+> +		sinfo->default_lcdcon2 = pdata_sinfo->default_lcdcon2;
+> +		sinfo->default_monspecs = pdata_sinfo->default_monspecs;
+> +		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
+> +		sinfo->guard_time = pdata_sinfo->guard_time;
+> +	} else {
+> +		dev_err(dev, "cannot get default configuration\n");
+> +		goto out;
+
+Wrong goto? Should be goto free_info?
+
+
+> +
+> +free_cmap:
+> +	fb_dealloc_cmap(&info->cmap);
+> +unregister_irqs:
+> +	free_irq(sinfo->irq_base, info);
+> +unmap_mmio:
+> +	iounmap(sinfo->mmio);
+> +release_mem:
+> + 	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
+> +free_fb:
+> +	if (map) {
+> +		iounmap(info->screen_base);
+> +	} else {
+> +		atmel_lcdfb_free_video_memory(sinfo);
+> +	}
+> +
+> +release_intmem:
+> +	if (map) {
+> +		release_mem_region(info->fix.smem_start, info->fix.smem_len);
+> +	}
+
+Unnecessary curly braces
+
+> +
+> +static struct platform_driver atmel_lcdfb_driver = {
+> +	.remove		= __exit_p(atmel_lcdfb_remove),
+> +	.driver		= {
+> +		.name	= "atmel_lcdfb",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int __init atmel_lcdfb_init(void)
+> +{
+> +	return platform_driver_probe(&atmel_lcdfb_driver, atmel_lcdfb_probe);
+> +}
+
+Is this intentional?  Why not platform_driver_register()?
+
+> +
+> +static void __exit atmel_lcdfb_exit(void)
+> +{
+> +	platform_driver_unregister(&atmel_lcdfb_driver);
+> +}
+> +
 
 Tony
-
-static int pm3fb_blank(int blank_mode, struct fb_info *info)
-{
-	struct pm3_par *par = info->par;
-	u32 video = par->video;
-
-	/*
-	 * Oxygen VX1 - it appears that setting PM3VideoControl and
-	 * then PM3RD_SyncControl to the same SYNC settings undoes
-	 * any net change - they seem to xor together.  Only set the
-	 * sync options in PM3RD_SyncControl.  --rmk
-	 */
-	video &= ~(PM3VideoControl_HSYNC_MASK |
-		   PM3VideoControl_VSYNC_MASK);
-	video |= PM3VideoControl_HSYNC_ACTIVE_HIGH |
-		 PM3VideoControl_VSYNC_ACTIVE_HIGH;
-
-	switch (blank_mode) {
-	case FB_BLANK_NORMAL:	/* FIXME */
-		video = video & ~(PM3VideoControl_ENABLE);
-		break;
-		
-	case FB_BLANK_HSYNC_SUSPEND:
-		video = video & ~(PM3VideoControl_HSYNC_MASK |
-				  PM3VideoControl_BLANK_ACTIVE_LOW);
-		break;
-	case FB_BLANK_VSYNC_SUSPEND:
-		video = video & ~(PM3VideoControl_VSYNC_MASK |
-				  PM3VideoControl_BLANK_ACTIVE_LOW);
-		break;
-	case FB_BLANK_POWERDOWN:
-		video = video & ~(PM3VideoControl_HSYNC_MASK |
-				  PM3VideoControl_VSYNC_MASK |
-				  PM3VideoControl_BLANK_ACTIVE_LOW);
-		break;
-	default:
-		DPRINTK("Unsupported blanking %d\n", blank_mode);
-		return 1;
-	}
-	
-	PM3_SLOW_WRITE_REG(par,PM3VideoControl, video);
-
-	return 0;
-}
-
-
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/

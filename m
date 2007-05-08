@@ -1,24 +1,26 @@
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH] pm2fb: fb_sync added
-Date: Tue, 08 May 2007 15:05:17 +0200
-Message-ID: <4640758d62f82@wp.pl>
+Date: Tue, 08 May 2007 21:34:10 +0800
+Message-ID: <1178631250.4953.7.camel@daplas>
 References: <464026127324d@wp.pl> <1178627547.4953.5.camel@daplas>
+	<4640758d62f82@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlPNb-0007LG-K2 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 06:05:23 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HlPNY-0001s8-Oc
+	id 1HlPpe-00023y-1W for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 May 2007 06:34:22 -0700
+Received: from py-out-1112.google.com ([64.233.166.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlPpc-0002dM-N9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 06:05:22 -0700
-In-reply-to: <464026127324d@wp.pl> <1178627547.4953.5.camel@daplas>
-Content-Disposition: inline
+	Tue, 08 May 2007 06:34:21 -0700
+Received: by py-out-1112.google.com with SMTP id a29so1479197pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 08 May 2007 06:34:20 -0700 (PDT)
+In-Reply-To: <4640758d62f82@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,60 +31,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A.Daplas" <adaplas@gmail.com>
+Content-Type: text/plain; charset="windows-1252"
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
 Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Dnia 8-05-2007 o godz. 14:32 Antonino A. Daplas napisa=B3(a):
-> On Tue, 2007-05-08 at 09:26 +0200, Krzysztof Helt wrote:
-
-> > Current testing shows that fb_sync is not
-> > required
-
-> =
-
-> Actually, creating an fb_sync() method would be better in terms of
-> maximizing the thoroughput of the GPU in comparison with
-indiscriminate
-> calls to sync waits. =
-
-
-
-I was not clear in the first email. The pm2fb_sync is required to
-avoid corruption of display (to define it as fb_sync) during
-scrolling. It is not required to be called inside the
-pm2fb_block_op() explicitly.
-
-The change is to remove the sync call from the pm2fb_block_op().
-
-> It would have been better if imageblit is also
-> hardware assisted.
-> =
-
-
-I know, but I have only as much time as my work and family allow
- (there was plenty of it last week =3D holiday).
-
-I see a major problem with using copyarea acceleration comparing
-to redraw function. The copyarea always moves the whole
-framebuffer (milions of pixels) while the redraw works very smart
-to redraw only things which has to be redrawn. I am working to
-use something smarter for copyarea. No success yet.
-
-Regards,
-Krzysztof
-
-----------------------------------------------------
-Zobacz, jak=B1 walk=EA stoczy superbohater, by ocali=E6 siebie
-i swych bliskich. A najwi=EAksza bitwa rozegra si=EA w jego duszy.
-SPIDER-MAN 3 w kinach od 4 maja.
-http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fspiderman3.h=
-tml&sid=3D1122
-
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+T24gVHVlLCAyMDA3LTA1LTA4IGF0IDE1OjA1ICswMjAwLCBLcnp5c3p0b2YgSGVsdCB3cm90ZToK
+PiBEbmlhIDgtMDUtMjAwNyBvIGdvZHouIDE0OjMyIEFudG9uaW5vIEEuIERhcGxhcyBuYXBpc2HF
+gihhKToKPiA+IE9uIFR1ZSwgMjAwNy0wNS0wOCBhdCAwOToyNiArMDIwMCwgS3J6eXN6dG9mIEhl
+bHQgd3JvdGU6Cj4gCj4gSSBzZWUgYSBtYWpvciBwcm9ibGVtIHdpdGggdXNpbmcgY29weWFyZWEg
+YWNjZWxlcmF0aW9uIGNvbXBhcmluZwo+IHRvIHJlZHJhdyBmdW5jdGlvbi4gVGhlIGNvcHlhcmVh
+IGFsd2F5cyBtb3ZlcyB0aGUgd2hvbGUKPiBmcmFtZWJ1ZmZlciAobWlsaW9ucyBvZiBwaXhlbHMp
+IHdoaWxlIHRoZSByZWRyYXcgd29ya3MgdmVyeSBzbWFydAo+IHRvIHJlZHJhdyBvbmx5IHRoaW5n
+cyB3aGljaCBoYXMgdG8gYmUgcmVkcmF3bi4gSSBhbSB3b3JraW5nIHRvCj4gdXNlIHNvbWV0aGlu
+ZyBzbWFydGVyIGZvciBjb3B5YXJlYS4gTm8gc3VjY2VzcyB5ZXQuCj4gCgpBcmUgeW91IHVzaW5n
+IGp1c3QgcGxhaW4gbW92ZSBhbmQgcmVkcmF3PyAgSG93IGFib3V0IHRyeWluZyBwYW4gKyBtb3Zl
+LApvciBwYW4gKyByZWRyYXcuICBJZiB5b3UgY2FuIHNldCB2YXItPnlyZXNfdmlydHVhbCB0byBi
+ZSBhdCBsZWFzdCAyeAp2YXItPnlyZXMsIGl0IG1pZ2h0IGltcHJvdmUgc2Nyb2xsaW5nIHNwZWVk
+IGEgbG90LgoKVG9ueQoKCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRoaXMgU0YubmV0IGVtYWlsIGlzIHNw
+b25zb3JlZCBieSBEQjIgRXhwcmVzcwpEb3dubG9hZCBEQjIgRXhwcmVzcyBDIC0gdGhlIEZSRUUg
+dmVyc2lvbiBvZiBEQjIgZXhwcmVzcyBhbmQgdGFrZQpjb250cm9sIG9mIHlvdXIgWE1MLiBObyBs
+aW1pdHMuIEp1c3QgZGF0YS4gQ2xpY2sgdG8gZ2V0IGl0IG5vdy4KaHR0cDovL3NvdXJjZWZvcmdl
+Lm5ldC9wb3dlcmJhci9kYjIvCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZl
+bEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlz
+dHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

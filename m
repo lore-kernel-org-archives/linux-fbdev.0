@@ -1,26 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
 Subject: Re: [PATCH] pm2fb: fb_sync added
-Date: Tue, 08 May 2007 20:32:27 +0800
-Message-ID: <1178627547.4953.5.camel@daplas>
-References: <464026127324d@wp.pl>
+Date: Tue, 08 May 2007 15:05:17 +0200
+Message-ID: <4640758d62f82@wp.pl>
+References: <464026127324d@wp.pl> <1178627547.4953.5.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlOrx-0003YI-IY for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 05:32:41 -0700
-Received: from wx-out-0506.google.com ([66.249.82.238])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlOrx-00015F-9A
+	id 1HlPNb-0007LG-K2 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 May 2007 06:05:23 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HlPNY-0001s8-Oc
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 05:32:41 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so3057890wxd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 08 May 2007 05:32:40 -0700 (PDT)
-In-Reply-To: <464026127324d@wp.pl>
+	Tue, 08 May 2007 06:05:22 -0700
+In-reply-to: <464026127324d@wp.pl> <1178627547.4953.5.camel@daplas>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,28 +29,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: "Antonino A.Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2007-05-08 at 09:26 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> This patch converts internal wait_pm2() function to fb API
-> fb_sync() method.
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> ---
-> The change of arguments in acceleration function allows use of
-> fb_sync by them. Current testing shows that fb_sync is not
-> required, but I left new arguments in case it may be needed. I am
-> working on speeding scrolling now.
+Dnia 8-05-2007 o godz. 14:32 Antonino A. Daplas napisa=B3(a):
+> On Tue, 2007-05-08 at 09:26 +0200, Krzysztof Helt wrote:
 
-Actually, creating an fb_sync() method would be better in terms of
-maximizing the thoroughput of the GPU in comparison with indiscriminate
-calls to sync waits. It would have been better if imageblit is also
-hardware assisted.
+> > Current testing shows that fb_sync is not
+> > required
 
-Tony
+> =
+
+> Actually, creating an fb_sync() method would be better in terms of
+> maximizing the thoroughput of the GPU in comparison with
+indiscriminate
+> calls to sync waits. =
+
+
+
+I was not clear in the first email. The pm2fb_sync is required to
+avoid corruption of display (to define it as fb_sync) during
+scrolling. It is not required to be called inside the
+pm2fb_block_op() explicitly.
+
+The change is to remove the sync call from the pm2fb_block_op().
+
+> It would have been better if imageblit is also
+> hardware assisted.
+> =
+
+
+I know, but I have only as much time as my work and family allow
+ (there was plenty of it last week =3D holiday).
+
+I see a major problem with using copyarea acceleration comparing
+to redraw function. The copyarea always moves the whole
+framebuffer (milions of pixels) while the redraw works very smart
+to redraw only things which has to be redrawn. I am working to
+use something smarter for copyarea. No success yet.
+
+Regards,
+Krzysztof
+
+----------------------------------------------------
+Zobacz, jak=B1 walk=EA stoczy superbohater, by ocali=E6 siebie
+i swych bliskich. A najwi=EAksza bitwa rozegra si=EA w jego duszy.
+SPIDER-MAN 3 w kinach od 4 maja.
+http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fspiderman3.h=
+tml&sid=3D1122
 
 
 

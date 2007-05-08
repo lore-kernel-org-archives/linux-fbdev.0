@@ -1,28 +1,26 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] vt8623fb: Fix compile error if
-	CONFIG_MTRR=n
-Date: Tue, 08 May 2007 20:28:21 +0800
-Message-ID: <46406CE5.6040309@gmail.com>
-References: <463C996A.9050005@gmail.com>
-	<20070507232837.d3dfcfb4.akpm@linux-foundation.org>
+Subject: Re: [PATCH] pm2fb: fb_sync added
+Date: Tue, 08 May 2007 20:32:27 +0800
+Message-ID: <1178627547.4953.5.camel@daplas>
+References: <464026127324d@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlOoq-00035u-EY for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 05:29:28 -0700
-Received: from wx-out-0506.google.com ([66.249.82.230])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlOop-00082A-1r
+	id 1HlOrx-0003YI-IY for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 May 2007 05:32:41 -0700
+Received: from wx-out-0506.google.com ([66.249.82.238])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlOrx-00015F-9A
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 05:29:28 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so3056304wxd
+	Tue, 08 May 2007 05:32:41 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so3057890wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 08 May 2007 05:29:26 -0700 (PDT)
-In-Reply-To: <20070507232837.d3dfcfb4.akpm@linux-foundation.org>
+	Tue, 08 May 2007 05:32:40 -0700 (PDT)
+In-Reply-To: <464026127324d@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,48 +31,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Fix compile error if CONFIG_MTRR=n
+On Tue, 2007-05-08 at 09:26 +0200, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> This patch converts internal wait_pm2() function to fb API
+> fb_sync() method.
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> ---
+> The change of arguments in acceleration function allows use of
+> fb_sync by them. Current testing shows that fb_sync is not
+> required, but I left new arguments in case it may be needed. I am
+> working on speeding scrolling now.
 
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
-Andrew Morton wrote:
-> On Sat, 05 May 2007 22:49:14 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
-> 
->> This patch adds fbdev driver for graphics core in VIA VT8623
-> 
-> Is bust with CONFIG_MTRR=n
-> 
-> drivers/video/vt8623fb.c: In function `vt8623_pci_remove':
-> drivers/video/vt8623fb.c:797: error: `par' undeclared (first use in this function)
-> drivers/video/vt8623fb.c:797: error: (Each undeclared identifier is reported only once
-> drivers/video/vt8623fb.c:797: error: for each function it appears in.)
-> 
-> (that's ia64)
+Actually, creating an fb_sync() method would be better in terms of
+maximizing the thoroughput of the GPU in comparison with indiscriminate
+calls to sync waits. It would have been better if imageblit is also
+hardware assisted.
 
- drivers/video/vt8623fb.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+Tony
 
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index 414e76b..5e9755e 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -778,12 +778,10 @@ err_enable_device:
- static void __devexit vt8623_pci_remove(struct pci_dev *dev)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
-+	struct vt8623fb_info *par = info->par;
- 
- 	if (info) {
--
- #ifdef CONFIG_MTRR
--		struct vt8623fb_info *par = info->par;
--
- 		if (par->mtrr_reg >= 0) {
- 			mtrr_del(par->mtrr_reg, 0, 0);
- 			par->mtrr_reg = -1;
 
 
 -------------------------------------------------------------------------

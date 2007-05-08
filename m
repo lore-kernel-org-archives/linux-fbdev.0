@@ -1,28 +1,25 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH] arkfb: Fix compile error if
-	CONFIG_MTRR=n
-Date: Tue, 8 May 2007 19:04:21 +0200
-Message-ID: <20070508170420.GB27666@localhost.localdomain>
-References: <463C9A29.4010505@gmail.com>
-	<20070507233102.3ed6c42d.akpm@linux-foundation.org>
-	<46406C89.50702@gmail.com>
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] atmel_lcdfb: AT91/AT32 LCD
+ Controller framebuffer driver
+Date: Tue, 8 May 2007 19:26:55 +0200
+Message-ID: <20070508192655.08b1d649@dhcp-252-105.norway.atmel.com>
+References: <463F3388.7020102@rfo.atmel.com> <1178574017.4674.30.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlT79-0001aY-Kd for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 10:04:43 -0700
-Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
+	id 1HlTT6-0003xG-GQ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 May 2007 10:27:20 -0700
+Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HlT77-0004kL-Vm
+	(Exim 4.44) id 1HlTT5-0000FU-RB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 10:04:39 -0700
-Content-Disposition: inline
-In-Reply-To: <46406C89.50702@gmail.com>
+	Tue, 08 May 2007 10:27:20 -0700
+In-Reply-To: <1178574017.4674.30.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,36 +31,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Victor <andrew@sanpeople.com>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel list <linux-kernel@vger.kernel.org>, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
 
-On Tue, May 08, 2007 at 08:26:49PM +0800, Antonino A. Daplas wrote:
-> Fix compile error if CONFIG_MTRR=n
+Hi Antonio,
 
-Thanks for fixes, I am sorry i didn't test it enough.
-There is one related bugfix:
+Thanks for the feedback. I'm just going to reply to one of your
+comments and leave the rest for Nicolas...
 
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+On Tue, 08 May 2007 05:40:17 +0800
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
 
-diff -uprN -X linux-2.6.21-rc7-mm2/Documentation/dontdiff linux-2.6.21-rc7-mm2/drivers/video/arkfb.c linux-2.6.21-rc7-mm2-dev-fix/drivers/video/arkfb.c
---- linux-2.6.21-rc7-mm2/drivers/video/arkfb.c	2007-05-08 18:47:08.000000000 +0200
-+++ linux-2.6.21-rc7-mm2-dev-fix/drivers/video/arkfb.c	2007-05-08 18:34:13.000000000 +0200
-@@ -122,7 +122,7 @@ MODULE_PARM_DESC(mtrr, "Enable write-com
- static int threshold = 4;
- 
- module_param(threshold, int, 0644);
--MODULE_PARM_DESC(mtrr, "FIFO threshold");
-+MODULE_PARM_DESC(threshold, "FIFO threshold");
- 
- 
- /* ------------------------------------------------------------------------- */
+> > +static int __init atmel_lcdfb_init(void)
+> > +{
+> > +	return platform_driver_probe(&atmel_lcdfb_driver, atmel_lcdfb_probe);
+> > +}  
+> 
+> Is this intentional?  Why not platform_driver_register()?
 
+Yes, it's intentional. This way, the atmel_lcdfb_probe function can be
+__init since it doesn't need to be referenced from atmel_lcdfb_driver.
+Saves a bit of memory at run time.
 
--- 
-Elen sila lumenn' omentielvo
+The downside is that hot plugging won't work, but that isn't very
+relevant for on-chip devices anyway.
 
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+Haavard
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

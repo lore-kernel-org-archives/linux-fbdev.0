@@ -1,25 +1,32 @@
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] atmel_lcdfb: AT91/AT32 LCD
- Controller framebuffer driver
-Date: Tue, 8 May 2007 19:26:55 +0200
-Message-ID: <20070508192655.08b1d649@dhcp-252-105.norway.atmel.com>
-References: <463F3388.7020102@rfo.atmel.com> <1178574017.4674.30.camel@daplas>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] packed pixel image blit
+	optimizations.
+Date: Tue, 8 May 2007 20:58:27 +0100 (BST)
+Message-ID: <Pine.LNX.4.64.0705082056180.2324@pentafluge.infradead.org>
+References: <Pine.LNX.4.64.0705022123490.12422@pentafluge.infradead.org> 
+	<1178141603.4606.44.camel@daplas>
+	<Pine.LNX.4.64.0705031503300.15445@pentafluge.infradead.org>
+	<1178220277.28617.7.camel@daplas>
+	<Pine.LNX.4.64.0705032029520.25194@pentafluge.infradead.org>
+	<1178221493.28617.21.camel@daplas>
+	<Pine.LNX.4.64.0705032055200.25194@pentafluge.infradead.org>
+	<1178222819.28617.33.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlTT6-0003xG-GQ for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 10:27:20 -0700
-Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
+	id 1HlVpP-0002g5-IZ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 May 2007 12:58:31 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HlTT5-0000FU-RB
+	(Exim 4.44) id 1HlVpP-0007Cr-8S
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 10:27:20 -0700
-In-Reply-To: <1178574017.4674.30.camel@daplas>
+	Tue, 08 May 2007 12:58:31 -0700
+In-Reply-To: <1178222819.28617.33.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,31 +38,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Victor <andrew@sanpeople.com>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel list <linux-kernel@vger.kernel.org>, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Antonio,
-
-Thanks for the feedback. I'm just going to reply to one of your
-comments and leave the rest for Nicolas...
-
-On Tue, 08 May 2007 05:40:17 +0800
-"Antonino A. Daplas" <adaplas@gmail.com> wrote:
-
-> > +static int __init atmel_lcdfb_init(void)
-> > +{
-> > +	return platform_driver_probe(&atmel_lcdfb_driver, atmel_lcdfb_probe);
-> > +}  
+> On Thu, 2007-05-03 at 20:55 +0100, James Simmons wrote:
+> > > > > I don't have to test the patch to see that it is not endian-correct and
+> > > > > that it will be many times slower than the old code.
+> > > > 
+> > > > I have tested on big endian framebuffers and it does work.
+> > > 
+> > > How about little-endian?
+> > 
+> > Worked as well.
+> >  
 > 
-> Is this intentional?  Why not platform_driver_register()?
+> Not for me, vesafb 8x16 font at 1024x768-8.
 
-Yes, it's intentional. This way, the atmel_lcdfb_probe function can be
-__init since it doesn't need to be referenced from atmel_lcdfb_driver.
-Saves a bit of memory at run time.
-
-The downside is that hot plugging won't work, but that isn't very
-relevant for on-chip devices anyway.
-
-Haavard
+How did you do the test below if it doesn't work on little endian? If you 
+are the only one allowed to work on the core system you need to make 
+people aware of it. I won't invade you space anymore.
+ 
+> 
+> time cat linux/MAINTAINERS
+> 
+> old
+> real    0m5.406s
+> user    0m0.001s
+> sys     0m5.401s
+> 
+> your patch
+> real    0m36.859s
+> user    0m0.002s
+> sys     0m36.843s
+> 
+> Tony
+> 
+> 
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

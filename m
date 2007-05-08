@@ -1,26 +1,28 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] pm2fb: fb_sync added
-Date: Tue, 08 May 2007 21:34:10 +0800
-Message-ID: <1178631250.4953.7.camel@daplas>
-References: <464026127324d@wp.pl> <1178627547.4953.5.camel@daplas>
-	<4640758d62f82@wp.pl>
+From: Ondrej Zajicek <santiago@crfreenet.org>
+Subject: Re: [PATCH] arkfb: Fix compile error if
+	CONFIG_MTRR=n
+Date: Tue, 8 May 2007 19:04:21 +0200
+Message-ID: <20070508170420.GB27666@localhost.localdomain>
+References: <463C9A29.4010505@gmail.com>
+	<20070507233102.3ed6c42d.akpm@linux-foundation.org>
+	<46406C89.50702@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlPpe-00023y-1W for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 06:34:22 -0700
-Received: from py-out-1112.google.com ([64.233.166.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlPpc-0002dM-N9
+	id 1HlT79-0001aY-Kd for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 May 2007 10:04:43 -0700
+Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HlT77-0004kL-Vm
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 06:34:21 -0700
-Received: by py-out-1112.google.com with SMTP id a29so1479197pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 08 May 2007 06:34:20 -0700 (PDT)
-In-Reply-To: <4640758d62f82@wp.pl>
+	Tue, 08 May 2007 10:04:39 -0700
+Content-Disposition: inline
+In-Reply-To: <46406C89.50702@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,28 +33,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="windows-1252"
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-T24gVHVlLCAyMDA3LTA1LTA4IGF0IDE1OjA1ICswMjAwLCBLcnp5c3p0b2YgSGVsdCB3cm90ZToK
-PiBEbmlhIDgtMDUtMjAwNyBvIGdvZHouIDE0OjMyIEFudG9uaW5vIEEuIERhcGxhcyBuYXBpc2HF
-gihhKToKPiA+IE9uIFR1ZSwgMjAwNy0wNS0wOCBhdCAwOToyNiArMDIwMCwgS3J6eXN6dG9mIEhl
-bHQgd3JvdGU6Cj4gCj4gSSBzZWUgYSBtYWpvciBwcm9ibGVtIHdpdGggdXNpbmcgY29weWFyZWEg
-YWNjZWxlcmF0aW9uIGNvbXBhcmluZwo+IHRvIHJlZHJhdyBmdW5jdGlvbi4gVGhlIGNvcHlhcmVh
-IGFsd2F5cyBtb3ZlcyB0aGUgd2hvbGUKPiBmcmFtZWJ1ZmZlciAobWlsaW9ucyBvZiBwaXhlbHMp
-IHdoaWxlIHRoZSByZWRyYXcgd29ya3MgdmVyeSBzbWFydAo+IHRvIHJlZHJhdyBvbmx5IHRoaW5n
-cyB3aGljaCBoYXMgdG8gYmUgcmVkcmF3bi4gSSBhbSB3b3JraW5nIHRvCj4gdXNlIHNvbWV0aGlu
-ZyBzbWFydGVyIGZvciBjb3B5YXJlYS4gTm8gc3VjY2VzcyB5ZXQuCj4gCgpBcmUgeW91IHVzaW5n
-IGp1c3QgcGxhaW4gbW92ZSBhbmQgcmVkcmF3PyAgSG93IGFib3V0IHRyeWluZyBwYW4gKyBtb3Zl
-LApvciBwYW4gKyByZWRyYXcuICBJZiB5b3UgY2FuIHNldCB2YXItPnlyZXNfdmlydHVhbCB0byBi
-ZSBhdCBsZWFzdCAyeAp2YXItPnlyZXMsIGl0IG1pZ2h0IGltcHJvdmUgc2Nyb2xsaW5nIHNwZWVk
-IGEgbG90LgoKVG9ueQoKCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRoaXMgU0YubmV0IGVtYWlsIGlzIHNw
-b25zb3JlZCBieSBEQjIgRXhwcmVzcwpEb3dubG9hZCBEQjIgRXhwcmVzcyBDIC0gdGhlIEZSRUUg
-dmVyc2lvbiBvZiBEQjIgZXhwcmVzcyBhbmQgdGFrZQpjb250cm9sIG9mIHlvdXIgWE1MLiBObyBs
-aW1pdHMuIEp1c3QgZGF0YS4gQ2xpY2sgdG8gZ2V0IGl0IG5vdy4KaHR0cDovL3NvdXJjZWZvcmdl
-Lm5ldC9wb3dlcmJhci9kYjIvCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZl
-bEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlz
-dHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+On Tue, May 08, 2007 at 08:26:49PM +0800, Antonino A. Daplas wrote:
+> Fix compile error if CONFIG_MTRR=n
+
+Thanks for fixes, I am sorry i didn't test it enough.
+There is one related bugfix:
+
+Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+
+diff -uprN -X linux-2.6.21-rc7-mm2/Documentation/dontdiff linux-2.6.21-rc7-mm2/drivers/video/arkfb.c linux-2.6.21-rc7-mm2-dev-fix/drivers/video/arkfb.c
+--- linux-2.6.21-rc7-mm2/drivers/video/arkfb.c	2007-05-08 18:47:08.000000000 +0200
++++ linux-2.6.21-rc7-mm2-dev-fix/drivers/video/arkfb.c	2007-05-08 18:34:13.000000000 +0200
+@@ -122,7 +122,7 @@ MODULE_PARM_DESC(mtrr, "Enable write-com
+ static int threshold = 4;
+ 
+ module_param(threshold, int, 0644);
+-MODULE_PARM_DESC(mtrr, "FIFO threshold");
++MODULE_PARM_DESC(threshold, "FIFO threshold");
+ 
+ 
+ /* ------------------------------------------------------------------------- */
+
+
+-- 
+Elen sila lumenn' omentielvo
+
+Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

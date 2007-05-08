@@ -1,26 +1,28 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] pm3fb: preliminary support
-	for	2.6	kernel
-Date: Tue, 08 May 2007 20:19:49 +0800
-Message-ID: <1178626789.4953.0.camel@daplas>
-References: <1hxqxt8.1dr1xgy136212oM%romain@dolbeau.org> <4640159dce83b@wp.pl>
+Subject: [PATCH] arkfb: Fix compile error if
+	CONFIG_MTRR=n
+Date: Tue, 08 May 2007 20:26:49 +0800
+Message-ID: <46406C89.50702@gmail.com>
+References: <463C9A29.4010505@gmail.com>
+	<20070507233102.3ed6c42d.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HlOfn-0001xk-24 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 05:20:07 -0700
-Received: from wx-out-0506.google.com ([66.249.82.234])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlOfk-0005vt-Tb
+	id 1HlOoI-0002yg-Ol for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 May 2007 05:28:58 -0700
+Received: from wx-out-0506.google.com ([66.249.82.225])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlOoI-0008Db-Db
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 May 2007 05:20:06 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so3051737wxd
+	Tue, 08 May 2007 05:28:54 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so3055739wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 08 May 2007 05:20:04 -0700 (PDT)
-In-Reply-To: <4640159dce83b@wp.pl>
+	Tue, 08 May 2007 05:28:54 -0700 (PDT)
+In-Reply-To: <20070507233102.3ed6c42d.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,24 +33,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="windows-1252"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: romain@dolbeau.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-T24gVHVlLCAyMDA3LTA1LTA4IGF0IDA4OjE1ICswMjAwLCBLcnp5c3p0b2YgSGVsdCB3cm90ZToK
-PiBEbmlhIDctMDUtMjAwNyBvIGdvZHouIDE0OjA4IHJvbWFpbkBkb2xiZWF1Lm9yZyAoUm9tYWlu
-IERvbGJlYXUpCj4gbmFwaXNhxYIoYSk6Cj4gPiBLcnp5c3p0b2YgSGVsdCA8a3J6eXN6dG9mLmgx
-QHdwLnBsPiB3cm90ZToKCj4gPiBBbmQgaWYgbXkgSVJJU0EgZS1tYWlsIGFkZHJlc3MgaXMgc3Rp
-bGwgaW4gdGhlIHNvdXJjZSwgaXQncwo+IHByb2JhYmx5Cj4gPiBiZXN0IHRvIHVwZGF0ZSBpdCB0
-byA8cm9tYWluQGRvbGJlYXUub3JnPi4KPiA+IAo+IAo+IEkgaG9wZSwgdGhhdCBBbnRvbmlvIGNh
-biBkbyB0aGlzIGluIG9yZGVyIHRvIGF2b2lkIHJlc2VuZCBvZiB0aGlzCj4gYmlnIHBhdGNoLgo+
-IAoKWXVwLCBhbHJlYWR5IGNoYW5nZWQgaXQgaW4gbXkgdHJlZS4KClRvbnkKCgoKLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLQpUaGlzIFNGLm5ldCBlbWFpbCBpcyBzcG9uc29yZWQgYnkgREIyIEV4cHJlc3MKRG93
-bmxvYWQgREIyIEV4cHJlc3MgQyAtIHRoZSBGUkVFIHZlcnNpb24gb2YgREIyIGV4cHJlc3MgYW5k
-IHRha2UKY29udHJvbCBvZiB5b3VyIFhNTC4gTm8gbGltaXRzLiBKdXN0IGRhdGEuIENsaWNrIHRv
-IGdldCBpdCBub3cuCmh0dHA6Ly9zb3VyY2Vmb3JnZS5uZXQvcG93ZXJiYXIvZGIyLwpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZl
-bCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
-dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRl
-dmVsCg==
+Fix compile error if CONFIG_MTRR=n
+
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
+Andrew Morton wrote:
+> On Sat, 05 May 2007 22:52:25 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> 
+>> This patch adds fbdev driver for graphics cards with
+>> ARK Logic 2000PV graphics chip with ICS 5342 ramdac.
+> 
+> also breaks with CONFIG_MTRR=n
+
+ drivers/video/arkfb.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index 7155508..a0c4d22 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -1055,12 +1055,10 @@ err_enable_device:
+ static void __devexit ark_pci_remove(struct pci_dev *dev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(dev);
++	struct arkfb_info *par = info->par;
+ 
+ 	if (info) {
+-
+ #ifdef CONFIG_MTRR
+-		struct arkfb_info *par = info->par;
+-
+ 		if (par->mtrr_reg >= 0) {
+ 			mtrr_del(par->mtrr_reg, 0, 0);
+ 			par->mtrr_reg = -1;
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

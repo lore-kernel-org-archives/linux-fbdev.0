@@ -1,17 +1,37 @@
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Subject: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: AT91/AT32 LCD Controller framebuffer driver
-Date: Wed, 09 May 2007 16:59:46 +0200
-Message-ID: <4641E1E2.6040808@rfo.atmel.com>
-References: <463F3388.7020102@rfo.atmel.com> <1178574017.4674.30.camel@daplas>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 2/5] atmel_lcdfb: AT91/AT32 LCD
+	Controller framebuffer driver
+Date: Thu, 10 May 2007 07:44:44 +0800
+Message-ID: <46425CEC.2030006@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758183AbXEIPAS@vger.kernel.org>
-In-Reply-To: <1178574017.4674.30.camel@daplas>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Victor <andrew@sanpeople.com>, Linux Kernel list <linux-kernel@vger.kernel.org>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HlvuX-0002MF-Bd for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 09 May 2007 16:49:33 -0700
+Received: from py-out-1112.google.com ([64.233.166.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlvuU-0005Lu-Lw
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 09 May 2007 16:49:33 -0700
+Received: by py-out-1112.google.com with SMTP id a29so322085pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 09 May 2007 16:49:30 -0700 (PDT)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 
@@ -19,224 +39,57 @@ Adds a framebuffer driver to ATMEL AT91SAM9x and AT32 aka AVR32 platforms. Those
 IP and this code is suitable for both architectures.
 
 Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
-This second patch is rebuild following Antonio A. Daplas comments. Thank you Tony.
+ drivers/video/Kconfig       |   16 +
+ drivers/video/Makefile      |    1 
+ drivers/video/atmel_lcdfb.c |  752 +++++++++++++++++++++++++++++++++++++++++++
+ include/video/atmel_lcdc.h  |  196 +++++++++++
+ 4 files changed, 965 insertions(+), 0 deletions(-)
 
-The header file resides in an arch neutral directory.
-
-AT91 platform informations are directly submitted trough
-the at91 maintainer.
-
-drivers/video/Kconfig       |   16 
-drivers/video/Makefile      |    1 
-drivers/video/atmel_lcdfb.c |  752 ++++++++++++++++++++++++++++++++++
-include/video/atmel_lcdc.h  |  196 ++++++++
-4 files changed, 965 insertions(+)
-
-Index: b/include/video/atmel_lcdc.h
-===================================================================
---- /dev/null
-+++ b/include/video/atmel_lcdc.h
-@@ -0,0 +1,196 @@
-+/*
-+ *  Header file for AT91/AT32 LCD Controller
-+ *
-+ *  Data structure and register user interface
-+ *
-+ *  Copyright (C) 2007 Atmel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+#ifndef __ATMEL_LCDC_H__
-+#define __ATMEL_LCDC_H__
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 0788f23..6f31842 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -747,6 +747,22 @@ config FB_S1D13XXX
+ 	  working with S1D13806). Product specs at
+ 	  <http://www.erd.epson.com/vdc/html/legacy_13xxx.htm>
+ 
++config FB_ATMEL
++	tristate "AT91/AT32 LCD Controller support"
++	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9263 || AVR32)
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	help
++	  This enables support for the AT91/AT32 LCD Controller.
 +
-+ /* LCD Controller info data structure */
-+struct atmel_lcdfb_info {
-+	spinlock_t		lock;
-+	struct fb_info		*info;
-+	void __iomem		*mmio;
-+	unsigned long		irq_base;
++config FB_INTSRAM
++	bool "Frame Buffer in internal SRAM"
++	depends on FB_ATMEL && ARCH_AT91SAM9261
++	help
++	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
++	  to let frame buffer in external SDRAM.
 +
-+	unsigned int		guard_time;
-+	struct platform_device	*pdev;
-+	struct clk		*bus_clk;
-+	struct clk		*lcdc_clk;
-+	unsigned int		default_bpp;
-+	unsigned int		default_lcdcon2;
-+	unsigned int		default_dmacon;
-+	void (*atmel_lcdfb_power_control)(int on);
-+	struct fb_monspecs	*default_monspecs;
-+	u32			pseudo_palette[16];
-+};
-+
-+#define ATMEL_LCDC_DMABADDR1	0x00
-+#define ATMEL_LCDC_DMABADDR2	0x04
-+#define ATMEL_LCDC_DMAFRMPT1	0x08
-+#define ATMEL_LCDC_DMAFRMPT2	0x0c
-+#define ATMEL_LCDC_DMAFRMADD1	0x10
-+#define ATMEL_LCDC_DMAFRMADD2	0x14
-+
-+#define ATMEL_LCDC_DMAFRMCFG	0x18
-+#define	ATMEL_LCDC_FRSIZE	(0x7fffff <<  0)
-+#define	ATMEL_LCDC_BLENGTH_OFFSET	24
-+#define	ATMEL_LCDC_BLENGTH	(0x7f     << ATMEL_LCDC_BLENGTH_OFFSET)
-+
-+#define ATMEL_LCDC_DMACON	0x1c
-+#define	ATMEL_LCDC_DMAEN	(0x1 << 0)
-+#define	ATMEL_LCDC_DMARST	(0x1 << 1)
-+#define	ATMEL_LCDC_DMABUSY	(0x1 << 2)
-+#define		ATMEL_LCDC_DMAUPDT	(0x1 << 3)
-+#define		ATMEL_LCDC_DMA2DEN	(0x1 << 4)
-+
-+#define ATMEL_LCDC_DMA2DCFG	0x20
-+#define		ATMEL_LCDC_ADDRINC_OFFSET	0
-+#define		ATMEL_LCDC_ADDRINC		(0xffff)
-+#define		ATMEL_LCDC_PIXELOFF_OFFSET	24
-+#define		ATMEL_LCDC_PIXELOFF		(0x1f << 24)
-+
-+#define ATMEL_LCDC_LCDCON1	0x0800
-+#define	ATMEL_LCDC_BYPASS	(1     <<  0)
-+#define	ATMEL_LCDC_CLKVAL_OFFSET	12
-+#define	ATMEL_LCDC_CLKVAL	(0x1ff << ATMEL_LCDC_CLKVAL_OFFSET)
-+#define	ATMEL_LCDC_LINCNT	(0x7ff << 21)
-+
-+#define ATMEL_LCDC_LCDCON2	0x0804
-+#define	ATMEL_LCDC_DISTYPE	(3 << 0)
-+#define		ATMEL_LCDC_DISTYPE_STNMONO	(0 << 0)
-+#define		ATMEL_LCDC_DISTYPE_STNCOLOR	(1 << 0)
-+#define		ATMEL_LCDC_DISTYPE_TFT		(2 << 0)
-+#define	ATMEL_LCDC_SCANMOD	(1 << 2)
-+#define		ATMEL_LCDC_SCANMOD_SINGLE	(0 << 2)
-+#define		ATMEL_LCDC_SCANMOD_DUAL		(1 << 2)
-+#define	ATMEL_LCDC_IFWIDTH	(3 << 3)
-+#define		ATMEL_LCDC_IFWIDTH_4		(0 << 3)
-+#define		ATMEL_LCDC_IFWIDTH_8		(1 << 3)
-+#define		ATMEL_LCDC_IFWIDTH_16		(2 << 3)
-+#define	ATMEL_LCDC_PIXELSIZE	(7 << 5)
-+#define		ATMEL_LCDC_PIXELSIZE_1		(0 << 5)
-+#define		ATMEL_LCDC_PIXELSIZE_2		(1 << 5)
-+#define		ATMEL_LCDC_PIXELSIZE_4		(2 << 5)
-+#define		ATMEL_LCDC_PIXELSIZE_8		(3 << 5)
-+#define		ATMEL_LCDC_PIXELSIZE_16		(4 << 5)
-+#define		ATMEL_LCDC_PIXELSIZE_24		(5 << 5)
-+#define		ATMEL_LCDC_PIXELSIZE_32		(6 << 5)
-+#define	ATMEL_LCDC_INVVD	(1 << 8)
-+#define		ATMEL_LCDC_INVVD_NORMAL		(0 << 8)
-+#define		ATMEL_LCDC_INVVD_INVERTED	(1 << 8)
-+#define	ATMEL_LCDC_INVFRAME	(1 << 9 )
-+#define		ATMEL_LCDC_INVFRAME_NORMAL	(0 << 9)
-+#define		ATMEL_LCDC_INVFRAME_INVERTED	(1 << 9)
-+#define	ATMEL_LCDC_INVLINE	(1 << 10)
-+#define		ATMEL_LCDC_INVLINE_NORMAL	(0 << 10)
-+#define		ATMEL_LCDC_INVLINE_INVERTED	(1 << 10)
-+#define	ATMEL_LCDC_INVCLK	(1 << 11)
-+#define		ATMEL_LCDC_INVCLK_NORMAL	(0 << 11)
-+#define		ATMEL_LCDC_INVCLK_INVERTED	(1 << 11)
-+#define	ATMEL_LCDC_INVDVAL	(1 << 12)
-+#define		ATMEL_LCDC_INVDVAL_NORMAL	(0 << 12)
-+#define		ATMEL_LCDC_INVDVAL_INVERTED	(1 << 12)
-+#define	ATMEL_LCDC_CLKMOD	(1 << 15)
-+#define		ATMEL_LCDC_CLKMOD_ACTIVEDISPLAY	(0 << 15)
-+#define		ATMEL_LCDC_CLKMOD_ALWAYSACTIVE	(1 << 15)
-+#define	ATMEL_LCDC_MEMOR	(1 << 31)
-+#define		ATMEL_LCDC_MEMOR_BIG		(0 << 31)
-+#define		ATMEL_LCDC_MEMOR_LITTLE		(1 << 31)
-+
-+#define ATMEL_LCDC_TIM1		0x0808
-+#define	ATMEL_LCDC_VFP		(0xff <<  0)
-+#define	ATMEL_LCDC_VBP_OFFSET		8
-+#define	ATMEL_LCDC_VBP		(0xff <<  ATMEL_LCDC_VBP_OFFSET)
-+#define	ATMEL_LCDC_VPW_OFFSET		16
-+#define	ATMEL_LCDC_VPW		(0x3f << ATMEL_LCDC_VPW_OFFSET)
-+#define	ATMEL_LCDC_VHDLY_OFFSET		24
-+#define	ATMEL_LCDC_VHDLY	(0xf  << ATMEL_LCDC_VHDLY_OFFSET)
-+
-+#define ATMEL_LCDC_TIM2		0x080c
-+#define	ATMEL_LCDC_HBP		(0xff  <<  0)
-+#define	ATMEL_LCDC_HPW_OFFSET		8
-+#define	ATMEL_LCDC_HPW		(0x3f  <<  ATMEL_LCDC_HPW_OFFSET)
-+#define	ATMEL_LCDC_HFP_OFFSET		21
-+#define	ATMEL_LCDC_HFP		(0x7ff << ATMEL_LCDC_HFP_OFFSET)
-+
-+#define ATMEL_LCDC_LCDFRMCFG	0x0810
-+#define	ATMEL_LCDC_LINEVAL	(0x7ff <<  0)
-+#define	ATMEL_LCDC_HOZVAL_OFFSET	21
-+#define	ATMEL_LCDC_HOZVAL	(0x7ff << ATMEL_LCDC_HOZVAL_OFFSET)
-+
-+#define ATMEL_LCDC_FIFO		0x0814
-+#define	ATMEL_LCDC_FIFOTH	(0xffff)
-+
-+#define ATMEL_LCDC_MVAL		0x0818
-+
-+#define ATMEL_LCDC_DP1_2	0x081c
-+#define ATMEL_LCDC_DP4_7	0x0820
-+#define ATMEL_LCDC_DP3_5	0x0824
-+#define ATMEL_LCDC_DP2_3	0x0828
-+#define ATMEL_LCDC_DP5_7	0x082c
-+#define ATMEL_LCDC_DP3_4	0x0830
-+#define ATMEL_LCDC_DP4_5	0x0834
-+#define ATMEL_LCDC_DP6_7	0x0838
-+#define	ATMEL_LCDC_DP1_2_VAL	(0xff)
-+#define	ATMEL_LCDC_DP4_7_VAL	(0xfffffff)
-+#define	ATMEL_LCDC_DP3_5_VAL	(0xfffff)
-+#define	ATMEL_LCDC_DP2_3_VAL	(0xfff)
-+#define	ATMEL_LCDC_DP5_7_VAL	(0xfffffff)
-+#define	ATMEL_LCDC_DP3_4_VAL	(0xffff)
-+#define	ATMEL_LCDC_DP4_5_VAL	(0xfffff)
-+#define	ATMEL_LCDC_DP6_7_VAL	(0xfffffff)
-+
-+#define ATMEL_LCDC_PWRCON	0x083c
-+#define	ATMEL_LCDC_PWR		(1    <<  0)
-+#define	ATMEL_LCDC_GUARDT_OFFSET	1
-+#define	ATMEL_LCDC_GUARDT	(0x7f <<  ATMEL_LCDC_GUARDT_OFFSET)
-+#define	ATMEL_LCDC_BUSY		(1    << 31)
-+
-+#define ATMEL_LCDC_CONTRAST_CTR	0x0840
-+#define	ATMEL_LCDC_PS		(3 << 0)
-+#define		ATMEL_LCDC_PS_DIV1		(0 << 0)
-+#define		ATMEL_LCDC_PS_DIV2		(1 << 0)
-+#define		ATMEL_LCDC_PS_DIV4		(2 << 0)
-+#define		ATMEL_LCDC_PS_DIV8		(3 << 0)
-+#define	ATMEL_LCDC_POL		(1 << 2)
-+#define		ATMEL_LCDC_POL_NEGATIVE		(0 << 2)
-+#define		ATMEL_LCDC_POL_POSITIVE		(1 << 2)
-+#define	ATMEL_LCDC_ENA		(1 << 3)
-+#define		ATMEL_LCDC_ENA_PWMDISABLE	(0 << 3)
-+#define		ATMEL_LCDC_ENA_PWMENABLE	(1 << 3)
-+
-+#define ATMEL_LCDC_CONTRAST_VAL	0x0844
-+#define	ATMEL_LCDC_CVAL	(0xff)
-+
-+#define ATMEL_LCDC_IER		0x0848
-+#define ATMEL_LCDC_IDR		0x084c
-+#define ATMEL_LCDC_IMR		0x0850
-+#define ATMEL_LCDC_ISR		0x0854
-+#define ATMEL_LCDC_ICR		0x0858
-+#define	ATMEL_LCDC_LNI		(1 << 0)
-+#define	ATMEL_LCDC_LSTLNI	(1 << 1)
-+#define	ATMEL_LCDC_EOFI		(1 << 2)
-+#define	ATMEL_LCDC_UFLWI	(1 << 4)
-+#define	ATMEL_LCDC_OWRI		(1 << 5)
-+#define	ATMEL_LCDC_MERI		(1 << 6)
-+
-+#define ATMEL_LCDC_LUT(n)	(0x0c00 + ((n)*4))
-+
-+#endif /* __ATMEL_LCDC_H__ */
-Index: b/drivers/video/atmel_lcdfb.c
-===================================================================
+ config FB_NVIDIA
+ 	tristate "nVidia Framebuffer Support"
+ 	depends on FB && PCI
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 0b70567..bd8b052 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -87,6 +87,7 @@ obj-$(CONFIG_FB_G364)             += g36
+ obj-$(CONFIG_FB_SA1100)           += sa1100fb.o
+ obj-$(CONFIG_FB_HIT)              += hitfb.o
+ obj-$(CONFIG_FB_EPSON1355)	  += epson1355fb.o
++obj-$(CONFIG_FB_ATMEL)		  += atmel_lcdfb.o
+ obj-$(CONFIG_FB_PVR2)             += pvr2fb.o
+ obj-$(CONFIG_FB_VOODOO1)          += sstfb.o
+ obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+new file mode 100644
+index 0000000..e1d5bd0
 --- /dev/null
 +++ b/drivers/video/atmel_lcdfb.c
 @@ -0,0 +1,752 @@
@@ -992,42 +845,212 @@ Index: b/drivers/video/atmel_lcdfb.c
 +MODULE_DESCRIPTION("AT91/AT32 LCD Controller framebuffer driver");
 +MODULE_AUTHOR("Nicolas Ferre <nicolas.ferre@rfo.atmel.com>");
 +MODULE_LICENSE("GPL");
-Index: b/drivers/video/Kconfig
-===================================================================
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -674,6 +674,22 @@
- 	  working with S1D13806). Product specs at
- 	  <http://www.erd.epson.com/vdc/html/legacy_13xxx.htm>
- 
-+config FB_ATMEL
-+	tristate "AT91/AT32 LCD Controller support"
-+	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9263 || AVR32)
-+	select FB_CFB_FILLRECT
-+	select FB_CFB_COPYAREA
-+	select FB_CFB_IMAGEBLIT
-+	help
-+	  This enables support for the AT91/AT32 LCD Controller.
+diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
+new file mode 100644
+index 0000000..4eea637
+--- /dev/null
++++ b/include/video/atmel_lcdc.h
+@@ -0,0 +1,196 @@
++/*
++ *  Header file for AT91/AT32 LCD Controller
++ *
++ *  Data structure and register user interface
++ *
++ *  Copyright (C) 2007 Atmel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++#ifndef __ATMEL_LCDC_H__
++#define __ATMEL_LCDC_H__
 +
-+config FB_INTSRAM
-+	bool "Frame Buffer in internal SRAM"
-+	depends on FB_ATMEL && ARCH_AT91SAM9261
-+	help
-+	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
-+	  to let frame buffer in external SDRAM.
++ /* LCD Controller info data structure */
++struct atmel_lcdfb_info {
++	spinlock_t		lock;
++	struct fb_info		*info;
++	void __iomem		*mmio;
++	unsigned long		irq_base;
 +
- config FB_NVIDIA
- 	tristate "nVidia Framebuffer Support"
- 	depends on FB && PCI
-Index: b/drivers/video/Makefile
-===================================================================
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -75,6 +75,7 @@
- obj-$(CONFIG_FB_SA1100)           += sa1100fb.o
- obj-$(CONFIG_FB_HIT)              += hitfb.o
- obj-$(CONFIG_FB_EPSON1355)	  += epson1355fb.o
-+obj-$(CONFIG_FB_ATMEL)		  += atmel_lcdfb.o
- obj-$(CONFIG_FB_PVR2)             += pvr2fb.o
- obj-$(CONFIG_FB_VOODOO1)          += sstfb.o
- obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o
++	unsigned int		guard_time;
++	struct platform_device	*pdev;
++	struct clk		*bus_clk;
++	struct clk		*lcdc_clk;
++	unsigned int		default_bpp;
++	unsigned int		default_lcdcon2;
++	unsigned int		default_dmacon;
++	void (*atmel_lcdfb_power_control)(int on);
++	struct fb_monspecs	*default_monspecs;
++	u32			pseudo_palette[16];
++};
++
++#define ATMEL_LCDC_DMABADDR1	0x00
++#define ATMEL_LCDC_DMABADDR2	0x04
++#define ATMEL_LCDC_DMAFRMPT1	0x08
++#define ATMEL_LCDC_DMAFRMPT2	0x0c
++#define ATMEL_LCDC_DMAFRMADD1	0x10
++#define ATMEL_LCDC_DMAFRMADD2	0x14
++
++#define ATMEL_LCDC_DMAFRMCFG	0x18
++#define	ATMEL_LCDC_FRSIZE	(0x7fffff <<  0)
++#define	ATMEL_LCDC_BLENGTH_OFFSET	24
++#define	ATMEL_LCDC_BLENGTH	(0x7f     << ATMEL_LCDC_BLENGTH_OFFSET)
++
++#define ATMEL_LCDC_DMACON	0x1c
++#define	ATMEL_LCDC_DMAEN	(0x1 << 0)
++#define	ATMEL_LCDC_DMARST	(0x1 << 1)
++#define	ATMEL_LCDC_DMABUSY	(0x1 << 2)
++#define		ATMEL_LCDC_DMAUPDT	(0x1 << 3)
++#define		ATMEL_LCDC_DMA2DEN	(0x1 << 4)
++
++#define ATMEL_LCDC_DMA2DCFG	0x20
++#define		ATMEL_LCDC_ADDRINC_OFFSET	0
++#define		ATMEL_LCDC_ADDRINC		(0xffff)
++#define		ATMEL_LCDC_PIXELOFF_OFFSET	24
++#define		ATMEL_LCDC_PIXELOFF		(0x1f << 24)
++
++#define ATMEL_LCDC_LCDCON1	0x0800
++#define	ATMEL_LCDC_BYPASS	(1     <<  0)
++#define	ATMEL_LCDC_CLKVAL_OFFSET	12
++#define	ATMEL_LCDC_CLKVAL	(0x1ff << ATMEL_LCDC_CLKVAL_OFFSET)
++#define	ATMEL_LCDC_LINCNT	(0x7ff << 21)
++
++#define ATMEL_LCDC_LCDCON2	0x0804
++#define	ATMEL_LCDC_DISTYPE	(3 << 0)
++#define		ATMEL_LCDC_DISTYPE_STNMONO	(0 << 0)
++#define		ATMEL_LCDC_DISTYPE_STNCOLOR	(1 << 0)
++#define		ATMEL_LCDC_DISTYPE_TFT		(2 << 0)
++#define	ATMEL_LCDC_SCANMOD	(1 << 2)
++#define		ATMEL_LCDC_SCANMOD_SINGLE	(0 << 2)
++#define		ATMEL_LCDC_SCANMOD_DUAL		(1 << 2)
++#define	ATMEL_LCDC_IFWIDTH	(3 << 3)
++#define		ATMEL_LCDC_IFWIDTH_4		(0 << 3)
++#define		ATMEL_LCDC_IFWIDTH_8		(1 << 3)
++#define		ATMEL_LCDC_IFWIDTH_16		(2 << 3)
++#define	ATMEL_LCDC_PIXELSIZE	(7 << 5)
++#define		ATMEL_LCDC_PIXELSIZE_1		(0 << 5)
++#define		ATMEL_LCDC_PIXELSIZE_2		(1 << 5)
++#define		ATMEL_LCDC_PIXELSIZE_4		(2 << 5)
++#define		ATMEL_LCDC_PIXELSIZE_8		(3 << 5)
++#define		ATMEL_LCDC_PIXELSIZE_16		(4 << 5)
++#define		ATMEL_LCDC_PIXELSIZE_24		(5 << 5)
++#define		ATMEL_LCDC_PIXELSIZE_32		(6 << 5)
++#define	ATMEL_LCDC_INVVD	(1 << 8)
++#define		ATMEL_LCDC_INVVD_NORMAL		(0 << 8)
++#define		ATMEL_LCDC_INVVD_INVERTED	(1 << 8)
++#define	ATMEL_LCDC_INVFRAME	(1 << 9 )
++#define		ATMEL_LCDC_INVFRAME_NORMAL	(0 << 9)
++#define		ATMEL_LCDC_INVFRAME_INVERTED	(1 << 9)
++#define	ATMEL_LCDC_INVLINE	(1 << 10)
++#define		ATMEL_LCDC_INVLINE_NORMAL	(0 << 10)
++#define		ATMEL_LCDC_INVLINE_INVERTED	(1 << 10)
++#define	ATMEL_LCDC_INVCLK	(1 << 11)
++#define		ATMEL_LCDC_INVCLK_NORMAL	(0 << 11)
++#define		ATMEL_LCDC_INVCLK_INVERTED	(1 << 11)
++#define	ATMEL_LCDC_INVDVAL	(1 << 12)
++#define		ATMEL_LCDC_INVDVAL_NORMAL	(0 << 12)
++#define		ATMEL_LCDC_INVDVAL_INVERTED	(1 << 12)
++#define	ATMEL_LCDC_CLKMOD	(1 << 15)
++#define		ATMEL_LCDC_CLKMOD_ACTIVEDISPLAY	(0 << 15)
++#define		ATMEL_LCDC_CLKMOD_ALWAYSACTIVE	(1 << 15)
++#define	ATMEL_LCDC_MEMOR	(1 << 31)
++#define		ATMEL_LCDC_MEMOR_BIG		(0 << 31)
++#define		ATMEL_LCDC_MEMOR_LITTLE		(1 << 31)
++
++#define ATMEL_LCDC_TIM1		0x0808
++#define	ATMEL_LCDC_VFP		(0xff <<  0)
++#define	ATMEL_LCDC_VBP_OFFSET		8
++#define	ATMEL_LCDC_VBP		(0xff <<  ATMEL_LCDC_VBP_OFFSET)
++#define	ATMEL_LCDC_VPW_OFFSET		16
++#define	ATMEL_LCDC_VPW		(0x3f << ATMEL_LCDC_VPW_OFFSET)
++#define	ATMEL_LCDC_VHDLY_OFFSET		24
++#define	ATMEL_LCDC_VHDLY	(0xf  << ATMEL_LCDC_VHDLY_OFFSET)
++
++#define ATMEL_LCDC_TIM2		0x080c
++#define	ATMEL_LCDC_HBP		(0xff  <<  0)
++#define	ATMEL_LCDC_HPW_OFFSET		8
++#define	ATMEL_LCDC_HPW		(0x3f  <<  ATMEL_LCDC_HPW_OFFSET)
++#define	ATMEL_LCDC_HFP_OFFSET		21
++#define	ATMEL_LCDC_HFP		(0x7ff << ATMEL_LCDC_HFP_OFFSET)
++
++#define ATMEL_LCDC_LCDFRMCFG	0x0810
++#define	ATMEL_LCDC_LINEVAL	(0x7ff <<  0)
++#define	ATMEL_LCDC_HOZVAL_OFFSET	21
++#define	ATMEL_LCDC_HOZVAL	(0x7ff << ATMEL_LCDC_HOZVAL_OFFSET)
++
++#define ATMEL_LCDC_FIFO		0x0814
++#define	ATMEL_LCDC_FIFOTH	(0xffff)
++
++#define ATMEL_LCDC_MVAL		0x0818
++
++#define ATMEL_LCDC_DP1_2	0x081c
++#define ATMEL_LCDC_DP4_7	0x0820
++#define ATMEL_LCDC_DP3_5	0x0824
++#define ATMEL_LCDC_DP2_3	0x0828
++#define ATMEL_LCDC_DP5_7	0x082c
++#define ATMEL_LCDC_DP3_4	0x0830
++#define ATMEL_LCDC_DP4_5	0x0834
++#define ATMEL_LCDC_DP6_7	0x0838
++#define	ATMEL_LCDC_DP1_2_VAL	(0xff)
++#define	ATMEL_LCDC_DP4_7_VAL	(0xfffffff)
++#define	ATMEL_LCDC_DP3_5_VAL	(0xfffff)
++#define	ATMEL_LCDC_DP2_3_VAL	(0xfff)
++#define	ATMEL_LCDC_DP5_7_VAL	(0xfffffff)
++#define	ATMEL_LCDC_DP3_4_VAL	(0xffff)
++#define	ATMEL_LCDC_DP4_5_VAL	(0xfffff)
++#define	ATMEL_LCDC_DP6_7_VAL	(0xfffffff)
++
++#define ATMEL_LCDC_PWRCON	0x083c
++#define	ATMEL_LCDC_PWR		(1    <<  0)
++#define	ATMEL_LCDC_GUARDT_OFFSET	1
++#define	ATMEL_LCDC_GUARDT	(0x7f <<  ATMEL_LCDC_GUARDT_OFFSET)
++#define	ATMEL_LCDC_BUSY		(1    << 31)
++
++#define ATMEL_LCDC_CONTRAST_CTR	0x0840
++#define	ATMEL_LCDC_PS		(3 << 0)
++#define		ATMEL_LCDC_PS_DIV1		(0 << 0)
++#define		ATMEL_LCDC_PS_DIV2		(1 << 0)
++#define		ATMEL_LCDC_PS_DIV4		(2 << 0)
++#define		ATMEL_LCDC_PS_DIV8		(3 << 0)
++#define	ATMEL_LCDC_POL		(1 << 2)
++#define		ATMEL_LCDC_POL_NEGATIVE		(0 << 2)
++#define		ATMEL_LCDC_POL_POSITIVE		(1 << 2)
++#define	ATMEL_LCDC_ENA		(1 << 3)
++#define		ATMEL_LCDC_ENA_PWMDISABLE	(0 << 3)
++#define		ATMEL_LCDC_ENA_PWMENABLE	(1 << 3)
++
++#define ATMEL_LCDC_CONTRAST_VAL	0x0844
++#define	ATMEL_LCDC_CVAL	(0xff)
++
++#define ATMEL_LCDC_IER		0x0848
++#define ATMEL_LCDC_IDR		0x084c
++#define ATMEL_LCDC_IMR		0x0850
++#define ATMEL_LCDC_ISR		0x0854
++#define ATMEL_LCDC_ICR		0x0858
++#define	ATMEL_LCDC_LNI		(1 << 0)
++#define	ATMEL_LCDC_LSTLNI	(1 << 1)
++#define	ATMEL_LCDC_EOFI		(1 << 2)
++#define	ATMEL_LCDC_UFLWI	(1 << 4)
++#define	ATMEL_LCDC_OWRI		(1 << 5)
++#define	ATMEL_LCDC_MERI		(1 << 6)
++
++#define ATMEL_LCDC_LUT(n)	(0x0c00 + ((n)*4))
++
++#endif /* __ATMEL_LCDC_H__ */
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

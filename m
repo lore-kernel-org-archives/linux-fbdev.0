@@ -1,26 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] smart blitter usage for scrolling
-Date: Wed, 09 May 2007 22:19:18 +0800
-Message-ID: <1178720358.4861.27.camel@daplas>
-References: <464172cc491d5@wp.pl>
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Subject: Re: [PATCH] atmel_lcdfb: AT91/AT32
+	LCDController framebuffer driver
+Date: Wed, 09 May 2007 16:59:53 +0200
+Message-ID: <4641E1E9.5060800@rfo.atmel.com>
+References: <463F3388.7020102@rfo.atmel.com> <1178574017.4674.30.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hln0s-0007zN-Ch for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 May 2007 07:19:30 -0700
-Received: from wx-out-0506.google.com ([66.249.82.236])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hln0r-0004rY-PC
+	id 1HlneG-0003kQ-7A for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 09 May 2007 08:00:12 -0700
+Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HlneF-0005aZ-Bj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 May 2007 07:19:30 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so335430wxd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 09 May 2007 07:19:29 -0700 (PDT)
-In-Reply-To: <464172cc491d5@wp.pl>
+	Wed, 09 May 2007 08:00:12 -0700
+In-Reply-To: <1178574017.4674.30.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,267 +29,118 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Victor <andrew@sanpeople.com>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel list <linux-kernel@vger.kernel.org>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
 
-On Wed, 2007-05-09 at 09:05 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Antonino A. Daplas :
+> On Mon, 2007-05-07 at 16:11 +0200, Nicolas Ferre wrote:
+>> From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+
+>> +
+>> +static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
+>> +	.type		= FB_TYPE_PACKED_PIXELS,
+>> +	.visual		= FB_VISUAL_TRUECOLOR,
+>> +	.xpanstep	= 0,
+>> +	.ypanstep	= 0,
+>> +	.ywrapstep	= 0,
+>> +	.accel		= FB_ACCEL_NONE,
+>> +};
+>> +
 > 
-> This patch adds option to uses blitter only to move characters
-> which have to be moved instead of current brute force approach
-> (move whole screen).
+> This driver has fb_pan_display() which I assume works. However, you also
+> need to set ypanstep and/or xpanstep and/or ywrapstep to a nonzero
+> value, depending on the hardware/drive capability.
+
+True, this function is here because one of our products can do pan display.
+The technique is not used for the moment but will be in a future version
+of this driver.
+
+>> +static u32 pseudo_palette[16] = {
+>> +	0x000000,
+>> +	0xaa0000,
+>> +	0x00aa00,
+>> +	0xaa5500,
+>> +	0x0000aa,
+>> +	0xaa00aa,
+>> +	0x00aaaa,
+>> +	0xaaaaaa,
+>> +	0x555555,
+>> +	0xff5555,
+>> +	0x55ff55,
+>> +	0xffff55,
+>> +	0x5555ff,
+>> +	0xff55ff,
+>> +	0x55ffff,
+>> +	0xffffff
+>> +};
+>> +
 > 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> Do you really need to pre-fill pseudo_palette[]? The contents are going
+> to be overwritten by the console anyway (The pseudo_palette is for
+> fbcon's use only).
+
+Ok, I have tested it with fbcon and no pre-fill : colors seem ok.
+
+> You can also include pseudo_palette[] as part of struct
+> atmel_lcdfb_info, then in your probe routine:
 > 
-> ---
+> info->pseudo_palette = par->pseudo_palette;
 > 
-> This patch uses the same logic as the fbcon_redraw() but uses
-> bmove() instead of putcs(). On my system (dual P3 866MHz and
-> Permedia 2 with 83MHz clock) this gives the SCROLL_MOVE up to 5%
-> slower than non accelerated SCROLL_REDRAW. Previously, the
-> SCROLL_MOVE was few times (up to 10) slower. I tested it with
-> "time dmesg" at 1024x768 and 1600x1200 resolutions.
+> to reduce the size of the kernel image. 
 
-This sounds quite logical to me.  However, I would rather that you
-create a new scrolling mode (ie SCROLL_MOVE_REDRAW and
-SCROLL_WRAP_REDRAW). Then create a new FBINFO_HWACCEL flag that will
-enable SCROLL_PAN/WRAP_MOVE_REDRAW and perhaps another one that will
-enable MERGE_BLIT.
+Done.
 
-To illustrate, see further comments below.
-
-
+>> +static inline u_int chan_to_field(u_int chan, const struct fb_bitfield *bf)
 > 
-> I think that this new approach can completely replace the brute
-> force SCROLL_MOVE method used currently. It should help all
-> drivers which uses SCROLL_MOVE method (probably not many), reduce
-> difference between SCROLL_REDRAW and SCROLL_MOVE and do nothing
-> to drivers useng SCROLL_REDRAW method.
+> Might as well change u_int to u32 or unsigned int, for consistency.
+
+Ok, changed to unsigned int.
+
+>> +static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
+>> +{
+>> +	struct fb_info *info = sinfo->info;
+>> +	int ret = 0;
+>> +
+>> +	memset(info->screen_base, 0, info->fix.smem_len);
 > 
-> There is additional possibility to improve performance by
-> enabling MERGE_BLIT definition. In this case, the first matching
-> character to scroll (in source and destination location) is
-> ignored. This produces about half of blits requests (in my test
-> case - around 100 instead of around 200) but blits are larger
-> (each one is one character larger). This may help on cards where
-> the blitter is fast but slow to start (any known card?). If it is
-> not a case it can be dropped completely (to simplify the code).
-> In my case it has not produced any speed improvement (and even
-> slower scrolling by 1-2%).
+> memset_io?
+
+ok, modified.
+
+
+>> +	if (dev->platform_data) {
+>> +		pdata_sinfo = (struct atmel_lcdfb_info *)dev->platform_data;
+>> +		sinfo->default_bpp = pdata_sinfo->default_bpp;
+>> +		sinfo->default_dmacon = pdata_sinfo->default_dmacon;
+>> +		sinfo->default_lcdcon2 = pdata_sinfo->default_lcdcon2;
+>> +		sinfo->default_monspecs = pdata_sinfo->default_monspecs;
+>> +		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
+>> +		sinfo->guard_time = pdata_sinfo->guard_time;
+>> +	} else {
+>> +		dev_err(dev, "cannot get default configuration\n");
+>> +		goto out;
 > 
-> This patch is indented for your review and tests on different
-> hardware. I will also test it on hardware I have (I can borrow
-> slower machine and I have few other GFX cards to tests).
+> Wrong goto? Should be goto free_info?
+
+Right. modified to "goto free_info".
+ 
+>> +release_intmem:
+>> +	if (map) {
+>> +		release_mem_region(info->fix.smem_start, info->fix.smem_len);
+>> +	}
 > 
-> Kind regards,
-> Krzysztof
-> 
-> diff -urp linux-2.6.21/drivers/video/Kconfig
-> linux-2.6.21.mod/drivers/video/Kconfig
-> --- linux-2.6.21/drivers/video/Kconfig	2007-05-08
-> 23:38:34.055228990 +0200
-> +++ linux-2.6.21.mod/drivers/video/Kconfig	2007-05-09
-> 00:13:34.910949935 +0200
-> @@ -139,6 +139,23 @@ config FB_TILEBLITTING
->  	 This is particularly important to one driver, matroxfb.  If
->  	 unsure, say N.
->  
-> +config FB_SMALL_BLITS
-> +       bool "Enable Enhanced Blitting Support (EXPERIMENTAL)"
-> +       depends on FB && EXPERIMENTAL
-> +       default n
-> +       ---help---
-> +         This enables smart usage of blitter to sroll screen. A
-> standard
-> +	 way is to use blitter to move almost whole screen. The enhanced
-> +	 blitting moves only characters which have to be moved. The same
-> +	 logic is used for redrawing characters during scroll if the
-> +	 blitting is not used to scroll.
-> +	 It may or may not speed up scrolling of your framebuffer. It
-> +	 depends on relative speed of your CPU and GPU. If you have
-> +	 fast CPU and slow GPU this option may slow down scrolling.
-> +	 If the opposite is true this may speed up scrolling for you.
-> +
-> +	 If unsure, say N.
-> +
->  comment "Frame buffer hardware drivers"
->  	depends on FB
->  
-> diff -urp linux-2.6.21/drivers/video/console/fbcon.c
-> linux-2.6.21.mod/drivers/video/console/fbcon.c
-> --- linux-2.6.21/drivers/video/console/fbcon.c	2007-04-26
-> 05:08:32.000000000 +0200
-> +++ linux-2.6.21.mod/drivers/video/console/fbcon.c	2007-05-09
-> 00:15:37.501935997 +0200
-> @@ -1663,6 +1663,81 @@ static void fbcon_redraw_move(struct vc_
->  	}
->  }
->  
-> +static void fbcon_redraw_blit(struct vc_data *vc, struct fb_info
-> *info,
-> +			struct display *p, int line, int count, int ycount)
-> +{
-> +	int offset = ycount * vc->vc_cols;
-> +	unsigned short *d = (unsigned short *)
-> +	    (vc->vc_origin + vc->vc_size_row * line);
-> +	unsigned short *s = d + offset;
-> +	struct fbcon_ops *ops = info->fbcon_par;
-> +
-> +	while (count--) {
-> +		unsigned short *start = s;
-> +		unsigned short *le = advance_row(s, 1);
-> +		unsigned short c;
-> +		int x = 0;
-> +		unsigned short attr = 1;
-> +#ifdef MERGE_BLITS
-> +		int was_blit = 1;
-> +#endif
-> +
-> +		do {
-> +			c = scr_readw(s);
-> +			if (attr != (c & 0xff00)) {
-> +				attr = c & 0xff00;
-> +				if (s > start) {
-> +					ops->bmove(vc, info, line + ycount, x, line, x, 1, s-start);
-> +#ifdef MERGE_BLITS
-> +					was_blit = 1;
-> +#endif
+> Unnecessary curly braces
 
-You can remove those #ifdef's (they're ugly anyway if used within a
-function).
+I like curly braces... Anyway, removed.
 
-So something like:
+Thanks you for your comments.
 
-if (info->flags & FBINFO_HWACCEL_MERGEBLIT)
-	was_blit = 1;
-> +					x += s - start;
-> +					start = s;
-> +				}
-> +			}
-> +			if (c == scr_readw(d)) {
-> +				if (s > start) {
-> +#ifdef MERGE_BLITS
-> +					if (!was_blit) {
-> +#endif
+I resend a modified driver now in the following email.
 
-and,
+Regards,
+-- 
+Nicolas Ferre
 
-if (info->flags & FBINFO_HWACCEL_MERGEBLIT || !was_blit) 
-
-or something to that effect.
-
-
-> +						ops->bmove(vc, info, line + ycount, x, line, x, 1, s-start);
-> +						x += s - start + 1;
-> +						start = s + 1;
-> +#ifdef MERGE_BLITS
-> +					}
-> +					was_blit = !was_blit;
-> +#endif
-> +				} else {
-> +#ifdef MERGE_BLITS
-> +					if (was_blit) {
-> +#endif
-> +						x++;
-> +						start++;
-> +#ifdef MERGE_BLITS
-> +					}
-> +#endif
-> +				}
-> +			}
-> +			scr_writew(c, d);
-> +			console_conditional_schedule();
-> +			s++;
-> +			d++;
-> +		} while (s < le);
-> +		if (s > start) {
-> +			ops->bmove(vc, info, line + ycount, x, line, x, 1, s-start);
-> +		}
-> +		console_conditional_schedule();
-> +		if (ycount > 0)
-> +			line++;
-> +		else {
-> +			line--;
-> +			/* NOTE: We subtract two lines from these pointers */
-> +			s -= vc->vc_size_row;
-> +			d -= vc->vc_size_row;
-> +		}
-> +	}
-> +}
-> +
->  static void fbcon_redraw(struct vc_data *vc, struct display *p,
->  			 int line, int count, int offset)
->  {
-> @@ -1748,7 +1823,9 @@ static int fbcon_scroll(struct vc_data *
->  {
->  	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
->  	struct display *p = &fb_display[vc->vc_num];
-> +#ifndef CONFIG_FB_SMALL_BLITS
->  	struct fbcon_ops *ops = info->fbcon_par;
-> +#endif
->  	int scroll_partial = info->flags & FBINFO_PARTIAL_PAN_OK;
->  
->  	if (fbcon_is_inactive(vc, info))
-> @@ -1772,10 +1849,22 @@ static int fbcon_scroll(struct vc_data *
->  			goto redraw_up;
->  		switch (p->scrollmode) {
->  		case SCROLL_MOVE:
-> +#ifndef CONFIG_FB_SMALL_BLITS
->  			ops->bmove(vc, info, t + count, 0, t, 0,
->  				    b - t - count, vc->vc_cols);
->  			ops->clear(vc, info, b - count, 0, count,
->  				  vc->vc_cols);
-> +#else
-
-Again, you can remove the #ifdef and just do:
-	
-		case SCROLL_MOVE_REDRAW:	
-> +			fbcon_redraw_blit(vc, info, p, t, b - t - count,
-> +				     count);
-> +			fbcon_clear(vc, b - count, 0, count, vc->vc_cols);
-> +			scr_memsetw((unsigned short *) (vc->vc_origin +
-> +							vc->vc_size_row *
-> +							(b - count)),
-> +				    vc->vc_video_erase_char,
-> +				    vc->vc_size_row * count);
-> +			return 1;
-> +#endif
->  			break;
->  
->  		case SCROLL_WRAP_MOVE:
-> @@ -1858,9 +1947,21 @@ static int fbcon_scroll(struct vc_data *
->  			goto redraw_down;
->  		switch (p->scrollmode) {
->  		case SCROLL_MOVE:
-> +#ifndef CONFIG_FB_SMALL_BLITS
->  			ops->bmove(vc, info, t, 0, t + count, 0,
->  				    b - t - count, vc->vc_cols);
->  			ops->clear(vc, info, t, 0, count, vc->vc_cols);
-> +#else
-
-Same here.
-
-> +			fbcon_redraw_blit(vc, info, p, b - 1, b - t - count,
-> +				     -count);
-> +			fbcon_clear(vc, t, 0, count, vc->vc_cols);
-> +			scr_memsetw((unsigned short *) (vc->vc_origin +
-> +							vc->vc_size_row *
-> +							t),
-> +				    vc->vc_video_erase_char,
-> +				    vc->vc_size_row * count);
-> +			return 1;
-> +#endif
->  			break;
->  
->  		case SCROLL_WRAP_MOVE:
-
-And all those selection magic  you can do in update_scrollmode().
-
-Hopefully, you get what I'm trying to illustrate. Choose the most
-effective method you want (not necessarily my example), but let's
-eliminate the ugly #ifdefs and make this a new scrolling mode selectable
-by the driver by setting certain bits in info->flags. 
-
-Tony
 
 
 -------------------------------------------------------------------------

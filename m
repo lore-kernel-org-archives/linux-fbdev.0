@@ -1,26 +1,26 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Blitter speed tests (was: smart
 	blitter	usage for scrolling)
-Date: Fri, 11 May 2007 04:24:34 +0800
-Message-ID: <1178828675.4662.4.camel@daplas>
+Date: Fri, 11 May 2007 04:31:34 +0800
+Message-ID: <1178829094.4662.7.camel@daplas>
 References: <46434cdea1ce4@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HmFBq-0000v3-84 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 May 2007 13:24:42 -0700
-Received: from py-out-1112.google.com ([64.233.166.180])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HmFBp-0001iL-Ht
+	id 1HmFIa-0001bp-Kr for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 10 May 2007 13:31:40 -0700
+Received: from py-out-1112.google.com ([64.233.166.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HmFIZ-00050m-4r
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 10 May 2007 13:24:42 -0700
-Received: by py-out-1112.google.com with SMTP id a29so596661pyi
+	Thu, 10 May 2007 13:31:40 -0700
+Received: by py-out-1112.google.com with SMTP id a29so598473pyi
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 10 May 2007 13:24:40 -0700 (PDT)
+	Thu, 10 May 2007 13:31:38 -0700 (PDT)
 In-Reply-To: <46434cdea1ce4@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -58,23 +58,9 @@ On Thu, 2007-05-10 at 18:48 +0200, Krzysztof Helt wrote:
 > even without it). I wonder if Geforce cards also shows this speed 
 > up if switched to the SCROLL_MOVE method but I have no card to 
 > test.
-> 
-> The mach64 case is strange: it gives upper hand to smart blitting 
-> but not at 32-bit depth.
-> 
-> I will prepare a patch with drop-in replacement for current 
-> SCROLL_MOVE method without blits merging (it is the cleanest 
-> solution).
 
-Nice benchmarks and results!
+I'll do the test for nvidia cards.
 
-The test is done on cards with both accelerated imageblit and copyarea.
-Do you get the same results in unaccelerated drivers (vesafb)?  
-
-If you do, it might even be wise to change the default from
-SCROLL_REDRAW to SCROLL_MOVE...?
-
-Tony
 
 
 

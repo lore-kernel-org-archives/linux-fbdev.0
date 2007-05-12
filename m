@@ -1,27 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
 Subject: Re: [PATCH] smart blitter usage for
-	scrolling	(cleaned)
-Date: Sat, 12 May 2007 03:41:56 +0800
-Message-ID: <1178912517.5017.3.camel@daplas>
-References: <4644106cacb67@wp.pl>
+	scrolling(cleaned)
+Date: Sat, 12 May 2007 08:06:47 +0200
+Message-ID: <46455977350ef@wp.pl>
+References: <4644106cacb67@wp.pl> <1178912517.5017.3.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hmb0F-0006NU-Gj for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 May 2007 12:42:11 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hmb0C-0008Mx-T1
+	id 1Hmkko-0007bR-FX for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 11 May 2007 23:06:54 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Hmkkl-00069u-VQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 May 2007 12:42:11 -0700
-Received: by py-out-1112.google.com with SMTP id a29so896631pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 11 May 2007 12:42:08 -0700 (PDT)
-In-Reply-To: <4644106cacb67@wp.pl>
+	Fri, 11 May 2007 23:06:54 -0700
+In-reply-to: <4644106cacb67@wp.pl> <1178912517.5017.3.camel@daplas>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,72 +30,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: "Antonino A.Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 2007-05-11 at 08:42 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> This patch replaces the current SCROLL_MOVE method with smarter
-> method using the same logic as the SCROLL_REDRAW method. This
-> brings these two methods much closer in performance and benefits
-> all framebuffers which uses the SCROLL_MOVE method.
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> ---
-> 
-> This version does not merge blits and does not uses ifdefs. The
-> patch was diffed against linux-2.6.21-git11
-> 
-> Regards,
-> Krzysztof
-> 
-> diff -urp linux-2.6.21.orig/drivers/video/console/fbcon.c
-> linux-2.6.21/drivers/video/console/fbcon.c
-> --- linux-2.6.21.orig/drivers/video/console/fbcon.c	2007-05-09
-> 16:56:07.936744076 +0200
-> +++ linux-2.6.21/drivers/video/console/fbcon.c	2007-05-10
-> 21:00:22.685633709 +0200
-> @@ -1704,6 +1704,61 @@ static void fbcon_redraw_move(struct vc_
->  	}
->  }
->  
-> +static void fbcon_redraw_blit(struct vc_data *vc, struct fb_info
-> *info,
-> +			struct display *p, int line, int count, int ycount)
-> +{
-> +	int offset = ycount * vc->vc_cols;
-> +	unsigned short *d = (unsigned short *)
-> +	    (vc->vc_origin + vc->vc_size_row * line);
-> +	unsigned short *s = d + offset;
-> +	struct fbcon_ops *ops = info->fbcon_par;
-> +
-> +	while (count--) {
-> +		unsigned short *start = s;
-> +		unsigned short *le = advance_row(s, 1);
-> +		unsigned short c;
-> +		int x = 0;
-> +		unsigned short attr = 1;
-> +
-> +		do {
-> +			c = scr_readw(s);
 
-#####
-> +			if (attr != (c & 0xff00)) {
-> +				attr = c & 0xff00;
-> +				if (s > start) {
-> +					ops->bmove(vc, info, line + ycount, x, line, x, 1, s-start);
-> +					x += s - start;
-> +					start = s;
-> +				}
-> +			}
-#####
+Dnia 11-05-2007 o godz. 21:41 Antonino A. Daplas napisa=B3(a):
+> =
 
-The code block above is probably not needed. It just checks if the
-attribute of the character (ie the color) has changed.  This is required
-for putcs, but is unnecessary for bmove.
+> #####
+> > +			if (attr !=3D (c & 0xff00)) {
+> > +				attr =3D c & 0xff00;
+> > +				if (s > start) {
+> > +					ops->bmove(vc, info, line + ycount, x, =
 
-Tony
+line, x, 1, s-start);
+> > +					x +=3D s - start;
+> > +					start =3D s;
+> > +				}
+> > +			}
+> #####
+> =
+
+> The code block above is probably not needed. It just checks if =
+
+the
+> attribute of the character (ie the color) has changed.  This is =
+
+required
+> for putcs, but is unnecessary for bmove.
+> =
+
+
+
+Please remove it from the patch. It may only speed up scrolling =
+
+by blitter.
+
+Regards,
+Krzysztof =
+
+
+----------------------------------------------------
+Zn=F3w dosta=B3e=B6 du=BFo spamu?! Masz ju=BF tego do=B6=E6..?
+Twoje dane s=B1 zagro=BFone..?
+mks_vir 2k7 -  program antywirusowy i antyszpiegowski
+http://klik.wp.pl/?adr=3Dwww.mks.com.pl&sid=3D1137
 
 
 

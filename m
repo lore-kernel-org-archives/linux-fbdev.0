@@ -1,25 +1,25 @@
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: Re: [PATCH] smart blitter usage for
-	scrolling(cleaned)
-Date: Sat, 12 May 2007 08:06:47 +0200
-Message-ID: <46455977350ef@wp.pl>
-References: <4644106cacb67@wp.pl> <1178912517.5017.3.camel@daplas>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH TRIVIAL] pm3fb: Fix compile error if
+	module
+Date: Sat, 12 May 2007 22:03:48 +0800
+Message-ID: <4645C944.1040301@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hmkko-0007bR-FX for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 May 2007 23:06:54 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Hmkkl-00069u-VQ
+	id 1HmsCT-0005HG-Ce for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 12 May 2007 07:03:57 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HmsCQ-0007xe-U2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 May 2007 23:06:54 -0700
-In-reply-to: <4644106cacb67@wp.pl> <1178912517.5017.3.camel@daplas>
-Content-Disposition: inline
+	Sat, 12 May 2007 07:03:57 -0700
+Received: by py-out-1112.google.com with SMTP id a29so1079522pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 12 May 2007 07:03:54 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,54 +30,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A.Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+pm3fb_setup() should only compiled if pm3fb is built statically in the kernel.
 
-Dnia 11-05-2007 o godz. 21:41 Antonino A. Daplas napisa=B3(a):
-> =
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
 
-> #####
-> > +			if (attr !=3D (c & 0xff00)) {
-> > +				attr =3D c & 0xff00;
-> > +				if (s > start) {
-> > +					ops->bmove(vc, info, line + ycount, x, =
+ drivers/video/pm3fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-line, x, 1, s-start);
-> > +					x +=3D s - start;
-> > +					start =3D s;
-> > +				}
-> > +			}
-> #####
-> =
-
-> The code block above is probably not needed. It just checks if =
-
-the
-> attribute of the character (ie the color) has changed.  This is =
-
-required
-> for putcs, but is unnecessary for bmove.
-> =
-
-
-
-Please remove it from the patch. It may only speed up scrolling =
-
-by blitter.
-
-Regards,
-Krzysztof =
-
-
-----------------------------------------------------
-Zn=F3w dosta=B3e=B6 du=BFo spamu?! Masz ju=BF tego do=B6=E6..?
-Twoje dane s=B1 zagro=BFone..?
-mks_vir 2k7 -  program antywirusowy i antyszpiegowski
-http://klik.wp.pl/?adr=3Dwww.mks.com.pl&sid=3D1137
-
-
+diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
+index 6c4dfcb..c77a1a1 100644
+--- a/drivers/video/pm3fb.c
++++ b/drivers/video/pm3fb.c
+@@ -985,7 +985,7 @@ static void __exit pm3fb_exit(void)
+ 	pci_unregister_driver(&pm3fb_driver);
+ }
+ 
+-#ifdef MODULE
++#ifndef MODULE
+ 	/*
+ 	 *  Setup
+ 	 */
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

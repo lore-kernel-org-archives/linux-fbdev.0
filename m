@@ -1,7 +1,7 @@
-From: Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH] Fix w100fb compile warnings
-Date: Sun, 13 May 2007 13:37:24 +0100
-Message-ID: <1179059844.5883.5.camel@localhost.localdomain>
+From: "vishnu tadepalli" <vishnu_tadepalli@hotmail.com>
+Subject: framebuffer for LCD connected to GPIO's
+Date: Mon, 14 May 2007 16:40:10 +0530
+Message-ID: <BAY139-F2DAB37B3C462BFA5B510EE33E0@phx.gbl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,13 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HnDKS-0002z6-P3 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 May 2007 05:37:36 -0700
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HnDKS-0006VV-5H
+	id 1HnYRY-0001oU-Dn for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 14 May 2007 04:10:20 -0700
+Received: from bay0-omc3-s36.bay0.hotmail.com ([65.54.246.236])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HnYRX-0007CL-3J
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 May 2007 05:37:36 -0700
+	Mon, 14 May 2007 04:10:20 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,47 +26,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Fix compile warnings from w100fb.c. Attribute registration failure
-doesn't stop the driver working so just warn about it.
+sir,
+Iam using an ARM 7 based MCU(HMS30c7202),i have interfcaed an 128*64 
+greyscale LCD using GPIOs.I would like your help in knowing how to write the 
+LCD driver and how to proceed with the framebuffer driver.anybody please 
+help me out,thanks in advance.
 
-Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
 
-diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
-index 5fc86ea..003c49a 100644
---- a/drivers/video/w100fb.c
-+++ b/drivers/video/w100fb.c
-@@ -660,7 +660,7 @@ int __init w100fb_probe(struct platform_device *pdev)
- 			err = -ENODEV;
- 			goto out;
- 	}
--	printk(" at 0x%08lx.\n", mem->start+W100_CFG_BASE);
-+	printk(" at 0x%08lx.\n", (unsigned long) mem->start+W100_CFG_BASE);
- 
- 	/* Remap the framebuffer */
- 	remapped_fbuf = ioremap_nocache(mem->start+MEM_WINDOW_BASE, MEM_WINDOW_SIZE);
-@@ -753,10 +753,14 @@ int __init w100fb_probe(struct platform_device *pdev)
- 		goto out;
- 	}
- 
--	device_create_file(&pdev->dev, &dev_attr_fastpllclk);
--	device_create_file(&pdev->dev, &dev_attr_reg_read);
--	device_create_file(&pdev->dev, &dev_attr_reg_write);
--	device_create_file(&pdev->dev, &dev_attr_flip);
-+	err = device_create_file(&pdev->dev, &dev_attr_fastpllclk);
-+	err |= device_create_file(&pdev->dev, &dev_attr_reg_read);
-+	err |= device_create_file(&pdev->dev, &dev_attr_reg_write);
-+	err |= device_create_file(&pdev->dev, &dev_attr_flip);
-+
-+	if (err != 0)
-+		printk(KERN_WARNING "fb%d: failed to register attributes (%d)\n",
-+				info->node, err);
- 
- 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node, info->fix.id);
- 	return 0;
+T.V.R.Prasad
 
+_________________________________________________________________
+Hey its Office 2007. Click here Now. 
+http://track1.quasar.co.in/trackQ/trkBanner.asp?Banner=TestDrive_Hotmail_TagOffLines&Creative=HeyItsOffice2007_TextLinks&Camp=office2007&Publisher=MSN&Advertiser=MS_Office2007&Link=http://www.microsoft.com/india/office/newday/default.mspx?nav=v4xcsubmenux
 
 
 -------------------------------------------------------------------------

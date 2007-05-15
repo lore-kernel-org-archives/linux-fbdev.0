@@ -1,30 +1,30 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] i.MX framebuffer remove ifdefs
-Date: Tue, 15 May 2007 11:21:20 +0200
-Message-ID: <20070515092120.GL5967@localhost.localdomain>
+Subject: [PATCH] i.MX framebuffer fix memory hole
+Date: Tue, 15 May 2007 11:23:59 +0200
+Message-ID: <20070515092359.GM5967@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HntRK-000417-Um for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 15 May 2007 02:35:31 -0700
+	id 1HntRU-00041K-7U for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 15 May 2007 02:35:42 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HntRJ-0000KR-9l
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HntRS-0003Rq-MV
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 15 May 2007 02:35:30 -0700
+	Tue, 15 May 2007 02:35:40 -0700
 Received: from leda.ptxnet.pengutronix.de ([10.1.0.71])
 	by metis.extern.pengutronix.de with esmtp (Exim 3.36 #1 (Debian))
-	id 1HntRI-0001qi-00 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 15 May 2007 11:35:28 +0200
+	id 1HntRR-0001ru-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 15 May 2007 11:35:37 +0200
 Received: from sha by leda.ptxnet.pengutronix.de with local (Exim 4.63)
-	(envelope-from <sha@localhost.localdomain>) id 1HntRI-0007Kj-6Q
+	(envelope-from <sha@localhost.localdomain>) id 1HntRR-0007Kn-Ii
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 15 May 2007 11:35:28 +0200
-Resent-Message-ID: <20070515093528.GN5967@localhost.localdomain>
+	Tue, 15 May 2007 11:35:37 +0200
+Resent-Message-ID: <20070515093537.GO5967@localhost.localdomain>
 Resent-To: linux-fbdev-devel@lists.sourceforge.net
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -39,65 +39,30 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Here are some small fixes for the imxfb framebuffer driver:
+Another small fix for the i.MX framebuffer driver (should be applied
+after the previously sent one):
 
-- remove ifndef for MX1FS2 platform which is not present in the kernel.
-- REV, CLS, PS and SPL_SPR are only needed with some sharp displays.
-  Only setup the corresponding io pins when such a display is connected.
+info->pseudo_palette was previously kmalloced. Do not overwrite
+it afterwards
 
-
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
 ---
- drivers/video/imxfb.c |   23 ++++++++---------------
- 1 file changed, 8 insertions(+), 15 deletions(-)
+ drivers/video/imxfb.c |    1 -
+ 1 file changed, 1 deletion(-)
 
 Index: linux-2.6/drivers/video/imxfb.c
 ===================================================================
 --- linux-2.6.orig/drivers/video/imxfb.c
 +++ linux-2.6/drivers/video/imxfb.c
-@@ -394,26 +394,18 @@ static void imxfb_setup_gpio(struct imxf
+@@ -468,7 +468,6 @@ static int __init imxfb_init_fbinfo(stru
  
- 	/* initialize GPIOs */
- 	imx_gpio_mode(PD6_PF_LSCLK);
--	imx_gpio_mode(PD10_PF_SPL_SPR);
- 	imx_gpio_mode(PD11_PF_CONTRAST);
- 	imx_gpio_mode(PD14_PF_FLM_VSYNC);
- 	imx_gpio_mode(PD13_PF_LP_HSYNC);
--	imx_gpio_mode(PD7_PF_REV);
--	imx_gpio_mode(PD8_PF_CLS);
--
--#ifndef CONFIG_MACH_PIMX1
--	/* on PiMX1 used as buffers enable signal
--	 */
--	imx_gpio_mode(PD9_PF_PS);
--#endif
--
--#ifndef CONFIG_MACH_MX1FS2
--	/* on mx1fs2 this pin is used to (de)activate the display, so we need
--	 * it as a normal gpio
--	 */
- 	imx_gpio_mode(PD12_PF_ACD_OE);
--#endif
+ 	info->fbops			= &imxfb_ops;
+ 	info->flags			= FBINFO_FLAG_DEFAULT;
+-	info->pseudo_palette		= (fbi + 1);
  
-+	/* These are only needed for Sharp HR TFT displays */
-+	if (fbi->pcr & PCR_SHARP) {
-+		imx_gpio_mode(PD7_PF_REV);
-+		imx_gpio_mode(PD8_PF_CLS);
-+		imx_gpio_mode(PD9_PF_PS);
-+		imx_gpio_mode(PD10_PF_SPL_SPR);
-+	}
- }
- 
- #ifdef CONFIG_PM
-@@ -499,6 +491,7 @@ static int __init imxfb_init_fbinfo(stru
- 	info->var.sync			= inf->sync;
- 	info->var.grayscale		= inf->cmap_greyscale;
- 	fbi->cmap_inverse		= inf->cmap_inverse;
-+	fbi->cmap_static		= inf->cmap_static;
- 	fbi->pcr			= inf->pcr;
- 	fbi->lscr1			= inf->lscr1;
- 	fbi->dmacr			= inf->dmacr;
+ 	fbi->rgb[RGB_16]		= &def_rgb_16;
+ 	fbi->rgb[RGB_8]			= &def_rgb_8;
 
 -- 
 Pengutronix - Linux Solutions for Science and Industry

@@ -1,7 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 04/10] w100fb: Fix compile warnings
-Date: Thu, 17 May 2007 05:21:02 +0800
-Message-ID: <464B75BE.8000505@gmail.com>
+Subject: [PATCH 06/10] imxfb: remove ifdefs
+Date: Thu, 17 May 2007 05:23:10 +0800
+Message-ID: <464B763E.4070700@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HoR9d-0005vm-4Y for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 14:35:29 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoR9b-0003Q1-Id
+	id 1HoR9o-0005w0-9A for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 May 2007 14:35:40 -0700
+Received: from wr-out-0506.google.com ([64.233.184.224])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoR9n-0003Tr-Gb
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 14:35:29 -0700
-Received: by py-out-1112.google.com with SMTP id a29so647770pyi
+	Wed, 16 May 2007 14:35:40 -0700
+Received: by wr-out-0506.google.com with SMTP id i20so716473wra
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 16 May 2007 14:35:27 -0700 (PDT)
+	Wed, 16 May 2007 14:35:38 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,52 +30,69 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Richard Purdie <rpurdie@rpsys.net>
+From: Sascha Hauer <s.hauer@pengutronix.de>
 
-Fix compile warnings from w100fb.c. Attribute registration failure
-doesn't stop the driver working so just warn about it.
+Here are some small fixes for the imxfb framebuffer driver:
 
-Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
+- remove ifndef for MX1FS2 platform which is not present in the kernel.
+- REV, CLS, PS and SPL_SPR are only needed with some sharp displays.
+  Only setup the corresponding io pins when such a display is connected.
+
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/w100fb.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
+ drivers/video/imxfb.c |   23 ++++++++---------------
+ 1 files changed, 8 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
-index 5fc86ea..003c49a 100644
---- a/drivers/video/w100fb.c
-+++ b/drivers/video/w100fb.c
-@@ -660,7 +660,7 @@ int __init w100fb_probe(struct platform_
- 			err = -ENODEV;
- 			goto out;
- 	}
--	printk(" at 0x%08lx.\n", mem->start+W100_CFG_BASE);
-+	printk(" at 0x%08lx.\n", (unsigned long) mem->start+W100_CFG_BASE);
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 267c1ff..6cdf269 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -394,26 +394,18 @@ static void imxfb_setup_gpio(struct imxf
  
- 	/* Remap the framebuffer */
- 	remapped_fbuf = ioremap_nocache(mem->start+MEM_WINDOW_BASE, MEM_WINDOW_SIZE);
-@@ -753,10 +753,14 @@ int __init w100fb_probe(struct platform_
- 		goto out;
- 	}
+ 	/* initialize GPIOs */
+ 	imx_gpio_mode(PD6_PF_LSCLK);
+-	imx_gpio_mode(PD10_PF_SPL_SPR);
+ 	imx_gpio_mode(PD11_PF_CONTRAST);
+ 	imx_gpio_mode(PD14_PF_FLM_VSYNC);
+ 	imx_gpio_mode(PD13_PF_LP_HSYNC);
+-	imx_gpio_mode(PD7_PF_REV);
+-	imx_gpio_mode(PD8_PF_CLS);
+-
+-#ifndef CONFIG_MACH_PIMX1
+-	/* on PiMX1 used as buffers enable signal
+-	 */
+-	imx_gpio_mode(PD9_PF_PS);
+-#endif
+-
+-#ifndef CONFIG_MACH_MX1FS2
+-	/* on mx1fs2 this pin is used to (de)activate the display, so we need
+-	 * it as a normal gpio
+-	 */
+ 	imx_gpio_mode(PD12_PF_ACD_OE);
+-#endif
  
--	device_create_file(&pdev->dev, &dev_attr_fastpllclk);
--	device_create_file(&pdev->dev, &dev_attr_reg_read);
--	device_create_file(&pdev->dev, &dev_attr_reg_write);
--	device_create_file(&pdev->dev, &dev_attr_flip);
-+	err = device_create_file(&pdev->dev, &dev_attr_fastpllclk);
-+	err |= device_create_file(&pdev->dev, &dev_attr_reg_read);
-+	err |= device_create_file(&pdev->dev, &dev_attr_reg_write);
-+	err |= device_create_file(&pdev->dev, &dev_attr_flip);
-+
-+	if (err != 0)
-+		printk(KERN_WARNING "fb%d: failed to register attributes (%d)\n",
-+				info->node, err);
++	/* These are only needed for Sharp HR TFT displays */
++	if (fbi->pcr & PCR_SHARP) {
++		imx_gpio_mode(PD7_PF_REV);
++		imx_gpio_mode(PD8_PF_CLS);
++		imx_gpio_mode(PD9_PF_PS);
++		imx_gpio_mode(PD10_PF_SPL_SPR);
++	}
+ }
  
- 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node, info->fix.id);
- 	return 0;
+ #ifdef CONFIG_PM
+@@ -499,6 +491,7 @@ static int __init imxfb_init_fbinfo(stru
+ 	info->var.sync			= inf->sync;
+ 	info->var.grayscale		= inf->cmap_greyscale;
+ 	fbi->cmap_inverse		= inf->cmap_inverse;
++	fbi->cmap_static		= inf->cmap_static;
+ 	fbi->pcr			= inf->pcr;
+ 	fbi->lscr1			= inf->lscr1;
+ 	fbi->dmacr			= inf->dmacr;
 
 
 -------------------------------------------------------------------------

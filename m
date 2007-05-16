@@ -1,25 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 10/10] [HEADS UP] fbdev: Move
- arch-specific bits to their respective subdirectories
-Date: Thu, 17 May 2007 05:33:48 +0800
-Message-ID: <464B78BC.4080900@gmail.com>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 01/10] fbdev: Clean up of sparc FB
+	options
+Date: Wed, 16 May 2007 14:47:39 -0700 (PDT)
+Message-ID: <20070516.144739.41633447.davem@davemloft.net>
+References: <464B74EE.5040407@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HoRA9-0005wR-8d for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 14:36:01 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoRA6-0003Q1-9D
+	id 1HoRLJ-00076n-6F for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 May 2007 14:47:34 -0700
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoRLI-0007cs-Eh
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 14:36:01 -0700
-Received: by py-out-1112.google.com with SMTP id a29so647770pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 16 May 2007 14:35:58 -0700 (PDT)
+	Wed, 16 May 2007 14:47:33 -0700
+In-Reply-To: <464B74EE.5040407@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,610 +29,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: adaplas@gmail.com
+Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net
 
-Move arch-specific bits of fb_mmap() to their respective subdirectories
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Date: Thu, 17 May 2007 05:17:34 +0800
 
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
-Hi all,
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> This patch puts all SBUS/UPA selection under one option "SBUS/UPA
+> framebuffers" and moves all sparc specific drivers next to them
+> in one group.
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 
-Please let me know if there are mistakes with this patch.
+Thanks for cleaning this up.
 
-Thanks.
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Tony
+On a related note I've been trying to figure out how to solve a
+particular issue on sparc, perhaps you can help?
 
- drivers/video/fbmem.c      |   65 +++++---------------------------------------
- include/asm-alpha/fb.h     |    7 +++++
- include/asm-arm/fb.h       |   12 ++++++++
- include/asm-arm26/fb.h     |    7 +++++
- include/asm-avr32/fb.h     |   14 +++++++++
- include/asm-blackfin/fb.h  |    7 +++++
- include/asm-cris/fb.h      |    7 +++++
- include/asm-frv/fb.h       |    7 +++++
- include/asm-h8300/fb.h     |    7 +++++
- include/asm-i386/fb.h      |   13 +++++++++
- include/asm-ia64/fb.h      |   15 ++++++++++
- include/asm-m32r/fb.h      |   12 ++++++++
- include/asm-m68k/fb.h      |   28 +++++++++++++++++++
- include/asm-m68knommu/fb.h |    7 +++++
- include/asm-mips/fb.h      |   12 ++++++++
- include/asm-parisc/fb.h    |   12 ++++++++
- include/asm-powerpc/fb.h   |   14 +++++++++
- include/asm-ppc/fb.h       |   14 +++++++++
- include/asm-s390/fb.h      |    7 +++++
- include/asm-sh/fb.h        |   12 ++++++++
- include/asm-sh64/fb.h      |   12 ++++++++
- include/asm-sparc/fb.h     |    6 ++++
- include/asm-sparc64/fb.h   |   15 ++++++++++
- include/asm-v850/fb.h      |    7 +++++
- include/asm-x86_64/fb.h    |   13 +++++++++
- include/asm-xtensa/fb.h    |    7 +++++
- include/linux/fb.h         |   12 ++++++++
- 27 files changed, 293 insertions(+), 58 deletions(-)
+The firmware has properties that we could use to determine exactly
+which framebuffer device is being used as the console in multi-head
+situations.
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 38c2e25..68d60b7 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -33,17 +33,10 @@ #endif
- #include <linux/err.h>
- #include <linux/device.h>
- #include <linux/efi.h>
-+#include <linux/fb.h>
- 
--#if defined(__mc68000__) || defined(CONFIG_APUS)
--#include <asm/setup.h>
--#endif
--
--#include <asm/io.h>
--#include <asm/uaccess.h>
--#include <asm/page.h>
--#include <asm/pgtable.h>
-+#include <asm/fb.h>
- 
--#include <linux/fb.h>
- 
-     /*
-      *  Frame buffer device initialization and setup routines
-@@ -1155,17 +1148,15 @@ fb_compat_ioctl(struct file *file, unsig
- }
- #endif
- 
--static int 
-+static int
- fb_mmap(struct file *file, struct vm_area_struct * vma)
- {
- 	int fbidx = iminor(file->f_path.dentry->d_inode);
- 	struct fb_info *info = registered_fb[fbidx];
- 	struct fb_ops *fb = info->fbops;
- 	unsigned long off;
--#if !defined(__sparc__) || defined(__sparc_v9__)
- 	unsigned long start;
- 	u32 len;
--#endif
- 
- 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
- 		return -EINVAL;
-@@ -1180,12 +1171,9 @@ #endif
- 		return res;
- 	}
- 
--#if defined(__sparc__) && !defined(__sparc_v9__)
--	/* Should never get here, all fb drivers should have their own
--	   mmap routines */
--	return -EINVAL;
--#else
--	/* !sparc32... */
-+	if (fb_mmap_required())
-+		return -EINVAL;
-+
- 	lock_kernel();
- 
- 	/* frame buffer memory */
-@@ -1209,50 +1197,11 @@ #else
- 	vma->vm_pgoff = off >> PAGE_SHIFT;
- 	/* This is an IO map - tell maydump to skip this VMA */
- 	vma->vm_flags |= VM_IO | VM_RESERVED;
--#if defined(__mc68000__)
--#if defined(CONFIG_SUN3)
--	pgprot_val(vma->vm_page_prot) |= SUN3_PAGE_NOCACHE;
--#elif defined(CONFIG_MMU)
--	if (CPU_IS_020_OR_030)
--		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
--	if (CPU_IS_040_OR_060) {
--		pgprot_val(vma->vm_page_prot) &= _CACHEMASK040;
--		/* Use no-cache mode, serialized */
--		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE_S;
--	}
--#endif
--#elif defined(__powerpc__)
--	vma->vm_page_prot = phys_mem_access_prot(file, off >> PAGE_SHIFT,
--						 vma->vm_end - vma->vm_start,
--						 vma->vm_page_prot);
--#elif defined(__alpha__)
--	/* Caching is off in the I/O space quadrant by design.  */
--#elif defined(__i386__) || defined(__x86_64__)
--	if (boot_cpu_data.x86 > 3)
--		pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
--#elif defined(__mips__) || defined(__sparc_v9__)
--	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--#elif defined(__hppa__)
--	pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
--#elif defined(__arm__) || defined(__sh__) || defined(__m32r__)
--	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
--#elif defined(__avr32__)
--	vma->vm_page_prot = __pgprot((pgprot_val(vma->vm_page_prot)
--				      & ~_PAGE_CACHABLE)
--				     | (_PAGE_BUFFER | _PAGE_DIRTY));
--#elif defined(__ia64__)
--	if (efi_range_is_wc(vma->vm_start, vma->vm_end - vma->vm_start))
--		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
--	else
--		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--#else
--#warning What do we have to do here??
--#endif
-+	fb_pgprotect(file, vma);
- 	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
- 			     vma->vm_end - vma->vm_start, vma->vm_page_prot))
- 		return -EAGAIN;
- 	return 0;
--#endif /* !sparc32 */
- }
- 
- static int
-diff --git a/include/asm-alpha/fb.h b/include/asm-alpha/fb.h
-new file mode 100644
-index 0000000..ca714a4
---- /dev/null
-+++ b/include/asm-alpha/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+/* Caching is off in the I/O space quadrant by design.  */
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-arm/fb.h b/include/asm-arm/fb.h
-new file mode 100644
-index 0000000..067b599
---- /dev/null
-+++ b/include/asm-arm/fb.h
-@@ -0,0 +1,12 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-arm26/fb.h b/include/asm-arm26/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-arm26/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-avr32/fb.h b/include/asm-avr32/fb.h
-new file mode 100644
-index 0000000..710255a
---- /dev/null
-+++ b/include/asm-avr32/fb.h
-@@ -0,0 +1,14 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = __pgprot((pgprot_val(vma->vm_page_prot)
-+				      & ~_PAGE_CACHABLE)
-+				     | (_PAGE_BUFFER | _PAGE_DIRTY));
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-blackfin/fb.h b/include/asm-blackfin/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-blackfin/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-cris/fb.h b/include/asm-cris/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-cris/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-frv/fb.h b/include/asm-frv/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-frv/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-h8300/fb.h b/include/asm-h8300/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-h8300/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-i386/fb.h b/include/asm-i386/fb.h
-new file mode 100644
-index 0000000..ff83013
---- /dev/null
-+++ b/include/asm-i386/fb.h
-@@ -0,0 +1,13 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	if (boot_cpu_data.x86 > 3)
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-ia64/fb.h b/include/asm-ia64/fb.h
-new file mode 100644
-index 0000000..31b9743
---- /dev/null
-+++ b/include/asm-ia64/fb.h
-@@ -0,0 +1,15 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	if (efi_range_is_wc(vma->vm_start, vma->vm_end - vma->vm_start))
-+		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+	else
-+		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-m32r/fb.h b/include/asm-m32r/fb.h
-new file mode 100644
-index 0000000..067b599
---- /dev/null
-+++ b/include/asm-m32r/fb.h
-@@ -0,0 +1,12 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-m68k/fb.h b/include/asm-m68k/fb.h
-new file mode 100644
-index 0000000..7d4a28f
---- /dev/null
-+++ b/include/asm-m68k/fb.h
-@@ -0,0 +1,28 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+#include <asm/setup.h>
-+
-+#ifdef CONFIG_SUN3
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	pgprot_val(vma->vm_page_prot) |= SUN3_PAGE_NOCACHE;
-+}
-+#elif defined(CONFIG_MMU)
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+	if (CPU_IS_020_OR_030)
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
-+	if (CPU_IS_040_OR_060) {
-+		pgprot_val(vma->vm_page_prot) &= _CACHEMASK040;
-+		/* Use no-cache mode, serialized */
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE_S;
-+	}
-+}
-+#else
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+#endif /* CONFIG_SUN3 */
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-m68knommu/fb.h b/include/asm-m68knommu/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-m68knommu/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-mips/fb.h b/include/asm-mips/fb.h
-new file mode 100644
-index 0000000..dab64a8
---- /dev/null
-+++ b/include/asm-mips/fb.h
-@@ -0,0 +1,12 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-parisc/fb.h b/include/asm-parisc/fb.h
-new file mode 100644
-index 0000000..a9c2f67
---- /dev/null
-+++ b/include/asm-parisc/fb.h
-@@ -0,0 +1,12 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-powerpc/fb.h b/include/asm-powerpc/fb.h
-new file mode 100644
-index 0000000..32eb8b7
---- /dev/null
-+++ b/include/asm-powerpc/fb.h
-@@ -0,0 +1,14 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = phys_mem_access_prot(file, off >> PAGE_SHIFT,
-+						 vma->vm_end - vma->vm_start,
-+						 vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-ppc/fb.h b/include/asm-ppc/fb.h
-new file mode 100644
-index 0000000..32eb8b7
---- /dev/null
-+++ b/include/asm-ppc/fb.h
-@@ -0,0 +1,14 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = phys_mem_access_prot(file, off >> PAGE_SHIFT,
-+						 vma->vm_end - vma->vm_start,
-+						 vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-s390/fb.h b/include/asm-s390/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-s390/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-sh/fb.h b/include/asm-sh/fb.h
-new file mode 100644
-index 0000000..067b599
---- /dev/null
-+++ b/include/asm-sh/fb.h
-@@ -0,0 +1,12 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-sh64/fb.h b/include/asm-sh64/fb.h
-new file mode 100644
-index 0000000..067b599
---- /dev/null
-+++ b/include/asm-sh64/fb.h
-@@ -0,0 +1,12 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-sparc/fb.h b/include/asm-sparc/fb.h
-new file mode 100644
-index 0000000..9f8c88d
---- /dev/null
-+++ b/include/asm-sparc/fb.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-sparc64/fb.h b/include/asm-sparc64/fb.h
-new file mode 100644
-index 0000000..01b50b2
---- /dev/null
-+++ b/include/asm-sparc64/fb.h
-@@ -0,0 +1,15 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#if defined(__sparc_v9__)
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+}
-+#else
-+#define fb_pgprotect(...) do {} while (0)
-+#endif /* defined(__sparc_v9__) */
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-v850/fb.h b/include/asm-v850/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-v850/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-x86_64/fb.h b/include/asm-x86_64/fb.h
-new file mode 100644
-index 0000000..ff83013
---- /dev/null
-+++ b/include/asm-x86_64/fb.h
-@@ -0,0 +1,13 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#include <linux/fs.h>
-+#include <asm/page.h>
-+
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-+{
-+	if (boot_cpu_data.x86 > 3)
-+		pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
-+}
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/asm-xtensa/fb.h b/include/asm-xtensa/fb.h
-new file mode 100644
-index 0000000..dc9d1be
---- /dev/null
-+++ b/include/asm-xtensa/fb.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_FB_H_
-+#define _ASM_FB_H_
-+
-+#warning What do we have to do here??
-+#define fb_pgprotect(...) do {} while (0)
-+
-+#endif /* _ASM_FB_H_ */
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index c654d0e..0e929c3 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1064,6 +1064,18 @@ extern int fb_find_mode(struct fb_var_sc
- 			const struct fb_videomode *default_mode,
- 			unsigned int default_bpp);
- 
-+#if defined(__sparc__) && !defined(__sparc_v9__)
-+static inline int fb_mmap_required(void)
-+{
-+	return 1;
-+}
-+#else
-+static inline int fb_mmap_required(void)
-+{
-+	return 0;
-+}
-+#endif
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _LINUX_FB_H */
+Currently there is no easy way to make use of that so the user just
+gets whatever the framebuffer device probing order gives them which
+isn't nice and is often wrong.
 
+One idea I have is to provide a way to set some flag in the
+fbinfo.  The flag would indicate that this framebuffer should
+be used as the primary console by default.  Command line options
+et al. could of course override this.
 
+In this way sparc framebuffers could see if a device is the
+one the "output-device" firmware property points to, and if
+so it would set the flag.
+
+What do you think about this?
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 07/10] imxfb: fix memory hole
-Date: Thu, 17 May 2007 05:24:10 +0800
-Message-ID: <464B767A.9030502@gmail.com>
+Subject: [PATCH 09/10] nvidiafb: Adjust flags to take
+ advantage of new scroll method
+Date: Thu, 17 May 2007 05:26:28 +0800
+Message-ID: <464B7704.2030405@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HoR9q-0005w6-OX for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 14:35:42 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoR9q-0003Q1-Fn
+	id 1HoR9w-0005wD-Qk for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 May 2007 14:35:49 -0700
+Received: from wr-out-0506.google.com ([64.233.184.224])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoR9v-0003Tr-51
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 14:35:42 -0700
-Received: by py-out-1112.google.com with SMTP id a29so647770pyi
+	Wed, 16 May 2007 14:35:48 -0700
+Received: by wr-out-0506.google.com with SMTP id i20so716473wra
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 16 May 2007 14:35:42 -0700 (PDT)
+	Wed, 16 May 2007 14:35:46 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,30 +33,36 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Sascha Hauer <s.hauer@pengutronix.de>
+The SCROLL_MOVE method has been optimized such that it is significantly faster
+than SCROLL_REDRAW. Adjust flags to indicate that blitting is preferred over
+rendering.
 
-info->pseudo_palette was previously kmalloced. Do not overwrite
-it afterwards
-
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/imxfb.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/video/nvidia/nvidia.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 6cdf269..a125898 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -468,7 +468,6 @@ static int __init imxfb_init_fbinfo(stru
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index 41f6365..8c3a253 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -674,6 +674,7 @@ #endif
+ 		info->fbops->fb_sync = nvidiafb_sync;
+ 		info->pixmap.scan_align = 4;
+ 		info->flags &= ~FBINFO_HWACCEL_DISABLED;
++		info->flags |= FBINFO_READS_FAST;
+ 		NVResetGraphics(info);
+ 	} else {
+ 		info->fbops->fb_imageblit = cfb_imageblit;
+@@ -682,6 +683,7 @@ #endif
+ 		info->fbops->fb_sync = NULL;
+ 		info->pixmap.scan_align = 1;
+ 		info->flags |= FBINFO_HWACCEL_DISABLED;
++		info->flags &= ~FBINFO_READS_FAST;
+ 	}
  
- 	info->fbops			= &imxfb_ops;
- 	info->flags			= FBINFO_FLAG_DEFAULT;
--	info->pseudo_palette		= (fbi + 1);
- 
- 	fbi->rgb[RGB_16]		= &def_rgb_16;
- 	fbi->rgb[RGB_8]			= &def_rgb_8;
+ 	par->cursor_reset = 1;
 
 
 -------------------------------------------------------------------------

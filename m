@@ -1,28 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 10/10] [HEADS UP] fbdev:
-	Move	arch-specific bits to their respective subdirectories
-Date: Thu, 17 May 2007 18:52:32 +0800
-Message-ID: <1179399152.4586.13.camel@daplas>
-References: <464B78BC.4080900@gmail.com>
-	<Pine.LNX.4.64.0705171140230.20754@anakin>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move
+ arch-specific bits to their respective subdirectories
+Date: Thu, 17 May 2007 13:30:03 -0700 (PDT)
+Message-ID: <20070517.133003.63739733.davem@davemloft.net>
+References: <464B78BC.4080900@gmail.com> <20070517094930.GA27627@infradead.org>
+	<1179399082.4586.10.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hodb7-0007LJ-Cg for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 May 2007 03:52:41 -0700
-Received: from nz-out-0506.google.com ([64.233.162.238])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hodb7-0000BG-4C
+	id 1Hombr-0003ZD-JR for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 17 May 2007 13:30:03 -0700
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hombp-00073g-Qo
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 May 2007 03:52:41 -0700
-Received: by nz-out-0506.google.com with SMTP id i11so812522nzi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 17 May 2007 03:52:40 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0705171140230.20754@anakin>
+	Thu, 17 May 2007 13:30:02 -0700
+In-Reply-To: <1179399082.4586.10.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,75 +30,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux/m68k <linux-m68k@vger.kernel.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, uClinux list <uclinux-dev@uclinux.org>
+To: adaplas@gmail.com
+Cc: hch@infradead.org, akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 11:43 +0200, Geert Uytterhoeven wrote:
-> On Thu, 16 May 2007, Antonino A. Daplas wrote:
-> > diff --git a/include/asm-m68k/fb.h b/include/asm-m68k/fb.h
-> > new file mode 100644
-> > index 0000000..7d4a28f
-> > --- /dev/null
-> > +++ b/include/asm-m68k/fb.h
-> > @@ -0,0 +1,28 @@
-> > +#ifndef _ASM_FB_H_
-> > +#define _ASM_FB_H_
-> > +
-> > +#include <linux/fs.h>
-> > +#include <asm/page.h>
-> > +#include <asm/setup.h>
-> > +
-> > +#ifdef CONFIG_SUN3
-> > +static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-> > +{
-> > +	pgprot_val(vma->vm_page_prot) |= SUN3_PAGE_NOCACHE;
-> > +}
-> > +#elif defined(CONFIG_MMU)
->    ^^^^^^^^^^^^^^^^^^^^^^^^^
-> This can be a plain `#else', as m68knommu hasn't been merged with m68k
-> (yet :-)
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Date: Thu, 17 May 2007 18:51:22 +0800
+
+> On Thu, 2007-05-17 at 10:49 +0100, Christoph Hellwig wrote:
+> > On Thu, May 17, 2007 at 05:33:48AM +0800, Antonino A. Daplas wrote:
+> > > -#if defined(__sparc__) && !defined(__sparc_v9__)
+> > > -	/* Should never get here, all fb drivers should have their own
+> > > -	   mmap routines */
+> > > -	return -EINVAL;
+> > > -#else
+> > > -	/* !sparc32... */
+> > > +	if (fb_mmap_required())
+> > > +		return -EINVAL;
+> > > +
+> > 
+> > I don't like this bit.
 > 
-> > +static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-> > +	if (CPU_IS_020_OR_030)
-> > +		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
-> > +	if (CPU_IS_040_OR_060) {
-> > +		pgprot_val(vma->vm_page_prot) &= _CACHEMASK040;
-> > +		/* Use no-cache mode, serialized */
-> > +		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE_S;
-> > +	}
-> > +}
-> > +#else
->    ^^^^^
-> So this branch can go away
-> 
-> > +#warning What do we have to do here??
-> > +#define fb_pgprotect(...) do {} while (0)
-> > +#endif /* CONFIG_SUN3 */
-> > +
-> > +#endif /* _ASM_FB_H_ */
-> > diff --git a/include/asm-m68knommu/fb.h b/include/asm-m68knommu/fb.h
-> > new file mode 100644
-> > index 0000000..dc9d1be
-> > --- /dev/null
-> > +++ b/include/asm-m68knommu/fb.h
-> > @@ -0,0 +1,7 @@
-> > +#ifndef _ASM_FB_H_
-> > +#define _ASM_FB_H_
-> > +
-> > +#warning What do we have to do here??
-> > +#define fb_pgprotect(...) do {} while (0)
-> > +
-> > +#endif /* _ASM_FB_H_ */
-> 
-> If the m68knommu case in fb_mmap() was empty before, it should be empty here
-> too, so I guess the warning can go away.
+> Me too, actually. I did it this way because I don't want to deviate from
+> the old code too much. Since all sparc32 drivers are either linked to
+> sbuslib.c or has their own fb_mmap method, the above test is redundant. 
+> I'll leave the decision to remove the above test to David Miller.
 
-Thanks. It's confusing when there's multiple directories for one
-architecture.
-
-Tony
-
-
+Feel free to remove it.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

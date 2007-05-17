@@ -1,30 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: David Miller <davem@davemloft.net>
 Subject: Re: [PATCH 01/10] fbdev: Clean up of sparc FB
 	options
-Date: Thu, 17 May 2007 08:36:21 +0800
-Message-ID: <1179362181.28568.4.camel@daplas>
-References: <1179360118.4743.32.camel@daplas>
-	<20070516.170550.85686786.davem@davemloft.net>
-	<1179360635.28568.0.camel@daplas>
+Date: Wed, 16 May 2007 17:42:40 -0700 (PDT)
+Message-ID: <20070516.174240.62344054.davem@davemloft.net>
+References: <1179360635.28568.0.camel@daplas>
 	<20070516.171526.08322463.davem@davemloft.net>
+	<1179362181.28568.4.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HoTyt-0006Yr-RL for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 17:36:35 -0700
-Received: from wx-out-0506.google.com ([66.249.82.227])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoTyr-0002XO-3o
+	id 1HoU4g-00075y-Ao for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 May 2007 17:42:34 -0700
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoU4g-00043S-4x
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 17:36:35 -0700
-Received: by wx-out-0506.google.com with SMTP id i30so710067wxd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 16 May 2007 17:36:31 -0700 (PDT)
-In-Reply-To: <20070516.171526.08322463.davem@davemloft.net>
+	Wed, 16 May 2007 17:42:34 -0700
+In-Reply-To: <1179362181.28568.4.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,33 +31,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: David Miller <davem@davemloft.net>
+To: adaplas@gmail.com
 Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2007-05-16 at 17:15 -0700, David Miller wrote:
-> From: "Antonino A. Daplas" <adaplas@gmail.com>
-> Date: Thu, 17 May 2007 08:10:34 +0800
-> 
-> > On Wed, 2007-05-16 at 17:05 -0700, David Miller wrote:
-> > > From: "Antonino A. Daplas" <adaplas@gmail.com>
-> > > Date: Thu, 17 May 2007 08:01:58 +0800
-> > As long as each instance is defined by distinct struct fb_info's, it
-> > should work.
-> 
-> Excellent.
-> 
-> The only missing piece for sparc is how do I get from an fb_info to
-> the firmware node for that device.  What we can do is add a "struct
-> device_node *" or similar to fb_info.  powerpc and all future
-> openfirmware platforms will be able to make use of this as well.
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Date: Thu, 17 May 2007 08:36:21 +0800
 
-struct fb_info already has struct device *device field.  Isn't that
-sufficient enough?  Or if you must, just define a flag somewhere in
-struct fb_info or struct par which the fb_get_primary_device() can
-check.
+> On Wed, 2007-05-16 at 17:15 -0700, David Miller wrote:
+> > Excellent.
+> > 
+> > The only missing piece for sparc is how do I get from an fb_info to
+> > the firmware node for that device.  What we can do is add a "struct
+> > device_node *" or similar to fb_info.  powerpc and all future
+> > openfirmware platforms will be able to make use of this as well.
+> 
+> struct fb_info already has struct device *device field.  Isn't that
+> sufficient enough?  Or if you must, just define a flag somewhere in
+> struct fb_info or struct par which the fb_get_primary_device() can
+> check.
 
-Tony
-
+Indeed, struct device is sufficient, I store the info I need
+in the struct dev_archdata.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

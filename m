@@ -1,24 +1,23 @@
-From: Kumar Gala <galak@kernel.crashing.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move
-	arch-specific bits to their respective subdirectories
-Date: Wed, 16 May 2007 19:54:40 -0500
-Message-ID: <3B9BEEF0-F01D-4FE3-86A8-B58AAAB0B2DC@kernel.crashing.org>
+ arch-specific bits to their respective subdirectories
+Date: Thu, 17 May 2007 11:43:34 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0705171140230.20754@anakin>
 References: <464B78BC.4080900@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v752.2)
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HoUI8-0008Mx-Cr for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 17:56:28 -0700
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HoUI7-0006pL-Qc
+	id 1HocWK-0007tn-Vz for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 17 May 2007 02:43:41 -0700
+Received: from asia.telenet-ops.be ([195.130.137.74])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HocWK-0007TG-AA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 17:56:28 -0700
+	Thu, 17 May 2007 02:43:40 -0700
 In-Reply-To: <464B78BC.4080900@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,62 +29,78 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A.Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@osdl.org>, Linux/m68k <linux-m68k@vger.kernel.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, uClinux list <uclinux-dev@uclinux.org>
 
+On Thu, 16 May 2007, Antonino A. Daplas wrote:
+> diff --git a/include/asm-m68k/fb.h b/include/asm-m68k/fb.h
+> new file mode 100644
+> index 0000000..7d4a28f
+> --- /dev/null
+> +++ b/include/asm-m68k/fb.h
+> @@ -0,0 +1,28 @@
+> +#ifndef _ASM_FB_H_
+> +#define _ASM_FB_H_
+> +
+> +#include <linux/fs.h>
+> +#include <asm/page.h>
+> +#include <asm/setup.h>
+> +
+> +#ifdef CONFIG_SUN3
+> +static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
+> +{
+> +	pgprot_val(vma->vm_page_prot) |= SUN3_PAGE_NOCACHE;
+> +}
+> +#elif defined(CONFIG_MMU)
+   ^^^^^^^^^^^^^^^^^^^^^^^^^
+This can be a plain `#else', as m68knommu hasn't been merged with m68k
+(yet :-)
 
-On May 16, 2007, at 4:33 PM, Antonino A. Daplas wrote:
+> +static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
+> +	if (CPU_IS_020_OR_030)
+> +		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
+> +	if (CPU_IS_040_OR_060) {
+> +		pgprot_val(vma->vm_page_prot) &= _CACHEMASK040;
+> +		/* Use no-cache mode, serialized */
+> +		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE_S;
+> +	}
+> +}
+> +#else
+   ^^^^^
+So this branch can go away
 
-> Move arch-specific bits of fb_mmap() to their respective  
-> subdirectories
->
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-> ---
-> Hi all,
->
-> Please let me know if there are mistakes with this patch.
->
-> Thanks.
->
-> Tony
->
->  drivers/video/fbmem.c      |   65 ++++ 
-> +---------------------------------------
->  include/asm-alpha/fb.h     |    7 +++++
->  include/asm-arm/fb.h       |   12 ++++++++
->  include/asm-arm26/fb.h     |    7 +++++
->  include/asm-avr32/fb.h     |   14 +++++++++
->  include/asm-blackfin/fb.h  |    7 +++++
->  include/asm-cris/fb.h      |    7 +++++
->  include/asm-frv/fb.h       |    7 +++++
->  include/asm-h8300/fb.h     |    7 +++++
->  include/asm-i386/fb.h      |   13 +++++++++
->  include/asm-ia64/fb.h      |   15 ++++++++++
->  include/asm-m32r/fb.h      |   12 ++++++++
->  include/asm-m68k/fb.h      |   28 +++++++++++++++++++
->  include/asm-m68knommu/fb.h |    7 +++++
->  include/asm-mips/fb.h      |   12 ++++++++
->  include/asm-parisc/fb.h    |   12 ++++++++
->  include/asm-powerpc/fb.h   |   14 +++++++++
->  include/asm-ppc/fb.h       |   14 +++++++++
+> +#warning What do we have to do here??
+> +#define fb_pgprotect(...) do {} while (0)
+> +#endif /* CONFIG_SUN3 */
+> +
+> +#endif /* _ASM_FB_H_ */
+> diff --git a/include/asm-m68knommu/fb.h b/include/asm-m68knommu/fb.h
+> new file mode 100644
+> index 0000000..dc9d1be
+> --- /dev/null
+> +++ b/include/asm-m68knommu/fb.h
+> @@ -0,0 +1,7 @@
+> +#ifndef _ASM_FB_H_
+> +#define _ASM_FB_H_
+> +
+> +#warning What do we have to do here??
+> +#define fb_pgprotect(...) do {} while (0)
+> +
+> +#endif /* _ASM_FB_H_ */
 
-You don't need a version in asm-ppc since you have one in asm- 
-powerpc.  We are slowly phasing out arch/ppc in favor of arch/powerpc  
-which merges the 32 and 64-bit support.
+If the m68knommu case in fb_mmap() was empty before, it should be empty here
+too, so I guess the warning can go away.
 
->  include/asm-s390/fb.h      |    7 +++++
->  include/asm-sh/fb.h        |   12 ++++++++
->  include/asm-sh64/fb.h      |   12 ++++++++
->  include/asm-sparc/fb.h     |    6 ++++
->  include/asm-sparc64/fb.h   |   15 ++++++++++
->  include/asm-v850/fb.h      |    7 +++++
->  include/asm-x86_64/fb.h    |   13 +++++++++
->  include/asm-xtensa/fb.h    |    7 +++++
->  include/linux/fb.h         |   12 ++++++++
->  27 files changed, 293 insertions(+), 58 deletions(-)
+Gr{oetje,eeting}s,
 
+						Geert
 
-- k
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

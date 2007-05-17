@@ -1,26 +1,28 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 01/10] fbdev: Clean up of sparc FB
-	options
-Date: Wed, 16 May 2007 17:42:40 -0700 (PDT)
-Message-ID: <20070516.174240.62344054.davem@davemloft.net>
-References: <1179360635.28568.0.camel@daplas>
-	<20070516.171526.08322463.davem@davemloft.net>
-	<1179362181.28568.4.camel@daplas>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move
+	arch-specific bits to	their respective subdirectories
+Date: Thu, 17 May 2007 14:13:14 +0800
+Message-ID: <1179382394.28568.6.camel@daplas>
+References: <464B78BC.4080900@gmail.com>
+	<3B9BEEF0-F01D-4FE3-86A8-B58AAAB0B2DC@kernel.crashing.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HoU4g-00075y-Ao for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 17:42:34 -0700
-Received: from [74.93.104.97] (helo=sunset.davemloft.net)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoU4g-00043S-4x
+	id 1HoZEs-0004xQ-9F for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 May 2007 23:13:26 -0700
+Received: from wr-out-0506.google.com ([64.233.184.224])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoZEq-0007zi-Jz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 17:42:34 -0700
-In-Reply-To: <1179362181.28568.4.camel@daplas>
+	Wed, 16 May 2007 23:13:26 -0700
+Received: by wr-out-0506.google.com with SMTP id i20so917393wra
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 16 May 2007 23:13:24 -0700 (PDT)
+In-Reply-To: <3B9BEEF0-F01D-4FE3-86A8-B58AAAB0B2DC@kernel.crashing.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,27 +33,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com
-Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Date: Thu, 17 May 2007 08:36:21 +0800
-
-> On Wed, 2007-05-16 at 17:15 -0700, David Miller wrote:
-> > Excellent.
-> > 
-> > The only missing piece for sparc is how do I get from an fb_info to
-> > the firmware node for that device.  What we can do is add a "struct
-> > device_node *" or similar to fb_info.  powerpc and all future
-> > openfirmware platforms will be able to make use of this as well.
+On Wed, 2007-05-16 at 19:54 -0500, Kumar Gala wrote:
+> On May 16, 2007, at 4:33 PM, Antonino A. Daplas wrote:
 > 
-> struct fb_info already has struct device *device field.  Isn't that
-> sufficient enough?  Or if you must, just define a flag somewhere in
-> struct fb_info or struct par which the fb_get_primary_device() can
-> check.
+> > Move arch-specific bits of fb_mmap() to their respective  
+> > subdirectories
+> >
 
-Indeed, struct device is sufficient, I store the info I need
-in the struct dev_archdata.
+> You don't need a version in asm-ppc since you have one in asm- 
+> powerpc.  We are slowly phasing out arch/ppc in favor of arch/powerpc  
+> which merges the 32 and 64-bit support.
+> 
+
+Okay, thanks.
+
+Tony
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

@@ -1,11 +1,12 @@
-From: David Miller <davem@davemloft.net>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH 01/10] fbdev: Clean up of sparc FB
 	options
-Date: Wed, 16 May 2007 16:17:17 -0700 (PDT)
-Message-ID: <20070516.161717.115911096.davem@davemloft.net>
+Date: Thu, 17 May 2007 08:01:58 +0800
+Message-ID: <1179360118.4743.32.camel@daplas>
 References: <464B74EE.5040407@gmail.com>
 	<20070516.144739.41633447.davem@davemloft.net>
 	<1179357305.4743.20.camel@daplas>
+	<20070516.161717.115911096.davem@davemloft.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,13 +15,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HoSk6-0007Pc-BF for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 16:17:14 -0700
-Received: from [74.93.104.97] (helo=sunset.davemloft.net)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoSk5-0001jK-M9
+	id 1HoTRb-0003CS-Tz for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 May 2007 17:02:11 -0700
+Received: from wx-out-0506.google.com ([66.249.82.230])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoTRa-00032v-Fc
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 May 2007 16:17:14 -0700
-In-Reply-To: <1179357305.4743.20.camel@daplas>
+	Wed, 16 May 2007 17:02:11 -0700
+Received: by wx-out-0506.google.com with SMTP id i30so697580wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 16 May 2007 17:02:09 -0700 (PDT)
+In-Reply-To: <20070516.161717.115911096.davem@davemloft.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,23 +35,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com
+To: David Miller <davem@davemloft.net>
 Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net
 
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Date: Thu, 17 May 2007 07:15:05 +0800
-
-> A flag may be the easiest. But we can also define an arch-specific
-> function (ie, fb_get_primary_device()) in asm/fb.h. With the x86, this
-> can be easily done by checking the IORESOURCE_ROM_SHADOW bit flag.  
+On Wed, 2007-05-16 at 16:17 -0700, David Miller wrote:
+> From: "Antonino A. Daplas" <adaplas@gmail.com>
+> Date: Thu, 17 May 2007 07:15:05 +0800
 > 
-> I'll add this for the x86, and then perhaps others can follow suit.
+> > A flag may be the easiest. But we can also define an arch-specific
+> > function (ie, fb_get_primary_device()) in asm/fb.h. With the x86, this
+> > can be easily done by checking the IORESOURCE_ROM_SHADOW bit flag.  
+> > 
+> > I'll add this for the x86, and then perhaps others can follow suit.
+> 
+> What would this iterate over?  The list of all registered
+> fb_info's?
 
-What would this iterate over?  The list of all registered
-fb_info's?
+For each driver that calls register_framebuffer(), fbcon will check if
+it is the primary device.  If it is, it will revise the
+console-to-framebuffer mapping (with set_con2fbmap()).
 
-Anyways this sounds great, I'll add the sparc bits once you
-push the x86 version.
+So something like this can happen:
+
+fb0 registers and becomes the default console for vc0-vc63, for the
+moment.
+
+fb1 registers, and it is the primary device.  fbcon now maps fb1 to
+vc0-vc63.
+
+fb2 registers, it is not the primary device.  fbcon ignores fb2.
+
+fb3 registers, it drives the same hardware as fb1, and thus is also the
+primary device.  fbcon still ignores fb3 since fb1 is already determined
+to be as the primary device.
+
+All the above is overridden by using the fbcon=map: option.
+
+Most of the pieces are already in place (ie the console-to-framebuffer
+remapping), so there should be minimal work for fbcon.
+
+The question is, will this work for sparc?
+
+Tony
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

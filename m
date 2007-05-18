@@ -1,10 +1,8 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move
- arch-specific bits to their respective subdirectories
-Date: Thu, 17 May 2007 13:30:03 -0700 (PDT)
-Message-ID: <20070517.133003.63739733.davem@davemloft.net>
-References: <464B78BC.4080900@gmail.com> <20070517094930.GA27627@infradead.org>
-	<1179399082.4586.10.camel@daplas>
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Subject: Re: Problem with FB
+Date: Fri, 18 May 2007 09:48:38 +0200
+Message-ID: <464D5A56.4070906@rfo.atmel.com>
+References: <464B3527.4080406@apexar.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,13 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hombr-0003ZD-JR for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 May 2007 13:30:03 -0700
-Received: from [74.93.104.97] (helo=sunset.davemloft.net)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hombp-00073g-Qo
+	id 1HoxCn-0002xV-TH for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 18 May 2007 00:48:53 -0700
+Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HoxCn-0002Li-AF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 May 2007 13:30:02 -0700
-In-Reply-To: <1179399082.4586.10.camel@daplas>
+	Fri, 18 May 2007 00:48:53 -0700
+In-Reply-To: <464B3527.4080406@apexar.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,32 +28,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com
-Cc: hch@infradead.org, akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: buildroot@uclibc.org
 
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Date: Thu, 17 May 2007 18:51:22 +0800
-
-> On Thu, 2007-05-17 at 10:49 +0100, Christoph Hellwig wrote:
-> > On Thu, May 17, 2007 at 05:33:48AM +0800, Antonino A. Daplas wrote:
-> > > -#if defined(__sparc__) && !defined(__sparc_v9__)
-> > > -	/* Should never get here, all fb drivers should have their own
-> > > -	   mmap routines */
-> > > -	return -EINVAL;
-> > > -#else
-> > > -	/* !sparc32... */
-> > > +	if (fb_mmap_required())
-> > > +		return -EINVAL;
-> > > +
-> > 
-> > I don't like this bit.
+Diego A. Fons :
+> Hi,
 > 
-> Me too, actually. I did it this way because I don't want to deviate from
-> the old code too much. Since all sparc32 drivers are either linked to
-> sbuslib.c or has their own fb_mmap method, the above test is redundant. 
-> I'll leave the decision to remove the above test to David Miller.
+> First of all i'm not sure if it is the correct list for posting this 
+> mail, if it's not, please tell me wich list is the correct one.
+> 
+> I'm working on an embedded device (a Ronetix pm9261 board with an 
+> AT91SAM9261 cpu), i could build the linux kernel version 2.6.19.7 with 
+> framebuffer support and it works fine. The problem is when i run any 
+> command that uses net services, i.e. when i run sftp the sreen moves and 
+> it kept like this, the offset (0,0) is in position (100,0) (it's just an 
+> example, i don't know thw correct values) and i'm not able to correct 
+> it. It occurs every time i run a net comand. The display i'm usin is a 
+> LCD and the driver is sidsab.c.
 
-Feel free to remove it.
+Strange behavior is not it ;-)
+
+I have seen this before and it was due to a bad timing setup of the
+dm9000 chip select.
+
+-	at91_sys_write(AT91_SMC_CYCLE(2), AT91_SMC_NWECYCLE_(0) | AT91_SMC_NRDCYCLE_(16));
++	at91_sys_write(AT91_SMC_CYCLE(2), AT91_SMC_NWECYCLE_(16) | AT91_SMC_NRDCYCLE_(16));
+
+Is you have the first configuration, try with the second and it should
+fix your problem.
+
+Hope that it helps. Tell us if it works.
+
+Regards,
+-- 
+Nicolas Ferre
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

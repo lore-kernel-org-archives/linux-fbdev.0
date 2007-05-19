@@ -1,24 +1,27 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Fixes for vt8623fb and arkfb drivers
-Date: Sat, 19 May 2007 14:41:39 +0200
-Message-ID: <20070519124139.GB19191@localhost.localdomain>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: [PATCH] skeletonfb: fix of xxxfb_setup ifdef
+Date: Sat, 19 May 2007 17:05:46 +0000 (UTC)
+Message-ID: <46508238.2000904@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="------------030002060107030302040700"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HpOFn-000633-Fq for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 19 May 2007 05:41:51 -0700
-Received: from gateway.crfreenet.org
-	([81.92.146.254] helo=mail.crfreenet.org ident=postfix)
+	id 1HpSN5-00006g-MM for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 19 May 2007 10:05:36 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HpOFl-0000NK-9Q
+	(Exim 4.44) id 1HpSN4-0001ZT-4O
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 19 May 2007 05:41:46 -0700
-Content-Disposition: inline
+	Sat, 19 May 2007 10:05:35 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO [87.99.61.239])
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	19 May 2007 19:05:28 +0200
+Date: Sun, 20 May 2007 19:15:36 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,60 +32,176 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: torvalds@linux-foundation.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+To: linux-fbdev-devel@lists.sourceforge.net
 
+This is a multi-part message in MIME format.
+--------------030002060107030302040700
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This patch prevents null pointer dereference in arkfb and vt8623fb.
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-It is against linux-2.6.22-rc2
+This patch fixes wrong ifdef around the xxxfb_setup. It also moves this 
+function to remove forward declaration.
 
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
- 
 ---
 
-diff -uprN -X linux-2.6.22-rc2/Documentation/dontdiff linux-2.6.22-rc2/drivers/video/arkfb.c linux-2.6.22-rc2-fixed/drivers/video/arkfb.c
---- linux-2.6.22-rc2/drivers/video/arkfb.c	2007-05-19 14:12:23.000000000 +0200
-+++ linux-2.6.22-rc2-fixed/drivers/video/arkfb.c	2007-05-19 14:05:08.000000000 +0200
-@@ -1055,9 +1055,10 @@ err_enable_device:
- static void __devexit ark_pci_remove(struct pci_dev *dev)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	struct arkfb_info *par = info->par;
- 
- 	if (info) {
-+		struct arkfb_info *par = info->par;
+Diff-ed agains 2.6.22-rc2
+
+diff -urp linux-2.6.21/drivers/video/skeletonfb.c 
+linux-2.6.21.new/drivers/video/skeletonfb.c
+--- linux-2.6.21/drivers/video/skeletonfb.c	2007-05-20 
+18:45:05.907358455 +0200
++++ linux-2.6.21.new/drivers/video/skeletonfb.c	2007-05-20 
+18:37:48.054406637 +0200
+@@ -132,7 +132,6 @@ static struct fb_info info;
+  static struct xxx_par __initdata current_par;
+
+  int xxxfb_init(void);
+-int xxxfb_setup(char*);
+
+  /**
+   *	xxxfb_open - Optional function. Called when the framebuffer is
+@@ -975,6 +974,21 @@ static struct platform_device xxxfb_devi
+  	.name = "xxxfb",
+  };
+
++#ifndef MODULE
++    /*
++     *  Setup
++     */
 +
- #ifdef CONFIG_MTRR
- 		if (par->mtrr_reg >= 0) {
- 			mtrr_del(par->mtrr_reg, 0, 0);
-diff -uprN -X linux-2.6.22-rc2/Documentation/dontdiff linux-2.6.22-rc2/drivers/video/vt8623fb.c linux-2.6.22-rc2-fixed/drivers/video/vt8623fb.c
---- linux-2.6.22-rc2/drivers/video/vt8623fb.c	2007-05-19 14:12:23.000000000 +0200
-+++ linux-2.6.22-rc2-fixed/drivers/video/vt8623fb.c	2007-05-19 13:46:21.000000000 +0200
-@@ -778,9 +778,10 @@ err_enable_device:
- static void __devexit vt8623_pci_remove(struct pci_dev *dev)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	struct vt8623fb_info *par = info->par;
- 
- 	if (info) {
-+		struct vt8623fb_info *par = info->par;
++/*
++ * Only necessary if your driver takes special options,
++ * otherwise we fall back on the generic fb_setup().
++ */
++int __init xxxfb_setup(char *options)
++{
++    /* Parse user speficied options (`video=xxxfb:') */
++}
++#endif /* MODULE */
 +
- #ifdef CONFIG_MTRR
- 		if (par->mtrr_reg >= 0) {
- 			mtrr_del(par->mtrr_reg, 0, 0);
+  static int __init xxxfb_init(void)
+  {
+  	int ret;
+@@ -1006,21 +1020,6 @@ static void __exit xxxfb_exit(void)
+  }
+  #endif /* CONFIG_PCI */
+
+-#ifdef MODULE
+-    /*
+-     *  Setup
+-     */
+-
+-/*
+- * Only necessary if your driver takes special options,
+- * otherwise we fall back on the generic fb_setup().
+- */
+-int __init xxxfb_setup(char *options)
+-{
+-    /* Parse user speficied options (`video=xxxfb:') */
+-}
+-#endif /* MODULE */
+-
+  /* 
+------------------------------------------------------------------------- */
 
 
--- 
-Elen sila lumenn' omentielvo
 
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+
+--------------030002060107030302040700
+Content-Type: text/plain;
+ name="skeletonfb-setup-ifdef.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="skeletonfb-setup-ifdef.diff"
+
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+This patch fixes wrong ifdef around the xxxfb_setup. It also moves this function to remove forward declaration.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+---
+
+diff -urp linux-2.6.21/drivers/video/skeletonfb.c linux-2.6.21.new/drivers/video/skeletonfb.c
+--- linux-2.6.21/drivers/video/skeletonfb.c	2007-05-20 18:45:05.907358455 +0200
++++ linux-2.6.21.new/drivers/video/skeletonfb.c	2007-05-20 18:37:48.054406637 +0200
+@@ -132,7 +132,6 @@ static struct fb_info info;
+ static struct xxx_par __initdata current_par;
+ 
+ int xxxfb_init(void);
+-int xxxfb_setup(char*);
+ 
+ /**
+  *	xxxfb_open - Optional function. Called when the framebuffer is
+@@ -975,6 +974,21 @@ static struct platform_device xxxfb_devi
+ 	.name = "xxxfb",
+ };
+ 
++#ifndef MODULE
++    /*
++     *  Setup
++     */
++
++/* 
++ * Only necessary if your driver takes special options,
++ * otherwise we fall back on the generic fb_setup().
++ */
++int __init xxxfb_setup(char *options)
++{
++    /* Parse user speficied options (`video=xxxfb:') */
++}
++#endif /* MODULE */
++
+ static int __init xxxfb_init(void)
+ {
+ 	int ret;
+@@ -1006,21 +1020,6 @@ static void __exit xxxfb_exit(void)
+ }
+ #endif /* CONFIG_PCI */
+ 
+-#ifdef MODULE
+-    /*
+-     *  Setup
+-     */
+-
+-/* 
+- * Only necessary if your driver takes special options,
+- * otherwise we fall back on the generic fb_setup().
+- */
+-int __init xxxfb_setup(char *options)
+-{
+-    /* Parse user speficied options (`video=xxxfb:') */
+-}
+-#endif /* MODULE */
+-
+ /* ------------------------------------------------------------------------- */
+ 
+ 
+
+--------------030002060107030302040700
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
+--------------030002060107030302040700
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--------------030002060107030302040700--

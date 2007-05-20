@@ -1,26 +1,30 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 Subject: Re: [PATCH] pm2fb: white spaces clean up
-Date: Sun, 20 May 2007 20:01:18 +0800
-Message-ID: <1179662478.15182.1.camel@daplas>
-References: <46508634.9030000@wp.pl>
+Date: Sun, 20 May 2007 14:32:23 +0000 (UTC)
+Message-ID: <4651AFD4.6020904@wp.pl>
+References: <46508634.9030000@wp.pl> <1179662478.15182.1.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hpk6S-0002Gy-5i for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 May 2007 05:01:38 -0700
-Received: from nz-out-0506.google.com ([64.233.162.234])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hpk6R-0005hE-EM
+	id 1HpmSI-0000rY-NQ for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 20 May 2007 07:32:18 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HpmSI-00088j-0U
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 May 2007 05:01:35 -0700
-Received: by nz-out-0506.google.com with SMTP id i11so3017644nzi
+	Sun, 20 May 2007 07:32:18 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO [87.99.61.239])
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 20 May 2007 05:01:34 -0700 (PDT)
-In-Reply-To: <46508634.9030000@wp.pl>
+	20 May 2007 16:32:14 +0200
+Date: Mon, 21 May 2007 16:42:28 +0200
+In-Reply-To: <1179662478.15182.1.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,53 +37,35 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2007-05-20 at 19:32 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Antonino A. Daplas wrote:
+> On Sun, 2007-05-20 at 19:32 +0200, Krzysztof Helt wrote:
+>> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+>>
+>> This patches kills spaces before tabs, spaces and tabs at line ends and replaces multiple 
+>> spaces with tabs.
+>>
+>> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> This patches kills spaces before tabs, spaces and tabs at line ends and replaces multiple 
-> spaces with tabs.
+> I'm getting this:
 > 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 26 out of 26 hunks FAILED -- saving rejects to file
+> drivers/video/pm2fb.c.rej
+> 
+> Let's just wait for the next mm release and rebase from that.
+> (I usually strip white space from patches before sending to akpm, maybe
+> that's the reason).
+> 
 
-I'm getting this:
+I have to send it as attachment. I don't know what is wrong. Now, I use mozilla 
+(seamonkey) and it was ok when I sent it to myself directly. It is corrupted all other 
+when I got it through mailing list.
 
-patching file drivers/video/pm2fb.c
-Hunk #1 FAILED at 24.
-Hunk #2 FAILED at 58.
-Hunk #3 FAILED at 82.
-Hunk #4 FAILED at 95.
-Hunk #5 FAILED at 166.
-Hunk #6 FAILED at 182.
-Hunk #7 FAILED at 367.
-Hunk #8 FAILED at 535.
-Hunk #9 FAILED at 574.
-Hunk #10 FAILED at 615.
-Hunk #11 FAILED at 672.
-Hunk #12 FAILED at 709.
-Hunk #13 FAILED at 722.
-Hunk #14 FAILED at 737.
-Hunk #15 FAILED at 778.
-Hunk #16 FAILED at 847.
-Hunk #17 FAILED at 916.
-Hunk #18 FAILED at 940.
-Hunk #19 FAILED at 956.
-Hunk #20 FAILED at 980.
-Hunk #21 FAILED at 1234.
-Hunk #22 FAILED at 1317.
-Hunk #23 FAILED at 1348.
-Hunk #24 FAILED at 1374.
-Hunk #25 FAILED at 1402.
-Hunk #26 FAILED at 1423.
-26 out of 26 hunks FAILED -- saving rejects to file
-drivers/video/pm2fb.c.rej
+I'll fall back to both attachments and inlines to keep everybody happy.
 
-Let's just wait for the next mm release and rebase from that.
-(I usually strip white space from patches before sending to akpm, maybe
-that's the reason).
+Anyway, let's wait for the -mm patch.
 
-Tony
-
-
+Regards,
+Krzysztof
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

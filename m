@@ -1,8 +1,7 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [PATCH] pm2fb: white spaces clean up
-Date: Sun, 20 May 2007 14:32:23 +0000 (UTC)
-Message-ID: <4651AFD4.6020904@wp.pl>
-References: <46508634.9030000@wp.pl> <1179662478.15182.1.camel@daplas>
+From: Bill Gatliff <bgat@billgatliff.com>
+Subject: Problems claiming resources? (PXA, SM501G8)
+Date: Mon, 21 May 2007 12:13:00 -0500
+Message-ID: <4651D31C.4000407@billgatliff.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,20 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HpmSI-0000rY-NQ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 May 2007 07:32:18 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HpmSI-00088j-0U
+	id 1HqBVz-0006VO-QR for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 May 2007 10:17:47 -0700
+Received: from smtp110.sbc.mail.re2.yahoo.com ([68.142.229.95])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1HqBVz-0001eg-CS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 May 2007 07:32:18 -0700
-Received: from host-87-99-61-239.lanet.net.pl (HELO [87.99.61.239])
-	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	20 May 2007 16:32:14 +0200
-Date: Mon, 21 May 2007 16:42:28 +0200
-In-Reply-To: <1179662478.15182.1.camel@daplas>
+	Mon, 21 May 2007 10:17:47 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,35 +28,76 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Antonino A. Daplas wrote:
-> On Sun, 2007-05-20 at 19:32 +0200, Krzysztof Helt wrote:
->> From: Krzysztof Helt <krzysztof.h1@wp.pl>
->>
->> This patches kills spaces before tabs, spaces and tabs at line ends and replaces multiple 
->> spaces with tabs.
->>
->> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> I'm getting this:
-> 
-> 26 out of 26 hunks FAILED -- saving rejects to file
-> drivers/video/pm2fb.c.rej
-> 
-> Let's just wait for the next mm release and rebase from that.
-> (I usually strip white space from patches before sending to akpm, maybe
-> that's the reason).
-> 
+Guys:
 
-I have to send it as attachment. I don't know what is wrong. Now, I use mozilla 
-(seamonkey) and it was ok when I sent it to myself directly. It is corrupted all other 
-when I got it through mailing list.
 
-I'll fall back to both attachments and inlines to keep everybody happy.
+I'm using an SM501G8 on a PXA270, linux-2.6.21.1 kernel. I'm stuck with 
+this at boot:
 
-Anyway, let's wait for the -mm patch.
+[ 1.380000] sm501 sm501.0: SM501 At c181e000: Version 050100a0, 4 Mb, IRQ 85
+[ 1.410000] sm501 sm501.0: CurrentGate 00021807
+[ 1.420000] sm501 sm501.0: CurrentClock 2a1a0a09
+[ 1.440000] sm501 sm501.0: PowerModeControl 00000000
+[ 1.450000] sm501-fb[0] flags 00000200: 13e80000..13e8ffff
+[ 1.470000] sm501-fb[1] flags 00000200: 13f00000..13f4ffff
+[ 1.480000] sm501-fb[2] flags 00000200: 10000000..103fffff
+[ 1.500000] sm501-fb[3] flags 00000400: 00000055..00000055
+[ 1.520000] sm501-fb.0: failed to claim resource 0
+[ 1.530000] sm501 sm501.0: error registering sm501-fb (-16)
+[ 1.550000] returning 0
+
+
+My resource definition looks like this:
+
+static struct resource sm501_device_resources[] = {
+[0] = {
+    .start = PXA_CS4_PHYS,
+    .end = PXA_CS4_PHYS + (4 * 1024 * 1024) - 1,
+    .flags = IORESOURCE_MEM,
+}, [1] = {
+    .start = PXA_CS4_PHYS + 0x3e00000,
+    .end = PXA_CS4_PHYS + 0x3e0fffff,
+    .flags = IORESOURCE_MEM,
+}, [2] = {
+    .start = IRQ_GPIO(53),
+    .end = IRQ_GPIO(53),
+    .flags = IORESOURCE_IRQ,
+}, };
+
+static struct platform_device sm501_device = {
+    .name = "sm501",
+    .id = 0,
+    .num_resources = ARRAY_SIZE(sm501_device_resources),
+    .resource = sm501_device_resources,
+};
+
+static struct platform_device *devices[] __initdata = { &sm501_device, };
+platform_add_devices(devices, ARRAY_SIZE(devices));
+
+
+All the above was gleaned from staring at the code in sm501.c, so I'm 
+probably doing something wrong.   :)
+
+My theory right now is that I'm not specifying the right ranges for the 
+resources. For example, after looking at the code in sm501.c it appears 
+as though I'm not supposed to resource _all_ the device's control 
+register memory, only a little bit (the code in sm501_register_display() 
+appears to grab the rest).  I think I must be still making a mistake 
+like that in the above, but I can't seem to find it.
+
+Any suggestions? I'm not registering an "sm501-fb" device, only the 
+"sm501" device shown above.
+
 
 Regards,
-Krzysztof
+
+
+b.g.
+
+-- 
+Bill Gatliff
+bgat@billgatliff.com
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

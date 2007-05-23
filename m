@@ -1,21 +1,28 @@
-From: Bill Gatliff <bgat@billgatliff.com>
-Subject: Problems claiming resources? (PXA, SM501G8)
-Date: Mon, 21 May 2007 12:13:00 -0500
-Message-ID: <4651D31C.4000407@billgatliff.com>
+From: jurriaan <thunder7@xs4all.nl>
+Subject: framebuffer with nvidia 7600GS shows corrupt
+	screen
+Date: Wed, 23 May 2007 20:18:26 +0200
+Message-ID: <20070523181826.GA4331@amd64.of.nowhere>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HqBVz-0006VO-QR for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 May 2007 10:17:47 -0700
-Received: from smtp110.sbc.mail.re2.yahoo.com ([68.142.229.95])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1HqBVz-0001eg-CS
+	id 1HqvQC-0005da-Jt for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 May 2007 11:18:52 -0700
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HqvQA-0003Jj-SY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 May 2007 10:17:47 -0700
+	Wed, 23 May 2007 11:18:52 -0700
+Received: from rivierenland.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
+	by smtp-vbr6.xs4all.nl (8.13.8/8.13.8) with ESMTP id l4NIIkZK084731
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 23 May 2007 20:18:46 +0200 (CEST)
+	(envelope-from jurriaan@rivierenland.xs4all.nl)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,77 +34,106 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@pol.net
 
-Guys:
+I've swapped my nvidia 6600 for a 7600GS, because it has dual-link DVI
+output. That broke my framebuffer!
+
+If I boot like this:
+
+Command line: root=/dev/md2 video=nvidiafb:640x480-32@60 atkbd.softrepeat=1
+
+I see this:
+
+nvidiafb: Device ID: 10de0392 
+nvidiafb: CRTC0 analog found
+nvidiafb: CRTC1 analog not found
+nvidiafb: EDID found from BUS1
+i2c-adapter i2c-1: unable to read EDID block.
+i2c-adapter i2c-1: unable to read EDID block.
+i2c-adapter i2c-1: unable to read EDID block.
+nvidiafb: CRTC 0 appears to have a CRT attached
+nvidiafb: Using CRT on CRTC 0
+nvidiafb: MTRR set to ON
+Console: switching to colour frame buffer device 64x26
+nvidiafb: PCI nVidia NV39 framebuffer (64MB @ 0xC0000000)
+
+But the screen is unreably corrupted. I can describe the corruption as
+follows:
+
+The two penguins I normally see are about the correct size, but shown in
+dark grey lines on a black background. All characters are also composed
+of these dark grey lines - with black lines inbetween. The entire screen
+is very faintly visible, all is dark grey on black.
+
+The monitor does receive the correct signal (my Eizo's on-screen menu
+shows a 60 Hz signal coming in).
+
+In case anybody is wondering about the resolution - normally I boot
+1600x1200, but that also doesn't work. Xorg works fine, so it must be
+something in the framebuffer, right?
+
+xorg's version:
+ii  xserver-xorg-video-nv 1:2.0.2-1 X.Org X server -- NV display driver
+
+output of lspci:
+
+01:00.0 VGA compatible controller: nVidia Corporation G70 [GeForce 7600 GS] (rev a1) (prog-if 00 [VGA])
+	Subsystem: Micro-Star International Co., Ltd. Unknown device 0413
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 18
+	Region 0: Memory at d0000000 (32-bit, non-prefetchable) [size=16M]
+	Region 1: Memory at c0000000 (64-bit, prefetchable) [size=256M]
+	Region 3: Memory at d1000000 (64-bit, non-prefetchable) [size=16M]
+	Region 5: I/O ports at a000 [size=128]
+	[virtual] Expansion ROM at d2000000 [disabled] [size=128K]
+	Capabilities: [60] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [68] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [78] Express Endpoint IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s <1us, L1 <4us
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+		Link: Supported Speed 2.5Gb/s, Width x16, ASPM L0s L1, Port 0
+		Link: Latency L0s <1us, L1 <4us
+		Link: ASPM Disabled RCB 128 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x16
+	Capabilities: [100] Virtual Channel
+	Capabilities: [128] Power Budgeting
+
+output of fbset:
 
 
-I'm using an SM501G8 on a PXA270, linux-2.6.21.1 kernel. I'm stuck with 
-this at boot:
+(C) Copyright 1995-1999 by Geert Uytterhoeven
 
-[ 1.380000] sm501 sm501.0: SM501 At c181e000: Version 050100a0, 4 Mb, IRQ 85
-[ 1.410000] sm501 sm501.0: CurrentGate 00021807
-[ 1.420000] sm501 sm501.0: CurrentClock 2a1a0a09
-[ 1.440000] sm501 sm501.0: PowerModeControl 00000000
-[ 1.450000] sm501-fb[0] flags 00000200: 13e80000..13e8ffff
-[ 1.470000] sm501-fb[1] flags 00000200: 13f00000..13f4ffff
-[ 1.480000] sm501-fb[2] flags 00000200: 10000000..103fffff
-[ 1.500000] sm501-fb[3] flags 00000400: 00000055..00000055
-[ 1.520000] sm501-fb.0: failed to claim resource 0
-[ 1.530000] sm501 sm501.0: error registering sm501-fb (-16)
-[ 1.550000] returning 0
+Opening frame buffer device `/dev/fb0'
+Using current video mode from `/dev/fb0'
 
+mode "640x480-60"
+    # D: 25.200 MHz, H: 31.500 kHz, V: 60.001 Hz
+    geometry 640 480 640 25990 32
+    timings 39682 48 16 33 10 96 2
+    accel true
+    rgba 8/16,8/8,8/0,8/24
+endmode
 
-My resource definition looks like this:
+Any hints on what to do? The mainboard is an Asus A8N-SLI, with X2 4600
+processor and 4 Gb ram - not too uncommon.
 
-static struct resource sm501_device_resources[] = {
-[0] = {
-    .start = PXA_CS4_PHYS,
-    .end = PXA_CS4_PHYS + (4 * 1024 * 1024) - 1,
-    .flags = IORESOURCE_MEM,
-}, [1] = {
-    .start = PXA_CS4_PHYS + 0x3e00000,
-    .end = PXA_CS4_PHYS + 0x3e0fffff,
-    .flags = IORESOURCE_MEM,
-}, [2] = {
-    .start = IRQ_GPIO(53),
-    .end = IRQ_GPIO(53),
-    .flags = IORESOURCE_IRQ,
-}, };
-
-static struct platform_device sm501_device = {
-    .name = "sm501",
-    .id = 0,
-    .num_resources = ARRAY_SIZE(sm501_device_resources),
-    .resource = sm501_device_resources,
-};
-
-static struct platform_device *devices[] __initdata = { &sm501_device, };
-platform_add_devices(devices, ARRAY_SIZE(devices));
-
-
-All the above was gleaned from staring at the code in sm501.c, so I'm 
-probably doing something wrong.   :)
-
-My theory right now is that I'm not specifying the right ranges for the 
-resources. For example, after looking at the code in sm501.c it appears 
-as though I'm not supposed to resource _all_ the device's control 
-register memory, only a little bit (the code in sm501_register_display() 
-appears to grab the rest).  I think I must be still making a mistake 
-like that in the above, but I can't seem to find it.
-
-Any suggestions? I'm not registering an "sm501-fb" device, only the 
-"sm501" device shown above.
-
-
-Regards,
-
-
-b.g.
-
+Kind regards,
+Jurriaan
 -- 
-Bill Gatliff
-bgat@billgatliff.com
-
+There are 3 kinds of people: those who can count & those who can't.
+	Unknown source
+Debian (Unstable) GNU/Linux 2.6.21-mm2 2x2010 bogomips load 0.40
+the Jack Vance Integral Edition: http://www.integralarchive.org
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

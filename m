@@ -1,11 +1,10 @@
-From: thunder7@xs4all.nl
-Subject: Re: framebuffer with nvidia 7600GS shows
-	corrupt screen
-Date: Fri, 25 May 2007 19:47:46 +0200
-Message-ID: <20070525174745.GA3990@amd64.of.nowhere>
-References: <20070523181826.GA4331@amd64.of.nowhere>
-	<4655536C.3080305@vc.cvut.cz>
-	<20070524123611.GA7084@amd64.of.nowhere>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: unregister_framebuffer() and cursor
+Date: Sat, 26 May 2007 05:25:09 +0800
+Message-ID: <1180128309.4627.10.camel@daplas>
+References: <Pine.LNX.4.62.0705041045310.9684@pademelon.sonytel.be>
+	<1178271722.4722.11.camel@daplas>
+	<Pine.LNX.4.62.0705251201460.2657@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,19 +13,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hrdtb-0005RC-L2 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 May 2007 10:48:11 -0700
-Received: from smtp-vbr7.xs4all.nl ([194.109.24.27])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HrdtX-0006xP-3E
+	id 1HrhHg-0001Z8-V6 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 May 2007 14:25:40 -0700
+Received: from py-out-1112.google.com ([64.233.166.183])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HrhHf-0000Pr-5C
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 May 2007 10:48:11 -0700
-Received: from rivierenland.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtp-vbr7.xs4all.nl (8.13.8/8.13.8) with ESMTP id l4PHm1vV082170
+	Fri, 25 May 2007 14:25:16 -0700
+Received: by py-out-1112.google.com with SMTP id u77so1537485pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 25 May 2007 19:48:02 +0200 (CEST)
-	(envelope-from jurriaan@rivierenland.xs4all.nl)
-Content-Disposition: inline
-In-Reply-To: <20070524123611.GA7084@amd64.of.nowhere>
+	Fri, 25 May 2007 14:25:14 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.62.0705251201460.2657@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,40 +33,57 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Geoff Levand <geoffrey.levand@am.sony.com>
 
-From: thunder7@xs4all.nl <thunder7@xs4all.nl>
-Date: Thu, May 24, 2007 at 02:36:11PM +0200
+On Fri, 2007-05-25 at 12:13 +0200, Geert Uytterhoeven wrote:
+> On Fri, 4 May 2007, Antonino A. Daplas wrote:
+> > On Fri, 2007-05-04 at 10:50 +0200, Geert Uytterhoeven wrote:
+> > > It looks like unregister_framebuffer() doesn't cause fbcon_del_cursor_timer()
+> > > to be called.
+> > > 
+> > > Hence if cursor_timer_handler() runs, it will try to schedule work on
+> > > fb_info.queue, which is no longer valid, and queue_work() will BUG_ON().
+> > > 
+> > > Or am I missing something?
+> > 
+> > The console cursor is not part of fbdev.  fbcon_del_cursor_timer() is
+> > done in fbcon_exit() in fbcon.c. You cannot (or, rather, should not)
+> > call unregister_framebuffer() unless fbcon unbinds the underlying
+> > driver.
 > 
-> I haven't yet - a plain old CRT monitor is attached currently. I haven't
-> bought a LCD yet. The messages seem correct. The monitor is attached via
-> a dvi->vga15 converter, of which I've tried two known working ones.
+> Indeed, when unbinding the console first using
 > 
-So far, I've determined the problem also happens when I boot a 32-bit
-system, and it goes partly away when I add the noaccel option.
+>     echo 0 > /sys/class/vtconsole/vtcon1/bind
+>     
+> the problem no longer happens on halt (Geoff: and ps3-hack-fbcon-shutdown.diff
+> is no longer needed).
+> 
+> However there are still a few remaining issues:
+>   - unbinding requires CONFIG_VT_HW_CONSOLE_BINDING=y,
+>   - unbinding can be done using sysfs only (for now),
+>   - worse, unbinding may fail, e.g. if the console is in graphics mode due to
+>     running X.
+> 
+> Our problem is that we have to shutdown ps3fb on reboot/kexec, to release the
+> hypervisor resources used by ps3fb. If unbinding fails, we cannot do that.
 
-If I add noaccel, I get a dark grey background, with very dark gray or
-black letters on it. It's readable if you can guess what is written,
-like boot messages.
+Both you and drmfb has the same problem, and Jesse submitted a patch
+that will unbind fbcon prior to unregister_framebuffer(). The patch
+needs a few tweaks but is fine by me in principle.
 
-xorg works fine (using the nv driver), and the strange part:
+Search lkml for [PATCH 1/3] allow console unregistration.
 
-once I've switched from Xorg to a console (ctrl-alt-F1), the console
-looks fine. Also, if I leave X11 after having switched to a console and
-back to Xorg, the console looks fine.
+As for the first, maybe a 
 
-I hope this jogs someone's memory - I basically trying blind. Anyone
-care to guess what goes wrong? I didn't think the 7600 was such an
-exotic card...
+'select VT_HW_CONSOLE_BINDING if FRAMEBUFFER_CONSOLE' under ps3fb?
 
-Kind regards,
-Jurriaan
--- 
-For who are we to question her
-Who stands among the stones
-	Big Country - The Seer
-Debian (Unstable) GNU/Linux 2.6.21-mm2 2x2010 bogomips load 2.21
-the Jack Vance Integral Edition: http://www.integralarchive.org
+As for the second and third concerns, Jesse's patch would take care of
+that.
+
+Tony
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

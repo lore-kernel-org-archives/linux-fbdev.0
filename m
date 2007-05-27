@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 6/9] fbcon: Use struct device instead of
-	struct class_device
-Date: Sun, 27 May 2007 08:50:56 +0800
-Message-ID: <4658D5F0.5050300@gmail.com>
+Subject: [PATCH 9/9] fbcon: Allow fbcon to use the
+	primary display driver
+Date: Sun, 27 May 2007 09:03:30 +0800
+Message-ID: <4658D8E2.3020608@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HsFPn-0001vj-TU for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 May 2007 02:51:56 -0700
+	id 1HsFPt-0001vq-ID for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 27 May 2007 02:52:02 -0700
 Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HsFPn-0003fW-Hj
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HsFPt-0003fW-1i
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 May 2007 02:51:55 -0700
+	Sun, 27 May 2007 02:52:01 -0700
 Received: by py-out-1112.google.com with SMTP id u77so2302792pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 27 May 2007 02:51:55 -0700 (PDT)
+	Sun, 27 May 2007 02:52:00 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,172 +31,262 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>
 
-Port fbcon.c to use struct device from using struct class_device
+Allow fbcon to select the primary display adapter using the
+fb_is_primary_device() arch-specific helper.  If a a primary adapter is
+detected, fbcon will unbind the old adapter from the VT layer, then rebind
+using the new adapter. This requires that bind_/unbind_con_driver() be made
+public.
+
+Because this feature may produce unexpected behavior (from the user's POV),
+this must be explicitly enabled in Kconfig.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/console/fbcon.c |   57 +++++++++++++++++++++--------------------
- 1 files changed, 29 insertions(+), 28 deletions(-)
+ arch/i386/video/fbdev.c       |    4 +-
+ drivers/char/vt.c             |    6 +--
+ drivers/video/console/Kconfig |   20 ++++++++++
+ drivers/video/console/fbcon.c |   80 +++++++++++++++++++++++++++++++++++++----
+ include/linux/vt_kern.h       |    4 ++
+ 5 files changed, 100 insertions(+), 14 deletions(-)
 
+diff --git a/arch/i386/video/fbdev.c b/arch/i386/video/fbdev.c
+index 7fc712c..48fb38d 100644
+--- a/arch/i386/video/fbdev.c
++++ b/arch/i386/video/fbdev.c
+@@ -13,13 +13,11 @@ #include <linux/pci.h>
+ 
+ int fb_is_primary_device(struct fb_info *info)
+ {
+-	struct device *device;
++	struct device *device = info->device;
+ 	struct pci_dev *pci_dev = NULL;
+ 	struct resource *res = NULL;
+ 	int retval = 0;
+ 
+-	device = info->device;
+-
+ 	if (device)
+ 		pci_dev = to_pci_dev(device);
+ 
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index bbd9fc4..45baf04 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2863,8 +2863,7 @@ #include <linux/device.h>
+ 
+ static struct class *vtconsole_class;
+ 
+-static int bind_con_driver(const struct consw *csw, int first, int last,
+-			   int deflt)
++int bind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ {
+ 	struct module *owner = csw->owner;
+ 	const char *desc = NULL;
+@@ -2981,8 +2980,7 @@ static int con_is_graphics(const struct 
+ 	return retval;
+ }
+ 
+-static int unbind_con_driver(const struct consw *csw, int first, int last,
+-			     int deflt)
++int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ {
+ 	struct module *owner = csw->owner;
+ 	const struct consw *defcsw = NULL;
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 63b85bf..1e11d30 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -118,6 +118,26 @@ config FRAMEBUFFER_CONSOLE
+ 	help
+ 	  Low-level framebuffer-based console driver.
+ 
++config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
++       bool "Map the console to the primary display device"
++       depends on FRAMEBUFFER_CONSOLE && VT_HW_CONSOLE_BINDING
++       default n
++       ---help---
++         If this option is selected, the framebuffer console will
++         automatically select the primary display device (if the architecture
++	 supports this feature).  Otherwise, the framebuffer console will
++         always select the first framebuffer driver that is loaded. The latter
++         is the default behavior.
++
++	 You can always override the automatic selection of the primary device
++	 by using the fbcon=map: boot option.
++
++	 To select this feature, "Support for binding and unbinding console
++         drivers", under "Device Drivers"->"Character Devices" must be set to
++	 y.
++
++	 If unsure, select n.
++
+ config FRAMEBUFFER_CONSOLE_ROTATION
+        bool "Framebuffer Console Rotation"
+        depends on FRAMEBUFFER_CONSOLE
 diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index b7e143e..7f4ed79 100644
+index 7f4ed79..7ba21eb 100644
 --- a/drivers/video/console/fbcon.c
 +++ b/drivers/video/console/fbcon.c
-@@ -198,7 +198,7 @@ static void fbcon_modechanged(struct fb_
- static void fbcon_set_all_vcs(struct fb_info *info);
- static void fbcon_start(void);
- static void fbcon_exit(void);
--static struct class_device *fbcon_class_device;
-+static struct device *fbcon_device;
+@@ -75,6 +75,7 @@ #include <linux/smp.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/crc32.h> /* For counting font checksums */
++#include <asm/fb.h>
+ #include <asm/irq.h>
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
+@@ -125,6 +126,8 @@ static int first_fb_vc;
+ static int last_fb_vc = MAX_NR_CONSOLES - 1;
+ static int fbcon_is_default = 1; 
+ static int fbcon_has_exited;
++static int primary_device = -1;
++static int map_override;
  
- #ifdef CONFIG_MAC
+ /* font data */
+ static char fontname[40];
+@@ -497,13 +500,17 @@ static int __init fb_console_setup(char 
+ 		
+ 		if (!strncmp(options, "map:", 4)) {
+ 			options += 4;
+-			if (*options)
++			if (*options) {
+ 				for (i = 0, j = 0; i < MAX_NR_CONSOLES; i++) {
+ 					if (!options[j])
+ 						j = 0;
+ 					con2fb_map_boot[i] =
+ 						(options[j++]-'0') % FB_MAX;
+ 				}
++
++				map_override = 1;
++			}
++
+ 			return 1;
+ 		}
+ 
+@@ -3004,9 +3011,9 @@ static int fbcon_mode_deleted(struct fb_
+ 	return found;
+ }
+ 
+-static int fbcon_fb_unregistered(int idx)
++static int fbcon_fb_unregistered(struct fb_info *info)
+ {
+-	int i;
++	int i, idx = info->node;
+ 
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] == idx)
+@@ -3034,12 +3041,70 @@ static int fbcon_fb_unregistered(int idx
+ 	if (!num_registered_fb)
+ 		unregister_con_driver(&fb_con);
+ 
++
++	if (primary_device == idx)
++		primary_device = -1;
++
++	return 0;
++}
++
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
++static int fbcon_select_primary(struct fb_info *info)
++{
++	int ret = 0;
++
++	if (!map_override && primary_device == -1 &&
++	    fb_is_primary_device(info)) {
++		int i, err;
++
++		printk(KERN_INFO "fbcon: %s is primary device\n",
++		       info->fix.id);
++		primary_device = info->node;
++
++		if (!con_is_bound(&fb_con))
++			goto done;
++
++		printk(KERN_INFO "fbcon: Unbinding old driver\n");
++		unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
++				  fbcon_is_default);
++		info_idx = primary_device;
++
++		for (i = first_fb_vc; i <= last_fb_vc; i++) {
++			con2fb_map_boot[i] = primary_device;
++			con2fb_map[i] = primary_device;
++		}
++
++		printk(KERN_INFO "fbcon: Selecting new driver\n");
++		err = bind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
++				      fbcon_is_default);
++
++		if (err) {
++			for (i = first_fb_vc; i <= last_fb_vc; i++)
++				con2fb_map[i] = -1;
++
++			info_idx = -1;
++		}
++
++		ret = 1;
++	}
++
++done:
++	return ret;
++}
++#else
++static inline int fbcon_select_primary(struct fb_info *info)
++{
+ 	return 0;
+ }
++#endif /* CONFIG_FRAMEBUFFER_DETECT_PRIMARY */
+ 
+-static int fbcon_fb_registered(int idx)
++static int fbcon_fb_registered(struct fb_info *info)
+ {
+-	int ret = 0, i;
++	int ret = 0, i, idx = info->node;
++
++	if (fbcon_select_primary(info))
++		goto done;
++
+ 
+ 	if (info_idx == -1) {
+ 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+@@ -3059,6 +3124,7 @@ static int fbcon_fb_registered(int idx)
+ 		}
+ 	}
+ 
++done:
+ 	return ret;
+ }
+ 
+@@ -3182,10 +3248,10 @@ static int fbcon_event_notify(struct not
+ 		ret = fbcon_mode_deleted(info, mode);
+ 		break;
+ 	case FB_EVENT_FB_REGISTERED:
+-		ret = fbcon_fb_registered(info->node);
++		ret = fbcon_fb_registered(info);
+ 		break;
+ 	case FB_EVENT_FB_UNREGISTERED:
+-		ret = fbcon_fb_unregistered(info->node);
++		ret = fbcon_fb_unregistered(info);
+ 		break;
+ 	case FB_EVENT_SET_CONSOLE_MAP:
+ 		con2fb = event->data;
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index d961635..0d034d8 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -75,6 +75,10 @@ int con_copy_unimap(struct vc_data *dst_
+ int vt_waitactive(int vt);
+ void change_console(struct vc_data *new_vc);
+ void reset_vc(struct vc_data *vc);
++extern int bind_con_driver(const struct consw *csw, int first, int last,
++			   int deflt);
++extern int unbind_con_driver(const struct consw *csw, int first, int last,
++			     int deflt);
+ 
  /*
-@@ -3246,8 +3246,9 @@ static struct notifier_block fbcon_event
- 	.notifier_call	= fbcon_event_notify,
- };
- 
--static ssize_t store_rotate(struct class_device *class_device,
--			    const char *buf, size_t count)
-+static ssize_t store_rotate(struct device *device,
-+			    struct device_attribute *attr, const char *buf,
-+			    size_t count)
- {
- 	struct fb_info *info;
- 	int rotate, idx;
-@@ -3270,8 +3271,9 @@ err:
- 	return count;
- }
- 
--static ssize_t store_rotate_all(struct class_device *class_device,
--				const char *buf, size_t count)
-+static ssize_t store_rotate_all(struct device *device,
-+				struct device_attribute *attr,const char *buf,
-+				size_t count)
- {
- 	struct fb_info *info;
- 	int rotate, idx;
-@@ -3294,7 +3296,8 @@ err:
- 	return count;
- }
- 
--static ssize_t show_rotate(struct class_device *class_device, char *buf)
-+static ssize_t show_rotate(struct device *device,
-+			   struct device_attribute *attr,char *buf)
- {
- 	struct fb_info *info;
- 	int rotate = 0, idx;
-@@ -3315,7 +3318,8 @@ err:
- 	return snprintf(buf, PAGE_SIZE, "%d\n", rotate);
- }
- 
--static ssize_t show_cursor_blink(struct class_device *class_device, char *buf)
-+static ssize_t show_cursor_blink(struct device *device,
-+				 struct device_attribute *attr, char *buf)
- {
- 	struct fb_info *info;
- 	struct fbcon_ops *ops;
-@@ -3342,7 +3346,8 @@ err:
- 	return snprintf(buf, PAGE_SIZE, "%d\n", blink);
- }
- 
--static ssize_t store_cursor_blink(struct class_device *clas_device,
-+static ssize_t store_cursor_blink(struct device *device,
-+				  struct device_attribute *attr,
- 				  const char *buf, size_t count)
- {
- 	struct fb_info *info;
-@@ -3378,22 +3383,21 @@ err:
- 	return count;
- }
- 
--static struct class_device_attribute class_device_attrs[] = {
-+static struct device_attribute device_attrs[] = {
- 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
- 	__ATTR(rotate_all, S_IWUSR, NULL, store_rotate_all),
- 	__ATTR(cursor_blink, S_IRUGO|S_IWUSR, show_cursor_blink,
- 	       store_cursor_blink),
- };
- 
--static int fbcon_init_class_device(void)
-+static int fbcon_init_device(void)
- {
- 	int i, error = 0;
- 
- 	fbcon_has_sysfs = 1;
- 
--	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++) {
--		error = class_device_create_file(fbcon_class_device,
--						 &class_device_attrs[i]);
-+	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
-+		error = device_create_file(fbcon_device, &device_attrs[i]);
- 
- 		if (error)
- 			break;
-@@ -3401,8 +3405,7 @@ static int fbcon_init_class_device(void)
- 
- 	if (error) {
- 		while (--i >= 0)
--			class_device_remove_file(fbcon_class_device,
--						 &class_device_attrs[i]);
-+			device_remove_file(fbcon_device, &device_attrs[i]);
- 
- 		fbcon_has_sysfs = 0;
- 	}
-@@ -3488,16 +3491,15 @@ static int __init fb_console_init(void)
- 
- 	acquire_console_sem();
- 	fb_register_client(&fbcon_event_notifier);
--	fbcon_class_device =
--	    class_device_create(fb_class, NULL, MKDEV(0, 0), NULL, "fbcon");
-+	fbcon_device = device_create(fb_class, NULL, MKDEV(0, 0), "fbcon");
- 
--	if (IS_ERR(fbcon_class_device)) {
--		printk(KERN_WARNING "Unable to create class_device "
-+	if (IS_ERR(fbcon_device)) {
-+		printk(KERN_WARNING "Unable to create device "
- 		       "for fbcon; errno = %ld\n",
--		       PTR_ERR(fbcon_class_device));
--		fbcon_class_device = NULL;
-+		       PTR_ERR(fbcon_device));
-+		fbcon_device = NULL;
- 	} else
--		fbcon_init_class_device();
-+		fbcon_init_device();
- 
- 	for (i = 0; i < MAX_NR_CONSOLES; i++)
- 		con2fb_map[i] = -1;
-@@ -3511,14 +3513,13 @@ module_init(fb_console_init);
- 
- #ifdef MODULE
- 
--static void __exit fbcon_deinit_class_device(void)
-+static void __exit fbcon_deinit_device(void)
- {
- 	int i;
- 
- 	if (fbcon_has_sysfs) {
--		for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
--			class_device_remove_file(fbcon_class_device,
--						 &class_device_attrs[i]);
-+		for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
-+			device_remove_file(fbcon_device, &device_attrs[i]);
- 
- 		fbcon_has_sysfs = 0;
- 	}
-@@ -3528,8 +3529,8 @@ static void __exit fb_console_exit(void)
- {
- 	acquire_console_sem();
- 	fb_unregister_client(&fbcon_event_notifier);
--	fbcon_deinit_class_device();
--	class_device_destroy(fb_class, MKDEV(0, 0));
-+	fbcon_deinit_device();
-+	device_destroy(fb_class, MKDEV(0, 0));
- 	fbcon_exit();
- 	release_console_sem();
- 	unregister_con_driver(&fb_con);
+  * vc_screen.c shares this temporary buffer with the console write code so that
 
 
 -------------------------------------------------------------------------

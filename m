@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/9] vt8623fb: arkfb: null pointer
-	dereference fix
-Date: Sun, 27 May 2007 08:46:52 +0800
-Message-ID: <4658D4FC.3010305@gmail.com>
+Subject: [PATCH 4/9] fbdev: Move declaration of fb_class
+	to <linux/fb.h>
+Date: Sun, 27 May 2007 08:48:56 +0800
+Message-ID: <4658D578.4030105@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HsFPR-0001vM-PK for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 May 2007 02:51:34 -0700
+	id 1HsFPd-0001vZ-Ey for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 27 May 2007 02:51:46 -0700
 Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HsFPQ-0003fW-Vj
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HsFPc-0003fW-7F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 May 2007 02:51:33 -0700
+	Sun, 27 May 2007 02:51:45 -0700
 Received: by py-out-1112.google.com with SMTP id u77so2302792pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 27 May 2007 02:51:32 -0700 (PDT)
+	Sun, 27 May 2007 02:51:43 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,52 +31,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Ondrej Zajicek <santiago@crfreenet.org>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-This patch prevents null pointer dereference in arkfb and vt8623fb.
+Move the forward declaration of fb_class from drivers/video/console/fbcon.h to
+<linux/fb.h>, together with the other forward declarations related to
+drivers/video/fbmem.c.
 
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+This kills the following sparse warning:
+| drivers/video/fbmem.c:1363:14: warning: symbol 'fb_class' was not declared. Should it be static?
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/arkfb.c    |    3 ++-
- drivers/video/vt8623fb.c |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/console/fbcon.h |    1 -
+ include/linux/fb.h            |    1 +
+ 2 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index ba6fede..8a1b07c 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -1055,9 +1055,10 @@ err_enable_device:
- static void __devexit ark_pci_remove(struct pci_dev *dev)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	struct arkfb_info *par = info->par;
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 71f24e0..8e6ef4b 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -176,7 +176,6 @@ extern void fbcon_set_tileops(struct vc_
+ #endif
+ extern void fbcon_set_bitops(struct fbcon_ops *ops);
+ extern int  soft_cursor(struct fb_info *info, struct fb_cursor *cursor);
+-extern struct class *fb_class;
  
- 	if (info) {
-+		struct arkfb_info *par = info->par;
-+
- #ifdef CONFIG_MTRR
- 		if (par->mtrr_reg >= 0) {
- 			mtrr_del(par->mtrr_reg, 0, 0);
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index 5e9755e..30c0b94 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -778,9 +778,10 @@ err_enable_device:
- static void __devexit vt8623_pci_remove(struct pci_dev *dev)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	struct vt8623fb_info *par = info->par;
+ #define FBCON_ATTRIBUTE_UNDERLINE 1
+ #define FBCON_ATTRIBUTE_REVERSE   2
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index c654d0e..6622682 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -942,6 +942,7 @@ extern int fb_new_modelist(struct fb_inf
  
- 	if (info) {
-+		struct vt8623fb_info *par = info->par;
-+
- #ifdef CONFIG_MTRR
- 		if (par->mtrr_reg >= 0) {
- 			mtrr_del(par->mtrr_reg, 0, 0);
+ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
++extern struct class *fb_class;
+ 
+ static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
+ 					   u8 *src, u32 s_pitch, u32 height)
 
 
 -------------------------------------------------------------------------

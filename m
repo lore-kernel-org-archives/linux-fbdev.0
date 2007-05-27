@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/9] cfag12864bfb: Use sys_ instead of
-	cfb_ framebuffer accessors
-Date: Sun, 27 May 2007 08:48:07 +0800
-Message-ID: <4658D547.8020707@gmail.com>
+Subject: [PATCH 2/9] vt8623fb: arkfb: null pointer
+	dereference fix
+Date: Sun, 27 May 2007 08:46:52 +0800
+Message-ID: <4658D4FC.3010305@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HsFPX-0001vT-5m for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 May 2007 02:51:40 -0700
+	id 1HsFPR-0001vM-PK for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 27 May 2007 02:51:34 -0700
 Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HsFPW-0003fW-UJ
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HsFPQ-0003fW-Vj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 May 2007 02:51:39 -0700
+	Sun, 27 May 2007 02:51:33 -0700
 Received: by py-out-1112.google.com with SMTP id u77so2302792pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 27 May 2007 02:51:38 -0700 (PDT)
+	Sun, 27 May 2007 02:51:32 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,63 +31,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Miguel Ojeda Sandonis <maxextreme@gmail.com>, Avuton Olrich <avuton@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Avuton Olrich <avuton@gmail.com>
+From: Ondrej Zajicek <santiago@crfreenet.org>
 
-Because the framebuffer memory is allocated system RAM, use the sys_ drawing
-libraries. It also fixes the following compile error:
+This patch prevents null pointer dereference in arkfb and vt8623fb.
 
-  LD      .tmp_vmlinux1
-drivers/built-in.o:(.data+0x8b48): undefined reference to `cfb_fillrect'
-drivers/built-in.o:(.data+0x8b50): undefined reference to `cfb_copyarea'
-drivers/built-in.o:(.data+0x8b58): undefined reference to `cfb_imageblit'
-
-[adaplas]
-Use fb_sys_read/write for the same reasons as above.
-
-Signed-off-by: Avuton Olrich <avuton@gmail.com>
+Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/auxdisplay/Kconfig        |    4 ++++
- drivers/auxdisplay/cfag12864bfb.c |    8 +++++---
- 2 files changed, 9 insertions(+), 3 deletions(-)
+ drivers/video/arkfb.c    |    3 ++-
+ drivers/video/vt8623fb.c |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/auxdisplay/Kconfig b/drivers/auxdisplay/Kconfig
-index 7c2ef5c..0e09376 100644
---- a/drivers/auxdisplay/Kconfig
-+++ b/drivers/auxdisplay/Kconfig
-@@ -72,6 +72,10 @@ config CFAG12864B
- 	depends on X86
- 	depends on FB
- 	depends on KS0108
-+	select FB_SYS_FILLRECT
-+	select FB_SYS_COPYAREA
-+	select FB_SYS_IMAGEBLIT
-+	select FB_SYS_FOPS
- 	default n
- 	---help---
- 	  If you have a Crystalfontz 128x64 2-color LCD, cfag12864b Series,
-diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
-index 66fafbb..307c190 100644
---- a/drivers/auxdisplay/cfag12864bfb.c
-+++ b/drivers/auxdisplay/cfag12864bfb.c
-@@ -73,9 +73,11 @@ static int cfag12864bfb_mmap(struct fb_i
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index ba6fede..8a1b07c 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -1055,9 +1055,10 @@ err_enable_device:
+ static void __devexit ark_pci_remove(struct pci_dev *dev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(dev);
+-	struct arkfb_info *par = info->par;
  
- static struct fb_ops cfag12864bfb_ops = {
- 	.owner = THIS_MODULE,
--	.fb_fillrect = cfb_fillrect,
--	.fb_copyarea = cfb_copyarea,
--	.fb_imageblit = cfb_imageblit,
-+	.fb_read = fb_sys_read,
-+	.fb_write = fb_sys_write,
-+	.fb_fillrect = sys_fillrect,
-+	.fb_copyarea = sys_copyarea,
-+	.fb_imageblit = sys_imageblit,
- 	.fb_mmap = cfag12864bfb_mmap,
- };
+ 	if (info) {
++		struct arkfb_info *par = info->par;
++
+ #ifdef CONFIG_MTRR
+ 		if (par->mtrr_reg >= 0) {
+ 			mtrr_del(par->mtrr_reg, 0, 0);
+diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
+index 5e9755e..30c0b94 100644
+--- a/drivers/video/vt8623fb.c
++++ b/drivers/video/vt8623fb.c
+@@ -778,9 +778,10 @@ err_enable_device:
+ static void __devexit vt8623_pci_remove(struct pci_dev *dev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(dev);
+-	struct vt8623fb_info *par = info->par;
  
+ 	if (info) {
++		struct vt8623fb_info *par = info->par;
++
+ #ifdef CONFIG_MTRR
+ 		if (par->mtrr_reg >= 0) {
+ 			mtrr_del(par->mtrr_reg, 0, 0);
 
 
 -------------------------------------------------------------------------

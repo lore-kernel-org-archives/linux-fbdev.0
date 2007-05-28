@@ -1,25 +1,26 @@
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Subject: Re: Problem with FB
-Date: Mon, 28 May 2007 17:18:57 +0200
-Message-ID: <465AF2E1.9090705@rfo.atmel.com>
-References: <464B3527.4080406@apexar.com>
-	<464D5A56.4070906@rfo.atmel.com>	<464DA279.6070404@apexar.com>
-	<464DA8FA.6050303@rfo.atmel.com> <4655CC7D.6020600@apexar.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: 8 words bursts for fbdev driver
+Date: Mon, 28 May 2007 23:40:08 +0800
+Message-ID: <1180366808.4526.4.camel@daplas>
+References: <1180365959.465af4876a6a8@imp.free.fr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Hsh02-0001k9-Be for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 28 May 2007 08:19:10 -0700
-Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hsh01-0002Ld-Jh
+	id 1HshKV-0004QB-Hx for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 28 May 2007 08:40:19 -0700
+Received: from wx-out-0506.google.com ([66.249.82.228])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HshKT-0002Ng-PF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 28 May 2007 08:19:10 -0700
-In-Reply-To: <4655CC7D.6020600@apexar.com>
+	Mon, 28 May 2007 08:40:19 -0700
+Received: by wx-out-0506.google.com with SMTP id t15so1263030wxc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 28 May 2007 08:40:17 -0700 (PDT)
+In-Reply-To: <1180365959.465af4876a6a8@imp.free.fr>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,54 +31,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Diego A. Fons" <diegofons@apexar.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Diego A. Fons :
-> I was changing the timings values but it seems to get worse, with a set 
-> of values the screen moves with every ftp command thet sftp sends!
-> Now the values are (it doesn't work either):
+On Mon, 2007-05-28 at 17:25 +0200, xcsnake@free.fr wrote:
+> Hello,
 > 
-> #define AT91_DM9000_NWE_SETUP           (8 << 0)
-> #define AT91_DM9000_NCS_WR_SETUP        (4 << 8)
-> #define AT91_DM9000_NRD_SETUP           (8 << 16)
-> #define AT91_DM9000_NCS_RD_SETUP        (4 << 24)
-> 
-> #define AT91_DM9000_NWE_PULSE           (16 << 0)
-> #define AT91_DM9000_NCS_WR_PULSE        (32 << 8)
-> #define AT91_DM9000_NRD_PULSE           (16 << 16)
-> #define AT91_DM9000_NCS_RD_PULSE        (32 << 24)
-> 
-> #define AT91_DM9000_NWE_CYCLE           (36 << 0)
-> #define AT91_DM9000_NRD_CYCLE           (36 << 16)
-> 
-> #define AT91_DM9000_TDF                 (1 << 16)
-> 
-> I test it with lower and higher values and nothing (with 1 and 127).
-> 
-> Can you tell me how is it possible that the DM9000 timings interfere 
-> with the frame buffer?
+> I have posted this message on the linux-kernel mailing list, but I think it
+> could be more appropriate here.
+> I'm working on a FPGA vga controller, with an arm cpu (at91rm9200). My FPGA is
+> plugged on a 16 bits data bus. I'm trying to develop the framebuffer driver,
+> from the epson s1d13xxxfb driver to use my controller. I have a first driver
+> which works well. To accelerate my controller, I would like to read and write in
+> my video memory (controlled by the FPGA) by 8 words bursts. Is it possible to
+> tell the kernel that the memory must be accessed only by 8 words bursts ??
+> My driver is available on http://xcsnake.free.fr/driver
 
-Well they both use the SDRam/EBI interface (in fact the ARM926 and the LCD) 
-and they may be in conflict some time to get the internal AHB bus (H matrix).
-The idea is that one or the other master takes the bus for too long.
+You can write your own fillrect, imageblit and copyarea routine. The
+same with fb_read and fb_write.  For userland that mmap's the
+framebuffer, I don't think there's a way to tell them how to access the
+framebuffer.
 
-What can help us is if you can also check if the fifo underflow UFLWIS 
-bit (#4) rises during LDC use.
-
-So, if the LCD is interrupted during a data burst from sdram, it can have 
-difficulties to resume its transfer. You can try to lower the configured burst 
-length on the LCD : 
-ATMEL_LCDC_DMA_BURST_LEN = 4 (so the register field must be written with 0x3) 
-instead of 8.
-
-Another option will be to keep the burst length and increase the slot cycle 
-in the Matrix interface (from 16->32 or 64). It is the preferred one. This is 
-done in the AT91bootstrap but you can do it for testing using a jtag ice.
-
-Keep me informed, Cheers,
--- 
-Nicolas Ferre
+Tony 
 
 
 

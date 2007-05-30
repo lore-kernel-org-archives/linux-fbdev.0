@@ -1,181 +1,288 @@
-From: "Diego A. Fons" <diegofons@apexar.com>
-Subject: Re: Problem with FB
-Date: Wed, 30 May 2007 10:00:20 -0300
-Message-ID: <465D7564.7000809@apexar.com>
-References: <464B3527.4080406@apexar.com>
-	<464D5A56.4070906@rfo.atmel.com>	<464DA279.6070404@apexar.com>
-	<464DA8FA.6050303@rfo.atmel.com>	 <4655CC7D.6020600@apexar.com>
-	<465AF2E1.9090705@rfo.atmel.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: tty-related oops in latest kernel(s)?
+Date: Wed, 30 May 2007 09:09:45 -0700
+Message-ID: <20070530090945.ab9d51d9.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
+	<84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+	<84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
+	<Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi>
+	<84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com>
+	<Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
+	<84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
+	<Pine.LNX.4.64.0705301458400.4634@jalava.cc.jyu.fi>
+	<20070530083953.9909bcef.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705301857370.29485@jalava.cc.jyu.fi>
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757920AbXE3QLl@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705301857370.29485@jalava.cc.jyu.fi>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HtO92-0000Gp-3Y for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 May 2007 06:23:20 -0700
-Received: from smtp1.allytech.com ([200.49.145.100] helo=ns1.arsesco.com.ar)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HtO8z-0007tZ-B9
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 May 2007 06:23:20 -0700
-In-Reply-To: <465AF2E1.9090705@rfo.atmel.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Tero Roponen <teanropo@jyu.fi>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Whitcroft <apw@shadowen.org>, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@pol.net>
 
-Nicolas Ferre escribi=F3:
+On Wed, 30 May 2007 19:01:09 +0300 (EEST) Tero Roponen <teanropo@jyu.fi=
+> wrote:
 
-> Diego A. Fons :
->
->> I was changing the timings values but it seems to get worse, with a =
+> On Wed, 30 May 2007, Andrew Morton wrote:
+>=20
+> > On Wed, 30 May 2007 15:02:49 +0300 (EEST) Tero Roponen <teanropo@jy=
+u.fi> wrote:
+> >=20
+> > > On Wed, 30 May 2007, Pekka Enberg wrote:
+> > >=20
+> > > > On 5/30/07, Tero Roponen <teanropo@jyu.fi> wrote:
+> > > > > Hmmm, I just found something interesting. In 2.6.21.3 the /sb=
+in/init
+> > > > > gets corrupted when I watch the video!
+> > > > >
+> > > > > $ cp /sbin/init init.before
+> > > > > $ mplayer kiwi.flv
+> > > > > $ cp /sbin/init init.after
+> > > > >
+> > > > > The sha1sums are here:
+> > > > >
+> > > > > 52c8d643057619cbe137b8e69d4709ce3bdd832d  init.after
+> > > > > 8efc7864a5b535a9e336fa82e9d7f112f3d956c1  init.before
+> > > > >
+> > > > > It seems that something corrupts memory somewhere...
+> > > >=20
+> > > > To debug this a bit further:
+> > > >=20
+> > > > $ od -a -t x1 -v init.after > init.after.dump
+> > > > $ od -a -t x1 -v init.before > init.before.dump
+> > > > $ diff -u init.before.dump init.after.dump | less
+> > > >=20
+> > > > -0011340  nul nul nul  e9  f0  fe  ff  ff  ff   %   < soh enq  =
+bs   h  80
+> > > > -           00  00  00  e9  f0  fe  ff  ff  ff  25  3c  01  05 =
+ 08  68  80
+> > > > +0010000    y ack nul nul   y ack nul nul   y ack nul nul   y a=
+ck nul nul
+> > > > +           79  06  00  00  79  06  00  00  79  06  00  00  79 =
+ 06  00  00
+> > > > +0010020    y ack nul nul   y ack nul nul   y ack nul nul   y a=
+ck nul nul
+> > > > +           79  06  00  00  79  06  00  00  79  06  00  00  79 =
+ 06  00  00
+> > > > +0011340    y ack nul nul   y ack nul nul  ff   %   < soh enq  =
+bs   h  80
+> > > > +           79  06  00  00  79  06  00  00  ff  25  3c  01  05 =
+ 08  68  80
+> > > >=20
+> > > > The file at offset 0010000 - 0011348 is overwritten with the by=
+te
+> > > > pattern 79 06 00 00.
+> > > >=20
+> > > > Do you see anything in the logs or is this a silent corruption?=
+ Did
+> > > > you see this corruption with 2.6.19 or 2.6.22-rc3?
+> > > >=20
+> > >=20
+> > > I recompiled 2.6.22-rc3 and booted it with slub_debug. Now I can'=
+t oops
+> > > the kernel, but ./slab_info -v gives me a warning:
+> > >=20
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > neofb: no support for 32bpp
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1024x768) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1152x864) larger than the LCD panel (800x600)
+> > > Mode (1024x1024) larger than the LCD panel (800x600)
+> > > Mode (1024x1024) larger than the LCD panel (800x600)
+> > > Mode (1024x1024) larger than the LCD panel (800x600)
+> > > Mode (1024x1024) larger than the LCD panel (800x600)
+> > > Mode (1280x1024) larger than the LCD panel (800x600)
+> > > Mode (1280x1024) larger than the LCD panel (800x600)
+> > > Mode (1280x1024) larger than the LCD panel (800x600)
+> > > Mode (1280x1024) larger than the LCD panel (800x600)
+> > > *** SLUB kmalloc-1024: Redzone Active@0xc10be860 slab 0xc10217c0
+> > >     offset=3D2144 flags=3D0x80004082 inuse=3D7 freelist=3D0x00000=
+000
+> > >   Bytes b4 0xc10be850:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a=
+ 5a 5a ........ZZZZZZZZ
+> > >     Object 0xc10be860:  00 00 00 00 00 20 00 00 20 03 00 00 58 02=
+ 00 00 ............X...
+> > >     Object 0xc10be870:  20 03 00 00 58 02 00 00 00 00 00 00 00 00=
+ 00 00 ....X...........
+> > >     Object 0xc10be880:  10 00 00 00 00 00 00 00 0b 00 00 00 05 00=
+ 00 00 ................
+> > >     Object 0xc10be890:  00 00 00 00 05 00 00 00 06 00 00 00 00 00=
+ 00 00 ................
+> > >     Object 0xc10be8a0:  00 00 00 00 05 00 00 00 00 00 00 00 00 00=
+ 00 00 ................
+> > >     Object 0xc10be8b0:  00 00 00 00 00 00 00 00 00 00 00 00 00 00=
+ 00 00 ................
+> > >     Object 0xc10be8c0:  ff ff ff ff ff ff ff ff 00 00 00 00 a8 61=
+ 00 00 =FF=FF=FF=FF=FF=FF=FF=FF....=A8a..
+> > >     Object 0xc10be8d0:  58 00 00 00 28 00 00 00 17 00 00 00 01 00=
+ 00 00 X...(...........
+> > >    Redzone 0xc10bec60:  4d 6b 00 00                              =
+       Mk..           =20
+> > > FreePointer 0xc10bec64 -> 0x00006b4d
+> > > Last alloc: 0x6b4d jiffies_ago=3D4294923792 cpu=3D27469 pid=3D274=
+69
+> > > Last free : 0x6b4d jiffies_ago=3D4294923792 cpu=3D27469 pid=3D274=
+69
+> > >     Filler 0xc10bec88:  4d 6b 00 00 4d 6b 00 00                  =
+       Mk..Mk..       =20
+> > >  [<c013f717>] check_object+0x64/0x23d
+> > >  [<c0141371>] validate_slab+0xff/0x12a
+> > >  [<c01413aa>] validate_slab_slab+0xe/0x51
+> > >  [<c0141488>] validate_store+0x9b/0xe8
+> > >  [<c01343d1>] __handle_mm_fault+0x370/0x68b
+> > >  [<c01413ed>] validate_store+0x0/0xe8
+> > >  [<c013eaa6>] slab_attr_store+0x1e/0x22
+> > >  [<c016e470>] sysfs_write_file+0xad/0xd6
+> > >  [<c016e3c3>] sysfs_write_file+0x0/0xd6
+> > >  [<c0143341>] vfs_write+0x8a/0x10c
+> > >  [<c01437d7>] sys_write+0x41/0x67
+> > >  [<c01022c2>] sysenter_past_esp+0x5f/0x85
+> > >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+> > > @@@ SLUB kmalloc-1024: Restoring redzone (0xcc) from 0xc10bec60-0=
+xc10bec63
+> > >=20
+> >=20
+> > So something did an overwrite of a 1024-byte kmalloc.  Unfortunatel=
+y that
+> > overwrite seems to have trashed our last-alloc info, so we don't kn=
+ow who
+> > allocated that memory.  Darn.
+> >=20
+> > Does the problem go away if you disable CONFIG_SLUB and enable CONF=
+IG_SLAB?
+> >=20
+> >=20
+>=20
+> Hi,
+>=20
+> after some trial and error I found a simple way to trigger the
+> corruption:
+>=20
+> [root@terrop ~]# ./slabinfo -v
+> [root@terrop ~]# ./oops
+> [root@terrop ~]# ./slabinfo -v
 
->> set of values the screen moves with every ftp command thet sftp sends!
->> Now the values are (it doesn't work either):
->>
->> #define AT91_DM9000_NWE_SETUP           (8 << 0)
->> #define AT91_DM9000_NCS_WR_SETUP        (4 << 8)
->> #define AT91_DM9000_NRD_SETUP           (8 << 16)
->> #define AT91_DM9000_NCS_RD_SETUP        (4 << 24)
->>
->> #define AT91_DM9000_NWE_PULSE           (16 << 0)
->> #define AT91_DM9000_NCS_WR_PULSE        (32 << 8)
->> #define AT91_DM9000_NRD_PULSE           (16 << 16)
->> #define AT91_DM9000_NCS_RD_PULSE        (32 << 24)
->>
->> #define AT91_DM9000_NWE_CYCLE           (36 << 0)
->> #define AT91_DM9000_NRD_CYCLE           (36 << 16)
->>
->> #define AT91_DM9000_TDF                 (1 << 16)
->>
->> I test it with lower and higher values and nothing (with 1 and 127).
->>
->> Can you tell me how is it possible that the DM9000 timings interfere =
+Whoa.  Impressed.
 
->> with the frame buffer?
->
->
-> Well they both use the SDRam/EBI interface (in fact the ARM926 and the =
+> *** SLUB kmalloc-1024: Redzone Active@0xc10be860 slab 0xc10217c0
+>     offset=3D2144 flags=3D0x80004082 inuse=3D7 freelist=3D0x00000000
+>   Bytes b4 0xc10be850:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a 5a =
+5a ........ZZZZZZZZ
+>     Object 0xc10be860:  00 00 00 00 00 20 00 00 20 03 00 00 58 02 00 =
+00 ............X...
+>     Object 0xc10be870:  20 03 00 00 58 02 00 00 00 00 00 00 00 00 00 =
+00 ....X...........
+>     Object 0xc10be880:  18 00 00 00 00 00 00 00 10 00 00 00 08 00 00 =
+00 ................
+>     Object 0xc10be890:  00 00 00 00 08 00 00 00 08 00 00 00 00 00 00 =
+00 ................
+>     Object 0xc10be8a0:  00 00 00 00 08 00 00 00 00 00 00 00 00 00 00 =
+00 ................
+>     Object 0xc10be8b0:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 =
+00 ................
+>     Object 0xc10be8c0:  ff ff ff ff ff ff ff ff 00 00 00 00 a8 61 00 =
+00 =FF=FF=FF=FF=FF=FF=FF=FF....=A8a..
+>     Object 0xc10be8d0:  58 00 00 00 28 00 00 00 17 00 00 00 01 00 00 =
+00 X...(...........
+>    Redzone 0xc10bec60:  6b 6b 6b 00                                  =
+   kkk.           =20
+> FreePointer 0xc10bec64 -> 0x006b6b6b
+> Last alloc: 0x6b6b6b jiffies_ago=3D4287907122 cpu=3D7039851 pid=3D703=
+9851
+> Last free : 0x6b6b6b jiffies_ago=3D4287907122 cpu=3D7039851 pid=3D703=
+9851
+>     Filler 0xc10bec88:  6b 6b 6b 00 6b 6b 6b 00                      =
+   kkk.kkk.       =20
+>  [<c013f717>] check_object+0x64/0x23d
+>  [<c0141371>] validate_slab+0xff/0x12a
+>  [<c01413aa>] validate_slab_slab+0xe/0x51
+>  [<c0141488>] validate_store+0x9b/0xe8
+>  [<c01343d1>] __handle_mm_fault+0x370/0x68b
+>  [<c01413ed>] validate_store+0x0/0xe8
+>  [<c013eaa6>] slab_attr_store+0x1e/0x22
+>  [<c016e470>] sysfs_write_file+0xad/0xd6
+>  [<c016e3c3>] sysfs_write_file+0x0/0xd6
+>  [<c0143341>] vfs_write+0x8a/0x10c
+>  [<c01437d7>] sys_write+0x41/0x67
+>  [<c01022c2>] sysenter_past_esp+0x5f/0x85
+>  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> @@@ SLUB kmalloc-1024: Restoring redzone (0xcc) from 0xc10bec60-0xc10=
+bec63
+>=20
+> [root@terrop ~]# cat oops.c
+> #include <sys/ioctl.h>
+> #include <stdio.h>
+> #include <linux/fb.h>
+> #include <fcntl.h>
+>=20
+> int main(void)
+> {
+>         struct fb_var_screeninfo fbinfo;
+>         int fd =3D open("/dev/fb0", O_RDWR);
+>         if (fd < 0)
+>                 return 1;
+>=20
+>         /* Get screeninfo */
+>         ioctl(fd, FBIOGET_VSCREENINFO, &fbinfo);
+>=20
+>         /* Change depth from current 16 to 24. */
+>         fbinfo.bits_per_pixel =3D 24;
+>         ioctl(fd, FBIOPUT_VSCREENINFO, &fbinfo);
+>=20
+>         return 0;
+> }
+>=20
+> So this seems to be a framebuffer error.
+>=20
 
-> LCD) and they may be in conflict some time to get the internal AHB bus =
+cc's added ;)
 
-> (H matrix).
-> The idea is that one or the other master takes the bus for too long.
->
-> What can help us is if you can also check if the fifo underflow UFLWIS =
+Thanks.
 
-> bit (#4) rises during LDC use.
->
-> So, if the LCD is interrupted during a data burst from sdram, it can =
+Tony, this is with SLUB enabled, which might be detecting a
+hitherto-undetected bug.
 
-> have difficulties to resume its transfer. You can try to lower the =
-
-> configured burst length on the LCD : ATMEL_LCDC_DMA_BURST_LEN =3D 4 (so =
-
-> the register field must be written with 0x3) instead of 8.
->
-> Another option will be to keep the burst length and increase the slot =
-
-> cycle in the Matrix interface (from 16->32 or 64). It is the preferred =
-
-> one. This is done in the AT91bootstrap but you can do it for testing =
-
-> using a jtag ice.
->
-> Keep me informed, Cheers,
-
-Good news!... kind of :(
-
-I was working in this problem and i was able to get a solution but it is =
-
-not a good practice.
-First of all i have to add a line in the at91_add_device_lcdc function =
-
-(ah! i made this tests using kernel 2.6.21):
-
-File: arch/arm/mach-at91/at91sam9261_devices.c
-Function: at91_add_device_lcdc()
-Line: at91_set_A_periph(AT91_PIN_PB0, 0);
-
-This line enables the Vertical Sync of the LCD, i don't know why it is =
-
-not set by default, so i didnt' have any vertical signal so the display =
-
-didn't work.
-
-Second. I set the fifo underflow interrupt to see if the problem was a =
-
-buffer underflow and it's that way, the interrupt occurs so the probles =
-
-is that display run out of data. I could solve this by calling a =
-
-function that resets all de lcd driver, also i kept enable the =
-
-interruptions all the time. This is the modified function (in the driver =
-
-file, drivers/video/atmel_lcdfb.c):
-
-static irqreturn_t atmel_lcdfb_interrupt(int irq, void *dev_id)
-{
-        struct fb_info *info =3D dev_id;
-        struct atmel_lcdfb_info *sinfo =3D info->par;
-        u32 status;
-
-        status =3D lcdc_readl(sinfo, ATMEL_LCDC_ISR);
-
-        // this is the reset call
-        atmel_lcdfb_set_par(info);
-
-        //lcdc_writel(sinfo, ATMEL_LCDC_IDR, status);
-        lcdc_writel(sinfo, ATMEL_LCDC_ICR, status);
-
-        return IRQ_HANDLED;
-}
-
-And the function atmel_lcdfb_set_par was modified to keep enable the =
-
-interruptions:
-
-static int atmel_lcdfb_set_par(struct fb_info *info)
-{
-...
-
-        // Added this line at the botom, the rest remains the same
-        lcdc_writel(sinfo, ATMEL_LCDC_IER, 0x00000010);
-        return 0;
-}
-
-With this modifications when the screens moves, it reset the parameters =
-
-and you see the screen go down and up.
-The question is: is there an elegant way to solve this?
-
-Third. I was trying to reconfigure the Matrix from linx but all i got =
-
-was a coredump from the kernel itself. I'm not able to configure it at =
-
-boot time because i'm using u-boot (and i'm not able to flash a new =
-
-compiled version).
-
-Well, that's it. Sorry for the long mail.I'll be waiting an advise from you.
-
-Best regards,
-Diego A. Fons.
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+Config is at http://userweb.kernel.org/~akpm/config-tero.txt

@@ -1,147 +1,51 @@
-From: Bill Nottingham <notting@redhat.com>
-Subject: [PATCH] drivers/video: Fix comparisons between negative and
-	unsigned
-Date: Wed, 30 May 2007 04:01:59 -0400
-Message-ID: <20070530080159.GA29146@nostromo.devel.redhat.com>
+From: Marek Szuba <Marek.Szuba@if.pw.edu.pl>
+Subject: radeonfb: RV410 support?
+Date: Wed, 30 May 2007 03:22:32 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0705300316470.6433@gyrvynk.vs.cj.rqh.cy>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752790AbXE3IEK@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1HtDpe-0007jC-7Q for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 29 May 2007 19:22:38 -0700
+Received: from student.if.pw.edu.pl ([194.29.174.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1HtDpc-000066-On
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 29 May 2007 19:22:38 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Recent gcc versions emit warnings when unsigned variables are compared < 0 or >= 0.
+Hello,
 
-Signed-off-by: Bill Nottingham <notting@redhat.com>
+A quick question: is there any way of getting radeonfb to work on a Radeon 
+X700 Pro, i.e. on a RV410-based card, with a recent kernel? I have found a 
+patch for 2.6.20 (http://lwn.net/Articles/215965/), but can't get it to 
+apply to 2.6.21.
 
----
- aty/aty128fb.c       |    3 ---
- aty/radeon_base.c    |    5 -----
- cirrusfb.c           |    5 -----
- fbmem.c              |    8 ++++----
- intelfb/intelfbdrv.c |    5 -----
- riva/fbdev.c         |    5 -----
- vga16fb.c            |    2 +-
- 7 files changed, 5 insertions(+), 28 deletions(-)
+On the same note, are there any estimations on when this feature is to be 
+incorporated into the main kernel tree? It sure has been a while since 
+that patch was posted...
 
-diff -ru linux-2.6.21-old/drivers/video/aty/aty128fb.c linux-2.6.21/drivers/video/aty/aty128fb.c
---- linux-2.6.21-old/drivers/video/aty/aty128fb.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/aty/aty128fb.c	2007-05-30 02:28:35.000000000 -0400
-@@ -1350,9 +1350,6 @@
- 		}
- 	}
- 
--	if (pll->post_divider < 0)
--		return -EINVAL;
--
- 	/* calculate feedback divider */
- 	n = c.ref_divider * output_freq;
- 	d = c.ref_clk;
-diff -ru linux-2.6.21-old/drivers/video/aty/radeon_base.c linux-2.6.21/drivers/video/aty/radeon_base.c
---- linux-2.6.21-old/drivers/video/aty/radeon_base.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/aty/radeon_base.c	2007-05-30 02:28:13.000000000 -0400
-@@ -813,11 +813,6 @@
- 	if (v.xres_virtual < v.xres)
- 		v.xres = v.xres_virtual;
- 
--	if (v.xoffset < 0)
--                v.xoffset = 0;
--        if (v.yoffset < 0)
--                v.yoffset = 0;
--         
-         if (v.xoffset > v.xres_virtual - v.xres)
-                 v.xoffset = v.xres_virtual - v.xres - 1;
-                         
-diff -ru linux-2.6.21-old/drivers/video/cirrusfb.c linux-2.6.21/drivers/video/cirrusfb.c
---- linux-2.6.21-old/drivers/video/cirrusfb.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/cirrusfb.c	2007-05-30 02:29:21.000000000 -0400
-@@ -729,11 +729,6 @@
- 	if (var->yres_virtual < var->yres)
- 		var->yres_virtual = var->yres;
- 
--	if (var->xoffset < 0)
--		var->xoffset = 0;
--	if (var->yoffset < 0)
--		var->yoffset = 0;
--
- 	/* truncate xoffset and yoffset to maximum if too high */
- 	if (var->xoffset > var->xres_virtual - var->xres)
- 		var->xoffset = var->xres_virtual - var->xres - 1;
-diff -ru linux-2.6.21-old/drivers/video/fbmem.c linux-2.6.21/drivers/video/fbmem.c
---- linux-2.6.21-old/drivers/video/fbmem.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/fbmem.c	2007-05-30 02:27:25.000000000 -0400
-@@ -392,7 +392,7 @@
- 			image->dx += image->width + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_UD) {
--		for (x = 0; x < num && image->dx >= 0; x++) {
-+		for (x = 0; x < num; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dx -= image->width + 8;
- 		}
-@@ -404,7 +404,7 @@
- 			image->dy += image->height + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_CCW) {
--		for (x = 0; x < num && image->dy >= 0; x++) {
-+		for (x = 0; x < num; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dy -= image->height + 8;
- 		}
-@@ -973,9 +973,9 @@
- 	case FBIOPUT_CON2FBMAP:
- 		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
- 			return - EFAULT;
--		if (con2fb.console < 0 || con2fb.console > MAX_NR_CONSOLES)
-+		if (con2fb.console > MAX_NR_CONSOLES)
- 		    return -EINVAL;
--		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
-+		if (con2fb.framebuffer >= FB_MAX)
- 		    return -EINVAL;
- #ifdef CONFIG_KMOD
- 		if (!registered_fb[con2fb.framebuffer])
-diff -ru linux-2.6.21-old/drivers/video/intelfb/intelfbdrv.c linux-2.6.21/drivers/video/intelfb/intelfbdrv.c
---- linux-2.6.21-old/drivers/video/intelfb/intelfbdrv.c	2007-05-30 02:53:13.000000000 -0400
-+++ linux-2.6.21/drivers/video/intelfb/intelfbdrv.c	2007-05-30 02:30:32.000000000 -0400
-@@ -1343,11 +1343,6 @@
- 		break;
- 	}
- 
--	if (v.xoffset < 0)
--		v.xoffset = 0;
--	if (v.yoffset < 0)
--		v.yoffset = 0;
--
- 	if (v.xoffset > v.xres_virtual - v.xres)
- 		v.xoffset = v.xres_virtual - v.xres;
- 	if (v.yoffset > v.yres_virtual - v.yres)
-diff -ru linux-2.6.21-old/drivers/video/riva/fbdev.c linux-2.6.21/drivers/video/riva/fbdev.c
---- linux-2.6.21-old/drivers/video/riva/fbdev.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/riva/fbdev.c	2007-05-30 02:29:05.000000000 -0400
-@@ -1185,11 +1185,6 @@
- 	if (rivafb_do_maximize(info, var, nom, den) < 0)
- 		return -EINVAL;
- 
--	if (var->xoffset < 0)
--		var->xoffset = 0;
--	if (var->yoffset < 0)
--		var->yoffset = 0;
--
- 	/* truncate xoffset and yoffset to maximum if too high */
- 	if (var->xoffset > var->xres_virtual - var->xres)
- 		var->xoffset = var->xres_virtual - var->xres - 1;
-diff -ru linux-2.6.21-old/drivers/video/vga16fb.c linux-2.6.21/drivers/video/vga16fb.c
---- linux-2.6.21-old/drivers/video/vga16fb.c	2007-05-30 02:53:01.000000000 -0400
-+++ linux-2.6.21/drivers/video/vga16fb.c	2007-05-30 02:30:08.000000000 -0400
-@@ -1092,7 +1092,7 @@
- 	sy += (dy - old_dy);
- 
- 	/* the source must be completely inside the virtual screen */
--	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
-+	if ((sx + width) > vxres || (sy + height) > vyres)
- 		return;
- 
- 	switch (info->fix.type) {
+Best regards,
+-- 
+MS
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

@@ -1,62 +1,147 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: 8 words bursts for fbdev driver
-Date: Mon, 28 May 2007 23:40:08 +0800
-Message-ID: <1180366808.4526.4.camel@daplas>
-References: <1180365959.465af4876a6a8@imp.free.fr>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Bill Nottingham <notting@redhat.com>
+Subject: [PATCH] drivers/video: Fix comparisons between negative and
+	unsigned
+Date: Wed, 30 May 2007 04:01:59 -0400
+Message-ID: <20070530080159.GA29146@nostromo.devel.redhat.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752790AbXE3IEK@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HshKV-0004QB-Hx for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 28 May 2007 08:40:19 -0700
-Received: from wx-out-0506.google.com ([66.249.82.228])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HshKT-0002Ng-PF
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 28 May 2007 08:40:19 -0700
-Received: by wx-out-0506.google.com with SMTP id t15so1263030wxc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 28 May 2007 08:40:17 -0700 (PDT)
-In-Reply-To: <1180365959.465af4876a6a8@imp.free.fr>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 2007-05-28 at 17:25 +0200, xcsnake@free.fr wrote:
-> Hello,
-> 
-> I have posted this message on the linux-kernel mailing list, but I think it
-> could be more appropriate here.
-> I'm working on a FPGA vga controller, with an arm cpu (at91rm9200). My FPGA is
-> plugged on a 16 bits data bus. I'm trying to develop the framebuffer driver,
-> from the epson s1d13xxxfb driver to use my controller. I have a first driver
-> which works well. To accelerate my controller, I would like to read and write in
-> my video memory (controlled by the FPGA) by 8 words bursts. Is it possible to
-> tell the kernel that the memory must be accessed only by 8 words bursts ??
-> My driver is available on http://xcsnake.free.fr/driver
+Recent gcc versions emit warnings when unsigned variables are compared < 0 or >= 0.
 
-You can write your own fillrect, imageblit and copyarea routine. The
-same with fb_read and fb_write.  For userland that mmap's the
-framebuffer, I don't think there's a way to tell them how to access the
-framebuffer.
+Signed-off-by: Bill Nottingham <notting@redhat.com>
 
-Tony 
+---
+ aty/aty128fb.c       |    3 ---
+ aty/radeon_base.c    |    5 -----
+ cirrusfb.c           |    5 -----
+ fbmem.c              |    8 ++++----
+ intelfb/intelfbdrv.c |    5 -----
+ riva/fbdev.c         |    5 -----
+ vga16fb.c            |    2 +-
+ 7 files changed, 5 insertions(+), 28 deletions(-)
 
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+diff -ru linux-2.6.21-old/drivers/video/aty/aty128fb.c linux-2.6.21/drivers/video/aty/aty128fb.c
+--- linux-2.6.21-old/drivers/video/aty/aty128fb.c	2007-05-30 02:53:00.000000000 -0400
++++ linux-2.6.21/drivers/video/aty/aty128fb.c	2007-05-30 02:28:35.000000000 -0400
+@@ -1350,9 +1350,6 @@
+ 		}
+ 	}
+ 
+-	if (pll->post_divider < 0)
+-		return -EINVAL;
+-
+ 	/* calculate feedback divider */
+ 	n = c.ref_divider * output_freq;
+ 	d = c.ref_clk;
+diff -ru linux-2.6.21-old/drivers/video/aty/radeon_base.c linux-2.6.21/drivers/video/aty/radeon_base.c
+--- linux-2.6.21-old/drivers/video/aty/radeon_base.c	2007-05-30 02:53:00.000000000 -0400
++++ linux-2.6.21/drivers/video/aty/radeon_base.c	2007-05-30 02:28:13.000000000 -0400
+@@ -813,11 +813,6 @@
+ 	if (v.xres_virtual < v.xres)
+ 		v.xres = v.xres_virtual;
+ 
+-	if (v.xoffset < 0)
+-                v.xoffset = 0;
+-        if (v.yoffset < 0)
+-                v.yoffset = 0;
+-         
+         if (v.xoffset > v.xres_virtual - v.xres)
+                 v.xoffset = v.xres_virtual - v.xres - 1;
+                         
+diff -ru linux-2.6.21-old/drivers/video/cirrusfb.c linux-2.6.21/drivers/video/cirrusfb.c
+--- linux-2.6.21-old/drivers/video/cirrusfb.c	2007-05-30 02:53:00.000000000 -0400
++++ linux-2.6.21/drivers/video/cirrusfb.c	2007-05-30 02:29:21.000000000 -0400
+@@ -729,11 +729,6 @@
+ 	if (var->yres_virtual < var->yres)
+ 		var->yres_virtual = var->yres;
+ 
+-	if (var->xoffset < 0)
+-		var->xoffset = 0;
+-	if (var->yoffset < 0)
+-		var->yoffset = 0;
+-
+ 	/* truncate xoffset and yoffset to maximum if too high */
+ 	if (var->xoffset > var->xres_virtual - var->xres)
+ 		var->xoffset = var->xres_virtual - var->xres - 1;
+diff -ru linux-2.6.21-old/drivers/video/fbmem.c linux-2.6.21/drivers/video/fbmem.c
+--- linux-2.6.21-old/drivers/video/fbmem.c	2007-05-30 02:53:00.000000000 -0400
++++ linux-2.6.21/drivers/video/fbmem.c	2007-05-30 02:27:25.000000000 -0400
+@@ -392,7 +392,7 @@
+ 			image->dx += image->width + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_UD) {
+-		for (x = 0; x < num && image->dx >= 0; x++) {
++		for (x = 0; x < num; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dx -= image->width + 8;
+ 		}
+@@ -404,7 +404,7 @@
+ 			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_CCW) {
+-		for (x = 0; x < num && image->dy >= 0; x++) {
++		for (x = 0; x < num; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dy -= image->height + 8;
+ 		}
+@@ -973,9 +973,9 @@
+ 	case FBIOPUT_CON2FBMAP:
+ 		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
+ 			return - EFAULT;
+-		if (con2fb.console < 0 || con2fb.console > MAX_NR_CONSOLES)
++		if (con2fb.console > MAX_NR_CONSOLES)
+ 		    return -EINVAL;
+-		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
++		if (con2fb.framebuffer >= FB_MAX)
+ 		    return -EINVAL;
+ #ifdef CONFIG_KMOD
+ 		if (!registered_fb[con2fb.framebuffer])
+diff -ru linux-2.6.21-old/drivers/video/intelfb/intelfbdrv.c linux-2.6.21/drivers/video/intelfb/intelfbdrv.c
+--- linux-2.6.21-old/drivers/video/intelfb/intelfbdrv.c	2007-05-30 02:53:13.000000000 -0400
++++ linux-2.6.21/drivers/video/intelfb/intelfbdrv.c	2007-05-30 02:30:32.000000000 -0400
+@@ -1343,11 +1343,6 @@
+ 		break;
+ 	}
+ 
+-	if (v.xoffset < 0)
+-		v.xoffset = 0;
+-	if (v.yoffset < 0)
+-		v.yoffset = 0;
+-
+ 	if (v.xoffset > v.xres_virtual - v.xres)
+ 		v.xoffset = v.xres_virtual - v.xres;
+ 	if (v.yoffset > v.yres_virtual - v.yres)
+diff -ru linux-2.6.21-old/drivers/video/riva/fbdev.c linux-2.6.21/drivers/video/riva/fbdev.c
+--- linux-2.6.21-old/drivers/video/riva/fbdev.c	2007-05-30 02:53:00.000000000 -0400
++++ linux-2.6.21/drivers/video/riva/fbdev.c	2007-05-30 02:29:05.000000000 -0400
+@@ -1185,11 +1185,6 @@
+ 	if (rivafb_do_maximize(info, var, nom, den) < 0)
+ 		return -EINVAL;
+ 
+-	if (var->xoffset < 0)
+-		var->xoffset = 0;
+-	if (var->yoffset < 0)
+-		var->yoffset = 0;
+-
+ 	/* truncate xoffset and yoffset to maximum if too high */
+ 	if (var->xoffset > var->xres_virtual - var->xres)
+ 		var->xoffset = var->xres_virtual - var->xres - 1;
+diff -ru linux-2.6.21-old/drivers/video/vga16fb.c linux-2.6.21/drivers/video/vga16fb.c
+--- linux-2.6.21-old/drivers/video/vga16fb.c	2007-05-30 02:53:01.000000000 -0400
++++ linux-2.6.21/drivers/video/vga16fb.c	2007-05-30 02:30:08.000000000 -0400
+@@ -1092,7 +1092,7 @@
+ 	sy += (dy - old_dy);
+ 
+ 	/* the source must be completely inside the virtual screen */
+-	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
++	if ((sx + width) > vxres || (sy + height) > vyres)
+ 		return;
+ 
+ 	switch (info->fix.type) {

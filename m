@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 7/8] fbdev: fbcon: Console
-	unregistration from unregister_framebuffer
-Date: Thu, 31 May 2007 21:02:47 +0800
-Message-ID: <465EC777.8070209@gmail.com>
+Subject: [PATCH 6/8] fbcon: Revise primary device
+	selection
+Date: Thu, 31 May 2007 21:02:34 +0800
+Message-ID: <465EC76A.30307@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HtkQS-0001Ig-IE for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 06:10:48 -0700
-Received: from wr-out-0506.google.com ([64.233.184.231])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HtkQS-0005Jc-2i
+	id 1HtkQN-0001IB-Gc for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 May 2007 06:10:43 -0700
+Received: from wx-out-0506.google.com ([66.249.82.238])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HtkQN-0001YJ-4M
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 06:10:48 -0700
-Received: by wr-out-0506.google.com with SMTP id 76so143940wra
+	Thu, 31 May 2007 06:10:43 -0700
+Received: by wx-out-0506.google.com with SMTP id t15so151309wxc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 31 May 2007 06:10:47 -0700 (PDT)
+	Thu, 31 May 2007 06:10:42 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,170 +31,138 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Jesse Barnes <jesse.barnes@intel.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "David S. Miller" <davem@davemloft.net>
 
-From: Jesse Barnes <jesse.barnes@intel.com>
+Use set_con2fb_map() to select the primary display driver instead of using
+unbind_con_driver() and bind_con_driver().  Using the former is much simpler
+and safer than the current one.
 
-This allows for proper console unregistration via the VT layer, and updates
-the FB layer to use it.  This makes debugging new console drivers much easier,
-since you can properly clean them up before unloading.
-
-[adaplas]
-unregister_framebuffer() is typically called as part of the driver's
-module_exit(). Doing so otherwise will freeze the machine as the VT layer is
-holding reference counts on fbcon, and fbcon on the driver.  With this change,
-it allows unregister_framebuffer() to be called safely anywhere as needed.
-
-Additions from the original:  If multiple drivers are used by fbcon, and if
-one of them unregisters, a driver will take over the consoles vacated by the
-outgoing one (via set_con2fb_map).   Once only the outgoing driver remains,
-then fbcon will unbind from the VT layer (if CONFIG_HW_CONSOLE_UNBINDING is
-set to y).
-
-It is important that these drivers implement fb_open() and fb_release()
-just to ensure that no other process is using the driver. Likewise, these
-drivers _must_ check the return value of unregister_framebuffer().
-
-Signed-off-by: Jesse Barnes <jesse.barnes@intel.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
-Geert,
-
-Is this patch suitable for your needs?
+I was forced to use unbind_con_driver/bind_con_driver initially because
+set_con2fb_map() is broken. Now that it is fixed, I can move primary device
+selection to set_con2fb_map. There is lesser complexity and lesser code, and
+it does not depend on the VT layer.
 
 Tony
 
- drivers/video/console/fbcon.c |   42 +++++++++++++++++++++++++++++++++++++++++
- drivers/video/fbmem.c         |   26 +++++++++++++++++++++----
- include/linux/fb.h            |    2 ++
- 3 files changed, 66 insertions(+), 4 deletions(-)
+ drivers/video/console/Kconfig |    6 +----
+ drivers/video/console/fbcon.c |   51 +++++++++++------------------------------
+ 2 files changed, 15 insertions(+), 42 deletions(-)
 
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 1e11d30..449f92c 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -120,7 +120,7 @@ config FRAMEBUFFER_CONSOLE
+ 
+ config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+        bool "Map the console to the primary display device"
+-       depends on FRAMEBUFFER_CONSOLE && VT_HW_CONSOLE_BINDING
++       depends on FRAMEBUFFER_CONSOLE
+        default n
+        ---help---
+          If this option is selected, the framebuffer console will
+@@ -132,10 +132,6 @@ config FRAMEBUFFER_CONSOLE_DETECT_PRIMAR
+ 	 You can always override the automatic selection of the primary device
+ 	 by using the fbcon=map: boot option.
+ 
+-	 To select this feature, "Support for binding and unbinding console
+-         drivers", under "Device Drivers"->"Character Devices" must be set to
+-	 y.
+-
+ 	 If unsure, select n.
+ 
+ config FRAMEBUFFER_CONSOLE_ROTATION
 diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 51bd430..1cbfeda 100644
+index 13b67ee..51bd430 100644
 --- a/drivers/video/console/fbcon.c
 +++ b/drivers/video/console/fbcon.c
-@@ -3003,6 +3003,45 @@ static int fbcon_mode_deleted(struct fb_
- 	return found;
+@@ -3041,52 +3041,32 @@ static int fbcon_fb_unregistered(struct 
  }
  
-+#ifdef CONFIG_VT_HW_CONSOLE_BINDING
-+static int fbcon_unbind(void)
-+{
-+	int ret;
-+
-+	ret = unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
-+				fbcon_is_default);
-+	return ret;
-+}
-+#else
-+static int fbcon_unbind(void)
-+{
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_VT_HW_CONSOLE_BINDING */
-+
-+static int fbcon_fb_unbind(int idx)
-+{
-+	int i, new_idx = -1, ret = 0;
-+
-+	for (i = first_fb_vc; i <= last_fb_vc; i++) {
-+		if (con2fb_map[i] != idx &&
-+		    con2fb_map[i] != -1) {
-+			new_idx = i;
-+			break;
-+		}
-+	}
-+
-+	if (new_idx != -1) {
-+		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-+			if (con2fb_map[i] == idx)
-+				set_con2fb_map(i, idx, 0);
-+		}
-+	} else
-+		ret = fbcon_unbind();
-+
-+	return ret;
-+}
-+
- static int fbcon_fb_unregistered(struct fb_info *info)
+ #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+-static int fbcon_select_primary(struct fb_info *info)
++static void fbcon_select_primary(struct fb_info *info)
  {
- 	int i, idx = info->node;
-@@ -3210,6 +3249,9 @@ static int fbcon_event_notify(struct not
- 		mode = event->data;
- 		ret = fbcon_mode_deleted(info, mode);
- 		break;
-+	case FB_EVENT_FB_UNBIND:
-+		ret = fbcon_fb_unbind(info->node);
-+		break;
- 	case FB_EVENT_FB_REGISTERED:
- 		ret = fbcon_fb_registered(info);
- 		break;
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 8d6dbe8..7f3a0cc 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1334,17 +1334,34 @@ register_framebuffer(struct fb_info *fb_
-  *
-  *	Returns negative errno on error, or zero for success.
-  *
-+ *      This function will also notify the framebuffer console
-+ *      to release the driver.
-+ *
-+ *      This is meant to be called within a driver's module_exit()
-+ *      function. If this is called outside module_exit(), ensure
-+ *      that the driver implements fb_open() and fb_release() to
-+ *      check that no processes are using the device.
-  */
+-	int ret = 0;
+-
+ 	if (!map_override && primary_device == -1 &&
+ 	    fb_is_primary_device(info)) {
+-		int i, err;
++		int i;
  
- int
- unregister_framebuffer(struct fb_info *fb_info)
+-		printk(KERN_INFO "fbcon: %s is primary device\n",
+-		       info->fix.id);
++		printk(KERN_INFO "fbcon: %s (fb%i) is primary device\n",
++		       info->fix.id, info->node);
+ 		primary_device = info->node;
+ 
+-		if (!con_is_bound(&fb_con))
+-			goto done;
+-
+-		printk(KERN_INFO "fbcon: Unbinding old driver\n");
+-		unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
+-				  fbcon_is_default);
+-		info_idx = primary_device;
+-
+-		for (i = first_fb_vc; i <= last_fb_vc; i++) {
++		for (i = first_fb_vc; i <= last_fb_vc; i++)
+ 			con2fb_map_boot[i] = primary_device;
+-			con2fb_map[i] = primary_device;
+-		}
+-
+-		printk(KERN_INFO "fbcon: Selecting new driver\n");
+-		err = bind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
+-				      fbcon_is_default);
+ 
+-		if (err) {
+-			for (i = first_fb_vc; i <= last_fb_vc; i++)
+-				con2fb_map[i] = -1;
+-
+-			info_idx = -1;
++		if (con_is_bound(&fb_con)) {
++			printk(KERN_INFO "fbcon: Remapping primary device, "
++			       "fb%i, to tty %i-%i\n", info->node,
++			       first_fb_vc + 1, last_fb_vc + 1);
++			info_idx = primary_device;
+ 		}
+-
+-		ret = 1;
+ 	}
+-
+-done:
+-	return ret;
++	
+ }
+ #else
+-static inline int fbcon_select_primary(struct fb_info *info)
++static inline void fbcon_select_primary(struct fb_info *info)
  {
- 	struct fb_event event;
--	int i;
-+	int i, ret = 0;
- 
- 	i = fb_info->node;
--	if (!registered_fb[i])
--		return -EINVAL;
-+	if (!registered_fb[i]) {
-+		ret = -EINVAL;
-+		goto done;
-+	}
-+
-+	event.info = fb_info;
-+	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
-+
-+	if (ret) {
-+		ret = -EINVAL;
-+		goto done;
-+	}
- 
- 	if (fb_info->pixmap.addr &&
- 	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
-@@ -1356,7 +1373,8 @@ unregister_framebuffer(struct fb_info *f
- 	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
 -	return 0;
-+done:
-+	return ret;
++	return;
+ }
+ #endif /* CONFIG_FRAMEBUFFER_DETECT_PRIMARY */
+ 
+@@ -3094,9 +3074,7 @@ static int fbcon_fb_registered(struct fb
+ {
+ 	int ret = 0, i, idx = info->node;
+ 
+-	if (fbcon_select_primary(info))
+-		goto done;
+-
++	fbcon_select_primary(info);
+ 
+ 	if (info_idx == -1) {
+ 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+@@ -3115,7 +3093,6 @@ static int fbcon_fb_registered(struct fb
+ 		}
+ 	}
+ 
+-done:
+ 	return ret;
  }
  
- /**
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 6622682..8628423 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -529,6 +529,8 @@ #define FB_EVENT_MODE_CHANGE_ALL	0x0B
- #define FB_EVENT_CONBLANK               0x0C
- /*      Get drawing requirements        */
- #define FB_EVENT_GET_REQ                0x0D
-+/*      Unbind from the console if possible */
-+#define FB_EVENT_FB_UNBIND              0x0E
- 
- struct fb_event {
- 	struct fb_info *info;
-
 
 
 

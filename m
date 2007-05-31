@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 6/8] fbcon: Revise primary device
-	selection
-Date: Thu, 31 May 2007 21:02:34 +0800
-Message-ID: <465EC76A.30307@gmail.com>
+Subject: [PATCH 8/8] vt: Add comment for
+	unbind_con_driver()
+Date: Thu, 31 May 2007 21:03:03 +0800
+Message-ID: <465EC787.8030003@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HtkQN-0001IB-Gc for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 06:10:43 -0700
+	id 1HtkQX-0001JD-OC for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 May 2007 06:10:54 -0700
 Received: from wx-out-0506.google.com ([66.249.82.238])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HtkQN-0001YJ-4M
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HtkQX-0001YJ-9p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 06:10:43 -0700
+	Thu, 31 May 2007 06:10:53 -0700
 Received: by wx-out-0506.google.com with SMTP id t15so151309wxc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 31 May 2007 06:10:42 -0700 (PDT)
+	Thu, 31 May 2007 06:10:52 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,138 +31,81 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "David S. Miller" <davem@davemloft.net>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Use set_con2fb_map() to select the primary display driver instead of using
-unbind_con_driver() and bind_con_driver().  Using the former is much simpler
-and safer than the current one.
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 
+- add comment for unbind_con_driver().
+- bind_con_driver() is made private again
+
+Signed-off-by: Jesse Barnes <jesse.barnes@intel.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
-I was forced to use unbind_con_driver/bind_con_driver initially because
-set_con2fb_map() is broken. Now that it is fixed, I can move primary device
-selection to set_con2fb_map. There is lesser complexity and lesser code, and
-it does not depend on the VT layer.
 
-Tony
+ drivers/char/vt.c       |   21 +++++++++++++++++++--
+ include/linux/vt_kern.h |    2 --
+ 2 files changed, 19 insertions(+), 4 deletions(-)
 
- drivers/video/console/Kconfig |    6 +----
- drivers/video/console/fbcon.c |   51 +++++++++++------------------------------
- 2 files changed, 15 insertions(+), 42 deletions(-)
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 2ea7759..86c3aef 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2861,7 +2861,8 @@ #include <linux/device.h>
+ 
+ static struct class *vtconsole_class;
+ 
+-int bind_con_driver(const struct consw *csw, int first, int last, int deflt)
++static int bind_con_driver(const struct consw *csw, int first, int last,
++			   int deflt)
+ {
+ 	struct module *owner = csw->owner;
+ 	const char *desc = NULL;
+@@ -2960,7 +2961,6 @@ err:
+ 	module_put(owner);
+ 	return retval;
+ };
+-EXPORT_SYMBOL(bind_con_driver);
+ 
+ #ifdef CONFIG_VT_HW_CONSOLE_BINDING
+ static int con_is_graphics(const struct consw *csw, int first, int last)
+@@ -2979,6 +2979,23 @@ static int con_is_graphics(const struct 
+ 	return retval;
+ }
+ 
++/**
++ * unbind_con_driver - unbind a console driver
++ * @csw: pointer to console driver to unregister
++ * @first: first in range of consoles that @csw should be unbound from
++ * @last: last in range of consoles that @csw should be unbound from
++ * @deflt: should next bound console driver be default after @csw is unbound?
++ *
++ * To unbind a driver from all possible consoles, pass 0 as @first and
++ * %MAX_NR_CONSOLES as @last.
++ *
++ * @deflt controls whether the console that ends up replacing @csw should be
++ * the default console.
++ *
++ * RETURNS:
++ * -ENODEV if @csw isn't a registered console driver or can't be unregistered
++ * or 0 on success.
++ */
+ int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
+ {
+ 	struct module *owner = csw->owner;
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index 0d034d8..699b7e9 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -75,8 +75,6 @@ int con_copy_unimap(struct vc_data *dst_
+ int vt_waitactive(int vt);
+ void change_console(struct vc_data *new_vc);
+ void reset_vc(struct vc_data *vc);
+-extern int bind_con_driver(const struct consw *csw, int first, int last,
+-			   int deflt);
+ extern int unbind_con_driver(const struct consw *csw, int first, int last,
+ 			     int deflt);
+ 
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 1e11d30..449f92c 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -120,7 +120,7 @@ config FRAMEBUFFER_CONSOLE
- 
- config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
-        bool "Map the console to the primary display device"
--       depends on FRAMEBUFFER_CONSOLE && VT_HW_CONSOLE_BINDING
-+       depends on FRAMEBUFFER_CONSOLE
-        default n
-        ---help---
-          If this option is selected, the framebuffer console will
-@@ -132,10 +132,6 @@ config FRAMEBUFFER_CONSOLE_DETECT_PRIMAR
- 	 You can always override the automatic selection of the primary device
- 	 by using the fbcon=map: boot option.
- 
--	 To select this feature, "Support for binding and unbinding console
--         drivers", under "Device Drivers"->"Character Devices" must be set to
--	 y.
--
- 	 If unsure, select n.
- 
- config FRAMEBUFFER_CONSOLE_ROTATION
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 13b67ee..51bd430 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3041,52 +3041,32 @@ static int fbcon_fb_unregistered(struct 
- }
- 
- #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
--static int fbcon_select_primary(struct fb_info *info)
-+static void fbcon_select_primary(struct fb_info *info)
- {
--	int ret = 0;
--
- 	if (!map_override && primary_device == -1 &&
- 	    fb_is_primary_device(info)) {
--		int i, err;
-+		int i;
- 
--		printk(KERN_INFO "fbcon: %s is primary device\n",
--		       info->fix.id);
-+		printk(KERN_INFO "fbcon: %s (fb%i) is primary device\n",
-+		       info->fix.id, info->node);
- 		primary_device = info->node;
- 
--		if (!con_is_bound(&fb_con))
--			goto done;
--
--		printk(KERN_INFO "fbcon: Unbinding old driver\n");
--		unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
--				  fbcon_is_default);
--		info_idx = primary_device;
--
--		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-+		for (i = first_fb_vc; i <= last_fb_vc; i++)
- 			con2fb_map_boot[i] = primary_device;
--			con2fb_map[i] = primary_device;
--		}
--
--		printk(KERN_INFO "fbcon: Selecting new driver\n");
--		err = bind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
--				      fbcon_is_default);
- 
--		if (err) {
--			for (i = first_fb_vc; i <= last_fb_vc; i++)
--				con2fb_map[i] = -1;
--
--			info_idx = -1;
-+		if (con_is_bound(&fb_con)) {
-+			printk(KERN_INFO "fbcon: Remapping primary device, "
-+			       "fb%i, to tty %i-%i\n", info->node,
-+			       first_fb_vc + 1, last_fb_vc + 1);
-+			info_idx = primary_device;
- 		}
--
--		ret = 1;
- 	}
--
--done:
--	return ret;
-+	
- }
- #else
--static inline int fbcon_select_primary(struct fb_info *info)
-+static inline void fbcon_select_primary(struct fb_info *info)
- {
--	return 0;
-+	return;
- }
- #endif /* CONFIG_FRAMEBUFFER_DETECT_PRIMARY */
- 
-@@ -3094,9 +3074,7 @@ static int fbcon_fb_registered(struct fb
- {
- 	int ret = 0, i, idx = info->node;
- 
--	if (fbcon_select_primary(info))
--		goto done;
--
-+	fbcon_select_primary(info);
- 
- 	if (info_idx == -1) {
- 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-@@ -3115,7 +3093,6 @@ static int fbcon_fb_registered(struct fb
- 		}
- 	}
- 
--done:
- 	return ret;
- }
- 
 
 
 

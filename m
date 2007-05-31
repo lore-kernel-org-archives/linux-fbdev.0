@@ -1,20 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: tty-related oops in latest kernel(s)?
-Date: Thu, 31 May 2007 17:04:38 +0800
-Message-ID: <1180602278.4570.42.camel@daplas>
-References: <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
-	<84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
-	<Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi>
-	<84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com>
-	<Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
-	<84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
-	<Pine.LNX.4.64.0705301458400.4634@jalava.cc.jyu.fi>
-	<20070530083953.9909bcef.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705301857370.29485@jalava.cc.jyu.fi>
-	<20070530090945.ab9d51d9.akpm@linux-foundation.org>
-	<20070530180428.GA5731@martell.zuzino.mipt.ru>
-	<1180566886.4570.14.camel@daplas>
-	<Pine.LNX.4.64.0705310916240.17047@anakin>
+Subject: [PATCH 2/8] radeonfb: Add support for Radeon
+	Xpress 200M (RS485)
+Date: Thu, 31 May 2007 20:59:24 +0800
+Message-ID: <465EC6AC.6030105@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,16 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HtgaO-0003Mh-KG for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 02:04:48 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HtgaM-0001Aj-TQ
+	id 1HtkQ0-0001Gj-SI for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 May 2007 06:10:21 -0700
+Received: from wx-out-0506.google.com ([66.249.82.238])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HtkQ0-0001YJ-Gb
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 02:04:48 -0700
-Received: by py-out-1112.google.com with SMTP id u77so186032pyb
+	Thu, 31 May 2007 06:10:20 -0700
+Received: by wx-out-0506.google.com with SMTP id t15so151309wxc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 31 May 2007 02:04:46 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0705310916240.17047@anakin>
+	Thu, 31 May 2007 06:10:20 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -43,56 +30,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>, Tero Roponen <teanropo@jyu.fi>, Andy Whitcroft <apw@shadowen.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, Alexey Dobriyan <adobriyan@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Stephan Wolf <WolfSt.External@qimonda.com>
 
-On Thu, 2007-05-31 at 09:17 +0200, Geert Uytterhoeven wrote:
-> On Thu, 31 May 2007, Antonino A. Daplas wrote:
-> > On Wed, 2007-05-30 at 22:04 +0400, Alexey Dobriyan wrote:
-> > > 2) palette in neofb_par is "u32 palette[16];" which is 4x16 = 64 bytes.
-> > >    struct fb_info::pseudo_palette is assigned to it in neo_alloc_fb_info().
-> > >    Yet, we check at the beginning of neofb_setcolreg() for color map
-> > >    length which neofb advertises as 256 which seems too many.
-> > > 
-> > 
-> > Yes, 256 is too many. the pseudo_palette is used for the 16-color
-> > console only.
-> > 
-> > I'm impressed that this bug has escaped notice for this long. That bug
-> > is present since the 2.5.x era.
-> > 
-> > Probably, the best thing to do is hide the pseudo_palette from the
-> > drivers and move it to the console layer where it belongs to spare
-> > future driver writers from palette usage confusion. That will be a
-> > thankless job.
-> 
-> The console layer doesn't know how to fill in the pseudo palette in all
-> cases, that's why the driver have to do it.
-> 
+From: Stephan Wolf <WolfSt.External@qimonda.com>
 
-I have actually started working on that.  It involves breaking down
-fb_setcolreg() so it deals only with writing to the actual hardware
-registers.  The part of fb_setcolreg() that adds entries to the
-pseudo_palette can be separated as a new method, fb_get_pixel(), which
-given red, blue, green, transp, the driver returns a u32 pixel value
-that can be written to the pseudo_palette.
+Add PCI ids for the Radeon Xpress 200M (RS485).
 
-So fbcon can hold a copy of the pseudo_palette and fills it up by
-calling info->fbops->fb_get_pixel() successively.
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
 
-This will touch the logo code, the drawing libraries, each driver, etc
-so it's a lot of work.  During the conversion period,  we support having
-info->pseudo_palette and fbcon->pseudo_palette at the same time. Once
-all drivers are converted, we can remove info->pseudo_palette.
+ drivers/video/aty/ati_ids.h     |    1 +
+ drivers/video/aty/radeon_base.c |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-One use for having an fb_get_pixel() method is we can use this as an
-rgb888-image-to-raw-framebuffer-format converter.
-
-Currently, I have only converted vesafb. Once the core code is done,
-I'll start converting the rest of the drivers one by one.
-
-Tony
-
+diff --git a/drivers/video/aty/ati_ids.h b/drivers/video/aty/ati_ids.h
+index 90e7df2..685a754 100644
+--- a/drivers/video/aty/ati_ids.h
++++ b/drivers/video/aty/ati_ids.h
+@@ -204,6 +204,7 @@ #define PCI_CHIP_RV280_5960		0x5960
+ #define PCI_CHIP_RV280_5961		0x5961
+ #define PCI_CHIP_RV280_5962		0x5962
+ #define PCI_CHIP_RV280_5964		0x5964
++#define PCI_CHIP_RS485_5975		0x5975
+ #define PCI_CHIP_RV280_5C61		0x5C61
+ #define PCI_CHIP_RV280_5C63		0x5C63
+ #define PCI_CHIP_R423_5D57              0x5D57
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+index 3b3c657..9448db8 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -153,6 +153,8 @@ static struct pci_device_id radeonfb_pci
+ 	/* Mobility 9200 (M9+) */
+ 	CHIP_DEF(PCI_CHIP_RV280_5C61,	RV280,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+ 	CHIP_DEF(PCI_CHIP_RV280_5C63,	RV280,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
++	/*Mobility Xpress 200 */
++	CHIP_DEF(PCI_CHIP_RS485_5975,	R300,	CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+ 	/* 9200 */
+ 	CHIP_DEF(PCI_CHIP_RV280_5960,	RV280,	CHIP_HAS_CRTC2),
+ 	CHIP_DEF(PCI_CHIP_RV280_5961,	RV280,	CHIP_HAS_CRTC2),
 
 
 

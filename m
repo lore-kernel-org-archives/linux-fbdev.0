@@ -1,27 +1,25 @@
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [PATCH 3/8] nvidiafb: Add proper support
-	for Geforce 7600 chipset
-Date: Thu, 31 May 2007 18:16:10 +0200
-Message-ID: <6bffcb0e0705310916o35cfe6ddm9c9a91199ebd79b0@mail.gmail.com>
-References: <465EC6BF.6070008@gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 10/24] platinumfb: The pseudo_palette is
+ only 16 elements long
+Date: Sat, 02 Jun 2007 17:54:38 +0800
+Message-ID: <46613E5E.5070103@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HtnJv-0005WC-IS for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 09:16:16 -0700
-Received: from wa-out-1112.google.com ([209.85.146.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HtnJt-00042Y-6Z
+	id 1HuQi1-00008e-Du for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 03:19:45 -0700
+Received: from py-out-1112.google.com ([64.233.166.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQi0-00011W-Qw
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 May 2007 09:16:15 -0700
-Received: by wa-out-1112.google.com with SMTP id v33so519164wah
+	Sat, 02 Jun 2007 03:19:45 -0700
+Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 31 May 2007 09:16:12 -0700 (PDT)
-In-Reply-To: <465EC6BF.6070008@gmail.com>
-Content-Disposition: inline
+	Sat, 02 Jun 2007 03:19:44 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,33 +30,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jurriaan <thunder7@xs4all.nl>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Paul Mackerras <paulus@samba.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi Antonino,
+The pseudo_palette is only 16 elements long.
 
-On 31/05/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> Add proper support for the Geforce 7600 (device id 0x039x).  This also sy=
-nc's
-> nvidiafb with the latest Xorg nv driver.
->
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-> ---
-> Michal,
->
-> Can you test this patch? It might directly impact your 7300.
->
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
 
-It works for me without any problems.
+ drivers/video/platinumfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Regards,
-Michal
+diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
+index e64f8b5..8503e73 100644
+--- a/drivers/video/platinumfb.c
++++ b/drivers/video/platinumfb.c
+@@ -52,7 +52,7 @@ struct fb_info_platinum {
+ 	struct {
+ 		__u8 red, green, blue;
+ 	}				palette[256];
+-	u32				pseudo_palette[17];
++	u32				pseudo_palette[16];
+ 	
+ 	volatile struct cmap_regs	__iomem *cmap_regs;
+ 	unsigned long			cmap_regs_phys;
 
--- =
 
-"Najbardziej brakowa=B3o mi twojego milczenia."
--- Andrzej Sapkowski "Co=B6 wi=EAcej"
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take

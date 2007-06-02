@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 15/24] sunxvr500fb: Fix pseudo_palette
-	array size
-Date: Sat, 02 Jun 2007 18:06:07 +0800
-Message-ID: <4661410F.6030900@gmail.com>
+Subject: [PATCH 12/24] q40fb: The pseudo_palette is only
+	16 elements long
+Date: Sat, 02 Jun 2007 18:01:16 +0800
+Message-ID: <46613FEC.1060300@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuS8R-0000vP-Ef for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 04:51:09 -0700
+	id 1HuSY3-0003ZZ-Sj for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 05:17:35 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQj5-00011W-Ls
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQiq-00011W-V3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:51 -0700
+	Sat, 02 Jun 2007 03:20:37 -0700
 Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 02 Jun 2007 03:20:51 -0700 (PDT)
+	Sat, 02 Jun 2007 03:20:36 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,43 +31,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "David S. Miller" <davem@davemloft.net>
+Cc: Richard Zidlicky <rz@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- the pseudo_palette is only 16 elements long.
-- the pseudo_palette has only 16 elements. Do not write if regno (the array
-  index) is more than 15.
+The pseudo_palette is only 16 elements long.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/sunxvr500.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/q40fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/sunxvr500.c b/drivers/video/sunxvr500.c
-index 08880a6..71bf3f1 100644
---- a/drivers/video/sunxvr500.c
-+++ b/drivers/video/sunxvr500.c
-@@ -50,7 +50,7 @@ struct e3d_info {
- 	u32			fb8_0_off;
- 	u32			fb8_1_off;
+diff --git a/drivers/video/q40fb.c b/drivers/video/q40fb.c
+index 48536c3..4beac1d 100644
+--- a/drivers/video/q40fb.c
++++ b/drivers/video/q40fb.c
+@@ -95,7 +95,7 @@ static int __init q40fb_probe(struct pla
+ 	/* mapped in q40/config.c */
+ 	q40fb_fix.smem_start = Q40_PHYS_SCREEN_ADDR;
  
--	u32			pseudo_palette[256];
-+	u32			pseudo_palette[16];
- };
+-	info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
++	info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
+ 	if (!info)
+ 		return -ENOMEM;
  
- static int __devinit e3d_get_props(struct e3d_info *ep)
-@@ -126,7 +126,9 @@ static int e3d_setcolreg(unsigned regno,
- 	blue_8 = blue >> 8;
- 
- 	value = (blue_8 << 24) | (green_8 << 16) | (red_8 << 8);
--	((u32 *)info->pseudo_palette)[regno] = value;
-+
-+	if (info->fix.visual == FB_VISUAL_TRUECOLOR && regno < 16)
-+		((u32 *)info->pseudo_palette)[regno] = value;
- 
- 
- 	red_10 = red >> 6;
-
 
 
 -------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 06/24] fm2fb: The pseudo_palette is only
+Subject: [PATCH 07/24] gbefb: The pseudo_palette is only
 	16 elements long
-Date: Sat, 02 Jun 2007 17:57:48 +0800
-Message-ID: <46613F1C.50606@gmail.com>
+Date: Sat, 02 Jun 2007 17:57:58 +0800
+Message-ID: <46613F26.2010006@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuQiR-0000F2-Cv for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:11 -0700
+	id 1HuQiX-0000FJ-TO for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 03:20:17 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQiR-00011W-2y
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQiX-00011W-J8
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:11 -0700
+	Sat, 02 Jun 2007 03:20:17 -0700
 Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 02 Jun 2007 03:20:10 -0700 (PDT)
+	Sat, 02 Jun 2007 03:20:17 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,51 +31,82 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Vivien Chappelier <vivien.chappelier@linux-mips.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 The pseudo_palette is only 16 elements long.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/fm2fb.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/video/gbefb.c |   41 +++++++++++++++++++++--------------------
+ 1 files changed, 21 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/fm2fb.c b/drivers/video/fm2fb.c
-index 70ff55b..6c91c61 100644
---- a/drivers/video/fm2fb.c
-+++ b/drivers/video/fm2fb.c
-@@ -195,13 +195,15 @@ static int fm2fb_blank(int blank, struct
- static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
-                          u_int transp, struct fb_info *info)
- {
--	if (regno > info->cmap.len)
--		return 1;
--	red >>= 8;
--	green >>= 8;
--	blue >>= 8;
-+	if (regno < 16) {
-+		red >>= 8;
-+		green >>= 8;
-+		blue >>= 8;
-+
-+		((u32*)(info->pseudo_palette))[regno] = (red << 16) |
-+			(green << 8) | blue;
-+	}
+diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
+index bf0e60b..b9b572b 100644
+--- a/drivers/video/gbefb.c
++++ b/drivers/video/gbefb.c
+@@ -86,7 +86,7 @@ static int gbe_revision;
  
--	((u32*)(info->pseudo_palette))[regno] = (red << 16) | (green << 8) | blue;
+ static int ypan, ywrap;
+ 
+-static uint32_t pseudo_palette[256];
++static uint32_t pseudo_palette[16];
+ 
+ static char *mode_option __initdata = NULL;
+ 
+@@ -854,8 +854,7 @@ static int gbefb_setcolreg(unsigned regn
+ 	green >>= 8;
+ 	blue >>= 8;
+ 
+-	switch (info->var.bits_per_pixel) {
+-	case 8:
++	if (info->var.bits_per_pixel <= 8) {
+ 		/* wait for the color map FIFO to have a free entry */
+ 		for (i = 0; i < 1000 && gbe->cm_fifo >= 63; i++)
+ 			udelay(10);
+@@ -864,23 +863,25 @@ static int gbefb_setcolreg(unsigned regn
+ 			return 1;
+ 		}
+ 		gbe->cmap[regno] = (red << 24) | (green << 16) | (blue << 8);
+-		break;
+-	case 15:
+-	case 16:
+-		red >>= 3;
+-		green >>= 3;
+-		blue >>= 3;
+-		pseudo_palette[regno] =
+-			(red << info->var.red.offset) |
+-			(green << info->var.green.offset) |
+-			(blue << info->var.blue.offset);
+-		break;
+-	case 32:
+-		pseudo_palette[regno] =
+-			(red << info->var.red.offset) |
+-			(green << info->var.green.offset) |
+-			(blue << info->var.blue.offset);
+-		break;
++	} else if (regno < 16) {
++		switch (info->var.bits_per_pixel) {
++		case 15:
++		case 16:
++			red >>= 3;
++			green >>= 3;
++			blue >>= 3;
++			pseudo_palette[regno] =
++				(red << info->var.red.offset) |
++				(green << info->var.green.offset) |
++				(blue << info->var.blue.offset);
++			break;
++		case 32:
++			pseudo_palette[regno] =
++				(red << info->var.red.offset) |
++				(green << info->var.green.offset) |
++				(blue << info->var.blue.offset);
++			break;
++		}
+ 	}
+ 
  	return 0;
- }
- 
-@@ -237,7 +239,7 @@ static int __devinit fm2fb_probe(struct 
- 	if (!zorro_request_device(z,"fm2fb"))
- 		return -ENXIO;
- 
--	info = framebuffer_alloc(256 * sizeof(u32), &z->dev);
-+	info = framebuffer_alloc(16 * sizeof(u32), &z->dev);
- 	if (!info) {
- 		zorro_release_device(z);
- 		return -ENOMEM;
 
 
 

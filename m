@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 05/24] ffb: The pseudo_palette is only
+Subject: [PATCH 06/24] fm2fb: The pseudo_palette is only
 	16 elements long
-Date: Sat, 02 Jun 2007 17:57:36 +0800
-Message-ID: <46613F10.4050005@gmail.com>
+Date: Sat, 02 Jun 2007 17:57:48 +0800
+Message-ID: <46613F1C.50606@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuQiN-0000Ef-1a for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:07 -0700
+	id 1HuQiR-0000F2-Cv for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 03:20:11 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQiM-00011W-OX
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQiR-00011W-2y
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:07 -0700
+	Sat, 02 Jun 2007 03:20:11 -0700
 Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 02 Jun 2007 03:20:06 -0700 (PDT)
+	Sat, 02 Jun 2007 03:20:10 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,38 +31,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "David S. Miller" <davem@davemloft.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 The pseudo_palette is only 16 elements long.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/ffb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fm2fb.c |   16 +++++++++-------
+ 1 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
-index 1d4e835..3f6c98f 100644
---- a/drivers/video/ffb.c
-+++ b/drivers/video/ffb.c
-@@ -656,7 +656,7 @@ static int ffb_setcolreg(unsigned regno,
+diff --git a/drivers/video/fm2fb.c b/drivers/video/fm2fb.c
+index 70ff55b..6c91c61 100644
+--- a/drivers/video/fm2fb.c
++++ b/drivers/video/fm2fb.c
+@@ -195,13 +195,15 @@ static int fm2fb_blank(int blank, struct
+ static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+                          u_int transp, struct fb_info *info)
  {
- 	u32 value;
+-	if (regno > info->cmap.len)
+-		return 1;
+-	red >>= 8;
+-	green >>= 8;
+-	blue >>= 8;
++	if (regno < 16) {
++		red >>= 8;
++		green >>= 8;
++		blue >>= 8;
++
++		((u32*)(info->pseudo_palette))[regno] = (red << 16) |
++			(green << 8) | blue;
++	}
  
--	if (regno >= 256)
-+	if (regno >= 16)
- 		return 1;
+-	((u32*)(info->pseudo_palette))[regno] = (red << 16) | (green << 8) | blue;
+ 	return 0;
+ }
  
- 	red >>= 8;
-@@ -903,7 +903,7 @@ ffb_init_fix(struct fb_info *info)
- struct all_info {
- 	struct fb_info info;
- 	struct ffb_par par;
--	u32 pseudo_palette[256];
-+	u32 pseudo_palette[16];
- };
+@@ -237,7 +239,7 @@ static int __devinit fm2fb_probe(struct 
+ 	if (!zorro_request_device(z,"fm2fb"))
+ 		return -ENXIO;
  
- static int ffb_init_one(struct of_device *op)
+-	info = framebuffer_alloc(256 * sizeof(u32), &z->dev);
++	info = framebuffer_alloc(16 * sizeof(u32), &z->dev);
+ 	if (!info) {
+ 		zorro_release_device(z);
+ 		return -ENOMEM;
 
 
 

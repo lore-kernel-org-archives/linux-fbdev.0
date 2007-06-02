@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 14/24] sunxvr2500fb: Fix pseudo_palette
-	array size
-Date: Sat, 02 Jun 2007 18:05:49 +0800
-Message-ID: <466140FD.60307@gmail.com>
+Subject: [PATCH 11/24] pvr2fb: Fix pseudo_palette array
+	overrun and typecast
+Date: Sat, 02 Jun 2007 18:00:30 +0800
+Message-ID: <46613FBE.2000507@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuREF-0003Tl-SR for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:53:04 -0700
+	id 1HuRX7-0005dM-Rv for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 04:12:34 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQj0-00011W-Nn
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQil-00011W-Iu
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:47 -0700
+	Sat, 02 Jun 2007 03:20:31 -0700
 Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 02 Jun 2007 03:20:46 -0700 (PDT)
+	Sat, 02 Jun 2007 03:20:31 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,55 +31,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "David S. Miller" <davem@davemloft.net>
+Cc: Paul Mundt <lethal@linux-sh.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- the pseudo_palette is only 16 elements long.
 - the pseudo_palette has only 16 elements. Do not write if regno (the array
   index) is more than 15.
+- if using generic drawing libraries, the typecast of pseudo_palette is 
+  always u32 *
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/sunxvr2500.c |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/video/pvr2fb.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/sunxvr2500.c b/drivers/video/sunxvr2500.c
-index 4316c7f..c3869a9 100644
---- a/drivers/video/sunxvr2500.c
-+++ b/drivers/video/sunxvr2500.c
-@@ -28,7 +28,7 @@ struct s3d_info {
- 	unsigned int		depth;
- 	unsigned int		fb_size;
+diff --git a/drivers/video/pvr2fb.c b/drivers/video/pvr2fb.c
+index df2909a..0af90e0 100644
+--- a/drivers/video/pvr2fb.c
++++ b/drivers/video/pvr2fb.c
+@@ -337,24 +337,25 @@ static int pvr2fb_setcolreg(unsigned int
+ 		      ((blue  & 0xf800) >> 11);
  
--	u32			pseudo_palette[256];
-+	u32			pseudo_palette[16];
- };
+ 		pvr2fb_set_pal_entry(par, regno, tmp);
+-		((u16*)(info->pseudo_palette))[regno] = tmp;
+ 		break;
+ 	    case 24: /* RGB 888 */
+ 		red >>= 8; green >>= 8; blue >>= 8;
+-		((u32*)(info->pseudo_palette))[regno] = (red << 16) | (green << 8) | blue;
++		tmp = (red << 16) | (green << 8) | blue;
+ 		break;
+ 	    case 32: /* ARGB 8888 */
+ 		red >>= 8; green >>= 8; blue >>= 8;
+ 		tmp = (transp << 24) | (red << 16) | (green << 8) | blue;
  
- static int __devinit s3d_get_props(struct s3d_info *sp)
-@@ -52,15 +52,14 @@ static int s3d_setcolreg(unsigned regno,
- {
- 	u32 value;
+ 		pvr2fb_set_pal_entry(par, regno, tmp);
+-		((u32*)(info->pseudo_palette))[regno] = tmp;
+ 		break;
+ 	    default:
+ 		pr_debug("Invalid bit depth %d?!?\n", info->var.bits_per_pixel);
+ 		return 1;
+ 	}
  
--	if (regno >= 256)
--		return 1;
-+	if (regno < 16) {
-+		red >>= 8;
-+		green >>= 8;
-+		blue >>= 8;
- 
--	red >>= 8;
--	green >>= 8;
--	blue >>= 8;
--
--	value = (blue << 24) | (green << 16) | (red << 8);
--	((u32 *)info->pseudo_palette)[regno] = value;
-+		value = (blue << 24) | (green << 16) | (red << 8);
-+		((u32 *)info->pseudo_palette)[regno] = value;
-+	}
- 
++	if (regno < 16)
++		((u32*)(info->pseudo_palette))[regno] = tmp;
++
  	return 0;
  }
-
+ 
 
 
 -------------------------------------------------------------------------

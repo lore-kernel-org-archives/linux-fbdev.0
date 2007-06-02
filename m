@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 11/24] pvr2fb: Fix pseudo_palette array
-	overrun and typecast
-Date: Sat, 02 Jun 2007 18:00:30 +0800
-Message-ID: <46613FBE.2000507@gmail.com>
+Subject: [PATCH 16/24] tgafb: Actually allocate memory
+	for the pseudo_palette
+Date: Sat, 02 Jun 2007 18:08:47 +0800
+Message-ID: <466141AF.8060900@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuRX7-0005dM-Rv for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 04:12:34 -0700
+	id 1HuS4T-0000T5-D6 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 04:47:01 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQil-00011W-Iu
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQjA-00011W-RO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:31 -0700
+	Sat, 02 Jun 2007 03:20:57 -0700
 Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 02 Jun 2007 03:20:31 -0700 (PDT)
+	Sat, 02 Jun 2007 03:20:56 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,51 +31,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Maciej W. Rozycki" <macro@linux-mips.org>
 
-- the pseudo_palette has only 16 elements. Do not write if regno (the array
-  index) is more than 15.
-- if using generic drawing libraries, the typecast of pseudo_palette is 
-  always u32 *
+No memory allocation was done for the pseudo_palette.  Allocate one for it.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/pvr2fb.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/video/tgafb.c |    2 +-
+ include/video/tgafb.h |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/pvr2fb.c b/drivers/video/pvr2fb.c
-index df2909a..0af90e0 100644
---- a/drivers/video/pvr2fb.c
-+++ b/drivers/video/pvr2fb.c
-@@ -337,24 +337,25 @@ static int pvr2fb_setcolreg(unsigned int
- 		      ((blue  & 0xf800) >> 11);
+diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
+index f0fde6e..5c9cd6e 100644
+--- a/drivers/video/tgafb.c
++++ b/drivers/video/tgafb.c
+@@ -1635,7 +1635,7 @@ tgafb_register(struct device *dev)
+ 		      FBINFO_HWACCEL_IMAGEBLIT | FBINFO_HWACCEL_FILLRECT;
+ 	info->fbops = &tgafb_ops;
+ 	info->screen_base = par->tga_fb_base;
+-	info->pseudo_palette = (void *)(par + 1);
++	info->pseudo_palette = par->palette;
  
- 		pvr2fb_set_pal_entry(par, regno, tmp);
--		((u16*)(info->pseudo_palette))[regno] = tmp;
- 		break;
- 	    case 24: /* RGB 888 */
- 		red >>= 8; green >>= 8; blue >>= 8;
--		((u32*)(info->pseudo_palette))[regno] = (red << 16) | (green << 8) | blue;
-+		tmp = (red << 16) | (green << 8) | blue;
- 		break;
- 	    case 32: /* ARGB 8888 */
- 		red >>= 8; green >>= 8; blue >>= 8;
- 		tmp = (transp << 24) | (red << 16) | (green << 8) | blue;
+ 	/* This should give a reasonable default video mode.  */
+ 	if (tga_bus_pci) {
+diff --git a/include/video/tgafb.h b/include/video/tgafb.h
+index 03d0dbe..7bc5e2c 100644
+--- a/include/video/tgafb.h
++++ b/include/video/tgafb.h
+@@ -216,6 +216,7 @@ struct tga_par {
+ 	u32 pll_freq;			/* pixclock in mhz */
+ 	u32 bits_per_pixel;		/* bits per pixel */
+ 	u32 sync_on_green;		/* set if sync is on green */
++	u32 palette[16];
+ };
  
- 		pvr2fb_set_pal_entry(par, regno, tmp);
--		((u32*)(info->pseudo_palette))[regno] = tmp;
- 		break;
- 	    default:
- 		pr_debug("Invalid bit depth %d?!?\n", info->var.bits_per_pixel);
- 		return 1;
- 	}
- 
-+	if (regno < 16)
-+		((u32*)(info->pseudo_palette))[regno] = tmp;
-+
- 	return 0;
- }
  
 
 

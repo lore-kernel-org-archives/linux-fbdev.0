@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 16/24] tgafb: Actually allocate memory
-	for the pseudo_palette
-Date: Sat, 02 Jun 2007 18:08:47 +0800
-Message-ID: <466141AF.8060900@gmail.com>
+Subject: [PATCH 15/24] sunxvr500fb: Fix pseudo_palette
+	array size
+Date: Sat, 02 Jun 2007 18:06:07 +0800
+Message-ID: <4661410F.6030900@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuS4T-0000T5-D6 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 04:47:01 -0700
+	id 1HuS8R-0000vP-Ef for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 04:51:09 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQjA-00011W-RO
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQj5-00011W-Ls
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:20:57 -0700
+	Sat, 02 Jun 2007 03:20:51 -0700
 Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 02 Jun 2007 03:20:56 -0700 (PDT)
+	Sat, 02 Jun 2007 03:20:51 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,42 +31,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "David S. Miller" <davem@davemloft.net>
 
-No memory allocation was done for the pseudo_palette.  Allocate one for it.
+- the pseudo_palette is only 16 elements long.
+- the pseudo_palette has only 16 elements. Do not write if regno (the array
+  index) is more than 15.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/tgafb.c |    2 +-
- include/video/tgafb.h |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/sunxvr500.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
-index f0fde6e..5c9cd6e 100644
---- a/drivers/video/tgafb.c
-+++ b/drivers/video/tgafb.c
-@@ -1635,7 +1635,7 @@ tgafb_register(struct device *dev)
- 		      FBINFO_HWACCEL_IMAGEBLIT | FBINFO_HWACCEL_FILLRECT;
- 	info->fbops = &tgafb_ops;
- 	info->screen_base = par->tga_fb_base;
--	info->pseudo_palette = (void *)(par + 1);
-+	info->pseudo_palette = par->palette;
+diff --git a/drivers/video/sunxvr500.c b/drivers/video/sunxvr500.c
+index 08880a6..71bf3f1 100644
+--- a/drivers/video/sunxvr500.c
++++ b/drivers/video/sunxvr500.c
+@@ -50,7 +50,7 @@ struct e3d_info {
+ 	u32			fb8_0_off;
+ 	u32			fb8_1_off;
  
- 	/* This should give a reasonable default video mode.  */
- 	if (tga_bus_pci) {
-diff --git a/include/video/tgafb.h b/include/video/tgafb.h
-index 03d0dbe..7bc5e2c 100644
---- a/include/video/tgafb.h
-+++ b/include/video/tgafb.h
-@@ -216,6 +216,7 @@ struct tga_par {
- 	u32 pll_freq;			/* pixclock in mhz */
- 	u32 bits_per_pixel;		/* bits per pixel */
- 	u32 sync_on_green;		/* set if sync is on green */
-+	u32 palette[16];
+-	u32			pseudo_palette[256];
++	u32			pseudo_palette[16];
  };
  
+ static int __devinit e3d_get_props(struct e3d_info *ep)
+@@ -126,7 +126,9 @@ static int e3d_setcolreg(unsigned regno,
+ 	blue_8 = blue >> 8;
  
+ 	value = (blue_8 << 24) | (green_8 << 16) | (red_8 << 8);
+-	((u32 *)info->pseudo_palette)[regno] = value;
++
++	if (info->fix.visual == FB_VISUAL_TRUECOLOR && regno < 16)
++		((u32 *)info->pseudo_palette)[regno] = value;
+ 
+ 
+ 	red_10 = red >> 6;
+
 
 
 -------------------------------------------------------------------------

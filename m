@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 02/24] controlfb: The pseudo_palette is
-	only 16 elements long
-Date: Sat, 02 Jun 2007 17:56:39 +0800
-Message-ID: <46613ED7.80602@gmail.com>
+Subject: [PATCH 03/24] cyblafb: Fix pseudo_palette array
+	overrun in setcolreg
+Date: Sat, 02 Jun 2007 17:56:58 +0800
+Message-ID: <46613EEA.2030504@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuQi9-000098-SB for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:19:53 -0700
+	id 1HuQiE-00009O-2R for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Jun 2007 03:19:58 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQi9-00011W-IK
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuQiD-00011W-Ol
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 03:19:53 -0700
+	Sat, 02 Jun 2007 03:19:58 -0700
 Received: by py-out-1112.google.com with SMTP id u77so1508651pyb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 02 Jun 2007 03:19:53 -0700 (PDT)
+	Sat, 02 Jun 2007 03:19:57 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,29 +31,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Knut Petersen <Knut_Petersen@t-online.de>
 
-The pseudo_palette is only 16 elements long.
+The pseudo_palette has only 16 elements. Do not write if regno (the array
+index) is more than 15.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/controlfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/cyblafb.c |   21 ++++++++++++---------
+ 1 files changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/controlfb.c b/drivers/video/controlfb.c
-index 8b76273..b0be7ea 100644
---- a/drivers/video/controlfb.c
-+++ b/drivers/video/controlfb.c
-@@ -94,7 +94,7 @@ static inline int VAR_MATCH(struct fb_va
- struct fb_info_control {
- 	struct fb_info		info;
- 	struct fb_par_control	par;
--	u32			pseudo_palette[17];
-+	u32			pseudo_palette[16];
- 		
- 	struct cmap_regs	__iomem *cmap_regs;
- 	unsigned long		cmap_regs_phys;
+diff --git a/drivers/video/cyblafb.c b/drivers/video/cyblafb.c
+index 94a66c2..e23324d 100644
+--- a/drivers/video/cyblafb.c
++++ b/drivers/video/cyblafb.c
+@@ -1068,15 +1068,18 @@ static int cyblafb_setcolreg(unsigned re
+ 		out8(0x3C9, green >> 10);
+ 		out8(0x3C9, blue >> 10);
+ 
+-	} else if (bpp == 16)	// RGB 565
+-		((u32 *) info->pseudo_palette)[regno] =
+-		    (red & 0xF800) |
+-		    ((green & 0xFC00) >> 5) | ((blue & 0xF800) >> 11);
+-	else if (bpp == 32)	// ARGB 8888
+-		((u32 *) info->pseudo_palette)[regno] =
+-		    ((transp & 0xFF00) << 16) |
+-		    ((red & 0xFF00) << 8) |
+-		    ((green & 0xFF00)) | ((blue & 0xFF00) >> 8);
++	} else if (regno < 16) {
++		if (bpp == 16)	// RGB 565
++			((u32 *) info->pseudo_palette)[regno] =
++				(red & 0xF800) |
++				((green & 0xFC00) >> 5) |
++				((blue & 0xF800) >> 11);
++		else if (bpp == 32)	// ARGB 8888
++			((u32 *) info->pseudo_palette)[regno] =
++				((transp & 0xFF00) << 16) |
++				((red & 0xFF00) << 8) |
++				((green & 0xFF00)) | ((blue & 0xFF00) >> 8);
++	}
+ 
+ 	return 0;
+ }
 
 
 

@@ -1,8 +1,9 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: Re: [PATCH 23/24] matroxfb: Color setting fixes
-Date: Sat, 02 Jun 2007 22:35:15 -0700
-Message-ID: <46625313.9050109@vc.cvut.cz>
-References: <46614341.5040402@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 06/24] fm2fb: The pseudo_palette is
+	only 16 elements long
+Date: Sun, 3 Jun 2007 10:27:23 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0706031026540.9351@anakin>
+References: <46613F1C.50606@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuikK-0004Ct-Sx for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 22:35:21 -0700
-Received: from mailgw.cvut.cz ([147.32.3.235])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuikK-0005EC-5d
+	id 1HulQx-0003Ui-AY for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 03 Jun 2007 01:27:31 -0700
+Received: from europa.telenet-ops.be ([195.130.137.75])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HulQu-0001u5-LO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Jun 2007 22:35:20 -0700
-In-Reply-To: <46614341.5040402@gmail.com>
+	Sun, 03 Jun 2007 01:27:31 -0700
+In-Reply-To: <46613F1C.50606@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,79 +32,67 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Antonino A. Daplas wrote:
-> - the pseudo_palette is only 16 elements long.
-> - do not write to the pseudo_palette if regno (array index) is more than 15
+On Sat, 2 Jun 2007, Antonino A. Daplas wrote:
+> The pseudo_palette is only 16 elements long.
 > 
 > Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 
-NACK.  If you want to remove entry #16, you need to also fix all uses of 
-it - matroxfb_crtc2 uses it, matroxfb_accel as well.  Before hardware 
-cursor was removed from fbcon it was used by hardware cursor - now it is 
-only set, but never used.  Removing entry without removing code to set 
-entry #16 memory corruption will occur.
-								Petr
-
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 > ---
 > 
->  drivers/video/matrox/matroxfb_base.c  |    4 ++++
->  drivers/video/matrox/matroxfb_base.h  |    2 +-
->  drivers/video/matrox/matroxfb_crtc2.h |    2 +-
->  3 files changed, 6 insertions(+), 2 deletions(-)
+>  drivers/video/fm2fb.c |   16 +++++++++-------
+>  1 files changed, 9 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
-> index c8559a7..7ebb562 100644
-> --- a/drivers/video/matrox/matroxfb_base.c
-> +++ b/drivers/video/matrox/matroxfb_base.c
-> @@ -679,6 +679,8 @@ #endif
->  		mga_outb(M_DAC_VAL, blue);
->  		break;
->  	case 16:
-> +		if (regno >= 16)
-> +			break;
->  		{
->  			u_int16_t col =
->  				(red << ACCESS_FBINFO(fbcon).var.red.offset)     |
-> @@ -690,6 +692,8 @@ #endif
->  		break;
->  	case 24:
->  	case 32:
-> +		if (regno >= 16)
-> +			break;
->  		ACCESS_FBINFO(cmap[regno]) =
->  			(red   << ACCESS_FBINFO(fbcon).var.red.offset)   |
->  			(green << ACCESS_FBINFO(fbcon).var.green.offset) |
-> diff --git a/drivers/video/matrox/matroxfb_base.h b/drivers/video/matrox/matroxfb_base.h
-> index 9c25c2f..d59577c 100644
-> --- a/drivers/video/matrox/matroxfb_base.h
-> +++ b/drivers/video/matrox/matroxfb_base.h
-> @@ -518,7 +518,7 @@ #endif
->  					dll:1;
->  				      } memory;
->  			      } values;
-> -	u_int32_t cmap[17];
-> +	u_int32_t cmap[16];
->  };
+> diff --git a/drivers/video/fm2fb.c b/drivers/video/fm2fb.c
+> index 70ff55b..6c91c61 100644
+> --- a/drivers/video/fm2fb.c
+> +++ b/drivers/video/fm2fb.c
+> @@ -195,13 +195,15 @@ static int fm2fb_blank(int blank, struct
+>  static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+>                           u_int transp, struct fb_info *info)
+>  {
+> -	if (regno > info->cmap.len)
+> -		return 1;
+> -	red >>= 8;
+> -	green >>= 8;
+> -	blue >>= 8;
+> +	if (regno < 16) {
+> +		red >>= 8;
+> +		green >>= 8;
+> +		blue >>= 8;
+> +
+> +		((u32*)(info->pseudo_palette))[regno] = (red << 16) |
+> +			(green << 8) | blue;
+> +	}
 >  
->  #define info2minfo(info) container_of(info, struct matrox_fb_info, fbcon)
-> diff --git a/drivers/video/matrox/matroxfb_crtc2.h b/drivers/video/matrox/matroxfb_crtc2.h
-> index 608e40b..24450df 100644
-> --- a/drivers/video/matrox/matroxfb_crtc2.h
-> +++ b/drivers/video/matrox/matroxfb_crtc2.h
-> @@ -30,7 +30,7 @@ struct matroxfb_dh_fb_info {
+> -	((u32*)(info->pseudo_palette))[regno] = (red << 16) | (green << 8) | blue;
+>  	return 0;
+>  }
 >  
->  	unsigned int		interlaced:1;
+> @@ -237,7 +239,7 @@ static int __devinit fm2fb_probe(struct 
+>  	if (!zorro_request_device(z,"fm2fb"))
+>  		return -ENXIO;
 >  
-> -	u_int32_t cmap[17];
-> +	u_int32_t cmap[16];
->  };
->  
->  #endif /* __MATROXFB_CRTC2_H__ */
+> -	info = framebuffer_alloc(256 * sizeof(u32), &z->dev);
+> +	info = framebuffer_alloc(16 * sizeof(u32), &z->dev);
+>  	if (!info) {
+>  		zorro_release_device(z);
+>  		return -ENOMEM;
+> 
 > 
 > 
 
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

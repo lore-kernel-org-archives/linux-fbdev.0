@@ -1,24 +1,24 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 06/24] fm2fb: The pseudo_palette is
-	only 16 elements long
-Date: Sun, 3 Jun 2007 10:27:23 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0706031026540.9351@anakin>
-References: <46613F1C.50606@gmail.com>
+Subject: Re: [PATCH 09/24] offb: The pseudo_palette is
+ only 16 elements long
+Date: Sun, 3 Jun 2007 10:28:58 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0706031028400.9351@anakin>
+References: <46613F48.40906@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HulQx-0003Ui-AY for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 01:27:31 -0700
+	id 1HulSO-0003bP-VQ for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 03 Jun 2007 01:29:01 -0700
 Received: from europa.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HulQu-0001u5-LO
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HulSO-0004g4-JC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 01:27:31 -0700
-In-Reply-To: <46613F1C.50606@gmail.com>
+	Sun, 03 Jun 2007 01:29:00 -0700
+In-Reply-To: <46613F48.40906@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,8 +29,8 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@osdl.org>
 
 On Sat, 2 Jun 2007, Antonino A. Daplas wrote:
 > The pseudo_palette is only 16 elements long.
@@ -41,47 +41,21 @@ Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 > ---
 > 
->  drivers/video/fm2fb.c |   16 +++++++++-------
->  1 files changed, 9 insertions(+), 7 deletions(-)
+>  drivers/video/offb.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/drivers/video/fm2fb.c b/drivers/video/fm2fb.c
-> index 70ff55b..6c91c61 100644
-> --- a/drivers/video/fm2fb.c
-> +++ b/drivers/video/fm2fb.c
-> @@ -195,13 +195,15 @@ static int fm2fb_blank(int blank, struct
->  static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
->                           u_int transp, struct fb_info *info)
->  {
-> -	if (regno > info->cmap.len)
-> -		return 1;
-> -	red >>= 8;
-> -	green >>= 8;
-> -	blue >>= 8;
-> +	if (regno < 16) {
-> +		red >>= 8;
-> +		green >>= 8;
-> +		blue >>= 8;
-> +
-> +		((u32*)(info->pseudo_palette))[regno] = (red << 16) |
-> +			(green << 8) | blue;
-> +	}
+> diff --git a/drivers/video/offb.c b/drivers/video/offb.c
+> index 885b428..452433d 100644
+> --- a/drivers/video/offb.c
+> +++ b/drivers/video/offb.c
+> @@ -271,7 +271,7 @@ static void __init offb_init_fb(const ch
+>  		return;
+>  	}
 >  
-> -	((u32*)(info->pseudo_palette))[regno] = (red << 16) | (green << 8) | blue;
->  	return 0;
->  }
+> -	size = sizeof(struct fb_info) + sizeof(u32) * 17;
+> +	size = sizeof(struct fb_info) + sizeof(u32) * 16;
 >  
-> @@ -237,7 +239,7 @@ static int __devinit fm2fb_probe(struct 
->  	if (!zorro_request_device(z,"fm2fb"))
->  		return -ENXIO;
->  
-> -	info = framebuffer_alloc(256 * sizeof(u32), &z->dev);
-> +	info = framebuffer_alloc(16 * sizeof(u32), &z->dev);
->  	if (!info) {
->  		zorro_release_device(z);
->  		return -ENOMEM;
-> 
-> 
-> 
+>  	info = kmalloc(size, GFP_ATOMIC);
 
 Gr{oetje,eeting}s,
 

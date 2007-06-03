@@ -1,27 +1,25 @@
-From: "Antonino Daplas" <adaplas@gmail.com>
-Subject: Re: [Fwd: [PATCH] pm3fb: fillrect acceleration]
-Date: Mon, 4 Jun 2007 04:45:00 +0800
-Message-ID: <b00ca3bd0706031345s5ff0e184v2ddfe461de95be70@mail.gmail.com>
-References: <466399C4.3060006@wp.pl>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 11/24] pvr2fb: Fix pseudo_palette
+	array overrun and typecast
+Date: Mon, 4 Jun 2007 08:25:10 +0900
+Message-ID: <20070603232510.GA29291@linux-sh.org>
+References: <46613FBE.2000507@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Huwwg-0004vz-63 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 13:45:02 -0700
-Received: from wa-out-1112.google.com ([209.85.146.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Huwwf-0003af-Ot
+	id 1HuzSo-0003ge-QI for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 03 Jun 2007 16:26:23 -0700
+Received: from smtp.ocgnet.org ([64.20.243.3])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuzSn-0005m3-Gp
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 13:45:02 -0700
-Received: by wa-out-1112.google.com with SMTP id k22so1493647waf
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 03 Jun 2007 13:45:00 -0700 (PDT)
-In-Reply-To: <466399C4.3060006@wp.pl>
+	Sun, 03 Jun 2007 16:26:22 -0700
 Content-Disposition: inline
+In-Reply-To: <46613FBE.2000507@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,21 +30,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 6/4/07, Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
-> Hi,
->
-> I am sending this message to you as it was bounced as a spam when I sent it to the fbdev list. See the attached details.
+On Sat, Jun 02, 2007 at 06:00:30PM +0800, Antonino A. Daplas wrote:
+> - the pseudo_palette has only 16 elements. Do not write if regno (the array
+>   index) is more than 15.
+> - if using generic drawing libraries, the typecast of pseudo_palette is 
+>   always u32 *
+> 
+> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 
-Heh, just because most of the text are uppercase, it was classified as
-spam?  But if you are a subscriber, shouldn't that override the spam
-filter?
-
-I'll take care of this.
-
-Tony
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

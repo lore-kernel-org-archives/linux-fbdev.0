@@ -1,9 +1,8 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 09/24] offb: The pseudo_palette is
- only 16 elements long
-Date: Sun, 3 Jun 2007 10:28:58 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0706031028400.9351@anakin>
-References: <46613F48.40906@gmail.com>
+From: "Antonino Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 23/24] matroxfb: Color setting fixes
+Date: Sun, 3 Jun 2007 17:59:18 +0800
+Message-ID: <b00ca3bd0706030259mf808c17g25246aac5876547d@mail.gmail.com>
+References: <46614341.5040402@gmail.com> <46625313.9050109@vc.cvut.cz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,13 +11,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HulSO-0003bP-VQ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 01:29:01 -0700
-Received: from europa.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HulSO-0004g4-JC
+	id 1Humro-0003lQ-T2 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 03 Jun 2007 02:59:21 -0700
+Received: from wa-out-1112.google.com ([209.85.146.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Humrn-0004fW-M2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 01:29:00 -0700
-In-Reply-To: <46613F48.40906@gmail.com>
+	Sun, 03 Jun 2007 02:59:20 -0700
+Received: by wa-out-1112.google.com with SMTP id v33so2730008wah
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 03 Jun 2007 02:59:19 -0700 (PDT)
+In-Reply-To: <46625313.9050109@vc.cvut.cz>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,44 +32,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2 Jun 2007, Antonino A. Daplas wrote:
-> The pseudo_palette is only 16 elements long.
-> 
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+On 6/3/07, Petr Vandrovec <vandrove@vc.cvut.cz> wrote:
+> Antonino A. Daplas wrote:
+> > - the pseudo_palette is only 16 elements long.
+> > - do not write to the pseudo_palette if regno (array index) is more than 15
+> >
+> > Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+>
+> NACK.  If you want to remove entry #16, you need to also fix all uses of
+> it - matroxfb_crtc2 uses it, matroxfb_accel as well.  Before hardware
+> cursor was removed from fbcon it was used by hardware cursor - now it is
+> only set, but never used.  Removing entry without removing code to set
+> entry #16 memory corruption will occur.
+>                                                                 Petr
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Okay, I see it now.  Andrew, drop the patch for matroxfb.
 
-> ---
-> 
->  drivers/video/offb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/offb.c b/drivers/video/offb.c
-> index 885b428..452433d 100644
-> --- a/drivers/video/offb.c
-> +++ b/drivers/video/offb.c
-> @@ -271,7 +271,7 @@ static void __init offb_init_fb(const ch
->  		return;
->  	}
->  
-> -	size = sizeof(struct fb_info) + sizeof(u32) * 17;
-> +	size = sizeof(struct fb_info) + sizeof(u32) * 16;
->  
->  	info = kmalloc(size, GFP_ATOMIC);
+Petr,
 
-Gr{oetje,eeting}s,
+Do you have plans for the 17th entry?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Tony
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

@@ -1,25 +1,24 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 11/24] pvr2fb: Fix pseudo_palette
-	array overrun and typecast
-Date: Mon, 4 Jun 2007 08:25:10 +0900
-Message-ID: <20070603232510.GA29291@linux-sh.org>
-References: <46613FBE.2000507@gmail.com>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH 16/24] tgafb: Actually allocate
+ memory for the pseudo_palette
+Date: Mon, 4 Jun 2007 14:24:21 +0100 (BST)
+Message-ID: <Pine.LNX.4.64N.0706041422440.863@blysk.ds.pg.gda.pl>
+References: <466141AF.8060900@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HuzSo-0003ge-QI for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 16:26:23 -0700
-Received: from smtp.ocgnet.org ([64.20.243.3])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HuzSn-0005m3-Gp
+	id 1HvCYk-0001Ch-1W for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 Jun 2007 06:25:24 -0700
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7] ident=postfix)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HvCYi-0008UY-JK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Jun 2007 16:26:22 -0700
-Content-Disposition: inline
-In-Reply-To: <46613FBE.2000507@gmail.com>
+	Mon, 04 Jun 2007 06:25:21 -0700
+In-Reply-To: <466141AF.8060900@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,18 +29,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@osdl.org>
 
-On Sat, Jun 02, 2007 at 06:00:30PM +0800, Antonino A. Daplas wrote:
-> - the pseudo_palette has only 16 elements. Do not write if regno (the array
->   index) is more than 15.
-> - if using generic drawing libraries, the typecast of pseudo_palette is 
->   always u32 *
-> 
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+On Sat, 2 Jun 2007, Antonino A. Daplas wrote:
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+> No memory allocation was done for the pseudo_palette.  Allocate one for it.
+
+ Indeed.  Thanks for debugging -- looks like a leftover from an earlier 
+version of the changes I made which got forgotten later on.
+
+  Maciej
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

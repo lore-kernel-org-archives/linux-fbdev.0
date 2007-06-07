@@ -1,76 +1,27 @@
-From: "Yen Rui" <ruiyen@gmail.com>
-Subject: [PATCH] radeonfb: Add ID for Radeon Xpress 1100
-Date: Fri, 8 Jun 2007 00:00:38 +1000
-Message-ID: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] radeonfb: Add ID for Radeon Xpress 1100
+Date: Thu, 07 Jun 2007 22:15:06 +0800
+Message-ID: <1181225706.4502.23.camel@daplas>
+References: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_48141_7784175.1181224838950"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1761692AbXFGOBS@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762032AbXFGOP3@vger.kernel.org>
+In-Reply-To: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-To: benh@kernel.crashing.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Yen Rui <ruiyen@gmail.com>
+Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-------=_Part_48141_7784175.1181224838950
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, 2007-06-08 at 00:00 +1000, Yen Rui wrote:
+> Hi,
+> 
+> I have to attach the patch instead of inlining it in this e-mail
+> because gmail converts word wraps into hard returns.  Sorry.
+> 
 
-Hi,
+A similar patch is already in the -mm tree.
 
-I have to attach the patch instead of inlining it in this e-mail
-because gmail converts word wraps into hard returns.  Sorry.
+http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm1/broken-out/radeonfb-add-support-for-radeon-xpress-200m-rs485.patch
 
--- Yen Rui
-
-------=_Part_48141_7784175.1181224838950
-Content-Type: text/x-diff; name=add-radeon-xpress-1100-id.patch; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f2naqqtu
-Content-Disposition: attachment; filename="add-radeon-xpress-1100-id.patch"
-
-cmFkZW9uZmI6IEFkZCBJRCBmb3IgUmFkZW9uIFhwcmVzcyAxMTAwCgpUZXN0ZWQgb24gYW4gQWNl
-ciBBc3BpcmUgNTA1MCBTZXJpZXMgbm90ZWJvb2suCgpTaWduZWQtb2ZmLWJ5OiBZZW4gUnVpIDxy
-dWl5ZW5AZ21haWwuY29tPgoKZGlmZiAtdXByTiBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJp
-dmVycy92aWRlby9hdHkvYXRpX2lkcy5oIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9h
-dHkvYXRpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9h
-dHkvYXRpX2lkcy5oCTIwMDctMDYtMDcgMjI6MjA6MzAuMDAwMDAwMDAwICsxMDAwCisrKyBsaW51
-eC0yLjYuMjItcmM0L2RyaXZlcnMvdmlkZW8vYXR5L2F0aV9pZHMuaAkyMDA3LTA2LTA3IDIyOjI2
-OjA4LjAwMDAwMDAwMCArMTAwMApAQCAtMjEwLDMgKzIxMCw0IEBACiAjZGVmaW5lIFBDSV9DSElQ
-X1JTMzUwXzc4MzQgICAgICAgICAgICAgMHg3ODM0CiAjZGVmaW5lIFBDSV9DSElQX1JTMzUwXzc4
-MzUgICAgICAgICAgICAgMHg3ODM1CiAjZGVmaW5lIFBDSV9DSElQX1JTNDgwXzU5NTUgICAgICAg
-ICAgICAgMHg1OTU1CisjZGVmaW5lIFBDSV9DSElQX1JTNDgyXzU5NzUJCTB4NTk3NQpkaWZmIC11
-cHJOIGxpbnV4LTIuNi4yMi1yYzQtdmFuaWxsYS9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFz
-ZS5jIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwotLS0g
-bGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbl9iYXNlLmMJ
-MjAwNy0wNi0wNyAyMjoyMDozMC4wMDAwMDAwMDAgKzEwMDAKKysrIGxpbnV4LTIuNi4yMi1yYzQv
-ZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwkyMDA3LTA2LTA3IDIyOjI5OjI0LjAwMDAw
-MDAwMCArMTAwMApAQCAtMTAwLDggKzEwMCw5IEBACiAJeyBQQ0lfVkVORE9SX0lEX0FUSSwgaWQs
-IFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAsIDAsIChmbGFncykgfCAoQ0hJUF9GQU1JTFlfIyNm
-YW1pbHkpIH0KIAogc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIHJhZGVvbmZiX3BjaV90YWJs
-ZVtdID0gewotICAgICAgICAvKiBSYWRlb24gWHByZXNzIDIwMG0gKi8KLQlDSElQX0RFRihQQ0lf
-Q0hJUF9SUzQ4MF81OTU1LCAgIFJTNDgwLCAgQ0hJUF9IQVNfQ1JUQzIgfCBDSElQX0lTX0lHUCB8
-IENISVBfSVNfTU9CSUxJVFkpLAorCS8qIFJhZGVvbiBYcHJlc3MgMjAwbSAqLworCUNISVBfREVG
-KFBDSV9DSElQX1JTNDgwXzU5NTUsCVJTNDgwLAlDSElQX0hBU19DUlRDMiB8IENISVBfSVNfSUdQ
-IHwgQ0hJUF9JU19NT0JJTElUWSksCisJQ0hJUF9ERUYoUENJX0NISVBfUlM0ODJfNTk3NSwJUlM0
-ODAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19JR1AgfCBDSElQX0lTX01PQklMSVRZKSwKIAkv
-KiBNb2JpbGl0eSBNNiAqLwogCUNISVBfREVGKFBDSV9DSElQX1JBREVPTl9MWSwgCVJWMTAwLAlD
-SElQX0hBU19DUlRDMiB8IENISVBfSVNfTU9CSUxJVFkpLAogCUNISVBfREVGKFBDSV9DSElQX1JB
-REVPTl9MWiwJUlYxMDAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19NT0JJTElUWSksCmRpZmYg
-LXVwck4gbGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbmZi
-LmggbGludXgtMi42LjIyLXJjNC9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25mYi5oCi0tLSBsaW51
-eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uZmIuaAkyMDA3LTA2
-LTA3IDIyOjIwOjMwLjAwMDAwMDAwMCArMTAwMAorKysgbGludXgtMi42LjIyLXJjNC9kcml2ZXJz
-L3ZpZGVvL2F0eS9yYWRlb25mYi5oCTIwMDctMDYtMDcgMjI6MzU6NDMuMDAwMDAwMDAwICsxMDAw
-CkBAIC00OCw3ICs0OCw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJQ0hJUF9GQU1JTFlfUlYz
-NTAsCiAJQ0hJUF9GQU1JTFlfUlYzODAsICAgIC8qIFJWMzcwL1JWMzgwL00yMi9NMjQgKi8KIAlD
-SElQX0ZBTUlMWV9SNDIwLCAgICAgLyogUjQyMC9SNDIzL00xOCAqLwotCUNISVBfRkFNSUxZX1JT
-NDgwLAorCUNISVBfRkFNSUxZX1JTNDgwLCAgICAvKiBSUzQ4MC9SUzQ4MiAqLwogCUNISVBfRkFN
-SUxZX0xBU1QsCiB9OwogCkBAIC02Niw3ICs2Niw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJ
-CQkJKChyaW5mbyktPmZhbWlseSA9PSBDSElQX0ZBTUlMWV9SMzUwKSAgfHwgXAogCQkJCSgocmlu
-Zm8pLT5mYW1pbHkgPT0gQ0hJUF9GQU1JTFlfUlYzODApIHx8IFwKIAkJCQkoKHJpbmZvKS0+ZmFt
-aWx5ID09IENISVBfRkFNSUxZX1I0MjApICB8fCBcCi0JCSAgICAgICAgICAgICAgICAoKHJpbmZv
-KS0+ZmFtaWx5ID09IENISVBfRkFNSUxZX1JTNDgwKSApCisJCQkJKChyaW5mbyktPmZhbWlseSA9
-PSBDSElQX0ZBTUlMWV9SUzQ4MCkpCiAKIC8qCiAgKiBDaGlwIGZsYWdzCg==
-------=_Part_48141_7784175.1181224838950--
+Tony

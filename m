@@ -1,97 +1,76 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: PXA270 framebuffer
-Date: Thu, 07 Jun 2007 21:52:13 +0800
-Message-ID: <1181224333.4502.20.camel@daplas>
-References: <BAY112-F36C82E4DE08DC1A472621A83260@phx.gbl>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Yen Rui" <ruiyen@gmail.com>
+Subject: [PATCH] radeonfb: Add ID for Radeon Xpress 1100
+Date: Fri, 8 Jun 2007 00:00:38 +1000
+Message-ID: <a0b3dd8d0706070700i3b029c28h7c6c6d3f6569fe16@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_48141_7784175.1181224838950"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1761692AbXFGOBS@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: benh@kernel.crashing.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
+------=_Part_48141_7784175.1181224838950
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HwIPw-0004Wc-EM for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Jun 2007 06:52:48 -0700
-Received: from wa-out-1112.google.com ([209.85.146.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HwIPv-0003ty-VN
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Jun 2007 06:52:48 -0700
-Received: by wa-out-1112.google.com with SMTP id k22so617314waf
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 07 Jun 2007 06:52:47 -0700 (PDT)
-In-Reply-To: <BAY112-F36C82E4DE08DC1A472621A83260@phx.gbl>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Julien Lebot <lesnip3r@hotmail.com>
+Content-Disposition: inline
 
-On Thu, 2007-06-07 at 15:22 +0400, Julien Lebot wrote:
-> Hi,
-> 
-> I'm currently developping on the Gumstix verdex platform and I noticed that 
-> the PXA270 processor includes a support for smartpanel screen in its 
-> framebuffer.
-> 
-> I've already written a small "driver" which is just a prototype to test if 
-> the LCD panel was working but it's far from being something really useful. 
-> (display only a picture, call some hardware functions of the LCD (rotate 
-> ...) and exit)
-> Also it's not using the PXA270 framebuffer at all, the communication 
-> protocol is handled in software which is pretty slow (about 1sec to display 
-> the picture).
-> 
-> Since the PXA270 uses the pxafb driver I wonder is there is any plan to add 
-> the support for smart panels.
-> I thought about modifying the driver so that parameters can be passed at 
-> boot time specifying if it is a smart-panel or a "regular" LCD along with 
-> other video parameters.
-> In the driver I understand that it is needed to set up the framebuffer 
-> registers, then enabling the framebuffer and passing the data/command 
-> through the DMA channel 6 using some kind of scheduling function.
-> Well so far all my attempts did not lead to something viable :D
-> 
-> I've also tried to write a framebuffer driver from vfb and fbskeleton for 
-> this kind of screen but I'm a real newbie at kernel programming, thus 
-> leading to nothing at the moment.
-> I've posted on the linux-kernel mailing list and got some useful answers 
-> about kernel programming and the framebuffer itself, though I think this 
-> mailing list is more appropriate.
-> 
-> Any idea / help would be really appreciated,
+Hi,
 
-You may want to look at arcfb.c.  If you look at it's copyarea, fillrect
-and imageblit functions, they use the generic drawing functions, then
-immediately followed by an arcfb_lcd_update(). That's where the contents
-of the framebuffer is transferred to the internal memory of the LCD. 
+I have to attach the patch instead of inlining it in this e-mail
+because gmail converts word wraps into hard returns.  Sorry.
 
-The same is done for arcfb_write().
+-- Yen Rui
 
-(You may want to do this step first.)
+------=_Part_48141_7784175.1181224838950
+Content-Type: text/x-diff; name=add-radeon-xpress-1100-id.patch; 
+	charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f2naqqtu
+Content-Disposition: attachment; filename="add-radeon-xpress-1100-id.patch"
 
-The above method make the framebuffer console work. Writing to /dev/fb0
-will also work (cat "file" > /dev/fb0). However, for applications that
-uses mmap(), such as X, it will not work.  You have to do some VM magic
-to make mmap() function for your driver. For this functionality, look at
-hecubafb.c driver and fb_defio.c. hecubafb.c and fb_defio.c is new for
-2.6.21.
-
-(This is the second step to make your smart lcd fully functional.)
-
-Tony
- 
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+cmFkZW9uZmI6IEFkZCBJRCBmb3IgUmFkZW9uIFhwcmVzcyAxMTAwCgpUZXN0ZWQgb24gYW4gQWNl
+ciBBc3BpcmUgNTA1MCBTZXJpZXMgbm90ZWJvb2suCgpTaWduZWQtb2ZmLWJ5OiBZZW4gUnVpIDxy
+dWl5ZW5AZ21haWwuY29tPgoKZGlmZiAtdXByTiBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJp
+dmVycy92aWRlby9hdHkvYXRpX2lkcy5oIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9h
+dHkvYXRpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9h
+dHkvYXRpX2lkcy5oCTIwMDctMDYtMDcgMjI6MjA6MzAuMDAwMDAwMDAwICsxMDAwCisrKyBsaW51
+eC0yLjYuMjItcmM0L2RyaXZlcnMvdmlkZW8vYXR5L2F0aV9pZHMuaAkyMDA3LTA2LTA3IDIyOjI2
+OjA4LjAwMDAwMDAwMCArMTAwMApAQCAtMjEwLDMgKzIxMCw0IEBACiAjZGVmaW5lIFBDSV9DSElQ
+X1JTMzUwXzc4MzQgICAgICAgICAgICAgMHg3ODM0CiAjZGVmaW5lIFBDSV9DSElQX1JTMzUwXzc4
+MzUgICAgICAgICAgICAgMHg3ODM1CiAjZGVmaW5lIFBDSV9DSElQX1JTNDgwXzU5NTUgICAgICAg
+ICAgICAgMHg1OTU1CisjZGVmaW5lIFBDSV9DSElQX1JTNDgyXzU5NzUJCTB4NTk3NQpkaWZmIC11
+cHJOIGxpbnV4LTIuNi4yMi1yYzQtdmFuaWxsYS9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFz
+ZS5jIGxpbnV4LTIuNi4yMi1yYzQvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwotLS0g
+bGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbl9iYXNlLmMJ
+MjAwNy0wNi0wNyAyMjoyMDozMC4wMDAwMDAwMDAgKzEwMDAKKysrIGxpbnV4LTIuNi4yMi1yYzQv
+ZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2Jhc2UuYwkyMDA3LTA2LTA3IDIyOjI5OjI0LjAwMDAw
+MDAwMCArMTAwMApAQCAtMTAwLDggKzEwMCw5IEBACiAJeyBQQ0lfVkVORE9SX0lEX0FUSSwgaWQs
+IFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAsIDAsIChmbGFncykgfCAoQ0hJUF9GQU1JTFlfIyNm
+YW1pbHkpIH0KIAogc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIHJhZGVvbmZiX3BjaV90YWJs
+ZVtdID0gewotICAgICAgICAvKiBSYWRlb24gWHByZXNzIDIwMG0gKi8KLQlDSElQX0RFRihQQ0lf
+Q0hJUF9SUzQ4MF81OTU1LCAgIFJTNDgwLCAgQ0hJUF9IQVNfQ1JUQzIgfCBDSElQX0lTX0lHUCB8
+IENISVBfSVNfTU9CSUxJVFkpLAorCS8qIFJhZGVvbiBYcHJlc3MgMjAwbSAqLworCUNISVBfREVG
+KFBDSV9DSElQX1JTNDgwXzU5NTUsCVJTNDgwLAlDSElQX0hBU19DUlRDMiB8IENISVBfSVNfSUdQ
+IHwgQ0hJUF9JU19NT0JJTElUWSksCisJQ0hJUF9ERUYoUENJX0NISVBfUlM0ODJfNTk3NSwJUlM0
+ODAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19JR1AgfCBDSElQX0lTX01PQklMSVRZKSwKIAkv
+KiBNb2JpbGl0eSBNNiAqLwogCUNISVBfREVGKFBDSV9DSElQX1JBREVPTl9MWSwgCVJWMTAwLAlD
+SElQX0hBU19DUlRDMiB8IENISVBfSVNfTU9CSUxJVFkpLAogCUNISVBfREVGKFBDSV9DSElQX1JB
+REVPTl9MWiwJUlYxMDAsCUNISVBfSEFTX0NSVEMyIHwgQ0hJUF9JU19NT0JJTElUWSksCmRpZmYg
+LXVwck4gbGludXgtMi42LjIyLXJjNC12YW5pbGxhL2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbmZi
+LmggbGludXgtMi42LjIyLXJjNC9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25mYi5oCi0tLSBsaW51
+eC0yLjYuMjItcmM0LXZhbmlsbGEvZHJpdmVycy92aWRlby9hdHkvcmFkZW9uZmIuaAkyMDA3LTA2
+LTA3IDIyOjIwOjMwLjAwMDAwMDAwMCArMTAwMAorKysgbGludXgtMi42LjIyLXJjNC9kcml2ZXJz
+L3ZpZGVvL2F0eS9yYWRlb25mYi5oCTIwMDctMDYtMDcgMjI6MzU6NDMuMDAwMDAwMDAwICsxMDAw
+CkBAIC00OCw3ICs0OCw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJQ0hJUF9GQU1JTFlfUlYz
+NTAsCiAJQ0hJUF9GQU1JTFlfUlYzODAsICAgIC8qIFJWMzcwL1JWMzgwL00yMi9NMjQgKi8KIAlD
+SElQX0ZBTUlMWV9SNDIwLCAgICAgLyogUjQyMC9SNDIzL00xOCAqLwotCUNISVBfRkFNSUxZX1JT
+NDgwLAorCUNISVBfRkFNSUxZX1JTNDgwLCAgICAvKiBSUzQ4MC9SUzQ4MiAqLwogCUNISVBfRkFN
+SUxZX0xBU1QsCiB9OwogCkBAIC02Niw3ICs2Niw3IEBAIGVudW0gcmFkZW9uX2ZhbWlseSB7CiAJ
+CQkJKChyaW5mbyktPmZhbWlseSA9PSBDSElQX0ZBTUlMWV9SMzUwKSAgfHwgXAogCQkJCSgocmlu
+Zm8pLT5mYW1pbHkgPT0gQ0hJUF9GQU1JTFlfUlYzODApIHx8IFwKIAkJCQkoKHJpbmZvKS0+ZmFt
+aWx5ID09IENISVBfRkFNSUxZX1I0MjApICB8fCBcCi0JCSAgICAgICAgICAgICAgICAoKHJpbmZv
+KS0+ZmFtaWx5ID09IENISVBfRkFNSUxZX1JTNDgwKSApCisJCQkJKChyaW5mbyktPmZhbWlseSA9
+PSBDSElQX0ZBTUlMWV9SUzQ4MCkpCiAKIC8qCiAgKiBDaGlwIGZsYWdzCg==
+------=_Part_48141_7784175.1181224838950--

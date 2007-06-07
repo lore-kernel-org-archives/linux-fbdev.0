@@ -1,27 +1,21 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] fb: epson1355fb: Kill off dead sh
-	support.
-Date: Thu, 07 Jun 2007 18:09:26 +0800
-Message-ID: <1181210966.4502.6.camel@daplas>
-References: <20070607095418.GA23002@linux-sh.org>
+From: "Julien Lebot" <lesnip3r@hotmail.com>
+Subject: PXA270 framebuffer
+Date: Thu, 07 Jun 2007 15:22:27 +0400
+Message-ID: <BAY112-F36C82E4DE08DC1A472621A83260@phx.gbl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HwEwM-0007A0-4c for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Jun 2007 03:10:02 -0700
-Received: from wa-out-1112.google.com ([209.85.146.176])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HwEwL-0002O3-DC
+	id 1HwG4c-0005uS-9b for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 07 Jun 2007 04:22:38 -0700
+Received: from bay0-omc2-s6.bay0.hotmail.com ([65.54.246.142])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HwG4a-0006s0-TM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Jun 2007 03:10:02 -0700
-Received: by wa-out-1112.google.com with SMTP id k22so549936waf
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 07 Jun 2007 03:10:00 -0700 (PDT)
-In-Reply-To: <20070607095418.GA23002@linux-sh.org>
+	Thu, 07 Jun 2007 04:22:38 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,31 +26,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2007-06-07 at 18:54 +0900, Paul Mundt wrote:
-> The SH board that was the only user for this code was removed entirely
-> from the kernel quite some time ago, so there's no reason to leave
-> the stubs in place. Additionally this driver was completely broken
-> anyways, so there's not really a lot of point in fixing it up either.
-> 
-> I can't imagine that this driver gets any testing on ARM either, given
-> that FB_BLANK_UNBLANKING doesn't exist, and kills the build regardless
-> of which platform is compiling. This fixes that, too.
-> 
-> It wouldn't be a lot of work to finish the platform device conversion
-> and go with a generic 8-bit read/write_reg and kill off the architecture
-> dependence completely, should someone have any use for this driver.
-> 
+Hi,
 
-I wonder whether we have users for this driver at all. This hardware is
-a pain because it's limited to 16-bit access only.
+I'm currently developping on the Gumstix verdex platform and I noticed that =
 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Acked-by: Antonino Daplas <adaplas@gmail.com>
+the PXA270 processor includes a support for smartpanel screen in its =
 
-Tony
+framebuffer.
+
+I've already written a small "driver" which is just a prototype to test if =
+
+the LCD panel was working but it's far from being something really useful. =
+
+(display only a picture, call some hardware functions of the LCD (rotate =
+
+...) and exit)
+Also it's not using the PXA270 framebuffer at all, the communication =
+
+protocol is handled in software which is pretty slow (about 1sec to display =
+
+the picture).
+
+Since the PXA270 uses the pxafb driver I wonder is there is any plan to add =
+
+the support for smart panels.
+I thought about modifying the driver so that parameters can be passed at =
+
+boot time specifying if it is a smart-panel or a "regular" LCD along with =
+
+other video parameters.
+In the driver I understand that it is needed to set up the framebuffer =
+
+registers, then enabling the framebuffer and passing the data/command =
+
+through the DMA channel 6 using some kind of scheduling function.
+Well so far all my attempts did not lead to something viable :D
+
+I've also tried to write a framebuffer driver from vfb and fbskeleton for =
+
+this kind of screen but I'm a real newbie at kernel programming, thus =
+
+leading to nothing at the moment.
+I've posted on the linux-kernel mailing list and got some useful answers =
+
+about kernel programming and the framebuffer itself, though I think this =
+
+mailing list is more appropriate.
+
+Any idea / help would be really appreciated,
+Julien.
+
+_________________________________________________________________
+MSN Messenger: appels gratuits de PC =E0 PC ! =
+
+http://www.msn.fr/newhotmail/Default.asp?Ath=3Df
 
 
 -------------------------------------------------------------------------

@@ -1,23 +1,24 @@
-From: Richard Purdie <rpurdie@rpsys.net>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: pxafb: Is it actually working in 2.6.21?
-Date: Fri, 08 Jun 2007 01:12:40 +0100
-Message-ID: <1181261560.30600.15.camel@localhost.localdomain>
+Date: Fri, 08 Jun 2007 08:24:03 +0800
+Message-ID: <1181262243.4502.29.camel@daplas>
 References: <200706080118.54787.hjk@linutronix.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HwS6t-0001ci-BZ for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Jun 2007 17:13:47 -0700
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HwS6s-0001DP-Er
+	id 1HwSGx-0002eS-9i for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 07 Jun 2007 17:24:11 -0700
+Received: from wa-out-1112.google.com ([209.85.146.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HwSGw-0003a9-NJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Jun 2007 17:13:47 -0700
+	Thu, 07 Jun 2007 17:24:11 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so832262waf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 07 Jun 2007 17:24:10 -0700 (PDT)
 In-Reply-To: <200706080118.54787.hjk@linutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,30 +30,101 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Fri, 2007-06-08 at 01:18 +0200, Hans-J=FCrgen Koch wrote:
-> In the last few days, I desperately tried to make pxafb work on a 2.6.21
-> vanilla kernel. All I got so far is some white and black blur on my displ=
-ay.
-> I asked for help on the linux-arm-kernel mailing list, but though friendly
-> and competent people answered my request, it still doesn't work.
-> =
-
-> So, I'd like to know if pxafb in 2.6.21 is actually working for somebody =
-
-> with a similar setup.
-
-pxafb works for me on the Spitz (PXA270 based) machine in 2.6.21.
-
-Regards,
-
-Richard
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+T24gRnJpLCAyMDA3LTA2LTA4IGF0IDAxOjE4ICswMjAwLCBIYW5zLUrDvHJnZW4gS29jaCB3cm90
+ZToKSSdtIHRvcCBwb3N0aW5nIGludGVudGlvbmFsbHkuCgpJdCBsb29rcyBsaWtlIHNvbWV0aGlu
+ZyBpcyBjbG9iYmVyaW5nIHlvdXIgcmVnaXN0ZXJzLCBhbmQgaXQgaGFwcGVucwphZnRlciBlbmFi
+bGluZyB0aGUgTENELgoKSSdtIGFkZGluZyB0aGUgWmF1cnVzIHBlb3BsZSB0byB0aGUgQ0MgbGlz
+dC4gIEhlIHdvcmtlZCBvbiB0aGlzIGRyaXZlcgp0b28uCgpUb255Cj4gSW4gdGhlIGxhc3QgZmV3
+IGRheXMsIEkgZGVzcGVyYXRlbHkgdHJpZWQgdG8gbWFrZSBweGFmYiB3b3JrIG9uIGEgMi42LjIx
+Cj4gdmFuaWxsYSBrZXJuZWwuIEFsbCBJIGdvdCBzbyBmYXIgaXMgc29tZSB3aGl0ZSBhbmQgYmxh
+Y2sgYmx1ciBvbiBteSBkaXNwbGF5Lgo+IEkgYXNrZWQgZm9yIGhlbHAgb24gdGhlIGxpbnV4LWFy
+bS1rZXJuZWwgbWFpbGluZyBsaXN0LCBidXQgdGhvdWdoIGZyaWVuZGx5Cj4gYW5kIGNvbXBldGVu
+dCBwZW9wbGUgYW5zd2VyZWQgbXkgcmVxdWVzdCwgaXQgc3RpbGwgZG9lc24ndCB3b3JrLgo+IAo+
+IFNvLCBJJ2QgbGlrZSB0byBrbm93IGlmIHB4YWZiIGluIDIuNi4yMSBpcyBhY3R1YWxseSB3b3Jr
+aW5nIGZvciBzb21lYm9keSAKPiB3aXRoIGEgc2ltaWxhciBzZXR1cC4KPiAKPiBIZXJlJ3Mgd2hh
+dCBJJ3ZlIGdvdDoKPiAKPiAtIEtlcm5lbCAyLjYuMjEsIGdjYyA0LjEuMCBvciAzLjQuMSAoc2Ft
+ZSBiZWhhdmlvdXIpCj4gLSBQWEEyNzAsIFRGVCA4MDB4NjAwCj4gLSBBdCBib290IHRpbWUsIHB4
+YWZiIHJlcG9ydHMgbm8gZXJyb3JzCj4gLSBmYnNldCAtaSBzaG93cyB0aGUgZXhwZWN0ZWQgdmFs
+dWVzCj4gLSBCVVQgdGhlIGRpc3BsYXkgc2hvd3Mgb25seSB3aGl0ZSBhbmQgYmxhY2sgYmx1cgo+
+IAo+IE5vdyBJIGZpbmQgbXlzdGVyaW91cyB0aGluZ3MgZ29pbmcgb24gaW4gcHhhZmJfZW5hYmxl
+X2NvbnRyb2xsZXIoKS4gVGhlIGRyaXZlcgo+IGNhbGN1bGF0ZXMgcmVhc29uYWJsZSB2YWx1ZXMg
+Zm9yIGUuZy4gTENDUjAsIGJ1dCB0aGV5IGRpc2FwcGVhciBzb29uIGFmdGVyCj4gdGhleSd2ZSBi
+ZWVuIHNldC4gSSBhZGRlZCBzb21lIHByX2RlYnVnIGxpbmVzLCB0aGUgY29kZSBsb29rcyBsaWtl
+IHRoaXM6Cj4gCj4gc3RhdGljIHZvaWQgcHhhZmJfZW5hYmxlX2NvbnRyb2xsZXIoc3RydWN0IHB4
+YWZiX2luZm8gKmZiaSkKPiB7Cj4gICAgICAgICBwcl9kZWJ1ZygicHhhZmI6IEVuYWJsaW5nIExD
+RCBjb250cm9sbGVyXG4iKTsKPiAgICAgICAgIHByX2RlYnVnKCJmZGFkcjAgMHglMDh4XG4iLCAo
+dW5zaWduZWQgaW50KSBmYmktPmZkYWRyMCk7Cj4gICAgICAgICBwcl9kZWJ1ZygiZmRhZHIxIDB4
+JTA4eFxuIiwgKHVuc2lnbmVkIGludCkgZmJpLT5mZGFkcjEpOwo+ICAgICAgICAgcHJfZGVidWco
+InJlZ19sY2NyMCAweCUwOHhcbiIsICh1bnNpZ25lZCBpbnQpIGZiaS0+cmVnX2xjY3IwKTsKPiAg
+ICAgICAgIHByX2RlYnVnKCJyZWdfbGNjcjEgMHglMDh4XG4iLCAodW5zaWduZWQgaW50KSBmYmkt
+PnJlZ19sY2NyMSk7Cj4gICAgICAgICBwcl9kZWJ1ZygicmVnX2xjY3IyIDB4JTA4eFxuIiwgKHVu
+c2lnbmVkIGludCkgZmJpLT5yZWdfbGNjcjIpOwo+ICAgICAgICAgcHJfZGVidWcoInJlZ19sY2Ny
+MyAweCUwOHhcbiIsICh1bnNpZ25lZCBpbnQpIGZiaS0+cmVnX2xjY3IzKTsKPiAKPiAgICAgICAg
+IC8qIGVuYWJsZSBMQ0QgY29udHJvbGxlciBjbG9jayAqLwo+ICAgICAgICAgcHhhX3NldF9ja2Vu
+KENLRU4xNl9MQ0QsIDEpOwo+IAo+ICAgICAgICAgcHJfZGVidWcoIjEuTENDUjAgMHglMDh4XG4i
+LCAodW5zaWduZWQgaW50KSBMQ0NSMCk7Cj4gICAgICAgICBMQ0NSMCA9IGZiaS0+cmVnX2xjY3Iw
+ICYgfkxDQ1IwX0VOQjsgLyogTWFrZSBzdXJlIGl0J3MgZGlzYWJsZWQgKi8KPiAgICAgICAgIHBy
+X2RlYnVnKCIyLkxDQ1IwIDB4JTA4eFxuIiwgKHVuc2lnbmVkIGludCkgTENDUjApOwo+IAo+ICAg
+ICAgICAgLyogU2VxdWVuY2UgZnJvbSAxMS43LjEwICovCj4gICAgICAgICBMQ0NSMyA9IGZiaS0+
+cmVnX2xjY3IzOwo+ICAgICAgICAgTENDUjIgPSBmYmktPnJlZ19sY2NyMjsKPiAgICAgICAgIExD
+Q1IxID0gZmJpLT5yZWdfbGNjcjE7Cj4gICAgICAgICBMQ0NSMCA9IGZiaS0+cmVnX2xjY3IwICYg
+fkxDQ1IwX0VOQjsKPiAgICAgICAgIHByX2RlYnVnKCJMQ0NSMCAoMHglMDh4KSA9IDB4JTA4eFxu
+IiwgJkxDQ1IwLCAodW5zaWduZWQgaW50KUxDQ1IwKTsKPiAKPiAgICAgICAgIEZEQURSMCA9IGZi
+aS0+ZmRhZHIwOwo+ICAgICAgICAgRkRBRFIxID0gZmJpLT5mZGFkcjE7Cj4gICAgICAgICBMQ0NS
+MCB8PSBMQ0NSMF9FTkI7Cj4gCj4gICAgICAgICBwcl9kZWJ1ZygiRkRBRFIwIDB4JTA4eFxuIiwg
+KHVuc2lnbmVkIGludCkgRkRBRFIwKTsKPiAgICAgICAgIHByX2RlYnVnKCJGREFEUjEgMHglMDh4
+XG4iLCAodW5zaWduZWQgaW50KSBGREFEUjEpOwo+ICAgICAgICAgcHJfZGVidWcoIkxDQ1IwIDB4
+JTA4eFxuIiwgKHVuc2lnbmVkIGludCkgTENDUjApOwo+ICAgICAgICAgcHJfZGVidWcoIkxDQ1Ix
+IDB4JTA4eFxuIiwgKHVuc2lnbmVkIGludCkgTENDUjEpOwo+ICAgICAgICAgcHJfZGVidWcoIkxD
+Q1IyIDB4JTA4eFxuIiwgKHVuc2lnbmVkIGludCkgTENDUjIpOwo+ICAgICAgICAgcHJfZGVidWco
+IkxDQ1IzIDB4JTA4eFxuIiwgKHVuc2lnbmVkIGludCkgTENDUjMpOwo+IH0KPiAKPiBBdCBib290
+IHRpbWUsIEkgZ2V0IHRoZSBmb2xsb3dpbmcgb3V0cHV0IGZyb20gdGhhdCBjb2RlOgo+IAo+IFsg
+ICAgOS43ODAwMDBdIHB4YWZiOiBFbmFibGluZyBMQ0QgY29udHJvbGxlcgo+IFsgICAgOS44MzAw
+MDBdIGZkYWRyMCAweGEzZDAwZmUwCj4gWyAgICA5Ljg3MDAwMF0gZmRhZHIxIDB4YTNkMDBmZDAK
+PiBbICAgIDkuOTAwMDAwXSByZWdfbGNjcjAgMHgwMDMwMDhmOAo+IFsgICAgOS45NDAwMDBdIHJl
+Z19sY2NyMSAweDU3MjdmZjFmCj4gWyAgICA5Ljk4MDAwMF0gcmVnX2xjY3IyIDB4MWMwMTBlNTcK
+PiBbICAgMTAuMDIwMDAwXSByZWdfbGNjcjMgMHgwNDcwMDAwMgo+IFsgICAxMC4wNjAwMDBdIDEu
+TENDUjAgMHgwMDAwMDAwNQo+IFsgICAxMC4wOTAwMDBdIDIuTENDUjAgMHgwMDMwMDhmOAo+IFsg
+ICAxMC4xMzAwMDBdIExDQ1IwICgweGY0MDAwMDAwKSA9IDB4MDAzMDA4ZjgKPiBbICAgMTAuMTgw
+MDAwXSBGREFEUjAgMHgwMDAwMDBkMQo+IFsgICAxMC4yMTAwMDBdIEZEQURSMSAweDAwMDAwMGQx
+Cj4gWyAgIDEwLjI1MDAwMF0gTENDUjAgMHgwMDAwMDBkMQo+IFsgICAxMC4yODAwMDBdIExDQ1Ix
+IDB4MDAwMDAwMWYKPiBbICAgMTAuMzIwMDAwXSBMQ0NSMiAweDAwMDAwMGQxCj4gWyAgIDEwLjM1
+MDAwMF0gTENDUjMgMHgwMDAwMDAxZgo+IAo+IEFUTSwgSSBvbmx5IGxvb2tlZCBhdCBMQ0NSMCBh
+bmQgZmluZCB0aGlzIHN0cmFuZ2U6Cj4gLSBGaXJzdCAoaW4gIjEuTENDUjAuLi4iKSwgQml0IDAg
+aXMgc2V0LCBtZWFuaW5nIGl0J3MgYWxyZWFkeSBlbmFibGVkCj4gLSBUaGVuIChpbiAiMi5MQ0NS
+MC4uLiIpLCB0aGUgdmFsdWUgaXMgc2V0IHByb3Blcmx5Cj4gLSBJdCBlbmRzIHVwIHdpdGggMHhk
+MSBpbiBMQ0NSMCwgd2hpY2ggaXMgY29tcGxldGUgY3JhcAo+IAo+IFJ1c3NlbGwgS2luZyBzdWdn
+ZXN0ZWQgdG8gZGlzYXNzZW1ibGUgdGhlIGNvZGUsIGJ1dCBhcyBJIGdldCB0aGUgc2FtZSAKPiBi
+ZWhhdmlvdXIgd2l0aCB0d28gdmVyeSBkaWZmZXJlbnQgdmVyc2lvbnMgb2YgZ2NjLCBJIGRvbid0
+IHJlYWxseSAKPiBiZWxpZXZlIHRoYXQgdGhpcyBpcyB0aGUgcHJvYmxlbS4gRXJpYyBNaWFvIHRo
+b3VnaHQgaXQgbWlnaHQgYmUgdGhlCj4gRE1BIGNvbnRyb2xsZXIgdGhhdCdzIG5vdCBzZXQgdXAg
+cHJvcGVybHkgYW5kIG92ZXJ3cml0ZXMgbXkgcmVnaXN0ZXJzLgo+IEFzIHRoaXMgaXMgY29tcGxl
+dGVseSBpbmRlcGVuZGVudCBvZiBteSBib2FyZCBzZXR1cCwgaXQgc2hvdWxkIGFwcGx5Cj4gdG8g
+X2V2ZXJ5Ym9keV8gdXNpbmcgcHhhZmIuCj4gCj4gSWYgSSBkb24ndCBnZXQgdGhpcyB0byB3b3Jr
+IHNvb24sIG15IHdpZmUgd2lsbCBkaXZvcmNlIG1lLCBteSBiYW5rIHdpbGwKPiBjYW5jZWwgbXkg
+YWNjb3VudCwgYW5kIG15IGRvZyB3aWxsIGdldCBsaWNlIGFuZCBmbGVhcy4KPiAKPiBTbywgcGxl
+YXNlIGdpdmUgYSBsb25lbHkgaGFja2VyIGEgaGVscGluZyBoYW5kIGFuZCB0ZWxsIG1lIHdoYXQn
+cyBnb2luZyBvbi4KPiBEb2VzIGl0IHdvcmsgZm9yIHNvbWVib2R5PyBBbnlib2R5IHdpdGggc2lt
+aWxhciBwcm9ibGVtcz8KPiAKPiBJJ2xsIGJlIG9mZmxpbmUgZm9yIGEgZmV3IGhvdXJzIG9mIGRy
+ZWFtbGVzcyBzbGVlcC4KPiAKPiBUaGFua3MsCj4gSGFucwo+IAo+IAo+IC0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0KPiBUaGlzIFNGLm5ldCBlbWFpbCBpcyBzcG9uc29yZWQgYnkgREIyIEV4cHJlc3MKPiBEb3du
+bG9hZCBEQjIgRXhwcmVzcyBDIC0gdGhlIEZSRUUgdmVyc2lvbiBvZiBEQjIgZXhwcmVzcyBhbmQg
+dGFrZQo+IGNvbnRyb2wgb2YgeW91ciBYTUwuIE5vIGxpbWl0cy4gSnVzdCBkYXRhLiBDbGljayB0
+byBnZXQgaXQgbm93Lgo+IGh0dHA6Ly9zb3VyY2Vmb3JnZS5uZXQvcG93ZXJiYXIvZGIyLwo+IF9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gTGludXgtZmJk
+ZXYtZGV2ZWwgbWFpbGluZyBsaXN0Cj4gTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9y
+Z2UubmV0Cj4gaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGlu
+dXgtZmJkZXYtZGV2ZWwKCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRoaXMgU0YubmV0IGVtYWlsIGlzIHNw
+b25zb3JlZCBieSBEQjIgRXhwcmVzcwpEb3dubG9hZCBEQjIgRXhwcmVzcyBDIC0gdGhlIEZSRUUg
+dmVyc2lvbiBvZiBEQjIgZXhwcmVzcyBhbmQgdGFrZQpjb250cm9sIG9mIHlvdXIgWE1MLiBObyBs
+aW1pdHMuIEp1c3QgZGF0YS4gQ2xpY2sgdG8gZ2V0IGl0IG5vdy4KaHR0cDovL3NvdXJjZWZvcmdl
+Lm5ldC9wb3dlcmJhci9kYjIvCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZl
+bEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlz
+dHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

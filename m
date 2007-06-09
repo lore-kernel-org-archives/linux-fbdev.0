@@ -1,24 +1,23 @@
-From: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
-Subject: Re: pxafb: Is it actually working in 2.6.21?
-Date: Fri, 8 Jun 2007 09:45:30 +0200
-Message-ID: <200706080945.30489.hjk@linutronix.de>
-References: <200706080118.54787.hjk@linutronix.de>
-	<1181262678.4502.33.camel@daplas>
+From: "Julien Lebot" <lesnip3r@hotmail.com>
+Subject: Re: PXA270 framebuffer
+Date: Sat, 09 Jun 2007 11:04:37 +0400
+Message-ID: <BAY112-F211E87F7C17589542D03D183240@phx.gbl>
+References: <1181224333.4502.20.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HwZAd-0002Lp-8d for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Jun 2007 00:46:07 -0700
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1HwZAb-0000YQ-Nu
+	id 1Hwv0A-0001uG-H6 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 09 Jun 2007 00:04:46 -0700
+Received: from bay0-omc2-s13.bay0.hotmail.com ([65.54.246.149])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Hwv09-0002aG-5F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Jun 2007 00:46:07 -0700
-In-Reply-To: <1181262678.4502.33.camel@daplas>
-Content-Disposition: inline
+	Sat, 09 Jun 2007 00:04:46 -0700
+In-Reply-To: <1181224333.4502.20.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,34 +28,56 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: adaplas@gmail.com
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-QW0gRnJlaXRhZyAwOCBKdW5pIDIwMDcgMDI6MzEgc2NocmllYiBBbnRvbmlubyBBLiBEYXBsYXM6
-Cj4gT24gRnJpLCAyMDA3LTA2LTA4IGF0IDAxOjE4ICswMjAwLCBIYW5zLUrDvHJnZW4gS29jaCB3
-cm90ZToKPiA+IEluIHRoZSBsYXN0IGZldyBkYXlzLCBJIGRlc3BlcmF0ZWx5IHRyaWVkIHRvIG1h
-a2UgcHhhZmIgd29yayBvbiBhIDIuNi4yMQo+ID4gdmFuaWxsYSBrZXJuZWwuIEFsbCBJIGdvdCBz
-byBmYXIgaXMgc29tZSB3aGl0ZSBhbmQgYmxhY2sgYmx1ciBvbiBteSBkaXNwbGF5Lgo+ID4gSSBh
-c2tlZCBmb3IgaGVscCBvbiB0aGUgbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QsIGJ1dCB0
-aG91Z2ggZnJpZW5kbHkKPiA+IGFuZCBjb21wZXRlbnQgcGVvcGxlIGFuc3dlcmVkIG15IHJlcXVl
-c3QsIGl0IHN0aWxsIGRvZXNuJ3Qgd29yay4KPiA+IAo+ID4gU28sIEknZCBsaWtlIHRvIGtub3cg
-aWYgcHhhZmIgaW4gMi42LjIxIGlzIGFjdHVhbGx5IHdvcmtpbmcgZm9yIHNvbWVib2R5IAo+ID4g
-d2l0aCBhIHNpbWlsYXIgc2V0dXAuCj4gPiAKPiA+IEhlcmUncyB3aGF0IEkndmUgZ290Ogo+ID4g
-Cj4gPiAtIEtlcm5lbCAyLjYuMjEsIGdjYyA0LjEuMCBvciAzLjQuMSAoc2FtZSBiZWhhdmlvdXIp
-Cj4gPiAtIFBYQTI3MCwgVEZUIDgwMHg2MDAKPiA+IC0gQXQgYm9vdCB0aW1lLCBweGFmYiByZXBv
-cnRzIG5vIGVycm9ycwo+ID4gLSBmYnNldCAtaSBzaG93cyB0aGUgZXhwZWN0ZWQgdmFsdWVzCj4g
-PiAtIEJVVCB0aGUgZGlzcGxheSBzaG93cyBvbmx5IHdoaXRlIGFuZCBibGFjayBibHVyCj4gCj4g
-SnVzdCB0byBiZSBzdXJlIHdlJ3JlIG5vdCBtaXNzaW5nIGFueXRoaW5nIG9idmlvdXM6Cj4gCj4g
-SGF2ZSB5b3UgdHJpZWQgY2F0IDxmaWxlPiA+IC9kZXYvZmIwIHdpdGhvdXQgYW55IHJlc3BvbnNl
-IGZyb20gdGhlCj4gZGlzcGxheT8KClllcywgbm8gdmlzaWJsZSBjaGFuZ2VzLgoKPiAKPiBIYXZl
-IHlvdSB0cmllZCB1c2luZyB0aGUgZHJpdmVyIHdpdGggdGhlIGZyYW1lYnVmZmVyIGNvbnNvbGU/
-CgpZZXMsIG5vdGhpbmcgdmlzaWJsZS4KClRoYW5rcywKSGFucwoKLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpU
-aGlzIFNGLm5ldCBlbWFpbCBpcyBzcG9uc29yZWQgYnkgREIyIEV4cHJlc3MKRG93bmxvYWQgREIy
-IEV4cHJlc3MgQyAtIHRoZSBGUkVFIHZlcnNpb24gb2YgREIyIGV4cHJlc3MgYW5kIHRha2UKY29u
-dHJvbCBvZiB5b3VyIFhNTC4gTm8gbGltaXRzLiBKdXN0IGRhdGEuIENsaWNrIHRvIGdldCBpdCBu
-b3cuCmh0dHA6Ly9zb3VyY2Vmb3JnZS5uZXQvcG93ZXJiYXIvZGIyLwpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5n
-IGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlz
-dHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+Hello,
+sorry for the delayed answer :)
+I sent an email to the mailing list before, not sure if it worked since I 
+did not get the mail back. Anyways please discard the previous one :)
+
+>You may want to look at arcfb.c.  If you look at it's copyarea, fillrect
+>and imageblit functions, they use the generic drawing functions, then
+>immediately followed by an arcfb_lcd_update(). That's where the contents
+>of the framebuffer is transferred to the internal memory of the LCD.
+>
+>The same is done for arcfb_write().
+>
+>(You may want to do this step first.)
+>
+>The above method make the framebuffer console work. Writing to /dev/fb0
+>will also work (cat "file" > /dev/fb0).
+
+This driver is interesting I understand a bit more the general steps I have 
+to do.
+
+>However, for applications that
+>uses mmap(), such as X, it will not work.  You have to do some VM magic
+>to make mmap() function for your driver. For this functionality, look at
+>hecubafb.c driver and fb_defio.c. hecubafb.c and fb_defio.c is new for
+>2.6.21.
+>
+>(This is the second step to make your smart lcd fully functional.)
+
+Yes and also I would like to use the hardware framebuffer capability of 
+driving my smart panel (no more bit-banging). Is there any examples / 
+explanations of how I can do a DMA to the framebuffer channel 6 (the one I 
+have to send the commands to) and set up properly the registers ?
+The LDD stated that this is the easiest part to mess up, which I would like 
+to avoid :p
+
+>Tony
+
+Thanks for your answers,
+Julien
+
+_________________________________________________________________
+MSN Messenger : discutez en direct avec vos amis ! 
+http://www.msn.fr/msger/default.asp
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

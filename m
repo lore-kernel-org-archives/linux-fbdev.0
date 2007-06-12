@@ -1,26 +1,26 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH] pm3fb: header file reduction
-Date: Tue, 12 Jun 2007 19:30:55 +0200
-Message-ID: <466ED84F.3090400@wp.pl>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [patch 18/30] PS3: Frame buffer system-bus
+	rework
+Date: Tue, 12 Jun 2007 11:53:39 -0700
+Message-ID: <466EEBB3.3060307@am.sony.com>
+References: <20070612181825.730300780@am.sony.com>>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------000702090208040601050703"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1HyABe-0007it-Uo for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Jun 2007 10:29:47 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
+	id 1HyBWu-0006V6-Ne for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 12 Jun 2007 11:55:48 -0700
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]
+	helo=outbound5-dub-R.bigfish.com)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1HyABd-0004sV-KO
+	(Exim 4.44) id 1HyBWt-0005mj-EB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Jun 2007 10:29:46 -0700
-Received: from host-87-99-61-239.lanet.net.pl (HELO [87.99.61.239])
-	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	12 Jun 2007 19:29:41 +0200
+	Tue, 12 Jun 2007 11:55:48 -0700
+In-Reply-To: <20070612181825.730300780@am.sony.com>>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,483 +31,551 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: paulus@samba.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, Geoff Levand <geoffrey.levand@am.sony.com>
 
-This is a multi-part message in MIME format.
---------------000702090208040601050703
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Convert the ps3fb device from a platform device to a PS3 system bus device.
+Fix the remove and shutdown methods to support kexec and to make ps3fb a
+loadable module.
 
-This patch removes constants named AAA_DISABLE with value 0. They are redudant and misleading ( a |= AAA_DISABLE does nothing and usually should be a &= ~AAA_ENABLE).
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
-This patch required already applied patches pm3fb-fillrect and pm3fb-copyarea send previously.
+ arch/powerpc/platforms/ps3/setup.c |    9 -
+ drivers/video/Kconfig              |    4 
+ drivers/video/ps3fb.c              |  288 ++++++++++++++++---------------------
+ include/asm-powerpc/ps3fb.h        |   12 -
+ 4 files changed, 132 insertions(+), 181 deletions(-)
 
-
---- linux-2.6.21.old/drivers/video/pm3fb.c	2007-06-12 19:15:13.718729992 +0200
-+++ linux-2.6.21/drivers/video/pm3fb.c	2007-06-12 19:14:07.714968629 +0200
-@@ -888,7 +888,7 @@ static int pm3fb_set_par(struct fb_info 
- 	if ((info->var.activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW)
- 		par->video |= PM3VideoControl_ENABLE;
- 	else {
--		par->video |= PM3VideoControl_DISABLE;
-+		par->video &= ~PM3VideoControl_ENABLE;
- 		DPRINTK("PM3Video disabled\n");
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -108,7 +108,7 @@ static void ps3_panic(char *str)
+ 	while(1);
+ }
+ 
+-#ifdef CONFIG_FB_PS3
++#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
+ static void prealloc(struct ps3_prealloc *p)
+ {
+ 	if (!p->size)
+@@ -126,10 +126,11 @@ static void prealloc(struct ps3_prealloc
+ }
+ 
+ struct ps3_prealloc ps3fb_videomemory = {
+-    .name = "ps3fb videomemory",
+-    .size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
+-    .align = 1024*1024			/* the GPU requires 1 MiB alignment */
++	.name = "ps3fb videomemory",
++	.size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
++	.align = 1024*1024		/* the GPU requires 1 MiB alignment */
+ };
++EXPORT_SYMBOL_GPL(ps3fb_videomemory);
+ #define prealloc_ps3fb_videomemory()	prealloc(&ps3fb_videomemory)
+ 
+ static int __init early_parse_ps3fb(char *p)
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1790,8 +1790,8 @@ config FB_IBM_GXT4500
+ 	  adaptor, found on some IBM System P (pSeries) machines.
+ 
+ config FB_PS3
+-	bool "PS3 GPU framebuffer driver"
+-	depends on (FB = y) && PS3_PS3AV
++	tristate "PS3 GPU framebuffer driver"
++	depends on FB && PS3_PS3AV
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+ 	select FB_SYS_IMAGEBLIT
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -27,7 +27,6 @@
+ #include <linux/vmalloc.h>
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+-#include <linux/platform_device.h>
+ #include <linux/console.h>
+ #include <linux/ioctl.h>
+ #include <linux/notifier.h>
+@@ -46,6 +45,9 @@
+ #include <asm/ps3fb.h>
+ #include <asm/ps3.h>
+ 
++
++#define DEVICE_NAME		"ps3fb"
++
+ #ifdef PS3FB_DEBUG
+ #define DPRINTK(fmt, args...) printk("%s: " fmt, __func__ , ##args)
+ #else
+@@ -126,7 +128,6 @@ struct gpu_driver_info {
+ 
+ struct ps3fb_priv {
+ 	unsigned int irq_no;
+-	void *dev;
+ 
+ 	u64 context_handle, memory_handle;
+ 	void *xdr_ea;
+@@ -171,7 +172,7 @@ static const struct ps3fb_res_table ps3f
+ 	{    0,    0,   0,   0 , 0} };
+ 
+ /* default resolution */
+-#define GPU_RES_INDEX 0		/* 720 x 480 */
++#define GPU_RES_INDEX	0		/* 720 x 480 */
+ 
+ static const struct fb_videomode ps3fb_modedb[] = {
+     /* 60 Hz broadcast modes (modes "1" to "5") */
+@@ -298,10 +299,9 @@ static const struct fb_videomode ps3fb_m
+ #define FB_OFF(i)	(GPU_OFFSET - VP_OFF(i) % GPU_OFFSET)
+ 
+ static int ps3fb_mode;
+-module_param(ps3fb_mode, bool, 0);
+-
+-static char *mode_option __initdata;
++module_param(ps3fb_mode, int, 0);
+ 
++static char *mode_option __devinitdata;
+ 
+ static int ps3fb_get_res_table(u32 xres, u32 yres)
+ {
+@@ -681,15 +681,15 @@ int ps3fb_wait_for_vsync(u32 crtc)
+ 
+ EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
+ 
+-void ps3fb_flip_ctl(int on)
++void ps3fb_flip_ctl(int on, void *data)
+ {
++	struct ps3fb_priv *priv = data;
+ 	if (on)
+-		atomic_dec_if_positive(&ps3fb.ext_flip);
++		atomic_dec_if_positive(&priv->ext_flip);
+ 	else
+-		atomic_inc(&ps3fb.ext_flip);
++		atomic_inc(&priv->ext_flip);
+ }
+ 
+-EXPORT_SYMBOL_GPL(ps3fb_flip_ctl);
+ 
+     /*
+      * ioctl
+@@ -851,37 +851,9 @@ static irqreturn_t ps3fb_vsync_interrupt
+ 	return IRQ_HANDLED;
+ }
+ 
+-#ifndef MODULE
+-static int __init ps3fb_setup(char *options)
+-{
+-	char *this_opt;
+-	int mode = 0;
+ 
+-	if (!options || !*options)
+-		return 0;	/* no options */
+-
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
+-		if (!*this_opt)
+-			continue;
+-		if (!strncmp(this_opt, "mode:", 5))
+-			mode = simple_strtoul(this_opt + 5, NULL, 0);
+-		else
+-			mode_option = this_opt;
+-	}
+-	return mode;
+-}
+-#endif	/* MODULE */
+-
+-    /*
+-     *  Initialisation
+-     */
+-
+-static void ps3fb_platform_release(struct device *device)
+-{
+-	/* This is called when the reference count goes to zero. */
+-}
+-
+-static int ps3fb_vsync_settings(struct gpu_driver_info *dinfo, void *dev)
++static int ps3fb_vsync_settings(struct gpu_driver_info *dinfo,
++				struct ps3_system_bus_device *dev)
+ {
+ 	int error;
+ 
+@@ -897,7 +869,6 @@ static int ps3fb_vsync_settings(struct g
+ 		return -EINVAL;
  	}
- 	switch (bpp) {
-@@ -912,8 +912,7 @@ static int pm3fb_set_par(struct fb_info 
- 					* bpp / 8;
  
- 	pm3fb_clear_colormap(par, 0, 0, 0);
--	PM3_WRITE_DAC_REG(par, PM3RD_CursorMode,
--			  PM3RD_CursorMode_CURSOR_DISABLE);
-+	PM3_WRITE_DAC_REG(par, PM3RD_CursorMode, 0);
- 	pm3fb_init_engine(info);
- 	pm3fb_write_mode(info);
- 	return 0;
-
---- linux-2.6.21/include/video/pm3fb.h	2007-06-05 09:01:38.000000000 +0200
-+++ linux-2.6.22/include/video/pm3fb.h	2007-06-12 08:35:29.000000000 +0200
-@@ -55,7 +55,6 @@
- 	#define PM3ByApertureMode_BYTESWAP_BADC			(1<<0)
- 	#define PM3ByApertureMode_BYTESWAP_CDAB			(2<<0)
- 	#define PM3ByApertureMode_BYTESWAP_DCBA			(3<<0)
--	#define PM3ByApertureMode_PATCH_DISABLE			(0<<2)
- 	#define PM3ByApertureMode_PATCH_ENABLE			(1<<2)
- 	#define PM3ByApertureMode_FORMAT_RAW			(0<<3)
- 	#define PM3ByApertureMode_FORMAT_YUYV			(1<<3)
-@@ -112,7 +111,6 @@
- #define PM3VsStart						0x3048
- #define PM3VsEnd						0x3050
- #define PM3VideoControl						0x3058
--	#define PM3VideoControl_DISABLE				(0<<0)
- 	#define PM3VideoControl_ENABLE				(1<<0)
- 	#define PM3VideoControl_BLANK_ACTIVE_HIGH		(0<<1)
- 	#define PM3VideoControl_BLANK_ACTIVE_LOW		(1<<1)
-@@ -133,7 +131,6 @@
- 	#define PM3VideoControl_BUFFER_SWAP_SYNCON_FRAMEBLANK	(0<<9)
- 	#define PM3VideoControl_BUFFER_SWAP_FREE_RUNNING	(1<<9)
- 	#define PM3VideoControl_BUFFER_SWAP_LIMITETO_FRAMERATE	(2<<9)
--	#define PM3VideoControl_STEREO_DISABLE			(0<<11)
- 	#define PM3VideoControl_STEREO_ENABLE			(1<<11)
- 	#define PM3VideoControl_RIGHT_EYE_ACTIVE_HIGH		(0<<12)
- 	#define PM3VideoControl_RIGHT_EYE_ACTIVE_LOW		(1<<12)
-@@ -142,12 +139,10 @@
- 	#define PM3VideoControl_SYNC_MODE_INDEPENDENT		(0<<16)
- 	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSA		(1<<16)
- 	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSB		(2<<16)
--	#define PM3VideoControl_PATCH_DISABLE			(0<<18)
- 	#define PM3VideoControl_PATCH_ENABLE			(1<<18)
- 	#define PM3VideoControl_PIXELSIZE_8BIT			(0<<19)
- 	#define PM3VideoControl_PIXELSIZE_16BIT			(1<<19)
- 	#define PM3VideoControl_PIXELSIZE_32BIT			(2<<19)
--	#define PM3VideoControl_DISPLAY_DISABLE			(0<<21)
- 	#define PM3VideoControl_DISPLAY_ENABLE			(1<<21)
- 	#define PM3VideoControl_PATCH_OFFSET_X(off)	(((off)&0x3f)<<22)
- 	#define PM3VideoControl_PATCH_OFFSET_Y(off)	(((off)&0x3f)<<28)
-@@ -159,10 +154,8 @@
- #define PM3MiscControl						0x3088
- 
- #define PM3VideoOverlayUpdate					0x3100
--        #define PM3VideoOverlayUpdate_DISABLE                   (0<<0)
-         #define PM3VideoOverlayUpdate_ENABLE                    (1<<0)
- #define PM3VideoOverlayMode					0x3108
--	#define PM3VideoOverlayMode_DISABLE			(0<<0)
- 	#define PM3VideoOverlayMode_ENABLE			(1<<0)
-         #define PM3VideoOverlayMode_BUFFERSYNC_MANUAL           (0<<1)
-         #define PM3VideoOverlayMode_BUFFERSYNC_VIDEOSTREAMA     (1<<1)
-@@ -250,25 +243,16 @@
- #define PM3RD_IndexedData					0x4030
- #define PM3RD_IndexControl					0x4038
- 	#define PM3RD_IndexControl_AUTOINCREMENT_ENABLE		(1<<0)
--	#define PM3RD_IndexControl_AUTOINCREMENT_DISABLE	(0<<0)
- 
- /* Indirect Registers */
- #define PM3RD_MiscControl					0x000
--	#define PM3RD_MiscControl_HIGHCOLOR_RES_DISABLE		(0<<0)
- 	#define PM3RD_MiscControl_HIGHCOLOR_RES_ENABLE		(1<<0)
--	#define PM3RD_MiscControl_PIXELDOUBLE_DISABLE		(0<<1)
- 	#define PM3RD_MiscControl_PIXELDOUBLE_ENABLE		(1<<1)
--	#define PM3RD_MiscControl_LASTREAD_ADDR_DISABLE		(0<<2)
- 	#define PM3RD_MiscControl_LASTREAD_ADDR_ENABLE		(1<<2)
--	#define PM3RD_MiscControl_DIRECTCOLOR_DISABLE		(0<<3)
- 	#define PM3RD_MiscControl_DIRECTCOLOR_ENABLE		(1<<3)
--	#define PM3RD_MiscControl_OVERLAY_DISABLE		(0<<4)
- 	#define PM3RD_MiscControl_OVERLAY_ENABLE		(1<<4)
--	#define PM3RD_MiscControl_PIXELDOUBLE_BUFFER_DISABLE	(0<<5)
- 	#define PM3RD_MiscControl_PIXELDOUBLE_BUFFER_ENABLE	(1<<5)
--	#define PM3RD_MiscControl_VSB_OUTPUT_DISABLE		(0<<6)
- 	#define PM3RD_MiscControl_VSB_OUTPUT_ENABLE		(1<<6)
--	#define PM3RD_MiscControl_STEREODOUBLE_BUFFER_DISABLE	(0<<7)
- 	#define PM3RD_MiscControl_STEREODOUBLE_BUFFER_ENABLE	(1<<7)
- #define PM3RD_SyncControl					0x001
- 	#define PM3RD_SyncControl_HSYNC_ACTIVE_LOW		(0<<0)
-@@ -288,15 +272,10 @@
- #define PM3RD_DACControl					0x002
- 	#define PM3RD_DACControl_DAC_POWER_ON			(0<<0)
- 	#define PM3RD_DACControl_DAC_POWER_OFF			(1<<0)
--	#define PM3RD_DACControl_SYNC_ON_GREEN_DISABLE		(0<<3)
- 	#define PM3RD_DACControl_SYNC_ON_GREEN_ENABLE		(1<<3)
--	#define PM3RD_DACControl_BLANK_RED_DAC_DISABLE		(0<<4)
- 	#define PM3RD_DACControl_BLANK_RED_DAC_ENABLE		(1<<4)
--	#define PM3RD_DACControl_BLANK_GREEN_DAC_DISABLE	(0<<5)
- 	#define PM3RD_DACControl_BLANK_GREEN_DAC_ENABLE		(1<<5)
--	#define PM3RD_DACControl_BLANK_BLUE_DAC_DISABLE		(0<<6)
- 	#define PM3RD_DACControl_BLANK_BLUE_DAC_ENABLE		(1<<6)
--	#define PM3RD_DACControl_BLANK_PEDESTAL_DISABLE		(0<<7)
- 	#define PM3RD_DACControl_BLANK_PEDESTAL_ENABLE		(1<<7)
- #define PM3RD_PixelSize						0x003
- 	#define PM3RD_PixelSize_24_BIT_PIXELS			(4<<0)
-@@ -305,7 +284,6 @@
- 	#define PM3RD_PixelSize_8_BIT_PIXELS			(0<<0)
- #define PM3RD_ColorFormat					0x004
- 	#define PM3RD_ColorFormat_LINEAR_COLOR_EXT_ENABLE	(1<<6)
--	#define PM3RD_ColorFormat_LINEAR_COLOR_EXT_DISABLE	(0<<6)
- 	#define PM3RD_ColorFormat_COLOR_ORDER_BLUE_LOW		(1<<5)
- 	#define PM3RD_ColorFormat_COLOR_ORDER_RED_LOW		(0<<5)
- 	#define PM3RD_ColorFormat_COLOR_FORMAT_MASK		(0x1f<<0)
-@@ -323,7 +301,6 @@
- 	#define PM3RD_ColorFormat_565_FRONT_COLOR		(16<<0)
- 	#define PM3RD_ColorFormat_565_BACK_COLOR		(17<<0)
- #define PM3RD_CursorMode					0x005
--	#define PM3RD_CursorMode_CURSOR_DISABLE			(0<<0)
- 	#define PM3RD_CursorMode_CURSOR_ENABLE			(1<<0)
- 	#define PM3RD_CursorMode_FORMAT_64x64_2BPE_P0123	(0<<2)
- 	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P0		(1<<2)
-@@ -334,16 +311,12 @@
- 	#define PM3RD_CursorMode_FORMAT_32x32_4BPE_P23		(6<<2)
- 	#define PM3RD_CursorMode_TYPE_MS			(0<<4)
- 	#define PM3RD_CursorMode_TYPE_X				(1<<4)
--	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_DISABLE	(0<<6)
- 	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_ENABLE	(1<<6)
- 	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_3_COLOR	(2<<6)
- 	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_15_COLOR	(3<<6)
- #define PM3RD_CursorControl					0x006
--	#define PM3RD_CursorControl_DOUBLE_X_DISABLED		(0<<0)
- 	#define PM3RD_CursorControl_DOUBLE_X_ENABLED		(1<<0)
--	#define PM3RD_CursorControl_DOUBLE_Y_DISABLED		(0<<1)
- 	#define PM3RD_CursorControl_DOUBLE_Y_ENABLED		(1<<1)
--	#define PM3RD_CursorControl_READBACK_POS_DISABLED	(0<<2)
- 	#define PM3RD_CursorControl_READBACK_POS_ENABLED	(1<<2)
- 
- #define PM3RD_CursorXLow					0x007
-@@ -354,16 +327,12 @@
- #define PM3RD_CursorHotSpotY					0x00c
- #define PM3RD_OverlayKey					0x00d
- #define PM3RD_Pan						0x00e
--	#define PM3RD_Pan_DISABLE				(0<<0)
- 	#define PM3RD_Pan_ENABLE				(1<<0)
--	#define PM3RD_Pan_GATE_DISABLE				(0<<1)
- 	#define PM3RD_Pan_GATE_ENABLE				(1<<1)
- #define PM3RD_Sense						0x00f
- 
- #define PM3RD_CheckControl					0x018
--	#define PM3RD_CheckControl_PIXEL_DISABLED		(0<<0)
- 	#define PM3RD_CheckControl_PIXEL_ENABLED		(1<<0)
--	#define PM3RD_CheckControl_LUT_DISABLED			(0<<1)
- 	#define PM3RD_CheckControl_LUT_ENABLED			(1<<1)
- #define PM3RD_CheckPixelRed					0x019
- #define PM3RD_CheckPixelGreen					0x01a
-@@ -374,14 +343,12 @@
- #define PM3RD_Scratch						0x01f
- 
- #define PM3RD_VideoOverlayControl				0x020
--        #define PM3RD_VideoOverlayControl_DISABLE               (0<<0)
-         #define PM3RD_VideoOverlayControl_ENABLE                (1<<0)
-         #define PM3RD_VideoOverlayControl_MODE_MASK             (3<<1)
-         #define PM3RD_VideoOverlayControl_MODE_MAINKEY          (0<<1)
-         #define PM3RD_VideoOverlayControl_MODE_OVERLAYKEY       (1<<1)
-         #define PM3RD_VideoOverlayControl_MODE_ALWAYS           (2<<1)
-         #define PM3RD_VideoOverlayControl_MODE_BLEND            (3<<1)
--        #define PM3RD_VideoOverlayControl_DIRECTCOLOR_DISABLED  (0<<3)
-         #define PM3RD_VideoOverlayControl_DIRECTCOLOR_ENABLED   (1<<3)
-         #define PM3RD_VideoOverlayControl_BLENDSRC_MAIN         (0<<4)
-         #define PM3RD_VideoOverlayControl_BLENDSRC_REGISTER     (1<<4)
-@@ -420,7 +387,6 @@
- 	#define PM3RD_DClkControl_LOCKED			(1<<1)
- 	#define PM3RD_DClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_DClkControl_ENABLE			(1<<0)
--	#define PM3RD_DClkControl_DISABLE			(0<<0)
- #define PM3RD_DClk0PreScale					0x201
- #define PM3RD_DClk0FeedbackScale				0x202
- #define PM3RD_DClk0PostScale					0x203
-@@ -435,7 +401,6 @@
- #define PM3RD_DClk3FeedbackScale				0x20b
- #define PM3RD_DClk3PostScale					0x20c
- #define PM3RD_KClkControl					0x20d
--	#define PM3RD_KClkControl_DISABLE			(0<<0)
- 	#define PM3RD_KClkControl_ENABLE			(1<<0)
- 	#define PM3RD_KClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_KClkControl_LOCKED			(1<<1)
-@@ -450,7 +415,6 @@
- #define PM3RD_KClkFeedbackScale					0x20f
- #define PM3RD_KClkPostScale					0x210
- #define PM3RD_MClkControl					0x211
--	#define PM3RD_MClkControl_DISABLE			(0<<0)
- 	#define PM3RD_MClkControl_ENABLE			(1<<0)
- 	#define PM3RD_MClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_MClkControl_LOCKED			(1<<1)
-@@ -468,7 +432,6 @@
- #define PM3RD_MClkFeedbackScale					0x213
- #define PM3RD_MClkPostScale					0x214
- #define PM3RD_SClkControl					0x215
--	#define PM3RD_SClkControl_DISABLE			(0<<0)
- 	#define PM3RD_SClkControl_ENABLE			(1<<0)
- 	#define PM3RD_SClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_SClkControl_LOCKED			(1<<1)
-
-
---------------000702090208040601050703
-Content-Type: text/plain;
- name="pm3fb-header-reduction.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pm3fb-header-reduction.diff"
-
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-This patch removes constants named AAA_DISABLE with value 0. They are redudant and misleading ( a |= AAA_DISABLE does nothing and usually should be a &= ~AAA_ENABLE).
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
----
-
---- linux-2.6.21.old/drivers/video/pm3fb.c	2007-06-12 19:15:13.718729992 +0200
-+++ linux-2.6.21/drivers/video/pm3fb.c	2007-06-12 19:14:07.714968629 +0200
-@@ -888,7 +888,7 @@ static int pm3fb_set_par(struct fb_info 
- 	if ((info->var.activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW)
- 		par->video |= PM3VideoControl_ENABLE;
- 	else {
--		par->video |= PM3VideoControl_DISABLE;
-+		par->video &= ~PM3VideoControl_ENABLE;
- 		DPRINTK("PM3Video disabled\n");
+-	ps3fb.dev = dev;
+ 	error = ps3_irq_plug_setup(PS3_BINDING_CPU_ANY, dinfo->irq.irq_outlet,
+ 				   &ps3fb.irq_no);
+ 	if (error) {
+@@ -907,7 +878,7 @@ static int ps3fb_vsync_settings(struct g
  	}
- 	switch (bpp) {
-@@ -912,8 +912,7 @@ static int pm3fb_set_par(struct fb_info 
- 					* bpp / 8;
  
- 	pm3fb_clear_colormap(par, 0, 0, 0);
--	PM3_WRITE_DAC_REG(par, PM3RD_CursorMode,
--			  PM3RD_CursorMode_CURSOR_DISABLE);
-+	PM3_WRITE_DAC_REG(par, PM3RD_CursorMode, 0);
- 	pm3fb_init_engine(info);
- 	pm3fb_write_mode(info);
+ 	error = request_irq(ps3fb.irq_no, ps3fb_vsync_interrupt, IRQF_DISABLED,
+-			    "ps3fb vsync", ps3fb.dev);
++			    DEVICE_NAME, dev);
+ 	if (error) {
+ 		printk(KERN_ERR "%s: request_irq failed %d\n", __func__,
+ 		       error);
+@@ -966,16 +937,47 @@ static struct fb_ops ps3fb_ops = {
+ };
+ 
+ static struct fb_fix_screeninfo ps3fb_fix __initdata = {
+-	.id =		"PS3 FB",
++	.id =		DEVICE_NAME,
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_TRUECOLOR,
+ 	.accel =	FB_ACCEL_NONE,
+ };
+ 
+-static int __init ps3fb_probe(struct platform_device *dev)
++static int ps3fb_set_sync(void)
++{
++	int status;
++
++#ifdef HEAD_A
++	status = lv1_gpu_context_attribute(0x0,
++					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
++					   0, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
++	if (status) {
++		printk(KERN_ERR
++		       "%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: %d\n",
++		       __func__, status);
++		return -1;
++	}
++#endif
++#ifdef HEAD_B
++	status = lv1_gpu_context_attribute(0x0,
++					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
++					   1, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
++
++	if (status) {
++		printk(KERN_ERR
++		       "%s: lv1_gpu_context_attribute DISPLAY_MODE failed: %d\n",
++		       __func__, status);
++		return -1;
++	}
++#endif
++	return 0;
++}
++
++static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ {
+ 	struct fb_info *info;
+ 	int retval = -ENOMEM;
++	u32 xres, yres;
+ 	u64 ddr_lpar = 0;
+ 	u64 lpar_dma_control = 0;
+ 	u64 lpar_driver_info = 0;
+@@ -986,6 +988,30 @@ static int __init ps3fb_probe(struct pla
+ 	unsigned long offset;
+ 	struct task_struct *task;
+ 
++	status = ps3_open_hv_device(dev);
++	if (status) {
++		printk(KERN_ERR "%s: ps3_open_hv_device failed\n", __func__);
++		goto err;
++	}
++
++	if (!ps3fb_mode)
++		ps3fb_mode = ps3av_get_mode();
++	DPRINTK("ps3av_mode:%d\n", ps3fb_mode);
++
++	if (ps3fb_mode > 0 &&
++	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
++		ps3fb.res_index = ps3fb_get_res_table(xres, yres);
++		DPRINTK("res_index:%d\n", ps3fb.res_index);
++	} else
++		ps3fb.res_index = GPU_RES_INDEX;
++
++	atomic_set(&ps3fb.f_count, -1);	/* fbcon opens ps3fb */
++	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
++	init_waitqueue_head(&ps3fb.wait_vsync);
++	ps3fb.num_frames = 1;
++
++	ps3fb_set_sync();
++
+ 	/* get gpu context handle */
+ 	status = lv1_gpu_memory_allocate(DDR_SIZE, 0, 0, 0, 0,
+ 					 &ps3fb.memory_handle, &ddr_lpar);
+@@ -1029,7 +1055,7 @@ static int __init ps3fb_probe(struct pla
+ 	 * leakage into userspace
+ 	 */
+ 	memset(ps3fb.xdr_ea, 0, ps3fb_videomemory.size);
+-	info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
++	info = framebuffer_alloc(sizeof(u32) * 16, &dev->core);
+ 	if (!info)
+ 		goto err_free_irq;
+ 
+@@ -1061,19 +1087,20 @@ static int __init ps3fb_probe(struct pla
+ 	if (retval < 0)
+ 		goto err_fb_dealloc;
+ 
+-	platform_set_drvdata(dev, info);
++	dev->core.driver_data = info;
+ 
+ 	printk(KERN_INFO
+ 	       "fb%d: PS3 frame buffer device, using %ld KiB of video memory\n",
+ 	       info->node, ps3fb_videomemory.size >> 10);
+ 
+-	task = kthread_run(ps3fbd, info, "ps3fbd");
++	task = kthread_run(ps3fbd, info, DEVICE_NAME);
+ 	if (IS_ERR(task)) {
+ 		retval = PTR_ERR(task);
+ 		goto err_unregister_framebuffer;
+ 	}
+ 
+ 	ps3fb.task = task;
++	ps3av_register_flip_ctl(ps3fb_flip_ctl, &ps3fb);
+ 
  	return 0;
+ 
+@@ -1084,7 +1111,7 @@ err_fb_dealloc:
+ err_framebuffer_release:
+ 	framebuffer_release(info);
+ err_free_irq:
+-	free_irq(ps3fb.irq_no, ps3fb.dev);
++	free_irq(ps3fb.irq_no, dev);
+ 	ps3_irq_plug_destroy(ps3fb.irq_no);
+ err_iounmap_dinfo:
+ 	iounmap((u8 __iomem *)ps3fb.dinfo);
+@@ -1096,26 +1123,30 @@ err:
+ 	return retval;
+ }
+ 
+-static void ps3fb_shutdown(struct platform_device *dev)
++static int ps3fb_shutdown(struct ps3_system_bus_device *dev)
+ {
+-	ps3fb_flip_ctl(0);	/* flip off */
++	int status;
++	struct fb_info *info = dev->core.driver_data;
++
++	DPRINTK(" -> %s:%d\n", __func__, __LINE__);
++
++	ps3fb_flip_ctl(0, &ps3fb);	/* flip off */
+ 	ps3fb.dinfo->irq.mask = 0;
+-	free_irq(ps3fb.irq_no, ps3fb.dev);
+-	ps3_irq_plug_destroy(ps3fb.irq_no);
+-	iounmap((u8 __iomem *)ps3fb.dinfo);
+-}
+ 
+-void ps3fb_cleanup(void)
+-{
+-	int status;
++	if (info) {
++		unregister_framebuffer(info);
++		fb_dealloc_cmap(&info->cmap);
++		framebuffer_release(info);
++	}
+ 
++	ps3av_register_flip_ctl(NULL, NULL);
+ 	if (ps3fb.task) {
+ 		struct task_struct *task = ps3fb.task;
+ 		ps3fb.task = NULL;
+ 		kthread_stop(task);
+ 	}
+ 	if (ps3fb.irq_no) {
+-		free_irq(ps3fb.irq_no, ps3fb.dev);
++		free_irq(ps3fb.irq_no, dev);
+ 		ps3_irq_plug_destroy(ps3fb.irq_no);
+ 	}
+ 	iounmap((u8 __iomem *)ps3fb.dinfo);
+@@ -1128,134 +1159,65 @@ void ps3fb_cleanup(void)
+ 	if (status)
+ 		DPRINTK("lv1_gpu_memory_free failed: %d\n", status);
+ 
+-	ps3av_dev_close();
+-}
+-
+-EXPORT_SYMBOL_GPL(ps3fb_cleanup);
+-
+-static int ps3fb_remove(struct platform_device *dev)
+-{
+-	struct fb_info *info = platform_get_drvdata(dev);
++	ps3_close_hv_device(dev);
++	DPRINTK(" <- %s:%d\n", __func__, __LINE__);
+ 
+-	if (info) {
+-		unregister_framebuffer(info);
+-		fb_dealloc_cmap(&info->cmap);
+-		framebuffer_release(info);
+-	}
+-	ps3fb_cleanup();
+ 	return 0;
+ }
+ 
+-static struct platform_driver ps3fb_driver = {
+-	.probe	= ps3fb_probe,
+-	.remove = ps3fb_remove,
+-	.shutdown = ps3fb_shutdown,
+-	.driver = { .name = "ps3fb" }
++static struct ps3_system_bus_driver ps3fb_driver = {
++	.match_id	= PS3_MATCH_ID_GRAPHICS,
++	.core.name	= DEVICE_NAME,
++	.core.owner	= THIS_MODULE,
++	.probe		= ps3fb_probe,
++	.remove		= ps3fb_shutdown,
++	.shutdown	= ps3fb_shutdown,
+ };
+ 
+-static struct platform_device ps3fb_device = {
+-	.name	= "ps3fb",
+-	.id	= 0,
+-	.dev	= { .release = ps3fb_platform_release }
+-};
+-
+-int ps3fb_set_sync(void)
++static int __init ps3fb_setup(void)
+ {
+-	int status;
++	char *options, *this_opt;
+ 
+-#ifdef HEAD_A
+-	status = lv1_gpu_context_attribute(0x0,
+-					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
+-					   0, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
+-	if (status) {
+-		printk(KERN_ERR
+-		       "%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: %d\n",
+-		       __func__, status);
+-		return -1;
+-	}
++#ifdef MODULE
++	return 0;
+ #endif
+-#ifdef HEAD_B
+-	status = lv1_gpu_context_attribute(0x0,
+-					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
+-					   1, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
+ 
+-	if (status) {
+-		printk(KERN_ERR
+-		       "%s: lv1_gpu_context_attribute DISPLAY_MODE failed: %d\n",
+-		       __func__, status);
+-		return -1;
++	if (fb_get_options(DEVICE_NAME, &options))
++		return -ENXIO;
++
++	if (!options || !*options)
++		return 0;
++
++	while ((this_opt = strsep(&options, ",")) != NULL) {
++		if (!*this_opt)
++			continue;
++		if (!strncmp(this_opt, "mode:", 5))
++			ps3fb_mode = simple_strtoul(this_opt + 5, NULL, 0);
++		else
++			mode_option = this_opt;
+ 	}
+-#endif
+ 	return 0;
+ }
+ 
+-EXPORT_SYMBOL_GPL(ps3fb_set_sync);
+-
+ static int __init ps3fb_init(void)
+ {
+-	int error;
+-#ifndef MODULE
+-	int mode;
+-	char *option = NULL;
+-
+-	if (fb_get_options("ps3fb", &option))
+-		goto err;
+-#endif
+-
+-	if (!ps3fb_videomemory.address)
+-		goto err;
+-
+-	error = ps3av_dev_open();
+-	if (error) {
+-		printk(KERN_ERR "%s: ps3av_dev_open failed\n", __func__);
+-		goto err;
+-	}
+-
+-	ps3fb_mode = ps3av_get_mode();
+-	DPRINTK("ps3av_mode:%d\n", ps3fb_mode);
+-#ifndef MODULE
+-	mode = ps3fb_setup(option);	/* check boot option */
+-	if (mode)
+-		ps3fb_mode = mode;
+-#endif
+-	if (ps3fb_mode > 0) {
+-		u32 xres, yres;
+-		ps3av_video_mode2res(ps3fb_mode, &xres, &yres);
+-		ps3fb.res_index = ps3fb_get_res_table(xres, yres);
+-		DPRINTK("res_index:%d\n", ps3fb.res_index);
+-	} else
+-		ps3fb.res_index = GPU_RES_INDEX;
+-
+-	atomic_set(&ps3fb.f_count, -1);	/* fbcon opens ps3fb */
+-	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
+-	init_waitqueue_head(&ps3fb.wait_vsync);
+-	ps3fb.num_frames = 1;
+-
+-	error = platform_driver_register(&ps3fb_driver);
+-	if (!error) {
+-		error = platform_device_register(&ps3fb_device);
+-		if (error)
+-			platform_driver_unregister(&ps3fb_driver);
+-	}
+-
+-	ps3fb_set_sync();
+-
+-	return error;
++	if (!ps3fb_videomemory.address ||  ps3fb_setup())
++		return -ENXIO;
+ 
+-err:
+-	return -ENXIO;
++	return ps3_system_bus_driver_register(&ps3fb_driver);
+ }
+ 
+-module_init(ps3fb_init);
+-
+-#ifdef MODULE
+ static void __exit ps3fb_exit(void)
+ {
+-	platform_device_unregister(&ps3fb_device);
+-	platform_driver_unregister(&ps3fb_driver);
++	DPRINTK(" -> %s:%d\n", __func__, __LINE__);
++	ps3_system_bus_driver_unregister(&ps3fb_driver);
++	DPRINTK(" <- %s:%d\n", __func__, __LINE__);
+ }
+ 
++module_init(ps3fb_init);
+ module_exit(ps3fb_exit);
+ 
+ MODULE_LICENSE("GPL");
+-#endif				/* MODULE */
++MODULE_DESCRIPTION("PS3 GPU Frame Buffer Driver");
++MODULE_AUTHOR("Sony Computer Entertainment Inc.");
++MODULE_ALIAS(PS3_MODULE_ALIAS_GRAPHICS);
+--- a/include/asm-powerpc/ps3fb.h
++++ b/include/asm-powerpc/ps3fb.h
+@@ -41,16 +41,4 @@ struct ps3fb_ioctl_res {
+ 	__u32 num_frames; /* num of frame buffers */
+ };
+ 
+-#ifdef __KERNEL__
+-
+-#ifdef CONFIG_FB_PS3
+-extern void ps3fb_flip_ctl(int on);
+-extern void ps3fb_cleanup(void);
+-#else
+-static inline void ps3fb_flip_ctl(int on) {}
+-static inline void ps3fb_cleanup(void) {}
+-#endif
+-
+-#endif /* __KERNEL__ */
+-
+ #endif /* _ASM_POWERPC_PS3FB_H_ */
 
---- linux-2.6.21/include/video/pm3fb.h	2007-06-05 09:01:38.000000000 +0200
-+++ linux-2.6.22/include/video/pm3fb.h	2007-06-12 08:35:29.000000000 +0200
-@@ -55,7 +55,6 @@
- 	#define PM3ByApertureMode_BYTESWAP_BADC			(1<<0)
- 	#define PM3ByApertureMode_BYTESWAP_CDAB			(2<<0)
- 	#define PM3ByApertureMode_BYTESWAP_DCBA			(3<<0)
--	#define PM3ByApertureMode_PATCH_DISABLE			(0<<2)
- 	#define PM3ByApertureMode_PATCH_ENABLE			(1<<2)
- 	#define PM3ByApertureMode_FORMAT_RAW			(0<<3)
- 	#define PM3ByApertureMode_FORMAT_YUYV			(1<<3)
-@@ -112,7 +111,6 @@
- #define PM3VsStart						0x3048
- #define PM3VsEnd						0x3050
- #define PM3VideoControl						0x3058
--	#define PM3VideoControl_DISABLE				(0<<0)
- 	#define PM3VideoControl_ENABLE				(1<<0)
- 	#define PM3VideoControl_BLANK_ACTIVE_HIGH		(0<<1)
- 	#define PM3VideoControl_BLANK_ACTIVE_LOW		(1<<1)
-@@ -133,7 +131,6 @@
- 	#define PM3VideoControl_BUFFER_SWAP_SYNCON_FRAMEBLANK	(0<<9)
- 	#define PM3VideoControl_BUFFER_SWAP_FREE_RUNNING	(1<<9)
- 	#define PM3VideoControl_BUFFER_SWAP_LIMITETO_FRAMERATE	(2<<9)
--	#define PM3VideoControl_STEREO_DISABLE			(0<<11)
- 	#define PM3VideoControl_STEREO_ENABLE			(1<<11)
- 	#define PM3VideoControl_RIGHT_EYE_ACTIVE_HIGH		(0<<12)
- 	#define PM3VideoControl_RIGHT_EYE_ACTIVE_LOW		(1<<12)
-@@ -142,12 +139,10 @@
- 	#define PM3VideoControl_SYNC_MODE_INDEPENDENT		(0<<16)
- 	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSA		(1<<16)
- 	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSB		(2<<16)
--	#define PM3VideoControl_PATCH_DISABLE			(0<<18)
- 	#define PM3VideoControl_PATCH_ENABLE			(1<<18)
- 	#define PM3VideoControl_PIXELSIZE_8BIT			(0<<19)
- 	#define PM3VideoControl_PIXELSIZE_16BIT			(1<<19)
- 	#define PM3VideoControl_PIXELSIZE_32BIT			(2<<19)
--	#define PM3VideoControl_DISPLAY_DISABLE			(0<<21)
- 	#define PM3VideoControl_DISPLAY_ENABLE			(1<<21)
- 	#define PM3VideoControl_PATCH_OFFSET_X(off)	(((off)&0x3f)<<22)
- 	#define PM3VideoControl_PATCH_OFFSET_Y(off)	(((off)&0x3f)<<28)
-@@ -159,10 +154,8 @@
- #define PM3MiscControl						0x3088
- 
- #define PM3VideoOverlayUpdate					0x3100
--        #define PM3VideoOverlayUpdate_DISABLE                   (0<<0)
-         #define PM3VideoOverlayUpdate_ENABLE                    (1<<0)
- #define PM3VideoOverlayMode					0x3108
--	#define PM3VideoOverlayMode_DISABLE			(0<<0)
- 	#define PM3VideoOverlayMode_ENABLE			(1<<0)
-         #define PM3VideoOverlayMode_BUFFERSYNC_MANUAL           (0<<1)
-         #define PM3VideoOverlayMode_BUFFERSYNC_VIDEOSTREAMA     (1<<1)
-@@ -250,25 +243,16 @@
- #define PM3RD_IndexedData					0x4030
- #define PM3RD_IndexControl					0x4038
- 	#define PM3RD_IndexControl_AUTOINCREMENT_ENABLE		(1<<0)
--	#define PM3RD_IndexControl_AUTOINCREMENT_DISABLE	(0<<0)
- 
- /* Indirect Registers */
- #define PM3RD_MiscControl					0x000
--	#define PM3RD_MiscControl_HIGHCOLOR_RES_DISABLE		(0<<0)
- 	#define PM3RD_MiscControl_HIGHCOLOR_RES_ENABLE		(1<<0)
--	#define PM3RD_MiscControl_PIXELDOUBLE_DISABLE		(0<<1)
- 	#define PM3RD_MiscControl_PIXELDOUBLE_ENABLE		(1<<1)
--	#define PM3RD_MiscControl_LASTREAD_ADDR_DISABLE		(0<<2)
- 	#define PM3RD_MiscControl_LASTREAD_ADDR_ENABLE		(1<<2)
--	#define PM3RD_MiscControl_DIRECTCOLOR_DISABLE		(0<<3)
- 	#define PM3RD_MiscControl_DIRECTCOLOR_ENABLE		(1<<3)
--	#define PM3RD_MiscControl_OVERLAY_DISABLE		(0<<4)
- 	#define PM3RD_MiscControl_OVERLAY_ENABLE		(1<<4)
--	#define PM3RD_MiscControl_PIXELDOUBLE_BUFFER_DISABLE	(0<<5)
- 	#define PM3RD_MiscControl_PIXELDOUBLE_BUFFER_ENABLE	(1<<5)
--	#define PM3RD_MiscControl_VSB_OUTPUT_DISABLE		(0<<6)
- 	#define PM3RD_MiscControl_VSB_OUTPUT_ENABLE		(1<<6)
--	#define PM3RD_MiscControl_STEREODOUBLE_BUFFER_DISABLE	(0<<7)
- 	#define PM3RD_MiscControl_STEREODOUBLE_BUFFER_ENABLE	(1<<7)
- #define PM3RD_SyncControl					0x001
- 	#define PM3RD_SyncControl_HSYNC_ACTIVE_LOW		(0<<0)
-@@ -288,15 +272,10 @@
- #define PM3RD_DACControl					0x002
- 	#define PM3RD_DACControl_DAC_POWER_ON			(0<<0)
- 	#define PM3RD_DACControl_DAC_POWER_OFF			(1<<0)
--	#define PM3RD_DACControl_SYNC_ON_GREEN_DISABLE		(0<<3)
- 	#define PM3RD_DACControl_SYNC_ON_GREEN_ENABLE		(1<<3)
--	#define PM3RD_DACControl_BLANK_RED_DAC_DISABLE		(0<<4)
- 	#define PM3RD_DACControl_BLANK_RED_DAC_ENABLE		(1<<4)
--	#define PM3RD_DACControl_BLANK_GREEN_DAC_DISABLE	(0<<5)
- 	#define PM3RD_DACControl_BLANK_GREEN_DAC_ENABLE		(1<<5)
--	#define PM3RD_DACControl_BLANK_BLUE_DAC_DISABLE		(0<<6)
- 	#define PM3RD_DACControl_BLANK_BLUE_DAC_ENABLE		(1<<6)
--	#define PM3RD_DACControl_BLANK_PEDESTAL_DISABLE		(0<<7)
- 	#define PM3RD_DACControl_BLANK_PEDESTAL_ENABLE		(1<<7)
- #define PM3RD_PixelSize						0x003
- 	#define PM3RD_PixelSize_24_BIT_PIXELS			(4<<0)
-@@ -305,7 +284,6 @@
- 	#define PM3RD_PixelSize_8_BIT_PIXELS			(0<<0)
- #define PM3RD_ColorFormat					0x004
- 	#define PM3RD_ColorFormat_LINEAR_COLOR_EXT_ENABLE	(1<<6)
--	#define PM3RD_ColorFormat_LINEAR_COLOR_EXT_DISABLE	(0<<6)
- 	#define PM3RD_ColorFormat_COLOR_ORDER_BLUE_LOW		(1<<5)
- 	#define PM3RD_ColorFormat_COLOR_ORDER_RED_LOW		(0<<5)
- 	#define PM3RD_ColorFormat_COLOR_FORMAT_MASK		(0x1f<<0)
-@@ -323,7 +301,6 @@
- 	#define PM3RD_ColorFormat_565_FRONT_COLOR		(16<<0)
- 	#define PM3RD_ColorFormat_565_BACK_COLOR		(17<<0)
- #define PM3RD_CursorMode					0x005
--	#define PM3RD_CursorMode_CURSOR_DISABLE			(0<<0)
- 	#define PM3RD_CursorMode_CURSOR_ENABLE			(1<<0)
- 	#define PM3RD_CursorMode_FORMAT_64x64_2BPE_P0123	(0<<2)
- 	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P0		(1<<2)
-@@ -334,16 +311,12 @@
- 	#define PM3RD_CursorMode_FORMAT_32x32_4BPE_P23		(6<<2)
- 	#define PM3RD_CursorMode_TYPE_MS			(0<<4)
- 	#define PM3RD_CursorMode_TYPE_X				(1<<4)
--	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_DISABLE	(0<<6)
- 	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_ENABLE	(1<<6)
- 	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_3_COLOR	(2<<6)
- 	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_15_COLOR	(3<<6)
- #define PM3RD_CursorControl					0x006
--	#define PM3RD_CursorControl_DOUBLE_X_DISABLED		(0<<0)
- 	#define PM3RD_CursorControl_DOUBLE_X_ENABLED		(1<<0)
--	#define PM3RD_CursorControl_DOUBLE_Y_DISABLED		(0<<1)
- 	#define PM3RD_CursorControl_DOUBLE_Y_ENABLED		(1<<1)
--	#define PM3RD_CursorControl_READBACK_POS_DISABLED	(0<<2)
- 	#define PM3RD_CursorControl_READBACK_POS_ENABLED	(1<<2)
- 
- #define PM3RD_CursorXLow					0x007
-@@ -354,16 +327,12 @@
- #define PM3RD_CursorHotSpotY					0x00c
- #define PM3RD_OverlayKey					0x00d
- #define PM3RD_Pan						0x00e
--	#define PM3RD_Pan_DISABLE				(0<<0)
- 	#define PM3RD_Pan_ENABLE				(1<<0)
--	#define PM3RD_Pan_GATE_DISABLE				(0<<1)
- 	#define PM3RD_Pan_GATE_ENABLE				(1<<1)
- #define PM3RD_Sense						0x00f
- 
- #define PM3RD_CheckControl					0x018
--	#define PM3RD_CheckControl_PIXEL_DISABLED		(0<<0)
- 	#define PM3RD_CheckControl_PIXEL_ENABLED		(1<<0)
--	#define PM3RD_CheckControl_LUT_DISABLED			(0<<1)
- 	#define PM3RD_CheckControl_LUT_ENABLED			(1<<1)
- #define PM3RD_CheckPixelRed					0x019
- #define PM3RD_CheckPixelGreen					0x01a
-@@ -374,14 +343,12 @@
- #define PM3RD_Scratch						0x01f
- 
- #define PM3RD_VideoOverlayControl				0x020
--        #define PM3RD_VideoOverlayControl_DISABLE               (0<<0)
-         #define PM3RD_VideoOverlayControl_ENABLE                (1<<0)
-         #define PM3RD_VideoOverlayControl_MODE_MASK             (3<<1)
-         #define PM3RD_VideoOverlayControl_MODE_MAINKEY          (0<<1)
-         #define PM3RD_VideoOverlayControl_MODE_OVERLAYKEY       (1<<1)
-         #define PM3RD_VideoOverlayControl_MODE_ALWAYS           (2<<1)
-         #define PM3RD_VideoOverlayControl_MODE_BLEND            (3<<1)
--        #define PM3RD_VideoOverlayControl_DIRECTCOLOR_DISABLED  (0<<3)
-         #define PM3RD_VideoOverlayControl_DIRECTCOLOR_ENABLED   (1<<3)
-         #define PM3RD_VideoOverlayControl_BLENDSRC_MAIN         (0<<4)
-         #define PM3RD_VideoOverlayControl_BLENDSRC_REGISTER     (1<<4)
-@@ -420,7 +387,6 @@
- 	#define PM3RD_DClkControl_LOCKED			(1<<1)
- 	#define PM3RD_DClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_DClkControl_ENABLE			(1<<0)
--	#define PM3RD_DClkControl_DISABLE			(0<<0)
- #define PM3RD_DClk0PreScale					0x201
- #define PM3RD_DClk0FeedbackScale				0x202
- #define PM3RD_DClk0PostScale					0x203
-@@ -435,7 +401,6 @@
- #define PM3RD_DClk3FeedbackScale				0x20b
- #define PM3RD_DClk3PostScale					0x20c
- #define PM3RD_KClkControl					0x20d
--	#define PM3RD_KClkControl_DISABLE			(0<<0)
- 	#define PM3RD_KClkControl_ENABLE			(1<<0)
- 	#define PM3RD_KClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_KClkControl_LOCKED			(1<<1)
-@@ -450,7 +415,6 @@
- #define PM3RD_KClkFeedbackScale					0x20f
- #define PM3RD_KClkPostScale					0x210
- #define PM3RD_MClkControl					0x211
--	#define PM3RD_MClkControl_DISABLE			(0<<0)
- 	#define PM3RD_MClkControl_ENABLE			(1<<0)
- 	#define PM3RD_MClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_MClkControl_LOCKED			(1<<1)
-@@ -468,7 +432,6 @@
- #define PM3RD_MClkFeedbackScale					0x213
- #define PM3RD_MClkPostScale					0x214
- #define PM3RD_SClkControl					0x215
--	#define PM3RD_SClkControl_DISABLE			(0<<0)
- 	#define PM3RD_SClkControl_ENABLE			(1<<0)
- 	#define PM3RD_SClkControl_NOT_LOCKED			(0<<1)
- 	#define PM3RD_SClkControl_LOCKED			(1<<1)
+-- 
 
---------------000702090208040601050703
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---------------000702090208040601050703
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---------------000702090208040601050703--

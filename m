@@ -1,8 +1,8 @@
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] atmel_lcdfb: Fix STN LCD support
-Date: Tue, 19 Jun 2007 09:47:52 +0200
-Message-ID: <20070619094752.1b7ba108@dhcp-255-175.norway.atmel.com>
-References: <467252C4.50203@rfo.atmel.com>
+From: "Trilok Soni" <soni.trilok@gmail.com>
+Subject: [PATCH 0/17] Add Texas Instruments OMAP LCD
+	driver
+Date: Tue, 19 Jun 2007 17:14:12 +0530
+Message-ID: <5d5443650706190444u24999878k43d920fe3ceaadc0@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,14 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I0YS4-0000JE-5J for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Jun 2007 00:48:37 -0700
-Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1I0YS2-0004IE-Fx
+	id 1I0c86-0007cf-VY for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Jun 2007 04:44:14 -0700
+Received: from wa-out-1112.google.com ([209.85.146.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I0c85-0004ni-NJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Jun 2007 00:48:36 -0700
-In-Reply-To: <467252C4.50203@rfo.atmel.com>
+	Tue, 19 Jun 2007 04:44:14 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so2527326waf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 19 Jun 2007 04:44:13 -0700 (PDT)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,51 +31,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>, Kernel list <linux-kernel@vger.kernel.org>, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>, Linux@sc8-sf-spam2.sourceforge.net, Andrew Victor <andrew@sanpeople.com>
+To: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+Cc: juha.yrjola@solidboot.com, imre.deak@solidboot.com
 
-On Fri, 15 Jun 2007 10:50:12 +0200
-Nicolas Ferre <nicolas.ferre@rfo.atmel.com> wrote:
+Hi Tony,
 
-> From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-> 
-> Fixes STN LCD support for the atmel_lcdfb framebuffer driver.
-> 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+This patch series contains Texas Instruments OMAP LCD framebuffer
+drivers. This driver is devided into
 
-Looks correct to me. Although...
+* main omapfb driver, which handles most common functions across
+processor series, like platform driver registration, ioctl handling,
+much like fb skeleton.
 
-> Index: b/drivers/video/Kconfig
-> ===================================================================
-> --- a/drivers/video/Kconfig	2007-05-14 11:02:16.000000000 +0200
-> +++ b/drivers/video/Kconfig	2007-06-13 11:04:10.000000000 +0200
-> @@ -701,6 +701,16 @@
->  	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
->  	  to let frame buffer in external SDRAM.
->  
-> +config FB_ATMEL_STN
-> +	bool "Use a STN display with AT91/AT32 LCD Controller"
-> +	depends on FB_ATMEL && ARCH_AT91SAM9261
-> +	default n
-> +	help
-> +	  Say Y if you want to connect a STN LCD display to the AT91/AT32 LCD
-> +	  Controller. Say N if you want to connect a TFT.
-> +
-> +	  If unsure, say N.
-> +
+This driver then gets through the callback based on the
+internal/external lcd controller and panel registered to it based on
+processor and board. Internal/External LCD controller as per lcd panel
+data registration is being done in separate files and so does patches.
 
-I don't think it's appropriate to include chip-specific options here.
-This option will not affect the driver at all, it will only affect the
-board-specific setup code, so IMO it should be under Platform-specific
-options or something like that.
+Overall this patches contains framebuffer driver for TI OMAP1
+(OMAP1510/1610/1710) and OMAP2 (OMAP2420/2430) and external
+controllers used in Nokia Internal Tablets (N770/N800).
 
-Also, the text says AT91/AT32 but it depends on one particular AT91
-chip.
+These drivers were very well tested on OMAP GIT [1] tree from long
+time. Most of the code for this driver is written by Imre Deak
+<imre.deak@solidboot.com>.
 
-I haven't had a chance to test it since I don't have any STN displays
-around, but I'll try forwarding it to someone who has.
-
-Haavard
+-- 
+--Trilok Soni
+[1] http://source.mvista.com/git/gitweb.cgi?p=linux-omap-2.6.git;a=log
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

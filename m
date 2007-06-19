@@ -1,25 +1,24 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 18/33] PS3: Frame buffer system-bus
-	rework
-Date: Tue, 19 Jun 2007 09:09:18 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0706190908370.5713@pademelon.sonytel.be>
-References: <20070615204749.629571012@am.sony.com>
-	<46730D32.8060803@am.sony.com>
-	<18039.31768.282185.497245@cargo.ozlabs.ibm.com>
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] atmel_lcdfb: Fix STN LCD support
+Date: Tue, 19 Jun 2007 09:47:52 +0200
+Message-ID: <20070619094752.1b7ba108@dhcp-255-175.norway.atmel.com>
+References: <467252C4.50203@rfo.atmel.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-133955480-1182236958=:5713"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I0XqY-0004Sh-UI for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Jun 2007 00:09:50 -0700
-Received: from [80.88.33.193] (helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I0XqU-0008QV-UV
+	id 1I0YS4-0000JE-5J for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Jun 2007 00:48:37 -0700
+Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1I0YS2-0004IE-Fx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Jun 2007 00:09:50 -0700
-In-Reply-To: <18039.31768.282185.497245@cargo.ozlabs.ibm.com>
+	Tue, 19 Jun 2007 00:48:36 -0700
+In-Reply-To: <467252C4.50203@rfo.atmel.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,77 +29,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, Geoff Levand <geoffrey.levand@am.sony.com>
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>, Kernel list <linux-kernel@vger.kernel.org>, Patrice Vilchez <patrice.vilchez@rfo.atmel.com>, Linux@sc8-sf-spam2.sourceforge.net, Andrew Victor <andrew@sanpeople.com>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 15 Jun 2007 10:50:12 +0200
+Nicolas Ferre <nicolas.ferre@rfo.atmel.com> wrote:
 
----584337861-133955480-1182236958=:5713
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+> 
+> Fixes STN LCD support for the atmel_lcdfb framebuffer driver.
+> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 
-	Hi Paul,
+Looks correct to me. Although...
 
-On Tue, 19 Jun 2007, Paul Mackerras wrote:
-> Geoff Levand writes:
-> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> >=20
-> > Convert the ps3fb device from a platform device to a PS3 system bus d=
-evice.
-> > Fix the remove and shutdown methods to support kexec and to make ps3f=
-b a
-> > loadable module.
->=20
-> Are you going to submit this to the fb maintainer (Antonio Daplas?) or
-> do you want me to take it because of dependencies on other patches in
-> your series?
+> Index: b/drivers/video/Kconfig
+> ===================================================================
+> --- a/drivers/video/Kconfig	2007-05-14 11:02:16.000000000 +0200
+> +++ b/drivers/video/Kconfig	2007-06-13 11:04:10.000000000 +0200
+> @@ -701,6 +701,16 @@
+>  	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
+>  	  to let frame buffer in external SDRAM.
+>  
+> +config FB_ATMEL_STN
+> +	bool "Use a STN display with AT91/AT32 LCD Controller"
+> +	depends on FB_ATMEL && ARCH_AT91SAM9261
+> +	default n
+> +	help
+> +	  Say Y if you want to connect a STN LCD display to the AT91/AT32 LCD
+> +	  Controller. Say N if you want to connect a TFT.
+> +
+> +	  If unsure, say N.
+> +
 
-I think it's best if you take it, since the changes to ps3fb depend on th=
-e
-PS3 system bus device core changes.
+I don't think it's appropriate to include chip-specific options here.
+This option will not affect the driver at all, it will only affect the
+board-specific setup code, so IMO it should be under Platform-specific
+options or something like that.
 
-With kind regards,
-=20
-Geert Uytterhoeven
-Software Architect
+Also, the text says AT91/AT32 but it depends on one particular AT91
+chip.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
-=B7 Belgium
-=20
-Phone:    +32 (0)2 700 8453=09
-Fax:      +32 (0)2 700 8622=09
-E-mail:   Geert.Uytterhoeven@sonycom.com=09
-Internet: http://www.sony-europe.com/
- =09
-Sony Network and Software Technology Center Europe=09
-A division of Sony Service Centre (Europe) N.V.=09
-Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
-ium=09
-VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
-Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
-9
----584337861-133955480-1182236958=:5713
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I haven't had a chance to test it since I don't have any STN displays
+around, but I'll try forwarding it to someone who has.
+
+Haavard
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
----584337861-133955480-1182236958=:5713
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
----584337861-133955480-1182236958=:5713--

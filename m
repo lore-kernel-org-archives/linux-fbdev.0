@@ -1,27 +1,26 @@
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: [REPOST][PATCH] pm2fb: mtrr support and noaccel
-	option
-Date: Thu, 21 Jun 2007 09:04:15 +0200
-Message-ID: <467a22ef07292@wp.pl>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: [PATCH] pm2fb: accelerated imageblit
+Date: Thu, 21 Jun 2007 17:21:34 +0200
+Message-ID: <467A977E.5070105@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="part467a22ef0998c"
+Content-Type: multipart/mixed; boundary="------------070802000806090206020202"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I1GiL-0005Ei-KR for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Jun 2007 00:04:21 -0700
+	id 1I1ORi-0003NQ-0X for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 21 Jun 2007 08:19:42 -0700
 Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1I1GiJ-0005KF-Pk
+	(Exim 4.44) id 1I1ORc-0006sk-VX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Jun 2007 00:04:21 -0700
-Received: from poczta-17.free.wp-sa.pl (HELO localhost) ([10.1.1.76])
-	(envelope-sender <krzysztof.h1@wp.pl>)
+	Thu, 21 Jun 2007 08:19:41 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO [87.99.61.239])
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
 	by smtp.wp.pl (WP-SMTPD) with SMTP
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	21 Jun 2007 09:04:15 +0200
+	21 Jun 2007 17:19:30 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,206 +31,459 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 This is a multi-part message in MIME format.
-
---part467a22ef0998c
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--------------070802000806090206020202
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch adds usage of MTRR registers and two new options:
-noaccel and nomtrr.
+This patch adds accelerated imageblit function.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
+This patch requires all previous pm2fb patches I sent to the list (and one from the current mm tree).
 
-The previous patch does not applied if the mm patches were
-applied. This one fixes it.
+Tony, please do not knock down my pm3fb patches because they do not apply cleanly. They do apply correctly (I have checked it). The mistake is due to the Adrian Bunk's patch which I forgot to use.
 
---- linux-2.6.21/drivers/video/pm2fb.c	2007-06-21
-08:32:07.000000000 +0200
-+++ linux-2.6.22/drivers/video/pm2fb.c	2007-06-21
-08:30:09.000000000 +0200
-@@ -38,6 +38,9 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/pci.h>
-+#ifdef CONFIG_MTRR
-+#include <asm/mtrr.h>
-+#endif
-=20
- #include <video/permedia2.h>
- #include <video/cvisionppc.h>
-@@ -71,8 +74,13 @@ static char *mode __devinitdata =3D NULL;
-  * these flags allow the user to specify that requests for +ve sync
-  * should be silently turned in -ve sync.
-  */
--static int lowhsync;
--static int lowvsync;
-+static int lowhsync __devinitdata;
-+static int lowvsync __devinitdata;
-+static int noaccel __devinitdata;
-+/* mtrr option */
-+#ifdef CONFIG_MTRR
-+static int nomtrr __devinitdata;
-+#endif
-=20
- /*
-  * The hardware state of the graphics card that isn't part of the
-@@ -88,6 +96,7 @@ struct pm2fb_par
- 	u32		mem_control;	/* MemControl reg at probe */
- 	u32		boot_address;	/* BootAddress reg at probe */
- 	u32		palette[16];
-+	int		mtrr_handle;
- };
-=20
- /*
-@@ -1316,6 +1325,15 @@ static int __devinit pm2fb_probe(struct=20
- 		goto err_exit_mmio;
- 	}
-=20
-+#ifdef CONFIG_MTRR
-+	default_par->mtrr_handle =3D -1;
-+	if (!nomtrr)
-+		default_par->mtrr_handle =3D
-+			mtrr_add(pm2fb_fix.smem_start,
-+				 pm2fb_fix.smem_len,
-+				 MTRR_TYPE_WRCOMB, 1);
-+#endif
+Regards,
+Krzysztof
+
+
+--- linux-2.6.21/drivers/video/pm2fb.c	2007-06-21 16:55:22.143307171 +0200
++++ linux-2.6.22/drivers/video/pm2fb.c	2007-06-21 17:10:14.194142205 +0200
+@@ -60,6 +60,8 @@
+ #define DPRINTK(a,b...)
+ #endif
+ 
++#define PM2_PIXMAP_SIZE	(1600 * 4)
 +
- 	info->fbops		=3D &pm2fb_ops;
- 	info->fix		=3D pm2fb_fix;
- 	info->pseudo_palette	=3D default_par->palette;
-@@ -1324,6 +1342,11 @@ static int __devinit pm2fb_probe(struct=20
- 				  FBINFO_HWACCEL_COPYAREA |
- 				  FBINFO_HWACCEL_FILLRECT;
-=20
-+	if (noaccel) {
-+	    	printk(KERN_DEBUG "disabling acceleration\n");
-+  		info->flags |=3D FBINFO_HWACCEL_DISABLED;
+ /*
+  * Driver data
+  */
+@@ -1166,6 +1168,104 @@ static void pm2fb_copyarea(struct fb_inf
+ 			modded.width, modded.height, 0);
+ }
+ 
++static void pm2fb_imageblit(struct fb_info *info, const struct fb_image *image)
++{
++	struct pm2fb_par *par = info->par;
++	u32 height = image->height;
++	u32 fgx, bgx;
++	const u32 *src = (const u32*)image->data;
++	u32 xres = (info->var.xres + 31) & ~31;
++
++	if (info->state != FBINFO_STATE_RUNNING)
++		return;
++	if (info->flags & FBINFO_HWACCEL_DISABLED || image->depth != 1) {
++		cfb_imageblit(info, image);
++		return;
++	}
++	switch (info->fix.visual) {
++		case FB_VISUAL_PSEUDOCOLOR:
++			fgx = image->fg_color;
++			bgx = image->bg_color;
++			break;
++		case FB_VISUAL_TRUECOLOR:
++		default:
++			fgx = par->palette[image->fg_color];
++			bgx = par->palette[image->bg_color];
++			break;
++	}
++	if (info->var.bits_per_pixel == 8) {
++		fgx |= fgx << 8;
++		bgx |= bgx << 8;
++	}
++	if (info->var.bits_per_pixel <= 16) {
++		fgx |= fgx << 16;
++		bgx |= bgx << 16;
 +	}
 +
++	WAIT_FIFO(par, 13);
++	pm2_WR(par, PM2R_FB_READ_MODE, partprod(xres));
++	pm2_WR(par, PM2R_SCISSOR_MIN_XY,
++			((image->dy & 0xfff) << 16) | (image->dx & 0x0fff));
++	pm2_WR(par, PM2R_SCISSOR_MAX_XY,
++			(((image->dy + image->height) & 0x0fff) << 16) |
++			((image->dx + image->width) & 0x0fff));
++	pm2_WR(par, PM2R_SCISSOR_MODE, 1);
++	/* GXcopy & UNIT_ENABLE */
++	pm2_WR(par, PM2R_LOGICAL_OP_MODE, (0x3 << 1) | 1 );
++	pm2_WR(par, PM2R_RECTANGLE_ORIGIN,
++			((image->dy & 0xfff) << 16) | (image->dx & 0x0fff));
++	pm2_WR(par, PM2R_RECTANGLE_SIZE,
++			((image->height & 0x0fff) << 16) |
++			((image->width) & 0x0fff));
++	if (info->var.bits_per_pixel == 24) {
++		pm2_WR(par, PM2R_COLOR_DDA_MODE, 1);
++		/* clear area */
++		pm2_WR(par, PM2R_CONSTANT_COLOR, bgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y );
++		/* BitMapPackEachScanline & invert bits and byte order*/
++		/* force background */
++		pm2_WR(par, PM2R_RASTERIZER_MODE,  (1<<9) | 1 | (3<<7));
++		pm2_WR(par, PM2R_CONSTANT_COLOR, fgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y |
++			PM2F_RENDER_SYNC_ON_BIT_MASK);
++	} else {
++		pm2_WR(par, PM2R_COLOR_DDA_MODE, 0);
++		/* clear area */
++		pm2_WR(par, PM2R_FB_BLOCK_COLOR, bgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_RENDER_FASTFILL |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y );
++		/* invert bits and byte order*/
++		pm2_WR(par, PM2R_RASTERIZER_MODE,  1 | (3<<7) );
++		pm2_WR(par, PM2R_FB_BLOCK_COLOR, fgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y |
++			PM2F_RENDER_FASTFILL |
++			PM2F_RENDER_SYNC_ON_BIT_MASK);
++	}
++
++	while (height--) {
++		int width = ((image->width + 7) >> 3)
++				+ info->pixmap.scan_align - 1;
++		width >>= 2;
++		WAIT_FIFO(par, width);
++		while (width--) {
++			pm2_WR(par, PM2R_BIT_MASK_PATTERN, *src);
++			src++;
++		}
++	}
++	WAIT_FIFO(par, 3);
++	pm2_WR(par, PM2R_RASTERIZER_MODE, 0);
++	pm2_WR(par, PM2R_COLOR_DDA_MODE, 0);
++	pm2_WR(par, PM2R_SCISSOR_MODE, 0);
++}
++
+ /* ------------ Hardware Independent Functions ------------ */
+ 
+ /*
+@@ -1181,7 +1281,7 @@ static struct fb_ops pm2fb_ops = {
+ 	.fb_pan_display	= pm2fb_pan_display,
+ 	.fb_fillrect	= pm2fb_fillrect,
+ 	.fb_copyarea	= pm2fb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
++	.fb_imageblit	= pm2fb_imageblit,
+ 	.fb_sync	= pm2fb_sync,
+ };
+ 
+@@ -1340,11 +1440,24 @@ static int __devinit pm2fb_probe(struct 
+ 	info->flags		= FBINFO_DEFAULT |
+ 				  FBINFO_HWACCEL_YPAN |
+ 				  FBINFO_HWACCEL_COPYAREA |
++				  FBINFO_HWACCEL_IMAGEBLIT |
+ 				  FBINFO_HWACCEL_FILLRECT;
+ 
++	info->pixmap.addr = kmalloc(PM2_PIXMAP_SIZE, GFP_KERNEL);
++	if (!info->pixmap.addr) {
++		err_retval = -ENOMEM;
++		goto err_exit_pixmap;
++	}
++	info->pixmap.size = PM2_PIXMAP_SIZE;
++	info->pixmap.buf_align = 4;
++	info->pixmap.scan_align = 4;
++	info->pixmap.access_align = 32;
++	info->pixmap.flags = FB_PIXMAP_SYSTEM;
++
+ 	if (noaccel) {
+-	    	printk(KERN_DEBUG "disabling acceleration\n");
+-  		info->flags |= FBINFO_HWACCEL_DISABLED;
++		printk(KERN_DEBUG "disabling acceleration\n");
++		info->flags |= FBINFO_HWACCEL_DISABLED;
++		info->pixmap.scan_align = 1;
+ 	}
+ 
  	if (!mode)
- 		mode =3D "640x480@60";
-=20
-@@ -1375,6 +1398,11 @@ static void __devexit pm2fb_remove(struc
-=20
- 	unregister_framebuffer(info);
-=20
-+#ifdef CONFIG_MTRR
-+	if (par->mtrr_handle >=3D 0)
-+		mtrr_del(par->mtrr_handle, info->fix.smem_start,
-+			 info->fix.smem_len);
-+#endif /* CONFIG_MTRR */
+@@ -1373,6 +1486,8 @@ static int __devinit pm2fb_probe(struct 
+  err_exit_all:
+ 	fb_dealloc_cmap(&info->cmap);
+  err_exit_both:
++	kfree(info->pixmap.addr);
++ err_exit_pixmap:
  	iounmap(info->screen_base);
- 	release_mem_region(fix->smem_start, fix->smem_len);
- 	iounmap(par->v_regs);
-@@ -1430,6 +1458,12 @@ static int __init pm2fb_setup(char *opti
- 			lowhsync =3D 1;
- 		} else if(!strcmp(this_opt, "lowvsync")) {
- 			lowvsync =3D 1;
-+#ifdef CONFIG_MTRR
-+		} else if (!strncmp(this_opt, "nomtrr", 6)) {
-+			nomtrr =3D 1;
-+#endif
-+		} else if (!strncmp(this_opt, "noaccel", 7)) {
-+			noaccel =3D 1;
- 		} else {
- 			mode =3D this_opt;
- 		}
-@@ -1474,6 +1508,12 @@ module_param(lowhsync, bool, 0);
- MODULE_PARM_DESC(lowhsync, "Force horizontal sync low regardless
-of mode");
- module_param(lowvsync, bool, 0);
- MODULE_PARM_DESC(lowvsync, "Force vertical sync low regardless
-of mode");
-+module_param(noaccel, bool, 0);
-+MODULE_PARM_DESC(noaccel, "Disable acceleration");
-+#ifdef CONFIG_MTRR
-+module_param(nomtrr, bool, 0);
-+MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=3Ddisabled)
-(default=3D0)");
-+#endif
-=20
- MODULE_AUTHOR("Jim Hague <jim.hague@acm.org>");
- MODULE_DESCRIPTION("Permedia2 framebuffer device driver");
+ 	release_mem_region(pm2fb_fix.smem_start, pm2fb_fix.smem_len);
+  err_exit_mmio:
+@@ -1409,6 +1524,8 @@ static void __devexit pm2fb_remove(struc
+ 	release_mem_region(fix->mmio_start, fix->mmio_len);
+ 
+ 	pci_set_drvdata(pdev, NULL);
++	if (info->pixmap.addr)
++		kfree(info->pixmap.addr);
+ 	kfree(info);
+ }
+ 
+--- linux-2.6.21/include/video/permedia2.h	2007-06-21 16:40:54.593868383 +0200
++++ linux-2.6.22/include/video/permedia2.h	2007-06-19 23:47:48.938974026 +0200
+@@ -68,11 +68,14 @@
+ #define PM2R_D_Y					0x8028
+ #define PM2R_COUNT					0x8030
+ #define PM2R_RENDER					0x8038
++#define PM2R_BIT_MASK_PATTERN				0x8068
+ #define PM2R_RASTERIZER_MODE				0x80a0
+ #define PM2R_RECTANGLE_ORIGIN				0x80d0
+ #define PM2R_RECTANGLE_SIZE				0x80d8
+ #define PM2R_PACKED_DATA_LIMITS				0x8150
+ #define PM2R_SCISSOR_MODE				0x8180
++#define PM2R_SCISSOR_MIN_XY				0x8188
++#define PM2R_SCISSOR_MAX_XY				0x8190
+ #define PM2R_SCREEN_SIZE				0x8198
+ #define PM2R_AREA_STIPPLE_MODE				0x81a0
+ #define PM2R_WINDOW_ORIGIN				0x81c8
+@@ -83,7 +86,9 @@
+ #define PM2R_TEXEL_LUT_MODE				0x8678
+ #define PM2R_TEXTURE_COLOR_MODE				0x8680
+ #define PM2R_FOG_MODE					0x8690
++#define PM2R_TEXEL0					0x8760
+ #define PM2R_COLOR_DDA_MODE				0x87e0
++#define PM2R_CONSTANT_COLOR				0x87e8
+ #define PM2R_ALPHA_BLEND_MODE				0x8810
+ #define PM2R_DITHER_MODE				0x8818
+ #define PM2R_FB_SOFT_WRITE_MASK				0x8820
+@@ -169,6 +174,8 @@
+ #define PM2F_RENDER_TRAPEZOID				(1L<<6)
+ #define PM2F_RENDER_POINT				(2L<<6)
+ #define PM2F_RENDER_RECTANGLE				(3L<<6)
++#define PM2F_RENDER_SYNC_ON_BIT_MASK			(1L<<11)
++#define PM2F_RENDER_TEXTURE_ENABLE			(1L<<13)
+ #define PM2F_SYNCHRONIZATION				(1L<<10)
+ #define PM2F_PLL_LOCKED					0x10
+ #define PM2F_BEING_RESET				(1L<<31)
 
+--------------070802000806090206020202
+Content-Type: text/plain;
+ name="pm2fb-imageblit-full.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pm2fb-imageblit-full.diff"
 
-----------------------------------------------------
-Wroc=B3aw Non Stop - eksplozja kultury we Wroc=B3awiu!=20
-22 czerwca - 1 lipca 2007.=20
-W ramach festiwalu wyst=B1pi=B1 m.in. Iggy Pop & The Stooges!
-wwW.wroclawnonstop.pl http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.w=
-p.pl%2Fas%2Figgypop.html&sid=3D1194
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
---part467a22ef0998c
-Content-Type: text/x-patch; name="pm2fb-mtrr.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="pm2fb-mtrr.diff"
+This patch adds accelerated imageblit function.
 
-RnJvbTogS3J6eXN6dG9mIEhlbHQgPGtyenlzenRvZi5oMUB3cC5wbD4KClRoaXMgcGF0Y2ggYWRk
-cyB1c2FnZSBvZiBNVFJSIHJlZ2lzdGVycyBhbmQgdHdvIG5ldyBvcHRpb25zOiBub2FjY2VsIGFu
-ZCBub210cnIuCgpTaWduZWQtb2ZmLWJ5OiBLcnp5c3p0b2YgSGVsdCA8a3J6eXN6dG9mLmgxQHdw
-LnBsPgoKLS0tCgotLS0gbGludXgtMi42LjIxL2RyaXZlcnMvdmlkZW8vcG0yZmIuYwkyMDA3LTA2
-LTIxIDA4OjMyOjA3LjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjIyL2RyaXZlcnMvdmlk
-ZW8vcG0yZmIuYwkyMDA3LTA2LTIxIDA4OjMwOjA5LjAwMDAwMDAwMCArMDIwMApAQCAtMzgsNiAr
-MzgsOSBAQAogI2luY2x1ZGUgPGxpbnV4L2ZiLmg+CiAjaW5jbHVkZSA8bGludXgvaW5pdC5oPgog
-I2luY2x1ZGUgPGxpbnV4L3BjaS5oPgorI2lmZGVmIENPTkZJR19NVFJSCisjaW5jbHVkZSA8YXNt
-L210cnIuaD4KKyNlbmRpZgogCiAjaW5jbHVkZSA8dmlkZW8vcGVybWVkaWEyLmg+CiAjaW5jbHVk
-ZSA8dmlkZW8vY3Zpc2lvbnBwYy5oPgpAQCAtNzEsOCArNzQsMTMgQEAgc3RhdGljIGNoYXIgKm1v
-ZGUgX19kZXZpbml0ZGF0YSA9IE5VTEw7CiAgKiB0aGVzZSBmbGFncyBhbGxvdyB0aGUgdXNlciB0
-byBzcGVjaWZ5IHRoYXQgcmVxdWVzdHMgZm9yICt2ZSBzeW5jCiAgKiBzaG91bGQgYmUgc2lsZW50
-bHkgdHVybmVkIGluIC12ZSBzeW5jLgogICovCi1zdGF0aWMgaW50IGxvd2hzeW5jOwotc3RhdGlj
-IGludCBsb3d2c3luYzsKK3N0YXRpYyBpbnQgbG93aHN5bmMgX19kZXZpbml0ZGF0YTsKK3N0YXRp
-YyBpbnQgbG93dnN5bmMgX19kZXZpbml0ZGF0YTsKK3N0YXRpYyBpbnQgbm9hY2NlbCBfX2Rldmlu
-aXRkYXRhOworLyogbXRyciBvcHRpb24gKi8KKyNpZmRlZiBDT05GSUdfTVRSUgorc3RhdGljIGlu
-dCBub210cnIgX19kZXZpbml0ZGF0YTsKKyNlbmRpZgogCiAvKgogICogVGhlIGhhcmR3YXJlIHN0
-YXRlIG9mIHRoZSBncmFwaGljcyBjYXJkIHRoYXQgaXNuJ3QgcGFydCBvZiB0aGUKQEAgLTg4LDYg
-Kzk2LDcgQEAgc3RydWN0IHBtMmZiX3BhcgogCXUzMgkJbWVtX2NvbnRyb2w7CS8qIE1lbUNvbnRy
-b2wgcmVnIGF0IHByb2JlICovCiAJdTMyCQlib290X2FkZHJlc3M7CS8qIEJvb3RBZGRyZXNzIHJl
-ZyBhdCBwcm9iZSAqLwogCXUzMgkJcGFsZXR0ZVsxNl07CisJaW50CQltdHJyX2hhbmRsZTsKIH07
-CiAKIC8qCkBAIC0xMzE2LDYgKzEzMjUsMTUgQEAgc3RhdGljIGludCBfX2RldmluaXQgcG0yZmJf
-cHJvYmUoc3RydWN0IAogCQlnb3RvIGVycl9leGl0X21taW87CiAJfQogCisjaWZkZWYgQ09ORklH
-X01UUlIKKwlkZWZhdWx0X3Bhci0+bXRycl9oYW5kbGUgPSAtMTsKKwlpZiAoIW5vbXRycikKKwkJ
-ZGVmYXVsdF9wYXItPm10cnJfaGFuZGxlID0KKwkJCW10cnJfYWRkKHBtMmZiX2ZpeC5zbWVtX3N0
-YXJ0LAorCQkJCSBwbTJmYl9maXguc21lbV9sZW4sCisJCQkJIE1UUlJfVFlQRV9XUkNPTUIsIDEp
-OworI2VuZGlmCisKIAlpbmZvLT5mYm9wcwkJPSAmcG0yZmJfb3BzOwogCWluZm8tPmZpeAkJPSBw
-bTJmYl9maXg7CiAJaW5mby0+cHNldWRvX3BhbGV0dGUJPSBkZWZhdWx0X3Bhci0+cGFsZXR0ZTsK
-QEAgLTEzMjQsNiArMTM0MiwxMSBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBwbTJmYl9wcm9iZShz
-dHJ1Y3QgCiAJCQkJICBGQklORk9fSFdBQ0NFTF9DT1BZQVJFQSB8CiAJCQkJICBGQklORk9fSFdB
-Q0NFTF9GSUxMUkVDVDsKIAorCWlmIChub2FjY2VsKSB7CisJICAgIAlwcmludGsoS0VSTl9ERUJV
-RyAiZGlzYWJsaW5nIGFjY2VsZXJhdGlvblxuIik7CisgIAkJaW5mby0+ZmxhZ3MgfD0gRkJJTkZP
-X0hXQUNDRUxfRElTQUJMRUQ7CisJfQorCiAJaWYgKCFtb2RlKQogCQltb2RlID0gIjY0MHg0ODBA
-NjAiOwogCkBAIC0xMzc1LDYgKzEzOTgsMTEgQEAgc3RhdGljIHZvaWQgX19kZXZleGl0IHBtMmZi
-X3JlbW92ZShzdHJ1YwogCiAJdW5yZWdpc3Rlcl9mcmFtZWJ1ZmZlcihpbmZvKTsKIAorI2lmZGVm
-IENPTkZJR19NVFJSCisJaWYgKHBhci0+bXRycl9oYW5kbGUgPj0gMCkKKwkJbXRycl9kZWwocGFy
-LT5tdHJyX2hhbmRsZSwgaW5mby0+Zml4LnNtZW1fc3RhcnQsCisJCQkgaW5mby0+Zml4LnNtZW1f
-bGVuKTsKKyNlbmRpZiAvKiBDT05GSUdfTVRSUiAqLwogCWlvdW5tYXAoaW5mby0+c2NyZWVuX2Jh
-c2UpOwogCXJlbGVhc2VfbWVtX3JlZ2lvbihmaXgtPnNtZW1fc3RhcnQsIGZpeC0+c21lbV9sZW4p
-OwogCWlvdW5tYXAocGFyLT52X3JlZ3MpOwpAQCAtMTQzMCw2ICsxNDU4LDEyIEBAIHN0YXRpYyBp
-bnQgX19pbml0IHBtMmZiX3NldHVwKGNoYXIgKm9wdGkKIAkJCWxvd2hzeW5jID0gMTsKIAkJfSBl
-bHNlIGlmKCFzdHJjbXAodGhpc19vcHQsICJsb3d2c3luYyIpKSB7CiAJCQlsb3d2c3luYyA9IDE7
-CisjaWZkZWYgQ09ORklHX01UUlIKKwkJfSBlbHNlIGlmICghc3RybmNtcCh0aGlzX29wdCwgIm5v
-bXRyciIsIDYpKSB7CisJCQlub210cnIgPSAxOworI2VuZGlmCisJCX0gZWxzZSBpZiAoIXN0cm5j
-bXAodGhpc19vcHQsICJub2FjY2VsIiwgNykpIHsKKwkJCW5vYWNjZWwgPSAxOwogCQl9IGVsc2Ug
-ewogCQkJbW9kZSA9IHRoaXNfb3B0OwogCQl9CkBAIC0xNDc0LDYgKzE1MDgsMTIgQEAgbW9kdWxl
-X3BhcmFtKGxvd2hzeW5jLCBib29sLCAwKTsKIE1PRFVMRV9QQVJNX0RFU0MobG93aHN5bmMsICJG
-b3JjZSBob3Jpem9udGFsIHN5bmMgbG93IHJlZ2FyZGxlc3Mgb2YgbW9kZSIpOwogbW9kdWxlX3Bh
-cmFtKGxvd3ZzeW5jLCBib29sLCAwKTsKIE1PRFVMRV9QQVJNX0RFU0MobG93dnN5bmMsICJGb3Jj
-ZSB2ZXJ0aWNhbCBzeW5jIGxvdyByZWdhcmRsZXNzIG9mIG1vZGUiKTsKK21vZHVsZV9wYXJhbShu
-b2FjY2VsLCBib29sLCAwKTsKK01PRFVMRV9QQVJNX0RFU0Mobm9hY2NlbCwgIkRpc2FibGUgYWNj
-ZWxlcmF0aW9uIik7CisjaWZkZWYgQ09ORklHX01UUlIKK21vZHVsZV9wYXJhbShub210cnIsIGJv
-b2wsIDApOworTU9EVUxFX1BBUk1fREVTQyhub210cnIsICJEaXNhYmxlIE1UUlIgc3VwcG9ydCAo
-MCBvciAxPWRpc2FibGVkKSAoZGVmYXVsdD0wKSIpOworI2VuZGlmCiAKIE1PRFVMRV9BVVRIT1Io
-IkppbSBIYWd1ZSA8amltLmhhZ3VlQGFjbS5vcmc+Iik7CiBNT0RVTEVfREVTQ1JJUFRJT04oIlBl
-cm1lZGlhMiBmcmFtZWJ1ZmZlciBkZXZpY2UgZHJpdmVyIik7Cg==
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
---part467a22ef0998c
+---
+This patch requires all previous pm2fb patches I sent to the list (and one from the mm tree).
+
+--- linux-2.6.21/drivers/video/pm2fb.c	2007-06-21 16:55:22.143307171 +0200
++++ linux-2.6.22/drivers/video/pm2fb.c	2007-06-21 17:10:14.194142205 +0200
+@@ -60,6 +60,8 @@
+ #define DPRINTK(a,b...)
+ #endif
+ 
++#define PM2_PIXMAP_SIZE	(1600 * 4)
++
+ /*
+  * Driver data
+  */
+@@ -1166,6 +1168,104 @@ static void pm2fb_copyarea(struct fb_inf
+ 			modded.width, modded.height, 0);
+ }
+ 
++static void pm2fb_imageblit(struct fb_info *info, const struct fb_image *image)
++{
++	struct pm2fb_par *par = info->par;
++	u32 height = image->height;
++	u32 fgx, bgx;
++	const u32 *src = (const u32*)image->data;
++	u32 xres = (info->var.xres + 31) & ~31;
++
++	if (info->state != FBINFO_STATE_RUNNING)
++		return;
++	if (info->flags & FBINFO_HWACCEL_DISABLED || image->depth != 1) {
++		cfb_imageblit(info, image);
++		return;
++	}
++	switch (info->fix.visual) {
++		case FB_VISUAL_PSEUDOCOLOR:
++			fgx = image->fg_color;
++			bgx = image->bg_color;
++			break;
++		case FB_VISUAL_TRUECOLOR:
++		default:
++			fgx = par->palette[image->fg_color];
++			bgx = par->palette[image->bg_color];
++			break;
++	}
++	if (info->var.bits_per_pixel == 8) {
++		fgx |= fgx << 8;
++		bgx |= bgx << 8;
++	}
++	if (info->var.bits_per_pixel <= 16) {
++		fgx |= fgx << 16;
++		bgx |= bgx << 16;
++	}
++
++	WAIT_FIFO(par, 13);
++	pm2_WR(par, PM2R_FB_READ_MODE, partprod(xres));
++	pm2_WR(par, PM2R_SCISSOR_MIN_XY,
++			((image->dy & 0xfff) << 16) | (image->dx & 0x0fff));
++	pm2_WR(par, PM2R_SCISSOR_MAX_XY,
++			(((image->dy + image->height) & 0x0fff) << 16) |
++			((image->dx + image->width) & 0x0fff));
++	pm2_WR(par, PM2R_SCISSOR_MODE, 1);
++	/* GXcopy & UNIT_ENABLE */
++	pm2_WR(par, PM2R_LOGICAL_OP_MODE, (0x3 << 1) | 1 );
++	pm2_WR(par, PM2R_RECTANGLE_ORIGIN,
++			((image->dy & 0xfff) << 16) | (image->dx & 0x0fff));
++	pm2_WR(par, PM2R_RECTANGLE_SIZE,
++			((image->height & 0x0fff) << 16) |
++			((image->width) & 0x0fff));
++	if (info->var.bits_per_pixel == 24) {
++		pm2_WR(par, PM2R_COLOR_DDA_MODE, 1);
++		/* clear area */
++		pm2_WR(par, PM2R_CONSTANT_COLOR, bgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y );
++		/* BitMapPackEachScanline & invert bits and byte order*/
++		/* force background */
++		pm2_WR(par, PM2R_RASTERIZER_MODE,  (1<<9) | 1 | (3<<7));
++		pm2_WR(par, PM2R_CONSTANT_COLOR, fgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y |
++			PM2F_RENDER_SYNC_ON_BIT_MASK);
++	} else {
++		pm2_WR(par, PM2R_COLOR_DDA_MODE, 0);
++		/* clear area */
++		pm2_WR(par, PM2R_FB_BLOCK_COLOR, bgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_RENDER_FASTFILL |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y );
++		/* invert bits and byte order*/
++		pm2_WR(par, PM2R_RASTERIZER_MODE,  1 | (3<<7) );
++		pm2_WR(par, PM2R_FB_BLOCK_COLOR, fgx);
++		pm2_WR(par, PM2R_RENDER,
++			PM2F_RENDER_RECTANGLE |
++			PM2F_INCREASE_X | PM2F_INCREASE_Y |
++			PM2F_RENDER_FASTFILL |
++			PM2F_RENDER_SYNC_ON_BIT_MASK);
++	}
++
++	while (height--) {
++		int width = ((image->width + 7) >> 3)
++				+ info->pixmap.scan_align - 1;
++		width >>= 2;
++		WAIT_FIFO(par, width);
++		while (width--) {
++			pm2_WR(par, PM2R_BIT_MASK_PATTERN, *src);
++			src++;
++		}
++	}
++	WAIT_FIFO(par, 3);
++	pm2_WR(par, PM2R_RASTERIZER_MODE, 0);
++	pm2_WR(par, PM2R_COLOR_DDA_MODE, 0);
++	pm2_WR(par, PM2R_SCISSOR_MODE, 0);
++}
++
+ /* ------------ Hardware Independent Functions ------------ */
+ 
+ /*
+@@ -1181,7 +1281,7 @@ static struct fb_ops pm2fb_ops = {
+ 	.fb_pan_display	= pm2fb_pan_display,
+ 	.fb_fillrect	= pm2fb_fillrect,
+ 	.fb_copyarea	= pm2fb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
++	.fb_imageblit	= pm2fb_imageblit,
+ 	.fb_sync	= pm2fb_sync,
+ };
+ 
+@@ -1340,11 +1440,24 @@ static int __devinit pm2fb_probe(struct 
+ 	info->flags		= FBINFO_DEFAULT |
+ 				  FBINFO_HWACCEL_YPAN |
+ 				  FBINFO_HWACCEL_COPYAREA |
++				  FBINFO_HWACCEL_IMAGEBLIT |
+ 				  FBINFO_HWACCEL_FILLRECT;
+ 
++	info->pixmap.addr = kmalloc(PM2_PIXMAP_SIZE, GFP_KERNEL);
++	if (!info->pixmap.addr) {
++		err_retval = -ENOMEM;
++		goto err_exit_pixmap;
++	}
++	info->pixmap.size = PM2_PIXMAP_SIZE;
++	info->pixmap.buf_align = 4;
++	info->pixmap.scan_align = 4;
++	info->pixmap.access_align = 32;
++	info->pixmap.flags = FB_PIXMAP_SYSTEM;
++
+ 	if (noaccel) {
+-	    	printk(KERN_DEBUG "disabling acceleration\n");
+-  		info->flags |= FBINFO_HWACCEL_DISABLED;
++		printk(KERN_DEBUG "disabling acceleration\n");
++		info->flags |= FBINFO_HWACCEL_DISABLED;
++		info->pixmap.scan_align = 1;
+ 	}
+ 
+ 	if (!mode)
+@@ -1373,6 +1486,8 @@ static int __devinit pm2fb_probe(struct 
+  err_exit_all:
+ 	fb_dealloc_cmap(&info->cmap);
+  err_exit_both:
++	kfree(info->pixmap.addr);
++ err_exit_pixmap:
+ 	iounmap(info->screen_base);
+ 	release_mem_region(pm2fb_fix.smem_start, pm2fb_fix.smem_len);
+  err_exit_mmio:
+@@ -1409,6 +1524,8 @@ static void __devexit pm2fb_remove(struc
+ 	release_mem_region(fix->mmio_start, fix->mmio_len);
+ 
+ 	pci_set_drvdata(pdev, NULL);
++	if (info->pixmap.addr)
++		kfree(info->pixmap.addr);
+ 	kfree(info);
+ }
+ 
+--- linux-2.6.21/include/video/permedia2.h	2007-06-21 16:40:54.593868383 +0200
++++ linux-2.6.22/include/video/permedia2.h	2007-06-19 23:47:48.938974026 +0200
+@@ -68,11 +68,14 @@
+ #define PM2R_D_Y					0x8028
+ #define PM2R_COUNT					0x8030
+ #define PM2R_RENDER					0x8038
++#define PM2R_BIT_MASK_PATTERN				0x8068
+ #define PM2R_RASTERIZER_MODE				0x80a0
+ #define PM2R_RECTANGLE_ORIGIN				0x80d0
+ #define PM2R_RECTANGLE_SIZE				0x80d8
+ #define PM2R_PACKED_DATA_LIMITS				0x8150
+ #define PM2R_SCISSOR_MODE				0x8180
++#define PM2R_SCISSOR_MIN_XY				0x8188
++#define PM2R_SCISSOR_MAX_XY				0x8190
+ #define PM2R_SCREEN_SIZE				0x8198
+ #define PM2R_AREA_STIPPLE_MODE				0x81a0
+ #define PM2R_WINDOW_ORIGIN				0x81c8
+@@ -83,7 +86,9 @@
+ #define PM2R_TEXEL_LUT_MODE				0x8678
+ #define PM2R_TEXTURE_COLOR_MODE				0x8680
+ #define PM2R_FOG_MODE					0x8690
++#define PM2R_TEXEL0					0x8760
+ #define PM2R_COLOR_DDA_MODE				0x87e0
++#define PM2R_CONSTANT_COLOR				0x87e8
+ #define PM2R_ALPHA_BLEND_MODE				0x8810
+ #define PM2R_DITHER_MODE				0x8818
+ #define PM2R_FB_SOFT_WRITE_MASK				0x8820
+@@ -169,6 +174,8 @@
+ #define PM2F_RENDER_TRAPEZOID				(1L<<6)
+ #define PM2F_RENDER_POINT				(2L<<6)
+ #define PM2F_RENDER_RECTANGLE				(3L<<6)
++#define PM2F_RENDER_SYNC_ON_BIT_MASK			(1L<<11)
++#define PM2F_RENDER_TEXTURE_ENABLE			(1L<<13)
+ #define PM2F_SYNCHRONIZATION				(1L<<10)
+ #define PM2F_PLL_LOCKED					0x10
+ #define PM2F_BEING_RESET				(1L<<31)
+
+--------------070802000806090206020202
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -242,7 +494,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---part467a22ef0998c
+--------------070802000806090206020202
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -253,4 +505,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---part467a22ef0998c--
+--------------070802000806090206020202--

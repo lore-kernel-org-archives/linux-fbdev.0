@@ -1,27 +1,22 @@
-From: "Levand, Geoffrey" <Geoffrey.Levand@am.sony.com>
-Subject: Re: [patch 18/33] PS3: Frame buffer system-bus
-	rework
-Date: Thu, 21 Jun 2007 15:18:25 -0700
-Message-ID: <591B6A09961C354991CD653B274DC8C203E0521B@ussdixms03.am.sony.com>
-References: <20070615204749.629571012@am.sony.com><46730D32.8060803@am.sony.com>
-	<18039.31768.282185.497245@cargo.ozlabs.ibm.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Michal Januszewski <spock@gentoo.org>
+Subject: [PATCH 0/4] fbdev: uvesafb
+Date: Sat, 23 Jun 2007 12:49:20 +0200
+Message-ID: <20070623104920.GA12623@spock.one.pl>
+Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I1Uz8-0000Oe-1W for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Jun 2007 15:18:38 -0700
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]
-	helo=outbound5-dub-R.bigfish.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1I1Uz6-0004y6-8r
+	id 1I23BG-0005Zj-PS for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Jun 2007 03:49:26 -0700
+Received: from ipn26-148.piekary.net ([83.238.26.148])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I23BF-0003rq-Dj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Jun 2007 15:18:37 -0700
-Content-class: urn:content-classes:message
+	Sat, 23 Jun 2007 03:49:26 -0700
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,39 +27,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mackerras <paulus@samba.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
 
------Original Message-----
-From: Paul Mackerras [mailto:paulus@samba.org]
-Sent: Mon 6/18/2007 11:47 PM
-To: Levand, Geoffrey
-Cc: linuxppc-dev@ozlabs.org; linux-fbdev-devel@lists.sourceforge.net; Geert Uytterhoeven
-Subject: Re: [patch 18/33] PS3: Frame buffer system-bus rework
- 
-Geoff Levand writes:
+uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
+version of vesafb and a direct successor of vesafb-tng [1].
 
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> 
-> Convert the ps3fb device from a platform device to a PS3 system bus device.
-> Fix the remove and shutdown methods to support kexec and to make ps3fb a
-> loadable module.
+uvesafb uses a userspace helper application (v86d, [2]) to run the x86
+Video BIOS code.  This makes it possible to include in uvesafb all the
+standard features (refresh rate control, video mode changes etc) that
+are missing from vesafb without resorting to ugly hacks such as the ones
+used in [1].  The current implementation of v86d can use either LRMI or
+x86emu to run the BIOS code and supports both x86 and x86_64.
 
-Are you going to submit this to the fb maintainer (Antonio Daplas?) or
-do you want me to take it because of dependencies on other patches in
-your series?
+[1] http://dev.gentoo.org/~spock/projects/vesafb-tng/
+[2] http://dev.gentoo.org/~spock/projects/uvesafb/
 
-
-Hi Paul,
-
-Sorry for the delay, and this formatting.  I am away on holiday,
-with just a crappy Web browser interface...
-
-I was hoping you could take it, as it fits in with the series, and
-touches my platform code.  Thanks.
-
--Geoff
-
+Best regards.
+-- 
+Michal Januszewski                              JID: spock@im.gentoo.org
+Gentoo Linux Developer                    http://people.gentoo.org/spock
 
 
 -------------------------------------------------------------------------

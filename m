@@ -1,7 +1,8 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH 0/4] fbdev: uvesafb
-Date: Sat, 23 Jun 2007 12:49:20 +0200
-Message-ID: <20070623104920.GA12623@spock.one.pl>
+Subject: [PATCH 1/4] fbdev: make fb_find_mode look for a
+	mode with the	highest refresh rate
+Date: Sat, 23 Jun 2007 12:50:46 +0200
+Message-ID: <20070623105046.GB12623@spock.one.pl>
 Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,12 +11,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I23BG-0005Zj-PS for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Jun 2007 03:49:26 -0700
+	id 1I23Cc-0005ft-Ae for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Jun 2007 03:50:50 -0700
 Received: from ipn26-148.piekary.net ([83.238.26.148])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I23BF-0003rq-Dj
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I23Cb-0004AV-V0
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Jun 2007 03:49:26 -0700
+	Sat, 23 Jun 2007 03:50:50 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,23 +31,52 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org
 
-uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
-version of vesafb and a direct successor of vesafb-tng [1].
+If the refresh rate hasn't been explicitly specified, fd_find_mode
+currently returns the first mode with the requested resolution. Change
+it so that it returns a mode with the requested resolution and the
+highest refresh rate.
 
-uvesafb uses a userspace helper application (v86d, [2]) to run the x86
-Video BIOS code.  This makes it possible to include in uvesafb all the
-standard features (refresh rate control, video mode changes etc) that
-are missing from vesafb without resorting to ugly hacks such as the ones
-used in [1].  The current implementation of v86d can use either LRMI or
-x86emu to run the BIOS code and supports both x86 and x86_64.
+Also export fb_destroy_modelist, which is used in uvesafb.
 
-[1] http://dev.gentoo.org/~spock/projects/vesafb-tng/
-[2] http://dev.gentoo.org/~spock/projects/uvesafb/
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
+drivers/video/modedb.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-Best regards.
--- 
-Michal Januszewski                              JID: spock@im.gentoo.org
-Gentoo Linux Developer                    http://people.gentoo.org/spock
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 3741ad7..98ee77b 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -606,16 +606,18 @@ done:
+ 	DPRINTK("Trying specified video mode%s %ix%i\n",
+ 	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
+ 
++	if (!refresh_specified)
++		refresh = 200;
+ 	diff = refresh;
+ 	best = -1;
+ 	for (i = 0; i < dbsize; i++) {
+ 		if (name_matches(db[i], name, namelen) ||
+ 		    (res_specified && res_matches(db[i], xres, yres))) {
+ 			if(!fb_try_mode(var, info, &db[i], bpp)) {
+-				if(!refresh_specified || db[i].refresh == refresh)
++				if (refresh_specified && db[i].refresh == refresh)
+ 					return 1;
+ 				else {
+-					if(diff > abs(db[i].refresh - refresh)) {
++					if (diff > abs(db[i].refresh - refresh)) {
+ 						diff = abs(db[i].refresh - refresh);
+ 						best = i;
+ 					}
+@@ -938,6 +940,7 @@ void fb_destroy_modelist(struct list_head *head)
+ 		kfree(pos);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(fb_destroy_modelist);
+ 
+ /**
+  * fb_videomode_to_modelist: convert mode array to mode list
+
 
 
 -------------------------------------------------------------------------

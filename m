@@ -1,22 +1,22 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH 1/4] fbdev: make fb_find_mode look for a
-	mode with the	highest refresh rate
-Date: Sat, 23 Jun 2007 12:50:46 +0200
-Message-ID: <20070623105046.GB12623@spock.one.pl>
+Subject: [PATCH 2/4] fbdev: add connector entries for
+	uvesafb
+Date: Sat, 23 Jun 2007 12:51:46 +0200
+Message-ID: <20070623105146.GC12623@spock.one.pl>
 Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I23Cc-0005ft-Ae for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Jun 2007 03:50:50 -0700
+	id 1I23Dd-0005lf-9R for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Jun 2007 03:51:53 -0700
 Received: from ipn26-148.piekary.net ([83.238.26.148])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I23Cb-0004AV-V0
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I23DZ-0003G3-Vz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Jun 2007 03:50:50 -0700
+	Sat, 23 Jun 2007 03:51:52 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,51 +31,39 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org
 
-If the refresh rate hasn't been explicitly specified, fd_find_mode
-currently returns the first mode with the requested resolution. Change
-it so that it returns a mode with the requested resolution and the
-highest refresh rate.
+Add connector's idx and val constants for v86d and uvesafb.
 
-Also export fb_destroy_modelist, which is used in uvesafb.
+Also change the maximum message size to 4k to allow transfers of VBE
+data blocks from userspace.
 
 Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
-drivers/video/modedb.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+include/linux/connector.h |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 3741ad7..98ee77b 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -606,16 +606,18 @@ done:
- 	DPRINTK("Trying specified video mode%s %ix%i\n",
- 	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
+diff --git a/include/linux/connector.h b/include/linux/connector.h
+index 10eb56b..46b2aba 100644
+--- a/include/linux/connector.h
++++ b/include/linux/connector.h
+@@ -36,14 +36,15 @@
+ #define CN_VAL_CIFS                     0x1
+ #define CN_W1_IDX			0x3	/* w1 communication */
+ #define CN_W1_VAL			0x1
++#define CN_IDX_V86D			0x4
++#define CN_VAL_V86D_UVESAFB		0x1
  
-+	if (!refresh_specified)
-+		refresh = 200;
- 	diff = refresh;
- 	best = -1;
- 	for (i = 0; i < dbsize; i++) {
- 		if (name_matches(db[i], name, namelen) ||
- 		    (res_specified && res_matches(db[i], xres, yres))) {
- 			if(!fb_try_mode(var, info, &db[i], bpp)) {
--				if(!refresh_specified || db[i].refresh == refresh)
-+				if (refresh_specified && db[i].refresh == refresh)
- 					return 1;
- 				else {
--					if(diff > abs(db[i].refresh - refresh)) {
-+					if (diff > abs(db[i].refresh - refresh)) {
- 						diff = abs(db[i].refresh - refresh);
- 						best = i;
- 					}
-@@ -938,6 +940,7 @@ void fb_destroy_modelist(struct list_head *head)
- 		kfree(pos);
- 	}
- }
-+EXPORT_SYMBOL_GPL(fb_destroy_modelist);
+-
+-#define CN_NETLINK_USERS		4
++#define CN_NETLINK_USERS		5
  
- /**
-  * fb_videomode_to_modelist: convert mode array to mode list
+ /*
+  * Maximum connector's message size.
+  */
+-#define CONNECTOR_MAX_MSG_SIZE 	1024
++#define CONNECTOR_MAX_MSG_SIZE 	4096
+ 
+ /*
+  * idx and val are unique identifiers which 
 
 
 

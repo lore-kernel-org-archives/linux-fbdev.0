@@ -1,69 +1,122 @@
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH 2/4] fbdev: add connector entries for uvesafb
-Date: Sun, 24 Jun 2007 00:05:07 +0400
-Message-ID: <20070623200507.GA29496@2ka.mipt.ru>
-References: <20070623105146.GC12623@spock.one.pl> <20070623110627.c911373c.akpm@linux-foundation.org>
+From: Michal Januszewski <spock@gentoo.org>
+Subject: Re: [PATCH 1/4] fbdev: make fb_find_mode look
+	for a mode with the	highest refresh rate
+Date: Sat, 23 Jun 2007 23:26:32 +0200
+Message-ID: <20070623212632.GA7148@spock.one.pl>
+References: <20070623105046.GB12623@spock.one.pl>
+	<20070623110424.9a68d82d.akpm@linux-foundation.org>
+Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754274AbXFWUF5@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070623110627.c911373c.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1I2D7s-0003OI-EI for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Jun 2007 14:26:36 -0700
+Received: from ipn26-148.piekary.net ([83.238.26.148])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I2D7q-0005og-NX
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Jun 2007 14:26:36 -0700
+Content-Disposition: inline
+In-Reply-To: <20070623110424.9a68d82d.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 11:06:27AM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Sat, 23 Jun 2007 12:51:46 +0200 Michal Januszewski <spock@gentoo.org> wrote:
+On Sat, Jun 23, 2007 at 11:04:24AM -0700, Andrew Morton wrote:
+> On Sat, 23 Jun 2007 12:50:46 +0200 Michal Januszewski <spock@gentoo.org> wrote:
 > 
-> > Add connector's idx and val constants for v86d and uvesafb.
-> > 
-> > Also change the maximum message size to 4k to allow transfers of VBE
-> > data blocks from userspace.
-> > 
-> > Signed-off-by: Michal Januszewski <spock@gentoo.org>
-> > ---
-> > include/linux/connector.h |    7 ++++---
-> >  1 files changed, 4 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/include/linux/connector.h b/include/linux/connector.h
-> > index 10eb56b..46b2aba 100644
-> > --- a/include/linux/connector.h
-> > +++ b/include/linux/connector.h
-> > @@ -36,14 +36,15 @@
-> >  #define CN_VAL_CIFS                     0x1
-> >  #define CN_W1_IDX			0x3	/* w1 communication */
-> >  #define CN_W1_VAL			0x1
-> > +#define CN_IDX_V86D			0x4
-> > +#define CN_VAL_V86D_UVESAFB		0x1
+> > +	if (!refresh_specified)
+> > +		refresh = 200;
+> >  	diff = refresh;
+> >  	best = -1;
+> >  	for (i = 0; i < dbsize; i++) {
+> >  		if (name_matches(db[i], name, namelen) ||
+> >  		    (res_specified && res_matches(db[i], xres, yres))) {
+> >  			if(!fb_try_mode(var, info, &db[i], bpp)) {
+> > -				if(!refresh_specified || db[i].refresh == refresh)
+> > +				if (refresh_specified && db[i].refresh == refresh)
+> >  					return 1;
+> >  				else {
+> > -					if(diff > abs(db[i].refresh - refresh)) {
+> > +					if (diff > abs(db[i].refresh - refresh)) {
+> >  						diff = abs(db[i].refresh - refresh);
+> >  						best = i;
+> >  					}
+> > @@ -938,6 +940,7 @@ void fb_destroy_modelist(struct list_head *head)
+> >  		kfree(pos);
+> >  	}
+> >  }
+> > +EXPORT_SYMBOL_GPL(fb_destroy_modelist);
 > >  
-> > -
-> > -#define CN_NETLINK_USERS		4
-> > +#define CN_NETLINK_USERS		5
-> >  
-> >  /*
-> >   * Maximum connector's message size.
-> >   */
-> > -#define CONNECTOR_MAX_MSG_SIZE 	1024
-> > +#define CONNECTOR_MAX_MSG_SIZE 	4096
-> >  
-> >  /*
-> >   * idx and val are unique identifiers which 
-> > 
-> > 
 > 
-> Evgeniy, could you please review this?
-> 
-> The need to add these enumerations for unrelated subsystems to connector.h
-> may get a bit ugly as time passes, but I guess it's OK for now.
+> fbdev ignoramus asks: isn't this pretty risky?  People who were previously
+> relying upon (or at least using) the kernel's default resolution will find
+> their displays coming up in a quite different resolution.
 
-Hi.
+The resolution will be unchanged (this part of the code is only executed
+if either the name of the mode or the resolution are a match).
 
-I have no problem with the patch, although it could be possible to split
-patch to two - add id and increase the size, but it is too minor nit.
+What can change is the refresh rate -- it can be set higher than what it
+used to be before.  But since we're checking all modes with fb_try_mode(),
+(which calls fb_check_var()), I think that this change should be safe.
+ 
+To avoid any side effects we could also do the following:
 
-Ack.
+	for (i = 0; i < dbsize; i++) {
+		if (name_matches(db[i], name, namelen) ||
+		    (res_specified && res_matches(db[i], xres, yres))) {
+			if(!fb_try_mode(var, info, &db[i], bpp)) {
+				if (refresh_specified && db[i].refresh == refresh)
+					return 1;
+				else {
+					if (diff > abs(db[i].refresh - refresh)) {
+						diff = abs(db[i].refresh - refresh);
+						best = i;
+					}
+				}
+			}
+		}
+	}
 
--- 
-	Evgeniy Polyakov
+	if (best != -1) {
+		fb_try_mode(var, info, &db[best], bpp);
+-		return 2;
++ 		return (refresh_specified) ? 2 : 1;
+	}
+
+which would ensure that 1 is returned if the refresh rate is not
+explicitly specified, just as it is done currently:
+
+				if(!refresh_specified || db[i].refresh == refresh)
+					return 1
+
+I might be missing something here, so it would be nice if someone
+involved in the fb development could comment on the proposed change.
+
+> This change seems to be quite unrelated to the uvesafb stuff and should be
+> in a separate patch from the export, which _is_ uvesafb-related.  I think. 
+> If that's wrong then the changelog could do with some attention.
+
+You're right, I'll split this into two patches in the next round.
+
+Best regards,
+Michal
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

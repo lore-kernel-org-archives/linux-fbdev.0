@@ -1,12 +1,12 @@
 From: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 02/17] OMAP: Add TI OMAP1610 accelerator entry.
-Date: Tue, 26 Jun 2007 18:52:05 +0200
-Message-ID: <20070626165205.GB22389@uranus.ravnborg.org>
-References: <5d5443650706260534k5d6aca34k9f574b6ffddf85b2@mail.gmail.com>
+Subject: Re: [PATCH 03/17] OMAP: Add TI OMAP1 internal LCD controller
+Date: Tue, 26 Jun 2007 18:53:52 +0200
+Message-ID: <20070626165352.GC22389@uranus.ravnborg.org>
+References: <5d5443650706260535haf0f9feq5e320059ee36c6cd@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758515AbXFZQwT@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758767AbXFZQw7@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5d5443650706260534k5d6aca34k9f574b6ffddf85b2@mail.gmail.com>
+In-Reply-To: <5d5443650706260535haf0f9feq5e320059ee36c6cd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
@@ -14,13 +14,21 @@ Content-Transfer-Encoding: 7bit
 To: Trilok Soni <soni.trilok@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, akpm@linux-foundation.org, Tony Lindgren <tony@atomide.com>, imre.deak@solidboot.com, juha.yrjola@solidboot.com, linux-kernel@vger.kernel.org
 
-Your patch ordering is bad.
-Patch 1 uses the symbol: FB_ACCEL_OMAP1610
-but it is defined by patch 2.
+diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
+index 5aa7175..2f35389 100644
+--- a/drivers/video/omap/Makefile
++++ b/drivers/video/omap/Makefile
+@@ -6,5 +6,7 @@ obj-$(CONFIG_FB_OMAP) += omapfb.o
 
-Please reorder patches so the module compiles for each
-and every patch being applied.
+ objs-yy := omapfb_main.o
 
-In this way you do not break git bisect for example.
++objs-y$(CONFIG_ARCH_OMAP1) += lcdc.o
++
+ omapfb-objs := $(objs-yy)
 
-	Sam
+So this explained your usage of -yy.
+If you use the proposal from before then you could do
+it like this:
+omapfb-$(CONFIG_ARCH_OMAPI) += lcdc.o
+
+	 Sam

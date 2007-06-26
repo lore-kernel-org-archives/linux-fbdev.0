@@ -1,12 +1,12 @@
 From: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 01/17] OMAP: Add TI OMAP framebuffer driver
-Date: Tue, 26 Jun 2007 18:50:03 +0200
-Message-ID: <20070626165003.GA22389@uranus.ravnborg.org>
-References: <5d5443650706260533r218c05b1u5d4336015c4a4a9b@mail.gmail.com>
+Subject: Re: [PATCH 02/17] OMAP: Add TI OMAP1610 accelerator entry.
+Date: Tue, 26 Jun 2007 18:52:05 +0200
+Message-ID: <20070626165205.GB22389@uranus.ravnborg.org>
+References: <5d5443650706260534k5d6aca34k9f574b6ffddf85b2@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757782AbXFZQtS@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758515AbXFZQwT@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5d5443650706260533r218c05b1u5d4336015c4a4a9b@mail.gmail.com>
+In-Reply-To: <5d5443650706260534k5d6aca34k9f574b6ffddf85b2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
@@ -14,31 +14,13 @@ Content-Transfer-Encoding: 7bit
 To: Trilok Soni <soni.trilok@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, akpm@linux-foundation.org, Tony Lindgren <tony@atomide.com>, imre.deak@solidboot.com, juha.yrjola@solidboot.com, linux-kernel@vger.kernel.org
 
-diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
-new file mode 100644
-index 0000000..5aa7175
---- /dev/null
-+++ b/drivers/video/omap/Makefile
-@@ -0,0 +1,10 @@
-+#
-+# Makefile for the new OMAP framebuffer device driver
-+#
-+
-+obj-$(CONFIG_FB_OMAP) += omapfb.o
-+
-+objs-yy := omapfb_main.o
-+
-+omapfb-objs := $(objs-yy)
-+
+Your patch ordering is bad.
+Patch 1 uses the symbol: FB_ACCEL_OMAP1610
+but it is defined by patch 2.
 
-This looks strangs.
-Please use:
-obj-$(CONFIG_FB_OMAP) += omapfb.o
+Please reorder patches so the module compiles for each
+and every patch being applied.
 
-omapfb-y := omapfb_main.o
-
-Or even better rename your .c file to omapfb.c then
-you only need to use:
-obj-$(CONFIG_FB_OMAP) += omapfb.o
+In this way you do not break git bisect for example.
 
 	Sam

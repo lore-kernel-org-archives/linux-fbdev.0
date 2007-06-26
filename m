@@ -1,40 +1,72 @@
-From: Jonathan McDowell <noodles@earth.li>
-Subject: Re: [PATCH 0/4] fbdev: uvesafb
-Date: Tue, 26 Jun 2007 11:42:41 +0100
-Message-ID: <20070626104241.GR8547@earth.li>
-References: <20070623104920.GA12623@spock.one.pl>
+From: "Trilok Soni" <soni.trilok@gmail.com>
+Subject: [PATCH 0/17] Add Texas Instruments OMAP LCD
+	driver-v2
+Date: Tue, 26 Jun 2007 18:00:22 +0530
+Message-ID: <5d5443650706260530x11b6ce8el542eabbe3800b4d6@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756862AbXFZLOm@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20070623104920.GA12623@spock.one.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Januszewski <spock@gentoo.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1I3ABb-0002le-KT for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Jun 2007 05:30:23 -0700
+Received: from wa-out-1112.google.com ([209.85.146.180])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I3ABb-0007qF-9b
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Jun 2007 05:30:23 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so2254918waf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 26 Jun 2007 05:30:22 -0700 (PDT)
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+Cc: juha.yrjola@solidboot.com, akpm@linux-foundation.org, imre.deak@solidboot.com, linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 12:49:20PM +0200, Michal Januszewski wrote:
-> uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
-> version of vesafb and a direct successor of vesafb-tng [1].
-> 
-> uvesafb uses a userspace helper application (v86d, [2]) to run the x86
-> Video BIOS code.  This makes it possible to include in uvesafb all the
-> standard features (refresh rate control, video mode changes etc) that
-> are missing from vesafb without resorting to ugly hacks such as the ones
-> used in [1].  The current implementation of v86d can use either LRMI or
-> x86emu to run the BIOS code and supports both x86 and x86_64.
+Hi Tony,
 
-Have you considered using libx86[1] in v86d? It looks very similar to
-what you have at present and there are plans to extend it to non
-x86(_64) archs.
+This patch series contains Texas Instruments OMAP LCD framebuffer
+drivers. This driver is divided into
 
-J.
+* main omapfb driver, which handles most common functions across
+processor series, like platform driver registration, ioctl handling,
+much like fb skeleton.
 
-[1] http://www.codon.org.uk/~mjg59/libx86/
+This driver then gets through the callback based on the
+internal/external lcd controller and panel registered to it based on
+processor and board. Internal/External LCD controller as per lcd panel
+data registration is being done in separate files and so does patches.
+
+Overall this patches contains framebuffer driver for TI OMAP1
+(OMAP1510/1610/1710) and OMAP2 (OMAP2420/2430) and external
+controllers used in Nokia Internal Tablets (N770/N800).
+
+These drivers were very well tested on OMAP GIT [1] tree from long
+time. Most of the code for this driver is written by Imre Deak
+<imre.deak@solidboot.com>.
+
+Also CCed to LKML for wider review, and this v2 went through checkpatch.pl and
+I have modified the patches to accept most of checkpatch comments.
 
 -- 
-] http://www.earth.li/~noodles/ []         noodles is criminal         [
-]  PGP/GPG Key @ the.earth.li   []                                     [
-] via keyserver, web or email.  []                                     [
-] RSA: 4DC4E7FD / DSA: 5B430367 []                                     [
+--Trilok Soni
+PS: Sorry, all the patches will be as attachment (not inline one), as
+I can only use gmail webmail interface, NO pop access allowed, where I
+am working.
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

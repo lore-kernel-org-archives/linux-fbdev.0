@@ -1,21 +1,22 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH v2 0/5] uvesafb: a general description
-Date: Sat, 30 Jun 2007 18:31:01 +0200
-Message-ID: <20070630163101.GA3838@spock.one.pl>
+Subject: [PATCH v2 1/5] uvesafb: export
+	fb_destroy_modelist
+Date: Sat, 30 Jun 2007 18:32:00 +0200
+Message-ID: <20070630163200.GB3838@spock.one.pl>
 Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I4fql-00041U-2l for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Jun 2007 09:31:08 -0700
+	id 1I4frf-000471-3M for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 30 Jun 2007 09:32:03 -0700
 Received: from ipn26-148.piekary.net ([83.238.26.148])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I4fqi-0000hp-Gj
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I4fre-0000oW-GX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Jun 2007 09:31:06 -0700
+	Sat, 30 Jun 2007 09:32:02 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,27 +31,25 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
 
-uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
-version of vesafb and a direct successor of vesafb-tng [1].
+Make fb_destroy_modelist an exported symbol for use in the uvesafb driver.
 
-This is the second version of this patch, and it incorporates all fixes
-and cleanups suggested on the lkml.  My thanks to everyone who took
-their time to review the first version.
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
+ drivers/video/modedb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-uvesafb uses a userspace helper application (v86d, [2]) to run the x86
-Video BIOS code.  This makes it possible to include in uvesafb all the
-standard features (refresh rate control, video mode changes etc) that
-are missing from vesafb without resorting to ugly hacks such as the ones
-used in [1].  The current implementation of v86d can use either LRMI or
-x86emu to run the BIOS code and supports both x86 and x86_64.
-
-[1] http://dev.gentoo.org/~spock/projects/vesafb-tng/
-[2] http://dev.gentoo.org/~spock/projects/uvesafb/
-
-Best regards.
--- 
-Michal Januszewski                              JID: spock@im.gentoo.org
-Gentoo Linux Developer                    http://people.gentoo.org/spock
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 3741ad7..d351eed 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -938,6 +938,7 @@ void fb_destroy_modelist(struct list_head *head)
+ 		kfree(pos);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(fb_destroy_modelist);
+ 
+ /**
+  * fb_videomode_to_modelist: convert mode array to mode list
 
 
 -------------------------------------------------------------------------

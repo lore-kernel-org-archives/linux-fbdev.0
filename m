@@ -1,54 +1,123 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: Re: [PATCH 0/4] fbdev: uvesafb
-Date: Sat, 30 Jun 2007 18:39:18 +0200
-Message-ID: <20070630163918.GG3838@spock.one.pl>
-References: <20070623104920.GA12623@spock.one.pl>
-	<20070626104241.GR8547@earth.li>
-Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+From: Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: [PATCH v2 0/5] uvesafb: a general description
+Date: Sat, 30 Jun 2007 22:48:07 +0200
+Message-ID: <4686C187.3090308@googlemail.com>
+References: <20070630163101.GA3838@spock.one.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I4fyj-0004yb-4F for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Jun 2007 09:39:21 -0700
-Received: from ipn26-148.piekary.net ([83.238.26.148])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I4fyh-0003M1-OA
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Jun 2007 09:39:21 -0700
-Content-Disposition: inline
-In-Reply-To: <20070626104241.GR8547@earth.li>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jonathan McDowell <noodles@earth.li>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753592AbXF3UsX@vger.kernel.org>
+In-Reply-To: <20070630163101.GA3838@spock.one.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: spock@gentoo.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, hpa@zytor.com
 
-On Tue, Jun 26, 2007 at 11:42:41AM +0100, Jonathan McDowell wrote:
+Michal Januszewski wrote:
+> uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
+> version of vesafb and a direct successor of vesafb-tng [1].
+>
+>   
 
-> Have you considered using libx86[1] in v86d? It looks very similar to
-> what you have at present and there are plans to extend it to non
-> x86(_64) archs.
+Hi Michal,
 
-It looks like an interesting solution and it is indeed similar to what
-I'm currently using.  I'll consider switching to it in the next version
-of v86d.
+I've just tested uvesafb on my workstation ( which has a really old 
+GeForce2 MX 400 Nvidia card ) and it didn't worked here.
 
-Thanks,
-Michal
+If I remember right vesafb-ntg worked here and vesafb works for sure :)
+
+Here the error from dmesg :
+
+....
 
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+[   37.397298] uvesafb: Getting VBE info block failed (eax=0x4f00, err=-3)
+[   37.397358] uvesafb: vbe_init() failed with -22
+[   37.397411] uvesafb: probe of uvesafb.0 failed with error -22
+
+
+....
+
+Here some infos I got with read-edid[1] tool:
+
+
+./get-edid: get-edid version 1.4.1
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f00 bx=0x0 cx=0x0
+        Function supported
+        Call successful
+
+        VBE version 300
+        VBE string at 0x11110 "NVidia"
+
+VBE/DDC service about to be called
+        Report DDC capabilities
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x0 cx=0x0
+        Function supported
+        Call successful
+
+        Monitor and video card combination does not support DDC1 transfers
+        Monitor and video card combination supports DDC2 transfers
+        0 seconds per 128 byte EDID block transfer
+        Screen is not blanked during DDC transfer
+
+Reading next EDID block
+
+VBE/DDC service about to be called
+        Read EDID
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x1 cx=0x0
+        Function supported
+        Call successful
+
+
+
+.....
+
+./parse-edid: parse-edid version 1.4.1
+./parse-edid: EDID checksum passed.
+
+        # EDID version 1 revision 3
+Section "Monitor"
+        # Block type: 2:0 3:ff
+        # Block type: 2:0 3:fd
+        # Block type: 2:0 3:fc
+        Identifier "GD 7000S"
+        VendorName "GRC"
+        ModelName "GD 7000S"
+        # Block type: 2:0 3:ff
+        # Block type: 2:0 3:fd
+        HorizSync 30-83
+        VertRefresh 50-75
+        # Max dot clock (video bandwidth) 140 MHz
+        # Block type: 2:0 3:fc
+        # DPMS capabilities: Active off:yes  Suspend:yes  Standby:yes
+
+        Mode    "1280x1024"     # vfreq 60.013Hz, hfreq 63.974kHz
+                DotClock        108.500000
+                HTimings        1280 1344 1472 1696
+                VTimings        1024 1025 1028 1066
+                Flags   "+HSync" "+VSync"
+        EndMode
+        # Block type: 2:0 3:ff
+        # Block type: 2:0 3:fd
+        # Block type: 2:0 3:fc
+EndSection
+
+...
+
+Let me know if you need more infos.
+
+Regards,
+
+Gabriel C
+
+[1] http://john.fremlin.de/programs/linux/read-edid/
+
+
+PS: You have an typo on line 702 in the patch from your website 
+s/vesafb/uvesafb/ in that printk

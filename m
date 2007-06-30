@@ -1,22 +1,21 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH v2 1/5] uvesafb: export
-	fb_destroy_modelist
-Date: Sat, 30 Jun 2007 18:32:00 +0200
-Message-ID: <20070630163200.GB3838@spock.one.pl>
+Subject: [PATCH v2 2/5] uvesafb: add connector entries
+Date: Sat, 30 Jun 2007 18:32:44 +0200
+Message-ID: <20070630163244.GC3838@spock.one.pl>
 Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I4frf-000471-3M for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Jun 2007 09:32:03 -0700
+	id 1I4fsM-0004Cu-UN for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 30 Jun 2007 09:32:47 -0700
 Received: from ipn26-148.piekary.net ([83.238.26.148])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I4fre-0000oW-GX
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I4fsM-0001Ln-IA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 Jun 2007 09:32:02 -0700
+	Sat, 30 Jun 2007 09:32:46 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,25 +30,30 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
 
-Make fb_destroy_modelist an exported symbol for use in the uvesafb driver.
+Add connector idx and val constants for v86d and uvesafb.
 
 Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
- drivers/video/modedb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ include/linux/connector.h |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 3741ad7..d351eed 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -938,6 +938,7 @@ void fb_destroy_modelist(struct list_head *head)
- 		kfree(pos);
- 	}
- }
-+EXPORT_SYMBOL_GPL(fb_destroy_modelist);
+diff --git a/include/linux/connector.h b/include/linux/connector.h
+index 10eb56b..14cecaf 100644
+--- a/include/linux/connector.h
++++ b/include/linux/connector.h
+@@ -36,9 +36,10 @@
+ #define CN_VAL_CIFS                     0x1
+ #define CN_W1_IDX			0x3	/* w1 communication */
+ #define CN_W1_VAL			0x1
++#define CN_IDX_V86D			0x4
++#define CN_VAL_V86D_UVESAFB		0x1
  
- /**
-  * fb_videomode_to_modelist: convert mode array to mode list
+-
+-#define CN_NETLINK_USERS		4
++#define CN_NETLINK_USERS		5
+ 
+ /*
+  * Maximum connector's message size.
 
 
 -------------------------------------------------------------------------

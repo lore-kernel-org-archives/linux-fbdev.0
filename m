@@ -1,123 +1,118 @@
-From: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: [PATCH v2 0/5] uvesafb: a general description
-Date: Sat, 30 Jun 2007 22:48:07 +0200
-Message-ID: <4686C187.3090308@googlemail.com>
-References: <20070630163101.GA3838@spock.one.pl>
+From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
+Subject: Re: [Bugme-new] [Bug 8232] New: Creator3D Framebuffer (sparc64) on
+ Sbus/UPA workstation
+Date: Mon, 02 Jul 2007 20:03:11 +0200
+Message-ID: <46893DDF.1060108@systella.fr>
+References: <200703191019.l2JAJVH5018137@fire-2.osdl.org>	<20070319033425.b0be2d95.akpm@linux-foundation.org> <20070326.161215.74749546.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753592AbXF3UsX@vger.kernel.org>
-In-Reply-To: <20070630163101.GA3838@spock.one.pl>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <sparclinux-owner@vger.kernel.org>
+In-Reply-To: <20070326.161215.74749546.davem@davemloft.net>
+Sender: sparclinux-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: spock@gentoo.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, hpa@zytor.com
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, sparclinux@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, mt1@systella.fr
 
-Michal Januszewski wrote:
-> uvesafb is a generic driver for VBE2+ compliant video cards; an enhanced
-> version of vesafb and a direct successor of vesafb-tng [1].
->
->   
+David Miller a =E9crit :
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Mon, 19 Mar 2007 03:34:25 -0800
+>=20
+>> On Mon, 19 Mar 2007 03:19:31 -0700 bugme-daemon@bugzilla.kernel.org =
+wrote:
+>>
+>>> http://bugzilla.kernel.org/show_bug.cgi?id=3D8232
+>>>
+>>>            Summary: Creator3D Framebuffer (sparc64) on Sbus/UPA wor=
+kstation
+>>>     Kernel Version: ALL 2.6
+>>>             Status: NEW
+>>>           Severity: normal
+>>>              Owner: jsimmons@infradead.org
+>>>          Submitter: mt1@systella.fr
+>>>
+>>>
+>>> Most recent kernel where this bug did *NOT* occur: 2.4.34.1
+>>> Distribution: Debian/testing
+>>> Hardware Environment: U1E/170 with Creator3D (UPA), U2 with creator=
+3D
+>>> Software Environment: debian without X on U1E, debian with Xorg on =
+U2
+>>> Problem Description: Console is white foreground and blanck backgro=
+und by
+>>> default. Sometimes, the screen is cut like this :
+>>>
+>>> N | N | N | N
+>>> --+---+---+---
+>>> N | G | G | G
+>>> --+---+---+---
+>>> N | W | W | W
+>>> --+---+---+---
+>>> N | G | G | G
+>>>
+>>>
+>>> where N is a 'normal' console, 'G' a 'like grey' console (black and=
+ white pixels
+>>> like snow), and 'W' a white console (many white pixels). I have tes=
+ted some
+>>> differents Creator3D fb and this trouble only occurs on Sbus/UPA wo=
+rkstation. On
+>>> a U60 (PCI/UPA), I never see it.
+>>>
+>>> When I launch Xorg, problem goes away.
+>=20
+> A quick audit found that we're using the ->dac_rev value before
+> setting it properly.  One difference between the older creator
+> cards and the newer ones is the DAC, so perhaps this was the
+> bug.
+>=20
+> Can you test the following patch?  Thanks.  I'll fire up some of
+> my older systems to see if I can reproduce this one.
+>=20
+> commit 2c4f1add7dd2747cd79c220c24e1dbc3dc4a315f
+> Author: David S. Miller <davem@sunset.davemloft.net>
+> Date:   Mon Mar 26 16:10:52 2007 -0700
+>=20
+>     [FFB]: Initialize dac_rev before using it.
+>    =20
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+>=20
+> diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
+> index 15854ae..3c01f45 100644
+> --- a/drivers/video/ffb.c
+> +++ b/drivers/video/ffb.c
+> @@ -948,8 +948,9 @@ static int ffb_init_one(struct of_device *op)
+>  	if ((upa_readl(&fbc->ucsr) & FFB_UCSR_ALL_ERRORS) !=3D 0)
+>  		upa_writel(FFB_UCSR_ALL_ERRORS, &fbc->ucsr);
+> =20
+> -	ffb_switch_from_graph(&all->par);
+> -
+> +	/* Determine the DAC revision, we must do this before calling
+> +	 * ffb_switch_from_graph().
+> +	 */
+>  	dac =3D all->par.dac;
+>  	upa_writel(0x8000, &dac->type);
+>  	all->par.dac_rev =3D upa_readl(&dac->value) >> 0x1c;
+> @@ -960,6 +961,8 @@ static int ffb_init_one(struct of_device *op)
+>  	if (all->par.flags & FFB_FLAG_AFB)
+>  		all->par.dac_rev =3D 10;
+> =20
+> +	ffb_switch_from_graph(&all->par);
+> +
+>  	/* Unblank it just to be sure.  When there are multiple
+>  	 * FFB/AFB cards in the system, or it is not the OBP
+>  	 * chosen console, it will have video outputs off in
 
-Hi Michal,
+	Hello,
 
-I've just tested uvesafb on my workstation ( which has a really old 
-GeForce2 MX 400 Nvidia card ) and it didn't worked here.
+	Bad news... This patch doesn't work for 2.6.21.3 and my U2 with=20
+creator3D UPA freamebuffer...
 
-If I remember right vesafb-ntg worked here and vesafb works for sure :)
+	Regards,
 
-Here the error from dmesg :
-
-....
-
-
-[   37.397298] uvesafb: Getting VBE info block failed (eax=0x4f00, err=-3)
-[   37.397358] uvesafb: vbe_init() failed with -22
-[   37.397411] uvesafb: probe of uvesafb.0 failed with error -22
-
-
-....
-
-Here some infos I got with read-edid[1] tool:
-
-
-./get-edid: get-edid version 1.4.1
-
-        Performing real mode VBE call
-        Interrupt 0x10 ax=0x4f00 bx=0x0 cx=0x0
-        Function supported
-        Call successful
-
-        VBE version 300
-        VBE string at 0x11110 "NVidia"
-
-VBE/DDC service about to be called
-        Report DDC capabilities
-
-        Performing real mode VBE call
-        Interrupt 0x10 ax=0x4f15 bx=0x0 cx=0x0
-        Function supported
-        Call successful
-
-        Monitor and video card combination does not support DDC1 transfers
-        Monitor and video card combination supports DDC2 transfers
-        0 seconds per 128 byte EDID block transfer
-        Screen is not blanked during DDC transfer
-
-Reading next EDID block
-
-VBE/DDC service about to be called
-        Read EDID
-
-        Performing real mode VBE call
-        Interrupt 0x10 ax=0x4f15 bx=0x1 cx=0x0
-        Function supported
-        Call successful
-
-
-
-.....
-
-./parse-edid: parse-edid version 1.4.1
-./parse-edid: EDID checksum passed.
-
-        # EDID version 1 revision 3
-Section "Monitor"
-        # Block type: 2:0 3:ff
-        # Block type: 2:0 3:fd
-        # Block type: 2:0 3:fc
-        Identifier "GD 7000S"
-        VendorName "GRC"
-        ModelName "GD 7000S"
-        # Block type: 2:0 3:ff
-        # Block type: 2:0 3:fd
-        HorizSync 30-83
-        VertRefresh 50-75
-        # Max dot clock (video bandwidth) 140 MHz
-        # Block type: 2:0 3:fc
-        # DPMS capabilities: Active off:yes  Suspend:yes  Standby:yes
-
-        Mode    "1280x1024"     # vfreq 60.013Hz, hfreq 63.974kHz
-                DotClock        108.500000
-                HTimings        1280 1344 1472 1696
-                VTimings        1024 1025 1028 1066
-                Flags   "+HSync" "+VSync"
-        EndMode
-        # Block type: 2:0 3:ff
-        # Block type: 2:0 3:fd
-        # Block type: 2:0 3:fc
-EndSection
-
-...
-
-Let me know if you need more infos.
-
-Regards,
-
-Gabriel C
-
-[1] http://john.fremlin.de/programs/linux/read-edid/
-
-
-PS: You have an typo on line 702 in the patch from your website 
-s/vesafb/uvesafb/ in that printk
+	JKB
+-
+To unsubscribe from this list: send the line "unsubscribe sparclinux" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

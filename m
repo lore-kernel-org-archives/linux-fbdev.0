@@ -1,65 +1,55 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] pxafb: Add support for other
- palette formats
-Date: Tue, 3 Jul 2007 17:58:35 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0707031756490.13482@anakin>
-References: <200707031607.08511.hjk@linutronix.de>
-	<468A6159.6000808@grupopie.com>
-	<200707031703.53102.hjk@linutronix.de>
+From: Paulo Marques <pmarques@grupopie.com>
+Subject: Re: [PATCH] pxafb: Add support for other palette formats
+Date: Tue, 03 Jul 2007 17:03:37 +0100
+Message-ID: <468A7359.5010305@grupopie.com>
+References: <200707031607.08511.hjk@linutronix.de>	<468A6159.6000808@grupopie.com>	<200707031703.53102.hjk@linutronix.de>
 	<18058.28725.106989.860166@ipc1.karo>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I5km0-00005m-9Z for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 08:58:40 -0700
-Received: from ananke.telenet-ops.be ([195.130.137.78])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5kly-00014o-Uk
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 08:58:40 -0700
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
 In-Reply-To: <18058.28725.106989.860166@ipc1.karo>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Lothar Wassmann <LW@KARO-electronics.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Tue, 3 Jul 2007, Lothar Wassmann wrote:
-> > Can userspace applications work with such a weired format?
-> > If yes, I'm looking forward to your patch.
-> > 
+Lothar Wassmann wrote:
+> Hi,
+> 
+>> Can userspace applications work with such a weired format?
+>> If yes, I'm looking forward to your patch.
+>>
 > At least framebuffer consoles don't work with that. So you should
 > add a configuration option that allows enabling the strange PXA pixel
 > formats only when CONFIG_FRAMEBUFFER_CONSOLE is not set.
 
-Of course framebuffer consoles handle that!
+Or maybe teach fbcon to use 18bpp modes?
 
-Just make sure to implement proper fb_ops.fb_{fillrect,copyarea,imageblit}().
+> BTW: PXA255 doesn't have an LCCR4 register.
 
-Gr{oetje,eeting}s,
+If we make sure that we don't touch LCCR4 registers unless the platform 
+driver asks for 18bpp we should be in the clear, no?
 
-						Geert
+However, the current patch does write to LCCR4 without checking this, 
+but this should be a no-op if there is no register there, AFAICS.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I'll try to handle it more correctly in my next patch, anyway.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Paulo Marques - www.grupopie.com
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+"You're just jealous because the voices only talk to me."
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

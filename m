@@ -1,55 +1,53 @@
-From: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [PATCH] pxafb: Add support for other palette formats
-Date: Tue, 03 Jul 2007 17:03:37 +0100
-Message-ID: <468A7359.5010305@grupopie.com>
-References: <200707031607.08511.hjk@linutronix.de>	<468A6159.6000808@grupopie.com>	<200707031703.53102.hjk@linutronix.de>
+From: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Subject: Re: [PATCH] pxafb: Add support for other
+	palette formats
+Date: Tue, 3 Jul 2007 18:39:57 +0200
+Message-ID: <200707031839.57252.hjk@linutronix.de>
+References: <200707031607.08511.hjk@linutronix.de>
+	<200707031703.53102.hjk@linutronix.de>
 	<18058.28725.106989.860166@ipc1.karo>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1I5lQu-0006tc-Ij for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 09:41:22 -0700
+Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5lQt-0006tg-5k
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 09:40:56 -0700
 In-Reply-To: <18058.28725.106989.860166@ipc1.karo>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Lothar Wassmann <LW@KARO-electronics.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Lothar Wassmann <LW@karo-electronics.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-Lothar Wassmann wrote:
-> Hi,
+Am Dienstag 03 Juli 2007 17:50 schrieb Lothar Wassmann:
+
 > 
->> Can userspace applications work with such a weired format?
->> If yes, I'm looking forward to your patch.
->>
-> At least framebuffer consoles don't work with that. So you should
-> add a configuration option that allows enabling the strange PXA pixel
-> formats only when CONFIG_FRAMEBUFFER_CONSOLE is not set.
-
-Or maybe teach fbcon to use 18bpp modes?
-
 > BTW: PXA255 doesn't have an LCCR4 register.
 
-If we make sure that we don't touch LCCR4 registers unless the platform 
-driver asks for 18bpp we should be in the clear, no?
+In that case I should insert some #ifdef CONFIG_PXA27x to have the
+new behaviour only on PXA270, right?
 
-However, the current patch does write to LCCR4 without checking this, 
-but this should be a no-op if there is no register there, AFAICS.
+Hans
 
-I'll try to handle it more correctly in my next patch, anyway.
 
--- 
-Paulo Marques - www.grupopie.com
-
-"You're just jealous because the voices only talk to me."
-
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

@@ -1,76 +1,72 @@
-From: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [PATCH] pxafb: Add support for other palette formats
-Date: Tue, 03 Jul 2007 18:21:38 +0100
-Message-ID: <468A85A2.1070506@grupopie.com>
+From: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Subject: Re: [PATCH] pxafb: Add support for other
+	palette formats
+Date: Tue, 3 Jul 2007 19:33:47 +0200
+Message-ID: <200707031933.47099.hjk@linutronix.de>
 References: <200707031607.08511.hjk@linutronix.de>
-	<18058.28725.106989.860166@ipc1.karo>
-	<468A7359.5010305@grupopie.com>
-	<200707031845.57256.hjk@linutronix.de>
+	<200707031839.57252.hjk@linutronix.de>
+	<18058.33810.378130.695740@ipc1.karo>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <200707031845.57256.hjk@linutronix.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1I5mG8-0004cF-4u for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 10:33:52 -0700
+Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5mG6-0000VC-Oz
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 10:33:52 -0700
+In-Reply-To: <18058.33810.378130.695740@ipc1.karo>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: =?ISO-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Lothar Wassmann <LW@karo-electronics.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-Hans-J=FCrgen Koch wrote:
-> Am Dienstag 03 Juli 2007 18:03 schrieb Paulo Marques:
->> [...]
->> Or maybe teach fbcon to use 18bpp modes?
->=20
-> This would only make sense if this is a common format that other
-> chips use, too.
+Am Dienstag 03 Juli 2007 19:14 schrieb Lothar Wassmann:
+> Hi,
+> 
+> > > BTW: PXA255 doesn't have an LCCR4 register.
+> > 
+> > In that case I should insert some #ifdef CONFIG_PXA27x to have the
+> > new behaviour only on PXA270, right?
+> >
+> This would be incompatible with the efforts to have the same kernel
+> binary running on PXA25x as well as PXA27x.
 
-I don't see this as a good reason not to implement 18bpp support in=20
-fbcon. "Just PXA270 18bpp devices" can be a lot of devices out there.
+OK, I see.
 
-Anyway, can fbcon work with 18bpp palette mode? If it does, then this=20
-should be enough for most users of 18bpp pxafb users: have a console=20
-with a palette mode and then switch to non-palette mode and run whatever=20
-windowing system supports 18bpp.
+> 
+> Either check the cpuid 
 
-I guess that even if it doesn't support 18bpp palette mode now, it=20
-shouldn't be that hard to implement (nor should it cause that much bloat=20
-to fbcon).
+This is probably the right way to go if you actually want the binary
+to run on both platforms.
 
->>> BTW: PXA255 doesn't have an LCCR4 register.
->> If we make sure that we don't touch LCCR4 registers unless the platform =
+> or as Paulo mentioned just check if the 
+> platform has defined a value for LCCR4 and assume that the platform
+> code knows when to specify it and when not.
 
->> driver asks for 18bpp we should be in the clear, no?
->>
->> However, the current patch does write to LCCR4 without checking this,=20
->> but this should be a no-op if there is no register there, AFAICS.
->=20
-> Arrg, no, you can't do this. Even if it works on your current PXA255
-> revision, writing to a nonexistent register is certainly not something
-> we should do in a proper driver.
+Well, my patch adds this definition to pxa_regs.h. Anyway, this solution
+also decides at compile time where the binary will run.
 
-Yes, I wasn't proposing that this be kept (that would be waaay too=20
-ugly), only pointing out that it shouldn't crash existing setups.
+Thanks,
+Hans
 
->> I'll try to handle it more correctly in my next patch, anyway.
->=20
-> So will I. I'll update my patch.
 
-Ok.
-
---=20
-Paulo Marques - www.grupopie.com
-
-"God is real, unless declared integer."
-
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

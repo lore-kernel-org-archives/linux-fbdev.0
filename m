@@ -1,27 +1,25 @@
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+From: "Lothar Wassmann" <LW@KARO-electronics.de>
 Subject: Re: [PATCH] pxafb: Add support for other
 	palette formats
-Date: Tue, 3 Jul 2007 18:45:57 +0200
-Message-ID: <200707031845.57256.hjk@linutronix.de>
+Date: Tue, 3 Jul 2007 19:14:58 +0200
+Message-ID: <18058.33810.378130.695740@ipc1.karo>
 References: <200707031607.08511.hjk@linutronix.de>
+	<200707031703.53102.hjk@linutronix.de>
 	<18058.28725.106989.860166@ipc1.karo>
-	<468A7359.5010305@grupopie.com>
+	<200707031839.57252.hjk@linutronix.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1338479520=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I5lVq-0007WF-A1 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 09:46:02 -0700
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5lVo-00009C-Jc
+	id 1I5lyd-0002ZC-GB for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 10:15:48 -0700
+Received: from mail.karo-electronics.de ([213.146.116.110])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5lya-0005Ae-Mv
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 09:46:01 -0700
-In-Reply-To: <468A7359.5010305@grupopie.com>
-Content-Disposition: inline
+	Tue, 03 Jul 2007 10:15:46 -0700
+In-Reply-To: <200707031839.57252.hjk@linutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,50 +30,59 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, Lothar Wassmann <LW@karo-electronics.de>
+To: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-Am Dienstag 03 Juli 2007 18:03 schrieb Paulo Marques:
-> Lothar Wassmann wrote:
-> > Hi,
-> > 
-> >> Can userspace applications work with such a weired format?
-> >> If yes, I'm looking forward to your patch.
-> >>
-> > At least framebuffer consoles don't work with that. So you should
-> > add a configuration option that allows enabling the strange PXA pixel
-> > formats only when CONFIG_FRAMEBUFFER_CONSOLE is not set.
-> 
-> Or maybe teach fbcon to use 18bpp modes?
+--===============1338479520==
 
-This would only make sense if this is a common format that other
-chips use, too.
+Hi,
 
-> 
 > > BTW: PXA255 doesn't have an LCCR4 register.
 > 
-> If we make sure that we don't touch LCCR4 registers unless the platform 
-> driver asks for 18bpp we should be in the clear, no?
-> 
-> However, the current patch does write to LCCR4 without checking this, 
-> but this should be a no-op if there is no register there, AFAICS.
-
-Arrg, no, you can't do this. Even if it works on your current PXA255
-revision, writing to a nonexistent register is certainly not something
-we should do in a proper driver.
-
-> 
-> I'll try to handle it more correctly in my next patch, anyway.
+> In that case I should insert some #ifdef CONFIG_PXA27x to have the
+> new behaviour only on PXA270, right?
 >
+This would be incompatible with the efforts to have the same kernel
+binary running on PXA25x as well as PXA27x.
 
-So will I. I'll update my patch.
+Either check the cpuid or as Paulo mentioned just check if the
+platform has defined a value for LCCR4 and assume that the platform
+code knows when to specify it and when not.
 
-Thanks,
-Hans
 
+Lothar Wassmann
+-- 
+___________________________________________________________
+
+Ka-Ro electronics GmbH | Pascalstra���e 22 | D - 52076 Aachen
+Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
+Gesch���ftsf���hrer: Matthias Kaussen, Rolf Rosenstein
+Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
+
+www.karo-electronics.de | info@karo-electronics.de
+___________________________________________________________
+
+
+--===============1338479520==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
+--===============1338479520==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1338479520==--

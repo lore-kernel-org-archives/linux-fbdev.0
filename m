@@ -1,26 +1,26 @@
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+From: Paulo Marques <pmarques@grupopie.com>
 Subject: Re: [PATCH] pxafb: Add support for other
 	palette formats
-Date: Tue, 3 Jul 2007 17:03:52 +0200
-Message-ID: <200707031703.53102.hjk@linutronix.de>
+Date: Tue, 03 Jul 2007 16:24:18 +0100
+Message-ID: <468A6A22.90008@grupopie.com>
 References: <200707031607.08511.hjk@linutronix.de>
 	<468A6159.6000808@grupopie.com>
+	<200707031703.53102.hjk@linutronix.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I5jva-0000hT-6T for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 08:04:30 -0700
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5jvZ-0002M7-NZ
+	id 1I5kEo-0003S9-Pc for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 08:24:23 -0700
+Received: from bipbip.grupopie.com ([195.23.16.24])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5kEn-0004y9-A9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 08:04:30 -0700
-In-Reply-To: <468A6159.6000808@grupopie.com>
-Content-Disposition: inline
+	Tue, 03 Jul 2007 08:24:22 -0700
+In-Reply-To: <200707031703.53102.hjk@linutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,52 +31,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paulo Marques <pmarques@grupopie.com>
+To: =?ISO-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
 Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-Am Dienstag 03 Juli 2007 16:46 schrieb Paulo Marques:
-> Hans-J=FCrgen Koch wrote:
-> > This patch adds support for the other three palette formats possible wi=
-th =
+Hans-J=FCrgen Koch wrote:
+> Am Dienstag 03 Juli 2007 16:46 schrieb Paulo Marques:
+>> [...]
+>> I've been working on getting the non-palletized 18bpp modes working and =
 
-> > the PXA LCD controller. This is required on boards where an LCD is conn=
-ected
-> > with all its 18 bits. With this patch, it's possible to use an 8-bit mo=
-de
-> > with 18-bit palette entries.
+>> had a preliminar patch that just didn't support packed mode yet (using =
+
+>> 24 bits per pixel).
 > =
 
-> I've been working on getting the non-palletized 18bpp modes working and =
+> Can userspace applications work with such a weired format?
+> If yes, I'm looking forward to your patch.
 
-> had a preliminar patch that just didn't support packed mode yet (using =
+It is not really that weird: rgb is packed 6 bits per component into 18 =
 
-> 24 bits per pixel).
+bits. Those 18 bits will then occupy the lower bits of a 24 bit value or =
 
-Can userspace applications work with such a weired format?
-If yes, I'm looking forward to your patch.
+a 32 bit value depending on using packed or unpacked mode.
 
+I'm doing this for the OpenEZX project to handle some motorola phones =
+
+that have 18bpp support.
+
+Motorola uses this mode in their software, so I suppose Qt already =
+
+supports it.
+
+Nevertheless, it seems a really big waste to have such a colorful =
+
+display and then just use a palletized frame-buffer :P
+
+So, if there are some userspace applications not supporting this mode, =
+
+we should address them, but the support has to be in the kernel first... :(
+
+>> We can either apply this patch as is and I'll just merge my work later, =
+
+>> or I can try to merge both patches and send a single patch upstream. =
+
+>> Either way is fine by me.
 > =
 
-> We can either apply this patch as is and I'll just merge my work later, =
+> It's probably cleaner to merge two small patches than a big one.
 
-> or I can try to merge both patches and send a single patch upstream. =
+Ok. It is also less stressful for me, too ;)
 
-> Either way is fine by me.
+-- =
 
-It's probably cleaner to merge two small patches than a big one.
+Paulo Marques - www.grupopie.com
 
-> =
-
-> For what is worth, this patch seems ok to me as is:
-> =
-
-> Acked-by: Paulo Marques <pmarques@grupopie.com>
-> =
-
-
-Thanks,
-Hans
-
+"All I ask is a chance to prove that money can't make me happy."
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

@@ -1,118 +1,253 @@
-From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-Subject: Re: [Bugme-new] [Bug 8232] New: Creator3D Framebuffer (sparc64) on
- Sbus/UPA workstation
-Date: Mon, 02 Jul 2007 20:03:11 +0200
-Message-ID: <46893DDF.1060108@systella.fr>
-References: <200703191019.l2JAJVH5018137@fire-2.osdl.org>	<20070319033425.b0be2d95.akpm@linux-foundation.org> <20070326.161215.74749546.davem@davemloft.net>
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Subject: [PATCH] pxafb: Add support for other palette
+	formats
+Date: Tue, 3 Jul 2007 16:07:08 +0200
+Message-ID: <200707031607.08511.hjk@linutronix.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <sparclinux-owner@vger.kernel.org>
-In-Reply-To: <20070326.161215.74749546.davem@davemloft.net>
-Sender: sparclinux-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, sparclinux@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, mt1@systella.fr
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1I5j29-0002Yh-8X for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 07:07:13 -0700
+Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5j28-0002Bx-GM
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 07:07:13 -0700
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net
 
-David Miller a =E9crit :
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Mon, 19 Mar 2007 03:34:25 -0800
->=20
->> On Mon, 19 Mar 2007 03:19:31 -0700 bugme-daemon@bugzilla.kernel.org =
-wrote:
->>
->>> http://bugzilla.kernel.org/show_bug.cgi?id=3D8232
->>>
->>>            Summary: Creator3D Framebuffer (sparc64) on Sbus/UPA wor=
-kstation
->>>     Kernel Version: ALL 2.6
->>>             Status: NEW
->>>           Severity: normal
->>>              Owner: jsimmons@infradead.org
->>>          Submitter: mt1@systella.fr
->>>
->>>
->>> Most recent kernel where this bug did *NOT* occur: 2.4.34.1
->>> Distribution: Debian/testing
->>> Hardware Environment: U1E/170 with Creator3D (UPA), U2 with creator=
-3D
->>> Software Environment: debian without X on U1E, debian with Xorg on =
-U2
->>> Problem Description: Console is white foreground and blanck backgro=
-und by
->>> default. Sometimes, the screen is cut like this :
->>>
->>> N | N | N | N
->>> --+---+---+---
->>> N | G | G | G
->>> --+---+---+---
->>> N | W | W | W
->>> --+---+---+---
->>> N | G | G | G
->>>
->>>
->>> where N is a 'normal' console, 'G' a 'like grey' console (black and=
- white pixels
->>> like snow), and 'W' a white console (many white pixels). I have tes=
-ted some
->>> differents Creator3D fb and this trouble only occurs on Sbus/UPA wo=
-rkstation. On
->>> a U60 (PCI/UPA), I never see it.
->>>
->>> When I launch Xorg, problem goes away.
->=20
-> A quick audit found that we're using the ->dac_rev value before
-> setting it properly.  One difference between the older creator
-> cards and the newer ones is the DAC, so perhaps this was the
-> bug.
->=20
-> Can you test the following patch?  Thanks.  I'll fire up some of
-> my older systems to see if I can reproduce this one.
->=20
-> commit 2c4f1add7dd2747cd79c220c24e1dbc3dc4a315f
-> Author: David S. Miller <davem@sunset.davemloft.net>
-> Date:   Mon Mar 26 16:10:52 2007 -0700
->=20
->     [FFB]: Initialize dac_rev before using it.
->    =20
->     Signed-off-by: David S. Miller <davem@davemloft.net>
->=20
-> diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
-> index 15854ae..3c01f45 100644
-> --- a/drivers/video/ffb.c
-> +++ b/drivers/video/ffb.c
-> @@ -948,8 +948,9 @@ static int ffb_init_one(struct of_device *op)
->  	if ((upa_readl(&fbc->ucsr) & FFB_UCSR_ALL_ERRORS) !=3D 0)
->  		upa_writel(FFB_UCSR_ALL_ERRORS, &fbc->ucsr);
-> =20
-> -	ffb_switch_from_graph(&all->par);
-> -
-> +	/* Determine the DAC revision, we must do this before calling
-> +	 * ffb_switch_from_graph().
-> +	 */
->  	dac =3D all->par.dac;
->  	upa_writel(0x8000, &dac->type);
->  	all->par.dac_rev =3D upa_readl(&dac->value) >> 0x1c;
-> @@ -960,6 +961,8 @@ static int ffb_init_one(struct of_device *op)
->  	if (all->par.flags & FFB_FLAG_AFB)
->  		all->par.dac_rev =3D 10;
-> =20
-> +	ffb_switch_from_graph(&all->par);
-> +
->  	/* Unblank it just to be sure.  When there are multiple
->  	 * FFB/AFB cards in the system, or it is not the OBP
->  	 * chosen console, it will have video outputs off in
+This patch adds support for the other three palette formats possible with 
+the PXA LCD controller. This is required on boards where an LCD is connected
+with all its 18 bits. With this patch, it's possible to use an 8-bit mode
+with 18-bit palette entries. This used to be possible in 2.4 kernels but
+disappeared in 2.6. With current kernels, you can only get wrong colours 
+out of an LCD connected this way.
 
-	Hello,
+Users can choose the palette format by doing something like this
+in their board definition:
 
-	Bad news... This patch doesn't work for 2.6.21.3 and my U2 with=20
-creator3D UPA freamebuffer...
+static struct pxafb_mach_info my_fb_info = {
+	[...]
+	.lccr3		= LCCR3_OutEnH | LCCR3_PixFlEdg | LCCR3_PDFOR_3,
+	.lccr4		= LCCR4_PAL_FOR_2,
+	[...]
+};
 
-	Regards,
+I plan to send complete board support for my device soon, it will rely
+on this patch.
 
-	JKB
+Thanks,
+Hans
+
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+
+Index: linux-2.6.22-rc/include/asm-arm/arch-pxa/pxa-regs.h
+===================================================================
+--- linux-2.6.22-rc.orig/include/asm-arm/arch-pxa/pxa-regs.h	2007-06-29 17:45:00.000000000 +0200
++++ linux-2.6.22-rc/include/asm-arm/arch-pxa/pxa-regs.h	2007-07-03 15:46:20.000000000 +0200
+@@ -1843,6 +1843,7 @@
+ #define LCCR1		__REG(0x44000004)  /* LCD Controller Control Register 1 */
+ #define LCCR2		__REG(0x44000008)  /* LCD Controller Control Register 2 */
+ #define LCCR3		__REG(0x4400000C)  /* LCD Controller Control Register 3 */
++#define LCCR4		__REG(0x44000010)  /* LCD Controller Control Register 3 */
+ #define DFBR0		__REG(0x44000020)  /* DMA Channel 0 Frame Branch Register */
+ #define DFBR1		__REG(0x44000024)  /* DMA Channel 1 Frame Branch Register */
+ #define LCSR		__REG(0x44000038)  /* LCD Controller Status Register */
+@@ -1856,6 +1857,16 @@
+ #define LCCR3_8BPP (3 << 24)
+ #define LCCR3_16BPP (4 << 24)
+ 
++#define LCCR3_PDFOR_0 (0 << 30)
++#define LCCR3_PDFOR_1 (1 << 30)
++#define LCCR3_PDFOR_2 (2 << 30)
++#define LCCR3_PDFOR_3 (3 << 30)
++
++#define LCCR4_PAL_FOR_0 (0 << 15)
++#define LCCR4_PAL_FOR_1 (1 << 15)
++#define LCCR4_PAL_FOR_2 (2 << 15)
++#define LCCR4_PAL_FOR_MASK (3 << 15)
++
+ #define FDADR0		__REG(0x44000200)  /* DMA Channel 0 Frame Descriptor Address Register */
+ #define FSADR0		__REG(0x44000204)  /* DMA Channel 0 Frame Source Address Register */
+ #define FIDR0		__REG(0x44000208)  /* DMA Channel 0 Frame ID Register */
+Index: linux-2.6.22-rc/drivers/video/pxafb.c
+===================================================================
+--- linux-2.6.22-rc.orig/drivers/video/pxafb.c	2007-06-29 17:44:59.000000000 +0200
++++ linux-2.6.22-rc/drivers/video/pxafb.c	2007-07-03 15:46:41.000000000 +0200
+@@ -106,20 +106,38 @@
+ 		       u_int trans, struct fb_info *info)
+ {
+ 	struct pxafb_info *fbi = (struct pxafb_info *)info;
+-	u_int val, ret = 1;
++	u_int val;
+ 
+-	if (regno < fbi->palette_size) {
+-		if (fbi->fb.var.grayscale) {
+-			val = ((blue >> 8) & 0x00ff);
+-		} else {
+-			val  = ((red   >>  0) & 0xf800);
+-			val |= ((green >>  5) & 0x07e0);
+-			val |= ((blue  >> 11) & 0x001f);
+-		}
++	if (regno >= fbi->palette_size)
++		return 1;
++
++	if (fbi->fb.var.grayscale) {
++		fbi->palette_cpu[regno] = ((blue >> 8) & 0x00ff);
++		return 0;
++	}
++
++	switch (fbi->lccr4 & LCCR4_PAL_FOR_MASK) {
++	case LCCR4_PAL_FOR_0:
++		val  = ((red   >>  0) & 0xf800);
++		val |= ((green >>  5) & 0x07e0);
++		val |= ((blue  >> 11) & 0x001f);
+ 		fbi->palette_cpu[regno] = val;
+-		ret = 0;
++		break;
++	case LCCR4_PAL_FOR_1:
++		val  = ((red   << 8) & 0x00f80000);
++		val |= ((green >> 0) & 0x0000fc00);
++		val |= ((blue  >> 8) & 0x000000f8);
++		((u32*)(fbi->palette_cpu))[regno] = val;
++		break;
++	case LCCR4_PAL_FOR_2:
++		val  = ((red   << 8) & 0x00fc0000);
++		val |= ((green >> 0) & 0x0000fc00);
++		val |= ((blue  >> 8) & 0x000000fc);
++		((u32*)(fbi->palette_cpu))[regno] = val;
++		break;
+ 	}
+-	return ret;
++
++	return 0;
+ }
+ 
+ static int
+@@ -361,7 +379,10 @@
+ 	else
+ 		fbi->palette_size = var->bits_per_pixel == 1 ? 4 : 1 << var->bits_per_pixel;
+ 
+-	palette_mem_size = fbi->palette_size * sizeof(u16);
++	if ((fbi->lccr4 & LCCR4_PAL_FOR_MASK) == LCCR4_PAL_FOR_0)
++		palette_mem_size = fbi->palette_size * sizeof(u16);
++	else
++		palette_mem_size = fbi->palette_size * sizeof(u32);
+ 
+ 	pr_debug("pxafb: palette_mem_size = 0x%08lx\n", palette_mem_size);
+ 
+@@ -676,7 +697,13 @@
+ 
+ 	fbi->dmadesc_palette_cpu->fsadr = fbi->palette_dma;
+ 	fbi->dmadesc_palette_cpu->fidr  = 0;
+-	fbi->dmadesc_palette_cpu->ldcmd = (fbi->palette_size * 2) | LDCMD_PAL;
++	if ((fbi->lccr4 & LCCR4_PAL_FOR_MASK) == LCCR4_PAL_FOR_0)
++		fbi->dmadesc_palette_cpu->ldcmd = fbi->palette_size *
++							sizeof(u16);
++	else
++		fbi->dmadesc_palette_cpu->ldcmd = fbi->palette_size *
++							sizeof(u32);
++	fbi->dmadesc_palette_cpu->ldcmd |= LDCMD_PAL;
+ 
+ 	if (var->bits_per_pixel == 16) {
+ 		/* palette shouldn't be loaded in true-color mode */
+@@ -715,6 +742,8 @@
+ 	fbi->reg_lccr1 = new_regs.lccr1;
+ 	fbi->reg_lccr2 = new_regs.lccr2;
+ 	fbi->reg_lccr3 = new_regs.lccr3;
++	fbi->reg_lccr4 = LCCR4 & (~LCCR4_PAL_FOR_MASK);
++	fbi->reg_lccr4 |= (fbi->lccr4 & LCCR4_PAL_FOR_MASK);
+ 	set_hsync_time(fbi, pcd);
+ 	local_irq_restore(flags);
+ 
+@@ -821,6 +850,7 @@
+ 	pr_debug("LCCR1 0x%08x\n", (unsigned int) LCCR1);
+ 	pr_debug("LCCR2 0x%08x\n", (unsigned int) LCCR2);
+ 	pr_debug("LCCR3 0x%08x\n", (unsigned int) LCCR3);
++	pr_debug("LCCR4 0x%08x\n", (unsigned int) LCCR4);
+ }
+ 
+ static void pxafb_disable_controller(struct pxafb_info *fbi)
+@@ -1090,10 +1120,13 @@
+ 		 * dma_writecombine_mmap)
+ 		 */
+ 		fbi->fb.fix.smem_start = fbi->screen_dma;
 -
-To unsubscribe from this list: send the line "unsubscribe sparclinux" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ 		fbi->palette_size = fbi->fb.var.bits_per_pixel == 8 ? 256 : 16;
+ 
+-		palette_mem_size = fbi->palette_size * sizeof(u16);
++		if ((fbi->lccr4 & LCCR4_PAL_FOR_MASK) == LCCR4_PAL_FOR_0)
++			palette_mem_size = fbi->palette_size * sizeof(u16);
++		else
++			palette_mem_size = fbi->palette_size * sizeof(u32);
++
+ 		pr_debug("pxafb: palette_mem_size = 0x%08lx\n", palette_mem_size);
+ 
+ 		fbi->palette_cpu = (u16 *)(fbi->map_cpu + PAGE_SIZE - palette_mem_size);
+@@ -1150,6 +1183,7 @@
+ 
+ 	fbi->lccr0			= inf->lccr0;
+ 	fbi->lccr3			= inf->lccr3;
++	fbi->lccr4			= inf->lccr4;
+ 	fbi->state			= C_STARTUP;
+ 	fbi->task_state			= (u_char)-1;
+ 
+Index: linux-2.6.22-rc/drivers/video/pxafb.h
+===================================================================
+--- linux-2.6.22-rc.orig/drivers/video/pxafb.h	2007-04-26 05:08:32.000000000 +0200
++++ linux-2.6.22-rc/drivers/video/pxafb.h	2007-07-03 15:46:20.000000000 +0200
+@@ -70,6 +70,7 @@
+ 
+ 	u_int			lccr0;
+ 	u_int			lccr3;
++	u_int			lccr4;
+ 	u_int			cmap_inverse:1,
+ 				cmap_static:1,
+ 				unused:30;
+@@ -78,6 +79,7 @@
+ 	u_int			reg_lccr1;
+ 	u_int			reg_lccr2;
+ 	u_int			reg_lccr3;
++	u_int			reg_lccr4;
+ 
+ 	unsigned long	hsync_time;
+ 
+Index: linux-2.6.22-rc/include/asm-arm/arch-pxa/pxafb.h
+===================================================================
+--- linux-2.6.22-rc.orig/include/asm-arm/arch-pxa/pxafb.h	2007-04-26 05:08:32.000000000 +0200
++++ linux-2.6.22-rc/include/asm-arm/arch-pxa/pxafb.h	2007-07-03 15:46:20.000000000 +0200
+@@ -70,7 +70,12 @@
+ 	 *      LCCR3_HSP, LCCR3_VSP, LCCR0_Pcd(x), LCCR3_Bpp
+ 	 */
+ 	u_int		lccr3;
+-
++	/* The following should be defined in LCCR4
++	 *	LCCR4_PAL_FOR_0 or LCCR4_PAL_FOR_1 or LCCR4_PAL_FOR_2
++	 *
++	 * All other bits in LCCR4 should be left alone.
++	 */
++	u_int		lccr4;
+ 	void (*pxafb_backlight_power)(int);
+ 	void (*pxafb_lcd_power)(int, struct fb_var_screeninfo *);
+ 
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

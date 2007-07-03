@@ -1,26 +1,26 @@
-From: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
 Subject: Re: [PATCH] pxafb: Add support for other
 	palette formats
-Date: Tue, 3 Jul 2007 19:33:47 +0200
-Message-ID: <200707031933.47099.hjk@linutronix.de>
+Date: Tue, 3 Jul 2007 19:44:21 +0200
+Message-ID: <200707031944.21467.hjk@linutronix.de>
 References: <200707031607.08511.hjk@linutronix.de>
-	<200707031839.57252.hjk@linutronix.de>
-	<18058.33810.378130.695740@ipc1.karo>
+	<200707031845.57256.hjk@linutronix.de>
+	<468A85A2.1070506@grupopie.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I5mG8-0004cF-4u for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 10:33:52 -0700
+	id 1I5mQL-0005u5-PU for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jul 2007 10:44:37 -0700
 Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5mG6-0000VC-Oz
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5mQL-0004Y6-Dg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jul 2007 10:33:52 -0700
-In-Reply-To: <18058.33810.378130.695740@ipc1.karo>
+	Tue, 03 Jul 2007 10:44:25 -0700
+In-Reply-To: <468A85A2.1070506@grupopie.com>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,34 +32,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Lothar Wassmann <LW@karo-electronics.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, Lothar Wassmann <LW@karo-electronics.de>
 
-Am Dienstag 03 Juli 2007 19:14 schrieb Lothar Wassmann:
-> Hi,
-> 
-> > > BTW: PXA255 doesn't have an LCCR4 register.
-> > 
-> > In that case I should insert some #ifdef CONFIG_PXA27x to have the
-> > new behaviour only on PXA270, right?
-> >
-> This would be incompatible with the efforts to have the same kernel
-> binary running on PXA25x as well as PXA27x.
+Am Dienstag 03 Juli 2007 19:21 schrieb Paulo Marques:
+> Hans-J=FCrgen Koch wrote:
+> > Am Dienstag 03 Juli 2007 18:03 schrieb Paulo Marques:
+> >> [...]
+> >> Or maybe teach fbcon to use 18bpp modes?
+> > =
 
-OK, I see.
+> > This would only make sense if this is a common format that other
+> > chips use, too.
+> =
 
-> 
-> Either check the cpuid 
+> I don't see this as a good reason not to implement 18bpp support in =
 
-This is probably the right way to go if you actually want the binary
-to run on both platforms.
+> fbcon. "Just PXA270 18bpp devices" can be a lot of devices out there.
 
-> or as Paulo mentioned just check if the 
-> platform has defined a value for LCCR4 and assume that the platform
-> code knows when to specify it and when not.
+I guess most hardware developers will connect their LCD with only
+16-bit, use RGB565, and are happy with that. It's a pity that this
+requires a physically different wiring of the LCD.
 
-Well, my patch adds this definition to pxa_regs.h. Anyway, this solution
-also decides at compile time where the binary will run.
+> =
+
+> Anyway, can fbcon work with 18bpp palette mode? If it does, then this =
+
+> should be enough for most users of 18bpp pxafb users: have a console =
+
+> with a palette mode and then switch to non-palette mode and run whatever =
+
+> windowing system supports 18bpp.
+
+I need to run gtk-directfb, and I'd be surprised if libcairo could handle
+that...
+
+> =
+
+> I guess that even if it doesn't support 18bpp palette mode now, it =
+
+> shouldn't be that hard to implement (nor should it cause that much bloat =
+
+> to fbcon).
+
+fbcon is not the big problem. But there's a lot of userspace stuff out there
+where they create graphics in their own buffers and blit it into the =
+
+framebuffer when ready. Most of them are definitely not prepared to support
+this format.
 
 Thanks,
 Hans

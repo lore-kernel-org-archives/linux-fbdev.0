@@ -1,87 +1,67 @@
-From: "Lothar Wassmann" <LW@KARO-electronics.de>
-Subject: Re: [PATCH] pxafb: Add support for other
-	palette formats
-Date: Wed, 4 Jul 2007 09:51:35 +0200
-Message-ID: <18059.20871.731074.623866@ipc1.karo>
-References: <200707031607.08511.hjk@linutronix.de>
-	<200707032236.27461.hjk@linutronix.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1487097911=="
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I5zfE-0006D7-TF for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Jul 2007 00:52:40 -0700
-Received: from mail.karo-electronics.de ([213.146.116.110])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I5zfD-0000V0-51
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Jul 2007 00:52:40 -0700
-In-Reply-To: <200707032236.27461.hjk@linutronix.de>
+From: Paulo Marques <pmarques@grupopie.com>
+Subject: Re: [PATCH] pxafb: Add support for other palette formats
+Date: Wed, 04 Jul 2007 12:00:48 +0100
+Message-ID: <468B7DE0.9020506@grupopie.com>
+References: <200707031607.08511.hjk@linutronix.de>	<200707031845.57256.hjk@linutronix.de>	<468A85A2.1070506@grupopie.com>	<200707031944.21467.hjk@linutronix.de>	<468A9300.7060608@grupopie.com>
+	<18059.18815.378793.220680@ipc1.karo>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+In-Reply-To: <18059.18815.378793.220680@ipc1.karo>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Clemens Koller <clemens.koller@anagramm.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, Paulo Marques <pmarques@grupopie.com>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Lothar Wassmann <LW@KARO-electronics.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
---===============1487097911==
+Lothar Wassmann wrote:
+> Hi,
 
 Hi,
 
-> +#define LCCR4_PAL_FOR_0 (0 << 15)
-> +#define LCCR4_PAL_FOR_1 (1 << 15)
-> +#define LCCR4_PAL_FOR_2 (2 << 15)
-> +#define LCCR4_PAL_FOR_MASK (3 << 15)
->
-Just a minor nitpicking. I would prefer names which represent the
-_meaning_ of the constants rather than duplicating their value in the
-name, like:
-#define LCCR4_PALFOR_16		(0 << 15) /* 16 palette, 16 bit output */
-#define LCCR4_PALFOR_16_T	(1 << 15) /* 25 bit palette, 16 bit output +transp. */
-#define LCCR4_PALFOR_18		(2 << 15) /* 25 bit palette, 18 bit output */
-#define LCCR4_PALFOR_24		(3 << 15) /* 25 bit palette, 24 bit output */
+>> I assume the "red 6@16" is a typo for "red 6@12", since the "3 byte / 
+>> green 6@6 and blue 6@0" match exactly the 18bpp packed format. Even 
+>>
+> Take a closer look at the actual pixel format of the PXA270.
+> The usual graphics packages AFAIK support either packed pixels
+> (i.e. 18 bit on screen => 18 bit in memory)
 
+This mode would be quite insane: 16 pixels in 9 words?  :P
 
-Lothar Wassmann
+No, I don't think there are graphics packages out there supporting this 
+mode.
+
+> or unpacked (i.e. 18/24
+> or whatever bits => 32 bit in memory).
+> The PXA supports either the unpacked pixel format (which is a waste of
+> memory especially on embedded systems) 
+
+...but is very good for alignment. Access to any individual pixel is 
+always aligned on a 4 byte boundary. So, I guess it depends on the 
+application.
+
+> or a strange format which is
+> neither: 18bit on screen in 24bit in memory (IOW 4 pixels in 3
+> words in memory).
+
+Take a closer look at my post, specially at the "3 byte" part. The mode 
+supported by DirectFB is really the packed mode of the PXA270: 18bit on 
+screen in 24bit in memory.
+
 -- 
-___________________________________________________________
+Paulo Marques - www.grupopie.com
 
-Ka-Ro electronics GmbH | Pascalstra���e 22 | D - 52076 Aachen
-Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
-Gesch���ftsf���hrer: Matthias Kaussen, Rolf Rosenstein
-Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
+"All I ask is a chance to prove that money can't make me happy."
 
-www.karo-electronics.de | info@karo-electronics.de
-___________________________________________________________
-
-
---===============1487097911==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
---===============1487097911==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1487097911==--
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

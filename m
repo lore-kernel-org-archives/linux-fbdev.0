@@ -1,67 +1,384 @@
-From: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [PATCH] pxafb: Add support for other palette formats
-Date: Wed, 04 Jul 2007 12:00:48 +0100
-Message-ID: <468B7DE0.9020506@grupopie.com>
-References: <200707031607.08511.hjk@linutronix.de>	<200707031845.57256.hjk@linutronix.de>	<468A85A2.1070506@grupopie.com>	<200707031944.21467.hjk@linutronix.de>	<468A9300.7060608@grupopie.com>
-	<18059.18815.378793.220680@ipc1.karo>
+From: "Huang, Ying" <ying.huang@intel.com>
+Subject: [PATCH] EFI framebuffer on EFI X86_64
+Date: Wed, 04 Jul 2007 21:50:51 +0000
+Message-ID: <1183585851.16719.36.camel@caritas-dev.intel.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <18059.18815.378793.220680@ipc1.karo>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1I65Gq-0005Qx-5s for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 04 Jul 2007 06:51:53 -0700
+Received: from mga01.intel.com ([192.55.52.88])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I65Gp-0007z5-MX
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 04 Jul 2007 06:51:52 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Lothar Wassmann <LW@KARO-electronics.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net
 
-Lothar Wassmann wrote:
-> Hi,
+This patch adds Graphics Output Protocol support to the kernel.
+x86_64 systems with UEFI2.0 firmware conform to UEFI 2.0 specification.
+UEFI2.0 spec deprecates Universal Graphics Adapter (UGA) protocol and
+only Graphics Output Protocol (GOP) is produced. Therefore, the boot
+loader
+needs to query the UEFI firmware with appropriate Output Protocol and
+pass the video information to the kernel. As a result of GOP
+protocol, an EFI framebuffer driver is needed for displaying console
+messages.
+Patch 3 of 3 adds a EFI framebuffer driver. The EFI frame buffer driver
+in this
+patch is based on the Intel Mac framebuffer driver.
 
-Hi,
+The x86_64 ELILO bootloader takes care of passing the video information
+as appropriate for EFI firmware. 
 
->> I assume the "red 6@16" is a typo for "red 6@12", since the "3 byte / 
->> green 6@6 and blue 6@0" match exactly the 18bpp packed format. Even 
->>
-> Take a closer look at the actual pixel format of the PXA270.
-> The usual graphics packages AFAIK support either packed pixels
-> (i.e. 18 bit on screen => 18 bit in memory)
+Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
 
-This mode would be quite insane: 16 pixels in 9 words?  :P
+This patch depends on the EFI x86_64 patches 1/3 and 2/3.
 
-No, I don't think there are graphics packages out there supporting this 
-mode.
+diff -uprN -X linux-2.6.21-orig/Documentation/dontdiff
+linux-2.6.21-orig/include/linux/screen_info.h
+linux-2.6.21-uefi-finaltest4/include/linux/screen_info.h
+--- linux-2.6.21-orig/include/linux/screen_info.h       2007-04-25
+20:08:32.000000000 -0700
++++
+linux-2.6.21-uefi-finaltest4/include/linux/screen_info.h    2007-06-12
+16:16:12.000000000 -0700
+@@ -63,6 +63,7 @@ extern struct screen_info screen_info;
+ #define VIDEO_TYPE_EGAC                0x21    /* EGA in Color
+Mode            */
+ #define VIDEO_TYPE_VGAC                0x22    /* VGA+ in Color
+Mode           */
+ #define VIDEO_TYPE_VLFB                0x23    /* VESA VGA in graphic
+mode     */
++#define VIDEO_TYPE_EFI         0x24    /* EFI graphic
+mode             */
+ 
+ #define VIDEO_TYPE_PICA_S3     0x30    /* ACER PICA-61 local S3
+video  */
+ #define VIDEO_TYPE_MIPS_G364   0x31    /* MIPS Magnum 4000 G364 video
+*/
+diff -uprN -X linux-2.6.21-orig/Documentation/dontdiff
+linux-2.6.21-orig/drivers/video/Kconfig
+linux-2.6.21-uefi-finaltest4/drivers/video/Kconfig
+--- linux-2.6.21-orig/drivers/video/Kconfig     2007-04-25
+20:08:32.000000000 -0700
++++ linux-2.6.21-uefi-finaltest4/drivers/video/Kconfig  2007-06-12
+16:16:12.000000000 -0700
+@@ -539,6 +539,17 @@ config FB_VESA
+          You will get a boot time penguin logo at no additional cost.
+Please
+          read <file:Documentation/fb/vesafb.txt>. If unsure, say Y.
+ 
++config FB_EFI
++       bool "EFI-based Framebuffer Support"
++       depends on (FB = y) && X86 && EFI
++       select FB_CFB_FILLRECT
++       select FB_CFB_COPYAREA
++       select FB_CFB_IMAGEBLIT
++       help
++         This is the EFI frame buffer device driver. If the firmware on
++         your platform is UEFI2.0, select Y to add support for
++         Graphics Output Protocol for early console messages to appear.
++
+ config FB_IMAC
+        bool "Intel-based Macintosh Framebuffer Support"
+        depends on (FB = y) && X86 && EFI
+diff -uprN -X linux-2.6.21-orig/Documentation/dontdiff
+linux-2.6.21-orig/drivers/video/Makefile
+linux-2.6.21-uefi-finaltest4/drivers/video/Makefile
+--- linux-2.6.21-orig/drivers/video/Makefile    2007-04-25
+20:08:32.000000000 -0700
++++ linux-2.6.21-uefi-finaltest4/drivers/video/Makefile 2007-06-12
+16:16:12.000000000 -0700
+@@ -103,6 +103,7 @@ obj-$(CONFIG_FB_SM501)            += sm5
+ # Platform or fallback drivers go here
+ obj-$(CONFIG_FB_VESA)             += vesafb.o
+ obj-$(CONFIG_FB_IMAC)             += imacfb.o
++obj-$(CONFIG_FB_EFI)              += efifb.o
+ obj-$(CONFIG_FB_VGA16)            += vga16fb.o vgastate.o
+ obj-$(CONFIG_FB_OF)               += offb.o
+ 
+diff -uprN -X linux-2.6.21-orig/Documentation/dontdiff
+linux-2.6.21-orig/drivers/video/efifb.c
+linux-2.6.21-uefi-finaltest4/drivers/video/efifb.c
+--- linux-2.6.21-orig/drivers/video/efifb.c     1969-12-31
+16:00:00.000000000 -0800
++++ linux-2.6.21-uefi-finaltest4/drivers/video/efifb.c  2007-06-12
+16:16:12.000000000 -0700
+@@ -0,0 +1,249 @@
++/*
++ * framebuffer driver for Intel Based Mac's
++ *
++ * (c) 2006 Edgar Hucek <gimli@dark-green.com>
++ * Original efi driver written by Gerd Knorr
+<kraxel@goldbach.in-berlin.de>
++ *
++ */
++
++#include <linux/delay.h>
++#include <linux/errno.h>
++#include <linux/fb.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/ioport.h>
++#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/screen_info.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/dmi.h>
++#include <linux/efi.h>
++
++#include <asm/io.h>
++
++#include <video/vga.h>
++
++static struct fb_var_screeninfo efifb_defined __initdata = {
++       .activate               = FB_ACTIVATE_NOW,
++       .height                 = -1,
++       .width                  = -1,
++       .right_margin           = 32,
++       .upper_margin           = 16,
++       .lower_margin           = 4,
++       .vsync_len              = 4,
++       .vmode                  = FB_VMODE_NONINTERLACED,
++};
++
++static struct fb_fix_screeninfo efifb_fix __initdata = {
++       .id                     = "EFI VGA",
++       .type                   = FB_TYPE_PACKED_PIXELS,
++       .accel                  = FB_ACCEL_NONE,
++       .visual                 = FB_VISUAL_TRUECOLOR,
++};
++
++static int efifb_setcolreg(unsigned regno, unsigned red, unsigned
+green,
++                           unsigned blue, unsigned transp,
++                           struct fb_info *info)
++{
++       /*
++        *  Set a single color register. The values supplied are
++        *  already rounded down to the hardware's capabilities
++        *  (according to the entries in the `var' structure). Return
++        *  != 0 for invalid regno.
++        */
++
++       if (regno >= info->cmap.len)
++               return 1;
++
++       if (regno < 16) {
++               red   >>= 8;
++               green >>= 8;
++               blue  >>= 8;
++               ((u32 *)(info->pseudo_palette))[regno] =
++                       (red   << info->var.red.offset)   |
++                       (green << info->var.green.offset) |
++                       (blue  << info->var.blue.offset);
++       }
++       return 0;
++}
++
++static struct fb_ops efifb_ops = {
++       .owner          = THIS_MODULE,
++       .fb_setcolreg   = efifb_setcolreg,
++       .fb_fillrect    = cfb_fillrect,
++       .fb_copyarea    = cfb_copyarea,
++       .fb_imageblit   = cfb_imageblit,
++};
++
++static int __init efifb_probe(struct platform_device *dev)
++{
++       struct fb_info *info;
++       int err;
++       unsigned int size_vmode;
++       unsigned int size_remap;
++       unsigned int size_total;
++
++       efifb_fix.smem_start = screen_info.lfb_base;
++       efifb_defined.bits_per_pixel = screen_info.lfb_depth;
++       efifb_defined.xres = screen_info.lfb_width;
++       efifb_defined.yres = screen_info.lfb_height;
++       efifb_fix.line_length = screen_info.lfb_linelength;
++
++       /*   size_vmode -- that is the amount of memory needed for the
++        *                 used video mode, i.e. the minimum amount of
++        *                 memory we need. */
++       size_vmode = efifb_defined.yres * efifb_fix.line_length;
++
++       /*   size_total -- all video memory we have. Used for
++        *                 entries, ressource allocation and bounds
++        *                 checking. */
++       //size_total = screen_info.lfb_size * 65536;
++       size_total = screen_info.lfb_size;
++       if (size_total < size_vmode)
++               size_total = size_vmode;
++
++       /*   size_remap -- the amount of video memory we are going to
++        *                 use for efifb.  With modern cards it is no
++        *                 option to simply use size_total as that
++        *                 wastes plenty of kernel address space. */
++       size_remap  = size_vmode * 2;
++       if (size_remap < size_vmode)
++               size_remap = size_vmode;
++       if (size_remap > size_total)
++               size_remap = size_total;
++       efifb_fix.smem_len = size_remap;
++
++#ifndef __i386__
++       //screen_info.imacpm_seg = 0;
++#endif
++
++       if (!request_mem_region(efifb_fix.smem_start, size_total,
+"efifb")) {
++               printk(KERN_WARNING
++                      "efifb: cannot reserve video memory at 0x%lx\n",
++                       efifb_fix.smem_start);
++               /* We cannot make this fatal. Sometimes this comes from
+magic
++                  spaces our resource handlers simply don't know about
+*/
++       }
++
++       info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
++       if (!info) {
++               err = -ENOMEM;
++               goto err_release_mem;
++       }
++       info->pseudo_palette = info->par;
++       info->par = NULL;
++
++       info->screen_base = ioremap(efifb_fix.smem_start,
+efifb_fix.smem_len);
++       if (!info->screen_base) {
++               printk(KERN_ERR "efifb: abort, cannot ioremap video
+memory "
++                               "0x%x @ 0x%lx\n",
++                       efifb_fix.smem_len, efifb_fix.smem_start);
++               err = -EIO;
++               goto err_unmap;
++       }
++
++       printk(KERN_INFO "efifb: framebuffer at 0x%lx, mapped to 0x%p, "
++              "using %dk, total %dk\n",
++              efifb_fix.smem_start, info->screen_base,
++              size_remap/1024, size_total/1024);
++       printk(KERN_INFO "efifb: mode is %dx%dx%d, linelength=%d, pages=
+%d\n",
++              efifb_defined.xres, efifb_defined.yres,
++              efifb_defined.bits_per_pixel, efifb_fix.line_length,
++              screen_info.pages);
++
++       efifb_defined.xres_virtual = efifb_defined.xres;
++       efifb_defined.yres_virtual = efifb_fix.smem_len /
++                                       efifb_fix.line_length;
++       printk(KERN_INFO "efifb: scrolling: redraw\n");
++       efifb_defined.yres_virtual = efifb_defined.yres;
++
++       /* some dummy values for timing to make fbset happy */
++       efifb_defined.pixclock     = 10000000 / efifb_defined.xres *
++                                       1000 / efifb_defined.yres;
++       efifb_defined.left_margin  = (efifb_defined.xres / 8) & 0xf8;
++       efifb_defined.hsync_len    = (efifb_defined.xres / 8) & 0xf8;
++
++       efifb_defined.red.offset    = screen_info.red_pos;
++       efifb_defined.red.length    = screen_info.red_size;
++       efifb_defined.green.offset  = screen_info.green_pos;
++       efifb_defined.green.length  = screen_info.green_size;
++       efifb_defined.blue.offset   = screen_info.blue_pos;
++       efifb_defined.blue.length   = screen_info.blue_size;
++       efifb_defined.transp.offset = screen_info.rsvd_pos;
++       efifb_defined.transp.length = screen_info.rsvd_size;
++
++       printk(KERN_INFO "efifb: %s: "
++              "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
++              "Truecolor",
++              screen_info.rsvd_size,
++              screen_info.red_size,
++              screen_info.green_size,
++              screen_info.blue_size,
++              screen_info.rsvd_pos,
++              screen_info.red_pos,
++              screen_info.green_pos,
++              screen_info.blue_pos);
++
++       efifb_fix.ypanstep  = 0;
++       efifb_fix.ywrapstep = 0;
++
++       info->fbops = &efifb_ops;
++       info->var = efifb_defined;
++       info->fix = efifb_fix;
++       info->flags = FBINFO_FLAG_DEFAULT;
++
++       if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
++               err = -ENOMEM;
++               goto err_unmap;
++       }
++       if (register_framebuffer(info)<0) {
++               err = -EINVAL;
++               goto err_fb_dealoc;
++       }
++       printk(KERN_INFO "fb%d: %s frame buffer device\n",
++              info->node, info->fix.id);
++       return 0;
++
++err_fb_dealoc:
++       fb_dealloc_cmap(&info->cmap);
++err_unmap:
++       iounmap(info->screen_base);
++       framebuffer_release(info);
++err_release_mem:
++       release_mem_region(efifb_fix.smem_start, size_total);
++       return err;
++}
++
++static struct platform_driver efifb_driver = {
++       .probe  = efifb_probe,
++       .driver = {
++               .name   = "efifb",
++       },
++};
++
++static struct platform_device efifb_device = {
++       .name   = "efifb",
++};
++
++static int __init efifb_init(void)
++{
++       int ret;
++
++       if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
++               return -ENODEV;
++
++
++       ret = platform_driver_register(&efifb_driver);
++
++       if (!ret) {
++               ret = platform_device_register(&efifb_device);
++               if (ret)
++                       platform_driver_unregister(&efifb_driver);
++       }
++       return ret;
++}
++module_init(efifb_init);
++
++MODULE_LICENSE("GPL");
 
-> or unpacked (i.e. 18/24
-> or whatever bits => 32 bit in memory).
-> The PXA supports either the unpacked pixel format (which is a waste of
-> memory especially on embedded systems) 
-
-...but is very good for alignment. Access to any individual pixel is 
-always aligned on a 4 byte boundary. So, I guess it depends on the 
-application.
-
-> or a strange format which is
-> neither: 18bit on screen in 24bit in memory (IOW 4 pixels in 3
-> words in memory).
-
-Take a closer look at my post, specially at the "3 byte" part. The mode 
-supported by DirectFB is really the packed mode of the PXA270: 18bit on 
-screen in 24bit in memory.
-
--- 
-Paulo Marques - www.grupopie.com
-
-"All I ask is a chance to prove that money can't make me happy."
-
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

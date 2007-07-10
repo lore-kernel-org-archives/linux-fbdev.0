@@ -1,23 +1,23 @@
 From: Ben Dooks <ben-linux@fluff.org>
-Subject: [RFC] SM501: Call fb suspend function during
-	suspend and resume.
-Date: Tue, 10 Jul 2007 10:01:24 +0100
-Message-ID: <20070710090124.GA3628@fluff.org.uk>
+Subject: SM501: Ensure panel interface is not tristated
+	when setup
+Date: Tue, 10 Jul 2007 10:02:30 +0100
+Message-ID: <20070710090230.GA3691@fluff.org.uk>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I8BbB-0000qt-U5 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 10 Jul 2007 02:01:33 -0700
+	id 1I8BcI-0000yy-D8 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Jul 2007 02:02:42 -0700
 Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=aeryn.fluff.org.uk)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1I8BbA-0004sd-D8
+	(Exim 4.44) id 1I8BcH-0004Oy-KQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 10 Jul 2007 02:01:33 -0700
+	Tue, 10 Jul 2007 02:02:42 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,46 +31,58 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-I belive the following patch to be correct:
-
-Call the fb_set_suspend() over suspend and resume.
+When we setup the panel interface whilst configuring the
+framebuffer, we should ensure the panel interface is not
+in tristate, in case the bootloader or previous setup has
+not enabled it.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.21-quilt/drivers/video/sm501fb.c
+Index: linux-2.6.21-quilt9/drivers/video/sm501fb.c
 ===================================================================
---- linux-2.6.21-quilt.orig/drivers/video/sm501fb.c	2007-05-24 14:58:43.000000000 +0100
-+++ linux-2.6.21-quilt/drivers/video/sm501fb.c	2007-05-24 15:06:24.000000000 +0100
-@@ -28,6 +28,7 @@
- #include <linux/wait.h>
- #include <linux/platform_device.h>
- #include <linux/clk.h>
-+#include <linux/console.h>
+--- linux-2.6.21-quilt9.orig/drivers/video/sm501fb.c	2007-06-20 14:25:59.000000000 +0100
++++ linux-2.6.21-quilt9/drivers/video/sm501fb.c	2007-06-20 14:37:06.000000000 +0100
+@@ -777,6 +777,11 @@ static int sm501fb_set_par_pnl(struct fb
+ 	writel(control, fbi->regs + SM501_DC_PANEL_CONTROL);
+ 	sm501fb_sync_regs(fbi);
  
- #include <asm/io.h>
- #include <asm/uaccess.h>
-@@ -1697,6 +1698,10 @@ static int sm501fb_suspend_fb(struct sm5
- 	/* blank the relevant interface to ensure unit power minimised */
- 	(par->ops.fb_blank)(FB_BLANK_POWERDOWN, fbi);
- 
-+	acquire_console_sem();
-+	fb_set_suspend(fbi, 1);
-+	release_console_sem();
++	/* ensure the panel interface is not tristated at this point */
 +
++	sm501_modify_reg(fbi->dev->parent, SM501_SYSTEM_CONTROL,
++			 0, SM501_SYSCTRL_PANEL_TRISTATE);
++
+ 	/* power the panel up */
+ 	sm501fb_panel_power(fbi, 1);
  	return 0;
+Index: linux-2.6.21-quilt9/include/linux/sm501-regs.h
+===================================================================
+--- linux-2.6.21-quilt9.orig/include/linux/sm501-regs.h	2007-06-20 14:25:59.000000000 +0100
++++ linux-2.6.21-quilt9/include/linux/sm501-regs.h	2007-06-20 14:36:27.000000000 +0100
+@@ -15,6 +15,24 @@
  
-  err_nocursor:
-@@ -1732,6 +1737,10 @@ static void sm501fb_resume_fb(struct sm5
- 		memcpy_toio(par->cursor.k_addr, par->store_cursor,
- 			    par->cursor.size);
- 
-+	acquire_console_sem();
-+	fb_set_suspend(fbi, 0);
-+	release_console_sem();
+ /* config 1 */
+ #define SM501_SYSTEM_CONTROL 		(0x000000)
 +
- 	vfree(par->store_fb);
- 	vfree(par->store_cursor);
- }
++#define SM501_SYSCTRL_PANEL_TRISTATE	(1<<0)
++#define SM501_SYSCTRL_MEM_TRISTATE	(1<<1)
++#define SM501_SYSCTRL_CRT_TRISTATE	(1<<2)
++
++#define SM501_SYSCTRL_PCI_SLAVE_BURST_MASK (3<<4)
++#define SM501_SYSCTRL_PCI_SLAVE_BURST_1	(0<<4)
++#define SM501_SYSCTRL_PCI_SLAVE_BURST_2	(1<<4)
++#define SM501_SYSCTRL_PCI_SLAVE_BURST_4	(2<<4)
++#define SM501_SYSCTRL_PCI_SLAVE_BURST_8	(3<<4)
++
++#define SM501_SYSCTRL_PCI_CLOCK_RUN_EN	(1<<6)
++#define SM501_SYSCTRL_PCI_RETRY_DISABLE	(1<<7)
++#define SM501_SYSCTRL_PCI_SUBSYS_LOCK	(1<<11)
++#define SM501_SYSCTRL_PCI_BURST_READ_EN	(1<<15)
++
++/* miscellaneous control */
++
+ #define SM501_MISC_CONTROL		(0x000004)
+ 
+ #define SM501_MISC_BUS_SH		(0x0)
 
 
 

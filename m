@@ -1,20 +1,30 @@
-From: sanjeev sinha <sinha_crl@yahoo.co.in>
-Subject: Frame Buffer details help
-Date: Thu, 12 Jul 2007 06:02:24 +0100 (BST)
-Message-ID: <363298.14801.qm@web94101.mail.in2.yahoo.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] pxafb: Add support for
+	other	palette formats
+Date: Thu, 12 Jul 2007 15:56:19 +0800
+Message-ID: <1184226980.4504.14.camel@daplas>
+References: <200707031607.08511.hjk@linutronix.de>
+	<468A6159.6000808@grupopie.com> <200707031703.53102.hjk@linutronix.de>
+	<18058.28725.106989.860166@ipc1.karo>
+	<Pine.LNX.4.64.0707031756490.13482@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0429694641=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I8qp2-00040d-4i for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Jul 2007 22:02:36 -0700
-Received: from web94101.mail.in2.yahoo.com ([203.104.16.55])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1I8qoz-0002Nu-9i
+	id 1I8tXK-0005FQ-9b for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Jul 2007 00:56:36 -0700
+Received: from nz-out-0506.google.com ([64.233.162.230])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I8tXJ-0004pp-LX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Jul 2007 22:02:34 -0700
+	Thu, 12 Jul 2007 00:56:30 -0700
+Received: by nz-out-0506.google.com with SMTP id f1so138526nzc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 12 Jul 2007 00:56:29 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0707031756490.13482@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,72 +36,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Geert.Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>, Thomas Gleixner <tglx@linutronix.de>, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
---===============0429694641==
-Content-Type: multipart/alternative; boundary="0-1572811091-1184216544=:14801"
-Content-Transfer-Encoding: 7bit
+On Tue, 2007-07-03 at 17:58 +0200, Geert Uytterhoeven wrote:
+> On Tue, 3 Jul 2007, Lothar Wassmann wrote:
+> > > Can userspace applications work with such a weired format?
+> > > If yes, I'm looking forward to your patch.
+> > > 
+> > At least framebuffer consoles don't work with that. So you should
+> > add a configuration option that allows enabling the strange PXA pixel
+> > formats only when CONFIG_FRAMEBUFFER_CONSOLE is not set.
+> 
+> Of course framebuffer consoles handle that!
+> 
+> Just make sure to implement proper fb_ops.fb_{fillrect,copyarea,imageblit}().
 
---0-1572811091-1184216544=:14801
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+As long as it is in packed-pixel format, the generic drawing libraries
+should be able to handle that.  Make sure that info->pseudo_palette[] is
+correctly filled.
 
-Hi,
-  I am a developer working on linux . Generally I was involved in applica=
-tion development on linux which do not have any GUI. Rightnow I am workin=
-g on a project wherein I have to grab the linux screen and send it to the=
- network at some other locations (where the screen data may be displayed =
-again). I analyzed, the best way is to grab the frame buffer and send it =
-through the network. I have very little idea about frame buffer and its u=
-sage. Can you help me out to find the illaborated solution.
-  =20
-  Deepak
-
-      =20
----------------------------------
- Download prohibited? No problem. CHAT from any browser, without download=
-.
---0-1572811091-1184216544=:14801
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>  <DIV><FONT face=3DAria=
-l size=3D2>I am a developer working on linux . Generally I was involved i=
-n application development on linux which do not have any GUI. Rightnow I =
-am working on a project wherein I have to grab the linux screen and send =
-it to the network at some other locations (where the screen data may be d=
-isplayed again). I analyzed, the best way is to grab the frame buffer and=
- send it through the network. I have very little idea about frame buffer =
-and its usage. Can you help me out to find the illaborated solution.</FON=
-T></DIV>  <DIV>&nbsp;</DIV>  <DIV>Deepak</DIV><p>&#32;
+Tony
 
 
-      <!--1--><hr size=3D1></hr> Download prohibited? No problem. <a href=
-=3D"http://in.rd.yahoo.com/tagline_webmessenger_1/*http://in.messenger.ya=
-hoo.com/webmessengerpromo.php">CHAT</a> from any browser, without downloa=
-d.
---0-1572811091-1184216544=:14801--
-
-
---===============0429694641==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---===============0429694641==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0429694641==--

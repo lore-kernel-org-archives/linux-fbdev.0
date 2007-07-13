@@ -1,28 +1,29 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] pxafb: Add support for
-	other	palette formats
-Date: Fri, 13 Jul 2007 20:20:35 +0800
-Message-ID: <1184329235.4702.14.camel@daplas>
-References: <200707031607.08511.hjk@linutronix.de>
-	<468A6159.6000808@grupopie.com> <200707031703.53102.hjk@linutronix.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 0/4] Cell SPE logos
+Date: Fri, 13 Jul 2007 22:30:58 +1000
+Message-ID: <1184329858.6059.217.camel@localhost.localdomain>
+References: <20070710122702.765654000@pademelon.sonytel.be>
+	<20070712160621.644d78d2.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707131051190.18802@pademelon.sonytel.be>
+	<20070713020621.e8f2e4ce.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0707131108320.18802@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I9K8l-0007qk-1M for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 05:21:02 -0700
-Received: from nz-out-0506.google.com ([64.233.162.230])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9K8h-0007Ct-Ci
+	id 1I9KJL-0000kj-5Z for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 13 Jul 2007 05:31:51 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX180HWtP/if4bdJjDH7pgzxG5GOPJGmcfP4=])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1I9KJJ-000068-Lx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 05:20:54 -0700
-Received: by nz-out-0506.google.com with SMTP id f1so1147991nzc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 13 Jul 2007 05:20:50 -0700 (PDT)
-In-Reply-To: <200707031703.53102.hjk@linutronix.de>
+	Fri, 13 Jul 2007 05:31:51 -0700
+In-Reply-To: <Pine.LNX.4.62.0707131108320.18802@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,22 +35,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Thomas Gleixner <tglx@linutronix.de>, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>, cbe-oss-dev@ozlabs.org
 
-T24gVHVlLCAyMDA3LTA3LTAzIGF0IDE3OjAzICswMjAwLCBIYW5zLUrDvHJnZW4gS29jaCB3cm90
-ZToKPiBBbSBEaWVuc3RhZyAwMyBKdWxpIDIwMDcgMTY6NDYgc2NocmllYiBQYXVsbyBNYXJxdWVz
-Ogo+ID4gSGFucy1Kw7xyZ2VuIEtvY2ggd3JvdGU6Cgo+ID4gV2UgY2FuIGVpdGhlciBhcHBseSB0
-aGlzIHBhdGNoIGFzIGlzIGFuZCBJJ2xsIGp1c3QgbWVyZ2UgbXkgd29yayBsYXRlciwgCj4gPiBv
-ciBJIGNhbiB0cnkgdG8gbWVyZ2UgYm90aCBwYXRjaGVzIGFuZCBzZW5kIGEgc2luZ2xlIHBhdGNo
-IHVwc3RyZWFtLiAKPiA+IEVpdGhlciB3YXkgaXMgZmluZSBieSBtZS4KPiAKPiBJdCdzIHByb2Jh
-Ymx5IGNsZWFuZXIgdG8gbWVyZ2UgdHdvIHNtYWxsIHBhdGNoZXMgdGhhbiBhIGJpZyBvbmUuCj4g
-CgpXaGF0IHNob3VsZCBJIGRvIHdpdGggdGhpcz8gU2hvdWxkIEkgcHVzaCB0aGlzIHRvIGFrcG0s
-IG9yIHNob3VsZCBJIHdhaXQKZm9yIGEgbWVyZ2U/CgpUb255CgoKCi0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
-VGhpcyBTRi5uZXQgZW1haWwgaXMgc3BvbnNvcmVkIGJ5IERCMiBFeHByZXNzCkRvd25sb2FkIERC
-MiBFeHByZXNzIEMgLSB0aGUgRlJFRSB2ZXJzaW9uIG9mIERCMiBleHByZXNzIGFuZCB0YWtlCmNv
-bnRyb2wgb2YgeW91ciBYTUwuIE5vIGxpbWl0cy4gSnVzdCBkYXRhLiBDbGljayB0byBnZXQgaXQg
-bm93LgpodHRwOi8vc291cmNlZm9yZ2UubmV0L3Bvd2VyYmFyL2RiMi8KX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGlu
-ZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xp
-c3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=
+On Fri, 2007-07-13 at 11:09 +0200, Geert Uytterhoeven wrote:
+> On Fri, 13 Jul 2007, Andrew Morton wrote:
+> > On Fri, 13 Jul 2007 10:52:10 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > 
+> > > > > Summaries:
+> > > > >   [1] fbdev: extract fb_show_logo_line()
+> > > > >   [2] fbdev: Add fb_append_extra_logo()
+> > > > 
+> > > > This one does give additional code and data to all fbdev users while only
+> > > > being useful to cell machines.  Should we fix that?
+> > > 
+> > > I can protect it by #ifdef CONFIG_PPC_CELL (as long as there are no other
+> > > users). Would that be OK?
+> > 
+> > umm, your call.  If that makes sense, sure.
+> 
+> I just don't like putting platform-specific checks in common code.
+> 
+> Perhaps I better add CONFIG_FB_LOGO_EXTRA and make it depend on
+> CONFIG_PPC_CELL?
+
+I hate depends when it's not a dependency... the logo extra code doesn't
+-depend- technically on cell (it doesn't call cell only stuff). However,
+cell wants it enabled, thus I'd rather use either the "default y if
+PP_CELL" construct or select it from the cell option.
+
+Ben.
+ 
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

@@ -1,29 +1,27 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 0/4] Cell SPE logos
-Date: Fri, 13 Jul 2007 22:30:58 +1000
-Message-ID: <1184329858.6059.217.camel@localhost.localdomain>
-References: <20070710122702.765654000@pademelon.sonytel.be>
-	<20070712160621.644d78d2.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707131051190.18802@pademelon.sonytel.be>
-	<20070713020621.e8f2e4ce.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707131108320.18802@pademelon.sonytel.be>
+From: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
+Subject: Re: [PATCH] pxafb: Add support for other
+	palette formats
+Date: Fri, 13 Jul 2007 14:39:43 +0200
+Message-ID: <200707131439.43676.hjk@linutronix.de>
+References: <200707031607.08511.hjk@linutronix.de>
+	<200707031703.53102.hjk@linutronix.de>
+	<1184329235.4702.14.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I9KJL-0000kj-5Z for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 05:31:51 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX180HWtP/if4bdJjDH7pgzxG5GOPJGmcfP4=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1I9KJJ-000068-Lx
+	id 1I9KRX-0001ki-P2 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 13 Jul 2007 05:40:19 -0700
+Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9KRW-0003Cg-Ao
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 05:31:51 -0700
-In-Reply-To: <Pine.LNX.4.62.0707131108320.18802@pademelon.sonytel.be>
+	Fri, 13 Jul 2007 05:40:19 -0700
+In-Reply-To: <1184329235.4702.14.camel@daplas>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,41 +32,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>, cbe-oss-dev@ozlabs.org
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-fbdev-devel@lists.sourceforge.net, Paulo Marques <pmarques@grupopie.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Fri, 2007-07-13 at 11:09 +0200, Geert Uytterhoeven wrote:
-> On Fri, 13 Jul 2007, Andrew Morton wrote:
-> > On Fri, 13 Jul 2007 10:52:10 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > 
-> > > > > Summaries:
-> > > > >   [1] fbdev: extract fb_show_logo_line()
-> > > > >   [2] fbdev: Add fb_append_extra_logo()
-> > > > 
-> > > > This one does give additional code and data to all fbdev users while only
-> > > > being useful to cell machines.  Should we fix that?
-> > > 
-> > > I can protect it by #ifdef CONFIG_PPC_CELL (as long as there are no other
-> > > users). Would that be OK?
-> > 
-> > umm, your call.  If that makes sense, sure.
-> 
-> I just don't like putting platform-specific checks in common code.
-> 
-> Perhaps I better add CONFIG_FB_LOGO_EXTRA and make it depend on
-> CONFIG_PPC_CELL?
-
-I hate depends when it's not a dependency... the logo extra code doesn't
--depend- technically on cell (it doesn't call cell only stuff). However,
-cell wants it enabled, thus I'd rather use either the "default y if
-PP_CELL" construct or select it from the cell option.
-
-Ben.
- 
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+QW0gRnJlaXRhZyAxMyBKdWxpIDIwMDcgMTQ6MjAgc2NocmllYiBBbnRvbmlubyBBLiBEYXBsYXM6
+Cj4gT24gVHVlLCAyMDA3LTA3LTAzIGF0IDE3OjAzICswMjAwLCBIYW5zLUrDvHJnZW4gS29jaCB3
+cm90ZToKPiA+IEFtIERpZW5zdGFnIDAzIEp1bGkgMjAwNyAxNjo0NiBzY2hyaWViIFBhdWxvIE1h
+cnF1ZXM6Cj4gPiA+IEhhbnMtSsO8cmdlbiBLb2NoIHdyb3RlOgo+IAo+ID4gPiBXZSBjYW4gZWl0
+aGVyIGFwcGx5IHRoaXMgcGF0Y2ggYXMgaXMgYW5kIEknbGwganVzdCBtZXJnZSBteSB3b3JrIGxh
+dGVyLCAKPiA+ID4gb3IgSSBjYW4gdHJ5IHRvIG1lcmdlIGJvdGggcGF0Y2hlcyBhbmQgc2VuZCBh
+IHNpbmdsZSBwYXRjaCB1cHN0cmVhbS4gCj4gPiA+IEVpdGhlciB3YXkgaXMgZmluZSBieSBtZS4K
+PiA+IAo+ID4gSXQncyBwcm9iYWJseSBjbGVhbmVyIHRvIG1lcmdlIHR3byBzbWFsbCBwYXRjaGVz
+IHRoYW4gYSBiaWcgb25lLgo+ID4gCj4gCj4gV2hhdCBzaG91bGQgSSBkbyB3aXRoIHRoaXM/IFNo
+b3VsZCBJIHB1c2ggdGhpcyB0byBha3BtLCBvciBzaG91bGQgSSB3YWl0Cj4gZm9yIGEgbWVyZ2U/
+CgpNeSBwYWxldHRlIGZvcm1hdCBwYXRjaCBpcyBjb21wbGV0ZWx5IGluZGVwZW5kZW50IG9mIFBh
+dWxvJ3MgdHJ1ZS1jb2xvciB3b3JrLgpJJ2QgYmUgZ2xhZCBpZiB5b3UgY291bGQgcHVzaCBpdC4K
+ClRoYW5rcywKSGFucwoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLm5ldCBlbWFpbCBpcyBzcG9u
+c29yZWQgYnkgREIyIEV4cHJlc3MKRG93bmxvYWQgREIyIEV4cHJlc3MgQyAtIHRoZSBGUkVFIHZl
+cnNpb24gb2YgREIyIGV4cHJlc3MgYW5kIHRha2UKY29udHJvbCBvZiB5b3VyIFhNTC4gTm8gbGlt
+aXRzLiBKdXN0IGRhdGEuIENsaWNrIHRvIGdldCBpdCBub3cuCmh0dHA6Ly9zb3VyY2Vmb3JnZS5u
+ZXQvcG93ZXJiYXIvZGIyLwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxA
+bGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3Rz
+L2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==

@@ -1,9 +1,9 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [RFC] SM501: Call fb suspend
-	function	during suspend and resume.
-Date: Fri, 13 Jul 2007 20:57:24 +0800
-Message-ID: <1184331444.4702.15.camel@daplas>
-References: <20070710090124.GA3628@fluff.org.uk>
+Subject: Re: [PATCH] pm3fb: copyarea and
+	partial	imageblit support
+Date: Fri, 13 Jul 2007 21:03:49 +0800
+Message-ID: <1184331829.4702.18.camel@daplas>
+References: <466DCAAE.7000501@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,16 +12,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I9Kil-0003k7-Ht for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 05:58:08 -0700
-Received: from nz-out-0506.google.com ([64.233.162.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9Kii-0003Tb-O2
+	id 1I9LE4-0007M5-Nj for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 13 Jul 2007 06:30:28 -0700
+Received: from nz-out-0506.google.com ([64.233.162.234])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9LE4-0006EY-Ei
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 05:58:07 -0700
-Received: by nz-out-0506.google.com with SMTP id f1so1168770nzc
+	Fri, 13 Jul 2007 06:30:28 -0700
+Received: by nz-out-0506.google.com with SMTP id f1so1189659nzc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 13 Jul 2007 05:58:04 -0700 (PDT)
-In-Reply-To: <20070710090124.GA3628@fluff.org.uk>
+	Fri, 13 Jul 2007 06:30:27 -0700 (PDT)
+In-Reply-To: <466DCAAE.7000501@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,15 +33,16 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Ben Dooks <ben-linux@fluff.org>
 
-On Tue, 2007-07-10 at 10:01 +0100, Ben Dooks wrote:
-> I belive the following patch to be correct:
+On Tue, 2007-06-12 at 00:20 +0200, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> Call the fb_set_suspend() over suspend and resume.
+> This patch adds accelerated copyarea and partially accelerated imageblit functions.
+> There is also fixed one register address in the pm3fb.h file.
 > 
-It's correct.  I'll be pushing your patches to akpm after the next -mm
-release.
+
+Sorry for the delayed response (ISP problems). I've already queued all
+of your patches for the -mm tree.
 
 Tony
 

@@ -1,25 +1,30 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [patch 0/4] Cell SPE logos
-Date: Fri, 13 Jul 2007 12:05:19 +0200
-Message-ID: <200707131205.20399.arnd@arndb.de>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [patch 2/4] fbdev: Add
+	fb_append_extra_logo()
+Date: Fri, 13 Jul 2007 19:45:34 +0800
+Message-ID: <1184327134.4702.6.camel@daplas>
 References: <20070710122702.765654000@pademelon.sonytel.be>
-	<20070712160621.644d78d2.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0707131051190.18802@pademelon.sonytel.be>
+	<20070710123540.678435000@pademelon.sonytel.be>
+	<1184285757.4566.11.camel@daplas>
+	<Pine.LNX.4.62.0707130855360.15603@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I9I3n-0001q7-Vr for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 03:07:40 -0700
-Received: from moutng.kundenserver.de ([212.227.126.187])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9I3m-0004Nb-CS
+	id 1I9Jav-00047x-Na for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 13 Jul 2007 04:45:57 -0700
+Received: from nz-out-0506.google.com ([64.233.162.234])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9Jav-0003Zt-EN
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 03:07:39 -0700
-In-Reply-To: <Pine.LNX.4.62.0707131051190.18802@pademelon.sonytel.be>
-Content-Disposition: inline
+	Fri, 13 Jul 2007 04:45:57 -0700
+Received: by nz-out-0506.google.com with SMTP id f1so1131640nzc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 13 Jul 2007 04:45:56 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.62.0707130855360.15603@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,32 +35,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: cbe-oss-dev@ozlabs.org
-Cc: James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Geoff Levand <geoffrey.levand@am.sony.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, cbe-oss-dev@ozlabs.org
 
-On Friday 13 July 2007, Geert Uytterhoeven wrote:
-> > > Summaries:
-> > > =A0 [1] fbdev: extract fb_show_logo_line()
-> > > =A0 [2] fbdev: Add fb_append_extra_logo()
-> > =
+On Fri, 2007-07-13 at 08:56 +0200, Geert Uytterhoeven wrote:
+> On Fri, 13 Jul 2007, Antonino A. Daplas wrote:
+> > On Tue, 2007-07-10 at 14:27 +0200, Geert Uytterhoeven wrote:
+> > > --- a/drivers/video/fbmem.c
+> > > +++ b/drivers/video/fbmem.c
+> > > @@ -318,6 +318,13 @@ static struct logo_data {
+> > >  	const struct linux_logo *logo;
+> > >  } fb_logo __read_mostly;
+> > >  
+> > > +#define FB_LOGO_EX_NUM_MAX 10
+> > > +static struct logo_data_extra {
+> > > +	const struct linux_logo *logo;
+> > > +	unsigned int n;
+> > > +} fb_logo_ex[FB_LOGO_EX_NUM_MAX];
+> > > +static unsigned int fb_logo_ex_num;
+> > > +
+> > >  static void fb_rotate_logo_ud(const u8 *in, u8 *out, u32 width, u32 height)
+> > >  {
+> > >  	u32 size = width * height, i;
+> > > @@ -411,10 +418,22 @@ static void fb_do_show_logo(struct fb_in
+> > >  	}
+> > >  }
+> > >  
+> > > +#ifdef CONFIG_FB
+> > 
+> > The #ifdef is redundant.
+> 
+> IIRC, it's needed for the CONFIG_FB=m case.
 
-> > This one does give additional code and data to all fbdev users while on=
-ly
-> > being useful to cell machines. =A0Should we fix that?
-> =
+What would happen if CONFIG_FB=m? (We already have a patch that prevents
+logo drawing if the driver or fbcon is modular)
 
-> I can protect it by #ifdef CONFIG_PPC_CELL (as long as there are no other
-> users). Would that be OK?
+Tony
 
-If you want to have an #ifdef in there, it should probably be
-CONFIG_FB_EXTRA_LOGO and have that autoselected by CONFIG_SPU_BASE.
 
-A nicer alternative to the #ifdef might be to mark it __init, so
-that it will just go away after boot. Not sure if that's safe
-though.
-
-	Arnd <><
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

@@ -1,26 +1,26 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Subject: Re: [patch 2/4] fbdev: Add
 	fb_append_extra_logo()
-Date: Fri, 13 Jul 2007 08:56:24 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0707130855360.15603@pademelon.sonytel.be>
+Date: Fri, 13 Jul 2007 08:58:15 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0707130857350.15603@pademelon.sonytel.be>
 References: <20070710122702.765654000@pademelon.sonytel.be>
 	<20070710123540.678435000@pademelon.sonytel.be>
 	<1184285757.4566.11.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1045557791-1184309784=:15603"
+	BOUNDARY="-584337861-975467389-1184309895=:15603"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I9F5E-00060U-Av for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jul 2007 23:56:56 -0700
+	id 1I9F6y-0006Bo-CE for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Jul 2007 23:58:45 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9F5C-0001yP-Sm
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9F6x-0005U8-0k
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jul 2007 23:56:56 -0700
+	Thu, 12 Jul 2007 23:58:44 -0700
 In-Reply-To: <1184285757.4566.11.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,38 +38,24 @@ Cc: linux-fbdev-devel@lists.sourceforge.net, Geoff Levand <geoffrey.levand@am.so
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-1045557791-1184309784=:15603
+---584337861-975467389-1184309895=:15603
 Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
 On Fri, 13 Jul 2007, Antonino A. Daplas wrote:
 > On Tue, 2007-07-10 at 14:27 +0200, Geert Uytterhoeven wrote:
-> > --- a/drivers/video/fbmem.c
-> > +++ b/drivers/video/fbmem.c
-> > @@ -318,6 +318,13 @@ static struct logo_data {
-> >  	const struct linux_logo *logo;
-> >  } fb_logo __read_mostly;
+> > --- a/include/linux/linux_logo.h
+> > +++ b/include/linux/linux_logo.h
+> > @@ -33,5 +33,13 @@ struct linux_logo {
+> >  };
 > > =20
-> > +#define FB_LOGO_EX_NUM_MAX 10
-> > +static struct logo_data_extra {
-> > +	const struct linux_logo *logo;
-> > +	unsigned int n;
-> > +} fb_logo_ex[FB_LOGO_EX_NUM_MAX];
-> > +static unsigned int fb_logo_ex_num;
-> > +
-> >  static void fb_rotate_logo_ud(const u8 *in, u8 *out, u32 width, u32 =
-height)
-> >  {
-> >  	u32 size =3D width * height, i;
-> > @@ -411,10 +418,22 @@ static void fb_do_show_logo(struct fb_in
-> >  	}
-> >  }
-> > =20
-> > +#ifdef CONFIG_FB
+> >  extern const struct linux_logo *fb_find_logo(int depth);
+> > +#if defined(CONFIG_LOGO) && defined(CONFIG_FB)
 >=20
-> The #ifdef is redundant.
+> The CONFIG_LOGO is also probably redundant, but that's arguable.
 
-IIRC, it's needed for the CONFIG_FB=3Dm case.
+You can have CONFIG_LOGO without CONFIG_FB (depends on FB ||
+SGI_NEWPORT_CONSOLE).
 
 With kind regards,
 =20
@@ -92,7 +78,7 @@ ium=09
 VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
 Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
 9
----584337861-1045557791-1184309784=:15603
+---584337861-975467389-1184309895=:15603
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -103,7 +89,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
----584337861-1045557791-1184309784=:15603
+---584337861-975467389-1184309895=:15603
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -114,4 +100,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
----584337861-1045557791-1184309784=:15603--
+---584337861-975467389-1184309895=:15603--

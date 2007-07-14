@@ -1,10 +1,7 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: logos work/apply when?
-Date: Sat, 14 Jul 2007 06:49:58 +0800
-Message-ID: <1184366998.4616.0.camel@daplas>
-References: <20070712130822.a8269fe0.rdunlap@xenotime.net>
-	<1184284251.4566.3.camel@daplas>
-	<20070713110629.d6eccbd4.rdunlap@xenotime.net>
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Subject: [PATCH] remove tx3912fb
+Date: Sat, 14 Jul 2007 21:08:25 +0900
+Message-ID: <20070714210825.6bddf23f.yoichi_yuasa@tripeaks.co.jp>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,16 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1I9Txf-0004GL-9n for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 15:50:07 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9Txd-0000qc-Oy
+	id 1I9gRn-0006zW-Pc for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 14 Jul 2007 05:10:04 -0700
+Received: from mo30.po.2iij.net ([210.128.50.53])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1I9gRi-0005yk-Vk
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 13 Jul 2007 15:50:07 -0700
-Received: by py-out-1112.google.com with SMTP id a25so1114417pyi
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 13 Jul 2007 15:50:05 -0700 (PDT)
-In-Reply-To: <20070713110629.d6eccbd4.rdunlap@xenotime.net>
+	Sat, 14 Jul 2007 05:10:03 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,24 +26,808 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ralf Baechle <ralf@linux-mips.org>
 
-On Fri, 2007-07-13 at 11:06 -0700, Randy Dunlap wrote:
-> On Fri, 13 Jul 2007 07:50:51 +0800 Antonino A. Daplas wrote:
-> 
-> > On Thu, 2007-07-12 at 13:08 -0700, Randy Dunlap wrote: 
+This patch has removed tx3912fb.
+Nino has already removed. it is no need anymore.
 
-> So when all 3 of these are enabled:
-> CONFIG_LOGO_LINUX_MONO=y
-> CONFIG_LOGO_LINUX_VGA16=y
-> CONFIG_LOGO_LINUX_CLUT224=y
-> is the one with most depth that is supported by the fb driver used?
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-Yes.
-
-Tony
-
+diff -pruN -X generic/Documentation/dontdiff generic-orig/drivers/video/Kconfig generic/drivers/video/Kconfig
+--- generic-orig/drivers/video/Kconfig	2007-07-14 20:47:00.152666000 +0900
++++ generic/drivers/video/Kconfig	2007-07-14 20:46:29.374742500 +0900
+@@ -1621,18 +1621,6 @@ config FB_MAXINE
+ 	  DECstation series (Personal DECstation 5000/20, /25, /33, /50,
+ 	  Codename "Maxine").
+ 
+-config FB_TX3912
+-	bool "TMPTX3912/PR31700 frame buffer support"
+-	depends on (FB = y) && NINO
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
+-	help
+-	  The TX3912 is a Toshiba RISC processor based on the MIPS 3900 core
+-	  see <http://www.toshiba.com/taec/components/Generic/risc/tx3912.htm>.
+-
+-	  Say Y here to enable kernel support for the on-board framebuffer.
+-
+ config FB_G364
+ 	bool "G364 frame buffer support"
+ 	depends on (FB = y) && (MIPS_MAGNUM_4000 || OLIVETTI_M700)
+diff -pruN -X generic/Documentation/dontdiff generic-orig/drivers/video/Makefile generic/drivers/video/Makefile
+--- generic-orig/drivers/video/Makefile	2007-07-14 20:47:00.192668500 +0900
++++ generic/drivers/video/Makefile	2007-07-14 20:46:29.418745250 +0900
+@@ -103,7 +103,6 @@ obj-$(CONFIG_FB_PMAG_AA)	  += pmag-aa-fb
+ obj-$(CONFIG_FB_PMAG_BA)	  += pmag-ba-fb.o
+ obj-$(CONFIG_FB_PMAGB_B)	  += pmagb-b-fb.o
+ obj-$(CONFIG_FB_MAXINE)		  += maxinefb.o
+-obj-$(CONFIG_FB_TX3912)		  += tx3912fb.o
+ obj-$(CONFIG_FB_S1D13XXX)	  += s1d13xxxfb.o
+ obj-$(CONFIG_FB_IMX)              += imxfb.o
+ obj-$(CONFIG_FB_S3C2410)	  += s3c2410fb.o
+diff -pruN -X generic/Documentation/dontdiff generic-orig/drivers/video/tx3912fb.c generic/drivers/video/tx3912fb.c
+--- generic-orig/drivers/video/tx3912fb.c	2007-07-14 20:47:04.012907250 +0900
++++ generic/drivers/video/tx3912fb.c	1970-01-01 09:00:00.000000000 +0900
+@@ -1,326 +0,0 @@
+-/*
+- *  drivers/video/tx3912fb.c
+- *
+- *  Copyright (C) 1999 Harald Koerfgen
+- *  Copyright (C) 2001 Steven Hill (sjhill@realitydiluted.com)
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License. See the file COPYING in the main directory of this archive for
+- * more details.
+- *
+- *  Framebuffer for LCD controller in TMPR3912/05 and PR31700 processors
+- */
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/delay.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/pm.h>
+-#include <linux/fb.h>
+-#include <asm/io.h>
+-#include <asm/bootinfo.h>
+-#include <asm/uaccess.h>
+-#include <asm/tx3912.h>
+-#include <video/tx3912.h>
+-
+-/*
+- * Frame buffer, palette and console structures
+- */
+-static struct fb_info fb_info;
+-static u32 cfb8[16];
+-
+-static struct fb_fix_screeninfo tx3912fb_fix __initdata = {
+-	.id =		"tx3912fb",
+-	.smem_len =	((240 * 320)/2),
+-	.type =		FB_TYPE_PACKED_PIXELS,
+-	.visual =	FB_VISUAL_TRUECOLOR, 
+-	.xpanstep =	1,
+-	.ypanstep =	1,
+-	.ywrapstep =	1,
+-	.accel =	FB_ACCEL_NONE,
+-};
+-
+-static struct fb_var_screeninfo tx3912fb_var = {
+-	.xres =		240,
+-	.yres =		320,
+-	.xres_virtual =	240,
+-	.yres_virtual =	320,
+-	.bits_per_pixel =4,
+-	.red =		{ 0, 4, 0 },	/* ??? */
+-	.green =	{ 0, 4, 0 },
+-	.blue =		{ 0, 4, 0 },
+-	.activate =	FB_ACTIVATE_NOW,
+-	.width =	-1,
+-	.height =	-1,
+-	.pixclock =	20000,
+-	.left_margin =	64,
+-	.right_margin =	64,
+-	.upper_margin =	32,
+-	.lower_margin =	32,
+-	.hsync_len =	64,
+-	.vsync_len =	2,
+-	.vmode =	FB_VMODE_NONINTERLACED,
+-};
+-
+-/*
+- * Interface used by the world
+- */
+-int tx3912fb_init(void);
+-
+-static int tx3912fb_setcolreg(u_int regno, u_int red, u_int green,
+-			      u_int blue, u_int transp,
+-			      struct fb_info *info);
+-
+-/*
+- * Macros
+- */
+-#define get_line_length(xres_virtual, bpp) \
+-                (u_long) (((int) xres_virtual * (int) bpp + 7) >> 3)
+-
+-/*
+- * Frame buffer operations structure used by console driver
+- */
+-static struct fb_ops tx3912fb_ops = {
+-	.owner		= THIS_MODULE,
+-	.fb_setcolreg	= tx3912fb_setcolreg,
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
+-};
+-
+-static int tx3912fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+-{
+-	/*
+-	 * Memory limit
+-	 */
+-	line_length =
+-	    get_line_length(var->xres_virtual, var->bits_per_pixel);
+-	if ((line_length * var->yres_virtual) > info->fix.smem_len)
+-		return -ENOMEM;
+-
+-	return 0;
+-}
+-
+-static int tx3912fb_set_par(struct fb_info *info)
+-{
+-	u_long tx3912fb_paddr = 0;
+-
+-	/* Disable the video logic */
+-	outl(inl(TX3912_VIDEO_CTRL1) &
+-	     ~(TX3912_VIDEO_CTRL1_ENVID | TX3912_VIDEO_CTRL1_DISPON),
+-	     TX3912_VIDEO_CTRL1);
+-	udelay(200);
+-
+-	/* Set start address for DMA transfer */
+-	outl(tx3912fb_paddr, TX3912_VIDEO_CTRL3);
+-
+-	/* Set end address for DMA transfer */
+-	outl((tx3912fb_paddr + tx3912fb_fix.smem_len + 1), TX3912_VIDEO_CTRL4);
+-
+-	/* Set the pixel depth */
+-	switch (info->var.bits_per_pixel) {
+-	case 1:
+-		/* Monochrome */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		info->fix.visual = FB_VISUAL_MONO10;
+-		break;
+-	case 4:
+-		/* 4-bit gray */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		outl(inl(TX3912_VIDEO_CTRL1) |
+-		     TX3912_VIDEO_CTRL1_BITSEL_4BIT_GRAY,
+-		     TX3912_VIDEO_CTRL1);
+-		info->fix.visual = FB_VISUAL_TRUECOLOR;
+-		break;
+-	case 8:
+-		/* 8-bit color */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		outl(inl(TX3912_VIDEO_CTRL1) |
+-		     TX3912_VIDEO_CTRL1_BITSEL_8BIT_COLOR,
+-		     TX3912_VIDEO_CTRL1);
+-		info->fix.visual = FB_VISUAL_TRUECOLOR;
+-		break;
+-	case 2:
+-	default:
+-		/* 2-bit gray */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		outl(inl(TX3912_VIDEO_CTRL1) |
+-		     TX3912_VIDEO_CTRL1_BITSEL_2BIT_GRAY,
+-		     TX3912_VIDEO_CTRL1);
+-		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+-		break;
+-	}
+-
+-	/* Enable the video clock */
+-	outl(inl(TX3912_CLK_CTRL) | TX3912_CLK_CTRL_ENVIDCLK,
+-	     TX3912_CLK_CTRL);
+-
+-	/* Unfreeze video logic and enable DF toggle */
+-	outl(inl(TX3912_VIDEO_CTRL1) &
+-	     ~(TX3912_VIDEO_CTRL1_ENFREEZEFRAME |
+-	       TX3912_VIDEO_CTRL1_DFMODE)
+-	     , TX3912_VIDEO_CTRL1);
+-	udelay(200);
+-
+-	/* Enable the video logic */
+-	outl(inl(TX3912_VIDEO_CTRL1) |
+-	     (TX3912_VIDEO_CTRL1_ENVID | TX3912_VIDEO_CTRL1_DISPON),
+-	     TX3912_VIDEO_CTRL1);
+-
+-	info->fix.line_length = get_line_length(var->xres_virtual,
+-					    var->bits_per_pixel);
+-}
+-
+-/*
+- * Set a single color register
+- */
+-static int tx3912fb_setcolreg(u_int regno, u_int red, u_int green,
+-			      u_int blue, u_int transp,
+-			      struct fb_info *info)
+-{
+-	if (regno > 255)
+-		return 1;
+-
+-	if (regno < 16)
+-		((u32 *)(info->pseudo_palette))[regno] = ((red & 0xe000) >> 8)
+-		    | ((green & 0xe000) >> 11)
+-		    | ((blue & 0xc000) >> 14);
+-	return 0;
+-}
+-
+-int __init tx3912fb_setup(char *options);
+-
+-/*
+- * Initialization of the framebuffer
+- */
+-int __init tx3912fb_init(void)
+-{
+-	u_long tx3912fb_paddr = 0;
+-	int size = (info->var.bits_per_pixel == 8) ? 256 : 16;
+-	char *option = NULL;
+-
+-	if (fb_get_options("tx3912fb", &option))
+-		return -ENODEV;
+-	tx3912fb_setup(option);
+-
+-	/* Disable the video logic */
+-	outl(inl(TX3912_VIDEO_CTRL1) &
+-	     ~(TX3912_VIDEO_CTRL1_ENVID | TX3912_VIDEO_CTRL1_DISPON),
+-	     TX3912_VIDEO_CTRL1);
+-	udelay(200);
+-
+-	/* Set start address for DMA transfer */
+-	outl(tx3912fb_paddr, TX3912_VIDEO_CTRL3);
+-
+-	/* Set end address for DMA transfer */
+-	outl((tx3912fb_paddr + tx3912fb_fix.smem_len + 1), TX3912_VIDEO_CTRL4);
+-
+-	/* Set the pixel depth */
+-	switch (tx3912fb_var.bits_per_pixel) {
+-	case 1:
+-		/* Monochrome */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		tx3912fb_fix.visual = FB_VISUAL_MONO10;
+-		break;
+-	case 4:
+-		/* 4-bit gray */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		outl(inl(TX3912_VIDEO_CTRL1) |
+-		     TX3912_VIDEO_CTRL1_BITSEL_4BIT_GRAY,
+-		     TX3912_VIDEO_CTRL1);
+-		tx3912fb_fix.visual = FB_VISUAL_TRUECOLOR;
+-		tx3912fb_fix.grayscale = 1;
+-		break;
+-	case 8:
+-		/* 8-bit color */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		outl(inl(TX3912_VIDEO_CTRL1) |
+-		     TX3912_VIDEO_CTRL1_BITSEL_8BIT_COLOR,
+-		     TX3912_VIDEO_CTRL1);
+-		tx3912fb_fix.visual = FB_VISUAL_TRUECOLOR;
+-		break;
+-	case 2:
+-	default:
+-		/* 2-bit gray */
+-		outl(inl(TX3912_VIDEO_CTRL1) &
+-		     ~TX3912_VIDEO_CTRL1_BITSEL_MASK, TX3912_VIDEO_CTRL1);
+-		outl(inl(TX3912_VIDEO_CTRL1) |
+-		     TX3912_VIDEO_CTRL1_BITSEL_2BIT_GRAY,
+-		     TX3912_VIDEO_CTRL1);
+-		tx3912fb_fix.visual = FB_VISUAL_PSEUDOCOLOR;
+-		tx3912fb_fix.grayscale = 1;
+-		break;
+-	}
+-
+-	/* Enable the video clock */
+-	outl(inl(TX3912_CLK_CTRL) | TX3912_CLK_CTRL_ENVIDCLK,
+-		TX3912_CLK_CTRL);
+-
+-	/* Unfreeze video logic and enable DF toggle */
+-	outl(inl(TX3912_VIDEO_CTRL1) &
+-		~(TX3912_VIDEO_CTRL1_ENFREEZEFRAME | TX3912_VIDEO_CTRL1_DFMODE),
+-		TX3912_VIDEO_CTRL1);
+-	udelay(200);
+-
+-	/* Clear the framebuffer */
+-	memset((void *) tx3912fb_fix.smem_start, 0xff, tx3912fb_fix.smem_len);
+-	udelay(200);
+-
+-	/* Enable the video logic */
+-	outl(inl(TX3912_VIDEO_CTRL1) |
+-		(TX3912_VIDEO_CTRL1_ENVID | TX3912_VIDEO_CTRL1_DISPON),
+-		TX3912_VIDEO_CTRL1);
+-
+-	/*
+-	 * Memory limit
+-	 */
+-	tx3912fb_fix.line_length =
+-	    get_line_length(tx3912fb_var.xres_virtual, tx3912fb_var.bits_per_pixel);
+-	if ((tx3912fb_fix.line_length * tx3912fb_var.yres_virtual) > tx3912fb_fix.smem_len)
+-		return -ENOMEM;
+-
+-	fb_info.fbops = &tx3912fb_ops;
+-	fb_info.var = tx3912fb_var;
+-	fb_info.fix = tx3912fb_fix;
+-	fb_info.pseudo_palette = pseudo_palette;
+-	fb_info.flags = FBINFO_DEFAULT;
+-
+-	/* Clear the framebuffer */
+-	memset((void *) fb_info.fix.smem_start, 0xff, fb_info.fix.smem_len);
+-	udelay(200);
+-
+-	fb_alloc_cmap(&info->cmap, size, 0);
+-
+-	if (register_framebuffer(&fb_info) < 0)
+-		return -1;
+-
+-	printk(KERN_INFO "fb%d: TX3912 frame buffer using %uKB.\n",
+-	       fb_info.node, (u_int) (fb_info.fix.smem_len >> 10));
+-	return 0;
+-}
+-
+-int __init tx3912fb_setup(char *options)
+-{
+-	char *this_opt;
+-
+-	if (!options || !*options)
+-		return 0;
+-
+-	while ((this_opt = strsep(&options, ","))) {
+-		if (!strncmp(options, "bpp:", 4))	
+-			tx3912fb_var.bits_per_pixel = simple_strtoul(options+4, NULL, 0);
+-	}	
+-	return 0;
+-}
+-
+-module_init(tx3912fb_init);
+-MODULE_LICENSE("GPL");
+diff -pruN -X generic/Documentation/dontdiff generic-orig/include/asm-mips/tx3912.h generic/include/asm-mips/tx3912.h
+--- generic-orig/include/asm-mips/tx3912.h	2007-07-14 20:47:45.295487250 +0900
++++ generic/include/asm-mips/tx3912.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,361 +0,0 @@
+-/*
+- *  include/asm-mips/tx3912.h
+- *
+- *  Copyright (C) 2001 Steven J. Hill (sjhill@realitydiluted.com)
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- *  Registers for TMPR3912/05 and PR31700 processors
+- */
+-#ifndef _TX3912_H_
+-#define _TX3912_H_
+-
+-/*****************************************************************************
+- *	Clock Subsystem                                                      *
+- *	---------------                                                      *
+- *	Chapter 6 in Philips PR31700 and Toshiba TMPR3905/12 User Manuals    *
+- *****************************************************************************/
+-#define TX3912_CLK_CTRL					0x01c0
+-
+-/*
+- * Clock control register values
+- */
+-#define TX3912_CLK_CTRL_CHICLKDIV_MASK			0xff000000
+-#define TX3912_CLK_CTRL_ENCLKTEST			0x00800000
+-#define TX3912_CLK_CTRL_CLKTESTSELSIB			0x00400000
+-#define TX3912_CLK_CTRL_CHIMCLKSEL			0x00200000
+-#define TX3912_CLK_CTRL_CHICLKDIR			0x00100000
+-#define TX3912_CLK_CTRL_ENCHIMCLK			0x00080000
+-#define TX3912_CLK_CTRL_ENVIDCLK			0x00040000
+-#define TX3912_CLK_CTRL_ENMBUSCLK			0x00020000
+-#define TX3912_CLK_CTRL_ENSPICLK			0x00010000
+-#define TX3912_CLK_CTRL_ENTIMERCLK			0x00008000
+-#define TX3912_CLK_CTRL_ENFASTTIMERCLK			0x00004000
+-#define TX3912_CLK_CTRL_SIBMCLKDIR			0x00002000
+-#define TX3912_CLK_CTRL_reserved1			0x00001000
+-#define TX3912_CLK_CTRL_ENSIBMCLK			0x00000800
+-#define TX3912_CLK_CTRL_SIBMCLKDIV_6			0x00000600
+-#define TX3912_CLK_CTRL_SIBMCLKDIV_5			0x00000500
+-#define TX3912_CLK_CTRL_SIBMCLKDIV_4			0x00000400
+-#define TX3912_CLK_CTRL_SIBMCLKDIV_3			0x00000300
+-#define TX3912_CLK_CTRL_SIBMCLKDIV_2			0x00000200
+-#define TX3912_CLK_CTRL_SIBMCLKDIV_1			0x00000100
+-#define TX3912_CLK_CTRL_CSERSEL				0x00000080
+-#define TX3912_CLK_CTRL_CSERDIV_6			0x00000060
+-#define TX3912_CLK_CTRL_CSERDIV_5			0x00000050
+-#define TX3912_CLK_CTRL_CSERDIV_4			0x00000040
+-#define TX3912_CLK_CTRL_CSERDIV_3			0x00000030
+-#define TX3912_CLK_CTRL_CSERDIV_2			0x00000020
+-#define TX3912_CLK_CTRL_CSERDIV_1			0x00000010
+-#define TX3912_CLK_CTRL_ENCSERCLK			0x00000008
+-#define TX3912_CLK_CTRL_ENIRCLK				0x00000004
+-#define TX3912_CLK_CTRL_ENUARTACLK			0x00000002
+-#define TX3912_CLK_CTRL_ENUARTBCLK			0x00000001
+-
+-
+-/*****************************************************************************
+- *	Interrupt Subsystem                                                  *
+- *	-------------------                                                  *
+- *	Chapter 8 in Philips PR31700 and Toshiba TMPR3905/12 User Manuals    *
+- *****************************************************************************/
+-#define TX3912_INT1_CLEAR				0x0100
+-#define TX3912_INT2_CLEAR				0x0104
+-#define TX3912_INT3_CLEAR				0x0108
+-#define TX3912_INT4_CLEAR				0x010c
+-#define TX3912_INT5_CLEAR				0x0110
+-#define TX3912_INT1_ENABLE				0x0118
+-#define TX3912_INT2_ENABLE				0x011c
+-#define TX3912_INT3_ENABLE				0x0120
+-#define TX3912_INT4_ENABLE				0x0124
+-#define TX3912_INT5_ENABLE				0x0128
+-#define TX3912_INT6_ENABLE				0x012c
+-#define TX3912_INT1_STATUS				0x0100
+-#define TX3912_INT2_STATUS				0x0104
+-#define TX3912_INT3_STATUS				0x0108
+-#define TX3912_INT4_STATUS				0x010c
+-#define TX3912_INT5_STATUS				0x0110
+-#define TX3912_INT6_STATUS				0x0114
+-
+-/*
+- * Interrupt 2 register values
+- */
+-#define TX3912_INT2_UARTARXINT				0x80000000
+-#define TX3912_INT2_UARTARXOVERRUNINT			0x40000000
+-#define TX3912_INT2_UARTAFRAMEERRINT			0x20000000
+-#define TX3912_INT2_UARTABREAKINT			0x10000000
+-#define TX3912_INT2_UARTAPARITYINT			0x08000000
+-#define TX3912_INT2_UARTATXINT				0x04000000
+-#define TX3912_INT2_UARTATXOVERRUNINT			0x02000000
+-#define TX3912_INT2_UARTAEMPTYINT			0x01000000
+-#define TX3912_INT2_UARTADMAFULLINT			0x00800000
+-#define TX3912_INT2_UARTADMAHALFINT			0x00400000
+-#define TX3912_INT2_UARTBRXINT				0x00200000
+-#define TX3912_INT2_UARTBRXOVERRUNINT			0x00100000
+-#define TX3912_INT2_UARTBFRAMEERRINT			0x00080000
+-#define TX3912_INT2_UARTBBREAKINT			0x00040000
+-#define TX3912_INT2_UARTBPARITYINT			0x00020000
+-#define TX3912_INT2_UARTBTXINT				0x00010000
+-#define TX3912_INT2_UARTBTXOVERRUNINT			0x00008000
+-#define TX3912_INT2_UARTBEMPTYINT			0x00004000
+-#define TX3912_INT2_UARTBDMAFULLINT			0x00002000
+-#define TX3912_INT2_UARTBDMAHALFINT			0x00001000
+-#define TX3912_INT2_UARTA_RX_BITS			0xf8000000
+-#define TX3912_INT2_UARTA_TX_BITS			0x07c00000
+-#define TX3912_INT2_UARTB_RX_BITS			0x003e0000
+-#define TX3912_INT2_UARTB_TX_BITS			0x0001f000
+-
+-/*
+- * Interrupt 5 register values
+- */
+-#define TX3912_INT5_RTCINT				0x80000000
+-#define TX3912_INT5_ALARMINT				0x40000000
+-#define TX3912_INT5_PERINT				0x20000000
+-#define TX3912_INT5_STPTIMERINT				0x10000000
+-#define TX3912_INT5_POSPWRINT				0x08000000
+-#define TX3912_INT5_NEGPWRINT				0x04000000
+-#define TX3912_INT5_POSPWROKINT				0x02000000
+-#define TX3912_INT5_NEGPWROKINT				0x01000000
+-#define TX3912_INT5_POSONBUTINT				0x00800000
+-#define TX3912_INT5_NEGONBUTINT				0x00400000
+-#define TX3912_INT5_SPIBUFAVAILINT			0x00200000
+-#define TX3912_INT5_SPIERRINT				0x00100000
+-#define TX3912_INT5_SPIRCVINT				0x00080000
+-#define TX3912_INT5_SPIEMPTYINT				0x00040000
+-#define TX3912_INT5_IRCONSMINT				0x00020000
+-#define TX3912_INT5_CARSTINT				0x00010000
+-#define TX3912_INT5_POSCARINT				0x00008000
+-#define TX3912_INT5_NEGCARINT				0x00004000
+-#define TX3912_INT5_IOPOSINT6				0x00002000
+-#define TX3912_INT5_IOPOSINT5				0x00001000
+-#define TX3912_INT5_IOPOSINT4				0x00000800
+-#define TX3912_INT5_IOPOSINT3				0x00000400
+-#define TX3912_INT5_IOPOSINT2				0x00000200
+-#define TX3912_INT5_IOPOSINT1				0x00000100
+-#define TX3912_INT5_IOPOSINT0				0x00000080
+-#define TX3912_INT5_IONEGINT6				0x00000040
+-#define TX3912_INT5_IONEGINT5				0x00000020
+-#define TX3912_INT5_IONEGINT4				0x00000010
+-#define TX3912_INT5_IONEGINT3				0x00000008
+-#define TX3912_INT5_IONEGINT2				0x00000004
+-#define TX3912_INT5_IONEGINT1				0x00000002
+-#define TX3912_INT5_IONEGINT0				0x00000001
+-
+-/*
+- * Interrupt 6 status register values
+- */
+-#define TX3912_INT6_STATUS_IRQHIGH			0x80000000
+-#define TX3912_INT6_STATUS_IRQLOW			0x40000000
+-#define TX3912_INT6_STATUS_reserved6			0x3fffffc0
+-#define TX3912_INT6_STATUS_INTVEC_POSNEGPWROKINT	0x0000003c
+-#define TX3912_INT6_STATUS_INTVEC_ALARMINT		0x00000038
+-#define TX3912_INT6_STATUS_INTVEC_PERINT		0x00000034
+-#define TX3912_INT6_STATUS_INTVEC_reserved5		0x00000030
+-#define TX3912_INT6_STATUS_INTVEC_UARTARXINT		0x0000002c
+-#define TX3912_INT6_STATUS_INTVEC_UARTBRXINT		0x00000028
+-#define TX3912_INT6_STATUS_INTVEC_reserved4		0x00000024
+-#define TX3912_INT6_STATUS_INTVEC_IOPOSINT65		0x00000020
+-#define TX3912_INT6_STATUS_INTVEC_reserved3		0x0000001c
+-#define TX3912_INT6_STATUS_INTVEC_IONEGINT65		0x00000018
+-#define TX3912_INT6_STATUS_INTVEC_reserved2		0x00000014
+-#define TX3912_INT6_STATUS_INTVEC_SNDDMACNTINT		0x00000010
+-#define TX3912_INT6_STATUS_INTVEC_TELDMACNTINT		0x0000000c
+-#define TX3912_INT6_STATUS_INTVEC_CHIDMACNTINT		0x00000008
+-#define TX3912_INT6_STATUS_INTVEC_IOPOSNEGINT0		0x00000004
+-#define TX3912_INT6_STATUS_INTVEC_STDHANDLER		0x00000000
+-#define TX3912_INT6_STATUS_reserved1			0x00000003
+-
+-/*
+- * Interrupt 6 enable register values
+- */
+-#define TX3912_INT6_ENABLE_reserved5			0xfff80000
+-#define TX3912_INT6_ENABLE_GLOBALEN			0x00040000
+-#define TX3912_INT6_ENABLE_IRQPRITEST			0x00020000
+-#define TX3912_INT6_ENABLE_IRQTEST			0x00010000
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_POSNEGPWROKINT	0x00008000
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_ALARMINT	0x00004000
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_PERINT		0x00002000
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_reserved4	0x00001000
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_UARTARXINT	0x00000800
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_UARTBRXINT	0x00000400
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_reserved3	0x00000200
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_IOPOSINT65	0x00000100
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_reserved2	0x00000080
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_IONEGINT65	0x00000040
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_reserved1	0x00000020
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_SNDDMACNTINT	0x00000010
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_TELDMACNTINT	0x00000008
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_CHIDMACNTINT	0x00000004
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_IOPOSNEGINT0	0x00000002
+-#define TX3912_INT6_ENABLE_PRIORITYMASK_STDHANDLER	0x00000001
+-#define TX3912_INT6_ENABLE_HIGH_PRIORITY		0x0000ffff
+-
+-
+-/*****************************************************************************
+- *	Power Subsystem                                                      *
+- *	---------------                                                      *
+- *	Chapter 11 in Philips PR31700 User Manual                            *
+- *	Chapter 12 in Toshiba TMPR3905/12 User Manual                        *
+- *****************************************************************************/
+-#define TX3912_POWER_CTRL				0x01c4
+-
+-/*
+- * Power control register values
+- */
+-#define TX3912_POWER_CTRL_ONBUTN			0x80000000
+-#define TX3912_POWER_CTRL_PWRINT			0x40000000
+-#define TX3912_POWER_CTRL_PWROK				0x20000000
+-#define TX3912_POWER_CTRL_VIDRF_MASK			0x18000000
+-#define TX3912_POWER_CTRL_SLOWBUS			0x04000000
+-#define TX3912_POWER_CTRL_DIVMOD			0x02000000
+-#define TX3912_POWER_CTRL_reserved2			0x01ff0000
+-#define TX3912_POWER_CTRL_STPTIMERVAL_MASK		0x0000f000
+-#define TX3912_POWER_CTRL_ENSTPTIMER			0x00000800
+-#define TX3912_POWER_CTRL_ENFORCESHUTDWN		0x00000400
+-#define TX3912_POWER_CTRL_FORCESHUTDWN			0x00000200
+-#define TX3912_POWER_CTRL_FORCESHUTDWNOCC		0x00000100
+-#define TX3912_POWER_CTRL_SELC2MS			0x00000080
+-#define TX3912_POWER_CTRL_reserved1			0x00000040
+-#define TX3912_POWER_CTRL_BPDBVCC3			0x00000020
+-#define TX3912_POWER_CTRL_STOPCPU			0x00000010
+-#define TX3912_POWER_CTRL_DBNCONBUTN			0x00000008
+-#define TX3912_POWER_CTRL_COLDSTART			0x00000004
+-#define TX3912_POWER_CTRL_PWRCS				0x00000002
+-#define TX3912_POWER_CTRL_VCCON				0x00000001
+-
+-
+-/*****************************************************************************
+- *	Timer Subsystem                                                      *
+- *	---------------                                                      *
+- *	Chapter 14 in Philips PR31700 User Manual                            *
+- *	Chapter 15 in Toshiba TMPR3905/12 User Manual                        *
+- *****************************************************************************/
+-#define TX3912_RTC_HIGH					0x0140
+-#define TX3912_RTC_LOW					0x0144
+-#define TX3912_RTC_ALARM_HIGH				0x0148
+-#define TX3912_RTC_ALARM_LOW				0x014c
+-#define TX3912_TIMER_CTRL				0x0150
+-#define TX3912_TIMER_PERIOD				0x0154
+-
+-/*
+- * Timer control register values
+- */
+-#define TX3912_TIMER_CTRL_FREEZEPRE			0x00000080
+-#define TX3912_TIMER_CTRL_FREEZERTC			0x00000040
+-#define TX3912_TIMER_CTRL_FREEZETIMER			0x00000020
+-#define TX3912_TIMER_CTRL_ENPERTIMER			0x00000010
+-#define TX3912_TIMER_CTRL_RTCCLEAR			0x00000008
+-#define TX3912_TIMER_CTRL_TESTC8MS			0x00000004
+-#define TX3912_TIMER_CTRL_ENTESTCLK			0x00000002
+-#define TX3912_TIMER_CTRL_ENRTCTST			0x00000001
+-
+-/*
+- * The periodic timer has granularity of 868 nanoseconds which
+- * results in a count of (1.152 x 10^6 / 100) in order to achieve
+- * a 10 millisecond periodic system clock.
+- */
+-#define TX3912_SYS_TIMER_VALUE				(1152000/HZ)
+-
+-
+-/*****************************************************************************
+- *	UART Subsystem                                                       *
+- *	--------------                                                       *
+- *	Chapter 15 in Philips PR31700 User Manual                            *
+- *	Chapter 16 in Toshiba TMPR3905/12 User Manual                        *
+- *****************************************************************************/
+-#define TX3912_UARTA_CTRL1				0x00b0
+-#define TX3912_UARTA_CTRL2				0x00b4
+-#define TX3912_UARTA_DMA_CTRL1				0x00b8
+-#define TX3912_UARTA_DMA_CTRL2				0x00bc
+-#define TX3912_UARTA_DMA_CNT				0x00c0
+-#define TX3912_UARTA_DATA				0x00c4
+-#define TX3912_UARTB_CTRL1				0x00c8
+-#define TX3912_UARTB_CTRL2				0x00cc
+-#define TX3912_UARTB_DMA_CTRL1				0x00d0
+-#define TX3912_UARTB_DMA_CTRL2				0x00d4
+-#define TX3912_UARTB_DMA_CNT				0x00d8
+-#define TX3912_UARTB_DATA				0x00dc
+-
+-/*
+- * UART Control Register 1 values
+- */
+-#define TX3912_UART_CTRL1_UARTON			0x80000000
+-#define TX3912_UART_CTRL1_EMPTY				0x40000000
+-#define TX3912_UART_CTRL1_PRXHOLDFULL			0x20000000
+-#define TX3912_UART_CTRL1_RXHOLDFULL			0x10000000
+-#define TX3912_UART_CTRL1_reserved1			0x0fff0000
+-#define TX3912_UART_CTRL1_ENDMARX			0x00008000
+-#define TX3912_UART_CTRL1_ENDMATX			0x00004000
+-#define TX3912_UART_CTRL1_TESTMODE			0x00002000
+-#define TX3912_UART_CTRL1_ENBREAKHALT			0x00001000
+-#define TX3912_UART_CTRL1_ENDMATEST			0x00000800
+-#define TX3912_UART_CTRL1_ENDMALOOP			0x00000400
+-#define TX3912_UART_CTRL1_PULSEOPT1			0x00000200
+-#define TX3912_UART_CTRL1_PULSEOPT1			0x00000100
+-#define TX3912_UART_CTRL1_DTINVERT			0x00000080
+-#define TX3912_UART_CTRL1_DISTXD			0x00000040
+-#define TX3912_UART_CTRL1_TWOSTOP			0x00000020
+-#define TX3912_UART_CTRL1_LOOPBACK			0x00000010
+-#define TX3912_UART_CTRL1_BIT_7				0x00000008
+-#define TX3912_UART_CTRL1_EVENPARITY			0x00000004
+-#define TX3912_UART_CTRL1_ENPARITY			0x00000002
+-#define TX3912_UART_CTRL1_ENUART			0x00000001
+-
+-/*
+- * UART Control Register 2 values
+- */
+-#define TX3912_UART_CTRL2_B230400			0x0000	/*   0 */
+-#define TX3912_UART_CTRL2_B115200			0x0001	/*   1 */
+-#define TX3912_UART_CTRL2_B76800			0x0002	/*   2 */
+-#define TX3912_UART_CTRL2_B57600			0x0003	/*   3 */
+-#define TX3912_UART_CTRL2_B38400			0x0005	/*   5 */
+-#define TX3912_UART_CTRL2_B19200			0x000b	/*  11 */
+-#define TX3912_UART_CTRL2_B9600				0x0016	/*  22 */
+-#define TX3912_UART_CTRL2_B4800				0x002f	/*  47 */
+-#define TX3912_UART_CTRL2_B2400				0x005f	/*  95 */
+-#define TX3912_UART_CTRL2_B1200				0x00bf	/* 191 */
+-#define TX3912_UART_CTRL2_B600				0x017f	/* 383 */
+-#define TX3912_UART_CTRL2_B300				0x02ff	/* 767 */
+-
+-/*****************************************************************************
+- *	Video Subsystem                                                      *
+- *	---------------                                                      *
+- *	Chapter 16 in Philips PR31700 User Manual                            *
+- *	Chapter 17 in Toshiba TMPR3905/12 User Manual                        *
+- *****************************************************************************/
+-#define TX3912_VIDEO_CTRL1				0x0028
+-#define TX3912_VIDEO_CTRL2				0x002c
+-#define TX3912_VIDEO_CTRL3				0x0030
+-#define TX3912_VIDEO_CTRL4				0x0034
+-#define TX3912_VIDEO_CTRL5				0x0038
+-#define TX3912_VIDEO_CTRL6				0x003c
+-#define TX3912_VIDEO_CTRL7				0x0040
+-#define TX3912_VIDEO_CTRL8				0x0044
+-#define TX3912_VIDEO_CTRL9				0x0048
+-#define TX3912_VIDEO_CTRL10				0x004c
+-#define TX3912_VIDEO_CTRL11				0x0050
+-#define TX3912_VIDEO_CTRL12				0x0054
+-#define TX3912_VIDEO_CTRL13				0x0058
+-#define TX3912_VIDEO_CTRL14				0x005c
+-
+-/*
+- * Video Control Register 1 values
+- */
+-#define TX3912_VIDEO_CTRL1_LINECNT			0xffc00000
+-#define TX3912_VIDEO_CTRL1_LOADDLY			0x00200000
+-#define TX3912_VIDEO_CTRL1_BAUDVAL			0x001f0000
+-#define TX3912_VIDEO_CTRL1_VIDDONEVAL			0x0000fe00
+-#define TX3912_VIDEO_CTRL1_ENFREEZEFRAME		0x00000100
+-#define TX3912_VIDEO_CTRL1_BITSEL_MASK			0x000000c0
+-#define TX3912_VIDEO_CTRL1_BITSEL_8BIT_COLOR		0x000000c0
+-#define TX3912_VIDEO_CTRL1_BITSEL_4BIT_GRAY		0x00000080
+-#define TX3912_VIDEO_CTRL1_BITSEL_2BIT_GRAY		0x00000040
+-#define TX3912_VIDEO_CTRL1_DISPSPLIT			0x00000020
+-#define TX3912_VIDEO_CTRL1_DISP8			0x00000010
+-#define TX3912_VIDEO_CTRL1_DFMODE			0x00000008
+-#define TX3912_VIDEO_CTRL1_INVVID			0x00000004
+-#define TX3912_VIDEO_CTRL1_DISPON			0x00000002
+-#define TX3912_VIDEO_CTRL1_ENVID			0x00000001
+-
+-#endif	/* _TX3912_H_ */
+diff -pruN -X generic/Documentation/dontdiff generic-orig/include/video/tx3912.h generic/include/video/tx3912.h
+--- generic-orig/include/video/tx3912.h	2007-07-14 20:48:20.529689250 +0900
++++ generic/include/video/tx3912.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,62 +0,0 @@
+-/*
+- * linux/include/video/tx3912.h
+- *
+- * Copyright (C) 2001 Steven Hill (sjhill@realitydiluted.com)
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License. See the file COPYING in the main directory of this archive for
+- * more details.
+- *
+- * Includes for TMPR3912/05 and PR31700 LCD controller registers
+- */
+-#include <asm/tx3912.h>
+-
+-#define VidCtrl1        REG_AT(0x028)
+-#define VidCtrl2        REG_AT(0x02C)
+-#define VidCtrl3        REG_AT(0x030)
+-#define VidCtrl4        REG_AT(0x034)
+-#define VidCtrl5        REG_AT(0x038)
+-#define VidCtrl6        REG_AT(0x03C)
+-#define VidCtrl7        REG_AT(0x040)
+-#define VidCtrl8        REG_AT(0x044)
+-#define VidCtrl9        REG_AT(0x048)
+-#define VidCtrl10       REG_AT(0x04C)
+-#define VidCtrl11       REG_AT(0x050)
+-#define VidCtrl12       REG_AT(0x054)
+-#define VidCtrl13       REG_AT(0x058)
+-#define VidCtrl14       REG_AT(0x05C)
+-
+-/* Video Control 1 Register */
+-#define LINECNT         0xffc00000
+-#define LINECNT_SHIFT   22
+-#define LOADDLY         BIT(21)
+-#define BAUDVAL         (BIT(20) | BIT(19) | BIT(18) | BIT(17) | BIT(16))
+-#define BAUDVAL_SHIFT   16
+-#define VIDDONEVAL      (BIT(15) | BIT(14) | BIT(13) | BIT(12) | BIT(11) | BIT(10) | BIT(9))
+-#define VIDDONEVAL_SHIFT  9
+-#define ENFREEZEFRAME   BIT(8)
+-#define TX3912_VIDCTRL1_BITSEL_MASK	0x000000c0
+-#define TX3912_VIDCTRL1_2BIT_GRAY	0x00000040
+-#define TX3912_VIDCTRL1_4BIT_GRAY	0x00000080
+-#define TX3912_VIDCTRL1_8BIT_COLOR	0x000000c0
+-#define BITSEL_SHIFT    6
+-#define DISPSPLIT       BIT(5)
+-#define DISP8           BIT(4)
+-#define DFMODE          BIT(3)
+-#define INVVID          BIT(2)
+-#define DISPON          BIT(1)
+-#define ENVID           BIT(0)
+-
+-/* Video Control 2 Register */
+-#define VIDRATE_MASK    0xffc00000
+-#define VIDRATE_SHIFT   22
+-#define HORZVAL_MASK    0x001ff000
+-#define HORZVAL_SHIFT   12
+-#define LINEVAL_MASK    0x000001ff
+-
+-/* Video Control 3 Register */
+-#define TX3912_VIDCTRL3_VIDBANK_MASK    0xfff00000
+-#define TX3912_VIDCTRL3_VIDBASEHI_MASK  0x000ffff0
+-
+-/* Video Control 4 Register */
+-#define TX3912_VIDCTRL4_VIDBASELO_MASK  0x000ffff0
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

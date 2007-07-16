@@ -1,21 +1,21 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 1/4] fbdev: extract fb_show_logo_line()
-Date: Mon, 16 Jul 2007 15:55:51 +0200
-Message-ID: <20070716135950.796801000@pademelon.sonytel.be>
+Subject: [patch 4/4] Cell: Draw SPE helper penguin logos
+Date: Mon, 16 Jul 2007 15:55:54 +0200
+Message-ID: <20070716135951.157006000@pademelon.sonytel.be>
 References: <20070716135550.010775000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0468569382=="
+Content-Type: multipart/mixed; boundary="===============1783120321=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IAR8b-00051V-8J for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Jul 2007 07:01:21 -0700
+	id 1IAR8b-00051d-Kx for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 16 Jul 2007 07:01:22 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IAR8Z-0001YP-C0
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IAR8a-0005nt-WB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Jul 2007 07:01:20 -0700
+	Mon, 16 Jul 2007 07:01:21 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,114 +29,111 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, Geoff Levand <geoffrey.levand@am.sony.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, James Simmons <jsimmons@infradead.org>, cbe-oss-dev@ozlabs.org
 
---===============0468569382==
-Content-Disposition: inline; filename=spe-logo/fb_show_logo_line.diff
+--===============1783120321==
+Content-Disposition: inline; filename=spe-logo/logo-extra-spe-glue-2.6.21.diff
 
-Extract the code to draw one line of logos into fb_show_logo_line()
+Let spu_management_ops.enumerate_spus() return the number of found SPEs
+and use that information to draw some little helper penguin logos.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Acked-By: James Simmons <jsimmons@infradead.org>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/video/fbmem.c |   39 +++++++++++++++++++++++----------------
- 1 files changed, 23 insertions(+), 16 deletions(-)
+Changes since last version:
+  - Let FB_LOGO_EXTRA default to y if SPU_BASE is enabled
 
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -477,22 +477,24 @@ int fb_prepare_logo(struct fb_info *info
- 	return fb_logo.logo->height;
- }
+ arch/powerpc/platforms/cell/spu_base.c   |   15 ++++++++++++++-
+ arch/powerpc/platforms/cell/spu_manage.c |    4 +++-
+ arch/powerpc/platforms/ps3/spu.c         |    6 ++++--
+ drivers/video/logo/Kconfig               |    1 +
+ 4 files changed, 22 insertions(+), 4 deletions(-)
+
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -31,6 +31,7 @@
+ #include <linux/mm.h>
+ #include <linux/io.h>
+ #include <linux/mutex.h>
++#include <linux/linux_logo.h>
+ #include <asm/spu.h>
+ #include <asm/spu_priv1.h>
+ #include <asm/xmon.h>
+@@ -603,12 +604,24 @@ static int __init init_spu_base(void)
  
--int fb_show_logo(struct fb_info *info, int rotate)
-+static int fb_show_logo_line(struct fb_info *info, int rotate,
-+			     const struct linux_logo *logo, int y,
-+			     unsigned int n)
- {
- 	u32 *palette = NULL, *saved_pseudo_palette = NULL;
- 	unsigned char *logo_new = NULL, *logo_rotate = NULL;
- 	struct fb_image image;
+ 	ret = spu_enumerate_spus(create_spu);
  
- 	/* Return if the frame buffer is not mapped or suspended */
--	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING ||
-+	if (logo == NULL || info->state != FBINFO_STATE_RUNNING ||
- 	    info->flags & FBINFO_MODULE)
- 		return 0;
- 
- 	image.depth = 8;
--	image.data = fb_logo.logo->data;
-+	image.data = logo->data;
- 
- 	if (fb_logo.needs_cmapreset)
--		fb_set_logocmap(info, fb_logo.logo);
-+		fb_set_logocmap(info, logo);
- 
- 	if (fb_logo.needs_truepalette || 
- 	    fb_logo.needs_directpalette) {
-@@ -501,17 +503,16 @@ int fb_show_logo(struct fb_info *info, i
- 			return 0;
- 
- 		if (fb_logo.needs_truepalette)
--			fb_set_logo_truepalette(info, fb_logo.logo, palette);
-+			fb_set_logo_truepalette(info, logo, palette);
- 		else
--			fb_set_logo_directpalette(info, fb_logo.logo, palette);
-+			fb_set_logo_directpalette(info, logo, palette);
- 
- 		saved_pseudo_palette = info->pseudo_palette;
- 		info->pseudo_palette = palette;
+-	if (ret) {
++	if (ret < 0) {
+ 		printk(KERN_WARNING "%s: Error initializing spus\n",
+ 			__FUNCTION__);
+ 		goto out_unregister_sysdev_class;
  	}
  
- 	if (fb_logo.depth <= 4) {
--		logo_new = kmalloc(fb_logo.logo->width * fb_logo.logo->height, 
--				   GFP_KERNEL);
-+		logo_new = kmalloc(logo->width * logo->height, GFP_KERNEL);
- 		if (logo_new == NULL) {
- 			kfree(palette);
- 			if (saved_pseudo_palette)
-@@ -519,29 +520,35 @@ int fb_show_logo(struct fb_info *info, i
- 			return 0;
- 		}
- 		image.data = logo_new;
--		fb_set_logo(info, fb_logo.logo, logo_new, fb_logo.depth);
-+		fb_set_logo(info, logo, logo_new, fb_logo.depth);
- 	}
- 
- 	image.dx = 0;
--	image.dy = 0;
--	image.width = fb_logo.logo->width;
--	image.height = fb_logo.logo->height;
-+	image.dy = y;
-+	image.width = logo->width;
-+	image.height = logo->height;
- 
- 	if (rotate) {
--		logo_rotate = kmalloc(fb_logo.logo->width *
--				      fb_logo.logo->height, GFP_KERNEL);
-+		logo_rotate = kmalloc(logo->width *
-+				      logo->height, GFP_KERNEL);
- 		if (logo_rotate)
- 			fb_rotate_logo(info, logo_rotate, &image, rotate);
- 	}
- 
--	fb_do_show_logo(info, &image, rotate, num_online_cpus());
-+	fb_do_show_logo(info, &image, rotate, n);
- 
- 	kfree(palette);
- 	if (saved_pseudo_palette != NULL)
- 		info->pseudo_palette = saved_pseudo_palette;
- 	kfree(logo_new);
- 	kfree(logo_rotate);
--	return fb_logo.logo->height;
-+	return logo->height;
-+}
++	if (ret > 0) {
++		/*
++		 * We cannot put the forward declaration in
++		 * <linux/linux_logo.h> because of conflicting session type
++		 * conflicts for const and __initdata with different compiler
++		 * versions
++		 */
++		extern const struct linux_logo logo_spe_clut224;
 +
-+int fb_show_logo(struct fb_info *info, int rotate)
-+{
-+	return fb_show_logo_line(info, rotate, fb_logo.logo, 0,
-+				 num_online_cpus());
++		fb_append_extra_logo(&logo_spe_clut224, ret);
++	}
++
+ 	xmon_register_spus(&spu_full_list);
+ 
+ 	return 0;
+--- a/arch/powerpc/platforms/cell/spu_manage.c
++++ b/arch/powerpc/platforms/cell/spu_manage.c
+@@ -279,6 +279,7 @@ static int __init of_enumerate_spus(int 
+ {
+ 	int ret;
+ 	struct device_node *node;
++	unsigned int n = 0;
+ 
+ 	ret = -ENODEV;
+ 	for (node = of_find_node_by_type(NULL, "spe");
+@@ -289,8 +290,9 @@ static int __init of_enumerate_spus(int 
+ 				__FUNCTION__, node->name);
+ 			break;
+ 		}
++		n++;
+ 	}
+-	return ret;
++	return ret ? ret : n;
  }
- #else
- int fb_prepare_logo(struct fb_info *info, int rotate) { return 0; }
+ 
+ static int __init of_create_spu(struct spu *spu, void *data)
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -400,11 +400,13 @@ static int __init ps3_enumerate_spus(int
+ 		}
+ 	}
+ 
+-	if (result)
++	if (result) {
+ 		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
+ 			__func__, __LINE__);
++		return result;
++	}
+ 
+-	return result;
++	return num_resource_id;
+ }
+ 
+ const struct spu_management_ops spu_management_ps3_ops = {
+--- a/drivers/video/logo/Kconfig
++++ b/drivers/video/logo/Kconfig
+@@ -13,6 +13,7 @@ if LOGO
+ config FB_LOGO_EXTRA
+ 	bool
+ 	depends on FB
++	default y if SPU_BASE
+ 
+ config LOGO_LINUX_MONO
+ 	bool "Standard black and white Linux logo"
 
 -- 
 With kind regards,
@@ -160,7 +157,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0468569382==
+--===============1783120321==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -171,7 +168,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---===============0468569382==
+--===============1783120321==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -182,4 +179,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0468569382==--
+--===============1783120321==--

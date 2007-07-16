@@ -1,21 +1,20 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 4/4] Cell: Draw SPE helper penguin logos
-Date: Mon, 16 Jul 2007 15:55:54 +0200
-Message-ID: <20070716135951.157006000@pademelon.sonytel.be>
-References: <20070716135550.010775000@pademelon.sonytel.be>
+Subject: [patch 0/4] Cell SPE logos
+Date: Mon, 16 Jul 2007 15:55:50 +0200
+Message-ID: <20070716135550.010775000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1783120321=="
+Content-Type: multipart/mixed; boundary="===============1185825376=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IAR8b-00051d-Kx for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Jul 2007 07:01:22 -0700
+	id 1IAR8a-00051U-TQ for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 16 Jul 2007 07:01:21 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IAR8a-0005nt-WB
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IAR8Z-0005nB-D6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Jul 2007 07:01:21 -0700
+	Mon, 16 Jul 2007 07:01:20 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,115 +26,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Geoff Levand <geoffrey.levand@am.sony.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, James Simmons <jsimmons@infradead.org>, cbe-oss-dev@ozlabs.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>, cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
 
---===============1783120321==
-Content-Disposition: inline; filename=spe-logo/logo-extra-spe-glue-2.6.21.diff
+--===============1185825376==
 
-Let spu_management_ops.enumerate_spus() return the number of found SPEs
-and use that information to draw some little helper penguin logos.
+The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
+threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
+When booting Linux, 2 penguins logos are shown on the graphical console by
+the standard frame buffer console logo code.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-Acked-By: James Simmons <jsimmons@infradead.org>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
----
-Changes since last version:
-  - Let FB_LOGO_EXTRA default to y if SPU_BASE is enabled
+To emphasize the existence of the SPEs (which can be used under Linux), we
+added a second row of (smaller) helper penguin logos, one for each SPE.
 
- arch/powerpc/platforms/cell/spu_base.c   |   15 ++++++++++++++-
- arch/powerpc/platforms/cell/spu_manage.c |    4 +++-
- arch/powerpc/platforms/ps3/spu.c         |    6 ++++--
- drivers/video/logo/Kconfig               |    1 +
- 4 files changed, 22 insertions(+), 4 deletions(-)
+A sample screenshot can be found at
+http://www.kernel.org/pub/linux/kernel/people/geoff/cell/debian-penguin-shot.png
+(or on the ps3linux T-shirts we wore at OLS :-)
 
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -31,6 +31,7 @@
- #include <linux/mm.h>
- #include <linux/io.h>
- #include <linux/mutex.h>
-+#include <linux/linux_logo.h>
- #include <asm/spu.h>
- #include <asm/spu_priv1.h>
- #include <asm/xmon.h>
-@@ -603,12 +604,24 @@ static int __init init_spu_base(void)
- 
- 	ret = spu_enumerate_spus(create_spu);
- 
--	if (ret) {
-+	if (ret < 0) {
- 		printk(KERN_WARNING "%s: Error initializing spus\n",
- 			__FUNCTION__);
- 		goto out_unregister_sysdev_class;
- 	}
- 
-+	if (ret > 0) {
-+		/*
-+		 * We cannot put the forward declaration in
-+		 * <linux/linux_logo.h> because of conflicting session type
-+		 * conflicts for const and __initdata with different compiler
-+		 * versions
-+		 */
-+		extern const struct linux_logo logo_spe_clut224;
-+
-+		fb_append_extra_logo(&logo_spe_clut224, ret);
-+	}
-+
- 	xmon_register_spus(&spu_full_list);
- 
- 	return 0;
---- a/arch/powerpc/platforms/cell/spu_manage.c
-+++ b/arch/powerpc/platforms/cell/spu_manage.c
-@@ -279,6 +279,7 @@ static int __init of_enumerate_spus(int 
- {
- 	int ret;
- 	struct device_node *node;
-+	unsigned int n = 0;
- 
- 	ret = -ENODEV;
- 	for (node = of_find_node_by_type(NULL, "spe");
-@@ -289,8 +290,9 @@ static int __init of_enumerate_spus(int 
- 				__FUNCTION__, node->name);
- 			break;
- 		}
-+		n++;
- 	}
--	return ret;
-+	return ret ? ret : n;
- }
- 
- static int __init of_create_spu(struct spu *spu, void *data)
---- a/arch/powerpc/platforms/ps3/spu.c
-+++ b/arch/powerpc/platforms/ps3/spu.c
-@@ -400,11 +400,13 @@ static int __init ps3_enumerate_spus(int
- 		}
- 	}
- 
--	if (result)
-+	if (result) {
- 		printk(KERN_WARNING "%s:%d: Error initializing spus\n",
- 			__func__, __LINE__);
-+		return result;
-+	}
- 
--	return result;
-+	return num_resource_id;
- }
- 
- const struct spu_management_ops spu_management_ps3_ops = {
---- a/drivers/video/logo/Kconfig
-+++ b/drivers/video/logo/Kconfig
-@@ -13,6 +13,7 @@ if LOGO
- config FB_LOGO_EXTRA
- 	bool
- 	depends on FB
-+	default y if SPU_BASE
- 
- config LOGO_LINUX_MONO
- 	bool "Standard black and white Linux logo"
+Summaries:
+  [1] fbdev: extract fb_show_logo_line()
+  [2] fbdev: Add fb_append_extra_logo()
+  [3] fbdev: SPE helper penguin logo
+  [4] Cell: Draw SPE helper penguin logos
 
--- 
+Compared to the previous submission, patches 2 and 4 were modified (cfr. the
+changelogs in those patches).
+
+Thanks for applying!
+
 With kind regards,
  
 Geert Uytterhoeven
@@ -157,7 +74,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============1783120321==
+--===============1185825376==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -168,7 +85,7 @@ This SF.net email is sponsored by DB2 Express
 Download DB2 Express C - the FREE version of DB2 express and take
 control of your XML. No limits. Just data. Click to get it now.
 http://sourceforge.net/powerbar/db2/
---===============1783120321==
+--===============1185825376==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -179,4 +96,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1783120321==--
+--===============1185825376==--

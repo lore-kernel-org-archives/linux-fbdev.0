@@ -1,29 +1,26 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] remove tx3912fb
-Date: Mon, 16 Jul 2007 21:09:37 +0100
-Message-ID: <20070716200937.GA23544@linux-mips.org>
-References: <20070714210825.6bddf23f.yoichi_yuasa@tripeaks.co.jp>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: fbdev: make fb_append_extra_logo() depend on
+	fb=y
+Date: Wed, 18 Jul 2007 00:52:03 +0200
+Message-ID: <200707180052.04659.arnd@arndb.de>
+References: <20070716135550.010775000@pademelon.sonytel.be>
+	<20070716135950.895120000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IAWtw-0007ZD-NM for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Jul 2007 13:10:36 -0700
-Received: from ftp.linux-mips.org ([194.74.144.162])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IAWtv-0001Qt-3V
+	id 1IAvvF-0007Qh-AB for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 17 Jul 2007 15:53:37 -0700
+Received: from moutng.kundenserver.de ([212.227.126.183])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IAvvD-0002lt-Qg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Jul 2007 13:10:36 -0700
-Received: from localhost.localdomain ([127.0.0.1]:11413 "EHLO
-	dl5rb.ham-radio-op.net") by ftp.linux-mips.org with ESMTP
-	id S20024759AbXGPUJk (ORCPT
-	<rfc822;linux-fbdev-devel@lists.sourceforge.net>);
-	Mon, 16 Jul 2007 21:09:40 +0100
+	Tue, 17 Jul 2007 15:53:37 -0700
+In-Reply-To: <20070716135950.895120000@pademelon.sonytel.be>
 Content-Disposition: inline
-In-Reply-To: <20070714210825.6bddf23f.yoichi_yuasa@tripeaks.co.jp>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,21 +31,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+To: cbe-oss-dev@ozlabs.org
+Cc: James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
 
-On Sat, Jul 14, 2007 at 09:08:25PM +0900, Yoichi Yuasa wrote:
+We can't show the extra logo from boot code if FB is built as
+a module. Make the FB_LOGO_EXTRA depend on FB=y.
 
-> This patch has removed tx3912fb.
-> Nino has already removed. it is no need anymore.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
 
-ACK.
+Reported by Al Viro. I don't know how this ended up in the final
+patch, as I'm pretty sure we talked about this scenario before
+and had a solution...
 
-Somebody is still working on Nino support but even assuming that'll
-eventually yield a result this FB driver has not seen any testing on
-hardware since several years so removing won't do any harm.
-
-  Ralf
+diff --git a/drivers/video/logo/Kconfig b/drivers/video/logo/Kconfig
+index da219c0..9de1c11 100644
+--- a/drivers/video/logo/Kconfig
++++ b/drivers/video/logo/Kconfig
+@@ -12,7 +12,7 @@ if LOGO
+ 
+ config FB_LOGO_EXTRA
+ 	bool
+-	depends on FB
++	depends on FB=y
+ 	default y if SPU_BASE
+ 
+ config LOGO_LINUX_MONO
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by DB2 Express

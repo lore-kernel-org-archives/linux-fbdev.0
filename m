@@ -1,69 +1,72 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] fbdev: find mode with highest refresh rate in
-	fb_find_mode()
-Date: Wed, 18 Jul 2007 10:41:02 +0200
-Message-ID: <20070718084102.GA22694@spock.one.pl>
-Reply-To: spock@gentoo.org
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Subject: [PATCH] atmel_lcdfb: Use spare bits in 32bpp
+	mode as alpha channel
+Date: Wed, 18 Jul 2007 11:18:24 +0200
+Message-ID: <469DDAE0.4010106@rfo.atmel.com>
+References: <11826149894079-git-send-email-hskinnemoen@atmel.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754877AbXGRIlk@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1IB5gn-0005JC-Ec for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Jul 2007 02:19:21 -0700
+Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IB5gl-0001br-PS
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Jul 2007 02:19:21 -0700
+In-Reply-To: <11826149894079-git-send-email-hskinnemoen@atmel.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
 
-Currently if the refresh rate is not specified fb_find_mode() returns
-the first known video mode with the requested resoluion, which provides
-no guarantees wrt the refresh rate.  Change this so that the mode with
-the highest refresh rate is returned instead.
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Set var->transp.offset and var->transp.length in 32bpp mode to
+indicate that the 8 otherwise unused bits can be used for
+transparency.
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 ---
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 3741ad7..f70143a 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -606,26 +606,29 @@ done:
- 	DPRINTK("Trying specified video mode%s %ix%i\n",
- 	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
- 
--	diff = refresh;
-+	if (!refresh_specified)
-+		diff = 0
-+	else
-+		diff = refresh;
-+
- 	best = -1;
- 	for (i = 0; i < dbsize; i++) {
--		if (name_matches(db[i], name, namelen) ||
--		    (res_specified && res_matches(db[i], xres, yres))) {
--			if(!fb_try_mode(var, info, &db[i], bpp)) {
--				if(!refresh_specified || db[i].refresh == refresh)
--					return 1;
--				else {
--					if(diff > abs(db[i].refresh - refresh)) {
--						diff = abs(db[i].refresh - refresh);
--						best = i;
--					}
-+		if ((name_matches(db[i], name, namelen) ||
-+		    (res_specified && res_matches(db[i], xres, yres))) &&
-+		    !fb_try_mode(var, info, &db[i], bpp)) {
-+			if (refresh_specified && db[i].refresh == refresh) {
-+				return 1;
-+			} else {
-+				if (diff < db[i].refresh) {
-+					diff = db[i].refresh;
-+					best = i;
- 				}
- 			}
- 		}
- 	}
- 	if (best != -1) {
- 		fb_try_mode(var, info, &db[best], bpp);
--		return 2;
-+		return (refresh_specified) ? 2 : 1;
- 	}
- 
- 	diff = xres + yres;
+  drivers/video/atmel_lcdfb.c |    5 ++++-
+  1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index a05491f..bb361ab 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -221,8 +221,11 @@ static int atmel_lcdfb_check_var(struct 
+fb_var_screeninfo *var,
+  		var->blue.offset = 10;
+  		var->red.length = var->green.length = var->blue.length = 5;
+  		break;
+-	case 24:
+  	case 32:
++		var->transp.offset = 24;
++		var->transp.length = 8;
++		/* fall through */
++	case 24:
+  		var->red.offset = 0;
+  		var->green.offset = 8;
+  		var->blue.offset = 16;
+
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

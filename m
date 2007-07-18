@@ -1,109 +1,75 @@
-From: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 2/3] drivers/video/aty/radeon_base:
-	fix	radeonfb_pci_register() err handling
-Date: Wed, 18 Jul 2007 01:55:24 -0400
-Message-ID: <20070718055524.GA5748@havoc.gtf.org>
-References: <20070718055348.GA5734@havoc.gtf.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: fbdev: make fb_append_extra_logo() depend on fb=y
+Date: Wed, 18 Jul 2007 08:15:36 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0707180811580.18423@pademelon.sonytel.be>
+References: <20070716135550.010775000@pademelon.sonytel.be>
+ <20070716135950.895120000@pademelon.sonytel.be> <200707180052.04659.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IB2VU-0005nG-BW for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Jul 2007 22:55:28 -0700
-Received: from havoc.gtf.org ([69.61.125.42])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IB2VU-00026P-0e
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Jul 2007 22:55:28 -0700
-Content-Disposition: inline
-In-Reply-To: <20070718055348.GA5734@havoc.gtf.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1929967979-1184739308=:18423"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758645AbXGRGPv@vger.kernel.org>
+In-Reply-To: <200707180052.04659.arnd@arndb.de>
+Content-ID: <Pine.LNX.4.62.0707180815110.18423@pademelon.sonytel.be>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Al Viro <viro@ftp.linux.org.uk>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The following change was checked into 'warnings' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+---584337861-1929967979-1184739308=:18423
+Content-Type: TEXT/PLAIN; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-ID: <Pine.LNX.4.62.0707180815111.18423@pademelon.sonytel.be>
 
-commit 61470a24062de01853fb922ec4a81dcd1c0ba1d0
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Wed Jul 18 01:43:05 2007 -0400
+On Wed, 18 Jul 2007, Arnd Bergmann wrote:
+> We can't show the extra logo from boot code if FB is built as
+> a module. Make the FB_LOGO_EXTRA depend on FB=y.
 
-    drivers/video/aty/radeon_base: fix radeonfb_pci_register() err handling
-    
-    * silence warnings by handling failure of sysfs_create_bin_file()
-    
-    * fix leak-on-error if register_framebuffer() fails, and sysfs is active
-    
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Bummer...
 
- drivers/video/aty/radeon_base.c |   23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-61470a24062de01853fb922ec4a81dcd1c0ba1d0
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 47ca62f..5a5458b 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -2326,10 +2326,16 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	radeon_check_modes(rinfo, mode_option);
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+> Reported by Al Viro. I don't know how this ended up in the final
+> patch, as I'm pretty sure we talked about this scenario before
+> and had a solution...
+
+It happened because introducing CONFIG_FB_LOGO_EXTRA was done in the last
+iteration (before the code was protected by #ifdef CONFIG_FB), and I got
+bitten by the weird Kconfig logic again.
+
+> diff --git a/drivers/video/logo/Kconfig b/drivers/video/logo/Kconfig
+> index da219c0..9de1c11 100644
+> --- a/drivers/video/logo/Kconfig
+> +++ b/drivers/video/logo/Kconfig
+> @@ -12,7 +12,7 @@ if LOGO
+>  
+>  config FB_LOGO_EXTRA
+>  	bool
+> -	depends on FB
+> +	depends on FB=y
+>  	default y if SPU_BASE
+>  
+>  config LOGO_LINUX_MONO
+
+With kind regards,
  
- 	/* Register some sysfs stuff (should be done better) */
--	if (rinfo->mon1_EDID)
--		sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
--	if (rinfo->mon2_EDID)
--		sysfs_create_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
-+	if (rinfo->mon1_EDID) {
-+		ret = sysfs_create_bin_file(&rinfo->pdev->dev.kobj,&edid1_attr);
-+		if (ret)
-+			goto err_unmap_fb;
-+	}
-+	if (rinfo->mon2_EDID) {
-+		ret = sysfs_create_bin_file(&rinfo->pdev->dev.kobj,&edid2_attr);
-+		if (ret)
-+			goto err_free_mon1;
-+	}
- 
- 	/* save current mode regs before we switch into the new one
- 	 * so we can restore this upon __exit
-@@ -2353,7 +2359,7 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	if (ret < 0) {
- 		printk (KERN_ERR "radeonfb (%s): could not register framebuffer\n",
- 			pci_name(rinfo->pdev));
--		goto err_unmap_fb;
-+		goto err_free_mon2;
- 	}
- 
- #ifdef CONFIG_MTRR
-@@ -2372,6 +2378,13 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	RTRACE("radeonfb_pci_register END\n");
- 
- 	return 0;
-+
-+err_free_mon2:
-+	if (rinfo->mon2_EDID)
-+		sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
-+err_free_mon1:
-+	if (rinfo->mon1_EDID)
-+		sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
- err_unmap_fb:
- 	iounmap(rinfo->fb_base);
- err_unmap_rom:
+Geert Uytterhoeven
+Software Architect
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1929967979-1184739308=:18423--

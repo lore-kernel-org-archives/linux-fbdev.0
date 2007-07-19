@@ -1,85 +1,49 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [git patches] two warning fixes
-Date: Thu, 19 Jul 2007 11:19:05 +1000
-Message-ID: <1184807945.25235.289.camel@localhost.localdomain>
+Date: Wed, 18 Jul 2007 18:37:53 -0700 (PDT)
+Message-ID: <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
 References: <20070718235504.GA9601@havoc.gtf.org>
-	<200707190159.22654.ak@suse.de>  <469EAABD.4010504@garzik.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S936551AbXGSBig@vger.kernel.org>
+In-Reply-To: <20070718235504.GA9601@havoc.gtf.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IBKfo-000275-JW for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Jul 2007 18:19:20 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX19mySD7yyGa0jMtIYrTw3rATp+E72xZy84=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IBKfo-0001Vk-3q
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Jul 2007 18:19:20 -0700
-In-Reply-To: <469EAABD.4010504@garzik.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
 
-On Wed, 2007-07-18 at 20:05 -0400, Jeff Garzik wrote:
-> Andi Kleen wrote:
-> > On Thursday 19 July 2007 01:55:04 Jeff Garzik wrote:
-> >> Please pull from 'warnings' branch of
-> >> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git warnings
-> >>
-> >> to receive the following updates:
-> >>
-> >>  drivers/video/aty/radeon_base.c |   23 ++++++++++++++++++-----
-> >>  include/asm-x86_64/tlbflush.h   |    6 +++++-
-> >>  2 files changed, 23 insertions(+), 6 deletions(-)
-> >>
-> >> Jeff Garzik (2):
-> >>       drivers/video/aty/radeon_base: fix radeonfb_pci_register() err handling
-> >>       [X86-64] make flush_tlb_kernel_range() a static inline function
-> > 
-> > I already got that patch queued. Why don't you send them through the maintainers?
+
+
+On Wed, 18 Jul 2007, Jeff Garzik wrote:
 > 
-> Because in both cases the maintainers never responded to me, indicating 
-> they were queued?
+> Please pull from 'warnings' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git warnings
+> 
+> to receive the following updates:
 
-I suppose I should have acked the radeonfb one... I'm a bit of a slacker
-with radeonfb maintainership lately.
+Quite frankly, I think a *lot* better fix for warnings would be to remove 
+those damn broken "must_check" things on functions that don't at all need 
+checking!
 
-However, in this case, I think I'll NACK it. I don't think it's fair to
-fail the fb initialization because it couldn't create the EDID files. A
-warning in dmesg is enough. For lots of machines, failing the fb init
-means no console at all...
+I'm pretty fed up with random "must_check" and "deprecated". They have 
+never *ever* helped anybody, afaik. There are some very few functions that 
+really do need to have their error returns checked (because not checking 
+it is a security issue), but people seem to think "must_check" is a good 
+approximation of "I think most of the time it makes sense to check".
 
-In general, I share paulus point of view here that forcing us to test
-all those result code from sysfs file creation functions is just a major
-PITA and adds bloat all over the kernel. There are many many cases where
-the "obvious" thing of erroring out is actually not good policy. In many
-cases, the failure to create some random sysfs file shouldn't prevent
-the driver from operating, because the consequences of doing the later
-are worse than the consequences of not having that sysfs file in the
-first place. Thus, warnings are a better thing to do. But multiply the
-number of sysfs_* calls by the code size of adding a test & printk and
-you'll get the direct non-configurable-out bloat to the kernel.
+So let's make a new rule:
 
-Ben.
+  We absolutely NEVER add things like "must_check" unless not checking 
+  causes a real and obvious SECURITY ISSUE.
 
+  And we absolutely *never* add crap like "deprecated", where the only 
+  point of the warning is to effectively hide *real* problems.
 
+So realistically, the only thing that needs must_check is pretty much 
+things like "get_user()" and quite frankly, I'm not sure even about that 
+one.
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by DB2 Express
-Download DB2 Express C - the FREE version of DB2 express and take
-control of your XML. No limits. Just data. Click to get it now.
-http://sourceforge.net/powerbar/db2/
+Ok?
+
+			Linus

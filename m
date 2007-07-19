@@ -1,49 +1,67 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [git patches] two warning fixes
-Date: Wed, 18 Jul 2007 18:37:53 -0700 (PDT)
-Message-ID: <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+Date: Wed, 18 Jul 2007 18:41:01 -0700
+Message-ID: <20070718184101.1d31db9c.akpm@linux-foundation.org>
 References: <20070718235504.GA9601@havoc.gtf.org>
+	<200707190159.22654.ak@suse.de> <469EAABD.4010504@garzik.org>
+	<1184807945.25235.289.camel@localhost.localdomain>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S936551AbXGSBig@vger.kernel.org>
-In-Reply-To: <20070718235504.GA9601@havoc.gtf.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1IBL16-0004Jv-Jz for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Jul 2007 18:41:24 -0700
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IBL15-0003Da-BB
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Jul 2007 18:41:20 -0700
+In-Reply-To: <1184807945.25235.289.camel@localhost.localdomain>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>, adaplas@gmail.com, Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
 
+On Thu, 19 Jul 2007 11:19:05 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
+> In general, I share paulus point of view here that forcing us to test
+> all those result code from sysfs file creation functions is just a major
+> PITA and adds bloat all over the kernel. There are many many cases where
+> the "obvious" thing of erroring out is actually not good policy. In many
+> cases, the failure to create some random sysfs file shouldn't prevent
+> the driver from operating, because the consequences of doing the later
+> are worse than the consequences of not having that sysfs file in the
+> first place. 
 
-On Wed, 18 Jul 2007, Jeff Garzik wrote:
-> 
-> Please pull from 'warnings' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git warnings
-> 
-> to receive the following updates:
+The only reason why the sysfs creation would fail is a kernel bug,
+so the consequence of your proposal is in fact unfixed kernel bugs.
 
-Quite frankly, I think a *lot* better fix for warnings would be to remove 
-those damn broken "must_check" things on functions that don't at all need 
-checking!
+Plus, of course, a driver which doesn't offer the interfaces which
+it is supposed to offer.
 
-I'm pretty fed up with random "must_check" and "deprecated". They have 
-never *ever* helped anybody, afaik. There are some very few functions that 
-really do need to have their error returns checked (because not checking 
-it is a security issue), but people seem to think "must_check" is a good 
-approximation of "I think most of the time it makes sense to check".
+Now, we can talk about making those sysfs core functions generate warnings
+themselves, and we can talk about generating new wrappers around them which
+generate warnings and which return void, then migrating code over to use
+those.
 
-So let's make a new rule:
+And we can also talk about blithely ignoring these errors and not telling
+anyone about our bugs, but nobody should listen to such scandalous ideas.
 
-  We absolutely NEVER add things like "must_check" unless not checking 
-  causes a real and obvious SECURITY ISSUE.
-
-  And we absolutely *never* add crap like "deprecated", where the only 
-  point of the warning is to effectively hide *real* problems.
-
-So realistically, the only thing that needs must_check is pretty much 
-things like "get_user()" and quite frankly, I'm not sure even about that 
-one.
-
-Ok?
-
-			Linus
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/

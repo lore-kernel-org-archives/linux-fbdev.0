@@ -1,33 +1,34 @@
-From: Tim Tassonis <timtas@cubic.ch>
+From: Krzysztof Halasa <khc@pm.waw.pl>
 Subject: Re: [git patches] two warning fixes
-Date: Fri, 20 Jul 2007 14:54:03 +0200
-Message-ID: <46A0B06B.3060701@cubic.ch>
-References: <20070718235504.GA9601@havoc.gtf.org> <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org> <m3vecgbjix.fsf@maximus.localdomain> <alpine.LFD.0.999.0707191056010.27353@woody.linux-foundation.org>
+Date: Fri, 20 Jul 2007 20:34:46 +0200
+Message-ID: <m3644e2abd.fsf@maximus.localdomain>
+References: <20070718235504.GA9601@havoc.gtf.org>
+	<alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
+	<469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain>
+	<alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760703AbXGTNWy@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0707191056010.27353@woody.linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1764621AbXGTSfG@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org> (Linus Torvalds's message of "Thu, 19 Jul 2007 11:04:29 -0700 (PDT)")
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
 
-Linus Torvalds wrote:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> 
-> I think "must_check" is an abomination. It makes the callee dictate what 
-> the caller has to do, but dammit, if the callee really "knows" its errors 
-> are that serious, it should damn well handle them itself.
-> 
-> The whole "sysfs_create_file()" thing is an example of that. If it fails, 
-> it fails. The caller can't do anythign about it anyway, except perhaps 
-> print a message.  Why the hell does such a function have the "right" to 
-> dictate what the user should do?
+> More people *should* generally ask themselves: "was the warning worth it?" 
+> and then, if the answer is "no", they shouldn't add code, they should 
+> remove the thing that causes the warning in the first place.
 
-Well, that's just how OO fascists think. An object dictates to the user 
-what he/she can do with it, as opposed to the user can do what he 
-wants/needs.
+Sure. If a routine uses must_check yet its return value may be
+safely ignored then that must_check is simply misplaced and should
+be removed. It does not mean all must_checks are bad - each of them
+isn't bad unless one can demonstrate it is.
 
-
-Tim
+Back to sysfs_create_bin_file() - if one can demonstrate a caller
+can safely ignore the return value (which, it seems, is the
+case), then exactly this very must_check should be removed.
+-- 
+Krzysztof Halasa

@@ -1,27 +1,26 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH] tdfxfb: 3 fixes
-Date: Fri, 20 Jul 2007 06:32:54 +0200
-Message-ID: <20070720063254.f3887791.krzysztof.h1@wp.pl>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: Text console scrolling
+Date: Fri, 20 Jul 2007 14:21:44 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0707201415440.13339@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0707181708020.15632@pademelon.sonytel.be>
+	<1184774936.4523.64.camel@daplas>
+	<20070719202045.89106250.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-285126806-1184934104=:13339"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IBk88-00042Z-BA for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 19 Jul 2007 21:30:16 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IBk87-0005YG-H7
+	id 1IBrUu-0005cK-NM for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 20 Jul 2007 05:22:21 -0700
+Received: from vervifontaine.sonytel.be ([80.88.33.193]
+	helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IBrUr-0008CM-OQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 19 Jul 2007 21:30:16 -0700
-Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
-	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	20 Jul 2007 06:30:10 +0200
+	Fri, 20 Jul 2007 05:22:16 -0700
+In-Reply-To: <20070719202045.89106250.krzysztof.h1@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,343 +31,205 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This patch fixes 3 issues:
-- transparency handling in tdfxfb
-- panning with more than 4096 virtual height and acceleration (acceleration with x & y > 4096)
-- exit paths on errors in tdfxfb_probe()
+---584337861-285126806-1184934104=:13339
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Additionally it sets a FBINFO_READS_FAST flag to use smart blitter scrolling (speed up on tdfxfb).
+On Thu, 19 Jul 2007, Krzysztof Helt wrote:
+> On Thu, 19 Jul 2007 00:08:56 +0800
+> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> > On Wed, 2007-07-18 at 17:10 +0200, Geert Uytterhoeven wrote:
+> > > Yesterday, FBINFO_READS_FAST was faster in some cases, but much slo=
+wer in
+> > > others, so I didn't really know whether I should enable it or not.
+> > >=20
+> > > Today, FBINFO_READS_FAST is faster in all test cases, so the choice=
+ is clear.
+> > The improvement of scroll_move is courtesy of Ondrej's smart blitter
+> > patch.
+> [...]
+> > =20
+> > > Note that there are still a few cases where today's fastest option =
+is a bit
+> > > slower than yesterday's fastest option.
+> > >=20
+> >=20
+> > All things equal, the speed of the smart blitter will depend on:
+> >=20
+> > The less different the contents, the more the smart blitter will spee=
+d
+> > up (because less characters are actually moved). If the contents are
+> > totally different, then the blitter spends as much time as the old
+> > (dumb) blitter plus the time spent on the compare.=20
+> >=20
+>=20
+> My guess is that comparing is relatively fast comparing to preparation =
+of the blit operation. =20
+> One of the very first versions of the patch had a variant to merge smal=
+l blits into bigger ones.
+> It was done by regarding the first character after difference (string o=
+f different character) as different too.
+> An advantage was fewer blitter operations but the operations got bigger=
+ at least by one character.
+>=20
+> You may look here (see MERGE_BLITS define):
+>=20
+> http://marc.info/?l=3Dlinux-fbdev-devel&m=3D117869435713671&w=3D2
+>=20
+> Some tests result on cards with real blitter:
+>=20
+> http://marc.info/?l=3Dlinux-fbdev-devel&m=3D117881573823606&w=3D2
+>=20
+> As you see, merging blits gave speed up on some cards (comparing to cur=
+rent method) despite it had more to compare.
+> But it was usually lost at higher bpp as amount of data to move grown f=
+aster.
+>=20
+> I am interested in results of scrolling speeds with merged blits on you=
+r hardware.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+I manually applied your MERGE_BLITS changes (patch below) and reran my
+benchmark:
 
----
-This patch was done against tdfxfb.c with cleanup patch I sent last week.
+                          -ga5fcaa21    -gcb32da04    -g9a79b227
+mode   rot     font      DFLT   READS  DFLT   READS  READS  +MERGE
+                                FAST          FAST   FAST    BLITS
+480p    0   default8x16   7.32   6.63   7.49   5.18   3.69   5.24
+480p    1   default8x16  11.39   5.79  11.6    7.60  10.18   8.09
+480p    2   default8x16   7.35   4.34   7.5    3.90   5.40   3.67
+480p    3   default8x16  11.39   8.85  11.61   9.31   6.80   9.92
+720p    0   default8x16  13.04  15.91  13.33   9.28   6.62   9.35
+720p    1   default8x16  22.76  12.73  23.17  18.35  23.51  19.83
+720p    2   default8x16  13.10  10.22  13.34   7.30  10.04   6.84
+720p    3   default8x16  22.60  19.65  23.03  19.56  14.48  21.11
+1080p   0   default8x16  20.76  34.25  21.09  14.98  10.78  15.01
+1080p   1   default8x16  35.13  23.82  35.78  26.27  34.15  28.11
+1080p   2   default8x16  20.69  21.51  21.12  11.57  15.79  10.73
+1080p   3   default8x16  34.98  37.03  35.68  29.23  21.47  31.43
+WUXGA   0   default8x16  24.92  46.83  25.52  18.05  12.98  18.05
+WUXGA   1   default8x16  41.19  31.08  41.98  28.61  37.90  30.99
+WUXGA   2   default8x16  25.00  29.11  25.56  13.74  18.81  12.64
+WUXGA   3   default8x16  41.20  49.49  42.02  34.79  25.66  37.84
+480p    0   lat4-19       7.20   6.57   7.35   5.12   3.63   5.18
+480p    1   lat4-19      11.19   6.02  11.36   7.86   9.97   8.31
+480p    2   lat4-19       7.21   4.32   7.36   3.83   5.31   3.62
+480p    3   lat4-19      11.12   8.90  11.33   9.08   7.01   9.63
+720p    0   lat4-19      12.69  15.57  12.94   9.09   6.52   9.13
+720p    1   lat4-19      22.43  12.92  22.86  17.46  21.68  18.89
+720p    2   lat4-19      12.71  10.04  13.08   7.19   9.83   6.70
+720p    3   lat4-19      22.50  20.02  22.89  20.21  15.92  21.84
+1080p   0   lat4-19      20.31  33.99  20.75  14.87  10.76  14.88
+1080p   1   lat4-19      34.60  24.06  35.26  25.19  31.67  27.02
+1080p   2   lat4-19      20.39  21.37  20.79  11.51  15.67  10.62
+1080p   3   lat4-19      34.50  37.45  35.24  29.13  22.61  31.30
+WUXGA   0   lat4-19      24.72  46.92  25.26  18.06  13.03  18.01
+WUXGA   1   lat4-19      40.98  32.32  41.77  30.52  38.22  33.30
+WUXGA   2   lat4-19      24.80  29.13  25.28  13.73  18.78  12.59
+WUXGA   3   lat4-19      41.25  50.26  42.25  35.50  27.82  38.63
+                                                           =20
+           RMS           24.50  26.47  24.99  18.60  18.87  19.74
 
-Regards,
-Krzysztof
+(RMS =3D Root Mean Squares)
 
---- linux-2.6.22.old/drivers/video/tdfxfb.c	2007-07-20 06:18:25.000000000 +0200
-+++ linux-2.6.22/drivers/video/tdfxfb.c	2007-07-20 06:19:35.000000000 +0200
-@@ -502,6 +502,8 @@ static int tdfxfb_check_var(struct fb_va
- 		return -EINVAL;
- 	}
- 
-+	var->transp.offset = 0;
-+	var->transp.length = 0;
- 	switch (var->bits_per_pixel) {
- 	case 8:
- 		var->red.length = var->green.length = var->blue.length = 8;
-@@ -515,10 +517,12 @@ static int tdfxfb_check_var(struct fb_va
- 		var->blue.length  = 5;
- 		break;
- 	case 32:
-+		var->transp.offset = 24;
-+		var->transp.length = 8;
- 	case 24:
--		var->red.offset=16;
--		var->green.offset=8;
--		var->blue.offset=0;
-+		var->red.offset = 16;
-+		var->green.offset = 8;
-+		var->blue.offset = 0;
- 		var->red.length = var->green.length = var->blue.length = 8;
- 		break;
- 	}
-@@ -874,13 +878,26 @@ static void tdfxfb_fillrect(struct fb_in
- 	u32 stride = info->fix.line_length;
- 	u32 fmt= stride | ((bpp + ((bpp == 8) ? 0 : 8)) << 13);
- 	int tdfx_rop;
-+	u32 dx = rect->dx;
-+	u32 dy = rect->dy;
-+	u32 dstbase = 0;
-  
- 	if (rect->rop == ROP_COPY)
- 		tdfx_rop = TDFX_ROP_COPY;
- 	else
- 		tdfx_rop = TDFX_ROP_XOR;
- 
--	banshee_make_room(par, 5);
-+	/* asume always rect->height < 4096 */
-+	if (dy + rect->height > 4095) {
-+		dstbase = stride * dy;
-+		dy = 0;
-+	}
-+	/* asume always rect->width < 4096 */
-+	if (dx + rect->width > 4095) {
-+		dstbase += dx * bpp >> 3;
-+		dx = 0;
-+	}
-+	banshee_make_room(par, 6);
- 	tdfx_outl(par, DSTFORMAT, fmt);
- 	if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR) {
- 		tdfx_outl(par, COLORFORE, rect->color);
-@@ -888,8 +905,9 @@ static void tdfxfb_fillrect(struct fb_in
- 		tdfx_outl(par, COLORFORE, par->palette[rect->color]);
- 	}
- 	tdfx_outl(par, COMMAND_2D, COMMAND_2D_FILLRECT | (tdfx_rop << 24));
-+	tdfx_outl(par, DSTBASE, dstbase);
- 	tdfx_outl(par, DSTSIZE, rect->width | (rect->height << 16));
--	tdfx_outl(par, LAUNCH_2D, rect->dx | (rect->dy << 16));
-+	tdfx_outl(par, LAUNCH_2D, dx | (dy << 16));
- }
- 
+Two findings:
+  - MERGE_BLITS is faster for rotations 1 and 2, but slower for rotations
+    0 and 3.
+  - Todays' kernel behaves different than the one from two days ago, even
+    without changes to the console code.
+
+Note that all scrolling is done by the CPU.
+
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1,3 +1,4 @@
++#define MERGE_BLITS
  /*
-@@ -904,6 +922,30 @@ static void tdfxfb_copyarea(struct fb_in
- 	u32 stride = info->fix.line_length;
- 	u32 blitcmd = COMMAND_2D_S2S_BITBLT | (TDFX_ROP_COPY << 24);
- 	u32 fmt = stride | ((bpp + ((bpp == 8) ? 0 : 8)) << 13);
-+	u32 dstbase = 0;
-+	u32 srcbase = 0;
-+
-+	/* asume always area->height < 4096 */
-+	if (sy + area->height > 4095) {
-+		srcbase = stride * sy;
-+		sy = 0;
-+	}
-+	/* asume always area->width < 4096 */
-+	if (sx + area->width > 4095) {
-+		srcbase += sx * bpp >> 3;
-+		sx = 0;
-+	}
-+	/* asume always area->height < 4096 */
-+	if (dy + area->height > 4095) {
-+		dstbase = stride * dy;
-+		dy = 0;
-+	}
-+	/* asume always area->width < 4096 */
-+	if (dx + area->width > 4095) {
-+		dstbase += dx * bpp >> 3;
-+		dx = 0;
-+	}
-+
- 
- 	if (area->sx <= area->dx) {
- 		//-X
-@@ -918,13 +960,15 @@ static void tdfxfb_copyarea(struct fb_in
- 		dy += area->height - 1;
- 	}
- 
--	banshee_make_room(par, 6);
-+	banshee_make_room(par, 8);
- 
- 	tdfx_outl(par, SRCFORMAT, fmt);
- 	tdfx_outl(par, DSTFORMAT, fmt);
- 	tdfx_outl(par, COMMAND_2D, blitcmd);
- 	tdfx_outl(par, DSTSIZE, area->width | (area->height << 16));
- 	tdfx_outl(par, DSTXY, dx | (dy << 16));
-+	tdfx_outl(par, SRCBASE, srcbase);
-+	tdfx_outl(par, DSTBASE, dstbase);
- 	tdfx_outl(par, LAUNCH_2D, sx | (sy << 16));
- }
- 
-@@ -938,35 +982,48 @@ static void tdfxfb_imageblit(struct fb_i
- 	u32 dstfmt = stride | ((bpp + ((bpp == 8) ? 0 : 8)) << 13);
- 	u8 *chardata = (u8 *) image->data;
- 	u32 srcfmt;
-+	u32 dx = image->dx;
-+	u32 dy = image->dy;
-+	u32 dstbase = 0;
- 
- 	if (image->depth != 1) {
- 		//banshee_make_room(par, 6 + ((size + 3) >> 2));
- 		//srcfmt = stride | ((bpp+((bpp==8) ? 0 : 8)) << 13) | 0x400000;
- 		cfb_imageblit(info, image);
- 		return;
--	} else {
--		banshee_make_room(par, 8);
--		switch (info->fix.visual) {
--		case FB_VISUAL_PSEUDOCOLOR:
--			tdfx_outl(par, COLORFORE, image->fg_color);
--			tdfx_outl(par, COLORBACK, image->bg_color);
--			break;
--		case FB_VISUAL_TRUECOLOR:
--		default:
--			tdfx_outl(par, COLORFORE,
--				  par->palette[image->fg_color]);
--			tdfx_outl(par, COLORBACK,
--				  par->palette[image->bg_color]);
--		}
-+	}
-+	banshee_make_room(par, 9);
-+	switch (info->fix.visual) {
-+	case FB_VISUAL_PSEUDOCOLOR:
-+		tdfx_outl(par, COLORFORE, image->fg_color);
-+		tdfx_outl(par, COLORBACK, image->bg_color);
-+		break;
-+	case FB_VISUAL_TRUECOLOR:
-+	default:
-+		tdfx_outl(par, COLORFORE,
-+			  par->palette[image->fg_color]);
-+		tdfx_outl(par, COLORBACK,
-+			  par->palette[image->bg_color]);
-+	}
- #ifdef __BIG_ENDIAN
--		srcfmt = 0x400000 | BIT(20);
-+	srcfmt = 0x400000 | BIT(20);
- #else
--		srcfmt = 0x400000;
-+	srcfmt = 0x400000;
- #endif
-+	/* asume always image->height < 4096 */
-+	if (dy + image->height > 4095) {
-+		dstbase = stride * dy;
-+		dy = 0;
-+	}
-+	/* asume always image->width < 4096 */
-+	if (dx + image->width > 4095) {
-+		dstbase += dx * bpp >> 3;
-+		dx = 0;
- 	}
- 
-+	tdfx_outl(par, DSTBASE, dstbase);
- 	tdfx_outl(par, SRCXY, 0);
--	tdfx_outl(par, DSTXY, image->dx | (image->dy << 16));
-+	tdfx_outl(par, DSTXY, dx | (dy << 16));
- 	tdfx_outl(par, COMMAND_2D, COMMAND_2D_H2S_BITBLT | (TDFX_ROP_COPY << 24));
- 	tdfx_outl(par, SRCFORMAT, srcfmt);
- 	tdfx_outl(par, DSTFORMAT, dstfmt);
-@@ -1211,44 +1268,36 @@ static int __devinit tdfxfb_probe(struct
- 
- 	tdfx_fix.mmio_start = pci_resource_start(pdev, 0);
- 	tdfx_fix.mmio_len = pci_resource_len(pdev, 0);
-+	if (!request_mem_region(tdfx_fix.mmio_start, tdfx_fix.mmio_len,
-+				"tdfx regbase")) {
-+		printk(KERN_WARNING "tdfxfb: Can't reserve regbase\n");
-+		goto out_err;
-+	}
-+
- 	default_par->regbase_virt =
- 		ioremap_nocache(tdfx_fix.mmio_start, tdfx_fix.mmio_len);
- 	if (!default_par->regbase_virt) {
- 		printk("fb: Can't remap %s register area.\n", tdfx_fix.id);
--		goto out_err;
--	}
--
--	if (!request_mem_region(pci_resource_start(pdev, 0),
--				pci_resource_len(pdev, 0), "tdfx regbase")) {
--		printk(KERN_WARNING "tdfxfb: Can't reserve regbase\n");
--		goto out_err;
-+		goto out_err_regbase;
- 	}
- 
- 	tdfx_fix.smem_start = pci_resource_start(pdev, 1);
- 	if (!(tdfx_fix.smem_len = do_lfb_size(default_par, pdev->device))) {
- 		printk("fb: Can't count %s memory.\n", tdfx_fix.id);
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_regbase;
- 	}
- 
--	if (!request_mem_region(pci_resource_start(pdev, 1),
-+	if (!request_mem_region(tdfx_fix.smem_start,
- 				pci_resource_len(pdev, 1), "tdfx smem")) {
- 		printk(KERN_WARNING "tdfxfb: Can't reserve smem\n");
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_regbase;
- 	}
- 
- 	info->screen_base = ioremap_nocache(tdfx_fix.smem_start,
- 					    tdfx_fix.smem_len);
- 	if (!info->screen_base) {
- 		printk("fb: Can't remap %s framebuffer.\n", tdfx_fix.id);
--		release_mem_region(pci_resource_start(pdev, 1),
--				   pci_resource_len(pdev, 1));
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_screenbase;
- 	}
- 
- 	default_par->iobase = pci_resource_start(pdev, 2);
-@@ -1256,11 +1305,7 @@ static int __devinit tdfxfb_probe(struct
- 	if (!request_region(pci_resource_start(pdev, 2),
- 			    pci_resource_len(pdev, 2), "tdfx iobase")) {
- 		printk(KERN_WARNING "tdfxfb: Can't reserve iobase\n");
--		release_mem_region(pci_resource_start(pdev, 1),
--				   pci_resource_len(pdev, 1));
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_screenbase;
- 	}
- 
- 	printk("fb: %s memory = %dK\n", tdfx_fix.id, tdfx_fix.smem_len >> 10);
-@@ -1274,7 +1319,9 @@ static int __devinit tdfxfb_probe(struct
- 	info->flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
- #ifdef CONFIG_FB_3DFX_ACCEL
- 	info->flags             |= FBINFO_HWACCEL_FILLRECT |
--		FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_IMAGEBLIT;
-+				   FBINFO_HWACCEL_COPYAREA |
-+				   FBINFO_HWACCEL_IMAGEBLIT |
-+				   FBINFO_READS_FAST;
- #endif
- 
- 	if (!mode_option)
-@@ -1288,27 +1335,17 @@ static int __devinit tdfxfb_probe(struct
- 	lpitch = info->var.xres_virtual * ((info->var.bits_per_pixel + 7) >> 3);
- 	info->var.yres_virtual = info->fix.smem_len / lpitch;
- 	if (info->var.yres_virtual < info->var.yres)
--		goto out_err;
--
--#ifdef CONFIG_FB_3DFX_ACCEL
--	/*
--	 * FIXME: Limit var->yres_virtual to 4096 because of screen artifacts
--	 * during scrolling. This is only present if 2D acceleration is
--	 * enabled.
--	 */
--	if (info->var.yres_virtual > 4096)
--		info->var.yres_virtual = 4096;
--#endif /* CONFIG_FB_3DFX_ACCEL */
-+		goto out_err_iobase;
- 
- 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
- 		printk(KERN_WARNING "tdfxfb: Can't allocate color map\n");
--		goto out_err;
-+		goto out_err_iobase;
- 	}
- 
- 	if (register_framebuffer(info) < 0) {
- 		printk("tdfxfb: can't register framebuffer\n");
- 		fb_dealloc_cmap(&info->cmap);
--		goto out_err;
-+		goto out_err_iobase;
- 	}
- 	/*
- 	 * Our driver data
-@@ -1316,14 +1353,21 @@ static int __devinit tdfxfb_probe(struct
- 	pci_set_drvdata(pdev, info);
- 	return 0;
- 
--out_err:
-+out_err_iobase:
-+	release_mem_region(pci_resource_start(pdev, 2),
-+			   pci_resource_len(pdev, 2));
-+out_err_screenbase:
-+	if (info->screen_base)
-+		iounmap(info->screen_base);
-+	release_mem_region(tdfx_fix.smem_start, pci_resource_len(pdev, 1));
-+out_err_regbase:
- 	/*
- 	 * Cleanup after anything that was remapped/allocated.
- 	 */
- 	if (default_par->regbase_virt)
- 		iounmap(default_par->regbase_virt);
--	if (info->screen_base)
--		iounmap(info->screen_base);
-+	release_mem_region(tdfx_fix.mmio_start, tdfx_fix.mmio_len);
-+out_err:
- 	framebuffer_release(info);
- 	return -ENXIO;
- }
+  *  linux/drivers/video/fbcon.c -- Low level frame buffer based console =
+driver
+  *
+@@ -1724,19 +1725,35 @@ static void fbcon_redraw_blit(struct vc_
+ 		unsigned short *le =3D advance_row(s, 1);
+ 		unsigned short c;
+ 		int x =3D 0;
++#ifdef MERGE_BLITS
++		int was_blit =3D 1;
++#endif
+=20
+ 		do {
+ 			c =3D scr_readw(s);
+=20
+ 			if (c =3D=3D scr_readw(d)) {
+ 				if (s > start) {
++#ifdef MERGE_BLITS
++				    if (!was_blit) {
++#endif
+ 					ops->bmove(vc, info, line + ycount, x,
+ 						   line, x, 1, s-start);
+ 					x +=3D s - start + 1;
+ 					start =3D s + 1;
++#ifdef MERGE_BLITS
++				    }
++				    was_blit =3D !was_blit;
++#endif
+ 				} else {
++#ifdef MERGE_BLITS
++				    if (was_blit) {
++#endif
+ 					x++;
+ 					start++;
++#ifdef MERGE_BLITS
++				    }
++#endif
+ 				}
+ 			}
+=20
+
+With kind regards,
+=20
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
+=B7 Belgium
+=20
+Phone:    +32 (0)2 700 8453=09
+Fax:      +32 (0)2 700 8622=09
+E-mail:   Geert.Uytterhoeven@sonycom.com=09
+Internet: http://www.sony-europe.com/
+ =09
+Sony Network and Software Technology Center Europe=09
+A division of Sony Service Centre (Europe) N.V.=09
+Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
+ium=09
+VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
+Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
+9
+---584337861-285126806-1184934104=:13339
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+---584337861-285126806-1184934104=:13339
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+---584337861-285126806-1184934104=:13339--

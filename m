@@ -1,18 +1,20 @@
 From: Geert.Uytterhoeven@sonycom.com
-Subject: [patch 0/3] ps3fb updates
-Date: Fri, 20 Jul 2007 14:55:33 +0200
-Message-ID: <20070720125533.933475000@pademelon.sonytel.be>
+Subject: [patch 3/3] ps3fb: Set FBINFO_READS_FAST to
+	speed up text console scrolling
+Date: Fri, 20 Jul 2007 14:55:36 +0200
+Message-ID: <20070720130425.323288000@pademelon.sonytel.be>
+References: <20070720125533.933475000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0669010779=="
+Content-Type: multipart/mixed; boundary="===============1062038768=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IBsB1-00023j-RM for linux-fbdev-devel@lists.sourceforge.net;
+	id 1IBsB1-00023m-RM for linux-fbdev-devel@lists.sourceforge.net;
 	Fri, 20 Jul 2007 06:05:55 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IBsB0-0001M8-8L
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IBsB1-0001FR-9W
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Fri, 20 Jul 2007 06:05:47 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -26,22 +28,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Antonino Daplas <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, Geoff Levand <geoffrey.levand@am.sony.com>
 
---===============0669010779==
+--===============1062038768==
+Content-Disposition: inline;
+	filename=ps3-stable/ps3fb-optimized-text-scrolling.diff
 
-	Hi,
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Here are a few updates for the PS3 frame buffer device:
-  [1] ps3fb: Enable VT_HW_CONSOLE_BINDING for proper kexec
-  [2] ps3fb: Shrink default virtual frame buffer size from 18 to 9 MiB
-  [3] ps3fb: Set FBINFO_READS_FAST to speed up text console scrolling
+ps3fb: Set FBINFO_READS_FAST to speed up text console scrolling (on average
+50%, according to my tests)
 
-The first one allows to do a proper reboot or kexec and depends on
-cfafca8067c6defbaeb28cb898b7b3f8abdfe20d, which went in recently.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/ps3fb.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-The last two are minor trivial changes.
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -1067,7 +1067,7 @@ static int __devinit ps3fb_probe(struct 
+ 	info->fix.smem_len = ps3fb_videomemory.size - offset;
+ 	info->pseudo_palette = info->par;
+ 	info->par = NULL;
+-	info->flags = FBINFO_FLAG_DEFAULT;
++	info->flags = FBINFO_DEFAULT | FBINFO_READS_FAST;
+ 
+ 	retval = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (retval < 0)
 
+-- 
 With kind regards,
  
 Geert Uytterhoeven
@@ -63,7 +78,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0669010779==
+--===============1062038768==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -73,7 +88,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0669010779==
+--===============1062038768==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -84,4 +99,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0669010779==--
+--===============1062038768==--

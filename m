@@ -1,29 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git patches] two warning fixes
-Date: Sat, 21 Jul 2007 10:32:53 +1000
-Message-ID: <1184977973.5439.45.camel@localhost.localdomain>
-References: <20070718235504.GA9601@havoc.gtf.org>
-	<alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
-	<469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain>
-	<alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
-	<m3644e2abd.fsf@maximus.localdomain>
+From: "John Lumby" <johnlumby@hotmail.com>
+Subject: typo errors in the modedb.c video mode tables
+Date: Sat, 21 Jul 2007 18:59:29 -0400
+Message-ID: <BAY137-F3235E7DB69C9967750E90DA3F50@phx.gbl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IC2uF-000257-0H for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 20 Jul 2007 17:33:14 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX18MjU3FcCd1OW1dc9WN5vYS6JASnRfskv4=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IC2uC-0001wt-RU
+	id 1ICNvF-0007t2-Ov for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 21 Jul 2007 15:59:37 -0700
+Received: from bay0-omc2-s40.bay0.hotmail.com ([65.54.246.176])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1ICNvE-0003cc-UA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 20 Jul 2007 17:33:10 -0700
-In-Reply-To: <m3644e2abd.fsf@maximus.localdomain>
+	Sat, 21 Jul 2007 15:59:37 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,66 +26,73 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>, adaplas@gmail.com, LKML <linux-kernel@vger.kernel.org>, ak@suse.de, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 2007-07-20 at 20:34 +0200, Krzysztof Halasa wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> 
-> > More people *should* generally ask themselves: "was the warning worth it?" 
-> > and then, if the answer is "no", they shouldn't add code, they should 
-> > remove the thing that causes the warning in the first place.
-> 
-> Sure. If a routine uses must_check yet its return value may be
-> safely ignored then that must_check is simply misplaced and should
-> be removed. It does not mean all must_checks are bad - each of them
-> isn't bad unless one can demonstrate it is.
-> 
-> Back to sysfs_create_bin_file() - if one can demonstrate a caller
-> can safely ignore the return value (which, it seems, is the
-> case), then exactly this very must_check should be removed
+I believe there are a few typos in the mode tables in modedb.c   -   in the 
+current 2.6.22 :
 
-Typically, the EDID creation in radeonfb :-)
+  .  line 77
+	/* 1152x864 @ 89 Hz interlaced, 44 kHz hsync */
+	NULL, 69, 1152, 864, 15384, 96, 16, 110, 1, 216, 10,
+should be
+	/* 1152x864 @ 89 Hz interlaced, 44 kHz hsync */
+	NULL, 89, 1152, 864, 15384, 96, 16, 110, 1, 216, 10,
 
-In fact, I'm not even sure there's -any- user of those sysfs files. I
-added them back then to allow distros to extract the EDID infos that
-were probed by radeonfb to properly configure the X server (because on
-some machines, the EDID is coming from the firmware/BIOS, not from DDC,
-and X can't get at it). I don't know if they ever used them.
+. line 125
 
-In any case, it doesn't make sense to abort initialization of the driver
-if for some reasons those files can't be created (for example, the core
-fbdev starts exposing EDID files, radeonfb isn't properly updated, name
-clash, error). Aborting the initialization will make sure that on some
-machines such as powermacs with radeon, whatever error is displayed will
-never be seen by the user.
+	/* 1400x1050 @ 60Hz, 63.9 kHz hsync */
+	NULL, 68, 1400, 1050, 9259, 136, 40, 13, 1, 112, 3,
+should be
+	/* 1400x1050 @ 60Hz, 63.9 kHz hsync */
+	NULL, 60, 1400, 1050, 9259, 136, 40, 13, 1, 112, 3,
 
-That's a typical, but I have plenty more.
+. line 129
+	/* 1400x1050 @ 75,107 Hz, 82,392 kHz +hsync +vsync*/
+	NULL, 75, 1400, 1050, 9271, 120, 56, 13, 0, 112, 3,
+is wrong somewhere but I don't know what should be changed
 
-For example, the powermac thermal control drivers. They work pretty well
-by themselves. They also expose via sysfs all the current values, fan
-speeds, temps ,etc... for the sake of whoever wants to do a GUI or
-"monitor" what's going on, but that is not critical to the operation of
-the driver. Thus, failure to create those files is not critical.
+. line 258
+	/* 1152x768, 60 Hz, PowerBook G4 Titanium I and II */
+	NULL, 60, 1152, 768, 15386, 158, 26, 29, 3, 136, 6,
+is wrong somewhere but I don't know what should be changed
 
-I have plenty other examples.
+. line 311
+        /* 12 1024x768i-43 VESA */
+	{ NULL, 53, 1024, 768, 22271, 56, 8, 41, 0, 176, 8,
+should be
+        /* 12 1024x768i-43 VESA */
+	{ NULL, 43, 1024, 768, 22271, 56, 8, 41, 0, 176, 8,
 
-Thus, we have two choices here:
+. line 388
+	/* 33 1920x1440-75 VESA */
+	{ NULL, 60, 1920, 1440, 3367, 352, 144, 56, 1, 224, 3,
+should be
+	/* 33 1920x1440-75 VESA */
+	{ NULL, 75, 1920, 1440, 3367, 352, 144, 56, 1, 224, 3,
 
- - The simple one: sysfs_create_blah() displays a warning when it fails
-and has no must_check
+In the cases where I've stated the correction, in every case it's the v_sync 
+refresh rate which is wrong and it's pretty obvious as the preceding comment 
+has the correct value.      In the other cases, I'm not sure but my 
+calculations indicates the refresh is not consistent with the other values 
+(but I could be wrong).
 
- - The one that adds code everywhere (the current one):
-sysfs_create_blah() returns an error, has much_check, and thus all
-callers like I described abvoe need to add code to test it and print a
-warning. Lots of added .text and .data for little benefit.
+I also don't know what effect these errors are having - I found them from 
+studying the code after I could not get my desired 1400x1050@60 for my 
+supersavage framebuffer console.       One of the above entries is the one I 
+want.    Is the refresh value in these tables used for matching modes?      
+It seems so from my reading of fb_find_mode() in the same file.
 
-Cheers,
-Ben.
+John
 
+_________________________________________________________________
+Tell us your tech love story in the Summer Lovin Competition for your chance 
+to win laptop loaded with Windows Vista, Office 2007 and Windows Live 
+OneCare. 
+http://www.microsoft.com/canada/home/contests/summerlovin/default.aspx
 
 
 -------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2005.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+This SF.net email is sponsored by: Splunk Inc.
+Still grepping through log files to find problems?  Stop.
+Now Search log events and configuration files using AJAX and a browser.
+Download your FREE copy of Splunk now >>  http://get.splunk.com/

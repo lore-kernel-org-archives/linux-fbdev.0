@@ -1,68 +1,75 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Kyle Moffett <mrmacman_g4@mac.com>
 Subject: Re: [git patches] two warning fixes
-Date: Mon, 23 Jul 2007 07:29:20 +1000
-Message-ID: <1185139760.5439.52.camel@localhost.localdomain>
-References: <20070718235504.GA9601@havoc.gtf.org>
-	<alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org>
-	<469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain>
-	<alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
-	<m3644e2abd.fsf@maximus.localdomain>
-	<1184977973.5439.45.camel@localhost.localdomain>
-	<46A2D6F7.9080309@garzik.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 22 Jul 2007 23:26:09 -0400
+Message-ID: <BF1FF315-482E-4ABF-8159-881C3426C28C@mac.com>
+References: <20070718235504.GA9601@havoc.gtf.org> <alpine.LFD.0.999.0707181834070.27353@woody.linux-foundation.org> <469ECD29.2010909@garzik.org> <m3r6n4bjgg.fsf@maximus.localdomain> <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1ICizk-0004tg-FJ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 22 Jul 2007 14:29:40 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX18ZU7ey2PHIiDuQFoE8r96ZAeleYYs4V68=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1ICizj-0008Ho-1H
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 22 Jul 2007 14:29:40 -0700
-In-Reply-To: <46A2D6F7.9080309@garzik.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, ak@suse.de, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Krzysztof Halasa <khc@pm.waw.pl>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S933934AbXGWD1A@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0707191100480.27353@woody.linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; delsp="yes"; format="flowed"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ak@suse.de, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
 
+On Jul 19, 2007, at 14:04:29, Linus Torvalds wrote:
+> On Thu, 19 Jul 2007, Krzysztof Halasa wrote:
+>> Jeff Garzik <jeff@garzik.org> writes:
+>>> My overall goal is killing useless warnings that continually  
+>>> obscure real ones.
+>>
+>> Precisely, the goal should be to make must_check (and similar  
+>> things) warn only in real cases.
+>
+> .. the problem with that mentality is that it's not how people work.
+>
+> People shut up warnings by adding code.
+>
+> Adding code tends to add bugs.
+>
+> People don't generally think "maybe that warning was bogus".
+>
+> More people *should* generally ask themselves: "was the warning  
+> worth it?" and then, if the answer is "no", they shouldn't add  
+> code, they should remove the thing that causes the warning in the  
+> first place.
+>
+> For example, for compiler options, the correct thign is often to  
+> just say "that option was broken", and not use "-fsign-warning",  
+> for example. We've literally have had bugs *added* because people  
+> "fixed" a sign warning.  More than once, in fact.
+>
+> Every time you see a warning, you should ask yourself: is the  
+> warning interesting, correct and valid? And if it isn't all three,  
+> then the problem is whatever *causes* the warning, not the code  
+> itself.
 
-> Not necessarily as simple as that -- you need to make sure you don't 
-> pass something bogus to a sysfs_remove_blah() function at 
-> unregister/unload time, if sysfs_create_blah() failed.
-> 
-> Certainly sysfs_foo() failure is often ignorable in the sense that you 
-> want the driver to keep loading... but that does not imply that it is 
-> strictly ignorable, if you also consider the associated cleanup code.
+I agree that there are a fair number of things (like the sysfs calls)  
+that should just WARN() when they hit an error, but I also think that  
+we're currently missing a *lot* of __must_check's that we should  
+have.  For example a friend of mine was having problems with an HDAPS  
+patch where it just kind of hung.  Turns out the problem was that the  
+code blithely called scsi_execute_async() and then put itself to  
+sleep on a completion... except scsi_execute_async() returned failure  
+and the completion would never complete.
 
-It should be trivial enough to have sysfs_create_blah() do enough
-initializations before it can fail so that sysfs_remove_blah() do the
-right thing regardless.
+For instance, I would bet that a fair number of the other int- 
+returning functions in include/scsi/scsi_device.h want __must_check  
+on them.  That said, the person adding the __must_check should be  
+REQUIRED to do at least a superficial audit of the code.
 
-It's actually a major PITA for a driver that creates a whole bunch of
-sysfs files to have to track precisely which ones were created
-successfully for the error path. If it's a single function, goto does
-the trick but if for some reason it's not, it's really annoying.
+I'd propose a few simple rules:
+   (1) If it can return the only pointer to freshly-allocated pointer  
+then it's __must_check
+   (2) If it can return a hard error which the caller must handle  
+specially, then it's __must_check
+   (3) If the only possible error is a kernel bug then make the damn  
+thing return void and give it a big fat WARN() when it fails.
+   (4) For any other case (or if you are unsure), don't flag it.
 
-Ben.
+And of course the burden of proof is on the person trying to add the  
+__must_check.
 
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc.
-Still grepping through log files to find problems?  Stop.
-Now Search log events and configuration files using AJAX and a browser.
-Download your FREE copy of Splunk now >>  http://get.splunk.com/
+Cheers,
+Kyle Moffett

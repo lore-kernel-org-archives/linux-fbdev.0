@@ -1,7 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 32/33] tdfxfb: 3 fixes
-Date: Thu, 26 Jul 2007 20:52:05 +0800
-Message-ID: <46A898F5.7030201@gmail.com>
+Subject: [PATCH 33/33] tdfxfb: palette fixes
+Date: Thu, 26 Jul 2007 20:52:50 +0800
+Message-ID: <46A89922.9010002@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IE2wr-0001P0-4y for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 06:00:09 -0700
+	id 1IE2x3-0001QF-6L for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 06:00:21 -0700
 Received: from wa-out-1112.google.com ([209.85.146.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2wq-0000Ts-K7
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2x2-0000Ts-S0
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 06:00:09 -0700
+	Thu, 26 Jul 2007 06:00:21 -0700
 Received: by wa-out-1112.google.com with SMTP id k22so615223waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 26 Jul 2007 06:00:08 -0700 (PDT)
+	Thu, 26 Jul 2007 06:00:20 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,340 +34,99 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch fixes 3 issues:
-- transparency handling in tdfxfb
-- panning with more than 4096 virtual height and acceleration (acceleration
-with x & y > 4096)
-- exit paths on errors in tdfxfb_probe()
-
-Additionally it sets a FBINFO_READS_FAST flag to use smart blitter scrolling
-(speed up on tdfxfb).
+This patch fixes:
+- palette setting in 8-bit mode (aka 'funky penguin')
+- grayscale handling
+- adds proper barriers in xxx_inb/outb functions
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/tdfxfb.c |  172 ++++++++++++++++++++++++++++++------------------
- 1 files changed, 108 insertions(+), 64 deletions(-)
+ drivers/video/tdfxfb.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
-index e6aced9..2566683 100644
+index 2566683..c032f6f 100644
 --- a/drivers/video/tdfxfb.c
 +++ b/drivers/video/tdfxfb.c
-@@ -502,6 +502,8 @@ static int tdfxfb_check_var(struct fb_va
- 		return -EINVAL;
- 	}
- 
-+	var->transp.offset = 0;
-+	var->transp.length = 0;
- 	switch (var->bits_per_pixel) {
- 	case 8:
- 		var->red.length = var->green.length = var->blue.length = 8;
-@@ -515,10 +517,12 @@ static int tdfxfb_check_var(struct fb_va
- 		var->blue.length  = 5;
- 		break;
- 	case 32:
-+		var->transp.offset = 24;
-+		var->transp.length = 8;
- 	case 24:
--		var->red.offset=16;
--		var->green.offset=8;
--		var->blue.offset=0;
-+		var->red.offset = 16;
-+		var->green.offset = 8;
-+		var->blue.offset = 0;
- 		var->red.length = var->green.length = var->blue.length = 8;
- 		break;
- 	}
-@@ -874,13 +878,26 @@ static void tdfxfb_fillrect(struct fb_in
- 	u32 stride = info->fix.line_length;
- 	u32 fmt= stride | ((bpp + ((bpp == 8) ? 0 : 8)) << 13);
- 	int tdfx_rop;
-+	u32 dx = rect->dx;
-+	u32 dy = rect->dy;
-+	u32 dstbase = 0;
- 
- 	if (rect->rop == ROP_COPY)
- 		tdfx_rop = TDFX_ROP_COPY;
- 	else
- 		tdfx_rop = TDFX_ROP_XOR;
- 
--	banshee_make_room(par, 5);
-+	/* asume always rect->height < 4096 */
-+	if (dy + rect->height > 4095) {
-+		dstbase = stride * dy;
-+		dy = 0;
-+	}
-+	/* asume always rect->width < 4096 */
-+	if (dx + rect->width > 4095) {
-+		dstbase += dx * bpp >> 3;
-+		dx = 0;
-+	}
-+	banshee_make_room(par, 6);
- 	tdfx_outl(par, DSTFORMAT, fmt);
- 	if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR) {
- 		tdfx_outl(par, COLORFORE, rect->color);
-@@ -888,8 +905,9 @@ static void tdfxfb_fillrect(struct fb_in
- 		tdfx_outl(par, COLORFORE, par->palette[rect->color]);
- 	}
- 	tdfx_outl(par, COMMAND_2D, COMMAND_2D_FILLRECT | (tdfx_rop << 24));
-+	tdfx_outl(par, DSTBASE, dstbase);
- 	tdfx_outl(par, DSTSIZE, rect->width | (rect->height << 16));
--	tdfx_outl(par, LAUNCH_2D, rect->dx | (rect->dy << 16));
-+	tdfx_outl(par, LAUNCH_2D, dx | (dy << 16));
+@@ -35,7 +35,6 @@
+  * driver by Ilario Nardinocchi, which in turn is based on skeletonfb.
+  *
+  * TODO:
+- * - support for 16/32 bpp needs fixing (funky bootup penguin)
+  * - multihead support (basically need to support an array of fb_infos)
+  * - support other architectures (PPC, Alpha); does the fact that the VGA
+  *   core can be accessed only thru I/O (not memory mapped) complicate
+@@ -184,30 +183,38 @@ #endif
+ static inline void gra_outb(struct tdfx_par *par, u32 idx, u8 val)
+ {
+ 	vga_outb(par, GRA_I, idx);
++	wmb();
+ 	vga_outb(par, GRA_D, val);
++	wmb();
  }
  
- /*
-@@ -904,6 +922,30 @@ static void tdfxfb_copyarea(struct fb_in
- 	u32 stride = info->fix.line_length;
- 	u32 blitcmd = COMMAND_2D_S2S_BITBLT | (TDFX_ROP_COPY << 24);
- 	u32 fmt = stride | ((bpp + ((bpp == 8) ? 0 : 8)) << 13);
-+	u32 dstbase = 0;
-+	u32 srcbase = 0;
-+
-+	/* asume always area->height < 4096 */
-+	if (sy + area->height > 4095) {
-+		srcbase = stride * sy;
-+		sy = 0;
-+	}
-+	/* asume always area->width < 4096 */
-+	if (sx + area->width > 4095) {
-+		srcbase += sx * bpp >> 3;
-+		sx = 0;
-+	}
-+	/* asume always area->height < 4096 */
-+	if (dy + area->height > 4095) {
-+		dstbase = stride * dy;
-+		dy = 0;
-+	}
-+	/* asume always area->width < 4096 */
-+	if (dx + area->width > 4095) {
-+		dstbase += dx * bpp >> 3;
-+		dx = 0;
-+	}
-+
- 
- 	if (area->sx <= area->dx) {
- 		//-X
-@@ -918,13 +960,15 @@ static void tdfxfb_copyarea(struct fb_in
- 		dy += area->height - 1;
- 	}
- 
--	banshee_make_room(par, 6);
-+	banshee_make_room(par, 8);
- 
- 	tdfx_outl(par, SRCFORMAT, fmt);
- 	tdfx_outl(par, DSTFORMAT, fmt);
- 	tdfx_outl(par, COMMAND_2D, blitcmd);
- 	tdfx_outl(par, DSTSIZE, area->width | (area->height << 16));
- 	tdfx_outl(par, DSTXY, dx | (dy << 16));
-+	tdfx_outl(par, SRCBASE, srcbase);
-+	tdfx_outl(par, DSTBASE, dstbase);
- 	tdfx_outl(par, LAUNCH_2D, sx | (sy << 16));
+ static inline void seq_outb(struct tdfx_par *par, u32 idx, u8 val)
+ {
+ 	vga_outb(par, SEQ_I, idx);
++	wmb();
+ 	vga_outb(par, SEQ_D, val);
++	wmb();
  }
  
-@@ -938,35 +982,48 @@ static void tdfxfb_imageblit(struct fb_i
- 	u32 dstfmt = stride | ((bpp + ((bpp == 8) ? 0 : 8)) << 13);
- 	u8 *chardata = (u8 *) image->data;
- 	u32 srcfmt;
-+	u32 dx = image->dx;
-+	u32 dy = image->dy;
-+	u32 dstbase = 0;
+ static inline u8 seq_inb(struct tdfx_par *par, u32 idx)
+ {
+ 	vga_outb(par, SEQ_I, idx);
++	mb();
+ 	return vga_inb(par, SEQ_D);
+ }
  
- 	if (image->depth != 1) {
- 		//banshee_make_room(par, 6 + ((size + 3) >> 2));
- 		//srcfmt = stride | ((bpp+((bpp==8) ? 0 : 8)) << 13) | 0x400000;
- 		cfb_imageblit(info, image);
- 		return;
--	} else {
--		banshee_make_room(par, 8);
--		switch (info->fix.visual) {
--		case FB_VISUAL_PSEUDOCOLOR:
--			tdfx_outl(par, COLORFORE, image->fg_color);
--			tdfx_outl(par, COLORBACK, image->bg_color);
--			break;
--		case FB_VISUAL_TRUECOLOR:
--		default:
--			tdfx_outl(par, COLORFORE,
--				  par->palette[image->fg_color]);
--			tdfx_outl(par, COLORBACK,
--				  par->palette[image->bg_color]);
--		}
-+	}
-+	banshee_make_room(par, 9);
-+	switch (info->fix.visual) {
-+	case FB_VISUAL_PSEUDOCOLOR:
-+		tdfx_outl(par, COLORFORE, image->fg_color);
-+		tdfx_outl(par, COLORBACK, image->bg_color);
-+		break;
-+	case FB_VISUAL_TRUECOLOR:
-+	default:
-+		tdfx_outl(par, COLORFORE,
-+			  par->palette[image->fg_color]);
-+		tdfx_outl(par, COLORBACK,
-+			  par->palette[image->bg_color]);
-+	}
- #ifdef __BIG_ENDIAN
--		srcfmt = 0x400000 | BIT(20);
-+	srcfmt = 0x400000 | BIT(20);
- #else
--		srcfmt = 0x400000;
-+	srcfmt = 0x400000;
- #endif
-+	/* asume always image->height < 4096 */
-+	if (dy + image->height > 4095) {
-+		dstbase = stride * dy;
-+		dy = 0;
-+	}
-+	/* asume always image->width < 4096 */
-+	if (dx + image->width > 4095) {
-+		dstbase += dx * bpp >> 3;
-+		dx = 0;
- 	}
+ static inline void crt_outb(struct tdfx_par *par, u32 idx, u8 val)
+ {
+ 	vga_outb(par, CRT_I, idx);
++	wmb();
+ 	vga_outb(par, CRT_D, val);
++	wmb();
+ }
  
-+	tdfx_outl(par, DSTBASE, dstbase);
- 	tdfx_outl(par, SRCXY, 0);
--	tdfx_outl(par, DSTXY, image->dx | (image->dy << 16));
-+	tdfx_outl(par, DSTXY, dx | (dy << 16));
- 	tdfx_outl(par, COMMAND_2D, COMMAND_2D_H2S_BITBLT | (TDFX_ROP_COPY << 24));
- 	tdfx_outl(par, SRCFORMAT, srcfmt);
- 	tdfx_outl(par, DSTFORMAT, dstfmt);
-@@ -1211,44 +1268,36 @@ static int __devinit tdfxfb_probe(struct
+ static inline u8 crt_inb(struct tdfx_par *par, u32 idx)
+ {
+ 	vga_outb(par, CRT_I, idx);
++	mb();
+ 	return vga_inb(par, CRT_D);
+ }
  
- 	tdfx_fix.mmio_start = pci_resource_start(pdev, 0);
- 	tdfx_fix.mmio_len = pci_resource_len(pdev, 0);
-+	if (!request_mem_region(tdfx_fix.mmio_start, tdfx_fix.mmio_len,
-+				"tdfx regbase")) {
-+		printk(KERN_WARNING "tdfxfb: Can't reserve regbase\n");
-+		goto out_err;
+@@ -243,6 +250,7 @@ static inline void vga_enable_video(stru
+ static inline void vga_enable_palette(struct tdfx_par *par)
+ {
+ 	vga_inb(par, IS1_R);
++	mb();
+ 	vga_outb(par, ATT_IW, 0x20);
+ }
+ 
+@@ -286,6 +294,8 @@ static inline void do_setpalentry(struct
+ {  
+ 	banshee_make_room(par, 2);
+ 	tdfx_outl(par, DACADDR, regno);
++	/* read after write makes it working */
++	tdfx_inl(par, DACADDR);
+ 	tdfx_outl(par, DACDATA, c);
+ }
+ 
+@@ -771,6 +781,12 @@ static int tdfxfb_setcolreg(unsigned reg
+ 	if (regno >= info->cmap.len || regno > 255)
+ 		return 1;
+ 
++	/* grayscale works only partially under directcolor */
++	if (info->var.grayscale) {
++		/* grayscale = 0.30*R + 0.59*G + 0.11*B */
++		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
 +	}
 +
- 	default_par->regbase_virt =
- 		ioremap_nocache(tdfx_fix.mmio_start, tdfx_fix.mmio_len);
- 	if (!default_par->regbase_virt) {
- 		printk("fb: Can't remap %s register area.\n", tdfx_fix.id);
--		goto out_err;
--	}
--
--	if (!request_mem_region(pci_resource_start(pdev, 0),
--				pci_resource_len(pdev, 0), "tdfx regbase")) {
--		printk(KERN_WARNING "tdfxfb: Can't reserve regbase\n");
--		goto out_err;
-+		goto out_err_regbase;
- 	}
- 
- 	tdfx_fix.smem_start = pci_resource_start(pdev, 1);
- 	if (!(tdfx_fix.smem_len = do_lfb_size(default_par, pdev->device))) {
- 		printk("fb: Can't count %s memory.\n", tdfx_fix.id);
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_regbase;
- 	}
- 
--	if (!request_mem_region(pci_resource_start(pdev, 1),
-+	if (!request_mem_region(tdfx_fix.smem_start,
- 				pci_resource_len(pdev, 1), "tdfx smem")) {
- 		printk(KERN_WARNING "tdfxfb: Can't reserve smem\n");
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_regbase;
- 	}
- 
- 	info->screen_base = ioremap_nocache(tdfx_fix.smem_start,
- 					    tdfx_fix.smem_len);
- 	if (!info->screen_base) {
- 		printk("fb: Can't remap %s framebuffer.\n", tdfx_fix.id);
--		release_mem_region(pci_resource_start(pdev, 1),
--				   pci_resource_len(pdev, 1));
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_screenbase;
- 	}
- 
- 	default_par->iobase = pci_resource_start(pdev, 2);
-@@ -1256,11 +1305,7 @@ static int __devinit tdfxfb_probe(struct
- 	if (!request_region(pci_resource_start(pdev, 2),
- 			    pci_resource_len(pdev, 2), "tdfx iobase")) {
- 		printk(KERN_WARNING "tdfxfb: Can't reserve iobase\n");
--		release_mem_region(pci_resource_start(pdev, 1),
--				   pci_resource_len(pdev, 1));
--		release_mem_region(pci_resource_start(pdev, 0),
--				   pci_resource_len(pdev, 0));
--		goto out_err;
-+		goto out_err_screenbase;
- 	}
- 
- 	printk("fb: %s memory = %dK\n", tdfx_fix.id, tdfx_fix.smem_len >> 10);
-@@ -1274,7 +1319,9 @@ static int __devinit tdfxfb_probe(struct
- 	info->flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
- #ifdef CONFIG_FB_3DFX_ACCEL
- 	info->flags             |= FBINFO_HWACCEL_FILLRECT |
--		FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_IMAGEBLIT;
-+				   FBINFO_HWACCEL_COPYAREA |
-+				   FBINFO_HWACCEL_IMAGEBLIT |
-+				   FBINFO_READS_FAST;
- #endif
- 
- 	if (!mode_option)
-@@ -1288,27 +1335,17 @@ #endif
- 	lpitch = info->var.xres_virtual * ((info->var.bits_per_pixel + 7) >> 3);
- 	info->var.yres_virtual = info->fix.smem_len / lpitch;
- 	if (info->var.yres_virtual < info->var.yres)
--		goto out_err;
--
--#ifdef CONFIG_FB_3DFX_ACCEL
--	/*
--	 * FIXME: Limit var->yres_virtual to 4096 because of screen artifacts
--	 * during scrolling. This is only present if 2D acceleration is
--	 * enabled.
--	 */
--	if (info->var.yres_virtual > 4096)
--		info->var.yres_virtual = 4096;
--#endif /* CONFIG_FB_3DFX_ACCEL */
-+		goto out_err_iobase;
- 
- 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
- 		printk(KERN_WARNING "tdfxfb: Can't allocate color map\n");
--		goto out_err;
-+		goto out_err_iobase;
- 	}
- 
- 	if (register_framebuffer(info) < 0) {
- 		printk("tdfxfb: can't register framebuffer\n");
- 		fb_dealloc_cmap(&info->cmap);
--		goto out_err;
-+		goto out_err_iobase;
- 	}
- 	/*
- 	 * Our driver data
-@@ -1316,14 +1353,21 @@ #endif /* CONFIG_FB_3DFX_ACCEL */
- 	pci_set_drvdata(pdev, info);
- 	return 0;
- 
--out_err:
-+out_err_iobase:
-+	release_mem_region(pci_resource_start(pdev, 2),
-+			   pci_resource_len(pdev, 2));
-+out_err_screenbase:
-+	if (info->screen_base)
-+		iounmap(info->screen_base);
-+	release_mem_region(tdfx_fix.smem_start, pci_resource_len(pdev, 1));
-+out_err_regbase:
- 	/*
- 	 * Cleanup after anything that was remapped/allocated.
- 	 */
- 	if (default_par->regbase_virt)
- 		iounmap(default_par->regbase_virt);
--	if (info->screen_base)
--		iounmap(info->screen_base);
-+	release_mem_region(tdfx_fix.mmio_start, tdfx_fix.mmio_len);
-+out_err:
- 	framebuffer_release(info);
- 	return -ENXIO;
- }
+ 	switch (info->fix.visual) {
+ 	case FB_VISUAL_PSEUDOCOLOR:
+ 		rgbcol =(((u32)red   & 0xff00) << 8) |
 
 
 -------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 24/33] sm501fb: update suspend and
-	resume code
-Date: Thu, 26 Jul 2007 20:29:23 +0800
-Message-ID: <46A893A3.1070408@gmail.com>
+Subject: [PATCH 25/33] sm501fb: Call fb suspend function
+ during suspend and resume
+Date: Thu, 26 Jul 2007 20:30:09 +0800
+Message-ID: <46A893D1.5080604@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IE2vZ-0001Ad-Dw for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:58:49 -0700
-Received: from nz-out-0506.google.com ([64.233.162.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2vZ-0008TI-5C
+	id 1IE2vk-0001BN-LZ for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 05:59:00 -0700
+Received: from wa-out-1112.google.com ([209.85.146.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2vk-0000Ts-Ev
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:58:49 -0700
-Received: by nz-out-0506.google.com with SMTP id f1so1352216nzc
+	Thu, 26 Jul 2007 05:59:00 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so615223waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 26 Jul 2007 05:58:48 -0700 (PDT)
+	Thu, 26 Jul 2007 05:58:59 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,112 +35,48 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ben 
 
 From: Ben Dooks <ben-linux@fluff.org>
 
-The suspend and resume code is failing to restore the CRT control
-register, thus causing the CRT data-path to get changed if the
-SM501 experiences a reset over suspend.
+Call the fb_set_suspend() over suspend and resume.
 
-Also move some of the debug messages to dev_dbg() level and ensure
-that the suspend code does not try and restore anything it did not
-manage to save.
-
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/sm501fb.c |   35 +++++++++++++++++++++++++++++++----
- 1 files changed, 31 insertions(+), 4 deletions(-)
+ drivers/video/sm501fb.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index c86df12..fc0cdc8 100644
+index fc0cdc8..d97edd7 100644
 --- a/drivers/video/sm501fb.c
 +++ b/drivers/video/sm501fb.c
-@@ -62,6 +62,8 @@ struct sm501fb_info {
- 	struct resource		*regs_res;	/* registers resource */
- 	struct sm501_platdata_fb *pdata;	/* our platform data */
+@@ -28,6 +28,7 @@ #include <linux/workqueue.h>
+ #include <linux/wait.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
++#include <linux/console.h>
  
-+	unsigned long		 pm_crt_ctrl;	/* pm: crt ctrl save */
-+
- 	int			 irq;
- 	int			 swap_endian;	/* set to swap rgb=>bgr */
- 	void __iomem		*regs;		/* remapped registers */
-@@ -1687,9 +1689,11 @@ static int sm501fb_suspend_fb(struct sm5
- 		goto err_nocursor;
- 	}
- 
-+	dev_dbg(info->dev, "suspending screen to %p\n", par->store_fb);
-+	dev_dbg(info->dev, "suspending cursor to %p\n", par->store_cursor);
-+
- 	memcpy_fromio(par->store_fb, par->screen.k_addr, par->screen.size);
- 	memcpy_fromio(par->store_cursor, par->cursor.k_addr, par->cursor.size);
--
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+@@ -1697,6 +1698,10 @@ static int sm501fb_suspend_fb(struct sm5
  	/* blank the relevant interface to ensure unit power minimised */
  	(par->ops.fb_blank)(FB_BLANK_POWERDOWN, fbi);
  
-@@ -1697,9 +1701,9 @@ static int sm501fb_suspend_fb(struct sm5
++	acquire_console_sem();
++	fb_set_suspend(fbi, 1);
++	release_console_sem();
++
+ 	return 0;
  
   err_nocursor:
- 	vfree(par->store_fb);
-+	par->store_fb = NULL;
+@@ -1732,6 +1737,10 @@ static void sm501fb_resume_fb(struct sm5
+ 		memcpy_toio(par->cursor.k_addr, par->store_cursor,
+ 			    par->cursor.size);
  
- 	return -ENOMEM;
--
- }
- 
- static void sm501fb_resume_fb(struct sm501fb_info *info,
-@@ -1717,8 +1721,16 @@ static void sm501fb_resume_fb(struct sm5
- 
- 	/* restore the data */
- 
--	memcpy_toio(par->screen.k_addr, par->store_fb, par->screen.size);
--	memcpy_toio(par->cursor.k_addr, par->store_cursor, par->cursor.size);
-+	dev_dbg(info->dev, "restoring screen from %p\n", par->store_fb);
-+	dev_dbg(info->dev, "restoring cursor from %p\n", par->store_cursor);
++	acquire_console_sem();
++	fb_set_suspend(fbi, 0);
++	release_console_sem();
 +
-+	if (par->store_fb)
-+		memcpy_toio(par->screen.k_addr, par->store_fb,
-+			    par->screen.size);
-+
-+	if (par->store_cursor)
-+		memcpy_toio(par->cursor.k_addr, par->store_cursor,
-+			    par->cursor.size);
- 
  	vfree(par->store_fb);
  	vfree(par->store_cursor);
-@@ -1731,6 +1743,9 @@ static int sm501fb_suspend(struct platfo
- {
- 	struct sm501fb_info *info = platform_get_drvdata(pdev);
- 
-+	/* store crt control to resume with */
-+	info->pm_crt_ctrl = readl(info->regs + SM501_DC_CRT_CONTROL);
-+
- 	sm501fb_suspend_fb(info, HEAD_CRT);
- 	sm501fb_suspend_fb(info, HEAD_PANEL);
- 
-@@ -1740,12 +1755,24 @@ static int sm501fb_suspend(struct platfo
- 	return 0;
  }
- 
-+#define SM501_CRT_CTRL_SAVE (SM501_DC_CRT_CONTROL_TVP |        \
-+			     SM501_DC_CRT_CONTROL_SEL)
-+
-+
- static int sm501fb_resume(struct platform_device *pdev)
- {
- 	struct sm501fb_info *info = platform_get_drvdata(pdev);
-+	unsigned long crt_ctrl;
- 
- 	sm501_unit_power(info->dev->parent, SM501_GATE_DISPLAY, 1);
- 
-+	/* restore the items we want to be saved for crt control */
-+
-+	crt_ctrl = readl(info->regs + SM501_DC_CRT_CONTROL);
-+	crt_ctrl &= ~SM501_CRT_CTRL_SAVE;
-+	crt_ctrl |= info->pm_crt_ctrl & SM501_CRT_CTRL_SAVE;
-+	writel(crt_ctrl, info->regs + SM501_DC_CRT_CONTROL);
-+
- 	sm501fb_resume_fb(info, HEAD_CRT);
- 	sm501fb_resume_fb(info, HEAD_PANEL);
- 
 
 
 -------------------------------------------------------------------------

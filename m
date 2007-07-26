@@ -1,8 +1,8 @@
-From: "John Lumby" <johnlumby@hotmail.com>
-Subject: Re: typo errors in the modedb.c video modetables
-Date: Wed, 25 Jul 2007 23:16:00 -0400
-Message-ID: <BAY137-F2532D5D8D314688B3874C0A3F20@phx.gbl>
-References: <1185063967.8688.9.camel@daplas>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 01/33] fbcon: Fix typo and bogus logic
+	in get_default_font
+Date: Thu, 26 Jul 2007 19:45:34 +0800
+Message-ID: <46A8895E.8000505@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IDtph-00035P-KG for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Jul 2007 20:16:09 -0700
-Received: from bay0-omc3-s8.bay0.hotmail.com ([65.54.246.208])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IDtpg-0003Th-AG
+	id 1IE2s7-0000kG-FF for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 05:55:15 -0700
+Received: from wa-out-1112.google.com ([209.85.146.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2s5-0007HM-3t
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Jul 2007 20:16:09 -0700
-In-Reply-To: <1185063967.8688.9.camel@daplas>
+	Thu, 26 Jul 2007 05:55:15 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so613963waf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 26 Jul 2007 05:55:12 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,61 +30,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: adaplas@gmail.com
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Antonino wrote :
+Reported in: Bugzilla Bug 8727
 
->You can also avoid the table lookup and use 1400x1050M@60 instead.  The
->timings will be computed.
+Fix typo and bogus logic in get_default_font(). The bug results in
+get_default_font() returning a font that may not be displayed properly by a
+framebuffer driver.
 
-Thanks Antonio.    However, on my SuperSavage IX/C SDR rev 5 (a LCD), mode 
-1400x1050M@60 results in a completely blank display.    mode 
-11400x1050-32@60 gives me a barely-readable display (i.e. characters do 
-appear) but with a shadow-zone  in the central columns of the display.
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
 
-The only good display I have been able to achieve at this resolution was by 
-hacking savagefb_driver.c and plugging in my own mode directly -
-static struct fb_var_screeninfo __devinitdata savagefb_var1400x1050x32 = {
-	.accel_flags =	FB_ACCELF_TEXT,
-	.xres =		1400,
-	.yres =		1050,
-	.xres_virtual =  1400,
-	.yres_virtual =  1050,
-	.bits_per_pixel = 32,
-	.pixclock =	9259,
-	.left_margin =	136,
-	.right_margin =	40,
-	.upper_margin =	13,
-	.lower_margin =	1,
-	.hsync_len =	112,
-	.vsync_len =	3,
-	.sync =		0,
-	.vmode =	FB_VMODE_NONINTERLACED
-};
-This worked almost ok - or rather, completely ok when running only the 
-framebuffer consoles - but as soon as I started X, (XFree86),  and then 
-VT-switching back to my framebuffer consoles - they had gone fuzzy and 
-rippling.       Maybe because the XFree86 mode had a different refresh rate. 
-      I also then tried to construct yet another explicit framebuffer mode 
-to correspond to the XFree86 mode as displayed by xvidtune --show, but that 
-also resulted in completely blank console display.
+ drivers/video/console/fonts.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I would be interested to hear if anyone has been able to get high resolution 
-(preferably 1400x1050 although I'd settle for 1280x1024 at this point) in 
-the linux framebuffer console on a SuperSavage IX/C SDR rev 5 LCD  while X 
-is running in virtual console 7.
-
-John
->
->Tony
->
-
-_________________________________________________________________
-Tell us your tech love story in the Summer Lovin Competition for your chance 
-to win laptop loaded with Windows Vista, Office 2007 and Windows Live 
-OneCare. 
-http://www.microsoft.com/canada/home/contests/summerlovin/default.aspx
+diff --git a/drivers/video/console/fonts.c b/drivers/video/console/fonts.c
+index a6828d0..96979c3 100644
+--- a/drivers/video/console/fonts.c
++++ b/drivers/video/console/fonts.c
+@@ -133,8 +133,8 @@ #endif
+ 	if ((yres < 400) == (f->height <= 8))
+ 	    c += 1000;
+ 
+-	if (!(font_w & (1 << (f->width - 1))) ||
+-	    !(font_w & (1 << (f->height - 1))))
++	if ((font_w & (1 << (f->width - 1))) &&
++	    (font_h & (1 << (f->height - 1))))
+ 	    c += 1000;
+ 
+ 	if (c > cc) {
 
 
 -------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 04/33] xilinxfb:Remove __initdata from
-	xilinx_fb_fix and xilinx_fb_var
-Date: Thu, 26 Jul 2007 19:49:09 +0800
-Message-ID: <46A88A35.8080901@gmail.com>
+Subject: [PATCH 05/33] xilinxfb: Don't bail if the
+ xilinxfb platform device doesn't have any pdata
+Date: Thu, 26 Jul 2007 19:50:12 +0800
+Message-ID: <46A88A74.5060203@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IE2sU-0000la-VE for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:55:39 -0700
+	id 1IE2sd-0000mF-63 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 05:55:47 -0700
 Received: from wa-out-1112.google.com ([209.85.146.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2sT-0007HM-Nr
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2sb-0007HM-U7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:55:38 -0700
+	Thu, 26 Jul 2007 05:55:47 -0700
 Received: by wa-out-1112.google.com with SMTP id k22so613963waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 26 Jul 2007 05:55:37 -0700 (PDT)
+	Thu, 26 Jul 2007 05:55:45 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,38 +35,61 @@ Cc: Grant Likely <grant.likely@secretlab.ca>, Andrei Konovalov <akonovalov@ru.mv
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-xilinxfb_drv_probe refers to both tables, but it cannot be initdata.
+lack of pdata is not a fatal omission.  The driver can still be used even
+if we do not know the screen dimensions.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 cc: Andrei Konovalov <akonovalov@ru.mvista.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/xilinxfb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/xilinxfb.c |   19 +++++++------------
+ 1 files changed, 7 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index 1d29a89..44ce955 100644
+index 44ce955..6ef9733 100644
 --- a/drivers/video/xilinxfb.c
 +++ b/drivers/video/xilinxfb.c
-@@ -79,7 +79,7 @@ #define PALETTE_ENTRIES_NO	16	/* passed 
- /*
-  * Here are the default fb_fix_screeninfo and fb_var_screeninfo structures
-  */
--static struct fb_fix_screeninfo xilinx_fb_fix __initdata = {
-+static struct fb_fix_screeninfo xilinx_fb_fix = {
- 	.id =		"Xilinx",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_TRUECOLOR,
-@@ -88,7 +88,7 @@ static struct fb_fix_screeninfo xilinx_f
- 	.accel =	FB_ACCEL_NONE
- };
+@@ -212,11 +212,6 @@ xilinxfb_drv_probe(struct device *dev)
+ 	pdev = to_platform_device(dev);
+ 	pdata = pdev->dev.platform_data;
  
--static struct fb_var_screeninfo xilinx_fb_var __initdata = {
-+static struct fb_var_screeninfo xilinx_fb_var = {
- 	.xres =			XRES,
- 	.yres =			YRES,
- 	.xres_virtual =		XRES_VIRTUAL,
+-	if (pdata == NULL) {
+-		printk(KERN_ERR "Couldn't find platform data.\n");
+-		return -EFAULT;
+-	}
+-
+ 	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+ 	if (!drvdata) {
+ 		printk(KERN_ERR "Couldn't allocate device private record\n");
+@@ -258,11 +253,9 @@ xilinxfb_drv_probe(struct device *dev)
+ 	xilinx_fb_out_be32(drvdata, REG_FB_ADDR, drvdata->fb_phys);
+ 
+ 	/* Turn on the display */
+-	if (pdata->rotate_screen) {
+-		drvdata->reg_ctrl_default = REG_CTRL_ENABLE | REG_CTRL_ROTATE;
+-	} else {
+-		drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
+-	}
++	drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
++	if (pdata && pdata->rotate_screen)
++		drvdata->reg_ctrl_default |= REG_CTRL_ROTATE;
+ 	xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
+ 
+ 	/* Fill struct fb_info */
+@@ -281,8 +274,10 @@ xilinxfb_drv_probe(struct device *dev)
+ 	}
+ 
+ 	drvdata->info.flags = FBINFO_DEFAULT;
+-	xilinx_fb_var.height = pdata->screen_height_mm;
+-	xilinx_fb_var.width = pdata->screen_width_mm;
++	if (pdata) {
++		xilinx_fb_var.height = pdata->screen_height_mm;
++		xilinx_fb_var.width = pdata->screen_width_mm;
++	}
+ 	drvdata->info.var = xilinx_fb_var;
+ 
+ 	/* Register new frame buffer */
 
 
 -------------------------------------------------------------------------

@@ -1,7 +1,8 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH] tdfxfb: palette fixes
-Date: Tue, 24 Jul 2007 18:47:06 +0200
-Message-ID: <20070724184706.771d44b9.krzysztof.h1@wp.pl>
+From: "John Lumby" <johnlumby@hotmail.com>
+Subject: Re: typo errors in the modedb.c video modetables
+Date: Wed, 25 Jul 2007 23:16:00 -0400
+Message-ID: <BAY137-F2532D5D8D314688B3874C0A3F20@phx.gbl>
+References: <1185063967.8688.9.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,18 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IDNUf-00020N-EW for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Jul 2007 09:44:17 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IDNUd-0002zw-NH
+	id 1IDtph-00035P-KG for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Jul 2007 20:16:09 -0700
+Received: from bay0-omc3-s8.bay0.hotmail.com ([65.54.246.208])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IDtpg-0003Th-AG
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Jul 2007 09:44:17 -0700
-Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
-	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	24 Jul 2007 18:44:11 +0200
+	Wed, 25 Jul 2007 20:16:09 -0700
+In-Reply-To: <1185063967.8688.9.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,99 +28,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@gmail.com
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Antonino wrote :
 
-This patch fixes:
-- palette setting in 8-bit mode (aka 'funky penguin')
-- grayscale handling
-- adds proper barriers in xxx_inb/outb functions
+>You can also avoid the table lookup and use 1400x1050M@60 instead.  The
+>timings will be computed.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Thanks Antonio.    However, on my SuperSavage IX/C SDR rev 5 (a LCD), mode 
+1400x1050M@60 results in a completely blank display.    mode 
+11400x1050-32@60 gives me a barely-readable display (i.e. characters do 
+appear) but with a shadow-zone  in the central columns of the display.
 
----
+The only good display I have been able to achieve at this resolution was by 
+hacking savagefb_driver.c and plugging in my own mode directly -
+static struct fb_var_screeninfo __devinitdata savagefb_var1400x1050x32 = {
+	.accel_flags =	FB_ACCELF_TEXT,
+	.xres =		1400,
+	.yres =		1050,
+	.xres_virtual =  1400,
+	.yres_virtual =  1050,
+	.bits_per_pixel = 32,
+	.pixclock =	9259,
+	.left_margin =	136,
+	.right_margin =	40,
+	.upper_margin =	13,
+	.lower_margin =	1,
+	.hsync_len =	112,
+	.vsync_len =	3,
+	.sync =		0,
+	.vmode =	FB_VMODE_NONINTERLACED
+};
+This worked almost ok - or rather, completely ok when running only the 
+framebuffer consoles - but as soon as I started X, (XFree86),  and then 
+VT-switching back to my framebuffer consoles - they had gone fuzzy and 
+rippling.       Maybe because the XFree86 mode had a different refresh rate. 
+      I also then tried to construct yet another explicit framebuffer mode 
+to correspond to the XFree86 mode as displayed by xvidtune --show, but that 
+also resulted in completely blank console display.
 
+I would be interested to hear if anyone has been able to get high resolution 
+(preferably 1400x1050 although I'd settle for 1280x1024 at this point) in 
+the linux framebuffer console on a SuperSavage IX/C SDR rev 5 LCD  while X 
+is running in virtual console 7.
 
---- linux-2.6.22.old/drivers/video/tdfxfb.c	2007-07-23 23:10:36.000000000 +0200
-+++ linux-2.6.22/drivers/video/tdfxfb.c	2007-07-24 18:40:14.000000000 +0200
-@@ -35,7 +35,6 @@
-  * driver by Ilario Nardinocchi, which in turn is based on skeletonfb.
-  *
-  * TODO:
-- * - support for 16/32 bpp needs fixing (funky bootup penguin)
-  * - multihead support (basically need to support an array of fb_infos)
-  * - support other architectures (PPC, Alpha); does the fact that the VGA
-  *   core can be accessed only thru I/O (not memory mapped) complicate
-@@ -184,30 +183,38 @@ static inline void vga_outb(struct tdfx_
- static inline void gra_outb(struct tdfx_par *par, u32 idx, u8 val)
- {
- 	vga_outb(par, GRA_I, idx);
-+	wmb();
- 	vga_outb(par, GRA_D, val);
-+	wmb();
- }
- 
- static inline void seq_outb(struct tdfx_par *par, u32 idx, u8 val)
- {
- 	vga_outb(par, SEQ_I, idx);
-+	wmb();
- 	vga_outb(par, SEQ_D, val);
-+	wmb();
- }
- 
- static inline u8 seq_inb(struct tdfx_par *par, u32 idx)
- {
- 	vga_outb(par, SEQ_I, idx);
-+	mb();
- 	return vga_inb(par, SEQ_D);
- }
- 
- static inline void crt_outb(struct tdfx_par *par, u32 idx, u8 val)
- {
- 	vga_outb(par, CRT_I, idx);
-+	wmb();
- 	vga_outb(par, CRT_D, val);
-+	wmb();
- }
- 
- static inline u8 crt_inb(struct tdfx_par *par, u32 idx)
- {
- 	vga_outb(par, CRT_I, idx);
-+	mb();
- 	return vga_inb(par, CRT_D);
- }
- 
-@@ -243,6 +250,7 @@ static inline void vga_enable_video(stru
- static inline void vga_enable_palette(struct tdfx_par *par)
- {
- 	vga_inb(par, IS1_R);
-+	mb();
- 	vga_outb(par, ATT_IW, 0x20);
- }
- 
-@@ -286,6 +294,8 @@ static inline void do_setpalentry(struct
- {
- 	banshee_make_room(par, 2);
- 	tdfx_outl(par, DACADDR, regno);
-+	/* read after write makes it working */
-+	tdfx_inl(par, DACADDR);
- 	tdfx_outl(par, DACDATA, c);
- }
- 
-@@ -771,6 +781,12 @@ static int tdfxfb_setcolreg(unsigned reg
- 	if (regno >= info->cmap.len || regno > 255)
- 		return 1;
- 
-+	/* grayscale works only partially under directcolor */
-+	if (info->var.grayscale) {
-+		/* grayscale = 0.30*R + 0.59*G + 0.11*B */
-+		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
-+	}
-+
- 	switch (info->fix.visual) {
- 	case FB_VISUAL_PSEUDOCOLOR:
- 		rgbcol =(((u32)red   & 0xff00) << 8) |
+John
+>
+>Tony
+>
+
+_________________________________________________________________
+Tell us your tech love story in the Summer Lovin Competition for your chance 
+to win laptop loaded with Windows Vista, Office 2007 and Windows Live 
+OneCare. 
+http://www.microsoft.com/canada/home/contests/summerlovin/default.aspx
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

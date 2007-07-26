@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 11/33] uvesafb: documentation
-Date: Thu, 26 Jul 2007 20:15:36 +0800
-Message-ID: <46A89068.2010707@gmail.com>
+Subject: [PATCH 12/33] pm3fb: copyarea and partial
+	imageblit suppor
+Date: Thu, 26 Jul 2007 20:17:51 +0800
+Message-ID: <46A890EF.8090909@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IE2tb-0000uH-5a for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:56:47 -0700
+	id 1IE2tk-0000us-AO for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 05:56:56 -0700
 Received: from nz-out-0506.google.com ([64.233.162.237])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2tY-0007th-Ks
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2tj-0007th-V1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:56:47 -0700
+	Thu, 26 Jul 2007 05:56:56 -0700
 Received: by nz-out-0506.google.com with SMTP id f1so1351458nzc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 26 Jul 2007 05:56:44 -0700 (PDT)
+	Thu, 26 Jul 2007 05:56:55 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,212 +31,276 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Michal Januszewski <spock@gentoo.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Michal Januszewski <spock@gentoo.org>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Documentation for the uvesafb driver.
+This patch adds accelerated copyarea and partially accelerated imageblit
+functions. There is also fixed one register address in the pm3fb.h file.
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- Documentation/fb/uvesafb.txt |  187 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 187 insertions(+), 0 deletions(-)
+ drivers/video/pm3fb.c |  180 ++++++++++++++++++++++++++++++++++++++++++++++---
+ include/video/pm3fb.h |    5 +
+ 2 files changed, 173 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/fb/uvesafb.txt b/Documentation/fb/uvesafb.txt
-new file mode 100644
-index 0000000..cfc4e55
---- /dev/null
-+++ b/Documentation/fb/uvesafb.txt
-@@ -0,0 +1,187 @@
+diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
+index 5b3f54c..438872a 100644
+--- a/drivers/video/pm3fb.c
++++ b/drivers/video/pm3fb.c
+@@ -276,15 +276,22 @@ static void pm3fb_init_engine(struct fb_
+ 
+ 	PM3_WAIT(par, 2);
+ 	{
+-		unsigned long rm = 1;
++		/* invert bits in bitmask */
++		unsigned long rm = 1 | (3 << 7);
+ 		switch (info->var.bits_per_pixel) {
+ 		case 8:
+ 			PM3_WRITE_REG(par, PM3PixelSize,
+ 					   PM3PixelSize_GLOBAL_8BIT);
++#ifdef __BIG_ENDIAN
++			rm |= 3 << 15;
++#endif
+ 			break;
+ 		case 16:
+ 			PM3_WRITE_REG(par, PM3PixelSize,
+ 					   PM3PixelSize_GLOBAL_16BIT);
++#ifdef __BIG_ENDIAN
++			rm |= 2 << 15;
++#endif
+ 			break;
+ 		case 32:
+ 			PM3_WRITE_REG(par, PM3PixelSize,
+@@ -394,18 +401,18 @@ static void pm3fb_fillrect (struct fb_in
+ 		color |= color << 16;
+ 
+ 	PM3_WAIT(par, 4);
+-
++	/* ROP Ox3 is GXcopy */
+ 	PM3_WRITE_REG(par, PM3Config2D,
+-				  PM3Config2D_UseConstantSource |
+-				  PM3Config2D_ForegroundROPEnable |
+-				  (PM3Config2D_ForegroundROP(0x3)) |	/* Ox3 is GXcopy */
+-				  PM3Config2D_FBWriteEnable);
++			PM3Config2D_UseConstantSource |
++			PM3Config2D_ForegroundROPEnable |
++			(PM3Config2D_ForegroundROP(0x3)) |
++			PM3Config2D_FBWriteEnable);
+ 
+ 	PM3_WRITE_REG(par, PM3ForegroundColor, color);
+ 
+ 	PM3_WRITE_REG(par, PM3RectanglePosition,
+-		      (PM3RectanglePosition_XOffset(modded.dx)) |
+-		      (PM3RectanglePosition_YOffset(modded.dy)));
++			(PM3RectanglePosition_XOffset(modded.dx)) |
++			(PM3RectanglePosition_YOffset(modded.dy)));
+ 
+ 	PM3_WRITE_REG(par, PM3Render2D,
+ 		      PM3Render2D_XPositive |
+@@ -415,6 +422,154 @@ static void pm3fb_fillrect (struct fb_in
+ 		      (PM3Render2D_Width(modded.width)) |
+ 		      (PM3Render2D_Height(modded.height)));
+ }
 +
-+uvesafb - A Generic Driver for VBE2+ compliant video cards
-+==========================================================
++static void pm3fb_copyarea(struct fb_info *info,
++				const struct fb_copyarea *area)
++{
++	struct pm3_par *par = info->par;
++	struct fb_copyarea modded;
++	u32 vxres, vyres;
++	int x_align, o_x, o_y;
 +
-+1. Requirements
-+---------------
++	if (info->state != FBINFO_STATE_RUNNING)
++		return;
++	if (info->flags & FBINFO_HWACCEL_DISABLED) {
++		cfb_copyarea(info, area);
++		return;
++	}
 +
-+uvesafb should work with any video card that has a Video BIOS compliant
-+with the VBE 2.0 standard.
++	memcpy(&modded, area, sizeof(struct fb_copyarea));
 +
-+Unlike other drivers, uvesafb makes use of a userspace helper called
-+v86d.  v86d is used to run the x86 Video BIOS code in a simulated and
-+controlled environment.  This allows uvesafb to function on arches other
-+than x86.  Check the v86d documentation for a list of currently supported
-+arches.
++	vxres = info->var.xres_virtual;
++	vyres = info->var.yres_virtual;
 +
-+v86d source code can be downloaded from the following website:
-+  http://dev.gentoo.org/~spock/projects/uvesafb
++	if(!modded.width || !modded.height ||
++	   modded.sx >= vxres || modded.sy >= vyres ||
++	   modded.dx >= vxres || modded.dy >= vyres)
++		return;
 +
-+Please refer to the v86d documentation for detailed configuration and
-+installation instructions.
++	if(modded.sx + modded.width > vxres)
++		modded.width = vxres - modded.sx;
++	if(modded.dx + modded.width > vxres)
++		modded.width = vxres - modded.dx;
++	if(modded.sy + modded.height > vyres)
++		modded.height = vyres - modded.sy;
++	if(modded.dy + modded.height > vyres)
++		modded.height = vyres - modded.dy;
 +
-+Note that the v86d userspace helper has to be available at all times in
-+order for uvesafb to work properly.  If you want to use uvesafb during
-+early boot, you will have to include v86d into an initramfs image, and
-+either compile it into the kernel or use it as an initrd.
++	o_x = modded.sx - modded.dx;	/*(sx > dx ) ? (sx - dx) : (dx - sx); */
++	o_y = modded.sy - modded.dy;	/*(sy > dy ) ? (sy - dy) : (dy - sy); */
 +
-+2. Caveats and limitations
-+--------------------------
++	x_align = (modded.sx & 0x1f);
 +
-+uvesafb is a _generic_ driver which supports a wide variety of video
-+cards, but which is ultimately limited by the Video BIOS interface.
-+The most important limitations are:
++	PM3_WAIT(par, 6);
 +
-+- Lack of any type of acceleration.
-+- A strict and limited set of supported video modes.  Often the native
-+  or most optimal resolution/refresh rate for your setup will not work
-+  with uvesafb, simply because the Video BIOS doesn't support the
-+  video mode you want to use.  This can be especially painful with
-+  widescreen panels, where native video modes don't have the 4:3 aspect
-+  ratio, which is what most BIOS-es are limited to.
-+- Adjusting the refresh rate is only possible with a VBE 3.0 compliant
-+  Video BIOS.  Note that many nVidia Video BIOS-es claim to be VBE 3.0
-+  compliant, while they simply ignore any refresh rate settings.
++	PM3_WRITE_REG(par, PM3Config2D,
++			PM3Config2D_UserScissorEnable |
++			PM3Config2D_ForegroundROPEnable |
++			PM3Config2D_Blocking |
++			(PM3Config2D_ForegroundROP(0x3)) | /* Ox3 is GXcopy */
++			PM3Config2D_FBWriteEnable);
 +
-+3. Configuration
-+----------------
++	PM3_WRITE_REG(par, PM3ScissorMinXY,
++			((modded.dy & 0x0fff) << 16) | (modded.dx & 0x0fff));
++	PM3_WRITE_REG(par, PM3ScissorMaxXY,
++			(((modded.dy + modded.height) & 0x0fff) << 16) |
++			((modded.dx + modded.width) & 0x0fff));
 +
-+uvesafb can be compiled either as a module, or directly into the kernel.
-+In both cases it supports the same set of configuration options, which
-+are either given on the kernel command line or as module parameters, e.g.:
++	PM3_WRITE_REG(par, PM3FBSourceReadBufferOffset,
++			PM3FBSourceReadBufferOffset_XOffset(o_x) |
++			PM3FBSourceReadBufferOffset_YOffset(o_y));
 +
-+ video=uvesafb:1024x768-32,mtrr:3,ywrap (compiled into the kernel)
++	PM3_WRITE_REG(par, PM3RectanglePosition,
++			(PM3RectanglePosition_XOffset(modded.dx - x_align)) |
++			(PM3RectanglePosition_YOffset(modded.dy)));
 +
-+ # modprobe uvesafb mode=1024x768-32 mtrr=3 scroll=ywrap  (module)
++	PM3_WRITE_REG(par, PM3Render2D,
++			((modded.sx > modded.dx) ? PM3Render2D_XPositive : 0) |
++			((modded.sy > modded.dy) ? PM3Render2D_YPositive : 0) |
++			PM3Render2D_Operation_Normal |
++			PM3Render2D_SpanOperation |
++			PM3Render2D_FBSourceReadEnable |
++			(PM3Render2D_Width(modded.width + x_align)) |
++			(PM3Render2D_Height(modded.height)));
++}
 +
-+Accepted options:
++static void pm3fb_imageblit(struct fb_info *info, const struct fb_image *image)
++{
++	struct pm3_par *par = info->par;
++	u32 height = image->height;
++	u32 fgx, bgx;
++	const u32 *src = (const u32*)image->data;
 +
-+ypan    Enable display panning using the VESA protected mode
-+        interface.  The visible screen is just a window of the
-+        video memory, console scrolling is done by changing the
-+        start of the window.
++	switch (info->fix.visual) {
++		case FB_VISUAL_PSEUDOCOLOR:
++			fgx = image->fg_color;
++			bgx = image->bg_color;
++			break;
++		case FB_VISUAL_TRUECOLOR:
++		default:
++			fgx = par->palette[image->fg_color];
++			bgx = par->palette[image->bg_color];
++			break;
++	}
++	if (image->depth != 1 || (image->width & 0x1f)) {
++		return cfb_imageblit(info, image);
++	}
++	if (info->var.bits_per_pixel == 8) {
++		fgx |= fgx << 8;
++		bgx |= bgx << 8;
++	}
++	if (info->var.bits_per_pixel <= 16) {
++		fgx |= fgx << 16;
++		bgx |= bgx << 16;
++	}
 +
-+ywrap   Same as ypan, but assumes your gfx board can wrap-around
-+        the video memory (i.e. starts reading from top if it
-+        reaches the end of video memory).  Faster than ypan.
++	PM3_WAIT(par, 5);
 +
-+redraw  Scroll by redrawing the affected part of the screen, this
-+        is the safe (and slow) default.
++	PM3_WRITE_REG(par, PM3ForegroundColor, fgx);
++	PM3_WRITE_REG(par, PM3BackgroundColor, bgx);
 +
-+(If you're using uvesafb as a module, the above three options are
-+ used a parameter of the scroll option, e.g. scroll=ypan.)
-+
-+vgapal  Use the standard VGA registers for palette changes.
-+
-+pmipal  Use the protected mode interface for palette changes.
-+        This is the default if the protected mode interface is
-+        available.
-+
-+mtrr:n  Setup memory type range registers for the framebuffer
-+        where n:
-+              0 - disabled (equivalent to nomtrr) (default)
-+              1 - uncachable
-+              2 - write-back
-+              3 - write-combining
-+              4 - write-through
-+
-+        If you see the following in dmesg, choose the type that matches
-+        the old one.  In this example, use "mtrr:2".
-+...
-+mtrr: type mismatch for e0000000,8000000 old: write-back new: write-combining
-+...
-+
-+nomtrr  Do not use memory type range registers.
-+
-+vremap:n
-+        Remap 'n' MiB of video RAM.  If 0 or not specified, remap memory
-+        according to video mode.
-+
-+vtotal:n
-+        If the video BIOS of your card incorrectly determines the total
-+        amount of video RAM, use this option to override the BIOS (in MiB).
-+
-+<mode>  The mode you want to set, in the standard modedb format.  Refer to
-+        modedb.txt for a detailed description.  When uvesafb is compiled as
-+        a module, the mode string should be provided as a value of the
-+        'mode' option.
-+
-+vbemode:x
-+        Force the use of VBE mode x.  The mode will only be set if it's
-+        found in the VBE-provided list of supported modes.
-+        NOTE: The mode number 'x' should be specified in VESA mode number
-+        notation, not the Linux kernel one (eg. 257 instead of 769).
-+        HINT: If you use this option because normal <mode> parameter does
-+        not work for you and you use a X server, you'll probably want to
-+        set the 'nocrtc' option to ensure that the video mode is properly
-+        restored after console <-> X switches.
-+
-+nocrtc  Do not use CRTC timings while setting the video mode.  This option
-+        has any effect only if the Video BIOS is VBE 3.0 compliant.  Use it
-+        if you have problems with modes set the standard way.  Note that
-+        using this option implies that any refresh rate adjustments will
-+        be ignored and the refresh rate will stay at your BIOS default (60 Hz).
-+
-+noedid  Do not try to fetch and use EDID-provided modes.
-+
-+noblank Disable hardware blanking.
-+
-+v86d:path
-+        Set path to the v86d executable. This option is only available as
-+        a module parameter, and not as a part of the video= string.  If you
-+        need to use it and have uvesafb built into the kernel, use
-+        uvesafb.v86d="path".
-+
-+Additionally, the following parameters may be provided.  They all override the
-+EDID-provided values and BIOS defaults.  Refer to your monitor's specs to get
-+the correct values for maxhf, maxvf and maxclk for your hardware.
-+
-+maxhf:n     Maximum horizontal frequency (in kHz).
-+maxvf:n     Maximum vertical frequency (in Hz).
-+maxclk:n    Maximum pixel clock (in MHz).
-+
-+4. The sysfs interface
-+----------------------
-+
-+uvesafb provides several sysfs nodes for configurable parameters and
-+additional information.
-+
-+Driver attributes:
-+
-+/sys/bus/platform/drivers/uvesafb
-+  - v86d (default: /sbin/v86d)
-+    Path to the v86d executable. v86d is started by uvesafb
-+    if an instance of the daemon isn't already running.
-+
-+Device attributes:
-+
-+/sys/bus/platform/drivers/uvesafb/uvesafb.0
-+  - nocrtc
-+    Use the default refresh rate (60 Hz) if set to 1.
-+
-+  - oem_product_name
-+  - oem_product_rev
-+  - oem_string
-+  - oem_vendor
-+    Information about the card and its maker.
-+
-+  - vbe_modes
-+    A list of video modes supported by the Video BIOS along with their
-+    VBE mode numbers in hex.
-+
-+  - vbe_version
-+    A BCD value indicating the implemented VBE standard.
-+
-+5. Miscellaneous
-+----------------
-+
-+Uvesafb will set a video mode with the default refresh rate and timings
-+from the Video BIOS if you set pixclock to 0 in fb_var_screeninfo.
++	/* ROP Ox3 is GXcopy */
++	PM3_WRITE_REG(par, PM3Config2D,
++			PM3Config2D_UseConstantSource |
++			PM3Config2D_ForegroundROPEnable |
++			(PM3Config2D_ForegroundROP(0x3)) |
++			PM3Config2D_OpaqueSpan |
++			PM3Config2D_FBWriteEnable);
++	PM3_WRITE_REG(par, PM3RectanglePosition,
++			(PM3RectanglePosition_XOffset(image->dx)) |
++			(PM3RectanglePosition_YOffset(image->dy)));
++	PM3_WRITE_REG(par, PM3Render2D,
++			PM3Render2D_XPositive |
++			PM3Render2D_YPositive |
++			PM3Render2D_Operation_SyncOnBitMask |
++			PM3Render2D_SpanOperation |
++			(PM3Render2D_Width(image->width)) |
++			(PM3Render2D_Height(image->height)));
 +
 +
-+--
-+ Michal Januszewski <spock@gentoo.org>
-+ Last updated: 2007-06-16
++	while (height--) {
++		u32 width = (image->width + 31) >> 5;
 +
-+ Documentation of the uvesafb options is loosely based on vesafb.txt.
++		while (width >= PM3_FIFO_SIZE) {
++			int i = PM3_FIFO_SIZE - 1;
 +
++			PM3_WAIT(par, PM3_FIFO_SIZE);
++			while (i--) {
++				PM3_WRITE_REG(par, PM3BitMaskPattern, *src);
++				src++;
++			}
++			width -= PM3_FIFO_SIZE - 1;
++		}
++
++		PM3_WAIT(par, width + 1);
++		while (width--) {
++			PM3_WRITE_REG(par, PM3BitMaskPattern, *src);
++			src++;
++		}
++	}
++}
+ /* end of acceleration functions */
+ 
+ /* write the mode to registers */
+@@ -907,8 +1062,8 @@ static struct fb_ops pm3fb_ops = {
+ 	.fb_setcolreg	= pm3fb_setcolreg,
+ 	.fb_pan_display	= pm3fb_pan_display,
+ 	.fb_fillrect	= pm3fb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
++	.fb_copyarea	= pm3fb_copyarea,
++	.fb_imageblit	= pm3fb_imageblit,
+ 	.fb_blank	= pm3fb_blank,
+ 	.fb_sync	= pm3fb_sync,
+ };
+@@ -1080,7 +1235,10 @@ #endif
+ 	info->fix = pm3fb_fix;
+ 	info->pseudo_palette = par->palette;
+ 	info->flags = FBINFO_DEFAULT |
+-			FBINFO_HWACCEL_FILLRECT;/* | FBINFO_HWACCEL_YPAN;*/
++/*			FBINFO_HWACCEL_YPAN |*/
++			FBINFO_HWACCEL_COPYAREA |
++			FBINFO_HWACCEL_IMAGEBLIT |
++			FBINFO_HWACCEL_FILLRECT;
+ 
+ 	/*
+ 	 * This should give a reasonable default video mode. The following is
+diff --git a/include/video/pm3fb.h b/include/video/pm3fb.h
+index d52e45a..871f707 100644
+--- a/include/video/pm3fb.h
++++ b/include/video/pm3fb.h
+@@ -849,7 +849,7 @@ #define PM3Render						0x8038
+ 	#define PM3Render_FBSourceRead_Enable			(1<<27)
+ #define PM3RasterizerMode					0x80a0
+ #define PM3RasterizerModeAnd					0xaba0
+-#define PM3RasterizerModeOr					0xabb8
++#define PM3RasterizerModeOr					0xaba8
+ #define PM3RectangleHeight					0x94e0
+ #define PM3Render						0x8038
+ #define PM3RepeatLine						0x9328
+@@ -1116,6 +1116,9 @@ #define PM3FBIO_RESETCHIP   0x504D33FF /
+ /* ***** pm3fb useful define and macro ***** */
+ /* ***************************************** */
+ 
++/* fifo size in chip */
++#define PM3_FIFO_SIZE 120
++
+ /* max size of options */
+ #define PM3_OPTIONS_SIZE 256
+ 
 
 
 -------------------------------------------------------------------------

@@ -1,8 +1,8 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch 0/4] Cell SPE logos
-Date: Wed, 25 Jul 2007 19:29:58 +0000
-Message-ID: <20070725192957.GC10208@ucw.cz>
-References: <20070716135550.010775000@pademelon.sonytel.be>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: How to remove EXPERIMENTAL status from fb
+	driver/feature
+Date: Thu, 26 Jul 2007 19:08:27 +0200
+Message-ID: <20070726190827.7080554d.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,14 +11,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IE34k-0002ML-2U for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 06:08:18 -0700
-Received: from gprs189-60.eurotel.cz ([160.218.189.60] helo=spitz.ucw.cz)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE34d-00049d-7l
+	id 1IE6mH-0001Pv-Kw for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 10:05:30 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IE6mC-00047b-QD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 06:08:17 -0700
-Content-Disposition: inline
-In-Reply-To: <20070716135550.010775000@pademelon.sonytel.be>
+	Thu, 26 Jul 2007 10:05:27 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	26 Jul 2007 19:05:20 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,29 +33,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, cbe-oss-dev@ozlabs.org
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi!
+Hi,
 
-> The Cell Broadband Engine contains a 64-bit PowerPC core with 2 hardware
-> threads (called PPEs) and 8 Synergistic Processing Engines (called SPEs).
-> When booting Linux, 2 penguins logos are shown on the graphical console by
-> the standard frame buffer console logo code.
-> 
-> To emphasize the existence of the SPEs (which can be used under Linux), we
-> added a second row of (smaller) helper penguin logos, one for each SPE.
+I wonder what is a procedure to remove experimental status from driver or feature.
 
-Does this belong in kernel?
+I work on the tdfxfb driver and wonder if the acceleration option from this
+driver can be marked as not experimental or even merged into the driver.
+I don't know what was the reason to make this as option for the tdfxfb driver.
 
-It is kernel boot log, not random advertising place. Various splash
-projects can get you any graphics you want...
+I am working on hardware cursor now and this could become an experimental option
+for this driver.
 
-
-						Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards,
+Krzysztof
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

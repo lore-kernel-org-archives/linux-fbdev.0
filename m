@@ -1,28 +1,25 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: How to remove EXPERIMENTAL status from fb
-	driver/feature
-Date: Thu, 26 Jul 2007 19:08:27 +0200
-Message-ID: <20070726190827.7080554d.krzysztof.h1@wp.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 01/33] fbcon: Fix typo and bogus
+ logic in get_default_font
+Date: Thu, 26 Jul 2007 10:29:19 -0700
+Message-ID: <20070726102919.853c5abf.akpm@linux-foundation.org>
+References: <46A8895E.8000505@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IE6mH-0001Pv-Kw for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 10:05:30 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
+	id 1IE7AD-0004Vs-5z for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 10:30:13 -0700
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IE6mC-00047b-QD
+	(Exim 4.44) id 1IE7AA-0003kb-SJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 10:05:27 -0700
-Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
-	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	26 Jul 2007 19:05:20 +0200
+	Thu, 26 Jul 2007 10:30:13 -0700
+In-Reply-To: <46A8895E.8000505@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,21 +30,12 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi,
-
-I wonder what is a procedure to remove experimental status from driver or feature.
-
-I work on the tdfxfb driver and wonder if the acceleration option from this
-driver can be marked as not experimental or even merged into the driver.
-I don't know what was the reason to make this as option for the tdfxfb driver.
-
-I am working on hardware cursor now and this could become an experimental option
-for this driver.
-
-Regards,
-Krzysztof
+It looks like patches 1-6 (at least) are 2.6.23 material, but
+I think it'd be better if you were to work out which of these
+are for 2.6.23, please?
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

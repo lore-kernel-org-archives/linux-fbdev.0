@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 20/33] pm2fb: accelerated imageblit
-Date: Thu, 26 Jul 2007 20:25:27 +0800
-Message-ID: <46A892B7.2070201@gmail.com>
+Subject: [PATCH 22/33] pm2fb: Permedia 2V initialization
+	fixes
+Date: Thu, 26 Jul 2007 20:27:52 +0800
+Message-ID: <46A89348.9020706@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IE2uz-00019A-AZ for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:58:13 -0700
+	id 1IE2vF-00019u-PC for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jul 2007 05:58:33 -0700
 Received: from nz-out-0506.google.com ([64.233.162.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2uy-0008TI-Rx
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IE2vF-0008TI-CD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 05:58:13 -0700
+	Thu, 26 Jul 2007 05:58:29 -0700
 Received: by nz-out-0506.google.com with SMTP id f1so1352216nzc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 26 Jul 2007 05:58:12 -0700 (PDT)
+	Thu, 26 Jul 2007 05:58:29 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,226 +35,194 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch adds accelerated imageblit function.
+This patch:
+- initializes correctly the Permedia2V chip if it is not initialized by BIOS
+- puts back clock frequency for the ELSA WINNER board to 100kHz
+- fixes returned error values from setcolreg() function
+- uses more general classes for PCI ids
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/pm2fb.c     |  123 ++++++++++++++++++++++++++++++++++++++++++++-
- include/video/permedia2.h |    7 +++
- 2 files changed, 127 insertions(+), 3 deletions(-)
+ drivers/video/pm2fb.c     |   42 ++++++++++++++++++------------------------
+ include/video/permedia2.h |    1 +
+ 2 files changed, 19 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
-index 5c6ff96..8a8ba3a 100644
+index bfbcfe1..06ac564 100644
 --- a/drivers/video/pm2fb.c
 +++ b/drivers/video/pm2fb.c
-@@ -60,6 +60,8 @@ #else
- #define DPRINTK(a,b...)
- #endif
+@@ -343,7 +343,7 @@ #endif
  
-+#define PM2_PIXMAP_SIZE	(1600 * 4)
-+
- /*
-  * Driver data
-  */
-@@ -1166,6 +1168,104 @@ static void pm2fb_copyarea(struct fb_inf
- 			modded.width, modded.height, 0);
+ static void reset_config(struct pm2fb_par* p)
+ {
+-	WAIT_FIFO(p, 52);
++	WAIT_FIFO(p, 53);
+ 	pm2_WR(p, PM2R_CHIP_CONFIG, pm2_RD(p, PM2R_CHIP_CONFIG) &
+ 			~(PM2F_VGA_ENABLE | PM2F_VGA_FIXED));
+ 	pm2_WR(p, PM2R_BYPASS_WRITE_MASK, ~(0L));
+@@ -380,6 +380,7 @@ static void reset_config(struct pm2fb_pa
+ 	pm2_WR(p, PM2R_STATISTICS_MODE, 0);
+ 	pm2_WR(p, PM2R_SCISSOR_MODE, 0);
+ 	pm2_WR(p, PM2R_FILTER_MODE, PM2F_SYNCHRONIZATION);
++	pm2_WR(p, PM2R_RD_PIXEL_MASK, 0xff);
+ 	switch (p->type) {
+ 	case PM2_TYPE_PERMEDIA2:
+ 		pm2_RDAC_WR(p, PM2I_RD_MODE_CONTROL, 0); /* no overlay */
+@@ -393,11 +394,6 @@ static void reset_config(struct pm2fb_pa
+ 		break;
+ 	case PM2_TYPE_PERMEDIA2V:
+ 		pm2v_RDAC_WR(p, PM2VI_RD_MISC_CONTROL, 1); /* 8bit */
+-		pm2v_RDAC_WR(p, PM2I_RD_COLOR_KEY_CONTROL, 0);
+-		pm2v_RDAC_WR(p, PM2I_RD_OVERLAY_KEY, 0);
+-		pm2v_RDAC_WR(p, PM2I_RD_RED_KEY, 0);
+-		pm2v_RDAC_WR(p, PM2I_RD_GREEN_KEY, 0);
+-		pm2v_RDAC_WR(p, PM2I_RD_BLUE_KEY, 0);
+ 		break;
+ 	}
  }
+@@ -532,7 +528,7 @@ static void set_video(struct pm2fb_par* 
+ 	vsync &= ~(PM2F_HSYNC_MASK | PM2F_VSYNC_MASK);
+ 	vsync |= PM2F_HSYNC_ACT_HIGH | PM2F_VSYNC_ACT_HIGH;
  
-+static void pm2fb_imageblit(struct fb_info *info, const struct fb_image *image)
-+{
-+	struct pm2fb_par *par = info->par;
-+	u32 height = image->height;
-+	u32 fgx, bgx;
-+	const u32 *src = (const u32*)image->data;
-+	u32 xres = (info->var.xres + 31) & ~31;
-+
-+	if (info->state != FBINFO_STATE_RUNNING)
-+		return;
-+	if (info->flags & FBINFO_HWACCEL_DISABLED || image->depth != 1) {
-+		cfb_imageblit(info, image);
-+		return;
-+	}
-+	switch (info->fix.visual) {
-+		case FB_VISUAL_PSEUDOCOLOR:
-+			fgx = image->fg_color;
-+			bgx = image->bg_color;
-+			break;
-+		case FB_VISUAL_TRUECOLOR:
-+		default:
-+			fgx = par->palette[image->fg_color];
-+			bgx = par->palette[image->bg_color];
-+			break;
-+	}
-+	if (info->var.bits_per_pixel == 8) {
-+		fgx |= fgx << 8;
-+		bgx |= bgx << 8;
-+	}
-+	if (info->var.bits_per_pixel <= 16) {
-+		fgx |= fgx << 16;
-+		bgx |= bgx << 16;
-+	}
-+
-+	WAIT_FIFO(par, 13);
-+	pm2_WR(par, PM2R_FB_READ_MODE, partprod(xres));
-+	pm2_WR(par, PM2R_SCISSOR_MIN_XY,
-+			((image->dy & 0xfff) << 16) | (image->dx & 0x0fff));
-+	pm2_WR(par, PM2R_SCISSOR_MAX_XY,
-+			(((image->dy + image->height) & 0x0fff) << 16) |
-+			((image->dx + image->width) & 0x0fff));
-+	pm2_WR(par, PM2R_SCISSOR_MODE, 1);
-+	/* GXcopy & UNIT_ENABLE */
-+	pm2_WR(par, PM2R_LOGICAL_OP_MODE, (0x3 << 1) | 1 );
-+	pm2_WR(par, PM2R_RECTANGLE_ORIGIN,
-+			((image->dy & 0xfff) << 16) | (image->dx & 0x0fff));
-+	pm2_WR(par, PM2R_RECTANGLE_SIZE,
-+			((image->height & 0x0fff) << 16) |
-+			((image->width) & 0x0fff));
-+	if (info->var.bits_per_pixel == 24) {
-+		pm2_WR(par, PM2R_COLOR_DDA_MODE, 1);
-+		/* clear area */
-+		pm2_WR(par, PM2R_CONSTANT_COLOR, bgx);
-+		pm2_WR(par, PM2R_RENDER,
-+			PM2F_RENDER_RECTANGLE |
-+			PM2F_INCREASE_X | PM2F_INCREASE_Y );
-+		/* BitMapPackEachScanline & invert bits and byte order*/
-+		/* force background */
-+		pm2_WR(par, PM2R_RASTERIZER_MODE,  (1<<9) | 1 | (3<<7));
-+		pm2_WR(par, PM2R_CONSTANT_COLOR, fgx);
-+		pm2_WR(par, PM2R_RENDER,
-+			PM2F_RENDER_RECTANGLE |
-+			PM2F_INCREASE_X | PM2F_INCREASE_Y |
-+			PM2F_RENDER_SYNC_ON_BIT_MASK);
-+	} else {
-+		pm2_WR(par, PM2R_COLOR_DDA_MODE, 0);
-+		/* clear area */
-+		pm2_WR(par, PM2R_FB_BLOCK_COLOR, bgx);
-+		pm2_WR(par, PM2R_RENDER,
-+			PM2F_RENDER_RECTANGLE |
-+			PM2F_RENDER_FASTFILL |
-+			PM2F_INCREASE_X | PM2F_INCREASE_Y );
-+		/* invert bits and byte order*/
-+		pm2_WR(par, PM2R_RASTERIZER_MODE,  1 | (3<<7) );
-+		pm2_WR(par, PM2R_FB_BLOCK_COLOR, fgx);
-+		pm2_WR(par, PM2R_RENDER,
-+			PM2F_RENDER_RECTANGLE |
-+			PM2F_INCREASE_X | PM2F_INCREASE_Y |
-+			PM2F_RENDER_FASTFILL |
-+			PM2F_RENDER_SYNC_ON_BIT_MASK);
-+	}
-+
-+	while (height--) {
-+		int width = ((image->width + 7) >> 3)
-+				+ info->pixmap.scan_align - 1;
-+		width >>= 2;
-+		WAIT_FIFO(par, width);
-+		while (width--) {
-+			pm2_WR(par, PM2R_BIT_MASK_PATTERN, *src);
-+			src++;
-+		}
-+	}
-+	WAIT_FIFO(par, 3);
-+	pm2_WR(par, PM2R_RASTERIZER_MODE, 0);
-+	pm2_WR(par, PM2R_COLOR_DDA_MODE, 0);
-+	pm2_WR(par, PM2R_SCISSOR_MODE, 0);
-+}
-+
- /* ------------ Hardware Independent Functions ------------ */
+-	WAIT_FIFO(p, 5);
++	WAIT_FIFO(p, 3);
+ 	pm2_WR(p, PM2R_VIDEO_CONTROL, vsync);
  
- /*
-@@ -1181,7 +1281,7 @@ static struct fb_ops pm2fb_ops = {
- 	.fb_pan_display	= pm2fb_pan_display,
- 	.fb_fillrect	= pm2fb_fillrect,
- 	.fb_copyarea	= pm2fb_copyarea,
--	.fb_imageblit	= cfb_imageblit,
-+	.fb_imageblit	= pm2fb_imageblit,
- 	.fb_sync	= pm2fb_sync,
+ 	switch (p->type) {
+@@ -551,7 +547,6 @@ static void set_video(struct pm2fb_par* 
+ 		if ((video & PM2F_VSYNC_MASK) == PM2F_VSYNC_ACT_LOW)
+ 			tmp |= 4; /* invert vsync */
+ 		pm2v_RDAC_WR(p, PM2VI_RD_SYNC_CONTROL, tmp);
+-		pm2v_RDAC_WR(p, PM2VI_RD_MISC_CONTROL, 1);
+ 		break;
+ 	}
+ }
+@@ -686,6 +681,7 @@ static int pm2fb_set_par(struct fb_info 
+ 	u32 txtmap = 0;
+ 	u32 pixsize = 0;
+ 	u32 clrformat = 0;
++	u32 misc = 1; /* 8-bit DAC */
+ 	u32 xres = (info->var.xres + 31) & ~31;
+ 	int data64;
+ 
+@@ -767,7 +763,7 @@ static int pm2fb_set_par(struct fb_info 
+ 	switch (depth) {
+ 	case 8:
+ 		pm2_WR(par, PM2R_FB_READ_PIXEL, 0);
+-		clrformat = 0x0e;
++		clrformat = 0x2e;
+ 		break;
+ 	case 16:
+ 		pm2_WR(par, PM2R_FB_READ_PIXEL, 1);
+@@ -775,6 +771,7 @@ static int pm2fb_set_par(struct fb_info 
+ 		txtmap = PM2F_TEXTEL_SIZE_16;
+ 		pixsize = 1;
+ 		clrformat = 0x70;
++		misc |= 8;
+ 		break;
+ 	case 32:
+ 		pm2_WR(par, PM2R_FB_READ_PIXEL, 2);
+@@ -782,6 +779,7 @@ static int pm2fb_set_par(struct fb_info 
+ 		txtmap = PM2F_TEXTEL_SIZE_32;
+ 		pixsize = 2;
+ 		clrformat = 0x20;
++		misc |= 8;
+ 		break;
+ 	case 24:
+ 		pm2_WR(par, PM2R_FB_READ_PIXEL, 4);
+@@ -789,6 +787,7 @@ static int pm2fb_set_par(struct fb_info 
+ 		txtmap = PM2F_TEXTEL_SIZE_24;
+ 		pixsize = 4;
+ 		clrformat = 0x20;
++		misc |= 8;
+ 		break;
+ 	}
+ 	pm2_WR(par, PM2R_FB_WRITE_MODE, PM2F_FB_WRITE_ENABLE);
+@@ -813,7 +812,7 @@ static int pm2fb_set_par(struct fb_info 
+ 	pm2_WR(par, PM2R_SCREEN_BASE, base);
+ 	wmb();
+ 	set_video(par, video);
+-	WAIT_FIFO(par, 6);
++	WAIT_FIFO(par, 10);
+ 	switch (par->type) {
+ 	case PM2_TYPE_PERMEDIA2:
+ 		pm2_RDAC_WR(par, PM2I_RD_COLOR_MODE, clrmode);
+@@ -821,10 +820,11 @@ static int pm2fb_set_par(struct fb_info 
+ 			        (depth == 8) ? 0 : PM2F_COLOR_KEY_TEST_OFF);
+ 		break;
+ 	case PM2_TYPE_PERMEDIA2V:
++		pm2v_RDAC_WR(par, PM2VI_RD_DAC_CONTROL, 0);
+ 		pm2v_RDAC_WR(par, PM2VI_RD_PIXEL_SIZE, pixsize);
+ 		pm2v_RDAC_WR(par, PM2VI_RD_COLOR_FORMAT, clrformat);
+-		pm2v_RDAC_WR(par, PM2I_RD_COLOR_KEY_CONTROL,
+-			         (depth == 8) ? 0 : PM2F_COLOR_KEY_TEST_OFF);
++		pm2v_RDAC_WR(par, PM2VI_RD_MISC_CONTROL, misc);
++		pm2v_RDAC_WR(par, PM2VI_RD_OVERLAY_KEY, 0);
+ 		break;
+ 	}
+ 	set_pixclock(par, pixclock);
+@@ -855,7 +855,7 @@ static int pm2fb_setcolreg(unsigned regn
+ 	struct pm2fb_par *par = info->par;
+ 
+ 	if (regno >= info->cmap.len)  /* no. of hw registers */
+-		return 1;
++		return -EINVAL;
+ 	/*
+ 	 * Program hardware... do anything you want with transp
+ 	 */
+@@ -914,7 +914,7 @@ #undef CNVT_TOHW
+ 		u32 v;
+ 
+ 		if (regno >= 16)
+-			return 1;
++			return -EINVAL;
+ 
+ 		v = (red << info->var.red.offset) |
+ 			(green << info->var.green.offset) |
+@@ -1341,7 +1341,7 @@ #endif
+ 			DPRINTK("We have not been initialized by VGA BIOS "
+ 				"and are running on an Elsa Winner 2000 Office\n");
+ 			DPRINTK("Initializing card timings manually...\n");
+-			default_par->memclock = 70000;
++			default_par->memclock = 100000;
+ 		}
+ 		if (pdev->subsystem_vendor == 0x3d3d &&
+ 			pdev->subsystem_device == 0x0100) {
+@@ -1491,17 +1491,11 @@ #endif /* CONFIG_MTRR */
+ 
+ static struct pci_device_id pm2fb_id_table[] = {
+ 	{ PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_TVP4020,
+-	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+-	  0xff0000, 0 },
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ PCI_VENDOR_ID_3DLABS, PCI_DEVICE_ID_3DLABS_PERMEDIA2,
+-	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+-	  0xff0000, 0 },
+-	{ PCI_VENDOR_ID_3DLABS, PCI_DEVICE_ID_3DLABS_PERMEDIA2V,
+-	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+-	  0xff0000, 0 },
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ PCI_VENDOR_ID_3DLABS, PCI_DEVICE_ID_3DLABS_PERMEDIA2V,
+-	  PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_NOT_DEFINED_VGA << 8,
+-	  0xff00, 0 },
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ 0, }
  };
  
-@@ -1340,11 +1440,24 @@ #endif
- 	info->flags		= FBINFO_DEFAULT |
- 				  FBINFO_HWACCEL_YPAN |
- 				  FBINFO_HWACCEL_COPYAREA |
-+				  FBINFO_HWACCEL_IMAGEBLIT |
- 				  FBINFO_HWACCEL_FILLRECT;
- 
-+	info->pixmap.addr = kmalloc(PM2_PIXMAP_SIZE, GFP_KERNEL);
-+	if (!info->pixmap.addr) {
-+		err_retval = -ENOMEM;
-+		goto err_exit_pixmap;
-+	}
-+	info->pixmap.size = PM2_PIXMAP_SIZE;
-+	info->pixmap.buf_align = 4;
-+	info->pixmap.scan_align = 4;
-+	info->pixmap.access_align = 32;
-+	info->pixmap.flags = FB_PIXMAP_SYSTEM;
-+
- 	if (noaccel) {
--	    	printk(KERN_DEBUG "disabling acceleration\n");
--  		info->flags |= FBINFO_HWACCEL_DISABLED;
-+		printk(KERN_DEBUG "disabling acceleration\n");
-+		info->flags |= FBINFO_HWACCEL_DISABLED;
-+		info->pixmap.scan_align = 1;
- 	}
- 
- 	if (!mode)
-@@ -1373,6 +1486,8 @@ #endif
-  err_exit_all:
- 	fb_dealloc_cmap(&info->cmap);
-  err_exit_both:
-+	kfree(info->pixmap.addr);
-+ err_exit_pixmap:
- 	iounmap(info->screen_base);
- 	release_mem_region(pm2fb_fix.smem_start, pm2fb_fix.smem_len);
-  err_exit_mmio:
-@@ -1409,6 +1524,8 @@ #endif /* CONFIG_MTRR */
- 	release_mem_region(fix->mmio_start, fix->mmio_len);
- 
- 	pci_set_drvdata(pdev, NULL);
-+	if (info->pixmap.addr)
-+		kfree(info->pixmap.addr);
- 	kfree(info);
- }
- 
 diff --git a/include/video/permedia2.h b/include/video/permedia2.h
-index 9e49c95..144c81c 100644
+index 144c81c..cf1d95b 100644
 --- a/include/video/permedia2.h
 +++ b/include/video/permedia2.h
-@@ -68,11 +68,14 @@ #define PM2R_START_Y					0x8020
- #define PM2R_D_Y					0x8028
- #define PM2R_COUNT					0x8030
- #define PM2R_RENDER					0x8038
-+#define PM2R_BIT_MASK_PATTERN				0x8068
- #define PM2R_RASTERIZER_MODE				0x80a0
- #define PM2R_RECTANGLE_ORIGIN				0x80d0
- #define PM2R_RECTANGLE_SIZE				0x80d8
- #define PM2R_PACKED_DATA_LIMITS				0x8150
- #define PM2R_SCISSOR_MODE				0x8180
-+#define PM2R_SCISSOR_MIN_XY				0x8188
-+#define PM2R_SCISSOR_MAX_XY				0x8190
- #define PM2R_SCREEN_SIZE				0x8198
- #define PM2R_AREA_STIPPLE_MODE				0x81a0
- #define PM2R_WINDOW_ORIGIN				0x81c8
-@@ -83,7 +86,9 @@ #define PM2R_TEXTURE_READ_MODE				0x8670
- #define PM2R_TEXEL_LUT_MODE				0x8678
- #define PM2R_TEXTURE_COLOR_MODE				0x8680
- #define PM2R_FOG_MODE					0x8690
-+#define PM2R_TEXEL0					0x8760
- #define PM2R_COLOR_DDA_MODE				0x87e0
-+#define PM2R_CONSTANT_COLOR				0x87e8
- #define PM2R_ALPHA_BLEND_MODE				0x8810
- #define PM2R_DITHER_MODE				0x8818
- #define PM2R_FB_SOFT_WRITE_MASK				0x8820
-@@ -169,6 +174,8 @@ #define PM2F_RENDER_LINE				0
- #define PM2F_RENDER_TRAPEZOID				(1L<<6)
- #define PM2F_RENDER_POINT				(2L<<6)
- #define PM2F_RENDER_RECTANGLE				(3L<<6)
-+#define PM2F_RENDER_SYNC_ON_BIT_MASK			(1L<<11)
-+#define PM2F_RENDER_TEXTURE_ENABLE			(1L<<13)
- #define PM2F_SYNCHRONIZATION				(1L<<10)
- #define PM2F_PLL_LOCKED					0x10
- #define PM2F_BEING_RESET				(1L<<31)
+@@ -153,6 +153,7 @@ #define PM2VI_RD_CURSOR_Y_LOW				0x009
+ #define PM2VI_RD_CURSOR_Y_HIGH				0x00A
+ #define PM2VI_RD_CURSOR_X_HOT				0x00B
+ #define PM2VI_RD_CURSOR_Y_HOT				0x00C
++#define PM2VI_RD_OVERLAY_KEY				0x00D
+ #define PM2VI_RD_CLK0_PRESCALE				0x201
+ #define PM2VI_RD_CLK0_FEEDBACK				0x202
+ #define PM2VI_RD_CLK0_POSTSCALE				0x203
 
 
 -------------------------------------------------------------------------

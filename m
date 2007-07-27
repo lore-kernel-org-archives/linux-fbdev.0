@@ -1,8 +1,8 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 Subject: Re: [PATCH 18/33] pm3fb: mtrr support and
 	noaccel option
-Date: Fri, 27 Jul 2007 05:51:12 +0800
-Message-ID: <1185486672.4565.5.camel@daplas>
+Date: Fri, 27 Jul 2007 19:19:34 +0200
+Message-ID: <20070727191934.7824e92b.krzysztof.h1@wp.pl>
 References: <46A8925B.8090801@gmail.com>
 	<20070726131238.9ed4bc7a.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
@@ -13,15 +13,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IEBEt-00019o-0y for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 14:51:19 -0700
-Received: from rv-out-0910.google.com ([209.85.198.185])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IEBEr-0002Or-Iy
+	id 1IETQO-0001vd-8s for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 27 Jul 2007 10:16:26 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IETQN-0001Q4-Q1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Jul 2007 14:51:19 -0700
-Received: by rv-out-0910.google.com with SMTP id g11so165094rvb
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 26 Jul 2007 14:51:16 -0700 (PDT)
+	Fri, 27 Jul 2007 10:16:24 -0700
 In-Reply-To: <20070726131238.9ed4bc7a.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,9 +32,11 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-On Thu, 2007-07-26 at 13:12 -0700, Andrew Morton wrote:
+On Thu, 26 Jul 2007 13:12:38 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
 > On Thu, 26 Jul 2007 20:23:55 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
 > 
 > > From: Krzysztof Helt <krzysztof.h1@wp.pl>
@@ -47,18 +47,13 @@ On Thu, 2007-07-26 at 13:12 -0700, Andrew Morton wrote:
 > 
 > It's been tested with CONFIG_MTRR=n, I trust?
 > 
-> > +#ifdef CONFIG_MTRR
-> > +#include <asm/mtrr.h>
-> > +#endif
-> 
-> Is the ifdef there needed for a successful compile?  If not, it's nicer to
-> leave it out.
 
-Yes, not all archs have asm/mtrr.h.
+Yes, of course. The only thing I haven't tested is compilation on the big-endian machine.
 
-Tony
+You can reject the patch if you want and will prepare the next version (without issues you pointed out). Or you can accept it and I will fix issues in next patch.
 
-
+Regards,
+Krzysztof
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

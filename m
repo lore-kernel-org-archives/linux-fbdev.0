@@ -1,9 +1,7 @@
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH] tdfxfb: hardware cursor (no ifdefs)
-Date: Sat, 28 Jul 2007 18:28:46 +0200
-Message-ID: <20070728182846.14ccebc7.krzysztof.h1@wp.pl>
-References: <20070728102635.d31fa8ea.krzysztof.h1@wp.pl>
-	<1185614537.9324.2.camel@daplas>
+Subject: [PATCH] tdfxfb: mtrr support
+Date: Sun, 29 Jul 2007 23:06:53 +0200
+Message-ID: <20070729230653.d5dd086b.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,14 +10,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IEp6e-0001eE-HC for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Jul 2007 09:25:31 -0700
+	id 1IFFvF-0007uI-K8 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 29 Jul 2007 14:03:31 -0700
 Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IEp6d-0001xj-IE
+	(Exim 4.44) id 1IFFvD-0004Oj-Oz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Jul 2007 09:25:28 -0700
-In-Reply-To: <1185614537.9324.2.camel@daplas>
+	Sun, 29 Jul 2007 14:03:29 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	29 Jul 2007 23:03:21 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,321 +32,114 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch adds hardware cursor support to the tdfxfb driver.
+This patch adds mtrr support to the tdfxfb driver.
+
+It also kills one redundant include and initialization value.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
 
-This patch requires all tdfxfb patches from the -mm tree and the source code 
-improvement patch sent to this list.
+This patch requires all previous tdfxfb patches sent to this list.
 
-I am not sure if the FB_CUR_SETIMAGE and FB_CUR_SETSHAPE are implemented
-correctly (the mask is always mask and the image is xor or and of the mask and data).
-The cursor works correctly on Voodoo3 2000 PCI with this patch.
-
---- linux-2.6.22.old/drivers/video/tdfxfb.c	2007-07-26 17:45:15.000000000 +0200
-+++ linux-2.6.22/drivers/video/tdfxfb.c	2007-07-28 18:18:13.000000000 +0200
-@@ -67,7 +67,6 @@
+--- linux-2.6.22.old/drivers/video/tdfxfb.c	2007-07-28 23:37:00.000000000 +0200
++++ linux-2.6.22/drivers/video/tdfxfb.c	2007-07-28 23:35:49.000000000 +0200
+@@ -67,7 +67,9 @@
  #include <linux/init.h>
  #include <linux/pci.h>
  #include <asm/io.h>
--#include <linux/timer.h>
- #include <linux/spinlock.h>
+-#include <linux/spinlock.h>
++#ifdef CONFIG_MTRR
++#include <asm/mtrr.h>
++#endif
  
  #include <video/tdfx.h>
-@@ -148,8 +147,9 @@ MODULE_DEVICE_TABLE(pci, tdfxfb_id_table
- /*
-  * Driver data
-  */
--static int  nopan   = 0;
--static int  nowrap  = 1;      // not implemented (yet)
-+static int nopan;
-+static int nowrap = 1;      /* not implemented (yet) */
-+static int hwcursor = 1;
- static char *mode_option __devinitdata = NULL;
+ 
+@@ -150,7 +152,11 @@ MODULE_DEVICE_TABLE(pci, tdfxfb_id_table
+ static int nopan;
+ static int nowrap = 1;      /* not implemented (yet) */
+ static int hwcursor = 1;
+-static char *mode_option __devinitdata = NULL;
++static char *mode_option __devinitdata;
++/* mtrr option */
++#ifdef CONFIG_MTRR
++static int nomtrr __devinitdata;
++#endif
  
  /* -------------------------------------------------------------------------
-@@ -378,7 +378,7 @@ static void do_write_regs(struct fb_info
- 	tdfx_outl(par, VGAINIT0, reg->vgainit0);
- 	tdfx_outl(par, DACMODE, reg->dacmode);
- 	tdfx_outl(par, VIDDESKSTRIDE, reg->stride);
--	tdfx_outl(par, HWCURPATADDR, 0);
-+	tdfx_outl(par, HWCURPATADDR, reg->curspataddr);
+  *                      Hardware-specific funcions
+@@ -1227,6 +1233,14 @@ static int __devinit tdfxfb_probe(struct
  
- 	tdfx_outl(par, VIDSCREENSIZE, reg->screensize);
- 	tdfx_outl(par, VIDDESKSTART, reg->startaddr);
-@@ -453,6 +453,7 @@ static int tdfxfb_check_var(struct fb_va
- 		DPRINTK("xoffset not supported\n");
- 		return -EINVAL;
- 	}
-+	var->yoffset = 0;
+ 	printk("fb: %s memory = %dK\n", tdfx_fix.id, tdfx_fix.smem_len >> 10);
  
- 	/* Banshee doesn't support interlace, but Voodoo4/5 and probably Voodoo3 do. */
- 	/* no direct information about device id now? use max_pixclock for this... */
-@@ -663,6 +664,9 @@ static int tdfxfb_set_par(struct fb_info
- 			VGAINIT0_EXTSHIFTOUT;
- 	reg.vgainit1 = tdfx_inl(par, VGAINIT1) & 0x1fffff;
- 
-+	if (hwcursor)
-+		reg.curspataddr = info->fix.smem_len;
++#ifdef CONFIG_MTRR
++	default_par->mtrr_handle = -1;
++	if (!nomtrr)
++		default_par->mtrr_handle =
++			mtrr_add(tdfx_fix.smem_start, tdfx_fix.smem_len,
++				 MTRR_TYPE_WRCOMB, 1);
++#endif
 +
- 	reg.cursloc   = 0;
+ 	tdfx_fix.ypanstep	= nopan ? 0 : 1;
+ 	tdfx_fix.ywrapstep	= nowrap ? 0 : 1;
  
- 	reg.cursc0    = 0;
-@@ -1012,11 +1016,25 @@ static void tdfxfb_imageblit(struct fb_i
- }
- #endif /* CONFIG_FB_3DFX_ACCEL */
- 
--#ifdef TDFX_HARDWARE_CURSOR
- static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
- 	struct tdfx_par *par = info->par;
--	unsigned long flags;
-+	u32 vidcfg;
-+
-+	if (!hwcursor)
-+		return -EINVAL;	/* just to force soft_cursor() call */
-+
-+	/* Too large of a cursor or wrong bpp :-( */
-+	if (cursor->image.width > 64 ||
-+	    cursor->image.height > 64 ||
-+	    cursor->image.depth > 1)
-+		return -EINVAL;
-+
-+	vidcfg = tdfx_inl(par, VIDPROCCFG);
-+	if (cursor->enable)
-+		tdfx_outl(par, VIDPROCCFG, vidcfg | VIDCFG_HWCURSOR_ENABLE);
-+	else
-+		tdfx_outl(par, VIDPROCCFG, vidcfg & ~VIDCFG_HWCURSOR_ENABLE);
- 
- 	/*
- 	 * If the cursor is not be changed this means either we want the
-@@ -1026,69 +1044,34 @@ static int tdfxfb_cursor(struct fb_info 
- 	if (!cursor->set)
- 		return 0;
- 
--	/* Too large of a cursor :-( */
--	if (cursor->image.width > 64 || cursor->image.height > 64)
--		return -ENXIO;
--
--	/*
--	 * If we are going to be changing things we should disable
--	 * the cursor first
--	 */
--	if (info->cursor.enable) {
--		spin_lock_irqsave(&par->DAClock, flags);
--		info->cursor.enable = 0;
--		del_timer(&(par->hwcursor.timer));
--		tdfx_outl(par, VIDPROCCFG, par->hwcursor.disable);
--		spin_unlock_irqrestore(&par->DAClock, flags);
--	}
--
--	/* Disable the Cursor */
--	if ((cursor->set && FB_CUR_SETCUR) && !cursor->enable)
--		return 0;
--
- 	/* fix cursor color - XFree86 forgets to restore it properly */
--	if (cursor->set && FB_CUR_SETCMAP) {
--		struct fb_cmap cmap = cursor->image.cmap;
-+	if (cursor->set & FB_CUR_SETCMAP) {
-+		struct fb_cmap cmap = info->cmap;
-+		u32 bg_idx = cursor->image.bg_color;
-+		u32 fg_idx = cursor->image.fg_color;
- 		unsigned long bg_color, fg_color;
- 
--		cmap.len = 2; /* Voodoo 3+ only support 2 color cursors */
--		fg_color = ((cmap.red[cmap.start] << 16) |
--			    (cmap.green[cmap.start] << 8) |
--			    (cmap.blue[cmap.start]));
--		bg_color = ((cmap.red[cmap.start + 1] << 16) |
--			    (cmap.green[cmap.start + 1] << 8) |
--			    (cmap.blue[cmap.start + 1]));
--		fb_copy_cmap(&cmap, &info->cursor.image.cmap);
--		spin_lock_irqsave(&par->DAClock, flags);
-+		fg_color = (((u32)cmap.red[fg_idx]   & 0xff00) << 8) |
-+			   (((u32)cmap.green[fg_idx] & 0xff00) << 0) |
-+			   (((u32)cmap.blue[fg_idx]  & 0xff00) >> 8);
-+		bg_color = (((u32)cmap.red[bg_idx]   & 0xff00) << 8) |
-+			   (((u32)cmap.green[bg_idx] & 0xff00) << 0) |
-+			   (((u32)cmap.blue[bg_idx]  & 0xff00) >> 8);
- 		banshee_make_room(par, 2);
- 		tdfx_outl(par, HWCURC0, bg_color);
- 		tdfx_outl(par, HWCURC1, fg_color);
--		spin_unlock_irqrestore(&par->DAClock, flags);
- 	}
- 
--	if (cursor->set && FB_CUR_SETPOS) {
--		int x, y;
-+	if (cursor->set & FB_CUR_SETPOS) {
-+		int x = cursor->image.dx;
-+		int y = cursor->image.dy - info->var.yoffset;
- 
--		x = cursor->image.dx;
--		y = cursor->image.dy;
--		y -= info->var.yoffset;
--		info->cursor.image.dx = x;
--		info->cursor.image.dy = y;
- 		x += 63;
- 		y += 63;
--		spin_lock_irqsave(&par->DAClock, flags);
- 		banshee_make_room(par, 1);
- 		tdfx_outl(par, HWCURLOC, (y << 16) + x);
--		spin_unlock_irqrestore(&par->DAClock, flags);
- 	}
--
--	/* Not supported so we fake it */
--	if (cursor->set && FB_CUR_SETHOT) {
--		info->cursor.hot.x = cursor->hot.x;
--		info->cursor.hot.y = cursor->hot.y;
--	}
--
--	if (cursor->set && FB_CUR_SETSHAPE) {
-+	if (cursor->set & (FB_CUR_SETIMAGE | FB_CUR_SETSHAPE)) {
- 		/*
- 		 * Voodoo 3 and above cards use 2 monochrome cursor patterns.
- 		 *    The reason is so the card can fetch 8 words at a time
-@@ -1096,7 +1079,7 @@ static int tdfxfb_cursor(struct fb_info 
- 		 * This reduces the number of times for access to draw the
- 		 * cursor for each screen refresh.
- 		 *    Each pattern is a bitmap of 64 bit wide and 64 bit high
--		 * (total of 8192 bits or 1024 Kbytes). The two patterns are
-+		 * (total of 8192 bits or 1024 bytes). The two patterns are
- 		 * stored in such a way that pattern 0 always resides in the
- 		 * lower half (least significant 64 bits) of a 128 bit word
- 		 * and pattern 1 the upper half. If you examine the data of
-@@ -1107,50 +1090,34 @@ static int tdfxfb_cursor(struct fb_info 
- 		 * (128 bits) which is the maximum cursor width times two for
- 		 * the two monochrome patterns.
- 		 */
--		u8 *cursorbase = (u8 *)info->cursor.image.data;
--		char *bitmap = (char *)cursor->image.data;
--		char *mask = (char *)cursor->mask;
--		int i, j, k, h = 0;
--
--		for (i = 0; i < 64; i++) {
--			if (i < cursor->image.height) {
--				j = (cursor->image.width + 7) >> 3;
--				k = 8 - j;
--
--				for (; j > 0; j--) {
--					/* Pattern 0. Copy the cursor bitmap to it */
--					fb_writeb(*bitmap, cursorbase + h);
--					bitmap++;
--					/* Pattern 1. Copy the cursor mask to it */
--					fb_writeb(*mask, cursorbase + h + 8);
--					mask++;
--					h++;
--				}
--				for (; k > 0; k--) {
--					fb_writeb(0, cursorbase + h);
--					fb_writeb(~0, cursorbase + h + 8);
--					h++;
--				}
--			} else {
--				fb_writel(0, cursorbase + h);
--				fb_writel(0, cursorbase + h + 4);
--				fb_writel(~0, cursorbase + h + 8);
--				fb_writel(~0, cursorbase + h + 12);
--				h += 16;
-+		u8 __iomem *cursorbase = info->screen_base + info->fix.smem_len;
-+		u8 *bitmap = (u8 *)cursor->image.data;
-+		u8 *mask = (u8 *)cursor->mask;
-+		int i;
-+
-+		fb_memset(cursorbase, 0, 1024);
-+
-+		for (i = 0; i < cursor->image.height; i++) {
-+			int h = 0;
-+			int j = (cursor->image.width + 7) >> 3;
-+
-+			for (; j > 0; j--) {
-+				u8 data = *mask ^ *bitmap;
-+				if (cursor->rop == ROP_COPY)
-+					data = *mask & *bitmap;
-+				/* Pattern 0. Copy the cursor mask to it */
-+				fb_writeb(*mask, cursorbase + h);
-+				mask++;
-+				/* Pattern 1. Copy the cursor bitmap to it */
-+				fb_writeb(data, cursorbase + h + 8);
-+				bitmap++;
-+				h++;
- 			}
-+			cursorbase += 16;
- 		}
- 	}
--	/* Turn the cursor on */
--	cursor->enable = 1;
--	info->cursor = *cursor;
--	mod_timer(&par->hwcursor.timer, jiffies + HZ / 2);
--	spin_lock_irqsave(&par->DAClock, flags);
--	banshee_make_room(par, 1);
--	tdfx_outl(par, VIDPROCCFG, par->hwcursor.enable);
--	spin_unlock_irqrestore(&par->DAClock, flags);
+@@ -1276,6 +1290,11 @@ static int __devinit tdfxfb_probe(struct
  	return 0;
- }
--#endif
  
- static struct fb_ops tdfxfb_ops = {
- 	.owner		= THIS_MODULE,
-@@ -1160,6 +1127,7 @@ static struct fb_ops tdfxfb_ops = {
- 	.fb_blank	= tdfxfb_blank,
- 	.fb_pan_display	= tdfxfb_pan_display,
- 	.fb_sync	= banshee_wait_idle,
-+	.fb_cursor	= tdfxfb_cursor,
- #ifdef CONFIG_FB_3DFX_ACCEL
- 	.fb_fillrect	= tdfxfb_fillrect,
- 	.fb_copyarea	= tdfxfb_copyarea,
-@@ -1272,6 +1240,11 @@ static int __devinit tdfxfb_probe(struct
- 				   FBINFO_HWACCEL_IMAGEBLIT |
- 				   FBINFO_READS_FAST;
- #endif
-+	/* reserve 8192 bits for cursor */
-+	/* the 2.4 driver says PAGE_MASK boundary is not enough for Voodoo4 */
-+	if (hwcursor)
-+		info->fix.smem_len = (info->fix.smem_len - 1024) &
-+					(PAGE_MASK << 1);
- 
- 	if (!mode_option)
- 		mode_option = "640x480@60";
-@@ -1336,6 +1309,8 @@ static void tdfxfb_setup(char *options)
- 			nopan = 1;
- 		} else if (!strcmp(this_opt, "nowrap")) {
+ out_err_iobase:
++#ifdef CONFIG_MTRR
++	if (default_par->mtrr_handle >= 0)
++		mtrr_del(default_par->mtrr_handle, info->fix.smem_start,
++			 info->fix.smem_len);
++#endif
+ 	release_mem_region(pci_resource_start(pdev, 2),
+ 			   pci_resource_len(pdev, 2));
+ out_err_screenbase:
+@@ -1311,6 +1330,10 @@ static void tdfxfb_setup(char *options)
  			nowrap = 1;
-+		} else if (!strcmp(this_opt, "hwcursor")) {
-+			hwcursor = simple_strtoul(opt + 9, NULL, 0);
+ 		} else if (!strcmp(this_opt, "hwcursor")) {
+ 			hwcursor = simple_strtoul(opt + 9, NULL, 0);
++#ifdef CONFIG_MTRR
++		} else if (!strncmp(this_opt, "nomtrr", 6)) {
++			nomtrr = 1;
++#endif
  		} else {
  			mode_option = this_opt;
  		}
-@@ -1394,5 +1369,9 @@ MODULE_AUTHOR("Hannu Mallat <hmallat@cc.
- MODULE_DESCRIPTION("3Dfx framebuffer device driver");
- MODULE_LICENSE("GPL");
+@@ -1333,6 +1356,11 @@ static void __devexit tdfxfb_remove(stru
+ 	struct tdfx_par *par = info->par;
  
-+module_param(hwcursor, int, 0644);
-+MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
-+			"(1=enable, 0=disable, default=1)");
-+
+ 	unregister_framebuffer(info);
++#ifdef CONFIG_MTRR
++	if (par->mtrr_handle >= 0)
++		mtrr_del(par->mtrr_handle, info->fix.smem_start,
++			 info->fix.smem_len);
++#endif
+ 	iounmap(par->regbase_virt);
+ 	iounmap(info->screen_base);
+ 
+@@ -1372,6 +1400,10 @@ MODULE_LICENSE("GPL");
+ module_param(hwcursor, int, 0644);
+ MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
+ 			"(1=enable, 0=disable, default=1)");
++#ifdef CONFIG_MTRR
++module_param(nomtrr, bool, 0);
++MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
++#endif
+ 
  module_init(tdfxfb_init);
  module_exit(tdfxfb_exit);
---- linux-2.6.22.old/include/video/tdfx.h	2007-07-26 17:45:15.000000000 +0200
-+++ linux-2.6.22/include/video/tdfx.h	2007-07-26 17:52:57.000000000 +0200
-@@ -175,14 +175,6 @@ struct tdfx_par {
+--- linux-2.6.22.old/include/video/tdfx.h	2007-07-28 23:37:00.000000000 +0200
++++ linux-2.6.22/include/video/tdfx.h	2007-07-28 23:13:19.000000000 +0200
+@@ -175,6 +175,7 @@ struct tdfx_par {
  	u32 palette[16];
  	void __iomem *regbase_virt;
  	unsigned long iobase;
--
--	struct {
--		int w, u, d;
--		unsigned long enable, disable;
--		struct timer_list timer;
--	} hwcursor;
--
--	spinlock_t DAClock;
++	int mtrr_handle;
  };
  
  #endif	/* __KERNEL__ */

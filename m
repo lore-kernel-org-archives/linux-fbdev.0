@@ -1,26 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 Subject: Re: [PATCH] tdfxfb: mtrr support
-Date: Mon, 30 Jul 2007 07:16:31 +0800
-Message-ID: <1185750991.9324.14.camel@daplas>
+Date: Mon, 30 Jul 2007 13:58:45 +0200
+Message-ID: <20070730135845.59d9a6cc.krzysztof.h1@wp.pl>
 References: <20070729230653.d5dd086b.krzysztof.h1@wp.pl>
+	<1185750991.9324.14.camel@daplas>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IFI0K-0004Vt-2T for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 29 Jul 2007 16:16:52 -0700
-Received: from wa-out-1112.google.com ([209.85.146.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IFI0H-0002V1-Sn
+	id 1IFTqE-0001hK-VC for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 30 Jul 2007 04:55:15 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IFTqD-0007Ge-E5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 29 Jul 2007 16:16:52 -0700
-Received: by wa-out-1112.google.com with SMTP id k22so1710807waf
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 29 Jul 2007 16:16:49 -0700 (PDT)
-In-Reply-To: <20070729230653.d5dd086b.krzysztof.h1@wp.pl>
+	Mon, 30 Jul 2007 04:55:14 -0700
+In-Reply-To: <1185750991.9324.14.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,85 +30,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2007-07-29 at 23:06 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Mon, 30 Jul 2007 07:16:31 +0800
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> Since akpm already commented against using #ifdef's within functions,
+> might as well modify the patch to something like this:
 > 
-> This patch adds mtrr support to the tdfxfb driver.
+> #ifdef CONFIG_MTRR
+> static inline void tdfxfb_mtrr_add(struct fb_info *info)
+> {
+> 	struct tdfxfb_par *par = info->par;
 > 
-> It also kills one redundant include and initialization value.
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> ---
-> 
-> This patch requires all previous tdfxfb patches sent to this list.
-> 
-> --- linux-2.6.22.old/drivers/video/tdfxfb.c	2007-07-28 23:37:00.000000000 +0200
-> +++ linux-2.6.22/drivers/video/tdfxfb.c	2007-07-28 23:35:49.000000000 +0200
-> @@ -67,7 +67,9 @@
->  #include <linux/init.h>
->  #include <linux/pci.h>
->  #include <asm/io.h>
-> -#include <linux/spinlock.h>
-> +#ifdef CONFIG_MTRR
-> +#include <asm/mtrr.h>
-> +#endif
->  
->  #include <video/tdfx.h>
->  
-> @@ -150,7 +152,11 @@ MODULE_DEVICE_TABLE(pci, tdfxfb_id_table
->  static int nopan;
->  static int nowrap = 1;      /* not implemented (yet) */
->  static int hwcursor = 1;
-> -static char *mode_option __devinitdata = NULL;
-> +static char *mode_option __devinitdata;
-> +/* mtrr option */
-> +#ifdef CONFIG_MTRR
-> +static int nomtrr __devinitdata;
-> +#endif
->  
->  /* -------------------------------------------------------------------------
->   *                      Hardware-specific funcions
-> @@ -1227,6 +1233,14 @@ static int __devinit tdfxfb_probe(struct
->  
->  	printk("fb: %s memory = %dK\n", tdfx_fix.id, tdfx_fix.smem_len >> 10);
->  
-> +#ifdef CONFIG_MTRR
-> +	default_par->mtrr_handle = -1;
-> +	if (!nomtrr)
-> +		default_par->mtrr_handle =
-> +			mtrr_add(tdfx_fix.smem_start, tdfx_fix.smem_len,
-> +				 MTRR_TYPE_WRCOMB, 1);
-> +#endif
-> +
+> 	par->mtrr_handle =  mtrr_add(info->fix.smem_start,
+> 				 info->fix.smem_len, 
+> 				 MTRR_TYPE_WRCOMB, 1);
+> }
+> #else
+> #define tdfxfb_mtrr_add(...) do {} while (0)
+> #endif
 
-Since akpm already commented against using #ifdef's within functions,
-might as well modify the patch to something like this:
+It doesn't really solve all mtrr #ifdefs problems.
 
-#ifdef CONFIG_MTRR
-static inline void tdfxfb_mtrr_add(struct fb_info *info)
-{
-	struct tdfxfb_par *par = info->par;
+The ultimate solution is to move mtrr.h to include/asm-generic or include/linux
+directory.
+It has redefined all functions as dummies in case CONFIG_MTRR is not
+defined.
 
-	par->mtrr_handle =  mtrr_add(info->fix.smem_start,
-				 info->fix.smem_len, 
-				 MTRR_TYPE_WRCOMB, 1);
-}
-#else
-#define tdfxfb_mtrr_add(...) do {} while (0)
-#endif
-
-...tdfxfb_probe(...)
-{
-	...
-	tdfxfb_mtrr_add();
-	...
-} 
-
-Tony
-
+Regards,
+Krzysztof
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

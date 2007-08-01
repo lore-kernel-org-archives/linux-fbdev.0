@@ -1,7 +1,7 @@
-From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Fw:  [PATCH] disable logo at boot
-Date: Wed, 1 Aug 2007 15:49:48 -0700
-Message-ID: <20070801154948.a2e03a7e.rdunlap@xenotime.net>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: [PATCH] cg6: fix memory size detection
+Date: Thu, 2 Aug 2007 01:11:33 +0200
+Message-ID: <20070802011133.7b78fb84.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +10,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IGMvM-0007WQ-RD for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Aug 2007 15:44:12 -0700
-Received: from xenotime.net ([66.160.160.81])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1IGMvL-0007W2-IW
+	id 1IGNID-0001dx-Ja for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 01 Aug 2007 16:07:49 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IGNIC-0006GQ-3e
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Aug 2007 15:44:12 -0700
-Received: from midway.site ([71.245.96.223]) by xenotime.net for
-	<linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 1 Aug 2007 15:44:07 -0700
+	Wed, 01 Aug 2007 16:07:49 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>; 2 Aug 2007 01:07:43 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,114 +31,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: adaplas@gmail.com
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: David Miller <davem@davemloft.net>
 
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-any interest in this?
-or is there some other way to do this that I missed?
+This patch fixes memory size detection on the CG6 card. 
+The 1MB TGX card has dblbuf property set to 0.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Date: Thu, 12 Jul 2007 13:37:45 -0700
-
-From: Randy Dunlap <rdunlap@xenotime.net>
-
-Add logo.nologo kernel boot option to disable the logo in order
-to provide more screen space for kernel messages; especially
-useful when debugging and screen space is more critical.
-
-newport_con driver changes are untested.
-
-Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
 ---
- Documentation/kernel-parameters.txt |    5 +++++
- drivers/video/console/newport_con.c |   20 ++++++++++++++------
- drivers/video/logo/logo.c           |    6 ++++++
- 3 files changed, 25 insertions(+), 6 deletions(-)
+This patch requires the cg6-cleanup patch posted earlier to apply cleanly.
 
---- linux-2.6.22.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6.22/Documentation/kernel-parameters.txt
-@@ -900,6 +900,11 @@ and is between 256 and 4096 characters. 
- 			n must be a power of two.  The default size
- 			is set in the kernel config file.
+--- linux-2.6.23smp/drivers/video/cg6.c	2007-08-02 00:24:06.000000000 +0200
++++ linux-2.6.23/drivers/video/cg6.c	2007-08-02 00:27:34.000000000 +0200
+@@ -669,6 +669,7 @@ static int __devinit cg6_probe(struct of
+ 	struct fb_info *info;
+ 	struct cg6_par *par;
+ 	int linebytes, err;
++	int dblbuf;
  
-+	logo.nologo	[FB] Disables display of the built-in Linux logo.
-+			This may be used to provide more screen space for
-+			kernel log messages and is useful when debugging
-+			kernel boot problems.
+ 	info = framebuffer_alloc(sizeof(struct cg6_par), &op->dev);
+ 
+@@ -690,7 +691,9 @@ static int __devinit cg6_probe(struct of
+ 	linebytes = of_getintprop_default(dp, "linebytes",
+ 					  info->var.xres);
+ 	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
+-	if (of_find_property(dp, "dblbuf", NULL))
 +
- 	lp=0		[LP]	Specify parallel ports to use, e.g,
- 	lp=port[,port...]	lp=none,parport0 (lp0 not configured, lp1 uses
- 	lp=reset		first parallel port). 'lp=0' disables the
---- linux-2.6.22.orig/drivers/video/logo/logo.c
-+++ linux-2.6.22/drivers/video/logo/logo.c
-@@ -34,11 +34,17 @@ extern const struct linux_logo logo_supe
- extern const struct linux_logo logo_superh_clut224;
- extern const struct linux_logo logo_m32r_clut224;
++	dblbuf = of_getintprop_default(dp, "dblbuf", 0);
++	if (dblbuf)
+ 		par->fbsize *= 4;
  
-+int nologo;
-+module_param(nologo, bool, 0);
-+MODULE_PARM_DESC(nologo, "Disables startup logo");
- 
- const struct linux_logo *fb_find_logo(int depth)
- {
- 	const struct linux_logo *logo = NULL;
- 
-+	if (nologo)
-+		return NULL;
-+
- 	if (depth >= 1) {
- #ifdef CONFIG_LOGO_LINUX_MONO
- 		/* Generic Linux logo */
---- linux-2.6.22.orig/drivers/video/console/newport_con.c
-+++ linux-2.6.22/drivers/video/console/newport_con.c
-@@ -98,14 +98,19 @@ static inline void newport_init_cmap(voi
- 	}
- }
- 
--static void newport_show_logo(void)
-+static struct linux_logo * newport_show_logo(void)
- {
- #ifdef CONFIG_LOGO_SGI_CLUT224
- 	const struct linux_logo *logo = fb_find_logo(8);
--	const unsigned char *clut = logo->clut;
--	const unsigned char *data = logo->data;
-+	const unsigned char *clut;
-+	const unsigned char *data;
- 	unsigned long i;
- 
-+	if (!logo)
-+		return NULL;
-+	*clut = logo->clut;
-+	*data = logo->data;
-+
- 	for (i = 0; i < logo->clutsize; i++) {
- 		newport_bfwait(npregs);
- 		newport_cmap_setaddr(npregs, i + 0x20);
-@@ -123,6 +128,8 @@ static void newport_show_logo(void)
- 
- 	for (i = 0; i < logo->width*logo->height; i++)
- 		npregs->go.hostrw0 = *data++ << 24;
-+
-+	return logo;
- #endif /* CONFIG_LOGO_SGI_CLUT224 */
- }
- 
-@@ -465,9 +472,10 @@ static int newport_switch(struct vc_data
- 	npregs->cset.topscan = 0x3ff;
- 
- 	if (!logo_drawn) {
--		newport_show_logo();
--		logo_drawn = 1;
--		logo_active = 1;
-+		if (newport_show_logo()) {
-+			logo_drawn = 1;
-+			logo_active = 1;
-+		}
- 	}
- 
- 	return 1;
+ 	par->fbc = of_ioremap(&op->resource[0], CG6_FBC_OFFSET,
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

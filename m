@@ -1,25 +1,27 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH] tdfxfb: mtrr support (2nd revision)
-Date: Tue, 31 Jul 2007 11:55:57 +0200
-Message-ID: <20070731115557.50b9b933.krzysztof.h1@wp.pl>
-References: <20070729230653.d5dd086b.krzysztof.h1@wp.pl>
-	<1185750991.9324.14.camel@daplas>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 4/5] x86_64 EFI support -v3: EFI
+	framebuffer driver
+Date: Wed, 01 Aug 2007 13:55:12 +0800
+Message-ID: <1185947712.4688.22.camel@daplas>
+References: <1185851582.23149.29.camel@caritas-dev.intel.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IFoP2-0003u6-8Z for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 31 Jul 2007 02:52:32 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IFoP0-0003wW-Oi
+	id 1IG7B5-0005qI-Uk for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 31 Jul 2007 22:55:24 -0700
+Received: from wa-out-1112.google.com ([209.85.146.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IG7B4-0005kk-EB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 31 Jul 2007 02:52:32 -0700
-In-Reply-To: <1185750991.9324.14.camel@daplas>
+	Tue, 31 Jul 2007 22:55:23 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so119507waf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 31 Jul 2007 22:55:22 -0700 (PDT)
+In-Reply-To: <1185851582.23149.29.camel@caritas-dev.intel.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,132 +32,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Chandramouli Narayanan <mouli@linux.intel.com>, ak@suse.de, linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
- 
-This patch adds mtrr support to the tdfxfb driver.
-It also kills one redundant include and initialization value.
+On Tue, 2007-07-31 at 11:13 +0800, Huang, Ying wrote:
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> +
+> +#include <linux/delay.h>
+> +#include <linux/errno.h>
+> +#include <linux/fb.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/ioport.h>
+> +#include <linux/mm.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/screen_info.h>
+> +#include <linux/slab.h>
+> +#include <linux/string.h>
+> +#include <linux/dmi.h>
+> +#include <linux/efi.h>
+> +#include <linux/io.h>
+> +
+> +#include <video/vga.h>
+> +
 
----
+I don't see any problems with this driver, just a few minor nits.
 
-This patch requires all previous tdfxfb patches sent to this list.
-It reduces ifdefs to only removing unused "nomtrr" parameter from the code.
+Do you really need all the #include's?
+I presume this driver only supports bpp 16 and above?
 
---- linux-2.6.22/drivers/video/tdfxfb.c	2007-07-31 11:49:16.921420742 +0200
-+++ linux-2.6.23/drivers/video/tdfxfb.c	2007-07-31 11:49:46.147086218 +0200
-@@ -67,7 +67,6 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <asm/io.h>
--#include <linux/spinlock.h>
- 
- #include <video/tdfx.h>
- 
-@@ -78,6 +77,24 @@
- #define DPRINTK(a,b...)
- #endif
- 
-+#ifdef CONFIG_MTRR
-+#include <asm/mtrr.h>
-+#else
-+/* duplicate asm/mtrr.h defines to work on archs without mtrr */
-+#define MTRR_TYPE_WRCOMB     1
-+
-+static __inline__ int mtrr_add (unsigned long base, unsigned long size,
-+				unsigned int type, char increment)
-+{
-+    return -ENODEV;
-+}
-+static __inline__ int mtrr_del (int reg, unsigned long base,
-+				unsigned long size)
-+{
-+    return -ENODEV;
-+}
-+#endif
-+
- #define BANSHEE_MAX_PIXCLOCK 270000
- #define VOODOO3_MAX_PIXCLOCK 300000
- #define VOODOO5_MAX_PIXCLOCK 350000
-@@ -150,7 +167,9 @@ MODULE_DEVICE_TABLE(pci, tdfxfb_id_table
- static int nopan;
- static int nowrap = 1;      /* not implemented (yet) */
- static int hwcursor = 1;
--static char *mode_option __devinitdata = NULL;
-+static char *mode_option __devinitdata;
-+/* mtrr option */
-+static int nomtrr __devinitdata;
- 
- /* -------------------------------------------------------------------------
-  *                      Hardware-specific funcions
-@@ -1227,6 +1246,12 @@ static int __devinit tdfxfb_probe(struct
- 
- 	printk("fb: %s memory = %dK\n", tdfx_fix.id, tdfx_fix.smem_len >> 10);
- 
-+	default_par->mtrr_handle = -1;
-+	if (!nomtrr)
-+		default_par->mtrr_handle =
-+			mtrr_add(tdfx_fix.smem_start, tdfx_fix.smem_len,
-+				 MTRR_TYPE_WRCOMB, 1);
-+
- 	tdfx_fix.ypanstep	= nopan ? 0 : 1;
- 	tdfx_fix.ywrapstep	= nowrap ? 0 : 1;
- 
-@@ -1276,6 +1301,9 @@ static int __devinit tdfxfb_probe(struct
- 	return 0;
- 
- out_err_iobase:
-+	if (default_par->mtrr_handle >= 0)
-+		mtrr_del(default_par->mtrr_handle, info->fix.smem_start,
-+			 info->fix.smem_len);
- 	release_mem_region(pci_resource_start(pdev, 2),
- 			   pci_resource_len(pdev, 2));
- out_err_screenbase:
-@@ -1311,6 +1339,10 @@ static void tdfxfb_setup(char *options)
- 			nowrap = 1;
- 		} else if (!strcmp(this_opt, "hwcursor")) {
- 			hwcursor = simple_strtoul(opt + 9, NULL, 0);
-+#ifdef CONFIG_MTRR
-+		} else if (!strncmp(this_opt, "nomtrr", 6)) {
-+			nomtrr = 1;
-+#endif
- 		} else {
- 			mode_option = this_opt;
- 		}
-@@ -1333,6 +1365,9 @@ static void __devexit tdfxfb_remove(stru
- 	struct tdfx_par *par = info->par;
- 
- 	unregister_framebuffer(info);
-+	if (par->mtrr_handle >= 0)
-+		mtrr_del(par->mtrr_handle, info->fix.smem_start,
-+			 info->fix.smem_len);
- 	iounmap(par->regbase_virt);
- 	iounmap(info->screen_base);
- 
-@@ -1372,6 +1407,10 @@ MODULE_LICENSE("GPL");
- module_param(hwcursor, int, 0644);
- MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
- 			"(1=enable, 0=disable, default=1)");
-+#ifdef CONFIG_MTRR
-+module_param(nomtrr, bool, 0);
-+MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
-+#endif
- 
- module_init(tdfxfb_init);
- module_exit(tdfxfb_exit);
---- linux-2.6.22.old/include/video/tdfx.h	2007-07-28 23:37:00.000000000 +0200
-+++ linux-2.6.22/include/video/tdfx.h	2007-07-28 23:13:19.000000000 +0200
-@@ -175,6 +175,7 @@ struct tdfx_par {
- 	u32 palette[16];
- 	void __iomem *regbase_virt;
- 	unsigned long iobase;
-+	int mtrr_handle;
- };
- 
- #endif	/* __KERNEL__ */
+Tony
+
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

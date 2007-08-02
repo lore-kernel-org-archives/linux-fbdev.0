@@ -1,26 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Fw:  [PATCH] disable logo at boot
-Date: Thu, 02 Aug 2007 09:29:23 +0800
-Message-ID: <1186018163.4707.4.camel@daplas>
-References: <20070801154948.a2e03a7e.rdunlap@xenotime.net>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] cg6: fix memory size detection
+Date: Wed, 01 Aug 2007 21:42:01 -0700 (PDT)
+Message-ID: <20070801.214201.75429989.davem@davemloft.net>
+References: <20070802011133.7b78fb84.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IGPVD-0007T9-32 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Aug 2007 18:29:23 -0700
-Received: from rv-out-0910.google.com ([209.85.198.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IGPVC-0002fd-P4
+	id 1IGSVd-000269-Nr for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 01 Aug 2007 21:42:01 -0700
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IGSVd-0004uS-FE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Aug 2007 18:29:23 -0700
-Received: by rv-out-0910.google.com with SMTP id g11so1005656rvb
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 01 Aug 2007 18:29:22 -0700 (PDT)
-In-Reply-To: <20070801154948.a2e03a7e.rdunlap@xenotime.net>
+	Wed, 01 Aug 2007 21:42:01 -0700
+In-Reply-To: <20070802011133.7b78fb84.krzysztof.h1@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,18 +28,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Randy Dunlap <rdunlap@xenotime.net>
+To: krzysztof.h1@wp.pl
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2007-08-01 at 15:49 -0700, Randy Dunlap wrote:
-> any interest in this?
-> or is there some other way to do this that I missed?
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Date: Thu, 2 Aug 2007 01:11:33 +0200
 
-This is the easiest way, I have no problems with this.
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> This patch fixes memory size detection on the CG6 card. 
+> The 1MB TGX card has dblbuf property set to 0.
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Tony
-
-
+Applied.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

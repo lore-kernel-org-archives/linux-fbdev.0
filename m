@@ -1,27 +1,26 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 01/11] fbcon: Kill compile warning
-Date: Thu, 02 Aug 2007 09:23:02 +0800
-Message-ID: <1186017782.4707.1.camel@daplas>
-References: <46B03735.9020803@gmail.com>
-	<20070801154143.613d83da.akpm@linux-foundation.org>
+Subject: Re: Fw:  [PATCH] disable logo at boot
+Date: Thu, 02 Aug 2007 09:29:23 +0800
+Message-ID: <1186018163.4707.4.camel@daplas>
+References: <20070801154948.a2e03a7e.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IGPP5-0006ou-FR for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Aug 2007 18:23:03 -0700
-Received: from wa-out-1112.google.com ([209.85.146.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IGPP3-0004Ft-M1
+	id 1IGPVD-0007T9-32 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 01 Aug 2007 18:29:23 -0700
+Received: from rv-out-0910.google.com ([209.85.198.191])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IGPVC-0002fd-P4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 01 Aug 2007 18:23:03 -0700
-Received: by wa-out-1112.google.com with SMTP id k22so399284waf
+	Wed, 01 Aug 2007 18:29:23 -0700
+Received: by rv-out-0910.google.com with SMTP id g11so1005656rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 01 Aug 2007 18:23:01 -0700 (PDT)
-In-Reply-To: <20070801154143.613d83da.akpm@linux-foundation.org>
+	Wed, 01 Aug 2007 18:29:22 -0700 (PDT)
+In-Reply-To: <20070801154948.a2e03a7e.rdunlap@xenotime.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,27 +31,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2007-08-01 at 15:41 -0700, Andrew Morton wrote:
-> On Wed, 01 Aug 2007 15:33:09 +0800
-> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
-> 
-> > +static inline void fbcon_map_override(void)
-> > +{
-> > +	map_override = 1;
-> > +}
-> > +#else
-> > +#define fbcon_map_override(...) do { } while (0)
-> > +#endif /* CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY */
-> 
-> It's odd to use a C function in one case and a macro in the other.
-> Was there a reason to not use plain old static inline?
+On Wed, 2007-08-01 at 15:49 -0700, Randy Dunlap wrote:
+> any interest in this?
+> or is there some other way to do this that I missed?
 
-No reason, an empty inline function is fine with me too.
+This is the easiest way, I have no problems with this.
 
 Tony
+
 
 
 -------------------------------------------------------------------------

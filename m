@@ -1,26 +1,25 @@
 From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: [PATCH] s3c2410fb: remove fb_info pointer from
-	s3c2410fb_info
-Date: Sat, 04 Aug 2007 13:46:44 +0200
-Message-ID: <46b4672403046@wp.pl>
+Subject: [PATCH] ffb: source cleanup
+Date: Sat, 04 Aug 2007 13:55:06 +0200
+Message-ID: <46b4691ae9d22@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="part46b4672405741"
+Content-Type: multipart/mixed; boundary="part46b4691aec41d"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IHI5t-00036D-9D for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 04 Aug 2007 04:46:53 -0700
+	id 1IHIDv-0003xX-UV for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 04 Aug 2007 04:55:14 -0700
 Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IHI5p-0006Cq-HH
+	(Exim 4.44) id 1IHIDu-0006tD-Ti
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 04 Aug 2007 04:46:53 -0700
+	Sat, 04 Aug 2007 04:55:11 -0700
 Received: from poczta-10.free.wp-sa.pl (HELO localhost) ([10.1.1.28])
 	(envelope-sender <krzysztof.h1@wp.pl>)
 	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>; 4 Aug 2007 13:46:44 +0200
+	for <linux-fbdev-devel@lists.sourceforge.net>; 4 Aug 2007 13:55:06 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,315 +31,639 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Ben Dooks <ben-linux@fluff.org>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Cc: David Miller <davem@davemloft.net>
 
 This is a multi-part message in MIME format.
 
---part46b4672405741
+--part46b4691aec41d
 Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch removes redundant fb field from
-the s3c2410fb_info structure. This breaks circular
-reference fb_info -> s3c2410fb_info -> fb_info again.
+This patch cleans up the driver a bit. It contains
+coding style fixes (pointed by Lindent and checkpatch)
+and white space clean ups.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
 
-This patch requires s3c2410fb-cleanup patch I posted earlier.
+It makes driver file little shorter.
 
-diff -urp linux-2.6.23.old/drivers/video/s3c2410fb.c linux-
-2.6.23/drivers/video/s3c2410fb.c
---- linux-2.6.23.old/drivers/video/s3c2410fb.c	2007-08-03=20
-07:30:31.000000000 +0200
-+++ linux-2.6.23/drivers/video/s3c2410fb.c	2007-08-03=20
-07:27:48.000000000 +0200
-@@ -119,15 +119,14 @@ static int debug	=3D 0;
-  *
-  * initialise lcd controller address pointers
-  */
--static void s3c2410fb_set_lcdaddr(struct s3c2410fb_info *fbi)
-+static void s3c2410fb_set_lcdaddr(struct fb_info *info)
- {
--	struct fb_var_screeninfo *var =3D &fbi->fb->var;
- 	unsigned long saddr1, saddr2, saddr3;
--	int line_length =3D var->xres * var->bits_per_pixel;
-+	int line_length =3D info->var.xres * info-
->var.bits_per_pixel;
+--- linux-2.6.23.old/drivers/video/ffb.c	2007-08-02=20
+10:21:10.000000000 +0200
++++ linux-2.6.23/drivers/video/ffb.c	2007-08-03=20
+19:42:54.000000000 +0200
+@@ -171,17 +171,17 @@ static struct fb_ops ffb_ops =3D {
+ #define FFB_PPC_CS_VAR		0x000002
+ #define FFB_PPC_CS_CONST	0x000003
 =20
--	saddr1  =3D fbi->fb->fix.smem_start >> 1;
--	saddr2  =3D fbi->fb->fix.smem_start;
--	saddr2 +=3D (line_length * var->yres) / 8;
-+	saddr1  =3D info->fix.smem_start >> 1;
-+	saddr2  =3D info->fix.smem_start;
-+	saddr2 +=3D (line_length * info->var.yres) / 8;
- 	saddr2 >>=3D 1;
-=20
- 	saddr3 =3D S3C2410_OFFSIZE(0) |
-@@ -275,9 +274,10 @@ static int s3c2410fb_check_var(struct fb
-  * activate (set) the controller from the given framebuffer
-  * information
-  */
--static void s3c2410fb_activate_var(struct s3c2410fb_info *fbi,
-+static void s3c2410fb_activate_var(struct fb_info *info,
- 				   struct fb_var_screeninfo *var)
- {
-+	struct s3c2410fb_info *fbi =3D info->par;
- 	int hs;
-=20
- 	fbi->regs.lcdcon1 &=3D ~S3C2410_LCDCON1_MODEMASK;
-@@ -418,7 +418,7 @@ static void s3c2410fb_activate_var(struc
- 	writel(fbi->regs.lcdcon5, S3C2410_LCDCON5);
-=20
- 	/* set lcd address pointers */
--	s3c2410fb_set_lcdaddr(fbi);
-+	s3c2410fb_set_lcdaddr(info);
-=20
- 	writel(fbi->regs.lcdcon1, S3C2410_LCDCON1);
- }
-@@ -430,7 +430,6 @@ static void s3c2410fb_activate_var(struc
-  */
- static int s3c2410fb_set_par(struct fb_info *info)
- {
--	struct s3c2410fb_info *fbi =3D info->par;
- 	struct fb_var_screeninfo *var =3D &info->var;
-=20
- 	switch (var->bits_per_pixel) {
-@@ -449,7 +448,7 @@ static int s3c2410fb_set_par(struct fb_i
-=20
- 	/* activate this new configuration */
-=20
--	s3c2410fb_activate_var(fbi, var);
-+	s3c2410fb_activate_var(info, var);
- 	return 0;
- }
-=20
-@@ -615,15 +614,17 @@ static struct fb_ops s3c2410fb_ops =3D {
-  *	cache.  Once this area is remapped, all virtual memory
-  *	access to the video memory should occur at the new=20
-region.
-  */
--static int __init s3c2410fb_map_video_memory(struct=20
-s3c2410fb_info *fbi)
-+static int __init s3c2410fb_map_video_memory(struct fb_info=20
-*info)
- {
-+	struct s3c2410fb_info *fbi =3D info->par;
+-#define FFB_ROP_NEW                  0x83
+-#define FFB_ROP_OLD                  0x85
+-#define FFB_ROP_NEW_XOR_OLD          0x86
+-
+-#define FFB_UCSR_FIFO_MASK     0x00000fff
+-#define FFB_UCSR_FB_BUSY       0x01000000
+-#define FFB_UCSR_RP_BUSY       0x02000000
+-#define FFB_UCSR_ALL_BUSY      (FFB_UCSR_RP_BUSY|
+FFB_UCSR_FB_BUSY)
+-#define FFB_UCSR_READ_ERR      0x40000000
+-#define FFB_UCSR_FIFO_OVFL     0x80000000
+-#define FFB_UCSR_ALL_ERRORS    (FFB_UCSR_READ_ERR|
+FFB_UCSR_FIFO_OVFL)
++#define FFB_ROP_NEW		0x83
++#define FFB_ROP_OLD		0x85
++#define FFB_ROP_NEW_XOR_OLD	0x86
 +
- 	dprintk("map_video_memory(fbi=3D%p)\n", fbi);
++#define FFB_UCSR_FIFO_MASK	0x00000fff
++#define FFB_UCSR_FB_BUSY	0x01000000
++#define FFB_UCSR_RP_BUSY	0x02000000
++#define FFB_UCSR_ALL_BUSY	(FFB_UCSR_RP_BUSY|
+FFB_UCSR_FB_BUSY)
++#define FFB_UCSR_READ_ERR	0x40000000
++#define FFB_UCSR_FIFO_OVFL	0x80000000
++#define FFB_UCSR_ALL_ERRORS	(FFB_UCSR_READ_ERR|
+FFB_UCSR_FIFO_OVFL)
 =20
--	fbi->map_size =3D PAGE_ALIGN(fbi->fb->fix.smem_len +=20
-PAGE_SIZE);
-+	fbi->map_size =3D PAGE_ALIGN(info->fix.smem_len +=20
-PAGE_SIZE);
- 	fbi->map_cpu  =3D dma_alloc_writecombine(fbi->dev, fbi-
->map_size,
- 					       &fbi->map_dma,=20
-GFP_KERNEL);
+ struct ffb_fbc {
+ 	/* Next vertex registers */
+@@ -197,7 +197,7 @@ struct ffb_fbc {
+ 	u32	ryf;
+ 	u32	rxf;
+ 	u32	xxx3[2];
+-=09
++
+ 	u32	dmyf;
+ 	u32	dmxf;
+ 	u32	xxx4[2];
+@@ -211,13 +211,13 @@ struct ffb_fbc {
+ 	u32	bh;
+ 	u32	bw;
+ 	u32	xxx6[2];
+-=09
++
+ 	u32	xxx7[32];
+-=09
++
+ 	/* Setup unit vertex state register */
+ 	u32	suvtx;
+ 	u32	xxx8[63];
+-=09
++
+ 	/* Control registers */
+ 	u32	ppc;
+ 	u32	wid;
+@@ -235,7 +235,7 @@ struct ffb_fbc {
+ 	u32	dcsb;
+ 	u32	dczf;
+ 	u32	dczb;
+-=09
++
+ 	u32	xxx9;
+ 	u32	blendc;
+ 	u32	blendc1;
+@@ -252,7 +252,7 @@ struct ffb_fbc {
+ 	u32	fbcfg1;
+ 	u32	fbcfg2;
+ 	u32	fbcfg3;
+-=09
++
+ 	u32	ppcfg;
+ 	u32	pick;
+ 	u32	fillmode;
+@@ -269,7 +269,7 @@ struct ffb_fbc {
+ 	u32	clip2max;
+ 	u32	clip3min;
+ 	u32	clip3max;
+-=09
++
+ 	/* New 3dRAM III support regs */
+ 	u32	rawblend2;
+ 	u32	rawpreblend;
+@@ -287,7 +287,7 @@ struct ffb_fbc {
+ 	u32	rawcmp;
+ 	u32	rawwac;
+ 	u32	fbramid;
+-=09
++
+ 	u32	drawop;
+ 	u32	xxx10[2];
+ 	u32	fontlpat;
+@@ -302,7 +302,7 @@ struct ffb_fbc {
+ 	u32	stencil;
+ 	u32	stencilctl;
 =20
--	fbi->map_size =3D fbi->fb->fix.smem_len;
-+	fbi->map_size =3D info->fix.smem_len;
+-	u32	xxx13[4];=09
++	u32	xxx13[4];
+ 	u32	dcss1;
+ 	u32	dcss2;
+ 	u32	dcss3;
+@@ -315,17 +315,17 @@ struct ffb_fbc {
+ 	u32	dcd3;
+ 	u32	dcd4;
+ 	u32	xxx15;
+-=09
++
+ 	u32	pattern[32];
+-=09
++
+ 	u32	xxx16[256];
+-=09
++
+ 	u32	devid;
+ 	u32	xxx17[63];
+-=09
++
+ 	u32	ucsr;
+ 	u32	xxx18[31];
+-=09
++
+ 	u32	mer;
+ };
 =20
- 	if (fbi->map_cpu) {
- 		/* prevent initial garbage on screen */
-@@ -632,11 +633,11 @@ static int __init s3c2410fb_map_video_me
- 		memset(fbi->map_cpu, 0xf0, fbi->map_size);
+@@ -336,20 +336,20 @@ struct ffb_dac {
+ 	u32	value2;
+ };
 =20
- 		fbi->screen_dma		=3D fbi->map_dma;
--		fbi->fb->screen_base	=3D fbi->map_cpu;
--		fbi->fb->fix.smem_start  =3D fbi->screen_dma;
-+		info->screen_base	=3D fbi->map_cpu;
-+		info->fix.smem_start	=3D fbi->screen_dma;
+-#define FFB_DAC_UCTRL	0x1001 /* User Control */
+-#define  FFB_DAC_UCTRL_MANREV	0x00000f00 /* 4-bit=20
+Manufacturing Revision */
+-#define  FFB_DAC_UCTRL_MANREV_SHIFT 8
+-#define FFB_DAC_TGEN	0x6000 /* Timing Generator */
+-#define  FFB_DAC_TGEN_VIDE	0x00000001 /* Video Enable */
+-#define FFB_DAC_DID	0x8000 /* Device Identification */
+-#define  FFB_DAC_DID_PNUM	0x0ffff000 /* Device Part Number=20
+*/
+-#define  FFB_DAC_DID_PNUM_SHIFT 12
+-#define  FFB_DAC_DID_REV	0xf0000000 /* Device Revision */
+-#define  FFB_DAC_DID_REV_SHIFT 28
++#define FFB_DAC_UCTRL		0x1001 /* User Control */
++#define FFB_DAC_UCTRL_MANREV	0x00000f00 /* 4-bit=20
+Manufacturing Revision */
++#define FFB_DAC_UCTRL_MANREV_SHIFT 8
++#define FFB_DAC_TGEN		0x6000 /* Timing Generator */
++#define FFB_DAC_TGEN_VIDE	0x00000001 /* Video Enable */
++#define FFB_DAC_DID		0x8000 /* Device Identification=20
+*/
++#define FFB_DAC_DID_PNUM	0x0ffff000 /* Device Part Number=20
+*/
++#define FFB_DAC_DID_PNUM_SHIFT	12
++#define FFB_DAC_DID_REV		0xf0000000 /* Device=20
+Revision */
++#define FFB_DAC_DID_REV_SHIFT	28
 =20
- 		dprintk("map_video_memory: dma=3D%08x cpu=3D%p=20
-size=3D%08x\n",
--			fbi->map_dma, fbi->map_cpu, fbi->fb-
->fix.smem_len);
-+			fbi->map_dma, fbi->map_cpu, info-
->fix.smem_len);
+ #define FFB_DAC_CUR_CTRL	0x100
+-#define  FFB_DAC_CUR_CTRL_P0	0x00000001
+-#define  FFB_DAC_CUR_CTRL_P1	0x00000002
++#define FFB_DAC_CUR_CTRL_P0	0x00000001
++#define FFB_DAC_CUR_CTRL_P1	0x00000002
+=20
+ struct ffb_par {
+ 	spinlock_t		lock;
+@@ -382,7 +382,9 @@ static void FFBFifo(struct ffb_par *par,
+=20
+ 	if (cache - n < 0) {
+ 		fbc =3D par->fbc;
+-		do {	cache =3D (upa_readl(&fbc->ucsr) &=20
+FFB_UCSR_FIFO_MASK) - 8;
++		do {
++			cache =3D (upa_readl(&fbc->ucsr) &=20
+FFB_UCSR_FIFO_MASK);
++			cache -=3D 8;
+ 		} while (cache - n < 0);
+ 	}
+ 	par->fifo_cache =3D cache - n;
+@@ -401,12 +403,12 @@ static void FFBWait(struct ffb_par *par)
+ 			upa_writel(FFB_UCSR_ALL_ERRORS, &fbc-
+>ucsr);
+ 		}
+ 		udelay(10);
+-	} while(--limit > 0);
++	} while (--limit > 0);
+ }
+=20
+ static int ffb_sync(struct fb_info *p)
+ {
+-	struct ffb_par *par =3D (struct ffb_par *) p->par;
++	struct ffb_par *par =3D (struct ffb_par *)p->par;
+=20
+ 	FFBWait(par);
+ 	return 0;
+@@ -431,8 +433,8 @@ static void ffb_switch_from_graph(struct
+ 	FFBWait(par);
+ 	par->fifo_cache =3D 0;
+ 	FFBFifo(par, 7);
+-	upa_writel(FFB_PPC_VCE_DISABLE|FFB_PPC_TBE_OPAQUE|
+-		   FFB_PPC_APE_DISABLE|FFB_PPC_CS_CONST,
++	upa_writel(FFB_PPC_VCE_DISABLE | FFB_PPC_TBE_OPAQUE |
++		   FFB_PPC_APE_DISABLE | FFB_PPC_CS_CONST,
+ 		   &fbc->ppc);
+ 	upa_writel(0x2000707f, &fbc->fbc);
+ 	upa_writel(par->rop_cache, &fbc->rop);
+@@ -455,7 +457,7 @@ static void ffb_switch_from_graph(struct
+=20
+ static int ffb_pan_display(struct fb_var_screeninfo *var,=20
+struct fb_info *info)
+ {
+-	struct ffb_par *par =3D (struct ffb_par *) info->par;
++	struct ffb_par *par =3D (struct ffb_par *)info->par;
+=20
+ 	/* We just use this to catch switches out of
+ 	 * graphics mode.
+@@ -468,16 +470,14 @@ static int ffb_pan_display(struct fb_var
+ }
+=20
+ /**
+- *      ffb_fillrect - REQUIRED function. Can use generic=20
+routines if=20
+- *                     non acclerated hardware and packed pixel=20
+based.
+- *                     Draws a rectangle on the=20
+screen.              =20
++ *	ffb_fillrect - Draws a rectangle on the screen.
+  *
+- *      @info: frame buffer structure that represents a single=20
+frame buffer
+- *      @rect: structure defining the rectagle and operation.
++ *	@info: frame buffer structure that represents a single=20
+frame buffer
++ *	@rect: structure defining the rectagle and operation.
+  */
+ static void ffb_fillrect(struct fb_info *info, const struct=20
+fb_fillrect *rect)
+ {
+-	struct ffb_par *par =3D (struct ffb_par *) info->par;
++	struct ffb_par *par =3D (struct ffb_par *)info->par;
+ 	struct ffb_fbc __iomem *fbc =3D par->fbc;
+ 	unsigned long flags;
+ 	u32 fg;
+@@ -494,9 +494,9 @@ static void ffb_fillrect(struct fb_info=20
+ 		par->fg_cache =3D fg;
  	}
 =20
- 	return fbi->map_cpu ? 0 : -ENOMEM;
-@@ -660,8 +661,9 @@ static inline void modify_gpio(void __io
- /*
-  * s3c2410fb_init_registers - Initialise all LCD-related=20
-registers
+-	ffb_rop(par, (rect->rop =3D=3D ROP_COPY ?
+-		      FFB_ROP_NEW :
+-		      FFB_ROP_NEW_XOR_OLD));
++	ffb_rop(par, rect->rop =3D=3D ROP_COPY ?
++		     FFB_ROP_NEW :
++		     FFB_ROP_NEW_XOR_OLD);
+=20
+ 	FFBFifo(par, 5);
+ 	upa_writel(FFB_DRAWOP_RECTANGLE, &fbc->drawop);
+@@ -509,18 +509,15 @@ static void ffb_fillrect(struct fb_info=20
+ }
+=20
+ /**
+- *      ffb_copyarea - REQUIRED function. Can use generic=20
+routines if
+- *                     non acclerated hardware and packed pixel=20
+based.
+- *                     Copies on area of the screen to another=20
+area.
++ *	ffb_copyarea - Copies on area of the screen to another=20
+area.
+  *
+- *      @info: frame buffer structure that represents a single=20
+frame buffer
+- *      @area: structure defining the source and destination.
++ *	@info: frame buffer structure that represents a single=20
+frame buffer
++ *	@area: structure defining the source and destination.
   */
--static int s3c2410fb_init_registers(struct s3c2410fb_info *fbi)
-+static int s3c2410fb_init_registers(struct fb_info *info)
+=20
+-static void
+-ffb_copyarea(struct fb_info *info, const struct fb_copyarea=20
+*area)=20
++static void ffb_copyarea(struct fb_info *info, const struct=20
+fb_copyarea *area)
  {
-+	struct s3c2410fb_info *fbi =3D info->par;
+-	struct ffb_par *par =3D (struct ffb_par *) info->par;
++	struct ffb_par *par =3D (struct ffb_par *)info->par;
+ 	struct ffb_fbc __iomem *fbc =3D par->fbc;
  	unsigned long flags;
- 	void __iomem *regs =3D fbi->io;
 =20
-@@ -684,7 +686,7 @@ static int s3c2410fb_init_registers(stru
- 	writel(fbi->regs.lcdcon4, regs + S3C2410_LCDCON4);
- 	writel(fbi->regs.lcdcon5, regs + S3C2410_LCDCON5);
+@@ -547,16 +544,14 @@ ffb_copyarea(struct fb_info *info, const
+ }
 =20
--	s3c2410fb_set_lcdaddr(fbi);
-+	s3c2410fb_set_lcdaddr(info);
+ /**
+- *      ffb_imageblit - REQUIRED function. Can use generic=20
+routines if
+- *                      non acclerated hardware and packed=20
+pixel based.
+- *                      Copies a image from system memory to=20
+the screen.=20
++ *	ffb_imageblit - Copies a image from system memory to the=20
+screen.
+  *
+- *      @info: frame buffer structure that represents a single=20
+frame buffer
+- *      @image: structure defining the image.
++ *	@info: frame buffer structure that represents a single=20
+frame buffer
++ *	@image: structure defining the image.
+  */
+ static void ffb_imageblit(struct fb_info *info, const struct=20
+fb_image *image)
+ {
+-	struct ffb_par *par =3D (struct ffb_par *) info->par;
++	struct ffb_par *par =3D (struct ffb_par *)info->par;
+ 	struct ffb_fbc __iomem *fbc =3D par->fbc;
+ 	const u8 *data =3D image->data;
+ 	unsigned long flags;
+@@ -644,13 +639,14 @@ static void ffb_fixup_var_rgb(struct fb_
+ }
 =20
- 	dprintk("LPCSEL    =3D 0x%08lx\n", mach_info->lpcsel);
- 	writel(mach_info->lpcsel, regs + S3C2410_LPCSEL);
-@@ -777,7 +779,6 @@ static int __init s3c2410fb_probe(struct
- 		return -ENOMEM;
+ /**
+- *      ffb_setcolreg - Optional function. Sets a color=20
+register.
+- *      @regno: boolean, 0 copy local, 1 get_user() function
+- *      @red: frame buffer colormap structure
+- *      @green: The green value which can be up to 16 bits wide
+- *      @blue:  The blue value which can be up to 16 bits wide.
+- *      @transp: If supported the alpha value which can be up=20
+to 16 bits wide.
+- *      @info: frame buffer info structure
++ *	ffb_setcolreg - Sets a color register.
++ *
++ *	@regno: boolean, 0 copy local, 1 get_user() function
++ *	@red: frame buffer colormap structure
++ *	@green: The green value which can be up to 16 bits wide
++ *	@blue:  The blue value which can be up to 16 bits wide.
++ *	@transp: If supported the alpha value which can be up to=20
+16 bits wide.
++ *	@info: frame buffer info structure
+  */
+ static int ffb_setcolreg(unsigned regno,
+ 			 unsigned red, unsigned green, unsigned=20
+blue,
+@@ -672,14 +668,13 @@ static int ffb_setcolreg(unsigned regno,
+ }
 =20
- 	info =3D fbinfo->par;
--	info->fb =3D fbinfo;
- 	info->dev =3D &pdev->dev;
+ /**
+- *      ffb_blank - Optional function.  Blanks the display.
+- *      @blank_mode: the blank mode we want.
+- *      @info: frame buffer structure that represents a single=20
+frame buffer
++ *	ffb_blank - Optional function.  Blanks the display.
++ *	@blank_mode: the blank mode we want.
++ *	@info: frame buffer structure that represents a single=20
+frame buffer
+  */
+-static int
+-ffb_blank(int blank, struct fb_info *info)
++static int ffb_blank(int blank, struct fb_info *info)
+ {
+-	struct ffb_par *par =3D (struct ffb_par *) info->par;
++	struct ffb_par *par =3D (struct ffb_par *)info->par;
+ 	struct ffb_dac __iomem *dac =3D par->dac;
+ 	unsigned long flags;
+ 	u32 val;
+@@ -867,7 +862,7 @@ static int ffb_mmap(struct fb_info *info
 =20
- 	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-@@ -890,7 +891,7 @@ static int __init s3c2410fb_probe(struct
- 	msleep(1);
+ static int ffb_ioctl(struct fb_info *info, unsigned int cmd,=20
+unsigned long arg)
+ {
+-	struct ffb_par *par =3D (struct ffb_par *) info->par;
++	struct ffb_par *par =3D (struct ffb_par *)info->par;
 =20
- 	/* Initialize video memory */
--	ret =3D s3c2410fb_map_video_memory(info);
-+	ret =3D s3c2410fb_map_video_memory(fbinfo);
- 	if (ret) {
- 		printk(KERN_ERR "Failed to allocate video RAM:
- %d\n", ret);
- 		ret =3D -ENOMEM;
-@@ -899,7 +900,7 @@ static int __init s3c2410fb_probe(struct
+ 	return sbusfb_ioctl_helper(cmd, arg, info,
+ 				   FBTYPE_CREATOR, 24, par-
+>fbsize);
+@@ -877,8 +872,7 @@ static int ffb_ioctl(struct fb_info *inf
+  *  Initialisation
+  */
 =20
- 	dprintk("got video memory\n");
+-static void
+-ffb_init_fix(struct fb_info *info)
++static void ffb_init_fix(struct fb_info *info)
+ {
+ 	struct ffb_par *par =3D (struct ffb_par *)info->par;
+ 	const char *ffb_type_name;
+@@ -902,7 +896,8 @@ ffb_init_fix(struct fb_info *info)
+ 	info->fix.accel =3D FB_ACCEL_SUN_CREATOR;
+ }
 =20
--	s3c2410fb_init_registers(info);
-+	s3c2410fb_init_registers(fbinfo);
-=20
- 	s3c2410fb_check_var(&fbinfo->var, fbinfo);
-=20
-diff -urp linux-2.6.23.old/drivers/video/s3c2410fb.h linux-
-2.6.23/drivers/video/s3c2410fb.h
---- linux-2.6.23.old/drivers/video/s3c2410fb.h	2007-08-02=20
-10:21:08.000000000 +0200
-+++ linux-2.6.23/drivers/video/s3c2410fb.h	2007-08-03=20
-07:16:50.000000000 +0200
-@@ -26,7 +26,6 @@
- #define __S3C2410FB_H
-=20
- struct s3c2410fb_info {
--	struct fb_info		*fb;
- 	struct device		*dev;
- 	struct clk		*clk;
-=20
+-static int __devinit ffb_probe(struct of_device *op, const=20
+struct of_device_id *match)
++static int __devinit ffb_probe(struct of_device *op,
++			       const struct of_device_id *match)
+ {
+ 	struct device_node *dp =3D op->node;
+ 	struct ffb_fbc __iomem *fbc;
 
 
 ----------------------------------------------------
-Jedni przybyli na Ziemi=EA, by nas zniszczy=E6. Inni - by nas chroni=E6.
-"Transformers" - pe=B3en akcji film Stevena Spielberga
-i Michaela Baya w kinach od 17 sierpnia.
-http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Ftransforme=
-rs.html&sid=3D1247
+Czy na wakacje warto zabra=E6 laptopa?
+Zobacz gdzie dzia=B3aj=B1 strefy darmowego, bezprzewodowego Internetu!
+Kliknij: http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fd=
+128.html&sid=3D1243
 
---part46b4672405741
-Content-Type: application/octet-stream; name="s3c2410fb-remove-fb-field.diff"
+--part46b4691aec41d
+Content-Type: application/octet-stream; name="ffb-cleanup.diff"
 Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="s3c2410fb-remove-fb-field.diff"
+Content-Disposition: attachment; filename="ffb-cleanup.diff"
 
-RnJvbTogS3J6eXN6dG9mIEhlbHQgPGtyenlzenRvZi5oMUB3cC5wbD4KClRoaXMgcGF0Y2ggcmVt
-b3ZlcyByZWR1bmRhbnQgZmIgZmllbGQgZnJvbQp0aGUgczNjMjQxMGZiX2luZm8gc3RydWN0dXJl
-LiBUaGlzIGJyZWFrcyBjaXJjdWxhcgpyZWZlcmVuY2UgZmJfaW5mbyAtPiBzM2MyNDEwZmJfaW5m
-byAtPiBmYl9pbmZvIGFnYWluLgoKU2lnbmVkLW9mZi1ieTogS3J6eXN6dG9mIEhlbHQgPGtyenlz
-enRvZi5oMUB3cC5wbD4KCi0tLQoKVGhpcyBwYXRjaCByZXF1aXJlcyBzM2MyNDEwZmItY2xlYW51
-cCBwYXRjaCBJIHBvc3RlZCBlYXJsaWVyLgoKZGlmZiAtdXJwIGxpbnV4LTIuNi4yMy5vbGQvZHJp
-dmVycy92aWRlby9zM2MyNDEwZmIuYyBsaW51eC0yLjYuMjMvZHJpdmVycy92aWRlby9zM2MyNDEw
-ZmIuYwotLS0gbGludXgtMi42LjIzLm9sZC9kcml2ZXJzL3ZpZGVvL3MzYzI0MTBmYi5jCTIwMDct
-MDgtMDMgMDc6MzA6MzEuMDAwMDAwMDAwICswMjAwCisrKyBsaW51eC0yLjYuMjMvZHJpdmVycy92
-aWRlby9zM2MyNDEwZmIuYwkyMDA3LTA4LTAzIDA3OjI3OjQ4LjAwMDAwMDAwMCArMDIwMApAQCAt
-MTE5LDE1ICsxMTksMTQgQEAgc3RhdGljIGludCBkZWJ1Zwk9IDA7CiAgKgogICogaW5pdGlhbGlz
-ZSBsY2QgY29udHJvbGxlciBhZGRyZXNzIHBvaW50ZXJzCiAgKi8KLXN0YXRpYyB2b2lkIHMzYzI0
-MTBmYl9zZXRfbGNkYWRkcihzdHJ1Y3QgczNjMjQxMGZiX2luZm8gKmZiaSkKK3N0YXRpYyB2b2lk
-IHMzYzI0MTBmYl9zZXRfbGNkYWRkcihzdHJ1Y3QgZmJfaW5mbyAqaW5mbykKIHsKLQlzdHJ1Y3Qg
-ZmJfdmFyX3NjcmVlbmluZm8gKnZhciA9ICZmYmktPmZiLT52YXI7CiAJdW5zaWduZWQgbG9uZyBz
-YWRkcjEsIHNhZGRyMiwgc2FkZHIzOwotCWludCBsaW5lX2xlbmd0aCA9IHZhci0+eHJlcyAqIHZh
-ci0+Yml0c19wZXJfcGl4ZWw7CisJaW50IGxpbmVfbGVuZ3RoID0gaW5mby0+dmFyLnhyZXMgKiBp
-bmZvLT52YXIuYml0c19wZXJfcGl4ZWw7CiAKLQlzYWRkcjEgID0gZmJpLT5mYi0+Zml4LnNtZW1f
-c3RhcnQgPj4gMTsKLQlzYWRkcjIgID0gZmJpLT5mYi0+Zml4LnNtZW1fc3RhcnQ7Ci0Jc2FkZHIy
-ICs9IChsaW5lX2xlbmd0aCAqIHZhci0+eXJlcykgLyA4OworCXNhZGRyMSAgPSBpbmZvLT5maXgu
-c21lbV9zdGFydCA+PiAxOworCXNhZGRyMiAgPSBpbmZvLT5maXguc21lbV9zdGFydDsKKwlzYWRk
-cjIgKz0gKGxpbmVfbGVuZ3RoICogaW5mby0+dmFyLnlyZXMpIC8gODsKIAlzYWRkcjIgPj49IDE7
-CiAKIAlzYWRkcjMgPSBTM0MyNDEwX09GRlNJWkUoMCkgfApAQCAtMjc1LDkgKzI3NCwxMCBAQCBz
-dGF0aWMgaW50IHMzYzI0MTBmYl9jaGVja192YXIoc3RydWN0IGZiCiAgKiBhY3RpdmF0ZSAoc2V0
-KSB0aGUgY29udHJvbGxlciBmcm9tIHRoZSBnaXZlbiBmcmFtZWJ1ZmZlcgogICogaW5mb3JtYXRp
-b24KICAqLwotc3RhdGljIHZvaWQgczNjMjQxMGZiX2FjdGl2YXRlX3ZhcihzdHJ1Y3QgczNjMjQx
-MGZiX2luZm8gKmZiaSwKK3N0YXRpYyB2b2lkIHMzYzI0MTBmYl9hY3RpdmF0ZV92YXIoc3RydWN0
-IGZiX2luZm8gKmluZm8sCiAJCQkJICAgc3RydWN0IGZiX3Zhcl9zY3JlZW5pbmZvICp2YXIpCiB7
-CisJc3RydWN0IHMzYzI0MTBmYl9pbmZvICpmYmkgPSBpbmZvLT5wYXI7CiAJaW50IGhzOwogCiAJ
-ZmJpLT5yZWdzLmxjZGNvbjEgJj0gflMzQzI0MTBfTENEQ09OMV9NT0RFTUFTSzsKQEAgLTQxOCw3
-ICs0MTgsNyBAQCBzdGF0aWMgdm9pZCBzM2MyNDEwZmJfYWN0aXZhdGVfdmFyKHN0cnVjCiAJd3Jp
-dGVsKGZiaS0+cmVncy5sY2Rjb241LCBTM0MyNDEwX0xDRENPTjUpOwogCiAJLyogc2V0IGxjZCBh
-ZGRyZXNzIHBvaW50ZXJzICovCi0JczNjMjQxMGZiX3NldF9sY2RhZGRyKGZiaSk7CisJczNjMjQx
-MGZiX3NldF9sY2RhZGRyKGluZm8pOwogCiAJd3JpdGVsKGZiaS0+cmVncy5sY2Rjb24xLCBTM0My
-NDEwX0xDRENPTjEpOwogfQpAQCAtNDMwLDcgKzQzMCw2IEBAIHN0YXRpYyB2b2lkIHMzYzI0MTBm
-Yl9hY3RpdmF0ZV92YXIoc3RydWMKICAqLwogc3RhdGljIGludCBzM2MyNDEwZmJfc2V0X3Bhcihz
-dHJ1Y3QgZmJfaW5mbyAqaW5mbykKIHsKLQlzdHJ1Y3QgczNjMjQxMGZiX2luZm8gKmZiaSA9IGlu
-Zm8tPnBhcjsKIAlzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciA9ICZpbmZvLT52YXI7CiAK
-IAlzd2l0Y2ggKHZhci0+Yml0c19wZXJfcGl4ZWwpIHsKQEAgLTQ0OSw3ICs0NDgsNyBAQCBzdGF0
-aWMgaW50IHMzYzI0MTBmYl9zZXRfcGFyKHN0cnVjdCBmYl9pCiAKIAkvKiBhY3RpdmF0ZSB0aGlz
-IG5ldyBjb25maWd1cmF0aW9uICovCiAKLQlzM2MyNDEwZmJfYWN0aXZhdGVfdmFyKGZiaSwgdmFy
-KTsKKwlzM2MyNDEwZmJfYWN0aXZhdGVfdmFyKGluZm8sIHZhcik7CiAJcmV0dXJuIDA7CiB9CiAK
-QEAgLTYxNSwxNSArNjE0LDE3IEBAIHN0YXRpYyBzdHJ1Y3QgZmJfb3BzIHMzYzI0MTBmYl9vcHMg
-PSB7CiAgKgljYWNoZS4gIE9uY2UgdGhpcyBhcmVhIGlzIHJlbWFwcGVkLCBhbGwgdmlydHVhbCBt
-ZW1vcnkKICAqCWFjY2VzcyB0byB0aGUgdmlkZW8gbWVtb3J5IHNob3VsZCBvY2N1ciBhdCB0aGUg
-bmV3IHJlZ2lvbi4KICAqLwotc3RhdGljIGludCBfX2luaXQgczNjMjQxMGZiX21hcF92aWRlb19t
-ZW1vcnkoc3RydWN0IHMzYzI0MTBmYl9pbmZvICpmYmkpCitzdGF0aWMgaW50IF9faW5pdCBzM2My
-NDEwZmJfbWFwX3ZpZGVvX21lbW9yeShzdHJ1Y3QgZmJfaW5mbyAqaW5mbykKIHsKKwlzdHJ1Y3Qg
-czNjMjQxMGZiX2luZm8gKmZiaSA9IGluZm8tPnBhcjsKKwogCWRwcmludGsoIm1hcF92aWRlb19t
-ZW1vcnkoZmJpPSVwKVxuIiwgZmJpKTsKIAotCWZiaS0+bWFwX3NpemUgPSBQQUdFX0FMSUdOKGZi
-aS0+ZmItPmZpeC5zbWVtX2xlbiArIFBBR0VfU0laRSk7CisJZmJpLT5tYXBfc2l6ZSA9IFBBR0Vf
-QUxJR04oaW5mby0+Zml4LnNtZW1fbGVuICsgUEFHRV9TSVpFKTsKIAlmYmktPm1hcF9jcHUgID0g
-ZG1hX2FsbG9jX3dyaXRlY29tYmluZShmYmktPmRldiwgZmJpLT5tYXBfc2l6ZSwKIAkJCQkJICAg
-ICAgICZmYmktPm1hcF9kbWEsIEdGUF9LRVJORUwpOwogCi0JZmJpLT5tYXBfc2l6ZSA9IGZiaS0+
-ZmItPmZpeC5zbWVtX2xlbjsKKwlmYmktPm1hcF9zaXplID0gaW5mby0+Zml4LnNtZW1fbGVuOwog
-CiAJaWYgKGZiaS0+bWFwX2NwdSkgewogCQkvKiBwcmV2ZW50IGluaXRpYWwgZ2FyYmFnZSBvbiBz
-Y3JlZW4gKi8KQEAgLTYzMiwxMSArNjMzLDExIEBAIHN0YXRpYyBpbnQgX19pbml0IHMzYzI0MTBm
-Yl9tYXBfdmlkZW9fbWUKIAkJbWVtc2V0KGZiaS0+bWFwX2NwdSwgMHhmMCwgZmJpLT5tYXBfc2l6
-ZSk7CiAKIAkJZmJpLT5zY3JlZW5fZG1hCQk9IGZiaS0+bWFwX2RtYTsKLQkJZmJpLT5mYi0+c2Ny
-ZWVuX2Jhc2UJPSBmYmktPm1hcF9jcHU7Ci0JCWZiaS0+ZmItPmZpeC5zbWVtX3N0YXJ0ICA9IGZi
-aS0+c2NyZWVuX2RtYTsKKwkJaW5mby0+c2NyZWVuX2Jhc2UJPSBmYmktPm1hcF9jcHU7CisJCWlu
-Zm8tPmZpeC5zbWVtX3N0YXJ0CT0gZmJpLT5zY3JlZW5fZG1hOwogCiAJCWRwcmludGsoIm1hcF92
-aWRlb19tZW1vcnk6IGRtYT0lMDh4IGNwdT0lcCBzaXplPSUwOHhcbiIsCi0JCQlmYmktPm1hcF9k
-bWEsIGZiaS0+bWFwX2NwdSwgZmJpLT5mYi0+Zml4LnNtZW1fbGVuKTsKKwkJCWZiaS0+bWFwX2Rt
-YSwgZmJpLT5tYXBfY3B1LCBpbmZvLT5maXguc21lbV9sZW4pOwogCX0KIAogCXJldHVybiBmYmkt
-Pm1hcF9jcHUgPyAwIDogLUVOT01FTTsKQEAgLTY2MCw4ICs2NjEsOSBAQCBzdGF0aWMgaW5saW5l
-IHZvaWQgbW9kaWZ5X2dwaW8odm9pZCBfX2lvCiAvKgogICogczNjMjQxMGZiX2luaXRfcmVnaXN0
-ZXJzIC0gSW5pdGlhbGlzZSBhbGwgTENELXJlbGF0ZWQgcmVnaXN0ZXJzCiAgKi8KLXN0YXRpYyBp
-bnQgczNjMjQxMGZiX2luaXRfcmVnaXN0ZXJzKHN0cnVjdCBzM2MyNDEwZmJfaW5mbyAqZmJpKQor
-c3RhdGljIGludCBzM2MyNDEwZmJfaW5pdF9yZWdpc3RlcnMoc3RydWN0IGZiX2luZm8gKmluZm8p
-CiB7CisJc3RydWN0IHMzYzI0MTBmYl9pbmZvICpmYmkgPSBpbmZvLT5wYXI7CiAJdW5zaWduZWQg
-bG9uZyBmbGFnczsKIAl2b2lkIF9faW9tZW0gKnJlZ3MgPSBmYmktPmlvOwogCkBAIC02ODQsNyAr
-Njg2LDcgQEAgc3RhdGljIGludCBzM2MyNDEwZmJfaW5pdF9yZWdpc3RlcnMoc3RydQogCXdyaXRl
-bChmYmktPnJlZ3MubGNkY29uNCwgcmVncyArIFMzQzI0MTBfTENEQ09ONCk7CiAJd3JpdGVsKGZi
-aS0+cmVncy5sY2Rjb241LCByZWdzICsgUzNDMjQxMF9MQ0RDT041KTsKIAotCXMzYzI0MTBmYl9z
-ZXRfbGNkYWRkcihmYmkpOworCXMzYzI0MTBmYl9zZXRfbGNkYWRkcihpbmZvKTsKIAogCWRwcmlu
-dGsoIkxQQ1NFTCAgICA9IDB4JTA4bHhcbiIsIG1hY2hfaW5mby0+bHBjc2VsKTsKIAl3cml0ZWwo
-bWFjaF9pbmZvLT5scGNzZWwsIHJlZ3MgKyBTM0MyNDEwX0xQQ1NFTCk7CkBAIC03NzcsNyArNzc5
-LDYgQEAgc3RhdGljIGludCBfX2luaXQgczNjMjQxMGZiX3Byb2JlKHN0cnVjdAogCQlyZXR1cm4g
-LUVOT01FTTsKIAogCWluZm8gPSBmYmluZm8tPnBhcjsKLQlpbmZvLT5mYiA9IGZiaW5mbzsKIAlp
-bmZvLT5kZXYgPSAmcGRldi0+ZGV2OwogCiAJcmVzID0gcGxhdGZvcm1fZ2V0X3Jlc291cmNlKHBk
-ZXYsIElPUkVTT1VSQ0VfTUVNLCAwKTsKQEAgLTg5MCw3ICs4OTEsNyBAQCBzdGF0aWMgaW50IF9f
-aW5pdCBzM2MyNDEwZmJfcHJvYmUoc3RydWN0CiAJbXNsZWVwKDEpOwogCiAJLyogSW5pdGlhbGl6
-ZSB2aWRlbyBtZW1vcnkgKi8KLQlyZXQgPSBzM2MyNDEwZmJfbWFwX3ZpZGVvX21lbW9yeShpbmZv
-KTsKKwlyZXQgPSBzM2MyNDEwZmJfbWFwX3ZpZGVvX21lbW9yeShmYmluZm8pOwogCWlmIChyZXQp
-IHsKIAkJcHJpbnRrKEtFUk5fRVJSICJGYWlsZWQgdG8gYWxsb2NhdGUgdmlkZW8gUkFNOiAlZFxu
-IiwgcmV0KTsKIAkJcmV0ID0gLUVOT01FTTsKQEAgLTg5OSw3ICs5MDAsNyBAQCBzdGF0aWMgaW50
-IF9faW5pdCBzM2MyNDEwZmJfcHJvYmUoc3RydWN0CiAKIAlkcHJpbnRrKCJnb3QgdmlkZW8gbWVt
-b3J5XG4iKTsKIAotCXMzYzI0MTBmYl9pbml0X3JlZ2lzdGVycyhpbmZvKTsKKwlzM2MyNDEwZmJf
-aW5pdF9yZWdpc3RlcnMoZmJpbmZvKTsKIAogCXMzYzI0MTBmYl9jaGVja192YXIoJmZiaW5mby0+
-dmFyLCBmYmluZm8pOwogCmRpZmYgLXVycCBsaW51eC0yLjYuMjMub2xkL2RyaXZlcnMvdmlkZW8v
-czNjMjQxMGZiLmggbGludXgtMi42LjIzL2RyaXZlcnMvdmlkZW8vczNjMjQxMGZiLmgKLS0tIGxp
-bnV4LTIuNi4yMy5vbGQvZHJpdmVycy92aWRlby9zM2MyNDEwZmIuaAkyMDA3LTA4LTAyIDEwOjIx
-OjA4LjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjIzL2RyaXZlcnMvdmlkZW8vczNjMjQx
-MGZiLmgJMjAwNy0wOC0wMyAwNzoxNjo1MC4wMDAwMDAwMDAgKzAyMDAKQEAgLTI2LDcgKzI2LDYg
-QEAKICNkZWZpbmUgX19TM0MyNDEwRkJfSAogCiBzdHJ1Y3QgczNjMjQxMGZiX2luZm8gewotCXN0
-cnVjdCBmYl9pbmZvCQkqZmI7CiAJc3RydWN0IGRldmljZQkJKmRldjsKIAlzdHJ1Y3QgY2xrCQkq
-Y2xrOwogCg==
+RnJvbTogS3J6eXN6dG9mIEhlbHQgPGtyenlzenRvZi5oMUB3cC5wbD4KClRoaXMgcGF0Y2ggY2xl
+YW5zIHVwIHRoZSBkcml2ZXIgYSBiaXQuIEl0IGNvbnRhaW5zCmNvZGluZyBzdHlsZSBmaXhlcyAo
+cG9pbnRlZCBieSBMaW5kZW50IGFuZCBjaGVja3BhdGNoKQphbmQgd2hpdGUgc3BhY2UgY2xlYW4g
+dXBzLgoKU2lnbmVkLW9mZi1ieTogS3J6eXN6dG9mIEhlbHQgPGtyenlzenRvZi5oMUB3cC5wbD4K
+Ci0tLQoKLS0tIGxpbnV4LTIuNi4yMy5vbGQvZHJpdmVycy92aWRlby9mZmIuYwkyMDA3LTA4LTAy
+IDEwOjIxOjEwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjIzL2RyaXZlcnMvdmlkZW8v
+ZmZiLmMJMjAwNy0wOC0wMyAxOTo0Mjo1NC4wMDAwMDAwMDAgKzAyMDAKQEAgLTE3MSwxNyArMTcx
+LDE3IEBAIHN0YXRpYyBzdHJ1Y3QgZmJfb3BzIGZmYl9vcHMgPSB7CiAjZGVmaW5lIEZGQl9QUENf
+Q1NfVkFSCQkweDAwMDAwMgogI2RlZmluZSBGRkJfUFBDX0NTX0NPTlNUCTB4MDAwMDAzCiAKLSNk
+ZWZpbmUgRkZCX1JPUF9ORVcgICAgICAgICAgICAgICAgICAweDgzCi0jZGVmaW5lIEZGQl9ST1Bf
+T0xEICAgICAgICAgICAgICAgICAgMHg4NQotI2RlZmluZSBGRkJfUk9QX05FV19YT1JfT0xEICAg
+ICAgICAgIDB4ODYKLQotI2RlZmluZSBGRkJfVUNTUl9GSUZPX01BU0sgICAgIDB4MDAwMDBmZmYK
+LSNkZWZpbmUgRkZCX1VDU1JfRkJfQlVTWSAgICAgICAweDAxMDAwMDAwCi0jZGVmaW5lIEZGQl9V
+Q1NSX1JQX0JVU1kgICAgICAgMHgwMjAwMDAwMAotI2RlZmluZSBGRkJfVUNTUl9BTExfQlVTWSAg
+ICAgIChGRkJfVUNTUl9SUF9CVVNZfEZGQl9VQ1NSX0ZCX0JVU1kpCi0jZGVmaW5lIEZGQl9VQ1NS
+X1JFQURfRVJSICAgICAgMHg0MDAwMDAwMAotI2RlZmluZSBGRkJfVUNTUl9GSUZPX09WRkwgICAg
+IDB4ODAwMDAwMDAKLSNkZWZpbmUgRkZCX1VDU1JfQUxMX0VSUk9SUyAgICAoRkZCX1VDU1JfUkVB
+RF9FUlJ8RkZCX1VDU1JfRklGT19PVkZMKQorI2RlZmluZSBGRkJfUk9QX05FVwkJMHg4MworI2Rl
+ZmluZSBGRkJfUk9QX09MRAkJMHg4NQorI2RlZmluZSBGRkJfUk9QX05FV19YT1JfT0xECTB4ODYK
+KworI2RlZmluZSBGRkJfVUNTUl9GSUZPX01BU0sJMHgwMDAwMGZmZgorI2RlZmluZSBGRkJfVUNT
+Ul9GQl9CVVNZCTB4MDEwMDAwMDAKKyNkZWZpbmUgRkZCX1VDU1JfUlBfQlVTWQkweDAyMDAwMDAw
+CisjZGVmaW5lIEZGQl9VQ1NSX0FMTF9CVVNZCShGRkJfVUNTUl9SUF9CVVNZfEZGQl9VQ1NSX0ZC
+X0JVU1kpCisjZGVmaW5lIEZGQl9VQ1NSX1JFQURfRVJSCTB4NDAwMDAwMDAKKyNkZWZpbmUgRkZC
+X1VDU1JfRklGT19PVkZMCTB4ODAwMDAwMDAKKyNkZWZpbmUgRkZCX1VDU1JfQUxMX0VSUk9SUwko
+RkZCX1VDU1JfUkVBRF9FUlJ8RkZCX1VDU1JfRklGT19PVkZMKQogCiBzdHJ1Y3QgZmZiX2ZiYyB7
+CiAJLyogTmV4dCB2ZXJ0ZXggcmVnaXN0ZXJzICovCkBAIC0xOTcsNyArMTk3LDcgQEAgc3RydWN0
+IGZmYl9mYmMgewogCXUzMglyeWY7CiAJdTMyCXJ4ZjsKIAl1MzIJeHh4M1syXTsKLQkKKwogCXUz
+MglkbXlmOwogCXUzMglkbXhmOwogCXUzMgl4eHg0WzJdOwpAQCAtMjExLDEzICsyMTEsMTMgQEAg
+c3RydWN0IGZmYl9mYmMgewogCXUzMgliaDsKIAl1MzIJYnc7CiAJdTMyCXh4eDZbMl07Ci0JCisK
+IAl1MzIJeHh4N1szMl07Ci0JCisKIAkvKiBTZXR1cCB1bml0IHZlcnRleCBzdGF0ZSByZWdpc3Rl
+ciAqLwogCXUzMglzdXZ0eDsKIAl1MzIJeHh4OFs2M107Ci0JCisKIAkvKiBDb250cm9sIHJlZ2lz
+dGVycyAqLwogCXUzMglwcGM7CiAJdTMyCXdpZDsKQEAgLTIzNSw3ICsyMzUsNyBAQCBzdHJ1Y3Qg
+ZmZiX2ZiYyB7CiAJdTMyCWRjc2I7CiAJdTMyCWRjemY7CiAJdTMyCWRjemI7Ci0JCisKIAl1MzIJ
+eHh4OTsKIAl1MzIJYmxlbmRjOwogCXUzMglibGVuZGMxOwpAQCAtMjUyLDcgKzI1Miw3IEBAIHN0
+cnVjdCBmZmJfZmJjIHsKIAl1MzIJZmJjZmcxOwogCXUzMglmYmNmZzI7CiAJdTMyCWZiY2ZnMzsK
+LQkKKwogCXUzMglwcGNmZzsKIAl1MzIJcGljazsKIAl1MzIJZmlsbG1vZGU7CkBAIC0yNjksNyAr
+MjY5LDcgQEAgc3RydWN0IGZmYl9mYmMgewogCXUzMgljbGlwMm1heDsKIAl1MzIJY2xpcDNtaW47
+CiAJdTMyCWNsaXAzbWF4OwotCQorCiAJLyogTmV3IDNkUkFNIElJSSBzdXBwb3J0IHJlZ3MgKi8K
+IAl1MzIJcmF3YmxlbmQyOwogCXUzMglyYXdwcmVibGVuZDsKQEAgLTI4Nyw3ICsyODcsNyBAQCBz
+dHJ1Y3QgZmZiX2ZiYyB7CiAJdTMyCXJhd2NtcDsKIAl1MzIJcmF3d2FjOwogCXUzMglmYnJhbWlk
+OwotCQorCiAJdTMyCWRyYXdvcDsKIAl1MzIJeHh4MTBbMl07CiAJdTMyCWZvbnRscGF0OwpAQCAt
+MzAyLDcgKzMwMiw3IEBAIHN0cnVjdCBmZmJfZmJjIHsKIAl1MzIJc3RlbmNpbDsKIAl1MzIJc3Rl
+bmNpbGN0bDsKIAotCXUzMgl4eHgxM1s0XTsJCisJdTMyCXh4eDEzWzRdOwogCXUzMglkY3NzMTsK
+IAl1MzIJZGNzczI7CiAJdTMyCWRjc3MzOwpAQCAtMzE1LDE3ICszMTUsMTcgQEAgc3RydWN0IGZm
+Yl9mYmMgewogCXUzMglkY2QzOwogCXUzMglkY2Q0OwogCXUzMgl4eHgxNTsKLQkKKwogCXUzMglw
+YXR0ZXJuWzMyXTsKLQkKKwogCXUzMgl4eHgxNlsyNTZdOwotCQorCiAJdTMyCWRldmlkOwogCXUz
+Mgl4eHgxN1s2M107Ci0JCisKIAl1MzIJdWNzcjsKIAl1MzIJeHh4MThbMzFdOwotCQorCiAJdTMy
+CW1lcjsKIH07CiAKQEAgLTMzNiwyMCArMzM2LDIwIEBAIHN0cnVjdCBmZmJfZGFjIHsKIAl1MzIJ
+dmFsdWUyOwogfTsKIAotI2RlZmluZSBGRkJfREFDX1VDVFJMCTB4MTAwMSAvKiBVc2VyIENvbnRy
+b2wgKi8KLSNkZWZpbmUgIEZGQl9EQUNfVUNUUkxfTUFOUkVWCTB4MDAwMDBmMDAgLyogNC1iaXQg
+TWFudWZhY3R1cmluZyBSZXZpc2lvbiAqLwotI2RlZmluZSAgRkZCX0RBQ19VQ1RSTF9NQU5SRVZf
+U0hJRlQgOAotI2RlZmluZSBGRkJfREFDX1RHRU4JMHg2MDAwIC8qIFRpbWluZyBHZW5lcmF0b3Ig
+Ki8KLSNkZWZpbmUgIEZGQl9EQUNfVEdFTl9WSURFCTB4MDAwMDAwMDEgLyogVmlkZW8gRW5hYmxl
+ICovCi0jZGVmaW5lIEZGQl9EQUNfRElECTB4ODAwMCAvKiBEZXZpY2UgSWRlbnRpZmljYXRpb24g
+Ki8KLSNkZWZpbmUgIEZGQl9EQUNfRElEX1BOVU0JMHgwZmZmZjAwMCAvKiBEZXZpY2UgUGFydCBO
+dW1iZXIgKi8KLSNkZWZpbmUgIEZGQl9EQUNfRElEX1BOVU1fU0hJRlQgMTIKLSNkZWZpbmUgIEZG
+Ql9EQUNfRElEX1JFVgkweGYwMDAwMDAwIC8qIERldmljZSBSZXZpc2lvbiAqLwotI2RlZmluZSAg
+RkZCX0RBQ19ESURfUkVWX1NISUZUIDI4CisjZGVmaW5lIEZGQl9EQUNfVUNUUkwJCTB4MTAwMSAv
+KiBVc2VyIENvbnRyb2wgKi8KKyNkZWZpbmUgRkZCX0RBQ19VQ1RSTF9NQU5SRVYJMHgwMDAwMGYw
+MCAvKiA0LWJpdCBNYW51ZmFjdHVyaW5nIFJldmlzaW9uICovCisjZGVmaW5lIEZGQl9EQUNfVUNU
+UkxfTUFOUkVWX1NISUZUIDgKKyNkZWZpbmUgRkZCX0RBQ19UR0VOCQkweDYwMDAgLyogVGltaW5n
+IEdlbmVyYXRvciAqLworI2RlZmluZSBGRkJfREFDX1RHRU5fVklERQkweDAwMDAwMDAxIC8qIFZp
+ZGVvIEVuYWJsZSAqLworI2RlZmluZSBGRkJfREFDX0RJRAkJMHg4MDAwIC8qIERldmljZSBJZGVu
+dGlmaWNhdGlvbiAqLworI2RlZmluZSBGRkJfREFDX0RJRF9QTlVNCTB4MGZmZmYwMDAgLyogRGV2
+aWNlIFBhcnQgTnVtYmVyICovCisjZGVmaW5lIEZGQl9EQUNfRElEX1BOVU1fU0hJRlQJMTIKKyNk
+ZWZpbmUgRkZCX0RBQ19ESURfUkVWCQkweGYwMDAwMDAwIC8qIERldmljZSBSZXZpc2lvbiAqLwor
+I2RlZmluZSBGRkJfREFDX0RJRF9SRVZfU0hJRlQJMjgKIAogI2RlZmluZSBGRkJfREFDX0NVUl9D
+VFJMCTB4MTAwCi0jZGVmaW5lICBGRkJfREFDX0NVUl9DVFJMX1AwCTB4MDAwMDAwMDEKLSNkZWZp
+bmUgIEZGQl9EQUNfQ1VSX0NUUkxfUDEJMHgwMDAwMDAwMgorI2RlZmluZSBGRkJfREFDX0NVUl9D
+VFJMX1AwCTB4MDAwMDAwMDEKKyNkZWZpbmUgRkZCX0RBQ19DVVJfQ1RSTF9QMQkweDAwMDAwMDAy
+CiAKIHN0cnVjdCBmZmJfcGFyIHsKIAlzcGlubG9ja190CQlsb2NrOwpAQCAtMzgyLDcgKzM4Miw5
+IEBAIHN0YXRpYyB2b2lkIEZGQkZpZm8oc3RydWN0IGZmYl9wYXIgKnBhciwKIAogCWlmIChjYWNo
+ZSAtIG4gPCAwKSB7CiAJCWZiYyA9IHBhci0+ZmJjOwotCQlkbyB7CWNhY2hlID0gKHVwYV9yZWFk
+bCgmZmJjLT51Y3NyKSAmIEZGQl9VQ1NSX0ZJRk9fTUFTSykgLSA4OworCQlkbyB7CisJCQljYWNo
+ZSA9ICh1cGFfcmVhZGwoJmZiYy0+dWNzcikgJiBGRkJfVUNTUl9GSUZPX01BU0spOworCQkJY2Fj
+aGUgLT0gODsKIAkJfSB3aGlsZSAoY2FjaGUgLSBuIDwgMCk7CiAJfQogCXBhci0+Zmlmb19jYWNo
+ZSA9IGNhY2hlIC0gbjsKQEAgLTQwMSwxMiArNDAzLDEyIEBAIHN0YXRpYyB2b2lkIEZGQldhaXQo
+c3RydWN0IGZmYl9wYXIgKnBhcikKIAkJCXVwYV93cml0ZWwoRkZCX1VDU1JfQUxMX0VSUk9SUywg
+JmZiYy0+dWNzcik7CiAJCX0KIAkJdWRlbGF5KDEwKTsKLQl9IHdoaWxlKC0tbGltaXQgPiAwKTsK
+Kwl9IHdoaWxlICgtLWxpbWl0ID4gMCk7CiB9CiAKIHN0YXRpYyBpbnQgZmZiX3N5bmMoc3RydWN0
+IGZiX2luZm8gKnApCiB7Ci0Jc3RydWN0IGZmYl9wYXIgKnBhciA9IChzdHJ1Y3QgZmZiX3BhciAq
+KSBwLT5wYXI7CisJc3RydWN0IGZmYl9wYXIgKnBhciA9IChzdHJ1Y3QgZmZiX3BhciAqKXAtPnBh
+cjsKIAogCUZGQldhaXQocGFyKTsKIAlyZXR1cm4gMDsKQEAgLTQzMSw4ICs0MzMsOCBAQCBzdGF0
+aWMgdm9pZCBmZmJfc3dpdGNoX2Zyb21fZ3JhcGgoc3RydWN0CiAJRkZCV2FpdChwYXIpOwogCXBh
+ci0+Zmlmb19jYWNoZSA9IDA7CiAJRkZCRmlmbyhwYXIsIDcpOwotCXVwYV93cml0ZWwoRkZCX1BQ
+Q19WQ0VfRElTQUJMRXxGRkJfUFBDX1RCRV9PUEFRVUV8Ci0JCSAgIEZGQl9QUENfQVBFX0RJU0FC
+TEV8RkZCX1BQQ19DU19DT05TVCwKKwl1cGFfd3JpdGVsKEZGQl9QUENfVkNFX0RJU0FCTEUgfCBG
+RkJfUFBDX1RCRV9PUEFRVUUgfAorCQkgICBGRkJfUFBDX0FQRV9ESVNBQkxFIHwgRkZCX1BQQ19D
+U19DT05TVCwKIAkJICAgJmZiYy0+cHBjKTsKIAl1cGFfd3JpdGVsKDB4MjAwMDcwN2YsICZmYmMt
+PmZiYyk7CiAJdXBhX3dyaXRlbChwYXItPnJvcF9jYWNoZSwgJmZiYy0+cm9wKTsKQEAgLTQ1NSw3
+ICs0NTcsNyBAQCBzdGF0aWMgdm9pZCBmZmJfc3dpdGNoX2Zyb21fZ3JhcGgoc3RydWN0CiAKIHN0
+YXRpYyBpbnQgZmZiX3Bhbl9kaXNwbGF5KHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLCBz
+dHJ1Y3QgZmJfaW5mbyAqaW5mbykKIHsKLQlzdHJ1Y3QgZmZiX3BhciAqcGFyID0gKHN0cnVjdCBm
+ZmJfcGFyICopIGluZm8tPnBhcjsKKwlzdHJ1Y3QgZmZiX3BhciAqcGFyID0gKHN0cnVjdCBmZmJf
+cGFyICopaW5mby0+cGFyOwogCiAJLyogV2UganVzdCB1c2UgdGhpcyB0byBjYXRjaCBzd2l0Y2hl
+cyBvdXQgb2YKIAkgKiBncmFwaGljcyBtb2RlLgpAQCAtNDY4LDE2ICs0NzAsMTQgQEAgc3RhdGlj
+IGludCBmZmJfcGFuX2Rpc3BsYXkoc3RydWN0IGZiX3ZhcgogfQogCiAvKioKLSAqICAgICAgZmZi
+X2ZpbGxyZWN0IC0gUkVRVUlSRUQgZnVuY3Rpb24uIENhbiB1c2UgZ2VuZXJpYyByb3V0aW5lcyBp
+ZiAKLSAqICAgICAgICAgICAgICAgICAgICAgbm9uIGFjY2xlcmF0ZWQgaGFyZHdhcmUgYW5kIHBh
+Y2tlZCBwaXhlbCBiYXNlZC4KLSAqICAgICAgICAgICAgICAgICAgICAgRHJhd3MgYSByZWN0YW5n
+bGUgb24gdGhlIHNjcmVlbi4gICAgICAgICAgICAgICAKKyAqCWZmYl9maWxscmVjdCAtIERyYXdz
+IGEgcmVjdGFuZ2xlIG9uIHRoZSBzY3JlZW4uCiAgKgotICogICAgICBAaW5mbzogZnJhbWUgYnVm
+ZmVyIHN0cnVjdHVyZSB0aGF0IHJlcHJlc2VudHMgYSBzaW5nbGUgZnJhbWUgYnVmZmVyCi0gKiAg
+ICAgIEByZWN0OiBzdHJ1Y3R1cmUgZGVmaW5pbmcgdGhlIHJlY3RhZ2xlIGFuZCBvcGVyYXRpb24u
+CisgKglAaW5mbzogZnJhbWUgYnVmZmVyIHN0cnVjdHVyZSB0aGF0IHJlcHJlc2VudHMgYSBzaW5n
+bGUgZnJhbWUgYnVmZmVyCisgKglAcmVjdDogc3RydWN0dXJlIGRlZmluaW5nIHRoZSByZWN0YWds
+ZSBhbmQgb3BlcmF0aW9uLgogICovCiBzdGF0aWMgdm9pZCBmZmJfZmlsbHJlY3Qoc3RydWN0IGZi
+X2luZm8gKmluZm8sIGNvbnN0IHN0cnVjdCBmYl9maWxscmVjdCAqcmVjdCkKIHsKLQlzdHJ1Y3Qg
+ZmZiX3BhciAqcGFyID0gKHN0cnVjdCBmZmJfcGFyICopIGluZm8tPnBhcjsKKwlzdHJ1Y3QgZmZi
+X3BhciAqcGFyID0gKHN0cnVjdCBmZmJfcGFyICopaW5mby0+cGFyOwogCXN0cnVjdCBmZmJfZmJj
+IF9faW9tZW0gKmZiYyA9IHBhci0+ZmJjOwogCXVuc2lnbmVkIGxvbmcgZmxhZ3M7CiAJdTMyIGZn
+OwpAQCAtNDk0LDkgKzQ5NCw5IEBAIHN0YXRpYyB2b2lkIGZmYl9maWxscmVjdChzdHJ1Y3QgZmJf
+aW5mbyAKIAkJcGFyLT5mZ19jYWNoZSA9IGZnOwogCX0KIAotCWZmYl9yb3AocGFyLCAocmVjdC0+
+cm9wID09IFJPUF9DT1BZID8KLQkJICAgICAgRkZCX1JPUF9ORVcgOgotCQkgICAgICBGRkJfUk9Q
+X05FV19YT1JfT0xEKSk7CisJZmZiX3JvcChwYXIsIHJlY3QtPnJvcCA9PSBST1BfQ09QWSA/CisJ
+CSAgICAgRkZCX1JPUF9ORVcgOgorCQkgICAgIEZGQl9ST1BfTkVXX1hPUl9PTEQpOwogCiAJRkZC
+RmlmbyhwYXIsIDUpOwogCXVwYV93cml0ZWwoRkZCX0RSQVdPUF9SRUNUQU5HTEUsICZmYmMtPmRy
+YXdvcCk7CkBAIC01MDksMTggKzUwOSwxNSBAQCBzdGF0aWMgdm9pZCBmZmJfZmlsbHJlY3Qoc3Ry
+dWN0IGZiX2luZm8gCiB9CiAKIC8qKgotICogICAgICBmZmJfY29weWFyZWEgLSBSRVFVSVJFRCBm
+dW5jdGlvbi4gQ2FuIHVzZSBnZW5lcmljIHJvdXRpbmVzIGlmCi0gKiAgICAgICAgICAgICAgICAg
+ICAgIG5vbiBhY2NsZXJhdGVkIGhhcmR3YXJlIGFuZCBwYWNrZWQgcGl4ZWwgYmFzZWQuCi0gKiAg
+ICAgICAgICAgICAgICAgICAgIENvcGllcyBvbiBhcmVhIG9mIHRoZSBzY3JlZW4gdG8gYW5vdGhl
+ciBhcmVhLgorICoJZmZiX2NvcHlhcmVhIC0gQ29waWVzIG9uIGFyZWEgb2YgdGhlIHNjcmVlbiB0
+byBhbm90aGVyIGFyZWEuCiAgKgotICogICAgICBAaW5mbzogZnJhbWUgYnVmZmVyIHN0cnVjdHVy
+ZSB0aGF0IHJlcHJlc2VudHMgYSBzaW5nbGUgZnJhbWUgYnVmZmVyCi0gKiAgICAgIEBhcmVhOiBz
+dHJ1Y3R1cmUgZGVmaW5pbmcgdGhlIHNvdXJjZSBhbmQgZGVzdGluYXRpb24uCisgKglAaW5mbzog
+ZnJhbWUgYnVmZmVyIHN0cnVjdHVyZSB0aGF0IHJlcHJlc2VudHMgYSBzaW5nbGUgZnJhbWUgYnVm
+ZmVyCisgKglAYXJlYTogc3RydWN0dXJlIGRlZmluaW5nIHRoZSBzb3VyY2UgYW5kIGRlc3RpbmF0
+aW9uLgogICovCiAKLXN0YXRpYyB2b2lkCi1mZmJfY29weWFyZWEoc3RydWN0IGZiX2luZm8gKmlu
+Zm8sIGNvbnN0IHN0cnVjdCBmYl9jb3B5YXJlYSAqYXJlYSkgCitzdGF0aWMgdm9pZCBmZmJfY29w
+eWFyZWEoc3RydWN0IGZiX2luZm8gKmluZm8sIGNvbnN0IHN0cnVjdCBmYl9jb3B5YXJlYSAqYXJl
+YSkKIHsKLQlzdHJ1Y3QgZmZiX3BhciAqcGFyID0gKHN0cnVjdCBmZmJfcGFyICopIGluZm8tPnBh
+cjsKKwlzdHJ1Y3QgZmZiX3BhciAqcGFyID0gKHN0cnVjdCBmZmJfcGFyICopaW5mby0+cGFyOwog
+CXN0cnVjdCBmZmJfZmJjIF9faW9tZW0gKmZiYyA9IHBhci0+ZmJjOwogCXVuc2lnbmVkIGxvbmcg
+ZmxhZ3M7CiAKQEAgLTU0NywxNiArNTQ0LDE0IEBAIGZmYl9jb3B5YXJlYShzdHJ1Y3QgZmJfaW5m
+byAqaW5mbywgY29uc3QKIH0KIAogLyoqCi0gKiAgICAgIGZmYl9pbWFnZWJsaXQgLSBSRVFVSVJF
+RCBmdW5jdGlvbi4gQ2FuIHVzZSBnZW5lcmljIHJvdXRpbmVzIGlmCi0gKiAgICAgICAgICAgICAg
+ICAgICAgICBub24gYWNjbGVyYXRlZCBoYXJkd2FyZSBhbmQgcGFja2VkIHBpeGVsIGJhc2VkLgot
+ICogICAgICAgICAgICAgICAgICAgICAgQ29waWVzIGEgaW1hZ2UgZnJvbSBzeXN0ZW0gbWVtb3J5
+IHRvIHRoZSBzY3JlZW4uIAorICoJZmZiX2ltYWdlYmxpdCAtIENvcGllcyBhIGltYWdlIGZyb20g
+c3lzdGVtIG1lbW9yeSB0byB0aGUgc2NyZWVuLgogICoKLSAqICAgICAgQGluZm86IGZyYW1lIGJ1
+ZmZlciBzdHJ1Y3R1cmUgdGhhdCByZXByZXNlbnRzIGEgc2luZ2xlIGZyYW1lIGJ1ZmZlcgotICog
+ICAgICBAaW1hZ2U6IHN0cnVjdHVyZSBkZWZpbmluZyB0aGUgaW1hZ2UuCisgKglAaW5mbzogZnJh
+bWUgYnVmZmVyIHN0cnVjdHVyZSB0aGF0IHJlcHJlc2VudHMgYSBzaW5nbGUgZnJhbWUgYnVmZmVy
+CisgKglAaW1hZ2U6IHN0cnVjdHVyZSBkZWZpbmluZyB0aGUgaW1hZ2UuCiAgKi8KIHN0YXRpYyB2
+b2lkIGZmYl9pbWFnZWJsaXQoc3RydWN0IGZiX2luZm8gKmluZm8sIGNvbnN0IHN0cnVjdCBmYl9p
+bWFnZSAqaW1hZ2UpCiB7Ci0Jc3RydWN0IGZmYl9wYXIgKnBhciA9IChzdHJ1Y3QgZmZiX3BhciAq
+KSBpbmZvLT5wYXI7CisJc3RydWN0IGZmYl9wYXIgKnBhciA9IChzdHJ1Y3QgZmZiX3BhciAqKWlu
+Zm8tPnBhcjsKIAlzdHJ1Y3QgZmZiX2ZiYyBfX2lvbWVtICpmYmMgPSBwYXItPmZiYzsKIAljb25z
+dCB1OCAqZGF0YSA9IGltYWdlLT5kYXRhOwogCXVuc2lnbmVkIGxvbmcgZmxhZ3M7CkBAIC02NDQs
+MTMgKzYzOSwxNCBAQCBzdGF0aWMgdm9pZCBmZmJfZml4dXBfdmFyX3JnYihzdHJ1Y3QgZmJfCiB9
+CiAKIC8qKgotICogICAgICBmZmJfc2V0Y29scmVnIC0gT3B0aW9uYWwgZnVuY3Rpb24uIFNldHMg
+YSBjb2xvciByZWdpc3Rlci4KLSAqICAgICAgQHJlZ25vOiBib29sZWFuLCAwIGNvcHkgbG9jYWws
+IDEgZ2V0X3VzZXIoKSBmdW5jdGlvbgotICogICAgICBAcmVkOiBmcmFtZSBidWZmZXIgY29sb3Jt
+YXAgc3RydWN0dXJlCi0gKiAgICAgIEBncmVlbjogVGhlIGdyZWVuIHZhbHVlIHdoaWNoIGNhbiBi
+ZSB1cCB0byAxNiBiaXRzIHdpZGUKLSAqICAgICAgQGJsdWU6ICBUaGUgYmx1ZSB2YWx1ZSB3aGlj
+aCBjYW4gYmUgdXAgdG8gMTYgYml0cyB3aWRlLgotICogICAgICBAdHJhbnNwOiBJZiBzdXBwb3J0
+ZWQgdGhlIGFscGhhIHZhbHVlIHdoaWNoIGNhbiBiZSB1cCB0byAxNiBiaXRzIHdpZGUuCi0gKiAg
+ICAgIEBpbmZvOiBmcmFtZSBidWZmZXIgaW5mbyBzdHJ1Y3R1cmUKKyAqCWZmYl9zZXRjb2xyZWcg
+LSBTZXRzIGEgY29sb3IgcmVnaXN0ZXIuCisgKgorICoJQHJlZ25vOiBib29sZWFuLCAwIGNvcHkg
+bG9jYWwsIDEgZ2V0X3VzZXIoKSBmdW5jdGlvbgorICoJQHJlZDogZnJhbWUgYnVmZmVyIGNvbG9y
+bWFwIHN0cnVjdHVyZQorICoJQGdyZWVuOiBUaGUgZ3JlZW4gdmFsdWUgd2hpY2ggY2FuIGJlIHVw
+IHRvIDE2IGJpdHMgd2lkZQorICoJQGJsdWU6ICBUaGUgYmx1ZSB2YWx1ZSB3aGljaCBjYW4gYmUg
+dXAgdG8gMTYgYml0cyB3aWRlLgorICoJQHRyYW5zcDogSWYgc3VwcG9ydGVkIHRoZSBhbHBoYSB2
+YWx1ZSB3aGljaCBjYW4gYmUgdXAgdG8gMTYgYml0cyB3aWRlLgorICoJQGluZm86IGZyYW1lIGJ1
+ZmZlciBpbmZvIHN0cnVjdHVyZQogICovCiBzdGF0aWMgaW50IGZmYl9zZXRjb2xyZWcodW5zaWdu
+ZWQgcmVnbm8sCiAJCQkgdW5zaWduZWQgcmVkLCB1bnNpZ25lZCBncmVlbiwgdW5zaWduZWQgYmx1
+ZSwKQEAgLTY3MiwxNCArNjY4LDEzIEBAIHN0YXRpYyBpbnQgZmZiX3NldGNvbHJlZyh1bnNpZ25l
+ZCByZWdubywKIH0KIAogLyoqCi0gKiAgICAgIGZmYl9ibGFuayAtIE9wdGlvbmFsIGZ1bmN0aW9u
+LiAgQmxhbmtzIHRoZSBkaXNwbGF5LgotICogICAgICBAYmxhbmtfbW9kZTogdGhlIGJsYW5rIG1v
+ZGUgd2Ugd2FudC4KLSAqICAgICAgQGluZm86IGZyYW1lIGJ1ZmZlciBzdHJ1Y3R1cmUgdGhhdCBy
+ZXByZXNlbnRzIGEgc2luZ2xlIGZyYW1lIGJ1ZmZlcgorICoJZmZiX2JsYW5rIC0gT3B0aW9uYWwg
+ZnVuY3Rpb24uICBCbGFua3MgdGhlIGRpc3BsYXkuCisgKglAYmxhbmtfbW9kZTogdGhlIGJsYW5r
+IG1vZGUgd2Ugd2FudC4KKyAqCUBpbmZvOiBmcmFtZSBidWZmZXIgc3RydWN0dXJlIHRoYXQgcmVw
+cmVzZW50cyBhIHNpbmdsZSBmcmFtZSBidWZmZXIKICAqLwotc3RhdGljIGludAotZmZiX2JsYW5r
+KGludCBibGFuaywgc3RydWN0IGZiX2luZm8gKmluZm8pCitzdGF0aWMgaW50IGZmYl9ibGFuayhp
+bnQgYmxhbmssIHN0cnVjdCBmYl9pbmZvICppbmZvKQogewotCXN0cnVjdCBmZmJfcGFyICpwYXIg
+PSAoc3RydWN0IGZmYl9wYXIgKikgaW5mby0+cGFyOworCXN0cnVjdCBmZmJfcGFyICpwYXIgPSAo
+c3RydWN0IGZmYl9wYXIgKilpbmZvLT5wYXI7CiAJc3RydWN0IGZmYl9kYWMgX19pb21lbSAqZGFj
+ID0gcGFyLT5kYWM7CiAJdW5zaWduZWQgbG9uZyBmbGFnczsKIAl1MzIgdmFsOwpAQCAtODY3LDcg
+Kzg2Miw3IEBAIHN0YXRpYyBpbnQgZmZiX21tYXAoc3RydWN0IGZiX2luZm8gKmluZm8KIAogc3Rh
+dGljIGludCBmZmJfaW9jdGwoc3RydWN0IGZiX2luZm8gKmluZm8sIHVuc2lnbmVkIGludCBjbWQs
+IHVuc2lnbmVkIGxvbmcgYXJnKQogewotCXN0cnVjdCBmZmJfcGFyICpwYXIgPSAoc3RydWN0IGZm
+Yl9wYXIgKikgaW5mby0+cGFyOworCXN0cnVjdCBmZmJfcGFyICpwYXIgPSAoc3RydWN0IGZmYl9w
+YXIgKilpbmZvLT5wYXI7CiAKIAlyZXR1cm4gc2J1c2ZiX2lvY3RsX2hlbHBlcihjbWQsIGFyZywg
+aW5mbywKIAkJCQkgICBGQlRZUEVfQ1JFQVRPUiwgMjQsIHBhci0+ZmJzaXplKTsKQEAgLTg3Nyw4
+ICs4NzIsNyBAQCBzdGF0aWMgaW50IGZmYl9pb2N0bChzdHJ1Y3QgZmJfaW5mbyAqaW5mCiAgKiAg
+SW5pdGlhbGlzYXRpb24KICAqLwogCi1zdGF0aWMgdm9pZAotZmZiX2luaXRfZml4KHN0cnVjdCBm
+Yl9pbmZvICppbmZvKQorc3RhdGljIHZvaWQgZmZiX2luaXRfZml4KHN0cnVjdCBmYl9pbmZvICpp
+bmZvKQogewogCXN0cnVjdCBmZmJfcGFyICpwYXIgPSAoc3RydWN0IGZmYl9wYXIgKilpbmZvLT5w
+YXI7CiAJY29uc3QgY2hhciAqZmZiX3R5cGVfbmFtZTsKQEAgLTkwMiw3ICs4OTYsOCBAQCBmZmJf
+aW5pdF9maXgoc3RydWN0IGZiX2luZm8gKmluZm8pCiAJaW5mby0+Zml4LmFjY2VsID0gRkJfQUND
+RUxfU1VOX0NSRUFUT1I7CiB9CiAKLXN0YXRpYyBpbnQgX19kZXZpbml0IGZmYl9wcm9iZShzdHJ1
+Y3Qgb2ZfZGV2aWNlICpvcCwgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCAqbWF0Y2gpCitzdGF0
+aWMgaW50IF9fZGV2aW5pdCBmZmJfcHJvYmUoc3RydWN0IG9mX2RldmljZSAqb3AsCisJCQkgICAg
+ICAgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCAqbWF0Y2gpCiB7CiAJc3RydWN0IGRldmljZV9u
+b2RlICpkcCA9IG9wLT5ub2RlOwogCXN0cnVjdCBmZmJfZmJjIF9faW9tZW0gKmZiYzsK
 
---part46b4672405741
+--part46b4691aec41d
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -351,7 +674,7 @@ This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >>  http://get.splunk.com/
---part46b4672405741
+--part46b4691aec41d
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -362,4 +685,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---part46b4672405741--
+--part46b4691aec41d--

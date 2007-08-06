@@ -1,21 +1,34 @@
-From: Jan Altenberg <jan.altenberg@linutronix.de>
-Subject: [PATCH] AT91: Remove at91_lcdc.h
-Date: Sun, 05 Aug 2007 17:15:03 +0200
-Message-ID: <1186326903.6027.10.camel@jan-laptop>
+From: "hinko.kocevar@cetrtapot.si" <hinko.kocevar@cetrtapot.si>
+Subject: Re: [RFC] Dynamic boot logo
+Date: Mon, 06 Aug 2007 09:53:24 +0200
+Message-ID: <46B6D374.9080001@cetrtapot.si>
+References: <20070804134123.GA19707@enneenne.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IHhnh-0007oq-41 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 05 Aug 2007 08:13:49 -0700
-Received: from www.osadl.org ([213.239.205.134] helo=mail.tglx.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IHhng-0002bO-7f
+	id 1IHxPH-0006Id-Rp for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 06 Aug 2007 00:53:40 -0700
+Received: from n1.cetrtapot.si ([89.212.80.162])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IHxPG-0000Xb-AH
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 05 Aug 2007 08:13:49 -0700
+	Mon, 06 Aug 2007 00:53:39 -0700
+Received: from localhost (localhost.dmz.cetrtapot.si [127.0.0.1])
+	by n1.cetrtapot.si (Postfix) with ESMTP id 5FF63BD23
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  6 Aug 2007 09:53:29 +0200 (CEST)
+Received: from n1.cetrtapot.si ([127.0.0.1])
+	by localhost (n1.dmz.cetrtapot.si [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 20082-01 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  6 Aug 2007 09:53:25 +0200 (CEST)
+Received: from [172.31.65.127] (inside.kranj.cetrtapot.si [192.168.66.2])
+	by n1.cetrtapot.si (Postfix) with ESMTP id 8A688BD02
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  6 Aug 2007 09:53:25 +0200 (CEST)
+In-Reply-To: <20070804134123.GA19707@enneenne.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,177 +39,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: andrew@sanpeople.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain; charset="windows-1252"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-include/asm-arm/arch-at91/at91_lcdc.h (which is still present in latest
-git) has been superseeded by include/video/atmel_lcdc.h, so let's remove
-it.
-
-Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
-
----
- include/asm-arm/arch-at91/at91_lcdc.h |  148 ----------------------------------
- 1 file changed, 148 deletions(-)
-
-Index: linux-2.6/include/asm-arm/arch-at91/at91_lcdc.h
-===================================================================
---- linux-2.6.orig/include/asm-arm/arch-at91/at91_lcdc.h
-+++ /dev/null
-@@ -1,148 +0,0 @@
--/*
-- * include/asm-arm/arch-at91/at91_lcdc.h
-- *
-- * LCD Controller (LCDC).
-- * Based on AT91SAM9261 datasheet revision E.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- */
--
--#ifndef AT91_LCDC_H
--#define AT91_LCDC_H
--
--#define AT91_LCDC_DMABADDR1	0x00		/* DMA Base Address Register 1 */
--#define AT91_LCDC_DMABADDR2	0x04		/* DMA Base Address Register 2 */
--#define AT91_LCDC_DMAFRMPT1	0x08		/* DMA Frame Pointer Register 1 */
--#define AT91_LCDC_DMAFRMPT2	0x0c		/* DMA Frame Pointer Register 2 */
--#define AT91_LCDC_DMAFRMADD1	0x10		/* DMA Frame Address Register 1 */
--#define AT91_LCDC_DMAFRMADD2	0x14		/* DMA Frame Address Register 2 */
--
--#define AT91_LCDC_DMAFRMCFG	0x18		/* DMA Frame Configuration Register */
--#define		AT91_LCDC_FRSIZE	(0x7fffff <<  0)	/* Frame Size */
--#define		AT91_LCDC_BLENGTH	(0x7f     << 24)	/* Burst Length */
--
--#define AT91_LCDC_DMACON	0x1c		/* DMA Control Register */
--#define		AT91_LCDC_DMAEN		(0x1 << 0)	/* DMA Enable */
--#define		AT91_LCDC_DMARST	(0x1 << 1)	/* DMA Reset */
--#define		AT91_LCDC_DMABUSY	(0x1 << 2)	/* DMA Busy */
--
--#define AT91_LCDC_LCDCON1	0x0800		/* LCD Control Register 1 */
--#define		AT91_LCDC_BYPASS	(1     <<  0)	/* Bypass lcd_dotck divider */
--#define		AT91_LCDC_CLKVAL	(0x1ff << 12)	/* Clock Divider */
--#define		AT91_LCDC_LINCNT	(0x7ff << 21)	/* Line Counter */
--
--#define AT91_LCDC_LCDCON2	0x0804		/* LCD Control Register 2 */
--#define		AT91_LCDC_DISTYPE	(3 << 0)	/* Display Type */
--#define			AT91_LCDC_DISTYPE_STNMONO	(0 << 0)
--#define			AT91_LCDC_DISTYPE_STNCOLOR	(1 << 0)
--#define			AT91_LCDC_DISTYPE_TFT		(2 << 0)
--#define		AT91_LCDC_SCANMOD	(1 << 2)	/* Scan Mode */
--#define			AT91_LCDC_SCANMOD_SINGLE	(0 << 2)
--#define			AT91_LCDC_SCANMOD_DUAL		(1 << 2)
--#define		AT91_LCDC_IFWIDTH	(3 << 3)	/*Interface Width */
--#define			AT91_LCDC_IFWIDTH_4		(0 << 3)
--#define			AT91_LCDC_IFWIDTH_8		(1 << 3)
--#define			AT91_LCDC_IFWIDTH_16		(2 << 3)
--#define		AT91_LCDC_PIXELSIZE	(7 << 5)	/* Bits per pixel */
--#define			AT91_LCDC_PIXELSIZE_1		(0 << 5)
--#define			AT91_LCDC_PIXELSIZE_2		(1 << 5)
--#define			AT91_LCDC_PIXELSIZE_4		(2 << 5)
--#define			AT91_LCDC_PIXELSIZE_8		(3 << 5)
--#define			AT91_LCDC_PIXELSIZE_16		(4 << 5)
--#define			AT91_LCDC_PIXELSIZE_24		(5 << 5)
--#define		AT91_LCDC_INVVD		(1 << 8)	/* LCD Data polarity */
--#define			AT91_LCDC_INVVD_NORMAL		(0 << 8)
--#define			AT91_LCDC_INVVD_INVERTED	(1 << 8)
--#define		AT91_LCDC_INVFRAME	(1 << 9 )	/* LCD VSync polarity */
--#define			AT91_LCDC_INVFRAME_NORMAL	(0 << 9)
--#define			AT91_LCDC_INVFRAME_INVERTED	(1 << 9)
--#define		AT91_LCDC_INVLINE	(1 << 10)	/* LCD HSync polarity */
--#define			AT91_LCDC_INVLINE_NORMAL	(0 << 10)
--#define			AT91_LCDC_INVLINE_INVERTED	(1 << 10)
--#define		AT91_LCDC_INVCLK	(1 << 11)	/* LCD dotclk polarity */
--#define			AT91_LCDC_INVCLK_NORMAL		(0 << 11)
--#define			AT91_LCDC_INVCLK_INVERTED	(1 << 11)
--#define		AT91_LCDC_INVDVAL	(1 << 12)	/* LCD dval polarity */
--#define			AT91_LCDC_INVDVAL_NORMAL	(0 << 12)
--#define			AT91_LCDC_INVDVAL_INVERTED	(1 << 12)
--#define		AT91_LCDC_CLKMOD	(1 << 15)	/* LCD dotclk mode */
--#define			AT91_LCDC_CLKMOD_ACTIVEDISPLAY	(0 << 15)
--#define			AT91_LCDC_CLKMOD_ALWAYSACTIVE	(1 << 15)
--#define		AT91_LCDC_MEMOR		(1 << 31)	/* Memory Ordering Format */
--#define			AT91_LCDC_MEMOR_BIG		(0 << 31)
--#define			AT91_LCDC_MEMOR_LITTLE		(1 << 31)
--
--#define AT91_LCDC_TIM1		0x0808		/* LCD Timing Register 1 */
--#define		AT91_LCDC_VFP		(0xff <<  0)	/* Vertical Front Porch */
--#define		AT91_LCDC_VBP		(0xff <<  8)	/* Vertical Back Porch */
--#define		AT91_LCDC_VPW		(0x3f << 16)	/* Vertical Synchronization Pulse Width */
--#define		AT91_LCDC_VHDLY		(0xf  << 24)	/* Vertical to Horizontal Delay */
--
--#define AT91_LCDC_TIM2		0x080c		/* LCD Timing Register 2 */
--#define		AT91_LCDC_HBP		(0xff  <<  0)	/* Horizontal Back Porch */
--#define		AT91_LCDC_HPW		(0x3f  <<  8)	/* Horizontal Synchronization Pulse Width */
--#define		AT91_LCDC_HFP		(0x7ff << 21)	/* Horizontal Front Porch */
--
--#define AT91_LCDC_LCDFRMCFG	0x0810		/* LCD Frame Configuration Register */
--#define		AT91_LCDC_LINEVAL	(0x7ff <<  0)	/* Vertical Size of LCD Module */
--#define		AT91_LCDC_HOZVAL	(0x7ff << 21)	/* Horizontal Size of LCD Module */
--
--#define AT91_LCDC_FIFO		0x0814		/* LCD FIFO Register */
--#define		AT91_LCDC_FIFOTH	(0xffff)	/* FIFO Threshold */
--
--#define AT91_LCDC_DP1_2		0x081c		/* Dithering Pattern DP1_2 Register */
--#define AT91_LCDC_DP4_7		0x0820		/* Dithering Pattern DP4_7 Register */
--#define AT91_LCDC_DP3_5		0x0824		/* Dithering Pattern DP3_5 Register */
--#define AT91_LCDC_DP2_3		0x0828		/* Dithering Pattern DP2_3 Register */
--#define AT91_LCDC_DP5_7		0x082c		/* Dithering Pattern DP5_7 Register */
--#define AT91_LCDC_DP3_4		0x0830		/* Dithering Pattern DP3_4 Register */
--#define AT91_LCDC_DP4_5		0x0834		/* Dithering Pattern DP4_5 Register */
--#define AT91_LCDC_DP6_7		0x0838		/* Dithering Pattern DP6_7 Register */
--#define		AT91_LCDC_DP1_2_VAL	(0xff)
--#define		AT91_LCDC_DP4_7_VAL	(0xfffffff)
--#define		AT91_LCDC_DP3_5_VAL	(0xfffff)
--#define		AT91_LCDC_DP2_3_VAL	(0xfff)
--#define		AT91_LCDC_DP5_7_VAL	(0xfffffff)
--#define		AT91_LCDC_DP3_4_VAL	(0xffff)
--#define		AT91_LCDC_DP4_5_VAL	(0xfffff)
--#define		AT91_LCDC_DP6_7_VAL	(0xfffffff)
--
--#define AT91_LCDC_PWRCON	0x083c		/* Power Control Register */
--#define		AT91_LCDC_PWR		(1    <<  0)	/* LCD Module Power Control */
--#define		AT91_LCDC_GUARDT	(0x7f <<  1)	/* Delay in Frame Period */
--#define		AT91_LCDC_BUSY		(1    << 31)	/* LCD Busy */
--
--#define AT91_LCDC_CONTRAST_CTR	0x0840		/* Contrast Control Register */
--#define		AT91_LCDC_PS		(3 << 0)	/* Contrast Counter Prescaler */
--#define			AT91_LCDC_PS_DIV1		(0 << 0)
--#define			AT91_LCDC_PS_DIV2		(1 << 0)
--#define			AT91_LCDC_PS_DIV4		(2 << 0)
--#define			AT91_LCDC_PS_DIV8		(3 << 0)
--#define		AT91_LCDC_POL		(1 << 2)	/* Polarity of output Pulse */
--#define			AT91_LCDC_POL_NEGATIVE		(0 << 2)
--#define			AT91_LCDC_POL_POSITIVE		(1 << 2)
--#define		AT91_LCDC_ENA		(1 << 3)	/* PWM generator Control */
--#define			AT91_LCDC_ENA_PWMDISABLE	(0 << 3)
--#define			AT91_LCDC_ENA_PWMENABLE		(1 << 3)
--
--#define AT91_LCDC_CONTRAST_VAL	0x0844		/* Contrast Value Register */
--#define		AT91_LCDC_CVAL		(0xff)		/* PWM compare value */
--
--#define AT91_LCDC_IER		0x0848		/* Interrupt Enable Register */
--#define AT91_LCDC_IDR		0x084c		/* Interrupt Disable Register */
--#define AT91_LCDC_IMR		0x0850		/* Interrupt Mask Register */
--#define AT91_LCDC_ISR		0x0854		/* Interrupt Enable Register */
--#define AT91_LCDC_ICR		0x0858		/* Interrupt Clear Register */
--#define		AT91_LCDC_LNI		(1 << 0)	/* Line Interrupt */
--#define		AT91_LCDC_LSTLNI	(1 << 1)	/* Last Line Interrupt */
--#define		AT91_LCDC_EOFI		(1 << 2)	/* DMA End Of Frame Interrupt */
--#define		AT91_LCDC_UFLWI		(1 << 4)	/* FIFO Underflow Interrupt */
--#define		AT91_LCDC_OWRI		(1 << 5)	/* FIFO Overwrite Interrupt */
--#define		AT91_LCDC_MERI		(1 << 6)	/* DMA Memory Error Interrupt */
--
--#define AT91_LCDC_LUT_(n)	(0x0c00 + ((n)*4))	/* Palette Entry 0..255 */
--
--#endif
-
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc.
-Still grepping through log files to find problems?  Stop.
-Now Search log events and configuration files using AJAX and a browser.
-Download your FREE copy of Splunk now >>  http://get.splunk.com/
+Um9kb2xmbyBHaW9tZXR0aSB3cm90ZToKPiBIZWxsbywKPiAKPiBJJ2QgbGlrZSB0byBoYXZlIHNv
+bWUgc3VnZ2VzdGlvbnMgZnJvbSB5b3UgYWJvdXQgaG93IEkgY2FuIGltcGxlbWVudAo+IHRoZSAi
+ZHluYW1pYyBib290IGxvZ28iIGZlYXR1cmUgaW4gTGludXggcmVhZGluZyB0aGUgbG9nbyBmcm9t
+IHRoZQo+IGZsYXNoIG1lbW9yeS4KCldlIHdvdWxkIGxpa2UgdG8gaGF2ZSB0aGlzIGZlYXR1cmUg
+b24gbXkgZW1iZWRkZWQgc3lzdGVtIHRvbyEgQ3VycmVudGx5IAp3ZSBhcmUgdXNpbmcgYml0bWFw
+IGZpbGUgY29udmVydGVkIHRvIHN0YW5kYXJkIGhlYWRlciBmaWxlIGFuZCB0aGVuIApjb21waWxl
+ZCBpbiB0aGUga2VybmVsLCB3aGljaCBpcyBub3QgZmxleGlibGUgYXQgYWxsLgoKPiAKPiBJbiBt
+eSBjdXN0b20gYm9hcmQsIHVzaW5nIHUtYm9vdCBJIHJlYWQgYSBjb21wcmVzc2VkIGJpdG1hcCBm
+cm9tIHRoZQo+IGZsYXNoIG1lbW9yeSBhbmQgdGhlbiBJIHVzZSBpdCB0byBkaXNwbGF5IHRoZSBs
+b2dvLCBzbyB1c2VycyBqdXN0IGhhdmUKPiB0byBjaGFuZ2UgZmxhc2ggY29udGVudCBpbiBvcmRl
+ciB0byBjaGFuZ2UgdGhlbiBib290IGxvZ28gd2l0aG91dAo+IHJlY29tcGlsaW5nIHUtYm9vdC4K
+PiAKPiBDb3VsZCBpdCBiZSBwb3NzaWJsZSBpbiBMaW51eCBhbHNvPyBXaGljaCBjb3VsZCBiZSwg
+aW4geW91ciBvcGluaW9uLAo+IHRoZSBiZXN0IHdheSB0byBzb2x2ZSB0aGlzIHByb2JsZW0/CgpN
+YXliZSB5b3UgY291bGQgYWNjZXNzIHRoZSBzYW1lIGZsYXNoIG1lbW9yeSBmcm9tIHRoZSBMaW51
+eCB0b28gLSB1c2luZyAKZWl0aGVyIHBoeXNpY2FsIG9yIHZpcnR1YWwgYWRkcmVzcyBzcGFjZSwg
+ZWcuIGJ5IEkvTyBvciBtZW1vcnkgbWFwcGluZyBpdC4KQW5vdGhlciB3YXkgY291bGQgYmUgdXNp
+bmcgYSBkZWRpY2F0ZWQga2VybmVsIG1vZHVsZSBmb3IgdGhlIGpvYiAtIGVnLiAKeW91IGNvbXBp
+bGUgdGhlIGdyYXBoaWMgc3VwcG9ydCBpbiB0aGUgbW9kdWxlIGFuZCB0aGUgd2hlbiB1cGRhdGUg
+aXMgCm5lZWRlZCBvbmx5IG1vZHVsZSBjYW4gYmUgcmVwbGFjZWQgaW4gdGhlIGZpbGUgc3lzdGVt
+IGxlYXZpbmcga2VybmVsIAppbnRhY3QgKGF0IGxlYXN0IHdoaWxlIGtlcm5lbCB2ZXJzaW9uIGRv
+ZXMgbm90IGNoYW5nZSkuCgpJbiBvdXIgY2FzZSwgYSkgd2UgY2FuIG5vdCB1c2UgYm9vdCBsb2Fk
+ZXIgYW5kLCBiKSB3ZSB1c2Uga2VybmVsIHdpdGggCm1vZHVsZSBzdXBwb3J0IGRpc2FibGVkLCBz
+byB0aGVzZSB2YXJpYW50cyB3ZXJlIG5vdCB0ZXN0ZWQgb24gb3VyIHNpZGUuCgpIVEgsCmhpbmtv
+CgoKLS0gCsSMRVRSVEEgUE9ULCBkLm8uby4sIEtyYW5qClBsYW5pbmEgMwo0MDAwIEtyYW5qClNs
+b3ZlbmlhLCBFdXJvcGUKVGVsLiArMzg2ICgwKSA0IDI4MCA2NiAwMwpFLW1haWw6IGhpbmtvLmtv
+Y2V2YXJAY2V0cnRhcG90LnNpCkh0dHA6IHd3dy5jZXRydGFwb3Quc2kKCgotLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tClRoaXMgU0YubmV0IGVtYWlsIGlzIHNwb25zb3JlZCBieTogU3BsdW5rIEluYy4KU3RpbGwg
+Z3JlcHBpbmcgdGhyb3VnaCBsb2cgZmlsZXMgdG8gZmluZCBwcm9ibGVtcz8gIFN0b3AuCk5vdyBT
+ZWFyY2ggbG9nIGV2ZW50cyBhbmQgY29uZmlndXJhdGlvbiBmaWxlcyB1c2luZyBBSkFYIGFuZCBh
+IGJyb3dzZXIuCkRvd25sb2FkIHlvdXIgRlJFRSBjb3B5IG9mIFNwbHVuayBub3cgPj4gIGh0dHA6
+Ly9nZXQuc3BsdW5rLmNvbS8KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVs
+QGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0
+cy9saXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=

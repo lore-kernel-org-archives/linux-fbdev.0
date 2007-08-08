@@ -1,20 +1,27 @@
-From: sanjeev sinha <sinha_crl@yahoo.co.in>
-Subject: help required for Frame buffer update region
-Date: Wed, 8 Aug 2007 12:55:46 +0100 (BST)
-Message-ID: <78833.58007.qm@web94105.mail.in2.yahoo.com>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH/RFC] fbdev: fb_create_modedb()
+	non-static `int first = 1; '
+Date: Wed, 8 Aug 2007 14:11:58 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0708081410170.15170@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0796362884=="
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-2011906981-1186575118=:15170"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IIk8v-0007cA-RU for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Aug 2007 04:56:02 -0700
-Received: from web94105.mail.in2.yahoo.com ([203.104.16.59])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1IIk8u-0001wU-9H
+	id 1IIkOq-00017T-Bu for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Aug 2007 05:12:28 -0700
+Received: from vervifontaine.sonytel.be ([80.88.33.193]
+	helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IIkOo-0008Tm-OS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Aug 2007 04:56:01 -0700
+	Wed, 08 Aug 2007 05:12:28 -0700
+Received: from pademelon.sonytel.be (piraat.sonytel.be [43.221.60.197])
+	by vervifontaine.sonycom.com (Postfix) with ESMTP id 7C26A58AD0
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed,  8 Aug 2007 14:11:58 +0200 (MEST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,105 +32,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
---===============0796362884==
-Content-Type: multipart/alternative; boundary="0-1191517883-1186574146=:58007"
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---0-1191517883-1186574146=:58007
-Content-Type: text/plain; charset=iso-8859-1
+---584337861-2011906981-1186575118=:15170
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
+
+From looking at the code flow, `int first' in fb_create_modedb() should =
+be
+static.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+Or should it be initialized to 1 outside the loop?
+
+ drivers/video/fbmon.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -606,7 +606,7 @@ static struct fb_videomode *fb_create_mo
+ 	pr_debug("   Detailed Timings\n");
+ 	block =3D edid + DETAILED_TIMING_DESCRIPTIONS_START;
+ 	for (i =3D 0; i < 4; i++, block +=3D DETAILED_TIMING_DESCRIPTION_SIZE) =
+{
+-		int first =3D 1;
++		static int first =3D 1;
 =20
-  Dear all,
-  =20
-  I am a student.My academic project is similar to VNC. I have to design =
-remote display sharing and on linux.
-  For that what I did is I accessed the frame buffer using fixed info and=
- varable info structure (include/fb.h) , IOCTL  and mmap call(after enabl=
-ing the frame buffer). Problem is that I have to send this frame buffer m=
-emory area to other network computer to display the complete picture (lik=
-e VNC). I can not send complete frame buffer every  time(1.5-2. MB). I wa=
-nt to send the complete fb once and then the updated  region only. Is the=
-re any way by which I can directly know what all frame buffer memory regi=
-on has been updated so that I will send only that portion. Otherwise I ha=
-ve to compare all the bytes,compress it and send.But this will have refre=
-sh rate (effiency ) issue. Please help me
-  =20
-  =20
-  =20
-  After mmap application is not writing anything to framebuffer pointer(d=
-escriptor).
-  For every update kernel is writing. So we can not make the mmap with re=
-ad option and find the page fault and send the updated pages. This option=
- (in this way ) is ruled out.
-  =20
-  I have one idea. All the X calls to driver (for display update) can be =
-hooked and then I will send those calls (hook Information) to remote comp=
-uter where in the display can be updated using this hook information. I d=
-on't know how to hook the display. In window it can be done ( I got this =
-window info from Net),but in linux I am not aware of it.If you can help ,=
- please suggest.
-  =20
-  =20
-  The later part of my project is both the display should behave as dual =
-head.Now I am blank about how to share the frame buffer area of one CPU o=
-n two display screen like dual head.please help me in this matter also.
-  =20
-  Regards,
-  Sanjeev
-  =20
- =20
+ 		if (!(block[0] =3D=3D 0x00 && block[1] =3D=3D 0x00)) {
+ 			get_detailed_timing(block, &mode[num]);
 
+With kind regards,
 =20
+Geert Uytterhoeven
+Software Architect
 
-      =20
----------------------------------
- Unlimited freedom, unlimited storage. Get it now
---0-1191517883-1186574146=:58007
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<DIV>&nbsp;</DIV>  <DIV>Dear all,</DIV>  <DIV>&nbsp;</DIV>  <DIV>I am a s=
-tudent.My academic project is similar to VNC. I have to design remote dis=
-play sharing and on linux.</DIV>  <DIV>For that what I did is I&nbsp;acce=
-ssed the frame buffer using fixed info and varable info structure (includ=
-e/fb.h) , IOCTL&nbsp; and mmap call(after enabling the frame buffer). Pro=
-blem is that I have to&nbsp;send this frame buffer memory area to other n=
-etwork computer to display the&nbsp;complete picture (like VNC). I can no=
-t send complete frame buffer every &nbsp;time(1.5-2. MB). I want to send =
-the complete fb once and then the updated &nbsp;region only. Is there any=
- way by which I can directly know what all frame&nbsp;buffer memory regio=
-n has been updated so that I will send only that portion. Otherwise I hav=
-e to compare all the bytes,compress it and send.But this will have refres=
-h rate (effiency ) issue. Please help me</DIV>  <DIV>&nbsp;</DIV>  <DIV>&=
-nbsp;</DIV>  <DIV>&nbsp;</DIV>=20
- <DIV>After mmap application is not writing anything to framebuffer point=
-er(descriptor).</DIV>  <DIV>For every update kernel is writing. So we can=
- not make the mmap with read option and find the page fault and send the =
-updated pages. This option (in this way ) is ruled out.</DIV>  <DIV>&nbsp=
-;</DIV>  <DIV>I have one idea. All the X calls&nbsp;to driver&nbsp;(for d=
-isplay update) can be hooked and then I will send those calls (hook Infor=
-mation) to remote computer where in the display can be updated using this=
- hook information. I don't know how to hook the display. In window it can=
- be done ( I got this window info from Net),but in linux I am not aware o=
-f it.If you can help , please suggest.</DIV>  <DIV>&nbsp;</DIV>  <DIV>&nb=
-sp;</DIV>  <DIV>The later part of my project is both the display should b=
-ehave as dual head.Now I am blank about how to share the frame buffer are=
-a of one CPU on two display screen like dual head.please help me in this =
-matter also.</DIV>  <DIV>&nbsp;</DIV>=20
- <DIV>Regards,</DIV>  <DIV>Sanjeev</DIV>  <DIV>&nbsp;</DIV>  <DIV><BR><BR=
->&nbsp;</DIV><p>&#32;
-
-
-      <!--2--><hr size=3D1></hr> Unlimited freedom, unlimited storage. <a=
- href=3D"http://in.rd.yahoo.com/tagline_mail_2/*http://help.yahoo.com/l/i=
-n/yahoo/mail/yahoomail/tools/tools-08.html/">Get it now</a>
---0-1191517883-1186574146=:58007--
-
-
---===============0796362884==
+Sony Network and Software Technology Center Europe
+The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
+=B7 Belgium
+=20
+Phone:    +32 (0)2 700 8453=09
+Fax:      +32 (0)2 700 8622=09
+E-mail:   Geert.Uytterhoeven@sonycom.com=09
+Internet: http://www.sony-europe.com/
+ =09
+Sony Network and Software Technology Center Europe=09
+A division of Sony Service Centre (Europe) N.V.=09
+Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
+ium=09
+VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
+Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
+9
+---584337861-2011906981-1186575118=:15170
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -134,7 +98,7 @@ This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >>  http://get.splunk.com/
---===============0796362884==
+---584337861-2011906981-1186575118=:15170
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -145,4 +109,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0796362884==--
+---584337861-2011906981-1186575118=:15170--

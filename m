@@ -1,27 +1,22 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Section mismatch warnings ( Re:
-	2.6.23-rc2-mm2 )
-Date: Fri, 10 Aug 2007 12:32:15 -0700
-Message-ID: <20070810123215.904369e8.akpm@linux-foundation.org>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	<46BC3CB1.2090503@googlemail.com> <46BC5C1D.50205@googlemail.com>
-	<46BCB6D5.1070506@googlemail.com>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: [PATCH] pm2fb: lowsyncs section mismatch fix
+Date: Fri, 10 Aug 2007 21:44:07 +0200
+Message-ID: <20070810214407.34639217.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IJaDo-0006u5-Rt for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 10 Aug 2007 12:32:32 -0700
-Received: from smtp2.linux-foundation.org ([207.189.120.14])
+	id 1IJaKu-0007i3-3S for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 10 Aug 2007 12:39:56 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IJaDn-0005gH-JR
+	(Exim 4.44) id 1IJaKs-0003fp-N9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 10 Aug 2007 12:32:32 -0700
-In-Reply-To: <46BCB6D5.1070506@googlemail.com>
+	Fri, 10 Aug 2007 12:39:52 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,28 +27,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Wim Van Sebroeck <wim@iguana.be>, "shannon.nelson@intel.com" <shannon.nelson@intel.com>, Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 10 Aug 2007 21:04:53 +0200
-Gabriel C <nix.or.die@googlemail.com> wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> Some more
-> 
-> ...
-> 
-> WARNING: vmlinux.o(.text+0xce2ce): Section mismatch: reference to .init.data:lowhsync (between 'pm2fb_set_par' and 'pm2fb_pan_display')
-> WARNING: vmlinux.o(.text+0xce2e8): Section mismatch: reference to .init.data:lowvsync (between 'pm2fb_set_par' and 'pm2fb_pan_display')
-> WARNING: vmlinux.o(.text+0x180d3b): Section mismatch: reference to .init.data: (between 'iTCO_wdt_probe' and 'supermicro_new_unlock_watchdog')
-> WARNING: vmlinux.o(.text+0x180e1d): Section mismatch: reference to .init.data: (between 'iTCO_wdt_probe' and 'supermicro_new_unlock_watchdog')
-> WARNING: vmlinux.o(.text+0x180e25): Section mismatch: reference to .init.data:iTCO_chipset_info (between 'iTCO_wdt_probe' and 'supermicro_new_unlock_watchdog')
-> WARNING: vmlinux.o(.data+0xa74f0): Section mismatch: reference to .init.text:ioat_probe (between 'ioat_pci_drv' and 'ioat_pci_tbl')
-> 
-> ...
-> 
-> http://194.231.229.228/kernel/mm/2.6.23-rc2-mm2/randconfig-auto-28
+This patch fixes sections mismatch in pm2fb found in the -mm tree.
 
-(suitable cc's added)
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+---
+
+--- linux-2.6.22.new/drivers/video/pm2fb.c	2007-08-10 21:19:55.436496086 +0200
++++ linux-2.6.23/drivers/video/pm2fb.c	2007-08-10 21:38:58.061610582 +0200
+@@ -77,8 +78,8 @@ static char *mode __devinitdata;
+  * these flags allow the user to specify that requests for +ve sync
+  * should be silently turned in -ve sync.
+  */
+-static int lowhsync __devinitdata;
+-static int lowvsync __devinitdata;
++static int lowhsync;
++static int lowvsync;
+ static int noaccel __devinitdata;
+ /* mtrr option */
+ #ifdef CONFIG_MTRR
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

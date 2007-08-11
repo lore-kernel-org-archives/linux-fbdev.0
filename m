@@ -1,8 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH 3/7] s3c2410fb: remove lcdcon3 register
- from s3c2410fb_display
-Date: Sat, 11 Aug 2007 07:51:39 +0200
-Message-ID: <20070811075139.c925fda3.krzysztof.h1@wp.pl>
+Subject: [PATCH 4/7] s3c2410fb: add vertical margins
+ fields to s3c2410fb_display
+Date: Sat, 11 Aug 2007 07:51:46 +0200
+Message-ID: <20070811075146.6ba9fb0f.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,18 +11,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IJjoi-0001Di-0f for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 10 Aug 2007 22:47:16 -0700
+	id 1IJjoo-0001Dz-K8 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 10 Aug 2007 22:47:22 -0700
 Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IJjoh-0007aM-2x
+	(Exim 4.44) id 1IJjon-0007cH-UA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 10 Aug 2007 22:47:16 -0700
+	Fri, 10 Aug 2007 22:47:22 -0700
 Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
 	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
 	by smtp.wp.pl (WP-SMTPD) with SMTP
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	11 Aug 2007 07:47:12 +0200
+	11 Aug 2007 07:47:19 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,563 +38,182 @@ Cc: Arnaud Patard <arnaud.patard@rtp-net.org>, Ben Dooks <ben-linux@fluff.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch removes unused lcdcon3 register from the
-s3c2410fb_display structure.
+This patch adds vertical margins values to all 
+s3c24xx platform.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
 
+The values of the margins are not yet used by the framebuffer driver.
+
 diff -urp linux-2.6.23.old/arch/arm/mach-s3c2410/mach-amlm5900.c linux-2.6.23/arch/arm/mach-s3c2410/mach-amlm5900.c
---- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-amlm5900.c	2007-08-05 12:17:51.000000000 +0200
-+++ linux-2.6.23/arch/arm/mach-s3c2410/mach-amlm5900.c	2007-08-05 12:37:51.000000000 +0200
-@@ -180,13 +180,10 @@ static struct s3c2410fb_display __initda
+--- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-amlm5900.c	2007-08-05 12:08:25.000000000 +0200
++++ linux-2.6.23/arch/arm/mach-s3c2410/mach-amlm5900.c	2007-08-05 12:05:05.000000000 +0200
+@@ -179,6 +179,8 @@ static struct s3c2410fb_display __initda
+ 	.bpp		= 4,
  	.left_margin	= 1 << (4 + 3),
  	.right_margin	= 8 << 3,
++	.upper_margin	= 0,
++	.lower_margin	= 0,
  
--	.regs		= {
--		.lcdcon1	= 0x00008225,
--		.lcdcon2	= 0x0027c000,
--		.lcdcon3	= 0x00182708,
--		.lcdcon4	= 0x00000002,
--		.lcdcon5	= 0x00000001,
--	}
-+	.lcdcon1	= 0x00008225,
-+	.lcdcon2	= 0x0027c000,
-+	.lcdcon4	= 0x00000002,
-+	.lcdcon5	= 0x00000001,
- };
- 
- static struct s3c2410fb_mach_info __initdata amlm5900_fb_info = {
+ 	.lcdcon1	= 0x00008225,
+ 	.lcdcon2	= 0x0027c000,
 diff -urp linux-2.6.23.old/arch/arm/mach-s3c2410/mach-bast.c linux-2.6.23/arch/arm/mach-s3c2410/mach-bast.c
---- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-bast.c	2007-08-05 12:17:51.000000000 +0200
-+++ linux-2.6.23/arch/arm/mach-s3c2410/mach-bast.c	2007-08-05 12:37:51.000000000 +0200
-@@ -479,13 +479,10 @@ static struct s3c2410fb_display __initda
+--- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-bast.c	2007-08-05 12:08:25.000000000 +0200
++++ linux-2.6.23/arch/arm/mach-s3c2410/mach-bast.c	2007-08-05 12:03:10.000000000 +0200
+@@ -472,10 +472,13 @@ static struct s3c2410fb_display __initda
+ 		.type		= S3C2410_LCDCON1_TFT,
+ 		.width		= 640,
+ 		.height		= 480,
++
+ 		.xres		= 320,
+ 		.yres		= 240,
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
  		.bpp		= 4,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -498,13 +495,10 @@ static struct s3c2410fb_display __initda
+@@ -494,6 +497,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 4,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -517,13 +511,10 @@ static struct s3c2410fb_display __initda
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+@@ -510,6 +515,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 4,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -536,13 +527,10 @@ static struct s3c2410fb_display __initda
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+@@ -526,6 +533,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 8,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -555,13 +543,10 @@ static struct s3c2410fb_display __initda
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+@@ -542,6 +551,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 8,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -574,13 +559,10 @@ static struct s3c2410fb_display __initda
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+@@ -558,6 +569,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 8,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -593,13 +575,10 @@ static struct s3c2410fb_display __initda
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+@@ -574,6 +587,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 16,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -612,13 +591,10 @@ static struct s3c2410fb_display __initda
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+@@ -590,6 +605,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 16,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
- 	{
- 		.type		= S3C2410_LCDCON1_TFT,
-@@ -631,13 +607,10 @@ static struct s3c2410fb_display __initda
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+@@ -606,6 +623,8 @@ static struct s3c2410fb_display __initda
+ 		.bpp		= 16,
  		.left_margin	= 40,
  		.right_margin	= 20,
++		.upper_margin	= 30,
++		.lower_margin	= 32,
  
--		.regs		= {
--			.lcdcon1	= 0x00000176,
--			.lcdcon2	= 0x1d77c7c2,
--			.lcdcon3	= 0x013a7f13,
--			.lcdcon4	= 0x00000057,
--			.lcdcon5	= 0x00014b02,
--		}
-+		.lcdcon1	= 0x00000176,
-+		.lcdcon2	= 0x1d77c7c2,
-+		.lcdcon4	= 0x00000057,
-+		.lcdcon5	= 0x00014b02,
- 	},
+ 		.lcdcon1	= 0x00000176,
+ 		.lcdcon2	= 0x1d77c7c2,
+diff -urp linux-2.6.23.old/arch/arm/mach-s3c2410/mach-h1940.c linux-2.6.23/arch/arm/mach-s3c2410/mach-h1940.c
+--- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-h1940.c	2007-08-05 12:08:25.000000000 +0200
++++ linux-2.6.23/arch/arm/mach-s3c2410/mach-h1940.c	2007-08-05 12:01:15.000000000 +0200
+@@ -158,6 +158,8 @@ static struct s3c2410fb_display h1940_lc
+ 	.bpp =		16,
+ 	.left_margin =	20,
+ 	.right_margin =	8,
++	.upper_margin =	8,
++	.lower_margin = 7,
  };
  
-diff -urp linux-2.6.23.old/arch/arm/mach-s3c2410/mach-h1940.c linux-2.6.23/arch/arm/mach-s3c2410/mach-h1940.c
---- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-h1940.c	2007-08-05 12:17:51.000000000 +0200
-+++ linux-2.6.23/arch/arm/mach-s3c2410/mach-h1940.c	2007-08-05 12:37:51.000000000 +0200
-@@ -134,27 +134,21 @@ static struct s3c2410_udc_mach_info h194
-  * Set lcd on or off
-  **/
- static struct s3c2410fb_display h1940_lcd __initdata = {
--	.regs={
--		.lcdcon1=	S3C2410_LCDCON1_TFT16BPP | \
--				S3C2410_LCDCON1_TFT | \
--				S3C2410_LCDCON1_CLKVAL(0x0C),
--
--		.lcdcon2=	S3C2410_LCDCON2_VBPD(7) | \
--				S3C2410_LCDCON2_LINEVAL(319) | \
--				S3C2410_LCDCON2_VFPD(6) | \
--				S3C2410_LCDCON2_VSPW(0),
--
--		.lcdcon3=	S3C2410_LCDCON3_HBPD(19) | \
--				S3C2410_LCDCON3_HOZVAL(239) | \
--				S3C2410_LCDCON3_HFPD(7),
--
--		.lcdcon4=	S3C2410_LCDCON4_MVAL(0) | \
--				S3C2410_LCDCON4_HSPW(3),
--
--		.lcdcon5=	S3C2410_LCDCON5_FRM565 | \
--				S3C2410_LCDCON5_INVVLINE | \
--				S3C2410_LCDCON5_HWSWP,
--	},
-+	.lcdcon1=	S3C2410_LCDCON1_TFT16BPP | \
-+			S3C2410_LCDCON1_TFT | \
-+			S3C2410_LCDCON1_CLKVAL(0x0C),
-+
-+	.lcdcon2=	S3C2410_LCDCON2_VBPD(7) | \
-+			S3C2410_LCDCON2_LINEVAL(319) | \
-+			S3C2410_LCDCON2_VFPD(6) | \
-+			S3C2410_LCDCON2_VSPW(0),
-+
-+	.lcdcon4=	S3C2410_LCDCON4_MVAL(0) | \
-+			S3C2410_LCDCON4_HSPW(3),
-+
-+	.lcdcon5=	S3C2410_LCDCON5_FRM565 | \
-+			S3C2410_LCDCON5_INVVLINE | \
-+			S3C2410_LCDCON5_HWSWP,
- 
- 	.type =		S3C2410_LCDCON1_TFT,
- 	.width =	240,
+ static struct s3c2410fb_mach_info h1940_fb_info __initdata = {
 diff -urp linux-2.6.23.old/arch/arm/mach-s3c2410/mach-qt2410.c linux-2.6.23/arch/arm/mach-s3c2410/mach-qt2410.c
---- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-qt2410.c	2007-08-05 12:17:51.000000000 +0200
-+++ linux-2.6.23/arch/arm/mach-s3c2410/mach-qt2410.c	2007-08-05 12:37:51.000000000 +0200
-@@ -98,30 +98,23 @@ static struct s3c2410_uartcfg smdk2410_u
- static struct s3c2410fb_display qt2410_lcd_cfg[] __initdata = {
- 	{
- 		/* Configuration for 640x480 SHARP LQ080V3DG01 */
--		.regs	= {
--
--			.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
--				   S3C2410_LCDCON1_TFT |
--				   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
--
--			.lcdcon2 = S3C2410_LCDCON2_VBPD(18) |	/* 19 */
--				   S3C2410_LCDCON2_LINEVAL(479) |
--				   S3C2410_LCDCON2_VFPD(10) |	/* 11 */
--				   S3C2410_LCDCON2_VSPW(14),	/* 15 */
--
--			.lcdcon3 = S3C2410_LCDCON3_HBPD(43) |	/* 44 */
--				   S3C2410_LCDCON3_HOZVAL(639) | /* 640 */
--				   S3C2410_LCDCON3_HFPD(115),	/* 116 */
--
--			.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
--				   S3C2410_LCDCON4_HSPW(95),	/* 96 */
--
--			.lcdcon5 = S3C2410_LCDCON5_FRM565 |
--				   S3C2410_LCDCON5_INVVLINE |
--				   S3C2410_LCDCON5_INVVFRAME |
--				   S3C2410_LCDCON5_PWREN |
--				   S3C2410_LCDCON5_HWSWP,
--		},
-+		.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
-+			   S3C2410_LCDCON1_TFT |
-+			   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
-+
-+		.lcdcon2 = S3C2410_LCDCON2_VBPD(18) |	/* 19 */
-+			   S3C2410_LCDCON2_LINEVAL(479) |
-+			   S3C2410_LCDCON2_VFPD(10) |	/* 11 */
-+			   S3C2410_LCDCON2_VSPW(14),	/* 15 */
-+
-+		.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
-+			   S3C2410_LCDCON4_HSPW(95),	/* 96 */
-+
-+		.lcdcon5 = S3C2410_LCDCON5_FRM565 |
-+			   S3C2410_LCDCON5_INVVLINE |
-+			   S3C2410_LCDCON5_INVVFRAME |
-+			   S3C2410_LCDCON5_PWREN |
-+			   S3C2410_LCDCON5_HWSWP,
- 
- 		.type		= S3C2410_LCDCON1_TFT,
- 		.width		= 640,
-@@ -135,30 +128,23 @@ static struct s3c2410fb_display qt2410_l
+--- linux-2.6.23.old/arch/arm/mach-s3c2410/mach-qt2410.c	2007-08-05 12:08:25.000000000 +0200
++++ linux-2.6.23/arch/arm/mach-s3c2410/mach-qt2410.c	2007-08-05 12:04:18.000000000 +0200
+@@ -125,6 +125,8 @@ static struct s3c2410fb_display qt2410_l
+ 		.bpp		= 16,
+ 		.left_margin	= 44,
+ 		.right_margin	= 116,
++		.upper_margin	= 19,
++		.lower_margin	= 11,
  	},
  	{
  		/* Configuration for 480x640 toppoly TD028TTEC1 */
--		.regs	= {
--
--			.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
--				   S3C2410_LCDCON1_TFT |
--				   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
--
--			.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |	/* 2 */
--				   S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
--				   S3C2410_LCDCON2_VFPD(3) |	/* 4 */
--				   S3C2410_LCDCON2_VSPW(1),	/* 2 */
--
--			.lcdcon3 = S3C2410_LCDCON3_HBPD(7) |	/* 8 */
--				   S3C2410_LCDCON3_HOZVAL(479) | /* 479 */
--				   S3C2410_LCDCON3_HFPD(23),	/* 24 */
--
--			.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
--				   S3C2410_LCDCON4_HSPW(7),	/* 8 */
--
--			.lcdcon5 = S3C2410_LCDCON5_FRM565 |
--				   S3C2410_LCDCON5_INVVLINE |
--				   S3C2410_LCDCON5_INVVFRAME |
--				   S3C2410_LCDCON5_PWREN |
--				   S3C2410_LCDCON5_HWSWP,
--		},
-+		.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
-+			   S3C2410_LCDCON1_TFT |
-+			   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
-+
-+		.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |	/* 2 */
-+			   S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
-+			   S3C2410_LCDCON2_VFPD(3) |	/* 4 */
-+			   S3C2410_LCDCON2_VSPW(1),	/* 2 */
-+
-+		.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
-+			   S3C2410_LCDCON4_HSPW(7),	/* 8 */
-+
-+		.lcdcon5 = S3C2410_LCDCON5_FRM565 |
-+			   S3C2410_LCDCON5_INVVLINE |
-+			   S3C2410_LCDCON5_INVVFRAME |
-+			   S3C2410_LCDCON5_PWREN |
-+			   S3C2410_LCDCON5_HWSWP,
- 
- 		.type		= S3C2410_LCDCON1_TFT,
- 		.width		= 480,
-@@ -171,30 +157,23 @@ static struct s3c2410fb_display qt2410_l
+@@ -154,6 +156,8 @@ static struct s3c2410fb_display qt2410_l
+ 		.bpp		= 16,
+ 		.left_margin	= 8,
+ 		.right_margin	= 24,
++		.upper_margin	= 2,
++		.lower_margin	= 4,
  	},
  	{
  		/* Config for 240x320 LCD */
--		.regs	= {
--
--			.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
--				   S3C2410_LCDCON1_TFT |
--				   S3C2410_LCDCON1_CLKVAL(0x04),
--
--			.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |
--				   S3C2410_LCDCON2_LINEVAL(319) |
--				   S3C2410_LCDCON2_VFPD(6) |
--				   S3C2410_LCDCON2_VSPW(3),
--
--			.lcdcon3 = S3C2410_LCDCON3_HBPD(12) |
--				   S3C2410_LCDCON3_HOZVAL(239) |
--				   S3C2410_LCDCON3_HFPD(7),
--
--			.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
--				   S3C2410_LCDCON4_HSPW(3),
--
--			.lcdcon5 = S3C2410_LCDCON5_FRM565 |
--				   S3C2410_LCDCON5_INVVLINE |
--				   S3C2410_LCDCON5_INVVFRAME |
--				   S3C2410_LCDCON5_PWREN |
--				   S3C2410_LCDCON5_HWSWP,
--		},
-+		.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
-+			   S3C2410_LCDCON1_TFT |
-+			   S3C2410_LCDCON1_CLKVAL(0x04),
-+
-+		.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |
-+			   S3C2410_LCDCON2_LINEVAL(319) |
-+			   S3C2410_LCDCON2_VFPD(6) |
-+			   S3C2410_LCDCON2_VSPW(3),
-+
-+		.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
-+			   S3C2410_LCDCON4_HSPW(3),
-+
-+		.lcdcon5 = S3C2410_LCDCON5_FRM565 |
-+			   S3C2410_LCDCON5_INVVLINE |
-+			   S3C2410_LCDCON5_INVVFRAME |
-+			   S3C2410_LCDCON5_PWREN |
-+			   S3C2410_LCDCON5_HWSWP,
- 
- 		.type		= S3C2410_LCDCON1_TFT,
- 		.width		= 240,
-diff -urp linux-2.6.23.old/arch/arm/mach-s3c2440/mach-rx3715.c linux-2.6.23/arch/arm/mach-s3c2440/mach-rx3715.c
---- linux-2.6.23.old/arch/arm/mach-s3c2440/mach-rx3715.c	2007-08-05 12:17:51.000000000 +0200
-+++ linux-2.6.23/arch/arm/mach-s3c2440/mach-rx3715.c	2007-08-05 12:37:51.000000000 +0200
-@@ -111,27 +111,21 @@ static struct s3c2410_uartcfg rx3715_uar
- /* framebuffer lcd controller information */
- 
- static struct s3c2410fb_display rx3715_lcdcfg __initdata = {
--	.regs	= {
--		.lcdcon1 =	S3C2410_LCDCON1_TFT16BPP | \
--				S3C2410_LCDCON1_TFT | \
--				S3C2410_LCDCON1_CLKVAL(0x0C),
--
--		.lcdcon2 =	S3C2410_LCDCON2_VBPD(5) | \
--				S3C2410_LCDCON2_LINEVAL(319) | \
--				S3C2410_LCDCON2_VFPD(6) | \
--				S3C2410_LCDCON2_VSPW(2),
--
--		.lcdcon3 =	S3C2410_LCDCON3_HBPD(35) | \
--				S3C2410_LCDCON3_HOZVAL(239) | \
--				S3C2410_LCDCON3_HFPD(35),
--
--		.lcdcon4 =	S3C2410_LCDCON4_MVAL(0) | \
--				S3C2410_LCDCON4_HSPW(7),
--
--		.lcdcon5 =	S3C2410_LCDCON5_INVVLINE |
--				S3C2410_LCDCON5_FRM565 |
--				S3C2410_LCDCON5_HWSWP,
--	},
-+	.lcdcon1 =	S3C2410_LCDCON1_TFT16BPP | \
-+			S3C2410_LCDCON1_TFT | \
-+			S3C2410_LCDCON1_CLKVAL(0x0C),
-+
-+	.lcdcon2 =	S3C2410_LCDCON2_VBPD(5) | \
-+			S3C2410_LCDCON2_LINEVAL(319) | \
-+			S3C2410_LCDCON2_VFPD(6) | \
-+			S3C2410_LCDCON2_VSPW(2),
-+
-+	.lcdcon4 =	S3C2410_LCDCON4_MVAL(0) | \
-+			S3C2410_LCDCON4_HSPW(7),
-+
-+	.lcdcon5 =	S3C2410_LCDCON5_INVVLINE |
-+			S3C2410_LCDCON5_FRM565 |
-+			S3C2410_LCDCON5_HWSWP,
- 
- 	.type		= S3C2410_LCDCON1_TFT,
- 	.width		= 240,
-diff -urp linux-2.6.23.old/arch/arm/mach-s3c2440/mach-smdk2440.c linux-2.6.23/arch/arm/mach-s3c2440/mach-smdk2440.c
---- linux-2.6.23.old/arch/arm/mach-s3c2440/mach-smdk2440.c	2007-08-05 12:17:51.000000000 +0200
-+++ linux-2.6.23/arch/arm/mach-s3c2440/mach-smdk2440.c	2007-08-05 12:37:51.000000000 +0200
-@@ -104,30 +104,24 @@ static struct s3c2410_uartcfg smdk2440_u
- /* LCD driver info */
- 
- static struct s3c2410fb_display smdk2440_lcd_cfg __initdata = {
--	.regs	= {
- 
--		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
--				  S3C2410_LCDCON1_TFT |
--				  S3C2410_LCDCON1_CLKVAL(0x04),
--
--		.lcdcon2	= S3C2410_LCDCON2_VBPD(7) |
--				  S3C2410_LCDCON2_LINEVAL(319) |
--				  S3C2410_LCDCON2_VFPD(6) |
--				  S3C2410_LCDCON2_VSPW(3),
--
--		.lcdcon3	= S3C2410_LCDCON3_HBPD(19) |
--				  S3C2410_LCDCON3_HOZVAL(239) |
--				  S3C2410_LCDCON3_HFPD(7),
--
--		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
--				  S3C2410_LCDCON4_HSPW(3),
--
--		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
--				  S3C2410_LCDCON5_INVVLINE |
--				  S3C2410_LCDCON5_INVVFRAME |
--				  S3C2410_LCDCON5_PWREN |
--				  S3C2410_LCDCON5_HWSWP,
--	},
-+	.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
-+			  S3C2410_LCDCON1_TFT |
-+			  S3C2410_LCDCON1_CLKVAL(0x04),
-+
-+	.lcdcon2	= S3C2410_LCDCON2_VBPD(7) |
-+			  S3C2410_LCDCON2_LINEVAL(319) |
-+			  S3C2410_LCDCON2_VFPD(6) |
-+			  S3C2410_LCDCON2_VSPW(3),
-+
-+	.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
-+			  S3C2410_LCDCON4_HSPW(3),
-+
-+	.lcdcon5	= S3C2410_LCDCON5_FRM565 |
-+			  S3C2410_LCDCON5_INVVLINE |
-+			  S3C2410_LCDCON5_INVVFRAME |
-+			  S3C2410_LCDCON5_PWREN |
-+			  S3C2410_LCDCON5_HWSWP,
- 
- 	.type		= S3C2410_LCDCON1_TFT16BPP,
- 
-diff -urp linux-2.6.23.old/drivers/video/s3c2410fb.c linux-2.6.23/drivers/video/s3c2410fb.c
---- linux-2.6.23.old/drivers/video/s3c2410fb.c	2007-08-05 12:40:40.000000000 +0200
-+++ linux-2.6.23/drivers/video/s3c2410fb.c	2007-08-05 12:37:51.000000000 +0200
-@@ -245,7 +245,7 @@ static int s3c2410fb_check_var(struct fb
- 
- 	default:
- 	case 16:
--		if (display->regs.lcdcon5 & S3C2410_LCDCON5_FRM565) {
-+		if (display->lcdcon5 & S3C2410_LCDCON5_FRM565) {
- 			/* 16 bpp, 565 format */
- 			var->red.offset		= 11;
- 			var->green.offset	= 5;
-@@ -796,7 +796,6 @@ static int __init s3c2410fb_probe(struct
- 	struct s3c2410fb_info *info;
- 	struct s3c2410fb_display *display;
- 	struct fb_info *fbinfo;
--	struct s3c2410fb_hw *mregs;
- 	struct resource *res;
- 	int ret;
- 	int irq;
-@@ -812,7 +811,6 @@ static int __init s3c2410fb_probe(struct
- 	}
- 
- 	display = mach_info->displays + mach_info->default_display;
--	mregs = &display->regs;
- 
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0) {
-@@ -855,7 +853,10 @@ static int __init s3c2410fb_probe(struct
- 
- 	strcpy(fbinfo->fix.id, driver_name);
- 
--	memcpy(&info->regs, &display->regs, sizeof(info->regs));
-+	info->regs.lcdcon1 = display->lcdcon1;
-+	info->regs.lcdcon2 = display->lcdcon2;
-+	info->regs.lcdcon4 = display->lcdcon4;
-+	info->regs.lcdcon5 = display->lcdcon5;
- 
- 	/* Stop the video and unset ENVID if set */
- 	info->regs.lcdcon1 &= ~S3C2410_LCDCON1_ENVID;
-@@ -892,14 +893,14 @@ static int __init s3c2410fb_probe(struct
- 	fbinfo->var.right_margin    = display->right_margin;
- 
- 	fbinfo->var.upper_margin    =
--				S3C2410_LCDCON2_GET_VBPD(mregs->lcdcon2) + 1;
-+				S3C2410_LCDCON2_GET_VBPD(display->lcdcon2) + 1;
- 	fbinfo->var.lower_margin    =
--				S3C2410_LCDCON2_GET_VFPD(mregs->lcdcon2) + 1;
-+				S3C2410_LCDCON2_GET_VFPD(display->lcdcon2) + 1;
- 	fbinfo->var.vsync_len	    =
--				S3C2410_LCDCON2_GET_VSPW(mregs->lcdcon2) + 1;
-+				S3C2410_LCDCON2_GET_VSPW(display->lcdcon2) + 1;
- 
- 	fbinfo->var.hsync_len	    =
--				S3C2410_LCDCON4_GET_HSPW(mregs->lcdcon4) + 1;
-+				S3C2410_LCDCON4_GET_HSPW(display->lcdcon4) + 1;
- 
- 	fbinfo->var.red.offset      = 11;
- 	fbinfo->var.green.offset    = 5;
-diff -urp linux-2.6.23.old/include/asm-arm/arch-s3c2410/fb.h linux-2.6.23/include/asm-arm/arch-s3c2410/fb.h
---- linux-2.6.23.old/include/asm-arm/arch-s3c2410/fb.h	2007-08-05 10:34:34.000000000 +0200
-+++ linux-2.6.23/include/asm-arm/arch-s3c2410/fb.h	2007-08-05 12:15:55.000000000 +0200
-@@ -44,7 +44,10 @@ struct s3c2410fb_display {
- 	unsigned short vsync_len;	/* value in lines (TFT) or 0 (STN) */
- 
- 	/* lcd configuration registers */
--	struct s3c2410fb_hw  regs;
-+	unsigned long	lcdcon1;
-+	unsigned long	lcdcon2;
-+	unsigned long	lcdcon4;
-+	unsigned long	lcdcon5;
+@@ -183,6 +187,8 @@ static struct s3c2410fb_display qt2410_l
+ 		.bpp		= 16,
+ 		.left_margin	= 13,
+ 		.right_margin	= 8,
++		.upper_margin	= 2,
++		.lower_margin	= 7,
+ 	},
  };
  
- struct s3c2410fb_mach_info {
+diff -urp linux-2.6.23.old/arch/arm/mach-s3c2440/mach-rx3715.c linux-2.6.23/arch/arm/mach-s3c2440/mach-rx3715.c
+--- linux-2.6.23.old/arch/arm/mach-s3c2440/mach-rx3715.c	2007-08-05 12:08:25.000000000 +0200
++++ linux-2.6.23/arch/arm/mach-s3c2440/mach-rx3715.c	2007-08-05 12:05:54.000000000 +0200
+@@ -136,6 +136,8 @@ static struct s3c2410fb_display rx3715_l
+ 	.bpp		= 16,
+ 	.left_margin	= 36,
+ 	.right_margin	= 36,
++	.upper_margin	= 6,
++	.lower_margin	= 7,
+ };
+ 
+ static struct s3c2410fb_mach_info rx3715_fb_info __initdata = {
+diff -urp linux-2.6.23.old/arch/arm/mach-s3c2440/mach-smdk2440.c linux-2.6.23/arch/arm/mach-s3c2440/mach-smdk2440.c
+--- linux-2.6.23.old/arch/arm/mach-s3c2440/mach-smdk2440.c	2007-08-05 12:08:25.000000000 +0200
++++ linux-2.6.23/arch/arm/mach-s3c2440/mach-smdk2440.c	2007-08-05 12:06:30.000000000 +0200
+@@ -133,6 +133,8 @@ static struct s3c2410fb_display smdk2440
+ 	.bpp		= 16,
+ 	.left_margin	= 20,
+ 	.right_margin	= 8,
++	.upper_margin	= 8,
++	.lower_margin	= 7,
+ };
+ 
+ static struct s3c2410fb_mach_info smdk2440_fb_info __initdata = {
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

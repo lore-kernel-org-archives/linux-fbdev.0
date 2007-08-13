@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 01/22] fbdev: fb_create_modedb()
-	non-static `int first = 1; '
-Date: Mon, 13 Aug 2007 20:25:10 +0800
-Message-ID: <46C04DA6.9070506@gmail.com>
+Subject: [PATCH 03/22] pm2fb: Permedia 2V hardware
+	cursor support
+Date: Mon, 13 Aug 2007 20:25:47 +0800
+Message-ID: <46C04DCB.2010500@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IKZJ0-0004IU-J1 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:45:58 -0700
+	id 1IKZJB-0004Nj-92 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Aug 2007 05:46:09 -0700
 Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZIy-0005O6-NB
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZJA-0005O6-RQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:45:58 -0700
+	Mon, 13 Aug 2007 05:46:09 -0700
 Received: by rv-out-0910.google.com with SMTP id k15so3930196rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 13 Aug 2007 05:45:56 -0700 (PDT)
+	Mon, 13 Aug 2007 05:46:08 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,47 +31,211 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-From looking at the code flow, `int first' in fb_create_modedb() should be
-static.
+This patch adds hardware cursor support for Permedia 2V chips.
+The hardware cursor is disabled by default. It does not blink - the
+same issue is mentioned in the x11 driver.
 
-[adaplas]
-Better for 'int first' to be moved outside the loop.
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/fbmon.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/pm2fb.c     |  137 +++++++++++++++++++++++++++++++++++++++++++++
+ include/video/permedia2.h |    2 +
+ 2 files changed, 139 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 438b941..af8c37c 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -591,7 +591,9 @@ static struct fb_videomode *fb_create_mo
- {
- 	struct fb_videomode *mode, *m;
- 	unsigned char *block;
--	int num = 0, i;
-+	int num = 0, i, first = 1;
-+
-+;
+diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
+index 19cbde1..53dd639 100644
+--- a/drivers/video/pm2fb.c
++++ b/drivers/video/pm2fb.c
+@@ -66,6 +66,7 @@ #define PM2_PIXMAP_SIZE	(1600 * 4)
+ /*
+  * Driver data
+  */
++static int hwcursor;
+ static char *mode __devinitdata;
  
- 	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
- 	if (mode == NULL)
-@@ -608,8 +610,6 @@ static struct fb_videomode *fb_create_mo
- 	DPRINTK("   Detailed Timings\n");
- 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
- 	for (i = 0; i < 4; i++, block+= DETAILED_TIMING_DESCRIPTION_SIZE) {
--	        int first = 1;
--
- 		if (!(block[0] == 0x00 && block[1] == 0x00)) {
- 			get_detailed_timing(block, &mode[num]);
- 			if (first) {
+ /*
+@@ -1245,6 +1246,136 @@ static void pm2fb_imageblit(struct fb_in
+ 	pm2_WR(par, PM2R_SCISSOR_MODE, 0);
+ }
+ 
++/*
++ *	Hardware cursor support.
++ */
++static const u8 cursor_bits_lookup[16] = {
++	0x00, 0x40, 0x10, 0x50, 0x04, 0x44, 0x14, 0x54,
++	0x01, 0x41, 0x11, 0x51, 0x05, 0x45, 0x15, 0x55
++};
++
++static int pm2vfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++	struct pm2fb_par *par = info->par;
++	u8 mode;
++
++	if (!hwcursor)
++		return -EINVAL;	/* just to force soft_cursor() call */
++
++	/* Too large of a cursor or wrong bpp :-( */
++	if (cursor->image.width > 64 ||
++	    cursor->image.height > 64 ||
++	    cursor->image.depth > 1)
++		return -EINVAL;
++
++	mode = PM2F_CURSORMODE_TYPE_X;
++	if (cursor->enable)
++		mode |= PM2F_CURSORMODE_CURSOR_ENABLE;
++
++	pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_MODE, mode);
++
++	/*
++	 * If the cursor is not be changed this means either we want the
++	 * current cursor state (if enable is set) or we want to query what
++	 * we can do with the cursor (if enable is not set)
++	 */
++	if (!cursor->set)
++		return 0;
++
++	if (cursor->set & FB_CUR_SETPOS) {
++		int x = cursor->image.dx - info->var.xoffset;
++		int y = cursor->image.dy - info->var.yoffset;
++
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_LOW, x & 0xff);
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_HIGH, (x >> 8) & 0xf);
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_LOW, y & 0xff);
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_HIGH, (y >> 8) & 0xf);
++	}
++
++	if (cursor->set & FB_CUR_SETHOT) {
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_HOT,
++			     cursor->hot.x & 0x3f);
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_HOT,
++			     cursor->hot.y & 0x3f);
++	}
++
++	if (cursor->set & FB_CUR_SETCMAP) {
++		u32 fg_idx = cursor->image.fg_color;
++		u32 bg_idx = cursor->image.bg_color;
++		struct fb_cmap cmap = info->cmap;
++
++		/* the X11 driver says one should use these color registers */
++		pm2_WR(par, PM2VR_RD_INDEX_HIGH, PM2VI_RD_CURSOR_PALETTE >> 8);
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 0,
++			     cmap.red[bg_idx] >> 8 );
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 1,
++			     cmap.green[bg_idx] >> 8 );
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 2,
++			     cmap.blue[bg_idx] >> 8 );
++
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 3,
++			     cmap.red[fg_idx] >> 8 );
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 4,
++			     cmap.green[fg_idx] >> 8 );
++		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 5,
++			     cmap.blue[fg_idx] >> 8 );
++		pm2_WR(par, PM2VR_RD_INDEX_HIGH, 0);
++	}
++
++	if (cursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
++		u8 *bitmap = (u8 *)cursor->image.data;
++		u8 *mask = (u8 *)cursor->mask;
++		int i;
++		int pos = PM2VI_RD_CURSOR_PATTERN;
++
++		for (i = 0; i < cursor->image.height; i++) {
++			int j = (cursor->image.width + 7) >> 3;
++			int k = 8 - j;
++
++			pm2_WR(par, PM2VR_RD_INDEX_HIGH, pos >> 8);
++
++			for (; j > 0; j--) {
++				u8 data = *bitmap ^ *mask;
++
++				if (cursor->rop == ROP_COPY)
++					data = *mask & *bitmap;
++				/* Upper 4 bits of bitmap data */
++				pm2v_RDAC_WR(par, pos++,
++					cursor_bits_lookup[data >> 4] |
++					(cursor_bits_lookup[*mask >> 4] << 1));
++				/* Lower 4 bits of bitmap */
++				pm2v_RDAC_WR(par, pos++,
++					cursor_bits_lookup[data & 0xf] |
++					(cursor_bits_lookup[*mask & 0xf] << 1));
++				bitmap++;
++				mask++;
++			}
++			for (; k > 0; k--) {
++				pm2v_RDAC_WR(par, pos++, 0);
++				pm2v_RDAC_WR(par, pos++, 0);
++			}
++		}
++
++		while (pos < (1024 + PM2VI_RD_CURSOR_PATTERN)) {
++			pm2_WR(par, PM2VR_RD_INDEX_HIGH, pos >> 8);
++			pm2v_RDAC_WR(par, pos++, 0);
++		}
++
++		pm2_WR(par, PM2VR_RD_INDEX_HIGH, 0);
++	}
++	return 0;
++}
++
++static int pm2fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++	struct pm2fb_par *par = info->par;
++
++	if (par->type == PM2_TYPE_PERMEDIA2V)
++		return pm2vfb_cursor(info, cursor);
++
++	return -ENXIO;
++}
++
+ /* ------------ Hardware Independent Functions ------------ */
+ 
+ /*
+@@ -1262,6 +1393,7 @@ static struct fb_ops pm2fb_ops = {
+ 	.fb_copyarea	= pm2fb_copyarea,
+ 	.fb_imageblit	= pm2fb_imageblit,
+ 	.fb_sync	= pm2fb_sync,
++	.fb_cursor	= pm2fb_cursor,
+ };
+ 
+ /*
+@@ -1550,6 +1682,8 @@ static int __init pm2fb_setup(char *opti
+ 			lowhsync = 1;
+ 		else if (!strcmp(this_opt, "lowvsync"))
+ 			lowvsync = 1;
++		else if (!strncmp(this_opt, "hwcursor=", 9))
++			hwcursor = simple_strtoul(this_opt + 9, NULL, 0);
+ #ifdef CONFIG_MTRR
+ 		else if (!strncmp(this_opt, "nomtrr", 6))
+ 			nomtrr = 1;
+@@ -1601,6 +1735,9 @@ module_param(lowvsync, bool, 0);
+ MODULE_PARM_DESC(lowvsync, "Force vertical sync low regardless of mode");
+ module_param(noaccel, bool, 0);
+ MODULE_PARM_DESC(noaccel, "Disable acceleration");
++module_param(hwcursor, int, 0644);
++MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
++			"(1=enable, 0=disable, default=0)");
+ #ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
+diff --git a/include/video/permedia2.h b/include/video/permedia2.h
+index cf1d95b..c6575b8 100644
+--- a/include/video/permedia2.h
++++ b/include/video/permedia2.h
+@@ -232,6 +232,8 @@ #define PM2F_MEM_BANKS_4				(3L<<29)
+ #define PM2F_APERTURE_STANDARD				0
+ #define PM2F_APERTURE_BYTESWAP				1
+ #define PM2F_APERTURE_HALFWORDSWAP			2
++#define PM2F_CURSORMODE_CURSOR_ENABLE			(1 << 0)
++#define PM2F_CURSORMODE_TYPE_X				(1 << 4)
+ 
+ typedef enum {
+ 	PM2_TYPE_PERMEDIA2,
 
 
 

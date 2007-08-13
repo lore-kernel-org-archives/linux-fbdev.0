@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 02/22] pm2fb: lowsyncs section mismatch
-	fix
-Date: Mon, 13 Aug 2007 20:25:30 +0800
-Message-ID: <46C04DBA.9090800@gmail.com>
+Subject: [PATCH 01/22] fbdev: fb_create_modedb()
+	non-static `int first = 1; '
+Date: Mon, 13 Aug 2007 20:25:10 +0800
+Message-ID: <46C04DA6.9070506@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IKZJ7-0004N7-ET for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:46:05 -0700
+	id 1IKZJ0-0004IU-J1 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Aug 2007 05:45:58 -0700
 Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZJ5-0005O6-4F
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZIy-0005O6-NB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:46:05 -0700
+	Mon, 13 Aug 2007 05:45:58 -0700
 Received: by rv-out-0910.google.com with SMTP id k15so3930196rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 13 Aug 2007 05:46:02 -0700 (PDT)
+	Mon, 13 Aug 2007 05:45:56 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,34 +31,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-This patch fixes sections mismatch in pm2fb found in the -mm tree.
+From looking at the code flow, `int first' in fb_create_modedb() should be
+static.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+[adaplas]
+Better for 'int first' to be moved outside the loop.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/pm2fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbmon.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
-index c61b3a4..19cbde1 100644
---- a/drivers/video/pm2fb.c
-+++ b/drivers/video/pm2fb.c
-@@ -77,8 +77,8 @@ static char *mode __devinitdata;
-  * these flags allow the user to specify that requests for +ve sync
-  * should be silently turned in -ve sync.
-  */
--static int lowhsync __devinitdata;
--static int lowvsync __devinitdata;
-+static int lowhsync;
-+static int lowvsync;
- static int noaccel __devinitdata;
- /* mtrr option */
- #ifdef CONFIG_MTRR
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 438b941..af8c37c 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -591,7 +591,9 @@ static struct fb_videomode *fb_create_mo
+ {
+ 	struct fb_videomode *mode, *m;
+ 	unsigned char *block;
+-	int num = 0, i;
++	int num = 0, i, first = 1;
++
++;
+ 
+ 	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
+ 	if (mode == NULL)
+@@ -608,8 +610,6 @@ static struct fb_videomode *fb_create_mo
+ 	DPRINTK("   Detailed Timings\n");
+ 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+ 	for (i = 0; i < 4; i++, block+= DETAILED_TIMING_DESCRIPTION_SIZE) {
+-	        int first = 1;
+-
+ 		if (!(block[0] == 0x00 && block[1] == 0x00)) {
+ 			get_detailed_timing(block, &mode[num]);
+ 			if (first) {
 
 
 

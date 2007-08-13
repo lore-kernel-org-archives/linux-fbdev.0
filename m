@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 09/22] s3c2410fb: use new margin fields
-Date: Mon, 13 Aug 2007 20:33:39 +0800
-Message-ID: <46C04FA3.9030907@gmail.com>
+Subject: [PATCH 10/22] s3c2410fb: remove lcdcon3
+	register from s3c2410fb_display
+Date: Mon, 13 Aug 2007 20:35:05 +0800
+Message-ID: <46C04FF9.9080207@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IKZK5-0004Ug-EA for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:47:09 -0700
+	id 1IKZKG-0004Vi-AL for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Aug 2007 05:47:16 -0700
 Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZK4-0005O6-Ri
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZKD-0005O6-0K
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:47:05 -0700
+	Mon, 13 Aug 2007 05:47:16 -0700
 Received: by rv-out-0910.google.com with SMTP id k15so3930196rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 13 Aug 2007 05:47:04 -0700 (PDT)
+	Mon, 13 Aug 2007 05:47:12 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,321 +35,572 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ben 
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch makes use of margins fields in the s3c2410fb_display
-structure.
+This patch removes unused lcdcon3 register from the
+s3c2410fb_display structure.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/s3c2410fb.c |  234 ++++++++++++++++++++++++++-------------------
- 1 files changed, 136 insertions(+), 98 deletions(-)
+ arch/arm/mach-s3c2410/mach-amlm5900.c |   11 +--
+ arch/arm/mach-s3c2410/mach-bast.c     |   99 +++++++++++------------------
+ arch/arm/mach-s3c2410/mach-h1940.c    |   36 ++++-------
+ arch/arm/mach-s3c2410/mach-qt2410.c   |  111 +++++++++++++--------------------
+ arch/arm/mach-s3c2440/mach-rx3715.c   |   36 ++++-------
+ arch/arm/mach-s3c2440/mach-smdk2440.c |   34 ++++------
+ drivers/video/s3c2410fb.c             |   17 +++--
+ include/asm-arm/arch-s3c2410/fb.h     |    5 +
+ 8 files changed, 142 insertions(+), 207 deletions(-)
 
+diff --git a/arch/arm/mach-s3c2410/mach-amlm5900.c b/arch/arm/mach-s3c2410/mach-amlm5900.c
+index e96b413..74801ce 100644
+--- a/arch/arm/mach-s3c2410/mach-amlm5900.c
++++ b/arch/arm/mach-s3c2410/mach-amlm5900.c
+@@ -180,13 +180,10 @@ static struct s3c2410fb_display __initda
+ 	.left_margin	= 1 << (4 + 3),
+ 	.right_margin	= 8 << 3,
+ 
+-	.regs		= {
+-		.lcdcon1	= 0x00008225,
+-		.lcdcon2	= 0x0027c000,
+-		.lcdcon3	= 0x00182708,
+-		.lcdcon4	= 0x00000002,
+-		.lcdcon5	= 0x00000001,
+-	}
++	.lcdcon1	= 0x00008225,
++	.lcdcon2	= 0x0027c000,
++	.lcdcon4	= 0x00000002,
++	.lcdcon5	= 0x00000001,
+ };
+ 
+ static struct s3c2410fb_mach_info __initdata amlm5900_fb_info = {
+diff --git a/arch/arm/mach-s3c2410/mach-bast.c b/arch/arm/mach-s3c2410/mach-bast.c
+index 1b4f9f9..6e46c20 100644
+--- a/arch/arm/mach-s3c2410/mach-bast.c
++++ b/arch/arm/mach-s3c2410/mach-bast.c
+@@ -479,13 +479,10 @@ static struct s3c2410fb_display __initda
+ 
+ 		.bpp		= 4,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -498,13 +495,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -517,13 +511,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -536,13 +527,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -555,13 +543,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -574,13 +559,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -593,13 +575,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -612,13 +591,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ 	{
+ 		.type		= S3C2410_LCDCON1_TFT,
+@@ -631,13 +607,10 @@ static struct s3c2410fb_display __initda
+ 		.left_margin	= 40,
+ 		.right_margin	= 20,
+ 
+-		.regs		= {
+-			.lcdcon1	= 0x00000176,
+-			.lcdcon2	= 0x1d77c7c2,
+-			.lcdcon3	= 0x013a7f13,
+-			.lcdcon4	= 0x00000057,
+-			.lcdcon5	= 0x00014b02,
+-		}
++		.lcdcon1	= 0x00000176,
++		.lcdcon2	= 0x1d77c7c2,
++		.lcdcon4	= 0x00000057,
++		.lcdcon5	= 0x00014b02,
+ 	},
+ };
+ 
+diff --git a/arch/arm/mach-s3c2410/mach-h1940.c b/arch/arm/mach-s3c2410/mach-h1940.c
+index 372caa2..52d7685 100644
+--- a/arch/arm/mach-s3c2410/mach-h1940.c
++++ b/arch/arm/mach-s3c2410/mach-h1940.c
+@@ -134,27 +134,21 @@ static struct s3c2410_udc_mach_info h194
+  * Set lcd on or off
+  **/
+ static struct s3c2410fb_display h1940_lcd __initdata = {
+-	.regs={
+-		.lcdcon1=	S3C2410_LCDCON1_TFT16BPP | \
+-				S3C2410_LCDCON1_TFT | \
+-				S3C2410_LCDCON1_CLKVAL(0x0C),
+-
+-		.lcdcon2=	S3C2410_LCDCON2_VBPD(7) | \
+-				S3C2410_LCDCON2_LINEVAL(319) | \
+-				S3C2410_LCDCON2_VFPD(6) | \
+-				S3C2410_LCDCON2_VSPW(0),
+-
+-		.lcdcon3=	S3C2410_LCDCON3_HBPD(19) | \
+-				S3C2410_LCDCON3_HOZVAL(239) | \
+-				S3C2410_LCDCON3_HFPD(7),
+-
+-		.lcdcon4=	S3C2410_LCDCON4_MVAL(0) | \
+-				S3C2410_LCDCON4_HSPW(3),
+-
+-		.lcdcon5=	S3C2410_LCDCON5_FRM565 | \
+-				S3C2410_LCDCON5_INVVLINE | \
+-				S3C2410_LCDCON5_HWSWP,
+-	},
++	.lcdcon1=	S3C2410_LCDCON1_TFT16BPP | \
++			S3C2410_LCDCON1_TFT | \
++			S3C2410_LCDCON1_CLKVAL(0x0C),
++
++	.lcdcon2=	S3C2410_LCDCON2_VBPD(7) | \
++			S3C2410_LCDCON2_LINEVAL(319) | \
++			S3C2410_LCDCON2_VFPD(6) | \
++			S3C2410_LCDCON2_VSPW(0),
++
++	.lcdcon4=	S3C2410_LCDCON4_MVAL(0) | \
++			S3C2410_LCDCON4_HSPW(3),
++
++	.lcdcon5=	S3C2410_LCDCON5_FRM565 | \
++			S3C2410_LCDCON5_INVVLINE | \
++			S3C2410_LCDCON5_HWSWP,
+ 
+ 	.type =		S3C2410_LCDCON1_TFT,
+ 	.width =	240,
+diff --git a/arch/arm/mach-s3c2410/mach-qt2410.c b/arch/arm/mach-s3c2410/mach-qt2410.c
+index 0c1ff0a..0a746f7 100644
+--- a/arch/arm/mach-s3c2410/mach-qt2410.c
++++ b/arch/arm/mach-s3c2410/mach-qt2410.c
+@@ -98,30 +98,23 @@ static struct s3c2410_uartcfg smdk2410_u
+ static struct s3c2410fb_display qt2410_lcd_cfg[] __initdata = {
+ 	{
+ 		/* Configuration for 640x480 SHARP LQ080V3DG01 */
+-		.regs	= {
++		.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
++			   S3C2410_LCDCON1_TFT |
++			   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
+ 
+-			.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
+-				   S3C2410_LCDCON1_TFT |
+-				   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
++		.lcdcon2 = S3C2410_LCDCON2_VBPD(18) |	/* 19 */
++			   S3C2410_LCDCON2_LINEVAL(479) |
++			   S3C2410_LCDCON2_VFPD(10) |	/* 11 */
++			   S3C2410_LCDCON2_VSPW(14),	/* 15 */
+ 
+-			.lcdcon2 = S3C2410_LCDCON2_VBPD(18) |	/* 19 */
+-				   S3C2410_LCDCON2_LINEVAL(479) |
+-				   S3C2410_LCDCON2_VFPD(10) |	/* 11 */
+-				   S3C2410_LCDCON2_VSPW(14),	/* 15 */
++		.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
++			   S3C2410_LCDCON4_HSPW(95),	/* 96 */
+ 
+-			.lcdcon3 = S3C2410_LCDCON3_HBPD(43) |	/* 44 */
+-				   S3C2410_LCDCON3_HOZVAL(639) | /* 640 */
+-				   S3C2410_LCDCON3_HFPD(115),	/* 116 */
+-
+-			.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
+-				   S3C2410_LCDCON4_HSPW(95),	/* 96 */
+-
+-			.lcdcon5 = S3C2410_LCDCON5_FRM565 |
+-				   S3C2410_LCDCON5_INVVLINE |
+-				   S3C2410_LCDCON5_INVVFRAME |
+-				   S3C2410_LCDCON5_PWREN |
+-				   S3C2410_LCDCON5_HWSWP,
+-		},
++		.lcdcon5 = S3C2410_LCDCON5_FRM565 |
++			   S3C2410_LCDCON5_INVVLINE |
++			   S3C2410_LCDCON5_INVVFRAME |
++			   S3C2410_LCDCON5_PWREN |
++			   S3C2410_LCDCON5_HWSWP,
+ 
+ 		.type		= S3C2410_LCDCON1_TFT,
+ 		.width		= 640,
+@@ -135,30 +128,23 @@ static struct s3c2410fb_display qt2410_l
+ 	},
+ 	{
+ 		/* Configuration for 480x640 toppoly TD028TTEC1 */
+-		.regs	= {
+-
+-			.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
+-				   S3C2410_LCDCON1_TFT |
+-				   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
+-
+-			.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |	/* 2 */
+-				   S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
+-				   S3C2410_LCDCON2_VFPD(3) |	/* 4 */
+-				   S3C2410_LCDCON2_VSPW(1),	/* 2 */
++		.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
++			   S3C2410_LCDCON1_TFT |
++			   S3C2410_LCDCON1_CLKVAL(0x01), /* HCLK/4 */
+ 
+-			.lcdcon3 = S3C2410_LCDCON3_HBPD(7) |	/* 8 */
+-				   S3C2410_LCDCON3_HOZVAL(479) | /* 479 */
+-				   S3C2410_LCDCON3_HFPD(23),	/* 24 */
++		.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |	/* 2 */
++			   S3C2410_LCDCON2_LINEVAL(639) |/* 640 */
++			   S3C2410_LCDCON2_VFPD(3) |	/* 4 */
++			   S3C2410_LCDCON2_VSPW(1),	/* 2 */
+ 
+-			.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
+-				   S3C2410_LCDCON4_HSPW(7),	/* 8 */
++		.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
++			   S3C2410_LCDCON4_HSPW(7),	/* 8 */
+ 
+-			.lcdcon5 = S3C2410_LCDCON5_FRM565 |
+-				   S3C2410_LCDCON5_INVVLINE |
+-				   S3C2410_LCDCON5_INVVFRAME |
+-				   S3C2410_LCDCON5_PWREN |
+-				   S3C2410_LCDCON5_HWSWP,
+-		},
++		.lcdcon5 = S3C2410_LCDCON5_FRM565 |
++			   S3C2410_LCDCON5_INVVLINE |
++			   S3C2410_LCDCON5_INVVFRAME |
++			   S3C2410_LCDCON5_PWREN |
++			   S3C2410_LCDCON5_HWSWP,
+ 
+ 		.type		= S3C2410_LCDCON1_TFT,
+ 		.width		= 480,
+@@ -171,30 +157,23 @@ static struct s3c2410fb_display qt2410_l
+ 	},
+ 	{
+ 		/* Config for 240x320 LCD */
+-		.regs	= {
+-
+-			.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
+-				   S3C2410_LCDCON1_TFT |
+-				   S3C2410_LCDCON1_CLKVAL(0x04),
+-
+-			.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |
+-				   S3C2410_LCDCON2_LINEVAL(319) |
+-				   S3C2410_LCDCON2_VFPD(6) |
+-				   S3C2410_LCDCON2_VSPW(3),
+-
+-			.lcdcon3 = S3C2410_LCDCON3_HBPD(12) |
+-				   S3C2410_LCDCON3_HOZVAL(239) |
+-				   S3C2410_LCDCON3_HFPD(7),
+-
+-			.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
+-				   S3C2410_LCDCON4_HSPW(3),
+-
+-			.lcdcon5 = S3C2410_LCDCON5_FRM565 |
+-				   S3C2410_LCDCON5_INVVLINE |
+-				   S3C2410_LCDCON5_INVVFRAME |
+-				   S3C2410_LCDCON5_PWREN |
+-				   S3C2410_LCDCON5_HWSWP,
+-		},
++		.lcdcon1 = S3C2410_LCDCON1_TFT16BPP |
++			   S3C2410_LCDCON1_TFT |
++			   S3C2410_LCDCON1_CLKVAL(0x04),
++
++		.lcdcon2 = S3C2410_LCDCON2_VBPD(1) |
++			   S3C2410_LCDCON2_LINEVAL(319) |
++			   S3C2410_LCDCON2_VFPD(6) |
++			   S3C2410_LCDCON2_VSPW(3),
++
++		.lcdcon4 = S3C2410_LCDCON4_MVAL(0) |
++			   S3C2410_LCDCON4_HSPW(3),
++
++		.lcdcon5 = S3C2410_LCDCON5_FRM565 |
++			   S3C2410_LCDCON5_INVVLINE |
++			   S3C2410_LCDCON5_INVVFRAME |
++			   S3C2410_LCDCON5_PWREN |
++			   S3C2410_LCDCON5_HWSWP,
+ 
+ 		.type		= S3C2410_LCDCON1_TFT,
+ 		.width		= 240,
+diff --git a/arch/arm/mach-s3c2440/mach-rx3715.c b/arch/arm/mach-s3c2440/mach-rx3715.c
+index dab8e7b..3058272 100644
+--- a/arch/arm/mach-s3c2440/mach-rx3715.c
++++ b/arch/arm/mach-s3c2440/mach-rx3715.c
+@@ -111,27 +111,21 @@ static struct s3c2410_uartcfg rx3715_uar
+ /* framebuffer lcd controller information */
+ 
+ static struct s3c2410fb_display rx3715_lcdcfg __initdata = {
+-	.regs	= {
+-		.lcdcon1 =	S3C2410_LCDCON1_TFT16BPP | \
+-				S3C2410_LCDCON1_TFT | \
+-				S3C2410_LCDCON1_CLKVAL(0x0C),
+-
+-		.lcdcon2 =	S3C2410_LCDCON2_VBPD(5) | \
+-				S3C2410_LCDCON2_LINEVAL(319) | \
+-				S3C2410_LCDCON2_VFPD(6) | \
+-				S3C2410_LCDCON2_VSPW(2),
+-
+-		.lcdcon3 =	S3C2410_LCDCON3_HBPD(35) | \
+-				S3C2410_LCDCON3_HOZVAL(239) | \
+-				S3C2410_LCDCON3_HFPD(35),
+-
+-		.lcdcon4 =	S3C2410_LCDCON4_MVAL(0) | \
+-				S3C2410_LCDCON4_HSPW(7),
+-
+-		.lcdcon5 =	S3C2410_LCDCON5_INVVLINE |
+-				S3C2410_LCDCON5_FRM565 |
+-				S3C2410_LCDCON5_HWSWP,
+-	},
++	.lcdcon1 =	S3C2410_LCDCON1_TFT16BPP | \
++			S3C2410_LCDCON1_TFT | \
++			S3C2410_LCDCON1_CLKVAL(0x0C),
++
++	.lcdcon2 =	S3C2410_LCDCON2_VBPD(5) | \
++			S3C2410_LCDCON2_LINEVAL(319) | \
++			S3C2410_LCDCON2_VFPD(6) | \
++			S3C2410_LCDCON2_VSPW(2),
++
++	.lcdcon4 =	S3C2410_LCDCON4_MVAL(0) | \
++			S3C2410_LCDCON4_HSPW(7),
++
++	.lcdcon5 =	S3C2410_LCDCON5_INVVLINE |
++			S3C2410_LCDCON5_FRM565 |
++			S3C2410_LCDCON5_HWSWP,
+ 
+ 	.type		= S3C2410_LCDCON1_TFT,
+ 	.width		= 240,
+diff --git a/arch/arm/mach-s3c2440/mach-smdk2440.c b/arch/arm/mach-s3c2440/mach-smdk2440.c
+index 5930f17..33b3644 100644
+--- a/arch/arm/mach-s3c2440/mach-smdk2440.c
++++ b/arch/arm/mach-s3c2440/mach-smdk2440.c
+@@ -104,30 +104,24 @@ static struct s3c2410_uartcfg smdk2440_u
+ /* LCD driver info */
+ 
+ static struct s3c2410fb_display smdk2440_lcd_cfg __initdata = {
+-	.regs	= {
+ 
+-		.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
+-				  S3C2410_LCDCON1_TFT |
+-				  S3C2410_LCDCON1_CLKVAL(0x04),
++	.lcdcon1	= S3C2410_LCDCON1_TFT16BPP |
++			  S3C2410_LCDCON1_TFT |
++			  S3C2410_LCDCON1_CLKVAL(0x04),
+ 
+-		.lcdcon2	= S3C2410_LCDCON2_VBPD(7) |
+-				  S3C2410_LCDCON2_LINEVAL(319) |
+-				  S3C2410_LCDCON2_VFPD(6) |
+-				  S3C2410_LCDCON2_VSPW(3),
++	.lcdcon2	= S3C2410_LCDCON2_VBPD(7) |
++			  S3C2410_LCDCON2_LINEVAL(319) |
++			  S3C2410_LCDCON2_VFPD(6) |
++			  S3C2410_LCDCON2_VSPW(3),
+ 
+-		.lcdcon3	= S3C2410_LCDCON3_HBPD(19) |
+-				  S3C2410_LCDCON3_HOZVAL(239) |
+-				  S3C2410_LCDCON3_HFPD(7),
++	.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
++			  S3C2410_LCDCON4_HSPW(3),
+ 
+-		.lcdcon4	= S3C2410_LCDCON4_MVAL(0) |
+-				  S3C2410_LCDCON4_HSPW(3),
+-
+-		.lcdcon5	= S3C2410_LCDCON5_FRM565 |
+-				  S3C2410_LCDCON5_INVVLINE |
+-				  S3C2410_LCDCON5_INVVFRAME |
+-				  S3C2410_LCDCON5_PWREN |
+-				  S3C2410_LCDCON5_HWSWP,
+-	},
++	.lcdcon5	= S3C2410_LCDCON5_FRM565 |
++			  S3C2410_LCDCON5_INVVLINE |
++			  S3C2410_LCDCON5_INVVFRAME |
++			  S3C2410_LCDCON5_PWREN |
++			  S3C2410_LCDCON5_HWSWP,
+ 
+ 	.type		= S3C2410_LCDCON1_TFT16BPP,
+ 
 diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
-index e52ec22..04e9d7a 100644
+index 04e9d7a..27528ca 100644
 --- a/drivers/video/s3c2410fb.c
 +++ b/drivers/video/s3c2410fb.c
-@@ -197,6 +197,14 @@ static int s3c2410fb_check_var(struct fb
- 		return -EINVAL;
+@@ -245,7 +245,7 @@ static int s3c2410fb_check_var(struct fb
+ 
+ 	default:
+ 	case 16:
+-		if (display->regs.lcdcon5 & S3C2410_LCDCON5_FRM565) {
++		if (display->lcdcon5 & S3C2410_LCDCON5_FRM565) {
+ 			/* 16 bpp, 565 format */
+ 			var->red.offset		= 11;
+ 			var->green.offset	= 5;
+@@ -796,7 +796,6 @@ static int __init s3c2410fb_probe(struct
+ 	struct s3c2410fb_info *info;
+ 	struct s3c2410fb_display *display;
+ 	struct fb_info *fbinfo;
+-	struct s3c2410fb_hw *mregs;
+ 	struct resource *res;
+ 	int ret;
+ 	int irq;
+@@ -812,7 +811,6 @@ static int __init s3c2410fb_probe(struct
  	}
  
-+	/* it is always the size as the display */
-+	var->xres_virtual = display->xres;
-+	var->yres_virtual = display->yres;
-+
-+	/* copy lcd settings */
-+	var->left_margin = display->left_margin;
-+	var->right_margin = display->right_margin;
-+
- 	var->transp.offset = 0;
- 	var->transp.length = 0;
- 	/* set r/g/b positions */
-@@ -270,124 +278,151 @@ static int s3c2410fb_check_var(struct fb
- 	return 0;
- }
+ 	display = mach_info->displays + mach_info->default_display;
+-	mregs = &display->regs;
  
--/* s3c2410fb_activate_var
-+/* s3c2410fb_calculate_stn_lcd_regs
-  *
-- * activate (set) the controller from the given framebuffer
-- * information
-+ * calculate register values from var settings
-  */
--static void s3c2410fb_activate_var(struct fb_info *info,
--				   struct fb_var_screeninfo *var)
-+static void s3c2410fb_calculate_stn_lcd_regs(const struct fb_info *info,
-+					     struct s3c2410fb_hw *regs)
- {
--	struct s3c2410fb_info *fbi = info->par;
--	struct s3c2410fb_mach_info *mach_info = fbi->mach_info;
--	struct s3c2410fb_display *display = mach_info->displays +
--					    fbi->current_display;
--	int hs;
--
--	fbi->regs.lcdcon1 &= ~S3C2410_LCDCON1_MODEMASK;
--	fbi->regs.lcdcon1 &= ~S3C2410_LCDCON1_TFT;
-+	const struct s3c2410fb_info *fbi = info->par;
-+	const struct fb_var_screeninfo *var = &info->var;
-+	int type = regs->lcdcon1 & ~S3C2410_LCDCON1_TFT;
-+	int hs = var->xres >> 2;
-+	unsigned wdly = (var->left_margin >> 4) - 1;
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+@@ -855,7 +853,10 @@ static int __init s3c2410fb_probe(struct
  
- 	dprintk("%s: var->xres  = %d\n", __FUNCTION__, var->xres);
- 	dprintk("%s: var->yres  = %d\n", __FUNCTION__, var->yres);
- 	dprintk("%s: var->bpp   = %d\n", __FUNCTION__, var->bits_per_pixel);
+ 	strcpy(fbinfo->fix.id, driver_name);
  
--	fbi->regs.lcdcon1 |= display->type;
--
--	if (display->type == S3C2410_LCDCON1_TFT)
--		switch (var->bits_per_pixel) {
--		case 1:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_TFT1BPP;
--			break;
--		case 2:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_TFT2BPP;
--			break;
--		case 4:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_TFT4BPP;
--			break;
--		case 8:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_TFT8BPP;
--			break;
--		case 16:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_TFT16BPP;
--			break;
-+	if (type != S3C2410_LCDCON1_STN4)
-+		hs >>= 1;
+-	memcpy(&info->regs, &display->regs, sizeof(info->regs));
++	info->regs.lcdcon1 = display->lcdcon1;
++	info->regs.lcdcon2 = display->lcdcon2;
++	info->regs.lcdcon4 = display->lcdcon4;
++	info->regs.lcdcon5 = display->lcdcon5;
  
--		default:
--			/* invalid pixel depth */
--			dev_err(fbi->dev, "invalid bpp %d\n",
--				var->bits_per_pixel);
--		}
--	else
--		switch (var->bits_per_pixel) {
--		case 1:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_STN1BPP;
--			break;
--		case 2:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_STN2GREY;
--			break;
--		case 4:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_STN4GREY;
--			break;
--		case 8:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_STN8BPP;
--			break;
--		case 12:
--			fbi->regs.lcdcon1 |= S3C2410_LCDCON1_STN12BPP;
--			break;
-+	regs->lcdcon1 &= ~S3C2410_LCDCON1_MODEMASK;
- 
--		default:
--			/* invalid pixel depth */
--			dev_err(fbi->dev, "invalid bpp %d\n",
--				var->bits_per_pixel);
--		}
-+	switch (var->bits_per_pixel) {
-+	case 1:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_STN1BPP;
-+		break;
-+	case 2:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_STN2GREY;
-+		break;
-+	case 4:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_STN4GREY;
-+		break;
-+	case 8:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_STN8BPP;
-+		hs *= 3;
-+		break;
-+	case 12:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_STN12BPP;
-+		hs *= 3;
-+		break;
- 
--	/* check to see if we need to update sync/borders */
-+	default:
-+		/* invalid pixel depth */
-+		dev_err(fbi->dev, "invalid bpp %d\n",
-+			var->bits_per_pixel);
-+	}
-+	/* update X/Y info */
-+	dprintk("setting vert: up=%d, low=%d, sync=%d\n",
-+		var->upper_margin, var->lower_margin, var->vsync_len);
- 
--	if (!mach_info->fixed_syncs) {
--		dprintk("setting vert: up=%d, low=%d, sync=%d\n",
--			var->upper_margin, var->lower_margin, var->vsync_len);
-+	dprintk("setting horz: lft=%d, rt=%d, sync=%d\n",
-+		var->left_margin, var->right_margin, var->hsync_len);
- 
--		dprintk("setting horz: lft=%d, rt=%d, sync=%d\n",
--			var->left_margin, var->right_margin, var->hsync_len);
-+	regs->lcdcon2 &= ~S3C2410_LCDCON2_LINEVAL(0x3ff);
-+	regs->lcdcon2 |=  S3C2410_LCDCON2_LINEVAL(var->yres - 1);
- 
--		fbi->regs.lcdcon2 =
--			S3C2410_LCDCON2_VBPD(var->upper_margin - 1) |
--			S3C2410_LCDCON2_VFPD(var->lower_margin - 1) |
--			S3C2410_LCDCON2_VSPW(var->vsync_len - 1);
-+	if (wdly > 3)
-+		wdly = 3;
- 
--		fbi->regs.lcdcon3 =
--			S3C2410_LCDCON3_HBPD(var->right_margin - 1) |
--			S3C2410_LCDCON3_HFPD(var->left_margin - 1);
-+	regs->lcdcon3 =	S3C2410_LCDCON3_WDLY(wdly) |
-+			S3C2410_LCDCON3_LINEBLANK(var->right_margin / 8) |
-+			S3C2410_LCDCON3_HOZVAL(hs - 1);
-+}
- 
--		fbi->regs.lcdcon4 &= ~S3C2410_LCDCON4_HSPW(0xff);
--		fbi->regs.lcdcon4 |=  S3C2410_LCDCON4_HSPW(var->hsync_len - 1);
--	}
-+/* s3c2410fb_calculate_tft_lcd_regs
-+ *
-+ * calculate register values from var settings
-+ */
-+static void s3c2410fb_calculate_tft_lcd_regs(const struct fb_info *info,
-+					     struct s3c2410fb_hw *regs)
-+{
-+	const struct s3c2410fb_info *fbi = info->par;
-+	const struct fb_var_screeninfo *var = &info->var;
- 
--	/* update X/Y info */
-+	dprintk("%s: var->xres  = %d\n", __FUNCTION__, var->xres);
-+	dprintk("%s: var->yres  = %d\n", __FUNCTION__, var->yres);
-+	dprintk("%s: var->bpp   = %d\n", __FUNCTION__, var->bits_per_pixel);
- 
--	fbi->regs.lcdcon2 &= ~S3C2410_LCDCON2_LINEVAL(0x3ff);
--	fbi->regs.lcdcon2 |=  S3C2410_LCDCON2_LINEVAL(var->yres - 1);
-+	regs->lcdcon1 &= ~S3C2410_LCDCON1_MODEMASK;
- 
--	switch (display->type) {
--	case S3C2410_LCDCON1_DSCAN4:
--	case S3C2410_LCDCON1_STN8:
--		hs = var->xres / 8;
-+	switch (var->bits_per_pixel) {
-+	case 1:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_TFT1BPP;
-+		break;
-+	case 2:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_TFT2BPP;
- 		break;
--	case S3C2410_LCDCON1_STN4:
--		hs = var->xres / 4;
-+	case 4:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_TFT4BPP;
- 		break;
--	default:
--	case S3C2410_LCDCON1_TFT:
--		hs = var->xres;
-+	case 8:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_TFT8BPP;
-+		break;
-+	case 16:
-+		regs->lcdcon1 |= S3C2410_LCDCON1_TFT16BPP;
- 		break;
-+
-+	default:
-+		/* invalid pixel depth */
-+		dev_err(fbi->dev, "invalid bpp %d\n",
-+			var->bits_per_pixel);
- 	}
-+	/* update X/Y info */
-+	dprintk("setting vert: up=%d, low=%d, sync=%d\n",
-+		var->upper_margin, var->lower_margin, var->vsync_len);
- 
--	/* Special cases : STN color displays */
--	if (((fbi->regs.lcdcon1 & S3C2410_LCDCON1_MODEMASK) == S3C2410_LCDCON1_STN8BPP) ||
--	    ((fbi->regs.lcdcon1 & S3C2410_LCDCON1_MODEMASK) == S3C2410_LCDCON1_STN12BPP))
--		hs = hs * 3;
-+	dprintk("setting horz: lft=%d, rt=%d, sync=%d\n",
-+		var->left_margin, var->right_margin, var->hsync_len);
- 
--	fbi->regs.lcdcon3 &= ~S3C2410_LCDCON3_HOZVAL(0x7ff);
--	fbi->regs.lcdcon3 |=  S3C2410_LCDCON3_HOZVAL(hs - 1);
-+	regs->lcdcon2 &= ~S3C2410_LCDCON2_LINEVAL(0x3ff);
-+	regs->lcdcon2 |=  S3C2410_LCDCON2_LINEVAL(var->yres - 1);
-+
-+	regs->lcdcon3 = S3C2410_LCDCON3_HBPD(var->right_margin - 1) |
-+			S3C2410_LCDCON3_HFPD(var->left_margin - 1) |
-+			S3C2410_LCDCON3_HOZVAL(var->xres - 1);
-+}
-+
-+/* s3c2410fb_activate_var
-+ *
-+ * activate (set) the controller from the given framebuffer
-+ * information
-+ */
-+static void s3c2410fb_activate_var(struct fb_info *info)
-+{
-+	struct s3c2410fb_info *fbi = info->par;
-+	struct fb_var_screeninfo *var = &info->var;
-+	struct s3c2410fb_mach_info *mach_info = fbi->mach_info;
-+	struct s3c2410fb_display *display = mach_info->displays +
-+					    fbi->current_display;
-+
-+	/* set display type */
-+	fbi->regs.lcdcon1 &= ~S3C2410_LCDCON1_TFT;
-+	fbi->regs.lcdcon1 |= display->type;
-+
-+	/* check to see if we need to update sync/borders */
-+
-+	if (!mach_info->fixed_syncs) {
-+		fbi->regs.lcdcon2 =
-+			S3C2410_LCDCON2_VBPD(var->upper_margin - 1) |
-+			S3C2410_LCDCON2_VFPD(var->lower_margin - 1) |
-+			S3C2410_LCDCON2_VSPW(var->vsync_len - 1);
-+
-+		fbi->regs.lcdcon4 &= ~S3C2410_LCDCON4_HSPW(0xff);
-+		fbi->regs.lcdcon4 |=  S3C2410_LCDCON4_HSPW(var->hsync_len - 1);
-+	}
- 
- 	if (var->pixclock > 0) {
- 		int clkdiv = s3c2410fb_calc_pixclk(fbi, var->pixclock);
-@@ -406,6 +441,11 @@ static void s3c2410fb_activate_var(struc
- 		fbi->regs.lcdcon1 |=  S3C2410_LCDCON1_CLKVAL(clkdiv);
- 	}
- 
-+	if (display->type == S3C2410_LCDCON1_TFT)
-+		s3c2410fb_calculate_tft_lcd_regs(info, &fbi->regs);
-+	else
-+		s3c2410fb_calculate_stn_lcd_regs(info, &fbi->regs);
-+
- 	/* write new registers */
- 
- 	dprintk("new register set:\n");
-@@ -452,7 +492,7 @@ static int s3c2410fb_set_par(struct fb_i
- 
- 	/* activate this new configuration */
- 
--	s3c2410fb_activate_var(info, var);
-+	s3c2410fb_activate_var(info);
- 	return 0;
- }
- 
-@@ -848,6 +888,8 @@ static int __init s3c2410fb_probe(struct
- 	fbinfo->var.yres	    = display->yres;
- 	fbinfo->var.yres_virtual    = display->yres;
- 	fbinfo->var.bits_per_pixel  = display->bpp;
-+	fbinfo->var.left_margin	    = display->left_margin;
-+	fbinfo->var.right_margin    = display->right_margin;
+ 	/* Stop the video and unset ENVID if set */
+ 	info->regs.lcdcon1 &= ~S3C2410_LCDCON1_ENVID;
+@@ -892,14 +893,14 @@ static int __init s3c2410fb_probe(struct
+ 	fbinfo->var.right_margin    = display->right_margin;
  
  	fbinfo->var.upper_margin    =
- 				S3C2410_LCDCON2_GET_VBPD(mregs->lcdcon2) + 1;
-@@ -856,10 +898,6 @@ static int __init s3c2410fb_probe(struct
+-				S3C2410_LCDCON2_GET_VBPD(mregs->lcdcon2) + 1;
++				S3C2410_LCDCON2_GET_VBPD(display->lcdcon2) + 1;
+ 	fbinfo->var.lower_margin    =
+-				S3C2410_LCDCON2_GET_VFPD(mregs->lcdcon2) + 1;
++				S3C2410_LCDCON2_GET_VFPD(display->lcdcon2) + 1;
  	fbinfo->var.vsync_len	    =
- 				S3C2410_LCDCON2_GET_VSPW(mregs->lcdcon2) + 1;
+-				S3C2410_LCDCON2_GET_VSPW(mregs->lcdcon2) + 1;
++				S3C2410_LCDCON2_GET_VSPW(display->lcdcon2) + 1;
  
--	fbinfo->var.left_margin	    =
--				S3C2410_LCDCON3_GET_HFPD(mregs->lcdcon3) + 1;
--	fbinfo->var.right_margin    =
--				S3C2410_LCDCON3_GET_HBPD(mregs->lcdcon3) + 1;
  	fbinfo->var.hsync_len	    =
- 				S3C2410_LCDCON4_GET_HSPW(mregs->lcdcon4) + 1;
+-				S3C2410_LCDCON4_GET_HSPW(mregs->lcdcon4) + 1;
++				S3C2410_LCDCON4_GET_HSPW(display->lcdcon4) + 1;
  
+ 	fbinfo->var.red.offset      = 11;
+ 	fbinfo->var.green.offset    = 5;
+diff --git a/include/asm-arm/arch-s3c2410/fb.h b/include/asm-arm/arch-s3c2410/fb.h
+index a76585a..8a7fa1b 100644
+--- a/include/asm-arm/arch-s3c2410/fb.h
++++ b/include/asm-arm/arch-s3c2410/fb.h
+@@ -44,7 +44,10 @@ struct s3c2410fb_display {
+ 	unsigned short vsync_len;	/* value in lines (TFT) or 0 (STN) */
+ 
+ 	/* lcd configuration registers */
+-	struct s3c2410fb_hw  regs;
++	unsigned long	lcdcon1;
++	unsigned long	lcdcon2;
++	unsigned long	lcdcon4;
++	unsigned long	lcdcon5;
+ };
+ 
+ struct s3c2410fb_mach_info {
 
 
 -------------------------------------------------------------------------

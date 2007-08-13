@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 03/22] pm2fb: Permedia 2V hardware
-	cursor support
-Date: Mon, 13 Aug 2007 20:25:47 +0800
-Message-ID: <46C04DCB.2010500@gmail.com>
+Subject: [PATCH 04/22] pm3fb: hardware cursor support
+Date: Mon, 13 Aug 2007 20:26:45 +0800
+Message-ID: <46C04E05.5030400@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IKZJB-0004Nj-92 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:46:09 -0700
+	id 1IKZJH-0004Nw-Mi for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Aug 2007 05:46:15 -0700
 Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZJA-0005O6-RQ
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZJH-0005O6-A8
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:46:09 -0700
+	Mon, 13 Aug 2007 05:46:15 -0700
 Received: by rv-out-0910.google.com with SMTP id k15so3930196rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 13 Aug 2007 05:46:08 -0700 (PDT)
+	Mon, 13 Aug 2007 05:46:15 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,45 +34,42 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch adds hardware cursor support for Permedia 2V chips.
-The hardware cursor is disabled by default. It does not blink - the
-same issue is mentioned in the x11 driver.
+This patch adds hardware cursor support to the pm3fb driver.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/pm2fb.c     |  137 +++++++++++++++++++++++++++++++++++++++++++++
- include/video/permedia2.h |    2 +
- 2 files changed, 139 insertions(+), 0 deletions(-)
+ drivers/video/pm3fb.c |  118 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 118 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
-index 19cbde1..53dd639 100644
---- a/drivers/video/pm2fb.c
-+++ b/drivers/video/pm2fb.c
-@@ -66,6 +66,7 @@ #define PM2_PIXMAP_SIZE	(1600 * 4)
+diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
+index 0f753dd..85d1217 100644
+--- a/drivers/video/pm3fb.c
++++ b/drivers/video/pm3fb.c
+@@ -55,6 +55,7 @@ #define PM3_PIXMAP_SIZE	(2048 * 4)
  /*
   * Driver data
   */
-+static int hwcursor;
- static char *mode __devinitdata;
++static int hwcursor = 1;
+ static char *mode_option __devinitdata;
+ static int noaccel __devinitdata;
  
- /*
-@@ -1245,6 +1246,136 @@ static void pm2fb_imageblit(struct fb_in
- 	pm2_WR(par, PM2R_SCISSOR_MODE, 0);
+@@ -604,6 +605,117 @@ static void pm3fb_imageblit(struct fb_in
  }
+ /* end of acceleration functions */
  
 +/*
-+ *	Hardware cursor support.
++ *	Hardware Cursor support.
 + */
 +static const u8 cursor_bits_lookup[16] = {
 +	0x00, 0x40, 0x10, 0x50, 0x04, 0x44, 0x14, 0x54,
 +	0x01, 0x41, 0x11, 0x51, 0x05, 0x45, 0x15, 0x55
 +};
 +
-+static int pm2vfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++static int pm3fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 +{
-+	struct pm2fb_par *par = info->par;
++	struct pm3_par *par = info->par;
 +	u8 mode;
 +
 +	if (!hwcursor)
@@ -85,11 +81,11 @@ index 19cbde1..53dd639 100644
 +	    cursor->image.depth > 1)
 +		return -EINVAL;
 +
-+	mode = PM2F_CURSORMODE_TYPE_X;
++	mode = PM3RD_CursorMode_TYPE_X;
 +	if (cursor->enable)
-+		mode |= PM2F_CURSORMODE_CURSOR_ENABLE;
++		 mode |= PM3RD_CursorMode_CURSOR_ENABLE;
 +
-+	pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_MODE, mode);
++	PM3_WRITE_DAC_REG(par, PM3RD_CursorMode, mode);
 +
 +	/*
 +	 * If the cursor is not be changed this means either we want the
@@ -103,17 +99,17 @@ index 19cbde1..53dd639 100644
 +		int x = cursor->image.dx - info->var.xoffset;
 +		int y = cursor->image.dy - info->var.yoffset;
 +
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_LOW, x & 0xff);
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_HIGH, (x >> 8) & 0xf);
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_LOW, y & 0xff);
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_HIGH, (y >> 8) & 0xf);
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorXLow, x & 0xff);
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorXHigh, (x >> 8) & 0xf);
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorYLow, y & 0xff);
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorYHigh, (y >> 8) & 0xf);
 +	}
 +
 +	if (cursor->set & FB_CUR_SETHOT) {
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_HOT,
-+			     cursor->hot.x & 0x3f);
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_HOT,
-+			     cursor->hot.y & 0x3f);
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorHotSpotX,
++				  cursor->hot.x & 0x3f);
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorHotSpotY,
++				  cursor->hot.y & 0x3f);
 +	}
 +
 +	if (cursor->set & FB_CUR_SETCMAP) {
@@ -122,34 +118,30 @@ index 19cbde1..53dd639 100644
 +		struct fb_cmap cmap = info->cmap;
 +
 +		/* the X11 driver says one should use these color registers */
-+		pm2_WR(par, PM2VR_RD_INDEX_HIGH, PM2VI_RD_CURSOR_PALETTE >> 8);
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 0,
-+			     cmap.red[bg_idx] >> 8 );
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 1,
-+			     cmap.green[bg_idx] >> 8 );
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 2,
-+			     cmap.blue[bg_idx] >> 8 );
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorPalette(39),
++				  cmap.red[fg_idx] >> 8 );
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorPalette(40),
++				  cmap.green[fg_idx] >> 8 );
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorPalette(41),
++				  cmap.blue[fg_idx] >> 8 );
 +
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 3,
-+			     cmap.red[fg_idx] >> 8 );
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 4,
-+			     cmap.green[fg_idx] >> 8 );
-+		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_PALETTE + 5,
-+			     cmap.blue[fg_idx] >> 8 );
-+		pm2_WR(par, PM2VR_RD_INDEX_HIGH, 0);
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorPalette(42),
++				  cmap.red[bg_idx] >> 8 );
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorPalette(43),
++				  cmap.green[bg_idx] >> 8 );
++		PM3_WRITE_DAC_REG(par, PM3RD_CursorPalette(44),
++				  cmap.blue[bg_idx] >> 8 );
 +	}
 +
 +	if (cursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
 +		u8 *bitmap = (u8 *)cursor->image.data;
 +		u8 *mask = (u8 *)cursor->mask;
 +		int i;
-+		int pos = PM2VI_RD_CURSOR_PATTERN;
++		int pos = PM3RD_CursorPattern(0);
 +
 +		for (i = 0; i < cursor->image.height; i++) {
 +			int j = (cursor->image.width + 7) >> 3;
 +			int k = 8 - j;
-+
-+			pm2_WR(par, PM2VR_RD_INDEX_HIGH, pos >> 8);
 +
 +			for (; j > 0; j--) {
 +				u8 data = *bitmap ^ *mask;
@@ -157,86 +149,57 @@ index 19cbde1..53dd639 100644
 +				if (cursor->rop == ROP_COPY)
 +					data = *mask & *bitmap;
 +				/* Upper 4 bits of bitmap data */
-+				pm2v_RDAC_WR(par, pos++,
++				PM3_WRITE_DAC_REG(par, pos++,
 +					cursor_bits_lookup[data >> 4] |
 +					(cursor_bits_lookup[*mask >> 4] << 1));
 +				/* Lower 4 bits of bitmap */
-+				pm2v_RDAC_WR(par, pos++,
++				PM3_WRITE_DAC_REG(par, pos++,
 +					cursor_bits_lookup[data & 0xf] |
 +					(cursor_bits_lookup[*mask & 0xf] << 1));
 +				bitmap++;
 +				mask++;
 +			}
 +			for (; k > 0; k--) {
-+				pm2v_RDAC_WR(par, pos++, 0);
-+				pm2v_RDAC_WR(par, pos++, 0);
++				PM3_WRITE_DAC_REG(par, pos++, 0);
++				PM3_WRITE_DAC_REG(par, pos++, 0);
 +			}
 +		}
-+
-+		while (pos < (1024 + PM2VI_RD_CURSOR_PATTERN)) {
-+			pm2_WR(par, PM2VR_RD_INDEX_HIGH, pos >> 8);
-+			pm2v_RDAC_WR(par, pos++, 0);
-+		}
-+
-+		pm2_WR(par, PM2VR_RD_INDEX_HIGH, 0);
++		while (pos < PM3RD_CursorPattern(1024))
++			PM3_WRITE_DAC_REG(par, pos++, 0);
 +	}
 +	return 0;
 +}
 +
-+static int pm2fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-+{
-+	struct pm2fb_par *par = info->par;
-+
-+	if (par->type == PM2_TYPE_PERMEDIA2V)
-+		return pm2vfb_cursor(info, cursor);
-+
-+	return -ENXIO;
-+}
-+
- /* ------------ Hardware Independent Functions ------------ */
- 
- /*
-@@ -1262,6 +1393,7 @@ static struct fb_ops pm2fb_ops = {
- 	.fb_copyarea	= pm2fb_copyarea,
- 	.fb_imageblit	= pm2fb_imageblit,
- 	.fb_sync	= pm2fb_sync,
-+	.fb_cursor	= pm2fb_cursor,
+ /* write the mode to registers */
+ static void pm3fb_write_mode(struct fb_info *info)
+ {
+@@ -1105,6 +1217,7 @@ static struct fb_ops pm3fb_ops = {
+ 	.fb_imageblit	= pm3fb_imageblit,
+ 	.fb_blank	= pm3fb_blank,
+ 	.fb_sync	= pm3fb_sync,
++	.fb_cursor	= pm3fb_cursor,
  };
  
- /*
-@@ -1550,6 +1682,8 @@ static int __init pm2fb_setup(char *opti
- 			lowhsync = 1;
- 		else if (!strcmp(this_opt, "lowvsync"))
- 			lowvsync = 1;
+ /* ------------------------------------------------------------------------- */
+@@ -1420,6 +1533,8 @@ static int __init pm3fb_setup(char *opti
+ 			continue;
+ 		else if (!strncmp(this_opt, "noaccel", 7))
+ 			noaccel = 1;
 +		else if (!strncmp(this_opt, "hwcursor=", 9))
 +			hwcursor = simple_strtoul(this_opt + 9, NULL, 0);
  #ifdef CONFIG_MTRR
  		else if (!strncmp(this_opt, "nomtrr", 6))
  			nomtrr = 1;
-@@ -1601,6 +1735,9 @@ module_param(lowvsync, bool, 0);
- MODULE_PARM_DESC(lowvsync, "Force vertical sync low regardless of mode");
+@@ -1459,6 +1574,9 @@ module_init(pm3fb_init);
+ 
  module_param(noaccel, bool, 0);
  MODULE_PARM_DESC(noaccel, "Disable acceleration");
 +module_param(hwcursor, int, 0644);
 +MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
-+			"(1=enable, 0=disable, default=0)");
++			"(1=enable, 0=disable, default=1)");
  #ifdef CONFIG_MTRR
  module_param(nomtrr, bool, 0);
  MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
-diff --git a/include/video/permedia2.h b/include/video/permedia2.h
-index cf1d95b..c6575b8 100644
---- a/include/video/permedia2.h
-+++ b/include/video/permedia2.h
-@@ -232,6 +232,8 @@ #define PM2F_MEM_BANKS_4				(3L<<29)
- #define PM2F_APERTURE_STANDARD				0
- #define PM2F_APERTURE_BYTESWAP				1
- #define PM2F_APERTURE_HALFWORDSWAP			2
-+#define PM2F_CURSORMODE_CURSOR_ENABLE			(1 << 0)
-+#define PM2F_CURSORMODE_TYPE_X				(1 << 4)
- 
- typedef enum {
- 	PM2_TYPE_PERMEDIA2,
-
 
 
 -------------------------------------------------------------------------

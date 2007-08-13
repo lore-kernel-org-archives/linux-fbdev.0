@@ -1,25 +1,27 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 22/22] uvesafb: try to set mode with
- default timings if setting it with our own timings failed
-Date: Mon, 13 Aug 2007 20:44:17 +0800
-Message-ID: <46C05221.40704@gmail.com>
+From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
+Subject: how to handle MSB framebuffer in LSB kernel?
+Date: Mon, 13 Aug 2007 21:41:18 +0200
+Message-ID: <46c0b3de5046e@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IKe0Z-0000Sv-3f for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 10:47:15 -0700
-Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IKZLX-0005O6-GO
+	id 1IKfn1-0004rt-A6 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Aug 2007 12:41:24 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1IKfmy-0001Pb-Gl
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 13 Aug 2007 05:48:36 -0700
-Received: by rv-out-0910.google.com with SMTP id k15so3930196rvb
+	Mon, 13 Aug 2007 12:41:20 -0700
+Received: from poczta-3.free.wp-sa.pl (HELO localhost) ([10.1.1.213])
+	(envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 13 Aug 2007 05:48:35 -0700 (PDT)
+	13 Aug 2007 21:41:18 +0200
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,64 +32,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Michal Januszewski <spock@gentoo.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Michal Januszewski <spock@gentoo.org>
+Hi,
 
-Sometimes the BIOS might not perform the mode switch correctly because of
-the timings that we requested.  In case this happens, try to set the video
-mode with the default timings instead.
+I have a problem how to handle MSB framebuffer (s3c2410fb) in LSB =
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
+kernel (typical ARM kernel).
 
- drivers/video/uvesafb.c |   24 ++++++++++++++++++++----
- 1 files changed, 20 insertions(+), 4 deletions(-)
+It is not a problem in 8+ bpp (bits per pixel) modes.
+The problem is how to reverse pixel order in 1, 2 and 4 bpp
+modes, because it does not work otherwise. Is there any fb flag
+or something?
 
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 2e5f1b5..853323e 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -1218,6 +1218,7 @@ static int uvesafb_set_par(struct fb_inf
- 	task = uvesafb_prep();
- 	if (!task)
- 		return -ENOMEM;
-+setmode:
- 	task->t.regs.eax = 0x4f02;
- 	task->t.regs.ebx = mode->mode_id | 0x4000;	/* use LFB */
- 
-@@ -1260,10 +1261,25 @@ static int uvesafb_set_par(struct fb_inf
- 
- 	err = uvesafb_exec(task);
- 	if (err || (task->t.regs.eax & 0xffff) != 0x004f) {
--		printk(KERN_ERR "uvesafb: mode switch failed (eax=0x%x, "
--				"err=%d)\n", task->t.regs.eax, err);
--		err = -EINVAL;
--		goto out;
-+		/*
-+		 * The mode switch might have failed because we tried to
-+		 * use our own timings.  Try again with the default timings.
-+		 */
-+		if (crtc != NULL) {
-+			printk(KERN_WARNING "uvesafb: mode switch failed "
-+				"(eax=0x%x, err=%d). Trying again with "
-+				"default timings.\n", task->t.regs.eax, err);
-+			uvesafb_reset(task);
-+			kfree(crtc);
-+			crtc = NULL;
-+			info->var.pixclock = 0;
-+			goto setmode;
-+		} else {
-+			printk(KERN_ERR "uvesafb: mode switch failed (eax="
-+				"0x%x, err=%d)\n", task->t.regs.eax, err);
-+			err = -EINVAL;
-+			goto out;
-+		}
- 	}
- 	par->mode_idx = i;
- 
+Regards,
+Krzysztof
+
+----------------------------------------------------
+Czy na wakacje warto zabra=E6 laptopa?
+Zobacz gdzie dzia=B3aj=B1 strefy darmowego, bezprzewodowego Internetu!
+Kliknij: http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fd12=
+8.html&sid=3D1259
+
 
 
 -------------------------------------------------------------------------

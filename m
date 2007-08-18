@@ -1,26 +1,27 @@
-From: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: [PATCH 3/3] cirrusfb: code improvements
-Date: Sat, 18 Aug 2007 08:23:37 +0200
-Message-ID: <46c690693b868@wp.pl>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: [PATCH] pm3fb: header file cleanup
+Date: Sat, 18 Aug 2007 23:33:16 +0200
+Message-ID: <20070818233316.3c94cf91.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="part46c690693df67"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IMHio-0001SM-Kw for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Aug 2007 23:23:43 -0700
+	id 1IMVqd-0002JY-0R for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 18 Aug 2007 14:28:43 -0700
 Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IMHil-0006Lw-I3
+	(Exim 4.44) id 1IMVqc-0008Iv-2R
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Aug 2007 23:23:42 -0700
-Received: from poczta-16.free.wp-sa.pl (HELO localhost) ([10.1.1.71])
-	(envelope-sender <krzysztof.h1@wp.pl>)
+	Sat, 18 Aug 2007 14:28:42 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
 	by smtp.wp.pl (WP-SMTPD) with SMTP
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	18 Aug 2007 08:23:37 +0200
+	18 Aug 2007 23:28:33 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,685 +32,1501 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-
-This is a multi-part message in MIME format.
-
---part46c690693df67
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch does some "short-range" code improvements like
-merging identical switch clauses, replacing conditional
-branches with calculation of values, merging only once-used
-functions into place they are called from.
+This patch fixes white spaces, redudant definitions and
+formating in the pm3fb header file.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
 
-This set of patches requires previously sent cirrusfb cleanup up.
+It makes it shorter by 3KBs.
 
---- linux-2.6.23.old/drivers/video/cirrusfb.c	2007-08-18 08:
-05:00.000000000 +0200
-+++ linux-2.6.23/drivers/video/cirrusfb.c	2007-08-18 08:08:
-17.000000000 +0200
-@@ -647,31 +647,17 @@ static int cirrusfb_check_var(struct fb_
- 	  { -1, -1 } };
-=20
- 	switch (var->bits_per_pixel) {
--	case 0 ... 1:
--		var->bits_per_pixel =3D 1;
-+	case 1:
- 		nom =3D 4;
- 		den =3D 8;
- 		break;		/* 8 pixel per byte, only 1/4th of mem=20
-usable */
--	case 2 ... 8:
--		var->bits_per_pixel =3D 8;
--		nom =3D 1;
-+	case 8:
-+	case 16:
-+	case 24:
-+	case 32:
-+		nom =3D var->bits_per_pixel / 8;
- 		den =3D 1;
- 		break;		/* 1 pixel =3D=3D 1 byte */
--	case 9 ... 16:
--		var->bits_per_pixel =3D 16;
--		nom =3D 2;
--		den =3D 1;
--		break;		/* 2 bytes per pixel */
--	case 17 ... 24:
--		var->bits_per_pixel =3D 24;
--		nom =3D 3;
--		den =3D 1;
--		break;		/* 3 bytes per pixel */
--	case 25 ... 32:
--		var->bits_per_pixel =3D 32;
--		nom =3D 4;
--		den =3D 1;
--		break;		/* 4 bytes per pixel */
- 	default:
- 		printk(KERN_ERR "cirrusfb: mode %dx%dx%d rejected..."
- 			"color depth not supported.\n",
-@@ -732,19 +718,15 @@ static int cirrusfb_check_var(struct fb_
- 	case 1:
- 		var->red.offset =3D 0;
- 		var->red.length =3D 1;
--		var->green.offset =3D 0;
--		var->green.length =3D 1;
--		var->blue.offset =3D 0;
--		var->blue.length =3D 1;
-+		var->green =3D var->red;
-+		var->blue =3D var->red;
- 		break;
-=20
- 	case 8:
- 		var->red.offset =3D 0;
- 		var->red.length =3D 6;
--		var->green.offset =3D 0;
--		var->green.length =3D 6;
--		var->blue.offset =3D 0;
--		var->blue.length =3D 6;
-+		var->green =3D var->red;
-+		var->blue =3D var->red;
- 		break;
-=20
- 	case 16:
-@@ -763,20 +745,6 @@ static int cirrusfb_check_var(struct fb_
- 		break;
-=20
- 	case 24:
--		if (isPReP) {
--			var->red.offset =3D 8;
--			var->green.offset =3D 16;
--			var->blue.offset =3D 24;
--		} else {
--			var->red.offset =3D 16;
--			var->green.offset =3D 8;
--			var->blue.offset =3D 0;
--		}
--		var->red.length =3D 8;
--		var->green.length =3D 8;
--		var->blue.length =3D 8;
--		break;
--
- 	case 32:
- 		if (isPReP) {
- 			var->red.offset =3D 8;
-@@ -828,7 +796,7 @@ static int cirrusfb_decode_var(const str
- {
- 	long freq;
- 	long maxclock;
--	int maxclockidx =3D 0;
-+	int maxclockidx =3D var->bits_per_pixel >> 3;
- 	struct cirrusfb_info *cinfo =3D info->par;
- 	int xres, hfront, hsync, hback;
- 	int yres, vfront, vsync, vback;
-@@ -837,31 +805,18 @@ static int cirrusfb_decode_var(const str
- 	case 1:
- 		regs->line_length =3D var->xres_virtual / 8;
- 		regs->visual =3D FB_VISUAL_MONO10;
--		maxclockidx =3D 0;
- 		break;
-=20
- 	case 8:
- 		regs->line_length =3D var->xres_virtual;
- 		regs->visual =3D FB_VISUAL_PSEUDOCOLOR;
--		maxclockidx =3D 1;
- 		break;
-=20
- 	case 16:
--		regs->line_length =3D var->xres_virtual * 2;
--		regs->visual =3D FB_VISUAL_DIRECTCOLOR;
--		maxclockidx =3D 2;
--		break;
--
- 	case 24:
--		regs->line_length =3D var->xres_virtual * 3;
--		regs->visual =3D FB_VISUAL_DIRECTCOLOR;
--		maxclockidx =3D 3;
--		break;
--
- 	case 32:
--		regs->line_length =3D var->xres_virtual * 4;
-+		regs->line_length =3D var->xres_virtual * maxclockidx;
- 		regs->visual =3D FB_VISUAL_DIRECTCOLOR;
--		maxclockidx =3D 4;
- 		break;
-=20
- 	default:
-@@ -874,7 +829,7 @@ static int cirrusfb_decode_var(const str
- 	regs->type =3D FB_TYPE_PACKED_PIXELS;
-=20
- 	/* convert from ps to kHz */
--	freq =3D 1000000000 / var->pixclock;
-+	freq =3D PICOS2KHZ(var->pixclock);
-=20
- 	DPRINTK("desired pixclock: %ld kHz\n", freq);
-=20
-@@ -1213,7 +1168,8 @@ static int cirrusfb_set_par_foo(struct f
- 			break;
-=20
- 		case BT_PICCOLO:
--			DPRINTK("(for Piccolo)\n");
-+		case BT_SPECTRUM:
-+			DPRINTK("(for Piccolo/Spectrum)\n");
- 			/* ### ueberall 0x22? */
- 			/* ##vorher 1c MCLK select */
- 			vga_wseq(regbase, CL_SEQR1F, 0x22);
-@@ -1229,15 +1185,6 @@ static int cirrusfb_set_par_foo(struct f
- 			vga_wseq(regbase, CL_SEQRF, 0xd0);
- 			break;
-=20
--		case BT_SPECTRUM:
--			DPRINTK("(for Spectrum)\n");
--			/* ### ueberall 0x22? */
--			/* ##vorher 1c MCLK select */
--			vga_wseq(regbase, CL_SEQR1F, 0x22);
--			/* evtl d0? avoid FIFO underruns..? */
--			vga_wseq(regbase, CL_SEQRF, 0xb0);
--			break;
--
- 		case BT_PICASSO4:
- 		case BT_ALPINE:
- 		case BT_GD5480:
-@@ -1306,19 +1253,7 @@ static int cirrusfb_set_par_foo(struct f
- 			break;
-=20
- 		case BT_PICCOLO:
--			/* ### vorher 1c MCLK select */
--			vga_wseq(regbase, CL_SEQR1F, 0x22);
--			/* Fast Page-Mode writes */
--			vga_wseq(regbase, CL_SEQRF, 0xb0);
--			break;
--
- 		case BT_PICASSO:
--			/* ### vorher 1c MCLK select */
--			vga_wseq(regbase, CL_SEQR1F, 0x22);
--			/* Fast Page-Mode writes */
--			vga_wseq(regbase, CL_SEQRF, 0xb0);
--			break;
--
- 		case BT_SPECTRUM:
- 			/* ### vorher 1c MCLK select */
- 			vga_wseq(regbase, CL_SEQR1F, 0x22);
-@@ -1385,6 +1320,7 @@ static int cirrusfb_set_par_foo(struct f
- 			break;
-=20
- 		case BT_PICCOLO:
-+		case BT_SPECTRUM:
- 			vga_wseq(regbase, CL_SEQR7, 0x87);
- 			/* Fast Page-Mode writes */
- 			vga_wseq(regbase, CL_SEQRF, 0xb0);
-@@ -1400,14 +1336,6 @@ static int cirrusfb_set_par_foo(struct f
- 			vga_wseq(regbase, CL_SEQR1F, 0x22);
- 			break;
-=20
--		case BT_SPECTRUM:
--			vga_wseq(regbase, CL_SEQR7, 0x87);
--			/* Fast Page-Mode writes */
--			vga_wseq(regbase, CL_SEQRF, 0xb0);
--			/* MCLK select */
--			vga_wseq(regbase, CL_SEQR1F, 0x22);
--			break;
--
- 		case BT_PICASSO4:
- 			vga_wseq(regbase, CL_SEQR7, 0x27);
- /*			vga_wseq(regbase, CL_SEQR1F, 0x1c);  */
-@@ -1473,6 +1401,7 @@ static int cirrusfb_set_par_foo(struct f
- 			break;
-=20
- 		case BT_PICCOLO:
-+		case BT_SPECTRUM:
- 			vga_wseq(regbase, CL_SEQR7, 0x85);
- 			/* Fast Page-Mode writes */
- 			vga_wseq(regbase, CL_SEQRF, 0xb0);
-@@ -1488,14 +1417,6 @@ static int cirrusfb_set_par_foo(struct f
- 			vga_wseq(regbase, CL_SEQR1F, 0x22);
- 			break;
-=20
--		case BT_SPECTRUM:
--			vga_wseq(regbase, CL_SEQR7, 0x85);
--			/* Fast Page-Mode writes */
--			vga_wseq(regbase, CL_SEQRF, 0xb0);
--			/* MCLK select */
--			vga_wseq(regbase, CL_SEQR1F, 0x22);
--			break;
--
- 		case BT_PICASSO4:
- 			vga_wseq(regbase, CL_SEQR7, 0x25);
- /*			vga_wseq(regbase, CL_SEQR1F, 0x1c);  */
-@@ -1662,18 +1583,7 @@ static int cirrusfb_setcolreg(unsigned r
- 		    (green << info->var.green.offset) |
- 		    (blue << info->var.blue.offset);
-=20
--		switch (info->var.bits_per_pixel) {
--		case 8:
--			cinfo->pseudo_palette[regno] =3D v;
--			break;
--		case 16:
--			cinfo->pseudo_palette[regno] =3D v;
--			break;
--		case 24:
--		case 32:
--			cinfo->pseudo_palette[regno] =3D v;
--			break;
--		}
-+		cinfo->pseudo_palette[regno] =3D v;
- 		return 0;
- 	}
-=20
-@@ -1743,12 +1653,8 @@ static int cirrusfb_pan_display(struct f
- 	vga_wcrt(cinfo->regbase, CL_CRT1B, tmp2);
-=20
- 	/* construct bit 19 of screen start address */
--	if (cirrusfb_board_info[cinfo->btype].scrn_start_bit19) {
--		tmp2 =3D 0;
--		if (base & 0x80000)
--			tmp2 =3D 0x80;
--		vga_wcrt(cinfo->regbase, CL_CRT1D, tmp2);
--	}
-+	if (cirrusfb_board_info[cinfo->btype].scrn_start_bit19)
-+		vga_wcrt(cinfo->regbase, CL_CRT1D, (base >> 12) & 0x80);
-=20
- 	/* write pixel panning value to AR33; this does not quite=20
-work in 8bpp
- 	 *
-@@ -2139,38 +2045,15 @@ static void switch_monitor(struct cirrus
- /* Linux 2.6-style  accelerated functions */
- /******************************************/
-=20
--static void cirrusfb_prim_fillrect(struct fb_info *info,
--				   const struct fb_fillrect *region)
--{
--	struct cirrusfb_info *cinfo =3D info->par;
--	int m; /* bytes per pixel */
--	u32 color =3D (info->fix.visual =3D=3D FB_VISUAL_TRUECOLOR) ?
--		cinfo->pseudo_palette[region->color] : region->color;
--
--	if (info->var.bits_per_pixel =3D=3D 1) {
--		cirrusfb_RectFill(cinfo->regbase,
--				  info->var.bits_per_pixel,
--				  region->dx / 8, region->dy,
--				  region->width / 8, region->height,
--				  color,
--				  cinfo->currentmode.line_length);
--	} else {
--		m =3D (info->var.bits_per_pixel + 7) / 8;
--		cirrusfb_RectFill(cinfo->regbase,
--				  info->var.bits_per_pixel,
--				  region->dx * m, region->dy,
--				  region->width * m, region->height,
--				  color,
--				  cinfo->currentmode.line_length);
--	}
--	return;
--}
--
- static void cirrusfb_fillrect(struct fb_info *info,
- 			      const struct fb_fillrect *region)
- {
- 	struct fb_fillrect modded;
- 	int vxres, vyres;
-+	struct cirrusfb_info *cinfo =3D info->par;
-+	int m =3D info->var.bits_per_pixel;
-+	u32 color =3D (info->fix.visual =3D=3D FB_VISUAL_TRUECOLOR) ?
-+		cinfo->pseudo_palette[region->color] : region->color;
-=20
- 	if (info->state !=3D FBINFO_STATE_RUNNING)
- 		return;
-@@ -2193,30 +2076,12 @@ static void cirrusfb_fillrect(struct fb_
- 	if (modded.dy + modded.height > vyres)
- 		modded.height =3D vyres - modded.dy;
-=20
--	cirrusfb_prim_fillrect(info, &modded);
--}
--
--static void cirrusfb_prim_copyarea(struct fb_info *info,
--				   const struct fb_copyarea *area)
--{
--	struct cirrusfb_info *cinfo =3D info->par;
--	int m; /* bytes per pixel */
--
--	if (info->var.bits_per_pixel =3D=3D 1) {
--		cirrusfb_BitBLT(cinfo->regbase, info->var.
-bits_per_pixel,
--				area->sx / 8, area->sy,
--				area->dx / 8, area->dy,
--				area->width / 8, area->height,
--				cinfo->currentmode.line_length);
--	} else {
--		m =3D (info->var.bits_per_pixel + 7) / 8;
--		cirrusfb_BitBLT(cinfo->regbase, info->var.
-bits_per_pixel,
--				area->sx * m, area->sy,
--				area->dx * m, area->dy,
--				area->width * m, area->height,
--				cinfo->currentmode.line_length);
--	}
--	return;
-+	cirrusfb_RectFill(cinfo->regbase,
-+			  info->var.bits_per_pixel,
-+			  (region->dx * m) / 8, region->dy,
-+			  (region->width * m) / 8, region->height,
-+			  color,
-+			  cinfo->currentmode.line_length);
- }
-=20
- static void cirrusfb_copyarea(struct fb_info *info,
-@@ -2224,13 +2089,8 @@ static void cirrusfb_copyarea(struct fb_
- {
- 	struct fb_copyarea modded;
- 	u32 vxres, vyres;
--
--	modded.sx =3D area->sx;
--	modded.sy =3D area->sy;
--	modded.dx =3D area->dx;
--	modded.dy =3D area->dy;
--	modded.width  =3D area->width;
--	modded.height =3D area->height;
-+	struct cirrusfb_info *cinfo =3D info->par;
-+	int m =3D info->var.bits_per_pixel;
-=20
- 	if (info->state !=3D FBINFO_STATE_RUNNING)
- 		return;
-@@ -2241,6 +2101,7 @@ static void cirrusfb_copyarea(struct fb_
-=20
- 	vxres =3D info->var.xres_virtual;
- 	vyres =3D info->var.yres_virtual;
-+	memcpy(&modded, area, sizeof(struct fb_copyarea));
-=20
- 	if (!modded.width || !modded.height ||
- 	   modded.sx >=3D vxres || modded.sy >=3D vyres ||
-@@ -2256,7 +2117,12 @@ static void cirrusfb_copyarea(struct fb_
- 	if (modded.dy + modded.height > vyres)
- 		modded.height =3D vyres - modded.dy;
-=20
--	cirrusfb_prim_copyarea(info, &modded);
-+	cirrusfb_BitBLT(cinfo->regbase, info->var.bits_per_pixel,
-+			(area->sx * m) / 8, area->sy,
-+			(area->dx * m) / 8, area->dy,
-+			(area->width * m) / 8, area->height,
-+			cinfo->currentmode.line_length);
+--- linux-2.6.23.old/include/video/pm3fb.h	2007-08-18 15:46:55.000000000 +0200
++++ linux-2.6.23/include/video/pm3fb.h	2007-08-18 17:30:17.000000000 +0200
+@@ -1,6 +1,6 @@
+ /*
+  *  linux/drivers/video/pm3fb.h -- 3DLabs Permedia3 frame buffer device
+- *  
++ *
+  *  Copyright (C) 2001 Romain Dolbeau <dolbeau@irisa.fr>
+  *  Copyright (C) 2001 Sven Luther, <luther@dpt-info.u-strasbg.fr>
+  *
+@@ -51,36 +51,36 @@
+ *  GLINT Permedia3 Region 0 Bypass Controls   *
+ ***********************************************/
+ #define PM3ByAperture1Mode					0x0300
+-	#define PM3ByApertureMode_BYTESWAP_ABCD			(0<<0)
+-	#define PM3ByApertureMode_BYTESWAP_BADC			(1<<0)
+-	#define PM3ByApertureMode_BYTESWAP_CDAB			(2<<0)
+-	#define PM3ByApertureMode_BYTESWAP_DCBA			(3<<0)
+-	#define PM3ByApertureMode_PATCH_ENABLE			(1<<2)
+-	#define PM3ByApertureMode_FORMAT_RAW			(0<<3)
+-	#define PM3ByApertureMode_FORMAT_YUYV			(1<<3)
+-	#define PM3ByApertureMode_FORMAT_UYVY			(2<<3)
+-	#define PM3ByApertureMode_PIXELSIZE_8BIT		(0<<5)
+-	#define PM3ByApertureMode_PIXELSIZE_16BIT		(1<<5)
+-	#define PM3ByApertureMode_PIXELSIZE_32BIT		(2<<5)
+-                #define PM3ByApertureMode_PIXELSIZE_MASK        (3<<5)
+-	#define PM3ByApertureMode_EFFECTIVE_STRIDE_1024		(0<<7)
+-	#define PM3ByApertureMode_EFFECTIVE_STRIDE_2048		(1<<7)
+-	#define PM3ByApertureMode_EFFECTIVE_STRIDE_4096		(2<<7)
+-	#define PM3ByApertureMode_EFFECTIVE_STRIDE_8192		(3<<7)
+-	#define PM3ByApertureMode_PATCH_OFFSET_X(off)	(((off)&7f)<<9)
+-	#define PM3ByApertureMode_PATCH_OFFSET_Y(off)	(((off)&7f)<<16)
+-	#define PM3ByApertureMode_FRAMEBUFFER			(0<<21)
+-	#define PM3ByApertureMode_LOCALBUFFER			(1<<21)
+-	#define PM3ByApertureMode_DOUBLE_WRITE_OFF		(0<<22)
+-	#define PM3ByApertureMode_DOUBLE_WRITE_1MB		(1<<22)
+-	#define PM3ByApertureMode_DOUBLE_WRITE_2MB		(2<<22)
+-	#define PM3ByApertureMode_DOUBLE_WRITE_4MB		(3<<22)
+-	#define PM3ByApertureMode_DOUBLE_WRITE_8MB		(4<<22)
+-	#define PM3ByApertureMode_DOUBLE_WRITE_16MB		(5<<22)
+-	#define PM3ByApertureMode_DOUBLE_WRITE_32MB		(6<<22)
++	#define PM3ByApertureMode_BYTESWAP_ABCD			(0 << 0)
++	#define PM3ByApertureMode_BYTESWAP_BADC			(1 << 0)
++	#define PM3ByApertureMode_BYTESWAP_CDAB			(2 << 0)
++	#define PM3ByApertureMode_BYTESWAP_DCBA			(3 << 0)
++	#define PM3ByApertureMode_PATCH_ENABLE			(1 << 2)
++	#define PM3ByApertureMode_FORMAT_RAW			(0 << 3)
++	#define PM3ByApertureMode_FORMAT_YUYV			(1 << 3)
++	#define PM3ByApertureMode_FORMAT_UYVY			(2 << 3)
++	#define PM3ByApertureMode_PIXELSIZE_8BIT		(0 << 5)
++	#define PM3ByApertureMode_PIXELSIZE_16BIT		(1 << 5)
++	#define PM3ByApertureMode_PIXELSIZE_32BIT		(2 << 5)
++		#define PM3ByApertureMode_PIXELSIZE_MASK	(3 << 5)
++	#define PM3ByApertureMode_EFFECTIVE_STRIDE_1024		(0 << 7)
++	#define PM3ByApertureMode_EFFECTIVE_STRIDE_2048		(1 << 7)
++	#define PM3ByApertureMode_EFFECTIVE_STRIDE_4096		(2 << 7)
++	#define PM3ByApertureMode_EFFECTIVE_STRIDE_8192		(3 << 7)
++	#define PM3ByApertureMode_PATCH_OFFSET_X(off)	(((off) & 0x7f) << 9)
++	#define PM3ByApertureMode_PATCH_OFFSET_Y(off)	(((off) & 0x7f) << 16)
++	#define PM3ByApertureMode_FRAMEBUFFER			(0 << 21)
++	#define PM3ByApertureMode_LOCALBUFFER			(1 << 21)
++	#define PM3ByApertureMode_DOUBLE_WRITE_OFF		(0 << 22)
++	#define PM3ByApertureMode_DOUBLE_WRITE_1MB		(1 << 22)
++	#define PM3ByApertureMode_DOUBLE_WRITE_2MB		(2 << 22)
++	#define PM3ByApertureMode_DOUBLE_WRITE_4MB		(3 << 22)
++	#define PM3ByApertureMode_DOUBLE_WRITE_8MB		(4 << 22)
++	#define PM3ByApertureMode_DOUBLE_WRITE_16MB		(5 << 22)
++	#define PM3ByApertureMode_DOUBLE_WRITE_32MB		(6 << 22)
+ 
+ #define PM3ByAperture2Mode					0x0328
+-	
 +
- }
-=20
- static void cirrusfb_imageblit(struct fb_info *info,
-@@ -2366,7 +2232,6 @@ static void cirrusfb_pci_unmap(struct fb
- 	if (release_io_ports)
- 		release_region(0x3C0, 32);
- 	pci_release_regions(pdev);
--	framebuffer_release(info);
- }
- #endif /* CONFIG_PCI */
-=20
-@@ -2383,7 +2248,6 @@ static void __devexit cirrusfb_zorro_unm
- 		if (zorro_resource_start(cinfo->zdev) > 0x01000000)
- 			iounmap(info->screen_base);
- 	}
--	framebuffer_release(cinfo->info);
- }
- #endif /* CONFIG_ZORRO */
-=20
-@@ -2481,6 +2345,7 @@ err_dealloc_cmap:
- 	fb_dealloc_cmap(&info->cmap);
- err_unmap_cirrusfb:
- 	cinfo->unmap(info);
-+	framebuffer_release(info);
- 	return err;
- }
-=20
-@@ -2495,6 +2360,7 @@ static void __devexit cirrusfb_cleanup(s
- 	fb_dealloc_cmap(&info->cmap);
- 	printk("Framebuffer unregistered\n");
- 	cinfo->unmap(info);
-+	framebuffer_release(info);
-=20
- 	DPRINTK("EXIT\n");
- }
-
-
-----------------------------------------------------
-Producenci filmu SEZON NA MISIA przedstawiaj=B1
-surfuj=B1ce pingwiny w nowej, animowanej komedii
-NA FALI -  w kinach od 10 sierpnia!=20
-http://klik.wp.pl/?adr=3Dhttp%3A%2F%2Fadv.reklama.wp.pl%2Fas%2Fnafali_zwi=
-astun.html&sid=3D1256
-
---part46c690693df67
-Content-Type: application/octet-stream; name="cirrusfb-impro.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="cirrusfb-impro.diff"
-
-RnJvbTogS3J6eXN6dG9mIEhlbHQgPGtyenlzenRvZi5oMUB3cC5wbD4KClRoaXMgcGF0Y2ggZG9l
-cyBzb21lICJzaG9ydC1yYW5nZSIgY29kZSBpbXByb3ZlbWVudHMgbGlrZQptZXJnaW5nIGlkZW50
-aWNhbCBzd2l0Y2ggY2xhdXNlcywgcmVwbGFjaW5nIGNvbmRpdGlvbmFsCmJyYW5jaGVzIHdpdGgg
-Y2FsY3VsYXRpb24gb2YgdmFsdWVzLCBtZXJnaW5nIG9ubHkgb25jZS11c2VkCmZ1bmN0aW9ucyBp
-bnRvIHBsYWNlIHRoZXkgYXJlIGNhbGxlZCBmcm9tLgoKU2lnbmVkLW9mZi1ieTogS3J6eXN6dG9m
-IEhlbHQgPGtyenlzenRvZi5oMUB3cC5wbD4KCi0tLQoKLS0tIGxpbnV4LTIuNi4yMy5vbGQvZHJp
-dmVycy92aWRlby9jaXJydXNmYi5jCTIwMDctMDgtMTggMDg6MDU6MDAuMDAwMDAwMDAwICswMjAw
-CisrKyBsaW51eC0yLjYuMjMvZHJpdmVycy92aWRlby9jaXJydXNmYi5jCTIwMDctMDgtMTggMDg6
-MDg6MTcuMDAwMDAwMDAwICswMjAwCkBAIC02NDcsMzEgKzY0NywxNyBAQCBzdGF0aWMgaW50IGNp
-cnJ1c2ZiX2NoZWNrX3ZhcihzdHJ1Y3QgZmJfCiAJICB7IC0xLCAtMSB9IH07CiAKIAlzd2l0Y2gg
-KHZhci0+Yml0c19wZXJfcGl4ZWwpIHsKLQljYXNlIDAgLi4uIDE6Ci0JCXZhci0+Yml0c19wZXJf
-cGl4ZWwgPSAxOworCWNhc2UgMToKIAkJbm9tID0gNDsKIAkJZGVuID0gODsKIAkJYnJlYWs7CQkv
-KiA4IHBpeGVsIHBlciBieXRlLCBvbmx5IDEvNHRoIG9mIG1lbSB1c2FibGUgKi8KLQljYXNlIDIg
-Li4uIDg6Ci0JCXZhci0+Yml0c19wZXJfcGl4ZWwgPSA4OwotCQlub20gPSAxOworCWNhc2UgODoK
-KwljYXNlIDE2OgorCWNhc2UgMjQ6CisJY2FzZSAzMjoKKwkJbm9tID0gdmFyLT5iaXRzX3Blcl9w
-aXhlbCAvIDg7CiAJCWRlbiA9IDE7CiAJCWJyZWFrOwkJLyogMSBwaXhlbCA9PSAxIGJ5dGUgKi8K
-LQljYXNlIDkgLi4uIDE2OgotCQl2YXItPmJpdHNfcGVyX3BpeGVsID0gMTY7Ci0JCW5vbSA9IDI7
-Ci0JCWRlbiA9IDE7Ci0JCWJyZWFrOwkJLyogMiBieXRlcyBwZXIgcGl4ZWwgKi8KLQljYXNlIDE3
-IC4uLiAyNDoKLQkJdmFyLT5iaXRzX3Blcl9waXhlbCA9IDI0OwotCQlub20gPSAzOwotCQlkZW4g
-PSAxOwotCQlicmVhazsJCS8qIDMgYnl0ZXMgcGVyIHBpeGVsICovCi0JY2FzZSAyNSAuLi4gMzI6
-Ci0JCXZhci0+Yml0c19wZXJfcGl4ZWwgPSAzMjsKLQkJbm9tID0gNDsKLQkJZGVuID0gMTsKLQkJ
-YnJlYWs7CQkvKiA0IGJ5dGVzIHBlciBwaXhlbCAqLwogCWRlZmF1bHQ6CiAJCXByaW50ayhLRVJO
-X0VSUiAiY2lycnVzZmI6IG1vZGUgJWR4JWR4JWQgcmVqZWN0ZWQuLi4iCiAJCQkiY29sb3IgZGVw
-dGggbm90IHN1cHBvcnRlZC5cbiIsCkBAIC03MzIsMTkgKzcxOCwxNSBAQCBzdGF0aWMgaW50IGNp
-cnJ1c2ZiX2NoZWNrX3ZhcihzdHJ1Y3QgZmJfCiAJY2FzZSAxOgogCQl2YXItPnJlZC5vZmZzZXQg
-PSAwOwogCQl2YXItPnJlZC5sZW5ndGggPSAxOwotCQl2YXItPmdyZWVuLm9mZnNldCA9IDA7Ci0J
-CXZhci0+Z3JlZW4ubGVuZ3RoID0gMTsKLQkJdmFyLT5ibHVlLm9mZnNldCA9IDA7Ci0JCXZhci0+
-Ymx1ZS5sZW5ndGggPSAxOworCQl2YXItPmdyZWVuID0gdmFyLT5yZWQ7CisJCXZhci0+Ymx1ZSA9
-IHZhci0+cmVkOwogCQlicmVhazsKIAogCWNhc2UgODoKIAkJdmFyLT5yZWQub2Zmc2V0ID0gMDsK
-IAkJdmFyLT5yZWQubGVuZ3RoID0gNjsKLQkJdmFyLT5ncmVlbi5vZmZzZXQgPSAwOwotCQl2YXIt
-PmdyZWVuLmxlbmd0aCA9IDY7Ci0JCXZhci0+Ymx1ZS5vZmZzZXQgPSAwOwotCQl2YXItPmJsdWUu
-bGVuZ3RoID0gNjsKKwkJdmFyLT5ncmVlbiA9IHZhci0+cmVkOworCQl2YXItPmJsdWUgPSB2YXIt
-PnJlZDsKIAkJYnJlYWs7CiAKIAljYXNlIDE2OgpAQCAtNzYzLDIwICs3NDUsNiBAQCBzdGF0aWMg
-aW50IGNpcnJ1c2ZiX2NoZWNrX3ZhcihzdHJ1Y3QgZmJfCiAJCWJyZWFrOwogCiAJY2FzZSAyNDoK
-LQkJaWYgKGlzUFJlUCkgewotCQkJdmFyLT5yZWQub2Zmc2V0ID0gODsKLQkJCXZhci0+Z3JlZW4u
-b2Zmc2V0ID0gMTY7Ci0JCQl2YXItPmJsdWUub2Zmc2V0ID0gMjQ7Ci0JCX0gZWxzZSB7Ci0JCQl2
-YXItPnJlZC5vZmZzZXQgPSAxNjsKLQkJCXZhci0+Z3JlZW4ub2Zmc2V0ID0gODsKLQkJCXZhci0+
-Ymx1ZS5vZmZzZXQgPSAwOwotCQl9Ci0JCXZhci0+cmVkLmxlbmd0aCA9IDg7Ci0JCXZhci0+Z3Jl
-ZW4ubGVuZ3RoID0gODsKLQkJdmFyLT5ibHVlLmxlbmd0aCA9IDg7Ci0JCWJyZWFrOwotCiAJY2Fz
-ZSAzMjoKIAkJaWYgKGlzUFJlUCkgewogCQkJdmFyLT5yZWQub2Zmc2V0ID0gODsKQEAgLTgyOCw3
-ICs3OTYsNyBAQCBzdGF0aWMgaW50IGNpcnJ1c2ZiX2RlY29kZV92YXIoY29uc3Qgc3RyCiB7CiAJ
-bG9uZyBmcmVxOwogCWxvbmcgbWF4Y2xvY2s7Ci0JaW50IG1heGNsb2NraWR4ID0gMDsKKwlpbnQg
-bWF4Y2xvY2tpZHggPSB2YXItPmJpdHNfcGVyX3BpeGVsID4+IDM7CiAJc3RydWN0IGNpcnJ1c2Zi
-X2luZm8gKmNpbmZvID0gaW5mby0+cGFyOwogCWludCB4cmVzLCBoZnJvbnQsIGhzeW5jLCBoYmFj
-azsKIAlpbnQgeXJlcywgdmZyb250LCB2c3luYywgdmJhY2s7CkBAIC04MzcsMzEgKzgwNSwxOCBA
-QCBzdGF0aWMgaW50IGNpcnJ1c2ZiX2RlY29kZV92YXIoY29uc3Qgc3RyCiAJY2FzZSAxOgogCQly
-ZWdzLT5saW5lX2xlbmd0aCA9IHZhci0+eHJlc192aXJ0dWFsIC8gODsKIAkJcmVncy0+dmlzdWFs
-ID0gRkJfVklTVUFMX01PTk8xMDsKLQkJbWF4Y2xvY2tpZHggPSAwOwogCQlicmVhazsKIAogCWNh
-c2UgODoKIAkJcmVncy0+bGluZV9sZW5ndGggPSB2YXItPnhyZXNfdmlydHVhbDsKIAkJcmVncy0+
-dmlzdWFsID0gRkJfVklTVUFMX1BTRVVET0NPTE9SOwotCQltYXhjbG9ja2lkeCA9IDE7CiAJCWJy
-ZWFrOwogCiAJY2FzZSAxNjoKLQkJcmVncy0+bGluZV9sZW5ndGggPSB2YXItPnhyZXNfdmlydHVh
-bCAqIDI7Ci0JCXJlZ3MtPnZpc3VhbCA9IEZCX1ZJU1VBTF9ESVJFQ1RDT0xPUjsKLQkJbWF4Y2xv
-Y2tpZHggPSAyOwotCQlicmVhazsKLQogCWNhc2UgMjQ6Ci0JCXJlZ3MtPmxpbmVfbGVuZ3RoID0g
-dmFyLT54cmVzX3ZpcnR1YWwgKiAzOwotCQlyZWdzLT52aXN1YWwgPSBGQl9WSVNVQUxfRElSRUNU
-Q09MT1I7Ci0JCW1heGNsb2NraWR4ID0gMzsKLQkJYnJlYWs7Ci0KIAljYXNlIDMyOgotCQlyZWdz
-LT5saW5lX2xlbmd0aCA9IHZhci0+eHJlc192aXJ0dWFsICogNDsKKwkJcmVncy0+bGluZV9sZW5n
-dGggPSB2YXItPnhyZXNfdmlydHVhbCAqIG1heGNsb2NraWR4OwogCQlyZWdzLT52aXN1YWwgPSBG
-Ql9WSVNVQUxfRElSRUNUQ09MT1I7Ci0JCW1heGNsb2NraWR4ID0gNDsKIAkJYnJlYWs7CiAKIAlk
-ZWZhdWx0OgpAQCAtODc0LDcgKzgyOSw3IEBAIHN0YXRpYyBpbnQgY2lycnVzZmJfZGVjb2RlX3Zh
-cihjb25zdCBzdHIKIAlyZWdzLT50eXBlID0gRkJfVFlQRV9QQUNLRURfUElYRUxTOwogCiAJLyog
-Y29udmVydCBmcm9tIHBzIHRvIGtIeiAqLwotCWZyZXEgPSAxMDAwMDAwMDAwIC8gdmFyLT5waXhj
-bG9jazsKKwlmcmVxID0gUElDT1MyS0haKHZhci0+cGl4Y2xvY2spOwogCiAJRFBSSU5USygiZGVz
-aXJlZCBwaXhjbG9jazogJWxkIGtIelxuIiwgZnJlcSk7CiAKQEAgLTEyMTMsNyArMTE2OCw4IEBA
-IHN0YXRpYyBpbnQgY2lycnVzZmJfc2V0X3Bhcl9mb28oc3RydWN0IGYKIAkJCWJyZWFrOwogCiAJ
-CWNhc2UgQlRfUElDQ09MTzoKLQkJCURQUklOVEsoIihmb3IgUGljY29sbylcbiIpOworCQljYXNl
-IEJUX1NQRUNUUlVNOgorCQkJRFBSSU5USygiKGZvciBQaWNjb2xvL1NwZWN0cnVtKVxuIik7CiAJ
-CQkvKiAjIyMgdWViZXJhbGwgMHgyMj8gKi8KIAkJCS8qICMjdm9yaGVyIDFjIE1DTEsgc2VsZWN0
-ICovCiAJCQl2Z2Ffd3NlcShyZWdiYXNlLCBDTF9TRVFSMUYsIDB4MjIpOwpAQCAtMTIyOSwxNSAr
-MTE4NSw2IEBAIHN0YXRpYyBpbnQgY2lycnVzZmJfc2V0X3Bhcl9mb28oc3RydWN0IGYKIAkJCXZn
-YV93c2VxKHJlZ2Jhc2UsIENMX1NFUVJGLCAweGQwKTsKIAkJCWJyZWFrOwogCi0JCWNhc2UgQlRf
-U1BFQ1RSVU06Ci0JCQlEUFJJTlRLKCIoZm9yIFNwZWN0cnVtKVxuIik7Ci0JCQkvKiAjIyMgdWVi
-ZXJhbGwgMHgyMj8gKi8KLQkJCS8qICMjdm9yaGVyIDFjIE1DTEsgc2VsZWN0ICovCi0JCQl2Z2Ff
-d3NlcShyZWdiYXNlLCBDTF9TRVFSMUYsIDB4MjIpOwotCQkJLyogZXZ0bCBkMD8gYXZvaWQgRklG
-TyB1bmRlcnJ1bnMuLj8gKi8KLQkJCXZnYV93c2VxKHJlZ2Jhc2UsIENMX1NFUVJGLCAweGIwKTsK
-LQkJCWJyZWFrOwotCiAJCWNhc2UgQlRfUElDQVNTTzQ6CiAJCWNhc2UgQlRfQUxQSU5FOgogCQlj
-YXNlIEJUX0dENTQ4MDoKQEAgLTEzMDYsMTkgKzEyNTMsNyBAQCBzdGF0aWMgaW50IGNpcnJ1c2Zi
-X3NldF9wYXJfZm9vKHN0cnVjdCBmCiAJCQlicmVhazsKIAogCQljYXNlIEJUX1BJQ0NPTE86Ci0J
-CQkvKiAjIyMgdm9yaGVyIDFjIE1DTEsgc2VsZWN0ICovCi0JCQl2Z2Ffd3NlcShyZWdiYXNlLCBD
-TF9TRVFSMUYsIDB4MjIpOwotCQkJLyogRmFzdCBQYWdlLU1vZGUgd3JpdGVzICovCi0JCQl2Z2Ff
-d3NlcShyZWdiYXNlLCBDTF9TRVFSRiwgMHhiMCk7Ci0JCQlicmVhazsKLQogCQljYXNlIEJUX1BJ
-Q0FTU086Ci0JCQkvKiAjIyMgdm9yaGVyIDFjIE1DTEsgc2VsZWN0ICovCi0JCQl2Z2Ffd3NlcShy
-ZWdiYXNlLCBDTF9TRVFSMUYsIDB4MjIpOwotCQkJLyogRmFzdCBQYWdlLU1vZGUgd3JpdGVzICov
-Ci0JCQl2Z2Ffd3NlcShyZWdiYXNlLCBDTF9TRVFSRiwgMHhiMCk7Ci0JCQlicmVhazsKLQogCQlj
-YXNlIEJUX1NQRUNUUlVNOgogCQkJLyogIyMjIHZvcmhlciAxYyBNQ0xLIHNlbGVjdCAqLwogCQkJ
-dmdhX3dzZXEocmVnYmFzZSwgQ0xfU0VRUjFGLCAweDIyKTsKQEAgLTEzODUsNiArMTMyMCw3IEBA
-IHN0YXRpYyBpbnQgY2lycnVzZmJfc2V0X3Bhcl9mb28oc3RydWN0IGYKIAkJCWJyZWFrOwogCiAJ
-CWNhc2UgQlRfUElDQ09MTzoKKwkJY2FzZSBCVF9TUEVDVFJVTToKIAkJCXZnYV93c2VxKHJlZ2Jh
-c2UsIENMX1NFUVI3LCAweDg3KTsKIAkJCS8qIEZhc3QgUGFnZS1Nb2RlIHdyaXRlcyAqLwogCQkJ
-dmdhX3dzZXEocmVnYmFzZSwgQ0xfU0VRUkYsIDB4YjApOwpAQCAtMTQwMCwxNCArMTMzNiw2IEBA
-IHN0YXRpYyBpbnQgY2lycnVzZmJfc2V0X3Bhcl9mb28oc3RydWN0IGYKIAkJCXZnYV93c2VxKHJl
-Z2Jhc2UsIENMX1NFUVIxRiwgMHgyMik7CiAJCQlicmVhazsKIAotCQljYXNlIEJUX1NQRUNUUlVN
-OgotCQkJdmdhX3dzZXEocmVnYmFzZSwgQ0xfU0VRUjcsIDB4ODcpOwotCQkJLyogRmFzdCBQYWdl
-LU1vZGUgd3JpdGVzICovCi0JCQl2Z2Ffd3NlcShyZWdiYXNlLCBDTF9TRVFSRiwgMHhiMCk7Ci0J
-CQkvKiBNQ0xLIHNlbGVjdCAqLwotCQkJdmdhX3dzZXEocmVnYmFzZSwgQ0xfU0VRUjFGLCAweDIy
-KTsKLQkJCWJyZWFrOwotCiAJCWNhc2UgQlRfUElDQVNTTzQ6CiAJCQl2Z2Ffd3NlcShyZWdiYXNl
-LCBDTF9TRVFSNywgMHgyNyk7CiAvKgkJCXZnYV93c2VxKHJlZ2Jhc2UsIENMX1NFUVIxRiwgMHgx
-Yyk7ICAqLwpAQCAtMTQ3Myw2ICsxNDAxLDcgQEAgc3RhdGljIGludCBjaXJydXNmYl9zZXRfcGFy
-X2ZvbyhzdHJ1Y3QgZgogCQkJYnJlYWs7CiAKIAkJY2FzZSBCVF9QSUNDT0xPOgorCQljYXNlIEJU
-X1NQRUNUUlVNOgogCQkJdmdhX3dzZXEocmVnYmFzZSwgQ0xfU0VRUjcsIDB4ODUpOwogCQkJLyog
-RmFzdCBQYWdlLU1vZGUgd3JpdGVzICovCiAJCQl2Z2Ffd3NlcShyZWdiYXNlLCBDTF9TRVFSRiwg
-MHhiMCk7CkBAIC0xNDg4LDE0ICsxNDE3LDYgQEAgc3RhdGljIGludCBjaXJydXNmYl9zZXRfcGFy
-X2ZvbyhzdHJ1Y3QgZgogCQkJdmdhX3dzZXEocmVnYmFzZSwgQ0xfU0VRUjFGLCAweDIyKTsKIAkJ
-CWJyZWFrOwogCi0JCWNhc2UgQlRfU1BFQ1RSVU06Ci0JCQl2Z2Ffd3NlcShyZWdiYXNlLCBDTF9T
-RVFSNywgMHg4NSk7Ci0JCQkvKiBGYXN0IFBhZ2UtTW9kZSB3cml0ZXMgKi8KLQkJCXZnYV93c2Vx
-KHJlZ2Jhc2UsIENMX1NFUVJGLCAweGIwKTsKLQkJCS8qIE1DTEsgc2VsZWN0ICovCi0JCQl2Z2Ff
-d3NlcShyZWdiYXNlLCBDTF9TRVFSMUYsIDB4MjIpOwotCQkJYnJlYWs7Ci0KIAkJY2FzZSBCVF9Q
-SUNBU1NPNDoKIAkJCXZnYV93c2VxKHJlZ2Jhc2UsIENMX1NFUVI3LCAweDI1KTsKIC8qCQkJdmdh
-X3dzZXEocmVnYmFzZSwgQ0xfU0VRUjFGLCAweDFjKTsgICovCkBAIC0xNjYyLDE4ICsxNTgzLDcg
-QEAgc3RhdGljIGludCBjaXJydXNmYl9zZXRjb2xyZWcodW5zaWduZWQgcgogCQkgICAgKGdyZWVu
-IDw8IGluZm8tPnZhci5ncmVlbi5vZmZzZXQpIHwKIAkJICAgIChibHVlIDw8IGluZm8tPnZhci5i
-bHVlLm9mZnNldCk7CiAKLQkJc3dpdGNoIChpbmZvLT52YXIuYml0c19wZXJfcGl4ZWwpIHsKLQkJ
-Y2FzZSA4OgotCQkJY2luZm8tPnBzZXVkb19wYWxldHRlW3JlZ25vXSA9IHY7Ci0JCQlicmVhazsK
-LQkJY2FzZSAxNjoKLQkJCWNpbmZvLT5wc2V1ZG9fcGFsZXR0ZVtyZWdub10gPSB2OwotCQkJYnJl
-YWs7Ci0JCWNhc2UgMjQ6Ci0JCWNhc2UgMzI6Ci0JCQljaW5mby0+cHNldWRvX3BhbGV0dGVbcmVn
-bm9dID0gdjsKLQkJCWJyZWFrOwotCQl9CisJCWNpbmZvLT5wc2V1ZG9fcGFsZXR0ZVtyZWdub10g
-PSB2OwogCQlyZXR1cm4gMDsKIAl9CiAKQEAgLTE3NDMsMTIgKzE2NTMsOCBAQCBzdGF0aWMgaW50
-IGNpcnJ1c2ZiX3Bhbl9kaXNwbGF5KHN0cnVjdCBmCiAJdmdhX3djcnQoY2luZm8tPnJlZ2Jhc2Us
-IENMX0NSVDFCLCB0bXAyKTsKIAogCS8qIGNvbnN0cnVjdCBiaXQgMTkgb2Ygc2NyZWVuIHN0YXJ0
-IGFkZHJlc3MgKi8KLQlpZiAoY2lycnVzZmJfYm9hcmRfaW5mb1tjaW5mby0+YnR5cGVdLnNjcm5f
-c3RhcnRfYml0MTkpIHsKLQkJdG1wMiA9IDA7Ci0JCWlmIChiYXNlICYgMHg4MDAwMCkKLQkJCXRt
-cDIgPSAweDgwOwotCQl2Z2Ffd2NydChjaW5mby0+cmVnYmFzZSwgQ0xfQ1JUMUQsIHRtcDIpOwot
-CX0KKwlpZiAoY2lycnVzZmJfYm9hcmRfaW5mb1tjaW5mby0+YnR5cGVdLnNjcm5fc3RhcnRfYml0
-MTkpCisJCXZnYV93Y3J0KGNpbmZvLT5yZWdiYXNlLCBDTF9DUlQxRCwgKGJhc2UgPj4gMTIpICYg
-MHg4MCk7CiAKIAkvKiB3cml0ZSBwaXhlbCBwYW5uaW5nIHZhbHVlIHRvIEFSMzM7IHRoaXMgZG9l
-cyBub3QgcXVpdGUgd29yayBpbiA4YnBwCiAJICoKQEAgLTIxMzksMzggKzIwNDUsMTUgQEAgc3Rh
-dGljIHZvaWQgc3dpdGNoX21vbml0b3Ioc3RydWN0IGNpcnJ1cwogLyogTGludXggMi42LXN0eWxl
-ICBhY2NlbGVyYXRlZCBmdW5jdGlvbnMgKi8KIC8qKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKiovCiAKLXN0YXRpYyB2b2lkIGNpcnJ1c2ZiX3ByaW1fZmlsbHJlY3Qoc3Ry
-dWN0IGZiX2luZm8gKmluZm8sCi0JCQkJICAgY29uc3Qgc3RydWN0IGZiX2ZpbGxyZWN0ICpyZWdp
-b24pCi17Ci0Jc3RydWN0IGNpcnJ1c2ZiX2luZm8gKmNpbmZvID0gaW5mby0+cGFyOwotCWludCBt
-OyAvKiBieXRlcyBwZXIgcGl4ZWwgKi8KLQl1MzIgY29sb3IgPSAoaW5mby0+Zml4LnZpc3VhbCA9
-PSBGQl9WSVNVQUxfVFJVRUNPTE9SKSA/Ci0JCWNpbmZvLT5wc2V1ZG9fcGFsZXR0ZVtyZWdpb24t
-PmNvbG9yXSA6IHJlZ2lvbi0+Y29sb3I7Ci0KLQlpZiAoaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVs
-ID09IDEpIHsKLQkJY2lycnVzZmJfUmVjdEZpbGwoY2luZm8tPnJlZ2Jhc2UsCi0JCQkJICBpbmZv
-LT52YXIuYml0c19wZXJfcGl4ZWwsCi0JCQkJICByZWdpb24tPmR4IC8gOCwgcmVnaW9uLT5keSwK
-LQkJCQkgIHJlZ2lvbi0+d2lkdGggLyA4LCByZWdpb24tPmhlaWdodCwKLQkJCQkgIGNvbG9yLAot
-CQkJCSAgY2luZm8tPmN1cnJlbnRtb2RlLmxpbmVfbGVuZ3RoKTsKLQl9IGVsc2UgewotCQltID0g
-KGluZm8tPnZhci5iaXRzX3Blcl9waXhlbCArIDcpIC8gODsKLQkJY2lycnVzZmJfUmVjdEZpbGwo
-Y2luZm8tPnJlZ2Jhc2UsCi0JCQkJICBpbmZvLT52YXIuYml0c19wZXJfcGl4ZWwsCi0JCQkJICBy
-ZWdpb24tPmR4ICogbSwgcmVnaW9uLT5keSwKLQkJCQkgIHJlZ2lvbi0+d2lkdGggKiBtLCByZWdp
-b24tPmhlaWdodCwKLQkJCQkgIGNvbG9yLAotCQkJCSAgY2luZm8tPmN1cnJlbnRtb2RlLmxpbmVf
-bGVuZ3RoKTsKLQl9Ci0JcmV0dXJuOwotfQotCiBzdGF0aWMgdm9pZCBjaXJydXNmYl9maWxscmVj
-dChzdHJ1Y3QgZmJfaW5mbyAqaW5mbywKIAkJCSAgICAgIGNvbnN0IHN0cnVjdCBmYl9maWxscmVj
-dCAqcmVnaW9uKQogewogCXN0cnVjdCBmYl9maWxscmVjdCBtb2RkZWQ7CiAJaW50IHZ4cmVzLCB2
-eXJlczsKKwlzdHJ1Y3QgY2lycnVzZmJfaW5mbyAqY2luZm8gPSBpbmZvLT5wYXI7CisJaW50IG0g
-PSBpbmZvLT52YXIuYml0c19wZXJfcGl4ZWw7CisJdTMyIGNvbG9yID0gKGluZm8tPmZpeC52aXN1
-YWwgPT0gRkJfVklTVUFMX1RSVUVDT0xPUikgPworCQljaW5mby0+cHNldWRvX3BhbGV0dGVbcmVn
-aW9uLT5jb2xvcl0gOiByZWdpb24tPmNvbG9yOwogCiAJaWYgKGluZm8tPnN0YXRlICE9IEZCSU5G
-T19TVEFURV9SVU5OSU5HKQogCQlyZXR1cm47CkBAIC0yMTkzLDMwICsyMDc2LDEyIEBAIHN0YXRp
-YyB2b2lkIGNpcnJ1c2ZiX2ZpbGxyZWN0KHN0cnVjdCBmYl8KIAlpZiAobW9kZGVkLmR5ICsgbW9k
-ZGVkLmhlaWdodCA+IHZ5cmVzKQogCQltb2RkZWQuaGVpZ2h0ID0gdnlyZXMgLSBtb2RkZWQuZHk7
-CiAKLQljaXJydXNmYl9wcmltX2ZpbGxyZWN0KGluZm8sICZtb2RkZWQpOwotfQotCi1zdGF0aWMg
-dm9pZCBjaXJydXNmYl9wcmltX2NvcHlhcmVhKHN0cnVjdCBmYl9pbmZvICppbmZvLAotCQkJCSAg
-IGNvbnN0IHN0cnVjdCBmYl9jb3B5YXJlYSAqYXJlYSkKLXsKLQlzdHJ1Y3QgY2lycnVzZmJfaW5m
-byAqY2luZm8gPSBpbmZvLT5wYXI7Ci0JaW50IG07IC8qIGJ5dGVzIHBlciBwaXhlbCAqLwotCi0J
-aWYgKGluZm8tPnZhci5iaXRzX3Blcl9waXhlbCA9PSAxKSB7Ci0JCWNpcnJ1c2ZiX0JpdEJMVChj
-aW5mby0+cmVnYmFzZSwgaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsLAotCQkJCWFyZWEtPnN4IC8g
-OCwgYXJlYS0+c3ksCi0JCQkJYXJlYS0+ZHggLyA4LCBhcmVhLT5keSwKLQkJCQlhcmVhLT53aWR0
-aCAvIDgsIGFyZWEtPmhlaWdodCwKLQkJCQljaW5mby0+Y3VycmVudG1vZGUubGluZV9sZW5ndGgp
-OwotCX0gZWxzZSB7Ci0JCW0gPSAoaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsICsgNykgLyA4Owot
-CQljaXJydXNmYl9CaXRCTFQoY2luZm8tPnJlZ2Jhc2UsIGluZm8tPnZhci5iaXRzX3Blcl9waXhl
-bCwKLQkJCQlhcmVhLT5zeCAqIG0sIGFyZWEtPnN5LAotCQkJCWFyZWEtPmR4ICogbSwgYXJlYS0+
-ZHksCi0JCQkJYXJlYS0+d2lkdGggKiBtLCBhcmVhLT5oZWlnaHQsCi0JCQkJY2luZm8tPmN1cnJl
-bnRtb2RlLmxpbmVfbGVuZ3RoKTsKLQl9Ci0JcmV0dXJuOworCWNpcnJ1c2ZiX1JlY3RGaWxsKGNp
-bmZvLT5yZWdiYXNlLAorCQkJICBpbmZvLT52YXIuYml0c19wZXJfcGl4ZWwsCisJCQkgIChyZWdp
-b24tPmR4ICogbSkgLyA4LCByZWdpb24tPmR5LAorCQkJICAocmVnaW9uLT53aWR0aCAqIG0pIC8g
-OCwgcmVnaW9uLT5oZWlnaHQsCisJCQkgIGNvbG9yLAorCQkJICBjaW5mby0+Y3VycmVudG1vZGUu
-bGluZV9sZW5ndGgpOwogfQogCiBzdGF0aWMgdm9pZCBjaXJydXNmYl9jb3B5YXJlYShzdHJ1Y3Qg
-ZmJfaW5mbyAqaW5mbywKQEAgLTIyMjQsMTMgKzIwODksOCBAQCBzdGF0aWMgdm9pZCBjaXJydXNm
-Yl9jb3B5YXJlYShzdHJ1Y3QgZmJfCiB7CiAJc3RydWN0IGZiX2NvcHlhcmVhIG1vZGRlZDsKIAl1
-MzIgdnhyZXMsIHZ5cmVzOwotCi0JbW9kZGVkLnN4ID0gYXJlYS0+c3g7Ci0JbW9kZGVkLnN5ID0g
-YXJlYS0+c3k7Ci0JbW9kZGVkLmR4ID0gYXJlYS0+ZHg7Ci0JbW9kZGVkLmR5ID0gYXJlYS0+ZHk7
-Ci0JbW9kZGVkLndpZHRoICA9IGFyZWEtPndpZHRoOwotCW1vZGRlZC5oZWlnaHQgPSBhcmVhLT5o
-ZWlnaHQ7CisJc3RydWN0IGNpcnJ1c2ZiX2luZm8gKmNpbmZvID0gaW5mby0+cGFyOworCWludCBt
-ID0gaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsOwogCiAJaWYgKGluZm8tPnN0YXRlICE9IEZCSU5G
-T19TVEFURV9SVU5OSU5HKQogCQlyZXR1cm47CkBAIC0yMjQxLDYgKzIxMDEsNyBAQCBzdGF0aWMg
-dm9pZCBjaXJydXNmYl9jb3B5YXJlYShzdHJ1Y3QgZmJfCiAKIAl2eHJlcyA9IGluZm8tPnZhci54
-cmVzX3ZpcnR1YWw7CiAJdnlyZXMgPSBpbmZvLT52YXIueXJlc192aXJ0dWFsOworCW1lbWNweSgm
-bW9kZGVkLCBhcmVhLCBzaXplb2Yoc3RydWN0IGZiX2NvcHlhcmVhKSk7CiAKIAlpZiAoIW1vZGRl
-ZC53aWR0aCB8fCAhbW9kZGVkLmhlaWdodCB8fAogCSAgIG1vZGRlZC5zeCA+PSB2eHJlcyB8fCBt
-b2RkZWQuc3kgPj0gdnlyZXMgfHwKQEAgLTIyNTYsNyArMjExNywxMiBAQCBzdGF0aWMgdm9pZCBj
-aXJydXNmYl9jb3B5YXJlYShzdHJ1Y3QgZmJfCiAJaWYgKG1vZGRlZC5keSArIG1vZGRlZC5oZWln
-aHQgPiB2eXJlcykKIAkJbW9kZGVkLmhlaWdodCA9IHZ5cmVzIC0gbW9kZGVkLmR5OwogCi0JY2ly
-cnVzZmJfcHJpbV9jb3B5YXJlYShpbmZvLCAmbW9kZGVkKTsKKwljaXJydXNmYl9CaXRCTFQoY2lu
-Zm8tPnJlZ2Jhc2UsIGluZm8tPnZhci5iaXRzX3Blcl9waXhlbCwKKwkJCShhcmVhLT5zeCAqIG0p
-IC8gOCwgYXJlYS0+c3ksCisJCQkoYXJlYS0+ZHggKiBtKSAvIDgsIGFyZWEtPmR5LAorCQkJKGFy
-ZWEtPndpZHRoICogbSkgLyA4LCBhcmVhLT5oZWlnaHQsCisJCQljaW5mby0+Y3VycmVudG1vZGUu
-bGluZV9sZW5ndGgpOworCiB9CiAKIHN0YXRpYyB2b2lkIGNpcnJ1c2ZiX2ltYWdlYmxpdChzdHJ1
-Y3QgZmJfaW5mbyAqaW5mbywKQEAgLTIzNjYsNyArMjIzMiw2IEBAIHN0YXRpYyB2b2lkIGNpcnJ1
-c2ZiX3BjaV91bm1hcChzdHJ1Y3QgZmIKIAlpZiAocmVsZWFzZV9pb19wb3J0cykKIAkJcmVsZWFz
-ZV9yZWdpb24oMHgzQzAsIDMyKTsKIAlwY2lfcmVsZWFzZV9yZWdpb25zKHBkZXYpOwotCWZyYW1l
-YnVmZmVyX3JlbGVhc2UoaW5mbyk7CiB9CiAjZW5kaWYgLyogQ09ORklHX1BDSSAqLwogCkBAIC0y
-MzgzLDcgKzIyNDgsNiBAQCBzdGF0aWMgdm9pZCBfX2RldmV4aXQgY2lycnVzZmJfem9ycm9fdW5t
-CiAJCWlmICh6b3Jyb19yZXNvdXJjZV9zdGFydChjaW5mby0+emRldikgPiAweDAxMDAwMDAwKQog
-CQkJaW91bm1hcChpbmZvLT5zY3JlZW5fYmFzZSk7CiAJfQotCWZyYW1lYnVmZmVyX3JlbGVhc2Uo
-Y2luZm8tPmluZm8pOwogfQogI2VuZGlmIC8qIENPTkZJR19aT1JSTyAqLwogCkBAIC0yNDgxLDYg
-KzIzNDUsNyBAQCBlcnJfZGVhbGxvY19jbWFwOgogCWZiX2RlYWxsb2NfY21hcCgmaW5mby0+Y21h
-cCk7CiBlcnJfdW5tYXBfY2lycnVzZmI6CiAJY2luZm8tPnVubWFwKGluZm8pOworCWZyYW1lYnVm
-ZmVyX3JlbGVhc2UoaW5mbyk7CiAJcmV0dXJuIGVycjsKIH0KIApAQCAtMjQ5NSw2ICsyMzYwLDcg
-QEAgc3RhdGljIHZvaWQgX19kZXZleGl0IGNpcnJ1c2ZiX2NsZWFudXAocwogCWZiX2RlYWxsb2Nf
-Y21hcCgmaW5mby0+Y21hcCk7CiAJcHJpbnRrKCJGcmFtZWJ1ZmZlciB1bnJlZ2lzdGVyZWRcbiIp
-OwogCWNpbmZvLT51bm1hcChpbmZvKTsKKwlmcmFtZWJ1ZmZlcl9yZWxlYXNlKGluZm8pOwogCiAJ
-RFBSSU5USygiRVhJVFxuIik7CiB9Cg==
-
---part46c690693df67
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ /**********************************************
+ *  GLINT Permedia3 Memory Control (0x1000)    *
+ ***********************************************/
+@@ -88,7 +88,7 @@
+ #define PM3MemBypassWriteMask					0x1008
+ #define PM3MemScratch						0x1010
+ #define PM3LocalMemCaps						0x1018
+-        #define PM3LocalMemCaps_NoWriteMask                     (1 << 28)
++	#define PM3LocalMemCaps_NoWriteMask			(1 << 28)
+ #define PM3LocalMemTimings					0x1020
+ #define PM3LocalMemControl					0x1028
+ #define PM3LocalMemRefresh					0x1030
+@@ -111,41 +111,41 @@
+ #define PM3VsStart						0x3048
+ #define PM3VsEnd						0x3050
+ #define PM3VideoControl						0x3058
+-	#define PM3VideoControl_ENABLE				(1<<0)
+-	#define PM3VideoControl_BLANK_ACTIVE_HIGH		(0<<1)
+-	#define PM3VideoControl_BLANK_ACTIVE_LOW		(1<<1)
+-	#define PM3VideoControl_LINE_DOUBLE_OFF			(0<<2)
+-	#define PM3VideoControl_LINE_DOUBLE_ON			(1<<2)
+-	#define PM3VideoControl_HSYNC_FORCE_HIGH		(0<<3)
+-	#define PM3VideoControl_HSYNC_ACTIVE_HIGH		(1<<3)
+-	#define PM3VideoControl_HSYNC_FORCE_LOW			(2<<3)
+-	#define PM3VideoControl_HSYNC_ACTIVE_LOW		(3<<3)
+-        #define PM3VideoControl_HSYNC_MASK          (3<<3)
+-	#define PM3VideoControl_VSYNC_FORCE_HIGH		(0<<5)
+-	#define PM3VideoControl_VSYNC_ACTIVE_HIGH		(1<<5)
+-	#define PM3VideoControl_VSYNC_FORCE_LOW			(2<<5)
+-	#define PM3VideoControl_VSYNC_ACTIVE_LOW		(3<<5)
+-        #define PM3VideoControl_VSYNC_MASK          (3<<5)
+-	#define PM3VideoControl_BYTE_DOUBLE_OFF			(0<<7)
+-	#define PM3VideoControl_BYTE_DOUBLE_ON			(1<<7)
+-	#define PM3VideoControl_BUFFER_SWAP_SYNCON_FRAMEBLANK	(0<<9)
+-	#define PM3VideoControl_BUFFER_SWAP_FREE_RUNNING	(1<<9)
+-	#define PM3VideoControl_BUFFER_SWAP_LIMITETO_FRAMERATE	(2<<9)
+-	#define PM3VideoControl_STEREO_ENABLE			(1<<11)
+-	#define PM3VideoControl_RIGHT_EYE_ACTIVE_HIGH		(0<<12)
+-	#define PM3VideoControl_RIGHT_EYE_ACTIVE_LOW		(1<<12)
+-	#define PM3VideoControl_VIDEO_EXT_LOW			(0<<14)
+-	#define PM3VideoControl_VIDEO_EXT_HIGH			(1<<14)
+-	#define PM3VideoControl_SYNC_MODE_INDEPENDENT		(0<<16)
+-	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSA		(1<<16)
+-	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSB		(2<<16)
+-	#define PM3VideoControl_PATCH_ENABLE			(1<<18)
+-	#define PM3VideoControl_PIXELSIZE_8BIT			(0<<19)
+-	#define PM3VideoControl_PIXELSIZE_16BIT			(1<<19)
+-	#define PM3VideoControl_PIXELSIZE_32BIT			(2<<19)
+-	#define PM3VideoControl_DISPLAY_ENABLE			(1<<21)
+-	#define PM3VideoControl_PATCH_OFFSET_X(off)	(((off)&0x3f)<<22)
+-	#define PM3VideoControl_PATCH_OFFSET_Y(off)	(((off)&0x3f)<<28)
++	#define PM3VideoControl_ENABLE				(1 << 0)
++	#define PM3VideoControl_BLANK_ACTIVE_HIGH		(0 << 1)
++	#define PM3VideoControl_BLANK_ACTIVE_LOW		(1 << 1)
++	#define PM3VideoControl_LINE_DOUBLE_OFF			(0 << 2)
++	#define PM3VideoControl_LINE_DOUBLE_ON			(1 << 2)
++	#define PM3VideoControl_HSYNC_FORCE_HIGH		(0 << 3)
++	#define PM3VideoControl_HSYNC_ACTIVE_HIGH		(1 << 3)
++	#define PM3VideoControl_HSYNC_FORCE_LOW			(2 << 3)
++	#define PM3VideoControl_HSYNC_ACTIVE_LOW		(3 << 3)
++	#define PM3VideoControl_HSYNC_MASK			(3 << 3)
++	#define PM3VideoControl_VSYNC_FORCE_HIGH		(0 << 5)
++	#define PM3VideoControl_VSYNC_ACTIVE_HIGH		(1 << 5)
++	#define PM3VideoControl_VSYNC_FORCE_LOW			(2 << 5)
++	#define PM3VideoControl_VSYNC_ACTIVE_LOW		(3 << 5)
++	#define PM3VideoControl_VSYNC_MASK			(3 << 5)
++	#define PM3VideoControl_BYTE_DOUBLE_OFF			(0 << 7)
++	#define PM3VideoControl_BYTE_DOUBLE_ON			(1 << 7)
++	#define PM3VideoControl_BUFFER_SWAP_SYNCON_FRAMEBLANK	(0 << 9)
++	#define PM3VideoControl_BUFFER_SWAP_FREE_RUNNING	(1 << 9)
++	#define PM3VideoControl_BUFFER_SWAP_LIMITETO_FRAMERATE	(2 << 9)
++	#define PM3VideoControl_STEREO_ENABLE			(1 << 11)
++	#define PM3VideoControl_RIGHT_EYE_ACTIVE_HIGH		(0 << 12)
++	#define PM3VideoControl_RIGHT_EYE_ACTIVE_LOW		(1 << 12)
++	#define PM3VideoControl_VIDEO_EXT_LOW			(0 << 14)
++	#define PM3VideoControl_VIDEO_EXT_HIGH			(1 << 14)
++	#define PM3VideoControl_SYNC_MODE_INDEPENDENT		(0 << 16)
++	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSA		(1 << 16)
++	#define PM3VideoControl_SYNC_MODE_SYNCTO_VSB		(2 << 16)
++	#define PM3VideoControl_PATCH_ENABLE			(1 << 18)
++	#define PM3VideoControl_PIXELSIZE_8BIT			(0 << 19)
++	#define PM3VideoControl_PIXELSIZE_16BIT			(1 << 19)
++	#define PM3VideoControl_PIXELSIZE_32BIT			(2 << 19)
++	#define PM3VideoControl_DISPLAY_ENABLE			(1 << 21)
++	#define PM3VideoControl_PATCH_OFFSET_X(off)	(((off) & 0x3f) << 22)
++	#define PM3VideoControl_PATCH_OFFSET_Y(off)	(((off) & 0x3f) << 28)
+ #define PM3InterruptLine					0x3060
+ #define PM3DisplayData						0x3068
+ #define PM3VerticalLineCount					0x3070
+@@ -154,78 +154,93 @@
+ #define PM3MiscControl						0x3088
+ 
+ #define PM3VideoOverlayUpdate					0x3100
+-        #define PM3VideoOverlayUpdate_ENABLE                    (1<<0)
++	#define PM3VideoOverlayUpdate_ENABLE			(1 << 0)
+ #define PM3VideoOverlayMode					0x3108
+-	#define PM3VideoOverlayMode_ENABLE			(1<<0)
+-        #define PM3VideoOverlayMode_BUFFERSYNC_MANUAL           (0<<1)
+-        #define PM3VideoOverlayMode_BUFFERSYNC_VIDEOSTREAMA     (1<<1)
+-        #define PM3VideoOverlayMode_BUFFERSYNC_VIDEOSTREAMB     (2<<1)
+-        #define PM3VideoOverlayMode_FIELDPOLARITY_NORMAL        (0<<4)
+-        #define PM3VideoOverlayMode_FIELDPOLARITY_INVERT        (1<<4)
+-        #define PM3VideoOverlayMode_PIXELSIZE_8BIT              (0<<5)
+-        #define PM3VideoOverlayMode_PIXELSIZE_16BIT             (1<<5)
+-        #define PM3VideoOverlayMode_PIXELSIZE_32BIT             (2<<5)
+-        #define PM3VideoOverlayMode_COLORFORMAT_RGB8888 ((0<<7)|(1<<12)|(2<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_RGB4444 ((1<<7)|(1<<12)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_RGB5551 ((2<<7)|(1<<12)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_RGB565  ((3<<7)|(1<<12)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_RGB332  ((4<<7)|(1<<12)|(0<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_BGR8888 ((0<<7)|(2<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_BGR4444 ((1<<7)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_BGR5551 ((2<<7)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_BGR565  ((3<<7)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_BGR332  ((4<<7)|(0<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_CI8     ((5<<7)|(1<<12)|(0<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_VUY444  ((2<<10)|(1<<12)|(2<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_YUV444  ((2<<10)|(2<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_VUY422  ((1<<10)|(1<<12)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORFORMAT_YUV422  ((1<<10)|(1<<5))
+-        #define PM3VideoOverlayMode_COLORORDER_BGR              (0<<12)
+-        #define PM3VideoOverlayMode_COLORORDER_RGB              (1<<12)
+-        #define PM3VideoOverlayMode_LINEARCOLOREXT_OFF          (0<<13)
+-        #define PM3VideoOverlayMode_LINEARCOLOREXT_ON           (1<<13)
+-        #define PM3VideoOverlayMode_FILTER_MASK                 (3<<14)
+-        #define PM3VideoOverlayMode_FILTER_OFF                  (0<<14)
+-        #define PM3VideoOverlayMode_FILTER_FULL                 (1<<14)
+-        #define PM3VideoOverlayMode_FILTER_PARTIAL              (2<<14)
+-        #define PM3VideoOverlayMode_DEINTERLACE_OFF             (0<<16)
+-        #define PM3VideoOverlayMode_DEINTERLACE_BOB             (1<<16)
+-        #define PM3VideoOverlayMode_PATCHMODE_OFF               (0<<18)
+-        #define PM3VideoOverlayMode_PATCHMODE_ON                (1<<18)
+-        #define PM3VideoOverlayMode_FLIP_VIDEO                  (0<<20)
+-        #define PM3VideoOverlayMode_FLIP_VIDEOSTREAMA           (1<<20)
+-        #define PM3VideoOverlayMode_FLIP_VIDEOSTREAMB           (2<<20)
+-        #define PM3VideoOverlayMode_MIRROR_MASK                 (3<<23)
+-        #define PM3VideoOverlayMode_MIRRORX_OFF                 (0<<23)
+-        #define PM3VideoOverlayMode_MIRRORX_ON                  (1<<23)
+-        #define PM3VideoOverlayMode_MIRRORY_OFF                 (0<<24)
+-        #define PM3VideoOverlayMode_MIRRORY_ON                  (1<<24)
++	#define PM3VideoOverlayMode_ENABLE			(1 << 0)
++	#define PM3VideoOverlayMode_BUFFERSYNC_MANUAL		(0 << 1)
++	#define PM3VideoOverlayMode_BUFFERSYNC_VIDEOSTREAMA	(1 << 1)
++	#define PM3VideoOverlayMode_BUFFERSYNC_VIDEOSTREAMB	(2 << 1)
++	#define PM3VideoOverlayMode_FIELDPOLARITY_NORMAL	(0 << 4)
++	#define PM3VideoOverlayMode_FIELDPOLARITY_INVERT	(1 << 4)
++	#define PM3VideoOverlayMode_PIXELSIZE_8BIT		(0 << 5)
++	#define PM3VideoOverlayMode_PIXELSIZE_16BIT		(1 << 5)
++	#define PM3VideoOverlayMode_PIXELSIZE_32BIT		(2 << 5)
++	#define PM3VideoOverlayMode_COLORFORMAT_RGB8888		\
++					((0 << 7)|(1 << 12)|(2 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_RGB4444		\
++					((1 << 7)|(1 << 12)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_RGB5551		\
++					((2 << 7)|(1 << 12)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_RGB565		\
++					((3 << 7)|(1 << 12)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_RGB332		\
++					((4 << 7)|(1 << 12)|(0 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_BGR8888		\
++					((0 << 7)|(2 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_BGR4444		\
++					((1 << 7)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_BGR5551		\
++					((2 << 7)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_BGR565		\
++					((3 << 7)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_BGR332		\
++					((4 << 7)|(0 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_CI8		\
++					((5 << 7)|(1 << 12)|(0 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_VUY444		\
++					((2 << 10)|(1 << 12)|(2 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_YUV444		\
++					((2 << 10)|(2 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_VUY422		\
++					((1 << 10)|(1 << 12)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORFORMAT_YUV422		\
++					((1 << 10)|(1 << 5))
++	#define PM3VideoOverlayMode_COLORORDER_BGR		(0 << 12)
++	#define PM3VideoOverlayMode_COLORORDER_RGB		(1 << 12)
++	#define PM3VideoOverlayMode_LINEARCOLOREXT_OFF		(0 << 13)
++	#define PM3VideoOverlayMode_LINEARCOLOREXT_ON		(1 << 13)
++	#define PM3VideoOverlayMode_FILTER_MASK			(3 << 14)
++	#define PM3VideoOverlayMode_FILTER_OFF			(0 << 14)
++	#define PM3VideoOverlayMode_FILTER_FULL			(1 << 14)
++	#define PM3VideoOverlayMode_FILTER_PARTIAL		(2 << 14)
++	#define PM3VideoOverlayMode_DEINTERLACE_OFF		(0 << 16)
++	#define PM3VideoOverlayMode_DEINTERLACE_BOB		(1 << 16)
++	#define PM3VideoOverlayMode_PATCHMODE_OFF		(0 << 18)
++	#define PM3VideoOverlayMode_PATCHMODE_ON		(1 << 18)
++	#define PM3VideoOverlayMode_FLIP_VIDEO			(0 << 20)
++	#define PM3VideoOverlayMode_FLIP_VIDEOSTREAMA		(1 << 20)
++	#define PM3VideoOverlayMode_FLIP_VIDEOSTREAMB		(2 << 20)
++	#define PM3VideoOverlayMode_MIRROR_MASK			(3 << 23)
++	#define PM3VideoOverlayMode_MIRRORX_OFF			(0 << 23)
++	#define PM3VideoOverlayMode_MIRRORX_ON			(1 << 23)
++	#define PM3VideoOverlayMode_MIRRORY_OFF			(0 << 24)
++	#define PM3VideoOverlayMode_MIRRORY_ON			(1 << 24)
+ #define PM3VideoOverlayFifoControl				0x3110
+ #define PM3VideoOverlayIndex					0x3118
+ #define PM3VideoOverlayBase0					0x3120
+ #define PM3VideoOverlayBase1					0x3128
+ #define PM3VideoOverlayBase2					0x3130
+ #define PM3VideoOverlayStride					0x3138
+-        #define PM3VideoOverlayStride_STRIDE(s)         (((s)&0xfff)<<0)
+-#define PM3VideoOverlayWidth                                    0x3140
+-        #define PM3VideoOverlayWidth_WIDTH(w)           (((w)&0xfff)<<0)
+-#define PM3VideoOverlayHeight                                   0x3148
+-        #define PM3VideoOverlayHeight_HEIGHT(h)         (((h)&0xfff)<<0)
+-#define PM3VideoOverlayOrigin                                   0x3150
+-        #define PM3VideoOverlayOrigin_XORIGIN(x)        (((x)&0xfff)<<0)
+-        #define PM3VideoOverlayOrigin_YORIGIN(y)        (((y)&0xfff)<<16)
+-#define PM3VideoOverlayShrinkXDelta                             0x3158
+-        #define PM3VideoOverlayShrinkXDelta_NONE                (1<<16)
+-        #define PM3VideoOverlayShrinkXDelta_DELTA(s,d)          \
+-                ((((s)<<16)/(d))&0x0ffffff0)
+-#define PM3VideoOverlayZoomXDelta                               0x3160
+-        #define PM3VideoOverlayZoomXDelta_NONE                  (1<<16)
+-        #define PM3VideoOverlayZoomXDelta_DELTA(s,d)            \
+-                ((((s)<<16)/(d))&0x0001fff0)
+-#define PM3VideoOverlayYDelta                                   0x3168
+-        #define PM3VideoOverlayYDelta_NONE                      (1<<16)
+-        #define PM3VideoOverlayYDelta_DELTA(s,d)                        \
+-                ((((s)<<16)/(d))&0x0ffffff0)
++	#define PM3VideoOverlayStride_STRIDE(s)		(((s) & 0xfff) << 0)
++#define PM3VideoOverlayWidth					0x3140
++	#define PM3VideoOverlayWidth_WIDTH(w)		(((w) & 0xfff) << 0)
++#define PM3VideoOverlayHeight					0x3148
++	#define PM3VideoOverlayHeight_HEIGHT(h)		(((h) & 0xfff) << 0)
++#define PM3VideoOverlayOrigin					0x3150
++	#define PM3VideoOverlayOrigin_XORIGIN(x)	(((x) & 0xfff) << 0)
++	#define PM3VideoOverlayOrigin_YORIGIN(y)	(((y) & 0xfff) << 16)
++#define PM3VideoOverlayShrinkXDelta				0x3158
++	#define PM3VideoOverlayShrinkXDelta_NONE		(1 << 16)
++	#define PM3VideoOverlayShrinkXDelta_DELTA(s,d)	\
++		((((s) << 16)/(d)) & 0x0ffffff0)
++#define PM3VideoOverlayZoomXDelta				0x3160
++	#define PM3VideoOverlayZoomXDelta_NONE			(1 << 16)
++	#define PM3VideoOverlayZoomXDelta_DELTA(s,d)	\
++		((((s) << 16)/(d)) & 0x0001fff0)
++#define PM3VideoOverlayYDelta					0x3168
++	#define PM3VideoOverlayYDelta_NONE			(1 << 16)
++	#define PM3VideoOverlayYDelta_DELTA(s,d)	\
++		((((s) << 16)/(d)) & 0x0ffffff0)
+ #define PM3VideoOverlayFieldOffset				0x3170
+ #define PM3VideoOverlayStatus					0x3178
+ 
+@@ -242,82 +257,82 @@
+ #define PM3RD_IndexHigh						0x4028
+ #define PM3RD_IndexedData					0x4030
+ #define PM3RD_IndexControl					0x4038
+-	#define PM3RD_IndexControl_AUTOINCREMENT_ENABLE		(1<<0)
++	#define PM3RD_IndexControl_AUTOINCREMENT_ENABLE		(1 << 0)
+ 
+ /* Indirect Registers */
+ #define PM3RD_MiscControl					0x000
+-	#define PM3RD_MiscControl_HIGHCOLOR_RES_ENABLE		(1<<0)
+-	#define PM3RD_MiscControl_PIXELDOUBLE_ENABLE		(1<<1)
+-	#define PM3RD_MiscControl_LASTREAD_ADDR_ENABLE		(1<<2)
+-	#define PM3RD_MiscControl_DIRECTCOLOR_ENABLE		(1<<3)
+-	#define PM3RD_MiscControl_OVERLAY_ENABLE		(1<<4)
+-	#define PM3RD_MiscControl_PIXELDOUBLE_BUFFER_ENABLE	(1<<5)
+-	#define PM3RD_MiscControl_VSB_OUTPUT_ENABLE		(1<<6)
+-	#define PM3RD_MiscControl_STEREODOUBLE_BUFFER_ENABLE	(1<<7)
++	#define PM3RD_MiscControl_HIGHCOLOR_RES_ENABLE		(1 << 0)
++	#define PM3RD_MiscControl_PIXELDOUBLE_ENABLE		(1 << 1)
++	#define PM3RD_MiscControl_LASTREAD_ADDR_ENABLE		(1 << 2)
++	#define PM3RD_MiscControl_DIRECTCOLOR_ENABLE		(1 << 3)
++	#define PM3RD_MiscControl_OVERLAY_ENABLE		(1 << 4)
++	#define PM3RD_MiscControl_PIXELDOUBLE_BUFFER_ENABLE	(1 << 5)
++	#define PM3RD_MiscControl_VSB_OUTPUT_ENABLE		(1 << 6)
++	#define PM3RD_MiscControl_STEREODOUBLE_BUFFER_ENABLE	(1 << 7)
+ #define PM3RD_SyncControl					0x001
+-	#define PM3RD_SyncControl_HSYNC_ACTIVE_LOW		(0<<0)
+-	#define PM3RD_SyncControl_HSYNC_ACTIVE_HIGH		(1<<0)
+-	#define PM3RD_SyncControl_HSYNC_FORCE_ACTIVE		(3<<0)
+-	#define PM3RD_SyncControl_HSYNC_FORCE_INACTIVE		(4<<0)
+-	#define PM3RD_SyncControl_HSYNC_TRI_STATE		(2<<0)
+-	#define PM3RD_SyncControl_VSYNC_ACTIVE_LOW		(0<<3)
+-	#define PM3RD_SyncControl_VSYNC_ACTIVE_HIGH		(1<<3)
+-	#define PM3RD_SyncControl_VSYNC_TRI_STATE		(2<<3)
+-	#define PM3RD_SyncControl_VSYNC_FORCE_ACTIVE		(3<<3)
+-	#define PM3RD_SyncControl_VSYNC_FORCE_INACTIVE		(4<<3)
+-	#define PM3RD_SyncControl_HSYNC_OVERRIDE_SETBY_HSYNC	(0<<6)
+-	#define PM3RD_SyncControl_HSYNC_OVERRIDE_FORCE_HIGH	(1<<6)
+-	#define PM3RD_SyncControl_VSYNC_OVERRIDE_SETBY_VSYNC	(0<<7)
+-	#define PM3RD_SyncControl_VSYNC_OVERRIDE_FORCE_HIGH	(1<<7)
++	#define PM3RD_SyncControl_HSYNC_ACTIVE_LOW		(0 << 0)
++	#define PM3RD_SyncControl_HSYNC_ACTIVE_HIGH		(1 << 0)
++	#define PM3RD_SyncControl_HSYNC_FORCE_ACTIVE		(3 << 0)
++	#define PM3RD_SyncControl_HSYNC_FORCE_INACTIVE		(4 << 0)
++	#define PM3RD_SyncControl_HSYNC_TRI_STATE		(2 << 0)
++	#define PM3RD_SyncControl_VSYNC_ACTIVE_LOW		(0 << 3)
++	#define PM3RD_SyncControl_VSYNC_ACTIVE_HIGH		(1 << 3)
++	#define PM3RD_SyncControl_VSYNC_TRI_STATE		(2 << 3)
++	#define PM3RD_SyncControl_VSYNC_FORCE_ACTIVE		(3 << 3)
++	#define PM3RD_SyncControl_VSYNC_FORCE_INACTIVE		(4 << 3)
++	#define PM3RD_SyncControl_HSYNC_OVERRIDE_SETBY_HSYNC	(0 << 6)
++	#define PM3RD_SyncControl_HSYNC_OVERRIDE_FORCE_HIGH	(1 << 6)
++	#define PM3RD_SyncControl_VSYNC_OVERRIDE_SETBY_VSYNC	(0 << 7)
++	#define PM3RD_SyncControl_VSYNC_OVERRIDE_FORCE_HIGH	(1 << 7)
+ #define PM3RD_DACControl					0x002
+-	#define PM3RD_DACControl_DAC_POWER_ON			(0<<0)
+-	#define PM3RD_DACControl_DAC_POWER_OFF			(1<<0)
+-	#define PM3RD_DACControl_SYNC_ON_GREEN_ENABLE		(1<<3)
+-	#define PM3RD_DACControl_BLANK_RED_DAC_ENABLE		(1<<4)
+-	#define PM3RD_DACControl_BLANK_GREEN_DAC_ENABLE		(1<<5)
+-	#define PM3RD_DACControl_BLANK_BLUE_DAC_ENABLE		(1<<6)
+-	#define PM3RD_DACControl_BLANK_PEDESTAL_ENABLE		(1<<7)
++	#define PM3RD_DACControl_DAC_POWER_ON			(0 << 0)
++	#define PM3RD_DACControl_DAC_POWER_OFF			(1 << 0)
++	#define PM3RD_DACControl_SYNC_ON_GREEN_ENABLE		(1 << 3)
++	#define PM3RD_DACControl_BLANK_RED_DAC_ENABLE		(1 << 4)
++	#define PM3RD_DACControl_BLANK_GREEN_DAC_ENABLE		(1 << 5)
++	#define PM3RD_DACControl_BLANK_BLUE_DAC_ENABLE		(1 << 6)
++	#define PM3RD_DACControl_BLANK_PEDESTAL_ENABLE		(1 << 7)
+ #define PM3RD_PixelSize						0x003
+-	#define PM3RD_PixelSize_24_BIT_PIXELS			(4<<0)
+-	#define PM3RD_PixelSize_32_BIT_PIXELS			(2<<0)
+-	#define PM3RD_PixelSize_16_BIT_PIXELS			(1<<0)
+-	#define PM3RD_PixelSize_8_BIT_PIXELS			(0<<0)
++	#define PM3RD_PixelSize_24_BIT_PIXELS			(4 << 0)
++	#define PM3RD_PixelSize_32_BIT_PIXELS			(2 << 0)
++	#define PM3RD_PixelSize_16_BIT_PIXELS			(1 << 0)
++	#define PM3RD_PixelSize_8_BIT_PIXELS			(0 << 0)
+ #define PM3RD_ColorFormat					0x004
+-	#define PM3RD_ColorFormat_LINEAR_COLOR_EXT_ENABLE	(1<<6)
+-	#define PM3RD_ColorFormat_COLOR_ORDER_BLUE_LOW		(1<<5)
+-	#define PM3RD_ColorFormat_COLOR_ORDER_RED_LOW		(0<<5)
+-	#define PM3RD_ColorFormat_COLOR_FORMAT_MASK		(0x1f<<0)
+-	#define PM3RD_ColorFormat_8888_COLOR			(0<<0)
+-	#define PM3RD_ColorFormat_5551_FRONT_COLOR		(1<<0)
+-	#define PM3RD_ColorFormat_4444_COLOR			(2<<0)
+-	#define PM3RD_ColorFormat_332_FRONT_COLOR		(5<<0)
+-	#define PM3RD_ColorFormat_332_BACK_COLOR		(6<<0)
+-	#define PM3RD_ColorFormat_2321_FRONT_COLOR		(9<<0)
+-	#define PM3RD_ColorFormat_2321_BACK_COLOR		(10<<0)
+-	#define PM3RD_ColorFormat_232_FRONTOFF_COLOR		(11<<0)
+-	#define PM3RD_ColorFormat_232_BACKOFF_COLOR		(12<<0)
+-	#define PM3RD_ColorFormat_5551_BACK_COLOR		(13<<0)
+-	#define PM3RD_ColorFormat_CI8_COLOR			(14<<0)
+-	#define PM3RD_ColorFormat_565_FRONT_COLOR		(16<<0)
+-	#define PM3RD_ColorFormat_565_BACK_COLOR		(17<<0)
++	#define PM3RD_ColorFormat_LINEAR_COLOR_EXT_ENABLE	(1 << 6)
++	#define PM3RD_ColorFormat_COLOR_ORDER_BLUE_LOW		(1 << 5)
++	#define PM3RD_ColorFormat_COLOR_ORDER_RED_LOW		(0 << 5)
++	#define PM3RD_ColorFormat_COLOR_FORMAT_MASK		(0x1f << 0)
++	#define PM3RD_ColorFormat_8888_COLOR			(0 << 0)
++	#define PM3RD_ColorFormat_5551_FRONT_COLOR		(1 << 0)
++	#define PM3RD_ColorFormat_4444_COLOR			(2 << 0)
++	#define PM3RD_ColorFormat_332_FRONT_COLOR		(5 << 0)
++	#define PM3RD_ColorFormat_332_BACK_COLOR		(6 << 0)
++	#define PM3RD_ColorFormat_2321_FRONT_COLOR		(9 << 0)
++	#define PM3RD_ColorFormat_2321_BACK_COLOR		(10 << 0)
++	#define PM3RD_ColorFormat_232_FRONTOFF_COLOR		(11 << 0)
++	#define PM3RD_ColorFormat_232_BACKOFF_COLOR		(12 << 0)
++	#define PM3RD_ColorFormat_5551_BACK_COLOR		(13 << 0)
++	#define PM3RD_ColorFormat_CI8_COLOR			(14 << 0)
++	#define PM3RD_ColorFormat_565_FRONT_COLOR		(16 << 0)
++	#define PM3RD_ColorFormat_565_BACK_COLOR		(17 << 0)
+ #define PM3RD_CursorMode					0x005
+-	#define PM3RD_CursorMode_CURSOR_ENABLE			(1<<0)
+-	#define PM3RD_CursorMode_FORMAT_64x64_2BPE_P0123	(0<<2)
+-	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P0		(1<<2)
+-	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P1		(2<<2)
+-	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P2		(3<<2)
+-	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P3		(4<<2)
+-	#define PM3RD_CursorMode_FORMAT_32x32_4BPE_P01		(5<<2)
+-	#define PM3RD_CursorMode_FORMAT_32x32_4BPE_P23		(6<<2)
+-	#define PM3RD_CursorMode_TYPE_MS			(0<<4)
+-	#define PM3RD_CursorMode_TYPE_X				(1<<4)
+-	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_ENABLE	(1<<6)
+-	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_3_COLOR	(2<<6)
+-	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_15_COLOR	(3<<6)
++	#define PM3RD_CursorMode_CURSOR_ENABLE			(1 << 0)
++	#define PM3RD_CursorMode_FORMAT_64x64_2BPE_P0123	(0 << 2)
++	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P0		(1 << 2)
++	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P1		(2 << 2)
++	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P2		(3 << 2)
++	#define PM3RD_CursorMode_FORMAT_32x32_2BPE_P3		(4 << 2)
++	#define PM3RD_CursorMode_FORMAT_32x32_4BPE_P01		(5 << 2)
++	#define PM3RD_CursorMode_FORMAT_32x32_4BPE_P23		(6 << 2)
++	#define PM3RD_CursorMode_TYPE_MS			(0 << 4)
++	#define PM3RD_CursorMode_TYPE_X				(1 << 4)
++	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_ENABLE	(1 << 6)
++	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_3_COLOR	(2 << 6)
++	#define PM3RD_CursorMode_REVERSE_PIXEL_ORDER_15_COLOR	(3 << 6)
+ #define PM3RD_CursorControl					0x006
+-	#define PM3RD_CursorControl_DOUBLE_X_ENABLED		(1<<0)
+-	#define PM3RD_CursorControl_DOUBLE_Y_ENABLED		(1<<1)
+-	#define PM3RD_CursorControl_READBACK_POS_ENABLED	(1<<2)
++	#define PM3RD_CursorControl_DOUBLE_X_ENABLED		(1 << 0)
++	#define PM3RD_CursorControl_DOUBLE_Y_ENABLED		(1 << 1)
++	#define PM3RD_CursorControl_READBACK_POS_ENABLED	(1 << 2)
+ 
+ #define PM3RD_CursorXLow					0x007
+ #define PM3RD_CursorXHigh					0x008
+@@ -327,13 +342,13 @@
+ #define PM3RD_CursorHotSpotY					0x00c
+ #define PM3RD_OverlayKey					0x00d
+ #define PM3RD_Pan						0x00e
+-	#define PM3RD_Pan_ENABLE				(1<<0)
+-	#define PM3RD_Pan_GATE_ENABLE				(1<<1)
++	#define PM3RD_Pan_ENABLE				(1 << 0)
++	#define PM3RD_Pan_GATE_ENABLE				(1 << 1)
+ #define PM3RD_Sense						0x00f
+ 
+ #define PM3RD_CheckControl					0x018
+-	#define PM3RD_CheckControl_PIXEL_ENABLED		(1<<0)
+-	#define PM3RD_CheckControl_LUT_ENABLED			(1<<1)
++	#define PM3RD_CheckControl_PIXEL_ENABLED		(1 << 0)
++	#define PM3RD_CheckControl_LUT_ENABLED			(1 << 1)
+ #define PM3RD_CheckPixelRed					0x019
+ #define PM3RD_CheckPixelGreen					0x01a
+ #define PM3RD_CheckPixelBlue					0x01b
+@@ -343,17 +358,17 @@
+ #define PM3RD_Scratch						0x01f
+ 
+ #define PM3RD_VideoOverlayControl				0x020
+-        #define PM3RD_VideoOverlayControl_ENABLE                (1<<0)
+-        #define PM3RD_VideoOverlayControl_MODE_MASK             (3<<1)
+-        #define PM3RD_VideoOverlayControl_MODE_MAINKEY          (0<<1)
+-        #define PM3RD_VideoOverlayControl_MODE_OVERLAYKEY       (1<<1)
+-        #define PM3RD_VideoOverlayControl_MODE_ALWAYS           (2<<1)
+-        #define PM3RD_VideoOverlayControl_MODE_BLEND            (3<<1)
+-        #define PM3RD_VideoOverlayControl_DIRECTCOLOR_ENABLED   (1<<3)
+-        #define PM3RD_VideoOverlayControl_BLENDSRC_MAIN         (0<<4)
+-        #define PM3RD_VideoOverlayControl_BLENDSRC_REGISTER     (1<<4)
+-        #define PM3RD_VideoOverlayControl_KEY_COLOR             (0<<5)
+-        #define PM3RD_VideoOverlayControl_KEY_ALPHA             (1<<5)
++	#define PM3RD_VideoOverlayControl_ENABLE		(1 << 0)
++	#define PM3RD_VideoOverlayControl_MODE_MASK		(3 << 1)
++	#define PM3RD_VideoOverlayControl_MODE_MAINKEY		(0 << 1)
++	#define PM3RD_VideoOverlayControl_MODE_OVERLAYKEY	(1 << 1)
++	#define PM3RD_VideoOverlayControl_MODE_ALWAYS		(2 << 1)
++	#define PM3RD_VideoOverlayControl_MODE_BLEND		(3 << 1)
++	#define PM3RD_VideoOverlayControl_DIRECTCOLOR_ENABLED	(1 << 3)
++	#define PM3RD_VideoOverlayControl_BLENDSRC_MAIN		(0 << 4)
++	#define PM3RD_VideoOverlayControl_BLENDSRC_REGISTER	(1 << 4)
++	#define PM3RD_VideoOverlayControl_KEY_COLOR		(0 << 5)
++	#define PM3RD_VideoOverlayControl_KEY_ALPHA		(1 << 5)
+ #define PM3RD_VideoOverlayXStartLow				0x021
+ #define PM3RD_VideoOverlayXStartHigh				0x022
+ #define PM3RD_VideoOverlayYStartLow				0x023
+@@ -366,10 +381,10 @@
+ #define PM3RD_VideoOverlayKeyG					0x02a
+ #define PM3RD_VideoOverlayKeyB					0x02b
+ #define PM3RD_VideoOverlayBlend					0x02c
+-        #define PM3RD_VideoOverlayBlend_FACTOR_0_PERCENT        (0<<6)
+-        #define PM3RD_VideoOverlayBlend_FACTOR_25_PERCENT       (1<<6)
+-        #define PM3RD_VideoOverlayBlend_FACTOR_75_PERCENT       (2<<6)
+-        #define PM3RD_VideoOverlayBlend_FACTOR_100_PERCENT      (3<<6)
++	#define PM3RD_VideoOverlayBlend_FACTOR_0_PERCENT	(0 << 6)
++	#define PM3RD_VideoOverlayBlend_FACTOR_25_PERCENT	(1 << 6)
++	#define PM3RD_VideoOverlayBlend_FACTOR_75_PERCENT	(2 << 6)
++	#define PM3RD_VideoOverlayBlend_FACTOR_100_PERCENT	(3 << 6)
+ 
+ #define PM3RD_DClkSetup1					0x1f0
+ #define PM3RD_DClkSetup2					0x1f1
+@@ -377,20 +392,20 @@
+ #define PM3RD_KClkSetup2					0x1f3
+ 
+ #define PM3RD_DClkControl					0x200
+-	#define PM3RD_DClkControl_SOURCE_PLL			(0<<4)
+-	#define PM3RD_DClkControl_SOURCE_VSA			(1<<4)
+-	#define PM3RD_DClkControl_SOURCE_VSB			(2<<4)
+-	#define PM3RD_DClkControl_SOURCE_EXT			(3<<4)
+-	#define PM3RD_DClkControl_STATE_RUN			(2<<2)
+-	#define PM3RD_DClkControl_STATE_HIGH			(1<<2)
+-	#define PM3RD_DClkControl_STATE_LOW			(0<<2)
+-	#define PM3RD_DClkControl_LOCKED			(1<<1)
+-	#define PM3RD_DClkControl_NOT_LOCKED			(0<<1)
+-	#define PM3RD_DClkControl_ENABLE			(1<<0)
++	#define PM3RD_DClkControl_SOURCE_PLL			(0 << 4)
++	#define PM3RD_DClkControl_SOURCE_VSA			(1 << 4)
++	#define PM3RD_DClkControl_SOURCE_VSB			(2 << 4)
++	#define PM3RD_DClkControl_SOURCE_EXT			(3 << 4)
++	#define PM3RD_DClkControl_STATE_RUN			(2 << 2)
++	#define PM3RD_DClkControl_STATE_HIGH			(1 << 2)
++	#define PM3RD_DClkControl_STATE_LOW			(0 << 2)
++	#define PM3RD_DClkControl_LOCKED			(1 << 1)
++	#define PM3RD_DClkControl_NOT_LOCKED			(0 << 1)
++	#define PM3RD_DClkControl_ENABLE			(1 << 0)
+ #define PM3RD_DClk0PreScale					0x201
+ #define PM3RD_DClk0FeedbackScale				0x202
+ #define PM3RD_DClk0PostScale					0x203
+-        #define PM3_REF_CLOCK                                   14318
++	#define PM3_REF_CLOCK					14318
+ #define PM3RD_DClk1PreScale					0x204
+ #define PM3RD_DClk1FeedbackScale				0x205
+ #define PM3RD_DClk1PostScale					0x206
+@@ -401,56 +416,56 @@
+ #define PM3RD_DClk3FeedbackScale				0x20b
+ #define PM3RD_DClk3PostScale					0x20c
+ #define PM3RD_KClkControl					0x20d
+-	#define PM3RD_KClkControl_ENABLE			(1<<0)
+-	#define PM3RD_KClkControl_NOT_LOCKED			(0<<1)
+-	#define PM3RD_KClkControl_LOCKED			(1<<1)
+-	#define PM3RD_KClkControl_STATE_LOW			(0<<2)
+-	#define PM3RD_KClkControl_STATE_HIGH			(1<<2)
+-	#define PM3RD_KClkControl_STATE_RUN			(2<<2)
+-	#define PM3RD_KClkControl_STATE_LOW_POWER		(3<<2)
+-	#define PM3RD_KClkControl_SOURCE_PCLK			(0<<4)
+-	#define PM3RD_KClkControl_SOURCE_HALF_PCLK		(1<<4)
+-	#define PM3RD_KClkControl_SOURCE_PLL			(2<<4)
++	#define PM3RD_KClkControl_ENABLE			(1 << 0)
++	#define PM3RD_KClkControl_NOT_LOCKED			(0 << 1)
++	#define PM3RD_KClkControl_LOCKED			(1 << 1)
++	#define PM3RD_KClkControl_STATE_LOW			(0 << 2)
++	#define PM3RD_KClkControl_STATE_HIGH			(1 << 2)
++	#define PM3RD_KClkControl_STATE_RUN			(2 << 2)
++	#define PM3RD_KClkControl_STATE_LOW_POWER		(3 << 2)
++	#define PM3RD_KClkControl_SOURCE_PCLK			(0 << 4)
++	#define PM3RD_KClkControl_SOURCE_HALF_PCLK		(1 << 4)
++	#define PM3RD_KClkControl_SOURCE_PLL			(2 << 4)
+ #define PM3RD_KClkPreScale					0x20e
+ #define PM3RD_KClkFeedbackScale					0x20f
+ #define PM3RD_KClkPostScale					0x210
+ #define PM3RD_MClkControl					0x211
+-	#define PM3RD_MClkControl_ENABLE			(1<<0)
+-	#define PM3RD_MClkControl_NOT_LOCKED			(0<<1)
+-	#define PM3RD_MClkControl_LOCKED			(1<<1)
+-	#define PM3RD_MClkControl_STATE_LOW			(0<<2)
+-	#define PM3RD_MClkControl_STATE_HIGH			(1<<2)
+-	#define PM3RD_MClkControl_STATE_RUN			(2<<2)
+-	#define PM3RD_MClkControl_STATE_LOW_POWER		(3<<2)
+-	#define PM3RD_MClkControl_SOURCE_PCLK			(0<<4)
+-	#define PM3RD_MClkControl_SOURCE_HALF_PCLK		(1<<4)
+-	#define PM3RD_MClkControl_SOURCE_HALF_EXT		(3<<4)
+-	#define PM3RD_MClkControl_SOURCE_EXT			(4<<4)
+-	#define PM3RD_MClkControl_SOURCE_HALF_KCLK		(5<<4)
+-	#define PM3RD_MClkControl_SOURCE_KCLK			(6<<4)
++	#define PM3RD_MClkControl_ENABLE			(1 << 0)
++	#define PM3RD_MClkControl_NOT_LOCKED			(0 << 1)
++	#define PM3RD_MClkControl_LOCKED			(1 << 1)
++	#define PM3RD_MClkControl_STATE_LOW			(0 << 2)
++	#define PM3RD_MClkControl_STATE_HIGH			(1 << 2)
++	#define PM3RD_MClkControl_STATE_RUN			(2 << 2)
++	#define PM3RD_MClkControl_STATE_LOW_POWER		(3 << 2)
++	#define PM3RD_MClkControl_SOURCE_PCLK			(0 << 4)
++	#define PM3RD_MClkControl_SOURCE_HALF_PCLK		(1 << 4)
++	#define PM3RD_MClkControl_SOURCE_HALF_EXT		(3 << 4)
++	#define PM3RD_MClkControl_SOURCE_EXT			(4 << 4)
++	#define PM3RD_MClkControl_SOURCE_HALF_KCLK		(5 << 4)
++	#define PM3RD_MClkControl_SOURCE_KCLK			(6 << 4)
+ #define PM3RD_MClkPreScale					0x212
+ #define PM3RD_MClkFeedbackScale					0x213
+ #define PM3RD_MClkPostScale					0x214
+ #define PM3RD_SClkControl					0x215
+-	#define PM3RD_SClkControl_ENABLE			(1<<0)
+-	#define PM3RD_SClkControl_NOT_LOCKED			(0<<1)
+-	#define PM3RD_SClkControl_LOCKED			(1<<1)
+-	#define PM3RD_SClkControl_STATE_LOW			(0<<2)
+-	#define PM3RD_SClkControl_STATE_HIGH			(1<<2)
+-	#define PM3RD_SClkControl_STATE_RUN			(2<<2)
+-	#define PM3RD_SClkControl_STATE_LOW_POWER		(3<<2)
+-	#define PM3RD_SClkControl_SOURCE_PCLK			(0<<4)
+-	#define PM3RD_SClkControl_SOURCE_HALF_PCLK		(1<<4)
+-	#define PM3RD_SClkControl_SOURCE_HALF_EXT		(3<<4)
+-	#define PM3RD_SClkControl_SOURCE_EXT			(4<<4)
+-	#define PM3RD_SClkControl_SOURCE_HALF_KCLK		(5<<4)
+-	#define PM3RD_SClkControl_SOURCE_KCLK			(6<<4)
++	#define PM3RD_SClkControl_ENABLE			(1 << 0)
++	#define PM3RD_SClkControl_NOT_LOCKED			(0 << 1)
++	#define PM3RD_SClkControl_LOCKED			(1 << 1)
++	#define PM3RD_SClkControl_STATE_LOW			(0 << 2)
++	#define PM3RD_SClkControl_STATE_HIGH			(1 << 2)
++	#define PM3RD_SClkControl_STATE_RUN			(2 << 2)
++	#define PM3RD_SClkControl_STATE_LOW_POWER		(3 << 2)
++	#define PM3RD_SClkControl_SOURCE_PCLK			(0 << 4)
++	#define PM3RD_SClkControl_SOURCE_HALF_PCLK		(1 << 4)
++	#define PM3RD_SClkControl_SOURCE_HALF_EXT		(3 << 4)
++	#define PM3RD_SClkControl_SOURCE_EXT			(4 << 4)
++	#define PM3RD_SClkControl_SOURCE_HALF_KCLK		(5 << 4)
++	#define PM3RD_SClkControl_SOURCE_KCLK			(6 << 4)
+ #define PM3RD_SClkPreScale					0x216
+ #define PM3RD_SClkFeedbackScale					0x217
+ #define PM3RD_SClkPostScale					0x218
+ 
+-#define PM3RD_CursorPalette(p)					(0x303+(p))
+-#define PM3RD_CursorPattern(p)					(0x400+(p))
++#define PM3RD_CursorPalette(p)				(0x303 + (p))
++#define PM3RD_CursorPattern(p)				(0x400 + (p))
+ /******************************************************
+ *  GLINT Permedia3 Video Streaming Registers (0x5000) *
+ *******************************************************/
+@@ -484,10 +499,10 @@
+ #define PM3ColorDDAModeOr					0xabe8
+ #define PM3CommandInterrupt					0xa990
+ #define PM3ConstantColorDDA					0xafb0
+-	#define PM3ConstantColorDDA_R(r)		((r)&0xff)
+-	#define PM3ConstantColorDDA_G(g)		(((g)&0xff)<<8)
+-	#define PM3ConstantColorDDA_B(b)		(((b)&0xff)<<16)
+-	#define PM3ConstantColorDDA_A(a)		(((a)&0xff)<<24)
++	#define PM3ConstantColorDDA_R(r)		((r) & 0xff)
++	#define PM3ConstantColorDDA_G(g)		(((g) & 0xff) << 8)
++	#define PM3ConstantColorDDA_B(b)		(((b) & 0xff) << 16)
++	#define PM3ConstantColorDDA_A(a)		(((a) & 0xff) << 24)
+ #define PM3ContextData						0x8dd0
+ #define PM3ContextDump						0x8dc0
+ #define PM3ContextRestore					0x8dc8
+@@ -531,59 +546,59 @@
+ #define PM3FBDestReadBufferOffset1				0xaea8
+ #define PM3FBDestReadBufferOffset2				0xaeb0
+ #define PM3FBDestReadBufferOffset3				0xaeb8
+-	#define PM3FBDestReadBufferOffset_XOffset(x)	((x)&0xffff)
+-	#define PM3FBDestReadBufferOffset_YOffset(y)	(((y)&0xffff)<<16)
++	#define PM3FBDestReadBufferOffset_XOffset(x)	((x) & 0xffff)
++	#define PM3FBDestReadBufferOffset_YOffset(y)	(((y) & 0xffff) << 16)
+ #define PM3FBDestReadBufferWidth0				0xaec0
+ #define PM3FBDestReadBufferWidth1				0xaec8
+ #define PM3FBDestReadBufferWidth2				0xaed0
+ #define PM3FBDestReadBufferWidth3				0xaed8
+-	#define PM3FBDestReadBufferWidth_Width(w)	((w)&0x0fff)
++	#define PM3FBDestReadBufferWidth_Width(w)	((w) & 0x0fff)
+ 
+ #define PM3FBDestReadEnables					0xaee8
+ #define PM3FBDestReadEnablesAnd					0xad20
+ #define PM3FBDestReadEnablesOr					0xad28
+-	#define PM3FBDestReadEnables_E(e)		((e)&0xff)
+-	#define PM3FBDestReadEnables_E0				1<<0
+-	#define PM3FBDestReadEnables_E1				1<<1
+-	#define PM3FBDestReadEnables_E2				1<<2
+-	#define PM3FBDestReadEnables_E3				1<<3
+-	#define PM3FBDestReadEnables_E4				1<<4
+-	#define PM3FBDestReadEnables_E5				1<<5
+-	#define PM3FBDestReadEnables_E6				1<<6
+-	#define PM3FBDestReadEnables_E7				1<<7
+-	#define PM3FBDestReadEnables_R(r)		(((r)&0xff)<<8)
+-	#define PM3FBDestReadEnables_R0				1<<8
+-	#define PM3FBDestReadEnables_R1				1<<9
+-	#define PM3FBDestReadEnables_R2				1<<10
+-	#define PM3FBDestReadEnables_R3				1<<11
+-	#define PM3FBDestReadEnables_R4				1<<12
+-	#define PM3FBDestReadEnables_R5				1<<13
+-	#define PM3FBDestReadEnables_R6				1<<14
+-	#define PM3FBDestReadEnables_R7				1<<15
+-	#define PM3FBDestReadEnables_ReferenceAlpha(a)	(((a)&0xff)<<24)
++	#define PM3FBDestReadEnables_E(e)		((e) & 0xff)
++	#define PM3FBDestReadEnables_E0				(1 << 0)
++	#define PM3FBDestReadEnables_E1				(1 << 1)
++	#define PM3FBDestReadEnables_E2				(1 << 2)
++	#define PM3FBDestReadEnables_E3				(1 << 3)
++	#define PM3FBDestReadEnables_E4				(1 << 4)
++	#define PM3FBDestReadEnables_E5				(1 << 5)
++	#define PM3FBDestReadEnables_E6				(1 << 6)
++	#define PM3FBDestReadEnables_E7				(1 << 7)
++	#define PM3FBDestReadEnables_R(r)		(((r) & 0xff) << 8)
++	#define PM3FBDestReadEnables_R0				(1 << 8)
++	#define PM3FBDestReadEnables_R1				(1 << 9)
++	#define PM3FBDestReadEnables_R2				(1 << 10)
++	#define PM3FBDestReadEnables_R3				(1 << 11)
++	#define PM3FBDestReadEnables_R4				(1 << 12)
++	#define PM3FBDestReadEnables_R5				(1 << 13)
++	#define PM3FBDestReadEnables_R6				(1 << 14)
++	#define PM3FBDestReadEnables_R7				(1 << 15)
++	#define PM3FBDestReadEnables_ReferenceAlpha(a)	(((a) & 0xff) << 24)
+ 
+ #define PM3FBDestReadMode					0xaee0
+ #define PM3FBDestReadModeAnd					0xac90
+ #define PM3FBDestReadModeOr					0xac98
+-	#define PM3FBDestReadMode_ReadDisable			0<<0
+-	#define PM3FBDestReadMode_ReadEnable			1<<0
+-	#define PM3FBDestReadMode_StripePitch(sp)	(((sp)&0x7)<<2)
+-	#define PM3FBDestReadMode_StripeHeight(sh)	(((sh)&0x7)<<7)
+-	#define PM3FBDestReadMode_Enable0			1<<8
+-	#define PM3FBDestReadMode_Enable1			1<<9
+-	#define PM3FBDestReadMode_Enable2			1<<10
+-	#define PM3FBDestReadMode_Enable3			1<<11
+-	#define PM3FBDestReadMode_Layout0(l)		(((l)&0x3)<<12)
+-	#define PM3FBDestReadMode_Layout1(l)		(((l)&0x3)<<14)
+-	#define PM3FBDestReadMode_Layout2(l)		(((l)&0x3)<<16)
+-	#define PM3FBDestReadMode_Layout3(l)		(((l)&0x3)<<18)
+-	#define PM3FBDestReadMode_Origin0			1<<20
+-	#define PM3FBDestReadMode_Origin1			1<<21
+-	#define PM3FBDestReadMode_Origin2			1<<22
+-	#define PM3FBDestReadMode_Origin3			1<<23
+-	#define PM3FBDestReadMode_Blocking			1<<24
+-	#define PM3FBDestReadMode_UseReadEnabled		1<<26
+-	#define PM3FBDestReadMode_AlphaFiltering		1<<27
++	#define PM3FBDestReadMode_ReadDisable			(0 << 0)
++	#define PM3FBDestReadMode_ReadEnable			(1 << 0)
++	#define PM3FBDestReadMode_StripePitch(sp)	(((sp) & 0x7) << 2)
++	#define PM3FBDestReadMode_StripeHeight(sh)	(((sh) & 0x7) << 7)
++	#define PM3FBDestReadMode_Enable0			(1 << 8)
++	#define PM3FBDestReadMode_Enable1			(1 << 9)
++	#define PM3FBDestReadMode_Enable2			(1 << 10)
++	#define PM3FBDestReadMode_Enable3			(1 << 11)
++	#define PM3FBDestReadMode_Layout0(l)		(((l) & 0x3) << 12)
++	#define PM3FBDestReadMode_Layout1(l)		(((l) & 0x3) << 14)
++	#define PM3FBDestReadMode_Layout2(l)		(((l) & 0x3) << 16)
++	#define PM3FBDestReadMode_Layout3(l)		(((l) & 0x3) << 18)
++	#define PM3FBDestReadMode_Origin0			(1 << 20)
++	#define PM3FBDestReadMode_Origin1			(1 << 21)
++	#define PM3FBDestReadMode_Origin2			(1 << 22)
++	#define PM3FBDestReadMode_Origin3			(1 << 23)
++	#define PM3FBDestReadMode_Blocking			(1 << 24)
++	#define PM3FBDestReadMode_UseReadEnabled		(1 << 26)
++	#define PM3FBDestReadMode_AlphaFiltering		(1 << 27)
+ 
+ #define PM3FBHardwareWriteMask					0x8ac0
+ #define PM3FBSoftwareWriteMask					0x8820
+@@ -591,65 +606,65 @@
+ #define PM3FBSourceData						0x8aa8
+ #define PM3FBSourceReadBufferAddr				0xaf08
+ #define PM3FBSourceReadBufferOffset				0xaf10
+-	#define PM3FBSourceReadBufferOffset_XOffset(x)	((x)&0xffff)
+-	#define PM3FBSourceReadBufferOffset_YOffset(y)	(((y)&0xffff)<<16)
++	#define PM3FBSourceReadBufferOffset_XOffset(x)	((x) & 0xffff)
++	#define PM3FBSourceReadBufferOffset_YOffset(y)	(((y) & 0xffff) << 16)
+ #define PM3FBSourceReadBufferWidth				0xaf18
+-	#define PM3FBSourceReadBufferWidth_Width(w)	((w)&0x0fff)
++	#define PM3FBSourceReadBufferWidth_Width(w)	((w) & 0x0fff)
+ #define PM3FBSourceReadMode					0xaf00
+ #define PM3FBSourceReadModeAnd					0xaca0
+ #define PM3FBSourceReadModeOr					0xaca8
+-	#define PM3FBSourceReadMode_ReadDisable			(0<<0)
+-	#define PM3FBSourceReadMode_ReadEnable			(1<<0)
+-	#define PM3FBSourceReadMode_StripePitch(sp)	(((sp)&0x7)<<2)
+-	#define PM3FBSourceReadMode_StripeHeight(sh)	(((sh)&0x7)<<7)
+-	#define PM3FBSourceReadMode_Layout(l)		(((l)&0x3)<<8)
+-	#define PM3FBSourceReadMode_Origin			1<<10
+-	#define PM3FBSourceReadMode_Blocking			1<<11
+-	#define PM3FBSourceReadMode_UserTexelCoord		1<<13
+-	#define PM3FBSourceReadMode_WrapXEnable			1<<14
+-	#define PM3FBSourceReadMode_WrapYEnable			1<<15
+-	#define PM3FBSourceReadMode_WrapX(w)		(((w)&0xf)<<16)
+-	#define PM3FBSourceReadMode_WrapY(w)		(((w)&0xf)<<20)
+-	#define PM3FBSourceReadMode_ExternalSourceData		1<<24
+-#define PM3FBWriteBufferAddr0                                   0xb000
+-#define PM3FBWriteBufferAddr1                                   0xb008
+-#define PM3FBWriteBufferAddr2                                   0xb010
+-#define PM3FBWriteBufferAddr3                                   0xb018
+-
+-#define PM3FBWriteBufferOffset0                                 0xb020
+-#define PM3FBWriteBufferOffset1                                 0xb028
+-#define PM3FBWriteBufferOffset2                                 0xb030
+-#define PM3FBWriteBufferOffset3                                 0xb038
+-	#define PM3FBWriteBufferOffset_XOffset(x)		((x)&0xffff)
+-	#define PM3FBWriteBufferOffset_YOffset(y)		(((y)&0xffff)<<16)
+-
+-#define PM3FBWriteBufferWidth0                                  0xb040
+-#define PM3FBWriteBufferWidth1                                  0xb048
+-#define PM3FBWriteBufferWidth2                                  0xb050
+-#define PM3FBWriteBufferWidth3                                  0xb058
+-	#define PM3FBWriteBufferWidth_Width(w)			((w)&0x0fff)
+-
+-#define PM3FBWriteMode                                          0x8ab8
+-#define PM3FBWriteModeAnd                                       0xacf0
+-#define PM3FBWriteModeOr                                        0xacf8
+-	#define PM3FBWriteMode_WriteDisable                     0<<0
+-	#define PM3FBWriteMode_WriteEnable                      1<<0
+-	#define PM3FBWriteMode_Replicate                        1<<4
+-	#define PM3FBWriteMode_OpaqueSpan                       1<<5
+-	#define PM3FBWriteMode_StripePitch(p)            (((p)&0x7)<<6)
+-	#define PM3FBWriteMode_StripeHeight(h)           (((h)&0x7)<<9)
+-	#define PM3FBWriteMode_Enable0                          1<<12
+-	#define PM3FBWriteMode_Enable1                          1<<13
+-	#define PM3FBWriteMode_Enable2                          1<<14
+-	#define PM3FBWriteMode_Enable3                          1<<15
+-	#define PM3FBWriteMode_Layout0(l)               (((l)&0x3)<<16)
+-	#define PM3FBWriteMode_Layout1(l)               (((l)&0x3)<<18)
+-	#define PM3FBWriteMode_Layout2(l)               (((l)&0x3)<<20)
+-	#define PM3FBWriteMode_Layout3(l)               (((l)&0x3)<<22)
+-	#define PM3FBWriteMode_Origin0                          1<<24
+-	#define PM3FBWriteMode_Origin1                          1<<25
+-	#define PM3FBWriteMode_Origin2                          1<<26
+-	#define PM3FBWriteMode_Origin3                          1<<27
++	#define PM3FBSourceReadMode_ReadDisable			(0 << 0)
++	#define PM3FBSourceReadMode_ReadEnable			(1 << 0)
++	#define PM3FBSourceReadMode_StripePitch(sp)	(((sp) & 0x7) << 2)
++	#define PM3FBSourceReadMode_StripeHeight(sh)	(((sh) & 0x7) << 7)
++	#define PM3FBSourceReadMode_Layout(l)		(((l) & 0x3) << 8)
++	#define PM3FBSourceReadMode_Origin			(1 << 10)
++	#define PM3FBSourceReadMode_Blocking			(1 << 11)
++	#define PM3FBSourceReadMode_UserTexelCoord		(1 << 13)
++	#define PM3FBSourceReadMode_WrapXEnable			(1 << 14)
++	#define PM3FBSourceReadMode_WrapYEnable			(1 << 15)
++	#define PM3FBSourceReadMode_WrapX(w)		(((w) & 0xf) << 16)
++	#define PM3FBSourceReadMode_WrapY(w)		(((w) & 0xf) << 20)
++	#define PM3FBSourceReadMode_ExternalSourceData		(1 << 24)
++#define PM3FBWriteBufferAddr0					0xb000
++#define PM3FBWriteBufferAddr1					0xb008
++#define PM3FBWriteBufferAddr2					0xb010
++#define PM3FBWriteBufferAddr3					0xb018
++
++#define PM3FBWriteBufferOffset0					0xb020
++#define PM3FBWriteBufferOffset1					0xb028
++#define PM3FBWriteBufferOffset2					0xb030
++#define PM3FBWriteBufferOffset3					0xb038
++	#define PM3FBWriteBufferOffset_XOffset(x)	((x) & 0xffff)
++	#define PM3FBWriteBufferOffset_YOffset(y)	(((y) & 0xffff) << 16)
++
++#define PM3FBWriteBufferWidth0					0xb040
++#define PM3FBWriteBufferWidth1					0xb048
++#define PM3FBWriteBufferWidth2					0xb050
++#define PM3FBWriteBufferWidth3					0xb058
++	#define PM3FBWriteBufferWidth_Width(w)		((w) & 0x0fff)
++
++#define PM3FBWriteMode						0x8ab8
++#define PM3FBWriteModeAnd					0xacf0
++#define PM3FBWriteModeOr					0xacf8
++	#define PM3FBWriteMode_WriteDisable			(0 << 0)
++	#define PM3FBWriteMode_WriteEnable			(1 << 0)
++	#define PM3FBWriteMode_Replicate			(1 << 4)
++	#define PM3FBWriteMode_OpaqueSpan			(1 << 5)
++	#define PM3FBWriteMode_StripePitch(p)		(((p) & 0x7) << 6)
++	#define PM3FBWriteMode_StripeHeight(h)		(((h) & 0x7) << 9)
++	#define PM3FBWriteMode_Enable0				(1 << 12)
++	#define PM3FBWriteMode_Enable1				(1 << 13)
++	#define PM3FBWriteMode_Enable2				(1 << 14)
++	#define PM3FBWriteMode_Enable3				(1 << 15)
++	#define PM3FBWriteMode_Layout0(l)		(((l) & 0x3) << 16)
++	#define PM3FBWriteMode_Layout1(l)		(((l) & 0x3) << 18)
++	#define PM3FBWriteMode_Layout2(l)		(((l) & 0x3) << 20)
++	#define PM3FBWriteMode_Layout3(l)		(((l) & 0x3) << 22)
++	#define PM3FBWriteMode_Origin0				(1 << 24)
++	#define PM3FBWriteMode_Origin1				(1 << 25)
++	#define PM3FBWriteMode_Origin2				(1 << 26)
++	#define PM3FBWriteMode_Origin3				(1 << 27)
+ #define PM3ForegroundColor					0xb0c0
+ /* ... */
+ #define PM3GIDMode						0xb538
+@@ -664,55 +679,55 @@
+ #define PM3LBDestReadMode					0xb500
+ #define PM3LBDestReadModeAnd					0xb580
+ #define PM3LBDestReadModeOr					0xb588
+-	#define PM3LBDestReadMode_Disable			0<<0
+-	#define PM3LBDestReadMode_Enable			1<<0
+-	#define PM3LBDestReadMode_StripePitch(p)		(((p)&0x7)<<2)
+-	#define PM3LBDestReadMode_StripeHeight(h)		(((h)&0x7)<<5)
+-	#define PM3LBDestReadMode_Layout			1<<8
+-	#define PM3LBDestReadMode_Origin			1<<9
+-	#define PM3LBDestReadMode_UserReadEnables		1<<10
+-	#define PM3LBDestReadMode_Packed16			1<<11
+-	#define PM3LBDestReadMode_Width(w)			(((w)&0xfff)<<12)
++	#define PM3LBDestReadMode_Disable			(0 << 0)
++	#define PM3LBDestReadMode_Enable			(1 << 0)
++	#define PM3LBDestReadMode_StripePitch(p)	(((p) & 0x7) << 2)
++	#define PM3LBDestReadMode_StripeHeight(h)	(((h) & 0x7) << 5)
++	#define PM3LBDestReadMode_Layout			(1 << 8)
++	#define PM3LBDestReadMode_Origin			(1 << 9)
++	#define PM3LBDestReadMode_UserReadEnables		(1 << 10)
++	#define PM3LBDestReadMode_Packed16			(1 << 11)
++	#define PM3LBDestReadMode_Width(w)		(((w) & 0xfff) << 12)
+ #define PM3LBReadFormat						0x8888
+-	#define PM3LBReadFormat_DepthWidth(w)			(((w)&0x3)<<0)
+-	#define PM3LBReadFormat_StencilWidth(w)			(((w)&0xf)<<2)
+-	#define PM3LBReadFormat_StencilPosition(p)		(((p)&0x1f)<<6)
+-	#define PM3LBReadFormat_FCPWidth(w)			(((w)&0xf)<<11)
+-	#define PM3LBReadFormat_FCPPosition(p)			(((p)&0x1f)<<15)
+-	#define PM3LBReadFormat_GIDWidth(w)			(((w)&0x7)<<20)
+-	#define PM3LBReadFormat_GIDPosition(p)			(((p)&0x1f)<<23)
++	#define PM3LBReadFormat_DepthWidth(w)		(((w) & 0x3) << 0)
++	#define PM3LBReadFormat_StencilWidth(w)		(((w) & 0xf) << 2)
++	#define PM3LBReadFormat_StencilPosition(p)	(((p) & 0x1f) << 6)
++	#define PM3LBReadFormat_FCPWidth(w)		(((w) & 0xf) << 11)
++	#define PM3LBReadFormat_FCPPosition(p)		(((p) & 0x1f) << 15)
++	#define PM3LBReadFormat_GIDWidth(w)		(((w) & 0x7) << 20)
++	#define PM3LBReadFormat_GIDPosition(p)		(((p) & 0x1f) << 23)
+ #define PM3LBSourceReadBufferAddr				0xb528
+ #define PM3LBSourceReadBufferOffset				0xb530
+ #define PM3LBSourceReadMode					0xb520
+ #define PM3LBSourceReadModeAnd					0xb5a0
+ #define PM3LBSourceReadModeOr					0xb5a8
+-	#define PM3LBSourceReadMode_Enable			1<<0
+-	#define PM3LBSourceReadMode_StripePitch(p)		(((p)&0x7)<<2)
+-	#define PM3LBSourceReadMode_StripeHeight(h)		(((h)&0x7)<<5)
+-	#define PM3LBSourceReadMode_Layout			1<<8
+-	#define PM3LBSourceReadMode_Origin			1<<9
+-	#define PM3LBSourceReadMode_Packed16			1<<10
+-	#define PM3LBSourceReadMode_Width(w)			(((w)&0xfff)<<11)
++	#define PM3LBSourceReadMode_Enable			(1 << 0)
++	#define PM3LBSourceReadMode_StripePitch(p)	(((p) & 0x7) << 2)
++	#define PM3LBSourceReadMode_StripeHeight(h)	(((h) & 0x7) << 5)
++	#define PM3LBSourceReadMode_Layout			(1 << 8)
++	#define PM3LBSourceReadMode_Origin			(1 << 9)
++	#define PM3LBSourceReadMode_Packed16			(1 << 10)
++	#define PM3LBSourceReadMode_Width(w)		(((w) & 0xfff) << 11)
+ #define PM3LBStencil						0x88a8
+ #define PM3LBWriteBufferAddr					0xb540
+ #define PM3LBWriteBufferOffset					0xb548
+ #define PM3LBWriteFormat					0x88c8
+-	#define PM3LBWriteFormat_DepthWidth(w)			(((w)&0x3)<<0)
+-	#define PM3LBWriteFormat_StencilWidth(w)		(((w)&0xf)<<2)
+-	#define PM3LBWriteFormat_StencilPosition(p)		(((p)&0x1f)<<6)
+-	#define PM3LBWriteFormat_GIDWidth(w)			(((w)&0x7)<<20)
+-	#define PM3LBWriteFormat_GIDPosition(p)			(((p)&0x1f)<<23)
++	#define PM3LBWriteFormat_DepthWidth(w)		(((w) & 0x3) << 0)
++	#define PM3LBWriteFormat_StencilWidth(w)	(((w) & 0xf) << 2)
++	#define PM3LBWriteFormat_StencilPosition(p)	(((p) & 0x1f) << 6)
++	#define PM3LBWriteFormat_GIDWidth(w)		(((w) & 0x7) << 20)
++	#define PM3LBWriteFormat_GIDPosition(p)		(((p) & 0x1f) << 23)
+ #define PM3LBWriteMode						0x88c0
+ #define PM3LBWriteModeAnd					0xac80
+ #define PM3LBWriteModeOr					0xac88
+-	#define PM3LBWriteMode_WriteDisable			0<<0
+-	#define PM3LBWriteMode_WriteEnable			1<<0
+-	#define PM3LBWriteMode_StripePitch(p)			(((p)&0x7)<<3)
+-	#define PM3LBWriteMode_StripeHeight(h)			(((h)&0x7)<<6)
+-	#define PM3LBWriteMode_Layout				1<<9
+-	#define PM3LBWriteMode_Origin				1<<10
+-	#define PM3LBWriteMode_Packed16				1<<11
+-	#define PM3LBWriteMode_Width(w)				(((w)&0xfff)<<12)
++	#define PM3LBWriteMode_WriteDisable			(0 << 0)
++	#define PM3LBWriteMode_WriteEnable			(1 << 0)
++	#define PM3LBWriteMode_StripePitch(p)		(((p) & 0x7) << 3)
++	#define PM3LBWriteMode_StripeHeight(h)		(((h) & 0x7) << 6)
++	#define PM3LBWriteMode_Layout				(1 << 9)
++	#define PM3LBWriteMode_Origin				(1 << 10)
++	#define PM3LBWriteMode_Packed16				(1 << 11)
++	#define PM3LBWriteMode_Width(w)			(((w) & 0xfff) << 12)
+ /* ... */
+ #define PM3LineStippleMode					0x81a8
+ #define PM3LineStippleModeAnd					0xabc0
+@@ -722,19 +737,16 @@
+ #define PM3LogicalOpMode					0x8828
+ #define PM3LogicalOpModeAnd					0xace0
+ #define PM3LogicalOpModeOr					0xace8
+-	#define PM3LogicalOpMode_Disable			(0<<0)
+-	#define PM3LogicalOpMode_Enable				(1<<0)
+-	#define PM3LogicalOpMode_LogicOp(op)			(((op)&0xf)<<1)
+-	#define PM3LogicalOpMode_UseConstantWriteData_Disable	(0<<5)
+-	#define PM3LogicalOpMode_UseConstantWriteData_Enable	(1<<5)
+-	#define PM3LogicalOpMode_Background_Disable		(0<<6)
+-	#define PM3LogicalOpMode_Background_Enable		(1<<6)
+-	#define PM3LogicalOpMode_Background_LogicOp(op)		(((op)&0xf)<<7)
+-	#define PM3LogicalOpMode_UseConstantSource_Disable	(0<<11)
+-	#define PM3LogicalOpMode_UseConstantSource_Enable	(1<<11)
+-
+-/* ... */
+-#define PM3LUT							0x8e80
++	#define PM3LogicalOpMode_Disable			(0 << 0)
++	#define PM3LogicalOpMode_Enable				(1 << 0)
++	#define PM3LogicalOpMode_LogicOp(op)		(((op) & 0xf) << 1)
++	#define PM3LogicalOpMode_UseConstantWriteData_Disable	(0 << 5)
++	#define PM3LogicalOpMode_UseConstantWriteData_Enable	(1 << 5)
++	#define PM3LogicalOpMode_Background_Disable		(0 << 6)
++	#define PM3LogicalOpMode_Background_Enable		(1 << 6)
++	#define PM3LogicalOpMode_Background_LogicOp(op)	(((op) & 0xf) << 7)
++	#define PM3LogicalOpMode_UseConstantSource_Disable	(0 << 11)
++	#define PM3LogicalOpMode_UseConstantSource_Enable	(1 << 11)
+ /* ... */
+ #define PM3LUT							0x8e80
+ #define PM3LUTAddress						0x84d0
+@@ -746,75 +758,74 @@
+ #define PM3LUTTransfer						0x84d8
+ /* ... */
+ #define PM3PixelSize						0x80c0
+-	#define PM3PixelSize_GLOBAL_32BIT			(0<<0)
+-	#define PM3PixelSize_GLOBAL_16BIT			(1<<0)
+-	#define PM3PixelSize_GLOBAL_8BIT			(2<<0)
+-	#define PM3PixelSize_RASTERIZER_32BIT			(0<<2)
+-	#define PM3PixelSize_RASTERIZER_16BIT			(1<<2)
+-	#define PM3PixelSize_RASTERIZER_8BIT			(2<<2)
+-	#define PM3PixelSize_SCISSOR_AND_STIPPLE_32BIT		(0<<4)
+-	#define PM3PixelSize_SCISSOR_AND_STIPPLE_16BIT		(1<<4)
+-	#define PM3PixelSize_SCISSOR_AND_STIPPLE_8BIT		(2<<4)
+-	#define PM3PixelSize_TEXTURE_32BIT			(0<<6)
+-	#define PM3PixelSize_TEXTURE_16BIT			(1<<6)
+-	#define PM3PixelSize_TEXTURE_8BIT			(2<<6)
+-	#define PM3PixelSize_LUT_32BIT				(0<<8)
+-	#define PM3PixelSize_LUT_16BIT				(1<<8)
+-	#define PM3PixelSize_LUT_8BIT				(2<<8)
+-	#define PM3PixelSize_FRAMEBUFFER_32BIT			(0<<10)
+-	#define PM3PixelSize_FRAMEBUFFER_16BIT			(1<<10)
+-	#define PM3PixelSize_FRAMEBUFFER_8BIT			(2<<10)
+-	#define PM3PixelSize_LOGICAL_OP_32BIT			(0<<12)
+-	#define PM3PixelSize_LOGICAL_OP_16BIT			(1<<12)
+-	#define PM3PixelSize_LOGICAL_OP_8BIT			(2<<12)
+-	#define PM3PixelSize_LOCALBUFFER_32BIT			(0<<14)
+-	#define PM3PixelSize_LOCALBUFFER_16BIT			(1<<14)
+-	#define PM3PixelSize_LOCALBUFFER_8BIT			(2<<14)
+-	#define PM3PixelSize_SETUP_32BIT			(0<<16)
+-	#define PM3PixelSize_SETUP_16BIT			(1<<16)
+-	#define PM3PixelSize_SETUP_8BIT				(2<<16)
+-	#define PM3PixelSize_GLOBAL				(0<<31)
+-	#define PM3PixelSize_INDIVIDUAL				(1<<31)
++	#define PM3PixelSize_GLOBAL_32BIT			(0 << 0)
++	#define PM3PixelSize_GLOBAL_16BIT			(1 << 0)
++	#define PM3PixelSize_GLOBAL_8BIT			(2 << 0)
++	#define PM3PixelSize_RASTERIZER_32BIT			(0 << 2)
++	#define PM3PixelSize_RASTERIZER_16BIT			(1 << 2)
++	#define PM3PixelSize_RASTERIZER_8BIT			(2 << 2)
++	#define PM3PixelSize_SCISSOR_AND_STIPPLE_32BIT		(0 << 4)
++	#define PM3PixelSize_SCISSOR_AND_STIPPLE_16BIT		(1 << 4)
++	#define PM3PixelSize_SCISSOR_AND_STIPPLE_8BIT		(2 << 4)
++	#define PM3PixelSize_TEXTURE_32BIT			(0 << 6)
++	#define PM3PixelSize_TEXTURE_16BIT			(1 << 6)
++	#define PM3PixelSize_TEXTURE_8BIT			(2 << 6)
++	#define PM3PixelSize_LUT_32BIT				(0 << 8)
++	#define PM3PixelSize_LUT_16BIT				(1 << 8)
++	#define PM3PixelSize_LUT_8BIT				(2 << 8)
++	#define PM3PixelSize_FRAMEBUFFER_32BIT			(0 << 10)
++	#define PM3PixelSize_FRAMEBUFFER_16BIT			(1 << 10)
++	#define PM3PixelSize_FRAMEBUFFER_8BIT			(2 << 10)
++	#define PM3PixelSize_LOGICAL_OP_32BIT			(0 << 12)
++	#define PM3PixelSize_LOGICAL_OP_16BIT			(1 << 12)
++	#define PM3PixelSize_LOGICAL_OP_8BIT			(2 << 12)
++	#define PM3PixelSize_LOCALBUFFER_32BIT			(0 << 14)
++	#define PM3PixelSize_LOCALBUFFER_16BIT			(1 << 14)
++	#define PM3PixelSize_LOCALBUFFER_8BIT			(2 << 14)
++	#define PM3PixelSize_SETUP_32BIT			(0 << 16)
++	#define PM3PixelSize_SETUP_16BIT			(1 << 16)
++	#define PM3PixelSize_SETUP_8BIT				(2 << 16)
++	#define PM3PixelSize_GLOBAL				(0 << 31)
++	#define PM3PixelSize_INDIVIDUAL				(1 << 31)
+ /* ... */
+ #define PM3Render						0x8038
+-	#define PM3Render_AreaStipple_Disable			(0<<0)
+-	#define PM3Render_AreaStipple_Enable			(1<<0)
+-	#define PM3Render_LineStipple_Disable			(0<<1)
+-	#define PM3Render_LineStipple_Enable			(1<<1)
+-	#define PM3Render_ResetLine_Disable			(0<<2)
+-	#define PM3Render_ResetLine_Enable			(1<<2)
+-	#define PM3Render_FastFill_Disable			(0<<3)
+-	#define PM3Render_FastFill_Enable			(1<<3)
+-	#define PM3Render_Primitive_Line			(0<<6)
+-	#define PM3Render_Primitive_Trapezoid			(1<<6)
+-	#define PM3Render_Primitive_Point			(2<<6)
+-	#define PM3Render_Antialias_Disable			(0<<8)
+-	#define PM3Render_Antialias_Enable			(1<<8)
+-	#define PM3Render_Antialias_SubPixelRes_4x4		(0<<9)
+-	#define PM3Render_Antialias_SubPixelRes_8x8		(1<<9)
+-	#define PM3Render_UsePointTable_Disable			(0<<10)
+-	#define PM3Render_UsePointTable_Enable			(1<<10)
+-	#define PM3Render_SyncOnbitMask_Disable			(0<<11)
+-	#define PM3Render_SyncOnBitMask_Enable			(1<<11)
+-	#define PM3Render_SyncOnHostData_Disable		(0<<12)
+-	#define PM3Render_SyncOnHostData_Enable			(1<<12)
+-	#define PM3Render_Texture_Disable			(0<<13)
+-	#define PM3Render_Texture_Enable			(1<<13)
+-	#define PM3Render_Fog_Disable				(0<<14)
+-	#define PM3Render_Fog_Enable				(1<<14)
+-	#define PM3Render_Coverage_Disable			(0<<15)
+-	#define PM3Render_Coverage_Enable			(1<<15)
+-	#define PM3Render_SubPixelCorrection_Disable		(0<<16)
+-	#define PM3Render_SubPixelCorrection_Enable		(1<<16)
+-	#define PM3Render_SpanOperation_Disable			(0<<18)
+-	#define PM3Render_SpanOperation_Enable			(1<<18)
+-	#define PM3Render_FBSourceRead_Disable			(0<<27)
+-	#define PM3Render_FBSourceRead_Enable			(1<<27)
++	#define PM3Render_AreaStipple_Disable			(0 << 0)
++	#define PM3Render_AreaStipple_Enable			(1 << 0)
++	#define PM3Render_LineStipple_Disable			(0 << 1)
++	#define PM3Render_LineStipple_Enable			(1 << 1)
++	#define PM3Render_ResetLine_Disable			(0 << 2)
++	#define PM3Render_ResetLine_Enable			(1 << 2)
++	#define PM3Render_FastFill_Disable			(0 << 3)
++	#define PM3Render_FastFill_Enable			(1 << 3)
++	#define PM3Render_Primitive_Line			(0 << 6)
++	#define PM3Render_Primitive_Trapezoid			(1 << 6)
++	#define PM3Render_Primitive_Point			(2 << 6)
++	#define PM3Render_Antialias_Disable			(0 << 8)
++	#define PM3Render_Antialias_Enable			(1 << 8)
++	#define PM3Render_Antialias_SubPixelRes_4x4		(0 << 9)
++	#define PM3Render_Antialias_SubPixelRes_8x8		(1 << 9)
++	#define PM3Render_UsePointTable_Disable			(0 << 10)
++	#define PM3Render_UsePointTable_Enable			(1 << 10)
++	#define PM3Render_SyncOnbitMask_Disable			(0 << 11)
++	#define PM3Render_SyncOnBitMask_Enable			(1 << 11)
++	#define PM3Render_SyncOnHostData_Disable		(0 << 12)
++	#define PM3Render_SyncOnHostData_Enable			(1 << 12)
++	#define PM3Render_Texture_Disable			(0 << 13)
++	#define PM3Render_Texture_Enable			(1 << 13)
++	#define PM3Render_Fog_Disable				(0 << 14)
++	#define PM3Render_Fog_Enable				(1 << 14)
++	#define PM3Render_Coverage_Disable			(0 << 15)
++	#define PM3Render_Coverage_Enable			(1 << 15)
++	#define PM3Render_SubPixelCorrection_Disable		(0 << 16)
++	#define PM3Render_SubPixelCorrection_Enable		(1 << 16)
++	#define PM3Render_SpanOperation_Disable			(0 << 18)
++	#define PM3Render_SpanOperation_Enable			(1 << 18)
++	#define PM3Render_FBSourceRead_Disable			(0 << 27)
++	#define PM3Render_FBSourceRead_Enable			(1 << 27)
+ #define PM3RasterizerMode					0x80a0
+ #define PM3RasterizerModeAnd					0xaba0
+ #define PM3RasterizerModeOr					0xaba8
+ #define PM3RectangleHeight					0x94e0
+-#define PM3Render						0x8038
+ #define PM3RepeatLine						0x9328
+ #define PM3ResetPickResult					0x8c20
+ #define PM3RLEMask						0x8c48
+@@ -881,31 +892,31 @@
+ #define PM3TextureIndexMode1And					0xb3d0
+ #define PM3TextureIndexMode1Or					0xb3d8
+ /* ... */
+-#define PM3TextureMapSize                                       0xb428
+-#define PM3TextureMapWidth0                                     0x8580
+-#define PM3TextureMapWidth1                                     0x8588
+-        #define PM3TextureMapWidth_Width(w)             ((w&0xfff)<<0)
+-        #define PM3TextureMapWidth_BorderLayout                 (1<<12)
+-        #define PM3TextureMapWidth_Layout_Linear                (0<<13)
+-        #define PM3TextureMapWidth_Layout_Patch64               (1<<13)
+-        #define PM3TextureMapWidth_Layout_Patch32_2             (2<<13)
+-        #define PM3TextureMapWidth_Layout_Patch2                (3<<13)
+-        #define PM3TextureMapWidth_HostTexture                  (1<<15)
+-#define PM3TextureReadMode0                                     0xb400
+-#define PM3TextureReadMode0And                                  0xac30
+-#define PM3TextureReadMode0Or                                   0xac38
+-#define PM3TextureReadMode1                                     0xb408
+-#define PM3TextureReadMode1And                                  0xad40
+-#define PM3TextureReadMode1Or                                   0xad48
++#define PM3TextureMapSize					0xb428
++#define PM3TextureMapWidth0					0x8580
++#define PM3TextureMapWidth1					0x8588
++	#define PM3TextureMapWidth_Width(w)		(((w) & 0xfff) << 0)
++	#define PM3TextureMapWidth_BorderLayout			(1 << 12)
++	#define PM3TextureMapWidth_Layout_Linear		(0 << 13)
++	#define PM3TextureMapWidth_Layout_Patch64		(1 << 13)
++	#define PM3TextureMapWidth_Layout_Patch32_2		(2 << 13)
++	#define PM3TextureMapWidth_Layout_Patch2		(3 << 13)
++	#define PM3TextureMapWidth_HostTexture			(1 << 15)
++#define PM3TextureReadMode0					0xb400
++#define PM3TextureReadMode0And					0xac30
++#define PM3TextureReadMode0Or					0xac38
++#define PM3TextureReadMode1					0xb408
++#define PM3TextureReadMode1And					0xad40
++#define PM3TextureReadMode1Or					0xad48
+ /* ... */
+ #define PM3WaitForCompletion					0x80b8
+ #define PM3Window						0x8980
+-	#define PM3Window_ForceLBUpdate				1<<3
+-	#define PM3Window_LBUpdateSource			1<<4
+-	#define PM3Window_FrameCount(c)				(((c)&0xff)<<9)
+-	#define PM3Window_StencilFCP				1<<17
+-	#define PM3Window_DepthFCP				1<<18
+-	#define PM3Window_OverrideWriteFiltering		1<<19
++	#define PM3Window_ForceLBUpdate				(1 << 3)
++	#define PM3Window_LBUpdateSource			(1 << 4)
++	#define PM3Window_FrameCount(c)			(((c) & 0xff) << 9)
++	#define PM3Window_StencilFCP				(1 << 17)
++	#define PM3Window_DepthFCP				(1 << 18)
++	#define PM3Window_OverrideWriteFiltering		(1 << 19)
+ #define PM3WindowAnd						0xab80
+ #define PM3WindowOr						0xab88
+ #define PM3WindowOrigin						0x81c8
+@@ -920,172 +931,131 @@
+ 
+ 
+ /**********************************************
+-*  GLINT Permedia3 2D setup Unit              *
++*  GLINT Permedia3 2D setup Unit	      *
+ ***********************************************/
+ #define PM3Config2D						0xb618
+-	#define PM3Config2D_OpaqueSpan				1<<0
+-	#define PM3Config2D_MultiRXBlit				1<<1
+-	#define PM3Config2D_UserScissorEnable			1<<2
+-	#define PM3Config2D_FBDestReadEnable			1<<3
+-	#define PM3Config2D_AlphaBlendEnable			1<<4
+-	#define PM3Config2D_DitherEnable			1<<5
+-	#define PM3Config2D_ForegroundROPEnable			1<<6
+-	#define PM3Config2D_ForegroundROP(rop)		(((rop)&0xf)<<7)
+-	#define PM3Config2D_BackgroundROPEnable			1<<11
+-	#define PM3Config2D_BackgroundROP(rop)		(((rop)&0xf)<<12)
+-	#define PM3Config2D_UseConstantSource			1<<16
+-	#define PM3Config2D_FBWriteEnable			1<<17
+-	#define PM3Config2D_Blocking				1<<18
+-	#define PM3Config2D_ExternalSourceData			1<<19
+-	#define PM3Config2D_LUTModeEnable			1<<20
++	#define PM3Config2D_OpaqueSpan				(1 << 0)
++	#define PM3Config2D_MultiRXBlit				(1 << 1)
++	#define PM3Config2D_UserScissorEnable			(1 << 2)
++	#define PM3Config2D_FBDestReadEnable			(1 << 3)
++	#define PM3Config2D_AlphaBlendEnable			(1 << 4)
++	#define PM3Config2D_DitherEnable			(1 << 5)
++	#define PM3Config2D_ForegroundROPEnable			(1 << 6)
++	#define PM3Config2D_ForegroundROP(rop)		(((rop) & 0xf) << 7)
++	#define PM3Config2D_BackgroundROPEnable			(1 << 11)
++	#define PM3Config2D_BackgroundROP(rop)		(((rop) & 0xf) << 12)
++	#define PM3Config2D_UseConstantSource			(1 << 16)
++	#define PM3Config2D_FBWriteEnable			(1 << 17)
++	#define PM3Config2D_Blocking				(1 << 18)
++	#define PM3Config2D_ExternalSourceData			(1 << 19)
++	#define PM3Config2D_LUTModeEnable			(1 << 20)
+ #define PM3DownloadGlyphwidth					0xb658
+-	#define PM3DownloadGlyphwidth_GlyphWidth(gw)	((gw)&0xffff)
++	#define PM3DownloadGlyphwidth_GlyphWidth(gw)	((gw) & 0xffff)
+ #define PM3DownloadTarget					0xb650
+-	#define PM3DownloadTarget_TagName(tag)		((tag)&0x1fff)
++	#define PM3DownloadTarget_TagName(tag)		((tag) & 0x1fff)
+ #define PM3GlyphData						0xb660
+ #define PM3GlyphPosition					0xb608
+-	#define PM3GlyphPosition_XOffset(x)		((x)&0xffff)
+-	#define PM3GlyphPosition_YOffset(y)		(((y)&0xffff)<<16)
++	#define PM3GlyphPosition_XOffset(x)		((x) & 0xffff)
++	#define PM3GlyphPosition_YOffset(y)		(((y) & 0xffff) << 16)
+ #define PM3Packed4Pixels					0xb668
+ #define PM3Packed8Pixels					0xb630
+ #define PM3Packed16Pixels					0xb638
+ #define PM3RectanglePosition					0xb600
+-	#define PM3RectanglePosition_XOffset(x)		((x)&0xffff)
+-	#define PM3RectanglePosition_YOffset(y)		(((y)&0xffff)<<16)
++	#define PM3RectanglePosition_XOffset(x)		((x) & 0xffff)
++	#define PM3RectanglePosition_YOffset(y)		(((y) & 0xffff) << 16)
+ #define PM3Render2D						0xb640
+-	#define PM3Render2D_Width(w)			((w)&0x0fff)
+-	#define PM3Render2D_Operation_Normal			0<<12
+-	#define PM3Render2D_Operation_SyncOnHostData		1<<12
+-	#define PM3Render2D_Operation_SyncOnBitMask		2<<12
+-	#define PM3Render2D_Operation_PatchOrderRendering	3<<12
+-	#define PM3Render2D_FBSourceReadEnable			1<<14
+-	#define PM3Render2D_SpanOperation			1<<15
+-	#define PM3Render2D_Height(h)			(((h)&0x0fff)<<16)
+-	#define PM3Render2D_XPositive				1<<28
+-	#define PM3Render2D_YPositive				1<<29
+-	#define PM3Render2D_AreaStippleEnable			1<<30
+-	#define PM3Render2D_TextureEnable			1<<31
++	#define PM3Render2D_Width(w)			((w) & 0x0fff)
++	#define PM3Render2D_Operation_Normal			(0 << 12)
++	#define PM3Render2D_Operation_SyncOnHostData		(1 << 12)
++	#define PM3Render2D_Operation_SyncOnBitMask		(2 << 12)
++	#define PM3Render2D_Operation_PatchOrderRendering	(3 << 12)
++	#define PM3Render2D_FBSourceReadEnable			(1 << 14)
++	#define PM3Render2D_SpanOperation			(1 << 15)
++	#define PM3Render2D_Height(h)			(((h) & 0x0fff) << 16)
++	#define PM3Render2D_XPositive				(1 << 28)
++	#define PM3Render2D_YPositive				(1 << 29)
++	#define PM3Render2D_AreaStippleEnable			(1 << 30)
++	#define PM3Render2D_TextureEnable			(1 << 31)
+ #define PM3Render2DGlyph					0xb648
+-	#define PM3Render2DGlyph_Width(w)		((w)&0x7f)
+-	#define PM3Render2DGlyph_Height(h)		(((h)&0x7f)<<7)
+-	#define PM3Render2DGlyph_XOffset(x)		(((x)&0x1ff)<<14)
+-	#define PM3Render2DGlyph_YOffset(y)		(((y)&0x1ff)<<23)
++	#define PM3Render2DGlyph_Width(w)		((w) & 0x7f)
++	#define PM3Render2DGlyph_Height(h)		(((h) & 0x7f) << 7)
++	#define PM3Render2DGlyph_XOffset(x)		(((x) & 0x1ff) << 14)
++	#define PM3Render2DGlyph_YOffset(y)		(((y) & 0x1ff) << 23)
+ #define PM3RenderPatchOffset					0xb610
+-	#define PM3RenderPatchOffset_XOffset(x)		((x)&0xffff)
+-	#define PM3RenderPatchOffset_YOffset(y)		(((y)&0xffff)<<16)
++	#define PM3RenderPatchOffset_XOffset(x)		((x) & 0xffff)
++	#define PM3RenderPatchOffset_YOffset(y)		(((y) & 0xffff) << 16)
+ #define PM3RLCount						0xb678
+-	#define PM3RLCount_Count(c)			((c)&0x0fff)
++	#define PM3RLCount_Count(c)			((c) & 0x0fff)
+ #define PM3RLData						0xb670
+ 
+ /**********************************************
+-*  GLINT Permedia3 Alias Register             *
++*  GLINT Permedia3 Alias Register	     *
+ ***********************************************/
+-#define PM3FillBackgroundColor                                  0x8330
+-#define PM3FillConfig2D0                                        0x8338
+-#define PM3FillConfig2D1                                        0x8360
+-	#define PM3FillConfig2D_OpaqueSpan                      1<<0
+-	#define PM3FillConfig2D_MultiRXBlit                     1<<1
+-	#define PM3FillConfig2D_UserScissorEnable               1<<2
+-	#define PM3FillConfig2D_FBDestReadEnable                1<<3
+-	#define PM3FillConfig2D_AlphaBlendEnable                1<<4
+-	#define PM3FillConfig2D_DitherEnable                    1<<5
+-	#define PM3FillConfig2D_ForegroundROPEnable             1<<6
+-	#define PM3FillConfig2D_ForegroundROP(rop)              (((rop)&0xf)<<7)
+-	#define PM3FillConfig2D_BackgroundROPEnable             1<<11
+-	#define PM3FillConfig2D_BackgroundROP(rop)              (((rop)&0xf)<<12)
+-	#define PM3FillConfig2D_UseConstantSource               1<<16
+-	#define PM3FillConfig2D_FBWriteEnable                   1<<17
+-	#define PM3FillConfig2D_Blocking                        1<<18
+-	#define PM3FillConfig2D_ExternalSourceData              1<<19
+-	#define PM3FillConfig2D_LUTModeEnable                   1<<20
+-#define PM3FillFBDestReadBufferAddr                             0x8310
+-#define PM3FillFBSourceReadBufferAddr                           0x8308
+-#define PM3FillFBSourceReadBufferOffset                         0x8340
+-	#define PM3FillFBSourceReadBufferOffset_XOffset(x)     ((x)&0xffff)
+-	#define PM3FillFBSourceReadBufferOffset_YOffset(y)      (((y)&0xffff)<<16)
+-#define PM3FillFBWriteBufferAddr                                0x8300
+-#define PM3FillForegroundColor0                                 0x8328
+-#define PM3FillForegroundColor1                                 0x8358
+-#define PM3FillGlyphPosition                                    0x8368
+-        #define PM3FillGlyphPosition_XOffset(x)                        ((x)&0xffff)
+-	#define PM3FillGlyphPosition_YOffset(y)                        (((y)&0xffff)<<16)
+-#define PM3FillRectanglePosition                                0x8348
+-	#define PM3FillRectanglePosition_XOffset(x)            ((x)&0xffff)
+-	#define PM3FillRectanglePosition_YOffset(y)            (((y)&0xffff)<<16)
++#define PM3FillBackgroundColor					0x8330
++#define PM3FillConfig2D0					0x8338
++#define PM3FillConfig2D1					0x8360
++	#define PM3FillConfig2D_OpaqueSpan			(1 << 0)
++	#define PM3FillConfig2D_MultiRXBlit			(1 << 1)
++	#define PM3FillConfig2D_UserScissorEnable		(1 << 2)
++	#define PM3FillConfig2D_FBDestReadEnable		(1 << 3)
++	#define PM3FillConfig2D_AlphaBlendEnable		(1 << 4)
++	#define PM3FillConfig2D_DitherEnable			(1 << 5)
++	#define PM3FillConfig2D_ForegroundROPEnable		(1 << 6)
++	#define PM3FillConfig2D_ForegroundROP(rop)	(((rop) & 0xf) << 7)
++	#define PM3FillConfig2D_BackgroundROPEnable		(1 << 11)
++	#define PM3FillConfig2D_BackgroundROP(rop)	(((rop) & 0xf) << 12)
++	#define PM3FillConfig2D_UseConstantSource		(1 << 16)
++	#define PM3FillConfig2D_FBWriteEnable			(1 << 17)
++	#define PM3FillConfig2D_Blocking			(1 << 18)
++	#define PM3FillConfig2D_ExternalSourceData		(1 << 19)
++	#define PM3FillConfig2D_LUTModeEnable			(1 << 20)
++#define PM3FillFBDestReadBufferAddr				0x8310
++#define PM3FillFBSourceReadBufferAddr				0x8308
++#define PM3FillFBSourceReadBufferOffset				0x8340
++	#define PM3FillFBSourceReadBufferOffset_XOffset(x) ((x) & 0xffff)
++	#define PM3FillFBSourceReadBufferOffset_YOffset(y)	\
++						(((y) & 0xffff) << 16)
++#define PM3FillFBWriteBufferAddr				0x8300
++#define PM3FillForegroundColor0					0x8328
++#define PM3FillForegroundColor1					0x8358
++#define PM3FillGlyphPosition					0x8368
++	#define PM3FillGlyphPosition_XOffset(x)		((x) & 0xffff)
++	#define PM3FillGlyphPosition_YOffset(y)		(((y) & 0xffff) << 16)
++#define PM3FillRectanglePosition				0x8348
++	#define PM3FillRectanglePosition_XOffset(x)	((x) & 0xffff)
++	#define PM3FillRectanglePosition_YOffset(y)	(((y) & 0xffff) << 16)
+ 
+-#define PM3_REGS_SIZE           0x10000
+-#define PM3_MAX_PIXCLOCK        300000
+ /* a few more useful registers & regs value... */
+-#define PM3Sync 0x8c40
+-        #define PM3Sync_Tag 0x188
+-#define PM3FilterMode 0x8c00
+-        #define PM3FilterModeSync 0x400
+-#define PM3OutputFifo 0x2000
+-#define PM3StatisticMode 0x8c08
+-#define PM3AreaStippleMode 0x81a0
+-        #define AreaStipplePattern0					(0x8200)
+-        #define AreaStipplePattern1					(0x8208)
+-        #define AreaStipplePattern2					(0x8210)
+-        #define AreaStipplePattern3					(0x8218)
+-        #define AreaStipplePattern4					(0x8220)
+-        #define AreaStipplePattern5					(0x8228)
+-        #define AreaStipplePattern6					(0x8230)
+-        #define AreaStipplePattern7					(0x8238)
+-        #define AreaStipplePattern8					(0x8240)
+-        #define AreaStipplePattern9					(0x8248)
+-        #define AreaStipplePattern10					(0x8250)
+-        #define AreaStipplePattern11					(0x8258)
+-        #define AreaStipplePattern12					(0x8260)
+-        #define AreaStipplePattern13					(0x8268)
+-        #define AreaStipplePattern14					(0x8270)
+-        #define AreaStipplePattern15					(0x8278)
+-        #define AreaStipplePattern16					(0x8280)
+-        #define AreaStipplePattern17					(0x8288)
+-        #define AreaStipplePattern18					(0x8290)
+-        #define AreaStipplePattern19					(0x8298)
+-        #define AreaStipplePattern20					(0x82a0)
+-        #define AreaStipplePattern21					(0x82a8)
+-        #define AreaStipplePattern22					(0x82b0)
+-        #define AreaStipplePattern23					(0x82b8)
+-        #define AreaStipplePattern24					(0x82c0)
+-        #define AreaStipplePattern25					(0x82c8)
+-        #define AreaStipplePattern26					(0x82d0)
+-        #define AreaStipplePattern27					(0x82d8)
+-        #define AreaStipplePattern28					(0x82eo)
+-        #define AreaStipplePattern29					(0x82e8)
+-        #define AreaStipplePattern30					(0x82f0)
+-        #define AreaStipplePattern31					(0x82f8)
+-        #define AreaStipplePattern_indexed(i)             (0x8200 + ((i) * 0x8))
+-
+-#define PM3DepthMode 0x89a0
+-#define PM3StencilMode 0x8988
+-#define PM3StencilData 0x8990
+-#define PM3TextureReadMode 0x8670
+-#define PM3FogMode 0x8690
+-#define PM3ChromaTestMode 0x8f18
+-#define PM3YUVMode 0x8f00
+-#define PM3BitMaskPattern 0x8068
++#define PM3Sync							0x8c40
++	#define PM3Sync_Tag					0x188
++#define PM3FilterMode						0x8c00
++	#define PM3FilterModeSync				0x400
++#define PM3OutputFifo						0x2000
++#define PM3StatisticMode					0x8c08
++#define PM3AreaStippleMode					0x81a0
++#define AreaStipplePattern_indexed(i)		(0x8200 + ((i) * 0x8))
++
++#define PM3DepthMode						0x89a0
++#define PM3StencilMode						0x8988
++#define PM3StencilData						0x8990
++#define PM3TextureReadMode					0x8670
++#define PM3FogMode						0x8690
++#define PM3ChromaTestMode					0x8f18
++#define PM3YUVMode						0x8f00
++#define PM3BitMaskPattern					0x8068
+ 
+ /* ***************************** */
+ /* ***** pm3fb IOCTL const ***** */
+ /* ***************************** */
+-/* debug-only IOCTL */
+-#define PM3FBIO_CLEARMEMORY 0x504D3300 /* 'PM3\000' */
+-#define PM3FBIO_CLEARCMAP   0x504D3301 /* 'PM3\001' */
+-/* common use IOCTL */
+-#define PM3FBIO_RESETCHIP   0x504D33FF /* 'PM3\377' */
++#define PM3FBIO_RESETCHIP		0x504D33FF /* 'PM3\377' */
+ 
+ /* ***************************************** */
+ /* ***** pm3fb useful define and macro ***** */
+ /* ***************************************** */
+ 
+ /* fifo size in chip */
+-#define PM3_FIFO_SIZE 120
+-
+-/* max size of options */
+-#define PM3_OPTIONS_SIZE 256
+-
+-/* max size of font name */
+-#define PM3_FONTNAME_SIZE 40
++#define PM3_FIFO_SIZE						120
++#define PM3_REGS_SIZE						0x10000
++#define PM3_MAX_PIXCLOCK					300000
+ 
+ #endif /* PM3FB_H */
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >>  http://get.splunk.com/
---part46c690693df67
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---part46c690693df67--

@@ -1,30 +1,28 @@
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [PATCH] s3c2443: fix section mismatch in
- irq.c file (3rd ver)
-Date: Sat, 18 Aug 2007 23:44:20 +0200
-Message-ID: <20070818234420.2a9a29ce.krzysztof.h1@wp.pl>
-References: <20070818234012.b61e0aac.krzysztof.h1@wp.pl>
+Subject: [PATCH]: pm2fb: hardware cursor support for the
+	Permedia2
+Date: Sun, 19 Aug 2007 14:12:46 +0200
+Message-ID: <20070819141246.4478077d.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IMWFP-0004uO-77 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 18 Aug 2007 14:54:19 -0700
+	id 1IMjZg-0004Zk-KJ for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 19 Aug 2007 05:08:09 -0700
 Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IMW1D-0008Kp-Go
+	(Exim 4.44) id 1IMjZR-0002Vh-0B
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 18 Aug 2007 14:39:40 -0700
+	Sun, 19 Aug 2007 05:08:08 -0700
 Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
 	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
 	by smtp.wp.pl (WP-SMTPD) with SMTP
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	18 Aug 2007 23:39:36 +0200
-In-Reply-To: <20070818234012.b61e0aac.krzysztof.h1@wp.pl>
+	19 Aug 2007 14:07:48 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,24 +33,181 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 18 Aug 2007 23:40:12 +0200
-Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> This patch removes section mismatches related to irq functions.
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
+This patch adds hardware cursor support for the 
+Permedia 2 chip.
 
-I am sorry. I posted it to the wrong list.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Please ignore it (or delete).
+---
 
-Regards,
-Krzysztof
+diff -urp linux-2.6.23.ref/drivers/video/pm2fb.c linux-2.6.23/drivers/video/pm2fb.c
+--- linux-2.6.23.ref/drivers/video/pm2fb.c	2007-08-19 08:42:17.000000000 +0200
++++ linux-2.6.23/drivers/video/pm2fb.c	2007-08-19 14:10:23.915091363 +0200
+@@ -1257,18 +1257,8 @@ static const u8 cursor_bits_lookup[16] =
+ static int pm2vfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	struct pm2fb_par *par = info->par;
+-	u8 mode;
+-
+-	if (!hwcursor)
+-		return -EINVAL;	/* just to force soft_cursor() call */
+-
+-	/* Too large of a cursor or wrong bpp :-( */
+-	if (cursor->image.width > 64 ||
+-	    cursor->image.height > 64 ||
+-	    cursor->image.depth > 1)
+-		return -EINVAL;
++	u8 mode = PM2F_CURSORMODE_TYPE_X;
+ 
+-	mode = PM2F_CURSORMODE_TYPE_X;
+ 	if (cursor->enable)
+ 		mode |= PM2F_CURSORMODE_CURSOR_ENABLE;
+ 
+@@ -1369,11 +1359,122 @@ static int pm2vfb_cursor(struct fb_info 
+ static int pm2fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	struct pm2fb_par *par = info->par;
++	u8 mode;
++
++	if (!hwcursor)
++		return -EINVAL;	/* just to force soft_cursor() call */
++
++	/* Too large of a cursor or wrong bpp :-( */
++	if (cursor->image.width > 64 ||
++	    cursor->image.height > 64 ||
++	    cursor->image.depth > 1)
++		return -EINVAL;
+ 
+ 	if (par->type == PM2_TYPE_PERMEDIA2V)
+ 		return pm2vfb_cursor(info, cursor);
+ 
+-	return -ENXIO;
++	mode = 0;
++	if (cursor->enable)
++		 mode = 0x43;
++
++	pm2_RDAC_WR(par, PM2I_RD_CURSOR_CONTROL, mode);
++
++	/*
++	 * If the cursor is not be changed this means either we want the
++	 * current cursor state (if enable is set) or we want to query what
++	 * we can do with the cursor (if enable is not set)
++	 */
++	if (!cursor->set)
++		return 0;
++
++	if (cursor->set & FB_CUR_SETPOS) {
++		int x, y;
++
++		x = cursor->image.dx + 63;
++		y = cursor->image.dy + 63;
++		WAIT_FIFO(par, 4);
++		pm2_WR(par, PM2R_RD_CURSOR_X_LSB, x & 0xff);
++		pm2_WR(par, PM2R_RD_CURSOR_X_MSB, (x >> 8) & 0x7);
++		pm2_WR(par, PM2R_RD_CURSOR_Y_LSB, y & 0xff);
++		pm2_WR(par, PM2R_RD_CURSOR_Y_MSB, (y >> 8) & 0x7);
++	}
++
++	if (cursor->set & FB_CUR_SETCMAP) {
++		u32 fg_idx = cursor->image.fg_color;
++		u32 bg_idx = cursor->image.bg_color;
++
++		WAIT_FIFO(par, 7);
++		pm2_WR(par, PM2R_RD_CURSOR_COLOR_ADDRESS, 1);
++		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
++			info->cmap.red[bg_idx] >> 8);
++		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
++			info->cmap.green[bg_idx] >> 8);
++		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
++			info->cmap.blue[bg_idx] >> 8);
++
++		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
++			info->cmap.red[fg_idx] >> 8);
++		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
++			info->cmap.green[fg_idx] >> 8);
++		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
++			info->cmap.blue[fg_idx] >> 8);
++	}
++
++	if (cursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
++		u8 *bitmap = (u8 *)cursor->image.data;
++		u8 *mask = (u8 *)cursor->mask;
++		int i;
++
++		WAIT_FIFO(par, 1);
++		pm2_WR(par, PM2R_RD_PALETTE_WRITE_ADDRESS, 0);
++
++		for (i = 0; i < cursor->image.height; i++) {
++			int j = (cursor->image.width + 7) >> 3;
++			int k = 8 - j;
++
++			WAIT_FIFO(par, 8);
++			for (; j > 0; j--) {
++				u8 data = *bitmap ^ *mask;
++
++				if (cursor->rop == ROP_COPY)
++					data = *mask & *bitmap;
++				/* bitmap data */
++				pm2_WR(par, PM2R_RD_CURSOR_DATA, data);
++				bitmap++;
++				mask++;
++			}
++			for (; k > 0; k--)
++				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
++		}
++		for (; i < 64; i++) {
++			int j = 8;
++			WAIT_FIFO(par, 8);
++			while (j-- > 0)
++				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
++		}
++
++		mask = (u8 *)cursor->mask;
++		for (i = 0; i < cursor->image.height; i++) {
++			int j = (cursor->image.width + 7) >> 3;
++			int k = 8 - j;
++
++			WAIT_FIFO(par, 8);
++			for (; j > 0; j--) {
++				/* mask */
++				pm2_WR(par, PM2R_RD_CURSOR_DATA, *mask);
++				mask++;
++			}
++			for (; k > 0; k--)
++				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
++		}
++		for (; i < 64; i++) {
++			int j = 8;
++			WAIT_FIFO(par, 8);
++			while (j-- > 0)
++				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
++		}
++	}
++	return 0;
+ }
+ 
+ /* ------------ Hardware Independent Functions ------------ */
+--- linux-2.6.23.ref/include/video/permedia2.h	2007-08-19 08:42:17.000000000 +0200
++++ linux-2.6.23/include/video/permedia2.h	2007-08-19 09:15:18.532392855 +0200
+@@ -58,7 +58,14 @@
+ #define PM2R_RD_PALETTE_DATA				0x4008
+ #define PM2R_RD_PIXEL_MASK				0x4010
+ #define PM2R_RD_PALETTE_READ_ADDRESS			0x4018
++#define PM2R_RD_CURSOR_COLOR_ADDRESS		        0x4020
++#define PM2R_RD_CURSOR_COLOR_DATA		        0x4028
+ #define PM2R_RD_INDEXED_DATA				0x4050
++#define PM2R_RD_CURSOR_DATA				0x4058
++#define PM2R_RD_CURSOR_X_LSB				0x4060
++#define PM2R_RD_CURSOR_X_MSB				0x4068
++#define PM2R_RD_CURSOR_Y_LSB				0x4070
++#define PM2R_RD_CURSOR_Y_MSB				0x4078
+ 
+ #define PM2R_START_X_DOM				0x8000
+ #define PM2R_D_X_DOM					0x8008
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

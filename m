@@ -1,8 +1,7 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH]: pm2fb: hardware cursor support for the
-	Permedia2
-Date: Sun, 19 Aug 2007 14:12:46 +0200
-Message-ID: <20070819141246.4478077d.krzysztof.h1@wp.pl>
+From: Ilya Yanok <ilya.yanok@gmail.com>
+Subject: [PATCH] vfb: make virtual framebuffer mmapable
+Date: Mon, 20 Aug 2007 21:44:09 +0000 (UTC)
+Message-ID: <loom.20070820T234228-300@post.gmane.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,18 +10,24 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IMjZg-0004Zk-KJ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 19 Aug 2007 05:08:09 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
+	id 1INFIG-0006MU-PZ for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 20 Aug 2007 15:00:16 -0700
+Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IMjZR-0002Vh-0B
+	(Exim 4.44) id 1INFIG-0002RQ-58
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 19 Aug 2007 05:08:08 -0700
-Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
-	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
+	Mon, 20 Aug 2007 15:00:16 -0700
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1INFI2-0006Ht-6m for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 21 Aug 2007 00:00:02 +0200
+Received: from pppoe-48.48.110.89-adsl.spbnit.ru ([89.110.48.48])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 21 Aug 2007 00:00:02 +0200
+Received: from ilya.yanok by pppoe-48.48.110.89-adsl.spbnit.ru with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	19 Aug 2007 14:07:48 +0200
+	Tue, 21 Aug 2007 00:00:02 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,181 +38,147 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-This patch adds hardware cursor support for the 
-Permedia 2 chip.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
+Changed things:
+1. vmalloc()/vfree() replaced with rvmalloc()/rvfree() (taken from
+drivers/media/video/se401.c)
+2. mmap method implemented (mostly taken from drivers/media/video/se401.c)
+3. smem_start and smem_len fields of struct fb_fix_screeninfo initialized.
+(smem_start initialized with virtual address, don't know if it is really
+bad...)
 ---
+ drivers/video/vfb.c |   78 ++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 74 insertions(+), 4 deletions(-)
 
-diff -urp linux-2.6.23.ref/drivers/video/pm2fb.c linux-2.6.23/drivers/video/pm2fb.c
---- linux-2.6.23.ref/drivers/video/pm2fb.c	2007-08-19 08:42:17.000000000 +0200
-+++ linux-2.6.23/drivers/video/pm2fb.c	2007-08-19 14:10:23.915091363 +0200
-@@ -1257,18 +1257,8 @@ static const u8 cursor_bits_lookup[16] =
- static int pm2vfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
- 	struct pm2fb_par *par = info->par;
--	u8 mode;
--
--	if (!hwcursor)
--		return -EINVAL;	/* just to force soft_cursor() call */
--
--	/* Too large of a cursor or wrong bpp :-( */
--	if (cursor->image.width > 64 ||
--	    cursor->image.height > 64 ||
--	    cursor->image.depth > 1)
--		return -EINVAL;
-+	u8 mode = PM2F_CURSORMODE_TYPE_X;
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index 64ee78c..7d8cdcb 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -38,6 +38,48 @@ static void *videomemory;
+ static u_long videomemorysize = VIDEOMEMSIZE;
+ module_param(videomemorysize, ulong, 0);
  
--	mode = PM2F_CURSORMODE_TYPE_X;
- 	if (cursor->enable)
- 		mode |= PM2F_CURSORMODE_CURSOR_ENABLE;
- 
-@@ -1369,11 +1359,122 @@ static int pm2vfb_cursor(struct fb_info 
- static int pm2fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++/**********************************************************************
++ *
++ * Memory management
++ *
++ **********************************************************************/
++static void *rvmalloc(unsigned long size)
++{
++	void *mem;
++	unsigned long adr;
++
++	size = PAGE_ALIGN(size);
++	mem = vmalloc_32(size);
++	if (!mem)
++		return NULL;
++
++	memset(mem, 0, size); /* Clear the ram out, no junk to the user */
++	adr = (unsigned long) mem;
++	while (size > 0) {
++		SetPageReserved(vmalloc_to_page((void *)adr));
++		adr += PAGE_SIZE;
++		size -= PAGE_SIZE;
++	}
++
++	return mem;
++}
++
++static void rvfree(void *mem, unsigned long size)
++{
++	unsigned long adr;
++
++	if (!mem)
++		return;
++
++	adr = (unsigned long) mem;
++	while ((long) size > 0) {
++		ClearPageReserved(vmalloc_to_page((void *)adr));
++		adr += PAGE_SIZE;
++		size -= PAGE_SIZE;
++	}
++	vfree(mem);
++}
++
+ static struct fb_var_screeninfo vfb_default __initdata = {
+ 	.xres =		640,
+ 	.yres =		480,
+@@ -372,7 +414,33 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
+ static int vfb_mmap(struct fb_info *info,
+ 		    struct vm_area_struct *vma)
  {
- 	struct pm2fb_par *par = info->par;
-+	u8 mode;
+-	return -EINVAL;
++	unsigned long start = vma->vm_start;
++	unsigned long size = vma->vm_end - vma->vm_start;
++	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
++	unsigned long page, pos;
 +
-+	if (!hwcursor)
-+		return -EINVAL;	/* just to force soft_cursor() call */
-+
-+	/* Too large of a cursor or wrong bpp :-( */
-+	if (cursor->image.width > 64 ||
-+	    cursor->image.height > 64 ||
-+	    cursor->image.depth > 1)
++	if (offset + size > info->fix.smem_len) {
 +		return -EINVAL;
- 
- 	if (par->type == PM2_TYPE_PERMEDIA2V)
- 		return pm2vfb_cursor(info, cursor);
- 
--	return -ENXIO;
-+	mode = 0;
-+	if (cursor->enable)
-+		 mode = 0x43;
-+
-+	pm2_RDAC_WR(par, PM2I_RD_CURSOR_CONTROL, mode);
-+
-+	/*
-+	 * If the cursor is not be changed this means either we want the
-+	 * current cursor state (if enable is set) or we want to query what
-+	 * we can do with the cursor (if enable is not set)
-+	 */
-+	if (!cursor->set)
-+		return 0;
-+
-+	if (cursor->set & FB_CUR_SETPOS) {
-+		int x, y;
-+
-+		x = cursor->image.dx + 63;
-+		y = cursor->image.dy + 63;
-+		WAIT_FIFO(par, 4);
-+		pm2_WR(par, PM2R_RD_CURSOR_X_LSB, x & 0xff);
-+		pm2_WR(par, PM2R_RD_CURSOR_X_MSB, (x >> 8) & 0x7);
-+		pm2_WR(par, PM2R_RD_CURSOR_Y_LSB, y & 0xff);
-+		pm2_WR(par, PM2R_RD_CURSOR_Y_MSB, (y >> 8) & 0x7);
 +	}
 +
-+	if (cursor->set & FB_CUR_SETCMAP) {
-+		u32 fg_idx = cursor->image.fg_color;
-+		u32 bg_idx = cursor->image.bg_color;
++	pos = (unsigned long)info->fix.smem_start + offset;
 +
-+		WAIT_FIFO(par, 7);
-+		pm2_WR(par, PM2R_RD_CURSOR_COLOR_ADDRESS, 1);
-+		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
-+			info->cmap.red[bg_idx] >> 8);
-+		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
-+			info->cmap.green[bg_idx] >> 8);
-+		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
-+			info->cmap.blue[bg_idx] >> 8);
-+
-+		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
-+			info->cmap.red[fg_idx] >> 8);
-+		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
-+			info->cmap.green[fg_idx] >> 8);
-+		pm2_WR(par, PM2R_RD_CURSOR_COLOR_DATA,
-+			info->cmap.blue[fg_idx] >> 8);
++	while (size > 0) {
++		page = vmalloc_to_pfn((void *)pos);
++		if (remap_pfn_range(vma, start, page, PAGE_SIZE, PAGE_SHARED)) {
++			return -EAGAIN;
++		}
++		start += PAGE_SIZE;
++		pos += PAGE_SIZE;
++		if (size > PAGE_SIZE)
++			size -= PAGE_SIZE;
++		else
++			size = 0;
 +	}
 +
-+	if (cursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETIMAGE)) {
-+		u8 *bitmap = (u8 *)cursor->image.data;
-+		u8 *mask = (u8 *)cursor->mask;
-+		int i;
-+
-+		WAIT_FIFO(par, 1);
-+		pm2_WR(par, PM2R_RD_PALETTE_WRITE_ADDRESS, 0);
-+
-+		for (i = 0; i < cursor->image.height; i++) {
-+			int j = (cursor->image.width + 7) >> 3;
-+			int k = 8 - j;
-+
-+			WAIT_FIFO(par, 8);
-+			for (; j > 0; j--) {
-+				u8 data = *bitmap ^ *mask;
-+
-+				if (cursor->rop == ROP_COPY)
-+					data = *mask & *bitmap;
-+				/* bitmap data */
-+				pm2_WR(par, PM2R_RD_CURSOR_DATA, data);
-+				bitmap++;
-+				mask++;
-+			}
-+			for (; k > 0; k--)
-+				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
-+		}
-+		for (; i < 64; i++) {
-+			int j = 8;
-+			WAIT_FIFO(par, 8);
-+			while (j-- > 0)
-+				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
-+		}
-+
-+		mask = (u8 *)cursor->mask;
-+		for (i = 0; i < cursor->image.height; i++) {
-+			int j = (cursor->image.width + 7) >> 3;
-+			int k = 8 - j;
-+
-+			WAIT_FIFO(par, 8);
-+			for (; j > 0; j--) {
-+				/* mask */
-+				pm2_WR(par, PM2R_RD_CURSOR_DATA, *mask);
-+				mask++;
-+			}
-+			for (; k > 0; k--)
-+				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
-+		}
-+		for (; i < 64; i++) {
-+			int j = 8;
-+			WAIT_FIFO(par, 8);
-+			while (j-- > 0)
-+				pm2_WR(par, PM2R_RD_CURSOR_DATA, 0);
-+		}
-+	}
++	vma->vm_flags |= VM_RESERVED;	/* avoid to swap out this VMA */
 +	return 0;
++
  }
  
- /* ------------ Hardware Independent Functions ------------ */
---- linux-2.6.23.ref/include/video/permedia2.h	2007-08-19 08:42:17.000000000 +0200
-+++ linux-2.6.23/include/video/permedia2.h	2007-08-19 09:15:18.532392855 +0200
-@@ -58,7 +58,14 @@
- #define PM2R_RD_PALETTE_DATA				0x4008
- #define PM2R_RD_PIXEL_MASK				0x4010
- #define PM2R_RD_PALETTE_READ_ADDRESS			0x4018
-+#define PM2R_RD_CURSOR_COLOR_ADDRESS		        0x4020
-+#define PM2R_RD_CURSOR_COLOR_DATA		        0x4028
- #define PM2R_RD_INDEXED_DATA				0x4050
-+#define PM2R_RD_CURSOR_DATA				0x4058
-+#define PM2R_RD_CURSOR_X_LSB				0x4060
-+#define PM2R_RD_CURSOR_X_MSB				0x4068
-+#define PM2R_RD_CURSOR_Y_LSB				0x4070
-+#define PM2R_RD_CURSOR_Y_MSB				0x4078
+ #ifndef MODULE
+@@ -407,7 +475,7 @@ static int __init vfb_probe(struct platform_device *dev)
+ 	/*
+ 	 * For real video cards we use ioremap.
+ 	 */
+-	if (!(videomemory = vmalloc(videomemorysize)))
++	if (!(videomemory = rvmalloc(videomemorysize)))
+ 		return retval;
  
- #define PM2R_START_X_DOM				0x8000
- #define PM2R_D_X_DOM					0x8008
+ 	/*
+@@ -430,6 +498,8 @@ static int __init vfb_probe(struct platform_device *dev)
+ 
+ 	if (!retval || (retval == 4))
+ 		info->var = vfb_default;
++	vfb_fix.smem_start = videomemory;
++	vfb_fix.smem_len = videomemorysize;
+ 	info->fix = vfb_fix;
+ 	info->pseudo_palette = info->par;
+ 	info->par = NULL;
+@@ -453,7 +523,7 @@ err2:
+ err1:
+ 	framebuffer_release(info);
+ err:
+-	vfree(videomemory);
++	rvfree(videomemory, videomemorysize);
+ 	return retval;
+ }
+ 
+@@ -463,7 +533,7 @@ static int vfb_remove(struct platform_device *dev)
+ 
+ 	if (info) {
+ 		unregister_framebuffer(info);
+-		vfree(videomemory);
++		rvfree(videomemory, videomemorysize);
+ 		framebuffer_release(info);
+ 	}
+ 	return 0;
+-- 
+1.5.2.4
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

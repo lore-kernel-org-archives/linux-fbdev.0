@@ -1,8 +1,7 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: [FB] Convert struct font_desc to use ISO C
-	initializers.
-Date: Wed, 22 Aug 2007 15:04:48 +0100
-Message-ID: <20070822140448.GA16004@linux-mips.org>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: [PATCH] pm2fb: panning and hardware cursor fixes
+Date: Fri, 24 Aug 2007 22:26:13 +0200
+Message-ID: <20070824222613.40e46213.krzysztof.h1@wp.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,18 +10,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1INqqA-0000ib-G4 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 22 Aug 2007 07:05:46 -0700
-Received: from ftp.linux-mips.org ([194.74.144.162])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1INqq8-0008M6-IP
+	id 1IOfeJ-0006C9-UW for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 24 Aug 2007 13:20:56 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IOfeH-0004Hg-An
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 22 Aug 2007 07:05:46 -0700
-Received: from localhost.localdomain ([127.0.0.1]:60066 "EHLO
-	dl5rb.ham-radio-op.net") by ftp.linux-mips.org with ESMTP
-	id S20022742AbXHVOEu (ORCPT
-	<rfc822;linux-fbdev-devel@lists.sourceforge.net>);
-	Wed, 22 Aug 2007 15:04:50 +0100
-Content-Disposition: inline
+	Fri, 24 Aug 2007 13:20:55 -0700
+Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
+	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	24 Aug 2007 22:20:44 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,247 +32,121 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+This patch:
+- disallows setting of virtual height above 2048 as it does
+  not work for accelerated copyarea and imageblit
+- fixes blinking of pm2v cursor by pushing cursor outside 
+  the display (x=2047)
+- fixes hardware cursor position on Permedia 2 chips with
+  panning enabled
+- enables hardware cursor by default
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
-Akpm's patch "newport_con warning fix" got me to look at the console
-drivers again and one thing that I noticed was that none of the fonts
-was using ISO initializers for it's fonts.
 
-diff --git a/drivers/video/console/font_10x18.c b/drivers/video/console/font_10x18.c
-index e6aa0ea..6be72bb 100644
---- a/drivers/video/console/font_10x18.c
-+++ b/drivers/video/console/font_10x18.c
-@@ -5133,14 +5133,14 @@ static const unsigned char fontdata_10x18[FONTDATAMAX] = {
+The panning and virtual height above 2047 produces artifacts on the screen.
+It is the same problem as was solved in the tdfxfb driver.
+
+
+diff -urp linux-2.6.23.ref/drivers/video/pm2fb.c linux-2.6.23/drivers/video/pm2fb.c
+--- linux-2.6.23.ref/drivers/video/pm2fb.c	2007-08-24 17:32:03.511731927 +0200
++++ linux-2.6.23/drivers/video/pm2fb.c	2007-08-24 22:12:54.680754027 +0200
+@@ -66,7 +66,7 @@
+ /*
+  * Driver data
+  */
+-static int hwcursor;
++static int hwcursor = 1;
+ static char *mode __devinitdata;
  
+ /*
+@@ -587,6 +587,11 @@ static int pm2fb_check_var(struct fb_var
+ 		return -EINVAL;
+ 	}
  
- const struct font_desc font_10x18 = {
--	FONT10x18_IDX,
--	"10x18",
--	10,
--	18,
--	fontdata_10x18,
-+	.idx	= FONT10x18_IDX,
-+	.name	= "10x18",
-+	.width	= 10,
-+	.height	= 18,
-+	.data	= fontdata_10x18,
- #ifdef __sparc__
--	5
-+	.pref	= 5,
- #else
--	-1
-+	.pref	= -1,
- #endif
- };
-diff --git a/drivers/video/console/font_6x11.c b/drivers/video/console/font_6x11.c
-index 89976cd..46e86e6 100644
---- a/drivers/video/console/font_6x11.c
-+++ b/drivers/video/console/font_6x11.c
-@@ -3342,10 +3342,11 @@ static const unsigned char fontdata_6x11[FONTDATAMAX] = {
++	/* permedia cannot blit over 2048 */
++	if (var->yres_virtual > 2047) {
++		var->yres_virtual = 2047;
++	}
++
+ 	if (var->xoffset) {
+ 		DPRINTK("xoffset not supported\n");
+ 		return -EINVAL;
+@@ -1258,12 +1263,21 @@ static int pm2vfb_cursor(struct fb_info 
+ {
+ 	struct pm2fb_par *par = info->par;
+ 	u8 mode = PM2F_CURSORMODE_TYPE_X;
++	int x = cursor->image.dx - info->var.xoffset;
++	int y = cursor->image.dy - info->var.yoffset;
  
+ 	if (cursor->enable)
+ 		mode |= PM2F_CURSORMODE_CURSOR_ENABLE;
  
- const struct font_desc font_vga_6x11 = {
--	VGA6x11_IDX,
--	"ProFont6x11",
--	6,
--	11,
--	fontdata_6x11,
--	-2000	/* Try avoiding this font if possible unless on MAC */
-+	.idx	= VGA6x11_IDX,
-+	.name	= "ProFont6x11",
-+	.width	= 6,
-+	.height	= 11,
-+	.data	= fontdata_6x11,
-+	/* Try avoiding this font if possible unless on MAC */
-+	.pref	= -2000,
- };
-diff --git a/drivers/video/console/font_7x14.c b/drivers/video/console/font_7x14.c
-index bbf1166..3b7dbf9 100644
---- a/drivers/video/console/font_7x14.c
-+++ b/drivers/video/console/font_7x14.c
-@@ -4109,10 +4109,10 @@ static const unsigned char fontdata_7x14[FONTDATAMAX] = {
+ 	pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_MODE, mode);
  
++	if (!cursor->enable)
++		x = 2047;	/* push it outside display */
++	pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_LOW, x & 0xff);
++	pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_HIGH, (x >> 8) & 0xf);
++	pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_LOW, y & 0xff);
++	pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_HIGH, (y >> 8) & 0xf);
++
+ 	/*
+ 	 * If the cursor is not be changed this means either we want the
+ 	 * current cursor state (if enable is set) or we want to query what
+@@ -1272,16 +1286,6 @@ static int pm2vfb_cursor(struct fb_info 
+ 	if (!cursor->set)
+ 		return 0;
  
- const struct font_desc font_7x14 = {
--	FONT7x14_IDX,
--	"7x14",
--	7,
--	14,
--	fontdata_7x14,
--	0
-+	.idx	= FONT7x14_IDX,
-+	.name	= "7x14",
-+	.width	= 7,
-+	.height	= 14,
-+	.data	= fontdata_7x14,
-+	.pref	= 0,
- };
-diff --git a/drivers/video/console/font_8x16.c b/drivers/video/console/font_8x16.c
-index 74fe86f..a9f35b4 100644
---- a/drivers/video/console/font_8x16.c
-+++ b/drivers/video/console/font_8x16.c
-@@ -4622,10 +4622,10 @@ static const unsigned char fontdata_8x16[FONTDATAMAX] = {
+-	if (cursor->set & FB_CUR_SETPOS) {
+-		int x = cursor->image.dx - info->var.xoffset;
+-		int y = cursor->image.dy - info->var.yoffset;
+-
+-		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_LOW, x & 0xff);
+-		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_HIGH, (x >> 8) & 0xf);
+-		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_LOW, y & 0xff);
+-		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_Y_HIGH, (y >> 8) & 0xf);
+-	}
+-
+ 	if (cursor->set & FB_CUR_SETHOT) {
+ 		pm2v_RDAC_WR(par, PM2VI_RD_CURSOR_X_HOT,
+ 			     cursor->hot.x & 0x3f);
+@@ -1373,7 +1377,7 @@ static int pm2fb_cursor(struct fb_info *
+ 	if (par->type == PM2_TYPE_PERMEDIA2V)
+ 		return pm2vfb_cursor(info, cursor);
  
+-	mode = 0;
++	mode = 0x40;
+ 	if (cursor->enable)
+ 		 mode = 0x43;
  
- const struct font_desc font_vga_8x16 = {
--	VGA8x16_IDX,
--	"VGA8x16",
--	8,
--	16,
--	fontdata_8x16,
--	0
-+	.idx	= VGA8x16_IDX,
-+	.name	= "VGA8x16",
-+	.width	= 8,
-+	.height	= 16,
-+	.data	= fontdata_8x16,
-+	.pref	= 0,
- };
-diff --git a/drivers/video/console/font_8x8.c b/drivers/video/console/font_8x8.c
-index 26199f8..9f56efe 100644
---- a/drivers/video/console/font_8x8.c
-+++ b/drivers/video/console/font_8x8.c
-@@ -2574,10 +2574,10 @@ static const unsigned char fontdata_8x8[FONTDATAMAX] = {
+@@ -1388,10 +1392,9 @@ static int pm2fb_cursor(struct fb_info *
+ 		return 0;
  
+ 	if (cursor->set & FB_CUR_SETPOS) {
+-		int x, y;
++		int x = cursor->image.dx - info->var.xoffset + 63;
++		int y = cursor->image.dy - info->var.yoffset + 63;
  
- const struct font_desc font_vga_8x8 = {
--	VGA8x8_IDX,
--	"VGA8x8",
--	8,
--	8,
--	fontdata_8x8,
--	0
-+	.idx	= VGA8x8_IDX,
-+	.name	= "VGA8x8",
-+	.width	= 8,
-+	.height	= 8,
-+	.data	= fontdata_8x8,
-+	.pref	= 0,
- };
-diff --git a/drivers/video/console/font_acorn_8x8.c b/drivers/video/console/font_acorn_8x8.c
-index 40f3d4e..639e31a 100644
---- a/drivers/video/console/font_acorn_8x8.c
-+++ b/drivers/video/console/font_acorn_8x8.c
-@@ -262,14 +262,14 @@ static const unsigned char acorndata_8x8[] = {
- };
- 
- const struct font_desc font_acorn_8x8 = {
--	ACORN8x8_IDX,
--	"Acorn8x8",
--	8,
--	8,
--	acorndata_8x8,
-+	.idx	= ACORN8x8_IDX,
-+	.name	= "Acorn8x8",
-+	.width	= 8,
-+	.height	= 8,
-+	.data	= acorndata_8x8,
- #ifdef CONFIG_ARCH_ACORN
--	20
-+	.pref	= 20,
- #else
--	0
-+	.pref	= 0,
- #endif
- };
-diff --git a/drivers/video/console/font_mini_4x6.c b/drivers/video/console/font_mini_4x6.c
-index d818234..a19a7f3 100644
---- a/drivers/video/console/font_mini_4x6.c
-+++ b/drivers/video/console/font_mini_4x6.c
-@@ -2148,11 +2148,11 @@ static const unsigned char fontdata_mini_4x6[FONTDATAMAX] = {
- };
- 
- const struct font_desc font_mini_4x6 = {
--	MINI4x6_IDX,
--	"MINI4x6",
--	4,
--	6,
--	fontdata_mini_4x6,
--	3
-+	.idx	= MINI4x6_IDX,
-+	.name	= "MINI4x6",
-+	.width	= 4,
-+	.height	= 6,
-+	.data	= fontdata_mini_4x6,
-+	.pref	= 3,
- };
- 
-diff --git a/drivers/video/console/font_pearl_8x8.c b/drivers/video/console/font_pearl_8x8.c
-index e646c88..dc6ad53 100644
---- a/drivers/video/console/font_pearl_8x8.c
-+++ b/drivers/video/console/font_pearl_8x8.c
-@@ -2578,10 +2578,10 @@ static const unsigned char fontdata_pearl8x8[FONTDATAMAX] = {
- };
- 
- const struct font_desc font_pearl_8x8 = {
--	PEARL8x8_IDX,
--	"PEARL8x8",
--	8,
--	8,
--	fontdata_pearl8x8,
--	2
-+	.idx	= PEARL8x8_IDX,
-+	.name	= "PEARL8x8",
-+	.width	= 8,
-+	.height	= 8,
-+	.data	= fontdata_pearl8x8,
-+	.pref	= 2,
- };
-diff --git a/drivers/video/console/font_sun12x22.c b/drivers/video/console/font_sun12x22.c
-index ab5eb93..d364385 100644
---- a/drivers/video/console/font_sun12x22.c
-+++ b/drivers/video/console/font_sun12x22.c
-@@ -6152,14 +6152,14 @@ static const unsigned char fontdata_sun12x22[FONTDATAMAX] = {
- 
- 
- const struct font_desc font_sun_12x22 = {
--	SUN12x22_IDX,
--	"SUN12x22",
--	12,
--	22,
--	fontdata_sun12x22,
-+	.idx	= SUN12x22_IDX,
-+	.name	= "SUN12x22",
-+	.width	= 12,
-+	.height	= 22,
-+	.data	= fontdata_sun12x22,
- #ifdef __sparc__
--	5
-+	.pref	= 5,
- #else
--	-1
-+	.pref	= -1,
- #endif
- };
-diff --git a/drivers/video/console/font_sun8x16.c b/drivers/video/console/font_sun8x16.c
-index 41f910f..5abf290 100644
---- a/drivers/video/console/font_sun8x16.c
-+++ b/drivers/video/console/font_sun8x16.c
-@@ -262,14 +262,14 @@ static const unsigned char fontdata_sun8x16[FONTDATAMAX] = {
- };
- 
- const struct font_desc font_sun_8x16 = {
--	SUN8x16_IDX,
--	"SUN8x16",
--	8,
--	16,
--	fontdata_sun8x16,
-+	.idx	= SUN8x16_IDX,
-+	.name	= "SUN8x16",
-+	.width	= 8,
-+	.height	= 16,
-+	.data	= fontdata_sun8x16,
- #ifdef __sparc__
--	10
-+	.pref	= 10,
- #else
--	-1
-+	.pref	= -1,
- #endif
- };
+-		x = cursor->image.dx + 63;
+-		y = cursor->image.dy + 63;
+ 		WAIT_FIFO(par, 4);
+ 		pm2_WR(par, PM2R_RD_CURSOR_X_LSB, x & 0xff);
+ 		pm2_WR(par, PM2R_RD_CURSOR_X_MSB, (x >> 8) & 0x7);
+@@ -1838,7 +1841,7 @@ module_param(noaccel, bool, 0);
+ MODULE_PARM_DESC(noaccel, "Disable acceleration");
+ module_param(hwcursor, int, 0644);
+ MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
+-			"(1=enable, 0=disable, default=0)");
++			"(1=enable, 0=disable, default=1)");
+ #ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "Disable MTRR support (0 or 1=disabled) (default=0)");
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

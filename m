@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 13/20] cirrusfb: remove fields from
-	cirrusfb_info
-Date: Sun, 26 Aug 2007 22:06:24 +0800
-Message-ID: <46D188E0.4070300@gmail.com>
+Subject: [PATCH 14/20] cirrusfb: code improvements
+Date: Sun, 26 Aug 2007 22:07:23 +0800
+Message-ID: <46D1891B.8070806@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IPJ2G-0005Hr-To for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 07:24:17 -0700
+	id 1IPJ2M-0005I6-3z for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 26 Aug 2007 07:24:22 -0700
 Received: from nz-out-0506.google.com ([64.233.162.237])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPJ2G-00088d-5Q
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPJ2L-00088d-Df
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 07:24:16 -0700
+	Sun, 26 Aug 2007 07:24:22 -0700
 Received: by nz-out-0506.google.com with SMTP id f1so2918589nzc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 26 Aug 2007 07:24:15 -0700 (PDT)
+	Sun, 26 Aug 2007 07:24:21 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,485 +34,433 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch removes unused or redundant fields
-from cirrusfb_info structure.
+This patch does some "short-range" code improvements like
+merging identical switch clauses, replacing conditional
+branches with calculation of values, merging only once-used
+functions into place they are called from.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/cirrusfb.c |  149 +++++++++++++++++++++-------------------------
- 1 files changed, 68 insertions(+), 81 deletions(-)
+ drivers/video/cirrusfb.c |  216 +++++++++-------------------------------------
+ 1 files changed, 41 insertions(+), 175 deletions(-)
 
 diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 3f18452..87ba565 100644
+index 87ba565..7ae14e9 100644
 --- a/drivers/video/cirrusfb.c
 +++ b/drivers/video/cirrusfb.c
-@@ -369,23 +369,14 @@ #endif		/* CIRRUSFB_DEBUG */
+@@ -647,31 +647,17 @@ static int cirrusfb_check_var(struct fb_
+ 	  { -1, -1 } };
  
- /* info about board */
- struct cirrusfb_info {
--	struct fb_info *info;
--
--	u8 __iomem *fbmem;
- 	u8 __iomem *regbase;
--	u8 __iomem *mem;
--	unsigned long size;
- 	enum cirrus_board btype;
- 	unsigned char SFR;	/* Shadow of special function register */
- 
--	unsigned long fbmem_phys;
--	unsigned long fbregs_phys;
--
- 	struct cirrusfb_regs currentmode;
- 	int blank_mode;
- 
- 	u32	pseudo_palette[16];
--	struct { u8 red, green, blue, pad; } palette[256];
- 
- #ifdef CONFIG_ZORRO
- 	struct zorro_dev *zdev;
-@@ -393,7 +384,7 @@ #endif
- #ifdef CONFIG_PCI
- 	struct pci_dev *pdev;
- #endif
--	void (*unmap)(struct cirrusfb_info *cinfo);
-+	void (*unmap)(struct fb_info *info);
- };
- 
- static unsigned cirrusfb_def_mode = 1;
-@@ -536,7 +527,7 @@ static int cirrusfb_decode_var(const str
- 				struct cirrusfb_regs *regs,
- 				const struct fb_info *info);
- /*--- Internal routines ----------------------------------------------------*/
--static void init_vgachip(struct cirrusfb_info *cinfo);
-+static void init_vgachip(struct fb_info *info);
- static void switch_monitor(struct cirrusfb_info *cinfo, int on);
- static void WGen(const struct cirrusfb_info *cinfo,
- 		 int regnum, unsigned char val);
-@@ -645,7 +636,6 @@ static long cirrusfb_get_mclk(long freq,
- static int cirrusfb_check_var(struct fb_var_screeninfo *var,
- 			      struct fb_info *info)
- {
--	struct cirrusfb_info *cinfo = info->par;
- 	int nom, den;		/* translyting from pixels->bytes */
- 	int yres, i;
- 	static struct { int xres, yres; } modes[] =
-@@ -690,7 +680,7 @@ static int cirrusfb_check_var(struct fb_
- 		return -EINVAL;
- 	}
- 
--	if (var->xres * nom / den * var->yres > cinfo->size) {
-+	if (var->xres * nom / den * var->yres > info->screen_size) {
+ 	switch (var->bits_per_pixel) {
+-	case 0 ... 1:
+-		var->bits_per_pixel = 1;
++	case 1:
+ 		nom = 4;
+ 		den = 8;
+ 		break;		/* 8 pixel per byte, only 1/4th of mem usable */
+-	case 2 ... 8:
+-		var->bits_per_pixel = 8;
+-		nom = 1;
++	case 8:
++	case 16:
++	case 24:
++	case 32:
++		nom = var->bits_per_pixel / 8;
+ 		den = 1;
+ 		break;		/* 1 pixel == 1 byte */
+-	case 9 ... 16:
+-		var->bits_per_pixel = 16;
+-		nom = 2;
+-		den = 1;
+-		break;		/* 2 bytes per pixel */
+-	case 17 ... 24:
+-		var->bits_per_pixel = 24;
+-		nom = 3;
+-		den = 1;
+-		break;		/* 3 bytes per pixel */
+-	case 25 ... 32:
+-		var->bits_per_pixel = 32;
+-		nom = 4;
+-		den = 1;
+-		break;		/* 4 bytes per pixel */
+ 	default:
  		printk(KERN_ERR "cirrusfb: mode %dx%dx%d rejected..."
- 			"resolution too high to fit into video memory!\n",
- 			var->xres, var->yres, var->bits_per_pixel);
-@@ -704,7 +694,8 @@ static int cirrusfb_check_var(struct fb_
- 		printk(KERN_INFO
- 		     "cirrusfb: using maximum available virtual resolution\n");
- 		for (i = 0; modes[i].xres != -1; i++) {
--			if (modes[i].xres * nom / den * modes[i].yres < cinfo->size / 2)
-+			int size = modes[i].xres * nom / den * modes[i].yres;
-+			if (size < info->screen_size / 2)
- 				break;
- 		}
- 		if (modes[i].xres == -1) {
-@@ -1018,7 +1009,7 @@ static int cirrusfb_set_par_foo(struct f
- 	       var->xres, var->yres, var->bits_per_pixel);
- 	DPRINTK("pixclock: %d\n", var->pixclock);
+ 			"color depth not supported.\n",
+@@ -732,19 +718,15 @@ static int cirrusfb_check_var(struct fb_
+ 	case 1:
+ 		var->red.offset = 0;
+ 		var->red.length = 1;
+-		var->green.offset = 0;
+-		var->green.length = 1;
+-		var->blue.offset = 0;
+-		var->blue.length = 1;
++		var->green = var->red;
++		var->blue = var->red;
+ 		break;
  
--	init_vgachip(cinfo);
-+	init_vgachip(info);
+ 	case 8:
+ 		var->red.offset = 0;
+ 		var->red.length = 6;
+-		var->green.offset = 0;
+-		var->green.length = 6;
+-		var->blue.offset = 0;
+-		var->blue.length = 6;
++		var->green = var->red;
++		var->blue = var->red;
+ 		break;
  
- 	err = cirrusfb_decode_var(var, &regs, info);
- 	if (err) {
-@@ -1686,10 +1677,6 @@ static int cirrusfb_setcolreg(unsigned r
+ 	case 16:
+@@ -763,20 +745,6 @@ static int cirrusfb_check_var(struct fb_
+ 		break;
+ 
+ 	case 24:
+-		if (isPReP) {
+-			var->red.offset = 8;
+-			var->green.offset = 16;
+-			var->blue.offset = 24;
+-		} else {
+-			var->red.offset = 16;
+-			var->green.offset = 8;
+-			var->blue.offset = 0;
+-		}
+-		var->red.length = 8;
+-		var->green.length = 8;
+-		var->blue.length = 8;
+-		break;
+-
+ 	case 32:
+ 		if (isPReP) {
+ 			var->red.offset = 8;
+@@ -828,7 +796,7 @@ static int cirrusfb_decode_var(const str
+ {
+ 	long freq;
+ 	long maxclock;
+-	int maxclockidx = 0;
++	int maxclockidx = var->bits_per_pixel >> 3;
+ 	struct cirrusfb_info *cinfo = info->par;
+ 	int xres, hfront, hsync, hback;
+ 	int yres, vfront, vsync, vback;
+@@ -837,31 +805,18 @@ static int cirrusfb_decode_var(const str
+ 	case 1:
+ 		regs->line_length = var->xres_virtual / 8;
+ 		regs->visual = FB_VISUAL_MONO10;
+-		maxclockidx = 0;
+ 		break;
+ 
+ 	case 8:
+ 		regs->line_length = var->xres_virtual;
+ 		regs->visual = FB_VISUAL_PSEUDOCOLOR;
+-		maxclockidx = 1;
+ 		break;
+ 
+ 	case 16:
+-		regs->line_length = var->xres_virtual * 2;
+-		regs->visual = FB_VISUAL_DIRECTCOLOR;
+-		maxclockidx = 2;
+-		break;
+-
+ 	case 24:
+-		regs->line_length = var->xres_virtual * 3;
+-		regs->visual = FB_VISUAL_DIRECTCOLOR;
+-		maxclockidx = 3;
+-		break;
+-
+ 	case 32:
+-		regs->line_length = var->xres_virtual * 4;
++		regs->line_length = var->xres_virtual * maxclockidx;
+ 		regs->visual = FB_VISUAL_DIRECTCOLOR;
+-		maxclockidx = 4;
+ 		break;
+ 
+ 	default:
+@@ -874,7 +829,7 @@ static int cirrusfb_decode_var(const str
+ 	regs->type = FB_TYPE_PACKED_PIXELS;
+ 
+ 	/* convert from ps to kHz */
+-	freq = 1000000000 / var->pixclock;
++	freq = PICOS2KHZ(var->pixclock);
+ 
+ 	DPRINTK("desired pixclock: %ld kHz\n", freq);
+ 
+@@ -1213,7 +1168,8 @@ static int cirrusfb_set_par_foo(struct f
+ 			break;
+ 
+ 		case BT_PICCOLO:
+-			DPRINTK("(for Piccolo)\n");
++		case BT_SPECTRUM:
++			DPRINTK("(for Piccolo/Spectrum)\n");
+ 			/* ### ueberall 0x22? */
+ 			/* ##vorher 1c MCLK select */
+ 			vga_wseq(regbase, CL_SEQR1F, 0x22);
+@@ -1229,15 +1185,6 @@ static int cirrusfb_set_par_foo(struct f
+ 			vga_wseq(regbase, CL_SEQRF, 0xd0);
+ 			break;
+ 
+-		case BT_SPECTRUM:
+-			DPRINTK("(for Spectrum)\n");
+-			/* ### ueberall 0x22? */
+-			/* ##vorher 1c MCLK select */
+-			vga_wseq(regbase, CL_SEQR1F, 0x22);
+-			/* evtl d0? avoid FIFO underruns..? */
+-			vga_wseq(regbase, CL_SEQRF, 0xb0);
+-			break;
+-
+ 		case BT_PICASSO4:
+ 		case BT_ALPINE:
+ 		case BT_GD5480:
+@@ -1306,19 +1253,7 @@ static int cirrusfb_set_par_foo(struct f
+ 			break;
+ 
+ 		case BT_PICCOLO:
+-			/* ### vorher 1c MCLK select */
+-			vga_wseq(regbase, CL_SEQR1F, 0x22);
+-			/* Fast Page-Mode writes */
+-			vga_wseq(regbase, CL_SEQRF, 0xb0);
+-			break;
+-
+ 		case BT_PICASSO:
+-			/* ### vorher 1c MCLK select */
+-			vga_wseq(regbase, CL_SEQR1F, 0x22);
+-			/* Fast Page-Mode writes */
+-			vga_wseq(regbase, CL_SEQRF, 0xb0);
+-			break;
+-
+ 		case BT_SPECTRUM:
+ 			/* ### vorher 1c MCLK select */
+ 			vga_wseq(regbase, CL_SEQR1F, 0x22);
+@@ -1385,6 +1320,7 @@ #endif
+ 			break;
+ 
+ 		case BT_PICCOLO:
++		case BT_SPECTRUM:
+ 			vga_wseq(regbase, CL_SEQR7, 0x87);
+ 			/* Fast Page-Mode writes */
+ 			vga_wseq(regbase, CL_SEQRF, 0xb0);
+@@ -1400,14 +1336,6 @@ #endif
+ 			vga_wseq(regbase, CL_SEQR1F, 0x22);
+ 			break;
+ 
+-		case BT_SPECTRUM:
+-			vga_wseq(regbase, CL_SEQR7, 0x87);
+-			/* Fast Page-Mode writes */
+-			vga_wseq(regbase, CL_SEQRF, 0xb0);
+-			/* MCLK select */
+-			vga_wseq(regbase, CL_SEQR1F, 0x22);
+-			break;
+-
+ 		case BT_PICASSO4:
+ 			vga_wseq(regbase, CL_SEQR7, 0x27);
+ /*			vga_wseq(regbase, CL_SEQR1F, 0x1c);  */
+@@ -1473,6 +1401,7 @@ #endif
+ 			break;
+ 
+ 		case BT_PICCOLO:
++		case BT_SPECTRUM:
+ 			vga_wseq(regbase, CL_SEQR7, 0x85);
+ 			/* Fast Page-Mode writes */
+ 			vga_wseq(regbase, CL_SEQRF, 0xb0);
+@@ -1488,14 +1417,6 @@ #endif
+ 			vga_wseq(regbase, CL_SEQR1F, 0x22);
+ 			break;
+ 
+-		case BT_SPECTRUM:
+-			vga_wseq(regbase, CL_SEQR7, 0x85);
+-			/* Fast Page-Mode writes */
+-			vga_wseq(regbase, CL_SEQRF, 0xb0);
+-			/* MCLK select */
+-			vga_wseq(regbase, CL_SEQR1F, 0x22);
+-			break;
+-
+ 		case BT_PICASSO4:
+ 			vga_wseq(regbase, CL_SEQR7, 0x25);
+ /*			vga_wseq(regbase, CL_SEQR1F, 0x1c);  */
+@@ -1662,18 +1583,7 @@ static int cirrusfb_setcolreg(unsigned r
+ 		    (green << info->var.green.offset) |
+ 		    (blue << info->var.blue.offset);
+ 
+-		switch (info->var.bits_per_pixel) {
+-		case 8:
+-			cinfo->pseudo_palette[regno] = v;
+-			break;
+-		case 16:
+-			cinfo->pseudo_palette[regno] = v;
+-			break;
+-		case 24:
+-		case 32:
+-			cinfo->pseudo_palette[regno] = v;
+-			break;
+-		}
++		cinfo->pseudo_palette[regno] = v;
  		return 0;
  	}
  
--	cinfo->palette[regno].red = red;
--	cinfo->palette[regno].green = green;
--	cinfo->palette[regno].blue = blue;
--
- 	if (info->var.bits_per_pixel == 8)
- 		WClut(cinfo, regno, red >> 10, green >> 10, blue >> 10);
+@@ -1743,12 +1653,8 @@ static int cirrusfb_pan_display(struct f
+ 	vga_wcrt(cinfo->regbase, CL_CRT1B, tmp2);
  
-@@ -1848,8 +1835,9 @@ static int cirrusfb_blank(int blank_mode
- /****************************************************************************/
- /**** BEGIN Internal Routines ***********************************************/
+ 	/* construct bit 19 of screen start address */
+-	if (cirrusfb_board_info[cinfo->btype].scrn_start_bit19) {
+-		tmp2 = 0;
+-		if (base & 0x80000)
+-			tmp2 = 0x80;
+-		vga_wcrt(cinfo->regbase, CL_CRT1D, tmp2);
+-	}
++	if (cirrusfb_board_info[cinfo->btype].scrn_start_bit19)
++		vga_wcrt(cinfo->regbase, CL_CRT1D, (base >> 12) & 0x80);
  
--static void init_vgachip(struct cirrusfb_info *cinfo)
-+static void init_vgachip(struct fb_info *info)
- {
-+	struct cirrusfb_info *cinfo = info->par;
- 	const struct cirrusfb_board_info_rec *bi;
- 
- 	DPRINTK("ENTER\n");
-@@ -1903,7 +1891,8 @@ static void init_vgachip(struct cirrusfb
- 		break;
- 	}
- 
--	assert(cinfo->size > 0); /* make sure RAM size set by this point */
-+	/* make sure RAM size set by this point */
-+	assert(info->screen_size > 0);
- 
- 	/* the P4 is not fully initialized here; I rely on it having been */
- 	/* inited under AmigaOS already, which seems to work just fine    */
-@@ -2089,7 +2078,7 @@ static void init_vgachip(struct cirrusfb
- 	WHDR(cinfo, 0);	/* Hidden DAC register: - */
- 
- 	printk(KERN_DEBUG "cirrusfb: This board has %ld bytes of DRAM memory\n",
--		cinfo->size);
-+		info->screen_size);
- 	DPRINTK("EXIT\n");
- 	return;
- }
-@@ -2150,24 +2139,25 @@ #endif /* CONFIG_ZORRO */
+ 	/* write pixel panning value to AR33; this does not quite work in 8bpp
+ 	 *
+@@ -2139,38 +2045,15 @@ #endif /* CONFIG_ZORRO */
  /* Linux 2.6-style  accelerated functions */
  /******************************************/
  
--static void cirrusfb_prim_fillrect(struct cirrusfb_info *cinfo,
-+static void cirrusfb_prim_fillrect(struct fb_info *info,
- 				   const struct fb_fillrect *region)
- {
-+	struct cirrusfb_info *cinfo = info->par;
- 	int m; /* bytes per pixel */
--	u32 color = (cinfo->info->fix.visual == FB_VISUAL_TRUECOLOR) ?
-+	u32 color = (info->fix.visual == FB_VISUAL_TRUECOLOR) ?
- 		cinfo->pseudo_palette[region->color] : region->color;
- 
--	if (cinfo->info->var.bits_per_pixel == 1) {
-+	if (info->var.bits_per_pixel == 1) {
- 		cirrusfb_RectFill(cinfo->regbase,
--				  cinfo->info->var.bits_per_pixel,
-+				  info->var.bits_per_pixel,
- 				  region->dx / 8, region->dy,
- 				  region->width / 8, region->height,
- 				  color,
- 				  cinfo->currentmode.line_length);
- 	} else {
--		m = (cinfo->info->var.bits_per_pixel + 7) / 8;
-+		m = (info->var.bits_per_pixel + 7) / 8;
- 		cirrusfb_RectFill(cinfo->regbase,
--				  cinfo->info->var.bits_per_pixel,
-+				  info->var.bits_per_pixel,
- 				  region->dx * m, region->dy,
- 				  region->width * m, region->height,
- 				  color,
-@@ -2179,7 +2169,6 @@ static void cirrusfb_prim_fillrect(struc
+-static void cirrusfb_prim_fillrect(struct fb_info *info,
+-				   const struct fb_fillrect *region)
+-{
+-	struct cirrusfb_info *cinfo = info->par;
+-	int m; /* bytes per pixel */
+-	u32 color = (info->fix.visual == FB_VISUAL_TRUECOLOR) ?
+-		cinfo->pseudo_palette[region->color] : region->color;
+-
+-	if (info->var.bits_per_pixel == 1) {
+-		cirrusfb_RectFill(cinfo->regbase,
+-				  info->var.bits_per_pixel,
+-				  region->dx / 8, region->dy,
+-				  region->width / 8, region->height,
+-				  color,
+-				  cinfo->currentmode.line_length);
+-	} else {
+-		m = (info->var.bits_per_pixel + 7) / 8;
+-		cirrusfb_RectFill(cinfo->regbase,
+-				  info->var.bits_per_pixel,
+-				  region->dx * m, region->dy,
+-				  region->width * m, region->height,
+-				  color,
+-				  cinfo->currentmode.line_length);
+-	}
+-	return;
+-}
+-
  static void cirrusfb_fillrect(struct fb_info *info,
  			      const struct fb_fillrect *region)
  {
--	struct cirrusfb_info *cinfo = info->par;
  	struct fb_fillrect modded;
  	int vxres, vyres;
++	struct cirrusfb_info *cinfo = info->par;
++	int m = info->var.bits_per_pixel;
++	u32 color = (info->fix.visual == FB_VISUAL_TRUECOLOR) ?
++		cinfo->pseudo_palette[region->color] : region->color;
  
-@@ -2204,22 +2193,24 @@ static void cirrusfb_fillrect(struct fb_
+ 	if (info->state != FBINFO_STATE_RUNNING)
+ 		return;
+@@ -2193,30 +2076,12 @@ static void cirrusfb_fillrect(struct fb_
  	if (modded.dy + modded.height > vyres)
  		modded.height = vyres - modded.dy;
  
--	cirrusfb_prim_fillrect(cinfo, &modded);
-+	cirrusfb_prim_fillrect(info, &modded);
+-	cirrusfb_prim_fillrect(info, &modded);
+-}
+-
+-static void cirrusfb_prim_copyarea(struct fb_info *info,
+-				   const struct fb_copyarea *area)
+-{
+-	struct cirrusfb_info *cinfo = info->par;
+-	int m; /* bytes per pixel */
+-
+-	if (info->var.bits_per_pixel == 1) {
+-		cirrusfb_BitBLT(cinfo->regbase, info->var.bits_per_pixel,
+-				area->sx / 8, area->sy,
+-				area->dx / 8, area->dy,
+-				area->width / 8, area->height,
+-				cinfo->currentmode.line_length);
+-	} else {
+-		m = (info->var.bits_per_pixel + 7) / 8;
+-		cirrusfb_BitBLT(cinfo->regbase, info->var.bits_per_pixel,
+-				area->sx * m, area->sy,
+-				area->dx * m, area->dy,
+-				area->width * m, area->height,
+-				cinfo->currentmode.line_length);
+-	}
+-	return;
++	cirrusfb_RectFill(cinfo->regbase,
++			  info->var.bits_per_pixel,
++			  (region->dx * m) / 8, region->dy,
++			  (region->width * m) / 8, region->height,
++			  color,
++			  cinfo->currentmode.line_length);
  }
  
--static void cirrusfb_prim_copyarea(struct cirrusfb_info *cinfo,
-+static void cirrusfb_prim_copyarea(struct fb_info *info,
- 				   const struct fb_copyarea *area)
- {
-+	struct cirrusfb_info *cinfo = info->par;
- 	int m; /* bytes per pixel */
--	if (cinfo->info->var.bits_per_pixel == 1) {
--		cirrusfb_BitBLT(cinfo->regbase, cinfo->info->var.bits_per_pixel,
-+
-+	if (info->var.bits_per_pixel == 1) {
-+		cirrusfb_BitBLT(cinfo->regbase, info->var.bits_per_pixel,
- 				area->sx / 8, area->sy,
- 				area->dx / 8, area->dy,
- 				area->width / 8, area->height,
- 				cinfo->currentmode.line_length);
- 	} else {
--		m = (cinfo->info->var.bits_per_pixel + 7) / 8;
--		cirrusfb_BitBLT(cinfo->regbase, cinfo->info->var.bits_per_pixel,
-+		m = (info->var.bits_per_pixel + 7) / 8;
-+		cirrusfb_BitBLT(cinfo->regbase, info->var.bits_per_pixel,
- 				area->sx * m, area->sy,
- 				area->dx * m, area->dy,
- 				area->width * m, area->height,
-@@ -2231,9 +2222,9 @@ static void cirrusfb_prim_copyarea(struc
  static void cirrusfb_copyarea(struct fb_info *info,
- 			      const struct fb_copyarea *area)
+@@ -2224,13 +2089,8 @@ static void cirrusfb_copyarea(struct fb_
  {
--	struct cirrusfb_info *cinfo = info->par;
  	struct fb_copyarea modded;
  	u32 vxres, vyres;
-+
- 	modded.sx = area->sx;
- 	modded.sy = area->sy;
- 	modded.dx = area->dx;
-@@ -2265,7 +2256,7 @@ static void cirrusfb_copyarea(struct fb_
+-
+-	modded.sx = area->sx;
+-	modded.sy = area->sy;
+-	modded.dx = area->dx;
+-	modded.dy = area->dy;
+-	modded.width  = area->width;
+-	modded.height = area->height;
++	struct cirrusfb_info *cinfo = info->par;
++	int m = info->var.bits_per_pixel;
+ 
+ 	if (info->state != FBINFO_STATE_RUNNING)
+ 		return;
+@@ -2241,6 +2101,7 @@ static void cirrusfb_copyarea(struct fb_
+ 
+ 	vxres = info->var.xres_virtual;
+ 	vyres = info->var.yres_virtual;
++	memcpy(&modded, area, sizeof(struct fb_copyarea));
+ 
+ 	if (!modded.width || !modded.height ||
+ 	   modded.sx >= vxres || modded.sy >= vyres ||
+@@ -2256,7 +2117,12 @@ static void cirrusfb_copyarea(struct fb_
  	if (modded.dy + modded.height > vyres)
  		modded.height = vyres - modded.dy;
  
--	cirrusfb_prim_copyarea(cinfo, &modded);
-+	cirrusfb_prim_copyarea(info, &modded);
+-	cirrusfb_prim_copyarea(info, &modded);
++	cirrusfb_BitBLT(cinfo->regbase, info->var.bits_per_pixel,
++			(area->sx * m) / 8, area->sy,
++			(area->dx * m) / 8, area->dy,
++			(area->width * m) / 8, area->height,
++			cinfo->currentmode.line_length);
++
  }
  
  static void cirrusfb_imageblit(struct fb_info *info,
-@@ -2363,18 +2354,19 @@ static void get_pci_addrs(const struct p
- 	DPRINTK("EXIT\n");
- }
- 
--static void cirrusfb_pci_unmap(struct cirrusfb_info *cinfo)
-+static void cirrusfb_pci_unmap(struct fb_info *info)
- {
-+	struct cirrusfb_info *cinfo = info->par;
- 	struct pci_dev *pdev = cinfo->pdev;
- 
--	iounmap(cinfo->fbmem);
-+	iounmap(info->screen_base);
- #if 0 /* if system didn't claim this region, we would... */
- 	release_mem_region(0xA0000, 65535);
- #endif
+@@ -2366,7 +2232,6 @@ #endif
  	if (release_io_ports)
  		release_region(0x3C0, 32);
  	pci_release_regions(pdev);
--	framebuffer_release(cinfo->info);
-+	framebuffer_release(info);
+-	framebuffer_release(info);
  }
  #endif /* CONFIG_PCI */
  
-@@ -2386,21 +2378,20 @@ static void __devexit cirrusfb_zorro_unm
- 	if (cinfo->btype == BT_PICASSO4) {
- 		cinfo->regbase -= 0x600000;
- 		iounmap((void *)cinfo->regbase);
--		iounmap((void *)cinfo->fbmem);
-+		iounmap(info->screen_base);
- 	} else {
+@@ -2383,7 +2248,6 @@ static void __devexit cirrusfb_zorro_unm
  		if (zorro_resource_start(cinfo->zdev) > 0x01000000)
--			iounmap((void *)cinfo->fbmem);
-+			iounmap(info->screen_base);
+ 			iounmap(info->screen_base);
  	}
- 	framebuffer_release(cinfo->info);
+-	framebuffer_release(cinfo->info);
  }
  #endif /* CONFIG_ZORRO */
  
--static int cirrusfb_set_fbinfo(struct cirrusfb_info *cinfo)
-+static int cirrusfb_set_fbinfo(struct fb_info *info)
- {
--	struct fb_info *info = cinfo->info;
-+	struct cirrusfb_info *cinfo = info->par;
- 	struct fb_var_screeninfo *var = &info->var;
- 
--	info->par = cinfo;
- 	info->pseudo_palette = cinfo->pseudo_palette;
- 	info->flags = FBINFO_DEFAULT
- 		    | FBINFO_HWACCEL_XPAN
-@@ -2410,7 +2401,6 @@ static int cirrusfb_set_fbinfo(struct ci
- 	if (noaccel)
- 		info->flags |= FBINFO_HWACCEL_DISABLED;
- 	info->fbops = &cirrusfb_ops;
--	info->screen_base = cinfo->fbmem;
- 	if (cinfo->btype == BT_GD5480) {
- 		if (var->bits_per_pixel == 16)
- 			info->screen_base += 1 * MB_;
-@@ -2424,9 +2414,9 @@ static int cirrusfb_set_fbinfo(struct ci
- 
- 	/* monochrome: only 1 memory plane */
- 	/* 8 bit and above: Use whole memory area */
--	info->fix.smem_start = cinfo->fbmem_phys;
--	info->fix.smem_len   =
--		(var->bits_per_pixel == 1) ? cinfo->size / 4 : cinfo->size;
-+	info->fix.smem_len   = info->screen_size;
-+	if (var->bits_per_pixel == 1)
-+		info->fix.smem_len /= 4;
- 	info->fix.type       = cinfo->currentmode.type;
- 	info->fix.type_aux   = 0;
- 	info->fix.visual     = cinfo->currentmode.visual;
-@@ -2436,7 +2426,6 @@ static int cirrusfb_set_fbinfo(struct ci
- 	info->fix.line_length = cinfo->currentmode.line_length;
- 
- 	/* FIXME: map region at 0xB8000 if available, fill in here */
--	info->fix.mmio_start = cinfo->fbregs_phys;
- 	info->fix.mmio_len   = 0;
- 	info->fix.accel = FB_ACCEL_NONE;
- 
-@@ -2445,9 +2434,9 @@ static int cirrusfb_set_fbinfo(struct ci
- 	return 0;
- }
- 
--static int cirrusfb_register(struct cirrusfb_info *cinfo)
-+static int cirrusfb_register(struct fb_info *info)
- {
--	struct fb_info *info;
-+	struct cirrusfb_info *cinfo = info->par;
- 	int err;
- 	enum cirrus_board btype;
- 
-@@ -2456,13 +2445,12 @@ static int cirrusfb_register(struct cirr
- 	printk(KERN_INFO "cirrusfb: Driver for Cirrus Logic based "
- 		"graphic boards, v" CIRRUSFB_VERSION "\n");
- 
--	info = cinfo->info;
- 	btype = cinfo->btype;
- 
- 	/* sanity checks */
- 	assert(btype != BT_NONE);
- 
--	DPRINTK("cirrusfb: (RAM start set to: 0x%p)\n", cinfo->fbmem);
-+	DPRINTK("cirrusfb: (RAM start set to: 0x%p)\n", info->screen_base);
- 
- 	/* Make pretend we've set the var so our structures are in a "good" */
- 	/* state, even though we haven't written the mode to the hw yet...  */
-@@ -2477,7 +2465,7 @@ static int cirrusfb_register(struct cirr
- 	}
- 
- 	/* set all the vital stuff */
--	cirrusfb_set_fbinfo(cinfo);
-+	cirrusfb_set_fbinfo(info);
- 
- 	err = register_framebuffer(info);
- 	if (err < 0) {
-@@ -2492,7 +2480,7 @@ static int cirrusfb_register(struct cirr
- err_dealloc_cmap:
+@@ -2481,6 +2345,7 @@ err_dealloc_cmap:
  	fb_dealloc_cmap(&info->cmap);
  err_unmap_cirrusfb:
--	cinfo->unmap(cinfo);
-+	cinfo->unmap(info);
+ 	cinfo->unmap(info);
++	framebuffer_release(info);
  	return err;
  }
  
-@@ -2506,7 +2494,7 @@ static void __devexit cirrusfb_cleanup(s
- 	unregister_framebuffer(info);
+@@ -2495,6 +2360,7 @@ static void __devexit cirrusfb_cleanup(s
  	fb_dealloc_cmap(&info->cmap);
  	printk("Framebuffer unregistered\n");
--	cinfo->unmap(cinfo);
-+	cinfo->unmap(info);
+ 	cinfo->unmap(info);
++	framebuffer_release(info);
  
  	DPRINTK("EXIT\n");
  }
-@@ -2535,7 +2523,6 @@ static int cirrusfb_pci_register(struct 
- 	}
- 
- 	cinfo = info->par;
--	cinfo->info = info;
- 	cinfo->pdev = pdev;
- 	cinfo->btype = btype = (enum cirrus_board) ent->driver_data;
- 
-@@ -2546,19 +2533,19 @@ static int cirrusfb_pci_register(struct 
- 	if (isPReP) {
- 		pci_write_config_dword(pdev, PCI_BASE_ADDRESS_0, 0x00000000);
- #ifdef CONFIG_PPC_PREP
--		get_prep_addrs(&board_addr, &cinfo->fbregs_phys);
-+		get_prep_addrs(&board_addr, &info->fix.mmio_start);
- #endif
- 	/* PReP dies if we ioremap the IO registers, but it works w/out... */
--		cinfo->regbase = (char __iomem *) cinfo->fbregs_phys;
-+		cinfo->regbase = (char __iomem *) info->fix.mmio_start;
- 	} else {
- 		DPRINTK("Attempt to get PCI info for Cirrus Graphics Card\n");
--		get_pci_addrs(pdev, &board_addr, &cinfo->fbregs_phys);
-+		get_pci_addrs(pdev, &board_addr, &info->fix.mmio_start);
- 		/* FIXME: this forces VGA.  alternatives? */
- 		cinfo->regbase = NULL;
- 	}
- 
- 	DPRINTK("Board address: 0x%lx, register address: 0x%lx\n",
--		board_addr, cinfo->fbregs_phys);
-+		board_addr, info->fix.mmio_start);
- 
- 	board_size = (btype == BT_GD5480) ?
- 		32 * MB_ : cirrusfb_get_memsize(cinfo->regbase);
-@@ -2582,24 +2569,24 @@ #endif
- 	if (request_region(0x3C0, 32, "cirrusfb"))
- 		release_io_ports = 1;
- 
--	cinfo->fbmem = ioremap(board_addr, board_size);
--	if (!cinfo->fbmem) {
-+	info->screen_base = ioremap(board_addr, board_size);
-+	if (!info->screen_base) {
- 		ret = -EIO;
- 		goto err_release_legacy;
- 	}
- 
--	cinfo->fbmem_phys = board_addr;
--	cinfo->size = board_size;
-+	info->fix.smem_start = board_addr;
-+	info->screen_size = board_size;
- 	cinfo->unmap = cirrusfb_pci_unmap;
- 
- 	printk(KERN_INFO " RAM (%lu kB) at 0xx%lx, ",
--		cinfo->size / KB_, board_addr);
-+		info->screen_size / KB_, board_addr);
- 	printk(KERN_INFO "Cirrus Logic chipset on PCI bus\n");
- 	pci_set_drvdata(pdev, info);
- 
--	ret = cirrusfb_register(cinfo);
-+	ret = cirrusfb_register(info);
- 	if (ret)
--		iounmap(cinfo->fbmem);
-+		iounmap(info->screen_base);
- 	return ret;
- 
- err_release_legacy:
-@@ -2677,7 +2664,7 @@ static int cirrusfb_zorro_register(struc
- 	cinfo->zdev = z;
- 	board_addr = zorro_resource_start(z);
- 	board_size = zorro_resource_len(z);
--	cinfo->size = size;
-+	info->screen_size = size;
- 
- 	if (!zorro_request_device(z, "cirrusfb")) {
- 		printk(KERN_ERR "cirrusfb: cannot reserve region 0x%lx, "
-@@ -2705,27 +2692,27 @@ static int cirrusfb_zorro_register(struc
- 		DPRINTK("cirrusfb: Virtual address for board set to: $%p\n",
- 			cinfo->regbase);
- 		cinfo->regbase += 0x600000;
--		cinfo->fbregs_phys = board_addr + 0x600000;
-+		info->fix.mmio_start = board_addr + 0x600000;
- 
--		cinfo->fbmem_phys = board_addr + 16777216;
--		cinfo->fbmem = ioremap(cinfo->fbmem_phys, 16777216);
--		if (!cinfo->fbmem)
-+		info->fix.smem_start = board_addr + 16777216;
-+		info->screen_base = ioremap(info->fix.smem_start, 16777216);
-+		if (!info->screen_base)
- 			goto err_unmap_regbase;
- 	} else {
- 		printk(KERN_INFO " REG at $%lx\n",
- 			(unsigned long) z2->resource.start);
- 
--		cinfo->fbmem_phys = board_addr;
-+		info->fix.smem_start = board_addr;
- 		if (board_addr > 0x01000000)
--			cinfo->fbmem = ioremap(board_addr, board_size);
-+			info->screen_base = ioremap(board_addr, board_size);
- 		else
--			cinfo->fbmem = (caddr_t) ZTWO_VADDR(board_addr);
--		if (!cinfo->fbmem)
-+			info->screen_base = (caddr_t) ZTWO_VADDR(board_addr);
-+		if (!info->screen_base)
- 			goto err_release_region;
- 
- 		/* set address for REG area of board */
- 		cinfo->regbase = (caddr_t) ZTWO_VADDR(z2->resource.start);
--		cinfo->fbregs_phys = z2->resource.start;
-+		info->fix.mmio_start = z2->resource.start;
- 
- 		DPRINTK("cirrusfb: Virtual address for board set to: $%p\n",
- 			cinfo->regbase);
-@@ -2738,10 +2725,10 @@ static int cirrusfb_zorro_register(struc
- 	ret = cirrusfb_register(cinfo);
- 	if (ret) {
- 		if (btype == BT_PICASSO4) {
--			iounmap(cinfo->fbmem);
-+			iounmap(info->screen_base);
- 			iounmap(cinfo->regbase - 0x600000);
- 		} else if (board_addr > 0x01000000)
--			iounmap(cinfo->fbmem);
-+			iounmap(info->screen_base);
- 	}
- 	return ret;
- 
 
 
 -------------------------------------------------------------------------

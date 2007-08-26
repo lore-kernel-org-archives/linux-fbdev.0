@@ -1,8 +1,7 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] uvesafb: select connector in Kconfig
-Date: Sat, 25 Aug 2007 08:23:41 -0700
-Message-ID: <20070825082341.e939e38e.randy.dunlap@oracle.com>
-References: <20070825085931.GA9318@spock.one.pl>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] atyfb: Unshare pseudo_palette
+Date: Sun, 26 Aug 2007 10:21:29 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0708261018470.31149@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,14 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IOxV4-0005go-TU for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 25 Aug 2007 08:24:45 -0700
-Received: from rgminet01.oracle.com ([148.87.113.118])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IOxV3-0005Xh-As
+	id 1IPDNK-0002EY-NH for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 26 Aug 2007 01:21:39 -0700
+Received: from asia.telenet-ops.be ([195.130.137.74])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPDNI-0005VD-5a
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 25 Aug 2007 08:24:34 -0700
-In-Reply-To: <20070825085931.GA9318@spock.one.pl>
+	Sun, 26 Aug 2007 01:21:38 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,46 +26,61 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Cc: Michal Januszewski <spock@gentoo.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Ville Syrjala <syrjala@sci.fi>, "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 25 Aug 2007 10:59:31 +0200 Michal Januszewski wrote:
+atyfb: Move the pseudo palette into the card-specific atyfb_par, so it's
+no longer shared among multiple cards
 
-> Make uvesafb select connector instead of depending on it being already selected.
-> 
-> Signed-off-by: Michal Januszewski <spock@gentoo.org>
-> ---
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index f1cc899..e152eed 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -594,7 +594,8 @@ config FB_TGA
->  
->  config FB_UVESA
->  	tristate "Userspace VESA VGA graphics support"
-> -	depends on FB && CONNECTOR
-> +	depends on FB
-> +	select CONNECTOR
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-
-There are 2 problems with this.
-
-a.  CONNECTOR depends on NET, but select won't enable NET, so if
-NET is not enabled otherwise, CONNECTOR still won't build.
-This is a longstanding select/kconfig issue.
-
-b.  CONNECTOR depends on NET, so if select did follow the depends
-chain and enable NET, it would be enabling the networking subsystem,
-which is something that should not be done quietly.
-
-select should only be used for enabling small library-like code
-(if even then).  Avoid it whenever possible.
-
-
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Compile-tested (on ppc64) only
+
+ drivers/video/aty/atyfb.h      |    1 +
+ drivers/video/aty/atyfb_base.c |    4 +---
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+--- a/drivers/video/aty/atyfb.h
++++ b/drivers/video/aty/atyfb.h
+@@ -126,6 +126,7 @@ union aty_pll {
+      */
+ 
+ struct atyfb_par {
++	u32 pseudo_palette[16];
+ 	struct { u8 red, green, blue; } palette[256];
+ 	const struct aty_dac_ops *dac_ops;
+ 	const struct aty_pll_ops *pll_ops;
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -541,8 +541,6 @@ static char ram_off[] __devinitdata = "O
+ #endif /* CONFIG_FB_ATY_CT */
+ 
+ 
+-static u32 pseudo_palette[16];
+-
+ #ifdef CONFIG_FB_ATY_GX
+ static char *aty_gx_ram[8] __devinitdata = {
+ 	ram_dram, ram_vram, ram_vram, ram_dram,
+@@ -2577,7 +2575,7 @@ static int __devinit aty_init(struct fb_
+ #endif
+ 
+ 	info->fbops = &atyfb_ops;
+-	info->pseudo_palette = pseudo_palette;
++	info->pseudo_palette = par->pseudo_palette;
+ 	info->flags = FBINFO_DEFAULT           |
+ 	              FBINFO_HWACCEL_IMAGEBLIT |
+ 	              FBINFO_HWACCEL_FILLRECT  |
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

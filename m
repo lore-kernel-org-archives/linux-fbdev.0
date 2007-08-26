@@ -1,23 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] atyfb: force 29MHz xtal on G3
-	PowerBooks (fwd)
-Date: Sun, 26 Aug 2007 10:40:56 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0708261040370.18775@pademelon.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Michal Januszewski <spock@gentoo.org>
+Subject: Re: [PATCH] uvesafb: select connector in	Kconfig
+Date: Sun, 26 Aug 2007 11:35:44 +0200
+Message-ID: <20070826093544.GA4865@spock.one.pl>
+References: <20070825085931.GA9318@spock.one.pl>
+	<20070825082341.e939e38e.randy.dunlap@oracle.com>
+Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IPDgC-0004CL-Sw for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 01:41:09 -0700
-Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPDgA-00006o-FQ
+	id 1IPEXI-00010s-7X for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 26 Aug 2007 02:36:00 -0700
+Received: from 219.63.79.83.cust.bluewin.ch ([83.79.63.219] helo=spock.one.pl)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPEXG-0007vC-PJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 01:41:08 -0700
+	Sun, 26 Aug 2007 02:36:00 -0700
+Content-Disposition: inline
+In-Reply-To: <20070825082341.e939e38e.randy.dunlap@oracle.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,39 +30,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Olaf Hering <olaf@aepfle.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
----------- Forwarded message ----------
-Date: Sat, 25 Aug 2007 11:13:58 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] atyfb: force 29MHz xtal on G3 PowerBooks
+On Sat, Aug 25, 2007 at 08:23:41AM -0700, Randy Dunlap wrote:
 
+> There are 2 problems with this.
+> 
+> a.  CONNECTOR depends on NET, but select won't enable NET, so if
+> NET is not enabled otherwise, CONNECTOR still won't build.
+> This is a longstanding select/kconfig issue.
+> 
+> b.  CONNECTOR depends on NET, so if select did follow the depends
+> chain and enable NET, it would be enabling the networking subsystem,
+> which is something that should not be done quietly.
+> 
+> select should only be used for enabling small library-like code
+> (if even then).  Avoid it whenever possible.
 
-The atyfb does not work on my 233MHz PowerBook with Mach64 LP, when the
-kernel is booted from firmware. aty_ld_pll_ct() returns 0x22 and xtal
-remains at 14.31818. When booted from MacOS, aty_ld_pll_ct() returns 0x3c
-and xtal is changed to 29.498928.
-Google indicates that all 4 PowerBook models need the higher value.
+OK, thanks for pointing this out.  Let's keep the original dependency
+on CONNECTOR then.
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -2411,7 +2411,7 @@ static int __devinit aty_init(struct fb_
- 				diff1 = -diff1;
- 			if (diff2 < 0)
- 				diff2 = -diff2;
--			if (diff2 < diff1) {
-+			if (diff2 < diff1 || (M64_HAS(G3_PB_1024x768))) {
- 				par->ref_clk_per = 1000000000000ULL / 29498928;
- 				xtal = "29.498928";
- 			}
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Best regards,
+Michal
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

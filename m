@@ -1,25 +1,25 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: Re: [PATCH] uvesafb: select connector in	Kconfig
-Date: Sun, 26 Aug 2007 11:35:44 +0200
-Message-ID: <20070826093544.GA4865@spock.one.pl>
-References: <20070825085931.GA9318@spock.one.pl>
-	<20070825082341.e939e38e.randy.dunlap@oracle.com>
-Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 01/20] newportcon: Fix font dependency
+ for SGI Newport console driver
+Date: Sun, 26 Aug 2007 21:55:23 +0800
+Message-ID: <46D1864B.2040601@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IPEXI-00010s-7X for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 02:36:00 -0700
-Received: from 219.63.79.83.cust.bluewin.ch ([83.79.63.219] helo=spock.one.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPEXG-0007vC-PJ
+	id 1IPJ10-000553-Am for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 26 Aug 2007 07:22:58 -0700
+Received: from py-out-1112.google.com ([64.233.166.176])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPJ10-00011m-16
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 02:36:00 -0700
-Content-Disposition: inline
-In-Reply-To: <20070825082341.e939e38e.randy.dunlap@oracle.com>
+	Sun, 26 Aug 2007 07:22:58 -0700
+Received: by py-out-1112.google.com with SMTP id a25so368092pyi
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 26 Aug 2007 07:22:57 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,29 +30,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ralf Baechle <ralf@linux-mips.org>
 
-On Sat, Aug 25, 2007 at 08:23:41AM -0700, Randy Dunlap wrote:
+From: Ralf Baechle <ralf@linux-mips.org>
 
-> There are 2 problems with this.
-> 
-> a.  CONNECTOR depends on NET, but select won't enable NET, so if
-> NET is not enabled otherwise, CONNECTOR still won't build.
-> This is a longstanding select/kconfig issue.
-> 
-> b.  CONNECTOR depends on NET, so if select did follow the depends
-> chain and enable NET, it would be enabling the networking subsystem,
-> which is something that should not be done quietly.
-> 
-> select should only be used for enabling small library-like code
-> (if even then).  Avoid it whenever possible.
+We better select a font when the newport driver is a module or the user
+experience might suffer.
 
-OK, thanks for pointing this out.  Let's keep the original dependency
-on CONNECTOR then.
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
 
-Best regards,
-Michal
+ drivers/video/console/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 4964396..087c091 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -182,7 +182,7 @@ config FONT_8x8
+ 
+ config FONT_8x16
+ 	bool "VGA 8x16 font" if FONTS
+-	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE=y || STI_CONSOLE || USB_SISUSBVGA_CON 
++	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON
+ 	default y if !SPARC && !FONTS
+ 	help
+ 	  This is the "high resolution" font for the VGA frame buffer (the one
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

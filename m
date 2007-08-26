@@ -1,12 +1,12 @@
-From: Michal Januszewski <spock@gentoo.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH] fbdev: find mode with
 	highest	refresh rate in fb_find_mode()
-Date: Sun, 26 Aug 2007 21:09:13 +0200
-Message-ID: <20070826190913.GA24286@spock.one.pl>
+Date: Mon, 27 Aug 2007 06:49:33 +0800
+Message-ID: <1188168573.4806.5.camel@daplas>
 References: <20070718084102.GA22694@spock.one.pl>
 	<20070718143803.GA5787@localhost.localdomain>
-	<1184771895.4523.33.camel@daplas>
-Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+	<1184771895.4523.33.camel@daplas> <20070826190913.GA24286@spock.one.pl>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,14 +14,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IPNUK-0003eh-LA for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 12:09:33 -0700
-Received: from 15.61.79.83.cust.bluewin.ch ([83.79.61.15] helo=spock.one.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPNUJ-0003fJ-0S
+	id 1IPQw0-00088X-KP for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 26 Aug 2007 15:50:23 -0700
+Received: from qb-out-0506.google.com ([72.14.204.238])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPQw0-0006Uv-BQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 12:09:32 -0700
-Content-Disposition: inline
-In-Reply-To: <1184771895.4523.33.camel@daplas>
+	Sun, 26 Aug 2007 15:50:20 -0700
+Received: by qb-out-0506.google.com with SMTP id c8so1547287qbc
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 26 Aug 2007 15:50:19 -0700 (PDT)
+In-Reply-To: <20070826190913.GA24286@spock.one.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,38 +34,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
+To: spock@gentoo.org
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 11:18:15PM +0800, Antonino A. Daplas wrote:
-
-> > > Currently if the refresh rate is not specified fb_find_mode() returns
-> > > the first known video mode with the requested resoluion, which provides
-> > > no guarantees wrt the refresh rate.  Change this so that the mode with
-> > > the highest refresh rate is returned instead.
-> > 
-> > What refresh rate it sets when used on card or monitor without DDC?
->
-> Yes, I noted this also while reviewing patches.  fb_find_mode() is used
-> predominantly with the 'generic' modedb which contains modes that are
-> not specific to the card or monitor.  And fb_try_mode() is not a
-> guarantee that the returned refresh rate will be safe (we have a lot of
-> drivers that do not check the timings against the display capabilities).
+On Sun, 2007-08-26 at 21:09 +0200, Michal Januszewski wrote:
+> On Wed, Jul 18, 2007 at 11:18:15PM +0800, Antonino A. Daplas wrote:
 > 
-> It would be best that fb_find_mode() return the safest refresh rate
-> (60Hz) instead of the highest.
+> How about modifying it so that it looks for a mode with the highest
+> refresh rate if either a non-generic modedb is used or
+> info.monspecs.{vfmin,vfmax,hfmin,hfmax,dclkmax} are all non-zero,
+> and for a mode with refresh rate closest to 60 Hz otherwise?
 
-How about modifying it so that it looks for a mode with the highest
-refresh rate if either a non-generic modedb is used or
-info.monspecs.{vfmin,vfmax,hfmin,hfmax,dclkmax} are all non-zero,
-and for a mode with refresh rate closest to 60 Hz otherwise?
+I would opt for combining the two, return the highest refresh rate only
+if the modedb was built by the driver and with the mode checked against
+the display's operating limits.
 
-I'm sorry for the delayed reply.
+Tony
 
-Best regards.
--- 
-Michal Januszewski                              JID: spock@im.gentoo.org
-Gentoo Linux Developer                    http://people.gentoo.org/spock
 
 
 -------------------------------------------------------------------------

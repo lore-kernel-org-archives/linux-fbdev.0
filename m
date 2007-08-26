@@ -1,24 +1,27 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH] atyfb: remove dead code
-Date: Sun, 26 Aug 2007 18:36:18 +0300
-Message-ID: <20070826153618.GB6003@sci.fi>
-References: <20070826091237.GA17667@aepfle.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Michal Januszewski <spock@gentoo.org>
+Subject: Re: [PATCH] fbdev: find mode with
+	highest	refresh rate in fb_find_mode()
+Date: Sun, 26 Aug 2007 21:09:13 +0200
+Message-ID: <20070826190913.GA24286@spock.one.pl>
+References: <20070718084102.GA22694@spock.one.pl>
+	<20070718143803.GA5787@localhost.localdomain>
+	<1184771895.4523.33.camel@daplas>
+Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IPKA5-0006Lg-4U for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 08:36:25 -0700
-Received: from smtp4.pp.htv.fi ([213.243.153.38])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPKA3-00049G-KA
+	id 1IPNUK-0003eh-LA for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 26 Aug 2007 12:09:33 -0700
+Received: from 15.61.79.83.cust.bluewin.ch ([83.79.61.15] helo=spock.one.pl)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IPNUJ-0003fJ-0S
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Aug 2007 08:36:25 -0700
+	Sun, 26 Aug 2007 12:09:32 -0700
 Content-Disposition: inline
-In-Reply-To: <20070826091237.GA17667@aepfle.de>
+In-Reply-To: <1184771895.4523.33.camel@daplas>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,46 +32,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Olaf Hering <olaf@aepfle.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sun, Aug 26, 2007 at 11:12:37AM +0200, Olaf Hering wrote:
-> Remove dead code.
-> =
+On Wed, Jul 18, 2007 at 11:18:15PM +0800, Antonino A. Daplas wrote:
 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
-> =
+> > > Currently if the refresh rate is not specified fb_find_mode() returns
+> > > the first known video mode with the requested resoluion, which provides
+> > > no guarantees wrt the refresh rate.  Change this so that the mode with
+> > > the highest refresh rate is returned instead.
+> > 
+> > What refresh rate it sets when used on card or monitor without DDC?
+>
+> Yes, I noted this also while reviewing patches.  fb_find_mode() is used
+> predominantly with the 'generic' modedb which contains modes that are
+> not specific to the card or monitor.  And fb_try_mode() is not a
+> guarantee that the returned refresh rate will be safe (we have a lot of
+> drivers that do not check the timings against the display capabilities).
+> 
+> It would be best that fb_find_mode() return the safest refresh rate
+> (60Hz) instead of the highest.
 
-> ---
->  drivers/video/aty/atyfb_base.c |    6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> =
+How about modifying it so that it looks for a mode with the highest
+refresh rate if either a non-generic modedb is used or
+info.monspecs.{vfmin,vfmax,hfmin,hfmax,dclkmax} are all non-zero,
+and for a mode with refresh rate closest to 60 Hz otherwise?
 
-> --- a/drivers/video/aty/atyfb_base.c
-> +++ b/drivers/video/aty/atyfb_base.c
-> @@ -2767,8 +2767,7 @@ static int atyfb_blank(int blank, struct
->  	if (par->lock_blank || par->asleep)
->  		return 0;
->  =
+I'm sorry for the delayed reply.
 
-> -#ifdef CONFIG_FB_ATY_BACKLIGHT
-> -#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
-> +#ifdef CONFIG_FB_ATY_GENERIC_LCD
->  	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
->  	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
->  		u32 pm =3D aty_ld_lcd(POWER_MANAGEMENT, par);
+Best regards.
+-- 
+Michal Januszewski                              JID: spock@im.gentoo.org
+Gentoo Linux Developer                    http://people.gentoo.org/spock
 
-This will change the behavior of the code. I basically agree with the
-change because the current code will not control the backlight when the
-kernel is built with CONFIG_FB_ATY_BACKLIGHT but the system doesn't
-support the backlight interface (ie. non-pmac system). However someone
-should check that it doesn't cause problems for pmac users.
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

@@ -1,30 +1,24 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: [PATCH] cirrusfb: checkpatch.pl cleanup PPC fix
-Date: Mon, 27 Aug 2007 19:37:35 +0200
-Message-ID: <20070827193735.290dfc84.krzysztof.h1@wp.pl>
-References: <46D18888.10902@gmail.com>
-	<Pine.LNX.4.64.0708270913170.19656@anakin>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 16/20] cyber2000fb: code cleanup
+Date: Mon, 27 Aug 2007 15:25:23 -0700
+Message-ID: <20070827152523.c045ff2d.akpm@linux-foundation.org>
+References: <46D1896F.9030306@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IPiRX-0000T4-Li for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Aug 2007 10:32:03 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
+	id 1IPn1b-0005gr-9s for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Aug 2007 15:25:35 -0700
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IPiRU-0002ka-Vv
+	(Exim 4.44) id 1IPn1Y-0002Ex-RS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Aug 2007 10:32:03 -0700
-Received: from host-87-99-61-239.lanet.net.pl (HELO krzysio.net)
-	(krzysztof.h1@[87.99.61.239]) (envelope-sender <krzysztof.h1@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	27 Aug 2007 19:31:52 +0200
-In-Reply-To: <Pine.LNX.4.64.0708270913170.19656@anakin>
+	Mon, 27 Aug 2007 15:25:35 -0700
+In-Reply-To: <46D1896F.9030306@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,29 +29,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Andy Whitcroft <apw@shadowen.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Sun, 26 Aug 2007 22:08:47 +0800
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
 
-This patch fixes the error spotted by Geert Uytterhoeven
-in the "cirrusfb: checkpatch.pl cleanup" patch.
+> This patch fixes errors and warnings pointed
+> out by the checkpatch.pl script.
+> 
+> [adaplas: Replaced BIT with ENCODE_BIT)]
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+This patch collided with the bit-macro patches which I recently added to
+-mm:
 
----
+fs-select-remove-unused-macros.patch
+cyber2000fb-rename-bit-macro.patch
+i2c-pxa-rename-bit-macro-to-pxa_bit.patch
+s2io-rename-bit-macro.patch
+amba-pl011-rename-bit-macro.patch
+define-first-set-of-bit-macros.patch
+get-rid-of-input-bit-duplicate-defines.patch
+define-global-bit-macro.patch
+flashpoint-use-bit-instead-of-bitw.patch
 
---- linux-sparc/drivers/video/cirrusfb.c	2007-08-27 19:32:30.632860728 +0200
-+++ linux-2.6.23/drivers/video/cirrusfb.c	2007-08-27 19:31:29.137356299 +0200
-@@ -58,7 +58,7 @@
- #endif
- #ifdef CONFIG_PPC_PREP
- #include <asm/machdep.h>
--#define isPReP(machine_is(prep))
-+#define isPReP machine_is(prep)
- #else
- #define isPReP 0
- #endif
+Those patches are a sensible consolidation so methinks it'd be good to do
+this cleanup on top of that work?
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

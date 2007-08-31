@@ -1,19 +1,20 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 0/2] [PATCH] PS3 graphics fixes for
-	2.6.23
-Date: Fri, 31 Aug 2007 15:46:23 +0200
-Message-ID: <20070831134623.910953000@pademelon.sonytel.be>
+Subject: [patch 2/2] ps3fb: Fix spurious mode change
+	failures
+Date: Fri, 31 Aug 2007 15:46:25 +0200
+Message-ID: <20070831134807.901741000@pademelon.sonytel.be>
+References: <20070831134623.910953000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1475115055=="
+Content-Type: multipart/mixed; boundary="===============1852164385=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IR6s4-0002CL-Og for linux-fbdev-devel@lists.sourceforge.net;
+	id 1IR6s4-0002CN-TR for linux-fbdev-devel@lists.sourceforge.net;
 	Fri, 31 Aug 2007 06:49:13 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IR6s3-0001zz-1W
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IR6s3-000201-15
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Fri, 31 Aug 2007 06:49:12 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -27,18 +28,91 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Paul Mackerras <paulus@samba.org>, "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Geoff Levand <geoffrey.levand@am.sony.com>
 
---===============1475115055==
+--===============1852164385==
+Content-Disposition: inline;
+	filename=ps3-wip/ps3fb-spurious-mode-change-failures.diff
 
-	Hi Paul, Tony,
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Here are 2 fixes for PS3 graphics support:
-  [1] PS3: Fix black and white stripes
-  [2] ps3fb: Fix spurious mode change failures
+ps3fb: Add a `mode' parameter to ps3fb_get_res_table(), as in some cases it
+should check the full-screen flag of the _new_ video mode instead of the
+current video mode.
 
-Please apply, thanks!
+This bug caused spurious mode change failures when switching between fullscreen
+and non-fullscreen modes using fbset, while ps3-video-mode worked fine.
 
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ drivers/video/ps3fb.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
+
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -303,13 +303,13 @@ module_param(ps3fb_mode, int, 0);
+ 
+ static char *mode_option __devinitdata;
+ 
+-static int ps3fb_get_res_table(u32 xres, u32 yres)
++static int ps3fb_get_res_table(u32 xres, u32 yres, int mode)
+ {
+ 	int full_mode;
+ 	unsigned int i;
+ 	u32 x, y, f;
+ 
+-	full_mode = (ps3fb_mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
++	full_mode = (mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
+ 	for (i = 0;; i++) {
+ 		x = ps3fb_res[i].xres;
+ 		y = ps3fb_res[i].yres;
+@@ -527,7 +527,7 @@ static int ps3fb_check_var(struct fb_var
+ 	}
+ 
+ 	/* Memory limit */
+-	i = ps3fb_get_res_table(var->xres, var->yres);
++	i = ps3fb_get_res_table(var->xres, var->yres, mode);
+ 	if (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP > ps3fb_videomemory.size) {
+ 		DPRINTK("Not enough memory\n");
+ 		return -ENOMEM;
+@@ -553,13 +553,14 @@ static int ps3fb_set_par(struct fb_info 
+ 	DPRINTK("xres:%d xv:%d yres:%d yv:%d clock:%d\n",
+ 		info->var.xres, info->var.xres_virtual,
+ 		info->var.yres, info->var.yres_virtual, info->var.pixclock);
+-	i = ps3fb_get_res_table(info->var.xres, info->var.yres);
+-	ps3fb.res_index = i;
+ 
+ 	mode = ps3fb_find_mode(&info->var, &info->fix.line_length);
+ 	if (!mode)
+ 		return -EINVAL;
+ 
++	i = ps3fb_get_res_table(info->var.xres, info->var.yres, mode);
++	ps3fb.res_index = i;
++
+ 	offset = FB_OFF(i) + VP_OFF(i);
+ 	info->fix.smem_len = ps3fb_videomemory.size - offset;
+ 	info->screen_base = (char __iomem *)ps3fb.xdr_ea + offset;
+@@ -610,7 +611,7 @@ static int ps3fb_mmap(struct fb_info *in
+ 	unsigned long size, offset;
+ 	int i;
+ 
+-	i = ps3fb_get_res_table(info->var.xres, info->var.yres);
++	i = ps3fb_get_res_table(info->var.xres, info->var.yres, ps3fb_mode);
+ 	if (i == -1)
+ 		return -EINVAL;
+ 
+@@ -999,7 +1000,7 @@ static int __devinit ps3fb_probe(struct 
+ 
+ 	if (ps3fb_mode > 0 &&
+ 	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
+-		ps3fb.res_index = ps3fb_get_res_table(xres, yres);
++		ps3fb.res_index = ps3fb_get_res_table(xres, yres, ps3fb_mode);
+ 		DPRINTK("res_index:%d\n", ps3fb.res_index);
+ 	} else
+ 		ps3fb.res_index = GPU_RES_INDEX;
+
+-- 
 With kind regards,
  
 Geert Uytterhoeven
@@ -60,7 +134,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============1475115055==
+--===============1852164385==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -71,7 +145,7 @@ This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >>  http://get.splunk.com/
---===============1475115055==
+--===============1852164385==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -82,4 +156,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1475115055==--
+--===============1852164385==--

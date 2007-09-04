@@ -1,26 +1,26 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] radeonfb: add new module
-	parameter to force PLL	calculation
-Date: Tue, 04 Sep 2007 15:46:29 +0200
-Message-ID: <1188913589.5972.150.camel@localhost.localdomain>
-References: <20070904105908.GF7320@devil>
+Subject: Re: [PATCH 4/4] radeonfb: use PCI device Id in
+	hex for name string
+Date: Tue, 04 Sep 2007 15:48:07 +0200
+Message-ID: <1188913688.5972.155.camel@localhost.localdomain>
+References: <20070904110050.GH7320@devil>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1ITG7h-000896-Gl for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Sep 2007 05:06:13 -0700
+	id 1ITG7j-00089I-Ap for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 06 Sep 2007 05:06:15 -0700
 Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX19rxXfuZOlNfv6IbQJ7IsRS4U4WkNpV8e0=])
+	ident=[U2FsdGVkX190MCqFCtIABEmpeX/zg/2YFCYjJo7AeCI=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1ITG7g-0001U9-FD
+	(Exim 4.44) id 1ITG7i-0005lL-KQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Sep 2007 05:06:13 -0700
-In-Reply-To: <20070904105908.GF7320@devil>
+	Thu, 06 Sep 2007 05:06:15 -0700
+In-Reply-To: <20070904110050.GH7320@devil>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,63 +34,43 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: aherrman@arcor.de
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-04 at 12:59 +0200, aherrman@arcor.de wrote:
-> On my Acer Aspire 5100 (with 0x5975) I need to force PLL caclulation.
-> Most probably the BIOS dividers are incorrect/insufficient. Without pll
-> calculation console goes blank.
+On Tue, 2007-09-04 at 13:00 +0200, aherrman@arcor.de wrote:
+> .. instead of potentially using nonprintable characters.
+> 
+> I guess the former (odd) concatenation was used to construct name strings
+> that match the  "*_ATI_RADEON_??" macros in include/linux/pci_ids.h
+> 
+> The PCI Id in hex is much more convenient to use. E.g. it can easily be
+> verified against "lspci -nn" output.
 > 
 > Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
 
-I don't like those tunables. First we should get a look at what values
-we obtain from the BIOS. Could be something with the parsing of ATOM
-BIOS. In any case, we might be able to detect we got wrong values or use
-subsystem vendor/device ID to blacklist.
+Well... ATI used to have printable characters and those were commonly
+used to identify the cards. I'm not sure we want to unilateraly switch
+to hex here...
 
 Ben.
 
 > ---
->  drivers/video/aty/radeon_base.c |    7 ++++++-
->  1 files changed, 6 insertions(+), 1 deletions(-)
+>  drivers/video/aty/radeon_base.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
 > 
 > diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-> index 90a3957..f672c0c 100644
+> index 71b0c17..e6229b4 100644
 > --- a/drivers/video/aty/radeon_base.c
 > +++ b/drivers/video/aty/radeon_base.c
-> @@ -268,6 +268,7 @@ static int mirror = 0;
->  static int panel_yres = 0;
->  static int force_dfp = 0;
->  static int force_measure_pll = 0;
-> +static int force_pll_calc = 0;
->  #ifdef CONFIG_MTRR
->  static int nomtrr = 0;
->  #endif
-> @@ -1590,7 +1591,7 @@ static int radeonfb_set_par(struct fb_info *info)
+> @@ -2184,9 +2184,8 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
+>  	rinfo->lvds_timer.function = radeon_lvds_timer_func;
+>  	rinfo->lvds_timer.data = (unsigned long)rinfo;
 >  
->  		pixClock = 100000000 / rinfo->panel_info.clock;
->  
-> -		if (rinfo->panel_info.use_bios_dividers) {
-> +		if (rinfo->panel_info.use_bios_dividers && !force_pll_calc) {
->  			nopllcalc = 1;
->  			newmode->ppll_div_3 = rinfo->panel_info.fbk_divider |
->  				(rinfo->panel_info.post_divider << 16);
-> @@ -2495,6 +2496,8 @@ static int __init radeonfb_setup (char *options)
->  			nomodeset = 1;
->  		} else if (!strncmp(this_opt, "force_measure_pll", 17)) {
->  			force_measure_pll = 1;
-> +		} else if (!strncmp(this_opt, "force_pll_calc", 17)) {
-> +			force_pll_calc = 1;
->  		} else if (!strncmp(this_opt, "ignore_edid", 11)) {
->  			ignore_edid = 1;
->  #if defined(CONFIG_PM) && defined(CONFIG_X86)
-> @@ -2550,6 +2553,8 @@ module_param(monitor_layout, charp, 0);
->  MODULE_PARM_DESC(monitor_layout, "Specify monitor mapping (like XFree86)");
->  module_param(force_measure_pll, bool, 0);
->  MODULE_PARM_DESC(force_measure_pll, "Force measurement of PLL (debug)");
-> +module_param(force_pll_calc, bool, 0400);
-> +MODULE_PARM_DESC(force_pll_calc, "Force calculation of PLL");
->  #ifdef CONFIG_MTRR
->  module_param(nomtrr, bool, 0);
->  MODULE_PARM_DESC(nomtrr, "bool: disable use of MTRR registers");
+> -	strcpy(rinfo->name, "ATI Radeon XX ");
+> -	rinfo->name[11] = ent->device >> 8;
+> -	rinfo->name[12] = ent->device & 0xFF;
+> +	snprintf(rinfo->name, sizeof(rinfo->name),
+> +		 "ATI Radeon %x", ent->device & 0xffff);
+>  	rinfo->family = ent->driver_data & CHIP_FAMILY_MASK;
+>  	rinfo->chipset = pdev->device;
+>  	rinfo->has_CRTC2 = (ent->driver_data & CHIP_HAS_CRTC2) != 0;
 
 
 -------------------------------------------------------------------------

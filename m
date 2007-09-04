@@ -1,9 +1,9 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] radeonfb: fix setting of
-	PPLL_REF_DIV for RV370	5B60
-Date: Tue, 04 Sep 2007 15:47:03 +0200
-Message-ID: <1188913623.5972.152.camel@localhost.localdomain>
-References: <20070904110000.GG7320@devil>
+Subject: Re: [PATCH 2/4] radeonfb: add new module
+	parameter to force PLL	calculation
+Date: Tue, 04 Sep 2007 15:46:29 +0200
+Message-ID: <1188913589.5972.150.camel@localhost.localdomain>
+References: <20070904105908.GF7320@devil>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,15 +12,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1ITG7i-00089B-NZ for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Sep 2007 05:06:14 -0700
+	id 1ITG7h-000896-Gl for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 06 Sep 2007 05:06:13 -0700
 Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX18W70lWjTbQLt9CkL53OX0OK30hLYUi4LE=])
+	ident=[U2FsdGVkX19rxXfuZOlNfv6IbQJ7IsRS4U4WkNpV8e0=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1ITG7h-0001UJ-8L
+	(Exim 4.44) id 1ITG7g-0001U9-FD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Sep 2007 05:06:14 -0700
-In-Reply-To: <20070904110000.GG7320@devil>
+	Thu, 06 Sep 2007 05:06:13 -0700
+In-Reply-To: <20070904105908.GF7320@devil>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,32 +34,63 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: aherrman@arcor.de
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-04 at 13:00 +0200, aherrman@arcor.de wrote:
-> As observed with various Radeon X300: console goes blank
-> without fixing setting of PPLL_REF_DIV.
+On Tue, 2007-09-04 at 12:59 +0200, aherrman@arcor.de wrote:
+> On my Acer Aspire 5100 (with 0x5975) I need to force PLL caclulation.
+> Most probably the BIOS dividers are incorrect/insufficient. Without pll
+> calculation console goes blank.
 > 
 > Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I don't like those tunables. First we should get a look at what values
+we obtain from the BIOS. Could be something with the parsing of ATOM
+BIOS. In any case, we might be able to detect we got wrong values or use
+subsystem vendor/device ID to blacklist.
+
+Ben.
 
 > ---
->  drivers/video/aty/radeon_base.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+>  drivers/video/aty/radeon_base.c |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
 > 
 > diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-> index f672c0c..71b0c17 100644
+> index 90a3957..f672c0c 100644
 > --- a/drivers/video/aty/radeon_base.c
 > +++ b/drivers/video/aty/radeon_base.c
-> @@ -1287,7 +1287,8 @@ static void radeon_write_pll_regs(struct radeonfb_info *rinfo, struct radeon_reg
->  	if (rinfo->family == CHIP_FAMILY_R300 ||
->  	    rinfo->family == CHIP_FAMILY_RS300 ||
->  	    rinfo->family == CHIP_FAMILY_R350 ||
-> -	    rinfo->family == CHIP_FAMILY_RV350) {
-> +	    rinfo->family == CHIP_FAMILY_RV350 ||
-> +	    rinfo->family == CHIP_FAMILY_RV380 ) {
->  		if (mode->ppll_ref_div & R300_PPLL_REF_DIV_ACC_MASK) {
->  			/* When restoring console mode, use saved PPLL_REF_DIV
->  			 * setting.
+> @@ -268,6 +268,7 @@ static int mirror = 0;
+>  static int panel_yres = 0;
+>  static int force_dfp = 0;
+>  static int force_measure_pll = 0;
+> +static int force_pll_calc = 0;
+>  #ifdef CONFIG_MTRR
+>  static int nomtrr = 0;
+>  #endif
+> @@ -1590,7 +1591,7 @@ static int radeonfb_set_par(struct fb_info *info)
+>  
+>  		pixClock = 100000000 / rinfo->panel_info.clock;
+>  
+> -		if (rinfo->panel_info.use_bios_dividers) {
+> +		if (rinfo->panel_info.use_bios_dividers && !force_pll_calc) {
+>  			nopllcalc = 1;
+>  			newmode->ppll_div_3 = rinfo->panel_info.fbk_divider |
+>  				(rinfo->panel_info.post_divider << 16);
+> @@ -2495,6 +2496,8 @@ static int __init radeonfb_setup (char *options)
+>  			nomodeset = 1;
+>  		} else if (!strncmp(this_opt, "force_measure_pll", 17)) {
+>  			force_measure_pll = 1;
+> +		} else if (!strncmp(this_opt, "force_pll_calc", 17)) {
+> +			force_pll_calc = 1;
+>  		} else if (!strncmp(this_opt, "ignore_edid", 11)) {
+>  			ignore_edid = 1;
+>  #if defined(CONFIG_PM) && defined(CONFIG_X86)
+> @@ -2550,6 +2553,8 @@ module_param(monitor_layout, charp, 0);
+>  MODULE_PARM_DESC(monitor_layout, "Specify monitor mapping (like XFree86)");
+>  module_param(force_measure_pll, bool, 0);
+>  MODULE_PARM_DESC(force_measure_pll, "Force measurement of PLL (debug)");
+> +module_param(force_pll_calc, bool, 0400);
+> +MODULE_PARM_DESC(force_pll_calc, "Force calculation of PLL");
+>  #ifdef CONFIG_MTRR
+>  module_param(nomtrr, bool, 0);
+>  MODULE_PARM_DESC(nomtrr, "bool: disable use of MTRR registers");
 
 
 -------------------------------------------------------------------------

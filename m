@@ -1,26 +1,25 @@
-From: Krzysztof Helt <krzysztof.h1@gmail.com>
-Subject: Re: [PATCH] s3c2410fb: byte ordering fixes
-Date: Sun, 9 Sep 2007 11:28:28 +0200
-Message-ID: <20070909112828.0bd6427a.krzysztof.h1@gmail.com>
-References: <46c1d7beb3dd8@wp.pl>
+From: "suresh gani" <sureshgani@gmail.com>
+Subject: Required Urgent
+Date: Mon, 10 Sep 2007 11:58:55 +0530
+Message-ID: <9771bb700709092328l5fbcfcc9uc9dce49a2ff08414@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IUIzK-00038f-87 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 09 Sep 2007 02:21:54 -0700
-Received: from fk-out-0910.google.com ([209.85.128.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IUIzH-0003Jg-EB
+	id 1IUclW-0007Di-B4 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 09 Sep 2007 23:28:58 -0700
+Received: from wa-out-1112.google.com ([209.85.146.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IUclV-0006Rc-3c
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 09 Sep 2007 02:21:54 -0700
-Received: by fk-out-0910.google.com with SMTP id 19so1219785fkr
+	Sun, 09 Sep 2007 23:28:58 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so1582139waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 09 Sep 2007 02:21:50 -0700 (PDT)
-In-Reply-To: <46c1d7beb3dd8@wp.pl>
+	Sun, 09 Sep 2007 23:28:56 -0700 (PDT)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,30 +30,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 14 Aug 2007 18:26:38 +0200
-"Krzysztof Helt" <krzysztof.h1@wp.pl> wrote:
-
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> This patch sets correct bits related to the byte ordering
-> of the framebuffer. This was tested on little endian kernel
-> only. The big endian kernel may require different settings.
-> 
-> The patch also adds 32 bpp mode which is called 24 bpp by
-> Samsung. One pixel takes 32 bits but only 24 bits are used
-> in this mode.
-> 
-
-Tony, 
-
-This patch didn't make into the -mm tree with other s3c2410fb patches.
-Please look into it.
-
-Regards,
-Krzysztof
+Dear Sir,
+     I want an application example source code  of framebuffer driver
+for accessing screen device please provide me it .
+-- 
+Regards
+ SURESH S GANI
+    SOFTWARE ENGINEER.
+    SPA COMPUTERS PVT LTD.
+         -An Embedded Systems Company.
+    HAL Second Stage Indiranagar.
+    Bangalore-8.
+    mob:9902703238
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

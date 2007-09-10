@@ -1,27 +1,27 @@
 From: aherrman@arcor.de
-Subject: Re: [PATCH 4/4] radeonfb: use PCI device Id in
-	hex for name string
-Date: Mon, 10 Sep 2007 23:41:18 +0200
-Message-ID: <20070910214118.GA5155@devil>
-References: <20070904110050.GH7320@devil>
-	<1188913688.5972.155.camel@localhost.localdomain>
+Subject: Re: [PATCH 2/4] radeonfb: add new module
+	parameter to force PLL calculation
+Date: Tue, 11 Sep 2007 00:20:12 +0200
+Message-ID: <20070910222012.GB5155@devil>
+References: <20070904105908.GF7320@devil>
+	<1188913589.5972.150.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IUqzI-0004BU-Dv for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Sep 2007 14:40:08 -0700
+	id 1IUrax-00086x-Gh for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Sep 2007 15:19:06 -0700
 Received: from mail-in-08.arcor-online.net ([151.189.21.48])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IUqzG-0003Yn-Ni
+	(Exim 4.44) id 1IUraw-00017w-7U
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Sep 2007 14:40:08 -0700
+	Mon, 10 Sep 2007 15:19:03 -0700
 Content-Disposition: inline
-In-Reply-To: <1188913688.5972.155.camel@localhost.localdomain>
+In-Reply-To: <1188913589.5972.150.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,77 +35,56 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, Sep 04, 2007 at 03:48:07PM +0200, Benjamin Herrenschmidt wrote:
-> Well... ATI used to have printable characters and those were commonly
-> used to identify the cards. I'm not sure we want to unilateraly switch
-> to hex here...
+On Tue, Sep 04, 2007 at 03:46:29PM +0200, Benjamin Herrenschmidt wrote:
+> I don't like those tunables. First we should get a look at what values
+> we obtain from the BIOS. Could be something with the parsing of ATOM
+> BIOS. In any case, we might be able to detect we got wrong values or use
+> subsystem vendor/device ID to blacklist.
 
-I see.
-How about the following patch?
-As an illustration this gives following output for some cards:
+So what should I looking for?
+Here is the diff of the radeonfb kernel messages between 
+(-)nopllcalc and (+)forcing pll calculation with my patch:
 
-  radeonfb (0000:01:05.0): ATI Radeon 5975 "Yu"
-  radeonfb (0000:02:00.0): ATI Radeon 5b60 "[`"
-  radeonfb (0000:02:00.0): ATI Radeon 5960 "Y`"
+   vSync_width: 4
+   clock: 7350
+ Setting up default mode based on panel info
+-hStart = 672, hEnd = 712, hTotal = 824
+-vStart = 404, vEnd = 408, vTotal = 437
+-h_total_disp = 0x4f0066           hsync_strt_wid = 0x5029a
+-v_total_disp = 0x18f01b4          vsync_strt_wid = 0x40193
++hStart = 1312, hEnd = 1352, hTotal = 1464
++vStart = 804, vEnd = 808, vTotal = 837
++h_total_disp = 0x9f00b6           hsync_strt_wid = 0x5051a
++v_total_disp = 0x31f0344          vsync_strt_wid = 0x40323
+ pixclock = 13605
+ freq = 7350
+-Console: switching to colour frame buffer device 80x25
++freq = 7350, PLL min = 20000, PLL max = 40000
++ref_div = 6, ref_clk = 1432, output_freq = 29400
++ref_div = 6, ref_clk = 1432, output_freq = 29400
++post div = 0x2
++fb_div = 0x7b
++ppll_div_3 = 0x2007b
++Console: switching to colour frame buffer device 160x50
+ radeonfb (0000:01:05.0): ATI Radeon 5975 "Yu"
+ radeonfb_pci_register END
+
+"nopllcalc" results in a console 80x25 but forcing pll calculation gives
+the expected result.
+
+BTW, I am a little surprised that the display doesn't blank without
+my patch as it used to in the past ...
+
+  Oops, PCI ID 0x5975 was already added with commit
+  b5f2f4d1a6d7efde39cfb5e1d034981c69f2214c
+
+I guess I have to repeat some testing with both the older commit and my patch(es)
+to sort out what is really needed to support my RS482/0x5975.
 
 
 Regards,
 
 Andreas
-
---
-radeonfb: use PCI device id in hex for name string
-
-Additionally provide PCI device id in character format if possible.
-(The printable characters were commonly used to identify the cards.)
-
-Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
----
- drivers/video/aty/radeon_base.c |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index b1bee6f..306d3c7 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -57,6 +57,7 @@
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/string.h>
-+#include <linux/ctype.h>
- #include <linux/mm.h>
- #include <linux/slab.h>
- #include <linux/delay.h>
-@@ -2156,6 +2157,7 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	struct fb_info *info;
- 	struct radeonfb_info *rinfo;
- 	int ret;
-+	unsigned char c1, c2;
- 
- 	RTRACE("radeonfb_pci_register BEGIN\n");
- 	
-@@ -2183,9 +2185,15 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	rinfo->lvds_timer.function = radeon_lvds_timer_func;
- 	rinfo->lvds_timer.data = (unsigned long)rinfo;
- 
--	strcpy(rinfo->name, "ATI Radeon XX ");
--	rinfo->name[11] = ent->device >> 8;
--	rinfo->name[12] = ent->device & 0xFF;
-+	c1 = ent->device >> 8;
-+	c2 = ent->device & 0xff;
-+	if (isprint(c1) && isprint(c2))
-+		snprintf(rinfo->name, sizeof(rinfo->name),
-+			 "ATI Radeon %x \"%c%c\"", ent->device & 0xffff, c1, c2);
-+	else
-+		snprintf(rinfo->name, sizeof(rinfo->name),
-+			 "ATI Radeon %x", ent->device & 0xffff);
-+
- 	rinfo->family = ent->driver_data & CHIP_FAMILY_MASK;
- 	rinfo->chipset = pdev->device;
- 	rinfo->has_CRTC2 = (ent->driver_data & CHIP_HAS_CRTC2) != 0;
--- 
-1.5.3
-
 
 
 -------------------------------------------------------------------------

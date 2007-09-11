@@ -1,71 +1,102 @@
 From: aherrman@arcor.de
-Subject: Re: [PATCH 1/4] radeonfb: add PCI Id
-	for	RS482/Radeon Xpress 200M
-Date: Tue, 11 Sep 2007 00:38:18 +0200
-Message-ID: <20070910223818.GC5155@devil>
-References: <20070904105831.GE7320@devil>
-	<1188913512.5972.147.camel@localhost.localdomain>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] radeonfb: bug fix for 2.6.23-rc5
+Date: Tue, 11 Sep 2007 02:13:31 +0200
+Message-ID: <20070911001331.GD5155@devil>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762034AbXIKAMV@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IUrsL-0001SE-Jg for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Sep 2007 15:37:01 -0700
-Received: from mail-in-10.arcor-online.net ([151.189.21.50])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IUrsJ-00079Q-Q7
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Sep 2007 15:37:01 -0700
-Content-Disposition: inline
-In-Reply-To: <1188913512.5972.147.camel@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, Stephan Wolf <WolfSt.External@qimonda.com>, Antonino Daplas <adaplas@gmail.com>
 
-On Tue, Sep 04, 2007 at 03:45:12PM +0200, Benjamin Herrenschmidt wrote:
-> On Tue, 2007-09-04 at 12:58 +0200, aherrman@arcor.de wrote:
-> > .. which can be found in Acer Aspire 5100.
-> > 
-> > Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Commit b5f2f4d1a6d7efde39cfb5e1d034981c69f2214c adds PCI ID 0x5975
+to radeonfb. But the chip family is wrong. Instead of R300 it should
+be RS480.
 
-Sorry, I have missed that 0x5975 was already defined for radeonfb.
-So this patch shouldn't be applied.
+With 2.6.23-rc5 and radeonfb enabled my Laptop hangs and console
+blanks. My ATI Radeon is the following model:
 
-We have already:
+  ATI Technologies Inc RS482 [Radeon Xpress 200M] [1002:5975]
 
-        /*Mobility Xpress 200 */
-        CHIP_DEF(PCI_CHIP_RS485_5975,   R300,   CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+Attached patch fixes the problem - no system hang and radeonfb is usable.
+(I have to use force_measure_pll to get the best resolution though.)
 
-This was introduced with commit b5f2f4d1a6d7efde39cfb5e1d034981c69f2214c
-
-But obviously this is not correct as the 0x5975 is an RS48x not R300.
-With the current git (w/o my patch) my display goes blank (or better it looks striped)
-and the Laptop hangs.
-
-I'll do some further tests on my Laptop and probably come up with a new patch.
+I guess this fix should go into 2.6.23 or alternatively the mentioned
+commit should be reverted.
 
 
 Regards,
 
 Andreas
 
+--
+radeonfb: fix chip definition for Radeon Xpress 200M 0x5975
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2005.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+ - rename PCI_CHIP_RS485_5975 to PCI_CHIP_RS482_5975
+ - correct chip family (RS480 instead of R300)
+ - make sure that PCI IDs are in ascending order in ati_ids.h
+
+Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
+---
+ drivers/video/aty/ati_ids.h     |   12 ++++++------
+ drivers/video/aty/radeon_base.c |    3 +--
+ 2 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/aty/ati_ids.h b/drivers/video/aty/ati_ids.h
+index 685a754..dca2eb8 100644
+--- a/drivers/video/aty/ati_ids.h
++++ b/drivers/video/aty/ati_ids.h
+@@ -192,6 +192,12 @@
+ #define PCI_CHIP_RS300_5835		0x5835
+ #define PCI_CHIP_RS300_5836		0x5836
+ #define PCI_CHIP_RS300_5837		0x5837
++#define PCI_CHIP_RS480_5955             0x5955
++#define PCI_CHIP_RV280_5960		0x5960
++#define PCI_CHIP_RV280_5961		0x5961
++#define PCI_CHIP_RV280_5962		0x5962
++#define PCI_CHIP_RV280_5964		0x5964
++#define PCI_CHIP_RS482_5975		0x5975
+ #define PCI_CHIP_RV370_5B60             0x5B60
+ #define PCI_CHIP_RV370_5B61             0x5B61
+ #define PCI_CHIP_RV370_5B62             0x5B62
+@@ -200,14 +206,8 @@
+ #define PCI_CHIP_RV370_5B65             0x5B65
+ #define PCI_CHIP_RV370_5B66             0x5B66
+ #define PCI_CHIP_RV370_5B67             0x5B67
+-#define PCI_CHIP_RV280_5960		0x5960
+-#define PCI_CHIP_RV280_5961		0x5961
+-#define PCI_CHIP_RV280_5962		0x5962
+-#define PCI_CHIP_RV280_5964		0x5964
+-#define PCI_CHIP_RS485_5975		0x5975
+ #define PCI_CHIP_RV280_5C61		0x5C61
+ #define PCI_CHIP_RV280_5C63		0x5C63
+ #define PCI_CHIP_R423_5D57              0x5D57
+ #define PCI_CHIP_RS350_7834             0x7834
+ #define PCI_CHIP_RS350_7835             0x7835
+-#define PCI_CHIP_RS480_5955             0x5955
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+index 47ca62f..e8e135f 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -102,6 +102,7 @@
+ static struct pci_device_id radeonfb_pci_table[] = {
+         /* Radeon Xpress 200m */
+ 	CHIP_DEF(PCI_CHIP_RS480_5955,   RS480,  CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
++	CHIP_DEF(PCI_CHIP_RS482_5975,	RS480,	CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+ 	/* Mobility M6 */
+ 	CHIP_DEF(PCI_CHIP_RADEON_LY, 	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+ 	CHIP_DEF(PCI_CHIP_RADEON_LZ,	RV100,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+@@ -153,8 +154,6 @@ static struct pci_device_id radeonfb_pci_table[] = {
+ 	/* Mobility 9200 (M9+) */
+ 	CHIP_DEF(PCI_CHIP_RV280_5C61,	RV280,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+ 	CHIP_DEF(PCI_CHIP_RV280_5C63,	RV280,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+-	/*Mobility Xpress 200 */
+-	CHIP_DEF(PCI_CHIP_RS485_5975,	R300,	CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+ 	/* 9200 */
+ 	CHIP_DEF(PCI_CHIP_RV280_5960,	RV280,	CHIP_HAS_CRTC2),
+ 	CHIP_DEF(PCI_CHIP_RV280_5961,	RV280,	CHIP_HAS_CRTC2),
+-- 
+1.5.3

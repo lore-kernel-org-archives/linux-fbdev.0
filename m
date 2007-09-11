@@ -1,28 +1,24 @@
-From: aherrman@arcor.de
-Subject: Re: [PATCH 2/4] radeonfb: add new module
-	parameter to force PLL calculation
-Date: Tue, 11 Sep 2007 02:45:45 +0200
-Message-ID: <20070911004545.GE5155@devil>
-References: <20070904105908.GF7320@devil>
-	<1188913589.5972.150.camel@localhost.localdomain>
-	<20070910222012.GB5155@devil>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Intel FB pixel clock calculation fix
+Date: Mon, 10 Sep 2007 22:52:21 -0700
+Message-ID: <20070910225221.f0eaf22c.akpm@linux-foundation.org>
+References: <m3ir6il3wl.fsf@maximus.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IUtrg-0005SL-R0 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Sep 2007 17:44:29 -0700
-Received: from mail-in-06.arcor-online.net ([151.189.21.46])
+	id 1IUyfl-0000s9-AU for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Sep 2007 22:52:29 -0700
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IUtrg-0004YB-0i
+	(Exim 4.44) id 1IUyfl-0000yJ-21
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Sep 2007 17:44:28 -0700
-Content-Disposition: inline
-In-Reply-To: <20070910222012.GB5155@devil>
+	Mon, 10 Sep 2007 22:52:29 -0700
+In-Reply-To: <m3ir6il3wl.fsf@maximus.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,47 +29,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>, sylvain.meyer@worldonline.fr, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 12:20:12AM +0200, aherrman@arcor.de wrote:
-> On Tue, Sep 04, 2007 at 03:46:29PM +0200, Benjamin Herrenschmidt wrote:
-> > I don't like those tunables. First we should get a look at what values
-> > we obtain from the BIOS. Could be something with the parsing of ATOM
-> > BIOS. In any case, we might be able to detect we got wrong values or use
-> > subsystem vendor/device ID to blacklist.
+On Mon, 10 Sep 2007 21:24:42 +0200 Krzysztof Halasa <khc@pm.waw.pl> wrote:
 
-     <snip>
-
-> "nopllcalc" results in a console 80x25 but forcing pll calculation gives
-> the expected result.
+> Intel framebuffer mis-calculated pixel clocks.
 > 
-> BTW, I am a little surprised that the display doesn't blank without
-> my patch as it used to in the past ...
+> Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
 > 
->   Oops, PCI ID 0x5975 was already added with commit
->   b5f2f4d1a6d7efde39cfb5e1d034981c69f2214c
-> 
-> I guess I have to repeat some testing with both the older commit and my patch(es)
-> to sort out what is really needed to support my RS482/0x5975.
+> --- a/drivers/video/intelfb/intelfbhw.c
+> +++ b/drivers/video/intelfb/intelfbhw.c
+> @@ -924,10 +920,10 @@ calc_pll_params(int index, int clock, u32 *retm1, u32 *retm2, u32 *retn, u32 *re
+>  			if (m > pll->max_m)
+>  				m = pll->max_m - 1;
+>  			for (testm = m - 1; testm <= m; testm++) {
+> -				f_out = calc_vclock3(index, m, n, p);
+> +				f_out = calc_vclock3(index, testm, n, p);
+>  				if (splitm(index, testm, &m1, &m2)) {
+> -					WRN_MSG("cannot split m = %d\n", m);
+> -					n++;
+> +					WRN_MSG("cannot split m = %d\n",
+> +						testm);
+>  					continue;
+>  				}
+>  				if (clock > f_out)
 
-Done that.
-And meanwhile I found out that force_measure_pll gives the same results
-like the new force_pll_calc knob. Hence that new tunable is really not needed.
+and... what are the consequences of this miscalculation?  I need to know
+such things so that I can decide whether a change is needed in 2.6.23.  And
+2.6.22.
 
-By blacklisting you meant to add a workaround to reinit the card if subsystem vendor/devID
-matches my combination of Acer Aspire+Radeon, right? Then I wouldn't have to add the
-force_measure_pll option on boot to get the optimal resolution ...
-
-Do we need a second Acer Aspire system that's not correctly working to justify
-a blacklisting?
-Well, and how should the reinit function look like?
-
-
-Thanks and Regards,
-
-Andreas
-
+Thanks.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

@@ -1,73 +1,36 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 9006] New: incorrect
- method to turn off DPLL in intel framebuffer driver
-Date: Tue, 11 Sep 2007 00:49:41 -0700
-Message-ID: <20070911004941.28b1332f.akpm@linux-foundation.org>
-References: <bug-9006-10286@http.bugzilla.kernel.org/>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] Intel FB pixel clock calculation fix
+Date: Tue, 11 Sep 2007 14:18:57 +0200
+Message-ID: <m3veah75u6.fsf@maximus.localdomain>
+References: <m3ir6il3wl.fsf@maximus.localdomain>
+	<20070910225221.f0eaf22c.akpm@linux-foundation.org>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964856AbXIKMTW@vger.kernel.org>
+In-Reply-To: <20070910225221.f0eaf22c.akpm@linux-foundation.org> (Andrew Morton's message of "Mon, 10 Sep 2007 22:52:21 -0700")
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IV0Vm-0004Hs-Ml for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Sep 2007 00:50:18 -0700
-Received: from smtp2.linux-foundation.org ([207.189.120.14])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IV0Vm-0007mf-Cc
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Sep 2007 00:50:18 -0700
-In-Reply-To: <bug-9006-10286@http.bugzilla.kernel.org/>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@pol.net>
-Cc: william.pan@kontron.cn, bugme-daemon@bugzilla.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: sylvain.meyer@worldonline.fr, linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 11 Sep 2007 00:40:22 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9006
-> 
->            Summary: incorrect method to turn off DPLL in intel framebuffer
->                     driver
->            Product: Platform Specific/Hardware
->            Version: 2.5
->      KernelVersion: 2.6.18.1
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: i386
->         AssignedTo: platform_i386@kernel-bugs.osdl.org
->         ReportedBy: william.pan@kontron.cn
-> 
-> 
-> in file intelfbhw.c, function intelfbhw_program_mode, the steps to 
-> turn off DPLL:
->         tmp = INREG(dpll_reg);
->         dpll_reg &= ~DPLL_VCO_ENABLE;
->         OUTREG(dpll_reg, tmp);
-> guess it should be:
->         tmp = INREG(dpll_reg);
->         tmp &= ~DPLL_VCO_ENABLE;
->         OUTREG(dpll_reg, tmp);
-> am I right?
-> 
+>> Intel framebuffer mis-calculated pixel clocks.
 
-?
+> and... what are the consequences of this miscalculation?  I need to know
+> such things so that I can decide whether a change is needed in 2.6.23.  And
+> 2.6.22.
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2005.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+The pixel clock (and thus both H and V sync) will be slower than
+requested, so if you set the minimum allowed the display may not
+sync. In case of really old CRT display it could theoretically
+damage it.
+
+I'm using it with PAL TV (using RGB input - SCART connector) and
+the bug prevented it from working at all (TV requirements are more
+strict and made the bug visible).
+
+I think 2.6.22 would be overkill, .23 - not sure.
+-- 
+Krzysztof Halasa

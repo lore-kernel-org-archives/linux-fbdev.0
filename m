@@ -1,30 +1,24 @@
-From: Timur Tabi <timur@freescale.com>
-Subject: Best way to support mulitple planes?
-Date: Thu, 13 Sep 2007 14:50:54 -0500
-Message-ID: <46E9949E.30908@freescale.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: Best way to support mulitple planes?
+Date: Fri, 14 Sep 2007 00:10:25 +0300
+Message-ID: <20070913211025.GB18714@sci.fi>
+References: <46E9949E.30908@freescale.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IVuiS-0000s8-4N for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Sep 2007 12:51:10 -0700
-Received: from de01egw02.freescale.net ([192.88.165.103])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IVuiQ-0007p3-NU
+	id 1IVvxH-0000Q9-HK for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 13 Sep 2007 14:10:31 -0700
+Received: from smtp5.pp.htv.fi ([213.243.153.39])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IVvxF-0008BE-NY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Sep 2007 12:51:08 -0700
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l8DJotUv021120 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 13 Sep 2007 12:50:55 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l8DJosXe002208
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 13 Sep 2007 14:50:54 -0500 (CDT)
+	Thu, 13 Sep 2007 14:10:31 -0700
+Content-Disposition: inline
+In-Reply-To: <46E9949E.30908@freescale.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,27 +31,59 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi, I'm new to the framebuffer subsystem, so forgive me if this is a FAQ. 
-I've spent the past couple hours scouring web sites and sample code, but I 
-don't have a definitive answer to my question.
+On Thu, Sep 13, 2007 at 02:50:54PM -0500, Timur Tabi wrote:
+> Hi, I'm new to the framebuffer subsystem, so forgive me if this is a FAQ. =
 
-I have a device that supports three planes - memory areas that the hardware 
-reads from to generate the physical image.  Each plane supports an alpha 
-channel for each pixel, and the hardware just blends all three planes together 
-when it draws the image.
+> I've spent the past couple hours scouring web sites and sample code, but =
+I =
 
-Currently, our driver create three framebuffer devices, /dev/fb0, /dev/fb1, 
-and /dev/fb2, which means three calls to register_framebuffer().  Is this the 
-correct way to do it?
+> don't have a definitive answer to my question.
+> =
 
-The reason I ask is that our hardware can only handle three planes if the 
-resolution is 1024x768 or below.  I can't figure out any way of telling the 
-framebuffer subsystem that if it switches to 1280x1024 in plane 0, that plane 
-1 and 2 no longer exist.  Any suggestions on how to handle that?
+> I have a device that supports three planes - memory areas that the hardwa=
+re =
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+> reads from to generate the physical image.  Each plane supports an alpha =
+
+> channel for each pixel, and the hardware just blends all three planes tog=
+ether =
+
+> when it draws the image.
+> =
+
+> Currently, our driver create three framebuffer devices, /dev/fb0, /dev/fb=
+1, =
+
+> and /dev/fb2, which means three calls to register_framebuffer().  Is this=
+ the =
+
+> correct way to do it?
+
+It is one way. At least omapfb does things the same way, and it has some
+custom ioctls to control the planes. Another way would be to have one
+fb device and implement support for the extra planes in user space.
+
+> The reason I ask is that our hardware can only handle three planes if the =
+
+> resolution is 1024x768 or below.  I can't figure out any way of telling t=
+he =
+
+> framebuffer subsystem that if it switches to 1280x1024 in plane 0, that p=
+lane =
+
+> 1 and 2 no longer exist.  Any suggestions on how to handle that?
+
+Perhaps return an error for any ioctls when the plane is not available,
+or implement a custom ioctl which carries that information. You could
+also leave that up to user space to know. It seems to me that you'll need
+a customized user space solution anyway (eg. a DirectFB gfx driver or a
+custom kdrive X server).
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

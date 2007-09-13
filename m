@@ -1,24 +1,32 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Timur Tabi <timur@freescale.com>
 Subject: Re: Best way to support mulitple planes?
-Date: Fri, 14 Sep 2007 00:10:25 +0300
-Message-ID: <20070913211025.GB18714@sci.fi>
-References: <46E9949E.30908@freescale.com>
+Date: Thu, 13 Sep 2007 16:29:31 -0500
+Message-ID: <46E9ABBB.4040008@freescale.com>
+References: <46E9949E.30908@freescale.com> <20070913211025.GB18714@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IVvxH-0000Q9-HK for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Sep 2007 14:10:31 -0700
-Received: from smtp5.pp.htv.fi ([213.243.153.39])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IVvxF-0008BE-NY
+	id 1IVwFl-0002Ms-T4 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 13 Sep 2007 14:29:38 -0700
+Received: from az33egw01.freescale.net ([192.88.158.102])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IVwFk-0000oH-54
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Sep 2007 14:10:31 -0700
-Content-Disposition: inline
-In-Reply-To: <46E9949E.30908@freescale.com>
+	Thu, 13 Sep 2007 14:29:37 -0700
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l8DLTWZ1010440 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 13 Sep 2007 14:29:32 -0700 (MST)
+Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l8DLTVRA025045
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 13 Sep 2007 16:29:31 -0500 (CDT)
+In-Reply-To: <20070913211025.GB18714@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,59 +39,61 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, Sep 13, 2007 at 02:50:54PM -0500, Timur Tabi wrote:
-> Hi, I'm new to the framebuffer subsystem, so forgive me if this is a FAQ. =
+Ville Syrj=E4l=E4 wrote:
 
-> I've spent the past couple hours scouring web sites and sample code, but =
-I =
+> It is one way. At least omapfb does things the same way, and it has some
+> custom ioctls to control the planes. =
 
-> don't have a definitive answer to my question.
-> =
 
-> I have a device that supports three planes - memory areas that the hardwa=
-re =
+Thanks, I'll take a look at it.
 
-> reads from to generate the physical image.  Each plane supports an alpha =
+> Another way would be to have one
+> fb device and implement support for the extra planes in user space.
 
-> channel for each pixel, and the hardware just blends all three planes tog=
-ether =
+Can you give me more details?  How exactly would I do that in user space?
 
-> when it draws the image.
-> =
+> Perhaps return an error for any ioctls when the plane is not available,
+> or implement a custom ioctl which carries that information. You could
+> also leave that up to user space to know. It seems to me that you'll need
+> a customized user space solution anyway (eg. a DirectFB gfx driver or a
+> custom kdrive X server).
 
-> Currently, our driver create three framebuffer devices, /dev/fb0, /dev/fb=
-1, =
+You might be right.
 
-> and /dev/fb2, which means three calls to register_framebuffer().  Is this=
- the =
+Would it be correct to say that applications expect the separate devices =
 
-> correct way to do it?
+(/dev/fb0, /dev/fb1, etc) to represent different monitors?
 
-It is one way. At least omapfb does things the same way, and it has some
-custom ioctls to control the planes. Another way would be to have one
-fb device and implement support for the extra planes in user space.
+As I said, our hardware does alpha-channel blending of the three planes ont=
+o =
 
-> The reason I ask is that our hardware can only handle three planes if the =
+one display.  If an application opens /dev/fb1 and tries to draw on it, =
 
-> resolution is 1024x768 or below.  I can't figure out any way of telling t=
-he =
+nothing appears because the alpha channel for each pixel defaults to 0, whi=
+ch =
 
-> framebuffer subsystem that if it switches to 1280x1024 in plane 0, that p=
-lane =
+means full transparency.  So our hardware ignores the alpha channel for =
 
-> 1 and 2 no longer exist.  Any suggestions on how to handle that?
+/dev/fb0 but not /dev/fb1 or /dev/fb2.
 
-Perhaps return an error for any ioctls when the plane is not available,
-or implement a custom ioctl which carries that information. You could
-also leave that up to user space to know. It seems to me that you'll need
-a customized user space solution anyway (eg. a DirectFB gfx driver or a
-custom kdrive X server).
+In addition, if the resolution is changed on /dev/fb0, it automatically =
+
+changes for /dev/fb1 and /dev/fb2 as well.  Is there a mechanism for tellin=
+g =
+
+the application that the resolution has changed?
+
+Do you know how DirectFB supports layers?  That is, what mechanism does =
+
+DirectFB use to draw to one layer versus another layer?  I tried examining =
+the =
+
+DirectFB source, but I couldn't figure it out.
 
 -- =
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Timur Tabi
+Linux Kernel Developer @ Freescale
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

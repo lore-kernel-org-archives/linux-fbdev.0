@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 01/12] fbdev: find mode with the
- highest/safest refresh rate in fb_find_mode()
-Date: Sat, 15 Sep 2007 07:55:44 +0800
-Message-ID: <46EB1F80.1060505@gmail.com>
+Subject: [PATCH 02/12] nvidiafb: Add boot option to
+	reverse i2c port assignment
+Date: Sat, 15 Sep 2007 07:59:51 +0800
+Message-ID: <46EB2077.2060004@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IWLEO-0007gK-0p for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:09:52 -0700
+	id 1IWLER-0007gS-NV for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Sep 2007 17:09:56 -0700
 Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEN-0003jU-Ev
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLER-0003jU-CG
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:09:51 -0700
+	Fri, 14 Sep 2007 17:09:55 -0700
 Received: by rv-out-0910.google.com with SMTP id g11so3286302rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Sep 2007 17:09:51 -0700 (PDT)
+	Fri, 14 Sep 2007 17:09:55 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,84 +31,99 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Michal Januszewski <spock@gentoo.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Alex Kanavin <ak@sensi.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Michal Januszewski <spock@gentoo.org>
+There are a few nvidia hardware where the i2c port assignments are
+reversed, i.e., the 1st i2c port is assigned to the secondary display and
+the 2nd i2c port to the primary display. In most cases, if only 1 display
+is attached, or if only 1 flatpanel and 1 analog display is attached, the
+port reversal is of no consequence.  However if 2 flatpanels are attached,
+it can cause display problems.
 
-Currently, if the refresh rate is not specified, fb_find_mode() returns
-the first known video mode with the requested resolution, which provides
-no guarantees wrt the refresh rate.  Change this so that the mode with
-the highest refresh rate is returned when the driver provides a custom
-video mode database and the monitor limits, and a mode with the safe
-60 Hz refresh rate otherwise.
+There is no sane way of determining if the hardware reversed the i2c port
+assignment, so the simplest fix is to add a boot/module option, 
+"reverse_i2c to explicitly reverse the i2c port.
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+This also restores i2c ordering back to the pre-2.6.22 state.
+
+Signed-off-by: Antonino Daplas <adaplas@gail.com>
 ---
 
- drivers/video/modedb.c |   41 +++++++++++++++++++++++++++++------------
- 1 files changed, 29 insertions(+), 12 deletions(-)
+ drivers/video/nvidia/nv_i2c.c  |    8 ++++----
+ drivers/video/nvidia/nv_type.h |    1 +
+ drivers/video/nvidia/nvidia.c  |    6 ++++++
+ 3 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index f7f9c08..03b06aa 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -606,26 +606,43 @@ done:
- 	DPRINTK("Trying specified video mode%s %ix%i\n",
- 	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
+diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+index afe4567..0cbcb3d 100644
+--- a/drivers/video/nvidia/nv_i2c.c
++++ b/drivers/video/nvidia/nv_i2c.c
+@@ -125,11 +125,11 @@ void nvidia_create_i2c_busses(struct nvi
+ 	par->chan[1].par = par;
+ 	par->chan[2].par = par;
  
--	diff = refresh;
-+	if (!refresh_specified) {
-+		/*
-+		 * If the caller has provided a custom mode database and a
-+		 * valid monspecs structure, we look for the mode with the
-+		 * highest refresh rate.  Otherwise we play it safe it and
-+		 * try to find a mode with a refresh rate closest to the
-+		 * standard 60 Hz.
-+		 */
-+		if (db != modedb &&
-+		    info->monspecs.vfmin && info->monspecs.vfmax &&
-+		    info->monspecs.hfmin && info->monspecs.hfmax &&
-+		    info->monspecs.dclkmax) {
-+			refresh = 1000;
-+		} else {
-+			refresh = 60;
-+		}
-+	}
-+
-+	diff = -1;
- 	best = -1;
- 	for (i = 0; i < dbsize; i++) {
--		if (name_matches(db[i], name, namelen) ||
--		    (res_specified && res_matches(db[i], xres, yres))) {
--			if(!fb_try_mode(var, info, &db[i], bpp)) {
--				if(!refresh_specified || db[i].refresh == refresh)
--					return 1;
--				else {
--					if(diff > abs(db[i].refresh - refresh)) {
--						diff = abs(db[i].refresh - refresh);
--						best = i;
--					}
-+		if ((name_matches(db[i], name, namelen) ||
-+		    (res_specified && res_matches(db[i], xres, yres))) &&
-+		    !fb_try_mode(var, info, &db[i], bpp)) {
-+			if (refresh_specified && db[i].refresh == refresh) {
-+				return 1;
-+			} else {
-+				if (abs(db[i].refresh - refresh) < diff) {
-+					diff = abs(db[i].refresh - refresh);
-+					best = i;
- 				}
- 			}
- 		}
- 	}
- 	if (best != -1) {
- 		fb_try_mode(var, info, &db[best], bpp);
--		return 2;
-+		return (refresh_specified) ? 2 : 1;
- 	}
+-	par->chan[0].ddc_base = 0x36;
+- 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", I2C_CLASS_HWMON);
++	par->chan[0].ddc_base = (par->reverse_i2c) ? 0x36 : 0x3e;
++ 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", 0);
  
- 	diff = xres + yres;
+-	par->chan[1].ddc_base = 0x3e;
+- 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1", 0);
++	par->chan[1].ddc_base = (par->reverse_i2c) ? 0x3e : 0x36;
++ 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1", I2C_CLASS_HWMON);
+ 
+ 	par->chan[2].ddc_base = 0x50;
+  	nvidia_setup_i2c_bus(&par->chan[2], "nvidia #2", 0);
+diff --git a/drivers/video/nvidia/nv_type.h b/drivers/video/nvidia/nv_type.h
+index 2fdf77e..f132aab 100644
+--- a/drivers/video/nvidia/nv_type.h
++++ b/drivers/video/nvidia/nv_type.h
+@@ -135,6 +135,7 @@ struct nvidia_par {
+ 	int paneltweak;
+ 	int LVDS;
+ 	int pm_state;
++	int reverse_i2c;
+ 	u32 crtcSync_read;
+ 	u32 fpSyncs;
+ 	u32 dmaPut;
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index a7fe214..30e14eb 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -79,6 +79,7 @@ static int noscale __devinitdata = 0;
+ static int paneltweak __devinitdata = 0;
+ static int vram __devinitdata = 0;
+ static int bpp __devinitdata = 8;
++static int reverse_i2c __devinitdata;
+ #ifdef CONFIG_MTRR
+ static int nomtrr __devinitdata = 0;
+ #endif
+@@ -1305,6 +1306,7 @@ static int __devinit nvidiafb_probe(stru
+ 	par->CRTCnumber = forceCRTC;
+ 	par->FpScale = (!noscale);
+ 	par->paneltweak = paneltweak;
++	par->reverse_i2c = reverse_i2c;
+ 
+ 	/* enable IO and mem if not already done */
+ 	pci_read_config_word(pd, PCI_COMMAND, &cmd);
+@@ -1486,6 +1488,8 @@ static int __devinit nvidiafb_setup(char
+ 			noaccel = 1;
+ 		} else if (!strncmp(this_opt, "noscale", 7)) {
+ 			noscale = 1;
++		} else if (!strncmp(this_opt, "reverse_i2c", 11)) {
++			reverse_i2c = 1;
+ 		} else if (!strncmp(this_opt, "paneltweak:", 11)) {
+ 			paneltweak = simple_strtoul(this_opt+11, NULL, 0);
+ 		} else if (!strncmp(this_opt, "vram:", 5)) {
+@@ -1582,6 +1586,8 @@ MODULE_PARM_DESC(mode_option, "Specify i
+ module_param(bpp, int, 0);
+ MODULE_PARM_DESC(bpp, "pixel width in bits"
+ 		 "(default=8)");
++module_param(reverse_i2c, int, 0);
++MODULE_PARM_DESC(reverse_i2c, "reverse port assignment of the i2c bus");
+ #ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
 
 
 -------------------------------------------------------------------------

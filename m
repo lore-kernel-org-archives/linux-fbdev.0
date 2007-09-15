@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 02/12] nvidiafb: Add boot option to
-	reverse i2c port assignment
-Date: Sat, 15 Sep 2007 07:59:51 +0800
-Message-ID: <46EB2077.2060004@gmail.com>
+Subject: [PATCH 05/12] ps3fb: Fix spurious mode change
+	failures
+Date: Sat, 15 Sep 2007 08:03:15 +0800
+Message-ID: <46EB2143.9000307@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IWLER-0007gS-NV for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:09:56 -0700
+	id 1IWLEf-0007lz-7z for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Sep 2007 17:10:09 -0700
 Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLER-0003jU-CG
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEe-0003jU-Tj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:09:55 -0700
+	Fri, 14 Sep 2007 17:10:09 -0700
 Received: by rv-out-0910.google.com with SMTP id g11so3286302rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Sep 2007 17:09:55 -0700 (PDT)
+	Fri, 14 Sep 2007 17:10:08 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,99 +31,89 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Alex Kanavin <ak@sensi.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geoff Levand <geoffrey.levand@am.sony.com>
 
-There are a few nvidia hardware where the i2c port assignments are
-reversed, i.e., the 1st i2c port is assigned to the secondary display and
-the 2nd i2c port to the primary display. In most cases, if only 1 display
-is attached, or if only 1 flatpanel and 1 analog display is attached, the
-port reversal is of no consequence.  However if 2 flatpanels are attached,
-it can cause display problems.
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-There is no sane way of determining if the hardware reversed the i2c port
-assignment, so the simplest fix is to add a boot/module option, 
-"reverse_i2c to explicitly reverse the i2c port.
+ps3fb: Add a `mode' parameter to ps3fb_get_res_table(), as in some cases it
+should check the full-screen flag of the _new_ video mode instead of the
+current video mode.
 
-This also restores i2c ordering back to the pre-2.6.22 state.
+This bug caused spurious mode change failures when switching between fullscreen
+and non-fullscreen modes using fbset, while ps3-video-mode worked fine.
 
-Signed-off-by: Antonino Daplas <adaplas@gail.com>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Geoff Levand <geoffrey.levand@am.sony.com>
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/nvidia/nv_i2c.c  |    8 ++++----
- drivers/video/nvidia/nv_type.h |    1 +
- drivers/video/nvidia/nvidia.c  |    6 ++++++
- 3 files changed, 11 insertions(+), 4 deletions(-)
+ drivers/video/ps3fb.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
-index afe4567..0cbcb3d 100644
---- a/drivers/video/nvidia/nv_i2c.c
-+++ b/drivers/video/nvidia/nv_i2c.c
-@@ -125,11 +125,11 @@ void nvidia_create_i2c_busses(struct nvi
- 	par->chan[1].par = par;
- 	par->chan[2].par = par;
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index e0beb97..c9037e9 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -303,13 +303,13 @@ module_param(ps3fb_mode, int, 0);
  
--	par->chan[0].ddc_base = 0x36;
-- 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", I2C_CLASS_HWMON);
-+	par->chan[0].ddc_base = (par->reverse_i2c) ? 0x36 : 0x3e;
-+ 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", 0);
+ static char *mode_option __devinitdata;
  
--	par->chan[1].ddc_base = 0x3e;
-- 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1", 0);
-+	par->chan[1].ddc_base = (par->reverse_i2c) ? 0x3e : 0x36;
-+ 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1", I2C_CLASS_HWMON);
+-static int ps3fb_get_res_table(u32 xres, u32 yres)
++static int ps3fb_get_res_table(u32 xres, u32 yres, int mode)
+ {
+ 	int full_mode;
+ 	unsigned int i;
+ 	u32 x, y, f;
  
- 	par->chan[2].ddc_base = 0x50;
-  	nvidia_setup_i2c_bus(&par->chan[2], "nvidia #2", 0);
-diff --git a/drivers/video/nvidia/nv_type.h b/drivers/video/nvidia/nv_type.h
-index 2fdf77e..f132aab 100644
---- a/drivers/video/nvidia/nv_type.h
-+++ b/drivers/video/nvidia/nv_type.h
-@@ -135,6 +135,7 @@ struct nvidia_par {
- 	int paneltweak;
- 	int LVDS;
- 	int pm_state;
-+	int reverse_i2c;
- 	u32 crtcSync_read;
- 	u32 fpSyncs;
- 	u32 dmaPut;
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index a7fe214..30e14eb 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -79,6 +79,7 @@ static int noscale __devinitdata = 0;
- static int paneltweak __devinitdata = 0;
- static int vram __devinitdata = 0;
- static int bpp __devinitdata = 8;
-+static int reverse_i2c __devinitdata;
- #ifdef CONFIG_MTRR
- static int nomtrr __devinitdata = 0;
- #endif
-@@ -1305,6 +1306,7 @@ static int __devinit nvidiafb_probe(stru
- 	par->CRTCnumber = forceCRTC;
- 	par->FpScale = (!noscale);
- 	par->paneltweak = paneltweak;
-+	par->reverse_i2c = reverse_i2c;
+-	full_mode = (ps3fb_mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
++	full_mode = (mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
+ 	for (i = 0;; i++) {
+ 		x = ps3fb_res[i].xres;
+ 		y = ps3fb_res[i].yres;
+@@ -527,7 +527,7 @@ static int ps3fb_check_var(struct fb_var
+ 	}
  
- 	/* enable IO and mem if not already done */
- 	pci_read_config_word(pd, PCI_COMMAND, &cmd);
-@@ -1486,6 +1488,8 @@ static int __devinit nvidiafb_setup(char
- 			noaccel = 1;
- 		} else if (!strncmp(this_opt, "noscale", 7)) {
- 			noscale = 1;
-+		} else if (!strncmp(this_opt, "reverse_i2c", 11)) {
-+			reverse_i2c = 1;
- 		} else if (!strncmp(this_opt, "paneltweak:", 11)) {
- 			paneltweak = simple_strtoul(this_opt+11, NULL, 0);
- 		} else if (!strncmp(this_opt, "vram:", 5)) {
-@@ -1582,6 +1586,8 @@ MODULE_PARM_DESC(mode_option, "Specify i
- module_param(bpp, int, 0);
- MODULE_PARM_DESC(bpp, "pixel width in bits"
- 		 "(default=8)");
-+module_param(reverse_i2c, int, 0);
-+MODULE_PARM_DESC(reverse_i2c, "reverse port assignment of the i2c bus");
- #ifdef CONFIG_MTRR
- module_param(nomtrr, bool, 0);
- MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
+ 	/* Memory limit */
+-	i = ps3fb_get_res_table(var->xres, var->yres);
++	i = ps3fb_get_res_table(var->xres, var->yres, mode);
+ 	if (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP > ps3fb_videomemory.size) {
+ 		DPRINTK("Not enough memory\n");
+ 		return -ENOMEM;
+@@ -553,13 +553,14 @@ static int ps3fb_set_par(struct fb_info 
+ 	DPRINTK("xres:%d xv:%d yres:%d yv:%d clock:%d\n",
+ 		info->var.xres, info->var.xres_virtual,
+ 		info->var.yres, info->var.yres_virtual, info->var.pixclock);
+-	i = ps3fb_get_res_table(info->var.xres, info->var.yres);
+-	ps3fb.res_index = i;
+ 
+ 	mode = ps3fb_find_mode(&info->var, &info->fix.line_length);
+ 	if (!mode)
+ 		return -EINVAL;
+ 
++	i = ps3fb_get_res_table(info->var.xres, info->var.yres, mode);
++	ps3fb.res_index = i;
++
+ 	offset = FB_OFF(i) + VP_OFF(i);
+ 	info->fix.smem_len = ps3fb_videomemory.size - offset;
+ 	info->screen_base = (char __iomem *)ps3fb.xdr_ea + offset;
+@@ -610,7 +611,7 @@ static int ps3fb_mmap(struct fb_info *in
+ 	unsigned long size, offset;
+ 	int i;
+ 
+-	i = ps3fb_get_res_table(info->var.xres, info->var.yres);
++	i = ps3fb_get_res_table(info->var.xres, info->var.yres, ps3fb_mode);
+ 	if (i == -1)
+ 		return -EINVAL;
+ 
+@@ -999,7 +1000,7 @@ static int __devinit ps3fb_probe(struct 
+ 
+ 	if (ps3fb_mode > 0 &&
+ 	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
+-		ps3fb.res_index = ps3fb_get_res_table(xres, yres);
++		ps3fb.res_index = ps3fb_get_res_table(xres, yres, ps3fb_mode);
+ 		DPRINTK("res_index:%d\n", ps3fb.res_index);
+ 	} else
+ 		ps3fb.res_index = GPU_RES_INDEX;
 
 
 -------------------------------------------------------------------------

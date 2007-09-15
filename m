@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 07/12] fbdev: Update
-	Documentation/fb/00-INDEX
-Date: Sat, 15 Sep 2007 08:04:37 +0800
-Message-ID: <46EB2195.3060202@gmail.com>
+Subject: [PATCH 10/12] pm2fb: replace busy waiting with
+	cpu_relax
+Date: Sat, 15 Sep 2007 08:07:09 +0800
+Message-ID: <46EB222D.5000201@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IWLEn-0007mA-Ar for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:18 -0700
+	id 1IWLF0-0007mm-BR for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Sep 2007 17:10:30 -0700
 Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEn-0003jU-01
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEz-0003jU-0P
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:17 -0700
+	Fri, 14 Sep 2007 17:10:30 -0700
 Received: by rv-out-0910.google.com with SMTP id g11so3286302rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Sep 2007 17:10:16 -0700 (PDT)
+	Fri, 14 Sep 2007 17:10:28 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,85 +31,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Jesper Juhl <jesper.juhl@gmail.com>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-An update to Documentation/fb/00-INDEX is long overdue.
-This patch adds entries for new files in the directory
-and removes entries for files that no longer exist. The
-files are now also sorted alphabetically.
+This patch replaces busy waiting with the cpu_relax() call.
+This makes scrolling faster.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- Documentation/fb/00-INDEX |   46 ++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 37 insertions(+), 9 deletions(-)
+ drivers/video/pm2fb.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/fb/00-INDEX b/Documentation/fb/00-INDEX
-index 92e89ae..caabbd3 100644
---- a/Documentation/fb/00-INDEX
-+++ b/Documentation/fb/00-INDEX
-@@ -5,21 +5,49 @@ please mail me.
+diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
+index 9db1f2e..5591dfb 100644
+--- a/drivers/video/pm2fb.c
++++ b/drivers/video/pm2fb.c
+@@ -193,8 +193,8 @@ #define WAIT_FIFO(p, a)
+ #else
+ static inline void WAIT_FIFO(struct pm2fb_par *p, u32 a)
+ {
+-	while (pm2_RD(p, PM2R_IN_FIFO_SPACE) < a);
+-	mb();
++	while (pm2_RD(p, PM2R_IN_FIFO_SPACE) < a)
++		cpu_relax();
+ }
+ #endif
  
- 00-INDEX
- 	- this file
-+arkfb.txt
-+	- info on the fbdev driver for ARK Logic chips.
-+aty128fb.txt
-+	- info on the ATI Rage128 frame buffer driver.
-+cirrusfb.txt
-+	- info on the driver for Cirrus Logic chipsets.
-+cyblafb/
-+	- directory with documentation files related to the cyblafb driver.
-+deferred_io.txt
-+	- an introduction to deferred IO.
-+fbcon.txt
-+	- intro to and usage guide for the framebuffer console (fbcon).
- framebuffer.txt
--	- introduction to frame buffer devices
-+	- introduction to frame buffer devices.
-+imacfb.txt
-+	- info on the generic EFI platform driver for Intel based Macs.
-+intel810.txt
-+	- documentation for the Intel 810/815 framebuffer driver.
-+intelfb.txt
-+	- docs for Intel 830M/845G/852GM/855GM/865G/915G/945G fb driver.
- internals.txt
--	- quick overview of frame buffer device internals
-+	- quick overview of frame buffer device internals.
-+matroxfb.txt
-+	- info on the Matrox framebuffer driver for Alpha, Intel and PPC.
- modedb.txt
--	- info on the video mode database
--aty128fb.txt
--	- info on the ATI Rage128 frame buffer driver
--clgenfb.txt
--	- info on the Cirrus Logic frame buffer driver
-+	- info on the video mode database.
- matroxfb.txt
--	- info on the Matrox frame buffer driver
-+	- info on the Matrox frame buffer driver.
- pvr2fb.txt
--	- info on the PowerVR 2 frame buffer driver
-+	- info on the PowerVR 2 frame buffer driver.
-+pxafb.txt
-+	- info on the driver for the PXA25x LCD controller.
-+s3fb.txt
-+	- info on the fbdev driver for S3 Trio/Virge chips.
-+sa1100fb.txt
-+	- information about the driver for the SA-1100 LCD controller.
-+sisfb.txt
-+	- info on the framebuffer device driver for various SiS chips.
-+sstfb.txt
-+	- info on the frame buffer driver for 3dfx' Voodoo Graphics boards.
- tgafb.txt
- 	- info on the TGA (DECChip 21030) frame buffer driver
- vesafb.txt
- 	- info on the VESA frame buffer device
-+vt8623fb.txt
-+	- info on the fb driver for the graphics core in VIA VT8623 chipsets.
+@@ -328,7 +328,7 @@ static void reset_card(struct pm2fb_par 
+ 	pm2_WR(p, PM2R_RESET_STATUS, 0);
+ 	mb();
+ 	while (pm2_RD(p, PM2R_RESET_STATUS) & PM2F_BEING_RESET)
+-		;
++		cpu_relax();
+ 	mb();
+ #ifdef CONFIG_FB_PM2_FIFO_DISCONNECT
+ 	DPRINTK("FIFO disconnect enabled\n");
+@@ -1041,8 +1041,7 @@ static int pm2fb_sync(struct fb_info *in
+ 	mb();
+ 	do {
+ 		while (pm2_RD(par, PM2R_OUT_FIFO_WORDS) == 0)
+-			udelay(10);
+-		rmb();
++			cpu_relax();
+ 	} while (pm2_RD(par, PM2R_OUT_FIFO) != PM2TAG(PM2R_SYNC));
+ 
+ 	return 0;
 
 
 -------------------------------------------------------------------------

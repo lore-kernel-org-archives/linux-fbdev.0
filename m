@@ -1,8 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 03/12] fbdev: Support for byte-reversed
-	framebuffer formats
-Date: Sat, 15 Sep 2007 08:00:52 +0800
-Message-ID: <46EB20B4.9040804@gmail.com>
+Subject: [PATCH 04/12] ps3: Fix black and white stripes
+Date: Sat, 15 Sep 2007 08:02:30 +0800
+Message-ID: <46EB2116.4030808@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IWLEW-0007ga-47 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:00 -0700
-Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEV-0003jU-He
+	id 1IWLEd-0007lu-Se for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Sep 2007 17:10:08 -0700
+Received: from wa-out-1112.google.com ([209.85.146.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEb-0003qG-59
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:00 -0700
-Received: by rv-out-0910.google.com with SMTP id g11so3286302rvb
+	Fri, 14 Sep 2007 17:10:07 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so1238382waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Sep 2007 17:09:59 -0700 (PDT)
+	Fri, 14 Sep 2007 17:10:04 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,370 +30,111 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Pavel Pisa <pisa@cmp.felk.cvut.cz>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>, Geoff Levand <geoffrey.levand@am.sony.com>
 
-From: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+From: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
 
-Allow generic frame-buffer code to correctly write texts
-and blit images for 1, 2 and 4 bit per pixel frame-buffer organizations
-when pixels in bytes are organized to in opposite order than bytes
-in long type.
+Fix the black and white stripes issue with WUXGA monitor via HDMI.
 
-Overhead should be reasonable. If option is not selected, than compiler
-should eliminate completely all overhead.
+It seems that when we use a VESA resolution from boot up, the AV settings
+driver could not be initialized correctly.
+In that case we need a dummy packet before VESA setting.
 
-The feature is disabled at compile time if CONFIG_FB_CFB_REV_PIXELS_IN_BYTE
-is not set.
+[Geert] Refactored to reduce code duplication.
 
-[adaplas]
-Convert helper functions to macros if feature is not enabled.
-
-Signed-off-by: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Geoff Levand <geoffrey.levand@am.sony.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/Kconfig       |    9 ++++++
- drivers/video/cfbcopyarea.c |   17 ++++++-----
- drivers/video/cfbfillrect.c |   20 ++++++++-----
- drivers/video/cfbimgblt.c   |   17 ++++++-----
- drivers/video/fb_draw.h     |   68 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h          |    1 +
- 6 files changed, 109 insertions(+), 23 deletions(-)
+ drivers/ps3/ps3av.c |   58 +++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 38 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 4e5338e..cf7ca7a 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -102,6 +102,15 @@ config FB_CFB_IMAGEBLIT
- 	  blitting. This is used by drivers that don't provide their own
- 	  (accelerated) version.
- 
-+config FB_CFB_REV_PIXELS_IN_BYTE
-+	bool
-+	depends on FB
-+	default n
-+	---help---
-+	  Allow generic frame-buffer functions to work on displays with 1, 2
-+	  and 4 bits per pixel depths which has opposite order of pixels in
-+	  byte order to bytes in long order.
-+
- config FB_SYS_FILLRECT
- 	tristate
- 	depends on FB
-diff --git a/drivers/video/cfbcopyarea.c b/drivers/video/cfbcopyarea.c
-index 032210f..1c67885 100644
---- a/drivers/video/cfbcopyarea.c
-+++ b/drivers/video/cfbcopyarea.c
-@@ -45,14 +45,14 @@ #endif
- 
- static void
- bitcpy(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
--	int src_idx, int bits, unsigned n)
-+	int src_idx, int bits, unsigned n, u32 bswapmask)
- {
- 	unsigned long first, last;
- 	int const shift = dst_idx-src_idx;
- 	int left, right;
- 
--	first = FB_SHIFT_HIGH(~0UL, dst_idx);
--	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
-+	first = fb_shifted_pixels_mask_long(dst_idx, bswapmask);
-+	last = ~fb_shifted_pixels_mask_long((dst_idx+n) % bits, bswapmask);
- 
- 	if (!shift) {
- 		// Same alignment for source and dest
-@@ -185,7 +185,7 @@ bitcpy(unsigned long __iomem *dst, int d
- 
- static void
- bitcpy_rev(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
--		int src_idx, int bits, unsigned n)
-+		int src_idx, int bits, unsigned n, u32 bswapmask)
- {
- 	unsigned long first, last;
- 	int shift;
-@@ -203,8 +203,8 @@ bitcpy_rev(unsigned long __iomem *dst, i
- 
- 	shift = dst_idx-src_idx;
- 
--	first = FB_SHIFT_LOW(~0UL, bits - 1 - dst_idx);
--	last = ~(FB_SHIFT_LOW(~0UL, bits - 1 - ((dst_idx-n) % bits)));
-+	first = fb_shifted_pixels_mask_long(bits - 1 - dst_idx, bswapmask);
-+	last = ~fb_shifted_pixels_mask_long(bits - 1 - ((dst_idx-n) % bits), bswapmask);
- 
- 	if (!shift) {
- 		// Same alignment for source and dest
-@@ -336,6 +336,7 @@ void cfb_copyarea(struct fb_info *p, con
- 	unsigned long __iomem *dst = NULL, *src = NULL;
- 	int bits = BITS_PER_LONG, bytes = bits >> 3;
- 	int dst_idx = 0, src_idx = 0, rev_copy = 0;
-+	u32 bswapmask = fb_compute_bswapmask(p);
- 
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
-@@ -368,7 +369,7 @@ void cfb_copyarea(struct fb_info *p, con
- 			src += src_idx >> (ffs(bits) - 1);
- 			src_idx &= (bytes - 1);
- 			bitcpy_rev(dst, dst_idx, src, src_idx, bits,
--				width*p->var.bits_per_pixel);
-+				width*p->var.bits_per_pixel, bswapmask);
- 		}
- 	} else {
- 		while (height--) {
-@@ -377,7 +378,7 @@ void cfb_copyarea(struct fb_info *p, con
- 			src += src_idx >> (ffs(bits) - 1);
- 			src_idx &= (bytes - 1);
- 			bitcpy(dst, dst_idx, src, src_idx, bits,
--				width*p->var.bits_per_pixel);
-+				width*p->var.bits_per_pixel, bswapmask);
- 			dst_idx += bits_per_line;
- 			src_idx += bits_per_line;
- 		}
-diff --git a/drivers/video/cfbfillrect.c b/drivers/video/cfbfillrect.c
-index 71623b4..23d70a1 100644
---- a/drivers/video/cfbfillrect.c
-+++ b/drivers/video/cfbfillrect.c
-@@ -36,15 +36,16 @@ #endif
-      */
- 
- static void
--bitfill_aligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n, int bits)
-+bitfill_aligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
-+		unsigned n, int bits, u32 bswapmask)
- {
- 	unsigned long first, last;
- 
- 	if (!n)
- 		return;
- 
--	first = FB_SHIFT_HIGH(~0UL, dst_idx);
--	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
-+	first = fb_shifted_pixels_mask_long(dst_idx, bswapmask);
-+	last = ~fb_shifted_pixels_mask_long((dst_idx+n) % bits, bswapmask);
- 
- 	if (dst_idx+n <= bits) {
- 		// Single word
-@@ -146,7 +147,8 @@ bitfill_unaligned(unsigned long __iomem 
-      *  Aligned pattern invert using 32/64-bit memory accesses
-      */
- static void
--bitfill_aligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n, int bits)
-+bitfill_aligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
-+		unsigned n, int bits, u32 bswapmask)
- {
- 	unsigned long val = pat, dat;
- 	unsigned long first, last;
-@@ -154,8 +156,8 @@ bitfill_aligned_rev(unsigned long __iome
- 	if (!n)
- 		return;
- 
--	first = FB_SHIFT_HIGH(~0UL, dst_idx);
--	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
-+	first = fb_shifted_pixels_mask_long(dst_idx, bswapmask);
-+	last = ~fb_shifted_pixels_mask_long((dst_idx+n) % bits, bswapmask);
- 
- 	if (dst_idx+n <= bits) {
- 		// Single word
-@@ -303,8 +305,10 @@ void cfb_fillrect(struct fb_info *p, con
- 	if (p->fbops->fb_sync)
- 		p->fbops->fb_sync(p);
- 	if (!left) {
-+		u32 bswapmask = fb_compute_bswapmask(p);
- 		void (*fill_op32)(unsigned long __iomem *dst, int dst_idx,
--		                  unsigned long pat, unsigned n, int bits) = NULL;
-+		                  unsigned long pat, unsigned n, int bits,
-+				  u32 bswapmask) = NULL;
- 
- 		switch (rect->rop) {
- 		case ROP_XOR:
-@@ -321,7 +325,7 @@ void cfb_fillrect(struct fb_info *p, con
- 		while (height--) {
- 			dst += dst_idx >> (ffs(bits) - 1);
- 			dst_idx &= (bits - 1);
--			fill_op32(dst, dst_idx, pat, width*bpp, bits);
-+			fill_op32(dst, dst_idx, pat, width*bpp, bits, bswapmask);
- 			dst_idx += p->fix.line_length*8;
- 		}
- 	} else {
-diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
-index 2610044..f598907 100644
---- a/drivers/video/cfbimgblt.c
-+++ b/drivers/video/cfbimgblt.c
-@@ -33,6 +33,7 @@ #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/fb.h>
- #include <asm/types.h>
-+#include "fb_draw.h"
- 
- #define DEBUG
- 
-@@ -87,6 +88,7 @@ static inline void color_imageblit(const
- 	u32 null_bits = 32 - bpp;
- 	u32 *palette = (u32 *) p->pseudo_palette;
- 	const u8 *src = image->data;
-+	u32 bswapmask = fb_compute_bswapmask(p);
- 
- 	dst2 = (u32 __iomem *) dst1;
- 	for (i = image->height; i--; ) {
-@@ -96,7 +98,7 @@ static inline void color_imageblit(const
- 		val = 0;
- 		
- 		if (start_index) {
--			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0, start_index));
-+			u32 start_mask = ~fb_shifted_pixels_mask_u32(start_index, bswapmask);
- 			val = FB_READL(dst) & start_mask;
- 			shift = start_index;
- 		}
-@@ -107,7 +109,7 @@ static inline void color_imageblit(const
- 			else
- 				color = *src;
- 			color <<= FB_LEFT_POS(bpp);
--			val |= FB_SHIFT_HIGH(color, shift);
-+			val |= FB_SHIFT_HIGH(color, shift ^ bswapmask);
- 			if (shift >= null_bits) {
- 				FB_WRITEL(val, dst++);
- 	
-@@ -119,7 +121,7 @@ static inline void color_imageblit(const
- 			src++;
- 		}
- 		if (shift) {
--			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
-+			u32 end_mask = fb_shifted_pixels_mask_u32(shift, bswapmask);
- 
- 			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
- 		}
-@@ -147,7 +149,8 @@ static inline void slow_imageblit(const 
- 	u32 spitch = (image->width+7)/8;
- 	const u8 *src = image->data, *s;
- 	u32 i, j, l;
--	
-+	u32 bswapmask = fb_compute_bswapmask(p);
-+
- 	dst2 = (u32 __iomem *) dst1;
- 	fgcolor <<= FB_LEFT_POS(bpp);
- 	bgcolor <<= FB_LEFT_POS(bpp);
-@@ -161,7 +164,7 @@ static inline void slow_imageblit(const 
- 
- 		/* write leading bits */
- 		if (start_index) {
--			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0,start_index));
-+			u32 start_mask = ~fb_shifted_pixels_mask_u32(start_index, bswapmask);
- 			val = FB_READL(dst) & start_mask;
- 			shift = start_index;
- 		}
-@@ -169,7 +172,7 @@ static inline void slow_imageblit(const 
- 		while (j--) {
- 			l--;
- 			color = (*s & (1 << l)) ? fgcolor : bgcolor;
--			val |= FB_SHIFT_HIGH(color, shift);
-+			val |= FB_SHIFT_HIGH(color, shift ^ bswapmask);
- 			
- 			/* Did the bitshift spill bits to the next long? */
- 			if (shift >= null_bits) {
-@@ -184,7 +187,7 @@ static inline void slow_imageblit(const 
- 
- 		/* write trailing bits */
-  		if (shift) {
--			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
-+			u32 end_mask = fb_shifted_pixels_mask_u32(shift, bswapmask);
- 
- 			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
- 		}
-diff --git a/drivers/video/fb_draw.h b/drivers/video/fb_draw.h
-index c5c4520..816843f 100644
---- a/drivers/video/fb_draw.h
-+++ b/drivers/video/fb_draw.h
-@@ -2,6 +2,7 @@ #ifndef _FB_DRAW_H
- #define _FB_DRAW_H
- 
- #include <asm/types.h>
-+#include <linux/fb.h>
- 
-     /*
-      *  Compose two values, using a bitmask as decision value
-@@ -69,4 +70,71 @@ pixel_to_pat( u32 bpp, u32 pixel)
-     }
+diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
+index 85e2161..a1f63cb 100644
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -491,10 +491,10 @@ static int ps3av_set_videomode(void)
+ 	return 0;
  }
- #endif
-+
-+#ifdef CONFIG_FB_CFB_REV_PIXELS_IN_BYTE
-+
-+static inline u32 fb_shifted_pixels_mask_u32(u32 index, u32 bswapmask)
-+{
-+	u32 mask;
-+
-+	if (!bswapmask) {
-+		mask = FB_SHIFT_HIGH(~(u32)0, index);
-+	} else {
-+		mask = 0xff << FB_LEFT_POS(8);
-+		mask = FB_SHIFT_LOW(mask, index & (bswapmask)) & mask;
-+		mask = FB_SHIFT_HIGH(mask, index & ~(bswapmask));
-+#if defined(__i386__) || defined(__x86_64__)
-+		/* Shift argument is limited to 0 - 31 on x86 based CPU's */
-+		if(index + bswapmask < 32)
-+#endif
-+			mask |= FB_SHIFT_HIGH(~(u32)0,
-+					(index + bswapmask) & ~(bswapmask));
-+	}
-+	return mask;
-+}
-+
-+static inline unsigned long fb_shifted_pixels_mask_long(u32 index, u32 bswapmask)
-+{
-+	unsigned long mask;
-+
-+	if (!bswapmask) {
-+		mask = FB_SHIFT_HIGH(~0UL, index);
-+	} else {
-+		mask = 0xff << FB_LEFT_POS(8);
-+		mask = FB_SHIFT_LOW(mask, index & (bswapmask)) & mask;
-+		mask = FB_SHIFT_HIGH(mask, index & ~(bswapmask));
-+#if defined(__i386__) || defined(__x86_64__)
-+		/* Shift argument is limited to 0 - 31 on x86 based CPU's */
-+		if(index + bswapmask < BITS_PER_LONG)
-+#endif
-+			mask |= FB_SHIFT_HIGH(~0UL,
-+					(index + bswapmask) & ~(bswapmask));
-+	}
-+	return mask;
-+}
-+
-+
-+static inline u32 fb_compute_bswapmask(struct fb_info *info)
-+{
-+	u32 bswapmask = 0;
-+	unsigned bpp = info->var.bits_per_pixel;
-+
-+	if ((bpp < 8) && (info->var.nonstd & FB_NONSTD_REV_PIX_IN_B)) {
-+		/*
-+		 * Reversed order of pixel layout in bytes
-+		 * works only for 1, 2 and 4 bpp
-+		 */
-+		bswapmask = 7 - bpp + 1;
-+	}
-+	return bswapmask;
-+}
-+
-+#else /* CONFIG_FB_CFB_REV_PIXELS_IN_BYTE */
-+
-+#define fb_shifted_pixels_mask_u32(i, b) FB_SHIFT_HIGH(~(u32)0, (i))
-+#define fb_shifted_pixels_mask_long(i, b) FB_SHIFT_HIGH(~0UL, (i))
-+#define fb_compute_bswapmask(...) 0
-+
-+#endif  /* CONFIG_FB_CFB_REV_PIXELS_IN_BYTE */
-+
- #endif /* FB_DRAW_H */
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index cec5410..b39395c 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -180,6 +180,7 @@ struct fb_bitfield {
- };
  
- #define FB_NONSTD_HAM		1	/* Hold-And-Modify (HAM)        */
-+#define FB_NONSTD_REV_PIX_IN_B	2	/* order of pixels in each byte is reversed */
+-static void ps3av_set_videomode_cont(u32 id, u32 old_id)
++static void ps3av_set_videomode_packet(u32 id)
+ {
+ 	struct ps3av_pkt_avb_param avb_param;
+-	int i;
++	unsigned int i;
+ 	u32 len = 0, av_video_cs;
+ 	const struct avset_video_mode *video_mode;
+ 	int res;
+@@ -507,24 +507,6 @@ static void ps3av_set_videomode_cont(u32
+ 					ps3av->av_hw_conf.num_of_avmulti;
+ 	avb_param.num_of_av_audio_pkt = 0;
  
- #define FB_ACTIVATE_NOW		0	/* set values immediately (or vbl)*/
- #define FB_ACTIVATE_NXTOPEN	1	/* activate on next open	*/
+-	/* video signal off */
+-	ps3av_set_video_disable_sig();
+-
+-	/* Retail PS3 product doesn't support this */
+-	if (id & PS3AV_MODE_HDCP_OFF) {
+-		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
+-		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av->dev->core, "Not supported\n");
+-		else if (res)
+-			dev_dbg(&ps3av->dev->core,
+-				"ps3av_cmd_av_hdmi_mode failed\n");
+-	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
+-		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
+-		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av->dev->core,
+-				"ps3av_cmd_av_hdmi_mode failed\n");
+-	}
+-
+ 	/* video_pkt */
+ 	for (i = 0; i < avb_param.num_of_video_pkt; i++)
+ 		len += ps3av_cmd_set_video_mode(&avb_param.buf[len],
+@@ -555,6 +537,42 @@ #endif
+ 		       __func__);
+ 	else if (res)
+ 		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
++}
++
++static void ps3av_set_videomode_cont(u32 id, u32 old_id)
++{
++	static int vesa = 0;
++	int res;
++
++	/* video signal off */
++	ps3av_set_video_disable_sig();
++
++	/*
++	 * AV backend needs non-VESA mode setting at least one time
++	 * when VESA mode is used.
++	 */
++	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= 11) {
++		/* vesa mode */
++		ps3av_set_videomode_packet(2);	/* 480P */
++	}
++	vesa = 1;
++
++	/* Retail PS3 product doesn't support this */
++	if (id & PS3AV_MODE_HDCP_OFF) {
++		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
++		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
++			dev_dbg(&ps3av->dev->core, "Not supported\n");
++		else if (res)
++			dev_dbg(&ps3av->dev->core,
++				"ps3av_cmd_av_hdmi_mode failed\n");
++	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
++		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
++		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
++			dev_dbg(&ps3av->dev->core,
++				"ps3av_cmd_av_hdmi_mode failed\n");
++	}
++
++	ps3av_set_videomode_packet(id);
+ 
+ 	msleep(1500);
+ 	/* av video mute */
 
 
 -------------------------------------------------------------------------

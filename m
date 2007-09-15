@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 10/12] pm2fb: replace busy waiting with
+Subject: [PATCH 11/12] pm3fb: replace busy waiting with
 	cpu_relax
-Date: Sat, 15 Sep 2007 08:07:09 +0800
-Message-ID: <46EB222D.5000201@gmail.com>
+Date: Sat, 15 Sep 2007 08:07:45 +0800
+Message-ID: <46EB2251.2060702@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IWLF0-0007mm-BR for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:30 -0700
-Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEz-0003jU-0P
+	id 1IWLF3-0007n0-4f for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Sep 2007 17:10:33 -0700
+Received: from wa-out-1112.google.com ([209.85.146.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLF2-0003qG-RU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:30 -0700
-Received: by rv-out-0910.google.com with SMTP id g11so3286302rvb
+	Fri, 14 Sep 2007 17:10:33 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so1238382waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Sep 2007 17:10:28 -0700 (PDT)
+	Fri, 14 Sep 2007 17:10:32 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -42,41 +42,32 @@ Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/pm2fb.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/video/pm3fb.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
-index 9db1f2e..5591dfb 100644
---- a/drivers/video/pm2fb.c
-+++ b/drivers/video/pm2fb.c
-@@ -193,8 +193,8 @@ #define WAIT_FIFO(p, a)
- #else
- static inline void WAIT_FIFO(struct pm2fb_par *p, u32 a)
+diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
+index 6a64b93..0706599 100644
+--- a/drivers/video/pm3fb.c
++++ b/drivers/video/pm3fb.c
+@@ -110,7 +110,8 @@ static inline void PM3_WRITE_REG(struct 
+ 
+ static inline void PM3_WAIT(struct pm3_par *par, u32 n)
  {
--	while (pm2_RD(p, PM2R_IN_FIFO_SPACE) < a);
--	mb();
-+	while (pm2_RD(p, PM2R_IN_FIFO_SPACE) < a)
+-	while (PM3_READ_REG(par, PM3InFIFOSpace) < n);
++	while (PM3_READ_REG(par, PM3InFIFOSpace) < n)
 +		cpu_relax();
  }
- #endif
  
-@@ -328,7 +328,7 @@ static void reset_card(struct pm2fb_par 
- 	pm2_WR(p, PM2R_RESET_STATUS, 0);
- 	mb();
- 	while (pm2_RD(p, PM2R_RESET_STATUS) & PM2F_BEING_RESET)
--		;
-+		cpu_relax();
- 	mb();
- #ifdef CONFIG_FB_PM2_FIFO_DISCONNECT
- 	DPRINTK("FIFO disconnect enabled\n");
-@@ -1041,8 +1041,7 @@ static int pm2fb_sync(struct fb_info *in
+ static inline void PM3_WRITE_DAC_REG(struct pm3_par *par, unsigned r, u8 v)
+@@ -209,8 +210,8 @@ static int pm3fb_sync(struct fb_info *in
+ 	PM3_WRITE_REG(par, PM3Sync, 0);
  	mb();
  	do {
- 		while (pm2_RD(par, PM2R_OUT_FIFO_WORDS) == 0)
--			udelay(10);
+-		while ((PM3_READ_REG(par, PM3OutFIFOWords)) == 0);
 -		rmb();
++		while ((PM3_READ_REG(par, PM3OutFIFOWords)) == 0)
 +			cpu_relax();
- 	} while (pm2_RD(par, PM2R_OUT_FIFO) != PM2TAG(PM2R_SYNC));
+ 	} while ((PM3_READ_REG(par, PM3OutputFifo)) != PM3Sync_Tag);
  
  	return 0;
 

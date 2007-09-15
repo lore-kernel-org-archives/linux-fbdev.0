@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 06/12] pvr2fb: Make PVR2_VBLANK
-	interrupt shareable
-Date: Sat, 15 Sep 2007 08:03:56 +0800
-Message-ID: <46EB216C.6040002@gmail.com>
+Subject: [PATCH 08/12] atyfb: force 29MHz xtal on G3
+	PowerBooks
+Date: Sat, 15 Sep 2007 08:05:20 +0800
+Message-ID: <46EB21C0.2050305@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IWLEi-0007m7-W6 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:14 -0700
-Received: from rv-out-0910.google.com ([209.85.198.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEi-0003jU-NA
+	id 1IWLEs-0007mU-Az for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Sep 2007 17:10:22 -0700
+Received: from wa-out-1112.google.com ([209.85.146.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWLEr-0003qG-My
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Sep 2007 17:10:12 -0700
-Received: by rv-out-0910.google.com with SMTP id g11so3286302rvb
+	Fri, 14 Sep 2007 17:10:21 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so1238382waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Sep 2007 17:10:12 -0700 (PDT)
+	Fri, 14 Sep 2007 17:10:21 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,38 +31,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Adrian McMenamin <adrian@mcmen.demon.co.uk>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Olaf Hering <olaf@aepfle.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
 
-From: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+From: Olaf Hering <olaf@aepfle.de>
 
-This makes the PVR2 VBLANK interrupt on the SEGA Dreamcast
-shareable - a small but necessary change to enable ongoing efforts to
-develop a driver for the maple bus on the Dreamcast. (Maple is Sega's
-proprietary serial interface for the Dreamcast and can be set to
-synchronise dma transfers to the VBLANK).
+The atyfb does not work on my 233MHz PowerBook with Mach64 LP, when the
+kernel is booted from firmware. aty_ld_pll_ct() returns 0x22 and xtal
+remains at 14.31818. When booted from MacOS, aty_ld_pll_ct() returns 0x3c
+and xtal is changed to 29.498928.
+Google indicates that all 4 PowerBook models need the higher value.
 
-This has no impact on the performance of the PVR2.
-
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/pvr2fb.c |    2 +-
+ drivers/video/aty/atyfb_base.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/pvr2fb.c b/drivers/video/pvr2fb.c
-index 994baad..cc0cf07 100644
---- a/drivers/video/pvr2fb.c
-+++ b/drivers/video/pvr2fb.c
-@@ -890,7 +890,7 @@ static int __init pvr2fb_dc_init(void)
- 	pvr2_fix.mmio_start	= 0xa05f8000;	/* registers start here */
- 	pvr2_fix.mmio_len	= 0x2000;
- 
--	if (request_irq(HW_EVENT_VSYNC, pvr2fb_interrupt, 0,
-+	if (request_irq(HW_EVENT_VSYNC, pvr2fb_interrupt, IRQF_SHARED,
- 	                "pvr2 VBL handler", fb_info)) {
- 		return -EBUSY;
- 	}
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index abe0c43..440ecb7 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -2409,7 +2409,7 @@ #ifdef CONFIG_FB_ATY_CT
+ 				diff1 = -diff1;
+ 			if (diff2 < 0)
+ 				diff2 = -diff2;
+-			if (diff2 < diff1) {
++			if (diff2 < diff1 || (M64_HAS(G3_PB_1024x768))) {
+ 				par->ref_clk_per = 1000000000000ULL / 29498928;
+ 				xtal = "29.498928";
+ 			}
 
 
 -------------------------------------------------------------------------

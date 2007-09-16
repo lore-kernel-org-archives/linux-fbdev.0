@@ -1,26 +1,27 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Best way to support mulitple planes?
-Date: Sun, 16 Sep 2007 10:32:53 +0800
-Message-ID: <1189909973.5344.12.camel@daplas>
-References: <46E9949E.30908@freescale.com>
+Date: Sun, 16 Sep 2007 10:38:30 +0800
+Message-ID: <1189910310.5344.18.camel@daplas>
+References: <46E9949E.30908@freescale.com> <20070913211025.GB18714@sci.fi>
+	<46E9ABBB.4040008@freescale.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IWjwW-0006qt-Sw for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 15 Sep 2007 19:33:05 -0700
-Received: from wa-out-1112.google.com ([209.85.146.180])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWjwU-0007OL-0N
+	id 1IWk1t-0007Ng-B2 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 15 Sep 2007 19:38:37 -0700
+Received: from rv-out-0910.google.com ([209.85.198.189])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IWk1r-0005kV-3I
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 15 Sep 2007 19:33:04 -0700
-Received: by wa-out-1112.google.com with SMTP id k22so1650845waf
+	Sat, 15 Sep 2007 19:38:37 -0700
+Received: by rv-out-0910.google.com with SMTP id g11so3989552rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 15 Sep 2007 19:33:01 -0700 (PDT)
-In-Reply-To: <46E9949E.30908@freescale.com>
+	Sat, 15 Sep 2007 19:38:34 -0700 (PDT)
+In-Reply-To: <46E9ABBB.4040008@freescale.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,45 +34,21 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2007-09-13 at 14:50 -0500, Timur Tabi wrote:
-> Hi, I'm new to the framebuffer subsystem, so forgive me if this is a FAQ. 
-> I've spent the past couple hours scouring web sites and sample code, but I 
-> don't have a definitive answer to my question.
-> 
-> I have a device that supports three planes - memory areas that the hardware 
-> reads from to generate the physical image.  Each plane supports an alpha 
-> channel for each pixel, and the hardware just blends all three planes together 
-> when it draws the image.
-> 
-> Currently, our driver create three framebuffer devices, /dev/fb0, /dev/fb1, 
-> and /dev/fb2, which means three calls to register_framebuffer().  Is this the 
-> correct way to do it?
-
-One method is to create device, /dev/fb0, then create a custom fb_mmap()
-that, depending on the parameters, will return a different address for
-each of the 3 planes. (We already mmap the framebuffer and the MMIO
-separately by this method). Then it is up to the user application to
-call mmap() 3x for each plane and what to write to those planes.
-
-Or, assuming each plane is located in single framebuffer region with
-just different offsets, then instead of creating a custom fb_mmap(),
-create a custom ioctl that will return the offsets relative to the start
-of the framebuffer of each plane.
-
-> 
-> The reason I ask is that our hardware can only handle three planes if the 
-> resolution is 1024x768 or below.  I can't figure out any way of telling the 
-> framebuffer subsystem that if it switches to 1280x1024 in plane 0, that plane 
-> 1 and 2 no longer exist.  Any suggestions on how to handle that?
-
-You can change the type from FB_TYPE_PLANES to FB_TYPE_PACKED_PIXELS in
-fb_fix_screeninfo.  That implies that for each SET_VAR ioctl, you do a
-GET_FIX ioctl.
-
-Tony
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2005.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+T24gVGh1LCAyMDA3LTA5LTEzIGF0IDE2OjI5IC0wNTAwLCBUaW11ciBUYWJpIHdyb3RlOgo+IFZp
+bGxlIFN5cmrDpGzDpCB3cm90ZToKPiAKCj4gCj4gV291bGQgaXQgYmUgY29ycmVjdCB0byBzYXkg
+dGhhdCBhcHBsaWNhdGlvbnMgZXhwZWN0IHRoZSBzZXBhcmF0ZSBkZXZpY2VzIAo+ICgvZGV2L2Zi
+MCwgL2Rldi9mYjEsIGV0YykgdG8gcmVwcmVzZW50IGRpZmZlcmVudCBtb25pdG9ycz8KPiAKClRo
+YXQncyBub3QgbmVjZXNzYXJpbHkgdHJ1ZS4gSW4gdGhlIHN0cmljdGVzdCBzZW5zZSwgZWFjaCAv
+ZGV2L2ZieApkZXZpY2UgcmVwcmVzZW50cyBvbmUgbWVtb3J5IHJlZ2lvbi4gIFdoZXRoZXIgdGhh
+dCBtZW1vcnkgcmVnaW9uIGlzCmF0dGFjaGVkIHRvIHplcm8sIG9uZSBvciBtb3JlIG1vbml0b3Jz
+IGlzIHVwIHRvIHRoZSBkcml2ZXIuCgpXZSBkbyBub3QgaGF2ZSB0aGUgaW5mcmFzdHJ1Y3R1cmUg
+eWV0IHRvIHNlcGFyYXRlIG91dHB1dCBkZXZpY2VzIGZyb20KdGhlIGZyYW1lYnVmZmVyIHNvIG11
+bHRpLWhlYWQvbWVyZ2VmYiBpbXBsZW1lbnRhdGlvbnMgd2lsbCBzdGlsbCBiZQpkcml2ZXIgc3Bl
+Y2lmaWMuCgpUb255CgoKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5uZXQgZW1haWwgaXMgc3Bv
+bnNvcmVkIGJ5OiBNaWNyb3NvZnQKRGVmeSBhbGwgY2hhbGxlbmdlcy4gTWljcm9zb2Z0KFIpIFZp
+c3VhbCBTdHVkaW8gMjAwNS4KaHR0cDovL2Nsay5hdGRtdC5jb20vTVJUL2dvL3ZzZTAxMjAwMDAw
+NzBtcnQvZGlyZWN0LzAxLwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxA
+bGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3Rz
+L2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==

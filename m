@@ -1,9 +1,9 @@
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [PATCH] drivers/video/pmag-ba-fb.c: Improve diagnostics
-Date: Mon, 17 Sep 2007 17:45:35 +0100 (BST)
-Message-ID: <Pine.LNX.4.64N.0709171736580.17606@blysk.ds.pg.gda.pl>
+Subject: [PATCH] drivers/video/pmagb-b-fb.c: Improve diagnostics
+Date: Mon, 17 Sep 2007 17:47:09 +0100 (BST)
+Message-ID: <Pine.LNX.4.64N.0709171746030.17606@blysk.ds.pg.gda.pl>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752620AbXIQQpx@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756246AbXIQQr2@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
@@ -24,17 +24,17 @@ going on.  Also this is good style.
 
   Maciej
 
-patch-mips-2.6.18-20060920-pmag-ba-err-1
-diff -up --recursive --new-file linux-mips-2.6.18-20060920.macro/drivers/video/pmag-ba-fb.c linux-mips-2.6.18-20060920/drivers/video/pmag-ba-fb.c
---- linux-mips-2.6.18-20060920.macro/drivers/video/pmag-ba-fb.c	2006-12-16 16:45:08.000000000 +0000
-+++ linux-mips-2.6.18-20060920/drivers/video/pmag-ba-fb.c	2006-12-16 16:45:23.000000000 +0000
-@@ -147,16 +147,23 @@ static int __init pmagbafb_probe(struct 
- 	resource_size_t start, len;
- 	struct fb_info *info;
- 	struct pmagbafb_par *par;
+patch-mips-2.6.18-20060920-pmagb-b-err-1
+diff -up --recursive --new-file linux-mips-2.6.18-20060920.macro/drivers/video/pmagb-b-fb.c linux-mips-2.6.18-20060920/drivers/video/pmagb-b-fb.c
+--- linux-mips-2.6.18-20060920.macro/drivers/video/pmagb-b-fb.c	2006-12-16 16:44:41.000000000 +0000
++++ linux-mips-2.6.18-20060920/drivers/video/pmagb-b-fb.c	2006-12-16 16:44:52.000000000 +0000
+@@ -254,16 +254,23 @@ static int __init pmagbbfb_probe(struct 
+ 	struct pmagbbfb_par *par;
+ 	char freq0[12], freq1[12];
+ 	u32 vid_base;
 +	int err = 0;
  
- 	info = framebuffer_alloc(sizeof(struct pmagbafb_par), dev);
+ 	info = framebuffer_alloc(sizeof(struct pmagbbfb_par), dev);
 -	if (!info)
 +	if (!info) {
 +		printk(KERN_ERR "%s: Cannot allocate memory\n", dev->bus_id);
@@ -52,9 +52,9 @@ diff -up --recursive --new-file linux-mips-2.6.18-20060920.macro/drivers/video/p
  		goto err_alloc;
 +	}
  
- 	info->fbops = &pmagbafb_ops;
- 	info->fix = pmagbafb_fix;
-@@ -166,28 +173,41 @@ static int __init pmagbafb_probe(struct 
+ 	info->fbops = &pmagbbfb_ops;
+ 	info->fix = pmagbbfb_fix;
+@@ -273,22 +280,31 @@ static int __init pmagbbfb_probe(struct 
  	/* Request the I/O MEM resource.  */
  	start = tdev->resource.start;
  	len = tdev->resource.end - start + 1;
@@ -74,21 +74,24 @@ diff -up --recursive --new-file linux-mips-2.6.18-20060920.macro/drivers/video/p
 +		err = -ENOMEM;
  		goto err_resource;
 +	}
- 	par->dac = par->mmio + PMAG_BA_BT459;
+ 	par->sfb = par->mmio + PMAGB_B_SFB;
+ 	par->dac = par->mmio + PMAGB_B_BT459;
  
  	/* Frame buffer mapping setup.  */
- 	info->fix.smem_start = start + PMAG_BA_FBMEM;
- 	info->screen_base = ioremap_nocache(info->fix.smem_start,
- 					    info->fix.smem_len);
--	if (!info->screen_base)
-+	if (!info->screen_base) {
+ 	info->fix.smem_start = start + PMAGB_B_FBMEM;
+ 	par->smem = ioremap_nocache(info->fix.smem_start, info->fix.smem_len);
+-	if (!par->smem)
++	if (!par->smem) {
 +		printk(KERN_ERR "%s: Cannot map FB\n", dev->bus_id);
 +		err = -ENOMEM;
  		goto err_mmio_map;
 +	}
- 	info->screen_size = info->fix.smem_len;
- 
- 	pmagbafb_erase_cursor(info);
+ 	vid_base = sfb_read(par, SFB_REG_VID_BASE);
+ 	info->screen_base = (void __iomem *)par->smem + vid_base * 0x1000;
+ 	info->screen_size = info->fix.smem_len - 2 * vid_base * 0x1000;
+@@ -297,8 +313,12 @@ static int __init pmagbbfb_probe(struct 
+ 	pmagbbfb_screen_setup(info);
+ 	pmagbbfb_osc_setup(info);
  
 -	if (register_framebuffer(info) < 0)
 +	err = register_framebuffer(info);

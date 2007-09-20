@@ -1,7 +1,10 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Fix platinumfb framebuffer
-Date: Wed, 19 Sep 2007 14:50:22 +1000
-Message-ID: <1190177423.6403.151.camel@localhost.localdomain>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] drivers/video/pmag-ba-fb.c: Improve
+	diagnostics
+Date: Wed, 19 Sep 2007 17:24:12 -0700
+Message-ID: <20070919172412.725508d0.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64N.0709171736580.17606@blysk.ds.pg.gda.pl>
+	<Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,14 +13,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IXrWF-0003jE-DB for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Sep 2007 21:50:35 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1+9wZuR+QE6jX+Kj1XMhs5wxt0B6uO8wOU=])
+	id 1IY9qN-0000xW-H5 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 19 Sep 2007 17:24:35 -0700
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IXrWD-0001WE-Rc
+	(Exim 4.44) id 1IY9qN-0003Dj-7p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Sep 2007 21:50:35 -0700
+	Wed, 19 Sep 2007 17:24:35 -0700
+In-Reply-To: <Pine.LNX.4.64N.0709181314300.9650@blysk.ds.pg.gda.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,117 +31,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
 
-powerpc: Fix platinumfb resource handling
+On Tue, 18 Sep 2007 13:18:34 +0100 (BST)
+"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
-Current kernels have a non-working platinumfb due to some resource
-management issues. This fixes it.
+>  Add error messages to the probe call.
+> 
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+>  While they may rarely trigger, they may be useful when something weird is 
+> going on.  Also this is good style.
+> 
+>  This is an updated version that addresses an issue raised by Mariusz 
+> Kozlowski for the sibling patch.  Checked with checkpatch.pl.
+> 
+>  Please apply.
+> 
+>   Maciej
+> 
+> patch-mips-2.6.23-rc5-20070904-pmag-ba-err-2
+> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c
+> --- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/pmag-ba-fb.c	2007-02-21 05:56:47.000000000 +0000
+> +++ linux-mips-2.6.23-rc5-20070904/drivers/video/pmag-ba-fb.c	2007-09-18 10:56:51.000000000 +0000
+> @@ -147,16 +147,23 @@ static int __init pmagbafb_probe(struct 
+>  	resource_size_t start, len;
+>  	struct fb_info *info;
+>  	struct pmagbafb_par *par;
+> +	int err = 0;
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+This initialisation to zero is not good.
 
-Note: platinumfb is a powermac only driver
+Because if some error-path code forgot to do `err = -EFOO' then probe()
+will return zero and the driver will leave things in half-initialised state
+and will then proceed as if things had succeeded.  It will crash.
 
-Index: linux-work/drivers/video/platinumfb.c
-===================================================================
---- linux-work.orig/drivers/video/platinumfb.c	2007-09-19 14:21:42.000000000 +1000
-+++ linux-work/drivers/video/platinumfb.c	2007-09-19 14:47:11.000000000 +1000
-@@ -17,6 +17,8 @@
-  *  more details.
-  */
- 
-+#undef DEBUG
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -535,33 +537,35 @@ static int __devinit platinumfb_probe(st
- 	volatile __u8		*fbuffer;
- 	int			bank0, bank1, bank2, bank3, rc;
- 
--	printk(KERN_INFO "platinumfb: Found Apple Platinum video hardware\n");
-+	dev_info(&odev->dev, "Found Apple Platinum video hardware\n");
- 
- 	info = framebuffer_alloc(sizeof(*pinfo), &odev->dev);
--	if (info == NULL)
-+	if (info == NULL) {
-+		dev_err(&odev->dev, "Failed to allocate fbdev !\n");
- 		return -ENOMEM;
-+	}
- 	pinfo = info->par;
- 
- 	if (of_address_to_resource(dp, 0, &pinfo->rsrc_reg) ||
- 	    of_address_to_resource(dp, 1, &pinfo->rsrc_fb)) {
--		printk(KERN_ERR "platinumfb: Can't get resources\n");
--		framebuffer_release(info);
--		return -ENXIO;
--	}
--	if (!request_mem_region(pinfo->rsrc_reg.start,
--				pinfo->rsrc_reg.start -
--				pinfo->rsrc_reg.end + 1,
--				"platinumfb registers")) {
-+		dev_err(&odev->dev, "Can't get resources\n");
- 		framebuffer_release(info);
- 		return -ENXIO;
- 	}
-+	dev_dbg(&odev->dev, " registers  : 0x%llx...0x%llx\n",
-+		(unsigned long long)pinfo->rsrc_reg.start,
-+		(unsigned long long)pinfo->rsrc_reg.end);
-+	dev_dbg(&odev->dev, " framebuffer: 0x%llx...0x%llx\n",
-+		(unsigned long long)pinfo->rsrc_fb.start,
-+		(unsigned long long)pinfo->rsrc_fb.end);
-+
-+	/* Do not try to request register space, they overlap with the
-+	 * northbridge and that can fail. Only request framebuffer
-+	 */
- 	if (!request_mem_region(pinfo->rsrc_fb.start,
--				pinfo->rsrc_fb.start
--				- pinfo->rsrc_fb.end + 1,
-+				pinfo->rsrc_fb.end - pinfo->rsrc_fb.start + 1,
- 				"platinumfb framebuffer")) {
--		release_mem_region(pinfo->rsrc_reg.start,
--				   pinfo->rsrc_reg.end -
--				   pinfo->rsrc_reg.start + 1);
-+		printk(KERN_ERR "platinumfb: Can't request framebuffer !\n");
- 		framebuffer_release(info);
- 		return -ENXIO;
- 	}
-@@ -600,7 +604,8 @@ static int __devinit platinumfb_probe(st
- 	bank2 = fbuffer[0x200000] == 0x56;
- 	bank3 = fbuffer[0x300000] == 0x78;
- 	pinfo->total_vram = (bank0 + bank1 + bank2 + bank3) * 0x100000;
--	printk(KERN_INFO "platinumfb: Total VRAM = %dMB (%d%d%d%d)\n", (int) (pinfo->total_vram / 1024 / 1024),
-+	printk(KERN_INFO "platinumfb: Total VRAM = %dMB (%d%d%d%d)\n",
-+	       (unsigned int) (pinfo->total_vram / 1024 / 1024),
- 	       bank3, bank2, bank1, bank0);
- 
- 	/*
-@@ -644,16 +649,15 @@ static int __devexit platinumfb_remove(s
-         unregister_framebuffer (info);
- 	
- 	/* Unmap frame buffer and registers */
-+	iounmap(pinfo->frame_buffer);
-+	iounmap(pinfo->platinum_regs);
-+	iounmap(pinfo->cmap_regs);
-+
- 	release_mem_region(pinfo->rsrc_fb.start,
- 			   pinfo->rsrc_fb.end -
- 			   pinfo->rsrc_fb.start + 1);
--	release_mem_region(pinfo->rsrc_reg.start,
--			   pinfo->rsrc_reg.end -
--			   pinfo->rsrc_reg.start + 1);
--	iounmap(pinfo->frame_buffer);
--	iounmap(pinfo->platinum_regs);
-+
- 	release_mem_region(pinfo->cmap_regs_phys, 0x1000);
--	iounmap(pinfo->cmap_regs);
- 
- 	framebuffer_release(info);
- 
+So it's better to leave this local uninitialised, because we really want to
+get that compiler warning if someone forgot to set the return value.
 
+I made that change, but am too stupid to be able to work out how to create
+a config which will let me compile this thing.
 
+akpm:/usr/src/25> grep PMAG arch/arm/configs/*
+akpm:/usr/src/25> 
+
+bah.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

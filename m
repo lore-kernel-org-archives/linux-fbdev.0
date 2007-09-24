@@ -1,23 +1,25 @@
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+From: Richard Purdie <rpurdie@rpsys.net>
 Subject: Re: [RFC] driving a LCD panel via I2C
-Date: Mon, 24 Sep 2007 12:34:08 +0200
-Message-ID: <20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
+Date: Tue, 25 Sep 2007 00:03:04 +0100
+Message-ID: <1190674984.19359.114.camel@localhost.localdomain>
 References: <41784.213.84.50.107.1190624288.squirrel@webmail.enneenne.com>
+	<20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IZlGq-0005YA-Ou for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 24 Sep 2007 03:34:33 -0700
-Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
+	id 1IZwy6-0002Ty-7Y for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 24 Sep 2007 16:03:58 -0700
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IZlGq-0004mP-1J
+	(Exim 4.44) id 1IZwy1-0003IM-U8
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 24 Sep 2007 03:34:32 -0700
-In-Reply-To: <41784.213.84.50.107.1190624288.squirrel@webmail.enneenne.com>
+	Mon, 24 Sep 2007 16:03:54 -0700
+In-Reply-To: <20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,32 +30,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: rpurdie@rpsys.net, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 
-T24gTW9uLCAyNCBTZXAgMjAwNyAxMDo1ODowOCArMDIwMCAoQ0VTVCkKIlJvZG9sZm8gR2lvbWV0
-dGkiIDxnaW9tZXR0aUBlbm5lZW5uZS5jb20+IHdyb3RlOgoKPiBIZWxsbywKPiAKPiBJIGhhdmUg
-YW4gTENEIHBhbmVsIG9uIGEgY3VzdG9tIFBYQTI3eCBiYXNlZCBib2FyZCBhbmQgaXQgbXVzdCBi
-ZQo+IHR1cm5lZCBvbi9vZmYgYnkgc29tZSBzcGVjaWFsIGNvbW1hbmRzIHZpYSBhIEdQSU8gdGhy
-b3VnaHQgYSBJMkMgY2hpcC4KPiAKPiBJJ2QgbGlrZSBzb21lIHN1Z2dlc3Rpb24gYWJvdXQgSSBj
-YW4gZWFzaWx5IG1hbmFnZSB0aGlzIHNpdHVhdGlvbi4KCkkgaGF2ZSBhIHNpbWlsYXIgcGFuZWwg
-aW4gdGhlIHNlbnNlIHRoYXQgaXQgbmVlZHMgYSBidW5jaCBvZiBTUEkKY29tbWFuZHMgdG8gZ2V0
-IHN0YXJ0ZWQuIEkgaW1wbGVtZW50ZWQgYSBMQ0QgZHJpdmVyCihkcml2ZXJzL3ZpZGVvL2JhY2ts
-aWdodCkgZm9yIGl0IHNvIHRoYXQgaXQgaXMgYXV0b21hdGljYWxseSB0dXJuZWQKb24vb2ZmIGF0
-IGJvb3R1cC9zaHV0ZG93biwgYW5kIGNhbiBiZSBtYW51YWxseSB0dXJuZWQgb24vb2ZmCnRocm91
-Z2ggL3N5cy9jbGFzcy9sY2QvbHR2MzUwcXYvcG93ZXIuIEFGQUlLIHRoZSBkcml2ZXIgaXMgY3Vy
-cmVudGx5CnNpdHRpbmcgaW4gdGhlIGJhY2tsaWdodCB0cmVlIHNjaGVkdWxlZCBmb3IgaW5jbHVz
-aW9uIGluIDIuNi4yNC4KCj4gTWF5YmUgY2FuIEkgYWRkIGEgc3BlY2lhbCBJMkMgZnVuY3Rpb24g
-dG8gZ2V0IGkyY19jbGllbnQgcG9pbnRlciBhbmQKPiB0aGVuIHVzaW5nIGl0IHRvIHNlbmQgb24v
-b2ZmIGNvbW1hbmRzIHRvIHRoZSBMQ0Q/CgpKdXN0IGltcGxlbWVudCBpdCBhcyBhIHJlZ3VsYXIg
-STJDIGNoaXAgZHJpdmVyIHdoaWNoIHJlZ2lzdGVycyBhIGRldmljZQp3aXRoIHRoZSBMQ0QgZnJh
-bWV3b3JrIHdoZW4gaXQgaXMgc3VjY2Vzc2Z1bGx5IHByb2JlZC4KCkjDpXZhcmQKCi0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0KVGhpcyBTRi5uZXQgZW1haWwgaXMgc3BvbnNvcmVkIGJ5OiBNaWNyb3NvZnQKRGVm
-eSBhbGwgY2hhbGxlbmdlcy4gTWljcm9zb2Z0KFIpIFZpc3VhbCBTdHVkaW8gMjAwNS4KaHR0cDov
-L2Nsay5hdGRtdC5jb20vTVJUL2dvL3ZzZTAxMjAwMDAwNzBtcnQvZGlyZWN0LzAxLwpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZl
-bCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
-dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRl
-dmVsCg==
+On Mon, 2007-09-24 at 12:34 +0200, Haavard Skinnemoen wrote: 
+> On Mon, 24 Sep 2007 10:58:08 +0200 (CEST)
+> "Rodolfo Giometti" <giometti@enneenne.com> wrote:
+> > I have an LCD panel on a custom PXA27x based board and it must be
+> > turned on/off by some special commands via a GPIO throught a I2C chip.
+> > 
+> > I'd like some suggestion about I can easily manage this situation.
+> 
+> I have a similar panel in the sense that it needs a bunch of SPI
+> commands to get started. I implemented a LCD driver
+> (drivers/video/backlight) for it so that it is automatically turned
+> on/off at bootup/shutdown, and can be manually turned on/off
+> through /sys/class/lcd/ltv350qv/power. AFAIK the driver is currently
+> sitting in the backlight tree scheduled for inclusion in 2.6.24.
+
+It is, its queued as
+http://git.o-hand.com/?p=linux-rpurdie-backlight;a=commitdiff;h=c962fe18c64ae9139028ee674ab3c380449ce052
+
+Its also worth noting that corgi-bl.c has a variant (akita) that uses a
+gpio over an I2C IO expander for the backlight control. The code paths
+are a little convoluted since other gpios are used by other drivers. The
+base driver is in arch/arm/mach-pxa/akita-ioexp.c, the set_intensity
+function is in arch/arm/mach-pxa/corgi_lcd.c and the base backlight
+device in arch/arm/mach-pxa/spitz.c. I will be moving the set_intensity
+to spitz.c to make things a little clearer.
+
+Also, I'm in the process of turning corgi-bl.c into a generic backlight
+driver which might help you, see:
+
+http://git.o-hand.com/?p=linux-rpurdie-backlight;a=commitdiff;h=c74f241bf53bf5251c7c10f65041c20979f6c694
+
+Now, the GPIO framework could help too (it didn't exist when I wrote
+akita-ioexp)...
+
+Regards,
+
+Richard
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2005.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

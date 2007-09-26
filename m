@@ -1,9 +1,7 @@
-From: Rodolfo Giometti <giometti@enneenne.com>
-Subject: Re: [RFC] driving a LCD panel via I2C
-Date: Wed, 26 Sep 2007 11:07:49 +0200
-Message-ID: <20070926090749.GI12137@enneenne.com>
-References: <41784.213.84.50.107.1190624288.squirrel@webmail.enneenne.com>
-	<20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
+From: Jerald Fitzjerald <jfj@freemail.gr>
+Subject: Plans for 2D acceleration
+Date: Wed, 26 Sep 2007 04:41:45 -0700
+Message-ID: <46FA4579.6040905@freemail.gr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,15 +10,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IaSq9-0002fg-WB for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 02:05:54 -0700
-Received: from 81-174-11-161.static.ngi.it
-	([81.174.11.161] helo=mail.enneenne.com ident=Debian-exim)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaSq8-0004Vs-Di
+	id 1IaVGM-0002aq-Kl for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 26 Sep 2007 04:41:06 -0700
+Received: from kane.otenet.gr ([195.170.0.77] ident=OTEnet-mail-system)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaVGK-0003YH-TA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 02:05:53 -0700
-Content-Disposition: inline
-In-Reply-To: <20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
+	Wed, 26 Sep 2007 04:41:06 -0700
+Received: from [87.203.210.184] (athedsl-59754.home.otenet.gr [87.203.210.184])
+	by kane.otenet.gr (8.13.8/8.13.8/Debian-3) with ESMTP id l8QBf09N024661
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 26 Sep 2007 14:41:01 +0300
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,33 +30,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: rpurdie@rpsys.net, linux-fbdev-devel@lists.sourceforge.net, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Sep 24, 2007 at 12:34:08PM +0200, Haavard Skinnemoen wrote:
-> 
-> I have a similar panel in the sense that it needs a bunch of SPI
-> commands to get started. I implemented a LCD driver
-> (drivers/video/backlight) for it so that it is automatically turned
-> on/off at bootup/shutdown, and can be manually turned on/off
-> through /sys/class/lcd/ltv350qv/power. AFAIK the driver is currently
-> sitting in the backlight tree scheduled for inclusion in 2.6.24.
+Hi.
 
-Mmm... it seems a good solution! :)
+Are there any plans to expose simple 2D acceleration to userland?
+I'm talking about the very basic operations:
 
-> Just implement it as a regular I2C chip driver which registers a device
-> with the LCD framework when it is successfully probed.
+- fill rectangle (graphics memset)
+- blit (graphics memcpy)
 
-Thanks for your suggestion.
+and possibly
 
-Rodolfo
+- copyarea (graphics memmove)
+- waitretrace
 
--- 
+Is there a reason we _don't_ want these exposed to userland or
+just nobody has taken the time to do it?
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+
+Thanks,
+
+jf
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

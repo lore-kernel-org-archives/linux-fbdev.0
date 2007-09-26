@@ -1,28 +1,22 @@
-From: Jerald Fitzjerald <jfj@freemail.gr>
-Subject: Re: Plans for 2D acceleration
-Date: Wed, 26 Sep 2007 07:29:52 -0700
-Message-ID: <46FA6CE0.8050004@freemail.gr>
-References: <46FA4579.6040905@freemail.gr>
-	<1190807127.27064.2.camel@tveimo-laptop>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [patch 1/8] ps3av: eliminate unneeded temporary
+	variables
+Date: Wed, 26 Sep 2007 18:33:09 +0200
+Message-ID: <20070926164030.799122000@pademelon.sonytel.be>
+References: <20070926163308.772580000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1647670924=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IaXt9-0004bH-7v for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 07:29:19 -0700
-Received: from rosebud.otenet.gr ([195.170.0.94] ident=OTEnet-mail-system)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaXt7-0000nI-EG
+	id 1IaZxW-0005pR-Q7 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 26 Sep 2007 09:41:59 -0700
+Received: from vervifontaine.sonytel.be ([80.88.33.193]
+	helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaZxV-0002uR-5o
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 07:29:19 -0700
-Received: from [85.75.213.93] (athedsl-171455.home.otenet.gr [85.75.213.93])
-	by rosebud.otenet.gr (8.13.8/8.13.8/Debian-3) with ESMTP id
-	l8QETEeC021812 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 26 Sep 2007 17:29:14 +0300
-In-Reply-To: <1190807127.27064.2.camel@tveimo-laptop>
+	Wed, 26 Sep 2007 09:41:58 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,34 +27,114 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 
-Torgeir Veimo wrote:
+--===============1647670924==
+Content-Disposition: inline; filename=ps3-wip/ps3av-kill-temporaries.diff
 
->On Wed, 2007-09-26 at 04:41 -0700, Jerald Fitzjerald wrote:
->  
->
->>Is there a reason we _don't_ want these exposed to userland or
->>just nobody has taken the time to do it? 
->>    
->>
->
->You can do all of these using DirectFB. Is that not an option for you?
->
->  
->
-Well, the code is already in the kernel for various cards as far as I 
-can tell.
-It's just a matter of exposing the functionality through some ioctl.
+ps3av: eliminate unneeded temporary variables
 
-Won't even DirectFB benefit from that? (not to mention it'll be able to use
-the features without iopl)
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/ps3/ps3av_cmd.c |   17 ++++++-----------
+ 1 files changed, 6 insertions(+), 11 deletions(-)
+
+--- a/drivers/ps3/ps3av_cmd.c
++++ b/drivers/ps3/ps3av_cmd.c
+@@ -512,7 +512,6 @@ static const u32 ps3av_ns_table[][5] = {
+ static void ps3av_cnv_ns(u8 *ns, u32 fs, u32 video_vid)
+ {
+ 	u32 av_vid, ns_val;
+-	u8 *p = ns;
+ 	int d;
+ 
+ 	d = ns_val = 0;
+@@ -551,24 +550,22 @@ static void ps3av_cnv_ns(u8 *ns, u32 fs,
+ 	else
+ 		ns_val = ps3av_ns_table[PS3AV_CMD_AUDIO_FS_44K-BASE][d];
+ 
+-	*p++ = ns_val & 0x000000FF;
+-	*p++ = (ns_val & 0x0000FF00) >> 8;
+-	*p = (ns_val & 0x00FF0000) >> 16;
++	*ns++ = ns_val & 0x000000FF;
++	*ns++ = (ns_val & 0x0000FF00) >> 8;
++	*ns = (ns_val & 0x00FF0000) >> 16;
+ }
+ 
+ #undef BASE
+ 
+ static u8 ps3av_cnv_enable(u32 source, const u8 *enable)
+ {
+-	const u8 *p;
+ 	u8 ret = 0;
+ 
+ 	if (source == PS3AV_CMD_AUDIO_SOURCE_SPDIF) {
+ 		ret = 0x03;
+ 	} else if (source == PS3AV_CMD_AUDIO_SOURCE_SERIAL) {
+-		p = enable;
+-		ret = ((p[0] << 4) + (p[1] << 5) + (p[2] << 6) + (p[3] << 7)) |
+-		      0x01;
++		ret = ((enable[0] << 4) + (enable[1] << 5) + (enable[2] << 6) +
++		       (enable[3] << 7)) | 0x01;
+ 	} else
+ 		printk(KERN_ERR "%s failed, source:%x\n", __func__, source);
+ 	return ret;
+@@ -576,11 +573,9 @@ static u8 ps3av_cnv_enable(u32 source, c
+ 
+ static u8 ps3av_cnv_fifomap(const u8 *map)
+ {
+-	const u8 *p;
+ 	u8 ret = 0;
+ 
+-	p = map;
+-	ret = p[0] + (p[1] << 2) + (p[2] << 4) + (p[3] << 6);
++	ret = map[0] + (map[1] << 2) + (map[2] << 4) + (map[3] << 6);
+ 	return ret;
+ }
+ 
+
+-- 
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village ������ Da Vincilaan 7-D1 ������ B-1935 Zaventem ������ Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 ������ B-1840 Londerzeel ������ Belgium	
+VAT BE 0413.825.160 ������ RPR Brussels	
+Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBAN BE39001382358619
 
 
-jf
 
+--===============1647670924==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+--===============1647670924==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1647670924==--

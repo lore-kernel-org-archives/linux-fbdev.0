@@ -1,21 +1,22 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 0/8] PS3 AV Settings Driver patches for
-	2.6.24
-Date: Wed, 26 Sep 2007 18:33:08 +0200
-Message-ID: <20070926163308.772580000@pademelon.sonytel.be>
+Subject: [patch 6/8] ps3av: add quirk database for
+	broken monitors
+Date: Wed, 26 Sep 2007 18:33:14 +0200
+Message-ID: <20070926164031.299276000@pademelon.sonytel.be>
+References: <20070926163308.772580000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0587830179=="
+Content-Type: multipart/mixed; boundary="===============0149618081=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IaZxW-0005pQ-Ns for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 09:41:59 -0700
+	id 1IaZxe-0005sc-73 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 26 Sep 2007 09:42:06 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaZxV-0002uQ-5W
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaZxc-00031i-IZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 09:41:58 -0700
+	Wed, 26 Sep 2007 09:42:06 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,31 +28,78 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 
---===============0587830179==
+--===============0149618081==
+Content-Disposition: inline; filename=ps3-wip/ps3av-monitor-quirks.diff
 
-	Hi,
+ps3av: add a quirk database for broken monitors where the `best' advertised
+video mode doesn't work
 
-Here are some new patches for the PS3 AV Settings Driver (ps3av), which is
-used in close collaboration with the PS3 Virtual Frame Buffer Device Driver
-(ps3fb):
-  [1] ps3av: eliminate unneeded temporary variables
-  [2] ps3av: eliminate PS3AV_DEBUG
-  [3] ps3av: use PS3 video mode ids in autodetect code
-  [4] ps3av: treat DVI-D like HDMI in autodetect
-  [5] ps3av: add autodetection for VESA modes
-  [6] ps3av: add quirk database for broken monitors
-  [7] ps3av: remove unused ps3av_set_mode()
-  [8] ps3av: don't distinguish between `boot' and `non-boot' autodetection
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/ps3/ps3av.c |   41 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 41 insertions(+)
 
-Please review, and queue for 2.6.24 if they're ok. Thanks!
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -721,6 +721,45 @@ static void ps3av_monitor_info_dump(cons
+ 	}
+ }
+ 
++static const struct ps3av_monitor_quirk {
++	const char *monitor_name;
++	u32 clear_60, clear_50, clear_vesa;
++} ps3av_monitor_quirks[] = {
++	{
++		.monitor_name	= "DELL 2007WFP",
++		.clear_60	= PS3AV_RESBIT_1920x1080I
++	}, {
++		.monitor_name	= "L226WTQ",
++		.clear_60	= PS3AV_RESBIT_1920x1080I |
++				  PS3AV_RESBIT_1920x1080P
++	}, {
++		.monitor_name	= "SyncMaster",
++		.clear_60	= PS3AV_RESBIT_1920x1080I
++	}
++};
++
++static void ps3av_fixup_monitor_info(struct ps3av_info_monitor *info)
++{
++	unsigned int i;
++	const struct ps3av_monitor_quirk *quirk;
++
++	for (i = 0; i < ARRAY_SIZE(ps3av_monitor_quirks); i++) {
++		quirk = &ps3av_monitor_quirks[i];
++		if (!strncmp(info->monitor_name, quirk->monitor_name,
++			     sizeof(info->monitor_name))) {
++			pr_info("%s: Applying quirk for %s\n", __func__,
++				quirk->monitor_name);
++			info->res_60.res_bits &= ~quirk->clear_60;
++			info->res_60.native &= ~quirk->clear_60;
++			info->res_50.res_bits &= ~quirk->clear_50;
++			info->res_50.native &= ~quirk->clear_50;
++			info->res_vesa.res_bits &= ~quirk->clear_vesa;
++			info->res_vesa.native &= ~quirk->clear_vesa;
++			break;
++		}
++	}
++}
++
+ static int ps3av_auto_videomode(struct ps3av_pkt_av_get_hw_conf *av_hw_conf,
+ 				int boot)
+ {
+@@ -739,6 +778,8 @@ static int ps3av_auto_videomode(struct p
+ 		ps3av_monitor_info_dump(&monitor_info);
+ 
+ 		info = &monitor_info.info;
++		ps3av_fixup_monitor_info(info);
++
+ 		switch (info->monitor_type) {
+ 		case PS3AV_MONITOR_TYPE_DVI:
+ 			dvi = PS3AV_MODE_DVI;
 
-Question: As several DVI-D displays advertise they support 1080i modes while
-they actually don't (cfr. the quirk database), perhaps I should drop 1080i
-modes completely from the ps3av_preferred_modes[] table? Usually 720p looks
-better than 1080i anyway.  What do you think?
-
+-- 
 With kind regards,
  
 Geert Uytterhoeven
@@ -73,7 +121,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0587830179==
+--===============0149618081==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -83,7 +131,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0587830179==
+--===============0149618081==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -94,4 +142,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0587830179==--
+--===============0149618081==--

@@ -1,22 +1,22 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 1/8] ps3av: eliminate unneeded temporary
-	variables
-Date: Wed, 26 Sep 2007 18:33:09 +0200
-Message-ID: <20070926164030.799122000@pademelon.sonytel.be>
+Subject: [patch 7/8] ps3av: remove unused
+	ps3av_set_mode()
+Date: Wed, 26 Sep 2007 18:33:15 +0200
+Message-ID: <20070926164031.390866000@pademelon.sonytel.be>
 References: <20070926163308.772580000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1647670924=="
+Content-Type: multipart/mixed; boundary="===============1717708470=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IaZxW-0005pR-Q7 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 09:41:59 -0700
+	id 1IaZxg-0005tS-95 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 26 Sep 2007 09:42:09 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaZxV-0002uR-5o
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaZxd-0005PS-QA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Sep 2007 09:41:58 -0700
+	Wed, 26 Sep 2007 09:42:08 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,69 +30,58 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 
---===============1647670924==
-Content-Disposition: inline; filename=ps3-wip/ps3av-kill-temporaries.diff
+--===============1717708470==
+Content-Disposition: inline;
+	filename=ps3-wip/ps3av-kill-unused-ps3av_set_mode.diff
 
-ps3av: eliminate unneeded temporary variables
+ps3av: remove unused ps3av_set_mode()
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av_cmd.c |   17 ++++++-----------
- 1 files changed, 6 insertions(+), 11 deletions(-)
+ drivers/ps3/ps3av.c         |   21 ---------------------
+ include/asm-powerpc/ps3av.h |    1 -
+ 2 files changed, 22 deletions(-)
 
---- a/drivers/ps3/ps3av_cmd.c
-+++ b/drivers/ps3/ps3av_cmd.c
-@@ -512,7 +512,6 @@ static const u32 ps3av_ns_table[][5] = {
- static void ps3av_cnv_ns(u8 *ns, u32 fs, u32 video_vid)
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -903,27 +903,6 @@ int ps3av_get_auto_mode(int boot)
+ 
+ EXPORT_SYMBOL_GPL(ps3av_get_auto_mode);
+ 
+-int ps3av_set_mode(u32 id, int boot)
+-{
+-	int res;
+-
+-	res = ps3av_set_video_mode(id, boot);
+-	if (res)
+-		return res;
+-
+-	res = ps3av_set_audio_mode(PS3AV_CMD_AUDIO_NUM_OF_CH_2,
+-				   PS3AV_CMD_AUDIO_FS_48K,
+-				   PS3AV_CMD_AUDIO_WORD_BITS_16,
+-				   PS3AV_CMD_AUDIO_FORMAT_PCM,
+-				   PS3AV_CMD_AUDIO_SOURCE_SERIAL);
+-	if (res)
+-		return res;
+-
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL_GPL(ps3av_set_mode);
+-
+ int ps3av_get_mode(void)
  {
- 	u32 av_vid, ns_val;
--	u8 *p = ns;
- 	int d;
- 
- 	d = ns_val = 0;
-@@ -551,24 +550,22 @@ static void ps3av_cnv_ns(u8 *ns, u32 fs,
- 	else
- 		ns_val = ps3av_ns_table[PS3AV_CMD_AUDIO_FS_44K-BASE][d];
- 
--	*p++ = ns_val & 0x000000FF;
--	*p++ = (ns_val & 0x0000FF00) >> 8;
--	*p = (ns_val & 0x00FF0000) >> 16;
-+	*ns++ = ns_val & 0x000000FF;
-+	*ns++ = (ns_val & 0x0000FF00) >> 8;
-+	*ns = (ns_val & 0x00FF0000) >> 16;
- }
- 
- #undef BASE
- 
- static u8 ps3av_cnv_enable(u32 source, const u8 *enable)
- {
--	const u8 *p;
- 	u8 ret = 0;
- 
- 	if (source == PS3AV_CMD_AUDIO_SOURCE_SPDIF) {
- 		ret = 0x03;
- 	} else if (source == PS3AV_CMD_AUDIO_SOURCE_SERIAL) {
--		p = enable;
--		ret = ((p[0] << 4) + (p[1] << 5) + (p[2] << 6) + (p[3] << 7)) |
--		      0x01;
-+		ret = ((enable[0] << 4) + (enable[1] << 5) + (enable[2] << 6) +
-+		       (enable[3] << 7)) | 0x01;
- 	} else
- 		printk(KERN_ERR "%s failed, source:%x\n", __func__, source);
- 	return ret;
-@@ -576,11 +573,9 @@ static u8 ps3av_cnv_enable(u32 source, c
- 
- static u8 ps3av_cnv_fifomap(const u8 *map)
- {
--	const u8 *p;
- 	u8 ret = 0;
- 
--	p = map;
--	ret = p[0] + (p[1] << 2) + (p[2] << 4) + (p[3] << 6);
-+	ret = map[0] + (map[1] << 2) + (map[2] << 4) + (map[3] << 6);
- 	return ret;
- }
- 
+ 	return ps3av ? ps3av->ps3av_mode : 0;
+--- a/include/asm-powerpc/ps3av.h
++++ b/include/asm-powerpc/ps3av.h
+@@ -712,7 +712,6 @@ extern int ps3av_cmd_video_get_monitor_i
+ extern int ps3av_set_video_mode(u32, int);
+ extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
+ extern int ps3av_get_auto_mode(int);
+-extern int ps3av_set_mode(u32, int);
+ extern int ps3av_get_mode(void);
+ extern int ps3av_get_scanmode(int);
+ extern int ps3av_get_refresh_rate(int);
 
 -- 
 With kind regards,
@@ -116,7 +105,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============1647670924==
+--===============1717708470==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -126,7 +115,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============1647670924==
+--===============1717708470==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -137,4 +126,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1647670924==--
+--===============1717708470==--

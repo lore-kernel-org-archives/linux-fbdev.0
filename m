@@ -1,22 +1,26 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH] video gfx: fix menu ordering
-Date: Mon, 24 Sep 2007 23:05:45 -0700
-Message-ID: <20070924230545.78797d75.randy.dunlap@oracle.com>
+From: Rodolfo Giometti <giometti@enneenne.com>
+Subject: Re: [RFC] driving a LCD panel via I2C
+Date: Wed, 26 Sep 2007 11:07:49 +0200
+Message-ID: <20070926090749.GI12137@enneenne.com>
+References: <41784.213.84.50.107.1190624288.squirrel@webmail.enneenne.com>
+	<20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Ia3Zk-0000RZ-U8 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 24 Sep 2007 23:07:17 -0700
-Received: from rgminet01.oracle.com ([148.87.113.118])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Ia3Zk-0003bE-Gs
+	id 1IaSq9-0002fg-WB for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 26 Sep 2007 02:05:54 -0700
+Received: from 81-174-11-161.static.ngi.it
+	([81.174.11.161] helo=mail.enneenne.com ident=Debian-exim)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IaSq8-0004Vs-Di
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 24 Sep 2007 23:07:16 -0700
+	Wed, 26 Sep 2007 02:05:53 -0700
+Content-Disposition: inline
+In-Reply-To: <20070924123408.596a3c69@dhcp-255-175.norway.atmel.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,67 +31,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm <akpm@linux-foundation.org>, adaplas@gmail.com
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: rpurdie@rpsys.net, linux-fbdev-devel@lists.sourceforge.net, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, Sep 24, 2007 at 12:34:08PM +0200, Haavard Skinnemoen wrote:
+> 
+> I have a similar panel in the sense that it needs a bunch of SPI
+> commands to get started. I implemented a LCD driver
+> (drivers/video/backlight) for it so that it is automatically turned
+> on/off at bootup/shutdown, and can be manually turned on/off
+> through /sys/class/lcd/ltv350qv/power. AFAIK the driver is currently
+> sitting in the backlight tree scheduled for inclusion in 2.6.24.
 
-Move video graphics driver configs to fix menus:
+Mmm... it seems a good solution! :)
 
-Fix FB_PMAGB_B to depend on FB so that the FB menus remain
-  listed in order and indented correctly.
-Fix FB_IBM_GXT4500 to depend on FB so that the FB menus remain
-  listed in order and indented correctly.
-The OMAP FB drivers still muck up the FB menu a bit, so I put
-  OMAP drivers at the end of the FB menu.
+> Just implement it as a regular I2C chip driver which registers a device
+> with the LCD framework when it is successfully probed.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/video/Kconfig |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+Thanks for your suggestion.
 
---- linux-2.6.23-rc8.orig/drivers/video/Kconfig
-+++ linux-2.6.23-rc8/drivers/video/Kconfig
-@@ -1625,7 +1625,7 @@ config FB_PMAG_BA
- 
- config FB_PMAGB_B
- 	tristate "PMAGB-B TURBOchannel framebuffer support"
--	depends on TC
-+	depends on FB && TC
-  	select FB_CFB_FILLRECT
-  	select FB_CFB_COPYAREA
-  	select FB_CFB_IMAGEBLIT
-@@ -1793,7 +1793,7 @@ config FB_PNX4008_DUM_RGB
- 
- config FB_IBM_GXT4500
- 	tristate "Framebuffer support for IBM GXT4500P adaptor"
--	depends on PPC
-+	depends on FB && PPC
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1833,10 +1833,6 @@ config FB_XILINX
- 	  framebuffer. ML300 carries a 640*480 LCD display on the board,
- 	  ML403 uses a standard DB15 VGA connector.
- 
--if ARCH_OMAP
--	source "drivers/video/omap/Kconfig"
--endif
--
- config FB_VIRTUAL
- 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
- 	depends on FB
-@@ -1860,6 +1856,10 @@ config FB_VIRTUAL
- 
- 	  If unsure, say N.
- 
-+if ARCH_OMAP
-+	source "drivers/video/omap/Kconfig"
-+endif
-+
- if VT
- 	source "drivers/video/console/Kconfig"
- endif
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

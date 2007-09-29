@@ -1,28 +1,27 @@
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [Cbe-oss-dev] [patch 0/8] PS3 AV Settings
- Driver patches for 2.6.24
-Date: Fri, 28 Sep 2007 12:29:08 -0700
-Message-ID: <46FD5604.3060104@am.sony.com>
-References: <20070926163308.772580000@pademelon.sonytel.be>	
-	<1190860285.6502.6.camel@concordia> <46FBE6FD.3030605@am.sony.com>
-	<1190968833.15970.3.camel@concordia>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 2/2] [VIDEO FRAMEBUFFER] Blackfin
+	BF54x framebuffer	device driver for a SHARP LQ043T1DG01 TFT LCD
+Date: Sat, 29 Sep 2007 08:09:30 +0800
+Message-ID: <1191024570.5273.4.camel@daplas>
+References: <1190778219.18676.13.camel@roc-laptop>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbLWd-0007og-Mm for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 12:29:23 -0700
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]
-	helo=outbound1-dub-R.bigfish.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IbLWa-0002Hk-Kg
+	id 1IbPtt-00029E-GW for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Sep 2007 17:09:41 -0700
+Received: from an-out-0708.google.com ([209.85.132.241])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbPts-0001Ir-1G
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 12:29:23 -0700
-In-Reply-To: <1190968833.15970.3.camel@concordia>
+	Fri, 28 Sep 2007 17:09:40 -0700
+Received: by an-out-0708.google.com with SMTP id b38so601948ana
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 28 Sep 2007 17:09:37 -0700 (PDT)
+In-Reply-To: <1190778219.18676.13.camel@roc-laptop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,37 +32,65 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: michael@ellerman.id.au
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>
+To: bryan.wu@analog.com
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel <linux-kernel@vger.kernel.org>, Michael Hennerich <michael.hennerich@analog.com>
 
-Michael Ellerman wrote:
-> On Thu, 2007-09-27 at 10:23 -0700, Geoff Levand wrote:
->> Michael Ellerman wrote:
->> > On Wed, 2007-09-26 at 18:33 +0200, Geert Uytterhoeven wrote:
->> >> Question: As several DVI-D displays advertise they support 1080i modes while
->> >> they actually don't (cfr. the quirk database), perhaps I should drop 1080i
->> >> modes completely from the ps3av_preferred_modes[] table? Usually 720p looks
->> >> better than 1080i anyway.  What do you think?
->> > 
->> > Definitely. If the autodetection fails Linux is basically unusable on
->> > PS3 unless you hack the kernel sources and build your own kboot and
->> > otheros.bld - not entirely trivial for novice users. So it's pretty
->> > important that it works 100%.
->> 
->> It is not that bad.  If a bootloader is configued to use autodetection
->> so that it is shown at best video mode, then it should have advertised
->> key sequences to default to known video modes, with at least a 480p 'safe'
->> mode.
+On Wed, 2007-09-26 at 11:43 +0800, Bryan Wu wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+> Date: Wed, 26 Sep 2007 11:33:01 +0800
+> Subject: [PATCH 2/2] [VIDEO FRAMEBUFFER] Blackfin BF54x framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
 > 
-> Oh OK, that is a good idea. What's the "safe mode" key sequence for the
-> otheros.bld you provide on kernel.org?
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> ---
+>  drivers/video/Kconfig                         |    9 +
+>  drivers/video/Makefile                        |    1 +
+>  drivers/video/bf54x-lq043.c                   |  786 +++++++++++++++++++++++++
+>  include/asm-blackfin/mach-bf548/bf54x-lq043.h |   30 +
+>  4 files changed, 826 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/video/bf54x-lq043.c
+>  create mode 100644 include/asm-blackfin/mach-bf548/bf54x-lq043.h
+> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 5216c11..41fae00 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -535,6 +535,15 @@ config FB_VGA16
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called vga16fb.
+>  
+> +config FB_BF54X_LQ043
+> +	tristate "SHARP LQ043 TFT LCD (BF548 EZKIT)"
+> +	depends on FB && (BF54x)
+> +	select FB_CFB_FILLRECT
+> +	select FB_CFB_COPYAREA
+> +	select FB_CFB_IMAGEBLIT
+> +	help
+> +	 This is the framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
+> +
+>  config FB_STI
+>  	tristate "HP STI frame buffer device support"
+>  	depends on FB && PARISC
+> diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+> index 06eec7b..359e560 100644
+> --- a/drivers/video/Makefile
+> +++ b/drivers/video/Makefile
+> @@ -122,6 +122,7 @@ obj-$(CONFIG_FB_OF)               += offb.o
+>  
+>  # the test framebuffer is last
+>  obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+> +obj-$(CONFIG_FB_BF54X_LQ043)	  += bf54x-lq043.o
 
+It's standard that we suffix all framebuffer drivers with an 'fb'. I'm
+making it so in my tree.
 
-I don't maintain that, and have no idea how it sets its video mode.  Did you
-have trouble with it?  I know in the past it used a fixed 480p mode. 
+Also, you shouldn't place your driver after vfb, that's why there's a
+comment that the test framebuffer is last. If someone accidentally
+enables vfb, he/she will get a blank screen. So I'm moving it under the
+platform driver section. 
 
+Tony
 
--Geoff
 
 
 

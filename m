@@ -1,25 +1,27 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 17/17] imxfb: fast read flag and
-	nonstandard field configurable
-Date: Sat, 29 Sep 2007 09:42:50 +0800
-Message-ID: <46FDAD9A.40707@gmail.com>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [Cbe-oss-dev] [patch 0/8] PS3 AV Settings
+ Driver patches for 2.6.24
+Date: Sat, 29 Sep 2007 10:00:13 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0709290957580.21636@pademelon.sonytel.be>
+References: <20070926163308.772580000@pademelon.sonytel.be> 
+	<1190860285.6502.6.camel@concordia> <46FBE6FD.3030605@am.sony.com>
+	<1190968833.15970.3.camel@concordia> <46FD5604.3060104@am.sony.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1157957658-1191052813=:21636"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbSPd-0008Hi-1D for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:50:37 -0700
-Received: from wa-out-1112.google.com ([209.85.146.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbSPc-0003f6-Ps
+	id 1IbXFP-0004Du-FR for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 29 Sep 2007 01:00:26 -0700
+Received: from vervifontaine.sonytel.be ([80.88.33.193]
+	helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbXFN-0007ar-So
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:50:37 -0700
-Received: by wa-out-1112.google.com with SMTP id k22so5645170waf
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 28 Sep 2007 19:50:36 -0700 (PDT)
+	Sat, 29 Sep 2007 01:00:23 -0700
+In-Reply-To: <46FD5604.3060104@am.sony.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,80 +32,103 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Pavel Pisa <pisa@cmp.felk.cvut.cz>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>
 
-From: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The i.MX frame-buffer read operation should be faster for all
-configurations then drawing each individual character again
-in response to scroll events.
+---584337861-1157957658-1191052813=:21636
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-The nonstandard fields allows to configure frame-buffer special
-options flags for different display configurations by board
-specific initialization code.
+On Fri, 28 Sep 2007, Geoff Levand wrote:
+> Michael Ellerman wrote:
+> > On Thu, 2007-09-27 at 10:23 -0700, Geoff Levand wrote:
+> >> Michael Ellerman wrote:
+> >> > On Wed, 2007-09-26 at 18:33 +0200, Geert Uytterhoeven wrote:
+> >> >> Question: As several DVI-D displays advertise they support 1080i =
+modes while
+> >> >> they actually don't (cfr. the quirk database), perhaps I should d=
+rop 1080i
+> >> >> modes completely from the ps3av_preferred_modes[] table? Usually =
+720p looks
+> >> >> better than 1080i anyway.  What do you think?
+> >> >=20
+> >> > Definitely. If the autodetection fails Linux is basically unusable=
+ on
+> >> > PS3 unless you hack the kernel sources and build your own kboot an=
+d
+> >> > otheros.bld - not entirely trivial for novice users. So it's prett=
+y
+> >> > important that it works 100%.
+> >>=20
+> >> It is not that bad.  If a bootloader is configued to use autodetecti=
+on
+> >> so that it is shown at best video mode, then it should have advertis=
+ed
+> >> key sequences to default to known video modes, with at least a 480p =
+'safe'
+> >> mode.
+> >=20
+> > Oh OK, that is a good idea. What's the "safe mode" key sequence for t=
+he
+> > otheros.bld you provide on kernel.org?
+>=20
+> I don't maintain that, and have no idea how it sets its video mode.  Di=
+d you
+> have trouble with it?  I know in the past it used a fixed 480p mode.=20
 
-One of such specific options is reversed order of pixels
-in each individual byte. i.MX frame-buffer seems to be designed
-for big-endian use first. The byte order is correctly configured
-for little-endian ordering, but if 1, 2 or 4 bits per pixel
-are used, pixels ordering is incompatible to Linux generic
-frame-buffer drawing functions.
+It uses the autodetect mode. In the past, the kernel defaulted to 480p fo=
+r
+DVI-D/HDMI displays, 480i for other displays.
 
-The patch "Allow generic BitBLT functions to work with swapped
-pixel order in bytes" introduces required functionality into
-FBDEV core. The pixels ordering selection has to be enabled
-at compile time CONFIG_FB_CFB_REV_PIXELS_IN_BYTE and for
-each display configuration which requires it by flag
-FB_NONSTD_REV_PIX_IN_B in "nonstd" field of info structure.
+So far no one complained about the new otheros.bld (AFAIK). Which doesn't=
+ mean
+that (a) the problem doesn't happen and (b) it wouldn't be nice to have a=
+ `safe
+mode' key sequence...
 
-This patch provides way for board specific code to select
-this option.
+With kind regards,
+=20
+Geert Uytterhoeven
+Software Architect
 
-Signed-off-by: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
-
- drivers/video/imxfb.c            |    3 ++-
- include/asm-arm/arch-imx/imxfb.h |    1 +
- 2 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 986ffa6..1160955 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -466,7 +466,7 @@ static int __init imxfb_init_fbinfo(stru
- 	info->var.vmode	= FB_VMODE_NONINTERLACED;
- 
- 	info->fbops			= &imxfb_ops;
--	info->flags			= FBINFO_FLAG_DEFAULT;
-+	info->flags			= FBINFO_FLAG_DEFAULT | FBINFO_READS_FAST;
- 
- 	fbi->rgb[RGB_16]		= &def_rgb_16;
- 	fbi->rgb[RGB_8]			= &def_rgb_8;
-@@ -479,6 +479,7 @@ static int __init imxfb_init_fbinfo(stru
- 	info->var.yres_virtual		= inf->yres;
- 	fbi->max_bpp			= inf->bpp;
- 	info->var.bits_per_pixel	= inf->bpp;
-+	info->var.nonstd		= inf->nonstd;
- 	info->var.pixclock		= inf->pixclock;
- 	info->var.hsync_len		= inf->hsync_len;
- 	info->var.left_margin		= inf->left_margin;
-diff --git a/include/asm-arm/arch-imx/imxfb.h b/include/asm-arm/arch-imx/imxfb.h
-index 7dbc7bb..3ed9ec8 100644
---- a/include/asm-arm/arch-imx/imxfb.h
-+++ b/include/asm-arm/arch-imx/imxfb.h
-@@ -7,6 +7,7 @@ struct imxfb_mach_info {
- 	u_short		xres;
- 	u_short		yres;
- 
-+	u_int		nonstd;
- 	u_char		bpp;
- 	u_char		hsync_len;
- 	u_char		left_margin;
-
+Sony Network and Software Technology Center Europe
+The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
+=B7 Belgium
+=20
+Phone:    +32 (0)2 700 8453=09
+Fax:      +32 (0)2 700 8622=09
+E-mail:   Geert.Uytterhoeven@sonycom.com=09
+Internet: http://www.sony-europe.com/
+ =09
+Sony Network and Software Technology Center Europe=09
+A division of Sony Service Centre (Europe) N.V.=09
+Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
+ium=09
+VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
+Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
+9
+---584337861-1157957658-1191052813=:21636
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+---584337861-1157957658-1191052813=:21636
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+---584337861-1157957658-1191052813=:21636--

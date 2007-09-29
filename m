@@ -1,10 +1,12 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 07/17] bf54x-lq043fb: Framebuffer
- driver for Blackfin BF54x framebuffer device driver
-Date: Sat, 29 Sep 2007 11:17:42 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0709291116460.10965@anakin>
-References: <46FDAAD1.6070700@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 06/17] platinumfb: Fix
+	resource	management
+Date: Sun, 30 Sep 2007 07:53:05 +1000
+Message-ID: <1191102785.28637.2.camel@pasglop>
+References: <46FDAA91.4080205@gmail.com>
+	<Pine.LNX.4.64.0709291115300.10965@anakin>
+Reply-To: benh@kernel.crashing.org,
+	linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,13 +14,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbYSJ-0003Io-TG for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 29 Sep 2007 02:17:48 -0700
-Received: from asia.telenet-ops.be ([195.130.137.74])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbYSI-0000rV-Er
+	id 1IbkFN-0000O6-PY for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 29 Sep 2007 14:53:14 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX18Uo9pnCUJ6cBtd7/s6fq6eAAsve/9tADw=])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1IbkFM-0006Xb-CT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 29 Sep 2007 02:17:47 -0700
-In-Reply-To: <46FDAAD1.6070700@gmail.com>
+	Sat, 29 Sep 2007 14:53:13 -0700
+In-Reply-To: <Pine.LNX.4.64.0709291115300.10965@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,33 +33,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>, Bryan Wu <bryan.wu@analog.com>, Michael Hennerich <michael.hennerich@analog.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andy Whitcroft <apw@uk.ibm.com>
 
-On Sat, 29 Sep 2007, Antonino A. Daplas wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
-> 
-> Blackfin BF54x framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
-> 
-> [adaplas]
-> Add 'fb' suffix to driver name.
 
-Won't work though if you forget to rename the actual source file:
+> Probably scripts/checkpatch.pl should be taught to complain about
+> `#undef DEBUG'.
 
->  drivers/video/bf54x-lq043.c                   |  786 +++++++++++++++++++++++++
+Why ? Whenever I have things that are #ifdef DEBUG in the file (such as
+dev_dbg statements), I always leave a #undef DEBUG statement at the top.
 
-> +obj-$(CONFIG_FB_BF54X_LQ043)	  += bf54x-lq043fb.o
+That way, I know I can enable debug in that file by flicking it.
 
-Gr{oetje,eeting}s,
+Ben.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

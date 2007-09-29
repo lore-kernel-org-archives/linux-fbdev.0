@@ -1,25 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 03/17] nvidiafb: Correctly assign the
- i2c class with the port reversal
-Date: Sat, 29 Sep 2007 09:26:55 +0800
-Message-ID: <46FDA9DF.9030407@gmail.com>
+Subject: [PATCH 04/17] pmagb-b-fb: Improve diagnostics
+Date: Sat, 29 Sep 2007 09:27:59 +0800
+Message-ID: <46FDAA1F.3030108@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbSN9-000811-Ab for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:48:03 -0700
-Received: from wr-out-0506.google.com ([64.233.184.225])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbSN7-00039C-VE
+	id 1IbSNG-00083x-5W for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Sep 2007 19:48:10 -0700
+Received: from wx-out-0506.google.com ([66.249.82.236])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbSNE-00077M-Pd
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:48:03 -0700
-Received: by wr-out-0506.google.com with SMTP id 36so1486750wra
+	Fri, 28 Sep 2007 19:48:10 -0700
+Received: by wx-out-0506.google.com with SMTP id h31so2566744wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 28 Sep 2007 19:48:01 -0700 (PDT)
+	Fri, 28 Sep 2007 19:48:08 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,36 +30,110 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Maciej W. Rozycki" <macro@linux-mips.org>
 
-If the i2c ports are to be reversed, I2C_CLASS_HWMON assignment must
-also be reversed.
+From: Maciej W. Rozycki <macro@linux-mips.org>
 
+Add error messages to the probe call.
+
+[adaplas]
+On failure, return actual error value instead of -ENXIO.
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/nvidia/nv_i2c.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/pmagb-b-fb.c |   34 +++++++++++++++++++++++++++-------
+ 1 files changed, 27 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
-index 0cbcb3d..6fd7cb8 100644
---- a/drivers/video/nvidia/nv_i2c.c
-+++ b/drivers/video/nvidia/nv_i2c.c
-@@ -126,10 +126,12 @@ void nvidia_create_i2c_busses(struct nvi
- 	par->chan[2].par = par;
+diff --git a/drivers/video/pmagb-b-fb.c b/drivers/video/pmagb-b-fb.c
+index 7a0ce7d..04de41d 100644
+--- a/drivers/video/pmagb-b-fb.c
++++ b/drivers/video/pmagb-b-fb.c
+@@ -254,16 +254,23 @@ static int __init pmagbbfb_probe(struct 
+ 	struct pmagbbfb_par *par;
+ 	char freq0[12], freq1[12];
+ 	u32 vid_base;
++	int err;
  
- 	par->chan[0].ddc_base = (par->reverse_i2c) ? 0x36 : 0x3e;
-- 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0", 0);
-+ 	nvidia_setup_i2c_bus(&par->chan[0], "nvidia #0",
-+			     (par->reverse_i2c) ? I2C_CLASS_HWMON : 0);
+ 	info = framebuffer_alloc(sizeof(struct pmagbbfb_par), dev);
+-	if (!info)
++	if (!info) {
++		printk(KERN_ERR "%s: Cannot allocate memory\n", dev->bus_id);
+ 		return -ENOMEM;
++	}
  
- 	par->chan[1].ddc_base = (par->reverse_i2c) ? 0x3e : 0x36;
-- 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1", I2C_CLASS_HWMON);
-+ 	nvidia_setup_i2c_bus(&par->chan[1], "nvidia #1",
-+			     (par->reverse_i2c) ? 0 : I2C_CLASS_HWMON);
+ 	par = info->par;
+ 	dev_set_drvdata(dev, info);
  
- 	par->chan[2].ddc_base = 0x50;
-  	nvidia_setup_i2c_bus(&par->chan[2], "nvidia #2", 0);
+-	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
++		printk(KERN_ERR "%s: Cannot allocate color map\n",
++		       dev->bus_id);
++		err = -ENOMEM;
+ 		goto err_alloc;
++	}
+ 
+ 	info->fbops = &pmagbbfb_ops;
+ 	info->fix = pmagbbfb_fix;
+@@ -273,22 +280,31 @@ static int __init pmagbbfb_probe(struct 
+ 	/* Request the I/O MEM resource.  */
+ 	start = tdev->resource.start;
+ 	len = tdev->resource.end - start + 1;
+-	if (!request_mem_region(start, len, dev->bus_id))
++	if (!request_mem_region(start, len, dev->bus_id)) {
++		printk(KERN_ERR "%s: Cannot reserve FB region\n", dev->bus_id);
++		err = -EBUSY;
+ 		goto err_cmap;
++	}
+ 
+ 	/* MMIO mapping setup.  */
+ 	info->fix.mmio_start = start;
+ 	par->mmio = ioremap_nocache(info->fix.mmio_start, info->fix.mmio_len);
+-	if (!par->mmio)
++	if (!par->mmio) {
++		printk(KERN_ERR "%s: Cannot map MMIO\n", dev->bus_id);
++		err = -ENOMEM;
+ 		goto err_resource;
++	}
+ 	par->sfb = par->mmio + PMAGB_B_SFB;
+ 	par->dac = par->mmio + PMAGB_B_BT459;
+ 
+ 	/* Frame buffer mapping setup.  */
+ 	info->fix.smem_start = start + PMAGB_B_FBMEM;
+ 	par->smem = ioremap_nocache(info->fix.smem_start, info->fix.smem_len);
+-	if (!par->smem)
++	if (!par->smem) {
++		printk(KERN_ERR "%s: Cannot map FB\n", dev->bus_id);
++		err = -ENOMEM;
+ 		goto err_mmio_map;
++	}
+ 	vid_base = sfb_read(par, SFB_REG_VID_BASE);
+ 	info->screen_base = (void __iomem *)par->smem + vid_base * 0x1000;
+ 	info->screen_size = info->fix.smem_len - 2 * vid_base * 0x1000;
+@@ -297,8 +313,12 @@ static int __init pmagbbfb_probe(struct 
+ 	pmagbbfb_screen_setup(info);
+ 	pmagbbfb_osc_setup(info);
+ 
+-	if (register_framebuffer(info) < 0)
++	err = register_framebuffer(info);
++	if (err < 0) {
++		printk(KERN_ERR "%s: Cannot register framebuffer\n",
++		       dev->bus_id);
+ 		goto err_smem_map;
++	}
+ 
+ 	get_device(dev);
+ 
+@@ -330,7 +350,7 @@ err_cmap:
+ 
+ err_alloc:
+ 	framebuffer_release(info);
+-	return -ENXIO;
++	return err;
+ }
+ 
+ static int __exit pmagbbfb_remove(struct device *dev)
 
 
 -------------------------------------------------------------------------

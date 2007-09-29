@@ -1,7 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 08/17] video gfx: merge kconfig menus
-Date: Sat, 29 Sep 2007 09:32:51 +0800
-Message-ID: <46FDAB43.5010703@gmail.com>
+Subject: [PATCH 09/17] ps3av: eliminate unneeded
+	temporary variables
+Date: Sat, 29 Sep 2007 09:33:54 +0800
+Message-ID: <46FDAB82.4020800@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbSNW-00084H-HA for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:48:26 -0700
-Received: from wr-out-0506.google.com ([64.233.184.225])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbSNW-00039C-7W
+	id 1IbSNc-00084R-KA for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Sep 2007 19:48:33 -0700
+Received: from wa-out-1112.google.com ([209.85.146.182])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbSNc-0003FN-D9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:48:26 -0700
-Received: by wr-out-0506.google.com with SMTP id 36so1486750wra
+	Fri, 28 Sep 2007 19:48:32 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so5642791waf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 28 Sep 2007 19:48:26 -0700 (PDT)
+	Fri, 28 Sep 2007 19:48:32 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,107 +31,74 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Dave Airlie <airlied@linux.ie>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Move AGP and DRM menus into the video graphics support menu.
-  They use 'menuconfig' so that they can all be disabled with
-  one selection.
-Make the console menu use 'menuconfig' so that it can all be
-  disabled with one selection.
-Make the frame buffer menu use 'menuconfig' so that it can all be
-  disabled with one selection.
+ps3av: eliminate unneeded temporary variables
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Acked-by: Dave Airlie <airlied@linux.ie>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/char/Kconfig     |    4 ----
- drivers/char/agp/Kconfig |    2 +-
- drivers/char/drm/Kconfig |    2 +-
- drivers/video/Kconfig    |   11 +++++++----
- 4 files changed, 9 insertions(+), 10 deletions(-)
+ drivers/ps3/ps3av_cmd.c |   17 ++++++-----------
+ 1 files changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 045f74c..d9bc0b3 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -925,10 +925,6 @@ config GPIO_TB0219
- 	depends on TANBAC_TB022X
- 	select GPIO_VR41XX
+diff --git a/drivers/ps3/ps3av_cmd.c b/drivers/ps3/ps3av_cmd.c
+index f72f5dd..83d7e8f 100644
+--- a/drivers/ps3/ps3av_cmd.c
++++ b/drivers/ps3/ps3av_cmd.c
+@@ -512,7 +512,6 @@ static const u32 ps3av_ns_table[][5] = {
+ static void ps3av_cnv_ns(u8 *ns, u32 fs, u32 video_vid)
+ {
+ 	u32 av_vid, ns_val;
+-	u8 *p = ns;
+ 	int d;
  
--source "drivers/char/agp/Kconfig"
--
--source "drivers/char/drm/Kconfig"
--
- source "drivers/char/pcmcia/Kconfig"
+ 	d = ns_val = 0;
+@@ -551,24 +550,22 @@ static void ps3av_cnv_ns(u8 *ns, u32 fs,
+ 	else
+ 		ns_val = ps3av_ns_table[PS3AV_CMD_AUDIO_FS_44K-BASE][d];
  
- config MWAVE
-diff --git a/drivers/char/agp/Kconfig b/drivers/char/agp/Kconfig
-index 713533d..f22c253 100644
---- a/drivers/char/agp/Kconfig
-+++ b/drivers/char/agp/Kconfig
-@@ -1,4 +1,4 @@
--config AGP
-+menuconfig AGP
- 	tristate "/dev/agpgart (AGP Support)"
- 	depends on ALPHA || IA64 || PARISC || PPC || X86
- 	depends on PCI
-diff --git a/drivers/char/drm/Kconfig b/drivers/char/drm/Kconfig
-index 0b7ffa5..ba3058d 100644
---- a/drivers/char/drm/Kconfig
-+++ b/drivers/char/drm/Kconfig
-@@ -4,7 +4,7 @@ #
- # This driver provides support for the
- # Direct Rendering Infrastructure (DRI) in XFree86 4.1.0 and higher.
- #
--config DRM
-+menuconfig DRM
- 	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
- 	depends on (AGP || AGP=n) && PCI && !EMULATED_CMPXCHG
- 	help
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index fbee300..282c351 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -5,8 +5,9 @@ #
- menu "Graphics support"
- 	depends on HAS_IOMEM
+-	*p++ = ns_val & 0x000000FF;
+-	*p++ = (ns_val & 0x0000FF00) >> 8;
+-	*p = (ns_val & 0x00FF0000) >> 16;
++	*ns++ = ns_val & 0x000000FF;
++	*ns++ = (ns_val & 0x0000FF00) >> 8;
++	*ns = (ns_val & 0x00FF0000) >> 16;
+ }
  
--source "drivers/video/backlight/Kconfig"
--source "drivers/video/display/Kconfig"
-+source "drivers/char/agp/Kconfig"
-+
-+source "drivers/char/drm/Kconfig"
+ #undef BASE
  
- config VGASTATE
-        tristate
-@@ -18,7 +19,7 @@ config VIDEO_OUTPUT_CONTROL
- 	  This framework adds support for low-level control of the video 
- 	  output switch.
+ static u8 ps3av_cnv_enable(u32 source, const u8 *enable)
+ {
+-	const u8 *p;
+ 	u8 ret = 0;
  
--config FB
-+menuconfig FB
- 	tristate "Support for frame buffer devices"
- 	---help---
- 	  The frame buffer device provides an abstraction for the graphics
-@@ -1906,6 +1907,9 @@ if ARCH_OMAP
- 	source "drivers/video/omap/Kconfig"
- endif
+ 	if (source == PS3AV_CMD_AUDIO_SOURCE_SPDIF) {
+ 		ret = 0x03;
+ 	} else if (source == PS3AV_CMD_AUDIO_SOURCE_SERIAL) {
+-		p = enable;
+-		ret = ((p[0] << 4) + (p[1] << 5) + (p[2] << 6) + (p[3] << 7)) |
+-		      0x01;
++		ret = ((enable[0] << 4) + (enable[1] << 5) + (enable[2] << 6) +
++		       (enable[3] << 7)) | 0x01;
+ 	} else
+ 		printk(KERN_ERR "%s failed, source:%x\n", __func__, source);
+ 	return ret;
+@@ -576,11 +573,9 @@ static u8 ps3av_cnv_enable(u32 source, c
  
-+source "drivers/video/backlight/Kconfig"
-+source "drivers/video/display/Kconfig"
-+
- if VT
- 	source "drivers/video/console/Kconfig"
- endif
-@@ -1915,4 +1919,3 @@ if FB || SGI_NEWPORT_CONSOLE
- endif
+ static u8 ps3av_cnv_fifomap(const u8 *map)
+ {
+-	const u8 *p;
+ 	u8 ret = 0;
  
- endmenu
--
+-	p = map;
+-	ret = p[0] + (p[1] << 2) + (p[2] << 4) + (p[3] << 6);
++	ret = map[0] + (map[1] << 2) + (map[2] << 4) + (map[3] << 6);
+ 	return ret;
+ }
+ 
 
 
 -------------------------------------------------------------------------

@@ -1,24 +1,24 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 06/17] platinumfb: Fix resource
- management
-Date: Sat, 29 Sep 2007 11:16:18 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0709291115300.10965@anakin>
-References: <46FDAA91.4080205@gmail.com>
+Subject: Re: [PATCH 07/17] bf54x-lq043fb: Framebuffer
+ driver for Blackfin BF54x framebuffer device driver
+Date: Sat, 29 Sep 2007 11:17:42 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0709291116460.10965@anakin>
+References: <46FDAAD1.6070700@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbYR0-0003CP-Dl for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 29 Sep 2007 02:16:27 -0700
-Received: from astra.telenet-ops.be ([195.130.132.58])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbYQy-0006aq-P5
+	id 1IbYSJ-0003Io-TG for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 29 Sep 2007 02:17:48 -0700
+Received: from asia.telenet-ops.be ([195.130.137.74])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbYSI-0000rV-Er
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 29 Sep 2007 02:16:26 -0700
-In-Reply-To: <46FDAA91.4080205@gmail.com>
+	Sat, 29 Sep 2007 02:17:47 -0700
+In-Reply-To: <46FDAAD1.6070700@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,37 +30,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andy Whitcroft <apw@uk.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, Bryan Wu <bryan.wu@analog.com>, Michael Hennerich <michael.hennerich@analog.com>
 
 On Sat, 29 Sep 2007, Antonino A. Daplas wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> From: Michael Hennerich <michael.hennerich@analog.com>
 > 
-> Current kernels have a non-working platinumfb due to some resource
-> management issues. This fixes it.
+> Blackfin BF54x framebuffer device driver for a SHARP LQ043T1DG01 TFT LCD
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-> ---
-> 
->  drivers/video/platinumfb.c |   48 ++++++++++++++++++++++++--------------------
->  1 files changed, 26 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
-> index 8503e73..cbe71a5 100644
-> --- a/drivers/video/platinumfb.c
-> +++ b/drivers/video/platinumfb.c
-> @@ -17,6 +17,8 @@
->   *  more details.
->   */
->  
-> +#undef DEBUG
-> +
->  #include <linux/module.h>
->  #include <linux/kernel.h>
->  #include <linux/errno.h>
+> [adaplas]
+> Add 'fb' suffix to driver name.
 
-Probably scripts/checkpatch.pl should be taught to complain about
-`#undef DEBUG'.
+Won't work though if you forget to rename the actual source file:
+
+>  drivers/video/bf54x-lq043.c                   |  786 +++++++++++++++++++++++++
+
+> +obj-$(CONFIG_FB_BF54X_LQ043)	  += bf54x-lq043fb.o
 
 Gr{oetje,eeting}s,
 

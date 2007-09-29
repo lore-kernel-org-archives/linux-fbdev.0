@@ -1,24 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 01/17] vt: VT ioctl race fix
-Date: Sat, 29 Sep 2007 09:24:45 +0800
-Message-ID: <46FDA95D.8060303@gmail.com>
+Subject: [PATCH 02/17] vt/vgacon: Check if screen resize
+ request comes from userspace
+Date: Sat, 29 Sep 2007 09:25:44 +0800
+Message-ID: <46FDA998.5010005@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbSN0-0007yd-5G for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:47:56 -0700
-Received: from qb-out-0506.google.com ([72.14.204.225])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbSMw-00070M-Qg
+	id 1IbSN4-0007yn-Dq for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Sep 2007 19:47:58 -0700
+Received: from wr-out-0506.google.com ([64.233.184.225])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbSN2-00039C-Sk
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Sep 2007 19:47:53 -0700
-Received: by qb-out-0506.google.com with SMTP id c8so581761qbc
+	Fri, 28 Sep 2007 19:47:58 -0700
+Received: by wr-out-0506.google.com with SMTP id 36so1486750wra
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 28 Sep 2007 19:47:49 -0700 (PDT)
+	Fri, 28 Sep 2007 19:47:56 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,63 +31,203 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Samuel Ortiz <sameo@openedhand.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Samuel Ortiz <sameo@openedhand.com>
+Various console drivers are able to resize the screen via the con_resize()
+hook. This hook is also visible in userspace via the TIOCWINSZ, VT_RESIZE
+and VT_RESIZEX ioctl's.  One particular utility, SVGATextMode, expects that
+con_resize() of the VGA console will always return success even if the
+resulting screen is not compatible with the hardware. However, this particular
+behavior of the VGA console, as reported in Kernel Bugzilla Bug 7513,
+can cause undefined behavior if the user starts with a console size larger
+than 80x25.
 
-When calling the RELDISP VT ioctl, we are reading vt_newvt while the console
-workqueue could be messing with it (through change_console()).
-We fix this race by taking the console semaphore before reading vt_newvt.
+To work around this problem, add an extra parameter to con_resize(). This
+parameter is ignored by drivers except for vgacon. If this parameter is
+non-zero, then the resize request came from a VT_RESIZE or VT_RESIZEX ioctl
+and vgacon will always return success. If this parameter is zero, vgacon will
+return -EINVAL if the requested size is not compatible with the hardware.
+The latter is the more correct behavior.
 
-Signed-off-by: Samuel Ortiz <sameo@openedhand.com>
+With this change, SVGATextMode should still work correctly while in-kernel
+and stty resize calls can expect correct behavior from vgacon.
+
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/char/vt_ioctl.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/char/vt.c                       |   13 +++++++++----
+ drivers/char/vt_ioctl.c                 |   15 +++++++++++++--
+ drivers/usb/misc/sisusbvga/sisusb_con.c |    3 ++-
+ drivers/video/console/fbcon.c           |    2 +-
+ drivers/video/console/vgacon.c          |    7 ++++---
+ include/linux/console.h                 |    3 ++-
+ include/linux/console_struct.h          |    1 +
+ 7 files changed, 32 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index e6a7916..2ef21da 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -786,13 +786,15 @@ int vc_allocate(unsigned int currcons)	/
+ 	return 0;
+ }
+ 
+-static inline int resize_screen(struct vc_data *vc, int width, int height)
++static inline int resize_screen(struct vc_data *vc, int width, int height,
++				int user)
+ {
+ 	/* Resizes the resolution of the display adapater */
+ 	int err = 0;
+ 
+ 	if (vc->vc_mode != KD_GRAPHICS && vc->vc_sw->con_resize)
+-		err = vc->vc_sw->con_resize(vc, width, height);
++		err = vc->vc_sw->con_resize(vc, width, height, user);
++
+ 	return err;
+ }
+ 
+@@ -808,7 +810,7 @@ int vc_resize(struct vc_data *vc, unsign
+ 	unsigned long old_origin, new_origin, new_scr_end, rlth, rrem, err = 0;
+ 	unsigned int old_cols, old_rows, old_row_size, old_screen_size;
+ 	unsigned int new_cols, new_rows, new_row_size, new_screen_size;
+-	unsigned int end;
++	unsigned int end, user;
+ 	unsigned short *newscreen;
+ 
+ 	WARN_CONSOLE_UNLOCKED();
+@@ -816,6 +818,9 @@ int vc_resize(struct vc_data *vc, unsign
+ 	if (!vc)
+ 		return -ENXIO;
+ 
++	user = vc->vc_resize_user;
++	vc->vc_resize_user = 0;
++
+ 	if (cols > VC_RESIZE_MAXCOL || lines > VC_RESIZE_MAXROW)
+ 		return -EINVAL;
+ 
+@@ -836,7 +841,7 @@ int vc_resize(struct vc_data *vc, unsign
+ 	old_row_size = vc->vc_size_row;
+ 	old_screen_size = vc->vc_screenbuf_size;
+ 
+-	err = resize_screen(vc, new_cols, new_rows);
++	err = resize_screen(vc, new_cols, new_rows, user);
+ 	if (err) {
+ 		kfree(newscreen);
+ 		return err;
 diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index 60111a7..c872774 100644
+index c872774..830e0ac 100644
 --- a/drivers/char/vt_ioctl.c
 +++ b/drivers/char/vt_ioctl.c
-@@ -812,6 +812,7 @@ #endif
- 		/*
- 		 * Switching-from response
- 		 */
-+		acquire_console_sem();
- 		if (vc->vt_newvt >= 0) {
- 			if (arg == 0)
- 				/*
-@@ -826,7 +827,6 @@ #endif
- 				 * complete the switch.
- 				 */
- 				int newvt;
--				acquire_console_sem();
- 				newvt = vc->vt_newvt;
- 				vc->vt_newvt = -1;
- 				i = vc_allocate(newvt);
-@@ -840,7 +840,6 @@ #endif
- 				 * other console switches..
- 				 */
- 				complete_change_console(vc_cons[newvt].d);
--				release_console_sem();
- 			}
- 		}
- 
-@@ -852,9 +851,12 @@ #endif
- 			/*
- 			 * If it's just an ACK, ignore it
- 			 */
--			if (arg != VT_ACKACQ)
-+			if (arg != VT_ACKACQ) {
-+				release_console_sem();
- 				return -EINVAL;
+@@ -889,14 +889,24 @@ #endif
+ 	case VT_RESIZE:
+ 	{
+ 		struct vt_sizes __user *vtsizes = up;
++		struct vc_data *vc;
++
+ 		ushort ll,cc;
+ 		if (!perm)
+ 			return -EPERM;
+ 		if (get_user(ll, &vtsizes->v_rows) ||
+ 		    get_user(cc, &vtsizes->v_cols))
+ 			return -EFAULT;
+-		for (i = 0; i < MAX_NR_CONSOLES; i++)
+-			vc_lock_resize(vc_cons[i].d, cc, ll);
++
++		for (i = 0; i < MAX_NR_CONSOLES; i++) {
++			vc = vc_cons[i].d;
++
++			if (vc) {
++				vc->vc_resize_user = 1;
++				vc_lock_resize(vc_cons[i].d, cc, ll);
 +			}
- 		}
-+		release_console_sem();
- 
++		}
++
  		return 0;
+ 	}
  
+@@ -942,6 +952,7 @@ #endif
+ 				vc_cons[i].d->vc_scan_lines = vlin;
+ 			if (clin)
+ 				vc_cons[i].d->vc_font.height = clin;
++			vc_cons[i].d->vc_resize_user = 1;
+ 			vc_resize(vc_cons[i].d, cc, ll);
+ 			release_console_sem();
+ 		}
+diff --git a/drivers/usb/misc/sisusbvga/sisusb_con.c b/drivers/usb/misc/sisusbvga/sisusb_con.c
+index 43722e5..b624320 100644
+--- a/drivers/usb/misc/sisusbvga/sisusb_con.c
++++ b/drivers/usb/misc/sisusbvga/sisusb_con.c
+@@ -1042,7 +1042,8 @@ sisusbcon_set_origin(struct vc_data *c)
+ 
+ /* Interface routine */
+ static int
+-sisusbcon_resize(struct vc_data *c, unsigned int newcols, unsigned int newrows)
++sisusbcon_resize(struct vc_data *c, unsigned int newcols, unsigned int newrows,
++		 unsigned int user)
+ {
+ 	struct sisusb_usb_data *sisusb;
+ 	int fh;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 6d0dcde..97a0224 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2168,7 +2168,7 @@ static __inline__ void updatescrollmode(
+ }
+ 
+ static int fbcon_resize(struct vc_data *vc, unsigned int width, 
+-			unsigned int height)
++			unsigned int height, unsigned int user)
+ {
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	struct fbcon_ops *ops = info->fbcon_par;
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 904bb24..a569871 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -1278,13 +1278,14 @@ #define vgacon_font_get NULL
+ #endif
+ 
+ static int vgacon_resize(struct vc_data *c, unsigned int width,
+-				unsigned int height)
++			 unsigned int height, unsigned int user)
+ {
+ 	if (width % 2 || width > ORIG_VIDEO_COLS ||
+ 	    height > (ORIG_VIDEO_LINES * vga_default_font_height)/
+ 	    c->vc_font.height)
+-		/* let svgatextmode tinker with video timings */
+-		return 0;
++		/* let svgatextmode tinker with video timings and
++		   return success */
++		return (user) ? 0 : -EINVAL;
+ 
+ 	if (CON_IS_VISIBLE(c) && !vga_is_gfx) /* who knows */
+ 		vgacon_doresize(c, width, height);
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 9236a3f..a5f88a6 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -45,7 +45,8 @@ struct consw {
+ 	int	(*con_font_get)(struct vc_data *, struct console_font *);
+ 	int	(*con_font_default)(struct vc_data *, struct console_font *, char *);
+ 	int	(*con_font_copy)(struct vc_data *, int);
+-	int	(*con_resize)(struct vc_data *, unsigned int, unsigned int);
++	int     (*con_resize)(struct vc_data *, unsigned int, unsigned int,
++			       unsigned int);
+ 	int	(*con_set_palette)(struct vc_data *, unsigned char *);
+ 	int	(*con_scrolldelta)(struct vc_data *, int);
+ 	int	(*con_set_origin)(struct vc_data *);
+diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+index dc77fed..d71f7c0 100644
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -100,6 +100,7 @@ struct vc_data {
+ 	unsigned char 	vc_G1_charset;
+ 	unsigned char 	vc_saved_G0;
+ 	unsigned char 	vc_saved_G1;
++	unsigned int    vc_resize_user;         /* resize request from user */
+ 	unsigned int	vc_bell_pitch;		/* Console bell pitch */
+ 	unsigned int	vc_bell_duration;	/* Console bell duration */
+ 	struct vc_data **vc_display_fg;		/* [!] Ptr to var holding fg console for this display */
 
 
 -------------------------------------------------------------------------

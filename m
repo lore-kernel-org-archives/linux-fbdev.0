@@ -1,14 +1,8 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 06/17] platinumfb: Fix
-	resource	management
-Date: Sun, 30 Sep 2007 18:03:39 +1000
-Message-ID: <1191139419.6310.0.camel@pasglop>
-References: <46FDAA91.4080205@gmail.com>
-	<Pine.LNX.4.64.0709291115300.10965@anakin>
-	<1191102785.28637.2.camel@pasglop>
-	<Pine.LNX.4.64.0709300910570.10965@anakin>
-Reply-To: benh@kernel.crashing.org,
-	linux-fbdev-devel@lists.sourceforge.net
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] s3fb: mode selection fixes
+Date: Sun, 30 Sep 2007 16:10:20 +0200
+Message-ID: <20070930161020.e6a01fa0.krzysztof.h1@poczta.fm>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,15 +10,23 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IbtmD-0006uC-TO for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 30 Sep 2007 01:03:46 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1/o6070tWNk+EI9Z5iT/svnOxXxFXDDFdc=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IbtmC-0002up-ED
+	id 1IbzMu-0000lz-Rv for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 30 Sep 2007 07:02:01 -0700
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]
+	helo=smtp4.poczta.interia.pl)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IbzMt-0005FN-7U
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 30 Sep 2007 01:03:45 -0700
-In-Reply-To: <Pine.LNX.4.64.0709300910570.10965@anakin>
+	Sun, 30 Sep 2007 07:02:00 -0700
+Received: from poczta.interia.pl (mi06.poczta.interia.pl [10.217.12.6])
+	by smtp4.poczta.interia.pl (INTERIA.PL) with ESMTP id 86A0C13DE7A
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 30 Sep 2007 16:01:55 +0200 (CEST)
+Received: from krzysio.net (host-87-99-61-239.lanet.net.pl [87.99.61.239])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by www.poczta.fm (INTERIA.PL) with ESMTP id E099F137BF4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 30 Sep 2007 16:01:55 +0200 (CEST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,31 +37,89 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Andy Whitcroft <apw@uk.ibm.com>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+This patch fixes bugs related to mode selection in the s3fb driver:
+- fixes definition of the 32-bit format,
+- fixes wrong error value returned when format is not supported
+  by chip,
+- sets r,g,b length field from the bits_per_pixel value otherwise
+  the fbset fails in simple case like switching depths: 
+  8bpp ->32bpp -> 8bpp
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+
+This patch keeps selected depth while switching resolutions.
+
+Regards,
+Krzysztof
+
+diff -urp linux-2.6.22/drivers/video/s3fb.c linux-2.6.23/drivers/video/s3fb.c
+--- linux-2.6.22/drivers/video/s3fb.c	2007-07-09 01:32:17.000000000 +0200
++++ linux-2.6.23/drivers/video/s3fb.c	2007-09-30 13:26:11.000000000 +0200
+@@ -58,7 +58,7 @@ static const struct svga_fb_format s3fb_
+ 		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 2, 4},
+ 	{24,  {16, 8, 0}, {8, 8, 0},  {0, 8, 0}, {0, 0, 0}, 0,
+ 		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 1, 2},
+-	{32,  {16, 8, 0}, {8, 8, 0},  {0, 8, 0}, {0, 0, 0}, 0,
++	{32,  {16, 8, 0}, {8, 8, 0},  {0, 8, 0}, {24, 8, 0}, 0,
+ 		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 1, 2},
+ 	SVGA_FORMAT_END
+ };
+@@ -401,12 +401,42 @@ static int s3fb_check_var(struct fb_var_
+ 	struct s3fb_info *par = info->par;
+ 	int rv, mem, step;
+ 
++	/* set predefined mode for bits_per_pixel settings */
++	var->transp.offset = 0;
++	var->transp.length = 0;
++	switch(var->bits_per_pixel) {
++	case 4:
++	case 8:
++		var->red.length = 6;
++		var->red.offset = 0;
++		var->green = var->red;
++		var->blue = var->red;
++		break;
++	case 16:
++		var->red.length = 5;
++		var->blue.length = 5;
++		if (var->green.length != 6 && var->green.length != 5)
++			var->green.length = 6;
++		var->transp.length = 0;
++		break;
++	case 32:
++		var->transp.length = 8;
++		var->transp.offset = 24;
++	case 24:
++		var->red.length = 8;
++		var->green = var->red;
++		var->blue = var->red;
++		break;
++	default:
++		printk(KERN_ERR "depth not supported: %u\n", var->bits_per_pixel);
++		return -EINVAL;
++	}
+ 	/* Find appropriate format */
+ 	rv = svga_match_format (s3fb_formats, var, NULL);
+ 	if ((rv < 0) || ((par->chip == CHIP_988_VIRGE_VX) ? (rv == 7) : (rv == 6)))
+ 	{		/* 24bpp on VIRGE VX, 32bpp on others */
+ 		printk(KERN_ERR "fb%d: unsupported mode requested\n", info->node);
+-		return rv;
++		return rv < 0 ? rv : -EINVAL;
+ 	}
+ 
+ 	/* Do not allow to have real resoulution larger than virtual */
 
 
-On Sun, 2007-09-30 at 09:11 +0200, Geert Uytterhoeven wrote:
-> On Sun, 30 Sep 2007, Benjamin Herrenschmidt wrote:
-> > > Probably scripts/checkpatch.pl should be taught to complain about
-> > > `#undef DEBUG'.
-> > 
-> > Why ? Whenever I have things that are #ifdef DEBUG in the file (such as
-> > dev_dbg statements), I always leave a #undef DEBUG statement at the top.
-> 
-> Because it overrides a -DDEBUG on the build command line.
 
-Hrm... ok, I never play with the commandline :-)
+----------------------------------------------------------------------
+Wygrasz, czy przegrasz?
 
-> > That way, I know I can enable debug in that file by flicking it.
-> 
-> Just add #define DEBUG at the top?
-
-Yeah well, it's really just a reminder that there's DEBUG stuff in that
-file, but feel free to send a patch removing it :-)
-
-Ben.
-
+>>> http://link.interia.pl/f1bbd
 
 
 -------------------------------------------------------------------------

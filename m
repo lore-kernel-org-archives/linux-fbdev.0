@@ -1,151 +1,92 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH] s3fb: mode selection fixes
-Date: Sun, 30 Sep 2007 22:31:37 +0200
-Message-ID: <20070930203136.GA1829@localhost.localdomain>
-References: <20070930161020.e6a01fa0.krzysztof.h1@poczta.fm>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 2/6] Xilinxfb: Replace calls to printk with dev_dbg, dev_err,
+	etc.
+Date: Mon, 01 Oct 2007 09:57:38 -0600
+Message-ID: <20071001155738.6114.51384.stgit@trillian.cg.shawcable.net>
+References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Ic5SV-0001qn-FG for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 30 Sep 2007 13:32:12 -0700
-Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Ic5SU-0005yq-OW
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 30 Sep 2007 13:32:11 -0700
-Content-Disposition: inline
-In-Reply-To: <20070930161020.e6a01fa0.krzysztof.h1@poczta.fm>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755584AbXJAP5x@vger.kernel.org>
+In-reply-to: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, akonovalov@ru.mvista.com, linuxppc@ozlabs.org, adaplas@gmail.com
 
-On Sun, Sep 30, 2007 at 04:10:20PM +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> This patch fixes bugs related to mode selection in the s3fb driver:
-> - fixes definition of the 32-bit format,
-> - fixes wrong error value returned when format is not supported
->   by chip,
-> - sets r,g,b length field from the bits_per_pixel value otherwise
->   the fbset fails in simple case like switching depths: 
->   8bpp ->32bpp -> 8bpp
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+From: Grant Likely <grant.likely@secretlab.ca>
 
-NACK
+The dev_dbg, dev_err, etc functions provide more context that plain
+vanilla printk which is useful for debugging.  Where appropriate,
+change printk calls to the appropriate dev_*() call.
 
-> diff -urp linux-2.6.22/drivers/video/s3fb.c linux-2.6.23/drivers/video/s3fb.c
-> --- linux-2.6.22/drivers/video/s3fb.c	2007-07-09 01:32:17.000000000 +0200
-> +++ linux-2.6.23/drivers/video/s3fb.c	2007-09-30 13:26:11.000000000 +0200
-> @@ -58,7 +58,7 @@ static const struct svga_fb_format s3fb_
->  		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 2, 4},
->  	{24,  {16, 8, 0}, {8, 8, 0},  {0, 8, 0}, {0, 0, 0}, 0,
->  		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 1, 2},
-> -	{32,  {16, 8, 0}, {8, 8, 0},  {0, 8, 0}, {0, 0, 0}, 0,
-> +	{32,  {16, 8, 0}, {8, 8, 0},  {0, 8, 0}, {24, 8, 0}, 0,
->  		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 1, 2},
->  	SVGA_FORMAT_END
->  };
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-Why do you think this is correct? I think that the highest byte is usually
-just a padding. In one older version of this driver i used 'your' version of
-that structure and i perceived problems with some cards (but i forgot which
-cards exactly) so perhaps that on some cards the highest byte is not just a
-padding, but neither alpha channel.
+ drivers/video/xilinxfb.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-> +	/* set predefined mode for bits_per_pixel settings */
-> +	var->transp.offset = 0;
-> +	var->transp.length = 0;
-> +	switch(var->bits_per_pixel) {
-> +	case 4:
-> +	case 8:
-> +		var->red.length = 6;
-> +		var->red.offset = 0;
-> +		var->green = var->red;
-> +		var->blue = var->red;
-> +		break;
-> +	case 16:
-> +		var->red.length = 5;
-> +		var->blue.length = 5;
-> +		if (var->green.length != 6 && var->green.length != 5)
-> +			var->green.length = 6;
-> +		var->transp.length = 0;
-> +		break;
-> +	case 32:
-> +		var->transp.length = 8;
-> +		var->transp.offset = 24;
-> +	case 24:
-> +		var->red.length = 8;
-> +		var->green = var->red;
-> +		var->blue = var->red;
-> +		break;
-> +	default:
-> +		printk(KERN_ERR "depth not supported: %u\n", var->bits_per_pixel);
-> +		return -EINVAL;
-> +	}
-
-This is unnecessary, red, green and blue structures are filled by
-svga_match_format().
-
-> - sets r,g,b length field from the bits_per_pixel value otherwise
->   the fbset fails in simple case like switching depths: 
->   8bpp ->32bpp -> 8bpp
-
-This problem is not caused by not not filled length fields (you can examine
-that fields by fbset). Problem is in strict interpretation of matching rules
-by this driver and in a strange fbset behavior.
-
-When some depth and some color lengths are requested then this driver
-(or precisely svga_match_format() ) only changes them up (which is correct
-behavior according to some previous email from A. Daplas).
-
-But if you do some partial change of mode using fbset, then fbset uses
-previous values for unspecified values of var structure in
-FBIOPUT_VSCREENINFO call. For example if you use 32bpp and do
-fbset -depth 16, then fbset calls FBIOPUT_VSCREENINFO with arguments
-requesting depth 16 but color length 8 for each channel. Better way
-is to put zeroes to color lengts (which is what fbset does when you
-do something like 'fbset 640x480-60 -depth 16') - workaround is to use
-argument -rgba 0,0,0,0  with -depth change using fbset.
-
-I don't really care what is a correct behavior of FBIOPUT_VSCREENINFO,
-but it should be consistent, explainable and fix should implement it in
-a generic way in svga_match_format() function.
-
->  	/* Find appropriate format */
->  	rv = svga_match_format (s3fb_formats, var, NULL);
->  	if ((rv < 0) || ((par->chip == CHIP_988_VIRGE_VX) ? (rv == 7) : (rv == 6)))
->  	{		/* 24bpp on VIRGE VX, 32bpp on others */
->  		printk(KERN_ERR "fb%d: unsupported mode requested\n", info->node);
-> -		return rv;
-> +		return rv < 0 ? rv : -EINVAL;
->  	}
-
-Yes, this is a bug. 'return -EINVAL' is sufficient (as EINVAL is only error
-returned by svga_match_format() ) to fix it.
-
--- 
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2005.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 1a5f1e4..e63cbd1 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -18,6 +18,7 @@
+  * Geert Uytterhoeven.
+  */
+ 
++#include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/version.h>
+@@ -214,7 +215,7 @@ xilinxfb_drv_probe(struct device *dev)
+ 
+ 	drvdata = kzalloc(sizeof(*drvdata), GFP_KERNEL);
+ 	if (!drvdata) {
+-		printk(KERN_ERR "Couldn't allocate device private record\n");
++		dev_err(dev, "Couldn't allocate device private record\n");
+ 		return -ENOMEM;
+ 	}
+ 	dev_set_drvdata(dev, drvdata);
+@@ -222,14 +223,13 @@ xilinxfb_drv_probe(struct device *dev)
+ 	/* Map the control registers in */
+ 	regs_res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+ 	if (!regs_res || (regs_res->end - regs_res->start + 1 < 8)) {
+-		printk(KERN_ERR "Couldn't get registers resource\n");
++		dev_err(dev, "Couldn't get registers resource\n");
+ 		retval = -EFAULT;
+ 		goto failed1;
+ 	}
+ 
+ 	if (!request_mem_region(regs_res->start, 8, DRIVER_NAME)) {
+-		printk(KERN_ERR
+-		       "Couldn't lock memory region at 0x%08X\n",
++		dev_err(dev, "Couldn't lock memory region at 0x%08X\n",
+ 		       regs_res->start);
+ 		retval = -EBUSY;
+ 		goto failed1;
+@@ -241,7 +241,7 @@ xilinxfb_drv_probe(struct device *dev)
+ 	drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(FB_SIZE),
+ 				&drvdata->fb_phys, GFP_KERNEL);
+ 	if (!drvdata->fb_virt) {
+-		printk(KERN_ERR "Could not allocate frame buffer memory\n");
++		dev_err(dev, "Could not allocate frame buffer memory\n");
+ 		retval = -ENOMEM;
+ 		goto failed2;
+ 	}
+@@ -267,7 +267,7 @@ xilinxfb_drv_probe(struct device *dev)
+ 	drvdata->info.pseudo_palette = drvdata->pseudo_palette;
+ 
+ 	if (fb_alloc_cmap(&drvdata->info.cmap, PALETTE_ENTRIES_NO, 0) < 0) {
+-		printk(KERN_ERR "Fail to allocate colormap (%d entries)\n",
++		dev_err(dev, "Fail to allocate colormap (%d entries)\n",
+ 			PALETTE_ENTRIES_NO);
+ 		retval = -EFAULT;
+ 		goto failed3;
+@@ -282,7 +282,7 @@ xilinxfb_drv_probe(struct device *dev)
+ 
+ 	/* Register new frame buffer */
+ 	if (register_framebuffer(&drvdata->info) < 0) {
+-		printk(KERN_ERR "Could not register frame buffer\n");
++		dev_err(dev, "Could not register frame buffer\n");
+ 		retval = -EINVAL;
+ 		goto failed4;
+ 	}

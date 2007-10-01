@@ -1,30 +1,25 @@
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 6/6] Xilinxfb: add of_platform bus
-	binding
-Date: Mon, 1 Oct 2007 10:46:38 -0600
-Message-ID: <fa686aa40710010946s55e3cf19w1e91a4e5c48b3dd6@mail.gmail.com>
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
-	<20071001155759.6114.29143.stgit@trillian.cg.shawcable.net>
-	<961aa3350710010942y42aef8eax6fb54354184b4cc1@mail.gmail.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] s3fb: mode selection fixes
+Date: Mon, 1 Oct 2007 19:43:45 +0200
+Message-ID: <20071001194345.cd5d609d.krzysztof.h1@poczta.fm>
+References: <20070930161020.e6a01fa0.krzysztof.h1@poczta.fm>
+	<20070930203136.GA1829@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IcOPv-0001Ig-P0 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Oct 2007 09:46:47 -0700
-Received: from an-out-0708.google.com ([209.85.132.246])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IcOPt-0000IR-GU
+	id 1IcPB1-0006XJ-AA for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Oct 2007 10:35:32 -0700
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]
+	helo=smtp4.poczta.interia.pl)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IcPAy-0003Lt-HE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Oct 2007 09:46:47 -0700
-Received: by an-out-0708.google.com with SMTP id b38so668406ana
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 01 Oct 2007 09:46:42 -0700 (PDT)
-In-Reply-To: <961aa3350710010942y42aef8eax6fb54354184b4cc1@mail.gmail.com>
-Content-Disposition: inline
+	Mon, 01 Oct 2007 10:35:27 -0700
+In-Reply-To: <20070930203136.GA1829@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,38 +30,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: akonovalov@ru.mvista.com, linuxppc@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On 10/1/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
-> 2007/10/2, Grant Likely <grant.likely@secretlab.ca>:
->
-> >  static int __init
-> >  xilinxfb_init(void)
-> >  {
-> > -       /*
-> > -        * No kernel boot options used,
-> > -        * so we just need to register the driver
-> > -        */
-> > +       int rc;
-> > +       rc = xilinxfb_of_register();
-> > +       if (rc)
-> > +               return rc;
-> > +
-> >         return platform_driver_register(&xilinxfb_platform_driver);
->
-> Is it better to add error handling for platform_driver_register()?
+On Sun, 30 Sep 2007 22:31:37 +0200
+Ondrej Zajicek <santiago@crfreenet.org> wrote:
 
-Right, good catch.  I'll fix that
+> On Sun, Sep 30, 2007 at 04:10:20PM +0200, Krzysztof Helt wrote:
+> > - sets r,g,b length field from the bits_per_pixel value otherwise
+> >   the fbset fails in simple case like switching depths: 
+> >   8bpp ->32bpp -> 8bpp
+> 
+> This problem is not caused by not not filled length fields (you can examine
+> that fields by fbset). Problem is in strict interpretation of matching rules
+> by this driver and in a strange fbset behavior.
+> 
+> When some depth and some color lengths are requested then this driver
+> (or precisely svga_match_format() ) only changes them up (which is correct
+> behavior according to some previous email from A. Daplas).
+> 
+> But if you do some partial change of mode using fbset, then fbset uses
+> previous values for unspecified values of var structure in
+> FBIOPUT_VSCREENINFO call. For example if you use 32bpp and do
+> fbset -depth 16, then fbset calls FBIOPUT_VSCREENINFO with arguments
+> requesting depth 16 but color length 8 for each channel. Better way
+> is to put zeroes to color lengths (which is what fbset does when you
+> do something like 'fbset 640x480-60 -depth 16') - workaround is to use
+> argument -rgba 0,0,0,0  with -depth change using fbset.
+> 
 
-Thanks!
-g.
+What is a difference if certain color depths allow only specific color lengths?
+The 8bpp depth requires 6-bit color lengths. One can set them to 6 in the
+driver and make it works for with just "fbset -depth 8" or leave wondering
+confused user how to set it up.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> >  	/* Find appropriate format */
+> >  	rv = svga_match_format (s3fb_formats, var, NULL);
+> >  	if ((rv < 0) || ((par->chip == CHIP_988_VIRGE_VX) ? (rv == 7) : (rv == 6)))
+> >  	{		/* 24bpp on VIRGE VX, 32bpp on others */
+> >  		printk(KERN_ERR "fb%d: unsupported mode requested\n", info->node);
+> > -		return rv;
+> > +		return rv < 0 ? rv : -EINVAL;
+> >  	}
+> 
+> Yes, this is a bug. 'return -EINVAL' is sufficient (as EINVAL is only error
+> returned by svga_match_format() ) to fix it.
+> 
+
+This is short sighted. If the implementation of svga_match_format will 
+change and will return new error values the -EINVAL will overwrite them
+(so it is opposite to the original code which returned
+the svga_match_format() error value).
+
+Regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Tutaj sa Twoi nowi znajomi!
+Sprawdz >>> http://link.interia.pl/f1bb7
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

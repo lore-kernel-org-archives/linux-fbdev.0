@@ -1,13 +1,13 @@
 From: Andrei Konovalov <akonovalov@ru.mvista.com>
-Subject: Re: [PATCH 1/6] Xilinxfb: add banner output to probe routine when
- DEBUG	is defined
-Date: Thu, 04 Oct 2007 16:05:50 +0400
-Message-ID: <4704D71E.8080607@ru.mvista.com>
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net> <20071001155733.6114.71740.stgit@trillian.cg.shawcable.net>
+Subject: Re: [PATCH 2/6] Xilinxfb: Replace calls to printk with dev_dbg, dev_err,
+ etc.
+Date: Thu, 04 Oct 2007 16:06:15 +0400
+Message-ID: <4704D737.4010003@ru.mvista.com>
+References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net> <20071001155738.6114.51384.stgit@trillian.cg.shawcable.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760585AbXJDMBU@vger.kernel.org>
-In-Reply-To: <20071001155733.6114.71740.stgit@trillian.cg.shawcable.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757021AbXJDMBo@vger.kernel.org>
+In-Reply-To: <20071001155738.6114.51384.stgit@trillian.cg.shawcable.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
@@ -17,13 +17,14 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux
 Grant Likely wrote:
 > From: Grant Likely <grant.likely@secretlab.ca>
 > 
-> Debug support: when DEBUG is defined, output relevant details to the
-> log about the framebuffer registration.
+> The dev_dbg, dev_err, etc functions provide more context that plain
+> vanilla printk which is useful for debugging.  Where appropriate,
+> change printk calls to the appropriate dev_*() call.
 > 
 > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 > ---
 
 Acked-by: Andrei Konovalov <akonovalov@ru.mvista.com>
 
->  drivers/video/xilinxfb.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+>  drivers/video/xilinxfb.c |   14 +++++++-------
+>  1 files changed, 7 insertions(+), 7 deletions(-)

@@ -1,22 +1,21 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 2/9] ps3fb: Do not print warnings on
-	invalid frame numbers
-Date: Mon, 08 Oct 2007 18:14:23 +0200
-Message-ID: <20071008161614.158499000@pademelon.sonytel.be>
-References: <20071008161421.818458000@pademelon.sonytel.be>
+Subject: [patch 0/9] PS3 Virtual Frame Buffer Device
+	Driver patches for 2.6.24
+Date: Mon, 08 Oct 2007 18:14:21 +0200
+Message-ID: <20071008161421.818458000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0490824577=="
+Content-Type: multipart/mixed; boundary="===============1962845967=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IevHz-0000P0-5L for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 08 Oct 2007 09:17:03 -0700
+	id 1IevHx-0000NQ-Kc for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 08 Oct 2007 09:17:02 -0700
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IevHw-0000eK-DC
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IevHv-0000e0-Ud
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 08 Oct 2007 09:17:02 -0700
+	Mon, 08 Oct 2007 09:17:01 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,37 +27,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 
---===============0490824577==
-Content-Disposition: inline;
-	filename=ps3-wip/ps3fb_do_not_warn_on_invalid_frame_number.diff
+--===============1962845967==
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+	Hi,
 
-ps3fb: Do not print warnings on invalid frame numbers, as this can be triggered
-from user space.
+Here are some new patches for the PS3 Virtual Frame Buffer Device Driver
+(ps3fb):
+  [1] ps3fb: Convert from printk()/DPRINTK() to dev_*()/pr_*()
+  [2] ps3fb: Do not print warnings on invalid frame numbers
+  [3] ps3fb: Clean up includes
+  [4] ps3fb: Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl() static
+  [5] ps3fb: Fix possible overlap of GPU command buffer and frame buffer
+  [6] ps3fb: Use fb_info.par properly
+  [7] ps3fb: Don't keep the borders for non-fullscreen modes in XDR memory
+  [8] ps3fb: Add virtual screen and panning support
+  [9] ps3fb: Enhance horizontal panning on firmware 1.90 and up
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/video/ps3fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Please review, and queue for 2.6.24 if they're ok. Thanks!
 
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -389,8 +389,8 @@ static int ps3fb_sync(struct fb_info *in
- 	yres = ps3fb_res[i].yres;
- 
- 	if (frame > ps3fb.num_frames - 1) {
--		dev_warn(info->device, "%s: invalid frame number (%u)\n",
--			 __func__, frame);
-+		dev_dbg(info->device, "%s: invalid frame number (%u)\n",
-+			__func__, frame);
- 		return -EINVAL;
- 	}
- 	offset = xres * yres * BPP * frame;
-
--- 
 With kind regards,
  
 Geert Uytterhoeven
@@ -80,7 +68,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0490824577==
+--===============1962845967==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -91,7 +79,7 @@ This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >> http://get.splunk.com/
---===============0490824577==
+--===============1962845967==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -102,4 +90,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0490824577==--
+--===============1962845967==--

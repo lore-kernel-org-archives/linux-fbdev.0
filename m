@@ -1,31 +1,39 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 0/6] Patch series to add	of_platform
-	binding to xilinxfb
-Date: Wed, 10 Oct 2007 05:06:12 +0800
-Message-ID: <1191963972.5446.1.camel@daplas>
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
-	<1191370502.5238.1.camel@daplas>
-	<fa686aa40710082143k2092e7d2l35bc3bda55bb6237@mail.gmail.com>
-	<1191906242.6083.7.camel@daplas>
-	<fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 0/3] More XilinxFB changes
+Date: Wed, 10 Oct 2007 12:31:40 -0600
+Message-ID: <20071010182920.12852.41903.stgit@trillian.cg.shawcable.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IfMHh-0004W3-UD for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 09 Oct 2007 14:06:34 -0700
-Received: from rv-out-0910.google.com ([209.85.198.185])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IfMHg-0003PI-CG
+	id 1IfgLq-0003bb-9N for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 10 Oct 2007 11:32:10 -0700
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]
+	helo=pd3mo2so.prod.shaw.ca)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IfgLk-0004zs-1S
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 09 Oct 2007 14:06:33 -0700
-Received: by rv-out-0910.google.com with SMTP id g11so4226554rvb
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 09 Oct 2007 14:06:32 -0700 (PDT)
-In-Reply-To: <fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
+	Wed, 10 Oct 2007 11:32:06 -0700
+Received: from pd4mr2so.prod.shaw.ca
+	(pd4mr2so-qfe3.prod.shaw.ca [10.0.141.213]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JPP00JK6KSPFM90@l-daemon> for
+	linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 10 Oct 2007 12:31:37 -0600 (MDT)
+Received: from pn2ml9so.prod.shaw.ca ([10.0.121.7])
+	by pd4mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JPP000GUKSPRIA0@pd4mr2so.prod.shaw.ca> for
+	linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 10 Oct 2007 12:31:37 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004)) with ESMTP id <0JPP00L6VKSOU2X0@l-daemon> for
+	linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 10 Oct 2007 12:31:36 -0600 (MDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,30 +44,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc <linuxppc-dev@ozlabs.org>, akonovalov@ru.mvista.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+To: linux-fbdev-devel@lists.sourceforge.net, akonovalov@ru.mvista.com, linuxppc-dev@ozlabs.org, adaplas@gmail.com, jwboyer@linux.vnet.ibm.com
 
-On Tue, 2007-10-09 at 11:39 -0600, Grant Likely wrote:
-> On 10/8/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > On Mon, 2007-10-08 at 22:43 -0600, Grant Likely wrote:
-> > > BTW, what path do framebuffer patches take to get into Linus' tree?
-> > > Does he pull your tree directly, or do they go through someone else's
-> > > tree?
-> >
-> > They all go to -mm tree, unless it's a needed fix, then to Linus's.
-> >
-> > Tony
-> 
-> Ah, okay.
-> 
-> Since the XilinxFB is a powerpc-only device, is it okay with you if I
-> get Paul Mackerras to merge them into his tree instead (that way the
-> changes go in with the platform code which requires these changes)
+Here are some more changes on the xilinxfb driver.  These changes add the
+ability to specify a custom resolution or framebuffer physical address.
+Useful for FPGA designs which use a modified xilinxfb device.
 
-Fine with me.
+Please review and comment.
 
-Tony
+Cheers,
+g.
 
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

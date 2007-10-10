@@ -1,41 +1,41 @@
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 1/3] XilinxFB: use pdata to pass around
-	framebuffer parameters.
-Date: Wed, 10 Oct 2007 12:31:46 -0600
-Message-ID: <20071010183146.12852.73383.stgit@trillian.cg.shawcable.net>
+Subject: [PATCH 3/3] XilinxFB: Allow fixed framebuffer
+	base address
+Date: Wed, 10 Oct 2007 12:31:56 -0600
+Message-ID: <20071010183156.12852.37319.stgit@trillian.cg.shawcable.net>
 References: <20071010182920.12852.41903.stgit@trillian.cg.shawcable.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IfgLq-0003bc-9N for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 11:32:10 -0700
+	id 1IfgMI-0003e2-7c for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 10 Oct 2007 11:32:38 -0700
 Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]
-	helo=pd3mo2so.prod.shaw.ca)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IfgLn-0004zs-Be
+	helo=pd3mo3so.prod.shaw.ca)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IfgMH-0002TL-QW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 11:32:07 -0700
-Received: from pd4mr1so.prod.shaw.ca
-	(pd4mr1so-qfe3.prod.shaw.ca [10.0.141.212]) by l-daemon
+	Wed, 10 Oct 2007 11:32:38 -0700
+Received: from pd3mr3so.prod.shaw.ca
+	(pd3mr3so-qfe3.prod.shaw.ca [10.0.141.179]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JPP00JKSKSVFN90@l-daemon> for
+	with ESMTP id <0JPP00035KT8HID0@l-daemon> for
 	linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 12:31:43 -0600 (MDT)
+	Wed, 10 Oct 2007 12:31:56 -0600 (MDT)
 Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
-	by pd4mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	by pd3mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JPP007NHKSTW460@pd4mr1so.prod.shaw.ca> for
+	5 2006)) with ESMTP id <0JPP000XYKT7JT50@pd3mr3so.prod.shaw.ca> for
 	linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 12:31:43 -0600 (MDT)
+	Wed, 10 Oct 2007 12:31:56 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004)) with ESMTP id <0JPP00C83KST8K51@l-daemon> for
+	2004)) with ESMTP id <0JPP005YJKT3LHQ0@l-daemon> for
 	linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 12:31:41 -0600 (MDT)
+	Wed, 10 Oct 2007 12:31:51 -0600 (MDT)
 In-reply-to: <20071010182920.12852.41903.stgit@trillian.cg.shawcable.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -51,127 +51,86 @@ To: linux-fbdev-devel@lists.sourceforge.net, akonovalov@ru.mvista.com, linuxppc-
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-The call to xilinxfb_assign is getting unwieldy when adding features
-to the Xilinx framebuffer driver.  Change xilinxfb_assign() to accept
-a pointer to a xilinxfb_platform_data structure to prepare for adding
-additition configuration options.
+Allow a fixed framebuffer address to be assigned to the framebuffer device
+instead of allocating the framebuffer from the consistent memory pool.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/video/xilinxfb.c |   43 +++++++++++++++++++++++--------------------
- 1 files changed, 23 insertions(+), 20 deletions(-)
+ drivers/video/xilinxfb.c |   22 ++++++++++++++++------
+ include/linux/xilinxfb.h |    5 +++++
+ 2 files changed, 21 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index dec602c..b3b57f4 100644
+index c617412..6ef99b2 100644
 --- a/drivers/video/xilinxfb.c
 +++ b/drivers/video/xilinxfb.c
-@@ -84,6 +84,12 @@
- #define PALETTE_ENTRIES_NO	16	/* passed to fb_alloc_cmap() */
+@@ -117,6 +117,7 @@ struct xilinxfb_drvdata {
  
- /*
-+ * Default xilinxfb configuration
-+ */
-+static struct xilinxfb_platform_data xilinx_fb_default_pdata = {
-+};
-+
-+/*
-  * Here are the default fb_fix_screeninfo and fb_var_screeninfo structures
-  */
- static struct fb_fix_screeninfo xilinx_fb_fix = {
-@@ -207,7 +213,7 @@ static struct fb_ops xilinxfb_ops =
-  */
+ 	void		*fb_virt;	/* virt. address of the frame buffer */
+ 	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
++	int		fb_alloced;	/* Flag, was the fb memory alloced? */
  
- static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
--			   int width_mm, int height_mm, int rotate)
-+			   struct xilinxfb_platform_data *pdata)
- {
- 	struct xilinxfb_drvdata *drvdata;
- 	int rc;
-@@ -253,7 +259,7 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
+ 	u32		reg_ctrl_default;
  
- 	/* Turn on the display */
- 	drvdata->reg_ctrl_default = REG_CTRL_ENABLE;
--	if (rotate)
-+	if (pdata->rotate_screen)
- 		drvdata->reg_ctrl_default |= REG_CTRL_ROTATE;
- 	xilinx_fb_out_be32(drvdata, REG_CTRL, drvdata->reg_ctrl_default);
- 
-@@ -267,8 +273,8 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
- 	drvdata->info.flags = FBINFO_DEFAULT;
- 	drvdata->info.var = xilinx_fb_var;
- 
--	xilinx_fb_var.height = height_mm;
--	xilinx_fb_var.width = width_mm;
-+	xilinx_fb_var.height = pdata->screen_height_mm;
-+	xilinx_fb_var.width = pdata->screen_width_mm;
- 
- 	/* Allocate a colour map */
- 	rc = fb_alloc_cmap(&drvdata->info.cmap, PALETTE_ENTRIES_NO, 0);
-@@ -349,9 +355,6 @@ xilinxfb_platform_probe(struct platform_device *pdev)
- {
- 	struct xilinxfb_platform_data *pdata;
- 	struct resource *res;
--	int width_mm = 0;
--	int height_mm = 0;
--	int rotate = 0;
- 
- 	/* Find the registers address */
- 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-@@ -361,15 +364,12 @@ xilinxfb_platform_probe(struct platform_device *pdev)
+@@ -235,8 +236,15 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
  	}
  
- 	/* If a pdata structure is provided, then extract the parameters */
--	pdata = pdev->dev.platform_data;
--	if (pdata) {
--		height_mm = pdata->screen_height_mm;
--		width_mm = pdata->screen_width_mm;
--		rotate = pdata->rotate_screen ? 1 : 0;
--	}
-+	if (pdev->dev.platform_data)
-+		pdata = pdev->dev.platform_data;
-+	else
-+		pdata = &xilinx_fb_default_pdata;
- 
--	return xilinxfb_assign(&pdev->dev, res->start, width_mm, height_mm,
--			       rotate);
-+	return xilinxfb_assign(&pdev->dev, res->start, pdata);
- }
- 
- static int
-@@ -398,9 +398,12 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
- {
- 	struct resource res;
- 	const u32 *prop;
--	int width = 0, height = 0, rotate = 0;
-+	struct xilinxfb_platform_data pdata;
- 	int size, rc;
- 
-+	/* Copy with the default pdata (not a ptr reference!) */
-+	pdata = xilinx_fb_default_pdata;
+ 	/* Allocate the framebuffer memory */
+-	drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
+-				&drvdata->fb_phys, GFP_KERNEL);
++	if (pdata->fb_phys) {
++		drvdata->fb_phys = pdata->fb_phys;
++		drvdata->fb_virt = ioremap(pdata->fb_phys, fbsize);
++	} else {
++		drvdata->fb_alloced = 1;
++		drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
++					&drvdata->fb_phys, GFP_KERNEL);
++	}
 +
- 	dev_dbg(&op->dev, "xilinxfb_of_probe(%p, %p)\n", op, match);
+ 	if (!drvdata->fb_virt) {
+ 		dev_err(dev, "Could not allocate frame buffer memory\n");
+ 		rc = -ENOMEM;
+@@ -300,8 +308,9 @@ err_regfb:
+ 	fb_dealloc_cmap(&drvdata->info.cmap);
  
- 	rc = of_address_to_resource(op->node, 0, &res);
-@@ -411,14 +414,14 @@ xilinxfb_of_probe(struct of_device *op, const struct of_device_id *match)
+ err_cmap:
+-	dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
+-		drvdata->fb_phys);
++	if (drvdata->fb_alloced)
++		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
++			drvdata->fb_phys);
+ 	/* Turn off the display */
+ 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
  
- 	prop = of_get_property(op->node, "display-number", &size);
- 	if ((prop) && (size >= sizeof(u32)*2)) {
--		width = prop[0];
--		height = prop[1];
-+		pdata.screen_width_mm = prop[0];
-+		pdata.screen_height_mm = prop[1];
- 	}
+@@ -330,8 +339,9 @@ static int xilinxfb_release(struct device *dev)
  
- 	if (of_find_property(op->node, "rotate-display", NULL))
--		rotate = 1;
-+		pdata.rotate_screen = 1;
+ 	fb_dealloc_cmap(&drvdata->info.cmap);
  
--	return xilinxfb_assign(&op->dev, res.start, width, height, rotate);
-+	return xilinxfb_assign(&op->dev, res.start, &pdata);
- }
+-	dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
+-			  drvdata->fb_virt, drvdata->fb_phys);
++	if (drvdata->fb_alloced)
++		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
++				  drvdata->fb_virt, drvdata->fb_phys);
  
- static int __devexit xilinxfb_of_remove(struct of_device *op)
+ 	/* Turn off the display */
+ 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
+diff --git a/include/linux/xilinxfb.h b/include/linux/xilinxfb.h
+index 199a1ee..f2463f5 100644
+--- a/include/linux/xilinxfb.h
++++ b/include/linux/xilinxfb.h
+@@ -20,6 +20,11 @@ struct xilinxfb_platform_data {
+ 	u32 screen_width_mm;
+ 	u32 xres, yres;		/* resolution of screen in pixels */
+ 	u32 xvirt, yvirt;	/* resolution of memory buffer */
++
++	/* Physical address of framebuffer memory; If non-zero, driver
++	 * will use provided memory address instead of allocating one from
++	 * the consistent pool. */
++	u32 fb_phys;
+ };
+ 
+ #endif  /* __XILINXFB_H__ */
 
 
 -------------------------------------------------------------------------

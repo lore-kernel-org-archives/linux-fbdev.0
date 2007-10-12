@@ -1,192 +1,156 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 14/17] ps3av: add quirk database for
-	broken monitors
-Date: Fri, 12 Oct 2007 16:36:20 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0710121635050.757@pademelon.sonytel.be>
-References: <46FDACBE.8080707@gmail.com>
-	<20071003140054.b340fe1f.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0710040943170.4788@pademelon.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: [patch 01/13] ps3av: Fix black and white stripes
+Date: Fri, 12 Oct 2007 16:50:53 +0200
+Message-ID: <20071012145129.480506000@pademelon.sonytel.be>
+References: <20071012145052.640177000@pademelon.sonytel.be>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1619437512-1192199780=:757"
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IgLct-0001dn-9S for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 07:36:34 -0700
-Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgLcr-0002Fb-Jq
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 07:36:31 -0700
-In-Reply-To: <Pine.LNX.4.62.0710040943170.4788@pademelon.sonytel.be>
+Content-Type: multipart/mixed; boundary="===============1043038691=="
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+--===============1043038691==
+Content-Disposition: inline; filename=ps3-stable/ps3av-vesa-stripes-workaround.diff
 
----584337861-1619437512-1192199780=:757
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+From: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
 
-	Hi Andrew,
+Fix the black and white stripes issue with WUXGA monitor via HDMI.
 
-On Thu, 4 Oct 2007, Geert Uytterhoeven wrote:
-> On Wed, 3 Oct 2007, Andrew Morton wrote:
-> > On Sat, 29 Sep 2007 09:39:10 +0800
-> > "Antonino A. Daplas" <adaplas@gmail.com> wrote:
-> >=20
-> > > +static const struct ps3av_monitor_quirk {
-> > > +	const char *monitor_name;
-> > > +	u32 clear_60, clear_50, clear_vesa;
-> > > +} ps3av_monitor_quirks[] =3D {
-> > > +	{
-> > > +		.monitor_name	=3D "DELL 2007WFP",
-> > > +		.clear_60	=3D PS3AV_RESBIT_1920x1080I
-> > > +	}, {
-> > > +		.monitor_name	=3D "L226WTQ",
-> > > +		.clear_60	=3D PS3AV_RESBIT_1920x1080I |
-> > > +				  PS3AV_RESBIT_1920x1080P
-> > > +	}, {
-> > > +		.monitor_name	=3D "SyncMaster",
-> > > +		.clear_60	=3D PS3AV_RESBIT_1920x1080I
-> > > +	}
-> > > +};
-> >=20
-> > One assumes that the presently-unused clear_50 and clear_vesa will
-> > be used at some time in the future...
->=20
-> So far I haven't encountered (or been reported) a monitor that needed t=
-o clear
-> 50 Hz or VESA mode flags. I can comment out/#if 0 out/remove those part=
-s if you
-> prefer.
+It seems that when we use a VESA resolution from boot up, the AV settings
+driver could not be initialized correctly.
+In that case we need a dummy packet before VESA setting.
 
-I removed those fields. Here's an updated patch:
-
-Subject: ps3av: add quirk database for broken monitors
-
-ps3av: add a quirk database for broken monitors where the `best' advertis=
-ed
-video mode doesn't work
+[Geert] Refactored to reduce code duplication.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
-Removed the `clear_50' and `clear_vesa' fields of struct ps3av_monitor_qu=
-irk,
-as they're currently unused
-
- drivers/ps3/ps3av.c |   37 +++++++++++++++++++++++++++++++++++++
- 1 files changed, 37 insertions(+)
+ drivers/ps3/ps3av.c |   58 ++++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 38 insertions(+), 20 deletions(-)
 
 --- a/drivers/ps3/ps3av.c
 +++ b/drivers/ps3/ps3av.c
-@@ -721,6 +721,41 @@ static void ps3av_monitor_info_dump(cons
- 	}
+@@ -491,10 +491,10 @@ static int ps3av_set_videomode(void)
+ 	return 0;
  }
-=20
-+static const struct ps3av_monitor_quirk {
-+	const char *monitor_name;
-+	u32 clear_60;
-+} ps3av_monitor_quirks[] =3D {
-+	{
-+		.monitor_name	=3D "DELL 2007WFP",
-+		.clear_60	=3D PS3AV_RESBIT_1920x1080I
-+	}, {
-+		.monitor_name	=3D "L226WTQ",
-+		.clear_60	=3D PS3AV_RESBIT_1920x1080I |
-+				  PS3AV_RESBIT_1920x1080P
-+	}, {
-+		.monitor_name	=3D "SyncMaster",
-+		.clear_60	=3D PS3AV_RESBIT_1920x1080I
-+	}
-+};
-+
-+static void ps3av_fixup_monitor_info(struct ps3av_info_monitor *info)
-+{
+ 
+-static void ps3av_set_videomode_cont(u32 id, u32 old_id)
++static void ps3av_set_videomode_packet(u32 id)
+ {
+ 	struct ps3av_pkt_avb_param avb_param;
+-	int i;
 +	unsigned int i;
-+	const struct ps3av_monitor_quirk *quirk;
-+
-+	for (i =3D 0; i < ARRAY_SIZE(ps3av_monitor_quirks); i++) {
-+		quirk =3D &ps3av_monitor_quirks[i];
-+		if (!strncmp(info->monitor_name, quirk->monitor_name,
-+			     sizeof(info->monitor_name))) {
-+			pr_info("%s: Applying quirk for %s\n", __func__,
-+				quirk->monitor_name);
-+			info->res_60.res_bits &=3D ~quirk->clear_60;
-+			info->res_60.native &=3D ~quirk->clear_60;
-+			break;
-+		}
-+	}
+ 	u32 len = 0, av_video_cs;
+ 	const struct avset_video_mode *video_mode;
+ 	int res;
+@@ -507,24 +507,6 @@ static void ps3av_set_videomode_cont(u32
+ 					ps3av->av_hw_conf.num_of_avmulti;
+ 	avb_param.num_of_av_audio_pkt = 0;
+ 
+-	/* video signal off */
+-	ps3av_set_video_disable_sig();
+-
+-	/* Retail PS3 product doesn't support this */
+-	if (id & PS3AV_MODE_HDCP_OFF) {
+-		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
+-		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av->dev->core, "Not supported\n");
+-		else if (res)
+-			dev_dbg(&ps3av->dev->core,
+-				"ps3av_cmd_av_hdmi_mode failed\n");
+-	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
+-		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
+-		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av->dev->core,
+-				"ps3av_cmd_av_hdmi_mode failed\n");
+-	}
+-
+ 	/* video_pkt */
+ 	for (i = 0; i < avb_param.num_of_video_pkt; i++)
+ 		len += ps3av_cmd_set_video_mode(&avb_param.buf[len],
+@@ -555,6 +537,42 @@ static void ps3av_set_videomode_cont(u32
+ 		       __func__);
+ 	else if (res)
+ 		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
 +}
 +
- static int ps3av_auto_videomode(struct ps3av_pkt_av_get_hw_conf *av_hw_c=
-onf,
- 				int boot)
- {
-@@ -739,6 +774,8 @@ static int ps3av_auto_videomode(struct p
- 		ps3av_monitor_info_dump(&monitor_info);
-=20
- 		info =3D &monitor_info.info;
-+		ps3av_fixup_monitor_info(info);
++static void ps3av_set_videomode_cont(u32 id, u32 old_id)
++{
++	static int vesa;
++	int res;
 +
- 		switch (info->monitor_type) {
- 		case PS3AV_MONITOR_TYPE_DVI:
- 			dvi =3D PS3AV_MODE_DVI;
++	/* video signal off */
++	ps3av_set_video_disable_sig();
++
++	/*
++	 * AV backend needs non-VESA mode setting at least one time
++	 * when VESA mode is used.
++	 */
++	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= 11) {
++		/* vesa mode */
++		ps3av_set_videomode_packet(2);	/* 480P */
++	}
++	vesa = 1;
++
++	/* Retail PS3 product doesn't support this */
++	if (id & PS3AV_MODE_HDCP_OFF) {
++		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
++		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
++			dev_dbg(&ps3av->dev->core, "Not supported\n");
++		else if (res)
++			dev_dbg(&ps3av->dev->core,
++				"ps3av_cmd_av_hdmi_mode failed\n");
++	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
++		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
++		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
++			dev_dbg(&ps3av->dev->core,
++				"ps3av_cmd_av_hdmi_mode failed\n");
++	}
++
++	ps3av_set_videomode_packet(id);
+ 
+ 	msleep(1500);
+ 	/* av video mute */
 
+-- 
 With kind regards,
-=20
+ 
 Geert Uytterhoeven
 Software Architect
 
 Sony Network and Software Technology Center Europe
-The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
-=B7 Belgium
-=20
-Phone:    +32 (0)2 700 8453=09
-Fax:      +32 (0)2 700 8622=09
-E-mail:   Geert.Uytterhoeven@sonycom.com=09
+The Corporate Village ������ Da Vincilaan 7-D1 ������ B-1935 Zaventem ������ Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
 Internet: http://www.sony-europe.com/
- =09
-Sony Network and Software Technology Center Europe=09
-A division of Sony Service Centre (Europe) N.V.=09
-Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
-ium=09
-VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
-Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
-9
----584337861-1619437512-1192199780=:757
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 ������ B-1840 Londerzeel ������ Belgium	
+VAT BE 0413.825.160 ������ RPR Brussels	
+Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBAN BE39001382358619
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc.
-Still grepping through log files to find problems?  Stop.
-Now Search log events and configuration files using AJAX and a browser.
-Download your FREE copy of Splunk now >> http://get.splunk.com/
----584337861-1619437512-1192199780=:757
+
+--===============1043038691==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 _______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
----584337861-1619437512-1192199780=:757--
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+--===============1043038691==--

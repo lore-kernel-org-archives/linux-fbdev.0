@@ -1,42 +1,26 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 3/3] XilinxFB: Allow fixed framebuffer
-	base address
-Date: Wed, 10 Oct 2007 12:31:56 -0600
-Message-ID: <20071010183156.12852.37319.stgit@trillian.cg.shawcable.net>
-References: <20071010182920.12852.41903.stgit@trillian.cg.shawcable.net>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 14/17] ps3av: add quirk database for
+	broken monitors
+Date: Fri, 12 Oct 2007 16:36:20 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0710121635050.757@pademelon.sonytel.be>
+References: <46FDACBE.8080707@gmail.com>
+	<20071003140054.b340fe1f.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0710040943170.4788@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1619437512-1192199780=:757"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IfgMI-0003e2-7c for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 11:32:38 -0700
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]
-	helo=pd3mo3so.prod.shaw.ca)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IfgMH-0002TL-QW
+	id 1IgLct-0001dn-9S for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 12 Oct 2007 07:36:34 -0700
+Received: from vervifontaine.sonytel.be ([80.88.33.193]
+	helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgLcr-0002Fb-Jq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 11:32:38 -0700
-Received: from pd3mr3so.prod.shaw.ca
-	(pd3mr3so-qfe3.prod.shaw.ca [10.0.141.179]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JPP00035KT8HID0@l-daemon> for
-	linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 12:31:56 -0600 (MDT)
-Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
-	by pd3mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JPP000XYKT7JT50@pd3mr3so.prod.shaw.ca> for
-	linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 12:31:56 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004)) with ESMTP id <0JPP005YJKT3LHQ0@l-daemon> for
-	linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Oct 2007 12:31:51 -0600 (MDT)
-In-reply-to: <20071010182920.12852.41903.stgit@trillian.cg.shawcable.net>
+	Fri, 12 Oct 2007 07:36:31 -0700
+In-Reply-To: <Pine.LNX.4.62.0710040943170.4788@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -47,94 +31,162 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, akonovalov@ru.mvista.com, linuxppc-dev@ozlabs.org, adaplas@gmail.com, jwboyer@linux.vnet.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Allow a fixed framebuffer address to be assigned to the framebuffer device
-instead of allocating the framebuffer from the consistent memory pool.
+---584337861-1619437512-1192199780=:757
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+	Hi Andrew,
+
+On Thu, 4 Oct 2007, Geert Uytterhoeven wrote:
+> On Wed, 3 Oct 2007, Andrew Morton wrote:
+> > On Sat, 29 Sep 2007 09:39:10 +0800
+> > "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> >=20
+> > > +static const struct ps3av_monitor_quirk {
+> > > +	const char *monitor_name;
+> > > +	u32 clear_60, clear_50, clear_vesa;
+> > > +} ps3av_monitor_quirks[] =3D {
+> > > +	{
+> > > +		.monitor_name	=3D "DELL 2007WFP",
+> > > +		.clear_60	=3D PS3AV_RESBIT_1920x1080I
+> > > +	}, {
+> > > +		.monitor_name	=3D "L226WTQ",
+> > > +		.clear_60	=3D PS3AV_RESBIT_1920x1080I |
+> > > +				  PS3AV_RESBIT_1920x1080P
+> > > +	}, {
+> > > +		.monitor_name	=3D "SyncMaster",
+> > > +		.clear_60	=3D PS3AV_RESBIT_1920x1080I
+> > > +	}
+> > > +};
+> >=20
+> > One assumes that the presently-unused clear_50 and clear_vesa will
+> > be used at some time in the future...
+>=20
+> So far I haven't encountered (or been reported) a monitor that needed t=
+o clear
+> 50 Hz or VESA mode flags. I can comment out/#if 0 out/remove those part=
+s if you
+> prefer.
+
+I removed those fields. Here's an updated patch:
+
+Subject: ps3av: add quirk database for broken monitors
+
+ps3av: add a quirk database for broken monitors where the `best' advertis=
+ed
+video mode doesn't work
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
+Removed the `clear_50' and `clear_vesa' fields of struct ps3av_monitor_qu=
+irk,
+as they're currently unused
 
- drivers/video/xilinxfb.c |   22 ++++++++++++++++------
- include/linux/xilinxfb.h |    5 +++++
- 2 files changed, 21 insertions(+), 6 deletions(-)
+ drivers/ps3/ps3av.c |   37 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 37 insertions(+)
 
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index c617412..6ef99b2 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -117,6 +117,7 @@ struct xilinxfb_drvdata {
- 
- 	void		*fb_virt;	/* virt. address of the frame buffer */
- 	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
-+	int		fb_alloced;	/* Flag, was the fb memory alloced? */
- 
- 	u32		reg_ctrl_default;
- 
-@@ -235,8 +236,15 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -721,6 +721,41 @@ static void ps3av_monitor_info_dump(cons
  	}
- 
- 	/* Allocate the framebuffer memory */
--	drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
--				&drvdata->fb_phys, GFP_KERNEL);
-+	if (pdata->fb_phys) {
-+		drvdata->fb_phys = pdata->fb_phys;
-+		drvdata->fb_virt = ioremap(pdata->fb_phys, fbsize);
-+	} else {
-+		drvdata->fb_alloced = 1;
-+		drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(fbsize),
-+					&drvdata->fb_phys, GFP_KERNEL);
+ }
+=20
++static const struct ps3av_monitor_quirk {
++	const char *monitor_name;
++	u32 clear_60;
++} ps3av_monitor_quirks[] =3D {
++	{
++		.monitor_name	=3D "DELL 2007WFP",
++		.clear_60	=3D PS3AV_RESBIT_1920x1080I
++	}, {
++		.monitor_name	=3D "L226WTQ",
++		.clear_60	=3D PS3AV_RESBIT_1920x1080I |
++				  PS3AV_RESBIT_1920x1080P
++	}, {
++		.monitor_name	=3D "SyncMaster",
++		.clear_60	=3D PS3AV_RESBIT_1920x1080I
 +	}
++};
 +
- 	if (!drvdata->fb_virt) {
- 		dev_err(dev, "Could not allocate frame buffer memory\n");
- 		rc = -ENOMEM;
-@@ -300,8 +308,9 @@ err_regfb:
- 	fb_dealloc_cmap(&drvdata->info.cmap);
- 
- err_cmap:
--	dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
--		drvdata->fb_phys);
-+	if (drvdata->fb_alloced)
-+		dma_free_coherent(dev, PAGE_ALIGN(fbsize), drvdata->fb_virt,
-+			drvdata->fb_phys);
- 	/* Turn off the display */
- 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
- 
-@@ -330,8 +339,9 @@ static int xilinxfb_release(struct device *dev)
- 
- 	fb_dealloc_cmap(&drvdata->info.cmap);
- 
--	dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
--			  drvdata->fb_virt, drvdata->fb_phys);
-+	if (drvdata->fb_alloced)
-+		dma_free_coherent(dev, PAGE_ALIGN(drvdata->info.fix.smem_len),
-+				  drvdata->fb_virt, drvdata->fb_phys);
- 
- 	/* Turn off the display */
- 	xilinx_fb_out_be32(drvdata, REG_CTRL, 0);
-diff --git a/include/linux/xilinxfb.h b/include/linux/xilinxfb.h
-index 199a1ee..f2463f5 100644
---- a/include/linux/xilinxfb.h
-+++ b/include/linux/xilinxfb.h
-@@ -20,6 +20,11 @@ struct xilinxfb_platform_data {
- 	u32 screen_width_mm;
- 	u32 xres, yres;		/* resolution of screen in pixels */
- 	u32 xvirt, yvirt;	/* resolution of memory buffer */
++static void ps3av_fixup_monitor_info(struct ps3av_info_monitor *info)
++{
++	unsigned int i;
++	const struct ps3av_monitor_quirk *quirk;
 +
-+	/* Physical address of framebuffer memory; If non-zero, driver
-+	 * will use provided memory address instead of allocating one from
-+	 * the consistent pool. */
-+	u32 fb_phys;
- };
- 
- #endif  /* __XILINXFB_H__ */
++	for (i =3D 0; i < ARRAY_SIZE(ps3av_monitor_quirks); i++) {
++		quirk =3D &ps3av_monitor_quirks[i];
++		if (!strncmp(info->monitor_name, quirk->monitor_name,
++			     sizeof(info->monitor_name))) {
++			pr_info("%s: Applying quirk for %s\n", __func__,
++				quirk->monitor_name);
++			info->res_60.res_bits &=3D ~quirk->clear_60;
++			info->res_60.native &=3D ~quirk->clear_60;
++			break;
++		}
++	}
++}
++
+ static int ps3av_auto_videomode(struct ps3av_pkt_av_get_hw_conf *av_hw_c=
+onf,
+ 				int boot)
+ {
+@@ -739,6 +774,8 @@ static int ps3av_auto_videomode(struct p
+ 		ps3av_monitor_info_dump(&monitor_info);
+=20
+ 		info =3D &monitor_info.info;
++		ps3av_fixup_monitor_info(info);
++
+ 		switch (info->monitor_type) {
+ 		case PS3AV_MONITOR_TYPE_DVI:
+ 			dvi =3D PS3AV_MODE_DVI;
 
+With kind regards,
+=20
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
+=B7 Belgium
+=20
+Phone:    +32 (0)2 700 8453=09
+Fax:      +32 (0)2 700 8622=09
+E-mail:   Geert.Uytterhoeven@sonycom.com=09
+Internet: http://www.sony-europe.com/
+ =09
+Sony Network and Software Technology Center Europe=09
+A division of Sony Service Centre (Europe) N.V.=09
+Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
+ium=09
+VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
+Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
+9
+---584337861-1619437512-1192199780=:757
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >> http://get.splunk.com/
+---584337861-1619437512-1192199780=:757
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+---584337861-1619437512-1192199780=:757--

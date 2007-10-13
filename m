@@ -1,22 +1,24 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 12/13] fb: Move and rename extern
-	declaration for global_mode_option
-Date: Fri, 12 Oct 2007 16:51:04 +0200
-Message-ID: <20071012145130.867069000@pademelon.sonytel.be>
-References: <20071012145052.640177000@pademelon.sonytel.be>
+From: Antonino Daplas <adaplas@gmail.com>
+Subject: [PATCH 03/15] ps3fb: Clean up includes
+Date: Sat, 13 Oct 2007 08:23:47 +0800
+Message-ID: <47101013.6050100@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1529162570=="
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IgLsN-0003Dp-BF for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 07:52:31 -0700
-Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgLsK-0002qn-RH
+	id 1IgUxp-0005IH-JM for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 12 Oct 2007 17:34:45 -0700
+Received: from rv-out-0910.google.com ([209.85.198.191])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUxp-0002xt-CJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 07:52:31 -0700
+	Fri, 12 Oct 2007 17:34:45 -0700
+Received: by rv-out-0910.google.com with SMTP id g11so3588679rvb
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 12 Oct 2007 17:34:45 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,117 +29,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org
-
---===============1529162570==
-Content-Disposition: inline; filename=ps3-stable/fb-fb_mode_option.diff
+To: Andrew Morton <akpm@osdl.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Move the extern declaration for global_mode_option to <linux/fb.h> and rename
-the variable to fb_mode_option.
+Clean up includes
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
- drivers/video/fbmem.c  |    4 +---
- drivers/video/modedb.c |    4 ++--
- include/linux/fb.h     |    1 +
- 3 files changed, 4 insertions(+), 5 deletions(-)
 
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1567,8 +1567,6 @@ int fb_new_modelist(struct fb_info *info
- static char *video_options[FB_MAX] __read_mostly;
- static int ofonly __read_mostly;
- 
--extern const char *global_mode_option;
+ drivers/video/ps3fb.c |   10 +---------
+ 1 files changed, 1 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index 49069db..74de53a 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -22,22 +22,14 @@ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/string.h>
+ #include <linux/mm.h>
+-#include <linux/tty.h>
+-#include <linux/slab.h>
+-#include <linux/vmalloc.h>
+-#include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/console.h>
+ #include <linux/ioctl.h>
+-#include <linux/notifier.h>
+-#include <linux/reboot.h>
+ #include <linux/kthread.h>
+ #include <linux/freezer.h>
 -
- /**
-  * fb_get_options - get kernel boot parameters
-  * @name:   framebuffer name as it would appear in
-@@ -1636,7 +1634,7 @@ static int __init video_setup(char *opti
-  	}
+-#include <linux/uaccess.h>
+ #include <linux/fb.h>
+ #include <linux/init.h>
+-#include <asm/time.h>
++#include <linux/uaccess.h>
  
-  	if (!global && !strstr(options, "fb:")) {
-- 		global_mode_option = options;
-+ 		fb_mode_option = options;
-  		global = 1;
-  	}
- 
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -27,7 +27,7 @@
- #define DPRINTK(fmt, args...)
- #endif
- 
--const char *global_mode_option;
-+const char *fb_mode_option;
- 
-     /*
-      *  Standard video mode definitions (taken from XFree86)
-@@ -510,7 +510,7 @@ int fb_find_mode(struct fb_var_screeninf
- 	default_bpp = 8;
- 
-     /* Did the user specify a video mode? */
--    if (mode_option || (mode_option = global_mode_option)) {
-+    if (mode_option || (mode_option = fb_mode_option)) {
- 	const char *name = mode_option;
- 	unsigned int namelen = strlen(name);
- 	int res_specified = 0, bpp_specified = 0, refresh_specified = 0;
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1054,6 +1054,7 @@ struct fb_videomode {
- 	u32 flag;
- };
- 
-+extern const char *fb_mode_option;
- extern const struct fb_videomode vesa_modes[];
- 
- struct fb_modelist {
+ #include <asm/abs_addr.h>
+ #include <asm/lv1call.h>
 
--- 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village ������ Da Vincilaan 7-D1 ������ B-1935 Zaventem ������ Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 ������ B-1840 Londerzeel ������ Belgium	
-VAT BE 0413.825.160 ������ RPR Brussels	
-Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBAN BE39001382358619
-
-
-
---===============1529162570==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >> http://get.splunk.com/
---===============1529162570==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1529162570==--

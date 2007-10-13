@@ -1,7 +1,8 @@
 From: Antonino Daplas <adaplas@gmail.com>
-Subject: [PATCH 03/15] ps3fb: Clean up includes
-Date: Sat, 13 Oct 2007 08:23:47 +0800
-Message-ID: <47101013.6050100@gmail.com>
+Subject: [PATCH 04/15] ps3fb: Make
+ ps3fb_wait_for_vsync() and ps3fb_flip_ctl() static
+Date: Sat, 13 Oct 2007 08:24:33 +0800
+Message-ID: <47101041.1050808@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IgUxp-0005IH-JM for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 17:34:45 -0700
+	id 1IgUxw-0005IM-0u for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 12 Oct 2007 17:34:52 -0700
 Received: from rv-out-0910.google.com ([209.85.198.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUxp-0002xt-CJ
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUxv-0002xt-Q7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 17:34:45 -0700
+	Fri, 12 Oct 2007 17:34:52 -0700
 Received: by rv-out-0910.google.com with SMTP id g11so3588679rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 12 Oct 2007 17:34:45 -0700 (PDT)
+	Fri, 12 Oct 2007 17:34:51 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,43 +35,40 @@ Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Clean up includes
+Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl() static, as they're no
+(longer) used outside ps3fb.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/ps3fb.c |   10 +---------
- 1 files changed, 1 insertions(+), 9 deletions(-)
+ drivers/video/ps3fb.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index 49069db..74de53a 100644
+index 74de53a..c9656a5 100644
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -22,22 +22,14 @@ #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/string.h>
- #include <linux/mm.h>
--#include <linux/tty.h>
--#include <linux/slab.h>
--#include <linux/vmalloc.h>
--#include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/console.h>
- #include <linux/ioctl.h>
--#include <linux/notifier.h>
--#include <linux/reboot.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
--
--#include <linux/uaccess.h>
- #include <linux/fb.h>
- #include <linux/init.h>
--#include <asm/time.h>
-+#include <linux/uaccess.h>
+@@ -652,7 +652,7 @@ static int ps3fb_get_vblank(struct fb_vb
+ 	return 0;
+ }
  
- #include <asm/abs_addr.h>
- #include <asm/lv1call.h>
+-int ps3fb_wait_for_vsync(u32 crtc)
++static int ps3fb_wait_for_vsync(u32 crtc)
+ {
+ 	int ret;
+ 	u64 count;
+@@ -667,9 +667,7 @@ int ps3fb_wait_for_vsync(u32 crtc)
+ 	return 0;
+ }
+ 
+-EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
+-
+-void ps3fb_flip_ctl(int on, void *data)
++static void ps3fb_flip_ctl(int on, void *data)
+ {
+ 	struct ps3fb_priv *priv = data;
+ 	if (on)
 
 
 -------------------------------------------------------------------------

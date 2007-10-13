@@ -1,7 +1,8 @@
 From: Antonino Daplas <adaplas@gmail.com>
-Subject: [PATCH 06/15] ps3fb: Use fb_info.par properly
-Date: Sat, 13 Oct 2007 08:26:24 +0800
-Message-ID: <471010B0.4010106@gmail.com>
+Subject: [PATCH 05/15] ps3fb: Fix possible overlap of
+ GPU command buffer and, frame buffer
+Date: Sat, 13 Oct 2007 08:25:23 +0800
+Message-ID: <47101073.1060409@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IgUy9-0005MX-76 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 17:35:05 -0700
+	id 1IgUy2-0005IS-25 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 12 Oct 2007 17:34:58 -0700
 Received: from rv-out-0910.google.com ([209.85.198.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUy8-0002xt-PY
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUy1-0002xt-Lk
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 17:35:05 -0700
+	Fri, 12 Oct 2007 17:34:58 -0700
 Received: by rv-out-0910.google.com with SMTP id g11so3588679rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 12 Oct 2007 17:35:04 -0700 (PDT)
+	Fri, 12 Oct 2007 17:34:57 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,290 +35,180 @@ Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3fb: Use fb_info.par properly:
-  o Move mode-specific fields into struct ps3fb_par
-  o Allocate struct ps3fb_par using framebuffer_alloc()
-  o Protect access to ps3fb_par in ps3fb_sync() using the console semaphore
-    (this semaphore is already held when ps3fb_set_par() is called)
-  o Avoid calling ps3av_set_video_mode() if the actual video mode hasn't
-    changed
+ps3fb: In the case of non-fullscreen video modes, there was a partial overlap
+of the GPU command buffer and the frame buffer. Fix and cleanup various issues
+with overlap and alignment:
+  - Move the GPU command buffer from the beginning to the end of video memory
+  - Exclude the GPU command buffer from the actual frame buffer memory
+  - Align the start of the virtual frame buffer to PAGE_SIZE instead of to 64
+    KiB, and don't waste memory if it's already aligned (for fullscreen modes)
+  - Take into account the alignment when checking memory requirements and
+    maximum number of frames
+  - Make sure fb_fix_screeninfo.smem_start always points to the virtual frame
+    buffer start, so we don't have to compensate for that in ps3fb_mmap()
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/ps3fb.c |   92 ++++++++++++++++++++++++++++++-------------------
- 1 files changed, 57 insertions(+), 35 deletions(-)
+ drivers/video/ps3fb.c |   66 +++++++++++++++++++++++++++++--------------------
+ 1 files changed, 39 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index efd8ab6..2f6080e 100644
+index c9656a5..efd8ab6 100644
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -119,12 +119,10 @@ struct ps3fb_priv {
+@@ -52,7 +52,7 @@ #define L1GPU_DISPLAY_SYNC_HSYNC		1
+ #define L1GPU_DISPLAY_SYNC_VSYNC		2
+ 
+ #define DDR_SIZE				(0)	/* used no ddr */
+-#define GPU_OFFSET				(64 * 1024)
++#define GPU_CMD_BUF_SIZE			(64 * 1024)
+ #define GPU_IOIF				(0x0d000000UL)
+ 
+ #define PS3FB_FULL_MODE_BIT			0x80
+@@ -117,6 +117,7 @@ struct ps3fb_priv {
+ 
+ 	u64 context_handle, memory_handle;
  	void *xdr_ea;
- 	size_t xdr_size;
++	size_t xdr_size;
  	struct gpu_driver_info *dinfo;
--	u32 res_index;
+ 	u32 res_index;
  
- 	u64 vblank_count;	/* frame count */
- 	wait_queue_head_t wait_vsync;
- 
--	u32 num_frames;		/* num of frame buffers */
- 	atomic_t ext_flip;	/* on/off flip with vsync */
- 	atomic_t f_count;	/* fb_open count */
- 	int is_blanked;
-@@ -133,6 +131,13 @@ struct ps3fb_priv {
- };
- static struct ps3fb_priv ps3fb;
- 
-+struct ps3fb_par {
-+	u32 pseudo_palette[16];
-+	int mode_id, new_mode_id;
-+	int res_index;
-+	unsigned int num_frames;	/* num of frame buffers */
-+};
+@@ -280,9 +281,20 @@ #define X_OFF(i)	(ps3fb_res[i].xoff)	/* 
+ #define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
+ #define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
+ #define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
+-#define BPP	4		/* number of bytes per pixel */
+-#define VP_OFF(i)	(WIDTH(i) * Y_OFF(i) * BPP + X_OFF(i) * BPP)
+-#define FB_OFF(i)	(GPU_OFFSET - VP_OFF(i) % GPU_OFFSET)
++#define BPP		4			/* number of bytes per pixel */
 +
- struct ps3fb_res_table {
- 	u32 xres;
- 	u32 yres;
-@@ -361,18 +366,17 @@ static unsigned int ps3fb_find_mode(cons
- 
- 	pr_debug("ps3fb_find_mode: mode not found\n");
- 	return 0;
--
- }
- 
--static const struct fb_videomode *ps3fb_default_mode(void)
-+static const struct fb_videomode *ps3fb_default_mode(int id)
- {
--	u32 mode = ps3fb_mode & PS3AV_MODE_MASK;
-+	u32 mode = id & PS3AV_MODE_MASK;
- 	u32 flags;
- 
- 	if (mode < 1 || mode > 13)
- 		return NULL;
- 
--	flags = ps3fb_mode & ~PS3AV_MODE_MASK;
-+	flags = id & ~PS3AV_MODE_MASK;
- 
- 	if (mode <= 10 && flags & PS3FB_FULL_MODE_BIT) {
- 		/* Full broadcast mode */
-@@ -384,18 +388,22 @@ static const struct fb_videomode *ps3fb_
- 
- static int ps3fb_sync(struct fb_info *info, u32 frame)
- {
--	int i, status;
-+	struct ps3fb_par *par = info->par;
-+	int i, status, error = 0;
- 	u32 xres, yres;
- 	u64 fb_ioif, offset;
- 
--	i = ps3fb.res_index;
-+	acquire_console_sem();
++/* Start of the virtual frame buffer (relative to fullscreen ) */
++#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
 +
-+	i = par->res_index;
- 	xres = ps3fb_res[i].xres;
- 	yres = ps3fb_res[i].yres;
++/*
++ * Start of the virtual frame buffer (relative to start of video memory)
++ * This is PAGE_SIZE aligned for easier mmap()
++ */
++#define VFB_OFF(i)	PAGE_ALIGN(VP_OFF(i))
++
++/* Start of the fullscreen frame buffer (relative to start of video memory) */
++#define FB_OFF(i)	(-VP_OFF(i) & ~PAGE_MASK)
++
  
--	if (frame > ps3fb.num_frames - 1) {
-+	if (frame > par->num_frames - 1) {
- 		dev_dbg(info->device, "%s: invalid frame number (%u)\n",
- 			__func__, frame);
--		return -EINVAL;
-+		error = -EINVAL;
-+		goto out;
+ static int ps3fb_mode;
+ module_param(ps3fb_mode, int, 0);
+@@ -517,7 +529,8 @@ static int ps3fb_check_var(struct fb_var
+ 
+ 	/* Memory limit */
+ 	i = ps3fb_get_res_table(var->xres, var->yres, mode);
+-	if (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP > ps3fb_videomemory.size) {
++	if (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP >
++	    ps3fb.xdr_size - VFB_OFF(i)) {
+ 		dev_dbg(info->device, "Not enough memory\n");
+ 		return -ENOMEM;
  	}
- 	offset = xres * yres * BPP * frame;
- 
-@@ -428,7 +436,10 @@ #ifdef HEAD_B
- 			"%s: lv1_gpu_context_attribute FLIP failed: %d\n",
- 			__func__, status);
- #endif
--	return 0;
-+
-+out:
-+	release_console_sem();
-+	return error;
- }
- 
- 
-@@ -547,6 +558,7 @@ static int ps3fb_check_var(struct fb_var
- 
- static int ps3fb_set_par(struct fb_info *info)
- {
-+	struct ps3fb_par *par = info->par;
- 	unsigned int mode;
- 	int i;
- 	unsigned long offset;
-@@ -560,7 +572,7 @@ static int ps3fb_set_par(struct fb_info 
- 		return -EINVAL;
- 
+@@ -549,12 +562,13 @@ static int ps3fb_set_par(struct fb_info 
  	i = ps3fb_get_res_table(info->var.xres, info->var.yres, mode);
--	ps3fb.res_index = i;
-+	par->res_index = i;
+ 	ps3fb.res_index = i;
  
- 	offset = VFB_OFF(i);
- 	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea) + offset;
-@@ -568,14 +580,19 @@ static int ps3fb_set_par(struct fb_info 
+-	offset = FB_OFF(i) + VP_OFF(i);
+-	info->fix.smem_len = ps3fb_videomemory.size - offset;
++	offset = VFB_OFF(i);
++	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea) + offset;
++	info->fix.smem_len = ps3fb.xdr_size - offset;
  	info->screen_base = (char __iomem *)ps3fb.xdr_ea + offset;
- 	memset(ps3fb.xdr_ea, 0, ps3fb.xdr_size);
+-	memset(ps3fb.xdr_ea, 0, ps3fb_videomemory.size);
++	memset(ps3fb.xdr_ea, 0, ps3fb.xdr_size);
  
--	ps3fb.num_frames = info->fix.smem_len/
--			   (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP);
-+	par->num_frames = info->fix.smem_len/
-+			  (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP);
+-	ps3fb.num_frames = ps3fb_videomemory.size/
++	ps3fb.num_frames = info->fix.smem_len/
+ 			   (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP);
  
  	/* Keep the special bits we cannot set using fb_var_screeninfo */
--	ps3fb_mode = (ps3fb_mode & ~PS3AV_MODE_MASK) | mode;
-+	par->new_mode_id = (par->new_mode_id & ~PS3AV_MODE_MASK) | mode;
- 
--	if (ps3av_set_video_mode(ps3fb_mode))
+@@ -596,18 +610,13 @@ static int ps3fb_setcolreg(unsigned int 
+ static int ps3fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	unsigned long size, offset;
+-	int i;
+-
+-	i = ps3fb_get_res_table(info->var.xres, info->var.yres, ps3fb_mode);
+-	if (i == -1)
 -		return -EINVAL;
-+	if (par->new_mode_id != par->mode_id) {
-+		if (ps3av_set_video_mode(par->new_mode_id)) {
-+			par->new_mode_id = par->mode_id;
-+			return -EINVAL;
-+		}
-+		par->mode_id = par->new_mode_id;
-+	}
  
- 	return 0;
- }
-@@ -694,7 +711,7 @@ static int ps3fb_ioctl(struct fb_info *i
- 		       unsigned long arg)
- {
- 	void __user *argp = (void __user *)arg;
--	u32 val, old_mode;
-+	u32 val;
- 	int retval = -EFAULT;
+ 	size = vma->vm_end - vma->vm_start;
+ 	offset = vma->vm_pgoff << PAGE_SHIFT;
+ 	if (offset + size > info->fix.smem_len)
+ 		return -EINVAL;
  
- 	switch (cmd) {
-@@ -724,6 +741,7 @@ static int ps3fb_ioctl(struct fb_info *i
+-	offset += info->fix.smem_start + FB_OFF(i) + VP_OFF(i);
++	offset += info->fix.smem_start;
+ 	if (remap_pfn_range(vma, vma->vm_start, offset >> PAGE_SHIFT,
+ 			    size, vma->vm_page_prot))
+ 		return -EAGAIN;
+@@ -899,8 +908,9 @@ static int ps3fb_xdr_settings(u64 xdr_lp
  
- 	case PS3FB_IOCTL_SETMODE:
- 		{
-+			struct ps3fb_par *par = info->par;
- 			const struct fb_videomode *mode;
- 			struct fb_var_screeninfo var;
+ 	status = lv1_gpu_context_attribute(ps3fb.context_handle,
+ 					   L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP,
+-					   xdr_lpar, ps3fb_videomemory.size,
+-					   GPU_IOIF, 0);
++					   xdr_lpar + ps3fb.xdr_size,
++					   GPU_CMD_BUF_SIZE,
++					   GPU_IOIF + ps3fb.xdr_size, 0);
+ 	if (status) {
+ 		dev_err(dev,
+ 			"%s: lv1_gpu_context_attribute FB_SETUP failed: %d\n",
+@@ -1038,29 +1048,31 @@ static int __devinit ps3fb_probe(struct 
+ 	if (retval)
+ 		goto err_iounmap_dinfo;
  
-@@ -737,9 +755,7 @@ static int ps3fb_ioctl(struct fb_info *i
- 			}
- 			dev_dbg(info->device, "PS3FB_IOCTL_SETMODE:%x\n", val);
- 			retval = -EINVAL;
--			old_mode = ps3fb_mode;
--			ps3fb_mode = val;
--			mode = ps3fb_default_mode();
-+			mode = ps3fb_default_mode(val);
- 			if (mode) {
- 				var = info->var;
- 				fb_videomode_to_var(&var, mode);
-@@ -747,12 +763,11 @@ static int ps3fb_ioctl(struct fb_info *i
- 				info->flags |= FBINFO_MISC_USEREVENT;
- 				/* Force, in case only special bits changed */
- 				var.activate |= FB_ACTIVATE_FORCE;
-+				par->new_mode_id = val;
- 				retval = fb_set_var(info, &var);
- 				info->flags &= ~FBINFO_MISC_USEREVENT;
- 				release_console_sem();
- 			}
--			if (retval)
--				ps3fb_mode = old_mode;
- 			break;
- 		}
- 
-@@ -765,14 +780,15 @@ static int ps3fb_ioctl(struct fb_info *i
- 
- 	case PS3FB_IOCTL_SCREENINFO:
- 		{
-+			struct ps3fb_par *par = info->par;
- 			struct ps3fb_ioctl_res res;
--			int i = ps3fb.res_index;
-+			int i = par->res_index;
- 			dev_dbg(info->device, "PS3FB_IOCTL_SCREENINFO:\n");
- 			res.xres = ps3fb_res[i].xres;
- 			res.yres = ps3fb_res[i].yres;
- 			res.xoff = ps3fb_res[i].xoff;
- 			res.yoff = ps3fb_res[i].yoff;
--			res.num_frames = ps3fb.num_frames;
-+			res.num_frames = par->num_frames;
- 			if (!copy_to_user(argp, &res, sizeof(res)))
- 				retval = 0;
- 			break;
-@@ -979,6 +995,7 @@ #endif
- static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- {
- 	struct fb_info *info;
-+	struct ps3fb_par *par;
- 	int retval = -ENOMEM;
- 	u32 xres, yres;
- 	u64 ddr_lpar = 0;
-@@ -987,7 +1004,7 @@ static int __devinit ps3fb_probe(struct 
- 	u64 lpar_reports = 0;
- 	u64 lpar_reports_size = 0;
- 	u64 xdr_lpar;
--	int status;
-+	int status, res_index;
- 	unsigned long offset;
- 	struct task_struct *task;
- 
-@@ -1004,15 +1021,14 @@ static int __devinit ps3fb_probe(struct 
- 
- 	if (ps3fb_mode > 0 &&
- 	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
--		ps3fb.res_index = ps3fb_get_res_table(xres, yres, ps3fb_mode);
--		dev_dbg(&dev->core, "res_index:%d\n", ps3fb.res_index);
-+		res_index = ps3fb_get_res_table(xres, yres, ps3fb_mode);
-+		dev_dbg(&dev->core, "res_index:%d\n", res_index);
- 	} else
--		ps3fb.res_index = GPU_RES_INDEX;
-+		res_index = GPU_RES_INDEX;
- 
- 	atomic_set(&ps3fb.f_count, -1);	/* fbcon opens ps3fb */
- 	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
- 	init_waitqueue_head(&ps3fb.wait_vsync);
--	ps3fb.num_frames = 1;
- 
- 	ps3fb_set_sync(&dev->core);
- 
-@@ -1062,19 +1078,24 @@ static int __devinit ps3fb_probe(struct 
+-	/* xdr frame buffer */
++	/* XDR frame buffer */
+ 	ps3fb.xdr_ea = ps3fb_videomemory.address;
+ 	xdr_lpar = ps3_mm_phys_to_lpar(__pa(ps3fb.xdr_ea));
++
++	/* Clear memory to prevent kernel info leakage into userspace */
++	memset(ps3fb.xdr_ea, 0, ps3fb_videomemory.size);
++
++	/* The GPU command buffer is at the end of video memory */
++	ps3fb.xdr_size = ps3fb_videomemory.size - GPU_CMD_BUF_SIZE;
++
+ 	retval = ps3fb_xdr_settings(xdr_lpar, &dev->core);
  	if (retval)
  		goto err_free_irq;
  
--	info = framebuffer_alloc(sizeof(u32) * 16, &dev->core);
-+	info = framebuffer_alloc(sizeof(struct ps3fb_par), &dev->core);
+-	/*
+-	 * ps3fb must clear memory to prevent kernel info
+-	 * leakage into userspace
+-	 */
+-	memset(ps3fb.xdr_ea, 0, ps3fb_videomemory.size);
+ 	info = framebuffer_alloc(sizeof(u32) * 16, &dev->core);
  	if (!info)
  		goto err_free_irq;
  
--	offset = VFB_OFF(ps3fb.res_index);
-+	par = info->par;
-+	par->mode_id = ~ps3fb_mode;	/* != ps3fb_mode, to trigger change */
-+	par->new_mode_id = ps3fb_mode;
-+	par->res_index = res_index;
-+	par->num_frames = 1;
-+
-+	offset = VFB_OFF(res_index);
+-	offset = FB_OFF(ps3fb.res_index) + VP_OFF(ps3fb.res_index);
++	offset = VFB_OFF(ps3fb.res_index);
  	info->screen_base = (char __iomem *)ps3fb.xdr_ea + offset;
  	info->fbops = &ps3fb_ops;
  
  	info->fix = ps3fb_fix;
- 	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea) + offset;
- 	info->fix.smem_len = ps3fb.xdr_size - offset;
--	info->pseudo_palette = info->par;
--	info->par = NULL;
-+	info->pseudo_palette = par->pseudo_palette;
+-	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea);
+-	info->fix.smem_len = ps3fb_videomemory.size - offset;
++	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea) + offset;
++	info->fix.smem_len = ps3fb.xdr_size - offset;
+ 	info->pseudo_palette = info->par;
+ 	info->par = NULL;
  	info->flags = FBINFO_DEFAULT | FBINFO_READS_FAST;
+@@ -1086,7 +1098,7 @@ static int __devinit ps3fb_probe(struct 
  
- 	retval = fb_alloc_cmap(&info->cmap, 256, 0);
-@@ -1082,7 +1103,8 @@ static int __devinit ps3fb_probe(struct 
- 		goto err_framebuffer_release;
+ 	dev_info(info->device, "%s %s, using %lu KiB of video memory\n",
+ 		 dev_driver_string(info->dev), info->dev->bus_id,
+-		 ps3fb_videomemory.size >> 10);
++		 ps3fb.xdr_size >> 10);
  
- 	if (!fb_find_mode(&info->var, info, mode_option, ps3fb_modedb,
--			  ARRAY_SIZE(ps3fb_modedb), ps3fb_default_mode(), 32)) {
-+			  ARRAY_SIZE(ps3fb_modedb),
-+			  ps3fb_default_mode(par->new_mode_id), 32)) {
- 		retval = -EINVAL;
- 		goto err_fb_dealloc;
- 	}
+ 	task = kthread_run(ps3fbd, info, DEVICE_NAME);
+ 	if (IS_ERR(task)) {
 
 
 -------------------------------------------------------------------------

@@ -1,8 +1,10 @@
-From: Antonino Daplas <adaplas@gmail.com>
-Subject: [PATCH 15/15] fbdev: Move and rename extern
-	declaration for global_mode_option
-Date: Sat, 13 Oct 2007 08:33:24 +0800
-Message-ID: <47101254.6010307@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bugme-new] [Bug 9155] New: No fan control
+	with ATI Radeon display support on HP nx6125.
+Date: Sat, 13 Oct 2007 20:30:20 +0200
+Message-ID: <200710132030.20826.rjw@sisk.pl>
+References: <bug-9155-10286@http.bugzilla.kernel.org/>
+	<20071013105315.accef6aa.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +13,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IgVoT-0001jp-CS for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 18:29:09 -0700
-Received: from rv-out-0910.google.com ([209.85.198.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUz5-0002xt-ML
+	id 1IglVf-0004He-FN for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 13 Oct 2007 11:14:47 -0700
+Received: from ogre.sisk.pl ([217.79.144.158])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IglVd-00027Y-V7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 17:36:03 -0700
-Received: by rv-out-0910.google.com with SMTP id g11so3588679rvb
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 12 Oct 2007 17:36:03 -0700 (PDT)
+	Sat, 13 Oct 2007 11:14:47 -0700
+In-Reply-To: <20071013105315.accef6aa.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,80 +31,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>, daniel.wuerfel@gmx.net, linux-acpi@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, Len Brown <lenb@kernel.org>
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+On Saturday, 13 October 2007 19:53, Andrew Morton wrote:
+> On Sat, 13 Oct 2007 02:37:35 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+> 
+> > Most recent kernel where this bug did not occur:2.6.21
+> > Distribution:gentoo
+> > Hardware Environment:HP nx6125 BIOS version F.11
+> > Software Environment:Gnome 2.18, ati-driver 8.40.4
 
-Move the extern declaration for global_mode_option to <linux/fb.h> and rename
-the variable to fb_mode_option.
+Looks like the binary ATI driver is used.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Antonino Daplas <adaplas@gmail.com>
----
+> > Problem Description:If you enable "support for frame buffer devices", "Vesa vga
+> > graphics support" and "ati radeon display support" under "graphics support" so
+> > you lost fan cantrol on your hp nx6125, that means the fan doens't stop
+> > working.
+> > 
+> > Steps to reproduce:Enable "support for frame buffer devices", "Vesa vga
+> > graphics support" and "ati radeon display support" under "graphics support" on
+> > your hp nx6125 and after the next boot the fan will not switched off.
+> > 
+> 
+> Does anyone know whether this is likely to be a radeon driver bug or an
+> acpi bug or something else??
 
- drivers/video/fbmem.c  |    4 +---
- drivers/video/modedb.c |    4 ++--
- include/linux/fb.h     |    1 +
- 3 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index db0c348..1194f5e 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1567,8 +1567,6 @@ int fb_new_modelist(struct fb_info *info
- static char *video_options[FB_MAX] __read_mostly;
- static int ofonly __read_mostly;
- 
--extern const char *global_mode_option;
--
- /**
-  * fb_get_options - get kernel boot parameters
-  * @name:   framebuffer name as it would appear in
-@@ -1636,7 +1634,7 @@ static int __init video_setup(char *opti
-  	}
- 
-  	if (!global && !strstr(options, "fb:")) {
-- 		global_mode_option = options;
-+ 		fb_mode_option = options;
-  		global = 1;
-  	}
- 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 03b06aa..42f5d76 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -27,7 +27,7 @@ #else
- #define DPRINTK(fmt, args...)
- #endif
- 
--const char *global_mode_option;
-+const char *fb_mode_option;
- 
-     /*
-      *  Standard video mode definitions (taken from XFree86)
-@@ -510,7 +510,7 @@ int fb_find_mode(struct fb_var_screeninf
- 	default_bpp = 8;
- 
-     /* Did the user specify a video mode? */
--    if (mode_option || (mode_option = global_mode_option)) {
-+    if (mode_option || (mode_option = fb_mode_option)) {
- 	const char *name = mode_option;
- 	unsigned int namelen = strlen(name);
- 	int res_specified = 0, bpp_specified = 0, refresh_specified = 0;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 6729272..58c57a3 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1056,6 +1056,7 @@ struct fb_videomode {
- 	u32 flag;
- };
- 
-+extern const char *fb_mode_option;
- extern const struct fb_videomode vesa_modes[];
- 
- struct fb_modelist {
-
+It looks like a thermal issue to me, so I'd say ACPI or the ATI driver (or the
+combination of the two).
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

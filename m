@@ -1,7 +1,8 @@
 From: Antonino Daplas <adaplas@gmail.com>
-Subject: [PATCH 11/15] svgalib: mode selection updates
-Date: Sat, 13 Oct 2007 08:30:38 +0800
-Message-ID: <471011AE.9000301@gmail.com>
+Subject: [PATCH 15/15] fbdev: Move and rename extern
+	declaration for global_mode_option
+Date: Sat, 13 Oct 2007 08:33:24 +0800
+Message-ID: <47101254.6010307@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IgVZJ-0000JZ-TT for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 18:13:29 -0700
+	id 1IgVoT-0001jp-CS for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 12 Oct 2007 18:29:09 -0700
 Received: from rv-out-0910.google.com ([209.85.198.191])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUyh-0002xt-Ot
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IgUz5-0002xt-ML
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 12 Oct 2007 17:35:40 -0700
+	Fri, 12 Oct 2007 17:36:03 -0700
 Received: by rv-out-0910.google.com with SMTP id g11so3588679rvb
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 12 Oct 2007 17:35:39 -0700 (PDT)
+	Fri, 12 Oct 2007 17:36:03 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,117 +31,78 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Ondrej Zajicek <santiago@crfreenet.org>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-This patch changes mode selection matching algorithm.
-It allows to choose mode with matching depth even when
-requested color lengths are greater than color lengths
-of every mode with requested color depth.
+Move the extern declaration for global_mode_option to <linux/fb.h> and rename
+the variable to fb_mode_option.
 
-It also fixes bug in s3fb - wrong error value returned
-when format is not supported by chip.
-
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- drivers/video/s3fb.c    |    9 +++++++--
- drivers/video/svgalib.c |   47 +++++++++++++++++++++++++++++++----------------
- 2 files changed, 38 insertions(+), 18 deletions(-)
+ drivers/video/fbmem.c  |    4 +---
+ drivers/video/modedb.c |    4 ++--
+ include/linux/fb.h     |    1 +
+ 3 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-index d117358..a96ac43 100644
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -403,8 +403,13 @@ static int s3fb_check_var(struct fb_var_
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index db0c348..1194f5e 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1567,8 +1567,6 @@ int fb_new_modelist(struct fb_info *info
+ static char *video_options[FB_MAX] __read_mostly;
+ static int ofonly __read_mostly;
  
- 	/* Find appropriate format */
- 	rv = svga_match_format (s3fb_formats, var, NULL);
--	if ((rv < 0) || ((par->chip == CHIP_988_VIRGE_VX) ? (rv == 7) : (rv == 6)))
--	{		/* 24bpp on VIRGE VX, 32bpp on others */
-+
-+	/* 32bpp mode is not supported on VIRGE VX,
-+	   24bpp is not supported on others */
-+	if ((par->chip == CHIP_988_VIRGE_VX) ? (rv == 7) : (rv == 6))
-+		rv = -EINVAL;
-+
-+	if (rv < 0) {
- 		printk(KERN_ERR "fb%d: unsupported mode requested\n", info->node);
- 		return rv;
- 	}
-diff --git a/drivers/video/svgalib.c b/drivers/video/svgalib.c
-index 25df928..9c71067 100644
---- a/drivers/video/svgalib.c
-+++ b/drivers/video/svgalib.c
-@@ -598,9 +598,11 @@ void svga_set_timings(const struct svga_
- /* ------------------------------------------------------------------------- */
+-extern const char *global_mode_option;
+-
+ /**
+  * fb_get_options - get kernel boot parameters
+  * @name:   framebuffer name as it would appear in
+@@ -1636,7 +1634,7 @@ static int __init video_setup(char *opti
+  	}
  
+  	if (!global && !strstr(options, "fb:")) {
+- 		global_mode_option = options;
++ 		fb_mode_option = options;
+  		global = 1;
+  	}
  
--int svga_match_format(const struct svga_fb_format *frm, struct fb_var_screeninfo *var, struct fb_fix_screeninfo *fix)
-+static inline int match_format(const struct svga_fb_format *frm,
-+			       struct fb_var_screeninfo *var)
- {
- 	int i = 0;
-+	int stored = -EINVAL;
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 03b06aa..42f5d76 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -27,7 +27,7 @@ #else
+ #define DPRINTK(fmt, args...)
+ #endif
  
- 	while (frm->bits_per_pixel != SVGA_FORMAT_END_VAL)
- 	{
-@@ -609,25 +611,38 @@ int svga_match_format(const struct svga_
- 		    (var->green.length   <= frm->green.length)   &&
- 		    (var->blue.length    <= frm->blue.length)    &&
- 		    (var->transp.length  <= frm->transp.length)  &&
--		    (var->nonstd	 == frm->nonstd)) {
--		    	var->bits_per_pixel = frm->bits_per_pixel;
--			var->red            = frm->red;
--			var->green          = frm->green;
--			var->blue           = frm->blue;
--			var->transp         = frm->transp;
--			var->nonstd         = frm->nonstd;
--			if (fix != NULL) {
--				fix->type      = frm->type;
--				fix->type_aux  = frm->type_aux;
--				fix->visual    = frm->visual;
--				fix->xpanstep  = frm->xpanstep;
--			}
-+		    (var->nonstd	 == frm->nonstd))
- 			return i;
--		}
-+		if (var->bits_per_pixel == frm->bits_per_pixel)
-+			stored = i;
- 		i++;
- 		frm++;
- 	}
--	return -EINVAL;
-+	return stored;
-+}
-+
-+int svga_match_format(const struct svga_fb_format *frm,
-+		      struct fb_var_screeninfo *var,
-+		      struct fb_fix_screeninfo *fix)
-+{
-+	int i = match_format(frm, var);
-+
-+	if (i >= 0) {
-+		var->bits_per_pixel = frm[i].bits_per_pixel;
-+		var->red            = frm[i].red;
-+		var->green          = frm[i].green;
-+		var->blue           = frm[i].blue;
-+		var->transp         = frm[i].transp;
-+		var->nonstd         = frm[i].nonstd;
-+		if (fix != NULL) {
-+			fix->type      = frm[i].type;
-+			fix->type_aux  = frm[i].type_aux;
-+			fix->visual    = frm[i].visual;
-+			fix->xpanstep  = frm[i].xpanstep;
-+		}
-+	}
-+
-+	return i;
- }
+-const char *global_mode_option;
++const char *fb_mode_option;
  
+     /*
+      *  Standard video mode definitions (taken from XFree86)
+@@ -510,7 +510,7 @@ int fb_find_mode(struct fb_var_screeninf
+ 	default_bpp = 8;
  
+     /* Did the user specify a video mode? */
+-    if (mode_option || (mode_option = global_mode_option)) {
++    if (mode_option || (mode_option = fb_mode_option)) {
+ 	const char *name = mode_option;
+ 	unsigned int namelen = strlen(name);
+ 	int res_specified = 0, bpp_specified = 0, refresh_specified = 0;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 6729272..58c57a3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1056,6 +1056,7 @@ struct fb_videomode {
+ 	u32 flag;
+ };
+ 
++extern const char *fb_mode_option;
+ extern const struct fb_videomode vesa_modes[];
+ 
+ struct fb_modelist {
 
 
 -------------------------------------------------------------------------

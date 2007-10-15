@@ -1,85 +1,85 @@
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [PATCH] tgafb: Fix an out-of-range shift in mono imageblit
-Date: Mon, 15 Oct 2007 18:36:00 +0100 (BST)
-Message-ID: <Pine.LNX.4.64N.0710151812540.16262@blysk.ds.pg.gda.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bugme-new] [Bug 9155] New: No fan control with ATI Radeon display support on HP nx6125.
+Date: Mon, 15 Oct 2007 22:32:34 +0200
+Message-ID: <200710152232.35324.rjw@sisk.pl>
+References: <bug-9155-10286@http.bugzilla.kernel.org/> <200710142155.09345.rjw@sisk.pl> <1192468342.6249.9.camel@localhost>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1765634AbXJORg2@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1192468342.6249.9.camel@localhost>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Jay Estabrook <Jay.Estabrook@hp.com>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+To: Daniel =?utf-8?q?W=C3=BCrfel?= <daniel.wuerfel@gmx.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>, bugme-daemon@bugzilla.kernel.org, Len Brown <lenb@kernel.org>
 
- The pixel mask calculation in tgafb_mono_imageblit() uses a variable 
-left-shift on a 32-bit data type by up to 32.  Shifting by the width of a 
-data type or more produces an unpredictable result according to the C 
-standard.
+On Monday, 15 October 2007 19:12, Daniel W=C3=BCrfel wrote:
+> Am Sonntag, den 14.10.2007, 21:55 +0200 schrieb Rafael J. Wysocki:
+> > On Sunday, 14 October 2007 16:18, Daniel W=C3=BCrfel wrote:
+> > > Am Sonntag, den 14.10.2007, 16:02 +0200 schrieb Rafael J. Wysocki=
+:
+> > > > On Sunday, 14 October 2007 09:26, Daniel W=C3=BCrfel wrote:
+> > > > > Hi there,
+> > > > >=20
+> > > > > at first great respect for your fast answers.=20
+> > > > > I don't think, that the binary ati driver is the problem, bec=
+ause:
+> > > > > 1. with switched of "ati radeon display support" in the kerne=
+l, the fan
+> > > > > control works correctly (and i still using the ati-driver)
+> > > >=20
+> > > > How do you know, however, that the "ati radeon display support"=
+ in the kernel
+> > > > does not interfere with the ATI driver in a destructive way?
+> > >=20
+> > > I think, but im not sure, that the ati driver is loaded, if X was
+> > > started. But at this moment X was not started.
+> >=20
+> > Well, the kernel module part is probably loaded earlier.
+> > =20
+> > > > > 2. the fan starts spinning at the boot screen even if the rad=
+eon display
+> > > > > driver was loaded (and the ati driver is not just loaded yet)=
+=2E
+> > > >=20
+> > > > I'm not sure what you mean exactly.  Can you clarify, please?da=
+nn
+> > >=20
+> > > Well, i see it looks a little bit confused what i wrote. What i m=
+ean is,
+> > > that the fan at this time starts to rotate, when the "radeon disp=
+lay
+> > > support" is loaded at boot time.
+> >=20
+> > I see.
+> >=20
+> > Can you please check:
+> > - What happens if you don't use the ATI driver at all (please unloa=
+d its kernel
+> >   module before loading the kernel's radeon one)?
+> > - Does the loading of the radeon module trigger the fan automatical=
+ly?
+> > - What happens if the fan module is not loaded at that time?
+>=20
+> I think i got the problem:
+> I made some test. The problem is the module radeonfb. If i compile
+> radeonfb as a module there is no problem with the fan control. But if=
+ i
+> compile it into the kernel, than fan control will be destroyed and th=
+e
+> fan doesn't stop working from the beginning of the system start.=20
+> The other modules (fglrx, agp_gart) have no influence to the fan
+> behaviour.
 
- Rather than widening the data type this fix makes sure the count is 
-between 0 and 31.  The reason is not to penalise 32-bit platforms with 
-operation on a "long long" type for a marginal case that is meant not to 
-happen (blitting an image of a zero width).
+Thanks for having narrowed this, good job.
 
- The reason it has escaped for so long is the Alpha, being purely 64-bit, 
-:-) does not mask the shift out to 32 bits.  This is a valid 
-implementation -- producing the correct result certainly falls within 
-"unpredictable behaviour".  It does trigger on MIPS though and it is the 
-recent merge of the TC support which only enabled the driver for use on 
-anything other than the Alpha.  For MIPS when the width is 32 the mask 
-ends up being 0 rather than 0xffffffff as it should be and the frame 
-buffer is not updated.
+Now, the question is why the radeonfb compiled in statically has this e=
+ffect.
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- Checked with checkpatch.pl and at the run time with an 8-bit TC frame 
-buffer on a MIPS host.  It fixes scrolling corruption.
-
- Please apply.
-
-  Maciej
-
-patch-mips-2.6.23-rc5-20070904-tgafb-mono_imageblit-width-0
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c
---- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c	2007-09-04 04:55:46.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c	2007-10-14 20:32:13.000000000 +0000
-@@ -5,7 +5,7 @@
-  *	Copyright (C) 1997 Geert Uytterhoeven
-  *	Copyright (C) 1999,2000 Martin Lucina, Tom Zerucha
-  *	Copyright (C) 2002 Richard Henderson
-- *	Copyright (C) 2006 Maciej W. Rozycki
-+ *	Copyright (C) 2006, 2007  Maciej W. Rozycki
-  *
-  *  This file is subject to the terms and conditions of the GNU General Public
-  *  License. See the file COPYING in the main directory of this archive for
-@@ -13,6 +13,7 @@
-  */
- 
- #include <linux/bitrev.h>
-+#include <linux/compiler.h>
- #include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/errno.h>
-@@ -654,6 +655,9 @@ tgafb_mono_imageblit(struct fb_info *inf
- 	line_length = info->fix.line_length;
- 	rincr = (width + 7) / 8;
- 
-+	/* A shift below cannot cope with.  */
-+	if (unlikely(width == 0))
-+		return;
- 	/* Crop the image to the screen.  */
- 	if (dx > vxres || dy > vyres)
- 		return;
-@@ -709,9 +713,10 @@ tgafb_mono_imageblit(struct fb_info *inf
- 		unsigned long bwidth;
- 
- 		/* Handle common case of imaging a single character, in
--		   a font less than 32 pixels wide.  */
-+		   a font less than or 32 pixels wide.  */
- 
--		pixelmask = (1 << width) - 1;
-+		/* Avoid a shift by 32; width > 0 implied.  */
-+		pixelmask = (2ul << (width - 1)) - 1;
- 		pixelmask <<= shift;
- 		__raw_writel(pixelmask, regs_base + TGA_PIXELMASK_REG);
- 		wmb();
+Can you please attach your current .config to the bugzilla entry?
+-
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

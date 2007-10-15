@@ -1,81 +1,85 @@
-From: Daniel =?ISO-8859-1?Q?W=FCrfel?= <daniel.wuerfel@gmx.net>
-Subject: Re: [Bugme-new] [Bug 9155] New: No fan control
-	with ATI Radeon	display support on HP nx6125.
-Date: Mon, 15 Oct 2007 19:12:22 +0200
-Message-ID: <1192468342.6249.9.camel@localhost>
-References: <bug-9155-10286@http.bugzilla.kernel.org/>
-	<200710141602.48206.rjw@sisk.pl> <1192371504.6265.46.camel@localhost>
-	<200710142155.09345.rjw@sisk.pl>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [PATCH] tgafb: Fix an out-of-range shift in mono imageblit
+Date: Mon, 15 Oct 2007 18:36:00 +0100 (BST)
+Message-ID: <Pine.LNX.4.64N.0710151812540.16262@blysk.ds.pg.gda.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IhTU3-0007n5-8p for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 15 Oct 2007 10:12:03 -0700
-Received: from mail.gmx.net ([213.165.64.20])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1IhTU2-0002Gl-5i
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 15 Oct 2007 10:12:02 -0700
-In-Reply-To: <200710142155.09345.rjw@sisk.pl>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-acpi@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1765634AbXJORg2@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net
+Cc: Jay Estabrook <Jay.Estabrook@hp.com>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
 
-QW0gU29ubnRhZywgZGVuIDE0LjEwLjIwMDcsIDIxOjU1ICswMjAwIHNjaHJpZWIgUmFmYWVsIEou
-IFd5c29ja2k6Cj4gT24gU3VuZGF5LCAxNCBPY3RvYmVyIDIwMDcgMTY6MTgsIERhbmllbCBXw7xy
-ZmVsIHdyb3RlOgo+ID4gQW0gU29ubnRhZywgZGVuIDE0LjEwLjIwMDcsIDE2OjAyICswMjAwIHNj
-aHJpZWIgUmFmYWVsIEouIFd5c29ja2k6Cj4gPiA+IE9uIFN1bmRheSwgMTQgT2N0b2JlciAyMDA3
-IDA5OjI2LCBEYW5pZWwgV8O8cmZlbCB3cm90ZToKPiA+ID4gPiBIaSB0aGVyZSwKPiA+ID4gPiAK
-PiA+ID4gPiBhdCBmaXJzdCBncmVhdCByZXNwZWN0IGZvciB5b3VyIGZhc3QgYW5zd2Vycy4gCj4g
-PiA+ID4gSSBkb24ndCB0aGluaywgdGhhdCB0aGUgYmluYXJ5IGF0aSBkcml2ZXIgaXMgdGhlIHBy
-b2JsZW0sIGJlY2F1c2U6Cj4gPiA+ID4gMS4gd2l0aCBzd2l0Y2hlZCBvZiAiYXRpIHJhZGVvbiBk
-aXNwbGF5IHN1cHBvcnQiIGluIHRoZSBrZXJuZWwsIHRoZSBmYW4KPiA+ID4gPiBjb250cm9sIHdv
-cmtzIGNvcnJlY3RseSAoYW5kIGkgc3RpbGwgdXNpbmcgdGhlIGF0aS1kcml2ZXIpCj4gPiA+IAo+
-ID4gPiBIb3cgZG8geW91IGtub3csIGhvd2V2ZXIsIHRoYXQgdGhlICJhdGkgcmFkZW9uIGRpc3Bs
-YXkgc3VwcG9ydCIgaW4gdGhlIGtlcm5lbAo+ID4gPiBkb2VzIG5vdCBpbnRlcmZlcmUgd2l0aCB0
-aGUgQVRJIGRyaXZlciBpbiBhIGRlc3RydWN0aXZlIHdheT8KPiA+IAo+ID4gSSB0aGluaywgYnV0
-IGltIG5vdCBzdXJlLCB0aGF0IHRoZSBhdGkgZHJpdmVyIGlzIGxvYWRlZCwgaWYgWCB3YXMKPiA+
-IHN0YXJ0ZWQuIEJ1dCBhdCB0aGlzIG1vbWVudCBYIHdhcyBub3Qgc3RhcnRlZC4KPiAKPiBXZWxs
-LCB0aGUga2VybmVsIG1vZHVsZSBwYXJ0IGlzIHByb2JhYmx5IGxvYWRlZCBlYXJsaWVyLgo+ICAK
-PiA+ID4gPiAyLiB0aGUgZmFuIHN0YXJ0cyBzcGlubmluZyBhdCB0aGUgYm9vdCBzY3JlZW4gZXZl
-biBpZiB0aGUgcmFkZW9uIGRpc3BsYXkKPiA+ID4gPiBkcml2ZXIgd2FzIGxvYWRlZCAoYW5kIHRo
-ZSBhdGkgZHJpdmVyIGlzIG5vdCBqdXN0IGxvYWRlZCB5ZXQpLgo+ID4gPiAKPiA+ID4gSSdtIG5v
-dCBzdXJlIHdoYXQgeW91IG1lYW4gZXhhY3RseS4gIENhbiB5b3UgY2xhcmlmeSwgcGxlYXNlP2Rh
-bm4KPiA+IAo+ID4gV2VsbCwgaSBzZWUgaXQgbG9va3MgYSBsaXR0bGUgYml0IGNvbmZ1c2VkIHdo
-YXQgaSB3cm90ZS4gV2hhdCBpIG1lYW4gaXMsCj4gPiB0aGF0IHRoZSBmYW4gYXQgdGhpcyB0aW1l
-IHN0YXJ0cyB0byByb3RhdGUsIHdoZW4gdGhlICJyYWRlb24gZGlzcGxheQo+ID4gc3VwcG9ydCIg
-aXMgbG9hZGVkIGF0IGJvb3QgdGltZS4KPiAKPiBJIHNlZS4KPiAKPiBDYW4geW91IHBsZWFzZSBj
-aGVjazoKPiAtIFdoYXQgaGFwcGVucyBpZiB5b3UgZG9uJ3QgdXNlIHRoZSBBVEkgZHJpdmVyIGF0
-IGFsbCAocGxlYXNlIHVubG9hZCBpdHMga2VybmVsCj4gICBtb2R1bGUgYmVmb3JlIGxvYWRpbmcg
-dGhlIGtlcm5lbCdzIHJhZGVvbiBvbmUpPwo+IC0gRG9lcyB0aGUgbG9hZGluZyBvZiB0aGUgcmFk
-ZW9uIG1vZHVsZSB0cmlnZ2VyIHRoZSBmYW4gYXV0b21hdGljYWxseT8KPiAtIFdoYXQgaGFwcGVu
-cyBpZiB0aGUgZmFuIG1vZHVsZSBpcyBub3QgbG9hZGVkIGF0IHRoYXQgdGltZT8KCkkgdGhpbmsg
-aSBnb3QgdGhlIHByb2JsZW06CkkgbWFkZSBzb21lIHRlc3QuIFRoZSBwcm9ibGVtIGlzIHRoZSBt
-b2R1bGUgcmFkZW9uZmIuIElmIGkgY29tcGlsZQpyYWRlb25mYiBhcyBhIG1vZHVsZSB0aGVyZSBp
-cyBubyBwcm9ibGVtIHdpdGggdGhlIGZhbiBjb250cm9sLiBCdXQgaWYgaQpjb21waWxlIGl0IGlu
-dG8gdGhlIGtlcm5lbCwgdGhhbiBmYW4gY29udHJvbCB3aWxsIGJlIGRlc3Ryb3llZCBhbmQgdGhl
-CmZhbiBkb2Vzbid0IHN0b3Agd29ya2luZyBmcm9tIHRoZSBiZWdpbm5pbmcgb2YgdGhlIHN5c3Rl
-bSBzdGFydC4gClRoZSBvdGhlciBtb2R1bGVzIChmZ2xyeCwgYWdwX2dhcnQpIGhhdmUgbm8gaW5m
-bHVlbmNlIHRvIHRoZSBmYW4KYmVoYXZpb3VyLgoKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5u
-ZXQgZW1haWwgaXMgc3BvbnNvcmVkIGJ5OiBTcGx1bmsgSW5jLgpTdGlsbCBncmVwcGluZyB0aHJv
-dWdoIGxvZyBmaWxlcyB0byBmaW5kIHByb2JsZW1zPyAgU3RvcC4KTm93IFNlYXJjaCBsb2cgZXZl
-bnRzIGFuZCBjb25maWd1cmF0aW9uIGZpbGVzIHVzaW5nIEFKQVggYW5kIGEgYnJvd3Nlci4KRG93
-bmxvYWQgeW91ciBGUkVFIGNvcHkgb2YgU3BsdW5rIG5vdyA+PiBodHRwOi8vZ2V0LnNwbHVuay5j
-b20vCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4
-LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vm
-b3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGlu
-dXgtZmJkZXYtZGV2ZWwK
+ The pixel mask calculation in tgafb_mono_imageblit() uses a variable 
+left-shift on a 32-bit data type by up to 32.  Shifting by the width of a 
+data type or more produces an unpredictable result according to the C 
+standard.
+
+ Rather than widening the data type this fix makes sure the count is 
+between 0 and 31.  The reason is not to penalise 32-bit platforms with 
+operation on a "long long" type for a marginal case that is meant not to 
+happen (blitting an image of a zero width).
+
+ The reason it has escaped for so long is the Alpha, being purely 64-bit, 
+:-) does not mask the shift out to 32 bits.  This is a valid 
+implementation -- producing the correct result certainly falls within 
+"unpredictable behaviour".  It does trigger on MIPS though and it is the 
+recent merge of the TC support which only enabled the driver for use on 
+anything other than the Alpha.  For MIPS when the width is 32 the mask 
+ends up being 0 rather than 0xffffffff as it should be and the frame 
+buffer is not updated.
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ Checked with checkpatch.pl and at the run time with an 8-bit TC frame 
+buffer on a MIPS host.  It fixes scrolling corruption.
+
+ Please apply.
+
+  Maciej
+
+patch-mips-2.6.23-rc5-20070904-tgafb-mono_imageblit-width-0
+diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c
+--- linux-mips-2.6.23-rc5-20070904.macro/drivers/video/tgafb.c	2007-09-04 04:55:46.000000000 +0000
++++ linux-mips-2.6.23-rc5-20070904/drivers/video/tgafb.c	2007-10-14 20:32:13.000000000 +0000
+@@ -5,7 +5,7 @@
+  *	Copyright (C) 1997 Geert Uytterhoeven
+  *	Copyright (C) 1999,2000 Martin Lucina, Tom Zerucha
+  *	Copyright (C) 2002 Richard Henderson
+- *	Copyright (C) 2006 Maciej W. Rozycki
++ *	Copyright (C) 2006, 2007  Maciej W. Rozycki
+  *
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License. See the file COPYING in the main directory of this archive for
+@@ -13,6 +13,7 @@
+  */
+ 
+ #include <linux/bitrev.h>
++#include <linux/compiler.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/errno.h>
+@@ -654,6 +655,9 @@ tgafb_mono_imageblit(struct fb_info *inf
+ 	line_length = info->fix.line_length;
+ 	rincr = (width + 7) / 8;
+ 
++	/* A shift below cannot cope with.  */
++	if (unlikely(width == 0))
++		return;
+ 	/* Crop the image to the screen.  */
+ 	if (dx > vxres || dy > vyres)
+ 		return;
+@@ -709,9 +713,10 @@ tgafb_mono_imageblit(struct fb_info *inf
+ 		unsigned long bwidth;
+ 
+ 		/* Handle common case of imaging a single character, in
+-		   a font less than 32 pixels wide.  */
++		   a font less than or 32 pixels wide.  */
+ 
+-		pixelmask = (1 << width) - 1;
++		/* Avoid a shift by 32; width > 0 implied.  */
++		pixelmask = (2ul << (width - 1)) - 1;
+ 		pixelmask <<= shift;
+ 		__raw_writel(pixelmask, regs_base + TGA_PIXELMASK_REG);
+ 		wmb();

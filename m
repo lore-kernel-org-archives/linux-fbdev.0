@@ -1,33 +1,23 @@
-From: "Rhee, C. Joon" <jrhee@qualcomm.com>
-Subject: YUV Framebuffer
-Date: Tue, 16 Oct 2007 17:00:51 -0700
-Message-ID: <27AAC353AE72C840926448157F375E72012B59B1@NAEX17.na.qualcomm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: YUV Framebuffer
+Date: Wed, 17 Oct 2007 08:57:32 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0710170852350.29643@anakin>
+References: <27AAC353AE72C840926448157F375E72012B59B1@NAEX17.na.qualcomm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0005782193=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IhwLM-0000iL-KN for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 16 Oct 2007 17:01:00 -0700
-Received: from ithilien.qualcomm.com ([129.46.51.59])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IhwLM-00066e-BK
+	id 1Ii2qW-0005SK-Ls for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 16 Oct 2007 23:57:38 -0700
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Ii2qV-0006mS-AQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 16 Oct 2007 17:01:00 -0700
-Received: from hamtaro.qualcomm.com (hamtaro.qualcomm.com [129.46.61.157])
-	by ithilien.qualcomm.com (8.13.6/8.12.5/1.0) with ESMTP id
-	l9H00rKK020307
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 16 Oct 2007 17:00:54 -0700
-Received: from sanexcas01.na.qualcomm.com (sanexcas01.qualcomm.com
-	[172.30.36.175])
-	by hamtaro.qualcomm.com (8.13.6/8.13.6/1.0) with ESMTP id
-	l9H00m6I013142 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 16 Oct 2007 17:00:53 -0700 (PDT)
-Content-class: urn:content-classes:message
+	Tue, 16 Oct 2007 23:57:36 -0700
+In-Reply-To: <27AAC353AE72C840926448157F375E72012B59B1@NAEX17.na.qualcomm.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,143 +28,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Rhee, C. Joon" <jrhee@qualcomm.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-This is a multi-part message in MIME format.
+On Tue, 16 Oct 2007, Rhee, C. Joon wrote:
+> Is it possible to create framebuffer color format in YUV (eg. YUV422
+> interleaved) and expose it through /dev/fb?
+> 
+> What would be fb_info type?  
 
---===============0005782193==
-Content-class: urn:content-classes:message
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C81050.C84115D4"
+What do you mean with `interleaved'?
+Even and odd frames are separate (interlace)?
 
-This is a multi-part message in MIME format.
+For YUV422, you have to add a new visual type.
 
-------_=_NextPart_001_01C81050.C84115D4
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+A long time ago, I used this for a non-public test project:
 
-Is it possible to create framebuffer color format in YUV (eg. YUV422
-interleaved) and expose it through /dev/fb?
+#define FB_TYPE_PACKED_PIXELS_LACED     5       /* Interlaced Packed Pixels */
+#define FB_TYPE_PACKED_PIXELS_4AREAS    6       /* 4 areas of Packed Pixels */
 
-What would be fb_info type? =20
+#define FB_VISUAL_YCBCR422              6       /* YCbCr 4:2:2 */
+#define FB_VISUAL_YCBCR420              7       /* YCbCr 4:2:0 */
 
-And how about about fb_var_screeninfo.green/blue/red offset?=20
+> And how about about fb_var_screeninfo.green/blue/red offset? 
 
-=20
+Just assume red, green, and blue mean Y, U, and V?
 
-Joon
+Gr{oetje,eeting}s,
 
+						Geert
 
-------_=_NextPart_001_01C81050.C84115D4
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-<html>
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Batang;
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
-@font-face
-	{font-family:"Palatino Linotype";
-	panose-1:2 4 5 2 5 5 5 3 3 4;}
-@font-face
-	{font-family:Batang;
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{font-family:"Palatino Linotype";
-	color:windowtext;
-	font-weight:normal;
-	font-style:normal;
-	text-decoration:none none;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino Linotype"'>Is it =
-possible to
-create framebuffer color format in YUV (eg. YUV422 interleaved) and =
-expose it through
-/dev/fb?</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino Linotype"'>What would be =
-fb_info type?
-&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino Linotype"'>And how about =
-about fb_var_screeninfo.green/blue/red
-offset? </span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino =
-Linotype"'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino =
-Linotype"'>Joon</span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C81050.C84115D4--
-
-
---===============0005782193==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.
 Still grepping through log files to find problems?  Stop.
 Now Search log events and configuration files using AJAX and a browser.
 Download your FREE copy of Splunk now >> http://get.splunk.com/
---===============0005782193==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0005782193==--

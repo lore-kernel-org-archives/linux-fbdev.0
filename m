@@ -1,72 +1,110 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: YUV Framebuffer
-Date: Wed, 17 Oct 2007 08:57:32 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0710170852350.29643@anakin>
-References: <27AAC353AE72C840926448157F375E72012B59B1@NAEX17.na.qualcomm.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: vga16fb doesn't build on powerpc (vgacon_remap_base)
+Date: Wed, 17 Oct 2007 10:49:04 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0710171047430.29856@pademelon.sonytel.be>
+References: <20071016191403.GA5962@nineveh.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Ii2qW-0005SK-Ls for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 16 Oct 2007 23:57:38 -0700
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Ii2qV-0006mS-AQ
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 16 Oct 2007 23:57:36 -0700
-In-Reply-To: <27AAC353AE72C840926448157F375E72012B59B1@NAEX17.na.qualcomm.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-2973903-1192610944=:29856"
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <20071016191403.GA5962@nineveh.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Rhee, C. Joon" <jrhee@qualcomm.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Joseph Fannin <jfannin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 16 Oct 2007, Rhee, C. Joon wrote:
-> Is it possible to create framebuffer color format in YUV (eg. YUV422
-> interleaved) and expose it through /dev/fb?
-> 
-> What would be fb_info type?  
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-What do you mean with `interleaved'?
-Even and odd frames are separate (interlace)?
+---584337861-2973903-1192610944=:29856
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-For YUV422, you have to add a new visual type.
+On Tue, 16 Oct 2007, Joseph Fannin wrote:
+> vga16fb is an available config option on powerpc, but it won't link
+> with my .config:
+>=20
+>     ERROR: "vgacon_remap_base" [drivers/video/vga16fb.ko] undefined!
+>=20
+>=20
+> I'm guessing this is because include/asm-powerpc/vga.h declares
+> vgacon_remap_base:=20
+>=20
+>     extern unsigned long vgacon_remap_base;
+>=20
+>=20
+> ...but arch/powerpc/kernel/setup_32.c wraps the definition in an #ifdef=
+:
+>=20
+>     #ifdef CONFIG_VGA_CONSOLE
+>     unsigned long vgacon_remap_base;
+>     EXPORT_SYMBOL(vgacon_remap_base);
+>     #endif
+>=20
+>=20
+> So CONFIG_VGA_CONSOLE=3Dn and CONFIG_FB_VGA16=3D[y|m] won't work.
+>=20
+> I've also noticed that the only places in the tree that ever assign
+> anything to config_remap_base are under arch/ppc.  And
+> include/asm-powerpc/vga.h also does this:
+>=20
+>     #ifdef __powerpc64__
+>     #define VGA_MAP_MEM(x,s) ((unsigned long) ioremap((x), s))
+>     #else
+>     #define VGA_MAP_MEM(x,s) (x + vgacon_remap_base)
+>     #endif
+>=20
+>=20
+> So VGACON probably doesn't work either on 32bit.  I'm guessing arch/pow=
+erpc
+> doesn't support PREP.
 
-A long time ago, I used this for a non-public test project:
+It's not only useful for PREP, but also for CHRP.
 
-#define FB_TYPE_PACKED_PIXELS_LACED     5       /* Interlaced Packed Pixels */
-#define FB_TYPE_PACKED_PIXELS_4AREAS    6       /* 4 areas of Packed Pixels */
+> How best could this be fixed up? Or should I just let the thing
+> be?  This is obviously not a new thing, and I don't have any hardware
+> that supports this stuff either.
 
-#define FB_VISUAL_YCBCR422              6       /* YCbCr 4:2:2 */
-#define FB_VISUAL_YCBCR420              7       /* YCbCr 4:2:0 */
+I remember this problem was present when I still had a working LongTrail =
+(which
+is CHRP), long before arch/powerpc/ was created.
 
-> And how about about fb_var_screeninfo.green/blue/red offset? 
+With kind regards,
+=20
+Geert Uytterhoeven
+Software Architect
 
-Just assume red, green, and blue mean Y, U, and V?
+Sony Network and Software Technology Center Europe
+The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
+=B7 Belgium
+=20
+Phone:    +32 (0)2 700 8453=09
+Fax:      +32 (0)2 700 8622=09
+E-mail:   Geert.Uytterhoeven@sonycom.com=09
+Internet: http://www.sony-europe.com/
+ =09
+Sony Network and Software Technology Center Europe=09
+A division of Sony Service Centre (Europe) N.V.=09
+Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
+ium=09
+VAT BE 0413.825.160 =C2=B7 RPR Brussels=09
+Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
+9
+---584337861-2973903-1192610944=:29856
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc.
-Still grepping through log files to find problems?  Stop.
-Now Search log events and configuration files using AJAX and a browser.
-Download your FREE copy of Splunk now >> http://get.splunk.com/
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+---584337861-2973903-1192610944=:29856--

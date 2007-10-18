@@ -1,32 +1,32 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] mbxfb: fix incorrect argument type
-Date: Thu, 18 Oct 2007 23:46:10 +0200
-Message-ID: <20071018234610.1498b21e.krzysztof.h1@poczta.fm>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: YUV Framebuffer
+Date: Fri, 19 Oct 2007 07:03:34 +0800
+Message-ID: <1192748614.5089.8.camel@daplas>
+References: <27AAC353AE72C840926448157F375E72012B59B1@NAEX17.na.qualcomm.com>
+	<Pine.LNX.4.64.0710170852350.29643@anakin>
+	<27AAC353AE72C840926448157F375E72012B5A8F@NAEX17.na.qualcomm.com>
+	<Pine.LNX.4.64.0710172141180.16690@anakin>
+	<1192713610.8484.53.camel@daplas>
+	<Pine.LNX.4.62.0710181537490.20173@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Iid2q-0007FT-K3 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Oct 2007 14:36:44 -0700
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]
-	helo=smtp4.poczta.interia.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Iid2p-0002d0-22
+	id 1IiePS-000751-Ec for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 18 Oct 2007 16:04:10 -0700
+Received: from hs-out-0708.google.com ([64.233.178.241]
+	helo=hs-out-2021.google.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IiePP-0007ey-NC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Oct 2007 14:36:44 -0700
-Received: from poczta.interia.pl (mi01.poczta.interia.pl [10.217.12.1])
-	by smtp4.poczta.interia.pl (INTERIA.PL) with ESMTP id 87B4A13FFC2
+	Thu, 18 Oct 2007 16:04:10 -0700
+Received: by hs-out-2021.google.com with SMTP id 55so244056hsc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 18 Oct 2007 23:36:39 +0200 (CEST)
-Received: from krzysio.net (host-87-99-61-239.lanet.net.pl [87.99.61.239])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by www.poczta.fm (INTERIA.PL) with ESMTP id AB6C8769BD1
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 18 Oct 2007 23:36:39 +0200 (CEST)
+	Thu, 18 Oct 2007 16:04:07 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.62.0710181537490.20173@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,35 +37,95 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: "Rhee, C. Joon" <jrhee@qualcomm.com>, linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Thu, 2007-10-18 at 15:41 +0200, Geert Uytterhoeven wrote:
+> On Thu, 18 Oct 2007, Antonino A. Daplas wrote:
+> > On Wed, 2007-10-17 at 21:45 +0200, Geert Uytterhoeven wrote:
+> > > On Wed, 17 Oct 2007, Rhee, C. Joon wrote:
+> > > > Interleaved means YCBCR is on the same plane in this order.
+> > > > Y CB Y CR Y CB Y CR.... (TV-Out)
+> > > 
+> > > So it's still FB_TYPE_PACKED_PIXELS.
+> > > 
+> > > > The problem of matching Y=G, CB=B and CR=R for RGB offset is that the
+> > > > pixel cannot be represented directly since CB/CR gets shared between Ys.
+> > > > 
+> > > > So, bitsperpixel would be 16 bit and both B and R offset will be 8.
+> > > 
+> > > Doesn't sound that bad to me, if you introduce a FB_VISUAL_YCBYCR
+> > > visual. Even pixels have a Cb, odd have a Cr component.
+> > 
+> > We need at least 3 fields to describe YUV.
+> > 
+> > 1. The component size - fb_bitfield.length
+> > 2. The sample period - fb_bitfield.offset
+> > 3. The component ordering - fb_bitfield.msb_right
+> 
+> This completely changes the meaning of the latter 2 fields...
+> 
 
-This patch fixes wrong pointer type passed into
-the dev_dbg() function.
+Yes, the intent was to reuse the already present fields to express YUV
+formats.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > So if Y = red, U = green, V = blue
+> > 
+> > YUV422
+> > 
+> > red|green|blue.length = 8 /* 8 bits per component */
+> > red.offset = 1 /* sampled every pixel */
+> > green.offset = blue.offset = 2 /* sampled every 2 pixels */
+> > red.msb_right = 1, green.msb_right = 2, blue.msb_right = 3
+> > (Y U V order)
+> > 
+> > UVY411
+> > 
+> > red|green|blue.length = 8;
+> > red.offset = 1;
+> > green.offset = blue.offset = 4;
+> > red.msb_right = 3, green.msb_right = 2, blue.msb_right = 1;
+> 
+> And you would use bits_per_pixel = 8, as you no longer have access to the
+> fb_bitfield.offsets (in the sense of `offsets within a pixel')?
 
----
+We can define the bits_per_pixel as the effective pixel size. For 422,
+that would be 16. For 411, that would be 12.
 
-This patch was done against the 2.6.23-git13 kernel.
+> 
+> How would you express YUV420?
 
-diff -urp linux-ref/drivers/video/mbx/mbxfb.c linux-new/drivers/video/mbx/mbxfb.c
---- linux-ref/drivers/video/mbx/mbxfb.c	2007-10-18 22:32:50.984989900 +0200
-+++ linux-new/drivers/video/mbx/mbxfb.c	2007-10-18 23:38:03.775967147 +0200
-@@ -889,7 +889,7 @@ static int __devinit mbxfb_probe(struct 
- 	struct mbxfb_info *mfbi;
- 	struct mbxfb_platform_data *pdata;
- 
--	dev_dbg(dev, "mbxfb_probe\n");
-+	dev_dbg(&dev->dev, "mbxfb_probe\n");
- 
- 	pdata = dev->dev.platform_data;
- 	if (!pdata) {
+We can't. We need another set of fields in the vertical axis.
 
-----------------------------------------------------------------------
-Rusz pupe na wybory!
-Kliknij >>> http://link.interia.pl/f1bfc
+> 
+> Alternatively:
+>   - YUV422 really is 16 bits per pixel.
+>   - YUV411 and YUV420 really are 12 bits per pixel.
+> But I don't think this makes things easier, especially not for the 12 bpp
+> variants.
+> 
+> > The FB_VISUAL_* will differentiate if the bitfields are interpreted as
+> > RGB or YUV.
+> > 
+> > That's the only way I can think of describing YUV packed pixel formats
+> > without adding new fields, or modifying our user-visible structures.
+> > 
+> > We will need separate drawing functions for fbcon's use.
+> 
+> Of course.
+
+Basically, since most YUV formats are fundamentally different from RGB
+(where all components are sampled per pixel), our best bet is to revive
+the framebuffer overlay support that was proposed several years ago.
+
+Or, if we do not want this in the kernel, we can always tell them to use
+the DirectFB library instead.
+
+What do you think? Should we extend the fb system to support YUV
+formats?
+
+Tony
+
 
 
 -------------------------------------------------------------------------

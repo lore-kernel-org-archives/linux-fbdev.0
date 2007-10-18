@@ -1,7 +1,11 @@
-From: Paride Legovini <legovini@spiro.fisica.unipd.it>
-Subject: intelfb not working on a 945GM
-Date: Thu, 18 Oct 2007 14:18:34 +0200
-Message-ID: <47174F1A.4050307@spiro.fisica.unipd.it>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: YUV Framebuffer
+Date: Thu, 18 Oct 2007 21:20:10 +0800
+Message-ID: <1192713610.8484.53.camel@daplas>
+References: <27AAC353AE72C840926448157F375E72012B59B1@NAEX17.na.qualcomm.com>
+	<Pine.LNX.4.64.0710170852350.29643@anakin>
+	<27AAC353AE72C840926448157F375E72012B5A8F@NAEX17.na.qualcomm.com>
+	<Pine.LNX.4.64.0710172141180.16690@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,18 +14,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IiUKt-0005hC-LJ for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Oct 2007 05:18:47 -0700
-Received: from mail231.csoft.net ([205.205.221.4] ident=_postfix)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IiUKq-0006Sp-KI
+	id 1IiVIe-0003U2-6x for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 18 Oct 2007 06:20:32 -0700
+Received: from wx-out-0506.google.com ([66.249.82.227])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IiVIc-0000IF-GU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Oct 2007 05:18:47 -0700
-Received: from [192.168.0.3] (ip-142-33.sn1.eutelia.it [62.94.142.33])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mail231.csoft.net (Postfix) with ESMTP id 949AF475DF
+	Thu, 18 Oct 2007 06:20:32 -0700
+Received: by wx-out-0506.google.com with SMTP id h31so165774wxd
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 18 Oct 2007 08:18:39 -0400 (EDT)
+	Thu, 18 Oct 2007 06:20:29 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0710172141180.16690@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,52 +35,61 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Rhee, C. Joon" <jrhee@qualcomm.com>, "Geert.Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
 
-I'm an owner of a Thinkpad x60s, that is provided with an Intel 945GM
-(details: http://www.thinkwiki.org/wiki/Category:X60s). This is the
-relevant lspci line:
+On Wed, 2007-10-17 at 21:45 +0200, Geert Uytterhoeven wrote:
+> On Wed, 17 Oct 2007, Rhee, C. Joon wrote:
+> > Interleaved means YCBCR is on the same plane in this order.
+> > Y CB Y CR Y CB Y CR.... (TV-Out)
+> 
+> So it's still FB_TYPE_PACKED_PIXELS.
+> 
+> > The problem of matching Y=G, CB=B and CR=R for RGB offset is that the
+> > pixel cannot be represented directly since CB/CR gets shared between Ys.
+> > 
+> > So, bitsperpixel would be 16 bit and both B and R offset will be 8.
+> 
+> Doesn't sound that bad to me, if you introduce a FB_VISUAL_YCBYCR
+> visual. Even pixels have a Cb, odd have a Cr component.
 
-00:02.0 VGA compatible controller: Intel Corporation Mobile
-945GM/GMS/940GML Express Integrated Graphics Controller (rev 03).
+We need at least 3 fields to describe YUV.
 
-This is not working for me. I tried booting with a lot of vga=xxx
-options, but I always get a scrambled screen and the system freezes.
-Yes, it doesn't continue the boot, so no log is written. If I attach an
-external CRT monitor to the VGA port it doesn't get scrambled, but shuts
-down as there were no signal, and the system freezes.
+1. The component size - fb_bitfield.length
+2. The sample period - fb_bitfield.offset
+3. The component ordering - fb_bitfield.msb_right
 
-Moreover, I can't try to boot the system and THEN change video mode, as
-the driver prevents this when an LVDS port is in use. For the same
-reason specifying a 'mode:XxY-D@R' option is unuseful: the driver only
-accept the vga= option. I've also tried put both (matching, I hope), but
-nothing changed (scrambled screen). Here is the output of a dmesg | grep
-intelfb (with the debug kernel option enabled, IIRC):
+So if Y = red, U = green, V = blue
 
-intelfb: intelfb_init
-intelfb: Framebuffer driver for Intel(R)
-830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM chipsets
-intelfb: Version 0.9.4
-intelfb: intelfb_setup
-intelfb: no options
-intelfb: intelfb_pci_register
-intelfb: fb aperture: 0xd0000000/0x10000000, MMIO region: 0xee100000/0x80000
-intelfb: 00:02.0: Intel(R) 945GM, aperture size 256MB, stolen memory 7932kB
-intelfb: fb: 0xd0000000(+ 0x0)/0x7bf000 (0xf8a00000)
-intelfb: MMIO: 0xee100000/0x80000 (0xfc200000)
-intelfb: ring buffer: 0xd3001000/0x10000 (0xfba01000)
-intelfb: HW cursor: 0x0/0x0 (0x00000000) (offset 0x0) (phys 0x0)
-intelfb: options: vram = 4, accel = 1, hwcursor = 0, fixed = 0, noinit = 0
-intelfb: options: mode = ""
-intelfb: Non-CRT device is enabled ( LVDS port ).  Disabling mode switching.
-intelfb: Video mode must be programmed at boot time.
-intelfb: cleanup
+YUV422
 
-Both the vesafb and the X11 'intel' driver work really fine. What could
-this be? If you need mode informations or want me to make any sort of
-test just tell me.
+red|green|blue.length = 8 /* 8 bits per component */
+red.offset = 1 /* sampled every pixel */
+green.offset = blue.offset = 2 /* sampled every 2 pixels */
+red.msb_right = 1, green.msb_right = 2, blue.msb_right = 3
+(Y U V order)
 
-Thank you,
-p.
+UVY411
+
+red|green|blue.length = 8;
+red.offset = 1;
+green.offset = blue.offset = 4;
+red.msb_right = 3, green.msb_right = 2, blue.msb_right = 1;
+
+The FB_VISUAL_* will differentiate if the bitfields are interpreted as
+RGB or YUV.
+
+That's the only way I can think of describing YUV packed pixel formats
+without adding new fields, or modifying our user-visible structures.
+
+We will need separate drawing functions for fbcon's use.
+
+Of course, the simplest way is to use fourcc naming for our FB_VISUAL_*
+constants. But that will become too unwieldy over time.
+
+Tony
+
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

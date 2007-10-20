@@ -1,11 +1,10 @@
-From: Paride Legovini <legovini@spiro.fisica.unipd.it>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 Subject: Re: intelfb not working on a 945GM
-Date: Sat, 20 Oct 2007 17:53:10 +0200
-Message-ID: <471A2466.1020907@spiro.fisica.unipd.it>
+Date: Sat, 20 Oct 2007 11:32:56 -0700
+Message-ID: <200710201132.56787.jbarnes@virtuousgeek.org>
 References: <47174F1A.4050307@spiro.fisica.unipd.it>
-	<200710181853.07410.jbarnes@virtuousgeek.org>
-	<47189307.7030403@spiro.fisica.unipd.it>
 	<200710191409.28522.jbarnes@virtuousgeek.org>
+	<471A2466.1020907@spiro.fisica.unipd.it>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,19 +13,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IjGdm-00037a-Kp for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 20 Oct 2007 08:53:30 -0700
-Received: from mail231.csoft.net ([205.205.221.4] ident=_postfix)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IjGdm-0004s5-8N
+	id 1IjJ8Z-0001oE-AT for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 20 Oct 2007 11:33:27 -0700
+Received: from outbound-mail-52.bluehost.com ([69.89.20.32])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1IjJ8Y-0004KA-0F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 20 Oct 2007 08:53:30 -0700
-Received: from [192.168.0.3] (ip-193-109.sn2.eutelia.it [83.211.193.109])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mail231.csoft.net (Postfix) with ESMTP id 088E847289
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 20 Oct 2007 11:53:17 -0400 (EDT)
-In-Reply-To: <200710191409.28522.jbarnes@virtuousgeek.org>
+	Sat, 20 Oct 2007 11:33:27 -0700
+In-Reply-To: <471A2466.1020907@spiro.fisica.unipd.it>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,37 +33,29 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Jesse Barnes wrote:
-> On Friday, October 19, 2007 4:20 am Paride Legovini wrote:
->> Jesse Barnes wrote:
->>> The intelfb driver doesn't support much in the way of modesetting,
->>> and in fact it can be problematic if you try to use it, X and the
->>> DRM at the same time, so I'd recommend avoiding it unless you have
->>> specific embedded requirements or something...
->> But the problem I described come out during the very first stages of
->> the boot, before drm or the X driver are loaded (and, moreover, I
->> don't start X at boot, I use startx, and then X loads the modules it
->> needs). So this doesn't seem to be the answer...
-> 
-> intelfb doesn't support LVDS afaik, so unless you specifically pass it a 
-> mode to set your display won't work at all with it.
-> 
-[...]
-> 
-> Though again, if you have specific embedded requirements (e.g. using fb 
-> applications directly in some specific environment) it might be fine 
-> for you.  But even then, you may prefer something like what we have in 
-> the DRM modesetting-101 tree, since it can also give you 3D 
-> acceleration.
+On Saturday, October 20, 2007 8:53 am Paride Legovini wrote:
+> I have no embedded requirements, I just don't always need X, and I
+> like the framebuffer console in general. Thank you for the
+> modesetting-101 hint, maybe I'll give it a try (I didn't ever know of
+> its existence).
 
-I have no embedded requirements, I just don't always need X, and I like
-the framebuffer console in general. Thank you for the modesetting-101
-hint, maybe I'll give it a try (I didn't ever know of its existence).
+Yeah, we're trying to provide a more complete (i.e. 3d accel and other 
+advanced features available) alternative to fb for people who don't 
+want X (or want other features).  The fb layer is nice and simple, so 
+for a lot of applications and devices it's a perfect fit.  If you want 
+to use all the features of your card though, you're stuck with X and 
+all its baggage.  The modesetting-101 tree is one big step away from 
+that; it allows you to run a full 3d stack w/o X and w/o any of the 
+conflicts that occur when you use DRM with the fb layer.
 
-Oh, sorry for writing to you directly and not to the list, I'm too used
-to lists where the Reply-To: header is set to the list's address.
+> Oh, sorry for writing to you directly and not to the list, I'm too
+> used to lists where the Reply-To: header is set to the list's
+> address.
 
-p.
+No problem, it's conventional to reply to both the list and the 
+individual anyway...
+
+Jesse
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

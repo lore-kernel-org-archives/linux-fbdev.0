@@ -1,26 +1,25 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: intelfb not working on a 945GM
-Date: Sat, 20 Oct 2007 11:32:56 -0700
-Message-ID: <200710201132.56787.jbarnes@virtuousgeek.org>
-References: <47174F1A.4050307@spiro.fisica.unipd.it>
-	<200710191409.28522.jbarnes@virtuousgeek.org>
-	<471A2466.1020907@spiro.fisica.unipd.it>
+From: Randy Dunlap <rdunlap@xenotime.net>
+Subject: [PATCH] fb menu: fix FB_OMAP dependencies so
+ that menu is displayed correctly
+Date: Sun, 21 Oct 2007 21:47:20 -0700
+Message-ID: <20071021214720.f551a387.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IjJ8Z-0001oE-AT for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 20 Oct 2007 11:33:27 -0700
-Received: from outbound-mail-52.bluehost.com ([69.89.20.32])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1IjJ8Y-0004KA-0F
+	id 1IjpCF-0007rq-5X for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 21 Oct 2007 21:47:23 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1IjpCE-0001ub-VN
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 20 Oct 2007 11:33:27 -0700
-In-Reply-To: <471A2466.1020907@spiro.fisica.unipd.it>
-Content-Disposition: inline
+	Sun, 21 Oct 2007 21:47:23 -0700
+Received: from midway.site ([71.117.233.180]) by xenotime.net for
+	<linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 21 Oct 2007 21:47:21 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,30 +31,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm <akpm@linux-foundation.org>, adaplas@gmail.com
 
-On Saturday, October 20, 2007 8:53 am Paride Legovini wrote:
-> I have no embedded requirements, I just don't always need X, and I
-> like the framebuffer console in general. Thank you for the
-> modesetting-101 hint, maybe I'll give it a try (I didn't ever know of
-> its existence).
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Yeah, we're trying to provide a more complete (i.e. 3d accel and other 
-advanced features available) alternative to fb for people who don't 
-want X (or want other features).  The fb layer is nice and simple, so 
-for a lot of applications and devices it's a perfect fit.  If you want 
-to use all the features of your card though, you're stuck with X and 
-all its baggage.  The modesetting-101 tree is one big step away from 
-that; it allows you to run a full 3d stack w/o X and w/o any of the 
-conflicts that occur when you use DRM with the fb layer.
+Fix FB_OMAP dependencies so that the OMAP FB driver options are
+presented correctly.
 
-> Oh, sorry for writing to you directly and not to the list, I'm too
-> used to lists where the Reply-To: header is set to the list's
-> address.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/video/Kconfig      |    4 +---
+ drivers/video/omap/Kconfig |    2 +-
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-No problem, it's conventional to reply to both the list and the 
-individual anyway...
-
-Jesse
+--- linux-2.6.23-git13.orig/drivers/video/Kconfig
++++ linux-2.6.23-git13/drivers/video/Kconfig
+@@ -1892,9 +1892,7 @@ config FB_VIRTUAL
+ 
+ 	  If unsure, say N.
+ 
+-if ARCH_OMAP
+-	source "drivers/video/omap/Kconfig"
+-endif
++source "drivers/video/omap/Kconfig"
+ 
+ source "drivers/video/backlight/Kconfig"
+ source "drivers/video/display/Kconfig"
+--- linux-2.6.23-git13.orig/drivers/video/omap/Kconfig
++++ linux-2.6.23-git13/drivers/video/omap/Kconfig
+@@ -1,6 +1,6 @@
+ config FB_OMAP
+ 	tristate "OMAP frame buffer support (EXPERIMENTAL)"
+-	depends on FB
++	depends on FB && ARCH_OMAP
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

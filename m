@@ -1,46 +1,38 @@
-From: Olof Johansson <olof@lixom.net>
-Subject: [PATCH] radeonfb: Remove warning with CONFIG_PM=n
-Date: Tue, 23 Oct 2007 00:29:12 -0500
-Message-ID: <20071023052912.GA21870@lixom.net>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: [PATCH] [LXFB] Use the correct MSR number for panel support
+Date: Fri, 26 Oct 2007 08:53:01 -0600
+Message-ID: <20071026145301.14168.19412.stgit@cosmic.amd.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753297AbXJWFWT@vger.kernel.org>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760264AbXJZOwx@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: akpm@linux-foundation.org
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, tibor.osztodi@bbraun.com, linux-info@geode.amd.com
 
-Remove warning from powerpc ppc64_defconfig builds:
+From: Jordan Crouse <jordan.crouse@amd.com>
 
-drivers/video/aty/radeon_pm.c:30: warning: 'radeon_reinitialize_M10' declared 'static' but never defined
+A relatively recent version of the Geode LX datasheet listed the wrong
+address for one of the MSRs that controls TFT panels, resulting in 
+breakage.  This patch corrects the MSR address.
 
-It's used only under CONFIG_PM, and only with CONFIG_X86 before it is
-defined, so the forward declaration can be moved under the ifdef.
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+---
 
+ drivers/video/geode/lxfb.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-index be1d57b..83ee3e7 100644
---- a/drivers/video/aty/radeon_pm.c
-+++ b/drivers/video/aty/radeon_pm.c
-@@ -27,8 +27,6 @@
+diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
+index 6c227f9..ca13c48 100644
+--- a/drivers/video/geode/lxfb.h
++++ b/drivers/video/geode/lxfb.h
+@@ -33,7 +33,7 @@ void lx_set_palette_reg(struct fb_info *, unsigned int, unsigned int,
  
- #include "ati_ids.h"
+ #define MSR_LX_GLD_CONFIG    0x48002001
+ #define MSR_LX_GLCP_DOTPLL   0x4c000015
+-#define MSR_LX_DF_PADSEL     0x48000011
++#define MSR_LX_DF_PADSEL     0x48002011
+ #define MSR_LX_DC_SPARE      0x80000011
+ #define MSR_LX_DF_GLCONFIG   0x48002001
  
--static void radeon_reinitialize_M10(struct radeonfb_info *rinfo);
--
- /*
-  * Workarounds for bugs in PC laptops:
-  * - enable D2 sleep in some IBM Thinkpads
-@@ -39,6 +37,8 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo);
-  */
- 
- #if defined(CONFIG_PM) && defined(CONFIG_X86)
-+static void radeon_reinitialize_M10(struct radeonfb_info *rinfo);
-+
- struct radeon_device_id {
-         const char *ident;                     /* (arbitrary) Name */
-         const unsigned short subsystem_vendor; /* Subsystem Vendor ID */

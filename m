@@ -1,26 +1,26 @@
 From: Roel Kluin <12o3l@tiscali.nl>
-Subject: Re: [PATCH] Free when fb can't be registered in
- video/aty/atyfb_base.c
-Date: Sat, 27 Oct 2007 14:31:15 +0200
-Message-ID: <47232F93.2020905@tiscali.nl>
-References: <47229AAA.9020907@tiscali.nl>
-	<20071026202546.53b78732.randy.dunlap@oracle.com>
+Subject: [PATCH] fix 'and typo in video/sis/sis_main.c
+Date: Sat, 27 Oct 2007 17:00:57 +0200
+Message-ID: <472352A9.3020009@tiscali.nl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Ilkp0-0003XD-Av for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Oct 2007 05:31:22 -0700
-Received: from smtp-out0.tiscali.nl ([195.241.79.175])
+	id 1Iln9s-0000fB-Uz for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 27 Oct 2007 08:01:04 -0700
+Received: from smtp-out3.tiscali.nl ([195.241.79.178])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Ilkoy-0005oi-TJ
+	(Exim 4.44) id 1Iln9s-0006jD-55
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Oct 2007 05:31:22 -0700
-In-Reply-To: <20071026202546.53b78732.randy.dunlap@oracle.com>
+	Sat, 27 Oct 2007 08:01:04 -0700
+Received: from [82.171.216.234] (helo=[192.168.1.2])
+	by smtp-out3.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
+	id 1Iln9n-0006ZL-Ow for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 27 Oct 2007 17:00:59 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,41 +31,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Randy Dunlap wrote:
-> 
-> Use tabs for indent above, not spaces.
-> 
-> Yes, looks needed to me.  Hopefully Tony will correct us if we
-> are wrong.
-> 
+Fixes 'and' typo
 
-Thanks for reviewing, here is one without the little spaces
---
 Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
---
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index d775eb6..669abd3 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -2680,10 +2680,13 @@ static int __devinit aty_init(struct fb_info *info)
- #endif /* CONFIG_FB_ATY_CT */
- 	info->var = var;
+---
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index bc7d236..d12dba9 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -427,7 +427,7 @@ sisfb_interpret_edid(struct sisfb_monitor *monitor, u8 *buffer)
  
--	fb_alloc_cmap(&info->cmap, 256, 0);
-+	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
-+		goto aty_init_exit;
+ 	monitor->feature = buffer[0x18];
  
--	if (register_framebuffer(info) < 0)
-+	if (register_framebuffer(info) < 0) {
-+		fb_dealloc_cmap(&info->cmap);
- 		goto aty_init_exit;
-+	}
- 
- 	fb_list = info;
- 
+-	if(!buffer[0x14] & 0x80) {
++	if (!(buffer[0x14] & 0x80)) {
+ 		if(!(buffer[0x14] & 0x08)) {
+ 			printk(KERN_INFO
+ 				"sisfb: WARNING: Monitor does not support separate syncs\n");
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

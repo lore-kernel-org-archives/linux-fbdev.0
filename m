@@ -1,8 +1,8 @@
 From: Roel Kluin <12o3l@tiscali.nl>
-Subject: [PATCH] Fix priority mistakes in
-	drivers/video/i810/i810_main.c
-Date: Sat, 27 Oct 2007 00:32:42 +0200
-Message-ID: <47226B0A.7090305@tiscali.nl>
+Subject: [PATCH] Free when fb can't be registered in
+	video/aty/atyfb_base.c
+Date: Sat, 27 Oct 2007 03:55:54 +0200
+Message-ID: <47229AAA.9020907@tiscali.nl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,17 +11,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IlXjV-0001HA-KZ for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Oct 2007 15:32:49 -0700
+	id 1Ilau9-0002qi-TC for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 26 Oct 2007 18:56:02 -0700
 Received: from smtp-out2.tiscali.nl ([195.241.79.177])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IlXjU-0000XI-2I
+	(Exim 4.44) id 1Ilau9-0001Xw-AN
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Oct 2007 15:32:49 -0700
+	Fri, 26 Oct 2007 18:56:01 -0700
 Received: from [82.171.216.234] (helo=[192.168.1.2])
 	by smtp-out2.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
-	id 1IlXjR-0002vW-SV for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 27 Oct 2007 00:32:45 +0200
+	id 1Ilau7-0003hb-4W for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 27 Oct 2007 03:55:59 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,24 +34,32 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Fixes priority mistakes similar to '!x & y'
-    
+I am a bit uncertain about this one, but I think a 'free' is required here?
+--
+Free buffer when the framebuffer can't be registered
+
 Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 1a7d778..1d13dd0 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- 	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index d775eb6..7ccc78e 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -2680,10 +2680,13 @@ static int __devinit aty_init(struct fb_info *info)
+ #endif /* CONFIG_FB_ATY_CT */
+ 	info->var = var;
  
--	if (!par->dev_flags & LOCKUP)
-+	if (!(par->dev_flags & LOCKUP))
- 		return -ENXIO;
+-	fb_alloc_cmap(&info->cmap, 256, 0);
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
++		goto aty_init_exit;
  
- 	if (cursor->image.width > 64 || cursor->image.height > 64)
-
+-	if (register_framebuffer(info) < 0)
++	if (register_framebuffer(info) < 0) {
++                fb_dealloc_cmap(&info->cmap);
+ 		goto aty_init_exit;
++	}
+ 
+ 	fb_list = info;
+ 
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

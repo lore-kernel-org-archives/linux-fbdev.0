@@ -1,40 +1,47 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] Silence radeon_pm warning
-Date: Mon, 29 Oct 2007 13:59:11 +1100
-Message-ID: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] Silence radeon_pm warning
+Date: Sun, 28 Oct 2007 20:06:12 -0700 (PDT)
+Message-ID: <20071028.200612.179943206.davem@davemloft.net>
+References: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756626AbXJ2C7X@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Ben Herrenschmidt <benh@kernel.crashing.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1ImKx9-00088m-Jp for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 28 Oct 2007 20:06:21 -0700
+Received: from [74.93.104.97] (helo=sunset.davemloft.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1ImKx9-0001Yb-CT
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 28 Oct 2007 20:06:11 -0700
+In-Reply-To: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: sfr@canb.auug.org.au
+Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-drivers/video/aty/radeon_pm.c:30: warning: 'radeon_reinitialize_M10' declared 'static' but never defined
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 29 Oct 2007 13:59:11 +1100
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/video/aty/radeon_pm.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> drivers/video/aty/radeon_pm.c:30: warning: 'radeon_reinitialize_M10' declared 'static' but never defined
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Acked-by: David S. Miller <davem@davemloft.net>
 
-diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-index be1d57b..f989836 100644
---- a/drivers/video/aty/radeon_pm.c
-+++ b/drivers/video/aty/radeon_pm.c
-@@ -27,7 +27,9 @@
- 
- #include "ati_ids.h"
- 
-+#ifdef CONFIG_PM
- static void radeon_reinitialize_M10(struct radeonfb_info *rinfo);
-+#endif
- 
- /*
-  * Workarounds for bugs in PC laptops:
--- 
-1.5.3.4
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc.
+Still grepping through log files to find problems?  Stop.
+Now Search log events and configuration files using AJAX and a browser.
+Download your FREE copy of Splunk now >> http://get.splunk.com/

@@ -1,59 +1,40 @@
-From: Roel Kluin <12o3l@tiscali.nl>
-Subject: [PATCH] Fix priority mistakes in
-	drivers/video/i810/i810_main.c
-Date: Fri, 26 Oct 2007 23:57:26 +0200
-Message-ID: <472262C6.4060203@tiscali.nl>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] Silence radeon_pm warning
+Date: Mon, 29 Oct 2007 13:59:11 +1100
+Message-ID: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IlXBO-0006XF-29 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Oct 2007 14:57:37 -0700
-Received: from smtp-out0.tiscali.nl ([195.241.79.175])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IlXBM-0004Vn-1i
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Oct 2007 14:57:33 -0700
-Received: from [82.171.216.234] (helo=[192.168.1.2])
-	by smtp-out0.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
-	id 1IlXBJ-0004FB-Ui for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 26 Oct 2007 23:57:30 +0200
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756626AbXJ2C7X@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Fixes priority mistakes similar to '!x & y'
-    
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+drivers/video/aty/radeon_pm.c:30: warning: 'radeon_reinitialize_M10' declared 'static' but never defined
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 1a7d778..1d13dd0 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- 	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 
--	if (!par->dev_flags & LOCKUP)
-+	if (!(par->dev_flags & LOCKUP))
- 		return -ENXIO;
- 
- 	if (cursor->image.width > 64 || cursor->image.height > 64)
+ drivers/video/aty/radeon_pm.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc.
-Still grepping through log files to find problems?  Stop.
-Now Search log events and configuration files using AJAX and a browser.
-Download your FREE copy of Splunk now >> http://get.splunk.com/
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index be1d57b..f989836 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -27,7 +27,9 @@
+ 
+ #include "ati_ids.h"
+ 
++#ifdef CONFIG_PM
+ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo);
++#endif
+ 
+ /*
+  * Workarounds for bugs in PC laptops:
+-- 
+1.5.3.4

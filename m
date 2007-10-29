@@ -1,49 +1,66 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] Silence radeon_pm warning
-Date: Mon, 29 Oct 2007 16:33:43 +1100
-Message-ID: <20071029163343.7fe7e6b8.sfr@canb.auug.org.au>
-References: <20071029135911.ba1bfee2.sfr@canb.auug.org.au>
-	<20071029050202.GA16159@lixom.net>
+From: Randy Dunlap <rdunlap@xenotime.net>
+Subject: [PATCH] gbefb: fix section mismatch warnings
+Date: Mon, 29 Oct 2007 11:19:36 -0700
+Message-ID: <20071029111936.7232eadb.rdunlap@xenotime.net>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755274AbXJ2FeF@vger.kernel.org>
-In-Reply-To: <20071029050202.GA16159@lixom.net>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Olof Johansson <olof@lixom.net>
-Cc: Ben Herrenschmidt <benh@kernel.crashing.org>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1ImZDC-0008Qo-BU for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Oct 2007 11:19:42 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1ImZDA-0000RC-QY
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Oct 2007 11:19:42 -0700
+Received: from midway.site ([71.117.233.180]) by xenotime.net for
+	<linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 29 Oct 2007 11:19:36 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: vivien.chappelier@linux-mips.org, akpm <akpm@linux-foundation.org>, adaplas@gmail.com
 
---Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-On Mon, 29 Oct 2007 00:02:02 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> I posted this one a few days ago, without adding a new ifdef (just moving=
- the
-> declaration down into the already existing ifdef below it):
->=20
-> http://marc.info/?l=3Dlinux-kernel&m=3D119311699109698&w=3D2
+Make 'default_mode' and 'default_var' be __initdata.
+Fixes these section warnings:
 
-Yeah, missed that and yours looks better.
+WARNING: vmlinux.o(.data+0x128e0): Section mismatch: reference to .init.data:default_mode_CRT (between 'default_mode' and 'default_var')
+WARNING: vmlinux.o(.data+0x128e4): Section mismatch: reference to .init.data:default_var_CRT (between 'default_var' and 'dev_attr_size')
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/video/gbefb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh
-Content-Type: application/pgp-signature
+--- linux-2.6.24-rc1-git4.orig/drivers/video/gbefb.c
++++ linux-2.6.24-rc1-git4/drivers/video/gbefb.c
+@@ -183,8 +183,8 @@ static struct fb_videomode default_mode_
+ 	.vmode		= FB_VMODE_NONINTERLACED,
+ };
+ 
+-struct fb_videomode *default_mode = &default_mode_CRT;
+-struct fb_var_screeninfo *default_var = &default_var_CRT;
++struct fb_videomode *default_mode __initdata = &default_mode_CRT;
++struct fb_var_screeninfo *default_var __initdata = &default_var_CRT;
+ 
+ static int flat_panel_enabled = 0;
+ 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHJXC7TgG2atn1QN8RAorsAJ9qMbbi2lUTNO02IoxFMxQhSNl3kgCdGhFx
-QOGcj7EMN+n17WIE43lNN4A=
-=hgi+
------END PGP SIGNATURE-----
-
---Signature=_Mon__29_Oct_2007_16_33_43_+1100_rlxOXtfMub2z4vVh--
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc.
+Still grepping through log files to find problems?  Stop.
+Now Search log events and configuration files using AJAX and a browser.
+Download your FREE copy of Splunk now >> http://get.splunk.com/

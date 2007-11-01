@@ -1,33 +1,32 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: resource management fixes in
-	probe function
-Date: Wed, 31 Oct 2007 22:05:24 +0100
-Message-ID: <20071031220524.54ed8dae.krzysztof.h1@poczta.fm>
+Subject: [PATCH] tridentfb: various fixes
+Date: Thu, 1 Nov 2007 15:09:26 +0100
+Message-ID: <20071101150926.0f775558.krzysztof.h1@poczta.fm>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1InKaa-0002lk-Ds for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Oct 2007 13:55:00 -0700
+	id 1InaZU-0001TB-VW for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 01 Nov 2007 06:58:57 -0700
 Received: from smtp35.poczta.interia.pl ([80.48.65.35]
 	helo=smtp4.poczta.interia.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1InKaX-0000OU-Fv
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1InaZT-0002Ca-Ep
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Oct 2007 13:55:00 -0700
+	Thu, 01 Nov 2007 06:58:56 -0700
 Received: from poczta.interia.pl (mi01.poczta.interia.pl [10.217.12.1])
-	by smtp4.poczta.interia.pl (INTERIA.PL) with ESMTP id EE8B12EC54C
+	by smtp4.poczta.interia.pl (INTERIA.PL) with ESMTP id 3A72642EEFA
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 31 Oct 2007 21:54:54 +0100 (CET)
+	Thu,  1 Nov 2007 14:58:52 +0100 (CET)
 Received: from krzysio.net (host-87-99-61-239.lanet.net.pl [87.99.61.239])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by www.poczta.fm (INTERIA.PL) with ESMTP id E41EB769BFA
+	by www.poczta.fm (INTERIA.PL) with ESMTP id 7EF88769BE7
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 31 Oct 2007 21:54:54 +0100 (CET)
+	Thu,  1 Nov 2007 14:58:53 +0100 (CET)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -42,180 +41,64 @@ To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-The most important fix  is to disable the mmio mode on error. Otherwise,
-the console is left in unusable state (garbled fonts at least, lock up at worst).
-
-Other changes balance release and request of memory regions
-in case of error and few minor style errors.
+Few more fixes for the tridentfb driver:
+- the set_vclk() function uses mmio region outb() (because mmio is already enabled)
+- the memory size of 512KB is correctly calculated
+- enable_mmio() in the setpar function is removed as the mmio is already enabled
+- mmio is disabled on driver removal
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ---
-The patch was done against the 2.6.24-rc1 kernel.
-
 
 diff -urp linux-ref/drivers/video/tridentfb.c linux-2.6.23/drivers/video/tridentfb.c
---- linux-ref/drivers/video/tridentfb.c	2007-10-28 08:31:17.179383210 +0100
-+++ linux-2.6.23/drivers/video/tridentfb.c	2007-10-31 21:41:59.747172161 +0100
-@@ -566,17 +566,42 @@ static inline void write3CE(int reg, uns
- 
- static inline void enable_mmio(void)
- {
-+	unsigned char tmp;
- 	/* Goto New Mode */
- 	outb(0x0B, 0x3C4);
- 	inb(0x3C5);
- 
- 	/* Unprotect registers */
- 	outb(NewMode1, 0x3C4);
-+	tmp = inb(0x3C5);
- 	outb(0x80, 0x3C5);
- 
- 	/* Enable MMIO */
- 	outb(PCIReg, 0x3D4);
- 	outb(inb(0x3D5) | 0x01, 0x3D5);
-+
-+	t_outb(NewMode1, 0x3C4);
-+	t_outb(tmp, 0x3C5);
-+}
-+
-+static inline void disable_mmio(void)
-+{
-+	unsigned char tmp;
-+	/* Goto New Mode */
-+	t_outb(0x0B, 0x3C4);
-+	t_inb(0x3C5);
-+
-+	/* Unprotect registers */
-+	t_outb(NewMode1, 0x3C4);
-+	tmp = t_inb(0x3C5);
-+	t_outb(0x80, 0x3C5);
-+
-+	/* Disable MMIO */
-+	t_outb(PCIReg, 0x3D4);
-+	t_outb(t_inb(0x3D5) & ~0x01, 0x3D5);
-+
-+	outb(NewMode1, 0x3C4);
-+	outb(tmp, 0x3C5);
+--- linux-ref/drivers/video/tridentfb.c	2007-11-01 14:07:27.461666762 +0100
++++ linux-2.6.23/drivers/video/tridentfb.c	2007-11-01 15:02:17.622078751 +0100
+@@ -702,8 +701,8 @@ static void set_vclk(int freq)
+ 		write3C4(ClockHigh, hi);
+ 		write3C4(ClockLow, lo);
+ 	} else {
+-		outb(lo, 0x43C8);
+-		outb(hi, 0x43C9);
++		t_outb(lo, 0x43C8);
++		t_outb(hi, 0x43C9);
+ 	}
+ 	debug("VCLK = %X %X\n", hi, lo);
  }
+@@ -755,7 +754,7 @@ static unsigned int __devinit get_memsiz
+ 			switch (tmp) {
  
- #define crtc_unlock()	write3X4(CRTVSyncEnd, read3X4(CRTVSyncEnd) & 0x7F)
-@@ -1176,7 +1201,6 @@ static int __devinit trident_pci_probe(s
- 		output("*** Please do use cyblafb, Cyberblade/i1 support "
- 		       "will soon be removed from tridentfb!\n");
+ 			case 0x01:
+-				k = 512;
++				k = 512 * Kb;
+ 				break;
+ 			case 0x02:
+ 				k = 6 * Mb;	/* XP */
+@@ -864,7 +863,6 @@ static int tridentfb_check_var(struct fb
+ 	debug("exit\n");
  
--
- 	/* If PCI id is 0x9660 then further detect chip type */
- 
- 	if (chip_id == TGUI9660) {
-@@ -1214,13 +1238,12 @@ static int __devinit trident_pci_probe(s
- 	chip3D = is3Dchip(chip_id);
- 	chipcyber = iscyber(chip_id);
- 
--	if (is_xp(chip_id)) {
-+	if (is_xp(chip_id))
- 		acc = &accel_xp;
--	} else if (is_blade(chip_id)) {
-+	else if (is_blade(chip_id))
- 		acc = &accel_blade;
--	} else {
-+	else
- 		acc = &accel_image;
--	}
- 
- 	/* acceleration is on by default for 3D chips */
- 	defaultaccel = chip3D && !noaccel;
-@@ -1239,9 +1262,9 @@ static int __devinit trident_pci_probe(s
- 	default_par.io_virt = ioremap_nocache(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
- 
- 	if (!default_par.io_virt) {
--		release_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
- 		debug("ioremap failed\n");
--		return -1;
-+		err = -1;
-+		goto out_unmap1;
- 	}
- 
- 	enable_mmio();
-@@ -1252,25 +1275,21 @@ static int __devinit trident_pci_probe(s
- 
- 	if (!request_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len, "tridentfb")) {
- 		debug("request_mem_region failed!\n");
-+		disable_mmio();
- 		err = -1;
--		goto out_unmap;
-+		goto out_unmap1;
- 	}
- 
- 	fb_info.screen_base = ioremap_nocache(tridentfb_fix.smem_start,
- 					      tridentfb_fix.smem_len);
- 
- 	if (!fb_info.screen_base) {
--		release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
- 		debug("ioremap failed\n");
- 		err = -1;
--		goto out_unmap;
-+		goto out_unmap2;
- 	}
- 
- 	output("%s board found\n", pci_name(dev));
--#if 0
--	output("Trident board found : mem = %X, io = %X, mem_v = %X, io_v = %X\n",
--		tridentfb_fix.smem_start, tridentfb_fix.mmio_start, fb_info.screen_base, default_par.io_virt);
--#endif
- 	displaytype = get_displaytype();
- 
- 	if (flatpanel)
-@@ -1288,9 +1307,12 @@ static int __devinit trident_pci_probe(s
- 
- 	if (!fb_find_mode(&default_var, &fb_info, mode, NULL, 0, NULL, bpp)) {
- 		err = -EINVAL;
--		goto out_unmap;
-+		goto out_unmap2;
- 	}
--	fb_alloc_cmap(&fb_info.cmap, 256, 0);
-+	err = fb_alloc_cmap(&fb_info.cmap, 256, 0);
-+	if (err < 0)
-+		goto out_unmap2;
-+
- 	if (defaultaccel && acc)
- 		default_var.accel_flags |= FB_ACCELF_TEXT;
- 	else
-@@ -1300,19 +1322,24 @@ static int __devinit trident_pci_probe(s
- 	fb_info.device = &dev->dev;
- 	if (register_framebuffer(&fb_info) < 0) {
- 		printk(KERN_ERR "tridentfb: could not register Trident framebuffer\n");
-+		fb_dealloc_cmap(&fb_info.cmap);
- 		err = -EINVAL;
--		goto out_unmap;
-+		goto out_unmap2;
- 	}
- 	output("fb%d: %s frame buffer device %dx%d-%dbpp\n",
- 	   fb_info.node, fb_info.fix.id, default_var.xres,
- 	   default_var.yres, default_var.bits_per_pixel);
  	return 0;
- 
--out_unmap:
--	if (default_par.io_virt)
--		iounmap(default_par.io_virt);
-+out_unmap2:
- 	if (fb_info.screen_base)
- 		iounmap(fb_info.screen_base);
-+	release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
-+	disable_mmio();
-+out_unmap1:
-+	if (default_par.io_virt)
-+		iounmap(default_par.io_virt);
-+	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
- 	return err;
+-
  }
  
-@@ -1323,7 +1350,7 @@ static void __devexit trident_pci_remove
+ /* Pan the display */
+@@ -912,7 +912,6 @@ static int tridentfb_set_par(struct fb_i
+ 	vblankstart = var->yres;
+ 	vblankend = vtotal + 2;
+ 
+-	enable_mmio();
+ 	crtc_unlock();
+ 	write3CE(CyberControl, 8);
+ 
+@@ -1348,9 +1347,10 @@ static void __devexit trident_pci_remove
+ 	struct tridentfb_par *par = (struct tridentfb_par*)fb_info.par;
+ 	unregister_framebuffer(&fb_info);
  	iounmap(par->io_virt);
++	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
++	disable_mmio();
  	iounmap(fb_info.screen_base);
  	release_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len);
--	release_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
-+	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
+-	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
  }
  
  /* List of boards that we are trying to support */

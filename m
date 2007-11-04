@@ -1,24 +1,29 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
 Subject: Re: [RFC 1/1 2.6.22.10] fbdev: defio and
- Metronomefb
-Date: Sun, 4 Nov 2007 11:24:16 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0711041123480.5468@anakin>
+	Metronomefb
+Date: Sun, 4 Nov 2007 05:54:44 -0500
+Message-ID: <45a44e480711040254n5c009998xe4bcde7abe466c05@mail.gmail.com>
 References: <20071103212446.23631.71478.sendpatchset@apodmy1.cis>
+	<Pine.LNX.4.64.0711041123480.5468@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IoceZ-0004cm-0j for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Nov 2007 02:24:27 -0800
-Received: from agave.telenet-ops.be ([195.130.137.77])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IoceX-0002O4-JN
+	id 1Iod7t-0007YQ-MS for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 04 Nov 2007 02:54:45 -0800
+Received: from wa-out-1112.google.com ([209.85.146.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Iod7t-0003ep-GZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Nov 2007 02:24:26 -0800
-In-Reply-To: <20071103212446.23631.71478.sendpatchset@apodmy1.cis>
+	Sun, 04 Nov 2007 02:54:45 -0800
+Received: by wa-out-1112.google.com with SMTP id k22so2428434waf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 04 Nov 2007 02:54:44 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0711041123480.5468@anakin>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,24 +34,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-mm@kvack.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sat, 3 Nov 2007, Jaya Kumar wrote:
-> +         interface. Please read <file:Documentation/fb/metronomefb.txt> 
+On Nov 4, 2007 5:24 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Sat, 3 Nov 2007, Jaya Kumar wrote:
+> > +         interface. Please read <file:Documentation/fb/metronomefb.txt>
+>
+> Documentation/fb/metronomefb.txt is missing?
 
-Documentation/fb/metronomefb.txt is missing?
+Oops. I forgot to write that document. Ok, will do.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Splunk Inc.

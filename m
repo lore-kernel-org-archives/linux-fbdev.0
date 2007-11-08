@@ -1,26 +1,25 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Bugme-new] [Bug 9319] New: National
- characters are not displayed under console.
-Date: Wed, 07 Nov 2007 17:05:58 -0800
-Message-ID: <473260F6.6090808@zytor.com>
-References: <bug-9319-10286@http.bugzilla.kernel.org/>
-	<20071107140450.fc6a5cb5.akpm@linux-foundation.org>
+From: Martin Michlmayr <tbm@cyrius.com>
+Subject: [PATCH] cyber2000fb.c: Fix 16bpp mode
+Date: Thu, 8 Nov 2007 09:22:00 +0100
+Message-ID: <20071108082159.GB23626@deprecation.cyrius.com>
+References: <000501c81e5e$c1334160$4399c420$@nl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IpvsE-0007gZ-Fd for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Nov 2007 17:07:58 -0800
-Received: from terminus.zytor.com ([198.137.202.10] ident=root)
+	id 1Iq2ea-0006La-Ql for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Nov 2007 00:22:20 -0800
+Received: from sorrow.cyrius.com ([65.19.161.204])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IpvsE-0006dO-2m
+	(Exim 4.44) id 1Iq2eY-00025G-H4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Nov 2007 17:07:58 -0800
-In-Reply-To: <20071107140450.fc6a5cb5.akpm@linux-foundation.org>
+	Thu, 08 Nov 2007 00:22:20 -0800
+Content-Disposition: inline
+In-Reply-To: <000501c81e5e$c1334160$4399c420$@nl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,52 +30,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Bill Nottingham <notting@redhat.com>, hannibal@astral.lodz.pl, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, bugme-daemon@bugzilla.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>, Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Woody Suwalski <woody@suwalski.net>, Jan Rinze <janrinze@home.nl>
 
-VGhpcyBpc24ndCBhIHJlZ3Jlc3Npb24uICBJdCdzIGFuIGludGVudGlvbmFsIGRlZmF1bHQgY2hh
-bmdlLgoKVGhlIGRlZmF1bHQgY29uc29sZSBtb2RlIGNoYW5nZWQgZnJvbSA4LWJpdCBsZWdhY3kg
-dG8gVVRGLTggaW4gMi42LjI0LgoKQXBwYXJlbnRseSB0aGlzIHVzZXIgaXMgdXNpbmcgYSBsZWdh
-Y3kgY2hhcmFjdGVyIHNldCAobm90ZSB0aGF0IGl0J3MgYSAKU2xhY2t3YXJlIG1hY2hpbmUpLCBh
-bmQgaXNuJ3QgZXhwbGljaXRseSBzZXR0aW5nIHRoZSBjaGFyYWN0ZXIgc2V0IHZpYSAKdGhlIGFw
-cHJvcHJpYXRlIGVzY2FwZSBzZXF1ZW5jZS4KClRoZSBuZXcgZGVmYXVsdCBjYW4gYmUgb3ZlcnJp
-ZGRlbiB2aWEgCi9zeXMvbW9kdWxlL3Z0L3BhcmFtZXRlcnMvZGVmYXVsdF91dGY4IG9yIHNvbWV0
-aGluZyBsaWtlIHRoYXQuLi4KCgktaHBhCgpBbmRyZXcgTW9ydG9uIHdyb3RlOgo+PiBPbiBXZWQs
-ICA3IE5vdiAyMDA3IDEzOjE5OjE2IC0wODAwIChQU1QpIGJ1Z21lLWRhZW1vbkBidWd6aWxsYS5r
-ZXJuZWwub3JnIHdyb3RlOgo+PiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9OTMxOQo+Pgo+PiAgICAgICAgICAgIFN1bW1hcnk6IE5hdGlvbmFsIGNoYXJhY3RlcnMg
-YXJlIG5vdCBkaXNwbGF5ZWQgdW5kZXIgY29uc29sZS4KPj4gICAgICAgICAgICBQcm9kdWN0OiBE
-cml2ZXJzCj4+ICAgICAgICAgICAgVmVyc2lvbjogMi41Cj4+ICAgICAgS2VybmVsVmVyc2lvbjog
-Mi42LjI0LXJjWAo+PiAgICAgICAgICAgUGxhdGZvcm06IEFsbAo+PiAgICAgICAgIE9TL1ZlcnNp
-b246IExpbnV4Cj4+ICAgICAgICAgICAgICAgVHJlZTogTWFpbmxpbmUKPj4gICAgICAgICAgICAg
-U3RhdHVzOiBORVcKPj4gICAgICAgICAgIFNldmVyaXR5OiBub3JtYWwKPj4gICAgICAgICAgIFBy
-aW9yaXR5OiBQMQo+PiAgICAgICAgICBDb21wb25lbnQ6IENvbnNvbGUvRnJhbWVidWZmZXJzCj4+
-ICAgICAgICAgQXNzaWduZWRUbzoganNpbW1vbnNAaW5mcmFkZWFkLm9yZwo+PiAgICAgICAgIFJl
-cG9ydGVkQnk6IGhhbm5pYmFsQGFzdHJhbC5sb2R6LnBsCj4+Cj4+Cj4+IE1vc3QgcmVjZW50IGtl
-cm5lbCB3aGVyZSB0aGlzIGJ1ZyBkaWQgbm90IG9jY3VyOiAyLjYuMjMKPj4KPj4gRGlzdHJpYnV0
-aW9uOiBTbGFja3dhcmUKPj4KPj4gSGFyZHdhcmUgRW52aXJvbm1lbnQ6Cj4+IFRvc2hpYmEgVGVj
-cmEgTTEKPj4gUGVudGl1bSBNIDEuNiA1MTJNQiBSQU0sIElDSDQtTSBjaGlwc2V0LCBUcmlkZW50
-IEN5YmVyQmxhZGUgWFA0IHZpZGVvIGNhcmQKPj4KPj4gU29mdHdhcmUgRW52aXJvbm1lbnQ6IFNs
-YWNrd2FyZS1jdXJyZW50IChrYmQtMS4xMiwgZ2xpYnMgMi41KQo+Pgo+PiBQcm9ibGVtIERlc2Ny
-aXB0aW9uOgo+PiBUaGUgbmF0aW9uYWwgY2hhcmFjdGVycyBsaWtlICLEhSIsICLFgiIgb3IgIsW8
-IiBhcmUgbm90IGRpc3BsYXllZCBjb3JlY3RsbHkKPj4gdW5kZXIgY29uc29sZSAobm8gbWF0dGVy
-IHZlc2EgZnJhbWVidWZmZXIsIG9yIHN0YW5kYXJkIHZnYSkuIEluc3RlYWQgb2YgdGhlbQo+PiAi
-PyIgb24gc3RyYW5nZSBiYWNrZ3JvdW5kIGlzIGRpc3BsYXllZC4gUHJvYmxlbSBiZWdpbnMgb24g
-Mi42LjI0LXJjMSBhbmQKPj4gY29udGludWVzIG9uIDIuNi4yNC1yYzIuIE9uIDIuNi4yMyBldmVy
-eXRoaW5nIGlzIE9LLgo+Pgo+PiBTdGVwcyB0byByZXByb2R1Y2U6Cj4+IFJ1biAyLjYuMjQtcmNY
-IGtlcm5lbCBhbmQgc2V0IG5hdGlvbmFsIGNvbnNvbGUgZm9udCBieSBzZXRmb250Lgo+Pgo+IAo+
-IEFub3RoZXIgcG9zdC0yLjYuMjMgcmVncmVzc2lvbi4gIFBvc3NpYmxlIGN1bHByaXRzIGNjJ2Vk
-Pwo+IC0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5z
-dWJzY3JpYmUgbGludXgta2VybmVsIiBpbgo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpv
-cmRvbW9Admdlci5rZXJuZWwub3JnCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3Zn
-ZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sCj4gUGxlYXNlIHJlYWQgdGhlIEZBUSBh
-dCAgaHR0cDovL3d3dy50dXgub3JnL2xrbWwvCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClRoaXMgU0YubmV0
-IGVtYWlsIGlzIHNwb25zb3JlZCBieTogU3BsdW5rIEluYy4KU3RpbGwgZ3JlcHBpbmcgdGhyb3Vn
-aCBsb2cgZmlsZXMgdG8gZmluZCBwcm9ibGVtcz8gIFN0b3AuCk5vdyBTZWFyY2ggbG9nIGV2ZW50
-cyBhbmQgY29uZmlndXJhdGlvbiBmaWxlcyB1c2luZyBBSkFYIGFuZCBhIGJyb3dzZXIuCkRvd25s
-b2FkIHlvdXIgRlJFRSBjb3B5IG9mIFNwbHVuayBub3cgPj4gaHR0cDovL2dldC5zcGx1bmsuY29t
-LwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1m
-YmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9y
-Z2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4
-LWZiZGV2LWRldmVsCg==
+Jan Rinze noticed that 16bpp screen mode is not working on Netwinder:
+"After some deduction it appeared that it was running in 24bpp instead
+of 16bpp. Found the bug: a missing 'break' statement at the end of a
+switch case.  After adding the break statement 16bpp works fine."
+
+Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
+Cc: Jan Rinze <janrinze@home.nl>
+Cc: Woody Suwalski <woody@suwalski.net>
+
+--- a/drivers/video/cyber2000fb.c
++++ b/drivers/video/cyber2000fb.c
+@@ -874,6 +874,8 @@ static int cyber2000fb_set_par(struct fb_info *info)
+ 		default:
+ 			BUG();
+ 		}
++		break;
++
+ 	case 24:/* TRUECOLOUR, 16m */
+ 		hw.co_pixfmt		= CO_PIXFMT_24BPP;
+ 		hw.width		*= 3;
+
+-- 
+Martin Michlmayr
+http://www.cyrius.com/
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc.
+Still grepping through log files to find problems?  Stop.
+Now Search log events and configuration files using AJAX and a browser.
+Download your FREE copy of Splunk now >> http://get.splunk.com/

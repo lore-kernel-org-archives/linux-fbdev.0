@@ -1,8 +1,9 @@
-From: Woody <woody@suwalski.net>
-Subject: Re: [PATCH] cyber2000fb.c: Fix 16bpp mode
-Date: Thu, 8 Nov 2007 08:03:41 -0500
-Message-ID: <4733092D.3010104@suwalski.net>
-References: <000501c81e5e$c1334160$4399c420$@nl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] uvesafb: Fix warnings about unused
+	variables on non-x86
+Date: Fri, 9 Nov 2007 16:47:13 -0800
+Message-ID: <20071109164713.f31c6cd1.akpm@linux-foundation.org>
+References: <1194563299-19768-1-git-send-email-frank@lichtenheld.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,16 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Iq72K-00008Q-E8 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Nov 2007 05:03:08 -0800
-Received: from ottmail.xandros.com ([142.46.212.35])
+	id 1IqeVZ-0000GD-IT for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 09 Nov 2007 16:47:33 -0800
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Iq72J-0005xO-Qc
+	(Exim 4.44) id 1IqeVZ-0006kQ-Ab
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Nov 2007 05:03:08 -0800
-In-Reply-To: <20071108082159.GB23626@deprecation.cyrius.com>
-References: <20071108082159.GB23626@deprecation.cyrius.com>
-Content-Disposition: inline
+	Fri, 09 Nov 2007 16:47:33 -0800
+In-Reply-To: <1194563299-19768-1-git-send-email-frank@lichtenheld.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,34 +30,74 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Jan Rinze <janrinze@home.nl>
+Cc: spock@gentoo.org, frank@lichtenheld.de, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Martin Michlmayr wrote:
-> Jan Rinze noticed that 16bpp screen mode is not working on Netwinder:
-> "After some deduction it appeared that it was running in 24bpp instead
-> of 16bpp. Found the bug: a missing 'break' statement at the end of a
-> switch case.  After adding the break statement 16bpp works fine."
->
-> Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
-> Cc: Jan Rinze <janrinze@home.nl>
-> Cc: Woody Suwalski <woody@suwalski.net>
->
-> --- a/drivers/video/cyber2000fb.c
-> +++ b/drivers/video/cyber2000fb.c
-> @@ -874,6 +874,8 @@ static int cyber2000fb_set_par(struct fb_info *info)
->  		default:
->  			BUG();
->  		}
-> +		break;
+On Fri,  9 Nov 2007 00:08:19 +0100
+Frank Lichtenheld <frank@lichtenheld.de> wrote:
+
+> Variables that are only used in #ifdef CONFIG_X86 should also
+> only be declared there.
+> 
+> Signed-off-by: Frank Lichtenheld <frank@lichtenheld.de>
+> ---
+>  drivers/video/uvesafb.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+> index b983d26..d1d6c0f 100644
+> --- a/drivers/video/uvesafb.c
+> +++ b/drivers/video/uvesafb.c
+> @@ -926,8 +926,10 @@ static int uvesafb_setpalette(struct uvesafb_pal_entry *entries, int count,
+>  		int start, struct fb_info *info)
+>  {
+>  	struct uvesafb_ktask *task;
+> +#ifdef CONFIG_X86
+>  	struct uvesafb_par *par = info->par;
+>  	int i = par->mode_idx;
+> +#endif
+>  	int err = 0;
+>  
+>  	/*
+> @@ -1103,11 +1105,11 @@ static int uvesafb_pan_display(struct fb_var_screeninfo *var,
+>  
+>  static int uvesafb_blank(int blank, struct fb_info *info)
+>  {
+> -	struct uvesafb_par *par = info->par;
+>  	struct uvesafb_ktask *task;
+>  	int err = 1;
+> -
+>  #ifdef CONFIG_X86
+> +	struct uvesafb_par *par = info->par;
 > +
->  	case 24:/* TRUECOLOUR, 16m */
->  		hw.co_pixfmt		= CO_PIXFMT_24BPP;
->  		hw.width		*= 3;
->
->   
-Yes, with the above bug fix I have tested that 16-bit X fbdev works OK.
-Woody
+>  	if (par->vbe_ib.capabilities & VBE_CAP_VGACOMPAT) {
+>  		int loop = 10000;
+>  		u8 seq = 0, crtc17 = 0;
+
+OK, but ug.  That's some quite nasty code you've found there.
+
+it would come out better if that x86-specific code was pulled out into
+separate functions like
+
+#ifdef CONFIG_X86
+static int do_x86_stuff(...)
+{
+	...
+	return 1;
+}
+#else
+static int do_x86_stuff(...)
+{
+	return 0;
+}
+#endif
+
+
+static int uvesafb_setpalette(...)
+{
+	if (do_x86_stuff(...) == 0) {
+		<do non-x86-specific-stuff>
+	}
+}
 
 
 -------------------------------------------------------------------------

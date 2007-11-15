@@ -1,24 +1,27 @@
-From: Andreas Herrmann <aherrman@arcor.de>
-Subject: [PATCH] radeonfb: add chip definition for RV370
-	5b63
-Date: Fri, 16 Nov 2007 01:20:17 +0100
-Message-ID: <20071116002017.GA11518@devil>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb: add chip definition for
+	RV370 5b63
+Date: Fri, 16 Nov 2007 10:31:31 +1100
+Message-ID: <1195169491.28865.108.camel@pasglop>
+References: <20071116002017.GA11518@devil>
+Reply-To: benh@kernel.crashing.org,
+	linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Isnyw-0007XW-6W for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 Nov 2007 15:18:46 -0800
-Received: from mail-in-14.arcor-online.net ([151.189.21.54])
+	id 1IsoBT-0000TS-El for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 15 Nov 2007 15:31:43 -0800
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX1/G52hycZKzsHAP6u8fH5tAYkaRFFgDIoc=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Isnyu-0007bw-MD
+	(Exim 4.44) id 1IsoBS-0001bh-1I
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 Nov 2007 15:18:46 -0800
-Content-Disposition: inline
+	Thu, 15 Nov 2007 15:31:43 -0800
+In-Reply-To: <20071116002017.GA11518@devil>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,30 +32,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
+To: Andreas Herrmann <aherrman@arcor.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-.. which I've found on a Sapphire X550 (Silent).
 
-Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
----
- drivers/video/aty/radeon_base.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+On Fri, 2007-11-16 at 01:20 +0100, Andreas Herrmann wrote:
+> .. which I've found on a Sapphire X550 (Silent).
+> 
+> Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
+> ---
 
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 1e32b3d..62867cb 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -202,6 +202,7 @@ static struct pci_device_id radeonfb_pci_table[] = {
- 	CHIP_DEF(PCI_CHIP_RV380_3154,	RV380,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
- 	CHIP_DEF(PCI_CHIP_RV370_5B60,	RV380,	CHIP_HAS_CRTC2),
- 	CHIP_DEF(PCI_CHIP_RV370_5B62,	RV380,	CHIP_HAS_CRTC2),
-+	CHIP_DEF(PCI_CHIP_RV370_5B63,	RV380,	CHIP_HAS_CRTC2),
- 	CHIP_DEF(PCI_CHIP_RV370_5B64,	RV380,	CHIP_HAS_CRTC2),
- 	CHIP_DEF(PCI_CHIP_RV370_5B65,	RV380,	CHIP_HAS_CRTC2),
- 	CHIP_DEF(PCI_CHIP_RV370_5460,	RV380,	CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
--- 
-1.5.3.4
+If it works, go for it. Ack.
 
+Ben.
 
 
 -------------------------------------------------------------------------

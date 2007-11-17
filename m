@@ -1,8 +1,8 @@
-From: Andreas Herrmann <aherrman@arcor.de>
-Subject: [PATCH resend] radeonfb: use PCI device id in
-	hex for name string
-Date: Fri, 16 Nov 2007 02:06:56 +0100
-Message-ID: <20071116010656.GB11518@devil>
+From: Helge Deller <deller@gmx.de>
+Subject: [PATCH] stifb: fix crash A1439A CRX (Rattler)
+	graphics card
+Date: Sat, 17 Nov 2007 22:37:07 +0100
+Message-ID: <200711172237.07833.deller@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +11,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Isoi5-0003pA-2a for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 Nov 2007 16:05:25 -0800
-Received: from mail-in-09.arcor-online.net ([151.189.21.49])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Isoi2-0005LZ-BW
+	id 1ItVNC-0002Qj-Aj for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 17 Nov 2007 13:38:42 -0800
+Received: from mail.gmx.net ([213.165.64.20])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1ItVNA-0005AK-MR
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 Nov 2007 16:05:24 -0800
+	Sat, 17 Nov 2007 13:38:42 -0800
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,80 +28,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, "Antonino A.Daplas" <adaplas@gmail.com>
 
-This patch slightly changes the debug output of radeonfb. E.g., instead of
-printing
+Fix kernel crash when stifb driver is used with a A1439A CRX (Rattler) graphics card.
+(Reference: http://thread.gmane.org/gmane.linux.ports.hppa/1834)
 
-  radeonfb (0000:02:00.0): ATI Radeon [`
+Signed-off-by: Helge Deller <deller@gmx.de>
 
-it will now show
+ stifb.c |   22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-  radeonfb (0000:02:00.0): ATI Radeon 5b60 "[`"
-
-This will provide proper identification for all radeon cards and not
-just for cards named like "Radeon X800PRO (R423) UI".
-
-
-Regards,
-
-Andreas
-
---
-radeonfb: use PCI device id in hex for name string
-
-Additionally provide PCI device id in character format if possible.
-(The printable characters were commonly used to identify the cards.)
-
-Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
----
- drivers/video/aty/radeon_base.c |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 62867cb..48e60cb 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -57,6 +57,7 @@
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/string.h>
-+#include <linux/ctype.h>
- #include <linux/mm.h>
- #include <linux/slab.h>
- #include <linux/delay.h>
-@@ -2158,6 +2159,7 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	struct fb_info *info;
- 	struct radeonfb_info *rinfo;
- 	int ret;
-+	unsigned char c1, c2;
- 
- 	RTRACE("radeonfb_pci_register BEGIN\n");
- 	
-@@ -2185,9 +2187,15 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
- 	rinfo->lvds_timer.function = radeon_lvds_timer_func;
- 	rinfo->lvds_timer.data = (unsigned long)rinfo;
- 
--	strcpy(rinfo->name, "ATI Radeon XX ");
--	rinfo->name[11] = ent->device >> 8;
--	rinfo->name[12] = ent->device & 0xFF;
-+	c1 = ent->device >> 8;
-+	c2 = ent->device & 0xff;
-+	if (isprint(c1) && isprint(c2))
-+		snprintf(rinfo->name, sizeof(rinfo->name),
-+			 "ATI Radeon %x \"%c%c\"", ent->device & 0xffff, c1, c2);
-+	else
-+		snprintf(rinfo->name, sizeof(rinfo->name),
-+			 "ATI Radeon %x", ent->device & 0xffff);
+diff --git a/drivers/video/stifb.c b/drivers/video/stifb.c
+index c97709e..6e5f138 100644
+--- a/drivers/video/stifb.c
++++ b/drivers/video/stifb.c
+@@ -505,16 +505,24 @@ ngleSetupAttrPlanes(struct stifb_info *fb, int BufferNumber)
+ static void
+ rattlerSetupPlanes(struct stifb_info *fb)
+ {
++	int saved_id, y;
 +
- 	rinfo->family = ent->driver_data & CHIP_FAMILY_MASK;
- 	rinfo->chipset = pdev->device;
- 	rinfo->has_CRTC2 = (ent->driver_data & CHIP_HAS_CRTC2) != 0;
--- 
-1.5.3.4
-
-
-
++ 	/* Write RAMDAC pixel read mask register so all overlay
++	 * planes are display-enabled.  (CRX24 uses Bt462 pixel
++	 * read mask register for overlay planes, not image planes).
++	 */
+ 	CRX24_SETUP_RAMDAC(fb);
+     
+-	/* replacement for: SETUP_FB(fb, CRX24_OVERLAY_PLANES); */
+-	WRITE_WORD(0x83000300, fb, REG_14);
+-	SETUP_HW(fb);
+-	WRITE_BYTE(1, fb, REG_16b1);
++	/* change fb->id temporarily to fool SETUP_FB() */
++	saved_id = fb->id;
++	fb->id = CRX24_OVERLAY_PLANES;
++	SETUP_FB(fb);
++	fb->id = saved_id;
++
++	for (y = 0; y < fb->info.var.yres; ++y)
++		memset(fb->info.screen_base + y * fb->info.fix.line_length,
++			0xff, fb->info.var.xres * fb->info.var.bits_per_pixel/8);
+ 
+-	fb_memset((void*)fb->info.fix.smem_start, 0xff,
+-		fb->info.var.yres*fb->info.fix.line_length);
+-    
+ 	CRX24_SET_OVLY_MASK(fb);
+ 	SETUP_FB(fb);
+ }
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

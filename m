@@ -1,8 +1,7 @@
 From: Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH 2/2] radeonfb: Drop redundant RTRACE
-	macro
-Date: Sat, 17 Nov 2007 23:32:30 +0100
-Message-ID: <20071117233230.0eff0b53@hyperion.delvare>
+Subject: [PATCH] fb_ddc: Fix DDC lines quirk
+Date: Sun, 18 Nov 2007 14:21:41 +0100
+Message-ID: <20071118142141.22a1e753@hyperion.delvare>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1ItWDJ-0007VV-7d for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 17 Nov 2007 14:32:33 -0800
-Received: from smtp-106-saturday.noc.nerim.net ([62.4.17.106]
+	id 1Itk5t-00030D-Mm for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 18 Nov 2007 05:21:49 -0800
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]
 	helo=mallaury.nerim.net)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1ItWDI-0003tT-84
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Itk5s-0001BP-WC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 17 Nov 2007 14:32:33 -0800
+	Sun, 18 Nov 2007 05:21:49 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,348 +27,80 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Antonino Daplas <adaplas@gmail.com>
 
-RTRACE() does exactly the same thing as the standard pr_debug() call,
-so just use the latter.
+The code in fb_ddc_read() is said to be based on the implementation
+of the radeon driver:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fc5891c8a3ba284f13994d7bc1f1bfa8283982de
+
+However, comparing the old radeon driver code with the new fb_ddc code
+reveals some differences. Most notably, the I2C bus lines are held at
+the end of the function, while the original code was releasing them
+(as the comment above correctly says.)
+
+There are a few other differences, which appear to be responsible for
+read failures on my system. While tracing low-level I2C code in
+i2c-algo-bit, I noticed that the initial attempt to read the EDID
+always failed. It takes one retry for the read to succeed. As we are
+about to remove this automatic retry property from i2c-algo-bit,
+reading the EDID would really fail.
+
+As a summary, the I2C lines quirk which is supposedly needed to read
+EDID on some older monitors is currently breaking the (first) read on
+all other monitors (and might not even work with older ones - did
+anyone try since October 2006?)
+
+After applying the patch below, which makes the code in fb_ddc_read()
+really similar to what the radeon driver used to have, the first EDID
+read succeeds again.
+
+On top of that, as it appears that this code has been broken for one
+year now and nobody seems to have complained, I'm curious if it makes
+sense to keep this quirk in place. It makes the code more complex and
+slower just for the sake of monitors which I guess nobody uses
+anymore. Can't we just get rid of it?
 
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
 ---
- drivers/video/aty/radeon_base.c    |   34 +++++++++++-----------
- drivers/video/aty/radeon_i2c.c     |    8 ++---
- drivers/video/aty/radeon_monitor.c |   54 ++++++++++++++++++------------------
- drivers/video/aty/radeonfb.h       |   10 ------
- 4 files changed, 48 insertions(+), 58 deletions(-)
+ drivers/video/fb_ddc.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.24-rc3.orig/drivers/video/aty/radeon_base.c	2007-11-17 18:53:29.000000000 +0100
-+++ linux-2.6.24-rc3/drivers/video/aty/radeon_base.c	2007-11-17 21:02:45.000000000 +0100
-@@ -1488,7 +1488,7 @@ static void radeon_calc_pll_regs(struct 
- 		freq = rinfo->pll.ppll_max;
- 	if (freq*12 < rinfo->pll.ppll_min)
- 		freq = rinfo->pll.ppll_min / 12;
--	RTRACE("freq = %lu, PLL min = %u, PLL max = %u\n",
-+	pr_debug("freq = %lu, PLL min = %u, PLL max = %u\n",
- 	       freq, rinfo->pll.ppll_min, rinfo->pll.ppll_max);
+--- linux-2.6.24-rc3.orig/drivers/video/fb_ddc.c	2007-11-17 20:23:03.000000000 +0100
++++ linux-2.6.24-rc3/drivers/video/fb_ddc.c	2007-11-18 12:49:14.000000000 +0100
+@@ -56,13 +56,12 @@ unsigned char *fb_ddc_read(struct i2c_ad
+ 	int i, j;
  
- 	for (post_div = &post_divs[0]; post_div->divider; ++post_div) {
-@@ -1509,7 +1509,7 @@ static void radeon_calc_pll_regs(struct 
- 		post_div = &post_divs[post_div->bitvalue];
- 		pll_output_freq = post_div->divider * freq;
- 	}
--	RTRACE("ref_div = %d, ref_clk = %d, output_freq = %d\n",
-+	pr_debug("ref_div = %d, ref_clk = %d, output_freq = %d\n",
- 	       rinfo->pll.ref_div, rinfo->pll.ref_clk,
- 	       pll_output_freq);
+ 	algo_data->setscl(algo_data->data, 1);
+-	algo_data->setscl(algo_data->data, 0);
  
-@@ -1519,7 +1519,7 @@ static void radeon_calc_pll_regs(struct 
- 		post_div = &post_divs[post_div->bitvalue];
- 		pll_output_freq = post_div->divider * freq;
- 	}
--	RTRACE("ref_div = %d, ref_clk = %d, output_freq = %d\n",
-+	pr_debug("ref_div = %d, ref_clk = %d, output_freq = %d\n",
- 	       rinfo->pll.ref_div, rinfo->pll.ref_clk,
- 	       pll_output_freq);
+ 	for (i = 0; i < 3; i++) {
+ 		/* For some old monitors we need the
+ 		 * following process to initialize/stop DDC
+ 		 */
+-		algo_data->setsda(algo_data->data, 0);
++		algo_data->setsda(algo_data->data, 1);
+ 		msleep(13);
  
-@@ -1528,9 +1528,9 @@ static void radeon_calc_pll_regs(struct 
- 	regs->ppll_ref_div = rinfo->pll.ref_div;
- 	regs->ppll_div_3 = fb_div | (post_div->bitvalue << 16);
- 
--	RTRACE("post div = 0x%x\n", post_div->bitvalue);
--	RTRACE("fb_div = 0x%x\n", fb_div);
--	RTRACE("ppll_div_3 = 0x%x\n", regs->ppll_div_3);
-+	pr_debug("post div = 0x%x\n", post_div->bitvalue);
-+	pr_debug("fb_div = 0x%x\n", fb_div);
-+	pr_debug("ppll_div_3 = 0x%x\n", regs->ppll_div_3);
- }
- 
- static int radeonfb_set_par(struct fb_info *info)
-@@ -1602,9 +1602,9 @@ static int radeonfb_set_par(struct fb_in
- 	dotClock = 1000000000 / pixClock;
- 	freq = dotClock / 10; /* x100 */
- 
--	RTRACE("hStart = %d, hEnd = %d, hTotal = %d\n",
-+	pr_debug("hStart = %d, hEnd = %d, hTotal = %d\n",
- 		hSyncStart, hSyncEnd, hTotal);
--	RTRACE("vStart = %d, vEnd = %d, vTotal = %d\n",
-+	pr_debug("vStart = %d, vEnd = %d, vTotal = %d\n",
- 		vSyncStart, vSyncEnd, vTotal);
- 
- 	hsync_wid = (hSyncEnd - hSyncStart) / 8;
-@@ -1713,16 +1713,16 @@ static int radeonfb_set_par(struct fb_in
- 		newmode->surf_info[i] = 0;
- 	}
- 
--	RTRACE("h_total_disp = 0x%x\t   hsync_strt_wid = 0x%x\n",
-+	pr_debug("h_total_disp = 0x%x\t   hsync_strt_wid = 0x%x\n",
- 		newmode->crtc_h_total_disp, newmode->crtc_h_sync_strt_wid);
--	RTRACE("v_total_disp = 0x%x\t   vsync_strt_wid = 0x%x\n",
-+	pr_debug("v_total_disp = 0x%x\t   vsync_strt_wid = 0x%x\n",
- 		newmode->crtc_v_total_disp, newmode->crtc_v_sync_strt_wid);
- 
- 	rinfo->bpp = mode->bits_per_pixel;
- 	rinfo->depth = depth;
- 
--	RTRACE("pixclock = %lu\n", (unsigned long)pixClock);
--	RTRACE("freq = %lu\n", (unsigned long)freq);
-+	pr_debug("pixclock = %lu\n", (unsigned long)pixClock);
-+	pr_debug("freq = %lu\n", (unsigned long)freq);
- 
- 	/* We use PPLL_DIV_3 */
- 	newmode->clk_cntl_index = 0x300;
-@@ -1986,7 +1986,7 @@ static void fixup_memory_mappings(struct
- 	if (rinfo->has_CRTC2)
- 		OUTREG(CRTC2_GEN_CNTL, save_crtc2_gen_cntl);	
- 
--	RTRACE("aper_base: %08x MC_FB_LOC to: %08x, MC_AGP_LOC to: %08x\n",
-+	pr_debug("aper_base: %08x MC_FB_LOC to: %08x, MC_AGP_LOC to: %08x\n",
- 		aper_base,
- 		((aper_base + aper_size - 1) & 0xffff0000) | (aper_base >> 16),
- 		0xffff0000 | (agp_base >> 16));
-@@ -2083,7 +2083,7 @@ static void radeon_identify_vram(struct 
- 	 * ToDo: identify these cases
- 	 */
- 
--	RTRACE("radeonfb (%s): Found %ldk of %s %d bits wide videoram\n",
-+	pr_debug("radeonfb (%s): Found %ldk of %s %d bits wide videoram\n",
- 	       pci_name(rinfo->pdev),
- 	       rinfo->video_ram / 1024,
- 	       rinfo->vram_ddr ? "DDR" : "SDRAM",
-@@ -2159,7 +2159,7 @@ static int __devinit radeonfb_pci_regist
- 	struct radeonfb_info *rinfo;
- 	int ret;
- 
--	RTRACE("radeonfb_pci_register BEGIN\n");
-+	pr_debug("radeonfb_pci_register BEGIN\n");
- 	
- 	/* Enable device in PCI config */
- 	ret = pci_enable_device(pdev);
-@@ -2278,7 +2278,7 @@ static int __devinit radeonfb_pci_regist
- 		goto err_unmap_rom;
- 	}
- 
--	RTRACE("radeonfb (%s): mapped %ldk videoram\n", pci_name(rinfo->pdev),
-+	pr_debug("radeonfb (%s): mapped %ldk videoram\n", pci_name(rinfo->pdev),
- 	       rinfo->mapped_vram/1024);
- 
- 	/*
-@@ -2373,7 +2373,7 @@ static int __devinit radeonfb_pci_regist
- 
- 	if (rinfo->bios_seg)
- 		radeon_unmap_ROM(rinfo, pdev);
--	RTRACE("radeonfb_pci_register END\n");
-+	pr_debug("radeonfb_pci_register END\n");
- 
- 	return 0;
- err_unmap_fb:
---- linux-2.6.24-rc3.orig/drivers/video/aty/radeon_i2c.c	2007-11-17 18:53:29.000000000 +0100
-+++ linux-2.6.24-rc3/drivers/video/aty/radeon_i2c.c	2007-11-17 21:03:43.000000000 +0100
-@@ -149,21 +149,21 @@ int radeon_probe_i2c_connector(struct ra
- 	if (out_edid)
- 		*out_edid = edid;
- 	if (!edid) {
--		RTRACE("radeonfb: I2C (port %d) ... not found\n", conn);
-+		pr_debug("radeonfb: I2C (port %d) ... not found\n", conn);
- 		return MT_NONE;
- 	}
- 	if (edid[0x14] & 0x80) {
- 		/* Fix detection using BIOS tables */
- 		if (rinfo->is_mobility /*&& conn == ddc_dvi*/ &&
- 		    (INREG(LVDS_GEN_CNTL) & LVDS_ON)) {
--			RTRACE("radeonfb: I2C (port %d) ... found LVDS panel\n", conn);
-+			pr_debug("radeonfb: I2C (port %d) ... found LVDS panel\n", conn);
- 			return MT_LCD;
- 		} else {
--			RTRACE("radeonfb: I2C (port %d) ... found TMDS panel\n", conn);
-+			pr_debug("radeonfb: I2C (port %d) ... found TMDS panel\n", conn);
- 			return MT_DFP;
- 		}
- 	}
--       	RTRACE("radeonfb: I2C (port %d) ... found CRT display\n", conn);
-+	pr_debug("radeonfb: I2C (port %d) ... found CRT display\n", conn);
- 	return MT_CRT;
- }
- 
---- linux-2.6.24-rc3.orig/drivers/video/aty/radeon_monitor.c	2007-11-17 18:53:29.000000000 +0100
-+++ linux-2.6.24-rc3/drivers/video/aty/radeon_monitor.c	2007-11-17 21:02:52.000000000 +0100
-@@ -69,11 +69,11 @@ static int __devinit radeon_parse_montyp
- 	u8 *tmp;
-         int i, mt = MT_NONE;  
- 	
--	RTRACE("analyzing OF properties...\n");
-+	pr_debug("analyzing OF properties...\n");
- 	pmt = of_get_property(dp, "display-type", NULL);
- 	if (!pmt)
- 		return MT_NONE;
--	RTRACE("display-type: %s\n", pmt);
-+	pr_debug("display-type: %s\n", pmt);
- 	/* OF says "LCD" for DFP as well, we discriminate from the caller of this
- 	 * function
- 	 */
-@@ -117,7 +117,7 @@ static int __devinit radeon_probe_OF_hea
- {
-         struct device_node *dp;
- 
--	RTRACE("radeon_probe_OF_head\n");
-+	pr_debug("radeon_probe_OF_head\n");
- 
-         dp = rinfo->of_node;
-         while (dp == NULL)
-@@ -135,7 +135,7 @@ static int __devinit radeon_probe_OF_hea
- 			if (!pname)
- 				return MT_NONE;
- 			len = strlen(pname);
--			RTRACE("head: %s (letter: %c, head_no: %d)\n",
-+			pr_debug("head: %s (letter: %c, head_no: %d)\n",
- 			       pname, pname[len-1], head_no);
- 			if (pname[len-1] == 'A' && head_no == 0) {
- 				int mt = radeon_parse_montype_prop(dp, out_EDID, 0);
-@@ -185,7 +185,7 @@ static int __devinit radeon_get_panel_in
- 		rinfo->panel_info.xres, rinfo->panel_info.yres);
- 
- 	rinfo->panel_info.pwr_delay = BIOS_IN16(tmp + 44);
--	RTRACE("BIOS provided panel power delay: %d\n", rinfo->panel_info.pwr_delay);
-+	pr_debug("BIOS provided panel power delay: %d\n", rinfo->panel_info.pwr_delay);
- 	if (rinfo->panel_info.pwr_delay > 2000 || rinfo->panel_info.pwr_delay <= 0)
- 		rinfo->panel_info.pwr_delay = 2000;
- 
-@@ -199,16 +199,16 @@ static int __devinit radeon_get_panel_in
- 	    rinfo->panel_info.fbk_divider > 3) {
- 		rinfo->panel_info.use_bios_dividers = 1;
- 		printk(KERN_INFO "radeondb: BIOS provided dividers will be used\n");
--		RTRACE("ref_divider = %x\n", rinfo->panel_info.ref_divider);
--		RTRACE("post_divider = %x\n", rinfo->panel_info.post_divider);
--		RTRACE("fbk_divider = %x\n", rinfo->panel_info.fbk_divider);
-+		pr_debug("ref_divider = %x\n", rinfo->panel_info.ref_divider);
-+		pr_debug("post_divider = %x\n", rinfo->panel_info.post_divider);
-+		pr_debug("fbk_divider = %x\n", rinfo->panel_info.fbk_divider);
- 	}
--	RTRACE("Scanning BIOS table ...\n");
-+	pr_debug("Scanning BIOS table ...\n");
- 	for(i=0; i<32; i++) {
- 		tmp0 = BIOS_IN16(tmp+64+i*2);
- 		if (tmp0 == 0)
+ 		algo_data->setscl(algo_data->data, 1);
+@@ -97,14 +96,15 @@ unsigned char *fb_ddc_read(struct i2c_ad
+ 		algo_data->setsda(algo_data->data, 1);
+ 		msleep(15);
+ 		algo_data->setscl(algo_data->data, 0);
++		algo_data->setsda(algo_data->data, 0);
+ 		if (edid)
  			break;
--		RTRACE(" %d x %d\n", BIOS_IN16(tmp0), BIOS_IN16(tmp0+2));
-+		pr_debug(" %d x %d\n", BIOS_IN16(tmp0), BIOS_IN16(tmp0+2));
- 		if ((BIOS_IN16(tmp0) == rinfo->panel_info.xres) &&
- 		    (BIOS_IN16(tmp0+2) == rinfo->panel_info.yres)) {
- 			rinfo->panel_info.hblank = (BIOS_IN16(tmp0+17) - BIOS_IN16(tmp0+19)) * 8;
-@@ -227,19 +227,19 @@ static int __devinit radeon_get_panel_in
- 			/* Mark panel infos valid */
- 			rinfo->panel_info.valid = 1;
- 
--			RTRACE("Found panel in BIOS table:\n");
--			RTRACE("  hblank: %d\n", rinfo->panel_info.hblank);
--			RTRACE("  hOver_plus: %d\n", rinfo->panel_info.hOver_plus);
--			RTRACE("  hSync_width: %d\n", rinfo->panel_info.hSync_width);
--			RTRACE("  vblank: %d\n", rinfo->panel_info.vblank);
--			RTRACE("  vOver_plus: %d\n", rinfo->panel_info.vOver_plus);
--			RTRACE("  vSync_width: %d\n", rinfo->panel_info.vSync_width);
--			RTRACE("  clock: %d\n", rinfo->panel_info.clock);
-+			pr_debug("Found panel in BIOS table:\n");
-+			pr_debug("  hblank: %d\n", rinfo->panel_info.hblank);
-+			pr_debug("  hOver_plus: %d\n", rinfo->panel_info.hOver_plus);
-+			pr_debug("  hSync_width: %d\n", rinfo->panel_info.hSync_width);
-+			pr_debug("  vblank: %d\n", rinfo->panel_info.vblank);
-+			pr_debug("  vOver_plus: %d\n", rinfo->panel_info.vOver_plus);
-+			pr_debug("  vSync_width: %d\n", rinfo->panel_info.vSync_width);
-+			pr_debug("  clock: %d\n", rinfo->panel_info.clock);
- 				
- 			return 1;
- 		}
  	}
--	RTRACE("Didn't find panel in BIOS table !\n");
-+	pr_debug("Didn't find panel in BIOS table !\n");
- 
- 	return 0;
- }
-@@ -271,18 +271,18 @@ static void __devinit radeon_parse_conne
- 	 * DEBUG is enabled
+ 	/* Release the DDC lines when done or the Apple Cinema HD display
+ 	 * will switch off
  	 */
- 	chips = BIOS_IN8(offset++) >> 4;
--	RTRACE("%d chips in connector info\n", chips);
-+	pr_debug("%d chips in connector info\n", chips);
- 	for (i = 0; i < chips; i++) {
- 		tmp = BIOS_IN8(offset++);
- 		connectors = tmp & 0x0f;
--		RTRACE(" - chip %d has %d connectors\n", tmp >> 4, connectors);
-+		pr_debug(" - chip %d has %d connectors\n", tmp >> 4, connectors);
- 		for (conn = 0; ; conn++) {
- 			tmp = BIOS_IN16(offset);
- 			if (tmp == 0)
- 				break;
- 			offset += 2;
- 			type = (tmp >> 12) & 0x0f;
--			RTRACE("  * connector %d of type %d (%s) : %04x\n",
-+			pr_debug("  * connector %d of type %d (%s) : %04x\n",
- 			       conn, type, __conn_type_table[type], tmp);
- 		}
- 	}
-@@ -449,7 +449,7 @@ void __devinit radeon_probe_screens(stru
- 		 * a layout for each card ?
- 		 */
+-	algo_data->setsda(algo_data->data, 0);
+-	algo_data->setscl(algo_data->data, 0);
++	algo_data->setsda(algo_data->data, 1);
++	algo_data->setscl(algo_data->data, 1);
  
--		RTRACE("Using specified monitor layout: %s", monitor_layout);
-+		pr_debug("Using specified monitor layout: %s", monitor_layout);
- #ifdef CONFIG_FB_RADEON_I2C
- 		if (!ignore_edid) {
- 			if (rinfo->mon1_type != MT_NONE)
-@@ -479,7 +479,7 @@ void __devinit radeon_probe_screens(stru
- 		 * Auto-detecting display type (well... trying to ...)
- 		 */
- 		
--		RTRACE("Starting monitor auto detection...\n");
-+		pr_debug("Starting monitor auto detection...\n");
- 
- #if defined(DEBUG) && defined(CONFIG_FB_RADEON_I2C)
- 		{
-@@ -756,7 +756,7 @@ void __devinit radeon_check_modes(struct
- 	if (!rinfo->panel_info.use_bios_dividers && rinfo->mon1_type != MT_CRT
- 	    && rinfo->mon1_EDID) {
- 		struct fb_var_screeninfo var;
--		RTRACE("Parsing EDID data for panel info\n");
-+		pr_debug("Parsing EDID data for panel info\n");
- 		if (fb_parse_edid(rinfo->mon1_EDID, &var) == 0) {
- 			if (var.xres >= rinfo->panel_info.xres &&
- 			    var.yres >= rinfo->panel_info.yres)
-@@ -776,7 +776,7 @@ void __devinit radeon_check_modes(struct
- 	if (rinfo->mon1_type != MT_CRT && rinfo->panel_info.valid) {
- 		struct fb_var_screeninfo *var = &info->var;
- 
--		RTRACE("Setting up default mode based on panel info\n");
-+		pr_debug("Setting up default mode based on panel info\n");
- 		var->xres = rinfo->panel_info.xres;
- 		var->yres = rinfo->panel_info.yres;
- 		var->xres_virtual = rinfo->panel_info.xres;
-@@ -824,7 +824,7 @@ void __devinit radeon_check_modes(struct
- 		int			dbsize;
- 		char			modename[32];
- 
--		RTRACE("Guessing panel info...\n");
-+		pr_debug("Guessing panel info...\n");
- 		if (rinfo->panel_info.xres == 0 || rinfo->panel_info.yres == 0) {
- 			u32 tmp = INREG(FP_HORZ_STRETCH) & HORZ_PANEL_SIZE;
- 			rinfo->panel_info.xres = ((tmp >> HORZ_PANEL_SHIFT) + 1) * 8;
---- linux-2.6.24-rc3.orig/drivers/video/aty/radeonfb.h	2007-11-17 18:53:29.000000000 +0100
-+++ linux-2.6.24-rc3/drivers/video/aty/radeonfb.h	2007-11-17 21:02:56.000000000 +0100
-@@ -369,16 +369,6 @@ struct radeonfb_info {
- 
- 
- /*
-- * Debugging stuffs
-- */
--#ifdef DEBUG
--#define RTRACE		printk
--#else
--#define RTRACE		if(0) printk
--#endif
--
--
--/*
-  * IO macros
-  */
- 
+ 	return edid;
+ }
 
 
 -- 

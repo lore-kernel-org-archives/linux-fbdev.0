@@ -1,26 +1,23 @@
 From: Ben Dooks <ben-linux@fluff.org>
-Subject: [PATCH] FB/SM501: Ensure console suspended
-	before saving state
-Date: Mon, 19 Nov 2007 18:06:51 +0000
-Message-ID: <20071119180725.449257893@fluff.org>
-References: <20071119180650.568288237@fluff.org>
+Subject: [PATCH] SM501 and S3C2410 fb driver fixes for
+	2.6.24-rc3
+Date: Mon, 19 Nov 2007 18:06:50 +0000
+Message-ID: <20071119180650.568288237@fluff.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IuB23-0006hv-UB for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Nov 2007 10:07:40 -0800
+	id 1IuB28-0006i8-Uv for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Nov 2007 10:07:48 -0800
 Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IuB22-00021B-Ab
+	(Exim 4.44) id 1IuB26-0001hf-HC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Nov 2007 10:07:39 -0800
-Content-Disposition: inline;
-	filename=simtec/simtec-drivers-fb-sm501-suspendbeforecopy.patch
+	Mon, 19 Nov 2007 10:07:44 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,47 +29,10 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: vince@simtec.co.uk, Ben Dooks <ben-linux@fluff.org>
+Cc: vince@simtec.co.uk
 
-Move the console suspend to before we save the state of
-the framebuffer to ensure that it does not try and change
-the fb state again once we have copied it out.
-
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-
-Index: linux-2.6.22-quilt9/drivers/video/sm501fb.c
-===================================================================
---- linux-2.6.22-quilt9.orig/drivers/video/sm501fb.c
-+++ linux-2.6.22-quilt9/drivers/video/sm501fb.c
-@@ -1681,6 +1681,15 @@ static int sm501fb_suspend_fb(struct sm5
- 	if (par->screen.size == 0)
- 		return 0;
- 
-+	/* blank the relevant interface to ensure unit power minimised */
-+	(par->ops.fb_blank)(FB_BLANK_POWERDOWN, fbi);
-+
-+	/* tell console/fb driver we are suspending */
-+
-+	acquire_console_sem();
-+	fb_set_suspend(fbi, 1);
-+	release_console_sem();
-+
- 	/* backup copies in case chip is powered down over suspend */
- 
- 	par->store_fb = vmalloc(par->screen.size);
-@@ -1700,12 +1709,6 @@ static int sm501fb_suspend_fb(struct sm5
- 
- 	memcpy_fromio(par->store_fb, par->screen.k_addr, par->screen.size);
- 	memcpy_fromio(par->store_cursor, par->cursor.k_addr, par->cursor.size);
--	/* blank the relevant interface to ensure unit power minimised */
--	(par->ops.fb_blank)(FB_BLANK_POWERDOWN, fbi);
--
--	acquire_console_sem();
--	fb_set_suspend(fbi, 1);
--	release_console_sem();
- 
- 	return 0;
- 
+Fixes for both the SM501 and S3C2410 framebuffer
+drivers for 2.6.24-rc3
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)

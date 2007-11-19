@@ -1,10 +1,10 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] fb_ddc: Fix DDC lines quirk
-Date: Mon, 19 Nov 2007 07:40:04 +1100
-Message-ID: <1195418404.6638.2.camel@pasglop>
-References: <20071118142141.22a1e753@hyperion.delvare>
-Reply-To: benh@kernel.crashing.org,
-	linux-fbdev-devel@lists.sourceforge.net
+From: Ben Dooks <ben-linux@fluff.org>
+Subject: [PATCH] FB: Update debugging in S3C2410
+	framebuffer driver
+Date: Mon, 19 Nov 2007 18:06:53 +0000
+Message-ID: <20071119180725.790612804@fluff.org>
+References: <20071119180650.568288237@fluff.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,15 +12,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1ItqwS-0000qL-Jp for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Nov 2007 12:40:32 -0800
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX18N1wl3bzQcFkOUhSjjtlJLrsVL67dGtBQ=])
+	id 1IuB23-0006hu-Th for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Nov 2007 10:07:40 -0800
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1ItqwP-0000o6-3w
+	(Exim 4.44) id 1IuB22-00021E-Ac
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Nov 2007 12:40:30 -0800
-In-Reply-To: <20071118142141.22a1e753@hyperion.delvare>
+	Mon, 19 Nov 2007 10:07:39 -0800
+Content-Disposition: inline;
+	filename=simtec/simtec-drivers-fb-s3c2410-debug-update.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,30 +31,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: vince@simtec.co.uk, Ben Dooks <ben-linux@fluff.org>
 
+Update the debugging in the s3c2410 framebuffer driver.
 
-On Sun, 2007-11-18 at 14:21 +0100, Jean Delvare wrote:
-> 
-> On top of that, as it appears that this code has been broken for one
-> year now and nobody seems to have complained, I'm curious if it makes
-> sense to keep this quirk in place. It makes the code more complex and
-> slower just for the sake of monitors which I guess nobody uses
-> anymore. Can't we just get rid of it?
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-I'll have to double check, I suspect some Apple monitors may choke on
-the "proper" way of releasing the lines (shut down assuming no more host
-is connected, some stupid trick they do). I'll test when I get a chance.
+Index: linux-2.6.24-rc3-fb1/drivers/video/s3c2410fb.c
+===================================================================
+--- linux-2.6.24-rc3-fb1.orig/drivers/video/s3c2410fb.c
++++ linux-2.6.24-rc3-fb1/drivers/video/s3c2410fb.c
+@@ -663,7 +663,7 @@ static int __init s3c2410fb_map_video_me
+ 	dma_addr_t map_dma;
+ 	unsigned map_size = PAGE_ALIGN(info->fix.smem_len);
+ 
+-	dprintk("map_video_memory(fbi=%p)\n", fbi);
++	dprintk("map_video_memory(fbi=%p) map_size %u\n", fbi, map_size);
+ 
+ 	info->screen_base = dma_alloc_writecombine(fbi->dev, map_size,
+ 						   &map_dma, GFP_KERNEL);
+@@ -891,6 +891,7 @@ static int __init s3c2410fb_probe(struct
+ 		smem_len *= mach_info->displays[i].yres;
+ 		smem_len *= mach_info->displays[i].bpp;
+ 		smem_len >>= 3;
++
+ 		if (fbinfo->fix.smem_len < smem_len)
+ 			fbinfo->fix.smem_len = smem_len;
+ 	}
 
-Regarding the quirk, well... I think the X folks are tempted to get rid
-of it too.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-Ben.
-
-
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

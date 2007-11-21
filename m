@@ -1,10 +1,10 @@
-From: Ben Dooks <ben-linux@fluff.org>
-Subject: [PATCH] FB: Check default_display parameter
-	passed in platform data
-Date: Mon, 19 Nov 2007 18:06:55 +0000
-Message-ID: <20071119180726.109170735@fluff.org>
-References: <20071119180650.568288237@fluff.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] fb_ddc: Fix DDC lines quirk
+Date: Thu, 22 Nov 2007 06:58:49 +1100
+Message-ID: <1195675129.6970.98.camel@pasglop>
+References: <20071118142141.22a1e753@hyperion.delvare>
+Reply-To: benh@kernel.crashing.org,
+	linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,15 +12,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IuB23-0006hr-D6 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Nov 2007 10:07:40 -0800
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
+	id 1IuvjJ-00024F-NM for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Nov 2007 11:59:26 -0800
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX189vk0iZeq6Xw6vgc9w2jEj7CpchzBjZ2s=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IuB22-00021C-AY
+	(Exim 4.44) id 1IuvjH-00063o-5s
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Nov 2007 10:07:38 -0800
-Content-Disposition: inline;
-	filename=simtec/simtec-drivers-fb-s3c2410-check-default-display.patch
+	Wed, 21 Nov 2007 11:59:25 -0800
+In-Reply-To: <20071118142141.22a1e753@hyperion.delvare>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,41 +31,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: vince@simtec.co.uk, Ben Dooks <ben-linux@fluff.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
 
-Ensure that the default display parameter passed in via the
-device's platform data is valid. It turns out when mach-bast.c
-was updated, the default_display was set outside of the display
-array bounds, causing a panic on startup.
 
-If the default_display is bigger than num_displays, then generate
-an error and refuse to initialise the driver.
+On Sun, 2007-11-18 at 14:21 +0100, Jean Delvare wrote:
+> The code in fb_ddc_read() is said to be based on the implementation
+> of the radeon driver:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fc5891c8a3ba284f13994d7bc1f1bfa8283982de
+> 
+> However, comparing the old radeon driver code with the new fb_ddc code
+> reveals some differences. Most notably, the I2C bus lines are held at
+> the end of the function, while the original code was releasing them
+> (as the comment above correctly says.)
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+ .../...
 
-Index: linux-2.6.24-rc3-fb1/drivers/video/s3c2410fb.c
-===================================================================
---- linux-2.6.24-rc3-fb1.orig/drivers/video/s3c2410fb.c
-+++ linux-2.6.24-rc3-fb1/drivers/video/s3c2410fb.c
-@@ -799,6 +799,12 @@ static int __init s3c2410fb_probe(struct
- 		return -EINVAL;
- 	}
- 
-+	if (mach_info->default_display >= mach_info->num_displays) {
-+		dev_err(&pdev->dev, "default is %d but only %d displays\n",
-+			mach_info->default_display, mach_info->num_displays);
-+		return -EINVAL;
-+	}
-+
- 	display = mach_info->displays + mach_info->default_display;
- 
- 	irq = platform_get_irq(pdev, 0);
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-  'a smiley only costs 4 bytes'
+> ---
+>  drivers/video/fb_ddc.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> --- linux-2.6.24-rc3.orig/drivers/video/fb_ddc.c	2007-11-17 20:23:03.000000000 +0100
+> +++ linux-2.6.24-rc3/drivers/video/fb_ddc.c	2007-11-18 12:49:14.000000000 +0100
+> @@ -56,13 +56,12 @@ unsigned char *fb_ddc_read(struct i2c_ad
+>  	int i, j;
+>  
+>  	algo_data->setscl(algo_data->data, 1);
+> -	algo_data->setscl(algo_data->data, 0);
+>  
+>  	for (i = 0; i < 3; i++) {
+>  		/* For some old monitors we need the
+>  		 * following process to initialize/stop DDC
+>  		 */
+> -		algo_data->setsda(algo_data->data, 0);
+> +		algo_data->setsda(algo_data->data, 1);
+>  		msleep(13);
+>  
+>  		algo_data->setscl(algo_data->data, 1);
+> @@ -97,14 +96,15 @@ unsigned char *fb_ddc_read(struct i2c_ad
+>  		algo_data->setsda(algo_data->data, 1);
+>  		msleep(15);
+>  		algo_data->setscl(algo_data->data, 0);
+> +		algo_data->setsda(algo_data->data, 0);
+>  		if (edid)
+>  			break;
+>  	}
+>  	/* Release the DDC lines when done or the Apple Cinema HD display
+>  	 * will switch off
+>  	 */
+> -	algo_data->setsda(algo_data->data, 0);
+> -	algo_data->setscl(algo_data->data, 0);
+> +	algo_data->setsda(algo_data->data, 1);
+> +	algo_data->setscl(algo_data->data, 1);
+>  
+>  	return edid;
+>  }
+> 
+> 
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

@@ -1,10 +1,9 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] fb_ddc: Fix DDC lines quirk
-Date: Thu, 22 Nov 2007 06:58:49 +1100
-Message-ID: <1195675129.6970.98.camel@pasglop>
-References: <20071118142141.22a1e753@hyperion.delvare>
-Reply-To: benh@kernel.crashing.org,
-	linux-fbdev-devel@lists.sourceforge.net
+From: "Hans J. Koch" <hjk@linutronix.de>
+Subject: [PATCH] pxafb: Add missing code to support
+	palette formats
+Date: Fri, 23 Nov 2007 12:26:16 +0100
+Message-ID: <20071123122616.30bd242c@bluebox.local>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,15 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IuvjJ-00024F-NM for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Nov 2007 11:59:26 -0800
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX189vk0iZeq6Xw6vgc9w2jEj7CpchzBjZ2s=])
+	id 1IvWhp-0007SF-5x for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Nov 2007 03:28:39 -0800
+Received: from www.tglx.de ([62.245.132.106])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IuvjH-00063o-5s
+	(Exim 4.44) id 1IvWhm-0001Xl-LR
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Nov 2007 11:59:25 -0800
-In-Reply-To: <20071118142141.22a1e753@hyperion.delvare>
+	Fri, 23 Nov 2007 03:28:20 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,68 +28,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+Subject: pxafb: Add missing code to support palette formats
+Date: Fri, 23 Nov 2007 10:33:24 +0100
+From: Hans J Koch <hjk@linutronix.de>
 
-On Sun, 2007-11-18 at 14:21 +0100, Jean Delvare wrote:
-> The code in fb_ddc_read() is said to be based on the implementation
-> of the radeon driver:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fc5891c8a3ba284f13994d7bc1f1bfa8283982de
-> 
-> However, comparing the old radeon driver code with the new fb_ddc code
-> reveals some differences. Most notably, the I2C bus lines are held at
-> the end of the function, while the original code was releasing them
-> (as the comment above correctly says.)
+A few lines of code are missing to support different palette formats in
+pxafb. This patch adds them, code was tested on PXA270.
 
- .../...
+Signed-off-by: Hans J Koch <hjk@linutronix.de>
 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/pxafb.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> ---
->  drivers/video/fb_ddc.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> --- linux-2.6.24-rc3.orig/drivers/video/fb_ddc.c	2007-11-17 20:23:03.000000000 +0100
-> +++ linux-2.6.24-rc3/drivers/video/fb_ddc.c	2007-11-18 12:49:14.000000000 +0100
-> @@ -56,13 +56,12 @@ unsigned char *fb_ddc_read(struct i2c_ad
->  	int i, j;
->  
->  	algo_data->setscl(algo_data->data, 1);
-> -	algo_data->setscl(algo_data->data, 0);
->  
->  	for (i = 0; i < 3; i++) {
->  		/* For some old monitors we need the
->  		 * following process to initialize/stop DDC
->  		 */
-> -		algo_data->setsda(algo_data->data, 0);
-> +		algo_data->setsda(algo_data->data, 1);
->  		msleep(13);
->  
->  		algo_data->setscl(algo_data->data, 1);
-> @@ -97,14 +96,15 @@ unsigned char *fb_ddc_read(struct i2c_ad
->  		algo_data->setsda(algo_data->data, 1);
->  		msleep(15);
->  		algo_data->setscl(algo_data->data, 0);
-> +		algo_data->setsda(algo_data->data, 0);
->  		if (edid)
->  			break;
->  	}
->  	/* Release the DDC lines when done or the Apple Cinema HD display
->  	 * will switch off
->  	 */
-> -	algo_data->setsda(algo_data->data, 0);
-> -	algo_data->setscl(algo_data->data, 0);
-> +	algo_data->setsda(algo_data->data, 1);
-> +	algo_data->setscl(algo_data->data, 1);
->  
->  	return edid;
->  }
-> 
-> 
-
+Index: linux-2.6.24-rc/drivers/video/pxafb.c
+===================================================================
+--- linux-2.6.24-rc.orig/drivers/video/pxafb.c	2007-11-22
+23:03:28.000000000 +0100 +++
+linux-2.6.24-rc/drivers/video/pxafb.c	2007-11-22
+23:43:07.000000000 +0100 @@ -745,8 +745,14 @@ fbi->reg_lccr1 =
+new_regs.lccr1; fbi->reg_lccr2 = new_regs.lccr2;
+ 	fbi->reg_lccr3 = new_regs.lccr3;
+-	fbi->reg_lccr4 = LCCR4 & (~LCCR4_PAL_FOR_MASK);
+-	fbi->reg_lccr4 |= (fbi->lccr4 & LCCR4_PAL_FOR_MASK);
++
++	if (((read_cpuid(CPUID_ID) >> 4) & 0x1f) == 0x11) {
++		/* PXA 27x only */
++		fbi->reg_lccr4 = LCCR4 & (~LCCR4_PAL_FOR_MASK);
++		fbi->reg_lccr4 |= (fbi->lccr4 & LCCR4_PAL_FOR_MASK);
++	} else
++		fbi->reg_lccr4 = 0;
++
+ 	set_hsync_time(fbi, pcd);
+ 	local_irq_restore(flags);
+ 
+@@ -838,6 +844,8 @@
+ 	clk_enable(fbi->clk);
+ 
+ 	/* Sequence from 11.7.10 */
++	if (((read_cpuid(CPUID_ID) >> 4) & 0x1f) == 0x11)
++		LCCR4 = fbi->reg_lccr4; /* PXA 27x only */
+ 	LCCR3 = fbi->reg_lccr3;
+ 	LCCR2 = fbi->reg_lccr2;
+ 	LCCR1 = fbi->reg_lccr1;
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

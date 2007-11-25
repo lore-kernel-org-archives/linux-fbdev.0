@@ -1,23 +1,19 @@
 From: Ville Syrjala <syrjala@sci.fi>
-Subject: [PATCH 4/7] sm501fb: Fix timing limits
-Date: Sun, 25 Nov 2007 22:01:29 +0200
-Message-ID: <11960208932561-git-send-email-syrjala@sci.fi>
-References: <1196020892591-git-send-email-syrjala@sci.fi>
+Subject: [PATCH 0/7] sm501 patches
+Date: Sun, 25 Nov 2007 22:01:25 +0200
+Message-ID: <1196020892591-git-send-email-syrjala@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1500181066=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IwNfg-0002S3-Av for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Nov 2007 12:01:40 -0800
-Received: from smtp4.pp.htv.fi ([213.243.153.38])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwNfd-0000oy-Rh
+	id 1IwNff-0002Ri-FL for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Nov 2007 12:01:39 -0800
+Received: from smtp6.pp.htv.fi ([213.243.153.40])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwNfd-00072B-0i
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Nov 2007 12:01:40 -0800
-In-Reply-To: <1196020892591-git-send-email-syrjala@sci.fi>
+	Sun, 25 Nov 2007 12:01:39 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,42 +25,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: ben@simtec.co.uk, vince@simtec.co.uk, Ville Syrjala <syrjala@sci.fi>
+Cc: ben@simtec.co.uk, vince@simtec.co.uk
 
-Vertical sync height register can only hold 6 bits. Fix the hsync start
-test to use > instead of >=. Also add a few clarifying comments.
+--===============1500181066==
 
-Signed-off-by: Ville Syrjala <syrjala@sci.fi>
----
- drivers/video/sm501fb.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+Here are some cleanups to the sm501 code and support for the SM502
+programmable PLL.
 
-diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index 66e2ae9..c92a255 100644
---- a/drivers/video/sm501fb.c
-+++ b/drivers/video/sm501fb.c
-@@ -237,12 +237,14 @@ static int sm501fb_check_var(struct fb_var_screeninfo *var,
- 
- 	/* check we can fit these values into the registers */
- 
--	if (var->hsync_len > 255 || var->vsync_len > 255)
-+	if (var->hsync_len > 255 || var->vsync_len > 63)
- 		return -EINVAL;
- 
--	if ((var->xres + var->right_margin) >= 4096)
-+	/* hdisplay end and hsync start */
-+	if ((var->xres + var->right_margin) > 4096)
- 		return -EINVAL;
- 
-+	/* vdisplay end and vsync start */
- 	if ((var->yres + var->lower_margin) > 2048)
- 		return -EINVAL;
- 
 -- 
-1.5.2.5
+Ville Syrj������l������
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
+
+--===============1500181066==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+--===============1500181066==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1500181066==--

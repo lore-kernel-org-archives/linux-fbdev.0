@@ -1,8 +1,7 @@
 From: Ville Syrjala <syrjala@sci.fi>
-Subject: [PATCH 6/7] sm501: Remove a misplaced x
-	character
-Date: Sun, 25 Nov 2007 22:01:31 +0200
-Message-ID: <11960208934176-git-send-email-syrjala@sci.fi>
+Subject: [PATCH 4/7] sm501fb: Fix timing limits
+Date: Sun, 25 Nov 2007 22:01:29 +0200
+Message-ID: <11960208932561-git-send-email-syrjala@sci.fi>
 References: <1196020892591-git-send-email-syrjala@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
@@ -12,10 +11,10 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IwNfg-0002Rz-6E for linux-fbdev-devel@lists.sourceforge.net;
+	id 1IwNfg-0002S3-Av for linux-fbdev-devel@lists.sourceforge.net;
 	Sun, 25 Nov 2007 12:01:40 -0800
-Received: from smtp6.pp.htv.fi ([213.243.153.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwNfd-0000p9-NM
+Received: from smtp4.pp.htv.fi ([213.243.153.38])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwNfd-0000oy-Rh
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sun, 25 Nov 2007 12:01:40 -0800
 In-Reply-To: <1196020892591-git-send-email-syrjala@sci.fi>
@@ -32,26 +31,35 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: ben@simtec.co.uk, vince@simtec.co.uk, Ville Syrjala <syrjala@sci.fi>
 
-sm501.c doesn't compile with debug enabled due to a misplaced x character.
+Vertical sync height register can only hold 6 bits. Fix the hsync start
+test to use > instead of >=. Also add a few clarifying comments.
 
 Signed-off-by: Ville Syrjala <syrjala@sci.fi>
 ---
- drivers/mfd/sm501.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/sm501fb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-index f31947c..4de8d46 100644
---- a/drivers/mfd/sm501.c
-+++ b/drivers/mfd/sm501.c
-@@ -137,7 +137,7 @@ static void sm501_dump_clk(struct sm501_devdata *sm)
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index 66e2ae9..c92a255 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -237,12 +237,14 @@ static int sm501fb_check_var(struct fb_var_screeninfo *var,
  
- 	dev_dbg(sm->dev, "PM0[%c]: "
- 		 "P2 %ld.%ld MHz (%ld), V2 %ld.%ld (%ld), "
--x		 "M %ld.%ld (%ld), MX1 %ld.%ld (%ld)\n",
-+		 "M %ld.%ld (%ld), MX1 %ld.%ld (%ld)\n",
- 		 (pmc & 3 ) == 0 ? '*' : '-',
- 		 fmt_freq(decode_div(pll2, pm0, 24, 1<<29, 31)),
- 		 fmt_freq(decode_div(pll2, pm0, 16, 1<<20, 15)),
+ 	/* check we can fit these values into the registers */
+ 
+-	if (var->hsync_len > 255 || var->vsync_len > 255)
++	if (var->hsync_len > 255 || var->vsync_len > 63)
+ 		return -EINVAL;
+ 
+-	if ((var->xres + var->right_margin) >= 4096)
++	/* hdisplay end and hsync start */
++	if ((var->xres + var->right_margin) > 4096)
+ 		return -EINVAL;
+ 
++	/* vdisplay end and vsync start */
+ 	if ((var->yres + var->lower_margin) > 2048)
+ 		return -EINVAL;
+ 
 -- 
 1.5.2.5
 

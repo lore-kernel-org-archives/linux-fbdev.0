@@ -1,27 +1,22 @@
-From: Ben Dooks <ben@fluff.org.uk>
-Subject: Re: [PATCH 6/7] sm501: Remove a misplaced
-	x	character
-Date: Mon, 26 Nov 2007 16:18:27 +0000
-Message-ID: <20071126161827.GA31746@fluff.org.uk>
-References: <1196020892591-git-send-email-syrjala@sci.fi>
-	<11960208934176-git-send-email-syrjala@sci.fi>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [patch 4/9] ps3fb: Inline macros that are used
+	only once
+Date: Mon, 26 Nov 2007 18:24:59 +0100
+Message-ID: <20071126172712.338327000@pademelon.sonytel.be>
+References: <20071126172455.308741000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0953544154=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Iwgff-0006AE-NI for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 08:18:55 -0800
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Iwgfd-0007tE-4F
+	id 1IwhkT-0008FO-Ch for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Nov 2007 09:27:57 -0800
+Received: from vervifontaine.sonytel.be ([80.88.33.193]
+	helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwhkS-0002W1-SU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 08:18:55 -0800
-Content-Disposition: inline
-In-Reply-To: <11960208934176-git-send-email-syrjala@sci.fi>
+	Mon, 26 Nov 2007 09:27:57 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,51 +27,94 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: ben@simtec.co.uk, vince@simtec.co.uk, Ville Syrjala <syrjala@sci.fi>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-On Sun, Nov 25, 2007 at 10:01:31PM +0200, Ville Syrjala wrote:
-> sm501.c doesn't compile with debug enabled due to a misplaced x character.
+--===============0953544154==
+Content-Disposition: inline; filename=ps3-wip/ps3fb-inline-macros.diff
 
-Hi, thanks but a fix for this has already been submitted.
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() macros,
+as they're used in one place only
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/ps3fb.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
+
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -286,15 +286,8 @@ static const struct fb_videomode ps3fb_m
+ #define HEAD_A
+ #define HEAD_B
  
-> Signed-off-by: Ville Syrjala <syrjala@sci.fi>
-> ---
->  drivers/mfd/sm501.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-> index f31947c..4de8d46 100644
-> --- a/drivers/mfd/sm501.c
-> +++ b/drivers/mfd/sm501.c
-> @@ -137,7 +137,7 @@ static void sm501_dump_clk(struct sm501_devdata *sm)
->  
->  	dev_dbg(sm->dev, "PM0[%c]: "
->  		 "P2 %ld.%ld MHz (%ld), V2 %ld.%ld (%ld), "
-> -x		 "M %ld.%ld (%ld), MX1 %ld.%ld (%ld)\n",
-> +		 "M %ld.%ld (%ld), MX1 %ld.%ld (%ld)\n",
->  		 (pmc & 3 ) == 0 ? '*' : '-',
->  		 fmt_freq(decode_div(pll2, pm0, 24, 1<<29, 31)),
->  		 fmt_freq(decode_div(pll2, pm0, 16, 1<<20, 15)),
-> -- 
-> 1.5.2.5
-> 
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Microsoft
-> Defy all challenges. Microsoft(R) Visual Studio 2005.
-> http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+-#define X_OFF(i)	(ps3fb_res[i].xoff)	/* left/right margin (pixel) */
+-#define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
+-#define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
+-#define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
+ #define BPP		4			/* number of bytes per pixel */
+ 
+-/* Start of the virtual frame buffer (relative to fullscreen ) */
+-#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
+-
+ 
+ static int ps3fb_mode;
+ module_param(ps3fb_mode, int, 0);
+@@ -609,7 +602,10 @@ static int ps3fb_set_par(struct fb_info 
+ 
+ 	par->width = info->var.xres;
+ 	par->height = info->var.yres;
+-	offset = VP_OFF(i);
++
++	/* Start of the virtual frame buffer (relative to fullscreen) */
++	offset = ps3fb_res[i].yoff * ddr_line_length + ps3fb_res[i].xoff * BPP;
++
+ 	par->fb_offset = GPU_ALIGN_UP(offset);
+ 	par->full_offset = par->fb_offset - offset;
+ 	par->pan_offset = info->var.yoffset * xdr_line_length +
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-  'a smiley only costs 4 bytes'
+Sony Network and Software Technology Center Europe
+The Corporate Village ������ Da Vincilaan 7-D1 ������ B-1935 Zaventem ������ Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 ������ B-1840 Londerzeel ������ Belgium	
+VAT BE 0413.825.160 ������ RPR Brussels	
+Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBAN BE39001382358619
+
+
+
+--===============0953544154==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+--===============0953544154==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============0953544154==--

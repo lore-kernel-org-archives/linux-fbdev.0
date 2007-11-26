@@ -1,20 +1,22 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 0/9] ps3av/fb patches for 2.6.25
-Date: Mon, 26 Nov 2007 18:24:55 +0100
-Message-ID: <20071126172455.308741000@pademelon.sonytel.be>
+Subject: [patch 1/9] ps3av: ps3av_get_scanmode() and
+	ps3av_get_refresh_rate() are unused
+Date: Mon, 26 Nov 2007 18:24:56 +0100
+Message-ID: <20071126172712.021850000@pademelon.sonytel.be>
+References: <20071126172455.308741000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0489414765=="
+Content-Type: multipart/mixed; boundary="===============1608890507=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IwhkU-0008Fc-CL for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 09:27:58 -0800
+	id 1IwhkZ-0008Iu-QJ for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Nov 2007 09:28:03 -0800
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwhkS-0002Vc-Sy
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwhkU-0000Wv-PS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 09:27:58 -0800
+	Mon, 26 Nov 2007 09:28:02 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,24 +28,111 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
---===============0489414765==
+--===============1608890507==
+Content-Disposition: inline; filename=ps3-wip/ps3av-remove-unused.diff
 
-	Hi,
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Here is a first bunch of ps3av/fb patches for 2.6.25:
-  [1] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused
-  [2] ps3: Use symbolic names for video modes
-  [3] ps3fb: Kill PS3FB_FULL_MODE_BIT
-  [4] ps3fb: Inline macros that are used only once
-  [5] ps3fb: Kill ps3fb_res[]
-  [6] ps3fb: Make frame buffer offset unsigned int
-  [7] ps3fb: Configurable black borders
-  [8] ps3fb: Reorganize modedb handling
-  [9] ps3fb: Round up video modes
+ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused, so remove
+them
 
-Thanks for reviewing!
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/ps3/ps3av.c         |   58 +++++++++-----------------------------------
+ include/asm-powerpc/ps3av.h |    2 -
+ 2 files changed, 13 insertions(+), 47 deletions(-)
 
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -78,23 +78,21 @@ static const struct avset_video_mode {
+ 	u32 aspect;
+ 	u32 x;
+ 	u32 y;
+-	u32 interlace;
+-	u32 freq;
+ } video_mode_table[] = {
+ 	{     0, }, /* auto */
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480, 1, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480, 0, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720, 0, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080, 1, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080, 0, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576, 1, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576, 0, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720, 0, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080, 1, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080, 0, 50},
+-	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768, 0, 60},
+-	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024, 0, 60},
+-	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200, 0, 60},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080},
++	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768},
++	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024},
++	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200},
+ };
+ 
+ /* supported CIDs */
+@@ -889,36 +887,6 @@ int ps3av_get_mode(void)
+ 
+ EXPORT_SYMBOL_GPL(ps3av_get_mode);
+ 
+-int ps3av_get_scanmode(int id)
+-{
+-	int size;
+-
+-	id = id & PS3AV_MODE_MASK;
+-	size = ARRAY_SIZE(video_mode_table);
+-	if (id > size - 1 || id < 0) {
+-		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
+-		return -EINVAL;
+-	}
+-	return video_mode_table[id].interlace;
+-}
+-
+-EXPORT_SYMBOL_GPL(ps3av_get_scanmode);
+-
+-int ps3av_get_refresh_rate(int id)
+-{
+-	int size;
+-
+-	id = id & PS3AV_MODE_MASK;
+-	size = ARRAY_SIZE(video_mode_table);
+-	if (id > size - 1 || id < 0) {
+-		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
+-		return -EINVAL;
+-	}
+-	return video_mode_table[id].freq;
+-}
+-
+-EXPORT_SYMBOL_GPL(ps3av_get_refresh_rate);
+-
+ /* get resolution by video_mode */
+ int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
+ {
+--- a/include/asm-powerpc/ps3av.h
++++ b/include/asm-powerpc/ps3av.h
+@@ -713,8 +713,6 @@ extern int ps3av_set_video_mode(u32);
+ extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
+ extern int ps3av_get_auto_mode(void);
+ extern int ps3av_get_mode(void);
+-extern int ps3av_get_scanmode(int);
+-extern int ps3av_get_refresh_rate(int);
+ extern int ps3av_video_mode2res(u32, u32 *, u32 *);
+ extern int ps3av_video_mute(int);
+ extern int ps3av_audio_mute(int);
+
+-- 
 With kind regards,
  
 Geert Uytterhoeven
@@ -65,7 +154,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0489414765==
+--===============1608890507==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -75,7 +164,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0489414765==
+--===============1608890507==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -86,4 +175,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0489414765==--
+--===============1608890507==--

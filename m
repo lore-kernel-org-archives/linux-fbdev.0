@@ -1,22 +1,20 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 4/9] ps3fb: Inline macros that are used
-	only once
-Date: Mon, 26 Nov 2007 18:24:59 +0100
-Message-ID: <20071126172712.338327000@pademelon.sonytel.be>
-References: <20071126172455.308741000@pademelon.sonytel.be>
+Subject: [patch 0/9] ps3av/fb patches for 2.6.25
+Date: Mon, 26 Nov 2007 18:24:55 +0100
+Message-ID: <20071126172455.308741000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0953544154=="
+Content-Type: multipart/mixed; boundary="===============0489414765=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IwhkT-0008FO-Ch for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 09:27:57 -0800
+	id 1IwhkU-0008Fc-CL for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Nov 2007 09:27:58 -0800
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwhkS-0002W1-SU
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwhkS-0002Vc-Sy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 09:27:57 -0800
+	Mon, 26 Nov 2007 09:27:58 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,53 +26,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
---===============0953544154==
-Content-Disposition: inline; filename=ps3-wip/ps3fb-inline-macros.diff
+--===============0489414765==
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+	Hi,
 
-ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() macros,
-as they're used in one place only
+Here is a first bunch of ps3av/fb patches for 2.6.25:
+  [1] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused
+  [2] ps3: Use symbolic names for video modes
+  [3] ps3fb: Kill PS3FB_FULL_MODE_BIT
+  [4] ps3fb: Inline macros that are used only once
+  [5] ps3fb: Kill ps3fb_res[]
+  [6] ps3fb: Make frame buffer offset unsigned int
+  [7] ps3fb: Configurable black borders
+  [8] ps3fb: Reorganize modedb handling
+  [9] ps3fb: Round up video modes
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/video/ps3fb.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+Thanks for reviewing!
 
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -286,15 +286,8 @@ static const struct fb_videomode ps3fb_m
- #define HEAD_A
- #define HEAD_B
- 
--#define X_OFF(i)	(ps3fb_res[i].xoff)	/* left/right margin (pixel) */
--#define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
--#define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
--#define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
- #define BPP		4			/* number of bytes per pixel */
- 
--/* Start of the virtual frame buffer (relative to fullscreen ) */
--#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
--
- 
- static int ps3fb_mode;
- module_param(ps3fb_mode, int, 0);
-@@ -609,7 +602,10 @@ static int ps3fb_set_par(struct fb_info 
- 
- 	par->width = info->var.xres;
- 	par->height = info->var.yres;
--	offset = VP_OFF(i);
-+
-+	/* Start of the virtual frame buffer (relative to fullscreen) */
-+	offset = ps3fb_res[i].yoff * ddr_line_length + ps3fb_res[i].xoff * BPP;
-+
- 	par->fb_offset = GPU_ALIGN_UP(offset);
- 	par->full_offset = par->fb_offset - offset;
- 	par->pan_offset = info->var.yoffset * xdr_line_length +
-
--- 
 With kind regards,
  
 Geert Uytterhoeven
@@ -96,7 +65,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0953544154==
+--===============0489414765==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -106,7 +75,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0953544154==
+--===============0489414765==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -117,4 +86,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0953544154==--
+--===============0489414765==--

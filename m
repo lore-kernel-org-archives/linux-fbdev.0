@@ -1,21 +1,24 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 8/9] ps3fb: Reorganize modedb handling
-Date: Mon, 26 Nov 2007 18:25:03 +0100
-Message-ID: <20071126172712.754263000@pademelon.sonytel.be>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [patch 2/9] ps3: Use symbolic names for
+	video modes
+Date: Tue, 27 Nov 2007 11:05:38 +1100
+Message-ID: <20071127110538.32f8dfef.sfr@canb.auug.org.au>
 References: <20071126172455.308741000@pademelon.sonytel.be>
+	<20071126172712.128301000@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0372627565=="
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============1878853972=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Iwhkh-0008Mk-SW for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 09:28:11 -0800
-Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Iwhke-0000dF-Kn
+	id 1IwnxW-0000EG-5I for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Nov 2007 16:05:50 -0800
+Received: from chilli.pcug.org.au ([203.10.76.44] helo=smtps.tip.net.au)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwnxU-000277-Ex
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 09:28:11 -0800
+	Mon, 26 Nov 2007 16:05:50 -0800
+In-Reply-To: <20071126172712.128301000@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,245 +29,71 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
---===============0372627565==
-Content-Disposition: inline;
-	filename=ps3-wip/ps3fb-reorganize-modedb-handling.diff
+--===============1878853972==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc"
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+--Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-ps3fb: Reorganize modedb handling:
-  - Reorder the video modes in ps3fb_modedb, for easier indexing using
-    PS3AV_MODE_* numbers,
-  - Introduce ps3fb_native_vmode(), to convert from native (PS3AV_MODE_*) mode
-    numbers to struct fb_videomode *,
-  - Rename and move ps3fb_default_mode() to ps3fb_vmode().
+On Mon, 26 Nov 2007 18:24:57 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@s=
+onycom.com> wrote:
+>
+> @@ -594,20 +594,21 @@ static const struct {
+>  	unsigned mask : 19;
+>  	unsigned id :  4;
+>  } ps3av_preferred_modes[] =3D {
+> -	{ .mask =3D PS3AV_RESBIT_WUXGA		<< SHIFT_VESA,	.id =3D 13 },
+> -	{ .mask =3D PS3AV_RESBIT_1920x1080P	<< SHIFT_60,	.id =3D 5 },
+> -	{ .mask =3D PS3AV_RESBIT_1920x1080P	<< SHIFT_50,	.id =3D 10 },
+> -	{ .mask =3D PS3AV_RESBIT_1920x1080I	<< SHIFT_60,	.id =3D 4 },
+> -	{ .mask =3D PS3AV_RESBIT_1920x1080I	<< SHIFT_50,	.id =3D 9 },
+> -	{ .mask =3D PS3AV_RESBIT_SXGA		<< SHIFT_VESA,	.id =3D 12 },
+> -	{ .mask =3D PS3AV_RESBIT_WXGA		<< SHIFT_VESA,	.id =3D 11 },
+> -	{ .mask =3D PS3AV_RESBIT_1280x720P	<< SHIFT_60,	.id =3D 3 },
+> -	{ .mask =3D PS3AV_RESBIT_1280x720P	<< SHIFT_50,	.id =3D 8 },
+> -	{ .mask =3D PS3AV_RESBIT_720x480P		<< SHIFT_60,	.id =3D 2 },
+> -	{ .mask =3D PS3AV_RESBIT_720x576P		<< SHIFT_50,	.id =3D 7 },
+> +	{ PS3AV_RESBIT_WUXGA      << SHIFT_VESA, PS3AV_MODE_WUXGA   },
+> +	{ PS3AV_RESBIT_1920x1080P << SHIFT_60,   PS3AV_MODE_1080P60 },
+> +	{ PS3AV_RESBIT_1920x1080P << SHIFT_50,   PS3AV_MODE_1080P50 },
+> +	{ PS3AV_RESBIT_1920x1080I << SHIFT_60,   PS3AV_MODE_1080I60 },
+> +	{ PS3AV_RESBIT_1920x1080I << SHIFT_50,   PS3AV_MODE_1080I50 },
+> +	{ PS3AV_RESBIT_SXGA       << SHIFT_VESA, PS3AV_MODE_SXGA    },
+> +	{ PS3AV_RESBIT_WXGA       << SHIFT_VESA, PS3AV_MODE_WXGA    },
+> +	{ PS3AV_RESBIT_1280x720P  << SHIFT_60,   PS3AV_MODE_720P60  },
+> +	{ PS3AV_RESBIT_1280x720P  << SHIFT_50,   PS3AV_MODE_720P50  },
+> +	{ PS3AV_RESBIT_720x480P   << SHIFT_60,   PS3AV_MODE_480P    },
+> +	{ PS3AV_RESBIT_720x576P   << SHIFT_50,   PS3AV_MODE_576P    },
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/video/ps3fb.c |  116 +++++++++++++++++++++++++-------------------------
- 1 files changed, 60 insertions(+), 56 deletions(-)
+Why did you remove the C99 style initialisers?
 
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -145,6 +145,8 @@ struct ps3fb_par {
- };
- 
- 
-+#define FIRST_NATIVE_MODE_INDEX	10
-+
- static const struct fb_videomode ps3fb_modedb[] = {
-     /* 60 Hz broadcast modes (modes "1" to "5") */
-     {
-@@ -192,24 +194,7 @@ static const struct fb_videomode ps3fb_m
-         FB_SYNC_BROADCAST, FB_VMODE_NONINTERLACED
-     },
- 
--    /* VESA modes (modes "11" to "13") */
--    {
--	/* WXGA */
--	"wxga", 60, 1280, 768, 12924, 160, 24, 29, 3, 136, 6,
--	0, FB_VMODE_NONINTERLACED,
--	FB_MODE_IS_VESA
--    }, {
--	/* SXGA */
--	"sxga", 60, 1280, 1024, 9259, 248, 48, 38, 1, 112, 3,
--	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED,
--	FB_MODE_IS_VESA
--    }, {
--	/* WUXGA */
--	"wuxga", 60, 1920, 1200, 6494, 80, 48, 26, 3, 32, 6,
--	FB_SYNC_HOR_HIGH_ACT, FB_VMODE_NONINTERLACED,
--	FB_MODE_IS_VESA
--    },
--
-+    [FIRST_NATIVE_MODE_INDEX] =
-     /* 60 Hz broadcast modes (full resolution versions of modes "1" to "5") */
-     {
- 	/* 480if */
-@@ -254,6 +239,24 @@ static const struct fb_videomode ps3fb_m
- 	/* 1080pf */
- 	"1080pf", 50, 1920, 1080, 6734, 148, 484, 36, 4, 88, 5,
- 	FB_SYNC_BROADCAST, FB_VMODE_NONINTERLACED
-+    },
-+
-+    /* VESA modes (modes "11" to "13") */
-+    {
-+	/* WXGA */
-+	"wxga", 60, 1280, 768, 12924, 160, 24, 29, 3, 136, 6,
-+	0, FB_VMODE_NONINTERLACED,
-+	FB_MODE_IS_VESA
-+    }, {
-+	/* SXGA */
-+	"sxga", 60, 1280, 1024, 9259, 248, 48, 38, 1, 112, 3,
-+	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED,
-+	FB_MODE_IS_VESA
-+    }, {
-+	/* WUXGA */
-+	"wuxga", 60, 1920, 1200, 6494, 80, 48, 26, 3, 32, 6,
-+	FB_SYNC_HOR_HIGH_ACT, FB_VMODE_NONINTERLACED,
-+	FB_MODE_IS_VESA
-     }
- };
- 
-@@ -297,20 +300,43 @@ static int ps3fb_cmp_mode(const struct f
- 	return 0;
- }
- 
-+static const struct fb_videomode *ps3fb_native_vmode(enum ps3av_mode_num id)
-+{
-+	return &ps3fb_modedb[FIRST_NATIVE_MODE_INDEX + id - 1];
-+}
-+
-+static const struct fb_videomode *ps3fb_vmode(int id)
-+{
-+	u32 mode = id & PS3AV_MODE_MASK;
-+
-+	if (mode < PS3AV_MODE_480I || mode > PS3AV_MODE_WUXGA)
-+		return NULL;
-+
-+	if (mode <= PS3AV_MODE_1080P50 && !(id & PS3AV_MODE_FULL)) {
-+		/* Non-fullscreen broadcast mode */
-+		return &ps3fb_modedb[mode - 1];
-+	}
-+
-+	return ps3fb_native_vmode(mode);
-+}
-+
- static unsigned int ps3fb_find_mode(struct fb_var_screeninfo *var,
- 				    u32 *ddr_line_length, u32 *xdr_line_length)
- {
--	unsigned int i, mode;
-+	unsigned int id;
-+	const struct fb_videomode *vmode;
- 
--	for (i = PS3AV_MODE_1080P50; i < ARRAY_SIZE(ps3fb_modedb); i++)
--		if (!ps3fb_cmp_mode(&ps3fb_modedb[i], var))
-+	for (id = PS3AV_MODE_480I; id <= PS3AV_MODE_WUXGA; id++) {
-+		vmode = ps3fb_native_vmode(id);
-+		if (!ps3fb_cmp_mode(vmode, var))
- 			goto found;
-+	}
- 
--	pr_debug("ps3fb_find_mode: mode not found\n");
-+	pr_debug("%s: mode not found\n", __func__);
- 	return 0;
- 
- found:
--	*ddr_line_length = ps3fb_modedb[i].xres * BPP;
-+	*ddr_line_length = vmode->xres * BPP;
- 
- 	if (!var->xres) {
- 		var->xres = 1;
-@@ -329,36 +355,14 @@ found:
- 	} else
- 		*xdr_line_length = *ddr_line_length;
- 
--	mode = i+1;
--	if (mode > PS3AV_MODE_WUXGA) {
--		mode -= PS3AV_MODE_WUXGA;
-+	if (vmode->sync & FB_SYNC_BROADCAST) {
- 		/* Full broadcast modes have the full mode bit set */
--		if (ps3fb_modedb[i].xres == var->xres &&
--		    ps3fb_modedb[i].yres == var->yres)
--			mode |= PS3AV_MODE_FULL;
--	}
--
--	pr_debug("ps3fb_find_mode: mode %u\n", mode);
--
--	return mode;
--}
--
--static const struct fb_videomode *ps3fb_default_mode(int id)
--{
--	u32 mode = id & PS3AV_MODE_MASK;
--	u32 flags;
--
--	if (mode < PS3AV_MODE_480I || mode > PS3AV_MODE_WUXGA)
--		return NULL;
--
--	flags = id & ~PS3AV_MODE_MASK;
--
--	if (mode <= PS3AV_MODE_1080P50 && flags & PS3AV_MODE_FULL) {
--		/* Full broadcast mode */
--		return &ps3fb_modedb[mode + PS3AV_MODE_WUXGA - 1];
-+		if (vmode->xres == var->xres && vmode->yres == var->yres)
-+			id |= PS3AV_MODE_FULL;
- 	}
- 
--	return &ps3fb_modedb[mode - 1];
-+	pr_debug("%s: mode %u\n", __func__, id);
-+	return id;
- }
- 
- static void ps3fb_sync_image(struct device *dev, u64 frame_offset,
-@@ -551,7 +555,7 @@ static int ps3fb_set_par(struct fb_info 
- 	if (!mode)
- 		return -EINVAL;
- 
--	vmode = ps3fb_default_mode(mode | PS3AV_MODE_FULL);
-+	vmode = ps3fb_native_vmode(mode & PS3AV_MODE_MASK);
- 
- 	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea);
- 	info->fix.smem_len = ps3fb.xdr_size;
-@@ -765,7 +769,7 @@ static int ps3fb_ioctl(struct fb_info *i
- 	case PS3FB_IOCTL_SETMODE:
- 		{
- 			struct ps3fb_par *par = info->par;
--			const struct fb_videomode *mode;
-+			const struct fb_videomode *vmode;
- 			struct fb_var_screeninfo var;
- 
- 			if (copy_from_user(&val, argp, sizeof(val)))
-@@ -778,10 +782,10 @@ static int ps3fb_ioctl(struct fb_info *i
- 			}
- 			dev_dbg(info->device, "PS3FB_IOCTL_SETMODE:%x\n", val);
- 			retval = -EINVAL;
--			mode = ps3fb_default_mode(val);
--			if (mode) {
-+			vmode = ps3fb_vmode(val);
-+			if (vmode) {
- 				var = info->var;
--				fb_videomode_to_var(&var, mode);
-+				fb_videomode_to_var(&var, vmode);
- 				acquire_console_sem();
- 				info->flags |= FBINFO_MISC_USEREVENT;
- 				/* Force, in case only special bits changed */
-@@ -1125,7 +1129,7 @@ static int __devinit ps3fb_probe(struct 
- 
- 	if (!fb_find_mode(&info->var, info, mode_option, ps3fb_modedb,
- 			  ARRAY_SIZE(ps3fb_modedb),
--			  ps3fb_default_mode(par->new_mode_id), 32)) {
-+			  ps3fb_vmode(par->new_mode_id), 32)) {
- 		retval = -EINVAL;
- 		goto err_fb_dealloc;
- 	}
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+--Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc
+Content-Type: application/pgp-signature
 
-Sony Network and Software Technology Center Europe
-The Corporate Village ������ Da Vincilaan 7-D1 ������ B-1935 Zaventem ������ Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 ������ B-1840 Londerzeel ������ Belgium	
-VAT BE 0413.825.160 ������ RPR Brussels	
-Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBAN BE39001382358619
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHS19WTgG2atn1QN8RAhxjAJwO8pMQu5fv7MzhHK+grvUvE3S7FACfUQMh
+H/2Vj3Wuoo0daPBQ+TH9kxc=
+=GFUR
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc--
 
 
-
---===============0372627565==
+--===============1878853972==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -274,7 +103,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2005.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0372627565==
+--===============1878853972==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -285,4 +114,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0372627565==--
+--===============1878853972==--

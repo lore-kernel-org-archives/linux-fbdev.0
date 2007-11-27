@@ -1,24 +1,29 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [patch 2/9] ps3: Use symbolic names for
-	video modes
-Date: Tue, 27 Nov 2007 11:05:38 +1100
-Message-ID: <20071127110538.32f8dfef.sfr@canb.auug.org.au>
-References: <20071126172455.308741000@pademelon.sonytel.be>
-	<20071126172712.128301000@pademelon.sonytel.be>
+From: "eric miao" <eric.y.miao@gmail.com>
+Subject: Re: [PATCH] pxafb: Add missing code to support
+	palette formats
+Date: Tue, 27 Nov 2007 10:48:51 +0800
+Message-ID: <f17812d70711261848w28ce14eamea2a61cd7f4a533b@mail.gmail.com>
+References: <20071123122616.30bd242c@bluebox.local>
+	<f17812d70711240028l295887asfc7ffeedaf9809c4@mail.gmail.com>
+	<20071126145857.765e625a@dilbert.local>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1878853972=="
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IwnxW-0000EG-5I for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 16:05:50 -0800
-Received: from chilli.pcug.org.au ([203.10.76.44] helo=smtps.tip.net.au)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwnxU-000277-Ex
+	id 1IwqVJ-0007vp-Uf for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Nov 2007 18:48:54 -0800
+Received: from wa-out-1112.google.com ([209.85.146.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IwqVJ-0005oT-J3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 26 Nov 2007 16:05:50 -0800
-In-Reply-To: <20071126172712.128301000@pademelon.sonytel.be>
+	Mon, 26 Nov 2007 18:48:53 -0800
+Received: by wa-out-1112.google.com with SMTP id k22so1139956waf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 26 Nov 2007 18:48:51 -0800 (PST)
+In-Reply-To: <20071126145857.765e625a@dilbert.local>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,89 +34,90 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?UTF-8?Q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
---===============1878853972==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc"
-
---Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 26 Nov 2007 18:24:57 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@s=
-onycom.com> wrote:
->
-> @@ -594,20 +594,21 @@ static const struct {
->  	unsigned mask : 19;
->  	unsigned id :  4;
->  } ps3av_preferred_modes[] =3D {
-> -	{ .mask =3D PS3AV_RESBIT_WUXGA		<< SHIFT_VESA,	.id =3D 13 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080P	<< SHIFT_60,	.id =3D 5 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080P	<< SHIFT_50,	.id =3D 10 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080I	<< SHIFT_60,	.id =3D 4 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080I	<< SHIFT_50,	.id =3D 9 },
-> -	{ .mask =3D PS3AV_RESBIT_SXGA		<< SHIFT_VESA,	.id =3D 12 },
-> -	{ .mask =3D PS3AV_RESBIT_WXGA		<< SHIFT_VESA,	.id =3D 11 },
-> -	{ .mask =3D PS3AV_RESBIT_1280x720P	<< SHIFT_60,	.id =3D 3 },
-> -	{ .mask =3D PS3AV_RESBIT_1280x720P	<< SHIFT_50,	.id =3D 8 },
-> -	{ .mask =3D PS3AV_RESBIT_720x480P		<< SHIFT_60,	.id =3D 2 },
-> -	{ .mask =3D PS3AV_RESBIT_720x576P		<< SHIFT_50,	.id =3D 7 },
-> +	{ PS3AV_RESBIT_WUXGA      << SHIFT_VESA, PS3AV_MODE_WUXGA   },
-> +	{ PS3AV_RESBIT_1920x1080P << SHIFT_60,   PS3AV_MODE_1080P60 },
-> +	{ PS3AV_RESBIT_1920x1080P << SHIFT_50,   PS3AV_MODE_1080P50 },
-> +	{ PS3AV_RESBIT_1920x1080I << SHIFT_60,   PS3AV_MODE_1080I60 },
-> +	{ PS3AV_RESBIT_1920x1080I << SHIFT_50,   PS3AV_MODE_1080I50 },
-> +	{ PS3AV_RESBIT_SXGA       << SHIFT_VESA, PS3AV_MODE_SXGA    },
-> +	{ PS3AV_RESBIT_WXGA       << SHIFT_VESA, PS3AV_MODE_WXGA    },
-> +	{ PS3AV_RESBIT_1280x720P  << SHIFT_60,   PS3AV_MODE_720P60  },
-> +	{ PS3AV_RESBIT_1280x720P  << SHIFT_50,   PS3AV_MODE_720P50  },
-> +	{ PS3AV_RESBIT_720x480P   << SHIFT_60,   PS3AV_MODE_480P    },
-> +	{ PS3AV_RESBIT_720x576P   << SHIFT_50,   PS3AV_MODE_576P    },
-
-Why did you remove the C99 style initialisers?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHS19WTgG2atn1QN8RAhxjAJwO8pMQu5fv7MzhHK+grvUvE3S7FACfUQMh
-H/2Vj3Wuoo0daPBQ+TH9kxc=
-=GFUR
------END PGP SIGNATURE-----
-
---Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc--
-
-
---===============1878853972==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2005.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============1878853972==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1878853972==--
+T24gTm92IDI2LCAyMDA3IDk6NTggUE0sIEhhbnMtSsO8cmdlbiBLb2NoIDxoamtAbGludXRyb25p
+eC5kZT4gd3JvdGU6Cj4gQW0gU2F0LCAyNCBOb3YgMjAwNyAxNjoyODo1NSArMDgwMAo+IHNjaHJp
+ZWIgImVyaWMgbWlhbyIgPGVyaWMueS5taWFvQGdtYWlsLmNvbT46Cj4KPgo+ID4gT24gTm92IDIz
+LCAyMDA3IDc6MjYgUE0sIEhhbnMgSi4gS29jaCA8aGprQGxpbnV0cm9uaXguZGU+IHdyb3RlOgo+
+ID4gPiBTdWJqZWN0OiBweGFmYjogQWRkIG1pc3NpbmcgY29kZSB0byBzdXBwb3J0IHBhbGV0dGUg
+Zm9ybWF0cwo+ID4gPiBEYXRlOiBGcmksIDIzIE5vdiAyMDA3IDEwOjMzOjI0ICswMTAwCj4gPiA+
+IEZyb206IEhhbnMgSiBLb2NoIDxoamtAbGludXRyb25peC5kZT4KPiA+ID4KPiA+ID4gQSBmZXcg
+bGluZXMgb2YgY29kZSBhcmUgbWlzc2luZyB0byBzdXBwb3J0IGRpZmZlcmVudCBwYWxldHRlCj4g
+PiA+IGZvcm1hdHMgaW4gcHhhZmIuIFRoaXMgcGF0Y2ggYWRkcyB0aGVtLCBjb2RlIHdhcyB0ZXN0
+ZWQgb24gUFhBMjcwLgo+ID4gPgo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBIYW5zIEogS29jaCA8aGpr
+QGxpbnV0cm9uaXguZGU+Cj4gPiA+Cj4gPiA+IC0tLQo+ID4gPiAgZHJpdmVycy92aWRlby9weGFm
+Yi5jIHwgICAxMiArKysrKysrKysrLS0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRp
+b25zKCspLCAyIGRlbGV0aW9ucygtKQo+ID4gPgo+ID4gPiBJbmRleDogbGludXgtMi42LjI0LXJj
+L2RyaXZlcnMvdmlkZW8vcHhhZmIuYwo+ID4gPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gPiA+IC0tLSBsaW51eC0y
+LjYuMjQtcmMub3JpZy9kcml2ZXJzL3ZpZGVvL3B4YWZiLmMgIDIwMDctMTEtMjIKPiA+ID4gMjM6
+MDM6MjguMDAwMDAwMDAwICswMTAwICsrKwo+ID4gPiBsaW51eC0yLjYuMjQtcmMvZHJpdmVycy92
+aWRlby9weGFmYi5jICAgMjAwNy0xMS0yMgo+ID4gPiAyMzo0MzowNy4wMDAwMDAwMDAgKzAxMDAg
+QEAgLTc0NSw4ICs3NDUsMTQgQEAgZmJpLT5yZWdfbGNjcjEgPQo+ID4gPiBuZXdfcmVncy5sY2Ny
+MTsgZmJpLT5yZWdfbGNjcjIgPSBuZXdfcmVncy5sY2NyMjsKPiA+ID4gICAgICAgICBmYmktPnJl
+Z19sY2NyMyA9IG5ld19yZWdzLmxjY3IzOwo+ID4gPiAtICAgICAgIGZiaS0+cmVnX2xjY3I0ID0g
+TENDUjQgJiAofkxDQ1I0X1BBTF9GT1JfTUFTSyk7Cj4gPiA+IC0gICAgICAgZmJpLT5yZWdfbGNj
+cjQgfD0gKGZiaS0+bGNjcjQgJiBMQ0NSNF9QQUxfRk9SX01BU0spOwo+ID4gPiArCj4gPiA+ICsg
+ICAgICAgaWYgKCgocmVhZF9jcHVpZChDUFVJRF9JRCkgPj4gNCkgJiAweDFmKSA9PSAweDExKSB7
+Cj4gPiA+ICsgICAgICAgICAgICAgICAvKiBQWEEgMjd4IG9ubHkgKi8KPiA+ID4gKyAgICAgICAg
+ICAgICAgIGZiaS0+cmVnX2xjY3I0ID0gTENDUjQgJiAofkxDQ1I0X1BBTF9GT1JfTUFTSyk7Cj4g
+PiA+ICsgICAgICAgICAgICAgICBmYmktPnJlZ19sY2NyNCB8PSAoZmJpLT5sY2NyNCAmIExDQ1I0
+X1BBTF9GT1JfTUFTSyk7Cj4gPiA+ICsgICAgICAgfSBlbHNlCj4gPiA+ICsgICAgICAgICAgICAg
+ICBmYmktPnJlZ19sY2NyNCA9IDA7Cj4gPiA+ICsKPiA+Cj4gPiBJIGRvbid0IHNlZSB3aGF0J3Mg
+d3Jvbmcgd2l0aCB0aGUgb3JpZ2luYWwgY29kZS4gQ2FuIHlvdSBleHBsYWluIHRoaXMKPiA+IGEg
+Yml0IG1vcmU/Cj4KPiBUaGUgcGF0Y2ggZml4ZXMgdHdvIHByb2JsZW1zOgo+Cj4gMS4gUmVnaXN0
+ZXIgTENDUjQgZXhpc3RzIG9uIFBYQTI3eCBvbmx5Lgo+IDIuIFRoZSBvcmlnaW5hbCBjb2RlIG5l
+dmVyIHdyaXRlcyB0byBMQ0NSNC4gSXQgc2V0cyBmYmktPnJlZ19sY2NyNCBvbmx5Lgo+Cj4KPiA+
+Cj4gPiBBbmQgdGhlcmUgYXJlIGFscmVhZHkgY3B1X2lzX3B4YTI3eCgpIGFuZCBmcmllbmRzIGlu
+IHRoZSBrZXJuZWwsIHNvCj4gPiB1c2UgdGhvc2UgaW5zdGVhZCBvZiB5b3VyIG93biBwbGVhc2Uu
+Cj4KPiBSaWdodC4KPgo+IFRoYW5rcyBmb3IgeW91ciBoaW50cywgRXJpYyEgSGVyZSdzIGFuIHVw
+ZGF0ZWQgdmVyc2lvbjoKPgo+IFN1YmplY3Q6IHB4YWZiOiBBZGQgbWlzc2luZyBjb2RlIHRvIHN1
+cHBvcnQgcGFsZXR0ZSBmb3JtYXRzCj4gRGF0ZTogRnJpLCAyMyBOb3YgMjAwNyAxMDozMzoyNCAr
+MDEwMAo+IEZyb206IEhhbnMgSiBLb2NoIDxoamtAbGludXRyb25peC5kZT4KPgo+IEEgZmV3IGxp
+bmVzIG9mIGNvZGUgYXJlIG1pc3NpbmcgdG8gc3VwcG9ydCBkaWZmZXJlbnQgcGFsZXR0ZSBmb3Jt
+YXRzIGluIHB4YWZiLgo+IFRoaXMgcGF0Y2ggYWRkcyB0aGVtLCBjb2RlIHdhcyB0ZXN0ZWQgb24g
+UFhBMjcwLgo+Cj4gU2lnbmVkLW9mZi1ieTogSGFucyBKIEtvY2ggPGhqa0BsaW51dHJvbml4LmRl
+Pgo+Cj4gLS0tCj4gIGRyaXZlcnMvdmlkZW8vcHhhZmIuYyB8ICAgMTEgKysrKysrKysrLS0KPiAg
+MSBmaWxlIGNoYW5nZWQsIDkgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKPgo+IEluZGV4
+OiBsaW51eC0yLjYuMjQtcmMvZHJpdmVycy92aWRlby9weGFmYi5jCj4gPT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0t
+LSBsaW51eC0yLjYuMjQtcmMub3JpZy9kcml2ZXJzL3ZpZGVvL3B4YWZiLmMgIDIwMDctMTEtMjIg
+MjM6MDM6MjguMDAwMDAwMDAwICswMTAwCj4gKysrIGxpbnV4LTIuNi4yNC1yYy9kcml2ZXJzL3Zp
+ZGVvL3B4YWZiLmMgICAgICAgMjAwNy0xMS0yNiAxNDo0NjozNC4wMDAwMDAwMDAgKzAxMDAKPiBA
+QCAtNzQ1LDggKzc0NSwxMyBAQAo+ICAgICAgICAgZmJpLT5yZWdfbGNjcjEgPSBuZXdfcmVncy5s
+Y2NyMTsKPiAgICAgICAgIGZiaS0+cmVnX2xjY3IyID0gbmV3X3JlZ3MubGNjcjI7Cj4gICAgICAg
+ICBmYmktPnJlZ19sY2NyMyA9IG5ld19yZWdzLmxjY3IzOwo+IC0gICAgICAgZmJpLT5yZWdfbGNj
+cjQgPSBMQ0NSNCAmICh+TENDUjRfUEFMX0ZPUl9NQVNLKTsKPiAtICAgICAgIGZiaS0+cmVnX2xj
+Y3I0IHw9IChmYmktPmxjY3I0ICYgTENDUjRfUEFMX0ZPUl9NQVNLKTsKPiArCj4gKyAgICAgICBp
+ZiAoY3B1X2lzX3B4YTI3eCgpKSB7Cj4gKyAgICAgICAgICAgICAgIGZiaS0+cmVnX2xjY3I0ID0g
+TENDUjQgJiAofkxDQ1I0X1BBTF9GT1JfTUFTSyk7Cj4gKyAgICAgICAgICAgICAgIGZiaS0+cmVn
+X2xjY3I0IHw9IChmYmktPmxjY3I0ICYgTENDUjRfUEFMX0ZPUl9NQVNLKTsKPiArICAgICAgIH0g
+ZWxzZQo+ICsgICAgICAgICAgICAgICBmYmktPnJlZ19sY2NyNCA9IDA7Cj4gKwoKaXQgd291bGQg
+YmUgbW9yZSBhcHByb3ByaWF0ZSB0byBpbml0aWFsaXplIGZiaS0+bGNjcjQgdG8gJzAnIGluCnB4
+YWZiX2luaXRfZmJpbmZvKCkKaWYgaXQgaXMgcHhhMjV4L3B4YTIxeCBzaW5jZSBmYmktPmxjY3I0
+IHdpbGwgYmUgdXNlZCB0byBjYWxjdWxhdGUgdGhlIHNpemUgYW5kCmZvcm1hdCBvZiB0aGUgcGFs
+ZXR0ZSBidWZmZXIgd2hpbGUgcHhhMjV4L3B4YTIxeCBzdXBwb3J0IG9ubHkgMTYtYml0CnBhbGV0
+dGUgX29ubHlfLgoKaXQgaXMgYWxzbyBwb3NzaWJsZSBubyBjaGFuZ2UgbWFkZSBoZXJlIHRvIGZi
+aS0+cmVnX2xjY3I0IHNpbmNlIHRoZSB2YWx1ZQp3aWxsIG5vdCBiZSBndWFyZGVkIHRvIGJlIGFj
+dHVhbGx5IHdyaXR0ZW4gaWYgcHhhMjV4L3B4YTIxeAoKPiAgICAgICAgIHNldF9oc3luY190aW1l
+KGZiaSwgcGNkKTsKPiAgICAgICAgIGxvY2FsX2lycV9yZXN0b3JlKGZsYWdzKTsKPgo+IEBAIC04
+MzgsNiArODQzLDggQEAKPiAgICAgICAgIGNsa19lbmFibGUoZmJpLT5jbGspOwo+Cj4gICAgICAg
+ICAvKiBTZXF1ZW5jZSBmcm9tIDExLjcuMTAgKi8KPiArICAgICAgIGlmIChjcHVfaXNfcHhhMjd4
+KCkpCj4gKyAgICAgICAgICAgICAgIExDQ1I0ID0gZmJpLT5yZWdfbGNjcjQ7Cj4KCnRoaXMgYnJl
+YWtzIHRoZSBweGEzeHgsIGlmIChjcHVfaXNfcHhhMjd4KCkgfHwgY3B1X2lzX3B4YTN4eCgpKSB3
+b3VsZCBiZSBiZXR0ZXIKCj4gICAgICAgICBMQ0NSMyA9IGZiaS0+cmVnX2xjY3IzOwo+ICAgICAg
+ICAgTENDUjIgPSBmYmktPnJlZ19sY2NyMjsKPiAgICAgICAgIExDQ1IxID0gZmJpLT5yZWdfbGNj
+cjE7Cj4KCkFueXdheSwgSSBkbyB0aGluayB0aGUgaXNzdWUgaXMgd2l0aGluIHRoZSBpbnRyb2R1
+Y2Ugb2YgbGNjcjQgaW4KcHJldmlvdXMgcGF0Y2hlcy4KVGhlcmUgc2hvdWxkIGJlIG11Y2ggY2xl
+YW4gcGF0Y2ggdG8gdGhpcyBpc3N1ZSwgdGhvdWdoLgoKLS0gCkNoZWVycwotIGVyaWMKLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQpUaGlzIFNGLm5ldCBlbWFpbCBpcyBzcG9uc29yZWQgYnk6IE1pY3Jvc29mdApE
+ZWZ5IGFsbCBjaGFsbGVuZ2VzLiBNaWNyb3NvZnQoUikgVmlzdWFsIFN0dWRpbyAyMDA1LgpodHRw
+Oi8vY2xrLmF0ZG10LmNvbS9NUlQvZ28vdnNlMDEyMDAwMDA3MG1ydC9kaXJlY3QvMDEvCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRl
+dmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQK
+aHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYt
+ZGV2ZWwK

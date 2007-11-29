@@ -1,39 +1,22 @@
-From: Ico Doornekamp <fbdev@pruts.nl>
-Subject: Re: Questions about fbdriver integration
-Date: Wed, 28 Nov 2007 14:21:08 +0100
-Message-ID: <20071128132108.GX25554@pruts.nl>
-References: <20071124214325.GD3183@pruts.nl> <20071124221447.GF3183@pruts.nl>
-	<45a44e480711241449l5c368250q40e5adc1fab117fa@mail.gmail.com>
-	<20071125090525.GG3183@pruts.nl>
-	<45a44e480711250248x692c3d2p8b5bade876a36d26@mail.gmail.com>
-	<20071128114045.GU25554@pruts.nl>
-	<45a44e480711280500j7557fe0ifa53bddc29de770a@mail.gmail.com>
-	<45a44e480711280511o454c6a7etbea8236412ae9278@mail.gmail.com>
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] atmel_lcdfb: Validate display timings
+Date: Thu, 29 Nov 2007 14:51:33 +0100
+Message-ID: <1196344293-31101-1-git-send-email-hskinnemoen@atmel.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IxMqt-0002gr-PL for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Nov 2007 05:21:21 -0800
-Received: from pruts.nl ([82.94.235.106] helo=iron.pruts.nl ident=postfix)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IxMqs-0003Pg-7D
+	id 1Ixjnz-0001OY-Bj for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 29 Nov 2007 05:51:56 -0800
+Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Ixjnw-00040J-61
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Nov 2007 05:21:19 -0800
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by iron.pruts.nl (Postfix) with ESMTP id 5777912E429
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 28 Nov 2007 14:21:16 +0100 (CET)
-Received: from iron.pruts.nl ([127.0.0.1])
-	by localhost (iron.pruts.nl [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id S9X8Hvtu0rsp
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 28 Nov 2007 14:21:08 +0100 (CET)
-Content-Disposition: inline
-In-Reply-To: <45a44e480711280511o454c6a7etbea8236412ae9278@mail.gmail.com>
+	Thu, 29 Nov 2007 05:51:49 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -44,49 +27,86 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: kernel@avr32linux.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
+Setting a display timing parameter too high or too low may cause it to
+wrap around and thus become completely wrong. Validate the timings in
+atmel_lcdfb_check_var() and saturate to the highest or lowest possible
+value if necessary.
 
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/video/atmel_lcdfb.c |   20 ++++++++++++++++++++
+ include/video/atmel_lcdc.h  |   14 +++++++-------
+ 2 files changed, 27 insertions(+), 7 deletions(-)
 
-* On 2007-11-28 Jaya Kumar <jayakumar.lkml@gmail.com> wrote  :
-
-> On Nov 28, 2007 8:00 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> > On Nov 28, 2007 6:40 AM, Ico Doornekamp <fbdev@zevv.nl> wrote:
-> > > * On 2007-11-25 Jaya Kumar <jayakumar.lkml@gmail.com> wrote  :
-> > > > On Nov 25, 2007 4:05 AM, Ico Doornekamp <fbdev@zevv.nl> wrote:
-> > > > >
-> > > > > This seems to fix my mmap problem, although the first mmap
-> > > > > access yields a kernel warning:
-> > > > >
-> > > > >         WARNING: at fs/buffer.c:696 __set_page_dirty()
-> > > > >         [<c01622f8>] __set_page_dirty+0xb8/0xf0
-> > > > >         [<c0134169>] set_page_dirty+0x29/0x50
-> > > > >         [<c0134d5b>] set_page_dirty_balance+0xb/0x40
-> > > > >         [<c0139470>] __do_fault+0x160/0x340
-> > > > >         [<c013a9d3>] handle_mm_fault+0xd3/0x3d0
-> > > > >
-> > > >
-> > > > Odd. I don't see the same warning. I am still on 2.6.22.10 so maybe
-> > > > it's a recent change.
-> > >
-> > > Just curious, did you happen to take a look at this issue, and were you
-> > > able to reproduce it ?
-> > >
-> >
-> > I haven't looked at it yet.
-> >
-> 
-> I'm regretably tied up. Please feel free to look at it too of course.
-
-Yes, of course, I was about to, so that's why I asked.
-
-Thank you,
-
-Ico
-
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 235b618..58d49e4 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -203,6 +203,26 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
+ 	var->transp.offset = var->transp.length = 0;
+ 	var->xoffset = var->yoffset = 0;
+ 
++	/* Saturate vertical and horizontal timings at maximum values */
++	var->vsync_len = min_t(u32, var->vsync_len,
++			(ATMEL_LCDC_VPW >> ATMEL_LCDC_VPW_OFFSET) + 1);
++	var->upper_margin = min_t(u32, var->upper_margin,
++			ATMEL_LCDC_VBP >> ATMEL_LCDC_VBP_OFFSET);
++	var->lower_margin = min_t(u32, var->lower_margin,
++			ATMEL_LCDC_VFP);
++	var->right_margin = min_t(u32, var->right_margin,
++			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 1);
++	var->hsync_len = min_t(u32, var->hsync_len,
++			(ATMEL_LCDC_HPW >> ATMEL_LCDC_HPW_OFFSET) + 1);
++	var->left_margin = min_t(u32, var->left_margin,
++			ATMEL_LCDC_HBP + 1);
++
++	/* Some parameters can't be zero */
++	var->vsync_len = max_t(u32, var->vsync_len, 1);
++	var->right_margin = max_t(u32, var->right_margin, 1);
++	var->hsync_len = max_t(u32, var->hsync_len, 1);
++	var->left_margin = max_t(u32, var->left_margin, 1);
++
+ 	switch (var->bits_per_pixel) {
+ 	case 1:
+ 	case 2:
+diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
+index 4eea637..76095e7 100644
+--- a/include/video/atmel_lcdc.h
++++ b/include/video/atmel_lcdc.h
+@@ -115,20 +115,20 @@ struct atmel_lcdfb_info {
+ #define		ATMEL_LCDC_MEMOR_LITTLE		(1 << 31)
+ 
+ #define ATMEL_LCDC_TIM1		0x0808
+-#define	ATMEL_LCDC_VFP		(0xff <<  0)
++#define	ATMEL_LCDC_VFP		(0xffU <<  0)
+ #define	ATMEL_LCDC_VBP_OFFSET		8
+-#define	ATMEL_LCDC_VBP		(0xff <<  ATMEL_LCDC_VBP_OFFSET)
++#define	ATMEL_LCDC_VBP		(0xffU <<  ATMEL_LCDC_VBP_OFFSET)
+ #define	ATMEL_LCDC_VPW_OFFSET		16
+-#define	ATMEL_LCDC_VPW		(0x3f << ATMEL_LCDC_VPW_OFFSET)
++#define	ATMEL_LCDC_VPW		(0x3fU << ATMEL_LCDC_VPW_OFFSET)
+ #define	ATMEL_LCDC_VHDLY_OFFSET		24
+-#define	ATMEL_LCDC_VHDLY	(0xf  << ATMEL_LCDC_VHDLY_OFFSET)
++#define	ATMEL_LCDC_VHDLY	(0xfU  << ATMEL_LCDC_VHDLY_OFFSET)
+ 
+ #define ATMEL_LCDC_TIM2		0x080c
+-#define	ATMEL_LCDC_HBP		(0xff  <<  0)
++#define	ATMEL_LCDC_HBP		(0xffU  <<  0)
+ #define	ATMEL_LCDC_HPW_OFFSET		8
+-#define	ATMEL_LCDC_HPW		(0x3f  <<  ATMEL_LCDC_HPW_OFFSET)
++#define	ATMEL_LCDC_HPW		(0x3fU  <<  ATMEL_LCDC_HPW_OFFSET)
+ #define	ATMEL_LCDC_HFP_OFFSET		21
+-#define	ATMEL_LCDC_HFP		(0x7ff << ATMEL_LCDC_HFP_OFFSET)
++#define	ATMEL_LCDC_HFP		(0x7ffU << ATMEL_LCDC_HFP_OFFSET)
+ 
+ #define ATMEL_LCDC_LCDFRMCFG	0x0810
+ #define	ATMEL_LCDC_LINEVAL	(0x7ff <<  0)
 -- 
-:wq
-^X^Cy^K^X^C^C^C^C
+1.5.3.4
+
 
 -------------------------------------------------------------------------
 SF.Net email is sponsored by: The Future of Linux Business White Paper

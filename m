@@ -1,23 +1,24 @@
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [RFC/PATCH] atmel_lcdfb: Don't initialize a
-	pre-allocated framebuffer
-Date: Thu, 29 Nov 2007 15:41:18 +0100
-Message-ID: <1196347278-1184-1-git-send-email-hskinnemoen@atmel.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Porting Epson (S1D113A04) video driver from
+ kernel 2.6.8 to 2.6.10
+Date: Mon, 3 Dec 2007 21:04:31 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0712032103001.21374@anakin>
+References: <4754247A.20706@one.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1IxkZz-0006fS-Hq for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 29 Nov 2007 06:41:27 -0800
-Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1IxkZy-0001ei-QL
+	id 1IzHWy-000743-Iv for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 03 Dec 2007 12:04:43 -0800
+Received: from europa.telenet-ops.be ([195.130.137.75])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1IzHWw-0000yr-46
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 29 Nov 2007 06:41:27 -0800
+	Mon, 03 Dec 2007 12:04:40 -0800
+In-Reply-To: <4754247A.20706@one.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,126 +29,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: kernel@avr32linux.org, linux-fbdev-devel@lists.sourceforge.net, linux@maxim.org.za
+To: James Kimble <jkimble@one.net>
+Cc: linux-m68k@vger.kernel.org, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-If the user specified a fixed framebuffer address on the command line,
-it may have been initialized already with a splash image or something,
-so we shouldn't clear it.
+On Mon, 3 Dec 2007, James Kimble wrote:
+> I am attempting to port an epson video driver (S1D13A04) that was written for
+> the 2.6.8 kernel to the 2.6.10 kernel. The big difference I see is that the
+> fbmem.c module in 2.6.8 is a set of conditional declarations that add the
+> drivers xxx_init() and xxx_setup() calls as elements to the fb_drivers array.
+> I don't see any fb_drivers array or corresponding array of driver function
+> calls in the 2.6.10 sources.
 
-Therefore, we should only initialize the framebuffer if we allocated
-it ourselves. This patch also updates the AVR32 setup code to clear
-the framebuffer if it allocated it itself, i.e. the user didn't
-provide a fixed address or the reservation failed.
+In 2.6.9, frame buffer device drivers started using module_init() in the
+individual drivers.
 
-I've updated the at91 platform code as well so that it initializes the
-framebuffer if it is located in SRAM, but I haven't tested that it
-actually works.
+Just do a diff of any random frame buffer device driver between 2.6.8
+and 2.6.10...
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- arch/arm/mach-at91/at91sam9261_devices.c |   11 +++++++++++
- arch/arm/mach-at91/at91sam9rl_devices.c  |   14 ++++++++++++++
- arch/avr32/kernel/setup.c                |    2 ++
- drivers/video/atmel_lcdfb.c              |    8 +++++++-
- 4 files changed, 34 insertions(+), 1 deletions(-)
+> Can anyone tell me where these calls are registered with the video drivers sub
+> section in the 2.6.10 kernel?
 
-diff --git a/arch/arm/mach-at91/at91sam9261_devices.c b/arch/arm/mach-at91/at91sam9261_devices.c
-index 3576595..a72c006 100644
---- a/arch/arm/mach-at91/at91sam9261_devices.c
-+++ b/arch/arm/mach-at91/at91sam9261_devices.c
-@@ -494,6 +494,17 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_info *data)
- 	at91_set_B_periph(AT91_PIN_PB27, 0);	/* LCDD22 */
- 	at91_set_B_periph(AT91_PIN_PB28, 0);	/* LCDD23 */
- 
-+	if (ARRAY_SIZE(lcdc_resources) > 2) {
-+		void __iomem *fb;
-+		struct resource *fb_res = &lcdc_resources[2];
-+		size_t fb_len = fb_res->end - fb_res->start + 1;
-+
-+		fb = ioremap_writecombine(fb_res->start, fb_len);
-+		if (fb) {
-+			memset(fb, 0, fb_len);
-+			iounmap(fb, fb_len);
-+		}
-+	}
- 	lcdc_data = *data;
- 	platform_device_register(&at91_lcdc_device);
- }
-diff --git a/arch/arm/mach-at91/at91sam9rl_devices.c b/arch/arm/mach-at91/at91sam9rl_devices.c
-index cd7532b..0ceb87a 100644
---- a/arch/arm/mach-at91/at91sam9rl_devices.c
-+++ b/arch/arm/mach-at91/at91sam9rl_devices.c
-@@ -340,6 +340,20 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_info *data)
- 	at91_set_B_periph(AT91_PIN_PC24, 0);	/* LCDD22 */
- 	at91_set_B_periph(AT91_PIN_PC25, 0);	/* LCDD23 */
- 
-+#ifdef CONFIG_FB_INTSRAM
-+	{
-+		void __iomem *fb;
-+		struct resource *fb_res = &lcdc_resources[2];
-+		size_t fb_len = fb_res->end - fb_res->start + 1;
-+
-+		fb = ioremap_writecombine(fb_res->start, fb_len);
-+		if (fb) {
-+			memset(fb, 0, fb_len);
-+			iounmap(fb, fb_len);
-+		}
-+	}
-+#endif
-+
- 	lcdc_data = *data;
- 	platform_device_register(&at91_lcdc_device);
- }
-diff --git a/arch/avr32/kernel/setup.c b/arch/avr32/kernel/setup.c
-index 4b4c188..488078d 100644
---- a/arch/avr32/kernel/setup.c
-+++ b/arch/avr32/kernel/setup.c
-@@ -273,6 +273,8 @@ static int __init early_parse_fbmem(char *p)
- 			printk(KERN_WARNING
- 			       "Failed to allocate framebuffer memory\n");
- 			fbmem_size = 0;
-+		} else {
-+			memset(__va(fbmem_start), 0, fbmem_size);
- 		}
- 	}
- 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 12da65e..138a367 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -150,6 +150,8 @@ static int atmel_lcdfb_alloc_video_memory(struct atmel_lcdfb_info *sinfo)
- 		return -ENOMEM;
- 	}
- 
-+	memset(info->screen_base, 0, info->fix.smem_len);
-+
- 	return 0;
- }
- 
-@@ -534,7 +536,6 @@ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
- 	struct fb_info *info = sinfo->info;
- 	int ret = 0;
- 
--	memset_io(info->screen_base, 0, info->fix.smem_len);
- 	info->var.activate |= FB_ACTIVATE_FORCE | FB_ACTIVATE_NOW;
- 
- 	dev_info(info->device,
-@@ -663,6 +664,11 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
- 		info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
- 		if (!info->screen_base)
- 			goto release_intmem;
-+
-+		/*
-+		 * Don't clear the framebuffer -- someone may have set
-+		 * up a splash image.
-+		 */
- 	} else {
- 		/* alocate memory buffer */
- 		ret = atmel_lcdfb_alloc_video_memory(sinfo);
--- 
-1.5.3.4
+Anyway, 2.6.10 is old...
 
+BTW, is this S1D113A04 driver for m68k?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 SF.Net email is sponsored by: The Future of Linux Business White Paper

@@ -1,25 +1,25 @@
-From: Elimar Riesebieter <riesebie@lxtec.de>
-Subject: Re: radeonfb: Please enable support for X850XT
-Date: Thu, 6 Dec 2007 22:37:15 +0100
-Message-ID: <20071206213715.GB8001@aragorn.home.lxtec.de>
-References: <20071206212809.GA8249@aragorn.home.lxtec.de>
+From: Ben Dooks <ben@fluff.org>
+Subject: Re: [PATCH 0/7] sm501 patches
+Date: Fri, 7 Dec 2007 18:35:00 +0000
+Message-ID: <20071207183500.GB31746@fluff.org.uk>
+References: <1196020892591-git-send-email-syrjala@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1J0OPO-0001XU-NF for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Dec 2007 13:37:26 -0800
-Received: from smtpout.hostsharing.net ([83.223.95.98])
+	id 1J0i2e-0003AQ-VE for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 07 Dec 2007 10:35:17 -0800
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1J0OPN-0007Sp-8X
+	(Exim 4.44) id 1J0i2e-0003YP-Hb
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Dec 2007 13:37:26 -0800
+	Fri, 07 Dec 2007 10:35:16 -0800
 Content-Disposition: inline
-In-Reply-To: <20071206212809.GA8249@aragorn.home.lxtec.de>
+In-Reply-To: <1196020892591-git-send-email-syrjala@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,24 +30,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, Luca Tettamanti <kronos.it@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: ben@simtec.co.uk, vince@simtec.co.uk
 
-On Thu, 06 Dec 2007 the mental interface of
-Elimar Riesebieter told:
+On Sun, Nov 25, 2007 at 10:01:25PM +0200, Ville Syrjala wrote:
+> Here are some cleanups to the sm501 code and support for the SM502
+> programmable PLL.
 
-[...]
-> There was a patch which looked like enabling this card:
-> 
-> http://marc.info/?l=linux-fbdev-devel&m=116768377303703&w=2
-
-Sorry, must be
-http://marc.info/?l=linux-fbdev-devel&m=116769067309397&w=2
-
-Elimar
+Those looks reasonable, other than the debug patch which has already
+been taken by akpm. I'll try and sort out testing the SM502 changes
+now I have access to an SM502 device.
 
 -- 
-  It's a good thing we don't get all 
-  the government we pay for.
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 SF.Net email is sponsored by: 

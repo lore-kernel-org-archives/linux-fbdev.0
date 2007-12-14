@@ -1,168 +1,114 @@
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [PATCH] logo: move declarations of logos to linux_logo.h
-Date: Thu, 13 Dec 2007 22:31:35 +0100
-Message-ID: <20071213213130.GA1822@joi>
-References: <20071209214027.GG9440@joi> <20071213023111.30ddc487.akpm@linux-foundation.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] logo: move declarations of logos to
+ linux_logo.h
+Date: Fri, 14 Dec 2007 21:49:03 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0712142148390.4881@anakin>
+References: <20071209214027.GG9440@joi>
+	<20071213023111.30ddc487.akpm@linux-foundation.org>
+	<20071213213130.GA1822@joi>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932314AbXLMVa2@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20071213023111.30ddc487.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="windows-1252"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Antonino Daplas <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-1463808512-1321829784-1197665343=:4881"
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1J3HT9-0004Md-Lr for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Dec 2007 12:49:15 -0800
+Received: from ananke.telenet-ops.be ([195.130.137.78])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1J3HT5-0007ot-VY
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Dec 2007 12:49:15 -0800
+In-Reply-To: <20071213213130.GA1822@joi>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org, Antonino Daplas <adaplas@gmail.com>
 
-On Thu, Dec 13, 2007 at 02:31:11AM -0800, Andrew Morton wrote:
-> On Sun, 9 Dec 2007 22:40:31 +0100 Marcin =C5=9Alusarz <marcin.slusarz=
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1463808512-1321829784-1197665343=:4881
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 13 Dec 2007, Marcin Slusarz wrote:
+> On Thu, Dec 13, 2007 at 02:31:11AM -0800, Andrew Morton wrote:
+> > On Sun, 9 Dec 2007 22:40:31 +0100 Marcin =C5=9Alusarz <marcin.slusarz=
 @gmail.com> wrote:
->
-> > logo: move declarations of logos to linux_logo.h
 > >
-> > there was a mismatch between externs in logo.c and code generated b=
+> > > logo: move declarations of logos to linux_logo.h
+> > >
+> > > there was a mismatch between externs in logo.c and code generated b=
 y pnmtologo
-> > (on old tree, you need to rm drivers/video/logo/logo_*.c before com=
+> > > (on old tree, you need to rm drivers/video/logo/logo_*.c before com=
 pilation)
->
-> This patch (after I fixed it) keeps on causing trouble: mismatches be=
+> >
+> > This patch (after I fixed it) keeps on causing trouble: mismatches be=
 tween
-> the header file declarations and the actual definitions of the lookup
-> tables.  This happens as I apply and unapply the patch.
->
-> It _shouldn't_ happen, but there would appear to be some missing make=
+> > the header file declarations and the actual definitions of the lookup
+> > tables.  This happens as I apply and unapply the patch.
+> >
+> > It _shouldn't_ happen, but there would appear to be some missing make=
 file
-> rules.  I guess the C files aren't being regenerated when
-> scripts/pnmtologo.c has been altered, so the C files aren't matching =
+> > rules.  I guess the C files aren't being regenerated when
+> > scripts/pnmtologo.c has been altered, so the C files aren't matching =
 the
-> header which this patch alters.
-
-Ok, updated patch below:
-
-logo: move declarations of logos to linux_logo.h
-
-there was a mismatch between externs in logo.c and code generated by pn=
+> > header which this patch alters.
+>=20
+> Ok, updated patch below:
+>=20
+> logo: move declarations of logos to linux_logo.h
+>=20
+> there was a mismatch between externs in logo.c and code generated by pn=
 mtologo
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: Antonino Daplas <adaplas@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Sam Ravnborg <sam@ravnborg.org>
----
- drivers/video/logo/Makefile |    8 ++++----
- drivers/video/logo/logo.c   |   13 -------------
- include/linux/linux_logo.h  |   13 +++++++++++++
- scripts/pnmtologo.c         |    6 +++---
- 4 files changed, 20 insertions(+), 20 deletions(-)
+This may cause section conflicts, cfr.
+http://lkml.org/lkml/2007/10/24/65
 
-diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
-index a5fc4ed..61b8c24 100644
---- a/drivers/video/logo/Makefile
-+++ b/drivers/video/logo/Makefile
-@@ -41,16 +41,16 @@ quiet_cmd_logo =3D LOGO    $@
- 			-t $(patsubst $*_%,%,$(notdir $(basename $<))) \
- 			-n $(notdir $(basename $<)) -o $@ $<
+Gr{oetje,eeting}s,
 
--$(obj)/%_mono.c: $(src)/%_mono.pbm FORCE
-+$(obj)/%_mono.c: $(src)/%_mono.pbm scripts/pnmtologo FORCE
- 	$(call if_changed,logo)
+						Geert
 
--$(obj)/%_vga16.c: $(src)/%_vga16.ppm FORCE
-+$(obj)/%_vga16.c: $(src)/%_vga16.ppm scripts/pnmtologo FORCE
- 	$(call if_changed,logo)
-
--$(obj)/%_clut224.c: $(src)/%_clut224.ppm FORCE
-+$(obj)/%_clut224.c: $(src)/%_clut224.ppm scripts/pnmtologo FORCE
- 	$(call if_changed,logo)
-
--$(obj)/%_gray256.c: $(src)/%_gray256.pgm FORCE
-+$(obj)/%_gray256.c: $(src)/%_gray256.pgm scripts/pnmtologo FORCE
- 	$(call if_changed,logo)
-
- # Files generated that shall be removed upon make clean
-diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
-index fc72684..f5a0cd3 100644
---- a/drivers/video/logo/logo.c
-+++ b/drivers/video/logo/logo.c
-@@ -21,19 +21,6 @@
- #include <asm/bootinfo.h>
- #endif
-
--extern const struct linux_logo logo_linux_mono;
--extern const struct linux_logo logo_linux_vga16;
--extern const struct linux_logo logo_linux_clut224;
--extern const struct linux_logo logo_dec_clut224;
--extern const struct linux_logo logo_mac_clut224;
--extern const struct linux_logo logo_parisc_clut224;
--extern const struct linux_logo logo_sgi_clut224;
--extern const struct linux_logo logo_sun_clut224;
--extern const struct linux_logo logo_superh_mono;
--extern const struct linux_logo logo_superh_vga16;
--extern const struct linux_logo logo_superh_clut224;
--extern const struct linux_logo logo_m32r_clut224;
--
- static int nologo;
- module_param(nologo, bool, 0);
- MODULE_PARM_DESC(nologo, "Disables startup logo");
-diff --git a/include/linux/linux_logo.h b/include/linux/linux_logo.h
-index 08a9296..da9fb79 100644
---- a/include/linux/linux_logo.h
-+++ b/include/linux/linux_logo.h
-@@ -42,4 +42,17 @@ static inline void fb_append_extra_logo(const struct=
- linux_logo *logo,
- {}
- #endif
-
-+extern const struct linux_logo logo_linux_mono;
-+extern const struct linux_logo logo_linux_vga16;
-+extern const struct linux_logo logo_linux_clut224;
-+extern const struct linux_logo logo_dec_clut224;
-+extern const struct linux_logo logo_mac_clut224;
-+extern const struct linux_logo logo_parisc_clut224;
-+extern const struct linux_logo logo_sgi_clut224;
-+extern const struct linux_logo logo_sun_clut224;
-+extern const struct linux_logo logo_superh_mono;
-+extern const struct linux_logo logo_superh_vga16;
-+extern const struct linux_logo logo_superh_clut224;
-+extern const struct linux_logo logo_m32r_clut224;
-+
- #endif /* _LINUX_LINUX_LOGO_H */
-diff --git a/scripts/pnmtologo.c b/scripts/pnmtologo.c
-index 6aa2a24..3048431 100644
---- a/scripts/pnmtologo.c
-+++ b/scripts/pnmtologo.c
-@@ -237,14 +237,14 @@ static void write_header(void)
-     fprintf(out, " *  Linux logo %s\n", logoname);
-     fputs(" */\n\n", out);
-     fputs("#include <linux/linux_logo.h>\n\n", out);
--    fprintf(out, "static unsigned char %s_data[] __initdata =3D {\n",
-+    fprintf(out, "static const unsigned char %s_data[] __initdata =3D =
-{\n",
- 	    logoname);
- }
-
- static void write_footer(void)
- {
-     fputs("\n};\n\n", out);
--    fprintf(out, "struct linux_logo %s __initdata =3D {\n", logoname);
-+    fprintf(out, "const struct linux_logo %s __initdata =3D {\n", logo=
-name);
-     fprintf(out, "    .type\t=3D %s,\n", logo_types[logo_type]);
-     fprintf(out, "    .width\t=3D %d,\n", logo_width);
-     fprintf(out, "    .height\t=3D %d,\n", logo_height);
-@@ -374,7 +374,7 @@ static void write_logo_clut224(void)
-     fputs("\n};\n\n", out);
-
-     /* write logo clut */
--    fprintf(out, "static unsigned char %s_clut[] __initdata =3D {\n",
-+    fprintf(out, "static const unsigned char %s_clut[] __initdata =3D =
-{\n",
- 	    logoname);
-     write_hex_cnt =3D 0;
-     for (i =3D 0; i < logo_clutsize; i++) {
 --
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
+---1463808512-1321829784-1197665343=:4881
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+-------------------------------------------------------------------------
+SF.Net email is sponsored by:
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services
+for just about anything Open Source.
+http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
+---1463808512-1321829784-1197665343=:4881
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+---1463808512-1321829784-1197665343=:4881--

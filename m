@@ -1,10 +1,8 @@
-From: "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/7] sm501fb: Direct color visual
-	does not work
-Date: Fri, 28 Dec 2007 12:21:25 +0900
-Message-ID: <aec7e5c30712271921q2ab3fa35s809f83c7b3afbaf8@mail.gmail.com>
-References: <1196020892591-git-send-email-syrjala@sci.fi>
-	<11960208921231-git-send-email-syrjala@sci.fi>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH] sm501fb: control panel pin usage with
+	platform data flags
+Date: Fri, 28 Dec 2007 14:51:13 +0900
+Message-ID: <20071228055113.807.96733.sendpatchset@clockwork.opensource.se>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,18 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1J85mq-0000Ax-A0 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Dec 2007 19:21:29 -0800
-Received: from hs-out-0708.google.com ([64.233.178.249]
-	helo=hs-out-2122.google.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1J85mo-00034J-Uw
+	id 1J889W-00060c-5I for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 27 Dec 2007 21:53:02 -0800
+Received: from wa-out-1112.google.com ([209.85.146.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1J889V-0002Bj-DR
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Dec 2007 19:21:28 -0800
-Received: by hs-out-2122.google.com with SMTP id 55so2246747hsc.10
+	Thu, 27 Dec 2007 21:53:02 -0800
+Received: by wa-out-1112.google.com with SMTP id k22so5672703waf.18
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 27 Dec 2007 19:21:25 -0800 (PST)
-In-Reply-To: <11960208921231-git-send-email-syrjala@sci.fi>
-Content-Disposition: inline
+	Thu, 27 Dec 2007 21:53:00 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,28 +31,101 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: ben@simtec.co.uk, vince@simtec.co.uk, Ville Syrjala <syrjala@sci.fi>
+Cc: akpm@linux-foundation.org, lethal@linux-sh.org, Magnus Damm <magnus.damm@gmail.com>, syrjala@sci.fi, ben-linux@fluff.org
 
-On Nov 26, 2007 5:01 AM, Ville Syrjala <syrjala@sci.fi> wrote:
-> The sm501fb palette code clearly does not handle direct color
-> so change the driver to use true color visual for 16bpp.
->
-> Signed-off-by: Ville Syrjala <syrjala@sci.fi>
-Acked-by: Magnus Damm <damm@igel.co.jp>
+sm501fb: control panel pin usage with platform data flags
 
-Heh, I cooked up the _exact_ same patch a little while ago. Sorry for
-the late reply.
+This patch makes it possible to control panel pins usage with flags passed
+from the platform data. Without this patch the sm501fb driver always controls
+the VBIASEN and FPEN pins. The polarity and use of these pins are very platform
+specific, so this patch introduces the flags SM501FB_FLAG_PANEL_USE_VBIASEN
+and SM501FB_FLAG_PANEL_USE_FPEN which enable the use of these pins.
 
-As Ville says, it's pretty obvious that direct color is not handled in
-sm501fb_setcolreg(). WIthout this patch 16bpp fbcon ends up all black
-apart from just a blinking cursor. X may or may work on top of this,
-but that's not the issue here. fbcon doesn't display any text without
-this patch. Just boot the kernel with 16bpp mode to reproduce with
-2.6.24-rc6.
+This patch is needed to support the a Sharp LQ104V1DG21 lcd panel on SuperH
+platforms such as R2D-1 and R2D-PLUS boards. Letting the sm501fb driver control
+the FPEN and VBIASEN pins like today just results in lcd panel flicker.
 
-Please pick up this patch. Thank you.
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-/ magnus
+ Applies to 2.6.24-rc6.
+
+ drivers/video/sm501fb.c |   41 +++++++++++++++++++++++++----------------
+ include/linux/sm501.h   |    2 ++
+ 2 files changed, 27 insertions(+), 16 deletions(-)
+
+--- 0003/drivers/video/sm501fb.c
++++ work/drivers/video/sm501fb.c	2007-12-27 14:18:28.000000000 +0900
+@@ -639,6 +639,7 @@ static void sm501fb_panel_power(struct s
+ {
+ 	unsigned long control;
+ 	void __iomem *ctrl_reg = fbi->regs + SM501_DC_PANEL_CONTROL;
++	struct sm501_platdata_fbsub *pd = fbi->pdata->fb_pnl;
+ 
+ 	control = readl(ctrl_reg);
+ 
+@@ -655,26 +656,34 @@ static void sm501fb_panel_power(struct s
+ 		sm501fb_sync_regs(fbi);
+ 		mdelay(10);
+ 
+-		control |= SM501_DC_PANEL_CONTROL_BIAS;	/* VBIASEN */
+-		writel(control, ctrl_reg);
+-		sm501fb_sync_regs(fbi);
+-		mdelay(10);
+-
+-		control |= SM501_DC_PANEL_CONTROL_FPEN;
+-		writel(control, ctrl_reg);
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_VBIASEN) {
++			control |= SM501_DC_PANEL_CONTROL_BIAS;	/* VBIASEN */
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_FPEN) {
++			control |= SM501_DC_PANEL_CONTROL_FPEN;
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 	} else if (!to && (control & SM501_DC_PANEL_CONTROL_VDD) != 0) {
+ 		/* disable panel power */
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_FPEN) {
++			control &= ~SM501_DC_PANEL_CONTROL_FPEN;
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 
+-		control &= ~SM501_DC_PANEL_CONTROL_FPEN;
+-		writel(control, ctrl_reg);
+-		sm501fb_sync_regs(fbi);
+-		mdelay(10);
+-
+-		control &= ~SM501_DC_PANEL_CONTROL_BIAS;
+-		writel(control, ctrl_reg);
+-		sm501fb_sync_regs(fbi);
+-		mdelay(10);
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_VBIASEN) {
++			control &= ~SM501_DC_PANEL_CONTROL_BIAS;
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 
+ 		control &= ~SM501_DC_PANEL_CONTROL_DATA;
+ 		writel(control, ctrl_reg);
+--- 0001/include/linux/sm501.h
++++ work/include/linux/sm501.h	2007-12-27 14:13:40.000000000 +0900
+@@ -70,6 +70,8 @@ extern unsigned long sm501_gpio_get(stru
+ #define SM501FB_FLAG_DISABLE_AT_EXIT	(1<<1)
+ #define SM501FB_FLAG_USE_HWCURSOR	(1<<2)
+ #define SM501FB_FLAG_USE_HWACCEL	(1<<3)
++#define SM501FB_FLAG_PANEL_USE_FPEN	(1<<4)
++#define SM501FB_FLAG_PANEL_USE_VBIASEN	(1<<5)
+ 
+ struct sm501_platdata_fbsub {
+ 	struct fb_videomode	*def_mode;
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

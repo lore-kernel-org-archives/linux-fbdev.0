@@ -1,28 +1,12 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] sm501fb: control panel pin usage
-	with platform data flags
-Date: Thu, 10 Jan 2008 11:53:31 +0900
-Message-ID: <20080110025331.GA8906@linux-sh.org>
-References: <20071228055552.813.58357.sendpatchset@clockwork.opensource.se>
-	<20071228055113.807.96733.sendpatchset@clockwork.opensource.se>
+From: Nikanth Karthikesan <knikanth@suse.de>
+Subject: [PATCH 2/11 ] Change drm_ioctl as an
+	unlocked_ioctl function : i810
+Date: Thu, 10 Jan 2008 21:13:49 +0530
+Message-ID: <1199979829.9154.3.camel@nikanth-laptop.blr.novell.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1606959677=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JCnYN-0005up-6z for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 Jan 2008 18:53:59 -0800
-Received: from pip10.gyao.ne.jp ([61.122.117.248] helo=mx.gate01.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JCnYL-0005IB-Oe
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 Jan 2008 18:53:59 -0800
-Content-Disposition: inline
-In-Reply-To: <20071228055552.813.58357.sendpatchset@clockwork.opensource.se>
-	<20071228055113.807.96733.sendpatchset@clockwork.opensource.se>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,49 +17,123 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@linux-foundation.org, Magnus Damm <magnus.damm@gmail.com>, syrjala@sci.fi, ben-linux@fluff.org
+To: airlied@linux.ie, dri-devel@lists.sourceforge.net, benh@kernel.crashing.org, paulus@samba.org, thomas@winischhofer.net, adaplas@gmail.com, sylvain.meyer@worldonline.fr
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Dec 28, 2007 at 02:51:13PM +0900, Magnus Damm wrote:
-> sm501fb: control panel pin usage with platform data flags
-> 
-> This patch makes it possible to control panel pins usage with flags passed
-> from the platform data. Without this patch the sm501fb driver always controls
-> the VBIASEN and FPEN pins. The polarity and use of these pins are very platform
-> specific, so this patch introduces the flags SM501FB_FLAG_PANEL_USE_VBIASEN
-> and SM501FB_FLAG_PANEL_USE_FPEN which enable the use of these pins.
-> 
-> This patch is needed to support the a Sharp LQ104V1DG21 lcd panel on SuperH
-> platforms such as R2D-1 and R2D-PLUS boards. Letting the sm501fb driver control
-> the FPEN and VBIASEN pins like today just results in lcd panel flicker.
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
 
-On Fri, Dec 28, 2007 at 02:55:52PM +0900, Magnus Damm wrote:
-> sm501fb: clear framebuffer memory and palette
-> 
-> Avoid displaying garbage on unused framebuffers. For most users a single
-> framebuffer is used together with fbcon. sm501fb supports two framebuffers
-> where one often is assigned to fbcon and the other one is left unused during
-> the boot.
-> 
-> The problem here is that framebuffers not in use by fbcon happen to display
-> garbage. This can easily be solved by making sure that framebuffer memory and
-> palette ram are cleared.
-> 
-> The problem can be observed by using looking at the panel output (fb1)
-> after booting the kernel with fbcon on crt (fb0). This is the default
-> configuration. It's also possible to watch the garbage on the crt framebuffer
-> by passing "fbcon=map:1" on the kernel cmdline. This will assign fbcon to
-> the panel (fb1) and leave the crt (fb0) unused.
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+--===============1606959677==
+Content-Type: multipart/alternative; boundary="=-n8uzFY6sf7ey8rYqMP4O"
 
-There hasn't been any updates or objections to these, and we do still
-need them.  Andrew, can you roll these in to -mm?
+
+--=-n8uzFY6sf7ey8rYqMP4O
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+Register drm_ioctl as an unlocked_ioctl function.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+--- 
+diff --git a/drivers/char/drm/i810_dma.c b/drivers/char/drm/i810_dma.c
+index eb381a7..e3adbf3 100644
+--- a/drivers/char/drm/i810_dma.c
++++ b/drivers/char/drm/i810_dma.c
+@@ -115,7 +115,7 @@ static int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
+ static const struct file_operations i810_buffer_fops = {
+ 	.open = drm_open,
+ 	.release = drm_release,
+-	.ioctl = drm_ioctl,
++	.unlocked_ioctl = drm_ioctl,
+ 	.mmap = i810_mmap_buffers,
+ 	.fasync = drm_fasync,
+ };
+diff --git a/drivers/char/drm/i810_drv.c b/drivers/char/drm/i810_drv.c
+index fabb9a8..c1e0275 100644
+--- a/drivers/char/drm/i810_drv.c
++++ b/drivers/char/drm/i810_drv.c
+@@ -59,7 +59,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+
+
+--=-n8uzFY6sf7ey8rYqMP4O
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.12.2">
+</HEAD>
+<BODY>
+<PRE>
+Register drm_ioctl as an unlocked_ioctl function.
+
+Signed-off-by: Nikanth Karthikesan &lt;<A HREF="mailto:knikanth@suse.de">knikanth@suse.de</A>&gt;
+
+--- 
+diff --git a/drivers/char/drm/i810_dma.c b/drivers/char/drm/i810_dma.c
+index eb381a7..e3adbf3 100644
+--- a/drivers/char/drm/i810_dma.c
++++ b/drivers/char/drm/i810_dma.c
+@@ -115,7 +115,7 @@ static int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
+ static const struct file_operations i810_buffer_fops = {
+ 	.open = drm_open,
+ 	.release = drm_release,
+-	.ioctl = drm_ioctl,
++	.unlocked_ioctl = drm_ioctl,
+ 	.mmap = i810_mmap_buffers,
+ 	.fasync = drm_fasync,
+ };
+diff --git a/drivers/char/drm/i810_drv.c b/drivers/char/drm/i810_drv.c
+index fabb9a8..c1e0275 100644
+--- a/drivers/char/drm/i810_drv.c
++++ b/drivers/char/drm/i810_drv.c
+@@ -59,7 +59,7 @@ static struct drm_driver driver = {
+ 		 .owner = THIS_MODULE,
+ 		 .open = drm_open,
+ 		 .release = drm_release,
+-		 .ioctl = drm_ioctl,
++		 .unlocked_ioctl = drm_ioctl,
+ 		 .mmap = drm_mmap,
+ 		 .poll = drm_poll,
+ 		 .fasync = drm_fasync,
+
+</PRE>
+</BODY>
+</HTML>
+
+--=-n8uzFY6sf7ey8rYqMP4O--
+
+
+
+--===============1606959677==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.
 It's the best place to buy or sell services for
 just about anything Open Source.
 http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
+--===============1606959677==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1606959677==--

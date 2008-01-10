@@ -1,11 +1,11 @@
 From: Nikanth Karthikesan <knikanth@suse.de>
-Subject: [PATCH 2/11 ] Change drm_ioctl as an
-	unlocked_ioctl function : i810
-Date: Thu, 10 Jan 2008 21:13:49 +0530
-Message-ID: <1199979829.9154.3.camel@nikanth-laptop.blr.novell.com>
+Subject: [PATCH 9/11 ] Change drm_ioctl as an
+	unlocked_ioctl function : sis
+Date: Thu, 10 Jan 2008 21:15:04 +0530
+Message-ID: <1199979904.9154.10.camel@nikanth-laptop.blr.novell.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1606959677=="
+Content-Type: multipart/mixed; boundary="===============0930292817=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -21,11 +21,11 @@ To: airlied@linux.ie, dri-devel@lists.sourceforge.net, benh@kernel.crashing.org,
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---===============1606959677==
-Content-Type: multipart/alternative; boundary="=-n8uzFY6sf7ey8rYqMP4O"
+--===============0930292817==
+Content-Type: multipart/alternative; boundary="=-438I7n/J2yOQAoUmMwJT"
 
 
---=-n8uzFY6sf7ey8rYqMP4O
+--=-438I7n/J2yOQAoUmMwJT
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
@@ -34,24 +34,11 @@ Register drm_ioctl as an unlocked_ioctl function.
 Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
 --- 
-diff --git a/drivers/char/drm/i810_dma.c b/drivers/char/drm/i810_dma.c
-index eb381a7..e3adbf3 100644
---- a/drivers/char/drm/i810_dma.c
-+++ b/drivers/char/drm/i810_dma.c
-@@ -115,7 +115,7 @@ static int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
- static const struct file_operations i810_buffer_fops = {
- 	.open = drm_open,
- 	.release = drm_release,
--	.ioctl = drm_ioctl,
-+	.unlocked_ioctl = drm_ioctl,
- 	.mmap = i810_mmap_buffers,
- 	.fasync = drm_fasync,
- };
-diff --git a/drivers/char/drm/i810_drv.c b/drivers/char/drm/i810_drv.c
-index fabb9a8..c1e0275 100644
---- a/drivers/char/drm/i810_drv.c
-+++ b/drivers/char/drm/i810_drv.c
-@@ -59,7 +59,7 @@ static struct drm_driver driver = {
+diff --git a/drivers/char/drm/sis_drv.c b/drivers/char/drm/sis_drv.c
+index 7dacc64..1bbde29 100644
+--- a/drivers/char/drm/sis_drv.c
++++ b/drivers/char/drm/sis_drv.c
+@@ -80,7 +80,7 @@ static struct drm_driver driver = {
  		 .owner = THIS_MODULE,
  		 .open = drm_open,
  		 .release = drm_release,
@@ -62,7 +49,7 @@ index fabb9a8..c1e0275 100644
  		 .fasync = drm_fasync,
 
 
---=-n8uzFY6sf7ey8rYqMP4O
+--=-438I7n/J2yOQAoUmMwJT
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -79,24 +66,11 @@ Register drm_ioctl as an unlocked_ioctl function.
 Signed-off-by: Nikanth Karthikesan &lt;<A HREF="mailto:knikanth@suse.de">knikanth@suse.de</A>&gt;
 
 --- 
-diff --git a/drivers/char/drm/i810_dma.c b/drivers/char/drm/i810_dma.c
-index eb381a7..e3adbf3 100644
---- a/drivers/char/drm/i810_dma.c
-+++ b/drivers/char/drm/i810_dma.c
-@@ -115,7 +115,7 @@ static int i810_mmap_buffers(struct file *filp, struct vm_area_struct *vma)
- static const struct file_operations i810_buffer_fops = {
- 	.open = drm_open,
- 	.release = drm_release,
--	.ioctl = drm_ioctl,
-+	.unlocked_ioctl = drm_ioctl,
- 	.mmap = i810_mmap_buffers,
- 	.fasync = drm_fasync,
- };
-diff --git a/drivers/char/drm/i810_drv.c b/drivers/char/drm/i810_drv.c
-index fabb9a8..c1e0275 100644
---- a/drivers/char/drm/i810_drv.c
-+++ b/drivers/char/drm/i810_drv.c
-@@ -59,7 +59,7 @@ static struct drm_driver driver = {
+diff --git a/drivers/char/drm/sis_drv.c b/drivers/char/drm/sis_drv.c
+index 7dacc64..1bbde29 100644
+--- a/drivers/char/drm/sis_drv.c
++++ b/drivers/char/drm/sis_drv.c
+@@ -80,7 +80,7 @@ static struct drm_driver driver = {
  		 .owner = THIS_MODULE,
  		 .open = drm_open,
  		 .release = drm_release,
@@ -110,11 +84,11 @@ index fabb9a8..c1e0275 100644
 </BODY>
 </HTML>
 
---=-n8uzFY6sf7ey8rYqMP4O--
+--=-438I7n/J2yOQAoUmMwJT--
 
 
 
---===============1606959677==
+--===============0930292817==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -125,7 +99,7 @@ Check out the new SourceForge.net Marketplace.
 It's the best place to buy or sell services for
 just about anything Open Source.
 http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
---===============1606959677==
+--===============0930292817==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -136,4 +110,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1606959677==--
+--===============0930292817==--

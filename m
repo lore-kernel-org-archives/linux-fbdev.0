@@ -1,87 +1,120 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 1/2] ps3fb: prevent use after free of
-	fb_info
-Date: Fri, 11 Jan 2008 14:27:10 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0801111426110.12536@vixen.sonytel.be>
+Subject: [PATCH 2/2] ps3fb: fix deadlock on kexec()
+Date: Fri, 11 Jan 2008 14:28:04 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0801111427160.12536@vixen.sonytel.be>
 References: <Pine.LNX.4.64.0801111417450.12038@vixen.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584349381-891518858-1200058030=:12536"
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JDJut-0004jF-Vo for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 Jan 2008 05:27:24 -0800
-Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JDJut-0003X7-Ae
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 Jan 2008 05:27:23 -0800
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-166629635-1200058084=:12536"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760723AbYAKN2T@vger.kernel.org>
 In-Reply-To: <Pine.LNX.4.64.0801111417450.12038@vixen.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Jeremy Kerr <jk@ozlabs.org>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+Cc: Jeremy Kerr <jk@ozlabs.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
----584349381-891518858-1200058030=:12536
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+---584349381-166629635-1200058084=:12536
+Content-Type: TEXT/PLAIN; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 From: Jeremy Kerr <jk@ozlabs.org>
 
-In ps3fb_shutdown, freeing the framebuffer will cause fb_info (in
-dev->core.driver_data) to be free()ed, which we potentially access
-from the ps3fbd kthread.
+Since the introduction of the acquire_console_sem calls in
+0333d83509c7d8496c8965b5ba9bc0c98e83c259, kexecing can cause the
+kernel to deadlock:
 
-This change frees the framebuffer after stopping the ps3fbd kthread.
+ ps3fb_shutdown()
+  -> unregister_framebuffer()
+  -> fb_notifier_call_chain(FB_EVENT_FB_UNBIND)
+  -> fbcon_fb_unbind()
+  -> unbind_con_driver()
+  -> bind_con_driver()
+	[ acquires console_sem ]
+  -> fbcon_deinit()
+  -> fbops->fb_release(newinfo, 0)
+  -> ps3fb_release()
+  -> ps3fb_sync()
+	[ acquires console_sem ]
+
+This change avoids the deadlock by moving the acquire_console_sem()
+out of ps3fb_sync(), and puts it into the two other callsites, leaving
+ps3fb_release() to call ps3fb_sync() without the console semaphore.
+
+[Geert]
+  - Corrected call sequence above
+  - ps3fb_release() may be called with and without console_sem held. This is an
+    inconsistency that should be fixed at the fb level, but for now, try to
+    acquire console_sem in ps3fb_release().
+
+    I think it's safer to let ps3fb_release() try to acquire console_sem and
+    not refresh the screen if it fails, than to call ps3fb_sync() without
+    holding console_sem, as ps3fb_par may be modified at the same time, causing
+    crashes or lockups.
+
+    Besides, ps3fb_release() only calls ps3fb_sync() to refresh the screen
+    when display flipping is disabled, which is an uncommon case (except during
+    shutdown/kexec).
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/video/ps3fb.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/ps3fb.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -1234,12 +1234,6 @@ static int ps3fb_shutdown(struct ps3_sys
- 	ps3fb_flip_ctl(0, &ps3fb);	/* flip off */
- 	ps3fb.dinfo->irq.mask =3D 0;
-=20
--	if (info) {
--		unregister_framebuffer(info);
--		fb_dealloc_cmap(&info->cmap);
--		framebuffer_release(info);
--	}
+@@ -443,8 +443,6 @@ static int ps3fb_sync(struct fb_info *in
+ 	u32 ddr_line_length, xdr_line_length;
+ 	u64 ddr_base, xdr_base;
+ 
+-	acquire_console_sem();
 -
- 	ps3av_register_flip_ctl(NULL, NULL);
- 	if (ps3fb.task) {
- 		struct task_struct *task =3D ps3fb.task;
-@@ -1250,6 +1244,12 @@ static int ps3fb_shutdown(struct ps3_sys
- 		free_irq(ps3fb.irq_no, &dev->core);
- 		ps3_irq_plug_destroy(ps3fb.irq_no);
+ 	if (frame > par->num_frames - 1) {
+ 		dev_dbg(info->device, "%s: invalid frame number (%u)\n",
+ 			__func__, frame);
+@@ -464,7 +462,6 @@ static int ps3fb_sync(struct fb_info *in
+ 			 xdr_line_length);
+ 
+ out:
+-	release_console_sem();
+ 	return error;
+ }
+ 
+@@ -479,7 +476,10 @@ static int ps3fb_release(struct fb_info 
+ 	if (atomic_dec_and_test(&ps3fb.f_count)) {
+ 		if (atomic_read(&ps3fb.ext_flip)) {
+ 			atomic_set(&ps3fb.ext_flip, 0);
+-			ps3fb_sync(info, 0);	/* single buffer */
++			if (!try_acquire_console_sem()) {
++				ps3fb_sync(info, 0);	/* single buffer */
++				release_console_sem();
++			}
+ 		}
  	}
-+	if (info) {
-+		unregister_framebuffer(info);
-+		fb_dealloc_cmap(&info->cmap);
-+		framebuffer_release(info);
-+		info =3D dev->core.driver_data =3D NULL;
-+	}
- 	iounmap((u8 __iomem *)ps3fb.dinfo);
-=20
- 	status =3D lv1_gpu_context_free(ps3fb.context_handle);
+ 	return 0;
+@@ -865,7 +865,9 @@ static int ps3fb_ioctl(struct fb_info *i
+ 			break;
+ 
+ 		dev_dbg(info->device, "PS3FB_IOCTL_FSEL:%d\n", val);
++		acquire_console_sem();
+ 		retval = ps3fb_sync(info, val);
++		release_console_sem();
+ 		break;
+ 
+ 	default:
+@@ -885,7 +887,9 @@ static int ps3fbd(void *arg)
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		if (ps3fb.is_kicked) {
+ 			ps3fb.is_kicked = 0;
++			acquire_console_sem();
+ 			ps3fb_sync(info, 0);	/* single buffer */
++			release_console_sem();
+ 		}
+ 		schedule();
+ 	}
 
 With kind regards,
 
@@ -89,8 +122,7 @@ Geert Uytterhoeven
 Software Architect
 
 Sony Network and Software Technology Center Europe
-The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
-=B7 Belgium
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
 Phone:    +32 (0)2 700 8453
 Fax:      +32 (0)2 700 8622
@@ -99,31 +131,7 @@ Internet: http://www.sony-europe.com/
 
 Sony Network and Software Technology Center Europe
 A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
-ium
-VAT BE 0413.825.160 =C2=B7 RPR Brussels
-Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
-9
----584349381-891518858-1200058030=:12536
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
--------------------------------------------------------------------------
-Check out the new SourceForge.net Marketplace.
-It's the best place to buy or sell services for
-just about anything Open Source.
-http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
----584349381-891518858-1200058030=:12536
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
----584349381-891518858-1200058030=:12536--
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584349381-166629635-1200058084=:12536--

@@ -1,7 +1,7 @@
 From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: [PATCH] uvesafb: fix section mismatch warnings
-Date: Fri, 11 Jan 2008 17:04:09 -0800
-Message-ID: <20080111170409.10ecb8a9.rdunlap@xenotime.net>
+Subject: [PATCH] uvesafb: small cleanups
+Date: Fri, 11 Jan 2008 17:04:15 -0800
+Message-ID: <20080111170415.41e2120c.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JDUnG-0001qr-4U for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 Jan 2008 17:04:14 -0800
+	id 1JDUnR-0001r9-R2 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 11 Jan 2008 17:04:25 -0800
 Received: from xenotime.net ([66.160.160.81])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1JDUnE-00017j-QY
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1JDUnR-0001EG-Fb
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 Jan 2008 17:04:14 -0800
+	Fri, 11 Jan 2008 17:04:25 -0800
 Received: from midway.site ([71.245.106.199]) by xenotime.net for
 	<linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 11 Jan 2008 17:04:09 -0800
+	Fri, 11 Jan 2008 17:04:15 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,42 +34,48 @@ Cc: akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>, adaplas@gmail.com
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Mark uvesafb_init_mtrr() as __devinit since its caller is __devinit
-and since it accesses __devinitdata.
-
-WARNING: vmlinux.o(.text+0x4df80e): Section mismatch: reference to .init.data: (between 'uvesafb_init_mtrr' and 'uvesafb_show_vbe_ver')
-
-Variable 'blank' cannot be __devinitdata since it is referenced in an
-fb_ops method that could be called at any time.
-
-WARNING: vmlinux.o(.text+0x4dfc1e): Section mismatch: reference to .init.data:blank (between 'param_set_scroll' and 'vesa_setpalette')
-WARNING: vmlinux.o(.text+0x4dfc24): Section mismatch: reference to .init.data:blank (between 'param_set_scroll' and 'vesa_setpalette')
+Some cleanups in uvesafb:
+- The custom module_param() get/set functions don't need to be inlined
+  since it is referred to via a pointer in a struct.
+- don't end a #define with a ';'
+- remove one of the single quote marks in "''ypan'"
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/video/uvesafb.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/uvesafb.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 --- linux-2.6.24-rc7-git1.orig/drivers/video/uvesafb.c
 +++ linux-2.6.24-rc7-git1/drivers/video/uvesafb.c
-@@ -43,7 +43,7 @@ static struct fb_fix_screeninfo uvesafb_
- };
+@@ -2003,12 +2003,12 @@ static void __devexit uvesafb_exit(void)
  
- static int mtrr		__devinitdata = 3; /* enable mtrr by default */
--static int blank	__devinitdata = 1; /* enable blanking by default */
-+static int blank	= 1;		   /* enable blanking by default */
- static int ypan		__devinitdata = 1; /* 0: scroll, 1: ypan, 2: ywrap */
- static int pmi_setpal	__devinitdata = 1; /* use PMI for palette changes */
- static int nocrtc	__devinitdata; /* ignore CRTC settings */
-@@ -1549,7 +1549,7 @@ static void __devinit uvesafb_init_info(
- 		info->fbops->fb_pan_display = NULL;
+ module_exit(uvesafb_exit);
+ 
+-static inline int param_get_scroll(char *buffer, struct kernel_param *kp)
++static int param_get_scroll(char *buffer, struct kernel_param *kp)
+ {
+ 	return 0;
  }
  
--static void uvesafb_init_mtrr(struct fb_info *info)
-+static void __devinit uvesafb_init_mtrr(struct fb_info *info)
+-static inline int param_set_scroll(const char *val, struct kernel_param *kp)
++static int param_set_scroll(const char *val, struct kernel_param *kp)
  {
- #ifdef CONFIG_MTRR
- 	if (mtrr && !(info->fix.smem_start & (PAGE_SIZE - 1))) {
+ 	ypan = 0;
+ 
+@@ -2022,11 +2022,11 @@ static inline int param_set_scroll(const
+ 	return 0;
+ }
+ 
+-#define param_check_scroll(name, p) __param_check(name, p, void);
++#define param_check_scroll(name, p) __param_check(name, p, void)
+ 
+ module_param_named(scroll, ypan, scroll, 0);
+ MODULE_PARM_DESC(scroll,
+-	"Scrolling mode, set to 'redraw', ''ypan' or 'ywrap'");
++	"Scrolling mode, set to 'redraw', 'ypan', or 'ywrap'");
+ module_param_named(vgapal, pmi_setpal, invbool, 0);
+ MODULE_PARM_DESC(vgapal, "Set palette using VGA registers");
+ module_param_named(pmipal, pmi_setpal, bool, 0);
 ---
 ~Randy
 

@@ -1,9 +1,9 @@
 From: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] pm3fb: fix section mismatch warnings
-Date: Sat, 12 Jan 2008 11:34:12 +0100
-Message-ID: <20080112103412.GB2523@uranus.ravnborg.org>
-References: <20080111170401.694b066f.rdunlap@xenotime.net>
-	<20080112051829.b43a328b.krzysztof.h1@wp.pl>
+Subject: Re: [PATCH] uvesafb: fix section mismatch
+	warnings
+Date: Sat, 12 Jan 2008 11:42:03 +0100
+Message-ID: <20080112104203.GC2523@uranus.ravnborg.org>
+References: <20080111170409.10ecb8a9.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,14 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JDdgr-0007lS-KD for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 12 Jan 2008 02:34:13 -0800
-Received: from pasmtpa.tele.dk ([80.160.77.114])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JDdgq-0007wp-72
+	id 1JDdoW-00008J-6f for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 12 Jan 2008 02:42:10 -0800
+Received: from pasmtpb.tele.dk ([80.160.77.98])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JDdoO-0003Rp-V5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 12 Jan 2008 02:34:13 -0800
+	Sat, 12 Jan 2008 02:42:05 -0800
 Content-Disposition: inline
-In-Reply-To: <20080112051829.b43a328b.krzysztof.h1@wp.pl>
+In-Reply-To: <20080111170409.10ecb8a9.rdunlap@xenotime.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,41 +30,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: romain@dolbeau.org, Randy Dunlap <rdunlap@xenotime.net>, linux-fbdev-devel@lists.sourceforge.net, akpm <akpm@linux-foundation.org>, adaplas@gmail.com
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net, akpm <akpm@linux-foundation.org>, adaplas@gmail.com
 
-On Sat, Jan 12, 2008 at 05:18:29AM +0100, Krzysztof Helt wrote:
-> On Fri, 11 Jan 2008 17:04:01 -0800
-> Randy Dunlap <rdunlap@xenotime.net> wrote:
+On Fri, Jan 11, 2008 at 05:04:09PM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Add __devinit to one function to clean up section mismatch warnings:
-> > 
-> > 
-> >  /* mmio register are already mapped when this function is called */
-> >  /* the pm3fb_fix.smem_start is also set */
-> > -static unsigned long pm3fb_size_memory(struct pm3_par *par)
-> > +static unsigned long __devinit pm3fb_size_memory(struct pm3_par *par)
-> >  {
+> Mark uvesafb_init_mtrr() as __devinit since its caller is __devinit
+> and since it accesses __devinitdata.
 > 
-> Exactly the same patch is already in the -mm tree (by Adrian Bunk):
-> drivers-video-pm3fbc-section-fix.patch
+> WARNING: vmlinux.o(.text+0x4df80e): Section mismatch: reference to .init.data: (between 'uvesafb_init_mtrr' and 'uvesafb_show_vbe_ver')
 
-Such obviously correct fixes should be pushed towards mainline sooner.
-With all the warnings being fixed lately by Randy and others we are now
-at the point where it is sensible to turn this check from a warning
-to an error so we really get them fixed before hitting -mm or -mainline
-with new code.
+OK
 
-It will most likely happen at -rc1 time and then I will see how much
-noise it results in.
+> 
+> Variable 'blank' cannot be __devinitdata since it is referenced in an
+> fb_ops method that could be called at any time.
 
-The rationale is that a precentage of the warnings are actually
-real bugs waiting to trigger. This patch is not one of these but
-it does hide the real ones.
+The patch is correct but the explanation is wrong.
+uvesafb uses local variables named blank in two spots that hides the
+global defined blank which I assume has confused you.
+
+The problematic spot is this use as a parameter:
+module_param(blank, bool, 0);
+MODULE_PARM_DESC(blank, "Enable hardware blanking");
+
+This is at least how I understand it looking at the code.
 
 	Sam
+
+
+
+> 
+> WARNING: vmlinux.o(.text+0x4dfc1e): Section mismatch: reference to .init.data:blank (between 'param_set_scroll' and 'vesa_setpalette')
+> WARNING: vmlinux.o(.text+0x4dfc24): Section mismatch: reference to .init.data:blank (between 'param_set_scroll' and 'vesa_setpalette')
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/video/uvesafb.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.24-rc7-git1.orig/drivers/video/uvesafb.c
+> +++ linux-2.6.24-rc7-git1/drivers/video/uvesafb.c
+> @@ -43,7 +43,7 @@ static struct fb_fix_screeninfo uvesafb_
+>  };
+>  
+>  static int mtrr		__devinitdata = 3; /* enable mtrr by default */
+> -static int blank	__devinitdata = 1; /* enable blanking by default */
+> +static int blank	= 1;		   /* enable blanking by default */
+>  static int ypan		__devinitdata = 1; /* 0: scroll, 1: ypan, 2: ywrap */
+>  static int pmi_setpal	__devinitdata = 1; /* use PMI for palette changes */
+>  static int nocrtc	__devinitdata; /* ignore CRTC settings */
+> @@ -1549,7 +1549,7 @@ static void __devinit uvesafb_init_info(
+>  		info->fbops->fb_pan_display = NULL;
+>  }
+>  
+> -static void uvesafb_init_mtrr(struct fb_info *info)
+> +static void __devinit uvesafb_init_mtrr(struct fb_info *info)
+>  {
+>  #ifdef CONFIG_MTRR
+>  	if (mtrr && !(info->fix.smem_start & (PAGE_SIZE - 1))) {
+> ---
+> ~Randy
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

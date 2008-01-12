@@ -1,24 +1,24 @@
 From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: [PATCH] pm3fb: fix section mismatch warnings
-Date: Fri, 11 Jan 2008 17:04:01 -0800
-Message-ID: <20080111170401.694b066f.rdunlap@xenotime.net>
+Subject: [PATCH] uvesafb: fix section mismatch warnings
+Date: Fri, 11 Jan 2008 17:04:09 -0800
+Message-ID: <20080111170409.10ecb8a9.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JDUnG-0001qw-L3 for linux-fbdev-devel@lists.sourceforge.net;
+	id 1JDUnG-0001qr-4U for linux-fbdev-devel@lists.sourceforge.net;
 	Fri, 11 Jan 2008 17:04:14 -0800
 Received: from xenotime.net ([66.160.160.81])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1JDUnG-00075K-9p
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1JDUnE-00017j-QY
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Fri, 11 Jan 2008 17:04:14 -0800
 Received: from midway.site ([71.245.106.199]) by xenotime.net for
 	<linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 11 Jan 2008 17:04:01 -0800
+	Fri, 11 Jan 2008 17:04:09 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,38 +29,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, romain@dolbeau.org, krzysztof.h1@wp.pl
+To: linux-fbdev-devel@lists.sourceforge.net, spock@gentoo.org
 Cc: akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>, adaplas@gmail.com
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Add __devinit to one function to clean up section mismatch warnings:
+Mark uvesafb_init_mtrr() as __devinit since its caller is __devinit
+and since it accesses __devinitdata.
 
-WARNING: vmlinux.o(.text+0x47c176): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x47c188): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x47c1ba): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x47c1c1): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x47c1e2): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x47c1e9): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x47c2f0): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
-WARNING: vmlinux.o(.text+0x47c2f7): Section mismatch: reference to .init.data: (between 'pm3fb_size_memory' and 'update_crtc2')
+WARNING: vmlinux.o(.text+0x4df80e): Section mismatch: reference to .init.data: (between 'uvesafb_init_mtrr' and 'uvesafb_show_vbe_ver')
+
+Variable 'blank' cannot be __devinitdata since it is referenced in an
+fb_ops method that could be called at any time.
+
+WARNING: vmlinux.o(.text+0x4dfc1e): Section mismatch: reference to .init.data:blank (between 'param_set_scroll' and 'vesa_setpalette')
+WARNING: vmlinux.o(.text+0x4dfc24): Section mismatch: reference to .init.data:blank (between 'param_set_scroll' and 'vesa_setpalette')
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/video/pm3fb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/uvesafb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.24-rc7-git1.orig/drivers/video/pm3fb.c
-+++ linux-2.6.24-rc7-git1/drivers/video/pm3fb.c
-@@ -1227,7 +1227,7 @@ static struct fb_ops pm3fb_ops = {
+--- linux-2.6.24-rc7-git1.orig/drivers/video/uvesafb.c
++++ linux-2.6.24-rc7-git1/drivers/video/uvesafb.c
+@@ -43,7 +43,7 @@ static struct fb_fix_screeninfo uvesafb_
+ };
  
- /* mmio register are already mapped when this function is called */
- /* the pm3fb_fix.smem_start is also set */
--static unsigned long pm3fb_size_memory(struct pm3_par *par)
-+static unsigned long __devinit pm3fb_size_memory(struct pm3_par *par)
+ static int mtrr		__devinitdata = 3; /* enable mtrr by default */
+-static int blank	__devinitdata = 1; /* enable blanking by default */
++static int blank	= 1;		   /* enable blanking by default */
+ static int ypan		__devinitdata = 1; /* 0: scroll, 1: ypan, 2: ywrap */
+ static int pmi_setpal	__devinitdata = 1; /* use PMI for palette changes */
+ static int nocrtc	__devinitdata; /* ignore CRTC settings */
+@@ -1549,7 +1549,7 @@ static void __devinit uvesafb_init_info(
+ 		info->fbops->fb_pan_display = NULL;
+ }
+ 
+-static void uvesafb_init_mtrr(struct fb_info *info)
++static void __devinit uvesafb_init_mtrr(struct fb_info *info)
  {
- 	unsigned long	memsize = 0;
- 	unsigned long	tempBypass, i, temp1, temp2;
+ #ifdef CONFIG_MTRR
+ 	if (mtrr && !(info->fix.smem_start & (PAGE_SIZE - 1))) {
 ---
 ~Randy
 

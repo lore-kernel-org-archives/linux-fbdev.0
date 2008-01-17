@@ -1,27 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bugme-new] [Bug 9762] New: radeonfb and
-	Xpress 200m 5955
-Date: Wed, 16 Jan 2008 23:37:54 +0100
-Message-ID: <200801162337.55226.rjw@sisk.pl>
-References: <bug-9762-10286@http.bugzilla.kernel.org/>
-	<Pine.LNX.4.64.0801161622060.7015@anakin>
-	<20080116111233.04c6df3a.akpm@linux-foundation.org>
+From: Andrey Kovalev <aka@pxe.ru>
+Subject: gx1fb problems.
+Date: Thu, 17 Jan 2008 16:29:45 +0400
+Message-ID: <478F4A39.4070003@pxe.ru>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JFGrY-0007D1-W7 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Jan 2008 14:36:06 -0800
-Received: from ogre.sisk.pl ([217.79.144.158])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JFGrW-0001Wh-UD
+	id 1JFTsd-0005w6-UF for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 17 Jan 2008 04:30:00 -0800
+Received: from luba.management.ru ([64.246.50.53])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JFTsc-0006eM-9Y
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Jan 2008 14:36:00 -0800
-In-Reply-To: <20080116111233.04c6df3a.akpm@linux-foundation.org>
-Content-Disposition: inline
+	Thu, 17 Jan 2008 04:29:59 -0800
+Received: from [87.226.216.246] (helo=[10.100.50.2])
+	by luba.management.ru with esmtps (TLSv1:AES256-SHA:256) (Exim 4.68)
+	(envelope-from <aka@pxe.ru>) id 1JFTsY-0002BH-7y
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 17 Jan 2008 12:29:54 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,27 +32,57 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Sellout Bessie <sellout@beautyisfleeting.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>, alevkovich@tut.by, "Antonino A. Daplas" <adaplas@pol.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-This patch from Alex, attached as
-http://bugzilla.kernel.org/attachment.cgi?id=14481&action=view,
-is reported to fix the problem.
+Hi all,
 
---- linux-2.6.23/drivers/video/modedb.c	2008-01-16 18:23:48.183178912 +0200
-+++ linux-2.6.23/drivers/video/modedb.c	2008-01-16 18:17:04.000000000 +0200
-@@ -259,6 +259,10 @@
- 	/* 1366x768, 60 Hz, 47.403 kHz hsync, WXGA 16:9 aspect ratio */
- 	NULL, 60, 1366, 768, 13806, 120, 10, 14, 3, 32, 5,
- 	0, FB_VMODE_NONINTERLACED
-+   }, {
-+	/* 1280x800, 60 Hz, 47.403 kHz hsync, WXGA 16:10 aspect ratio */
-+	NULL, 60, 1280, 800, 12048, 200, 64, 24, 1, 136, 3,
-+	0, FB_VMODE_NONINTERLACED
-     },
- };
- 
+I have a problem with the gx1fb driver. My board is GX1 with CS5530. 
+Award bios. Vanilla kernel 2.6.23.1. I use our own test program.
 
+Here is the right image:
+
+http://www.pxe.ru/ban/gx1fb/gx1fb01.JPG
+
+When I move mouse cursor over the "line of corruption", top part of the 
+image becomes corrupted (800x600-8bit):
+
+http://www.pxe.ru/ban/gx1fb/gx1fb02.JPG
+
+This is the biggest possible corruption:
+
+http://www.pxe.ru/ban/gx1fb/gx1fb03.JPG
+
+I'm pretty shure demo program doesn't touch top area of framebuffer when 
+cursor is over the "line of corruption". And I can "restore" image by 
+moving mouse over corrupted area. I.e. image restores when demo program 
+writes data to damaged area of framebuffer and corrupted again when demo 
+program writes data near the "line of corruption".
+
+Here is the same problem in 16 bit color:
+
+http://www.pxe.ru/ban/gx1fb/gx1fb04.JPG
+
+The "line of corruption" in 16bit mode is higher (red arrow). And there 
+is one more damage - look at the text in the line marked with green arrow.
+
+
+And second problem. Timings seems not working. I tried to pass 
+"mode=800x600-8@60" and "mode=800x600-8@75" while loading gx1fb and 
+fbset report correct timings for this rates. But monitor always reports 
+85Hz.
+
+This board works right (without image corruption and monitor reports 
+60Hz when I ask for 60Hz) with 2.4 series kernel and nsc framebuffer driver.
+
+This board works right (without image corruption and monitor reports 
+60Hz) with 2.6.23.1 kernel and VESA driver in svgalib.
+
+
+
+Thanks for your help.
+
+-- 
+Andrey
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

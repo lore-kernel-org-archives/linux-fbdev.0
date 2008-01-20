@@ -1,9 +1,8 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 9564] New: Uninitialzed
- variable fields cvt.h_margin and cvt.v_margin
-Date: Fri, 18 Jan 2008 14:00:55 -0800
-Message-ID: <20080118140055.fe862b78.akpm@linux-foundation.org>
-References: <bug-9564-10286@http.bugzilla.kernel.org/>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: "problem" with mdacon
+Date: Sun, 20 Jan 2008 12:08:11 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0801201205050.28200@anakin>
+References: <112492815@web.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,14 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JFzGt-0001pb-Ed for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 18 Jan 2008 14:01:07 -0800
-Received: from smtp2.linux-foundation.org ([207.189.120.14])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JFzGt-00015J-25
+	id 1JGY2F-0005eG-K7 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 20 Jan 2008 03:08:19 -0800
+Received: from ananke.telenet-ops.be ([195.130.137.78])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JGY2E-0000Ot-4i
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 18 Jan 2008 14:01:07 -0800
-In-Reply-To: <bug-9564-10286@http.bugzilla.kernel.org/>
+	Sun, 20 Jan 2008 03:08:19 -0800
+In-Reply-To: <112492815@web.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,47 +28,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: marciobuss@gmail.com, bugme-daemon@bugzilla.kernel.org
+To: devzero@web.de
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, mj@ucw.cz
 
-On Fri, 14 Dec 2007 13:54:59 -0800 (PST)
-bugme-daemon@bugzilla.kernel.org wrote:
+	Hi Roland,
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9564
-> 
->            Summary: Uninitialzed variable fields cvt.h_margin and
->                     cvt.v_margin
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.23
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Video(Other)
->         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
->         ReportedBy: marciobuss@gmail.com
-> 
-> 
-> The errors can be found at drivers/video/fbcvt.c as follows:
-> 
-> (1) the test "if (margin)" at line 310 evaluates to false,
-> (2) this makes the test "if (cvt.flags & FB_CVT_FLAG_MARGINS)" at line 352
->     to evaluate to false as well
-> (3) now cvt.h_margin is uninitialized at line 359, 368, and 370, and
->     cvt.v_margin is uninitizalied at line 371.
-> 
-> In other words, both cvt.v_margin and cvt.h_margin are initialized conditinally
-> but used unconditionally. This bug is a false positive only if the parameter
-> "margins" at line 304 is never 0. However, this would make the test at line
-> 310 unnecessary -- anyone looking at the code is miled into believing that
-> 0 is a legal value for "margins". This means the code does require some change
-> in my humble opinion.
-> 
+On Fri, 18 Jan 2008, devzero@web.de wrote:
+> sorry for contacting directly, but i was unsure about what list is best to ask questions for console specific stuff.
+> maybe  linux-fbdev or linuxconsole-dev ? the latter looks dead - there is nothing but spam in the recent archive...
 
-Could someone please take a look at this?
+I'd use linux-fbdev-devel and cc to lkml (already added).
+
+> ok - my "problem" (not being a real one, but not sure if this is a bug)
+> 
+> if i do "modprobe mdacon" (without any options) the system console output freezes and takes no more keyboard input (no vt switching, too)
+> this happens on any real hardware and also in vmware.
+> 
+> looks weird to me - is this expected behaviour ?
+> 
+> i would have expected some "no such device or adress".
+> 
+> found this by chance by some module load/unload stresstesting and there are not many modules which break my system when loading/unloading - mdacon is one of the very few...
+> 
+> would be nice to get a comment about this.
+
+I think it should just complain with `mdacon: MDA card not detected.',
+if no MDA card is present.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

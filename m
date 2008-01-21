@@ -1,23 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: "problem" with mdacon
-Date: Sun, 20 Jan 2008 12:08:11 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0801201205050.28200@anakin>
-References: <112492815@web.de>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [RESEND][PATCH] sm501fb: control panel pin
+	usage with platform data flags
+Date: Mon, 21 Jan 2008 19:57:29 +0900
+Message-ID: <20080121105729.12440.66026.sendpatchset@clockwork.opensource.se>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JGY2F-0005eG-K7 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jan 2008 03:08:19 -0800
-Received: from ananke.telenet-ops.be ([195.130.137.78])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JGY2E-0000Ot-4i
+	id 1JGuOf-0004w7-GM for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Jan 2008 03:00:57 -0800
+Received: from wa-out-1112.google.com ([209.85.146.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JGuOf-0004dD-3I
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jan 2008 03:08:19 -0800
-In-Reply-To: <112492815@web.de>
+	Mon, 21 Jan 2008 03:00:57 -0800
+Received: by wa-out-1112.google.com with SMTP id k22so3893864waf.18
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 21 Jan 2008 03:00:56 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,43 +30,102 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: devzero@web.de
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, mj@ucw.cz
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, lethal@linux-sh.org, magnus.damm@gmail.com, ben-linux@fluff.org
 
-	Hi Roland,
+sm501fb: control panel pin usage with platform data flags
 
-On Fri, 18 Jan 2008, devzero@web.de wrote:
-> sorry for contacting directly, but i was unsure about what list is best to ask questions for console specific stuff.
-> maybe  linux-fbdev or linuxconsole-dev ? the latter looks dead - there is nothing but spam in the recent archive...
+This patch makes it possible to control panel pins usage with flags passed
+from the platform data. Without this patch the sm501fb driver always controls
+the VBIASEN and FPEN pins. The polarity and use of these pins are very platform
+specific, so this patch introduces the flags SM501FB_FLAG_PANEL_USE_VBIASEN
+and SM501FB_FLAG_PANEL_USE_FPEN which enable the use of these pins.
 
-I'd use linux-fbdev-devel and cc to lkml (already added).
+This patch is needed to support the a Sharp LQ104V1DG21 lcd panel on SuperH
+platforms such as R2D-1 and R2D-PLUS boards. Letting the sm501fb driver control
+the FPEN and VBIASEN pins like today just results in lcd panel flicker.
 
-> ok - my "problem" (not being a real one, but not sure if this is a bug)
-> 
-> if i do "modprobe mdacon" (without any options) the system console output freezes and takes no more keyboard input (no vt switching, too)
-> this happens on any real hardware and also in vmware.
-> 
-> looks weird to me - is this expected behaviour ?
-> 
-> i would have expected some "no such device or adress".
-> 
-> found this by chance by some module load/unload stresstesting and there are not many modules which break my system when loading/unloading - mdacon is one of the very few...
-> 
-> would be nice to get a comment about this.
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-I think it should just complain with `mdacon: MDA card not detected.',
-if no MDA card is present.
+ This is the same patch that was sent to linux-fbdev-devel on 20071228.
 
-Gr{oetje,eeting}s,
+ drivers/video/sm501fb.c |   41 +++++++++++++++++++++++++----------------
+ include/linux/sm501.h   |    2 ++
+ 2 files changed, 27 insertions(+), 16 deletions(-)
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--- 0003/drivers/video/sm501fb.c
++++ work/drivers/video/sm501fb.c	2007-12-27 14:18:28.000000000 +0900
+@@ -639,6 +639,7 @@ static void sm501fb_panel_power(struct s
+ {
+ 	unsigned long control;
+ 	void __iomem *ctrl_reg = fbi->regs + SM501_DC_PANEL_CONTROL;
++	struct sm501_platdata_fbsub *pd = fbi->pdata->fb_pnl;
+ 
+ 	control = readl(ctrl_reg);
+ 
+@@ -655,26 +656,34 @@ static void sm501fb_panel_power(struct s
+ 		sm501fb_sync_regs(fbi);
+ 		mdelay(10);
+ 
+-		control |= SM501_DC_PANEL_CONTROL_BIAS;	/* VBIASEN */
+-		writel(control, ctrl_reg);
+-		sm501fb_sync_regs(fbi);
+-		mdelay(10);
+-
+-		control |= SM501_DC_PANEL_CONTROL_FPEN;
+-		writel(control, ctrl_reg);
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_VBIASEN) {
++			control |= SM501_DC_PANEL_CONTROL_BIAS;	/* VBIASEN */
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_FPEN) {
++			control |= SM501_DC_PANEL_CONTROL_FPEN;
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 	} else if (!to && (control & SM501_DC_PANEL_CONTROL_VDD) != 0) {
+ 		/* disable panel power */
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_FPEN) {
++			control &= ~SM501_DC_PANEL_CONTROL_FPEN;
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 
+-		control &= ~SM501_DC_PANEL_CONTROL_FPEN;
+-		writel(control, ctrl_reg);
+-		sm501fb_sync_regs(fbi);
+-		mdelay(10);
+-
+-		control &= ~SM501_DC_PANEL_CONTROL_BIAS;
+-		writel(control, ctrl_reg);
+-		sm501fb_sync_regs(fbi);
+-		mdelay(10);
++		if (pd->flags & SM501FB_FLAG_PANEL_USE_VBIASEN) {
++			control &= ~SM501_DC_PANEL_CONTROL_BIAS;
++			writel(control, ctrl_reg);
++			sm501fb_sync_regs(fbi);
++			mdelay(10);
++		}
+ 
+ 		control &= ~SM501_DC_PANEL_CONTROL_DATA;
+ 		writel(control, ctrl_reg);
+--- 0001/include/linux/sm501.h
++++ work/include/linux/sm501.h	2007-12-27 14:13:40.000000000 +0900
+@@ -70,6 +70,8 @@ extern unsigned long sm501_gpio_get(stru
+ #define SM501FB_FLAG_DISABLE_AT_EXIT	(1<<1)
+ #define SM501FB_FLAG_USE_HWCURSOR	(1<<2)
+ #define SM501FB_FLAG_USE_HWACCEL	(1<<3)
++#define SM501FB_FLAG_PANEL_USE_FPEN	(1<<4)
++#define SM501FB_FLAG_PANEL_USE_VBIASEN	(1<<5)
+ 
+ struct sm501_platdata_fbsub {
+ 	struct fb_videomode	*def_mode;
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

@@ -1,89 +1,62 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [RESEND][PATCH] sm501fb: clear framebuffer
-	memory and palette
-Date: Mon, 21 Jan 2008 19:59:25 +0900
-Message-ID: <20080121105925.12446.36815.sendpatchset@clockwork.opensource.se>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [Bugme-new] [Bug 9564] New: Uninitialzed variable fields
+	cvt.h_margin and cvt.v_margin
+Date: Mon, 21 Jan 2008 20:28:39 +0300
+Message-ID: <20080121172839.GB6722@cvg>
+References: <bug-9564-10286@http.bugzilla.kernel.org/> <20080118140055.fe862b78.akpm@linux-foundation.org>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752891AbYAUR3Q@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20080118140055.fe862b78.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JGuQV-000594-78 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Jan 2008 03:02:51 -0800
-Received: from rv-out-0910.google.com ([209.85.198.185])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JGuQU-0005hk-TZ
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Jan 2008 03:02:51 -0800
-Received: by rv-out-0910.google.com with SMTP id g11so5849322rvb.22
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 21 Jan 2008 03:02:50 -0800 (PST)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@linux-foundation.org, lethal@linux-sh.org, magnus.damm@gmail.com, ben-linux@fluff.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, marciobuss@gmail.com
 
-sm501fb: clear framebuffer memory and palette
+[Andrew Morton - Fri, Jan 18, 2008 at 02:00:55PM -0800]
+| On Fri, 14 Dec 2007 13:54:59 -0800 (PST)
+| bugme-daemon@bugzilla.kernel.org wrote:
+| 
+| > http://bugzilla.kernel.org/show_bug.cgi?id=9564
+| > 
+| >            Summary: Uninitialzed variable fields cvt.h_margin and
+| >                     cvt.v_margin
+| >            Product: Drivers
+| >            Version: 2.5
+| >      KernelVersion: 2.6.23
+| >           Platform: All
+| >         OS/Version: Linux
+| >               Tree: Mainline
+| >             Status: NEW
+| >           Severity: normal
+| >           Priority: P1
+| >          Component: Video(Other)
+| >         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
+| >         ReportedBy: marciobuss@gmail.com
+| > 
+| > 
+| > The errors can be found at drivers/video/fbcvt.c as follows:
+| > 
+| > (1) the test "if (margin)" at line 310 evaluates to false,
+| > (2) this makes the test "if (cvt.flags & FB_CVT_FLAG_MARGINS)" at line 352
+| >     to evaluate to false as well
+| > (3) now cvt.h_margin is uninitialized at line 359, 368, and 370, and
+| >     cvt.v_margin is uninitizalied at line 371.
+| > 
+| > In other words, both cvt.v_margin and cvt.h_margin are initialized conditinally
+| > but used unconditionally. This bug is a false positive only if the parameter
+| > "margins" at line 304 is never 0. However, this would make the test at line
+| > 310 unnecessary -- anyone looking at the code is miled into believing that
+| > 0 is a legal value for "margins". This means the code does require some change
+| > in my humble opinion.
+| > 
+| 
+| Could someone please take a look at this?
 
-Avoid displaying garbage on unused framebuffers. For most users a single
-framebuffer is used together with fbcon. sm501fb supports two framebuffers
-where one often is assigned to fbcon and the other one is left unused during
-the boot.
+unfortunelly, it's not really obvious what is the right way of
+calculation. *should* the 1.8% margin be involved in calculation
+all the time or 0 is legal too?
 
-The problem here is that framebuffers not in use by fbcon happen to display
-garbage. This can easily be solved by making sure that framebuffer memory and
-palette ram are cleared.
-
-The problem can be observed by using looking at the panel output (fb1)
-after booting the kernel with fbcon on crt (fb0). This is the default
-configuration. It's also possible to watch the garbage on the crt framebuffer
-by passing "fbcon=map:1" on the kernel cmdline. This will assign fbcon to
-the panel (fb1) and leave the crt (fb0) unused.
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
-
- This is the same patch that was sent to linux-fbdev-devel on 20071228.
-
- drivers/video/sm501fb.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
---- 0002/drivers/video/sm501fb.c
-+++ work/drivers/video/sm501fb.c	2007-12-27 13:24:20.000000000 +0900
-@@ -1264,6 +1264,7 @@ static int sm501fb_start(struct sm501fb_
- {
- 	struct resource	*res;
- 	struct device *dev;
-+	int k;
- 	int ret;
- 
- 	info->dev = dev = &pdev->dev;
-@@ -1325,6 +1326,13 @@ static int sm501fb_start(struct sm501fb_
- 
- 	info->fbmem_len = (res->end - res->start)+1;
- 
-+	/* clear framebuffer memory - avoids garbage data on unused fb */
-+	memset(info->fbmem, 0, info->fbmem_len);
-+
-+	/* clear palette ram - undefined at power on */
-+	for (k = 0; k < (256 * 3); k++)
-+		writel(0, info->regs + SM501_DC_PANEL_PALETTE + (k * 4));
-+
- 	/* enable display controller */
- 	sm501_unit_power(dev->parent, SM501_GATE_DISPLAY, 1);
- 
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+		- Cyrill -

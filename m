@@ -1,62 +1,136 @@
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [Bugme-new] [Bug 9564] New: Uninitialzed variable fields
-	cvt.h_margin and cvt.v_margin
-Date: Mon, 21 Jan 2008 20:28:39 +0300
-Message-ID: <20080121172839.GB6722@cvg>
-References: <bug-9564-10286@http.bugzilla.kernel.org/> <20080118140055.fe862b78.akpm@linux-foundation.org>
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] atmel_lcdfb: backlight control
+Date: Wed, 23 Jan 2008 18:27:34 +0100
+Message-ID: <20080123182734.45a84e82@dhcp-252-066.norway.atmel.com>
+References: <4790BB53.3080407@atmel.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752891AbYAUR3Q@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20080118140055.fe862b78.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, bugme-daemon@bugzilla.kernel.org, marciobuss@gmail.com
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JHjOU-0002in-Gw for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Jan 2008 09:28:10 -0800
+Received: from nat-132.atmel.no ([80.232.32.132] helo=relay.atmel.no)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JHjOR-0003Th-GB
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Jan 2008 09:28:09 -0800
+In-Reply-To: <4790BB53.3080407@atmel.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: David Brownell <david-b@pacbell.net>, ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>
 
-[Andrew Morton - Fri, Jan 18, 2008 at 02:00:55PM -0800]
-| On Fri, 14 Dec 2007 13:54:59 -0800 (PST)
-| bugme-daemon@bugzilla.kernel.org wrote:
-| 
-| > http://bugzilla.kernel.org/show_bug.cgi?id=9564
-| > 
-| >            Summary: Uninitialzed variable fields cvt.h_margin and
-| >                     cvt.v_margin
-| >            Product: Drivers
-| >            Version: 2.5
-| >      KernelVersion: 2.6.23
-| >           Platform: All
-| >         OS/Version: Linux
-| >               Tree: Mainline
-| >             Status: NEW
-| >           Severity: normal
-| >           Priority: P1
-| >          Component: Video(Other)
-| >         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
-| >         ReportedBy: marciobuss@gmail.com
-| > 
-| > 
-| > The errors can be found at drivers/video/fbcvt.c as follows:
-| > 
-| > (1) the test "if (margin)" at line 310 evaluates to false,
-| > (2) this makes the test "if (cvt.flags & FB_CVT_FLAG_MARGINS)" at line 352
-| >     to evaluate to false as well
-| > (3) now cvt.h_margin is uninitialized at line 359, 368, and 370, and
-| >     cvt.v_margin is uninitizalied at line 371.
-| > 
-| > In other words, both cvt.v_margin and cvt.h_margin are initialized conditinally
-| > but used unconditionally. This bug is a false positive only if the parameter
-| > "margins" at line 304 is never 0. However, this would make the test at line
-| > 310 unnecessary -- anyone looking at the code is miled into believing that
-| > 0 is a legal value for "margins". This means the code does require some change
-| > in my humble opinion.
-| > 
-| 
-| Could someone please take a look at this?
+On Fri, 18 Jan 2008 15:44:35 +0100
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-unfortunelly, it's not really obvious what is the right way of
-calculation. *should* the 1.8% margin be involved in calculation
-all the time or 0 is legal too?
+> From: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> On the sam9 EK boards, the LCD backlight is hooked up to a PWM output
+> from the LCD controller.  It's controlled by "contrast" registers though.
+> 
+> This patch lets boards declare that they have that kind of backlight
+> control.  The driver can then export this control, letting screenblank
+> and other operations actually take effect ... reducing the typically
+> substantial power drain from the backlight.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-		- Cyrill -
+Looks good to me. It won't affect any current AVR32 boards, although
+that may change in the future.
+
+A couple of minor comments below.
+
+> +static struct backlight_ops atmel_lcdc_bl_ops = {
+> +	.update_status = atmel_bl_update_status,
+> +	.get_brightness = atmel_bl_get_brightness,
+> +};
+
+This can be const, no?
+
+No it can't, since backlight_device_register() takes a non-const
+pointer for some reason...
+
+> +#else
+> +
+> +static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
+> +{
+> +	dev_warn(&sinfo->pdev->dev, "backlight control is not available\n");
+> +}
+> +
+> +static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
+> +{
+> +}
+> +
+> +#endif
+
+This looks a bit asymmetric...
+
+> +static inline void init_contrast(struct atmel_lcdfb_info *sinfo)
+> +{
+> +	/* have some default contrast/backlight settings */
+> +	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+> +	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, ATMEL_LCDC_CVAL_DEFAULT);
+> +
+> +	if (sinfo->lcdcon_is_backlight)
+> +		init_backlight(sinfo);
+> +}
+> +
+>  
+>  static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
+>  	.type		= FB_TYPE_PACKED_PIXELS,
+> @@ -370,10 +472,6 @@ static int atmel_lcdfb_set_par(struct fb
+>  	/* Disable all interrupts */
+>  	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
+>  
+> -	/* Set contrast */
+> -	value = ATMEL_LCDC_PS_DIV8 | ATMEL_LCDC_POL_POSITIVE | ATMEL_LCDC_ENA_PWMENABLE;
+> -	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, value);
+> -	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, ATMEL_LCDC_CVAL_DEFAULT);
+>  	/* ...wait for DMA engine to become idle... */
+>  	while (lcdc_readl(sinfo, ATMEL_LCDC_DMACON) & ATMEL_LCDC_DMABUSY)
+>  		msleep(10);
+> @@ -577,6 +675,7 @@ static int __init atmel_lcdfb_probe(stru
+>  		sinfo->default_monspecs = pdata_sinfo->default_monspecs;
+>  		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
+>  		sinfo->guard_time = pdata_sinfo->guard_time;
+> +		sinfo->lcdcon_is_backlight = pdata_sinfo->lcdcon_is_backlight;
+>  	} else {
+>  		dev_err(dev, "cannot get default configuration\n");
+>  		goto free_info;
+> @@ -670,6 +769,9 @@ static int __init atmel_lcdfb_probe(stru
+>  		goto release_mem;
+>  	}
+>  
+> +	/* Initialize PWM for contrast or backlight ("off") */
+> +	init_contrast(sinfo);
+> +
+>  	/* interrupt */
+>  	ret = request_irq(sinfo->irq_base, atmel_lcdfb_interrupt, 0, pdev->name, info);
+>  	if (ret) {
+> @@ -755,6 +857,7 @@ static int __exit atmel_lcdfb_remove(str
+>  	if (!sinfo)
+>  		return 0;
+>  
+> +	exit_contrast(sinfo);
+
+Missing exit_contrast() in probe() error path?
+
+Haavard
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

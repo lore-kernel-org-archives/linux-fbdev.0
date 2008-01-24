@@ -1,101 +1,88 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Fw: [Bugme-new] [Bug 9803] New: intel fb
-	switches off monitor
-Date: Wed, 23 Jan 2008 23:50:21 -0800
-Message-ID: <20080123235021.209c5df0.akpm@linux-foundation.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: backlight control -
+ tiny rework
+Date: Thu, 24 Jan 2008 10:30:44 +0100
+Message-ID: <47985AC4.9070104@atmel.com>
+References: <4790BB53.3080407@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JHwqt-000450-Sm for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Jan 2008 23:50:23 -0800
-Received: from smtp2.linux-foundation.org ([207.189.120.14])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JHwqs-0005y9-GD
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Jan 2008 23:50:23 -0800
-Received: from imap1.linux-foundation.org (imap1.linux-foundation.org
-	[207.189.120.55]) by smtp2.linux-foundation.org
-	(8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with ESMTP id
-	m0O7oFFM029342
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 23 Jan 2008 23:50:16 -0800
-Received: from sony (localhost [127.0.0.1]) by imap1.linux-foundation.org
-	(8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with SMTP id
-	m0O7oEF8016617 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 23 Jan 2008 23:50:15 -0800
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754805AbYAXJbk@vger.kernel.org>
+In-Reply-To: <4790BB53.3080407@atmel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, David Brownell <david-b@pacbell.net>, Andrew Victor <linux@maxim.org.za>, ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>
 
+Tiny patch that removes not needed "inline" and renames 
+function : exit_contrast() -> exit_backlight().
+It adds the missing exit_backlight() in  probe() 
+error path.
 
-argh.
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+Follows comments from Andrew Morton and Haavard Skinnemoen.
+Thanks to both of you.
 
-Begin forwarded message:
+ drivers/video/atmel_lcdfb.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Date: Wed, 23 Jan 2008 01:56:14 -0800 (PST)
-From: bugme-daemon@bugzilla.kernel.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 9803] New: intel fb switches off monitor
-
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9803
-
-           Summary: intel fb switches off monitor
-           Product: Drivers
-           Version: 2.5
-     KernelVersion: [REGRESSION] 2.6.23.0 and higher currently tested
-                    2.6.24-rc8
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: high
-          Priority: P1
-         Component: Video(Other)
-        AssignedTo: drivers_video-other@kernel-bugs.osdl.org
-        ReportedBy: cijoml@volny.cz
-
-
-Latest working kernel version: config-2.6.22.5
-Earliest failing kernel version: 
-Distribution:Debian stable
-Hardware Environment: Dell Optiplex GX620, BIOS A11 (latest)
-Software Environment: Debian stable, Intel FB compiled into kernel
-Problem Description:
-
-When kernel boots I see normal letters on the screen until
-in-kernel-compiled-intelfb is inicialited. From that time my LCD's LED says "No
-signal" and I see nothink until Xorg starts. Then I can jump from Xorg to
-intelfb screen with ctrl+alt+f1 and nice fb is there. With my previous 2.6.22.5
-this works.
-
-Steps to reproduce:
-
-boot kernel and look
-
-Boot
-
-
--- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -118,7 +118,7 @@ static struct backlight_ops atmel_lcdc_b
+ 	.get_brightness = atmel_bl_get_brightness,
+ };
+ 
+-static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
++static void init_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ 	struct backlight_device	*bl;
+ 
+@@ -142,7 +142,7 @@ static inline void init_backlight(struct
+ 	bl->props.brightness = atmel_bl_get_brightness(bl);
+ }
+ 
+-static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
++static void exit_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ 	if (sinfo->backlight)
+ 		backlight_device_unregister(sinfo->backlight);
+@@ -150,18 +150,18 @@ static inline void exit_contrast(struct 
+ 
+ #else
+ 
+-static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
++static void init_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ 	dev_warn(&sinfo->pdev->dev, "backlight control is not available\n");
+ }
+ 
+-static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
++static void exit_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ }
+ 
+ #endif
+ 
+-static inline void init_contrast(struct atmel_lcdfb_info *sinfo)
++static void init_contrast(struct atmel_lcdfb_info *sinfo)
+ {
+ 	/* have some default contrast/backlight settings */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+@@ -823,6 +823,7 @@ free_cmap:
+ unregister_irqs:
+ 	free_irq(sinfo->irq_base, info);
+ unmap_mmio:
++	exit_backlight(sinfo);
+ 	iounmap(sinfo->mmio);
+ release_mem:
+  	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
+@@ -857,7 +858,7 @@ static int __exit atmel_lcdfb_remove(str
+ 	if (!sinfo)
+ 		return 0;
+ 
+-	exit_contrast(sinfo);
++	exit_backlight(sinfo);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(0);
+ 	unregister_framebuffer(info);

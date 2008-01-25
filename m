@@ -1,22 +1,21 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 02/11] ps3: Use symbolic names for video
-	modes
-Date: Fri, 25 Jan 2008 16:06:25 +0100
-Message-ID: <20080125153107.054556036@vixen.sonytel.be>
+Subject: [patch 10/11] ps3fb: Cleanup sweep
+Date: Fri, 25 Jan 2008 16:06:33 +0100
+Message-ID: <20080125153107.540190528@vixen.sonytel.be>
 References: <20080125150623.202631389@vixen.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1258868877=="
+Content-Type: multipart/mixed; boundary="===============0959358786=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JIQY0-00021r-R6 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:52 -0800
+	id 1JIQY7-00022W-H5 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jan 2008 07:32:59 -0800
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQXy-0004fy-0g
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQY6-0004u1-N2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:52 -0800
+	Fri, 25 Jan 2008 07:32:59 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,225 +29,191 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 
---===============1258868877==
-Content-Disposition: inline; filename=ps3-wip/ps3av-mode-defines.diff
+--===============0959358786==
+Content-Disposition: inline; filename=ps3-wip/ps3fb-cleanup.diff
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3: Use symbolic names for video modes
+ps3fb: cleanup sweep:
+  - Kill ps3fb_priv.xdr_ea and ps3fb_priv.xdr_size, use info->screen_base and
+    info->fix.smem_len instead.
+  - Kill superfluous assignments to info->fix.smem_start, info->fix.smem_len,
+    and info->screen_base in ps3fb_set_par(). Their values never change.
+  - Add sparse annotations to casts to kill address space warnings
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av.c         |   39 ++++++++++++++++++++-------------------
- drivers/video/ps3fb.c       |   17 ++++++++++-------
- include/asm-powerpc/ps3av.h |   41 ++++++++++++++++++++++++++++++-----------
- 3 files changed, 60 insertions(+), 37 deletions(-)
+ drivers/video/ps3fb.c |   64 +++++++++++++++++++++-----------------------------
+ 1 file changed, 27 insertions(+), 37 deletions(-)
 
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -542,7 +542,7 @@ static void ps3av_set_videomode_packet(u
- 
- static void ps3av_set_videomode_cont(u32 id, u32 old_id)
- {
--	static int vesa = 0;
-+	static int vesa;
- 	int res;
- 
- 	/* video signal off */
-@@ -552,9 +552,9 @@ static void ps3av_set_videomode_cont(u32
- 	 * AV backend needs non-VESA mode setting at least one time
- 	 * when VESA mode is used.
- 	 */
--	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= 11) {
-+	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= PS3AV_MODE_WXGA) {
- 		/* vesa mode */
--		ps3av_set_videomode_packet(2);	/* 480P */
-+		ps3av_set_videomode_packet(PS3AV_MODE_480P);
- 	}
- 	vesa = 1;
- 
-@@ -594,20 +594,21 @@ static const struct {
- 	unsigned mask : 19;
- 	unsigned id :  4;
- } ps3av_preferred_modes[] = {
--	{ .mask = PS3AV_RESBIT_WUXGA		<< SHIFT_VESA,	.id = 13 },
--	{ .mask = PS3AV_RESBIT_1920x1080P	<< SHIFT_60,	.id = 5 },
--	{ .mask = PS3AV_RESBIT_1920x1080P	<< SHIFT_50,	.id = 10 },
--	{ .mask = PS3AV_RESBIT_1920x1080I	<< SHIFT_60,	.id = 4 },
--	{ .mask = PS3AV_RESBIT_1920x1080I	<< SHIFT_50,	.id = 9 },
--	{ .mask = PS3AV_RESBIT_SXGA		<< SHIFT_VESA,	.id = 12 },
--	{ .mask = PS3AV_RESBIT_WXGA		<< SHIFT_VESA,	.id = 11 },
--	{ .mask = PS3AV_RESBIT_1280x720P	<< SHIFT_60,	.id = 3 },
--	{ .mask = PS3AV_RESBIT_1280x720P	<< SHIFT_50,	.id = 8 },
--	{ .mask = PS3AV_RESBIT_720x480P		<< SHIFT_60,	.id = 2 },
--	{ .mask = PS3AV_RESBIT_720x576P		<< SHIFT_50,	.id = 7 },
-+	{ PS3AV_RESBIT_WUXGA      << SHIFT_VESA, PS3AV_MODE_WUXGA   },
-+	{ PS3AV_RESBIT_1920x1080P << SHIFT_60,   PS3AV_MODE_1080P60 },
-+	{ PS3AV_RESBIT_1920x1080P << SHIFT_50,   PS3AV_MODE_1080P50 },
-+	{ PS3AV_RESBIT_1920x1080I << SHIFT_60,   PS3AV_MODE_1080I60 },
-+	{ PS3AV_RESBIT_1920x1080I << SHIFT_50,   PS3AV_MODE_1080I50 },
-+	{ PS3AV_RESBIT_SXGA       << SHIFT_VESA, PS3AV_MODE_SXGA    },
-+	{ PS3AV_RESBIT_WXGA       << SHIFT_VESA, PS3AV_MODE_WXGA    },
-+	{ PS3AV_RESBIT_1280x720P  << SHIFT_60,   PS3AV_MODE_720P60  },
-+	{ PS3AV_RESBIT_1280x720P  << SHIFT_50,   PS3AV_MODE_720P50  },
-+	{ PS3AV_RESBIT_720x480P   << SHIFT_60,   PS3AV_MODE_480P    },
-+	{ PS3AV_RESBIT_720x576P   << SHIFT_50,   PS3AV_MODE_576P    },
- };
- 
--static int ps3av_resbit2id(u32 res_50, u32 res_60, u32 res_vesa)
-+static enum ps3av_mode_num ps3av_resbit2id(u32 res_50, u32 res_60,
-+					   u32 res_vesa)
- {
- 	unsigned int i;
- 	u32 res_all;
-@@ -636,9 +637,9 @@ static int ps3av_resbit2id(u32 res_50, u
- 	return 0;
- }
- 
--static int ps3av_hdmi_get_id(struct ps3av_info_monitor *info)
-+static enum ps3av_mode_num ps3av_hdmi_get_id(struct ps3av_info_monitor *info)
- {
--	int id;
-+	enum ps3av_mode_num id;
- 
- 	if (safe_mode)
- 		return PS3AV_DEFAULT_HDMI_MODE_ID_REG_60;
-@@ -852,7 +853,7 @@ int ps3av_set_video_mode(u32 id)
- 
- 	/* auto mode */
- 	option = id & ~PS3AV_MODE_MASK;
--	if ((id & PS3AV_MODE_MASK) == 0) {
-+	if ((id & PS3AV_MODE_MASK) == PS3AV_MODE_AUTO) {
- 		id = ps3av_auto_videomode(&ps3av->av_hw_conf);
- 		if (id < 1) {
- 			printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
-@@ -958,7 +959,7 @@ static int ps3av_probe(struct ps3_system
- 		return -ENOMEM;
- 
- 	mutex_init(&ps3av->mutex);
--	ps3av->ps3av_mode = 0;
-+	ps3av->ps3av_mode = PS3AV_MODE_AUTO;
- 	ps3av->dev = dev;
- 
- 	INIT_WORK(&ps3av->work, ps3avd);
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -338,7 +338,7 @@ static int ps3fb_get_res_table(u32 xres,
- static unsigned int ps3fb_find_mode(const struct fb_var_screeninfo *var,
- 				    u32 *ddr_line_length, u32 *xdr_line_length)
- {
--	unsigned int i, mode;
-+	unsigned int i, fi, mode;
+@@ -116,8 +116,6 @@ struct ps3fb_priv {
+ 	unsigned int irq_no;
  
- 	for (i = 0; i < ARRAY_SIZE(ps3fb_modedb); i++)
- 		if (var->xres == ps3fb_modedb[i].xres &&
-@@ -359,7 +359,8 @@ static unsigned int ps3fb_find_mode(cons
+ 	u64 context_handle, memory_handle;
+-	void *xdr_ea;
+-	size_t xdr_size;
+ 	struct gpu_driver_info *dinfo;
  
- found:
- 	/* Cropped broadcast modes use the full line length */
--	*ddr_line_length = ps3fb_modedb[i < 10 ? i + 13 : i].xres * BPP;
-+	fi = i < PS3AV_MODE_1080P50 ? i + PS3AV_MODE_WUXGA : i;
-+	*ddr_line_length = ps3fb_modedb[fi].xres * BPP;
- 
- 	if (ps3_compare_firmware_version(1, 9, 0) >= 0) {
- 		*xdr_line_length = GPU_ALIGN_UP(max(var->xres,
-@@ -370,7 +371,9 @@ found:
- 		*xdr_line_length = *ddr_line_length;
- 
- 	/* Full broadcast modes have the full mode bit set */
--	mode = i > 12 ? (i - 12) | PS3FB_FULL_MODE_BIT : i + 1;
-+	mode = i+1;
-+	if (mode > PS3AV_MODE_WUXGA)
-+		mode = (mode - PS3AV_MODE_WUXGA) | PS3FB_FULL_MODE_BIT;
- 
- 	pr_debug("ps3fb_find_mode: mode %u\n", mode);
- 
-@@ -382,14 +385,14 @@ static const struct fb_videomode *ps3fb_
- 	u32 mode = id & PS3AV_MODE_MASK;
- 	u32 flags;
- 
--	if (mode < 1 || mode > 13)
-+	if (mode < PS3AV_MODE_480I || mode > PS3AV_MODE_WUXGA)
- 		return NULL;
- 
- 	flags = id & ~PS3AV_MODE_MASK;
- 
--	if (mode <= 10 && flags & PS3FB_FULL_MODE_BIT) {
-+	if (mode <= PS3AV_MODE_1080P50 && flags & PS3FB_FULL_MODE_BIT) {
- 		/* Full broadcast mode */
--		return &ps3fb_modedb[mode + 12];
-+		return &ps3fb_modedb[mode + PS3AV_MODE_WUXGA - 1];
+ 	u64 vblank_count;	/* frame count */
+@@ -598,7 +596,7 @@ static int ps3fb_check_var(struct fb_var
  	}
  
- 	return &ps3fb_modedb[mode - 1];
-@@ -1080,7 +1083,7 @@ static int __devinit ps3fb_probe(struct 
+ 	/* Memory limit */
+-	if (var->yres_virtual * xdr_line_length > ps3fb.xdr_size) {
++	if (var->yres_virtual * xdr_line_length > info->fix.smem_len) {
+ 		dev_dbg(info->device, "Not enough memory\n");
+ 		return -ENOMEM;
+ 	}
+@@ -627,19 +625,15 @@ static int ps3fb_set_par(struct fb_info 
  
- 	if (!ps3fb_mode)
- 		ps3fb_mode = ps3av_get_mode();
--	dev_dbg(&dev->core, "ps3av_mode:%d\n", ps3fb_mode);
-+	dev_dbg(&dev->core, "ps3fb_mode: %d\n", ps3fb_mode);
+ 	vmode = ps3fb_native_vmode(mode & PS3AV_MODE_MASK);
  
- 	if (ps3fb_mode > 0 &&
- 	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
---- a/include/asm-powerpc/ps3av.h
-+++ b/include/asm-powerpc/ps3av.h
-@@ -310,19 +310,25 @@
- #define PS3AV_MONITOR_TYPE_HDMI			1	/* HDMI */
- #define PS3AV_MONITOR_TYPE_DVI			2	/* DVI */
+-	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea);
+-	info->fix.smem_len = ps3fb.xdr_size;
+ 	info->fix.xpanstep = info->var.xres_virtual > info->var.xres ? 1 : 0;
+ 	info->fix.ypanstep = info->var.yres_virtual > info->var.yres ? 1 : 0;
+ 	info->fix.line_length = xdr_line_length;
  
--#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_60	2	/* 480p */
--#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_60	1	/* 480i */
--#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_50	7	/* 576p */
--#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_50	6	/* 576i */
+-	info->screen_base = (char __iomem *)ps3fb.xdr_ea;
 -
--#define PS3AV_REGION_60				0x01
--#define PS3AV_REGION_50				0x02
--#define PS3AV_REGION_RGB			0x10
+ 	par->ddr_line_length = ddr_line_length;
+ 	par->ddr_frame_size = vmode->yres * ddr_line_length;
+ 	par->xdr_frame_size = info->var.yres_virtual * xdr_line_length;
+ 
+-	par->num_frames = ps3fb.xdr_size /
++	par->num_frames = info->fix.smem_len /
+ 			  max(par->ddr_frame_size, par->xdr_frame_size);
+ 
+ 	/* Keep the special bits we cannot set using fb_var_screeninfo */
+@@ -667,13 +661,13 @@ static int ps3fb_set_par(struct fb_info 
+ 	}
+ 
+ 	/* Clear XDR frame buffer memory */
+-	memset(ps3fb.xdr_ea, 0, ps3fb.xdr_size);
++	memset((void __force *)info->screen_base, 0, info->fix.smem_len);
+ 
+ 	/* Clear DDR frame buffer memory */
+ 	lines = vmode->yres * par->num_frames;
+ 	if (par->full_offset)
+ 		lines++;
+-	maxlines = ps3fb.xdr_size / ddr_line_length;
++	maxlines = info->fix.smem_len / ddr_line_length;
+ 	for (dst = 0; lines; dst += maxlines * ddr_line_length) {
+ 		unsigned int l = min(lines, maxlines);
+ 		ps3fb_sync_image(info->device, 0, dst, 0, vmode->xres, l,
+@@ -1017,10 +1011,9 @@ static int ps3fb_xdr_settings(u64 xdr_lp
+ 			__func__, status);
+ 		return -ENXIO;
+ 	}
+-	dev_dbg(dev,
+-		"video:%p xdr_ea:%p ioif:%lx lpar:%lx phys:%lx size:%lx\n",
+-		ps3fb_videomemory.address, ps3fb.xdr_ea, GPU_IOIF, xdr_lpar,
+-		virt_to_abs(ps3fb.xdr_ea), ps3fb_videomemory.size);
++	dev_dbg(dev, "video:%p ioif:%lx lpar:%lx size:%lx\n",
++		ps3fb_videomemory.address, GPU_IOIF, xdr_lpar,
++		ps3fb_videomemory.size);
+ 
+ 	status = lv1_gpu_context_attribute(ps3fb.context_handle,
+ 					   L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP,
+@@ -1103,6 +1096,7 @@ static int __devinit ps3fb_probe(struct 
+ 	u64 lpar_reports = 0;
+ 	u64 lpar_reports_size = 0;
+ 	u64 xdr_lpar;
++	void *fb_start;
+ 	int status;
+ 	struct task_struct *task;
+ 	unsigned long max_ps3fb_size;
+@@ -1158,7 +1152,7 @@ static int __devinit ps3fb_probe(struct 
+ 	}
+ 
+ 	/* vsync interrupt */
+-	ps3fb.dinfo = ioremap(lpar_driver_info, 128 * 1024);
++	ps3fb.dinfo = (void __force *)ioremap(lpar_driver_info, 128 * 1024);
+ 	if (!ps3fb.dinfo) {
+ 		dev_err(&dev->core, "%s: ioremap failed\n", __func__);
+ 		goto err_gpu_context_free;
+@@ -1168,22 +1162,10 @@ static int __devinit ps3fb_probe(struct 
+ 	if (retval)
+ 		goto err_iounmap_dinfo;
+ 
+-	/* XDR frame buffer */
+-	ps3fb.xdr_ea = ps3fb_videomemory.address;
+-	xdr_lpar = ps3_mm_phys_to_lpar(__pa(ps3fb.xdr_ea));
 -
--#define get_status(buf)				(((__u32 *)buf)[2])
--#define PS3AV_HDR_SIZE				4	/* version + size */
+ 	/* Clear memory to prevent kernel info leakage into userspace */
+-	memset(ps3fb.xdr_ea, 0, ps3fb_videomemory.size);
+-
+-	/*
+-	 * The GPU command buffer is at the start of video memory
+-	 * As we don't use the full command buffer, we can put the actual
+-	 * frame buffer at offset GPU_FB_START and save some precious XDR
+-	 * memory
+-	 */
+-	ps3fb.xdr_ea += GPU_FB_START;
+-	ps3fb.xdr_size = ps3fb_videomemory.size - GPU_FB_START;
++	memset(ps3fb_videomemory.address, 0, ps3fb_videomemory.size);
  
- /* for video mode */
-+enum ps3av_mode_num {
-+	PS3AV_MODE_AUTO				= 0,
-+	PS3AV_MODE_480I				= 1,
-+	PS3AV_MODE_480P				= 2,
-+	PS3AV_MODE_720P60			= 3,
-+	PS3AV_MODE_1080I60			= 4,
-+	PS3AV_MODE_1080P60			= 5,
-+	PS3AV_MODE_576I				= 6,
-+	PS3AV_MODE_576P				= 7,
-+	PS3AV_MODE_720P50			= 8,
-+	PS3AV_MODE_1080I50			= 9,
-+	PS3AV_MODE_1080P50			= 10,
-+	PS3AV_MODE_WXGA				= 11,
-+	PS3AV_MODE_SXGA				= 12,
-+	PS3AV_MODE_WUXGA			= 13,
-+};
-+
- #define PS3AV_MODE_MASK				0x000F
- #define PS3AV_MODE_HDCP_OFF			0x1000	/* Retail PS3 product doesn't support this */
- #define PS3AV_MODE_DITHER			0x0800
-@@ -333,6 +339,19 @@
- #define PS3AV_MODE_RGB				0x0020
++	xdr_lpar = ps3_mm_phys_to_lpar(__pa(ps3fb_videomemory.address));
+ 	retval = ps3fb_xdr_settings(xdr_lpar, &dev->core);
+ 	if (retval)
+ 		goto err_free_irq;
+@@ -1197,12 +1179,20 @@ static int __devinit ps3fb_probe(struct 
+ 	par->new_mode_id = ps3fb_mode;
+ 	par->num_frames = 1;
  
+-	info->screen_base = (char __iomem *)ps3fb.xdr_ea;
+ 	info->fbops = &ps3fb_ops;
+-
+ 	info->fix = ps3fb_fix;
+-	info->fix.smem_start = virt_to_abs(ps3fb.xdr_ea);
+-	info->fix.smem_len = ps3fb.xdr_size;
++
++	/*
++	 * The GPU command buffer is at the start of video memory
++	 * As we don't use the full command buffer, we can put the actual
++	 * frame buffer at offset GPU_FB_START and save some precious XDR
++	 * memory
++	 */
++	fb_start = ps3fb_videomemory.address + GPU_FB_START;
++	info->screen_base = (char __force __iomem *)fb_start;
++	info->fix.smem_start = virt_to_abs(fb_start);
++	info->fix.smem_len = ps3fb_videomemory.size - GPU_FB_START;
++
+ 	info->pseudo_palette = par->pseudo_palette;
+ 	info->flags = FBINFO_DEFAULT | FBINFO_READS_FAST |
+ 		      FBINFO_HWACCEL_XPAN | FBINFO_HWACCEL_YPAN;
+@@ -1227,9 +1217,9 @@ static int __devinit ps3fb_probe(struct 
  
-+#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_60	PS3AV_MODE_480P
-+#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_60	PS3AV_MODE_480I
-+#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_50	PS3AV_MODE_576P
-+#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_50	PS3AV_MODE_576I
-+
-+#define PS3AV_REGION_60				0x01
-+#define PS3AV_REGION_50				0x02
-+#define PS3AV_REGION_RGB			0x10
-+
-+#define get_status(buf)				(((__u32 *)buf)[2])
-+#define PS3AV_HDR_SIZE				4	/* version + size */
-+
-+
- /** command packet structure **/
- struct ps3av_send_hdr {
- 	u16 version;
+ 	dev->core.driver_data = info;
+ 
+-	dev_info(info->device, "%s %s, using %lu KiB of video memory\n",
++	dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+ 		 dev_driver_string(info->dev), info->dev->bus_id,
+-		 ps3fb.xdr_size >> 10);
++		 info->fix.smem_len >> 10);
+ 
+ 	task = kthread_run(ps3fbd, info, DEVICE_NAME);
+ 	if (IS_ERR(task)) {
+@@ -1252,7 +1242,7 @@ err_free_irq:
+ 	free_irq(ps3fb.irq_no, &dev->core);
+ 	ps3_irq_plug_destroy(ps3fb.irq_no);
+ err_iounmap_dinfo:
+-	iounmap((u8 __iomem *)ps3fb.dinfo);
++	iounmap((u8 __force __iomem *)ps3fb.dinfo);
+ err_gpu_context_free:
+ 	lv1_gpu_context_free(ps3fb.context_handle);
+ err_gpu_memory_free:
+@@ -1287,7 +1277,7 @@ static int ps3fb_shutdown(struct ps3_sys
+ 		framebuffer_release(info);
+ 		info = dev->core.driver_data = NULL;
+ 	}
+-	iounmap((u8 __iomem *)ps3fb.dinfo);
++	iounmap((u8 __force __iomem *)ps3fb.dinfo);
+ 
+ 	status = lv1_gpu_context_free(ps3fb.context_handle);
+ 	if (status)
 
 -- 
 With kind regards,
@@ -272,7 +237,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============1258868877==
+--===============0959358786==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -282,7 +247,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============1258868877==
+--===============0959358786==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -293,4 +258,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1258868877==--
+--===============0959358786==--

@@ -1,20 +1,21 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 00/11] ps3av/3fb patches for 2.6.25
-Date: Fri, 25 Jan 2008 16:06:23 +0100
-Message-ID: <20080125150623.202631389@vixen.sonytel.be>
+Subject: [patch 03/11] ps3fb: Kill PS3FB_FULL_MODE_BIT
+Date: Fri, 25 Jan 2008 16:06:26 +0100
+Message-ID: <20080125153107.116974131@vixen.sonytel.be>
+References: <20080125150623.202631389@vixen.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0132365733=="
+Content-Type: multipart/mixed; boundary="===============1127550096=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JIQXz-00021h-Ik for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:51 -0800
+	id 1JIQY1-00021y-DA for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jan 2008 07:32:53 -0800
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQXy-0004fn-0j
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQXy-0004kM-7P
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:51 -0800
+	Fri, 25 Jan 2008 07:32:53 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,33 +27,61 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 
---===============0132365733==
+--===============1127550096==
+Content-Disposition: inline;
+	filename=ps3-wip/ps3fb-kill-PS3FB_FULL_MODE_BIT.diff
 
-	Hi Tony, Andrew,
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Hare are the ps3av/fb patches for 2.6.25:
-  [1] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused
-  [2] ps3: Use symbolic names for video modes
-  [3] ps3fb: Kill PS3FB_FULL_MODE_BIT
-  [4] ps3fb: Inline macros that are used only once
-  [5] ps3fb: Kill ps3fb_res[]
-  [6] ps3fb: Make frame buffer offsets unsigned int
-  [7] ps3fb: Add support for configurable black borders
-  [8] ps3fb: Reorganize modedb handling
-  [9] ps3fb: Round up video modes
-  [10] ps3fb: Cleanup sweep
-  [11] ps3fb: Fix modedb typos
+ps3fb: Kill PS3FB_FULL_MODE_BIT, use PS3AV_MODE_FULL instead
 
-Patches 1-9 have been sent for review on Mon, 26 Nov 2007. They haven't
-changed in the mean time, except for rebasing and minor editing of patch
-descriptions.
-Patches 10-11 are new, but not very complex, and tested in ps3-linux.git since
-a while.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/ps3fb.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Please apply for 2.6.25. Thanks a lot!
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -57,8 +57,6 @@
+ #define GPU_ALIGN_UP(x)				_ALIGN_UP((x), 64)
+ #define GPU_MAX_LINE_LENGTH			(65536 - 64)
+ 
+-#define PS3FB_FULL_MODE_BIT			0x80
+-
+ #define GPU_INTR_STATUS_VSYNC_0			0	/* vsync on head A */
+ #define GPU_INTR_STATUS_VSYNC_1			1	/* vsync on head B */
+ #define GPU_INTR_STATUS_FLIP_0			3	/* flip head A */
+@@ -310,7 +308,7 @@ static int ps3fb_get_res_table(u32 xres,
+ 	unsigned int i;
+ 	u32 x, y, f;
+ 
+-	full_mode = (mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
++	full_mode = (mode & PS3AV_MODE_FULL) ? PS3FB_RES_FULL : 0;
+ 	for (i = 0;; i++) {
+ 		x = ps3fb_res[i].xres;
+ 		y = ps3fb_res[i].yres;
+@@ -373,7 +371,7 @@ found:
+ 	/* Full broadcast modes have the full mode bit set */
+ 	mode = i+1;
+ 	if (mode > PS3AV_MODE_WUXGA)
+-		mode = (mode - PS3AV_MODE_WUXGA) | PS3FB_FULL_MODE_BIT;
++		mode = (mode - PS3AV_MODE_WUXGA) | PS3AV_MODE_FULL;
+ 
+ 	pr_debug("ps3fb_find_mode: mode %u\n", mode);
+ 
+@@ -390,7 +388,7 @@ static const struct fb_videomode *ps3fb_
+ 
+ 	flags = id & ~PS3AV_MODE_MASK;
+ 
+-	if (mode <= PS3AV_MODE_1080P50 && flags & PS3FB_FULL_MODE_BIT) {
++	if (mode <= PS3AV_MODE_1080P50 && flags & PS3AV_MODE_FULL) {
+ 		/* Full broadcast mode */
+ 		return &ps3fb_modedb[mode + PS3AV_MODE_WUXGA - 1];
+ 	}
 
+-- 
 With kind regards,
  
 Geert Uytterhoeven
@@ -74,7 +103,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0132365733==
+--===============1127550096==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -84,7 +113,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0132365733==
+--===============1127550096==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -95,4 +124,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0132365733==--
+--===============1127550096==--

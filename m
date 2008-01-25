@@ -1,88 +1,98 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: backlight control -
- tiny rework
-Date: Thu, 24 Jan 2008 10:30:44 +0100
-Message-ID: <47985AC4.9070104@atmel.com>
-References: <4790BB53.3080407@atmel.com>
-Mime-Version: 1.0
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [patch 00/11] ps3av/3fb patches for 2.6.25
+Date: Fri, 25 Jan 2008 16:06:23 +0100
+Message-ID: <20080125150623.202631389@vixen.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: multipart/mixed; boundary="===============0132365733=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JIQXz-00021h-Ik for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jan 2008 07:32:51 -0800
+Received: from vervifontaine.sonytel.be ([80.88.33.193]
+	helo=vervifontaine.sonycom.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQXy-0004fn-0j
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jan 2008 07:32:51 -0800
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+
+--===============0132365733==
+
+	Hi Tony, Andrew,
+
+Hare are the ps3av/fb patches for 2.6.25:
+  [1] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused
+  [2] ps3: Use symbolic names for video modes
+  [3] ps3fb: Kill PS3FB_FULL_MODE_BIT
+  [4] ps3fb: Inline macros that are used only once
+  [5] ps3fb: Kill ps3fb_res[]
+  [6] ps3fb: Make frame buffer offsets unsigned int
+  [7] ps3fb: Add support for configurable black borders
+  [8] ps3fb: Reorganize modedb handling
+  [9] ps3fb: Round up video modes
+  [10] ps3fb: Cleanup sweep
+  [11] ps3fb: Fix modedb typos
+
+Patches 1-9 have been sent for review on Mon, 26 Nov 2007. They haven't
+changed in the mean time, except for rebasing and minor editing of patch
+descriptions.
+Patches 10-11 are new, but not very complex, and tested in ps3-linux.git since
+a while.
+
+Please apply for 2.6.25. Thanks a lot!
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village ������ Da Vincilaan 7-D1 ������ B-1935 Zaventem ������ Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 ������ B-1840 Londerzeel ������ Belgium	
+VAT BE 0413.825.160 ������ RPR Brussels	
+Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBAN BE39001382358619
+
+
+
+--===============0132365733==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754805AbYAXJbk@vger.kernel.org>
-In-Reply-To: <4790BB53.3080407@atmel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, David Brownell <david-b@pacbell.net>, Andrew Victor <linux@maxim.org.za>, ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>
+Content-Disposition: inline
 
-Tiny patch that removes not needed "inline" and renames 
-function : exit_contrast() -> exit_backlight().
-It adds the missing exit_backlight() in  probe() 
-error path.
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+--===============0132365733==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-Follows comments from Andrew Morton and Haavard Skinnemoen.
-Thanks to both of you.
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
- drivers/video/atmel_lcdfb.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -118,7 +118,7 @@ static struct backlight_ops atmel_lcdc_b
- 	.get_brightness = atmel_bl_get_brightness,
- };
- 
--static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
-+static void init_backlight(struct atmel_lcdfb_info *sinfo)
- {
- 	struct backlight_device	*bl;
- 
-@@ -142,7 +142,7 @@ static inline void init_backlight(struct
- 	bl->props.brightness = atmel_bl_get_brightness(bl);
- }
- 
--static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
-+static void exit_backlight(struct atmel_lcdfb_info *sinfo)
- {
- 	if (sinfo->backlight)
- 		backlight_device_unregister(sinfo->backlight);
-@@ -150,18 +150,18 @@ static inline void exit_contrast(struct 
- 
- #else
- 
--static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
-+static void init_backlight(struct atmel_lcdfb_info *sinfo)
- {
- 	dev_warn(&sinfo->pdev->dev, "backlight control is not available\n");
- }
- 
--static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
-+static void exit_backlight(struct atmel_lcdfb_info *sinfo)
- {
- }
- 
- #endif
- 
--static inline void init_contrast(struct atmel_lcdfb_info *sinfo)
-+static void init_contrast(struct atmel_lcdfb_info *sinfo)
- {
- 	/* have some default contrast/backlight settings */
- 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
-@@ -823,6 +823,7 @@ free_cmap:
- unregister_irqs:
- 	free_irq(sinfo->irq_base, info);
- unmap_mmio:
-+	exit_backlight(sinfo);
- 	iounmap(sinfo->mmio);
- release_mem:
-  	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
-@@ -857,7 +858,7 @@ static int __exit atmel_lcdfb_remove(str
- 	if (!sinfo)
- 		return 0;
- 
--	exit_contrast(sinfo);
-+	exit_backlight(sinfo);
- 	if (sinfo->atmel_lcdfb_power_control)
- 		sinfo->atmel_lcdfb_power_control(0);
- 	unregister_framebuffer(info);
+--===============0132365733==--

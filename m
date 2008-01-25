@@ -1,22 +1,22 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 01/11] ps3av: ps3av_get_scanmode() and
-	ps3av_get_refresh_rate() are unused
-Date: Fri, 25 Jan 2008 16:06:24 +0100
-Message-ID: <20080125153106.990140657@vixen.sonytel.be>
+Subject: [patch 04/11] ps3fb: Inline macros that are
+	used only once
+Date: Fri, 25 Jan 2008 16:06:27 +0100
+Message-ID: <20080125153107.177014292@vixen.sonytel.be>
 References: <20080125150623.202631389@vixen.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============0711763570=="
+Content-Type: multipart/mixed; boundary="===============2096251203=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JIQY0-00021m-8f for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:52 -0800
+	id 1JIQY1-00021x-An for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jan 2008 07:32:53 -0800
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
 	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQXy-0004k0-0j
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQXy-0004kU-Gb
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:52 -0800
+	Fri, 25 Jan 2008 07:32:53 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,107 +30,49 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 
---===============0711763570==
-Content-Disposition: inline; filename=ps3-wip/ps3av-remove-unused.diff
+--===============2096251203==
+Content-Disposition: inline; filename=ps3-wip/ps3fb-inline-macros.diff
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused, so remove
-them
+ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() macros,
+as they're used in one place only
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av.c         |   58 +++++++++-----------------------------------
- include/asm-powerpc/ps3av.h |    2 -
- 2 files changed, 13 insertions(+), 47 deletions(-)
+ drivers/video/ps3fb.c |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -78,23 +78,21 @@ static const struct avset_video_mode {
- 	u32 aspect;
- 	u32 x;
- 	u32 y;
--	u32 interlace;
--	u32 freq;
- } video_mode_table[] = {
- 	{     0, }, /* auto */
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480, 1, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480, 0, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720, 0, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080, 1, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080, 0, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576, 1, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576, 0, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720, 0, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080, 1, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080, 0, 50},
--	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768, 0, 60},
--	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024, 0, 60},
--	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200, 0, 60},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080},
-+	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768},
-+	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024},
-+	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200},
- };
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -287,15 +287,8 @@ static const struct fb_videomode ps3fb_m
+ #define HEAD_A
+ #define HEAD_B
  
- /* supported CIDs */
-@@ -889,36 +887,6 @@ int ps3av_get_mode(void)
+-#define X_OFF(i)	(ps3fb_res[i].xoff)	/* left/right margin (pixel) */
+-#define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
+-#define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
+-#define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
+ #define BPP		4			/* number of bytes per pixel */
  
- EXPORT_SYMBOL_GPL(ps3av_get_mode);
+-/* Start of the virtual frame buffer (relative to fullscreen ) */
+-#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
+-
  
--int ps3av_get_scanmode(int id)
--{
--	int size;
--
--	id = id & PS3AV_MODE_MASK;
--	size = ARRAY_SIZE(video_mode_table);
--	if (id > size - 1 || id < 0) {
--		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
--		return -EINVAL;
--	}
--	return video_mode_table[id].interlace;
--}
--
--EXPORT_SYMBOL_GPL(ps3av_get_scanmode);
--
--int ps3av_get_refresh_rate(int id)
--{
--	int size;
--
--	id = id & PS3AV_MODE_MASK;
--	size = ARRAY_SIZE(video_mode_table);
--	if (id > size - 1 || id < 0) {
--		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
--		return -EINVAL;
--	}
--	return video_mode_table[id].freq;
--}
--
--EXPORT_SYMBOL_GPL(ps3av_get_refresh_rate);
--
- /* get resolution by video_mode */
- int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
- {
---- a/include/asm-powerpc/ps3av.h
-+++ b/include/asm-powerpc/ps3av.h
-@@ -713,8 +713,6 @@ extern int ps3av_set_video_mode(u32);
- extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
- extern int ps3av_get_auto_mode(void);
- extern int ps3av_get_mode(void);
--extern int ps3av_get_scanmode(int);
--extern int ps3av_get_refresh_rate(int);
- extern int ps3av_video_mode2res(u32, u32 *, u32 *);
- extern int ps3av_video_mute(int);
- extern int ps3av_audio_mute(int);
+ static int ps3fb_mode;
+ module_param(ps3fb_mode, int, 0);
+@@ -611,7 +604,10 @@ static int ps3fb_set_par(struct fb_info 
+ 
+ 	par->width = info->var.xres;
+ 	par->height = info->var.yres;
+-	offset = VP_OFF(i);
++
++	/* Start of the virtual frame buffer (relative to fullscreen) */
++	offset = ps3fb_res[i].yoff * ddr_line_length + ps3fb_res[i].xoff * BPP;
++
+ 	par->fb_offset = GPU_ALIGN_UP(offset);
+ 	par->full_offset = par->fb_offset - offset;
+ 	par->pan_offset = info->var.yoffset * xdr_line_length +
 
 -- 
 With kind regards,
@@ -154,7 +96,7 @@ Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBA
 
 
 
---===============0711763570==
+--===============2096251203==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -164,7 +106,7 @@ Content-Disposition: inline
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0711763570==
+--===============2096251203==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -175,4 +117,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============0711763570==--
+--===============2096251203==--

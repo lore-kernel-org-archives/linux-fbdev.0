@@ -1,22 +1,22 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [patch 06/11] ps3fb: Make frame buffer offsets
-	unsigned int
-Date: Fri, 25 Jan 2008 16:06:29 +0100
-Message-ID: <20080125153107.297253543@vixen.sonytel.be>
-References: <20080125150623.202631389@vixen.sonytel.be>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] [RESEND] pm2fb: big endian fix
+Date: Sat, 26 Jan 2008 11:29:11 +0100
+Message-ID: <20080126112911.f6b5adc0.krzysztof.h1@poczta.fm>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Content-Type: multipart/mixed; boundary="===============1340676983=="
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JIQY5-00022B-No for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:57 -0800
-Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=vervifontaine.sonycom.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIQY5-0004tQ-91
+	id 1JIigZ-0001LH-BX for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 26 Jan 2008 02:54:55 -0800
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]
+	helo=smtp4.poczta.interia.pl)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIigX-0002zr-N6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jan 2008 07:32:57 -0800
+	Sat, 26 Jan 2008 02:54:55 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,89 +27,67 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, David Miller <davem@davemloft.net>
 
---===============1340676983==
-Content-Disposition: inline; filename=ps3-wip/ps3fb-unsigned-int-offsets.diff
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+This patch fixes garbled letters on big endian
+machines with acceleration enabled.
 
-ps3fb: Frame buffer offsets don't have to be `unsigned long', `unsigned int' is
-sufficient
+This patch makes pm2fb works fine with full acceleration
+on sparc machine (card known as Sun PGX-32 or
+TechSource Raptor GFX-8P).
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
 ---
- drivers/video/ps3fb.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+This patch is reworked after Geert Uytterhoeven's suggestion.
 
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -140,9 +140,9 @@ struct ps3fb_par {
- 	unsigned int ddr_line_length;
- 	unsigned int ddr_frame_size;
- 	unsigned int xdr_frame_size;
--	unsigned long full_offset;	/* start of fullscreen DDR fb */
--	unsigned long fb_offset;	/* start of actual DDR fb */
--	unsigned long pan_offset;
-+	unsigned int full_offset;	/* start of fullscreen DDR fb */
-+	unsigned int fb_offset;		/* start of actual DDR fb */
-+	unsigned int pan_offset;
- };
+diff -urp linux-ref/drivers/video/pm2fb.c linux-new/drivers/video/pm2fb.c
+--- linux-ref/drivers/video/pm2fb.c	2007-12-24 14:28:01.000000000 +0100
++++ linux-new/drivers/video/pm2fb.c	2007-12-25 01:09:42.000000000 +0100
+@@ -1159,6 +1159,11 @@ static void pm2fb_imageblit(struct fb_in
+ 	u32 fgx, bgx;
+ 	const u32 *src = (const u32 *)image->data;
+ 	u32 xres = (info->var.xres + 31) & ~31;
++	int raster_mode = 1; /* invert bits */
++
++#ifdef __LITTLE_ENDIAN
++	raster_mode |= 3 << 7; /* reverse byte order */
++#endif
  
- 
-@@ -512,8 +512,7 @@ static int ps3fb_set_par(struct fb_info 
- {
- 	struct ps3fb_par *par = info->par;
- 	unsigned int mode, ddr_line_length, xdr_line_length, lines, maxlines;
--	unsigned int ddr_xoff, ddr_yoff;
--	unsigned long offset;
-+	unsigned int ddr_xoff, ddr_yoff, offset;
- 	const struct fb_videomode *vmode;
- 	u64 dst;
- 
-
--- 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village ������ Da Vincilaan 7-D1 ������ B-1935 Zaventem ������ Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 ������ B-1840 Londerzeel ������ Belgium	
-VAT BE 0413.825.160 ������ RPR Brussels	
-Fortis Bank Zaventem ������ Swift GEBABEBB08A ������ IBAN BE39001382358619
+ 	if (info->state != FBINFO_STATE_RUNNING)
+ 		return;
+@@ -1208,9 +1213,8 @@ static void pm2fb_imageblit(struct fb_in
+ 		pm2_WR(par, PM2R_RENDER,
+ 			PM2F_RENDER_RECTANGLE |
+ 			PM2F_INCREASE_X | PM2F_INCREASE_Y);
+-		/* BitMapPackEachScanline & invert bits and byte order*/
+-		/* force background */
+-		pm2_WR(par, PM2R_RASTERIZER_MODE,  (1 << 9) | 1 | (3 << 7));
++		/* BitMapPackEachScanline */
++		pm2_WR(par, PM2R_RASTERIZER_MODE, raster_mode | (1 << 9));
+ 		pm2_WR(par, PM2R_CONSTANT_COLOR, fgx);
+ 		pm2_WR(par, PM2R_RENDER,
+ 			PM2F_RENDER_RECTANGLE |
+@@ -1224,8 +1228,7 @@ static void pm2fb_imageblit(struct fb_in
+ 			PM2F_RENDER_RECTANGLE |
+ 			PM2F_RENDER_FASTFILL |
+ 			PM2F_INCREASE_X | PM2F_INCREASE_Y);
+-		/* invert bits and byte order*/
+-		pm2_WR(par, PM2R_RASTERIZER_MODE,  1 | (3 << 7));
++		pm2_WR(par, PM2R_RASTERIZER_MODE, raster_mode);
+ 		pm2_WR(par, PM2R_FB_BLOCK_COLOR, fgx);
+ 		pm2_WR(par, PM2R_RENDER,
+ 			PM2F_RENDER_RECTANGLE |
 
 
+Pogoda na najblizsze dni.
+Sprawdz >>> http://link.interia.pl/f1ce1
 
---===============1340676983==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============1340676983==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1340676983==--

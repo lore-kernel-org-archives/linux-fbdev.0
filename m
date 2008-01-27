@@ -1,74 +1,62 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] fbdev: make the best-fit section of
- fb_find_mode return the closest matching mode
-Date: Sun, 27 Jan 2008 13:25:10 +0100
-Message-ID: <20080127132510.b00017cb.krzysztof.h1@poczta.fm>
-References: <20080127113115.GA17722@spock.one.pl>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [patch 00/11] ps3av/3fb patches for 2.6.25
+Date: Sun, 27 Jan 2008 07:42:30 -0600
+Message-ID: <20080127074230.00adf79d@zod.rchland.ibm.com>
+References: <20080125150623.202631389@vixen.sonytel.be>
+	<20080126220139.5385f2c7.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0801271041160.10193@vixen.sonytel.be>
+	<20080127021659.fb6c72a1.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JJ6tR-0002Nn-RU for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 04:45:50 -0800
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]
-	helo=smtp4.poczta.interia.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JJ6tQ-0002pv-DU
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 04:45:49 -0800
-In-Reply-To: <20080127113115.GA17722@spock.one.pl>
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Antonino Daplas <adaplas@gmail.com>, Cell@ozlabs.org, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>, Development <cbe-oss-dev@ozlabs.org>
 
-On Sun, 27 Jan 2008 12:31:16 +0100
-Michal Januszewski <spock@gentoo.org> wrote:
+On Sun, 27 Jan 2008 12:15:28 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-> From: Michal Januszewski <spock@gentoo.org>
+> 	Hi Andrew,
 > 
-> Currently, if a perfect match in terms of resolution is not found,
-> fb_find_mode() only looks for a best-fit mode among modes with a
-> higher resolution than the one requested.  Thus, if the user
-> requests a resolution higher than the largest supported one, they
-> are dropped to the default mode (usually a low resolution one).
+> On Sun, 27 Jan 2008, Andrew Morton wrote:
+> > > On Sun, 27 Jan 2008 10:44:40 +0100 (CET) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > On Sat, 26 Jan 2008, Andrew Morton wrote:
+> > > > > On Fri, 25 Jan 2008 16:06:23 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > > > Hare are the ps3av/fb patches for 2.6.25:
+> > > > 
+> > > > I would have to say: it's a bit late to be submitting things of this nature
+> > > > for 2.6.25.  Given the mess everyone has made of everything there's little
+> > > > chance that I'll be able to do a 2.6.24-mm1 so this stuff basically goes
+> > > > into mainline without public testing.
+> > > 
+> > > I beg to disagree (of course :-)
+> > > 
+> > > I posted these patches before, about 2 months ago. Unfortunately I didn't CC
+> > > you at that time, so they slipped under your radar.
+> > > But the patches did receive public testing even before that, when they entered
+> > > Geoff's ps3-linux.git tree.
+> > 
+> > Should that git tree be in the -mm lineup?
 > 
+> That may be a good idea! Geoff?
 
-> Change this behaviour so that the true closest match in terms
-> of the city-block metric is returned.
-> 
+There are lots of powerpc sub-trees.  Kumar's, Geoff's, mine, Olof's,
+Grant's, Vitaly's are just the ones I can think of the top of my head.
 
-This may be not ideal solution in case there exist both lower and
-higher matches. If given resolution is closer (even by few pixels)
-to lower one, your method will choose the lower one.
-It may be incorrect for e.g. picture viewer (the higher resolution
-shows the whole picture with margins, the smaller one shows
-rescaled or cut picture).
+Shouldn't we just ask Paul to sync up more often rather than have
+Andrew track X number of trees that eventually all merge into Paul's
+anyway?
 
-IMHO, the choice of higher resolution (if possible) should be
-preferred. It is also closer to the old solution.
-
-Kind regards,
-Krzysztof
-
-
-----------------------------------------------------------------------
-Nadchodzi galaktyczna wojna!
-Sprawdz >> http://link.interia.pl/f1ce0
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+josh

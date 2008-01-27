@@ -1,7 +1,10 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] [RESEND] pm2fb: big endian fix
-Date: Sat, 26 Jan 2008 11:29:11 +0100
-Message-ID: <20080126112911.f6b5adc0.krzysztof.h1@poczta.fm>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 04/11] ps3fb: Inline macros that are
+	used only once
+Date: Sat, 26 Jan 2008 22:01:33 -0800
+Message-ID: <20080126220133.eb99e5c4.akpm@linux-foundation.org>
+References: <20080125150623.202631389@vixen.sonytel.be>
+	<20080125153107.177014292@vixen.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,13 +13,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JIigZ-0001LH-BX for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 26 Jan 2008 02:54:55 -0800
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]
-	helo=smtp4.poczta.interia.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JIigX-0002zr-N6
+	id 1JJ0aJ-00005L-GZ for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 26 Jan 2008 22:01:39 -0800
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JJ0aI-0001lK-4v
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 26 Jan 2008 02:54:55 -0800
+	Sat, 26 Jan 2008 22:01:39 -0800
+In-Reply-To: <20080125153107.177014292@vixen.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,64 +31,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, David Miller <davem@davemloft.net>
+Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, adaplas@gmail.com
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> On Fri, 25 Jan 2008 16:06:27 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> 
+> ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() macros,
+> as they're used in one place only
+> 
 
-This patch fixes garbled letters on big endian
-machines with acceleration enabled.
+I think the term "open-code" would be more suitable here.  "inlining" means
+"make it an inline function".  I'll update the changelog.
 
-This patch makes pm2fb works fine with full acceleration
-on sparc machine (card known as Sun PGX-32 or
-TechSource Raptor GFX-8P).
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
----
-This patch is reworked after Geert Uytterhoeven's suggestion.
-
-diff -urp linux-ref/drivers/video/pm2fb.c linux-new/drivers/video/pm2fb.c
---- linux-ref/drivers/video/pm2fb.c	2007-12-24 14:28:01.000000000 +0100
-+++ linux-new/drivers/video/pm2fb.c	2007-12-25 01:09:42.000000000 +0100
-@@ -1159,6 +1159,11 @@ static void pm2fb_imageblit(struct fb_in
- 	u32 fgx, bgx;
- 	const u32 *src = (const u32 *)image->data;
- 	u32 xres = (info->var.xres + 31) & ~31;
-+	int raster_mode = 1; /* invert bits */
-+
-+#ifdef __LITTLE_ENDIAN
-+	raster_mode |= 3 << 7; /* reverse byte order */
-+#endif
- 
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return;
-@@ -1208,9 +1213,8 @@ static void pm2fb_imageblit(struct fb_in
- 		pm2_WR(par, PM2R_RENDER,
- 			PM2F_RENDER_RECTANGLE |
- 			PM2F_INCREASE_X | PM2F_INCREASE_Y);
--		/* BitMapPackEachScanline & invert bits and byte order*/
--		/* force background */
--		pm2_WR(par, PM2R_RASTERIZER_MODE,  (1 << 9) | 1 | (3 << 7));
-+		/* BitMapPackEachScanline */
-+		pm2_WR(par, PM2R_RASTERIZER_MODE, raster_mode | (1 << 9));
- 		pm2_WR(par, PM2R_CONSTANT_COLOR, fgx);
- 		pm2_WR(par, PM2R_RENDER,
- 			PM2F_RENDER_RECTANGLE |
-@@ -1224,8 +1228,7 @@ static void pm2fb_imageblit(struct fb_in
- 			PM2F_RENDER_RECTANGLE |
- 			PM2F_RENDER_FASTFILL |
- 			PM2F_INCREASE_X | PM2F_INCREASE_Y);
--		/* invert bits and byte order*/
--		pm2_WR(par, PM2R_RASTERIZER_MODE,  1 | (3 << 7));
-+		pm2_WR(par, PM2R_RASTERIZER_MODE, raster_mode);
- 		pm2_WR(par, PM2R_FB_BLOCK_COLOR, fgx);
- 		pm2_WR(par, PM2R_RENDER,
- 			PM2F_RENDER_RECTANGLE |
-
-
-Pogoda na najblizsze dni.
-Sprawdz >>> http://link.interia.pl/f1ce1
+> -#define X_OFF(i)	(ps3fb_res[i].xoff)	/* left/right margin (pixel) */
+> -#define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
+> -#define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
+> -#define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
+>  #define BPP		4			/* number of bytes per pixel */
+>  
+> -/* Start of the virtual frame buffer (relative to fullscreen ) */
+> -#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
+> -
+>  
+>  static int ps3fb_mode;
+>  module_param(ps3fb_mode, int, 0);
+> @@ -611,7 +604,10 @@ static int ps3fb_set_par(struct fb_info 
+>  
+>  	par->width = info->var.xres;
+>  	par->height = info->var.yres;
+> -	offset = VP_OFF(i);
+> +
+> +	/* Start of the virtual frame buffer (relative to fullscreen) */
+> +	offset = ps3fb_res[i].yoff * ddr_line_length + ps3fb_res[i].xoff * BPP;
+> +
 
 
 -------------------------------------------------------------------------

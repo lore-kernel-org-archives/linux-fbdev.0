@@ -1,25 +1,25 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] fbdev: make the best-fit section of
-	fb_find_mode return	the closest matching mode
-Date: Sun, 27 Jan 2008 12:31:16 +0100
-Message-ID: <20080127113115.GA17722@spock.one.pl>
+Subject: [PATCH] uvesafb: don't treat valid modes
+	returned by	fb_find_mode() as errors
+Date: Sun, 27 Jan 2008 12:34:56 +0100
+Message-ID: <20080127113456.GA17976@spock.one.pl>
 Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JJ5jg-0005wz-Be for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 03:31:40 -0800
-Received: from fg-out-1718.google.com ([72.14.220.153])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JJ5jd-0000ny-I3
+	id 1JJ5nD-0006Js-9I for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 27 Jan 2008 03:35:19 -0800
+Received: from fg-out-1718.google.com ([72.14.220.156])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JJ5nB-0002Hb-St
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 03:31:40 -0800
-Received: by fg-out-1718.google.com with SMTP id d23so1274186fga.32
+	Sun, 27 Jan 2008 03:35:19 -0800
+Received: by fg-out-1718.google.com with SMTP id d23so1274940fga.32
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 27 Jan 2008 03:31:36 -0800 (PST)
+	Sun, 27 Jan 2008 03:35:16 -0800 (PST)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,43 +36,25 @@ Cc: linux-kernel@vger.kernel.org
 
 From: Michal Januszewski <spock@gentoo.org>
 
-Currently, if a perfect match in terms of resolution is not found,
-fb_find_mode() only looks for a best-fit mode among modes with a
-higher resolution than the one requested.  Thus, if the user
-requests a resolution higher than the largest supported one, they
-are dropped to the default mode (usually a low resolution one).
-
-Change this behaviour so that the true closest match in terms
-of the city-block metric is returned.
+Don't treat valid modes returned by fb_find_mode() (best-fit modes,
+default modes or the first valid mode) as errors.
 
 Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 08d0725..bc29ef3 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -655,15 +655,15 @@ done:
- 	best = -1;
- 	DPRINTK("Trying best-fit modes\n");
- 	for (i = 0; i < dbsize; i++) {
--	    if (xres <= db[i].xres && yres <= db[i].yres) {
- 		DPRINTK("Trying %ix%i\n", db[i].xres, db[i].yres);
- 		if (!fb_try_mode(var, info, &db[i], bpp)) {
--		    if (diff > (db[i].xres - xres) + (db[i].yres - yres)) {
--			diff = (db[i].xres - xres) + (db[i].yres - yres);
--			best = i;
--		    }
-+			if (diff > abs(db[i].xres - xres) +
-+				   abs(db[i].yres - yres)) {
-+				diff = abs(db[i].xres - xres) +
-+				       abs(db[i].yres - yres);
-+				best = i;
-+			}
- 		}
--	    }
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index a14ef89..fc68b3e 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -885,7 +885,7 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
  	}
- 	if (best != -1) {
- 	    fb_try_mode(var, info, &db[best], bpp);
+ 
+ 	/* fb_find_mode() failed */
+-	if (i == 0 || i >= 3) {
++	if (i == 0) {
+ 		info->var.xres = 640;
+ 		info->var.yres = 480;
+ 		mode = (struct fb_videomode *)
+
 
 
 -------------------------------------------------------------------------

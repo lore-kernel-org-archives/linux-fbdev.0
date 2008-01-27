@@ -1,25 +1,34 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 09/11] ps3fb: Round up video modes
-Date: Sat, 26 Jan 2008 22:01:43 -0800
-Message-ID: <20080126220143.16c8f821.akpm@linux-foundation.org>
-References: <20080125150623.202631389@vixen.sonytel.be>
-	<20080125153107.478948955@vixen.sonytel.be>
+Subject: Fw: [Bugme-new] [Bug 9822] New: mdacon messing
+ up console on hw w/o MDA adapter
+Date: Sat, 26 Jan 2008 22:24:33 -0800
+Message-ID: <20080126222433.e1c662d5.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JJ0aS-00005S-Uq for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 26 Jan 2008 22:01:49 -0800
+	id 1JJ0x4-0002Ek-Jp for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 26 Jan 2008 22:25:10 -0800
 Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JJ0aS-0001oG-Kt
+	(Exim 4.44) id 1JJ0x3-0002l5-66
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 26 Jan 2008 22:01:48 -0800
-In-Reply-To: <20080125153107.478948955@vixen.sonytel.be>
+	Sat, 26 Jan 2008 22:25:10 -0800
+Received: from imap1.linux-foundation.org (imap1.linux-foundation.org
+	[207.189.120.55]) by smtp2.linux-foundation.org
+	(8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with ESMTP id
+	m0R6OVe3001022
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 26 Jan 2008 22:24:32 -0800
+Received: from sony (localhost [127.0.0.1]) by imap1.linux-foundation.org
+	(8.13.5.20060308/8.13.5/Debian-3ubuntu1.1) with SMTP id
+	m0R6OUHT000931 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 26 Jan 2008 22:24:31 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,27 +39,63 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, adaplas@gmail.com
+To: linux-fbdev-devel@lists.sourceforge.net
 
-> On Fri, 25 Jan 2008 16:06:32 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
->  static int ps3fb_cmp_mode(const struct fb_videomode *vmode,
->  			  const struct fb_var_screeninfo *var)
->  {
-> -	/* resolution + black border must match a native resolution */
-> -	if (vmode->left_margin + vmode->xres + vmode->right_margin !=
-> -	    var->left_margin + var->xres + var->right_margin ||
-> -	    vmode->upper_margin + vmode->yres + vmode->lower_margin !=
-> -	    var->upper_margin + var->yres + var->lower_margin)
-> +	long xres, yres, left_margin, right_margin, upper_margin, lower_margin;
-> +	long dx, dy;
 
-I don't think these need to be longs?  And they probably don't need to be
-signed either.
 
-If a switch to u32 improves the code any, it might be worth doing..
+Begin forwarded message:
 
-All the typecasting which this patch adds makes me wonder if the choice
-of types requires a general revisit...
+Date: Sat, 26 Jan 2008 06:00:42 -0800 (PST)
+From: bugme-daemon@bugzilla.kernel.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 9822] New: mdacon messing up console on hw w/o MDA adapter
+
+
+http://bugzilla.kernel.org/show_bug.cgi?id=9822
+
+           Summary: mdacon messing up console on hw w/o MDA adapter
+           Product: Drivers
+           Version: 2.5
+     KernelVersion: 2.6.24 and before
+          Platform: All
+        OS/Version: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: low
+          Priority: P1
+         Component: Console/Framebuffers
+        AssignedTo: jsimmons@infradead.org
+        ReportedBy: devzero@web.de
+
+
+Latest working kernel version: didn`t try before 
+Earliest failing kernel version: don`t know, but may exist for a long time
+Distribution: openSuSE
+Hardware Environment: various (e.g. FSC Scenic T 1Ghz i815 PC, FSC Lifebook,
+VMware Workstation)
+Software Environment: -
+
+Problem Description:
+loading mdacon on a system without MDA adapter screws up the console window. i
+cannot use it afterwards. i would have expected some "no mda adapter found" and
+a clean exit afterwards.
+
+Steps to reproduce:
+modprobe mdacon
+
+also see:
+http://marc.info/?l=linux-kernel&m=120082731013963&w=2
+http://uwsg.indiana.edu/hypermail/linux/kernel/0203.3/0524.html
+
+
+same issue with cfag12864bfb. behaviour is a little bit different, but console
+is also unusable afterwards.
+
+
+-- 
+Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

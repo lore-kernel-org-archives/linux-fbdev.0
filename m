@@ -1,24 +1,25 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 00/11] ps3av/3fb patches for 2.6.25
-Date: Sat, 26 Jan 2008 22:01:39 -0800
-Message-ID: <20080126220139.5385f2c7.akpm@linux-foundation.org>
+Subject: Re: [patch 09/11] ps3fb: Round up video modes
+Date: Sat, 26 Jan 2008 22:01:43 -0800
+Message-ID: <20080126220143.16c8f821.akpm@linux-foundation.org>
 References: <20080125150623.202631389@vixen.sonytel.be>
+	<20080125153107.478948955@vixen.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JJ0aO-00005Q-A7 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 26 Jan 2008 22:01:48 -0800
+	id 1JJ0aS-00005S-Uq for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 26 Jan 2008 22:01:49 -0800
 Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JJ0aN-00048b-VQ
+	(Exim 4.44) id 1JJ0aS-0001oG-Kt
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 26 Jan 2008 22:01:44 -0800
-In-Reply-To: <20080125150623.202631389@vixen.sonytel.be>
+	Sat, 26 Jan 2008 22:01:48 -0800
+In-Reply-To: <20080125153107.478948955@vixen.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,25 +30,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, adaplas@gmail.com
+Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, adaplas@gmail.com
 
-> On Fri, 25 Jan 2008 16:06:23 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> Hare are the ps3av/fb patches for 2.6.25:
+> On Fri, 25 Jan 2008 16:06:32 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+>  static int ps3fb_cmp_mode(const struct fb_videomode *vmode,
+>  			  const struct fb_var_screeninfo *var)
+>  {
+> -	/* resolution + black border must match a native resolution */
+> -	if (vmode->left_margin + vmode->xres + vmode->right_margin !=
+> -	    var->left_margin + var->xres + var->right_margin ||
+> -	    vmode->upper_margin + vmode->yres + vmode->lower_margin !=
+> -	    var->upper_margin + var->yres + var->lower_margin)
+> +	long xres, yres, left_margin, right_margin, upper_margin, lower_margin;
+> +	long dx, dy;
 
-I would have to say: it's a bit late to be submitting things of this nature
-for 2.6.25.  Given the mess everyone has made of everything there's little
-chance that I'll be able to do a 2.6.24-mm1 so this stuff basically goes
-into mainline without public testing.
+I don't think these need to be longs?  And they probably don't need to be
+signed either.
 
-I don't think many people care much about ps3 so whatever.  But if it were
-core code or a popular driver then I would probably slip this back to
-2.6.26.
+If a switch to u32 improves the code any, it might be worth doing..
 
-
-We haven't heard from Tony in a while so I guess I'm fbdev maintainer
-again.  Be afraid.
-
+All the typecasting which this patch adds makes me wonder if the choice
+of types requires a general revisit...
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

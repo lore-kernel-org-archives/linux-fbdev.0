@@ -1,30 +1,29 @@
-From: Jon Loeliger <jdl@jdl.com>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 Subject: Re: [patch 00/11] ps3av/3fb patches for 2.6.25
-Date: Sun, 27 Jan 2008 10:15:41 -0600
-Message-ID: <E1JJAAX-0007BN-SA@jdl.com>
+Date: Sun, 27 Jan 2008 12:01:25 -0800
+Message-ID: <479CE315.6070508@am.sony.com>
 References: <20080125150623.202631389@vixen.sonytel.be>
 	<20080126220139.5385f2c7.akpm@linux-foundation.org>
 	<Pine.LNX.4.64.0801271041160.10193@vixen.sonytel.be>
 	<20080127021659.fb6c72a1.akpm@linux-foundation.org>
 	<Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
-	<20080127074230.00adf79d@zod.rchland.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JJAAk-0002W9-HS for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 08:16:02 -0800
-Received: from jdl.com ([208.123.74.7])
+	id 1JJDhE-00039r-M9 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 27 Jan 2008 12:01:40 -0800
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]
+	helo=outbound2-va3-R.bigfish.com)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JJAAi-000671-2u
+	(Exim 4.44) id 1JJDhC-0004XD-UK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 08:15:54 -0800
-In-Reply-To: Your message of "Sun, 27 Jan 2008 07:42:30 CST."
-	<20080127074230.00adf79d@zod.rchland.ibm.com> 
+	Sun, 27 Jan 2008 12:01:40 -0800
+In-Reply-To: <Pine.LNX.4.64.0801271215120.10514@vixen.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,21 +34,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Josh Boyer <jwboyer@gmail.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Antonino Daplas <adaplas@gmail.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Andrew Morton <akpm@linux-foundation.org>, Cell@ozlabs.org, Development <cbe-oss-dev@ozlabs.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>, Antonino Daplas <adaplas@gmail.com>
 
-So, like, the other day Josh Boyer mumbled:
+On 01/27/2008 03:15 AM, Geert Uytterhoeven wrote:
+> On Sun, 27 Jan 2008, Andrew Morton wrote:
+>> > On Sun, 27 Jan 2008 10:44:40 +0100 (CET) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+>> > I posted these patches before, about 2 months ago. Unfortunately I didn't CC
+>> > you at that time, so they slipped under your radar.
+>> > But the patches did receive public testing even before that, when they entered
+>> > Geoff's ps3-linux.git tree.
+>> 
+>> Should that git tree be in the -mm lineup?
 > 
-> There are lots of powerpc sub-trees.  Kumar's, Geoff's, mine, Olof's,
-> Grant's, Vitaly's are just the ones I can think of the top of my head.
-> 
-> Shouldn't we just ask Paul to sync up more often rather than have
-> Andrew track X number of trees that eventually all merge into Paul's
-> anyway?
+> That may be a good idea! Geoff?
 
-I think that is an excellent notion.
+Sounds good.
 
-jdl
+ps3-linux.git is used by a lot of active PS3 developers, so
+already gets some good testing on PS3, but I think if we get
+the stable patches into -mm, then we will get more testing on
+non-PS3 platforms, which is something I think we need.
+
+As a start, I'll work toward getting patches from ps3-stable
+into -mm.  I think it is too late now for the 2.6.25 patches,
+so the 'for 2.6.26' ones.  To make this work, we (PS3
+maintainers) need to get our patches moved from ps3-wip to
+ps3-stable in a timely manner.  As of late, it seems patches
+have lingered in ps3-wip too long.
+ 
+-Geoff
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

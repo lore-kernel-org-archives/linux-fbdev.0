@@ -1,100 +1,79 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Fw: [Bugme-new] [Bug 9822] New: mdacon
- messing up console on hw w/o MDA adapter
-Date: Sun, 27 Jan 2008 10:29:48 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0801271029010.6515@anakin>
-References: <20080126222433.e1c662d5.akpm@linux-foundation.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 04/11] ps3fb: Inline macros that are used only once
+Date: Sun, 27 Jan 2008 10:34:08 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0801271033540.10193@vixen.sonytel.be>
+References: <20080125150623.202631389@vixen.sonytel.be>
+	<20080125153107.177014292@vixen.sonytel.be>
+	<20080126220133.eb99e5c4.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JJ3pv-0002CB-I8 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 01:29:59 -0800
-Received: from ananke.telenet-ops.be ([195.130.137.78])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JJ3pr-000473-6F
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Jan 2008 01:29:56 -0800
-In-Reply-To: <20080126222433.e1c662d5.akpm@linux-foundation.org>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584349381-540867663-1201426448=:10193"
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
+In-Reply-To: <20080126220133.eb99e5c4.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, adaplas@gmail.com
+
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584349381-540867663-1201426448=:10193
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
 On Sat, 26 Jan 2008, Andrew Morton wrote:
-> Begin forwarded message:
-> 
-> Date: Sat, 26 Jan 2008 06:00:42 -0800 (PST)
-> From: bugme-daemon@bugzilla.kernel.org
-> To: bugme-new@lists.osdl.org
-> Subject: [Bugme-new] [Bug 9822] New: mdacon messing up console on hw w/o MDA adapter
-> 
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9822
-> 
->            Summary: mdacon messing up console on hw w/o MDA adapter
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.24 and before
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: low
->           Priority: P1
->          Component: Console/Framebuffers
->         AssignedTo: jsimmons@infradead.org
->         ReportedBy: devzero@web.de
-> 
-> 
-> Latest working kernel version: didn`t try before 
-> Earliest failing kernel version: don`t know, but may exist for a long time
-> Distribution: openSuSE
-> Hardware Environment: various (e.g. FSC Scenic T 1Ghz i815 PC, FSC Lifebook,
-> VMware Workstation)
-> Software Environment: -
-> 
-> Problem Description:
-> loading mdacon on a system without MDA adapter screws up the console window. i
-> cannot use it afterwards. i would have expected some "no mda adapter found" and
-> a clean exit afterwards.
-> 
-> Steps to reproduce:
-> modprobe mdacon
-> 
-> also see:
-> http://marc.info/?l=linux-kernel&m=120082731013963&w=2
-> http://uwsg.indiana.edu/hypermail/linux/kernel/0203.3/0524.html
-> 
-> 
-> same issue with cfag12864bfb. behaviour is a little bit different, but console
-> is also unusable afterwards.
+> > On Fri, 25 Jan 2008 16:06:27 +0100 Geert Uytterhoeven <Geert.Uytterho=
+even@sonycom.com> wrote:
+> > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> >=20
+> > ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() m=
+acros,
+> > as they're used in one place only
+>=20
+> I think the term "open-code" would be more suitable here.  "inlining" m=
+eans
+> "make it an inline function".  I'll update the changelog.
 
-Cfag12864bfb uses a plain platform device, which doesn't seem to do any
-checking for the presence of the appropriate hardware.
+You're right. Thanks!
 
-Gr{oetje,eeting}s,
+With kind regards,
 
-						Geert
+Geert Uytterhoeven
+Software Architect
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Sony Network and Software Technology Center Europe
+The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
+=B7 Belgium
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+Sony Network and Software Technology Center Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 =C2=B7 B-1840 Londerzeel =C2=B7 Belg=
+ium
+VAT BE 0413.825.160 =C2=B7 RPR Brussels
+Fortis Bank Zaventem =C2=B7 Swift GEBABEBB08A =C2=B7 IBAN BE3900138235861=
+9
+---584349381-540867663-1201426448=:10193
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+---584349381-540867663-1201426448=:10193--

@@ -1,9 +1,9 @@
 From: Ben Dooks <ben@fluff.org>
-Subject: Re: [RESEND][PATCH] sm501fb: control panel
-	pin	usage with platform data flags
-Date: Wed, 30 Jan 2008 11:12:13 +0000
-Message-ID: <20080130111213.GA7089@fluff.org.uk>
-References: <20080121105729.12440.66026.sendpatchset@clockwork.opensource.se>
+Subject: Re: [RESEND][PATCH] sm501fb: clear
+	framebuffer	memory and palette
+Date: Wed, 30 Jan 2008 11:14:41 +0000
+Message-ID: <20080130111441.GB7089@fluff.org.uk>
+References: <20080121105925.12446.36815.sendpatchset@clockwork.opensource.se>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,19 +12,19 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JKArq-00041K-O9 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 Jan 2008 03:12:34 -0800
+	id 1JKAu1-0004DV-H9 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 30 Jan 2008 03:14:49 -0800
 Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JKArl-0007yK-JX
+	(Exim 4.44) id 1JKAtz-0000Nf-RG
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 Jan 2008 03:12:32 -0800
+	Wed, 30 Jan 2008 03:14:49 -0800
 Received: from ben by kira.home.fluff.org with local (Exim 4.68)
-	(envelope-from <ben@fluff.org.uk>) id 1JKArV-0006pu-9U
+	(envelope-from <ben@fluff.org.uk>) id 1JKAtt-0006rB-4V
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 Jan 2008 11:12:13 +0000
+	Wed, 30 Jan 2008 11:14:41 +0000
 Content-Disposition: inline
-In-Reply-To: <20080121105729.12440.66026.sendpatchset@clockwork.opensource.se>
+In-Reply-To: <20080121105925.12446.36815.sendpatchset@clockwork.opensource.se>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,104 +37,59 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Jan 21, 2008 at 07:57:29PM +0900, Magnus Damm wrote:
-> sm501fb: control panel pin usage with platform data flags
+On Mon, Jan 21, 2008 at 07:59:25PM +0900, Magnus Damm wrote:
+> sm501fb: clear framebuffer memory and palette
 > 
-> This patch makes it possible to control panel pins usage with flags passed
-> from the platform data. Without this patch the sm501fb driver always controls
-> the VBIASEN and FPEN pins. The polarity and use of these pins are very platform
-> specific, so this patch introduces the flags SM501FB_FLAG_PANEL_USE_VBIASEN
-> and SM501FB_FLAG_PANEL_USE_FPEN which enable the use of these pins.
+> Avoid displaying garbage on unused framebuffers. For most users a single
+> framebuffer is used together with fbcon. sm501fb supports two framebuffers
+> where one often is assigned to fbcon and the other one is left unused during
+> the boot.
+> 
+> The problem here is that framebuffers not in use by fbcon happen to display
+> garbage. This can easily be solved by making sure that framebuffer memory and
+> palette ram are cleared.
+> 
+> The problem can be observed by using looking at the panel output (fb1)
+> after booting the kernel with fbcon on crt (fb0). This is the default
+> configuration. It's also possible to watch the garbage on the crt framebuffer
+> by passing "fbcon=map:1" on the kernel cmdline. This will assign fbcon to
+> the panel (fb1) and leave the crt (fb0) unused.
 
-Hi, can you change this to having these flags disable these functions,
-say SM501FB_FLAG_PANEL_NO_VBIASEN so that existing functionality can
-be retained without changing everyone else's usage.
+Can you please add a no-clear-on-init flag incase people do not want
+their framebuffers cleared.
  
-> This patch is needed to support the a Sharp LQ104V1DG21 lcd panel on SuperH
-> platforms such as R2D-1 and R2D-PLUS boards. Letting the sm501fb driver control
-> the FPEN and VBIASEN pins like today just results in lcd panel flicker.
-> 
 > Signed-off-by: Magnus Damm <damm@igel.co.jp>
 > ---
 > 
 >  This is the same patch that was sent to linux-fbdev-devel on 20071228.
 > 
->  drivers/video/sm501fb.c |   41 +++++++++++++++++++++++++----------------
->  include/linux/sm501.h   |    2 ++
->  2 files changed, 27 insertions(+), 16 deletions(-)
+>  drivers/video/sm501fb.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
 > 
-> --- 0003/drivers/video/sm501fb.c
-> +++ work/drivers/video/sm501fb.c	2007-12-27 14:18:28.000000000 +0900
-> @@ -639,6 +639,7 @@ static void sm501fb_panel_power(struct s
+> --- 0002/drivers/video/sm501fb.c
+> +++ work/drivers/video/sm501fb.c	2007-12-27 13:24:20.000000000 +0900
+> @@ -1264,6 +1264,7 @@ static int sm501fb_start(struct sm501fb_
 >  {
->  	unsigned long control;
->  	void __iomem *ctrl_reg = fbi->regs + SM501_DC_PANEL_CONTROL;
-> +	struct sm501_platdata_fbsub *pd = fbi->pdata->fb_pnl;
+>  	struct resource	*res;
+>  	struct device *dev;
+> +	int k;
+>  	int ret;
 >  
->  	control = readl(ctrl_reg);
+>  	info->dev = dev = &pdev->dev;
+> @@ -1325,6 +1326,13 @@ static int sm501fb_start(struct sm501fb_
 >  
-> @@ -655,26 +656,34 @@ static void sm501fb_panel_power(struct s
->  		sm501fb_sync_regs(fbi);
->  		mdelay(10);
+>  	info->fbmem_len = (res->end - res->start)+1;
 >  
-> -		control |= SM501_DC_PANEL_CONTROL_BIAS;	/* VBIASEN */
-> -		writel(control, ctrl_reg);
-> -		sm501fb_sync_regs(fbi);
-> -		mdelay(10);
-> -
-> -		control |= SM501_DC_PANEL_CONTROL_FPEN;
-> -		writel(control, ctrl_reg);
-> +		if (pd->flags & SM501FB_FLAG_PANEL_USE_VBIASEN) {
-> +			control |= SM501_DC_PANEL_CONTROL_BIAS;	/* VBIASEN */
-> +			writel(control, ctrl_reg);
-> +			sm501fb_sync_regs(fbi);
-> +			mdelay(10);
-> +		}
+> +	/* clear framebuffer memory - avoids garbage data on unused fb */
+> +	memset(info->fbmem, 0, info->fbmem_len);
+> +
+> +	/* clear palette ram - undefined at power on */
+> +	for (k = 0; k < (256 * 3); k++)
+> +		writel(0, info->regs + SM501_DC_PANEL_PALETTE + (k * 4));
+> +
+>  	/* enable display controller */
+>  	sm501_unit_power(dev->parent, SM501_GATE_DISPLAY, 1);
 >  
-> +		if (pd->flags & SM501FB_FLAG_PANEL_USE_FPEN) {
-> +			control |= SM501_DC_PANEL_CONTROL_FPEN;
-> +			writel(control, ctrl_reg);
-> +			sm501fb_sync_regs(fbi);
-> +			mdelay(10);
-> +		}
->  	} else if (!to && (control & SM501_DC_PANEL_CONTROL_VDD) != 0) {
->  		/* disable panel power */
-> +		if (pd->flags & SM501FB_FLAG_PANEL_USE_FPEN) {
-> +			control &= ~SM501_DC_PANEL_CONTROL_FPEN;
-> +			writel(control, ctrl_reg);
-> +			sm501fb_sync_regs(fbi);
-> +			mdelay(10);
-> +		}
->  
-> -		control &= ~SM501_DC_PANEL_CONTROL_FPEN;
-> -		writel(control, ctrl_reg);
-> -		sm501fb_sync_regs(fbi);
-> -		mdelay(10);
-> -
-> -		control &= ~SM501_DC_PANEL_CONTROL_BIAS;
-> -		writel(control, ctrl_reg);
-> -		sm501fb_sync_regs(fbi);
-> -		mdelay(10);
-> +		if (pd->flags & SM501FB_FLAG_PANEL_USE_VBIASEN) {
-> +			control &= ~SM501_DC_PANEL_CONTROL_BIAS;
-> +			writel(control, ctrl_reg);
-> +			sm501fb_sync_regs(fbi);
-> +			mdelay(10);
-> +		}
->  
->  		control &= ~SM501_DC_PANEL_CONTROL_DATA;
->  		writel(control, ctrl_reg);
-> --- 0001/include/linux/sm501.h
-> +++ work/include/linux/sm501.h	2007-12-27 14:13:40.000000000 +0900
-> @@ -70,6 +70,8 @@ extern unsigned long sm501_gpio_get(stru
->  #define SM501FB_FLAG_DISABLE_AT_EXIT	(1<<1)
->  #define SM501FB_FLAG_USE_HWCURSOR	(1<<2)
->  #define SM501FB_FLAG_USE_HWACCEL	(1<<3)
-> +#define SM501FB_FLAG_PANEL_USE_FPEN	(1<<4)
-> +#define SM501FB_FLAG_PANEL_USE_VBIASEN	(1<<5)
->  
->  struct sm501_platdata_fbsub {
->  	struct fb_videomode	*def_mode;
 > 
 > -------------------------------------------------------------------------
 > This SF.net email is sponsored by: Microsoft

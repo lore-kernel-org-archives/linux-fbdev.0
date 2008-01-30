@@ -1,9 +1,9 @@
-From: ben@fluff.org.uk
-Subject: [patch 3/5] FB/S3C2410: Update debugging in
-	S3C2410 framebuffer driver
-Date: Wed, 30 Jan 2008 01:30:14 +0000
-Message-ID: <20080130013106.182952236@fluff.org.uk>
-References: <20080130013011.604188602@fluff.org.uk>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 9847] New: i810fb: module
+ parameter 'mode_option' inconsistent with other framebuffer modules
+Date: Tue, 29 Jan 2008 21:33:25 -0800
+Message-ID: <20080129213325.0d19dd8d.akpm@linux-foundation.org>
+References: <bug-9847-10286@http.bugzilla.kernel.org/>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,15 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JK1nb-0007BK-94 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Jan 2008 17:31:35 -0800
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
+	id 1JK5Zf-0004Vq-AF for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 29 Jan 2008 21:33:27 -0800
+Received: from smtp2.linux-foundation.org ([207.189.120.14])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JK1nZ-0003Q6-MK
+	(Exim 4.44) id 1JK5Zd-0001GC-Td
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Jan 2008 17:31:35 -0800
-Content-Disposition: inline;
-	filename=simtec/simtec-drivers-fb-s3c2410-debug-update.patch
+	Tue, 29 Jan 2008 21:33:27 -0800
+In-Reply-To: <bug-9847-10286@http.bugzilla.kernel.org/>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,31 +30,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux FB <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Vincent Sanders <vince@simtec.co.uk>, Ben Dooks <ben-linux@fluff.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: miki@dds.nl, bugme-daemon@bugzilla.kernel.org
 
-Update the debugging in the s3c2410 framebuffer driver.
+On Tue, 29 Jan 2008 21:02:39 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-
-Index: linux-2.6.22-simtec14/drivers/video/s3c2410fb.c
-===================================================================
---- linux-2.6.22-simtec14.orig/drivers/video/s3c2410fb.c
-+++ linux-2.6.22-simtec14/drivers/video/s3c2410fb.c
-@@ -670,7 +670,7 @@ static int __init s3c2410fb_map_video_me
- 	dma_addr_t map_dma;
- 	unsigned map_size = PAGE_ALIGN(info->fix.smem_len);
- 
--	dprintk("map_video_memory(fbi=%p)\n", fbi);
-+	dprintk("map_video_memory(fbi=%p) map_size %u\n", fbi, map_size);
- 
- 	info->screen_base = dma_alloc_writecombine(fbi->dev, map_size,
- 						   &map_dma, GFP_KERNEL);
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+> http://bugzilla.kernel.org/show_bug.cgi?id=9847
+> 
+>            Summary: i810fb: module parameter 'mode_option' inconsistent with
+>                     other framebuffer modules
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: 2.6.22
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Console/Framebuffers
+>         AssignedTo: jsimmons@infradead.org
+>         ReportedBy: miki@dds.nl
+> 
+> 
+> Latest working kernel version: -
+> Earliest failing kernel version:
+> Distribution: Debian Release: lenny/sid
+> Hardware Environment: Intel PIII / i815M
+> Software Environment:
+> Problem Description: While all other framebuffer modules use the option
+> "mode=..." to specify a modedb-style video mode, i810fb uses the non-standard
+> "mode_option=..." This breaks the use of "video=i810fb:<videomode>" boot
+> parameter, such that for instance "video=i810fb:1024x768" doesn't work.
+> The boot scripts parse the "<videomode>" parameter internally and pass 
+> it to the correct module as 'mode=<videomode>'.
+> 
+> -Alain
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

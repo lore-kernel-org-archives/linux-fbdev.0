@@ -1,25 +1,24 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 9847] New: i810fb: module
- parameter 'mode_option' inconsistent with other framebuffer modules
-Date: Tue, 29 Jan 2008 21:33:25 -0800
-Message-ID: <20080129213325.0d19dd8d.akpm@linux-foundation.org>
-References: <bug-9847-10286@http.bugzilla.kernel.org/>
+From: Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 1/3] [Video] BF54x LQ043 Framebuffer
+	driver: fix bug NULL for gpio_request label is not allowed
+Date: Wed, 30 Jan 2008 17:01:49 +0800
+Message-ID: <1201683711-24948-2-git-send-email-bryan.wu@analog.com>
+References: <1201683711-24948-1-git-send-email-bryan.wu@analog.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JK5Zf-0004Vq-AF for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Jan 2008 21:33:27 -0800
-Received: from smtp2.linux-foundation.org ([207.189.120.14])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JK5Zd-0001GC-Td
+	id 1JK8pP-0007Z3-6S for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 30 Jan 2008 01:01:55 -0800
+Received: from nwd2mail11.analog.com ([137.71.25.57])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JK8pO-00063g-PJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Jan 2008 21:33:27 -0800
-In-Reply-To: <bug-9847-10286@http.bugzilla.kernel.org/>
+	Wed, 30 Jan 2008 01:01:55 -0800
+In-Reply-To: <1201683711-24948-1-git-send-email-bryan.wu@analog.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,42 +29,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: miki@dds.nl, bugme-daemon@bugzilla.kernel.org
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
+Cc: Bryan Wu <bryan.wu@analog.com>, linux-kernel@vger.kernel.org, Michael Hennerich <michael.hennerich@analog.com>
 
-On Tue, 29 Jan 2008 21:02:39 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9847
-> 
->            Summary: i810fb: module parameter 'mode_option' inconsistent with
->                     other framebuffer modules
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.22
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Console/Framebuffers
->         AssignedTo: jsimmons@infradead.org
->         ReportedBy: miki@dds.nl
-> 
-> 
-> Latest working kernel version: -
-> Earliest failing kernel version:
-> Distribution: Debian Release: lenny/sid
-> Hardware Environment: Intel PIII / i815M
-> Software Environment:
-> Problem Description: While all other framebuffer modules use the option
-> "mode=..." to specify a modedb-style video mode, i810fb uses the non-standard
-> "mode_option=..." This breaks the use of "video=i810fb:<videomode>" boot
-> parameter, such that for instance "video=i810fb:1024x768" doesn't work.
-> The boot scripts parse the "<videomode>" parameter internally and pass 
-> it to the correct module as 'mode=<videomode>'.
-> 
-> -Alain
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+---
+ drivers/video/bf54x-lq043fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index c8e7427..e9f5989 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -241,7 +241,7 @@ static int request_ports(struct bfin_bf54xfb_info *fbi)
+ 	u16 eppi_req_18[] = EPPI0_18;
+ 	u16 disp = fbi->mach_info->disp;
+ 
+-	if (gpio_request(disp, NULL)) {
++	if (gpio_request(disp, DRIVER_NAME)) {
+ 		printk(KERN_ERR "Requesting GPIO %d faild\n", disp);
+ 		return -EFAULT;
+ 	}
+-- 
+1.5.3.4
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

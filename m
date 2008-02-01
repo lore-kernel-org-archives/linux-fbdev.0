@@ -1,10 +1,10 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: modesetting and fbdev
-Date: Thu, 31 Jan 2008 23:52:47 -0800
-Message-ID: <200801312352.47290.jbarnes@virtuousgeek.org>
-References: <eb77d7060801301155gbbd2d3eie9f12108425cb0b1@mail.gmail.com>
-	<200801302055.21825.jbarnes@virtuousgeek.org>
-	<eb77d7060801311558i40942c34y71f0831f64e63d0c@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] [Resend] fbcon : fix color
+ generation for monochrome framebuffer
+Date: Fri, 1 Feb 2008 09:02:17 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0802010859230.22762@anakin>
+References: <Pine.LNX.4.64.0801281052480.4385@lxtpfaff.pcs.ditec.de>
+	<20080131140701.b584430e.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,14 +13,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JKqiG-0008Ta-Mp for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jan 2008 23:53:28 -0800
-Received: from outbound-mail-32.bluehost.com ([69.89.18.152])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1JKqiD-0001W6-1V
+	id 1JKqqw-0000vW-G9 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 01 Feb 2008 00:02:26 -0800
+Received: from edna.telenet-ops.be ([195.130.132.58])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JKqqu-0004Jm-Mx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jan 2008 23:53:26 -0800
-In-Reply-To: <eb77d7060801311558i40942c34y71f0831f64e63d0c@mail.gmail.com>
-Content-Disposition: inline
+	Fri, 01 Feb 2008 00:02:26 -0800
+In-Reply-To: <20080131140701.b584430e.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,54 +30,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jorge Luis Zapata Muga <jorgeluis.zapata@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Thomas Pfaff <tpfaff@pcs.com>, adaplas@gmail.com
 
-On Thursday, January 31, 2008 3:58 pm Jorge Luis Zapata Muga wrote:
-> On Jan 31, 2008 5:55 AM, Jesse Barnes <jbarnes@virtuousgeek.org> 
-wrote:
-> > On Wednesday 30 January 2008 11:55:19 am Jorge Luis Zapata Muga 
-wrote:
-> > > Hi all, I've seen some patches and discussions about modesetting
-> > > into the kernel and fb devices, what is the relation or plans
-> > > with that beside the pros and cons? keep the fb api? some kind of
-> > > merge between both?
-> >
-> > The DRM modesetting code preserves compatibility with the fb
-> > interfaces, so if you write a DRM based modesetting driver, fb
-> > applications can run on top unmodified.  Also, the existing fb
-> > stuff won't go away (though some maintainers may choose to replace
-> > their fb drivers with DRM modesetting based ones).  Which type of
-> > driver to write just depends on what your hw is capable of and
-> > whether you feel the slightly higher complexity of a DRM based
-> > driver is justified (it probably will be if you ever plan on adding
-> > 3d support to your stack or if you want to exploit the fancy output
-> > control that the DRM based API provides).
-> >
-> > Hope that helps.
->
-> Yes it does, thanks for explaining ... my concerns are about multiple
-> framebuffers on one chip, from what i see you reference a framebuffer
-> == output (correct me if im wrong),
+On Thu, 31 Jan 2008, Andrew Morton wrote:
+> On Mon, 28 Jan 2008 11:03:38 +0100 (CET) Thomas Pfaff <tpfaff@pcs.com> wrote:
+> > +#define attr_bgcol_ec(bgshift,vc,info)		\
+> > +	attr_col_ec(bgshift,vc,info,0);
+> > +#define attr_fgcol_ec(fgshift,vc,info)		\
+> > +	attr_col_ec(fgshift,vc,info,1);
+> > +
+> 
+> Could be implemented as C functions.
 
-Yeah, that's wrong. :)  It supports multiple memory objects, which you 
-can bind to CRTCs, which connect to outputs, arbitrarily.
+I don't see a real advantage in using a function instead. It will just
+become longer. There won't be any additional type checking.
 
-> and i thought that maybe this 
-> upper controller (drm) could take the control of hw with multiple
-> graphics layers i.e one framebuffer for every gfx layer, like
-> controlling the compositing of them, beside the memory controller/3d
-> thing. Is this in consideration?
+Gr{oetje,eeting}s,
 
-Yes, definitely.  One of the design goals for these new parts of the DRM 
-layer was to fully support output reconfiguration and routing, so the 
-system should be as flexible as the underlying hardware allows.
+						Geert
 
-> Where is the main development taken? on the modesetting-101 branch?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Yep, that's the main tree right now.
-
-Jesse
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

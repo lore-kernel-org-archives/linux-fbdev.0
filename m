@@ -1,12 +1,13 @@
-From: Thomas Pfaff <tpfaff@pcs.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] [Resend] fbcon : fix color
  generation for monochrome framebuffer
-Date: Fri, 1 Feb 2008 14:01:07 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0802011353430.5628@lxtpfaff.pcs.ditec.de>
+Date: Fri, 1 Feb 2008 14:38:15 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0802011426140.18111@anakin>
 References: <Pine.LNX.4.64.0801281052480.4385@lxtpfaff.pcs.ditec.de>
 	<20080131140701.b584430e.akpm@linux-foundation.org>
 	<Pine.LNX.4.64.0802011128210.5425@lxtpfaff.pcs.ditec.de>
 	<Pine.LNX.4.64.0802011322450.18111@anakin>
+	<Pine.LNX.4.64.0802011353430.5628@lxtpfaff.pcs.ditec.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,13 +16,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JKviB-0007Ac-RG for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 01 Feb 2008 05:13:44 -0800
-Received: from mail.pcs.de ([145.253.69.50] helo=mail.pcs.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JKvW9-0006RL-RF
+	id 1JKw62-0001TR-0z for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 01 Feb 2008 05:38:22 -0800
+Received: from monty.telenet-ops.be ([195.130.132.56])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JKw60-0003k1-Bo
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 01 Feb 2008 05:01:19 -0800
-In-Reply-To: <Pine.LNX.4.64.0802011322450.18111@anakin>
+	Fri, 01 Feb 2008 05:38:21 -0800
+In-Reply-To: <Pine.LNX.4.64.0802011353430.5628@lxtpfaff.pcs.ditec.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,29 +33,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Thomas Pfaff <tpfaff@pcs.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
 
-On Fri, 1 Feb 2008, Geert Uytterhoeven wrote:
-> On Fri, 1 Feb 2008, Thomas Pfaff wrote:
-> > On Thu, 31 Jan 2008, Andrew Morton wrote:
-> > > On Mon, 28 Jan 2008 11:03:38 +0100 (CET)
-> > If the functions should be deinlined someone should decide where to put them. 
-> > Since they must be exported i would avoid to put them into fbcon.c, this would 
-> > lead to cross dependencies.
-> > I would suggest to put the prototype into <linux/fb.h> and the definition into 
-> > fbcmap.c instead, but i am unsure whether they really belong there.
+On Fri, 1 Feb 2008, Thomas Pfaff wrote:
+> On Fri, 1 Feb 2008, Geert Uytterhoeven wrote:
+> > On Fri, 1 Feb 2008, Thomas Pfaff wrote:
+> > > On Thu, 31 Jan 2008, Andrew Morton wrote:
+> > > > On Mon, 28 Jan 2008 11:03:38 +0100 (CET)
+> > > If the functions should be deinlined someone should decide where to put them. 
+> > > Since they must be exported i would avoid to put them into fbcon.c, this would 
+> > > lead to cross dependencies.
+> > > I would suggest to put the prototype into <linux/fb.h> and the definition into 
+> > > fbcmap.c instead, but i am unsure whether they really belong there.
+> > 
+> > General note: functions in header files must be inline, else you get
+> > multiple definitions of the same symbol.
 > 
-> General note: functions in header files must be inline, else you get
-> multiple definitions of the same symbol.
-> 
+> Of course you are right but this does not answer my question:
+> Where should i put a mono_col / attr_col_ec if they must be deinlined ?
 
-Of course you are right but this does not answer my question:
-Where should i put a mono_col / attr_col_ec if they must be deinlined ?
+Sorry, I misunderstood. I thought you meant the macros that Andrew
+wanted to be turned into functions.
 
-My suggestion is a fb_mono_col / fb_attr_col_ec in fbcmap.c.
+> My suggestion is a fb_mono_col / fb_attr_col_ec in fbcmap.c.
 
+As they're used by fbcon only, not by fbdev, I'd suggest fbcon.c.
 
+pmag-aa-fb.c is the only other user, but it's broken anyway because it
+still uses the 2.4.x fbdev API.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

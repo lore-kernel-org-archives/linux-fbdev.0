@@ -1,25 +1,26 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 9847] New: i810fb: module
- parameter 'mode_option' inconsistent with other framebuffer modules
-Date: Thu, 31 Jan 2008 23:32:32 -0800
-Message-ID: <20080131233232.a7bf51d5.akpm@linux-foundation.org>
-References: <20080201070131.27F842BD8B5@f25.poczta.interia.pl>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: modesetting and fbdev
+Date: Thu, 31 Jan 2008 23:52:47 -0800
+Message-ID: <200801312352.47290.jbarnes@virtuousgeek.org>
+References: <eb77d7060801301155gbbd2d3eie9f12108425cb0b1@mail.gmail.com>
+	<200801302055.21825.jbarnes@virtuousgeek.org>
+	<eb77d7060801311558i40942c34y71f0831f64e63d0c@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JKqOC-0006SR-1I for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jan 2008 23:32:44 -0800
-Received: from smtp2.linux-foundation.org ([207.189.120.14])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JKqOA-0005ns-Hz
+	id 1JKqiG-0008Ta-Mp for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jan 2008 23:53:28 -0800
+Received: from outbound-mail-32.bluehost.com ([69.89.18.152])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1JKqiD-0001W6-1V
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jan 2008 23:32:43 -0800
-In-Reply-To: <20080201070131.27F842BD8B5@f25.poczta.interia.pl>
+	Thu, 31 Jan 2008 23:53:26 -0800
+In-Reply-To: <eb77d7060801311558i40942c34y71f0831f64e63d0c@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,36 +31,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: jsimmons@infradead.org, miki@dds.nl, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+To: Jorge Luis Zapata Muga <jorgeluis.zapata@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On 01 Feb 2008 08:01:30 +0100 krzysztof.h1@poczta.fm wrote:
+On Thursday, January 31, 2008 3:58 pm Jorge Luis Zapata Muga wrote:
+> On Jan 31, 2008 5:55 AM, Jesse Barnes <jbarnes@virtuousgeek.org> 
+wrote:
+> > On Wednesday 30 January 2008 11:55:19 am Jorge Luis Zapata Muga 
+wrote:
+> > > Hi all, I've seen some patches and discussions about modesetting
+> > > into the kernel and fb devices, what is the relation or plans
+> > > with that beside the pros and cons? keep the fb api? some kind of
+> > > merge between both?
+> >
+> > The DRM modesetting code preserves compatibility with the fb
+> > interfaces, so if you write a DRM based modesetting driver, fb
+> > applications can run on top unmodified.  Also, the existing fb
+> > stuff won't go away (though some maintainers may choose to replace
+> > their fb drivers with DRM modesetting based ones).  Which type of
+> > driver to write just depends on what your hw is capable of and
+> > whether you feel the slightly higher complexity of a DRM based
+> > driver is justified (it probably will be if you ever plan on adding
+> > 3d support to your stack or if you want to exploit the fancy output
+> > control that the DRM based API provides).
+> >
+> > Hope that helps.
+>
+> Yes it does, thanks for explaining ... my concerns are about multiple
+> framebuffers on one chip, from what i see you reference a framebuffer
+> == output (correct me if im wrong),
 
-> > On Tue, 29 Jan 2008 21:02:39 -0800 (PST) bugme-daemon@bugzilla.kernel.org
-> > wrote:
-> > > Problem Description: While all other framebuffer modules use the option
-> > > "mode=..." to specify a modedb-style video mode, i810fb uses the
-> > non-standard
-> > > "mode_option=..." 
-> 
-> The attached patch should fix it.
-> --
-> 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> This patch changes the option "mode_option" into "mode".
-> 
+Yeah, that's wrong. :)  It supports multiple memory objects, which you 
+can bind to CRTCs, which connect to outputs, arbitrarily.
 
-Thanks.
+> and i thought that maybe this 
+> upper controller (drm) could take the control of hw with multiple
+> graphics layers i.e one framebuffer for every gfx layer, like
+> controlling the compositing of them, beside the memory controller/3d
+> thing. Is this in consideration?
 
-> -module_param(mode_option, charp, 0);
-> -MODULE_PARM_DESC(mode_option, "Specify initial video mode");
-> +module_param(mode, charp, 0);
-> +MODULE_PARM_DESC(mode, "Specify initial video mode");
+Yes, definitely.  One of the design goals for these new parts of the DRM 
+layer was to fully support output reconfiguration and routing, so the 
+system should be as flexible as the underlying hardware allows.
 
-But can we retain the old option as well, to avoid breaking people's
-existing setups?
+> Where is the main development taken? on the modesetting-101 branch?
 
+Yep, that's the main tree right now.
+
+Jesse
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

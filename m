@@ -1,11 +1,8 @@
-From: Alain Kalker <miki@dds.nl>
-Subject: Re: [Bugme-new] [Bug 9847] New: i810fb:
-	module	parameter 'mode_option' inconsistent with other
-	framebuffer modules
-Date: Sat, 02 Feb 2008 05:18:10 +0100
-Message-ID: <1201925891.2704.25.camel@localhost>
-References: <20080201070131.27F842BD8B5@f25.poczta.interia.pl>
-	<20080131233232.a7bf51d5.akpm@linux-foundation.org>
+From: Roel Kluin <12o3l@tiscali.nl>
+Subject: [PATCH] [drivers/video/i810/i810_main.c] add
+	parentheses
+Date: Sat, 02 Feb 2008 20:56:42 +0100
+Message-ID: <47A4CAFA.606@tiscali.nl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,13 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JL9pj-0000qe-NF for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 01 Feb 2008 20:18:30 -0800
-Received: from spalding.dds.nl ([85.17.178.135])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JL9pg-0003tt-F2
+	id 1JLOTr-0002sk-VE for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 02 Feb 2008 11:56:52 -0800
+Received: from smtp-out3.tiscali.nl ([195.241.79.178])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JLOTq-0007V4-L3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 01 Feb 2008 20:18:27 -0800
-In-Reply-To: <20080131233232.a7bf51d5.akpm@linux-foundation.org>
+	Sat, 02 Feb 2008 11:56:51 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,82 +28,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
+Cc: lkml <linux-kernel@vger.kernel.org>
 
+'!' has a higher priority than '&': bitanding has no effect.
 
-On Thu, 2008-01-31 at 23:32 -0800, Andrew Morton wrote:
-> On 01 Feb 2008 08:01:30 +0100 krzysztof.h1@poczta.fm wrote:
-> 
-> > > On Tue, 29 Jan 2008 21:02:39 -0800 (PST) bugme-daemon@bugzilla.kernel.org
-> > > wrote:
-> > > > Problem Description: While all other framebuffer modules use the option
-> > > > "mode=..." to specify a modedb-style video mode, i810fb uses the
-> > > non-standard
-> > > > "mode_option=..." 
-> > 
-> > The attached patch should fix it.
-> > --
-> > 
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > This patch changes the option "mode_option" into "mode".
-> > 
-> 
-> Thanks.
-> 
-> > -module_param(mode_option, charp, 0);
-> > -MODULE_PARM_DESC(mode_option, "Specify initial video mode");
-> > +module_param(mode, charp, 0);
-> > +MODULE_PARM_DESC(mode, "Specify initial video mode");
-> 
-> But can we retain the old option as well, to avoid breaking people's
-> existing setups?
-
-Thanks for the quick reply and patch. In the meantime, I have found out
-that the option inconsistency is far more widespread among framebuffer
-modules. The documentation on video mode setting
-(Documentation/fb/modedb.txt) states that the mode parameter should be
-called 'mode_option', but the framebuffer modules seem to be split
-exactly down the middle in using 'mode' versus 'mode_option'
-
-On a Debian lenny/sid system running a 2.6.22 kernel I get this:
-
-Framebuffer modules accepting a 'mode' parameter:
----[cut here]---
-iki@miki:~$ find /lib/modules/`uname -r`/kernel -name '*fb.ko'|while
-read ko; do sudo modinfo -F parm $ko|grep -q "^mode:" && echo $ko; done
-/lib/modules/2.6.22-3-686/kernel/drivers/video/s3fb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/sis/sisfb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/arkfb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/geode/gx1fb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/vt8623fb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/intelfb/intelfb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/pm2fb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/aty/atyfb.ko
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
+diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+index 1a7d778..1d13dd0 100644
+--- a/drivers/video/i810/i810_main.c
++++ b/drivers/video/i810/i810_main.c
+@@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 	struct i810fb_par *par = info->par;
+ 	u8 __iomem *mmio = par->mmio_start_virtual;
+ 
+-	if (!par->dev_flags & LOCKUP)
++	if (!(par->dev_flags & LOCKUP))
+ 		return -ENXIO;
+ 
+ 	if (cursor->image.width > 64 || cursor->image.height > 64)
 
-Framebuffer modules accepting a 'mode_option' parameter:
-miki@miki:~$ find /lib/modules/`uname -r`/kernel -name '*fb.ko'|while
-read ko; do sudo modinfo -F parm $ko|grep -q "^mode_option:" && echo
-$ko; done
-/lib/modules/2.6.22-3-686/kernel/drivers/video/savage/savagefb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/sstfb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/neofb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/geode/gxfb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/i810/i810fb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/nvidia/nvidiafb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/aty/aty128fb.ko
-/lib/modules/2.6.22-3-686/kernel/drivers/video/aty/radeonfb.ko
-
-I assume the parameter was called 'mode_option' originally to indicate
-that the parameter name itself is optional, "modprobe i810fb
-mode=1024x768" is equivalent to "modprobe i810fb 1024x768", which at
-least this module seems to support.
-
-Should this be filed as a more general bug report?
-
--Alain
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

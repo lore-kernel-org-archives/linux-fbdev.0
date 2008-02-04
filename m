@@ -1,8 +1,8 @@
 From: Roel Kluin <12o3l@tiscali.nl>
-Subject: [PATCH] [drivers/video/i810/i810_main.c] add
-	parentheses
-Date: Sat, 02 Feb 2008 20:56:42 +0100
-Message-ID: <47A4CAFA.606@tiscali.nl>
+Subject: [PATCH][drivers/video/imsttfb.c] add missing
+	curly brackets
+Date: Mon, 04 Feb 2008 20:41:09 +0100
+Message-ID: <47A76A55.8010609@tiscali.nl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +11,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JLOTr-0002sk-VE for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Feb 2008 11:56:52 -0800
-Received: from smtp-out3.tiscali.nl ([195.241.79.178])
+	id 1JM7Bt-0001VN-3m for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 Feb 2008 11:41:17 -0800
+Received: from smtp-out1.tiscali.nl ([195.241.79.176])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JLOTq-0007V4-L3
+	(Exim 4.44) id 1JM7Br-0002Ek-MJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 02 Feb 2008 11:56:51 -0800
+	Mon, 04 Feb 2008 11:41:17 -0800
+Received: from [82.171.187.43] (helo=[192.168.1.2])
+	by smtp-out1.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
+	id 1JM7Bm-0001mA-Qe for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 04 Feb 2008 20:41:11 +0100
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,27 +32,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: lkml <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-'!' has a higher priority than '&': bitanding has no effect.
+in #if 0 inactivated function msttfb_load_cursor_image() the call
+eieio() occurs after rather than in the loop due to missing curly
+brackets.
 
 Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 1a7d778..1d13dd0 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- 	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 
--	if (!par->dev_flags & LOCKUP)
-+	if (!(par->dev_flags & LOCKUP))
- 		return -ENXIO;
- 
- 	if (cursor->image.width > 64 || cursor->image.height > 64)
-
+diff --git a/drivers/video/imsttfb.c b/drivers/video/imsttfb.c
+index 3ab91bf..04696f9 100644
+--- a/drivers/video/imsttfb.c
++++ b/drivers/video/imsttfb.c
+@@ -1151,8 +1151,10 @@ imsttfb_load_cursor_image(struct imstt_par *par, int width, int height, __u8 fgc
+ 				par->cmap_regs[TVPCRDAT] = 0xff;		eieio();
+ 			}
+ 		par->cmap_regs[TVPCADRW] = 0x00;	eieio();
+-		for (x = 0; x < 12; x++)
+-			par->cmap_regs[TVPCDATA] = fgc;	eieio();
++		for (x = 0; x < 12; x++) {
++			par->cmap_regs[TVPCDATA] = fgc;
++			eieio();
++		}
+ 	}
+ 	return 1;
+ }
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

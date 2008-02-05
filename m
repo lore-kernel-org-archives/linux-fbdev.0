@@ -1,27 +1,23 @@
-From: Alain Kalker <miki@dds.nl>
+From: krzysztof.h1@poczta.fm
 Subject: Re: mode_option or mode parameter (was: i810fb
-	module parameter	'mode_option' inconsistent with other
+	module parameter 'mode_option' inconsistent with other
 	framebuffer modules)
-Date: Tue, 05 Feb 2008 13:25:19 +0100
-Message-ID: <1202214319.5357.44.camel@localhost>
-References: <20080205070810.9BF9D1B00D8@f41.poczta.interia.pl>
-	<1202211756.5357.31.camel@localhost>
-	<1202213386.5357.40.camel@localhost>
+Date: 05 Feb 2008 13:40:29 +0100
+Message-ID: <20080205124029.620C01B00DA@f41.poczta.interia.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JMMrn-0007Fa-O4 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Feb 2008 04:25:35 -0800
-Received: from stipula.dds.nl ([85.17.178.134])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JMMrm-0002Ob-Bz
+	id 1JMN6K-0000Ks-2t for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 05 Feb 2008 04:40:36 -0800
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]
+	helo=smtp4.poczta.interia.pl)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JMN6H-0000Pj-LW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Feb 2008 04:25:35 -0800
-In-Reply-To: <1202213386.5357.40.camel@localhost>
+	Tue, 05 Feb 2008 04:40:36 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,14 +28,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org, 463129@bugs.debian.org, adaplas@gmail.com
+Content-Type: text/plain; charset="iso-8859-1"
+To: Alain Kalker <miki@dds.nl>, krzysztof.h1@poczta.fm, jsimmons@infradead.org, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, 463129@bugs.debian.org
 
-On Tue, 2008-02-05 at 13:09 +0100, Alain Kalker wrote:
-> parameter name 'video_mode'
+Alain Kalker napisa=B3:
 
-That should be 'mode_option'.
-Need More Coffee ASAP
+> >From Documentation/fb/modedb.txt:
+> ---
+> When a frame buffer device receives a video=3D option it doesn't know, it
+> should consider that to be a video mode option. If no frame buffer
+> device is specified in a video=3D option, fbmem considers that to be a
+> global video mode option.
+> =
+
+> Valid mode specifiers (mode_option argument):
+> ...
+> =
+
+> >From this I believe that "mode_option" is the standard way, It also
+> indicates that the parameter name itself is optional, but I am not sure
+> if there is an overall Linux standard for indicating optional parameter
+> names.
+> =
+
+
+If the mode_option is the correct one please email Andrew Morton to remove =
+the patch I made for i810fb.
+I will fix drivers which use the "mode" option.
+
+> =
+
+> P.S.: Krzysztof, maybe it would be a good idea to update fbmode.txt
+> too, as there are now many more framebuffer drivers which support video
+> mode naming.
+> =
+
+> =
+
+
+I'll update it with every driver I reworked.
+
+Regards,
+Krzysztof
+
+
+Pogoda na najblizsze dni.
+Sprawdz >>> http://link.interia.pl/f1ce1
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

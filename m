@@ -1,23 +1,26 @@
-From: krzysztof.h1@poczta.fm
-Subject: Re: mode_option or mode parameter (was: i810fb
-	module parameter 'mode_option' inconsistent with other
-	framebuffer modules)
-Date: 07 Feb 2008 08:21:14 +0100
-Message-ID: <20080207072114.628B197A810@f43.poczta.interia.pl>
+From: Scott Mcdermott <vaxerdec@gmail.com>
+Subject: appropriate list for intelfb devel? 965GM
+	support?
+Date: Thu, 7 Feb 2008 00:38:23 -0800
+Message-ID: <20080207083823.GA17726@omnius.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JN1Ti-0001r1-Dp for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Feb 2008 23:47:26 -0800
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]
-	helo=smtp4.poczta.interia.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JN1Th-00014p-1F
+	id 1JN2HI-0006jn-6a for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 07 Feb 2008 00:38:40 -0800
+Received: from rv-out-0910.google.com ([209.85.198.190])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JN2HG-0004Xb-Tq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Feb 2008 23:47:26 -0800
+	Thu, 07 Feb 2008 00:38:40 -0800
+Received: by rv-out-0910.google.com with SMTP id g11so6867380rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 07 Feb 2008 00:38:36 -0800 (PST)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,33 +31,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Alain Kalker <miki@dds.nl>, linux-fbdev-devel@lists.sourceforge.net, Randy Dunlap <rdunlap@xenotime.net>, krzysztof.h1@poczta.fm, jsimmons@infradead.org, adaplas@gmail.com
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Alain Kalker napisa=B3(a):
->
-> I would like to propose instead to make the "mode& / mode_option"
-> parameter name optional for all drivers where possible. This will
-> greatly simplify framebuffer driver loading by the boot scripts, which
-> currently cannot easily identify drivers needing either parameter name.
->
+I am trying to determine where the appropriate list is for
+intelfb related postings.
 
-Just for conirmation:
+I am trying to determine if there are any developers working
+on adding support for the 965GM chipset.  Currently it seems
+to max out at 865GM.
 
-so the current solution should be to add "mode_option" for drivers using
-ModeDB and for all drivers to be able to accept resolution without any
-parameter name?
+I doubt it's a matter of just recognizing the PCI ID.  A
+gander at xorg sources says that this chipset requires
+somewhat different programming.  I wish I had the expertise
+to do it myself.
 
-Regards,
-Krzysztof
+If there is a developer that needs some hardware to add
+support, I can probably work something out with someone in
+the Bay Area.  I'm using vesafb right now, which works, but
+it's quite a bit slower than using a native chipset fbdev
+driver (I've used both radeon and matrox before).
+Especially because it uses software scrolling and doesn't
+seem to support hardware panning with this chipset.
 
+I appreciate any comments.  Thanks.
 
-
-----------------------------------------------------------------------
-Wyjatkowe pioro Andrzeja Mleczki! =
-
-Licytuj! >>> http://link.interia.pl/f1cf2
-
+-- 
+Scott
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

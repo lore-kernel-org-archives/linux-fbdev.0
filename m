@@ -1,26 +1,23 @@
-From: Alain Kalker <miki@dds.nl>
-Subject: Re: mode_option or mode parameter (was:
-	i810fb	module parameter 'mode_option' inconsistent with other
+From: krzysztof.h1@poczta.fm
+Subject: Re: mode_option or mode parameter (was: i810fb
+	module parameter 'mode_option' inconsistent with other
 	framebuffer modules)
-Date: Wed, 06 Feb 2008 17:53:50 +0100
-Message-ID: <1202316830.5109.29.camel@localhost>
-References: <20080206071517.14FE52E5CE4@f27.poczta.interia.pl>
-	<1202316423.5109.26.camel@localhost>
+Date: 07 Feb 2008 08:21:14 +0100
+Message-ID: <20080207072114.628B197A810@f43.poczta.interia.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JMnX6-0007WO-2Y for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Feb 2008 08:54:00 -0800
-Received: from stipula.dds.nl ([85.17.178.134])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JMnX0-0003y9-Jg
+	id 1JN1Ti-0001r1-Dp for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 06 Feb 2008 23:47:26 -0800
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]
+	helo=smtp4.poczta.interia.pl)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JN1Th-00014p-1F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Feb 2008 08:54:00 -0800
-In-Reply-To: <1202316423.5109.26.camel@localhost>
+	Wed, 06 Feb 2008 23:47:26 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,27 +28,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Randy Dunlap <rdunlap@xenotime.net>, jsimmons@infradead.org, adaplas@gmail.com
+Content-Type: text/plain; charset="iso-8859-1"
+To: Alain Kalker <miki@dds.nl>, linux-fbdev-devel@lists.sourceforge.net, Randy Dunlap <rdunlap@xenotime.net>, krzysztof.h1@poczta.fm, jsimmons@infradead.org, adaplas@gmail.com
 
-
-On Wed, 2008-02-06 at 17:47 +0100, Alain Kalker wrote:
-> I would like to propose instead to make the 'mode' / 'mode_option'
+Alain Kalker napisa=B3(a):
+>
+> I would like to propose instead to make the "mode& / mode_option"
 > parameter name optional for all drivers where possible. This will
 > greatly simplify framebuffer driver loading by the boot scripts, which
 > currently cannot easily identify drivers needing either parameter name.
+>
 
-so one would be able to use
+Just for conirmation:
 
-# modprobe <xxxfb> 1024x768 <other options>
-
-instead of 
-
-# modprobe <xxxfb> mode_option=1024x768 <other options>
+so the current solution should be to add "mode_option" for drivers using
+ModeDB and for all drivers to be able to accept resolution without any
+parameter name?
 
 Regards,
+Krzysztof
 
-Alain
+
+
+----------------------------------------------------------------------
+Wyjatkowe pioro Andrzeja Mleczki! =
+
+Licytuj! >>> http://link.interia.pl/f1cf2
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

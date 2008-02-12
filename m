@@ -1,11 +1,8 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] fbdev: make the best-fit section of
-	fb_find_mode return	the closest matching mode
-Date: Sun, 10 Feb 2008 19:46:13 +0100
-Message-ID: <20080210184613.GA11006@spock.one.pl>
-References: <20080127113115.GA17722@spock.one.pl>
-	<20080127132510.b00017cb.krzysztof.h1@poczta.fm>
-Reply-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH 1/3] radeonfb: Speed up the I2C buses
+Date: Tue, 12 Feb 2008 10:19:15 +0100
+Message-ID: <20080212101915.1dce8475@hyperion.delvare>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,17 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JOHCq-00087j-48 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 10 Feb 2008 10:47:12 -0800
-Received: from fk-out-0910.google.com ([209.85.128.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JOHCo-000246-4F
+	id 1JOrIV-0000mc-Of for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 12 Feb 2008 01:19:27 -0800
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102] helo=kraid.nerim.net)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JOrIU-0001cY-B7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 10 Feb 2008 10:47:12 -0800
-Received: by fk-out-0910.google.com with SMTP id 26so4273037fkx.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 10 Feb 2008 10:47:08 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20080127132510.b00017cb.krzysztof.h1@poczta.fm>
+	Tue, 12 Feb 2008 01:19:27 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,71 +26,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Michal Januszewski <spock@gentoo.org>
+There is no reason to drive the radeon I2C buses at such a low
+speed, so bump it from 12.5 kbps to 50 kbps. The Intel (i810) and
+Matrox framebuffer drivers already run their I2C bus at this speed.
 
-Currently, if a perfect match in terms of resolution is not found,
-fb_find_mode() only looks for a best-fit mode among modes with a
-higher resolution than the one requested.  Thus, if the user
-requests a resolution higher than the largest supported one, they
-are dropped to the default mode (usually a low resolution one).
-
-Change this behaviour so that all valid video modes are considered
-when looking for a best-fit mode, while still preferring modes
-with a higher resolution.
-
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 ---
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 08d0725..0b6a45f 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -522,7 +522,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 	int res_specified = 0, bpp_specified = 0, refresh_specified = 0;
- 	unsigned int xres = 0, yres = 0, bpp = default_bpp, refresh = 0;
- 	int yres_specified = 0, cvt = 0, rb = 0, interlace = 0, margins = 0;
--	u32 best, diff;
-+	u32 best, diff, tdiff;
- 
- 	for (i = namelen-1; i >= 0; i--) {
- 	    switch (name[i]) {
-@@ -651,19 +651,27 @@ done:
- 		return (refresh_specified) ? 2 : 1;
- 	}
- 
--	diff = xres + yres;
-+	diff = 2 * (xres + yres);
- 	best = -1;
- 	DPRINTK("Trying best-fit modes\n");
- 	for (i = 0; i < dbsize; i++) {
--	    if (xres <= db[i].xres && yres <= db[i].yres) {
- 		DPRINTK("Trying %ix%i\n", db[i].xres, db[i].yres);
- 		if (!fb_try_mode(var, info, &db[i], bpp)) {
--		    if (diff > (db[i].xres - xres) + (db[i].yres - yres)) {
--			diff = (db[i].xres - xres) + (db[i].yres - yres);
--			best = i;
--		    }
-+			tdiff = abs(db[i].xres - xres) +
-+				abs(db[i].yres - yres);
-+
-+			/*
-+			 * Penalize modes with resolutions smaller
-+			 * than requested.
-+			 */
-+			if (xres > db[i].xres || yres > db[i].yres)
-+				tdiff += xres + yres;
-+
-+			if (diff > tdiff) {
-+				diff = tdiff;
-+				best = i;
-+			}
- 		}
--	    }
- 	}
- 	if (best != -1) {
- 	    fb_try_mode(var, info, &db[best], bpp);
+This patch was already sent on:
+ * 2007-03-08
+ * 2007-09-09
+
+ drivers/video/aty/radeon_i2c.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.21-git.orig/drivers/video/aty/radeon_i2c.c	2007-05-09 10:52:26.000000000 +0200
++++ linux-2.6.21-git/drivers/video/aty/radeon_i2c.c	2007-05-09 10:55:51.000000000 +0200
+@@ -77,7 +77,7 @@ static int radeon_setup_i2c_bus(struct r
+ 	chan->algo.setscl		= radeon_gpio_setscl;
+ 	chan->algo.getsda		= radeon_gpio_getsda;
+ 	chan->algo.getscl		= radeon_gpio_getscl;
+-	chan->algo.udelay		= 40;
++	chan->algo.udelay		= 10;
+ 	chan->algo.timeout		= 20;
+ 	chan->algo.data 		= chan;	
+ 	
+
+
+-- 
+Jean Delvare
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

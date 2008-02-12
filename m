@@ -1,26 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] radeonfb: Fix debug option
-Date: Wed, 13 Feb 2008 07:57:15 +1100
-Message-ID: <1202849835.7410.13.camel@pasglop>
-References: <20080212102347.6dd7f673@hyperion.delvare>
-Reply-To: benh@kernel.crashing.org,
-	linux-fbdev-devel@lists.sourceforge.net
+From: "Jong Lin" <jong_lin@xgitech.com>
+Subject: Source code of FB device driver for XGI Z-series
+Date: Tue, 12 Feb 2008 13:59:30 +0800
+Message-ID: <7BDE3DB56E0B0144A1265CABF7785E630DA4EB@MAIL03.corpnet.xgitech.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0603746472=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JP2CD-0008Jv-5D for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Feb 2008 12:57:50 -0800
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1/uzYRg74LqEjby2dxleH/0f4Zn0RqmrnQ=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JP2CB-0008Rn-0Z
+	id 1JOoCN-0007Fz-Qf for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 Feb 2008 22:00:59 -0800
+Received: from smtp.xgitech.com ([61.66.19.130]
+	helo=twhqfe01.corpnet.xgitech.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JOoCM-0008KM-0e
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Feb 2008 12:57:41 -0800
-In-Reply-To: <20080212102347.6dd7f673@hyperion.delvare>
+	Mon, 11 Feb 2008 22:00:55 -0800
+Content-class: urn:content-classes:message
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,109 +27,251 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: jong_xgi@yahoo.com.tw, adaplas@pol.net, linux-video@atrey.karlin.mff.cuni.cz, mj@ucw.cz
+
+This is a multi-part message in MIME format.
 
 
-On Tue, 2008-02-12 at 10:23 +0100, Jean Delvare wrote:
-> Fix CONFIG_FB_RADEON_DEBUG. DEBUG must be defined before including any
-> kernel header, otherwise dev_dbg() resolves to a no-op. Also, when
-> debugging is disabled, don't set DEBUG at all instead of setting it to
-> 0, to comply with what the kernel headers expect.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+--===============0603746472==
+Content-class: urn:content-classes:message
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C86D3C.71050B68"
 
-Ack.
+This is a multi-part message in MIME format.
 
-> ---
-> This patch was already sent on:
->  * 2007-11-17
-> 
->  drivers/video/aty/radeon_base.c    |    3 ++-
->  drivers/video/aty/radeon_i2c.c     |    3 ++-
->  drivers/video/aty/radeon_monitor.c |    2 +-
->  drivers/video/aty/radeonfb.h       |   12 +++++-------
->  4 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> --- linux-2.6.24-rc3.orig/drivers/video/aty/radeonfb.h	2007-10-24 09:59:48.000000000 +0200
-> +++ linux-2.6.24-rc3/drivers/video/aty/radeonfb.h	2007-11-17 14:25:49.000000000 +0100
-> @@ -1,6 +1,10 @@
->  #ifndef __RADEONFB_H__
->  #define __RADEONFB_H__
->  
-> +#ifdef CONFIG_FB_RADEON_DEBUG
-> +#define DEBUG		1
-> +#endif
-> +
->  #include <linux/module.h>
->  #include <linux/kernel.h>
->  #include <linux/sched.h>
-> @@ -367,13 +371,7 @@ struct radeonfb_info {
->  /*
->   * Debugging stuffs
->   */
-> -#ifdef CONFIG_FB_RADEON_DEBUG
-> -#define DEBUG		1
-> -#else
-> -#define DEBUG		0
-> -#endif
-> -
-> -#if DEBUG
-> +#ifdef DEBUG
->  #define RTRACE		printk
->  #else
->  #define RTRACE		if(0) printk
-> --- linux-2.6.24-rc3.orig/drivers/video/aty/radeon_base.c	2007-10-24 09:59:48.000000000 +0200
-> +++ linux-2.6.24-rc3/drivers/video/aty/radeon_base.c	2007-11-17 14:35:06.000000000 +0100
-> @@ -52,6 +52,8 @@
->  
->  #define RADEON_VERSION	"0.2.0"
->  
-> +#include "radeonfb.h"
-> +
->  #include <linux/module.h>
->  #include <linux/moduleparam.h>
->  #include <linux/kernel.h>
-> @@ -91,7 +93,6 @@
->  
->  #include "../edid.h" // MOVE THAT TO include/video
->  #include "ati_ids.h"
-> -#include "radeonfb.h"		    
->  
->  #define MAX_MAPPED_VRAM	(2048*2048*4)
->  #define MIN_MAPPED_VRAM	(1024*768*1)
-> --- linux-2.6.24-rc3.orig/drivers/video/aty/radeon_i2c.c	2007-11-17 10:54:30.000000000 +0100
-> +++ linux-2.6.24-rc3/drivers/video/aty/radeon_i2c.c	2007-11-17 14:34:47.000000000 +0100
-> @@ -1,3 +1,5 @@
-> +#include "radeonfb.h"
-> +
->  #include <linux/module.h>
->  #include <linux/kernel.h>
->  #include <linux/delay.h>
-> @@ -11,7 +13,6 @@
->  #include <asm/io.h>
->  
->  #include <video/radeon.h>
-> -#include "radeonfb.h"
->  #include "../edid.h"
->  
->  static void radeon_gpio_setscl(void* data, int state)
-> --- linux-2.6.24-rc3.orig/drivers/video/aty/radeon_monitor.c	2007-10-10 09:57:39.000000000 +0200
-> +++ linux-2.6.24-rc3/drivers/video/aty/radeon_monitor.c	2007-11-17 15:17:02.000000000 +0100
-> @@ -481,7 +481,7 @@ void __devinit radeon_probe_screens(stru
->  		
->  		RTRACE("Starting monitor auto detection...\n");
->  
-> -#if DEBUG && defined(CONFIG_FB_RADEON_I2C)
-> +#if defined(DEBUG) && defined(CONFIG_FB_RADEON_I2C)
->  		{
->  			u8 *EDIDs[4] = { NULL, NULL, NULL, NULL };
->  			int mon_types[4] = {MT_NONE, MT_NONE, MT_NONE, MT_NONE};
-> 
-> 
 
+------_=_NextPart_001_01C86D3C.71050B68
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+What is XGIfb?
+
+=20
+
+=20
+
+This is a frame buffer driver for XGI Graphics chips .
+
+This driver supports Z7, Z9, Z9s and Z11 chips and DVI output.
+
+=20
+
+Advantages:
+
+* It provides a nice graphic text console.
+
+* support DirectFB
+
+=20
+
+=20
+
+XGIfb driver is modified from sisfb driver and the basic code base is
+almost the same.
+
+The difference is that XGIfb's setmode functions is based on the XGI
+Z-series chips.
+
+So, XGIfb can support Z9/Z9s/Z11 DVI output and is developed for XGI
+Z-series chips with more completed features support than sisfb.
+
+=20
+
+(1). xgifb-kernel2.6.tgz is for Linux Kernel 2.6
+
+(2). xgifb-kernel2.4.tgz is for Linux Kernel 2.4
+
+=20
+
+
+------_=_NextPart_001_01C86D3C.71050B68
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:PMingLiU;
+	panose-1:2 2 3 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:windowtext;}
+span.EmailStyle18
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:navy;}
+span.EmailStyle19
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:18.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DZH-TW link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
+
+<div class=3DSection1 style=3D'layout-grid:18.0pt'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>What is XGIfb?<o:p></o:p></span></font></p>
+
+<div style=3D'border:none;border-bottom:double windowtext =
+2.25pt;padding:0cm 0cm 1.0pt 0cm'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>This is a frame buffer driver for XGI Graphics =
+chips .<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>This driver supports Z7, Z9, Z9s and Z11 chips =
+and DVI
+output.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>Advantages:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>* It provides a nice graphic text =
+console.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>* support DirectFB<o:p></o:p></span></font></p>
+
+<div style=3D'border:none;border-bottom:double windowtext =
+2.25pt;padding:0cm 0cm 1.0pt 0cm'>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>XGIfb driver is modified from sisfb driver and =
+the
+basic code base is almost the same.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>The difference is that XGIfb's setmode =
+functions is
+based on the XGI Z-series chips.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>So, XGIfb can support Z9/Z9s/Z11 DVI output and =
+is
+developed for XGI Z-series chips with more completed features support =
+than
+sisfb.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>(1). xgifb-kernel2.6.tgz is for Linux Kernel =
+2.6<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'>(2). xgifb-kernel2.4.tgz is for Linux Kernel =
+2.4<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C86D3C.71050B68--
+
+
+--===============0603746472==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+--===============0603746472==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============0603746472==--

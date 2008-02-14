@@ -1,7 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] pm3fb: change option mode to mode_option
-Date: Thu, 14 Feb 2008 22:56:13 +0100
-Message-ID: <20080214225613.39db9efe.krzysztof.h1@poczta.fm>
+Subject: [PATCH] update modedb.txt documentation about
+ mode_option parameter change
+Date: Thu, 14 Feb 2008 22:58:34 +0100
+Message-ID: <20080214225834.98a95860.krzysztof.h1@poczta.fm>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,13 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JPlz0-0003ZT-5J for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 Feb 2008 13:51:06 -0800
+	id 1JPm1F-0003nQ-BI for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 14 Feb 2008 13:53:25 -0800
 Received: from smtp35.poczta.interia.pl ([80.48.65.35]
 	helo=smtp4.poczta.interia.pl)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JPlyy-0006Q7-HK
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JPm1D-0006yg-UW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 Feb 2008 13:51:06 -0800
+	Thu, 14 Feb 2008 13:53:25 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,7 +33,8 @@ Cc: adaplas@gmail.com
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch adds the option "mode_option".
+This patch adds names of drivers converted to "mode_option"
+parameter.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
@@ -41,22 +43,27 @@ This is one step toward changing all fb drivers to have common "mode_option" par
 
 This patch was created against 2.6.25-rc1 kernel.
 
-diff -urp linux-ref/drivers/video/pm3fb.c linux-pc/drivers/video/pm3fb.c
---- linux-ref/drivers/video/pm3fb.c	2008-02-04 20:46:27.000000000 +0100
-+++ linux-pc/drivers/video/pm3fb.c	2008-02-05 21:41:15.000000000 +0100
-@@ -1571,6 +1571,8 @@ module_exit(pm3fb_exit);
- #endif
- module_init(pm3fb_init);
+diff -urp linux-ref/Documentation/fb/modedb.txt linux-pc/Documentation/fb/modedb.txt
+--- linux-ref/Documentation/fb/modedb.txt	2007-10-09 22:31:38.000000000 +0200
++++ linux-pc/Documentation/fb/modedb.txt	2008-02-05 21:34:42.000000000 +0100
+@@ -125,8 +125,12 @@ There may be more modes.
+     amifb	- Amiga chipset frame buffer
+     aty128fb	- ATI Rage128 / Pro frame buffer
+     atyfb	- ATI Mach64 frame buffer
++    pm2fb	- Permedia 2/2V frame buffer
++    pm3fb	- Permedia 3 frame buffer
++    sstfb	- Voodoo 1/2 (SST1) chipset frame buffer
+     tdfxfb	- 3D Fx frame buffer
+     tridentfb	- Trident (Cyber)blade chipset frame buffer
++    vt8623fb	- VIA 8623 frame buffer
  
-+module_param(mode_option, charp, 0);
-+MODULE_PARM_DESC(mode_option, "Initial video mode e.g. '648x480-8@60'");
- module_param(noaccel, bool, 0);
- MODULE_PARM_DESC(noaccel, "Disable acceleration");
- module_param(hwcursor, int, 0644);
+ BTW, only a few drivers use this at the moment. Others are to follow
+ (feel free to send patches).
+
 
 ----------------------------------------------------------------------
-Potega i sila na wyciagniecie reki - sprawdz!
-Zagraj >>> http://link.interia.pl/f1cf3
+Sprawdz, czy pasujesz do swojego partnera!
+http://link.interia.pl/f1ce7
 
 
 -------------------------------------------------------------------------

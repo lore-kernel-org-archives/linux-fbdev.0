@@ -1,122 +1,121 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/2] fb: add support for foreign
- endianness
-Date: Sun, 17 Feb 2008 10:44:32 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0802171030330.6848@anakin>
-References: <20080205154432.GA8749@localhost.localdomain>
-	<20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] MAINTAINERS: linux-fbdev is moderated
+Date: Sun, 17 Feb 2008 10:50:52 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0802171050220.6848@anakin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755872AbYBQJvL@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JQg4j-0001d6-Sz for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Feb 2008 01:44:45 -0800
-Received: from edna.telenet-ops.be ([195.130.132.58])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JQg4i-0004Tu-6q
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Feb 2008 01:44:45 -0800
-In-Reply-To: <20080215164542.GB16810@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: avorontsov@ru.mvista.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, adaplas@gmail.com
-
-On Fri, 15 Feb 2008, Anton Vorontsov wrote:
-> On Thu, Feb 14, 2008 at 10:49:42PM -0800, Andrew Morton wrote:
-> > On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> > > This patch adds support for the framebuffers with non-native
-> > > endianness. This is done via FBINFO_FOREIGN_ENDIAN flag that will
-> > > be used by the drivers. Depending on the host endianness this flag
-> > > will be overwritten by FBINFO_BE_MATH internal flag, or cleared.
-> > > 
-> > > Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
-> > 
-> > That's a pretty large patch to fbdev core,
-> 
-> Yes, but changes are mostly trivial. No insurance of typos and thinkos
-> though. OTOH, it survived my tests.
-> 
-> > and Tony appears to have gone
-> > offline again and you didn't cc the fbdev mailing list.
-> 
-> FRAMEBUFFER LAYER
-> P:      Antonino Daplas
-> M:      adaplas@gmail.com
-> L:      linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
-> 
-> I'm lazy to subscribe on occasional patches. Yup, this is hardly
-> an excuse...
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
 While linux-fbdev is subscribers-only, non-subscribers are not plainly
-rejected, but moderated, so the casual patch/comment/question comes
-through.
+rejected, but moderated, so the casual patch/comment/question comes through.
 
-I'll cook up a patch for MAINTAINERS to clarify.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ MAINTAINERS |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-> > Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
-> > be permanently enabled?
-> 
-> It should not. Because with CONFIG_FB_FOREIGN_ENDIAN enabled, drawing
-> might be a little bit slower, because of external checks for endianness
-> (I didn't noticed any slowdown, but I guess it's still measurable if we
-> find some fb benchmark).
-
-> > I'd like to at least queue a patch in -mm so that CONFIG_FB_FOREIGN_ENDIAN
-> > is forced-on, so the code gets some runtime testing.  Will that break
-> > anything?
-> 
-> Nope, it should not break anything, just possible fbconsole/tux drawing
-> slowdown.
-
-Tux drawing speed doesn't really matter, as it's done once only.
-Console text drawing is different.
-
-`time cat MAINTAINERS' is a good test. Of course, is most time is spent
-in scrolling, you won't see much difference.
-
-So probably we need a test file that contains lines of text interspersed
-with `HOME' escape sequences, so we don't scroll?
-
-> Thinking about it a little bit more, I believe we want to add a choice,
-> which exactly foreign endianness we want to compile-in. Then, if we're
-> pretty confident that particular BE machine uses only LE framebuffer,
-> gcc can optimize away endianness checks.
-> 
-> Patch on top of previous inlined here. With that patch, slowdown is
-> possible with CONFIG_FB_BOTH_ENDIAN option only, which is still
-> default if FOREIGN_ENDIAN is selected.
-> With this patch FB_FOREIGN_ENDIAN converted to menuconfig with the
-> choice inside: which type of foreign endianness we want to compile-in.
-> 
-
-The notion of `FOREIGN_ENDIAN' is relative, as it depends on the
-architecture you're compiling for.
-
-Suppose you have a PCI graphics card with a frame buffer that's always
-big endian. When compiling for a big endian platform, the driver won't
-depend on FB_FOREIGN_ENDIAN. When compiling for a little endian
-platform, it will.
-
-Shouldn't we add LITTLE_ENDIAN and BIG_ENDIAN Kconfig vars first, just
-like we have 64BIT?
-
-> As a bonus, now fb subsystem will refuse to register framebuffer with
-> unsupported endianness, and will suggest a way to solve the problem.
-
-I'd like to handle this in Kconfig (cfr. above).
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -697,7 +697,7 @@ S:	Supported
+ ATMEL LCDFB DRIVER
+ P:	Nicolas Ferre
+ M:	nicolas.ferre@atmel.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ ATMEL MACB ETHERNET DRIVER
+@@ -1202,7 +1202,7 @@ S:	Maintained
+ CYBLAFB FRAMEBUFFER DRIVER
+ P:	Knut Petersen
+ M:	Knut_Petersen@t-online.de
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ CYCLADES 2X SYNC CARD DRIVER
+@@ -1580,7 +1580,7 @@ S:	Supported
+ FRAMEBUFFER LAYER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ W:	http://linux-fbdev.sourceforge.net/
+ S:	Maintained
+ 
+@@ -1965,7 +1965,7 @@ L:	linux1394-devel@lists.sourceforge.net
+ S:	Maintained
+ 
+ IMS TWINTURBO FRAMEBUFFER DRIVER
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Orphan
+ 
+ INFINIBAND SUBSYSTEM
+@@ -1999,13 +1999,13 @@ S:	Maintained
+ INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
+ P:	Sylvain Meyer
+ M:	sylvain.meyer@worldonline.fr
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ INTEL 810/815 FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ INTEL IA32 MICROCODE UPDATE SUPPORT
+@@ -2601,7 +2601,7 @@ S:	Odd Fixes for 2.4; Maintained for 2.6
+ MATROX FRAMEBUFFER DRIVER
+ P:	Petr Vandrovec
+ M:	vandrove@vc.cvut.cz
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ MAX6650 HARDWARE MONITOR AND FAN CONTROLLER DRIVER
+@@ -2910,7 +2910,7 @@ S:	Maintained
+ NVIDIA (rivafb and nvidiafb) FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ OPENCORES I2C BUS DRIVER
+@@ -3239,13 +3239,13 @@ S:	Maintained
+ RADEON FRAMEBUFFER DISPLAY DRIVER
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ RAGE128 FRAMEBUFFER DISPLAY DRIVER
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ RAYLINK/WEBGEAR 802.11 WIRELESS LAN DRIVER
+@@ -3350,7 +3350,7 @@ S:	Maintained
+ S3 SAVAGE FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ S390
 
 Gr{oetje,eeting}s,
 
@@ -128,8 +127,3 @@ Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
 							    -- Linus Torvalds
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

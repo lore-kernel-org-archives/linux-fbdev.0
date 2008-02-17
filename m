@@ -1,233 +1,135 @@
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/2] fb: add support for foreign endianness
-Date: Fri, 15 Feb 2008 19:45:42 +0300
-Message-ID: <20080215164542.GB16810@localhost.localdomain>
-References: <20080205154432.GA8749@localhost.localdomain> <20080214224942.a0cb6218.akpm@linux-foundation.org>
-Reply-To: avorontsov@ru.mvista.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/2] fb: add support for foreign
+ endianness
+Date: Sun, 17 Feb 2008 10:44:32 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0802171030330.6848@anakin>
+References: <20080205154432.GA8749@localhost.localdomain>
+	<20080214224942.a0cb6218.akpm@linux-foundation.org>
+	<20080215164542.GB16810@localhost.localdomain>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757930AbYBOQp4@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20080214224942.a0cb6218.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JQg4j-0001d6-Sz for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 Feb 2008 01:44:45 -0800
+Received: from edna.telenet-ops.be ([195.130.132.58])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JQg4i-0004Tu-6q
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 Feb 2008 01:44:45 -0800
+In-Reply-To: <20080215164542.GB16810@localhost.localdomain>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: avorontsov@ru.mvista.com, linux-fbdev-devel@lists.sourceforge.net
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On Thu, Feb 14, 2008 at 10:49:42PM -0800, Andrew Morton wrote:
-> On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > This patch adds support for the framebuffers with non-native
-> > endianness. This is done via FBINFO_FOREIGN_ENDIAN flag that will
-> > be used by the drivers. Depending on the host endianness this flag
-> > will be overwritten by FBINFO_BE_MATH internal flag, or cleared.
+On Fri, 15 Feb 2008, Anton Vorontsov wrote:
+> On Thu, Feb 14, 2008 at 10:49:42PM -0800, Andrew Morton wrote:
+> > On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > > This patch adds support for the framebuffers with non-native
+> > > endianness. This is done via FBINFO_FOREIGN_ENDIAN flag that will
+> > > be used by the drivers. Depending on the host endianness this flag
+> > > will be overwritten by FBINFO_BE_MATH internal flag, or cleared.
+> > > 
+> > > Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
 > > 
-> > Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
+> > That's a pretty large patch to fbdev core,
 > 
-> That's a pretty large patch to fbdev core,
-
-Yes, but changes are mostly trivial. No insurance of typos and thinkos
-though. OTOH, it survived my tests.
-
-> and Tony appears to have gone
-> offline again and you didn't cc the fbdev mailing list.
-
-FRAMEBUFFER LAYER
-P:      Antonino Daplas
-M:      adaplas@gmail.com
-L:      linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
-
-I'm lazy to subscribe on occasional patches. Yup, this is hardly
-an excuse...
-
-> I fixed the third problem.  Could the other fbdev developers please review
-> and comment on this?
+> Yes, but changes are mostly trivial. No insurance of typos and thinkos
+> though. OTOH, it survived my tests.
 > 
-> Thanks.
+> > and Tony appears to have gone
+> > offline again and you didn't cc the fbdev mailing list.
 > 
+> FRAMEBUFFER LAYER
+> P:      Antonino Daplas
+> M:      adaplas@gmail.com
+> L:      linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
 > 
+> I'm lazy to subscribe on occasional patches. Yup, this is hardly
+> an excuse...
+
+While linux-fbdev is subscribers-only, non-subscribers are not plainly
+rejected, but moderated, so the casual patch/comment/question comes
+through.
+
+I'll cook up a patch for MAINTAINERS to clarify.
+
+> > Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
+> > be permanently enabled?
 > 
-> Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
-> be permanently enabled?
+> It should not. Because with CONFIG_FB_FOREIGN_ENDIAN enabled, drawing
+> might be a little bit slower, because of external checks for endianness
+> (I didn't noticed any slowdown, but I guess it's still measurable if we
+> find some fb benchmark).
 
-It should not. Because with CONFIG_FB_FOREIGN_ENDIAN enabled, drawing
-might be a little bit slower, because of external checks for endianness
-(I didn't noticed any slowdown, but I guess it's still measurable if we
-find some fb benchmark).
+> > I'd like to at least queue a patch in -mm so that CONFIG_FB_FOREIGN_ENDIAN
+> > is forced-on, so the code gets some runtime testing.  Will that break
+> > anything?
+> 
+> Nope, it should not break anything, just possible fbconsole/tux drawing
+> slowdown.
 
-Thinking about it a little bit more, I believe we want to add a choice,
-which exactly foreign endianness we want to compile-in. Then, if we're
-pretty confident that particular BE machine uses only LE framebuffer,
-gcc can optimize away endianness checks.
+Tux drawing speed doesn't really matter, as it's done once only.
+Console text drawing is different.
 
-Patch on top of previous inlined here. With that patch, slowdown is
-possible with CONFIG_FB_BOTH_ENDIAN option only, which is still
-default if FOREIGN_ENDIAN is selected.
+`time cat MAINTAINERS' is a good test. Of course, is most time is spent
+in scrolling, you won't see much difference.
 
-> I'd like to at least queue a patch in -mm so that CONFIG_FB_FOREIGN_ENDIAN
-> is forced-on, so the code gets some runtime testing.  Will that break
-> anything?
+So probably we need a test file that contains lines of text interspersed
+with `HOME' escape sequences, so we don't scroll?
 
-Nope, it should not break anything, just possible fbconsole/tux drawing
-slowdown.
+> Thinking about it a little bit more, I believe we want to add a choice,
+> which exactly foreign endianness we want to compile-in. Then, if we're
+> pretty confident that particular BE machine uses only LE framebuffer,
+> gcc can optimize away endianness checks.
+> 
+> Patch on top of previous inlined here. With that patch, slowdown is
+> possible with CONFIG_FB_BOTH_ENDIAN option only, which is still
+> default if FOREIGN_ENDIAN is selected.
+> With this patch FB_FOREIGN_ENDIAN converted to menuconfig with the
+> choice inside: which type of foreign endianness we want to compile-in.
+> 
 
+The notion of `FOREIGN_ENDIAN' is relative, as it depends on the
+architecture you're compiling for.
 
-Thanks,
+Suppose you have a PCI graphics card with a frame buffer that's always
+big endian. When compiling for a big endian platform, the driver won't
+depend on FB_FOREIGN_ENDIAN. When compiling for a little endian
+platform, it will.
 
-- - - -
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: fb: add support for choice foreign endianness
+Shouldn't we add LITTLE_ENDIAN and BIG_ENDIAN Kconfig vars first, just
+like we have 64BIT?
 
-With this patch FB_FOREIGN_ENDIAN converted to menuconfig with the
-choice inside: which type of foreign endianness we want to compile-in.
+> As a bonus, now fb subsystem will refuse to register framebuffer with
+> unsupported endianness, and will suggest a way to solve the problem.
 
-As a bonus, now fb subsystem will refuse to register framebuffer with
-unsupported endianness, and will suggest a way to solve the problem.
+I'd like to handle this in Kconfig (cfr. above).
 
-[ on top of fb-add-support-for-foreign-endianness.patch ]
+Gr{oetje,eeting}s,
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/video/Kconfig |   27 +++++++++++++++++++++------
- drivers/video/fbmem.c |   38 ++++++++++++++++++++++++++++++--------
- include/linux/fb.h    |   14 +++++++++++---
- 3 files changed, 62 insertions(+), 17 deletions(-)
+						Geert
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 6b3940d..9e0b6ea 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -139,14 +139,29 @@ config FB_SYS_IMAGEBLIT
- 	  blitting. This is used by drivers that don't provide their own
- 	  (accelerated) version and the framebuffer is in system RAM.
- 
--config FB_FOREIGN_ENDIAN
--	bool "Enable support for foreign endianness"
-+menuconfig FB_FOREIGN_ENDIAN
-+	bool "Framebuffer foreign endianness support"
- 	depends on FB
- 	---help---
--	  This option enables support for the framebuffers with non-native
--	  endianness (e.g. Little-Endian framebuffer on a Big-Endian machine).
--	  You probably don't have such hardware, so in most cases it's safe to
--	  say "n" here.
-+	  This menu will let you enable support for the framebuffers with
-+	  non-native endianness (e.g. Little-Endian framebuffer on a
-+	  Big-Endian machine). Most probably you don't have such hardware,
-+	  so it's safe to say "n" here.
-+
-+choice
-+	prompt "Choice endianness support"
-+	depends on FB_FOREIGN_ENDIAN
-+
-+config FB_BOTH_ENDIAN
-+	bool "Support for Big- and Little-Endian framebuffers"
-+
-+config FB_BIG_ENDIAN
-+	bool "Support for Big-Endian framebuffers only"
-+
-+config FB_LITTLE_ENDIAN
-+	bool "Support for Little-Endian framebuffers only"
-+
-+endchoice
- 
- config FB_SYS_FOPS
-        tristate
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index c086004..11d92fd 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1352,6 +1352,32 @@ static const struct file_operations fb_fops = {
- 
- struct class *fb_class;
- EXPORT_SYMBOL(fb_class);
-+
-+static int fb_check_foreignness(struct fb_info *fi)
-+{
-+	const bool foreign_endian = fi->flags & FBINFO_FOREIGN_ENDIAN;
-+
-+	fi->flags &= ~FBINFO_FOREIGN_ENDIAN;
-+
-+#ifdef __BIG_ENDIAN
-+	fi->flags |= foreign_endian ? 0 : FBINFO_BE_MATH;
-+#else
-+	fi->flags |= foreign_endian ? FBINFO_BE_MATH : 0;
-+#endif /* __BIG_ENDIAN */
-+
-+	if (fi->flags & FBINFO_BE_MATH && !fb_be_math(fi)) {
-+		pr_err("%s: enable CONFIG_FB_BIG_ENDIAN to "
-+		       "support this framebuffer\n", fi->fix.id);
-+		return -ENOSYS;
-+	} else if (!(fi->flags & FBINFO_BE_MATH) && fb_be_math(fi)) {
-+		pr_err("%s: enable CONFIG_FB_LITTLE_ENDIAN to "
-+		       "support this framebuffer\n", fi->fix.id);
-+		return -ENOSYS;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  *	register_framebuffer - registers a frame buffer device
-  *	@fb_info: frame buffer info structure
-@@ -1368,10 +1394,13 @@ register_framebuffer(struct fb_info *fb_info)
- 	int i;
- 	struct fb_event event;
- 	struct fb_videomode mode;
--	const bool foreign_endian = fb_info->flags & FBINFO_FOREIGN_ENDIAN;
- 
- 	if (num_registered_fb == FB_MAX)
- 		return -ENXIO;
-+
-+	if (fb_check_foreignness(fb_info))
-+		return -ENOSYS;
-+
- 	num_registered_fb++;
- 	for (i = 0 ; i < FB_MAX; i++)
- 		if (!registered_fb[i])
-@@ -1405,13 +1434,6 @@ register_framebuffer(struct fb_info *fb_info)
- 	if (!fb_info->pixmap.blit_y)
- 		fb_info->pixmap.blit_y = ~(u32)0;
- 
--	fb_info->flags &= ~FBINFO_FOREIGN_ENDIAN;
--#ifdef __BIG_ENDIAN
--	fb_info->flags |= foreign_endian ? 0 : FBINFO_BE_MATH;
--#else
--	fb_info->flags |= foreign_endian ? FBINFO_BE_MATH : 0;
--#endif
--
- 	if (!fb_info->modelist.prev || !fb_info->modelist.next)
- 		INIT_LIST_HEAD(&fb_info->modelist);
- 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a067ed3..72295b0 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -979,13 +979,21 @@ extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
- 
- static inline bool fb_be_math(struct fb_info *info)
- {
--#if defined(CONFIG_FB_FOREIGN_ENDIAN)
-+#ifdef CONFIG_FB_FOREIGN_ENDIAN
-+#if defined(CONFIG_FB_BOTH_ENDIAN)
- 	return info->flags & FBINFO_BE_MATH;
--#elif defined(__BIG_ENDIAN)
-+#elif defined(CONFIG_FB_BIG_ENDIAN)
-+	return true;
-+#elif defined(CONFIG_FB_LITTLE_ENDIAN)
-+	return false;
-+#endif /* CONFIG_FB_BOTH_ENDIAN */
-+#else
-+#ifdef __BIG_ENDIAN
- 	return true;
- #else
- 	return false;
--#endif
-+#endif /* __BIG_ENDIAN */
-+#endif /* CONFIG_FB_FOREIGN_ENDIAN */
- }
- 
- /* drivers/video/fbsysfs.c */
--- 
-1.5.2.2
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

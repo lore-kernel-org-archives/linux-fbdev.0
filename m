@@ -1,103 +1,148 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 1/2] fb: add support for foreign
- endianness
-Date: Mon, 18 Feb 2008 08:18:47 +0100
-Message-ID: <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-References: <20080205154432.GA8749@localhost.localdomain>
-	<20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+From: akpm@linux-foundation.org
+Subject: + fbdev-use-div_round_up-or-roundup.patch added to -mm tree
+Date: Mon, 18 Feb 2008 02:15:45 -0800
+Message-ID: <200802181016.m1IAGhZE019721@imap1.linux-foundation.org>
+Reply-To: linux-kernel@vger.kernel.org
+Return-path: <mm-commits-owner@vger.kernel.org>
+Sender: mm-commits-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JR0jQ-00041g-Mp for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Feb 2008 23:48:08 -0800
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JR0jP-0002BC-10
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Feb 2008 23:48:08 -0800
-In-Reply-To: <Pine.LNX.4.64.0802171030330.6848@anakin>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, avorontsov@ru.mvista.com
-
-On Sun, 17 Feb 2008 10:44:32 +0100 (CET)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
-> On Fri, 15 Feb 2008, Anton Vorontsov wrote:
-> > On Thu, Feb 14, 2008 at 10:49:42PM -0800, Andrew Morton wrote:
-> > > On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> > > Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
-> > > be permanently enabled?
-> > 
-(...)
-> 
-> The notion of `FOREIGN_ENDIAN' is relative, as it depends on the
-> architecture you're compiling for.
-> 
-> Suppose you have a PCI graphics card with a frame buffer that's always
-> big endian. When compiling for a big endian platform, the driver won't
-> depend on FB_FOREIGN_ENDIAN. When compiling for a little endian
-> platform, it will.
-> 
-> Shouldn't we add LITTLE_ENDIAN and BIG_ENDIAN Kconfig vars first, just
-> like we have 64BIT?
-> 
-
-I disagree here. The FOREIGN_ENDIAN is enough. It is determined only by
-graphics chip endianess and CPU (arch) endianess.
-I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
-Both resolve endianess at driver level. Actually, both handle it by setting special
-bits so the graphics chip itself reorder bytes to transform foreign endianess. 
-I understand that this patch is for chips which cannot reorder bytes by themselves.
-
-So the FOREIGN_ENDIANESS flag should be set by the driver if it is needed
-(if the graphics chip is BE and CPU is LE a simple #ifdef will add the flag).
-
-> 
-> I'd like to handle this in Kconfig (cfr. above).
-> 
-
-Again, it is possible. It is enough to put one rule which enables
-the FOREIGN_ENDIAN if the architecture endianess is "foreign"
-for the driver. The advantage here is that it  can be set only
-for drivers which need it (as some driver can handle it without
-this code). It should be hidden option set only internally if needed
-(no user selectable).
-
-I tested this patch on the s3c2410fb with disabled byte order
-corrections by the graphics chip itself. It worked for 8-bit depth
-but not for 16-bit depth (pixel position seemed ok but wrong tux'
-colors). I will investigate. The s3c2410fb is BE and the kernel
-was arm LE.
-
-I would like to extend this patch to fb depths below 8-bit. The
-s3c2410fb cannot handle this correctly with LE kernel.
-
-Kind regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Masz ostatnia szanse !
-Sprawdz >>> http://link.interia.pl/f1d02  
+To: mm-commits@vger.kernel.org
+Cc: julia@diku.dk, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+The patch titled
+     fbdev: use DIV_ROUND_UP or roundup
+has been added to the -mm tree.  Its filename is
+     fbdev-use-div_round_up-or-roundup.patch
+
+Before you just go and hit "reply", please:
+   a) Consider who else should be cc'ed
+   b) Prefer to cc a suitable mailing list as well
+   c) Ideally: find the original patch on the mailing list and do a
+      reply-to-all to that, adding suitable additional cc's
+
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+out what to do about this
+
+The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+
+------------------------------------------------------
+Subject: fbdev: use DIV_ROUND_UP or roundup
+From: Julia Lawall <julia@diku.dk>
+
+The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
+(d)) but is perhaps more readable.
+
+An extract of the semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@haskernel@
+@@
+
+#include <linux/kernel.h>
+
+@depends on haskernel@
+expression n,d;
+@@
+
+(
+- (n + d - 1) / d
++ DIV_ROUND_UP(n,d)
+|
+- (n + (d - 1)) / d
++ DIV_ROUND_UP(n,d)
+)
+
+@depends on haskernel@
+expression n,d;
+@@
+
+- DIV_ROUND_UP((n),d)
++ DIV_ROUND_UP(n,d)
+
+@depends on haskernel@
+expression n,d;
+@@
+
+- DIV_ROUND_UP(n,(d))
++ DIV_ROUND_UP(n,d)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Cc: <linux-fbdev-devel@lists.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/video/atafb.c         |    2 +-
+ drivers/video/cirrusfb.c      |    2 +-
+ drivers/video/console/fbcon.c |    3 +--
+ drivers/video/gxt4500.c       |    2 +-
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+
+diff -puN drivers/video/atafb.c~fbdev-use-div_round_up-or-roundup drivers/video/atafb.c
+--- a/drivers/video/atafb.c~fbdev-use-div_round_up-or-roundup
++++ a/drivers/video/atafb.c
+@@ -1270,7 +1270,7 @@ again:
+ 
+ 	gstart = (prescale / 2 + plen * left_margin) / prescale;
+ 	/* gend1 is for hde (gend-gstart multiple of align), shifter's xres */
+-	gend1 = gstart + ((xres + align - 1) / align) * align * plen / prescale;
++	gend1 = gstart + roundup(xres, align) * plen / prescale;
+ 	/* gend2 is for hbb, visible xres (rest to gend1 is cut off by hblank) */
+ 	gend2 = gstart + xres * plen / prescale;
+ 	par->HHT = plen * (left_margin + xres + right_margin) /
+diff -puN drivers/video/cirrusfb.c~fbdev-use-div_round_up-or-roundup drivers/video/cirrusfb.c
+--- a/drivers/video/cirrusfb.c~fbdev-use-div_round_up-or-roundup
++++ a/drivers/video/cirrusfb.c
+@@ -3117,7 +3117,7 @@ static void bestclock(long freq, long *b
+ 				}
+ 			}
+ 		}
+-		d = ((143181 * n) + f - 1) / f;
++		d = DIV_ROUND_UP(143181 * n, f);
+ 		if ((d >= 7) && (d <= 63)) {
+ 			if (d > 31)
+ 				d = (d / 2) * 2;
+diff -puN drivers/video/console/fbcon.c~fbdev-use-div_round_up-or-roundup drivers/video/console/fbcon.c
+--- a/drivers/video/console/fbcon.c~fbdev-use-div_round_up-or-roundup
++++ a/drivers/video/console/fbcon.c
+@@ -620,8 +620,7 @@ static void fbcon_prepare_logo(struct vc
+ 	if (fb_get_color_depth(&info->var, &info->fix) == 1)
+ 		erase &= ~0x400;
+ 	logo_height = fb_prepare_logo(info, ops->rotate);
+-	logo_lines = (logo_height + vc->vc_font.height - 1) /
+-		vc->vc_font.height;
++	logo_lines = DIV_ROUND_UP(logo_height, vc->vc_font.height);
+ 	q = (unsigned short *) (vc->vc_origin +
+ 				vc->vc_size_row * rows);
+ 	step = logo_lines * cols;
+diff -puN drivers/video/gxt4500.c~fbdev-use-div_round_up-or-roundup drivers/video/gxt4500.c
+--- a/drivers/video/gxt4500.c~fbdev-use-div_round_up-or-roundup
++++ a/drivers/video/gxt4500.c
+@@ -238,7 +238,7 @@ static int calc_pll(int period_ps, struc
+ 	for (pdiv1 = 1; pdiv1 <= 8; ++pdiv1) {
+ 		for (pdiv2 = 1; pdiv2 <= pdiv1; ++pdiv2) {
+ 			postdiv = pdiv1 * pdiv2;
+-			pll_period = (period_ps + postdiv - 1) / postdiv;
++			pll_period = DIV_ROUND_UP(period_ps, postdiv);
+ 			/* keep pll in range 350..600 MHz */
+ 			if (pll_period < 1666 || pll_period > 2857)
+ 				continue;
+_
+
+Patches currently in -mm which might be from julia@diku.dk are
+
+git-hid.patch
+git-net.patch
+drivers-net-mv643xx_ethc-use-field_sizeof.patch
+s390-use-div_round_up.patch
+drivers-block-viodasdc-use-field_sizeof.patch
+usb-use-div_round_up.patch
+fbdev-use-div_round_up-or-roundup.patch

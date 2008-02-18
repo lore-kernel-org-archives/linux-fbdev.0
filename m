@@ -1,11 +1,12 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] MAINTAINERS: linux-fbdev is
-	moderated
-Date: Sun, 17 Feb 2008 21:30:51 +0900
-Message-ID: <20080217123050.GC7780@linux-sh.org>
-References: <Pine.LNX.4.64.0802171050220.6848@anakin>
-	<20080217095443.GA9842@uranus.ravnborg.org>
-	<Pine.LNX.4.64.0802171135300.6848@anakin>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH 1/2] fb: add support for foreign
+ endianness
+Date: Mon, 18 Feb 2008 08:18:47 +0100
+Message-ID: <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
+References: <20080205154432.GA8749@localhost.localdomain>
+	<20080214224942.a0cb6218.akpm@linux-foundation.org>
+	<20080215164542.GB16810@localhost.localdomain>
+	<Pine.LNX.4.64.0802171030330.6848@anakin>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,15 +15,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JQigw-00054c-BM for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Feb 2008 04:32:22 -0800
-Received: from pip23.gyao.ne.jp ([125.63.38.249] helo=mx.gate01.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JQigs-0000vS-Kt
+	id 1JR0jQ-00041g-Mp for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 Feb 2008 23:48:08 -0800
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JR0jP-0002BC-10
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Feb 2008 04:32:20 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802171135300.6848@anakin>
+	Sun, 17 Feb 2008 23:48:08 -0800
+In-Reply-To: <Pine.LNX.4.64.0802171030330.6848@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,33 +32,70 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, avorontsov@ru.mvista.com
 
-On Sun, Feb 17, 2008 at 11:36:57AM +0100, Geert Uytterhoeven wrote:
-> On Sun, 17 Feb 2008, Sam Ravnborg wrote:
-> > On Sun, Feb 17, 2008 at 10:50:52AM +0100, Geert Uytterhoeven wrote:
-> > > While linux-fbdev is subscribers-only, non-subscribers are not plainly
-> > > rejected, but moderated, so the casual patch/comment/question comes through.
+On Sun, 17 Feb 2008 10:44:32 +0100 (CET)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+
+> On Fri, 15 Feb 2008, Anton Vorontsov wrote:
+> > On Thu, Feb 14, 2008 at 10:49:42PM -0800, Andrew Morton wrote:
+> > > On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+
+> > > Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
+> > > be permanently enabled?
 > > 
-> > Have you considered moving this list to vger.kernel.org?
-> > Almost no spam so the moderation is not needed.
+(...)
 > 
-> Sounds like a good idea to me...
+> The notion of `FOREIGN_ENDIAN' is relative, as it depends on the
+> architecture you're compiling for.
 > 
-> Anyone who disagrees?
+> Suppose you have a PCI graphics card with a frame buffer that's always
+> big endian. When compiling for a big endian platform, the driver won't
+> depend on FB_FOREIGN_ENDIAN. When compiling for a little endian
+> platform, it will.
 > 
-> BTW, is there an easy way to tell people the address has changed? I.e.
-> unsubscribing everybody from the sf.net list and letting the sf.net
-> list send customized messages back to posters?
+> Shouldn't we add LITTLE_ENDIAN and BIG_ENDIAN Kconfig vars first, just
+> like we have 64BIT?
 > 
-That's what I did when moving from sf to vger. Any new posts to the old
-list get an auto-reply with notification that the list has moved and
-instructions on how to subscribe to the new list.
 
-SF policy doesn't seem to allow you to remove the old list entirely, and
-there unfortunately doesn't seem to be a way to disable subscriptions
-either.
+I disagree here. The FOREIGN_ENDIAN is enough. It is determined only by
+graphics chip endianess and CPU (arch) endianess.
+I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
+Both resolve endianess at driver level. Actually, both handle it by setting special
+bits so the graphics chip itself reorder bytes to transform foreign endianess. 
+I understand that this patch is for chips which cannot reorder bytes by themselves.
+
+So the FOREIGN_ENDIANESS flag should be set by the driver if it is needed
+(if the graphics chip is BE and CPU is LE a simple #ifdef will add the flag).
+
+> 
+> I'd like to handle this in Kconfig (cfr. above).
+> 
+
+Again, it is possible. It is enough to put one rule which enables
+the FOREIGN_ENDIAN if the architecture endianess is "foreign"
+for the driver. The advantage here is that it  can be set only
+for drivers which need it (as some driver can handle it without
+this code). It should be hidden option set only internally if needed
+(no user selectable).
+
+I tested this patch on the s3c2410fb with disabled byte order
+corrections by the graphics chip itself. It worked for 8-bit depth
+but not for 16-bit depth (pixel position seemed ok but wrong tux'
+colors). I will investigate. The s3c2410fb is BE and the kernel
+was arm LE.
+
+I would like to extend this patch to fb depths below 8-bit. The
+s3c2410fb cannot handle this correctly with LE kernel.
+
+Kind regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Masz ostatnia szanse !
+Sprawdz >>> http://link.interia.pl/f1d02  
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

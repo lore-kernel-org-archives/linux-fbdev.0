@@ -1,16 +1,8 @@
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH 1/2] fb: add support for foreign
-	endianness
-Date: Mon, 18 Feb 2008 20:37:45 +0300
-Message-ID: <20080218173745.GA25628@localhost.localdomain>
-References: <20080205154432.GA8749@localhost.localdomain>
-	<20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-	<19805.1203355811@turing-police.cc.vt.edu>
-Reply-To: avorontsov@ru.mvista.com,
-	linux-fbdev-devel@lists.sourceforge.net
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] s3fb: add option mode_option
+Date: Mon, 18 Feb 2008 22:44:52 +0100
+Message-ID: <20080218224452.d06c2bf8.krzysztof.h1@poczta.fm>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,14 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JR9w5-0007b5-OQ for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Feb 2008 09:37:50 -0800
-Received: from [85.21.88.6] (helo=buildserver.ru.mvista.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JR9w4-0004kw-B8
+	id 1JRE0Q-0000WH-I4 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 18 Feb 2008 13:58:34 -0800
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JRE0O-00057i-4B
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Feb 2008 09:37:49 -0800
-Content-Disposition: inline
-In-Reply-To: <19805.1203355811@turing-police.cc.vt.edu>
+	Mon, 18 Feb 2008 13:58:34 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,25 +26,77 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: adaplas@gmail.com
 
-On Mon, Feb 18, 2008 at 12:30:11PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
-> > I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
-> > Both resolve endianess at driver level. Actually, both handle it by setting special
-> > bits so the graphics chip itself reorder bytes to transform foreign endianess. 
-> > I understand that this patch is for chips which cannot reorder bytes by themselves.
-> 
-> Does anybody know of such a chip that's actually available in the wild?
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-LE Fujitsu mb86277 (MINT) on the BE MPC8360E.
+This patch adds the option "mode_option".
+It also moves mtrr variable to devinitdata section.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+
+This is one step toward changing all fb drivers to have common "mode_option" parameter.
+
+This patch was created against 2.6.25-rc2-mm1 kernel.
+
+diff -urp linux-mm-ref/drivers/video/s3fb.c linux-mm/drivers/video/s3fb.c
+--- linux-mm-ref/drivers/video/s3fb.c	2008-01-24 23:58:37.000000000 +0100
++++ linux-mm/drivers/video/s3fb.c	2008-02-18 22:21:42.101155675 +0100
+@@ -132,10 +132,10 @@ static const struct svga_timing_regs s3_
+ /* Module parameters */
+ 
+ 
+-static char *mode = "640x480-8@60";
++static char *mode_option __devinitdata = "640x480-8@60";
+ 
+ #ifdef CONFIG_MTRR
+-static int mtrr = 1;
++static int mtrr __devinitdata = 1;
+ #endif
+ 
+ static int fasttext = 1;
+@@ -145,8 +145,10 @@ MODULE_AUTHOR("(c) 2006-2007 Ondrej Zaji
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("fbdev driver for S3 Trio/Virge");
+ 
+-module_param(mode, charp, 0444);
+-MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc)");
++module_param(mode_option, charp, 0444);
++MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
++module_param_named(mode, mode_option, charp, 0444);
++MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
+ 
+ #ifdef CONFIG_MTRR
+ module_param(mtrr, int, 0444);
+@@ -960,10 +962,10 @@ static int __devinit s3_pci_probe(struct
+ 	info->pseudo_palette = (void*) (par->pseudo_palette);
+ 
+ 	/* Prepare startup mode */
+-	rc = fb_find_mode(&(info->var), info, mode, NULL, 0, NULL, 8);
++	rc = fb_find_mode(&(info->var), info, mode_option, NULL, 0, NULL, 8);
+ 	if (! ((rc == 1) || (rc == 2))) {
+ 		rc = -EINVAL;
+-		dev_err(&(dev->dev), "mode %s not found\n", mode);
++		dev_err(&(dev->dev), "mode %s not found\n", mode_option);
+ 		goto err_find_mode;
+ 	}
+ 
+@@ -1168,7 +1170,7 @@ static int  __init s3fb_setup(char *opti
+ 		else if (!strncmp(opt, "fasttext:", 9))
+ 			fasttext = simple_strtoul(opt + 9, NULL, 0);
+ 		else
+-			mode = opt;
++			mode_option = opt;
+ 	}
+ 
+ 	return 0;
+
+----------------------------------------------------------------------
+Masz ostatnia szanse !
+Sprawdz >>> http://link.interia.pl/f1d02  
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

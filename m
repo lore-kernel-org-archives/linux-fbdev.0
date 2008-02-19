@@ -1,68 +1,71 @@
-From: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign endianness
-Date: Tue, 19 Feb 2008 13:22:02 +0100
-Message-ID: <47BAC9EA.1070305@anagramm.de>
-References: <20080205154432.GA8749@localhost.localdomain>	<20080214224942.a0cb6218.akpm@linux-foundation.org>	<20080215164542.GB16810@localhost.localdomain>	<Pine.LNX.4.64.0802171030330.6848@anakin>	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>	<19805.1203355811@turing-police.cc.vt.edu>	<47BA162C.5000807@anagramm.de>	<1203381353.6740.59.camel@pasglop>	<47BABD3A.7010102@anagramm.de> <20080219040530.7b1d115d.akpm@linux-foundation.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: pm2fb: corrects error values returned from
+	probe function
+Date: Tue, 19 Feb 2008 21:19:27 +0100
+Message-ID: <20080219211927.4549624c.krzysztof.h1@poczta.fm>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755235AbYBSMWX@vger.kernel.org>
-In-Reply-To: <20080219040530.7b1d115d.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>, Anton Vorontsov <avorontsov@ru.mvista.com>, valdis.kletnieks@vt.edu
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JRYr6-00029A-UM for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Feb 2008 12:14:20 -0800
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JRYr3-0004pn-Bo
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Feb 2008 12:14:20 -0800
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: adaplas@gmail.com
 
-Andrew Morton schrieb:
-> On Tue, 19 Feb 2008 12:27:54 +0100 Clemens Koller <clemens.koller@anagramm.de> wrote:
->> Benjamin Herrenschmidt schrieb:
->>> On Tue, 2008-02-19 at 00:35 +0100, Clemens Koller wrote:
->>>> Valdis.Kletnieks@vt.edu schrieb:
->>>>> On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
->>>>>> I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
->>>>>> Both resolve endianess at driver level. Actually, both handle it by setting special
->>>>>> bits so the graphics chip itself reorder bytes to transform foreign endianess. 
->>>>>> I understand that this patch is for chips which cannot reorder bytes by themselves.
->>>>> Does anybody know of such a chip that's actually available in the wild?  Or are
->>>>> we writing drivers for speculative possible chips?
->>>>>
->>>> I had troubles with the Silicon Motion SM501/SM502 endianess on PowerPC PCI vs. LocalBus.
->>>> The chip also has a register to swap endianess, but that seems to only affect some
->>>> LocalBus modes.
->>>> The current fb and X drivers are working, but when it comes to font
->>>> aliasing and hw-acceleration, the problems start to rise again...
->>> Most "sane" gfx chips nowadays provide configurable surfaces that allow
->>> to perform the swap when writing/reading from regions of the
->>> framebuffer, with the ability to set a different swapper setting (based
->>> on bit depth) per region.
->> Most! But not the SM50x. I still hope I would be wrong here. :-(
->>
->>> Then there is also the risk that your PCI<->Localbus has been wired
->>> improperly :-)
->> That's not an issue in my case. The SM50x can be connected to
->> either an PCI or some Local/CPU-whateverbus IF.
->> I.e. on the MPC85xx PowerPC, PCI and LocalBus are separate bussses.
->> If the sm501 is attached to the MPC85xx' PCI like any other video card,
->> the PCI config-space is can be accessed as usual, whereas the framebuffer
->> memory area is byte-swapped compared to other common video cards.
->>
->> So, to get back on topic:
->> I would welcome endianess swapping in SW. Some architectures (PowerPC)
->> should also be able to do swapped-endian mmapping. I just haven't
->> had time for a closer look but it looks also interesting way to do it
->> that way.
-> 
-> Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
-> Could whoever did that please thwap himself?
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Propably my bad, being subscribed to several CCed lists...
+This patch fixes error values returned in some code branches
+in the pm2fb_probe() function.
 
-> Anyway, my head is now officially spinning.  Did anyone actually have a
-> reason why we shouldn't proceed with Anton's patch?
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Since it seem that there are some odd chips out in the wild, I guess
-Valdis (also readded to CC:) has no more objections to give it a try. :-)
+---
 
-Regards,
+diff -urp linux-mm-ref/drivers/video/pm2fb.c linux-mm/drivers/video/pm2fb.c
+--- linux-mm-ref/drivers/video/pm2fb.c	2008-02-18 21:12:29.000000000 +0100
++++ linux-mm/drivers/video/pm2fb.c	2008-02-19 21:16:18.145699735 +0100
+@@ -1687,10 +1687,12 @@ static int __devinit pm2fb_probe(struct 
+ 	if (!err || err == 4)
+ 		info->var = pm2fb_var;
+ 
+-	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
++	retval = fb_alloc_cmap(&info->cmap, 256, 0);
++	if (retval < 0)
+ 		goto err_exit_both;
+ 
+-	if (register_framebuffer(info) < 0)
++	retval = register_framebuffer(info);
++	if (retval < 0)
+ 		goto err_exit_all;
+ 
+ 	printk(KERN_INFO "fb%d: %s frame buffer device, memory = %dK.\n",
 
-Clemens
+
+---------------------------------------------------------------------- 	
+Sprawdz gdzie lezy snieg, czy dzialaja armatki
+i jak przygotowane sa stoki >>> http://link.interia.pl/f1cfc
+
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

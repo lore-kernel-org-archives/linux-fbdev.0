@@ -1,51 +1,58 @@
-From: Alain Kalker <miki@dds.nl>
-Subject: Re: [PATCH] pm2fb: change option mode to
-	mode_option
-Date: Tue, 19 Feb 2008 05:41:24 +0100
-Message-ID: <1203396085.9828.10.camel@localhost>
-References: <20080215141527.C0C0A860C75@f23.poczta.interia.pl>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for	foreign	endianness
+Date: Tue, 19 Feb 2008 12:27:54 +0100
+Message-ID: <47BABD3A.7010102@anagramm.de>
+References: <20080205154432.GA8749@localhost.localdomain>	 <20080214224942.a0cb6218.akpm@linux-foundation.org>	 <20080215164542.GB16810@localhost.localdomain>	 <Pine.LNX.4.64.0802171030330.6848@anakin>	 <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>	 <19805.1203355811@turing-police.cc.vt.edu>  <47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JRKIT-0004xY-Fe for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Feb 2008 20:41:37 -0800
-Received: from spalding.dds.nl ([85.17.178.135])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JRKIS-0003i1-3H
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Feb 2008 20:41:37 -0800
-In-Reply-To: <20080215141527.C0C0A860C75@f23.poczta.interia.pl>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="windows-1252"
-To: krzysztof.h1@poczta.fm
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757002AbYBSL2W@vger.kernel.org>
+In-Reply-To: <1203381353.6740.59.camel@pasglop>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: benh@kernel.crashing.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>
 
-T24gRnJpLCAyMDA4LTAyLTE1IGF0IDE1OjE1ICswMTAwLCBrcnp5c3p0b2YuaDFAcG9jenRhLmZt
-IHdyb3RlOgo+IEFuZHJldyBNb3J0b24gbmFwaXNhxYIoYSk6Cj4gPiBPbiBUaHUsIDE0IEZlYiAy
-MDA4IDIyOjUyOjEzICswMTAwCj4gPiBLcnp5c3p0b2YgSGVsdCA+a3J6eXN6dG9mLmgxQHBvY3p0
-YS5mbT4gd3JvdGU6Cj4gPiAKPiA+ID4gRnJvbTogS3J6eXN6dG9mIEhlbHQgPmtyenlzenRvZi5o
-MUB3cC5wbD4KPiA+ID4gCj4gPiA+IFRoaXMgcGF0Y2ggY2hhbmdlcyB0aGUgb3B0aW9uICJtb2Rl
-X29wdGlvbiIgaW50byAibW9kZSIuCgpUaGFua3MgdmVyeSBtdWNoIGZvciB5b3VyIHdvcmsgS3J6
-eXN6dG9mLiBJIGhvcGUgdGhhdCBpbiB0aW1lIG1vc3Qgb2YKdGhlIGRyaXZlcnMgY2FuIGJlIG1h
-ZGUgdG8gdXNlIHRoZSBNb2RlREIgZnJhbWV3b3JrLCBzbyBoYW5kbGluZyBvZgptb2RlcyBjYW4g
-YmUgZG9uZSBpbiBvbmUgcGxhY2UuIElmIEkgY2FuIGJlIG9mIGFueSBoZWxwLCBwbGVhc2UgbGV0
-IG1lCmtub3cuIAoKUmVnYXJkcywKQWxhaW4KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5uZXQg
-ZW1haWwgaXMgc3BvbnNvcmVkIGJ5OiBNaWNyb3NvZnQKRGVmeSBhbGwgY2hhbGxlbmdlcy4gTWlj
-cm9zb2Z0KFIpIFZpc3VhbCBTdHVkaW8gMjAwOC4KaHR0cDovL2Nsay5hdGRtdC5jb20vTVJUL2dv
-L3ZzZTAxMjAwMDAwNzBtcnQvZGlyZWN0LzAxLwpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgt
-ZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9y
-Z2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+Benjamin Herrenschmidt schrieb:
+> On Tue, 2008-02-19 at 00:35 +0100, Clemens Koller wrote:
+>> Valdis.Kletnieks@vt.edu schrieb:
+>>> On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
+>>>> I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
+>>>> Both resolve endianess at driver level. Actually, both handle it by setting special
+>>>> bits so the graphics chip itself reorder bytes to transform foreign endianess. 
+>>>> I understand that this patch is for chips which cannot reorder bytes by themselves.
+>>> Does anybody know of such a chip that's actually available in the wild?  Or are
+>>> we writing drivers for speculative possible chips?
+>>>
+>> I had troubles with the Silicon Motion SM501/SM502 endianess on PowerPC PCI vs. LocalBus.
+>> The chip also has a register to swap endianess, but that seems to only affect some
+>> LocalBus modes.
+>> The current fb and X drivers are working, but when it comes to font
+>> aliasing and hw-acceleration, the problems start to rise again...
+> 
+> Most "sane" gfx chips nowadays provide configurable surfaces that allow
+> to perform the swap when writing/reading from regions of the
+> framebuffer, with the ability to set a different swapper setting (based
+> on bit depth) per region.
+
+Most! But not the SM50x. I still hope I would be wrong here. :-(
+
+> Then there is also the risk that your PCI<->Localbus has been wired
+> improperly :-)
+
+That's not an issue in my case. The SM50x can be connected to
+either an PCI or some Local/CPU-whateverbus IF.
+I.e. on the MPC85xx PowerPC, PCI and LocalBus are separate bussses.
+If the sm501 is attached to the MPC85xx' PCI like any other video card,
+the PCI config-space is can be accessed as usual, whereas the framebuffer
+memory area is byte-swapped compared to other common video cards.
+
+So, to get back on topic:
+I would welcome endianess swapping in SW. Some architectures (PowerPC)
+should also be able to do swapped-endian mmapping. I just haven't
+had time for a closer look but it looks also interesting way to do it
+that way.
+
+Regards,
+
+Clemens

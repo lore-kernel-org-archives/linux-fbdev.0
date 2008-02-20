@@ -1,11 +1,12 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
 Subject: Re: [PATCH 1/1 2.6.24] fbdev: defio and
- Metronomefb v3
-Date: Wed, 20 Feb 2008 05:35:21 -0800
-Message-ID: <20080220053521.2dd66ad6.akpm@linux-foundation.org>
+	Metronomefb v3
+Date: Wed, 20 Feb 2008 08:46:17 -0500
+Message-ID: <45a44e480802200546n3cf7c7a1i9b7c24659ed43b25@mail.gmail.com>
 References: <20080218134125.5159.58386.sendpatchset@nxdomain.guide.opendns.com>
 	<Pine.LNX.4.64.0802181502550.12244@anakin>
 	<45a44e480802200518s21aeb938pd2375de44fc00b31@mail.gmail.com>
+	<20080220053521.2dd66ad6.akpm@linux-foundation.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,14 +15,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JRp81-0003jV-Pk for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Feb 2008 05:36:54 -0800
-Received: from smtp2.linux-foundation.org ([207.189.120.14])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JRp80-0006rJ-AX
+	id 1JRpHD-0004hP-WC for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 Feb 2008 05:46:24 -0800
+Received: from ug-out-1314.google.com ([66.249.92.169])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JRpHA-0003Lo-K9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Feb 2008 05:36:53 -0800
-In-Reply-To: <45a44e480802200518s21aeb938pd2375de44fc00b31@mail.gmail.com>
+	Wed, 20 Feb 2008 05:46:23 -0800
+Received: by ug-out-1314.google.com with SMTP id m2so721679uge.28
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 20 Feb 2008 05:46:19 -0800 (PST)
+In-Reply-To: <20080220053521.2dd66ad6.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,42 +36,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, sfr@canb.auug.org.au, Geert Uytterhoeven <geert@linux-m68k.org>, adaplas@pol.net
 
-On Wed, 20 Feb 2008 08:18:35 -0500 "Jaya Kumar" <jayakumar.lkml@gmail.com> wrote:
+On Wed, Feb 20, 2008 at 8:35 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>
+>  It means that at some stage I'd like linux-next to incorporate some patches
+>  from the -mm queue, that's all.
+>
+>  I'll continue to collect fbdev patches.
+>
 
-> On Mon, Feb 18, 2008 at 9:03 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > On Mon, 18 Feb 2008, Jaya Kumar wrote:
-> >  > This patch implements support for the E-Ink Metronome controller. It
-> >  > provides an mmapable interface to the controller using defio support.
-> >  >
-> >  > I welcome your feedback. Please let me know if it looks okay to apply.
-> >
-> >  To me it looks OK.
-> >
-> 
-> Thanks Geert.
-> 
-> I have a follow-up question on the next steps of getting this merged.
-> I saw Stephen Rothwell's announcement of a new tree called linux-next.
-> [ http://lwn.net/Articles/268881/ ] He also said:
-> "
->   otoh, a lot of the -mm queue is _not_ cross-subsystem: fbdev, uml, various
->   new drivers and features, etc.  So I'll need to split -mm into multiple
->   queues and feed many of them into linux-next.
-> "
-> I have not understood this. Does this mean that this type of patch,
-> ie: a new fbdev driver, should aim towards merging into akpm's -mm
-> tree? or that there needs to be a fbdev subsystem git tree that
-> Stephen can pull from into linux-next?
-> 
+Ok. Cool. Does this metronomefb patch look viable for merging into -mm?
 
-It means that at some stage I'd like linux-next to incorporate some patches
-from the -mm queue, that's all.
-
-I'll continue to collect fbdev patches.
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

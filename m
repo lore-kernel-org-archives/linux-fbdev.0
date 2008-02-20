@@ -1,31 +1,26 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH 1/1 2.6.24] fbdev: defio and
-	Metronomefb v3
-Date: Wed, 20 Feb 2008 08:46:17 -0500
-Message-ID: <45a44e480802200546n3cf7c7a1i9b7c24659ed43b25@mail.gmail.com>
-References: <20080218134125.5159.58386.sendpatchset@nxdomain.guide.opendns.com>
-	<Pine.LNX.4.64.0802181502550.12244@anakin>
-	<45a44e480802200518s21aeb938pd2375de44fc00b31@mail.gmail.com>
-	<20080220053521.2dd66ad6.akpm@linux-foundation.org>
+From: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: [PATCH 1/2] fb: add support for foreign
+	endianness
+Date: Wed, 20 Feb 2008 16:43:42 +0100
+Message-ID: <47BC4AAE.8020908@anagramm.de>
+References: <20080205154432.GA8749@localhost.localdomain>	<20080214224942.a0cb6218.akpm@linux-foundation.org>	<20080215164542.GB16810@localhost.localdomain>	<Pine.LNX.4.64.0802171030330.6848@anakin>	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>	<19805.1203355811@turing-police.cc.vt.edu>	<47BA162C.5000807@anagramm.de>
+	<1203381353.6740.59.camel@pasglop>	<47BABD3A.7010102@anagramm.de>	<20080219040530.7b1d115d.akpm@linux-foundation.org>
+	<18363.31427.989835.105966@cargo.ozlabs.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JRpHD-0004hP-WC for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Feb 2008 05:46:24 -0800
-Received: from ug-out-1314.google.com ([66.249.92.169])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JRpHA-0003Lo-K9
+	id 1JRr7V-0000RP-1a for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 Feb 2008 07:44:39 -0800
+Received: from moutng.kundenserver.de ([212.227.126.186])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JRr7S-0004IQ-Vl
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Feb 2008 05:46:23 -0800
-Received: by ug-out-1314.google.com with SMTP id m2so721679uge.28
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 20 Feb 2008 05:46:19 -0800 (PST)
-In-Reply-To: <20080220053521.2dd66ad6.akpm@linux-foundation.org>
-Content-Disposition: inline
+	Wed, 20 Feb 2008 07:44:29 -0800
+In-Reply-To: <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,22 +31,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, sfr@canb.auug.org.au, Geert Uytterhoeven <geert@linux-m68k.org>, adaplas@pol.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@gmail.com, benh@kernel.crashing.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, Anton Vorontsov <avorontsov@ru.mvista.com>
 
-On Wed, Feb 20, 2008 at 8:35 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->
->  It means that at some stage I'd like linux-next to incorporate some patches
->  from the -mm queue, that's all.
->
->  I'll continue to collect fbdev patches.
->
+Paul Mackerras schrieb:
+> Andrew Morton writes:
+> 
+>> Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
+>> Could whoever did that please thwap himself?
+>>
+>> Anyway, my head is now officially spinning.  Did anyone actually have a
+>> reason why we shouldn't proceed with Anton's patch?
+> 
+> I was wondering if it would be sufficient to provide alternative
+> versions of fb_readl, fb_writel etc. that do byte-swapping.  That
+> would mean that all framebuffers would have to have the same
+> endianness, but that would suffice for embedded systems such as
+> Anton's and would end up a lot simpler IMHO.
 
-Ok. Cool. Does this metronomefb patch look viable for merging into -mm?
+Yes. At least the affected PowerPC platforms can do byte-swapping on
+the fly, so this should be sufficient and without performance
+penalty, AFAICS.
 
-Thanks,
-jaya
+Regards,
+
+Clemens
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

@@ -1,43 +1,59 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign endianness
-Date: Thu, 21 Feb 2008 15:59:44 +1100
-Message-ID: <18365.1344.466799.556560@cargo.ozlabs.ibm.com>
-References: <20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-	<19805.1203355811@turing-police.cc.vt.edu>
-	<47BA162C.5000807@anagramm.de>
-	<1203381353.6740.59.camel@pasglop>
-	<47BABD3A.7010102@anagramm.de>
-	<20080219040530.7b1d115d.akpm@linux-foundation.org>
-	<18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-	<20080220121818.GA20836@localhost.localdomain>
+From: Markus Armbruster <armbru@redhat.com>
+Subject: [PATCH 0/2] xen pvfb: Para-virtual framebuffer, keyboard and pointer
+Date: Thu, 21 Feb 2008 10:42:03 +0100
+Message-ID: <871w76ejdg.fsf@pike.pond.sub.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1765303AbYBUFAA@vger.kernel.org>
-In-Reply-To: <20080220121818.GA20836@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: avorontsov@ru.mvista.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Clemens Koller <clemens.koller@anagramm.de>, benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: virtualization@lists.osdl.org, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com, akpm@linux-foundation.org, jayakumar.lkml@gmail.com
 
-Anton Vorontsov writes:
+This is a pair of Xen para-virtual frontend device drivers:
+drivers/video/xen-fbfront.c provides a framebuffer, and
+drivers/input/xen-kbdfront provides keyboard and mouse.
 
-> > I was wondering if it would be sufficient to provide alternative
-> > versions of fb_readl, fb_writel etc. that do byte-swapping.
-> 
-> This is of course viable alternative. And I was considering this, but
-> later I abandoned the idea: that way we'll end up doing math in the
-> native endianness and then converting it to the foreign. This feels
-> ugly in contrast when we can do the right math in the first place, per
-> framebuffer.
+The backends run in dom0 user space.
 
-OK.  I guess I'm convinced then.  However, your patch description
-needs to be a lot better.  It should describe things like why you
-want to make the change and why the change you are proposing is a good
-idea and is better than other alternatives.  If you'd done that
-originally we might not have needed to have all this discussion. :)
+I started with the Xen version at
+http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/ca05cf1a9bdc
 
-Paul.
+Differences to that Xen version, for those who care:
+
+* Rewritten on top of fb deferred I/O
+
+* IRQ handler names visible in /proc and /sys match the driver names.
+
+* Use framebuffer helper functions appropriate for framebuffer in
+  system RAM.
+
+* write() refreshes the framebuffer properly.
+
+* off-by-one height of some screen refreshs fixed.
+
+* Crash when register_framebuffer() fails fixed.
+
+* Test for empty ring in input_handler() fixed.
+
+* Deadlock in xen-kbdfront resume fixed.
+
+* General clean up.
+
+I have a step-by-step patch series from that Xen version to my
+version, if anybody is interested.  Might be useful for reviewers
+familiar with the Xen version.
+
+The patch consists of two parts:
+
+1. fbdev: Make deferred I/O work as advertized
+
+   I need fb deferred I/O, but is utterly broken.  A fix has been
+   floating around on linux-fbdev-devel as part of a larger patch,
+   which as far as I know has not been merged anywhere, yet.  This is
+   just the fix.
+
+2. xen pvfb: Para-virtual framebuffer, keyboard and pointer driver
+
+   The actual drivers.

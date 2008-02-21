@@ -1,43 +1,31 @@
-From: Markus Armbruster <armbru@redhat.com>
-Subject: Re: [PATCH 1/2] fbdev: Make deferred I/O work as advertized
-Date: Thu, 21 Feb 2008 18:31:40 +0100
-Message-ID: <878x1ecj2b.fsf@pike.pond.sub.org>
-References: <871w76ejdg.fsf@pike.pond.sub.org>
-	<87ve4id4rb.fsf@pike.pond.sub.org>
-	<45a44e480802210830o1041e612sa532acde52e42748@mail.gmail.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 0/2] xen pvfb: Para-virtual framebuffer,	keyboard and
+ pointer
+Date: Thu, 21 Feb 2008 11:45:03 -0800
+Message-ID: <47BDD4BF.3000808@goop.org>
+References: <871w76ejdg.fsf@pike.pond.sub.org> <87hcg2cyti.fsf@pike.pond.sub.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <45a44e480802210830o1041e612sa532acde52e42748@mail.gmail.com> (Jaya Kumar's message of "Fri\, 22 Feb 2008 00\:30\:58 +0800")
+In-Reply-To: <87hcg2cyti.fsf@pike.pond.sub.org>
 Sender: linux-input-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com, akpm@linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Markus Armbruster <armbru@redhat.com>
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com, virtualization@lists.osdl.org, linux-input@vger.kernel.org, adaplas@pol.net, akpm@linux-foundation.org, jayakumar.lkml@gmail.com
 
-"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
+Markus Armbruster wrote:
+> Forgot to mention: This patch depends on
+>
+>     Subject: [PATCH] xen: Make xen-blkfront write its protocol ABI to xenstore
+>     From: Markus Armbruster <>
+>     Date: Thu, 06 Dec 2007 14:45:53 +0100
+>
+> http://lkml.org/lkml/2007/12/6/132
+>
+> Sorry!
 
-> On Thu, Feb 21, 2008 at 5:43 PM, Markus Armbruster <armbru@redhat.com> wrote:
->>  Fix extracted from this linux-fbdev-devel message:
->
-> Hi Markus,
->
-> Yes, this was discussed back in November on linux-mm and hence my
-> patch. I didn't push for it to be merged by itself because I don't
-> think it makes sense to merge it separately from the full metronomefb
-> patch. As far as I can tell, only hecubafb and metronomefb seem to be
-> the consumers.
->
-> Out of curiosity, are you using defio or planning to use it? I would
-> love to hear back from people who are using it.
->
-> Thanks,
-> jaya
+Sorry, I haven't pushed this upstream yet, since there didn't seem to be 
+any particular urgency.  What's the dependency?
 
-Converting to fb_defio made xen-fbfront quite a bit simpler and much
-more maintainable.  Excellent match.
-
-It took me a bit of time to find your fix, mostly because I assumed my
-own code was broken, not fb_defio.  It's best not to make assumptions
-about who uses your code; if it's any good, chances are somebody will
-find a use you never imagined.
+    J

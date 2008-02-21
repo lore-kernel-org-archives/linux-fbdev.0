@@ -1,52 +1,43 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH 2/2] xen pvfb: Para-virtual
-	framebuffer, keyboard and pointer driver
-Date: Fri, 22 Feb 2008 00:37:19 +0800
-Message-ID: <45a44e480802210837o6caa9a9k8b26825b31cbf54d@mail.gmail.com>
+From: Markus Armbruster <armbru@redhat.com>
+Subject: Re: [PATCH 1/2] fbdev: Make deferred I/O work as advertized
+Date: Thu, 21 Feb 2008 18:31:40 +0100
+Message-ID: <878x1ecj2b.fsf@pike.pond.sub.org>
 References: <871w76ejdg.fsf@pike.pond.sub.org>
-	<87skzmd4qc.fsf@pike.pond.sub.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+	<87ve4id4rb.fsf@pike.pond.sub.org>
+	<45a44e480802210830o1041e612sa532acde52e42748@mail.gmail.com>
 Mime-Version: 1.0
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <45a44e480802210830o1041e612sa532acde52e42748@mail.gmail.com> (Jaya Kumar's message of "Fri\, 22 Feb 2008 00\:30\:58 +0800")
+Sender: linux-input-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JSEQH-00038n-Hs for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Feb 2008 08:37:26 -0800
-Received: from wf-out-1314.google.com ([209.85.200.175])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JSEQE-0000Kn-Qo
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 21 Feb 2008 08:37:25 -0800
-Received: by wf-out-1314.google.com with SMTP id 28so50265wff.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 21 Feb 2008 08:37:20 -0800 (PST)
-In-Reply-To: <87skzmd4qc.fsf@pike.pond.sub.org>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Markus Armbruster <armbru@redhat.com>
-Cc: xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, linux-input@vger.kernel.org, adaplas@pol.net, akpm@linux-foundation.org
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com, akpm@linux-foundation.org
 
-On Thu, Feb 21, 2008 at 5:43 PM, Markus Armbruster <armbru@redhat.com> wrote:
->  +config XEN_FBDEV_FRONTEND
->  +       select FB_DEFERRED_IO
+"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
 
-Groovy. :-)
+> On Thu, Feb 21, 2008 at 5:43 PM, Markus Armbruster <armbru@redhat.com> wrote:
+>>  Fix extracted from this linux-fbdev-devel message:
+>
+> Hi Markus,
+>
+> Yes, this was discussed back in November on linux-mm and hence my
+> patch. I didn't push for it to be merged by itself because I don't
+> think it makes sense to merge it separately from the full metronomefb
+> patch. As far as I can tell, only hecubafb and metronomefb seem to be
+> the consumers.
+>
+> Out of curiosity, are you using defio or planning to use it? I would
+> love to hear back from people who are using it.
+>
+> Thanks,
+> jaya
 
-Thanks,
-jaya
+Converting to fb_defio made xen-fbfront quite a bit simpler and much
+more maintainable.  Excellent match.
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+It took me a bit of time to find your fix, mostly because I assumed my
+own code was broken, not fb_defio.  It's best not to make assumptions
+about who uses your code; if it's any good, chances are somebody will
+find a use you never imagined.

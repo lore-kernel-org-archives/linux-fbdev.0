@@ -1,33 +1,141 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 0/2] xen pvfb: Para-virtual framebuffer,	keyboard and
- pointer
-Date: Thu, 21 Feb 2008 14:33:05 -0800
-Message-ID: <47BDFC21.6010604@goop.org>
-References: <871w76ejdg.fsf@pike.pond.sub.org>	<87hcg2cyti.fsf@pike.pond.sub.org> <47BDD4BF.3000808@goop.org> <871w76ca0i.fsf@pike.pond.sub.org>
+From: Markus Armbruster <armbru@redhat.com>
+Subject: Re: [PATCH 2/2] xen pvfb: Para-virtual framebuffer,	keyboard and pointer driver
+Date: Fri, 22 Feb 2008 07:31:43 +0100
+Message-ID: <8763whbiy8.fsf@pike.pond.sub.org>
+References: <871w76ejdg.fsf@pike.pond.sub.org>
+	<87skzmd4qc.fsf@pike.pond.sub.org> <47BDDF97.7070001@goop.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1765918AbYBUWge@vger.kernel.org>
-In-Reply-To: <871w76ca0i.fsf@pike.pond.sub.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <47BDDF97.7070001@goop.org> (Jeremy Fitzhardinge's message of "Thu\, 21 Feb 2008 12\:31\:19 -0800")
+Sender: linux-input-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Markus Armbruster <armbru@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com, virtualization@lists.osdl.org, linux-input@vger.kernel.org, adaplas@pol.net, akpm@linux-foundation.org, jayakumar.lkml@gmail.com
 
-Markus Armbruster wrote:
-> Here's the description again:
->
->     Frontends are expected to write their protocol ABI to xenstore.  Since
->     the protocol ABI defaults to the backend's native ABI, things work
->     fine without that as long as the frontend's native ABI is identical to
->     the backend's native ABI.  This is not the case for xen-blkfront
->     running 32-on-64, because its ABI differs between 32 and 64 bit, and
->     thus needs this fix.
->
-> I can break the dependency by putting the same bug that is now in
-> xen-blkfront into xen-fbfront and xen-kbdfront.
->   
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Right, I see.  The dependency is on the protocols.h changes.
+> Markus Armbruster wrote:
+>> This is a pair of Xen para-virtual frontend device drivers:
+>> drivers/video/xen-fbfront.c provides a framebuffer, and
+>> drivers/input/xen-kbdfront provides keyboard and mouse.
+>>   
+>
+> Unless they're actually inter-dependent, could you post this as two
+> separate patches?  I don't know anything about these parts of the
+> kernel, so it would be nice to make it very obvious which changes are
+> fb vs mouse/keyboard.
 
-    J
+I could do that do that, but the intermediate step (one driver, not
+the other) is somewhat problematic: the backend in dom0 needs both
+drivers, and will refuse to complete device initialization unless
+they're both present.
+
+> (I guess input/* vs video/* should make it obvious, but it looks like
+> input has a config dependency on fb, so I'll avoid making too many
+> presumptions...)
+
+Framebuffer: fbif.h xen-fbfront.c
+Keyboard/mouse: kbdif.h xen-kbdfront.h
+
+I added the config dependency because having one without the other
+doesn't make sense, as explained above.
+
+Still want it split into two separate patches?
+
+> (Couple of comments below)
+>
+>    J
+>
+>> The backends run in dom0 user space.
+>>
+>> Signed-off-by: Markus Armbruster <armbru@redhat.com>
+>>
+>> ---
+[...]
+>> diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+>> new file mode 100644
+>> index 0000000..84f65cf
+>> --- /dev/null
+>> +++ b/drivers/input/xen-kbdfront.c
+>> @@ -0,0 +1,337 @@
+[...]
+>> +static int __devinit xenkbd_probe(struct xenbus_device *dev,
+>> +				  const struct xenbus_device_id *id)
+>> +{
+[...]
+>> +	if (ret < 0)
+>> +		goto error;
+>> +
+>> +	return 0;
+>> +
+>> + error_nomem:
+>> +	ret = -ENOMEM;
+>> +	xenbus_dev_fatal(dev, ret, "allocating device memory");
+>> + error:
+>> +	xenkbd_remove(dev);
+>>   
+>
+> This is happy if dev->info is only partially initialized?
+
+It's designed that way.  dev->info is initialized so that
+xenkbd_remove() does nothing.  Then stuff is stored into dev->info
+only when it's sufficiently initialized for xenkbd_remove() to clean
+it up.
+
+>> +	return ret;
+>> +}
+>> +
+>> +static int xenkbd_resume(struct xenbus_device *dev)
+>> +{
+>> +	struct xenkbd_info *info = dev->dev.driver_data;
+>> +
+>> +	xenkbd_disconnect_backend(info);
+>> +	memset(info->page, 0, PAGE_SIZE);
+>> +	return xenkbd_connect_backend(dev, info);
+>> +}
+>> +
+>> +static int xenkbd_remove(struct xenbus_device *dev)
+>> +{
+>> +	struct xenkbd_info *info = dev->dev.driver_data;
+>> +
+>> +	xenkbd_disconnect_backend(info);
+>> +	input_unregister_device(info->kbd);
+>> +	input_unregister_device(info->ptr);
+>>   
+>
+> Does this free kdb and ptr?
+
+Yes.  xenkbd_probe() initializes info->kbd and info->ptr to null, and
+changes that to the device only after input_register_device()
+succeeds.  If something goes wrong between input_allocate_device() and
+input_register_device(), xenkbd_probe() frees the device with
+input_free_device().  This is how input_register_device() wants to be
+used according to its function comment:
+
+    /**
+     * input_register_device - register device with input core
+     * @dev: device to be registered
+     *
+     * This function registers device with input core. The device must be
+     * allocated with input_allocate_device() and all it's capabilities
+     * set up before registering.
+     * If function fails the device must be freed with input_free_device().
+     * Once device has been successfully registered it can be unregistered
+     * with input_unregister_device(); input_free_device() should not be
+     * called in this case.
+     */
+
+There's another bug here: must not call input_unregister_device() when
+the device is still null.  Man, I remember checking cleanup multiple
+times when this stuff went into Xen (i.e. quite some time ago), and I
+still missed this one.  Going to check cleanup *again*.
+
+>> +	free_page((unsigned long)info->page);
+>> +	kfree(info);
+>> +	return 0;
+>> +}
+[...]
+
+Thanks!

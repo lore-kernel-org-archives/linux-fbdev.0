@@ -1,89 +1,55 @@
-From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 3/4] gxfb: Don't enable the CRT DACs when we are in
- flatpanel mode
-Date: Sat, 23 Feb 2008 01:10:54 -0500
-Message-ID: <20080223011054.0c7529e7@ephemeral>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1 2.6.24] fbdev: defio and
+ Metronomefb v3
+Date: Sat, 23 Feb 2008 00:07:05 -0800
+Message-ID: <20080223000705.9c5eda0f.akpm@linux-foundation.org>
+References: <20080218134125.5159.58386.sendpatchset@nxdomain.guide.opendns.com>
+	<Pine.LNX.4.64.0802181502550.12244@anakin>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752102AbYBWGJ3@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com, Jordan Crouse <jordan.crouse@amd.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JSpRL-00086r-Oh for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Feb 2008 00:08:59 -0800
+Received: from smtp1.linux-foundation.org ([207.189.120.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JSpRK-0004x7-Dk
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Feb 2008 00:08:59 -0800
+In-Reply-To: <Pine.LNX.4.64.0802181502550.12244@anakin>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-This one's also from Jordan.
+On Mon, 18 Feb 2008 15:03:08 +0100 (CET) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-From dea8d19f689706985b30be745ef1151082866374 Mon Sep 17 00:00:00 2001
-From: Jordan Crouse <jordan.crouse@amd.com>
-Date: Fri, 22 Feb 2008 19:55:09 -0500
-Subject: [PATCH] gxfb: Don't enable the CRT DACs when we are in flatpanel mode
+> On Mon, 18 Feb 2008, Jaya Kumar wrote:
+> > This patch implements support for the E-Ink Metronome controller. It
+> > provides an mmapable interface to the controller using defio support.
+> > 
+> > I welcome your feedback. Please let me know if it looks okay to apply.
+> 
+> To me it looks OK.
+> 
 
-When the FP strap is enabled, don't turn on the CRT DACs - that will save
-about 35 mA of power.
+It doesn't to me - I think I found several issues.
 
-Updated/cleaned up by Andres Salomon.
+Please, silence is preferable to a quick scan and a poor ack.
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
-Acked-by: Jordan Crouse <jordan.crouse@amd.com>
----
- drivers/video/geode/video_gx.c |   32 +++++++++++++++++---------------
- 1 files changed, 17 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/video/geode/video_gx.c b/drivers/video/geode/video_gx.c
-index a53936f..b436155 100644
---- a/drivers/video/geode/video_gx.c
-+++ b/drivers/video/geode/video_gx.c
-@@ -238,18 +238,6 @@ static void gx_configure_display(struct fb_info *info)
- 	struct geodefb_par *par = info->par;
- 	u32 dcfg, misc;
- 
--	/* Set up the MISC register */
--
--	misc = readl(par->vid_regs + GX_MISC);
--
--	/* Power up the DAC */
--	misc &= ~(GX_MISC_A_PWRDN | GX_MISC_DAC_PWRDN);
--
--	/* Disable gamma correction */
--	misc |= GX_MISC_GAM_EN;
--
--	writel(misc, par->vid_regs + GX_MISC);
--
- 	/* Write the display configuration */
- 	dcfg = readl(par->vid_regs + GX_DCFG);
- 
-@@ -268,14 +256,28 @@ static void gx_configure_display(struct fb_info *info)
- 	/* Enable hsync and vsync. */
- 	dcfg |= GX_DCFG_HSYNC_EN | GX_DCFG_VSYNC_EN;
- 
--	/* Only change the sync polarities if we are running
--	 * in CRT mode.  The FP polarities will be handled in
--	 * gxfb_configure_tft */
-+	misc = readl(par->vid_regs + GX_MISC);
-+
-+	/* Disable gamma correction */
-+	misc |= GX_MISC_GAM_EN;
-+
- 	if (par->enable_crt) {
-+
-+		/* Power up the CRT DACs */
-+		misc &= ~(GX_MISC_A_PWRDN | GX_MISC_DAC_PWRDN);
-+		writel(misc, par->vid_regs + GX_MISC);
-+
-+		/* Only change the sync polarities if we are running
-+		 * in CRT mode.  The FP polarities will be handled in
-+		 * gxfb_configure_tft */
- 		if (!(info->var.sync & FB_SYNC_HOR_HIGH_ACT))
- 			dcfg |= GX_DCFG_CRT_HSYNC_POL;
- 		if (!(info->var.sync & FB_SYNC_VERT_HIGH_ACT))
- 			dcfg |= GX_DCFG_CRT_VSYNC_POL;
-+	} else {
-+		/* Power down the CRT DACs if in FP mode */
-+		misc |= (GX_MISC_A_PWRDN | GX_MISC_DAC_PWRDN);
-+		writel(misc, par->vid_regs + GX_MISC);
- 	}
- 
- 	/* Enable the display logic */
--- 
-1.5.3.7
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

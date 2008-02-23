@@ -1,153 +1,39 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 1/4] gxfb: Replace FBSIZE config option with a kernel
- argument
-Date: Sat, 23 Feb 2008 01:10:45 -0500
-Message-ID: <20080223011045.48e6cb8e@ephemeral>
+Subject: [PATCH 4/4] gxfb: use PCI_DEVICE() for gxfb's pci device table
+Date: Sat, 23 Feb 2008 01:11:00 -0500
+Message-ID: <20080223011100.72ca0c4f@ephemeral>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754675AbYBWGIV@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760097AbYBWGJu@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 To: adaplas@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com, Jordan Crouse <jordan.crouse@amd.com>, dwmw2@infradead.org
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com, Jordan Crouse <jordan.crouse@amd.com>
 
 
-Use a command line option (fbsize:) rather than hardcoding the vram size.
-LxFB already does this; it's useful for machines that can't query the
-BIOS for fb size.  This patch originated from David Woodhouse, was
-modified by Jordan Crouse, and was then modified further by me.
+Drop the class/class_mask stuff; it's unnecessary
+as long as the vendor and device IDs match.
 
 Signed-off-by: Andres Salomon <dilinger@debian.org>
-Acked-by: Jordan Crouse <jordan.crouse@amd.com>
 ---
- drivers/video/geode/Kconfig      |   20 --------------------
- drivers/video/geode/display_gx.c |    7 -------
- drivers/video/geode/gxfb_core.c  |   19 ++++++++++++-------
- 3 files changed, 12 insertions(+), 34 deletions(-)
+ drivers/video/geode/gxfb_core.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/geode/Kconfig b/drivers/video/geode/Kconfig
-index 7608429..c5d8ba4 100644
---- a/drivers/video/geode/Kconfig
-+++ b/drivers/video/geode/Kconfig
-@@ -38,26 +38,6 @@ config FB_GEODE_GX
- 
- 	  If unsure, say N.
- 
--config FB_GEODE_GX_SET_FBSIZE
--	bool "Manually specify the Geode GX framebuffer size"
--	depends on FB_GEODE_GX
--	default n
--	---help---
--	  If you want to manually specify the size of your GX framebuffer,
--	  say Y here, otherwise say N to dynamically probe it.
--
--	  Say N unless you know what you are doing.
--
--config FB_GEODE_GX_FBSIZE
--	hex "Size of the GX framebuffer, in bytes"
--	depends on FB_GEODE_GX_SET_FBSIZE
--	default "0x1600000"
--	---help---
--	  Specify the size of the GX framebuffer.  Normally, you will
--	  want this to be MB aligned.  Common values are 0x80000 (8MB)
--	  and 0x1600000 (16MB).  Don't change this unless you know what
--	  you are doing
--
- config FB_GEODE_GX1
- 	tristate "AMD Geode GX1 framebuffer support (EXPERIMENTAL)"
- 	depends on FB && FB_GEODE && EXPERIMENTAL
-diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
-index 0f16e4b..8cd7572 100644
---- a/drivers/video/geode/display_gx.c
-+++ b/drivers/video/geode/display_gx.c
-@@ -21,12 +21,6 @@
- #include "geodefb.h"
- #include "display_gx.h"
- 
--#ifdef CONFIG_FB_GEODE_GX_SET_FBSIZE
--unsigned int gx_frame_buffer_size(void)
--{
--	return CONFIG_FB_GEODE_GX_FBSIZE;
--}
--#else
- unsigned int gx_frame_buffer_size(void)
- {
- 	unsigned int val;
-@@ -41,7 +35,6 @@ unsigned int gx_frame_buffer_size(void)
- 	val = (unsigned int)(inw(0xAC1E)) & 0xFFl;
- 	return (val << 19);
- }
--#endif
- 
- int gx_line_delta(int xres, int bpp)
- {
 diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-index cf841ef..07ff4bc 100644
+index 07ff4bc..08fa25e 100644
 --- a/drivers/video/geode/gxfb_core.c
 +++ b/drivers/video/geode/gxfb_core.c
-@@ -36,6 +36,7 @@
- #include "video_gx.h"
+@@ -396,9 +396,7 @@ static void gxfb_remove(struct pci_dev *pdev)
+ }
  
- static char *mode_option;
-+static int fbsize;
+ static struct pci_device_id gxfb_id_table[] = {
+-	{ PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_GX_VIDEO,
+-	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+-	  0xff0000, 0 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_GX_VIDEO) },
+ 	{ 0, }
+ };
  
- /* Modes relevant to the GX (taken from modedb.c) */
- static const struct fb_videomode gx_modedb[] __initdata = {
-@@ -207,7 +208,6 @@ static int gxfb_blank(int blank_mode, struct fb_info *info)
- static int __init gxfb_map_video_memory(struct fb_info *info, struct pci_dev *dev)
- {
- 	struct geodefb_par *par = info->par;
--	int fb_len;
- 	int ret;
- 
- 	ret = pci_enable_device(dev);
-@@ -232,21 +232,20 @@ static int __init gxfb_map_video_memory(struct fb_info *info, struct pci_dev *de
- 	ret = pci_request_region(dev, 0, "gxfb (framebuffer)");
- 	if (ret < 0)
- 		return ret;
--	if ((fb_len = gx_frame_buffer_size()) < 0)
--		return -ENOMEM;
-+
- 	info->fix.smem_start = pci_resource_start(dev, 0);
--	info->fix.smem_len = fb_len;
-+	info->fix.smem_len = fbsize ? fbsize : gx_frame_buffer_size();
- 	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
- 	if (!info->screen_base)
- 		return -ENOMEM;
- 
--	/* Set the 16MB aligned base address of the graphics memory region
-+	/* Set the 16MiB aligned base address of the graphics memory region
- 	 * in the display controller */
- 
- 	writel(info->fix.smem_start & 0xFF000000,
- 			par->dc_regs + DC_GLIU0_MEM_OFFSET);
- 
--	dev_info(&dev->dev, "%d Kibyte of video memory at 0x%lx\n",
-+	dev_info(&dev->dev, "%d KiB of video memory at 0x%lx\n",
- 		 info->fix.smem_len / 1024, info->fix.smem_start);
- 
- 	return 0;
-@@ -425,7 +424,10 @@ static int __init gxfb_setup(char *options)
- 		if (!*opt)
- 			continue;
- 
--		mode_option = opt;
-+		if (!strncmp(opt, "fbsize:", 7))
-+			fbsize = simple_strtoul(opt+7, NULL, 0);
-+		else
-+			mode_option = opt;
- 	}
- 
- 	return 0;
-@@ -456,5 +458,8 @@ module_exit(gxfb_cleanup);
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "video mode (<x>x<y>[-<bpp>][@<refr>])");
- 
-+module_param(fbsize, int, 0);
-+MODULE_PARM_DESC(fbsize, "video memory size");
-+
- MODULE_DESCRIPTION("Framebuffer driver for the AMD Geode GX");
- MODULE_LICENSE("GPL");
 -- 
 1.5.3.7

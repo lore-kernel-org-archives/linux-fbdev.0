@@ -1,42 +1,71 @@
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 2/2] xen pvfb: Para-virtual framebuffer,	keyboard and
- pointer driver
-Date: Fri, 22 Feb 2008 14:31:55 -0800
-Message-ID: <47BF4D5B.5020509@goop.org>
-References: <871w76ejdg.fsf@pike.pond.sub.org>	<87skzmd4qc.fsf@pike.pond.sub.org> <47BDDF97.7070001@goop.org> <8763whbiy8.fsf@pike.pond.sub.org>
+From: Andres Salomon <dilinger@queued.net>
+Subject: [PATCH 2/4] gxfb: Set the right registers to tweak the sync
+ polarity
+Date: Sat, 23 Feb 2008 01:10:50 -0500
+Message-ID: <20080223011050.1453d3e2@ephemeral>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <8763whbiy8.fsf@pike.pond.sub.org>
-Sender: linux-input-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757035AbYBWGJD@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Markus Armbruster <armbru@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, linux-input@vger.kernel.org, adaplas@pol.net, akpm@linux-foundation.org, jayakumar.lkml@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+To: adaplas@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, info-linux@geode.amd.com, Jordan Crouse <jordan.crouse@amd.com>
 
-Markus Armbruster wrote:
-> Jeremy Fitzhardinge <jeremy@goop.org> writes:
->
->   
->> Markus Armbruster wrote:
->>     
->>> This is a pair of Xen para-virtual frontend device drivers:
->>> drivers/video/xen-fbfront.c provides a framebuffer, and
->>> drivers/input/xen-kbdfront provides keyboard and mouse.
->>>   
->>>       
->> Unless they're actually inter-dependent, could you post this as two
->> separate patches?  I don't know anything about these parts of the
->> kernel, so it would be nice to make it very obvious which changes are
->> fb vs mouse/keyboard.
->>     
->
-> I could do that do that, but the intermediate step (one driver, not
-> the other) is somewhat problematic: the backend in dom0 needs both
-> drivers, and will refuse to complete device initialization unless
-> they're both present.
->   
+This one's from Jordan..
 
-That's OK.  In that case keep them together.
+From f29234fa3f3ece430c48227d0e2c0f0bcbff6e0f Mon Sep 17 00:00:00 2001
+From: Jordan Crouse <jordan.crouse@amd.com>
+Date: Fri, 22 Feb 2008 19:48:40 -0500
+Subject: [PATCH] gxfb: Set the right registers to tweak the sync polarity
 
-    J
+While running in flatpanel mode it is important to change the FP
+sync bits (VG register 0x408) rather then the CRT sync bits
+(VG register 0x008).  This patch keeps the CRT sync bits at default
+when a flatpanel exists.
+
+Note that this also fixes inverted logic; we want CRT_VSYNC_POL to
+be set (ie, vsync is normally high) when FB_SYNC_VERT_HIGH_ACT is unset.
+
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ drivers/video/geode/video_gx.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/geode/video_gx.c b/drivers/video/geode/video_gx.c
+index febf09c..a53936f 100644
+--- a/drivers/video/geode/video_gx.c
++++ b/drivers/video/geode/video_gx.c
+@@ -207,7 +207,7 @@ gx_configure_tft(struct fb_info *info)
+ 
+ 	fp = 0x0F100000;
+ 
+-	/* Add sync polarity */
++	/* Configure sync polarity */
+ 
+ 	if (!(info->var.sync & FB_SYNC_VERT_HIGH_ACT))
+ 		fp |= GX_FP_PT2_VSP;
+@@ -268,11 +268,15 @@ static void gx_configure_display(struct fb_info *info)
+ 	/* Enable hsync and vsync. */
+ 	dcfg |= GX_DCFG_HSYNC_EN | GX_DCFG_VSYNC_EN;
+ 
+-	/* Sync polarities. */
+-	if (info->var.sync & FB_SYNC_HOR_HIGH_ACT)
+-		dcfg |= GX_DCFG_CRT_HSYNC_POL;
+-	if (info->var.sync & FB_SYNC_VERT_HIGH_ACT)
+-		dcfg |= GX_DCFG_CRT_VSYNC_POL;
++	/* Only change the sync polarities if we are running
++	 * in CRT mode.  The FP polarities will be handled in
++	 * gxfb_configure_tft */
++	if (par->enable_crt) {
++		if (!(info->var.sync & FB_SYNC_HOR_HIGH_ACT))
++			dcfg |= GX_DCFG_CRT_HSYNC_POL;
++		if (!(info->var.sync & FB_SYNC_VERT_HIGH_ACT))
++			dcfg |= GX_DCFG_CRT_VSYNC_POL;
++	}
+ 
+ 	/* Enable the display logic */
+ 	/* Set up the DACS to blank normally */
+-- 
+1.5.3.7

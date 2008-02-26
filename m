@@ -1,24 +1,23 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] fbcon: replace mono_col macro with
 	static inline
-Date: Mon, 25 Feb 2008 10:50:20 -0800
-Message-ID: <20080225105020.131f3df9.akpm@linux-foundation.org>
+Date: Tue, 26 Feb 2008 09:18:03 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0802260917410.5158@anakin>
 References: <1203963237.5582.4.camel@brick>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JTiQf-0005EI-9U for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 25 Feb 2008 10:51:57 -0800
-Received: from smtp1.linux-foundation.org ([207.189.120.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JTiQe-0002nC-0r
+	id 1JTv0v-00036B-AV for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Feb 2008 00:18:13 -0800
+Received: from harold.telenet-ops.be ([195.130.133.65])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JTv0t-0002zy-Mj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 25 Feb 2008 10:51:57 -0800
+	Tue, 26 Feb 2008 00:18:13 -0800
 In-Reply-To: <1203963237.5582.4.camel@brick>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,10 +30,9 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>
 
-On Mon, 25 Feb 2008 10:13:57 -0800 Harvey Harrison <harvey.harrison@gmail.com> wrote:
-
+On Mon, 25 Feb 2008, Harvey Harrison wrote:
 > Use __u32 for max_len to match the declaration of length in the
 > struct fb_bitfield.
 > 
@@ -66,6 +64,9 @@ On Mon, 25 Feb 2008 10:13:57 -0800 Harvey Harrison <harvey.harrison@gmail.com> w
 > -			     (info)->var.blue.length)))) & 0xff)
 > +
 > +static inline int mono_col(struct fb_info *info)
+                              ^^^^^^^^^^^^^^^^^^^^
+const struct fb_info *info?
+
 > +{
 > +	__u32 max_len;
 > +	max_len = max(info->var.green.length, info->var.red.length);
@@ -76,11 +77,16 @@ On Mon, 25 Feb 2008 10:13:57 -0800 Harvey Harrison <harvey.harrison@gmail.com> w
 >  static inline int attr_col_ec(int shift, struct vc_data *vc,
 >  			      struct fb_info *info, int is_fg)
 
-Thanks, but please do try to copy a suitable mailing list on the patches. 
-Particularly fbdev - Tony has been out of contact for a while, but there
-are other fbdev developers who can help us to review code, as long as we
-tell them about it.
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

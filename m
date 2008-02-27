@@ -1,24 +1,25 @@
 From: "eric miao" <eric.y.miao@gmail.com>
-Subject: [PATCH 0/8] pxafb cleanup
-Date: Wed, 27 Feb 2008 10:32:29 +0800
-Message-ID: <f17812d70802261832l78840912r4dcb0403e9fe4385@mail.gmail.com>
+Subject: [PATCH 1/8] pxa: un-nest pxafb_parse_options()
+	to cleanup the coding style issue
+Date: Wed, 27 Feb 2008 10:33:10 +0800
+Message-ID: <f17812d70802261833v7d6dbff3jd9b436ee6dfda4a0@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JUC5v-00038G-MT for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Feb 2008 18:32:31 -0800
-Received: from wa-out-1112.google.com ([209.85.146.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JUC5u-0002U2-D9
+	id 1JUC6d-0003Dx-4N for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Feb 2008 18:33:15 -0800
+Received: from wa-out-1112.google.com ([209.85.146.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JUC6Z-00078I-HD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Feb 2008 18:32:31 -0800
-Received: by wa-out-1112.google.com with SMTP id k22so3024889waf.18
+	Tue, 26 Feb 2008 18:33:15 -0800
+Received: by wa-out-1112.google.com with SMTP id k22so3025178waf.18
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 26 Feb 2008 18:32:30 -0800 (PST)
+	Tue, 26 Feb 2008 18:33:11 -0800 (PST)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,37 +34,360 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-The following series of patches try to address several issues of the
-current PXA framebuffer driver. Some of these patches are already
-submitted for review, here are more:
+From e946f577d3f869abcc587629e2fdd5f1563ce1df Mon Sep 17 00:00:00 2001
+From: eric miao <eric.miao@marvell.com>
+Date: Fri, 22 Feb 2008 11:29:08 +0800
+Subject: [PATCH] pxa: un-nest pxafb_parse_options() to cleanup the
+coding style issue
 
-pxa: un-nest pxafb_parse_options() to cleanup the coding style issue
-pxa: fix various coding style issues for pxafb
-pxa: purge unnecessary pr_debug and comments from pxafb
-pxa: sanitize the usage of #ifdef .. processing pxafb parameters
-pxa: convert fb driver to use ioremap() and __raw_{readl, writel}
-pxa: introduce "struct pxafb_dma_buff" for palette and dma descriptors
-pxa: introduce register independent LCD connection type for pxafb
-pxa: make lubbock/mainstone/zylonite/littleton to use new LCD connection type
+pxafb_parse_options() has very long lines exceeding far beyond 80
+characters, which makes the function looks bad.  Un-nest it into
+smaller functions and use a temporary string for only what has been
+overridden instead of the whole dev_info() message to reduce the
+line a bit more.
 
-Board maintainers are encouraged to use the new way for LCD connection
-types.
+Signed-off-by: eric miao <eric.miao@marvell.com>
+---
+ drivers/video/pxafb.c |  306 ++++++++++++++++++++++++++----------------------
+ 1 files changed, 166 insertions(+), 140 deletions(-)
 
-To further clean-up the driver, I suggest to make the following changes:
-1. removal of set_ctrlr_state(), the original code is written so because
-the fb_blank() is called within interrupt context in 2.4 kernel, but this is
-no longer the case in 2.6. And states can be simplified.
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 97facb1..4eaaed5 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -1210,154 +1210,180 @@ static struct pxafb_info * __init
+pxafb_init_fbinfo(struct device *dev)
+ }
 
-2. introduce a "vram" module parameter or boot option to indicate the
-size of the video memory, so that frame buffer offset can be specified
-within this video memory range, and PAN_DISPLAY can be done.
-And the start offset of each overlay can also be specified.
+ #ifdef CONFIG_FB_PXA_PARAMETERS
+-static int __init pxafb_parse_options(struct device *dev, char *options)
++static int parse_opt_mode(struct device *dev, const char *this_opt)
+ {
+ 	struct pxafb_mach_info *inf = dev->platform_data;
++
++	const char *name = this_opt+5;
++	unsigned int namelen = strlen(name);
++	int res_specified = 0, bpp_specified = 0;
++	unsigned int xres = 0, yres = 0, bpp = 0;
++	int yres_specified = 0;
++	int i;
++	for (i = namelen-1; i >= 0; i--) {
++		switch (name[i]) {
++		case '-':
++			namelen = i;
++			if (!bpp_specified && !yres_specified) {
++				bpp = simple_strtoul(&name[i+1], NULL, 0);
++				bpp_specified = 1;
++			} else
++				goto done;
++			break;
++		case 'x':
++			if (!yres_specified) {
++				yres = simple_strtoul(&name[i+1], NULL, 0);
++				yres_specified = 1;
++			} else
++				goto done;
++			break;
++		case '0' ... '9':
++			break;
++		default:
++			goto done;
++		}
++	}
++	if (i < 0 && yres_specified) {
++		xres = simple_strtoul(name, NULL, 0);
++		res_specified = 1;
++	}
++done:
++	if (res_specified) {
++		dev_info(dev, "overriding resolution: %dx%d\n", xres, yres);
++		inf->modes[0].xres = xres; inf->modes[0].yres = yres;
++	}
++	if (bpp_specified)
++		switch (bpp) {
++		case 1:
++		case 2:
++		case 4:
++		case 8:
++		case 16:
++			inf->modes[0].bpp = bpp;
++			dev_info(dev, "overriding bit depth: %d\n", bpp);
++			break;
++		default:
++			dev_err(dev, "Depth %d is not valid\n", bpp);
++			return -EINVAL;
++		}
++	return 0;
++}
++
++static int parse_opt(struct device *dev, char *this_opt)
++{
++	struct pxafb_mach_info *inf = dev->platform_data;
++	struct pxafb_mode_info *mode = &inf->modes[0];
++	char s[64];
++
++	s[0] = '\0';
++
++	if (!strncmp(this_opt, "mode:", 5)) {
++		return parse_opt_mode(dev, this_opt);
++	} else if (!strncmp(this_opt, "pixclock:", 9)) {
++		mode->pixclock = simple_strtoul(this_opt+9, NULL, 0);
++		sprintf(s, "pixclock: %ld\n", mode->pixclock);
++	} else if (!strncmp(this_opt, "left:", 5)) {
++		mode->left_margin = simple_strtoul(this_opt+5, NULL, 0);
++		sprintf(s, "left: %u\n", mode->left_margin);
++	} else if (!strncmp(this_opt, "right:", 6)) {
++		mode->right_margin = simple_strtoul(this_opt+6, NULL, 0);
++		sprintf(s, "right: %u\n", mode->right_margin);
++	} else if (!strncmp(this_opt, "upper:", 6)) {
++		mode->upper_margin = simple_strtoul(this_opt+6, NULL, 0);
++		sprintf(s, "upper: %u\n", mode->upper_margin);
++	} else if (!strncmp(this_opt, "lower:", 6)) {
++		mode->lower_margin = simple_strtoul(this_opt+6, NULL, 0);
++		sprintf(s, "lower: %u\n", mode->lower_margin);
++	} else if (!strncmp(this_opt, "hsynclen:", 9)) {
++		mode->hsync_len = simple_strtoul(this_opt+9, NULL, 0);
++		sprintf(s, "hsynclen: %u\n", mode->hsync_len);
++	} else if (!strncmp(this_opt, "vsynclen:", 9)) {
++		mode->vsync_len = simple_strtoul(this_opt+9, NULL, 0);
++		sprintf(s, "vsynclen: %u\n", mode->vsync_len);
++	} else if (!strncmp(this_opt, "hsync:", 6)) {
++		if (simple_strtoul(this_opt+6, NULL, 0) == 0) {
++			sprintf(s, "hsync: Active Low\n");
++			mode->sync &= ~FB_SYNC_HOR_HIGH_ACT;
++		} else {
++			sprintf(s, "hsync: Active High\n");
++			mode->sync |= FB_SYNC_HOR_HIGH_ACT;
++		}
++	} else if (!strncmp(this_opt, "vsync:", 6)) {
++		if (simple_strtoul(this_opt+6, NULL, 0) == 0) {
++			sprintf(s, "vsync: Active Low\n");
++			mode->sync &= ~FB_SYNC_VERT_HIGH_ACT;
++		} else {
++			sprintf(s, "vsync: Active High\n");
++			mode->sync |= FB_SYNC_VERT_HIGH_ACT;
++		}
++	} else if (!strncmp(this_opt, "dpc:", 4)) {
++		if (simple_strtoul(this_opt+4, NULL, 0) == 0) {
++			sprintf(s, "double pixel clock: false\n");
++			inf->lccr3 &= ~LCCR3_DPC;
++		} else {
++			sprintf(s, "double pixel clock: true\n");
++			inf->lccr3 |= LCCR3_DPC;
++		}
++	} else if (!strncmp(this_opt, "outputen:", 9)) {
++		if (simple_strtoul(this_opt+9, NULL, 0) == 0) {
++			sprintf(s, "output enable: active low\n");
++			inf->lccr3 = (inf->lccr3 & ~LCCR3_OEP) | LCCR3_OutEnL;
++		} else {
++			sprintf(s, "output enable: active high\n");
++			inf->lccr3 = (inf->lccr3 & ~LCCR3_OEP) | LCCR3_OutEnH;
++		}
++	} else if (!strncmp(this_opt, "pixclockpol:", 12)) {
++		if (simple_strtoul(this_opt+12, NULL, 0) == 0) {
++			sprintf(s, "pixel clock polarity: falling edge\n");
++			inf->lccr3 = (inf->lccr3 & ~LCCR3_PCP) | LCCR3_PixFlEdg;
++		} else {
++			sprintf(s, "pixel clock polarity: rising edge\n");
++			inf->lccr3 = (inf->lccr3 & ~LCCR3_PCP) | LCCR3_PixRsEdg;
++		}
++	} else if (!strncmp(this_opt, "color", 5)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_CMS) | LCCR0_Color;
++	} else if (!strncmp(this_opt, "mono", 4)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_CMS) | LCCR0_Mono;
++	} else if (!strncmp(this_opt, "active", 6)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_PAS) | LCCR0_Act;
++	} else if (!strncmp(this_opt, "passive", 7)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_PAS) | LCCR0_Pas;
++	} else if (!strncmp(this_opt, "single", 6)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_SDS) | LCCR0_Sngl;
++	} else if (!strncmp(this_opt, "dual", 4)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_SDS) | LCCR0_Dual;
++	} else if (!strncmp(this_opt, "4pix", 4)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_DPD) | LCCR0_4PixMono;
++	} else if (!strncmp(this_opt, "8pix", 4)) {
++		inf->lccr0 = (inf->lccr0 & ~LCCR0_DPD) | LCCR0_8PixMono;
++	} else {
++		dev_err(dev, "unknown option: %s\n", this_opt);
++		return -EINVAL;
++	}
++
++	if (s[0] != '\0')
++		dev_info(dev, "override %s", s);
++
++	return 0;
++}
++
++static int __init pxafb_parse_options(struct device *dev, char *options)
++{
+ 	char *this_opt;
++	int ret;
 
-3. a "pxafb_layer" structure describing each possible layers,
-base, overlay1 and overlay2 for pxa27x can be described. From this
-layer information, frame buffer device can be dynamically allocated
-and registered. Palette manipulation, parameter checking and
-layer activation code can be generalized.
+-        if (!options || !*options)
+-                return 0;
++	if (!options || !*options)
++		return 0;
+
+ 	dev_dbg(dev, "options are \"%s\"\n", options ? options : "null");
+
+ 	/* could be made table driven or similar?... */
+-        while ((this_opt = strsep(&options, ",")) != NULL) {
+-                if (!strncmp(this_opt, "mode:", 5)) {
+-			const char *name = this_opt+5;
+-			unsigned int namelen = strlen(name);
+-			int res_specified = 0, bpp_specified = 0;
+-			unsigned int xres = 0, yres = 0, bpp = 0;
+-			int yres_specified = 0;
+-			int i;
+-			for (i = namelen-1; i >= 0; i--) {
+-				switch (name[i]) {
+-				case '-':
+-					namelen = i;
+-					if (!bpp_specified && !yres_specified) {
+-						bpp = simple_strtoul(&name[i+1], NULL, 0);
+-						bpp_specified = 1;
+-					} else
+-						goto done;
+-					break;
+-				case 'x':
+-					if (!yres_specified) {
+-						yres = simple_strtoul(&name[i+1], NULL, 0);
+-						yres_specified = 1;
+-					} else
+-						goto done;
+-					break;
+-				case '0' ... '9':
+-					break;
+-				default:
+-					goto done;
+-				}
+-			}
+-			if (i < 0 && yres_specified) {
+-				xres = simple_strtoul(name, NULL, 0);
+-				res_specified = 1;
+-			}
+-		done:
+-			if (res_specified) {
+-				dev_info(dev, "overriding resolution: %dx%d\n", xres, yres);
+-				inf->modes[0].xres = xres; inf->modes[0].yres = yres;
+-			}
+-			if (bpp_specified)
+-				switch (bpp) {
+-				case 1:
+-				case 2:
+-				case 4:
+-				case 8:
+-				case 16:
+-					inf->modes[0].bpp = bpp;
+-					dev_info(dev, "overriding bit depth: %d\n", bpp);
+-					break;
+-				default:
+-					dev_err(dev, "Depth %d is not valid\n", bpp);
+-				}
+-                } else if (!strncmp(this_opt, "pixclock:", 9)) {
+-                        inf->modes[0].pixclock =
+simple_strtoul(this_opt+9, NULL, 0);
+-			dev_info(dev, "override pixclock: %ld\n", inf->modes[0].pixclock);
+-                } else if (!strncmp(this_opt, "left:", 5)) {
+-                        inf->modes[0].left_margin =
+simple_strtoul(this_opt+5, NULL, 0);
+-			dev_info(dev, "override left: %u\n", inf->modes[0].left_margin);
+-                } else if (!strncmp(this_opt, "right:", 6)) {
+-                        inf->modes[0].right_margin =
+simple_strtoul(this_opt+6, NULL, 0);
+-			dev_info(dev, "override right: %u\n", inf->modes[0].right_margin);
+-                } else if (!strncmp(this_opt, "upper:", 6)) {
+-                        inf->modes[0].upper_margin =
+simple_strtoul(this_opt+6, NULL, 0);
+-			dev_info(dev, "override upper: %u\n", inf->modes[0].upper_margin);
+-                } else if (!strncmp(this_opt, "lower:", 6)) {
+-                        inf->modes[0].lower_margin =
+simple_strtoul(this_opt+6, NULL, 0);
+-			dev_info(dev, "override lower: %u\n", inf->modes[0].lower_margin);
+-                } else if (!strncmp(this_opt, "hsynclen:", 9)) {
+-                        inf->modes[0].hsync_len =
+simple_strtoul(this_opt+9, NULL, 0);
+-			dev_info(dev, "override hsynclen: %u\n", inf->modes[0].hsync_len);
+-                } else if (!strncmp(this_opt, "vsynclen:", 9)) {
+-                        inf->modes[0].vsync_len =
+simple_strtoul(this_opt+9, NULL, 0);
+-			dev_info(dev, "override vsynclen: %u\n", inf->modes[0].vsync_len);
+-                } else if (!strncmp(this_opt, "hsync:", 6)) {
+-                        if (simple_strtoul(this_opt+6, NULL, 0) == 0) {
+-				dev_info(dev, "override hsync: Active Low\n");
+-				inf->modes[0].sync &= ~FB_SYNC_HOR_HIGH_ACT;
+-			} else {
+-				dev_info(dev, "override hsync: Active High\n");
+-				inf->modes[0].sync |= FB_SYNC_HOR_HIGH_ACT;
+-			}
+-                } else if (!strncmp(this_opt, "vsync:", 6)) {
+-                        if (simple_strtoul(this_opt+6, NULL, 0) == 0) {
+-				dev_info(dev, "override vsync: Active Low\n");
+-				inf->modes[0].sync &= ~FB_SYNC_VERT_HIGH_ACT;
+-			} else {
+-				dev_info(dev, "override vsync: Active High\n");
+-				inf->modes[0].sync |= FB_SYNC_VERT_HIGH_ACT;
+-			}
+-                } else if (!strncmp(this_opt, "dpc:", 4)) {
+-                        if (simple_strtoul(this_opt+4, NULL, 0) == 0) {
+-				dev_info(dev, "override double pixel clock: false\n");
+-				inf->lccr3 &= ~LCCR3_DPC;
+-			} else {
+-				dev_info(dev, "override double pixel clock: true\n");
+-				inf->lccr3 |= LCCR3_DPC;
+-			}
+-                } else if (!strncmp(this_opt, "outputen:", 9)) {
+-                        if (simple_strtoul(this_opt+9, NULL, 0) == 0) {
+-				dev_info(dev, "override output enable: active low\n");
+-				inf->lccr3 = (inf->lccr3 & ~LCCR3_OEP) | LCCR3_OutEnL;
+-			} else {
+-				dev_info(dev, "override output enable: active high\n");
+-				inf->lccr3 = (inf->lccr3 & ~LCCR3_OEP) | LCCR3_OutEnH;
+-			}
+-                } else if (!strncmp(this_opt, "pixclockpol:", 12)) {
+-                        if (simple_strtoul(this_opt+12, NULL, 0) == 0) {
+-				dev_info(dev, "override pixel clock polarity: falling edge\n");
+-				inf->lccr3 = (inf->lccr3 & ~LCCR3_PCP) | LCCR3_PixFlEdg;
+-			} else {
+-				dev_info(dev, "override pixel clock polarity: rising edge\n");
+-				inf->lccr3 = (inf->lccr3 & ~LCCR3_PCP) | LCCR3_PixRsEdg;
+-			}
+-                } else if (!strncmp(this_opt, "color", 5)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_CMS) | LCCR0_Color;
+-                } else if (!strncmp(this_opt, "mono", 4)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_CMS) | LCCR0_Mono;
+-                } else if (!strncmp(this_opt, "active", 6)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_PAS) | LCCR0_Act;
+-                } else if (!strncmp(this_opt, "passive", 7)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_PAS) | LCCR0_Pas;
+-                } else if (!strncmp(this_opt, "single", 6)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_SDS) | LCCR0_Sngl;
+-                } else if (!strncmp(this_opt, "dual", 4)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_SDS) | LCCR0_Dual;
+-                } else if (!strncmp(this_opt, "4pix", 4)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_DPD) | LCCR0_4PixMono;
+-                } else if (!strncmp(this_opt, "8pix", 4)) {
+-			inf->lccr0 = (inf->lccr0 & ~LCCR0_DPD) | LCCR0_8PixMono;
+-		} else {
+-			dev_err(dev, "unknown option: %s\n", this_opt);
+-			return -EINVAL;
+-		}
+-        }
+-        return 0;
+-
++	while ((this_opt = strsep(&options, ",")) != NULL) {
++		ret = parse_opt(dev, this_opt);
++		if (ret)
++			return ret;
++	}
++	return 0;
+ }
+ #endif
+
+-- 
+1.5.3.8
+
+
 
 -- 
 Cheers

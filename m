@@ -1,131 +1,78 @@
-From: "eric miao" <eric.y.miao@gmail.com>
-Subject: [PATCH 8/8] pxa: make
-	lubbock/mainstone/zylonite/littleton to use new LCD connection type
-Date: Wed, 27 Feb 2008 10:39:06 +0800
-Message-ID: <f17812d70802261839k50381960t4a38e745474681c8@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Alexandre Rusev <arusev@ru.mvista.com>
+Subject: Re: [PATCH 0/8] pxafb cleanup
+Date: Wed, 27 Feb 2008 11:58:16 +0300
+Message-ID: <47C52628.8010005@ru.mvista.com>
+References: <f17812d70802261832l78840912r4dcb0403e9fe4385@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JUCCL-0003m3-PG for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Feb 2008 18:39:09 -0800
-Received: from el-out-1112.google.com ([209.85.162.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JUCCK-0000b4-7X
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Feb 2008 18:39:09 -0800
-Received: by el-out-1112.google.com with SMTP id y26so2498412ele.18
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 26 Feb 2008 18:39:07 -0800 (PST)
-Content-Disposition: inline
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+In-Reply-To: <f17812d70802261832l78840912r4dcb0403e9fe4385@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: eric miao <eric.y.miao@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
 
-From 596867419b5d6cb33bbc4056c63d13e6ce1c042a Mon Sep 17 00:00:00 2001
-From: eric miao <eric.miao@marvell.com>
-Date: Tue, 26 Feb 2008 15:06:08 +0800
-Subject: [PATCH] pxa: make lubbock/mainstone/zylonite/littleton to use
-new LCD connection type
+eric miao wrote:
+> The following series of patches try to address several issues of the
+> current PXA framebuffer driver. Some of these patches are already
+> submitted for review, here are more:
+>
+> pxa: un-nest pxafb_parse_options() to cleanup the coding style issue
+> pxa: fix various coding style issues for pxafb
+> pxa: purge unnecessary pr_debug and comments from pxafb
+> pxa: sanitize the usage of #ifdef .. processing pxafb parameters
+> pxa: convert fb driver to use ioremap() and __raw_{readl, writel}
+> pxa: introduce "struct pxafb_dma_buff" for palette and dma descriptors
+> pxa: introduce register independent LCD connection type for pxafb
+> pxa: make lubbock/mainstone/zylonite/littleton to use new LCD connection type
+>
+> Board maintainers are encouraged to use the new way for LCD connection
+> types.
+>
+> To further clean-up the driver, I suggest to make the following changes:
+> 1. removal of set_ctrlr_state(), the original code is written so because
+> the fb_blank() is called within interrupt context in 2.4 kernel, but this is
+> no longer the case in 2.6. And states can be simplified.
+>
+> 2. introduce a "vram" module parameter or boot option to indicate the
+> size of the video memory, so that frame buffer offset can be specified
+> within this video memory range, and PAN_DISPLAY can be done.
+> And the start offset of each overlay can also be specified.
+>
+> 3. a "pxafb_layer" structure describing each possible layers,
+> base, overlay1 and overlay2 for pxa27x can be described. From this
+>   
+But what about support of DirectFB applications?
+DirectFB as we know needs framebuffer memory to be allocated and mapped
+only once
+taking in account  the greatest values of colordeepth and resolution.
 
-Signed-off-by: eric miao <eric.miao@marvell.com>
----
- arch/arm/mach-pxa/littleton.c |    3 +--
- arch/arm/mach-pxa/lubbock.c   |    4 ++--
- arch/arm/mach-pxa/mainstone.c |    3 +--
- arch/arm/mach-pxa/zylonite.c  |    6 ++----
- 4 files changed, 6 insertions(+), 10 deletions(-)
+Furthermore for support of overlays DirectFB needs a capability to map
+all overlays and baseplane
+to be mapped continuously in memory (taking in account greatest bpp and
+resolution values again)
 
-diff --git a/arch/arm/mach-pxa/littleton.c b/arch/arm/mach-pxa/littleton.c
-index 0a4b54c..1c11948 100644
---- a/arch/arm/mach-pxa/littleton.c
-+++ b/arch/arm/mach-pxa/littleton.c
-@@ -287,8 +287,7 @@ static struct pxafb_mode_info tpo_tdo24mtea1_modes[] = {
- static struct pxafb_mach_info littleton_lcd_info = {
- 	.modes			= tpo_tdo24mtea1_modes,
- 	.num_modes		= 2,
--	.lccr0			= LCCR0_Act,
--	.lccr3			= LCCR3_HSP | LCCR3_VSP,
-+	.lcd_conn		= LCD_COLOR_TFT_16BPP,
- 	.pxafb_lcd_power	= littleton_lcd_power,
- };
-
-diff --git a/arch/arm/mach-pxa/lubbock.c b/arch/arm/mach-pxa/lubbock.c
-index e7ae4bb..76e3670 100644
---- a/arch/arm/mach-pxa/lubbock.c
-+++ b/arch/arm/mach-pxa/lubbock.c
-@@ -360,8 +360,8 @@ static struct pxafb_mach_info sharp_lm8v31 = {
- 	.num_modes	= 1,
- 	.cmap_inverse	= 0,
- 	.cmap_static	= 0,
--	.lccr0		= LCCR0_SDS,
--	.lccr3		= LCCR3_PCP | LCCR3_Acb(255),
-+	.lcd_conn	= LCD_COLOR_DSTN_16BPP | LCD_PCLK_EDGE_FALL |
-+			  LCD_AC_BIAS_FREQ(255);
- };
-
- #define	MMC_POLL_RATE		msecs_to_jiffies(1000)
-diff --git a/arch/arm/mach-pxa/mainstone.c b/arch/arm/mach-pxa/mainstone.c
-index 345c3de..ae75218 100644
---- a/arch/arm/mach-pxa/mainstone.c
-+++ b/arch/arm/mach-pxa/mainstone.c
-@@ -354,8 +354,7 @@ static struct pxafb_mode_info toshiba_ltm035a776c_mode = {
-
- static struct pxafb_mach_info mainstone_pxafb_info = {
- 	.num_modes      	= 1,
--	.lccr0			= LCCR0_Act,
--	.lccr3			= LCCR3_PCP,
-+	.lcd_conn		= LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL,
- };
-
- static int mainstone_mci_init(struct device *dev, irq_handler_t
-mstone_detect_int, void *data)
-diff --git a/arch/arm/mach-pxa/zylonite.c b/arch/arm/mach-pxa/zylonite.c
-index afd2cbf..b6377e2 100644
---- a/arch/arm/mach-pxa/zylonite.c
-+++ b/arch/arm/mach-pxa/zylonite.c
-@@ -94,8 +94,7 @@ static struct pxafb_mode_info toshiba_ltm04c380k_mode = {
-
- static struct pxafb_mach_info zylonite_toshiba_lcd_info = {
- 	.num_modes      	= 1,
--	.lccr0			= LCCR0_Act,
--	.lccr3			= LCCR3_PCP,
-+	.lcd_conn		= LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL,
- 	.pxafb_backlight_power	= zylonite_backlight_power,
- };
-
-@@ -131,8 +130,7 @@ static struct pxafb_mode_info sharp_ls037_modes[] = {
- static struct pxafb_mach_info zylonite_sharp_lcd_info = {
- 	.modes			= sharp_ls037_modes,
- 	.num_modes		= 2,
--	.lccr0			= LCCR0_Act,
--	.lccr3			= LCCR3_PCP | LCCR3_HSP | LCCR3_VSP,
-+	.lcd_conn		= LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL,
- 	.pxafb_backlight_power	= zylonite_backlight_power,
- };
-
--- 
-1.5.3.8
+I'd prefer to see DirectFB fixed against this, yet the fulfillment of
+these  a bit strange rules
+looks like to be the only way to make it possible the DirectFB to work
+with pxafb driver :(
+> layer information, frame buffer device can be dynamically allocated
+> and registered. Palette manipulation, parameter checking and
+> layer activation code can be generalized.
+>
+>   
 
 
-
--- 
-Cheers
-- eric
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

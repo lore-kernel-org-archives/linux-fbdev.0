@@ -1,10 +1,7 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH 1/1 2.6.24] fbdev: defio and
-	Metronomefb v4
-Date: Sun, 2 Mar 2008 23:50:53 -0800
-Message-ID: <45a44e480803022350u4fd9c217q670dda5f9dce51ec@mail.gmail.com>
-References: <20080301034136.32426.77821.sendpatchset@hit-nxdomain.opendns.com>
-	<20080302231941.c744f159.akpm@linux-foundation.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] tridentfb: fix memory size detection
+Date: Wed, 5 Mar 2008 22:07:44 +0100
+Message-ID: <20080305220744.824e839e.krzysztof.h1@poczta.fm>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,17 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JW5Rn-0004lo-Fo for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 02 Mar 2008 23:50:55 -0800
-Received: from wf-out-1314.google.com ([209.85.200.172])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JW5Rm-0006GN-6y
+	id 1JX0ji-00064q-5P for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 05 Mar 2008 13:01:14 -0800
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JX0jg-0001wz-Lg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 02 Mar 2008 23:50:55 -0800
-Received: by wf-out-1314.google.com with SMTP id 28so6687556wff.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 02 Mar 2008 23:50:53 -0800 (PST)
-In-Reply-To: <20080302231941.c744f159.akpm@linux-foundation.org>
-Content-Disposition: inline
+	Wed, 05 Mar 2008 13:01:14 -0800
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,26 +26,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: adaplas@gmail.com
 
-On Sun, Mar 2, 2008 at 11:19 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->
->  I now do not have a usable changelog for this patch.  Please send one, and
->  please do always send the full changelog (possibly updated) with each iteration
->  of a patch, thanks.
->
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Ok, will do.
+Tiny patch which fixes memory size multiplier
+during detection.
 
-This patch implements support for the E-Ink Metronome controller. It
-provides an mmapable interface to the controller using defio support.
-It was tested with a gumstix pxa255 with Vizplex media using Xfbdev
-and various X clients such as xeyes, xpdf, xloadimage.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
 
-Thanks,
-jaya
+
+diff -urp linux-ref/drivers/video/tridentfb.c linux-2.6.23/drivers/video/tridentfb.c
+--- linux-ref/drivers/video/tridentfb.c	2007-11-01 14:07:27.461666762 +0100
++++ linux-2.6.23/drivers/video/tridentfb.c	2007-11-01 15:02:17.622078751 +0100
+@@ -755,7 +754,7 @@ static unsigned int __devinit get_memsiz
+ 			switch (tmp) {
+ 
+ 			case 0x01:
+-				k = 512;
++				k = 512 * Kb;
+ 				break;
+ 			case 0x02:
+ 				k = 6 * Mb;	/* XP */
+
+----------------------------------------------------------------------
+Kochasz kobiety? Nie zapomnij o nich!
+kliknij >> http://link.interia.pl/f1d47 	
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

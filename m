@@ -1,30 +1,26 @@
-From: "Michal Suchanek" <hramrach@centrum.cz>
-Subject: Re: reguest for comments regarding an imac_fb
-	and efifb unification
-Date: Fri, 7 Mar 2008 08:49:35 +0100
-Message-ID: <a5d587fb0803062349q61981b2dj1656e535ff5e5659@mail.gmail.com>
-References: <p0623091ac3f5e718e844@192.168.9.5>
-	<Pine.LNX.4.64.0803062038100.26657@anakin>
-	<p0623091cc3f5f9111ec0@192.168.9.5>
+From: Andres Salomon <dilinger@queued.net>
+Subject: Re: [PATCH 1/4] gxfb: Replace FBSIZE config
+ option with a kernel argument
+Date: Sat, 8 Mar 2008 20:19:43 -0500
+Message-ID: <20080308201943.31cd89b3@ephemeral>
+References: <20080223011045.48e6cb8e@ephemeral>
+	<20080227163105.e1b96023.akpm@linux-foundation.org>
+	<20080227195839.1e86074e@ephemeral>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JXXKm-00082L-Cz for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Mar 2008 23:49:50 -0800
-Received: from ug-out-1314.google.com ([66.249.92.168])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JXXKj-0003ag-Gx
+	id 1JYA97-0004fw-8B for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 08 Mar 2008 17:16:13 -0800
+Received: from mail.queued.net ([207.210.101.209])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JYA95-0006bs-R4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Mar 2008 23:49:38 -0800
-Received: by ug-out-1314.google.com with SMTP id m2so3850494uge.28
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 06 Mar 2008 23:49:36 -0800 (PST)
-In-Reply-To: <p0623091cc3f5f9111ec0@192.168.9.5>
-Content-Disposition: inline
+	Sat, 08 Mar 2008 17:16:13 -0800
+In-Reply-To: <20080227195839.1e86074e@ephemeral>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,48 +31,88 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On 06/03/2008, Scott D. Davilla <davilla@4pi.com> wrote:
-> >  > Which brings up the point, is there another more general console
->  >>  frame buffer that could replace both imac_fb and efifb? It seems that
->  >>  a generic console framebuffer that assumes a linear video framebuffer
->  >>  that does not make video bios calls (nor PC bios) and can be
->  >>  configured by screen_info params or command-line params would be
->  >>  something that already exists? Is there such a console frame buffer?
->  >>
->  >>  I'm willing to pursue this but I want to check the general consensus
->  >>  about such a venture and possible ramifications that I might not have
->  >>  considered.
->  >
->  >There exist a few more drivers for simple linear video frame buffer
->  >devices with fixed x,y dimensions:
->  >   - offb, for Open Firmware based machines,
->  >   - vesafb, for VBE 2.0 compliant graphic boards.
->
->
-> vesafb would be nice but there is an implied VBE 2.0 compliance which
->  includes video bios. I'll force my bootloader to vesafb and see how
->  far it gets.
->
+On Wed, 27 Feb 2008 19:58:39 -0500
+Andres Salomon <dilinger@queued.net> wrote:
 
-Perhaps you want something like linfb which would act as backend for
-various fb (auto)configuration methods. efifb through parameters
-passed by efi bootloader on the commandline, imacfb by reading the mac
-bios, offb by reading the ofw, vesafb by reading the vesa bios, etc.
+> On Wed, 27 Feb 2008 16:31:05 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Sat, 23 Feb 2008 01:10:45 -0500
+> > Andres Salomon <dilinger@queued.net> wrote:
+> > 
+> > > @@ -425,7 +424,10 @@ static int __init gxfb_setup(char *options)
+> > >  		if (!*opt)
+> > >  			continue;
+> > >  
+> > > -		mode_option = opt;
+> > > +		if (!strncmp(opt, "fbsize:", 7))
+> > > +			fbsize = simple_strtoul(opt+7, NULL, 0);
+> > > +		else
+> > > +			mode_option = opt;
+> > >  	}
+> > 
+> > The above shouldn't be necessary.
+> 
+> It looks like that's done in other drivers in case MODULE isn't defined.  I'm
+> assuming this is historical at this point, and manual options parsing can
+> be removed from all fb drivers at this point, or is there another reason
+> why manual parsing would be necessary?
+> 
 
-However, I am not familiar with the kernel fb, all I can say is I
-could probably test offb and imacfb if you did the merge.
 
-iirc the offb was special in that one could load another fb over it
-even before fb switching was possible (or was it ofconsole?)
+Could I get an answer from the fbdevel folks about this?  It looks like
+the fb_get_options stuff is there for backwards compatibility.
+gxfb.fbsize=16777216 (for example) works regardless of whether or not
+CONFIG_MODULES is set.  
 
-Another speciality is vesafb_tng or whatever it's called which is
-supposed to be able to change the resolution even after boot.
+It would appear that the only reason for fb_get_options() calling would
+be to support video=gxfb:<options>.  Is this used any more?  Should it
+be marked deprecated, and dropped from the geode fb drivers?
 
-Thanks
 
-Michal
+> 
+> > 
+> > And it should have been documented in Documentation/kernel-parameters.txt.
+> 
+> Yeah, I wasn't actually sure about that; I did check for other fb drivers
+> documenting stuff in kernel-parameters.txt, and didn't see it.  It looks
+> like they instead document stuff in Documentation/fb/.  Which is preferred?
+> 
+
+
+I'd also like an opinion about this.
+
+
+> 
+> 
+> > 
+> > And "fbsize=N" would be a lot more conventional than "fbsize:N"
+> > 
+> 
+> I can certainly change that.  Regarding convention, I toyed with renaming
+> it 'vram' (as most of the fb drivers use that), and will probably do
+> that unless Jordan objects.
+> 
+> 
+> > I suspect that the formulation you have here will not permit "fbsize:128k",
+> > whereas "fbsize=128k" or "gxfb.fbsize=128k" should work.  Needs checking.
+> > 
+> > >  	return 0;
+> > > @@ -456,5 +458,8 @@ module_exit(gxfb_cleanup);
+> > >  module_param(mode_option, charp, 0);
+> > >  MODULE_PARM_DESC(mode_option, "video mode (<x>x<y>[-<bpp>][@<refr>])");
+> > >  
+> > > +module_param(fbsize, int, 0);
+> > > +MODULE_PARM_DESC(fbsize, "video memory size");
+> > > +
+> > 
+> > Because the module_param() already makes fbsize available on the kernel
+> > boot command line via gxfb.fbsize=42 (or something similar).
+> > 
+> > 
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

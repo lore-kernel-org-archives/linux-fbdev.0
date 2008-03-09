@@ -1,27 +1,28 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 10205] New: BUG: Display
- gets corrupted when using lxfb driver on a GeodeLX 5535 based chipset
-Date: Sun, 9 Mar 2008 15:54:15 -0700
-Message-ID: <20080309155415.6857e199.akpm@linux-foundation.org>
-References: <bug-10205-10286@http.bugzilla.kernel.org/>
-	<20080309115427.2f39dc93.akpm@linux-foundation.org>
-	<200803092231.13945.rjw@sisk.pl>
+From: Andres Salomon <dilinger@queued.net>
+Subject: Re: [PATCH 1/4] gxfb: Replace FBSIZE config
+ option with a kernel argument
+Date: Sun, 9 Mar 2008 19:57:54 -0400
+Message-ID: <20080309195754.6d972be7@ephemeral>
+References: <20080223011045.48e6cb8e@ephemeral>
+	<20080227163105.e1b96023.akpm@linux-foundation.org>
+	<20080227195839.1e86074e@ephemeral>
+	<20080308201950.28f6eae8@ephemeral>
+	<20080309220025.GD9971@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JYUPv-0003sF-5I for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 09 Mar 2008 15:54:55 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JYUPs-0005BO-Nh
+	id 1JYVLQ-0002rn-4d for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 09 Mar 2008 16:54:20 -0700
+Received: from mail.queued.net ([207.210.101.209])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JYVLO-0002rs-LA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 09 Mar 2008 15:54:55 -0700
-In-Reply-To: <200803092231.13945.rjw@sisk.pl>
+	Sun, 09 Mar 2008 16:54:20 -0700
+In-Reply-To: <20080309220025.GD9971@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,74 +33,132 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: nestorac@gmail.com, Jordan Crouse <jordan.crouse@amd.com>, linux-fbdev-devel@lists.sourceforge.net
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On Sun, 9 Mar 2008 22:31:13 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sun, 9 Mar 2008 23:00:25 +0100
+Ondrej Zajicek <santiago@crfreenet.org> wrote:
 
-> On Sunday, 9 of March 2008, Andrew Morton wrote:
-> > On Sun,  9 Mar 2008 08:55:52 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
-> > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=10205
-> > > 
-> > >            Summary: BUG: Display gets corrupted when using lxfb driver on a
-> > >                     GeodeLX 5535 based chipset
-> > >            Product: Drivers
-> > >            Version: 2.5
-> > >      KernelVersion: 2.6.24.2
-> > >           Platform: All
-> > >         OS/Version: Linux
-> > >               Tree: Mainline
-> > >             Status: NEW
-> > >           Severity: normal
-> > >           Priority: P1
-> > >          Component: Console/Framebuffers
-> > >         AssignedTo: jsimmons@infradead.org
-> > >         ReportedBy: nestorac@gmail.com
-> > > 
-> > > 
-> > > Latest working kernel version:
-> > >  None or unknown
-> > > Earliest failing kernel version:
-> > >  Latest version
-> > > Distribution:
-> > >  Debian Stable (Etch)
-> > > Hardware Environment:
-> > >  AMD Geode 32 bit A830 board, 5536 chipset based embedded computer (TFT 10"
-> > >  800x600), with GeodeLX embedded GPU. It's webpage is at:
-> > >  http://www.winmatev.com.tw/PPc/PPcSpec.asp?Prod=03_0013&Typeid=03020101
-> > >  I own a cheaper version using GeodeGX 500 processor, 256MiB RAM, no
-> > >  touchscreen.
-> > > Software Environment:
-> > >  Debian 4.0 Stable (Etch), Kernel 2.4.22.2 vanilla + AUFS patch (it has nothing
-> > >  to do with graphics, but BTW...), all i386, kernel specifically compiled for
-> > >  Geode GX/LX Processor target (but also does not work for generic i386 target).
-> > > Problem Description:
-> > >  I get a blurry screen when trying to enable Framebuffer, vga=788
-> > >  option (800x600). Screen gets corrupted, but when I start X.org, it shows
-> > >  Ok, until I switch again to console. Everything works fine with Vesa FB,
-> > >  except that, of course, it's more CPU consuming and slower [supposedly].
-> > >  When blurry, screen looks like it was under a lake.
-> > > Steps to reproduce:
-> > >  1) Compile the kernel, include support for GeodeLX Framebuffer.
-> > >  2) Install the kernel on the machine
-> > >  3) Boot it up, adding vga=788 mode to bootloader.
-> > >  4) Screen gets completely blurry until X.org starts.
+> On Sat, Mar 08, 2008 at 08:19:50PM -0500, Andres Salomon wrote:
+> > > assuming this is historical at this point, and manual options parsing can
+> > > be removed from all fb drivers at this point, or is there another reason
+> > > why manual parsing would be necessary?
 > > > 
 > > 
-> > Guys, this is a post-2.6.24 regression
+> > Could I get an answer from the fbdevel folks about this?  It looks like
+> > the fb_get_options stuff is there for backwards compatibility.
 > 
-> Hm, what exactly makes you think so?
-
-Beats me.  I was probably looking at the wrong report when I decided that.
-
-> The failing kernel version is 2.6.24.2, so most probably the problem is present
-> in 2.6.24 as well.
+> I think so. I used fb_get_options() in arkfb and vt8623fb for mode option
+> only. Universal notation module.option=value is much nicer than manual
+> options parsing.  
 > 
-> Moreover, the reporter didn't specify the last known good kernel, so it might
-> not be a regression at all.
 
-Yup.
+
+If that is indeed the case, here's a patch that might be useful.  I have
+no idea what kind of timeframe would be proposed for removing
+fb_get_options (or if it's even desirable to remove it at all given that
+people are likely still using video=$foo syntax).
+
+
+
+From dc3f29acc1f5fedf41e1705d1d820727c8fa1e89 Mon Sep 17 00:00:00 2001
+From: Andres Salomon <dilinger@debian.org>
+Date: Sun, 9 Mar 2008 13:29:21 -0400
+Subject: [PATCH] fb: mark fb_get_options as deprecated, and remove from skeletonfb.c
+
+fb_get_options is now marked as deprecated.  This also removes
+the fb_get_options stuff from skeletonfb.c (so people don't use it
+in new code), and it allows mode_options to be set via module_param.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ drivers/video/skeletonfb.c |   40 ++++------------------------------------
+ include/linux/fb.h         |    2 +-
+ 2 files changed, 5 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
+index 6232145..62cbc08 100644
+--- a/drivers/video/skeletonfb.c
++++ b/drivers/video/skeletonfb.c
+@@ -903,17 +903,6 @@ MODULE_DEVICE_TABLE(pci, xxxfb_id_table);
+ 
+ int __init xxxfb_init(void)
+ {
+-	/*
+-	 *  For kernel boot options (in 'video=xxxfb:<options>' format)
+-	 */
+-#ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("xxxfb", &option))
+-		return -ENODEV;
+-	xxxfb_setup(option);
+-#endif
+-
+ 	return pci_register_driver(&xxxfb_driver);
+ }
+ 
+@@ -974,34 +963,10 @@ static struct platform_device xxxfb_device = {
+ 	.name = "xxxfb",
+ };
+ 
+-#ifndef MODULE
+-    /*
+-     *  Setup
+-     */
+-
+-/*
+- * Only necessary if your driver takes special options,
+- * otherwise we fall back on the generic fb_setup().
+- */
+-int __init xxxfb_setup(char *options)
+-{
+-    /* Parse user speficied options (`video=xxxfb:') */
+-}
+-#endif /* MODULE */
+-
+ static int __init xxxfb_init(void)
+ {
+ 	int ret;
+-	/*
+-	 *  For kernel boot options (in 'video=xxxfb:<options>' format)
+-	 */
+-#ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("xxxfb", &option))
+-		return -ENODEV;
+-	xxxfb_setup(option);
+-#endif
++
+ 	ret = driver_register(&xxxfb_driver);
+ 
+ 	if (!ret) {
+@@ -1031,3 +996,6 @@ module_init(xxxfb_init);
+ module_exit(xxxfb_remove);
+ 
+ MODULE_LICENSE("GPL");
++module_param(mode_option, charp, 0);
++MODULE_PARM_DESC(mode_option, "Specify resolution as"
++		" \"<xres>x<yres>[-<bpp>][@<refresh>]\"");
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 58c57a3..c46009b 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -942,7 +942,7 @@ extern void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u3
+ extern void fb_set_suspend(struct fb_info *info, int state);
+ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
+ 			      struct fb_fix_screeninfo *fix);
+-extern int fb_get_options(char *name, char **option);
++extern int __deprecated fb_get_options(char *name, char **option);
+ extern int fb_new_modelist(struct fb_info *info);
+ 
+ extern struct fb_info *registered_fb[FB_MAX];
+-- 
+1.5.3.7
+
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

@@ -1,8 +1,8 @@
 From: Andres Salomon <dilinger@queued.net>
 Subject: Re: [PATCH 1/4] gxfb: Replace FBSIZE config
  option with a kernel argument
-Date: Sat, 8 Mar 2008 20:19:43 -0500
-Message-ID: <20080308201943.31cd89b3@ephemeral>
+Date: Sat, 8 Mar 2008 20:19:50 -0500
+Message-ID: <20080308201950.28f6eae8@ephemeral>
 References: <20080223011045.48e6cb8e@ephemeral>
 	<20080227163105.e1b96023.akpm@linux-foundation.org>
 	<20080227195839.1e86074e@ephemeral>
@@ -11,13 +11,13 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JYA97-0004fw-8B for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 08 Mar 2008 17:16:13 -0800
+	id 1JYA97-0004g2-Vr for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 08 Mar 2008 17:16:14 -0800
 Received: from mail.queued.net ([207.210.101.209])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JYA95-0006bs-R4
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JYA96-0002iJ-Lw
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 08 Mar 2008 17:16:13 -0800
 In-Reply-To: <20080227195839.1e86074e@ephemeral>
@@ -62,15 +62,11 @@ Andres Salomon <dilinger@queued.net> wrote:
 > why manual parsing would be necessary?
 > 
 
-
 Could I get an answer from the fbdevel folks about this?  It looks like
 the fb_get_options stuff is there for backwards compatibility.
 gxfb.fbsize=16777216 (for example) works regardless of whether or not
 CONFIG_MODULES is set.  
 
-It would appear that the only reason for fb_get_options() calling would
-be to support video=gxfb:<options>.  Is this used any more?  Should it
-be marked deprecated, and dropped from the geode fb drivers?
 
 
 > 
@@ -82,37 +78,7 @@ be marked deprecated, and dropped from the geode fb drivers?
 > like they instead document stuff in Documentation/fb/.  Which is preferred?
 > 
 
-
-I'd also like an opinion about this.
-
-
-> 
-> 
-> > 
-> > And "fbsize=N" would be a lot more conventional than "fbsize:N"
-> > 
-> 
-> I can certainly change that.  Regarding convention, I toyed with renaming
-> it 'vram' (as most of the fb drivers use that), and will probably do
-> that unless Jordan objects.
-> 
-> 
-> > I suspect that the formulation you have here will not permit "fbsize:128k",
-> > whereas "fbsize=128k" or "gxfb.fbsize=128k" should work.  Needs checking.
-> > 
-> > >  	return 0;
-> > > @@ -456,5 +458,8 @@ module_exit(gxfb_cleanup);
-> > >  module_param(mode_option, charp, 0);
-> > >  MODULE_PARM_DESC(mode_option, "video mode (<x>x<y>[-<bpp>][@<refr>])");
-> > >  
-> > > +module_param(fbsize, int, 0);
-> > > +MODULE_PARM_DESC(fbsize, "video memory size");
-> > > +
-> > 
-> > Because the module_param() already makes fbsize available on the kernel
-> > boot command line via gxfb.fbsize=42 (or something similar).
-> > 
-> > 
+I'd also like an opinion on this.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

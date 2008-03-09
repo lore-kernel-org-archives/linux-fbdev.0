@@ -1,12 +1,9 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 1/4] gxfb: Replace FBSIZE config
- option with a kernel argument
-Date: Sun, 9 Mar 2008 11:12:03 -0700
-Message-ID: <20080309111203.97680dc2.randy.dunlap@oracle.com>
-References: <20080223011045.48e6cb8e@ephemeral>
-	<20080227163105.e1b96023.akpm@linux-foundation.org>
-	<20080227195839.1e86074e@ephemeral>
-	<20080308201950.28f6eae8@ephemeral>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 10205] New: BUG: Display
+ gets corrupted when using lxfb driver on a GeodeLX 5535 based chipset
+Date: Sun, 9 Mar 2008 11:54:27 -0700
+Message-ID: <20080309115427.2f39dc93.akpm@linux-foundation.org>
+References: <bug-10205-10286@http.bugzilla.kernel.org/>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,14 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JYQ1Z-0001b5-Po for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 09 Mar 2008 11:13:29 -0700
-Received: from rgminet01.oracle.com ([148.87.113.118])
+	id 1JYQfw-0006yV-1a for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 09 Mar 2008 11:55:12 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JYQ1X-0007aU-Bv
+	(Exim 4.44) id 1JYQft-00087G-J5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 09 Mar 2008 11:13:29 -0700
-In-Reply-To: <20080308201950.28f6eae8@ephemeral>
+	Sun, 09 Mar 2008 11:55:12 -0700
+In-Reply-To: <bug-10205-10286@http.bugzilla.kernel.org/>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,73 +30,63 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: nestorac@gmail.com, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
 
-On Sat, 8 Mar 2008 20:19:50 -0500 Andres Salomon wrote:
+On Sun,  9 Mar 2008 08:55:52 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
 
-> On Wed, 27 Feb 2008 19:58:39 -0500
-> Andres Salomon <dilinger@queued.net> wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=10205
 > 
-> > On Wed, 27 Feb 2008 16:31:05 -0800
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Sat, 23 Feb 2008 01:10:45 -0500
-> > > Andres Salomon <dilinger@queued.net> wrote:
-> > > 
-> > > > @@ -425,7 +424,10 @@ static int __init gxfb_setup(char *options)
-> > > >  		if (!*opt)
-> > > >  			continue;
-> > > >  
-> > > > -		mode_option = opt;
-> > > > +		if (!strncmp(opt, "fbsize:", 7))
-> > > > +			fbsize = simple_strtoul(opt+7, NULL, 0);
-> > > > +		else
-> > > > +			mode_option = opt;
-> > > >  	}
-> > > 
-> > > The above shouldn't be necessary.
-> > 
-> > It looks like that's done in other drivers in case MODULE isn't defined.  I'm
-> > assuming this is historical at this point, and manual options parsing can
-> > be removed from all fb drivers at this point, or is there another reason
-> > why manual parsing would be necessary?
-> > 
+>            Summary: BUG: Display gets corrupted when using lxfb driver on a
+>                     GeodeLX 5535 based chipset
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: 2.6.24.2
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Console/Framebuffers
+>         AssignedTo: jsimmons@infradead.org
+>         ReportedBy: nestorac@gmail.com
 > 
-> Could I get an answer from the fbdevel folks about this?  It looks like
-> the fb_get_options stuff is there for backwards compatibility.
-> gxfb.fbsize=16777216 (for example) works regardless of whether or not
-> CONFIG_MODULES is set.  
+> 
+> Latest working kernel version:
+>  None or unknown
+> Earliest failing kernel version:
+>  Latest version
+> Distribution:
+>  Debian Stable (Etch)
+> Hardware Environment:
+>  AMD Geode 32 bit A830 board, 5536 chipset based embedded computer (TFT 10"
+>  800x600), with GeodeLX embedded GPU. It's webpage is at:
+>  http://www.winmatev.com.tw/PPc/PPcSpec.asp?Prod=03_0013&Typeid=03020101
+>  I own a cheaper version using GeodeGX 500 processor, 256MiB RAM, no
+>  touchscreen.
+> Software Environment:
+>  Debian 4.0 Stable (Etch), Kernel 2.4.22.2 vanilla + AUFS patch (it has nothing
+>  to do with graphics, but BTW...), all i386, kernel specifically compiled for
+>  Geode GX/LX Processor target (but also does not work for generic i386 target).
+> Problem Description:
+>  I get a blurry screen when trying to enable Framebuffer, vga=788
+>  option (800x600). Screen gets corrupted, but when I start X.org, it shows
+>  Ok, until I switch again to console. Everything works fine with Vesa FB,
+>  except that, of course, it's more CPU consuming and slower [supposedly].
+>  When blurry, screen looks like it was under a lake.
+> Steps to reproduce:
+>  1) Compile the kernel, include support for GeodeLX Framebuffer.
+>  2) Install the kernel on the machine
+>  3) Boot it up, adding vga=788 mode to bootloader.
+>  4) Screen gets completely blurry until X.org starts.
 > 
 
-It would be very nice to get Mr. Daplas back.
+Guys, this is a post-2.6.24 regression hence needs
+running-around-with-your-hair-on-fire priority please.
 
-> > 
-> > > 
-> > > And it should have been documented in Documentation/kernel-parameters.txt.
-> > 
-> > Yeah, I wasn't actually sure about that; I did check for other fb drivers
-> > documenting stuff in kernel-parameters.txt, and didn't see it.  It looks
-> > like they instead document stuff in Documentation/fb/.  Which is preferred?
-> > 
-> 
-> I'd also like an opinion on this.
-
-My opinion (only) is that any subsystem that has lots of doc and/or
-kernel parameters should put that info into Documentation/<subdir>/,
-so adding to Documentation/fb/ is good.  (sound is another big
-candidate for this.  All of those "snd-xyz=" entries in
-kernel-parameters.txt don't actually help other than to say that there
-are some user-settable parameters that someone has to go search for.)
-We should probably also extend this entry in kernel-parameters.txt:
-
- 	video=		[FB] Frame buffer configuration
-			See Documentation/fb/modedb.txt.
-
-to point to Documentation/fb/ for all frame buffer docs.
-
----
-~Randy
+Can anyone think what we did to cause this?  Recent changes to
+drivers/video/geode/ look pretty tame.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

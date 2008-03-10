@@ -1,9 +1,11 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 6/6] PM/FB/gxfb: add config option
- that allows disabling of VT switch during suspend
-Date: Mon, 10 Mar 2008 14:19:39 -0700
-Message-ID: <20080310141939.ce1169c0.akpm@linux-foundation.org>
-References: <20080308204927.73afa56c@ephemeral>
+Subject: Re: [PATCH 3/6] gxfb: move MSR bit fields into
+	gxfb.h
+Date: Mon, 10 Mar 2008 14:26:33 -0700
+Message-ID: <20080310142633.33204659.akpm@linux-foundation.org>
+References: <20080308204840.47a27236@ephemeral>
+	<20080310131432.e4567537.akpm@linux-foundation.org>
+	<20080310162844.6e8e9215@ephemeral>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,14 +14,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JYpV4-0001Z1-N1 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Mar 2008 14:25:41 -0700
+	id 1JYpXF-0001pX-Ps for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Mar 2008 14:27:54 -0700
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JYpV3-0002hv-A5
+	(Exim 4.44) id 1JYpXE-0003kG-FN
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Mar 2008 14:25:38 -0700
-In-Reply-To: <20080308204927.73afa56c@ephemeral>
+	Mon, 10 Mar 2008 14:27:53 -0700
+In-Reply-To: <20080310162844.6e8e9215@ephemeral>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,69 +33,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andres Salomon <dilinger@queued.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, info-linux@geode.amd.com, "Rafael J. Wysocki" <rjw@sisk.pl>, jordan.crouse@amd.com, Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: jordan.crouse@amd.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com, info-linux@geode.amd.com
 
-On Sat, 8 Mar 2008 20:49:27 -0500
+On Mon, 10 Mar 2008 16:28:44 -0400
 Andres Salomon <dilinger@queued.net> wrote:
 
-> This is purely for suspend/resume time optimization.
+> > 
+> > In [1/6] you refer to "the MSR cleanup patch".  I don't know what that is.
+> > 
 > 
+> That would be this:
 > 
-> >From 874aa20022a2501a30704163ed31a7baba7de9e5 Mon Sep 17 00:00:00 2001
-> From: Andres Salomon <dilinger@debian.org>
-> Date: Wed, 5 Mar 2008 16:40:25 -0500
-> Subject: [PATCH] PM: add config option that allows disabling of VT switch during suspend
+> http://thread.gmane.org/gmane.linux.kernel/645387/focus=645636
 > 
-> Prior to suspend, we allocate and switch to a new VT; after suspend, we
-> switch back to the original VT.  This can be slow, and is completely
-> unnecessary if the framebuffer we're using can restore video properly.
-> 
-> This adds CONFIG_DISABLE_SUSPEND_VT_SWITCH which allows the user to
-> select whether or not to do that switch.  This has been tested with the
-> gxfb driver (on a Geode GX dev board and OLPC prototype machines).  In
-> order for the user to even see this option, a framebuffer has to declare
-> support for it (via CONFIG_FBDEV_SUPPORTS_NOSWITCH).
-> 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  drivers/char/Kconfig        |   21 +++++++++++++++++++++
->  drivers/video/geode/Kconfig |    1 +
->  include/linux/suspend.h     |    2 +-
->  kernel/power/console.c      |    2 +-
->  4 files changed, 24 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-> index 47c6be8..7fe0e85 100644
-> --- a/drivers/char/Kconfig
-> +++ b/drivers/char/Kconfig
-> @@ -58,6 +58,27 @@ config VT_CONSOLE
->  
->  	  If unsure, say Y.
->  
-> +config FBDEV_SUPPORTS_NOSWITCH
-> +	bool
-> +	default n
-> +
-> +config DISABLE_SUSPEND_VT_SWITCH
-> +	bool "Disable the console switch prior to suspend (EXPERIMENTAL)"
-> +	depends on VT_CONSOLE && PM && EXPERIMENTAL && FBDEV_SUPPORTS_NOSWITCH
-> +	default n
-> +	---help---
-> +	  This option disables the automatic switch to VT console that happens
-> +	  prior to Linux going into a suspend/sleep.  Your
-> +	  video card/framebuffer must be able to properly restore the
-> +	  display (even if X is doing something crazy!) in this scenario.
-> +	  This is useful for saving precious milliseconds during suspend and
-> +	  resume; however, if your framebuffer lacks support, it could leave
-> +	  your display in a weird state.  If you're even seeing this option,
-> +	  it means at least one of your selected framebuffer drivers supports
-> +	  restoring the display.
-> +
-> +	  If unsure, say N.
 
-It would be far preferable to do this via a kernel boot parameter rather
-than via a kernel rebuild.
+Oh, that.  OK, I found that and it still applies and it makes these new
+patches apply.
 
+> 
+> > 
+> > Please clean up the changelogs - remove those email headers from the
+> > email-forwarding operation and remove the additional little commentary on
+> > top: if there's actually anything in there which is needed then it should
+> > be integrated into the changelog proper, thanks.
+> > 
+> 
+> For future requests, or should I resend these to you?
+
+Well I cleaned these up and was ready to go, but I think some updates are
+needed, please.  So please consider, redo and resend everything, including
+the already-acked-by-Jordan MSR cleanup.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

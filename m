@@ -1,11 +1,9 @@
-From: Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: PM/FB/gxfb: add config option that allows
-	disabling of VT	switch during suspend
-Date: Mon, 10 Mar 2008 16:24:07 -0600
-Message-ID: <20080310222407.GD589@cosmic.amd.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 6/6] PM/FB/gxfb: add config option
+	that allows disabling of VT switch during suspend
+Date: Mon, 10 Mar 2008 23:28:18 +0100
+Message-ID: <200803102328.19985.rjw@sisk.pl>
 References: <20080308204927.73afa56c@ephemeral>
-	<20080310141939.ce1169c0.akpm@linux-foundation.org>
-	<20080310174424.29621e62@ephemeral>
 	<20080310145118.adb0cf1e.akpm@linux-foundation.org>
 	<20080310181446.2fb85eea@ephemeral>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
@@ -16,16 +14,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JYqRa-0000ix-5U for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Mar 2008 15:26:06 -0700
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]
-	helo=outbound2-sin-R.bigfish.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JYqRX-0007PV-JB
+	id 1JYqUf-00016M-Ec for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Mar 2008 15:29:17 -0700
+Received: from ogre.sisk.pl ([217.79.144.158])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JYqUd-00009s-P2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Mar 2008 15:26:06 -0700
-Content-Disposition: inline
+	Mon, 10 Mar 2008 15:29:17 -0700
 In-Reply-To: <20080310181446.2fb85eea@ephemeral>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,9 +33,9 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andres Salomon <dilinger@queued.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, info-linux@geode.amd.com, rjw@sisk.pl, samuel.thibault@ens-lyon.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, info-linux@geode.amd.com, jordan.crouse@amd.com, Pavel Machek <pavel@ucw.cz>, samuel.thibault@ens-lyon.org, Andrew Morton <akpm@linux-foundation.org>
 
-On 10/03/08 18:14 -0400, Andres Salomon wrote:
+On Monday, 10 of March 2008, Andres Salomon wrote:
 > On Mon, 10 Mar 2008 14:51:18 -0700
 > Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
@@ -95,19 +91,10 @@ On 10/03/08 18:14 -0400, Andres Salomon wrote:
 > NO_VT_SWITCH other than to work around possible bugs in the register
 > save/restore code..
 
-I like Andrew's idea.  I wager This won't be Geode specific for long.
-Either other drivers will get the hint and add real save/restore code
-or the GPU subystem code being worked on by the X folks will come along
-and make the VT switch obsolete for everybody.  Either way, I see hooks
-in the PM core as generic love that everybody can benefit from.
+FWIW, I prefer the original .config option idea.
 
-Jordan
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
+Thanks,
+Rafael
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

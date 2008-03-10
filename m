@@ -1,9 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH 6/6] PM/FB/gxfb: add config option
-	that allows disabling of VT switch during suspend
-Date: Mon, 10 Mar 2008 23:28:18 +0100
-Message-ID: <200803102328.19985.rjw@sisk.pl>
+ that allows disabling of VT switch during suspend
+Date: Mon, 10 Mar 2008 15:28:28 -0700
+Message-ID: <20080310152828.8f102f52.akpm@linux-foundation.org>
 References: <20080308204927.73afa56c@ephemeral>
+	<20080310141939.ce1169c0.akpm@linux-foundation.org>
+	<20080310174424.29621e62@ephemeral>
 	<20080310145118.adb0cf1e.akpm@linux-foundation.org>
 	<20080310181446.2fb85eea@ephemeral>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
@@ -11,17 +13,17 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JYqUf-00016M-Ec for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Mar 2008 15:29:17 -0700
-Received: from ogre.sisk.pl ([217.79.144.158])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JYqUd-00009s-P2
+	id 1JYqVP-0001B5-QU for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Mar 2008 15:30:03 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JYqVO-0007T5-GU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 10 Mar 2008 15:29:17 -0700
+	Mon, 10 Mar 2008 15:30:03 -0700
 In-Reply-To: <20080310181446.2fb85eea@ephemeral>
-Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,9 +35,10 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andres Salomon <dilinger@queued.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, info-linux@geode.amd.com, jordan.crouse@amd.com, Pavel Machek <pavel@ucw.cz>, samuel.thibault@ens-lyon.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, info-linux@geode.amd.com, rjw@sisk.pl, jordan.crouse@amd.com, samuel.thibault@ens-lyon.org
 
-On Monday, 10 of March 2008, Andres Salomon wrote:
+On Mon, 10 Mar 2008 18:14:46 -0400 Andres Salomon <dilinger@queued.net> wrote:
+
 > On Mon, 10 Mar 2008 14:51:18 -0700
 > Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
@@ -86,15 +89,21 @@ On Monday, 10 of March 2008, Andres Salomon wrote:
 > > 
 > 
 > That's a possibility, but doesn't adding hooks into PM core for two
-> drivers (lxfb and gxfb) seems like overkill?  I also don't really see
+> drivers (lxfb and gxfb) seems like overkill?
+
+It's just a few bytes of code?
+
+>  I also don't really see
 > anyone needing to switch back and forth between VT_SWITCH and
 > NO_VT_SWITCH other than to work around possible bugs in the register
 > save/restore code..
 
-FWIW, I prefer the original .config option idea.
+Making driver behaviour depend upon compile-time settings is really to be
+avoided.  A distributor has to choose one setting or the other, and a) that
+means that some people will get the wrong setting and b) there's a decent
+chance that the distributor will get it wrong.
 
-Thanks,
-Rafael
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

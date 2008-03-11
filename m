@@ -1,8 +1,9 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 6/6] PM/gxfb: add hook to PM console
+Subject: Re: [PATCH 6/6] PM/gxfb: add hook to PM console
  layer that allows disabling of suspend VT switch
-Date: Tue, 11 Mar 2008 19:00:11 -0400
-Message-ID: <20080311190011.44e24d2e@ephemeral>
+Date: Tue, 11 Mar 2008 19:21:02 -0400
+Message-ID: <20080311192102.6b93363f@ephemeral>
+References: <20080311190011.44e24d2e@ephemeral>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,12 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JZDOV-0002gM-FD for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Mar 2008 15:56:27 -0700
+	id 1JZDia-0005Gk-Po for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Mar 2008 16:17:12 -0700
 Received: from mail.queued.net ([207.210.101.209])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JZDOU-0005L4-2Y
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JZDiZ-00043h-9G
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Mar 2008 15:56:27 -0700
+	Tue, 11 Mar 2008 16:17:12 -0700
+In-Reply-To: <20080311190011.44e24d2e@ephemeral>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,26 +32,44 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, info-linux@geode.amd.com, jordan.crouse@amd.com, Pavel Machek <pavel@ucw.cz>
 
+On Tue, 11 Mar 2008 19:00:11 -0400
+Andres Salomon <dilinger@queued.net> wrote:
 
-Prior to suspend, we allocate and switch to a new VT; after suspend, we
-switch back to the original VT.  This can be slow, and is completely
-unnecessary if the framebuffer we're using can restore video properly.
+> 
+> Prior to suspend, we allocate and switch to a new VT; after suspend, we
+> switch back to the original VT.  This can be slow, and is completely
+> unnecessary if the framebuffer we're using can restore video properly.
+> 
+> This adds a hook that allows drivers to select whether or not to do this
+> vt switch, and changes the gxfb driver to call this hook.  It also
+> adds a module param to gxfb to allow controlling of the vt switch
+> (defaulting to no switch).
+> 
+> (Note: I'm not convinced that console_sem is the best way to protect this,
+> but we should probably have some form of locking..)
+> 
 
-This adds a hook that allows drivers to select whether or not to do this
-vt switch, and changes the gxfb driver to call this hook.  It also
-adds a module param to gxfb to allow controlling of the vt switch
-(defaulting to no switch).
+And here's a version w/out the console_sem protection.  There are two
+races that I can think of: 1) pm_prepare_console is called with
+vt_switch == 0, and then pm_restore_console is called with vt_switch == 1,
+and 2) pm_prepare_console is called while a driver is probing, but before
+it has had the opportunity to call pm_set_vt_switch.
 
-(Note: I'm not convinced that console_sem is the best way to protect this,
-but we should probably have some form of locking..)
+#2 is not the least bit critical, and can be ignored.  I'd like some
+reassurances about #1.
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- Documentation/fb/gxfb.txt       |    3 ++-
- drivers/video/geode/gxfb_core.c |    7 +++++++
- include/linux/suspend.h         |    2 ++
- kernel/power/console.c          |   27 ++++++++++++++++++++++++++-
- 4 files changed, 37 insertions(+), 2 deletions(-)
+
+    
+    Prior to suspend, we allocate and switch to a new VT; after suspend, we
+    switch back to the original VT.  This can be slow, and is completely
+    unnecessary if the framebuffer we're using can restore video properly.
+    
+    This adds a hook that allows drivers to select whether or not to do this
+    vt switch, and changes the gxfb driver to call this hook.  It also
+    adds a module param to gxfb to allow controlling of the vt switch
+    (defaulting to no switch).
+    
+    Signed-off-by: Andres Salomon <dilinger@debian.org>
 
 diff --git a/Documentation/fb/gxfb.txt b/Documentation/fb/gxfb.txt
 index 2d3dbaf..6749759 100644
@@ -120,10 +140,10 @@ index 1d7d4c5..bef66a7 100644
  static inline void pm_restore_console(void) {}
  #endif
 diff --git a/kernel/power/console.c b/kernel/power/console.c
-index 89bcf49..b8628be 100644
+index 89bcf49..327d1c6 100644
 --- a/kernel/power/console.c
 +++ b/kernel/power/console.c
-@@ -7,17 +7,39 @@
+@@ -7,15 +7,33 @@
  #include <linux/vt_kern.h>
  #include <linux/kbd_kern.h>
  #include <linux/console.h>
@@ -145,41 +165,32 @@ index 89bcf49..b8628be 100644
 + */
 +void pm_set_vt_switch(int do_switch)
 +{
-+	acquire_console_sem();
 +	disable_vt_switch = !do_switch;
-+	release_console_sem();
 +}
 +EXPORT_SYMBOL(pm_set_vt_switch);
  
  int pm_prepare_console(void)
  {
++	if (disable_vt_switch)
++		return 0;
++
  	acquire_console_sem();
  
-+	if (disable_vt_switch) {
-+		release_console_sem();
-+		return 0;
-+	}
-+
  	orig_fgconsole = fg_console;
+@@ -49,10 +67,12 @@ int pm_prepare_console(void)
  
- 	if (vc_allocate(SUSPEND_CONSOLE)) {
-@@ -50,9 +72,12 @@ int pm_prepare_console(void)
  void pm_restore_console(void)
  {
- 	acquire_console_sem();
-+	if (disable_vt_switch) {
-+		release_console_sem();
++	if (disable_vt_switch)
 +		return;
-+	}
++
+ 	acquire_console_sem();
  	set_console(orig_fgconsole);
  	release_console_sem();
  	kmsg_redirect = orig_kmsg;
 -	return;
  }
  #endif
--- 
-1.5.3.7
-
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

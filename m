@@ -1,63 +1,76 @@
-From: Andres Salomon <dilinger@queued.net>
-Subject: Re: LCD backlight IOCTL
-Date: Thu, 13 Mar 2008 14:05:44 -0400
-Message-ID: <20080313140544.187ae2cc@ephemeral>
-References: <27AAC353AE72C840926448157F375E7201DD65E1@NAEX17.na.qualcomm.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] atmel_lcdfb: suspend/resume support
+Date: Thu, 13 Mar 2008 11:19:37 -0800
+Message-ID: <200803131219.38154.david-b@pacbell.net>
+References: <47D53CFC.8050907@atmel.com> <20080313162454.3859ef1a@hskinnemo-gx620.norway.atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JZrkS-0007eG-DF for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Mar 2008 11:01:48 -0700
-Received: from mail.queued.net ([207.210.101.209])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JZrkQ-0002AI-UE
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Mar 2008 11:01:48 -0700
-In-Reply-To: <27AAC353AE72C840926448157F375E7201DD65E1@NAEX17.na.qualcomm.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: jrhee@qualcomm.com
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757045AbYCMTTv@vger.kernel.org>
+In-Reply-To: <20080313162454.3859ef1a@hskinnemo-gx620.norway.atmel.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel list <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@gmail.com>, ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Sedji GAOUAOU <sedji.gaouaou@atmel.com>, Patrice VILCHEZ <patrice.vilchez@atmel.com>, Andrew Victor <linux@maxim.org.za>, Andrew Morton <akpm@linux-foundation.org>
 
-On Thu, 13 Mar 2008 09:38:51 -0700
-"Rhee, C. Joon" <jrhee@qualcomm.com> wrote:
+On Thursday 13 March 2008, Haavard Skinnemoen wrote:
 
-> Hi, I'm searching for how we can specify the LCD backlight level through
-> /dev/fb.
+> > +	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
 > 
-> And for this, should we introduce a new IOCTL?
-> 
->  
-> 
-> FBIOGET/SET_BACKLIGHT
-> 
->  
-> 
-> I looked through CONFIG_FB_BACKLIGHT and bl_dev registration but I found
-> this is more of internal usage when there is fb event and I don't really
-> see how user app can specify the level.
-> 
->  
-> 
+> You're saving CONTRAST_VAL into a field called saved_lcdcon even though
+> it has nothing to do with LCDCON1 or LCDCON2...
+
+Yeah, why don't registers named LCDCONx have nothing
+to do with LCD CONtrast?  Better to have named the PWM
+registers PWM ... and say they could be used for either
+contrast or backlight control.
+
+The saved contrast/backlight counter value CONTRAST_VAL is
+one of two PWM control registers.
 
 
-backlight_device_register() takes a  struct backlight_ops that has
-callbacks for getting and setting the backlight.  This ends up
-being exported via sysfs, and is a nice way to adjust the backlight.
+> > +	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
+> 
+> ...then you're altering CONTRAST_CTR...
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+That's forces the contrast signal low and disables the
+PWM counter, so it won't "randomly" leave the PWM output
+high when the clock is stopped (leaving at least some
+displays lit during suspend).
+
+It's possible that only CTR needed to be saved; all the
+backlight support in this driver still needs work.
+
+
+> > +}
+> > +
+> > +static int atmel_lcdfb_resume(struct platform_device *pdev)
+> > +{
+> 
+> > +	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, sinfo->saved_lcdcon);
+> 
+> ...and later restoring the saved value of CONTRAST_VAL into CONTRAST_CTR.
+> 
+> Confused.
+
+Yeah, that looks wrong; the patch below makes more sense.
+Though it *does* behave right for some reason...
+
+- Dave
+
+
+--- sam9.orig/drivers/video/atmel_lcdfb.c	2008-03-13 12:14:08.000000000 -0700
++++ sam9/drivers/video/atmel_lcdfb.c	2008-03-13 10:40:54.000000000 -0700
+@@ -926,7 +926,10 @@ static int atmel_lcdfb_resume(struct pla
+ 	atmel_lcdfb_start_clock(sinfo);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(1);
+-	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, sinfo->saved_lcdcon);
++	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, sinfo->saved_lcdcon);
++	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR,
++			sinfo->saved_lcdcon ? contrast_ctr : 0);
++
+ 	return 0;
+ }
+ 

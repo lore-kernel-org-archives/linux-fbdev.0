@@ -1,52 +1,39 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: Driver for Freescale Display Interface Unit (A LCD controller)
-Date: Thu, 13 Mar 2008 11:17:51 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0803131117000.9727@vixen.sonytel.be>
-References: <12053582234100-git-send-email-yorksun@freescale.com>
+From: Andres Salomon <dilinger@queued.net>
+Subject: Re: +
+ pm-gxfb-add-hook-to-pm-console-layer-that-allows-disabling-of-suspen
+ d-vt-switch.patch added to -mm tree
+Date: Thu, 13 Mar 2008 10:57:50 -0400
+Message-ID: <20080313105750.3e50107a@ephemeral>
+References: <200803120527.m2C5RmWl011967@imap1.linux-foundation.org>
+	<20080312085149.GA3993@ucw.cz>
+	<20080312144506.GE1018@cosmic.amd.com>
+	<20080313074332.GA19117@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-617900929-1205403461=:9727"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755449AbYCMKSG@vger.kernel.org>
-In-Reply-To: <12053582234100-git-send-email-yorksun@freescale.com>
-Content-ID: <Pine.LNX.4.64.0803131117490.9727@vixen.sonytel.be>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756465AbYCMOyH@vger.kernel.org>
+In-Reply-To: <20080313074332.GA19117@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: York Sun <yorksun@freescale.com>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Kumar Gala <galak@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jordan Crouse <jordan.crouse@amd.com>, akpm@linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, mm-commits@vger.kernel.org, rjw@sisk.pl
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 13 Mar 2008 08:43:32 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
----584349381-617900929-1205403461=:9727
-Content-Type: TEXT/PLAIN; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-ID: <Pine.LNX.4.64.0803131117491.9727@vixen.sonytel.be>
-
-On Wed, 12 Mar 2008, York Sun wrote:
-> The following patches are for Freescale DIU. The first patch is a DIU driver.
-> The second patch is the platform code to support the driver. It is a frame
-> buffer driver for DIU. Descriptions can be found in the patches.
+[...]
+> > 
+> > > Also, it would be nice to make the logic the other way around. Move vt
+> > > switching to the drivers that need it because X can be expected to own
+> > > the hardware.
+> > 
+> > Conservation of energy.  Its easier to make 3 or 4 drivers opt out of 
 > 
-> It is a new feature targeting 2.6.26 kernel.
+> Nice euphemism. You did quick hack instead of proper solution, and
+> someone will have to clean it up sooner or later...
+> 								Pavel
+> 
 
-Please CC linux-fbdev-devel@lists.sourceforge.net when submitting new frame
-buffer device drivers. Thx!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Network and Software Technology Center Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584349381-617900929-1205403461=:9727--
+And I wouldn't be willing to do anything further without approval
+from the fbdevel folks.  No one's stopping you from writing a patch
+if you feel so strongly about it, though.

@@ -1,48 +1,91 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] uvesafb: don't treat valid modes returned by
-	fb_find_mode() as errors
-Date: Sun, 16 Mar 2008 12:23:38 +0100
-Message-ID: <20080316112338.GA4788@spock.one.pl>
-References: <20080127113456.GA17976@spock.one.pl> <20080305225412.ad1d3bb5.akpm@linux-foundation.org>
-Reply-To: spock@gentoo.org
+From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+Subject: Re: [REGRESSION] i810fb: console switch causes
+	pixel waste since 2.6.25-rc1
+Date: Sun, 16 Mar 2008 17:33:00 +0100
+Message-ID: <200803161733.01055.stefan.bauer@cs.tu-chemnitz.de>
+References: <200803160133.19948.stefan.bauer@cs.tu-chemnitz.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752788AbYCPLYF@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JavnR-0000Xe-Lh for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 16 Mar 2008 09:33:27 -0700
+Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JavnP-0004Cc-Sa
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 16 Mar 2008 09:33:17 -0700
+Received: from v0026.v.pppool.de ([89.57.0.38] helo=noname)
+	by lana.hrz.tu-chemnitz.de with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.66) (envelope-from <stefan.bauer@informatik.tu-chemnitz.de>)
+	id 1JavnL-0004Ae-VK for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 16 Mar 2008 17:33:12 +0100
+In-Reply-To: <200803160133.19948.stefan.bauer@cs.tu-chemnitz.de>
 Content-Disposition: inline
-In-Reply-To: <20080305225412.ad1d3bb5.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Michal Januszewski <spock@gentoo.org>
+Am Sonntag, 16. M=E4rz 2008 01:33 schrieb Stefan Bauer:
+> I will continue tomorrow figuring out since when agpgart is broken and
+> since when it works again. Possibly that problem also causes this
+> regression.
 
-Don't treat valid modes returned by fb_find_mode() (best-fit modes,
-default modes or the first valid mode) as errors.
+That wasn't the case. As I wrote, agpgart was broken since 266b9f8 (x86: fi=
+x =
 
-Currently, when fb_find_mode() finds a valid mode belonging to one
-of the above-mentioned classes, uvesafb will ignore it and will try
-to set a 640x480 video mode.  The expected behaviour (introduced by
-this patch) would be to use the valid mode returned by fb_find_mode()
-instead.
+ioremap RAM check), but works well again since 38cb47b (x86: relax RAM chec=
+k =
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-As requested, this patch contains an expanded changelog message.  The
-bug is by no means critical and should have no impact on the large
-majority of users, so it's definitely not 2.6.24 material.
+in ioremap()).
 
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index a14ef89..fc68b3e 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -885,7 +885,7 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
- 	}
- 
- 	/* fb_find_mode() failed */
--	if (i == 0 || i >= 3) {
-+	if (i == 0) {
- 		info->var.xres = 640;
- 		info->var.yres = 480;
- 		mode = (struct fb_videomode *)
+So I restarted bisecting, finding this one:
+
+commit eaa0ff15c30dc9799eb4d12660edb73aeb6d32c5
+Author: Alexey Dobriyan <adobriyan@gmail.com>
+Date:   Wed Feb 6 01:36:06 2008 -0800
+
+    fix ! versus & precedence in various places
+
+    Fix various instances of
+
+        if (!expr & mask)
+
+    which should probably have been
+
+        if (!(expr & mask))
+
+    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+    Cc: Jens Axboe <jens.axboe@oracle.com>
+    Cc: Peter Osterlund <petero2@telia.com>
+    Cc: Karsten Keil <kkeil@suse.de>
+    Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+    Cc: "Antonino A. Daplas" <adaplas@pol.net>
+    Cc: Mark Fasheh <mark.fasheh@oracle.com>
+    Cc: "David S. Miller" <davem@davemloft.net>
+    Cc: Jeff Garzik <jeff@garzik.org>
+    Cc: Al Viro <viro@zeniv.linux.org.uk>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+So the regression was in since -rc1.
+
+	Regards,
+		Stefan
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

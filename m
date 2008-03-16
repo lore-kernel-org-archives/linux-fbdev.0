@@ -1,30 +1,22 @@
 From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Subject: Re: [REGRESSION] i810fb: console switch causes
-	pixel waste since 2.6.25-rc1
-Date: Sun, 16 Mar 2008 17:33:00 +0100
-Message-ID: <200803161733.01055.stefan.bauer@cs.tu-chemnitz.de>
-References: <200803160133.19948.stefan.bauer@cs.tu-chemnitz.de>
+Subject: [PATCH] i810fb: Fix console switch regression
+Date: Sun, 16 Mar 2008 19:42:24 +0100
+Message-ID: <200803161942.24555.stefan.bauer@cs.tu-chemnitz.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JavnR-0000Xe-Lh for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 16 Mar 2008 09:33:27 -0700
-Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3])
+	id 1Jaxok-0006Dh-PM for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 16 Mar 2008 11:42:46 -0700
+Received: from john.hrz.tu-chemnitz.de ([134.109.132.2])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JavnP-0004Cc-Sa
+	(Exim 4.44) id 1Jaxoj-0002vR-Ct
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 16 Mar 2008 09:33:17 -0700
-Received: from v0026.v.pppool.de ([89.57.0.38] helo=noname)
-	by lana.hrz.tu-chemnitz.de with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.66) (envelope-from <stefan.bauer@informatik.tu-chemnitz.de>)
-	id 1JavnL-0004Ae-VK for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 16 Mar 2008 17:33:12 +0100
-In-Reply-To: <200803160133.19948.stefan.bauer@cs.tu-chemnitz.de>
+	Sun, 16 Mar 2008 11:42:46 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,54 +28,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Antonino Daplas <adaplas@pol.net>
 
-Am Sonntag, 16. M=E4rz 2008 01:33 schrieb Stefan Bauer:
-> I will continue tomorrow figuring out since when agpgart is broken and
-> since when it works again. Possibly that problem also causes this
-> regression.
+From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
 
-That wasn't the case. As I wrote, agpgart was broken since 266b9f8 (x86: fi=
-x =
+Commit eaa0ff15c30dc9799eb4d12660edb73aeb6d32c5 ("fix ! versus & precedence in 
+various places") introduced a regression in console switching when using 
+i810fb. Every 5th to 10th console switch causes 'pixel waste' - the same line 
+of multi-colored pixels repeated over the whole screen.
+This reverts eaa0ff1 for i810_main.c.
 
-ioremap RAM check), but works well again since 38cb47b (x86: relax RAM chec=
-k =
+Signed-off-by: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+Cc: Antonino Daplas <adaplas@pol.net>
 
-in ioremap()).
+---
+As I'm not subscribed to the LKML, please CC me, thanks.
 
-So I restarted bisecting, finding this one:
+--- linux-2.6/drivers/video/i810/i810_main.c.orig
++++ linux-2.6/drivers/video/i810/i810_main.c
+@@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info 
+	struct i810fb_par *par = info->par;
+	u8 __iomem *mmio = par->mmio_start_virtual;
 
-commit eaa0ff15c30dc9799eb4d12660edb73aeb6d32c5
-Author: Alexey Dobriyan <adobriyan@gmail.com>
-Date:   Wed Feb 6 01:36:06 2008 -0800
+-	if (!(par->dev_flags & LOCKUP))
++	if (!par->dev_flags & LOCKUP)
+		return -ENXIO;
 
-    fix ! versus & precedence in various places
-
-    Fix various instances of
-
-        if (!expr & mask)
-
-    which should probably have been
-
-        if (!(expr & mask))
-
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-    Cc: Jens Axboe <jens.axboe@oracle.com>
-    Cc: Peter Osterlund <petero2@telia.com>
-    Cc: Karsten Keil <kkeil@suse.de>
-    Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-    Cc: "Antonino A. Daplas" <adaplas@pol.net>
-    Cc: Mark Fasheh <mark.fasheh@oracle.com>
-    Cc: "David S. Miller" <davem@davemloft.net>
-    Cc: Jeff Garzik <jeff@garzik.org>
-    Cc: Al Viro <viro@zeniv.linux.org.uk>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-So the regression was in since -rc1.
-
-	Regards,
-		Stefan
+	if (cursor->image.width > 64 || cursor->image.height > 64)
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

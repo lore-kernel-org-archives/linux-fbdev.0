@@ -1,28 +1,35 @@
-From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Subject: Re: [PATCH] i810fb: Fix console switch
-	regression
-Date: Tue, 18 Mar 2008 08:09:09 +0100
-Message-ID: <200803180809.10020.stefan.bauer@cs.tu-chemnitz.de>
-References: <200803161942.24555.stefan.bauer@cs.tu-chemnitz.de>
-	<200803171641.10750.stefan.bauer@cs.tu-chemnitz.de>
-	<20080317204812.2c3e3754.akpm@linux-foundation.org>
+From: Markus Armbruster <armbru@redhat.com>
+Subject: Re: [PATCH 2/3] fbdev: Make deferred I/O work
+	as advertized
+Date: Wed, 19 Mar 2008 11:45:29 +0100
+Message-ID: <87iqzjat6e.fsf@pike.pond.sub.org>
+References: <87tzjx6vj3.fsf@pike.pond.sub.org>
+	<87k5kt6vd3.fsf@pike.pond.sub.org>
+	<45a44e480802260611l5a8d0bc9k9cc967bc73b88fac@mail.gmail.com>
+	<871w6z6ajs.fsf@pike.pond.sub.org>
+	<45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JbVxA-0008Nc-4i for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Mar 2008 00:09:44 -0700
-Received: from john.hrz.tu-chemnitz.de ([134.109.132.2])
+	id 1Jbvnf-0003kO-J5 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 19 Mar 2008 03:45:39 -0700
+Received: from oxygen.pond.sub.org ([88.198.11.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JbVx8-0007dO-3w
+	(Exim 4.44) id 1Jbvne-0000iH-5Z
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Mar 2008 00:09:43 -0700
-In-Reply-To: <20080317204812.2c3e3754.akpm@linux-foundation.org>
-Content-Disposition: inline
+	Wed, 19 Mar 2008 03:45:39 -0700
+Received: from pike.pond.sub.org (dslb-084-056-221-103.pools.arcor-ip.net
+	[84.56.221.103])
+	by oxygen.pond.sub.org (Postfix) with ESMTP id B996411EF1A
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 19 Mar 2008 11:45:29 +0100 (CET)
+In-Reply-To: <45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
+	(Jaya Kumar's message of "Tue\, 26 Feb 2008 10\:01\:16 -0500")
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,58 +40,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, linux-input@vger.kernel.org, adaplas@pol.net, akpm@linux-foundation.org
 
-Am Dienstag, 18. M=E4rz 2008 04:48 schrieb Andrew Morton:
-> On Mon, 17 Mar 2008 16:41:10 +0100 Stefan Bauer =
+"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
 
-<stefan.bauer@cs.tu-chemnitz.de> wrote:
-> > From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-> >
-> > Since 4c7ffe0b9f7f40bd818fe3af51342f64c483908e ("fbdev: prevent drivers
-> > that have hardware cursors from calling software cursor code") every ca=
-ll
-> > of i810fb_cursor fails with -ENXIO because of a incorrect "!".
-> >
-> > This hasn't striked until eaa0ff15c30dc9799eb4d12660edb73aeb6d32c5 ("fix
-> > ! versus & precedence in various places") surrounded the expression with
-> > braces, so that the intended behavior was inverted. That caused 'pixel
-> > waste' - the same line of multi-colored pixels repeated over the whole
-> > screen - during console switch.
-> >
-> > This switches back to the original pre-4c7ffe0 behavior.
-> >
-> > Signed-off-by: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > Cc: Antonino Daplas <adaplas@pol.net>
-> >
-> > --- linux-2.6/drivers/video/i810/i810_main.c.orig
-> > +++ linux-2.6/drivers/video/i810/i810_main.c
-> > @@ -1476,7 +1476,7 @@ static int i810fb_cursor(struct fb_info
-> >  	struct i810fb_par *par =3D info->par;
-> >  	u8 __iomem *mmio =3D par->mmio_start_virtual;
-> >
-> > -	if (!(par->dev_flags & LOCKUP))
-> > +	if (par->dev_flags & LOCKUP)
-> >  		return -ENXIO;
-> >
-> >  	if (cursor->image.width > 64 || cursor->image.height > 64)
+> On Tue, Feb 26, 2008 at 9:45 AM, Markus Armbruster <armbru@redhat.com> wrote:
+>>
+>>  What about pushing the fb_defio fixes independently of any new
+>>  fb_defio users?  If fb_defio was worth merging into Linus's tree, it
+>>  should be worth fixing there, whether new users are in shape already
+>>  or not.
 >
-> Can you please confirm that this actually fixes the bug?  That wasn't
-> clear.
+> I think that Andrew's message is saying that there may be a race
+> condition in the defio patch itself as opposed to the defio user
+> patch.
 >
-> Thanks.
+> If there is no race condition or other problems, then I think it would
+> make sense to merge the defio patch independent of metronomefb or
+> other new patches that use defio.
+>
+> Thanks,
+> jaya
 
-Yes, yesterday I worked the whole day with that machine running -rc6 + my =
+Any progress on this?
 
-patch. The regression definitely is fixed, fbi and fbset work w/o problems =
-or =
-
-new regressions.
-
-	Regards
-		Stefan
+Considering that fb_defio is utterly broken without the fix (writing
+the frame buffer makes the VM endlessly invoke vm_ops.page_mkwrite()),
+wouldn't it make sense to merge the fix even if it still has issues?
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

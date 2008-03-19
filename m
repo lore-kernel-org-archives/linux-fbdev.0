@@ -1,35 +1,33 @@
-From: Markus Armbruster <armbru@redhat.com>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
 Subject: Re: [PATCH 2/3] fbdev: Make deferred I/O work
 	as advertized
-Date: Wed, 19 Mar 2008 11:45:29 +0100
-Message-ID: <87iqzjat6e.fsf@pike.pond.sub.org>
+Date: Wed, 19 Mar 2008 19:24:25 +0800
+Message-ID: <45a44e480803190424s51b85efbk39ab3bfce4cb924a@mail.gmail.com>
 References: <87tzjx6vj3.fsf@pike.pond.sub.org>
 	<87k5kt6vd3.fsf@pike.pond.sub.org>
 	<45a44e480802260611l5a8d0bc9k9cc967bc73b88fac@mail.gmail.com>
 	<871w6z6ajs.fsf@pike.pond.sub.org>
 	<45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
+	<87iqzjat6e.fsf@pike.pond.sub.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jbvnf-0003kO-J5 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Mar 2008 03:45:39 -0700
-Received: from oxygen.pond.sub.org ([88.198.11.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jbvne-0000iH-5Z
+	id 1JbwPD-0008AP-Jg for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 19 Mar 2008 04:24:27 -0700
+Received: from wf-out-1314.google.com ([209.85.200.172])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JbwPC-0003Gf-79
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 19 Mar 2008 03:45:39 -0700
-Received: from pike.pond.sub.org (dslb-084-056-221-103.pools.arcor-ip.net
-	[84.56.221.103])
-	by oxygen.pond.sub.org (Postfix) with ESMTP id B996411EF1A
+	Wed, 19 Mar 2008 04:24:27 -0700
+Received: by wf-out-1314.google.com with SMTP id 28so385453wff.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 19 Mar 2008 11:45:29 +0100 (CET)
-In-Reply-To: <45a44e480802260701o7c616e3bjd5f86f4143be791b@mail.gmail.com>
-	(Jaya Kumar's message of "Tue\, 26 Feb 2008 10\:01\:16 -0500")
+	Wed, 19 Mar 2008 04:24:25 -0700 (PDT)
+In-Reply-To: <87iqzjat6e.fsf@pike.pond.sub.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,34 +38,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
+To: Markus Armbruster <armbru@redhat.com>
 Cc: xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, linux-input@vger.kernel.org, adaplas@pol.net, akpm@linux-foundation.org
 
-"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
-
-> On Tue, Feb 26, 2008 at 9:45 AM, Markus Armbruster <armbru@redhat.com> wrote:
->>
->>  What about pushing the fb_defio fixes independently of any new
->>  fb_defio users?  If fb_defio was worth merging into Linus's tree, it
->>  should be worth fixing there, whether new users are in shape already
->>  or not.
+On Wed, Mar 19, 2008 at 6:45 PM, Markus Armbruster <armbru@redhat.com> wrote:
 >
-> I think that Andrew's message is saying that there may be a race
-> condition in the defio patch itself as opposed to the defio user
-> patch.
+>  Any progress on this?
 >
-> If there is no race condition or other problems, then I think it would
-> make sense to merge the defio patch independent of metronomefb or
-> other new patches that use defio.
+>  Considering that fb_defio is utterly broken without the fix (writing
+>  the frame buffer makes the VM endlessly invoke vm_ops.page_mkwrite()),
+>  wouldn't it make sense to merge the fix even if it still has issues?
 >
-> Thanks,
-> jaya
 
-Any progress on this?
+Yes, Andrew has merged the fix into -mm. I see it in mmotm
 
-Considering that fb_defio is utterly broken without the fix (writing
-the frame buffer makes the VM endlessly invoke vm_ops.page_mkwrite()),
-wouldn't it make sense to merge the fix even if it still has issues?
+http://userweb.kernel.org/~akpm/mmotm/broken-out/fbdev-defio-and-metronomefb-v4.patch
+
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

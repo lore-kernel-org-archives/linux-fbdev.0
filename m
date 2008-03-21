@@ -1,80 +1,73 @@
-From: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-Date: Fri, 21 Mar 2008 11:12:30 -0500
-Message-ID: <47E3DE6E.2050801@freescale.com>
-References: <12059526271941-git-send-email-yorksun@freescale.com>	<12059526274026-git-send-email-yorksun@freescale.com> <20080320152708.23c6c734.akpm@linux-foundation.org>
+From: Martin Michlmayr <tbm@cyrius.com>
+Subject: vga16fb: blank screen with Intel GM965/GL960 on
+	HP 2510p notebook
+Date: Fri, 21 Mar 2008 17:39:44 +0100
+Message-ID: <20080321163944.GA22068@deprecation.cyrius.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758508AbYCUQNp@vger.kernel.org>
-In-Reply-To: <20080320152708.23c6c734.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, galak@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JckHG-0005kO-W2 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 21 Mar 2008 09:39:35 -0700
+Received: from sorrow.cyrius.com ([65.19.161.204])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JckHE-0005v6-MN
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 21 Mar 2008 09:39:34 -0700
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: keith.packard@intel.com
 
-Andrew Morton wrote:
+When I start debian-installer on my HP 2510p notebook the screen
+becomes blank when it tries to start the frame buffer.  I can reproduce
+the same behaviour when I load the vga16fb module manually.  I tested
+at least 2.6.22 and 2.6.25-rc6.  It works though when I pass vga=773
+to the kernel.
 
->> +static struct diu_hw dr = {
->> +	.mode = MFB_MODE1,
->> +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
->> +};
-> 
-> I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
-> do know that its documentation is crap.
+When I load the module, I get the following in dmesg and the screen goes
+blank:
 
-Yes, "__SPIN_LOCK_UNLOCKED(old_style_spin_init)" is wrong.  We'll fix it.
+vga16fb: initializing
+vga16fb: mapped to 0xffff8100000a0000
+Console: switching to colour frame buffer device 80x30
+fb0: VGA16 VGA frame buffer device
 
->  static struct diu_hw dr = {
->  	.mode = MFB_MODE1,
-> -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-> +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
->  };
+This notebook uses the following graphics chip:
 
-Yes, this is better.  Did you already make this change when you applied it to
-your -mm repo?
+00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller (rev 0c)
 
-> GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
+Any idea what to do?
 
-So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?  If so, this
-combination is used a lot in the kernel today.
 
->> +	if (virt) {
->> +		*phys = virt_to_phys(virt);
->> +		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
->> +		memset(virt, 0, size);
-> 
-> Could have used __GFP_ZERO, I guess.
-
-I had completely forgotten about __GFP_ZERO.  Thanks.
-
->> +	virt = (void *) rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
-> 
-> hm, I'd have expected checkpatch to whine about the space after the cast
-> there.  Whatever.
-
-I thought a space after a cast is the right thing to do?
-
-> please take a look, and please use checkpatch on all future patches.
-
-Sorry, we forgot to run it again after our second version of the patch.
-
->> +static void free_irq_local(int irq)
->> +{
->> +	struct diu *hw = dr.diu_reg;
->> +
->> +	/* Disable all LCDC interrupt */
->> +	out_be32(&(hw->int_mask), 0x1f);
->> +
->> +	free_irq(irq, 0);
->> +}
-> 
-> and the free_irq() will go splat?
-
-Sorry, but I don't understand what's wrong with this code.
-
-We'll make the other changes you've suggested and repost.
+lspci -v
+00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 Integrated Graphics Controller (rev 0c) (prog-if 00 [VGA controller])
+        Subsystem: Hewlett-Packard Company Unknown device 30c9
+        Flags: fast devsel, IRQ 16
+        Memory at e0400000 (64-bit, non-prefetchable) [size=1M]
+        Memory at d0000000 (64-bit, prefetchable) [size=256M]
+        I/O ports at 2000 [size=8]
+        Capabilities: [90] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
+        Capabilities: [d0] Power Management version 3
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Martin Michlmayr
+http://www.cyrius.com/
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

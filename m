@@ -1,24 +1,28 @@
-From: Keith Packard <keith.packard@intel.com>
-Subject: Re: vga16fb: blank screen with Intel
-	GM965/GL960 on HP 2510p	notebook
-Date: Fri, 21 Mar 2008 10:03:36 -0700
-Message-ID: <1206119016.26934.516.camel@koto.keithp.com>
-References: <20080321163944.GA22068@deprecation.cyrius.com>
-Reply-To: keith.packard@intel.com,
-	linux-fbdev-devel@lists.sourceforge.net
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610
+	and 5121 DIU
+Date: Fri, 21 Mar 2008 11:12:28 -0700
+Message-ID: <20080321111228.95a7d9ab.akpm@linux-foundation.org>
+References: <12059526271941-git-send-email-yorksun@freescale.com>
+	<12059526274026-git-send-email-yorksun@freescale.com>
+	<20080320152708.23c6c734.akpm@linux-foundation.org>
+	<47E3DE6E.2050801@freescale.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1559396411=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JckhE-0000Ql-OB for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 21 Mar 2008 10:06:24 -0700
-Received: from mga03.intel.com ([143.182.124.21])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JckhB-0000B1-BR
+	id 1Jclk3-00085C-2P for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 21 Mar 2008 11:13:23 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Jclk2-0001GQ-JL
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 21 Mar 2008 10:06:24 -0700
-In-Reply-To: <20080321163944.GA22068@deprecation.cyrius.com>
+	Fri, 21 Mar 2008 11:13:22 -0700
+In-Reply-To: <47E3DE6E.2050801@freescale.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,67 +33,103 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, keith.packard@intel.com
+To: Timur Tabi <timur@freescale.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Peter Zijlstra <a.p.zijlstra@chello.nl>, galak@kernel.crashing.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, York Sun <yorksun@freescale.com>
 
+On Fri, 21 Mar 2008 11:12:30 -0500 Timur Tabi <timur@freescale.com> wrote:
 
---===============1559396411==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-7rEaIMjyFWrfe5lkvhO1"
+> Andrew Morton wrote:
+> 
+> >> +static struct diu_hw dr = {
+> >> +	.mode = MFB_MODE1,
+> >> +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+> >> +};
+> > 
+> > I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
+> > do know that its documentation is crap.
+> 
+> Yes, "__SPIN_LOCK_UNLOCKED(old_style_spin_init)" is wrong.  We'll fix it.
+> 
+> >  static struct diu_hw dr = {
+> >  	.mode = MFB_MODE1,
+> > -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+> > +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
+> >  };
+> 
+> Yes, this is better.  Did you already make this change when you applied it to
+> your -mm repo?
 
+I did:
 
---=-7rEaIMjyFWrfe5lkvhO1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+--- a/drivers/video/fsl-diu-fb.c~fbdev-driver-for-freescale-8610-and-5121-diu-fix
++++ a/drivers/video/fsl-diu-fb.c
+@@ -274,7 +274,7 @@ static struct mfb_info mfb_template[] = 
+ 
+ static struct diu_hw dr = {
+ 	.mode = MFB_MODE1,
+-	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
++	.reg_lock = __SPIN_LOCK_UNLOCKED(dr.reg_lock),
+ };
+ 
+ static struct diu_pool pool;
 
+> > GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
+> 
+> So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?
 
-On Fri, 2008-03-21 at 17:39 +0100, Martin Michlmayr wrote:
-> When I start debian-installer on my HP 2510p notebook the screen
-> becomes blank when it tries to start the frame buffer.
+No, that's OK too.  It's just that GFP_DMA|GFP_ATOMIC is a bit redundant
+and misleading.  GFP_DMA is already atomic; the only effect of adding
+GFP_ATOMIC to GFP_DMA is to add __GFP_HIGH.
 
-I have the same machine and the debian install worked for me. Perhaps
-your BIOS has configured the chip in a way that prevents VGA graphics
-mode from working?
+Don't wory about it ;)
 
---=20
-keith.packard@intel.com
+>  If so, this
+> combination is used a lot in the kernel today.
+> 
+> >> +	if (virt) {
+> >> +		*phys = virt_to_phys(virt);
+> >> +		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
+> >> +		memset(virt, 0, size);
+> > 
+> > Could have used __GFP_ZERO, I guess.
+> 
+> I had completely forgotten about __GFP_ZERO.  Thanks.
+> 
+> >> +	virt = (void *) rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
+> > 
+> > hm, I'd have expected checkpatch to whine about the space after the cast
+> > there.  Whatever.
+> 
+> I thought a space after a cast is the right thing to do?
 
---=-7rEaIMjyFWrfe5lkvhO1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Last time I grepped, no-space is a lot more common.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> > please take a look, and please use checkpatch on all future patches.
+> 
+> Sorry, we forgot to run it again after our second version of the patch.
+> 
+> >> +static void free_irq_local(int irq)
+> >> +{
+> >> +	struct diu *hw = dr.diu_reg;
+> >> +
+> >> +	/* Disable all LCDC interrupt */
+> >> +	out_be32(&(hw->int_mask), 0x1f);
+> >> +
+> >> +	free_irq(irq, 0);
+> >> +}
+> > 
+> > and the free_irq() will go splat?
+> 
+> Sorry, but I don't understand what's wrong with this code.
 
-iD8DBQBH4+poQp8BWwlsTdMRAoASAKDFquALHOJH9dp9GVXZqsHNgDj0YwCePu82
-sIrXusqS54M+ci77RR5iHUw=
-=Ey2h
------END PGP SIGNATURE-----
+You snipped a bit.  Earlier, request_irq() failures were ignored.  So I
+think there's a code path where free_irq_local() can free an IRQ which this
+driver never owned.
 
---=-7rEaIMjyFWrfe5lkvhO1--
+> We'll make the other changes you've suggested and repost.
 
-
-
---===============1559396411==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============1559396411==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============1559396411==--

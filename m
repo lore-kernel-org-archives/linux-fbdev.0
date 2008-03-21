@@ -1,119 +1,80 @@
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH 1/2 v2] Driver for Freescale 8610 and 5121 DIU
-Date: Fri, 21 Mar 2008 00:02:16 +0100
-Message-ID: <1206054136.6437.67.camel@lappy>
-References: <12059526271941-git-send-email-yorksun@freescale.com>
-	 <12059526274026-git-send-email-yorksun@freescale.com>
-	 <20080320152708.23c6c734.akpm@linux-foundation.org>
+Date: Fri, 21 Mar 2008 11:12:30 -0500
+Message-ID: <47E3DE6E.2050801@freescale.com>
+References: <12059526271941-git-send-email-yorksun@freescale.com>	<12059526274026-git-send-email-yorksun@freescale.com> <20080320152708.23c6c734.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759624AbYCTXCw@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758508AbYCUQNp@vger.kernel.org>
 In-Reply-To: <20080320152708.23c6c734.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, galak@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, timur@freescale.com, Ingo Molnar <mingo@elte.hu>
+Cc: York Sun <yorksun@freescale.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, galak@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-On Thu, 2008-03-20 at 15:27 -0700, Andrew Morton wrote:
+Andrew Morton wrote:
 
-> >
-> > +static struct diu_hw dr = {
-> > +	.mode = MFB_MODE1,
-> > +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-> > +};
+>> +static struct diu_hw dr = {
+>> +	.mode = MFB_MODE1,
+>> +	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
+>> +};
 > 
 > I'm not clear on what's supposed to happen with __SPIN_LOCK_UNLOCKED().  I
 > do know that its documentation is crap.
-> 
-> I guess you should have used SPIN_LOCK_UNLOCKED there rather than
-> open-coding its equivalent.  And SPIN_LOCK_UNLOCKED _is_ documented.  It
-> says "don't use this".
-> 
-> Now, s/documentation/guesswork-and-grep/ says that you're supposed to pick
-> a tree-wide-unique string here as your lockdep key.
-> 
-> So I did this:
-> 
-> --- a/drivers/video/fsl-diu-fb.c~fbdev-driver-for-freescale-8610-and-5121-diu-fix
-> +++ a/drivers/video/fsl-diu-fb.c
-> @@ -274,7 +274,7 @@ static struct mfb_info mfb_template[] = 
->  
+
+Yes, "__SPIN_LOCK_UNLOCKED(old_style_spin_init)" is wrong.  We'll fix it.
+
 >  static struct diu_hw dr = {
 >  	.mode = MFB_MODE1,
 > -	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
 > +	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
 >  };
 
-#define __SPIN_LOCK_UNLOCKED(lockname)
+Yes, this is better.  Did you already make this change when you applied it to
+your -mm repo?
 
-seems pretty suggestive to me, also DEFINE_SPINLOCK(x) shows the proper
-usage; the right thing would have been:
-
-static struct diu_hw dr = {
- 	.mode = MFB_MODE1,
--	.reg_lock = __SPIN_LOCK_UNLOCKED(old_style_spin_init),
-+	.reg_lock = __SPIN_LOCK_UNLOCKED(dr.reg_lock),
-};
-
-Where 'dr.reg_lock' is the expression to locate the actual object.
-
-Does something like this make sense to you:
-
----
-Subject: lockdep: document __SPIN_LOCK_UNLOCKED() usage
-
-Small comment clarifying the intended usage of __SPIN_LOCK_UNLOCKED()
-
-[ for the observant readers; yes this prescribes a usage that is more
-  than strictly needed, it does however enable interesting future uses ]
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/include/linux/spinlock_types.h b/include/linux/spinlock_types.h
-index 68d88f7..4278558 100644
---- a/include/linux/spinlock_types.h
-+++ b/include/linux/spinlock_types.h
-@@ -63,6 +63,10 @@ typedef struct {
- # define RW_DEP_MAP_INIT(lockname)
- #endif
- 
-+/*
-+ * __*_LOCK_UNLOCKED(lockname), where 'lockname' is a valid C expression
-+ * that evaluates to the actual object being initialized.
-+ */
- #ifdef CONFIG_DEBUG_SPINLOCK
- # define __SPIN_LOCK_UNLOCKED(lockname)					\
- 	(spinlock_t)	{	.raw_lock = __RAW_SPIN_LOCK_UNLOCKED,	\
----
-
-Perhaps I should make the macros do something like:
-
-  typecheck(spinlock_t, lockname)
-
-And sweep the tree to make it compile again.
-
->  static struct diu_pool pool;
-> 
-> > +static struct diu_pool pool;
-> > +
-> > +/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
-> > + *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
-> > + *	very large memory (more than 4MB). We don't want to allocate all memory
-> > + *	in rheap since small memory allocation/deallocation will fragment the
-> > + *	rheap and make the furture large allocation fail.
-> > + */
-> > +
-> > +void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
-> > +{
-> > +	void *virt;
-> > +
-> > +	pr_debug("size=%lu\n", size);
-> > +
-> > +	virt = (void *)__get_free_pages(GFP_DMA | GFP_ATOMIC, get_order(size));
-> 
 > GFP_DMA implies GFP_ATOMIC, but it's appropriate for documentation purposes.
 
-FWIW, I prefer the form: GFP_type | __GFP_modifiers
+So does that mean that "GFP_DMA | GFP_KERNEL" is always wrong?  If so, this
+combination is used a lot in the kernel today.
 
-For instance: 'GFP_KERNEL | __GFP_DMA | __GFP_ZERO'
+>> +	if (virt) {
+>> +		*phys = virt_to_phys(virt);
+>> +		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
+>> +		memset(virt, 0, size);
+> 
+> Could have used __GFP_ZERO, I guess.
+
+I had completely forgotten about __GFP_ZERO.  Thanks.
+
+>> +	virt = (void *) rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
+> 
+> hm, I'd have expected checkpatch to whine about the space after the cast
+> there.  Whatever.
+
+I thought a space after a cast is the right thing to do?
+
+> please take a look, and please use checkpatch on all future patches.
+
+Sorry, we forgot to run it again after our second version of the patch.
+
+>> +static void free_irq_local(int irq)
+>> +{
+>> +	struct diu *hw = dr.diu_reg;
+>> +
+>> +	/* Disable all LCDC interrupt */
+>> +	out_be32(&(hw->int_mask), 0x1f);
+>> +
+>> +	free_irq(irq, 0);
+>> +}
+> 
+> and the free_irq() will go splat?
+
+Sorry, but I don't understand what's wrong with this code.
+
+We'll make the other changes you've suggested and repost.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale

@@ -1,25 +1,27 @@
-From: Frans Pop <elendil@planet.nl>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: vga16fb: blank screen with Intel
-	GM965/GL960 on HP 2510p notebook
-Date: Sun, 23 Mar 2008 02:26:37 +0100
-Message-ID: <200803230226.38587.elendil@planet.nl>
+ GM965/GL960 on HP 2510p notebook
+Date: Sun, 23 Mar 2008 10:05:19 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0803231005101.25605@anakin>
 References: <20080321163944.GA22068@deprecation.cyrius.com>
 	<200803222035.08897.elendil@planet.nl>
 	<20080322232708.GA32209@deprecation.cyrius.com>
+	<200803230226.38587.elendil@planet.nl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0104810296=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JdEz2-0006x5-Sq for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 22 Mar 2008 18:26:49 -0700
-Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JdEz2-0002IN-2L
+	id 1JdM8v-0006sL-Ss for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 23 Mar 2008 02:05:30 -0700
+Received: from monty.telenet-ops.be ([195.130.132.56])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JdM8s-0002sw-O9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 22 Mar 2008 18:26:48 -0700
-In-Reply-To: <20080322232708.GA32209@deprecation.cyrius.com>
+	Sun, 23 Mar 2008 02:05:29 -0700
+In-Reply-To: <200803230226.38587.elendil@planet.nl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,94 +32,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Keith Packard <keith.packard@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Martin Michlmayr <tbm@cyrius.com>, Keith Packard <keith.packard@intel.com>
 
---===============0104810296==
-Content-Type: multipart/signed; boundary="nextPart1575793.tYtD9qn0Jy";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Sun, 23 Mar 2008, Frans Pop wrote:
+> The problem here is that /proc/fb doesn't show VESA when the regular 
+> installer is booted, AFAICT because we boot with vga=normal. vesafb seems 
+> to only be actually activated by the kernel during boot if you boot with a 
+> vga mode that requires it.
 
---nextPart1575793.tYtD9qn0Jy
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+That's true. Vesafb uses the linear graphics mode as programmed by the
+BIOS _before_ starting the kernel, and doesn't contain code to switch graphics
+mode itselfs.
 
-On Sunday 23 March 2008, Martin Michlmayr wrote:
-> Anyway, you didn't answer my original question which was why the
-> text-based d-i loads vga16fb.
+> The installer then runs its init scripts, specifically
+> /lib/debian-installer-startup.d/S40framebuffer-module-linux-x86, and that 
+> ends up loading vga16fb because loading vesafb fails (as it's compiled in).
+> And thus you end up with vga16fb, basically because it's the only 
+> framebuffer available _despite_ the fact that vesafb is compiled in...
+> 
+> Is there is a way to activate vesafb post-boot even when the system was 
+> booted with vga=normal? If there is this could probably be avoided.
 
-The installer only modprobes vga16fb if vesafb is not active (well, it=20
-actually does modprobe vga16fb when vesafb and/or fbcon are compiled in=20
-[1], but that's the general idea), but that's not the problem here.
+No, as it relies on the BIOS.
 
-The kernel config is:
-CONFIG_FB_VGA16=3Dm
-CONFIG_FB_VESA=3Dy
-CONFIG_VGA_CONSOLE=3Dy
-CONFIG_FRAMEBUFFER_CONSOLE=3Dy
+Uvesafb can, but it relies on a userspace helper daemon.
 
-So VESA is compiled in.
-The problem here is that /proc/fb doesn't show VESA when the regular=20
-installer is booted, AFAICT because we boot with vga=3Dnormal. vesafb seems=
-=20
-to only be actually activated by the kernel during boot if you boot with a=
-=20
-vga mode that requires it.
+> Also, does anyone know a way to test whether fbcon is compiled in or not?
+> We can of course test if fbcon is available as a module and assume it's 
+> compiled in if not, but that's not a proper test that it _is_ present.
 
-The installer then runs its init scripts, specifically
-/lib/debian-installer-startup.d/S40framebuffer-module-linux-x86, and that=20
-ends up loading vga16fb because loading vesafb fails (as it's compiled in).
-And thus you end up with vga16fb, basically because it's the only=20
-framebuffer available _despite_ the fact that vesafb is compiled in...
+If /sys/class/graphics/fbcon exists but lsmod doesn't show fbcon?
 
-Is there is a way to activate vesafb post-boot even when the system was=20
-booted with vga=3Dnormal? If there is this could probably be avoided.
+Gr{oetje,eeting}s,
 
-Also, does anyone know a way to test whether fbcon is compiled in or not?
-We can of course test if fbcon is available as a module and assume it's=20
-compiled in if not, but that's not a proper test that it _is_ present.
+						Geert
 
-Cheers,
-=46JP
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-[1] I've got a patch to fix that in D-I's rootskel.
-
---nextPart1575793.tYtD9qn0Jy
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBH5bHOgm/Kwh6ICoQRAmXXAJ9pirWogjhW0kS9f6FHqMOF2erCjACfSo3Z
-tlVakqIbilJP1Bjo0orp70U=
-=VDkm
------END PGP SIGNATURE-----
-
---nextPart1575793.tYtD9qn0Jy--
-
-
---===============0104810296==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft
 Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---===============0104810296==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0104810296==--

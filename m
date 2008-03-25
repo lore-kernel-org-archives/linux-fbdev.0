@@ -1,22 +1,28 @@
-From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH] gxfb: two suspend/resume fixes
-Date: Tue, 25 Mar 2008 11:30:34 -0400
-Message-ID: <20080325113034.489d8643@ephemeral>
-References: <20080311181807.454effb7@ephemeral>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2 v2] Add DIU platform code for
+	MPC8610HPCD
+Date: Tue, 25 Mar 2008 12:18:04 -0700
+Message-ID: <20080325121804.a273944e.akpm@linux-foundation.org>
+References: <12059526271941-git-send-email-yorksun@freescale.com>
+	<12059526274026-git-send-email-yorksun@freescale.com>
+	<12059526271964-git-send-email-yorksun@freescale.com>
+	<20080320153304.cdc1817d.akpm@linux-foundation.org>
+	<20080325124322.GH12798@shadowen.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JeB6K-0003ZT-EX for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Mar 2008 08:30:12 -0700
-Received: from mail.queued.net ([207.210.101.209])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JeB6I-0005l1-Oo
+	id 1JeEfA-0005Gy-F7 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 25 Mar 2008 12:18:25 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JeEf9-0004fd-69
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Mar 2008 08:30:12 -0700
-In-Reply-To: <20080311181807.454effb7@ephemeral>
+	Tue, 25 Mar 2008 12:18:24 -0700
+In-Reply-To: <20080325124322.GH12798@shadowen.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,77 +33,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jordan.crouse@amd.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com, info-linux@geode.amd.com
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, yorksun@freescale.com, galak@kernel.crashing.org, linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Tue, 25 Mar 2008 12:43:22 +0000
+Andy Whitcroft <apw@shadowen.org> wrote:
 
-Can you please also add/merge this patch as well?  It fixes bugs in
-gxfb-add-power-management-functionality.patch (currently in your tree).
+> > > ...
+> > >
+> > > +unsigned int mpc8610hpcd_get_pixel_format
+> > > +	(unsigned int bits_per_pixel, int monitor_port)
+> 
+> This seems like it might be detectable, does this seem like something we
+> should try an report?
 
-
-
-
-Two suspend/resume fixes:
-  - we weren't saving/restoring the palette correctly; I wasn't setting
-    PAL_ADDRESS correctly.
-  - the original GP restore code had an off-by-one bug that I happily
-    reproduced in this code.  This fixes that, which fixes the RASTER_MODE
-    register not getting set.
-
-And drop an unnecessary comment.
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- drivers/video/geode/suspend_gx.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/geode/suspend_gx.c b/drivers/video/geode/suspend_gx.c
-index bc1f2b9..9aff32e 100644
---- a/drivers/video/geode/suspend_gx.c
-+++ b/drivers/video/geode/suspend_gx.c
-@@ -39,7 +39,7 @@ static void gx_save_regs(struct gxfb_par *par)
- 	memcpy(par->fp, par->vid_regs + VP_FP_START, sizeof(par->fp));
- 
- 	/* save the palette */
--	write_gp(par, DC_PAL_ADDRESS, 0);
-+	write_dc(par, DC_PAL_ADDRESS, 0);
- 	for (i = 0; i < ARRAY_SIZE(par->pal); i++)
- 		par->pal[i] = read_dc(par, DC_PAL_DATA);
- }
-@@ -73,10 +73,10 @@ static void gx_restore_gfx_proc(struct gxfb_par *par)
- 
- 	for (i = 0; i < ARRAY_SIZE(par->gp); i++) {
- 		switch (i) {
--		case GP_RASTER_MODE:
- 		case GP_VECTOR_MODE:
- 		case GP_BLT_MODE:
- 		case GP_BLT_STATUS:
-+		case GP_HST_SRC:
- 			/* don't restore these registers */
- 			break;
- 		default:
-@@ -130,7 +130,7 @@ static void gx_restore_display_ctlr(struct gxfb_par *par)
- 	}
- 
- 	/* restore the palette */
--	write_gp(par, DC_PAL_ADDRESS, 0);
-+	write_dc(par, DC_PAL_ADDRESS, 0);
- 	for (i = 0; i < ARRAY_SIZE(par->pal); i++)
- 		write_dc(par, DC_PAL_DATA, par->pal[i]);
- }
-@@ -163,7 +163,7 @@ static void gx_restore_video_proc(struct gxfb_par *par)
- 		case VP_RSVD_3:
- 		case VP_CRC32:
- 		case VP_AWT:
--		case VP_VTM:    /* this is r/w, shouldn't we restore?  -dil */
-+		case VP_VTM:
- 			/* don't restore these registers */
- 			break;
- 		default:
--- 
-1.5.3.7
-
+I guess so.  It's quite unusual.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

@@ -1,174 +1,82 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2 v3] Driver for Freescale 8610 and 5121 DIU
-Date: Tue, 25 Mar 2008 17:19:17 -0500
-Message-ID: <47E97A65.5010700@freescale.com>
-References: <120648043867-git-send-email-yorksun@freescale.com>
-	<12064804383051-git-send-email-yorksun@freescale.com>
+From: Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 2/2] Blackfin Video Driver: fix bug when
+	opening/reading/mmaping BF54x and BF52x framebuffer simultaneously
+Date: Wed, 26 Mar 2008 18:19:35 -0700
+Message-ID: <1206580775-23929-3-git-send-email-cooloney@kernel.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <12064804383051-git-send-email-yorksun@freescale.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JeSjJ-0003Lz-Gb for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 26 Mar 2008 03:19:37 -0700
+Received: from nwd2mail11.analog.com ([137.71.25.57])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JeSjI-0001dm-3e
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 26 Mar 2008 03:19:37 -0700
+In-Reply-To: <>
+References: <>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: York Sun <yorksun@freescale.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, Timur Tabi <timur@freescale.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Bryan Wu <cooloney@kernel.org>, Michael Hennerich <michael.hennerich@analog.com>
 
-York Sun wrote:
-> +    Example (MPC8610HPCD)
-> +	diu@2c000 {
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-display@2c000
+http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=3974
 
-> +		device_type = "lcd";
+opening/reading/mmaping BF54x and BF52x framebuffer simultaneously
+triggers BUG: failure at mm/nommu.c:470/add_nommu_vma()
+Add VM_SHARED to the default vm_flags
 
-No device_type.
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/video/bf54x-lq043fb.c    |    2 +-
+ drivers/video/bfin-t350mcqb-fb.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> +		compatible = "fsl-diu";
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index 986a550..eefba3d 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -384,7 +384,7 @@ static int bfin_bf54x_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	 *   Other flags can be set, and are documented in
+ 	 *   include/linux/mm.h
+ 	 */
+-	vma->vm_flags |= VM_MAYSHARE;
++	vma->vm_flags |=  VM_MAYSHARE | VM_SHARED;
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index 68d5857..c92d457 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -302,7 +302,7 @@ static int bfin_t350mcqb_fb_mmap(struct fb_info *info, struct vm_area_struct *vm
+ 	 *   Other flags can be set, and are documented in
+ 	 *   include/linux/mm.h
+ 	 */
+-	vma->vm_flags |= VM_MAYSHARE;
++	vma->vm_flags |= VM_MAYSHARE | VM_SHARED;
+ 
+ 	return 0;
+ }
+-- 
+1.5.4.3
 
-"fsl,diu".
-
-> +    s) Freescale on board FPGA
-> +
-> +    This is the memory-mapped registers for on board FPGA.
-> +
-> +    Required properities:
-> +    - compatible : should be "fsl,fpga-pixis".
-> +    - reg : should contain the address and the lenght of the FPPGA register
-> +      set.
-> +
-> +    Example (MPC8610HPCD)
-> +	fpga {
-
-board-control@e8000000 {
-
-> +config FB_FSL_DIU
-> +	tristate "Freescale MPC8610/MPC5121 DIU framebuffer support"
-
-Are these the only chips that will ever implement this?
-
-> +	depends on FB && (MPC8610 || MPC5121)
-
-depends on FB && FSL_SOC
-
-> +		cmfbi = machine_data->fsl_diu_info[index+1]->par;
-> +		if ((mfbi->x_aoi_d + var->xres) >
-> +				machine_data->fsl_diu_info[0]->var.xres)
-> +			mfbi->x_aoi_d = machine_data->fsl_diu_info[0]->var.xres
-> +					- var->xres;
-> +		if (mfbi->x_aoi_d < 0)
-> +			mfbi->x_aoi_d = 0;
-> +		if ((var->xres + mfbi->x_aoi_d) >
-> +				machine_data->fsl_diu_info[0]->var.xres)
-> +			var->xres = machine_data->fsl_diu_info[0]->var.xres
-> +					- mfbi->x_aoi_d;
-> +
-> +		if (cmfbi->count > 0) {		/* AOI1 is open */
-> +			if ((mfbi->y_aoi_d + var->yres) > cmfbi->y_aoi_d)
-> +				mfbi->y_aoi_d = cmfbi->y_aoi_d - var->yres;
-> +			if (mfbi->y_aoi_d < 0)
-> +				mfbi->y_aoi_d = 0;
-> +			if ((var->yres + mfbi->y_aoi_d) > cmfbi->y_aoi_d)
-> +				var->yres = cmfbi->y_aoi_d - mfbi->y_aoi_d;
-> +		} else {				/* AOI1 is close */
-> +			if ((mfbi->y_aoi_d + var->yres) >
-> +					machine_data->fsl_diu_info[0]->var.yres)
-> +				mfbi->y_aoi_d =
-> +					machine_data->fsl_diu_info[0]->var.yres
-> +					- var->yres;
-> +			if (mfbi->y_aoi_d < 0)
-> +				mfbi->y_aoi_d = 0;
-> +			if ((var->yres + mfbi->y_aoi_d) >
-> +					machine_data->fsl_diu_info[0]->var.yres)
-> +				var->yres =
-> +					machine_data->fsl_diu_info[0]->var.yres
-> +					- mfbi->y_aoi_d;
-> +		}
-> +		break;
-> +	case 2:			/* AOI 1 */
-> +	case 4:
-> +		pmfbi = machine_data->fsl_diu_info[index-1]->par;
-> +		if ((mfbi->x_aoi_d + var->xres) >
-> +				machine_data->fsl_diu_info[0]->var.xres)
-> +			mfbi->x_aoi_d = machine_data->fsl_diu_info[0]->var.xres
-> +					- var->xres;
-> +		if (mfbi->x_aoi_d < 0)
-> +			mfbi->x_aoi_d = 0;
-> +		if ((var->xres + mfbi->x_aoi_d) >
-> +				machine_data->fsl_diu_info[0]->var.xres)
-> +			var->xres = machine_data->fsl_diu_info[0]->var.xres
-> +					- mfbi->x_aoi_d;
-> +
-> +		if (pmfbi->count > 0) {		/* AOI0 is open */
-> +			if ((mfbi->y_aoi_d + var->yres) >
-> +					machine_data->fsl_diu_info[0]->var.yres)
-> +				mfbi->y_aoi_d =
-> +					machine_data->fsl_diu_info[0]->var.yres
-> +					- var->yres;
-> +			if (mfbi->y_aoi_d < (pmfbi->y_aoi_d +
-> +				machine_data->fsl_diu_info[index-1]->var.yres))
-> +				mfbi->y_aoi_d = pmfbi->y_aoi_d +
-> +				  machine_data->fsl_diu_info[index-1]->var.yres;
-> +			if ((var->yres + mfbi->y_aoi_d) >
-> +					machine_data->fsl_diu_info[0]->var.yres)
-> +				var->yres =
-> +					machine_data->fsl_diu_info[0]->var.yres
-> +					- mfbi->y_aoi_d;
-> +		} else {				/* AOI0 is close */
-> +			if ((mfbi->y_aoi_d + var->yres) >
-> +				machine_data->fsl_diu_info[0]->var.yres)
-> +				mfbi->y_aoi_d =
-> +					machine_data->fsl_diu_info[0]->var.yres
-> +					- var->yres;
-> +			if (mfbi->y_aoi_d < 0)
-> +				mfbi->y_aoi_d = 0;
-> +			if ((var->yres + mfbi->y_aoi_d) >
-> +				machine_data->fsl_diu_info[0]->var.yres)
-> +				var->yres =
-> +					machine_data->fsl_diu_info[0]->var.yres
-> +					- mfbi->y_aoi_d;
-
-Could you split some of this up into separate functions at lower 
-indentation levels to make it more readable?
-
-> +#define CNVT_TOHW(val, width) ((((val)<<(width))+0x7FFF-(val))>>16)
-> +			red = CNVT_TOHW(red, info->var.red.length);
-> +			green = CNVT_TOHW(green, info->var.green.length);
-> +			blue = CNVT_TOHW(blue, info->var.blue.length);
-> +			transp = CNVT_TOHW(transp, info->var.transp.length);
-> +#undef CNVT_TOHW
-
-Define a function for this.
-
-> +	switch (cmd) {
-> +	case MFB_SET_PIXFMT:
-> +		if (!arg)
-> +			return -EINVAL;
-> +		if (copy_from_user((void *)&pix_fmt, (void *)arg,
-> +				sizeof(pix_fmt)))
-
-(void __user *)arg
-No cast on &pix_fmt.
-
-> +#if defined(CONFIG_NOT_COHERENT_CACHE)
-> +		else if (status & INT_VSYNC) {
-> +			int i;
-> +			unsigned int *ptr;
-> +			ptr  = coherence_data;
-> +			for (i = 0; i < 1024*8; i++)
-> +				*ptr++ = 0;
-
-As I said in an internal review, this is not enough, and it's 
-inefficient.  Read rather than write, and do so only once per cache 
-line, but the size you access has to be at least 13/8 of the cache size 
-for an 8-way plru cache.
-
--Scott
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace

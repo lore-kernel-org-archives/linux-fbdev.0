@@ -1,32 +1,27 @@
-From: "Rhee, C. Joon" <jrhee@qualcomm.com>
-Subject: overlay question
-Date: Fri, 28 Mar 2008 10:45:45 -0700
-Message-ID: <27AAC353AE72C840926448157F375E7201EAF3A7@NAEX17.na.qualcomm.com>
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/2 v4] Driver for Freescale 8610
+	and 5121 DIU
+Date: Fri, 28 Mar 2008 20:48:53 +0300
+Message-ID: <20080328174853.GA1438@localhost.localdomain>
+References: <12066720572512-git-send-email-yorksun@freescale.com>
+	<12066720572314-git-send-email-yorksun@freescale.com>
+	<47ED2B35.4030601@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0442020607=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JfIeE-0006TW-R2 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Mar 2008 10:45:51 -0700
-Received: from wolverine01.qualcomm.com ([199.106.114.254])
-	by mail.sourceforge.net with esmtps (TLSv1:RC4-SHA:128) (Exim 4.44)
-	id 1JfIeD-0003Z8-4h for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Mar 2008 10:45:50 -0700
-Received: from msgtransport01.qualcomm.com (msgtransport01.qualcomm.com
-	[129.46.61.148])
-	by numenor.qualcomm.com (8.14.2/8.14.2/1.0) with ESMTP id
-	m2SHjlNG016213
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 28 Mar 2008 10:45:47 -0700
-Received: from SANEXCAS03.na.qualcomm.com (sanexcas03.qualcomm.com
-	[172.30.32.65])
-	by msgtransport01.qualcomm.com (8.14.2/8.14.2/1.0) with ESMTP id
-	m2SHjkoN014719 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 28 Mar 2008 10:45:47 -0700
-Content-class: urn:content-classes:message
+	id 1JfIhF-0006pL-5H for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Mar 2008 10:48:58 -0700
+Received: from [85.21.88.6] (helo=buildserver.ru.mvista.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JfIhD-00028h-OS
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Mar 2008 10:48:57 -0700
+Content-Disposition: inline
+In-Reply-To: <47ED2B35.4030601@freescale.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,139 +32,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Scott Wood <scottwood@freescale.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org, akpm@linux-foundation.org
 
-This is a multi-part message in MIME format.
+On Fri, Mar 28, 2008 at 12:30:29PM -0500, Scott Wood wrote:
+> York Sun wrote:
+> >+static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+> >+		       unsigned long arg)
+> >+{
+> >+	struct mfb_info *mfbi = info->par;
+> >+	struct diu_ad *ad = mfbi->ad;
+> >+	struct mfb_chroma_key ck;
+> >+	unsigned char global_alpha;
+> >+	struct aoi_display_offset aoi_d;
+> >+	__u32 pix_fmt;
+> >+
+> >+	switch (cmd) {
+> >+	case MFB_SET_PIXFMT:
+> >+		if (!arg)
+> >+			return -EINVAL;
+> >+		if (copy_from_user(&pix_fmt, (void __user *)arg,
+> >+				sizeof(pix_fmt)))
+> 
+> OK, you fixed the cast here...
 
---===============0442020607==
-Content-class: urn:content-classes:message
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C890FB.8D6FD477"
+Maybe better would be to define "buf" at the top of this function as
+void __user *buf = (void __user *)arg;, i.e. just once?
 
-This is a multi-part message in MIME format.
+> 
+> >+			return -EFAULT;
+> >+		ad->pix_fmt = pix_fmt;
+> >+		pr_debug("Set pixel format to 0x%08x\n", ad->pix_fmt);
+> >+		break;
+> >+	case MFB_GET_PIXFMT:
+> >+		if (!arg)
+> >+			return -EINVAL;
 
-------_=_NextPart_001_01C890FB.8D6FD477
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+This if (!arg) appears to be everywhere except default: label, maybe
+this could be placed on top too?
 
-Hi, can we support an overlay surface through framebuffer?
+> >+		pix_fmt = ad->pix_fmt;
+> >+		if (copy_to_user((void *)arg, &pix_fmt, sizeof(pix_fmt)))
+> >+			return -EFAULT;
+> >+		pr_debug("get pixel format 0x%08x\n", ad->pix_fmt);
+> >+		break;
+> >+	case MFB_SET_AOID:
+> >+		if (!arg)
+> >+			return -EINVAL;
+> >+		if (copy_from_user(&aoi_d, (void *)arg, sizeof(aoi_d)))
+> >+			return -EFAULT;
+> 
+> ...but not anywhere else.  All user pointers should have a __user 
+> annotation.
 
-How does Linux support the overlay in general?
-
-=20
-
-Thanks!
-
-=20
-
-
-------_=_NextPart_001_01C890FB.8D6FD477
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Batang;
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
-@font-face
-	{font-family:"Palatino Linotype";
-	panose-1:2 4 5 2 5 5 5 3 3 4;}
-@font-face
-	{font-family:Batang;
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{font-family:"Palatino Linotype";
-	color:windowtext;
-	font-weight:normal;
-	font-style:normal;
-	text-decoration:none none;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino Linotype"'>Hi, can we =
-support an overlay
-surface through framebuffer?</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino Linotype"'>How does =
-Linux support
-the overlay in general?</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino =
-Linotype"'>&nbsp;</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino =
-Linotype"'>Thanks!</span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Palatino Linotype"><span
-style=3D'font-size:10.0pt;font-family:"Palatino =
-Linotype"'>&nbsp;</span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C890FB.8D6FD477--
-
-
---===============0442020607==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+-- 
+Anton Vorontsov
+email: cboumailru@gmail.com
+irc://irc.freenode.net/bd2
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.
 It's the best place to buy or sell services for
 just about anything Open Source.
 http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
---===============0442020607==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0442020607==--

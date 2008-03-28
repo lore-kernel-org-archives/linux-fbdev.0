@@ -1,44 +1,88 @@
-From: York Sun <yorksun@freescale.com>
-Subject: Re: [PATCH 1/2 v4] Driver for Freescale 8610 and 5121 DIU
-Date: Fri, 28 Mar 2008 13:18:49 -0500
-Message-ID: <1206728329.10785.12.camel@laptop>
-References: <12066720572512-git-send-email-yorksun@freescale.com>
-	 <12066720572314-git-send-email-yorksun@freescale.com>
-	 <47ED2B35.4030601@freescale.com>
-	 <20080328174853.GA1438@localhost.localdomain>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 10352] New: uvesafb does
+ not find 1680x1050 resolution on my ati X1400
+Date: Fri, 28 Mar 2008 16:51:49 -0700
+Message-ID: <20080328165149.9b38a0cf.akpm@linux-foundation.org>
+References: <bug-10352-10286@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757382AbYC1STN@vger.kernel.org>
-In-Reply-To: <20080328174853.GA1438@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: avorontsov@ru.mvista.com
-Cc: Scott Wood <scottwood@freescale.com>, linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, Timur Tabi <timur@freescale.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JfONE-0000sw-K6 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Mar 2008 16:52:40 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JfOND-0001y9-7B
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Mar 2008 16:52:40 -0700
+In-Reply-To: <bug-10352-10286@http.bugzilla.kernel.org/>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: sargentd@die-welt.net, bugme-daemon@bugzilla.kernel.org
 
-On Fri, 2008-03-28 at 20:48 +0300, Anton Vorontsov wrote:
-> > >+		if (copy_from_user(&pix_fmt, (void __user *)arg,
-> > >+				sizeof(pix_fmt)))
-> > 
-> > OK, you fixed the cast here...
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
+
+On Fri, 28 Mar 2008 16:14:37 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+
+> http://bugzilla.kernel.org/show_bug.cgi?id=10352
 > 
-> Maybe better would be to define "buf" at the top of this function as
-> void __user *buf = (void __user *)arg;, i.e. just once?
-
-I think it is a good idea.
-
+>            Summary: uvesafb does not find 1680x1050 resolution on my ati
+>                     X1400
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: 2.6.25-rc6
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Console/Framebuffers
+>         AssignedTo: jsimmons@infradead.org
+>         ReportedBy: sargentd@die-welt.net
 > 
-> > 
-> > >+			return -EFAULT;
-> > >+		ad->pix_fmt = pix_fmt;
-> > >+		pr_debug("Set pixel format to 0x%08x\n", ad->pix_fmt);
-> > >+		break;
-> > >+	case MFB_GET_PIXFMT:
-> > >+		if (!arg)
-> > >+			return -EINVAL;
 > 
-> This if (!arg) appears to be everywhere except default: label, maybe
-> this could be placed on top too?
-Will do that, too.
+> Latest working kernel version: none
+> Earliest failing kernel version: 2.6.25-rc6
+> Distribution: Debian Sid
+> Hardware Environment: ThinkPad Z61m, ATI Mobility Radeon X1400, 15.2" 1680x1050
+> LCD
+> Problem Description:
+> 
+> I'm trying to get the native resolution (1680x1050) of my LCD running in the
+> console. However, the maximum I can get is 1400x1050 (that is the maximum
+> displayed by `hwinfo --vbe` and in /sys/devices/platform/uvesafb.0/vbe_modes).
+> As the LCD supports 1680x1050 
+> (hwinfo says:
+>      Resolution: 1680x1050
+>      Horizontal: 1680 1712 1776 1904 (+32 +96 +224) -hsync
+>        Vertical: 1050 1051 1054 1066 (+1 +4 +16) -vsync
+>     Frequencies: 101.67 MHz, 53.40 kHz, 50.09 Hz
+> )
+> and I can get this resolution in Xorg, I wonder how one could get this in the
+> console too.
+> 
+> 
+> -- 
+> Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+> ------- You are receiving this mail because: -------
+> You are on the CC list for the bug, or are watching someone who is.
 
-York
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace

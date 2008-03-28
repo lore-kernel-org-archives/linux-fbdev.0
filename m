@@ -1,20 +1,20 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 3/7] lxfb: clean up final bits of df_regs
-Date: Thu, 27 Mar 2008 20:06:52 -0400
-Message-ID: <20080327200652.6e53e97d@ephemeral>
+Subject: [PATCH 4/7] lxfb: rearrange/rename MSR bitfields
+Date: Thu, 27 Mar 2008 20:09:43 -0400
+Message-ID: <20080327200943.32c41bb1@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jf26n-0002IU-Dq for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Mar 2008 17:06:13 -0700
+	id 1Jf29Z-0002ZS-79 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 27 Mar 2008 17:09:05 -0700
 Received: from mail.queued.net ([207.210.101.209])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jf26l-0000Je-UJ
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jf29X-0000y7-IS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Mar 2008 17:06:13 -0700
+	Thu, 27 Mar 2008 17:09:05 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,106 +29,172 @@ To: Andrew Morton <akpm@linux-foundation.org>
 Cc: jordan.crouse@amd.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com, info-linux@geode.amd.com
 
 
-Finally drop the last remnants of df_regs, using vp_regs instead.  Also,
-drop panel_width and panel_height from lxfb_par; they're unused.
+Finally, move the MSR bitfields around in lxfb.h, and rename them.
+Alas, most of that crap appears to be undocumented.
 
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/geode/lxfb.h      |   12 +++++-------
- drivers/video/geode/lxfb_core.c |   12 ++++++------
- 2 files changed, 11 insertions(+), 13 deletions(-)
+ drivers/video/geode/lxfb.h     |   52 ++++++++++++++++++++-------------------
+ drivers/video/geode/lxfb_ops.c |   37 ++++++++++++++--------------
+ 2 files changed, 46 insertions(+), 43 deletions(-)
 
 diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
-index 6eac13d..0e3cb91 100644
+index 0e3cb91..b3fbc56 100644
 --- a/drivers/video/geode/lxfb.h
 +++ b/drivers/video/geode/lxfb.h
-@@ -8,12 +8,10 @@
+@@ -27,31 +27,6 @@ int lx_blank_display(struct fb_info *, int);
+ void lx_set_palette_reg(struct fb_info *, unsigned int, unsigned int,
+ 			unsigned int, unsigned int);
  
- struct lxfb_par {
- 	int output;
--	int panel_width;
--	int panel_height;
+-/* MSRS */
+-
+-#define GLCP_DOTPLL_RESET    (1 << 0)
+-#define GLCP_DOTPLL_BYPASS   (1 << 15)
+-#define GLCP_DOTPLL_HALFPIX  (1 << 24)
+-#define GLCP_DOTPLL_LOCK     (1 << 25)
+-
+-#define DF_CONFIG_OUTPUT_MASK       0x38
+-#define DF_OUTPUT_PANEL             0x08
+-#define DF_OUTPUT_CRT               0x00
+-#define DF_SIMULTANEOUS_CRT_AND_FP  (1 << 15)
+-
+-#define DF_DEFAULT_TFT_PAD_SEL_LOW  0xDFFFFFFF
+-#define DF_DEFAULT_TFT_PAD_SEL_HIGH 0x0000003F
+-
+-#define DC_SPARE_DISABLE_CFIFO_HGO         0x00000800
+-#define DC_SPARE_VFIFO_ARB_SELECT          0x00000400
+-#define DC_SPARE_WM_LPEN_OVRD              0x00000200
+-#define DC_SPARE_LOAD_WM_LPEN_MASK         0x00000100
+-#define DC_SPARE_DISABLE_INIT_VID_PRI      0x00000080
+-#define DC_SPARE_DISABLE_VFIFO_WM          0x00000040
+-#define DC_SPARE_DISABLE_CWD_CHECK         0x00000020
+-#define DC_SPARE_PIX8_PAN_FIX              0x00000010
+-#define DC_SPARE_FIRST_REQ_MASK            0x00000002
+-
  
- 	void __iomem *gp_regs;
- 	void __iomem *dc_regs;
--	void __iomem *df_regs;
-+	void __iomem *vp_regs;
- };
- 
- static inline unsigned int lx_get_pitch(unsigned int xres, int bpp)
-@@ -374,22 +372,22 @@ static inline void write_dc(struct lxfb_par *par, int reg, uint32_t val)
- 
- static inline uint32_t read_vp(struct lxfb_par *par, int reg)
- {
--	return readl(par->df_regs + 8*reg);
-+	return readl(par->vp_regs + 8*reg);
+ /* Graphics Processor registers (table 6-29 from the data book) */
+ enum gp_registers {
+@@ -390,4 +365,31 @@ static inline void write_fp(struct lxfb_par *par, int reg, uint32_t val)
+ 	writel(val, par->vp_regs + 8*reg + VP_FP_START);
  }
  
- static inline void write_vp(struct lxfb_par *par, int reg, uint32_t val)
- {
--	writel(val, par->df_regs + 8*reg);
-+	writel(val, par->vp_regs + 8*reg);
- }
- 
- static inline uint32_t read_fp(struct lxfb_par *par, int reg)
- {
--	return readl(par->df_regs + 8*reg + VP_FP_START);
-+	return readl(par->vp_regs + 8*reg + VP_FP_START);
- }
- 
- static inline void write_fp(struct lxfb_par *par, int reg, uint32_t val)
- {
--	writel(val, par->df_regs + 8*reg + VP_FP_START);
-+	writel(val, par->vp_regs + 8*reg + VP_FP_START);
- }
- 
++
++/* MSRs are defined in asm/geode.h; their bitfields are here */
++
++#define MSR_GLCP_DOTPLL_LOCK		(1 << 25)	/* r/o */
++#define MSR_GLCP_DOTPLL_HALFPIX		(1 << 24)
++#define MSR_GLCP_DOTPLL_BYPASS		(1 << 15)
++#define MSR_GLCP_DOTPLL_DOTRESET	(1 << 0)
++
++/* note: this is actually the VP's GLD_MSR_CONFIG */
++#define MSR_LX_GLD_MSR_CONFIG_FMT	((1 << 3) | (1 << 4) | (1 << 5))
++#define MSR_LX_GLD_MSR_CONFIG_FMT_FP	(1 << 3)
++#define MSR_LX_GLD_MSR_CONFIG_FMT_CRT	(0)
++#define MSR_LX_GLD_MSR_CONFIG_FPC	(1 << 15)	/* FP *and* CRT */
++
++#define MSR_LX_MSR_PADSEL_TFT_SEL_LOW	0xDFFFFFFF	/* ??? */
++#define MSR_LX_MSR_PADSEL_TFT_SEL_HIGH	0x0000003F	/* ??? */
++
++#define MSR_LX_SPARE_MSR_DIS_CFIFO_HGO	(1 << 11)	/* undocumented */
++#define MSR_LX_SPARE_MSR_VFIFO_ARB_SEL	(1 << 10)	/* undocumented */
++#define MSR_LX_SPARE_MSR_WM_LPEN_OVRD	(1 << 9)	/* undocumented */
++#define MSR_LX_SPARE_MSR_LOAD_WM_LPEN_M	(1 << 8)	/* undocumented */
++#define MSR_LX_SPARE_MSR_DIS_INIT_V_PRI	(1 << 7)	/* undocumented */
++#define MSR_LX_SPARE_MSR_DIS_VIFO_WM	(1 << 6)
++#define MSR_LX_SPARE_MSR_DIS_CWD_CHECK	(1 << 5)	/* undocumented */
++#define MSR_LX_SPARE_MSR_PIX8_PAN_FIX	(1 << 4)	/* undocumented */
++#define MSR_LX_SPARE_MSR_FIRST_REQ_MASK	(1 << 1)	/* undocumented */
++
  #endif
-diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
-index acf1bf6..19eabef 100644
---- a/drivers/video/geode/lxfb_core.c
-+++ b/drivers/video/geode/lxfb_core.c
-@@ -333,7 +333,7 @@ static int __init lxfb_map_video_memory(struct fb_info *info,
- 	if (ret)
- 		return ret;
+diff --git a/drivers/video/geode/lxfb_ops.c b/drivers/video/geode/lxfb_ops.c
+index 6659df7..e042ae7 100644
+--- a/drivers/video/geode/lxfb_ops.c
++++ b/drivers/video/geode/lxfb_ops.c
+@@ -104,12 +104,12 @@ static void lx_set_dotpll(u32 pllval)
  
--	ret = pci_request_region(dev, 3, "lxfb-vip");
-+	ret = pci_request_region(dev, 3, "lxfb-vp");
+ 	rdmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
  
- 	if (ret)
- 		return ret;
-@@ -360,10 +360,10 @@ static int __init lxfb_map_video_memory(struct fb_info *info,
- 	if (par->dc_regs == NULL)
- 		return ret;
+-	if ((dotpll_lo & GLCP_DOTPLL_LOCK) && (dotpll_hi == pllval))
++	if ((dotpll_lo & MSR_GLCP_DOTPLL_LOCK) && (dotpll_hi == pllval))
+ 		return;
  
--	par->df_regs = ioremap(pci_resource_start(dev, 3),
-+	par->vp_regs = ioremap(pci_resource_start(dev, 3),
- 			       pci_resource_len(dev, 3));
+ 	dotpll_hi = pllval;
+-	dotpll_lo &= ~(GLCP_DOTPLL_BYPASS | GLCP_DOTPLL_HALFPIX);
+-	dotpll_lo |= GLCP_DOTPLL_RESET;
++	dotpll_lo &= ~(MSR_GLCP_DOTPLL_BYPASS | MSR_GLCP_DOTPLL_HALFPIX);
++	dotpll_lo |= MSR_GLCP_DOTPLL_DOTRESET;
  
--	if (par->df_regs == NULL)
-+	if (par->vp_regs == NULL)
- 		return ret;
+ 	wrmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
  
- 	write_dc(par, DC_UNLOCK, DC_UNLOCK_UNLOCK);
-@@ -507,8 +507,8 @@ err:
- 		iounmap(par->dc_regs);
- 		pci_release_region(pdev, 2);
- 	}
--	if (par->df_regs) {
--		iounmap(par->df_regs);
-+	if (par->vp_regs) {
-+		iounmap(par->vp_regs);
- 		pci_release_region(pdev, 3);
+@@ -121,13 +121,13 @@ static void lx_set_dotpll(u32 pllval)
+ 
+ 	for (i = 0; i < 1000; i++) {
+ 		rdmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
+-		if (dotpll_lo & GLCP_DOTPLL_LOCK)
++		if (dotpll_lo & MSR_GLCP_DOTPLL_LOCK)
+ 			break;
  	}
  
-@@ -534,7 +534,7 @@ static void lxfb_remove(struct pci_dev *pdev)
- 	iounmap(par->dc_regs);
- 	pci_release_region(pdev, 2);
+ 	/* Clear the reset bit */
  
--	iounmap(par->df_regs);
-+	iounmap(par->vp_regs);
- 	pci_release_region(pdev, 3);
+-	dotpll_lo &= ~GLCP_DOTPLL_RESET;
++	dotpll_lo &= ~MSR_GLCP_DOTPLL_DOTRESET;
+ 	wrmsr(MSR_GLCP_DOTPLL, dotpll_lo, dotpll_hi);
+ }
  
- 	pci_set_drvdata(pdev, NULL);
+@@ -249,8 +249,8 @@ static void lx_graphics_enable(struct fb_info *info)
+ 		write_fp(par, FP_PT2, FP_PT2_SCRC);
+ 		write_fp(par, FP_DFC, FP_DFC_BC);
+ 
+-		msrlo = DF_DEFAULT_TFT_PAD_SEL_LOW;
+-		msrhi = DF_DEFAULT_TFT_PAD_SEL_HIGH;
++		msrlo = MSR_LX_MSR_PADSEL_TFT_SEL_LOW;
++		msrhi = MSR_LX_MSR_PADSEL_TFT_SEL_HIGH;
+ 
+ 		wrmsr(MSR_LX_MSR_PADSEL, msrlo, msrhi);
+ 	}
+@@ -316,18 +316,17 @@ void lx_set_mode(struct fb_info *info)
+ 	/* Set output mode */
+ 
+ 	rdmsrl(MSR_LX_GLD_MSR_CONFIG, msrval);
+-	msrval &= ~DF_CONFIG_OUTPUT_MASK;
++	msrval &= ~MSR_LX_GLD_MSR_CONFIG_FMT;
+ 
+ 	if (par->output & OUTPUT_PANEL) {
+-		msrval |= DF_OUTPUT_PANEL;
++		msrval |= MSR_LX_GLD_MSR_CONFIG_FMT_FP;
+ 
+ 		if (par->output & OUTPUT_CRT)
+-			msrval |= DF_SIMULTANEOUS_CRT_AND_FP;
++			msrval |= MSR_LX_GLD_MSR_CONFIG_FPC;
+ 		else
+-			msrval &= ~DF_SIMULTANEOUS_CRT_AND_FP;
+-	} else {
+-		msrval |= DF_OUTPUT_CRT;
+-	}
++			msrval &= ~MSR_LX_GLD_MSR_CONFIG_FPC;
++	} else
++		msrval |= MSR_LX_GLD_MSR_CONFIG_FMT_CRT;
+ 
+ 	wrmsrl(MSR_LX_GLD_MSR_CONFIG, msrval);
+ 
+@@ -379,10 +378,12 @@ void lx_set_mode(struct fb_info *info)
+ 
+ 	rdmsrl(MSR_LX_SPARE_MSR, msrval);
+ 
+-	msrval &= ~(DC_SPARE_DISABLE_CFIFO_HGO | DC_SPARE_VFIFO_ARB_SELECT |
+-		    DC_SPARE_LOAD_WM_LPEN_MASK | DC_SPARE_WM_LPEN_OVRD |
+-		    DC_SPARE_DISABLE_INIT_VID_PRI | DC_SPARE_DISABLE_VFIFO_WM);
+-	msrval |= DC_SPARE_DISABLE_VFIFO_WM | DC_SPARE_DISABLE_INIT_VID_PRI;
++	msrval &= ~(MSR_LX_SPARE_MSR_DIS_CFIFO_HGO
++			| MSR_LX_SPARE_MSR_VFIFO_ARB_SEL
++			| MSR_LX_SPARE_MSR_LOAD_WM_LPEN_M
++			| MSR_LX_SPARE_MSR_WM_LPEN_OVRD);
++	msrval |= MSR_LX_SPARE_MSR_DIS_VIFO_WM |
++			MSR_LX_SPARE_MSR_DIS_INIT_V_PRI;
+ 	wrmsrl(MSR_LX_SPARE_MSR, msrval);
+ 
+ 	gcfg = DC_GENERAL_CFG_DFLE;   /* Display fifo enable */
 -- 
 1.5.3.7
 

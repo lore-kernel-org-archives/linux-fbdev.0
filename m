@@ -1,9 +1,8 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 10352] New: uvesafb does
- not find 1680x1050 resolution on my ati X1400
-Date: Fri, 28 Mar 2008 16:51:49 -0700
-Message-ID: <20080328165149.9b38a0cf.akpm@linux-foundation.org>
-References: <bug-10352-10286@http.bugzilla.kernel.org/>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [RFC 1/3 2.6.24] fbdev: platforming metronomefb
+	and hecubafb
+Date: Sat, 29 Mar 2008 04:50:07 -0400
+Message-ID: <20080329085006.6926.54613.sendpatchset@hit-nxdomain.opendns.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,14 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JfONE-0000sw-K6 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Mar 2008 16:52:40 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JfOND-0001y9-7B
+	id 1JfXfq-0006Zs-76 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 29 Mar 2008 02:48:30 -0700
+Received: from wa-out-1112.google.com ([209.85.146.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JfXfo-0000gS-Mq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 28 Mar 2008 16:52:40 -0700
-In-Reply-To: <bug-10352-10286@http.bugzilla.kernel.org/>
+	Sat, 29 Mar 2008 02:48:30 -0700
+Received: by wa-out-1112.google.com with SMTP id k22so797290waf.18
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 29 Mar 2008 02:48:27 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,56 +30,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: sargentd@die-welt.net, bugme-daemon@bugzilla.kernel.org
+Cc: akpm@linux-foundation.org, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+Hi Tony, Geert, Andrew, fbdev,
 
-On Fri, 28 Mar 2008 16:14:37 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+Following are 2 patches. They are my first pass at splitting metronomefb and
+hecubafb into platform independent (platform drivers) and platform specific
+(platform devices) drivers which are am200epd (arm) and n411 (x86).
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10352
-> 
->            Summary: uvesafb does not find 1680x1050 resolution on my ati
->                     X1400
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.25-rc6
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Console/Framebuffers
->         AssignedTo: jsimmons@infradead.org
->         ReportedBy: sargentd@die-welt.net
-> 
-> 
-> Latest working kernel version: none
-> Earliest failing kernel version: 2.6.25-rc6
-> Distribution: Debian Sid
-> Hardware Environment: ThinkPad Z61m, ATI Mobility Radeon X1400, 15.2" 1680x1050
-> LCD
-> Problem Description:
-> 
-> I'm trying to get the native resolution (1680x1050) of my LCD running in the
-> console. However, the maximum I can get is 1400x1050 (that is the maximum
-> displayed by `hwinfo --vbe` and in /sys/devices/platform/uvesafb.0/vbe_modes).
-> As the LCD supports 1680x1050 
-> (hwinfo says:
->      Resolution: 1680x1050
->      Horizontal: 1680 1712 1776 1904 (+32 +96 +224) -hsync
->        Vertical: 1050 1051 1054 1066 (+1 +4 +16) -vsync
->     Frequencies: 101.67 MHz, 53.40 kHz, 50.09 Hz
-> )
-> and I can get this resolution in Xorg, I wonder how one could get this in the
-> console too.
-> 
-> 
-> -- 
-> Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-> ------- You are receiving this mail because: -------
-> You are on the CC list for the bug, or are watching someone who is.
+This code works okay but I'm having some trouble figuring out why module
+refcounting and unloading doesn't work on my platform device side of things.
+So that's on the todolist. I stuck the headers in include/video but I'm not
+sure if that was the right thing to do. I noticed some of the other headers in
+there are there in order to share headers with userspace. Would it be better
+if I made an include/linux/video or just stuck it in include/linux/ itself?
+The overall diffstat is appended below.
+
+I would be grateful for any feedback on this.
+
+Thanks,
+jaya
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+
+---
+
+ Documentation/fb/metronomefb.txt |   16 --
+ drivers/video/Kconfig            |   33 ++--
+ drivers/video/Makefile           |    2 
+ drivers/video/am200epd.c         |  278 ++++++++++++++++++++++++++++++++++
+ drivers/video/hecubafb.c         |  294 ++++++++----------------------------
+ drivers/video/metronomefb.c      |  310 +++++----------------------------------
+ drivers/video/n411.c             |  192 ++++++++++++++++++++++++
+ include/video/hecubafb.h         |   50 ++++++
+ include/video/metronomefb.h      |   61 +++++++
+ 9 files changed, 726 insertions(+), 510 deletions(-)
+
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

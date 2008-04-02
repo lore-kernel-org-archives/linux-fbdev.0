@@ -1,12 +1,8 @@
-From: York Sun <yorksun@freescale.com>
-Subject: Re: [PATCH 2/2 v5] Add DIU platform code for
-	MPC8610HPCD
-Date: Wed, 02 Apr 2008 08:27:43 -0500
-Message-ID: <1207142863.20695.19.camel@laptop>
-References: <12069806051060-git-send-email-yorksun@freescale.com>
-	<1206980605689-git-send-email-yorksun@freescale.com>
-	<12069806051291-git-send-email-yorksun@freescale.com>
-	<20080401140029.be918d87.akpm@linux-foundation.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
+Date: Wed, 2 Apr 2008 14:55:54 -0700
+Message-ID: <20080402145554.77ede423.akpm@linux-foundation.org>
+References: <20080402124854.M56647@visp.net.lb>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +10,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jh30R-0002yT-HK for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Apr 2008 06:27:59 -0700
-Received: from de01egw02.freescale.net ([192.88.165.103])
+	id 1JhAw7-0004fQ-Fd for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 Apr 2008 14:56:03 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jh30P-0000VZ-Ha
+	(Exim 4.44) id 1JhAw6-0007WV-Tz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Apr 2008 06:27:59 -0700
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	m32DRjKt003585 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 2 Apr 2008 06:27:46 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m32DRjtP002586
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 2 Apr 2008 08:27:45 -0500 (CDT)
-In-Reply-To: <20080401140029.be918d87.akpm@linux-foundation.org>
+	Wed, 02 Apr 2008 14:56:03 -0700
+In-Reply-To: <20080402124854.M56647@visp.net.lb>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -41,35 +28,109 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, galak@kernel.crashing.org, linuxppc-dev@ozlabs.org, scottwood@freescale.com, avorontsov@ru.mvista.com, timur@freescale.com
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, 2008-04-01 at 14:00 -0700, Andrew Morton wrote:
-> On Mon, 31 Mar 2008 11:23:25 -0500
-> York Sun <yorksun@freescale.com> wrote:
+On Wed, 2 Apr 2008 15:54:12 +0300
+"Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+
+> VGA card i dont know how much RAM there actually, but lspci here shows looks
+> like 16MB:
 > 
-> > Add platform code to support Freescale DIU. The platform code includes
-> > framebuffer memory allocation, pixel format, monitor port, etc.
-> > 
-> > Signed-off-by: York Sun <yorksun@freescale.com>
-> > Signed-off-by: Timur Tabi <timur@freescale.com>
-> > ---
-> > This patch addes platform support for Freescale DIU driver, targeting 2.6.26 kernel.
-> > 
-> >  arch/powerpc/configs/mpc8610_hpcd_defconfig |  198 +++++++++++++++++++++++----
-> >  arch/powerpc/platforms/86xx/mpc8610_hpcd.c  |  190 ++++++++++++++++++++++++--
-> >  arch/powerpc/sysdev/fsl_soc.c               |   41 ++++++
-> >  arch/powerpc/sysdev/fsl_soc.h               |   23 +++
-> >  4 files changed, 413 insertions(+), 39 deletions(-)
+> 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
+> 5c) (prog-if 00 [VGA controller])
+>         Subsystem: ATI Technologies Inc Rage Pro Turbo
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping+ SERR- FastB2B- DisINTx-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
+>         Interrupt: pin A routed to IRQ 21
+>         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
+>         Region 1: I/O ports at 2000 [size=256]
+>         Region 2: Memory at d0121000 (32-bit, non-prefetchable) [size=4K]
+>         Kernel driver in use: atyfb
 > 
-> The defconfig change gets almost 100% rejects and probably isn't
-> appropriate here and isn't very important.  I dropped that part of the
-> patch.
+> 
+> 
+> Loading without parameters
+> 
+> atyfb: using auxiliary register aperture
+> atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> atyfb: BIOS frequency table:
+> atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100 MHz XCLK
+> atyfb: fb0: ATY Mach64 frame buffer device on PCI
+> 
+> It detects 8M.
+> If i put parameter vram=8
+> atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> atyfb: BIOS frequency table:
+> atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> atyfb: 0M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100 MHz XCLK
+> atyfb: not enough video RAM
+> atyfb: can't set default video mode
+
+Why did this happen?  It seems from reading the code that the vram arg is in
+kilobytes, yes?
+
+
+> And most interesting when i do rmmod
+> tv1 ~ # rmmod atyfb
+> Segmentation fault
+> 
+> and dmesg:
+> BUG: unable to handle kernel NULL pointer dereference at 00000448
+> IP: [<ce8fd0f2>] :atyfb:aty_set_crtc+0x9/0x19d
+> *pde = 00000000
+> Oops: 0000 [#1] SMP
+> Modules linked in: atyfb(-) fb backlight cfbcopyarea cfbimgblt cfbfillrect
+> rtc_cmos rtc_core rtc_lib e100 mii snd_intel8x0 snd_ac97_codec ac97_bus
+> snd_pcm snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core rng_core
+> iTCO_wdt uhci_hcd usbcore [last unloaded: atyfb]
+> 
+> Pid: 5198, comm: rmmod Not tainted (2.6.25-rc8-video #1)
+> EIP: 0060:[<ce8fd0f2>] EFLAGS: 00010286 CPU: 1
+> EIP is at aty_set_crtc+0x9/0x19d [atyfb]
+> EAX: 00000000 EBX: 00000000 ECX: cd8c6854 EDX: ce9064a0
+> ESI: ce9064a0 EDI: ce905830 EBP: cc9a1ed0 ESP: cc9a1ec8
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process rmmod (pid: 5198, ti=cc9a1000 task=cc9da000 task.ti=cc9a1000)
+> Stack: 00000000 ccacd000 cc9a1ee0 ce900d20 cd8c6800 ce905830 cc9a1eec c01c8376
+>        cd8c6854 cc9a1efc c0208c92 cd8c3854 cd8c6854 cc9a1f10 c02090c1 ce905830
+>        00000000 c0369060 cc9a1f24 c02086bc 00000000 ce905830 00000880 cc9a1f34
+> Call Trace:
+>  [<ce900d20>] ? atyfb_pci_remove+0x1d/0xb3 [atyfb]
+>  [<c01c8376>] ? pci_device_remove+0x19/0x39
+>  [<c0208c92>] ? __device_release_driver+0x60/0x7d
+>  [<c02090c1>] ? driver_detach+0x8e/0xcd
+>  [<c02086bc>] ? bus_remove_driver+0x63/0x7f
+>  [<c020914c>] ? driver_unregister+0x2a/0x2e
+>  [<c01c852e>] ? pci_unregister_driver+0x1e/0x64
+>  [<ce900d01>] ? atyfb_exit+0xd/0xf [atyfb]
+>  [<c013be85>] ? sys_delete_module+0x195/0x1d0
+>  [<c0110b8c>] ? do_page_fault+0x251/0x505
+>  [<c012e5cd>] ? up_read+0x16/0x29
+>  [<c0110b8c>] ? do_page_fault+0x251/0x505
+>  [<c0103892>] ? sysenter_past_esp+0x5f/0x91
+>  =======================
+> Code: 01 00 00 00 e8 84 ff ff ff a8 02 74 0e 8b 07 89 83 dc 03 00 00 8b b3 50
+> 04 00 00 89 f0 5b 5e 5f 5d c3 55 89 e5 56 53 89 c3 89 d6 <83> b8 48 04 00 00
+> 00 74 5f 8b 52 2c 81 e2 ff ff ff fc 8b 80 48
+> EIP: [<ce8fd0f2>] aty_set_crtc+0x9/0x19d [atyfb] SS:ESP 0068:cc9a1ec8
+> ---[ end trace 1c998179e35e2f76 ]---
+> 
+> I will try to enable more debug, but probably this information is enough?
 > 
 
-It's OK.
+Looks like incoming arg `par' is NULL in aty_set_crtc().
 
-York
+I suspect the problem is that the module shouldn't have successfully loaded
+at all, given that its fb_ops.fb_set_par() failed?
 
 
 -------------------------------------------------------------------------

@@ -1,10 +1,8 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
-Date: Wed, 2 Apr 2008 22:30:56 -0700
-Message-ID: <20080402223056.f708881b.akpm@linux-foundation.org>
-References: <20080402124854.M56647@visp.net.lb>
-	<20080402145554.77ede423.akpm@linux-foundation.org>
-	<20080403051531.M38762@visp.net.lb>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [PATCH 1/2 2.6.24] fbdev: platforming
+	metronomefb and am200epd
+Date: Thu, 03 Apr 2008 01:19:08 -0400
+Message-ID: <20080403051908.29628.86131.sendpatchset@apodmy1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,14 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JhI2n-0002mB-3O for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Apr 2008 22:31:25 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JhI2m-00062p-Lu
+	id 1JhIlN-0000Gi-CH for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 Apr 2008 23:17:29 -0700
+Received: from an-out-0708.google.com ([209.85.132.246])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JhIlK-0005T0-68
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Apr 2008 22:31:25 -0700
-In-Reply-To: <20080403051531.M38762@visp.net.lb>
+	Wed, 02 Apr 2008 23:17:29 -0700
+Received: by an-out-0708.google.com with SMTP id b38so773552ana.6
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 02 Apr 2008 23:17:25 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,155 +29,1091 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-On Thu, 3 Apr 2008 08:22:19 +0300 "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+Hi Tony, Geert, Andrew, fbdev,
 
-> Well, additionally i am not able to manage this FB driver to work on my VGA,
-> while uvesafb works fine (but probably slower). But it is probably sync
-> problems with my TV-Out, i am still investigating it. But again, uvesafb works
-> great.
+This patchset has 2 patches. They are are in order to split metronomefb and
+hecubafb into platform independent (platform drivers) and platform specific
+(platform devices) drivers which are am200epd (arm) and n411 (x86). The
+improvement over the last time I posted this is that I've now added module
+refcount handling in the platform drivers and so module loading/unloading
+works.
 
-OK.
+I would be grateful for any feedback on this.
 
-> Btw just a bit offtopic question, do i need to report here about such issues,
-> while i can find for myself another solution? Maybe better to not take time of
-> developers for such not important things? Or better to "bugtest" kernel and to
-> make it better together?
+Thanks,
+jaya
 
-No, you did fine.  You forgot to cc the fbdev mailing list, but I fixed
-that.  Thanks for helping.
+This patch splits metronomefb into the platform independent metronomefb and
+the platform dependent am200epd. It also includes some comment cleanup and
+a bugfix for the use of cfb_* functions instead of sys_* functions. The 
+Kconfig and Makefile changes include the changes needed for hecubafb and
+n411.
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+
+---
+
+ Documentation/fb/metronomefb.txt |   16 -
+ drivers/video/Kconfig            |   33 ++--
+ drivers/video/Makefile           |    2 
+ drivers/video/am200epd.c         |  295 +++++++++++++++++++++++++++++++++++
+ drivers/video/hecubafb.c         |  302 +++++++++---------------------------
+ drivers/video/metronomefb.c      |  320 ++++++---------------------------------
+ drivers/video/n411.c             |  202 ++++++++++++++++++++++++
+ include/video/hecubafb.h         |   51 ++++++
+ include/video/metronomefb.h      |   62 +++++++
+ 9 files changed, 767 insertions(+), 516 deletions(-)
 
 
-> On Wed, 2 Apr 2008 14:55:54 -0700, Andrew Morton wrote
-> > On Wed, 2 Apr 2008 15:54:12 +0300
-> > "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
-> > 
-> > > VGA card i dont know how much RAM there actually, but lspci here shows looks
-> > > like 16MB:
-> > > 
-> > > 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
-> > > 5c) (prog-if 00 [VGA controller])
-> > >         Subsystem: ATI Technologies Inc Rage Pro Turbo
-> > >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> > > Stepping+ SERR- FastB2B- DisINTx-
-> > >         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> > > <TAbort- <MAbort- >SERR- <PERR- INTx-
-> > >         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
-> > >         Interrupt: pin A routed to IRQ 21
-> > >         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
-> > >         Region 1: I/O ports at 2000 [size=256]
-> > >         Region 2: Memory at d0121000 (32-bit, non-prefetchable) [size=4K]
-> > >         Kernel driver in use: atyfb
-> > > 
-> > > 
-> > > 
-> > > Loading without parameters
-> > > 
-> > > atyfb: using auxiliary register aperture
-> > > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> > > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> > > atyfb: BIOS frequency table:
-> > > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
-> > > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
-> > > atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
-> MHz XCLK
-> > > atyfb: fb0: ATY Mach64 frame buffer device on PCI
-> > > 
-> > > It detects 8M.
-> > > If i put parameter vram=8
-> > > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> > > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> > > atyfb: BIOS frequency table:
-> > > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
-> > > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
-> > > atyfb: 0M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
-> MHz XCLK
-> > > atyfb: not enough video RAM
-> > > atyfb: can't set default video mode
-> > 
-> > Why did this happen?  It seems from reading the code that the vram 
-> > arg is in kilobytes, yes?
-> Also from various sources, like Documentation/fb/intel810.txt
-> <<< SNIP >>>
->    e. "vram:<value>"
->         select amount of system RAM in MB to allocate for the video memory
-> 
->         Recommendation: 1 - 4 MB.
->         (default = 4)
-> <<< SNIP >>>
-> 
-> I tried also 8388608, sure it doesn't work too. This parameter seems doesn't
-> work at all. When i didn't specify it - it shows amount or RAM (which looks
-> invalid), when i specify it any value (i try 2 or 8 or 16) - it shows 0MB and
-> crashing.
-
-OK.
-
-> > 
-> > > And most interesting when i do rmmod
-> > > tv1 ~ # rmmod atyfb
-> > > Segmentation fault
-> > > 
-> > > and dmesg:
-> > > BUG: unable to handle kernel NULL pointer dereference at 00000448
-> > > IP: [<ce8fd0f2>] :atyfb:aty_set_crtc+0x9/0x19d
-> > > *pde = 00000000
-> > > Oops: 0000 [#1] SMP
-> > > Modules linked in: atyfb(-) fb backlight cfbcopyarea cfbimgblt cfbfillrect
-> > > rtc_cmos rtc_core rtc_lib e100 mii snd_intel8x0 snd_ac97_codec ac97_bus
-> > > snd_pcm snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core rng_core
-> > > iTCO_wdt uhci_hcd usbcore [last unloaded: atyfb]
-> > > 
-> > > Pid: 5198, comm: rmmod Not tainted (2.6.25-rc8-video #1)
-> > > EIP: 0060:[<ce8fd0f2>] EFLAGS: 00010286 CPU: 1
-> > > EIP is at aty_set_crtc+0x9/0x19d [atyfb]
-> > > EAX: 00000000 EBX: 00000000 ECX: cd8c6854 EDX: ce9064a0
-> > > ESI: ce9064a0 EDI: ce905830 EBP: cc9a1ed0 ESP: cc9a1ec8
-> > >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > > Process rmmod (pid: 5198, ti=cc9a1000 task=cc9da000 task.ti=cc9a1000)
-> > > Stack: 00000000 ccacd000 cc9a1ee0 ce900d20 cd8c6800 ce905830 cc9a1eec c01c8376
-> > >        cd8c6854 cc9a1efc c0208c92 cd8c3854 cd8c6854 cc9a1f10 c02090c1 ce905830
-> > >        00000000 c0369060 cc9a1f24 c02086bc 00000000 ce905830 00000880 cc9a1f34
-> > > Call Trace:
-> > >  [<ce900d20>] ? atyfb_pci_remove+0x1d/0xb3 [atyfb]
-> > >  [<c01c8376>] ? pci_device_remove+0x19/0x39
-> > >  [<c0208c92>] ? __device_release_driver+0x60/0x7d
-> > >  [<c02090c1>] ? driver_detach+0x8e/0xcd
-> > >  [<c02086bc>] ? bus_remove_driver+0x63/0x7f
-> > >  [<c020914c>] ? driver_unregister+0x2a/0x2e
-> > >  [<c01c852e>] ? pci_unregister_driver+0x1e/0x64
-> > >  [<ce900d01>] ? atyfb_exit+0xd/0xf [atyfb]
-> > >  [<c013be85>] ? sys_delete_module+0x195/0x1d0
-> > >  [<c0110b8c>] ? do_page_fault+0x251/0x505
-> > >  [<c012e5cd>] ? up_read+0x16/0x29
-> > >  [<c0110b8c>] ? do_page_fault+0x251/0x505
-> > >  [<c0103892>] ? sysenter_past_esp+0x5f/0x91
-> > >  =======================
-> > > Code: 01 00 00 00 e8 84 ff ff ff a8 02 74 0e 8b 07 89 83 dc 03 00 00 8b b3 50
-> > > 04 00 00 89 f0 5b 5e 5f 5d c3 55 89 e5 56 53 89 c3 89 d6 <83> b8 48 04 00 00
-> > > 00 74 5f 8b 52 2c 81 e2 ff ff ff fc 8b 80 48
-> > > EIP: [<ce8fd0f2>] aty_set_crtc+0x9/0x19d [atyfb] SS:ESP 0068:cc9a1ec8
-> > > ---[ end trace 1c998179e35e2f76 ]---
-> > > 
-> > > I will try to enable more debug, but probably this information is enough?
-> > >
-> > 
-> > Looks like incoming arg `par' is NULL in aty_set_crtc().
-> > 
-> > I suspect the problem is that the module shouldn't have successfully 
-> > loaded at all, given that its fb_ops.fb_set_par() failed?
-> Maybe, at least it must not crash such ugly way. I am not enough programmer to
-> give comments about code.
-
-Alas, I don't think we have an atyfb maintainer, and our official fbdev
-maintainer (Tony Daplas) has been out of contact for a couple of months. 
-(This has happened before and I expect he'll return).  Meanwhile a few
-other people are helping out.
-
-But it may take us some time to get onto this.  If nothing happens, please
-do send a repeat bug report in a month or so.
+diff --git a/Documentation/fb/metronomefb.txt b/Documentation/fb/metronomefb.txt
+index b9a2e7b..54875ad 100644
+--- a/Documentation/fb/metronomefb.txt
++++ b/Documentation/fb/metronomefb.txt
+@@ -1,7 +1,7 @@
+ 			Metronomefb
+ 			-----------
+ Maintained by Jaya Kumar <jayakumar.lkml.gmail.com>
+-Last revised: Nov 20, 2007
++Last revised: Mar 10, 2008
+ 
+ Metronomefb is a driver for the Metronome display controller. The controller
+ is from E-Ink Corporation. It is intended to be used to drive the E-Ink
+@@ -11,20 +11,18 @@ display media here http://www.e-ink.com/products/matrix/metronome.html .
+ Metronome is interfaced to the host CPU through the AMLCD interface. The
+ host CPU generates the control information and the image in a framebuffer
+ which is then delivered to the AMLCD interface by a host specific method.
+-Currently, that's implemented for the PXA's LCDC controller. The display and
+-error status are each pulled through individual GPIOs.
++The display and error status are each pulled through individual GPIOs.
+ 
+-Metronomefb was written for the PXA255/gumstix/lyre combination and
+-therefore currently has board set specific code in it. If other boards based on
+-other architectures are available, then the host specific code can be separated
+-and abstracted out.
++Metronomefb is platform independent and depends on a board specific driver
++to do all physical IO work. Currently, an example is implemented for the
++PXA board used in the AM-200 EPD devkit. This example is am200epd.c 
+ 
+ Metronomefb requires waveform information which is delivered via the AMLCD
+ interface to the metronome controller. The waveform information is expected to
+ be delivered from userspace via the firmware class interface. The waveform file
+ can be compressed as long as your udev or hotplug script is aware of the need
+-to uncompress it before delivering it. metronomefb will ask for waveform.wbf
+-which would typically go into /lib/firmware/waveform.wbf depending on your
++to uncompress it before delivering it. metronomefb will ask for metronome.wbf
++which would typically go into /lib/firmware/metronome.wbf depending on your
+ udev/hotplug setup. I have only tested with a single waveform file which was
+ originally labeled 23P01201_60_WT0107_MTC. I do not know what it stands for.
+ Caution should be exercised when manipulating the waveform as there may be
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 1bd5fb3..eb652c6 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -149,6 +149,16 @@ config FB_DEFERRED_IO
+ 	depends on FB
+ 	default y
+ 
++config FB_METRONOME
++	tristate
++	depends on FB
++	depends on FB_DEFERRED_IO
++
++config FB_HECUBA
++	tristate
++	depends on FB
++	depends on FB_DEFERRED_IO
++
+ config FB_SVGALIB
+ 	tristate
+ 	depends on FB
+@@ -674,20 +684,18 @@ config FB_IMAC
+ 	help
+ 	  This is the frame buffer device driver for the Intel-based Macintosh
+ 
+-config FB_HECUBA
+-       tristate "Hecuba board support"
++config FB_N411
++       tristate "N411 Apollo/Hecuba devkit support"
+        depends on FB && X86 && MMU
+        select FB_SYS_FILLRECT
+        select FB_SYS_COPYAREA
+        select FB_SYS_IMAGEBLIT
+        select FB_SYS_FOPS
+        select FB_DEFERRED_IO
++       select FB_HECUBA
+        help
+-         This enables support for the Hecuba board. This driver was tested
+-         with an E-Ink 800x600 display and x86 SBCs through a 16 bit GPIO
+-         interface (8 bit data, 4 bit control). If you anticipate using
+-         this driver, say Y or M; otherwise say N. You must specify the
+-         GPIO IO address to be used for setting control and data.
++         This enables support for the Apollo display controller in its
++         Hecuba form using the n411 devkit. 
+ 
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+@@ -1893,19 +1901,18 @@ config FB_XILINX
+ 	  framebuffer. ML300 carries a 640*480 LCD display on the board,
+ 	  ML403 uses a standard DB15 VGA connector.
+ 
+-config FB_METRONOME
+-       tristate "Metronome display controller support"
++config FB_AM200EPD
++       tristate "AM-200 E-Ink EPD devkit support"
+        depends on FB && ARCH_PXA && MMU
+        select FB_SYS_FILLRECT
+        select FB_SYS_COPYAREA
+        select FB_SYS_IMAGEBLIT
+        select FB_SYS_FOPS
+        select FB_DEFERRED_IO
++       select FB_METRONOME
+        help
+-         This enables support for the Metronome display controller. Tested
+-         with an E-Ink 800x600 display and Gumstix Connex through an AMLCD
+-         interface. Please read <file:Documentation/fb/metronomefb.txt>
+-         for more information.
++         This enables support for the Metronome display controller used on
++         the E-Ink AM-200 EPD devkit.
+ 
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 11c0e5e..b38549c 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -29,6 +29,7 @@ obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
++obj-$(CONFIG_FB_AM200EPD)         += am200epd.o
+ obj-$(CONFIG_FB_ARC)              += arcfb.o
+ obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o
+ obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o
+@@ -47,6 +48,7 @@ obj-$(CONFIG_FB_SAVAGE)		  += savage/
+ obj-$(CONFIG_FB_GEODE)		  += geode/
+ obj-$(CONFIG_FB_MBX)		  += mbx/
+ obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o
++obj-$(CONFIG_FB_N411)             += n411.o
+ obj-$(CONFIG_FB_3DFX)             += tdfxfb.o
+ obj-$(CONFIG_FB_CONTROL)          += controlfb.o
+ obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o
+diff --git a/drivers/video/am200epd.c b/drivers/video/am200epd.c
+new file mode 100644
+index 0000000..51e26c1
+--- /dev/null
++++ b/drivers/video/am200epd.c
+@@ -0,0 +1,295 @@
++/*
++ * linux/drivers/video/am200epd.c -- Platform device for AM200 EPD kit
++ *
++ * Copyright (C) 2008, Jaya Kumar
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file COPYING in the main directory of this archive for
++ * more details.
++ *
++ * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
++ *
++ * This work was made possible by help and equipment support from E-Ink
++ * Corporation. http://support.eink.com/community
++ *
++ * This driver is written to be used with the Metronome display controller.
++ * on the AM200 EPD prototype kit/development kit with an E-Ink 800x600
++ * Vizplex EPD on a Gumstix board using the Lyre interface board.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/fb.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/list.h>
++#include <linux/uaccess.h>
++#include <linux/irq.h>
++
++#include <video/metronomefb.h>
++
++#include <asm/arch/pxa-regs.h>
++
++/* register offsets for gpio control */
++#define LED_GPIO_PIN 51
++#define STDBY_GPIO_PIN 48
++#define RST_GPIO_PIN 49
++#define RDY_GPIO_PIN 32
++#define ERR_GPIO_PIN 17
++#define PCBPWR_GPIO_PIN 16
++
++#define AF_SEL_GPIO_N 0x3
++#define GAFR0_U_OFFSET(pin) ((pin - 16) * 2)
++#define GAFR1_L_OFFSET(pin) ((pin - 32) * 2)
++#define GAFR1_U_OFFSET(pin) ((pin - 48) * 2)
++#define GPDR1_OFFSET(pin) (pin - 32)
++#define GPCR1_OFFSET(pin) (pin - 32)
++#define GPSR1_OFFSET(pin) (pin - 32)
++#define GPCR0_OFFSET(pin) (pin)
++#define GPSR0_OFFSET(pin) (pin)
++
++static void am200_set_gpio_output(int pin, int val)
++{
++	u8 index;
++
++	index = pin >> 4;
++
++	switch (index) {
++	case 1:
++		if (val)
++			GPSR0 |= (1 << GPSR0_OFFSET(pin));
++		else
++			GPCR0 |= (1 << GPCR0_OFFSET(pin));
++		break;
++	case 2:
++		break;
++	case 3:
++		if (val)
++			GPSR1 |= (1 << GPSR1_OFFSET(pin));
++		else
++			GPCR1 |= (1 << GPCR1_OFFSET(pin));
++		break;
++	default:
++		printk(KERN_ERR "unimplemented\n");
++	}
++}
++
++static void __devinit am200_init_gpio_pin(int pin, int dir)
++{
++	u8 index;
++	/* dir 0 is output, 1 is input
++	- do 2 things here:
++	- set gpio alternate function to standard gpio
++	- set gpio direction to input or output  */
++
++	index = pin >> 4;
++	switch (index) {
++	case 1:
++		GAFR0_U &= ~(AF_SEL_GPIO_N << GAFR0_U_OFFSET(pin));
++
++		if (dir)
++			GPDR0 &= ~(1 << pin);
++		else
++			GPDR0 |= (1 << pin);
++		break;
++	case 2:
++		GAFR1_L &= ~(AF_SEL_GPIO_N << GAFR1_L_OFFSET(pin));
++
++		if (dir)
++			GPDR1 &= ~(1 << GPDR1_OFFSET(pin));
++		else
++			GPDR1 |= (1 << GPDR1_OFFSET(pin));
++		break;
++	case 3:
++		GAFR1_U &= ~(AF_SEL_GPIO_N << GAFR1_U_OFFSET(pin));
++
++		if (dir)
++			GPDR1 &= ~(1 << GPDR1_OFFSET(pin));
++		else
++			GPDR1 |= (1 << GPDR1_OFFSET(pin));
++		break;
++	default:
++		printk(KERN_ERR "unimplemented\n");
++	}
++}
++
++static void am200_init_gpio_regs(struct metronomefb_par *par)
++{
++	am200_init_gpio_pin(LED_GPIO_PIN, 0);
++	am200_set_gpio_output(LED_GPIO_PIN, 0);
++
++	am200_init_gpio_pin(STDBY_GPIO_PIN, 0);
++	am200_set_gpio_output(STDBY_GPIO_PIN, 0);
++
++	am200_init_gpio_pin(RST_GPIO_PIN, 0);
++	am200_set_gpio_output(RST_GPIO_PIN, 0);
++
++	am200_init_gpio_pin(RDY_GPIO_PIN, 1);
++
++	am200_init_gpio_pin(ERR_GPIO_PIN, 1);
++
++	am200_init_gpio_pin(PCBPWR_GPIO_PIN, 0);
++	am200_set_gpio_output(PCBPWR_GPIO_PIN, 0);
++}
++
++static void am200_disable_lcd_controller(struct metronomefb_par *par)
++{
++	LCSR = 0xffffffff;	/* Clear LCD Status Register */
++	LCCR0 |= LCCR0_DIS;	/* Disable LCD Controller */
++
++	/* we reset and just wait for things to settle */
++	msleep(200);
++}
++
++static void am200_enable_lcd_controller(struct metronomefb_par *par)
++{
++	LCSR = 0xffffffff;
++	FDADR0 = par->metromem_desc_dma;
++	LCCR0 |= LCCR0_ENB;
++}
++
++static void am200_init_lcdc_regs(struct metronomefb_par *par)
++{
++	/* here we do:
++	- disable the lcd controller
++	- setup lcd control registers
++	- setup dma descriptor
++	- reenable lcd controller
++	*/
++
++	/* disable the lcd controller */
++	am200_disable_lcd_controller(par);
++
++	/* setup lcd control registers */
++	LCCR0 = LCCR0_LDM | LCCR0_SFM | LCCR0_IUM | LCCR0_EFM | LCCR0_PAS
++		| LCCR0_QDM | LCCR0_BM | LCCR0_OUM;
++
++	LCCR1 = (par->info->var.xres/2 - 1) /* pixels per line */
++		| (27 << 10) /* hsync pulse width - 1 */
++		| (33 << 16) /* eol pixel count */
++		| (33 << 24); /* bol pixel count */
++
++	LCCR2 = (par->info->var.yres - 1) /* lines per panel */
++		| (24 << 10) /* vsync pulse width - 1 */
++		| (2 << 16) /* eof pixel count */
++		| (0 << 24); /* bof pixel count */
++
++	LCCR3 = 2 /* pixel clock divisor */
++		| (24 << 8) /* AC Bias pin freq */
++		| LCCR3_16BPP /* BPP */
++		| LCCR3_PCP;  /* PCP falling edge */
++
++}
++
++static void am200_post_dma_setup(struct metronomefb_par *par)
++{
++	par->metromem_desc->mFDADR0 = par->metromem_desc_dma;
++	par->metromem_desc->mFSADR0 = par->metromem_dma;
++	par->metromem_desc->mFIDR0 = 0;
++	par->metromem_desc->mLDCMD0 = par->info->var.xres
++					* par->info->var.yres;
++	am200_enable_lcd_controller(par);
++}
++
++static void am200_free_irq(struct fb_info *info)
++{
++	free_irq(IRQ_GPIO(RDY_GPIO_PIN), info);
++}
++
++static irqreturn_t am200_handle_irq(int irq, void *dev_id)
++{
++	struct fb_info *info = dev_id;
++	struct metronomefb_par *par = info->par;
++
++	wake_up_interruptible(&par->waitq);
++	return IRQ_HANDLED;
++}
++
++static int am200_setup_irq(struct fb_info *info)
++{
++	int retval;
++
++	retval = request_irq(IRQ_GPIO(RDY_GPIO_PIN), am200_handle_irq,
++				IRQF_DISABLED, "AM200", info);
++	if (retval) {
++		printk(KERN_ERR "am200epd: request_irq failed: %d\n", retval);
++		return retval;
++	}
++
++	return set_irq_type(IRQ_GPIO(RDY_GPIO_PIN), IRQT_FALLING);
++}
++
++static void am200_set_rst(struct metronomefb_par *par, int state)
++{
++	am200_set_gpio_output(RST_GPIO_PIN, state);
++}
++
++static void am200_set_stdby(struct metronomefb_par *par, int state)
++{
++	am200_set_gpio_output(STDBY_GPIO_PIN, state);
++}
++
++static int am200_wait_event(struct metronomefb_par *par)
++{
++	return wait_event_timeout(par->waitq, (GPLR1 & 0x01), HZ);
++}
++
++static int am200_wait_event_intr(struct metronomefb_par *par)
++{
++	return wait_event_interruptible_timeout(par->waitq, (GPLR1 & 0x01), HZ);
++}
++
++static struct metronome_board am200_board = {
++	.owner			= THIS_MODULE,
++	.free_irq		= am200_free_irq,
++	.setup_irq		= am200_setup_irq,
++	.init_gpio_regs		= am200_init_gpio_regs,
++	.init_lcdc_regs		= am200_init_lcdc_regs,
++	.post_dma_setup		= am200_post_dma_setup,
++	.set_rst		= am200_set_rst,
++	.set_stdby		= am200_set_stdby,
++	.met_wait_event		= am200_wait_event,
++	.met_wait_event_intr	= am200_wait_event_intr,
++};
++
++static struct platform_device *am200_device;
++
++static int __init am200_init(void)
++{
++	int ret;
++
++	/* request our platform independent driver */
++	request_module("metronomefb");
++
++	am200_device = platform_device_alloc("metronomefb", -1);
++	if (!am200_device)
++		return -ENOMEM;
++
++	platform_device_add_data(am200_device, &am200_board,
++					sizeof(am200_board));
++
++	/* this _add binds metronomefb to am200. metronomefb refcounts am200 */
++	ret = platform_device_add(am200_device);
++
++	if (ret)
++		platform_device_put(am200_device);
++
++	return ret;
++}
++
++static void __exit am200_exit(void)
++{
++	platform_device_unregister(am200_device);
++}
++
++module_init(am200_init);
++module_exit(am200_exit);
++
++MODULE_DESCRIPTION("board driver for am200 metronome epd kit");
++MODULE_AUTHOR("Jaya Kumar");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index e9a89fd..17066dd 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -13,12 +13,10 @@
+  * Corporation. http://support.eink.com/community
+  *
+  * This driver is written to be used with the Metronome display controller.
+- * It was tested with an E-Ink 800x600 Vizplex EPD on a Gumstix Connex board
+- * using the Lyre interface board.
++ * It is intended to be architecture independent. A board specific driver
++ * must be used to perform all the physical IO interactions. An example
++ * is provided as am200epd.c
+  *
+- * General notes:
+- * - User must set metronomefb_enable=1 to enable it.
+- * - See Documentation/fb/metronomefb.txt for how metronome works.
+  */
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+@@ -38,9 +36,11 @@
+ #include <linux/uaccess.h>
+ #include <linux/irq.h>
+ 
+-#include <asm/arch/pxa-regs.h>
++#include <video/metronomefb.h>
++
+ #include <asm/unaligned.h>
+ 
++
+ #define DEBUG 1
+ #ifdef DEBUG
+ #define DPRINTK(f, a...) printk(KERN_DEBUG "%s: " f, __func__ , ## a)
+@@ -53,35 +53,6 @@
+ #define DPY_W 832
+ #define DPY_H 622
+ 
+-struct metromem_desc {
+-	u32 mFDADR0;
+-	u32 mFSADR0;
+-	u32 mFIDR0;
+-	u32 mLDCMD0;
+-};
+-
+-struct metromem_cmd {
+-	u16 opcode;
+-	u16 args[((64-2)/2)];
+-	u16 csum;
+-};
+-
+-struct metronomefb_par {
+-	unsigned char *metromem;
+-	struct metromem_desc *metromem_desc;
+-	struct metromem_cmd *metromem_cmd;
+-	unsigned char *metromem_wfm;
+-	unsigned char *metromem_img;
+-	u16 *metromem_img_csum;
+-	u16 *csum_table;
+-	int metromemsize;
+-	dma_addr_t metromem_dma;
+-	dma_addr_t metromem_desc_dma;
+-	struct fb_info *info;
+-	wait_queue_head_t waitq;
+-	u8 frame_count;
+-};
+-
+ /* frame differs from image. frame includes non-visible pixels */
+ struct epd_frame {
+ 	int fw; /* frame width */
+@@ -120,8 +91,7 @@ static struct fb_var_screeninfo metronomefb_var __devinitdata = {
+ 	.transp =	{ 0, 0, 0 },
+ };
+ 
+-static unsigned int metronomefb_enable;
+-
++/* the waveform structure that is coming from userspace firmware */
+ struct waveform_hdr {
+ 	u8 stuff[32];
+ 
+@@ -301,165 +271,6 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 	return 0;
+ }
+ 
+-/* register offsets for gpio control */
+-#define LED_GPIO_PIN 51
+-#define STDBY_GPIO_PIN 48
+-#define RST_GPIO_PIN 49
+-#define RDY_GPIO_PIN 32
+-#define ERR_GPIO_PIN 17
+-#define PCBPWR_GPIO_PIN 16
+-
+-#define AF_SEL_GPIO_N 0x3
+-#define GAFR0_U_OFFSET(pin) ((pin - 16) * 2)
+-#define GAFR1_L_OFFSET(pin) ((pin - 32) * 2)
+-#define GAFR1_U_OFFSET(pin) ((pin - 48) * 2)
+-#define GPDR1_OFFSET(pin) (pin - 32)
+-#define GPCR1_OFFSET(pin) (pin - 32)
+-#define GPSR1_OFFSET(pin) (pin - 32)
+-#define GPCR0_OFFSET(pin) (pin)
+-#define GPSR0_OFFSET(pin) (pin)
+-
+-static void metronome_set_gpio_output(int pin, int val)
+-{
+-	u8 index;
+-
+-	index = pin >> 4;
+-
+-	switch (index) {
+-	case 1:
+-		if (val)
+-			GPSR0 |= (1 << GPSR0_OFFSET(pin));
+-		else
+-			GPCR0 |= (1 << GPCR0_OFFSET(pin));
+-		break;
+-	case 2:
+-		break;
+-	case 3:
+-		if (val)
+-			GPSR1 |= (1 << GPSR1_OFFSET(pin));
+-		else
+-			GPCR1 |= (1 << GPCR1_OFFSET(pin));
+-		break;
+-	default:
+-		printk(KERN_ERR "unimplemented\n");
+-	}
+-}
+-
+-static void __devinit metronome_init_gpio_pin(int pin, int dir)
+-{
+-	u8 index;
+-	/* dir 0 is output, 1 is input
+-	- do 2 things here:
+-	- set gpio alternate function to standard gpio
+-	- set gpio direction to input or output  */
+-
+-	index = pin >> 4;
+-	switch (index) {
+-	case 1:
+-		GAFR0_U &= ~(AF_SEL_GPIO_N << GAFR0_U_OFFSET(pin));
+-
+-		if (dir)
+-			GPDR0 &= ~(1 << pin);
+-		else
+-			GPDR0 |= (1 << pin);
+-		break;
+-	case 2:
+-		GAFR1_L &= ~(AF_SEL_GPIO_N << GAFR1_L_OFFSET(pin));
+-
+-		if (dir)
+-			GPDR1 &= ~(1 << GPDR1_OFFSET(pin));
+-		else
+-			GPDR1 |= (1 << GPDR1_OFFSET(pin));
+-		break;
+-	case 3:
+-		GAFR1_U &= ~(AF_SEL_GPIO_N << GAFR1_U_OFFSET(pin));
+-
+-		if (dir)
+-			GPDR1 &= ~(1 << GPDR1_OFFSET(pin));
+-		else
+-			GPDR1 |= (1 << GPDR1_OFFSET(pin));
+-		break;
+-	default:
+-		printk(KERN_ERR "unimplemented\n");
+-	}
+-}
+-
+-static void __devinit metronome_init_gpio_regs(void)
+-{
+-	metronome_init_gpio_pin(LED_GPIO_PIN, 0);
+-	metronome_set_gpio_output(LED_GPIO_PIN, 0);
+-
+-	metronome_init_gpio_pin(STDBY_GPIO_PIN, 0);
+-	metronome_set_gpio_output(STDBY_GPIO_PIN, 0);
+-
+-	metronome_init_gpio_pin(RST_GPIO_PIN, 0);
+-	metronome_set_gpio_output(RST_GPIO_PIN, 0);
+-
+-	metronome_init_gpio_pin(RDY_GPIO_PIN, 1);
+-
+-	metronome_init_gpio_pin(ERR_GPIO_PIN, 1);
+-
+-	metronome_init_gpio_pin(PCBPWR_GPIO_PIN, 0);
+-	metronome_set_gpio_output(PCBPWR_GPIO_PIN, 0);
+-}
+-
+-static void metronome_disable_lcd_controller(struct metronomefb_par *par)
+-{
+-	LCSR = 0xffffffff;	/* Clear LCD Status Register */
+-	LCCR0 |= LCCR0_DIS;	/* Disable LCD Controller */
+-
+-	/* we reset and just wait for things to settle */
+-	msleep(200);
+-}
+-
+-static void metronome_enable_lcd_controller(struct metronomefb_par *par)
+-{
+-	LCSR = 0xffffffff;
+-	FDADR0 = par->metromem_desc_dma;
+-	LCCR0 |= LCCR0_ENB;
+-}
+-
+-static void __devinit metronome_init_lcdc_regs(struct metronomefb_par *par)
+-{
+-	/* here we do:
+-	- disable the lcd controller
+-	- setup lcd control registers
+-	- setup dma descriptor
+-	- reenable lcd controller
+-	*/
+-
+-	/* disable the lcd controller */
+-	metronome_disable_lcd_controller(par);
+-
+-	/* setup lcd control registers */
+-	LCCR0 = LCCR0_LDM | LCCR0_SFM | LCCR0_IUM | LCCR0_EFM | LCCR0_PAS
+-		| LCCR0_QDM | LCCR0_BM | LCCR0_OUM;
+-
+-	LCCR1 = (epd_frame_table[0].fw/2 - 1) /* pixels per line */
+-		| (27 << 10) /* hsync pulse width - 1 */
+-		| (33 << 16) /* eol pixel count */
+-		| (33 << 24); /* bol pixel count */
+-
+-	LCCR2 = (epd_frame_table[0].fh - 1) /* lines per panel */
+-		| (24 << 10) /* vsync pulse width - 1 */
+-		| (2 << 16) /* eof pixel count */
+-		| (0 << 24); /* bof pixel count */
+-
+-	LCCR3 = 2 /* pixel clock divisor */
+-		| (24 << 8) /* AC Bias pin freq */
+-		| LCCR3_16BPP /* BPP */
+-		| LCCR3_PCP;  /* PCP falling edge */
+-
+-	/* setup dma descriptor */
+-	par->metromem_desc->mFDADR0 = par->metromem_desc_dma;
+-	par->metromem_desc->mFSADR0 = par->metromem_dma;
+-	par->metromem_desc->mFIDR0 = 0;
+-	par->metromem_desc->mLDCMD0 = epd_frame_table[0].fw
+-					* epd_frame_table[0].fh;
+-	/* reenable lcd controller */
+-	metronome_enable_lcd_controller(par);
+-}
+-
+ static int metronome_display_cmd(struct metronomefb_par *par)
+ {
+ 	int i;
+@@ -493,8 +304,7 @@ static int metronome_display_cmd(struct metronomefb_par *par)
+ 	par->metromem_cmd->csum = cs;
+ 	par->metromem_cmd->opcode = opcode; /* display cmd */
+ 
+-	i = wait_event_interruptible_timeout(par->waitq, (GPLR1 & 0x01), HZ);
+-	return i;
++	return par->board->met_wait_event_intr(par);
+ }
+ 
+ static int __devinit metronome_powerup_cmd(struct metronomefb_par *par)
+@@ -518,13 +328,12 @@ static int __devinit metronome_powerup_cmd(struct metronomefb_par *par)
+ 	par->metromem_cmd->csum = cs;
+ 
+ 	msleep(1);
+-	metronome_set_gpio_output(RST_GPIO_PIN, 1);
++	par->board->set_rst(par, 1);
+ 
+ 	msleep(1);
+-	metronome_set_gpio_output(STDBY_GPIO_PIN, 1);
++	par->board->set_stdby(par, 1);
+ 
+-	i = wait_event_timeout(par->waitq, (GPLR1 & 0x01), HZ);
+-	return i;
++	return par->board->met_wait_event(par);
+ }
+ 
+ static int __devinit metronome_config_cmd(struct metronomefb_par *par)
+@@ -569,8 +378,7 @@ static int __devinit metronome_config_cmd(struct metronomefb_par *par)
+ 	par->metromem_cmd->csum = cs;
+ 	par->metromem_cmd->opcode = 0xCC10; /* config cmd */
+ 
+-	i = wait_event_timeout(par->waitq, (GPLR1 & 0x01), HZ);
+-	return i;
++	return par->board->met_wait_event(par);
+ }
+ 
+ static int __devinit metronome_init_cmd(struct metronomefb_par *par)
+@@ -596,16 +404,19 @@ static int __devinit metronome_init_cmd(struct metronomefb_par *par)
+ 	par->metromem_cmd->csum = cs;
+ 	par->metromem_cmd->opcode = 0xCC20; /* init cmd */
+ 
+-	i = wait_event_timeout(par->waitq, (GPLR1 & 0x01), HZ);
+-	return i;
++	return par->board->met_wait_event(par);
+ }
+ 
+ static int __devinit metronome_init_regs(struct metronomefb_par *par)
+ {
+ 	int res;
+ 
+-	metronome_init_gpio_regs();
+-	metronome_init_lcdc_regs(par);
++	par->board->init_gpio_regs(par);
++
++	par->board->init_lcdc_regs(par);
++
++	/* now that lcd is setup, setup dma descriptor */
++	par->board->post_dma_setup(par);
+ 
+ 	res = metronome_powerup_cmd(par);
+ 	if (res)
+@@ -616,8 +427,6 @@ static int __devinit metronome_init_regs(struct metronomefb_par *par)
+ 		return res;
+ 
+ 	res = metronome_init_cmd(par);
+-	if (res)
+-		return res;
+ 
+ 	return res;
+ }
+@@ -632,7 +441,7 @@ static void metronomefb_dpy_update(struct metronomefb_par *par)
+ 
+ 	cksum = calc_img_cksum((u16 *) par->metromem_img,
+ 				(epd_frame_table[0].fw * DPY_H)/2);
+-	*((u16 *) (par->metromem_img) +
++	*((u16 *)(par->metromem_img) +
+ 			(epd_frame_table[0].fw * DPY_H)/2) = cksum;
+ 	metronome_display_cmd(par);
+ }
+@@ -641,8 +450,8 @@ static u16 metronomefb_dpy_update_page(struct metronomefb_par *par, int index)
+ {
+ 	int i;
+ 	u16 csum = 0;
+-	u16 *buf = (u16 __force *) (par->info->screen_base + index);
+-	u16 *img = (u16 *) (par->metromem_img + index);
++	u16 *buf = (u16 __force *)(par->info->screen_base + index);
++	u16 *img = (u16 *)(par->metromem_img + index);
+ 
+ 	/* swizzle from vm to metromem and recalc cksum at the same time*/
+ 	for (i = 0; i < PAGE_SIZE/2; i++) {
+@@ -678,7 +487,7 @@ static void metronomefb_fillrect(struct fb_info *info,
+ {
+ 	struct metronomefb_par *par = info->par;
+ 
+-	cfb_fillrect(info, rect);
++	sys_fillrect(info, rect);
+ 	metronomefb_dpy_update(par);
+ }
+ 
+@@ -687,7 +496,7 @@ static void metronomefb_copyarea(struct fb_info *info,
+ {
+ 	struct metronomefb_par *par = info->par;
+ 
+-	cfb_copyarea(info, area);
++	sys_copyarea(info, area);
+ 	metronomefb_dpy_update(par);
+ }
+ 
+@@ -696,7 +505,7 @@ static void metronomefb_imageblit(struct fb_info *info,
+ {
+ 	struct metronomefb_par *par = info->par;
+ 
+-	cfb_imageblit(info, image);
++	sys_imageblit(info, image);
+ 	metronomefb_dpy_update(par);
+ }
+ 
+@@ -733,7 +542,7 @@ static ssize_t metronomefb_write(struct fb_info *info, const char __user *buf,
+ 		count = total_size - p;
+ 	}
+ 
+-	dst = (void __force *) (info->screen_base + p);
++	dst = (void __force *)(info->screen_base + p);
+ 
+ 	if (copy_from_user(dst, buf, count))
+ 		err = -EFAULT;
+@@ -759,18 +568,10 @@ static struct fb_deferred_io metronomefb_defio = {
+ 	.deferred_io	= metronomefb_dpy_deferred_io,
+ };
+ 
+-static irqreturn_t metronome_handle_irq(int irq, void *dev_id)
+-{
+-	struct fb_info *info = dev_id;
+-	struct metronomefb_par *par = info->par;
+-
+-	wake_up_interruptible(&par->waitq);
+-	return IRQ_HANDLED;
+-}
+-
+ static int __devinit metronomefb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
++	struct metronome_board *board;
+ 	int retval = -ENOMEM;
+ 	int videomemorysize;
+ 	unsigned char *videomemory;
+@@ -779,17 +580,26 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 	int cmd_size, wfm_size, img_size, padding_size, totalsize;
+ 	int i;
+ 
++	/* pick up board specific routines */
++	board = dev->dev.platform_data;
++	if (!board)
++		return -EINVAL;
++
++	/* try to count device specific driver, if can't, platform recalls */
++	if (!try_module_get(board->owner))
++		return -ENODEV;
++
+ 	/* we have two blocks of memory.
+ 	info->screen_base which is vm, and is the fb used by apps.
+ 	par->metromem which is physically contiguous memory and
+ 	contains the display controller commands, waveform,
+ 	processed image data and padding. this is the data pulled
+-	by the pxa255's LCD controller and pushed to Metronome */
++	by the device's LCD controller and pushed to Metronome */
+ 
+ 	videomemorysize = (DPY_W*DPY_H);
+ 	videomemory = vmalloc(videomemorysize);
+ 	if (!videomemory)
+-		return retval;
++		return -ENOMEM;
+ 
+ 	memset(videomemory, 0, videomemorysize);
+ 
+@@ -797,7 +607,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 	if (!info)
+ 		goto err_vfree;
+ 
+-	info->screen_base = (char __iomem *) videomemory;
++	info->screen_base = (char __force __iomem *)videomemory;
+ 	info->fbops = &metronomefb_ops;
+ 
+ 	info->var = metronomefb_var;
+@@ -805,6 +615,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 	info->fix.smem_len = videomemorysize;
+ 	par = info->par;
+ 	par->info = info;
++	par->board = board;
+ 	init_waitqueue_head(&par->waitq);
+ 
+ 	/* this table caches per page csum values. */
+@@ -849,11 +660,10 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 	par->metromem_desc_dma = par->metromem_dma + cmd_size + wfm_size
+ 				 + img_size + padding_size;
+ 
+-	/* load the waveform in. assume mode 3, temp 31 for now */
+-	/* 	a) request the waveform file from userspace
++	/* load the waveform in. assume mode 3, temp 31 for now
++		a) request the waveform file from userspace
+ 		b) process waveform and decode into metromem */
+-
+-	retval = request_firmware(&fw_entry, "waveform.wbf", &dev->dev);
++	retval = request_firmware(&fw_entry, "metronome.wbf", &dev->dev);
+ 	if (retval < 0) {
+ 		printk(KERN_ERR "metronomefb: couldn't get waveform\n");
+ 		goto err_dma_free;
+@@ -867,13 +677,8 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 	}
+ 	release_firmware(fw_entry);
+ 
+-	retval = request_irq(IRQ_GPIO(RDY_GPIO_PIN), metronome_handle_irq,
+-				IRQF_DISABLED, "Metronome", info);
+-	if (retval) {
+-		dev_err(&dev->dev, "request_irq failed: %d\n", retval);
++	if (board->setup_irq(info))
+ 		goto err_ld_wfm;
+-	}
+-	set_irq_type(IRQ_GPIO(RDY_GPIO_PIN), IRQT_FALLING);
+ 
+ 	retval = metronome_init_regs(par);
+ 	if (retval < 0)
+@@ -913,7 +718,7 @@ err_cmap:
+ err_fb_rel:
+ 	framebuffer_release(info);
+ err_free_irq:
+-	free_irq(IRQ_GPIO(RDY_GPIO_PIN), info);
++	board->free_irq(info);
+ err_ld_wfm:
+ 	release_firmware(fw_entry);
+ err_dma_free:
+@@ -923,6 +728,7 @@ err_csum_table:
+ 	vfree(par->csum_table);
+ err_vfree:
+ 	vfree(videomemory);
++	module_put(board->owner);
+ 	return retval;
+ }
+ 
+@@ -939,7 +745,8 @@ static int __devexit metronomefb_remove(struct platform_device *dev)
+ 		vfree(par->csum_table);
+ 		unregister_framebuffer(info);
+ 		vfree((void __force *)info->screen_base);
+-		free_irq(IRQ_GPIO(RDY_GPIO_PIN), info);
++		par->board->free_irq(info);
++		module_put(par->board->owner);
+ 		framebuffer_release(info);
+ 	}
+ 	return 0;
+@@ -949,48 +756,21 @@ static struct platform_driver metronomefb_driver = {
+ 	.probe	= metronomefb_probe,
+ 	.remove = metronomefb_remove,
+ 	.driver	= {
++		.owner	= THIS_MODULE,
+ 		.name	= "metronomefb",
+ 	},
+ };
+ 
+-static struct platform_device *metronomefb_device;
+-
+ static int __init metronomefb_init(void)
+ {
+-	int ret;
+-
+-	if (!metronomefb_enable) {
+-		printk(KERN_ERR
+-			"Use metronomefb_enable to enable the device\n");
+-		return -ENXIO;
+-	}
+-
+-	ret = platform_driver_register(&metronomefb_driver);
+-	if (!ret) {
+-		metronomefb_device = platform_device_alloc("metronomefb", 0);
+-		if (metronomefb_device)
+-			ret = platform_device_add(metronomefb_device);
+-		else
+-			ret = -ENOMEM;
+-
+-		if (ret) {
+-			platform_device_put(metronomefb_device);
+-			platform_driver_unregister(&metronomefb_driver);
+-		}
+-	}
+-	return ret;
+-
++	return platform_driver_register(&metronomefb_driver);
+ }
+ 
+ static void __exit metronomefb_exit(void)
+ {
+-	platform_device_unregister(metronomefb_device);
+ 	platform_driver_unregister(&metronomefb_driver);
+ }
+ 
+-module_param(metronomefb_enable, uint, 0);
+-MODULE_PARM_DESC(metronomefb_enable, "Enable communication with Metronome");
+-
+ module_init(metronomefb_init);
+ module_exit(metronomefb_exit);
+ 
+diff --git a/include/video/metronomefb.h b/include/video/metronomefb.h
+new file mode 100644
+index 0000000..dab04b4
+--- /dev/null
++++ b/include/video/metronomefb.h
+@@ -0,0 +1,62 @@
++/*
++ * metronomefb.h - definitions for the metronome framebuffer driver
++ *
++ * Copyright (C) 2008 by Jaya Kumar
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file COPYING in the main directory of this archive for
++ * more details.
++ *
++ */
++
++#ifndef _LINUX_METRONOMEFB_H_
++#define _LINUX_METRONOMEFB_H_
++
++/* address and control descriptors used by metronome controller */
++struct metromem_desc {
++	u32 mFDADR0;
++	u32 mFSADR0;
++	u32 mFIDR0;
++	u32 mLDCMD0;
++};
++
++/* command structure used by metronome controller */
++struct metromem_cmd {
++	u16 opcode;
++	u16 args[((64-2)/2)];
++	u16 csum;
++};
++
++/* struct used by metronome. board specific stuff comes from *board */
++struct metronomefb_par {
++	unsigned char *metromem;
++	struct metromem_desc *metromem_desc;
++	struct metromem_cmd *metromem_cmd;
++	unsigned char *metromem_wfm;
++	unsigned char *metromem_img;
++	u16 *metromem_img_csum;
++	u16 *csum_table;
++	int metromemsize;
++	dma_addr_t metromem_dma;
++	dma_addr_t metromem_desc_dma;
++	struct fb_info *info;
++	struct metronome_board *board;
++	wait_queue_head_t waitq;
++	u8 frame_count;
++};
++
++/* board specific routines */
++struct metronome_board {
++	struct module *owner;
++	void (*free_irq)(struct fb_info *);
++	void (*init_gpio_regs)(struct metronomefb_par *);
++	void (*init_lcdc_regs)(struct metronomefb_par *);
++	void (*post_dma_setup)(struct metronomefb_par *);
++	void (*set_rst)(struct metronomefb_par *, int);
++	void (*set_stdby)(struct metronomefb_par *, int);
++	int (*met_wait_event)(struct metronomefb_par *);
++	int (*met_wait_event_intr)(struct metronomefb_par *);
++	int (*setup_irq)(struct fb_info *);
++};
++
++#endif
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

@@ -1,149 +1,187 @@
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
-Date: Thu, 3 Apr 2008 08:22:19 +0300
-Message-ID: <20080403051531.M38762@visp.net.lb>
-References: <20080402124854.M56647@visp.net.lb> <20080402145554.77ede423.akpm@linux-foundation.org>
+Date: Wed, 2 Apr 2008 22:30:56 -0700
+Message-ID: <20080402223056.f708881b.akpm@linux-foundation.org>
+References: <20080402124854.M56647@visp.net.lb>
+	<20080402145554.77ede423.akpm@linux-foundation.org>
+	<20080403051531.M38762@visp.net.lb>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757391AbYDCFWl@vger.kernel.org>
-In-Reply-To: <20080402145554.77ede423.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JhI2n-0002mB-3O for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 Apr 2008 22:31:25 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JhI2m-00062p-Lu
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 Apr 2008 22:31:25 -0700
+In-Reply-To: <20080403051531.M38762@visp.net.lb>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Well, additionally i am not able to manage this FB driver to work on my VGA,
-while uvesafb works fine (but probably slower). But it is probably sync
-problems with my TV-Out, i am still investigating it. But again, uvesafb works
-great.
+On Thu, 3 Apr 2008 08:22:19 +0300 "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
 
-Btw just a bit offtopic question, do i need to report here about such issues,
-while i can find for myself another solution? Maybe better to not take time of
-developers for such not important things? Or better to "bugtest" kernel and to
-make it better together?
+> Well, additionally i am not able to manage this FB driver to work on my VGA,
+> while uvesafb works fine (but probably slower). But it is probably sync
+> problems with my TV-Out, i am still investigating it. But again, uvesafb works
+> great.
 
-On Wed, 2 Apr 2008 14:55:54 -0700, Andrew Morton wrote
-> On Wed, 2 Apr 2008 15:54:12 +0300
-> "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+OK.
+
+> Btw just a bit offtopic question, do i need to report here about such issues,
+> while i can find for myself another solution? Maybe better to not take time of
+> developers for such not important things? Or better to "bugtest" kernel and to
+> make it better together?
+
+No, you did fine.  You forgot to cc the fbdev mailing list, but I fixed
+that.  Thanks for helping.
+
+
+> On Wed, 2 Apr 2008 14:55:54 -0700, Andrew Morton wrote
+> > On Wed, 2 Apr 2008 15:54:12 +0300
+> > "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+> > 
+> > > VGA card i dont know how much RAM there actually, but lspci here shows looks
+> > > like 16MB:
+> > > 
+> > > 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
+> > > 5c) (prog-if 00 [VGA controller])
+> > >         Subsystem: ATI Technologies Inc Rage Pro Turbo
+> > >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> > > Stepping+ SERR- FastB2B- DisINTx-
+> > >         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
+> > > <TAbort- <MAbort- >SERR- <PERR- INTx-
+> > >         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
+> > >         Interrupt: pin A routed to IRQ 21
+> > >         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
+> > >         Region 1: I/O ports at 2000 [size=256]
+> > >         Region 2: Memory at d0121000 (32-bit, non-prefetchable) [size=4K]
+> > >         Kernel driver in use: atyfb
+> > > 
+> > > 
+> > > 
+> > > Loading without parameters
+> > > 
+> > > atyfb: using auxiliary register aperture
+> > > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> > > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> > > atyfb: BIOS frequency table:
+> > > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> > > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> > > atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
+> MHz XCLK
+> > > atyfb: fb0: ATY Mach64 frame buffer device on PCI
+> > > 
+> > > It detects 8M.
+> > > If i put parameter vram=8
+> > > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
+> > > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> > > atyfb: BIOS frequency table:
+> > > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
+> > > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
+> > > atyfb: 0M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
+> MHz XCLK
+> > > atyfb: not enough video RAM
+> > > atyfb: can't set default video mode
+> > 
+> > Why did this happen?  It seems from reading the code that the vram 
+> > arg is in kilobytes, yes?
+> Also from various sources, like Documentation/fb/intel810.txt
+> <<< SNIP >>>
+>    e. "vram:<value>"
+>         select amount of system RAM in MB to allocate for the video memory
 > 
-> > VGA card i dont know how much RAM there actually, but lspci here shows looks
-> > like 16MB:
-> > 
-> > 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP (rev
-> > 5c) (prog-if 00 [VGA controller])
-> >         Subsystem: ATI Technologies Inc Rage Pro Turbo
-> >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-> > Stepping+ SERR- FastB2B- DisINTx-
-> >         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-> > <TAbort- <MAbort- >SERR- <PERR- INTx-
-> >         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
-> >         Interrupt: pin A routed to IRQ 21
-> >         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=16M]
-> >         Region 1: I/O ports at 2000 [size=256]
-> >         Region 2: Memory at d0121000 (32-bit, non-prefetchable) [size=4K]
-> >         Kernel driver in use: atyfb
-> > 
-> > 
-> > 
-> > Loading without parameters
-> > 
-> > atyfb: using auxiliary register aperture
-> > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> > atyfb: BIOS frequency table:
-> > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
-> > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
-> > atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
-MHz XCLK
-> > atyfb: fb0: ATY Mach64 frame buffer device on PCI
-> > 
-> > It detects 8M.
-> > If i put parameter vram=8
-> > atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> > atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> > atyfb: BIOS frequency table:
-> > atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider 64
-> > atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq 5000
-> > atyfb: 0M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100
-MHz XCLK
-> > atyfb: not enough video RAM
-> > atyfb: can't set default video mode
+>         Recommendation: 1 - 4 MB.
+>         (default = 4)
+> <<< SNIP >>>
 > 
-> Why did this happen?  It seems from reading the code that the vram 
-> arg is in kilobytes, yes?
-Also from various sources, like Documentation/fb/intel810.txt
-<<< SNIP >>>
-   e. "vram:<value>"
-        select amount of system RAM in MB to allocate for the video memory
+> I tried also 8388608, sure it doesn't work too. This parameter seems doesn't
+> work at all. When i didn't specify it - it shows amount or RAM (which looks
+> invalid), when i specify it any value (i try 2 or 8 or 16) - it shows 0MB and
+> crashing.
 
-        Recommendation: 1 - 4 MB.
-        (default = 4)
-<<< SNIP >>>
+OK.
 
-I tried also 8388608, sure it doesn't work too. This parameter seems doesn't
-work at all. When i didn't specify it - it shows amount or RAM (which looks
-invalid), when i specify it any value (i try 2 or 8 or 16) - it shows 0MB and
-crashing.
-
-> 
-> > And most interesting when i do rmmod
-> > tv1 ~ # rmmod atyfb
-> > Segmentation fault
 > > 
-> > and dmesg:
-> > BUG: unable to handle kernel NULL pointer dereference at 00000448
-> > IP: [<ce8fd0f2>] :atyfb:aty_set_crtc+0x9/0x19d
-> > *pde = 00000000
-> > Oops: 0000 [#1] SMP
-> > Modules linked in: atyfb(-) fb backlight cfbcopyarea cfbimgblt cfbfillrect
-> > rtc_cmos rtc_core rtc_lib e100 mii snd_intel8x0 snd_ac97_codec ac97_bus
-> > snd_pcm snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core rng_core
-> > iTCO_wdt uhci_hcd usbcore [last unloaded: atyfb]
+> > > And most interesting when i do rmmod
+> > > tv1 ~ # rmmod atyfb
+> > > Segmentation fault
+> > > 
+> > > and dmesg:
+> > > BUG: unable to handle kernel NULL pointer dereference at 00000448
+> > > IP: [<ce8fd0f2>] :atyfb:aty_set_crtc+0x9/0x19d
+> > > *pde = 00000000
+> > > Oops: 0000 [#1] SMP
+> > > Modules linked in: atyfb(-) fb backlight cfbcopyarea cfbimgblt cfbfillrect
+> > > rtc_cmos rtc_core rtc_lib e100 mii snd_intel8x0 snd_ac97_codec ac97_bus
+> > > snd_pcm snd_timer snd soundcore snd_page_alloc i2c_i801 i2c_core rng_core
+> > > iTCO_wdt uhci_hcd usbcore [last unloaded: atyfb]
+> > > 
+> > > Pid: 5198, comm: rmmod Not tainted (2.6.25-rc8-video #1)
+> > > EIP: 0060:[<ce8fd0f2>] EFLAGS: 00010286 CPU: 1
+> > > EIP is at aty_set_crtc+0x9/0x19d [atyfb]
+> > > EAX: 00000000 EBX: 00000000 ECX: cd8c6854 EDX: ce9064a0
+> > > ESI: ce9064a0 EDI: ce905830 EBP: cc9a1ed0 ESP: cc9a1ec8
+> > >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > > Process rmmod (pid: 5198, ti=cc9a1000 task=cc9da000 task.ti=cc9a1000)
+> > > Stack: 00000000 ccacd000 cc9a1ee0 ce900d20 cd8c6800 ce905830 cc9a1eec c01c8376
+> > >        cd8c6854 cc9a1efc c0208c92 cd8c3854 cd8c6854 cc9a1f10 c02090c1 ce905830
+> > >        00000000 c0369060 cc9a1f24 c02086bc 00000000 ce905830 00000880 cc9a1f34
+> > > Call Trace:
+> > >  [<ce900d20>] ? atyfb_pci_remove+0x1d/0xb3 [atyfb]
+> > >  [<c01c8376>] ? pci_device_remove+0x19/0x39
+> > >  [<c0208c92>] ? __device_release_driver+0x60/0x7d
+> > >  [<c02090c1>] ? driver_detach+0x8e/0xcd
+> > >  [<c02086bc>] ? bus_remove_driver+0x63/0x7f
+> > >  [<c020914c>] ? driver_unregister+0x2a/0x2e
+> > >  [<c01c852e>] ? pci_unregister_driver+0x1e/0x64
+> > >  [<ce900d01>] ? atyfb_exit+0xd/0xf [atyfb]
+> > >  [<c013be85>] ? sys_delete_module+0x195/0x1d0
+> > >  [<c0110b8c>] ? do_page_fault+0x251/0x505
+> > >  [<c012e5cd>] ? up_read+0x16/0x29
+> > >  [<c0110b8c>] ? do_page_fault+0x251/0x505
+> > >  [<c0103892>] ? sysenter_past_esp+0x5f/0x91
+> > >  =======================
+> > > Code: 01 00 00 00 e8 84 ff ff ff a8 02 74 0e 8b 07 89 83 dc 03 00 00 8b b3 50
+> > > 04 00 00 89 f0 5b 5e 5f 5d c3 55 89 e5 56 53 89 c3 89 d6 <83> b8 48 04 00 00
+> > > 00 74 5f 8b 52 2c 81 e2 ff ff ff fc 8b 80 48
+> > > EIP: [<ce8fd0f2>] aty_set_crtc+0x9/0x19d [atyfb] SS:ESP 0068:cc9a1ec8
+> > > ---[ end trace 1c998179e35e2f76 ]---
+> > > 
+> > > I will try to enable more debug, but probably this information is enough?
+> > >
 > > 
-> > Pid: 5198, comm: rmmod Not tainted (2.6.25-rc8-video #1)
-> > EIP: 0060:[<ce8fd0f2>] EFLAGS: 00010286 CPU: 1
-> > EIP is at aty_set_crtc+0x9/0x19d [atyfb]
-> > EAX: 00000000 EBX: 00000000 ECX: cd8c6854 EDX: ce9064a0
-> > ESI: ce9064a0 EDI: ce905830 EBP: cc9a1ed0 ESP: cc9a1ec8
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > Process rmmod (pid: 5198, ti=cc9a1000 task=cc9da000 task.ti=cc9a1000)
-> > Stack: 00000000 ccacd000 cc9a1ee0 ce900d20 cd8c6800 ce905830 cc9a1eec c01c8376
-> >        cd8c6854 cc9a1efc c0208c92 cd8c3854 cd8c6854 cc9a1f10 c02090c1 ce905830
-> >        00000000 c0369060 cc9a1f24 c02086bc 00000000 ce905830 00000880 cc9a1f34
-> > Call Trace:
-> >  [<ce900d20>] ? atyfb_pci_remove+0x1d/0xb3 [atyfb]
-> >  [<c01c8376>] ? pci_device_remove+0x19/0x39
-> >  [<c0208c92>] ? __device_release_driver+0x60/0x7d
-> >  [<c02090c1>] ? driver_detach+0x8e/0xcd
-> >  [<c02086bc>] ? bus_remove_driver+0x63/0x7f
-> >  [<c020914c>] ? driver_unregister+0x2a/0x2e
-> >  [<c01c852e>] ? pci_unregister_driver+0x1e/0x64
-> >  [<ce900d01>] ? atyfb_exit+0xd/0xf [atyfb]
-> >  [<c013be85>] ? sys_delete_module+0x195/0x1d0
-> >  [<c0110b8c>] ? do_page_fault+0x251/0x505
-> >  [<c012e5cd>] ? up_read+0x16/0x29
-> >  [<c0110b8c>] ? do_page_fault+0x251/0x505
-> >  [<c0103892>] ? sysenter_past_esp+0x5f/0x91
-> >  =======================
-> > Code: 01 00 00 00 e8 84 ff ff ff a8 02 74 0e 8b 07 89 83 dc 03 00 00 8b b3 50
-> > 04 00 00 89 f0 5b 5e 5f 5d c3 55 89 e5 56 53 89 c3 89 d6 <83> b8 48 04 00 00
-> > 00 74 5f 8b 52 2c 81 e2 ff ff ff fc 8b 80 48
-> > EIP: [<ce8fd0f2>] aty_set_crtc+0x9/0x19d [atyfb] SS:ESP 0068:cc9a1ec8
-> > ---[ end trace 1c998179e35e2f76 ]---
+> > Looks like incoming arg `par' is NULL in aty_set_crtc().
 > > 
-> > I will try to enable more debug, but probably this information is enough?
-> >
-> 
-> Looks like incoming arg `par' is NULL in aty_set_crtc().
-> 
-> I suspect the problem is that the module shouldn't have successfully 
-> loaded at all, given that its fb_ops.fb_set_par() failed?
-Maybe, at least it must not crash such ugly way. I am not enough programmer to
-give comments about code.
+> > I suspect the problem is that the module shouldn't have successfully 
+> > loaded at all, given that its fb_ops.fb_set_par() failed?
+> Maybe, at least it must not crash such ugly way. I am not enough programmer to
+> give comments about code.
 
+Alas, I don't think we have an atyfb maintainer, and our official fbdev
+maintainer (Tony Daplas) has been out of contact for a couple of months. 
+(This has happened before and I expect he'll return).  Meanwhile a few
+other people are helping out.
 
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
+But it may take us some time to get onto this.  If nothing happens, please
+do send a repeat bug report in a month or so.
+
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace

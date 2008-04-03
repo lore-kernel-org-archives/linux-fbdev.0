@@ -1,23 +1,21 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: "Denys Fedoryshchenko" <denys@visp.net.lb>
 Subject: Re: atyfb rmmod & vram crash, 2.6.24, 2.6.25-rc8
-Date: Thu, 3 Apr 2008 11:23:36 +0300
-Message-ID: <20080403082336.GD16619@sci.fi>
-References: <20080402124854.M56647@visp.net.lb>
+Date: Thu, 3 Apr 2008 13:10:37 +0300
+Message-ID: <20080403095138.M76173@visp.net.lb>
+References: <20080402124854.M56647@visp.net.lb> <20080403082336.GD16619@sci.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JhKjX-00081B-5h for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Apr 2008 01:23:43 -0700
-Received: from smtp6.pp.htv.fi ([213.243.153.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JhKjV-00070q-G5
+	id 1JhMPH-0005n5-BV for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 03 Apr 2008 03:10:55 -0700
+Received: from usermail.globalproof.net ([194.146.153.18])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JhMPF-0002sI-I4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Apr 2008 01:23:43 -0700
-Content-Disposition: inline
-In-Reply-To: <20080402124854.M56647@visp.net.lb>
+	Thu, 03 Apr 2008 03:10:55 -0700
+In-Reply-To: <20080403082336.GD16619@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,69 +26,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Denys Fedoryshchenko <denys@visp.net.lb>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Ville, UTF-8?, =?KOI8-R?Q?Syrj=C3=A4l=C3=A4_?= <syrjala@sci.fi>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Wed, Apr 02, 2008 at 03:54:12PM +0300, Denys Fedoryshchenko wrote:
-> VGA card i dont know how much RAM there actually, but lspci here shows lo=
-oks
-> like 16MB:
-> =
-
-> 03:09.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro 215GP=
- (rev
-> 5c) (prog-if 00 [VGA controller])
->         Subsystem: ATI Technologies Inc Rage Pro Turbo
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParEr=
-r-
-> Stepping+ SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 66 (2000ns min), Cache Line Size: 32 bytes
->         Interrupt: pin A routed to IRQ 21
->         Region 0: Memory at f0000000 (32-bit, prefetchable) [size=3D16M]
-
-This region is always 16MB regardless of how much actual RAM is on the
-card.
-
-> Loading without parameters
-> =
-
-> atyfb: using auxiliary register aperture
-> atyfb: 3D RAGE PRO (Mach64 GP, PQFP, PCI) [0x4750 rev 0x7c]
-> atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-> atyfb: BIOS frequency table:
-> atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, ref_divider=
- 64
-> atyfb: MCLK_pwd 4200, MCLK_max_freq 7500, XCLK_max_freq 10000, SCLK_freq =
-5000
-> atyfb: 8M SGRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 75 Mhz MCLK, 100 =
-MHz XCLK
-> atyfb: fb0: ATY Mach64 frame buffer device on PCI
-> =
-
-> It detects 8M.
-> If i put parameter vram=3D8
-
-The vram paramter takes KB not MB.
-
-Why do you want to override it anyway? It seems to detect the amount of
-RAM just fine.
-
-> And most interesting when i do rmmod
-> tv1 ~ # rmmod atyfb
-> Segmentation fault
-
-Does this only happen after the failure caused by the bad vram parameter?
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
-
--------------------------------------------------------------------------
-Check out the new SourceForge.net Marketplace.
-It's the best place to buy or sell services for
-just about anything Open Source.
-http://ad.doubleclick.net/clk;164216239;13503038;w?http://sf.net/marketplace
+T24gVGh1LCAzIEFwciAyMDA4IDExOjIzOjM2ICswMzAwLCBWaWxsZSBbVVRGLTg/XVN5cmrDpGzD
+pCB3cm90ZQo+IFRoaXMgcmVnaW9uIGlzIGFsd2F5cyAxNk1CIHJlZ2FyZGxlc3Mgb2YgaG93IG11
+Y2ggYWN0dWFsIFJBTSBpcyBvbiAKPiB0aGUgY2FyZC4KWWVzLCB5b3UgYXJlIHJpZ2h0LgpUaGVy
+ZSBpcyA0IGNoaXBzIEtNNDEzMkc1MTJRMTAsIGVhY2ggMTZNYml0LCBzbyBpdCBpcyA4MTkyS2J5
+dGUuCgo+IFRoZSB2cmFtIHBhcmFtdGVyIHRha2VzIEtCIG5vdCBNQi4KPiAKPiBXaHkgZG8geW91
+IHdhbnQgdG8gb3ZlcnJpZGUgaXQgYW55d2F5PyBJdCBzZWVtcyB0byBkZXRlY3QgdGhlIGFtb3Vu
+dCAKPiBvZiBSQU0ganVzdCBmaW5lLgpPbiBzb21lIHNldHRpbmdzIGl0IHdhcyBlbm91Z2gsIGl0
+IHdhcyBteSBtaXN0YWtlIHRvIHRyeSBzZXQgaXQgdG8gaGlnaGVyCnZhbHVlLiBCdXQgaW4gZmFj
+dCBpdCBpcyBkaWZmaWN1bHQgdG8gZmluZCBhbnkgZG9jdW1lbnRhdGlvbiwgdGhhdCB2YWx1ZSBp
+cyBpbgpLYnl0ZS4gUHJvYmFibHkgYXQgbGVhc3QgaXQgaGF2ZSB0byBiZSBkb2N1bWVudGVkIHRv
+IGJlIHZpc2libGUgaW4gbW9kaW5mby4KCj4gCj4gRG9lcyB0aGlzIG9ubHkgaGFwcGVuIGFmdGVy
+IHRoZSBmYWlsdXJlIGNhdXNlZCBieSB0aGUgYmFkIHZyYW0gcGFyYW1ldGVyPwpZZXMsIG9ubHkg
+YnkgYmFkIHZyYW0gcGFyYW1ldGVyLgo+IAo+IC0tIAo+IFZpbGxlIFN5cmrkbOQKPiBzeXJqYWxh
+QHNjaS5maQo+IGh0dHA6Ly93d3cuc2NpLmZpL35zeXJqYWxhLwoKCi0tCkRlbnlzIEZlZG9yeXNo
+Y2hlbmtvClRlY2huaWNhbCBNYW5hZ2VyClZpcnR1YWwgSVNQIFMuQS5MLgoKCi0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0KQ2hlY2sgb3V0IHRoZSBuZXcgU291cmNlRm9yZ2UubmV0IE1hcmtldHBsYWNlLgpJdCdz
+IHRoZSBiZXN0IHBsYWNlIHRvIGJ1eSBvciBzZWxsIHNlcnZpY2VzIGZvcgpqdXN0IGFib3V0IGFu
+eXRoaW5nIE9wZW4gU291cmNlLgpodHRwOi8vYWQuZG91YmxlY2xpY2submV0L2NsazsxNjQyMTYy
+Mzk7MTM1MDMwMzg7dz9odHRwOi8vc2YubmV0L21hcmtldHBsYWNlCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcg
+bGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0
+cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

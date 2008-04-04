@@ -1,24 +1,25 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [PATCH 0/4 2.6.24] fbdev: metronomefb and
-	hecubafb bugfix and platforming
-Date: Thu, 03 Apr 2008 21:03:19 -0400
-Message-ID: <20080404010318.17144.4354.sendpatchset@hit-nxdomain.opendns.com>
+Subject: [PATCH 1/4 2.6.24] fbdev: metronomefb bugfix
+Date: Thu, 03 Apr 2008 21:03:32 -0400
+Message-ID: <20080404010332.17144.2388.sendpatchset@hit-nxdomain.opendns.com>
+References: <20080404010318.17144.4354.sendpatchset@hit-nxdomain.opendns.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JhbFG-00036V-I0 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Apr 2008 19:01:34 -0700
-Received: from qb-out-0506.google.com ([72.14.204.236])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JhbFF-0003uT-05
+	id 1JhbFT-000373-5K for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 03 Apr 2008 19:01:47 -0700
+Received: from qb-out-0506.google.com ([72.14.204.238])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JhbFR-0000kF-Nq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Apr 2008 19:01:34 -0700
-Received: by qb-out-0506.google.com with SMTP id a33so2038141qbd.0
+	Thu, 03 Apr 2008 19:01:47 -0700
+Received: by qb-out-0506.google.com with SMTP id c8so2042922qbc.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 03 Apr 2008 19:01:31 -0700 (PDT)
+	Thu, 03 Apr 2008 19:01:44 -0700 (PDT)
+In-Reply-To: <20080404010318.17144.4354.sendpatchset@hit-nxdomain.opendns.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,23 +33,48 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: akpm@linux-foundation.org, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-Hi Tony, Geert, Andrew, fbdev,
+This patch is a bugfix for the use of cfb_* functions instead of sys_*
+functions. sys_* should be used with vmalloced framebuffers. the previous
+cfb_ use would not work for callers of imageblit/etc.
 
-This patchset has 4 patches. They are:
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 
-1 - bugfix for metronomefb
-2 - bugfix for hecubafb
-3 - platforming metronomefb
-4 - platforming hecubafb
+---
 
-The improvement over the last post is that the bugfixes are split into
-individual patches.
+ metronomefb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I would be grateful for any feedback on this.
-
-Thanks,
-jaya
-
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index e9a89fd..5602f3e 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -678,7 +678,7 @@ static void metronomefb_fillrect(struct fb_info *info,
+ {
+ 	struct metronomefb_par *par = info->par;
+ 
+-	cfb_fillrect(info, rect);
++	sys_fillrect(info, rect);
+ 	metronomefb_dpy_update(par);
+ }
+ 
+@@ -687,7 +687,7 @@ static void metronomefb_copyarea(struct fb_info *info,
+ {
+ 	struct metronomefb_par *par = info->par;
+ 
+-	cfb_copyarea(info, area);
++	sys_copyarea(info, area);
+ 	metronomefb_dpy_update(par);
+ }
+ 
+@@ -696,7 +696,7 @@ static void metronomefb_imageblit(struct fb_info *info,
+ {
+ 	struct metronomefb_par *par = info->par;
+ 
+-	cfb_imageblit(info, image);
++	sys_imageblit(info, image);
+ 	metronomefb_dpy_update(par);
+ }
+ 
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

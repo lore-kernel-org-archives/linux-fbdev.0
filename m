@@ -1,12 +1,8 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [SPAM] [PATCH 4/4 2.6.24] fbdev:
- platforming hecubafb and n411
-Date: Fri, 4 Apr 2008 14:44:16 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804041442430.24006@anakin>
-References: <20080404010318.17144.4354.sendpatchset@hit-nxdomain.opendns.com>
-	<20080404010414.17144.60962.sendpatchset@hit-nxdomain.opendns.com>
-	<Pine.LNX.4.64.0804041236270.24006@anakin>
-	<45a44e480804040438n17422cfeqde0bcfc45fd01326@mail.gmail.com>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [PATCH 0/4 2.6.24] fbdev: metronomefb and
+	hecubafb bugfix and platforming v4
+Date: Fri, 04 Apr 2008 08:23:59 -0400
+Message-ID: <20080404122358.6404.54652.sendpatchset@hit-nxdomain.opendns.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,13 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JhlHL-0007Jm-4K for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 04 Apr 2008 05:44:23 -0700
-Received: from wilson.telenet-ops.be ([195.130.132.42])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JhlHJ-0000kM-I0
+	id 1Jhls7-00044n-OM for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 04 Apr 2008 06:22:23 -0700
+Received: from yw-out-1718.google.com ([74.125.46.154])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jhls6-0007kF-45
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 04 Apr 2008 05:44:23 -0700
-In-Reply-To: <45a44e480804040438n17422cfeqde0bcfc45fd01326@mail.gmail.com>
+	Fri, 04 Apr 2008 06:22:23 -0700
+Received: by yw-out-1718.google.com with SMTP id 4so7401ywq.82
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 04 Apr 2008 06:22:15 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,46 +29,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-On Fri, 4 Apr 2008, Jaya Kumar wrote:
-> On Fri, Apr 4, 2008 at 6:37 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Thu, 3 Apr 2008, Jaya Kumar wrote:
-> >  > This patch splits hecubafb into the platform independent hecubafb and
-> >  > the platform dependent n411.
-> >  >
-> >  > Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-> >  >
-> >  > ---
-> >  >
-> >  >  drivers/video/hecubafb.c |  250 +++++++++--------------------------------------
-> >  >  drivers/video/n411.c     |  202 +++++++++++++++++++++++++++++++++++++
-> >  >  include/video/hecubafb.h |   51 +++++++++
-> >  >  3 files changed, 304 insertions(+), 199 deletions(-)
-> >
-> >  Why is there no corresponding change to a Kconfig and Makefile?
-> 
-> I left the Kconfig/Makefile changes in patch 3. I am hoping that is
+Hi Tony, Geert, Andrew, fbdev,
 
-Ah, I didn't seem to have received that one...
+This is version4 of the metronomefb and hecubafb bugfix and platforming
+patchset. It has 4 patches, which are as follows:
 
-> okay. Should I split those out?
+1 - bugfix for metronomefb
+2 - bugfix for hecubafb
+3 - platforming metronomefb
+4 - platforming hecubafb
 
-I think it's better to keep the Kconfig/Makefile changes together. Else
-you get an unbuildable tree if you apply patches 1-3, but don't apply
-patch 4.
+The improvement over v2 is that the bugfixes are split into
+individual patches and that the Kconfig/Makefile changes for hecubafb
+are moved in patch 4 (as they should be) rather than patch 3. Thanks Geert.
 
-Gr{oetje,eeting}s,
+I would be grateful for any feedback on this.
 
-						Geert
+Thanks,
+jaya
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

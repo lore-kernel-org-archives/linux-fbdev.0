@@ -1,26 +1,23 @@
-From: "arun c" <arun.edarath@gmail.com>
-Subject: Re: How to implement rotation for framebuffer?
-Date: Tue, 8 Apr 2008 10:33:36 +0530
-Message-ID: <c656a4d20804072203u1073a348ob7c167a88956f39e@mail.gmail.com>
-References: <c656a4d20804040202g370948e2pa4d70b1f693df2cd@mail.gmail.com>
-	<Pine.LNX.4.64.0804041230490.24006@anakin>
+From: Bhaskar <abc.bhaskar@gmail.com>
+Subject: FramBuffer for ep9310 ARM Board
+Date: Tue, 8 Apr 2008 11:46:19 +0530
+Message-ID: <f63322490804072316g447cf528m5bd402f1b8f77645@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jj5zd-0001SS-3i for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Apr 2008 22:03:37 -0700
-Received: from yw-out-1718.google.com ([74.125.46.154])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jj5zc-0006lB-PH
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Apr 2008 22:03:37 -0700
-Received: by yw-out-1718.google.com with SMTP id 4so302398ywq.82
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 07 Apr 2008 22:03:36 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0804041230490.24006@anakin>
+	id 1Jj781-0000Fd-U2 for Linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 07 Apr 2008 23:16:21 -0700
+Received: from ti-out-0910.google.com ([209.85.142.187])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jj780-0004gY-Hv
+	for Linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 07 Apr 2008 23:16:21 -0700
+Received: by ti-out-0910.google.com with SMTP id d10so760020tib.18
+	for <Linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 07 Apr 2008 23:16:19 -0700 (PDT)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,66 +29,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Apr 4, 2008 at 4:04 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Fri, 4 Apr 2008, arun c wrote:
->  > I am working on 2430SDP. SDP has omap2430 as the processor and it's
->  > display controller supports rotation of framebuffer in hardware.
->  >
->  > I will explain the hardware rotation in brief.
->  >
->  > 1) One Physical framebuffer is allocated in memory
->  > 2) This physical address ( as well as width and height) is programmed in the
->  >     VRFB Module (the hardware rotation engine, it stands for virtual rotated
->  >     frame buffer)
->  > 3)Then VRFB gives you 4 addresses ( virtual addresses which are
->  > transparent to applications)
->  >     VBA0      --> Address for 0 degree rotation
->  >     VBA90    --> Address for 90 degree rotation
->  >     VBA180  --> Address for 180 degree rotation
->  >     VBA270  --> Address for 270 degree rotation
->  >
->  > Rotation is achieved like this
->  > Assume you want 90 degree rotation
->  >
->  > Processor writes all picture data to VBA90 space and lcd reads all
->  > data from VBA0 space
->  >
->  > For this kind of implementation i need to change fb_fix_screeninfo
->  > members (smem_start ,smem_len) and fb_info member( screen_base)
->  > dynamically according to degree of rotation.
->
->  Yep, that's correct.
->
->
->  > Please anybody suggest me  good ways to implement this kind of
->  > rotation in my driver or point me to some code so that i can refer and
->  > implement the same.
->
->  Very simple: any change of struct fb_var_screeninfo may cause a change
->  of fb_fix_screeninfo.
->
->  Hence if an application requests to change the rotation angle by
->  changing fb_var_screeninfo.rotate and issuing an FBIOPUT_VSCREENINFO
->  ioctl, you update your fb_fix_screeninfo and fb_info.screen_base.
+Dear Team,
 
-I was thinking this kind of implementation is not permissible ( I am
-very much ignorant about fbdev applications), because i thought
-dynamically changing these structure members make applications to
-brake.
+I need to modify modify Frame Buffer for ep9310 ARM board.  The
+original frame buffer was provided by Cirrus Logic.  For the debugging
+purpose, I introduced trace messages in frame buffer operation
+functions like imageblit, fillrect, etc.
 
-Could anybody  please suggest me some example code to refer?
+These messages appear only during Linux boot up and shutdown.  When I
+move the window, none of the trace messages from the frame buffer
+appears.  The Xserver used is XOrg-6.9
 
-Regards,
-Arun C
+Somebody kindly provide a pointer from where to start inorder to
+understand the flow functionlity of the existing framebuffer.
 
-
->
->  Gr{oetje,eeting}s,
->
->                                                 Geert
+Regards.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

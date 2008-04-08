@@ -1,8 +1,9 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: FramBuffer for ep9310 ARM Board
-Date: Tue, 8 Apr 2008 09:28:08 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804080927400.20606@anakin>
-References: <f63322490804072316g447cf528m5bd402f1b8f77645@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] pxafb: introduce lcd_{read,
+ write}l() to wrap the __raw_{read, write}l()
+Date: Tue, 8 Apr 2008 01:20:04 -0700
+Message-ID: <20080408012004.013a2572.akpm@linux-foundation.org>
+References: <f17812d70804072103s4fa2b6d4t57abfcda9d8e0b11@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,13 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jj8Fa-0007wy-GE for Linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Apr 2008 00:28:14 -0700
-Received: from winston.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jj8FZ-0001Yg-2r
-	for Linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Apr 2008 00:28:14 -0700
-In-Reply-To: <f63322490804072316g447cf528m5bd402f1b8f77645@mail.gmail.com>
+	id 1Jj94S-0005Oc-Hn for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 Apr 2008 01:20:48 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Jj94R-0007mw-8l
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 Apr 2008 01:20:48 -0700
+In-Reply-To: <f17812d70804072103s4fa2b6d4t57abfcda9d8e0b11@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,32 +29,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Bhaskar <abc.bhaskar@gmail.com>
-Cc: Linux-fbdev-devel@lists.sourceforge.net
+To: eric miao <eric.y.miao@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel email list <linux-arm-kernel@lists.arm.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>
 
-On Tue, 8 Apr 2008, Bhaskar wrote:
-> I need to modify modify Frame Buffer for ep9310 ARM board.  The
-> original frame buffer was provided by Cirrus Logic.  For the debugging
-> purpose, I introduced trace messages in frame buffer operation
-> functions like imageblit, fillrect, etc.
-> 
-> These messages appear only during Linux boot up and shutdown.  When I
-> move the window, none of the trace messages from the frame buffer
-> appears.  The Xserver used is XOrg-6.9
+On Tue, 8 Apr 2008 12:03:16 +0800 "eric miao" <eric.y.miao@gmail.com> wrote:
 
-The in-kernel frame buffer operation functions like imageblit, fillrect,
-etc. are not used from userspace. X does all drawing itself.
+> +#define lcd_readl(f, off)	__raw_readl((f)->mmio_base + (off))
+> +#define lcd_writel(f, off, v)	__raw_writel((v), (f)->mmio_base + (off))
 
-Gr{oetje,eeting}s,
+Please implement things like this in C.  Probably inlined.
 
-						Geert
+Advantages:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+- C looks nicer
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+- For some reason people are more likely to document their C than their macros
+
+- macros can sometimes reference their argument multiple times, causing
+  bugs when they are passed experssions with side-effects.
+
+- C functions have typechecking
+
+- C functions (whether inlined or not) count as a reference to their
+  argument, and can help to avoid unused-variable warnings.
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

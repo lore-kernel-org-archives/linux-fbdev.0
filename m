@@ -1,10 +1,7 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH 0/4 2.6.24] fbdev: metronomefb and
-	hecubafb bugfix and platforming v4
-Date: Tue, 8 Apr 2008 09:31:38 +0800
-Message-ID: <45a44e480804071831u2415b9c1h15b6383c35adf56a@mail.gmail.com>
-References: <20080404122358.6404.54652.sendpatchset@hit-nxdomain.opendns.com>
-	<20080407165331.9cbf654b.akpm@linux-foundation.org>
+From: "eric miao" <eric.y.miao@gmail.com>
+Subject: [PATCH 0/4] pxafb: add smartpanel support
+Date: Tue, 8 Apr 2008 12:01:25 +0800
+Message-ID: <f17812d70804072101u1244c864s2f8d2ec1c9f96239@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,16 +9,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jj2gZ-00065o-6J for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Apr 2008 18:31:43 -0700
-Received: from wf-out-1314.google.com ([209.85.200.173])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jj2gV-0006Qi-BT
+	id 1Jj51U-0003op-ON for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 07 Apr 2008 21:01:28 -0700
+Received: from wr-out-0506.google.com ([64.233.184.233])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jj51S-0001hR-JL
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Apr 2008 18:31:40 -0700
-Received: by wf-out-1314.google.com with SMTP id 28so1734665wff.4
+	Mon, 07 Apr 2008 21:01:28 -0700
+Received: by wr-out-0506.google.com with SMTP id c48so1435401wra.1
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 07 Apr 2008 18:31:38 -0700 (PDT)
-In-Reply-To: <20080407165331.9cbf654b.akpm@linux-foundation.org>
+	Mon, 07 Apr 2008 21:01:25 -0700 (PDT)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,43 +29,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-arm-kernel email list <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-On Tue, Apr 8, 2008 at 7:53 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 04 Apr 2008 08:23:59 -0400
->  Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
->
->  > Hi Tony, Geert, Andrew, fbdev,
->  >
->  > This is version4 of the metronomefb and hecubafb bugfix and platforming
->  > patchset. It has 4 patches, which are as follows:
->  >
->  > 1 - bugfix for metronomefb
->  > 2 - bugfix for hecubafb
->  > 3 - platforming metronomefb
->  > 4 - platforming hecubafb
->  >
->  > The improvement over v2 is that the bugfixes are split into
->  > individual patches and that the Kconfig/Makefile changes for hecubafb
->  > are moved in patch 4 (as they should be) rather than patch 3. Thanks Geert.
->  >
->
->  Thanks.
->
->  Do you believe that #1 and #2 should be in 2.6.25?  2.6.24.x?
->
->  If so, for what reason(s)?
->
+There are 4 patches as listed below:
 
-I think #1 and #2 don't need to get pushed into prior kernels. My
-reasoning is that both metronomefb and hecubafb don't have mainstream
-users yet. I think current users are using hand built patchsets
-against -rc kernels because support patches like the arch/arm patches
-for the gumstix platform used in am200 are still works-in-progress.
+0001 - pxafb: introduce lcd_{read,write}l() to wrap the __raw_{read,write}l()
+0002 - pxafb: use completion for LCD disable wait code
+0003 - pxafb: move parallel LCD timing setup into dedicate function
+0004 - pxafb: preliminary smart panel interface support
 
-Thanks,
-jaya
+The actual support for the smartpanel interface is done by patch 0004, the
+patches 0001-0003 are mainly cleanup ones.
+
+The smartpanel interface supports LCD panels with internal buffers,
+sometimes known as remote framebuffer.
+
+The next step work will be to introduce an "struct pxafb_output" to
+abstract two different output interface supported: the parallel and
+the smartpanel, after these patches are merged.
+
+-- 
+Cheers
+- eric
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

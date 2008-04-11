@@ -1,236 +1,102 @@
-From: Maik Broemme <mbroemme@plusserver.de>
-Subject: Added support for the Intel Integrated Graphics Controller
-	965G/965GM to intelfb
-Date: Thu, 10 Apr 2008 17:34:00 +0200
-Message-ID: <20080410153400.GA3553@bart.intergenia.de>
+From: Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [PATCH] xen: Enable Xen console by default in domU
+Date: Fri, 11 Apr 2008 09:52:25 +0100
+Message-ID: <1207903945.26445.4.camel@muff>
+References: <87hcehshyc.fsf@pike.pond.sub.org>
+	 <87d4oxvhk0.fsf@pike.pond.sub.org>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="PEIAKu/WMn1b1Hv9"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758030AbYDJQW0@vger.kernel.org>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759531AbYDKIxQ@vger.kernel.org>
+In-Reply-To: <87d4oxvhk0.fsf@pike.pond.sub.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Markus Armbruster <armbru@redhat.com>
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, Jeremy Fitzhardinge <jeremy@goop.org>, mingo@redhat.com
 
+On Thu, 2008-04-10 at 17:46 +0200, Markus Armbruster wrote:
+...
+> Problem: when tty registers, we can't yet know whether the PVFB is
+> enabled.  By the time we can know (xenstore is up), the console setup
+> game is over.
+> 
+> Enable the Xen console hvc by default, and make it the preferred
+> console.  Change the preferred console to tty when PVFB probes
+> successfully, unless we've been given console kernel parameters.
+...
+> The previous version of this patch had the PVFB change the preferred
+> console *always*.  That's wrong, because it blithely overwrites any
+> preferred console the user might have set up with console kernel
+> parameters.  Unfortunately, I couldn't see how to fix that cleanly
+> without messing with printk.c.  If you can think of a better way, let
+> me know.
+...
+> --- a/drivers/video/xen-fbfront.c
+> +++ b/drivers/video/xen-fbfront.c
 
---PEIAKu/WMn1b1Hv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> @@ -358,6 +361,28 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
+>  	return ret;
+>  }
+>  
+> +static __devinit void
+> +xenfb_make_preferred_console(void)
+> +{
+> +	struct console *c;
+> +
+> +	if (console_set_on_cmdline)
+> +		return;
+> +
+> +	acquire_console_sem();
+> +	for (c = console_drivers; c; c = c->next) {
+> +		if (!strcmp(c->name, "tty") && c->index == 0)
+> +			break;
+> +	}
 
-Hi,
+How about adding a new console flag so that e.g. you could do:
 
-i have added support for the 965G and 965GM graphic chipsets to the intelfb
-driver. I have a notebook with an Intel Mobile GM965/GL960 Integrated
-Graphics Controller and with the attached patch the framebuffer comes
-up. I have tested it a bit with DirectFB to make sure it is working stable.
+        if (!strcmp(c->name, "tty") && c->index == 0 &&
+            !(c->flags & CON_SET_ON_CMDLINE))
+                break;
 
-I also have an Intel Mobile GM945 and i compared the results, the
-programming interface of the 9xx series from Intel is mostly the same,
-so i think the attached patch should add all functionality the 945GM
-have. Please keep me in CC because i am not subscribed.
-
-Signed-off-by: Maik Broemme <mbroemme@plusserver.de>
-
---Maik
-
---PEIAKu/WMn1b1Hv9
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: attachment; filename="linux-2.6.25-rc8-intelfb-i965.patch"
-Content-Transfer-Encoding: quoted-printable
-
-diff -Nur linux-2.6.25-rc8/Documentation/fb/intelfb.txt linux-2.6.25-rc8-in=
-telfb-i965/Documentation/fb/intelfb.txt
---- linux-2.6.25-rc8/Documentation/fb/intelfb.txt	2008-04-01 21:44:26.00000=
-0000 +0200
-+++ linux-2.6.25-rc8-intelfb-i965/Documentation/fb/intelfb.txt	2008-04-10 1=
-7:11:23.000000000 +0200
-@@ -14,6 +14,8 @@
- 	Intel 915GM
- 	Intel 945G
- 	Intel 945GM
-+	Intel 965G
-+	Intel 965GM
-=20
- B.  List of available options
-=20
-diff -Nur linux-2.6.25-rc8/drivers/video/Kconfig linux-2.6.25-rc8-intelfb-i=
-965/drivers/video/Kconfig
---- linux-2.6.25-rc8/drivers/video/Kconfig	2008-04-01 21:44:26.000000000 +0=
-200
-+++ linux-2.6.25-rc8-intelfb-i965/drivers/video/Kconfig	2008-04-10 17:12:19=
-=2E000000000 +0200
-@@ -1087,7 +1087,7 @@
- 	  This driver supports the LE80578 (Carillo Ranch) board
-=20
- config FB_INTEL
--	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G support (EXPERIMENTA=
-L)"
-+	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM sup=
-port (EXPERIMENTAL)"
- 	depends on FB && EXPERIMENTAL && PCI && X86
- 	select AGP
- 	select AGP_INTEL
-@@ -1097,7 +1097,7 @@
- 	select FB_CFB_IMAGEBLIT
- 	help
- 	  This driver supports the on-board graphics built in to the Intel
--          830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM chipsets.
-+          830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chip=
-sets.
-           Say Y if you have and plan to use such a board.
-=20
- 	  If you say Y here and want DDC/I2C support you must first say Y to
-diff -Nur linux-2.6.25-rc8/drivers/video/intelfb/intelfb.h linux-2.6.25-rc8=
--intelfb-i965/drivers/video/intelfb/intelfb.h
---- linux-2.6.25-rc8/drivers/video/intelfb/intelfb.h	2008-04-01 21:44:26.00=
-0000000 +0200
-+++ linux-2.6.25-rc8-intelfb-i965/drivers/video/intelfb/intelfb.h	2008-04-1=
-0 17:10:53.000000000 +0200
-@@ -12,9 +12,9 @@
- #endif
-=20
- /*** Version/name ***/
--#define INTELFB_VERSION			"0.9.4"
-+#define INTELFB_VERSION			"0.9.5"
- #define INTELFB_MODULE_NAME		"intelfb"
--#define SUPPORTED_CHIPSETS		"830M/845G/852GM/855GM/865G/915G/915GM/945G/94=
-5GM"
-+#define SUPPORTED_CHIPSETS		"830M/845G/852GM/855GM/865G/915G/915GM/945G/94=
-5GM/965G/965GM"
-=20
-=20
- /*** Debug/feature defines ***/
-@@ -58,6 +58,8 @@
- #define PCI_DEVICE_ID_INTEL_915GM	0x2592
- #define PCI_DEVICE_ID_INTEL_945G	0x2772
- #define PCI_DEVICE_ID_INTEL_945GM	0x27A2
-+#define PCI_DEVICE_ID_INTEL_965G	0x29A2
-+#define PCI_DEVICE_ID_INTEL_965GM	0x2A02
-=20
- /* Size of MMIO region */
- #define INTEL_REG_SIZE			0x80000
-@@ -158,6 +160,8 @@
- 	INTEL_915GM,
- 	INTEL_945G,
- 	INTEL_945GM,
-+	INTEL_965G,
-+	INTEL_965GM,
- };
-=20
- struct intelfb_hwstate {
-@@ -358,7 +362,9 @@
- #define IS_I9XX(dinfo) (((dinfo)->chipset =3D=3D INTEL_915G) ||	\
- 			((dinfo)->chipset =3D=3D INTEL_915GM) ||	\
- 			((dinfo)->chipset =3D=3D INTEL_945G) ||	\
--			((dinfo)->chipset=3D=3DINTEL_945GM))
-+			((dinfo)->chipset =3D=3D INTEL_945GM) ||	\
-+			((dinfo)->chipset =3D=3D INTEL_965G) ||	\
-+			((dinfo)->chipset =3D=3D INTEL_965GM))
-=20
- #ifndef FBIO_WAITFORVSYNC
- #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
-diff -Nur linux-2.6.25-rc8/drivers/video/intelfb/intelfb_i2c.c linux-2.6.25=
--rc8-intelfb-i965/drivers/video/intelfb/intelfb_i2c.c
---- linux-2.6.25-rc8/drivers/video/intelfb/intelfb_i2c.c	2008-04-01 21:44:2=
-6.000000000 +0200
-+++ linux-2.6.25-rc8-intelfb-i965/drivers/video/intelfb/intelfb_i2c.c	2008-=
-04-10 17:10:53.000000000 +0200
-@@ -169,6 +169,8 @@
- 		/* has some LVDS + tv-out */
- 	case INTEL_945G:
- 	case INTEL_945GM:
-+	case INTEL_965G:
-+	case INTEL_965GM:
- 		/* SDVO ports have a single control bus - 2 devices */
- 		dinfo->output[i].type =3D INTELFB_OUTPUT_SDVO;
- 		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].i2c_bus,
-diff -Nur linux-2.6.25-rc8/drivers/video/intelfb/intelfbdrv.c linux-2.6.25-=
-rc8-intelfb-i965/drivers/video/intelfb/intelfbdrv.c
---- linux-2.6.25-rc8/drivers/video/intelfb/intelfbdrv.c	2008-04-01 21:44:26=
-=2E000000000 +0200
-+++ linux-2.6.25-rc8-intelfb-i965/drivers/video/intelfb/intelfbdrv.c	2008-0=
-4-10 17:10:53.000000000 +0200
-@@ -2,7 +2,7 @@
-  * intelfb
-  *
-  * Linux framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G/9=
-15GM/
-- * 945G/945GM integrated graphics chips.
-+ * 945G/945GM/965G/965GM integrated graphics chips.
-  *
-  * Copyright =C2=A9 2002, 2003 David Dawes <dawes@xfree86.org>
-  *                   2004 Sylvain Meyer
-@@ -99,6 +99,9 @@
-  *              Add vram option to reserve more memory than stolen by BIOS
-  *              Fix intelfbhw_pan_display typo
-  *              Add __initdata annotations
-+ *
-+ *    04/2008 - Version 0.9.5
-+ *              Add support for 965G/965GM. (Maik Broemme <mbroemme@plusse=
-rver.de>)
-  */
-=20
- #include <linux/module.h>
-@@ -180,6 +183,8 @@
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_915GM, PCI_ANY_ID, PCI_ANY_ID,=
- PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915GM },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945G, PCI_ANY_ID, PCI_ANY_ID, =
-PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945G },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GM, PCI_ANY_ID, PCI_ANY_ID,=
- PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GM },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965G, PCI_ANY_ID, PCI_ANY_ID, =
-PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965G },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965GM, PCI_ANY_ID, PCI_ANY_ID,=
- PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965GM },
- 	{ 0, }
- };
-=20
-@@ -549,7 +554,10 @@
- 	if ((ent->device =3D=3D PCI_DEVICE_ID_INTEL_915G) ||
- 	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_915GM) ||
- 	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_945G)  ||
--	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_945GM)) {
-+	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_945GM) ||
-+	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_965G) ||
-+	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_965GM)) {
-+
- 		aperture_bar =3D 2;
- 		mmio_bar =3D 0;
- 	}
-diff -Nur linux-2.6.25-rc8/drivers/video/intelfb/intelfbhw.c linux-2.6.25-r=
-c8-intelfb-i965/drivers/video/intelfb/intelfbhw.c
---- linux-2.6.25-rc8/drivers/video/intelfb/intelfbhw.c	2008-04-01 21:44:26.=
-000000000 +0200
-+++ linux-2.6.25-rc8-intelfb-i965/drivers/video/intelfb/intelfbhw.c	2008-04=
--10 17:10:53.000000000 +0200
-@@ -143,6 +143,18 @@
- 		dinfo->mobile =3D 1;
- 		dinfo->pll_index =3D PLLS_I9xx;
- 		return 0;
-+	case PCI_DEVICE_ID_INTEL_965G:
-+		dinfo->name =3D "Intel(R) 965G";
-+		dinfo->chipset =3D INTEL_965G;
-+		dinfo->mobile =3D 0;
-+		dinfo->pll_index =3D PLLS_I9xx;
-+		return 0;
-+	case PCI_DEVICE_ID_INTEL_965GM:
-+		dinfo->name =3D "Intel(R) 965GM";
-+		dinfo->chipset =3D INTEL_965GM;
-+		dinfo->mobile =3D 1;
-+		dinfo->pll_index =3D PLLS_I9xx;
-+		return 0;
- 	default:
- 		return 1;
- 	}
-@@ -174,7 +186,9 @@
- 	case PCI_DEVICE_ID_INTEL_915GM:
- 	case PCI_DEVICE_ID_INTEL_945G:
- 	case PCI_DEVICE_ID_INTEL_945GM:
--		/* 915 and 945 chipsets support a 256MB aperture.
-+	case PCI_DEVICE_ID_INTEL_965G:
-+	case PCI_DEVICE_ID_INTEL_965GM:
-+		/* 915, 945 and 965 chipsets support a 256MB aperture.
- 		   Aperture size is determined by inspected the
- 		   base address of the aperture. */
- 		if (pci_resource_start(pdev, 2) & 0x08000000)
-
---PEIAKu/WMn1b1Hv9--
+> +	release_console_sem();
+> +	if (c) {
+> +		unregister_console(c);
+> +		c->flags |= CON_CONSDEV;
+> +		c->flags &= ~CON_PRINTBUFFER; /* don't print again */
+> +		register_console(c);
+> +	}
+> +}
+> +
+...
+> --- a/include/linux/console.h
+> +++ b/include/linux/console.h
+> @@ -107,6 +107,8 @@ struct console {
+>  	struct	 console *next;
+>  };
+>  
+> +extern int console_set_on_cmdline;
+> +
+>  extern int add_preferred_console(char *name, int idx, char *options);
+>  extern int update_console_cmdline(char *name, int idx, char *name_new, int idx_new, char *options);
+>  extern void register_console(struct console *);
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index c46a20a..c07bfc1 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -118,6 +118,7 @@ struct console_cmdline
+>  static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
+>  static int selected_console = -1;
+>  static int preferred_console = -1;
+> +int console_set_on_cmdline;
+>  
+>  /* Flag: console code may call schedule() */
+>  static int console_may_schedule;
+> @@ -829,6 +830,7 @@ static int __init console_setup(char *str)
+>  	*s = 0;
+>  
+>  	add_preferred_console(buf, idx, options);
+> +	console_set_on_cmdline = 1;
+>  	return 1;
+>  }
+>  __setup("console=", console_setup);

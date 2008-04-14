@@ -1,8 +1,8 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 1/3] gxfb/lxfb: use VSA definitions when
- fetching framebuffer size
-Date: Mon, 14 Apr 2008 03:52:13 -0400
-Message-ID: <20080414035213.1223c84b@ephemeral>
+Subject: [PATCH 2/3] gxfb/lxfb: detect framebuffer size
+ using an MSR if VSA2 isn't available
+Date: Mon, 14 Apr 2008 03:52:49 -0400
+Message-ID: <20080414035249.52125ba6@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,12 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JlJSA-0007NU-CQ for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 14 Apr 2008 00:50:14 -0700
+	id 1JlJSg-0007Pz-Ew for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 14 Apr 2008 00:50:46 -0700
 Received: from mail.queued.net ([207.210.101.209])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JlJS9-0003Ca-0T
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JlJSg-0003N4-3A
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 14 Apr 2008 00:50:14 -0700
+	Mon, 14 Apr 2008 00:50:46 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,71 +30,89 @@ To: Andrew Morton <akpm@linux-foundation.org>
 Cc: jordan.crouse@amd.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-kernel@vger.kernel.org, info-linux@geode.amd.com
 
 
-..Rather than using magic constants.
+If there's no VSA2 (ie, if we're using tinybios or OpenFirmware), use
+the GLIU's P2D Range Offset Descriptor to determine how much memory we
+have available for the framebuffer.
+
+Originally based on a patch by Jordan Crouse.  Tested with OpenFirmware;
+Pascal informs me that tinybios has a stub that fills in P2D_RO0.
 
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/geode/display_gx.c |    7 ++++---
- drivers/video/geode/lxfb_ops.c   |    6 +++---
- include/asm-x86/geode.h          |    1 +
- 3 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/video/geode/display_gx.c |   18 +++++++++++++++++-
+ drivers/video/geode/lxfb_ops.c   |   16 ++++++++++++++++
+ include/asm-x86/geode.h          |    2 ++
+ 3 files changed, 35 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/video/geode/display_gx.c b/drivers/video/geode/display_gx.c
-index 3743c87..1e82ecc 100644
+index 1e82ecc..e759895 100644
 --- a/drivers/video/geode/display_gx.c
 +++ b/drivers/video/geode/display_gx.c
-@@ -17,6 +17,7 @@
- #include <asm/io.h>
- #include <asm/div64.h>
- #include <asm/delay.h>
-+#include <asm/geode.h>
+@@ -25,7 +25,23 @@ unsigned int gx_frame_buffer_size(void)
+ {
+ 	unsigned int val;
  
- #include "gxfb.h"
- 
-@@ -28,10 +29,10 @@ unsigned int gx_frame_buffer_size(void)
+-	/* FB size is reported by a virtual register */
++	if (!geode_has_vsa2()) {
++		uint32_t hi, lo;
++
++		/* The number of pages is (PMAX - PMIN)+1 */
++		rdmsr(MSR_GLIU_P2D_RO0, lo, hi);
++
++		/* PMAX */
++		val = ((hi & 0xff) << 12) | ((lo & 0xfff00000) >> 20);
++		/* PMIN */
++		val -= (lo & 0x000fffff);
++		val += 1;
++
++		/* The page size is 4k */
++		return (val << 12);
++	}
++
++	/* FB size can be obtained from the VSA II */
  	/* Virtual register class = 0x02 */
  	/* VG_MEM_SIZE(512Kb units) = 0x00 */
  
--	outw(0xFC53, 0xAC1C);
--	outw(0x0200, 0xAC1C);
-+	outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
-+	outw(VSA_VR_MEM_SIZE, VSA_VRC_INDEX);
- 
--	val = (unsigned int)(inw(0xAC1E)) & 0xFFl;
-+	val = (unsigned int)(inw(VSA_VRC_DATA)) & 0xFFl;
- 	return (val << 19);
- }
- 
 diff --git a/drivers/video/geode/lxfb_ops.c b/drivers/video/geode/lxfb_ops.c
-index c0413ea..51080db 100644
+index 51080db..becf285 100644
 --- a/drivers/video/geode/lxfb_ops.c
 +++ b/drivers/video/geode/lxfb_ops.c
-@@ -283,10 +283,10 @@ unsigned int lx_framebuffer_size(void)
+@@ -279,6 +279,22 @@ unsigned int lx_framebuffer_size(void)
+ {
+ 	unsigned int val;
+ 
++	if (!geode_has_vsa2()) {
++		uint32_t hi, lo;
++
++		/* The number of pages is (PMAX - PMIN)+1 */
++		rdmsr(MSR_GLIU_P2D_RO0, lo, hi);
++
++		/* PMAX */
++		val = ((hi & 0xff) << 12) | ((lo & 0xfff00000) >> 20);
++		/* PMIN */
++		val -= (lo & 0x000fffff);
++		val += 1;
++
++		/* The page size is 4k */
++		return (val << 12);
++	}
++
+ 	/* The frame buffer size is reported by a VSM in VSA II */
  	/* Virtual Register Class    = 0x02                     */
  	/* VG_MEM_SIZE (1MB units)   = 0x00                     */
- 
--	outw(0xFC53, 0xAC1C);
--	outw(0x0200, 0xAC1C);
-+	outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
-+	outw(VSA_VR_MEM_SIZE, VSA_VRC_INDEX);
- 
--	val = (unsigned int)(inw(0xAC1E)) & 0xFE;
-+	val = (unsigned int)(inw(VSA_VRC_DATA)) & 0xFE;
- 	return (val << 20);
- }
- 
 diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
-index 6cded63..6c8a2a0 100644
+index 6c8a2a0..d5cc7bf 100644
 --- a/include/asm-x86/geode.h
 +++ b/include/asm-x86/geode.h
-@@ -109,6 +109,7 @@ extern int geode_get_dev_base(unsigned int dev);
- #define VSA_VRC_DATA		0xAC1E
- #define VSA_VR_UNLOCK		0xFC53	/* unlock virtual register */
- #define VSA_VR_SIGNATURE	0x0003
-+#define VSA_VR_MEM_SIZE		0x0200
- #define VSA_SIG			0x4132	/* signature is ascii 'VSA2' */
+@@ -30,6 +30,8 @@ extern int geode_get_dev_base(unsigned int dev);
  
- /* GPIO */
+ /* MSRS */
+ 
++#define MSR_GLIU_P2D_RO0	0x10000029
++
+ #define MSR_LX_GLD_MSR_CONFIG	0x48002001
+ #define MSR_LX_MSR_PADSEL	0x48002011	/* NOT 0x48000011; the data
+ 						 * sheet has the wrong value */
 -- 
 1.5.4.4
 

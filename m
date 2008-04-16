@@ -1,24 +1,24 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH RFC] pxafb: introduce "struct
- pxafb_output" to abstract the output interface
-Date: Tue, 15 Apr 2008 17:22:46 -0700
-Message-ID: <20080415172246.292760a5.akpm@linux-foundation.org>
-References: <f17812d70804080259n7e69fc54n7a18bca77c88b8bb@mail.gmail.com>
+Subject: Re: tridentfb: resource management fixes in
+	probe function
+Date: Tue, 15 Apr 2008 21:30:25 -0700
+Message-ID: <20080415213025.7aa389ea.akpm@linux-foundation.org>
+References: <20071224114025.cb230e25.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JlvRC-000633-Ac for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 15 Apr 2008 17:23:46 -0700
+	id 1JlzI5-0004mu-2t for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 15 Apr 2008 21:30:37 -0700
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JlvRA-0000D7-Li
+	(Exim 4.44) id 1JlzI3-0006i5-QT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 15 Apr 2008 17:23:46 -0700
-In-Reply-To: <f17812d70804080259n7e69fc54n7a18bca77c88b8bb@mail.gmail.com>
+	Tue, 15 Apr 2008 21:30:37 -0700
+In-Reply-To: <20071224114025.cb230e25.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,34 +29,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: eric miao <eric.y.miao@gmail.com>
-Cc: linux@arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, daniel@caiaq.de
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-> Subject: [PATCH RFC] pxafb: introduce "struct pxafb_output" to abstract the output interface
+On Mon, 24 Dec 2007 11:40:25 +0100 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-I'm not really sure who we can request comments from on this one.
-
-The code looks OK to me from a quick scan - but you're largely on your own on
-this one.
-
-On Tue, 8 Apr 2008 17:59:14 +0800
-"eric miao" <eric.y.miao@gmail.com> wrote:
-
-> Currently two output interfaces are supported:
 > 
->     ppi - parallel port interface
->     spi - smart panel interface
+> The most important fix  is to disable the mmio mode on error. Otherwise,
+> the console is left in unusable state (garbled fonts at least, lock up at worst).
 > 
-> and possibly MIPI or video output in the future.
+> Other changes balance release and request of memory regions
+> in case of error and few minor style errors.
 
-I get a monster reject when applying this on the current patchset.  Perhaps
-because there are also changes to drivers/video/pxafb.c in git-arm.patch.
+I'm going back through my Christmas vacation backlog(!) and this patch
+seems to have been lost.  If it's still relevant can you please refresh and
+resend sometime?
 
-It would be best please if you could redo the patch against
-http://userweb.kernel.org/~akpm/mmotm/.  I've also uploaded a single rolled
-up patch against 2.6.25-rc9 at http://userweb.kernel.org/~akpm/em.gz.
+Thanks.
 
-Please try to lessen the wordwrapping in the next version, thanks ;)
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

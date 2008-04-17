@@ -1,27 +1,20 @@
-From: Thiago Galesi <thiagogalesi@gmail.com>
-Subject: Re: [PATCH] fb: Remove use of lock_kernel /
-	unlock_kernel in fbmem
-Date: Wed, 16 Apr 2008 20:00:59 -0300
-Message-ID: <200804162000.59587.thiagogalesi@gmail.com>
-References: <200804131150.07601.thiagogalesi@gmail.com>
-	<20080415221707.82da3d42.akpm@linux-foundation.org>
+From: Adrian Bunk <bunk@kernel.org>
+Subject: [2.6 patch] video/sis/: remove compat code
+Date: Thu, 17 Apr 2008 12:37:24 +0300
+Message-ID: <20080417093724.GE1677@cs181133002.pp.htv.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JmGd8-0003lW-Ac for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Apr 2008 16:01:30 -0700
-Received: from yw-out-1718.google.com ([74.125.46.157])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JmGd6-0006nh-Ij
+	id 1JmQYi-0001cC-Ia for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 17 Apr 2008 02:37:36 -0700
+Received: from smtp4.pp.htv.fi ([213.243.153.38])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JmQYf-0006zO-Fu
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Apr 2008 16:01:30 -0700
-Received: by yw-out-1718.google.com with SMTP id 4so1451303ywq.82
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 16 Apr 2008 16:01:23 -0700 (PDT)
-In-Reply-To: <20080415221707.82da3d42.akpm@linux-foundation.org>
+	Thu, 17 Apr 2008 02:37:36 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,216 +26,341 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
+To: thomas@winischhofer.net, adaplas@gmail.com
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
+This patch removes compat code for older kernel versions.
 
-
-
-
-This patch removes lock_kernel(), unlock_kernel() usage in fbmem.c and replaces it with a mutex
-
-Signed-off-by: Thiago Galesi <thiagogalesi@gmail.com>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-Ok, 2nd try
+ drivers/video/sis/init.h       |    1 
+ drivers/video/sis/init301.h    |    1 
+ drivers/video/sis/initextlfb.c |    1 
+ drivers/video/sis/osdef.h      |    1 
+ drivers/video/sis/sis.h        |   22 +++-------------
+ drivers/video/sis/sis_accel.c  |    1 
+ drivers/video/sis/sis_main.c   |   44 +++++++--------------------------
+ drivers/video/sis/sis_main.h   |    4 +--
+ drivers/video/sis/vgatypes.h   |    4 ---
+ 9 files changed, 17 insertions(+), 62 deletions(-)
 
-The only thing I don't like is the name of fb_ioctl, but I don't have a better idea, so...
-
-
----
-
-Index: linux-2.6.23.1/drivers/video/fbmem.c
-===================================================================
---- linux-2.6.23.1.orig/drivers/video/fbmem.c
-+++ linux-2.6.23.1/drivers/video/fbmem.c
-@@ -987,7 +987,7 @@ fb_blank(struct fb_info *info, int blank
- }
- 
- static int 
--fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+__fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
- 	 unsigned long arg)
- {
- 	int fbidx = iminor(inode);
-@@ -1085,6 +1085,28 @@ fb_ioctl(struct inode *inode, struct fil
- 	}
- }
- 
-+static int
-+fb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+	 unsigned long arg)
-+{
-+	int fbidx = iminor(inode);
-+	struct fb_info *info = registered_fb[fbidx];
-+	int ret;
-+
-+	mutex_lock(&info->hwlock);
-+	ret = __fb_ioctl(inode, file, cmd, arg);
-+	mutex_unlock(&info->hwlock);
-+	return ret;
-+}
-+
-+static long
-+fb_unlocked_ioctl(struct file *file, unsigned int cmd,
-+	 unsigned long arg)
-+{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	return fb_ioctl(inode, file, cmd, arg);
-+}
-+
- #ifdef CONFIG_COMPAT
- struct fb_fix_screeninfo32 {
- 	char			id[16];
-@@ -1136,7 +1158,7 @@ static int fb_getput_cmap(struct inode *
- 	    put_user(compat_ptr(data), &cmap->transp))
- 		return -EFAULT;
- 
--	err = fb_ioctl(inode, file, cmd, (unsigned long) cmap);
-+	err = __fb_ioctl(inode, file, cmd, (unsigned long) cmap);
- 
- 	if (!err) {
- 		if (copy_in_user(&cmap32->start,
-@@ -1190,7 +1212,7 @@ static int fb_get_fscreeninfo(struct ino
- 
- 	old_fs = get_fs();
- 	set_fs(KERNEL_DS);
--	err = fb_ioctl(inode, file, cmd, (unsigned long) &fix);
-+	err = __fb_ioctl(inode, file, cmd, (unsigned long) &fix);
- 	set_fs(old_fs);
- 
- 	if (!err)
-@@ -1208,7 +1230,7 @@ fb_compat_ioctl(struct file *file, unsig
- 	struct fb_ops *fb = info->fbops;
- 	long ret = -ENOIOCTLCMD;
- 
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 	switch(cmd) {
- 	case FBIOGET_VSCREENINFO:
- 	case FBIOPUT_VSCREENINFO:
-@@ -1217,7 +1239,7 @@ fb_compat_ioctl(struct file *file, unsig
- 	case FBIOPUT_CON2FBMAP:
- 		arg = (unsigned long) compat_ptr(arg);
- 	case FBIOBLANK:
--		ret = fb_ioctl(inode, file, cmd, arg);
-+		ret = __fb_ioctl(inode, file, cmd, arg);
- 		break;
- 
- 	case FBIOGET_FSCREENINFO:
-@@ -1234,7 +1256,7 @@ fb_compat_ioctl(struct file *file, unsig
- 			ret = fb->fb_compat_ioctl(info, cmd, arg);
- 		break;
- 	}
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	return ret;
- }
+2a64dba04671b006cfa32c17e4ec8ef02c177992 diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
+index f40a680..b96005c 100644
+--- a/drivers/video/sis/init.h
++++ b/drivers/video/sis/init.h
+@@ -73,7 +73,6 @@
+ #ifdef SIS_CP
+ #undef SIS_CP
  #endif
-@@ -1256,13 +1278,13 @@ fb_mmap(struct file *file, struct vm_are
- 		return -ENODEV;
- 	if (fb->fb_mmap) {
- 		int res;
--		lock_kernel();
-+		mutex_lock(&info->hwlock);
- 		res = fb->fb_mmap(info, vma);
--		unlock_kernel();
-+		mutex_unlock(&info->hwlock);
- 		return res;
+-#include <linux/version.h>
+ #include <linux/types.h>
+ #include <asm/io.h>
+ #include <linux/fb.h>
+diff --git a/drivers/video/sis/init301.h b/drivers/video/sis/init301.h
+index 7708e1e..51d9922 100644
+--- a/drivers/video/sis/init301.h
++++ b/drivers/video/sis/init301.h
+@@ -67,7 +67,6 @@
+ #ifdef SIS_CP
+ #undef SIS_CP
+ #endif
+-#include <linux/version.h>
+ #include <linux/types.h>
+ #include <asm/io.h>
+ #include <linux/fb.h>
+diff --git a/drivers/video/sis/initextlfb.c b/drivers/video/sis/initextlfb.c
+index 47a3350..99c04a4 100644
+--- a/drivers/video/sis/initextlfb.c
++++ b/drivers/video/sis/initextlfb.c
+@@ -30,7 +30,6 @@
+ #include "vgatypes.h"
+ #include "vstruct.h"
+ 
+-#include <linux/version.h>
+ #include <linux/types.h>
+ #include <linux/fb.h>
+ 
+diff --git a/drivers/video/sis/osdef.h b/drivers/video/sis/osdef.h
+index c149278..6ff8f98 100644
+--- a/drivers/video/sis/osdef.h
++++ b/drivers/video/sis/osdef.h
+@@ -87,7 +87,6 @@
+ /**********************************************************************/
+ 
+ #ifdef SIS_LINUX_KERNEL
+-#include <linux/version.h>
+ 
+ #ifdef CONFIG_FB_SIS_300
+ #define SIS300
+diff --git a/drivers/video/sis/sis.h b/drivers/video/sis/sis.h
+index 9b05da6..6fcf8f5 100644
+--- a/drivers/video/sis/sis.h
++++ b/drivers/video/sis/sis.h
+@@ -24,8 +24,6 @@
+ #ifndef _SIS_H_
+ #define _SIS_H_
+ 
+-#include <linux/version.h>
+-
+ #include "osdef.h"
+ #include <video/sisfb.h>
+ 
+@@ -42,16 +40,6 @@
+ #define SIS_NEW_CONFIG_COMPAT
+ #endif	/* CONFIG_COMPAT */
+ 
+-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
+-#define SIS_IOTYPE1 void __iomem
+-#define SIS_IOTYPE2 __iomem
+-#define SISINITSTATIC static
+-#else
+-#define SIS_IOTYPE1 unsigned char
+-#define SIS_IOTYPE2
+-#define SISINITSTATIC
+-#endif
+-
+ #undef SISFBDEBUG
+ 
+ #ifdef SISFBDEBUG
+@@ -505,8 +493,8 @@ struct sis_video_info {
+ 
+ 	unsigned long	UMAsize, LFBsize;
+ 
+-	SIS_IOTYPE1	*video_vbase;
+-	SIS_IOTYPE1	*mmio_vbase;
++	void __iomem	*video_vbase;
++	void __iomem	*mmio_vbase;
+ 
+ 	unsigned char	*bios_abase;
+ 
+@@ -533,8 +521,8 @@ struct sis_video_info {
+ 	int		sisfb_nocrt2rate;
+ 
+ 	u32		heapstart;		/* offset  */
+-	SIS_IOTYPE1	*sisfb_heap_start;	/* address */
+-	SIS_IOTYPE1	*sisfb_heap_end;	/* address */
++	void __iomem	*sisfb_heap_start;	/* address */
++	void __iomem	*sisfb_heap_end;	/* address */
+ 	u32		sisfb_heap_size;
+ 	int		havenoheap;
+ 
+@@ -612,7 +600,7 @@ struct sis_video_info {
+ 	u8		detectedpdca;
+ 	u8		detectedlcda;
+ 
+-	SIS_IOTYPE1	*hwcursor_vbase;
++	void __iomem	*hwcursor_vbase;
+ 
+ 	int		chronteltype;
+ 	int		tvxpos, tvypos;
+diff --git a/drivers/video/sis/sis_accel.c b/drivers/video/sis/sis_accel.c
+index 7addf91..ceb434c 100644
+--- a/drivers/video/sis/sis_accel.c
++++ b/drivers/video/sis/sis_accel.c
+@@ -28,7 +28,6 @@
+  *			for more information and updates)
+  */
+ 
+-#include <linux/version.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/fb.h>
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 7380362..cad2095 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -33,7 +33,6 @@
+  *
+  */
+ 
+-#include <linux/version.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/kernel.h>
+@@ -41,13 +40,7 @@
+ #include <linux/errno.h>
+ #include <linux/string.h>
+ #include <linux/mm.h>
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,17)
+-#include <linux/tty.h>
+-#else
+ #include <linux/screen_info.h>
+-#endif
+-
+ #include <linux/slab.h>
+ #include <linux/fb.h>
+ #include <linux/selection.h>
+@@ -1167,11 +1160,7 @@ sisfb_set_mode(struct sis_video_info *ivideo, int clrscrn)
+ 	unsigned short modeno = ivideo->mode_no;
+ 
+ 	/* >=2.6.12's fbcon clears the screen anyway */
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,12)
+-	if(!clrscrn) modeno |= 0x80;
+-#else
+ 	modeno |= 0x80;
+-#endif
+ 
+ 	outSISIDXREG(SISSR, IND_SIS_PASSWORD, SIS_PASSWORD);
+ 
+@@ -1436,11 +1425,8 @@ sisfb_set_par(struct fb_info *info)
+ 	if((err = sisfb_do_set_var(&info->var, 1, info)))
+ 		return err;
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,10)
+-	sisfb_get_fix(&info->fix, info->currcon, info);
+-#else
+ 	sisfb_get_fix(&info->fix, -1, info);
+-#endif
++
+ 	return 0;
+ }
+ 
+@@ -1676,14 +1662,8 @@ sisfb_blank(int blank, struct fb_info *info)
+ 
+ /* ----------- FBDev related routines for all series ---------- */
+ 
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
+ static int	sisfb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			    unsigned long arg)
+-#else
+-static int	sisfb_ioctl(struct inode *inode, struct file *file,
+-				unsigned int cmd, unsigned long arg,
+-				struct fb_info *info)
+-#endif
+ {
+ 	struct sis_video_info	*ivideo = (struct sis_video_info *)info->par;
+ 	struct sis_memreq	sismemreq;
+@@ -3986,8 +3966,7 @@ sisfb_handle_command(struct sis_video_info *ivideo, struct sisfb_cmd *sisfb_comm
+ }
+ 
+ #ifndef MODULE
+-SISINITSTATIC int __init
+-sisfb_setup(char *options)
++static int __init sisfb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -4086,9 +4065,9 @@ sisfb_setup(char *options)
+ #endif
+ 
+ static int __devinit
+-sisfb_check_rom(SIS_IOTYPE1 *rom_base, struct sis_video_info *ivideo)
++sisfb_check_rom(void __iomem *rom_base, struct sis_video_info *ivideo)
+ {
+-	SIS_IOTYPE1 *rom;
++	void __iomem *rom;
+ 	int romptr;
+ 
+ 	if((readb(rom_base) != 0x55) || (readb(rom_base + 1) != 0xaa))
+@@ -4117,10 +4096,9 @@ static unsigned char * __devinit
+ sisfb_find_rom(struct pci_dev *pdev)
+ {
+ 	struct sis_video_info *ivideo = pci_get_drvdata(pdev);
+-	SIS_IOTYPE1 *rom_base;
++	void __iomem *rom_base;
+ 	unsigned char *myrombase = NULL;
+ 	u32 temp;
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,11)
+ 	size_t romsize;
+ 
+ 	/* First, try the official pci ROM functions (except
+@@ -4151,7 +4129,6 @@ sisfb_find_rom(struct pci_dev *pdev)
  	}
  
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
+ 	if(myrombase) return myrombase;
+-#endif
  
- 	/* frame buffer memory */
- 	start = info->fix.smem_start;
-@@ -1271,13 +1293,13 @@ fb_mmap(struct file *file, struct vm_are
- 		/* memory mapped io */
- 		off -= len;
- 		if (info->var.accel_flags) {
--			unlock_kernel();
-+			mutex_unlock(&info->hwlock);
- 			return -EINVAL;
+ 	/* Otherwise do it the conventional way. */
+ 
+@@ -4225,7 +4202,7 @@ sisfb_post_map_vram(struct sis_video_info *ivideo, unsigned int *mapsize,
+ static int __devinit
+ sisfb_post_300_buswidth(struct sis_video_info *ivideo)
+ {
+-	SIS_IOTYPE1 *FBAddress = ivideo->video_vbase;
++	void __iomem *FBAddress = ivideo->video_vbase;
+ 	unsigned short temp;
+ 	unsigned char reg;
+ 	int i, j;
+@@ -4273,7 +4250,7 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
+ 			int PseudoRankCapacity, int PseudoAdrPinCount,
+ 			unsigned int mapsize)
+ {
+-	SIS_IOTYPE1 *FBAddr = ivideo->video_vbase;
++	void __iomem *FBAddr = ivideo->video_vbase;
+ 	unsigned short sr14;
+ 	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
+ 	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPage;
+@@ -5829,7 +5806,7 @@ sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	ivideo->engineok = 0;
+ 
+ 	ivideo->sisfb_was_boot_device = 0;
+-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12))
++
+ 	if(pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW) {
+ 		if(ivideo->sisvga_enabled)
+ 			ivideo->sisfb_was_boot_device = 1;
+@@ -5840,7 +5817,6 @@ sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 				"as the primary VGA device\n");
  		}
- 		start = info->fix.mmio_start;
- 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
  	}
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	start &= PAGE_MASK;
- 	if ((vma->vm_end - vma->vm_start + off) > len)
- 		return -EINVAL;
-@@ -1323,25 +1345,25 @@ fb_release(struct inode *inode, struct f
+-#endif
+ 
+ 	ivideo->sisfb_parm_mem = sisfb_parm_mem;
+ 	ivideo->sisfb_accel = sisfb_accel;
+@@ -6010,7 +5986,7 @@ sisfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		ivideo->modeprechange = reg & 0x7f;
+ 	} else if(ivideo->sisvga_enabled) {
+ #if defined(__i386__) || defined(__x86_64__)
+-		unsigned char SIS_IOTYPE2 *tt = ioremap(0x400, 0x100);
++		unsigned char __iomem *tt = ioremap(0x400, 0x100);
+ 		if(tt) {
+ 			ivideo->modeprechange = readb(tt + 0x49);
+ 			iounmap(tt);
+@@ -6503,7 +6479,7 @@ static struct pci_driver sisfb_driver = {
+ 	.remove 	= __devexit_p(sisfb_remove)
+ };
+ 
+-SISINITSTATIC int __init sisfb_init(void)
++static int __init sisfb_init(void)
  {
- 	struct fb_info * const info = file->private_data;
+ #ifndef MODULE
+ 	char *options = NULL;
+diff --git a/drivers/video/sis/sis_main.h b/drivers/video/sis/sis_main.h
+index 3e3b7fa..9540e97 100644
+--- a/drivers/video/sis/sis_main.h
++++ b/drivers/video/sis/sis_main.h
+@@ -665,11 +665,11 @@ static struct _customttable {
  
--	lock_kernel();
-+	mutex_lock(&info->hwlock);
- 	if (info->fbops->fb_release)
- 		info->fbops->fb_release(info,1);
- 	module_put(info->fbops->owner);
--	unlock_kernel();
-+	mutex_unlock(&info->hwlock);
- 	return 0;
- }
- 
- static const struct file_operations fb_fops = {
--	.owner =	THIS_MODULE,
--	.read =		fb_read,
--	.write =	fb_write,
--	.ioctl =	fb_ioctl,
-+	.owner =		THIS_MODULE,
-+	.read =			fb_read,
-+	.write =		fb_write,
-+	.unlocked_ioctl =	fb_unlocked_ioctl,
- #ifdef CONFIG_COMPAT
--	.compat_ioctl = fb_compat_ioctl,
-+	.compat_ioctl = 	fb_compat_ioctl,
+ /* Interface used by the world */
+ #ifndef MODULE
+-SISINITSTATIC int sisfb_setup(char *options);
++static int sisfb_setup(char *options);
  #endif
--	.mmap =		fb_mmap,
--	.open =		fb_open,
--	.release =	fb_release,
-+	.mmap =			fb_mmap,
-+	.open =			fb_open,
-+	.release =		fb_release,
- #ifdef HAVE_ARCH_FB_UNMAPPED_AREA
- 	.get_unmapped_area = get_fb_unmapped_area,
- #endif
-@@ -1413,6 +1435,8 @@ register_framebuffer(struct fb_info *fb_
  
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
-+
-+	mutex_init(&fb_info->hwlock);
- 	return 0;
- }
+ /* Interface to the low level console driver */
+-SISINITSTATIC int sisfb_init(void);
++static int sisfb_init(void);
  
-@@ -1464,6 +1488,7 @@ unregister_framebuffer(struct fb_info *f
- 	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 	event.info = fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
-+	mutex_destroy(&fb_info.hwlock);
- done:
- 	return ret;
- }
-Index: linux-2.6.23.1/include/linux/fb.h
-===================================================================
---- linux-2.6.23.1.orig/include/linux/fb.h
-+++ linux-2.6.23.1/include/linux/fb.h
-@@ -802,6 +802,7 @@ struct fb_info {
- 	struct list_head modelist;      /* mode list */
- 	struct fb_videomode *mode;	/* current mode */
+ /* fbdev routines */
+ static int	sisfb_get_fix(struct fb_fix_screeninfo *fix, int con,
+diff --git a/drivers/video/sis/vgatypes.h b/drivers/video/sis/vgatypes.h
+index b532fbd..81a22ea 100644
+--- a/drivers/video/sis/vgatypes.h
++++ b/drivers/video/sis/vgatypes.h
+@@ -53,10 +53,6 @@
+ #ifndef _VGATYPES_H_
+ #define _VGATYPES_H_
  
-+	struct mutex hwlock;		/* mutex for protecting hw ops */
- #ifdef CONFIG_FB_BACKLIGHT
- 	/* assigned backlight device */
- 	/* set before framebuffer registration, 
-
-
-
-
-
+-#ifdef SIS_LINUX_KERNEL
+-#include <linux/version.h>
+-#endif
+-
+ #define SISIOMEMTYPE
+ 
+ #ifdef SIS_LINUX_KERNEL
 
 
 -------------------------------------------------------------------------

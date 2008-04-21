@@ -1,8 +1,8 @@
-From: Sebastian Siewior <frame+buffer@ml.breakpoint.cc>
-Subject: [PATCH] [FB] metronomefb: don't free firmware
-	twice in error path.
-Date: Mon, 21 Apr 2008 14:09:31 +0200
-Message-ID: <20080421120931.GD11534@Chamillionaire.breakpoint.cc>
+From: Bernhard Fischer <rep.dot.nop@gmail.com>
+Subject: Re: [PATCH v3] [FB] Add the carmine FB driver.
+Date: Mon, 21 Apr 2008 16:39:07 +0200
+Message-ID: <20080421143907.GA19553@mx.loc>
+References: <20080421120706.GC11534@Chamillionaire.breakpoint.cc>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,15 +10,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jnuq1-0002DD-2x for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 05:09:41 -0700
-Received: from chamillionaire.breakpoint.cc ([85.10.199.196]
-	ident=G2wL6ZuayTZo\z0haXx|IP)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jnupx-0002f8-FR
+	id 1JnxHN-0003tA-Jt for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Apr 2008 07:46:01 -0700
+Received: from nf-out-0910.google.com ([64.233.182.190])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JnxHK-00048Q-RQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 05:09:37 -0700
+	Mon, 21 Apr 2008 07:46:01 -0700
+Received: by nf-out-0910.google.com with SMTP id 4so537049nfv.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 21 Apr 2008 07:45:57 -0700 (PDT)
 Content-Disposition: inline
+In-Reply-To: <20080421120706.GC11534@Chamillionaire.breakpoint.cc>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,49 +31,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+To: Sebastian Siewior <frame+buffer@ml.breakpoint.cc>
+Cc: tglx@linutronix.de, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, Antonino Daplas <adaplas@gmail.com>
 
-Right now, if request_irq or anthing after it fails than we free the
-firmware for the second time what migh end bad :)
+On Mon, Apr 21, 2008 at 02:07:06PM +0200, Sebastian Siewior wrote:
+>From: Sebastian Siewior <bigeasy@linutronix.de>
+>
+>Basic FB driver for the carmine chip. The driver registers
+>two FB devices for the two possible screens.
+>The DRAM settings can be be switched via Kconfig (between eval board
+>and custom).
+>
+>Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
+>---
+>Changelog:
+>v3: carmine_check_var() can now fail if an invalid parameter for
+>    resolution was supplied instead of using default values and keeping
+>    an invalid struct fb_info (noticed by Geert Uytterhoeven).
+>v2: - s/carime/carmine/ noticed by Hans J. Koch
+>    - fb_get_options() isn't used anymore. The initial video can only be
+>      supplied via the module parameter (recommended by Jaya Kumar).
+>v1: Initial posting
+>
+> drivers/video/Kconfig          |   23 ++
+> drivers/video/Makefile         |    1 +
+> drivers/video/carminefb.c      |  801 ++++++++++++++++++++++++++++++++++++++++
+> drivers/video/carminefb.h      |   64 ++++
+> drivers/video/carminefb_regs.h |  159 ++++++++
+> 5 files changed, 1048 insertions(+), 0 deletions(-)
+> create mode 100644 drivers/video/carminefb.c
+> create mode 100644 drivers/video/carminefb.h
+> create mode 100644 drivers/video/carminefb_regs.h
+>
 
-Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
----
- drivers/video/metronomefb.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+>+choice
+>+    depends on FB_CARMINE
+>+    prompt "DRAM timming"
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index e9a89fd..110985f 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -861,12 +861,13 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 
- 	retval = load_waveform((u8 *) fw_entry->data, fw_entry->size,
- 				par->metromem_wfm, 3, 31, &par->frame_count);
-+
-+	release_firmware(fw_entry);
-+
- 	if (retval < 0) {
- 		printk(KERN_ERR "metronomefb: couldn't process waveform\n");
--		goto err_ld_wfm;
-+		goto err_dma_free;
- 	}
--	release_firmware(fw_entry);
--
- 	retval = request_irq(IRQ_GPIO(RDY_GPIO_PIN), metronome_handle_irq,
- 				IRQF_DISABLED, "Metronome", info);
- 	if (retval) {
-@@ -914,8 +915,6 @@ err_fb_rel:
- 	framebuffer_release(info);
- err_free_irq:
- 	free_irq(IRQ_GPIO(RDY_GPIO_PIN), info);
--err_ld_wfm:
--	release_firmware(fw_entry);
- err_dma_free:
- 	dma_free_writecombine(&dev->dev, par->metromemsize, par->metromem,
- 				par->metromem_dma);
--- 
-1.5.4.4
+s/timming/timing/g
+
+>+	/* Set default curor position */
+
+s/curor/cursor/g
+
+>+static void set_display_parameters(struct carmine_fb *par)
+>+{
+>+	u32 mode;
+>+	u32 hdp, vdp, htp, hsp, hsw, vtr, vsp, vsw;
+>+
+>+	/*
+>+	 * display timing. Parameters ae decreased by one because hardware
+
+s/ae/are/
+
+s/ressolution/resolution/g
 
 
 -------------------------------------------------------------------------

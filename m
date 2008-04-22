@@ -1,10 +1,10 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] atyfb: Fix 64 bits resources on
-	32 bits archs
-Date: Wed, 23 Apr 2008 08:20:06 +1000
-Message-ID: <1208902806.9640.136.camel@pasglop>
-References: <20080422012726.42775DE2A3@ozlabs.org>
-	<480E07BC.3050107@ru.mvista.com>
+Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources
+	on 32 bits archs
+Date: Wed, 23 Apr 2008 08:21:43 +1000
+Message-ID: <1208902903.9640.138.camel@pasglop>
+References: <20080422012723.BA9F2DE13F@ozlabs.org>
+	<480E0A54.9010203@linux.vnet.ibm.com>
 Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,15 +13,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JoQqa-00011W-VO for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 22 Apr 2008 15:20:21 -0700
+	id 1JoQua-0001Qm-B1 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 22 Apr 2008 15:24:28 -0700
 Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1944VYmPxfdVZUx9USyELJxDZXkKH+qkLw=])
+	ident=[U2FsdGVkX1/fROXuRlpOrfk7qijR+uo0MoG8oi2g9Bc=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JoQqZ-0006uZ-Gr
+	(Exim 4.44) id 1JoQuY-0000Gj-SE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 22 Apr 2008 15:20:20 -0700
-In-Reply-To: <480E07BC.3050107@ru.mvista.com>
+	Tue, 22 Apr 2008 15:24:28 -0700
+In-Reply-To: <480E0A54.9010203@linux.vnet.ibm.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,22 +32,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Hollis Blanchard <hollisb@us.ibm.com>, adaplas@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Detlev Zundel <dzu@denx.de>, Wolfgang Denk <wd@denx.de>
 
 
-On Tue, 2008-04-22 at 19:43 +0400, Sergei Shtylyov wrote:
->     Not sure what that change gives us -- this function mostly treats 'addr' 
-> as unsigned long (casting it to char/void *), ot compares it to 'unsigned 
-> long' 'base' variable -- which should be made 'resource_size_t' in its turn 
-> being assigned resource's start value.  So, this part of patch looks incomplete
-> (and yet I'm not sure if SPARC really needs all that)...
+On Tue, 2008-04-22 at 17:55 +0200, Christian Ehrhardt wrote:
+> I wanted to ask if there are any known workarounds atm that would
+> allow me to use my X11 for now?
 
-I just wanted to make sure both setup functions has the same prototype. 
+X is doing a mmap of /dev/mem instead of /dev/fb ?
 
-I think sparc doesn't need fixing in there.
+You can normally map the fb mapping /dev/fb and then map the registers
+using /dev/fb at an offset beyond the framebuffer (fix->smem_len).
 
+If X is using /dev/mem instead, then it's being stupid and needs to be
+fixed...
+
+Cheers,
 Ben.
+
 
 
 -------------------------------------------------------------------------

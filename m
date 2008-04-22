@@ -1,8 +1,8 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH v4] [FB] Add the carmine FB driver.
-Date: Mon, 21 Apr 2008 12:48:37 -0700
-Message-ID: <20080421124837.aa4dcf91.randy.dunlap@oracle.com>
-References: <20080421194344.GA18378@Chamillionaire.breakpoint.cc>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: deprecating fix->mmio_start and smem_start
+Date: Tue, 22 Apr 2008 11:17:26 +1000
+Message-ID: <1208827046.9640.73.camel@pasglop>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,14 +10,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jo21x-0007ki-Lo for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 12:50:25 -0700
-Received: from rgminet01.oracle.com ([148.87.113.118])
+	id 1Jo79K-0008U9-8E for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Apr 2008 18:18:23 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX1+hAHbr0bfE/Eu5eqsbtJtvI6XHMbnqfU4=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jo21w-0007b3-Bv
+	(Exim 4.44) id 1Jo79I-00028f-Ni
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 12:50:25 -0700
-In-Reply-To: <20080421194344.GA18378@Chamillionaire.breakpoint.cc>
+	Mon, 21 Apr 2008 18:18:22 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,54 +28,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Sebastian Siewior <frame+buffer@ml.breakpoint.cc>
-Cc: tglx@linutronix.de, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, Antonino Daplas <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-On Mon, 21 Apr 2008 21:43:44 +0200 Sebastian Siewior wrote:
+Hi !
 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 1bd5fb3..613849f 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -1629,6 +1629,32 @@ config FB_PM3
->  	  similar boards, 3DLabs Permedia3 Create!, Appian Jeronimo 2000
->  	  and maybe other boards.
->  
-> +config FB_CARMINE
-> +	tristate "Fujitsu carmine frame buffer support"
-> +	depends on FB && PCI
-> +	select FB_CFB_FILLRECT
-> +	select FB_CFB_COPYAREA
-> +	select FB_CFB_IMAGEBLIT
-> +	help
-> +	  This is the frame buffer device driver for the Fujitsu Carmine chip.
-> +	  The driver provides two independent frame buffer devices.
-> +
-> +choice
-> +    depends on FB_CARMINE
-> +    prompt "DRAM timing"
-> +    default FB_CARMINE_DRAM_EVAL
-> +
-> +config FB_CARMINE_DRAM_EVAL
-> +    bool "Eval board timings"
-> +    help
-> +      Use timings which work on the eval card.
-> +
-> +config CARMINE_DRAM_CUSTOM
-> +    bool "Custom board timings"
-> +    help
-> +      Use custom board timings"
+We currently have a problem with those two members of struct
+fb_fix_screeninfo. The struct contains an "unsigned long" which means
+that:
 
-Drop the ending quotation mark.  Actually, change it to a period.
+- 64 bits kernels with 32 bits userspace can't pass a complete address
+- 32 bits machines with 64 bits resource_size_t can't pass a complete
+address
+- The structure isn't even properly padded to be 32/64 bits neutral in
+the first place.
 
-> +endchoice
-> +
->  config FB_AU1100
->  	bool "Au1100 LCD Driver"
->  	depends on (FB = y) && MIPS && SOC_AU1100
+We could define new versions of the struct with new get/set ioctls,
+or we could try to just deprecate those fields. What do you guys think ?
 
----
-~Randy
+If we do the later, we need another way to convey the informations.
+
+For smem, I'm not sure it's very useful, we should just be able to mmap
+the fbdev. The problem is more with mmio_start.
+
+Thus the idea that we could do something to allow mmap'ing mmio via
+mmap of /dev/fb via some specific offset... what do you think ?
+
+Or we can just do a fb_fix_screeninfo2, with proper padding and u64
+addresses, replace the kernel one with that, have translators for the
+old ioctl's, and new ioctl's.
+
+What do you guys think ?
+
+Cheers,
+Ben.
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

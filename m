@@ -1,24 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Scott D. Davilla" <davilla@4pi.com>
 Subject: Re: deprecating fix->mmio_start and smem_start
-Date: Tue, 22 Apr 2008 20:11:38 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804222011140.9710@anakin>
+Date: Tue, 22 Apr 2008 14:28:57 -0400
+Message-ID: <p0623091dc433dce76d94@[192.168.2.55]>
 References: <1208827046.9640.73.camel@pasglop>
 	<Pine.LNX.4.64.0804220951380.14102@anakin>
 	<p0623091ac433bc15bc29@[192.168.2.55]>
+	<Pine.LNX.4.64.0804222011140.9710@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JoMy3-0007vY-Qb for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 22 Apr 2008 11:11:47 -0700
-Received: from harold.telenet-ops.be ([195.130.133.65])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JoMy1-00040b-9Q
+	id 1JoNEz-0001Kl-NE for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 22 Apr 2008 11:29:17 -0700
+Received: from mx.4pi.com ([24.172.19.59])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JoNEy-0002zo-7r
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 22 Apr 2008 11:11:46 -0700
-In-Reply-To: <p0623091ac433bc15bc29@[192.168.2.55]>
+	Tue, 22 Apr 2008 11:29:17 -0700
+In-Reply-To: <Pine.LNX.4.64.0804222011140.9710@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,43 +30,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Scott D. Davilla" <davilla@4pi.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 22 Apr 2008, Scott D. Davilla wrote:
-> >On Tue, 22 Apr 2008, Benjamin Herrenschmidt wrote:
-> >>  We currently have a problem with those two members of struct
-> >>  fb_fix_screeninfo. The struct contains an "unsigned long" which means
-> >>  that:
-> >>
-> >>  - 64 bits kernels with 32 bits userspace can't pass a complete address
-> >>  - 32 bits machines with 64 bits resource_size_t can't pass a complete
-> >>  address
-> >>  - The structure isn't even properly padded to be 32/64 bits neutral in
-> >>  the first place.
-> >>
-> >  > We could define new versions of the struct with new get/set ioctls,
-> >>  or we could try to just deprecate those fields. What do you guys think ?
-> >
-> >As userspace doesn't really need those fields[1], we can easily 
-> >deprecate them.
-> 
-> kexec uses FBIOGET_FSCREENINFO and FBIOGET_VSCREENINFO. So if these 
-> ioctls changes, it will possibly break kexec under vesafb and efifb.
+>On Tue, 22 Apr 2008, Scott D. Davilla wrote:
+>>  >On Tue, 22 Apr 2008, Benjamin Herrenschmidt wrote:
+>>  >>  We currently have a problem with those two members of struct
+>>  >>  fb_fix_screeninfo. The struct contains an "unsigned long" which means
+>>  >>  that:
+>>  >>
+>>  >>  - 64 bits kernels with 32 bits userspace can't pass a complete address
+>>  >>  - 32 bits machines with 64 bits resource_size_t can't pass a complete
+>>  >>  address
+>>  >>  - The structure isn't even properly padded to be 32/64 bits neutral in
+>>  >>  the first place.
+>>  >>
+>>  >  > We could define new versions of the struct with new get/set ioctls,
+>>  >>  or we could try to just deprecate those fields. What do you guys think ?
+>>  >
+>>  >As userspace doesn't really need those fields[1], we can easily
+>>  >deprecate them.
+>>
+>  > kexec uses FBIOGET_FSCREENINFO and FBIOGET_VSCREENINFO. So if these
+>  > ioctls changes, it will possibly break kexec under vesafb and efifb.
+>
+>Does kexec use the smem_start and mmio_start fields of
+>fb_fix_screeninfo?
+>
 
-Does kexec use the smem_start and mmio_start fields of
-fb_fix_screeninfo?
+In "kexec/arch/i386/x86-linux-setup.c", the routine 
+"setup_linux_vesafb" uses smem_start, smem_len, and line_length.
 
-Gr{oetje,eeting}s,
+This is used for vesafb and efifb framebuffer kernel boot param 
+setup. This is required for PC hardware that do not contain a PC-BIOS 
+and need the bootloader to setup the kernel video boot params.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

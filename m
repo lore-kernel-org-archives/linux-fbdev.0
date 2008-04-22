@@ -1,22 +1,26 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: deprecating fix->mmio_start and smem_start
-Date: Tue, 22 Apr 2008 10:00:10 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804220951380.14102@anakin>
+Date: Tue, 22 Apr 2008 18:48:56 +1000
+Message-ID: <1208854136.9640.104.camel@pasglop>
 References: <1208827046.9640.73.camel@pasglop>
+	<Pine.LNX.4.64.0804220951380.14102@anakin>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JoDQS-0008N8-F7 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 22 Apr 2008 01:00:28 -0700
-Received: from nelson.telenet-ops.be ([195.130.133.66])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JoDQQ-0003D2-Si
+	id 1JoEEj-0006ZZ-Dg for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 22 Apr 2008 01:52:25 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX1/L4yq2ZORGf9MbX1fp0gftAUCufkzayI0=])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JoEEh-0003iW-TB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 22 Apr 2008 01:00:28 -0700
-In-Reply-To: <1208827046.9640.73.camel@pasglop>
+	Tue, 22 Apr 2008 01:52:25 -0700
+In-Reply-To: <Pine.LNX.4.64.0804220951380.14102@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,62 +31,71 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
 
-On Tue, 22 Apr 2008, Benjamin Herrenschmidt wrote:
-> We currently have a problem with those two members of struct
-> fb_fix_screeninfo. The struct contains an "unsigned long" which means
-> that:
+
+> > We could define new versions of the struct with new get/set ioctls,
+> > or we could try to just deprecate those fields. What do you guys think ?
 > 
-> - 64 bits kernels with 32 bits userspace can't pass a complete address
-> - 32 bits machines with 64 bits resource_size_t can't pass a complete
-> address
-> - The structure isn't even properly padded to be 32/64 bits neutral in
-> the first place.
+> As userspace doesn't really need those fields[1], we can easily deprecate them.
+
+Well... yes and no. At least some X drivers use the mmio_start field to
+map registers via /dev/mem no ?
+
+> > If we do the later, we need another way to convey the informations.
+> > 
+> > For smem, I'm not sure it's very useful, we should just be able to mmap
+> > the fbdev. The problem is more with mmio_start.
+> > 
+> > Thus the idea that we could do something to allow mmap'ing mmio via
+> > mmap of /dev/fb via some specific offset... what do you think ?
 > 
-> We could define new versions of the struct with new get/set ioctls,
-> or we could try to just deprecate those fields. What do you guys think ?
+> That's exactly what drivers/video/fbmem.c:fb_mmap() does[2].
 
-As userspace doesn't really need those fields[1], we can easily deprecate them.
+Ok, I had a look at it does indeed make MMIO appear after the fb. The
+funny thing here is that it does use fix for that which means it's
+broken on those platforms.
 
-> If we do the later, we need another way to convey the informations.
-> 
-> For smem, I'm not sure it's very useful, we should just be able to mmap
-> the fbdev. The problem is more with mmio_start.
-> 
-> Thus the idea that we could do something to allow mmap'ing mmio via
-> mmap of /dev/fb via some specific offset... what do you think ?
+> But fb_mmap() does need the correct (resource_size_t) information.
+> That can be done by changing the offending fields in the kernel variant of
+> fb_fix_screeninfo to resource_size_t.
 
-That's exactly what drivers/video/fbmem.c:fb_mmap() does[2].
+Yup, and we need to add some conversion to the "user" variant.
 
-But fb_mmap() does need the correct (resource_size_t) information.
-That can be done by changing the offending fields in the kernel variant of
-fb_fix_screeninfo to resource_size_t.
+> The user variant of fb_fix_screeninfo would stay the same, and only the
+> FBIOGET_FSCREENINFO case in drivers/video/fbmem.c:fb_ioctl() has to be
+> changed to convert from the kernel to the user variant.
 
-The user variant of fb_fix_screeninfo would stay the same, and only the
-FBIOGET_FSCREENINFO case in drivers/video/fbmem.c:fb_ioctl() has to be
-changed to convert from the kernel to the user variant.
+Yup. I could always set smem_start to 0 and mmio_stat to smem_len in
+there while at it. This will break the day we have 4G of video RAM
+though. Which is why I wonder if we should -also- make the new kernel
+structure user-visible with a new ioctl, so that user space can migrate
+and the day we have such monsters, we aren't totally broken ?
 
-> Or we can just do a fb_fix_screeninfo2, with proper padding and u64
-> addresses, replace the kernel one with that, have translators for the
-> old ioctl's, and new ioctl's.
+> [1] Except when it wants to mmap /dev/mem using this info, but that can
+>     be done using [2].
 
-I don't think the new ioctls are needed.
+Yes, but there are existing broken programs. I'm pretty sure there used
+to be at least...
 
-[1] Except when it wants to mmap /dev/mem using this info, but that can
-    be done using [2].
+One option here is we can test if the values are > 32 bits, when
+converting from the in-kernel 64 bits structure.
 
-Gr{oetje,eeting}s,
+If that's not the case, we copy them as usual, thus we stay compatible
+for cases that work today (such as a 64 bits G5 with 32 bits userspace
+as all MMIO on the G5 is below 4G).
 
-						Geert
+If they are >4G, we do something like putting 0xffffffff in smem_start
+and mmio_start, which should make mmap attempts via /dev/mem to fail and
+keep smem_len and mmio_len to the right values.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+What do you think ?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Cheers,
+Ben.
+
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

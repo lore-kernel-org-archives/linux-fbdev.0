@@ -1,8 +1,8 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: deprecating fix->mmio_start and smem_start
-Date: Tue, 22 Apr 2008 11:17:26 +1000
-Message-ID: <1208827046.9640.73.camel@pasglop>
-Reply-To: benh@kernel.crashing.org
+Subject: [PATCH 2/3] aty128fb: Fix 64 bits resources on
+	32 bits archs
+Date: Tue, 22 Apr 2008 11:26:08 +1000
+Message-ID: <20080422012724.C22F5DE1AF@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,14 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jo79K-0008U9-8E for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 18:18:23 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1+hAHbr0bfE/Eu5eqsbtJtvI6XHMbnqfU4=])
+	id 1Jo7I8-0000tk-Hc for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Apr 2008 18:27:29 -0700
+Received: from ozlabs.org ([203.10.76.45])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jo79I-00028f-Ni
+	(Exim 4.44) id 1Jo7I7-00057u-FV
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 18:18:22 -0700
+	Mon, 21 Apr 2008 18:27:27 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,41 +28,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-Hi !
+This fixes aty128fb to not truncate 64 bits resources on 32 bits
+platforms. Unfortunately, there are still issues with addresses
+returned to userspace via struct fb_fix_screeninfo. This will
+have to be dealt with separately.
 
-We currently have a problem with those two members of struct
-fb_fix_screeninfo. The struct contains an "unsigned long" which means
-that:
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-- 64 bits kernels with 32 bits userspace can't pass a complete address
-- 32 bits machines with 64 bits resource_size_t can't pass a complete
-address
-- The structure isn't even properly padded to be 32/64 bits neutral in
-the first place.
+ drivers/video/aty/aty128fb.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-We could define new versions of the struct with new get/set ioctls,
-or we could try to just deprecate those fields. What do you guys think ?
-
-If we do the later, we need another way to convey the informations.
-
-For smem, I'm not sure it's very useful, we should just be able to mmap
-the fbdev. The problem is more with mmio_start.
-
-Thus the idea that we could do something to allow mmap'ing mmio via
-mmap of /dev/fb via some specific offset... what do you think ?
-
-Or we can just do a fb_fix_screeninfo2, with proper padding and u64
-addresses, replace the kernel one with that, have translators for the
-old ioctl's, and new ioctl's.
-
-What do you guys think ?
-
-Cheers,
-Ben.
-
-
+--- linux-work.orig/drivers/video/aty/aty128fb.c	2008-04-22 11:18:41.000000000 +1000
++++ linux-work/drivers/video/aty/aty128fb.c	2008-04-22 11:19:31.000000000 +1000
+@@ -2011,7 +2011,7 @@ static int __devinit aty128_init(struct 
+ /* register a card    ++ajoshi */
+ static int __devinit aty128_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+-	unsigned long fb_addr, reg_addr;
++	resource_size_t fb_addr, reg_addr;
+ 	struct aty128fb_par *par;
+ 	struct fb_info *info;
+ 	int err;
+@@ -2052,7 +2052,6 @@ static int __devinit aty128_probe(struct
+ 	info->pseudo_palette = par->pseudo_palette;
+ 
+ 	/* Virtualize mmio region */
+-	info->fix.mmio_start = reg_addr;
+ 	par->regbase = ioremap(reg_addr, pci_resource_len(pdev, 2));
+ 	if (!par->regbase)
+ 		goto err_free_info;
+@@ -2068,9 +2067,9 @@ static int __devinit aty128_probe(struct
+ 
+ 	/* Set up info->fix */
+ 	info->fix = aty128fb_fix;
+-	info->fix.smem_start = fb_addr;
++	info->fix.smem_start = (unsigned long)fb_addr;
+ 	info->fix.smem_len = par->vram_size;
+-	info->fix.mmio_start = reg_addr;
++	info->fix.mmio_start = (unsigned long)reg_addr;
+ 
+ 	/* If we can't test scratch registers, something is seriously wrong */
+ 	if (!register_test(par)) {
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

@@ -1,22 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/3] radeonfb: Fix 64 bits resources on
-	32 bits archs
-Date: Tue, 22 Apr 2008 11:26:07 +1000
-Message-ID: <20080422012723.BA9F2DE13F@ozlabs.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: deprecating fix->mmio_start and smem_start
+Date: Tue, 22 Apr 2008 10:00:10 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0804220951380.14102@anakin>
+References: <1208827046.9640.73.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jo7I8-0000tm-Hd for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 18:27:29 -0700
-Received: from ozlabs.org ([203.10.76.45])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jo7I7-0002z1-3e
+	id 1JoDQS-0008N8-F7 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 22 Apr 2008 01:00:28 -0700
+Received: from nelson.telenet-ops.be ([195.130.133.66])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JoDQQ-0003D2-Si
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Apr 2008 18:27:28 -0700
+	Tue, 22 Apr 2008 01:00:28 -0700
+In-Reply-To: <1208827046.9640.73.camel@pasglop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,56 +27,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, adaplas@gmail.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Josh Boyer <jwboyer@linux.vnet.ibm.com>, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
 
-This fixes radeonfb to not truncate 64 bits resources on 32 bits
-platforms. Unfortunately, there are still issues with addresses
-returned to userspace via struct fb_fix_screeninfo. This will
-have to be dealt with separately.
+On Tue, 22 Apr 2008, Benjamin Herrenschmidt wrote:
+> We currently have a problem with those two members of struct
+> fb_fix_screeninfo. The struct contains an "unsigned long" which means
+> that:
+> 
+> - 64 bits kernels with 32 bits userspace can't pass a complete address
+> - 32 bits machines with 64 bits resource_size_t can't pass a complete
+> address
+> - The structure isn't even properly padded to be 32/64 bits neutral in
+> the first place.
+> 
+> We could define new versions of the struct with new get/set ioctls,
+> or we could try to just deprecate those fields. What do you guys think ?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+As userspace doesn't really need those fields[1], we can easily deprecate them.
 
- drivers/video/aty/radeon_base.c |    4 ++--
- drivers/video/aty/radeonfb.h    |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> If we do the later, we need another way to convey the informations.
+> 
+> For smem, I'm not sure it's very useful, we should just be able to mmap
+> the fbdev. The problem is more with mmio_start.
+> 
+> Thus the idea that we could do something to allow mmap'ing mmio via
+> mmap of /dev/fb via some specific offset... what do you think ?
 
---- linux-work.orig/drivers/video/aty/radeon_base.c	2008-04-22 11:04:19.000000000 +1000
-+++ linux-work/drivers/video/aty/radeon_base.c	2008-04-22 11:05:00.000000000 +1000
-@@ -1886,7 +1886,7 @@ static int __devinit radeon_set_fbinfo (
- 	info->screen_size = rinfo->mapped_vram;
- 	/* Fill fix common fields */
- 	strlcpy(info->fix.id, rinfo->name, sizeof(info->fix.id));
--        info->fix.smem_start = rinfo->fb_base_phys;
-+        info->fix.smem_start = (unsigned long)rinfo->fb_base_phys;
-         info->fix.smem_len = rinfo->video_ram;
-         info->fix.type = FB_TYPE_PACKED_PIXELS;
-         info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-@@ -1894,7 +1894,7 @@ static int __devinit radeon_set_fbinfo (
-         info->fix.ypanstep = 1;
-         info->fix.ywrapstep = 0;
-         info->fix.type_aux = 0;
--        info->fix.mmio_start = rinfo->mmio_base_phys;
-+        info->fix.mmio_start = (unsigned long)rinfo->mmio_base_phys;
-         info->fix.mmio_len = RADEON_REGSIZE;
- 	info->fix.accel = FB_ACCEL_ATI_RADEON;
- 
-Index: linux-work/drivers/video/aty/radeonfb.h
-===================================================================
---- linux-work.orig/drivers/video/aty/radeonfb.h	2008-04-22 11:03:17.000000000 +1000
-+++ linux-work/drivers/video/aty/radeonfb.h	2008-04-22 11:03:27.000000000 +1000
-@@ -287,8 +287,8 @@ struct radeonfb_info {
- 
- 	char			name[DEVICE_NAME_SIZE];
- 
--	unsigned long		mmio_base_phys;
--	unsigned long		fb_base_phys;
-+	resource_size_t		mmio_base_phys;
-+	resource_size_t		fb_base_phys;
- 
- 	void __iomem		*mmio_base;
- 	void __iomem		*fb_base;
+That's exactly what drivers/video/fbmem.c:fb_mmap() does[2].
+
+But fb_mmap() does need the correct (resource_size_t) information.
+That can be done by changing the offending fields in the kernel variant of
+fb_fix_screeninfo to resource_size_t.
+
+The user variant of fb_fix_screeninfo would stay the same, and only the
+FBIOGET_FSCREENINFO case in drivers/video/fbmem.c:fb_ioctl() has to be
+changed to convert from the kernel to the user variant.
+
+> Or we can just do a fb_fix_screeninfo2, with proper padding and u64
+> addresses, replace the kernel one with that, have translators for the
+> old ioctl's, and new ioctl's.
+
+I don't think the new ioctls are needed.
+
+[1] Except when it wants to mmap /dev/mem using this info, but that can
+    be done using [2].
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

@@ -1,24 +1,24 @@
 From: Roel Kluin <12o3l@tiscali.nl>
-Subject: [PATCH] amifb: test virtual screen range before
-	subtraction on unsigned
-Date: Wed, 23 Apr 2008 20:55:28 +0200
-Message-ID: <480F8620.2000502@tiscali.nl>
-References: <480F6FF9.9000605@tiscali.nl>
+Subject: [PATCH v2] aty128fb: test below 0 on unsigned
+	pll->post_divider
+Date: Wed, 23 Apr 2008 21:24:58 +0200
+Message-ID: <480F8D0A.8080808@tiscali.nl>
+References: <480F81DC.5010505@tiscali.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jok83-00024R-0b for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 11:55:39 -0700
-Received: from smtp-out3.tiscali.nl ([195.241.79.178])
+	id 1JokaW-0005B7-Tb for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Apr 2008 12:25:05 -0700
+Received: from smtp-out1.tiscali.nl ([195.241.79.176])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jok80-00006l-Jz
+	(Exim 4.44) id 1JokaV-0008Tk-4j
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 11:55:38 -0700
-In-Reply-To: <480F6FF9.9000605@tiscali.nl>
+	Wed, 23 Apr 2008 12:25:04 -0700
+In-Reply-To: <480F81DC.5010505@tiscali.nl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,38 +29,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: lkml <linux-kernel@vger.kernel.org>
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>
 
-and another,
+Joe Perches wrote:
+> 
+> In both uses, sizeof(post_dividers) should be ARRAY_SIZE(post_dividers)
+> Yes, it's an unsigned char array, it works, but it's unsightly.
+> 
+> cheers, Joe
+
+Thanks Joe, updated patch below
 ---
-dx and dy are u32's, so the test should occur before the subtraction
+pll->post_divider is unsigned, so the test fails
 
 Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index 4c9ec3f..cc62349 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -2048,13 +2048,16 @@ static void amifb_copyarea(struct fb_info *info,
- 	width = x2 - dx;
- 	height = y2 - dy;
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index cbd3308..5049228 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -1339,10 +1339,8 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
+ 	if (vclk * 12 < c.ppll_min)
+ 		vclk = c.ppll_min/12;
  
-+	if (area->sx + dx < area->dx || area->sy + dy < area->dy)
-+		return;
-+
- 	/* update sx,sy */
- 	sx = area->sx + (dx - area->dx);
- 	sy = area->sy + (dy - area->dy);
+-	pll->post_divider = -1;
+-
+ 	/* now, find an acceptable divider */
+-	for (i = 0; i < sizeof(post_dividers); i++) {
++	for (i = 0; i < ARRAY_SIZE(post_dividers); i++) {
+ 		output_freq = post_dividers[i] * vclk;
+ 		if (output_freq >= c.ppll_min && output_freq <= c.ppll_max) {
+ 			pll->post_divider = post_dividers[i];
+@@ -1350,7 +1348,7 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
+ 		}
+ 	}
  
- 	/* the source must be completely inside the virtual screen */
--	if (sx < 0 || sy < 0 || (sx + width) > info->var.xres_virtual ||
--	    (sy + height) > info->var.yres_virtual)
-+	if (sx + width > info->var.xres_virtual ||
-+			sy + height > info->var.yres_virtual)
- 		return;
+-	if (pll->post_divider < 0)
++	if (i == ARRAY_SIZE(post_dividers))
+ 		return -EINVAL;
  
- 	if (dy > sy || (dy == sy && dx > sx)) {
+ 	/* calculate feedback divider */
+
 
 
 -------------------------------------------------------------------------

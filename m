@@ -1,29 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits	resources
-	on 32 bits archs
-Date: Wed, 23 Apr 2008 20:34:21 +1000
-Message-ID: <1208946861.9060.30.camel@pasglop>
-References: <480E0A54.9010203@linux.vnet.ibm.com>
-	<1208902903.9640.138.camel@pasglop>
-	<1208943127.5632.324.camel@thor.sulgenrain.local>
-	<20080423.025721.50367920.davem@davemloft.net>
-Reply-To: benh@kernel.crashing.org
+From: Christian Schoenebeck <cuse@users.sourceforge.net>
+Subject: Re: basic FB development questions
+Date: Wed, 23 Apr 2008 13:41:44 +0200
+Message-ID: <200804231341.44720.cuse@users.sourceforge.net>
+References: <200804230050.31349.cuse@users.sourceforge.net>
+	<Pine.LNX.4.64.0804231058370.15290@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JocJE-0001Lb-4z for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 03:34:40 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1+A88YHpL8juasncupnoVi27VCQd45NmxI=])
+	id 1JodMV-00013G-L2 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Apr 2008 04:42:07 -0700
+Received: from dns1.rz.hs-heilbronn.de ([141.7.1.18])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JocJC-0002GX-MF
+	(Exim 4.44) id 1JodMT-0005xV-T1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 03:34:40 -0700
-In-Reply-To: <20080423.025721.50367920.davem@davemloft.net>
+	Wed, 23 Apr 2008 04:42:07 -0700
+Received: from fry.software-engineering.org ([141.7.66.13])
+	by dns1.rz.hs-heilbronn.de (8.14.1/8.14.1) with ESMTP id m3NBfrHx029193
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 23 Apr 2008 13:41:57 +0200 (CEST)
+Received: from host391.homenet.telecomitalia.it
+	(host2-28-static.38-79-b.business.telecomitalia.it [79.38.28.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by fry.software-engineering.org (Postfix) with ESMTP id 7C008487A8
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 23 Apr 2008 13:32:29 +0200 (CEST)
+In-Reply-To: <Pine.LNX.4.64.0804231058370.15290@anakin>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,27 +41,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: David Miller <davem@davemloft.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, hollisb@us.ibm.com, linux-kernel@vger.kernel.org, michel@tungstengraphics.com, linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, dzu@denx.de
+To: linux-fbdev-devel@lists.sourceforge.net
 
+Es geschah am Wednesday, 23. April 2008 11:01 als Geert Uytterhoeven schrieb:
+> On Wed, 23 Apr 2008, Christian Schoenebeck wrote:
+> > First of all, AFAIK most FB drivers are based upon memory mapped IO,
+> > right? But in my case the graphics are forwarded via calls of Linux's USB
+> > subsystem. Which FB approach would suggest in this case? Something like
+> > the virtual framebuffer driver with some kind of static allocated buffer?
+> > If yes, what kind of function would I have to implement to trigger the
+> > screen sync between that modified buffer and the hardware (that is
+> > sending the buffer's data via USB to the device)? Or should I implement
+> > mmap? I mean: I know everything about the USB side to recognize the
+> > device and sending data etc., I just don't know how to establish a FB
+> > callback or something to "flush" the suggested graphics buffer.
+>
+> Documentation/fb/deferred_io.txt
 
-On Wed, 2008-04-23 at 02:57 -0700, David Miller wrote:
-> > It's up to the driver, and again, the current radeon driver doesn't
-> use
-> > radeonfb at all anymore...
-> 
-> The only portable thing is for X to use the PCI sysfs mmap() stuff,
-> which current Xorg servers using libpciaccess do.
-> 
-> I know because I'm typing this from a sparc64 using a Radeon
-> with current Xorg :-)
+Ah, that's a good one!
 
-True :-) But I'd still like to fix the fb API for the sake of things
-like directfb etc...
+Seems the "hecubafb" driver is a very good candidate for stealing code for 
+that USB LCD FB driver.
 
-Ben.
+Thanks a lot Geert!
 
-
+CU
+Christian
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

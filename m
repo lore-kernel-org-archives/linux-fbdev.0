@@ -1,39 +1,63 @@
 From: Roel Kluin <12o3l@tiscali.nl>
-Subject: [PATCH] vga16fb: test virtual screen range before subtraction on
- unsigned
-Date: Wed, 23 Apr 2008 19:20:57 +0200
-Message-ID: <480F6FF9.9000605@tiscali.nl>
+Subject: [PATCH] aty128fb: test below 0 on unsigned
+	pll->post_divider
+Date: Wed, 23 Apr 2008 20:37:16 +0200
+Message-ID: <480F81DC.5010505@tiscali.nl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754652AbYDWRVT@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JojqT-0000Bu-Ui for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Apr 2008 11:37:36 -0700
+Received: from smtp-out1.tiscali.nl ([195.241.79.176])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JojqP-0001Pp-Ca
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Apr 2008 11:37:28 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
 
-dx and dy are u32's, so the test should occur before the subtraction
+pll->post_divider is unsigned, so the test fails
 
 Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 ---
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 9b3c592..9d27517 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -1087,12 +1087,15 @@ static void vga16fb_copyarea(struct fb_info *info, const struct fb_copyarea *are
- 	width = x2 - dx;
- 	height = y2 - dy;
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index cbd3308..5617259 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -1339,8 +1339,6 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
+ 	if (vclk * 12 < c.ppll_min)
+ 		vclk = c.ppll_min/12;
  
-+	if (sx + dx < old_dx || sy + dy < old_dy)
-+		return;
-+
- 	/* update sx1,sy1 */
- 	sx += (dx - old_dx);
- 	sy += (dy - old_dy);
+-	pll->post_divider = -1;
+-
+ 	/* now, find an acceptable divider */
+ 	for (i = 0; i < sizeof(post_dividers); i++) {
+ 		output_freq = post_dividers[i] * vclk;
+@@ -1350,7 +1348,7 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
+ 		}
+ 	}
  
- 	/* the source must be completely inside the virtual screen */
--	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
-+	if (sx + width > vxres || sy + height > vyres)
- 		return;
+-	if (pll->post_divider < 0)
++	if (i == sizeof(post_dividers))
+ 		return -EINVAL;
  
- 	switch (info->fix.type) {
+ 	/* calculate feedback divider */
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
+Don't miss this year's exciting event. There's still time to save $100. 
+Use priority code J8TL2D2. 
+http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone

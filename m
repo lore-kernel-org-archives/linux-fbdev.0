@@ -1,22 +1,27 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: basic FB development questions
-Date: Wed, 23 Apr 2008 11:01:57 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804231058370.15290@anakin>
-References: <200804230050.31349.cuse@users.sourceforge.net>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits	resources
+	on 32 bits archs
+Date: Wed, 23 Apr 2008 11:32:07 +0200
+Message-ID: <1208943127.5632.324.camel@thor.sulgenrain.local>
+References: <20080422012723.BA9F2DE13F@ozlabs.org>
+	<480E0A54.9010203@linux.vnet.ibm.com>
+	<1208902903.9640.138.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JoarZ-0007Ei-LI for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 02:02:01 -0700
-Received: from monty.telenet-ops.be ([195.130.132.56])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JoarY-0007d2-Jf
+	id 1JobL4-0002Zo-QT for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Apr 2008 02:32:31 -0700
+Received: from fg-out-1718.google.com ([72.14.220.155])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JobL0-0006qr-0n
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 02:02:01 -0700
-In-Reply-To: <200804230050.31349.cuse@users.sourceforge.net>
+	Wed, 23 Apr 2008 02:32:30 -0700
+Received: by fg-out-1718.google.com with SMTP id d23so9832188fga.32
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 23 Apr 2008 02:32:23 -0700 (PDT)
+In-Reply-To: <1208902903.9640.138.camel@pasglop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,62 +32,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Christian Schoenebeck <cuse@users.sourceforge.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: benh@kernel.crashing.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, Hollis Blanchard <hollisb@us.ibm.com>, adaplas@gmail.com, Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Detlev Zundel <dzu@denx.de>, Wolfgang Denk <wd@denx.de>
 
-On Wed, 23 Apr 2008, Christian Schoenebeck wrote:
-> First of all, AFAIK most FB drivers are based upon memory mapped IO, right? 
-> But in my case the graphics are forwarded via calls of Linux's USB subsystem. 
-> Which FB approach would suggest in this case? Something like the virtual 
-> framebuffer driver with some kind of static allocated buffer? If yes, what 
-> kind of function would I have to implement to trigger the screen sync between 
-> that modified buffer and the hardware (that is sending the buffer's data via 
-> USB to the device)? Or should I implement mmap? I mean: I know everything 
-> about the USB side to recognize the device and sending data etc., I just 
-> don't know how to establish a FB callback or something to "flush" the 
-> suggested graphics buffer.
-
-Documentation/fb/deferred_io.txt
-
-> In the "fb_var_screeninfo" struct there are the following members which I'm 
-> not sure about their precise purpose:
-> 
-> 	* "pixclock": is that the average speed (in ps) with which one pixel of the
-> 	  screen is changed?
-
-It's the inverse of the dot clock (in Hz).
-
-> 	* "left_margin", "right_margin", "upper_margin", "lower_margin":
-> 	  I'm confused about these members, I first thought that would be some kind
-> 	  of reference margin (in pixels), but the header file says those are timing
-> 	  values?
-> 
-> 	* "hsync_len", "vsync_len":
-> 	  what's that exactly and is it a timing or pixel value?
-> 
-> If there are basic docs about FB terms etc, please let me know!
-
-Documentation/fb/framebuffer.txt, section 5. Video Mode Timings.
-
-But if your screen is 100% digital, they may not matter at all, and
-zeroes are OK for the margins and sync lengths.
-
-IIRC, fbset doesn't like pixclock being zero, so you should fill in
-something.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
-Don't miss this year's exciting event. There's still time to save $100. 
-Use priority code J8TL2D2. 
-http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone
+T24gV2VkLCAyMDA4LTA0LTIzIGF0IDA4OjIxICsxMDAwLCBCZW5qYW1pbiBIZXJyZW5zY2htaWR0
+IHdyb3RlOgo+IE9uIFR1ZSwgMjAwOC0wNC0yMiBhdCAxNzo1NSArMDIwMCwgQ2hyaXN0aWFuIEVo
+cmhhcmR0IHdyb3RlOgo+ID4gSSB3YW50ZWQgdG8gYXNrIGlmIHRoZXJlIGFyZSBhbnkga25vd24g
+d29ya2Fyb3VuZHMgYXRtIHRoYXQgd291bGQKPiA+IGFsbG93IG1lIHRvIHVzZSBteSBYMTEgZm9y
+IG5vdz8KPiAKPiBYIGlzIGRvaW5nIGEgbW1hcCBvZiAvZGV2L21lbSBpbnN0ZWFkIG9mIC9kZXYv
+ZmIgPwo+IAo+IFlvdSBjYW4gbm9ybWFsbHkgbWFwIHRoZSBmYiBtYXBwaW5nIC9kZXYvZmIgYW5k
+IHRoZW4gbWFwIHRoZSByZWdpc3RlcnMKPiB1c2luZyAvZGV2L2ZiIGF0IGFuIG9mZnNldCBiZXlv
+bmQgdGhlIGZyYW1lYnVmZmVyIChmaXgtPnNtZW1fbGVuKS4KPiAKPiBJZiBYIGlzIHVzaW5nIC9k
+ZXYvbWVtIGluc3RlYWQsIHRoZW4gaXQncyBiZWluZyBzdHVwaWQgYW5kIG5lZWRzIHRvIGJlCj4g
+Zml4ZWQuLi4KCkl0J3MgdXAgdG8gdGhlIGRyaXZlciwgYW5kIGFnYWluLCB0aGUgY3VycmVudCBy
+YWRlb24gZHJpdmVyIGRvZXNuJ3QgdXNlCnJhZGVvbmZiIGF0IGFsbCBhbnltb3JlLi4uCgoKLS0g
+CkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAgICAgICAgICAgfCAgICAgICAgICBodHRwOi8vdHVu
+Z3N0ZW5ncmFwaGljcy5jb20KTGlicmUgc29mdHdhcmUgZW50aHVzaWFzdCAgICAgICAgIHwgICAg
+ICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2ZWxvcGVyCgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlz
+IFNGLm5ldCBlbWFpbCBpcyBzcG9uc29yZWQgYnkgdGhlIDIwMDggSmF2YU9uZShTTSkgQ29uZmVy
+ZW5jZSAKRG9uJ3QgbWlzcyB0aGlzIHllYXIncyBleGNpdGluZyBldmVudC4gVGhlcmUncyBzdGls
+bCB0aW1lIHRvIHNhdmUgJDEwMC4gClVzZSBwcmlvcml0eSBjb2RlIEo4VEwyRDIuIApodHRwOi8v
+YWQuZG91YmxlY2xpY2submV0L2NsazsxOTg3NTc2NzM7MTM1MDMwMzg7cD9odHRwOi8vamF2YS5z
+dW4uY29tL2phdmFvbmUKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxp
+c3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9s
+aXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=

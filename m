@@ -1,9 +1,8 @@
-From: Roel Kluin <12o3l@tiscali.nl>
-Subject: [PATCH v2] aty128fb: test below 0 on unsigned
-	pll->post_divider
-Date: Wed, 23 Apr 2008 21:24:58 +0200
-Message-ID: <480F8D0A.8080808@tiscali.nl>
-References: <480F81DC.5010505@tiscali.nl>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] fbdev: Do not let CONFIG_FB_DEFERRED_IO
+	default to y
+Date: Wed, 23 Apr 2008 22:46:08 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0804232244150.15605@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,14 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JokaW-0005B7-Tb for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 12:25:05 -0700
-Received: from smtp-out1.tiscali.nl ([195.241.79.176])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JokaV-0008Tk-4j
+	id 1Jolr8-0005m6-2V for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Apr 2008 13:46:18 -0700
+Received: from monty.telenet-ops.be ([195.130.132.56])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jolr4-0000sg-Er
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 12:25:04 -0700
-In-Reply-To: <480F81DC.5010505@tiscali.nl>
+	Wed, 23 Apr 2008 13:46:18 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,48 +26,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Joe Perches wrote:
-> 
-> In both uses, sizeof(post_dividers) should be ARRAY_SIZE(post_dividers)
-> Yes, it's an unsigned char array, it works, but it's unsightly.
-> 
-> cheers, Joe
+CONFIG_FB_DEFERRED_IO can not be turned off, while it's already selected
+automatically by the drivers that need it.
 
-Thanks Joe, updated patch below
+Although it's nice to have more compile-coverage, not being able to disable a
+rarely used feature is annoying.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-pll->post_divider is unsigned, so the test fails
+ drivers/video/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-index cbd3308..5049228 100644
---- a/drivers/video/aty/aty128fb.c
-+++ b/drivers/video/aty/aty128fb.c
-@@ -1339,10 +1339,8 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
- 	if (vclk * 12 < c.ppll_min)
- 		vclk = c.ppll_min/12;
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -147,7 +147,6 @@ config FB_SYS_FOPS
+ config FB_DEFERRED_IO
+ 	bool
+ 	depends on FB
+-	default y
  
--	pll->post_divider = -1;
--
- 	/* now, find an acceptable divider */
--	for (i = 0; i < sizeof(post_dividers); i++) {
-+	for (i = 0; i < ARRAY_SIZE(post_dividers); i++) {
- 		output_freq = post_dividers[i] * vclk;
- 		if (output_freq >= c.ppll_min && output_freq <= c.ppll_max) {
- 			pll->post_divider = post_dividers[i];
-@@ -1350,7 +1348,7 @@ static int aty128_var_to_pll(u32 period_in_ps, struct aty128_pll *pll,
- 		}
- 	}
- 
--	if (pll->post_divider < 0)
-+	if (i == ARRAY_SIZE(post_dividers))
- 		return -EINVAL;
- 
- 	/* calculate feedback divider */
+ config FB_SVGALIB
+ 	tristate
 
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

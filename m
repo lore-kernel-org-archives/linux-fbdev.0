@@ -1,9 +1,8 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH] [FB] metronomefb: don't free
-	firmware twice in error path.
-Date: Thu, 24 Apr 2008 09:57:56 +0800
-Message-ID: <45a44e480804231857m430a05a4mf33f2fe23e6d4495@mail.gmail.com>
-References: <20080421120931.GD11534@Chamillionaire.breakpoint.cc>
+From: Sebastian Siewior <frame+buffer@ml.breakpoint.cc>
+Subject: [PATCH] [FB] metronomefb: don't free firmware
+	twice in error path.
+Date: Thu, 24 Apr 2008 09:56:46 +0200
+Message-ID: <20080424075646.GA21460@Chamillionaire.breakpoint.cc>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,16 +10,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Joqik-00023a-2E for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 18:57:58 -0700
-Received: from wf-out-1314.google.com ([209.85.200.173])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Joqii-0003am-TY
+	id 1JowK5-0004gH-JC for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 24 Apr 2008 00:56:53 -0700
+Received: from chamillionaire.breakpoint.cc ([85.10.199.196]
+	ident=G2wL6ZuayTZo\z0haXx|IP)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JowK4-000451-7J
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 18:57:58 -0700
-Received: by wf-out-1314.google.com with SMTP id 28so2257131wff.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 23 Apr 2008 18:57:56 -0700 (PDT)
-In-Reply-To: <20080421120931.GD11534@Chamillionaire.breakpoint.cc>
+	Thu, 24 Apr 2008 00:56:53 -0700
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,17 +29,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Sebastian Siewior <frame+buffer@ml.breakpoint.cc>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Antonino Daplas <adaplas@gmail.com>
 
-On Mon, Apr 21, 2008 at 8:09 PM, Sebastian Siewior
-<frame+buffer@ml.breakpoint.cc> wrote:
-> Right now, if request_irq or anthing after it fails than we free the
->  firmware for the second time what migh end bad :)
+Right now, if request_irq or anthing after it fails than we free the
+firmware for the second time what migh end bad :)
 
-Agreed.
-
+Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
 Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+---
+ drivers/video/metronomefb.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index e9a89fd..110985f 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -861,12 +861,13 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 
+ 	retval = load_waveform((u8 *) fw_entry->data, fw_entry->size,
+ 				par->metromem_wfm, 3, 31, &par->frame_count);
++
++	release_firmware(fw_entry);
++
+ 	if (retval < 0) {
+ 		printk(KERN_ERR "metronomefb: couldn't process waveform\n");
+-		goto err_ld_wfm;
++		goto err_dma_free;
+ 	}
+-	release_firmware(fw_entry);
+-
+ 	retval = request_irq(IRQ_GPIO(RDY_GPIO_PIN), metronome_handle_irq,
+ 				IRQF_DISABLED, "Metronome", info);
+ 	if (retval) {
+@@ -914,8 +915,6 @@ err_fb_rel:
+ 	framebuffer_release(info);
+ err_free_irq:
+ 	free_irq(IRQ_GPIO(RDY_GPIO_PIN), info);
+-err_ld_wfm:
+-	release_firmware(fw_entry);
+ err_dma_free:
+ 	dma_free_writecombine(&dev->dev, par->metromemsize, par->metromem,
+ 				par->metromem_dma);
+-- 
+1.5.4.4
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

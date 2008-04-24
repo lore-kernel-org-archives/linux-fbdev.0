@@ -1,8 +1,9 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch 09/15] m68k: dnfb doesnt check for Apollo
-Date: Thu, 24 Apr 2008 20:29:49 +0200
-Message-ID: <20080424183242.692694606@mail.of.borg>
-References: <20080424182940.424312704@mail.of.borg>
+Subject: Re: [PATCH] atafb: test virtual screen range
+ before subtraction on unsigned
+Date: Thu, 24 Apr 2008 23:05:55 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0804242304310.21224@anakin>
+References: <480F6FF9.9000605@tiscali.nl> <480F8522.4090805@tiscali.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,13 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jp6H3-0005ev-TY for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Apr 2008 11:34:25 -0700
-Received: from winston.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jp6Gx-0003Pg-Hl
+	id 1Jp8dq-0004VH-RV for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 24 Apr 2008 14:06:06 -0700
+Received: from wilson.telenet-ops.be ([195.130.132.42])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jp8dp-0003tj-1S
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Apr 2008 11:34:24 -0700
-Content-Disposition: inline; filename=m68k-dnfb-breaks-multi-platform.diff
+	Thu, 24 Apr 2008 14:06:06 -0700
+In-Reply-To: <480F8522.4090805@tiscali.nl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,33 +28,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>, adaplas@gmail.com
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+On Wed, 23 Apr 2008, Roel Kluin wrote:
+> a bit similar to vga16fb,
+> ---
+> dx and dy are u32's, so the test should occur before the subtraction
 
-The Apollo frame buffer device driver (dnfb) doesn't check whether it's
-actually running on Apollo hardware, causing a crash if it isn't.
+Note that fb_copyarea.d[xy] are also u32, while there are many tests
+that check for these fields being negative.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/video/dnfb.c |    3 +++
- 1 file changed, 3 insertions(+)
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
+> index 5d4fbaa..8f60a8f 100644
+> --- a/drivers/video/atafb.c
+> +++ b/drivers/video/atafb.c
+> @@ -2593,13 +2593,16 @@ static void atafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+>  	width = x2 - dx;
+>  	height = y2 - dy;
+>  
+> +	if (area->sx + dx < area->dx || area->sy + dy < area->dy)
+> +		return;
+> +
+>  	/* update sx,sy */
+>  	sx = area->sx + (dx - area->dx);
+>  	sy = area->sy + (dy - area->dy);
+>  
+>  	/* the source must be completely inside the virtual screen */
+> -	if (sx < 0 || sy < 0 || (sx + width) > info->var.xres_virtual ||
+> -	    (sy + height) > info->var.yres_virtual)
+> +	if (sx + width > info->var.xres_virtual ||
+> +			sy + height > info->var.yres_virtual)
+>  		return;
+>  
+>  	if (dy > sy || (dy == sy && dx > sx)) {
+> 
 
---- a/drivers/video/dnfb.c
-+++ b/drivers/video/dnfb.c
-@@ -284,6 +284,9 @@ int __init dnfb_init(void)
- {
- 	int ret;
- 
-+	if (!MACH_IS_APOLLO)
-+		return -ENODEV;
-+
- 	if (fb_get_options("dnfb", NULL))
- 		return -ENODEV;
- 
-
--- 
 Gr{oetje,eeting}s,
 
 						Geert
@@ -64,7 +76,6 @@ Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
 							    -- Linus Torvalds
-
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

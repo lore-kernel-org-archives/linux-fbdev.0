@@ -1,51 +1,76 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [2.6.25-rc6] possible regression: X server dying
-Date: Thu, 24 Apr 2008 18:03:30 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804241715320.7642@axis700.grange>
-References: <47E82D68.5070305@imap.cc>  <21d7e9970803241622v10b887a6p869535102b486279@mail.gmail.com>
-  <47E83D14.8070800@imap.cc>  <21d7e9970803241753q433e7545pdd00eae189846a8@mail.gmail.com>
-  <21d7e9970803302153s314d48d3o7120a56092eeaede@mail.gmail.com> 
- <21d7e9970804060044i25b36802p1859ca25fa532494@mail.gmail.com> 
- <20080406143434.106940@gmx.net> <21d7e9970804071527g14402783j26bfdbd2beb1b026@mail.gmail.com>
- <Pine.LNX.4.64.0804082256270.4987@axis700.grange>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [patch 03/15] m68k: FB_HP300 depends on DIO and
+	doesnt need FB_CFB_FILLRECT
+Date: Thu, 24 Apr 2008 20:29:43 +0200
+Message-ID: <20080424183241.286539069@mail.of.borg>
+References: <20080424182940.424312704@mail.of.borg>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762694AbYDXQDb@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0804082256270.4987@axis700.grange>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: Gerhard Pircher <gerhard_pircher@gmx.net>, linux-kernel@vger.kernel.org, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Jp6H3-0005er-E4 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 24 Apr 2008 11:34:25 -0700
+Received: from winston.telenet-ops.be ([195.130.137.75])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jp6Gy-00018Y-7r
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 24 Apr 2008 11:34:24 -0700
+Content-Disposition: inline; filename=m68k-correct-FB_HP300-dependencies.diff
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-m68k@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, 8 Apr 2008, Guennadi Liakhovetski wrote:
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-> Hm, so looks like I'm not seeing some ghosts on mine either. 2.6.25-rc8 
-> xorg runs under etch, but enters a tight (no syscalls) loop woth 100% CPU 
-> load under lenny. A 2.6.24 based kernel works under both etch and lenny... 
-> Haven't had time to try to localize the problem. Glint xorg driver, DRM 
-> and AGP are off, CONFIG_FB_PM2=y.
+Correct FB_HP300 dependencies:
+  - FB_HP300 doesn't depend only on HP300, but also on DIO (which depends on
+    HP300)
+  - FB_HP300 does not need FB_CFB_FILLRECT
 
-Ok, here's more info. It DOES seem to be a regression. I spent half a day 
-yesterday trying to trace this down, with no success. Multiple bisect 
-attempts ended up with non-bootable kernels on the very first iteration. 
-Today I just wanted to post all possible logs / configs to Bugzilla and - 
-it "suddenly" worked... And the change that made it work was - I disabled 
-CONFIG_FB_PM2 in the kernel...
-
-So, I think, this shall be qualified as a regression, although, I have no 
-idea where. pm2fb.c itself hasn't (effectively for little endian) changed 
-since 2.6.24. To make it visual
-
-		etch		lenny
-
-v2.6.24		works		works
-v2.6.25		works		fails
-
-/me thinks he should trade his ap400 to the Linux Kernel Testers Inc. for 
-LOTS of money.
-
-Thanks
-Guennadi
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-Guennadi Liakhovetski
+ drivers/video/Kconfig |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -596,8 +596,7 @@ config FB_MAC
+ 
+ config FB_HP300
+ 	bool
+-	depends on (FB = y) && HP300
+-	select FB_CFB_FILLRECT
++	depends on (FB = y) && DIO
+ 	select FB_CFB_IMAGEBLIT
+ 	default y
+ 
+
+-- 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
+Don't miss this year's exciting event. There's still time to save $100. 
+Use priority code J8TL2D2. 
+http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone

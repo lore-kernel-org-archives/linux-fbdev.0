@@ -1,22 +1,22 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch 02/15] m68k: Kill CONFIG_FB_DAFB
-Date: Thu, 24 Apr 2008 20:29:42 +0200
-Message-ID: <20080424183241.052803569@mail.of.borg>
+Subject: [patch 09/15] m68k: dnfb doesnt check for Apollo
+Date: Thu, 24 Apr 2008 20:29:49 +0200
+Message-ID: <20080424183242.692694606@mail.of.borg>
 References: <20080424182940.424312704@mail.of.borg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jp6H3-0005es-E4 for linux-fbdev-devel@lists.sourceforge.net;
+	id 1Jp6H3-0005ev-TY for linux-fbdev-devel@lists.sourceforge.net;
 	Thu, 24 Apr 2008 11:34:25 -0700
-Received: from nelson.telenet-ops.be ([195.130.133.66])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jp6Gy-00018V-SP
+Received: from winston.telenet-ops.be ([195.130.137.75])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jp6Gx-0003Pg-Hl
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Thu, 24 Apr 2008 11:34:24 -0700
-Content-Disposition: inline; filename=m68k-kill-CONFIG_FB_DAFB.diff
+Content-Disposition: inline; filename=m68k-dnfb-breaks-multi-platform.diff
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,23 +32,26 @@ Cc: linux-m68k@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-k
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-CONFIG_FB_DAFB is a leftover from pre-Kconfig
+The Apollo frame buffer device driver (dnfb) doesn't check whether it's
+actually running on Apollo hardware, causing a crash if it isn't.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/Kconfig |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/dnfb.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -594,7 +594,6 @@ config FB_MAC
- 	select FB_CFB_IMAGEBLIT
- 	select FB_MACMODES
+--- a/drivers/video/dnfb.c
++++ b/drivers/video/dnfb.c
+@@ -284,6 +284,9 @@ int __init dnfb_init(void)
+ {
+ 	int ret;
  
--#      bool '  Apple DAFB display support' CONFIG_FB_DAFB
- config FB_HP300
- 	bool
- 	depends on (FB = y) && HP300
++	if (!MACH_IS_APOLLO)
++		return -ENODEV;
++
+ 	if (fb_get_options("dnfb", NULL))
+ 		return -ENODEV;
+ 
 
 -- 
 Gr{oetje,eeting}s,

@@ -1,9 +1,9 @@
 From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH] fbdev: Do not let
-	CONFIG_FB_DEFERRED_IO default to y
-Date: Thu, 24 Apr 2008 09:56:13 +0800
-Message-ID: <45a44e480804231856o15b07749r3a31893f18d42d48@mail.gmail.com>
-References: <Pine.LNX.4.64.0804232244150.15605@anakin>
+Subject: Re: [PATCH] [FB] metronomefb: don't free
+	firmware twice in error path.
+Date: Thu, 24 Apr 2008 09:57:56 +0800
+Message-ID: <45a44e480804231857m430a05a4mf33f2fe23e6d4495@mail.gmail.com>
+References: <20080421120931.GD11534@Chamillionaire.breakpoint.cc>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,16 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Joqh5-0001wi-3m for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 18:56:15 -0700
-Received: from wf-out-1314.google.com ([209.85.200.168])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Joqh3-00032K-Td
+	id 1Joqik-00023a-2E for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Apr 2008 18:57:58 -0700
+Received: from wf-out-1314.google.com ([209.85.200.173])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Joqii-0003am-TY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Apr 2008 18:56:15 -0700
-Received: by wf-out-1314.google.com with SMTP id 28so2256596wff.4
+	Wed, 23 Apr 2008 18:57:58 -0700
+Received: by wf-out-1314.google.com with SMTP id 28so2257131wff.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 23 Apr 2008 18:56:13 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0804232244150.15605@anakin>
+	Wed, 23 Apr 2008 18:57:56 -0700 (PDT)
+In-Reply-To: <20080421120931.GD11534@Chamillionaire.breakpoint.cc>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,16 +32,13 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>
+To: Sebastian Siewior <frame+buffer@ml.breakpoint.cc>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
 
-On Thu, Apr 24, 2008 at 4:46 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> CONFIG_FB_DEFERRED_IO can not be turned off, while it's already selected
->  automatically by the drivers that need it.
->
->  Although it's nice to have more compile-coverage, not being able to disable a
->  rarely used feature is annoying.
+On Mon, Apr 21, 2008 at 8:09 PM, Sebastian Siewior
+<frame+buffer@ml.breakpoint.cc> wrote:
+> Right now, if request_irq or anthing after it fails than we free the
+>  firmware for the second time what migh end bad :)
 
 Agreed.
 

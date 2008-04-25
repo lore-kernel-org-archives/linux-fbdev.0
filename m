@@ -1,23 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] atafb: test virtual screen range
- before subtraction on unsigned
-Date: Thu, 24 Apr 2008 23:05:55 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804242304310.21224@anakin>
-References: <480F6FF9.9000605@tiscali.nl> <480F8522.4090805@tiscali.nl>
+From: Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 2/2] BF54x Framebuffer Driver: BF542
+	does not have EPPI0, so dont allow the LQ034 driver for now
+Date: Fri, 25 Apr 2008 11:29:06 +0800
+Message-ID: <1209094146-19872-3-git-send-email-cooloney@kernel.org>
+References: <1209094146-19872-1-git-send-email-cooloney@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jp8dq-0004VH-RV for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Apr 2008 14:06:06 -0700
-Received: from wilson.telenet-ops.be ([195.130.132.42])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jp8dp-0003tj-1S
+	id 1JpEcu-0007sv-Ct for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 24 Apr 2008 20:29:32 -0700
+Received: from nwd2mail10.analog.com ([137.71.25.55])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JpEct-0002hY-2p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Apr 2008 14:06:06 -0700
-In-Reply-To: <480F8522.4090805@tiscali.nl>
+	Thu, 24 Apr 2008 20:29:32 -0700
+In-Reply-To: <1209094146-19872-1-git-send-email-cooloney@kernel.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,54 +28,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>, adaplas@gmail.com
+To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Bryan Wu <cooloney@kernel.org>, Mike Frysinger <vapier.adi@gmail.com>
 
-On Wed, 23 Apr 2008, Roel Kluin wrote:
-> a bit similar to vga16fb,
-> ---
-> dx and dy are u32's, so the test should occur before the subtraction
+From: Mike Frysinger <vapier.adi@gmail.com>
 
-Note that fb_copyarea.d[xy] are also u32, while there are many tests
-that check for these fields being negative.
+Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/video/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
-> index 5d4fbaa..8f60a8f 100644
-> --- a/drivers/video/atafb.c
-> +++ b/drivers/video/atafb.c
-> @@ -2593,13 +2593,16 @@ static void atafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
->  	width = x2 - dx;
->  	height = y2 - dy;
->  
-> +	if (area->sx + dx < area->dx || area->sy + dy < area->dy)
-> +		return;
-> +
->  	/* update sx,sy */
->  	sx = area->sx + (dx - area->dx);
->  	sy = area->sy + (dy - area->dy);
->  
->  	/* the source must be completely inside the virtual screen */
-> -	if (sx < 0 || sy < 0 || (sx + width) > info->var.xres_virtual ||
-> -	    (sy + height) > info->var.yres_virtual)
-> +	if (sx + width > info->var.xres_virtual ||
-> +			sy + height > info->var.yres_virtual)
->  		return;
->  
->  	if (dy > sy || (dy == sy && dx > sx)) {
-> 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 1bd5fb3..682eb61 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -546,7 +546,7 @@ config FB_VGA16
+ 
+ config FB_BF54X_LQ043
+ 	tristate "SHARP LQ043 TFT LCD (BF548 EZKIT)"
+-	depends on FB && (BF54x)
++	depends on FB && (BF54x) && !BF542
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+1.5.5
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

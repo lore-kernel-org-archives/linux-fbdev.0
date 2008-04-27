@@ -1,62 +1,85 @@
-From: Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/2] BF54x Framebuffer Driver: drop
-	request_irq cast
-Date: Fri, 25 Apr 2008 11:29:05 +0800
-Message-ID: <1209094146-19872-2-git-send-email-cooloney@kernel.org>
-References: <1209094146-19872-1-git-send-email-cooloney@kernel.org>
+From: Julia Lawall <julia@diku.dk>
+Subject: [PATCH] drivers/video/pnx4008: eliminate double free
+Date: Sun, 27 Apr 2008 12:46:22 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0804271245510.7217@ask.diku.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759448AbYD0Kqk@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JpEcv-0007t0-73 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Apr 2008 20:29:33 -0700
-Received: from nwd2mail11.analog.com ([137.71.25.57])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JpEct-0008Lu-PF
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Apr 2008 20:29:33 -0700
-In-Reply-To: <1209094146-19872-1-git-send-email-cooloney@kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Bryan Wu <cooloney@kernel.org>, Mike Frysinger <vapier.adi@gmail.com>
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+From: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
+The function framebuffer_release just calls kfree, so calling kfree
+subsequently on the same argument represents a double free.  The
+comments with the definition of framebuffer_release
+in drivers/video/fbsysfs.c suggest that a more elaborate definition of this
+function is planned, such that the splitting up of framebuffer_release and
+kfree as done in the second instance might someday make sense, but it does
+not make sense now. 
+
+This was found using the following semantic match.
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+expression E;
+@@
+
+* kfree(E);
+...
+* framebuffer_release(E);
+
+@@
+expression E;
+@@
+
+* framebuffer_release(E);
+...
+* kfree(E);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/video/bf54x-lq043fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-index eefba3d..850212d 100644
---- a/drivers/video/bf54x-lq043fb.c
-+++ b/drivers/video/bf54x-lq043fb.c
-@@ -652,7 +652,7 @@ static int __init bfin_bf54x_probe(struct platform_device *pdev)
- 		goto out7;
+diff -u -p a/drivers/video/pnx4008/pnxrgbfb.c b/drivers/video/pnx4008/pnxrgbfb.c
+--- a/drivers/video/pnx4008/pnxrgbfb.c	2008-04-07 13:50:27.000000000 +0200
++++ b/drivers/video/pnx4008/pnxrgbfb.c	2008-04-27 12:25:52.000000000 +0200
+@@ -100,7 +100,6 @@ static int rgbfb_remove(struct platform_
+ 		fb_dealloc_cmap(&info->cmap);
+ 		framebuffer_release(info);
+ 		platform_set_drvdata(pdev, NULL);
+-		kfree(info);
  	}
  
--	if (request_irq(info->irq, (void *)bfin_bf54x_irq_error, IRQF_DISABLED,
-+	if (request_irq(info->irq, bfin_bf54x_irq_error, IRQF_DISABLED,
- 			"PPI ERROR", info) < 0) {
- 		printk(KERN_ERR DRIVER_NAME
- 		       ": unable to request PPI ERROR IRQ\n");
--- 
-1.5.5
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
-Don't miss this year's exciting event. There's still time to save $100. 
-Use priority code J8TL2D2. 
-http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone
+ 	pnx4008_free_dum_channel(channel_owned, pdev->id);
+@@ -168,23 +167,21 @@ static int __devinit rgbfb_probe(struct 
+ 
+ 	ret = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (ret < 0)
+-		goto err2;
++		goto err1;
+ 
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0)
+-		goto err3;
++		goto err2;
+ 	platform_set_drvdata(pdev, info);
+ 
+ 	return 0;
+ 
+-err3:
+-	fb_dealloc_cmap(&info->cmap);
+ err2:
+-	framebuffer_release(info);
++	fb_dealloc_cmap(&info->cmap);
+ err1:
+ 	pnx4008_free_dum_channel(channel_owned, pdev->id);
+ err0:
+-	kfree(info);
++	framebuffer_release(info);
+ err:
+ 	return ret;
+ }

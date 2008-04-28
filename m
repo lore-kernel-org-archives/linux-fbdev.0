@@ -1,85 +1,95 @@
-From: Julia Lawall <julia@diku.dk>
-Subject: [PATCH] drivers/video/pnx4008: eliminate double free
-Date: Sun, 27 Apr 2008 12:46:22 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0804271245510.7217@ask.diku.dk>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [PATCH 1/1 2.6.25] fbdev: bugfix for
+	multiprocess defio
+Date: Sun, 27 Apr 2008 22:01:40 -0400
+Message-ID: <20080428020140.8662.66707.sendpatchset@hit-nxdomain.opendns.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759448AbYD0Kqk@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JqJaQ-0000rk-UA for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 27 Apr 2008 19:59:26 -0700
+Received: from wf-out-1314.google.com ([209.85.200.170])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JqJaP-0004HI-DN
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 27 Apr 2008 19:59:26 -0700
+Received: by wf-out-1314.google.com with SMTP id 28so3822718wff.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 27 Apr 2008 19:59:24 -0700 (PDT)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: bernard@largestprime.net, akpm@linux-foundation.org, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-From: Julia Lawall <julia@diku.dk>
+Hi Tony, Geert, Andrew, fbdev,
 
-The function framebuffer_release just calls kfree, so calling kfree
-subsequently on the same argument represents a double free.  The
-comments with the definition of framebuffer_release
-in drivers/video/fbsysfs.c suggest that a more elaborate definition of this
-function is planned, such that the splitting up of framebuffer_release and
-kfree as done in the second instance might someday make sense, but it does
-not make sense now. 
+This patch is a bugfix for how defio handles multiple processes manipulating
+the same framebuffer. Thanks to Bernard Blackham for identifying this bug.
+It occurs when two applications mmap the same framebuffer and concurrently
+write to the same page. Normally, this doesn't occur since only a single
+process mmaps the framebuffer. The symptom of the bug is that the mapping
+applications will hang. The cause is that defio incorrectly tries to add the
+same page twice to the pagelist. The solution I have is to walk the pagelist
+and check for a duplicate before adding. Since I needed to walk the
+pagelist, I now also keep the pagelist in sorted order.
 
-This was found using the following semantic match.
-(http://www.emn.fr/x-info/coccinelle/)
+Thanks,
+jaya
 
-// <smpl>
-@@
-expression E;
-@@
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 
-* kfree(E);
-...
-* framebuffer_release(E);
-
-@@
-expression E;
-@@
-
-* framebuffer_release(E);
-...
-* kfree(E);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
-
-diff -u -p a/drivers/video/pnx4008/pnxrgbfb.c b/drivers/video/pnx4008/pnxrgbfb.c
---- a/drivers/video/pnx4008/pnxrgbfb.c	2008-04-07 13:50:27.000000000 +0200
-+++ b/drivers/video/pnx4008/pnxrgbfb.c	2008-04-27 12:25:52.000000000 +0200
-@@ -100,7 +100,6 @@ static int rgbfb_remove(struct platform_
- 		fb_dealloc_cmap(&info->cmap);
- 		framebuffer_release(info);
- 		platform_set_drvdata(pdev, NULL);
--		kfree(info);
- 	}
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index 24843fd..59df132 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -74,6 +74,7 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ {
+ 	struct fb_info *info = vma->vm_private_data;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct page *cur;
  
- 	pnx4008_free_dum_channel(channel_owned, pdev->id);
-@@ -168,23 +167,21 @@ static int __devinit rgbfb_probe(struct 
+ 	/* this is a callback we get when userspace first tries to
+ 	write to the page. we schedule a workqueue. that workqueue
+@@ -83,7 +84,24 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
  
- 	ret = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (ret < 0)
--		goto err2;
-+		goto err1;
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
+-	list_add(&page->lru, &fbdefio->pagelist);
++
++	/* we loop through the pagelist before adding in order
++	to keep the pagelist sorted */
++	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++		/* this check is to catch the case where a new
++		process could start writing to the same page
++		through a new pte. this new access can cause the
++		mkwrite even when the original ps's pte is marked
++		writable */
++		if (unlikely(cur == page))
++			goto page_already_added;
++		else if (cur->index > page->index)
++			break;
++	}
++
++	list_add_tail(&page->lru, &cur->lru);
++
++page_already_added:
+ 	mutex_unlock(&fbdefio->lock);
  
- 	ret = register_framebuffer(info);
- 	if (ret < 0)
--		goto err3;
-+		goto err2;
- 	platform_set_drvdata(pdev, info);
- 
- 	return 0;
- 
--err3:
--	fb_dealloc_cmap(&info->cmap);
- err2:
--	framebuffer_release(info);
-+	fb_dealloc_cmap(&info->cmap);
- err1:
- 	pnx4008_free_dum_channel(channel_owned, pdev->id);
- err0:
--	kfree(info);
-+	framebuffer_release(info);
- err:
- 	return ret;
- }
+ 	/* come back after delay to process the deferred IO */
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
+Don't miss this year's exciting event. There's still time to save $100. 
+Use priority code J8TL2D2. 
+http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone

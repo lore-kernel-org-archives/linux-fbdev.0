@@ -1,30 +1,24 @@
-From: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: intelfb and G33 / Q33 / Q35 chipsets
-	support ?
-Date: Wed, 30 Apr 2008 04:16:39 +0200
-Message-ID: <4817D687.8080201@googlemail.com>
-References: <4815EEB4.2060509@frugalware.org>
-	<alpine.DEB.0.82.0804282016440.5277@skynet.skynet.ie>
-	<481678C6.7050400@googlemail.com>
-	<200804291104.47687.jbarnes@virtuousgeek.org>
-	<4817A9D3.1030309@googlemail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1 2.6.25] fbdev: bugfix for
+	multiprocess defio
+Date: Wed, 30 Apr 2008 13:37:59 -0700
+Message-ID: <20080430133759.e39bf34c.akpm@linux-foundation.org>
+References: <20080428020140.8662.66707.sendpatchset@hit-nxdomain.opendns.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jr1sN-0007u2-6R for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Apr 2008 19:16:55 -0700
-Received: from hu-out-0506.google.com ([72.14.214.225])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jr1sM-00041b-NR
+	id 1JrJ4M-0007fd-V3 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 30 Apr 2008 13:38:27 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JrJ4L-00060S-M3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 29 Apr 2008 19:16:55 -0700
-Received: by hu-out-0506.google.com with SMTP id 28so274819hub.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 29 Apr 2008 19:16:52 -0700 (PDT)
-In-Reply-To: <4817A9D3.1030309@googlemail.com>
+	Wed, 30 Apr 2008 13:38:26 -0700
+In-Reply-To: <20080428020140.8662.66707.sendpatchset@hit-nxdomain.opendns.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,42 +29,67 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Gabriel C <crazy@frugalware.org>, linux-fbdev-devel@lists.sourceforge.net, Wang Zhenyu <zhenyu.z.wang@intel.com>, "Antonino A. Daplas" <adaplas@gmail.com>, Dave Airlie <airlied@linux.ie>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: jayakumar.lkml@gmail.com, bernard@largestprime.net, linux-fbdev-devel@lists.sourceforge.net
 
-Gabriel C wrote:
-> Jesse Barnes wrote:
->> On Monday, April 28, 2008 6:24 pm Gabriel C wrote:
->>> Dave Airlie wrote:
->>>> On Mon, 28 Apr 2008, Gabriel C wrote:
->>>>> Hello ,
->>>>>
->>>>> are there any plans to add G33 / Q33 / Q35 chipsets support for the
->>>>> intelfb driver ? Is this driver still maintained ?
->>>>>
->>>>> ( I'm not really sure who maintains this driver so I've add peoples to
->>>>> CC I saw worked on it , I've also added Wang Zhenyu to CC while he added
->>>>> this support for AGP )
->>>> Intel fb is unmaintained (well I've done trivial fixes in the past), and
->>>> I'd rather not add new chipset support to it.
->>>>
->>>> We are working (RH and Intel) on a new kernel modesetting layer which
->>>> will allow fbs integrated with proper memory management and support all
->>>> intel hw,
->>> Good news :)
->>>
->>> Are there any patch(es) / git tree one could try out ?
->> See the modesetting-101 branch of git://git.freedesktop.org/git/mesa/drm.  
->> It's a bit rough in spots but the i915 driver should be pretty close to 
->> feature parity with the Intel X driver at this point.
+On Sun, 27 Apr 2008 22:01:40 -0400
+Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+
+> Hi Tony, Geert, Andrew, fbdev,
 > 
-> Thx , I will try out the tree.
+> This patch is a bugfix for how defio handles multiple processes manipulating
+> the same framebuffer. Thanks to Bernard Blackham for identifying this bug.
+> It occurs when two applications mmap the same framebuffer and concurrently
+> write to the same page. Normally, this doesn't occur since only a single
+> process mmaps the framebuffer. The symptom of the bug is that the mapping
+> applications will hang. The cause is that defio incorrectly tries to add the
+> same page twice to the pagelist. The solution I have is to walk the pagelist
+> and check for a duplicate before adding. Since I needed to walk the
+> pagelist, I now also keep the pagelist in sorted order.
 > 
+> Thanks,
+> jaya
+> 
+> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+> 
+> diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+> index 24843fd..59df132 100644
+> --- a/drivers/video/fb_defio.c
+> +++ b/drivers/video/fb_defio.c
+> @@ -74,6 +74,7 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+>  {
+>  	struct fb_info *info = vma->vm_private_data;
+>  	struct fb_deferred_io *fbdefio = info->fbdefio;
+> +	struct page *cur;
+>  
+>  	/* this is a callback we get when userspace first tries to
+>  	write to the page. we schedule a workqueue. that workqueue
+> @@ -83,7 +84,24 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+>  
+>  	/* protect against the workqueue changing the page list */
+>  	mutex_lock(&fbdefio->lock);
+> -	list_add(&page->lru, &fbdefio->pagelist);
+> +
+> +	/* we loop through the pagelist before adding in order
+> +	to keep the pagelist sorted */
+> +	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+> +		/* this check is to catch the case where a new
+> +		process could start writing to the same page
+> +		through a new pte. this new access can cause the
+> +		mkwrite even when the original ps's pte is marked
+> +		writable */
+> +		if (unlikely(cur == page))
+> +			goto page_already_added;
+> +		else if (cur->index > page->index)
+> +			break;
+> +	}
+> +
+> +	list_add_tail(&page->lru, &cur->lru);
+> +
+> +page_already_added:
+>  	mutex_unlock(&fbdefio->lock);
+>  
 
-modesetting-101 does not compile on current git , NOPAGE_SIGBUS , nopage and friends gone.
-
-
-Gabriel 
+Did you consider using !list_empty(&page->lru) to avoid the linear search?
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

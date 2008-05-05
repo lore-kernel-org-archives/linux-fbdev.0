@@ -1,102 +1,62 @@
-From: devzero@web.de
-Subject: =?iso-8859-15?Q?[PATCH]_mdacon_messing_up_default_vc's,_set_default_to?=
- =?iso-8859-15?Q?_vc13-16_again?=
-Date: Sat, 03 May 2008 22:09:25 +0200
-Message-ID: <263875520@web.de>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [PATCH 1/1 2.6.25] fbdev: bugfix for
+	multiprocess defio
+Date: Mon, 5 May 2008 00:23:09 -0700
+Message-ID: <45a44e480805050023h68cffe15h5e309707ec6d8380@mail.gmail.com>
+References: <20080428020140.8662.66707.sendpatchset@hit-nxdomain.opendns.com>
+	<20080430133759.e39bf34c.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754750AbYECUJh@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: adaplas@gmail.com, alan@lxorguk.ukuu.org.uk, edward@debian.org, jsimmons@infradead.org, Soeren Sonnenburg <kernel@nn7.de>, matan@svgalib.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Jsv2V-0005g8-TT for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 May 2008 00:23:11 -0700
+Received: from wf-out-1314.google.com ([209.85.200.168])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jsv2U-0002yF-KB
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 May 2008 00:23:11 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so1025919wfd.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 05 May 2008 00:23:10 -0700 (PDT)
+In-Reply-To: <20080430133759.e39bf34c.akpm@linux-foundation.org>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: bernard@largestprime.net, linux-fbdev-devel@lists.sourceforge.net
 
-mdacon incorrectly detects MDA hardware on systems without such graphic=
-s card.
+On Wed, Apr 30, 2008 at 1:37 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>
+> On Sun, 27 Apr 2008 22:01:40 -0400
+>  Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+>
+>  > +     /* we loop through the pagelist before adding in order
+>  > +     to keep the pagelist sorted */
+>  > +     list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+>
+>  Did you consider using !list_empty(&page->lru) to avoid the linear search?
+>
 
-one may load this module by chance, for example when doing some systema=
-tical=20
-module-testing, and if there is no Monochrome Display Adapter attached =
-, module init=20
-renders vc1-16 completely unusable.=20
+Ah, no, I didn't think of that. I agree that checking list_empty would
+be far better. I'll redo the patch using that.
 
-me and others have run into this more than once. see [Bug 224522 - modp=
-robe mdacon=20
-freezes machine -> https://bugzilla.novell.com/show_bug.cgi?id=3D224522=
- ] for example
+Thanks,
+jaya
 
-apparently, proper MDA detection seems to be broken for a long time - s=
-eems to be=20
-related to those #ifdef TEST_MDA_B statements added by Edward Betts.
-
-this commit back in 2002 made things even worse :
-http://git.kernel.org/?p=3Dlinux/kernel/git/tglx/history.git;a=3Dcommit=
-;h=3Dc72757b49c88914433244757fb4967fc63546685
-=20
-it changed default vc allocation from 13-16 to 1-16  for no apparent re=
-ason (!?) , and=20
-with that (and without X), mdacon grabs the vc you`re currently sitting=
- on and locks you out.
-
-this is from Kconfig :
->config MDA_CONSOLE
->        depends on !M68K && !PARISC && ISA
->        tristate "MDA text console (dual-headed) (EXPERIMENTAL)"
->        ---help---
->          Say Y here if you have an old MDA or monochrome Hercules gra=
-phics
->          adapter in your system acting as a second head ( =3D video c=
-ard). You
->          will then be able to use two monitors with your Linux system=
-=2E Do not
->          say Y here if your MDA card is the primary card in your syst=
-em; the
->          normal VGA driver will handle it.
-
-As we can see mdacon is just meant as an additional driver for dual-hea=
-d setup,=20
-and since kernel 2.4.36 still defaults to vc13-16 ,  setting the defaul=
-t back to that value=20
-again shouldn`t  do any harm.=20
-
-hereby i`m reverting that change, setting default back to to vc13-16 ag=
-ain.
-
-Besides the fact that mdacon may be rarely or never be used these days =
-and could=20
-perhaps put to trash anyway (pre-dinosaur hardware!), indeed this is no=
-t a real solution, =20
-but at least it removes the unfortunate side-effect of messing up the v=
-c you`re working on.
-
-
-Signed-off-by: Roland Kletzing <devzero@web.de>
-
---- drivers/video/console/mdacon.c.orig 2008-05-03 15:47:20.000000000 +=
-0200
-+++ drivers/video/console/mdacon.c      2008-05-03 15:55:27.000000000 +=
-0200
-@@ -71,13 +71,15 @@
-
- /* console information */
-
--static int     mda_first_vc =3D 1;
-+static int     mda_first_vc =3D 13;
- static int     mda_last_vc  =3D 16;
-
- static struct vc_data  *mda_display_fg =3D NULL;
-
- module_param(mda_first_vc, int, 0);
-+MODULE_PARM_DESC(mda_first_vc, "First virtual console. Default: 13");
- module_param(mda_last_vc, int, 0);
-+MODULE_PARM_DESC(mda_last_vc, "Last virtual console. Default: 16");
-
- /* MDA register values
-  */
-
-_______________________________________________________________________
-EINE F=DCR ALLE: die kostenlose WEB.DE-Plattform f=FCr Freunde und Dein=
-e
-Homepage mit eigenem Namen. Jetzt starten! http://unddu.de/?kid=3Dkid@m=
-f2
+-------------------------------------------------------------------------
+This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
+Don't miss this year's exciting event. There's still time to save $100. 
+Use priority code J8TL2D2. 
+http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone

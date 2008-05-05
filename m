@@ -1,62 +1,34 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [PATCH 1/1 2.6.25] fbdev: bugfix for
-	multiprocess defio
-Date: Mon, 5 May 2008 00:23:09 -0700
-Message-ID: <45a44e480805050023h68cffe15h5e309707ec6d8380@mail.gmail.com>
-References: <20080428020140.8662.66707.sendpatchset@hit-nxdomain.opendns.com>
-	<20080430133759.e39bf34c.akpm@linux-foundation.org>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: intelfb and G33 / Q33 / Q35 chipsets support ?
+Date: Mon, 5 May 2008 09:38:54 -0700
+Message-ID: <200805050938.54453.jbarnes@virtuousgeek.org>
+References: <4815EEB4.2060509@frugalware.org> <4817A9D3.1030309@googlemail.com> <4817D687.8080201@googlemail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jsv2V-0005g8-TT for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 May 2008 00:23:11 -0700
-Received: from wf-out-1314.google.com ([209.85.200.168])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jsv2U-0002yF-KB
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 May 2008 00:23:11 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so1025919wfd.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 05 May 2008 00:23:10 -0700 (PDT)
-In-Reply-To: <20080430133759.e39bf34c.akpm@linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758658AbYEEQjV@vger.kernel.org>
+In-Reply-To: <4817D687.8080201@googlemail.com>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: bernard@largestprime.net, linux-fbdev-devel@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Dave Airlie <airlied@linux.ie>, Gabriel C <crazy@frugalware.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>, Wang Zhenyu <zhenyu.z.wang@intel.com>
 
-On Wed, Apr 30, 2008 at 1:37 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
+On Tuesday, April 29, 2008 7:16 pm Gabriel C wrote:
+> >> See the modesetting-101 branch of
+> >> git://git.freedesktop.org/git/mesa/drm. It's a bit rough in spots but
+> >> the i915 driver should be pretty close to feature parity with the Intel
+> >> X driver at this point.
+> >
+> > Thx , I will try out the tree.
 >
-> On Sun, 27 Apr 2008 22:01:40 -0400
->  Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
->
->  > +     /* we loop through the pagelist before adding in order
->  > +     to keep the pagelist sorted */
->  > +     list_for_each_entry(cur, &fbdefio->pagelist, lru) {
->
->  Did you consider using !list_empty(&page->lru) to avoid the linear search?
->
+> modesetting-101 does not compile on current git , NOPAGE_SIGBUS , nopage
+> and friends gone.
 
-Ah, no, I didn't think of that. I agree that checking list_empty would
-be far better. I'll redo the patch using that.
+Yeah the DRM tree doesn't have a full kernel included, so it'll occasionally 
+be out-of-sync.  You could try a different kernel version (it almost always 
+works with the last stable release of Linux) or merging DRM master into 
+modesetting-101.  Assuming there are no conflicts that might also fix 
+things. :)
 
-Thanks,
-jaya
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
-Don't miss this year's exciting event. There's still time to save $100. 
-Use priority code J8TL2D2. 
-http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone
+Jesse

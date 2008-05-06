@@ -1,46 +1,62 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] atmel_lcdfb: fix pixclok divider calculation
-Date: Tue, 06 May 2008 19:36:08 +0200
-Message-ID: <48209708.3020807@atmel.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Question] sumbit VIAFB driver
+Date: Tue, 6 May 2008 11:44:50 -0700
+Message-ID: <20080506114450.8be56880.akpm@linux-foundation.org>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F363D2@exchtp03.taipei.via.com.tw>
+	<Pine.LNX.4.64.0805052035180.3160@anakin>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1765381AbYEFQeu@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
-Cc: Per Hedblom <per.hedblom@abem.se>, Roel Kluin <12o3l@tiscali.nl>, Jan Weber <jw022609@uni-greifswald.de>, Andrew Victor <linux@maxim.org.za>, Haavard Skinnemoen <hskinnemoen@atmel.com>, linux-kernel@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JtSAa-0001dC-Gu for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 May 2008 11:45:44 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JtSAT-0005YN-Qa
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 May 2008 11:45:39 -0700
+In-Reply-To: <Pine.LNX.4.64.0805052035180.3160@anakin>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: JosephChan@via.com.tw, linux-fbdev-devel@lists.sourceforge.net
 
-Fix divider calculation and allow CLKVAL = 0 (divisor 2)
+On Mon, 5 May 2008 20:37:22 +0200 (CEST)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-It was not possible to get the clock value 0 (divisor 2) because 
-the test "<=0" force the BYPASS bit to be activated instead.
+> 	Hi Joseph,
+> 
+> On Mon, 5 May 2008, JosephChan@via.com.tw wrote:
+> > We would like to sumbit VIA's framebuffer device driver into kernel and
+> > I've done the patch file.
+> > But the patch seems too large to send (2 files exceed 2700 lines, other
+> > 3 more files exceed 1000 lines), it's appreciated to guide me to
+> > separate those signle file into multiple parts?
+> 
+> For review, you can split the patch in multiple parts (one for each big
+> change) and send them separately.
+> 
+> For submission (after integrating the review comments!), you can send it as
+> one big patch to Andrew Morton, I think. Andrew?
+> 
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-Thanks a lot to Jan, Per, Roel and Haavard for sending me
-similar patches.
+Sure.  Just copy me on the split-up patches and remind me to join them all
+together for upstream merging.
 
- drivers/video/atmel_lcdfb.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -441,13 +441,12 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
- 
- 	value = DIV_ROUND_UP(clk_value_khz, PICOS2KHZ(info->var.pixclock));
- 
--	value = (value / 2) - 1;
--	dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
--
--	if (value <= 0) {
-+	if (value < 2) {
- 		dev_notice(info->device, "Bypassing pixel clock divider\n");
- 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, ATMEL_LCDC_BYPASS);
- 	} else {
-+		value = (value / 2) - 1;
-+		dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
- 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, value << ATMEL_LCDC_CLKVAL_OFFSET);
- 		info->var.pixclock = KHZ2PICOS(clk_value_khz / (2 * (value + 1)));
- 		dev_dbg(info->device, "  updated pixclk:     %lu KHz\n",
+-------------------------------------------------------------------------
+This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
+Don't miss this year's exciting event. There's still time to save $100. 
+Use priority code J8TL2D2. 
+http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone

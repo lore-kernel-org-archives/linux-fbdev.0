@@ -1,22 +1,27 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Question] sumbit VIAFB driver
-Date: Wed, 7 May 2008 13:28:10 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0805071327060.13757@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F6751F@exchtp03.taipei.via.com.tw>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: pxafb and am200epd question
+Date: Wed, 7 May 2008 11:07:53 -0400
+Message-ID: <45a44e480805070807x7be5da5q632da9c25c66139a@mail.gmail.com>
+References: <45a44e480805060505r2b280717p60d0046e083adf98@mail.gmail.com>
+	<E913911567467945BBEB9277E27868B0C1C3CB@msiexch01.marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jthov-0000TJ-Cq for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 May 2008 04:28:25 -0700
-Received: from harold.telenet-ops.be ([195.130.133.65])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jthos-0001Qv-NW
+	id 1JtlFb-0007vx-Mo for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 May 2008 08:08:12 -0700
+Received: from wf-out-1314.google.com ([209.85.200.175])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JtlFQ-0002Ig-NB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 May 2008 04:28:25 -0700
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F6751F@exchtp03.taipei.via.com.tw>
+	Wed, 07 May 2008 08:08:06 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so303336wfd.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 07 May 2008 08:07:53 -0700 (PDT)
+In-Reply-To: <E913911567467945BBEB9277E27868B0C1C3CB@msiexch01.marvell.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,59 +32,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: JosephChan@via.com.tw
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
+To: Eric Miao <ymiao3@marvell.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 7 May 2008, JosephChan@via.com.tw wrote:
-> I've tried to split the patch into parts and sent to linux-fbdev-devel.
-> But I got returned mail, it seems to be my patch was banned by
-> linux-fbdev-devel.
+On Tue, May 6, 2008 at 9:14 PM, Eric Miao <ymiao3@marvell.com> wrote:
+>
+>  In a long run, I guess the most critical dependency of metronomefb on
+>  pxafb is the video memory, while pxafb currently allocates its own
+>  video memory (correct me if my understanding is wrong).  For such case
+>  pxafb.c should really be modified where its platform data can specify
+>  customized video memory location. I'm not sure if this satisfy your
+>  requirement.
 
-Really? I don't see them being stuck in mailman, and I did receive them
-through the list.
-Can you please forward me the error email by personal email?
+Hi Eric,
 
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-> Sent: Wednesday, May 07, 2008 2:45 AM
-> To: Geert Uytterhoeven
-> Cc: Joseph Chan; linux-fbdev-devel@lists.sourceforge.net
-> Subject: Re: [Linux-fbdev-devel] [Question] sumbit VIAFB driver
-> 
-> On Mon, 5 May 2008 20:37:22 +0200 (CEST) Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> 
-> > 	Hi Joseph,
-> > 
-> > On Mon, 5 May 2008, JosephChan@via.com.tw wrote:
-> > > We would like to sumbit VIA's framebuffer device driver into kernel 
-> > > and I've done the patch file.
-> > > But the patch seems too large to send (2 files exceed 2700 lines, 
-> > > other
-> > > 3 more files exceed 1000 lines), it's appreciated to guide me to 
-> > > separate those signle file into multiple parts?
-> > 
-> > For review, you can split the patch in multiple parts (one for each 
-> > big
-> > change) and send them separately.
-> > 
-> > For submission (after integrating the review comments!), you can send 
-> > it as one big patch to Andrew Morton, I think. Andrew?
-> > 
-> 
-> Sure.  Just copy me on the split-up patches and remind me to join them
-> all together for upstream merging.
+I think you are right. I can make modifications to accommodate this so
+that am200epd doesn't result in allocation of its own physical
+framebuffer. Here's what I am thinking:
 
-Gr{oetje,eeting}s,
+a) am200epd will use set_pxa_fb_info and pxafb_mach_info to pass pxafb
+information about modes that it wants. It can pass desired LCCR0..3
+settings through the lccr0,1,2,3 entries in pxafb_mach_info.
+b) am200epd will find out from metronomefb about the size of the
+waveform area that it needs in the framebuffer. It can do this before
+it calls set_pxa_fb_info. We can add an entry to pxafb_mach_info like
+extra_video_mem. Then pxafb can add that to the calculation of
+map_size so that the allocated framebuffer is suitable for am200epd.
+c) am200epd will need a way to get access to pxafb's map_cpu. This is
+the part that I'm unsure about. Maybe we can add a callback function
+entry in pxafb_mach_info that will be called by pxafb once it has
+allocated a framebuffer.
 
-						Geert
+Let me know if this sounds reasonable, especially on part c. If you
+like it, I will be happy to start writing a patch to do this.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+>  And indeed what am200epd.c is doing looks quite platform specific, which
+>  means it's better to move them into some kind of <platform>.c, and note
+>  that manipulating GPARx/GPSRx/GPLRx directly is no longer recommended :)
+>
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Agreed. I intend to remove that code and switch to the new gpio stuff.
+
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

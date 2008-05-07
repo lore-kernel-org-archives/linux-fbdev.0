@@ -1,84 +1,327 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: pxafb and am200epd question
-Date: Wed, 7 May 2008 11:07:53 -0400
-Message-ID: <45a44e480805070807x7be5da5q632da9c25c66139a@mail.gmail.com>
-References: <45a44e480805060505r2b280717p60d0046e083adf98@mail.gmail.com>
-	<E913911567467945BBEB9277E27868B0C1C3CB@msiexch01.marvell.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device
+ Driver
+Date: Wed, 7 May 2008 08:19:48 -0700
+Message-ID: <20080507081948.8dce60dc.randy.dunlap@oracle.com>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67705@exchtp03.taipei.via.com.tw>
+	<C80EF34A3D2E494DBAF9AC29C7AE4EB806F67724@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JtlFb-0007vx-Mo for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 May 2008 08:08:12 -0700
-Received: from wf-out-1314.google.com ([209.85.200.175])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JtlFQ-0002Ig-NB
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 May 2008 08:08:06 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so303336wfd.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 07 May 2008 08:07:53 -0700 (PDT)
-In-Reply-To: <E913911567467945BBEB9277E27868B0C1C3CB@msiexch01.marvell.com>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <ymiao3@marvell.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759497AbYEGPVl@vger.kernel.org>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67724@exchtp03.taipei.via.com.tw>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: JosephChan@via.com.tw
+Cc: akpm@linux-foundation.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, May 6, 2008 at 9:14 PM, Eric Miao <ymiao3@marvell.com> wrote:
->
->  In a long run, I guess the most critical dependency of metronomefb on
->  pxafb is the video memory, while pxafb currently allocates its own
->  video memory (correct me if my understanding is wrong).  For such case
->  pxafb.c should really be modified where its platform data can specify
->  customized video memory location. I'm not sure if this satisfy your
->  requirement.
+On Wed, 7 May 2008 18:55:30 +0800 JosephChan@via.com.tw wrote:
 
-Hi Eric,
+> Signed-off-by: Joseph Chan <josephchan@via.com.tw>
+> 
+> diff -Nur a/Documentation/fb/viafb.txt b/Documentation/fb/viafb.txt
+> --- a/Documentation/fb/viafb.txt	1969-12-31 19:00:00.000000000
+> -0500
+> +++ b/Documentation/fb/viafb.txt	2008-05-06 06:46:26.000000000
+> -0400
+> @@ -0,0 +1,197 @@
+> +
+> +        VIA Integration Graphic Chip Console Framebuffer Driver
+> +
+> +[Platform]
+> +-----------------------
+> +    The console framebuffer driver is for Graphics chips of
 
-I think you are right. I can make modifications to accommodate this so
-that am200epd doesn't result in allocation of its own physical
-framebuffer. Here's what I am thinking:
+                                             graphics
 
-a) am200epd will use set_pxa_fb_info and pxafb_mach_info to pass pxafb
-information about modes that it wants. It can pass desired LCCR0..3
-settings through the lccr0,1,2,3 entries in pxafb_mach_info.
-b) am200epd will find out from metronomefb about the size of the
-waveform area that it needs in the framebuffer. It can do this before
-it calls set_pxa_fb_info. We can add an entry to pxafb_mach_info like
-extra_video_mem. Then pxafb can add that to the calculation of
-map_size so that the allocated framebuffer is suitable for am200epd.
-c) am200epd will need a way to get access to pxafb's map_cpu. This is
-the part that I'm unsure about. Maybe we can add a callback function
-entry in pxafb_mach_info that will be called by pxafb once it has
-allocated a framebuffer.
+> +    VIA UniChrome (Pro) Family:
+> + 	CLE266, PM800 / CN400,P4M800CE / P4M800Pro / CN700 / VN800, 
+> +	CX700 / VX700, P4M890 
+> +    VIA Chrome9 Family:
+> +	K8M890, CN896 / P4M900, VX800)
 
-Let me know if this sounds reasonable, especially on part c. If you
-like it, I will be happy to start writing a patch to do this.
+                                     ^ drop ")" ?
 
->
->  And indeed what am200epd.c is doing looks quite platform specific, which
->  means it's better to move them into some kind of <platform>.c, and note
->  that manipulating GPARx/GPSRx/GPLRx directly is no longer recommended :)
->
+> +
+> +[Driver features]
+> +------------------------
+> +    Device:CRT, LCD, DVI
 
-Agreed. I intend to remove that code and switch to the new gpio stuff.
+       Device: CRT, LCD, DVI
 
-Thanks,
-jaya
+> +
+> +    Support Mode:
+> +        CRT:   
+> +	    640 x480(60, 75, 85, 100, 120 Hz), 720 x480(60 Hz),
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
-Don't miss this year's exciting event. There's still time to save $100. 
-Use priority code J8TL2D2. 
-http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone
+Usually NNNxMMM or NNN x MMM (use space consistently).
+(multiple times)
+
+> +	    720 x576(60 Hz), 800 x600(60, 75, 85, 100, 120 Hz),
+> +	    848 x480(60 Hz), 856 x480(60 Hz), 1024 x512(60 Hz),
+> +	    1024 x768(60, 75, 85, 100 Hz), 1152 x864(75 Hz),
+> +	    1280 x768(60 Hz), 1280 x960(60 Hz), 1280 x1024(60, 75, 85
+> Hz),
+> +	    1440 x1050(60 Hz), 1600 x1200(60, 75 Hz), 1280 x720(60 Hz),
+> +	    1920 x1080(60 Hz), 1400 x1050(60 Hz), 800 x480(60 Hz)
+> +
+> +    color depth:8 bpp, 16 bpp, 32 bpp
+
+       color depth: 8 bpp, ...
+
+> +
+> +    Support 2 D hardware accelerator for kernel 2.6.xx
+
+               2D or 2-D
+
+> +
+> +[Using the viafb module]
+> +-- -- --------------------
+> +    Start viafb with default settings,
+
+                                settings:
+
+> +        #modprobe viafb
+> +
+> +    Start viafb with with user options,
+
+                                  options:
+
+> +        #modprobe viafb mode=800x600 via_fb_bpp=16 refresh=60 
+> +                  active_dev=CRT+DVI dvi_port = DVP1 mode1 = 1024 x768 
+> +                  via_fb_bpp1 = 16 refresh1 = 60 SAMM_ON = 1
+
+I'm pretty sure that you don't want (can't have) spaces around the
+"=" signs above.. or does it not matter?  Anyone?
+
+> +
+> +    mode:
+> +        640 x480(default)
+
+             ...480 (default)  [space before (default)]
+
+> +        720 x480 
+> +        800 x600 
+> +        1024 x768
+> +        ......
+> +
+> +    via_fb_bpp:
+> +        8, 16, 32(default:32)
+
+	add space before "(default:32)"
+
+> +
+> +    refresh:
+> +        60, 75, 85, 100, 120(default:60)
+
+	add space before...
+
+> +
+> +    lcd_dsp_method:
+> +        0 : expandsion(default)
+> +        1 : centering
+> +
+> +    lcd_mode:
+> +        0 : OPEN LDI(default)
+> +        1 : SPWG
+> +
+> +    lcd_panel_id:
+> +        0 : Resolution: 640 x480, Channel: single, Dithering: Enable 
+> +        1 : Resolution: 800 x600, Channel: single, Dithering: Enable 
+> +        2 : Resolution: 1024 x768, Channel: single, Dithering:Enable
+> (default)
+> +        3 : Resolution: 1280 x768, Channel: single, Dithering: Enable 
+> +        4 : Resolution: 1280 x1024, Channel: dual, Dithering: Enable 
+> +        5 : Resolution: 1400 x1050, Channel: dual, Dithering: Enable 
+> +        6 : Resolution: 1600 x1200, Channel: dual, Dithering: Enable
+> +
+> +        8 : Resolution: 800 x480, Channel: single, Dithering: Enable 
+> +        9 : Resolution: 1024 x768, Channel: dual, Dithering: Enable 
+> +        10: Resolution: 1024 x768, Channel: single, Dithering: Disable 
+> +        11: Resolution: 1024 x768, Channel: dual, Dithering: Disable 
+> +        12: Resolution: 1280 x768, Channel: single, Dithering: Disable 
+> +        13: Resolution: 1280 x1024, Channel: dual, Dithering: Disable 
+> +        14: Resolution: 1400 x1050, Channel: dual, Dithering: Disable 
+> +        15: Resolution: 1600 x1200, Channel: dual, Dithering: Disable  
+> +        16: Resolution: 1366 x768, Channel: single, Dithering: Disable 
+> +        17: Resolution: 1024 x600, Channel: single, Dithering: Enable 
+> +        18: Resolution: 1280 x768, Channel: dual, Dithering: Enable 
+> +        19: Resolution: 1280 x800, Channel: single, Dithering: Enable
+> +    
+> +    via_fb_accel:
+> +        0 : No 2 D Hardware Acceleration(default)
+> +        1 : 2 D Hardware Acceleration
+
+2D or 2-D
+
+> +
+> +    SAMM_ON:
+> +        0 : SAMM_ON disable(default)
+> +        1 : SAMM_ON enable
+
+Is SAMM_ON explained somewhere?
+
+> +    mode1:(secondary display device)
+
+	Add space: mode1: (secondary ...
+
+> +        640 x480(default)
+
+	Add space before (default)
+
+> +        720 x480 
+> +        800 x600 
+> +        1024 x768 
+> +        ... ... 
+> + 
+> +    via_fb_bpp1:(secondary display device) 
+> +        8, 16, 32(default:32)
+
+Add space above & below here.
+
+> +    refresh1:(secondary display device) 
+> +        60, 75, 85, 100, 120(default:60)
+> +
+> +    active_dev:
+> +        This option is used to specify active devices.(CRT, DVI, LCD,
+> CRT + LCD, CRT + DVI,...)
+> +        DVI stand for DVI or HDMI, Ex.If you want to enable HDMI, set
+> active_dev = DVI
+
+               stands for DVI or HDMI.  E.g., if you want ...
+
+> +        In SAMM case, the previous of active_dev is primary device, and
+> the following is secondary device.
+> +
+> +        For example:
+> +        To enable one device, such as DVI only, we should use:
+> +        modprobe viafb active_dev = DVI...To enable two devices, such
+> as CRT + DVI:
+
+                          active_dev=DVI
+	   To enable two device, such as CRT + DVI:
+
+> +        For DuoView case, we can use:
+> +        modprobe viafb active_dev = CRT + DVI...OR modprobe viafb
+> active_dev = DVI + CRT...
+
+                          active_dev=CRT+DVI...
+	   OR
+	   modprobe viafb active_dev=DVI=CRT...
+
+> +        For SAMM case:
+> +        If CRT is primary and DVI is secondary, we should use:
+> +            modprobe viafb active_dev = CRT + DVI SAMM_ON = 1...
+
+No spaces in module parameter strings.
+
+> +        If DVI is primary and CRT is secondary, we should use:
+> +            modprobe viafb active_dev = DVI + CRT SAMM_ON = 1...
+
+Ditto.
+
+> +    display_hardware_layout:
+> +	      This option is uesed to specify display hardware layout
+> for CX700 chip.
+
+                             used
+
+> +        1 : LCD only 
+> +        2 : DVI only 
+> +        3 : LCD + DVI(default)
+> +        4 : LCD1 + LCD2(internal + internal)
+> +        16: LCD1 + ExternalLCD2(internal + external)
+
+	Add space before each "(" above.
+
+> +
+> +    second_size:
+> +        This option is used to set second device memory size(MB) in
+> SAMM case.
+> +        The minimal size is 16. 
+> +
+> +    EPIA_DVI:
+> +        This option is used to enable DVI on EPIA - M 
+> +        0 : No DVI on EPIA - M(default)
+> +        1 : DVI on EPIA - M
+> +
+> +    BusWidth:
+> +        When using 24 - Bit Bus Width Digital Interface, this option
+> should be set.
+> +        12: 12-Bit LVDS or 12-Bit TMDS(default)
+> +        24: 24-Bit LVDS or 24-Bit TMDS
+> +
+> +    LCDDualEdge:
+> +        When using Dual Edge Panel, this option should be set.
+> +        0 : No Dual Edge Panel(default)
+> +        1 : Dual Edge Panel
+> +
+> +    video_dev:
+> +        This option is used to specify video output devices(CRT, DVI,
+> LCD) for duoview case.
+> +        For example:
+> +        To output video on DVI, we should use:
+> +            modprobe viafb video_dev = DVI...
+
+No spaces in module parameters...
+
+> +    lcd_port:
+> +	      This option is used to specify lcd output port,
+
+                                             LCD output port;
+
+> +        available values are "DVP0" "DVP1" "DFP_HIGHLOW" "DFP_HIGH"
+> +	      "DFP_LOW", for external LCD + external DVI on
+> CX700(External LCD is on DVP0), 
+> +        we should use:
+> +	          modprobe viafb lcd_port = DVP0...
+
+No spaces in module parameters.
+
+> +
+> +Note:
+> +    1. CRT may not display properly for DuoView CRT & DVI display at
+> +       the "640x480" PAL mode with DVI overscan enabled.
+> +    2. When SAMM is enable, mode and mode1, via_fb_bpp and via_fb_bpp1,
+> +       refresh and refresh1 can be different.
+> +    3. When console is depend on viafbinfo1, dynamically change
+> resolution and bpp,
+> +       need call VIAFB specified ioctl interface VIAFB_SET_DEVICE.
+
+I didn't understand that sentence.
+
+> +       Call common ioctl function FBIOPUT_VSCREENINFO will cause sreen
+> crush.
+
+                                                                    screen
+
+> +
+> +[Configure viafb with "fbset" tool]
+> +-----------------------------------
+> +    "fbset" is an inbox utility of Linux.
+> +    1. Inquire current viafb information, type,
+> +           # fbset -i
+> +
+> +    2. Set various resolutions and refresh rates,
+> +           # fbset <resolution-vertical_sync>
+> +
+> +       example,
+> +           # fbset "1024x768-75"
+> +       or
+> +           # fbset -g 1024 768 1024 768 32
+> +      Check the file "/etc/fb.modes" to find display modes available.
+> +
+> +    3. Set the color depth,
+> +           # fbset -depth <value>
+> +
+> +       example,
+> +           # fbset -depth 16
+> +
+> +[Bootup with viafb]:
+> +--------------------
+> +    Add the following line to your lilo.conf:
+> +        append =  "video=viafb:mode:1024x768,via_fb_bpp:32,refresh:85"
+
+
+---
+~Randy

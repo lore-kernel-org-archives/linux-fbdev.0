@@ -1,26 +1,41 @@
 From: <JosephChan@via.com.tw>
-Subject: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device Driver
-Date: Wed, 7 May 2008 18:55:30 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67724@exchtp03.taipei.via.com.tw>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67705@exchtp03.taipei.via.com.tw>
+Subject: [PATCH 1/9] viafb: VIA Frame Buffer Device
+	Driver - Resend
+Date: Wed, 7 May 2008 19:06:48 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757857AbYEGK5U@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67705@exchtp03.taipei.via.com.tw>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JthU6-0006bS-Am for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 May 2008 04:06:54 -0700
+Received: from mailtp.via.com.tw ([61.66.243.2])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JthU4-0001wu-OZ
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 May 2008 04:06:54 -0700
+Content-class: urn:content-classes:message
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: JosephChan@via.com.tw, akpm@linux-foundation.org, geert@linux-m68k.org
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
 
 Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 
 diff -Nur a/Documentation/fb/viafb.txt b/Documentation/fb/viafb.txt
---- a/Documentation/fb/viafb.txt	1969-12-31 19:00:00.000000000
--0500
-+++ b/Documentation/fb/viafb.txt	2008-05-06 06:46:26.000000000
--0400
+--- a/Documentation/fb/viafb.txt	1969-12-31 19:00:00.000000000 -0500
++++ b/Documentation/fb/viafb.txt	2008-05-06 06:46:26.000000000 -0400
 @@ -0,0 +1,197 @@
 +
 +        VIA Integration Graphic Chip Console Framebuffer Driver
@@ -44,8 +59,7 @@ diff -Nur a/Documentation/fb/viafb.txt b/Documentation/fb/viafb.txt
 +	    720 x576(60 Hz), 800 x600(60, 75, 85, 100, 120 Hz),
 +	    848 x480(60 Hz), 856 x480(60 Hz), 1024 x512(60 Hz),
 +	    1024 x768(60, 75, 85, 100 Hz), 1152 x864(75 Hz),
-+	    1280 x768(60 Hz), 1280 x960(60 Hz), 1280 x1024(60, 75, 85
-Hz),
++	    1280 x768(60 Hz), 1280 x960(60 Hz), 1280 x1024(60, 75, 85 Hz),
 +	    1440 x1050(60 Hz), 1600 x1200(60, 75 Hz), 1280 x720(60 Hz),
 +	    1920 x1080(60 Hz), 1400 x1050(60 Hz), 800 x480(60 Hz)
 +
@@ -87,8 +101,7 @@ Hz),
 +    lcd_panel_id:
 +        0 : Resolution: 640 x480, Channel: single, Dithering: Enable 
 +        1 : Resolution: 800 x600, Channel: single, Dithering: Enable 
-+        2 : Resolution: 1024 x768, Channel: single, Dithering:Enable
-(default)
++        2 : Resolution: 1024 x768, Channel: single, Dithering:Enable (default)
 +        3 : Resolution: 1280 x768, Channel: single, Dithering: Enable 
 +        4 : Resolution: 1280 x1024, Channel: dual, Dithering: Enable 
 +        5 : Resolution: 1400 x1050, Channel: dual, Dithering: Enable 
@@ -129,21 +142,16 @@ Hz),
 +        60, 75, 85, 100, 120(default:60)
 +
 +    active_dev:
-+        This option is used to specify active devices.(CRT, DVI, LCD,
-CRT + LCD, CRT + DVI,...)
-+        DVI stand for DVI or HDMI, Ex.If you want to enable HDMI, set
-active_dev = DVI
-+        In SAMM case, the previous of active_dev is primary device, and
-the following is secondary device.
++        This option is used to specify active devices.(CRT, DVI, LCD, CRT + LCD, CRT + DVI,...)
++        DVI stand for DVI or HDMI, Ex.If you want to enable HDMI, set active_dev = DVI
++        In SAMM case, the previous of active_dev is primary device, and the following is secondary device.
 +
 +        For example:
 +        To enable one device, such as DVI only, we should use:
-+        modprobe viafb active_dev = DVI...To enable two devices, such
-as CRT + DVI:
++        modprobe viafb active_dev = DVI...To enable two devices, such as CRT + DVI:
 +
 +        For DuoView case, we can use:
-+        modprobe viafb active_dev = CRT + DVI...OR modprobe viafb
-active_dev = DVI + CRT...
++        modprobe viafb active_dev = CRT + DVI...OR modprobe viafb active_dev = DVI + CRT...
 +
 +        For SAMM case:
 +        If CRT is primary and DVI is secondary, we should use:
@@ -152,8 +160,7 @@ active_dev = DVI + CRT...
 +            modprobe viafb active_dev = DVI + CRT SAMM_ON = 1...
 +
 +    display_hardware_layout:
-+	      This option is uesed to specify display hardware layout
-for CX700 chip.
++	      This option is uesed to specify display hardware layout for CX700 chip.
 +        1 : LCD only 
 +        2 : DVI only 
 +        3 : LCD + DVI(default)
@@ -161,8 +168,7 @@ for CX700 chip.
 +        16: LCD1 + ExternalLCD2(internal + external)
 +
 +    second_size:
-+        This option is used to set second device memory size(MB) in
-SAMM case.
++        This option is used to set second device memory size(MB) in SAMM case.
 +        The minimal size is 16. 
 +
 +    EPIA_DVI:
@@ -171,8 +177,7 @@ SAMM case.
 +        1 : DVI on EPIA - M
 +
 +    BusWidth:
-+        When using 24 - Bit Bus Width Digital Interface, this option
-should be set.
++        When using 24 - Bit Bus Width Digital Interface, this option should be set.
 +        12: 12-Bit LVDS or 12-Bit TMDS(default)
 +        24: 24-Bit LVDS or 24-Bit TMDS
 +
@@ -182,8 +187,7 @@ should be set.
 +        1 : Dual Edge Panel
 +
 +    video_dev:
-+        This option is used to specify video output devices(CRT, DVI,
-LCD) for duoview case.
++        This option is used to specify video output devices(CRT, DVI, LCD) for duoview case.
 +        For example:
 +        To output video on DVI, we should use:
 +            modprobe viafb video_dev = DVI...
@@ -191,8 +195,7 @@ LCD) for duoview case.
 +    lcd_port:
 +	      This option is used to specify lcd output port,
 +        available values are "DVP0" "DVP1" "DFP_HIGHLOW" "DFP_HIGH"
-+	      "DFP_LOW", for external LCD + external DVI on
-CX700(External LCD is on DVP0), 
++	      "DFP_LOW", for external LCD + external DVI on CX700(External LCD is on DVP0), 
 +        we should use:
 +	          modprobe viafb lcd_port = DVP0...
 +
@@ -201,11 +204,9 @@ CX700(External LCD is on DVP0),
 +       the "640x480" PAL mode with DVI overscan enabled.
 +    2. When SAMM is enable, mode and mode1, via_fb_bpp and via_fb_bpp1,
 +       refresh and refresh1 can be different.
-+    3. When console is depend on viafbinfo1, dynamically change
-resolution and bpp,
++    3. When console is depend on viafbinfo1, dynamically change resolution and bpp,
 +       need call VIAFB specified ioctl interface VIAFB_SET_DEVICE.
-+       Call common ioctl function FBIOPUT_VSCREENINFO will cause sreen
-crush.
++       Call common ioctl function FBIOPUT_VSCREENINFO will cause sreen crush.
 +
 +[Configure viafb with "fbset" tool]
 +-----------------------------------
@@ -237,8 +238,7 @@ diff -Nur a/drivers/video/Kconfig b/drivers/video/Kconfig
 --- a/drivers/video/Kconfig	2008-05-06 07:05:59.000000000 -0400
 +++ b/drivers/video/Kconfig	2008-05-06 07:06:37.000000000 -0400
 @@ -1501,6 +1501,24 @@
- 	  (315/H/PRO, 55x, 650, 651, 740, 330, 661, 741, 760, 761) as
-well
+ 	  (315/H/PRO, 55x, 650, 651, 740, 330, 661, 741, 760, 761) as well
  	  as XGI V3XT, V5, V8 and Z7.
  
 +config FB_VIA
@@ -249,12 +249,9 @@ well
 +	select FB_CFB_IMAGEBLIT
 +	select FB_SOFT_CURSOR
 +        help
-+          This is the frame buffer device driver for Graphics chips of
-VIA 
-+          UniChrome (Pro) Family
-(CLE266,PM800/CN400,P4M800CE/P4M800Pro/
-+          CN700/VN800,CX700/VX700,P4M890) and Chrome9 Family
-(K8M890,CN896
++          This is the frame buffer device driver for Graphics chips of VIA 
++          UniChrome (Pro) Family (CLE266,PM800/CN400,P4M800CE/P4M800Pro/
++          CN700/VN800,CX700/VX700,P4M890) and Chrome9 Family (K8M890,CN896
 +          /P4M900,VX800)
 +
 +          Say Y if you have a VIA UniChrome graphics board.
@@ -286,7 +283,7 @@ diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
 +
 + * This program is free software; you can redistribute it and/or modify
 + * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your 
++ * by the Free Software Foundation; either version 2, or (at your
 + option)
 + * any later version.
 +
@@ -309,8 +306,7 @@ diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
 +	parinfo.fbmem_free -= CURSOR_SIZE;
 +	parinfo.fbmem_used += CURSOR_SIZE;
 +
-+	/* Reverse 8*1024 memory space for cursor image of the XServer
-*/
++	/* Reverse 8*1024 memory space for cursor image of the XServer */
 +	parinfo.VQ_start = parinfo.fbmem_free - CURSOR_SIZE - VQ_SIZE;
 +	parinfo.VQ_end = parinfo.VQ_start + VQ_SIZE - 1;
 +	parinfo.fbmem_free -= (CURSOR_SIZE + VQ_SIZE);
@@ -369,28 +365,20 @@ diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
 +		switch (chip_info.gfx_chip_name) {
 +		case UNICHROME_K8M890:
 +		case UNICHROME_P4M900:
-+			dwVQStartL = 0x70000000 | (dwVQStartAddr &
-0xFFFFFF);
-+			dwVQEndL = 0x71000000 | (dwVQEndAddr &
-0xFFFFFF);
++			dwVQStartL = 0x70000000 | (dwVQStartAddr & 0xFFFFFF);
++			dwVQEndL = 0x71000000 | (dwVQEndAddr & 0xFFFFFF);
 +			dwVQStartEndH =
-+			    0x72000000 | ((dwVQStartAddr & 0xFF000000)
->>
-+					  24) | ((dwVQEndAddr &
-0xFF000000)
++			    0x72000000 | ((dwVQStartAddr & 0xFF000000) >>
++					  24) | ((dwVQEndAddr & 0xFF000000)
 +						 >> 16);
 +			dwVQLen = 0x73000000 | (VQ_SIZE >> 3);
 +			break;
 +		default:
-+			dwVQStartL = 0x50000000 | (dwVQStartAddr &
-0xFFFFFF);
-+			dwVQEndL = 0x51000000 | (dwVQEndAddr &
-0xFFFFFF);
++			dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
++			dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
 +			dwVQStartEndH =
-+			    0x52000000 | ((dwVQStartAddr & 0xFF000000)
->>
-+					  24) | ((dwVQEndAddr &
-0xFF000000)
++			    0x52000000 | ((dwVQStartAddr & 0xFF000000) >>
++					  24) | ((dwVQEndAddr & 0xFF000000)
 +						 >> 16);
 +			dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
 +			break;
@@ -461,8 +449,7 @@ diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
 +		   (((parinfo.hres *
 +		      parinfo.bpp >> 3) >> 3) | (((parinfo.hres *
 +						   parinfo.
-+						   bpp >> 3) >> 3) <<
-16)));
++						   bpp >> 3) >> 3) << 16)));
 +}
 +
 +void set_2d_color_depth(int bpp)
@@ -528,8 +515,7 @@ diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
 +	       && (loop++ < MAXLOOP)) ;
 +
 +	while ((MMIO_IN32(VIA_REG_STATUS) &
-+		(VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY))
-&&
++		(VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
 +	       (loop++ < MAXLOOP)) ;
 +
 +	return loop >= MAXLOOP;
@@ -544,7 +530,7 @@ diff -Nur a/drivers/video/via/accel.h b/drivers/video/via/accel.h
 +
 + * This program is free software; you can redistribute it and/or modify
 + * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your 
++ * by the Free Software Foundation; either version 2, or (at your
 + option)
 + * any later version.
 +
@@ -579,8 +565,7 @@ diff -Nur a/drivers/video/via/accel.h b/drivers/video/via/accel.h
 +#endif
 +
 +#if VIA_MMIO
-+#define MMIO_OUT8(reg, val)  writeb(val, parinfo.io_virt + reg) #define
-
++#define MMIO_OUT8(reg, val)  writeb(val, parinfo.io_virt + reg) #define 
 +MMIO_OUT16(reg, val) writew(val, parinfo.io_virt + reg) #define 
 +MMIO_OUT32(reg, val) writel(val, parinfo.io_virt + reg)
 +#define MMIO_IN8(reg)       readb(parinfo.io_virt + reg)
@@ -588,7 +573,7 @@ diff -Nur a/drivers/video/via/accel.h b/drivers/video/via/accel.h
 +#define MMIO_IN32(reg)      readl(parinfo.io_virt + reg)
 +
 +#else
-+#define MMIO_OUT8(reg, val)  outb(val, reg) #define MMIO_OUT16(reg, 
++#define MMIO_OUT8(reg, val)  outb(val, reg) #define MMIO_OUT16(reg,
 +val) outw(val, reg) #define MMIO_OUT32(reg, val) outl(val, reg)
 +#define MMIO_IN8(reg)       inb(reg)
 +#define MMIO_IN16(reg)      inw(reg)
@@ -739,7 +724,7 @@ diff -Nur a/drivers/video/via/chip.h b/drivers/video/via/chip.h
 +
 + * This program is free software; you can redistribute it and/or modify
 + * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your 
++ * by the Free Software Foundation; either version 2, or (at your
 + option)
 + * any later version.
 +
@@ -932,7 +917,7 @@ diff -Nur a/drivers/video/via/debug.h b/drivers/video/via/debug.h
 +
 + * This program is free software; you can redistribute it and/or modify
 + * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your 
++ * by the Free Software Foundation; either version 2, or (at your
 + option)
 + * any later version.
 +
@@ -978,7 +963,7 @@ diff -Nur a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
 +
 + * This program is free software; you can redistribute it and/or modify
 + * it under  the terms of the GNU General Public License as published
-+ * by the Free Software Foundation; either version 2, or (at your 
++ * by the Free Software Foundation; either version 2, or (at your
 + option)
 + * any later version.
 +
@@ -1005,8 +990,7 @@ diff -Nur a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
 +void init_dvi_size(void)
 +{
 +	DEBUG_MSG(KERN_INFO "init_dvi_size()\n");
-+	DEBUG_MSG(KERN_INFO "tmds_setting_info.get_dvi_size_method
-%d\n",
++	DEBUG_MSG(KERN_INFO "tmds_setting_info.get_dvi_size_method %d\n",
 +		  tmds_setting_info.get_dvi_size_method);
 +
 +	switch (tmds_setting_info.get_dvi_size_method) {
@@ -1047,8 +1031,7 @@ diff -Nur a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
 +	default:
 +	    /* DVP0/DVP1 Pad on */
 +		sr1e = read_reg(VIASR, SR1E);
-+		write_reg_mask(SR1E, VIASR, 0xF0, BIT4 + BIT5 + BIT6 +
-BIT7);
++		write_reg_mask(SR1E, VIASR, 0xF0, BIT4 + BIT5 + BIT6 + BIT7);
 +	    /* SR3E[1]Multi-function selection:
 +	    0 = Emulate I2C and DDC bus by GPIO2/3/4. */
 +		sr3e = read_reg(VIASR, SR3E);
@@ -1058,13 +1041,10 @@ BIT7);
 +
 +	/* Check for VT1632: */
 +	chip_info.tmds_chip_info.tmds_chip_name = VT1632_TMDS;
-+	chip_info.tmds_chip_info.tmds_chip_slave_addr =
-VT1632_TMDS_I2C_ADDR;
++	chip_info.tmds_chip_info.tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
 +	chip_info.tmds_chip_info.i2c_port = I2CPORTINDEX;
-+	if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID) !=
-FAIL) {
-+	/*Currently only support 12bits,dual edge,add 24bits mode later
-*/
++	if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID) != FAIL) {
++	/*Currently only support 12bits,dual edge,add 24bits mode later */
 +		tmds_register_write(0x08, 0x3b);
 +
 +		DEBUG_MSG(KERN_INFO "\n VT1632 TMDS ! \n");
@@ -1075,14 +1055,12 @@ FAIL) {
 +		return (OK);
 +	} else {
 +		chip_info.tmds_chip_info.i2c_port = GPIOPORTINDEX;
-+		if (check_tmds_chip(VT1632_DEVICE_ID_REG,
-VT1632_DEVICE_ID)
++		if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID)
 +		    != FAIL) {
 +			tmds_register_write(0x08, 0x3b);
 +			DEBUG_MSG(KERN_INFO "\n VT1632 TMDS ! \n");
 +			DEBUG_MSG(KERN_INFO "\n %2d",
-+
-chip_info.tmds_chip_info.tmds_chip_name);
++				  chip_info.tmds_chip_info.tmds_chip_name);
 +			DEBUG_MSG(KERN_INFO "\n %2d",
 +				  chip_info.tmds_chip_info.i2c_port);
 +			return (OK);
@@ -1116,8 +1094,7 @@ chip_info.tmds_chip_info.tmds_chip_name);
 +	}
 +
 +	chip_info.tmds_chip_info.tmds_chip_name = NON_TMDS_TRANSMITTER;
-+	chip_info.tmds_chip_info.tmds_chip_slave_addr =
-VT1632_TMDS_I2C_ADDR;
++	chip_info.tmds_chip_info.tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
 +	return (FAIL);
 +}
 +
@@ -1136,8 +1113,7 @@ VT1632_TMDS_I2C_ADDR;
 +		break;
 +	}
 +
-+	i2cWriteByte(chip_info.tmds_chip_info.tmds_chip_slave_addr,
-index,
++	i2cWriteByte(chip_info.tmds_chip_info.tmds_chip_slave_addr, index,
 +		     data);
 +
 +	chip_info.chip_on_slot = tmp;
@@ -1163,8 +1139,7 @@ index,
 +	}
 +
 +	status =
-+	    i2cReadByte((u8)
-chip_info.tmds_chip_info.tmds_chip_slave_addr,
++	    i2cReadByte((u8) chip_info.tmds_chip_info.tmds_chip_slave_addr,
 +			(u8) index, &data);
 +	chip_info.chip_on_slot = tmp;
 +	return (data);
@@ -1188,8 +1163,7 @@ chip_info.tmds_chip_info.tmds_chip_slave_addr,
 +
 +	status =
 +	    i2cReadBytes((u8) chip_info.tmds_chip_info.
-+			 tmds_chip_slave_addr, (u8) index, buff,
-buff_len);
++			 tmds_chip_slave_addr, (u8) index, buff, buff_len);
 +	chip_info.chip_on_slot = tmp;
 +	return (status);
 +}
@@ -1211,8 +1185,7 @@ buff_len);
 +
 +	default:
 +		DEBUG_MSG(KERN_INFO
-+			  "This dvi mode %d have no reduce blanking
-mode!\n",
++			  "This dvi mode %d have no reduce blanking mode!\n",
 +			  mode_index);
 +		return (FALSE);
 +	}
@@ -1229,21 +1202,17 @@ mode!\n",
 +	videoMode = get_modetbl_pointer(video_index);
 +	pDviTiming = videoMode->crtc;
 +	desirePixelClock = pDviTiming->clk / 1000000;
-+	maxPixelClock = (unsigned
-long)tmds_setting_info.max_pixel_clock;
++	maxPixelClock = (unsigned long)tmds_setting_info.max_pixel_clock;
 +
 +	DEBUG_MSG(KERN_INFO "\nDVI_set_mode!!\n");
 +
-+	if ((maxPixelClock != 0) && (desirePixelClock > maxPixelClock))
-{
++	if ((maxPixelClock != 0) && (desirePixelClock > maxPixelClock)) {
 +		/*Check if reduce-blanking mode is exist */
 +		status =
 +		    check_reduce_blanking_mode(video_index,
-+
-pDviTiming->refresh_rate);
++					       pDviTiming->refresh_rate);
 +		if (status) {
-+			video_index += 100;	/*Use reduce-blanking
-mode */
++			video_index += 100;	/*Use reduce-blanking mode */
 +			videoMode = get_modetbl_pointer(video_index);
 +			pDviTiming = videoMode->crtc;
 +			DEBUG_MSG(KERN_INFO
@@ -1251,8 +1220,7 @@ mode */
 +				  video_index);
 +		}
 +	}
-+	fill_crtc_timing(pDviTiming, video_index, mode_bpp / 8,
-set_iga);
++	fill_crtc_timing(pDviTiming, video_index, mode_bpp / 8, set_iga);
 +	set_output_path(DEVICE_DVI, set_iga,
 +			chip_info.tmds_chip_info.output_interface);
 +}
@@ -1275,8 +1243,7 @@ set_iga);
 +		RegCR6B = read_reg(VIACR, CR6B);
 +		write_reg(CR6B, VIACR, RegCR6B | 0x08);
 +
-+		/* CR91[4] VDD On [3] Data On [2] VEE On [1] Back Light
-Off
++		/* CR91[4] VDD On [3] Data On [2] VEE On [1] Back Light Off
 +		   [0] Software Control Power Sequence */
 +		RegCR91 = read_reg(VIACR, CR91);
 +		write_reg(CR91, VIACR, 0x1D);
@@ -1297,8 +1264,7 @@ Off
 +		RegSR3E = read_reg(VIASR, SR3E);
 +		write_reg(SR3E, VIASR, RegSR3E & (~0x20));
 +
-+		/* CR91[4] VDD On [3] Data On [2] VEE On [1] Back Light
-Off
++		/* CR91[4] VDD On [3] Data On [2] VEE On [1] Back Light Off
 +		   [0] Software Control Power Sequence */
 +		RegCR91 = read_reg(VIACR, CR91);
 +		write_reg(CR91, VIACR, 0x1D);
@@ -1334,7 +1300,7 @@ Off
 +	return ret;
 +}
 +
-+/* Query Flat Panel's EDID Table Version Through DVI Connector */ int 
++/* Query Flat Panel's EDID Table Version Through DVI Connector */ int
 +dvi_query_EDID(void) {
 +	u8 data0, data1;
 +	int restore;
@@ -1425,8 +1391,7 @@ Off
 +				/* The first two byte must be zero. */
 +				if (EDID_DATA[3] == 0xFD) {
 +					/* To get max pixel clock. */
-+
-tmds_setting_info.max_pixel_clock =
++					tmds_setting_info.max_pixel_clock =
 +					    EDID_DATA[9] * 10;
 +				}
 +			}
@@ -1461,18 +1426,14 @@ tmds_setting_info.max_pixel_clock =
 +		break;
 +	case 1920:
 +		if (max_v == 1200)
-+			tmds_setting_info.dvi_panel_size =
-VIA_RES_1920X1200;
++			tmds_setting_info.dvi_panel_size = VIA_RES_1920X1200;
 +		else
-+			tmds_setting_info.dvi_panel_size =
-VIA_RES_1920X1080;
++			tmds_setting_info.dvi_panel_size = VIA_RES_1920X1080;
 +		break;
 +	default:
 +		tmds_setting_info.dvi_panel_size = VIA_RES_1024X768;
-+		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution =
-%d !\
-+					 set default panel size.\n",
-max_h);
++		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution = %d !\
++					 set default panel size.\n", max_h);
 +		break;
 +	}
 +
@@ -1529,10 +1490,8 @@ max_h);
 +		break;
 +	default:
 +		tmds_setting_info.dvi_panel_size = VIA_RES_1024X768;
-+		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution =
-%d!\
-+					set default panel size.\n",
-HSize);
++		DEBUG_MSG(KERN_INFO "Unknow panel size max resolution = %d!\
++					set default panel size.\n", HSize);
 +		break;
 +	}
 +
@@ -1577,12 +1536,10 @@ HSize);
 +	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DVP1)
 +		write_reg(SR1E, VIASR, read_reg(VIASR, SR1E) & (~0x30));
 +
-+	if (chip_info.tmds_chip_info.output_interface ==
-INTERFACE_DFP_HIGH)
++	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DFP_HIGH)
 +		write_reg(SR2A, VIASR, read_reg(VIASR, SR2A) & (~0x0C));
 +
-+	if (chip_info.tmds_chip_info.output_interface ==
-INTERFACE_DFP_LOW)
++	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DFP_LOW)
 +		write_reg(SR2A, VIASR, read_reg(VIASR, SR2A) & (~0x03));
 +
 +	if (chip_info.tmds_chip_info.output_interface == INTERFACE_TMDS)
@@ -1592,31 +1549,26 @@ INTERFACE_DFP_LOW)
 +/* If Enable DVI, turn off pad */
 +void dvi_enable(void)
 +{
-+	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DVP0)
-{
++	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DVP0) {
 +		write_reg(SR1E, VIASR, read_reg(VIASR, SR1E) | 0xC0);
 +		if (chip_info.gfx_chip_name == UNICHROME_CLE266)
 +			tmds_register_write(0x88, 0x3b);
 +		else
 +			/*clear CR91[5] to direct on display period
 +			   in the secondary diplay path */
-+			write_reg(CR91, VIACR, read_reg(VIACR, CR91) &
-0xDF);
++			write_reg(CR91, VIACR, read_reg(VIACR, CR91) & 0xDF);
 +	}
 +
-+	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DVP1)
-{
++	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DVP1) {
 +		write_reg(SR1E, VIASR, read_reg(VIASR, SR1E) | 0x30);
 +
-+		/*fix dvi cann't be enabled with MB VT5718C4 - Al Zhang
-*/
++		/*fix dvi cann't be enabled with MB VT5718C4 - Al Zhang */
 +		if (chip_info.gfx_chip_name == UNICHROME_CLE266) {
 +			tmds_register_write(0x88, 0x3b);
 +		} else {
 +			/*clear CR91[5] to direct on display period
 +			  in the secondary diplay path */
-+			write_reg(CR91, VIACR, read_reg(VIACR, CR91) &
-0xDF);
++			write_reg(CR91, VIACR, read_reg(VIACR, CR91) & 0xDF);
 +		}
 +
 +		/*fix DVI cannot enable on EPIA-M board */
@@ -1627,32 +1579,27 @@ INTERFACE_DFP_LOW)
 +				if (device_lcd_dualedge == 1)
 +					i2cWriteByte(chip_info.
 +						     tmds_chip_info.
-+
-tmds_chip_slave_addr,
++						     tmds_chip_slave_addr,
 +						     0x08, 0x3F);
 +				else
 +					i2cWriteByte(chip_info.
 +						     tmds_chip_info.
-+
-tmds_chip_slave_addr,
++						     tmds_chip_slave_addr,
 +						     0x08, 0x37);
 +			}
 +		}
 +	}
 +
-+	if (chip_info.tmds_chip_info.output_interface ==
-INTERFACE_DFP_HIGH) {
++	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DFP_HIGH) {
 +		write_reg(SR2A, VIASR, read_reg(VIASR, SR2A) | 0x0C);
 +		write_reg(CR91, VIACR, read_reg(VIACR, CR91) & 0xDF);
 +	}
 +
-+	if (chip_info.tmds_chip_info.output_interface ==
-INTERFACE_DFP_LOW) {
++	if (chip_info.tmds_chip_info.output_interface == INTERFACE_DFP_LOW) {
 +		write_reg(SR2A, VIASR, read_reg(VIASR, SR2A) | 0x03);
 +		write_reg(CR91, VIACR, read_reg(VIACR, CR91) & 0xDF);
 +	}
-+	if (chip_info.tmds_chip_info.output_interface == INTERFACE_TMDS)
-{
++	if (chip_info.tmds_chip_info.output_interface == INTERFACE_TMDS) {
 +		/* Turn on Display period in the panel path. */
 +		write_reg_mask(CR91, VIACR, 0, BIT7);
 +
@@ -1689,15 +1636,12 @@ INTERFACE_DFP_LOW) {
 +				byVendorDataBlock = 0x82 + 2;
 +
 +				byTemp1 = (u8)
-+
-tmds_register_read(byVendorDataBlock);
++				    tmds_register_read(byVendorDataBlock);
 +				while ((byTemp1 & 0xE0) != 0x60
-+				       && byVendorDataBlock < (byTemp +
-0x82)) {
++				       && byVendorDataBlock < (byTemp + 0x82)) {
 +					byTemp1 &= 0x1F;
 +
-+					byVendorDataBlock += (byTemp1 +
-1);
++					byVendorDataBlock += (byTemp1 + 1);
 +
 +					byTemp1 = (u8)
 +					    tmds_register_read
@@ -1717,8 +1661,7 @@ tmds_register_read(byVendorDataBlock);
 +					if (byTemp == 0x03
 +					    && byTemp1 == 0x0C
 +					    && byTemp2 == 0x00)
-+						result =
-DEV_CONNECT_HDMI;
++						result = DEV_CONNECT_HDMI;
 +				}
 +			}
 +		}
@@ -1727,3 +1670,8 @@ DEV_CONNECT_HDMI;
 +	chip_info.tmds_chip_info.tmds_chip_slave_addr = restore;
 +	return result;
 +}
+-------------------------------------------------------------------------
+This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
+Don't miss this year's exciting event. There's still time to save $100. 
+Use priority code J8TL2D2. 
+http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone

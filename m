@@ -1,284 +1,128 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device
- Driver - Resend
-Date: Wed, 7 May 2008 18:43:33 +0200
-Message-ID: <20080507184333.7d0f1bf4.krzysztof.h1@poczta.fm>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw>
+Subject: [PATCH] tridentfb: fix timing calculations
+Date: Wed, 7 May 2008 17:41:41 +0200
+Message-ID: <20080507174141.1e04e789.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758988AbYEGRKR@vger.kernel.org>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: JosephChan@via.com.tw
-Cc: akpm@linux-foundation.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1JtmU1-0000UH-8P for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 May 2008 09:27:10 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JtmC6-0000YS-Ul
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 May 2008 09:08:40 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: akpm@linux-foundation.org, adaplas@gmail.com
 
-Hi Joseph,
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-You have sent tremendous amount of work. 
+Fix broken timings calculations. This patch helps with following
+problems:
+ - no left part of screen visible (up to half of the screen)
+ - monitor's frequencies are not the ones intended for selected modes
+ - if mode with resoultion y > 1024 is selected at least once then
+   all modes with y < 1024 are "out of sync" (no display)
 
-I am trying to point some mistakes or improvements, but I won't cover the whole code at the moment. Look at them and check if the rest of the code can be improved as well.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-A general comment is that you use to many global variables. You should move some of them into the viafb_par structure.
-Does any of supported devices support multi-head? If so you may prefer to have allocated fb_info and viafb_par structure
-to hold data required for each display separated (e.g. for different types of displays connected to both heads).
-
-See below for problems I have spotted (in quick look over).
-
-Regards,
-Krzysztof
-
-PS. I assume that your driver will replace the existing vt8623fb (CLE266?) driver when ready. Am I right?
-
-On Wed, 7 May 2008 19:06:48 +0800
-<JosephChan@via.com.tw> wrote:
-
-(...)
-> diff -Nur a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-> --- a/drivers/video/via/accel.c	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/accel.c	2008-04-29 02:51:13.000000000 -0400
-> @@ -0,0 +1,245 @@
-> +/*
-> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-> +
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under  the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; either version 2, or (at your
-> + option)
-
-Somehow this line got wrapped against your intention, I suppose.
-
-> +#include "global.h"
-> +
-> +void init_accel(void)
-> +{
-> +	parinfo.cursor_start = parinfo.fbmem_free - CURSOR_SIZE;
-> +	parinfo.fbmem_free -= CURSOR_SIZE;
-
-You can swap these two lines to get shorter code:
-parinfo.fbmem_free -= CURSOR_SIZE;
-parinfo.cursor_start = parinfo.fbmem_free;
-
-> +
-> +	/* Reverse 8*1024 memory space for cursor image of the XServer */
-> +	parinfo.VQ_start = parinfo.fbmem_free - CURSOR_SIZE - VQ_SIZE;
-> +	parinfo.VQ_end = parinfo.VQ_start + VQ_SIZE - 1;
-> +	parinfo.fbmem_free -= (CURSOR_SIZE + VQ_SIZE);
-> +	parinfo.fbmem_used += (CURSOR_SIZE + VQ_SIZE); }
-> +
-
-Again, swap the third and the first line.
-
-> +	if (parinfo.VQ_start != 0) {
-> +		/* Enable VQ */
-> +		dwVQStartAddr = parinfo.VQ_start;
-> +		dwVQEndAddr = parinfo.VQ_end;
-> +		switch (chip_info.gfx_chip_name) {
-> +		case UNICHROME_K8M890:
-> +		case UNICHROME_P4M900:
-> +			dwVQStartL = 0x70000000 | (dwVQStartAddr & 0xFFFFFF);
-> +			dwVQEndL = 0x71000000 | (dwVQEndAddr & 0xFFFFFF);
-> +			dwVQStartEndH =
-> +			    0x72000000 | ((dwVQStartAddr & 0xFF000000) >>
-> +					  24) | ((dwVQEndAddr & 0xFF000000)
-> +						 >> 16);
-> +			dwVQLen = 0x73000000 | (VQ_SIZE >> 3);
-> +			break;
-> +		default:
-> +			dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
-> +			dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
-> +			dwVQStartEndH =
-> +			    0x52000000 | ((dwVQStartAddr & 0xFF000000) >>
-> +					  24) | ((dwVQEndAddr & 0xFF000000)
-> +						 >> 16);
-> +			dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
-
-You can move the default case before switch the only or the 0x20000000 bit 
-in case of the K8M890 or P4M900 chipsets. It will show that you set
-actually the same values (except one bit) for both.
-
-> +
-> +int wait_engine_idle(void)
-> +{
-> +	int loop = 0;
-> +
-> +	while (!(MMIO_IN32(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY)
-> +	       && (loop++ < MAXLOOP)) ;
-> +
-> +	while ((MMIO_IN32(VIA_REG_STATUS) &
-> +		(VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
-> +	       (loop++ < MAXLOOP)) ;
-> +
-
-You can add cpu_relax() call into these waiting loops.
-
-> diff -Nur a/drivers/video/via/accel.h b/drivers/video/via/accel.h
-> --- a/drivers/video/via/accel.h	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/accel.h	2008-04-29 02:51:14.000000000 -0400
-> @@ -0,0 +1,190 @@
-> +/*
-> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-> +
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under  the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; either version 2, or (at your
-> + option)
-
-Again, wrapped.
-
-> + * any later version.
-> +
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-> + * the implied warranty of MERCHANTABILITY or FITNESS FOR
-> + * A PARTICULAR PURPOSE.See the GNU General Public License
-> + * for more details.
-> +
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc.,
-> + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-> + */
-> +
-> +#ifndef __ACCEL_H__
-> +#define __ACCEL_H__
-> +
-> +#ifndef FB_ACCEL_VIA_UNICHROME
-> +#define FB_ACCEL_VIA_UNICHROME  50
-> +#endif
-
-This is the only place you define FB_ACCEL_VIA_UNICHROME. If so
-you don't need to do #ifndef.
-
-> +
-> +#ifndef VIA_MMIO
-> +#define VIA_MMIO 1
-> +#endif
-> +
-
-The same as the above.
-
-> +#if VIA_MMIO
-> +#define MMIO_OUT8(reg, val)  writeb(val, parinfo.io_virt + reg) #define 
-> +MMIO_OUT16(reg, val) writew(val, parinfo.io_virt + reg) #define 
-> +MMIO_OUT32(reg, val) writel(val, parinfo.io_virt + reg)
-
-These lines get wrapped badly.
-
-> +#define MMIO_IN8(reg)       readb(parinfo.io_virt + reg)
-> +#define MMIO_IN16(reg)      readw(parinfo.io_virt + reg)
-> +#define MMIO_IN32(reg)      readl(parinfo.io_virt + reg)
-> +
-> +#else
-> +#define MMIO_OUT8(reg, val)  outb(val, reg) #define MMIO_OUT16(reg,
-> +val) outw(val, reg) #define MMIO_OUT32(reg, val) outl(val, reg)
-> +#define MMIO_IN8(reg)       inb(reg)
-> +#define MMIO_IN16(reg)      inw(reg)
-> +#define MMIO_IN32(reg)      inl(reg)
-> +#endif
-> +
-
-Your devices seem to be 32-bit only because 8 and 16-bit accesses are never used. You can remove these macros.
-
-> diff -Nur a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-> --- a/drivers/video/via/chip.h	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/chip.h	2008-04-29 02:51:15.000000000 -0400
-> @@ -0,0 +1,189 @@
-> +/*
-> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-> +
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under  the terms of the GNU General Public License as published
-> + * by the Free Software Foundation; either version 2, or (at your
-> + option)
-
-Wrapped. Check all other files for this.
-
-> diff -Nur a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-> --- a/drivers/video/via/dvi.c	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/dvi.c	2008-05-04 07:28:49.000000000 -0400
-> @@ -0,0 +1,721 @@
-(...)
-> +
-> +/* Sense DVI Connector */
-> +int dvi_sense(void)
-> +{
-> +	u8 RegSR1E = 0, RegSR3E = 0, RegCR6B = 0, RegCR91 = 0, RegCR93 =
-> +	    0, RegCR9B = 0, data;
-
-There is no need to initialize these variables. They are set before use (and if not a compiler will generate warning).
-
-(...)
-> +	/* Restore status */
-> +	if (chip_info.gfx_chip_name == UNICHROME_CLE266) {
-> +		write_reg(SR1E, VIASR, RegSR1E);
-> +		write_reg(CR6B, VIACR, RegCR6B);
-> +		write_reg(CR91, VIACR, RegCR91);
-> +		write_reg(CR93, VIACR, RegCR93);
-> +	} else {
-> +		write_reg(SR1E, VIASR, RegSR1E);
-> +		write_reg(SR3E, VIASR, RegSR3E);
-> +		write_reg(CR91, VIACR, RegCR91);
-> +		write_reg(CR9B, VIACR, RegCR9B);
-> +	}
-> +
-
-You can  put at least the first line before the if. Make common code just single instance (the third line can be moved if sequence is not important).
-
-> +int dvi_get_panel_size_from_DDCv1(void)
-> +{
-> +	int i, max_h = 0, max_v = 0, tmp, restore;
-> +	unsigned char rData;
-> +	unsigned char EDID_DATA[18];
-> +
-> +	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv1 \n");
-> +
-> +	restore = chip_info.tmds_chip_info.tmds_chip_slave_addr;
-> +	chip_info.tmds_chip_info.tmds_chip_slave_addr = 0xA0;
-> +
-> +	for (i = 0x23; i < 0x6D; i++) {
-> +		switch (i) {
-> +		case 0x23:
-> +			rData = tmds_register_read(0x23);
-> +			if (rData & 0x3C)
-> +				max_h = 640;
-> +			if (rData & 0xC0)
-> +				max_h = 720;
-> +			if (rData & 0x03)
-> +				max_h = 800;
-> +			break;
-> +		case 0x24:
-> +			rData = tmds_register_read(0x24);
-> +			if (rData & 0xC0)
-> +				max_h = 800;
-> +			if (rData & 0x1E)
-> +				max_h = 1024;
-> +			if (rData & 0x01)
-> +				max_h = 1280;
-> +			break;
-
-You can move these two cases before the loop and change loop's range.
-
-(...)
-> +			if (via_bus_width == 24) {
-> +				if (device_lcd_dualedge == 1)
-> +					i2cWriteByte(chip_info.
-> +						     tmds_chip_info.
-> +						     tmds_chip_slave_addr,
-> +						     0x08, 0x3F);
-> +				else
-> +					i2cWriteByte(chip_info.
-> +						     tmds_chip_info.
-> +						     tmds_chip_slave_addr,
-> +						     0x08, 0x37);
-
-These to branches differs only by the set value. It is shorter to set value inside if-else the call i2cWriteByte after.
-
+diff -urp linux-old/drivers/video/tridentfb.c linux-pc/drivers/video/tridentfb.c
+diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
+--- linux-2.6.25/drivers/video/tridentfb.c	2008-05-06 19:49:15.607453941 +0200
++++ linux-new/drivers/video/tridentfb.c	2008-05-07 06:52:14.175279482 +0200
+@@ -886,20 +886,19 @@ static int tridentfb_set_par(struct fb_i
+ 
+ 	debug("enter\n");
+ 	hdispend = var->xres / 8 - 1;
+-	hsyncstart = (var->xres + var->right_margin) / 8;
+-	hsyncend = var->hsync_len / 8;
+-	htotal =
+-		(var->xres + var->left_margin + var->right_margin +
+-		 var->hsync_len) / 8 - 10;
+-	hblankstart = hdispend + 1;
+-	hblankend = htotal + 5;
++	hsyncstart = (var->xres + var->right_margin) / 8 - 1;
++	hsyncend = (var->xres + var->right_margin + var->hsync_len) / 8 - 1;
++	htotal = (var->xres + var->left_margin + var->right_margin +
++		  var->hsync_len) / 8 - 5;
++	hblankstart = hdispend + 2;
++	hblankend = htotal + 3;
+ 
+ 	vdispend = var->yres - 1;
+ 	vsyncstart = var->yres + var->lower_margin;
+-	vsyncend = var->vsync_len;
+-	vtotal = var->upper_margin + vsyncstart + vsyncend - 2;
+-	vblankstart = var->yres;
+-	vblankend = vtotal + 2;
++	vsyncend = vsyncstart + var->vsync_len;
++	vtotal = var->upper_margin + vsyncend - 2;
++	vblankstart = vdispend + 2;
++	vblankend = vtotal;
+ 
+ 	crtc_unlock(par);
+ 	write3CE(par, CyberControl, 8);
+@@ -930,7 +929,7 @@ static int tridentfb_set_par(struct fb_i
+ 	write3X4(par, VGA_CRTC_V_SYNC_START, vsyncstart & 0xFF);
+ 	write3X4(par, VGA_CRTC_V_SYNC_END, (vsyncend & 0x0F));
+ 	write3X4(par, VGA_CRTC_V_BLANK_START, vblankstart & 0xFF);
+-	write3X4(par, VGA_CRTC_V_BLANK_END, 0 /* p->vblankend & 0xFF */);
++	write3X4(par, VGA_CRTC_V_BLANK_END, vblankend & 0xFF);
+ 
+ 	/* horizontal timing values */
+ 	write3X4(par, VGA_CRTC_H_TOTAL, htotal & 0xFF);
+@@ -939,7 +938,7 @@ static int tridentfb_set_par(struct fb_i
+ 	write3X4(par, VGA_CRTC_H_SYNC_END,
+ 		 (hsyncend & 0x1F) | ((hblankend & 0x20) << 2));
+ 	write3X4(par, VGA_CRTC_H_BLANK_START, hblankstart & 0xFF);
+-	write3X4(par, VGA_CRTC_H_BLANK_END, 0 /* (p->hblankend & 0x1F) */);
++	write3X4(par, VGA_CRTC_H_BLANK_END, hblankend & 0x1F);
+ 
+ 	/* higher bits of vertical timing values */
+ 	tmp = 0x10;
+@@ -953,16 +952,18 @@ static int tridentfb_set_par(struct fb_i
+ 	if (vsyncstart & 0x200) tmp |= 0x80;
+ 	write3X4(par, VGA_CRTC_OVERFLOW, tmp);
+ 
+-	tmp = read3X4(par, CRTHiOrd) | 0x08;	/* line compare bit 10 */
++	tmp = read3X4(par, CRTHiOrd) & 0x07;
++	tmp |= 0x08;	/* line compare bit 10 */
+ 	if (vtotal & 0x400) tmp |= 0x80;
+ 	if (vblankstart & 0x400) tmp |= 0x40;
+ 	if (vsyncstart & 0x400) tmp |= 0x20;
+ 	if (vdispend & 0x400) tmp |= 0x10;
+ 	write3X4(par, CRTHiOrd, tmp);
+ 
+-	tmp = 0;
+-	if (htotal & 0x800) tmp |= 0x800 >> 11;
+-	if (hblankstart & 0x800) tmp |= 0x800 >> 7;
++	tmp = (htotal >> 8) & 0x01;
++	tmp |= (hdispend >> 7) & 0x02;
++	tmp |= (hsyncstart >> 5) & 0x08;
++	tmp |= (hblankstart >> 4) & 0x10;
+ 	write3X4(par, HorizOverflow, tmp);
+ 
+ 	tmp = 0x40;
 
 ----------------------------------------------------------------------
-Sprawdz, czy jestes prawdziwym internauta!
-Kliknij http://link.interia.pl/f1d6e
+Andrzej Piaseczny w roli kucharza? Zobacz!
+http://link.interia.pl/f1dcb
+
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
+Don't miss this year's exciting event. There's still time to save $100. 
+Use priority code J8TL2D2. 
+http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone

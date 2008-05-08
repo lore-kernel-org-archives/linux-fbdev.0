@@ -1,24 +1,21 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Debugging pxafb and am200epd
-Date: Thu, 8 May 2008 16:06:48 -0400
-Message-ID: <45a44e480805081306v17421858w3fbde163d43118e8@mail.gmail.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] tridentfb: use mmio access for clock
+	setting
+Date: Thu, 8 May 2008 22:28:42 +0200
+Message-ID: <20080508222842.667e5eed.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JuCON-0004ad-8S for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 May 2008 13:07:03 -0700
-Received: from wf-out-1314.google.com ([209.85.200.174])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JuCOC-0007o4-Ia
+	id 1JuCk0-0006sx-3L for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 May 2008 13:29:24 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JuCjj-0005mp-SB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 May 2008 13:06:57 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so844520wfd.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 08 May 2008 13:06:49 -0700 (PDT)
-Content-Disposition: inline
+	Thu, 08 May 2008 13:29:13 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,61 +26,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <ymiao3@marvell.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: akpm@linux-foundation.org
 
-Hi Eric,
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Just some quick questions and notes while trying to implement am200epd
-sharing pxafb's framebuffer.
+Use the mmio outb function instead of direct one. 
+The mmio registers are already mapped (in the probe function).
 
-1. pxafb_init is set to __devinit, but it is only called from
-module_init. Is my understanding correct that it should be __init?
-2. pxafb currently doesn't implement module unloading support.  Is
-there a reason for this?
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-3. I'm seeing weird behavior with insmod of am200epd on my test system
-on a gumstix. Probably something that I'm doing wrong but I wanted to
-ask advice here anyway. Here's what I'm doing:
-# insmod drivers/video/cfbcopyarea.ko && insmod
-drivers/video/cfbfillrect.ko && insmod drivers/video/cfbimgblt.ko
-# insmod drivers/video/syscopyarea.ko && insmod
-drivers/video/sysfillrect.ko && insmod drivers/video/sysimgblt.ko &&
-insmod drivers/video/fb_sys_fops.ko
-# insmod drivers/video/metronomefb.ko ; insmod drivers/video/pxafb.ko
-# grep pxafb_probe /proc/kallsyms
-bf014000 t pxafb_probe  [pxafb]
-# grep bf014000 /proc/kallsyms
-bf014000 t pxafb_probe  [pxafb]
-bf014000 t $a   [pxafb]
+diff -urp linux-old/drivers/video/tridentfb.c linux-pc/drivers/video/tridentfb.c
+--- linux-old/drivers/video/tridentfb.c	2008-05-03 08:11:52.000000000 +0200
++++ linux-pc/drivers/video/tridentfb.c	2008-05-03 08:10:52.000000000 +0200
+@@ -680,8 +680,8 @@ static void set_vclk(struct tridentfb_pa
+ 		vga_mm_wseq(par->io_virt, ClockHigh, hi);
+ 		vga_mm_wseq(par->io_virt, ClockLow, lo);
+ 	} else {
+-		outb(lo, 0x43C8);
+-		outb(hi, 0x43C9);
++		t_outb(par, lo, 0x43C8);
++		t_outb(par, hi, 0x43C9);
+ 	}
+ 	debug("VCLK = %X %X\n", hi, lo);
+ }
 
-The reason I was debugging this was because platform_device_add was
-failing from am200epd when am200epd is trying to add pxa2xx-fb. It
-would fail from platform_drv_probe. I found that it was because the
-pxafb's probe routine somehow gets replaced by other stuff. I was
-worried if it was due to am200epd so I then took out all the code from
-am200epd's init_module so it does nothing other than return 0. So the
-following insmod is of am200epd that has a completely empty
-init_module.
+----------------------------------------------------------------------
+Poprowadz swoj klub do zwyciestwa!
+Sprawdz >>> http://link.interia.pl/f1d76
 
-# insmod arch/arm/mach-pxa/am200epd.ko
-
-# grep pxafb_probe /proc/kallsyms
-bf014000 t pxafb_probe  [pxafb]
-
-# grep bf014000 /proc/kallsyms
-bf014000 t am200_exit   [am200epd]
-bf014000 t $a   [am200epd]
-bf014000 t cleanup_module       [am200epd]
-bf014000 t pxafb_probe  [pxafb]
-bf014000 t $a   [pxafb]
-
-The above doesn't make sense to me. I don't understand why am200_exit
-is overloaded at the same address as pxafb_probe. Any suggestions on
-how to debug this?
-
-Thanks,
-jaya
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

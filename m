@@ -1,8 +1,9 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: lxfb driver regression
-Date: Wed, 7 May 2008 18:11:40 -0700
-Message-ID: <20080507181140.ecea2305.akpm@linux-foundation.org>
-References: <20080507210836.1eb61b8f@ephemeral>
+From: Ondrej Zajicek <santiago@crfreenet.org>
+Subject: Re: [PATCH 6/9] viafb: VIA Frame Buffer Device
+	Driver
+Date: Thu, 8 May 2008 09:18:09 +0200
+Message-ID: <20080508071809.GA11121@localhost.localdomain>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,14 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jtufy-0006XL-7u for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 May 2008 18:12:02 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	id 1Ju0P8-0007Qu-Fm for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 May 2008 00:19:02 -0700
+Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.10])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jtufw-0000Zu-R0
+	(Exim 4.44) id 1Ju0P3-0006XY-Q6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 May 2008 18:12:02 -0700
-In-Reply-To: <20080507210836.1eb61b8f@ephemeral>
+	Thu, 08 May 2008 00:19:00 -0700
+Content-Disposition: inline
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,35 +30,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andres Salomon <dilinger@queued.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-geode@bombadil.infradead.org, Jens Rottmann <JRottmann@LiPPERT-AT.de>, linux-kernel@vger.kernel.org, jordan.crouse@amd.com, torvalds@linux-foundation.org
+To: JosephChan@via.com.tw
+Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, geert@linux-m68k.org, linux-kernel@vger.kernel.org
 
-On Wed, 7 May 2008 21:08:36 -0400 Andres Salomon <dilinger@queued.net> wrote:
+On Wed, May 07, 2008 at 07:09:42PM +0800, JosephChan@via.com.tw wrote:
+> diff -Nur a/drivers/video/via/viafb.modes b/drivers/video/via/viafb.modes
+> --- a/drivers/video/via/viafb.modes	1969-12-31 19:00:00.000000000 -0500
+> +++ b/drivers/video/via/viafb.modes	2008-04-29 02:51:27.000000000 -0400
+> @@ -0,0 +1,870 @@
+> +#
+> +#
+> +#   These data are based on the CRTC parameters in
+> +#
+> +#       VIA Integration Graphics Chip
+> +#       (C) 2004 VIA Technologies Inc.
 
-> Hi,
-> 
-> I noticed that a patch from you went into 2.6.26-rc1 to adjust the PLL table
-> in the lxfb driver.  Unfortunately, it breaks on OLPC machines (I haven't
-> tested it on other Geode platforms yet, but I don't have any other Geodes
-> with panels anyways).  It's this commit:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3888d4639e78802c4ec1086127124e890461b9e4
-> 
-> Without this patch, I get the following (correct) output from the lxfb
-> and console code:
-> 
-> [    0.939827] lxfb 0000:00:01.1: 16384 KB of video memory at 0xfd000000
-> [    1.009194] Console: switching to colour frame buffer device 150x56     
-> 
-> Without it, the cols/width is screwy (and I get a blank white screen):
-> 
-> [   20.706836] lxfb 0000:00:01.1: 16384 KB of video memory at 0xfd000000
-> [   20.788538] Console: switching to colour frame buffer device 100x40        
+Configuration file for fbset definitely shouldn't be here between C
+source files. If it is needed, then it should be somewhere in
+Documentation/fb .
 
-I queued a reversion but (as is often the case with non-critical
-regressions) I'll hold off for a few days, see if we can get things fixed
-up.
+BTW, Are these modes common VESA modes (DVT, GTF or CVT)  or some
+other modes. In first case there is probably no reason to include
+them.
 
+-- 
+Elen sila lumenn' omentielvo
+
+Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

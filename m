@@ -1,99 +1,72 @@
-From: Andres Salomon <dilinger@queued.net>
+From: Jordan Crouse <jordan.crouse@amd.com>
 Subject: Re: lxfb driver regression
-Date: Thu, 8 May 2008 10:48:08 -0400
-Message-ID: <20080508104808.77f48f41@ephemeral>
-References: <20080507210836.1eb61b8f@ephemeral>
-	<48230694.5010505@LiPPERT-AT.de>
+Date: Thu, 8 May 2008 09:06:53 -0600
+Message-ID: <20080508150653.GA18117@cosmic.amd.com>
+References: <20080507210836.1eb61b8f@ephemeral> <48230694.5010505@LiPPERT-AT.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1764360AbYEHOoh@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757914AbYEHPFl@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <48230694.5010505@LiPPERT-AT.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Jens Rottmann <JRottmann@LiPPERT-AT.de>
-Cc: jordan.crouse@amd.com, linux-kernel@vger.kernel.org, linux-geode@bombadil.infradead.org, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, torvalds@linux-foundation.org
+Cc: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org, linux-geode@bombadil.infradead.org, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, torvalds@linux-foundation.org
 
-On Thu, 08 May 2008 15:56:36 +0200
-Jens Rottmann <JRottmann@LiPPERT-AT.de> wrote:
-
+On 08/05/08 15:56 +0200, Jens Rottmann wrote:
 > Hi Andres,
 > 
-> > Without this patch, I get the following (correct) output from the
-> > lxfb and console code:
-> > [    0.939827] lxfb 0000:00:01.1: 16384 KB of video memory at
-> > 0xfd000000 [    1.009194] Console: switching to colour frame buffer
-> > device 150x56     
+> > Without this patch, I get the following (correct) output from the lxfb
+> > and console code:
+> > [    0.939827] lxfb 0000:00:01.1: 16384 KB of video memory at 0xfd000000
+> > [    1.009194] Console: switching to colour frame buffer device 150x56     
 > 
-> > Without it, the cols/width is screwy (and I get a blank white
-> > screen): [   20.706836] lxfb 0000:00:01.1: 16384 KB of video memory
-> > at 0xfd000000 [   20.788538] Console: switching to colour frame
-> > buffer device 100x40          
+> > Without it, the cols/width is screwy (and I get a blank white screen):
+> > [   20.706836] lxfb 0000:00:01.1: 16384 KB of video memory at 0xfd000000
+> > [   20.788538] Console: switching to colour frame buffer device 100x40          
 > 
-> I've searched all morning, but I don't get it. The only place the
-> (changed) pll_table[] gets used is lx_set_clock(), and this doesn't
-> return anything at all. lx_set_clock() gets told which dotclock to
-> configure and it does its best to comply, but it doesn't report back,
-> which clock it actually was able to select. So how on earth can
-> changing this table cause fbcon or lxfb to decide for a completely
-> different videomode?? Without the patch it seems to use the special
-> 1200x900 OLPC DCON mode. With the patch it looks like it switches to
+> I've searched all morning, but I don't get it. The only place the (changed)
+> pll_table[] gets used is lx_set_clock(), and this doesn't return anything at
+> all. lx_set_clock() gets told which dotclock to configure and it does its best
+> to comply, but it doesn't report back, which clock it actually was able to
+> select. So how on earth can changing this table cause fbcon or lxfb to decide
+> for a completely different videomode?? Without the patch it seems to use the
+> special 1200x900 OLPC DCON mode. With the patch it looks like it switches to
 > some 800x640 mode. No idea where this mode might come from.
-
-
-I played with it a bit last night. The pixclock that's specified is
-17460 (from the olpc dcon table).  This gives a freq of 0xdfb9.
-lx_set_clock then tries to figure out the best pll from the pll_table
-by looking at the closest frequency.  Prior to your patch, this was:
-
-  { 0x00004286, 56250 },
-The freq difference was -1023, the closest of any in the table.   So,
-we stuff 0x4286 into MSR_GLCP_DOTPLL, and all is good.
-
-Your patch adds:
-  { 0x00014170, 57375 },
-The freq difference there is only 102, so lx_set_clock chooses
-0x14170 as the pllval.
-
-I'm unsure as to how that ends up causing the vc cols/rows stuff
-to change..
-
-
-
 > 
-> And why does the lxfb init take place 20 sec later with the patch? Is
-> there some initrd manually setting a different mode? Is this
-> offending 800x640 mode maybe not coming from the kernel, but from
-> some startup script via "fbset" and "/etc/fb.modes"?
+> And why does the lxfb init take place 20 sec later with the patch? Is there
+> some initrd manually setting a different mode? Is this offending 800x640 mode
+> maybe not coming from the kernel, but from some startup script via "fbset" and
+> "/etc/fb.modes"?
 > 
-
-Nope, that's a separate bug; IDE hangs for 20 seconds and then times
-out.  I believe it's a regression in rc1, but I haven't had the chance
-to look at it yet.  There's no initrd being used in this kernel.
-
-
-> I don't have an OLPC, so could you please run "fbset -i -v" with and
-> without my patch. Hopefully this gives some clues...
+> I don't have an OLPC, so could you please run "fbset -i -v" with and without
+> my patch. Hopefully this gives some clues...
 > 
-> I have also attached a cut down version of my patch. It still adds
-> all the PLL settings for < 25 MHz dotclocks, but it no longer
-> supplements the > 25 MHz clocks with intermediate steps. I'm only
-> guessing here, I don't see what big difference this would make, but
-> still ... could you please give it a try if you have time?
-> 
+> I have also attached a cut down version of my patch. It still adds all the PLL
+> settings for < 25 MHz dotclocks, but it no longer supplements the > 25 MHz
+> clocks with intermediate steps. I'm only guessing here, I don't see what big
+> difference this would make, but still ... could you please give it a try if
+> you have time?
 
-I'm not sure if I'll be able to get to this today, but certainly by
-tomorrow.  BTW, where did the intermediate values in your table come from?
-The LX data book shows the DOTPLL equation (6.14.2.14), but very little
-documentation of DIV4 or the usable values below 15MHz.
+Part of what was happening here was that one of the DIV4 generated frequencies
+( 0x00014170, 57375) was a closer match for the OLPC intended frequency
+(57.273) then the original value (56.250), which in retrospect is probably
+a better choice for ths display.
 
+The DIV4 bit was really only intended to provide frequencies less then what
+it could cleanly generate on its own.  The datasheet says '
+This bit is intended for generating frequencies below the PLL spec limit
+of 15Mhz'.  I don't think we really need divided signals > 24Mhz.
+The new patch you sent out was good, and I'll ack it.
 
+That said, Andres has some interesting behaviors in his report that
+probably need to be looked at, but the different clock could
+explain the white screen, especially with the LCD situation on the XO.
 
-> Thanks a lot for your help.
-> 
-> Regards,
-> Jens Rottmann
-> 
+Thanks,
+Jordan
+
 > =============X8=================X8==============================
 > lxfb: extend PLL table to support dotclocks below 25 MHz
 > 
@@ -103,6 +76,8 @@ documentation of DIV4 or the usable values below 15MHz.
 > (e.g. 320x240).
 > 
 > Signed-off-by: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+Acked-by: Jordan Crouse <jordan.crouse@amd.com>
+
 > ---
 > 
 > --- linux-2.6.25/drivers/video/geode/lxfb_ops.c
@@ -219,3 +194,9 @@ documentation of DIV4 or the usable values below 15MHz.
 > 
 >  static void lx_graphics_disable(struct fb_info *info)
 > 
+> 
+
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.

@@ -1,25 +1,25 @@
 From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH 7/9] viafb: VIA Frame Buffer Device
+Subject: Re: [PATCH 2/9] viafb: VIA Frame Buffer Device
 	Driver
-Date: Thu, 8 May 2008 09:41:34 +0200
-Message-ID: <20080508074134.GB11121@localhost.localdomain>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F6775A@exchtp03.taipei.via.com.tw>
+Date: Thu, 8 May 2008 09:58:09 +0200
+Message-ID: <20080508075809.GC11121@localhost.localdomain>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67753@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Ju0lA-0001JM-DD for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 May 2008 00:41:48 -0700
+	id 1Ju118-00030z-L8 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 May 2008 00:58:18 -0700
 Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.10])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Ju0l9-0003J1-Nu
+	(Exim 4.44) id 1Ju118-0002RY-2K
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 May 2008 00:41:48 -0700
+	Thu, 08 May 2008 00:58:18 -0700
 Content-Disposition: inline
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F6775A@exchtp03.taipei.via.com.tw>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67753@exchtp03.taipei.via.com.tw>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,67 +33,35 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: JosephChan@via.com.tw
 Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, geert@linux-m68k.org, linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 07:09:44PM +0800, JosephChan@via.com.tw wrote:
-> +static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
-> +{
-> +	switch (cmd) {
-> +	case VIAFB_GET_CHIP_INFO:	/*struct chip_information chip_info ; */
-> +	if (copy_to_user((void __user *)arg, &chip_info, sizeof(chip_info)))
-> +		return -EFAULT;
-> +		break;
-> +	case VIAFB_GET_INFO_SIZE:
-> +		return put_user(sizeof(viainfo), argp);
-> +	case VIAFB_GET_INFO:
-> +		return ioctl_get_viafb_info(arg);
+
+On Wed, May 07, 2008 at 07:09:28PM +0800, JosephChan@via.com.tw wrote:
+> +u16 red256[] = {
+> +	0x0, 0x0, 0x0, 0x0, 0xa800, 0xa800, 0xa800, 0xa800, 0x5400, 0x5400,
+> +	0x5400, 0x5400, 0xfc00, 0xfc00, 0xfc00, 0xfc00,
+
 ...
-> +	case VIAFB_GET_RESOLUTION:
 
-Some of these ioctls looks like they duplicate standard fbdev ioctls.
-What is a reason for that?
+> +u16 green256[] =
+> +    { 0x0, 0x0, 0xa800, 0xa800, 0x0, 0x0, 0x5400, 0xa800, 0x5400, 0x5400,
+> +	0xfc00, 0xfc00, 0x5400, 0x5400, 0xfc00, 0xfc00,
 
-> +int get_mode_index(int hres, int vres, int flag)
-> +{
-> +	DEBUG_MSG(KERN_INFO "get_mode_index!\n");
+...
+
+> +};
+> +u16 blue256[] =
+> +    { 0x0, 0xa800, 0x0, 0xa800, 0x0, 0xa800, 0x0, 0xa800, 0x5400, 0xfc00,
+> +	0x5400, 0xfc00, 0x5400, 0xfc00, 0x5400, 0xfc00,
+> +	0x0, 0x1400, 0x2000, 0x2c00, 0x3800, 0x4400, 0x5000, 0x6000,
+
+...
+
+> +};
 > +
-> +	if (flag == 0) {
-> +		if (hres == 480 && vres == 640) {
-> +			resMode = VIA_RES_480X640;
-> +			mode = "480x640";
-> +		} else if (hres == 640 && vres == 480) {
-> +			resMode = VIA_RES_640X480;
-> +			mode = "640x480";
-> +		} else if (hres == 800 && vres == 480) {
-> +			resMode = VIA_RES_800X480;
-> +			mode = "800x480";
-> +		} else if (hres == 800 && vres == 600) {
-> +			resMode = VIA_RES_800X600;
-> +			mode = "800x600";
-> +		} else if (hres == 1024 && vres == 768) {
-> +			resMode = VIA_RES_1024X768;
-> +			mode = "1024x768";
-...
+> +struct fb_cmap viafb_256_colors = { 0, 256, red256, green256, blue256, NULL
 
-This is particularly ugly function. Some loop through a table is perhaps
-better than 250 lines of such if statements, isn't it?
-
-> +		if (!strncmp(this_opt, "mode=", 5)) {
-> +			mode = kmalloc(strlen(this_opt + 4), GFP_KERNEL);
-> +			strcpy(mode, this_opt + 5);
-> +		} else if (!strncmp(this_opt, "mode1=", 6)) {
-> +			mode1 = kmalloc(strlen(this_opt + 5), GFP_KERNEL);
-> +			strcpy(mode1, this_opt + 6);
-> +		} else if (!strncmp(this_opt, "bpp=", 4)) {
-> +			via_fb_bpp = simple_strtoul(this_opt + 4, NULL, 0);
-> +		} else if (!strncmp(this_opt, "bpp1=", 5)) {
-> +			via_fb_bpp1 = simple_strtoul(this_opt + 5, NULL, 0);
-> +		} else if (!strncmp(this_opt, "refresh=", 8)) {
-> +			refresh = simple_strtoul(this_opt + 8, NULL, 0);
-> +		} else if (!strncmp(this_opt, "refresh1=", 9)) {
-> +			refresh1 = simple_strtoul(this_opt + 9, NULL, 0);
-
-Most drivers accept default mode specification like 1024x768-16@60
-(see Documentation/fb/modedb.txt). Is there a reason to have separate
-bpp= and refresh= ?
+Standard pattern is to allocate colormap using fb_alloc_cmap(). This function
+also fills colormap with common default colormap. It is unnecessary to have
+another default colormap.
 
 -- 
 Elen sila lumenn' omentielvo

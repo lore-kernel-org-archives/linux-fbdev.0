@@ -1,24 +1,27 @@
-From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
-Subject: Re: lxfb driver regression
-Date: Fri, 09 May 2008 12:33:32 +0200
-Message-ID: <4824287C.4050300@LiPPERT-AT.de>
-References: <20080507210836.1eb61b8f@ephemeral>	<48230694.5010505@LiPPERT-AT.de>
-	<20080508104808.77f48f41@ephemeral>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: Debugging pxafb and am200epd
+Date: Fri, 9 May 2008 13:37:53 -0400
+Message-ID: <45a44e480805091037q43942e20s28a7960cfb53c4ae@mail.gmail.com>
+References: <45a44e480805081306v17421858w3fbde163d43118e8@mail.gmail.com>
+	<E913911567467945BBEB9277E27868B0C1CDD5@msiexch01.marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JuPuu-0004nz-Ls for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 09 May 2008 03:33:32 -0700
-Received: from mail.lippert-at.com ([62.80.22.186]
-	helo=domex.lippertembedded.de)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JuPut-0001xa-7q
+	id 1JuWXb-00014a-Jk for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 09 May 2008 10:37:55 -0700
+Received: from wf-out-1314.google.com ([209.85.200.169])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JuWXa-0007dr-JX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 09 May 2008 03:33:32 -0700
-In-Reply-To: <20080508104808.77f48f41@ephemeral>
+	Fri, 09 May 2008 10:37:55 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so1234056wfd.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 09 May 2008 10:37:53 -0700 (PDT)
+In-Reply-To: <E913911567467945BBEB9277E27868B0C1CDD5@msiexch01.marvell.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,66 +32,134 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andres Salomon <dilinger@queued.net>, jordan.crouse@amd.com
-Cc: linux-geode@bombadil.infradead.org, Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Eric Miao <ymiao3@marvell.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Andres Salomon wrote:
-> The pixclock that's specified is 17460 (from the olpc dcon table)
-> [...] Prior to your patch, this was:  { 0x00004286, 56250 },
-> [...] Your patch adds:  { 0x00014170, 57375 },
+On Fri, May 9, 2008 at 5:20 AM, Eric Miao <ymiao3@marvell.com> wrote:
+> Hi Jaya,
+>
+>> -----Original Message-----
+>> From: Jaya Kumar [mailto:jayakumar.lkml@gmail.com]
+>> Sent: Friday, May 09, 2008 4:07 AM
+>> To: Eric Miao
+>> Cc: Linux Frame Buffer Device Development
+>> Subject: Debugging pxafb and am200epd
+>>
+>> Hi Eric,
+>>
+>> Just some quick questions and notes while trying to implement am200epd
+>> sharing pxafb's framebuffer.
+>>
+>> 1. pxafb_init is set to __devinit, but it is only called from
+>> module_init. Is my understanding correct that it should be __init?
+>
+> Yes indeed, it is not a HOTPLUG device obviously, there are some
+> variables associated, like g_options[], so will have another look
+> into this.
+>
+>> 2. pxafb currently doesn't implement module unloading support.  Is
+>> there a reason for this?
+>>
+>
+> From technical, I don't think so, yet there might be some if u want :)
+>  - this driver really has a long history, and
+>  - most uses it as builtin and never unload it
+>
+>> 3. I'm seeing weird behavior with insmod of am200epd on my test system
+>> on a gumstix. Probably something that I'm doing wrong but I wanted to
 
-Yes, of course that was my first idea, too. And this was my motivation for
-sending you the cut down patch without the > 25 MHz entries. But I'm almost
-prepared to bet this is not the root of the evil.
+Hi Eric,
 
-As I said, this does not explain why the resolution seems to switch to 800x640,
-because lx_set_clock() does not return any feedback. I somehow doubt you'll get
-a white screen just by raising the dotclock by 2 % (and getting it _closer_ to
-the intended value)?
+It looks like the issue is tied to the __devinit used on pxafb_init. I
+switched pxafb_init to __init and the problem goes away. Here's my
+current result from testing:
 
-And before I wrote my mail yesterday, I checked the dotclock for the 0x00004286
-and 0x00014170 PLL values with a scope, and both settings produced a fine signal
-with the expected frequencies.
+# grep pxafb_probe /proc/kallsyms
+bf01401c t pxafb_probe  [pxafb]
+# grep bf01401c /proc/kallsyms
+bf01401c t pxafb_probe  [pxafb]
+bf01401c t $a   [pxafb]
+# insmod arch/arm/mach-pxa/am200epd.ko
+# grep bf01401c /proc/kallsyms
+bf01401c t pxafb_probe  [pxafb]
+bf01401c t $a   [pxafb]
+# grep am200_exit /proc/kallsyms
+bf014000 t am200_exit   [am200epd]
 
-Anyway, I hope I'm wrong, then at least we'd have a solution for this issue.
+So it looks okay now. I didn't quite analyze why the setting of
+__devinit on pxafb_init seems to affect pxafb_probe but maybe there's
+a relationship there.
 
-> BTW, where did the intermediate values in your table come from?
+While I was doing this, I cooked up the following patch to pxafb to
+make it unloadable. I've appended the code below. If it looks okay to
+you, I would like to test it a bit and then submit it as a patch.
 
-Took the original table from lxfb_ops.c, everywhere set DIV4 and divided
-frequency by 4, merged it back into the original table, dropping all lines
-within 300 kHz of an preexisting setting.
-I wrote a small script to do this, to avoid typos when mangling the table
-(assuming the original table was ok).
+Thanks,
+jaya
 
-> The LX data book shows the DOTPLL equation (6.14.2.14), but very
-> little documentation of DIV4 or the usable values below 15MHz.
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 3ab6e3d..ffbce49 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -1778,8 +1797,35 @@ failed:
+        return ret;
+ }
 
-LX Data Book, p. 554:
-"DIV4: Divide by 4. When set, the PLL output is divided by 4 before clocking the
-logic."
++static int __devexit pxafb_remove(struct platform_device *dev)
++{
++       struct pxafb_info *fbi = platform_get_drvdata(dev);
++       struct resource *r;
++       int irq;
++
++       if (fbi) {
++               struct fb_info *info = &fbi->fb;
++
++               irq = platform_get_irq(dev, 0);
++               free_irq(irq, fbi);
++
++               r = platform_get_resource(dev, IORESOURCE_MEM, 0);
++               release_mem_region(r->start, r->end - r->start + 1);
++
++               iounmap(fbi->mmio_base);
++
++               dma_free_writecombine(&dev->dev, fbi->map_size,
++                                       fbi->map_cpu, fbi->map_dma);
++               fb_dealloc_cmap(&info->cmap);
++               unregister_framebuffer(info);
++               kfree(fbi);
++       }
++       return 0;
++}
++
+ static struct platform_driver pxafb_driver = {
+        .probe          = pxafb_probe,
++       .remove         = pxafb_remove,
+        .suspend        = pxafb_suspend,
+        .resume         = pxafb_resume,
+        .driver         = {
+@@ -1787,7 +1833,7 @@ static struct platform_driver pxafb_driver = {
+        },
+ };
 
-Sounds like a simple divider circuit _behind_ the PLL, so as long as the
-original frequency is ok, the DIV4-ed should be, too.
+-static int __devinit pxafb_init(void)
++static int __init pxafb_init(void)
+ {
+        if (pxafb_setup_options())
+                return -EINVAL;
+@@ -1795,7 +1841,13 @@ static int __devinit pxafb_init(void)
+        return platform_driver_register(&pxafb_driver);
+ }
 
-As I said, I assumed the original table in lxfb_ops.c to contain usable values.
-And all of the few settings I checked with the scope looked ok.
++static void __exit pxafb_exit(void)
++{
++       platform_driver_unregister(&pxafb_driver);
++}
++
+ module_init(pxafb_init);
++module_exit(pxafb_exit);
 
-Jordan Crouse wrote:
-> ... the original value (56.250), which in retrospect is probably
-> a better choice for ths display.
-
-So in case the increased dotclock in fact causes the white screen, it might be
-cleaner to lower the _requested_ dotclock in the OLPC DCON mode timing to 56.250
-MHz instead of cutting out PLL settings.
-
-> I don't think we really need divided signals > 24Mhz.
-
-Well, in my opinion it would be nice to have some intermediate steps in the
-available dotclocks. However, I don't actually need those for the 320x240 panel,
-so I don't care much.
-
-Regards,
-Jens
+ MODULE_DESCRIPTION("loadable framebuffer driver for PXA");
+ MODULE_LICENSE("GPL");
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

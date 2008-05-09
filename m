@@ -1,10 +1,9 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: Debugging pxafb and am200epd
-Date: Fri, 9 May 2008 06:22:48 -0400
-Message-ID: <45a44e480805090322m2119194paa30dc85fb0376d6@mail.gmail.com>
-References: <45a44e480805081306v17421858w3fbde163d43118e8@mail.gmail.com>
-	<E913911567467945BBEB9277E27868B0C1CDD5@msiexch01.marvell.com>
-	<45a44e480805090317r2a428d82o1f95c3fc73b6163a@mail.gmail.com>
+From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+Subject: Re: lxfb driver regression
+Date: Fri, 09 May 2008 12:33:32 +0200
+Message-ID: <4824287C.4050300@LiPPERT-AT.de>
+References: <20080507210836.1eb61b8f@ephemeral>	<48230694.5010505@LiPPERT-AT.de>
+	<20080508104808.77f48f41@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,17 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JuPkX-0003nC-3B for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 09 May 2008 03:22:49 -0700
-Received: from rv-out-0708.google.com ([209.85.198.240])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JuPkW-00071l-Lt
+	id 1JuPuu-0004nz-Ls for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 09 May 2008 03:33:32 -0700
+Received: from mail.lippert-at.com ([62.80.22.186]
+	helo=domex.lippertembedded.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JuPut-0001xa-7q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 09 May 2008 03:22:49 -0700
-Received: by rv-out-0708.google.com with SMTP id f25so1173236rvb.22
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 09 May 2008 03:22:48 -0700 (PDT)
-In-Reply-To: <45a44e480805090317r2a428d82o1f95c3fc73b6163a@mail.gmail.com>
-Content-Disposition: inline
+	Fri, 09 May 2008 03:33:32 -0700
+In-Reply-To: <20080508104808.77f48f41@ephemeral>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,130 +29,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <ymiao3@marvell.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Andres Salomon <dilinger@queued.net>, jordan.crouse@amd.com
+Cc: linux-geode@bombadil.infradead.org, Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Fri, May 9, 2008 at 6:17 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> On Fri, May 9, 2008 at 5:20 AM, Eric Miao <ymiao3@marvell.com> wrote:
->> Hi Jaya,
->>
->>> -----Original Message-----
->>> From: Jaya Kumar [mailto:jayakumar.lkml@gmail.com]
->>> Sent: Friday, May 09, 2008 4:07 AM
->>> To: Eric Miao
->>> Cc: Linux Frame Buffer Device Development
->>> Subject: Debugging pxafb and am200epd
->>>
->>> Hi Eric,
->>>
->>> Just some quick questions and notes while trying to implement am200epd
->>> sharing pxafb's framebuffer.
->>>
->>> 1. pxafb_init is set to __devinit, but it is only called from
->>> module_init. Is my understanding correct that it should be __init?
->>
->> Yes indeed, it is not a HOTPLUG device obviously, there are some
->> variables associated, like g_options[], so will have another look
->> into this.
->>
->>> 2. pxafb currently doesn't implement module unloading support.  Is
->>> there a reason for this?
->>>
->>
->> From technical, I don't think so, yet there might be some if u want :)
->>  - this driver really has a long history, and
->>  - most uses it as builtin and never unload it
->
-> I see. The reason I encountered it was because I was debugging and it
-> was troublesome to reboot each time after testing. If you like, I can
-> try to add the exit and remove code. It'll be useful if anyone else
-> wants to do more weird stuff like am200epd. :-)
->
->>
->>> 3. I'm seeing weird behavior with insmod of am200epd on my test system
->>> on a gumstix. Probably something that I'm doing wrong but I wanted to
->>> ask advice here anyway. Here's what I'm doing:
->>> # insmod drivers/video/cfbcopyarea.ko && insmod
->>> drivers/video/cfbfillrect.ko && insmod drivers/video/cfbimgblt.ko
->>> # insmod drivers/video/syscopyarea.ko && insmod
->>> drivers/video/sysfillrect.ko && insmod drivers/video/sysimgblt.ko &&
->>> insmod drivers/video/fb_sys_fops.ko
->>> # insmod drivers/video/metronomefb.ko ; insmod drivers/video/pxafb.ko
->>> # grep pxafb_probe /proc/kallsyms
->>> bf014000 t pxafb_probe  [pxafb]
->>> # grep bf014000 /proc/kallsyms
->>> bf014000 t pxafb_probe  [pxafb]
->>> bf014000 t $a   [pxafb]
->>>
->>> The reason I was debugging this was because platform_device_add was
->>> failing from am200epd when am200epd is trying to add pxa2xx-fb. It
->>> would fail from platform_drv_probe. I found that it was because the
->>> pxafb's probe routine somehow gets replaced by other stuff. I was
->>> worried if it was due to am200epd so I then took out all the code from
->>> am200epd's init_module so it does nothing other than return 0. So the
->>> following insmod is of am200epd that has a completely empty
->>> init_module.
->>>
->>> # insmod arch/arm/mach-pxa/am200epd.ko
->>>
->>> # grep pxafb_probe /proc/kallsyms
->>> bf014000 t pxafb_probe  [pxafb]
->>>
->>> # grep bf014000 /proc/kallsyms
->>> bf014000 t am200_exit   [am200epd]
->>> bf014000 t $a   [am200epd]
->>> bf014000 t cleanup_module       [am200epd]
->>> bf014000 t pxafb_probe  [pxafb]
->>> bf014000 t $a   [pxafb]
->>>
->>> The above doesn't make sense to me. I don't understand why am200_exit
->>> is overloaded at the same address as pxafb_probe. Any suggestions on
->>> how to debug this?
->>>
->>
->> doesn't make sense to me either :), but check your am200epd.ko which I
->> wonder if it has included the pxafb.o already to avoid duplication code
->> being inserted (insmod should complain but I'm not sure)
->
-> I've moved am200epd.ko to arch/arm/mach-pxa. The build for that says:
-> obj-y                           += clock.o devices.o generic.o irq.o dma.o \
->                                   time.o gpio.o
-> obj-$(CONFIG_MACH_AM200EPD)     += am200epd.o
+Andres Salomon wrote:
+> The pixclock that's specified is 17460 (from the olpc dcon table)
+> [...] Prior to your patch, this was:  { 0x00004286, 56250 },
+> [...] Your patch adds:  { 0x00014170, 57375 },
 
-the exact compile line that is generated by kbuild is:
+Yes, of course that was my first idea, too. And this was my motivation for
+sending you the cut down patch without the > 25 MHz entries. But I'm almost
+prepared to bet this is not the root of the evil.
 
-  arm-linux-gcc -Wp,-MD,arch/arm/mach-pxa/.am200epd.o.d  -nostdinc
--isystem /home/jaya/metronome/gumstix-buildroot/build_arm_nofpu/staging_dir/lib/gcc/arm-linux-uclibcgnueabi/4.1.1/include
--D__KERNEL__ -Iinclude  -include include/linux/autoconf.h
--mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs
--fno-strict-aliasing -fno-common -Werror-implicit-function-declaration
--Os   -fno-stack-protector -marm -fno-omit-frame-pointer -mapcs
--mno-sched-prolog -mabi=aapcs-linux -mno-thumb-interwork
--D__LINUX_ARM_ARCH__=5 -march=armv5te -mtune=xscale -Wa,-mcpu=xscale
--msoft-float -Uarm -fno-omit-frame-pointer -fno-optimize-sibling-calls
--Wdeclaration-after-statement -Wno-pointer-sign    -DMODULE
--D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(am200epd)"
--D"KBUILD_MODNAME=KBUILD_STR(am200epd)" -c -o
-arch/arm/mach-pxa/am200epd.o arch/arm/mach-pxa/am200epd.c
+As I said, this does not explain why the resolution seems to switch to 800x640,
+because lx_set_clock() does not return any feedback. I somehow doubt you'll get
+a white screen just by raising the dotclock by 2 % (and getting it _closer_ to
+the intended value)?
 
-  arm-linux-ld -EL -r    -o arch/arm/mach-pxa/am200epd.ko
-arch/arm/mach-pxa/am200epd.o arch/arm/mach-pxa/am200epd.mod.o
+And before I wrote my mail yesterday, I checked the dotclock for the 0x00004286
+and 0x00014170 PLL values with a scope, and both settings produced a fine signal
+with the expected frequencies.
 
+Anyway, I hope I'm wrong, then at least we'd have a solution for this issue.
 
+> BTW, where did the intermediate values in your table come from?
 
->
-> It doesn't include pxafb.o. I even took out #include pxafb.h to see if
-> that was the cause but it still happens. I just tested something
-> different which was to load the empty am200epd first. Then load pxafb.
-> When I do that, the overlap doesn't occur. But if I load pxafb first,
-> and then load am200epd, then the overlap happens. I'm really confused
-> why. I think I'll sleep on it and see what I can figure out this
-> weekend. If anyone has any suggestions, that would be greatly
-> appreciated.
->
-> Thanks,
-> jaya
->
+Took the original table from lxfb_ops.c, everywhere set DIV4 and divided
+frequency by 4, merged it back into the original table, dropping all lines
+within 300 kHz of an preexisting setting.
+I wrote a small script to do this, to avoid typos when mangling the table
+(assuming the original table was ok).
+
+> The LX data book shows the DOTPLL equation (6.14.2.14), but very
+> little documentation of DIV4 or the usable values below 15MHz.
+
+LX Data Book, p. 554:
+"DIV4: Divide by 4. When set, the PLL output is divided by 4 before clocking the
+logic."
+
+Sounds like a simple divider circuit _behind_ the PLL, so as long as the
+original frequency is ok, the DIV4-ed should be, too.
+
+As I said, I assumed the original table in lxfb_ops.c to contain usable values.
+And all of the few settings I checked with the scope looked ok.
+
+Jordan Crouse wrote:
+> ... the original value (56.250), which in retrospect is probably
+> a better choice for ths display.
+
+So in case the increased dotclock in fact causes the white screen, it might be
+cleaner to lower the _requested_ dotclock in the OLPC DCON mode timing to 56.250
+MHz instead of cutting out PLL settings.
+
+> I don't think we really need divided signals > 24Mhz.
+
+Well, in my opinion it would be nice to have some intermediate steps in the
+available dotclocks. However, I don't actually need those for the 320x240 panel,
+so I don't care much.
+
+Regards,
+Jens
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

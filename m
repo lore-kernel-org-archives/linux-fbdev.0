@@ -1,29 +1,31 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: pxafb and am200epd question
-Date: Sun, 11 May 2008 01:52:05 -0400
-Message-ID: <45a44e480805102252n5a1c84ap740433641eb0dd9e@mail.gmail.com>
-References: <45a44e480805060505r2b280717p60d0046e083adf98@mail.gmail.com>
-	<E913911567467945BBEB9277E27868B0C1C3CB@msiexch01.marvell.com>
-	<45a44e480805070807x7be5da5q632da9c25c66139a@mail.gmail.com>
-	<45a44e480805080903m1acde0b2j73012646ef8da17e@mail.gmail.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] tridentfb: fix unitialized
+	pseudo_palette
+Date: Sun, 11 May 2008 14:25:40 +0200
+Message-ID: <20080511142540.b7f867e1.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jv4Te-0002bq-Ue for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 10 May 2008 22:52:07 -0700
-Received: from wf-out-1314.google.com ([209.85.200.169])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jv4Td-0002ic-Kx
+	id 1JvAcD-0004xj-MR for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 May 2008 05:25:21 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvAcB-0007Rt-70
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 10 May 2008 22:52:06 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so1801632wfd.4
+	Sun, 11 May 2008 05:25:21 -0700
+Received: from poczta.interia.pl (mi01.poczta.interia.pl [10.217.12.1])
+	by smtp239.poczta.interia.pl (INTERIA.PL) with ESMTP id 1129D31AE0E
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 10 May 2008 22:52:05 -0700 (PDT)
-In-Reply-To: <45a44e480805080903m1acde0b2j73012646ef8da17e@mail.gmail.com>
-Content-Disposition: inline
+	Sun, 11 May 2008 14:25:15 +0200 (CEST)
+Received: from krzysio.net (host-87-99-61-239.lanet.net.pl [87.99.61.239])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by www.poczta.fm (INTERIA.PL) with ESMTP id 2D135769825
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 11 May 2008 14:25:16 +0200 (CEST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,101 +36,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <ymiao3@marvell.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, May 8, 2008 at 12:03 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> Hi Eric,
->
-> I'm thinking something along the lines of the following. Not a real
-> patch, just a draft.
->
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Hi Eric,
+Initialize the pseudo_palette pointer properly. This fixes crash
+when 16bpp or 32bpp mode is selected.
 
-After starting to test, a few more changes came up:
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-diff --git a/arch/arm/mach-pxa/devices.c b/arch/arm/mach-pxa/devices.c
-index d6c05b6..f7fcb5e 100644
---- a/arch/arm/mach-pxa/devices.c
-+++ b/arch/arm/mach-pxa/devices.c
-@@ -127,6 +127,7 @@ struct platform_device pxa_device_fb = {
-        .num_resources  = ARRAY_SIZE(pxafb_resources),
-        .resource       = pxafb_resources,
- };
-+EXPORT_SYMBOL_GPL(pxa_device_fb);
+---
+This is ugly regression introduced by one of my earlier patches.
 
-this is so that am200epd can access pxa_device_fb and pass it as the
-platform_dev to pxafb when it is loaded. If I use a duplicate copy of
-the struct, then pxafb can't get the LCDCLK.
+diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
+--- linux-2.6.25/drivers/video/tridentfb.c	2008-05-11 03:33:29.830636688 +0200
++++ linux-new/drivers/video/tridentfb.c	2008-05-11 03:31:32.614634551 +0200
+@@ -1350,7 +1350,7 @@ static int __devinit trident_pci_probe(s
+ 
+ 	info->fix = tridentfb_fix;
+ 	info->fbops = &tridentfb_ops;
+-
++	info->pseudo_palette = default_par->pseudo_pal;
+ 
+ 	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
+ #ifdef CONFIG_FB_TRIDENT_ACCEL
 
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 3ab6e3d..c9c7eea 100644
+----------------------------------------------------------------------
+Sprawdz, czy jestes prawdziwym internauta!
+Kliknij http://link.interia.pl/f1d6e
 
-@@ -1613,24 +1661,28 @@ MODULE_PARM_DESC(options, "LCD parameters (see
-Documentation/fb/pxafb.txt)");
- #define pxafb_setup_options()          (0)
- #endif
-
-
--static int __init pxafb_probe(struct platform_device *dev)
-+static int __devinit pxafb_probe(struct platform_device *dev)
-
-This was needed to solve that memory overlap on insmod issue. I think
-__devinit is the right setting for pxafb_probe since it is called only
-at probe().
-
-@@ -778,8 +794,9 @@ static void setup_parallel_timing(struct pxafb_info *fbi,
- {
-        unsigned int lines_per_panel, pcd = get_pcd(fbi, var->pixclock);
-
-        fbi->reg_lccr1 =
--               LCCR1_DisWdth(var->xres) +
-+               LCCR1_DisWdth(var->xres/2) +
-
-This one is dirty and I'm trying to find a different solution now.
-Basically, it is there because the metronome controller accepts only
-16-bit transfers on the AMLCD. To get pxa to do that, I have to set
-16bpp on lccr3. But the pixels are 8bpp which is why the lccr1 pixels
-per line needs to actually be half what the actual ppl is. I'm
-planning to spend some time looking at how pxa and metronome transfers
-are done and see if I can find a better way to do this.
-
--               LCCR1_DisWdth(var->xres) +
-+               LCCR1_DisWdth(var->xres/fbi->custom_ppl_div) +
-
-Above would be the worst case, adding an entry like custom_ppl_div to
-handle this 16bpp transfer with 8bpp lines. I'll try my best to avoid
-that.
-
-        if (fbi->map_cpu) {
-                /* prevent initial garbage on screen */
-                memset(fbi->map_cpu, 0, fbi->map_size);
--               fbi->fb.screen_base = fbi->map_cpu + fbi->video_offset;
--               fbi->screen_dma = fbi->map_dma + fbi->video_offset;
-+               fbi->fb.screen_base = fbi->map_cpu;
-+               fbi->screen_dma = fbi->map_dma;
-
-@@ -1273,14 +1306,18 @@ static int __init
-pxafb_map_video_memory(struct pxafb_info *fbi)
-                fbi->fb.fix.smem_start = fbi->screen_dma;
-                fbi->palette_size = fbi->fb.var.bits_per_pixel == 8 ? 256 : 16;
--               fbi->dma_buff = (void *) fbi->map_cpu;
--               fbi->dma_buff_phys = fbi->map_dma;
-+               fbi->dma_buff = (void *) fbi->map_cpu + fbi->map_size
-- fbi->video_offset;
-+               fbi->dma_buff_phys = fbi->map_dma + fbi->map_size -
-fbi->video_offset;
-
-I moved the dma descriptors to the end of the framebuffer rather than
-at the top. The reason is that way metronomefb can lay out the memory
-in the framebuffer as: cmd, waveform, image data.
-
-I'm sorry for the inconveniences that this may cause and really
-appreciate your help in getting this right.
-
-Thanks,
-jaya
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

@@ -1,31 +1,24 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: fix unitialized
-	pseudo_palette
-Date: Sun, 11 May 2008 14:25:40 +0200
-Message-ID: <20080511142540.b7f867e1.krzysztof.h1@poczta.fm>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 10666] New: cfag12864bfb
+	messing up vc on load
+Date: Sun, 11 May 2008 11:06:46 -0700
+Message-ID: <20080511110646.ff5eca7b.akpm@linux-foundation.org>
+References: <bug-10666-10286@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JvAcD-0004xj-MR for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 May 2008 05:25:21 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvAcB-0007Rt-70
+	id 1JvFxJ-0005mx-CO for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 May 2008 11:07:29 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JvFxH-0001fP-UR
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 May 2008 05:25:21 -0700
-Received: from poczta.interia.pl (mi01.poczta.interia.pl [10.217.12.1])
-	by smtp239.poczta.interia.pl (INTERIA.PL) with ESMTP id 1129D31AE0E
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 11 May 2008 14:25:15 +0200 (CEST)
-Received: from krzysio.net (host-87-99-61-239.lanet.net.pl [87.99.61.239])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by www.poczta.fm (INTERIA.PL) with ESMTP id 2D135769825
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 11 May 2008 14:25:16 +0200 (CEST)
+	Sun, 11 May 2008 11:07:29 -0700
+In-Reply-To: <bug-10666-10286@http.bugzilla.kernel.org/>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,35 +29,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: devzero@web.de, bugme-daemon@bugzilla.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-Initialize the pseudo_palette pointer properly. This fixes crash
-when 16bpp or 32bpp mode is selected.
+On Sun, 11 May 2008 05:10:41 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
----
-This is ugly regression introduced by one of my earlier patches.
-
-diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
---- linux-2.6.25/drivers/video/tridentfb.c	2008-05-11 03:33:29.830636688 +0200
-+++ linux-new/drivers/video/tridentfb.c	2008-05-11 03:31:32.614634551 +0200
-@@ -1350,7 +1350,7 @@ static int __devinit trident_pci_probe(s
- 
- 	info->fix = tridentfb_fix;
- 	info->fbops = &tridentfb_ops;
--
-+	info->pseudo_palette = default_par->pseudo_pal;
- 
- 	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
- #ifdef CONFIG_FB_TRIDENT_ACCEL
-
-----------------------------------------------------------------------
-Sprawdz, czy jestes prawdziwym internauta!
-Kliknij http://link.interia.pl/f1d6e
-
+> http://bugzilla.kernel.org/show_bug.cgi?id=10666
+> 
+>            Summary: cfag12864bfb messing up vc on load
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: 2.6.21+
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: low
+>           Priority: P1
+>          Component: Console/Framebuffers
+>         AssignedTo: jsimmons@infradead.org
+>         ReportedBy: devzero@web.de
+> 
+> 
+> Latest working kernel version: n/a
+> 
+> Earliest failing kernel version: at least 2.6.21
+> 
+> Distribution: opensuse 10.3
+> 
+> Hardware Environment: vmware
+> 
+> Software Environment: opensuse 10.3 + kernel 2.6.26rc1
+> 
+> Problem Description:
+> when doing some module regression testing (load/unload most available modules),
+> cfag12864bfb driver always kills the local console on load and locks you out.
+> visible area of vc shrinks to 16x4 and output freezing. this happens if you
+> don`t have appropriate hardware attached, cannot test with hw attached (don`t
+> own such). no vc switching afterwards. cannot unload module from remote (ssh)
+> either. need reboot.
+> 
+> Steps to reproduce:
+> save all of your important data, switch to textconsole, modprobe cfag12864bfb 
+> 
+> dmesg shows:
+> Console: switching to mono frame buffer device 16x8
+> fb0: cfag12864b frame buffer device
+> 
+> contacted the author who confirmed the issue and tells that this didn`t happen
+> initially. iirc, he thinks this is a regression due to change in framebuffer
+> layer. didn`t get a response since then, maybe he`s lacking time.
+> i`m putting it here so it`s being marked as a ToDo and won`t get lost.
+> 
+> 
+> -- 
+> Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+> ------- You are receiving this mail because: -------
+> You are on the CC list for the bug, or are watching someone who is.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 

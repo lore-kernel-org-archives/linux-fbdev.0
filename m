@@ -1,7 +1,7 @@
-From: Andres Salomon <dilinger@queued.net>
+From: Jordan Crouse <jordan.crouse@amd.com>
 Subject: Re: lxfb driver regression
-Date: Tue, 13 May 2008 13:55:01 -0400
-Message-ID: <20080513135501.5c9b4650@ephemeral>
+Date: Tue, 13 May 2008 14:05:58 -0600
+Message-ID: <20080513200558.GK28172@cosmic.amd.com>
 References: <20080507210836.1eb61b8f@ephemeral>
 	<48230694.5010505@LiPPERT-AT.de>
 	<20080512185148.104fc4c3@ephemeral>
@@ -15,12 +15,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JvyeD-0002WM-1S for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 May 2008 10:50:45 -0700
-Received: from mail.queued.net ([207.210.101.209])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvyeB-0007lK-KW
+	id 1Jw0ln-0000Zg-BU for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 13 May 2008 13:06:43 -0700
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]
+	helo=outbound2-dub-R.bigfish.com)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Jw0li-0006vb-E7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 May 2008 10:50:45 -0700
+	Tue, 13 May 2008 13:06:42 -0700
+Content-Disposition: inline
 In-Reply-To: <20080513135015.4452fb8f@ephemeral>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,9 +38,7 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andres Salomon <dilinger@queued.net>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-geode@bombadil.infradead.org, Jens Rottmann <JRottmann@LiPPERT-AT.de>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Tue, 13 May 2008 13:50:15 -0400
-Andres Salomon <dilinger@queued.net> wrote:
-
+On 13/05/08 13:50 -0400, Andres Salomon wrote:
 > On Tue, 13 May 2008 09:35:54 -0700
 > Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
@@ -48,8 +49,8 @@ Andres Salomon <dilinger@queued.net> wrote:
 > > > 
 > > > On Mon, 12 May 2008, Andres Salomon wrote:
 > > > > 
-> > > > Sorry for the delay, I got around to testing this today.  It
-> > > > works much better on an XO, so I've ack'd it.
+> > > > Sorry for the delay, I got around to testing this today.  It works
+> > > > much better on an XO, so I've ack'd it.
 > > > 
 > > > If people expect me to apply that patch, I hope they'll re-send
 > > > (with acks etc). Otherwise I just expect I'll get it through the
@@ -57,8 +58,7 @@ Andres Salomon <dilinger@queued.net> wrote:
 > > > 
 > > 
 > > It got confusing.  Turns out that I had a speculative revert patch,
-> > followed by a new patch with an identical changelog to the first
-> > one.
+> > followed by a new patch with an identical changelog to the first one.
 > > 
 > > I folded them together and below is what I presently have against
 > > mainline, but I have no changelog describing what it fixes.
@@ -67,17 +67,9 @@ Andres Salomon <dilinger@queued.net> wrote:
 > > 
 > 
 > How's this?  Jordan and Jens, please correct me if I'm off.
-> 
-> 
-> 
 
-Oh, and of course:
+Acked-by: Jordan Crouse <jordan.crouse@amd.com>
 
-
-From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
-
-
-> 
 > [PATCH] lxfb: fix regression on OLPC caused by PLL table updates
 > 
 > The following patch caused a regression with OLPC panels:
@@ -85,11 +77,10 @@ From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
 >  commit 3888d4639e78802c4ec1086127124e890461b9e4
 >     lxfb: extend PLL table to support dotclocks below 25 MHz
 > 
->     Extends the PLL frequency table of the AMD Geode-LX frame buffer
-> driver to make use of the DIV4 bit, thus adding support for dotclocks
-> between 6 and 25 MHz.  These are needed for small LCDs (e.g.
-> 320x240).  Also inserts some intermediate steps between pre-existing
-> frequencies.
+>     Extends the PLL frequency table of the AMD Geode-LX frame buffer driver to
+>     make use of the DIV4 bit, thus adding support for dotclocks between 6 and 25
+>     MHz.  These are needed for small LCDs (e.g.  320x240).  Also inserts some
+>     intermediate steps between pre-existing frequencies.
 > 
 > The problem was the insertion of intermediate steps into the frequency
 > table; they would cause the wrong frequency to be matched.  This patch
@@ -101,8 +92,8 @@ From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
 > 
 > > ---
 > > a/drivers/video/geode/lxfb_ops.c~fix-lxfb-extend-pll-table-to-support-dotclocks-below-25-mhz
-> > +++ a/drivers/video/geode/lxfb_ops.c @@ -63,54 +63,32 @@ static
-> > const struct { { 0x00014284,  19688 },
+> > +++ a/drivers/video/geode/lxfb_ops.c @@ -63,54 +63,32 @@ static const
+> > struct { { 0x00014284,  19688 },
 > >    { 0x00011104,  20400 },
 > >    { 0x00016363,  23625 },
 > > -  { 0x00015303,  24380 },
@@ -159,10 +150,12 @@ From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
 > > _
 > > 
 > 
-> _______________________________________________
-> Linux-geode mailing list
-> Linux-geode@bombadil.infradead.org
-> http://bombadil.infradead.org/mailman/listinfo/linux-geode
+
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft 

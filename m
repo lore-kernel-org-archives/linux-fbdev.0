@@ -1,7 +1,9 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: improve check_var function
-Date: Tue, 13 May 2008 07:40:33 +0200
-Message-ID: <20080513074033.62ef637b.krzysztof.h1@poczta.fm>
+From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+Subject: Re: lxfb driver regression
+Date: Tue, 13 May 2008 12:29:23 +0200
+Message-ID: <48296D83.3020007@LiPPERT-AT.de>
+References: <20080507210836.1eb61b8f@ephemeral>	<48230694.5010505@LiPPERT-AT.de>
+	<20080512185148.104fc4c3@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,12 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JvnlK-0003kr-90 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 May 2008 23:13:22 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvnlI-0001CI-Q1
+	id 1JvrlD-0007zf-2T for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 13 May 2008 03:29:31 -0700
+Received: from mail.lippert-at.com ([62.80.22.186]
+	helo=domex.lippertembedded.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvrlB-0004LZ-MW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 May 2008 23:13:22 -0700
+	Tue, 13 May 2008 03:29:31 -0700
+In-Reply-To: <20080512185148.104fc4c3@ephemeral>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,79 +29,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-geode@bombadil.infradead.org, linux-kernel@vger.kernel.org, jordan.crouse@amd.com, Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+I wrote:
+> > Yes, of course that was my first idea, too. [...] But I'm
+> > almost prepared to bet this is not the root of the evil.
 
-Do some additional checks (like pixelclock versus ramdac speed)
-to eliminate modes which do not work.
+Andres Salomon wrote:
+> It works much better on an XO, so I've ack'd it.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Oops. Lucky I didn't bet, I'd have lost!
+But it wasn't all fair, this strange fb resolution switch got me off track. ;-)
 
-diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
---- linux-2.6.25/drivers/video/tridentfb.c	2008-05-11 18:25:16.026663831 +0200
-+++ linux-new/drivers/video/tridentfb.c	2008-05-11 18:26:19.574663241 +0200
-@@ -829,6 +829,7 @@ static int tridentfb_check_var(struct fb
- {
- 	struct tridentfb_par *par = info->par;
- 	int bpp = var->bits_per_pixel;
-+	int ramdac = 230000; /* 230MHz for most 3D chips */
- 	debug("enter\n");
- 
- 	/* check color depth */
-@@ -837,6 +838,12 @@ static int tridentfb_check_var(struct fb
- 	/* check whether resolution fits on panel and in memory */
- 	if (par->flatpanel && nativex && var->xres > nativex)
- 		return -EINVAL;
-+	/* various resolution checks */
-+	var->xres = (var->xres + 7) & ~0x7;
-+	if (var->xres != var->xres_virtual)
-+		var->xres_virtual = var->xres;
-+	if (var->yres > var->yres_virtual)
-+		var->yres_virtual = var->yres;
- 	if (var->xres * var->yres_virtual * bpp / 8 > info->fix.smem_len)
- 		return -EINVAL;
- 
-@@ -868,6 +875,33 @@ static int tridentfb_check_var(struct fb
- 	default:
- 		return -EINVAL;
- 	}
-+
-+	if (is_xp(par->chip_id))
-+		ramdac = 350000;
-+
-+	switch (par->chip_id) {
-+	case TGUI9440:
-+		ramdac = 90000;
-+		break;
-+	case CYBER9320:
-+	case TGUI9660:
-+		ramdac = 135000;
-+		break;
-+	case PROVIDIA9685:
-+	case CYBER9388:
-+	case CYBER9382:
-+	case CYBER9385:
-+		ramdac = 170000;
-+		break;
-+	}
-+
-+	/* The clock is doubled for 32 bpp */
-+	if (bpp == 32)
-+		ramdac /= 2;
-+
-+	if (PICOS2KHZ(var->pixclock) > ramdac)
-+		return -EINVAL;
-+
- 	debug("exit\n");
- 
- 	return 0;
 
-----------------------------------------------------------------------
-> Blachara + solarium = ...sam zobacz!
-> Video>> http://link.interia.pl/f1ddd
+But it still surprises me that you get a white screen if you run the XO panel
+with the specified frequency, and it only works as long as this is unavailable.
+Are you sure the dotclock setting in olpc_dcon_modedb[] is correct?
 
+Anyway, glad the problem is solved, now.
+
+Again, many thanks for your help!
+Jens
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft 

@@ -1,20 +1,20 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: preserve memory type settings
-Date: Tue, 13 May 2008 07:44:15 +0200
-Message-ID: <20080513074415.204c3dcd.krzysztof.h1@poczta.fm>
+Subject: [PATCH] tridentfb: improve check_var function
+Date: Tue, 13 May 2008 07:40:33 +0200
+Message-ID: <20080513074033.62ef637b.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JvnIn-0000Zv-3W for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 May 2008 22:43:53 -0700
+	id 1JvnlK-0003kr-90 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 May 2008 23:13:22 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvnIi-0006t7-AL
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvnlI-0001CI-Q1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 May 2008 22:43:51 -0700
+	Mon, 12 May 2008 23:13:22 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,31 +30,73 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Do not overwrite bits which contain memory type settings. 
-It removes noise pixels ("snow") on Blade3D and 3DImage
-chips.
+Do some additional checks (like pixelclock versus ramdac speed)
+to eliminate modes which do not work.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
---- linux-2.6.25/drivers/video/tridentfb.c	2008-05-11 18:27:52.858665205 +0200
-+++ linux-new/drivers/video/tridentfb.c	2008-05-11 18:27:38.158668768 +0200
-@@ -1095,7 +1095,10 @@ static int tridentfb_set_par(struct fb_i
- 	vga_mm_wseq(par->io_virt, 4, 0x0E); /* memory mode enable bitmaps ?? */
+--- linux-2.6.25/drivers/video/tridentfb.c	2008-05-11 18:25:16.026663831 +0200
++++ linux-new/drivers/video/tridentfb.c	2008-05-11 18:26:19.574663241 +0200
+@@ -829,6 +829,7 @@ static int tridentfb_check_var(struct fb
+ {
+ 	struct tridentfb_par *par = info->par;
+ 	int bpp = var->bits_per_pixel;
++	int ramdac = 230000; /* 230MHz for most 3D chips */
+ 	debug("enter\n");
  
- 	/* divide clock by 2 if 32bpp chain4 mode display and CPU path */
--	write3CE(par, MiscExtFunc, (bpp == 32) ? 0x1A : 0x12);
-+	tmp = read3CE(par, MiscExtFunc) & 0xF0;
+ 	/* check color depth */
+@@ -837,6 +838,12 @@ static int tridentfb_check_var(struct fb
+ 	/* check whether resolution fits on panel and in memory */
+ 	if (par->flatpanel && nativex && var->xres > nativex)
+ 		return -EINVAL;
++	/* various resolution checks */
++	var->xres = (var->xres + 7) & ~0x7;
++	if (var->xres != var->xres_virtual)
++		var->xres_virtual = var->xres;
++	if (var->yres > var->yres_virtual)
++		var->yres_virtual = var->yres;
+ 	if (var->xres * var->yres_virtual * bpp / 8 > info->fix.smem_len)
+ 		return -EINVAL;
+ 
+@@ -868,6 +875,33 @@ static int tridentfb_check_var(struct fb
+ 	default:
+ 		return -EINVAL;
+ 	}
++
++	if (is_xp(par->chip_id))
++		ramdac = 350000;
++
++	switch (par->chip_id) {
++	case TGUI9440:
++		ramdac = 90000;
++		break;
++	case CYBER9320:
++	case TGUI9660:
++		ramdac = 135000;
++		break;
++	case PROVIDIA9685:
++	case CYBER9388:
++	case CYBER9382:
++	case CYBER9385:
++		ramdac = 170000;
++		break;
++	}
++
++	/* The clock is doubled for 32 bpp */
 +	if (bpp == 32)
-+		tmp |= 8;
-+	write3CE(par, MiscExtFunc, tmp | 0x12);
- 	write3CE(par, 0x5, 0x40);	/* no CGA compat, allow 256 col */
- 	write3CE(par, 0x6, 0x05);	/* graphics mode */
- 	write3CE(par, 0x7, 0x0F);	/* planes? */
++		ramdac /= 2;
++
++	if (PICOS2KHZ(var->pixclock) > ramdac)
++		return -EINVAL;
++
+ 	debug("exit\n");
+ 
+ 	return 0;
 
 ----------------------------------------------------------------------
-Od Ani z Wieliczki czerwone papryczki!
-http://link.interia.pl/f1de3
+> Blachara + solarium = ...sam zobacz!
+> Video>> http://link.interia.pl/f1ddd
 
 
 -------------------------------------------------------------------------

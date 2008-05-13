@@ -1,21 +1,26 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: add acceleration for TGUI
-	families
-Date: Tue, 13 May 2008 18:40:42 +0200
-Message-ID: <20080513184042.e650a09d.krzysztof.h1@poczta.fm>
+From: Andres Salomon <dilinger@queued.net>
+Subject: Re: lxfb driver regression
+Date: Tue, 13 May 2008 13:50:15 -0400
+Message-ID: <20080513135015.4452fb8f@ephemeral>
+References: <20080507210836.1eb61b8f@ephemeral>
+	<48230694.5010505@LiPPERT-AT.de>
+	<20080512185148.104fc4c3@ephemeral>
+	<alpine.LFD.1.10.0805130847150.3019@woody.linux-foundation.org>
+	<20080513093554.64466981.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jvxzb-0006a2-Vj for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 May 2008 10:08:48 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvxzZ-000464-UM
+	id 1JvyZc-00021N-S5 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 13 May 2008 10:46:00 -0700
+Received: from mail.queued.net ([207.210.101.209])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JvyZc-00062y-1O
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 May 2008 10:08:47 -0700
+	Tue, 13 May 2008 10:46:00 -0700
+In-Reply-To: <20080513093554.64466981.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,253 +31,120 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-geode@bombadil.infradead.org, Jens Rottmann <JRottmann@LiPPERT-AT.de>, linux-kernel@vger.kernel.org, jordan.crouse@amd.com, Linus Torvalds <torvalds@linux-foundation.org>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Tue, 13 May 2008 09:35:54 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-This patch adds acceleration for TGUI 9440 and 96xx chips. 
-These chips requires line length to be power of 2, so this is
-also changed.
+> On Tue, 13 May 2008 08:48:02 -0700 (PDT) Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > 
+> > On Mon, 12 May 2008, Andres Salomon wrote:
+> > > 
+> > > Sorry for the delay, I got around to testing this today.  It works
+> > > much better on an XO, so I've ack'd it.
+> > 
+> > If people expect me to apply that patch, I hope they'll re-send
+> > (with acks etc). Otherwise I just expect I'll get it through the
+> > normal fbdev queues (which is often Andrew, but shouldn't be).
+> > 
+> 
+> It got confusing.  Turns out that I had a speculative revert patch,
+> followed by a new patch with an identical changelog to the first one.
+> 
+> I folded them together and below is what I presently have against
+> mainline, but I have no changelog describing what it fixes.
+> 
+> Can someone send some text please?
+> 
 
-It also moves the troubling enable_mmio() function to its
-final destination.
+How's this?  Jordan and Jens, please correct me if I'm off.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
----
 
-This is tridentfb patch number 19.
 
-diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
---- linux-2.6.25/drivers/video/tridentfb.c	2008-05-13 18:32:24.091097855 +0200
-+++ linux-new/drivers/video/tridentfb.c	2008-05-13 18:33:02.227095118 +0200
-@@ -492,6 +492,95 @@ static void image_copy_rect(struct tride
- }
- 
- /*
-+ * TGUI 9440/96XX acceleration
-+ */
-+
-+static void tgui_init_accel(struct tridentfb_par *par, int pitch, int bpp)
-+{
-+	unsigned char x = 0;
-+
-+	/* disable clipping */
-+	writemmr(par, 0x2148, 0);
-+	writemmr(par, 0x214C, point(4095, 2047));
-+
-+	switch (bpp) {
-+	case 8:
-+		x = 0;
-+		break;
-+	case 16:
-+		x = 1;
-+		break;
-+	case 24:
-+		x = 3;
-+		break;
-+	case 32:
-+		x = 2;
-+		break;
-+	}
-+
-+	switch ((pitch * bpp) / 8) {
-+	case 8192:
-+	case 512:
-+		x |= 0x00;
-+		break;
-+	case 1024:
-+		x |= 0x04;
-+		break;
-+	case 2048:
-+		x |= 0x08;
-+		break;
-+	case 4096:
-+		x |= 0x0C;
-+		break;
-+	}
-+
-+	fb_writew(x, par->io_virt + 0x2122);
-+}
-+
-+static void tgui_fill_rect(struct tridentfb_par *par,
-+			   u32 x, u32 y, u32 w, u32 h, u32 c, u32 rop)
-+{
-+	t_outb(par, ROP_P, 0x2127);
-+	writemmr(par, 0x212c, c);
-+	writemmr(par, 0x2128, 0x4020);
-+	writemmr(par, 0x2140, point(w - 1, h - 1));
-+	writemmr(par, 0x2138, point(x, y));
-+	t_outb(par, 1, 0x2124);
-+}
-+
-+static void tgui_copy_rect(struct tridentfb_par *par,
-+			   u32 x1, u32 y1, u32 x2, u32 y2, u32 w, u32 h)
-+{
-+	int flags = 0;
-+	u16 x1_tmp, x2_tmp, y1_tmp, y2_tmp;
-+
-+	if ((x1 < x2) && (y1 == y2)) {
-+		flags |= 0x0200;
-+		x1_tmp = x1 + w - 1;
-+		x2_tmp = x2 + w - 1;
-+	} else {
-+		x1_tmp = x1;
-+		x2_tmp = x2;
-+	}
-+
-+	if (y1 < y2) {
-+		flags |= 0x0100;
-+		y1_tmp = y1 + h - 1;
-+		y2_tmp = y2 + h - 1;
-+	} else {
-+		y1_tmp = y1;
-+		y2_tmp = y2;
-+	}
-+
-+	writemmr(par, 0x2128, 0x4 | flags);
-+	t_outb(par, ROP_S, 0x2127);
-+	writemmr(par, 0x213C, point(x1_tmp, y1_tmp));
-+	writemmr(par, 0x2138, point(x2_tmp, y2_tmp));
-+	writemmr(par, 0x2140, point(w - 1, h - 1));
-+	t_outb(par, 1, 0x2124);
-+}
-+
-+/*
-  * Accel functions called by the upper layers
-  */
- #ifdef CONFIG_FB_TRIDENT_ACCEL
-@@ -530,12 +619,8 @@ static void tridentfb_copyarea(struct fb
- 		       ca->width, ca->height);
- 	par->wait_engine(par);
- }
--#else /* !CONFIG_FB_TRIDENT_ACCEL */
--#define tridentfb_fillrect cfb_fillrect
--#define tridentfb_copyarea cfb_copyarea
- #endif /* CONFIG_FB_TRIDENT_ACCEL */
- 
--
- /*
-  * Hardware access functions
-  */
-@@ -829,6 +914,7 @@ static int tridentfb_check_var(struct fb
- {
- 	struct tridentfb_par *par = info->par;
- 	int bpp = var->bits_per_pixel;
-+	int line_length;
- 	int ramdac = 230000; /* 230MHz for most 3D chips */
- 	debug("enter\n");
- 
-@@ -844,9 +930,27 @@ static int tridentfb_check_var(struct fb
- 	var->xres = (var->xres + 7) & ~0x7;
- 	if (var->xres != var->xres_virtual)
- 		var->xres_virtual = var->xres;
-+	line_length = var->xres_virtual * bpp / 8;
-+#ifdef CONFIG_FB_TRIDENT_ACCEL
-+	if (!is3Dchip(par->chip_id)) {
-+		/* acceleration requires line length to be power of 2 */
-+		if (line_length <= 512)
-+			var->xres_virtual = 512 * 8 / bpp;
-+		else if (line_length <= 1024)
-+			var->xres_virtual = 1024 * 8 / bpp;
-+		else if (line_length <= 2048)
-+			var->xres_virtual = 2048 * 8 / bpp;
-+		else if (line_length <= 4096)
-+			var->xres_virtual = 4096 * 8 / bpp;
-+		else if (line_length <= 8192)
-+			var->xres_virtual = 8192 * 8 / bpp;
-+
-+		line_length = var->xres_virtual * bpp / 8;
-+	}
-+#endif
- 	if (var->yres > var->yres_virtual)
- 		var->yres_virtual = var->yres;
--	if (var->xres * var->yres_virtual * bpp / 8 > info->fix.smem_len)
-+	if (line_length * var->yres_virtual > info->fix.smem_len)
- 		return -EINVAL;
- 
- 	switch (bpp) {
-@@ -918,7 +1022,7 @@ static int tridentfb_pan_display(struct 
- 	unsigned int offset;
- 
- 	debug("enter\n");
--	offset = (var->xoffset + (var->yoffset * var->xres))
-+	offset = (var->xoffset + (var->yoffset * var->xres_virtual))
- 		* var->bits_per_pixel / 32;
- 	info->var.xoffset = var->xoffset;
- 	info->var.yoffset = var->yoffset;
-@@ -1049,7 +1153,7 @@ static int tridentfb_set_par(struct fb_i
- 	write3X4(par, GraphEngReg, 0x80);
- 
- #ifdef CONFIG_FB_TRIDENT_ACCEL
--	par->init_accel(par, info->var.xres, bpp);
-+	par->init_accel(par, info->var.xres_virtual, bpp);
- #endif
- 
- 	switch (bpp) {
-@@ -1147,9 +1251,9 @@ static int tridentfb_set_par(struct fb_i
- 
- 	if (par->flatpanel)
- 		set_number_of_lines(par, info->var.yres);
--	set_lwidth(par, info->var.xres * bpp / (4 * 16));
-+	info->fix.line_length = info->var.xres_virtual * bpp / 8;
-+	set_lwidth(par, info->fix.line_length / 8);
- 	info->fix.visual = (bpp == 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
--	info->fix.line_length = info->var.xres * (bpp >> 3);
- 	info->cmap.len = (bpp == 8) ? 256 : 16;
- 	debug("exit\n");
- 	return 0;
-@@ -1248,9 +1352,11 @@ static struct fb_ops tridentfb_ops = {
- 	.fb_blank = tridentfb_blank,
- 	.fb_check_var = tridentfb_check_var,
- 	.fb_set_par = tridentfb_set_par,
-+#ifdef CONFIG_FB_TRIDENT_ACCEL
- 	.fb_fillrect = tridentfb_fillrect,
- 	.fb_copyarea = tridentfb_copyarea,
- 	.fb_imageblit = cfb_imageblit,
-+#endif
- };
- 
- static int __devinit trident_pci_probe(struct pci_dev *dev,
-@@ -1328,11 +1434,16 @@ static int __devinit trident_pci_probe(s
- 		default_par->wait_engine = blade_wait_engine;
- 		default_par->fill_rect = blade_fill_rect;
- 		default_par->copy_rect = blade_copy_rect;
--	} else {
-+	} else if (chip3D) {			/* 3DImage family left */
- 		default_par->init_accel = image_init_accel;
- 		default_par->wait_engine = image_wait_engine;
- 		default_par->fill_rect = image_fill_rect;
- 		default_par->copy_rect = image_copy_rect;
-+	} else { 				/* TGUI 9440/96XX family */
-+		default_par->init_accel = tgui_init_accel;
-+		default_par->wait_engine = xp_wait_engine;
-+		default_par->fill_rect = tgui_fill_rect;
-+		default_par->copy_rect = tgui_copy_rect;
- 	}
- 
- 	default_par->chip_id = chip_id;
-@@ -1359,12 +1470,12 @@ static int __devinit trident_pci_probe(s
- 		goto out_unmap1;
- 	}
- 
-+	enable_mmio();
-+
- 	/* setup framebuffer memory */
- 	tridentfb_fix.smem_start = pci_resource_start(dev, 0);
- 	tridentfb_fix.smem_len = get_memsize(default_par);
- 
--	enable_mmio();
--
- 	if (!request_mem_region(tridentfb_fix.smem_start, tridentfb_fix.smem_len, "tridentfb")) {
- 		debug("request_mem_region failed!\n");
- 		disable_mmio(info->par);
+[PATCH] lxfb: fix regression on OLPC caused by PLL table updates
 
-----------------------------------------------------------------------
-Lepszy niz zakladki. 	
-Kliknij >>> http://link.interia.pl/f1db1
+The following patch caused a regression with OLPC panels:
 
+ commit 3888d4639e78802c4ec1086127124e890461b9e4
+    lxfb: extend PLL table to support dotclocks below 25 MHz
+
+    Extends the PLL frequency table of the AMD Geode-LX frame buffer driver to
+    make use of the DIV4 bit, thus adding support for dotclocks between 6 and 25
+    MHz.  These are needed for small LCDs (e.g.  320x240).  Also inserts some
+    intermediate steps between pre-existing frequencies.
+
+The problem was the insertion of intermediate steps into the frequency
+table; they would cause the wrong frequency to be matched.  This patch
+drops those intermediate frequencies while keeping the sub-25MHz
+frequencies.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+
+
+> ---
+> a/drivers/video/geode/lxfb_ops.c~fix-lxfb-extend-pll-table-to-support-dotclocks-below-25-mhz
+> +++ a/drivers/video/geode/lxfb_ops.c @@ -63,54 +63,32 @@ static const
+> struct { { 0x00014284,  19688 },
+>    { 0x00011104,  20400 },
+>    { 0x00016363,  23625 },
+> -  { 0x00015303,  24380 },
+>    { 0x000031AC,  24923 },
+>    { 0x0000215D,  25175 },
+>    { 0x00001087,  27000 },
+>    { 0x0000216C,  28322 },
+>    { 0x0000218D,  28560 },
+> -  { 0x00010041,  29913 },
+>    { 0x000010C9,  31200 },
+>    { 0x00003147,  31500 },
+> -  { 0x000141A1,  32400 },
+>    { 0x000010A7,  33032 },
+> -  { 0x00012182,  33375 },
+> -  { 0x000141B1,  33750 },
+>    { 0x00002159,  35112 },
+>    { 0x00004249,  35500 },
+>    { 0x00000057,  36000 },
+> -  { 0x000141E1,  37125 },
+>    { 0x0000219A,  37889 },
+>    { 0x00002158,  39168 },
+>    { 0x00000045,  40000 },
+> -  { 0x000131A1,  40500 },
+> -  { 0x00010061,  42301 },
+>    { 0x00000089,  43163 },
+> -  { 0x00012151,  43875 },
+>    { 0x000010E7,  44900 },
+>    { 0x00002136,  45720 },
+> -  { 0x000152E1,  47250 },
+> -  { 0x00010071,  48000 },
+>    { 0x00003207,  49500 },
+>    { 0x00002187,  50000 },
+> -  { 0x00014291,  50625 },
+> -  { 0x00011101,  51188 },
+> -  { 0x00017481,  54563 },
+>    { 0x00004286,  56250 },
+> -  { 0x00014170,  57375 },
+> -  { 0x00016210,  58500 },
+>    { 0x000010E5,  60065 },
+> -  { 0x00013140,  62796 },
+>    { 0x00004214,  65000 },
+> -  { 0x00016250,  65250 },
+>    { 0x00001105,  68179 },
+> -  { 0x000141C0,  69600 },
+> -  { 0x00015220,  70160 },
+> -  { 0x00010050,  72000 },
+>    { 0x000031E4,  74250 },
+>    { 0x00003183,  75000 },
+>    { 0x00004284,  78750 },
+> -  { 0x00012130,  80052 },
+>    { 0x00001104,  81600 },
+>    { 0x00006363,  94500 },
+>    { 0x00005303,  97520 },
+> _
+> 
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft 

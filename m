@@ -1,8 +1,9 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: acceleration code
-	improvements
-Date: Wed, 14 May 2008 07:12:00 +0200
-Message-ID: <20080514071200.4f2409b0.krzysztof.h1@poczta.fm>
+From: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+Subject: Re: lxfb driver regression
+Date: Wed, 14 May 2008 14:44:40 +0200
+Message-ID: <482ADEB8.4030103@LiPPERT-AT.de>
+References: <20080507210836.1eb61b8f@ephemeral>	<48230694.5010505@LiPPERT-AT.de>	<20080512185148.104fc4c3@ephemeral>	<alpine.LFD.1.10.0805130847150.3019@woody.linux-foundation.org>	<20080513093554.64466981.akpm@linux-foundation.org>
+	<20080513135015.4452fb8f@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,12 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jw9Gz-00045l-TO for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 May 2008 22:11:30 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jw9Gx-0000mE-Cv
+	id 1JwGLj-0001AY-8I for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 May 2008 05:44:51 -0700
+Received: from mail.lippert-at.com ([62.80.22.186]
+	helo=domex.lippertembedded.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JwGLg-0007cE-49
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 13 May 2008 22:11:29 -0700
+	Wed, 14 May 2008 05:44:50 -0700
+In-Reply-To: <20080513135015.4452fb8f@ephemeral>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,598 +29,97 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: jordan.crouse@amd.com, linux-fbdev-devel@lists.sourceforge.net, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-geode@bombadil.infradead.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Andres Salomon wrote:
+> How's this?  Jordan and Jens, please correct me if I'm off.
 
-This patch brings various acceleration improvements:
-- set  copyarea/fillrect for non-accelerated framebuffer (fix)
-- remove 15 bpp depth handling to simplify code as it hardly 
-  works (15 bpp handling was obviously missing in some switches)
-- add fb_sync call and move waiting before accelerated function
-  to make acceleration more asynchronous to cpu (few % of speed
-  improvement)
-- add cpu_relax() call in waiting loops
-- make longer register names and name more registers
-- move registers' definition to header
-- general code improvements (shortening, simplifying)
+It's truly beautiful.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Summing up to avoid complaints.
+
+
+
+[PATCH] lxfb: fix regression on OLPC caused by PLL table updates
+
+The following patch caused a regression with OLPC panels:
+
+ commit 3888d4639e78802c4ec1086127124e890461b9e4
+    lxfb: extend PLL table to support dotclocks below 25 MHz
+
+    Extends the PLL frequency table of the AMD Geode-LX frame buffer driver to
+    make use of the DIV4 bit, thus adding support for dotclocks between 6 and 25
+    MHz.  These are needed for small LCDs (e.g. 320x240).  Also inserts some
+    intermediate steps between pre-existing frequencies.
+
+The problem was the insertion of intermediate steps into the frequency
+table; they would cause the wrong frequency to be matched.  This patch
+drops those intermediate frequencies while keeping the sub-25MHz
+frequencies.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+Acked-by: Jordan Crouse <jordan.crouse@amd.com>
+Signed-off-by: Jens Rottmann <JRottmann@LiPPERT-AT.de>
 ---
-This is tridentfb patch number 20. List of previous patches:
 
-01 tridentfb-replace-macros-with-functions.patch
-02 tridentfb-convert-fb_info-into-allocated-one.patch
-03 tridentfb-move-global-pseudo-palette-into-structure.patch
-04 tridentfb-move-global-chip_id-into-structure.patch
-05 tridentfb-move-global-flat-panel-variable-into-structure.patch
-06 tridentfb-convert-is_blade-and-is_xp-macros-into-functions.patch
-07 tridentfb-move-global-acceleration-hooks-into-structure.patch
-08 tridentfb-make-use-of-functions-and-constants-from-the-vgah.patch
-09 tridentfb-fix-timing-calculations.patch
-10 tridentfb-use-mmio-access-for-clock-setting.patch
-11 tridentfb-fix-clock-settings-for-older-trident-96xx-chips.patch
-12 tridentfb-improve-probe-function.patch
-13 tridentfb-improved-register-values-on-tgui-9680.patch
-14 tridentfb-add-tgui-9440-support.patch
-15 tridentfb-fix-unitialized-pseudo_palette.patch
-16 tridentfb-improve-check_var-function.patch
-17 tridentfb-preserve-memory-type-settings.patch
-18 tridentfb-fix-hi-color-modes-for-tgui-9440.patch
-19 tridentfb-add-acceleration-for-tgui-families.patch
-
-diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
---- linux-2.6.25/drivers/video/tridentfb.c	2008-05-13 23:36:20.313229298 +0200
-+++ linux-new/drivers/video/tridentfb.c	2008-05-14 07:08:55.081848477 +0200
-@@ -1,5 +1,5 @@
- /*
-- * Frame buffer driver for Trident Blade and Image series
-+ * Frame buffer driver for Trident TGUI, Blade and Image series
-  *
-  * Copyright 2001, 2002 - Jani Monoses   <jani@iv.ro>
-  *
-@@ -13,7 +13,6 @@
-  *	code, suggestions
-  * TODO:
-  *	timing value tweaking so it looks good on every monitor in every mode
-- *	TGUI acceleration
-  */
- 
- #include <linux/module.h>
-@@ -193,37 +192,13 @@ static inline u32 readmmr(struct trident
-  */
- 
- #define point(x, y) ((y) << 16 | (x))
--#define STA	0x2120
--#define CMD	0x2144
--#define ROP	0x2148
--#define CLR	0x2160
--#define SR1	0x2100
--#define SR2	0x2104
--#define DR1	0x2108
--#define DR2	0x210C
--
--#define ROP_S	0xCC
- 
- static void blade_init_accel(struct tridentfb_par *par, int pitch, int bpp)
- {
- 	int v1 = (pitch >> 3) << 20;
--	int tmp = 0, v2;
--	switch (bpp) {
--	case 8:
--		tmp = 0;
--		break;
--	case 15:
--		tmp = 5;
--		break;
--	case 16:
--		tmp = 1;
--		break;
--	case 24:
--	case 32:
--		tmp = 2;
--		break;
--	}
--	v2 = v1 | (tmp << 29);
-+	int tmp = bpp == 24 ? 2 : (bpp >> 4);
-+	int v2 = v1 | (tmp << 29);
-+
- 	writemmr(par, 0x21C0, v2);
- 	writemmr(par, 0x21C4, v2);
- 	writemmr(par, 0x21B8, v2);
-@@ -237,29 +212,29 @@ static void blade_init_accel(struct trid
- 
- static void blade_wait_engine(struct tridentfb_par *par)
- {
--	while (readmmr(par, STA) & 0xFA800000) ;
-+	while (readmmr(par, STATUS) & 0xFA800000)
-+		cpu_relax();
- }
- 
- static void blade_fill_rect(struct tridentfb_par *par,
- 			    u32 x, u32 y, u32 w, u32 h, u32 c, u32 rop)
- {
--	writemmr(par, CLR, c);
--	writemmr(par, ROP, rop ? 0x66 : ROP_S);
-+	writemmr(par, COLOR, c);
-+	writemmr(par, ROP, rop ? ROP_X : ROP_S);
- 	writemmr(par, CMD, 0x20000000 | 1 << 19 | 1 << 4 | 2 << 2);
- 
--	writemmr(par, DR1, point(x, y));
--	writemmr(par, DR2, point(x + w - 1, y + h - 1));
-+	writemmr(par, DST1, point(x, y));
-+	writemmr(par, DST2, point(x + w - 1, y + h - 1));
- }
- 
- static void blade_copy_rect(struct tridentfb_par *par,
- 			    u32 x1, u32 y1, u32 x2, u32 y2, u32 w, u32 h)
- {
--	u32 s1, s2, d1, d2;
- 	int direction = 2;
--	s1 = point(x1, y1);
--	s2 = point(x1 + w - 1, y1 + h - 1);
--	d1 = point(x2, y2);
--	d2 = point(x2 + w - 1, y2 + h - 1);
-+	u32 s1 = point(x1, y1);
-+	u32 s2 = point(x1 + w - 1, y1 + h - 1);
-+	u32 d1 = point(x2, y2);
-+	u32 d2 = point(x2 + w - 1, y2 + h - 1);
- 
- 	if ((y1 > y2) || ((y1 == y2) && (x1 > x2)))
- 		direction = 0;
-@@ -267,38 +242,20 @@ static void blade_copy_rect(struct tride
- 	writemmr(par, ROP, ROP_S);
- 	writemmr(par, CMD, 0xE0000000 | 1 << 19 | 1 << 4 | 1 << 2 | direction);
- 
--	writemmr(par, SR1, direction ? s2 : s1);
--	writemmr(par, SR2, direction ? s1 : s2);
--	writemmr(par, DR1, direction ? d2 : d1);
--	writemmr(par, DR2, direction ? d1 : d2);
-+	writemmr(par, SRC1, direction ? s2 : s1);
-+	writemmr(par, SRC2, direction ? s1 : s2);
-+	writemmr(par, DST1, direction ? d2 : d1);
-+	writemmr(par, DST2, direction ? d1 : d2);
- }
- 
- /*
-  * BladeXP specific acceleration functions
-  */
- 
--#define ROP_P 0xF0
--#define masked_point(x, y) ((y & 0xffff)<<16|(x & 0xffff))
--
- static void xp_init_accel(struct tridentfb_par *par, int pitch, int bpp)
- {
--	int tmp = 0, v1;
--	unsigned char x = 0;
--
--	switch (bpp) {
--	case 8:
--		x = 0;
--		break;
--	case 16:
--		x = 1;
--		break;
--	case 24:
--		x = 3;
--		break;
--	case 32:
--		x = 2;
--		break;
--	}
-+	unsigned char x = bpp == 24 ? 3 : (bpp >> 4);
-+	int v1 = pitch << (bpp == 24 ? 20 : (18 + x));
- 
- 	switch (pitch << (bpp >> 3)) {
- 	case 8192:
-@@ -320,22 +277,6 @@ static void xp_init_accel(struct trident
- 
- 	eng_oper = x | 0x40;
- 
--	switch (bpp) {
--	case 8:
--		tmp = 18;
--		break;
--	case 15:
--	case 16:
--		tmp = 19;
--		break;
--	case 24:
--	case 32:
--		tmp = 20;
--		break;
--	}
--
--	v1 = pitch << tmp;
--
- 	writemmr(par, 0x2154, v1);
- 	writemmr(par, 0x2150, v1);
- 	t_outb(par, 3, 0x2126);
-@@ -343,15 +284,11 @@ static void xp_init_accel(struct trident
- 
- static void xp_wait_engine(struct tridentfb_par *par)
- {
--	int busy;
- 	int count, timeout;
- 
- 	count = 0;
- 	timeout = 0;
--	for (;;) {
--		busy = t_inb(par, STA) & 0x80;
--		if (busy != 0x80)
--			return;
-+	while (t_inb(par, STATUS) & 0x80) {
- 		count++;
- 		if (count == 10000000) {
- 			/* Timeout */
-@@ -359,10 +296,11 @@ static void xp_wait_engine(struct triden
- 			timeout++;
- 			if (timeout == 8) {
- 				/* Reset engine */
--				t_outb(par, 0x00, 0x2120);
-+				t_outb(par, 0x00, STATUS);
- 				return;
- 			}
- 		}
-+		cpu_relax();
- 	}
- }
- 
-@@ -371,10 +309,10 @@ static void xp_fill_rect(struct tridentf
- {
- 	writemmr(par, 0x2127, ROP_P);
- 	writemmr(par, 0x2158, c);
--	writemmr(par, 0x2128, 0x4000);
--	writemmr(par, 0x2140, masked_point(h, w));
--	writemmr(par, 0x2138, masked_point(y, x));
--	t_outb(par, 0x01, 0x2124);
-+	writemmr(par, DRAWFL, 0x4000);
-+	writemmr(par, OLDDIM, point(h, w));
-+	writemmr(par, OLDDST, point(y, x));
-+	t_outb(par, 0x01, OLDCMD);
- 	t_outb(par, eng_oper, 0x2125);
- }
- 
-@@ -404,12 +342,12 @@ static void xp_copy_rect(struct tridentf
- 		y2_tmp = y2;
- 	}
- 
--	writemmr(par, 0x2128, direction);
-+	writemmr(par, DRAWFL, direction);
- 	t_outb(par, ROP_S, 0x2127);
--	writemmr(par, 0x213C, masked_point(y1_tmp, x1_tmp));
--	writemmr(par, 0x2138, masked_point(y2_tmp, x2_tmp));
--	writemmr(par, 0x2140, masked_point(h, w));
--	t_outb(par, 0x01, 0x2124);
-+	writemmr(par, OLDSRC, point(y1_tmp, x1_tmp));
-+	writemmr(par, OLDDST, point(y2_tmp, x2_tmp));
-+	writemmr(par, OLDDIM, point(h, w));
-+	t_outb(par, 0x01, OLDCMD);
- }
- 
- /*
-@@ -417,22 +355,8 @@ static void xp_copy_rect(struct tridentf
-  */
- static void image_init_accel(struct tridentfb_par *par, int pitch, int bpp)
- {
--	int tmp = 0;
--	switch (bpp) {
--	case 8:
--		tmp = 0;
--		break;
--	case 15:
--		tmp = 5;
--		break;
--	case 16:
--		tmp = 1;
--		break;
--	case 24:
--	case 32:
--		tmp = 2;
--		break;
--	}
-+	int tmp = bpp == 24 ? 2: (bpp >> 4);
-+
- 	writemmr(par, 0x2120, 0xF0000000);
- 	writemmr(par, 0x2120, 0x40000000 | tmp);
- 	writemmr(par, 0x2120, 0x80000000);
-@@ -450,7 +374,8 @@ static void image_init_accel(struct trid
- 
- static void image_wait_engine(struct tridentfb_par *par)
- {
--	while (readmmr(par, 0x2164) & 0xF0000000) ;
-+	while (readmmr(par, 0x2164) & 0xF0000000)
-+		cpu_relax();
- }
- 
- static void image_fill_rect(struct tridentfb_par *par,
-@@ -461,8 +386,8 @@ static void image_fill_rect(struct tride
- 
- 	writemmr(par, 0x2144, c);
- 
--	writemmr(par, DR1, point(x, y));
--	writemmr(par, DR2, point(x + w - 1, y + h - 1));
-+	writemmr(par, DST1, point(x, y));
-+	writemmr(par, DST2, point(x + w - 1, y + h - 1));
- 
- 	writemmr(par, 0x2124, 0x80000000 | 3 << 22 | 1 << 10 | 1 << 9);
- }
-@@ -470,12 +395,11 @@ static void image_fill_rect(struct tride
- static void image_copy_rect(struct tridentfb_par *par,
- 			    u32 x1, u32 y1, u32 x2, u32 y2, u32 w, u32 h)
- {
--	u32 s1, s2, d1, d2;
- 	int direction = 2;
--	s1 = point(x1, y1);
--	s2 = point(x1 + w - 1, y1 + h - 1);
--	d1 = point(x2, y2);
--	d2 = point(x2 + w - 1, y2 + h - 1);
-+	u32 s1 = point(x1, y1);
-+	u32 s2 = point(x1 + w - 1, y1 + h - 1);
-+	u32 d1 = point(x2, y2);
-+	u32 d2 = point(x2 + w - 1, y2 + h - 1);
- 
- 	if ((y1 > y2) || ((y1 == y2) && (x1 > x2)))
- 		direction = 0;
-@@ -483,10 +407,10 @@ static void image_copy_rect(struct tride
- 	writemmr(par, 0x2120, 0x80000000);
- 	writemmr(par, 0x2120, 0x90000000 | ROP_S);
- 
--	writemmr(par, SR1, direction ? s2 : s1);
--	writemmr(par, SR2, direction ? s1 : s2);
--	writemmr(par, DR1, direction ? d2 : d1);
--	writemmr(par, DR2, direction ? d1 : d2);
-+	writemmr(par, SRC1, direction ? s2 : s1);
-+	writemmr(par, SRC2, direction ? s1 : s2);
-+	writemmr(par, DST1, direction ? d2 : d1);
-+	writemmr(par, DST2, direction ? d1 : d2);
- 	writemmr(par, 0x2124,
- 		 0x80000000 | 1 << 22 | 1 << 10 | 1 << 7 | direction);
- }
-@@ -497,27 +421,12 @@ static void image_copy_rect(struct tride
- 
- static void tgui_init_accel(struct tridentfb_par *par, int pitch, int bpp)
- {
--	unsigned char x = 0;
-+	unsigned char x = bpp == 24 ? 3 : (bpp >> 4);
- 
- 	/* disable clipping */
- 	writemmr(par, 0x2148, 0);
- 	writemmr(par, 0x214C, point(4095, 2047));
- 
--	switch (bpp) {
--	case 8:
--		x = 0;
--		break;
--	case 16:
--		x = 1;
--		break;
--	case 24:
--		x = 3;
--		break;
--	case 32:
--		x = 2;
--		break;
--	}
--
- 	switch ((pitch * bpp) / 8) {
- 	case 8192:
- 	case 512:
-@@ -541,11 +450,11 @@ static void tgui_fill_rect(struct triden
- 			   u32 x, u32 y, u32 w, u32 h, u32 c, u32 rop)
- {
- 	t_outb(par, ROP_P, 0x2127);
--	writemmr(par, 0x212c, c);
--	writemmr(par, 0x2128, 0x4020);
--	writemmr(par, 0x2140, point(w - 1, h - 1));
--	writemmr(par, 0x2138, point(x, y));
--	t_outb(par, 1, 0x2124);
-+	writemmr(par, OLDCLR, c);
-+	writemmr(par, DRAWFL, 0x4020);
-+	writemmr(par, OLDDIM, point(w - 1, h - 1));
-+	writemmr(par, OLDDST, point(x, y));
-+	t_outb(par, 1, OLDCMD);
- }
- 
- static void tgui_copy_rect(struct tridentfb_par *par,
-@@ -572,12 +481,12 @@ static void tgui_copy_rect(struct triden
- 		y2_tmp = y2;
- 	}
- 
--	writemmr(par, 0x2128, 0x4 | flags);
-+	writemmr(par, DRAWFL, 0x4 | flags);
- 	t_outb(par, ROP_S, 0x2127);
--	writemmr(par, 0x213C, point(x1_tmp, y1_tmp));
--	writemmr(par, 0x2138, point(x2_tmp, y2_tmp));
--	writemmr(par, 0x2140, point(w - 1, h - 1));
--	t_outb(par, 1, 0x2124);
-+	writemmr(par, OLDSRC, point(x1_tmp, y1_tmp));
-+	writemmr(par, OLDDST, point(x2_tmp, y2_tmp));
-+	writemmr(par, OLDDIM, point(w - 1, h - 1));
-+	t_outb(par, 1, OLDCMD);
- }
- 
- /*
-@@ -588,37 +497,40 @@ static void tridentfb_fillrect(struct fb
- 			       const struct fb_fillrect *fr)
- {
- 	struct tridentfb_par *par = info->par;
--	int bpp = info->var.bits_per_pixel;
--	int col = 0;
-+	int col;
- 
--	switch (bpp) {
--	default:
--	case 8:
--		col |= fr->color;
-+	if (info->var.bits_per_pixel == 8) {
-+		col = fr->color;
- 		col |= col << 8;
- 		col |= col << 16;
--		break;
--	case 16:
--		col = ((u32 *)(info->pseudo_palette))[fr->color];
--		break;
--	case 32:
-+	} else
- 		col = ((u32 *)(info->pseudo_palette))[fr->color];
--		break;
--	}
- 
-+	par->wait_engine(par);
- 	par->fill_rect(par, fr->dx, fr->dy, fr->width,
- 		       fr->height, col, fr->rop);
--	par->wait_engine(par);
- }
-+
- static void tridentfb_copyarea(struct fb_info *info,
- 			       const struct fb_copyarea *ca)
- {
- 	struct tridentfb_par *par = info->par;
- 
-+	par->wait_engine(par);
- 	par->copy_rect(par, ca->sx, ca->sy, ca->dx, ca->dy,
- 		       ca->width, ca->height);
-+}
-+
-+static int tridentfb_sync(struct fb_info *info)
-+{
-+	struct tridentfb_par *par = info->par;
-+
- 	par->wait_engine(par);
-+	return 0;
- }
-+#else
-+#define tridentfb_fillrect cfb_fillrect
-+#define tridentfb_copyarea cfb_copyarea
- #endif /* CONFIG_FB_TRIDENT_ACCEL */
- 
- /*
-@@ -921,6 +833,8 @@ static int tridentfb_check_var(struct fb
- 	/* check color depth */
- 	if (bpp == 24)
- 		bpp = var->bits_per_pixel = 32;
-+	if (bpp != 8 && bpp != 16 && bpp != 32)
-+		return -EINVAL;
- 	if (par->chip_id == TGUI9440 && bpp == 32)
- 		return -EINVAL;
- 	/* check whether resolution fits on panel and in memory */
-@@ -928,8 +842,15 @@ static int tridentfb_check_var(struct fb
- 		return -EINVAL;
- 	/* various resolution checks */
- 	var->xres = (var->xres + 7) & ~0x7;
--	if (var->xres != var->xres_virtual)
-+	if (var->xres > var->xres_virtual)
- 		var->xres_virtual = var->xres;
-+	if (var->yres > var->yres_virtual)
-+		var->yres_virtual = var->yres;
-+	if (var->xres_virtual > 4095 || var->yres > 2048)
-+		return -EINVAL;
-+	/* prevent from position overflow for acceleration */
-+	if (var->yres_virtual > 0xffff)
-+		return -EINVAL;
- 	line_length = var->xres_virtual * bpp / 8;
- #ifdef CONFIG_FB_TRIDENT_ACCEL
- 	if (!is3Dchip(par->chip_id)) {
-@@ -944,6 +865,8 @@ static int tridentfb_check_var(struct fb
- 			var->xres_virtual = 4096 * 8 / bpp;
- 		else if (line_length <= 8192)
- 			var->xres_virtual = 8192 * 8 / bpp;
-+		else
-+			return -EINVAL;
- 
- 		line_length = var->xres_virtual * bpp / 8;
- 	}
-@@ -1229,9 +1152,6 @@ static int tridentfb_set_par(struct fb_i
- 	case 8:
- 		tmp = 0;
- 		break;
--	case 15:
--		tmp = 0x10;
--		break;
- 	case 16:
- 		tmp = 0x30;
- 		break;
-@@ -1352,10 +1272,11 @@ static struct fb_ops tridentfb_ops = {
- 	.fb_blank = tridentfb_blank,
- 	.fb_check_var = tridentfb_check_var,
- 	.fb_set_par = tridentfb_set_par,
--#ifdef CONFIG_FB_TRIDENT_ACCEL
- 	.fb_fillrect = tridentfb_fillrect,
- 	.fb_copyarea = tridentfb_copyarea,
- 	.fb_imageblit = cfb_imageblit,
-+#ifdef CONFIG_FB_TRIDENT_ACCEL
-+	.fb_sync = tridentfb_sync,
- #endif
- };
- 
-@@ -1366,7 +1287,6 @@ static int __devinit trident_pci_probe(s
- 	unsigned char revision;
- 	struct fb_info *info;
- 	struct tridentfb_par *default_par;
--	int defaultaccel;
- 	int chip3D;
- 	int chip_id;
- 
-@@ -1448,9 +1368,6 @@ static int __devinit trident_pci_probe(s
- 
- 	default_par->chip_id = chip_id;
- 
--	/* acceleration is on by default for 3D chips */
--	defaultaccel = chip3D && !noaccel;
--
- 	/* setup MMIO region */
- 	tridentfb_fix.mmio_start = pci_resource_start(dev, 1);
- 	tridentfb_fix.mmio_len = chip3D ? 0x20000 : 0x10000;
-@@ -1515,7 +1432,7 @@ static int __devinit trident_pci_probe(s
- 	if (err < 0)
- 		goto out_unmap2;
- 
--	if (defaultaccel && default_par->init_accel)
-+	if (!noaccel && default_par->init_accel)
- 		info->var.accel_flags |= FB_ACCELF_TEXT;
- 	else
- 		info->var.accel_flags &= ~FB_ACCELF_TEXT;
-diff -urp linux-2.6.25/include/video/trident.h linux-new/include/video/trident.h
---- linux-2.6.25/include/video/trident.h	2008-05-13 17:06:52.887101515 +0200
-+++ linux-new/include/video/trident.h	2008-05-13 23:30:05.497228847 +0200
-@@ -4,7 +4,7 @@
- #endif
- 
- #if TRIDENTFB_DEBUG
--#define debug(f,a...)	printk("%s:" f,  __FUNCTION__ , ## a);mdelay(1000);
-+#define debug(f,a...)	printk("%s:" f,  __FUNCTION__ , ## a);mdelay(100);
- #else
- #define debug(f,a...)
- #endif
-@@ -124,3 +124,22 @@
- #define BiosMode     0x5c
- #define BiosReg      0x5d
- 
-+/* Graphics Engine */
-+#define STATUS	0x2120
-+#define OLDCMD	0x2124
-+#define DRAWFL	0x2128
-+#define OLDCLR	0x212C
-+#define OLDDST	0x2138
-+#define OLDSRC	0x213C
-+#define OLDDIM	0x2140
-+#define CMD	0x2144
-+#define ROP	0x2148
-+#define COLOR	0x2160
-+#define SRC1	0x2100
-+#define SRC2	0x2104
-+#define DST1	0x2108
-+#define DST2	0x210C
-+
-+#define ROP_S	0xCC
-+#define ROP_P	0xF0
-+#define ROP_X	0x66
-
-----------------------------------------------------------------------
-> Blachara + solarium = ...sam zobacz!
-> Video>> http://link.interia.pl/f1ddd
+--- a/drivers/video/geode/lxfb_ops.c~fix-lxfb-extend-pll-table-to-support-dotclocks-below-25-mhz
++++ a/drivers/video/geode/lxfb_ops.c
+@@ -63,54 +63,32 @@ static const struct {
+   { 0x00014284,  19688 },
+   { 0x00011104,  20400 },
+   { 0x00016363,  23625 },
+-  { 0x00015303,  24380 },
+   { 0x000031AC,  24923 },
+   { 0x0000215D,  25175 },
+   { 0x00001087,  27000 },
+   { 0x0000216C,  28322 },
+   { 0x0000218D,  28560 },
+-  { 0x00010041,  29913 },
+   { 0x000010C9,  31200 },
+   { 0x00003147,  31500 },
+-  { 0x000141A1,  32400 },
+   { 0x000010A7,  33032 },
+-  { 0x00012182,  33375 },
+-  { 0x000141B1,  33750 },
+   { 0x00002159,  35112 },
+   { 0x00004249,  35500 },
+   { 0x00000057,  36000 },
+-  { 0x000141E1,  37125 },
+   { 0x0000219A,  37889 },
+   { 0x00002158,  39168 },
+   { 0x00000045,  40000 },
+-  { 0x000131A1,  40500 },
+-  { 0x00010061,  42301 },
+   { 0x00000089,  43163 },
+-  { 0x00012151,  43875 },
+   { 0x000010E7,  44900 },
+   { 0x00002136,  45720 },
+-  { 0x000152E1,  47250 },
+-  { 0x00010071,  48000 },
+   { 0x00003207,  49500 },
+   { 0x00002187,  50000 },
+-  { 0x00014291,  50625 },
+-  { 0x00011101,  51188 },
+-  { 0x00017481,  54563 },
+   { 0x00004286,  56250 },
+-  { 0x00014170,  57375 },
+-  { 0x00016210,  58500 },
+   { 0x000010E5,  60065 },
+-  { 0x00013140,  62796 },
+   { 0x00004214,  65000 },
+-  { 0x00016250,  65250 },
+   { 0x00001105,  68179 },
+-  { 0x000141C0,  69600 },
+-  { 0x00015220,  70160 },
+-  { 0x00010050,  72000 },
+   { 0x000031E4,  74250 },
+   { 0x00003183,  75000 },
+   { 0x00004284,  78750 },
+-  { 0x00012130,  80052 },
+   { 0x00001104,  81600 },
+   { 0x00006363,  94500 },
+   { 0x00005303,  97520 },
 
 
 -------------------------------------------------------------------------

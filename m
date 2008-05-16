@@ -1,114 +1,122 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: acceleration bug fixes
-Date: Fri, 16 May 2008 07:20:09 +0200
-Message-ID: <20080516072009.ebdee232.krzysztof.h1@poczta.fm>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH] atmel_lcdfb: FIFO underflow management
+Date: Fri, 16 May 2008 14:34:12 +0200
+Message-ID: <482D7F44.7040404@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JwsLj-0000Id-VK for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 May 2008 22:19:24 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JwsLi-0004q4-7z
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 May 2008 22:19:23 -0700
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756509AbYEPMeh@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>, Andrew Victor <linux@maxim.org.za>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Manage atmel_lcdfb FIFO underflow
 
-This patch fixes two problems when acceleration is
-enabled:
+Resetting the LCD and DMA allows to fix screen shifting after a 
+FIFO underflow. It follows reset sequence from errata 
+"LCD Screen Shifting After a Reset".
 
- - bit for bitblt direction is corrected
-   so scrolling down works as expected on 3DImage chips
-
- - initialization of acceleration is done later
-   this helps with initial console malfuntion (on Blade3D
-   chips) well documented here:
-   http://marc.info/?l=linux-fbdev-users&m=111386953124478&w=2
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
-This is tridentfb patch number 21. The list of previous patches in -mm tree:
+ drivers/video/atmel_lcdfb.c |   50 +++++++++++++++++++++++++++++++++-
+ include/video/atmel_lcdc.h  |    1 
+ 2 files changed, 50 insertions(+), 1 deletion(-)
 
-01 tridentfb-replace-macros-with-functions.patch
-02 tridentfb-convert-fb_info-into-allocated-one.patch
-03 tridentfb-move-global-pseudo-palette-into-structure.patch
-04 tridentfb-move-global-chip_id-into-structure.patch
-05 tridentfb-move-global-flat-panel-variable-into-structure.patch
-06 tridentfb-convert-is_blade-and-is_xp-macros-into-functions.patch
-07 tridentfb-move-global-acceleration-hooks-into-structure.patch
-08 tridentfb-make-use-of-functions-and-constants-from-the-vgah.patch
-09 tridentfb-fix-timing-calculations.patch
-10 tridentfb-use-mmio-access-for-clock-setting.patch
-11 tridentfb-fix-clock-settings-for-older-trident-96xx-chips.patch
-12 tridentfb-improve-probe-function.patch
-13 tridentfb-improved-register-values-on-tgui-9680.patch
-14 tridentfb-add-tgui-9440-support.patch
-15 tridentfb-fix-unitialized-pseudo_palette.patch
-16 tridentfb-improve-check_var-function.patch
-17 tridentfb-preserve-memory-type-settings.patch
-18 tridentfb-fix-hi-color-modes-for-tgui-9440.patch
-19 tridentfb-add-acceleration-for-tgui-families.patch
-20-tridentfb-acceleration-code-improvements.patch
-
-diff -urp linux-2.6.25/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
---- linux-2.6.25/drivers/video/tridentfb.c	2008-05-14 21:47:41.948105140 +0200
-+++ linux-new/drivers/video/tridentfb.c	2008-05-15 20:09:42.903823950 +0200
-@@ -395,7 +395,7 @@ static void image_fill_rect(struct tride
- static void image_copy_rect(struct tridentfb_par *par,
- 			    u32 x1, u32 y1, u32 x2, u32 y2, u32 w, u32 h)
- {
--	int direction = 2;
-+	int direction = 0x4;
- 	u32 s1 = point(x1, y1);
- 	u32 s2 = point(x1 + w - 1, y1 + h - 1);
- 	u32 d1 = point(x2, y2);
-@@ -1075,10 +1075,6 @@ static int tridentfb_set_par(struct fb_i
- 	/* enable GE for text acceleration */
- 	write3X4(par, GraphEngReg, 0x80);
+Index: include/video/atmel_lcdc.h
+===================================================================
+--- a/include/video/atmel_lcdc.h
++++ b/include/video/atmel_lcdc.h
+@@ -37,6 +37,7 @@ struct atmel_lcdfb_info {
+ 	struct fb_info		*info;
+ 	void __iomem		*mmio;
+ 	unsigned long		irq_base;
++	struct work_struct	task;
  
--#ifdef CONFIG_FB_TRIDENT_ACCEL
--	par->init_accel(par, info->var.xres_virtual, bpp);
--#endif
--
- 	switch (bpp) {
- 	case 8:
- 		tmp = 0x00;
-@@ -1173,6 +1169,10 @@ static int tridentfb_set_par(struct fb_i
- 		set_number_of_lines(par, info->var.yres);
- 	info->fix.line_length = info->var.xres_virtual * bpp / 8;
- 	set_lwidth(par, info->fix.line_length / 8);
-+#ifdef CONFIG_FB_TRIDENT_ACCEL
-+	par->init_accel(par, info->var.xres_virtual, bpp);
-+#endif
+ 	unsigned int		guard_time;
+ 	struct platform_device	*pdev;
+Index: drivers/video/atmel_lcdfb.c
+===================================================================
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -356,6 +356,33 @@ static int atmel_lcdfb_check_var(struct 
+ 	return 0;
+ }
+ 
++/*
++ * LCD reset sequence
++ */
++static void atmel_lcdfb_reset(struct atmel_lcdfb_info *sinfo)
++{
++	/* LCD power off */
++	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON, sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET);
 +
- 	info->fix.visual = (bpp == 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
- 	info->cmap.len = (bpp == 8) ? 256 : 16;
- 	debug("exit\n");
-
-----------------------------------------------------------------------
-Wypozycz auto. Tylko 70 PLN za dobe! 
-Bez dziennego limitu kilometrow, z pelnym ubezpieczeniem. 
-Sprawdz! >> www.express.interia.pl 
-
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft 
-Defy all challenges. Microsoft(R) Visual Studio 2008. 
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
++	/* wait for the LCDC core to become idle */
++	while (lcdc_readl(sinfo, ATMEL_LCDC_PWRCON) & ATMEL_LCDC_BUSY)
++		msleep(10);
++
++	/* DMA disable */
++	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, 0);
++
++	/* wait for DMA engine to become idle */
++	while (lcdc_readl(sinfo, ATMEL_LCDC_DMACON) & ATMEL_LCDC_DMABUSY)
++		msleep(10);
++
++	/* LCD power on */
++	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON,
++		(sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET) | ATMEL_LCDC_PWR);
++
++	/* DMA enable */
++	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, sinfo->default_dmacon);
++}
++
+ /**
+  *      atmel_lcdfb_set_par - Alters the hardware state.
+  *      @info: frame buffer structure that represents a single frame buffer
+@@ -486,6 +513,8 @@ static int atmel_lcdfb_set_par(struct fb
+ 
+ 	/* Disable all interrupts */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
++	/* Enable FIFO & DMA errors */
++	lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI | ATMEL_LCDC_OWRI | ATMEL_LCDC_MERI);
+ 
+ 	/* ...wait for DMA engine to become idle... */
+ 	while (lcdc_readl(sinfo, ATMEL_LCDC_DMACON) & ATMEL_LCDC_DMABUSY)
+@@ -620,10 +649,26 @@ static irqreturn_t atmel_lcdfb_interrupt
+ 	u32 status;
+ 
+ 	status = lcdc_readl(sinfo, ATMEL_LCDC_ISR);
+-	lcdc_writel(sinfo, ATMEL_LCDC_IDR, status);
++	if (status & ATMEL_LCDC_UFLWI) {
++		dev_warn(info->device, "FIFO underflow %#x\n", status);
++		/* reset DMA and FIFO to avoid screen shifting */
++		schedule_work(&sinfo->task);
++	}
++	lcdc_writel(sinfo, ATMEL_LCDC_ICR, status);
+ 	return IRQ_HANDLED;
+ }
+ 
++/*
++ * LCD controller task (to reset the LCD)
++ */
++static void atmel_lcdfb_task(struct work_struct *work)
++{
++	struct atmel_lcdfb_info *sinfo =
++		container_of(work, struct atmel_lcdfb_info, task);
++
++	atmel_lcdfb_reset(sinfo);
++}
++
+ static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
+ {
+ 	struct fb_info *info = sinfo->info;
+@@ -795,6 +840,9 @@ static int __init atmel_lcdfb_probe(stru
+ 		goto unmap_mmio;
+ 	}
+ 
++	/* Initialize bottom half workqueue */
++	INIT_WORK(&sinfo->task, atmel_lcdfb_task);
++
+ 	ret = atmel_lcdfb_init_fbinfo(sinfo);
+ 	if (ret < 0) {
+ 		dev_err(dev, "init fbinfo failed: %d\n", ret);

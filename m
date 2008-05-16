@@ -1,122 +1,39 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] atmel_lcdfb: FIFO underflow management
-Date: Fri, 16 May 2008 14:34:12 +0200
-Message-ID: <482D7F44.7040404@atmel.com>
+From: Luc Verhaegen <libv@skynet.be>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device Driver - Resend
+Date: Fri, 16 May 2008 22:22:28 +0200
+Message-ID: <20080516202228.GA15817@skynet.be>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw> <20080507184333.7d0f1bf4.krzysztof.h1@poczta.fm> <20080508081508.GD11121@localhost.localdomain> <Pine.LNX.4.64.0805081452120.8604@anakin>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756509AbYEPMeh@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760616AbYEPUWi@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805081452120.8604@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>, Andrew Victor <linux@maxim.org.za>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, JosephChan@via.com.tw, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Manage atmel_lcdfb FIFO underflow
+On Thu, May 08, 2008 at 02:52:34PM +0200, Geert Uytterhoeven wrote:
+> On Thu, 8 May 2008, Ondrej Zajicek wrote:
+> > On Wed, May 07, 2008 at 06:43:33PM +0200, Krzysztof Helt wrote:
+> > > PS. I assume that your driver will replace the existing vt8623fb (CLE266?) driver when ready. Am I right?
+> > 
+> > These drivers are hardly comparable. vt8623fb supports CLE266 with VGA output only,
+> > but allows arbitrary resolutions and pixclocks, high-res text mode and
+> > (partially) suspend/resume. viafb implements fixed resolutions only and
+> > have no text mode and no suspend/resume support (according to my quick
+> > look on it).
+> 
+> It's a pity viafb implements fixed resolutions only. Is there any
+> specific reason for that?
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
 
-Resetting the LCD and DMA allows to fix screen shifting after a 
-FIFO underflow. It follows reset sequence from errata 
-"LCD Screen Shifting After a Reset".
+Known good dotclock parameters versus a routine to generate stable dotclocks
+parameters.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- drivers/video/atmel_lcdfb.c |   50 +++++++++++++++++++++++++++++++++-
- include/video/atmel_lcdc.h  |    1 
- 2 files changed, 50 insertions(+), 1 deletion(-)
-
-Index: include/video/atmel_lcdc.h
-===================================================================
---- a/include/video/atmel_lcdc.h
-+++ b/include/video/atmel_lcdc.h
-@@ -37,6 +37,7 @@ struct atmel_lcdfb_info {
- 	struct fb_info		*info;
- 	void __iomem		*mmio;
- 	unsigned long		irq_base;
-+	struct work_struct	task;
- 
- 	unsigned int		guard_time;
- 	struct platform_device	*pdev;
-Index: drivers/video/atmel_lcdfb.c
-===================================================================
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -356,6 +356,33 @@ static int atmel_lcdfb_check_var(struct 
- 	return 0;
- }
- 
-+/*
-+ * LCD reset sequence
-+ */
-+static void atmel_lcdfb_reset(struct atmel_lcdfb_info *sinfo)
-+{
-+	/* LCD power off */
-+	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON, sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET);
-+
-+	/* wait for the LCDC core to become idle */
-+	while (lcdc_readl(sinfo, ATMEL_LCDC_PWRCON) & ATMEL_LCDC_BUSY)
-+		msleep(10);
-+
-+	/* DMA disable */
-+	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, 0);
-+
-+	/* wait for DMA engine to become idle */
-+	while (lcdc_readl(sinfo, ATMEL_LCDC_DMACON) & ATMEL_LCDC_DMABUSY)
-+		msleep(10);
-+
-+	/* LCD power on */
-+	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON,
-+		(sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET) | ATMEL_LCDC_PWR);
-+
-+	/* DMA enable */
-+	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, sinfo->default_dmacon);
-+}
-+
- /**
-  *      atmel_lcdfb_set_par - Alters the hardware state.
-  *      @info: frame buffer structure that represents a single frame buffer
-@@ -486,6 +513,8 @@ static int atmel_lcdfb_set_par(struct fb
- 
- 	/* Disable all interrupts */
- 	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
-+	/* Enable FIFO & DMA errors */
-+	lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI | ATMEL_LCDC_OWRI | ATMEL_LCDC_MERI);
- 
- 	/* ...wait for DMA engine to become idle... */
- 	while (lcdc_readl(sinfo, ATMEL_LCDC_DMACON) & ATMEL_LCDC_DMABUSY)
-@@ -620,10 +649,26 @@ static irqreturn_t atmel_lcdfb_interrupt
- 	u32 status;
- 
- 	status = lcdc_readl(sinfo, ATMEL_LCDC_ISR);
--	lcdc_writel(sinfo, ATMEL_LCDC_IDR, status);
-+	if (status & ATMEL_LCDC_UFLWI) {
-+		dev_warn(info->device, "FIFO underflow %#x\n", status);
-+		/* reset DMA and FIFO to avoid screen shifting */
-+		schedule_work(&sinfo->task);
-+	}
-+	lcdc_writel(sinfo, ATMEL_LCDC_ICR, status);
- 	return IRQ_HANDLED;
- }
- 
-+/*
-+ * LCD controller task (to reset the LCD)
-+ */
-+static void atmel_lcdfb_task(struct work_struct *work)
-+{
-+	struct atmel_lcdfb_info *sinfo =
-+		container_of(work, struct atmel_lcdfb_info, task);
-+
-+	atmel_lcdfb_reset(sinfo);
-+}
-+
- static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
- {
- 	struct fb_info *info = sinfo->info;
-@@ -795,6 +840,9 @@ static int __init atmel_lcdfb_probe(stru
- 		goto unmap_mmio;
- 	}
- 
-+	/* Initialize bottom half workqueue */
-+	INIT_WORK(&sinfo->task, atmel_lcdfb_task);
-+
- 	ret = atmel_lcdfb_init_fbinfo(sinfo);
- 	if (ret < 0) {
- 		dev_err(dev, "init fbinfo failed: %d\n", ret);
+Luc Verhaegen.
+SUSE/Novell X Driver Developer.

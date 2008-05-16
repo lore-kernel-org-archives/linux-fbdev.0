@@ -1,20 +1,24 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [RFC] handling panic under X
-Date: Thu, 15 May 2008 16:43:56 -0700
-Message-ID: <200805151643.56914.jbarnes@virtuousgeek.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] tridentfb: acceleration code
+	improvements
+Date: Fri, 16 May 2008 06:46:02 +0200
+Message-ID: <20080516064602.f4313fef.krzysztof.h1@poczta.fm>
+References: <20080514071200.4f2409b0.krzysztof.h1@poczta.fm>
+	<20080515155614.ca818e04.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_8qMLIcAvaYwSiwk"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jwn7G-0002Ot-LL for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 May 2008 16:44:06 -0700
-Received: from outbound-mail-147.bluehost.com ([67.222.38.37])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1Jwn7E-0008Kz-Vr
+	id 1JwsB6-0007gG-Sh for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 15 May 2008 22:08:25 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JwsB5-0001NP-Cs
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 May 2008 16:44:06 -0700
+	Thu, 15 May 2008 22:08:24 -0700
+In-Reply-To: <20080515155614.ca818e04.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,219 +29,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_8qMLIcAvaYwSiwk
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, 15 May 2008 15:56:14 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-The attached patches, which depend on kernel mode setting, will allow us to 
-see some kernel messages even if a panic occurs while X is running.
+> On Wed, 14 May 2008 07:12:00 +0200
+> checkpatch whines:
+> 
+> ERROR: space required after that ',' (ctx:VxV)
+(...)
 
-I think the approach is fairly sound (using a notifier to let mode setting 
-drivers switch the front buffer), but there are some details to be worked out 
-still:
-  - the console needs to be switched earlier on, probably in panic(), so we
-    don't lose messages (the current code will print stuff to VT8 until the
-    notifier gets called, so we lose the early stuff), but that should be easy
-  - abusing KD_TEXT for this purpose probably isn't right, I think we'll want
-    some smarts under KD_KERNEL_GRAPHICS for this (console layer hacking for
-    the above could be under a KD_KERNEL_GRAPHICS test)
-  - we definitely don't wait to wait on VT switch in the notifier, this means
-    more exporting of stuff from the console core and smarter handling
-  - the switch in the notifier should be more robust; we have some smarts in
-    the mode setting code to avoid a full mode reprogram, but we can
-    definitely be better about it so we don't rely on as much state being
-    preserved
+How do you run the checkpatch? I am not getting these warning even with the "--strict" option (stock linux-2.6.26-rc2 kernel scripts). Do you have another version?
+I'd like to have the same version as you.
 
-Anyone have good thoughts on the above or approaches they think will work?
+> 
+> Also that macro is plain wrong:
+> 
+> 	if (foo)
+> 		debug(...);
+> 	else
+> 		something();
+> 
+> won't compile.  Using the do{...}while(0) thing or perhaps {(...)} will fix.
+> 
+I'll fix it.
 
-That said, it's pretty neat to insert a panic module, see the switch, then see 
-printks from the notifier...
+Regards,
+Krzysztof
 
-One interesting side effect of running X in KD_TEXT mode is that messages 
-still get printed to the hidden fbcon, which means things like the root weave 
-paint run *really* slow if you're running the DRM modules in debug mode.
+----------------------------------------------------------------------
+Od slicznej Mariolki swieze pomidorki!
+http://link.interia.pl/f1de2
 
-Jesse
-
---Boundary-00=_8qMLIcAvaYwSiwk
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="kd-text.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="kd-text.patch"
-
-diff --git a/src/i830_driver.c b/src/i830_driver.c
-index 4109d88..436345c 100644
---- a/src/i830_driver.c
-+++ b/src/i830_driver.c
-@@ -174,10 +174,13 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
- #include <sys/mman.h>
- #include <errno.h>
- 
-+#include <linux/kd.h>
-+
- #include "xf86.h"
- #include "xf86_OSproc.h"
- #include "xf86Resources.h"
- #include "xf86RAC.h"
-+#include "xf86Priv.h"
- #include "xf86cmap.h"
- #include "compiler.h"
- #include "mibstore.h"
-@@ -1068,6 +1071,8 @@ static Bool i830_kernel_mode_enabled(ScrnInfoPtr pScrn)
-    if (ret)
-      return FALSE;
- 
-+   ioctl(xf86Info.consoleFd, KDSETMODE, KD_TEXT);
-+
-    return TRUE;
- }
- #else
-
---Boundary-00=_8qMLIcAvaYwSiwk
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="fb-panic.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="fb-panic.patch"
-
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index fa1ffbf..f53336f 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -2401,6 +2401,7 @@ int set_console(int nr)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(set_console);
- 
- struct tty_driver *console_driver;
- 
-diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
-index 3211afd..395f2ab 100644
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -26,6 +26,7 @@
- #include <linux/consolemap.h>
- #include <linux/signal.h>
- #include <linux/timex.h>
-+#include <linux/module.h>
- 
- #include <asm/io.h>
- #include <asm/uaccess.h>
-@@ -1203,6 +1204,7 @@ int vt_waitactive(int vt)
- 	__set_current_state(TASK_RUNNING);
- 	return retval;
- }
-+EXPORT_SYMBOL(vt_waitactive);
- 
- #define vt_wake_waitactive() wake_up(&vt_activate_queue)
- 
-diff --git a/include/linux/kd.h b/include/linux/kd.h
-index 15f2853..6fe4598 100644
---- a/include/linux/kd.h
-+++ b/include/linux/kd.h
-@@ -45,6 +45,7 @@ struct consolefontdesc {
- #define		KD_GRAPHICS	0x01
- #define		KD_TEXT0	0x02	/* obsolete */
- #define		KD_TEXT1	0x03	/* obsolete */
-+#define		KD_KERNEL_GRAPHICS 0x4  /* kernel will print panics, etc. */
- #define KDGETMODE	0x4B3B	/* get current mode */
- 
- #define KDMAPDISP	0x4B3C	/* map display into address space */
-
---Boundary-00=_8qMLIcAvaYwSiwk
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="i915-panicfb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="i915-panicfb.patch"
-
-diff --git a/linux-core/intel_fb.c b/linux-core/intel_fb.c
-index 9934e3a..a43319d 100644
---- a/linux-core/intel_fb.c
-+++ b/linux-core/intel_fb.c
-@@ -566,6 +566,31 @@ int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
- }
- EXPORT_SYMBOL(intelfb_resize);
- 
-+static struct fb_info *panic_fb;
-+
-+extern int set_console(int nr);
-+extern int vt_waitactive(int vt);
-+
-+int intelfb_panic(struct notifier_block *n, unsigned long ununsed,
-+		  void *panic_str)
-+{
-+	/* Force a switch back to our FB console */
-+	panic_fb->var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
-+	fb_set_var(panic_fb, &panic_fb->var);
-+
-+	set_console(0);
-+	vt_waitactive(0);
-+
-+	printk(KERN_ERR "panic!  switched back to text console\n");
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(intelfb_panic);
-+
-+static struct notifier_block paniced = {
-+	.notifier_call = intelfb_panic,
-+};
-+
- int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output)
- {
- 	struct fb_info *info;
-@@ -763,6 +788,11 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_outp
- 
- 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
- 		info->fix.id);
-+
-+	/* Switch back to kernel console on panic */
-+	panic_fb = info;
-+	atomic_notifier_chain_register(&panic_notifier_list, &paniced);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(intelfb_probe);
-@@ -783,6 +813,9 @@ int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
- 		drm_framebuffer_destroy(fb);
- 		framebuffer_release(info);
- 	}
-+
-+	panic_fb = NULL;
-+	atomic_notifier_chain_unregister(&panic_notifier_list, &paniced);
- 	return 0;
- }
- EXPORT_SYMBOL(intelfb_remove);
-
---Boundary-00=_8qMLIcAvaYwSiwk
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft 
 Defy all challenges. Microsoft(R) Visual Studio 2008. 
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
---Boundary-00=_8qMLIcAvaYwSiwk
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---Boundary-00=_8qMLIcAvaYwSiwk--

@@ -1,22 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch 02/18] m68k: Kill CONFIG_FB_DAFB
-Date: Sun, 18 May 2008 20:47:08 +0200
-Message-ID: <20080518185150.302370159@mail.of.borg>
-References: <20080518184706.631023070@mail.of.borg>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] atmel_lcdfb: FIFO underflow
+	management
+Date: Mon, 19 May 2008 16:00:06 -0700
+Message-ID: <20080519160006.12a30e71.akpm@linux-foundation.org>
+References: <482D7F44.7040404@atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jxo1D-00023q-V3 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 May 2008 11:54:04 -0700
-Received: from nelson.telenet-ops.be ([195.130.133.66])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Jxo1C-0006E9-Hk
+	id 1JyELc-0001C9-UY for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 May 2008 16:00:53 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1JyELb-0006j8-M8
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 May 2008 11:54:03 -0700
-Content-Disposition: inline; filename=m68k-kill-CONFIG_FB_DAFB.diff
+	Mon, 19 May 2008 16:00:52 -0700
+In-Reply-To: <482D7F44.7040404@atmel.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,41 +29,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, hskinnemoen@atmel.com, adaplas@gmail.com, linux@maxim.org.za
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+On Fri, 16 May 2008 14:34:12 +0200
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-CONFIG_FB_DAFB is a leftover from pre-Kconfig
+> Manage atmel_lcdfb FIFO underflow
+> 
+> Resetting the LCD and DMA allows to fix screen shifting after a 
+> FIFO underflow. It follows reset sequence from errata 
+> "LCD Screen Shifting After a Reset".
+> 
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/video/Kconfig |    1 -
- 1 file changed, 1 deletion(-)
+This looks like 2.6.26-worthy bugfix to me?  But as commonly happens,
+that isn't terribly clear.
 
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -627,7 +627,6 @@ config FB_MAC
- 	select FB_CFB_IMAGEBLIT
- 	select FB_MACMODES
- 
--#      bool '  Apple DAFB display support' CONFIG_FB_DAFB
- config FB_HP300
- 	bool
- 	depends on (FB = y) && HP300
+> +	if (status & ATMEL_LCDC_UFLWI) {
+> +		dev_warn(info->device, "FIFO underflow %#x\n", status);
+> +		/* reset DMA and FIFO to avoid screen shifting */
+> +		schedule_work(&sinfo->task);
+> +	}
+> +	lcdc_writel(sinfo, ATMEL_LCDC_ICR, status);
+>  	return IRQ_HANDLED;
+>  }
 
--- 
-Gr{oetje,eeting}s,
+Shouldn't there be a cancel_work_sync() in atmel_lcdfb_exit()?
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> +	/* Initialize bottom half workqueue */
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Well.  "bottom half" is an ancient term for softirqs, not for the
+new-fangled process-context callbacks.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft 

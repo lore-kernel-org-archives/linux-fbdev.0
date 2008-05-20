@@ -1,9 +1,8 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] tridentfb: fix console freeze
- when switching from X11
-Date: Tue, 20 May 2008 02:18:54 -0700
-Message-ID: <20080520021854.9c82c2d4.akpm@linux-foundation.org>
-References: <20080520071421.4d1727d0.krzysztof.h1@poczta.fm>
+From: Ben Dooks <ben-fbdev@fluff.org>
+Subject: [patch 5/5] S3C2410: Fix driver MODULE_ALIAS()
+Date: Tue, 20 May 2008 13:49:59 +0100
+Message-ID: <20080520125030.720359122@fluff.org.uk>
+References: <20080520124954.001898813@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,14 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JyNzr-0003ei-UT for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 May 2008 02:19:04 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	id 1JyRIo-0004TI-Nv for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 May 2008 05:50:50 -0700
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8] helo=kira.home.fluff.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1JyNzp-0001Vo-Hd
+	(Exim 4.44) id 1JyRIm-0006Hu-W4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 May 2008 02:19:03 -0700
-In-Reply-To: <20080520071421.4d1727d0.krzysztof.h1@poczta.fm>
+	Tue, 20 May 2008 05:50:50 -0700
+Content-Disposition: inline;
+	filename=simtec/simtec-drivers-fb-s3c2410-modalias.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,22 +29,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, Ben Dooks <ben-linux@fluff.org>, arnaud.patard@rtp-net.org
 
-On Tue, 20 May 2008 07:14:21 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+Add a correct MODULE_ALIAS() entry for this driver
+to enable udev module loading.
 
-> This is tridentfb patch number 25.
-> 
-> I thought that it would be the last patch in the batch of changes but there
-> seemed to be another bug for every fixed or enabled feature. I hope that
-> all these 25 patches will make in next kernel release (2.6.27).
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-yup, I was planning on merging all this into 2.6.27.
+Index: linux-2.6.26-rc3-quilt1/drivers/video/s3c2410fb.c
+===================================================================
+--- linux-2.6.26-rc3-quilt1.orig/drivers/video/s3c2410fb.c	2008-05-20 10:56:00.000000000 +0100
++++ linux-2.6.26-rc3-quilt1/drivers/video/s3c2410fb.c	2008-05-20 10:56:01.000000000 +0100
+@@ -1070,3 +1070,5 @@ MODULE_AUTHOR("Arnaud Patard <arnaud.pat
+ 	      "Ben Dooks <ben-linux@fluff.org>");
+ MODULE_DESCRIPTION("Framebuffer driver for the s3c2410");
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:s3c2410-lcd");
++MODULE_ALIAS("platform:s3c2412-lcd");
 
-> Unfortunately, more fixes will follow. I hope they will be only minor ones.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-Fixes are not unfortunate ;)
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft 

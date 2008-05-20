@@ -1,214 +1,115 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/9] viafb: VIA Frame Buffer Device
-	Driver
-Date: Tue, 20 May 2008 14:56:29 +0200
-Message-ID: <20080520125629.GB4052@ucw.cz>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67705@exchtp03.taipei.via.com.tw>
-	<C80EF34A3D2E494DBAF9AC29C7AE4EB806F67724@exchtp03.taipei.via.com.tw>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH] atmel_lcdfb: FIFO underflow management rework
+Date: Tue, 20 May 2008 15:54:15 +0200
+Message-ID: <4832D807.7000703@atmel.com>
+References: <482D7F44.7040404@atmel.com> <20080519160006.12a30e71.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1JyROd-00056L-2g for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 May 2008 05:56:51 -0700
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123] ident=postfix)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1JyROZ-0008NF-Os
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 May 2008 05:56:49 -0700
-Content-Disposition: inline
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67724@exchtp03.taipei.via.com.tw>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: JosephChan@via.com.tw
-Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, geert@linux-m68k.org, linux-kernel@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762504AbYETNzA@vger.kernel.org>
+In-Reply-To: <20080519160006.12a30e71.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@gmail.com, hskinnemoen@atmel.com, linux@maxim.org.za, linux-kernel@vger.kernel.org
 
-Hi!
+Manage atmel_lcdfb FIFO underflow rework
 
-> +    color depth:8 bpp, 16 bpp, 32 bpp
-> +
-> +    Support 2 D hardware accelerator for kernel 2.6.xx
+Resetting the LCD and DMA allows to fix screen shifting after 
+a FIFO underflow. It follows reset sequence from errata
+"LCD Screen Shifting After a Reset".
 
-Supports? . at end of line? Remove 2.6 reference as it will work in
-2.7+, too, and this docs is not going into 2.4, anyway?
+Reworked following Andrew Morton comments.
 
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
 
-> +[Using the viafb module]
-> +-- -- --------------------
-> +    Start viafb with default settings,
-> +        #modprobe viafb
-> +
-> +    Start viafb with with user options,
-> +        #modprobe viafb mode=800x600 via_fb_bpp=16 refresh=60 
-> +                  active_dev=CRT+DVI dvi_port = DVP1 mode1 = 1024 x768 
-> +                  via_fb_bpp1 = 16 refresh1 = 60 SAMM_ON = 1
-> +
-> +    mode:
-> +        640 x480(default)
-> +        720 x480 
-> +        800 x600 
-> +        1024 x768
-> +        ......
-> +
-> +    via_fb_bpp:
-> +        8, 16, 32(default:32)
-> +
-> +    refresh:
-> +        60, 75, 85, 100, 120(default:60)
-> +
-> +    lcd_dsp_method:
-> +        0 : expandsion(default)
+Andrew Morton :
+> On Fri, 16 May 2008 14:34:12 +0200
+> Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+> 
+>> Manage atmel_lcdfb FIFO underflow
+>>
+>> Resetting the LCD and DMA allows to fix screen shifting after a 
+>> FIFO underflow. It follows reset sequence from errata 
+>> "LCD Screen Shifting After a Reset".
+>>
+> 
+> This looks like 2.6.26-worthy bugfix to me?  But as commonly happens,
+> that isn't terribly clear.
 
-expansion?
+This error may append in latency sensitive cases : slow clock, 
+matrix slot cycle bad configuration, too high pixel clock...
 
-> +        1 : centering
-> +
-> +    lcd_mode:
-> +        0 : OPEN LDI(default)
-> +        1 : SPWG
+>> +	if (status & ATMEL_LCDC_UFLWI) {
+>> +		dev_warn(info->device, "FIFO underflow %#x\n", status);
+>> +		/* reset DMA and FIFO to avoid screen shifting */
+>> +		schedule_work(&sinfo->task);
+>> +	}
+>> +	lcdc_writel(sinfo, ATMEL_LCDC_ICR, status);
+>>  	return IRQ_HANDLED;
+>>  }
+> 
+> Shouldn't there be a cancel_work_sync() in atmel_lcdfb_exit()?
 
-This needs to be explained, I guess.
+Ok incremental patch follows. Tell me if you prefer that I send 
+a reworked one.
 
-> +    via_fb_accel:
-> +        0 : No 2 D Hardware Acceleration(default)
-> +        1 : 2 D Hardware Acceleration
+I also added  might_sleep() annotation functions.
 
-Why does it default to no acceleration?
+>> +	/* Initialize bottom half workqueue */
+> 
+> Well.  "bottom half" is an ancient term for softirqs, not for the
+> new-fangled process-context callbacks.
 
-> +    SAMM_ON:
-> +        0 : SAMM_ON disable(default)
-> +        1 : SAMM_ON enable
-
-...needs better explanation.
-
-> +    second_size:
-> +        This option is used to set second device memory size(MB) in
-> SAMM case.
-> +        The minimal size is 16. 
-> +
-> +    EPIA_DVI:
-> +        This option is used to enable DVI on EPIA - M 
-> +        0 : No DVI on EPIA - M(default)
-> +        1 : DVI on EPIA - M
-> +
-> +    BusWidth:
-> +        When using 24 - Bit Bus Width Digital Interface, this option
-> should be set.
-> +        12: 12-Bit LVDS or 12-Bit TMDS(default)
-> +        24: 24-Bit LVDS or 24-Bit TMDS
-> +
-> +    LCDDualEdge:
-> +        When using Dual Edge Panel, this option should be set.
-> +        0 : No Dual Edge Panel(default)
-> +        1 : Dual Edge Panel
-> +
-> +    video_dev:
-> +        This option is used to specify video output devices(CRT, DVI,
-> LCD) for duoview case.
-> +        For example:
-> +        To output video on DVI, we should use:
-> +            modprobe viafb video_dev = DVI...
-> +
-> +    lcd_port:
-> +	      This option is used to specify lcd output port,
-> +        available values are "DVP0" "DVP1" "DFP_HIGHLOW" "DFP_HIGH"
-> +	      "DFP_LOW", for external LCD + external DVI on
-> CX700(External LCD is on DVP0), 
-> +        we should use:
-> +	          modprobe viafb lcd_port = DVP0...
-> +
-> +Note:
-
-notes?
-
-> +    1. CRT may not display properly for DuoView CRT & DVI display at
-> +       the "640x480" PAL mode with DVI overscan enabled.
-> +    2. When SAMM is enable, mode and mode1, via_fb_bpp and via_fb_bpp1,
-
-enabled?
-
-> +       refresh and refresh1 can be different.
-> +    3. When console is depend on viafbinfo1, dynamically change
-
-depend -- check spelling.
-
-> +[Bootup with viafb]:
-> +--------------------
-> +    Add the following line to your lilo.conf:
-> +        append =  "video=viafb:mode:1024x768,via_fb_bpp:32,refresh:85"
-
-Hmm, who uses lilo these days?
+Ok, I try to adapt this comment in the reworked patch.
 
 
-> diff -Nur a/drivers/video/Kconfig b/drivers/video/Kconfig
-> --- a/drivers/video/Kconfig	2008-05-06 07:05:59.000000000 -0400
-> +++ b/drivers/video/Kconfig	2008-05-06 07:06:37.000000000 -0400
-> @@ -1501,6 +1501,24 @@
->  	  (315/H/PRO, 55x, 650, 651, 740, 330, 661, 741, 760, 761) as
-> well
->  	  as XGI V3XT, V5, V8 and Z7.
->  
-> +config FB_VIA
-> +	tristate "VIA UniChrome (Pro) and Chrome9 display support"
-> +	depends on FB && PCI
-> +	select FB_CFB_FILLRECT
-> +	select FB_CFB_COPYAREA
-> +	select FB_CFB_IMAGEBLIT
-> +	select FB_SOFT_CURSOR
-> +        help
-> +          This is the frame buffer device driver for Graphics chips of
-> VIA 
-> +          UniChrome (Pro) Family
-> (CLE266,PM800/CN400,P4M800CE/P4M800Pro/
-> +          CN700/VN800,CX700/VX700,P4M890) and Chrome9 Family
-> (K8M890,CN896
-> +          /P4M900,VX800)
-> +
-> +          Say Y if you have a VIA UniChrome graphics board.
-> +
-> +	  To compile this driver as a module, choose M here: the
-> +	  module will be called viafb.
-
-Strange indentation.
-
-> +	} else {
-> +		/* Diable VQ */
-
-disable?
-
-> +		switch (chip_info.gfx_chip_name) {
-> +		case UNICHROME_K8M890:
-> +		case UNICHROME_P4M900:
-> +			MMIO_OUT32(0x41c, 0x00100000);
-> +			MMIO_OUT32(0x420, 0x74301000);
-> +			break;
-
-Can we get symbolic names and comments here?
-
-> +	case IGA1:
-> +	default:
-> +		temp &= 0x7FFFFFFF;
-> +	}
-> +	MMIO_OUT32(VIA_REG_CURSOR_MODE, temp); }
-
-Check indentation.
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft 
-Defy all challenges. Microsoft(R) Visual Studio 2008. 
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+Index: drivers/video/atmel_lcdfb.c
+===================================================================
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -361,6 +361,8 @@ static int atmel_lcdfb_check_var(struct 
+  */
+ static void atmel_lcdfb_reset(struct atmel_lcdfb_info *sinfo)
+ {
++	might_sleep();
++
+ 	/* LCD power off */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON, sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET);
+ 
+@@ -405,6 +407,8 @@ static int atmel_lcdfb_set_par(struct fb
+ 	unsigned long clk_value_khz;
+ 	unsigned long bits_per_line;
+ 
++	might_sleep();
++
+ 	dev_dbg(info->device, "%s:\n", __func__);
+ 	dev_dbg(info->device, "  * resolution: %ux%u (%ux%u virtual)\n",
+ 		 info->var.xres, info->var.yres,
+@@ -840,7 +844,8 @@ static int __init atmel_lcdfb_probe(stru
+ 		goto unmap_mmio;
+ 	}
+ 
+-	/* Initialize bottom half workqueue */
++	/* Some operations on the LCDC might sleep and 
++	 * require a preemptible task context */
+ 	INIT_WORK(&sinfo->task, atmel_lcdfb_task);
+ 
+ 	ret = atmel_lcdfb_init_fbinfo(sinfo);
+@@ -885,6 +890,7 @@ static int __init atmel_lcdfb_probe(stru
+ free_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+ unregister_irqs:
++	cancel_work_sync(&sinfo->task);
+ 	free_irq(sinfo->irq_base, info);
+ unmap_mmio:
+ 	exit_backlight(sinfo);
+@@ -922,6 +928,7 @@ static int __exit atmel_lcdfb_remove(str
+ 	if (!sinfo)
+ 		return 0;
+ 
++	cancel_work_sync(&sinfo->task);
+ 	exit_backlight(sinfo);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(0);

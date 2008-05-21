@@ -1,8 +1,8 @@
 From: Markus Armbruster <armbru@redhat.com>
-Subject: [PATCH 3/5] xen pvfb: Module aliases to support
-	module autoloading
-Date: Wed, 21 May 2008 10:40:18 +0200
-Message-ID: <873aocm4nh.fsf@pike.pond.sub.org>
+Subject: [PATCH 4/5] xen pvfb: Zero unused bytes in
+	events sent to backend
+Date: Wed, 21 May 2008 10:40:31 +0200
+Message-ID: <871w3wm4n4.fsf@pike.pond.sub.org>
 References: <87d4ngm4s4.fsf@pike.pond.sub.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,18 +11,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jyjs0-00027H-7h for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 May 2008 01:40:24 -0700
+	id 1JyjsB-00027k-NW for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 May 2008 01:40:35 -0700
 Received: from oxygen.pond.sub.org ([88.198.11.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jyjrw-0008L9-KS
+	(Exim 4.44) id 1JyjsA-0008PE-5C
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 May 2008 01:40:24 -0700
+	Wed, 21 May 2008 01:40:35 -0700
 Received: from pike.pond.sub.org (dslb-084-056-234-126.pools.arcor-ip.net
 	[84.56.234.126])
-	by oxygen.pond.sub.org (Postfix) with ESMTP id C9CE411EE7C
+	by oxygen.pond.sub.org (Postfix) with ESMTP id 420EE11EF1A
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 21 May 2008 10:40:18 +0200 (CEST)
+	Wed, 21 May 2008 10:40:32 +0200 (CEST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,42 +36,26 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-kernel@vger.kernel.org
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, dmitry.torokhov@gmail.com, virtualization@lists.linux-foundation.org, mingo@redhat.com, Pat Campbell <plc@novell.com>, linux-input@vger.kernel.org, akpm@linux-foundation.org
 
-These are mostly for completeness and consistency with the other
-frontends, as PVFB is typically compiled in rather than a module.
-
-Derived from
-http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/5e294e29a43e
-
-While there, add module descriptions.
+This isn't a security flaw (the backend can see all our memory
+anyway).  But it's the right thing to do all the same.
 
 Signed-off-by: Markus Armbruster <armbru@redhat.com>
 ---
- drivers/input/xen-kbdfront.c |    2 ++
- drivers/video/xen-fbfront.c  |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/video/xen-fbfront.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
-index 9da4452..eaf69cf 100644
---- a/drivers/input/xen-kbdfront.c
-+++ b/drivers/input/xen-kbdfront.c
-@@ -343,4 +343,6 @@ static void __exit xenkbd_cleanup(void)
- module_init(xenkbd_init);
- module_exit(xenkbd_cleanup);
- 
-+MODULE_DESCRIPTION("Xen virtual keyboard/pointer device frontend");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("xen:vkbd");
 diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
-index 4e10876..5553e51 100644
+index 5553e51..291eef6 100644
 --- a/drivers/video/xen-fbfront.c
 +++ b/drivers/video/xen-fbfront.c
-@@ -572,4 +572,6 @@ static void __exit xenfb_cleanup(void)
- module_init(xenfb_init);
- module_exit(xenfb_cleanup);
+@@ -61,6 +61,7 @@ static void xenfb_do_update(struct xenfb_info *info,
+ 	union xenfb_out_event event;
+ 	u32 prod;
  
-+MODULE_DESCRIPTION("Xen virtual framebuffer device frontend");
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("xen:vfb");
++	memset(&event, 0, sizeof(event));
+ 	event.type = XENFB_TYPE_UPDATE;
+ 	event.update.x = x;
+ 	event.update.y = y;
 -- 
 1.5.3.3
 

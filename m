@@ -1,30 +1,22 @@
-From: Markus Armbruster <armbru@redhat.com>
-Subject: Re: [PATCH 0/5] xen pvfb: Para-virtual
-	framebuffer, keyboard and pointer driver updates
-Date: Wed, 21 May 2008 11:54:29 +0200
-Message-ID: <87lk24j82y.fsf@pike.pond.sub.org>
-References: <87d4ngm4s4.fsf@pike.pond.sub.org> <4833E6BA.3060408@goop.org>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: FB: Export symbol fb_mode_option
+Date: Wed, 21 May 2008 14:39:02 -0700
+Message-ID: <48349676.5030608@am.sony.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jyl1u-00021E-8U for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 May 2008 02:54:42 -0700
-Received: from oxygen.pond.sub.org ([88.198.11.5])
+	id 1Jyw4X-0008Bx-Vi for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 May 2008 14:42:10 -0700
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]
+	helo=outbound4-wa4-R.bigfish.com)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jyl1r-0003sN-Lr
+	(Exim 4.44) id 1Jyw4V-000463-SP
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 May 2008 02:54:42 -0700
-Received: from pike.pond.sub.org (dslb-084-056-234-126.pools.arcor-ip.net
-	[84.56.234.126])
-	by oxygen.pond.sub.org (Postfix) with ESMTP id 6B36A11EF1A
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 21 May 2008 11:54:29 +0200 (CEST)
-In-Reply-To: <4833E6BA.3060408@goop.org> (Jeremy Fitzhardinge's message of
-	"Wed\, 21 May 2008 10\:09\:14 +0100")
+	Wed, 21 May 2008 14:42:09 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,54 +27,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, mingo@redhat.com, Pat Campbell <plc@novell.com>, linux-input@vger.kernel.org, akpm@linux-foundation.org
+To: adaplas@gmail.com
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Frame buffer drivers and the associated mode setting
+drivers can be built as modules, so fb_mode_option needs
+to be exported to support these.
 
-> Markus Armbruster wrote:
->> This is an update to the Linux part of the Xen PVFB.  Linux Xen PVFB
->> is a pair of Xen para-virtual frontend device drivers:
->> drivers/video/xen-fbfront.c provides a framebuffer, and
->> drivers/input/xen-kbdfront provides keyboard and mouse.  Their
->> backends run in dom0 user space.
->>
->> Parts in this patch series:
->>
->> 1. Enable Xen console by default in domU
->> 2. Pointer z-axis (mouse wheel) support
->> 3. Module aliases to support module autoloading
->> 4. Zero unused bytes in events sent to backend
->> 5. Dynamic mode support (screen resizing)
->>
->> To the best of my knowledge, these patches are independent.  The last
->> one needs a bit of trivial merging to apply without the first one.  I
->> tested only 1, 1+2, 1+2+3, 1+2+3+4, and the complete series.  I'm
->> happy to split this into different parts if that helps.
->>   
->
-> Thanks Markus,
->
-> This looks good.  I'll stick it into my queue and feed it via Ingo
-> when I've given it a bit of a test.
+Prevents this error:
 
-Thanks!
+  ERROR: "fb_mode_option" [drivers/ps3/ps3av_mod.ko] undefined!
 
-> Are we happy that the preferred console stuff is now the best
-> solution?  Does it solve your installer issues?
->
->    J
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/modedb.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Yes, the console stuff works nicely for me, and the installer is
-happy.
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -28,6 +28,7 @@
+ #endif
+ 
+ const char *fb_mode_option;
++EXPORT_SYMBOL_GPL(fb_mode_option);
+ 
+     /*
+      *  Standard video mode definitions (taken from XFree86)
 
-Note that I went with the stupidest solution that could possibly work
-there: have a global flag that gets set when the command line sets
-consoles, and don't mess with the console then.  Mark McLoughlin
-suggested a somewhat less stupid way, namely to mark consoles selected
-on the command line with a flag.  Critical review invited!
 
 -------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft 
-Defy all challenges. Microsoft(R) Visual Studio 2008. 
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
 http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

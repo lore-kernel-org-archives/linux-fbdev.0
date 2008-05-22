@@ -1,25 +1,24 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] xen: Enable console tty by
- default in domU if it's not a dummy
-Date: Wed, 21 May 2008 17:26:13 -0700
-Message-ID: <20080521172613.18eb24c4.akpm@linux-foundation.org>
-References: <87d4ngm4s4.fsf@pike.pond.sub.org>
-	<878wy4m4px.fsf@pike.pond.sub.org>
+Subject: Re: [Bugme-new] [Bug 10766] New: ceased to work
+ framebuffer with videocard NVIDIA GeForce MX 440
+Date: Wed, 21 May 2008 19:05:25 -0700
+Message-ID: <20080521190525.eb2a9a9b.akpm@linux-foundation.org>
+References: <bug-10766-10286@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Jyydw-00085u-FP for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 May 2008 17:26:52 -0700
+	id 1Jz0BV-0000oZ-JA for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 May 2008 19:05:37 -0700
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Jyydw-0007i4-6D
+	(Exim 4.44) id 1Jz0BS-0005X2-57
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 May 2008 17:26:52 -0700
-In-Reply-To: <878wy4m4px.fsf@pike.pond.sub.org>
+	Wed, 21 May 2008 19:05:37 -0700
+In-Reply-To: <bug-10766-10286@http.bugzilla.kernel.org/>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,39 +29,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Markus Armbruster <armbru@redhat.com>
-Cc: jeremy@goop.org, xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, mingo@redhat.com, plc@novell.com, linux-input@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: ashirapov.denis@mail.ru, bugme-daemon@bugzilla.kernel.org
 
-On Wed, 21 May 2008 10:38:50 +0200
-Markus Armbruster <armbru@redhat.com> wrote:
 
-> Without console= arguments on the kernel command line, the first
-> console to register becomes enabled and the preferred console (the one
-> behind /dev/console).  This is normally tty (assuming
-> CONFIG_VT_CONSOLE is enabled, which it commonly is).
-> 
-> This is okay as long tty is a useful console.  But unless we have the
-> PV framebuffer, and it is enabled for this domain, tty0 in domU is
-> merely a dummy.  In that case, we want the preferred console to be the
-> Xen console hvc0, and we want it without having to fiddle with the
-> kernel command line.  Commit b8c2d3dfbc117dff26058fbac316b8acfc2cb5f7
-> did that for us.
-> 
-> Since we now have the PV framebuffer, we want to enable and prefer tty
-> again, but only when PVFB is enabled.  But even then we still want to
-> enable the Xen console as well.
-> 
-> Problem: when tty registers, we can't yet know whether the PVFB is
-> enabled.  By the time we can know (xenstore is up), the console setup
-> game is over.
-> 
-> Solution: enable console tty by default, but keep hvc as the preferred
-> console.  Change the preferred console to tty when PVFB probes
-> successfully, unless we've been given console kernel parameters.
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-What a stunningly good changelog - I'd buy the tee-shirt.
+On Tue, 20 May 2008 22:55:43 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
 
-Ack on the non-xen bits.
+> http://bugzilla.kernel.org/show_bug.cgi?id=10766
+> 
+>            Summary: ceased to work framebuffer with videocard NVIDIA GeForce
+>                     MX 440
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: 2.6.25
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Console/Framebuffers
+>         AssignedTo: jsimmons@infradead.org
+>         ReportedBy: ashirapov.denis@mail.ru
+> 
+> 
+> Latest working kernel version:2.6.25.4
+> Earliest failing kernel version:2.6.25 and up
+> Distribution: Slackware GNU/Linux 12.0 
+> Hardware Environment:
+>  Processors: AMD Athlon XP 1800(Thunderbird)
+>  Video card: Nvidia GeForce MX 440 agp 8x
+>  Mother board: Biostar M7NCD (nForce2)
+> Software Environment:
+> Problem Description: 
+>  In kernels >= 2.6.25 loading kernel with append patameters in boot
+> loaders(grub) as "vga=317" etc. can't enable requred video mode.
+> 
+> Steps to reproduce: 
+> Compile ketnel 2.6.25 with config:
+> http://slackware.perespim.ru/pub/slackware-current/kernels/huge.s/config
+> 
+
+Can anyone think of anything we might have done between 2.6.24 and
+2.6.25 to break the nvidia driver's boot-command-line handling?
+
+Thanks.
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

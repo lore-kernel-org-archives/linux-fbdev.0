@@ -1,118 +1,65 @@
-From: Denis Oliver Kropp <dok-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [Linux-fbdev-devel] DirectFB without FBDev
-Date: Wed, 28 May 2008 21:11:20 +0200
-Message-ID: <483DAE58.4020300@directfb.org>
-References: <483D7344.6030503@directfb.org>	<Pine.LNX.4.64.0805281901300.15083@anakin>	<483D9453.1080700@directfb.org>
-	<483D9C30.8010301@acdstar.com> <483D9F4E.4000707@directfb.org>
-	<483DAAB7.6080208@acdstar.com>
+From: "Alex Deucher" <alexdeucher@gmail.com>
+Subject: Re: [directfb-users] DirectFB without FBDev
+Date: Wed, 28 May 2008 15:33:06 -0400
+Message-ID: <a728f9f90805281233h4ca3ef3dnf6aeec8aaf64f39f@mail.gmail.com>
+References: <483D7344.6030503@directfb.org>
+	<Pine.LNX.4.64.0805281901300.15083@anakin>
+	<483D9453.1080700@directfb.org> <483D9C30.8010301@acdstar.com>
+	<483D9F4E.4000707@directfb.org>
+	<a728f9f90805281124y53df86e7n7ae1918ac97907fc@mail.gmail.com>
+	<483DAB14.3020300@directfb.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <483DAAB7.6080208-3mWahjwryh5BDgjK7y7TUQ@public.gmane.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1K1ROX-0004eN-7r for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 28 May 2008 12:33:09 -0700
+Received: from rv-out-0708.google.com ([209.85.198.247])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K1ROU-0001Bn-Ud
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 28 May 2008 12:33:09 -0700
+Received: by rv-out-0708.google.com with SMTP id f25so2924969rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 28 May 2008 12:33:06 -0700 (PDT)
+In-Reply-To: <483DAB14.3020300@directfb.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-users>,
-	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://mail.directfb.org/pipermail/directfb-users>
-List-Post: <mailto:directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-users>,
-	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Sender: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
-Errors-To: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
-To: "Brian G. Rhodes" <bgr-3mWahjwryh5BDgjK7y7TUQ@public.gmane.org>
-Cc: directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, directfb-dev-iGvX3keArt1g9hUCZPvPmw@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Denis Oliver Kropp <dok@directfb.org>
+Cc: directfb-users@directfb.org, "Brian G. Rhodes" <bgr@acdstar.com>, linux-fbdev-devel@lists.sourceforge.net, directfb-dev@directfb.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Brian G. Rhodes wrote:
-> 
-> 
-> Denis Oliver Kropp wrote:
->> Brian G. Rhodes wrote:
->>> I don't think the solution to abstracting access to multiple hardware 
->>> planes which can be located in at dynamic memory addresses to be 
->>> implemented by adding complexity to the framebuffer driver.  It is 
->>> supposed to be just a dumb chunk of memory and storage for hardware 
->>> timings.
->>>     
+On Wed, May 28, 2008 at 2:57 PM, Denis Oliver Kropp <dok@directfb.org> wrote:
+> Alex Deucher wrote:
 >>
->> Adding the byte offset and pitch fits into this as well and would save
->> it from being removed from DirectFB.
+>> As you may or may not be aware, the drm is slowly getting modesetting
+>> support including support for multiple crtcs and outputs and better
+>> memory management.  Development is currently focusing on intel, but
+>> AMD support will follow soon.  It even provides a legacy fbdev compat
+>> layer.
 >>
->>   
-> 
-> Seems like an end-run around supporting windows in framebuffer memory 
-> and using pan to jump back and forth.  This obviously was not the 
-> original intention of panning.   I have seen it used quite a bit for 
+>> http://cgit.freedesktop.org/mesa/drm/log/?h=modesetting-101
+>
+> It looks interesting and we should consider using libdrm in DirectFB,
+> but I could not find anything about display layers and it's already quite
+> big and kernel side drivers have this GPL issue etc...
 
-Yep, panning wasn't meant for buffer swapping initially :)
+In theory the code will be X11 licensed since it's coming from Xorg
+and shared with BSD, but I guess it's kind of a grey area.
 
-> buffering and it seems like a pretty inelegant method for accessing the 
-> memory.  So you add a byte offset and a pitch so that you can pull out 
-> your next screen buffer.  Now you also need to add flags for the fb 
-> driver to tell the user-space implementation that it supports this 
-> functionality.  Pretty soon it's not a framebuffer driver.  Not that 
-> it's terribly atrocious what you suggest...  I didn't mean to come off 
-> as such.  I would just prefer that there is an intermediary interface to 
-> the fb driver which understands the hardware better and can manage these 
-> line-width writes better.
+Alex
 
-You want to put something between fb driver and user space?
-
->>> It is too inefficient and in cases with hardware-assist (other than 
->>> coprocessors), likely unnecessary.  The answer probably isn't using 
->>> Video4Linux directly either.  Perhaps a DirectFB kernel component 
->>> which can standardize an interface and provide a better architecture 
->>> than v4l2 does.  An application where, as mentioned above, you are 
->>> using video memory for multiple buffers as a implementation for 
->>> queuing seems too specialized to me to ever be done in a linuxfb driver.
->>>     
->>
->> It's not special regarding the hardware. Every driver with an interrupt
->> handler could support it.
->>
->>   
-> No, it's not special with respect to the hardware.  It's special because 
-> you're turning your framebuffer into a fifo.
-
-No, it's just a FIFO between kernel and user space to set display offsets
-within the frame buffer.
-
->>> Has any thought been given to designing a DirectFB kernel-space 
->>> component which abstracts that access at the kernel level?  Seems to 
->>> me that it would make direct interaction from directfb with 
->>> specialized hardware much easier.
->>>     
->>
->> I don't think a new kernel graphics interface should be added, instead 
->> using
->> UIO to access MMIO, DMA and IRQs would be enough and implement most of 
->> the
->> graphics driver in user space. Downside is to loose the kernel console 
->> which
->> you usually don't need on an embedded device...
->> For acceleration and DMA/IRQ based programming, I still need to check 
->> if a
->> user space approach would be enough. So far I always handled IRQs in 
->> kernel
->> space for timing/performance reasons...
->>
->>   
-> I wouldn't want to signal userspace from an ISR to handle work.  All the 
-> unnecessary context switches just seem wasteful.  Or is there a better 
-> method now for waking up userspace from the kernel now?
-
-I agree. It would be nice to have some cheap context switch from kernel to user
-space, or some way to create a less privileged kernel thread with less overhead
-during switching, but the ability to execute non-root user's code. I don't care
-about the overhead from user to kernel (system call), but kernel to user (real time
-thread for IRQs) should be optimized. Just dropping some privileges only sounds
-simple in that case though :)
-
--- 
-Best regards,
-   Denis Oliver Kropp
-
-.------------------------------------------.
-| DirectFB - Hardware accelerated graphics |
-| http://www.directfb.org/                 |
-"------------------------------------------"
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

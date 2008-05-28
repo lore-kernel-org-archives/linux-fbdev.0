@@ -1,7 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] fix scrolling after logo is cleared
-Date: Wed, 28 May 2008 22:53:37 +0200
-Message-ID: <20080528225337.9e01d40e.krzysztof.h1@poczta.fm>
+Subject: [PATCH] tdfxfb: remove ypan checks done by a
+	higher layer
+Date: Wed, 28 May 2008 22:56:32 +0200
+Message-ID: <20080528225632.5286e274.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,22 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K1Sd9-00046u-90 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 May 2008 13:52:19 -0700
+	id 1K1SfJ-0004Iy-KJ for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 28 May 2008 13:54:34 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K1Sd7-0002o4-S0
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K1SfI-0003Mu-QD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 May 2008 13:52:19 -0700
-Received: from poczta.interia.pl (mi06.poczta.interia.pl [10.217.12.6])
-	by smtp239.poczta.interia.pl (INTERIA.PL) with ESMTP id 7C38D31B450
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 28 May 2008 22:51:35 +0200 (CEST)
-Received: from krzysio.net (host-87-99-61-239.lanet.net.pl [87.99.61.239])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by www.poczta.fm (INTERIA.PL) with ESMTP id 21DF61324AA
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 28 May 2008 22:51:35 +0200 (CEST)
+	Wed, 28 May 2008 13:54:33 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,31 +27,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-If the 'clear' command is used on the frame buffer
-with a logo the upper area is filled by few lines but
-not scrolled anymore.
-Fix this by removing the protected area for the logo
-if any part of the logo is cleared.
+These checks and assignments are done by
+a higher layer so remove them from the driver.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
 ---
 
-diff -urp linux-rc2/drivers/video/console/fbcon.c linux-new/drivers/video/console/fbcon.c
---- linux-rc2/drivers/video/console/fbcon.c	2008-05-12 18:16:23.193553990 +0200
-+++ linux-new/drivers/video/console/fbcon.c	2008-05-26 21:10:17.592997192 +0200
-@@ -1312,6 +1310,9 @@ static void fbcon_clear(struct vc_data *
- 	if (!height || !width)
- 		return;
+diff -urp linux-rc2/drivers/video/tdfxfb.c linux-new/drivers/video/tdfxfb.c
+--- linux-rc2/drivers/video/tdfxfb.c	2008-05-12 18:16:24.541623784 +0200
++++ linux-new/drivers/video/tdfxfb.c	2008-05-27 18:14:09.731595627 +0200
+@@ -836,16 +836,12 @@ static int tdfxfb_pan_display(struct fb_
+ 	struct tdfx_par *par = info->par;
+ 	u32 addr = var->yoffset * info->fix.line_length;
  
-+	if (sy < vc->vc_top && vc->vc_top == logo_lines)
-+		vc->vc_top = 0;
-+
- 	/* Split blits that cross physical y_wrap boundary */
+-	if (nopan || var->xoffset || (var->yoffset > var->yres_virtual))
+-		return -EINVAL;
+-	if ((var->yoffset + var->yres > var->yres_virtual && nowrap))
++	if (nopan || var->xoffset)
+ 		return -EINVAL;
  
- 	y_break = p->vrows - p->yscroll;
+ 	banshee_make_room(par, 1);
+ 	tdfx_outl(par, VIDDESKSTART, addr);
+ 
+-	info->var.xoffset = var->xoffset;
+-	info->var.yoffset = var->yoffset;
+ 	return 0;
+ }
 
 ----------------------------------------------------------------------
 Tanie rozmowy!

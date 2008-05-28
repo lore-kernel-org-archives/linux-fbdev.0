@@ -1,21 +1,24 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tdfxfb: remove ypan checks done by a
-	higher layer
-Date: Wed, 28 May 2008 22:56:32 +0200
-Message-ID: <20080528225632.5286e274.krzysztof.h1@poczta.fm>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] modedb: fix incorrect sync and
+ vmode flags for CVT modes
+Date: Wed, 28 May 2008 13:56:20 -0700
+Message-ID: <20080528135620.5a1ba19d.akpm@linux-foundation.org>
+References: <20080528224921.da1f0f15.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K1SfJ-0004Iy-KJ for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 May 2008 13:54:34 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K1SfI-0003Mu-QD
+	id 1K1She-0004X9-Re for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 28 May 2008 13:57:03 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1K1Shd-0005da-Ks
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 May 2008 13:54:33 -0700
+	Wed, 28 May 2008 13:56:58 -0700
+In-Reply-To: <20080528224921.da1f0f15.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,43 +29,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Wed, 28 May 2008 22:49:21 +0200
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-These checks and assignments are done by
-a higher layer so remove them from the driver.
+> Testing of the tridentfb seems like a good exercise
+> for the fbdev layer.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+heh.
 
----
+> +	    memset(&cvt_mode, 0, sizeof(struct fb_videomode));
 
-diff -urp linux-rc2/drivers/video/tdfxfb.c linux-new/drivers/video/tdfxfb.c
---- linux-rc2/drivers/video/tdfxfb.c	2008-05-12 18:16:24.541623784 +0200
-+++ linux-new/drivers/video/tdfxfb.c	2008-05-27 18:14:09.731595627 +0200
-@@ -836,16 +836,12 @@ static int tdfxfb_pan_display(struct fb_
- 	struct tdfx_par *par = info->par;
- 	u32 addr = var->yoffset * info->fix.line_length;
+I think using sizeof(cvt_mode) is better here.  Then the reader doesn't
+have to go and hunt down the definition of cvt_mode.  
+
+Or even
+
+--- a/drivers/video/modedb.c~a
++++ a/drivers/video/modedb.c
+@@ -582,7 +582,7 @@ int fb_find_mode(struct fb_var_screeninf
+ 	}
+ done:
+ 	if (cvt) {
+-	    struct fb_videomode cvt_mode;
++	    struct fb_videomode cvt_mode = { };
+ 	    int ret;
  
--	if (nopan || var->xoffset || (var->yoffset > var->yres_virtual))
--		return -EINVAL;
--	if ((var->yoffset + var->yres > var->yres_virtual && nowrap))
-+	if (nopan || var->xoffset)
- 		return -EINVAL;
- 
- 	banshee_make_room(par, 1);
- 	tdfx_outl(par, VIDDESKSTART, addr);
- 
--	info->var.xoffset = var->xoffset;
--	info->var.yoffset = var->yoffset;
- 	return 0;
- }
+ 	    DPRINTK("CVT mode %dx%d@%dHz%s%s%s\n", xres, yres,
+_
 
-----------------------------------------------------------------------
-Tanie rozmowy!
-Sprawdz >>> http://link.interia.pl/f1e13  
-
+however gcc might generate sucky code for that.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

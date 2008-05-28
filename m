@@ -1,20 +1,24 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] vga16fb: source code improvement
-Date: Tue, 27 May 2008 22:20:12 +0200
-Message-ID: <20080527222012.3052de05.krzysztof.h1@poczta.fm>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fbcon: fix wrong vmode bits copied
+	on console switch
+Date: Tue, 27 May 2008 20:38:58 -0700
+Message-ID: <20080527203858.79061fef.akpm@linux-foundation.org>
+References: <20080523100934.27232c7b.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K166c-0005dy-5l for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 May 2008 13:49:21 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K166Z-00076u-T1
+	id 1K1CVb-00037p-7s for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 May 2008 20:39:27 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1K1CVa-0001C3-VX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 May 2008 13:49:14 -0700
+	Tue, 27 May 2008 20:39:27 -0700
+In-Reply-To: <20080523100934.27232c7b.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,280 +29,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Uytterhoeven <geert@linux-m68k.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, stable@kernel.org, Geert@sc8-sf-spam2.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Fri, 23 May 2008 10:09:34 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-Use constants and functions from the vga.h file.
-Also add module description.
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> The interlaced and double line mode bits should not be
+> copied to new console when the console is switched.
+> Otherwise, the new console may be set to incorrect refresh
+> rate.
+> 
+> Also, the x and y offsets does not need to be copied.
+> 
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> diff -urp linux-2.6.25/drivers/video/console/fbcon.c linux-new/drivers/video/console/fbcon.c
+> --- linux-2.6.25/drivers/video/console/fbcon.c	2008-05-23 10:06:04.144074130 +0200
+> +++ linux-new/drivers/video/console/fbcon.c	2008-05-23 09:44:50.544333721 +0200
+> @@ -2274,9 +2274,7 @@ static int fbcon_switch(struct vc_data *
+>  	 * in fb_set_var()
+>  	 */
+>  	info->var.activate = var.activate;
+> -	var.yoffset = info->var.yoffset;
+> -	var.xoffset = info->var.xoffset;
+> -	var.vmode = info->var.vmode;
+> +	var.vmode |= info->var.vmode & ~FB_VMODE_MASK;
+>  	fb_set_var(info, &var);
+>  	ops->var = info->var;
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Do you think this is a needed-in-2.6.26 fix?
 
---- linux-2.6.25/drivers/video/vga16fb.c	2008-05-27 22:04:51.946973858 +0200
-+++ linux-new/drivers/video/vga16fb.c	2008-05-27 22:12:50.442974021 +0200
-@@ -26,18 +26,6 @@
- #include <asm/io.h>
- #include <video/vga.h>
- 
--#define GRAPHICS_ADDR_REG VGA_GFX_I	/* Graphics address register. */
--#define GRAPHICS_DATA_REG VGA_GFX_D	/* Graphics data register. */
--
--#define SET_RESET_INDEX 	VGA_GFX_SR_VALUE	/* Set/Reset Register index. */
--#define ENABLE_SET_RESET_INDEX	VGA_GFX_SR_ENABLE	/* Enable Set/Reset Register index. */
--#define DATA_ROTATE_INDEX	VGA_GFX_DATA_ROTATE	/* Data Rotate Register index. */
--#define GRAPHICS_MODE_INDEX	VGA_GFX_MODE		/* Graphics Mode Register index. */
--#define BIT_MASK_INDEX		VGA_GFX_BIT_MASK	/* Bit Mask Register index. */
--
--#define dac_reg	(VGA_PEL_IW)
--#define dac_val	(VGA_PEL_D)
--
- #define VGA_FB_PHYS 0xA0000
- #define VGA_FB_PHYS_LEN 65536
- 
-@@ -108,7 +96,7 @@ static struct fb_fix_screeninfo vga16fb_
- 	.visual		= FB_VISUAL_PSEUDOCOLOR,
- 	.xpanstep	= 8,
- 	.ypanstep	= 1,
--	.line_length	= 640/8,
-+	.line_length	= 640 / 8,
- 	.accel		= FB_ACCEL_NONE
- };
- 
-@@ -135,23 +123,22 @@ static inline int setmode(int mode)
- {
- 	int oldmode;
- 	
--	vga_io_w(GRAPHICS_ADDR_REG, GRAPHICS_MODE_INDEX);
--	oldmode = vga_io_r(GRAPHICS_DATA_REG);
--	vga_io_w(GRAPHICS_DATA_REG, mode);
-+	oldmode = vga_io_rgfx(VGA_GFX_MODE);
-+	vga_io_w(VGA_GFX_D, mode);
- 	return oldmode;
- }
- 
- /* Select the Bit Mask Register and return its value. */
- static inline int selectmask(void)
- {
--	return vga_io_rgfx(BIT_MASK_INDEX);
-+	return vga_io_rgfx(VGA_GFX_BIT_MASK);
- }
- 
- /* Set the value of the Bit Mask Register.  It must already have been
-    selected with selectmask(). */
- static inline void setmask(int mask)
- {
--	vga_io_w(GRAPHICS_DATA_REG, mask);
-+	vga_io_w(VGA_GFX_D, mask);
- }
- 
- /* Set the Data Rotate Register and return its old value. 
-@@ -161,9 +148,8 @@ static inline int setop(int op)
- {
- 	int oldop;
- 	
--	vga_io_w(GRAPHICS_ADDR_REG, DATA_ROTATE_INDEX);
--	oldop = vga_io_r(GRAPHICS_DATA_REG);
--	vga_io_w(GRAPHICS_DATA_REG, op);
-+	oldop = vga_io_rgfx(VGA_GFX_DATA_ROTATE);
-+	vga_io_w(VGA_GFX_D, op);
- 	return oldop;
- }
- 
-@@ -173,9 +159,8 @@ static inline int setsr(int sr)
- {
- 	int oldsr;
- 
--	vga_io_w(GRAPHICS_ADDR_REG, ENABLE_SET_RESET_INDEX);
--	oldsr = vga_io_r(GRAPHICS_DATA_REG);
--	vga_io_w(GRAPHICS_DATA_REG, sr);
-+	oldsr = vga_io_rgfx(VGA_GFX_SR_ENABLE);
-+	vga_io_w(VGA_GFX_D, sr);
- 	return oldsr;
- }
- 
-@@ -184,22 +169,21 @@ static inline int setcolor(int color)
- {
- 	int oldcolor;
- 
--	vga_io_w(GRAPHICS_ADDR_REG, SET_RESET_INDEX);
--	oldcolor = vga_io_r(GRAPHICS_DATA_REG);
--	vga_io_w(GRAPHICS_DATA_REG, color);
-+	oldcolor = vga_io_rgfx(VGA_GFX_SR_VALUE);
-+	vga_io_w(VGA_GFX_D, color);
- 	return oldcolor;
- }
- 
- /* Return the value in the Graphics Address Register. */
- static inline int getindex(void)
- {
--	return vga_io_r(GRAPHICS_ADDR_REG);
-+	return vga_io_r(VGA_GFX_I);
- }
- 
- /* Set the value in the Graphics Address Register. */
- static inline void setindex(int index)
- {
--	vga_io_w(GRAPHICS_ADDR_REG, index);
-+	vga_io_w(VGA_GFX_I, index);
- }
- 
- static void vga16fb_pan_var(struct fb_info *info, 
-@@ -672,10 +656,10 @@ static void ega16_setpalette(int regno, 
- 
- static void vga16_setpalette(int regno, unsigned red, unsigned green, unsigned blue)
- {
--	outb(regno,       dac_reg);
--	outb(red   >> 10, dac_val);
--	outb(green >> 10, dac_val);
--	outb(blue  >> 10, dac_val);
-+	outb(regno,       VGA_PEL_IW);
-+	outb(red   >> 10, VGA_PEL_D);
-+	outb(green >> 10, VGA_PEL_D);
-+	outb(blue  >> 10, VGA_PEL_D);
- }
- 
- static int vga16fb_setcolreg(unsigned regno, unsigned red, unsigned green,
-@@ -719,28 +703,15 @@ static int vga16fb_pan_display(struct fb
-    blanking code was originally by Huang shi chao, and modified by
-    Christoph Rimek (chrimek@toppoint.de) and todd j. derr
-    (tjd@barefoot.org) for Linux. */
--#define attrib_port		VGA_ATC_IW
--#define seq_port_reg		VGA_SEQ_I
--#define seq_port_val		VGA_SEQ_D
--#define gr_port_reg		VGA_GFX_I
--#define gr_port_val		VGA_GFX_D
--#define video_misc_rd		VGA_MIS_R
--#define video_misc_wr		VGA_MIS_W
--#define vga_video_port_reg	VGA_CRT_IC
--#define vga_video_port_val	VGA_CRT_DC
- 
- static void vga_vesa_blank(struct vga16fb_par *par, int mode)
- {
--	unsigned char SeqCtrlIndex;
--	unsigned char CrtCtrlIndex;
-+	unsigned char SeqCtrlIndex = vga_io_r(VGA_SEQ_I);
-+	unsigned char CrtCtrlIndex = vga_io_r(VGA_CRT_IC);
- 	
--	//cli();
--	SeqCtrlIndex = vga_io_r(seq_port_reg);
--	CrtCtrlIndex = vga_io_r(vga_video_port_reg);
--
- 	/* save original values of VGA controller registers */
- 	if(!par->vesa_blanked) {
--		par->vga_state.CrtMiscIO = vga_io_r(video_misc_rd);
-+		par->vga_state.CrtMiscIO = vga_io_r(VGA_MIS_R);
- 		//sti();
- 
- 		par->vga_state.HorizontalTotal = vga_io_rcrt(0x00);	/* HorizontalTotal */
-@@ -756,12 +727,11 @@ static void vga_vesa_blank(struct vga16f
- 
- 	/* assure that video is enabled */
- 	/* "0x20" is VIDEO_ENABLE_bit in register 01 of sequencer */
--	//cli();
- 	vga_io_wseq(0x01, par->vga_state.ClockingMode | 0x20);
- 
- 	/* test for vertical retrace in process.... */
- 	if ((par->vga_state.CrtMiscIO & 0x80) == 0x80)
--		vga_io_w(video_misc_wr, par->vga_state.CrtMiscIO & 0xef);
-+		vga_io_w(VGA_MIS_W, par->vga_state.CrtMiscIO & 0xef);
- 
- 	/*
- 	 * Set <End of vertical retrace> to minimum (0) and
-@@ -769,12 +739,10 @@ static void vga_vesa_blank(struct vga16f
- 	 * Result: turn off vertical sync (VSync) pulse.
- 	 */
- 	if (mode & FB_BLANK_VSYNC_SUSPEND) {
--		outb_p(0x10,vga_video_port_reg);	/* StartVertRetrace */
--		outb_p(0xff,vga_video_port_val); 	/* maximum value */
--		outb_p(0x11,vga_video_port_reg);	/* EndVertRetrace */
--		outb_p(0x40,vga_video_port_val);	/* minimum (bits 0..3)  */
--		outb_p(0x07,vga_video_port_reg);	/* Overflow */
--		outb_p(par->vga_state.Overflow | 0x84,vga_video_port_val); /* bits 9,10 of vert. retrace */
-+		vga_io_wcrt(VGA_CRTC_V_SYNC_START, 0xff);
-+		vga_io_wcrt(VGA_CRTC_V_SYNC_END, 0x40);
-+		/* bits 9,10 of vert. retrace */
-+		vga_io_wcrt(VGA_CRTC_OVERFLOW, par->vga_state.Overflow | 0x84);
- 	}
- 
- 	if (mode & FB_BLANK_HSYNC_SUSPEND) {
-@@ -783,29 +751,22 @@ static void vga_vesa_blank(struct vga16f
- 		 *  <Start of horizontal Retrace> to maximum
- 		 * Result: turn off horizontal sync (HSync) pulse.
- 		 */
--		outb_p(0x04,vga_video_port_reg);	/* StartHorizRetrace */
--		outb_p(0xff,vga_video_port_val);	/* maximum */
--		outb_p(0x05,vga_video_port_reg);	/* EndHorizRetrace */
--		outb_p(0x00,vga_video_port_val);	/* minimum (0) */
-+		vga_io_wcrt(VGA_CRTC_H_SYNC_START, 0xff);
-+		vga_io_wcrt(VGA_CRTC_H_SYNC_END, 0x00);
- 	}
- 
- 	/* restore both index registers */
--	outb_p(SeqCtrlIndex,seq_port_reg);
--	outb_p(CrtCtrlIndex,vga_video_port_reg);
--	//sti();
-+	outb_p(SeqCtrlIndex, VGA_SEQ_I);
-+	outb_p(CrtCtrlIndex, VGA_CRT_IC);
- }
- 
- static void vga_vesa_unblank(struct vga16fb_par *par)
- {
--	unsigned char SeqCtrlIndex;
--	unsigned char CrtCtrlIndex;
-+	unsigned char SeqCtrlIndex = vga_io_r(VGA_SEQ_I);
-+	unsigned char CrtCtrlIndex = vga_io_r(VGA_CRT_IC);
- 	
--	//cli();
--	SeqCtrlIndex = vga_io_r(seq_port_reg);
--	CrtCtrlIndex = vga_io_r(vga_video_port_reg);
--
- 	/* restore original values of VGA controller registers */
--	vga_io_w(video_misc_wr, par->vga_state.CrtMiscIO);
-+	vga_io_w(VGA_MIS_W, par->vga_state.CrtMiscIO);
- 
- 	/* HorizontalTotal */
- 	vga_io_wcrt(0x00, par->vga_state.HorizontalTotal);
-@@ -827,9 +788,8 @@ static void vga_vesa_unblank(struct vga1
- 	vga_io_wseq(0x01, par->vga_state.ClockingMode);
- 
- 	/* restore index/control registers */
--	vga_io_w(seq_port_reg, SeqCtrlIndex);
--	vga_io_w(vga_video_port_reg, CrtCtrlIndex);
--	//sti();
-+	vga_io_w(VGA_SEQ_I, SeqCtrlIndex);
-+	vga_io_w(VGA_CRT_IC, CrtCtrlIndex);
- }
- 
- static void vga_pal_blank(void)
-@@ -837,10 +797,10 @@ static void vga_pal_blank(void)
- 	int i;
- 
- 	for (i=0; i<16; i++) {
--		outb_p (i, dac_reg) ;
--		outb_p (0, dac_val) ;
--		outb_p (0, dac_val) ;
--		outb_p (0, dac_val) ;
-+		outb_p(i, VGA_PEL_IW);
-+		outb_p(0, VGA_PEL_D);
-+		outb_p(0, VGA_PEL_D);
-+		outb_p(0, VGA_PEL_D);
- 	}
- }
- 
-@@ -1485,6 +1445,7 @@ static void __exit vga16fb_exit(void)
- 	platform_driver_unregister(&vga16fb_driver);
- }
- 
-+MODULE_DESCRIPTION("Legacy VGA framebuffer device driver");
- MODULE_LICENSE("GPL");
- module_init(vga16fb_init);
- module_exit(vga16fb_exit);
+And 2.6.25.x?
 
-----------------------------------------------------------------------
-Tanie rozmowy!
-Sprawdz >>> http://link.interia.pl/f1e13  
-
+Thanks.
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

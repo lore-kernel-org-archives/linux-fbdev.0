@@ -1,24 +1,24 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: Re: [PATCH] fbcon: fix wrong vmode bits copied
 	on console switch
-Date: Tue, 27 May 2008 20:38:58 -0700
-Message-ID: <20080527203858.79061fef.akpm@linux-foundation.org>
+Date: Wed, 28 May 2008 08:22:00 +0200
+Message-ID: <20080528082200.d85268ab.krzysztof.h1@poczta.fm>
 References: <20080523100934.27232c7b.krzysztof.h1@poczta.fm>
+	<20080527203858.79061fef.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K1CVb-00037p-7s for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 May 2008 20:39:27 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K1CVa-0001C3-VX
+	id 1K1F1A-0001Mn-Rh for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 27 May 2008 23:20:16 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K1F19-0007pO-Bq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 27 May 2008 20:39:27 -0700
-In-Reply-To: <20080523100934.27232c7b.krzysztof.h1@poczta.fm>
+	Tue, 27 May 2008 23:20:12 -0700
+In-Reply-To: <20080527203858.79061fef.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,42 +29,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Uytterhoeven <geert@linux-m68k.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, stable@kernel.org, Geert@sc8-sf-spam2.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, stable@kernel.org
 
-On Fri, 23 May 2008 10:09:34 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+On Tue, 27 May 2008 20:38:58 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> On Fri, 23 May 2008 10:09:34 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 > 
-> The interlaced and double line mode bits should not be
-> copied to new console when the console is switched.
-> Otherwise, the new console may be set to incorrect refresh
-> rate.
-> 
-> Also, the x and y offsets does not need to be copied.
-> 
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> diff -urp linux-2.6.25/drivers/video/console/fbcon.c linux-new/drivers/video/console/fbcon.c
-> --- linux-2.6.25/drivers/video/console/fbcon.c	2008-05-23 10:06:04.144074130 +0200
-> +++ linux-new/drivers/video/console/fbcon.c	2008-05-23 09:44:50.544333721 +0200
-> @@ -2274,9 +2274,7 @@ static int fbcon_switch(struct vc_data *
->  	 * in fb_set_var()
->  	 */
->  	info->var.activate = var.activate;
-> -	var.yoffset = info->var.yoffset;
-> -	var.xoffset = info->var.xoffset;
-> -	var.vmode = info->var.vmode;
-> +	var.vmode |= info->var.vmode & ~FB_VMODE_MASK;
->  	fb_set_var(info, &var);
->  	ops->var = info->var;
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > The interlaced and double line mode bits should not be
+> > copied to new console when the console is switched.
+> > Otherwise, the new console may be set to incorrect refresh
+> > rate.
+> > 
+> > Also, the x and y offsets does not need to be copied.
+> > 
+> > 
+> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Do you think this is a needed-in-2.6.26 fix?
+> 
+> Do you think this is a needed-in-2.6.26 fix?
+> 
 
-And 2.6.25.x?
+It would be nice. 
 
-Thanks.
+> And 2.6.25.x?
+> 
+
+Rather no.
+
+Geert found that it was introduced in 2.6.15 kernel and nobody complained so this is not a critical must-be fix.
+
+commit e4fc27618b75234b721c4a13d0e0d9d07e75e641
+Date:   Tue Nov 8 21:39:09 2005 -0800
+
+    [PATCH] fbcon: Console Rotation - Prepare fbcon for console rotation
+
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Tanie rozmowy!
+Sprawdz >>> http://link.interia.pl/f1e13  
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

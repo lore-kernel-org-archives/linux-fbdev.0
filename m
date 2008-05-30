@@ -1,7 +1,10 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] tridentfb: Blade3D clock fixes
-Date: Fri, 30 May 2008 21:36:11 +0200
-Message-ID: <20080530213611.0910d8fa.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver V2
+Date: Fri, 30 May 2008 21:44:18 +0200
+Message-ID: <20080530214418.f024ba0c.krzysztof.h1@poczta.fm>
+References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se>
+	<20080530182803.5d599d21.krzysztof.h1@poczta.fm>
+	<20080530120606.9ff1b384.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,12 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2AMY-0004Qx-8V for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 12:34:06 -0700
+	id 1K2AUT-0005FB-C6 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 May 2008 12:42:17 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2AMW-0001lt-Qf
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2AUR-0003wg-OM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 12:34:06 -0700
+	Fri, 30 May 2008 12:42:17 -0700
+In-Reply-To: <20080530120606.9ff1b384.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,56 +29,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Fri, 30 May 2008 12:06:06 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-This patch fixes following problems:
-- does not allow the m parameter to reach 0 as
-  it locks the graphics core (power cycle needed)
-- for the newer chips (with new clock registers)
-  does not allow of n / m ratio below 4 as it gives
-  unstable image on the Blade3D core
-- extend shift parameter (k) range  to 2 for the newer 
-  chips to cope with the n /m >= 4 limit at low resolution
-  (bandwidth) modes
-- prefer modes with higher n / m ratio (higher k values)
+> On Fri, 30 May 2008 18:28:03 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> 
+> > On Fri, 30 May 2008 20:02:39 +0900
+> > Magnus Damm <magnus.damm@gmail.com> wrote:
+> > 
+> > > This is the SuperH Mobile LCDC frame buffer driver V2, adding
+> > > support for the LCDC block found in SuperH Mobile processors. The
+> > > hardware supports up to two LCD panels per LCDC block, and both RGB
+> > > and SYS interfaces can be used to hook up LCD panels/modules.
+> > > 
+> > > The device driver is a regular platform driver, so LCD configuration
+> > > and board specific hooks are passed to the driver using platform data.
+> > > LCD modules using SYS interface often require special configuration
+> > > using the SYS bus, and to solve this cleanly the driver provides SYS
+> > > interface operations to the board code.
+> > > 
+> > > Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel and
+> > > WVGA panels using RGB16 and RGB18 interfaces.
+> > > 
+> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> > > ---
+> > 
+> > Acked-by: Krzysztof Helt<krzysztof.h1@wp.pl>
+> > 
+> > Does anybody know which tag is better for a reviewed patch:
+> > "Acked-by" or "Reviewed-by" ?
+> > 
+> 
+> I consider Reviewed-by: to be much stronger that Acked-by:
+> 
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+This driver has been really carefully checked.
 
----
-Another test, another patch...
+Reviewed-by: Krzysztof Helt<krzysztof.h1@wp.pl>
 
-diff -urp linux-old/drivers/video/tridentfb.c linux-new/drivers/video/tridentfb.c
---- linux-old/drivers/video/tridentfb.c	2008-05-30 20:43:03.416124771 +0200
-+++ linux-new/drivers/video/tridentfb.c	2008-05-30 21:12:37.887397930 +0200
-@@ -672,15 +672,16 @@ static void set_vclk(struct tridentfb_pa
- 	unsigned long fi, d, di;
- 	unsigned char best_m = 0, best_n = 0, best_k = 0;
- 	unsigned char hi, lo;
-+	unsigned char shift = !is_oldclock(par->chip_id) ? 2 : 1;
- 
- 	d = 20000;
--	for (k = 1; k >= 0; k--)
--		for (m = 0; m < 32; m++) {
--			n = 2 * (m + 2) - 8;
-+	for (k = shift; k >= 0; k--)
-+		for (m = 1; m < 32; m++) {
-+			n = ((m + 2) << shift) - 8;
- 			for (n = (n < 0 ? 0 : n); n < 122; n++) {
- 				fi = ((14318l * (n + 8)) / (m + 2)) >> k;
- 				di = abs(fi - freq);
--				if (di <= d) {
-+				if (di < d || (di == d && k == best_k)) {
- 					d = di;
- 					best_n = n;
- 					best_m = m;
-
+Krzysztof
 
 ----------------------------------------------------------------------
-Mucha powraca!
-Sprawdz >>> http://link.interia.pl/f1e0d
+Tanie rozmowy!
+Sprawdz >>> http://link.interia.pl/f1e13  
 
 
 -------------------------------------------------------------------------

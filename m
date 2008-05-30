@@ -1,24 +1,24 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [RFC 2.6.26-rc3 2/5] pxafb: add shared
- framebuffer interface
-Date: Fri, 30 May 2008 19:10:02 +0200
-Message-ID: <20080530191002.3f63cf6f.krzysztof.h1@poczta.fm>
-References: <1212150530-14941-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1212150530-14941-3-git-send-email-jayakumar.lkml@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver V2
+Date: Fri, 30 May 2008 12:06:06 -0700
+Message-ID: <20080530120606.9ff1b384.akpm@linux-foundation.org>
+References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se>
+	<20080530182803.5d599d21.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2859-0005Nb-Uq for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 10:08:00 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2859-0008Le-FN
+	id 1K29vf-0001UE-SL for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 May 2008 12:06:20 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1K29vf-00031R-AH
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 10:07:59 -0700
-In-Reply-To: <1212150530-14941-3-git-send-email-jayakumar.lkml@gmail.com>
+	Fri, 30 May 2008 12:06:19 -0700
+In-Reply-To: <20080530182803.5d599d21.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,62 +29,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org
 
-On Fri, 30 May 2008 08:28:47 -0400
-Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+On Fri, 30 May 2008 18:28:03 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-> These changes are to make it possible for a secondary driver to share the
-> pxafb framebuffer. The changes include:
-> - adding clkdev entry in pxafb_mach_info so that a driver can pass in the
->   correct struct device owner for the LCDCLK.
-> - adding custom_xfer_div entry so that a driver can have custom sized
->   transfers. For example, the metronome controller uses 16 bit AMLCD
->   transfers but actually has 3 bit pixels in 8 bit containers.
-> - adding extra_video_mem entry so that a driver can tell pxafb of its
->   additional needs.
-> - adding share_video_mem/unshare_video_mem callbacks to notify the secondary
->   driver of the framebuffer address, to allow refcounting, and to cleanup on
->   completion.
+> On Fri, 30 May 2008 20:02:39 +0900
+> Magnus Damm <magnus.damm@gmail.com> wrote:
 > 
-> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-> ---
->  arch/arm/mach-pxa/devices.c      |    2 +
->  drivers/video/pxafb.c            |   46 ++++++++++++++++++++++++++++++++-----
->  include/asm-arm/arch-pxa/pxafb.h |    9 +++++++
->  3 files changed, 50 insertions(+), 7 deletions(-)
+> > This is the SuperH Mobile LCDC frame buffer driver V2, adding
+> > support for the LCDC block found in SuperH Mobile processors. The
+> > hardware supports up to two LCD panels per LCDC block, and both RGB
+> > and SYS interfaces can be used to hook up LCD panels/modules.
+> > 
+> > The device driver is a regular platform driver, so LCD configuration
+> > and board specific hooks are passed to the driver using platform data.
+> > LCD modules using SYS interface often require special configuration
+> > using the SYS bus, and to solve this cleanly the driver provides SYS
+> > interface operations to the board code.
+> > 
+> > Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel and
+> > WVGA panels using RGB16 and RGB18 interfaces.
+> > 
+> > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> > ---
 > 
-> diff --git a/arch/arm/mach-pxa/devices.c b/arch/arm/mach-pxa/devices.c
-> index d6c05b6..b72b73a 100644
-> --- a/arch/arm/mach-pxa/devices.c
-> +++ b/arch/arm/mach-pxa/devices.c
+> Acked-by: Krzysztof Helt<krzysztof.h1@wp.pl>
+> 
+> Does anybody know which tag is better for a reviewed patch:
+> "Acked-by" or "Reviewed-by" ?
+> 
 
-> @@ -1297,6 +1318,8 @@ static void pxafb_decode_mode_info(struct pxafb_info *fbi,
->  		smemlen = modes[i].xres * modes[i].yres * modes[i].bpp / 8;
->  		if (smemlen > fbi->fb.fix.smem_len)
->  			fbi->fb.fix.smem_len = smemlen;
-> +		if (inf->custom_xfer_div)
-> +			smemlen /= inf->custom_xfer_div;
->  	}
->  }
->  
+I consider Reviewed-by: to be much stronger that Acked-by:
 
-This one should be rather:
-
-+		if (inf->custom_xfer_div)
-+			fbi->fb.fix.smem_len  /= inf->custom_xfer_div;
-
-Otherwise is does nothing (the function ends here).
-
-Regards,
-Krzysztof
-
-
-----------------------------------------------------------------------
-Mucha powraca!
-Sprawdz >>> http://link.interia.pl/f1e0d
-
+You wouldn't believe some of the crap which has had cheerful Acked-by:s :(
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

@@ -1,46 +1,38 @@
 From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver
-Date: Fri, 30 May 2008 17:14:54 +0900
-Message-ID: <20080530171454.1c0eb6c6.iwamatsu@nigauri.org>
+Date: Fri, 30 May 2008 17:30:59 +0900
+Message-ID: <20080530173059.c210decb.iwamatsu@nigauri.org>
 References: <20080529092451.19666.91541.sendpatchset@rx1.opensource.se>
 	<20080530135928.9a555aca.iwamatsu@nigauri.org>
-	<20080530051554.GA21499@roarinelk.homelinux.net>
+	<aec7e5c30805292224n46786be2td59a1c982138bfc2@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20080530051554.GA21499@roarinelk.homelinux.net>
+In-Reply-To: <aec7e5c30805292224n46786be2td59a1c982138bfc2@mail.gmail.com>
 Sender: linux-sh-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, lethal@linux-sh.org, akpm@linux-foundation.org, linux-sh@vger.kernel.org
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, lethal@linux-sh.org, akpm@linux-foundation.org, linux-sh@vger.kernel.org
 
-Hi, Manuel.
+Hi, Magnus.
 
-On Fri, 30 May 2008 07:15:54 +0200
-Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
+On Fri, 30 May 2008 14:24:26 +0900
+"Magnus Damm" <magnus.damm@gmail.com> wrote:
 
-> > This is a proposal. 
-> > I am coding sh7763's frame buffer driver.
+> I think grouping drivers together by architecture is a good
+> suggestion, but I personally prefer a step by step approach. So I
+> think we should deal with it later when we actually have more drivers
+> upstream.
 > 
->  I wrote a driver for the SH7760 LCDC 2 years ago. From a quick glance at
-> the respective datasheets it seems both 7760 and 7763 have identical
-> register layout.  Looking at Magnus' driver, the 7722/7723 LCDC seems to
-> be an extended version of the 7760/63 LCDC. Maybe we can unify them somehow?
+OK.
+I also have the driver first released. 
 
-Thank you for your comments.
-
-I comment on SH7760 and SH7763 because Magnus is writing for SH7722 and SH7723. 
-
-I checked these data sheets. Most registers are the same. 
-I think that I can merge it. 
-
-Can I check the driver of SH7760 that you wrote where?
-
-And I need found SH7760 LCDC suport board .....
+> I'm aiming for having this driver included in 2.6.27. Your driver is
+> targeted for some release later on, right?
+I also am working aiming at 2.6.27.
 
 Best regards,
  Nobuhiro
-
 -- 
 Nobuhiro Iwamatsu

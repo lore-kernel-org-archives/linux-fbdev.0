@@ -1,25 +1,27 @@
-From: Paul Mundt <lethal@linux-sh.org>
+From: "Magnus Damm" <magnus.damm@gmail.com>
 Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver
-Date: Fri, 30 May 2008 06:07:36 +0900
-Message-ID: <20080529210736.GA13663@linux-sh.org>
+Date: Fri, 30 May 2008 11:31:29 +0900
+Message-ID: <aec7e5c30805291931v23512403qa95554fe1602a1b2@mail.gmail.com>
 References: <20080529092451.19666.91541.sendpatchset@rx1.opensource.se>
-	<20080529200951.434093d3.krzysztof.h1@poczta.fm>
+	<20080529024024.63d726de.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K1pNP-00067u-Fe for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 29 May 2008 14:09:35 -0700
-Received: from mta23.gyao.ne.jp ([125.63.38.249] helo=mx.gate01.com)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K1pNO-0006Mr-Jv
+	id 1K1uOw-0003B3-OQ for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 29 May 2008 19:31:30 -0700
+Received: from yw-out-1718.google.com ([74.125.46.152])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K1uOw-0007Cr-EJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 29 May 2008 14:09:35 -0700
+	Thu, 29 May 2008 19:31:30 -0700
+Received: by yw-out-1718.google.com with SMTP id 6so2160184ywa.82
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 29 May 2008 19:31:29 -0700 (PDT)
+In-Reply-To: <20080529024024.63d726de.akpm@linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080529200951.434093d3.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,73 +32,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lethal@linux-sh.org, linux-fbdev-devel@lists.sourceforge.net, linux-sh@vger.kernel.org
 
-On Thu, May 29, 2008 at 08:09:51PM +0200, Krzysztof Helt wrote:
-> > --- /dev/null
-> > +++ work/drivers/video/sh_mobile_lcdcfb.c	2008-05-29 17:21:48.000000000 +0900
-> > @@ -0,0 +1,742 @@
-> > +/*
-> > + * SuperH Mobile LCDC Framebuffer
-> > + *
-> > + * Copyright (c) 2008 Magnus Damm
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License as published by
-> > + * the Free Software Foundation; either version 2 of the License
-> > + *
-> 
-> English is not my native language but the last line sounds suspicious (either what?)
-> 
-Yes, there's overzealous trimming here. This should be amended to refer
-to GPLv2 only, though as the MODULE_LICENSE() its already get this right,
-it's mostly a cosmetic change.
+On Thu, May 29, 2008 at 6:40 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 29 May 2008 18:24:51 +0900 Magnus Damm <magnus.damm@gmail.com> wrote:
+>
+>> This patch adds frame buffer support for the LCDC block found in
+>> SuperH Mobile processors. The hardware supports up to two LCD panels
+>> per LCDC block, and both RGB and SYS interfaces can be used to hook
+>> up LCD panels/modules.
+>>
+>> The device driver is a regular platform driver, so LCD configuration
+>> and board specific hooks are passed to the driver using platform data.
+>> LCD modules using SYS interface often require special configuration
+>> using the SYS bus, and to solve this cleanly the driver provides SYS
+>> interface operations to the board code.
+>>
+>> Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel and
+>> WVGA panels using RGB16 and RGB18 interfaces.
+>>
+>> ...
+>>
+>> +     while (lcdc_read(ch->lcdc, _LDSR) & 2)
+>> +       ;
+>
+> Indenting is odd and inconsistent with most of the other zillions of
+> busywait loops here (multiple instances)
+>
+> It might make sense to write a single function to do this busywaiting.
+> That function can implement a timeout and can avoid lockups and provide
+> useful diagnostics.
 
-> put lcdc_priv and channel number (or base address and and channel pointer) 
-> as arguments to break the circular link. 
-> You can make these functions inline as well.
-> 
-As the 'circular' link is being used in a pre-defined way, it's not clear
-that there's a problem with it existing in the first place. It's
-obviously a matter of convenience.
+Breaking out to a single function and implementing timeout makes
+sense. I'll see what I can do.
 
-> > +static void lcdc_write(struct sh_mobile_lcdc_priv *priv,
-> > +		       int reg_offs, unsigned long data)
-> > +{
-> > +	iowrite32(data, priv->base + reg_offs);
-> > +}
-> > +
-> > +static unsigned long lcdc_read(struct sh_mobile_lcdc_priv *priv,
-> > +			       unsigned long reg_offs)
-> > +{
-> > +	return ioread32(priv->base + reg_offs);
-> > +}
-> > +
-> 
-> These two functions can be inline.
-> 
-The compiler will do this automatically, there's no need to mark it
-explicity.
+> Is sh's cpu_relax() a no-op?  Or are we assuming that ioread is a
+> suitable substitute?
 
-> > +static void lcdc_sys_write_index(void *handle, unsigned long data)
-> > +{
-> > +	struct sh_mobile_lcdc_chan *ch = handle;
-> > +
-> > +	lcdc_write(ch->lcdc, _LDDWD0R, data | 0x10000000);
-> > +
-> > +	while (lcdc_read(ch->lcdc, _LDSR) & 2)
-> > +	  ;
-> > +
-> 
-> As Andrew Morton put it it would be better to put
-> cpu_relax() inside this loop (or do some other
-> cpu releasing). There are more busy loops
-> in the driver's code.
-> 
-cpu_relax() doesn't really matter here. It's good to include for general
-coherency, since we don't have the same barriers in the ioread() path,
-but it's hardly critical.
+I simply forgot to use cpu_relax(). =)
+
+I'll fix up the code and post a V2. Thank you for your review!
+
+/ magnus
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

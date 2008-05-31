@@ -1,97 +1,86 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc3 5/5] mach-pxa: add am200epd
-	support
-Date: Sat, 31 May 2008 13:12:32 -0400
-Message-ID: <45a44e480805311012n11091448o11c29efc7ed92d2b@mail.gmail.com>
-References: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1212208915-24544-6-git-send-email-jayakumar.lkml@gmail.com>
-	<20080531140303.06bb6386.krzysztof.h1@poczta.fm>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] convert sticore.c to PCI ROM API (bugzilla #9425)
+Date: Sat, 31 May 2008 19:15:16 +0200
+Message-ID: <20080531191516.ae60240f.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2Ud8-0007ZK-KP for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 31 May 2008 10:12:34 -0700
-Received: from wf-out-1314.google.com ([209.85.200.172])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2Ud8-0006Pi-AG
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 31 May 2008 10:12:34 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so277530wfd.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 31 May 2008 10:12:33 -0700 (PDT)
-In-Reply-To: <20080531140303.06bb6386.krzysztof.h1@poczta.fm>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+Return-path: <linux-parisc-owner@vger.kernel.org>
+Sender: linux-parisc-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-parisc@vger.kernel.org, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: adaplas@gmail.com, protasnb@gmail.com, jsimmons@infradead.org
 
-On Sat, May 31, 2008 at 8:03 AM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
->> @@ -569,13 +579,16 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
->>  {
-> (...)
->
->> +     fw = epd_frame_table[epd_dt_index].fw;
->> +     fh = epd_frame_table[epd_dt_index].fh;
->> +     videomemorysize = fw * fh;
->>       videomemory = vmalloc(videomemorysize);
->>       if (!videomemory)
->>               return -ENOMEM;
->
-> I suppose the put_module should be done before return (see the whole
-> function code).
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Ah, yes. Ok, will correct that.
+Convert console/sticore.c file to use PCI ROM API.
 
-> In order to reduce number of goto labels you can do something
-> like this (for allocated pointers):
->
-> err_exit:
->    if (pointer)
->        free(pointer)
->   do_something_more
->
-> instead
->
-> err_exit1:
->  free(pointer)
-> err_exit2:
->   do_something_more
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Ok. I'll take a look at doing it that way.
+---
+I don't have cross-compiler nor the hardware so PARISC guys
+please test it.
 
->
->>  static int __devexit metronomefb_remove(struct platform_device *dev)
->> @@ -734,14 +764,13 @@ static int __devexit metronomefb_remove(struct platform_device *dev)
->>       if (info) {
->>               struct metronomefb_par *par = info->par;
->>               fb_deferred_io_cleanup(info);
->> -             dma_free_writecombine(&dev->dev, par->metromemsize,
->> -                                     par->metromem, par->metromem_dma);
->>               fb_dealloc_cmap(&info->cmap);
->>               vfree(par->csum_table);
->>               unregister_framebuffer(info);
->
-> I am not sure but to release the color map before
-> unregistering the framebuffer is probably a mistake.
+diff -urp linux-2.6.25/drivers/video/console/sticore.c linux-new/drivers/video/console/sticore.c
+--- linux-2.6.25/drivers/video/console/sticore.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-new/drivers/video/console/sticore.c	2008-05-31 14:47:14.794107818 +0200
+@@ -780,7 +780,8 @@ out_err:
+ }
+ 
+ static struct sti_struct * __devinit
+-sti_try_rom_generic(unsigned long address, unsigned long hpa, struct pci_dev *pd)
++sti_try_rom_generic(char __iomem *address, unsigned long hpa,
++		    struct pci_dev *pd)
+ {
+ 	struct sti_struct *sti;
+ 	int ok;
+@@ -868,10 +869,8 @@ test_rom:
+ 	/* disable STI PCI ROM. ROM and card RAM overlap and
+ 	 * leaving it enabled would force HPMCs
+ 	 */
+-	if (sti->pd) {
+-		unsigned long rom_base;
+-		rom_base = pci_resource_start(sti->pd, PCI_ROM_RESOURCE);	
+-		pci_write_config_dword(sti->pd, PCI_ROM_ADDRESS, rom_base & ~PCI_ROM_ADDRESS_ENABLE);
++	if (sti->pd && rom_base) {
++		pci_unmap_rom(sti->pd, rom_base);
+ 		DPRINTK((KERN_DEBUG "STI PCI ROM disabled\n"));
+ 	}
+ 
+@@ -930,22 +929,22 @@ static int __devinit sticore_pci_init(st
+ 		const struct pci_device_id *ent)
+ {
+ #ifdef CONFIG_PCI
+-	unsigned long fb_base, rom_base;
+-	unsigned int fb_len, rom_len;
++	unsigned long fb_base;
++	unsigned int fb_len;
++	char __iomem *rom_base;
++	size_t rom_len;
+ 	struct sti_struct *sti;
+ 	
+ 	pci_enable_device(pd);
+ 
+ 	fb_base = pci_resource_start(pd, 0);
+ 	fb_len = pci_resource_len(pd, 0);
+-	rom_base = pci_resource_start(pd, PCI_ROM_RESOURCE);
+-	rom_len = pci_resource_len(pd, PCI_ROM_RESOURCE);
++	rom_base = pci_map_rom(pd, &rom_len);
+ 	if (rom_base) {
+-		pci_write_config_dword(pd, PCI_ROM_ADDRESS, rom_base | PCI_ROM_ADDRESS_ENABLE);
+-		DPRINTK((KERN_DEBUG "STI PCI ROM enabled at 0x%08lx\n", rom_base));
++		DPRINTK((KERN_DEBUG "STI PCI ROM enabled at 0x%p\n", rom_base));
+ 	}
+ 
+-	printk(KERN_INFO "STI PCI graphic ROM found at %08lx (%u kB), fb at %08lx (%u MB)\n",
++	printk(KERN_INFO "STI PCI graphic ROM found at %p (%u kB), fb at %08lx (%u MB)\n",
+ 		rom_base, rom_len/1024, fb_base, fb_len/1024/1024);
+ 
+ 	DPRINTK((KERN_DEBUG "Trying PCI STI ROM at %08lx, PCI hpa at %08lx\n",
 
-Agreed. I'll correct that.
 
-Thanks,
-jaya
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+----------------------------------------------------------------------
+Podbij Dziki Zachod!Gra strategiczna online
+Sprawdz >>> http://link.interia.pl/f1dff
+

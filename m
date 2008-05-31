@@ -1,74 +1,97 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc3 5/5] mach-pxa: add am200epd
-	support
-Date: Sat, 31 May 2008 20:36:33 +0800
-Message-ID: <45a44e480805310536q78a80c5ai5a24db78dbcbda49@mail.gmail.com>
-References: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1212208915-24544-6-git-send-email-jayakumar.lkml@gmail.com>
-	<20080531140303.06bb6386.krzysztof.h1@poczta.fm>
+From: Fabio Giovagnini <fabio.giovagnini@aurion-tech.com>
+Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver V2
+Date: Sat, 31 May 2008 16:25:26 +0200
+Message-ID: <200805311625.27018.fabio.giovagnini@aurion-tech.com>
+References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se> <20080530120606.9ff1b384.akpm@linux-foundation.org> <20080530214418.f024ba0c.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2QK4-0001ql-Fl for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 31 May 2008 05:36:36 -0700
-Received: from py-out-1112.google.com ([64.233.166.180])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2QK3-0003Uf-2l
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 31 May 2008 05:36:36 -0700
-Received: by py-out-1112.google.com with SMTP id n24so168766pyh.20
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 31 May 2008 05:36:34 -0700 (PDT)
-In-Reply-To: <20080531140303.06bb6386.krzysztof.h1@poczta.fm>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20080530214418.f024ba0c.krzysztof.h1@poczta.fm>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Andrew Morton <akpm@linux-foundation.org>, Magnus Damm <magnus.damm@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, mano@roarinelk.homelinux.net, lethal@linux-sh.org
 
-On Sat, May 31, 2008 at 8:03 PM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+Which differences are bteween SuperH Mobile LCDC frame buffer and SH2A =
+7203=20
+LCDC controller?
+
+Thanks a lot.
+
+Best regards
+
+
+Alle 21:44, venerd=EC 30 maggio 2008, Krzysztof Helt ha scritto:
+> On Fri, 30 May 2008 12:06:06 -0700
 >
-> Then probably you should also break this patch into two pieces:
-> - changes which prepare existing stuff for a new driver but do
-> not break existing things (like export pxa_device_fb)
-> - the new driver itself (much smaller then)
-
-Ok. I will try to do that.
-
->> +
->> +#define DEBUG 1
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Fri, 30 May 2008 18:28:03 +0200 Krzysztof Helt <krzysztof.h1@poc=
+zta.fm>=20
+wrote:
+> > > On Fri, 30 May 2008 20:02:39 +0900
+> > >
+> > > Magnus Damm <magnus.damm@gmail.com> wrote:
+> > > > This is the SuperH Mobile LCDC frame buffer driver V2, adding
+> > > > support for the LCDC block found in SuperH Mobile processors. T=
+he
+> > > > hardware supports up to two LCD panels per LCDC block, and both=
+ RGB
+> > > > and SYS interfaces can be used to hook up LCD panels/modules.
+> > > >
+> > > > The device driver is a regular platform driver, so LCD configur=
+ation
+> > > > and board specific hooks are passed to the driver using platfor=
+m
+> > > > data. LCD modules using SYS interface often require special
+> > > > configuration using the SYS bus, and to solve this cleanly the =
+driver
+> > > > provides SYS interface operations to the board code.
+> > > >
+> > > > Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel=
+ and
+> > > > WVGA panels using RGB16 and RGB18 interfaces.
+> > > >
+> > > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> > > > ---
+> > >
+> > > Acked-by: Krzysztof Helt<krzysztof.h1@wp.pl>
+> > >
+> > > Does anybody know which tag is better for a reviewed patch:
+> > > "Acked-by" or "Reviewed-by" ?
+> >
+> > I consider Reviewed-by: to be much stronger that Acked-by:
 >
-> You have left the debug code enabled. If it is intentional it is ok.
-
-Yes, I wanted to keep it there for a few releases to help debug when
-any problems arise.
-
+> This driver has been really carefully checked.
 >
->> +static int am200_init_gpio_regs(struct metronomefb_par *par)
->> +{
+> Reviewed-by: Krzysztof Helt<krzysztof.h1@wp.pl>
 >
-> Many functions have metronomefb_par parameter, but do not use it.
-> You can remove the parameter for now.
+> Krzysztof
+>
+> ---------------------------------------------------------------------=
+-
+> Tanie rozmowy!
+> Sprawdz >>> http://link.interia.pl/f1e13
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-If it's okay, I'd like to keep it because there are some features
-supported in the E-Ink controllers that I haven't implemented yet.
-Passing par around is intended to make that possible in future.
+--=20
+=46abio Giovagnini
 
-Thanks,
-jaya
+Aurion s.r.l.
+via degli orti 11,
+40050 Funo di Argelato (BO)
+P.I e C.F.
+00885711200
+Tel. +39.335.8350919
+=46ax +39.051.8659009
 
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+www.aurion-tech.com
+
+account telefono VoIP skype (www.skype.com):
+aurion.giovagnini

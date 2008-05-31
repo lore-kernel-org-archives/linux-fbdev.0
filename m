@@ -1,10 +1,11 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver V2
-Date: Fri, 30 May 2008 21:44:18 +0200
-Message-ID: <20080530214418.f024ba0c.krzysztof.h1@poczta.fm>
-References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se>
-	<20080530182803.5d599d21.krzysztof.h1@poczta.fm>
-	<20080530120606.9ff1b384.akpm@linux-foundation.org>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.26-rc3 2/5] pxafb: add shared
+	framebuffer interface
+Date: Fri, 30 May 2008 20:49:45 -0400
+Message-ID: <45a44e480805301749yea2b4ean393cd426144459c4@mail.gmail.com>
+References: <1212150530-14941-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1212150530-14941-3-git-send-email-jayakumar.lkml@gmail.com>
+	<20080530191002.3f63cf6f.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,13 +13,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2AUT-0005FB-C6 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 12:42:17 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2AUR-0003wg-OM
+	id 1K2FI2-0001Z7-Q7 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 May 2008 17:49:46 -0700
+Received: from wf-out-1314.google.com ([209.85.200.175])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2FI1-0008OZ-JO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 12:42:17 -0700
-In-Reply-To: <20080530120606.9ff1b384.akpm@linux-foundation.org>
+	Fri, 30 May 2008 17:49:46 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so84144wfd.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 30 May 2008 17:49:45 -0700 (PDT)
+In-Reply-To: <20080530191002.3f63cf6f.krzysztof.h1@poczta.fm>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,53 +34,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Fri, 30 May 2008 12:06:06 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, May 30, 2008 at 1:10 PM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+>
+> This one should be rather:
+>
+> +               if (inf->custom_xfer_div)
+> +                       fbi->fb.fix.smem_len  /= inf->custom_xfer_div;
+>
+> Otherwise is does nothing (the function ends here).
+>
 
-> On Fri, 30 May 2008 18:28:03 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> 
-> > On Fri, 30 May 2008 20:02:39 +0900
-> > Magnus Damm <magnus.damm@gmail.com> wrote:
-> > 
-> > > This is the SuperH Mobile LCDC frame buffer driver V2, adding
-> > > support for the LCDC block found in SuperH Mobile processors. The
-> > > hardware supports up to two LCD panels per LCDC block, and both RGB
-> > > and SYS interfaces can be used to hook up LCD panels/modules.
-> > > 
-> > > The device driver is a regular platform driver, so LCD configuration
-> > > and board specific hooks are passed to the driver using platform data.
-> > > LCD modules using SYS interface often require special configuration
-> > > using the SYS bus, and to solve this cleanly the driver provides SYS
-> > > interface operations to the board code.
-> > > 
-> > > Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel and
-> > > WVGA panels using RGB16 and RGB18 interfaces.
-> > > 
-> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> > > ---
-> > 
-> > Acked-by: Krzysztof Helt<krzysztof.h1@wp.pl>
-> > 
-> > Does anybody know which tag is better for a reviewed patch:
-> > "Acked-by" or "Reviewed-by" ?
-> > 
-> 
-> I consider Reviewed-by: to be much stronger that Acked-by:
-> 
+Thanks for catching it. Will fix and repost.
 
-This driver has been really carefully checked.
-
-Reviewed-by: Krzysztof Helt<krzysztof.h1@wp.pl>
-
-Krzysztof
-
-----------------------------------------------------------------------
-Tanie rozmowy!
-Sprawdz >>> http://link.interia.pl/f1e13  
-
+jaya
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

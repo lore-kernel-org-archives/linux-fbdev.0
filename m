@@ -1,23 +1,24 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [RFC 2.6.26-rc3 0/5] am200epd, pxafb,
- metronomefb changes v2
-Date: Sat, 31 May 2008 08:41:25 +0200
-Message-ID: <20080531084125.ae345e14.krzysztof.h1@poczta.fm>
+Subject: Re: [RFC 2.6.26-rc3 1/5] pxafb: module
+ unloading support
+Date: Sat, 31 May 2008 08:43:46 +0200
+Message-ID: <20080531084346.30ca0f2a.krzysztof.h1@poczta.fm>
 References: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1212208915-24544-2-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2KkP-0008AF-5V for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 23:39:25 -0700
+	id 1K2Kma-0008Mh-OM for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 May 2008 23:41:40 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2KkN-0005ui-OZ
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2KmZ-00061c-AZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 23:39:25 -0700
-In-Reply-To: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
+	Fri, 30 May 2008 23:41:40 -0700
+In-Reply-To: <1212208915-24544-2-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,34 +32,28 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
 Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Sat, 31 May 2008 00:41:50 -0400
+On Sat, 31 May 2008 00:41:51 -0400
 Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
 
-> 
-> Hi Eric, arm and fbdev friends,
-> 
-> This is version 2 of this RFC and contains the following updates:
-> - skip setting g_options to __initdata since it is used both by init and
->   probe functions 
-> - fix ordering of iounmap/release_mem_region
-> - fix setting of smem_len (thanks to Krzysztof for above feedback)
-> - make user_wfm_size static as caught by sparse 
+> This patch to pxafb adds:
+>  - exit and remove handlers
+>  - changes to use __devinit/exit for probe functions and __init/exit for
+>    init/exit functions
+>  - removes initdata from g_options since it is accessed both at init and probe
 > 
 
-Hey, slow down. I have intended to review all your patches, but I have not had
-enough time yet. Please wait till Monday.
+The best solution is to leave it as __devinitdata as it is accessed only by __init
+and __devinit functions.
+Your previous error was to change the functions to __devinit while changing
+the g_options to __initdata.
 
-Also, if the am200epd changes are less then say 40% of the original
-driver I would prefer to see an incremental patch, not replacement of
-the driver as it is not clear what was changed.
-
-Kind regards,
+Regards,
 Krzysztof
 
 
 ----------------------------------------------------------------------
-Mucha powraca!
-Sprawdz >>> http://link.interia.pl/f1e0d
+Za co Doda nienawidzi Feel?
+Sprawdz >>> http://link.interia.pl/f1e0b
 
 
 -------------------------------------------------------------------------

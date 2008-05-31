@@ -1,8 +1,8 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc3 1/5] pxafb: module unloading
-	support
-Date: Sat, 31 May 2008 00:41:51 -0400
-Message-ID: <1212208915-24544-2-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc3 2/5] pxafb: add shared
+	framebuffer interface
+Date: Sat, 31 May 2008 00:41:52 -0400
+Message-ID: <1212208915-24544-3-git-send-email-jayakumar.lkml@gmail.com>
 References: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2Jo6-0002eG-6Z for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 22:39:10 -0700
+	id 1K2JoD-0002eN-OZ for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 May 2008 22:39:17 -0700
 Received: from wf-out-1314.google.com ([209.85.200.172])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2Jo5-0005Ay-SY
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2JoD-0005Ay-B7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 22:39:10 -0700
+	Fri, 30 May 2008 22:39:17 -0700
 Received: by wf-out-1314.google.com with SMTP id 27so134773wfd.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 30 May 2008 22:39:09 -0700 (PDT)
+	Fri, 30 May 2008 22:39:17 -0700 (PDT)
 In-Reply-To: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,166 +34,206 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-This patch to pxafb adds:
- - exit and remove handlers
- - changes to use __devinit/exit for probe functions and __init/exit for
-   init/exit functions
- - removes initdata from g_options since it is accessed both at init and probe
+These changes are to make it possible for a secondary driver to share the
+pxafb framebuffer. The changes include:
+- adding clkdev entry in pxafb_mach_info so that a driver can pass in the
+  correct struct device owner for the LCDCLK.
+- adding custom_xfer_div entry so that a driver can have custom sized
+  transfers. For example, the metronome controller uses 16 bit AMLCD
+  transfers but actually has 3 bit pixels in 8 bit containers.
+- adding extra_video_mem entry so that a driver can tell pxafb of its
+  additional needs.
+- adding share_video_mem/unshare_video_mem callbacks to notify the secondary
+  driver of the framebuffer address, to allow refcounting, and to cleanup on
+  completion.
 
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 ---
- drivers/video/pxafb.c |   61 ++++++++++++++++++++++++++++++++++++++----------
- 1 files changed, 48 insertions(+), 13 deletions(-)
+ arch/arm/mach-pxa/devices.c      |    2 +
+ drivers/video/pxafb.c            |   45 ++++++++++++++++++++++++++++++++-----
+ include/asm-arm/arch-pxa/pxafb.h |    9 +++++++
+ 3 files changed, 50 insertions(+), 6 deletions(-)
 
+diff --git a/arch/arm/mach-pxa/devices.c b/arch/arm/mach-pxa/devices.c
+index d6c05b6..b72b73a 100644
+--- a/arch/arm/mach-pxa/devices.c
++++ b/arch/arm/mach-pxa/devices.c
+@@ -130,6 +130,8 @@ struct platform_device pxa_device_fb = {
+ 
+ void __init set_pxa_fb_info(struct pxafb_mach_info *info)
+ {
++	if (!info->clkdev)
++		info->clkdev = &pxa_device_fb.dev;
+ 	pxa_register_device(&pxa_device_fb, info);
+ }
+ 
 diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 274bc93..dc0cefa 100644
+index dc0cefa..f8df2c7 100644
 --- a/drivers/video/pxafb.c
 +++ b/drivers/video/pxafb.c
-@@ -1246,7 +1246,7 @@ static int pxafb_resume(struct platform_device *dev)
+@@ -57,6 +57,8 @@
+  */
+ #define DEBUG_VAR 1
+ 
++static struct platform_driver pxafb_driver;
++
+ #include "pxafb.h"
+ 
+ /* Bits which should not be set in machine configuration structures */
+@@ -775,10 +777,15 @@ int pxafb_smart_flush(struct fb_info *info)
+ static void setup_parallel_timing(struct pxafb_info *fbi,
+ 				  struct fb_var_screeninfo *var)
+ {
++	struct pxafb_mach_info *inf = fbi->dev->platform_data;
+ 	unsigned int lines_per_panel, pcd = get_pcd(fbi, var->pixclock);
++	unsigned int pix_per_line = var->xres;
++
++	if (inf->custom_xfer_div)
++		pix_per_line /= inf->custom_xfer_div;
+ 
+ 	fbi->reg_lccr1 =
+-		LCCR1_DisWdth(var->xres) +
++		LCCR1_DisWdth(pix_per_line) +
+ 		LCCR1_HorSnchWdth(var->hsync_len) +
+ 		LCCR1_BegLnDel(var->left_margin) +
+ 		LCCR1_EndLnDel(var->right_margin);
+@@ -819,6 +826,7 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
+ {
+ 	u_long flags;
+ 	size_t nbytes;
++	struct pxafb_mach_info *inf = fbi->dev->platform_data;
+ 
+ #if DEBUG_VAR
+ 	if (!(fbi->lccr0 & LCCR0_LCDT)) {
+@@ -878,6 +886,8 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
+ 	fbi->reg_lccr3 |= pxafb_bpp_to_lccr3(var);
+ 
+ 	nbytes = var->yres * fbi->fb.fix.line_length;
++	if (inf->custom_xfer_div)
++		nbytes /= inf->custom_xfer_div;
+ 
+ 	if ((fbi->lccr0 & LCCR0_SDS) == LCCR0_Dual) {
+ 		nbytes = nbytes / 2;
+@@ -1246,14 +1256,17 @@ static int pxafb_resume(struct platform_device *dev)
   *      cache.  Once this area is remapped, all virtual memory
   *      access to the video memory should occur at the new region.
   */
--static int __init pxafb_map_video_memory(struct pxafb_info *fbi)
-+static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
+-static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
++static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi,
++					 struct pxafb_mach_info *inf)
  {
++	int ret;
  	/*
  	 * We reserve one page for the palette, plus the size
-@@ -1346,7 +1346,7 @@ decode_mode:
- 	pxafb_decode_mode_info(fbi, inf->modes, inf->num_modes);
- }
+ 	 * of the framebuffer.
+ 	 */
+ 	fbi->video_offset = PAGE_ALIGN(sizeof(struct pxafb_dma_buff));
+-	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset);
++	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset +
++					inf->extra_video_mem);
+ 	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
+ 					      &fbi->map_dma, GFP_KERNEL);
  
--static struct pxafb_info * __init pxafb_init_fbinfo(struct device *dev)
-+static struct pxafb_info * __devinit pxafb_init_fbinfo(struct device *dev)
- {
- 	struct pxafb_info *fbi;
- 	void *addr;
-@@ -1408,7 +1408,7 @@ static struct pxafb_info * __init pxafb_init_fbinfo(struct device *dev)
- }
- 
- #ifdef CONFIG_FB_PXA_PARAMETERS
--static int __init parse_opt_mode(struct device *dev, const char *this_opt)
-+static int __devinit parse_opt_mode(struct device *dev, const char *this_opt)
- {
- 	struct pxafb_mach_info *inf = dev->platform_data;
- 
-@@ -1467,7 +1467,7 @@ done:
- 	return 0;
- }
- 
--static int __init parse_opt(struct device *dev, char *this_opt)
-+static int __devinit parse_opt(struct device *dev, char *this_opt)
- {
- 	struct pxafb_mach_info *inf = dev->platform_data;
- 	struct pxafb_mode_info *mode = &inf->modes[0];
-@@ -1565,7 +1565,7 @@ static int __init parse_opt(struct device *dev, char *this_opt)
- 	return 0;
- }
- 
--static int __init pxafb_parse_options(struct device *dev, char *options)
-+static int __devinit pxafb_parse_options(struct device *dev, char *options)
- {
- 	char *this_opt;
- 	int ret;
-@@ -1584,10 +1584,10 @@ static int __init pxafb_parse_options(struct device *dev, char *options)
- 	return 0;
- }
- 
--static char g_options[256] __devinitdata = "";
-+static char g_options[256] = "";
- 
- #ifndef CONFIG_MODULES
--static int __devinit pxafb_setup_options(void)
-+static int __init pxafb_setup_options(void)
- {
- 	char *options = NULL;
- 
-@@ -1611,7 +1611,7 @@ MODULE_PARM_DESC(options, "LCD parameters (see Documentation/fb/pxafb.txt)");
- #define pxafb_setup_options()		(0)
+@@ -1280,6 +1293,13 @@ static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
+ 		fbi->smart_cmds = (uint16_t *) fbi->dma_buff->cmd_buff;
+ 		fbi->n_smart_cmds = 0;
  #endif
++		if (inf->share_video_mem) {
++			ret = inf->share_video_mem(fbi->fb.screen_base,
++				fbi->screen_dma, pxafb_driver.driver.owner,
++				inf->extra_data);
++			if (ret)
++				return ret;
++		}
+ 	}
  
--static int __init pxafb_probe(struct platform_device *dev)
-+static int __devinit pxafb_probe(struct platform_device *dev)
+ 	return fbi->map_cpu ? 0 : -ENOMEM;
+@@ -1290,6 +1310,7 @@ static void pxafb_decode_mode_info(struct pxafb_info *fbi,
+ 				   unsigned int num_modes)
  {
- 	struct pxafb_info *fbi;
- 	struct pxafb_mach_info *inf;
-@@ -1763,29 +1763,58 @@ static int __init pxafb_probe(struct platform_device *dev)
+ 	unsigned int i, smemlen;
++	struct pxafb_mach_info *inf = fbi->dev->platform_data;
  
+ 	pxafb_setmode(&fbi->fb.var, &modes[0]);
+ 
+@@ -1297,6 +1318,8 @@ static void pxafb_decode_mode_info(struct pxafb_info *fbi,
+ 		smemlen = modes[i].xres * modes[i].yres * modes[i].bpp / 8;
+ 		if (smemlen > fbi->fb.fix.smem_len)
+ 			fbi->fb.fix.smem_len = smemlen;
++		if (inf->custom_xfer_div)
++			fbi->fb.fix.smem_len /= inf->custom_xfer_div;
+ 	}
+ }
+ 
+@@ -1360,7 +1383,7 @@ static struct pxafb_info * __devinit pxafb_init_fbinfo(struct device *dev)
+ 	memset(fbi, 0, sizeof(struct pxafb_info));
+ 	fbi->dev = dev;
+ 
+-	fbi->clk = clk_get(dev, "LCDCLK");
++	fbi->clk = clk_get(inf->clkdev, "LCDCLK");
+ 	if (IS_ERR(fbi->clk)) {
+ 		kfree(fbi);
+ 		return NULL;
+@@ -1701,8 +1724,12 @@ static int __devinit pxafb_probe(struct platform_device *dev)
+ 	}
+ 
+ 	/* Initialize video memory */
+-	ret = pxafb_map_video_memory(fbi);
+-	if (ret) {
++	ret = pxafb_map_video_memory(fbi, inf);
++	if (ret == -ENODEV) {
++		dev_err(&dev->dev, "Failed device binding: %d\n", ret);
++		ret = -ENODEV;
++		goto failed_free_mem;
++	} else if (ret) {
+ 		dev_err(&dev->dev, "Failed to allocate video RAM: %d\n", ret);
+ 		ret = -ENOMEM;
+ 		goto failed_free_io;
+@@ -1764,6 +1791,8 @@ static int __devinit pxafb_probe(struct platform_device *dev)
  failed_free_irq:
  	free_irq(irq, fbi);
--failed_free_res:
--	release_mem_region(r->start, r->end - r->start + 1);
--failed_free_io:
--	iounmap(fbi->mmio_base);
  failed_free_mem:
++	if (inf->unshare_video_mem)
++		inf->unshare_video_mem(inf->extra_data);
  	dma_free_writecombine(&dev->dev, fbi->map_size,
  			fbi->map_cpu, fbi->map_dma);
-+failed_free_io:
-+	iounmap(fbi->mmio_base);
-+failed_free_res:
-+	release_mem_region(r->start, r->end - r->start + 1);
- failed:
- 	platform_set_drvdata(dev, NULL);
- 	kfree(fbi);
- 	return ret;
- }
+ failed_free_io:
+@@ -1783,8 +1812,12 @@ static int __devexit pxafb_remove(struct platform_device *dev)
+ 	int irq;
  
-+static int __devexit pxafb_remove(struct platform_device *dev)
-+{
-+	struct pxafb_info *fbi = platform_get_drvdata(dev);
-+	struct resource *r;
-+	int irq;
-+
-+	if (fbi) {
-+		struct fb_info *info = &fbi->fb;
-+
-+		dma_free_writecombine(&dev->dev, fbi->map_size,
-+					fbi->map_cpu, fbi->map_dma);
-+
-+		irq = platform_get_irq(dev, 0);
-+		free_irq(irq, fbi);
-+
-+		iounmap(fbi->mmio_base);
-+
-+		r = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+		release_mem_region(r->start, r->end - r->start + 1);
-+
-+		fb_dealloc_cmap(&info->cmap);
-+		unregister_framebuffer(info);
-+		kfree(fbi);
-+	}
-+	return 0;
-+}
-+
- static struct platform_driver pxafb_driver = {
- 	.probe		= pxafb_probe,
-+	.remove 	= pxafb_remove,
- 	.suspend	= pxafb_suspend,
- 	.resume		= pxafb_resume,
- 	.driver		= {
-+		.owner	= THIS_MODULE,
- 		.name	= "pxa2xx-fb",
- 	},
+ 	if (fbi) {
++		struct pxafb_mach_info *inf;
+ 		struct fb_info *info = &fbi->fb;
+ 
++		inf = dev->dev.platform_data;
++		if (inf->unshare_video_mem)
++			inf->unshare_video_mem(inf->extra_data);
+ 		dma_free_writecombine(&dev->dev, fbi->map_size,
+ 					fbi->map_cpu, fbi->map_dma);
+ 
+diff --git a/include/asm-arm/arch-pxa/pxafb.h b/include/asm-arm/arch-pxa/pxafb.h
+index bbd2239..c703633 100644
+--- a/include/asm-arm/arch-pxa/pxafb.h
++++ b/include/asm-arm/arch-pxa/pxafb.h
+@@ -138,9 +138,18 @@ struct pxafb_mach_info {
+ 	 * All other bits in LCCR4 should be left alone.
+ 	 */
+ 	u_int		lccr4;
++	unsigned int	custom_xfer_div; /* divides the pixel transfer */
++	/* size of extra mem needed for secondary driver */
++	unsigned int	extra_video_mem;
++	void		*extra_data; /* extra data for secondary */
+ 	void (*pxafb_backlight_power)(int);
+ 	void (*pxafb_lcd_power)(int, struct fb_var_screeninfo *);
+ 	void (*smart_update)(struct fb_info *);
++	/* share_video_mem allows client drivers to get our framebuffer */
++	int (*share_video_mem)(unsigned char *, dma_addr_t, struct module *,
++				void *);
++	void (*unshare_video_mem)(void *);
++	struct device *clkdev;
  };
- 
--static int __devinit pxafb_init(void)
-+static int __init pxafb_init(void)
- {
- 	if (pxafb_setup_options())
- 		return -EINVAL;
-@@ -1793,7 +1822,13 @@ static int __devinit pxafb_init(void)
- 	return platform_driver_register(&pxafb_driver);
- }
- 
-+static void __exit pxafb_exit(void)
-+{
-+	platform_driver_unregister(&pxafb_driver);
-+}
-+
- module_init(pxafb_init);
-+module_exit(pxafb_exit);
- 
- MODULE_DESCRIPTION("loadable framebuffer driver for PXA");
- MODULE_LICENSE("GPL");
+ void set_pxa_fb_info(struct pxafb_mach_info *hard_pxa_fb_info);
+ void set_pxa_fb_parent(struct device *parent_dev);
 -- 
 1.5.3.6
 

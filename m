@@ -1,97 +1,97 @@
-From: Fabio Giovagnini <fabio.giovagnini@aurion-tech.com>
-Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver V2
-Date: Sat, 31 May 2008 16:25:26 +0200
-Message-ID: <200805311625.27018.fabio.giovagnini@aurion-tech.com>
-References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se> <20080530120606.9ff1b384.akpm@linux-foundation.org> <20080530214418.f024ba0c.krzysztof.h1@poczta.fm>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.26-rc3 5/5] mach-pxa: add am200epd
+	support
+Date: Sat, 31 May 2008 13:12:32 -0400
+Message-ID: <45a44e480805311012n11091448o11c29efc7ed92d2b@mail.gmail.com>
+References: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1212208915-24544-6-git-send-email-jayakumar.lkml@gmail.com>
+	<20080531140303.06bb6386.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20080530214418.f024ba0c.krzysztof.h1@poczta.fm>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1K2Ud8-0007ZK-KP for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 31 May 2008 10:12:34 -0700
+Received: from wf-out-1314.google.com ([209.85.200.172])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2Ud8-0006Pi-AG
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 31 May 2008 10:12:34 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so277530wfd.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 31 May 2008 10:12:33 -0700 (PDT)
+In-Reply-To: <20080531140303.06bb6386.krzysztof.h1@poczta.fm>
 Content-Disposition: inline
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Magnus Damm <magnus.damm@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, mano@roarinelk.homelinux.net, lethal@linux-sh.org
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-Which differences are bteween SuperH Mobile LCDC frame buffer and SH2A =
-7203=20
-LCDC controller?
-
-Thanks a lot.
-
-Best regards
-
-
-Alle 21:44, venerd=EC 30 maggio 2008, Krzysztof Helt ha scritto:
-> On Fri, 30 May 2008 12:06:06 -0700
+On Sat, May 31, 2008 at 8:03 AM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+>> @@ -569,13 +579,16 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+>>  {
+> (...)
 >
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Fri, 30 May 2008 18:28:03 +0200 Krzysztof Helt <krzysztof.h1@poc=
-zta.fm>=20
-wrote:
-> > > On Fri, 30 May 2008 20:02:39 +0900
-> > >
-> > > Magnus Damm <magnus.damm@gmail.com> wrote:
-> > > > This is the SuperH Mobile LCDC frame buffer driver V2, adding
-> > > > support for the LCDC block found in SuperH Mobile processors. T=
-he
-> > > > hardware supports up to two LCD panels per LCDC block, and both=
- RGB
-> > > > and SYS interfaces can be used to hook up LCD panels/modules.
-> > > >
-> > > > The device driver is a regular platform driver, so LCD configur=
-ation
-> > > > and board specific hooks are passed to the driver using platfor=
-m
-> > > > data. LCD modules using SYS interface often require special
-> > > > configuration using the SYS bus, and to solve this cleanly the =
-driver
-> > > > provides SYS interface operations to the board code.
-> > > >
-> > > > Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel=
- and
-> > > > WVGA panels using RGB16 and RGB18 interfaces.
-> > > >
-> > > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> > > > ---
-> > >
-> > > Acked-by: Krzysztof Helt<krzysztof.h1@wp.pl>
-> > >
-> > > Does anybody know which tag is better for a reviewed patch:
-> > > "Acked-by" or "Reviewed-by" ?
-> >
-> > I consider Reviewed-by: to be much stronger that Acked-by:
+>> +     fw = epd_frame_table[epd_dt_index].fw;
+>> +     fh = epd_frame_table[epd_dt_index].fh;
+>> +     videomemorysize = fw * fh;
+>>       videomemory = vmalloc(videomemorysize);
+>>       if (!videomemory)
+>>               return -ENOMEM;
 >
-> This driver has been really carefully checked.
->
-> Reviewed-by: Krzysztof Helt<krzysztof.h1@wp.pl>
->
-> Krzysztof
->
-> ---------------------------------------------------------------------=
--
-> Tanie rozmowy!
-> Sprawdz >>> http://link.interia.pl/f1e13
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I suppose the put_module should be done before return (see the whole
+> function code).
 
---=20
-=46abio Giovagnini
+Ah, yes. Ok, will correct that.
 
-Aurion s.r.l.
-via degli orti 11,
-40050 Funo di Argelato (BO)
-P.I e C.F.
-00885711200
-Tel. +39.335.8350919
-=46ax +39.051.8659009
+> In order to reduce number of goto labels you can do something
+> like this (for allocated pointers):
+>
+> err_exit:
+>    if (pointer)
+>        free(pointer)
+>   do_something_more
+>
+> instead
+>
+> err_exit1:
+>  free(pointer)
+> err_exit2:
+>   do_something_more
 
-www.aurion-tech.com
+Ok. I'll take a look at doing it that way.
 
-account telefono VoIP skype (www.skype.com):
-aurion.giovagnini
+>
+>>  static int __devexit metronomefb_remove(struct platform_device *dev)
+>> @@ -734,14 +764,13 @@ static int __devexit metronomefb_remove(struct platform_device *dev)
+>>       if (info) {
+>>               struct metronomefb_par *par = info->par;
+>>               fb_deferred_io_cleanup(info);
+>> -             dma_free_writecombine(&dev->dev, par->metromemsize,
+>> -                                     par->metromem, par->metromem_dma);
+>>               fb_dealloc_cmap(&info->cmap);
+>>               vfree(par->csum_table);
+>>               unregister_framebuffer(info);
+>
+> I am not sure but to release the color map before
+> unregistering the framebuffer is probably a mistake.
+
+Agreed. I'll correct that.
+
+Thanks,
+jaya
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by: Microsoft
+Defy all challenges. Microsoft(R) Visual Studio 2008.
+http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/

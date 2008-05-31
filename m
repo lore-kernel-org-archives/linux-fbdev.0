@@ -1,29 +1,24 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc3 1/5] pxafb: module
-	unloading support
-Date: Fri, 30 May 2008 21:02:05 -0400
-Message-ID: <45a44e480805301802i7cea217fw8ef55be8dccc01b9@mail.gmail.com>
-References: <1212150530-14941-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1212150530-14941-2-git-send-email-jayakumar.lkml@gmail.com>
-	<20080530190453.2e205e1d.krzysztof.h1@poczta.fm>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc3 0/5] am200epd, pxafb,
+	metronomefb changes v2
+Date: Sat, 31 May 2008 00:41:50 -0400
+Message-ID: <1212208915-24544-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2FTy-0002km-2m for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 18:02:06 -0700
-Received: from wf-out-1314.google.com ([209.85.200.175])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2FTx-0005Jt-Oq
+	id 1K2Jo1-0002dr-HG for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 May 2008 22:39:05 -0700
+Received: from wf-out-1314.google.com ([209.85.200.172])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2Jo0-0005Ay-8e
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 May 2008 18:02:05 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so86295wfd.4
+	Fri, 30 May 2008 22:39:05 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so134773wfd.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 30 May 2008 18:02:05 -0700 (PDT)
-In-Reply-To: <20080530190453.2e205e1d.krzysztof.h1@poczta.fm>
-Content-Disposition: inline
+	Fri, 30 May 2008 22:39:03 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,46 +29,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: ymiao3@marvell.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Fri, May 30, 2008 at 1:04 PM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> On Fri, 30 May 2008 08:28:46 -0400
-> Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
->
->> -static char g_options[256] __devinitdata = "";
->> +static char g_options[256] __initdata = "";
->>
->
-> This is not right. The g_options is used by
-> the pxafb_probe (below) and pxafb_parse_options
-> which are now __devinit.
 
-Ah, I see it now. Will fix.
+Hi Eric, arm and fbdev friends,
 
->> +
->> +             r = platform_get_resource(dev, IORESOURCE_MEM, 0);
->> +             release_mem_region(r->start, r->end - r->start + 1);
->> +
->> +             iounmap(fbi->mmio_base);
->> +
->
-> I can be wrong here, but should not the iounmap be done before
-> releasing the iomaped region?
->
+This is version 2 of this RFC and contains the following updates:
+- skip setting g_options to __initdata since it is used both by init and
+  probe functions 
+- fix ordering of iounmap/release_mem_region
+- fix setting of smem_len (thanks to Krzysztof for above feedback)
+- make user_wfm_size static as caught by sparse 
 
-Yes, I agree with you. I used the same sequence I saw in the
-pxafb_probe failout path:
+This RFC consists of five patches intended to improve the condition of the
+am200epd devkit support. The am200epd devkit contains a gumstix (pxa255) and
+a carrier board (am200epd or Lyre), and a metronome display controller.
+Previously, there was a drivers/video/am200epd driver that manipulated pxa
+LCDC registers and GPSR/GPLR registers directly. That was clearly wrong so I
+have removed it and written a new mach-pxa am200epd support driver. This
+driver interfaces with pxafb through a set of callbacks to share/unshare
+pxafb's framebuffer and achieve the same functionality without manipulating
+any pxa registers directly. The patches are split as follows:
 
-failed_free_res:
-        release_mem_region(r->start, r->end - r->start + 1);
-failed_free_io:
-        iounmap(fbi->mmio_base);
+1 pxafb: module unloading support
+2 pxafb: add shared framebuffer interface
+3 gumstix: conversion to MFP support and add bluetooth support
+4 am200epd: remove am200epd platform device driver
+5 mach-pxa: add am200epd support
 
-I will reorder both as the correction.
+I would be grateful for any feedback and advice.
 
 Thanks,
 jaya
+
 
 -------------------------------------------------------------------------
 This SF.net email is sponsored by: Microsoft

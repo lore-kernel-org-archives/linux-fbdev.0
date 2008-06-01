@@ -1,9 +1,9 @@
-From: Akinobu@sc8-sf-spam2.sourceforge.net,
-	"Mita <akinobu.mita"@gmail.com
-Subject: [patch 18/23] aty: use memory_read_from_buffer
-Date: Mon, 02 Jun 2008 00:00:35 +0900
-Message-ID: <20080601150224.821886060@gmail.com>
-References: <20080601150017.176540188@gmail.com>
+From: akinobu.mita@gmail.com
+Subject: [patch -v2 18/23] aty: use
+	memory_read_from_buffer
+Date: Mon, 02 Jun 2008 08:13:47 +0900
+Message-ID: <20080601231628.820854976@gmail.com>
+References: <20080601231329.223608711@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2pGZ-0000Vm-JQ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Jun 2008 08:14:43 -0700
-Received: from rv-out-0708.google.com ([209.85.198.242])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2pGZ-0005qu-6O
+	id 1K2wyk-0002eM-Qd for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 01 Jun 2008 16:28:47 -0700
+Received: from rv-out-0708.google.com ([209.85.198.248])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2wyh-00066d-V4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Jun 2008 08:14:39 -0700
-Received: by rv-out-0708.google.com with SMTP id f25so479778rvb.22
+	Sun, 01 Jun 2008 16:28:45 -0700
+Received: by rv-out-0708.google.com with SMTP id f25so578917rvb.22
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 01 Jun 2008 08:14:38 -0700 (PDT)
+	Sun, 01 Jun 2008 16:28:43 -0700 (PDT)
 Content-Disposition: inline; filename=aty-use-memory-read-from-buffer.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,

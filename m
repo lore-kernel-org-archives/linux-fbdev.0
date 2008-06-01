@@ -1,14 +1,13 @@
-From: George Tsalikis <aliverius-Im0InqVrh0jk1uMJSBkQmQ@public.gmane.org>
-Subject: Re: [directfb-dev]  DirectFB   without FBDev
-Date: Sun, 01 Jun 2008 11:20:12 +0200
-Message-ID: <g1tq1r$qu4$1@ger.gmane.org>
-References: <483D7344.6030503@directfb.org>	<Pine.LNX.4.64.0805281901300.15083@anakin>	<483D9453.1080700@directfb.org>	<483D9C30.8010301@acdstar.com>	<483D9F4E.4000707@directfb.org>	<20080529165452.GA7708@powerlinux.fr>	<4840EB76.6040506@directfb.org>	<20080531062127.GA5425@powerlinux.fr>	<4840F060.7090500@directfb.org>	<20080531064501.GA7526@powerlinux.fr>	<g1sd2n$q0v$1@ger.gmane.org>
-	<48424B49.8080202@directfb.org>
+From: Denis Oliver Kropp <dok-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [directfb-dev] DirectFB without FBDev
+Date: Sun, 01 Jun 2008 11:31:34 +0200
+Message-ID: <48426C76.5080606@directfb.org>
+References: <483D7344.6030503@directfb.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <48424B49.8080202-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <483D7344.6030503-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-users>,
 	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
@@ -19,36 +18,62 @@ List-Subscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-user
 	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
 Sender: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
 Errors-To: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
-To: directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
-Cc: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, directfb-dev-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
+To: directfb-dev-iGvX3keArt1g9hUCZPvPmw@public.gmane.org, directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
+Cc: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 
-Ty9IIERlbmlzIE9saXZlciBLcm9wcCDOrc6zz4HOsc+IzrU6Cj4gR2VvcmdlIFRzYWxpa2lzIHdy
-b3RlOgo+PiBJIGFtIHNvcnJ5IHRvIGludHJ1ZGUgaW4geW91ciBkaXNjdXNzaW9uLCBzaW5jZSBp
-IGFtIG5vdCBhbiBleHBlcnQgYnV0IGkgCj4+IHdvdWxkIGxpa2UgdG8gcG9pbnQ6Cj4+IFNob3Vs
-ZG4ndCB5b3UgY29uc2lkZXIgbm93IHRvIGJlY29tZSBhcyBjcm9zcy1wbGF0Zm9ybSBrZXJuZWwt
-d2lzZSBhcyAKPj4gcG9zc2libGU/Cj4gCj4gRFJJIGlzIHNvbWV3aGF0IGNyb3NzIHBsYXRmb3Jt
-IHJ1bm5pbmcgb24gTGludXggYW5kIEJTRC4KPiAKSSB0aG91Z2h0IGl0IHdhcyBMaW51eCBhbmQg
-YW1vbmcgdGhlIEJTRHMgb25seSBGcmVlQlNELgoKPiBEaXJlY3RGQiBpcyBjcm9zcyBwbGF0Zm9y
-bSBhcyBpdCdzIGEgdXNlciBzcGFjZSBsaWJyYXJ5IGFuZCBjYW4gYmUgcG9ydGVkCj4gdG8gYW55
-IG90aGVyIE9TIHdpdGggYSBiaXQgb2YgUE9TSVggc3VwcG9ydC4gVGhlcmUncyBvbmx5IGEga2Vy
-bmVsIG1vZHVsZQo+ICh1c3VhbGx5IHNtYWxsKSBmb3IgY2VydGFpbiBkcml2ZXJzIG9yIGluIGNh
-c2UgeW91IHdhbnQgdG8gcnVuIG11bHRpcGxlCj4gcHJvY2Vzc2VzIGluIG9uZSBzZXNzaW9uLiBC
-dXQgaWYgdGhlIE9TIGRvZXMgbm90IGhhdmUgc2VwYXJhdGUgcHJvY2Vzc2VzLAo+IGl0J3Mgbm90
-IHJlcXVpcmVkIGFueWhvdywgYXMgZWFjaCBhcHBsaWNhdGlvbiBpcyBhIHRocmVhZCB0aGVyZS4K
-PiAKU3BlYWtpbmcgYWJvdXQgRnVzaW9uPwoKPiBXaGF0IGRvIHlvdSBtZWFuIGJ5IGtlcm5lbC13
-aXNlPyBMaWtlIERSSSB3aXRoIHNoYXJlZCBrZXJuZWwgY29kZSBiZXR3ZWVuCj4gTGludXggYW5k
-IEJTRCBvciBsaWtlIERpcmVjdEZCIHdpdGggc2hhcmVkIHVzZXIgc3BhY2UgY29kZSBwb3J0YWJs
-ZSBvdmVyCj4gZGlmZmVyZW50IGtlcm5lbHM/Cj4gCkkgbGlrZSBEaXJlY3RGQiBsaWtlIGhvdyBp
-dCBpcyBub3cuIEV2ZW4gdGhvdWdoIHRoZSBEUk0ga2VybmVsIGNvbXBvbmVudCAKd291bGQgc2F2
-ZSB5b3Ugc29tZSBjb2RpbmcgaXQgd291bGQgYmluZCBEaXJlY3RGQiB0byBhIHNwZWNpZmljIHRl
-YW0ncyAKd29yayBjcmVhdGluZyBhIGdyYWRlIG9mIGRlcGVuZGVuY3kgYW5kIGxpbWl0IGl0IHRv
-IHNwZWNpZmljIGtlcm5lbHMgCndoaWNoIGlzIG5vdCBhaWRpbmcgZGl2ZXJzaXR5IGFuZCBldm9s
-dXRpb24uIFBsdXMgdGhlIG92ZXJoZWFkLCBwbHVzIHRoZSAKZmFjdCB0aGlzIHdpbGwgZ2V0IERp
-cmVjdEZCIG9uZSBzdGVwIGNsb3NlciB0byBYIHdoaWNoIGlzIGltbyAKInBvbGl0aWNhbHkgaW5j
-b3JyZWN0Ii4KCldvdWxkIGl0IGJlIGhhcmQgZm9yIHlvdSB0byBwaWNrIHRoZSBvbGQgRkJEZXYg
-Y29kZSBhbmQgYWRvcHQgaXQgdW5kZXIgCkRpcmVjdEZCPyBXZSBkb250IG5lZWQgb3VyIG93biBr
-ZXJuZWwgbGV2ZWwgaW5mcmFzdHJ1Y3R1cmUgaW4gb3JkZXIgdG8gCmdvIG9uIHdpdGhvdXQgRFJJ
-LgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRpcmVj
-dGZiLXVzZXJzIG1haWxpbmcgbGlzdApkaXJlY3RmYi11c2Vyc0BkaXJlY3RmYi5vcmcKaHR0cDov
-L21haWwuZGlyZWN0ZmIub3JnL2NnaS1iaW4vbWFpbG1hbi9saXN0aW5mby9kaXJlY3RmYi11c2Vy
-cwo=
+Denis Oliver Kropp wrote:
+> Hi,
+> 
+> after getting too depressed by the current state of the FBDev backend with the new
+> surface core I decided to drop FBDev support as it no longer fits into the architecture.
+> 
+> If you feel you like to fix the frame buffer device system module or better the frame
+> buffer device itself, you're welcome to help the FBDev backend to creep over the 1.2 hurdle...
+> 
+> One major bug at the moment is mode switching and pitch values being wrong. It's dumb to
+> return the pitch of the variable mode settings in the fixed settings structure anyhow, but
+> if you like to start with the above mentioned mission, that's where it could begin.
+> 
+> And while you're at it, please also add an ioctl to just simply set the display offset without
+> a virtual resolution and x/y offset values within the whole frame buffer...
+> 
+> I have no idea why the FBDev backend uses the wrong pitch (4096) after switching to RGB16 which
+> should have a pitch of 2048. One out of ten tries did work though. I remember it has been
+> working once I added several workarounds and hacks to keep the FBDev backend alive, but somehow
+> the code or core have changed, I don't know and I'm not in the mood of spending time on cruft
+> like VTs, FBDev etc...
+
+It seems the bug is not happening that often on other
+systems, I was using vmwarefb with a 2.4 kernel.
+
+Right now I can only reproduce it when switching from a fullscreen
+application back to the window stack and that's due to the weird
+workarounds I've added.
+
+> Volunteers are welcome, urgently, I'm going to make a first release candidate of 1.2 tomorrow,
+> most likely after removing the fbdev system module.
+
+I'm partly rewriting the FBDev system module now. Without those
+workarounds, but a different overall structure it should behave
+much better.
+
+Still my wish is to set the frame buffer via byte offset/pitch!
+
+I also forget about those extensions like layer transparency,
+scaling, YUV formats, ...
+
+But I suggest everyone planning some more sophisticated stuff
+not to start writing a frame buffer driver, but starting off
+cleanly in user space with a simple DirectFB driver using the
+devmem system module or writing one yourself.
+
+	http://www.directfb.org/docs/ELC2008/elc2008_directfb_gfx.pdf
+
+-- 
+Best regards,
+   Denis Oliver Kropp
+
+.------------------------------------------.
+| DirectFB - Hardware accelerated graphics |
+| http://www.directfb.org/                 |
+"------------------------------------------"

@@ -1,14 +1,13 @@
 From: Denis Oliver Kropp <dok-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [directfb-dev]  DirectFB   without FBDev
-Date: Sun, 01 Jun 2008 11:38:42 +0200
-Message-ID: <48426E22.2000400@directfb.org>
-References: <483D7344.6030503@directfb.org>	<Pine.LNX.4.64.0805281901300.15083@anakin>	<483D9453.1080700@directfb.org>	<483D9C30.8010301@acdstar.com>	<483D9F4E.4000707@directfb.org>	<20080529165452.GA7708@powerlinux.fr>	<4840EB76.6040506@directfb.org>	<20080531062127.GA5425@powerlinux.fr>	<4840F060.7090500@directfb.org>	<20080531064501.GA7526@powerlinux.fr>	<g1sd2n$q0v$1@ger.gmane.org>	<48424B49.8080202@directfb.org>
-	<g1tq1r$qu4$1@ger.gmane.org>
+Subject: Re: [directfb-dev] DirectFB without FBDev
+Date: Sun, 01 Jun 2008 13:57:17 +0200
+Message-ID: <48428E9D.30808@directfb.org>
+References: <483D7344.6030503@directfb.org> <48426C76.5080606@directfb.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <g1tq1r$qu4$1@ger.gmane.org>
+In-Reply-To: <48426C76.5080606-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-users>,
 	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
@@ -19,53 +18,36 @@ List-Subscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-user
 	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
 Sender: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
 Errors-To: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
-To: George Tsalikis <aliverius-Im0InqVrh0jk1uMJSBkQmQ@public.gmane.org>
-Cc: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org, directfb-dev-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
+To: directfb-dev-iGvX3keArt1g9hUCZPvPmw@public.gmane.org, directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
+Cc: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 
-R2VvcmdlIFRzYWxpa2lzIHdyb3RlOgo+IE8vSCBEZW5pcyBPbGl2ZXIgS3JvcHAgzq3Os8+BzrHP
-iM61Ogo+PiBHZW9yZ2UgVHNhbGlraXMgd3JvdGU6Cj4+PiBJIGFtIHNvcnJ5IHRvIGludHJ1ZGUg
-aW4geW91ciBkaXNjdXNzaW9uLCBzaW5jZSBpIGFtIG5vdCBhbiBleHBlcnQgYnV0IGkgCj4+PiB3
-b3VsZCBsaWtlIHRvIHBvaW50Ogo+Pj4gU2hvdWxkbid0IHlvdSBjb25zaWRlciBub3cgdG8gYmVj
-b21lIGFzIGNyb3NzLXBsYXRmb3JtIGtlcm5lbC13aXNlIGFzIAo+Pj4gcG9zc2libGU/Cj4+IERS
-SSBpcyBzb21ld2hhdCBjcm9zcyBwbGF0Zm9ybSBydW5uaW5nIG9uIExpbnV4IGFuZCBCU0QuCj4+
-Cj4gSSB0aG91Z2h0IGl0IHdhcyBMaW51eCBhbmQgYW1vbmcgdGhlIEJTRHMgb25seSBGcmVlQlNE
-LgoKWW91IHByb2JhYmx5IGJldHRlciBrbm93IHRoYW4gSSA6KQoKPj4gRGlyZWN0RkIgaXMgY3Jv
-c3MgcGxhdGZvcm0gYXMgaXQncyBhIHVzZXIgc3BhY2UgbGlicmFyeSBhbmQgY2FuIGJlIHBvcnRl
-ZAo+PiB0byBhbnkgb3RoZXIgT1Mgd2l0aCBhIGJpdCBvZiBQT1NJWCBzdXBwb3J0LiBUaGVyZSdz
-IG9ubHkgYSBrZXJuZWwgbW9kdWxlCj4+ICh1c3VhbGx5IHNtYWxsKSBmb3IgY2VydGFpbiBkcml2
-ZXJzIG9yIGluIGNhc2UgeW91IHdhbnQgdG8gcnVuIG11bHRpcGxlCj4+IHByb2Nlc3NlcyBpbiBv
-bmUgc2Vzc2lvbi4gQnV0IGlmIHRoZSBPUyBkb2VzIG5vdCBoYXZlIHNlcGFyYXRlIHByb2Nlc3Nl
-cywKPj4gaXQncyBub3QgcmVxdWlyZWQgYW55aG93LCBhcyBlYWNoIGFwcGxpY2F0aW9uIGlzIGEg
-dGhyZWFkIHRoZXJlLgo+Pgo+IFNwZWFraW5nIGFib3V0IEZ1c2lvbj8KClJlZ2FyZGluZyBtdWx0
-aXBsZSBwcm9jZXNzZXMsIHllcy4gWW91IGNvdWxkIGFsc28gdXNlIHRoZSBTeXNWIHVzZXIgc3Bh
-Y2UKbXVsdGkgYXBwIGNvcmUsIGJ1dCBpdCBuZXZlciBmdWxseSB3b3JrZWQgZm9yIG1lIGFuZCBJ
-J20gbm90IHN1cmUgYWJvdXQKdGhlIHBlcmZvcm1hbmNlLgoKPj4gV2hhdCBkbyB5b3UgbWVhbiBi
-eSBrZXJuZWwtd2lzZT8gTGlrZSBEUkkgd2l0aCBzaGFyZWQga2VybmVsIGNvZGUgYmV0d2Vlbgo+
-PiBMaW51eCBhbmQgQlNEIG9yIGxpa2UgRGlyZWN0RkIgd2l0aCBzaGFyZWQgdXNlciBzcGFjZSBj
-b2RlIHBvcnRhYmxlIG92ZXIKPj4gZGlmZmVyZW50IGtlcm5lbHM/Cj4+Cj4gSSBsaWtlIERpcmVj
-dEZCIGxpa2UgaG93IGl0IGlzIG5vdy4gRXZlbiB0aG91Z2ggdGhlIERSTSBrZXJuZWwgY29tcG9u
-ZW50IAo+IHdvdWxkIHNhdmUgeW91IHNvbWUgY29kaW5nIGl0IHdvdWxkIGJpbmQgRGlyZWN0RkIg
-dG8gYSBzcGVjaWZpYyB0ZWFtJ3MgCj4gd29yayBjcmVhdGluZyBhIGdyYWRlIG9mIGRlcGVuZGVu
-Y3kgYW5kIGxpbWl0IGl0IHRvIHNwZWNpZmljIGtlcm5lbHMgCj4gd2hpY2ggaXMgbm90IGFpZGlu
-ZyBkaXZlcnNpdHkgYW5kIGV2b2x1dGlvbi4gUGx1cyB0aGUgb3ZlcmhlYWQsIHBsdXMgdGhlIAo+
-IGZhY3QgdGhpcyB3aWxsIGdldCBEaXJlY3RGQiBvbmUgc3RlcCBjbG9zZXIgdG8gWCB3aGljaCBp
-cyBpbW8gCj4gInBvbGl0aWNhbHkgaW5jb3JyZWN0Ii4KCkRpcmVjdEZCIGZvcnR1bmF0ZWx5IGlz
-IHZlcnkgbW9kdWxhciBhbmQgdXNpbmcgRFJNIHdvdWxkIGp1c3QgbWVhbiB3ZSBhZGQKYW5vdGhl
-ciBzeXN0ZW0gbW9kdWxlIG5leHQgdG8gRkJEZXYsIERldk1lbSwgWDExLCBTREwsIFZOQywgcHJv
-cHJpZXRhcnkuLi4KCkl0IHdvdWxkIGV2ZW4gZml0IHdpdGggdGhlIERSSSBtb2RlbCBvZiBoYXZp
-bmcgY29yZSBmdW5jdGlvbmFsaXR5IGNvbW1vbgp0byBhbGwgZHJpdmVycyAoRGlyZWN0RkIgc3lz
-dGVtIG1vZHVsZSkgYW5kIHNwZWNpZmljIGZ1bmN0aW9ucyBhZGRlZCBieQplYWNoIGRyaXZlciB0
-byBtYWtlIGl0IGNvbXBsZXRlIChEaXJlY3RGQiBncmFwaGljcyBkcml2ZXIpLgoKPiBXb3VsZCBp
-dCBiZSBoYXJkIGZvciB5b3UgdG8gcGljayB0aGUgb2xkIEZCRGV2IGNvZGUgYW5kIGFkb3B0IGl0
-IHVuZGVyIAo+IERpcmVjdEZCPyBXZSBkb250IG5lZWQgb3VyIG93biBrZXJuZWwgbGV2ZWwgaW5m
-cmFzdHJ1Y3R1cmUgaW4gb3JkZXIgdG8gCj4gZ28gb24gd2l0aG91dCBEUkkuCgpZb3UgbWVhbiBw
-dWxsaW5nIGZiY29uIGludG8gdXNlciBzcGFjZT8gVGhlcmUncyBubyB3aW4gZXhjZXB0IGZvciBz
-b21lCmRyaXZlciBjb2RlLCBidXQgYmV0dGVyIHB1bGwgaW4gdGhhdCBhbmQgdXNlIHRoZSBkZXZt
-ZW0gc3lzdGVtIG1vZHVsZSBvcgphIHVpbyBzeXN0ZW0gbW9kdWxlIHRvIGJlIHdyaXR0ZW4gOikK
-Ci0tIApCZXN0IHJlZ2FyZHMsCiAgIERlbmlzIE9saXZlciBLcm9wcAoKLi0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS4KfCBEaXJlY3RGQiAtIEhhcmR3YXJlIGFjY2Vs
-ZXJhdGVkIGdyYXBoaWNzIHwKfCBodHRwOi8vd3d3LmRpcmVjdGZiLm9yZy8gICAgICAgICAgICAg
-ICAgIHwKIi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSIKCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRpcmVjdGZiLXVzZXJz
-IG1haWxpbmcgbGlzdApkaXJlY3RmYi11c2Vyc0BkaXJlY3RmYi5vcmcKaHR0cDovL21haWwuZGly
-ZWN0ZmIub3JnL2NnaS1iaW4vbWFpbG1hbi9saXN0aW5mby9kaXJlY3RmYi11c2Vycwo=
+Denis Oliver Kropp wrote:
+> I'm partly rewriting the FBDev system module now. Without those
+> workarounds, but a different overall structure it should behave
+> much better.
+
+New commits:
+http://git.directfb.org/?p=core/DirectFB.git;a=commit;h=18552ace2ccfd852fac90016844cd30027b432aa
+commit 18552ace2ccfd852fac90016844cd30027b432aa
+Author: Denis Oliver Kropp <dok-NwL2HUT4ws72VUFvYR39d//2nO7Rh1Op@public.gmane.org>
+Date:   Sun Jun 1 15:03:11 2008 +0200
+
+     [fbdev] The big fix[tm]
+
+     Still not working again is support for virtual resolutions with panning,
+     not double/triple buffering which works.
+
+  systems/fbdev/fbdev.c              |  518 +++++++++++++++++++++++++++++-------
+  systems/fbdev/fbdev.h              |   14 +-
+  systems/fbdev/fbdev_surface_pool.c |   53 +++--
+  3 files changed, 467 insertions(+), 118 deletions(-)
+
+
+-- 
+Best regards,
+   Denis Oliver Kropp
+
+.------------------------------------------.
+| DirectFB - Hardware accelerated graphics |
+| http://www.directfb.org/                 |
+"------------------------------------------"

@@ -1,66 +1,54 @@
-From: Denis Oliver Kropp <dok@directfb.org>
-Subject: Re: [directfb-dev] [directfb-users] DirectFB
-	without FBDev
-Date: Sun, 01 Jun 2008 09:10:01 +0200
-Message-ID: <48424B49.8080202@directfb.org>
-References: <483D7344.6030503@directfb.org>	<Pine.LNX.4.64.0805281901300.15083@anakin>	<483D9453.1080700@directfb.org>	<483D9C30.8010301@acdstar.com>	<483D9F4E.4000707@directfb.org>	<20080529165452.GA7708@powerlinux.fr>	<4840EB76.6040506@directfb.org>	<20080531062127.GA5425@powerlinux.fr>	<4840F060.7090500@directfb.org>	<20080531064501.GA7526@powerlinux.fr>
-	<g1sd2n$q0v$1@ger.gmane.org>
+From: George Tsalikis <aliverius-Im0InqVrh0jk1uMJSBkQmQ@public.gmane.org>
+Subject: Re: [directfb-dev]  DirectFB   without FBDev
+Date: Sun, 01 Jun 2008 11:20:12 +0200
+Message-ID: <g1tq1r$qu4$1@ger.gmane.org>
+References: <483D7344.6030503@directfb.org>	<Pine.LNX.4.64.0805281901300.15083@anakin>	<483D9453.1080700@directfb.org>	<483D9C30.8010301@acdstar.com>	<483D9F4E.4000707@directfb.org>	<20080529165452.GA7708@powerlinux.fr>	<4840EB76.6040506@directfb.org>	<20080531062127.GA5425@powerlinux.fr>	<4840F060.7090500@directfb.org>	<20080531064501.GA7526@powerlinux.fr>	<g1sd2n$q0v$1@ger.gmane.org>
+	<48424B49.8080202@directfb.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2hhj-00011A-Ps for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Jun 2008 00:10:11 -0700
-Received: from directfb.org ([212.227.87.76] helo=www.directfb.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K2hhi-0006Hv-Cn
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Jun 2008 00:10:11 -0700
-In-Reply-To: <g1sd2n$q0v$1@ger.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <48424B49.8080202-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: George Tsalikis <aliverius@tsalikis.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, directfb-users@directfb.org, directfb-dev@directfb.org
+List-Unsubscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-users>,
+	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://mail.directfb.org/pipermail/directfb-users>
+List-Post: <mailto:directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <http://mail.directfb.org/cgi-bin/mailman/listinfo/directfb-users>,
+	<mailto:directfb-users-request-iGvX3keArt1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Sender: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
+Errors-To: directfb-users-bounces-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
+To: directfb-users-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
+Cc: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, directfb-dev-iGvX3keArt1g9hUCZPvPmw@public.gmane.org
 
-George Tsalikis wrote:
-> I am sorry to intrude in your discussion, since i am not an expert but i 
-> would like to point:
-> Shouldn't you consider now to become as cross-platform kernel-wise as 
-> possible?
-
-DRI is somewhat cross platform running on Linux and BSD.
-
-DirectFB is cross platform as it's a user space library and can be ported
-to any other OS with a bit of POSIX support. There's only a kernel module
-(usually small) for certain drivers or in case you want to run multiple
-processes in one session. But if the OS does not have separate processes,
-it's not required anyhow, as each application is a thread there.
-
-What do you mean by kernel-wise? Like DRI with shared kernel code between
-Linux and BSD or like DirectFB with shared user space code portable over
-different kernels?
-
--- 
-Best regards,
-   Denis Oliver Kropp
-
-.------------------------------------------.
-| DirectFB - Hardware accelerated graphics |
-| http://www.directfb.org/                 |
-"------------------------------------------"
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+Ty9IIERlbmlzIE9saXZlciBLcm9wcCDOrc6zz4HOsc+IzrU6Cj4gR2VvcmdlIFRzYWxpa2lzIHdy
+b3RlOgo+PiBJIGFtIHNvcnJ5IHRvIGludHJ1ZGUgaW4geW91ciBkaXNjdXNzaW9uLCBzaW5jZSBp
+IGFtIG5vdCBhbiBleHBlcnQgYnV0IGkgCj4+IHdvdWxkIGxpa2UgdG8gcG9pbnQ6Cj4+IFNob3Vs
+ZG4ndCB5b3UgY29uc2lkZXIgbm93IHRvIGJlY29tZSBhcyBjcm9zcy1wbGF0Zm9ybSBrZXJuZWwt
+d2lzZSBhcyAKPj4gcG9zc2libGU/Cj4gCj4gRFJJIGlzIHNvbWV3aGF0IGNyb3NzIHBsYXRmb3Jt
+IHJ1bm5pbmcgb24gTGludXggYW5kIEJTRC4KPiAKSSB0aG91Z2h0IGl0IHdhcyBMaW51eCBhbmQg
+YW1vbmcgdGhlIEJTRHMgb25seSBGcmVlQlNELgoKPiBEaXJlY3RGQiBpcyBjcm9zcyBwbGF0Zm9y
+bSBhcyBpdCdzIGEgdXNlciBzcGFjZSBsaWJyYXJ5IGFuZCBjYW4gYmUgcG9ydGVkCj4gdG8gYW55
+IG90aGVyIE9TIHdpdGggYSBiaXQgb2YgUE9TSVggc3VwcG9ydC4gVGhlcmUncyBvbmx5IGEga2Vy
+bmVsIG1vZHVsZQo+ICh1c3VhbGx5IHNtYWxsKSBmb3IgY2VydGFpbiBkcml2ZXJzIG9yIGluIGNh
+c2UgeW91IHdhbnQgdG8gcnVuIG11bHRpcGxlCj4gcHJvY2Vzc2VzIGluIG9uZSBzZXNzaW9uLiBC
+dXQgaWYgdGhlIE9TIGRvZXMgbm90IGhhdmUgc2VwYXJhdGUgcHJvY2Vzc2VzLAo+IGl0J3Mgbm90
+IHJlcXVpcmVkIGFueWhvdywgYXMgZWFjaCBhcHBsaWNhdGlvbiBpcyBhIHRocmVhZCB0aGVyZS4K
+PiAKU3BlYWtpbmcgYWJvdXQgRnVzaW9uPwoKPiBXaGF0IGRvIHlvdSBtZWFuIGJ5IGtlcm5lbC13
+aXNlPyBMaWtlIERSSSB3aXRoIHNoYXJlZCBrZXJuZWwgY29kZSBiZXR3ZWVuCj4gTGludXggYW5k
+IEJTRCBvciBsaWtlIERpcmVjdEZCIHdpdGggc2hhcmVkIHVzZXIgc3BhY2UgY29kZSBwb3J0YWJs
+ZSBvdmVyCj4gZGlmZmVyZW50IGtlcm5lbHM/Cj4gCkkgbGlrZSBEaXJlY3RGQiBsaWtlIGhvdyBp
+dCBpcyBub3cuIEV2ZW4gdGhvdWdoIHRoZSBEUk0ga2VybmVsIGNvbXBvbmVudCAKd291bGQgc2F2
+ZSB5b3Ugc29tZSBjb2RpbmcgaXQgd291bGQgYmluZCBEaXJlY3RGQiB0byBhIHNwZWNpZmljIHRl
+YW0ncyAKd29yayBjcmVhdGluZyBhIGdyYWRlIG9mIGRlcGVuZGVuY3kgYW5kIGxpbWl0IGl0IHRv
+IHNwZWNpZmljIGtlcm5lbHMgCndoaWNoIGlzIG5vdCBhaWRpbmcgZGl2ZXJzaXR5IGFuZCBldm9s
+dXRpb24uIFBsdXMgdGhlIG92ZXJoZWFkLCBwbHVzIHRoZSAKZmFjdCB0aGlzIHdpbGwgZ2V0IERp
+cmVjdEZCIG9uZSBzdGVwIGNsb3NlciB0byBYIHdoaWNoIGlzIGltbyAKInBvbGl0aWNhbHkgaW5j
+b3JyZWN0Ii4KCldvdWxkIGl0IGJlIGhhcmQgZm9yIHlvdSB0byBwaWNrIHRoZSBvbGQgRkJEZXYg
+Y29kZSBhbmQgYWRvcHQgaXQgdW5kZXIgCkRpcmVjdEZCPyBXZSBkb250IG5lZWQgb3VyIG93biBr
+ZXJuZWwgbGV2ZWwgaW5mcmFzdHJ1Y3R1cmUgaW4gb3JkZXIgdG8gCmdvIG9uIHdpdGhvdXQgRFJJ
+LgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRpcmVj
+dGZiLXVzZXJzIG1haWxpbmcgbGlzdApkaXJlY3RmYi11c2Vyc0BkaXJlY3RmYi5vcmcKaHR0cDov
+L21haWwuZGlyZWN0ZmIub3JnL2NnaS1iaW4vbWFpbG1hbi9saXN0aW5mby9kaXJlY3RmYi11c2Vy
+cwo=

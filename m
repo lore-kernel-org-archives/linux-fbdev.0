@@ -1,62 +1,54 @@
-From: "Magnus Damm" <magnus.damm@gmail.com>
+From: Paul Mundt <lethal@linux-sh.org>
 Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver V2
-Date: Mon, 2 Jun 2008 10:43:57 +0900
-Message-ID: <aec7e5c30806011843k32b692e3q3105b20d7611781a@mail.gmail.com>
-References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se>
-	<20080530120606.9ff1b384.akpm@linux-foundation.org>
-	<20080530214418.f024ba0c.krzysztof.h1@poczta.fm>
-	<200805311625.27018.fabio.giovagnini@aurion-tech.com>
+Date: Mon, 2 Jun 2008 15:09:12 +0900
+Message-ID: <20080602060912.GA24978@linux-sh.org>
+References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se> <20080530182803.5d599d21.krzysztof.h1@poczta.fm> <20080530120606.9ff1b384.akpm@linux-foundation.org>
 Mime-Version: 1.0
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20080530120606.9ff1b384.akpm@linux-foundation.org>
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K2z5b-0006W2-Lo for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Jun 2008 18:43:59 -0700
-Received: from yw-out-1718.google.com ([74.125.46.158])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K2z5b-0004mC-EP
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 01 Jun 2008 18:43:59 -0700
-Received: by yw-out-1718.google.com with SMTP id 6so353909ywa.82
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 01 Jun 2008 18:43:58 -0700 (PDT)
-In-Reply-To: <200805311625.27018.fabio.giovagnini@aurion-tech.com>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Fabio Giovagnini <fabio.giovagnini@aurion-tech.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, lethal@linux-sh.org, Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, Magnus Damm <magnus.damm@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, mano@roarinelk.homelinux.net
 
-On Sat, May 31, 2008 at 11:25 PM, Fabio Giovagnini
-<fabio.giovagnini@aurion-tech.com> wrote:
-> Which differences are bteween SuperH Mobile LCDC frame buffer and SH2A 7203
-> LCDC controller?
+On Fri, May 30, 2008 at 12:06:06PM -0700, Andrew Morton wrote:
+> On Fri, 30 May 2008 18:28:03 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> 
+> > On Fri, 30 May 2008 20:02:39 +0900
+> > Magnus Damm <magnus.damm@gmail.com> wrote:
+> > 
+> > > This is the SuperH Mobile LCDC frame buffer driver V2, adding
+> > > support for the LCDC block found in SuperH Mobile processors. The
+> > > hardware supports up to two LCD panels per LCDC block, and both RGB
+> > > and SYS interfaces can be used to hook up LCD panels/modules.
+> > > 
+> > > The device driver is a regular platform driver, so LCD configuration
+> > > and board specific hooks are passed to the driver using platform data.
+> > > LCD modules using SYS interface often require special configuration
+> > > using the SYS bus, and to solve this cleanly the driver provides SYS
+> > > interface operations to the board code.
+> > > 
+> > > Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel and
+> > > WVGA panels using RGB16 and RGB18 interfaces.
+> > > 
+> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> > > ---
+> > 
+> > Acked-by: Krzysztof Helt<krzysztof.h1@wp.pl>
+> > 
+> > Does anybody know which tag is better for a reviewed patch:
+> > "Acked-by" or "Reviewed-by" ?
+> > 
+> 
+> I consider Reviewed-by: to be much stronger that Acked-by:
+> 
+> You wouldn't believe some of the crap which has had cheerful Acked-by:s :(
 
-Judging from the data sheets the LCDC block in sh7203, sh7763 and
-sh7720 are identical. Except different base address for registers and
-palette. And maybe IRQ number and pin configuration. =) Anyway, the
-sh7760 LCDC is very similar but seems to be missing a few registers.
-I'm sure there are other parts that are using this LCDC block as well.
-Having a shared driver for sh7203/sh7763/sh7720 and sh7760 makes
-sense.
+In that case:
 
-The SuperH Mobile LCDC block (sh7723/sh7722/sh7343) is very different:
-Supported pixel formats, hardware interfaces, number of channels,
-register layout and register width.
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 
-/ magnus
-
--------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+:-)

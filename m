@@ -1,54 +1,43 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] video: SuperH Mobile LCDC Driver V2
-Date: Mon, 2 Jun 2008 15:09:12 +0900
-Message-ID: <20080602060912.GA24978@linux-sh.org>
-References: <20080530110239.21680.46731.sendpatchset@rx1.opensource.se> <20080530182803.5d599d21.krzysztof.h1@poczta.fm> <20080530120606.9ff1b384.akpm@linux-foundation.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Linux-fbdev-devel] [VIDEO] vfb: only enable if explicitly
+ requested when compiled in
+Date: Mon, 2 Jun 2008 18:56:37 +0200
+Message-ID: <20080602185637.bb1dedfb.krzysztof.h1@poczta.fm>
+References: <200806011454.23123.elendil@planet.nl>
 Mime-Version: 1.0
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20080530120606.9ff1b384.akpm@linux-foundation.org>
-Sender: linux-sh-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755914AbYFBQyf@vger.kernel.org>
+In-Reply-To: <200806011454.23123.elendil@planet.nl>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, Magnus Damm <magnus.damm@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, iwamatsu@nigauri.org, linux-sh@vger.kernel.org, mano@roarinelk.homelinux.net
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@gmail.com>
 
-On Fri, May 30, 2008 at 12:06:06PM -0700, Andrew Morton wrote:
-> On Fri, 30 May 2008 18:28:03 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+On Sun, 1 Jun 2008 14:54:22 +0200
+Frans Pop <elendil@planet.nl> wrote:
+
+> From: Frans Pop <elendil@planet.nl>
 > 
-> > On Fri, 30 May 2008 20:02:39 +0900
-> > Magnus Damm <magnus.damm@gmail.com> wrote:
-> > 
-> > > This is the SuperH Mobile LCDC frame buffer driver V2, adding
-> > > support for the LCDC block found in SuperH Mobile processors. The
-> > > hardware supports up to two LCD panels per LCDC block, and both RGB
-> > > and SYS interfaces can be used to hook up LCD panels/modules.
-> > > 
-> > > The device driver is a regular platform driver, so LCD configuration
-> > > and board specific hooks are passed to the driver using platform data.
-> > > LCD modules using SYS interface often require special configuration
-> > > using the SYS bus, and to solve this cleanly the driver provides SYS
-> > > interface operations to the board code.
-> > > 
-> > > Tested on sh7723 and sh7722 processors with a SYS16A QVGA panel and
-> > > WVGA panels using RGB16 and RGB18 interfaces.
-> > > 
-> > > Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> > > ---
-> > 
-> > Acked-by: Krzysztof Helt<krzysztof.h1@wp.pl>
-> > 
-> > Does anybody know which tag is better for a reviewed patch:
-> > "Acked-by" or "Reviewed-by" ?
-> > 
+> The Kconfig help for the vfb driver says:
+>    Do NOT enable it for normal systems! To protect the innocent, it
+>    has to be enabled explicitly at boot time using the kernel option
+>    `video=vfb:'.
+>     
+> This change lets the code match the description.
+>     
+> Support for vfb:disable is kept for backwards compatibility; vfb:off
+> works because it is tested at a higher level.
+>     
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> CC: Antonino A. Daplas <adaplas@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
 > 
-> I consider Reviewed-by: to be much stronger that Acked-by:
-> 
-> You wouldn't believe some of the crap which has had cheerful Acked-by:s :(
+> ---
 
-In that case:
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
 
-:-)
+----------------------------------------------------------------------
+Podbij Dziki Zachod!Gra strategiczna online
+Sprawdz >>> http://link.interia.pl/f1dff

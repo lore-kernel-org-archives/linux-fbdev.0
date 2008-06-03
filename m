@@ -1,8 +1,9 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH 1/3] i2c: Let framebuffer drivers set
- their I2C bus class to DDC
-Date: Tue, 3 Jun 2008 13:00:47 +0200
-Message-ID: <20080603130047.15a9da3c@hyperion.delvare>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] hgafb: convert to new platform
+ driver API (bugzilla #9689)
+Date: Tue, 3 Jun 2008 16:13:46 -0700
+Message-ID: <20080603161346.9685e0a9.akpm@linux-foundation.org>
+References: <20080602193608.5173cdc0.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,14 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K3UGT-0007QL-Jb for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jun 2008 04:01:17 -0700
-Received: from zone0.gcu-squad.org ([212.85.147.21]
-	helo=services.gcu-squad.org)
+	id 1K3fhS-0006s2-A9 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Jun 2008 16:13:54 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K3UGS-00025x-Mq
+	(Exim 4.44) id 1K3fhR-0008Ay-PZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Jun 2008 04:01:17 -0700
+	Tue, 03 Jun 2008 16:13:54 -0700
+In-Reply-To: <20080602193608.5173cdc0.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,153 +29,223 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux I2C <i2c@lm-sensors.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linux-fbdev-devel@lists.sourceforge.net
 
-Let framebuffer drivers set their I2C bus class to DDC. Once this is
-done, we will be able to tell the eeprom driver to only probe for
-EDID EEPROMs on these buses.
+On Mon, 2 Jun 2008 19:36:08 +0200
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> Convert the hgafb driver to use new platform driver API. 
+> This solves problem reported in Bugzilla #9689.
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
+> 
+> diff -urp linux-rc2/drivers/video/hgafb.c linux-new/drivers/video/hgafb.c
+> --- linux-rc2/drivers/video/hgafb.c	2008-04-17 04:49:44.000000000 +0200
+> +++ linux-new/drivers/video/hgafb.c	2008-06-02 19:20:54.778088766 +0200
+> @@ -547,7 +547,7 @@ static struct fb_ops hgafb_ops = {
+>  	 *  Initialization
+>  	 */
+>  
+> -static int __init hgafb_probe(struct device *device)
+> +static int __init hgafb_probe(struct platform_device *pdev)
+>  {
+>  	struct fb_info *info;
+>  
+> @@ -561,7 +561,7 @@ static int __init hgafb_probe(struct dev
+>  	printk(KERN_INFO "hgafb: %s with %ldK of memory detected.\n",
+>  		hga_type_name, hga_vram_len/1024);
+>  
+> -	info = framebuffer_alloc(0, NULL);
+> +	info = framebuffer_alloc(0, &pdev->dev);
+>  	if (!info) {
+>  		iounmap(hga_vram);
+>  		return -ENOMEM;
+> @@ -589,13 +589,13 @@ static int __init hgafb_probe(struct dev
+>  
+>          printk(KERN_INFO "fb%d: %s frame buffer device\n",
+>                 info->node, info->fix.id);
+> -	dev_set_drvdata(device, info);
+> +	platform_set_drvdata(pdev, info);
+>  	return 0;
+>  }
+>  
+> -static int hgafb_remove(struct device *device)
+> +static int hgafb_remove(struct platform_device *pdev)
+>  {
+> -	struct fb_info *info = dev_get_drvdata(device);
+> +	struct fb_info *info = platform_get_drvdata(pdev);
+>  
+>  	hga_txt_mode();
+>  	hga_clear_screen();
+> @@ -616,16 +616,15 @@ static int hgafb_remove(struct device *d
+>  	return 0;
+>  }
+>  
+> -static struct device_driver hgafb_driver = {
+> -	.name = "hgafb",
+> -	.bus  = &platform_bus_type,
+> +static struct platform_driver hgafb_driver = {
+>  	.probe = hgafb_probe,
+>  	.remove = hgafb_remove,
+> +	.driver = {
+> +		.name = "hgafb",
+> +	},
+>  };
+>  
+> -static struct platform_device hgafb_device = {
+> -	.name = "hgafb",
+> -};
+> +static struct platform_device *hgafb_device;
+>  
+>  static int __init hgafb_init(void)
+>  {
+> @@ -634,12 +633,15 @@ static int __init hgafb_init(void)
+>  	if (fb_get_options("hgafb", NULL))
+>  		return -ENODEV;
+>  
+> -	ret = driver_register(&hgafb_driver);
+> +	ret = platform_driver_register(&hgafb_driver);
+>  
+>  	if (!ret) {
+> -		ret = platform_device_register(&hgafb_device);
+> -		if (ret)
+> -			driver_unregister(&hgafb_driver);
+> +		hgafb_device = platform_device_register_simple("hgafb", 0, NULL, 0);
+> +
+> +		if (IS_ERR(hgafb_device)) {
+> +			platform_driver_unregister(&hgafb_driver);
+> +			ret = PTR_ERR(hgafb_device);
+> +		}
+>  	}
+>  
+>  	return ret;
+> @@ -647,8 +649,8 @@ static int __init hgafb_init(void)
+>  
+>  static void __exit hgafb_exit(void)
+>  {
+> -	platform_device_unregister(&hgafb_device);
+> -	driver_unregister(&hgafb_driver);
+> +	platform_device_unregister(hgafb_device);
+> +	platform_driver_unregister(&hgafb_driver);
+>  }
+
+Oh.  I just merged Anton's similar patch, below.
+
+What should we do?
+
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+We should allocate platform device dynamically, otherwise it can't be removed.
+
+Also, back in time it was acceptable to mix devices and platform_devices,
+today this might cause all sort of bugs. Fix that too.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: <devzero@web.de>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Cc: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/fb_ddc.c              |    1 +
- drivers/video/intelfb/intelfb_i2c.c |   12 +++++++-----
- drivers/video/matrox/i2c-matroxfb.c |   20 +++++++++++++++-----
- include/linux/i2c.h                 |    2 +-
- 4 files changed, 24 insertions(+), 11 deletions(-)
 
---- linux-2.6.26-rc4.orig/drivers/video/fb_ddc.c	2008-06-03 10:02:28.000000000 +0200
-+++ linux-2.6.26-rc4/drivers/video/fb_ddc.c	2008-06-03 10:03:37.000000000 +0200
-@@ -106,6 +106,7 @@ unsigned char *fb_ddc_read(struct i2c_ad
- 	algo_data->setsda(algo_data->data, 1);
- 	algo_data->setscl(algo_data->data, 1);
+ drivers/video/hgafb.c |   41 ++++++++++++++++++++--------------------
+ 1 file changed, 21 insertions(+), 20 deletions(-)
+
+diff -puN drivers/video/hgafb.c~hgafb-fix-module-removal drivers/video/hgafb.c
+--- a/drivers/video/hgafb.c~hgafb-fix-module-removal
++++ a/drivers/video/hgafb.c
+@@ -547,7 +547,7 @@ static struct fb_ops hgafb_ops = {
+ 	 *  Initialization
+ 	 */
  
-+	adapter->class |= I2C_CLASS_DDC;
- 	return edid;
+-static int __init hgafb_probe(struct device *device)
++static int __init hgafb_probe(struct platform_device *pdev)
+ {
+ 	struct fb_info *info;
+ 
+@@ -589,13 +589,13 @@ static int __init hgafb_probe(struct dev
+ 
+         printk(KERN_INFO "fb%d: %s frame buffer device\n",
+                info->node, info->fix.id);
+-	dev_set_drvdata(device, info);
++	platform_set_drvdata(pdev, info);
+ 	return 0;
  }
  
---- linux-2.6.26-rc4.orig/include/linux/i2c.h	2008-06-03 10:02:28.000000000 +0200
-+++ linux-2.6.26-rc4/include/linux/i2c.h	2008-06-03 10:03:37.000000000 +0200
-@@ -349,7 +349,7 @@ static inline void i2c_set_adapdata (str
- #define I2C_CLASS_HWMON		(1<<0)	/* lm_sensors, ... */
- #define I2C_CLASS_TV_ANALOG	(1<<1)	/* bttv + friends */
- #define I2C_CLASS_TV_DIGITAL	(1<<2)	/* dvb cards */
--#define I2C_CLASS_DDC		(1<<3)	/* i2c-matroxfb ? */
-+#define I2C_CLASS_DDC		(1<<3)	/* DDC bus on graphics adapters */
- #define I2C_CLASS_CAM_ANALOG	(1<<4)	/* camera with analog CCD */
- #define I2C_CLASS_CAM_DIGITAL	(1<<5)	/* most webcams */
- #define I2C_CLASS_SOUND		(1<<6)	/* sound devices */
---- linux-2.6.26-rc4.orig/drivers/video/intelfb/intelfb_i2c.c	2008-06-03 09:57:31.000000000 +0200
-+++ linux-2.6.26-rc4/drivers/video/intelfb/intelfb_i2c.c	2008-06-03 10:03:37.000000000 +0200
-@@ -100,7 +100,8 @@ static int intelfb_gpio_getsda(void *dat
- 
- static int intelfb_setup_i2c_bus(struct intelfb_info *dinfo,
- 				 struct intelfb_i2c_chan *chan,
--				 const u32 reg, const char *name)
-+				 const u32 reg, const char *name,
-+				 int class)
+-static int hgafb_remove(struct device *device)
++static int __devexit hgafb_remove(struct platform_device *pdev)
  {
- 	int rc;
+-	struct fb_info *info = dev_get_drvdata(device);
++	struct fb_info *info = platform_get_drvdata(pdev);
  
-@@ -108,6 +109,7 @@ static int intelfb_setup_i2c_bus(struct 
- 	chan->reg			= reg;
- 	snprintf(chan->adapter.name, sizeof(chan->adapter.name),
- 		 "intelfb %s", name);
-+	chan->adapter.class		= class;
- 	chan->adapter.owner		= THIS_MODULE;
- 	chan->adapter.id		= I2C_HW_B_INTELFB;
- 	chan->adapter.algo_data		= &chan->algo;
-@@ -145,7 +147,7 @@ void intelfb_create_i2c_busses(struct in
+ 	hga_txt_mode();
+ 	hga_clear_screen();
+@@ -616,16 +616,15 @@ static int hgafb_remove(struct device *d
+ 	return 0;
+ }
  
- 	/* setup the DDC bus for analog output */
- 	intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].ddc_bus, GPIOA,
--			      "CRTDDC_A");
-+			      "CRTDDC_A", I2C_CLASS_DDC);
- 	i++;
- 
- 	/* need to add the output busses for each device
-@@ -159,9 +161,9 @@ void intelfb_create_i2c_busses(struct in
- 	case INTEL_865G:
- 		dinfo->output[i].type = INTELFB_OUTPUT_DVO;
- 		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].ddc_bus,
--				      GPIOD, "DVODDC_D");
-+				      GPIOD, "DVODDC_D", I2C_CLASS_DDC);
- 		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].i2c_bus,
--				      GPIOE, "DVOI2C_E");
-+				      GPIOE, "DVOI2C_E", 0);
- 		i++;
- 		break;
- 	case INTEL_915G:
-@@ -174,7 +176,7 @@ void intelfb_create_i2c_busses(struct in
- 		/* SDVO ports have a single control bus - 2 devices */
- 		dinfo->output[i].type = INTELFB_OUTPUT_SDVO;
- 		intelfb_setup_i2c_bus(dinfo, &dinfo->output[i].i2c_bus,
--				      GPIOE, "SDVOCTRL_E");
-+				      GPIOE, "SDVOCTRL_E", 0);
- 		/* TODO: initialize the SDVO */
- 		/* I830SDVOInit(pScrn, i, DVOB); */
- 		i++;
---- linux-2.6.26-rc4.orig/drivers/video/matrox/i2c-matroxfb.c	2008-06-03 09:57:31.000000000 +0200
-+++ linux-2.6.26-rc4/drivers/video/matrox/i2c-matroxfb.c	2008-06-03 10:05:32.000000000 +0200
-@@ -104,7 +104,9 @@ static struct i2c_algo_bit_data matrox_i
+-static struct device_driver hgafb_driver = {
+-	.name = "hgafb",
+-	.bus  = &platform_bus_type,
++static struct platform_driver hgafb_driver = {
++	.driver = {
++		.name = "hgafb",
++	},
+ 	.probe = hgafb_probe,
+-	.remove = hgafb_remove,
++	.remove = __devexit_p(hgafb_remove),
  };
  
- static int i2c_bus_reg(struct i2c_bit_adapter* b, struct matrox_fb_info* minfo, 
--		unsigned int data, unsigned int clock, const char* name) {
-+		unsigned int data, unsigned int clock, const char *name,
-+		int class)
-+{
- 	int err;
+-static struct platform_device hgafb_device = {
+-	.name = "hgafb",
+-};
++static struct platform_device *hgafb_device;
  
- 	b->minfo = minfo;
-@@ -114,6 +116,7 @@ static int i2c_bus_reg(struct i2c_bit_ad
- 	snprintf(b->adapter.name, sizeof(b->adapter.name), name,
- 		minfo->fbcon.node);
- 	i2c_set_adapdata(&b->adapter, b);
-+	b->adapter.class = class;
- 	b->adapter.algo_data = &b->bac;
- 	b->adapter.dev.parent = &ACCESS_FBINFO(pcidev)->dev;
- 	b->bac = matrox_i2c_algo_template;
-@@ -159,22 +162,29 @@ static void* i2c_matroxfb_probe(struct m
- 	switch (ACCESS_FBINFO(chip)) {
- 		case MGA_2064:
- 		case MGA_2164:
--			err = i2c_bus_reg(&m2info->ddc1, minfo, DDC1B_DATA, DDC1B_CLK, "DDC:fb%u #0");
-+			err = i2c_bus_reg(&m2info->ddc1, minfo,
-+					  DDC1B_DATA, DDC1B_CLK,
-+					  "DDC:fb%u #0", I2C_CLASS_DDC);
- 			break;
- 		default:
--			err = i2c_bus_reg(&m2info->ddc1, minfo, DDC1_DATA, DDC1_CLK, "DDC:fb%u #0");
-+			err = i2c_bus_reg(&m2info->ddc1, minfo,
-+					  DDC1_DATA, DDC1_CLK,
-+					  "DDC:fb%u #0", I2C_CLASS_DDC);
- 			break;
+ static int __init hgafb_init(void)
+ {
+@@ -634,21 +633,23 @@ static int __init hgafb_init(void)
+ 	if (fb_get_options("hgafb", NULL))
+ 		return -ENODEV;
+ 
+-	ret = driver_register(&hgafb_driver);
+-
+-	if (!ret) {
+-		ret = platform_device_register(&hgafb_device);
+-		if (ret)
+-			driver_unregister(&hgafb_driver);
++	ret = platform_driver_register(&hgafb_driver);
++	if (ret)
++		return ret;
++
++	hgafb_device = platform_device_register_simple("hgafb", -1, NULL, 0);
++	if (!hgafb_device) {
++		platform_driver_unregister(&hgafb_driver);
++		return -ENOMEM;
  	}
- 	if (err)
- 		goto fail_ddc1;
- 	if (ACCESS_FBINFO(devflags.dualhead)) {
--		err = i2c_bus_reg(&m2info->ddc2, minfo, DDC2_DATA, DDC2_CLK, "DDC:fb%u #1");
-+		err = i2c_bus_reg(&m2info->ddc2, minfo,
-+				  DDC2_DATA, DDC2_CLK,
-+				  "DDC:fb%u #1", I2C_CLASS_DDC);
- 		if (err == -ENODEV) {
- 			printk(KERN_INFO "i2c-matroxfb: VGA->TV plug detected, DDC unavailable.\n");
- 		} else if (err)
- 			printk(KERN_INFO "i2c-matroxfb: Could not register secondary output i2c bus. Continuing anyway.\n");
- 		/* Register maven bus even on G450/G550 */
--		err = i2c_bus_reg(&m2info->maven, minfo, MAT_DATA, MAT_CLK, "MAVEN:fb%u");
-+		err = i2c_bus_reg(&m2info->maven, minfo,
-+				  MAT_DATA, MAT_CLK, "MAVEN:fb%u", 0);
- 		if (err)
- 			printk(KERN_INFO "i2c-matroxfb: Could not register Maven i2c bus. Continuing anyway.\n");
- 	}
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static void __exit hgafb_exit(void)
+ {
+-	platform_device_unregister(&hgafb_device);
+-	driver_unregister(&hgafb_driver);
++	platform_device_unregister(hgafb_device);
++	platform_driver_unregister(&hgafb_driver);
+ }
+ 
+ /* -------------------------------------------------------------------------
+_
 
-
--- 
-Jean Delvare
 
 -------------------------------------------------------------------------
-This SF.net email is sponsored by: Microsoft
-Defy all challenges. Microsoft(R) Visual Studio 2008.
-http://clk.atdmt.com/MRT/go/vse0120000070mrt/direct/01/
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://sourceforge.net/services/buy/index.php

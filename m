@@ -1,23 +1,26 @@
-From: Ville Syrjala <syrjala@sci.fi>
-Subject: [PATCH] atyfb: Remove dead code.
-Date: Wed,  4 Jun 2008 12:14:21 +0300
-Message-ID: <1212570865-31419-3-git-send-email-syrjala@sci.fi>
-References: <1212570865-31419-1-git-send-email-syrjala@sci.fi>
-	<1212570865-31419-2-git-send-email-syrjala@sci.fi>
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [patch -v3 17/22] aty: use
+	memory_read_from_buffer
+Date: Wed, 04 Jun 2008 20:56:50 +0900
+Message-ID: <20080604115828.992854080@gmail.com>
+References: <20080604115633.116832712@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K3p4k-0008IM-Sz for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Jun 2008 02:14:35 -0700
-Received: from smtp4.pp.htv.fi ([213.243.153.38])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K3p4k-0003Va-Aa
+	id 1K3rpM-0001TH-6M for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 04 Jun 2008 05:10:52 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K3rpL-0005qB-RN
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Jun 2008 02:14:34 -0700
-In-Reply-To: <1212570865-31419-2-git-send-email-syrjala@sci.fi>
+	Wed, 04 Jun 2008 05:10:52 -0700
+Received: by py-out-1112.google.com with SMTP id n24so31639pyh.20
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 04 Jun 2008 05:10:51 -0700 (PDT)
+Content-Disposition: inline; filename=aty-use-memory-read-from-buffer.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,54 +31,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Ville Syrjala <syrjala@sci.fi>, akpm@linux-foundation.org, Olaf Hering <olaf@aepfle.de>, adaplas@gmail.com
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
 
-From: Olaf Hering <olaf@aepfle.de>
-
-Remove dead code. This will slightly change the behaviour of the driver
-on systems that support backlight control. Previously they would just
-turn the backlight off using the backlight control but now the generic
-LCD code will also turn off the LCD using the POWER_MANAGEMENT register.
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 ---
-Nobody has come forward to test this on one of the affected systems
-(ie. pmac laptops that support backlight control) so let's just put it
-in. It really shouldn't break anything and it helps if some non-pmac
-user has unwittingly configured his kernel with CONFIG_FB_ATY_BACKLIGHT.
+ drivers/video/aty/radeon_base.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
- drivers/video/aty/atyfb_base.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+Index: 2.6-git/drivers/video/aty/radeon_base.c
+===================================================================
+--- 2.6-git.orig/drivers/video/aty/radeon_base.c
++++ 2.6-git/drivers/video/aty/radeon_base.c
+@@ -70,6 +70,7 @@
+ #include <linux/pci.h>
+ #include <linux/vmalloc.h>
+ #include <linux/device.h>
++#include <linux/fs.h>
+ 
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+@@ -2098,15 +2099,7 @@ static void radeon_identify_vram(struct 
+ 
+ static ssize_t radeon_show_one_edid(char *buf, loff_t off, size_t count, const u8 *edid)
+ {
+-	if (off > EDID_LENGTH)
+-		return 0;
+-
+-	if (off + count > EDID_LENGTH)
+-		count = EDID_LENGTH - off;
+-
+-	memcpy(buf, edid + off, count);
+-
+-	return count;
++	return memory_read_from_buffer(buf, count, &off, edid, EDID_LENGTH);
+ }
+ 
+ 
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index bd4ac0b..d7ba3f1 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -2709,8 +2709,7 @@ static int atyfb_blank(int blank, struct fb_info *info)
- 	if (par->lock_blank || par->asleep)
- 		return 0;
- 
--#ifdef CONFIG_FB_ATY_BACKLIGHT
--#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
-+#ifdef CONFIG_FB_ATY_GENERIC_LCD
- 	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
- 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
- 		u32 pm = aty_ld_lcd(POWER_MANAGEMENT, par);
-@@ -2739,8 +2738,7 @@ static int atyfb_blank(int blank, struct fb_info *info)
- 	}
- 	aty_st_le32(CRTC_GEN_CNTL, gen_cntl, par);
- 
--#ifdef CONFIG_FB_ATY_BACKLIGHT
--#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
-+#ifdef CONFIG_FB_ATY_GENERIC_LCD
- 	if (par->lcd_table && blank <= FB_BLANK_NORMAL &&
- 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
- 		u32 pm = aty_ld_lcd(POWER_MANAGEMENT, par);
 -- 
-1.5.3.7
-
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

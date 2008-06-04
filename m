@@ -1,23 +1,27 @@
 From: Ville Syrjala <syrjala@sci.fi>
-Subject: [PATCH] fbdev: xoffset,
-	yoffset and yres are unsigned
-Date: Wed,  4 Jun 2008 12:14:20 +0300
-Message-ID: <1212570865-31419-2-git-send-email-syrjala@sci.fi>
+Subject: [PATCH] atyfb: Fix a cast
+Date: Wed,  4 Jun 2008 12:14:25 +0300
+Message-ID: <1212570865-31419-7-git-send-email-syrjala@sci.fi>
 References: <1212570865-31419-1-git-send-email-syrjala@sci.fi>
+	<1212570865-31419-2-git-send-email-syrjala@sci.fi>
+	<1212570865-31419-3-git-send-email-syrjala@sci.fi>
+	<1212570865-31419-4-git-send-email-syrjala@sci.fi>
+	<1212570865-31419-5-git-send-email-syrjala@sci.fi>
+	<1212570865-31419-6-git-send-email-syrjala@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K3p4j-0008Hz-V8 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Jun 2008 02:14:33 -0700
-Received: from smtp6.pp.htv.fi ([213.243.153.40])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K3p4i-000167-FX
+	id 1K3p4k-0008IK-RT for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 04 Jun 2008 02:14:34 -0700
+Received: from smtp4.pp.htv.fi ([213.243.153.38])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K3p4k-0003Vh-Ae
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Jun 2008 02:14:33 -0700
-In-Reply-To: <1212570865-31419-1-git-send-email-syrjala@sci.fi>
+	Wed, 04 Jun 2008 02:14:34 -0700
+In-Reply-To: <1212570865-31419-6-git-send-email-syrjala@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,41 +35,26 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: akpm@linux-foundation.org, Ville Syrjala <syrjala@sci.fi>, adaplas@gmail.com
 
-The xoffset, yoffset and yres members of fb_var_screeninfo are __u32.
-Make them unsigned in the code as well.
+The argument to iounmap() is void __iomem *. Fix the cast.
 
 Signed-off-by: Ville Syrjala <syrjala@sci.fi>
 ---
- drivers/video/fbmem.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/video/aty/atyfb_base.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 776f7fc..5554670 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -848,9 +848,8 @@ int
- fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
- {
- 	struct fb_fix_screeninfo *fix = &info->fix;
--        int xoffset = var->xoffset;
--        int yoffset = var->yoffset;
--        int err = 0, yres = info->var.yres;
-+	unsigned int yres = info->var.yres;
-+	int err = 0;
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index e38398f..620ba81 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -3335,7 +3335,7 @@ static int __devinit init_from_bios(struct atyfb_par *par)
+ 		PRINTKE("no BIOS frequency table found, use parameters\n");
+ 		ret = -ENXIO;
+ 	}
+-	iounmap((void* __iomem )bios_base);
++	iounmap((void __iomem *)bios_base);
  
- 	if (var->yoffset > 0) {
- 		if (var->vmode & FB_VMODE_YWRAP) {
-@@ -866,8 +865,8 @@ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
- 				 (var->xoffset % fix->xpanstep)))
- 		err = -EINVAL;
- 
--        if (err || !info->fbops->fb_pan_display || xoffset < 0 ||
--	    yoffset < 0 || var->yoffset + yres > info->var.yres_virtual ||
-+	if (err || !info->fbops->fb_pan_display ||
-+	    var->yoffset + yres > info->var.yres_virtual ||
- 	    var->xoffset + info->var.xres > info->var.xres_virtual)
- 		return -EINVAL;
- 
+ 	return ret;
+ }
 -- 
 1.5.3.7
 

@@ -1,21 +1,21 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] skeletonfb: update to correct platform
-	driver usage
-Date: Thu, 5 Jun 2008 23:07:26 +0200
-Message-ID: <20080605230726.9b378d8a.krzysztof.h1@poczta.fm>
+Subject: [RESEND] [PATCH] convert sticore.c to PCI ROM
+	API
+Date: Thu, 5 Jun 2008 23:13:27 +0200
+Message-ID: <20080605231327.af9cc9e6.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K4Mdv-0001dL-Gq for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 05 Jun 2008 14:05:07 -0700
+	id 1K4Mjp-0002FQ-5Q for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 05 Jun 2008 14:11:13 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K4Mds-0006kQ-Fu
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K4Mjo-0006EO-BY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 05 Jun 2008 14:05:07 -0700
+	Thu, 05 Jun 2008 14:11:13 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,111 +27,113 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-It updates skeletonfb to new platform driver API.
-The skeletonfb is templates for creating new drivers.
+Convert console/sticore.c file to use PCI ROM API.
+
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9425
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Signed-off-by: Helge Deller <deller@gmx.de>
 
---- linux-mm1/drivers/video/skeletonfb.c	2008-04-17 04:49:44.000000000 +0200
-+++ linux-new/drivers/video/skeletonfb.c	2008-06-05 23:01:47.393941821 +0200
-@@ -675,13 +675,13 @@ static struct fb_ops xxxfb_ops = {
-      *  Initialization
-      */
- 
--/* static int __init xxfb_probe (struct device *device) -- for platform devs */
-+/* static int __init xxfb_probe (struct platform_device *pdev) -- for platform devs */
- static int __devinit xxxfb_probe(struct pci_dev *dev,
- 			      const struct pci_device_id *ent)
- {
-     struct fb_info *info;
-     struct xxx_par *par;
--    struct device* device = &dev->dev; /* for pci drivers */
-+    struct device *device = &dev->dev; /* or &pdev->dev */
-     int cmap_len, retval;	
-    
-     /*
-@@ -824,18 +824,18 @@ static int __devinit xxxfb_probe(struct 
- 	return -EINVAL;
-     printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
- 	   info->fix.id);
--    pci_set_drvdata(dev, info); /* or dev_set_drvdata(device, info) */
-+    pci_set_drvdata(dev, info); /* or platform_set_drvdata(pdev, info) */
-     return 0;
+---
+This patch was fixed and tested by Helge Deller on his
+PARISC machine.
+
+
+diff --git a/drivers/video/console/sticore.c b/drivers/video/console/sticore.c
+index e9ab657..df30499 100644
+--- a/drivers/video/console/sticore.c
++++ b/drivers/video/console/sticore.c
+@@ -780,11 +780,13 @@ out_err:
  }
  
-     /*
-      *  Cleanup
-      */
--/* static void __devexit xxxfb_remove(struct device *device) */
-+/* static void __devexit xxxfb_remove(struct platform_device *pdev) */
- static void __devexit xxxfb_remove(struct pci_dev *dev)
+ static struct sti_struct * __devinit
+-sti_try_rom_generic(unsigned long address, unsigned long hpa, struct pci_dev *pd)
++sti_try_rom_generic(unsigned long address, unsigned long hpa,
++		    struct pci_dev *pd)
  {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	/* or dev_get_drvdata(device); */
-+	/* or platform_get_drvdata(pdev); */
++	char __iomem *rom_base = (char __iomem *) address;
+ 	struct sti_struct *sti;
+ 	int ok;
+-	u32 sig;
++	__le32 sig;
  
- 	if (info) {
- 		unregister_framebuffer(info);
-@@ -961,18 +961,17 @@ static int xxxfb_resume(struct platform_
- #define xxxfb_resume NULL
- #endif /* CONFIG_PM */
+ 	if (num_sti_roms >= MAX_STI_ROMS) {
+ 		printk(KERN_WARNING "maximum number of STI ROMS reached !\n");
+@@ -808,7 +810,7 @@ test_rom:
+ 	sig = gsc_readl(address);
  
--static struct device_driver xxxfb_driver = {
--	.name = "xxxfb",
--	.bus  = &platform_bus_type,
-+static struct platform_device_driver xxxfb_driver = {
- 	.probe = xxxfb_probe,
- 	.remove = xxxfb_remove,
- 	.suspend = xxxfb_suspend, /* optional but recommended */
- 	.resume = xxxfb_resume,   /* optional but recommended */
-+	.driver = {
-+		.name = "xxxfb",
-+	},
- };
- 
--static struct platform_device xxxfb_device = {
--	.name = "xxxfb",
--};
-+static struct platform_device *xxxfb_device;
- 
- #ifndef MODULE
-     /*
-@@ -1002,12 +1001,16 @@ static int __init xxxfb_init(void)
- 		return -ENODEV;
- 	xxxfb_setup(option);
- #endif
--	ret = driver_register(&xxxfb_driver);
-+	ret = platform_driver_register(&xxxfb_driver);
- 
- 	if (!ret) {
--		ret = platform_device_register(&xxxfb_device);
--		if (ret)
--			driver_unregister(&xxxfb_driver);
-+		xxxfb_device = platform_device_register_simple("xxxfb", 0,
-+								NULL, 0);
-+
-+		if (IS_ERR(xxxfb_device)) {
-+			platform_driver_unregister(&xxxfb_driver);
-+			ret = PTR_ERR(xxxfb_device);
-+		}
+ 	/* check for a PCI ROM structure */
+-	if ((le32_to_cpu(sig)==0xaa55)) {
++	if (sig == cpu_to_le32(0xaa55)) {
+ 		unsigned int i, rm_offset;
+ 		u32 *rm;
+ 		i = gsc_readl(address+0x04);
+@@ -868,10 +870,8 @@ test_rom:
+ 	/* disable STI PCI ROM. ROM and card RAM overlap and
+ 	 * leaving it enabled would force HPMCs
+ 	 */
+-	if (sti->pd) {
+-		unsigned long rom_base;
+-		rom_base = pci_resource_start(sti->pd, PCI_ROM_RESOURCE);	
+-		pci_write_config_dword(sti->pd, PCI_ROM_ADDRESS, rom_base & ~PCI_ROM_ADDRESS_ENABLE);
++	if (sti->pd && rom_base) {
++		pci_unmap_rom(sti->pd, rom_base);
+ 		DPRINTK((KERN_DEBUG "STI PCI ROM disabled\n"));
  	}
  
- 	return ret;
-@@ -1015,8 +1018,8 @@ static int __init xxxfb_init(void)
- 
- static void __exit xxxfb_exit(void)
+@@ -930,28 +930,25 @@ static int __devinit sticore_pci_init(struct pci_dev *pd,
+ 		const struct pci_device_id *ent)
  {
--	platform_device_unregister(&xxxfb_device);
--	driver_unregister(&xxxfb_driver);
-+	platform_device_unregister(xxxfb_device);
-+	platform_driver_unregister(&xxxfb_driver);
- }
- #endif /* CONFIG_PCI */
+ #ifdef CONFIG_PCI
+-	unsigned long fb_base, rom_base;
+-	unsigned int fb_len, rom_len;
++	unsigned long fb_base;
++	unsigned int fb_len;
++	char __iomem *rom_base;
++	size_t rom_len;
+ 	struct sti_struct *sti;
+ 	
+ 	pci_enable_device(pd);
  
+ 	fb_base = pci_resource_start(pd, 0);
+ 	fb_len = pci_resource_len(pd, 0);
+-	rom_base = pci_resource_start(pd, PCI_ROM_RESOURCE);
+-	rom_len = pci_resource_len(pd, PCI_ROM_RESOURCE);
+-	if (rom_base) {
+-		pci_write_config_dword(pd, PCI_ROM_ADDRESS, rom_base | PCI_ROM_ADDRESS_ENABLE);
+-		DPRINTK((KERN_DEBUG "STI PCI ROM enabled at 0x%08lx\n", rom_base));
+-	}
++	rom_base = pci_map_rom(pd, &rom_len);
+ 
+-	printk(KERN_INFO "STI PCI graphic ROM found at %08lx (%u kB), fb at %08lx (%u MB)\n",
++	printk(KERN_INFO "STI PCI graphic ROM found at %p (%u kB), fb at %08lx (%u MB)\n",
+ 		rom_base, rom_len/1024, fb_base, fb_len/1024/1024);
+ 
+-	DPRINTK((KERN_DEBUG "Trying PCI STI ROM at %08lx, PCI hpa at %08lx\n",
++	DPRINTK((KERN_DEBUG "Trying PCI STI ROM at %p, PCI hpa at %08lx\n",
+ 		    rom_base, fb_base));
+ 
+-	sti = sti_try_rom_generic(rom_base, fb_base, pd);
++	sti = sti_try_rom_generic((unsigned long)rom_base, fb_base, pd);
+ 	if (sti) {
+ 		char pa_path[30];
+ 		print_pci_hwpath(pd, pa_path);
+@@ -975,7 +972,7 @@ static void __devexit sticore_pci_remove(struct pci_dev *pd)
+ }
+ 
+ 
+-static struct pci_device_id sti_pci_tbl[] = {
++DEFINE_PCI_DEVICE_TABLE(sti_pci_tbl) = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_HP, PCI_DEVICE_ID_HP_VISUALIZE_EG) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_HP, PCI_DEVICE_ID_HP_VISUALIZE_FX6) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_HP, PCI_DEVICE_ID_HP_VISUALIZE_FX4) },
+
+
+
 
 ----------------------------------------------------------------------
 Tanie rozmowy!

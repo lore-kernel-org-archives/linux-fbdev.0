@@ -1,65 +1,57 @@
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [RESEND] [PATCH] convert sticore.c to PCI ROM API
-Date: Fri, 06 Jun 2008 23:23:10 +0200
-Message-ID: <4849AABE.7040805@gmx.de>
-References: <20080605231327.af9cc9e6.krzysztof.h1@poczta.fm> <1212704814.4241.37.camel@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb: Revert "Fix radeon DDC
+	regression"
+Date: Sat, 07 Jun 2008 09:21:51 +1000
+Message-ID: <1212794511.12464.38.camel@pasglop>
+References: <20080606112116.3aa37dfd@hyperion.delvare>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-parisc-owner@vger.kernel.org>
-In-Reply-To: <1212704814.4241.37.camel@localhost.localdomain>
-Sender: linux-parisc-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, linux-parisc@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1K4lG5-0004Br-4i for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 16:22:09 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX1/yoDKFXEn7ZHifI3Gu8V6s6v1NCouTmY0=])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1K4lG2-00070e-M5
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 16:22:08 -0700
+In-Reply-To: <20080606112116.3aa37dfd@hyperion.delvare>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-James Bottomley wrote:
->>  static struct sti_struct * __devinit
->> -sti_try_rom_generic(unsigned long address, unsigned long hpa, struct pci_dev *pd)
->> +sti_try_rom_generic(unsigned long address, unsigned long hpa,
->> +		    struct pci_dev *pd)
->>  {
->> +	char __iomem *rom_base = (char __iomem *) address;
->>  	struct sti_struct *sti;
->>  	int ok;
->> -	u32 sig;
->> +	__le32 sig;
->>  
->>  	if (num_sti_roms >= MAX_STI_ROMS) {
->>  		printk(KERN_WARNING "maximum number of STI ROMS reached !\n");
->> @@ -808,7 +810,7 @@ test_rom:
->>  	sig = gsc_readl(address);
+On Fri, 2008-06-06 at 11:21 +0200, Jean Delvare wrote:
+> The bug was in fb_ddc and was fixed by commit
+> b64d70825abbf706bbe80be1b11b09514b71f45e (fb_ddc: fix DDC lines quirk)
+> so the workaround in radeonfb can be removed now.
 > 
-> Since gsc_readl() has (designedly) no endianness type, doesn't this give
-> a sparse warning?
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> ---
 
-No, it doesn't.
-But maybe I tested it wrongly?
+I need to verify that on my Apple monitor which would switch off
+if that is wrong. Will try to do that this week-end. Without news
+from me next week, then just commit the bloody thing :-)
 
-[hd@p100 linus-linux-2.6]# REAL_CC=hppa-linux-gcc cgcc -Wbitwise 
--Wp,-MD,drivers/video/console/.sticore.o.d  -nostdinc -isystem 
-/opt/palinux33/lib/gcc-lib/hppa-linux/3.3.4/include -D__KERNEL__ 
--Iinclude  -include include/linux/autoconf.h -Wall -Wundef 
--Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common 
--Werror-implicit-function-declaration -Os   -pipe -mno-space-regs 
--mfast-indirect-calls -mdisable-fpregs -ffunction-sections -march=1.1 
--mschedule=7100LC -fomit-frame-pointer       -D"KBUILD_STR(s)=#s" 
--D"KBUILD_BASENAME=KBUILD_STR(sticore)" 
--D"KBUILD_MODNAME=KBUILD_STR(sticore)" -c -o 
-drivers/video/console/sticore.o drivers/video/console/sticore.c
-drivers/video/console/sticore.c:32:19: warning: symbol 'default_sti' was 
-not declared. Should it be static?
-drivers/video/console/sticore.c:241:1: warning: symbol 'sti_rom_copy' 
-was not declared. Should it be static?
-drivers/video/console/sticore.c:481:24: warning: symbol 
-'sti_select_fbfont' was not declared. Should it be static?
-drivers/video/console/sticore.c:544:24: warning: symbol 
-'sti_select_font' was not declared. Should it be static?
-drivers/video/console/sticore.c:710:16: warning: symbol 
-'sti_get_wmode_rom' was not declared. Should it be static?
-drivers/video/console/sticore.c:727:1: warning: symbol 'sti_read_rom' 
-was not declared. Should it be static?
-drivers/video/console/sticore.c:975:1: warning: symbol 'sti_pci_tbl' was 
-not declared. Should it be static?
+Cheers,
+Ben.
 
-Helge
+
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://sourceforge.net/services/buy/index.php

@@ -1,33 +1,24 @@
-From: York Sun <yorksun@freescale.com>
-Subject: Re: [PATCH] fsl_diu_fb: fix build with
-	CONFIG_PM=y, plus fix some	warnings
-Date: Fri, 06 Jun 2008 10:25:52 -0500
-Message-ID: <1212765952.4939.9.camel@tera>
-References: <20080606145552.GA24276@polina.dev.rtsoft.ru>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [RESEND] [PATCH] convert sticore.c to PCI
+	ROM API
+Date: Fri, 6 Jun 2008 20:52:53 +0200
+Message-ID: <20080606205253.6858ea7a.krzysztof.h1@poczta.fm>
+References: <20080605231327.af9cc9e6.krzysztof.h1@poczta.fm>
+	<20080605151122.a9ac8fbe.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K4dpO-0000ts-E9 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 08:26:06 -0700
-Received: from de01egw01.freescale.net ([192.88.165.102])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K4dpN-0007PF-Lr
+	id 1K4h1H-0001v0-B5 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 11:50:35 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K4h1F-0008HI-Qc
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 08:26:06 -0700
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	m56FPs2c004697 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 6 Jun 2008 08:25:54 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id m56FPrvh007127
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 6 Jun 2008 10:25:53 -0500 (CDT)
-In-Reply-To: <20080606145552.GA24276@polina.dev.rtsoft.ru>
+	Fri, 06 Jun 2008 11:50:35 -0700
+In-Reply-To: <20080605151122.a9ac8fbe.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,179 +29,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, Timur Tabi <timur@freescale.com>, Antonino Daplas <adaplas@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: deller@gmx.de, Jon Smirl <jonsmirl@yahoo.com>, linux-fbdev-devel@lists.sourceforge.net, linux-parisc@vger.kernel.org
 
-Anton,
+On Thu, 5 Jun 2008 15:11:22 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Thanks for spending time on this. We will verify it soon.
+> On Thu, 5 Jun 2008 23:13:27 +0200
+> Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> 
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > Convert console/sticore.c file to use PCI ROM API.
+> > 
+> > Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9425
+> 
+> I'm unable to understand that bug report.  Is this just a cleanup
+> or does it fix some runtime error, or...?
+> 
 
-York
+It is conversion to a new API after the API was introduced (code change/cleanup).
 
-On Fri, 2008-06-06 at 18:55 +0400, Anton Vorontsov wrote:
-> This patch fixes following build error when CONFIG_PM is set.
-> 
->   CC      drivers/video/fsl-diu-fb.o
-> drivers/video/fsl-diu-fb.c: In function 'fsl_diu_suspend':
-> drivers/video/fsl-diu-fb.c:1327: error: 'ofdev' undeclared (first use in this function)
-> drivers/video/fsl-diu-fb.c:1327: error: (Each undeclared identifier is reported only once
-> drivers/video/fsl-diu-fb.c:1327: error: for each function it appears in.)
-> drivers/video/fsl-diu-fb.c: In function 'fsl_diu_resume':
-> drivers/video/fsl-diu-fb.c:1337: error: 'ofdev' undeclared (first use in this function)
-> 
-> While I'm at it, also fix this warning:
-> 
-> drivers/video/fsl-diu-fb.c: In function 'fsl_diu_alloc':
-> drivers/video/fsl-diu-fb.c:314: warning: format '%lx' expects type 'long unsigned int', but argument 3 has type 'phys_addr_t'
-> 
-> And these section mismatches:
-> 
-> ..from the function fsl_diu_remove() to the function .exit.text:uninstall_fb()
-> ..from the function fsl_diu_remove() to the function .exit.text:uninstall_fb()
-> ..from the function install_fb() to the variable .devinit.data:fsl_diu_mode_db
-> ..from the function install_fb() to the variable .devinit.data:fsl_diu_mode_db
-> ..from the function fsl_diu_probe() to the function .exit.text:uninstall_fb()
-> ..from the function fsl_diu_probe() to the function .exit.text:uninstall_fb()
-> 
-> Also, some sparse fixes: make two functions static, and use NULL where
-> appropriate. There are still a lot of sparse warnings, mainly wrt absence
-> of __iomem annotations, but some will require ugly __force stuff. I'll leave
-> them for now, since proper fix would be not that trivial as few one-liners
-> below.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  drivers/video/fsl-diu-fb.c |   29 +++++++++++++++--------------
->  1 files changed, 15 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-> index b50bb03..7a78fd5 100644
-> --- a/drivers/video/fsl-diu-fb.c
-> +++ b/drivers/video/fsl-diu-fb.c
-> @@ -286,7 +286,7 @@ static struct diu_pool pool;
->   *	rheap and make the furture large allocation fail.
->   */
->  
-> -void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
-> +static void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
->  {
->  	void *virt;
->  
-> @@ -311,12 +311,12 @@ void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
->  		memset(virt, 0, size);
->  	}
->  
-> -	pr_debug("rh virt=%p phys=%lx\n", virt, *phys);
-> +	pr_debug("rh virt=%p phys=%llx\n", virt, (unsigned long long)*phys);
->  
->  	return virt;
->  }
->  
-> -void fsl_diu_free(void *p, unsigned long size)
-> +static void fsl_diu_free(void *p, unsigned long size)
->  {
->  	pr_debug("p=%p size=%lu\n", p, size);
->  
-> @@ -770,7 +770,7 @@ static int map_video_memory(struct fb_info *info)
->  	info->fix.smem_len = info->fix.line_length * info->var.yres_virtual;
->  	pr_debug("MAP_VIDEO_MEMORY: smem_len = %d\n", info->fix.smem_len);
->  	info->screen_base = fsl_diu_alloc(info->fix.smem_len, &phys);
-> -	if (info->screen_base == 0) {
-> +	if (info->screen_base == NULL) {
->  		printk(KERN_ERR "Unable to allocate fb memory\n");
->  		return -ENOMEM;
->  	}
-> @@ -788,7 +788,7 @@ static int map_video_memory(struct fb_info *info)
->  static void unmap_video_memory(struct fb_info *info)
->  {
->  	fsl_diu_free(info->screen_base, info->fix.smem_len);
-> -	info->screen_base = 0;
-> +	info->screen_base = NULL;
->  	info->fix.smem_start = 0;
->  	info->fix.smem_len = 0;
->  }
-> @@ -1158,7 +1158,7 @@ static int init_fbinfo(struct fb_info *info)
->  	return 0;
->  }
->  
-> -static int install_fb(struct fb_info *info)
-> +static int __devinit install_fb(struct fb_info *info)
->  {
->  	int rc;
->  	struct mfb_info *mfbi = info->par;
-> @@ -1233,7 +1233,7 @@ static int install_fb(struct fb_info *info)
->  	return 0;
->  }
->  
-> -static void __exit uninstall_fb(struct fb_info *info)
-> +static void uninstall_fb(struct fb_info *info)
->  {
->  	struct mfb_info *mfbi = info->par;
->  
-> @@ -1287,7 +1287,7 @@ static int request_irq_local(int irq)
->  	/* Read to clear the status */
->  	status = in_be32(&hw->int_status);
->  
-> -	ret = request_irq(irq, fsl_diu_isr, 0, "diu", 0);
-> +	ret = request_irq(irq, fsl_diu_isr, 0, "diu", NULL);
->  	if (ret)
->  		pr_info("Request diu IRQ failed.\n");
->  	else {
-> @@ -1312,7 +1312,7 @@ static void free_irq_local(int irq)
->  	/* Disable all LCDC interrupt */
->  	out_be32(&hw->int_mask, 0x1f);
->  
-> -	free_irq(irq, 0);
-> +	free_irq(irq, NULL);
->  }
->  
->  #ifdef CONFIG_PM
-> @@ -1324,7 +1324,7 @@ static int fsl_diu_suspend(struct of_device *dev, pm_message_t state)
->  {
->  	struct fsl_diu_data *machine_data;
->  
-> -	machine_data = dev_get_drvdata(&ofdev->dev);
-> +	machine_data = dev_get_drvdata(&dev->dev);
->  	disable_lcdc(machine_data->fsl_diu_info[0]);
->  
->  	return 0;
-> @@ -1334,7 +1334,7 @@ static int fsl_diu_resume(struct of_device *dev)
->  {
->  	struct fsl_diu_data *machine_data;
->  
-> -	machine_data = dev_get_drvdata(&ofdev->dev);
-> +	machine_data = dev_get_drvdata(&dev->dev);
->  	enable_lcdc(machine_data->fsl_diu_info[0]);
->  
->  	return 0;
-> @@ -1353,7 +1353,8 @@ static int allocate_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
->  	dma_addr_t paddr = 0;
->  
->  	ssize = size + bytes_align;
-> -	buf->vaddr = dma_alloc_coherent(0, ssize, &paddr, GFP_DMA | __GFP_ZERO);
-> +	buf->vaddr = dma_alloc_coherent(NULL, ssize, &paddr, GFP_DMA |
-> +							     __GFP_ZERO);
->  	if (!buf->vaddr)
->  		return -ENOMEM;
->  
-> @@ -1371,7 +1372,7 @@ static int allocate_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
->  
->  static void free_buf(struct diu_addr *buf, u32 size, u32 bytes_align)
->  {
-> -	dma_free_coherent(0, size + bytes_align,
-> +	dma_free_coherent(NULL, size + bytes_align,
->  				buf->vaddr, (buf->paddr - buf->offset));
->  	return;
->  }
-> @@ -1411,7 +1412,7 @@ static ssize_t show_monitor(struct device *device,
->  	return diu_ops.show_monitor_port(machine_data->monitor_port, buf);
->  }
->  
-> -static int fsl_diu_probe(struct of_device *ofdev,
-> +static int __devinit fsl_diu_probe(struct of_device *ofdev,
->  	const struct of_device_id *match)
->  {
->  	struct device_node *np = ofdev->node;
+AFAIK, it does not fix any known error.
+
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Tanie rozmowy!
+Sprawdz >>>  http://link.interia.pl/f1e22 
 
 
 -------------------------------------------------------------------------

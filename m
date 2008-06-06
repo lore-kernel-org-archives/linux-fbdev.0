@@ -1,108 +1,62 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [RESEND] [PATCH] convert sticore.c to PCI ROM API
-Date: Thu, 05 Jun 2008 17:26:54 -0500
-Message-ID: <1212704814.4241.37.camel@localhost.localdomain>
-References: <20080605231327.af9cc9e6.krzysztof.h1@poczta.fm>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH] radeonfb: Give i2c buses nicer names
+Date: Fri, 6 Jun 2008 11:19:55 +0200
+Message-ID: <20080606111955.5583e81a@hyperion.delvare>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-parisc-owner@vger.kernel.org>
-In-Reply-To: <20080605231327.af9cc9e6.krzysztof.h1@poczta.fm>
-Sender: linux-parisc-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1K4Y7S-00080T-60 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 02:20:26 -0700
+Received: from zone0.gcu-squad.org ([212.85.147.21]
+	helo=services.gcu-squad.org)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1K4Y7P-0001Ct-LH
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 02:20:21 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2008-06-05 at 23:13 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> Convert console/sticore.c file to use PCI ROM API.
-> 
-> Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9425
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> 
-> ---
-> This patch was fixed and tested by Helge Deller on his
-> PARISC machine.
-> 
-> 
-> diff --git a/drivers/video/console/sticore.c b/drivers/video/console/sticore.c
-> index e9ab657..df30499 100644
-> --- a/drivers/video/console/sticore.c
-> +++ b/drivers/video/console/sticore.c
-> @@ -780,11 +780,13 @@ out_err:
->  }
->  
->  static struct sti_struct * __devinit
-> -sti_try_rom_generic(unsigned long address, unsigned long hpa, struct pci_dev *pd)
-> +sti_try_rom_generic(unsigned long address, unsigned long hpa,
-> +		    struct pci_dev *pd)
->  {
-> +	char __iomem *rom_base = (char __iomem *) address;
->  	struct sti_struct *sti;
->  	int ok;
-> -	u32 sig;
-> +	__le32 sig;
->  
->  	if (num_sti_roms >= MAX_STI_ROMS) {
->  		printk(KERN_WARNING "maximum number of STI ROMS reached !\n");
-> @@ -808,7 +810,7 @@ test_rom:
->  	sig = gsc_readl(address);
+The name of the i2c buses shows in the output of "i2cdetect -l", so
+it's important to give informative names.
 
-Since gsc_readl() has (designedly) no endianness type, doesn't this give
-a sparse warning?
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/aty/radeon_i2c.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-2.6.26-rc5.orig/drivers/video/aty/radeon_i2c.c	2008-06-03 09:57:31.000000000 +0200
++++ linux-2.6.26-rc5/drivers/video/aty/radeon_i2c.c	2008-06-06 08:43:51.000000000 +0200
+@@ -69,7 +69,8 @@ static int radeon_setup_i2c_bus(struct r
+ {
+ 	int rc;
  
->  	/* check for a PCI ROM structure */
-> -	if ((le32_to_cpu(sig)==0xaa55)) {
-> +	if (sig == cpu_to_le32(0xaa55)) {
->  		unsigned int i, rm_offset;
->  		u32 *rm;
->  		i = gsc_readl(address+0x04);
-> @@ -868,10 +870,8 @@ test_rom:
->  	/* disable STI PCI ROM. ROM and card RAM overlap and
->  	 * leaving it enabled would force HPMCs
->  	 */
-> -	if (sti->pd) {
-> -		unsigned long rom_base;
-> -		rom_base = pci_resource_start(sti->pd, PCI_ROM_RESOURCE);	
-> -		pci_write_config_dword(sti->pd, PCI_ROM_ADDRESS, rom_base & ~PCI_ROM_ADDRESS_ENABLE);
-> +	if (sti->pd && rom_base) {
-> +		pci_unmap_rom(sti->pd, rom_base);
->  		DPRINTK((KERN_DEBUG "STI PCI ROM disabled\n"));
->  	}
->  
-> @@ -930,28 +930,25 @@ static int __devinit sticore_pci_init(struct pci_dev *pd,
->  		const struct pci_device_id *ent)
->  {
->  #ifdef CONFIG_PCI
-> -	unsigned long fb_base, rom_base;
-> -	unsigned int fb_len, rom_len;
-> +	unsigned long fb_base;
-> +	unsigned int fb_len;
-> +	char __iomem *rom_base;
-> +	size_t rom_len;
->  	struct sti_struct *sti;
->  	
->  	pci_enable_device(pd);
->  
->  	fb_base = pci_resource_start(pd, 0);
->  	fb_len = pci_resource_len(pd, 0);
-> -	rom_base = pci_resource_start(pd, PCI_ROM_RESOURCE);
-> -	rom_len = pci_resource_len(pd, PCI_ROM_RESOURCE);
-> -	if (rom_base) {
-> -		pci_write_config_dword(pd, PCI_ROM_ADDRESS, rom_base | PCI_ROM_ADDRESS_ENABLE);
-> -		DPRINTK((KERN_DEBUG "STI PCI ROM enabled at 0x%08lx\n", rom_base));
-> -	}
-> +	rom_base = pci_map_rom(pd, &rom_len);
-
-I'm really not sure this is such a good idea.  pci_map_rom() can do an
-ioremap() on the region.  In that case, gsc_readl which punches through
-our virtual memory into physical I/O space will fail.  What assurance do
-we have that all STI roms are correctly set up so pci_map_rom() isn't
-inclined to ioremap them?
-
-James
+-	strcpy(chan->adapter.name, name);
++	snprintf(chan->adapter.name, sizeof(chan->adapter.name),
++		 "radeonfb %s", name);
+ 	chan->adapter.owner		= THIS_MODULE;
+ 	chan->adapter.id		= I2C_HW_B_RADEON;
+ 	chan->adapter.algo_data		= &chan->algo;
 
 
+-- 
+Jean Delvare
+
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://sourceforge.net/services/buy/index.php

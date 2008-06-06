@@ -1,25 +1,25 @@
-From: Christian Schoenebeck <cuse@users.sourceforge.net>
-Subject: Re: deferred IO
-Date: Fri, 6 Jun 2008 14:28:34 +0200
-Message-ID: <200806061428.34427.cuse@users.sourceforge.net>
-References: <200806061134.13496.cuse@users.sourceforge.net>
-	<200806061251.26134.cuse@users.sourceforge.net>
-	<45a44e480806060355u6068a92bladb6e13c383c66d6@mail.gmail.com>
+From: "Alex Deucher" <alexdeucher@gmail.com>
+Subject: Re: radeonfb monid i2c bus
+Date: Fri, 6 Jun 2008 09:46:39 -0400
+Message-ID: <a728f9f90806060646q23cf9974k9647a79e8894451@mail.gmail.com>
+References: <20080606120151.7976df45@hyperion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K4b4Z-0004Wp-JW for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 05:29:39 -0700
-Received: from dns1.rz.hs-heilbronn.de ([141.7.1.18])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K4b4W-0002qq-Le
+	id 1K4cHB-0004zs-7C for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 06:46:41 -0700
+Received: from rv-out-0708.google.com ([209.85.198.243])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K4cH9-0006mo-UU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 05:29:34 -0700
-In-Reply-To: <45a44e480806060355u6068a92bladb6e13c383c66d6@mail.gmail.com>
+	Fri, 06 Jun 2008 06:46:41 -0700
+Received: by rv-out-0708.google.com with SMTP id f25so1089169rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 06 Jun 2008 06:46:39 -0700 (PDT)
+In-Reply-To: <20080606120151.7976df45@hyperion.delvare>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,45 +31,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Es geschah am Friday 06 June 2008 als Jaya Kumar schrieb:
-> On Fri, Jun 6, 2008 at 3:51 AM, Christian Schoenebeck
+On Fri, Jun 6, 2008 at 6:01 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi Ben,
 >
-> <cuse@users.sourceforge.net> wrote:
-> > Es geschah am Friday 06 June 2008 als Jaya Kumar schrieb:
-> >> On Fri, Jun 6, 2008 at 2:34 AM, Christian Schoenebeck
-> >>
-> >> <cuse@users.sourceforge.net> wrote:
-> >> > Hi!
-> >> >
-> >> > Is it possible that the deferred IO implementation in kernel 2.6.22 is
-> >> > buggy?
-> >>
-> >> Yes, that's possible. There was a key bug fixed in 2.6.25. You'll
-> >> probably want at least the following commit:
-> >>
-> >> commit        de7c6d15e354bc94a846f03749819768c331280a
-> >> fbdev: defio and Metronomefb
-> >
-> > Very good, thanks a lot!
-> > Is there an easy way to retrieve that specific patch?
+> Can you explain what is the "monid" i2c bus on Radeon adapters? I have
+> two Radeon chips here, an M6 in my old laptop and a 9200 in my desktop
+> system. On the M6 there is nothing on the monid bus. On the 9200, the
+> monid bus doesn't even work, every access results in timeout. The
+> radeonfb driver doesn't even look for EDID EEPROMs on that bus (except
+> in debug code.)
 >
-> I think git cherry-pick should be possible. Alternatively, I think you
-> can download just the fb_defio.c changes from:
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h
->=de7c6d15e354bc94a846f03749819768c331280a
->
-> and apply it that way. Hope that helps.
+> So I'm curious why you create this i2c bus if you don't need it.
+> Have you ever seen a Radeon adapter where there is something on that
+> bus?
 
-That did it! Works like a charme now!
+There are several i2c busses available on radeons and different OEMs
+use different combinations.  The bus used by each display output is
+listed in the connector table in the vbios rom on x86 cards.  Other
+uses include controlling external TMDS or DAC chips on some cards.
+This info is also available via the bios tables on x86 cards.
 
-Thanks Jaya!
-
-CU
-Christian
+Alex
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

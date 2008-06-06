@@ -1,26 +1,25 @@
-From: "Alex Deucher" <alexdeucher@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: radeonfb monid i2c bus
-Date: Fri, 6 Jun 2008 09:46:39 -0400
-Message-ID: <a728f9f90806060646q23cf9974k9647a79e8894451@mail.gmail.com>
+Date: Fri, 06 Jun 2008 23:50:18 +1000
+Message-ID: <1212760218.12464.33.camel@pasglop>
 References: <20080606120151.7976df45@hyperion.delvare>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K4cHB-0004zs-7C for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 06:46:41 -0700
-Received: from rv-out-0708.google.com ([209.85.198.243])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K4cH9-0006mo-UU
+	id 1K4cKs-0005R6-9F for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 06:50:30 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX18ryXxRaqoVAajNfTSdKk+AGcq2EkcL/EQ=])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1K4cKq-0007j2-Rp
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 06:46:41 -0700
-Received: by rv-out-0708.google.com with SMTP id f25so1089169rvb.22
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 06 Jun 2008 06:46:39 -0700 (PDT)
+	Fri, 06 Jun 2008 06:50:30 -0700
 In-Reply-To: <20080606120151.7976df45@hyperion.delvare>
-Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,29 +31,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jean Delvare <khali@linux-fr.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Jun 6, 2008 at 6:01 AM, Jean Delvare <khali@linux-fr.org> wrote:
+On Fri, 2008-06-06 at 12:01 +0200, Jean Delvare wrote:
 > Hi Ben,
->
+> 
 > Can you explain what is the "monid" i2c bus on Radeon adapters? I have
 > two Radeon chips here, an M6 in my old laptop and a 9200 in my desktop
 > system. On the M6 there is nothing on the monid bus. On the 9200, the
 > monid bus doesn't even work, every access results in timeout. The
 > radeonfb driver doesn't even look for EDID EEPROMs on that bus (except
 > in debug code.)
->
+> 
 > So I'm curious why you create this i2c bus if you don't need it.
 > Have you ever seen a Radeon adapter where there is something on that
 > bus?
 
-There are several i2c busses available on radeons and different OEMs
-use different combinations.  The bus used by each display output is
-listed in the connector table in the vbios rom on x86 cards.  Other
-uses include controlling external TMDS or DAC chips on some cards.
-This info is also available via the bios tables on x86 cards.
+The BIOS connector tables might make us use it. Otherwise, it tends to
+have the external TMDS transmitter on it for which we'll one day get
+proper support for re-initializing on wakeup from sleep...
 
-Alex
+Ben.
+
+
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

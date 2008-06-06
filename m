@@ -1,22 +1,25 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: radeonfb monid i2c bus
-Date: Fri, 6 Jun 2008 12:01:51 +0200
-Message-ID: <20080606120151.7976df45@hyperion.delvare>
+From: Christian Schoenebeck <cuse@users.sourceforge.net>
+Subject: Re: deferred IO
+Date: Fri, 6 Jun 2008 12:51:26 +0200
+Message-ID: <200806061251.26134.cuse@users.sourceforge.net>
+References: <200806061134.13496.cuse@users.sourceforge.net>
+	<45a44e480806060240j44887451q12c47595ca76df27@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K4Yls-0004MM-A1 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 03:02:08 -0700
-Received: from zone0.gcu-squad.org ([212.85.147.21]
-	helo=services.gcu-squad.org)
+	id 1K4ZYW-0001eK-Cc for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 06 Jun 2008 03:52:25 -0700
+Received: from dns1.rz.hs-heilbronn.de ([141.7.1.18])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K4Ylq-000224-OF
+	(Exim 4.44) id 1K4ZYU-0000xv-KA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 03:02:08 -0700
+	Fri, 06 Jun 2008 03:52:24 -0700
+In-Reply-To: <45a44e480806060240j44887451q12c47595ca76df27@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,25 +30,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Ben,
+Es geschah am Friday 06 June 2008 als Jaya Kumar schrieb:
+> On Fri, Jun 6, 2008 at 2:34 AM, Christian Schoenebeck
+>
+> <cuse@users.sourceforge.net> wrote:
+> > Hi!
+> >
+> > Is it possible that the deferred IO implementation in kernel 2.6.22 is
+> > buggy?
+>
+> Yes, that's possible. There was a key bug fixed in 2.6.25. You'll
+> probably want at least the following commit:
+>
+> commit	de7c6d15e354bc94a846f03749819768c331280a
+> fbdev: defio and Metronomefb
 
-Can you explain what is the "monid" i2c bus on Radeon adapters? I have
-two Radeon chips here, an M6 in my old laptop and a 9200 in my desktop
-system. On the M6 there is nothing on the monid bus. On the 9200, the
-monid bus doesn't even work, every access results in timeout. The
-radeonfb driver doesn't even look for EDID EEPROMs on that bus (except
-in debug code.)
+Very good, thanks a lot!
+Is there an easy way to retrieve that specific patch?
 
-So I'm curious why you create this i2c bus if you don't need it.
-Have you ever seen a Radeon adapter where there is something on that
-bus?
-
-Thanks,
--- 
-Jean Delvare
+CU
+Christian
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

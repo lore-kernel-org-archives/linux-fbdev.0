@@ -1,57 +1,52 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb: Revert "Fix radeon DDC
-	regression"
-Date: Sat, 07 Jun 2008 09:21:51 +1000
-Message-ID: <1212794511.12464.38.camel@pasglop>
-References: <20080606112116.3aa37dfd@hyperion.delvare>
-Reply-To: benh@kernel.crashing.org
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [RESEND] [PATCH] convert sticore.c to PCI ROM API
+Date: Fri, 06 Jun 2008 18:27:41 -0500
+Message-ID: <1212794861.16182.39.camel@localhost.localdomain>
+References: <20080605231327.af9cc9e6.krzysztof.h1@poczta.fm>
+	 <1212704814.4241.37.camel@localhost.localdomain>
+	 <20080606223507.0daf2b80.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K4lG5-0004Br-4i for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 16:22:09 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1/yoDKFXEn7ZHifI3Gu8V6s6v1NCouTmY0=])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K4lG2-00070e-M5
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 06 Jun 2008 16:22:08 -0700
-In-Reply-To: <20080606112116.3aa37dfd@hyperion.delvare>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-parisc-owner@vger.kernel.org>
+In-Reply-To: <20080606223507.0daf2b80.krzysztof.h1@poczta.fm>
+Sender: linux-parisc-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org
 
-On Fri, 2008-06-06 at 11:21 +0200, Jean Delvare wrote:
-> The bug was in fb_ddc and was fixed by commit
-> b64d70825abbf706bbe80be1b11b09514b71f45e (fb_ddc: fix DDC lines quirk)
-> so the workaround in radeonfb can be removed now.
+On Fri, 2008-06-06 at 22:35 +0200, Krzysztof Helt wrote:
+> On Thu, 05 Jun 2008 17:26:54 -0500
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> ---
+> > 
+> > I'm really not sure this is such a good idea.  pci_map_rom() can do an
+> > ioremap() on the region.  In that case, gsc_readl which punches through
+> > our virtual memory into physical I/O space will fail.  What assurance do
+> > we have that all STI roms are correctly set up so pci_map_rom() isn't
+> > inclined to ioremap them?
+> > 
+> 
+> I haven't thought about this. The ROM the Helge tested was obviously
+> set up correctly, otherwise reading the ROM signature would be impossible.
 
-I need to verify that on my Apple monitor which would switch off
-if that is wrong. Will try to do that this week-end. Without news
-from me next week, then just commit the bloody thing :-)
+I suspect Helge only tested GSC based cards, which will work just fine
+because they use the old logic.
 
-Cheers,
-Ben.
+> What is you advise for this patch James?
+
+The more I look at this the more I doubt that it's a good thing.  STI is
+really a platform driver; it has to function for both GSC and PCI
+busses.  pci_map_rom() seems to be a bit of a minefield designed for x86
+centric video cards, which STI definitely isn't.  The sticore driver is
+also designed to operate on unmapped ranges ... at least this is the way
+it's designed for the GSC, so the PCI part has to follow suit.
+
+Our simple base get and enabling transparently the driver currently has
+says what we're doing; I don't really see why it needs to switch to
+pci_map_rom.  Additionally, I fear that switching to pci_map_rom will
+cause us to break later on down the road.
+
+James
 
 
--------------------------------------------------------------------------
-Check out the new SourceForge.net Marketplace.
-It's the best place to buy or sell services for
-just about anything Open Source.
-http://sourceforge.net/services/buy/index.php

@@ -1,24 +1,24 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [RFC 2.6.26-rc3 4/7] am200epd: move
- am200epd to mach-pxa
-Date: Sat, 7 Jun 2008 10:40:04 +0200
-Message-ID: <20080607104004.ec8c2373.krzysztof.h1@poczta.fm>
+Subject: Re: [RFC 2.6.26-rc3 6/7] metronomefb: convert
+ printk to dev_dbg/err messages
+Date: Sat, 7 Jun 2008 10:46:05 +0200
+Message-ID: <20080607104605.f2968e05.krzysztof.h1@poczta.fm>
 References: <1212814166-10313-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1212814166-10313-5-git-send-email-jayakumar.lkml@gmail.com>
+	<1212814166-10313-7-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K4tvc-0006Cb-Nl for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Jun 2008 01:37:36 -0700
+	id 1K4u1U-0006oq-Qs for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 07 Jun 2008 01:43:41 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K4tvc-0002Z1-AJ
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K4u1T-0002pK-E1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Jun 2008 01:37:36 -0700
-In-Reply-To: <1212814166-10313-5-git-send-email-jayakumar.lkml@gmail.com>
+	Sat, 07 Jun 2008 01:43:40 -0700
+In-Reply-To: <1212814166-10313-7-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,39 +32,23 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
 Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Sat,  7 Jun 2008 00:49:23 -0400
+On Sat,  7 Jun 2008 00:49:25 -0400
 Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
 
-> The am200epd driver was designed with bad assumptions. It manipulated
-> GPSR/GPLR registers directly. It relied on direct access to the pxa LCDC
-> registers which have since conflicted with commit
-> ce4fb7b892a6d6c6a0f87366b26fd834d2923dd7 . This patch moves it into
-> mach-pxa in preparation for an overhaul. This is done as a move rather
-> than a removal in order to facilitate code review.
+> This patch converts the printk messages in metronomefb to dev_dbg/err type
+> messages.
 > 
 > Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 > ---
->  arch/arm/mach-pxa/Kconfig    |   17 +++
->  arch/arm/mach-pxa/Makefile   |    1 +
->  arch/arm/mach-pxa/am200epd.c |  295 ++++++++++++++++++++++++++++++++++++++++++
->  drivers/video/Kconfig        |   13 --
->  drivers/video/Makefile       |    1 -
->  drivers/video/am200epd.c     |  295 ------------------------------------------
->  6 files changed, 313 insertions(+), 309 deletions(-)
->  create mode 100644 arch/arm/mach-pxa/am200epd.c
->  delete mode 100644 drivers/video/am200epd.c
+>  drivers/video/metronomefb.c |   49 +++++++++++++++++++-----------------------
+>  1 files changed, 22 insertions(+), 27 deletions(-)
 > 
 
 Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-The move instead of removal is good idea.
-
-Regards,
-Krzysztof
-
----------------------------------------------------------------
-Sprawdz jak zdobyc zdrowy usmiech!
-Kliknij >> http://link.interia.pl/f1e26
+----------------------------------------------------------------------
+Tanie rozmowy!
+Sprawdz >>>  http://link.interia.pl/f1e22 
 
 
 -------------------------------------------------------------------------

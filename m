@@ -1,9 +1,9 @@
 From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH] radeonfb: Give i2c buses nicer names
-Date: Sun, 8 Jun 2008 15:50:56 +0200
-Message-ID: <20080608155056.4506f457@hyperion.delvare>
-References: <20080606111955.5583e81a@hyperion.delvare>
-	<1212744097.12464.29.camel@pasglop>
+Subject: Re: radeonfb monid i2c bus
+Date: Sun, 8 Jun 2008 16:20:23 +0200
+Message-ID: <20080608162023.431083c7@hyperion.delvare>
+References: <20080606120151.7976df45@hyperion.delvare>
+	<1212760218.12464.33.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K5LIo-0005nb-19 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Jun 2008 06:51:22 -0700
+	id 1K5Ll7-0000Hc-AD for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Jun 2008 07:20:37 -0700
 Received: from zone0.gcu-squad.org ([212.85.147.21]
 	helo=services.gcu-squad.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K5LIl-000220-KO
+	(Exim 4.44) id 1K5Ll5-0003C3-Qq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Jun 2008 06:51:22 -0700
-In-Reply-To: <1212744097.12464.29.camel@pasglop>
+	Sun, 08 Jun 2008 07:20:37 -0700
+In-Reply-To: <1212760218.12464.33.camel@pasglop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,36 +33,37 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: benh@kernel.crashing.org
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 06 Jun 2008 19:21:37 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2008-06-06 at 11:19 +0200, Jean Delvare wrote:
-> > The name of the i2c buses shows in the output of "i2cdetect -l", so
-> > it's important to give informative names.
+On Fri, 06 Jun 2008 23:50:18 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2008-06-06 at 12:01 +0200, Jean Delvare wrote:
+> > Can you explain what is the "monid" i2c bus on Radeon adapters? I have
+> > two Radeon chips here, an M6 in my old laptop and a 9200 in my desktop
+> > system. On the M6 there is nothing on the monid bus. On the 9200, the
+> > monid bus doesn't even work, every access results in timeout. The
+> > radeonfb driver doesn't even look for EDID EEPROMs on that bus (except
+> > in debug code.)
 > > 
-> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > So I'm curious why you create this i2c bus if you don't need it.
+> > Have you ever seen a Radeon adapter where there is something on that
+> > bus?
 > 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> The BIOS connector tables might make us use it.
 
-Hmm, does this mean that you won't take care of pushing the patch
-upstream? Driver maintainers usually do that...
+Where is the code handling this? In radeon_monitor.c I can only see
+radeon_probe_i2c_connector() being called on ddc_vga, ddc_dvi and
+ddc_crt2. No reference to ddc_monid.
 
-> > ---
-> >  drivers/video/aty/radeon_i2c.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > --- linux-2.6.26-rc5.orig/drivers/video/aty/radeon_i2c.c	2008-06-03 09:57:31.000000000 +0200
-> > +++ linux-2.6.26-rc5/drivers/video/aty/radeon_i2c.c	2008-06-06 08:43:51.000000000 +0200
-> > @@ -69,7 +69,8 @@ static int radeon_setup_i2c_bus(struct r
-> >  {
-> >  	int rc;
-> >  
-> > -	strcpy(chan->adapter.name, name);
-> > +	snprintf(chan->adapter.name, sizeof(chan->adapter.name),
-> > +		 "radeonfb %s", name);
-> >  	chan->adapter.owner		= THIS_MODULE;
-> >  	chan->adapter.id		= I2C_HW_B_RADEON;
-> >  	chan->adapter.algo_data		= &chan->algo;
-> > 
+>                                                 Otherwise, it tends to
+> have the external TMDS transmitter on it for which we'll one day get
+> proper support for re-initializing on wakeup from sleep...
 
+But apparently not all chips have the "monid" bus? Or is it a card
+property, and other cards using the same Radeon 9200 might have it
+while mine doesn't? I wouldn't care about an empty i2c bus, but a
+broken bus as I get now affects the whole i2c subsystem and its users
+in unpleasant ways. That's why I am wondering if there's a way to avoid
+it.
+
+Thanks,
 -- 
 Jean Delvare
 

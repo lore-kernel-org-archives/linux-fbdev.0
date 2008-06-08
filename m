@@ -1,20 +1,25 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: hgafb: resource management fix
-Date: Sun, 8 Jun 2008 00:06:12 +0200
-Message-ID: <20080608000612.87685b5b.krzysztof.h1@poczta.fm>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] radeonfb: Give i2c buses nicer names
+Date: Sun, 8 Jun 2008 15:50:56 +0200
+Message-ID: <20080608155056.4506f457@hyperion.delvare>
+References: <20080606111955.5583e81a@hyperion.delvare>
+	<1212744097.12464.29.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K56Vj-0004OH-EJ for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Jun 2008 15:03:43 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K56Vh-0002Vd-TV
+	id 1K5LIo-0005nb-19 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Jun 2008 06:51:22 -0700
+Received: from zone0.gcu-squad.org ([212.85.147.21]
+	helo=services.gcu-squad.org)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1K5LIl-000220-KO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Jun 2008 15:03:43 -0700
+	Sun, 08 Jun 2008 06:51:22 -0700
+In-Reply-To: <1212744097.12464.29.camel@pasglop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,83 +30,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: benh@kernel.crashing.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Fri, 06 Jun 2008 19:21:37 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2008-06-06 at 11:19 +0200, Jean Delvare wrote:
+> > The name of the i2c buses shows in the output of "i2cdetect -l", so
+> > it's important to give informative names.
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Release ports which are requested during detection
-which are not freed if there is no hga card.
-Otherwise there is a crash during cat /proc/ioports command. 
+Hmm, does this mean that you won't take care of pushing the patch
+upstream? Driver maintainers usually do that...
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > ---
+> >  drivers/video/aty/radeon_i2c.c |    3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > --- linux-2.6.26-rc5.orig/drivers/video/aty/radeon_i2c.c	2008-06-03 09:57:31.000000000 +0200
+> > +++ linux-2.6.26-rc5/drivers/video/aty/radeon_i2c.c	2008-06-06 08:43:51.000000000 +0200
+> > @@ -69,7 +69,8 @@ static int radeon_setup_i2c_bus(struct r
+> >  {
+> >  	int rc;
+> >  
+> > -	strcpy(chan->adapter.name, name);
+> > +	snprintf(chan->adapter.name, sizeof(chan->adapter.name),
+> > +		 "radeonfb %s", name);
+> >  	chan->adapter.owner		= THIS_MODULE;
+> >  	chan->adapter.id		= I2C_HW_B_RADEON;
+> >  	chan->adapter.algo_data		= &chan->algo;
+> > 
 
---- linux-rc2/drivers/video/hgafb.c	2008-06-02 20:09:20.139779110 +0200
-+++ linux-new/drivers/video/hgafb.c	2008-06-02 20:01:45.030230800 +0200
-@@ -279,7 +279,7 @@ static void hga_blank(int blank_mode)
- 
- static int __init hga_card_detect(void)
- {
--	int count=0;
-+	int count = 0;
- 	void __iomem *p, *q;
- 	unsigned short p_save, q_save;
- 
-@@ -303,20 +303,18 @@ static int __init hga_card_detect(void)
- 	writew(0x55aa, p); if (readw(p) == 0x55aa) count++;
- 	writew(p_save, p);
- 
--	if (count != 2) {
--		return 0;
--	}
-+	if (count != 2)
-+		goto error;
- 
- 	/* Ok, there is definitely a card registering at the correct
- 	 * memory location, so now we do an I/O port test.
- 	 */
- 	
--	if (!test_hga_b(0x66, 0x0f)) {	    /* cursor low register */
--		return 0;
--	}
--	if (!test_hga_b(0x99, 0x0f)) {     /* cursor low register */
--		return 0;
--	}
-+	if (!test_hga_b(0x66, 0x0f))	    /* cursor low register */
-+		goto error;
-+
-+	if (!test_hga_b(0x99, 0x0f))     /* cursor low register */
-+		goto error;
- 
- 	/* See if the card is a Hercules, by checking whether the vsync
- 	 * bit of the status register is changing.  This test lasts for
-@@ -331,7 +329,7 @@ static int __init hga_card_detect(void)
- 	}
- 
- 	if (p_save == q_save) 
--		return 0;
-+		goto error;
- 
- 	switch (inb_p(HGA_STATUS_PORT) & 0x70) {
- 		case 0x10:
-@@ -348,6 +346,12 @@ static int __init hga_card_detect(void)
- 			break;
- 	}
- 	return 1;
-+error:
-+	if (release_io_ports)
-+		release_region(0x3b0, 12);
-+	if (release_io_port)
-+		release_region(0x3bf, 1);
-+	return 0;
- }
- 
- /**
-
----------------------------------------------------------------
-Sprawdz jak zdobyc zdrowy usmiech!
-Kliknij >> http://link.interia.pl/f1e26
-
+-- 
+Jean Delvare
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

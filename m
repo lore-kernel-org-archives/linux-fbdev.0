@@ -1,25 +1,28 @@
-From: Jean Delvare <khali@linux-fr.org>
+From: Jimmy.Jazz@gmx.net
 Subject: Re: radeonfb monid i2c bus
-Date: Sun, 8 Jun 2008 16:20:23 +0200
-Message-ID: <20080608162023.431083c7@hyperion.delvare>
-References: <20080606120151.7976df45@hyperion.delvare>
-	<1212760218.12464.33.camel@pasglop>
+Date: Mon, 09 Jun 2008 00:48:22 +0200
+Message-ID: <484C61B6.8090902@gmx.net>
+References: <20080606120151.7976df45@hyperion.delvare>	<1212760218.12464.33.camel@pasglop>
+	<20080608162023.431083c7@hyperion.delvare>
+Reply-To: Jimmy.Jazz@gmx.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K5Ll7-0000Hc-AD for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Jun 2008 07:20:37 -0700
-Received: from zone0.gcu-squad.org ([212.85.147.21]
-	helo=services.gcu-squad.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K5Ll5-0003C3-Qq
+	id 1K5Tgi-0002KX-Vp for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 08 Jun 2008 15:48:37 -0700
+Received: from mail.gmx.net ([213.165.64.20])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1K5Tgi-00075E-Ex
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 08 Jun 2008 07:20:37 -0700
-In-Reply-To: <1212760218.12464.33.camel@pasglop>
+	Sun, 08 Jun 2008 15:48:36 -0700
+Received: from dspam-out (localhost.cryosphere.corp [127.0.0.1])
+	by dspam.cryosphere.corp (Postfix) with SMTP id 698D5581A8
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  9 Jun 2008 00:48:25 +0200 (CEST)
+In-Reply-To: <20080608162023.431083c7@hyperion.delvare>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,42 +33,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: benh@kernel.crashing.org
+To: Jean Delvare <khali@linux-fr.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 06 Jun 2008 23:50:18 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2008-06-06 at 12:01 +0200, Jean Delvare wrote:
-> > Can you explain what is the "monid" i2c bus on Radeon adapters? I have
-> > two Radeon chips here, an M6 in my old laptop and a 9200 in my desktop
-> > system. On the M6 there is nothing on the monid bus. On the 9200, the
-> > monid bus doesn't even work, every access results in timeout. The
-> > radeonfb driver doesn't even look for EDID EEPROMs on that bus (except
-> > in debug code.)
-> > 
-> > So I'm curious why you create this i2c bus if you don't need it.
-> > Have you ever seen a Radeon adapter where there is something on that
-> > bus?
-> 
-> The BIOS connector tables might make us use it.
+Jean Delvare a =E9crit :
+>
+> Where is the code handling this? In radeon_monitor.c I can only see
+> radeon_probe_i2c_connector() being called on ddc_vga, ddc_dvi and
+> ddc_crt2. No reference to ddc_monid.
+>
+>   =
 
-Where is the code handling this? In radeon_monitor.c I can only see
-radeon_probe_i2c_connector() being called on ddc_vga, ddc_dvi and
-ddc_crt2. No reference to ddc_monid.
+You will find several patches that make use of that functionality.  The =
 
->                                                 Otherwise, it tends to
-> have the external TMDS transmitter on it for which we'll one day get
-> proper support for re-initializing on wakeup from sleep...
+current radeonfd driver is quite incomplete and is unusable for  the =
 
-But apparently not all chips have the "monid" bus? Or is it a card
-property, and other cards using the same Radeon 9200 might have it
-while mine doesn't? I wouldn't care about an empty i2c bus, but a
-broken bus as I get now affects the whole i2c subsystem and its users
-in unpleasant ways. That's why I am wondering if there's a way to avoid
-it.
+never cards that use an atom bios.  The driver needs also to be =
 
-Thanks,
--- 
-Jean Delvare
+patched.  Some of the ati x800 family cards like the one i own will only =
+
+work with the ddc_monid and  one or more of the patches i mentioned.
+> But apparently not all chips have the "monid" bus? Or is it a card
+> property, and other cards using the same Radeon 9200 might have it
+> while mine doesn't? I wouldn't care about an empty i2c bus, but a
+> broken bus as I get now affects the whole i2c subsystem and its users
+> in unpleasant ways. That's why I am wondering if there's a way to avoid
+> it.
+>   =
+
+There are certainly many good reasons why the driver will stay =
+
+unchanged. One reason could be, it is stable for most of the users and =
+
+"easily" patchable to fit particular needs. Like me, you need particular =
+
+needs :)
+
+
+
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

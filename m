@@ -1,22 +1,30 @@
-From: Julia Lawall <julia@diku.dk>
-Subject: [PATCH 3/4] drivers/video/fsl-diu-fb.c: add
-	missing of_node_put
-Date: Mon, 9 Jun 2008 14:21:18 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0806091420450.16009@ask.diku.dk>
+From: "Alex Deucher" <alexdeucher@gmail.com>
+Subject: Re: radeonfb monid i2c bus
+Date: Mon, 9 Jun 2008 09:02:07 -0400
+Message-ID: <a728f9f90806090602n439ec4dbqd9c59ba901ce0275@mail.gmail.com>
+References: <20080606120151.7976df45@hyperion.delvare>
+	<1212760218.12464.33.camel@pasglop>
+	<20080608162023.431083c7@hyperion.delvare>
+	<a728f9f90806082215x35c81364q45583a3742bc5d2@mail.gmail.com>
+	<20080609091414.2502c49d@hyperion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K5gNI-0006X6-8G for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Jun 2008 05:21:24 -0700
-Received: from mgw2.diku.dk ([130.225.96.92])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K5gNH-0000Eq-PP
+	id 1K5h0j-0002U1-Bd for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Jun 2008 06:02:10 -0700
+Received: from rv-out-0708.google.com ([209.85.198.250])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K5h0h-0001HD-N3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Jun 2008 05:21:24 -0700
+	Mon, 09 Jun 2008 06:02:09 -0700
+Received: by rv-out-0708.google.com with SMTP id f25so1857557rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 09 Jun 2008 06:02:07 -0700 (PDT)
+In-Reply-To: <20080609091414.2502c49d@hyperion.delvare>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,81 +35,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Jean Delvare <khali@linux-fr.org>
+Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
 
-From: Julia Lawall <julia@diku.dk>
+On Mon, Jun 9, 2008 at 3:14 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi Alex,
+>
+> Thanks for your answers.
+>
+> On Mon, 9 Jun 2008 01:15:00 -0400, Alex Deucher wrote:
+>> On Sun, Jun 8, 2008 at 10:20 AM, Jean Delvare <khali@linux-fr.org> wrote:
+>> > But apparently not all chips have the "monid" bus? Or is it a card
+>> > property, and other cards using the same Radeon 9200 might have it
+>> > while mine doesn't? I wouldn't care about an empty i2c bus, but a
+>> > broken bus as I get now affects the whole i2c subsystem and its users
+>> > in unpleasant ways. That's why I am wondering if there's a way to avoid
+>> > it.
+>>
+>> They are just gpio pads.  All the cards supported by radeonfb have
+>> then, but only certain ones are wired up as per the bios connector
+>> tables on x86 cards.  Mac cards and we currently hard code them based
+>> on lots of investigation.  I suppose, ideally, you check the connector
+>> tables and some of the other bios tables (powerplay, external tmds,
+>> ext dac, multimedia. etc.) and only init the buses you have a
+>> particular card.
+>
+> That would indeed make sense. If these are GPIOs, do we even have any
+> guarantee that they aren't used for other purposes when not used for
+> I2C? I've always considered the monid I2C bus on my adapters to be
+> non-existent (i2c-algo-bit can't control the lines) and that's the
+> reason why I wanted it to not be created, but maybe the GPIO lines are
+> actually used for something different and creating the non-existent I2C
+> bus could break that?
 
-of_node_put is needed before discarding a value received from
-of_find_node_by_type, eg in error handling code.
+In theory they could be used for other things, but I'm pretty sure
+this set (monid, dvi, vga, crt2) is only used for i2c.
 
-The semantic patch that makes the change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+>
+> So if it is possible to create the I2C buses (by default, at least)
+> only when the BIOS connector tables say they are present, I'm in favor
+> of doing that.
 
-// <smpl>
-@@
-struct device_node *n;
-struct device_node *n1;
-struct device_node *n2;
-statement S;
-identifier f1,f2;
-expression E1,E2;
-constant C;
-@@
+That would be ideal, unfortunately, I don't have the time to implement
+anything like that for radonhd.  For anyone interested, the code in
+the Xorg radeon driver would be a good guide.  The drm modesetting
+work should also alleviate this, once it's done for radeon hw.
 
-n = of_find_node_by_type(...)
-...
-if (!n) S
-... when != of_node_put(n)
-    when != n1 = f1(n,...)
-    when != E1 = n
-    when any
-    when strict
-(
-+ of_node_put(n);
-  return -C;
-|
-  of_node_put(n);
-|
-  n2 = f2(n,...)
-|
-  E2 = n
-|
-  return ...;
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-
-diff -u -p a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1664,8 +1664,10 @@ static int __init fsl_diu_init(void)
- 	}
- 
- 	prop = of_get_property(np, "d-cache-size", NULL);
--	if (prop == NULL)
-+	if (prop == NULL) {
-+		of_node_put(np);
- 		return -ENODEV;
-+	}
- 
- 	/* Freescale PLRU requires 13/8 times the cache size to do a proper
- 	   displacement flush
-@@ -1674,8 +1676,10 @@ static int __init fsl_diu_init(void)
- 	coherence_data_size /= 8;
- 
- 	prop = of_get_property(np, "d-cache-line-size", NULL);
--	if (prop == NULL)
-+	if (prop == NULL) {
-+		of_node_put(np);
- 		return -ENODEV;
-+	}
- 	d_cache_line_size = *prop;
- 
- 	of_node_put(np);
- 	
+Alex
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

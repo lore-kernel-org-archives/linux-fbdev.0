@@ -1,24 +1,27 @@
-From: =?iso-8859-15?q?Lothar_Wa=DFmann?= <LW@KARO-electronics.de>
+From: Eric Miao <eric.y.miao@gmail.com>
 Subject: Re: [RFC 2.6.26-rc3 1/7] pxafb: module
 	unloading support
-Date: Tue, 10 Jun 2008 08:43:01 +0200
-Message-ID: <18510.8821.785915.671710@ipc1.ka-ro>
-References: <1212814166-10313-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1212814166-10313-2-git-send-email-jayakumar.lkml@gmail.com>
+Date: Tue, 10 Jun 2008 15:44:38 +0800
+Message-ID: <484E30E6.8090204@gmail.com>
+References: <1212814166-10313-1-git-send-email-jayakumar.lkml@gmail.com>	<1212814166-10313-2-git-send-email-jayakumar.lkml@gmail.com>
+	<18510.8821.785915.671710@ipc1.ka-ro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K5xZs-0001Ap-Le for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Jun 2008 23:43:32 -0700
-Received: from mail.karo-electronics.de ([213.146.116.110])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K5xZq-00036c-Gt
+	id 1K5yXJ-0007Kd-7o for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Jun 2008 00:44:57 -0700
+Received: from rv-out-0708.google.com ([209.85.198.248])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K5yXH-0006cx-0P
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Jun 2008 23:43:32 -0700
-In-Reply-To: <1212814166-10313-2-git-send-email-jayakumar.lkml@gmail.com>
+	Tue, 10 Jun 2008 00:44:57 -0700
+Received: by rv-out-0708.google.com with SMTP id f25so2227758rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 10 Jun 2008 00:44:54 -0700 (PDT)
+In-Reply-To: <18510.8821.785915.671710@ipc1.ka-ro>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,40 +32,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: =?UTF-8?B?TG90aGFyIFdhw59tYW5u?= <LW@KARO-electronics.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, ymiao3@marvell.com, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-Jaya Kumar wrote:
-> @@ -1587,7 +1587,7 @@ static int __init pxafb_parse_options(struct device=
- *dev, char *options)
->  static char g_options[256] __devinitdata =3D "";
->  =
-
->  #ifndef CONFIG_MODULES
-           ^^^^^^^^^^^^^^
-> -static int __devinit pxafb_setup_options(void)
-> +static int __init pxafb_setup_options(void)
->
-That should be '#ifndef MODULE'.
-Otherwise support for cmdline options for the built-in driver will
-only be enabled if the kernel is compiled without module support.
-
-
-Lothar Wa=DFmann
--- =
-
-___________________________________________________________
-
-Ka-Ro electronics GmbH | Pascalstra=DFe 22 | D - 52076 Aachen
-Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
-Gesch=E4ftsf=FChrer: Matthias Kaussen
-Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
-
-www.karo-electronics.de | info@karo-electronics.de
-___________________________________________________________
-
--------------------------------------------------------------------------
-Check out the new SourceForge.net Marketplace.
-It's the best place to buy or sell services for
-just about anything Open Source.
-http://sourceforge.net/services/buy/index.php
+TG90aGFyIFdhw59tYW5uIHdyb3RlOgo+IEpheWEgS3VtYXIgd3JvdGU6Cj4+IEBAIC0xNTg3LDcg
+KzE1ODcsNyBAQCBzdGF0aWMgaW50IF9faW5pdCBweGFmYl9wYXJzZV9vcHRpb25zKHN0cnVjdCBk
+ZXZpY2UgKmRldiwgY2hhciAqb3B0aW9ucykKPj4gIHN0YXRpYyBjaGFyIGdfb3B0aW9uc1syNTZd
+IF9fZGV2aW5pdGRhdGEgPSAiIjsKPj4gIAo+PiAgI2lmbmRlZiBDT05GSUdfTU9EVUxFUwo+ICAg
+ICAgICAgICAgXl5eXl5eXl5eXl5eXl4KPj4gLXN0YXRpYyBpbnQgX19kZXZpbml0IHB4YWZiX3Nl
+dHVwX29wdGlvbnModm9pZCkKPj4gK3N0YXRpYyBpbnQgX19pbml0IHB4YWZiX3NldHVwX29wdGlv
+bnModm9pZCkKPj4KPiBUaGF0IHNob3VsZCBiZSAnI2lmbmRlZiBNT0RVTEUnLgo+IE90aGVyd2lz
+ZSBzdXBwb3J0IGZvciBjbWRsaW5lIG9wdGlvbnMgZm9yIHRoZSBidWlsdC1pbiBkcml2ZXIgd2ls
+bAo+IG9ubHkgYmUgZW5hYmxlZCBpZiB0aGUga2VybmVsIGlzIGNvbXBpbGVkIHdpdGhvdXQgbW9k
+dWxlIHN1cHBvcnQuCj4gCgpZZXMsIGluZGVlZC4gSXQgcmVxdWlyZXMgYW5vdGhlciBmaXggcGF0
+Y2ggZm9yIHRoaXMuCgo+IAo+IExvdGhhciBXYcOfbWFubgoKCi0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KQ2hl
+Y2sgb3V0IHRoZSBuZXcgU291cmNlRm9yZ2UubmV0IE1hcmtldHBsYWNlLgpJdCdzIHRoZSBiZXN0
+IHBsYWNlIHRvIGJ1eSBvciBzZWxsIHNlcnZpY2VzIGZvcgpqdXN0IGFib3V0IGFueXRoaW5nIE9w
+ZW4gU291cmNlLgpodHRwOi8vc291cmNlZm9yZ2UubmV0L3NlcnZpY2VzL2J1eS9pbmRleC5waHAK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtZmJk
+ZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdl
+Lm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9saW51eC1m
+YmRldi1kZXZlbAo=

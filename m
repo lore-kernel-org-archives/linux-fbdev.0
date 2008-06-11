@@ -1,8 +1,7 @@
-From: "Syed Mohammed, Khasim" <khasim@ti.com>
-Subject: Does FBDEV support dynamic
-	configuration/selection of output device
-Date: Wed, 11 Jun 2008 19:31:05 +0530
-Message-ID: <0680EC522D0CC943BC586913CF3768C001DE5A2F4E@dbde02.ent.ti.com>
+From: John Summerfield <reluctanthacker@js.id.au>
+Subject: Intelfb, Q965 etc etc
+Date: Thu, 12 Jun 2008 00:45:15 +0800
+Message-ID: <4850011B.6030202@js.id.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,23 +9,20 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K6QtC-0004BN-AP for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Jun 2008 07:01:27 -0700
-Received: from arroyo.ext.ti.com ([192.94.94.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1K6Qt7-0004Y3-Jd
+	id 1K6TRv-0000c3-ST for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 11 Jun 2008 09:45:32 -0700
+Received: from dsl-58-6-192-22.wa.westnet.com.au ([58.6.192.22] helo=js.id.au)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K6TRr-0003Xa-Ro
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Jun 2008 07:01:22 -0700
-Received: from dlep95.itg.ti.com ([157.170.170.107])
-	by arroyo.ext.ti.com (8.13.7/8.13.7) with ESMTP id m5BE17NF010826
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	Wed, 11 Jun 2008 09:45:25 -0700
+Received: from ns.demo.lan (unknown [192.168.4.10])
+	by js.id.au (Postfix) with ESMTP id 7B4FA3B0003
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 11 Jun 2008 09:01:12 -0500
-Received: from dbde71.ent.ti.com (localhost [127.0.0.1])
-	by dlep95.itg.ti.com (8.13.8/8.13.8) with ESMTP id m5BE15l2024423
+	Thu, 12 Jun 2008 00:45:16 +0800 (WST)
+Received: from [192.168.9.131] (Numbat.demo.lan [192.168.9.131])
+	by ns.demo.lan (Postfix) with ESMTP id 16762478D62
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 11 Jun 2008 09:01:06 -0500 (CDT)
-Content-Language: en-US
+	Thu, 12 Jun 2008 00:45:16 +0800 (WST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,26 +33,75 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi all:
+I have an HP DC7700 on which I wish to run SL5, a RHEL clone and xen. I
+also wish to have framebuffer support whilst XEN is running.
 
-I am under an impression that FBDEV doesn't support dynamic selection/configuring of output devices.
+I can do that with an IBM Thinkcentre with this video:
+21:16 [summer@numbat ~]$ lspci -v -s 00:02.0
+00:02.0 VGA compatible controller: Intel Corporation 82865G Integrated
+Graphics Controller (rev 02) (prog-if 00 [VGA])
+         Subsystem: IBM Unknown device 0285
+         Flags: bus master, fast devsel, latency 0, IRQ 17
+         Memory at f0000000 (32-bit, prefetchable) [size=128M]
+         Memory at e8000000 (32-bit, non-prefetchable) [size=512K]
+         I/O ports at 1800 [size=8]
+         Capabilities: <access denied>
 
-The scenario is as below,
+21:17 [summer@numbat ~]$
 
-On many TI OMAP Platforms we have LCD, DVI, S-Video, as outputs to our OMAP FBDEV driver, basically the FBDEV driver is configured to render Framebuffer to one of these Panels.
+I simply modprobe intelfb and all works well, despite nasturtiums cast
+on this list.
 
-But the requirement is to dynamically switch the framebuffer to S-Video or DVI or LCD and viceversa.
+I've noticed that intelfb does not support the graphics on my HP box:
+[summer@bobtail ~]$ lspci -v -s 00:02.0
+00:02.0 VGA compatible controller: Intel Corporation 82Q963/Q965
+Integrated Graphics Controller (rev 02) (prog-if 00 [VGA])
+         Subsystem: Hewlett-Packard Company Unknown device 2801
+         Flags: bus master, fast devsel, latency 0, IRQ 21
+         Memory at f0400000 (32-bit, non-prefetchable) [size=1M]
+         Memory at e0000000 (64-bit, prefetchable) [size=256M]
+         I/O ports at 1100 [size=8]
+         Capabilities: <access denied>
 
-I would like to know if there is an ioctl that can be used from application layer to make this dynamic switch.
+[summer@bobtail ~]$
 
-Any suggestion in handling this is appreciated.
+I don't know much at all about these things, but it seemed a fair bet
+that a '945G driver might work, so I did some hacking on intelfb and
+I've booted.
 
-Thanks
+The good news is that "modprobe intelfb" doesn't hang the system; the
+screen goes powersaving, which given the gas supply here (Thankyou
+Apache), is probably a good thing.
 
-Regards,
-Khasim
+fbset finds a framebuffer driver and all seems well, better than it
+should be:-) Except for the blank screen.
+
+Time to call for help I think. But first:
+http://sourceforge.net/mailarchive/forum.php?thread_name=4815EEB4.2060509%40frugalware.org&forum_name=linux-fbdev-devel 
+
+
+says that intelfb isn't really being maintained, and that clever souls
+are working on a replacement.
+
+Now, that _was_ about six weeks ago.
+
+vesafb (which I discovered cannot be compiled as a module) drives it
+fine with standard (not XEN) kernels.
+
+I have a similar system running F9 and it's fine _but_ it's so long
+since I had a working kernel-xen in Fedora that I don't recall whether I
+had XEN and framebuffer.
+
+Since I wish to run SL5, I really should stay with 2.6.18 kernels.
+
+Before I post the copious kernel messages I have and the patch for
+others' perusal, what does the list recommend?
+
+
+
+
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

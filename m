@@ -1,8 +1,8 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc3 03/10] pxafb: fix
-	__devinit/exit annotations
-Date: Thu, 12 Jun 2008 12:59:14 -0400
-Message-ID: <1213289961-1562-4-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc3 02/10] pxafb: cleanup and fix
+	order of failure handling
+Date: Thu, 12 Jun 2008 12:59:13 -0400
+Message-ID: <1213289961-1562-3-git-send-email-jayakumar.lkml@gmail.com>
 References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K6r2I-0003eO-Pk for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jun 2008 10:56:34 -0700
+	id 1K6r2E-0003eD-PO for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Jun 2008 10:56:30 -0700
 Received: from wf-out-1314.google.com ([209.85.200.172])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K6r2I-0008E0-Ih
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K6r2E-0008E0-I4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jun 2008 10:56:34 -0700
+	Thu, 12 Jun 2008 10:56:30 -0700
 Received: by wf-out-1314.google.com with SMTP id 27so3712034wfd.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 12 Jun 2008 10:56:34 -0700 (PDT)
+	Thu, 12 Jun 2008 10:56:30 -0700 (PDT)
 In-Reply-To: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,91 +34,96 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-This patch fixes pxafb's init/exit annotations. It uses __devinit/exit for
-probe functions and __init for init functions. g_options is left as
-__devinitdata since it is used by both.
+This issue was found by Krzysztof Helt and Eric Miao.
+
+pxafb had issues in the order with which it cleaned up if errors occurred
+during a probe. This patch reorders the failure handling sequence and also
+frees the cmap and clk.
 
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 ---
- drivers/video/pxafb.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/video/pxafb.c |   34 ++++++++++++++++++++++++----------
+ 1 files changed, 24 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 037881a..b891aac 100644
+index dd013f3..037881a 100644
 --- a/drivers/video/pxafb.c
 +++ b/drivers/video/pxafb.c
-@@ -1246,7 +1246,7 @@ static int pxafb_resume(struct platform_device *dev)
-  *      cache.  Once this area is remapped, all virtual memory
-  *      access to the video memory should occur at the new region.
-  */
--static int __init pxafb_map_video_memory(struct pxafb_info *fbi)
-+static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
- {
- 	/*
- 	 * We reserve one page for the palette, plus the size
-@@ -1346,7 +1346,7 @@ decode_mode:
- 	pxafb_decode_mode_info(fbi, inf->modes, inf->num_modes);
- }
+@@ -1683,14 +1683,14 @@ static int __init pxafb_probe(struct platform_device *dev)
+ 	if (r == NULL) {
+ 		dev_err(&dev->dev, "no I/O memory resource defined\n");
+ 		ret = -ENODEV;
+-		goto failed;
++		goto failed_fbi;
+ 	}
  
--static struct pxafb_info * __init pxafb_init_fbinfo(struct device *dev)
-+static struct pxafb_info * __devinit pxafb_init_fbinfo(struct device *dev)
- {
- 	struct pxafb_info *fbi;
- 	void *addr;
-@@ -1408,7 +1408,7 @@ static struct pxafb_info * __init pxafb_init_fbinfo(struct device *dev)
- }
+ 	r = request_mem_region(r->start, r->end - r->start + 1, dev->name);
+ 	if (r == NULL) {
+ 		dev_err(&dev->dev, "failed to request I/O memory\n");
+ 		ret = -EBUSY;
+-		goto failed;
++		goto failed_fbi;
+ 	}
  
- #ifdef CONFIG_FB_PXA_PARAMETERS
--static int __init parse_opt_mode(struct device *dev, const char *this_opt)
-+static int __devinit parse_opt_mode(struct device *dev, const char *this_opt)
- {
- 	struct pxafb_mach_info *inf = dev->platform_data;
+ 	fbi->mmio_base = ioremap(r->start, r->end - r->start + 1);
+@@ -1733,8 +1733,17 @@ static int __init pxafb_probe(struct platform_device *dev)
+ 	 * This makes sure that our colour bitfield
+ 	 * descriptors are correctly initialised.
+ 	 */
+-	pxafb_check_var(&fbi->fb.var, &fbi->fb);
+-	pxafb_set_par(&fbi->fb);
++	ret = pxafb_check_var(&fbi->fb.var, &fbi->fb);
++	if (ret) {
++		dev_err(&dev->dev, "failed to get suitable mode\n");
++		goto failed_free_irq;
++	}
++
++	ret = pxafb_set_par(&fbi->fb);
++	if (ret) {
++		dev_err(&dev->dev, "Failed to set parameters\n");
++		goto failed_free_irq;
++	}
  
-@@ -1467,7 +1467,7 @@ done:
+ 	platform_set_drvdata(dev, fbi);
+ 
+@@ -1742,7 +1751,7 @@ static int __init pxafb_probe(struct platform_device *dev)
+ 	if (ret < 0) {
+ 		dev_err(&dev->dev,
+ 			"Failed to register framebuffer device: %d\n", ret);
+-		goto failed_free_irq;
++		goto failed_free_cmap;
+ 	}
+ 
+ #ifdef CONFIG_CPU_FREQ
+@@ -1761,18 +1770,23 @@ static int __init pxafb_probe(struct platform_device *dev)
+ 
  	return 0;
+ 
++failed_free_cmap:
++	if (fbi->fb.cmap.len)
++		fb_dealloc_cmap(&fbi->fb.cmap);
+ failed_free_irq:
+ 	free_irq(irq, fbi);
+-failed_free_res:
+-	release_mem_region(r->start, r->end - r->start + 1);
+-failed_free_io:
+-	iounmap(fbi->mmio_base);
+ failed_free_mem:
+ 	dma_free_writecombine(&dev->dev, fbi->map_size,
+ 			fbi->map_cpu, fbi->map_dma);
+-failed:
++failed_free_io:
++	iounmap(fbi->mmio_base);
++failed_free_res:
++	release_mem_region(r->start, r->end - r->start + 1);
++failed_fbi:
++	clk_put(fbi->clk);
+ 	platform_set_drvdata(dev, NULL);
+ 	kfree(fbi);
++failed:
+ 	return ret;
  }
  
--static int __init parse_opt(struct device *dev, char *this_opt)
-+static int __devinit parse_opt(struct device *dev, char *this_opt)
- {
- 	struct pxafb_mach_info *inf = dev->platform_data;
- 	struct pxafb_mode_info *mode = &inf->modes[0];
-@@ -1565,7 +1565,7 @@ static int __init parse_opt(struct device *dev, char *this_opt)
- 	return 0;
- }
- 
--static int __init pxafb_parse_options(struct device *dev, char *options)
-+static int __devinit pxafb_parse_options(struct device *dev, char *options)
- {
- 	char *this_opt;
- 	int ret;
-@@ -1587,7 +1587,7 @@ static int __init pxafb_parse_options(struct device *dev, char *options)
- static char g_options[256] __devinitdata = "";
- 
- #ifndef MODULE
--static int __devinit pxafb_setup_options(void)
-+static int __init pxafb_setup_options(void)
- {
- 	char *options = NULL;
- 
-@@ -1611,7 +1611,7 @@ MODULE_PARM_DESC(options, "LCD parameters (see Documentation/fb/pxafb.txt)");
- #define pxafb_setup_options()		(0)
- #endif
- 
--static int __init pxafb_probe(struct platform_device *dev)
-+static int __devinit pxafb_probe(struct platform_device *dev)
- {
- 	struct pxafb_info *fbi;
- 	struct pxafb_mach_info *inf;
-@@ -1799,7 +1799,7 @@ static struct platform_driver pxafb_driver = {
- 	},
- };
- 
--static int __devinit pxafb_init(void)
-+static int __init pxafb_init(void)
- {
- 	if (pxafb_setup_options())
- 		return -EINVAL;
 -- 
 1.5.3.6
 

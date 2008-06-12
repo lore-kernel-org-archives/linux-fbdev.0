@@ -1,8 +1,9 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc3 0/10] am200epd, pxafb,
-	metronomefb changes v4
-Date: Thu, 12 Jun 2008 12:59:11 -0400
-Message-ID: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc3 01/10] pxafb: fix ifdef for
+	command line option handling
+Date: Thu, 12 Jun 2008 12:59:12 -0400
+Message-ID: <1213289961-1562-2-git-send-email-jayakumar.lkml@gmail.com>
+References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,15 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K6r1z-0003dc-OS for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jun 2008 10:56:15 -0700
-Received: from yw-out-1718.google.com ([74.125.46.152])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K6r1z-00088L-Gh
+	id 1K6r26-0003dn-VP for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Jun 2008 10:56:23 -0700
+Received: from wf-out-1314.google.com ([209.85.200.172])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K6r25-0008E0-PM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jun 2008 10:56:15 -0700
-Received: by yw-out-1718.google.com with SMTP id 6so2382424ywa.82
+	Thu, 12 Jun 2008 10:56:22 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so3712034wfd.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 12 Jun 2008 10:56:15 -0700 (PDT)
+	Thu, 12 Jun 2008 10:56:21 -0700 (PDT)
+In-Reply-To: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,43 +32,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
+This bug was found and fixed by Lothar Wassmann.
 
-Hi Eric, arm and fbdev friends,
+Previously, the use of ifndef CONFIG_MODULES made it such that pxafb command
+line option parsing was dependent on whether the kernel was built with module
+support. The ifndef should be MODULE so that parsing is dependent only on
+whether the driver is built-in or not.
 
-This is version 4 of this RFC and contains the following updates:
-- split pxafb patch 1 into separate parts as suggested.
-- add patch for ifdef in pxafb
-- improve failout handling in metronomefb
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+---
+ drivers/video/pxafb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks to Krzysztof, Eric and Lothar for feedback.
-
-This RFC consists of patches intended to improve the condition of the
-am200epd devkit support. The am200epd devkit contains a gumstix (pxa255) and
-a carrier board (am200epd or Lyre), and a metronome display controller.
-Previously, there was a drivers/video/am200epd driver that manipulated pxa
-LCDC registers and GPSR/GPLR registers directly. That was clearly wrong and
-broken so I have removed it and written a new mach-pxa am200epd support
-driver.This driver interfaces with pxafb through a set of callbacks to
-share/unshare pxafb's framebuffer and achieves the same functionality without
-manipulating any pxa registers directly. The patches are split as follows:
-
-pxafb: fix ifdef for command line option handling
-pxafb: cleanup and fix order of failure handling
-pxafb: fix __devinit/exit annotations
-pxafb: add exit and remove handlers
-pxafb: add shared framebuffer interface
-gumstix: conversion to MFP support and add bluetooth support
-am200epd: move am200epd to mach-pxa
-am200epd: convert to shared fb and use gpio api
-metronomefb: convert printk to dev_dbg/err messages
-metronomefb: changes to use separate framebuffer
-
-I would be grateful for any feedback and advice.
-
-Thanks,
-jaya
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 274bc93..dd013f3 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -1586,7 +1586,7 @@ static int __init pxafb_parse_options(struct device *dev, char *options)
+ 
+ static char g_options[256] __devinitdata = "";
+ 
+-#ifndef CONFIG_MODULES
++#ifndef MODULE
+ static int __devinit pxafb_setup_options(void)
+ {
+ 	char *options = NULL;
+-- 
+1.5.3.6
 
 
 -------------------------------------------------------------------------

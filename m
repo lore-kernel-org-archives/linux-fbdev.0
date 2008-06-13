@@ -1,26 +1,27 @@
 From: Eric Miao <eric.y.miao@gmail.com>
-Subject: Re: [RFC 2.6.26-rc3 01/10] pxafb: fix ifdef for
- command line option handling
-Date: Fri, 13 Jun 2008 09:22:44 +0800
-Message-ID: <4851CBE4.5080301@gmail.com>
-References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>	<1213289961-1562-2-git-send-email-jayakumar.lkml@gmail.com>
-	<20080612203541.0baa5586.krzysztof.h1@poczta.fm>
+Subject: Re: [RFC 2.6.26-rc3 02/10] pxafb: cleanup and
+ fix order of failure handling
+Date: Fri, 13 Jun 2008 09:23:14 +0800
+Message-ID: <4851CC02.9000004@gmail.com>
+References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>	<1213289961-1562-3-git-send-email-jayakumar.lkml@gmail.com>
+	<20080612203608.f5a0b1eb.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K6y0C-00083D-Iw for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jun 2008 18:22:52 -0700
+	id 1K6y0e-00088W-Sz for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Jun 2008 18:23:20 -0700
 Received: from ti-out-0910.google.com ([209.85.142.186])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K6y08-00058f-W2
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K6y0d-00058f-Fx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Jun 2008 18:22:52 -0700
+	Thu, 12 Jun 2008 18:23:20 -0700
 Received: by ti-out-0910.google.com with SMTP id y6so1392386tia.18
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 12 Jun 2008 18:22:47 -0700 (PDT)
-In-Reply-To: <20080612203541.0baa5586.krzysztof.h1@poczta.fm>
+	Thu, 12 Jun 2008 18:23:19 -0700 (PDT)
+In-Reply-To: <20080612203608.f5a0b1eb.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,51 +32,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-fbdev-devel@lists.sourceforge.net, ymiao3@marvell.com, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-S3J6eXN6dG9mIEhlbHQgd3JvdGU6Cj4gT24gVGh1LCAxMiBKdW4gMjAwOCAxMjo1OToxMiAtMDQw
-MAo+IEpheWEgS3VtYXIgPGpheWFrdW1hci5sa21sQGdtYWlsLmNvbT4gd3JvdGU6Cj4gCj4+IFRo
-aXMgYnVnIHdhcyBmb3VuZCBhbmQgZml4ZWQgYnkgTG90aGFyIFdhc3NtYW5uLgo+Pgo+PiBQcmV2
-aW91c2x5LCB0aGUgdXNlIG9mIGlmbmRlZiBDT05GSUdfTU9EVUxFUyBtYWRlIGl0IHN1Y2ggdGhh
-dCBweGFmYiBjb21tYW5kCj4+IGxpbmUgb3B0aW9uIHBhcnNpbmcgd2FzIGRlcGVuZGVudCBvbiB3
-aGV0aGVyIHRoZSBrZXJuZWwgd2FzIGJ1aWx0IHdpdGggbW9kdWxlCj4+IHN1cHBvcnQuIFRoZSBp
-Zm5kZWYgc2hvdWxkIGJlIE1PRFVMRSBzbyB0aGF0IHBhcnNpbmcgaXMgZGVwZW5kZW50IG9ubHkg
-b24KPj4gd2hldGhlciB0aGUgZHJpdmVyIGlzIGJ1aWx0LWluIG9yIG5vdC4KPj4KPj4gU2lnbmVk
-LW9mZi1ieTogSmF5YSBLdW1hciA8amF5YWt1bWFyLmxrbWxAZ21haWwuY29tPgo+PiAtLS0KPj4g
-IGRyaXZlcnMvdmlkZW8vcHhhZmIuYyB8ICAgIDIgKy0KPj4gIDEgZmlsZXMgY2hhbmdlZCwgMSBp
-bnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQo+Pgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92
-aWRlby9weGFmYi5jIGIvZHJpdmVycy92aWRlby9weGFmYi5jCj4+IGluZGV4IDI3NGJjOTMuLmRk
-MDEzZjMgMTAwNjQ0Cj4+IC0tLSBhL2RyaXZlcnMvdmlkZW8vcHhhZmIuYwo+PiArKysgYi9kcml2
-ZXJzL3ZpZGVvL3B4YWZiLmMKPj4gQEAgLTE1ODYsNyArMTU4Niw3IEBAIHN0YXRpYyBpbnQgX19p
-bml0IHB4YWZiX3BhcnNlX29wdGlvbnMoc3RydWN0IGRldmljZSAqZGV2LCBjaGFyICpvcHRpb25z
-KQo+PiAgCj4+ICBzdGF0aWMgY2hhciBnX29wdGlvbnNbMjU2XSBfX2RldmluaXRkYXRhID0gIiI7
-Cj4+ICAKPj4gLSNpZm5kZWYgQ09ORklHX01PRFVMRVMKPj4gKyNpZm5kZWYgTU9EVUxFCj4+ICBz
-dGF0aWMgaW50IF9fZGV2aW5pdCBweGFmYl9zZXR1cF9vcHRpb25zKHZvaWQpCj4+ICB7Cj4+ICAJ
-Y2hhciAqb3B0aW9ucyA9IE5VTEw7Cj4+IC0tIAo+IAo+IEFja2VkLWJ5OiBLcnp5c3p0b2YgSGVs
-dCA8a3J6eXN6dG9mLmgxQHdwLnBsPgo+IAo+IEVyaWMsCj4gQ2FuIHlvdSByZXZpZXcgYW5kIGFj
-ayBhdCBsZWFzdCBmZXcgZmlyc3QgcGF0Y2hlcyBmcm9tIHRoaXMgc2V0Pwo+IEpheWEgcmVkb2Vz
-IHRoaXMgc2V0IGZvciB0aGUgdGhpcmQgb3IgZm91cnRoIHRpbWUgYW5kIGV2ZXJ5IHRpbWUgaGUK
-PiByZWRvZXMgaXQgSSBoYXZlIHRvIHJldmlldyB0aGUgd2hvbGUgc2V0IGFnYWluLiBJZiB5b3Ug
-Y2FuIGFjayBmZXcKPiBmaXJzdCBwYXRjaGVzLCBoZSBjYW4gdXBsb2FkIHRoZW0gaW50byBSTUsn
-cyBwYXRjaCBzeXN0ZW0gYW5kCj4gcmVkb2VzIG9ubHkgYSBwYXJ0IG9mIHRoZSBzZXQgbmV4dCB0
-aW1lLiBUaGFuayB5b3UgaW4gYWR2YW5jZS4KPiAKCkFja2VkLWJ5OiBFcmljIE1pYW8gPGVyaWMu
-bWlhb0BtYXJ2ZWxsLmNvbT4KCj4gS3J6eXN6dG9mCj4gCj4gCj4gLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+IEpl
-c3RlwrYgUG9sYWtpZW0gaSBtaWVzemthc3ogemEgZ3JhbmljYT8gU3ByYXdkeiEKPiBrbGlrbmlq
-ID4+PiBodHRwOi8vbGluay5pbnRlcmlhLnBsL2YxZTM4Cj4gCj4gCj4gCj4gCj4gLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tCj4gCj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQo+IExpc3QgYWRtaW46IGh0dHA6Ly9saXN0cy5hcm0ubGlu
-dXgub3JnLnVrL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo+IEZBUTogICAgICAg
-IGh0dHA6Ly93d3cuYXJtLmxpbnV4Lm9yZy51ay9tYWlsaW5nbGlzdHMvZmFxLnBocAo+IEV0aXF1
-ZXR0ZTogIGh0dHA6Ly93d3cuYXJtLmxpbnV4Lm9yZy51ay9tYWlsaW5nbGlzdHMvZXRpcXVldHRl
-LnBocAoKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KQ2hlY2sgb3V0IHRoZSBuZXcgU291cmNlRm9yZ2UubmV0
-IE1hcmtldHBsYWNlLgpJdCdzIHRoZSBiZXN0IHBsYWNlIHRvIGJ1eSBvciBzZWxsIHNlcnZpY2Vz
-IGZvcgpqdXN0IGFib3V0IGFueXRoaW5nIE9wZW4gU291cmNlLgpodHRwOi8vc291cmNlZm9yZ2Uu
-bmV0L3NlcnZpY2VzL2J1eS9pbmRleC5waHAKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZi
-ZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdl
-Lm5ldC9saXN0cy9saXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=
+Krzysztof Helt wrote:
+> On Thu, 12 Jun 2008 12:59:13 -0400
+> Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> 
+>> This issue was found by Krzysztof Helt and Eric Miao.
+>>
+>> pxafb had issues in the order with which it cleaned up if errors occurred
+>> during a probe. This patch reorders the failure handling sequence and also
+>> frees the cmap and clk.
+>>
+>> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+>> ---
+> 
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+Acked-by: Eric Miao <eric.miao@marvell.com>
+
+> 
+> ----------------------------------------------------------------------
+> Internetowy planer podrozy - sprawdz!
+> kliknij >>> http://link.interia.pl/f1e3a
+> 
+> 
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+
+
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://sourceforge.net/services/buy/index.php

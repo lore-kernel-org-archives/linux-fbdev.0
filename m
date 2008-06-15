@@ -1,28 +1,28 @@
 From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc3 08/10] am200epd: convert to
-	shared fb and use gpio api
-Date: Sun, 15 Jun 2008 02:42:44 -0400
-Message-ID: <45a44e480806142342n7f0be549se6ded1a93d363d65@mail.gmail.com>
+Subject: Re: [RFC 2.6.26-rc3 05/10] pxafb: add shared
+	framebuffer interface
+Date: Sun, 15 Jun 2008 02:49:53 -0400
+Message-ID: <45a44e480806142349n20ca1d7by594878e3921a28ec@mail.gmail.com>
 References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1213289961-1562-9-git-send-email-jayakumar.lkml@gmail.com>
-	<4851D98A.5000508@gmail.com>
+	<1213289961-1562-6-git-send-email-jayakumar.lkml@gmail.com>
+	<20080615082653.e63a25dd.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K7lws-0003qm-LY for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 14 Jun 2008 23:42:46 -0700
-Received: from wf-out-1314.google.com ([209.85.200.170])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K7lwr-0001AH-Ca
+	id 1K7m3o-0004Uf-0H for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 14 Jun 2008 23:50:01 -0700
+Received: from wf-out-1314.google.com ([209.85.200.168])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K7m3m-0001V6-JK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 14 Jun 2008 23:42:46 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so4735800wfd.4
+	Sat, 14 Jun 2008 23:49:55 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so4736488wfd.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 14 Jun 2008 23:42:45 -0700 (PDT)
-In-Reply-To: <4851D98A.5000508@gmail.com>
+	Sat, 14 Jun 2008 23:49:53 -0700 (PDT)
+In-Reply-To: <20080615082653.e63a25dd.krzysztof.h1@poczta.fm>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,53 +34,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <eric.y.miao@gmail.com>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Thu, Jun 12, 2008 at 10:20 PM, Eric Miao <eric.y.miao@gmail.com> wrote:
-> Jaya Kumar wrote:
->> This patch converts am200epd to use pxafb's fb and to stop performing
->> direct access to LCDC registers. It now uses the generic GPIO api.
->>
+On Sun, Jun 15, 2008 at 2:26 AM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> On Thu, 12 Jun 2008 12:59:16 -0400
+> Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
 >
-> Mmm..., this patch makes the code much cleaner now, see my comments below.
-
-Thanks :)
-
->> +static struct pxafb_mach_info am200_fb_info = {
->> +     .modes          = &am200_fb_mode_6inch,
->> +     .num_modes      = 1,
->> +     .lccr0          = LCCR0_Pas | LCCR0_Sngl | LCCR0_Color,
->> +     .lccr3          = 0,
->> +     .lcd_conn       = LCD_TYPE_COLOR_TFT | LCD_PCLK_EDGE_FALL |
->> +                       LCD_AC_BIAS_FREQ(24),
+>> +     ret = pxafb_map_video_memory(fbi, inf);
+>> +     if (ret == -ENODEV) {
+>> +             dev_err(&dev->dev, "Failed device binding: %d\n", ret);
+>> +             ret = -ENODEV;
 >
-> You don't need to specify both lccrX and lcd_conn, the pxafb.c should
-> be smart enough to guess a correct LCCRx setting based on lcd_conn.
+> This line is redundant as the ret is already -ENODEV.
 
-Ok, will fix.
+Arr, sorry about that embarrassing mistake. I don't know why I didn't spot it.
 
 >
-> Can set_pxa_fb_info() be used here instead of re-allocating a new
-> platform_device with almost same setting as pxa_device_fb?
-
-Actually, I had tried to do that and ran into problems on driver
-unload. This is because pxa_device_fb is a statically declared struct
-and not allocated using platform_device_alloc. So it is missing a
-bunch of stuff needed for device release. I thought about changing
-set_pxa_fb_info to do alloc instead but it seems too invasive. This
-duplication seems easier.
-
->> -     return set_irq_type(IRQ_GPIO(RDY_GPIO_PIN), IRQT_FALLING);
->> +     ret = set_irq_type(IRQ_GPIO(RDY_GPIO_PIN), IRQT_FALLING);
+>> +             goto failed_free_mem;
+>> +     } else if (ret) {
+>>               dev_err(&dev->dev, "Failed to allocate video RAM: %d\n", ret);
+>>               ret = -ENOMEM;
 >
-> This can be specified in request_irq(), e.g.
+> Probably, there is no need to change the error code (ret). You can drop this line.
 >
->        request_irq(..., IRQF_DISABLED | IRQF_TRIGGER_FALLING, ...)
->
-> the rest of the edge configuration work will be automatically done.
 
-Ok, will fix.
+Ok. Will do.
 
 Thanks,
 jaya

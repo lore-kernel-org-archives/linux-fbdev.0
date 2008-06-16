@@ -1,40 +1,29 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: fb_videomode_to_modelist (was: Re: [PATCH]
- amifb: Register Amiga-specific video modes with sysfs)
-Date: Sun, 15 Jun 2008 13:15:13 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0806151314450.5736@anakin>
-References: <Pine.LNX.4.64.0806151311200.5736@anakin>
+From: Eric Miao <eric.y.miao@gmail.com>
+Subject: Re: [RFC 2.6.26-rc3 06/10] gumstix: conversion
+ to MFP support and add bluetooth support
+Date: Mon, 16 Jun 2008 10:21:45 +0800
+Message-ID: <4855CE39.2090702@gmail.com>
+References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>	
+	<1213289961-1562-7-git-send-email-jayakumar.lkml@gmail.com>	
+	<4851D4E9.3080008@gmail.com>
+	<45a44e480806142251x61462e2ft839332de6c2fbe1c@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1K7qCi-0005YU-Kb for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Jun 2008 04:15:24 -0700
-Received: from edna.telenet-ops.be ([195.130.132.58])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K7qCi-0002Y4-7m
+	id 1K84M2-000590-62 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 15 Jun 2008 19:22:00 -0700
+Received: from rv-out-0708.google.com ([209.85.198.250])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1K84Lz-0005mE-Pf
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Jun 2008 04:15:24 -0700
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by edna.telenet-ops.be (Postfix) with SMTP id 34FF0E4028
+	Sun, 15 Jun 2008 19:21:58 -0700
+Received: by rv-out-0708.google.com with SMTP id f25so4192350rvb.22
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 15 Jun 2008 13:15:23 +0200 (CEST)
-Received: from anakin.of.borg (78-21-204-88.access.telenet.be [78.21.204.88])
-	by edna.telenet-ops.be (Postfix) with ESMTP id 19BB9E4041
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 15 Jun 2008 13:15:23 +0200 (CEST)
-Received: from anakin.of.borg (localhost [127.0.0.1])
-	by anakin.of.borg (8.14.3/8.14.3/Debian-4) with ESMTP id m5FBFDU2017118
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 15 Jun 2008 13:15:13 +0200
-Received: from localhost (geert@localhost)
-	by anakin.of.borg (8.14.3/8.14.3/Submit) with ESMTP id m5FBFDi0017115
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 15 Jun 2008 13:15:13 +0200
-In-Reply-To: <Pine.LNX.4.64.0806151311200.5736@anakin>
+	Sun, 15 Jun 2008 19:21:55 -0700 (PDT)
+In-Reply-To: <45a44e480806142251x61462e2ft839332de6c2fbe1c@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -45,44 +34,88 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Sun, 15 Jun 2008, Geert Uytterhoeven wrote:
-> Register the Amiga-specific video modes with sysfs, so you can see them in
-> /sys/class/graphics/fb0/modes and change the video mode by writing to
-> /sys/class/graphics/fb0/mode.
+Jaya Kumar wrote:
+> On Thu, Jun 12, 2008 at 10:01 PM, Eric Miao <eric.y.miao@gmail.com> wrote:
+>> Jaya Kumar wrote:
+>>
+>> I'd suggest we use
+>>
+>> #if defined(CONFIG_MMC_PXA) || defined(CONFIG_MMC_PXA_MODULE)
+>>
+>> so that even when PXA MMCI is built as a module, the platform data
+>> is still available for later bind. Same below to the BT.
 > 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/video/amifb.c |    3 +++
->  1 file changed, 3 insertions(+)
+> Yup, there are problems with my assumptions there. I see Russell's
+> point that gpio setup shouldn't depend on whether the driver is
+> enabled or not. I wasn't sure if all gumstix-F's had MMC and BT on
+> those gpio's so I tried to hedge that with CONFIG options. It looks
+> like it is safe to remove the CONFIG so I'll change that over.
 > 
-> --- a/drivers/video/amifb.c
-> +++ b/drivers/video/amifb.c
-> @@ -2383,6 +2383,9 @@ default_chipset:
->  		goto amifb_error;
->  	}
->  
-> +	fb_videomode_to_modelist(ami_modedb, NUM_TOTAL_MODES,
-> +				 &fb_info.modelist);
-> +
->  	round_down_bpp = 0;
->  	chipptr = chipalloc(fb_info.fix.smem_len+
->  	                    SPRITEMEMSIZE+
+>> The 32KHz oscillator should be on by default, so I'm thinking of:
+>>
+>> 1. remove this clock source
+>>
+>> or
+>>
+>> 2. enable/disable the clk by enable/disable the pin configuration
+>> (i.e. switch between GPIO12_32KHz and GPIO12_GPIO)
+> 
+> Ok. I'll go read up and try to solve this. I think I put the enable in
+> there because it initially didn't work on my setup. I saw that the
+> gumstix bluetooth startup script S30bluetooth was manually tweaking
+> that using the pxaregs proc_gpio patch.
+> 
+>         echo -n "Starting 32kHz clock..."
+>         /usr/sbin/pxaregs OSCC_OON 1
+>         while /usr/sbin/pxaregs OSCC_OOK | tail -n 1 | grep -q -v 1;do
+>                 echo -n '.'
+>                 sleep 1
+>         done
+>         echo "Settled"
+> 
+> From the gumstix faq:
+> http://docwiki.gumstix.org/Frequently_asked_questions/Bluetooth
+> The new bluetooth module needs a 32Khz clock signal to be fed to the
+> module from the PXA by setting one of the GPIO lines to a special alt
+> function mode, and enabling the OSCC on the PXA. This is done properly
+> by the u-boot in the latest buildroot revisions, (as of Jan 27, 2006)
+> and double-checked by the latest bluetooth startup scripts in the
+> buildroot using pxaregs to ensure that the clock is in fact ticking
+> before attempting to talk to the BT module.
 > 
 
-BTW, it looks like a few other drivers could use a similar change.
+OK, so I assume with the latest u-boot (I mean after Jan 27, 2006), it
+should boot up with 32KHz timer enabled, and you don't really need to
+enable OSCC by default, right? Or would you be kind enough to test that
+out?
 
-Gr{oetje,eeting}s,
+You see, I'm a bit conservative to add clk support for 32KHz timer in
+the kernel, as that should be started earlier, most suitable place will
+be in the boot loader. If this doesn't work, we have to work it out in
+another way.
 
-						Geert
+>> As said, the 32K timer should really be started on the very begining,
+>> I'd prefer a some kind of warning here if OSCC_OOK isn't set.
+> 
+> Ok, I'll fix this.
+> 
+>>> +
+>>> +static void clk_32k_disable(struct clk *clk)
+>>> +{
+>>> +     OSCC &= ~OSCC_OON;
+>>> +}
+>>> +
+>> The 32K timer cannot be disabled once started, until a power-on or
+>> hardware reset occurs.
+> 
+> Ok, I'll take this out.
+> 
+> Thanks,
+> jaya
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

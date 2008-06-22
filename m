@@ -1,8 +1,7 @@
 From: Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 1/5] SM501: Add inversion controls for
-	VBIASEN and FPEN
-Date: Sun, 22 Jun 2008 22:04:40 +0100
-Message-ID: <20080622210614.259326969@fluff.org.uk>
+Subject: [patch 5/5] LCD: Add platform_lcd driver.
+Date: Sun, 22 Jun 2008 22:04:44 +0100
+Message-ID: <20080622210615.036067525@fluff.org.uk>
 References: <20080622210439.018928412@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KAWld-0002yA-4D for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 22 Jun 2008 14:06:33 -0700
+	id 1KAWlc-0002y0-0i for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 22 Jun 2008 14:06:32 -0700
 Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KAWlb-00018C-0w
+	(Exim 4.44) id 1KAWlb-00018B-0p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 22 Jun 2008 14:06:33 -0700
+	Sun, 22 Jun 2008 14:06:31 -0700
 Content-Disposition: inline;
-	filename=simtec/simtec-drivers-fb-sm501-ctrlinvert.patch
+	filename=simtec/simtec-drivers-fb-backlight-generic.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,81 +32,244 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
 Cc: linux-arm-kernel@lists.arm.linux.org.uk, Ben Dooks <ben-linux@fluff.org>
 
-Add flags to allow the driver to invert the sense of
-both VBIASEN and FPEN signals comming from the SM501.
+Add a platform_lcd driver to allow boards with simple
+lcd power controls to register themselves easily.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.26-rc4-quilt3/drivers/video/sm501fb.c
+Index: linux-2.6.26-rc5-quilt2/include/video/platform_lcd.h
 ===================================================================
---- linux-2.6.26-rc4-quilt3.orig/drivers/video/sm501fb.c	2008-05-26 23:17:37.000000000 +0100
-+++ linux-2.6.26-rc4-quilt3/drivers/video/sm501fb.c	2008-05-29 10:53:18.000000000 +0100
-@@ -663,15 +663,25 @@ static void sm501fb_panel_power(struct s
- 		sm501fb_sync_regs(fbi);
- 		mdelay(10);
- 
-+		/* VBIASEN */
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.26-rc5-quilt2/include/video/platform_lcd.h	2008-06-12 11:32:17.000000000 +0100
+@@ -0,0 +1,21 @@
++/* include/video/platform_lcd.h
++ *
++ * Copyright 2008 Simtec Electronics
++ *	Ben Dooks <ben@simtec.co.uk>
++ *
++ * Generic platform-device LCD power control interface.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++*/
 +
- 		if (!(pd->flags & SM501FB_FLAG_PANEL_NO_VBIASEN)) {
--			control |= SM501_DC_PANEL_CONTROL_BIAS;	/* VBIASEN */
-+			if (pd->flags & SM501FB_FLAG_PANEL_INV_VBIASEN)
-+				control &= ~SM501_DC_PANEL_CONTROL_BIAS;
-+			else
-+				control |= SM501_DC_PANEL_CONTROL_BIAS;
++struct plat_lcd_data;
++struct fb_info;
 +
- 			writel(control, ctrl_reg);
- 			sm501fb_sync_regs(fbi);
- 			mdelay(10);
- 		}
- 
- 		if (!(pd->flags & SM501FB_FLAG_PANEL_NO_FPEN)) {
--			control |= SM501_DC_PANEL_CONTROL_FPEN;
-+			if (pd->flags & SM501FB_FLAG_PANEL_INV_FPEN)
-+				control &= ~SM501_DC_PANEL_CONTROL_FPEN;
-+			else
-+				control |= SM501_DC_PANEL_CONTROL_FPEN;
++struct plat_lcd_data {
++	void	(*set_power)(struct plat_lcd_data *, unsigned int power);
++	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
++};
 +
- 			writel(control, ctrl_reg);
- 			sm501fb_sync_regs(fbi);
- 			mdelay(10);
-@@ -679,14 +689,22 @@ static void sm501fb_panel_power(struct s
- 	} else if (!to && (control & SM501_DC_PANEL_CONTROL_VDD) != 0) {
- 		/* disable panel power */
- 		if (!(pd->flags & SM501FB_FLAG_PANEL_NO_FPEN)) {
--			control &= ~SM501_DC_PANEL_CONTROL_FPEN;
-+			if (pd->flags & SM501FB_FLAG_PANEL_INV_FPEN)
-+				control |= SM501_DC_PANEL_CONTROL_FPEN;
-+			else
-+				control &= ~SM501_DC_PANEL_CONTROL_FPEN;
-+
- 			writel(control, ctrl_reg);
- 			sm501fb_sync_regs(fbi);
- 			mdelay(10);
- 		}
- 
- 		if (!(pd->flags & SM501FB_FLAG_PANEL_NO_VBIASEN)) {
--			control &= ~SM501_DC_PANEL_CONTROL_BIAS;
-+			if (pd->flags & SM501FB_FLAG_PANEL_INV_VBIASEN)
-+				control |= SM501_DC_PANEL_CONTROL_BIAS;
-+			else
-+				control &= ~SM501_DC_PANEL_CONTROL_BIAS;
-+
- 			writel(control, ctrl_reg);
- 			sm501fb_sync_regs(fbi);
- 			mdelay(10);
-Index: linux-2.6.26-rc4-quilt3/include/linux/sm501.h
+Index: linux-2.6.26-rc5-quilt2/drivers/video/backlight/Kconfig
 ===================================================================
---- linux-2.6.26-rc4-quilt3.orig/include/linux/sm501.h	2008-05-27 20:25:43.000000000 +0100
-+++ linux-2.6.26-rc4-quilt3/include/linux/sm501.h	2008-05-29 10:54:40.000000000 +0100
-@@ -73,6 +73,8 @@ extern unsigned long sm501_gpio_get(stru
- #define SM501FB_FLAG_USE_HWACCEL	(1<<3)
- #define SM501FB_FLAG_PANEL_NO_FPEN	(1<<4)
- #define SM501FB_FLAG_PANEL_NO_VBIASEN	(1<<5)
-+#define SM501FB_FLAG_PANEL_INV_FPEN	(1<<6)
-+#define SM501FB_FLAG_PANEL_INV_VBIASEN	(1<<7)
+--- linux-2.6.26-rc5-quilt2.orig/drivers/video/backlight/Kconfig	2008-06-12 10:49:49.000000000 +0100
++++ linux-2.6.26-rc5-quilt2/drivers/video/backlight/Kconfig	2008-06-12 11:25:22.000000000 +0100
+@@ -53,6 +53,13 @@ config LCD_VGG2432A4
+ 	  If you have a VGG2432A4 panel based on the ILI9320 controller chip
+ 	  then say y to include a power driver for it.
  
- struct sm501_platdata_fbsub {
- 	struct fb_videomode	*def_mode;
++config LCD_PLATFORM
++	tristate "Platform LCD controls"
++	depends on LCD_CLASS_DEVICE
++	help
++	  This driver provides a platform-device registered LCD power
++	  control interface.
++
+ #
+ # Backlight
+ #
+Index: linux-2.6.26-rc5-quilt2/drivers/video/backlight/Makefile
+===================================================================
+--- linux-2.6.26-rc5-quilt2.orig/drivers/video/backlight/Makefile	2008-06-12 10:49:49.000000000 +0100
++++ linux-2.6.26-rc5-quilt2/drivers/video/backlight/Makefile	2008-06-12 11:25:22.000000000 +0100
+@@ -3,6 +3,7 @@
+ obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
+ obj-$(CONFIG_LCD_LTV350QV)	   += ltv350qv.o
+ obj-$(CONFIG_LCD_ILI9320)	   += ili9320.o
++obj-$(CONFIG_LCD_PLATFORM)	   += platform_lcd.o
+ obj-$(CONFIG_LCD_VGG2432A4)	   += vgg2432a4.o
+ 
+ obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
+Index: linux-2.6.26-rc5-quilt2/drivers/video/backlight/platform_lcd.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.26-rc5-quilt2/drivers/video/backlight/platform_lcd.c	2008-06-12 14:19:55.000000000 +0100
+@@ -0,0 +1,172 @@
++/* drivers/video/backlight/platform_lcd.c
++ *
++ * Copyright 2008 Simtec Electronics
++ *	Ben Dooks <ben@simtec.co.uk>
++ *
++ * Generic platform-device LCD power control interface.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++*/
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++#include <linux/lcd.h>
++
++#include <video/platform_lcd.h>
++
++struct platform_lcd {
++	struct device		*us;
++	struct lcd_device	*lcd;
++	struct plat_lcd_data	*pdata;
++
++	unsigned int		 power;
++	unsigned int		 suspended : 1;
++};
++
++static inline struct platform_lcd *to_our_lcd(struct lcd_device *lcd)
++{
++	return lcd_get_data(lcd);
++}
++
++static int platform_lcd_get_power(struct lcd_device *lcd)
++{
++	struct platform_lcd *plcd = to_our_lcd(lcd);
++
++	return plcd->power;
++}
++
++static int platform_lcd_set_power(struct lcd_device *lcd, int power)
++{
++	struct platform_lcd *plcd = to_our_lcd(lcd);
++	int lcd_power = 1;
++
++	if (power == FB_BLANK_POWERDOWN || plcd->suspended)
++		lcd_power = 0;
++
++	plcd->pdata->set_power(plcd->pdata, lcd_power);
++	plcd->power = power;
++
++	return 0;
++}
++
++static int platform_lcd_match(struct lcd_device *lcd, struct fb_info *info)
++{
++	struct platform_lcd *plcd = to_our_lcd(lcd);
++	struct plat_lcd_data *pdata = plcd->pdata;
++
++	if (pdata->match_fb)
++		return pdata->match_fb(pdata, info);
++
++	return plcd->us->parent == info->dev;
++}
++
++static struct lcd_ops platform_lcd_ops = {
++	.get_power	= platform_lcd_get_power,
++	.set_power	= platform_lcd_set_power,
++	.check_fb	= platform_lcd_match,
++};
++
++static int __devinit platform_lcd_probe(struct platform_device *pdev)
++{
++	struct plat_lcd_data *pdata;
++	struct platform_lcd *plcd;
++	struct device *dev = &pdev->dev;
++	int err;
++
++	pdata = pdev->dev.platform_data;
++	if (!pdata) {
++		dev_err(dev, "no platform data supplied\n");
++		return -EINVAL;
++	}
++
++	plcd = kzalloc(sizeof(struct platform_lcd), GFP_KERNEL);
++	if (!plcd) {
++		dev_err(dev, "no memory for state\n");
++		return -ENOMEM;
++	}
++
++	plcd->us = dev;
++	plcd->pdata = pdata;
++	plcd->lcd = lcd_device_register("platform-lcd", dev,
++					plcd, &platform_lcd_ops);
++	if (IS_ERR(plcd->lcd)) {
++		dev_err(dev, "cannot register lcd device\n");
++		err = PTR_ERR(plcd->lcd);
++		goto err_mem;
++	}
++
++	platform_set_drvdata(pdev, plcd);
++	return 0;
++
++ err_mem:
++	kfree(plcd);
++	return err;
++}
++
++static int __devexit platform_lcd_remove(struct platform_device *pdev)
++{
++	struct platform_lcd *plcd = platform_get_drvdata(pdev);
++
++	lcd_device_unregister(plcd->lcd);
++	kfree(plcd);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int platform_lcd_suspend(struct platform_device *pdev, pm_message_t st)
++{
++	struct platform_lcd *plcd = platform_get_drvdata(pdev);
++
++	plcd->suspended = 1;
++	platform_lcd_set_power(plcd->lcd, plcd->power);
++
++	return 0;
++}
++
++static int platform_lcd_resume(struct platform_device *pdev)
++{
++	struct platform_lcd *plcd = platform_get_drvdata(pdev);
++
++	plcd->suspended = 0;
++	platform_lcd_set_power(plcd->lcd, plcd->power);
++
++	return 0;
++}
++#else
++#define s3c2410bl_suspend NULL
++#define s3c2410bl_resume  NULL
++#endif
++
++static struct platform_driver platform_lcd_driver = {
++	.driver		= {
++		.name	= "platform-lcd",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= platform_lcd_probe,
++	.remove		= __devexit_p(platform_lcd_remove),
++	.suspend        = platform_lcd_suspend,
++	.resume         = platform_lcd_resume,
++};
++
++static int __init platform_lcd_init(void)
++{
++	return platform_driver_register(&platform_lcd_driver);
++}
++
++static void __exit platform_lcd_cleanup(void)
++{
++	platform_driver_unregister(&platform_lcd_driver);
++}
++
++module_init(platform_lcd_init);
++module_exit(platform_lcd_cleanup);
++
++MODULE_AUTHOR("Ben Dooks <ben-linux@fluff.org>");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:platform-lcd");
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)

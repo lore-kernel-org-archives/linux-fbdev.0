@@ -1,7 +1,8 @@
 From: Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 5/5] LCD: Add platform_lcd driver.
-Date: Sun, 22 Jun 2008 22:04:44 +0100
-Message-ID: <20080622210615.036067525@fluff.org.uk>
+Subject: [patch 2/5] SM501: Restructure init to allow
+	only 1 fb on an SM501
+Date: Sun, 22 Jun 2008 22:04:41 +0100
+Message-ID: <20080622210614.414283871@fluff.org.uk>
 References: <20080622210439.018928412@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -10,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KAWlc-0002y0-0i for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 22 Jun 2008 14:06:32 -0700
+	id 1KAWld-0002yH-KH for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 22 Jun 2008 14:06:33 -0700
 Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KAWlb-00018B-0p
+	(Exim 4.44) id 1KAWlb-00018I-0s
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 22 Jun 2008 14:06:31 -0700
+	Sun, 22 Jun 2008 14:06:33 -0700
 Content-Disposition: inline;
-	filename=simtec/simtec-drivers-fb-backlight-generic.patch
+	filename=simtec/simtec-drivers-fb-sm501-onefb.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,244 +33,416 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
 Cc: linux-arm-kernel@lists.arm.linux.org.uk, Ben Dooks <ben-linux@fluff.org>
 
-Add a platform_lcd driver to allow boards with simple
-lcd power controls to register themselves easily.
+Add the ability to register only one of the two possible
+main framebuffer devices on the SM501 by passing platform
+data for only the framebuffer that you are interested in
+having.
+
+As a side note, we update the init sequence to commonise
+the code that is executed twice, and fix a pair of missing
+frees that we didn't do on framebuffer exit, such as freeing
+the fb's cmap.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.26-rc5-quilt2/include/video/platform_lcd.h
+Index: linux-2.6.26-rc6-quilt1/drivers/video/sm501fb.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc5-quilt2/include/video/platform_lcd.h	2008-06-12 11:32:17.000000000 +0100
-@@ -0,0 +1,21 @@
-+/* include/video/platform_lcd.h
-+ *
-+ * Copyright 2008 Simtec Electronics
-+ *	Ben Dooks <ben@simtec.co.uk>
-+ *
-+ * Generic platform-device LCD power control interface.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+*/
-+
-+struct plat_lcd_data;
-+struct fb_info;
-+
-+struct plat_lcd_data {
-+	void	(*set_power)(struct plat_lcd_data *, unsigned int power);
-+	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
-+};
-+
-Index: linux-2.6.26-rc5-quilt2/drivers/video/backlight/Kconfig
-===================================================================
---- linux-2.6.26-rc5-quilt2.orig/drivers/video/backlight/Kconfig	2008-06-12 10:49:49.000000000 +0100
-+++ linux-2.6.26-rc5-quilt2/drivers/video/backlight/Kconfig	2008-06-12 11:25:22.000000000 +0100
-@@ -53,6 +53,13 @@ config LCD_VGG2432A4
- 	  If you have a VGG2432A4 panel based on the ILI9320 controller chip
- 	  then say y to include a power driver for it.
+--- linux-2.6.26-rc6-quilt1.orig/drivers/video/sm501fb.c	2008-06-18 19:02:14.000000000 +0100
++++ linux-2.6.26-rc6-quilt1/drivers/video/sm501fb.c	2008-06-18 19:48:01.000000000 +0100
+@@ -143,6 +143,8 @@ static int sm501_alloc_mem(struct sm501f
+ 			   unsigned int why, size_t size)
+ {
+ 	unsigned int ptr = 0;
++	unsigned int end;
++	struct fb_info *fbi;
  
-+config LCD_PLATFORM
-+	tristate "Platform LCD controls"
-+	depends on LCD_CLASS_DEVICE
-+	help
-+	  This driver provides a platform-device registered LCD power
-+	  control interface.
-+
- #
- # Backlight
- #
-Index: linux-2.6.26-rc5-quilt2/drivers/video/backlight/Makefile
-===================================================================
---- linux-2.6.26-rc5-quilt2.orig/drivers/video/backlight/Makefile	2008-06-12 10:49:49.000000000 +0100
-+++ linux-2.6.26-rc5-quilt2/drivers/video/backlight/Makefile	2008-06-12 11:25:22.000000000 +0100
-@@ -3,6 +3,7 @@
- obj-$(CONFIG_LCD_CLASS_DEVICE)     += lcd.o
- obj-$(CONFIG_LCD_LTV350QV)	   += ltv350qv.o
- obj-$(CONFIG_LCD_ILI9320)	   += ili9320.o
-+obj-$(CONFIG_LCD_PLATFORM)	   += platform_lcd.o
- obj-$(CONFIG_LCD_VGG2432A4)	   += vgg2432a4.o
+ 	switch (why) {
+ 	case SM501_MEMF_CURSOR:
+@@ -152,7 +154,9 @@ static int sm501_alloc_mem(struct sm501f
  
- obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
-Index: linux-2.6.26-rc5-quilt2/drivers/video/backlight/platform_lcd.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc5-quilt2/drivers/video/backlight/platform_lcd.c	2008-06-12 14:19:55.000000000 +0100
-@@ -0,0 +1,172 @@
-+/* drivers/video/backlight/platform_lcd.c
-+ *
-+ * Copyright 2008 Simtec Electronics
-+ *	Ben Dooks <ben@simtec.co.uk>
-+ *
-+ * Generic platform-device LCD power control interface.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+*/
+ 	case SM501_MEMF_PANEL:
+ 		ptr = inf->fbmem_len - size;
+-		if (ptr < inf->fb[0]->fix.smem_len)
++		fbi = inf->fb[0];
 +
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/fb.h>
-+#include <linux/backlight.h>
-+#include <linux/lcd.h>
++		if (fbi && ptr < fbi->fix.smem_len)
+ 			return -ENOMEM;
+ 
+ 		break;
+@@ -162,11 +166,18 @@ static int sm501_alloc_mem(struct sm501f
+ 		break;
+ 
+ 	case SM501_MEMF_ACCEL:
+-		ptr = inf->fb[0]->fix.smem_len;
++		fbi = inf->fb[0];
++		ptr = fbi ? fbi->fix.smem_len : 0;
 +
-+#include <video/platform_lcd.h>
++		fbi = inf->fb[1];
++		if (fbi)
++			end = (fbi->fix.smem_start - inf->fbmem_res->start);
++		else
++			end = inf->fbmem_len;
+ 
+-		if ((ptr + size) >
+-		    (inf->fb[1]->fix.smem_start - inf->fbmem_res->start))
++		if ((ptr + size) > end)
+ 			return -ENOMEM;
 +
-+struct platform_lcd {
-+	struct device		*us;
-+	struct lcd_device	*lcd;
-+	struct plat_lcd_data	*pdata;
+ 		break;
+ 
+ 	default:
+@@ -1228,39 +1239,6 @@ static struct fb_ops sm501fb_ops_pnl = {
+ 	.fb_imageblit	= cfb_imageblit,
+ };
+ 
+-/* sm501fb_info_alloc
+- *
+- * creates and initialises an sm501fb_info structure
+-*/
+-
+-static struct sm501fb_info *sm501fb_info_alloc(struct fb_info *fbinfo_crt,
+-					       struct fb_info *fbinfo_pnl)
+-{
+-	struct sm501fb_info *info;
+-	struct sm501fb_par  *par;
+-
+-	info = kzalloc(sizeof(struct sm501fb_info), GFP_KERNEL);
+-	if (info) {
+-		/* set the references back */
+-
+-		par = fbinfo_crt->par;
+-		par->info = info;
+-		par->head = HEAD_CRT;
+-		fbinfo_crt->pseudo_palette = &par->pseudo_palette;
+-
+-		par = fbinfo_pnl->par;
+-		par->info = info;
+-		par->head = HEAD_PANEL;
+-		fbinfo_pnl->pseudo_palette = &par->pseudo_palette;
+-
+-		/* store the two fbs into our info */
+-		info->fb[HEAD_CRT] = fbinfo_crt;
+-		info->fb[HEAD_PANEL] = fbinfo_pnl;
+-	}
+-
+-	return info;
+-}
+-
+ /* sm501_init_cursor
+  *
+  * initialise hw cursor parameters
+@@ -1268,10 +1246,16 @@ static struct sm501fb_info *sm501fb_info
+ 
+ static int sm501_init_cursor(struct fb_info *fbi, unsigned int reg_base)
+ {
+-	struct sm501fb_par *par = fbi->par;
+-	struct sm501fb_info *info = par->info;
++	struct sm501fb_par *par;
++	struct sm501fb_info *info;
+ 	int ret;
+ 
++	if (fbi == NULL)
++		return 0;
 +
-+	unsigned int		 power;
-+	unsigned int		 suspended : 1;
-+};
++	par = fbi->par;
++	info = par->info;
 +
-+static inline struct platform_lcd *to_our_lcd(struct lcd_device *lcd)
-+{
-+	return lcd_get_data(lcd);
-+}
-+
-+static int platform_lcd_get_power(struct lcd_device *lcd)
-+{
-+	struct platform_lcd *plcd = to_our_lcd(lcd);
-+
-+	return plcd->power;
-+}
-+
-+static int platform_lcd_set_power(struct lcd_device *lcd, int power)
-+{
-+	struct platform_lcd *plcd = to_our_lcd(lcd);
-+	int lcd_power = 1;
-+
-+	if (power == FB_BLANK_POWERDOWN || plcd->suspended)
-+		lcd_power = 0;
-+
-+	plcd->pdata->set_power(plcd->pdata, lcd_power);
-+	plcd->power = power;
-+
-+	return 0;
-+}
-+
-+static int platform_lcd_match(struct lcd_device *lcd, struct fb_info *info)
-+{
-+	struct platform_lcd *plcd = to_our_lcd(lcd);
-+	struct plat_lcd_data *pdata = plcd->pdata;
-+
-+	if (pdata->match_fb)
-+		return pdata->match_fb(pdata, info);
-+
-+	return plcd->us->parent == info->dev;
-+}
-+
-+static struct lcd_ops platform_lcd_ops = {
-+	.get_power	= platform_lcd_get_power,
-+	.set_power	= platform_lcd_set_power,
-+	.check_fb	= platform_lcd_match,
-+};
-+
-+static int __devinit platform_lcd_probe(struct platform_device *pdev)
-+{
-+	struct plat_lcd_data *pdata;
-+	struct platform_lcd *plcd;
+ 	par->cursor_regs = info->regs + reg_base;
+ 
+ 	ret = sm501_alloc_mem(info, &par->cursor, SM501_MEMF_CURSOR, 1024);
+@@ -1299,13 +1283,10 @@ static int sm501fb_start(struct sm501fb_
+ 			 struct platform_device *pdev)
+ {
+ 	struct resource	*res;
+-	struct device *dev;
 +	struct device *dev = &pdev->dev;
-+	int err;
+ 	int k;
+ 	int ret;
+ 
+-	info->dev = dev = &pdev->dev;
+-	platform_set_drvdata(pdev, info);
+-
+ 	info->irq = ret = platform_get_irq(pdev, 0);
+ 	if (ret < 0) {
+ 		/* we currently do not use the IRQ */
+@@ -1408,11 +1389,6 @@ static void sm501fb_stop(struct sm501fb_
+ 	kfree(info->regs_res);
+ }
+ 
+-static void sm501fb_info_release(struct sm501fb_info *info)
+-{
+-	kfree(info);
+-}
+-
+ static int sm501fb_init_fb(struct fb_info *fb,
+ 			   enum sm501_controller head,
+ 			   const char *fbname)
+@@ -1557,36 +1533,93 @@ static struct sm501_platdata_fb sm501fb_
+ static char driver_name_crt[] = "sm501fb-crt";
+ static char driver_name_pnl[] = "sm501fb-panel";
+ 
+-static int __init sm501fb_probe(struct platform_device *pdev)
++static int __devinit sm501fb_probe_one(struct sm501fb_info *info,
++				       enum sm501_controller head)
+ {
+-	struct sm501fb_info *info;
+-	struct device	    *dev = &pdev->dev;
+-	struct fb_info	    *fbinfo_crt;
+-	struct fb_info	    *fbinfo_pnl;
+-	int		     ret;
++	unsigned char *name = (head == HEAD_CRT) ? "crt" : "panel";
++	struct sm501_platdata_fbsub *pd;
++	struct sm501fb_par *par;
++	struct fb_info *fbi;
+ 
+-	/* allocate our framebuffers */
++	pd = (head == HEAD_CRT) ? info->pdata->fb_crt : info->pdata->fb_pnl;
 +
-+	pdata = pdev->dev.platform_data;
-+	if (!pdata) {
-+		dev_err(dev, "no platform data supplied\n");
-+		return -EINVAL;
++	/* Do not initialise if we've not been given any platform data */
++	if (pd == NULL) {
++		dev_info(info->dev, "no data for fb %s (disabled)\n", name);
++		return 0;
++	}
+ 
+-	fbinfo_crt = framebuffer_alloc(sizeof(struct sm501fb_par), dev);
+-	if (fbinfo_crt == NULL) {
+-		dev_err(dev, "cannot allocate crt framebuffer\n");
++	fbi = framebuffer_alloc(sizeof(struct sm501fb_par), info->dev);
++	if (fbi == NULL) {
++		dev_err(info->dev, "cannot allocate %s framebuffer\n", name);
+ 		return -ENOMEM;
+ 	}
+ 
+-	fbinfo_pnl = framebuffer_alloc(sizeof(struct sm501fb_par), dev);
+-	if (fbinfo_pnl == NULL) {
+-		dev_err(dev, "cannot allocate panel framebuffer\n");
+-		ret = -ENOMEM;
+-		goto fbinfo_crt_alloc_fail;
++	par = fbi->par;
++	par->info = info;
++	par->head = head;
++	fbi->pseudo_palette = &par->pseudo_palette;
++
++	info->fb[head] = fbi;
++
++	return 0;
++}
++
++/* Free up anything allocated by sm501fb_init_fb */
++
++static void sm501_free_init_fb(struct sm501fb_info *info,
++				enum sm501_controller head)
++{
++	struct fb_info *fbi = info->fb[head];
++
++	fb_dealloc_cmap(&fbi->cmap);
++}
++
++static int __devinit sm501fb_start_one(struct sm501fb_info *info,
++				       enum sm501_controller head,
++				       const char *drvname)
++{
++	struct fb_info *fbi = info->fb[head];
++	int ret;
++
++	if (!fbi)
++		return 0;
++
++	ret = sm501fb_init_fb(info->fb[head], head, drvname);
++	if (ret) {
++		dev_err(info->dev, "cannot initialise fb %s\n", drvname);
++		return ret;
 +	}
 +
-+	plcd = kzalloc(sizeof(struct platform_lcd), GFP_KERNEL);
-+	if (!plcd) {
-+		dev_err(dev, "no memory for state\n");
++	ret = register_framebuffer(info->fb[head]);
++	if (ret) {
++		dev_err(info->dev, "failed to register fb %s\n", drvname);
++		sm501_free_init_fb(info, head);
++		return ret;
+ 	}
+ 
+-	info = sm501fb_info_alloc(fbinfo_crt, fbinfo_pnl);
+-	if (info == NULL) {
+-		dev_err(dev, "cannot allocate par\n");
+-		ret = -ENOMEM;
+-		goto sm501fb_alloc_fail;
++	dev_info(info->dev, "fb%d: %s frame buffer\n", fbi->node, fbi->fix.id);
++
++	return 0;
++}
++
++static int __devinit sm501fb_probe(struct platform_device *pdev)
++{
++	struct sm501fb_info *info;
++	struct device *dev = &pdev->dev;
++	int ret;
++
++	/* allocate our framebuffers */
++
++	info = kzalloc(sizeof(struct sm501fb_info), GFP_KERNEL);
++	if (!info) {
++		dev_err(dev, "failed to allocate state\n");
 +		return -ENOMEM;
+ 	}
+ 
++	info->dev = dev = &pdev->dev;
++	platform_set_drvdata(pdev, info);
++
+ 	if (dev->parent->platform_data) {
+ 		struct sm501_platdata *pd = dev->parent->platform_data;
+ 		info->pdata = pd->fb;
+@@ -1597,90 +1630,88 @@ static int __init sm501fb_probe(struct p
+ 		info->pdata = &sm501fb_def_pdata;
+ 	}
+ 
+-	/* start the framebuffers */
++	/* probe for the presence of each panel */
+ 
+-	ret = sm501fb_start(info, pdev);
+-	if (ret) {
+-		dev_err(dev, "cannot initialise SM501\n");
+-		goto sm501fb_start_fail;
++	ret = sm501fb_probe_one(info, HEAD_CRT);
++	if (ret < 0) {
++		dev_err(dev, "failed to probe CRT\n");
++		goto err_alloc;
+ 	}
+ 
+-	/* CRT framebuffer setup */
++	ret = sm501fb_probe_one(info, HEAD_PANEL);
++	if (ret < 0) {
++		dev_err(dev, "failed to probe PANEL\n");
++		goto err_probed_crt;
 +	}
+ 
+-	ret = sm501fb_init_fb(fbinfo_crt, HEAD_CRT, driver_name_crt);
+-	if (ret) {
+-		dev_err(dev, "cannot initialise CRT fb\n");
+-		goto sm501fb_start_fail;
++	if (info->fb[HEAD_PANEL] == NULL &&
++	    info->fb[HEAD_CRT] == NULL) {
++		dev_err(dev, "no framebuffers found\n");
++		goto err_alloc;
+ 	}
+ 
+-	/* Panel framebuffer setup */
++	/* get the resources for both of the framebuffers */
+ 
+-	ret = sm501fb_init_fb(fbinfo_pnl, HEAD_PANEL, driver_name_pnl);
++	ret = sm501fb_start(info, pdev);
+ 	if (ret) {
+-		dev_err(dev, "cannot initialise Panel fb\n");
+-		goto sm501fb_start_fail;
++		dev_err(dev, "cannot initialise SM501\n");
++		goto err_probed_panel;
+ 	}
+ 
+-	/* register framebuffers */
+-
+-	ret = register_framebuffer(fbinfo_crt);
+-	if (ret < 0) {
+-		dev_err(dev, "failed to register CRT fb (%d)\n", ret);
+-		goto register_crt_fail;
++	ret = sm501fb_start_one(info, HEAD_CRT, driver_name_crt);
++	if (ret) {
++		dev_err(dev, "failed to start CRT\n");
++		goto err_started;
+ 	}
+ 
+-	ret = register_framebuffer(fbinfo_pnl);
+-	if (ret < 0) {
+-		dev_err(dev, "failed to register panel fb (%d)\n", ret);
+-		goto register_pnl_fail;
++	ret = sm501fb_start_one(info, HEAD_PANEL, driver_name_pnl);
++	if (ret) {
++		dev_err(dev, "failed to start Panel\n");
++		goto err_started_crt;
+ 	}
+ 
+-	dev_info(dev, "fb%d: %s frame buffer device\n",
+-		 fbinfo_crt->node, fbinfo_crt->fix.id);
+-
+-	dev_info(dev, "fb%d: %s frame buffer device\n",
+-	       fbinfo_pnl->node, fbinfo_pnl->fix.id);
+-
+ 	/* create device files */
+ 
+ 	ret = device_create_file(dev, &dev_attr_crt_src);
+ 	if (ret)
+-		goto crtsrc_fail;
++		goto err_started_panel;
+ 
+ 	ret = device_create_file(dev, &dev_attr_fbregs_pnl);
+ 	if (ret)
+-		goto fbregs_pnl_fail;
++		goto err_attached_crtsrc_file;
+ 
+ 	ret = device_create_file(dev, &dev_attr_fbregs_crt);
+ 	if (ret)
+-		goto fbregs_crt_fail;
++		goto err_attached_pnlregs_file;
+ 
+ 	/* we registered, return ok */
+ 	return 0;
+ 
+- fbregs_crt_fail:
++err_attached_pnlregs_file:
+ 	device_remove_file(dev, &dev_attr_fbregs_pnl);
+ 
+- fbregs_pnl_fail:
++err_attached_crtsrc_file:
+ 	device_remove_file(dev, &dev_attr_crt_src);
+ 
+- crtsrc_fail:
+-	unregister_framebuffer(fbinfo_pnl);
+-
+- register_pnl_fail:
+-	unregister_framebuffer(fbinfo_crt);
++err_started_panel:
++	unregister_framebuffer(info->fb[HEAD_PANEL]);
++	sm501_free_init_fb(info, HEAD_PANEL);
 +
-+	plcd->us = dev;
-+	plcd->pdata = pdata;
-+	plcd->lcd = lcd_device_register("platform-lcd", dev,
-+					plcd, &platform_lcd_ops);
-+	if (IS_ERR(plcd->lcd)) {
-+		dev_err(dev, "cannot register lcd device\n");
-+		err = PTR_ERR(plcd->lcd);
-+		goto err_mem;
-+	}
++err_started_crt:
++	unregister_framebuffer(info->fb[HEAD_CRT]);
++	sm501_free_init_fb(info, HEAD_CRT);
+ 
+- register_crt_fail:
++err_started:
+ 	sm501fb_stop(info);
+ 
+- sm501fb_start_fail:
+-	sm501fb_info_release(info);
++err_probed_panel:
++	framebuffer_release(info->fb[HEAD_PANEL]);
+ 
+- sm501fb_alloc_fail:
+-	framebuffer_release(fbinfo_pnl);
++err_probed_crt:
++	framebuffer_release(info->fb[HEAD_CRT]);
+ 
+- fbinfo_crt_alloc_fail:
+-	framebuffer_release(fbinfo_crt);
++err_alloc:
++	kfree(info);
+ 
+ 	return ret;
+ }
+@@ -1699,11 +1730,14 @@ static int sm501fb_remove(struct platfor
+ 	device_remove_file(&pdev->dev, &dev_attr_fbregs_pnl);
+ 	device_remove_file(&pdev->dev, &dev_attr_crt_src);
+ 
++	sm501_free_init_fb(info, HEAD_CRT);
++	sm501_free_init_fb(info, HEAD_PANEL);
 +
-+	platform_set_drvdata(pdev, plcd);
-+	return 0;
-+
-+ err_mem:
-+	kfree(plcd);
-+	return err;
-+}
-+
-+static int __devexit platform_lcd_remove(struct platform_device *pdev)
-+{
-+	struct platform_lcd *plcd = platform_get_drvdata(pdev);
-+
-+	lcd_device_unregister(plcd->lcd);
-+	kfree(plcd);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int platform_lcd_suspend(struct platform_device *pdev, pm_message_t st)
-+{
-+	struct platform_lcd *plcd = platform_get_drvdata(pdev);
-+
-+	plcd->suspended = 1;
-+	platform_lcd_set_power(plcd->lcd, plcd->power);
-+
-+	return 0;
-+}
-+
-+static int platform_lcd_resume(struct platform_device *pdev)
-+{
-+	struct platform_lcd *plcd = platform_get_drvdata(pdev);
-+
-+	plcd->suspended = 0;
-+	platform_lcd_set_power(plcd->lcd, plcd->power);
-+
-+	return 0;
-+}
-+#else
-+#define s3c2410bl_suspend NULL
-+#define s3c2410bl_resume  NULL
-+#endif
-+
-+static struct platform_driver platform_lcd_driver = {
-+	.driver		= {
-+		.name	= "platform-lcd",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= platform_lcd_probe,
-+	.remove		= __devexit_p(platform_lcd_remove),
-+	.suspend        = platform_lcd_suspend,
-+	.resume         = platform_lcd_resume,
-+};
-+
-+static int __init platform_lcd_init(void)
-+{
-+	return platform_driver_register(&platform_lcd_driver);
-+}
-+
-+static void __exit platform_lcd_cleanup(void)
-+{
-+	platform_driver_unregister(&platform_lcd_driver);
-+}
-+
-+module_init(platform_lcd_init);
-+module_exit(platform_lcd_cleanup);
-+
-+MODULE_AUTHOR("Ben Dooks <ben-linux@fluff.org>");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:platform-lcd");
+ 	unregister_framebuffer(fbinfo_crt);
+ 	unregister_framebuffer(fbinfo_pnl);
+ 
+ 	sm501fb_stop(info);
+-	sm501fb_info_release(info);
++	kfree(info);
+ 
+ 	framebuffer_release(fbinfo_pnl);
+ 	framebuffer_release(fbinfo_crt);
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)

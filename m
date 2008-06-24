@@ -1,27 +1,23 @@
-From: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [patch 3/5] FB: Add support for the	ILI9320
-	video display controller.
-Date: Tue, 24 Jun 2008 14:37:28 +0100
-Message-ID: <20080624133728.GB22222@fluff.org.uk>
-References: <20080622210439.018928412@fluff.org.uk>
-	<20080622210614.627586051@fluff.org.uk>
-	<20080624000725.3622c57f.akpm@linux-foundation.org>
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Subject: [PATCH][2/2] add new Cobalt LCD platform device
+	register
+Date: Tue, 24 Jun 2008 22:47:02 +0900
+Message-ID: <20080624224702.5aa7f7ac.yoichi_yuasa@tripeaks.co.jp>
+References: <20080624223004.d54f14fe.yoichi_yuasa@tripeaks.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KB8iY-0000FZ-BN for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Jun 2008 06:37:54 -0700
-Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KB8iV-0005sU-I6
+	id 1KB8sc-0001Qr-3d for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 24 Jun 2008 06:48:18 -0700
+Received: from mo31.po.2iij.net ([210.128.50.54])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KB8sa-0001Tm-LV
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Jun 2008 06:37:54 -0700
-Content-Disposition: inline
-In-Reply-To: <20080624000725.3622c57f.akpm@linux-foundation.org>
+	Tue, 24 Jun 2008 06:48:18 -0700
+In-Reply-To: <20080624223004.d54f14fe.yoichi_yuasa@tripeaks.co.jp>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,159 +28,84 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, Ben Dooks <ben-linux@fluff.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips <linux-mips@linux-mips.org>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, yoichi_yuasa@tripeaks.co.jp
 
-On Tue, Jun 24, 2008 at 12:07:25AM -0700, Andrew Morton wrote:
-> On Sun, 22 Jun 2008 22:04:42 +0100 Ben Dooks <ben-linux@fluff.org> wrote:
-> 
-> > Provide support for the ILI9320 display controller chip
-> > which is found in many LCD displays. Included with this
-> > is support for an example LCD using this chip, the
-> > VGG2432A4.
-> > 
-> 
-> Please pass this patch (and indeed all patches) through
-> scripts/checkpatch.pl.  It finds things which you wouldn't have sent
-> had you known they were there.
-> 
-> >
-> > ...
-> >
-> > +int __devinit ili9320_probe_spi(struct spi_device *spi,
-> > +				struct ili9320_client *client)
-> > +{
-> > +	struct ili9320_platdata *cfg = spi->dev.platform_data;
-> > +	struct device *dev = &spi->dev;
-> > +	struct ili9320 *ili;
-> > +	struct lcd_device *lcd;
-> > +	int ret = 0;
-> > +
-> > +	/* verify we where given some information */
-> > +
-> > +	if (cfg == NULL) {
-> > +		dev_err(dev, "no platform data supplied\n");
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	if (cfg->hsize <= 0 || cfg->vsize <= 0 || cfg->reset == NULL) {
-> > +		dev_err(dev, "invalid platform data supplied\n");
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	/* allocate and initialse our state */
-> > +
-> > +	ili = kzalloc(sizeof(struct ili9320), GFP_KERNEL);
-> > +	if (ili == NULL) {
-> > +		dev_err(dev, "no memory for device\n");
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> > +	ili->access.spi.id = ILI9320_SPI_IDCODE | ILI9320_SPI_ID(1);
-> > +
-> > +	ili->dev = dev;
-> > +	ili->client = client;
-> > +	ili->power = FB_BLANK_POWERDOWN;
-> > +	ili->platdata = cfg;
-> > +
-> > +	dev_set_drvdata(&spi->dev, ili);
-> > +
-> > +	ili9320_setup_spi(ili, spi);
-> > +
-> > +	lcd = lcd_device_register("ili9320", dev, ili, &ili9320_ops);
-> > +	if (IS_ERR(lcd)) {
-> > +		dev_err(dev, "failed to register lcd device\n");
-> > +		ret = PTR_ERR(lcd);
-> > +		goto err_free;
-> > +	}
-> > +
-> > +	ili->lcd = lcd;
-> > +
-> > +	dev_info(dev, "initialising %s\n", client->name);
-> > +
-> > +	ret = ili9320_power(ili, FB_BLANK_UNBLANK);
-> > +	if (ret != 0) {
-> > +		dev_err(dev, "failed to set lcd power state\n");
-> > +		goto err_unregister;
-> > +	}
-> > +
-> > +	return 0;
-> > +
-> > + err_unregister:
-> > +	lcd_device_unregister(lcd);
-> > +
-> > + err_free:
-> > +	kfree(lcd);
-> > +	return ret;
-> > +}
-> 
-> urgh.  lcd_device_register() returns kmalloced memory which the caller
-> must kfree() after having run lcd_device_unregister()?  Who thought
-> that scheme up?  :(
+Add new Cobalt LCD platform device register.
 
-This seems to be some confusion on my part about what was being freed
-and where. There is a cleanup method on the device release and what
-was meant to be freed was the ili.
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-> Does this function leaks *ili on errors?
-
-I've fixed that.
-
-
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/arch/mips/cobalt/Makefile linux/arch/mips/cobalt/Makefile
+--- linux-orig/arch/mips/cobalt/Makefile	2008-06-01 18:01:46.808253360 +0900
++++ linux/arch/mips/cobalt/Makefile	2008-06-01 22:55:40.342007921 +0900
+@@ -2,7 +2,7 @@
+ # Makefile for the Cobalt micro systems family specific parts of the kernel
+ #
  
-> > +EXPORT_SYMBOL_GPL(ili9320_probe_spi);
-> > +
-> > +int __devexit ili9320_remove(struct ili9320 *lcd)
-> > +{
-> > +	ili9320_power(lcd, FB_BLANK_POWERDOWN);
-> > +
-> > +	lcd_device_unregister(lcd->lcd);
-> > +	kfree(lcd);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +EXPORT_SYMBOL_GPL(ili9320_remove);
-> 
-> Did ili get freed in here?
-
-Yes, but the naming confusion means that it looks like it
-was freeing the lcd. I've renamed the argument to ili and
-ensured we kfree() what we intended to kfree().
-
-> > +static int vgg2432a4_lcd_init(struct ili9320 *lcd,
-> > +			      struct ili9320_platdata *cfg)
-> > +{
-> > +	unsigned int addr;
-> > +	int ret;
-> > +
-> > +	/* Set VCore before anything else (VGG243237-6UFLWA) */
-> > +	ret = ili9320_write(lcd, 0x00e5, 0x8000);
-> > +	if (ret)
-> > +		goto err_initial;
-> > +
-> > +	/* Start the oscillator up before we can do anything else. */
-> > +	ret = ili9320_write(lcd, ILI9320_OSCILATION, ILI9320_OSCILATION_OSC);
-> > +	if (ret)
-> > +		goto err_initial;
-> > +
-> > +	/* must wait at-lesat 10ms after starting */
-> > +	mdelay(15);
-> 
-> msleep()?  And everywhere else.  This function alone consumes maybe
-> half a second CPU time.
-
-I've had no end of problems with getting suspend/resume working
-with msleep in. I'll try and see if this can be changed, but I've
-got lots of other patches in flight atm. 
-
-Would you like a new patch for the other issues, or a fixup patch for
-the driver?
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+-obj-y := buttons.o irq.o led.o reset.o rtc.o serial.o setup.o time.o
++obj-y := buttons.o irq.o lcd.o led.o reset.o rtc.o serial.o setup.o time.o
+ 
+ obj-$(CONFIG_PCI)		+= pci.o
+ obj-$(CONFIG_EARLY_PRINTK)	+= console.o
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/arch/mips/cobalt/lcd.c linux/arch/mips/cobalt/lcd.c
+--- linux-orig/arch/mips/cobalt/lcd.c	1970-01-01 09:00:00.000000000 +0900
++++ linux/arch/mips/cobalt/lcd.c	2008-06-01 22:55:40.350008376 +0900
+@@ -0,0 +1,55 @@
++/*
++ *  Registration of Cobalt LCD platform device.
++ *
++ *  Copyright (C) 2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/ioport.h>
++#include <linux/platform_device.h>
++
++static struct resource cobalt_lcd_resource __initdata = {
++	.start	= 0x1f000000,
++	.end	= 0x1f00001f,
++	.flags	= IORESOURCE_MEM,
++};
++
++static __init int cobalt_lcd_add(void)
++{
++	struct platform_device *pdev;
++	int retval;
++
++	pdev = platform_device_alloc("cobalt-lcd", -1);
++	if (!pdev)
++		return -ENOMEM;
++
++	retval = platform_device_add_resources(pdev, &cobalt_lcd_resource, 1);
++	if (retval)
++		goto err_free_device;
++
++	retval = platform_device_add(pdev);
++	if (retval)
++		goto err_free_device;
++
++	return 0;
++
++err_free_device:
++	platform_device_put(pdev);
++
++	return retval;
++}
++device_initcall(cobalt_lcd_add);
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

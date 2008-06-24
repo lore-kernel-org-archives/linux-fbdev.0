@@ -1,24 +1,25 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 10971] New: radeonfb :
- radeon X800 family support (atombios)
-Date: Mon, 23 Jun 2008 14:49:26 -0700
-Message-ID: <20080623144926.61b523e1.akpm@linux-foundation.org>
-References: <bug-10971-10286@http.bugzilla.kernel.org/>
+Subject: Re: [patch 2/5] SM501: Restructure init to
+ allow only 1 fb on an SM501
+Date: Mon, 23 Jun 2008 23:54:02 -0700
+Message-ID: <20080623235402.0ab2e49c.akpm@linux-foundation.org>
+References: <20080622210439.018928412@fluff.org.uk>
+	<20080622210614.414283871@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KAtvK-0005iR-KL for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Jun 2008 14:50:06 -0700
+	id 1KB2Ql-0006PK-3U for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Jun 2008 23:55:07 -0700
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KAtvJ-0007qR-8U
+	(Exim 4.44) id 1KB2Qk-0001Nx-Rz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Jun 2008 14:50:06 -0700
-In-Reply-To: <bug-10971-10286@http.bugzilla.kernel.org/>
+	Mon, 23 Jun 2008 23:55:07 -0700
+In-Reply-To: <20080622210614.414283871@fluff.org.uk>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,75 +30,65 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: bugme-daemon@bugzilla.kernel.org
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
+On Sun, 22 Jun 2008 22:04:41 +0100 Ben Dooks <ben-linux@fluff.org> wrote:
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+> Add the ability to register only one of the two possible
+> main framebuffer devices on the SM501 by passing platform
+> data for only the framebuffer that you are interested in
+> having.
+> 
+> As a side note, we update the init sequence to commonise
+> the code that is executed twice, and fix a pair of missing
+> frees that we didn't do on framebuffer exit, such as freeing
+> the fb's cmap.
+> 
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> 
+> Index: linux-2.6.26-rc6-quilt1/drivers/video/sm501fb.c
+> ===================================================================
+> --- linux-2.6.26-rc6-quilt1.orig/drivers/video/sm501fb.c	2008-06-18 19:02:14.000000000 +0100
+> +++ linux-2.6.26-rc6-quilt1/drivers/video/sm501fb.c	2008-06-18 19:48:01.000000000 +0100
+> @@ -143,6 +143,8 @@ static int sm501_alloc_mem(struct sm501f
+>  			   unsigned int why, size_t size)
+>  {
+>  	unsigned int ptr = 0;
+> +	unsigned int end;
+> +	struct fb_info *fbi;
+>  
+>  	switch (why) {
+>  	case SM501_MEMF_CURSOR:
+> @@ -152,7 +154,9 @@ static int sm501_alloc_mem(struct sm501f
+>  
+>  	case SM501_MEMF_PANEL:
+>  		ptr = inf->fbmem_len - size;
+> -		if (ptr < inf->fb[0]->fix.smem_len)
+> +		fbi = inf->fb[0];
+> +
+> +		if (fbi && ptr < fbi->fix.smem_len)
+>  			return -ENOMEM;
+>  
+>  		break;
+> @@ -162,11 +166,18 @@ static int sm501_alloc_mem(struct sm501f
+>  		break;
+>  
+>  	case SM501_MEMF_ACCEL:
+> -		ptr = inf->fb[0]->fix.smem_len;
+> +		fbi = inf->fb[0];
+> +		ptr = fbi ? fbi->fix.smem_len : 0;
+> +
+> +		fbi = inf->fb[1];
+> +		if (fbi)
+> +			end = (fbi->fix.smem_start - inf->fbmem_res->start);
 
-On Mon, 23 Jun 2008 14:35:21 -0700 (PDT)
-bugme-daemon@bugzilla.kernel.org wrote:
+Local variable `end' doesn't have an appropriate type.
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10971
-> 
->            Summary: radeonfb : radeon X800 family support (atombios)
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: stable branch 2.6.26-rc6
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: enhancement
->           Priority: P1
->          Component: Console/Framebuffers
->         AssignedTo: jsimmons@infradead.org
->         ReportedBy: Jimmy.Jazz@gmx.net
-> 
-> 
-> Latest working kernel version:2.6.26
-> Earliest failing kernel version:
-> Distribution:
-> Hardware Environment: Radeon X800 family PCIe videocard
-> Software Environment:
-> Problem Description:
-> 
-> Using the actual radeonfb kernel driver with a X800 videocard gives me a black
-> screen of the death and will crash xorg. Worth, with the vesafb driver the card
-> is not even working well.
-> 
-> Also, i gathered some patches that were published on the fbdev forum, and
-> changed few easy things to make the driver understand the monid ddc type of the
-> videocard and print better kernel messages. I tested the vga ddc and the monid
-> ddc and both are working well.
-> 
-> The only difficulties are, first i need to deactivate some options in xorg.conf
-> to be able to switch back and forth to the virtual ttys.
-> 
-> [code]
->         Option      "IgnoreEDID" "off" 
->         Option      "ReverseDDC" "off"
->         Option      "VGAAccess" "off"
-> [/code]
-> 
-> Second, the driver needs to share the same resolution and color depth as xorg.
-> 
-> The following options are working with the radeonfb framebuffer. I have only
-> tested them when the radeonfb driver was compiled like an optional module.
-> 
-> options radeonfb mode_option=1680x1050MR-32@60
-> options radeonfb ignore_edid=0
-> options radeonfb ignore_devlist=1 force_measure_pll=0 nomodeset=0 noaccel=0
-> 
-> I hope these patches will help radeon X800 owners to have a nice splash screen
-> on their flat wide screen... but without guaranty. My knowledge in videocard
-> logic is quite thin :)  
-> 
-> Steps to reproduce:
-> 
+It could be that overflows here are not possible due to hardware and
+architecture limitations, but still, it's best to get these things
+right.
 
-A post-2.6.26 regression..
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

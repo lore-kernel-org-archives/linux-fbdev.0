@@ -1,8 +1,8 @@
 From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Subject: [PATCH v2 4/4] video: sh7760fb: SH7760/SH7763
- LCDC framebuffer driver's document
-Date: Thu, 26 Jun 2008 14:44:26 +0900
-Message-ID: <48632CBA.8000707@renesas.com>
+Subject: [RESEND][PATCH v2 4/4] video: sh7760fb:
+ SH7760/SH7763 LCDC framebuffer driver's document
+Date: Thu, 26 Jun 2008 15:12:18 +0900
+Message-ID: <48633342.1050102@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,12 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KBkHc-0003iF-AT for Linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Jun 2008 22:44:36 -0700
-Received: from mail.renesas.com ([202.234.163.13] helo=mail04.idc.renesas.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KBkHZ-0002X0-OA
+	id 1KBkid-0006MY-Py for Linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Jun 2008 23:12:32 -0700
+Received: from mail.renesas.com ([202.234.163.13] helo=mail06.idc.renesas.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KBkib-0000fK-7a
 	for Linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Jun 2008 22:44:36 -0700
+	Wed, 25 Jun 2008 23:12:31 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,6 +31,7 @@ Cc: Paul Mundt <lethal@linux-sh.org>, Linux-sh <linux-sh@vger.kernel.org>
 
 Document for the LCDC interface on the SH7760 and SH7763 SoCs.
 
+Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
 Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
 ---
  Documentation/fb/sh7760fb.txt |  129 +++++++++++++++++++++++++++++++++++++++++
@@ -174,6 +175,7 @@ index 0000000..b8bf844
 +====================== cut here ======================================
 -- 
 1.5.5.1
+
 
 
 -------------------------------------------------------------------------

@@ -1,179 +1,441 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH v2 1/4] video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver part 1/3
-Date: Thu, 26 Jun 2008 16:45:55 +0900
-Message-ID: <20080626074555.GA408@linux-sh.org>
-References: <48632CAF.3090703@renesas.com>
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Subject: [PATCH v2][1/2] add new Cobalt LCD framebuffer
+	driver
+Date: Thu, 26 Jun 2008 21:50:18 +0900
+Message-ID: <20080626215018.2d946781.yoichi_yuasa@tripeaks.co.jp>
 Mime-Version: 1.0
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <48632CAF.3090703@renesas.com>
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Cc: linuc-fbdev <Linux-fbdev-devel@lists.sourceforge.net>, Linux-sh <linux-sh@vger.kernel.org>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Manuel Lauss <mano@roarinelk.homelinux.net>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1KBqyR-00072P-L1 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jun 2008 05:53:15 -0700
+Received: from mo32.po.2iij.net ([210.128.50.17])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KBqyQ-0006TU-SV
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Jun 2008 05:53:15 -0700
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mips <linux-mips@linux-mips.org>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Ralf Baechle <ralf@linux-mips.org>, yoichi_yuasa@tripeaks.co.jp
 
-On Thu, Jun 26, 2008 at 02:44:15PM +0900, Nobuhiro Iwamatsu wrote:
-> Main source code of Driver for the LCDC interface on the SH7760 and SH7763 SoCs.
-> 
-> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
-> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-> ---
->  drivers/video/sh7760fb.c |  671 ++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 671 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/sh7760fb.c
-> 
-It really doesn't make any sense to split this patch up in to parts, as
-none of the parts is useful or insular without the rest. The whole point
-of splitting a patch out in to a series is to isolate changes logically
-and in an incremental fashion, which obviously doesn't apply here.
 
-> +#include <linux/delay.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/fb.h>
-> +#include <linux/gfp.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mm.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <linux/io.h>
-> +#include <asm/sh7760fb.h>
-> +
-> +#define fb_msg(args...)        \
-> +       do { printk(KERN_ALERT "sh7760fb: " args); } while (0)
-> +#if 0
-> +#define dbg(args...) fb_msg(args)
-> +#else
-> +#define dbg(fmt, args...) do { } while (0)
-> +#endif
-> +
-Use dev_dbg() instead, then you get the pretty printing with the driver
-name from the struct device.
+Add new Cobalt LCD framebuffer driver.
 
-> +/*
-> + * some bits of the colormap registers should be written as zero.
-> + * create a mask for that.
-> + */
-> +#define SH7760FB_PALETTE_MASK    0x00f8fcf8
-> +
-> +/* The LCDC dma engine always sets bits 27-26 to 1: this is Area3 */
-> +#define SH7760FB_DMA_MASK      0x0C000000
-> +
-These should probably be in the header with all of the other related
-bits.
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
-> +static inline void OUT16(struct sh7760fb_par *par, int reg, unsigned short v)
-> +{
-> +	iowrite16(v, par->base + reg);
-> +}
-> +
-> +static inline unsigned short IN16(struct sh7760fb_par *par, int reg)
-> +{
-> +	return ioread16(par->base + reg);
-> +}
-> +
-> +static inline void OUT32(struct sh7760fb_par *par, int reg, unsigned long v)
-> +{
-> +	iowrite32(v, par->base + reg);
-> +}
-> +
-> +static inline unsigned long IN32(struct sh7760fb_par *par, int reg)
-> +{
-> +	return ioread32(par->base + reg);
-> +}
-> +
-There is effectively no point in using wrappers here, just use the
-ioreadX() routines directly.
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/video/Kconfig linux/drivers/video/Kconfig
+--- linux-orig/drivers/video/Kconfig	2008-06-25 15:53:46.017857142 +0900
++++ linux/drivers/video/Kconfig	2008-06-25 23:18:03.687968473 +0900
+@@ -1950,6 +1950,10 @@ config FB_AM200EPD
+          This enables support for the Metronome display controller used on
+          the E-Ink AM-200 EPD devkit.
+ 
++config FB_COBALT
++	tristate "Cobalt server LCD frame buffer support"
++	depends on FB && MIPS_COBALT
++
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+ 	depends on FB
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/video/Makefile linux/drivers/video/Makefile
+--- linux-orig/drivers/video/Makefile	2008-06-25 15:53:46.017857142 +0900
++++ linux/drivers/video/Makefile	2008-06-25 23:17:25.277779602 +0900
+@@ -117,6 +117,7 @@ obj-$(CONFIG_FB_SM501)            += sm5
+ obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
+ obj-$(CONFIG_FB_OMAP)             += omap/
+ obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
++obj-$(CONFIG_FB_COBALT)           += cobalt_lcdfb.o
+ 
+ # Platform or fallback drivers go here
+ obj-$(CONFIG_FB_UVESA)            += uvesafb.o
+diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/video/cobalt_lcdfb.c linux/drivers/video/cobalt_lcdfb.c
+--- linux-orig/drivers/video/cobalt_lcdfb.c	1970-01-01 09:00:00.000000000 +0900
++++ linux/drivers/video/cobalt_lcdfb.c	2008-06-25 23:58:52.951544053 +0900
+@@ -0,0 +1,370 @@
++/*
++ *  Cobalt server LCD frame buffer driver.
++ *
++ *  Copyright (C) 2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++ */
++#include <linux/delay.h>
++#include <linux/fb.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/ioport.h>
++#include <linux/platform_device.h>
++
++/*
++ * Cursor position address
++ * \X  0    1    2  ...  14   15
++ * Y+----+----+----+---+----+----+
++ * 0|0x00|0x01|0x02|...|0x0e|0x0f|
++ *  +----+----+----+---+----+----+
++ * 1|0x40|0x41|0x42|...|0x4e|0x4f|
++ *  +----+----+----+---+----+----+
++ */
++#define LCD_DATA_REG_OFFSET	0x10
++#define LCD_XRES_MAX		16
++#define LCD_YRES_MAX		2
++#define LCD_CHARS_MAX		32
++
++#define LCD_CLEAR		0x01
++#define LCD_CURSOR_MOVE_HOME	0x02
++#define LCD_RESET		0x06
++#define LCD_OFF			0x08
++#define LCD_CURSOR_OFF		0x0c
++#define LCD_CURSOR_BLINK_OFF	0x0e
++#define LCD_CURSOR_ON		0x0f
++#define LCD_ON			LCD_CURSOR_ON
++#define LCD_CURSOR_MOVE_LEFT	0x10
++#define LCD_CURSOR_MOVE_RIGHT	0x14
++#define LCD_DISPLAY_LEFT	0x18
++#define LCD_DISPLAY_RIGHT	0x1c
++#define LCD_PRERESET		0x3f	/* execute 4 times continuously */
++#define LCD_BUSY		0x80
++
++#define LCD_GRAPHIC_MODE	0x40
++#define LCD_TEXT_MODE		0x80
++#define LCD_CUR_POS_MASK	0x7f
++
++#define LCD_CUR_POS(x)		((x) & LCD_CUR_POS_MASK)
++#define LCD_TEXT_POS(x)		((x) | LCD_TEXT_MODE)
++
++static inline void lcd_write_control(struct fb_info *info, u8 control)
++{
++	writel((u32)control << 24, info->screen_base);
++}
++
++static inline u8 lcd_read_control(struct fb_info *info)
++{
++	return readl(info->screen_base) >> 24;
++}
++
++static inline void lcd_write_data(struct fb_info *info, u8 data)
++{
++	writel((u32)data << 24, info->screen_base + LCD_DATA_REG_OFFSET);
++}
++
++static inline u8 lcd_read_data(struct fb_info *info)
++{
++	return readl(info->screen_base + LCD_DATA_REG_OFFSET) >> 24;
++}
++
++static int lcd_busy_wait(struct fb_info *info)
++{
++	u8 val = 0;
++	int timeout = 10, retval = 0;
++
++	do {
++		val = lcd_read_control(info);
++		val &= LCD_BUSY;
++		if (val != LCD_BUSY)
++			break;
++
++		if (msleep_interruptible(1))
++			return -EINTR;
++
++		timeout--;
++	} while (timeout);
++
++	if (val == LCD_BUSY)
++		retval = -EBUSY;
++
++	return retval;
++}
++
++static void lcd_clear(struct fb_info *info)
++{
++	int i;
++
++	for (i = 0; i < 4; i++) {
++		udelay(150);
++
++		lcd_write_control(info, LCD_PRERESET);
++	}
++
++	udelay(150);
++
++	lcd_write_control(info, LCD_CLEAR);
++
++	udelay(150);
++
++	lcd_write_control(info, LCD_RESET);
++}
++
++static struct fb_fix_screeninfo cobalt_lcdfb_fix __initdata = {
++	.id		= "cobalt-lcd",
++	.type		= FB_TYPE_TEXT,
++	.type_aux	= FB_AUX_TEXT_MDA,
++	.visual		= FB_VISUAL_MONO01,
++	.line_length	= LCD_XRES_MAX,
++	.accel		= FB_ACCEL_NONE,
++};
++
++static ssize_t cobalt_lcdfb_read(struct fb_info *info, char __user *buf,
++				 size_t count, loff_t *ppos)
++{
++	char src[LCD_CHARS_MAX];
++	unsigned long pos;
++	int len, retval = 0;
++
++	pos = *ppos;
++	if (pos >= LCD_CHARS_MAX || count == 0)
++		return 0;
++
++	if (count > LCD_CHARS_MAX)
++		count = LCD_CHARS_MAX;
++
++	if (pos + count >= LCD_CHARS_MAX)
++		count = LCD_CHARS_MAX - pos;
++
++	for (len = 0; len < count; len++) {
++		retval = lcd_busy_wait(info);
++		if (retval < 0)
++			break;
++
++		lcd_write_control(info, LCD_TEXT_POS(pos));
++
++		retval = lcd_busy_wait(info);
++		if (retval < 0)
++			break;
++
++		src[len] = lcd_read_data(info);
++		if (pos == 0x0f)
++			pos = 0x40;
++		else
++			pos++;
++	}
++
++	if (retval < 0 && signal_pending(current))
++		return -ERESTARTSYS;
++
++	if (copy_to_user(buf, src, len))
++		return -EFAULT;
++
++	*ppos += len;
++
++	return len;
++}
++
++static ssize_t cobalt_lcdfb_write(struct fb_info *info, const char __user *buf,
++				  size_t count, loff_t *ppos)
++{
++	char dst[LCD_CHARS_MAX];
++	unsigned long pos;
++	int len, retval = 0;
++
++	pos = *ppos;
++	if (pos >= LCD_CHARS_MAX || count == 0)
++		return 0;
++
++	if (count > LCD_CHARS_MAX)
++		count = LCD_CHARS_MAX;
++
++	if (pos + count >= LCD_CHARS_MAX)
++		count = LCD_CHARS_MAX - pos;
++
++	if (copy_from_user(dst, buf, count))
++		return -EFAULT;
++
++	for (len = 0; len < count; len++) {
++		retval = lcd_busy_wait(info);
++		if (retval < 0)
++			break;
++
++		lcd_write_control(info, LCD_TEXT_POS(pos));
++
++		retval = lcd_busy_wait(info);
++		if (retval < 0)
++			break;
++
++		lcd_write_data(info, dst[len]);
++		if (pos == 0x0f)
++			pos = 0x40;
++		else
++			pos++;
++	}
++
++	if (retval < 0 && signal_pending(current))
++		return -ERESTARTSYS;
++
++	*ppos += len;
++
++	return len;
++}
++
++static int cobalt_lcdfb_blank(int blank_mode, struct fb_info *info)
++{
++	int retval;
++
++	retval = lcd_busy_wait(info);
++	if (retval < 0)
++		return retval;
++
++	switch (blank_mode) {
++	case FB_BLANK_UNBLANK:
++		lcd_write_control(info, LCD_ON);
++		break;
++	default:
++		lcd_write_control(info, LCD_OFF);
++		break;
++	}
++
++	return 0;
++}
++
++static int cobalt_lcdfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++	u32 x, y;
++	int retval;
++
++	switch (cursor->set) {
++	case FB_CUR_SETPOS:
++		x = cursor->image.dx;
++		y = cursor->image.dy;
++		if (x >= LCD_XRES_MAX || y >= LCD_YRES_MAX)
++			return -EINVAL;
++
++		retval = lcd_busy_wait(info);
++		if (retval < 0)
++			return retval;
++
++		lcd_write_control(info,
++				  LCD_TEXT_POS(info->fix.line_length * y + x));
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	retval = lcd_busy_wait(info);
++	if (retval < 0)
++		return retval;
++
++	if (cursor->enable)
++		lcd_write_control(info, LCD_CURSOR_ON);
++	else
++		lcd_write_control(info, LCD_CURSOR_OFF);
++
++	return 0;
++}
++
++static struct fb_ops cobalt_lcd_fbops = {
++	.owner		= THIS_MODULE,
++	.fb_read	= cobalt_lcdfb_read,
++	.fb_write	= cobalt_lcdfb_write,
++	.fb_blank	= cobalt_lcdfb_blank,
++	.fb_cursor	= cobalt_lcdfb_cursor,
++};
++
++static int __init cobalt_lcdfb_probe(struct platform_device *dev)
++{
++	struct fb_info *info;
++	struct resource *res;
++	int retval;
++
++	info = framebuffer_alloc(0, &dev->dev);
++	if (!info)
++		return -ENOMEM;
++
++	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!res) {
++		framebuffer_release(info);
++		return -EBUSY;
++	}
++
++	info->screen_size = res->end - res->start + 1;
++	info->screen_base = ioremap(res->start, info->screen_size);
++	info->fbops = &cobalt_lcd_fbops;
++	info->fix = cobalt_lcdfb_fix;
++	info->fix.smem_start = res->start;
++	info->fix.smem_len = info->screen_size;
++	info->pseudo_palette = NULL;
++	info->par = NULL;
++	info->flags = FBINFO_DEFAULT;
++
++	retval = register_framebuffer(info);
++	if (retval < 0) {
++		iounmap(info->screen_base);
++		framebuffer_release(info);
++		return retval;
++	}
++
++	platform_set_drvdata(dev, info);
++
++	lcd_clear(info);
++
++	printk(KERN_INFO "fb%d: Cobalt server LCD frame buffer device\n",
++		info->node);
++
++	return 0;
++}
++
++static int __devexit cobalt_lcdfb_remove(struct platform_device *dev)
++{
++	struct fb_info *info;
++
++	info = platform_get_drvdata(dev);
++	if (info) {
++		iounmap(info->screen_base);
++		unregister_framebuffer(info);
++		framebuffer_release(info);
++	}
++
++	return 0;
++}
++
++static struct platform_driver cobalt_lcdfb_driver = {
++	.probe	= cobalt_lcdfb_probe,
++	.remove	= __devexit_p(cobalt_lcdfb_remove),
++	.driver	= {
++		.name	= "cobalt-lcd",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init cobalt_lcdfb_init(void)
++{
++	return platform_driver_register(&cobalt_lcdfb_driver);
++}
++
++static void __exit cobalt_lcdfb_exit(void)
++{
++	platform_driver_unregister(&cobalt_lcdfb_driver);
++}
++
++module_init(cobalt_lcdfb_init);
++module_exit(cobalt_lcdfb_exit);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Yoichi Yuasa")
++MODULE_DESCRIPTION("Cobalt server LCD frame buffer driver");
 
-> +static void sh7760fb_wait_vsync(struct fb_info *info)
-> +{
-> +	struct sh7760fb_par *par = info->par;
-> +
-> +	if (par->pd->novsync)
-> +		return;
-> +/*
-> +	while (IN16(par, LDINTR) & 1)
-> +		OUT16(par, LDINTR, 0x1100);
-> +*/
-> +}
-> +
-This function doesn't actually do anything, so just kill it off.
-
-> +
-> +/*
-> + * wait_for_lps - wait until power supply has reached a certain state.
-> + * @val:       bitmask to wait for.
-> + */
-> +static void wait_for_lps(struct sh7760fb_par *par, int val)
-> +{
-> +	int i = 100;
-> +	while (--i && ((IN16(par, LDPMMR) & 3) != val))
-> +		msleep(1);
-> +}
-> +
-You don't check for a timeout here, which you can easily check for and
-hand down an error value for sh7760fb_blank() to return.
-
-> +	if (!tmo) {
-> +		ret = 1;
-> +		pr_debug("sh7760fb: no palette access!\n");
-> +		goto out;
-> +	}
-> +
-Here also, switch to dev_dbg() so you can get rid of the sh7760fb:
-prefixing and be consistent with the other debug messages.
-
-> +	par->ioarea = request_mem_region(res->start,
-> +			(res->end - res->start), pdev->name);
-> +	if (!par->ioarea) {
-> +		dev_err(&pdev->dev, "mmio area busy\n");
-> +		ret = -EBUSY;
-> +		goto out_fb;
-> +	}
-> +
-> +	par->base = ioremap_nocache(res->start, (res->end - res->start));
-> +	if (!par->base) {
-> +		dev_err(&pdev->dev, "cannot remap\n");
-> +		ret = -ENODEV;
-> +		goto out_res;
-> +	}
-> +
-You have an off-by-1 error here, ioremap() needs (res->end - res->start) + 1,
-while request_mem_region() wants (res->end - res->start).
-
-> +	fb_msg("memory at phys 0x%08lx-0x%08lx, size %ld KiB\n",
-> +	       (unsigned long)par->fbdma,
-> +	       (unsigned long)(par->fbdma + info->screen_size - 1),
-> +		   info->screen_size >> 10);
-> +
-This is probably useful to have as a dev_info() or so instead of a debug
-message..
-
-> +#ifdef CONFIG_PM
-> +static int sh7760fb_suspend(struct platform_device *dev, u32 level)
-> +{
-> +	dbg("sh7760fb_suspend()\n");
-> +	return 0;
-> +}
-> +
-> +static int sh7760fb_resume(struct platform_device *dev, u32 level)
-> +{
-> +	dbg("sh7760fb_resume()\n");
-> +	return 0;
-> +}
-
-Fascinating messages. Please kill them.
-
-> +MODULE_AUTHOR("Manuel Lauss <mano@roarinelk.homelinux.net>");
-> +MODULE_DESCRIPTION("FBdev for SH7760/63 integrated LCD Controller");
-> +MODULE_LICENSE("GPL");
-
-Despite the fact that Manuel wrote the initial version, you seem to be
-the one hacking on it and posting it for submission. MODULE_AUTHOR()
-should reflect the active maintainer or at least point to a neutral place
-where users can get help, as this is the first thing users will see with
-modinfo and such. If you are going to maintain this together, also add
-your name in to MODULE_AUTHOR().
+-------------------------------------------------------------------------
+Check out the new SourceForge.net Marketplace.
+It's the best place to buy or sell services for
+just about anything Open Source.
+http://sourceforge.net/services/buy/index.php

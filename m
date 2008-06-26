@@ -1,185 +1,179 @@
-From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Subject: [RESEND][PATCH v2 4/4] video: sh7760fb:
- SH7760/SH7763 LCDC framebuffer driver's document
-Date: Thu, 26 Jun 2008 15:12:18 +0900
-Message-ID: <48633342.1050102@renesas.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH v2 1/4] video: sh7760fb: SH7760/SH7763 LCDC framebuffer driver part 1/3
+Date: Thu, 26 Jun 2008 16:45:55 +0900
+Message-ID: <20080626074555.GA408@linux-sh.org>
+References: <48632CAF.3090703@renesas.com>
 Mime-Version: 1.0
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <48632CAF.3090703@renesas.com>
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KBkid-0006MY-Py for Linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Jun 2008 23:12:32 -0700
-Received: from mail.renesas.com ([202.234.163.13] helo=mail06.idc.renesas.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KBkib-0000fK-7a
-	for Linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Jun 2008 23:12:31 -0700
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linuc-fbdev <Linux-fbdev-devel@lists.sourceforge.net>
-Cc: Paul Mundt <lethal@linux-sh.org>, Linux-sh <linux-sh@vger.kernel.org>
+To: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Cc: linuc-fbdev <Linux-fbdev-devel@lists.sourceforge.net>, Linux-sh <linux-sh@vger.kernel.org>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Manuel Lauss <mano@roarinelk.homelinux.net>
 
-Document for the LCDC interface on the SH7760 and SH7763 SoCs.
+On Thu, Jun 26, 2008 at 02:44:15PM +0900, Nobuhiro Iwamatsu wrote:
+> Main source code of Driver for the LCDC interface on the SH7760 and SH7763 SoCs.
+> 
+> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+> ---
+>  drivers/video/sh7760fb.c |  671 ++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 671 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/video/sh7760fb.c
+> 
+It really doesn't make any sense to split this patch up in to parts, as
+none of the parts is useful or insular without the rest. The whole point
+of splitting a patch out in to a series is to isolate changes logically
+and in an incremental fashion, which obviously doesn't apply here.
 
-Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
----
- Documentation/fb/sh7760fb.txt |  129 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 129 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/fb/sh7760fb.txt
+> +#include <linux/delay.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/fb.h>
+> +#include <linux/gfp.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mm.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <linux/io.h>
+> +#include <asm/sh7760fb.h>
+> +
+> +#define fb_msg(args...)        \
+> +       do { printk(KERN_ALERT "sh7760fb: " args); } while (0)
+> +#if 0
+> +#define dbg(args...) fb_msg(args)
+> +#else
+> +#define dbg(fmt, args...) do { } while (0)
+> +#endif
+> +
+Use dev_dbg() instead, then you get the pretty printing with the driver
+name from the struct device.
 
-diff --git a/Documentation/fb/sh7760fb.txt b/Documentation/fb/sh7760fb.txt
-new file mode 100644
-index 0000000..b8bf844
---- /dev/null
-+++ b/Documentation/fb/sh7760fb.txt
-@@ -0,0 +1,129 @@
-+SH7760 integrated LCDC Framebuffer driver
-+=========================================
-+
-+0. Overwiew
-+-----------
-+The SH7760/SH7763 have an integrated LCD Display controller (LCDC) which
-+supports (in theory) resolutions ranging from 1x1 to 1024x1024,
-+with color depths ranging from 1 to 16 bit.
-+Supports STN, DSTN and TFT Panels.
-+
-+* Framebuffer memory must be a large chunk allocated at the top
-+  of Area3 (HW requirement). Because of this requirement you should NOT
-+  make the driver a module since at runtime it may become impossible to
-+  get a large enough contiguous chunk of memory.
-+
-+* The driver does not support changing resolution while loaded
-+  (LCD's aren't hotpluggable anyway)
-+
-+* Heavy flickering may be observed
-+  a) if you're using 15/16bit color modes at >= 640x480 px resolutions,
-+  b) during PCMCIA (or any other slow bus) activity.
-+
-+* Rotation works only 90degress clockwise, and only if horizontal
-+  resolution is <= 320 pixels.
-+
-+files:   drivers/video/sh7760fb.c
-+	 include/asm-sh/sh7760fb.h
-+	 Documentation/fb/sh7760fb.txt
-+
-+1. Platform setup
-+-----------------
-+Video data is fetched via the DMABRG DMA engine, so you have to
-+configure the SH DMAC for DMABRG mode (write 0x94808080 to the
-+DMARSRA register somewhere at boot).
-+
-+PFC registers PCCR and PCDR must be set to peripheral mode.
-+(write zeros to both).
-+
-+The driver does NOT do the above for you (since board setup is, well, job
-+of the board setup code).
-+
-+2. Panel definitions
-+--------------------
-+The LCDC must explicitly be told about the type of LCD panel
-+attached. Data must be wrapped in a "struct sh7760fb_platdata" and
-+passed to the driver as platform_data.
-+
-+Suggest you take a closer look at the SH7760 Manual, Section 30.
-+(http://documentation.renesas.com/eng/products/mpumcu/e602291_sh7760.pdf)
-+
-+The following code illustrates what needs to be done to
-+get the framebuffer working on a 640x480 TFT:
-+
-+====================== cut here ======================================
-+
-+#include <linux/fb.h>
-+#include <asm/sh7760fb.h>
-+
-+/*
-+ * NEC NL6440bc26-01 640x480 TFT
-+ * dotclock 25175 kHz
-+ * Xres		640	Yres		480
-+ * Htotal	800	Vtotal		525
-+ * HsynStart	656	VsynStart	490
-+ * HsynLenn	30	VsynLenn	2
-+ *
-+ * The linux framebuffer layer does not use the syncstart/synclen
-+ * values but right/left/upper/lower margin values. The comments
-+ * for the x_margin explain how to calculate those from given
-+ * panel sync timings.
-+ */
-+static struct fb_videomode nl6448bc26 = {
-+/*	.name		= "NL6448BC26",*/
-+/*	.refresh	= 60,	*/
-+	.xres		= 640,
-+	.yres		= 480,
-+	.pixclock	= 39683,	/* in picoseconds! */
-+	.hsync_len	= 30,
-+	.vsync_len	= 2,
-+	.left_margin	= 114,	/* HTOT - (HSYNSLEN + HSYNSTART) */
-+	.right_margin	= 16,	/* HSYNSTART - XRES */
-+	.upper_margin	= 33,	/* VTOT - (VSYNLEN + VSYNSTART) */
-+	.lower_margin	= 10,	/* VSYNSTART - YRES */
-+	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-+	.vmode		= FB_VMODE_NONINTERLACED,
-+	.flag		= 0,
-+};
-+
-+static struct sh7760fb_platdata sh7760fb_nl6448 = {
-+	.def_mode	= &nl6448bc26,
-+	.ldmtr		= LDMTR_TFT_COLOR_16,	/* 16bit TFT panel */
-+	.lddfr		= LDDFR_8BPP,		/* we want 8bit output */
-+	.ldpmmr		= 0x0070,
-+	.ldpspr		= 0x0500,
-+	.ldaclnr	= 0,
-+	.ldickr		= LDICKR_CLKSRC(LCDC_CLKSRC_EXTERNAL) |
-+			  LDICKR_CLKDIV(1),
-+	.rotate		= 0,
-+	.novsync	= 1,
-+	.blank		= NULL,
-+};
-+
-+/* 0xFE300800: 256 * 4byte xRGB palette ram
-+ * 0xFE300C00: 42 bytes ctrl registers
-+ */
-+static struct resource sh7760_lcdc_res[] = {
-+	[0] = {
-+		.start	= 0xFE300800,
-+		.end	= 0xFE300CFF,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= 65,
-+		.end	= 65,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device sh7760_lcdc_dev = {
-+	.dev	= {
-+		.platform_data = &sh7760fb_nl6448,
-+	},
-+	.name		= "sh7760-lcdc",
-+	.id		= -1,
-+	.resource	= sh7760_lcdc_res,
-+	.num_resources	= ARRAY_SIZE(sh7760_lcdc_res),
-+};
-+
-+====================== cut here ======================================
--- 
-1.5.5.1
+> +/*
+> + * some bits of the colormap registers should be written as zero.
+> + * create a mask for that.
+> + */
+> +#define SH7760FB_PALETTE_MASK    0x00f8fcf8
+> +
+> +/* The LCDC dma engine always sets bits 27-26 to 1: this is Area3 */
+> +#define SH7760FB_DMA_MASK      0x0C000000
+> +
+These should probably be in the header with all of the other related
+bits.
 
+> +static inline void OUT16(struct sh7760fb_par *par, int reg, unsigned short v)
+> +{
+> +	iowrite16(v, par->base + reg);
+> +}
+> +
+> +static inline unsigned short IN16(struct sh7760fb_par *par, int reg)
+> +{
+> +	return ioread16(par->base + reg);
+> +}
+> +
+> +static inline void OUT32(struct sh7760fb_par *par, int reg, unsigned long v)
+> +{
+> +	iowrite32(v, par->base + reg);
+> +}
+> +
+> +static inline unsigned long IN32(struct sh7760fb_par *par, int reg)
+> +{
+> +	return ioread32(par->base + reg);
+> +}
+> +
+There is effectively no point in using wrappers here, just use the
+ioreadX() routines directly.
 
+> +static void sh7760fb_wait_vsync(struct fb_info *info)
+> +{
+> +	struct sh7760fb_par *par = info->par;
+> +
+> +	if (par->pd->novsync)
+> +		return;
+> +/*
+> +	while (IN16(par, LDINTR) & 1)
+> +		OUT16(par, LDINTR, 0x1100);
+> +*/
+> +}
+> +
+This function doesn't actually do anything, so just kill it off.
 
--------------------------------------------------------------------------
-Check out the new SourceForge.net Marketplace.
-It's the best place to buy or sell services for
-just about anything Open Source.
-http://sourceforge.net/services/buy/index.php
+> +
+> +/*
+> + * wait_for_lps - wait until power supply has reached a certain state.
+> + * @val:       bitmask to wait for.
+> + */
+> +static void wait_for_lps(struct sh7760fb_par *par, int val)
+> +{
+> +	int i = 100;
+> +	while (--i && ((IN16(par, LDPMMR) & 3) != val))
+> +		msleep(1);
+> +}
+> +
+You don't check for a timeout here, which you can easily check for and
+hand down an error value for sh7760fb_blank() to return.
+
+> +	if (!tmo) {
+> +		ret = 1;
+> +		pr_debug("sh7760fb: no palette access!\n");
+> +		goto out;
+> +	}
+> +
+Here also, switch to dev_dbg() so you can get rid of the sh7760fb:
+prefixing and be consistent with the other debug messages.
+
+> +	par->ioarea = request_mem_region(res->start,
+> +			(res->end - res->start), pdev->name);
+> +	if (!par->ioarea) {
+> +		dev_err(&pdev->dev, "mmio area busy\n");
+> +		ret = -EBUSY;
+> +		goto out_fb;
+> +	}
+> +
+> +	par->base = ioremap_nocache(res->start, (res->end - res->start));
+> +	if (!par->base) {
+> +		dev_err(&pdev->dev, "cannot remap\n");
+> +		ret = -ENODEV;
+> +		goto out_res;
+> +	}
+> +
+You have an off-by-1 error here, ioremap() needs (res->end - res->start) + 1,
+while request_mem_region() wants (res->end - res->start).
+
+> +	fb_msg("memory at phys 0x%08lx-0x%08lx, size %ld KiB\n",
+> +	       (unsigned long)par->fbdma,
+> +	       (unsigned long)(par->fbdma + info->screen_size - 1),
+> +		   info->screen_size >> 10);
+> +
+This is probably useful to have as a dev_info() or so instead of a debug
+message..
+
+> +#ifdef CONFIG_PM
+> +static int sh7760fb_suspend(struct platform_device *dev, u32 level)
+> +{
+> +	dbg("sh7760fb_suspend()\n");
+> +	return 0;
+> +}
+> +
+> +static int sh7760fb_resume(struct platform_device *dev, u32 level)
+> +{
+> +	dbg("sh7760fb_resume()\n");
+> +	return 0;
+> +}
+
+Fascinating messages. Please kill them.
+
+> +MODULE_AUTHOR("Manuel Lauss <mano@roarinelk.homelinux.net>");
+> +MODULE_DESCRIPTION("FBdev for SH7760/63 integrated LCD Controller");
+> +MODULE_LICENSE("GPL");
+
+Despite the fact that Manuel wrote the initial version, you seem to be
+the one hacking on it and posting it for submission. MODULE_AUTHOR()
+should reflect the active maintainer or at least point to a neutral place
+where users can get help, as this is the first thing users will see with
+modinfo and such. If you are going to maintain this together, also add
+your name in to MODULE_AUTHOR().

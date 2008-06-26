@@ -1,123 +1,119 @@
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Subject: [PATCH] gbefb: cmap FIFO timeout
-Date: Thu, 26 Jun 2008 00:16:40 +0200 (CEST)
-Message-ID: <20080625221640.35CF3E2F71@solo.franken.de>
-Return-path: <linux-mips-bounce@linux-mips.org>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/4] video: sh7760fb: SH7760/SH7763
+ LCDC framebuffer driver part 1/3
+Date: Thu, 26 Jun 2008 14:31:47 +0900
+Message-ID: <486329C3.2020806@renesas.com>
+References: <20080625082914.E208721C824@f28.poczta.interia.pl>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-mips@linux-mips.org, adaplas@gmail.com, 487257@bugs.debian.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-reply-to: <20080625082914.E208721C824@f28.poczta.interia.pl>
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; format="flowed"; charset="us-ascii"
+To: krzysztof.h1@poczta.fm
+Cc: "Linux-fbdev-devel@lists.sourceforge.net" <Linux-fbdev-devel@lists.sourceforge.net>, Paul Mundt <lethal@linux-sh.org>, Linux-sh <linux-sh@vger.kernel.org>
 
-Writes to the cmap fifo while the display is blanked caused cmap FIFO
-timeout messages and a wrong colormap. To avoid this the driver now
-maintains a colormap in memory and updates the colormap after the
-display is unblanked.
+krzysztof.h1@poczta.fm wrote:
+>> Main source code of Driver for the LCDC interface on the SH7760 and SH7763
+>> SoCs.
+>>
+>> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+>> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+>> ---
+>>  drivers/video/sh7760fb.c |  717
+>> ++++++++++++++++++++++++++++++++++++++++++++++
+>>  1 files changed, 717 insertions(+), 0 deletions(-)
+>>  create mode 100644 drivers/video/sh7760fb.c
+>>
+>> diff --git a/drivers/video/sh7760fb.c b/drivers/video/sh7760fb.c
+<snip>
 
-Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
----
+>> +#define LDCNTR		0x428
+>> +#define LDCNTR_DON	(1 << 0)
+>> +#define LDCNTR_DON2	(1 << 4)
+>> +#ifdef CONFIG_CPU_SUBTYPE_SH7763
+>> +# define LDLIRNR	0x440
+>> +#endif
+>> +
+> 
+> These definitions should be moved to the header file. Part of bits definitions are there and I suppose these bits are related to registers.
+> 
+>> +/*
+>> + * some bits of the colormap registers should be written as zero.
+>> + * create a mask for that.
+>> + */
+>> +#define SH7760FB_PALETTE_MASK    0x00f8fcf8
+>> +
+>> +/* The LCDC dma engine always sets bits 27-26 to 1: this is Area3 */
+>> +#define SH7760FB_DMA_MASK      0x0C000000
+>> +
+>> +struct sh7760fb_par {
+>> +	void __iomem *base;
+>> +	struct sh7760fb_platdata *pd;	/* display information */
+>> +
+>> +	/* framebuffer memory information */
+>> +	void *fbmem;		/* alloced framebuffer */
+>> +	dma_addr_t fbdma;	/* physical address */
+>> +	unsigned long vram;	/* size, in bytes */
+> 
+> The fields fbmem and vram are redundant as you can use smem_start/smem_len or or screen_base/screen_size to store the same information (and you do it anyway).
+> 
+>> +	unsigned long stride;
+>> +
+> 
+> The line_length field is the same (redundant).
+> 
+<snip>
 
- drivers/video/gbefb.c |   50 +++++++++++++++++++++++++++++++++---------------
- 1 files changed, 34 insertions(+), 16 deletions(-)
+>> +	if (blank == FB_BLANK_UNBLANK) {
+>> +		cntr = LDCNTR_DON2 | LDCNTR_DON;
+>> +		lps = 3;
+>> +		if (pd->blank)
+>> +			pd->blank(blank);
+> 
+> Probably pd->blank can be moved outside the if-else stantement.
+> 
+>> +
+>> +	if (par->disp_set)
+>> +		return 0;
+>> +
+> 
+> Is there any specific reason you cannot do disp_set twice? It means that the framebuffer is not able to change display depth at runtime. Probably you can drop the disp_set field completely. If the registers are programmed twice to the same values it should do no harm.
+> 
+<snip>
 
-diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
-index 2e552d5..f89c3cc 100644
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -87,6 +87,8 @@ static int gbe_revision;
- static int ypan, ywrap;
- 
- static uint32_t pseudo_palette[16];
-+static uint32_t gbe_cmap[256];
-+static int gbe_turned_on; /* 0 turned off, 1 turned on */
- 
- static char *mode_option __initdata = NULL;
- 
-@@ -208,6 +210,8 @@ void gbe_turn_off(void)
- 	int i;
- 	unsigned int val, x, y, vpixen_off;
- 
-+	gbe_turned_on = 0;
-+
- 	/* check if pixel counter is on */
- 	val = gbe->vt_xy;
- 	if (GET_GBE_FIELD(VT_XY, FREEZE, val) == 1)
-@@ -371,6 +375,22 @@ static void gbe_turn_on(void)
- 	}
- 	if (i == 10000)
- 		printk(KERN_ERR "gbefb: turn on DMA timed out\n");
-+
-+	gbe_turned_on = 1;
-+}
-+
-+static void gbe_loadcmap(void)
-+{
-+	int i, j;
-+
-+	for (i = 0; i < 256; i++) {
-+		for (j = 0; j < 1000 && gbe->cm_fifo >= 63; j++)
-+			udelay(10);
-+		if (j == 1000)
-+			printk(KERN_ERR "gbefb: cmap FIFO timeout\n");
-+
-+		gbe->cmap[i] = gbe_cmap[i];
-+	}
- }
- 
- /*
-@@ -382,6 +402,7 @@ static int gbefb_blank(int blank, struct fb_info *info)
- 	switch (blank) {
- 	case FB_BLANK_UNBLANK:		/* unblank */
- 		gbe_turn_on();
-+		gbe_loadcmap();
- 		break;
- 
- 	case FB_BLANK_NORMAL:		/* blank */
-@@ -796,16 +817,10 @@ static int gbefb_set_par(struct fb_info *info)
- 		gbe->gmap[i] = (i << 24) | (i << 16) | (i << 8);
- 
- 	/* Initialize the color map */
--	for (i = 0; i < 256; i++) {
--		int j;
--
--		for (j = 0; j < 1000 && gbe->cm_fifo >= 63; j++)
--			udelay(10);
--		if (j == 1000)
--			printk(KERN_ERR "gbefb: cmap FIFO timeout\n");
-+	for (i = 0; i < 256; i++)
-+		gbe_cmap[i] = (i << 8) | (i << 16) | (i << 24);
- 
--		gbe->cmap[i] = (i << 8) | (i << 16) | (i << 24);
--	}
-+	gbe_loadcmap();
- 
- 	return 0;
- }
-@@ -855,14 +870,17 @@ static int gbefb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 	blue >>= 8;
- 
- 	if (info->var.bits_per_pixel <= 8) {
--		/* wait for the color map FIFO to have a free entry */
--		for (i = 0; i < 1000 && gbe->cm_fifo >= 63; i++)
--			udelay(10);
--		if (i == 1000) {
--			printk(KERN_ERR "gbefb: cmap FIFO timeout\n");
--			return 1;
-+		gbe_cmap[regno] = (red << 24) | (green << 16) | (blue << 8);
-+		if (gbe_turned_on) {
-+			/* wait for the color map FIFO to have a free entry */
-+			for (i = 0; i < 1000 && gbe->cm_fifo >= 63; i++)
-+				udelay(10);
-+			if (i == 1000) {
-+				printk(KERN_ERR "gbefb: cmap FIFO timeout\n");
-+				return 1;
-+			}
-+			gbe->cmap[regno] = gbe_cmap[regno];
- 		}
--		gbe->cmap[regno] = (red << 24) | (green << 16) | (blue << 8);
- 	} else if (regno < 16) {
- 		switch (info->var.bits_per_pixel) {
- 		case 15:
+>> +
+>> +	bpp = gray = 0;
+> 
+> There is no reason to set the bpp (it is set in all cases).
+<snip>
+
+>> +
+>> +	var->bits_per_pixel = bpp;
+>> +
+> 
+> The changes in fbinfo->var is allowed only in the check_var function (see skeletonfb.c foe explanations). You should move the code which changes the var structure into the check_var functions and get some code reduction.
+<snip>
+
+>> +
+>> +	par->fbmem = NULL;
+>> +	par->fbdma = 0;
+>> +	info->screen_base = NULL;
+>> +	info->screen_size = 0;
+> 
+> Just use the screen_base/screen_size instead of the fbmem/vram fields.
+<snip>
+
+>> +	OUT16(par, LDCNTR_DON2, LDCNTR);
+>> +	info->fbops = &sh7760fb_ops;
+>> +	fb_alloc_cmap(&info->cmap, 256, 0);
+>> +
+> 
+> Check if the cmap was correctly allocated and release it on error below (if the framebuffer is not registered).
+> 
+Thank you for your check and comments.
+I will fix and update all.
+
+Best regards,
+  Nobuhiro

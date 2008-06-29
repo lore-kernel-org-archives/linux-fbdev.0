@@ -1,29 +1,20 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH v2][1/2] add new Cobalt LCD
-	framebuffer driver
-Date: Sat, 28 Jun 2008 20:54:42 +0200
-Message-ID: <20080628185442.GB7238@linux-mips.org>
-References: <20080626215018.2d946781.yoichi_yuasa@tripeaks.co.jp>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] neofb: simplify clock calculation
+Date: Sun, 29 Jun 2008 18:24:53 +0200
+Message-ID: <20080629182453.003d7a0e.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KCfbc-0002Pi-6m for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Jun 2008 11:57:04 -0700
-Received: from ftp.linux-mips.org ([213.58.128.207])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KCfbb-0007kb-HM
+	id 1KD04t-0008Ii-0R for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 29 Jun 2008 09:48:39 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KD04r-0007Vo-Hs
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Jun 2008 11:57:04 -0700
-Received: from localhost.localdomain ([127.0.0.1]:9925 "EHLO
-	vigor.karmaclothing.net") by ftp.linux-mips.org with ESMTP
-	id S20045627AbYF1S47 (ORCPT
-	<rfc822;linux-fbdev-devel@lists.sourceforge.net>);
-	Sat, 28 Jun 2008 19:56:59 +0100
-Content-Disposition: inline
-In-Reply-To: <20080626215018.2d946781.yoichi_yuasa@tripeaks.co.jp>
+	Sun, 29 Jun 2008 09:48:38 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,20 +25,92 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Cc: linux-mips <linux-mips@linux-mips.org>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Thu, Jun 26, 2008 at 09:50:18PM +0900, Yoichi Yuasa wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> Add new Cobalt LCD framebuffer driver.
-> 
-> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+There is nothing to gain by converting value in kHz to
+fixed point MHz. Just calculate everything in kHz.
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
+A reorder of the loop allows reducing number
+of iterations (check if frequency is not too high
+already).
 
-Or if you want I can queue this part too.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-  Ralf
+---
+
+--- linux-mm/drivers/video/neofb.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-new/drivers/video/neofb.c	2008-06-29 18:20:35.000395382 +0200
+@@ -201,7 +201,6 @@ static int neoFindMode(int xres, int yre
+  *
+  * Determine the closest clock frequency to the one requested.
+  */
+-#define REF_FREQ 0xe517		/* 14.31818 in 20.12 fixed point */
+ #define MAX_N 127
+ #define MAX_D 31
+ #define MAX_F 1
+@@ -211,27 +210,24 @@ static void neoCalcVCLK(const struct fb_
+ {
+ 	int n, d, f;
+ 	int n_best = 0, d_best = 0, f_best = 0;
+-	long f_best_diff = (0x7ffff << 12);	/* 20.12 */
+-	long f_target = (freq << 12) / 1000;	/* 20.12 */
++	long f_best_diff = 0x7ffff;
+ 
+ 	for (f = 0; f <= MAX_F; f++)
+-		for (n = 0; n <= MAX_N; n++)
+-			for (d = 0; d <= MAX_D; d++) {
+-				long f_out;	/* 20.12 */
+-				long f_diff;	/* 20.12 */
+-
+-				f_out =
+-				    ((((n + 1) << 12) / ((d +
+-							  1) *
+-							 (1 << f))) >> 12)
+-				    * REF_FREQ;
+-				f_diff = abs(f_out - f_target);
+-				if (f_diff < f_best_diff) {
++		for (d = 0; d <= MAX_D; d++)
++			for (n = 0; n <= MAX_N; n++) {
++				long f_out;
++				long f_diff;
++
++				f_out = ((14318 * (n + 1)) / (d + 1)) >> f;
++				f_diff = abs(f_out - freq);
++				if (f_diff <= f_best_diff) {
+ 					f_best_diff = f_diff;
+ 					n_best = n;
+ 					d_best = d;
+ 					f_best = f;
+ 				}
++				if (f_out > freq)
++					break;
+ 			}
+ 
+ 	if (info->fix.accel == FB_ACCEL_NEOMAGIC_NM2200 ||
+@@ -248,11 +244,11 @@ static void neoCalcVCLK(const struct fb_
+ 	par->VCLK3Denominator = d_best;
+ 
+ #ifdef NEOFB_DEBUG
+-	printk("neoVCLK: f:%d NumLow=%d NumHi=%d Den=%d Df=%d\n",
+-	       f_target >> 12,
++	printk(KERN_DEBUG "neoVCLK: f:%ld NumLow=%d NumHi=%d Den=%d Df=%ld\n",
++	       freq,
+ 	       par->VCLK3NumeratorLow,
+ 	       par->VCLK3NumeratorHigh,
+-	       par->VCLK3Denominator, f_best_diff >> 12);
++	       par->VCLK3Denominator, f_best_diff);
+ #endif
+ }
+ 
+
+
+----------------------------------------------------------------------
+Posluchaj ballady o Lukaszu Podolskim!
+kliknij >>> http://link.interia.pl/f1e55
+
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

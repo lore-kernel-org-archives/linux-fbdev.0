@@ -1,9 +1,8 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 13/13] viafb: via_utility.c,
- via_utility.h, vt1636.c, vt1636.h
-Date: Mon, 30 Jun 2008 10:44:07 +0100
-Message-ID: <20080630104407.6adf59ab@lxorguk.ukuu.org.uk>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78BE@exchtp03.taipei.via.com.tw>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Subject: Re: [PATCH 1/13] viafb: viafb.modes, viafb.txt
+Date: Mon, 30 Jun 2008 12:46:28 +0200
+Message-ID: <20080630124628.194b782f@neptune.home>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7705@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,15 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KDGCm-0005rv-3y for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Jun 2008 03:01:52 -0700
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]
-	helo=lxorguk.ukuu.org.uk)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KDGCl-0006CM-Cc
+	id 1KDGu6-0002Po-FX for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 30 Jun 2008 03:46:38 -0700
+Received: from [158.64.110.117] (helo=bonbons.gotdns.org)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KDGu4-0005lY-NV
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Jun 2008 03:01:51 -0700
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E78BE@exchtp03.taipei.via.com.tw>
+	Mon, 30 Jun 2008 03:46:38 -0700
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7705@exchtp03.taipei.via.com.tw>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,31 +27,75 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Cc: JosephChan@via.com.tw, geert@linux-m68k.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: JosephChan@via.com.tw
+Cc: geert@linux-m68k.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-> +void get_gamma_table(unsigned int *gamma_table)
+On Mon, 30 June 2008 <JosephChan@via.com.tw> wrote:
+> diff -Nur a/Documentation/fb/viafb.txt b/Documentation/fb/viafb.txt
+> --- a/Documentation/fb/viafb.txt	1970-01-01 08:00:00.000000000
+> +0800 +++ b/Documentation/fb/viafb.txt	2009-01-02 16:28:20.000000000 +0800
+> [...]
+> +[Using the viafb module]
+> +-- -- --------------------
+> +    Start viafb with default settings:
+> +        #modprobe viafb
+> +
+> +    Start viafb with with user options:
+> +        #modprobe viafb viafb_mode=800x600 via_fb_bpp=16 viafb_refresh=60 
+> +                  viafb_active_dev=CRT+DVI viafb_dvi_port=DVP1
+> +                  viafb_mode1=1024x768 via_fb_bpp=16 viafb_refresh1=60
+> +                  viafb_SAMM_ON=1 
+> +
+> +    viafb_mode:
+> +        640x480 (default)
+> +        720x480 
+> +        800x600 
+> +        1024x768
+> +        ......
+> +
+> +    via_fb_bpp:
+> +        8, 16, 32 (default:32)
+> +
+> +    viafb_refresh:
+> +        60, 75, 85, 100, 120 (default:60)
+> +
+> [...]
+Is there a specific reason why some module options start with via_fb_
+and others with viafb_?
 
-Still more globals with names asking to cause clashes
 
-> +{
-> +	unsigned char color_r[256];
-> +	unsigned char color_g[256];
-> +	unsigned char color_b[256];
-> +	unsigned char sr1a = 0;
+> +[Building viafb as a built - in driver on Linux kernel 2.6.xx]
+> +--------------------------------------------------------------
+> +    Step 1: Get kernel source and put them under /usr/src/linux 
+> +    Step 2: Copy FBDev to proper location.
+> +            # cp -a FBDev /usr/src/linux/drivers/video/via
+> +    Step 3: Modify Makefile and Kconfig under /usr/src/linux/drivers/video:
+> +        add line to Makefile
+> +	        "obj-$(CONFIG_FB_VIA)              += via/"
+> +
+> +        add below lines to Kconfig
+> +           config FB_VIA
+> +               tristate "VIA UniChrome (Pro) and Chrome9 display support"
+> +               depends on FB && PCI 
+> +               select FB_CFB_FILLRECT 
+> +               select FB_CFB_COPYAREA
+> +               select FB_CFB_IMAGEBLIT 
+> +               select FB_SOFT_CURSOR 
+> + 
+> +           help
+> +               This is the frame buffer device driver for Graphics
+> +               chips of VIA UniChrome Family(CLE266, PM800 / CN400 / CN300,
+> +                                             P4M800CE / P4M800Pro / CN700,
+> +                                             VN800 / CX700 / VX700, K8M890,
+> +                                             P4M890 / CN896 / P4M900, VX800)
+> +               Say Y if you have a VIA UniChrome graphics board. To compile
+> +               this driver as a module, choose M here: the module will be
+> +               called viafb.
+This section can be dropped, the patch series aiming to merge viafb into
+mainline tree. (the patch series does this already)
 
-and possibly excesive stack usage
-
-
-I think at this point however the code is in a state where it would be
-more productive to merge it and then fix up the remaining smaller details
-than keep going round back to VIA to change it internally and return.
-
-So
-
-Acked-by: Alan Cox <alan@redhat.com>  - for the patch series, subject to
-further tidyups getting done after it is all merged.
-
-Alan
+-
+Bruno
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

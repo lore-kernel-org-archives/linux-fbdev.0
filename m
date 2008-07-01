@@ -1,24 +1,24 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fsl-diu-fb: Update Freescale DIU
- driver to use page_alloc_exact()
-Date: Mon, 30 Jun 2008 13:24:26 -0700
-Message-ID: <20080630132426.a89c32b0.akpm@linux-foundation.org>
-References: <1214325853-26150-1-git-send-email-timur@freescale.com>
+From: <JosephChan@via.com.tw>
+Subject: Re: [PATCH 12/13] viafb: via_i2c.c, via_i2c.h,
+	viamode.c, viamode.c
+Date: Tue, 1 Jul 2008 09:11:13 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8074E7CE4@exchtp03.taipei.via.com.tw>
+References: <20080630154348.GF21835@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KDPvV-0008SA-Qt for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Jun 2008 13:24:41 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KDPvU-0007cV-GK
+	id 1KDUOs-0001pH-HM for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 30 Jun 2008 18:11:18 -0700
+Received: from mailtp.via.com.tw ([61.66.243.2])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KDUOr-0007U0-IJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 30 Jun 2008 13:24:41 -0700
-In-Reply-To: <1214325853-26150-1-git-send-email-timur@freescale.com>
+	Mon, 30 Jun 2008 18:11:18 -0700
+Content-class: urn:content-classes:message
+In-Reply-To: <20080630154348.GF21835@fluff.org.uk>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,87 +29,409 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: ben-linux@fluff.org
+Cc: geert@linux-m68k.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, 24 Jun 2008 11:44:13 -0500
-Timur Tabi <timur@freescale.com> wrote:
+Ben,
 
-> Update the Freescale DIU driver to use page_alloc_exact() to allocate a
-> DMA buffer.  This also eliminates the rheap-based memory allocator.  We
-> can do this now because commit 6ccf61f9 allows us to allocate 8MB physically-
-> contiguous memory blocks.
+Thanks for your comments. I will inform our engineers to check those items you mentioned.
+
+BRs,
+Joseph Chan 
+-----Original Message-----
+From: Ben Dooks [mailto:ben-linux@fluff.org] 
+Sent: Monday, June 30, 2008 11:44 PM
+To: Joseph Chan
+Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org; geert@linux-m68k.org
+Subject: Re: [PATCH 12/13] viafb: via_i2c.c, via_i2c.h, viamode.c, viamode.c
+
+On Mon, Jun 30, 2008 at 03:51:19PM +0800, JosephChan@via.com.tw wrote:
+> via_i2c.c, via_i2c.h: Implement i2c specification.
+> viamode.c, viamode.c: all support modes information.
 > 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
 > 
-> My other patch, "Add alloc_pages_exact() and free_pages_exact()", must be
-> applied first, otherwise drivers/video/fsl-diu-fb.c will not compile.
+> Signed-off-by: Joseph Chan <josephchan@via.com.tw>
 > 
->  drivers/video/fsl-diu-fb.c |   59 +++++++++++++++----------------------------
->  1 files changed, 21 insertions(+), 38 deletions(-)
-> 
-> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-> index 0a27853..d15d265 100644
-> --- a/drivers/video/fsl-diu-fb.c
-> +++ b/drivers/video/fsl-diu-fb.c
-> @@ -279,58 +279,41 @@ static struct diu_hw dr = {
->  
->  static struct diu_pool pool;
->  
-> -/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
-> - *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
-> - *	very large memory (more than 4MB). We don't want to allocate all memory
-> - *	in rheap since small memory allocation/deallocation will fragment the
-> - *	rheap and make the furture large allocation fail.
-> +/**
-> + * fsl_diu_alloc - allocate memory for the DIU
-> + * @size: number of bytes to allocate
-> + * @param: returned physical address of memory
-> + *
-> + * This function allocates a physically-contiguous block of memory.
->   */
-> -
-> -void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
-> +static void *fsl_diu_alloc(size_t size, phys_addr_t *phys)
->  {
->  	void *virt;
->  
-> -	pr_debug("size=%lu\n", size);
-> +	pr_debug("size=%u\n", size);
+> diff -Nur a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+> --- a/drivers/video/via/via_i2c.c	1970-01-01 08:00:00.000000000 +0800
+> +++ b/drivers/video/via/via_i2c.c	2008-06-30 08:53:33.000000000 +0800
+> @@ -0,0 +1,377 @@
+> +/*
+> + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
+> + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
+> +
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public
+> + * License as published by the Free Software Foundation;
+> + * either version 2, or (at your option) any later version.
+> +
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
+> + * the implied warranty of MERCHANTABILITY or FITNESS FOR
+> + * A PARTICULAR PURPOSE.See the GNU General Public License
+> + * for more details.
+> +
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc.,
+> + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + */
+> +
+> +#include "global.h"
+> +
+> +/* i2c delay for microsecond*/
+> +void viafb_delays(int count)
+> +{
+> +	u8 data;
+> +	while (count--) {
+> +		/* delay 1 us */
+> +		data = inb(DELAYPORT);
+> +		data = inb(DELAYPORT);
+> +		data = inb(DELAYPORT);
+> +		data = inb(DELAYPORT);
+> +		data = inb(DELAYPORT);
+> +	}
+> +
+> +}
+> +
+> +/*  Write I2C BUS SDA And SCL*/
+> +static void i2cWriteSdaScl(u8 sda, u8 scl) {
+> +	u8 data;
+> +	u16 port_addr;
+> +
+> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AMR) {
+> +
+> +		data = ((scl << 1) | sda) << 4;
+> +		/* enable I2C port */
+> +		data = data | BIT0;
+> +
+> +		port_addr = I2CPORT;
+> +		/* Write Register Value */
+> +		viafb_write_reg(I2CPORTINDEX, port_addr, data);
+> +	} else {
+> +		if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
+> +			data = ((scl << 1) | sda) << 4;
+> +			/* enable GPIO write port */
+> +			data = data | (BIT6 + BIT7);
+> +			port_addr = GPIOPORT;
+> +			/* Write Register Value */
+> +			viafb_write_reg(GPIOPORTINDEX, port_addr, data);
+> +		}
+> +	}
+> +}
+> +
+> +static void i2cReadSdaScl(u8 *pSda, u8 *pScl) {
+> +	u8 data;
+> +	u16 port_addr;
+> +
+> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AMR) {
+> +		port_addr = I2CPORT;
+> +		data = viafb_read_reg(port_addr, I2CPORTINDEX);
+> +		*pSda = (data >> 2) & BIT0;	/* get sda */
+> +		*pScl = (data >> 3) & BIT0;	/* get scl */
+> +	} else {
+> +		if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
+> +			port_addr = GPIOPORT;
+> +			data = viafb_read_reg(port_addr, GPIOPORTINDEX);
+> +			*pSda = (data >> 2) & BIT0;	/* get sda */
+> +			*pScl = (data >> 3) & BIT0;	/* get scl */
+> +		}
+> +	}
+> +}
+> +
+> +static void i2cWriteSdaSclDelay(u8 sda, u8 scl) {
+> +	i2cWriteSdaScl(sda, scl);
+> +	viafb_delays(16);		/* Wait 16 uS */
+> +}
+> +
+> +static void i2cStartSignal(void)
+> +{
+> +	i2cWriteSdaSclDelay(1, 1);
+> +	i2cWriteSdaSclDelay(0, 1);
+> +	i2cWriteSdaSclDelay(0, 0);
+> +}
+> +
+> +static void i2cStopSignal(void)
+> +{
+> +	u8 data;
+> +	u16 port_addr;
+> +
+> +	i2cWriteSdaSclDelay(0, 0);
+> +	i2cWriteSdaSclDelay(0, 1);
+> +	i2cWriteSdaSclDelay(1, 1);
+> +
+> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
+> +		/* disable GPIO write port */
+> +		data = 0x3c;
+> +		port_addr = GPIOPORT;
+> +		/* Write Register Value */
+> +		viafb_write_reg(GPIOPORTINDEX, port_addr, data);
+> +	}
+> +	viafb_delays(2);
+> +
+> +}
+> +
+> +static void disableSdaGPIO(void)
+> +{
+> +	u8 data;
+> +	u16 port_addr;
+> +
+> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
+> +		port_addr = GPIOPORT;
+> +		data = viafb_read_reg(port_addr, GPIOPORTINDEX);
+> +		/* disable GPIO write port */
+> +		data = data & (~BIT6);
+> +		/* Write Register Value */
+> +		viafb_write_reg(GPIOPORTINDEX, port_addr, data);
+> +	}
+> +}
+> +
+> +static void writeSclGPIO(u8 scl)
+> +{
+> +	u8 data;
+> +	u16 port_addr;
+> +
+> +	if (viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP) {
+> +		port_addr = GPIOPORT;
+> +		data = viafb_read_reg(port_addr, GPIOPORTINDEX);
+> +		data = data & (~BIT5);
+> +		/* write data to clock */
+> +		data = (data | (scl << 5)) & (~BIT6);
+> +		/* Write Register Value */
+> +		viafb_write_reg(GPIOPORTINDEX, port_addr, data);
+> +	}
+> +}
+> +
+> +static int i2CWaitForSlave(void)
+> +{
+> +	int time_out = 20000;
+> +	u8 sda, scl;
+> +
+> +	while (time_out--) {
+> +		i2cReadSdaScl(&sda, &scl);
+> +		if (scl)
+> +			return OK;	/* Successful stall */
+> +		viafb_delays(1);	/* wait 1 uS */
+> +	}
+> +	return FAIL;		/* Slave fail */
+> +}
+> +
+> +static int i2cOutByte(u8 data)
+> +{
+> +	u8 sda, scl;
+> +	u8 out_byte;
+> +	int bit_count = 8;
+> +	int status;
+> +
+> +	out_byte = data;
+> +	while (bit_count--) {
+> +		sda = (out_byte >> 7) & 1;	/* Load MSB */
+> +		out_byte = out_byte << 1;	/* next bit. */
+> +		i2cWriteSdaSclDelay(sda, 0);
+> +		i2cWriteSdaSclDelay(sda, 1);
+> +
+> +		status = i2CWaitForSlave();
+> +		if (status == FAIL)
+> +			return status;
+> +		i2cWriteSdaSclDelay(sda, 0);
+> +
+> +	}
+> +
+> +	if ((viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP)) {
+> +
+> +		writeSclGPIO(0);
+> +		disableSdaGPIO();
+> +		viafb_delays(2);
+> +		writeSclGPIO(1);
+> +		viafb_delays(2);
+> +		i2cReadSdaScl(&sda, &scl);
+> +		writeSclGPIO(0);
+> +		viafb_delays(2);
+> +		if (sda == 0)
+> +			status = OK;
+> +		else
+> +			status = FAIL;
+> +	} else {
+> +		i2cWriteSdaSclDelay(1, 0);
+> +		i2cWriteSdaSclDelay(1, 1);
+> +		status = i2CWaitForSlave();
+> +		if (status == FAIL)
+> +			return status;
+> +
+> +		i2cReadSdaScl(&sda, &scl);
+> +		if (sda == 0) {
+> +			i2cWriteSdaSclDelay(1, 0);
+> +			status = OK;
+> +		} else {
+> +
+> +			i2cWriteSdaSclDelay(1, 0);
+> +			status = FAIL;
+> +		}
+> +	}
+> +	return status;
+> +}
+> +
+> +static int i2cInputByte(u8 *pInByte, int ack) {
+> +
+> +	int bit_count = 8;
+> +	u8 sda, scl;
+> +	u8 data = 0;
+> +	int status;
+> +
+> +	disableSdaGPIO();
+> +
+> +	while (bit_count--) {
+> +		if ((viaparinfo->chip_info->chip_on_slot == PORT_ON_AGP)) {
+> +
+> +			writeSclGPIO(1);
+> +			viafb_delays(2);
+> +			status = i2CWaitForSlave();
+> +			if (status == FAIL)
+> +				return FAIL;
+> +			i2cReadSdaScl(&sda, &scl);
+> +			data = data << 1;
+> +			data |= sda;
+> +			writeSclGPIO(0);
+> +			viafb_delays(2);
+> +
+> +		} else {
+> +			i2cWriteSdaSclDelay(1, 1);
+> +			status = i2CWaitForSlave();
+> +			if (status == FAIL)
+> +				return FAIL;
+> +			i2cReadSdaScl(&sda, &scl);
+> +			data = data << 1;
+> +			data |= sda;
+> +			i2cWriteSdaSclDelay(1, 0);
+> +		}
+> +	}
+> +	*pInByte = data;
+> +
+> +	if (ack) {
+> +		i2cWriteSdaSclDelay(0, 0);
+> +		i2cWriteSdaSclDelay(0, 1);
+> +		status = i2CWaitForSlave();
+> +		if (status == FAIL)
+> +			return status;
+> +		i2cWriteSdaSclDelay(0, 0);
+> +	} else {
+> +		i2cWriteSdaSclDelay(1, 0);
+> +		i2cWriteSdaSclDelay(1, 1);
+> +		status = i2CWaitForSlave();
+> +		if (status == FAIL)
+> +			return status;
+> +	}
+> +	i2cWriteSdaSclDelay(1, 0);
+> +
+> +	return OK;
+> +}
+> +
+> +int viafb_i2cReadByte(u8 slave_addr, u8 index, u8 *pData) {
+> +
+> +	int status;
+> +
+> +	i2cStartSignal();
+> +
+> +	status = i2cOutByte(slave_addr);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +	status = i2cOutByte(index);
+> +
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +
+> +	i2cStartSignal();
+> +	status = i2cOutByte(slave_addr | BIT0);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +	status = i2cInputByte(pData, 0);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +
+> +	i2cStopSignal();
+> +	return OK;
+> +}
+> +
+> +int viafb_i2cWriteByte(u8 slave_addr, u8 index, u8 data) {
+> +
+> +	int status;
+> +
+> +	i2cStartSignal();
+> +	status = i2cOutByte(slave_addr);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +	status = i2cOutByte(index);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +	status = i2cOutByte(data);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +	i2cStopSignal();
+> +	return OK;
+> +}
+> +
+> +int viafb_i2cReadBytes(u8 slave_addr, u8 index, u8 *buff, int 
+> +buff_len) {
+> +
+> +	int status, i;
+> +
+> +	i2cStartSignal();
+> +
+> +	status = i2cOutByte(slave_addr);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +
+> +	status = i2cOutByte(index);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +
+> +	i2cStartSignal();
+> +	status = i2cOutByte(slave_addr | BIT0);
+> +	if (status == FAIL) {
+> +		i2cStopSignal();
+> +		return FAIL;
+> +	}
+> +
+> +	for (i = 0; i < buff_len; i++) {
+> +		if (buff_len == 1)
+> +			status = i2cInputByte(buff, 0);	/* send NACK */
+> +		else if (i < buff_len - 1)
+> +			status = i2cInputByte(buff, 1);	/* send ACK */
+> +		else
+> +			status = i2cInputByte(buff, 0);	/* send NACK */
+> +		if (status == FAIL) {
+> +			i2cStopSignal();
+> +			return (FAIL);
+> +		}
+> +		buff++;
+> +	}
+> +
+> +	i2cStopSignal();
+> +	return OK;
+> +}
 
-Nope, this will generate warnings on some architectures.
+This looks like an attempt at re-doing the already extant i2c gpio algorithm. Either export via gpiolib and use the i2c-gpio adapter or use the i2c bit-banging algorithm.
 
-The way to print a size_t is with %zu or %zd.  I guess the latter is for
-ssize_t.
-
-
-> -	virt = (void *)__get_free_pages(GFP_DMA | __GFP_ZERO, get_order(size));
-> +	virt = alloc_pages_exact(size, GFP_DMA | __GFP_ZERO);
->  	if (virt) {
->  		*phys = virt_to_phys(virt);
-> -		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
-> -		return virt;
-> -	}
-> -	if (!diu_ops.diu_mem) {
-> -		printk(KERN_INFO "%s: no diu_mem."
-> -			" To reserve more memory, put 'diufb=15M' "
-> -			"in the command line\n", __func__);
-> -		return NULL;
-> -	}
-> -
-> -	virt = (void *)rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
-> -	if (virt) {
-> -		*phys = virt_to_bus(virt);
-> -		memset(virt, 0, size);
-> +		pr_debug("virt=%p, phys=%llx\n", virt, (uint64_t) *phys);
-
-This is also incorrect.  We cannot pass u64 or uint64_t into printk at
-all.  We do not know what type the architectures uses to implement
-them.  It should be cast to a known type.  In this case `unsigned long
-long'.
-
-
+--
+Ben
 
 -------------------------------------------------------------------------
 Check out the new SourceForge.net Marketplace.

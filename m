@@ -1,7 +1,8 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] neofb: drop redundant code
-Date: Wed, 2 Jul 2008 19:46:46 +0200
-Message-ID: <20080702194646.ae2fad0a.krzysztof.h1@poczta.fm>
+From: Ben Dooks <ben-linux@fluff.org>
+Subject: SM501: Fixup allocation code to be 64bit
+	resource compliant
+Date: Wed, 02 Jul 2008 21:35:48 +0100
+Message-ID: <20080702203548.731030150@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,12 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KE6r6-0002vo-P8 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Jul 2008 11:15:00 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KE6r3-0002mp-Nz
+	id 1KE93k-0000CZ-64 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 02 Jul 2008 13:36:12 -0700
+Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KE93i-0004ch-KL
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Jul 2008 11:15:00 -0700
+	Wed, 02 Jul 2008 13:36:12 -0700
+Content-Disposition: inline;
+	filename=simtec/simtec-drivers-fb-sm501-ressizefix-v2.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,195 +29,112 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, Ben Dooks <ben-linux@fluff.org>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+As pointed out by Andrew Morton, we have a problem when setting
+the 64bit resources option. Alter the allocation routines to
+remove the need to use the start and end fields, use the
+proper HEAD_PANEL/HEAD_CRT and update the comments.
 
-Drop structure which is only set but never read.
-Drop variables which are only set and never read.
-Convert one long switch into two shorter ones.
+Note, we also fix the bug where we failed to check the size of the
+CRT memory allocation.
 
-Add cpu_relax() in busy waiting loop.
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
----
-
-diff -urp linux-old/drivers/video/neofb.c linux-2.6.25/drivers/video/neofb.c
---- linux-old/drivers/video/neofb.c	2008-06-29 14:59:20.000000000 +0000
-+++ linux-2.6.25/drivers/video/neofb.c	2008-06-29 15:02:26.000000000 +0000
-@@ -479,7 +479,8 @@ static inline int neo2200_sync(struct fb
+Index: linux-2.6.26-rc8-quilt3/drivers/video/sm501fb.c
+===================================================================
+--- linux-2.6.26-rc8-quilt3.orig/drivers/video/sm501fb.c	2008-07-02 10:59:59.000000000 +0100
++++ linux-2.6.26-rc8-quilt3/drivers/video/sm501fb.c	2008-07-02 12:25:01.000000000 +0100
+@@ -48,10 +48,15 @@ enum sm501_controller {
+ 	HEAD_PANEL	= 1,
+ };
+ 
+-/* SM501 memory address */
++/* SM501 memory address. 
++ *
++ * This structure is used to track memory usage within the SM501 framebuffer
++ * allocation. The sm_addr field is stored as an offset as it is often used
++ * against both the physical and mapped addresses.
++ */
+ struct sm501_mem {
+ 	unsigned long	 size;
+-	unsigned long	 sm_addr;
++	unsigned long	 sm_addr;	/* offset from base of sm501 fb. */
+ 	void __iomem	*k_addr;
+ };
+ 
+@@ -142,37 +147,56 @@ static inline void sm501fb_sync_regs(str
+ static int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
+ 			   unsigned int why, size_t size)
  {
- 	struct neofb_par *par = info->par;
+-	unsigned int ptr = 0;
+-	unsigned int end;
++	struct sm501fb_par *par;
+ 	struct fb_info *fbi;
++	unsigned int ptr;
++	unsigned int end;
  
--	while (readl(&par->neo2200->bltStat) & 1);
-+	while (readl(&par->neo2200->bltStat) & 1)
-+		cpu_relax();
- 	return 0;
- }
- 
-@@ -587,34 +588,14 @@ static int
- neofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	struct neofb_par *par = info->par;
--	unsigned int pixclock = var->pixclock;
--	struct xtimings timings;
- 	int memlen, vramlen;
- 	int mode_ok = 0;
- 
- 	DBG("neofb_check_var");
- 
--	if (!pixclock)
--		pixclock = 10000;	/* 10ns = 100MHz */
--	timings.pixclock = 1000000000 / pixclock;
--	if (timings.pixclock < 1)
--		timings.pixclock = 1;
--
--	if (timings.pixclock > par->maxClock)
-+	if (PICOS2KHZ(var->pixclock) > par->maxClock)
- 		return -EINVAL;
- 
--	timings.dblscan = var->vmode & FB_VMODE_DOUBLE;
--	timings.interlaced = var->vmode & FB_VMODE_INTERLACED;
--	timings.HDisplay = var->xres;
--	timings.HSyncStart = timings.HDisplay + var->right_margin;
--	timings.HSyncEnd = timings.HSyncStart + var->hsync_len;
--	timings.HTotal = timings.HSyncEnd + var->left_margin;
--	timings.VDisplay = var->yres;
--	timings.VSyncStart = timings.VDisplay + var->lower_margin;
--	timings.VSyncEnd = timings.VSyncStart + var->vsync_len;
--	timings.VTotal = timings.VSyncEnd + var->upper_margin;
--	timings.sync = var->sync;
--
- 	/* Is the mode larger than the LCD panel? */
- 	if (par->internal_display &&
-             ((var->xres > par->NeoPanelWidth) ||
-@@ -1923,9 +1904,6 @@ static int __devinit neo_init_hw(struct 
- 	int maxClock = 65000;
- 	int CursorMem = 1024;
- 	int CursorOff = 0x100;
--	int linearSize = 1024;
--	int maxWidth = 1024;
--	int maxHeight = 1024;
- 
- 	DBG("neo_init_hw");
- 
-@@ -1944,81 +1922,52 @@ static int __devinit neo_init_hw(struct 
- 	case FB_ACCEL_NEOMAGIC_NM2070:
- 		videoRam = 896;
- 		maxClock = 65000;
--		CursorMem = 2048;
--		CursorOff = 0x100;
--		linearSize = 1024;
--		maxWidth = 1024;
--		maxHeight = 1024;
+ 	switch (why) {
+ 	case SM501_MEMF_CURSOR:
+ 		ptr = inf->fbmem_len - size;
+-		inf->fbmem_len = ptr;
++		inf->fbmem_len = ptr;	/* adjust available memory. */
  		break;
- 	case FB_ACCEL_NEOMAGIC_NM2090:
- 	case FB_ACCEL_NEOMAGIC_NM2093:
--		videoRam = 1152;
--		maxClock = 80000;
--		CursorMem = 2048;
--		CursorOff = 0x100;
--		linearSize = 2048;
--		maxWidth = 1024;
--		maxHeight = 1024;
--		break;
- 	case FB_ACCEL_NEOMAGIC_NM2097:
- 		videoRam = 1152;
- 		maxClock = 80000;
--		CursorMem = 1024;
--		CursorOff = 0x100;
--		linearSize = 2048;
--		maxWidth = 1024;
--		maxHeight = 1024;
- 		break;
- 	case FB_ACCEL_NEOMAGIC_NM2160:
- 		videoRam = 2048;
- 		maxClock = 90000;
--		CursorMem = 1024;
--		CursorOff = 0x100;
--		linearSize = 2048;
--		maxWidth = 1024;
--		maxHeight = 1024;
- 		break;
- 	case FB_ACCEL_NEOMAGIC_NM2200:
- 		videoRam = 2560;
- 		maxClock = 110000;
--		CursorMem = 1024;
--		CursorOff = 0x1000;
--		linearSize = 4096;
--		maxWidth = 1280;
--		maxHeight = 1024;	/* ???? */
--
--		par->neo2200 = (Neo2200 __iomem *) par->mmio_vbase;
- 		break;
- 	case FB_ACCEL_NEOMAGIC_NM2230:
- 		videoRam = 3008;
- 		maxClock = 110000;
--		CursorMem = 1024;
--		CursorOff = 0x1000;
--		linearSize = 4096;
--		maxWidth = 1280;
--		maxHeight = 1024;	/* ???? */
--
--		par->neo2200 = (Neo2200 __iomem *) par->mmio_vbase;
- 		break;
- 	case FB_ACCEL_NEOMAGIC_NM2360:
- 		videoRam = 4096;
- 		maxClock = 110000;
--		CursorMem = 1024;
--		CursorOff = 0x1000;
--		linearSize = 4096;
--		maxWidth = 1280;
--		maxHeight = 1024;	/* ???? */
--
--		par->neo2200 = (Neo2200 __iomem *) par->mmio_vbase;
- 		break;
- 	case FB_ACCEL_NEOMAGIC_NM2380:
- 		videoRam = 6144;
- 		maxClock = 110000;
-+		break;
-+	}
-+	switch (info->fix.accel) {
-+	case FB_ACCEL_NEOMAGIC_NM2070:
-+	case FB_ACCEL_NEOMAGIC_NM2090:
-+	case FB_ACCEL_NEOMAGIC_NM2093:
-+		CursorMem = 2048;
-+		CursorOff = 0x100;
-+		break;
-+	case FB_ACCEL_NEOMAGIC_NM2097:
-+	case FB_ACCEL_NEOMAGIC_NM2160:
-+		CursorMem = 1024;
-+		CursorOff = 0x100;
-+		break;
-+	case FB_ACCEL_NEOMAGIC_NM2200:
-+	case FB_ACCEL_NEOMAGIC_NM2230:
-+	case FB_ACCEL_NEOMAGIC_NM2360:
-+	case FB_ACCEL_NEOMAGIC_NM2380:
- 		CursorMem = 1024;
- 		CursorOff = 0x1000;
--		linearSize = 8192;
--		maxWidth = 1280;
--		maxHeight = 1024;	/* ???? */
  
- 		par->neo2200 = (Neo2200 __iomem *) par->mmio_vbase;
+ 	case SM501_MEMF_PANEL:
+ 		ptr = inf->fbmem_len - size;
+-		fbi = inf->fb[0];
++		fbi = inf->fb[HEAD_CRT];
+ 
+ 		if (fbi && ptr < fbi->fix.smem_len)
+ 			return -ENOMEM;
+ 
++		if (ptr < 0)
++			return -ENOMEM;
++
  		break;
-@@ -2032,7 +1981,7 @@ static int __devinit neo_init_hw(struct 
- */
- 	par->maxClock = maxClock;
- 	par->cursorOff = CursorOff;
--	return ((videoRam * 1024));
-+	return videoRam * 1024;
- }
  
+ 	case SM501_MEMF_CRT:
+ 		ptr = 0;
++
++		/* check to see if we have panel memory allocated
++		 * which would put an limit on available memory. */
++
++		fbi = inf->fb[HEAD_PANEL];
++		if (fbi) {
++			par = fbi->par;
++			end = par->screen.k_addr ? par->screen.sm_addr : inf->fbmem_len;
++		} else
++			end = inf->fbmem_len;
++
++		if ((ptr + size) > end)
++			return -ENOMEM;
++
+ 		break;
  
+ 	case SM501_MEMF_ACCEL:
+-		fbi = inf->fb[0];
++		fbi = inf->fb[HEAD_CRT];
+ 		ptr = fbi ? fbi->fix.smem_len : 0;
+ 
+-		fbi = inf->fb[1];
+-		if (fbi)
+-			end = (fbi->fix.smem_start - inf->fbmem_res->start);
+-		else
++		fbi = inf->fb[HEAD_PANEL];
++		if (fbi) {
++			par = fbi->par;
++			end = par->screen.sm_addr;
++		} else
+ 			end = inf->fbmem_len;
+ 
+ 		if ((ptr + size) > end)
 
-----------------------------------------------------------------------
-Masz czas tylko do 10 lipca.
-Przystap on-line do ING OFE!
-Sprawdz >> http://link.interia.pl/f1e54
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!

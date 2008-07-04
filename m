@@ -1,31 +1,25 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc3 06/10] gumstix: conversion
-	to MFP support and add bluetooth support
-Date: Thu, 3 Jul 2008 22:01:07 -0700
-Message-ID: <45a44e480807032201y5fac43abpc47082e9df46aede@mail.gmail.com>
-References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1213289961-1562-7-git-send-email-jayakumar.lkml@gmail.com>
-	<4851D4E9.3080008@gmail.com>
-	<45a44e480806142251x61462e2ft839332de6c2fbe1c@mail.gmail.com>
-	<4855CE39.2090702@gmail.com>
-Mime-Version: 1.0
+From: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] fsl-diu-fb: Update Freescale DIU
+	driver to use page_alloc_exact()
+Date: Fri, 4 Jul 2008 06:32:05 -0400
+Message-ID: <DEA4DF93-2CC0-4F19-B1CC-59A737626D2B@freescale.com>
+References: <1214325853-26150-1-git-send-email-timur@freescale.com>
+	<20080630132426.a89c32b0.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v924)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KEdQ0-0006y0-AQ for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Jul 2008 22:01:12 -0700
-Received: from ik-out-1112.google.com ([66.249.90.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KEdPw-0005PU-TJ
+	id 1KEiWr-0006jl-68 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 04 Jul 2008 03:28:37 -0700
+Received: from de01egw02.freescale.net ([192.88.165.103])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KEiWn-000400-NC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Jul 2008 22:01:12 -0700
-Received: by ik-out-1112.google.com with SMTP id c21so501620ika.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 03 Jul 2008 22:01:07 -0700 (PDT)
-In-Reply-To: <4855CE39.2090702@gmail.com>
-Content-Disposition: inline
+	Fri, 04 Jul 2008 03:28:37 -0700
+In-Reply-To: <20080630132426.a89c32b0.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,28 +30,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sun, Jun 15, 2008 at 7:21 PM, Eric Miao <eric.y.miao@gmail.com> wrote:
-> OK, so I assume with the latest u-boot (I mean after Jan 27, 2006), it
-> should boot up with 32KHz timer enabled, and you don't really need to
-> enable OSCC by default, right? Or would you be kind enough to test that
-> out?
 
-Yes, you're right, it should get enabled by default with the newer
-u-boot. I'll try it out. A bit scared about reflashing the boot loader
-because the gumstix model that I have doesn't have JTAG. :-)
+On Jun 30, 2008, at 4:24 PM, Andrew Morton wrote:
 
-> You see, I'm a bit conservative to add clk support for 32KHz timer in
-> the kernel, as that should be started earlier, most suitable place will
-> be in the boot loader. If this doesn't work, we have to work it out in
-> another way.
+> This is also incorrect.  We cannot pass u64 or uint64_t into printk at
+> all.  We do not know what type the architectures uses to implement
+> them.  It should be cast to a known type.  In this case `unsigned long
+> long'.
 
-Agreed.
+Ok, I'll fix these, but I'm on vacation now and won't get to it for  
+another 10 days.
 
-Thanks,
-jaya
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!

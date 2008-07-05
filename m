@@ -1,23 +1,20 @@
-From: Robert Reif <reif@earthlink.net>
-Subject: Re: Enabling Hardware acceleration in	existing
- framebuffer driver
-Date: Fri, 04 Jul 2008 15:09:35 -0400
-Message-ID: <486E756F.4090000@earthlink.net>
-References: <486E4812.5070803@linuxinstruments.com>	<20080704182215.6f64f848.krzysztof.h1@poczta.fm>	<486E50F5.5070401@linuxinstruments.com>	<20080704193226.a1750cf8.krzysztof.h1@poczta.fm>
-	<20080704182123.GE7132@sci.fi>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] neofb: drop the xtimings structure
+Date: Sat, 5 Jul 2008 18:52:20 +0200
+Message-ID: <20080705185220.6615eef8.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------020306020101000200090405"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KEqf9-000601-0E for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 04 Jul 2008 12:09:43 -0700
-Received: from pop-sarus.atl.sa.earthlink.net ([207.69.195.72])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KEqf7-0004LK-Gk
+	id 1KFAvs-0008BZ-OK for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 05 Jul 2008 09:48:20 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KFAvq-0004Ac-R4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 04 Jul 2008 12:09:42 -0700
-In-Reply-To: <20080704182123.GE7132@sci.fi>
+	Sat, 05 Jul 2008 09:48:20 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,202 +25,210 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>, Keith Williams <espian@linuxinstruments.com>, linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-This is a multi-part message in MIME format.
---------------020306020101000200090405
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Ville Syrj=E4l=E4 wrote:
-> On Fri, Jul 04, 2008 at 07:32:26PM +0200, Krzysztof Helt wrote:
->  =20
->> On Fri, 04 Jul 2008 12:33:57 -0400
->> Keith Williams <espian@linuxinstruments.com> wrote:
->>
->>    =20
->>> The fillrect was the simplest to implement.  I agree that the others
->>> will be much higher value.
->>>
->>> In DirectFB there are a set of benchmarks that run through all of the
->>> different drawing types including filled rectangles.  That is what I =
-am
->>> using as my baseline.
->>>
->>>      =20
->> I don't know DirectFB. I am not sure if the DirectFB uses the frame bu=
-ffer
->> acceleration or its own.=20
->>    =20
->
-> DirectFB has it's own low level gfx drivers. It can use fbdev for mode
-> switching but that's all.
->
-> In fact there is no way to call fbdev accel code from userspace.
->
->  =20
-I'm adding hardware acceleration to the sparc leo driver and this is=20
-what I am using for user space testing:
+Remove the xtimings structure which only stored some
+values to be used later (mostly once). Calculate and use
+these values in places they are needed.
 
---------------020306020101000200090405
-Content-Type: text/plain;
- name="fbmem.diff.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fbmem.diff.txt"
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 776f7fc..14d5586 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1023,6 +1023,9 @@ fb_ioctl(struct inode *inode, struct fil
- 	struct fb_con2fbmap con2fb;
- 	struct fb_cmap_user cmap;
- 	struct fb_event event;
-+	struct fb_copyarea area;
-+	struct fb_fillrect rect;
-+	struct fb_image image;	
- 	void __user *argp = (void __user *)arg;
- 	int i;
- 	
-@@ -1103,6 +1106,27 @@ #endif /* CONFIG_KMOD */
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
- 		release_console_sem();
- 		return i;
-+	case FBIOFILLRECT:
-+		if (copy_from_user(&rect, argp, sizeof(rect)))
-+			return -EFAULT;
-+		acquire_console_sem();
-+		fb->fb_fillrect(info, &rect);
-+		release_console_sem();
-+		return 0;
-+	case FBIOCOPYAREA:
-+		if (copy_from_user(&area, argp, sizeof(area)))
-+			return -EFAULT;
-+		acquire_console_sem();
-+		fb->fb_copyarea(info, &area);
-+		release_console_sem();
-+		return 0;
-+	case FBIOIMAGEBLIT:
-+		if (copy_from_user(&image, argp, sizeof(image)))
-+			return -EFAULT;
-+		acquire_console_sem();
-+		fb->fb_imageblit(info, &image);
-+		release_console_sem();
-+		return 0;
- 	default:
- 		if (fb->fb_ioctl == NULL)
- 			return -EINVAL;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 72295b0..a369d0f 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -38,6 +38,9 @@ #define FBIOGET_GLYPH           0x4615
- #define FBIOGET_HWCINFO         0x4616
- #define FBIOPUT_MODEINFO        0x4617
- #define FBIOGET_DISPINFO        0x4618
-+#define FBIOFILLRECT		0x4619
-+#define FBIOCOPYAREA		0x461A
-+#define FBIOIMAGEBLIT		0x461B
- 
- 
- #define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/
-
---------------020306020101000200090405
-Content-Type: text/plain;
- name="fbtest.diff.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fbtest.diff.txt"
-
-Index: fb.c
-===================================================================
-RCS file: /cvsroot/linux-fbdev/FBdev/utlilities/fbtest/fb.c,v
-retrieving revision 1.7
-diff -r1.7 fb.c
-30c30
-< static int fb_fd = -1;
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
-> int fb_fd = -1;
-Index: include/fb.h
-===================================================================
-RCS file: /cvsroot/linux-fbdev/FBdev/utlilities/fbtest/include/fb.h,v
-retrieving revision 1.2
-diff -r1.2 fb.h
-19a20
-> extern int fb_fd;
-Index: tests/test001.c
-===================================================================
-RCS file: /cvsroot/linux-fbdev/FBdev/utlilities/fbtest/tests/test001.c,v
-retrieving revision 1.1
-diff -r1.1 test001.c
-11a12
-> #include <errno.h>
-12a14,16
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/ioctl.h>
-23a28,29
-> #define FBIOFILLRECT	0x4619
-> 
-28a35,38
->     u8 * screen;
->     u32 bytes;
->     struct fb_fillrect rect;
->     enum test_res res = TEST_OK;
-37a48,74
-> 
->     bytes = (fb_var.xres * fb_var.yres * fb_var.bits_per_pixel) / 8;
->     if (!(screen = malloc(bytes)))
->         Fatal("malloc %d: %s\n", bytes, strerror(errno));
->     memcpy(screen, fb, bytes);
-> 
->     for (i = 1, y0 = 0; i <= Y_BLOCKS; i++, y0 = y1) {
-> 	y1 = i*fb_var.yres/Y_BLOCKS;
-> 	for (j = 1, x0 = 0; j <= X_BLOCKS; j++, x0 = x1) {
-> 	    pixel = (i+j) & 1 ? white_pixel : black_pixel;
-> 	    x1 = j*fb_var.xres/X_BLOCKS;
-> 	    rect.dx = x0;
-> 	    rect.dy = y0;
-> 	    rect.width = x1 - x0;
-> 	    rect.height = y1 - y0;
-> 	    rect.color = (i+j) & 1 ? 15 : 0;
-> 	    rect.rop = ROP_COPY;
-> 	
-> 	    if (ioctl(fb_fd, FBIOFILLRECT, &rect) == -1) {
-> 	        Fatal("ioctl FBIOFILLRECT: %s\n", strerror(errno));
-> 	    }
-> 	}
->     }
-> 
->     if (memcmp(screen, fb, bytes) != 0)
-> 	res = TEST_FAIL; 
->     free(screen);
-39c76
-<     return TEST_OK;
----
->     return res;
 
---------------020306020101000200090405
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--- linux-old/drivers/video/neofb.c	2008-07-05 17:40:23.157418130 +0200
++++ linux-new/drivers/video/neofb.c	2008-07-05 18:36:33.409409663 +0200
+@@ -259,15 +259,20 @@ static void neoCalcVCLK(const struct fb_
+  */
+ 
+ static int vgaHWInit(const struct fb_var_screeninfo *var,
+-		     const struct fb_info *info,
+-		     struct neofb_par *par, struct xtimings *timings)
++		     struct neofb_par *par)
+ {
++	int hsync_end = var->xres + var->right_margin + var->hsync_len;
++	int htotal = (hsync_end + var->left_margin) >> 3;
++	int vsync_start = var->yres + var->lower_margin;
++	int vsync_end = vsync_start + var->vsync_len;
++	int vtotal = vsync_end + var->upper_margin;
++
+ 	par->MiscOutReg = 0x23;
+ 
+-	if (!(timings->sync & FB_SYNC_HOR_HIGH_ACT))
++	if (!(var->sync & FB_SYNC_HOR_HIGH_ACT))
+ 		par->MiscOutReg |= 0x40;
+ 
+-	if (!(timings->sync & FB_SYNC_VERT_HIGH_ACT))
++	if (!(var->sync & FB_SYNC_VERT_HIGH_ACT))
+ 		par->MiscOutReg |= 0x80;
+ 
+ 	/*
+@@ -282,25 +287,25 @@ static int vgaHWInit(const struct fb_var
+ 	/*
+ 	 * CRTC Controller
+ 	 */
+-	par->CRTC[0] = (timings->HTotal >> 3) - 5;
+-	par->CRTC[1] = (timings->HDisplay >> 3) - 1;
+-	par->CRTC[2] = (timings->HDisplay >> 3) - 1;
+-	par->CRTC[3] = (((timings->HTotal >> 3) - 1) & 0x1F) | 0x80;
+-	par->CRTC[4] = (timings->HSyncStart >> 3);
+-	par->CRTC[5] = ((((timings->HTotal >> 3) - 1) & 0x20) << 2)
+-	    | (((timings->HSyncEnd >> 3)) & 0x1F);
+-	par->CRTC[6] = (timings->VTotal - 2) & 0xFF;
+-	par->CRTC[7] = (((timings->VTotal - 2) & 0x100) >> 8)
+-	    | (((timings->VDisplay - 1) & 0x100) >> 7)
+-	    | ((timings->VSyncStart & 0x100) >> 6)
+-	    | (((timings->VDisplay - 1) & 0x100) >> 5)
+-	    | 0x10 | (((timings->VTotal - 2) & 0x200) >> 4)
+-	    | (((timings->VDisplay - 1) & 0x200) >> 3)
+-	    | ((timings->VSyncStart & 0x200) >> 2);
++	par->CRTC[0] = htotal - 5;
++	par->CRTC[1] = (var->xres >> 3) - 1;
++	par->CRTC[2] = (var->xres >> 3) - 1;
++	par->CRTC[3] = ((htotal - 1) & 0x1F) | 0x80;
++	par->CRTC[4] = ((var->xres + var->right_margin) >> 3);
++	par->CRTC[5] = (((htotal - 1) & 0x20) << 2)
++	    | (((hsync_end >> 3)) & 0x1F);
++	par->CRTC[6] = (vtotal - 2) & 0xFF;
++	par->CRTC[7] = (((vtotal - 2) & 0x100) >> 8)
++	    | (((var->yres - 1) & 0x100) >> 7)
++	    | ((vsync_start & 0x100) >> 6)
++	    | (((var->yres - 1) & 0x100) >> 5)
++	    | 0x10 | (((vtotal - 2) & 0x200) >> 4)
++	    | (((var->yres - 1) & 0x200) >> 3)
++	    | ((vsync_start & 0x200) >> 2);
+ 	par->CRTC[8] = 0x00;
+-	par->CRTC[9] = (((timings->VDisplay - 1) & 0x200) >> 4) | 0x40;
++	par->CRTC[9] = (((var->yres - 1) & 0x200) >> 4) | 0x40;
+ 
+-	if (timings->dblscan)
++	if (var->vmode & FB_VMODE_DOUBLE)
+ 		par->CRTC[9] |= 0x80;
+ 
+ 	par->CRTC[10] = 0x00;
+@@ -309,13 +314,13 @@ static int vgaHWInit(const struct fb_var
+ 	par->CRTC[13] = 0x00;
+ 	par->CRTC[14] = 0x00;
+ 	par->CRTC[15] = 0x00;
+-	par->CRTC[16] = timings->VSyncStart & 0xFF;
+-	par->CRTC[17] = (timings->VSyncEnd & 0x0F) | 0x20;
+-	par->CRTC[18] = (timings->VDisplay - 1) & 0xFF;
++	par->CRTC[16] = vsync_start & 0xFF;
++	par->CRTC[17] = (vsync_end & 0x0F) | 0x20;
++	par->CRTC[18] = (var->yres - 1) & 0xFF;
+ 	par->CRTC[19] = var->xres_virtual >> 4;
+ 	par->CRTC[20] = 0x00;
+-	par->CRTC[21] = (timings->VDisplay - 1) & 0xFF;
+-	par->CRTC[22] = (timings->VTotal - 1) & 0xFF;
++	par->CRTC[21] = (var->yres - 1) & 0xFF;
++	par->CRTC[22] = (vtotal - 1) & 0xFF;
+ 	par->CRTC[23] = 0xC3;
+ 	par->CRTC[24] = 0xFF;
+ 
+@@ -736,11 +741,11 @@ neofb_check_var(struct fb_var_screeninfo
+ static int neofb_set_par(struct fb_info *info)
+ {
+ 	struct neofb_par *par = info->par;
+-	struct xtimings timings;
+ 	unsigned char temp;
+ 	int i, clock_hi = 0;
+ 	int lcd_stretch;
+ 	int hoffset, voffset;
++	int vsync_start, vtotal;
+ 
+ 	DBG("neofb_set_par");
+ 
+@@ -748,28 +753,15 @@ static int neofb_set_par(struct fb_info 
+ 
+ 	vgaHWProtect(1);	/* Blank the screen */
+ 
+-	timings.dblscan = info->var.vmode & FB_VMODE_DOUBLE;
+-	timings.interlaced = info->var.vmode & FB_VMODE_INTERLACED;
+-	timings.HDisplay = info->var.xres;
+-	timings.HSyncStart = timings.HDisplay + info->var.right_margin;
+-	timings.HSyncEnd = timings.HSyncStart + info->var.hsync_len;
+-	timings.HTotal = timings.HSyncEnd + info->var.left_margin;
+-	timings.VDisplay = info->var.yres;
+-	timings.VSyncStart = timings.VDisplay + info->var.lower_margin;
+-	timings.VSyncEnd = timings.VSyncStart + info->var.vsync_len;
+-	timings.VTotal = timings.VSyncEnd + info->var.upper_margin;
+-	timings.sync = info->var.sync;
+-	timings.pixclock = PICOS2KHZ(info->var.pixclock);
+-
+-	if (timings.pixclock < 1)
+-		timings.pixclock = 1;
++	vsync_start = info->var.yres + info->var.lower_margin;
++	vtotal = vsync_start + info->var.vsync_len + info->var.upper_margin;
+ 
+ 	/*
+ 	 * This will allocate the datastructure and initialize all of the
+ 	 * generic VGA registers.
+ 	 */
+ 
+-	if (vgaHWInit(&info->var, info, par, &timings))
++	if (vgaHWInit(&info->var, par))
+ 		return -EINVAL;
+ 
+ 	/*
+@@ -808,10 +800,10 @@ static int neofb_set_par(struct fb_info 
+ 	par->ExtCRTDispAddr = 0x10;
+ 
+ 	/* Vertical Extension */
+-	par->VerticalExt = (((timings.VTotal - 2) & 0x400) >> 10)
+-	    | (((timings.VDisplay - 1) & 0x400) >> 9)
+-	    | (((timings.VSyncStart) & 0x400) >> 8)
+-	    | (((timings.VSyncStart) & 0x400) >> 7);
++	par->VerticalExt = (((vtotal - 2) & 0x400) >> 10)
++	    | (((info->var.yres - 1) & 0x400) >> 9)
++	    | (((vsync_start) & 0x400) >> 8)
++	    | (((vsync_start) & 0x400) >> 7);
+ 
+ 	/* Fast write bursts on unless disabled. */
+ 	if (par->pci_burst)
+@@ -972,7 +964,7 @@ static int neofb_set_par(struct fb_info 
+ 	 * Calculate the VCLK that most closely matches the requested dot
+ 	 * clock.
+ 	 */
+-	neoCalcVCLK(info, par, timings.pixclock);
++	neoCalcVCLK(info, par, PICOS2KHZ(info->var.pixclock));
+ 
+ 	/* Since we program the clocks ourselves, always use VCLK3. */
+ 	par->MiscOutReg |= 0x0C;
+--- linux-old/include/video/neomagic.h	2008-04-17 04:49:44.000000000 +0200
++++ linux-new/include/video/neomagic.h	2008-07-05 18:35:37.017409826 +0200
+@@ -90,23 +90,6 @@
+ #define PCI_CHIP_NM2360 0x0006
+ #define PCI_CHIP_NM2380 0x0016
+ 
+-
+-struct xtimings {
+-	unsigned int pixclock;
+-	unsigned int HDisplay;
+-	unsigned int HSyncStart;
+-	unsigned int HSyncEnd;
+-	unsigned int HTotal;
+-	unsigned int VDisplay;
+-	unsigned int VSyncStart;
+-	unsigned int VSyncEnd;
+-	unsigned int VTotal;
+-	unsigned int sync;
+-	int dblscan;
+-	int interlaced;
+-};
+-
+-
+ /* --------------------------------------------------------------------- */
+ 
+ typedef volatile struct {
+
+----------------------------------------------------------------------
+Wyjezdzasz? Sprawdz, co mozesz ciekawego obejrzec!
+Przewodniki >>> http://link.interia.pl/f1e5f
+
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!
 Studies have shown that voting for your favorite open source project,
 along with a healthy diet, reduces your potential for chronic lameness
 and boredom. Vote Now at http://www.sourceforge.net/community/cca08
---------------020306020101000200090405
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---------------020306020101000200090405--

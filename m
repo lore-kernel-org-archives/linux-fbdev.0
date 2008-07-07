@@ -1,1228 +1,169 @@
-From: Yauhen Kharuzhy <jekhor@gmail.com>
-Subject: [PATCH] eink_apollofb: new driver for Apollo
-	eInk controller.
-Date: Mon,  7 Jul 2008 16:09:28 +0300
-Message-ID: <1215436169-21632-1-git-send-email-jekhor@gmail.com>
+From: stefan@datenfreihafen.org
+Subject: [Patch 02/10] pxafb: Support for RGB666, RGBT666, RGB888 and RGBT888
+Date: Mon, 07 Jul 2008 20:40:02 +0200
+Message-ID: <20080707184126.050044363@datenfreihafen.org>
+References: <20080707184000.411913919@datenfreihafen.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KFqr0-0006Pm-EN for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Jul 2008 06:34:06 -0700
-Received: from fg-out-1718.google.com ([72.14.220.156])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KFqqx-0006F9-8c
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Jul 2008 06:34:06 -0700
-Received: by fg-out-1718.google.com with SMTP id d23so775141fga.32
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 07 Jul 2008 06:34:01 -0700 (PDT)
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+Content-Disposition: inline; filename=pxafb-18+bpp-modes.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Antonino Daplas <adaplas@gmail.com>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Add a new driver for eInk Apollo controller. This
-controller is used in various bookreaders with eInk
-displays.
+Add the .depth field to pxafb_mode_info and use it to set pixel data format
+as 18(RGB666), 19(RGBT666), 24(RGB888) or 25(RGBT888)
 
-The eink_apollofb driver supports many features of
-Apollo chip, in difference with the hecubafb driver:
-2-bit color depth, partial picture loading, flash
-read/write.
+Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
 
-The driver uses platform_device framework for
-platform-specific functions (set values of control
-lines, read/write data from/to bus etc.) and can be
-used on any platform.
+PATCH FOLLOWS
+KernelVersion: 2.6-arm-git pxa branch
 
-This driver have been developed for the OpenInkpot
-project (http://openinkpot.org/).
-
-Signed-off-by: Yauhen Kharuzhy <jekhor@gmail.com>
----
- drivers/video/Kconfig         |   17 +
- drivers/video/Makefile        |    1 +
- drivers/video/eink_apollofb.c | 1046 +++++++++++++++++++++++++++++++++++++++++
- include/linux/eink_apollofb.h |   60 +++
- 4 files changed, 1124 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/eink_apollofb.c
- create mode 100644 include/linux/eink_apollofb.h
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index e0c5f96..ad23464 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -718,6 +718,23 @@ config FB_N411
-          This enables support for the Apollo display controller in its
-          Hecuba form using the n411 devkit.
+Index: linux-2.6-arm/drivers/video/pxafb.c
+===================================================================
+--- linux-2.6-arm.orig/drivers/video/pxafb.c
++++ linux-2.6-arm/drivers/video/pxafb.c
+@@ -227,6 +227,22 @@
+ 	case 4:  ret = LCCR3_4BPP; break;
+ 	case 8:  ret = LCCR3_8BPP; break;
+ 	case 16: ret = LCCR3_16BPP; break;
++	case 24:
++		switch (var->red.length + var->green.length +
++				var->blue.length + var->transp.length) {
++		case 18: ret = LCCR3_18BPP_P | LCCR3_PDFOR_3; break;
++		case 19: ret = LCCR3_19BPP_P; break;
++		}
++		break;
++	case 32:
++		switch (var->red.length + var->green.length +
++				var->blue.length + var->transp.length) {
++		case 18: ret = LCCR3_18BPP | LCCR3_PDFOR_3; break;
++		case 19: ret = LCCR3_19BPP; break;
++		case 24: ret = LCCR3_24BPP | LCCR3_PDFOR_3; break;
++		case 25: ret = LCCR3_25BPP; break;
++		}
++		break;
+ 	}
+ 	return ret;
+ }
+@@ -345,6 +361,41 @@
+ 		var->green.offset = 5;  var->green.length = 6;
+ 		var->blue.offset  = 0;  var->blue.length  = 5;
+ 		var->transp.offset = var->transp.length = 0;
++	} else if (var->bits_per_pixel > 16) {
++		struct pxafb_mode_info *mode;
++
++		mode = pxafb_getmode(inf, var);
++		if (!mode)
++			return -EINVAL;
++
++		switch (mode->depth) {
++		case 18: /* RGB666 */
++			var->transp.offset = var->transp.length     = 0;
++			var->red.offset	   = 12; var->red.length    = 6;
++			var->green.offset  = 6;  var->green.length  = 6;
++			var->blue.offset   = 0;  var->blue.length   = 6;
++			break;
++		case 19: /* RGBT666 */
++			var->transp.offset = 18; var->transp.length = 1;
++			var->red.offset	   = 12; var->red.length    = 6;
++			var->green.offset  = 6;  var->green.length  = 6;
++			var->blue.offset   = 0;  var->blue.length   = 6;
++			break;
++		case 24: /* RGB888 */
++			var->transp.offset = var->transp.length     = 0;
++			var->red.offset	   = 16; var->red.length    = 8;
++			var->green.offset  = 8;  var->green.length  = 8;
++			var->blue.offset   = 0;  var->blue.length   = 8;
++			break;
++		case 25: /* RGBT888 */
++			var->transp.offset = 24; var->transp.length = 1;
++			var->red.offset	   = 16; var->red.length    = 8;
++			var->green.offset  = 8;  var->green.length  = 8;
++			var->blue.offset   = 0;  var->blue.length   = 8;
++			break;
++		default:
++			return -EINVAL;
++		}
+ 	} else {
+ 		var->red.offset = var->green.offset = 0;
+ 		var->blue.offset = var->transp.offset = 0;
+@@ -376,7 +427,7 @@
+ 	struct pxafb_info *fbi = (struct pxafb_info *)info;
+ 	struct fb_var_screeninfo *var = &info->var;
  
-+config FB_EINK_APOLLO
-+       tristate "Apollo eInk display controller support"
-+       depends on EXPERIMENTAL && FB && MMU
-+       select FB_SYS_FILLRECT
-+       select FB_SYS_COPYAREA
-+       select FB_SYS_IMAGEBLIT
-+       select FB_SYS_FOPS
-+       select FB_DEFERRED_IO
-+       help
-+         This enables support for Apollo eInk display controller.
-+	 Includes support of deferred IO and 2-bit grayscale mode.
-+
-+	 Hardware-specific functions have been moved to platform data.
-+
-+	 To compile this driver as a module, choose M here: the
-+	 module will be called eink_apollofb.
-+
- config FB_HGA
- 	tristate "Hercules mono graphics support"
- 	depends on FB && X86
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 04bca35..2530f0c 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -76,6 +76,7 @@ obj-$(CONFIG_FB_ATARI)            += atafb.o c2p.o atafb_mfb.o \
-                                      atafb_iplan2p2.o atafb_iplan2p4.o atafb_iplan2p8.o
- obj-$(CONFIG_FB_MAC)              += macfb.o
- obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
-+obj-$(CONFIG_FB_EINK_APOLLO)      += eink_apollofb.o
- obj-$(CONFIG_FB_HGA)              += hgafb.o
- obj-$(CONFIG_FB_XVR500)           += sunxvr500.o
- obj-$(CONFIG_FB_XVR2500)          += sunxvr2500.o
-diff --git a/drivers/video/eink_apollofb.c b/drivers/video/eink_apollofb.c
-new file mode 100644
-index 0000000..290b68f
---- /dev/null
-+++ b/drivers/video/eink_apollofb.c
-@@ -0,0 +1,1046 @@
-+/*
-+ * linux/drivers/video/apollofb.c -- FB driver for lBook/Jinke eReader V3
-+ *
-+ * Copyright (C) 2007, Yauhen Kharuzhy
-+ * This driver is part of openinkpot.org project
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file COPYING in the main directory of this archive for
-+ * more details.
-+ *
-+ * This driver based on hecubafb driver code.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/fb.h>
-+#include <linux/fs.h>
-+#include <linux/cdev.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/list.h>
-+#include <linux/device.h>
-+#include <linux/ctype.h>
-+#include <linux/eink_apollofb.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
-+
-+#include <asm/arch/regs-gpio.h>
-+#include <asm/hardware.h>
-+
-+/* Display specific information */
-+#define DPY_W 600
-+#define DPY_H 800
-+
-+#define is_portrait(var) (!(var.rotate % 180))
-+
-+struct apollofb_options {
-+	unsigned int manual_refresh:1;
-+	unsigned int partial_update:1;
-+	unsigned int use_sleep_mode:1;
-+};
-+
-+struct apollofb_par {
-+	struct fb_info *info;
-+	struct mutex lock;
-+	struct delayed_work deferred_work;
-+	struct cdev cdev;
-+	struct apollofb_options options;
-+	int current_mode;
-+	struct eink_apollo_operations *ops;
-+	int standby;
-+};
-+
-+static struct fb_fix_screeninfo apollofb_fix __devinitdata = {
-+	.id =		"apollofb",
-+	.type =		FB_TYPE_PACKED_PIXELS,
-+	.visual =	FB_VISUAL_STATIC_PSEUDOCOLOR,
-+	.xpanstep =	0,
-+	.ypanstep =	0,
-+	.ywrapstep =	0,
-+	.line_length =	DPY_W / (8 / 8),
-+	.accel =	FB_ACCEL_NONE,
-+};
-+
-+static struct fb_var_screeninfo apollofb_var __devinitdata = {
-+	.xres		= DPY_W,
-+	.yres		= DPY_H,
-+	.xres_virtual	= DPY_W,
-+	.yres_virtual	= DPY_H,
-+	.red		= {0, 2, 0},
-+	.blue		= {0, 2, 0},
-+	.green		= {0, 2, 0},
-+	.grayscale	= 1,
-+	.bits_per_pixel	= 8,
-+	.nonstd		= 1,
-+};
-+
-+static inline int apollo_wait_for_ack_value(struct apollofb_par *par,
-+		unsigned int value)
-+{
-+	unsigned long timeout = jiffies + 2 * HZ;
-+
-+	while ((par->ops->get_ctl_pin(H_ACK) != value) &&
-+			time_before(jiffies, timeout))
-+		schedule();
-+
-+	if (par->ops->get_ctl_pin(H_ACK) != value) {
-+		printk(KERN_ERR "%s: Wait for H_ACK == %u, timeout\n",
-+				__func__, value);
-+		return 1;
+-	if (var->bits_per_pixel == 16)
++	if (var->bits_per_pixel >= 16)
+ 		fbi->fb.fix.visual = FB_VISUAL_TRUECOLOR;
+ 	else if (!fbi->cmap_static)
+ 		fbi->fb.fix.visual = FB_VISUAL_PSEUDOCOLOR;
+@@ -391,7 +442,7 @@
+ 
+ 	fbi->fb.fix.line_length = var->xres_virtual *
+ 				  var->bits_per_pixel / 8;
+-	if (var->bits_per_pixel == 16)
++	if (var->bits_per_pixel >= 16)
+ 		fbi->palette_size = 0;
+ 	else
+ 		fbi->palette_size = var->bits_per_pixel == 1 ?
+@@ -404,7 +455,7 @@
+ 	 */
+ 	pxafb_set_truecolor(fbi->fb.fix.visual == FB_VISUAL_TRUECOLOR);
+ 
+-	if (fbi->fb.var.bits_per_pixel == 16)
++	if (fbi->fb.var.bits_per_pixel >= 16)
+ 		fb_dealloc_cmap(&fbi->fb.cmap);
+ 	else
+ 		fb_alloc_cmap(&fbi->fb.cmap, 1<<fbi->fb.var.bits_per_pixel, 0);
+@@ -831,6 +882,8 @@
+ 		case 4:
+ 		case 8:
+ 		case 16:
++		case 24:
++		case 32:
+ 			break;
+ 		default:
+ 			printk(KERN_ERR "%s: invalid bit depth %d\n",
+@@ -968,6 +1021,11 @@
+ 
+ 	for (gpio = 58; ldd_bits; gpio++, ldd_bits--)
+ 		pxa_gpio_mode(gpio | GPIO_ALT_FN_2_OUT);
++	/* 18 bit interface */
++	if (fbi->fb.var.bits_per_pixel > 16) {
++		pxa_gpio_mode(86 | GPIO_ALT_FN_2_OUT);
++		pxa_gpio_mode(87 | GPIO_ALT_FN_2_OUT);
 +	}
-+
-+	return 0;
-+}
-+
-+#define apollo_wait_for_ack(par)	apollo_wait_for_ack_value(par, 0)
-+#define apollo_wait_for_ack_clear(par)	apollo_wait_for_ack_value(par, 1)
-+
-+static void apollo_send_data(struct apollofb_par *par, unsigned char data)
-+{
-+	par->ops->write_value(data);
-+	par->ops->set_ctl_pin(H_DS, 0);
-+	apollo_wait_for_ack(par);
-+	par->ops->set_ctl_pin(H_DS, 1);
-+	apollo_wait_for_ack_clear(par);
-+}
-+
-+
-+static void apollo_send_command(struct apollofb_par *par, unsigned char cmd)
-+{
-+	par->ops->set_ctl_pin(H_CD, 1);
-+	apollo_send_data(par, cmd);
-+	par->ops->set_ctl_pin(H_CD, 0);
-+}
-+
-+static unsigned char apollo_read_data(struct apollofb_par *par)
-+{
-+	unsigned char res;
-+
-+	par->ops->set_ctl_pin(H_RW, 1);
-+	par->ops->set_ctl_pin(H_DS, 0);
-+	apollo_wait_for_ack(par);
-+	res = par->ops->read_value();
-+	par->ops->set_ctl_pin(H_DS, 1);
-+	apollo_wait_for_ack_clear(par);
-+	par->ops->set_ctl_pin(H_RW, 0);
-+
-+	return res;
-+}
-+
-+static unsigned char apollo_get_status(struct apollofb_par *par)
-+{
-+	unsigned char res;
-+
-+	apollo_send_command(par, APOLLO_GET_STATUS);
-+	res = apollo_read_data(par);
-+	return res;
-+}
-+
-+static void apollo_set_sleep_mode(struct apollofb_par *par)
-+{
-+	apollo_send_command(par, APOLLO_SLEEP_MODE);
-+	par->current_mode = APOLLO_STATUS_MODE_SLEEP;
-+}
-+
-+static void apollo_set_normal_mode(struct apollofb_par *par)
-+{
-+	par->ops->set_ctl_pin(H_CD, 0);
-+	par->ops->set_ctl_pin(H_RW, 0);
-+
-+	apollo_send_command(par, APOLLO_NORMAL_MODE);
-+	apollo_send_command(par, APOLLO_ORIENTATION);
-+	apollo_send_data(par, ((par->info->var.rotate + 90) % 360) / 90);
-+
-+	par->current_mode = APOLLO_STATUS_MODE_NORMAL;
-+}
-+
-+static void apollo_wakeup(struct apollofb_par *par)
-+{
-+	udelay(600); /* in case we were just powered off */
-+	par->ops->set_ctl_pin(H_WUP, 1);
-+	udelay(100);
-+	par->ops->set_ctl_pin(H_DS, 0);
-+	apollo_wait_for_ack(par);
-+	par->ops->set_ctl_pin(H_WUP, 0);
-+	par->ops->set_ctl_pin(H_DS, 1);
-+	apollo_wait_for_ack_clear(par);
-+}
-+
-+
-+/* main apollofb functions */
-+
-+static void apollofb_dpy_update(struct apollofb_par *par)
-+{
-+	unsigned char *buf = (unsigned char __force *)par->info->screen_base;
-+	int count = par->info->fix.smem_len;
-+	int bpp = par->info->var.green.length;
-+	unsigned char tmp, mask;
-+	unsigned int i, k;
-+	unsigned int pixels_in_byte = 8 / bpp;
-+
-+	cancel_delayed_work(&par->deferred_work);
-+
-+	mask = 0;
-+	for (i = 0; i < bpp; i++)
-+		mask = (mask << 1) | 1;
-+
-+	mutex_lock(&par->lock);
-+
-+	if (par->current_mode == APOLLO_STATUS_MODE_SLEEP)
-+		apollo_set_normal_mode(par);
-+
-+	if (par->options.manual_refresh)
-+		apollo_send_command(par, APOLLO_MANUAL_REFRESH);
-+
-+	apollo_send_command(par, APOLLO_LOAD_PICTURE);
-+
-+	k = 0;
-+	tmp = 0;
-+	for (i = 0; i < count; i++) {
-+		tmp = (tmp << bpp) | (buf[i] & mask);
-+		k++;
-+		if (k % pixels_in_byte == 0)
-+			apollo_send_data(par, tmp);
-+	}
-+
-+	apollo_send_command(par, APOLLO_STOP_LOADING);
-+	apollo_send_command(par, APOLLO_DISPLAY_PICTURE);
-+
-+	if (par->options.use_sleep_mode)
-+		apollo_set_sleep_mode(par);
-+
-+	mutex_unlock(&par->lock);
-+}
-+
-+/*
-+ * x1 must be less than x2, y1 < y2
-+ */
-+static void apollofb_apollo_update_part(struct apollofb_par *par,
-+		unsigned int x1, unsigned int y1,
-+		unsigned int x2, unsigned int y2)
-+{
-+	int i, j, k;
-+	struct fb_info *info = par->info;
-+	unsigned int width = is_portrait(info->var) ? info->var.xres :
-+							info->var.yres;
-+	unsigned int bpp = info->var.green.length;
-+	unsigned int pixels_in_byte = 8 / bpp;
-+	unsigned char *buf = (unsigned char __force *)info->screen_base;
-+	unsigned char tmp, mask;
-+
-+	y1 -= y1 % 4;
-+
-+	if ((y2 + 1) % 4)
-+		y2 += 4 - ((y2 + 1) % 4);
-+
-+	x1 -= x1 % 4;
-+
-+	if ((x2 + 1) % 4)
-+		x2 += 4 - ((x2 + 1) % 4);
-+
-+	mask = 0;
-+	for (i = 0; i < bpp; i++)
-+		mask = (mask << 1) | 1;
-+
-+	mutex_lock(&par->lock);
-+
-+	if (par->current_mode == APOLLO_STATUS_MODE_SLEEP)
-+		apollo_set_normal_mode(par);
-+
-+	if (par->options.manual_refresh)
-+		apollo_send_command(par, APOLLO_MANUAL_REFRESH);
-+
-+	apollo_send_command(par, APOLLO_LOAD_PARTIAL_PICTURE);
-+	apollo_send_data(par, (x1 >> 8) & 0xff);
-+	apollo_send_data(par, x1 & 0xff);
-+	apollo_send_data(par, (y1 >> 8) & 0xff);
-+	apollo_send_data(par, y1 & 0xff);
-+	apollo_send_data(par, (x2 >> 8) & 0xff);
-+	apollo_send_data(par, x2 & 0xff);
-+	apollo_send_data(par, (y2 >> 8) & 0xff);
-+	apollo_send_data(par, y2 & 0xff);
-+
-+	k = 0;
-+	tmp = 0;
-+	for (i = y1; i <= y2; i++)
-+		for (j = x1; j <= x2; j++) {
-+			tmp = (tmp << bpp) | (buf[i * width + j] & mask);
-+			k++;
-+			if (k % pixels_in_byte == 0)
-+				apollo_send_data(par, tmp);
-+		}
-+
-+	apollo_send_command(par, APOLLO_STOP_LOADING);
-+	apollo_send_command(par, APOLLO_DISPLAY_PARTIAL_PICTURE);
-+
-+	if (par->options.use_sleep_mode)
-+		apollo_set_sleep_mode(par);
-+
-+	mutex_unlock(&par->lock);
-+}
-+
-+/* this is called back from the deferred io workqueue */
-+static void apollofb_dpy_deferred_io(struct fb_info *info,
-+				struct list_head *pagelist)
-+{
-+
-+	struct apollofb_par *par = info->par;
-+	unsigned int width = is_portrait(info->var) ? info->var.xres :
-+							info->var.yres;
-+	unsigned int height = is_portrait(info->var) ? info->var.yres :
-+							info->var.xres;
-+	unsigned long int start_page = -1, end_page = -1;
-+	unsigned int y1 = 0, y2 = 0;
-+	struct page *cur;
-+
-+
-+	if (par->options.partial_update) {
-+		list_for_each_entry(cur, pagelist, lru) {
-+			if (start_page == -1) {
-+				start_page = cur->index;
-+				end_page = cur->index;
-+				continue;
-+			}
-+
-+			if (cur->index == end_page + 1) {
-+				end_page++;
-+			} else {
-+				y1 = start_page * PAGE_SIZE / width;
-+				y2 = ((end_page + 1) * PAGE_SIZE - 1) / width;
-+				if (y2 >= height)
-+					y2 = height - 1;
-+
-+				apollofb_apollo_update_part(par,
-+						0, y1,
-+						width - 1, y2);
-+
-+				start_page = cur->index;
-+				end_page = cur->index;
-+			}
-+		}
-+
-+		y1 = start_page * PAGE_SIZE / width;
-+		y2 = ((end_page + 1) * PAGE_SIZE - 1) / width;
-+		if (y2 >= height)
-+			y2 = height - 1;
-+
-+		apollofb_apollo_update_part(par, 0, y1,	width - 1, y2);
-+	} else {
-+		apollofb_dpy_update(par);
-+	}
-+}
-+
-+static void apollofb_deferred_work(struct work_struct *work)
-+{
-+	struct apollofb_par *par = container_of(work, struct apollofb_par,
-+						deferred_work.work);
-+
-+	apollofb_dpy_update(par);
-+}
-+
-+static void apollofb_fillrect(struct fb_info *info,
-+				   const struct fb_fillrect *rect)
-+{
-+	struct apollofb_par *par = info->par;
-+
-+	sys_fillrect(info, rect);
-+
-+	schedule_delayed_work(&par->deferred_work, info->fbdefio->delay);
-+}
-+
-+static void apollofb_copyarea(struct fb_info *info,
-+				   const struct fb_copyarea *area)
-+{
-+	struct apollofb_par *par = info->par;
-+
-+	sys_copyarea(info, area);
-+
-+	schedule_delayed_work(&par->deferred_work, info->fbdefio->delay);
-+}
-+
-+static void apollofb_imageblit(struct fb_info *info,
-+				const struct fb_image *image)
-+{
-+	struct apollofb_par *par = info->par;
-+
-+	sys_imageblit(info, image);
-+
-+	schedule_delayed_work(&par->deferred_work, info->fbdefio->delay);
-+}
-+
-+int apollofb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * this is the slow path from userspace. they can seek and write to
-+ * the fb. it's inefficient to do anything less than a full screen draw
-+ */
-+static ssize_t apollofb_write(struct fb_info *info, const char __user *buf,
-+				size_t count, loff_t *ppos)
-+{
-+	unsigned long p;
-+	int err = -EINVAL;
-+	struct apollofb_par *par;
-+	unsigned int xres;
-+	unsigned int fbmemlength;
-+
-+	p = *ppos;
-+	par = info->par;
-+	xres = info->var.xres;
-+	fbmemlength = (xres * info->var.yres)/8 * info->var.bits_per_pixel;
-+
-+	if (p > fbmemlength)
-+		return -ENOSPC;
-+
-+	err = 0;
-+	if ((count + p) > fbmemlength) {
-+		count = fbmemlength - p;
-+		err = -ENOSPC;
-+	}
-+
-+	if (count) {
-+		char *base_addr;
-+
-+		base_addr = (char __force *)info->screen_base;
-+		count -= copy_from_user(base_addr + p, buf, count);
-+		*ppos += count;
-+		err = -EFAULT;
-+	}
-+
-+	schedule_delayed_work(&par->deferred_work, info->fbdefio->delay);
-+
-+	if (count)
-+		return count;
-+
-+	return err;
-+}
-+
-+static int apollofb_sync(struct fb_info *info)
-+{
-+	return 0;
-+}
-+
-+static int apollofb_check_var(struct fb_var_screeninfo *var,
-+			      struct fb_info *info)
-+{
-+	switch (var->bits_per_pixel) {
-+	case 1:
-+		var->red.length = 1;
-+		var->red.offset = 0;
-+		var->green.length = 1;
-+		var->green.offset = 0;
-+		var->blue.length = 1;
-+		var->blue.offset = 0;
-+		var->transp.length = 0;
-+		var->transp.offset = 0;
-+		break;
-+	default:
-+		var->bits_per_pixel = 8;
-+		var->grayscale = 1;
-+		var->red.length = 2;
-+		var->red.offset = 0;
-+		var->green.length = 2;
-+		var->green.offset = 0;
-+		var->blue.length = 2;
-+		var->blue.offset = 0;
-+		var->transp.length = 0;
-+		var->transp.offset = 0;
-+		break;
-+	}
-+
-+	var->xres = DPY_W;
-+	var->xres_virtual = DPY_W;
-+	var->yres = DPY_H;
-+	var->yres_virtual = DPY_H;
-+
-+	if (var->rotate % 90)
-+		var->rotate -= var->rotate % 90;
-+
-+	return 0;
-+}
-+
-+static int apollofb_set_par(struct fb_info *info)
-+{
-+	struct apollofb_par *par = info->par;
-+
-+	switch (info->var.bits_per_pixel) {
-+	case 1:
-+		info->fix.visual = FB_VISUAL_MONO01;
-+		apollo_send_command(par, APOLLO_SET_DEPTH);
-+		apollo_send_data(par, 0x00);
-+		break;
-+	default:
-+		info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR;
-+		apollo_send_command(par, APOLLO_SET_DEPTH);
-+		apollo_send_data(par, 0x02);
-+		break;
-+	}
-+
-+	mutex_lock(&par->lock);
-+	apollo_send_command(par, APOLLO_ORIENTATION);
-+	apollo_send_data(par, ((info->var.rotate + 90) % 360) / 90);
-+	mutex_unlock(&par->lock);
-+
-+	return 0;
-+}
-+
-+static ssize_t apollofb_wf_read(struct file *f, char __user *buf,
-+				size_t count, loff_t *f_pos)
-+{
-+	unsigned char data;
-+	char __user *p = buf;
-+	int i;
-+	struct apollofb_par *par = f->private_data;
-+
-+	mutex_lock(&par->lock);
-+	if (par->current_mode == APOLLO_STATUS_MODE_SLEEP)
-+		apollo_set_normal_mode(par);
-+
-+	if (*f_pos > APOLLO_WAVEFORMS_FLASH_SIZE - 1)
-+		return 0;
-+
-+	if (*f_pos + count > APOLLO_WAVEFORMS_FLASH_SIZE)
-+		count = APOLLO_WAVEFORMS_FLASH_SIZE - *f_pos;
-+
-+	for (i = *f_pos; i < *f_pos + count; i++) {
-+		apollo_send_command(par, APOLLO_READ_FROM_FLASH);
-+
-+		apollo_send_data(par, (i >> 16) & 0xff);
-+		apollo_send_data(par, (i >> 8) & 0xff);
-+		apollo_send_data(par, i & 0xff);
-+
-+		data = apollo_read_data(par);
-+
-+		if (copy_to_user(p, &data, 1))
-+			return -EFAULT;
-+
-+		p++;
-+	}
-+
-+	if (par->options.use_sleep_mode)
-+		apollo_set_sleep_mode(par);
-+	mutex_unlock(&par->lock);
-+
-+	*f_pos += count;
-+	return count;
-+}
-+
-+static ssize_t apollofb_wf_write(struct file *f, const char __user *buf,
-+				size_t count, loff_t *f_pos)
-+{
-+	unsigned char data;
-+	const char __user *p = buf;
-+	int i;
-+	struct apollofb_par *par = f->private_data;
-+
-+	mutex_lock(&par->lock);
-+
-+	if (par->current_mode == APOLLO_STATUS_MODE_SLEEP)
-+		apollo_set_normal_mode(par);
-+
-+	if (*f_pos > APOLLO_WAVEFORMS_FLASH_SIZE - 1)
-+		return 0;
-+
-+	if (*f_pos + count > APOLLO_WAVEFORMS_FLASH_SIZE)
-+		count = APOLLO_WAVEFORMS_FLASH_SIZE - *f_pos;
-+
-+	for (i = *f_pos; i < *f_pos + count; i++) {
-+		if (copy_to_user(&data, p, 1))
-+			return -EFAULT;
-+
-+		apollo_send_command(par, APOLLO_WRITE_TO_FLASH);
-+		apollo_send_data(par, (i >> 16) & 0xff);
-+		apollo_send_data(par, (i >> 8) & 0xff);
-+		apollo_send_data(par, i & 0xff);
-+
-+		apollo_send_data(par, data);
-+
-+		p++;
-+	}
-+
-+	if (par->options.use_sleep_mode)
-+		apollo_set_sleep_mode(par);
-+	mutex_unlock(&par->lock);
-+
-+	*f_pos += count;
-+	return count;
-+}
-+
-+static int apollofb_wf_open(struct inode *i, struct file *f)
-+{
-+	struct apollofb_par *par;
-+
-+	par = container_of(i->i_cdev, struct apollofb_par, cdev);
-+
-+	f->private_data = par;
-+
-+	return 0;
-+}
-+
-+static ssize_t apollofb_temperature_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+	char temp;
-+
-+	mutex_lock(&par->lock);
-+
-+	apollo_send_command(par, APOLLO_READ_TEMPERATURE);
-+
-+	temp = apollo_read_data(par);
-+
-+	mutex_unlock(&par->lock);
-+
-+	sprintf(buf, "%d\n", temp);
-+	return strlen(buf) + 1;
-+}
-+
-+static ssize_t apollofb_manual_refresh_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+
-+	sprintf(buf, "%d\n", par->options.manual_refresh);
-+	return strlen(buf) + 1;
-+}
-+
-+static ssize_t apollofb_manual_refresh_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+	char *after;
-+	unsigned long state = simple_strtoul(buf, &after, 10);
-+	size_t count = after - buf;
-+	ssize_t ret = -EINVAL;
-+
-+	if (*after && isspace(*after))
-+		count++;
-+
-+	if ((count == size) && (state <= 1)) {
-+		ret = count;
-+		par->options.manual_refresh = state;
-+	}
-+
-+	return ret;
-+}
-+
-+static ssize_t apollofb_use_sleep_mode_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+
-+	sprintf(buf, "%d\n", par->options.use_sleep_mode);
-+	return strlen(buf) + 1;
-+}
-+
-+static ssize_t apollofb_use_sleep_mode_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+	char *after;
-+	unsigned long state = simple_strtoul(buf, &after, 10);
-+	size_t count = after - buf;
-+	ssize_t ret = -EINVAL;
-+
-+	if (*after && isspace(*after))
-+		count++;
-+
-+	if ((count == size) && (state <= 1)) {
-+		ret = count;
-+		par->options.use_sleep_mode = state;
-+
-+		mutex_lock(&par->lock);
-+
-+		if (state)
-+			apollo_set_sleep_mode(par);
-+		else
-+			apollo_set_normal_mode(par);
-+
-+		mutex_unlock(&par->lock);
-+
-+	}
-+
-+	return ret;
-+}
-+
-+static ssize_t apollofb_partial_update_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+
-+	sprintf(buf, "%d\n", par->options.partial_update);
-+	return strlen(buf) + 1;
-+}
-+
-+static ssize_t apollofb_partial_update_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+	char *after;
-+	unsigned long state = simple_strtoul(buf, &after, 10);
-+	size_t count = after - buf;
-+	ssize_t ret = -EINVAL;
-+
-+	if (*after && isspace(*after))
-+		count++;
-+
-+	if ((count == size) && (state <= 1)) {
-+		ret = count;
-+		par->options.partial_update = state;
-+	}
-+
-+	return ret;
-+}
-+
-+static ssize_t apollofb_defio_delay_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+
-+	sprintf(buf, "%lu\n", info->fbdefio->delay * 1000 / HZ);
-+	return strlen(buf) + 1;
-+}
-+
-+static ssize_t apollofb_defio_delay_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	char *after;
-+	unsigned long state = simple_strtoul(buf, &after, 10);
-+	size_t count = after - buf;
-+	ssize_t ret = -EINVAL;
-+
-+	if (*after && isspace(*after))
-+		count++;
-+
-+	state = state * HZ / 1000;
-+
-+	if (!state)
-+		state = 1;
-+
-+	if (count == size) {
-+		ret = count;
-+		info->fbdefio->delay = state;
-+	}
-+
-+	return ret;
-+}
-+
-+DEVICE_ATTR(manual_refresh, 0666,
-+		apollofb_manual_refresh_show, apollofb_manual_refresh_store);
-+DEVICE_ATTR(partial_update, 0666,
-+		apollofb_partial_update_show, apollofb_partial_update_store);
-+DEVICE_ATTR(defio_delay, 0666,
-+		apollofb_defio_delay_show, apollofb_defio_delay_store);
-+DEVICE_ATTR(use_sleep_mode, 0666,
-+		apollofb_use_sleep_mode_show, apollofb_use_sleep_mode_store);
-+
-+static struct file_operations apollofb_wf_fops = {
-+	.owner = THIS_MODULE,
-+	.open = apollofb_wf_open,
-+	.read = apollofb_wf_read,
-+	.write = apollofb_wf_write,
-+};
-+
-+
-+static struct fb_ops apollofb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_read        = fb_sys_read,
-+	.fb_write	= apollofb_write,
-+	.fb_fillrect	= apollofb_fillrect,
-+	.fb_copyarea	= apollofb_copyarea,
-+	.fb_imageblit	= apollofb_imageblit,
-+	.fb_cursor	= apollofb_cursor,
-+	.fb_sync	= apollofb_sync,
-+	.fb_check_var	= apollofb_check_var,
-+	.fb_set_par	= apollofb_set_par,
-+};
-+
-+static struct fb_deferred_io apollofb_defio = {
-+	.delay		= HZ / 2,
-+	.deferred_io	= apollofb_dpy_deferred_io,
-+};
-+
-+DEVICE_ATTR(temperature, 0444, apollofb_temperature_show, NULL);
-+
-+
-+static int __devinit apollofb_setup_chrdev(struct apollofb_par *par)
-+{
-+	int res = 0;
-+	struct cdev *cdev = &par->cdev;
-+	dev_t devno;
-+
-+	res = alloc_chrdev_region(&devno, 0, 1, "apollo");
-+	if (res)
-+		goto err_alloc_chrdev_region;
-+
-+
-+	cdev_init(cdev, &apollofb_wf_fops);
-+
-+	res = cdev_add(cdev, devno, 1);
-+	if (res)
-+		goto err_cdev_add;
-+
-+	return 0;
-+
-+err_cdev_add:
-+	unregister_chrdev_region(devno, 1);
-+err_alloc_chrdev_region:
-+
-+	return res;
-+}
-+
-+static void apollofb_remove_chrdev(struct apollofb_par *par)
-+{
-+	cdev_del(&par->cdev);
-+	unregister_chrdev_region(par->cdev.dev, 1);
-+}
-+
-+static u16 red4[] __read_mostly = {
-+    0x0000, 0x5555, 0xaaaa, 0xffff
-+};
-+static u16 green4[] __read_mostly = {
-+    0x0000, 0x5555, 0xaaaa, 0xffff
-+};
-+static u16 blue4[] __read_mostly = {
-+    0x0000, 0x5555, 0xaaaa, 0xffff
-+};
-+
-+static const struct fb_cmap eink_apollofb_4_colors = {
-+	    .len = 4, .red = red4, .green = green4, .blue = blue4
-+};
-+
-+static int __devinit apollofb_probe(struct platform_device *dev)
-+{
-+	struct fb_info *info;
-+	int retval = -ENOMEM;
-+	int videomemorysize;
-+	unsigned char *videomemory;
-+	struct apollofb_par *par;
-+	struct eink_apollofb_platdata *pdata = dev->dev.platform_data;
-+
-+	videomemorysize = (DPY_W * DPY_H)/8 * apollofb_var.bits_per_pixel;
-+
-+	videomemory = vmalloc(videomemorysize);
-+	if (!videomemory)
-+		return retval;
-+
-+	memset(videomemory, 0xFF, videomemorysize);
-+
-+	info = framebuffer_alloc(sizeof(struct apollofb_par), &dev->dev);
-+	if (!info)
-+		goto err;
-+
-+	if (!pdata->ops.set_ctl_pin ||
-+			!pdata->ops.get_ctl_pin ||
-+			!pdata->ops.read_value ||
-+			!pdata->ops.write_value) {
-+		retval = -EINVAL;
-+		dev_err(&dev->dev,
-+				"Invalid platform data: missing operations\n");
-+		goto err1;
-+	}
-+
-+	info->screen_base = (char __iomem *) videomemory;
-+	info->fbops = &apollofb_ops;
-+
-+	info->var = apollofb_var;
-+	info->fix = apollofb_fix;
-+	info->fix.smem_len = videomemorysize;
-+	par = info->par;
-+	par->info = info;
-+	mutex_init(&par->lock);
-+	INIT_DELAYED_WORK(&par->deferred_work, apollofb_deferred_work);
-+	par->options.manual_refresh = 0;
-+	par->options.partial_update = 1;
-+	par->options.use_sleep_mode = 0;
-+	par->ops = &pdata->ops;
-+
-+	info->flags = FBINFO_FLAG_DEFAULT;
-+
-+	if (pdata->defio_delay)
-+		apollofb_defio.delay = pdata->defio_delay;
-+	info->fbdefio = &apollofb_defio;
-+	fb_deferred_io_init(info);
-+
-+	fb_alloc_cmap(&info->cmap, 4, 0);
-+	fb_copy_cmap(&eink_apollofb_4_colors, &info->cmap);
-+
-+	if (par->ops->initialize)
-+		par->ops->initialize();
-+
-+	par->ops->set_ctl_pin(H_CD, 0);
-+	par->ops->set_ctl_pin(H_RW, 0);
-+
-+	mutex_lock(&par->lock);
-+	apollo_set_normal_mode(par);
-+	apollo_send_command(par, APOLLO_SET_DEPTH);
-+	apollo_send_data(par, 0x02);
-+	apollo_send_command(par, APOLLO_ERASE_DISPLAY);
-+	apollo_send_data(par, 0x01);
-+	if (par->options.use_sleep_mode)
-+		apollo_set_sleep_mode(par);
-+	mutex_unlock(&par->lock);
-+
-+	retval = register_framebuffer(info);
-+	if (retval < 0)
-+		goto err1;
-+	platform_set_drvdata(dev, info);
-+
-+	printk(KERN_INFO
-+	       "fb%d: eInk Apollo frame buffer device,"
-+	       "using %dK of video memory (%p)\n",
-+	       info->node, videomemorysize >> 10, videomemory);
-+
-+
-+	retval = apollofb_setup_chrdev(par);
-+	if (retval)
-+		goto err2;
-+
-+	retval = device_create_file(info->dev, &dev_attr_temperature);
-+	if (retval)
-+		goto err_devattr_temperature;
-+
-+	retval = device_create_file(info->dev, &dev_attr_manual_refresh);
-+	if (retval)
-+		goto err_devattr_manref;
-+
-+	retval = device_create_file(info->dev, &dev_attr_partial_update);
-+	if (retval)
-+		goto err_devattr_partupd;
-+
-+	retval = device_create_file(info->dev, &dev_attr_defio_delay);
-+	if (retval)
-+		goto err_devattr_defio_delay;
-+
-+	retval = device_create_file(info->dev, &dev_attr_use_sleep_mode);
-+	if (retval)
-+		goto err_devattr_use_sleep_mode;
-+
-+	return 0;
-+
-+
-+	device_remove_file(info->dev, &dev_attr_use_sleep_mode);
-+err_devattr_use_sleep_mode:
-+	device_remove_file(info->dev, &dev_attr_defio_delay);
-+err_devattr_defio_delay:
-+	device_remove_file(info->dev, &dev_attr_partial_update);
-+err_devattr_partupd:
-+	device_remove_file(info->dev, &dev_attr_manual_refresh);
-+err_devattr_manref:
-+	device_remove_file(info->dev, &dev_attr_temperature);
-+err_devattr_temperature:
-+	apollofb_remove_chrdev(par);
-+err2:
-+	unregister_framebuffer(info);
-+err1:
-+	framebuffer_release(info);
-+err:
-+	vfree(videomemory);
-+	return retval;
-+}
-+
-+static int __devexit apollofb_remove(struct platform_device *dev)
-+{
-+	struct fb_info *info = platform_get_drvdata(dev);
-+	struct apollofb_par *par = info->par;
-+
-+	if (info) {
-+		fb_deferred_io_cleanup(info);
-+		cancel_delayed_work(&par->deferred_work);
-+		flush_scheduled_work();
-+
-+		device_remove_file(info->dev, &dev_attr_use_sleep_mode);
-+		device_remove_file(info->dev, &dev_attr_manual_refresh);
-+		device_remove_file(info->dev, &dev_attr_partial_update);
-+		device_remove_file(info->dev, &dev_attr_defio_delay);
-+		device_remove_file(info->dev, &dev_attr_temperature);
-+		unregister_framebuffer(info);
-+		vfree((void __force *)info->screen_base);
-+		apollofb_remove_chrdev(info->par);
-+		framebuffer_release(info);
-+	}
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int apollofb_suspend(struct platform_device *pdev, pm_message_t message)
-+{
-+	struct fb_info *info = platform_get_drvdata(pdev);
-+	struct apollofb_par *par = info->par;
-+
-+	mutex_lock(&par->lock);
-+	apollo_send_command(par, APOLLO_STANDBY_MODE);
-+	mutex_unlock(&par->lock);
-+
-+	return 0;
-+}
-+
-+static int apollofb_resume(struct platform_device *pdev)
-+{
-+	struct fb_info *info = platform_get_drvdata(pdev);
-+	struct apollofb_par *par = info->par;
-+
-+	mutex_lock(&par->lock);
-+	apollo_wakeup(par);
-+	if (par->current_mode == APOLLO_STATUS_MODE_SLEEP)
-+		apollo_set_normal_mode(par);
-+	mutex_unlock(&par->lock);
-+
-+	return 0;
-+}
-+#endif
-+
-+
-+static struct platform_driver apollofb_driver = {
-+	.probe	= apollofb_probe,
-+	.remove = apollofb_remove,
-+	.driver	= {
-+		.owner	= THIS_MODULE,
-+		.name	= "eink-apollo",
-+	},
-+#ifdef CONFIG_PM
-+	.suspend = apollofb_suspend,
-+	.resume = apollofb_resume,
-+#endif
-+};
-+
-+static int __init apollofb_init(void)
-+{
-+	int ret = 0;
-+
-+	ret = platform_driver_register(&apollofb_driver);
-+
-+	return ret;
-+}
-+
-+static void __exit apollofb_exit(void)
-+{
-+	platform_driver_unregister(&apollofb_driver);
-+}
-+
-+
-+module_init(apollofb_init);
-+module_exit(apollofb_exit);
-+
-+MODULE_DESCRIPTION("fbdev driver for Apollo eInk display controller");
-+MODULE_AUTHOR("Yauhen Kharuzhy");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/eink_apollofb.h b/include/linux/eink_apollofb.h
-new file mode 100644
-index 0000000..36c1c3c
---- /dev/null
-+++ b/include/linux/eink_apollofb.h
-@@ -0,0 +1,60 @@
-+
-+enum eink_apollo_controls {
-+	H_CD = 0,
-+	H_RW = 1,
-+	H_DS = 2,
-+	H_ACK = 3,
-+	H_WUP = 4,
-+	H_NRST = 5,
-+};
-+
-+struct eink_apollo_operations {
-+	int (*initialize)(void);
-+	void (*set_ctl_pin)(unsigned int pin, unsigned char val);
-+	int (*get_ctl_pin)(unsigned int pin);
-+	void (*write_value)(unsigned char val);
-+	unsigned char (*read_value)(void);
-+};
-+
-+/* Apollo controller commands */
-+#define APOLLO_WRITE_TO_FLASH		0x01
-+#define APOLLO_READ_FROM_FLASH		0x02
-+#define APOLLO_WRITE_REGISTER		0x10
-+#define APOLLO_READ_REGISTER		0x11
-+#define APOLLO_READ_TEMPERATURE		0x21
-+#define APOLLO_LOAD_PICTURE		0xA0
-+#define APOLLO_STOP_LOADING		0xA1
-+#define APOLLO_DISPLAY_PICTURE		0xA2
-+#define APOLLO_ERASE_DISPLAY		0xA3
-+#define APOLLO_INIT_DISPLAY		0xA4
-+#define APOLLO_RESTORE_IMAGE		0xA5
-+#define APOLLO_GET_STATUS		0xAA
-+#define APOLLO_LOAD_PARTIAL_PICTURE	0xB0
-+#define APOLLO_DISPLAY_PARTIAL_PICTURE	0xB1
-+#define APOLLO_VERSION_NUMBER		0xE0
-+#define APOLLO_DISPLAY_SIZE		0xE2
-+#define APOLLO_RESET			0xEE
-+#define APOLLO_NORMAL_MODE		0xF0
-+#define APOLLO_SLEEP_MODE		0xF1
-+#define APOLLO_STANDBY_MODE		0xF2
-+#define APOLLO_SET_DEPTH		0xF3
-+#define APOLLO_ORIENTATION		0xF5
-+#define APOLLO_POSITIVE_PICTURE		0xF7
-+#define APOLLO_NEGATIVE_PICTURE		0xF8
-+#define APOLLO_AUTO_REFRESH		0xF9
-+#define APOLLO_CANCEL_AUTO_REFRESH	0xFA
-+#define APOLLO_SET_REFRESH_TIMER	0xFB
-+#define APOLLO_MANUAL_REFRESH		0xFC
-+#define APOLLO_READ_REFRESH_TIMER	0xFD
-+
-+#define APOLLO_WAVEFORMS_FLASH_SIZE	(1024 * 1024 * 2)
-+
-+#define APOLLO_STATUS_MODE_MASK		(1 << 0)
-+#define APOLLO_STATUS_MODE_SLEEP	0x01
-+#define APOLLO_STATUS_MODE_NORMAL	0x00
-+
-+struct eink_apollofb_platdata {
-+	struct eink_apollo_operations ops;
-+	unsigned long defio_delay;
-+};
-+
+ 	pxa_gpio_mode(GPIO74_LCD_FCLK_MD);
+ 	pxa_gpio_mode(GPIO75_LCD_LCLK_MD);
+ 	pxa_gpio_mode(GPIO76_LCD_PCLK_MD);
+Index: linux-2.6-arm/include/asm-arm/arch-pxa/pxafb.h
+===================================================================
+--- linux-2.6-arm.orig/include/asm-arm/arch-pxa/pxafb.h
++++ linux-2.6-arm/include/asm-arm/arch-pxa/pxafb.h
+@@ -71,7 +71,8 @@
+ 
+ 	u_char		bpp;
+ 	u_int		cmap_greyscale:1,
+-			unused:31;
++			depth:8,
++			unused:23;
+ 
+ 	/* Parallel Mode Timing */
+ 	u_char		hsync_len;
+
 -- 
-1.5.6
 
-
--------------------------------------------------------------------------
-Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!
-Studies have shown that voting for your favorite open source project,
-along with a healthy diet, reduces your potential for chronic lameness
-and boredom. Vote Now at http://www.sourceforge.net/community/cca08
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

@@ -1,54 +1,73 @@
-From: stefan@datenfreihafen.org
-Subject: [Patch 01/10] pxafb: More LCCR3 depth defines
-Date: Mon, 07 Jul 2008 20:40:01 +0200
-Message-ID: <20080707184125.173098306@datenfreihafen.org>
-References: <20080707184000.411913919@datenfreihafen.org>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.26-rc3 06/10] gumstix: conversion
+	to MFP support and add bluetooth support
+Date: Mon, 7 Jul 2008 20:52:06 -0400
+Message-ID: <45a44e480807071752k3d09f2cam786b9d4e56da964e@mail.gmail.com>
+References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1213289961-1562-7-git-send-email-jayakumar.lkml@gmail.com>
+	<4851D4E9.3080008@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-Content-Disposition: inline; filename=pxafb-add-18+bpp-lccr3.patch
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1KG1RB-0003HL-SP for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 07 Jul 2008 17:52:09 -0700
+Received: from ug-out-1314.google.com ([66.249.92.170])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KG1RA-0005PN-Aj
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 07 Jul 2008 17:52:09 -0700
+Received: by ug-out-1314.google.com with SMTP id o29so1248569ugd.28
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 07 Jul 2008 17:52:06 -0700 (PDT)
+In-Reply-To: <4851D4E9.3080008@gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-fbdev-devel@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-Add missing depth definitions to LCCR3.
+On Thu, Jun 12, 2008 at 10:01 PM, Eric Miao <eric.y.miao@gmail.com> wrote:
+> Jaya Kumar wrote:
+>> diff --git a/include/asm-arm/arch-pxa/mfp-pxa25x.h b/include/asm-arm/arch-pxa/mfp-pxa25x.h
+>> index 0499323..6c82a74 100644
+>> --- a/include/asm-arm/arch-pxa/mfp-pxa25x.h
+>> +++ b/include/asm-arm/arch-pxa/mfp-pxa25x.h
+>> @@ -79,6 +79,7 @@
+>>  #define GPIO43_HWUART_TXD    MFP_CFG_OUT(GPIO43, AF3, DRIVE_HIGH)
+>>  #define GPIO44_HWUART_CTS    MFP_CFG_IN(GPIO44, AF3)
+>>  #define GPIO45_HWUART_RTS    MFP_CFG_OUT(GPIO45, AF3, DRIVE_HIGH)
+>> +#define GPIO45_HWUART_RTSL   MFP_CFG_OUT(GPIO45, AF3, DRIVE_LOW)
+>
+> Is this board specific or globally applicable? ISTR, RTS is low active,
 
-Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+I suspect it is board specific, ie: gumstix-[basix/connex]-bt
+specific. I wasn't able to find schematics for this board but found
+what is probably the same part of the design.
 
-PATCH FOLLOWS
-KernelVersion: 2.6-arm-git pxa branch
+http://www.gumstix.org/schematics/B00002-HWUART.png?nocache=1
 
-Index: linux-2.6-arm/include/asm-arm/arch-pxa/regs-lcd.h
-===================================================================
---- linux-2.6-arm.orig/include/asm-arm/arch-pxa/regs-lcd.h
-+++ linux-2.6-arm/include/asm-arm/arch-pxa/regs-lcd.h
-@@ -24,6 +24,12 @@
- #define LCCR3_4BPP	(2 << 24)
- #define LCCR3_8BPP	(3 << 24)
- #define LCCR3_16BPP	(4 << 24)
-+#define LCCR3_18BPP	(5 << 24)
-+#define LCCR3_18BPP_P	(6 << 24)
-+#define LCCR3_19BPP	(7 << 24)
-+#define LCCR3_19BPP_P	(1 << 29)
-+#define LCCR3_24BPP	((1 << 29) | (1 << 24))
-+#define LCCR3_25BPP	((1 << 29) | (2 << 24))
- 
- #define LCCR3_PDFOR_0	(0 << 30)
- #define LCCR3_PDFOR_1	(1 << 30)
+> so a HIGH in low power mode would be more appropriate that the remote
+> DCE will hold its data to send.
 
--- 
+I agree that RTS should start high. I'm not sure why the bt device
+seems troubled in that state. I'll debug some more.
 
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+Thanks,
+jaya
+
+-------------------------------------------------------------------------
+Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!
+Studies have shown that voting for your favorite open source project,
+along with a healthy diet, reduces your potential for chronic lameness
+and boredom. Vote Now at http://www.sourceforge.net/community/cca08

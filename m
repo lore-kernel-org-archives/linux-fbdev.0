@@ -1,27 +1,24 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Subject: Re: [Patch 02/10] pxafb: Support for RGB666,
- RGBT666, RGB888 and RGBT888
-Date: Tue, 08 Jul 2008 15:45:30 +0800
-Message-ID: <48731B1A.10504@gmail.com>
-References: <20080707184000.411913919@datenfreihafen.org>
-	<20080707184126.050044363@datenfreihafen.org>
+From: Ben Dooks <ben-linux@fluff.org>
+Subject: LCD: Add lcd_device to check_fb() entry in
+	lcd_ops.
+Date: Tue, 08 Jul 2008 10:35:09 +0100
+Message-ID: <20080708093509.112793619@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KG7tK-00039A-Da for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Jul 2008 00:45:38 -0700
-Received: from ti-out-0910.google.com ([209.85.142.190])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KG7tJ-0000ot-3H
+	id 1KG9bs-00077y-1C for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 Jul 2008 02:35:44 -0700
+Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KG9bq-0001A8-FU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Jul 2008 00:45:38 -0700
-Received: by ti-out-0910.google.com with SMTP id y6so763001tia.18
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 08 Jul 2008 00:45:36 -0700 (PDT)
-In-Reply-To: <20080707184126.050044363@datenfreihafen.org>
+	Tue, 08 Jul 2008 02:35:43 -0700
+Content-Disposition: inline;
+	filename=simtec/simtec-drivers-fb-backlight-match-entry.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,15 +29,74 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: stefan@datenfreihafen.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, Ben Dooks <ben-linux@fluff.org>
 
-stefan@datenfreihafen.org wrote:
+Add the lcd_device being checked to the check_fb entry
+of lcd_ops. This ensures that any driver using this
+to check against it's own state can do so, and also
+makes all the calls in lcd_ops more orthogonal in their
+arguments.
 
-I'd really like an enumeration type for all the supported bpp + data format,
-but for the moment, I think this is acceptable, so
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
+Index: linux-2.6.26-rc5-quilt1/drivers/video/backlight/lcd.c
+===================================================================
+--- linux-2.6.26-rc5-quilt1.orig/drivers/video/backlight/lcd.c	2008-06-09 11:47:51.000000000 +0100
++++ linux-2.6.26-rc5-quilt1/drivers/video/backlight/lcd.c	2008-06-09 11:49:25.000000000 +0100
+@@ -33,7 +33,7 @@ static int fb_notifier_callback(struct n
+ 	ld = container_of(self, struct lcd_device, fb_notif);
+ 	mutex_lock(&ld->ops_lock);
+ 	if (ld->ops)
+-		if (!ld->ops->check_fb || ld->ops->check_fb(evdata->info))
++		if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info))
+ 			ld->ops->set_power(ld, *(int *)evdata->data);
+ 	mutex_unlock(&ld->ops_lock);
+ 	return 0;
+Index: linux-2.6.26-rc5-quilt1/drivers/video/bf54x-lq043fb.c
+===================================================================
+--- linux-2.6.26-rc5-quilt1.orig/drivers/video/bf54x-lq043fb.c	2008-06-09 11:56:06.000000000 +0100
++++ linux-2.6.26-rc5-quilt1/drivers/video/bf54x-lq043fb.c	2008-06-09 11:56:24.000000000 +0100
+@@ -478,7 +478,7 @@ static int bfin_lcd_set_contrast(struct 
+ 	return 0;
+ }
+ 
+-static int bfin_lcd_check_fb(struct fb_info *fi)
++static int bfin_lcd_check_fb(struct lcd_device *dev, struct fb_info *fi)
+ {
+ 	if (!fi || (fi == &bfin_bf54x_fb))
+ 		return 1;
+Index: linux-2.6.26-rc5-quilt1/drivers/video/bfin-t350mcqb-fb.c
+===================================================================
+--- linux-2.6.26-rc5-quilt1.orig/drivers/video/bfin-t350mcqb-fb.c	2008-06-09 11:56:40.000000000 +0100
++++ linux-2.6.26-rc5-quilt1/drivers/video/bfin-t350mcqb-fb.c	2008-06-09 11:56:51.000000000 +0100
+@@ -396,7 +396,7 @@ static int bfin_lcd_set_contrast(struct 
+ 	return 0;
+ }
+ 
+-static int bfin_lcd_check_fb(struct fb_info *fi)
++static int bfin_lcd_check_fb(struct lcd_device *dev, struct fb_info *fi)
+ {
+ 	if (!fi || (fi == &bfin_t350mcqb_fb))
+ 		return 1;
+Index: linux-2.6.26-rc5-quilt1/include/linux/lcd.h
+===================================================================
+--- linux-2.6.26-rc5-quilt1.orig/include/linux/lcd.h	2008-06-09 11:23:48.000000000 +0100
++++ linux-2.6.26-rc5-quilt1/include/linux/lcd.h	2008-06-09 11:24:10.000000000 +0100
+@@ -47,7 +47,7 @@ struct lcd_ops {
+         int (*set_contrast)(struct lcd_device *, int contrast);
+ 	/* Check if given framebuffer device is the one LCD is bound to;
+ 	   return 0 if not, !=0 if it is. If NULL, lcd always matches the fb. */
+-	int (*check_fb)(struct fb_info *);
++	int (*check_fb)(struct lcd_device *, struct fb_info *);
+ };
+ 
+ struct lcd_device {
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!

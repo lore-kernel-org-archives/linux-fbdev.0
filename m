@@ -1,23 +1,25 @@
 From: Ben Dooks <ben-linux@fluff.org>
-Subject: FB: Fix platform_lcd match entry.
-Date: Tue, 08 Jul 2008 10:37:30 +0100
-Message-ID: <20080708093729.970594944@fluff.org.uk>
+Subject: Re: LCD: Add lcd_device to check_fb() entry in
+	lcd_ops.
+Date: Tue, 8 Jul 2008 10:38:14 +0100
+Message-ID: <20080708093814.GF8489@trinity.fluff.org>
+References: <20080708093509.112793619@fluff.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KG9dk-0007MF-BR for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Jul 2008 02:37:40 -0700
-Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
+	id 1KG9eO-0007T3-1q for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 Jul 2008 02:38:20 -0700
+Received: from trinity.fluff.org ([89.145.97.151])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KG9di-00048Z-Vh
+	(Exim 4.44) id 1KG9eN-0002Be-Mj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Jul 2008 02:37:40 -0700
-Content-Disposition: inline;
-	filename=simtec/simtec-drivers-fb-platformlcd-fixmatch.patch
+	Tue, 08 Jul 2008 02:38:20 -0700
+Content-Disposition: inline
+In-Reply-To: <20080708093509.112793619@fluff.org.uk>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,31 +30,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@linux-foundation.org, Ben Dooks <ben-linux@fluff.org>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
 
-The platform_lcd driver was matching against the
-framebuffer device entry, and not the framebuffer's
-parent device.
+On Tue, Jul 08, 2008 at 10:35:09AM +0100, Ben Dooks wrote:
+> Add the lcd_device being checked to the check_fb entry
+> of lcd_ops. This ensures that any driver using this
+> to check against it's own state can do so, and also
+> makes all the calls in lcd_ops more orthogonal in their
+> arguments.
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-
---- linux-2.6.26-rc6-quilt1.orig/drivers/video/backlight/platform_lcd.c	2008-06-15 20:27:56.000000000 +0100
-+++ linux-2.6.26-rc6-quilt1/drivers/video/backlight/platform_lcd.c	2008-06-15 21:07:22.000000000 +0100
-@@ -62,7 +62,7 @@ static int platform_lcd_match(struct lcd
- 	if (pdata->match_fb)
- 		return pdata->match_fb(pdata, info);
- 
--	return plcd->us->parent == info->dev;
-+	return plcd->us->parent == info->device;
- }
- 
- static struct lcd_ops platform_lcd_ops = {
+sorry, this patch seems to have escaped its cage... correct
+patch to follow.
 
 -- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+Ben
 
-  'a smiley only costs 4 bytes'
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!

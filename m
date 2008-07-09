@@ -1,24 +1,22 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [PATCH 1/1 2.6.25] fbdev: bugfix for
-	multiprocess defio
-Date: Wed, 09 Jul 2008 09:43:15 -0400
-Message-ID: <20080709134315.5675.73620.sendpatchset@apodmy1>
+From: Jordan Crouse <jordan.crouse@amd.com>
+Subject: [PATCH] lxfb: Fix console blanking
+Date: Wed, 9 Jul 2008 10:35:44 -0600
+Message-ID: <20080709163544.GC6809@cosmic.amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="UlVJffcvxoiEqYs2"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KGapg-0003C3-5u for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 Jul 2008 07:39:48 -0700
-Received: from ti-out-0910.google.com ([209.85.142.188])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KGapd-0008A4-A8
+	id 1KGcbf-0002YU-Bh for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 09 Jul 2008 09:33:27 -0700
+Received: from mail-va3.bigfish.com ([216.32.180.113]
+	helo=mail127-va3-R.bigfish.com)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KGcbd-0008Pd-Dg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 09 Jul 2008 07:39:48 -0700
-Received: by ti-out-0910.google.com with SMTP id y6so1225666tia.18
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 09 Jul 2008 07:39:44 -0700 (PDT)
+	Wed, 09 Jul 2008 09:33:27 -0700
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,64 +28,130 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: bernard@largestprime.net, akpm@linux-foundation.org, Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: akpm@linux-foundation.org, dilinger@debian.org, linux-geode@lists.infradead.org
 
-This patch is a bugfix for how defio handles multiple processes manipulating
-the same framebuffer.
 
-Thanks to Bernard Blackham for identifying this bug.
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It occurs when two applications mmap the same framebuffer and concurrently
-write to the same page. Normally, this doesn't occur since only a single
-process mmaps the framebuffer. The symptom of the bug is that the mapping
-applications will hang. The cause is that defio incorrectly tries to add the
-same page twice to the pagelist. The solution I have is to walk the pagelist
-and check for a duplicate before adding. Since I needed to walk the
-pagelist, I now also keep the pagelist in sorted order.
+The attached patch fixes console blanking in the Geode LX framebuffer.
+The current code blanks the DACs, but that does not appear to be enough
+to actually blank the screen (some characters remain visible).
 
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+The new code turns off the CRT enable bit for all modes, which forces
+blanking.  Also, to save power the DAC is powered down in the more 
+aggressive blanking modes.  
 
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-index 24843fd..59df132 100644
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -74,6 +74,7 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+--UlVJffcvxoiEqYs2
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: inline; filename="fix-dac-blanking.patch"
+
+LXFB:  Fix DAC blanking
+
+From: Jordan Crouse <jordan.crouse@amd.com>
+
+Simply enabling DAC blanking without turning off the CRT seems to be 
+resulting in characters remaining on the screen when the monitor blanks.
+This patch turns off the CRT for all modes, and also powers down the DACs
+when vsync and/or hsync are disabled.
+
+Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
+---
+
+ drivers/video/geode/lxfb_ops.c |   28 ++++++++++++++++++----------
+ 1 files changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/video/geode/lxfb_ops.c b/drivers/video/geode/lxfb_ops.c
+index aaef916..b1cd49c 100644
+--- a/drivers/video/geode/lxfb_ops.c
++++ b/drivers/video/geode/lxfb_ops.c
+@@ -517,25 +517,25 @@ void lx_set_palette_reg(struct fb_info *info, unsigned regno,
+ int lx_blank_display(struct fb_info *info, int blank_mode)
  {
- 	struct fb_info *info = vma->vm_private_data;
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct page *cur;
+ 	struct lxfb_par *par = info->par;
+-	u32 dcfg, fp_pm;
+-	int blank, hsync, vsync, crt;
++	u32 dcfg, misc, fp_pm;
++	int blank, hsync, vsync;
  
- 	/* this is a callback we get when userspace first tries to
- 	write to the page. we schedule a workqueue. that workqueue
-@@ -83,7 +84,24 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ 	/* CRT power saving modes. */
+ 	switch (blank_mode) {
+ 	case FB_BLANK_UNBLANK:
+-		blank = 0; hsync = 1; vsync = 1; crt = 1;
++		blank = 0; hsync = 1; vsync = 1;
+ 		break;
+ 	case FB_BLANK_NORMAL:
+-		blank = 1; hsync = 1; vsync = 1; crt = 1;
++		blank = 1; hsync = 1; vsync = 1;
+ 		break;
+ 	case FB_BLANK_VSYNC_SUSPEND:
+-		blank = 1; hsync = 1; vsync = 0; crt = 1;
++		blank = 1; hsync = 1; vsync = 0;
+ 		break;
+ 	case FB_BLANK_HSYNC_SUSPEND:
+-		blank = 1; hsync = 0; vsync = 1; crt = 1;
++		blank = 1; hsync = 0; vsync = 1;
+ 		break;
+ 	case FB_BLANK_POWERDOWN:
+-		blank = 1; hsync = 0; vsync = 0; crt = 0;
++		blank = 1; hsync = 0; vsync = 0;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -545,15 +545,23 @@ int lx_blank_display(struct fb_info *info, int blank_mode)
+ 	dcfg &= ~(VP_DCFG_DAC_BL_EN | VP_DCFG_HSYNC_EN | VP_DCFG_VSYNC_EN |
+ 			VP_DCFG_CRT_EN);
+ 	if (!blank)
+-		dcfg |= VP_DCFG_DAC_BL_EN;
++		dcfg |= VP_DCFG_DAC_BL_EN | VP_DCFG_CRT_EN;
+ 	if (hsync)
+ 		dcfg |= VP_DCFG_HSYNC_EN;
+ 	if (vsync)
+ 		dcfg |= VP_DCFG_VSYNC_EN;
+-	if (crt)
+-		dcfg |= VP_DCFG_CRT_EN;
++
+ 	write_vp(par, VP_DCFG, dcfg);
  
- 	/* protect against the workqueue changing the page list */
- 	mutex_lock(&fbdefio->lock);
--	list_add(&page->lru, &fbdefio->pagelist);
++	misc = read_vp(par, VP_MISC);
 +
-+	/* we loop through the pagelist before adding in order
-+	to keep the pagelist sorted */
-+	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
-+		/* this check is to catch the case where a new
-+		process could start writing to the same page
-+		through a new pte. this new access can cause the
-+		mkwrite even when the original ps's pte is marked
-+		writable */
-+		if (unlikely(cur == page))
-+			goto page_already_added;
-+		else if (cur->index > page->index)
-+			break;
-+	}
++	if (vsync && hsync)
++		misc &= ~VP_MISC_DACPWRDN;
++	else
++		misc |= VP_MISC_DACPWRDN;
 +
-+	list_add_tail(&page->lru, &cur->lru);
++	write_vp(par, VP_MISC, misc);
 +
-+page_already_added:
- 	mutex_unlock(&fbdefio->lock);
+ 	/* Power on/off flat panel */
  
- 	/* come back after delay to process the deferred IO */
+ 	if (par->output & OUTPUT_PANEL) {
+
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!
 Studies have shown that voting for your favorite open source project,
 along with a healthy diet, reduces your potential for chronic lameness
 and boredom. Vote Now at http://www.sourceforge.net/community/cca08
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--UlVJffcvxoiEqYs2--

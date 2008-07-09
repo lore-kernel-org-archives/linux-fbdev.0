@@ -1,27 +1,24 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1 2.6.25] fbdev: bugfix for
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [PATCH 1/1 2.6.25] fbdev: bugfix for
 	multiprocess defio
-Date: Tue, 8 Jul 2008 14:40:22 -0700
-Message-ID: <20080708144022.149c99be.akpm@linux-foundation.org>
-References: <20080428020140.8662.66707.sendpatchset@hit-nxdomain.opendns.com>
-	<20080430133759.e39bf34c.akpm@linux-foundation.org>
-	<45a44e480805050023h68cffe15h5e309707ec6d8380@mail.gmail.com>
-	<45a44e480807080550r65b3c5a2me3dce82629e44ccb@mail.gmail.com>
+Date: Wed, 09 Jul 2008 09:43:15 -0400
+Message-ID: <20080709134315.5675.73620.sendpatchset@apodmy1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KGL0R-0008JY-7G for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Jul 2008 14:45:51 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KGL0P-0002H0-Um
+	id 1KGapg-0003C3-5u for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 09 Jul 2008 07:39:48 -0700
+Received: from ti-out-0910.google.com ([209.85.142.188])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KGapd-0008A4-A8
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 08 Jul 2008 14:45:51 -0700
-In-Reply-To: <45a44e480807080550r65b3c5a2me3dce82629e44ccb@mail.gmail.com>
+	Wed, 09 Jul 2008 07:39:48 -0700
+Received: by ti-out-0910.google.com with SMTP id y6so1225666tia.18
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 09 Jul 2008 07:39:44 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,50 +29,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: bernard@largestprime.net, linux-fbdev-devel@lists.sourceforge.net, Markus Armbruster <armbru@redhat.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: bernard@largestprime.net, akpm@linux-foundation.org, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-On Tue, 8 Jul 2008 08:50:30 -0400 "Jaya Kumar" <jayakumar.lkml@gmail.com> wrote:
+This patch is a bugfix for how defio handles multiple processes manipulating
+the same framebuffer.
 
-> On Mon, May 5, 2008 at 3:23 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> > On Wed, Apr 30, 2008 at 1:37 PM, Andrew Morton
-> > <akpm@linux-foundation.org> wrote:
-> >>
-> >> On Sun, 27 Apr 2008 22:01:40 -0400
-> >>  Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> >>
-> >>  > +     /* we loop through the pagelist before adding in order
-> >>  > +     to keep the pagelist sorted */
-> >>  > +     list_for_each_entry(cur, &fbdefio->pagelist, lru) {
-> >>
-> >>  Did you consider using !list_empty(&page->lru) to avoid the linear search?
-> >>
-> >
-> > Ah, no, I didn't think of that. I agree that checking list_empty would
-> > be far better. I'll redo the patch using that.
-> >
-> > Thanks,
-> > jaya
-> >
-> 
-> Hi Andrew,
-> 
-> I encountered some complexity when trying to use page->lru because its
-> not empty on its first mkwrite. I think there are probably deeper
-> issues that repurposing page->lru for use in defio causes. I'm working
-> on it.
-> 
-> In the meantime, it turns out that suspend/resume of xen pvfb is
-> affected by the same bug that raised this patch. Markus suggested,
-> http://marc.info/?l=linux-kernel&m=121368814027583&w=2 , that perhaps
-> this existing patch could be merged in the interim while a better
-> solution is worked on.
-> 
-> Would you be okay with adding this patch back into the queue? If so,
-> should I repost it here?
+Thanks to Bernard Blackham for identifying this bug.
 
-It never hurts to resend everything.  Especially when "everything" is
-several months old!
+It occurs when two applications mmap the same framebuffer and concurrently
+write to the same page. Normally, this doesn't occur since only a single
+process mmaps the framebuffer. The symptom of the bug is that the mapping
+applications will hang. The cause is that defio incorrectly tries to add the
+same page twice to the pagelist. The solution I have is to walk the pagelist
+and check for a duplicate before adding. Since I needed to walk the
+pagelist, I now also keep the pagelist in sorted order.
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index 24843fd..59df132 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -74,6 +74,7 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ {
+ 	struct fb_info *info = vma->vm_private_data;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct page *cur;
+ 
+ 	/* this is a callback we get when userspace first tries to
+ 	write to the page. we schedule a workqueue. that workqueue
+@@ -83,7 +84,24 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ 
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
+-	list_add(&page->lru, &fbdefio->pagelist);
++
++	/* we loop through the pagelist before adding in order
++	to keep the pagelist sorted */
++	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++		/* this check is to catch the case where a new
++		process could start writing to the same page
++		through a new pte. this new access can cause the
++		mkwrite even when the original ps's pte is marked
++		writable */
++		if (unlikely(cur == page))
++			goto page_already_added;
++		else if (cur->index > page->index)
++			break;
++	}
++
++	list_add_tail(&page->lru, &cur->lru);
++
++page_already_added:
+ 	mutex_unlock(&fbdefio->lock);
+ 
+ 	/* come back after delay to process the deferred IO */
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!

@@ -1,8 +1,8 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc9 2/5] gumstix: conversion to MFP
-	support and add bluetooth support
-Date: Sun, 13 Jul 2008 09:26:24 -0400
-Message-ID: <1215955587-20367-3-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc9 3/5] am200epd: convert to
+	shared fb and use gpio api
+Date: Sun, 13 Jul 2008 09:26:25 -0400
+Message-ID: <1215955587-20367-4-git-send-email-jayakumar.lkml@gmail.com>
 References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KI2Tj-0005Ec-Ls for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Jul 2008 07:23:07 -0700
+	id 1KI2Tu-0005GA-Tp for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 13 Jul 2008 07:23:18 -0700
 Received: from wf-out-1314.google.com ([209.85.200.170])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KI2Ti-00076b-VC
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KI2Ts-00076b-46
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Jul 2008 07:23:07 -0700
+	Sun, 13 Jul 2008 07:23:18 -0700
 Received: by wf-out-1314.google.com with SMTP id 27so4474071wfd.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 13 Jul 2008 07:23:06 -0700 (PDT)
+	Sun, 13 Jul 2008 07:23:16 -0700 (PDT)
 In-Reply-To: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,199 +34,752 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-This patch converts gumstix over to the MFP configuration system and adds
-bluetooth support. Added a CLK_32K clock to enable bluetooth.
+The original am200epd driver was designed with bad assumptions. It
+manipulated GPSR/GPLR registers directly. It relied on direct access to the
+pxa LCDC registers which have since conflicted with commit
+ce4fb7b892a6d6c6a0f87366b26fd834d2923dd7 . This patch moves it into mach-pxa
+and overhauls it to use pxafb's fb. It now uses the generic GPIO api.
 
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 ---
- arch/arm/mach-pxa/gumstix.c |   77 +++++++++++++++++++++++++++++++++---------
- arch/arm/mach-pxa/pxa25x.c  |   31 +++++++++++++++++
- 2 files changed, 91 insertions(+), 17 deletions(-)
+ arch/arm/mach-pxa/Kconfig    |    9 +
+ arch/arm/mach-pxa/Makefile   |    1 +
+ arch/arm/mach-pxa/am200epd.c |  340 ++++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-pxa/devices.c  |    1 +
+ drivers/video/Kconfig        |   13 --
+ drivers/video/Makefile       |    1 -
+ drivers/video/am200epd.c     |  295 ------------------------------------
+ 7 files changed, 351 insertions(+), 309 deletions(-)
+ create mode 100644 arch/arm/mach-pxa/am200epd.c
+ delete mode 100644 drivers/video/am200epd.c
 
-diff --git a/arch/arm/mach-pxa/gumstix.c b/arch/arm/mach-pxa/gumstix.c
-index bdf2397..73c1cc5 100644
---- a/arch/arm/mach-pxa/gumstix.c
-+++ b/arch/arm/mach-pxa/gumstix.c
-@@ -20,8 +20,12 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
+diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
+index 3e28521..ee6456f 100644
+--- a/arch/arm/mach-pxa/Kconfig
++++ b/arch/arm/mach-pxa/Kconfig
+@@ -243,6 +243,15 @@ config PCM990_DISPLAY_NONE
+ 
+ endchoice
+ 
++config MACH_AM200EPD
++	depends on MACH_GUMSTIX_F
++	tristate "Enable AM200EPD board support"
++	select FB_METRONOME
++	select FB_SYS_FILLRECT
++	select FB_SYS_COPYAREA
++	select FB_SYS_IMAGEBLIT
++	select FB_SYS_FOPS
++	select FB_DEFERRED_IO
+ 
+ config PXA_EZX
+ 	bool "Motorola EZX Platform"
+diff --git a/arch/arm/mach-pxa/Makefile b/arch/arm/mach-pxa/Makefile
+index 5220a5c..618fe96 100644
+--- a/arch/arm/mach-pxa/Makefile
++++ b/arch/arm/mach-pxa/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_CPU_PXA320)	+= pxa320.o
+ 
+ # Specific board support
+ obj-$(CONFIG_ARCH_GUMSTIX)	+= gumstix.o
++obj-$(CONFIG_MACH_AM200EPD)	+= am200epd.o
+ obj-$(CONFIG_ARCH_LUBBOCK)	+= lubbock.o
+ obj-$(CONFIG_MACH_LOGICPD_PXA270) += lpd270.o
+ obj-$(CONFIG_MACH_MAINSTONE)	+= mainstone.o
+diff --git a/arch/arm/mach-pxa/am200epd.c b/arch/arm/mach-pxa/am200epd.c
+new file mode 100644
+index 0000000..c62a17d
+--- /dev/null
++++ b/arch/arm/mach-pxa/am200epd.c
+@@ -0,0 +1,340 @@
++/*
++ * am200epd.c -- Platform device for AM200 EPD kit
++ *
++ * Copyright (C) 2008, Jaya Kumar
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file COPYING in the main directory of this archive for
++ * more details.
++ *
++ * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
++ *
++ * This work was made possible by help and equipment support from E-Ink
++ * Corporation. http://support.eink.com/community
++ *
++ * This driver is written to be used with the Metronome display controller.
++ * on the AM200 EPD prototype kit/development kit with an E-Ink 800x600
++ * Vizplex EPD on a Gumstix board using the Lyre interface board.
++ *
++ */
++
++#define DEBUG 1
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/string.h>
 +#include <linux/delay.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/partitions.h>
++#include <linux/interrupt.h>
++#include <linux/fb.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/irq.h>
 +#include <linux/gpio.h>
-+#include <linux/err.h>
-+#include <linux/clk.h>
- 
- #include <asm/setup.h>
- #include <asm/memory.h>
-@@ -40,7 +44,7 @@
- 
- #include <asm/arch/pxa-regs.h>
- #include <asm/arch/pxa2xx-regs.h>
--#include <asm/arch/pxa2xx-gpio.h>
-+#include <asm/arch/mfp-pxa25x.h>
- 
- #include "generic.h"
- 
-@@ -85,21 +89,8 @@ static struct platform_device *devices[] __initdata = {
++
++#include <asm/arch/pxafb.h>
++
++#include <video/metronomefb.h>
++
++#include "generic.h"
++#include "devices.h"
++
++static unsigned int panel_type = 6;
++static struct platform_device *am200_device;
++static struct metronome_board am200_board;
++
++static struct pxafb_mode_info am200_fb_mode_9inch7 = {
++	.pixclock	= 40000,
++	.xres		= 1200,
++	.yres		= 842,
++	.bpp		= 16,
++	.hsync_len	= 2,
++	.left_margin	= 2,
++	.right_margin	= 2,
++	.vsync_len	= 1,
++	.upper_margin	= 2,
++	.lower_margin	= 25,
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++};
++
++static struct pxafb_mode_info am200_fb_mode_8inch = {
++	.pixclock	= 40000,
++	.xres		= 1088,
++	.yres		= 791,
++	.bpp		= 16,
++	.hsync_len	= 28,
++	.left_margin	= 8,
++	.right_margin	= 30,
++	.vsync_len	= 8,
++	.upper_margin	= 10,
++	.lower_margin	= 8,
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++};
++
++static struct pxafb_mode_info am200_fb_mode_6inch = {
++	.pixclock	= 40189,
++	.xres		= 832,
++	.yres		= 622,
++	.bpp		= 16,
++	.hsync_len	= 28,
++	.left_margin	= 34,
++	.right_margin	= 34,
++	.vsync_len	= 25,
++	.upper_margin	= 0,
++	.lower_margin	= 2,
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++};
++
++static struct pxafb_mach_info am200_fb_info = {
++	.modes		= &am200_fb_mode_6inch,
++	.num_modes	= 1,
++	.lcd_conn	= LCD_TYPE_COLOR_TFT | LCD_PCLK_EDGE_FALL |
++			  LCD_AC_BIAS_FREQ(24),
++	.clkdev		= &pxa_device_fb.dev,
++	.custom_xfer_div = 2,
++};
++
++/* register offsets for gpio control */
++#define LED_GPIO_PIN 51
++#define STDBY_GPIO_PIN 48
++#define RST_GPIO_PIN 49
++#define RDY_GPIO_PIN 32
++#define ERR_GPIO_PIN 17
++#define PCBPWR_GPIO_PIN 16
++static int gpios[] = { LED_GPIO_PIN , STDBY_GPIO_PIN , RST_GPIO_PIN,
++			RDY_GPIO_PIN, ERR_GPIO_PIN, PCBPWR_GPIO_PIN };
++static char *gpio_names[] = { "LED" , "STDBY" , "RST", "RDY", "ERR", "PCBPWR" };
++
++static int am200_init_gpio_regs(struct metronomefb_par *par)
++{
++	int i;
++	int err;
++
++	for (i = 0; i < ARRAY_SIZE(gpios); i++) {
++		err = gpio_request(gpios[i], gpio_names[i]);
++		if (err) {
++			dev_err(&am200_device->dev, "failed requesting "
++				"gpio %s, err=%d\n", gpio_names[i], err);
++			goto err_req_gpio;
++		}
++	}
++
++	gpio_direction_output(LED_GPIO_PIN, 0);
++	gpio_direction_output(STDBY_GPIO_PIN, 0);
++	gpio_direction_output(RST_GPIO_PIN, 0);
++
++	gpio_direction_input(RDY_GPIO_PIN);
++	gpio_direction_input(ERR_GPIO_PIN);
++
++	gpio_direction_output(PCBPWR_GPIO_PIN, 0);
++
++	return 0;
++
++err_req_gpio:
++	while (i > 0)
++		gpio_free(gpios[i--]);
++
++	return err;
++}
++
++static void am200_cleanup(struct metronomefb_par *par)
++{
++	int i;
++
++	free_irq(IRQ_GPIO(RDY_GPIO_PIN), par->info);
++
++	for (i = 0; i < ARRAY_SIZE(gpios); i++)
++		gpio_free(gpios[i]);
++}
++
++static struct platform_device *am200_pxa_device_fb;
++
++static int am200_pxa_register_device(struct platform_device *dev,
++					struct pxafb_mach_info *data)
++{
++	int ret;
++
++	am200_pxa_device_fb = platform_device_alloc("pxa2xx-fb", -1);
++	if (!am200_pxa_device_fb)
++		return -ENOMEM;
++
++	platform_device_add_data(am200_pxa_device_fb, data, sizeof(*data));
++
++	platform_device_add_resources(am200_pxa_device_fb,
++					pxa_device_fb.resource,
++					pxa_device_fb.num_resources);
++
++	am200_pxa_device_fb->dev.dma_mask = pxa_device_fb.dev.dma_mask;
++	am200_pxa_device_fb->dev.coherent_dma_mask =
++					pxa_device_fb.dev.coherent_dma_mask;
++
++	ret = platform_device_add(am200_pxa_device_fb);
++
++	if (ret) {
++		dev_err(&am200_device->dev, "failed adding pxafb %d\n", ret);
++		platform_device_put(am200_pxa_device_fb);
++	}
++
++	return ret;
++}
++
++static int am200_share_video_mem(char __iomem *video_mem, dma_addr_t dma,
++					struct module *fbmaster, void *data)
++{
++	struct metronomefb_par *par = data;
++
++	/* try to refcount the caller since we are the consumer after this */
++	if (!try_module_get(fbmaster))
++		return -ENODEV;
++
++	dev_dbg(&am200_device->dev, "mod_get %p\n", fbmaster);
++	am200_board.fbmaster = fbmaster;
++	par->metromem = (unsigned char __force *)video_mem;
++	par->metromem_dma = dma;
++
++	return 0;
++}
++
++static void am200_unshare_video_mem(void *data)
++{
++	struct metronomefb_par *par = data;
++
++	dev_dbg(&am200_device->dev, "ENTER %s\n", __func__);
++	par->metromem = NULL;
++	par->metromem_dma = 0;
++	dev_dbg(&am200_device->dev, "mod_put %p\n", am200_board.fbmaster);
++	module_put(am200_board.fbmaster);
++}
++
++static int am200_setup_fb(struct metronomefb_par *par)
++{
++	int ret;
++
++	am200_fb_info.extra_video_mem = par->extra_size;
++	am200_fb_info.extra_data = (void *) par;
++	am200_fb_info.share_video_mem = am200_share_video_mem;
++	am200_fb_info.unshare_video_mem = am200_unshare_video_mem;
++
++	switch (panel_type) {
++	case 6:
++		am200_fb_info.modes = &am200_fb_mode_6inch;
++		break;
++	case 8:
++		am200_fb_info.modes = &am200_fb_mode_8inch;
++		break;
++	case 97:
++		am200_fb_info.modes = &am200_fb_mode_9inch7;
++		break;
++	default:
++		dev_err(&am200_device->dev, "invalid panel_type selection,"
++						" setting to 6\n");
++		am200_fb_info.modes = &am200_fb_mode_6inch;
++		break;
++	}
++
++	ret = am200_pxa_register_device(&pxa_device_fb, &am200_fb_info);
++	return ret;
++}
++
++static int am200_get_panel_type(void)
++{
++	return panel_type;
++}
++
++static irqreturn_t am200_handle_irq(int irq, void *dev_id)
++{
++	struct fb_info *info = dev_id;
++	struct metronomefb_par *par = info->par;
++
++	wake_up_interruptible(&par->waitq);
++	return IRQ_HANDLED;
++}
++
++static int am200_setup_irq(struct fb_info *info)
++{
++	int ret;
++
++	ret = request_irq(IRQ_GPIO(RDY_GPIO_PIN), am200_handle_irq,
++				IRQF_DISABLED|IRQF_TRIGGER_FALLING,
++				"AM200", info);
++	if (ret)
++		dev_err(&am200_device->dev, "request_irq failed: %d\n", ret);
++
++	return ret;
++}
++
++static void am200_set_rst(struct metronomefb_par *par, int state)
++{
++	gpio_set_value(RST_GPIO_PIN, state);
++}
++
++static void am200_set_stdby(struct metronomefb_par *par, int state)
++{
++	gpio_set_value(STDBY_GPIO_PIN, state);
++}
++
++static int am200_wait_event(struct metronomefb_par *par)
++{
++	return wait_event_timeout(par->waitq, gpio_get_value(RDY_GPIO_PIN), HZ);
++}
++
++static int am200_wait_event_intr(struct metronomefb_par *par)
++{
++	int ret;
++
++	ret = wait_event_interruptible_timeout(par->waitq,
++					gpio_get_value(RDY_GPIO_PIN), HZ);
++	return ret;
++}
++
++static struct metronome_board am200_board = {
++	.owner			= THIS_MODULE,
++	.setup_irq		= am200_setup_irq,
++	.setup_io		= am200_init_gpio_regs,
++	.setup_fb		= am200_setup_fb,
++	.set_rst		= am200_set_rst,
++	.set_stdby		= am200_set_stdby,
++	.met_wait_event		= am200_wait_event,
++	.met_wait_event_intr	= am200_wait_event_intr,
++	.get_panel_type		= am200_get_panel_type,
++	.cleanup		= am200_cleanup,
++};
++
++static int __init am200_init(void)
++{
++	int ret;
++
++	/* request our platform independent driver */
++	request_module("metronomefb");
++
++	am200_device = platform_device_alloc("metronomefb", -1);
++	if (!am200_device)
++		return -ENOMEM;
++
++	platform_device_add_data(am200_device, &am200_board,
++					sizeof(am200_board));
++
++	/* this _add binds metronomefb to am200. metronomefb refcounts am200 */
++	ret = platform_device_add(am200_device);
++
++	if (ret)
++		platform_device_put(am200_device);
++
++	return ret;
++}
++
++static void __exit am200_exit(void)
++{
++	platform_device_unregister(am200_pxa_device_fb);
++	platform_device_unregister(am200_device);
++}
++
++module_param(panel_type, uint, 0);
++MODULE_PARM_DESC(panel_type, "Select the panel type: 6, 8, 97");
++
++module_init(am200_init);
++module_exit(am200_exit);
++
++MODULE_DESCRIPTION("board driver for am200 metronome epd kit");
++MODULE_AUTHOR("Jaya Kumar");
++MODULE_LICENSE("GPL");
+diff --git a/arch/arm/mach-pxa/devices.c b/arch/arm/mach-pxa/devices.c
+index 47af7f6..d85ea98 100644
+--- a/arch/arm/mach-pxa/devices.c
++++ b/arch/arm/mach-pxa/devices.c
+@@ -143,6 +143,7 @@ struct platform_device pxa_device_fb = {
+ 	.num_resources	= ARRAY_SIZE(pxafb_resources),
+ 	.resource	= pxafb_resources,
  };
++EXPORT_SYMBOL_GPL(pxa_device_fb);
  
- #ifdef CONFIG_MMC_PXA
--static struct pxamci_platform_data gumstix_mci_platform_data;
+ void __init set_pxa_fb_info(struct pxafb_mach_info *info)
+ {
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index e0c5f96..752907d 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1938,19 +1938,6 @@ config FB_XILINX
+ 	  framebuffer. ML300 carries a 640*480 LCD display on the board,
+ 	  ML403 uses a standard DB15 VGA connector.
+ 
+-config FB_AM200EPD
+-       tristate "AM-200 E-Ink EPD devkit support"
+-       depends on FB && ARCH_PXA && MMU
+-       select FB_SYS_FILLRECT
+-       select FB_SYS_COPYAREA
+-       select FB_SYS_IMAGEBLIT
+-       select FB_SYS_FOPS
+-       select FB_DEFERRED_IO
+-       select FB_METRONOME
+-       help
+-         This enables support for the Metronome display controller used on
+-         the E-Ink AM-200 EPD devkit.
 -
--static int gumstix_mci_init(struct device *dev, irq_handler_t detect_int,
--				void *data)
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+ 	depends on FB
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 04bca35..80d5842 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -29,7 +29,6 @@ obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
+-obj-$(CONFIG_FB_AM200EPD)         += am200epd.o
+ obj-$(CONFIG_FB_ARC)              += arcfb.o
+ obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o
+ obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o
+diff --git a/drivers/video/am200epd.c b/drivers/video/am200epd.c
+deleted file mode 100644
+index 51e26c1..0000000
+--- a/drivers/video/am200epd.c
++++ /dev/null
+@@ -1,295 +0,0 @@
+-/*
+- * linux/drivers/video/am200epd.c -- Platform device for AM200 EPD kit
+- *
+- * Copyright (C) 2008, Jaya Kumar
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License. See the file COPYING in the main directory of this archive for
+- * more details.
+- *
+- * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
+- *
+- * This work was made possible by help and equipment support from E-Ink
+- * Corporation. http://support.eink.com/community
+- *
+- * This driver is written to be used with the Metronome display controller.
+- * on the AM200 EPD prototype kit/development kit with an E-Ink 800x600
+- * Vizplex EPD on a Gumstix board using the Lyre interface board.
+- *
+- */
+-
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/delay.h>
+-#include <linux/interrupt.h>
+-#include <linux/fb.h>
+-#include <linux/init.h>
+-#include <linux/platform_device.h>
+-#include <linux/list.h>
+-#include <linux/uaccess.h>
+-#include <linux/irq.h>
+-
+-#include <video/metronomefb.h>
+-
+-#include <asm/arch/pxa-regs.h>
+-
+-/* register offsets for gpio control */
+-#define LED_GPIO_PIN 51
+-#define STDBY_GPIO_PIN 48
+-#define RST_GPIO_PIN 49
+-#define RDY_GPIO_PIN 32
+-#define ERR_GPIO_PIN 17
+-#define PCBPWR_GPIO_PIN 16
+-
+-#define AF_SEL_GPIO_N 0x3
+-#define GAFR0_U_OFFSET(pin) ((pin - 16) * 2)
+-#define GAFR1_L_OFFSET(pin) ((pin - 32) * 2)
+-#define GAFR1_U_OFFSET(pin) ((pin - 48) * 2)
+-#define GPDR1_OFFSET(pin) (pin - 32)
+-#define GPCR1_OFFSET(pin) (pin - 32)
+-#define GPSR1_OFFSET(pin) (pin - 32)
+-#define GPCR0_OFFSET(pin) (pin)
+-#define GPSR0_OFFSET(pin) (pin)
+-
+-static void am200_set_gpio_output(int pin, int val)
 -{
--	pxa_gpio_mode(GPIO6_MMCCLK_MD);
--	pxa_gpio_mode(GPIO53_MMCCLK_MD);
--	pxa_gpio_mode(GPIO8_MMCCS0_MD);
+-	u8 index;
 -
--	return 0;
+-	index = pin >> 4;
+-
+-	switch (index) {
+-	case 1:
+-		if (val)
+-			GPSR0 |= (1 << GPSR0_OFFSET(pin));
+-		else
+-			GPCR0 |= (1 << GPCR0_OFFSET(pin));
+-		break;
+-	case 2:
+-		break;
+-	case 3:
+-		if (val)
+-			GPSR1 |= (1 << GPSR1_OFFSET(pin));
+-		else
+-			GPCR1 |= (1 << GPCR1_OFFSET(pin));
+-		break;
+-	default:
+-		printk(KERN_ERR "unimplemented\n");
+-	}
 -}
 -
- static struct pxamci_platform_data gumstix_mci_platform_data = {
- 	.ocr_mask	= MMC_VDD_32_33|MMC_VDD_33_34,
--	.init		= gumstix_mci_init,
- };
- 
- static void __init gumstix_mmc_init(void)
-@@ -109,11 +100,11 @@ static void __init gumstix_mmc_init(void)
- #else
- static void __init gumstix_mmc_init(void)
- {
--	printk(KERN_INFO "Gumstix mmc disabled\n");
-+	pr_debug("Gumstix mmc disabled\n");
- }
- #endif
- 
--#ifdef CONFIG_USB_GADGET_PXA2XX
-+#ifdef CONFIG_USB_GADGET_PXA25X
- static struct pxa2xx_udc_mach_info gumstix_udc_info __initdata = {
- 	.gpio_vbus		= GPIO_GUMSTIX_USB_GPIOn,
- 	.gpio_pullup		= GPIO_GUMSTIX_USB_GPIOx,
-@@ -126,12 +117,64 @@ static void __init gumstix_udc_init(void)
- #else
- static void gumstix_udc_init(void)
- {
--	printk(KERN_INFO "Gumstix udc is disabled\n");
-+	pr_debug("Gumstix udc is disabled\n");
- }
- #endif
- 
-+#ifdef CONFIG_BT
-+static void __init gumstix_bluetooth_init(void)
-+{
-+	int err;
-+	struct clk *clk32k;
-+
-+	clk32k = clk_get(NULL, "CLK_32K");
-+	if (IS_ERR(clk32k)) {
-+		pr_err("gumstix: failed to find 32kHz clock\n");
-+		return;
-+	}
-+	clk_enable(clk32k);
-+
-+	err = gpio_direction_output(GPIO_GUMSTIX_BTRESET, 1);
-+	if (err) {
-+		pr_err("gumstix: can't reset bluetooth\n");
-+		return;
-+	}
-+	gpio_set_value(GPIO_GUMSTIX_BTRESET, 0);
-+	udelay(100);
-+	gpio_set_value(GPIO_GUMSTIX_BTRESET, 1);
-+}
-+#else
-+static void gumstix_bluetooth_init(void)
-+{
-+	pr_debug("Gumstix Bluetooth is disabled\n");
-+}
-+#endif
-+
-+static unsigned long gumstix_pin_config[] __initdata = {
-+	GPIO12_32KHz,
-+	/* BTUART */
-+	GPIO42_HWUART_RXD,
-+	GPIO43_HWUART_TXD,
-+	GPIO44_HWUART_CTS,
-+	GPIO45_HWUART_RTS,
-+	/* MMC */
-+	GPIO6_MMC_CLK,
-+	GPIO53_MMC_CLK,
-+	GPIO8_MMC_CS0,
-+	/* these are used by AM200EPD */
-+	GPIO51_GPIO,
-+	GPIO49_GPIO,
-+	GPIO48_GPIO,
-+	GPIO32_GPIO,
-+	GPIO17_GPIO,
-+	GPIO16_GPIO,
-+};
-+
- static void __init gumstix_init(void)
- {
-+	pxa2xx_mfp_config(ARRAY_AND_SIZE(gumstix_pin_config));
-+
-+	gumstix_bluetooth_init();
- 	gumstix_udc_init();
- 	gumstix_mmc_init();
- 	(void) platform_add_devices(devices, ARRAY_SIZE(devices));
-diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
-index c5b845b..5930a8b 100644
---- a/arch/arm/mach-pxa/pxa25x.c
-+++ b/arch/arm/mach-pxa/pxa25x.c
-@@ -22,6 +22,7 @@
- #include <linux/platform_device.h>
- #include <linux/suspend.h>
- #include <linux/sysdev.h>
-+#include <linux/delay.h>
- 
- #include <asm/hardware.h>
- #include <asm/arch/irqs.h>
-@@ -155,6 +156,30 @@ static const struct clkops clk_pxa25x_gpio11_ops = {
- 	.disable        = clk_gpio11_disable,
- };
- 
-+static void clk_32k_enable(struct clk *clk)
-+{
-+	int timeout = 500;
-+
-+	if (!(OSCC & OSCC_OOK))
-+		pr_warning("32kHz clock was not on. Bootloader may need to "
-+				"be updated\n");
-+	else
-+		return;
-+
-+	OSCC |= OSCC_OON;
-+	do {
-+		if (OSCC & OSCC_OOK)
-+			break;
-+		udelay(1);
-+	} while (--timeout);
-+	if (!timeout)
-+		pr_err("Failed to start 32kHz clock\n");
-+}
-+
-+static const struct clkops clk_32k_ops = {
-+	.enable		= clk_32k_enable,
-+};
-+
- /*
-  * 3.6864MHz -> OST, GPIO, SSP, PWM, PLLs (95.842MHz, 147.456MHz)
-  * 95.842MHz -> MMC 19.169MHz, I2C 31.949MHz, FICP 47.923MHz, USB 47.923MHz
-@@ -169,6 +194,12 @@ static struct clk pxa25x_hwuart_clk =
-  * Please be careful not to disrupt the ordering.
-  */
- static struct clk pxa25x_clks[] = {
-+	{
-+		.name           = "CLK_32K",
-+		.ops            = &clk_32k_ops,
-+		.rate           = 32768,
-+		.delay          = 70,
-+	},
- 	INIT_CK("LCDCLK", LCD, &clk_pxa25x_lcd_ops, &pxa_device_fb.dev),
- 	INIT_CKEN("UARTCLK", FFUART, 14745600, 1, &pxa_device_ffuart.dev),
- 	INIT_CKEN("UARTCLK", BTUART, 14745600, 1, &pxa_device_btuart.dev),
+-static void __devinit am200_init_gpio_pin(int pin, int dir)
+-{
+-	u8 index;
+-	/* dir 0 is output, 1 is input
+-	- do 2 things here:
+-	- set gpio alternate function to standard gpio
+-	- set gpio direction to input or output  */
+-
+-	index = pin >> 4;
+-	switch (index) {
+-	case 1:
+-		GAFR0_U &= ~(AF_SEL_GPIO_N << GAFR0_U_OFFSET(pin));
+-
+-		if (dir)
+-			GPDR0 &= ~(1 << pin);
+-		else
+-			GPDR0 |= (1 << pin);
+-		break;
+-	case 2:
+-		GAFR1_L &= ~(AF_SEL_GPIO_N << GAFR1_L_OFFSET(pin));
+-
+-		if (dir)
+-			GPDR1 &= ~(1 << GPDR1_OFFSET(pin));
+-		else
+-			GPDR1 |= (1 << GPDR1_OFFSET(pin));
+-		break;
+-	case 3:
+-		GAFR1_U &= ~(AF_SEL_GPIO_N << GAFR1_U_OFFSET(pin));
+-
+-		if (dir)
+-			GPDR1 &= ~(1 << GPDR1_OFFSET(pin));
+-		else
+-			GPDR1 |= (1 << GPDR1_OFFSET(pin));
+-		break;
+-	default:
+-		printk(KERN_ERR "unimplemented\n");
+-	}
+-}
+-
+-static void am200_init_gpio_regs(struct metronomefb_par *par)
+-{
+-	am200_init_gpio_pin(LED_GPIO_PIN, 0);
+-	am200_set_gpio_output(LED_GPIO_PIN, 0);
+-
+-	am200_init_gpio_pin(STDBY_GPIO_PIN, 0);
+-	am200_set_gpio_output(STDBY_GPIO_PIN, 0);
+-
+-	am200_init_gpio_pin(RST_GPIO_PIN, 0);
+-	am200_set_gpio_output(RST_GPIO_PIN, 0);
+-
+-	am200_init_gpio_pin(RDY_GPIO_PIN, 1);
+-
+-	am200_init_gpio_pin(ERR_GPIO_PIN, 1);
+-
+-	am200_init_gpio_pin(PCBPWR_GPIO_PIN, 0);
+-	am200_set_gpio_output(PCBPWR_GPIO_PIN, 0);
+-}
+-
+-static void am200_disable_lcd_controller(struct metronomefb_par *par)
+-{
+-	LCSR = 0xffffffff;	/* Clear LCD Status Register */
+-	LCCR0 |= LCCR0_DIS;	/* Disable LCD Controller */
+-
+-	/* we reset and just wait for things to settle */
+-	msleep(200);
+-}
+-
+-static void am200_enable_lcd_controller(struct metronomefb_par *par)
+-{
+-	LCSR = 0xffffffff;
+-	FDADR0 = par->metromem_desc_dma;
+-	LCCR0 |= LCCR0_ENB;
+-}
+-
+-static void am200_init_lcdc_regs(struct metronomefb_par *par)
+-{
+-	/* here we do:
+-	- disable the lcd controller
+-	- setup lcd control registers
+-	- setup dma descriptor
+-	- reenable lcd controller
+-	*/
+-
+-	/* disable the lcd controller */
+-	am200_disable_lcd_controller(par);
+-
+-	/* setup lcd control registers */
+-	LCCR0 = LCCR0_LDM | LCCR0_SFM | LCCR0_IUM | LCCR0_EFM | LCCR0_PAS
+-		| LCCR0_QDM | LCCR0_BM | LCCR0_OUM;
+-
+-	LCCR1 = (par->info->var.xres/2 - 1) /* pixels per line */
+-		| (27 << 10) /* hsync pulse width - 1 */
+-		| (33 << 16) /* eol pixel count */
+-		| (33 << 24); /* bol pixel count */
+-
+-	LCCR2 = (par->info->var.yres - 1) /* lines per panel */
+-		| (24 << 10) /* vsync pulse width - 1 */
+-		| (2 << 16) /* eof pixel count */
+-		| (0 << 24); /* bof pixel count */
+-
+-	LCCR3 = 2 /* pixel clock divisor */
+-		| (24 << 8) /* AC Bias pin freq */
+-		| LCCR3_16BPP /* BPP */
+-		| LCCR3_PCP;  /* PCP falling edge */
+-
+-}
+-
+-static void am200_post_dma_setup(struct metronomefb_par *par)
+-{
+-	par->metromem_desc->mFDADR0 = par->metromem_desc_dma;
+-	par->metromem_desc->mFSADR0 = par->metromem_dma;
+-	par->metromem_desc->mFIDR0 = 0;
+-	par->metromem_desc->mLDCMD0 = par->info->var.xres
+-					* par->info->var.yres;
+-	am200_enable_lcd_controller(par);
+-}
+-
+-static void am200_free_irq(struct fb_info *info)
+-{
+-	free_irq(IRQ_GPIO(RDY_GPIO_PIN), info);
+-}
+-
+-static irqreturn_t am200_handle_irq(int irq, void *dev_id)
+-{
+-	struct fb_info *info = dev_id;
+-	struct metronomefb_par *par = info->par;
+-
+-	wake_up_interruptible(&par->waitq);
+-	return IRQ_HANDLED;
+-}
+-
+-static int am200_setup_irq(struct fb_info *info)
+-{
+-	int retval;
+-
+-	retval = request_irq(IRQ_GPIO(RDY_GPIO_PIN), am200_handle_irq,
+-				IRQF_DISABLED, "AM200", info);
+-	if (retval) {
+-		printk(KERN_ERR "am200epd: request_irq failed: %d\n", retval);
+-		return retval;
+-	}
+-
+-	return set_irq_type(IRQ_GPIO(RDY_GPIO_PIN), IRQT_FALLING);
+-}
+-
+-static void am200_set_rst(struct metronomefb_par *par, int state)
+-{
+-	am200_set_gpio_output(RST_GPIO_PIN, state);
+-}
+-
+-static void am200_set_stdby(struct metronomefb_par *par, int state)
+-{
+-	am200_set_gpio_output(STDBY_GPIO_PIN, state);
+-}
+-
+-static int am200_wait_event(struct metronomefb_par *par)
+-{
+-	return wait_event_timeout(par->waitq, (GPLR1 & 0x01), HZ);
+-}
+-
+-static int am200_wait_event_intr(struct metronomefb_par *par)
+-{
+-	return wait_event_interruptible_timeout(par->waitq, (GPLR1 & 0x01), HZ);
+-}
+-
+-static struct metronome_board am200_board = {
+-	.owner			= THIS_MODULE,
+-	.free_irq		= am200_free_irq,
+-	.setup_irq		= am200_setup_irq,
+-	.init_gpio_regs		= am200_init_gpio_regs,
+-	.init_lcdc_regs		= am200_init_lcdc_regs,
+-	.post_dma_setup		= am200_post_dma_setup,
+-	.set_rst		= am200_set_rst,
+-	.set_stdby		= am200_set_stdby,
+-	.met_wait_event		= am200_wait_event,
+-	.met_wait_event_intr	= am200_wait_event_intr,
+-};
+-
+-static struct platform_device *am200_device;
+-
+-static int __init am200_init(void)
+-{
+-	int ret;
+-
+-	/* request our platform independent driver */
+-	request_module("metronomefb");
+-
+-	am200_device = platform_device_alloc("metronomefb", -1);
+-	if (!am200_device)
+-		return -ENOMEM;
+-
+-	platform_device_add_data(am200_device, &am200_board,
+-					sizeof(am200_board));
+-
+-	/* this _add binds metronomefb to am200. metronomefb refcounts am200 */
+-	ret = platform_device_add(am200_device);
+-
+-	if (ret)
+-		platform_device_put(am200_device);
+-
+-	return ret;
+-}
+-
+-static void __exit am200_exit(void)
+-{
+-	platform_device_unregister(am200_device);
+-}
+-
+-module_init(am200_init);
+-module_exit(am200_exit);
+-
+-MODULE_DESCRIPTION("board driver for am200 metronome epd kit");
+-MODULE_AUTHOR("Jaya Kumar");
+-MODULE_LICENSE("GPL");
 -- 
 1.5.3.6
 

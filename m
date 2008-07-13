@@ -1,8 +1,8 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc9 1/5] pxafb: add shared
-	framebuffer interface
-Date: Sun, 13 Jul 2008 09:26:23 -0400
-Message-ID: <1215955587-20367-2-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc9 2/5] gumstix: conversion to MFP
+	support and add bluetooth support
+Date: Sun, 13 Jul 2008 09:26:24 -0400
+Message-ID: <1215955587-20367-3-git-send-email-jayakumar.lkml@gmail.com>
 References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KI2Tb-00059b-Qd for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Jul 2008 07:23:03 -0700
+	id 1KI2Tj-0005Ec-Ls for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 13 Jul 2008 07:23:07 -0700
 Received: from wf-out-1314.google.com ([209.85.200.170])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KI2Tb-00076b-7E
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KI2Ti-00076b-VC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Jul 2008 07:22:59 -0700
+	Sun, 13 Jul 2008 07:23:07 -0700
 Received: by wf-out-1314.google.com with SMTP id 27so4474071wfd.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 13 Jul 2008 07:22:59 -0700 (PDT)
+	Sun, 13 Jul 2008 07:23:06 -0700 (PDT)
 In-Reply-To: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,221 +34,199 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-These changes are to make it possible for a secondary driver to share the
-pxafb framebuffer. The changes include:
-- adding clkdev entry in pxafb_mach_info so that a driver can pass in the
-  correct struct device owner for the LCDCLK.
-- adding custom_xfer_div entry so that a driver can have custom sized
-  transfers. For example, the metronome controller uses 16 bit AMLCD
-  transfers but actually has 3 bit pixels in 8 bit containers.
-- adding extra_video_mem entry so that a driver can tell pxafb of its
-  additional needs.
-- adding share_video_mem/unshare_video_mem callbacks to notify the secondary
-  driver of the framebuffer address, to allow refcounting, and to cleanup on
-  completion.
+This patch converts gumstix over to the MFP configuration system and adds
+bluetooth support. Added a CLK_32K clock to enable bluetooth.
 
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 ---
- arch/arm/mach-pxa/devices.c      |    2 +
- drivers/video/pxafb.c            |   48 +++++++++++++++++++++++++++++++------
- include/asm-arm/arch-pxa/pxafb.h |    9 +++++++
- 3 files changed, 51 insertions(+), 8 deletions(-)
+ arch/arm/mach-pxa/gumstix.c |   77 +++++++++++++++++++++++++++++++++---------
+ arch/arm/mach-pxa/pxa25x.c  |   31 +++++++++++++++++
+ 2 files changed, 91 insertions(+), 17 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/devices.c b/arch/arm/mach-pxa/devices.c
-index 84489dc..47af7f6 100644
---- a/arch/arm/mach-pxa/devices.c
-+++ b/arch/arm/mach-pxa/devices.c
-@@ -146,6 +146,8 @@ struct platform_device pxa_device_fb = {
+diff --git a/arch/arm/mach-pxa/gumstix.c b/arch/arm/mach-pxa/gumstix.c
+index bdf2397..73c1cc5 100644
+--- a/arch/arm/mach-pxa/gumstix.c
++++ b/arch/arm/mach-pxa/gumstix.c
+@@ -20,8 +20,12 @@
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
++#include <linux/delay.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
++#include <linux/gpio.h>
++#include <linux/err.h>
++#include <linux/clk.h>
  
- void __init set_pxa_fb_info(struct pxafb_mach_info *info)
- {
-+	if (!info->clkdev)
-+		info->clkdev = &pxa_device_fb.dev;
- 	pxa_register_device(&pxa_device_fb, info);
- }
+ #include <asm/setup.h>
+ #include <asm/memory.h>
+@@ -40,7 +44,7 @@
  
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index bb25143..d2bd488 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -57,6 +57,8 @@
-  */
- #define DEBUG_VAR 1
+ #include <asm/arch/pxa-regs.h>
+ #include <asm/arch/pxa2xx-regs.h>
+-#include <asm/arch/pxa2xx-gpio.h>
++#include <asm/arch/mfp-pxa25x.h>
  
-+static struct platform_driver pxafb_driver;
-+
- #include "pxafb.h"
+ #include "generic.h"
  
- /* Bits which should not be set in machine configuration structures */
-@@ -826,10 +828,15 @@ int pxafb_smart_flush(struct fb_info *info)
- static void setup_parallel_timing(struct pxafb_info *fbi,
- 				  struct fb_var_screeninfo *var)
- {
-+	struct pxafb_mach_info *inf = fbi->dev->platform_data;
- 	unsigned int lines_per_panel, pcd = get_pcd(fbi, var->pixclock);
-+	unsigned int pix_per_line = var->xres;
-+
-+	if (inf->custom_xfer_div)
-+		pix_per_line /= inf->custom_xfer_div;
- 
- 	fbi->reg_lccr1 =
--		LCCR1_DisWdth(var->xres) +
-+		LCCR1_DisWdth(pix_per_line) +
- 		LCCR1_HorSnchWdth(var->hsync_len) +
- 		LCCR1_BegLnDel(var->left_margin) +
- 		LCCR1_EndLnDel(var->right_margin);
-@@ -870,6 +877,7 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
- {
- 	u_long flags;
- 	size_t nbytes;
-+	struct pxafb_mach_info *inf = fbi->dev->platform_data;
- 
- #if DEBUG_VAR
- 	if (!(fbi->lccr0 & LCCR0_LCDT)) {
-@@ -931,6 +939,8 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
- 	fbi->reg_lccr3 |= pxafb_bpp_to_lccr3(var);
- 
- 	nbytes = var->yres * fbi->fb.fix.line_length;
-+	if (inf->custom_xfer_div)
-+		nbytes /= inf->custom_xfer_div;
- 
- 	if ((fbi->lccr0 & LCCR0_SDS) == LCCR0_Dual) {
- 		nbytes = nbytes / 2;
-@@ -1304,21 +1314,25 @@ static int pxafb_resume(struct platform_device *dev)
-  *      cache.  Once this area is remapped, all virtual memory
-  *      access to the video memory should occur at the new region.
-  */
--static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
-+static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi,
-+					 struct pxafb_mach_info *inf)
- {
-+	int ret;
- 	/*
- 	 * We reserve one page for the palette, plus the size
- 	 * of the framebuffer.
- 	 */
- 	fbi->video_offset = PAGE_ALIGN(sizeof(struct pxafb_dma_buff));
--	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset);
-+	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset +
-+					inf->extra_video_mem);
- 	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
- 					      &fbi->map_dma, GFP_KERNEL);
- 
- 	if (fbi->map_cpu) {
- 		/* prevent initial garbage on screen */
- 		memset(fbi->map_cpu, 0, fbi->map_size);
--		fbi->fb.screen_base = fbi->map_cpu + fbi->video_offset;
-+		fbi->fb.screen_base = (char __force __iomem *) fbi->map_cpu
-+					+ fbi->video_offset;
- 		fbi->screen_dma = fbi->map_dma + fbi->video_offset;
- 
- 		/*
-@@ -1340,6 +1354,13 @@ static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
- 		fbi->smart_cmds = (uint16_t *) fbi->dma_buff->cmd_buff;
- 		fbi->n_smart_cmds = 0;
- #endif
-+		if (inf->share_video_mem) {
-+			ret = inf->share_video_mem(fbi->fb.screen_base,
-+				fbi->screen_dma, pxafb_driver.driver.owner,
-+				inf->extra_data);
-+			if (ret)
-+				return ret;
-+		}
- 	}
- 
- 	return fbi->map_cpu ? 0 : -ENOMEM;
-@@ -1350,6 +1371,7 @@ static void pxafb_decode_mode_info(struct pxafb_info *fbi,
- 				   unsigned int num_modes)
- {
- 	unsigned int i, smemlen;
-+	struct pxafb_mach_info *inf = fbi->dev->platform_data;
- 
- 	pxafb_setmode(&fbi->fb.var, &modes[0]);
- 
-@@ -1357,6 +1379,8 @@ static void pxafb_decode_mode_info(struct pxafb_info *fbi,
- 		smemlen = modes[i].xres * modes[i].yres * modes[i].bpp / 8;
- 		if (smemlen > fbi->fb.fix.smem_len)
- 			fbi->fb.fix.smem_len = smemlen;
-+		if (inf->custom_xfer_div)
-+			fbi->fb.fix.smem_len /= inf->custom_xfer_div;
- 	}
- }
- 
-@@ -1420,7 +1444,7 @@ static struct pxafb_info * __devinit pxafb_init_fbinfo(struct device *dev)
- 	memset(fbi, 0, sizeof(struct pxafb_info));
- 	fbi->dev = dev;
- 
--	fbi->clk = clk_get(dev, "LCDCLK");
-+	fbi->clk = clk_get(inf->clkdev, "LCDCLK");
- 	if (IS_ERR(fbi->clk)) {
- 		kfree(fbi);
- 		return NULL;
-@@ -1761,10 +1785,12 @@ static int __devinit pxafb_probe(struct platform_device *dev)
- 	}
- 
- 	/* Initialize video memory */
--	ret = pxafb_map_video_memory(fbi);
--	if (ret) {
-+	ret = pxafb_map_video_memory(fbi, inf);
-+	if (ret == -ENODEV) {
-+		dev_err(&dev->dev, "Failed device binding: %d\n", ret);
-+		goto failed_free_mem;
-+	} else if (ret) {
- 		dev_err(&dev->dev, "Failed to allocate video RAM: %d\n", ret);
--		ret = -ENOMEM;
- 		goto failed_free_io;
- 	}
- 
-@@ -1836,6 +1862,8 @@ failed_free_cmap:
- failed_free_irq:
- 	free_irq(irq, fbi);
- failed_free_mem:
-+	if (inf->unshare_video_mem)
-+		inf->unshare_video_mem(inf->extra_data);
- 	dma_free_writecombine(&dev->dev, fbi->map_size,
- 			fbi->map_cpu, fbi->map_dma);
- failed_free_io:
-@@ -1856,6 +1884,7 @@ static int __devexit pxafb_remove(struct platform_device *dev)
- 	struct resource *r;
- 	int irq;
- 	struct fb_info *info;
-+	struct pxafb_mach_info *inf;
- 
- 	if (!fbi)
- 		return 0;
-@@ -1872,6 +1901,9 @@ static int __devexit pxafb_remove(struct platform_device *dev)
- 	irq = platform_get_irq(dev, 0);
- 	free_irq(irq, fbi);
- 
-+	inf = dev->dev.platform_data;
-+	if (inf->unshare_video_mem)
-+		inf->unshare_video_mem(inf->extra_data);
- 	dma_free_writecombine(&dev->dev, fbi->map_size,
- 					fbi->map_cpu, fbi->map_dma);
- 
-diff --git a/include/asm-arm/arch-pxa/pxafb.h b/include/asm-arm/arch-pxa/pxafb.h
-index daf018d..8528895 100644
---- a/include/asm-arm/arch-pxa/pxafb.h
-+++ b/include/asm-arm/arch-pxa/pxafb.h
-@@ -139,9 +139,18 @@ struct pxafb_mach_info {
- 	 * All other bits in LCCR4 should be left alone.
- 	 */
- 	u_int		lccr4;
-+	unsigned int	custom_xfer_div; /* divides the pixel transfer */
-+	/* size of extra mem needed for secondary driver */
-+	unsigned int	extra_video_mem;
-+	void		*extra_data; /* extra data for secondary */
- 	void (*pxafb_backlight_power)(int);
- 	void (*pxafb_lcd_power)(int, struct fb_var_screeninfo *);
- 	void (*smart_update)(struct fb_info *);
-+	/* share_video_mem allows client drivers to get our framebuffer */
-+	int (*share_video_mem)(char __iomem *, dma_addr_t, struct module *,
-+				void *);
-+	void (*unshare_video_mem)(void *);
-+	struct device *clkdev;
+@@ -85,21 +89,8 @@ static struct platform_device *devices[] __initdata = {
  };
- void set_pxa_fb_info(struct pxafb_mach_info *hard_pxa_fb_info);
- void set_pxa_fb_parent(struct device *parent_dev);
+ 
+ #ifdef CONFIG_MMC_PXA
+-static struct pxamci_platform_data gumstix_mci_platform_data;
+-
+-static int gumstix_mci_init(struct device *dev, irq_handler_t detect_int,
+-				void *data)
+-{
+-	pxa_gpio_mode(GPIO6_MMCCLK_MD);
+-	pxa_gpio_mode(GPIO53_MMCCLK_MD);
+-	pxa_gpio_mode(GPIO8_MMCCS0_MD);
+-
+-	return 0;
+-}
+-
+ static struct pxamci_platform_data gumstix_mci_platform_data = {
+ 	.ocr_mask	= MMC_VDD_32_33|MMC_VDD_33_34,
+-	.init		= gumstix_mci_init,
+ };
+ 
+ static void __init gumstix_mmc_init(void)
+@@ -109,11 +100,11 @@ static void __init gumstix_mmc_init(void)
+ #else
+ static void __init gumstix_mmc_init(void)
+ {
+-	printk(KERN_INFO "Gumstix mmc disabled\n");
++	pr_debug("Gumstix mmc disabled\n");
+ }
+ #endif
+ 
+-#ifdef CONFIG_USB_GADGET_PXA2XX
++#ifdef CONFIG_USB_GADGET_PXA25X
+ static struct pxa2xx_udc_mach_info gumstix_udc_info __initdata = {
+ 	.gpio_vbus		= GPIO_GUMSTIX_USB_GPIOn,
+ 	.gpio_pullup		= GPIO_GUMSTIX_USB_GPIOx,
+@@ -126,12 +117,64 @@ static void __init gumstix_udc_init(void)
+ #else
+ static void gumstix_udc_init(void)
+ {
+-	printk(KERN_INFO "Gumstix udc is disabled\n");
++	pr_debug("Gumstix udc is disabled\n");
+ }
+ #endif
+ 
++#ifdef CONFIG_BT
++static void __init gumstix_bluetooth_init(void)
++{
++	int err;
++	struct clk *clk32k;
++
++	clk32k = clk_get(NULL, "CLK_32K");
++	if (IS_ERR(clk32k)) {
++		pr_err("gumstix: failed to find 32kHz clock\n");
++		return;
++	}
++	clk_enable(clk32k);
++
++	err = gpio_direction_output(GPIO_GUMSTIX_BTRESET, 1);
++	if (err) {
++		pr_err("gumstix: can't reset bluetooth\n");
++		return;
++	}
++	gpio_set_value(GPIO_GUMSTIX_BTRESET, 0);
++	udelay(100);
++	gpio_set_value(GPIO_GUMSTIX_BTRESET, 1);
++}
++#else
++static void gumstix_bluetooth_init(void)
++{
++	pr_debug("Gumstix Bluetooth is disabled\n");
++}
++#endif
++
++static unsigned long gumstix_pin_config[] __initdata = {
++	GPIO12_32KHz,
++	/* BTUART */
++	GPIO42_HWUART_RXD,
++	GPIO43_HWUART_TXD,
++	GPIO44_HWUART_CTS,
++	GPIO45_HWUART_RTS,
++	/* MMC */
++	GPIO6_MMC_CLK,
++	GPIO53_MMC_CLK,
++	GPIO8_MMC_CS0,
++	/* these are used by AM200EPD */
++	GPIO51_GPIO,
++	GPIO49_GPIO,
++	GPIO48_GPIO,
++	GPIO32_GPIO,
++	GPIO17_GPIO,
++	GPIO16_GPIO,
++};
++
+ static void __init gumstix_init(void)
+ {
++	pxa2xx_mfp_config(ARRAY_AND_SIZE(gumstix_pin_config));
++
++	gumstix_bluetooth_init();
+ 	gumstix_udc_init();
+ 	gumstix_mmc_init();
+ 	(void) platform_add_devices(devices, ARRAY_SIZE(devices));
+diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
+index c5b845b..5930a8b 100644
+--- a/arch/arm/mach-pxa/pxa25x.c
++++ b/arch/arm/mach-pxa/pxa25x.c
+@@ -22,6 +22,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/suspend.h>
+ #include <linux/sysdev.h>
++#include <linux/delay.h>
+ 
+ #include <asm/hardware.h>
+ #include <asm/arch/irqs.h>
+@@ -155,6 +156,30 @@ static const struct clkops clk_pxa25x_gpio11_ops = {
+ 	.disable        = clk_gpio11_disable,
+ };
+ 
++static void clk_32k_enable(struct clk *clk)
++{
++	int timeout = 500;
++
++	if (!(OSCC & OSCC_OOK))
++		pr_warning("32kHz clock was not on. Bootloader may need to "
++				"be updated\n");
++	else
++		return;
++
++	OSCC |= OSCC_OON;
++	do {
++		if (OSCC & OSCC_OOK)
++			break;
++		udelay(1);
++	} while (--timeout);
++	if (!timeout)
++		pr_err("Failed to start 32kHz clock\n");
++}
++
++static const struct clkops clk_32k_ops = {
++	.enable		= clk_32k_enable,
++};
++
+ /*
+  * 3.6864MHz -> OST, GPIO, SSP, PWM, PLLs (95.842MHz, 147.456MHz)
+  * 95.842MHz -> MMC 19.169MHz, I2C 31.949MHz, FICP 47.923MHz, USB 47.923MHz
+@@ -169,6 +194,12 @@ static struct clk pxa25x_hwuart_clk =
+  * Please be careful not to disrupt the ordering.
+  */
+ static struct clk pxa25x_clks[] = {
++	{
++		.name           = "CLK_32K",
++		.ops            = &clk_32k_ops,
++		.rate           = 32768,
++		.delay          = 70,
++	},
+ 	INIT_CK("LCDCLK", LCD, &clk_pxa25x_lcd_ops, &pxa_device_fb.dev),
+ 	INIT_CKEN("UARTCLK", FFUART, 14745600, 1, &pxa_device_ffuart.dev),
+ 	INIT_CKEN("UARTCLK", BTUART, 14745600, 1, &pxa_device_btuart.dev),
 -- 
 1.5.3.6
 

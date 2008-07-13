@@ -1,9 +1,14 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc9 5/5] metronomefb: changes to
-	use separate framebuffer
-Date: Sun, 13 Jul 2008 09:26:27 -0400
-Message-ID: <1215955587-20367-6-git-send-email-jayakumar.lkml@gmail.com>
-References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [PATCH] eink_apollofb: new driver for
+	Apollo eInk controller.
+Date: Mon, 14 Jul 2008 03:03:05 +0800
+Message-ID: <45a44e480807131203s6f4ad6dfn507b6a1f22972b7@mail.gmail.com>
+References: <1215787849-25580-1-git-send-email-jekhor@gmail.com>
+	<1215788071-25764-1-git-send-email-jekhor@gmail.com>
+	<1215788071-25764-2-git-send-email-jekhor@gmail.com>
+	<20080712192013.1fb9519b.akpm@linux-foundation.org>
+	<45a44e480807122002uaf7e452n563c42e186c944a1@mail.gmail.com>
+	<87iqvaasc8.fsf@frontier.dottedmag.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,16 +16,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KI2UA-0005H2-D2 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Jul 2008 07:23:34 -0700
-Received: from yw-out-1718.google.com ([74.125.46.153])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KI2U9-0007U8-Gt
+	id 1KI6qi-00040C-NM for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 13 Jul 2008 12:03:09 -0700
+Received: from nf-out-0910.google.com ([64.233.182.189])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KI6qh-0007pW-2K
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 13 Jul 2008 07:23:34 -0700
-Received: by yw-out-1718.google.com with SMTP id 6so2122225ywa.82
+	Sun, 13 Jul 2008 12:03:08 -0700
+Received: by nf-out-0910.google.com with SMTP id g16so1250062nfd.2
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 13 Jul 2008 07:23:32 -0700 (PDT)
-In-Reply-To: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
+	Sun, 13 Jul 2008 12:03:05 -0700 (PDT)
+In-Reply-To: <87iqvaasc8.fsf@frontier.dottedmag.net>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,480 +37,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: ymiao3@marvell.com
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: Mikhail Gusarov <dottedmag@dottedmag.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>, linux-fbdev-devel@lists.sourceforge.net
 
-These changes are used in order to support the use of a separate
-framebuffer provided by the platform device driver. Other changes
-are cleanup to error handling and order of release.
+On Sun, Jul 13, 2008 at 8:20 PM, Mikhail Gusarov
+<dottedmag@dottedmag.net> wrote:
+> Twas brillig at 11:02:29 13.07.2008 UTC+08 when jayakumar.lkml@gmail.com did gyre and gimble:
+>
+>  JK> However, I should point out that hecubafb is a driver for this same
+>  JK> apollo controller.
+>
+> AFAICT from the diff, eink_apollofb already includes all the features of
+> hecubafb, so that would be just renaming. Is it worth it?
+>
+> --
+>
 
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
----
- drivers/video/metronomefb.c |  225 +++++++++++++++++++++++++------------------
- include/video/metronomefb.h |   22 ++---
- 2 files changed, 138 insertions(+), 109 deletions(-)
+Hi Mikhail,
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index 8ccd113..471b0c1 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -46,16 +46,59 @@
- #define DPY_W 832
- #define DPY_H 622
- 
-+static int user_wfm_size;
-+
- /* frame differs from image. frame includes non-visible pixels */
- struct epd_frame {
- 	int fw; /* frame width */
- 	int fh; /* frame height */
-+	u16 config[4];
-+	int wfm_size;
- };
- 
- static struct epd_frame epd_frame_table[] = {
- 	{
--	.fw = 832,
--	.fh = 622
-+		.fw = 832,
-+		.fh = 622,
-+		.config = {
-+			15 /* sdlew */
-+			| 2 << 8 /* sdosz */
-+			| 0 << 11 /* sdor */
-+			| 0 << 12 /* sdces */
-+			| 0 << 15, /* sdcer */
-+			42 /* gdspl */
-+			| 1 << 8 /* gdr1 */
-+			| 1 << 9 /* sdshr */
-+			| 0 << 15, /* gdspp */
-+			18 /* gdspw */
-+			| 0 << 15, /* dispc */
-+			599 /* vdlc */
-+			| 0 << 11 /* dsi */
-+			| 0 << 12, /* dsic */
-+		},
-+		.wfm_size = 47001,
-+	},
-+	{
-+		.fw = 1088,
-+		.fh = 791,
-+		.config = {
-+			0x0104,
-+			0x031f,
-+			0x0088,
-+			0x02ff,
-+		},
-+		.wfm_size = 46770,
-+	},
-+	{
-+		.fw = 1200,
-+		.fh = 842,
-+		.config = {
-+			0x0101,
-+			0x030e,
-+			0x0012,
-+			0x0280,
-+		},
-+		.wfm_size = 46770,
- 	},
- };
- 
-@@ -127,7 +170,6 @@ static u16 calc_img_cksum(u16 *start, int length)
- }
- 
- /* here we decode the incoming waveform file and populate metromem */
--#define EXP_WFORM_SIZE 47001
- static int __devinit load_waveform(u8 *mem, size_t size, int m, int t,
- 				struct metronomefb_par *par)
- {
-@@ -144,9 +186,12 @@ static int __devinit load_waveform(u8 *mem, size_t size, int m, int t,
- 	u8 *metromem = par->metromem_wfm;
- 	struct device *dev = par->info->dev;
- 
--	if (size != EXP_WFORM_SIZE) {
-+	if (user_wfm_size)
-+		epd_frame_table[par->dt].wfm_size = user_wfm_size;
-+
-+	if (size != epd_frame_table[par->dt].wfm_size) {
- 		dev_err(dev, "Error: unexpected size %d != %d\n", size,
--					EXP_WFORM_SIZE);
-+					epd_frame_table[par->dt].wfm_size);
- 		return -EINVAL;
- 	}
- 
-@@ -330,44 +375,17 @@ static int __devinit metronome_powerup_cmd(struct metronomefb_par *par)
- 
- static int __devinit metronome_config_cmd(struct metronomefb_par *par)
- {
--	int i;
--	u16 cs;
--
- 	/* setup config command
- 	we can't immediately set the opcode since the controller
--	will try parse the command before we've set it all up
--	so we just set cs here and set the opcode at the end */
--
--	cs = 0xCC10;
--
--	/* set the 12 args ( 8 bytes ) for config. see spec for meanings */
--	i = 0;
--	par->metromem_cmd->args[i] = 	15 /* sdlew */
--					| 2 << 8 /* sdosz */
--					| 0 << 11 /* sdor */
--					| 0 << 12 /* sdces */
--					| 0 << 15; /* sdcer */
--	cs += par->metromem_cmd->args[i++];
--
--	par->metromem_cmd->args[i] = 	42 /* gdspl */
--					| 1 << 8 /* gdr1 */
--					| 1 << 9 /* sdshr */
--					| 0 << 15; /* gdspp */
--	cs += par->metromem_cmd->args[i++];
--
--	par->metromem_cmd->args[i] = 	18 /* gdspw */
--					| 0 << 15; /* dispc */
--	cs += par->metromem_cmd->args[i++];
--
--	par->metromem_cmd->args[i] = 	599 /* vdlc */
--					| 0 << 11 /* dsi */
--					| 0 << 12; /* dsic */
--	cs += par->metromem_cmd->args[i++];
-+	will try parse the command before we've set it all up */
- 
-+	memcpy(par->metromem_cmd->args, epd_frame_table[par->dt].config,
-+		sizeof(epd_frame_table[par->dt].config));
- 	/* the rest are 0 */
--	memset((u8 *) (par->metromem_cmd->args + i), 0, (32-i)*2);
-+	memset((u8 *) (par->metromem_cmd->args + 4), 0, (32-4)*2);
- 
--	par->metromem_cmd->csum = cs;
-+	par->metromem_cmd->csum = 0xCC10;
-+	par->metromem_cmd->csum += calc_img_cksum(par->metromem_cmd->args, 4);
- 	par->metromem_cmd->opcode = 0xCC10; /* config cmd */
- 
- 	return par->board->met_wait_event(par);
-@@ -403,12 +421,9 @@ static int __devinit metronome_init_regs(struct metronomefb_par *par)
- {
- 	int res;
- 
--	par->board->init_gpio_regs(par);
--
--	par->board->init_lcdc_regs(par);
--
--	/* now that lcd is setup, setup dma descriptor */
--	par->board->post_dma_setup(par);
-+	res = par->board->setup_io(par);
-+	if (res)
-+		return res;
- 
- 	res = metronome_powerup_cmd(par);
- 	if (res)
-@@ -425,16 +440,16 @@ static int __devinit metronome_init_regs(struct metronomefb_par *par)
- 
- static void metronomefb_dpy_update(struct metronomefb_par *par)
- {
-+	int fbsize;
- 	u16 cksum;
- 	unsigned char *buf = (unsigned char __force *)par->info->screen_base;
- 
-+	fbsize = par->info->fix.smem_len;
- 	/* copy from vm to metromem */
--	memcpy(par->metromem_img, buf, DPY_W*DPY_H);
-+	memcpy(par->metromem_img, buf, fbsize);
- 
--	cksum = calc_img_cksum((u16 *) par->metromem_img,
--				(epd_frame_table[0].fw * DPY_H)/2);
--	*((u16 *)(par->metromem_img) +
--			(epd_frame_table[0].fw * DPY_H)/2) = cksum;
-+	cksum = calc_img_cksum((u16 *) par->metromem_img, fbsize/2);
-+	*((u16 *)(par->metromem_img) + fbsize/2) = cksum;
- 	metronome_display_cmd(par);
- }
- 
-@@ -569,8 +584,11 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 	unsigned char *videomemory;
- 	struct metronomefb_par *par;
- 	const struct firmware *fw_entry;
--	int cmd_size, wfm_size, img_size, padding_size, totalsize;
-+	int cmd_size, wfm_size, padding_size;
- 	int i;
-+	int panel_type;
-+	int fw, fh;
-+	int epd_dt_index;
- 
- 	/* pick up board specific routines */
- 	board = dev->dev.platform_data;
-@@ -581,39 +599,65 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 	if (!try_module_get(board->owner))
- 		return -ENODEV;
- 
-+	info = framebuffer_alloc(sizeof(struct metronomefb_par), &dev->dev);
-+	if (!info)
-+		goto err;
-+
- 	/* we have two blocks of memory.
- 	info->screen_base which is vm, and is the fb used by apps.
- 	par->metromem which is physically contiguous memory and
- 	contains the display controller commands, waveform,
- 	processed image data and padding. this is the data pulled
--	by the device's LCD controller and pushed to Metronome */
--
--	videomemorysize = (DPY_W*DPY_H);
-+	by the device's LCD controller and pushed to Metronome.
-+	the metromem memory is allocated by the board driver and
-+	is provided to us */
-+
-+	panel_type = board->get_panel_type();
-+	switch (panel_type) {
-+	case 6:
-+		epd_dt_index = 0;
-+		break;
-+	case 8:
-+		epd_dt_index = 1;
-+		break;
-+	case 97:
-+		epd_dt_index = 2;
-+		break;
-+	default:
-+		dev_err(&dev->dev, "Unexpected panel type. Defaulting to 6\n");
-+		epd_dt_index = 0;
-+		break;
-+	}
-+	fw = epd_frame_table[epd_dt_index].fw;
-+	fh = epd_frame_table[epd_dt_index].fh;
-+	videomemorysize = fw * fh;
- 	videomemory = vmalloc(videomemorysize);
- 	if (!videomemory)
--		return -ENOMEM;
-+		goto err_fb_rel;
- 
- 	memset(videomemory, 0, videomemorysize);
- 
--	info = framebuffer_alloc(sizeof(struct metronomefb_par), &dev->dev);
--	if (!info)
--		goto err_vfree;
--
- 	info->screen_base = (char __force __iomem *)videomemory;
- 	info->fbops = &metronomefb_ops;
- 
-+	metronomefb_fix.line_length = fw;
-+	metronomefb_var.xres = fw;
-+	metronomefb_var.yres = fh;
-+	metronomefb_var.xres_virtual = fw;
-+	metronomefb_var.yres_virtual = fh;
- 	info->var = metronomefb_var;
- 	info->fix = metronomefb_fix;
- 	info->fix.smem_len = videomemorysize;
- 	par = info->par;
- 	par->info = info;
- 	par->board = board;
-+	par->dt = epd_dt_index;
- 	init_waitqueue_head(&par->waitq);
- 
- 	/* this table caches per page csum values. */
- 	par->csum_table = vmalloc(videomemorysize/PAGE_SIZE);
- 	if (!par->csum_table)
--		goto err_csum_table;
-+		goto err_vfree;
- 
- 	/* the metromem buffer is divided as follows:
- 	command | CRC | padding
-@@ -623,34 +667,26 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 	eg: IW=832 IH=622 WS=128
- 	*/
- 
--	cmd_size = 1 * epd_frame_table[0].fw;
--	wfm_size = ((16*1024 + 2 + epd_frame_table[0].fw - 1)
--			/ epd_frame_table[0].fw) * epd_frame_table[0].fw;
--	img_size = epd_frame_table[0].fh * epd_frame_table[0].fw;
--	padding_size = 4 * epd_frame_table[0].fw;
--	totalsize = cmd_size + wfm_size + img_size + padding_size;
--	par->metromemsize = PAGE_ALIGN(totalsize + 256);
--	DPRINTK("desired memory size = %d\n", par->metromemsize);
--	dev->dev.coherent_dma_mask = 0xffffffffull;
--	par->metromem = dma_alloc_writecombine(&dev->dev, par->metromemsize,
--						&par->metromem_dma, GFP_KERNEL);
-+	cmd_size = 1 * fw;
-+	wfm_size = ((16*1024 + 2 + fw - 1) / fw) * fw;
-+	padding_size = 4 * fw;
-+	par->extra_size = cmd_size + wfm_size + padding_size;
-+	retval = par->board->setup_fb(par);
-+	if (retval) {
-+		dev_err(&dev->dev, "Failed to setup fb\n");
-+		goto err_csum_table;
-+	}
-+	/* after this point we should have a framebuffer */
- 	if (!par->metromem) {
--		printk(KERN_ERR
--			"metronomefb: unable to allocate dma buffer\n");
--		goto err_vfree;
-+		retval = -EINVAL;
-+		goto err_csum_table;
- 	}
- 
- 	info->fix.smem_start = par->metromem_dma;
- 	par->metromem_cmd = (struct metromem_cmd *) par->metromem;
- 	par->metromem_wfm = par->metromem + cmd_size;
- 	par->metromem_img = par->metromem + cmd_size + wfm_size;
--	par->metromem_img_csum = (u16 *) (par->metromem_img +
--					(epd_frame_table[0].fw * DPY_H));
--	DPRINTK("img offset=0x%x\n", cmd_size + wfm_size);
--	par->metromem_desc = (struct metromem_desc *) (par->metromem + cmd_size
--					+ wfm_size + img_size + padding_size);
--	par->metromem_desc_dma = par->metromem_dma + cmd_size + wfm_size
--				 + img_size + padding_size;
-+	par->metromem_img_csum = (u16 *) (par->metromem_img + (fw * fh));
- 
- 	/* load the waveform in. assume mode 3, temp 31 for now
- 		a) request the waveform file from userspace
-@@ -658,7 +694,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 	retval = request_firmware(&fw_entry, "metronome.wbf", &dev->dev);
- 	if (retval < 0) {
- 		dev_err(&dev->dev, "Failed to get waveform\n");
--		goto err_dma_free;
-+		goto err_csum_table;
- 	}
- 
- 	retval = load_waveform((u8 *) fw_entry->data, fw_entry->size, 3, 31,
-@@ -666,11 +702,11 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 	release_firmware(fw_entry);
- 	if (retval < 0) {
- 		dev_err(&dev->dev, "Failed processing waveform\n");
--		goto err_dma_free;
-+		goto err_csum_table;
- 	}
- 
- 	if (board->setup_irq(info))
--		goto err_dma_free;
-+		goto err_csum_table;
- 
- 	retval = metronome_init_regs(par);
- 	if (retval < 0)
-@@ -684,7 +720,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 	retval = fb_alloc_cmap(&info->cmap, 8, 0);
- 	if (retval < 0) {
- 		dev_err(&dev->dev, "Failed to allocate colormap\n");
--		goto err_fb_rel;
-+		goto err_free_irq;
- 	}
- 
- 	/* set cmap */
-@@ -707,17 +743,15 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 
- err_cmap:
- 	fb_dealloc_cmap(&info->cmap);
--err_fb_rel:
--	framebuffer_release(info);
- err_free_irq:
--	board->free_irq(info);
--err_dma_free:
--	dma_free_writecombine(&dev->dev, par->metromemsize, par->metromem,
--				par->metromem_dma);
-+	board->cleanup(par);
- err_csum_table:
- 	vfree(par->csum_table);
- err_vfree:
- 	vfree(videomemory);
-+err_fb_rel:
-+	framebuffer_release(info);
-+err:
- 	module_put(board->owner);
- 	return retval;
- }
-@@ -728,15 +762,15 @@ static int __devexit metronomefb_remove(struct platform_device *dev)
- 
- 	if (info) {
- 		struct metronomefb_par *par = info->par;
-+
-+		unregister_framebuffer(info);
- 		fb_deferred_io_cleanup(info);
--		dma_free_writecombine(&dev->dev, par->metromemsize,
--					par->metromem, par->metromem_dma);
- 		fb_dealloc_cmap(&info->cmap);
-+		par->board->cleanup(par);
- 		vfree(par->csum_table);
--		unregister_framebuffer(info);
- 		vfree((void __force *)info->screen_base);
--		par->board->free_irq(info);
- 		module_put(par->board->owner);
-+		dev_dbg(&dev->dev, "calling release\n");
- 		framebuffer_release(info);
- 	}
- 	return 0;
-@@ -761,6 +795,9 @@ static void __exit metronomefb_exit(void)
- 	platform_driver_unregister(&metronomefb_driver);
- }
- 
-+module_param(user_wfm_size, uint, 0);
-+MODULE_PARM_DESC(user_wfm_size, "Set custom waveform size");
-+
- module_init(metronomefb_init);
- module_exit(metronomefb_exit);
- 
-diff --git a/include/video/metronomefb.h b/include/video/metronomefb.h
-index dab04b4..79444cd 100644
---- a/include/video/metronomefb.h
-+++ b/include/video/metronomefb.h
-@@ -12,14 +12,6 @@
- #ifndef _LINUX_METRONOMEFB_H_
- #define _LINUX_METRONOMEFB_H_
- 
--/* address and control descriptors used by metronome controller */
--struct metromem_desc {
--	u32 mFDADR0;
--	u32 mFSADR0;
--	u32 mFIDR0;
--	u32 mLDCMD0;
--};
--
- /* command structure used by metronome controller */
- struct metromem_cmd {
- 	u16 opcode;
-@@ -30,33 +22,33 @@ struct metromem_cmd {
- /* struct used by metronome. board specific stuff comes from *board */
- struct metronomefb_par {
- 	unsigned char *metromem;
--	struct metromem_desc *metromem_desc;
- 	struct metromem_cmd *metromem_cmd;
- 	unsigned char *metromem_wfm;
- 	unsigned char *metromem_img;
- 	u16 *metromem_img_csum;
- 	u16 *csum_table;
--	int metromemsize;
- 	dma_addr_t metromem_dma;
--	dma_addr_t metromem_desc_dma;
- 	struct fb_info *info;
- 	struct metronome_board *board;
- 	wait_queue_head_t waitq;
- 	u8 frame_count;
-+	int extra_size;
-+	int dt;
- };
- 
- /* board specific routines */
- struct metronome_board {
- 	struct module *owner;
--	void (*free_irq)(struct fb_info *);
--	void (*init_gpio_regs)(struct metronomefb_par *);
--	void (*init_lcdc_regs)(struct metronomefb_par *);
--	void (*post_dma_setup)(struct metronomefb_par *);
-+	struct module *fbmaster;
- 	void (*set_rst)(struct metronomefb_par *, int);
- 	void (*set_stdby)(struct metronomefb_par *, int);
-+	void (*cleanup)(struct metronomefb_par *);
- 	int (*met_wait_event)(struct metronomefb_par *);
- 	int (*met_wait_event_intr)(struct metronomefb_par *);
- 	int (*setup_irq)(struct fb_info *);
-+	int (*setup_fb)(struct metronomefb_par *);
-+	int (*setup_io)(struct metronomefb_par *);
-+	int (*get_panel_type)(void);
- };
- 
- #endif
--- 
-1.5.3.6
+Looking at the posted code, it is the same code as hecubafb, renamed,
+and with the 2-bit, partial update, and flash features added. The new
+features are good but basically, its a fork of hecubafb. I'm
+suggesting that rather than doing that, it would make more sense to
+add those features to the existing hecubafb code. If any help is
+needed in making that happen, please let me know, I'm happy to help.
 
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 Sponsored by: SourceForge.net Community Choice Awards: VOTE NOW!

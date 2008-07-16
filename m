@@ -1,7 +1,10 @@
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Subject: [PATCH v3] add new Cobalt LCD framebuffer driver
-Date: Tue, 15 Jul 2008 22:27:51 +0900
-Message-ID: <20080715222751.86091a71.yoichi_yuasa@tripeaks.co.jp>
+From: "eric miao" <eric.y.miao@gmail.com>
+Subject: Re: [RFC 2.6.26-rc9 2/5] gumstix: conversion to
+	MFP support and add bluetooth support
+Date: Wed, 16 Jul 2008 14:55:00 +0800
+Message-ID: <f17812d70807152355t72247d4dt34763c580e0f607b@mail.gmail.com>
+References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1215955587-20367-3-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,12 +12,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KIkZZ-00073C-Rb for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 15 Jul 2008 06:28:05 -0700
-Received: from mo31.po.2iij.net ([210.128.50.54])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KIkZW-0000da-KX
+	id 1KJ0um-00085F-Bp for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 15 Jul 2008 23:55:04 -0700
+Received: from py-out-1112.google.com ([64.233.166.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KJ0uj-0000zZ-Pg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 15 Jul 2008 06:28:05 -0700
+	Tue, 15 Jul 2008 23:55:04 -0700
+Received: by py-out-1112.google.com with SMTP id f31so1157148pyh.20
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 15 Jul 2008 23:55:01 -0700 (PDT)
+In-Reply-To: <1215955587-20367-3-git-send-email-jayakumar.lkml@gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,429 +33,223 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Antonino A. Daplas" <adaplas@pol.net>, linux-mips <linux-mips@linux-mips.org>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Ralf Baechle <ralf@linux-mips.org>, yoichi_yuasa@tripeaks.co.jp
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-Hi,
+On Sun, Jul 13, 2008 at 9:26 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> This patch converts gumstix over to the MFP configuration system and adds
+> bluetooth support. Added a CLK_32K clock to enable bluetooth.
+>
 
-I update cobalt_lcdfb driver.
+The CLK_32KHz is assumed to be enabled always, so it's really not
+necessary to create a struct clk for it. Please remove that from this
+patch.
 
-v3
-- fix read/write count boundary check.
-- add <include/uaccess.h>.
-- fix MODULE_AUTHOR.
+> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+> ---
+>  arch/arm/mach-pxa/gumstix.c |   77 +++++++++++++++++++++++++++++++++---------
+>  arch/arm/mach-pxa/pxa25x.c  |   31 +++++++++++++++++
+>  2 files changed, 91 insertions(+), 17 deletions(-)
+>
+> diff --git a/arch/arm/mach-pxa/gumstix.c b/arch/arm/mach-pxa/gumstix.c
+> index bdf2397..73c1cc5 100644
+> --- a/arch/arm/mach-pxa/gumstix.c
+> +++ b/arch/arm/mach-pxa/gumstix.c
+> @@ -20,8 +20,12 @@
+>  #include <linux/init.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/interrupt.h>
+> +#include <linux/delay.h>
+>  #include <linux/mtd/mtd.h>
+>  #include <linux/mtd/partitions.h>
+> +#include <linux/gpio.h>
+> +#include <linux/err.h>
+> +#include <linux/clk.h>
+>
+>  #include <asm/setup.h>
+>  #include <asm/memory.h>
+> @@ -40,7 +44,7 @@
+>
+>  #include <asm/arch/pxa-regs.h>
+>  #include <asm/arch/pxa2xx-regs.h>
+> -#include <asm/arch/pxa2xx-gpio.h>
+> +#include <asm/arch/mfp-pxa25x.h>
+>
+>  #include "generic.h"
+>
+> @@ -85,21 +89,8 @@ static struct platform_device *devices[] __initdata = {
+>  };
+>
+>  #ifdef CONFIG_MMC_PXA
+> -static struct pxamci_platform_data gumstix_mci_platform_data;
+> -
+> -static int gumstix_mci_init(struct device *dev, irq_handler_t detect_int,
+> -                               void *data)
+> -{
+> -       pxa_gpio_mode(GPIO6_MMCCLK_MD);
+> -       pxa_gpio_mode(GPIO53_MMCCLK_MD);
+> -       pxa_gpio_mode(GPIO8_MMCCS0_MD);
+> -
+> -       return 0;
+> -}
+> -
+>  static struct pxamci_platform_data gumstix_mci_platform_data = {
+>        .ocr_mask       = MMC_VDD_32_33|MMC_VDD_33_34,
+> -       .init           = gumstix_mci_init,
+>  };
+>
+>  static void __init gumstix_mmc_init(void)
+> @@ -109,11 +100,11 @@ static void __init gumstix_mmc_init(void)
+>  #else
+>  static void __init gumstix_mmc_init(void)
+>  {
+> -       printk(KERN_INFO "Gumstix mmc disabled\n");
+> +       pr_debug("Gumstix mmc disabled\n");
+>  }
+>  #endif
+>
+> -#ifdef CONFIG_USB_GADGET_PXA2XX
+> +#ifdef CONFIG_USB_GADGET_PXA25X
+>  static struct pxa2xx_udc_mach_info gumstix_udc_info __initdata = {
+>        .gpio_vbus              = GPIO_GUMSTIX_USB_GPIOn,
+>        .gpio_pullup            = GPIO_GUMSTIX_USB_GPIOx,
+> @@ -126,12 +117,64 @@ static void __init gumstix_udc_init(void)
+>  #else
+>  static void gumstix_udc_init(void)
+>  {
+> -       printk(KERN_INFO "Gumstix udc is disabled\n");
+> +       pr_debug("Gumstix udc is disabled\n");
+>  }
+>  #endif
+>
+> +#ifdef CONFIG_BT
+> +static void __init gumstix_bluetooth_init(void)
+> +{
+> +       int err;
+> +       struct clk *clk32k;
+> +
+> +       clk32k = clk_get(NULL, "CLK_32K");
+> +       if (IS_ERR(clk32k)) {
+> +               pr_err("gumstix: failed to find 32kHz clock\n");
+> +               return;
+> +       }
+> +       clk_enable(clk32k);
+> +
+> +       err = gpio_direction_output(GPIO_GUMSTIX_BTRESET, 1);
+> +       if (err) {
+> +               pr_err("gumstix: can't reset bluetooth\n");
+> +               return;
+> +       }
+> +       gpio_set_value(GPIO_GUMSTIX_BTRESET, 0);
+> +       udelay(100);
+> +       gpio_set_value(GPIO_GUMSTIX_BTRESET, 1);
+> +}
+> +#else
+> +static void gumstix_bluetooth_init(void)
+> +{
+> +       pr_debug("Gumstix Bluetooth is disabled\n");
+> +}
+> +#endif
+> +
+> +static unsigned long gumstix_pin_config[] __initdata = {
+> +       GPIO12_32KHz,
+> +       /* BTUART */
+> +       GPIO42_HWUART_RXD,
+> +       GPIO43_HWUART_TXD,
+> +       GPIO44_HWUART_CTS,
+> +       GPIO45_HWUART_RTS,
+> +       /* MMC */
+> +       GPIO6_MMC_CLK,
+> +       GPIO53_MMC_CLK,
+> +       GPIO8_MMC_CS0,
+> +       /* these are used by AM200EPD */
+> +       GPIO51_GPIO,
+> +       GPIO49_GPIO,
+> +       GPIO48_GPIO,
+> +       GPIO32_GPIO,
+> +       GPIO17_GPIO,
+> +       GPIO16_GPIO,
+> +};
+> +
+>  static void __init gumstix_init(void)
+>  {
+> +       pxa2xx_mfp_config(ARRAY_AND_SIZE(gumstix_pin_config));
+> +
+> +       gumstix_bluetooth_init();
+>        gumstix_udc_init();
+>        gumstix_mmc_init();
+>        (void) platform_add_devices(devices, ARRAY_SIZE(devices));
+> diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
+> index c5b845b..5930a8b 100644
+> --- a/arch/arm/mach-pxa/pxa25x.c
+> +++ b/arch/arm/mach-pxa/pxa25x.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/suspend.h>
+>  #include <linux/sysdev.h>
+> +#include <linux/delay.h>
+>
+>  #include <asm/hardware.h>
+>  #include <asm/arch/irqs.h>
+> @@ -155,6 +156,30 @@ static const struct clkops clk_pxa25x_gpio11_ops = {
+>        .disable        = clk_gpio11_disable,
+>  };
+>
+> +static void clk_32k_enable(struct clk *clk)
+> +{
+> +       int timeout = 500;
+> +
+> +       if (!(OSCC & OSCC_OOK))
+> +               pr_warning("32kHz clock was not on. Bootloader may need to "
+> +                               "be updated\n");
+> +       else
+> +               return;
+> +
+> +       OSCC |= OSCC_OON;
+> +       do {
+> +               if (OSCC & OSCC_OOK)
+> +                       break;
+> +               udelay(1);
+> +       } while (--timeout);
+> +       if (!timeout)
+> +               pr_err("Failed to start 32kHz clock\n");
+> +}
+> +
+> +static const struct clkops clk_32k_ops = {
+> +       .enable         = clk_32k_enable,
+> +};
+> +
+>  /*
+>  * 3.6864MHz -> OST, GPIO, SSP, PWM, PLLs (95.842MHz, 147.456MHz)
+>  * 95.842MHz -> MMC 19.169MHz, I2C 31.949MHz, FICP 47.923MHz, USB 47.923MHz
+> @@ -169,6 +194,12 @@ static struct clk pxa25x_hwuart_clk =
+>  * Please be careful not to disrupt the ordering.
+>  */
+>  static struct clk pxa25x_clks[] = {
+> +       {
+> +               .name           = "CLK_32K",
+> +               .ops            = &clk_32k_ops,
+> +               .rate           = 32768,
+> +               .delay          = 70,
+> +       },
+>        INIT_CK("LCDCLK", LCD, &clk_pxa25x_lcd_ops, &pxa_device_fb.dev),
+>        INIT_CKEN("UARTCLK", FFUART, 14745600, 1, &pxa_device_ffuart.dev),
+>        INIT_CKEN("UARTCLK", BTUART, 14745600, 1, &pxa_device_btuart.dev),
+> --
+> 1.5.3.6
+>
+>
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+>
 
-v2
-- add dpends MIPS_COBALT in Kconfig.
-- add handling of signal_pending().
-- check overflow of read/write count.
 
-v1
-- first release.
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-
-diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/video/Kconfig linux/drivers/video/Kconfig
---- linux-orig/drivers/video/Kconfig	2008-07-15 15:54:29.554677590 +0900
-+++ linux/drivers/video/Kconfig	2008-07-15 10:37:54.612354756 +0900
-@@ -1951,6 +1951,10 @@ config FB_AM200EPD
-          This enables support for the Metronome display controller used on
-          the E-Ink AM-200 EPD devkit.
- 
-+config FB_COBALT
-+	tristate "Cobalt server LCD frame buffer support"
-+	depends on FB && MIPS_COBALT
-+
- config FB_VIRTUAL
- 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
- 	depends on FB
-diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/video/Makefile linux/drivers/video/Makefile
---- linux-orig/drivers/video/Makefile	2008-07-15 15:54:29.562678048 +0900
-+++ linux/drivers/video/Makefile	2008-07-15 10:37:54.612354756 +0900
-@@ -117,6 +117,7 @@ obj-$(CONFIG_FB_SM501)            += sm5
- obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
- obj-$(CONFIG_FB_OMAP)             += omap/
- obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
-+obj-$(CONFIG_FB_COBALT)           += cobalt_lcdfb.o
- 
- # Platform or fallback drivers go here
- obj-$(CONFIG_FB_UVESA)            += uvesafb.o
-diff -pruN -X /home/yuasa/Memo/dontdiff linux-orig/drivers/video/cobalt_lcdfb.c linux/drivers/video/cobalt_lcdfb.c
---- linux-orig/drivers/video/cobalt_lcdfb.c	1970-01-01 09:00:00.000000000 +0900
-+++ linux/drivers/video/cobalt_lcdfb.c	2008-07-15 15:48:52.035443466 +0900
-@@ -0,0 +1,371 @@
-+/*
-+ *  Cobalt server LCD frame buffer driver.
-+ *
-+ *  Copyright (C) 2008  Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-+ */
-+#include <linux/delay.h>
-+#include <linux/fb.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/ioport.h>
-+#include <linux/platform_device.h>
-+#include <linux/uaccess.h>
-+
-+/*
-+ * Cursor position address
-+ * \X  0    1    2  ...  14   15
-+ * Y+----+----+----+---+----+----+
-+ * 0|0x00|0x01|0x02|...|0x0e|0x0f|
-+ *  +----+----+----+---+----+----+
-+ * 1|0x40|0x41|0x42|...|0x4e|0x4f|
-+ *  +----+----+----+---+----+----+
-+ */
-+#define LCD_DATA_REG_OFFSET	0x10
-+#define LCD_XRES_MAX		16
-+#define LCD_YRES_MAX		2
-+#define LCD_CHARS_MAX		32
-+
-+#define LCD_CLEAR		0x01
-+#define LCD_CURSOR_MOVE_HOME	0x02
-+#define LCD_RESET		0x06
-+#define LCD_OFF			0x08
-+#define LCD_CURSOR_OFF		0x0c
-+#define LCD_CURSOR_BLINK_OFF	0x0e
-+#define LCD_CURSOR_ON		0x0f
-+#define LCD_ON			LCD_CURSOR_ON
-+#define LCD_CURSOR_MOVE_LEFT	0x10
-+#define LCD_CURSOR_MOVE_RIGHT	0x14
-+#define LCD_DISPLAY_LEFT	0x18
-+#define LCD_DISPLAY_RIGHT	0x1c
-+#define LCD_PRERESET		0x3f	/* execute 4 times continuously */
-+#define LCD_BUSY		0x80
-+
-+#define LCD_GRAPHIC_MODE	0x40
-+#define LCD_TEXT_MODE		0x80
-+#define LCD_CUR_POS_MASK	0x7f
-+
-+#define LCD_CUR_POS(x)		((x) & LCD_CUR_POS_MASK)
-+#define LCD_TEXT_POS(x)		((x) | LCD_TEXT_MODE)
-+
-+static inline void lcd_write_control(struct fb_info *info, u8 control)
-+{
-+	writel((u32)control << 24, info->screen_base);
-+}
-+
-+static inline u8 lcd_read_control(struct fb_info *info)
-+{
-+	return readl(info->screen_base) >> 24;
-+}
-+
-+static inline void lcd_write_data(struct fb_info *info, u8 data)
-+{
-+	writel((u32)data << 24, info->screen_base + LCD_DATA_REG_OFFSET);
-+}
-+
-+static inline u8 lcd_read_data(struct fb_info *info)
-+{
-+	return readl(info->screen_base + LCD_DATA_REG_OFFSET) >> 24;
-+}
-+
-+static int lcd_busy_wait(struct fb_info *info)
-+{
-+	u8 val = 0;
-+	int timeout = 10, retval = 0;
-+
-+	do {
-+		val = lcd_read_control(info);
-+		val &= LCD_BUSY;
-+		if (val != LCD_BUSY)
-+			break;
-+
-+		if (msleep_interruptible(1))
-+			return -EINTR;
-+
-+		timeout--;
-+	} while (timeout);
-+
-+	if (val == LCD_BUSY)
-+		retval = -EBUSY;
-+
-+	return retval;
-+}
-+
-+static void lcd_clear(struct fb_info *info)
-+{
-+	int i;
-+
-+	for (i = 0; i < 4; i++) {
-+		udelay(150);
-+
-+		lcd_write_control(info, LCD_PRERESET);
-+	}
-+
-+	udelay(150);
-+
-+	lcd_write_control(info, LCD_CLEAR);
-+
-+	udelay(150);
-+
-+	lcd_write_control(info, LCD_RESET);
-+}
-+
-+static struct fb_fix_screeninfo cobalt_lcdfb_fix __initdata = {
-+	.id		= "cobalt-lcd",
-+	.type		= FB_TYPE_TEXT,
-+	.type_aux	= FB_AUX_TEXT_MDA,
-+	.visual		= FB_VISUAL_MONO01,
-+	.line_length	= LCD_XRES_MAX,
-+	.accel		= FB_ACCEL_NONE,
-+};
-+
-+static ssize_t cobalt_lcdfb_read(struct fb_info *info, char __user *buf,
-+				 size_t count, loff_t *ppos)
-+{
-+	char src[LCD_CHARS_MAX];
-+	unsigned long pos;
-+	int len, retval = 0;
-+
-+	pos = *ppos;
-+	if (pos >= LCD_CHARS_MAX || count == 0)
-+		return 0;
-+
-+	if (count > LCD_CHARS_MAX)
-+		count = LCD_CHARS_MAX;
-+
-+	if (pos + count > LCD_CHARS_MAX)
-+		count = LCD_CHARS_MAX - pos;
-+
-+	for (len = 0; len < count; len++) {
-+		retval = lcd_busy_wait(info);
-+		if (retval < 0)
-+			break;
-+
-+		lcd_write_control(info, LCD_TEXT_POS(pos));
-+
-+		retval = lcd_busy_wait(info);
-+		if (retval < 0)
-+			break;
-+
-+		src[len] = lcd_read_data(info);
-+		if (pos == 0x0f)
-+			pos = 0x40;
-+		else
-+			pos++;
-+	}
-+
-+	if (retval < 0 && signal_pending(current))
-+		return -ERESTARTSYS;
-+
-+	if (copy_to_user(buf, src, len))
-+		return -EFAULT;
-+
-+	*ppos += len;
-+
-+	return len;
-+}
-+
-+static ssize_t cobalt_lcdfb_write(struct fb_info *info, const char __user *buf,
-+				  size_t count, loff_t *ppos)
-+{
-+	char dst[LCD_CHARS_MAX];
-+	unsigned long pos;
-+	int len, retval = 0;
-+
-+	pos = *ppos;
-+	if (pos >= LCD_CHARS_MAX || count == 0)
-+		return 0;
-+
-+	if (count > LCD_CHARS_MAX)
-+		count = LCD_CHARS_MAX;
-+
-+	if (pos + count > LCD_CHARS_MAX)
-+		count = LCD_CHARS_MAX - pos;
-+
-+	if (copy_from_user(dst, buf, count))
-+		return -EFAULT;
-+
-+	for (len = 0; len < count; len++) {
-+		retval = lcd_busy_wait(info);
-+		if (retval < 0)
-+			break;
-+
-+		lcd_write_control(info, LCD_TEXT_POS(pos));
-+
-+		retval = lcd_busy_wait(info);
-+		if (retval < 0)
-+			break;
-+
-+		lcd_write_data(info, dst[len]);
-+		if (pos == 0x0f)
-+			pos = 0x40;
-+		else
-+			pos++;
-+	}
-+
-+	if (retval < 0 && signal_pending(current))
-+		return -ERESTARTSYS;
-+
-+	*ppos += len;
-+
-+	return len;
-+}
-+
-+static int cobalt_lcdfb_blank(int blank_mode, struct fb_info *info)
-+{
-+	int retval;
-+
-+	retval = lcd_busy_wait(info);
-+	if (retval < 0)
-+		return retval;
-+
-+	switch (blank_mode) {
-+	case FB_BLANK_UNBLANK:
-+		lcd_write_control(info, LCD_ON);
-+		break;
-+	default:
-+		lcd_write_control(info, LCD_OFF);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int cobalt_lcdfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-+{
-+	u32 x, y;
-+	int retval;
-+
-+	switch (cursor->set) {
-+	case FB_CUR_SETPOS:
-+		x = cursor->image.dx;
-+		y = cursor->image.dy;
-+		if (x >= LCD_XRES_MAX || y >= LCD_YRES_MAX)
-+			return -EINVAL;
-+
-+		retval = lcd_busy_wait(info);
-+		if (retval < 0)
-+			return retval;
-+
-+		lcd_write_control(info,
-+				  LCD_TEXT_POS(info->fix.line_length * y + x));
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	retval = lcd_busy_wait(info);
-+	if (retval < 0)
-+		return retval;
-+
-+	if (cursor->enable)
-+		lcd_write_control(info, LCD_CURSOR_ON);
-+	else
-+		lcd_write_control(info, LCD_CURSOR_OFF);
-+
-+	return 0;
-+}
-+
-+static struct fb_ops cobalt_lcd_fbops = {
-+	.owner		= THIS_MODULE,
-+	.fb_read	= cobalt_lcdfb_read,
-+	.fb_write	= cobalt_lcdfb_write,
-+	.fb_blank	= cobalt_lcdfb_blank,
-+	.fb_cursor	= cobalt_lcdfb_cursor,
-+};
-+
-+static int __init cobalt_lcdfb_probe(struct platform_device *dev)
-+{
-+	struct fb_info *info;
-+	struct resource *res;
-+	int retval;
-+
-+	info = framebuffer_alloc(0, &dev->dev);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		framebuffer_release(info);
-+		return -EBUSY;
-+	}
-+
-+	info->screen_size = res->end - res->start + 1;
-+	info->screen_base = ioremap(res->start, info->screen_size);
-+	info->fbops = &cobalt_lcd_fbops;
-+	info->fix = cobalt_lcdfb_fix;
-+	info->fix.smem_start = res->start;
-+	info->fix.smem_len = info->screen_size;
-+	info->pseudo_palette = NULL;
-+	info->par = NULL;
-+	info->flags = FBINFO_DEFAULT;
-+
-+	retval = register_framebuffer(info);
-+	if (retval < 0) {
-+		iounmap(info->screen_base);
-+		framebuffer_release(info);
-+		return retval;
-+	}
-+
-+	platform_set_drvdata(dev, info);
-+
-+	lcd_clear(info);
-+
-+	printk(KERN_INFO "fb%d: Cobalt server LCD frame buffer device\n",
-+		info->node);
-+
-+	return 0;
-+}
-+
-+static int __devexit cobalt_lcdfb_remove(struct platform_device *dev)
-+{
-+	struct fb_info *info;
-+
-+	info = platform_get_drvdata(dev);
-+	if (info) {
-+		iounmap(info->screen_base);
-+		unregister_framebuffer(info);
-+		framebuffer_release(info);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct platform_driver cobalt_lcdfb_driver = {
-+	.probe	= cobalt_lcdfb_probe,
-+	.remove	= __devexit_p(cobalt_lcdfb_remove),
-+	.driver	= {
-+		.name	= "cobalt-lcd",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init cobalt_lcdfb_init(void)
-+{
-+	return platform_driver_register(&cobalt_lcdfb_driver);
-+}
-+
-+static void __exit cobalt_lcdfb_exit(void)
-+{
-+	platform_driver_unregister(&cobalt_lcdfb_driver);
-+}
-+
-+module_init(cobalt_lcdfb_init);
-+module_exit(cobalt_lcdfb_exit);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Yoichi Yuasa");
-+MODULE_DESCRIPTION("Cobalt server LCD frame buffer driver");
+-- 
+Cheers
+- eric
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

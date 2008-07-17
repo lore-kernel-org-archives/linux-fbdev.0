@@ -1,8 +1,9 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: kernel oops with framebuffer device vt8623fb
-Date: Thu, 17 Jul 2008 03:39:18 +0200
-Message-ID: <20080717013917.GA1695@localhost.localdomain>
-References: <487E2911.5090701@gmx.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] fbdev: Teaches offb about palette on
+	radeon r5xx/r6xx
+Date: Thu, 17 Jul 2008 15:05:22 +1000
+Message-ID: <1216271122.7740.290.camel@pasglop>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,16 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KJISr-0001jB-1z for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Jul 2008 18:39:25 -0700
-Received: from gateway.crfreenet.org
-	([81.92.146.254] helo=mail.crfreenet.org ident=postfix)
+	id 1KJLgH-0005Dx-Ev for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 Jul 2008 22:05:29 -0700
+Received: from gate.crashing.org ([63.228.1.57])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KJISq-0004bP-29
+	(Exim 4.44) id 1KJLgG-0005cH-IZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Jul 2008 18:39:25 -0700
-Content-Disposition: inline
-In-Reply-To: <487E2911.5090701@gmx.net>
+	Wed, 16 Jul 2008 22:05:29 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,274 +28,286 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: MadLoisae@gmx.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 
-On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
-> Hi!
-> 
-> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found 
-> a problem.
-> 
-> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 
-> display framebuffer driver is compiled direct into kernel the system 
-> hangs up very early at booting the kernel.
+The offb driver already has a collection of hacks to be able to set
+the palette on various chips. This adds support for r5xx/r6xx radeons.
 
-I am sorry for mistake, here is a patch for 2.6.26 fixing the bug:
+This is needed as offb is the only console solution on these currently
+and the firmware in some cases sets a really bad color palette. This
+fixes using some Radeon X16xx on the Powerstation for example.
 
-Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-diff -uprN -X linux-2.6.26-orig/Documentation/dontdiff linux-2.6.26-orig/drivers/video/arkfb.c linux-2.6.26/drivers/video/arkfb.c
---- linux-2.6.26-orig/drivers/video/arkfb.c	2008-07-13 23:51:29.000000000 +0200
-+++ linux-2.6.26/drivers/video/arkfb.c	2008-07-16 22:56:34.000000000 +0200
-@@ -958,20 +958,20 @@ static int __devinit ark_pci_probe(struc
- 	/* Prepare PCI device */
- 	rc = pci_enable_device(dev);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot enable PCI device\n");
-+		dev_err(info->device, "cannot enable PCI device\n");
- 		goto err_enable_device;
+I'm happy to merge that via the powerpc tree if there is no objection
+as offb is a powerpc-only driver at this stage.
+
+Index: linux-work/drivers/video/offb.c
+===================================================================
+--- linux-work.orig/drivers/video/offb.c	2008-07-14 15:57:58.000000000 +1000
++++ linux-work/drivers/video/offb.c	2008-07-15 11:12:56.000000000 +1000
+@@ -47,6 +47,7 @@ enum {
+ 	cmap_M3B,		/* ATI Rage Mobility M3 Head B */
+ 	cmap_radeon,		/* ATI Radeon */
+ 	cmap_gxt2000,		/* IBM GXT2000 */
++	cmap_avivo,		/* ATI R5xx */
+ };
+ 
+ struct offb_par {
+@@ -58,26 +59,36 @@ struct offb_par {
+ 
+ struct offb_par default_par;
+ 
+-    /*
+-     *  Interface used by the world
+-     */
+-
+-static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+-			  u_int transp, struct fb_info *info);
+-static int offb_blank(int blank, struct fb_info *info);
+-
+ #ifdef CONFIG_PPC32
+ extern boot_infos_t *boot_infos;
+ #endif
+ 
+-static struct fb_ops offb_ops = {
+-	.owner		= THIS_MODULE,
+-	.fb_setcolreg	= offb_setcolreg,
+-	.fb_blank	= offb_blank,
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
+-};
++/* Definitions used by the Avivo palette hack */
++#define AVIVO_DC_LUT_RW_SELECT                  0x6480
++#define AVIVO_DC_LUT_RW_MODE                    0x6484
++#define AVIVO_DC_LUT_RW_INDEX                   0x6488
++#define AVIVO_DC_LUT_SEQ_COLOR                  0x648c
++#define AVIVO_DC_LUT_PWL_DATA                   0x6490
++#define AVIVO_DC_LUT_30_COLOR                   0x6494
++#define AVIVO_DC_LUT_READ_PIPE_SELECT           0x6498
++#define AVIVO_DC_LUT_WRITE_EN_MASK              0x649c
++#define AVIVO_DC_LUT_AUTOFILL                   0x64a0
++
++#define AVIVO_DC_LUTA_CONTROL                   0x64c0
++#define AVIVO_DC_LUTA_BLACK_OFFSET_BLUE         0x64c4
++#define AVIVO_DC_LUTA_BLACK_OFFSET_GREEN        0x64c8
++#define AVIVO_DC_LUTA_BLACK_OFFSET_RED          0x64cc
++#define AVIVO_DC_LUTA_WHITE_OFFSET_BLUE         0x64d0
++#define AVIVO_DC_LUTA_WHITE_OFFSET_GREEN        0x64d4
++#define AVIVO_DC_LUTA_WHITE_OFFSET_RED          0x64d8
++
++#define AVIVO_DC_LUTB_CONTROL                   0x6cc0
++#define AVIVO_DC_LUTB_BLACK_OFFSET_BLUE         0x6cc4
++#define AVIVO_DC_LUTB_BLACK_OFFSET_GREEN        0x6cc8
++#define AVIVO_DC_LUTB_BLACK_OFFSET_RED          0x6ccc
++#define AVIVO_DC_LUTB_WHITE_OFFSET_BLUE         0x6cd0
++#define AVIVO_DC_LUTB_WHITE_OFFSET_GREEN        0x6cd4
++#define AVIVO_DC_LUTB_WHITE_OFFSET_RED          0x6cd8
+ 
+     /*
+      *  Set a single color register. The values supplied are already
+@@ -160,6 +171,17 @@ static int offb_setcolreg(u_int regno, u
+ 		out_le32(((unsigned __iomem *) par->cmap_adr) + regno,
+ 			 (red << 16 | green << 8 | blue));
+ 		break;
++	case cmap_avivo:
++		/* Write to both LUTs for now */
++		writel(1, par->cmap_adr + AVIVO_DC_LUT_RW_SELECT);
++		writeb(regno, par->cmap_adr + AVIVO_DC_LUT_RW_INDEX);
++		writel(((red) << 22) | ((green) << 12) | ((blue) << 2),
++		       par->cmap_adr + AVIVO_DC_LUT_30_COLOR);
++		writel(0, par->cmap_adr + AVIVO_DC_LUT_RW_SELECT);
++		writeb(regno, par->cmap_adr + AVIVO_DC_LUT_RW_INDEX);
++		writel(((red) << 22) | ((green) << 12) | ((blue) << 2),
++		       par->cmap_adr + AVIVO_DC_LUT_30_COLOR);
++		break;
  	}
  
- 	rc = pci_request_regions(dev, "arkfb");
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot reserve framebuffer region\n");
-+		dev_err(info->device, "cannot reserve framebuffer region\n");
- 		goto err_request_regions;
- 	}
+ 	return 0;
+@@ -216,12 +238,59 @@ static int offb_blank(int blank, struct 
+ 				out_le32(((unsigned __iomem *) par->cmap_adr) + i,
+ 					 0);
+ 				break;
++			case cmap_avivo:
++				writel(1, par->cmap_adr + AVIVO_DC_LUT_RW_SELECT);
++				writeb(i, par->cmap_adr + AVIVO_DC_LUT_RW_INDEX);
++				writel(0, par->cmap_adr + AVIVO_DC_LUT_30_COLOR);
++				writel(0, par->cmap_adr + AVIVO_DC_LUT_RW_SELECT);
++				writeb(i, par->cmap_adr + AVIVO_DC_LUT_RW_INDEX);
++				writel(0, par->cmap_adr + AVIVO_DC_LUT_30_COLOR);
++				break;
+ 			}
+ 	} else
+ 		fb_set_cmap(&info->cmap, info);
+ 	return 0;
+ }
  
- 	par->dac = ics5342_init(ark_dac_read_regs, ark_dac_write_regs, info);
- 	if (! par->dac) {
- 		rc = -ENOMEM;
--		dev_err(info->dev, "RAMDAC initialization failed\n");
-+		dev_err(info->device, "RAMDAC initialization failed\n");
- 		goto err_dac;
- 	}
++static int offb_set_par(struct fb_info *info)
++{
++	struct offb_par *par = (struct offb_par *) info->par;
++
++	/* On avivo, initialize palette control */
++	if (par->cmap_type == cmap_avivo) {
++		writel(0, par->cmap_adr + AVIVO_DC_LUTA_CONTROL);
++		writel(0, par->cmap_adr + AVIVO_DC_LUTA_BLACK_OFFSET_BLUE);
++		writel(0, par->cmap_adr + AVIVO_DC_LUTA_BLACK_OFFSET_GREEN);
++		writel(0, par->cmap_adr + AVIVO_DC_LUTA_BLACK_OFFSET_RED);
++		writel(0x0000ffff, par->cmap_adr + AVIVO_DC_LUTA_WHITE_OFFSET_BLUE);
++		writel(0x0000ffff, par->cmap_adr + AVIVO_DC_LUTA_WHITE_OFFSET_GREEN);
++		writel(0x0000ffff, par->cmap_adr + AVIVO_DC_LUTA_WHITE_OFFSET_RED);
++		writel(0, par->cmap_adr + AVIVO_DC_LUTB_CONTROL);
++		writel(0, par->cmap_adr + AVIVO_DC_LUTB_BLACK_OFFSET_BLUE);
++		writel(0, par->cmap_adr + AVIVO_DC_LUTB_BLACK_OFFSET_GREEN);
++		writel(0, par->cmap_adr + AVIVO_DC_LUTB_BLACK_OFFSET_RED);
++		writel(0x0000ffff, par->cmap_adr + AVIVO_DC_LUTB_WHITE_OFFSET_BLUE);
++		writel(0x0000ffff, par->cmap_adr + AVIVO_DC_LUTB_WHITE_OFFSET_GREEN);
++		writel(0x0000ffff, par->cmap_adr + AVIVO_DC_LUTB_WHITE_OFFSET_RED);
++		writel(1, par->cmap_adr + AVIVO_DC_LUT_RW_SELECT);
++		writel(0, par->cmap_adr + AVIVO_DC_LUT_RW_MODE);
++		writel(0x0000003f, par->cmap_adr + AVIVO_DC_LUT_WRITE_EN_MASK);
++		writel(0, par->cmap_adr + AVIVO_DC_LUT_RW_SELECT);
++		writel(0, par->cmap_adr + AVIVO_DC_LUT_RW_MODE);
++		writel(0x0000003f, par->cmap_adr + AVIVO_DC_LUT_WRITE_EN_MASK);
++	}
++	return 0;
++}
++
++static struct fb_ops offb_ops = {
++	.owner		= THIS_MODULE,
++	.fb_setcolreg	= offb_setcolreg,
++	.fb_set_par	= offb_set_par,
++	.fb_blank	= offb_blank,
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit,
++};
  
-@@ -982,7 +982,7 @@ static int __devinit ark_pci_probe(struc
- 	info->screen_base = pci_iomap(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
--		dev_err(info->dev, "iomap for framebuffer failed\n");
-+		dev_err(info->device, "iomap for framebuffer failed\n");
- 		goto err_iomap;
- 	}
+ static void __iomem *offb_map_reg(struct device_node *np, int index,
+ 				  unsigned long offset, unsigned long size)
+@@ -245,6 +314,59 @@ static void __iomem *offb_map_reg(struct
+ 	return ioremap(taddr + offset, size);
+ }
  
-@@ -1004,19 +1004,19 @@ static int __devinit ark_pci_probe(struc
- 	rc = fb_find_mode(&(info->var), info, mode_option, NULL, 0, NULL, 8);
- 	if (! ((rc == 1) || (rc == 2))) {
- 		rc = -EINVAL;
--		dev_err(info->dev, "mode %s not found\n", mode_option);
-+		dev_err(info->device, "mode %s not found\n", mode_option);
- 		goto err_find_mode;
- 	}
++static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp,
++				    const char *name, unsigned long address)
++{
++	struct offb_par *par = (struct offb_par *) info->par;
++
++	if (dp && !strncmp(name, "ATY,Rage128", 11)) {
++		par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
++		if (par->cmap_adr)
++			par->cmap_type = cmap_r128;
++	} else if (dp && (!strncmp(name, "ATY,RageM3pA", 12)
++			  || !strncmp(name, "ATY,RageM3p12A", 14))) {
++		par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
++		if (par->cmap_adr)
++			par->cmap_type = cmap_M3A;
++	} else if (dp && !strncmp(name, "ATY,RageM3pB", 12)) {
++		par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
++		if (par->cmap_adr)
++			par->cmap_type = cmap_M3B;
++	} else if (dp && !strncmp(name, "ATY,Rage6", 9)) {
++		par->cmap_adr = offb_map_reg(dp, 1, 0, 0x1fff);
++		if (par->cmap_adr)
++			par->cmap_type = cmap_radeon;
++	} else if (!strncmp(name, "ATY,", 4)) {
++		unsigned long base = address & 0xff000000UL;
++		par->cmap_adr =
++			ioremap(base + 0x7ff000, 0x1000) + 0xcc0;
++		par->cmap_data = par->cmap_adr + 1;
++		par->cmap_type = cmap_m64;
++	} else if (dp && (of_device_is_compatible(dp, "pci1014,b7") ||
++			  of_device_is_compatible(dp, "pci1014,21c"))) {
++		par->cmap_adr = offb_map_reg(dp, 0, 0x6000, 0x1000);
++		if (par->cmap_adr)
++			par->cmap_type = cmap_gxt2000;
++	} else if (dp && !strncmp(name, "vga,Display-", 12)) {
++		/* Look for AVIVO initialized by SLOF */
++		struct device_node *pciparent = of_get_parent(dp);
++		const u32 *vid, *did;
++		vid = of_get_property(pciparent, "vendor-id", NULL);
++		did = of_get_property(pciparent, "device-id", NULL);
++		/* This will match most R5xx */
++		if (vid && did && *vid == 0x1002 &&
++		    ((*did >= 0x7100 && *did < 0x7800) ||
++		     (*did >= 0x9400))) {
++			par->cmap_adr = offb_map_reg(pciparent, 2, 0, 0x10000);
++			if (par->cmap_adr)
++				par->cmap_type = cmap_avivo;
++		}
++		of_node_put(pciparent);
++	}
++	info->fix.visual = (par->cmap_type != cmap_unknown) ?
++		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_STATIC_PSEUDOCOLOR;
++}
++
+ static void __init offb_init_fb(const char *name, const char *full_name,
+ 				int width, int height, int depth,
+ 				int pitch, unsigned long address,
+@@ -283,6 +405,7 @@ static void __init offb_init_fb(const ch
  
- 	rc = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot allocate colormap\n");
-+		dev_err(info->device, "cannot allocate colormap\n");
- 		goto err_alloc_cmap;
- 	}
+ 	fix = &info->fix;
+ 	var = &info->var;
++	info->par = par;
  
- 	rc = register_framebuffer(info);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot register framebugger\n");
-+		dev_err(info->device, "cannot register framebugger\n");
- 		goto err_reg_fb;
- 	}
+ 	strcpy(fix->id, "OFfb ");
+ 	strncat(fix->id, name, sizeof(fix->id) - sizeof("OFfb "));
+@@ -298,39 +421,9 @@ static void __init offb_init_fb(const ch
+ 	fix->type_aux = 0;
  
-@@ -1090,7 +1090,7 @@ static int ark_pci_suspend (struct pci_d
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct arkfb_info *par = info->par;
+ 	par->cmap_type = cmap_unknown;
+-	if (depth == 8) {
+-		if (dp && !strncmp(name, "ATY,Rage128", 11)) {
+-			par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
+-			if (par->cmap_adr)
+-				par->cmap_type = cmap_r128;
+-		} else if (dp && (!strncmp(name, "ATY,RageM3pA", 12)
+-				  || !strncmp(name, "ATY,RageM3p12A", 14))) {
+-			par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
+-			if (par->cmap_adr)
+-				par->cmap_type = cmap_M3A;
+-		} else if (dp && !strncmp(name, "ATY,RageM3pB", 12)) {
+-			par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
+-			if (par->cmap_adr)
+-				par->cmap_type = cmap_M3B;
+-		} else if (dp && !strncmp(name, "ATY,Rage6", 9)) {
+-			par->cmap_adr = offb_map_reg(dp, 1, 0, 0x1fff);
+-			if (par->cmap_adr)
+-				par->cmap_type = cmap_radeon;
+-		} else if (!strncmp(name, "ATY,", 4)) {
+-			unsigned long base = address & 0xff000000UL;
+-			par->cmap_adr =
+-			    ioremap(base + 0x7ff000, 0x1000) + 0xcc0;
+-			par->cmap_data = par->cmap_adr + 1;
+-			par->cmap_type = cmap_m64;
+-		} else if (dp && (of_device_is_compatible(dp, "pci1014,b7") ||
+-				  of_device_is_compatible(dp, "pci1014,21c"))) {
+-			par->cmap_adr = offb_map_reg(dp, 0, 0x6000, 0x1000);
+-			if (par->cmap_adr)
+-				par->cmap_type = cmap_gxt2000;
+-		}
+-		fix->visual = (par->cmap_type != cmap_unknown) ?
+-			FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_STATIC_PSEUDOCOLOR;
+-	} else
++	if (depth == 8)
++		offb_init_palette_hacks(info, dp, name, address);
++	else
+ 		fix->visual = FB_VISUAL_TRUECOLOR;
  
--	dev_info(info->dev, "suspend\n");
-+	dev_info(info->device, "suspend\n");
+ 	var->xoffset = var->yoffset = 0;
+@@ -395,7 +488,6 @@ static void __init offb_init_fb(const ch
  
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
-@@ -1121,7 +1121,7 @@ static int ark_pci_resume (struct pci_de
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct arkfb_info *par = info->par;
+ 	info->fbops = &offb_ops;
+ 	info->screen_base = ioremap(address, fix->smem_len);
+-	info->par = par;
+ 	info->pseudo_palette = (void *) (info + 1);
+ 	info->flags = FBINFO_DEFAULT | foreign_endian;
  
--	dev_info(info->dev, "resume\n");
-+	dev_info(info->device, "resume\n");
- 
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
-diff -uprN -X linux-2.6.26-orig/Documentation/dontdiff linux-2.6.26-orig/drivers/video/s3fb.c linux-2.6.26/drivers/video/s3fb.c
---- linux-2.6.26-orig/drivers/video/s3fb.c	2008-07-13 23:51:29.000000000 +0200
-+++ linux-2.6.26/drivers/video/s3fb.c	2008-07-16 22:44:19.000000000 +0200
-@@ -903,13 +903,13 @@ static int __devinit s3_pci_probe(struct
- 	/* Prepare PCI device */
- 	rc = pci_enable_device(dev);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot enable PCI device\n");
-+		dev_err(info->device, "cannot enable PCI device\n");
- 		goto err_enable_device;
- 	}
- 
- 	rc = pci_request_regions(dev, "s3fb");
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot reserve framebuffer region\n");
-+		dev_err(info->device, "cannot reserve framebuffer region\n");
- 		goto err_request_regions;
- 	}
- 
-@@ -921,7 +921,7 @@ static int __devinit s3_pci_probe(struct
- 	info->screen_base = pci_iomap(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
--		dev_err(info->dev, "iomap for framebuffer failed\n");
-+		dev_err(info->device, "iomap for framebuffer failed\n");
- 		goto err_iomap;
- 	}
- 
-@@ -965,19 +965,19 @@ static int __devinit s3_pci_probe(struct
- 	rc = fb_find_mode(&(info->var), info, mode_option, NULL, 0, NULL, 8);
- 	if (! ((rc == 1) || (rc == 2))) {
- 		rc = -EINVAL;
--		dev_err(info->dev, "mode %s not found\n", mode_option);
-+		dev_err(info->device, "mode %s not found\n", mode_option);
- 		goto err_find_mode;
- 	}
- 
- 	rc = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot allocate colormap\n");
-+		dev_err(info->device, "cannot allocate colormap\n");
- 		goto err_alloc_cmap;
- 	}
- 
- 	rc = register_framebuffer(info);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot register framebuffer\n");
-+		dev_err(info->device, "cannot register framebuffer\n");
- 		goto err_reg_fb;
- 	}
- 
-@@ -1053,7 +1053,7 @@ static int s3_pci_suspend(struct pci_dev
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct s3fb_info *par = info->par;
- 
--	dev_info(info->dev, "suspend\n");
-+	dev_info(info->device, "suspend\n");
- 
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
-@@ -1085,7 +1085,7 @@ static int s3_pci_resume(struct pci_dev*
- 	struct s3fb_info *par = info->par;
- 	int err;
- 
--	dev_info(info->dev, "resume\n");
-+	dev_info(info->device, "resume\n");
- 
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
-@@ -1102,7 +1102,7 @@ static int s3_pci_resume(struct pci_dev*
- 	if (err) {
- 		mutex_unlock(&(par->open_lock));
- 		release_console_sem();
--		dev_err(info->dev, "error %d enabling device for resume\n", err);
-+		dev_err(info->device, "error %d enabling device for resume\n", err);
- 		return err;
- 	}
- 	pci_set_master(dev);
-diff -uprN -X linux-2.6.26-orig/Documentation/dontdiff linux-2.6.26-orig/drivers/video/vt8623fb.c linux-2.6.26/drivers/video/vt8623fb.c
---- linux-2.6.26-orig/drivers/video/vt8623fb.c	2008-07-13 23:51:29.000000000 +0200
-+++ linux-2.6.26/drivers/video/vt8623fb.c	2008-07-16 22:57:05.000000000 +0200
-@@ -677,13 +677,13 @@ static int __devinit vt8623_pci_probe(st
- 
- 	rc = pci_enable_device(dev);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot enable PCI device\n");
-+		dev_err(info->device, "cannot enable PCI device\n");
- 		goto err_enable_device;
- 	}
- 
- 	rc = pci_request_regions(dev, "vt8623fb");
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot reserve framebuffer region\n");
-+		dev_err(info->device, "cannot reserve framebuffer region\n");
- 		goto err_request_regions;
- 	}
- 
-@@ -696,14 +696,14 @@ static int __devinit vt8623_pci_probe(st
- 	info->screen_base = pci_iomap(dev, 0, 0);
- 	if (! info->screen_base) {
- 		rc = -ENOMEM;
--		dev_err(info->dev, "iomap for framebuffer failed\n");
-+		dev_err(info->device, "iomap for framebuffer failed\n");
- 		goto err_iomap_1;
- 	}
- 
- 	par->mmio_base = pci_iomap(dev, 1, 0);
- 	if (! par->mmio_base) {
- 		rc = -ENOMEM;
--		dev_err(info->dev, "iomap for MMIO failed\n");
-+		dev_err(info->device, "iomap for MMIO failed\n");
- 		goto err_iomap_2;
- 	}
- 
-@@ -714,7 +714,7 @@ static int __devinit vt8623_pci_probe(st
- 	if ((16 <= memsize1) && (memsize1 <= 64) && (memsize1 == memsize2))
- 		info->screen_size = memsize1 << 20;
- 	else {
--		dev_err(info->dev, "memory size detection failed (%x %x), suppose 16 MB\n", memsize1, memsize2);
-+		dev_err(info->device, "memory size detection failed (%x %x), suppose 16 MB\n", memsize1, memsize2);
- 		info->screen_size = 16 << 20;
- 	}
- 
-@@ -731,19 +731,19 @@ static int __devinit vt8623_pci_probe(st
- 	rc = fb_find_mode(&(info->var), info, mode_option, NULL, 0, NULL, 8);
- 	if (! ((rc == 1) || (rc == 2))) {
- 		rc = -EINVAL;
--		dev_err(info->dev, "mode %s not found\n", mode_option);
-+		dev_err(info->device, "mode %s not found\n", mode_option);
- 		goto err_find_mode;
- 	}
- 
- 	rc = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot allocate colormap\n");
-+		dev_err(info->device, "cannot allocate colormap\n");
- 		goto err_alloc_cmap;
- 	}
- 
- 	rc = register_framebuffer(info);
- 	if (rc < 0) {
--		dev_err(info->dev, "cannot register framebugger\n");
-+		dev_err(info->device, "cannot register framebugger\n");
- 		goto err_reg_fb;
- 	}
- 
-@@ -817,7 +817,7 @@ static int vt8623_pci_suspend(struct pci
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct vt8623fb_info *par = info->par;
- 
--	dev_info(info->dev, "suspend\n");
-+	dev_info(info->device, "suspend\n");
- 
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
-@@ -848,7 +848,7 @@ static int vt8623_pci_resume(struct pci_
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct vt8623fb_info *par = info->par;
- 
--	dev_info(info->dev, "resume\n");
-+	dev_info(info->device, "resume\n");
- 
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
 
 
-
-
--- 
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

@@ -1,31 +1,24 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc9 1/5] pxafb: add shared
-	framebuffer interface
-Date: Wed, 16 Jul 2008 19:18:10 +0800
-Message-ID: <45a44e480807160418g10090321uc57c338987d74b30@mail.gmail.com>
-References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1215955587-20367-2-git-send-email-jayakumar.lkml@gmail.com>
-	<f17812d70807160000y4fb9e543gdd25d6b6937af81e@mail.gmail.com>
-	<45a44e480807160159j62b9f989l2ae99bd94d24a95f@mail.gmail.com>
-	<20080716093855.GC23468@flint.arm.linux.org.uk>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v3] add new Cobalt LCD framebuffer
+	driver
+Date: Wed, 16 Jul 2008 17:31:54 -0700
+Message-ID: <20080716173154.8cb87400.akpm@linux-foundation.org>
+References: <20080715222751.86091a71.yoichi_yuasa@tripeaks.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KJ51R-0004og-E3 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Jul 2008 04:18:13 -0700
-Received: from nf-out-0910.google.com ([64.233.182.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KJ51P-0007zC-PX
+	id 1KJHPm-0003Tg-Tg for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 16 Jul 2008 17:32:10 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KJHPm-0001JS-JM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 16 Jul 2008 04:18:13 -0700
-Received: by nf-out-0910.google.com with SMTP id g16so1579959nfd.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 16 Jul 2008 04:18:10 -0700 (PDT)
-In-Reply-To: <20080716093855.GC23468@flint.arm.linux.org.uk>
-Content-Disposition: inline
+	Wed, 16 Jul 2008 17:32:10 -0700
+In-Reply-To: <20080715222751.86091a71.yoichi_yuasa@tripeaks.co.jp>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,49 +29,144 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net, ymiao3@marvell.com, eric miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: adaplas@pol.net, linux-mips@linux-mips.org, linux-fbdev-devel@lists.sourceforge.net, ralf@linux-mips.org, yoichi_yuasa@tripeaks.co.jp
 
-On Wed, Jul 16, 2008 at 5:38 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Wed, Jul 16, 2008 at 01:59:42AM -0700, Jaya Kumar wrote:
->> On Wed, Jul 16, 2008 at 12:00 AM, eric miao <eric.y.miao@gmail.com> wrote:
->> > On Sun, Jul 13, 2008 at 9:26 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
->> >> These changes are to make it possible for a secondary driver to share the
->> >> pxafb framebuffer. The changes include:
->> >> - adding clkdev entry in pxafb_mach_info so that a driver can pass in the
->> >>  correct struct device owner for the LCDCLK.
->> >
->> > Is it possible that LCDCLK being requested by device other than
->> > pxa_device_fb?? Could you give an example and we may work out
->> > a better solution.
->>
->> You're right. I think LCDCLK is only ever requested by pxa_device_fb.
->>
->> I see now that instead of doing:
->> -       fbi->clk = clk_get(dev, "LCDCLK");
->> +       fbi->clk = clk_get(inf->clkdev, "LCDCLK");
->>
->> a better solution would be to directly use pxa_device_fb:
->> -       fbi->clk = clk_get(dev, "LCDCLK");
->> +       fbi->clk = clk_get(pxa_device_fb.dev, "LCDCLK");
->>
->> and then I can avoid doing the clkdev ugliness.
->
-> PXA devices (intentionally) aren't exported.  Nor are they going to be,
-> so the above will fail if built as a module.
->
+On Tue, 15 Jul 2008 22:27:51 +0900
+Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
 
-Ah... I think this may be the cause of all my troubles. I've been
-trying to support am200epd working as a module, and allow it to rmmod
-cleanly, hence the inability to use pxa_device_fb through
-set_pxa_fb_info. If module support isn't important then I can happily
-take out unload support from am200epd and probably can then use
-set_pxa_fb_info and also reduce complexity in other parts of the
-metronomefb, am200epd, pxafb code.
+> I update cobalt_lcdfb driver.
+> 
+> v3
+> - fix read/write count boundary check.
+> - add <include/uaccess.h>.
+> - fix MODULE_AUTHOR.
+> 
+> v2
+> - add dpends MIPS_COBALT in Kconfig.
+> - add handling of signal_pending().
+> - check overflow of read/write count.
+> 
+> v1
+> - first release.
 
-Thanks,
-jaya
+This driver has been merged into the subsystem tree for a long time and
+has been reviewed and has been perhaps tested by others.  Sending a
+complete new version of the entire thing is really quite an unfriendly
+act.  It basically invalidates all the review and test work which
+everyone else has done.
+
+This is why I will almost always turn replacement patches into
+incremental patches - so I can see what changed.  But that's only good
+for me.  Everyone else who is reading your new version won't bother
+doing that.
+
+
+So I generated the incremental patch and:
+
+- The driver I have already includes linux/uaccess.h, so that change
+  was unneeded.
+
+- The driver I have has already fixed the reject in
+  drivers/video/Makefile, so I get to fix it again, ho hum.
+
+Here's what I ended up committing:
+
+ drivers/video/Kconfig        |    2 +-
+ drivers/video/cobalt_lcdfb.c |   24 ++++++++++++++++++------
+ 2 files changed, 19 insertions(+), 7 deletions(-)
+
+diff -puN drivers/video/Kconfig~add-new-cobalt-lcd-framebuffer-driver drivers/video/Kconfig
+--- a/drivers/video/Kconfig~add-new-cobalt-lcd-framebuffer-driver
++++ a/drivers/video/Kconfig
+@@ -1989,7 +1989,7 @@ config FB_AM200EPD
+ 
+ config FB_COBALT
+ 	tristate "Cobalt server LCD frame buffer support"
+-	depends on FB
++	depends on FB && MIPS_COBALT
+ 
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+diff -puN drivers/video/Makefile~add-new-cobalt-lcd-framebuffer-driver drivers/video/Makefile
+diff -puN drivers/video/cobalt_lcdfb.c~add-new-cobalt-lcd-framebuffer-driver drivers/video/cobalt_lcdfb.c
+--- a/drivers/video/cobalt_lcdfb.c~add-new-cobalt-lcd-framebuffer-driver
++++ a/drivers/video/cobalt_lcdfb.c
+@@ -137,13 +137,16 @@ static ssize_t cobalt_lcdfb_read(struct 
+ {
+ 	char src[LCD_CHARS_MAX];
+ 	unsigned long pos;
+-	int len, retval;
++	int len, retval = 0;
+ 
+ 	pos = *ppos;
+-	if (pos >= LCD_CHARS_MAX)
++	if (pos >= LCD_CHARS_MAX || count == 0)
+ 		return 0;
+ 
+-	if (pos + count >= LCD_CHARS_MAX)
++	if (count > LCD_CHARS_MAX)
++		count = LCD_CHARS_MAX;
++
++	if (pos + count > LCD_CHARS_MAX)
+ 		count = LCD_CHARS_MAX - pos;
+ 
+ 	for (len = 0; len < count; len++) {
+@@ -164,6 +167,9 @@ static ssize_t cobalt_lcdfb_read(struct 
+ 			pos++;
+ 	}
+ 
++	if (retval < 0 && signal_pending(current))
++		return -ERESTARTSYS;
++
+ 	if (copy_to_user(buf, src, len))
+ 		return -EFAULT;
+ 
+@@ -177,13 +183,16 @@ static ssize_t cobalt_lcdfb_write(struct
+ {
+ 	char dst[LCD_CHARS_MAX];
+ 	unsigned long pos;
+-	int len, retval;
++	int len, retval = 0;
+ 
+ 	pos = *ppos;
+-	if (pos >= LCD_CHARS_MAX)
++	if (pos >= LCD_CHARS_MAX || count == 0)
+ 		return 0;
+ 
+-	if (pos + count >= LCD_CHARS_MAX)
++	if (count > LCD_CHARS_MAX)
++		count = LCD_CHARS_MAX;
++
++	if (pos + count > LCD_CHARS_MAX)
+ 		count = LCD_CHARS_MAX - pos;
+ 
+ 	if (copy_from_user(dst, buf, count))
+@@ -207,6 +216,9 @@ static ssize_t cobalt_lcdfb_write(struct
+ 			pos++;
+ 	}
+ 
++	if (retval < 0 && signal_pending(current))
++		return -ERESTARTSYS;
++
+ 	*ppos += len;
+ 
+ 	return len;
+_
+
+
+and I'm a bit uncertain about it.
+
+- the test for (count > LCD_CHARS_MAX) appear to be unneeded, given
+  the follwing test for (pos + count > LCD_CHARS_MAX).
+
+  Or perhaps it is an obscure test for very large tests of `count',
+  which would cause overflows in `count+pos'?  Can it all be simplified?
+
+- Do we need to test for `count == 0'?  I have a feeling that this
+  case is handled at the higher levels of read(), but I cannot find
+  that piece of code at present.  Perhaps I dreamed it.
+
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

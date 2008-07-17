@@ -1,23 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] [RESEND] fbcon: simple text
- blinking implementation
-Date: Thu, 17 Jul 2008 20:50:35 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0807172047340.20605@anakin>
-References: <487F4E20.6090802@eu.citrix.com>
+From: Timur Tabi <timur@freescale.com>
+Subject: [PATCH v2] fsl-diu-fb: Update Freescale DIU
+	driver to use page_alloc_exact()
+Date: Thu, 17 Jul 2008 16:25:16 -0500
+Message-ID: <1216329916-31549-1-git-send-email-timur@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KJYYv-0004JP-5K for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 Jul 2008 11:50:45 -0700
-Received: from winston.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KJYYs-00018t-4v
+	id 1KJazK-0004hu-Da for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 17 Jul 2008 14:26:10 -0700
+Received: from de01egw02.freescale.net ([192.88.165.103])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KJazI-00038l-V3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 Jul 2008 11:50:45 -0700
-In-Reply-To: <487F4E20.6090802@eu.citrix.com>
+	Thu, 17 Jul 2008 14:26:10 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,32 +27,112 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 17 Jul 2008, Stefano Stabellini wrote:
-> at the moment blinking is not supported in fbcon but it is supported in
-> vgacon.
-> Since userspace applications don't distinguish between the two, they just
-> assume that the linux terminal is always capable of blinking text.
-> However implementing blinking in fbcon is not so difficult: this patch
-> provides a very simple (too simple?) implementation of that.
-> I am using the flashcursor function to scan the buffer for blinking text.
-> For the sake of efficiency I added a simple flag mechanism to disable the scan
-> when I am sure that there are no blinking characters on the screen.
+Update the Freescale DIU driver to use page_alloc_exact() to allocate a
+DMA buffer.  This also eliminates the rheap-based memory allocator.  We
+can do this now because commit 6ccf61f9 allows us to allocate 8MB physically-
+contiguous memory blocks.
 
-Ehrm, there's already blinking support on some platforms?
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-Gr{oetje,eeting}s,
+Fix printk format specifiers, per Andrew Morton.
 
-						Geert
+My other patch, "Add alloc_pages_exact() and free_pages_exact()", must be
+applied first, otherwise drivers/video/fsl-diu-fb.c will not compile.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ drivers/video/fsl-diu-fb.c |   60 ++++++++++++++++---------------------------
+ 1 files changed, 22 insertions(+), 38 deletions(-)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 09d7e22..9cd36c2 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -279,58 +279,42 @@ static struct diu_hw dr = {
+ 
+ static struct diu_pool pool;
+ 
+-/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
+- *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
+- *	very large memory (more than 4MB). We don't want to allocate all memory
+- *	in rheap since small memory allocation/deallocation will fragment the
+- *	rheap and make the furture large allocation fail.
++/**
++ * fsl_diu_alloc - allocate memory for the DIU
++ * @size: number of bytes to allocate
++ * @param: returned physical address of memory
++ *
++ * This function allocates a physically-contiguous block of memory.
+  */
+-
+-static void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
++static void *fsl_diu_alloc(size_t size, phys_addr_t *phys)
+ {
+ 	void *virt;
+ 
+-	pr_debug("size=%lu\n", size);
++	pr_debug("size=%zu\n", size);
+ 
+-	virt = (void *)__get_free_pages(GFP_DMA | __GFP_ZERO, get_order(size));
++	virt = alloc_pages_exact(size, GFP_DMA | __GFP_ZERO);
+ 	if (virt) {
+ 		*phys = virt_to_phys(virt);
+-		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
+-		return virt;
+-	}
+-	if (!diu_ops.diu_mem) {
+-		printk(KERN_INFO "%s: no diu_mem."
+-			" To reserve more memory, put 'diufb=15M' "
+-			"in the command line\n", __func__);
+-		return NULL;
+-	}
+-
+-	virt = (void *)rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
+-	if (virt) {
+-		*phys = virt_to_bus(virt);
+-		memset(virt, 0, size);
++		pr_debug("virt=%p phys=%llx\n", virt,
++			(unsigned long long)*phys);
+ 	}
+ 
+-	pr_debug("rh virt=%p phys=%llx\n", virt, (unsigned long long)*phys);
+-
+ 	return virt;
+ }
+ 
+-static void fsl_diu_free(void *p, unsigned long size)
++/**
++ * fsl_diu_free - release DIU memory
++ * @virt: pointer returned by fsl_diu_alloc()
++ * @size: number of bytes allocated by fsl_diu_alloc()
++ *
++ * This function releases memory allocated by fsl_diu_alloc().
++ */
++static void fsl_diu_free(void *virt, size_t size)
+ {
+-	pr_debug("p=%p size=%lu\n", p, size);
++	pr_debug("virt=%p size=%zu\n", virt, size);
+ 
+-	if (!p)
+-		return;
+-
+-	if ((p >= diu_ops.diu_mem) &&
+-	    (p < (diu_ops.diu_mem + diu_ops.diu_size))) {
+-		pr_debug("rh\n");
+-		rh_free(&diu_ops.diu_rh_info, (unsigned long) p);
+-	} else {
+-		pr_debug("dma\n");
+-		free_pages((unsigned long)p, get_order(size));
+-	}
++	if (virt && size)
++		free_pages_exact(virt, size);
+ }
+ 
+ static int fsl_diu_enable_panel(struct fb_info *info)
+-- 
+1.5.5
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

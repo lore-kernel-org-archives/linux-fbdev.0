@@ -1,8 +1,10 @@
-From: Timur Tabi <timur@freescale.com>
-Subject: [PATCH v2] fsl-diu-fb: Update Freescale DIU
-	driver to use page_alloc_exact()
-Date: Thu, 17 Jul 2008 16:25:16 -0500
-Message-ID: <1216329916-31549-1-git-send-email-timur@freescale.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: No console on Riva TNT since 2.6.26-0.rc4
+Date: Sat, 19 Jul 2008 18:06:59 +0200
+Message-ID: <20080719180659.da7efbcd.krzysztof.h1@poczta.fm>
+References: <062620082004.6012.4863F668000CEA0D0000177C2200751090CE05040A05@comcast.net>
+	<20080709194108.f18226e8.akpm@linux-foundation.org>
+	<20080710025149.GA4817@martell.zuzino.mipt.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,13 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KJazK-0004hu-Da for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 Jul 2008 14:26:10 -0700
-Received: from de01egw02.freescale.net ([192.88.165.103])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KJazI-00038l-V3
+	id 1KKEt5-0005yi-Hy for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 19 Jul 2008 09:02:23 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKEt2-0007uy-V5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 17 Jul 2008 14:26:10 -0700
+	Sat, 19 Jul 2008 09:02:23 -0700
+In-Reply-To: <20080710025149.GA4817@martell.zuzino.mipt.ru>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,111 +29,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Quel Qun <kelk1@comcast.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
 
-Update the Freescale DIU driver to use page_alloc_exact() to allocate a
-DMA buffer.  This also eliminates the rheap-based memory allocator.  We
-can do this now because commit 6ccf61f9 allows us to allocate 8MB physically-
-contiguous memory blocks.
+On Thu, 10 Jul 2008 06:51:49 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
+> On Wed, Jul 09, 2008 at 07:41:08PM -0700, Andrew Morton wrote:
+> > On Thu, 26 Jun 2008 20:04:56 +0000 kelk1@comcast.net (Quel Qun) wrote:
+> > 
+> > > Hi,
+> > > 
+> > > The system boots fine with 2.6.26-0.rc3.1mnb (Mandriva Cooker), but since rc4, I see a few squares of color, then a black screen and the console never comes back. This is independent of the resolution chosen when using vga=ask. The machine does boot and I can start X if I log in blindly. Only the F1 to F6 consoles are gone.
+> > > 
 
-Fix printk format specifiers, per Andrew Morton.
+Please try the patch below if it helps:
 
-My other patch, "Add alloc_pages_exact() and free_pages_exact()", must be
-applied first, otherwise drivers/video/fsl-diu-fb.c will not compile.
+--- linux-2.6.26/drivers/video/vesafb.c	2008-07-13 23:51:29.000000000 +0200
++++ linux-mm/drivers/video/vesafb.c	2008-07-19 17:56:51.774318414 +0200
+@@ -247,7 +247,8 @@ static int __init vesafb_probe(struct pl
+ 	/*   size_total -- all video memory we have. Used for mtrr
+ 	 *                 entries, ressource allocation and bounds
+ 	 *                 checking. */
+-	size_total = screen_info.lfb_size * 65536;
++	size_total = screen_info.lfb_linelength * screen_info.lfb_height *
++		     screen_info.pages;
+ 	if (vram_total)
+ 		size_total = vram_total * 1024 * 1024;
+ 	if (size_total < size_vmode)
 
- drivers/video/fsl-diu-fb.c |   60 ++++++++++++++++---------------------------
- 1 files changed, 22 insertions(+), 38 deletions(-)
+Regards,
+Krzysztof
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 09d7e22..9cd36c2 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -279,58 +279,42 @@ static struct diu_hw dr = {
- 
- static struct diu_pool pool;
- 
--/*	To allocate memory for framebuffer. First try __get_free_pages(). If it
-- *	fails, try rh_alloc. The reason is __get_free_pages() cannot allocate
-- *	very large memory (more than 4MB). We don't want to allocate all memory
-- *	in rheap since small memory allocation/deallocation will fragment the
-- *	rheap and make the furture large allocation fail.
-+/**
-+ * fsl_diu_alloc - allocate memory for the DIU
-+ * @size: number of bytes to allocate
-+ * @param: returned physical address of memory
-+ *
-+ * This function allocates a physically-contiguous block of memory.
-  */
--
--static void *fsl_diu_alloc(unsigned long size, phys_addr_t *phys)
-+static void *fsl_diu_alloc(size_t size, phys_addr_t *phys)
- {
- 	void *virt;
- 
--	pr_debug("size=%lu\n", size);
-+	pr_debug("size=%zu\n", size);
- 
--	virt = (void *)__get_free_pages(GFP_DMA | __GFP_ZERO, get_order(size));
-+	virt = alloc_pages_exact(size, GFP_DMA | __GFP_ZERO);
- 	if (virt) {
- 		*phys = virt_to_phys(virt);
--		pr_debug("virt %p, phys=%llx\n", virt, (uint64_t) *phys);
--		return virt;
--	}
--	if (!diu_ops.diu_mem) {
--		printk(KERN_INFO "%s: no diu_mem."
--			" To reserve more memory, put 'diufb=15M' "
--			"in the command line\n", __func__);
--		return NULL;
--	}
--
--	virt = (void *)rh_alloc(&diu_ops.diu_rh_info, size, "DIU");
--	if (virt) {
--		*phys = virt_to_bus(virt);
--		memset(virt, 0, size);
-+		pr_debug("virt=%p phys=%llx\n", virt,
-+			(unsigned long long)*phys);
- 	}
- 
--	pr_debug("rh virt=%p phys=%llx\n", virt, (unsigned long long)*phys);
--
- 	return virt;
- }
- 
--static void fsl_diu_free(void *p, unsigned long size)
-+/**
-+ * fsl_diu_free - release DIU memory
-+ * @virt: pointer returned by fsl_diu_alloc()
-+ * @size: number of bytes allocated by fsl_diu_alloc()
-+ *
-+ * This function releases memory allocated by fsl_diu_alloc().
-+ */
-+static void fsl_diu_free(void *virt, size_t size)
- {
--	pr_debug("p=%p size=%lu\n", p, size);
-+	pr_debug("virt=%p size=%zu\n", virt, size);
- 
--	if (!p)
--		return;
--
--	if ((p >= diu_ops.diu_mem) &&
--	    (p < (diu_ops.diu_mem + diu_ops.diu_size))) {
--		pr_debug("rh\n");
--		rh_free(&diu_ops.diu_rh_info, (unsigned long) p);
--	} else {
--		pr_debug("dma\n");
--		free_pages((unsigned long)p, get_order(size));
--	}
-+	if (virt && size)
-+		free_pages_exact(virt, size);
- }
- 
- static int fsl_diu_enable_panel(struct fb_info *info)
--- 
-1.5.5
+----------------------------------------------------------------------
+Zobacz cala prawde o Lukaszu Podolskim!
+kliknij >>> http://link.interia.pl/f1e57
 
 
 -------------------------------------------------------------------------

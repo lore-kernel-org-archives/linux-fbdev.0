@@ -1,8 +1,8 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH]: tridentfb: remove warning message that
- cyblafb driver should be used
-Date: Sun, 20 Jul 2008 08:45:58 +0200
-Message-ID: <20080720084558.cfa4854c.krzysztof.h1@poczta.fm>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc9 0/5] am200epd, pxafb,
+	metronomefb changes v6
+Date: Sun, 20 Jul 2008 02:10:28 -0400
+Message-ID: <1216534233-26674-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,12 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KKSvt-0001FK-0L for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jul 2008 00:02:13 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKSvq-0007Bd-GI
+	id 1KKT0O-0001fR-Cs for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 20 Jul 2008 00:06:52 -0700
+Received: from wf-out-1314.google.com ([209.85.200.168])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKT0O-0008Gs-3C
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jul 2008 00:02:12 -0700
+	Sun, 20 Jul 2008 00:06:52 -0700
+Received: by wf-out-1314.google.com with SMTP id 27so979630wfd.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 20 Jul 2008 00:06:51 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,41 +29,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: ymiao3@marvell.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-The tridentfb driver should handle now all chipsets
-handled by the cyblafb driver. Remove the message
-which claims that support will be removed.
+Hi Eric, arm and fbdev friends,
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
+This is version 6 of this RFC and contains the following updates:
+- remove use of clk api for 32k clock and replace with check and set
+  in gumstix init code
+- avoid exporting am200_device_fb and remove am200epd platform code
+- allow am200epd to only be built as a built-in. This allows me to use
+  set_pxa_fb_info and removes related issues in other parts of the code.
+- change the way we do setup_fb in am200epd so am200epd does not need to
+  wait for metronomefb to receive its waveform file from user space.
 
-I would like to see this patch in the 2.6.27 along other
-tridentfb patches to help with testing the new tridentfb
-driver on more chipsets. It is also a step toward removing
-the cyblafb driver which will be replaced by more generic
-the tridentfb.
+Thanks to Eric and Russell for feedback.
+I will take out DEBUG before final.
 
---- linux-mm/drivers/video/tridentfb.c.orig	2008-07-20 07:38:31.654411754 +0200
-+++ linux-mm/drivers/video/tridentfb.c	2008-07-20 07:38:49.494412410 +0200
-@@ -1359,10 +1359,6 @@ static int __devinit trident_pci_probe(s
- 
- 	chip_id = id->device;
- 
--	if (chip_id == CYBERBLADEi1)
--		output("*** Please do use cyblafb, Cyberblade/i1 support "
--		       "will soon be removed from tridentfb!\n");
--
- #ifndef CONFIG_FB_TRIDENT_ACCEL
- 	noaccel = 1;
- #endif
+This RFC consists of patches intended to improve the condition of the
+am200epd devkit support. The am200epd devkit contains a gumstix (pxa255) and
+a carrier board (am200epd or Lyre), and a metronome display controller.
+Previously, there was a drivers/video/am200epd driver that manipulated pxa
+LCDC registers and GPSR/GPLR registers directly. That was clearly wrong and
+broken so I have removed it and written a new mach-pxa am200epd support
+driver.This driver interfaces with pxafb through a set of callbacks to
+share/unshare pxafb's framebuffer and achieves the same functionality without
+manipulating any pxa registers directly. The patches are split as follows:
 
-----------------------------------------------------------------------
-Partyjka w Chinczyka?
-Graj >>> http://link.interia.pl/f1e67
+pxafb: add shared framebuffer interface
+gumstix: conversion to MFP support and add bluetooth support
+am200epd: convert to shared fb and use gpio api
+metronomefb: convert printk to dev_dbg/err messages
+metronomefb: changes to use separate framebuffer
+
+I would be grateful for any feedback and advice.
+
+Thanks,
+jaya
+
 
 
 -------------------------------------------------------------------------

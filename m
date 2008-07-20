@@ -1,24 +1,32 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: No console on Riva TNT since 2.6.26-0.rc4
-Date: Sat, 19 Jul 2008 18:06:59 +0200
-Message-ID: <20080719180659.da7efbcd.krzysztof.h1@poczta.fm>
-References: <062620082004.6012.4863F668000CEA0D0000177C2200751090CE05040A05@comcast.net>
-	<20080709194108.f18226e8.akpm@linux-foundation.org>
-	<20080710025149.GA4817@martell.zuzino.mipt.ru>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.26-rc9 1/5] pxafb: add shared
+	framebuffer interface
+Date: Sat, 19 Jul 2008 22:41:38 -0400
+Message-ID: <45a44e480807191941pb05934ay33c519c586572861@mail.gmail.com>
+References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1215955587-20367-2-git-send-email-jayakumar.lkml@gmail.com>
+	<f17812d70807160000y4fb9e543gdd25d6b6937af81e@mail.gmail.com>
+	<45a44e480807160159j62b9f989l2ae99bd94d24a95f@mail.gmail.com>
+	<20080716093855.GC23468@flint.arm.linux.org.uk>
+	<45a44e480807160418g10090321uc57c338987d74b30@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KKEt5-0005yi-Hy for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 19 Jul 2008 09:02:23 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKEt2-0007uy-V5
+	id 1KKOrl-0002Ss-98 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 19 Jul 2008 19:41:41 -0700
+Received: from nf-out-0910.google.com ([64.233.182.186])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKOrj-0000X1-Lu
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 19 Jul 2008 09:02:23 -0700
-In-Reply-To: <20080710025149.GA4817@martell.zuzino.mipt.ru>
+	Sat, 19 Jul 2008 19:41:41 -0700
+Received: by nf-out-0910.google.com with SMTP id g16so251134nfd.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 19 Jul 2008 19:41:38 -0700 (PDT)
+In-Reply-To: <45a44e480807160418g10090321uc57c338987d74b30@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,42 +37,75 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Quel Qun <kelk1@comcast.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-fbdev-devel@lists.sourceforge.net, ymiao3@marvell.com, eric miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Thu, 10 Jul 2008 06:51:49 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Wed, Jul 16, 2008 at 7:18 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> On Wed, Jul 16, 2008 at 5:38 PM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+>> On Wed, Jul 16, 2008 at 01:59:42AM -0700, Jaya Kumar wrote:
+>>> On Wed, Jul 16, 2008 at 12:00 AM, eric miao <eric.y.miao@gmail.com> wrote:
+>>> > On Sun, Jul 13, 2008 at 9:26 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+>>> >> These changes are to make it possible for a secondary driver to share the
+>>> >> pxafb framebuffer. The changes include:
+>>> >> - adding clkdev entry in pxafb_mach_info so that a driver can pass in the
+>>> >>  correct struct device owner for the LCDCLK.
+>>> >
+>>> > Is it possible that LCDCLK being requested by device other than
+>>> > pxa_device_fb?? Could you give an example and we may work out
+>>> > a better solution.
+>>>
+>>> You're right. I think LCDCLK is only ever requested by pxa_device_fb.
+>>>
+>>> I see now that instead of doing:
+>>> -       fbi->clk = clk_get(dev, "LCDCLK");
+>>> +       fbi->clk = clk_get(inf->clkdev, "LCDCLK");
+>>>
+>>> a better solution would be to directly use pxa_device_fb:
+>>> -       fbi->clk = clk_get(dev, "LCDCLK");
+>>> +       fbi->clk = clk_get(pxa_device_fb.dev, "LCDCLK");
+>>>
+>>> and then I can avoid doing the clkdev ugliness.
+>>
+>> PXA devices (intentionally) aren't exported.  Nor are they going to be,
+>> so the above will fail if built as a module.
+>>
+>
+> Ah... I think this may be the cause of all my troubles. I've been
+> trying to support am200epd working as a module, and allow it to rmmod
+> cleanly, hence the inability to use pxa_device_fb through
+> set_pxa_fb_info. If module support isn't important then I can happily
+> take out unload support from am200epd and probably can then use
+> set_pxa_fb_info and also reduce complexity in other parts of the
+> metronomefb, am200epd, pxafb code.
+>
 
-> On Wed, Jul 09, 2008 at 07:41:08PM -0700, Andrew Morton wrote:
-> > On Thu, 26 Jun 2008 20:04:56 +0000 kelk1@comcast.net (Quel Qun) wrote:
-> > 
-> > > Hi,
-> > > 
-> > > The system boots fine with 2.6.26-0.rc3.1mnb (Mandriva Cooker), but since rc4, I see a few squares of color, then a black screen and the console never comes back. This is independent of the resolution chosen when using vga=ask. The machine does boot and I can start X if I log in blindly. Only the F1 to F6 consoles are gone.
-> > > 
+Hi Eric,
 
-Please try the patch below if it helps:
+I've run into some difficulties. set_pxa_fb_info is:
 
---- linux-2.6.26/drivers/video/vesafb.c	2008-07-13 23:51:29.000000000 +0200
-+++ linux-mm/drivers/video/vesafb.c	2008-07-19 17:56:51.774318414 +0200
-@@ -247,7 +247,8 @@ static int __init vesafb_probe(struct pl
- 	/*   size_total -- all video memory we have. Used for mtrr
- 	 *                 entries, ressource allocation and bounds
- 	 *                 checking. */
--	size_total = screen_info.lfb_size * 65536;
-+	size_total = screen_info.lfb_linelength * screen_info.lfb_height *
-+		     screen_info.pages;
- 	if (vram_total)
- 		size_total = vram_total * 1024 * 1024;
- 	if (size_total < size_vmode)
+void __init set_pxa_fb_info(struct pxafb_mach_info *info)
 
-Regards,
-Krzysztof
+and not exported. Therefore am200epd can't be built as a module now
+that it depends on set_pxa_fb_info. That is fine, I switched am200epd
+to a built-in. But then because set_pxa_fb_info is __init, it
+disappears before am200epd is ready to call it. This is because
+am200epd needs metronomefb's framebuffer size and info which it only
+finds out after full boot into userspace when it gets its firmware
+from a udev script. I think this means that I would also need to make
+metronomefb a built-in and figure out how to compile in metronome's
+firmware. I haven't figured out how to do the latter yet.
 
-----------------------------------------------------------------------
-Zobacz cala prawde o Lukaszu Podolskim!
-kliknij >>> http://link.interia.pl/f1e57
+I started thinking about maybe creating something different, like
+maybe set_mod_pxa_fb_info that would work more dynamically (ie: alloc
+a platform_device dynamically, thus making it possible for
+device_release to work, rather than using a static struct
+pxa_device_fb) and allow for module support without requiring any
+exports other than itself. Is this something that's of interest  or
+should I focus on the former?
 
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

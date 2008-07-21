@@ -1,16 +1,8 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc9 1/5] pxafb: add shared
-	framebuffer interface
-Date: Sun, 20 Jul 2008 20:38:26 -0700
-Message-ID: <45a44e480807202038v29dd0a57ld46c3c882a56195d@mail.gmail.com>
-References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1215955587-20367-2-git-send-email-jayakumar.lkml@gmail.com>
-	<f17812d70807160000y4fb9e543gdd25d6b6937af81e@mail.gmail.com>
-	<45a44e480807160159j62b9f989l2ae99bd94d24a95f@mail.gmail.com>
-	<20080716093855.GC23468@flint.arm.linux.org.uk>
-	<45a44e480807160418g10090321uc57c338987d74b30@mail.gmail.com>
-	<45a44e480807191941pb05934ay33c519c586572861@mail.gmail.com>
-	<f17812d70807201910i7936268dp30b704fb6465e5bd@mail.gmail.com>
+From: Julia Lawall <julia@diku.dk>
+Subject: [PATCH 6/7] drivers/video: Release mutex in
+	error handling code
+Date: Mon, 21 Jul 2008 09:58:55 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0807210958320.24625@ask.diku.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,17 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KKmEI-0006OB-3u for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jul 2008 20:38:30 -0700
-Received: from ik-out-1112.google.com ([66.249.90.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKmEG-00078r-HB
+	id 1KKqIP-0006eJ-MZ for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Jul 2008 00:59:01 -0700
+Received: from mgw1.diku.dk ([130.225.96.91])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KKqIO-0004CJ-Gm
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jul 2008 20:38:30 -0700
-Received: by ik-out-1112.google.com with SMTP id c21so790221ika.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 20 Jul 2008 20:38:26 -0700 (PDT)
-In-Reply-To: <f17812d70807201910i7936268dp30b704fb6465e5bd@mail.gmail.com>
-Content-Disposition: inline
+	Mon, 21 Jul 2008 00:59:01 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,35 +27,96 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: eric miao <eric.y.miao@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, ymiao3@marvell.com, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.arm.linux.org.uk
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On Sun, Jul 20, 2008 at 7:10 PM, eric miao <eric.y.miao@gmail.com> wrote:
->
-> I see no reason why set_pxa_fb_info() cannot be exported, though
-> its primary use is in the board setup code.
+From: Julia Lawall <julia@diku.dk>
 
-Yup, I see now. In the v6 patchset, I managed to use set_pxa_fb_info
-by converting am200epd to a builtin and also changing the way we do
-setup_fb for metronomefb. So I'm able to use set_pxa_fb_info without
-changes now. :-)
+The mutex is released on a successful return, so it would seem that it
+should be released on an error return as well.
 
->
->> I started thinking about maybe creating something different, like
->> maybe set_mod_pxa_fb_info that would work more dynamically (ie: alloc
->> a platform_device dynamically, thus making it possible for
->> device_release to work, rather than using a static struct
->> pxa_device_fb) and allow for module support without requiring any
->> exports other than itself. Is this something that's of interest  or
->> should I focus on the former?
->
-> That sounds a bit trickier maybe we should avoid.
->
+The semantic patch finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Agreed.
+// <smpl>
+@@
+expression l;
+@@
 
-Thanks,
-jaya
+mutex_lock(l);
+... when != mutex_unlock(l)
+    when any
+    when strict
+(
+if (...) { ... when != mutex_unlock(l)
++   mutex_unlock(l);
+    return ...;
+}
+|
+mutex_unlock(l);
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/arkfb.c    |    9 +++------
+ drivers/video/vt8623fb.c |    9 +++------
+ 2 files changed, 6 insertions(+), 12 deletions(-)
+
+diff -u -p a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -1126,11 +1126,8 @@ static int ark_pci_resume (struct pci_de
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
+ 
+-	if (par->ref_count == 0) {
+-		mutex_unlock(&(par->open_lock));
+-		release_console_sem();
+-		return 0;
+-	}
++	if (par->ref_count == 0)
++		goto fail;
+ 
+ 	pci_set_power_state(dev, PCI_D0);
+ 	pci_restore_state(dev);
+@@ -1143,8 +1140,8 @@ static int ark_pci_resume (struct pci_de
+ 	arkfb_set_par(info);
+ 	fb_set_suspend(info, 0);
+ 
+-	mutex_unlock(&(par->open_lock));
+ fail:
++	mutex_unlock(&(par->open_lock));
+ 	release_console_sem();
+ 	return 0;
+ }
+diff -u -p a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
+--- a/drivers/video/vt8623fb.c
++++ b/drivers/video/vt8623fb.c
+@@ -853,11 +853,8 @@ static int vt8623_pci_resume(struct pci_
+ 	acquire_console_sem();
+ 	mutex_lock(&(par->open_lock));
+ 
+-	if (par->ref_count == 0) {
+-		mutex_unlock(&(par->open_lock));
+-		release_console_sem();
+-		return 0;
+-	}
++	if (par->ref_count == 0)
++		goto fail;
+ 
+ 	pci_set_power_state(dev, PCI_D0);
+ 	pci_restore_state(dev);
+@@ -870,8 +867,8 @@ static int vt8623_pci_resume(struct pci_
+ 	vt8623fb_set_par(info);
+ 	fb_set_suspend(info, 0);
+ 
+-	mutex_unlock(&(par->open_lock));
+ fail:
++	mutex_unlock(&(par->open_lock));
+ 	release_console_sem();
+ 
+ 	return 0;
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

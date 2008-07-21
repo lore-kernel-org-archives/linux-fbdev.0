@@ -1,22 +1,26 @@
-From: Julia Lawall <julia@diku.dk>
-Subject: [PATCH 6/7] drivers/video: Release mutex in
-	error handling code
-Date: Mon, 21 Jul 2008 09:58:55 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0807210958320.24625@ask.diku.dk>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC 2.6.26-rc9 1/5] pxafb: add shared
+	framebuffer interface
+Date: Mon, 21 Jul 2008 12:11:59 +0100
+Message-ID: <20080721111159.GA18909@flint.arm.linux.org.uk>
+References: <1216534233-26674-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1216534233-26674-2-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KKqIP-0006eJ-MZ for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Jul 2008 00:59:01 -0700
-Received: from mgw1.diku.dk ([130.225.96.91])
+	id 1KKtJU-000322-Sq for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 21 Jul 2008 04:12:20 -0700
+Received: from caramon.arm.linux.org.uk ([78.32.30.218])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KKqIO-0004CJ-Gm
+	(Exim 4.44) id 1KKtJT-0004yj-UR
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Jul 2008 00:59:01 -0700
+	Mon, 21 Jul 2008 04:12:20 -0700
+Content-Disposition: inline
+In-Reply-To: <1216534233-26674-2-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,96 +31,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-From: Julia Lawall <julia@diku.dk>
+On Sun, Jul 20, 2008 at 02:10:29AM -0400, Jaya Kumar wrote:
+>  	if (fbi->map_cpu) {
+>  		/* prevent initial garbage on screen */
+>  		memset(fbi->map_cpu, 0, fbi->map_size);
+> -		fbi->fb.screen_base = fbi->map_cpu + fbi->video_offset;
+> +		fbi->fb.screen_base = (char __force __iomem *) fbi->map_cpu
+> +					+ fbi->video_offset;
 
-The mutex is released on a successful return, so it would seem that it
-should be released on an error return as well.
+I'm not sure this has any benefits - the use of __force in drivers is
+definitely frowned upon.
 
-The semantic patch finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+It's well known that FB doesn't sit well with all the MMIO sparse checking
+so it's probably a good idea not to try and make it work.
 
-// <smpl>
-@@
-expression l;
-@@
+> @@ -1357,6 +1379,8 @@ static void pxafb_decode_mode_info(struct pxafb_info *fbi,
+>  		smemlen = modes[i].xres * modes[i].yres * modes[i].bpp / 8;
+>  		if (smemlen > fbi->fb.fix.smem_len)
+>  			fbi->fb.fix.smem_len = smemlen;
+> +		if (inf->custom_xfer_div)
+> +			fbi->fb.fix.smem_len /= inf->custom_xfer_div;
 
-mutex_lock(l);
-... when != mutex_unlock(l)
-    when any
-    when strict
-(
-if (...) { ... when != mutex_unlock(l)
-+   mutex_unlock(l);
-    return ...;
-}
-|
-mutex_unlock(l);
-)
-// </smpl>
+I don't understand this.  If you have a 640x480 display with 8 bits of
+memory per pixel, then it's 307200 bytes no matter whether you're only
+using the lower 4 bits and the upper 4 are unused.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/video/arkfb.c    |    9 +++------
- drivers/video/vt8623fb.c |    9 +++------
- 2 files changed, 6 insertions(+), 12 deletions(-)
-
-diff -u -p a/drivers/video/arkfb.c b/drivers/video/arkfb.c
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -1126,11 +1126,8 @@ static int ark_pci_resume (struct pci_de
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
- 
--	if (par->ref_count == 0) {
--		mutex_unlock(&(par->open_lock));
--		release_console_sem();
--		return 0;
--	}
-+	if (par->ref_count == 0)
-+		goto fail;
- 
- 	pci_set_power_state(dev, PCI_D0);
- 	pci_restore_state(dev);
-@@ -1143,8 +1140,8 @@ static int ark_pci_resume (struct pci_de
- 	arkfb_set_par(info);
- 	fb_set_suspend(info, 0);
- 
--	mutex_unlock(&(par->open_lock));
- fail:
-+	mutex_unlock(&(par->open_lock));
- 	release_console_sem();
- 	return 0;
- }
-diff -u -p a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -853,11 +853,8 @@ static int vt8623_pci_resume(struct pci_
- 	acquire_console_sem();
- 	mutex_lock(&(par->open_lock));
- 
--	if (par->ref_count == 0) {
--		mutex_unlock(&(par->open_lock));
--		release_console_sem();
--		return 0;
--	}
-+	if (par->ref_count == 0)
-+		goto fail;
- 
- 	pci_set_power_state(dev, PCI_D0);
- 	pci_restore_state(dev);
-@@ -870,8 +867,8 @@ static int vt8623_pci_resume(struct pci_
- 	vt8623fb_set_par(info);
- 	fb_set_suspend(info, 0);
- 
--	mutex_unlock(&(par->open_lock));
- fail:
-+	mutex_unlock(&(par->open_lock));
- 	release_console_sem();
- 
- 	return 0;
+If, on the other hand, the lower 4 bits contain one pixel and the upper
+4 bits contain the other pixel, then you have a 4 bit per pixel
+framebuffer, so 'bpp' should be 4.  In which case the original calculation
+gives the correct answer.
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

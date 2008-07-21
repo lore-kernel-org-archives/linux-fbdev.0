@@ -1,10 +1,16 @@
-From: "eric miao" <eric.y.miao@gmail.com>
-Subject: Re: [RFC 2.6.26-rc9 2/5] gumstix: conversion to
-	MFP support and add bluetooth support
-Date: Mon, 21 Jul 2008 10:13:17 +0800
-Message-ID: <f17812d70807201913y6f3d5290r6bd4f7f8da726058@mail.gmail.com>
-References: <1216534233-26674-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1216534233-26674-3-git-send-email-jayakumar.lkml@gmail.com>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.26-rc9 1/5] pxafb: add shared
+	framebuffer interface
+Date: Sun, 20 Jul 2008 20:38:26 -0700
+Message-ID: <45a44e480807202038v29dd0a57ld46c3c882a56195d@mail.gmail.com>
+References: <1215955587-20367-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1215955587-20367-2-git-send-email-jayakumar.lkml@gmail.com>
+	<f17812d70807160000y4fb9e543gdd25d6b6937af81e@mail.gmail.com>
+	<45a44e480807160159j62b9f989l2ae99bd94d24a95f@mail.gmail.com>
+	<20080716093855.GC23468@flint.arm.linux.org.uk>
+	<45a44e480807160418g10090321uc57c338987d74b30@mail.gmail.com>
+	<45a44e480807191941pb05934ay33c519c586572861@mail.gmail.com>
+	<f17812d70807201910i7936268dp30b704fb6465e5bd@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,16 +18,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KKktr-00074H-JE for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jul 2008 19:13:19 -0700
-Received: from yw-out-1718.google.com ([74.125.46.154])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKktq-0008UP-3o
+	id 1KKmEI-0006OB-3u for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 20 Jul 2008 20:38:30 -0700
+Received: from ik-out-1112.google.com ([66.249.90.183])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KKmEG-00078r-HB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Jul 2008 19:13:19 -0700
-Received: by yw-out-1718.google.com with SMTP id 6so513642ywa.82
+	Sun, 20 Jul 2008 20:38:30 -0700
+Received: by ik-out-1112.google.com with SMTP id c21so790221ika.2
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 20 Jul 2008 19:13:17 -0700 (PDT)
-In-Reply-To: <1216534233-26674-3-git-send-email-jayakumar.lkml@gmail.com>
+	Sun, 20 Jul 2008 20:38:26 -0700 (PDT)
+In-Reply-To: <f17812d70807201910i7936268dp30b704fb6465e5bd@mail.gmail.com>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,184 +39,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: eric miao <eric.y.miao@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, ymiao3@marvell.com, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Sun, Jul 20, 2008 at 2:10 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> This patch converts gumstix over to the MFP configuration system and adds
-> bluetooth support.
+On Sun, Jul 20, 2008 at 7:10 PM, eric miao <eric.y.miao@gmail.com> wrote:
 >
+> I see no reason why set_pxa_fb_info() cannot be exported, though
+> its primary use is in the board setup code.
 
-Looks OK to me, except you seem to forget the gpio_request() in
-gumstix_bluetooth_init(), with that change,
+Yup, I see now. In the v6 patchset, I managed to use set_pxa_fb_info
+by converting am200epd to a builtin and also changing the way we do
+setup_fb for metronomefb. So I'm able to use set_pxa_fb_info without
+changes now. :-)
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
-
-> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-> ---
->  arch/arm/mach-pxa/gumstix.c |   94 +++++++++++++++++++++++++++++++++++--------
->  1 files changed, 77 insertions(+), 17 deletions(-)
 >
-> diff --git a/arch/arm/mach-pxa/gumstix.c b/arch/arm/mach-pxa/gumstix.c
-> index bdf2397..06493ff 100644
-> --- a/arch/arm/mach-pxa/gumstix.c
-> +++ b/arch/arm/mach-pxa/gumstix.c
-> @@ -20,8 +20,12 @@
->  #include <linux/init.h>
->  #include <linux/platform_device.h>
->  #include <linux/interrupt.h>
-> +#include <linux/delay.h>
->  #include <linux/mtd/mtd.h>
->  #include <linux/mtd/partitions.h>
-> +#include <linux/gpio.h>
-> +#include <linux/err.h>
-> +#include <linux/clk.h>
+>> I started thinking about maybe creating something different, like
+>> maybe set_mod_pxa_fb_info that would work more dynamically (ie: alloc
+>> a platform_device dynamically, thus making it possible for
+>> device_release to work, rather than using a static struct
+>> pxa_device_fb) and allow for module support without requiring any
+>> exports other than itself. Is this something that's of interest  or
+>> should I focus on the former?
 >
->  #include <asm/setup.h>
->  #include <asm/memory.h>
-> @@ -40,7 +44,7 @@
->
->  #include <asm/arch/pxa-regs.h>
->  #include <asm/arch/pxa2xx-regs.h>
-> -#include <asm/arch/pxa2xx-gpio.h>
-> +#include <asm/arch/mfp-pxa25x.h>
->
->  #include "generic.h"
->
-> @@ -85,21 +89,8 @@ static struct platform_device *devices[] __initdata = {
->  };
->
->  #ifdef CONFIG_MMC_PXA
-> -static struct pxamci_platform_data gumstix_mci_platform_data;
-> -
-> -static int gumstix_mci_init(struct device *dev, irq_handler_t detect_int,
-> -                               void *data)
-> -{
-> -       pxa_gpio_mode(GPIO6_MMCCLK_MD);
-> -       pxa_gpio_mode(GPIO53_MMCCLK_MD);
-> -       pxa_gpio_mode(GPIO8_MMCCS0_MD);
-> -
-> -       return 0;
-> -}
-> -
->  static struct pxamci_platform_data gumstix_mci_platform_data = {
->        .ocr_mask       = MMC_VDD_32_33|MMC_VDD_33_34,
-> -       .init           = gumstix_mci_init,
->  };
->
->  static void __init gumstix_mmc_init(void)
-> @@ -109,11 +100,11 @@ static void __init gumstix_mmc_init(void)
->  #else
->  static void __init gumstix_mmc_init(void)
->  {
-> -       printk(KERN_INFO "Gumstix mmc disabled\n");
-> +       pr_debug("Gumstix mmc disabled\n");
->  }
->  #endif
->
-> -#ifdef CONFIG_USB_GADGET_PXA2XX
-> +#ifdef CONFIG_USB_GADGET_PXA25X
->  static struct pxa2xx_udc_mach_info gumstix_udc_info __initdata = {
->        .gpio_vbus              = GPIO_GUMSTIX_USB_GPIOn,
->        .gpio_pullup            = GPIO_GUMSTIX_USB_GPIOx,
-> @@ -126,12 +117,81 @@ static void __init gumstix_udc_init(void)
->  #else
->  static void gumstix_udc_init(void)
->  {
-> -       printk(KERN_INFO "Gumstix udc is disabled\n");
-> +       pr_debug("Gumstix udc is disabled\n");
->  }
->  #endif
->
-> +#ifdef CONFIG_BT
-> +/* Normally, the bootloader would have enabled this 32kHz clock but many
-> +** boards still have u-boot 1.1.4 so we check if it has been turned on and
-> +** if not, we turn it on with a warning message. */
-> +static void gumstix_setup_bt_clock(void)
-> +{
-> +       int timeout = 500;
-> +
-> +       if (!(OSCC & OSCC_OOK))
-> +               pr_warning("32kHz clock was not on. Bootloader may need to "
-> +                               "be updated\n");
-> +       else
-> +               return;
-> +
-> +       OSCC |= OSCC_OON;
-> +       do {
-> +               if (OSCC & OSCC_OOK)
-> +                       break;
-> +               udelay(1);
-> +       } while (--timeout);
-> +       if (!timeout)
-> +               pr_err("Failed to start 32kHz clock\n");
-> +}
-> +
-> +static void __init gumstix_bluetooth_init(void)
-> +{
-> +       int err;
-> +
-> +       gumstix_setup_bt_clock();
-> +
-> +       err = gpio_direction_output(GPIO_GUMSTIX_BTRESET, 1);
-> +       if (err) {
-> +               pr_err("gumstix: can't reset bluetooth\n");
-> +               return;
-> +       }
-> +       gpio_set_value(GPIO_GUMSTIX_BTRESET, 0);
-> +       udelay(100);
-> +       gpio_set_value(GPIO_GUMSTIX_BTRESET, 1);
-> +}
-> +#else
-> +static void gumstix_bluetooth_init(void)
-> +{
-> +       pr_debug("Gumstix Bluetooth is disabled\n");
-> +}
-> +#endif
-> +
-> +static unsigned long gumstix_pin_config[] __initdata = {
-> +       GPIO12_32KHz,
-> +       /* BTUART */
-> +       GPIO42_HWUART_RXD,
-> +       GPIO43_HWUART_TXD,
-> +       GPIO44_HWUART_CTS,
-> +       GPIO45_HWUART_RTS,
-> +       /* MMC */
-> +       GPIO6_MMC_CLK,
-> +       GPIO53_MMC_CLK,
-> +       GPIO8_MMC_CS0,
-> +       /* these are used by AM200EPD */
-> +       GPIO51_GPIO,
-> +       GPIO49_GPIO,
-> +       GPIO48_GPIO,
-> +       GPIO32_GPIO,
-> +       GPIO17_GPIO,
-> +       GPIO16_GPIO,
-> +};
-> +
->  static void __init gumstix_init(void)
->  {
-> +       pxa2xx_mfp_config(ARRAY_AND_SIZE(gumstix_pin_config));
-> +
-> +       gumstix_bluetooth_init();
->        gumstix_udc_init();
->        gumstix_mmc_init();
->        (void) platform_add_devices(devices, ARRAY_SIZE(devices));
-> --
-> 1.5.3.6
->
->
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> That sounds a bit trickier maybe we should avoid.
 >
 
+Agreed.
 
-
--- 
-Cheers
-- eric
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

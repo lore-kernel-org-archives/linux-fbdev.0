@@ -1,33 +1,55 @@
-From: roel kluin <roel.kluin@gmail.com>
-Subject: [PATCH 6/9] radeon: test below 0 on unsigned v.[xy]offset
-Date: Mon, 21 Jul 2008 20:29:31 -0400
-Message-ID: <488529EB.9090501@gmail.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Linux-fbdev-devel] [PATCH 6/7] drivers/video: Release mutex in
+ error handling code
+Date: Tue, 22 Jul 2008 06:19:14 +0200
+Message-ID: <20080722061914.301275a8.krzysztof.h1@poczta.fm>
+References: <Pine.LNX.4.64.0807210958320.24625@ask.diku.dk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756805AbYGVAar@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753519AbYGVEOh@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0807210958320.24625@ask.diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+To: Julia Lawall <julia@diku.dk>
+Cc: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-v.[xy]offset is unsigned so the test doesn't work.
+On Mon, 21 Jul 2008 09:58:55 +0200 (CEST)
+Julia Lawall <julia@diku.dk> wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 400e926..586d04e 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -819,11 +819,6 @@ static int radeonfb_check_var (struct fb_var_screeninfo *var, struct fb_info *in
- 	if (v.xres_virtual < v.xres)
- 		v.xres = v.xres_virtual;
- 
--	if (v.xoffset < 0)
--                v.xoffset = 0;
--        if (v.yoffset < 0)
--                v.yoffset = 0;
--         
-         if (v.xoffset > v.xres_virtual - v.xres)
-                 v.xoffset = v.xres_virtual - v.xres - 1;
-                         
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The mutex is released on a successful return, so it would seem that it
+> should be released on an error return as well.
+> 
+> The semantic patch finds this problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> expression l;
+> @@
+> 
+> mutex_lock(l);
+> ... when != mutex_unlock(l)
+>     when any
+>     when strict
+> (
+> if (...) { ... when != mutex_unlock(l)
+> +   mutex_unlock(l);
+>     return ...;
+> }
+> |
+> mutex_unlock(l);
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+----------------------------------------------------------------------
+Partyjka w Chinczyka?
+Graj >>> http://link.interia.pl/f1e67

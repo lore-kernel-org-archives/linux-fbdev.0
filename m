@@ -1,22 +1,31 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: video/fb: cleanup FB_MAJOR usage
-Date: Fri, 25 Jul 2008 02:15:24 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0807250213520.9222@anakin>
-References: <200807242325.m6ONP5hG015643@hera.kernel.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] eink_apollofb: new driver for
+ Apollo eInk controller.
+Date: Fri, 25 Jul 2008 16:35:57 -0700
+Message-ID: <20080725163557.ea286ee2.akpm@linux-foundation.org>
+References: <1215787849-25580-1-git-send-email-jekhor@gmail.com>
+	<1215788071-25764-1-git-send-email-jekhor@gmail.com>
+	<1215788071-25764-2-git-send-email-jekhor@gmail.com>
+	<20080712192013.1fb9519b.akpm@linux-foundation.org>
+	<45a44e480807122002uaf7e452n563c42e186c944a1@mail.gmail.com>
+	<87iqvaasc8.fsf@frontier.dottedmag.net>
+	<45a44e480807131203s6f4ad6dfn507b6a1f22972b7@mail.gmail.com>
+	<20080713191928.GA23528@jeknote.loshitsa1.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KMAy4-0002wZ-So for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Jul 2008 17:15:33 -0700
-Received: from nelson.telenet-ops.be ([195.130.133.66])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KMAy3-0001MR-5V
+	id 1KMWpW-0004jw-1v for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jul 2008 16:36:10 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KMWpR-0005uu-G5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Jul 2008 17:15:32 -0700
-In-Reply-To: <200807242325.m6ONP5hG015643@hera.kernel.org>
+	Fri, 25 Jul 2008 16:36:05 -0700
+In-Reply-To: <20080713191928.GA23528@jeknote.loshitsa1.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,87 +36,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Philippe De Muyter <phdm@macqel.be>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Yauhen Kharuzhy <jekhor@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, jayakumar.lkml@gmail.com
 
-On Thu, 24 Jul 2008, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5bb49fcd501aa9fd3d321a22b7c01d9b0db7ab36
-> Commit:     5bb49fcd501aa9fd3d321a22b7c01d9b0db7ab36
-> Parent:     cba603bf514c101bf48f6adf393c3d00ed457a57
-> Author:     Philippe De Muyter <phdm@macqel.be>
-> AuthorDate: Wed Jul 23 21:31:50 2008 -0700
-> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-> CommitDate: Thu Jul 24 10:47:41 2008 -0700
+On Sun, 13 Jul 2008 22:19:28 +0300
+Yauhen Kharuzhy <jekhor@gmail.com> wrote:
+
+> On Mon, Jul 14, 2008 at 03:03:05AM +0800, Jaya Kumar wrote:
+> > On Sun, Jul 13, 2008 at 8:20 PM, Mikhail Gusarov
+> > <dottedmag@dottedmag.net> wrote:
+> > > Twas brillig at 11:02:29 13.07.2008 UTC+08 when jayakumar.lkml@gmail.com did gyre and gimble:
+> > >
+> > >  JK> However, I should point out that hecubafb is a driver for this same
+> > >  JK> apollo controller.
+> > >
+> > > AFAICT from the diff, eink_apollofb already includes all the features of
+> > > hecubafb, so that would be just renaming. Is it worth it?
+> > >
+> > > --
+> > >
+> > 
+> > Hi Mikhail,
+> > 
+> > Looking at the posted code, it is the same code as hecubafb, renamed,
+> > and with the 2-bit, partial update, and flash features added.
+> Hardware abstraction layer (with platform_device framework) and rotation also :)
 > 
->     video/fb: cleanup FB_MAJOR usage
->     
->     Currently, linux/major.h defines a GRAPHDEV_MAJOR (29) that nobody uses,
->     and linux/fb.h defines the real FB_MAJOR (also 29), that only fbmem.c
->     needs.  Drop GRAPHDEV_MAJOR from major.h, move FB_MAJOR definition from
->     fb.h to major.h, and fix fbmem.c to use major.h's definition.
-
-<linux/fb.h> is exported to userspace, so this may affect userspace
-applications.
-
->     Signed-off-by: Philippe De Muyter <phdm@macqel.be>
->     Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
->     Cc: "Antonino A. Daplas" <adaplas@pol.net>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  drivers/video/fbmem.c |    1 +
->  include/linux/fb.h    |    1 -
->  include/linux/major.h |    2 +-
->  3 files changed, 2 insertions(+), 2 deletions(-)
+> > The new
+> > features are good but basically, its a fork of hecubafb. I'm
+> > suggesting that rather than doing that, it would make more sense to
+> > add those features to the existing hecubafb code. If any help is
+> > needed in making that happen, please let me know, I'm happy to help.
 > 
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index 6b48780..5d84b34 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -35,6 +35,7 @@
->  #include <linux/device.h>
->  #include <linux/efi.h>
->  #include <linux/fb.h>
-> +#include <linux/major.h>
->  
->  #include <asm/fb.h>
->  
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index a084d13..3b8870e 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -8,7 +8,6 @@ struct dentry;
->  
->  /* Definitions of frame buffers						*/
->  
-> -#define FB_MAJOR		29
->  #define FB_MAX			32	/* sufficient for now */
->  
->  /* ioctls
-> diff --git a/include/linux/major.h b/include/linux/major.h
-> index 0cb9805..53d5faf 100644
-> --- a/include/linux/major.h
-> +++ b/include/linux/major.h
-> @@ -53,7 +53,7 @@
->  #define STL_SIOMEMMAJOR		28
->  #define ACSI_MAJOR		28
->  #define AZTECH_CDROM_MAJOR	29
-> -#define GRAPHDEV_MAJOR		29   /* SparcLinux & Linux/68k /dev/fb */
-> +#define FB_MAJOR		29   /* /dev/fb* framebuffers */
->  #define CM206_CDROM_MAJOR	32
->  #define IDE2_MAJOR		33
->  #define IDE3_MAJOR		34
+> I am agreed. I saw 'Apollo' name more frequently than any other, but
+> it is not a matter of principe.
+> 
 
-Gr{oetje,eeting}s,
+I agree that having a separate-but-similar driver for the same hardware
+is most undesirable.
 
-						Geert
+I presently have
+eink_apollofb-new-driver-for-apollo-eink-controller.patch on "hold"
+status, waiting for some resolution here.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

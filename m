@@ -1,31 +1,30 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] eink_apollofb: new driver for
- Apollo eInk controller.
-Date: Fri, 25 Jul 2008 16:35:57 -0700
-Message-ID: <20080725163557.ea286ee2.akpm@linux-foundation.org>
-References: <1215787849-25580-1-git-send-email-jekhor@gmail.com>
-	<1215788071-25764-1-git-send-email-jekhor@gmail.com>
-	<1215788071-25764-2-git-send-email-jekhor@gmail.com>
-	<20080712192013.1fb9519b.akpm@linux-foundation.org>
-	<45a44e480807122002uaf7e452n563c42e186c944a1@mail.gmail.com>
-	<87iqvaasc8.fsf@frontier.dottedmag.net>
-	<45a44e480807131203s6f4ad6dfn507b6a1f22972b7@mail.gmail.com>
-	<20080713191928.GA23528@jeknote.loshitsa1.net>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.26-rc9 1/5] pxafb: add shared
+	framebuffer interface
+Date: Fri, 25 Jul 2008 23:30:56 -0400
+Message-ID: <45a44e480807252030w9f542j4926005249dbf01@mail.gmail.com>
+References: <1216534233-26674-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1216534233-26674-2-git-send-email-jayakumar.lkml@gmail.com>
+	<20080721111159.GA18909@flint.arm.linux.org.uk>
+	<45a44e480807210532w20495622ub36bd8a9722c2023@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KMWpW-0004jw-1v for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jul 2008 16:36:10 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KMWpR-0005uu-G5
+	id 1KMaUk-0001NL-Ho for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jul 2008 20:30:58 -0700
+Received: from ik-out-1112.google.com ([66.249.90.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KMaUj-0004zz-QJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jul 2008 16:36:05 -0700
-In-Reply-To: <20080713191928.GA23528@jeknote.loshitsa1.net>
+	Fri, 25 Jul 2008 20:30:58 -0700
+Received: by ik-out-1112.google.com with SMTP id c21so2771957ika.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 25 Jul 2008 20:30:56 -0700 (PDT)
+In-Reply-To: <45a44e480807210532w20495622ub36bd8a9722c2023@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,49 +35,94 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Yauhen Kharuzhy <jekhor@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, jayakumar.lkml@gmail.com
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Sun, 13 Jul 2008 22:19:28 +0300
-Yauhen Kharuzhy <jekhor@gmail.com> wrote:
+On Mon, Jul 21, 2008 at 8:32 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> On Mon, Jul 21, 2008 at 7:11 AM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+>> On Sun, Jul 20, 2008 at 02:10:29AM -0400, Jaya Kumar wrote:
+>>
+>>> @@ -1357,6 +1379,8 @@ static void pxafb_decode_mode_info(struct pxafb_info *fbi,
+>>>               smemlen = modes[i].xres * modes[i].yres * modes[i].bpp / 8;
+>>>               if (smemlen > fbi->fb.fix.smem_len)
+>>>                       fbi->fb.fix.smem_len = smemlen;
+>>> +             if (inf->custom_xfer_div)
+>>> +                     fbi->fb.fix.smem_len /= inf->custom_xfer_div;
+>>
+>> I don't understand this.  If you have a 640x480 display with 8 bits of
+>> memory per pixel, then it's 307200 bytes no matter whether you're only
+>> using the lower 4 bits and the upper 4 are unused.
+>>
+>> If, on the other hand, the lower 4 bits contain one pixel and the upper
+>> 4 bits contain the other pixel, then you have a 4 bit per pixel
+>> framebuffer, so 'bpp' should be 4.  In which case the original calculation
+>> gives the correct answer.
+>>
+>
+> The complexity I faced is that the transfers used by Metronome on the
+> AMLCD bus have to be 16-bits wide although it is actually treating the
+> pixels as 8-bits per pixel and then only using the lower 4-bits within
+> that for actual content. So what I did in the code is set bits per
+> pixel, bpp to 16 so that pxafb sets the LCCR3_16BPP flag (so that it
+> meets Metronome's AMLCD transfer requirements) and then use the
+> custom_xfer_div to divide the transfer sizes and buffer allocations to
+> the correct size.
+>
+> If I set bpp to 8, the allocations and transfer sizes are correct but
+> then that causes pxafb to set LCCR3_8BPP and that causes Metronome to
+> fail to display anything.
+>
+> Instead of doing custom_xfer_div, I had thought about setting
+> pxafb_mach_info.lccr3 = LCCR3_16BPP to try to force the setting of
+> LCCR3_16BPP but then I saw:
+>
+> include/asm/arch-pxa/pxafb.h
+>         * The following should not be defined in LCCR3
+>         *      LCCR3_HSP, LCCR3_VSP, LCCR0_Pcd(x), LCCR3_Bpp
+>         */
+>        u_int           lccr3;
+>
+> so I decided to create custom_xfer_div instead. How about if I try a
+> different way like creating a separate flag that can be used to
+> predicate the lccr3 setting. Maybe something like:
+>
+> static int pxafb_bpp_to_lccr3(struct fb_var_screeninfo *var)
+> ...
+>        case 8:
+>               switch (inf->custom_amlcd_bpp) {
+>                case 16: ret = LCCR3_16BPP; break;
+>                default: ret = LCCR3_8BPP; break;
+>        case 16: ret = LCCR3_16BPP; break;
+>
+> Thanks,
+> jaya
+>
 
-> On Mon, Jul 14, 2008 at 03:03:05AM +0800, Jaya Kumar wrote:
-> > On Sun, Jul 13, 2008 at 8:20 PM, Mikhail Gusarov
-> > <dottedmag@dottedmag.net> wrote:
-> > > Twas brillig at 11:02:29 13.07.2008 UTC+08 when jayakumar.lkml@gmail.com did gyre and gimble:
-> > >
-> > >  JK> However, I should point out that hecubafb is a driver for this same
-> > >  JK> apollo controller.
-> > >
-> > > AFAICT from the diff, eink_apollofb already includes all the features of
-> > > hecubafb, so that would be just renaming. Is it worth it?
-> > >
-> > > --
-> > >
-> > 
-> > Hi Mikhail,
-> > 
-> > Looking at the posted code, it is the same code as hecubafb, renamed,
-> > and with the 2-bit, partial update, and flash features added.
-> Hardware abstraction layer (with platform_device framework) and rotation also :)
-> 
-> > The new
-> > features are good but basically, its a fork of hecubafb. I'm
-> > suggesting that rather than doing that, it would make more sense to
-> > add those features to the existing hecubafb code. If any help is
-> > needed in making that happen, please let me know, I'm happy to help.
-> 
-> I am agreed. I saw 'Apollo' name more frequently than any other, but
-> it is not a matter of principe.
-> 
+I took a look at doing the above, ie: adjusting bpp instead of
+custom_xfer_size. I've realized that I would still need to adjust lccr
+in at least one other place:
 
-I agree that having a separate-but-similar driver for the same hardware
-is most undesirable.
+        fbi->reg_lccr1 =
+                LCCR1_DisWdth(var->xres) +
 
-I presently have
-eink_apollofb-new-driver-for-apollo-eink-controller.patch on "hold"
-status, waiting for some resolution here.
+I'll try to improve my explanation. :-)
 
+The reason for this is that metronome requires a different bus width
+(16 bit) for AMLCD transfers than it requires for its expected bits
+per pixel ( 8 bits). To get LCDC to use 16 bits on the AMLCD bus, we
+need to set 16bpp in LCCR3. So we then need to divide down the x
+resolution in LCCR1. Eg: 800 pixels at 8bpp is the framebuffer. We
+need 16-bit transfers so we set the desired pixels per line in LCCR to
+= 800 pixels / ( 16 custom bus bits / 8 bits per pixel ) = 400 pixels
+per line. So the code would be like:
+
+pix_per_line = var->xres / ( inf->custom_lccr_bpp / var->bits_per_pixel )
+
+I hope I was able to explain my reasoning for this above.
+
+Thanks,
+jaya
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

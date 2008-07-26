@@ -1,8 +1,8 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc9 1/5] pxafb: add shared
-	framebuffer interface
-Date: Sat, 26 Jul 2008 00:32:50 -0400
-Message-ID: <1217046774-13080-2-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc9 2/5] gumstix: conversion to MFP
+	support and add bluetooth support
+Date: Sat, 26 Jul 2008 00:32:51 -0400
+Message-ID: <1217046774-13080-3-git-send-email-jayakumar.lkml@gmail.com>
 References: <1217046774-13080-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KMcLC-00042B-UH for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jul 2008 22:29:15 -0700
+	id 1KMcLK-00042L-HU for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Jul 2008 22:29:22 -0700
 Received: from ti-out-0910.google.com ([209.85.142.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KMcLC-00084O-80
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KMcLI-00084O-Cq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Jul 2008 22:29:14 -0700
+	Fri, 25 Jul 2008 22:29:22 -0700
 Received: by ti-out-0910.google.com with SMTP id y6so2036672tia.18
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 25 Jul 2008 22:29:13 -0700 (PDT)
+	Fri, 25 Jul 2008 22:29:19 -0700 (PDT)
 In-Reply-To: <1217046774-13080-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,203 +34,165 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-These changes are to make it possible for a secondary driver to share the
-pxafb framebuffer. The changes include:
-- adding custom_lccr_bpp entry so that a driver can set a specific
-  transfer width on the AMLCD bus while using a separate bits per pixel for
-  its actual framebuffer.
-- adding extra_video_mem entry so that a driver can tell pxafb of its
-  additional needs.
-- adding share_video_mem/unshare_video_mem callbacks to notify the secondary
-  driver of the framebuffer address, to allow refcounting, and to cleanup on
-  completion.
+This patch converts gumstix over to the MFP configuration system and adds
+bluetooth support.
 
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 ---
- drivers/video/pxafb.c            |   65 +++++++++++++++++++++++++++++++++-----
- include/asm-arm/arch-pxa/pxafb.h |    8 +++++
- 2 files changed, 65 insertions(+), 8 deletions(-)
+ arch/arm/mach-pxa/gumstix.c |  100 +++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 83 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index bb25143..54e0ad1 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -57,6 +57,8 @@
-  */
- #define DEBUG_VAR 1
+diff --git a/arch/arm/mach-pxa/gumstix.c b/arch/arm/mach-pxa/gumstix.c
+index bdf2397..49b78e7 100644
+--- a/arch/arm/mach-pxa/gumstix.c
++++ b/arch/arm/mach-pxa/gumstix.c
+@@ -20,8 +20,12 @@
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
++#include <linux/delay.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
++#include <linux/gpio.h>
++#include <linux/err.h>
++#include <linux/clk.h>
  
-+static struct platform_driver pxafb_driver;
-+
- #include "pxafb.h"
+ #include <asm/setup.h>
+ #include <asm/memory.h>
+@@ -40,7 +44,7 @@
  
- /* Bits which should not be set in machine configuration structures */
-@@ -218,9 +220,25 @@ pxafb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
-  *  pxafb_bpp_to_lccr3():
-  *    Convert a bits per pixel value to the correct bit pattern for LCCR3
-  */
--static int pxafb_bpp_to_lccr3(struct fb_var_screeninfo *var)
-+static int pxafb_bpp_to_lccr3(struct fb_var_screeninfo *var,
-+				struct pxafb_mach_info *inf)
- {
- 	int ret = 0;
-+
-+	/* this is to support devices that have customized
-+	 * bpp settings for LCCR that are independent from
-+	 * the actual bpp used in the framebuffer.
-+	 */
-+	if (inf->custom_lccr_bpp) {
-+		switch (inf->custom_lccr_bpp) {
-+		case 1:  ret = LCCR3_1BPP; break;
-+		case 2:  ret = LCCR3_2BPP; break;
-+		case 4:  ret = LCCR3_4BPP; break;
-+		case 8:  ret = LCCR3_8BPP; break;
-+		case 16: ret = LCCR3_16BPP; break;
-+		}
-+		return ret;
-+	}
- 	switch (var->bits_per_pixel) {
- 	case 1:  ret = LCCR3_1BPP; break;
- 	case 2:  ret = LCCR3_2BPP; break;
-@@ -826,10 +844,22 @@ int pxafb_smart_flush(struct fb_info *info)
- static void setup_parallel_timing(struct pxafb_info *fbi,
- 				  struct fb_var_screeninfo *var)
- {
-+	struct pxafb_mach_info *inf = fbi->dev->platform_data;
- 	unsigned int lines_per_panel, pcd = get_pcd(fbi, var->pixclock);
-+	unsigned int pix_per_line = var->xres;
-+
-+	/*
-+	 * We can have a device that needs a different width for its AMLCD
-+	 * transfers than its framebuffer's bits per pixel. So we need to
-+	 * divide down the x resolution. Eg: 800 pixels at 8bpp is the fb.
-+	 * The device uses 16-bit xfers so the desired result is:
-+	 * 800 pixels / ( 16 bit xfer / 8bpp ) = 400 pixels per line
-+	 */
-+	if (inf->custom_lccr_bpp)
-+		pix_per_line /= (inf->custom_lccr_bpp / var->bits_per_pixel);
+ #include <asm/arch/pxa-regs.h>
+ #include <asm/arch/pxa2xx-regs.h>
+-#include <asm/arch/pxa2xx-gpio.h>
++#include <asm/arch/mfp-pxa25x.h>
  
- 	fbi->reg_lccr1 =
--		LCCR1_DisWdth(var->xres) +
-+		LCCR1_DisWdth(pix_per_line) +
- 		LCCR1_HorSnchWdth(var->hsync_len) +
- 		LCCR1_BegLnDel(var->left_margin) +
- 		LCCR1_EndLnDel(var->right_margin);
-@@ -870,6 +900,7 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
- {
- 	u_long flags;
- 	size_t nbytes;
-+	struct pxafb_mach_info *inf = fbi->dev->platform_data;
+ #include "generic.h"
  
- #if DEBUG_VAR
- 	if (!(fbi->lccr0 & LCCR0_LCDT)) {
-@@ -928,7 +959,7 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
- 		(LCCR0_LDM | LCCR0_SFM | LCCR0_IUM | LCCR0_EFM |
- 		 LCCR0_QDM | LCCR0_BM  | LCCR0_OUM);
- 
--	fbi->reg_lccr3 |= pxafb_bpp_to_lccr3(var);
-+	fbi->reg_lccr3 |= pxafb_bpp_to_lccr3(var, inf);
- 
- 	nbytes = var->yres * fbi->fb.fix.line_length;
- 
-@@ -1304,14 +1335,17 @@ static int pxafb_resume(struct platform_device *dev)
-  *      cache.  Once this area is remapped, all virtual memory
-  *      access to the video memory should occur at the new region.
-  */
--static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
-+static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi,
-+						struct pxafb_mach_info *inf)
- {
-+	int ret;
- 	/*
- 	 * We reserve one page for the palette, plus the size
- 	 * of the framebuffer.
- 	 */
- 	fbi->video_offset = PAGE_ALIGN(sizeof(struct pxafb_dma_buff));
--	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset);
-+	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset +
-+					inf->extra_video_mem);
- 	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
- 					      &fbi->map_dma, GFP_KERNEL);
- 
-@@ -1340,6 +1374,13 @@ static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
- 		fbi->smart_cmds = (uint16_t *) fbi->dma_buff->cmd_buff;
- 		fbi->n_smart_cmds = 0;
- #endif
-+		if (inf->share_video_mem) {
-+			ret = inf->share_video_mem(fbi->fb.screen_base,
-+				fbi->screen_dma, pxafb_driver.driver.owner,
-+				inf->extra_data);
-+			if (ret)
-+				return ret;
-+		}
- 	}
- 
- 	return fbi->map_cpu ? 0 : -ENOMEM;
-@@ -1761,10 +1802,12 @@ static int __devinit pxafb_probe(struct platform_device *dev)
- 	}
- 
- 	/* Initialize video memory */
--	ret = pxafb_map_video_memory(fbi);
--	if (ret) {
-+	ret = pxafb_map_video_memory(fbi, inf);
-+	if (ret == -ENODEV) {
-+		dev_err(&dev->dev, "Failed device binding: %d\n", ret);
-+		goto failed_free_mem;
-+	} else if (ret) {
- 		dev_err(&dev->dev, "Failed to allocate video RAM: %d\n", ret);
--		ret = -ENOMEM;
- 		goto failed_free_io;
- 	}
- 
-@@ -1836,6 +1879,8 @@ failed_free_cmap:
- failed_free_irq:
- 	free_irq(irq, fbi);
- failed_free_mem:
-+	if (inf->unshare_video_mem)
-+		inf->unshare_video_mem(inf->extra_data);
- 	dma_free_writecombine(&dev->dev, fbi->map_size,
- 			fbi->map_cpu, fbi->map_dma);
- failed_free_io:
-@@ -1856,6 +1901,7 @@ static int __devexit pxafb_remove(struct platform_device *dev)
- 	struct resource *r;
- 	int irq;
- 	struct fb_info *info;
-+	struct pxafb_mach_info *inf;
- 
- 	if (!fbi)
- 		return 0;
-@@ -1872,6 +1918,9 @@ static int __devexit pxafb_remove(struct platform_device *dev)
- 	irq = platform_get_irq(dev, 0);
- 	free_irq(irq, fbi);
- 
-+	inf = dev->dev.platform_data;
-+	if (inf->unshare_video_mem)
-+		inf->unshare_video_mem(inf->extra_data);
- 	dma_free_writecombine(&dev->dev, fbi->map_size,
- 					fbi->map_cpu, fbi->map_dma);
- 
-diff --git a/include/asm-arm/arch-pxa/pxafb.h b/include/asm-arm/arch-pxa/pxafb.h
-index daf018d..c8c3e84 100644
---- a/include/asm-arm/arch-pxa/pxafb.h
-+++ b/include/asm-arm/arch-pxa/pxafb.h
-@@ -139,9 +139,17 @@ struct pxafb_mach_info {
- 	 * All other bits in LCCR4 should be left alone.
- 	 */
- 	u_int		lccr4;
-+	unsigned int	custom_lccr_bpp; /* custom bpp setting */
-+	/* size of extra mem needed for secondary driver */
-+	unsigned int	extra_video_mem;
-+	void		*extra_data; /* extra data for secondary */
- 	void (*pxafb_backlight_power)(int);
- 	void (*pxafb_lcd_power)(int, struct fb_var_screeninfo *);
- 	void (*smart_update)(struct fb_info *);
-+	/* share_video_mem allows client drivers to get our framebuffer */
-+	int (*share_video_mem)(char __iomem *, dma_addr_t, struct module *,
-+				void *);
-+	void (*unshare_video_mem)(void *);
+@@ -85,21 +89,8 @@ static struct platform_device *devices[] __initdata = {
  };
- void set_pxa_fb_info(struct pxafb_mach_info *hard_pxa_fb_info);
- void set_pxa_fb_parent(struct device *parent_dev);
+ 
+ #ifdef CONFIG_MMC_PXA
+-static struct pxamci_platform_data gumstix_mci_platform_data;
+-
+-static int gumstix_mci_init(struct device *dev, irq_handler_t detect_int,
+-				void *data)
+-{
+-	pxa_gpio_mode(GPIO6_MMCCLK_MD);
+-	pxa_gpio_mode(GPIO53_MMCCLK_MD);
+-	pxa_gpio_mode(GPIO8_MMCCS0_MD);
+-
+-	return 0;
+-}
+-
+ static struct pxamci_platform_data gumstix_mci_platform_data = {
+ 	.ocr_mask	= MMC_VDD_32_33|MMC_VDD_33_34,
+-	.init		= gumstix_mci_init,
+ };
+ 
+ static void __init gumstix_mmc_init(void)
+@@ -109,11 +100,11 @@ static void __init gumstix_mmc_init(void)
+ #else
+ static void __init gumstix_mmc_init(void)
+ {
+-	printk(KERN_INFO "Gumstix mmc disabled\n");
++	pr_debug("Gumstix mmc disabled\n");
+ }
+ #endif
+ 
+-#ifdef CONFIG_USB_GADGET_PXA2XX
++#ifdef CONFIG_USB_GADGET_PXA25X
+ static struct pxa2xx_udc_mach_info gumstix_udc_info __initdata = {
+ 	.gpio_vbus		= GPIO_GUMSTIX_USB_GPIOn,
+ 	.gpio_pullup		= GPIO_GUMSTIX_USB_GPIOx,
+@@ -126,12 +117,87 @@ static void __init gumstix_udc_init(void)
+ #else
+ static void gumstix_udc_init(void)
+ {
+-	printk(KERN_INFO "Gumstix udc is disabled\n");
++	pr_debug("Gumstix udc is disabled\n");
+ }
+ #endif
+ 
++#ifdef CONFIG_BT
++/* Normally, the bootloader would have enabled this 32kHz clock but many
++** boards still have u-boot 1.1.4 so we check if it has been turned on and
++** if not, we turn it on with a warning message. */
++static void gumstix_setup_bt_clock(void)
++{
++	int timeout = 500;
++
++	if (!(OSCC & OSCC_OOK))
++		pr_warning("32kHz clock was not on. Bootloader may need to "
++				"be updated\n");
++	else
++		return;
++
++	OSCC |= OSCC_OON;
++	do {
++		if (OSCC & OSCC_OOK)
++			break;
++		udelay(1);
++	} while (--timeout);
++	if (!timeout)
++		pr_err("Failed to start 32kHz clock\n");
++}
++
++static void __init gumstix_bluetooth_init(void)
++{
++	int err;
++
++	gumstix_setup_bt_clock();
++
++	err = gpio_request(GPIO_GUMSTIX_BTRESET, "BTRST");
++	if (err) {
++		pr_err("gumstix: failed request gpio for bluetooth reset\n");
++		return;
++	}
++
++	err = gpio_direction_output(GPIO_GUMSTIX_BTRESET, 1);
++	if (err) {
++		pr_err("gumstix: can't reset bluetooth\n");
++		return;
++	}
++	gpio_set_value(GPIO_GUMSTIX_BTRESET, 0);
++	udelay(100);
++	gpio_set_value(GPIO_GUMSTIX_BTRESET, 1);
++}
++#else
++static void gumstix_bluetooth_init(void)
++{
++	pr_debug("Gumstix Bluetooth is disabled\n");
++}
++#endif
++
++static unsigned long gumstix_pin_config[] __initdata = {
++	GPIO12_32KHz,
++	/* BTUART */
++	GPIO42_HWUART_RXD,
++	GPIO43_HWUART_TXD,
++	GPIO44_HWUART_CTS,
++	GPIO45_HWUART_RTS,
++	/* MMC */
++	GPIO6_MMC_CLK,
++	GPIO53_MMC_CLK,
++	GPIO8_MMC_CS0,
++	/* these are used by AM200EPD */
++	GPIO51_GPIO,
++	GPIO49_GPIO,
++	GPIO48_GPIO,
++	GPIO32_GPIO,
++	GPIO17_GPIO,
++	GPIO16_GPIO,
++};
++
+ static void __init gumstix_init(void)
+ {
++	pxa2xx_mfp_config(ARRAY_AND_SIZE(gumstix_pin_config));
++
++	gumstix_bluetooth_init();
+ 	gumstix_udc_init();
+ 	gumstix_mmc_init();
+ 	(void) platform_add_devices(devices, ARRAY_SIZE(devices));
 -- 
 1.5.3.6
 

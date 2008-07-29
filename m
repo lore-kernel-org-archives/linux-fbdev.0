@@ -1,24 +1,24 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kernel oops with framebuffer device vt8623fb
-Date: Mon, 28 Jul 2008 20:48:17 -0700
-Message-ID: <20080728204817.ebaa621b.akpm@linux-foundation.org>
-References: <487E2911.5090701@gmx.net>
-	<20080717013917.GA1695@localhost.localdomain>
+From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Subject: Re: [PATCH] sh7760fb: write colormap value to
+	hardware.
+Date: Tue, 29 Jul 2008 14:41:18 +0900
+Message-ID: <488EAD7E.1080804@renesas.com>
+References: <486B39E3.60601@renesas.com>
+	<20080728180513.GA31478@roarinelk.homelinux.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KNgCp-0000KK-NU for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 28 Jul 2008 20:48:59 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KNgCo-0005T9-GD
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 28 Jul 2008 20:48:59 -0700
-In-Reply-To: <20080717013917.GA1695@localhost.localdomain>
+	id 1KNhxu-0002ur-JO for Linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 28 Jul 2008 22:41:42 -0700
+Received: from mail.renesas.com ([202.234.163.13] helo=mail06.idc.renesas.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KNhxt-0002jh-6W
+	for Linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 28 Jul 2008 22:41:42 -0700
+In-reply-to: <20080728180513.GA31478@roarinelk.homelinux.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,29 +29,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: MadLoisae@gmx.net, linux-fbdev-devel@lists.sourceforge.net, Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: linuc-fbdev <Linux-fbdev-devel@lists.sourceforge.net>, Linux-sh <linux-sh@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@linux-foundation.org>, Munakata Hisao <munakata.hisao@renesas.com>
 
-On Thu, 17 Jul 2008 03:39:18 +0200 Ondrej Zajicek <santiago@crfreenet.org> wrote:
+Hi, Manuel.
 
-> On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
-> > Hi!
-> > 
-> > I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found 
-> > a problem.
-> > 
-> > If I load the module vt8623fb i get a kernel oops, if the VIA 8623 
-> > display framebuffer driver is compiled direct into kernel the system 
-> > hangs up very early at booting the kernel.
+Thank you for your work.
+I checked this patch, there was not a problem.
+
+Best regards,
+  Nobuhiro
+
+Manuel Lauss wrote:
+> The computed color value is never actually written to hardware
+> colormap register.
 > 
-> I am sorry for mistake, here is a patch for 2.6.26 fixing the bug:
-> 
-> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+Acked-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
 
-I went back through the email thread and wrote your changelog for you. 
-Not a very good one though.
-
-It would be better were you to write your changelogs, please.
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

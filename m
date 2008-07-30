@@ -1,8 +1,8 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc9 1/5] metronomefb: convert
-	printk to dev_dbg/err messages
-Date: Wed, 30 Jul 2008 08:51:05 -0400
-Message-ID: <1217422269-11093-2-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc9 3/5] pxafb: add shared
+	framebuffer interface
+Date: Wed, 30 Jul 2008 08:51:07 -0400
+Message-ID: <1217422269-11093-4-git-send-email-jayakumar.lkml@gmail.com>
 References: <1217422269-11093-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOC1Z-00010o-4F for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 Jul 2008 06:47:29 -0700
+	id 1KOC1r-00011U-7m for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 30 Jul 2008 06:47:47 -0700
 Received: from yw-out-1718.google.com ([74.125.46.156])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOC1Y-0001fS-NM
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOC1q-0001fS-Fc
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 Jul 2008 06:47:29 -0700
+	Wed, 30 Jul 2008 06:47:46 -0700
 Received: by yw-out-1718.google.com with SMTP id 6so10226ywa.82
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 30 Jul 2008 06:47:28 -0700 (PDT)
+	Wed, 30 Jul 2008 06:47:46 -0700 (PDT)
 In-Reply-To: <1217422269-11093-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,167 +34,139 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-This patch converts the printk messages in metronomefb to dev_dbg/err type
-messages.
+These changes are to make it possible for a secondary driver to share the
+pxafb framebuffer. The changes include:
+- adding extra_video_mem entry so that a driver can tell pxafb of its
+  additional needs.
+- adding share_video_mem/unshare_video_mem callbacks to notify the secondary
+  driver of the framebuffer address, to allow refcounting, and to cleanup on
+  completion.
 
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-Acked-by: Eric Miao <eric.miao@marvell.com>
 ---
- drivers/video/metronomefb.c |   47 ++++++++++++++++++------------------------
- 1 files changed, 20 insertions(+), 27 deletions(-)
+ drivers/video/pxafb.c            |   31 ++++++++++++++++++++++++++-----
+ include/asm-arm/arch-pxa/pxafb.h |    7 +++++++
+ 2 files changed, 33 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index cc4c038..7cda4f8 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -40,15 +40,6 @@
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index bb25143..f799c52 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -57,6 +57,8 @@
+  */
+ #define DEBUG_VAR 1
  
- #include <asm/unaligned.h>
++static struct platform_driver pxafb_driver;
++
+ #include "pxafb.h"
  
--
--#define DEBUG 1
--#ifdef DEBUG
--#define DPRINTK(f, a...) printk(KERN_DEBUG "%s: " f, __func__ , ## a)
--#else
--#define DPRINTK(f, a...)
--#endif
--
--
- /* Display specific information */
- #define DPY_W 832
- #define DPY_H 622
-@@ -135,8 +126,8 @@ static u16 calc_img_cksum(u16 *start, int length)
- 
- /* here we decode the incoming waveform file and populate metromem */
- #define EXP_WFORM_SIZE 47001
--static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
--				u8 *frame_count)
-+static int __devinit load_waveform(u8 *mem, size_t size, int m, int t,
-+				struct metronomefb_par *par)
+ /* Bits which should not be set in machine configuration structures */
+@@ -870,6 +872,7 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
  {
- 	int tta;
- 	int wmta;
-@@ -148,9 +139,11 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
- 	int wfm_idx, owfm_idx;
- 	int mem_idx = 0;
- 	struct waveform_hdr *wfm_hdr;
-+	u8 *metromem = par->metromem_wfm;
-+	struct device *dev = par->info->dev;
+ 	u_long flags;
+ 	size_t nbytes;
++	struct pxafb_mach_info *inf = fbi->dev->platform_data;
  
- 	if (size != EXP_WFORM_SIZE) {
--		printk(KERN_ERR "Error: unexpected size %d != %d\n", size,
-+		dev_err(dev, "Error: unexpected size %d != %d\n", size,
- 					EXP_WFORM_SIZE);
- 		return -EINVAL;
- 	}
-@@ -158,16 +151,16 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
- 	wfm_hdr = (struct waveform_hdr *) mem;
+ #if DEBUG_VAR
+ 	if (!(fbi->lccr0 & LCCR0_LCDT)) {
+@@ -1304,14 +1307,17 @@ static int pxafb_resume(struct platform_device *dev)
+  *      cache.  Once this area is remapped, all virtual memory
+  *      access to the video memory should occur at the new region.
+  */
+-static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
++static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi,
++						struct pxafb_mach_info *inf)
+ {
++	int ret;
+ 	/*
+ 	 * We reserve one page for the palette, plus the size
+ 	 * of the framebuffer.
+ 	 */
+ 	fbi->video_offset = PAGE_ALIGN(sizeof(struct pxafb_dma_buff));
+-	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset);
++	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset +
++					inf->extra_video_mem);
+ 	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
+ 					      &fbi->map_dma, GFP_KERNEL);
  
- 	if (wfm_hdr->fvsn != 1) {
--		printk(KERN_ERR "Error: bad fvsn %x\n", wfm_hdr->fvsn);
-+		dev_err(dev, "Error: bad fvsn %x\n", wfm_hdr->fvsn);
- 		return -EINVAL;
- 	}
- 	if (wfm_hdr->luts != 0) {
--		printk(KERN_ERR "Error: bad luts %x\n", wfm_hdr->luts);
-+		dev_err(dev, "Error: bad luts %x\n", wfm_hdr->luts);
- 		return -EINVAL;
- 	}
- 	cksum = calc_cksum(32, 47, mem);
- 	if (cksum != wfm_hdr->wfm_cs) {
--		printk(KERN_ERR "Error: bad cksum %x != %x\n", cksum,
-+		dev_err(dev, "Error: bad cksum %x != %x\n", cksum,
- 					wfm_hdr->wfm_cs);
- 		return -EINVAL;
- 	}
-@@ -175,7 +168,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
- 	wfm_hdr->trc += 1;
- 	for (i = 0; i < 5; i++) {
- 		if (*(wfm_hdr->stuff2a + i) != 0) {
--			printk(KERN_ERR "Error: unexpected value in padding\n");
-+			dev_err(dev, "Error: unexpected value in padding\n");
- 			return -EINVAL;
- 		}
- 	}
-@@ -200,7 +193,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
- 		return -EINVAL;
- 	cksum = calc_cksum(sizeof(*wfm_hdr), cksum_idx, mem);
- 	if (cksum != mem[cksum_idx]) {
--		printk(KERN_ERR "Error: bad temperature range table cksum"
-+		dev_err(dev, "Error: bad temperature range table cksum"
- 				" %x != %x\n", cksum, mem[cksum_idx]);
- 		return -EINVAL;
- 	}
-@@ -212,7 +205,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
- 		return -EINVAL;
- 	cksum = calc_cksum(cksum_idx - 3, cksum_idx, mem);
- 	if (cksum != mem[cksum_idx]) {
--		printk(KERN_ERR "Error: bad mode table address cksum"
-+		dev_err(dev, "Error: bad mode table address cksum"
- 				" %x != %x\n", cksum, mem[cksum_idx]);
- 		return -EINVAL;
- 	}
-@@ -224,7 +217,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
- 		return -EINVAL;
- 	cksum = calc_cksum(cksum_idx - 3, cksum_idx, mem);
- 	if (cksum != mem[cksum_idx]) {
--		printk(KERN_ERR "Error: bad temperature table address cksum"
-+		dev_err(dev, "Error: bad temperature table address cksum"
- 			" %x != %x\n", cksum, mem[cksum_idx]);
- 		return -EINVAL;
- 	}
-@@ -259,11 +252,11 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
- 		return -EINVAL;
- 	cksum = calc_cksum(owfm_idx, cksum_idx, mem);
- 	if (cksum != mem[cksum_idx]) {
--		printk(KERN_ERR "Error: bad waveform data cksum"
-+		dev_err(dev, "Error: bad waveform data cksum"
- 				" %x != %x\n", cksum, mem[cksum_idx]);
- 		return -EINVAL;
- 	}
--	*frame_count = (mem_idx/64);
-+	par->frame_count = (mem_idx/64);
- 
- 	return 0;
- }
-@@ -662,15 +655,15 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 		b) process waveform and decode into metromem */
- 	retval = request_firmware(&fw_entry, "metronome.wbf", &dev->dev);
- 	if (retval < 0) {
--		printk(KERN_ERR "metronomefb: couldn't get waveform\n");
-+		dev_err(&dev->dev, "Failed to get waveform\n");
- 		goto err_dma_free;
+@@ -1340,6 +1346,13 @@ static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
+ 		fbi->smart_cmds = (uint16_t *) fbi->dma_buff->cmd_buff;
+ 		fbi->n_smart_cmds = 0;
+ #endif
++		if (inf->share_video_mem) {
++			ret = inf->share_video_mem(fbi->fb.screen_base,
++				fbi->screen_dma, pxafb_driver.driver.owner,
++				inf->extra_data);
++			if (ret)
++				return ret;
++		}
  	}
  
--	retval = load_waveform((u8 *) fw_entry->data, fw_entry->size,
--				par->metromem_wfm, 3, 31, &par->frame_count);
-+	retval = load_waveform((u8 *) fw_entry->data, fw_entry->size, 3, 31,
-+				par);
- 	release_firmware(fw_entry);
- 	if (retval < 0) {
--		printk(KERN_ERR "metronomefb: couldn't process waveform\n");
-+		dev_err(&dev->dev, "Failed processing waveform\n");
- 		goto err_dma_free;
+ 	return fbi->map_cpu ? 0 : -ENOMEM;
+@@ -1761,10 +1774,12 @@ static int __devinit pxafb_probe(struct platform_device *dev)
  	}
  
-@@ -688,7 +681,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
- 
- 	retval = fb_alloc_cmap(&info->cmap, 8, 0);
- 	if (retval < 0) {
--		printk(KERN_ERR "Failed to allocate colormap\n");
-+		dev_err(&dev->dev, "Failed to allocate colormap\n");
- 		goto err_fb_rel;
+ 	/* Initialize video memory */
+-	ret = pxafb_map_video_memory(fbi);
+-	if (ret) {
++	ret = pxafb_map_video_memory(fbi, inf);
++	if (ret == -ENODEV) {
++		dev_err(&dev->dev, "Failed device binding: %d\n", ret);
++		goto failed_free_mem;
++	} else if (ret) {
+ 		dev_err(&dev->dev, "Failed to allocate video RAM: %d\n", ret);
+-		ret = -ENOMEM;
+ 		goto failed_free_io;
  	}
  
-@@ -704,7 +697,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+@@ -1836,6 +1851,8 @@ failed_free_cmap:
+ failed_free_irq:
+ 	free_irq(irq, fbi);
+ failed_free_mem:
++	if (inf->unshare_video_mem)
++		inf->unshare_video_mem(inf->extra_data);
+ 	dma_free_writecombine(&dev->dev, fbi->map_size,
+ 			fbi->map_cpu, fbi->map_dma);
+ failed_free_io:
+@@ -1856,6 +1873,7 @@ static int __devexit pxafb_remove(struct platform_device *dev)
+ 	struct resource *r;
+ 	int irq;
+ 	struct fb_info *info;
++	struct pxafb_mach_info *inf;
  
- 	platform_set_drvdata(dev, info);
+ 	if (!fbi)
+ 		return 0;
+@@ -1872,6 +1890,9 @@ static int __devexit pxafb_remove(struct platform_device *dev)
+ 	irq = platform_get_irq(dev, 0);
+ 	free_irq(irq, fbi);
  
--	printk(KERN_INFO
-+	dev_dbg(&dev->dev,
- 		"fb%d: Metronome frame buffer device, using %dK of video"
- 		" memory\n", info->node, videomemorysize >> 10);
++	inf = dev->dev.platform_data;
++	if (inf->unshare_video_mem)
++		inf->unshare_video_mem(inf->extra_data);
+ 	dma_free_writecombine(&dev->dev, fbi->map_size,
+ 					fbi->map_cpu, fbi->map_dma);
  
+diff --git a/include/asm-arm/arch-pxa/pxafb.h b/include/asm-arm/arch-pxa/pxafb.h
+index daf018d..1ff9281 100644
+--- a/include/asm-arm/arch-pxa/pxafb.h
++++ b/include/asm-arm/arch-pxa/pxafb.h
+@@ -139,9 +139,16 @@ struct pxafb_mach_info {
+ 	 * All other bits in LCCR4 should be left alone.
+ 	 */
+ 	u_int		lccr4;
++	/* size of extra mem needed for secondary driver */
++	unsigned int	extra_video_mem;
++	void		*extra_data; /* extra data for secondary */
+ 	void (*pxafb_backlight_power)(int);
+ 	void (*pxafb_lcd_power)(int, struct fb_var_screeninfo *);
+ 	void (*smart_update)(struct fb_info *);
++	/* share_video_mem allows client drivers to get our framebuffer */
++	int (*share_video_mem)(char __iomem *, dma_addr_t, struct module *,
++				void *);
++	void (*unshare_video_mem)(void *);
+ };
+ void set_pxa_fb_info(struct pxafb_mach_info *hard_pxa_fb_info);
+ void set_pxa_fb_parent(struct device *parent_dev);
 -- 
 1.5.3.6
 

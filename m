@@ -1,8 +1,8 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.26-rc9 2/5] gumstix: conversion to MFP
-	support and add bluetooth support
-Date: Wed, 30 Jul 2008 08:51:06 -0400
-Message-ID: <1217422269-11093-3-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.26-rc9 1/5] metronomefb: convert
+	printk to dev_dbg/err messages
+Date: Wed, 30 Jul 2008 08:51:05 -0400
+Message-ID: <1217422269-11093-2-git-send-email-jayakumar.lkml@gmail.com>
 References: <1217422269-11093-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOC1i-000119-6D for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 Jul 2008 06:47:38 -0700
+	id 1KOC1Z-00010o-4F for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 30 Jul 2008 06:47:29 -0700
 Received: from yw-out-1718.google.com ([74.125.46.156])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOC1h-0001fS-Qm
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOC1Y-0001fS-NM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 30 Jul 2008 06:47:38 -0700
+	Wed, 30 Jul 2008 06:47:29 -0700
 Received: by yw-out-1718.google.com with SMTP id 6so10226ywa.82
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 30 Jul 2008 06:47:37 -0700 (PDT)
+	Wed, 30 Jul 2008 06:47:28 -0700 (PDT)
 In-Reply-To: <1217422269-11093-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,166 +34,167 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ymiao3@marvell.com
 Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-This patch converts gumstix over to the MFP configuration system and adds
-bluetooth support.
+This patch converts the printk messages in metronomefb to dev_dbg/err type
+messages.
 
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 Acked-by: Eric Miao <eric.miao@marvell.com>
 ---
- arch/arm/mach-pxa/gumstix.c |  100 +++++++++++++++++++++++++++++++++++-------
- 1 files changed, 83 insertions(+), 17 deletions(-)
+ drivers/video/metronomefb.c |   47 ++++++++++++++++++------------------------
+ 1 files changed, 20 insertions(+), 27 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/gumstix.c b/arch/arm/mach-pxa/gumstix.c
-index bdf2397..49b78e7 100644
---- a/arch/arm/mach-pxa/gumstix.c
-+++ b/arch/arm/mach-pxa/gumstix.c
-@@ -20,8 +20,12 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
-+#include <linux/delay.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/partitions.h>
-+#include <linux/gpio.h>
-+#include <linux/err.h>
-+#include <linux/clk.h>
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index cc4c038..7cda4f8 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -40,15 +40,6 @@
  
- #include <asm/setup.h>
- #include <asm/memory.h>
-@@ -40,7 +44,7 @@
+ #include <asm/unaligned.h>
  
- #include <asm/arch/pxa-regs.h>
- #include <asm/arch/pxa2xx-regs.h>
--#include <asm/arch/pxa2xx-gpio.h>
-+#include <asm/arch/mfp-pxa25x.h>
- 
- #include "generic.h"
- 
-@@ -85,21 +89,8 @@ static struct platform_device *devices[] __initdata = {
- };
- 
- #ifdef CONFIG_MMC_PXA
--static struct pxamci_platform_data gumstix_mci_platform_data;
 -
--static int gumstix_mci_init(struct device *dev, irq_handler_t detect_int,
--				void *data)
--{
--	pxa_gpio_mode(GPIO6_MMCCLK_MD);
--	pxa_gpio_mode(GPIO53_MMCCLK_MD);
--	pxa_gpio_mode(GPIO8_MMCCS0_MD);
+-#define DEBUG 1
+-#ifdef DEBUG
+-#define DPRINTK(f, a...) printk(KERN_DEBUG "%s: " f, __func__ , ## a)
+-#else
+-#define DPRINTK(f, a...)
+-#endif
 -
--	return 0;
--}
 -
- static struct pxamci_platform_data gumstix_mci_platform_data = {
- 	.ocr_mask	= MMC_VDD_32_33|MMC_VDD_33_34,
--	.init		= gumstix_mci_init,
- };
+ /* Display specific information */
+ #define DPY_W 832
+ #define DPY_H 622
+@@ -135,8 +126,8 @@ static u16 calc_img_cksum(u16 *start, int length)
  
- static void __init gumstix_mmc_init(void)
-@@ -109,11 +100,11 @@ static void __init gumstix_mmc_init(void)
- #else
- static void __init gumstix_mmc_init(void)
+ /* here we decode the incoming waveform file and populate metromem */
+ #define EXP_WFORM_SIZE 47001
+-static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+-				u8 *frame_count)
++static int __devinit load_waveform(u8 *mem, size_t size, int m, int t,
++				struct metronomefb_par *par)
  {
--	printk(KERN_INFO "Gumstix mmc disabled\n");
-+	pr_debug("Gumstix mmc disabled\n");
+ 	int tta;
+ 	int wmta;
+@@ -148,9 +139,11 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 	int wfm_idx, owfm_idx;
+ 	int mem_idx = 0;
+ 	struct waveform_hdr *wfm_hdr;
++	u8 *metromem = par->metromem_wfm;
++	struct device *dev = par->info->dev;
+ 
+ 	if (size != EXP_WFORM_SIZE) {
+-		printk(KERN_ERR "Error: unexpected size %d != %d\n", size,
++		dev_err(dev, "Error: unexpected size %d != %d\n", size,
+ 					EXP_WFORM_SIZE);
+ 		return -EINVAL;
+ 	}
+@@ -158,16 +151,16 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 	wfm_hdr = (struct waveform_hdr *) mem;
+ 
+ 	if (wfm_hdr->fvsn != 1) {
+-		printk(KERN_ERR "Error: bad fvsn %x\n", wfm_hdr->fvsn);
++		dev_err(dev, "Error: bad fvsn %x\n", wfm_hdr->fvsn);
+ 		return -EINVAL;
+ 	}
+ 	if (wfm_hdr->luts != 0) {
+-		printk(KERN_ERR "Error: bad luts %x\n", wfm_hdr->luts);
++		dev_err(dev, "Error: bad luts %x\n", wfm_hdr->luts);
+ 		return -EINVAL;
+ 	}
+ 	cksum = calc_cksum(32, 47, mem);
+ 	if (cksum != wfm_hdr->wfm_cs) {
+-		printk(KERN_ERR "Error: bad cksum %x != %x\n", cksum,
++		dev_err(dev, "Error: bad cksum %x != %x\n", cksum,
+ 					wfm_hdr->wfm_cs);
+ 		return -EINVAL;
+ 	}
+@@ -175,7 +168,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 	wfm_hdr->trc += 1;
+ 	for (i = 0; i < 5; i++) {
+ 		if (*(wfm_hdr->stuff2a + i) != 0) {
+-			printk(KERN_ERR "Error: unexpected value in padding\n");
++			dev_err(dev, "Error: unexpected value in padding\n");
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -200,7 +193,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 		return -EINVAL;
+ 	cksum = calc_cksum(sizeof(*wfm_hdr), cksum_idx, mem);
+ 	if (cksum != mem[cksum_idx]) {
+-		printk(KERN_ERR "Error: bad temperature range table cksum"
++		dev_err(dev, "Error: bad temperature range table cksum"
+ 				" %x != %x\n", cksum, mem[cksum_idx]);
+ 		return -EINVAL;
+ 	}
+@@ -212,7 +205,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 		return -EINVAL;
+ 	cksum = calc_cksum(cksum_idx - 3, cksum_idx, mem);
+ 	if (cksum != mem[cksum_idx]) {
+-		printk(KERN_ERR "Error: bad mode table address cksum"
++		dev_err(dev, "Error: bad mode table address cksum"
+ 				" %x != %x\n", cksum, mem[cksum_idx]);
+ 		return -EINVAL;
+ 	}
+@@ -224,7 +217,7 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 		return -EINVAL;
+ 	cksum = calc_cksum(cksum_idx - 3, cksum_idx, mem);
+ 	if (cksum != mem[cksum_idx]) {
+-		printk(KERN_ERR "Error: bad temperature table address cksum"
++		dev_err(dev, "Error: bad temperature table address cksum"
+ 			" %x != %x\n", cksum, mem[cksum_idx]);
+ 		return -EINVAL;
+ 	}
+@@ -259,11 +252,11 @@ static int load_waveform(u8 *mem, size_t size, u8 *metromem, int m, int t,
+ 		return -EINVAL;
+ 	cksum = calc_cksum(owfm_idx, cksum_idx, mem);
+ 	if (cksum != mem[cksum_idx]) {
+-		printk(KERN_ERR "Error: bad waveform data cksum"
++		dev_err(dev, "Error: bad waveform data cksum"
+ 				" %x != %x\n", cksum, mem[cksum_idx]);
+ 		return -EINVAL;
+ 	}
+-	*frame_count = (mem_idx/64);
++	par->frame_count = (mem_idx/64);
+ 
+ 	return 0;
  }
- #endif
+@@ -662,15 +655,15 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 		b) process waveform and decode into metromem */
+ 	retval = request_firmware(&fw_entry, "metronome.wbf", &dev->dev);
+ 	if (retval < 0) {
+-		printk(KERN_ERR "metronomefb: couldn't get waveform\n");
++		dev_err(&dev->dev, "Failed to get waveform\n");
+ 		goto err_dma_free;
+ 	}
  
--#ifdef CONFIG_USB_GADGET_PXA2XX
-+#ifdef CONFIG_USB_GADGET_PXA25X
- static struct pxa2xx_udc_mach_info gumstix_udc_info __initdata = {
- 	.gpio_vbus		= GPIO_GUMSTIX_USB_GPIOn,
- 	.gpio_pullup		= GPIO_GUMSTIX_USB_GPIOx,
-@@ -126,12 +117,87 @@ static void __init gumstix_udc_init(void)
- #else
- static void gumstix_udc_init(void)
- {
--	printk(KERN_INFO "Gumstix udc is disabled\n");
-+	pr_debug("Gumstix udc is disabled\n");
- }
- #endif
+-	retval = load_waveform((u8 *) fw_entry->data, fw_entry->size,
+-				par->metromem_wfm, 3, 31, &par->frame_count);
++	retval = load_waveform((u8 *) fw_entry->data, fw_entry->size, 3, 31,
++				par);
+ 	release_firmware(fw_entry);
+ 	if (retval < 0) {
+-		printk(KERN_ERR "metronomefb: couldn't process waveform\n");
++		dev_err(&dev->dev, "Failed processing waveform\n");
+ 		goto err_dma_free;
+ 	}
  
-+#ifdef CONFIG_BT
-+/* Normally, the bootloader would have enabled this 32kHz clock but many
-+** boards still have u-boot 1.1.4 so we check if it has been turned on and
-+** if not, we turn it on with a warning message. */
-+static void gumstix_setup_bt_clock(void)
-+{
-+	int timeout = 500;
-+
-+	if (!(OSCC & OSCC_OOK))
-+		pr_warning("32kHz clock was not on. Bootloader may need to "
-+				"be updated\n");
-+	else
-+		return;
-+
-+	OSCC |= OSCC_OON;
-+	do {
-+		if (OSCC & OSCC_OOK)
-+			break;
-+		udelay(1);
-+	} while (--timeout);
-+	if (!timeout)
-+		pr_err("Failed to start 32kHz clock\n");
-+}
-+
-+static void __init gumstix_bluetooth_init(void)
-+{
-+	int err;
-+
-+	gumstix_setup_bt_clock();
-+
-+	err = gpio_request(GPIO_GUMSTIX_BTRESET, "BTRST");
-+	if (err) {
-+		pr_err("gumstix: failed request gpio for bluetooth reset\n");
-+		return;
-+	}
-+
-+	err = gpio_direction_output(GPIO_GUMSTIX_BTRESET, 1);
-+	if (err) {
-+		pr_err("gumstix: can't reset bluetooth\n");
-+		return;
-+	}
-+	gpio_set_value(GPIO_GUMSTIX_BTRESET, 0);
-+	udelay(100);
-+	gpio_set_value(GPIO_GUMSTIX_BTRESET, 1);
-+}
-+#else
-+static void gumstix_bluetooth_init(void)
-+{
-+	pr_debug("Gumstix Bluetooth is disabled\n");
-+}
-+#endif
-+
-+static unsigned long gumstix_pin_config[] __initdata = {
-+	GPIO12_32KHz,
-+	/* BTUART */
-+	GPIO42_HWUART_RXD,
-+	GPIO43_HWUART_TXD,
-+	GPIO44_HWUART_CTS,
-+	GPIO45_HWUART_RTS,
-+	/* MMC */
-+	GPIO6_MMC_CLK,
-+	GPIO53_MMC_CLK,
-+	GPIO8_MMC_CS0,
-+	/* these are used by AM200EPD */
-+	GPIO51_GPIO,
-+	GPIO49_GPIO,
-+	GPIO48_GPIO,
-+	GPIO32_GPIO,
-+	GPIO17_GPIO,
-+	GPIO16_GPIO,
-+};
-+
- static void __init gumstix_init(void)
- {
-+	pxa2xx_mfp_config(ARRAY_AND_SIZE(gumstix_pin_config));
-+
-+	gumstix_bluetooth_init();
- 	gumstix_udc_init();
- 	gumstix_mmc_init();
- 	(void) platform_add_devices(devices, ARRAY_SIZE(devices));
+@@ -688,7 +681,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 
+ 	retval = fb_alloc_cmap(&info->cmap, 8, 0);
+ 	if (retval < 0) {
+-		printk(KERN_ERR "Failed to allocate colormap\n");
++		dev_err(&dev->dev, "Failed to allocate colormap\n");
+ 		goto err_fb_rel;
+ 	}
+ 
+@@ -704,7 +697,7 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 
+ 	platform_set_drvdata(dev, info);
+ 
+-	printk(KERN_INFO
++	dev_dbg(&dev->dev,
+ 		"fb%d: Metronome frame buffer device, using %dK of video"
+ 		" memory\n", info->node, videomemorysize >> 10);
+ 
 -- 
 1.5.3.6
 

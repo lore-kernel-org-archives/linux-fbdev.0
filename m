@@ -1,9 +1,10 @@
-From: "M. Asselstine" <asselsm@mcmaster.ca>
-Subject: Re: [PATCH] atyfb_base.c: fix warning
-Date: Thu, 31 Jul 2008 08:47:46 -0400
-Message-ID: <919fe2b30807310547k4c5c28fh1ea524bcb320865d@mail.gmail.com>
-References: <20080730210352.GA29355@orion>
-	<20080731021552.2f5fe6d6.akpm@linux-foundation.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [RFC 2.6.26-rc9 3/5] pxafb: add shared
+ framebuffer interface
+Date: Thu, 31 Jul 2008 17:28:41 +0200
+Message-ID: <20080731172841.103671c1.krzysztof.h1@poczta.fm>
+References: <1217422269-11093-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1217422269-11093-4-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,17 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOXZN-0008Aw-Jf for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 05:47:49 -0700
-Received: from fg-out-1718.google.com ([72.14.220.154])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOXZM-0002PR-U0
+	id 1KOa09-0001PI-21 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jul 2008 08:23:37 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOa07-0004Sj-Cn
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 05:47:49 -0700
-Received: by fg-out-1718.google.com with SMTP id d23so250232fga.32
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 31 Jul 2008 05:47:46 -0700 (PDT)
-In-Reply-To: <20080731021552.2f5fe6d6.akpm@linux-foundation.org>
-Content-Disposition: inline
+	Thu, 31 Jul 2008 08:23:37 -0700
+In-Reply-To: <1217422269-11093-4-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,137 +29,81 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, syrjala@sci.fi, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, Alexander Beregalov <a.beregalov@gmail.com>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Thu, Jul 31, 2008 at 5:15 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Thu, 31 Jul 2008 01:03:52 +0400 Alexander Beregalov <a.beregalov@gmail.com> wrote:
->
->> From: Alexander Beregalov <a.beregalov@gmail.com>
->>
->> atyfb_base.c: fix warning
->>
->> drivers/video/aty/atyfb_base.c:2663: warning: 'aty_resume_chip' defined
->> but not used
->>
->> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
->> Cc: Ville Syrjala <syrjala@sci.fi>
->> Cc: Antonino A. Daplas <adaplas@pol.net>
->> ---
->>
->>  drivers/video/aty/atyfb_base.c |    4 ++++
->>  1 files changed, 4 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
->> index 620ba81..9e5dfb1 100644
->> --- a/drivers/video/aty/atyfb_base.c
->> +++ b/drivers/video/aty/atyfb_base.c
->> @@ -244,7 +244,9 @@ static int atyfb_sync(struct fb_info *info);
->>       */
->>
->>  static int aty_init(struct fb_info *info);
->> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
->>  static void aty_resume_chip(struct fb_info *info);
->> +#endif
->>  #ifdef CONFIG_ATARI
->>  static int store_video_par(char *videopar, unsigned char m64_num);
->>  #endif
->> @@ -2659,6 +2661,7 @@ aty_init_exit:
->>       return ret;
->>  }
->>
->> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
->>  static void aty_resume_chip(struct fb_info *info)
->>  {
->>       struct atyfb_par *par = info->par;
->> @@ -2671,6 +2674,7 @@ static void aty_resume_chip(struct fb_info *info)
->>       if (par->aux_start)
->>               aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
->>  }
->> +#endif /* defined(CONFIG_PM) && defined(CONFIG_PCI) */
->>
->>  #ifdef CONFIG_ATARI
->>  static int __devinit store_video_par(char *video_str, unsigned char m64_num)
->
-> OK...
->
-> We don't strictly need the first ifdef - it's OK to declare a
-> non-existent function, and ifdefs are ugly.
->
-> But we can reorganise the code a bit more and remove the forward
-> declaration altogether and remove a whole ifdef block too.
->
-> How does this look?
->
+On Wed, 30 Jul 2008 08:51:07 -0400
+Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
 
-Ah. Much better, this is definitely the way to go.
-
-Mark
-
->  drivers/video/aty/atyfb_base.c |   29 +++++++++++++++--------------
->  1 file changed, 15 insertions(+), 14 deletions(-)
->
-> diff -puN drivers/video/aty/atyfb_base.c~atyfb_basec-fix-warning drivers/video/aty/atyfb_base.c
-> --- a/drivers/video/aty/atyfb_base.c~atyfb_basec-fix-warning
-> +++ a/drivers/video/aty/atyfb_base.c
-> @@ -244,7 +244,7 @@ static int atyfb_sync(struct fb_info *in
->      */
->
->  static int aty_init(struct fb_info *info);
-> -static void aty_resume_chip(struct fb_info *info);
+> These changes are to make it possible for a secondary driver to share the
+> pxafb framebuffer. The changes include:
+> - adding extra_video_mem entry so that a driver can tell pxafb of its
+>   additional needs.
+> - adding share_video_mem/unshare_video_mem callbacks to notify the secondary
+>   driver of the framebuffer address, to allow refcounting, and to cleanup on
+>   completion.
+> 
+> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+> ---
+> diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+> index bb25143..f799c52 100644
+> --- a/drivers/video/pxafb.c
+> +++ b/drivers/video/pxafb.c
+> @@ -57,6 +57,8 @@
+>   */
+>  #define DEBUG_VAR 1
+>  
+> +static struct platform_driver pxafb_driver;
 > +
->  #ifdef CONFIG_ATARI
->  static int store_video_par(char *videopar, unsigned char m64_num);
+
+Not needed - see below
+
+(...)
+
+> -static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
+> +static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi,
+> +						struct pxafb_mach_info *inf)
+>  {
+> +	int ret;
+>  	/*
+>  	 * We reserve one page for the palette, plus the size
+>  	 * of the framebuffer.
+>  	 */
+>  	fbi->video_offset = PAGE_ALIGN(sizeof(struct pxafb_dma_buff));
+> -	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset);
+> +	fbi->map_size = PAGE_ALIGN(fbi->fb.fix.smem_len + fbi->video_offset +
+> +					inf->extra_video_mem);
+>  	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
+>  					      &fbi->map_dma, GFP_KERNEL);
+>  
+> @@ -1340,6 +1346,13 @@ static int __devinit pxafb_map_video_memory(struct pxafb_info *fbi)
+>  		fbi->smart_cmds = (uint16_t *) fbi->dma_buff->cmd_buff;
+>  		fbi->n_smart_cmds = 0;
 >  #endif
-> @@ -2023,6 +2023,20 @@ static int atyfb_pci_suspend(struct pci_
->        return 0;
->  }
->
-> +static void aty_resume_chip(struct fb_info *info)
-> +{
-> +       struct atyfb_par *par = info->par;
-> +
-> +       aty_st_le32(MEM_CNTL, par->mem_cntl, par);
-> +
-> +       if (par->pll_ops->resume_pll)
-> +               par->pll_ops->resume_pll(info, &par->pll);
-> +
-> +       if (par->aux_start)
-> +               aty_st_le32(BUS_CNTL,
-> +                       aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
-> +}
-> +
->  static int atyfb_pci_resume(struct pci_dev *pdev)
->  {
->        struct fb_info *info = pci_get_drvdata(pdev);
-> @@ -2659,19 +2673,6 @@ aty_init_exit:
->        return ret;
->  }
->
-> -static void aty_resume_chip(struct fb_info *info)
-> -{
-> -       struct atyfb_par *par = info->par;
-> -
-> -       aty_st_le32(MEM_CNTL, par->mem_cntl, par);
-> -
-> -       if (par->pll_ops->resume_pll)
-> -               par->pll_ops->resume_pll(info, &par->pll);
-> -
-> -       if (par->aux_start)
-> -               aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
-> -}
-> -
->  #ifdef CONFIG_ATARI
->  static int __devinit store_video_par(char *video_str, unsigned char m64_num)
->  {
-> _
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> +		if (inf->share_video_mem) {
+> +			ret = inf->share_video_mem(fbi->fb.screen_base,
+> +				fbi->screen_dma, pxafb_driver.driver.owner,
+
+You should use here either THIS_MODULE or runtime information
+from fbi->fb.device.driver.owner.
+
+> +				inf->extra_data);
+> +			if (ret)
+> +				return ret;
+> +		}
+>  	}
+>  
+
+The rest of the patch is ok.
+
+Regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Partyjka w Chinczyka?
+Graj >>> http://link.interia.pl/f1e67
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

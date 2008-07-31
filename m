@@ -1,9 +1,9 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc3 06/10] gumstix: conversion
-	to MFP support and add bluetooth support
-Date: Thu, 31 Jul 2008 06:45:52 -0400
-Message-ID: <45a44e480807310345x736d43byca8ee1a915f70b8b@mail.gmail.com>
-References: <20080731095910.DEF5C45B81F@f49.poczta.interia.pl>
+From: "M. Asselstine" <asselsm@mcmaster.ca>
+Subject: Re: [PATCH] atyfb_base.c: fix warning
+Date: Thu, 31 Jul 2008 08:47:46 -0400
+Message-ID: <919fe2b30807310547k4c5c28fh1ea524bcb320865d@mail.gmail.com>
+References: <20080730210352.GA29355@orion>
+	<20080731021552.2f5fe6d6.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,16 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOVfQ-00049K-TT for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 03:45:57 -0700
-Received: from nf-out-0910.google.com ([64.233.182.185])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOVfP-0006EO-Ab
+	id 1KOXZN-0008Aw-Jf for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jul 2008 05:47:49 -0700
+Received: from fg-out-1718.google.com ([72.14.220.154])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOXZM-0002PR-U0
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 03:45:56 -0700
-Received: by nf-out-0910.google.com with SMTP id g16so162577nfd.2
+	Thu, 31 Jul 2008 05:47:49 -0700
+Received: by fg-out-1718.google.com with SMTP id d23so250232fga.32
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 31 Jul 2008 03:45:53 -0700 (PDT)
-In-Reply-To: <20080731095910.DEF5C45B81F@f49.poczta.interia.pl>
+	Thu, 31 Jul 2008 05:47:46 -0700 (PDT)
+In-Reply-To: <20080731021552.2f5fe6d6.akpm@linux-foundation.org>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,50 +32,137 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: Andrew Morton <akpm@linux-foundation.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "ymiao3@marvell.com" <ymiao3@marvell.com>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, syrjala@sci.fi, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, Alexander Beregalov <a.beregalov@gmail.com>
 
-On Thu, Jul 31, 2008 at 5:59 AM,  <krzysztof.h1@poczta.fm> wrote:
->> On Thu, 12 Jun 2008 12:59:17 -0400 Jaya Kumar <jayakumar.lkml@gmail.com>
->> wrote:
+On Thu, Jul 31, 2008 at 5:15 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 31 Jul 2008 01:03:52 +0400 Alexander Beregalov <a.beregalov@gmail.com> wrote:
+>
+>> From: Alexander Beregalov <a.beregalov@gmail.com>
 >>
->> > This patch converts gumstix over to the MFP configuration system and
->> adds
->> > bluetooth support. Added a CLK_32K clock to enable bluetooth.
+>> atyfb_base.c: fix warning
 >>
->> Please be aware that the regular fbdev maintainer (Tony) has been out
->> of contact for many months and that I very rarely read
->> linux-fbdev-devel.  So if/when you have fbdev patches which need
->> attention, please cc myself directly.
+>> drivers/video/aty/atyfb_base.c:2663: warning: 'aty_resume_chip' defined
+>> but not used
 >>
+>> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+>> Cc: Ville Syrjala <syrjala@sci.fi>
+>> Cc: Antonino A. Daplas <adaplas@pol.net>
+>> ---
+>>
+>>  drivers/video/aty/atyfb_base.c |    4 ++++
+>>  1 files changed, 4 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+>> index 620ba81..9e5dfb1 100644
+>> --- a/drivers/video/aty/atyfb_base.c
+>> +++ b/drivers/video/aty/atyfb_base.c
+>> @@ -244,7 +244,9 @@ static int atyfb_sync(struct fb_info *info);
+>>       */
+>>
+>>  static int aty_init(struct fb_info *info);
+>> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
+>>  static void aty_resume_chip(struct fb_info *info);
+>> +#endif
+>>  #ifdef CONFIG_ATARI
+>>  static int store_video_par(char *videopar, unsigned char m64_num);
+>>  #endif
+>> @@ -2659,6 +2661,7 @@ aty_init_exit:
+>>       return ret;
+>>  }
+>>
+>> +#if defined(CONFIG_PM) && defined(CONFIG_PCI)
+>>  static void aty_resume_chip(struct fb_info *info)
+>>  {
+>>       struct atyfb_par *par = info->par;
+>> @@ -2671,6 +2674,7 @@ static void aty_resume_chip(struct fb_info *info)
+>>       if (par->aux_start)
+>>               aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
+>>  }
+>> +#endif /* defined(CONFIG_PM) && defined(CONFIG_PCI) */
+>>
+>>  #ifdef CONFIG_ATARI
+>>  static int __devinit store_video_par(char *video_str, unsigned char m64_num)
 >
-> Andrew,
+> OK...
 >
-> Please skip Jaya patches. He sents them to arm-linux and fbdev-devel and got
-> reviews from me and Eric Miao (I review and Ack only fb related patches, so the gumstix
-> patch must be acked by Eric Miao).
+> We don't strictly need the first ifdef - it's OK to declare a
+> non-existent function, and ifdefs are ugly.
 >
-> He fixed and reposted this set few times. The latest repost is here:
-> http://marc.info/?l=linux-fbdev-devel&m=121742676828595&w=2
+> But we can reorganise the code a bit more and remove the forward
+> declaration altogether and remove a whole ifdef block too.
 >
-> However, according to Jaya's answer he wants to push this patches through the arm tree (RMK's patch system):
-> http://marc.info/?l=linux-fbdev-devel&m=121734957011562&w=2
+> How does this look?
 >
-> Any repost of the set to the fbdev-devel will be reviewed by me.
->
-> Regards,
-> Krzysztof
 
+Ah. Much better, this is definitely the way to go.
 
-Hi Andrew, Krzysztof,
+Mark
 
-Yes, I've been CCing fbdev for review and thanks to Krzysztof for
-prior review of the fbdev patches. Once the patchset gets Eric's ack,
-I'll push it through rmk for consistency since the previous pxafb
-patches also went through rmk's tree.
-
-Thanks,
-jaya
+>  drivers/video/aty/atyfb_base.c |   29 +++++++++++++++--------------
+>  1 file changed, 15 insertions(+), 14 deletions(-)
+>
+> diff -puN drivers/video/aty/atyfb_base.c~atyfb_basec-fix-warning drivers/video/aty/atyfb_base.c
+> --- a/drivers/video/aty/atyfb_base.c~atyfb_basec-fix-warning
+> +++ a/drivers/video/aty/atyfb_base.c
+> @@ -244,7 +244,7 @@ static int atyfb_sync(struct fb_info *in
+>      */
+>
+>  static int aty_init(struct fb_info *info);
+> -static void aty_resume_chip(struct fb_info *info);
+> +
+>  #ifdef CONFIG_ATARI
+>  static int store_video_par(char *videopar, unsigned char m64_num);
+>  #endif
+> @@ -2023,6 +2023,20 @@ static int atyfb_pci_suspend(struct pci_
+>        return 0;
+>  }
+>
+> +static void aty_resume_chip(struct fb_info *info)
+> +{
+> +       struct atyfb_par *par = info->par;
+> +
+> +       aty_st_le32(MEM_CNTL, par->mem_cntl, par);
+> +
+> +       if (par->pll_ops->resume_pll)
+> +               par->pll_ops->resume_pll(info, &par->pll);
+> +
+> +       if (par->aux_start)
+> +               aty_st_le32(BUS_CNTL,
+> +                       aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
+> +}
+> +
+>  static int atyfb_pci_resume(struct pci_dev *pdev)
+>  {
+>        struct fb_info *info = pci_get_drvdata(pdev);
+> @@ -2659,19 +2673,6 @@ aty_init_exit:
+>        return ret;
+>  }
+>
+> -static void aty_resume_chip(struct fb_info *info)
+> -{
+> -       struct atyfb_par *par = info->par;
+> -
+> -       aty_st_le32(MEM_CNTL, par->mem_cntl, par);
+> -
+> -       if (par->pll_ops->resume_pll)
+> -               par->pll_ops->resume_pll(info, &par->pll);
+> -
+> -       if (par->aux_start)
+> -               aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
+> -}
+> -
+>  #ifdef CONFIG_ATARI
+>  static int __devinit store_video_par(char *video_str, unsigned char m64_num)
+>  {
+> _
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

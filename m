@@ -1,20 +1,21 @@
 From: krzysztof.h1@poczta.fm
-Subject: Re: [PATCH] fix scrolling after logo is cleared
-Date: 31 Jul 2008 11:48:59 +0200
-Message-ID: <20080731094859.C898945B81B@f49.poczta.interia.pl>
+Subject: Re: [RFC 2.6.26-rc3 06/10] gumstix: conversion
+	to MFP support and add bluetooth support
+Date: 31 Jul 2008 11:59:10 +0200
+Message-ID: <20080731095910.DEF5C45B81F@f49.poczta.interia.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOUmN-0006go-Rm for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 02:49:03 -0700
+	id 1KOUwI-0007kk-0h for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jul 2008 02:59:18 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOUmM-00023n-An
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KOUwG-0000VW-Jy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 02:49:03 -0700
+	Thu, 31 Jul 2008 02:59:18 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,58 +26,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@linux-foundation.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: "ymiao3@marvell.com" <ymiao3@marvell.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
 
-> On Wed, 28 May 2008 22:53:37 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm>
+> On Thu, 12 Jun 2008 12:59:17 -0400 Jaya Kumar <jayakumar.lkml@gmail.com>
 > wrote:
 > 
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > If the 'clear' command is used on the frame buffer
-> > with a logo the upper area is filled by few lines but
-> > not scrolled anymore.
-> > Fix this by removing the protected area for the logo
-> > if any part of the logo is cleared.
-> > 
-> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > ---
-> > 
-> > diff -urp linux-rc2/drivers/video/console/fbcon.c
-> linux-new/drivers/video/console/fbcon.c
-> > --- linux-rc2/drivers/video/console/fbcon.c	2008-05-12
-> 18:16:23.193553990 +0200
-> > +++ linux-new/drivers/video/console/fbcon.c	2008-05-26
-> 21:10:17.592997192 +0200
-> > @@ -1312,6 +1310,9 @@ static void fbcon_clear(struct vc_data *
-> >  	if (!height || !width)
-> >  		return;
-> >  
-> > +	if (sy < vc->vc_top && vc->vc_top == logo_lines)
-> > +		vc->vc_top = 0;
-> > +
-> >  	/* Split blits that cross physical y_wrap boundary */
-> >  
-> >  	y_break = p->vrows - p->yscroll;
-> > 
+> > This patch converts gumstix over to the MFP configuration system and
+> adds
+> > bluetooth support. Added a CLK_32K clock to enable bluetooth.
 > 
-> So I'm trolling linux-fbdev-devel for lost patches and I come across
-> this one.
-> 
-> It is still good?  If so, do you think it should be in 2.6.27?  And
-> earlier?
+> Please be aware that the regular fbdev maintainer (Tony) has been out
+> of contact for many months and that I very rarely read
+> linux-fbdev-devel.  So if/when you have fbdev patches which need
+> attention, please cc myself directly.
 > 
 
-I forgot this one. I sent it to get a feedback from other fbdev devs but forgot to resend it with cc to you.
+Andrew,
 
-Yes, it is  still good.  It is side effect of the tridentfb testing.
+Please skip Jaya patches. He sents them to arm-linux and fbdev-devel and got
+reviews from me and Eric Miao (I review and Ack only fb related patches, so the gumstix
+patch must be acked by Eric Miao).
+
+He fixed and reposted this set few times. The latest repost is here:
+http://marc.info/?l=linux-fbdev-devel&m=121742676828595&w=2
+
+However, according to Jaya's answer he wants to push this patches through the arm tree (RMK's patch system):
+http://marc.info/?l=linux-fbdev-devel&m=121734957011562&w=2
+
+Any repost of the set to the fbdev-devel will be reviewed by me.
 
 Regards,
 Krzysztof
+PS. As you are looking through the fbdev-devel, if you wants any old forgotten patch to be reviewed cc it to me and I will do today or tomorrow. I have some time for reviews as I stopped developing new crashes^Wfeatures for now ;-)
+
 
 ----------------------------------------------------------------------
-Najciekawsze miejsca w Polsce i na swiecie!
-Zobacz >>> http://link.interia.pl/f1e60
+Lubisz zagadki? Zagraj w puzzle na Smaker.pl!
+Kliknij >>> http://link.interia.pl/f1eb0
 
 
 -------------------------------------------------------------------------

@@ -1,12 +1,10 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb: Give i2c buses nicer	names
-Date: Thu, 31 Jul 2008 19:00:37 +1000
-Message-ID: <1217494837.11188.439.camel@pasglop>
-References: <20080606111955.5583e81a@hyperion.delvare>
-	<1212744097.12464.29.camel@pasglop>
-	<20080608155056.4506f457@hyperion.delvare>
-	<20080731015751.9d78e1af.akpm@linux-foundation.org>
-Reply-To: benh@kernel.crashing.org
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC 2.6.26-rc3 06/10] gumstix: conversion
+ to MFP support and add bluetooth support
+Date: Thu, 31 Jul 2008 02:04:05 -0700
+Message-ID: <20080731020405.4031150a.akpm@linux-foundation.org>
+References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
+	<1213289961-1562-7-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,15 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOU1k-0001S0-CH for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 02:00:54 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX19v3e6VpEqSbcLF0VKZSeifuZFxTHavfgo=])
+	id 1KOU5U-0001qz-O6 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jul 2008 02:04:44 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KOU1i-00051i-KR
+	(Exim 4.44) id 1KOU5U-0006WJ-9u
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 02:00:52 -0700
-In-Reply-To: <20080731015751.9d78e1af.akpm@linux-foundation.org>
+	Thu, 31 Jul 2008 02:04:44 -0700
+In-Reply-To: <1213289961-1562-7-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,33 +30,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jean Delvare <khali@linux-fr.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Thu, 2008-07-31 at 01:57 -0700, Andrew Morton wrote:
-> On Sun, 8 Jun 2008 15:50:56 +0200 Jean Delvare <khali@linux-fr.org> wrote:
-> 
-> > On Fri, 06 Jun 2008 19:21:37 +1000, Benjamin Herrenschmidt wrote:
-> > > On Fri, 2008-06-06 at 11:19 +0200, Jean Delvare wrote:
-> > > > The name of the i2c buses shows in the output of "i2cdetect -l", so
-> > > > it's important to give informative names.
-> > > > 
-> > > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > > 
-> > > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > Hmm, does this mean that you won't take care of pushing the patch
-> > upstream? Driver maintainers usually do that...
-> 
-> Tony hasn't been heard from in many months and I only very occasionally
-> troll linux-fbdev-devel for lost things.
-> 
-> Is this patch still good?  If so, in which of
-> 2.6.25/2.6.26/2.6.27/2.6.28 do you think it should be merged?
+On Thu, 12 Jun 2008 12:59:17 -0400 Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
 
-No objection here.
+> This patch converts gumstix over to the MFP configuration system and adds
+> bluetooth support. Added a CLK_32K clock to enable bluetooth.
 
-Ben.
+Please be aware that the regular fbdev maintainer (Tony) has been out
+of contact for many months and that I very rarely read
+linux-fbdev-devel.  So if/when you have fbdev patches which need
+attention, please cc myself directly.
 
 
 

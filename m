@@ -1,10 +1,10 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] radeonfb: Give i2c buses nicer names
-Date: Thu, 31 Jul 2008 01:57:51 -0700
-Message-ID: <20080731015751.9d78e1af.akpm@linux-foundation.org>
-References: <20080606111955.5583e81a@hyperion.delvare>
-	<1212744097.12464.29.camel@pasglop>
-	<20080608155056.4506f457@hyperion.delvare>
+Subject: Re: [PATCH] radeonfb: Revert "Fix radeon DDC
+ regression"
+Date: Thu, 31 Jul 2008 01:59:13 -0700
+Message-ID: <20080731015913.9d165c6d.akpm@linux-foundation.org>
+References: <20080606112116.3aa37dfd@hyperion.delvare>
+	<1212794511.12464.38.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,14 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOTzE-0001EE-4r for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 01:58:16 -0700
+	id 1KOU0W-0001Lk-SB for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jul 2008 01:59:36 -0700
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KOTzD-000411-TO
+	(Exim 4.44) id 1KOU0W-0004Xy-LB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 01:58:16 -0700
-In-Reply-To: <20080608155056.4506f457@hyperion.delvare>
+	Thu, 31 Jul 2008 01:59:36 -0700
+In-Reply-To: <1212794511.12464.38.camel@pasglop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,30 +30,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jean Delvare <khali@linux-fr.org>
-Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
+To: benh@kernel.crashing.org
+Cc: Jean Delvare <khali@linux-fr.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 8 Jun 2008 15:50:56 +0200 Jean Delvare <khali@linux-fr.org> wrote:
+On Sat, 07 Jun 2008 09:21:51 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Fri, 06 Jun 2008 19:21:37 +1000, Benjamin Herrenschmidt wrote:
-> > On Fri, 2008-06-06 at 11:19 +0200, Jean Delvare wrote:
-> > > The name of the i2c buses shows in the output of "i2cdetect -l", so
-> > > it's important to give informative names.
-> > > 
-> > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> On Fri, 2008-06-06 at 11:21 +0200, Jean Delvare wrote:
+> > The bug was in fb_ddc and was fixed by commit
+> > b64d70825abbf706bbe80be1b11b09514b71f45e (fb_ddc: fix DDC lines quirk)
+> > so the workaround in radeonfb can be removed now.
 > > 
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > ---
 > 
-> Hmm, does this mean that you won't take care of pushing the patch
-> upstream? Driver maintainers usually do that...
+> I need to verify that on my Apple monitor which would switch off
+> if that is wrong. Will try to do that this week-end. Without news
+> from me next week, then just commit the bloody thing :-)
+> 
 
-Tony hasn't been heard from in many months and I only very occasionally
-troll linux-fbdev-devel for lost things.
-
-Is this patch still good?  If so, in which of
-2.6.25/2.6.26/2.6.27/2.6.28 do you think it should be merged?
-
-
+I queued this for 2.6.28.
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

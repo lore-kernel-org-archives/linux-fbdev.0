@@ -1,8 +1,10 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fix scrolling after logo is cleared
-Date: Thu, 31 Jul 2008 01:54:03 -0700
-Message-ID: <20080731015403.831e038c.akpm@linux-foundation.org>
-References: <20080528225337.9e01d40e.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] radeonfb: Give i2c buses nicer names
+Date: Thu, 31 Jul 2008 01:57:51 -0700
+Message-ID: <20080731015751.9d78e1af.akpm@linux-foundation.org>
+References: <20080606111955.5583e81a@hyperion.delvare>
+	<1212744097.12464.29.camel@pasglop>
+	<20080608155056.4506f457@hyperion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,14 +12,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOTvS-0000oP-0M for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 01:54:22 -0700
+	id 1KOTzE-0001EE-4r for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jul 2008 01:58:16 -0700
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KOTvP-0002Ox-OX
+	(Exim 4.44) id 1KOTzD-000411-TO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 01:54:22 -0700
-In-Reply-To: <20080528225337.9e01d40e.krzysztof.h1@poczta.fm>
+	Thu, 31 Jul 2008 01:58:16 -0700
+In-Reply-To: <20080608155056.4506f457@hyperion.delvare>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,42 +30,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 28 May 2008 22:53:37 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+On Sun, 8 Jun 2008 15:50:56 +0200 Jean Delvare <khali@linux-fr.org> wrote:
 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> On Fri, 06 Jun 2008 19:21:37 +1000, Benjamin Herrenschmidt wrote:
+> > On Fri, 2008-06-06 at 11:19 +0200, Jean Delvare wrote:
+> > > The name of the i2c buses shows in the output of "i2cdetect -l", so
+> > > it's important to give informative names.
+> > > 
+> > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > 
+> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> If the 'clear' command is used on the frame buffer
-> with a logo the upper area is filled by few lines but
-> not scrolled anymore.
-> Fix this by removing the protected area for the logo
-> if any part of the logo is cleared.
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> ---
-> 
-> diff -urp linux-rc2/drivers/video/console/fbcon.c linux-new/drivers/video/console/fbcon.c
-> --- linux-rc2/drivers/video/console/fbcon.c	2008-05-12 18:16:23.193553990 +0200
-> +++ linux-new/drivers/video/console/fbcon.c	2008-05-26 21:10:17.592997192 +0200
-> @@ -1312,6 +1310,9 @@ static void fbcon_clear(struct vc_data *
->  	if (!height || !width)
->  		return;
->  
-> +	if (sy < vc->vc_top && vc->vc_top == logo_lines)
-> +		vc->vc_top = 0;
-> +
->  	/* Split blits that cross physical y_wrap boundary */
->  
->  	y_break = p->vrows - p->yscroll;
-> 
+> Hmm, does this mean that you won't take care of pushing the patch
+> upstream? Driver maintainers usually do that...
 
-So I'm trolling linux-fbdev-devel for lost patches and I come across
-this one.
+Tony hasn't been heard from in many months and I only very occasionally
+troll linux-fbdev-devel for lost things.
 
-It is still good?  If so, do you think it should be in 2.6.27?  And
-earlier?
+Is this patch still good?  If so, in which of
+2.6.25/2.6.26/2.6.27/2.6.28 do you think it should be merged?
+
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

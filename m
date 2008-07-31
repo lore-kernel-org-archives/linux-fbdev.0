@@ -1,10 +1,12 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC 2.6.26-rc3 06/10] gumstix: conversion
- to MFP support and add bluetooth support
-Date: Thu, 31 Jul 2008 02:04:05 -0700
-Message-ID: <20080731020405.4031150a.akpm@linux-foundation.org>
-References: <1213289961-1562-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1213289961-1562-7-git-send-email-jayakumar.lkml@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb: Revert "Fix radeon
+	DDC	regression"
+Date: Thu, 31 Jul 2008 19:12:36 +1000
+Message-ID: <1217495556.11188.443.camel@pasglop>
+References: <20080606112116.3aa37dfd@hyperion.delvare>
+	<1212794511.12464.38.camel@pasglop>
+	<20080731015913.9d165c6d.akpm@linux-foundation.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,14 +14,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KOU5U-0001qz-O6 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 02:04:44 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	id 1KOUDH-0002n1-07 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 31 Jul 2008 02:12:47 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX1/ND31OMJlWPI/OT+QLdzOiryrDLPUoxaA=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KOU5U-0006WJ-9u
+	(Exim 4.44) id 1KOUDG-0001HJ-CC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 31 Jul 2008 02:04:44 -0700
-In-Reply-To: <1213289961-1562-7-git-send-email-jayakumar.lkml@gmail.com>
+	Thu, 31 Jul 2008 02:12:46 -0700
+In-Reply-To: <20080731015913.9d165c6d.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,18 +33,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: ymiao3@marvell.com, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jean Delvare <khali@linux-fr.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 12 Jun 2008 12:59:17 -0400 Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+On Thu, 2008-07-31 at 01:59 -0700, Andrew Morton wrote:
+> On Sat, 07 Jun 2008 09:21:51 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > On Fri, 2008-06-06 at 11:21 +0200, Jean Delvare wrote:
+> > > The bug was in fb_ddc and was fixed by commit
+> > > b64d70825abbf706bbe80be1b11b09514b71f45e (fb_ddc: fix DDC lines quirk)
+> > > so the workaround in radeonfb can be removed now.
+> > > 
+> > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > > ---
+> > 
+> > I need to verify that on my Apple monitor which would switch off
+> > if that is wrong. Will try to do that this week-end. Without news
+> > from me next week, then just commit the bloody thing :-)
+> > 
+> 
+> I queued this for 2.6.28.
 
-> This patch converts gumstix over to the MFP configuration system and adds
-> bluetooth support. Added a CLK_32K clock to enable bluetooth.
+Ok. The monitor that was having problem is hooked on some other
+stuff and I don't have the radeon machine in the same building
+so unless people complain, I think this patch will do.
 
-Please be aware that the regular fbdev maintainer (Tony) has been out
-of contact for many months and that I very rarely read
-linux-fbdev-devel.  So if/when you have fbdev patches which need
-attention, please cc myself directly.
+Ben.
 
 
 

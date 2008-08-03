@@ -1,36 +1,43 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [RFC 2.6.26-rc9 1/2] am200epd: use fb notifiers and gpio api
-Date: Sun, 3 Aug 2008 21:38:14 +0200
-Message-ID: <20080803213814.50ca9ad5.krzysztof.h1@poczta.fm>
+Subject: Re: [RFC 2.6.26-rc9 2/2] metronomefb: changes
+ to use platform framebuffer
+Date: Sun, 3 Aug 2008 21:40:41 +0200
+Message-ID: <20080803214041.24bc88da.krzysztof.h1@poczta.fm>
 References: <1217682500-31503-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1217682500-31503-2-git-send-email-jayakumar.lkml@gmail.com>
+	<1217682500-31503-3-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <1217682500-31503-2-git-send-email-jayakumar.lkml@gmail.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1KPjMT-0006Qj-8t for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 03 Aug 2008 12:35:25 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KPjMR-0002dk-Kk
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 03 Aug 2008 12:35:25 -0700
+In-Reply-To: <1217682500-31503-3-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Sat,  2 Aug 2008 09:08:19 -0400
+On Sat,  2 Aug 2008 09:08:20 -0400
 Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
 
-> The original am200epd driver was designed with bad assumptions. It
-> manipulated GPSR/GPLR registers directly. It relied on direct access to the
-> pxa LCDC registers which have since conflicted with commit
-> ce4fb7b892a6d6c6a0f87366b26fd834d2923dd7 . This patch moves it into mach-pxa
-> and overhauls it to use a fb obtained through fb notifiers. It now uses the
-> generic GPIO api.
+> These changes are used in order to support the use of the framebuffer
+> provided by the platform device driver rather than to directly allocate one.
+> Other changes are cleanup to error handling and order of release.
 > 
 > Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 > ---
@@ -38,11 +45,12 @@ Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
 Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ----------------------------------------------------------------------
-Te newsy nakreca Cie na caly dzien!
-Sprawdz >>> http://link.interia.pl/f1e94
+Tanie rozmowy!
+Sprawdz >>>  http://link.interia.pl/f1e91
 
 
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

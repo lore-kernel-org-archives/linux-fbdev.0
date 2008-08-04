@@ -1,24 +1,29 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [RFC 2.6.26-rc9 2/2] metronomefb: changes
- to use platform framebuffer
-Date: Sun, 3 Aug 2008 21:40:41 +0200
-Message-ID: <20080803214041.24bc88da.krzysztof.h1@poczta.fm>
+From: "Eric Miao" <eric.y.miao@gmail.com>
+Subject: Re: [RFC 2.6.26-rc9 1/2] am200epd: use fb
+	notifiers and gpio api
+Date: Mon, 4 Aug 2008 09:27:58 +0800
+Message-ID: <f17812d70808031827g2cdaada4r6b5ead0e24b9ec90@mail.gmail.com>
 References: <1217682500-31503-1-git-send-email-jayakumar.lkml@gmail.com>
-	<1217682500-31503-3-git-send-email-jayakumar.lkml@gmail.com>
+	<1217682500-31503-2-git-send-email-jayakumar.lkml@gmail.com>
+	<20080803213814.50ca9ad5.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KPjMT-0006Qj-8t for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Aug 2008 12:35:25 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KPjMR-0002dk-Kk
+	id 1KPorf-0005Ry-S1 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 03 Aug 2008 18:27:59 -0700
+Received: from yw-out-1718.google.com ([74.125.46.158])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KPorf-0006l5-Gk
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 03 Aug 2008 12:35:25 -0700
-In-Reply-To: <1217682500-31503-3-git-send-email-jayakumar.lkml@gmail.com>
+	Sun, 03 Aug 2008 18:27:59 -0700
+Received: by yw-out-1718.google.com with SMTP id 6so1287674ywa.82
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 03 Aug 2008 18:27:59 -0700 (PDT)
+In-Reply-To: <20080803213814.50ca9ad5.krzysztof.h1@poczta.fm>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,25 +34,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Sat,  2 Aug 2008 09:08:20 -0400
-Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+On Mon, Aug 4, 2008 at 3:38 AM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> On Sat,  2 Aug 2008 09:08:19 -0400
+> Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+>
+>> The original am200epd driver was designed with bad assumptions. It
+>> manipulated GPSR/GPLR registers directly. It relied on direct access to the
+>> pxa LCDC registers which have since conflicted with commit
+>> ce4fb7b892a6d6c6a0f87366b26fd834d2923dd7 . This patch moves it into mach-pxa
+>> and overhauls it to use a fb obtained through fb notifiers. It now uses the
+>> generic GPIO api.
+>>
+>> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+>> ---
+>
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+>
 
-> These changes are used in order to support the use of the framebuffer
-> provided by the platform device driver rather than to directly allocate one.
-> Other changes are cleanup to error handling and order of release.
-> 
-> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-> ---
+Nice work, it looks very clean, and I like this very much.
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Acked-by: Eric Miao <eric.miao@marvell.com>
 
-----------------------------------------------------------------------
-Tanie rozmowy!
-Sprawdz >>>  http://link.interia.pl/f1e91
+If you need another Acked-by :-)
 
+> ----------------------------------------------------------------------
+> Te newsy nakreca Cie na caly dzien!
+> Sprawdz >>> http://link.interia.pl/f1e94
+>
+>
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+>
+
+
+
+-- 
+Cheers
+- eric
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

@@ -1,9 +1,11 @@
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-Subject: Re: [PATCH] au1200fb: fixup PM support.
-Date: Tue, 05 Aug 2008 18:08:39 +0200
-Message-ID: <48987B07.80502@roarinelk.homelinux.net>
-References: <20080805124221.GA27469@roarinelk.homelinux.net>
-	<1217952137.23188.2.camel@kh-ubuntu.razamicroelectronics.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kernel oops with framebuffer device vt8623fb
+Date: Tue, 5 Aug 2008 09:12:29 -0700
+Message-ID: <20080805091229.a613d423.akpm@linux-foundation.org>
+References: <487E2911.5090701@gmx.net>
+	<20080717013917.GA1695@localhost.localdomain>
+	<20080728204817.ebaa621b.akpm@linux-foundation.org>
+	<489836D3.2050008@chello.at>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,15 +13,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQP5c-0005I7-UE for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Aug 2008 09:08:49 -0700
-Received: from fnoeppeil43.netpark.at ([217.175.205.171]
-	helo=roarinelk.homelinux.net)
+	id 1KQP9X-0005mb-Rj for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 05 Aug 2008 09:12:52 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KQP5Z-00077Q-8F
+	(Exim 4.44) id 1KQP9W-0000KP-H7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Aug 2008 09:08:48 -0700
-In-Reply-To: <1217952137.23188.2.camel@kh-ubuntu.razamicroelectronics.com>
+	Tue, 05 Aug 2008 09:12:51 -0700
+In-Reply-To: <489836D3.2050008@chello.at>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,32 +31,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Kevin Hickey <khickey@rmicorp.com>
-Cc: L-M-O <linux-mips@linux-mips.org>, linux-fbdev-devel@lists.sf.net
+To: alois.klingler@chello.at
+Cc: linux-fbdev-devel@lists.sourceforge.net, MadLoisae@gmx.net, linux-kernel@vger.kernel.org, Alexey@sc8-sf-spam2.sourceforge.net, Dobriyan <adobriyan@gmail.com>
 
-Kevin Hickey wrote:
-> On Tue, 2008-08-05 at 14:42 +0200, Manuel Lauss wrote:
->> Remove last traces of the custom Alchemy linux-2.4 PM code, implement
->> suspend/resume callbacks.
->>
->> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
->> ---
->>  drivers/video/au1200fb.c |  164 ++++++++++++----------------------------------
->>  1 files changed, 41 insertions(+), 123 deletions(-)
->>
-> This looks good.  It applied to my tree and appears functional on my
-> board.  One question: what about dynamic brightness?  It was part of the
-> old PM interface and you seem to have removed it.  Any ideas about
-> re-integrating that into the current PM model?
+On Tue, 05 Aug 2008 13:17:39 +0200 "alois.klingler@chello.at" <alois.klingler@chello.at> wrote:
 
-Hm, good point.  Let me see if I can hook the 2 PWMs into the backlight
-framework somehow...   I'll repost once this works.
+> 
+> Andrew Morton wrote:
+> > On Thu, 17 Jul 2008 03:39:18 +0200 Ondrej Zajicek <santiago@crfreenet.org> wrote:
+> >
+> >   
+> >> On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
+> >>     
+> >>> Hi!
+> >>>
+> >>> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found 
+> >>> a problem.
+> >>>
+> >>> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 
+> >>> display framebuffer driver is compiled direct into kernel the system 
+> >>> hangs up very early at booting the kernel.
+> >>>       
+> >> I am sorry for mistake, here is a patch for 2.6.26 fixing the bug:
+> >>
+> >> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+> >>     
+> >
+> > I went back through the email thread and wrote your changelog for you. 
+> > Not a very good one though.
+> >
+> > It would be better were you to write your changelogs, please.
+> >
+>
+> Hi!
+> 
+> This issue is still not fixed in 2.6.26.1 - may be there a way to commit 
+> it in 2.6.26.2?
+> 
+> Still, the provided patch I got on 07/17/2008 works great ...
+> 
+> Thanks, anyway!
+> 
+> kind regards, Alois
+> 
 
+(top-posting repaired)
 
-> Acked-by: Kevin Hickey <khickey@rmicorp.com>
-
-MfG,
-	Manuel Lauss
+The fix will be in my next batch for Linus.  It'll be merged this week.
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

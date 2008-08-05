@@ -1,26 +1,22 @@
-From: $mailname@fluff.org
-Subject: [patch 1/1] SM501: Update debugging/low
-	information messages
-Date: Wed, 06 Aug 2008 15:47:29 +0100
-Message-ID: <20080806144728.620509911@fluff.org>
-References: <20080806144728.525306982@fluff.org>
+From: Kevin Hickey <khickey@rmicorp.com>
+Subject: Re: [PATCH] au1200fb: fixup PM support.
+Date: Tue, 05 Aug 2008 11:02:17 -0500
+Message-ID: <1217952137.23188.2.camel__38034.6660888337$1218049188$gmane$org@kh-ubuntu.razamicroelectronics.com>
+References: <20080805124221.GA27469@roarinelk.homelinux.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQkIb-0001Zy-Pn for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 07:47:37 -0700
-Received: from hull.simtec.co.uk ([78.105.113.97]
-	helo=ivanova.local.simtec.co.uk)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KQkIb-00060W-EJ
+	id 1KQOzE-0004SL-Qv for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 05 Aug 2008 09:02:12 -0700
+Received: from mx1.razamicroelectronics.com ([63.111.213.197]
+	helo=hq-ex-mb01.razamicroelectronics.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KQOzC-0004JA-Ed
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 07:47:37 -0700
-Content-Disposition: inline;
-	filename=simtec/simtec-drivers-mfd-sm501-output-update.patch
+	Tue, 05 Aug 2008 09:02:12 -0700
+In-Reply-To: <20080805124221.GA27469@roarinelk.homelinux.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,43 +27,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: Ben Dooks <ben-linux@fluff.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: L-M-O <linux-mips@linux-mips.org>, linux-fbdev-devel@lists.sf.net
 
-Make the default output of the SM501 driver to be less noisy wrt to
-message that have low informational value, or simply should be debug.
-
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-
-Index: linux-2.6.26-quilt7/drivers/mfd/sm501.c
-===================================================================
---- linux-2.6.26-quilt7.orig/drivers/mfd/sm501.c	2008-08-05 11:54:26.000000000 +0100
-+++ linux-2.6.26-quilt7/drivers/mfd/sm501.c	2008-08-05 11:56:09.000000000 +0100
-@@ -624,8 +624,8 @@ unsigned long sm501_set_clock(struct dev
- 
- 	sm501_sync_regs(sm);
- 
--	dev_info(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
--		 gate, clock, mode);
-+	dev_dbg(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
-+		gate, clock, mode);
- 
- 	sm501_mdelay(sm, 16);
- 	mutex_unlock(&sm->clock_lock);
-@@ -743,7 +743,7 @@ static int sm501_register_device(struct 
- 	int ret;
- 
- 	for (ptr = 0; ptr < pdev->num_resources; ptr++) {
--		printk("%s[%d] flags %08lx: %08llx..%08llx\n",
-+		printk(KERN_DEBUG "%s[%d] flags %08lx: %08llx..%08llx\n",
- 		       pdev->name, ptr,
- 		       pdev->resource[ptr].flags,
- 		       (unsigned long long)pdev->resource[ptr].start,
-
--- 
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+T24gVHVlLCAyMDA4LTA4LTA1IGF0IDE0OjQyICswMjAwLCBNYW51ZWwgTGF1c3Mgd3JvdGU6Cj4g
+UmVtb3ZlIGxhc3QgdHJhY2VzIG9mIHRoZSBjdXN0b20gQWxjaGVteSBsaW51eC0yLjQgUE0gY29k
+ZSwgaW1wbGVtZW50Cj4gc3VzcGVuZC9yZXN1bWUgY2FsbGJhY2tzLgo+IAo+IFNpZ25lZC1vZmYt
+Ynk6IE1hbnVlbCBMYXVzcyA8bWFub0Byb2FyaW5lbGsuaG9tZWxpbnV4Lm5ldD4KPiAtLS0KPiAg
+ZHJpdmVycy92aWRlby9hdTEyMDBmYi5jIHwgIDE2NCArKysrKysrKysrKystLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gIDEgZmlsZXMgY2hhbmdlZCwgNDEgaW5zZXJ0aW9ucygr
+KSwgMTIzIGRlbGV0aW9ucygtKQo+IApUaGlzIGxvb2tzIGdvb2QuICBJdCBhcHBsaWVkIHRvIG15
+IHRyZWUgYW5kIGFwcGVhcnMgZnVuY3Rpb25hbCBvbiBteQpib2FyZC4gIE9uZSBxdWVzdGlvbjog
+d2hhdCBhYm91dCBkeW5hbWljIGJyaWdodG5lc3M/ICBJdCB3YXMgcGFydCBvZiB0aGUKb2xkIFBN
+IGludGVyZmFjZSBhbmQgeW91IHNlZW0gdG8gaGF2ZSByZW1vdmVkIGl0LiAgQW55IGlkZWFzIGFi
+b3V0CnJlLWludGVncmF0aW5nIHRoYXQgaW50byB0aGUgY3VycmVudCBQTSBtb2RlbD8KCkFja2Vk
+LWJ5OiBLZXZpbiBIaWNrZXkgPGtoaWNrZXlAcm1pY29ycC5jb20+CgotLSAKS2V2aW4gSGlja2V5
+Cu+7v0FsY2hlbXkgU29sdXRpb25zClJNSSBDb3Jwb3JhdGlvbgpraGlja2V5QFJNSUNvcnAuY29t
+ClA6IDUxMi42OTEuODA0NAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFpbCBpcyBz
+cG9uc29yZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1
+aWxkIHRoZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxpbiBTREsg
+JiB3aW4gZ3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRvIGFuIE9w
+ZW4gU291cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGluLWNvbnRl
+c3Qub3JnL3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcg
+bGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0
+cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

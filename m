@@ -1,8 +1,10 @@
-From: krzysztof.h1@poczta.fm
-Subject: Re: [PATCH] fb: convert lock/unlock_kernel()
-	into local fb mutex
-Date: 05 Aug 2008 12:07:30 +0200
-Message-ID: <20080805100731.AC1E297A81B@f43.poczta.interia.pl>
+From: "alois.klingler@chello.at" <alois.klingler@chello.at>
+Subject: Re: kernel oops with framebuffer device vt8623fb
+Date: Tue, 05 Aug 2008 13:17:39 +0200
+Message-ID: <489836D3.2050008@chello.at>
+References: <487E2911.5090701@gmx.net>	<20080717013917.GA1695@localhost.localdomain>
+	<20080728204817.ebaa621b.akpm@linux-foundation.org>
+Reply-To: alois.klingler@chello.at
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,12 +12,19 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQJS8-0003KZ-Ko for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Aug 2008 03:07:40 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KQJS7-0004Yn-2P
+	id 1KQKZc-0002zR-Ve for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 05 Aug 2008 04:19:29 -0700
+Received: from viefep18-int.chello.at ([213.46.255.22]
+	helo=viefep21-int.chello.at)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KQKZZ-0002k8-Ro
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Aug 2008 03:07:40 -0700
+	Tue, 05 Aug 2008 04:19:28 -0700
+Received: from edge05.upc.biz ([192.168.13.212]) by viefep20-int.chello.at
+	(InterMail vM.7.08.02.02 201-2186-121-104-20070414) with ESMTP
+	id <20080805111755.WFQL14987.viefep20-int.chello.at@edge05.upc.biz>
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 5 Aug 2008 13:17:55 +0200
+In-Reply-To: <20080728204817.ebaa621b.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,69 +35,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: MadLoisae@gmx.net, linux-fbdev-devel@lists.sourceforge.net, Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
 
-> On Tue, 5 Aug 2008 07:37:55 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm>
-> wrote:
-> 
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > Change lock_kernel()/unlock_kernel() to local fb mutex.
-> > Each frame buffer instance has its own mutex.
-> > 
-> > The one line try_to_load() function is unrolled to
-> > request_module() in two places for readability.
-> > 
-> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > ---
-> > 
-> > The only caveat is that I had to put request_module()
-> > call outside this new mutex while it was inside the 
-> > lock_kernel() (inside fb_open()). 
-> 
-> Why did you have to do that?
-> 
+Hi!
 
-This has to be done if the per fb mutex (fb_info->lock) is used as the request_module is called before fb_info pointer exists. 
+This issue is still not fixed in 2.6.26.1 - may be there a way to commit 
+it in 2.6.26.2?
 
-I tried to avoid one big mutex for the fb layer (which would not be worse than lock_kernel now).
+Still, the provided patch I got on 07/17/2008 works great ...
 
-Alternative solution is to provide one global mutex inside the fb layer to mutex fb_open and fb_close functions and another mutex per each fb (fb_info->lock) for all other locking (so ioctls on different fb instances/cards can be concurrent).
+Thanks, anyway!
 
-> The request_module() in fb_ioctl() is inside the lock...
-> 
+kind regards, Alois
 
-Yes. This is some mistake I suppose as the fb_info pointer is used before the switch
-then it is checked against null inside the switch. Either the request_module is never called there (dead code) or a core dump happens sometimes.
 
-As I see it now, the whole fbmem locking is somehow not right as IMO the registered_fb[idx] access should be locked to avoid situation that someone is adding/removing the fb and another function grabs fb_info pointer from the registered_fb[].
-
-> > If the request_module() should be called only inside this mutex
-> > please drop the patch.
-> 
-> No, request_module() doesn't need lock_kernel().
-> 
-> The only possible problem I can see is the sole remaining lock_kernel()
-> in drivers/video/console/vgacon.c.  The fbcon.c code used to be
-> serialised against vgacon_do_font_op() via lock_kernel, but with this
-> change vgacon_do_font_op() can now run concurrently with all the code
-> which you've put inside fb_info.mutex_lock.  Probably not a problem, but
-> please check that sometime.
-> 
-> 
-
-I will look into it and either resend this patch or another one.
-
-Should I cc some other list or person next time?
-
-Kind regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Wymien zeszyty na notebooka!
-Sprawdz >>> http://link.interia.pl/f1eab 
-
+Andrew Morton wrote:
+> On Thu, 17 Jul 2008 03:39:18 +0200 Ondrej Zajicek <santiago@crfreenet.org> wrote:
+>
+>   
+>> On Wed, Jul 16, 2008 at 07:00:02PM +0200, MadLoisae@gmx.net wrote:
+>>     
+>>> Hi!
+>>>
+>>> I've updated my machine from 2.6.25.11 to 2.6.26 and I think I've found 
+>>> a problem.
+>>>
+>>> If I load the module vt8623fb i get a kernel oops, if the VIA 8623 
+>>> display framebuffer driver is compiled direct into kernel the system 
+>>> hangs up very early at booting the kernel.
+>>>       
+>> I am sorry for mistake, here is a patch for 2.6.26 fixing the bug:
+>>
+>> Signed-off-by: Ondrej Zajicek <santiago@crfreenet.org>
+>>     
+>
+> I went back through the email thread and wrote your changelog for you. 
+> Not a very good one though.
+>
+> It would be better were you to write your changelogs, please.
+>
+>
+>   
 
 
 -------------------------------------------------------------------------

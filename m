@@ -1,21 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 Subject: Re: [RFC] double buffering for atmel_lcdfb
-Date: Wed, 6 Aug 2008 11:55:49 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808061151150.25079@anakin>
+Date: Wed, 6 Aug 2008 14:13:05 +0200
+Message-ID: <20080806141305.49e883a2@hskinnemo-gx745.norway.atmel.com>
 References: <200808061136.16783.stf_xl@wp.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQfsd-0002hv-Ca for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 03:04:31 -0700
-Received: from monty.telenet-ops.be ([195.130.132.56])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KQfkO-000297-TW
+	id 1KQhtG-0001Dd-02 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 06 Aug 2008 05:13:18 -0700
+Received: from smtpeu1.atmel.com ([195.65.72.27] helo=bagnes.atmel.com)
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1KQhtD-00082h-Ps
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 02:56:01 -0700
+	Wed, 06 Aug 2008 05:13:17 -0700
 In-Reply-To: <200808061136.16783.stf_xl@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,86 +31,63 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Stanislaw Gruszka <stf_xl@wp.pl>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 6 Aug 2008, Stanislaw Gruszka wrote:
-> I try to implement double buffering for Atmel LCD display on AT91SAM9263 based 
-> board. I could not find any document about panning display on linux 
-> framebuffer, so I have some question about it and generic question about 
-> double buffer design. 
-> 
-> 1) Is FBIOPAN_DISPLAY ioctl right way to implement double buffering?
+Stanislaw Gruszka <stf_xl@wp.pl> wrote:
+> Below is patch I have already done. I also attached program which I used for 
+> for tests - as far result are quite nice.
 
-Yes.
+I sent this patch a while ago, but I forgot to send Nicolas a test
+program when he asked for it :-(
 
-> 2) What is the difference between ypanstep and ywrapstep, which one should be 
-> used for double buffering.
+Could you give it a try? If it works for you, I think we can conclude
+that y-panning indeed works on AT91 so the patch can be applied.
 
-Ypanstep is the allowed step increment for panning vertically.
-E.g. for a screen with 200 lines and y.offset = 50, it will display
-lines 50-249 of the frame buffer.
+Haavard
 
-Ywrapstep is the allowed step increment for wrapping the screen
-vertically.
-E.g. for a screen with 200 lines and y.offset = 50, it will display
-lines 50-199 followed by lines 0-49 of the frame buffer.
+From c1dc155e3c1a828faa4379a1f6f6de0bb58385cc Mon Sep 17 00:00:00 2001
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Date: Sat, 23 Jun 2007 17:38:26 +0200
+Subject: [PATCH] atmel_lcdfb: Set ypanstep to 1 and enable y-panning on AT91
 
-> 3) Does double buffer stuff should be turned on using module parameter, 
-> compile time parameter, board specific parameter (flag from platform device).
-> As it consume 2x memory I don't thing anyone want it by default.
+Panning in the y-direction can be done by simply changing the DMA base
+address. This code is already in place, but FBIOPAN_DISPLAY will
+currently fail because ypanstep is 0.
 
-No, let userspace ask for it when it specifies a large
-fb_var_screeninfo.yres_virtual, if possible. If you have to allocate all
-frame buffer memory at initialization time, you can use a board specific
-parameter or a kernel command line parameter.
+Set ypanstep to 1 to indicate that we do support y-panning and also
+set the necessary acceleration flags on AT91 (AVR32 already have
+them.)
 
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index b004036..d0b2bed 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -7,7 +7,6 @@
->   * License.  See the file COPYING in the main directory of this archive for
->   * more details.
->   */
-> -
->  #include <linux/kernel.h>
->  #include <linux/platform_device.h>
->  #include <linux/dma-mapping.h>
-> @@ -41,6 +40,8 @@
->  #if defined(CONFIG_ARCH_AT91)
->  #define	ATMEL_LCDFB_FBINFO_DEFAULT	FBINFO_DEFAULT
->  
-> +static int double_buffering = 1;
-> +
->  static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
->  					struct fb_var_screeninfo *var)
->  {
-> @@ -789,7 +790,13 @@ static int __init atmel_lcdfb_probe(struct 
-> platform_device *pdev)
->  		 * Don't clear the framebuffer -- someone may have set
->  		 * up a splash image.
->  		 */
-> +		double_buffering = 0;
-> + 		dev_info(dev, "dissable double buffering\n");
->  	} else {
-> + 		if (double_buffering) {
-> + 			info->fix.ypanstep = info->var.yres_virtual;
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/video/atmel_lcdfb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-I would set it to 1, if there's no hardware limitation preventing this.
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index b004036..c0a0364 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -39,7 +39,9 @@
+ #endif
+ 
+ #if defined(CONFIG_ARCH_AT91)
+-#define	ATMEL_LCDFB_FBINFO_DEFAULT	FBINFO_DEFAULT
++#define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
++					 | FBINFO_PARTIAL_PAN_OK \
++					 | FBINFO_HWACCEL_YPAN)
+ 
+ static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
+ 					struct fb_var_screeninfo *var)
+@@ -177,7 +179,7 @@ static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_TRUECOLOR,
+ 	.xpanstep	= 0,
+-	.ypanstep	= 0,
++	.ypanstep	= 1,
+ 	.ywrapstep	= 0,
+ 	.accel		= FB_ACCEL_NONE,
+ };
+-- 
+1.5.6.3
 
-> + 			info->var.yres_virtual *= 2;
-
-This is done at initialization time, hence it cannot be changed later by
-using the ioctls?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

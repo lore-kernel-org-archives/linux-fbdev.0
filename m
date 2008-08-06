@@ -1,9 +1,9 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 11258] New: fbcon cursor
- disappered after switch to 512 consolefont
-Date: Wed, 6 Aug 2008 09:12:04 -0700
-Message-ID: <20080806091204.25045807.akpm@linux-foundation.org>
-References: <bug-11258-10286@http.bugzilla.kernel.org/>
+From: $mailname@fluff.org
+Subject: [patch 1/1] SM501: Update debugging/low
+	information messages
+Date: Wed, 06 Aug 2008 15:47:17 +0100
+Message-ID: <20080806144716.638227184@fluff.org>
+References: <20080806144716.533792387@fluff.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,14 +11,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQlhe-0006p7-73 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 09:17:34 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	id 1KQkIU-0001ZZ-2S for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 06 Aug 2008 07:47:30 -0700
+Received: from hull.simtec.co.uk ([78.105.113.97]
+	helo=ivanova.local.simtec.co.uk)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KQlcT-00033v-VG
+	(Exim 4.44) id 1KQkIT-0005x7-M6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 09:12:14 -0700
-In-Reply-To: <bug-11258-10286@http.bugzilla.kernel.org/>
+	Wed, 06 Aug 2008 07:47:30 -0700
+Content-Disposition: inline;
+	filename=simtec/simtec-drivers-mfd-sm501-output-update.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,49 +31,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: hanzelpeter@gmail.com, bugme-daemon@bugzilla.kernel.org
+To: akpm@linux-foundatio.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: Ben Dooks <ben-linux@fluff.org>
 
+Make the default output of the SM501 driver to be less noisy wrt to
+message that have low informational value, or simply should be debug.
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-On Wed,  6 Aug 2008 08:27:54 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+Index: linux-2.6.26-quilt7/drivers/mfd/sm501.c
+===================================================================
+--- linux-2.6.26-quilt7.orig/drivers/mfd/sm501.c	2008-08-05 11:54:26.000000000 +0100
++++ linux-2.6.26-quilt7/drivers/mfd/sm501.c	2008-08-05 11:56:09.000000000 +0100
+@@ -624,8 +624,8 @@ unsigned long sm501_set_clock(struct dev
+ 
+ 	sm501_sync_regs(sm);
+ 
+-	dev_info(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
+-		 gate, clock, mode);
++	dev_dbg(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
++		gate, clock, mode);
+ 
+ 	sm501_mdelay(sm, 16);
+ 	mutex_unlock(&sm->clock_lock);
+@@ -743,7 +743,7 @@ static int sm501_register_device(struct 
+ 	int ret;
+ 
+ 	for (ptr = 0; ptr < pdev->num_resources; ptr++) {
+-		printk("%s[%d] flags %08lx: %08llx..%08llx\n",
++		printk(KERN_DEBUG "%s[%d] flags %08lx: %08llx..%08llx\n",
+ 		       pdev->name, ptr,
+ 		       pdev->resource[ptr].flags,
+ 		       (unsigned long long)pdev->resource[ptr].start,
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=11258
-> 
->            Summary: fbcon cursor disappered after switch to 512 consolefont
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.26.1
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Console/Framebuffers
->         AssignedTo: jsimmons@infradead.org
->         ReportedBy: hanzelpeter@gmail.com
-> 
-> 
-> Latest working kernel version: 2.6.25.8
-> Earliest failing kernel version: 2.6.26
-> Distribution: LFS 6.3
-> Hardware Environment: VMWare 5.5
-> Software Environment: LFS, framebuffer console
-> Problem Description: When I use setfont to change font to 512 chars font, than
-> blinking cursor disappers.
-> 
-> Steps to reproduce: 
-> 1) setfont LatArCyrHeb-16.psfu.gz
-> 2) press enter (sometimes twice or more)
-> 3) blinking cursor disappers
-> 4) start typing (no cursor)
-> 5) press "backspace" => cursor is back
-> 
-
-A regression.
+-- 
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

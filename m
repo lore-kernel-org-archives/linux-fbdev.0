@@ -1,9 +1,9 @@
 From: $mailname@fluff.org
 Subject: [patch 1/1] SM501: Update debugging/low
 	information messages
-Date: Wed, 06 Aug 2008 15:47:17 +0100
-Message-ID: <20080806144716.638227184@fluff.org>
-References: <20080806144716.533792387@fluff.org>
+Date: Wed, 06 Aug 2008 15:47:29 +0100
+Message-ID: <20080806144728.620509911@fluff.org>
+References: <20080806144728.525306982@fluff.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,14 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQkIU-0001ZZ-2S for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 07:47:30 -0700
+	id 1KQkIb-0001Zy-Pn for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 06 Aug 2008 07:47:37 -0700
 Received: from hull.simtec.co.uk ([78.105.113.97]
 	helo=ivanova.local.simtec.co.uk)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KQkIT-0005x7-M6
+	(Exim 4.44) id 1KQkIb-00060W-EJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 06 Aug 2008 07:47:30 -0700
+	Wed, 06 Aug 2008 07:47:37 -0700
 Content-Disposition: inline;
 	filename=simtec/simtec-drivers-mfd-sm501-output-update.patch
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -31,7 +31,7 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@linux-foundatio.org, linux-fbdev-devel@lists.sourceforge.net
+To: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
 Cc: Ben Dooks <ben-linux@fluff.org>
 
 Make the default output of the SM501 driver to be less noisy wrt to

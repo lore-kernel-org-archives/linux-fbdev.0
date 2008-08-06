@@ -1,22 +1,22 @@
-From: Kevin Hickey <khickey@rmicorp.com>
-Subject: Re: [PATCH] au1200fb: fixup PM support.
-Date: Tue, 05 Aug 2008 11:02:17 -0500
-Message-ID: <1217952137.23188.2.camel__38034.6660888337$1218049188$gmane$org@kh-ubuntu.razamicroelectronics.com>
-References: <20080805124221.GA27469@roarinelk.homelinux.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: How to test virtual resolution
+Date: Wed, 6 Aug 2008 21:17:50 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0808062116260.17614@anakin>
+References: <FE151544B54DB0428FFA9AE99C27A12102183DD0@az33exm22.fsl.freescale.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQOzE-0004SL-Qv for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Aug 2008 09:02:12 -0700
-Received: from mx1.razamicroelectronics.com ([63.111.213.197]
-	helo=hq-ex-mb01.razamicroelectronics.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KQOzC-0004JA-Ed
+	id 1KQoWA-0001I2-2X for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 06 Aug 2008 12:17:54 -0700
+Received: from winston.telenet-ops.be ([195.130.137.75])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KQoW8-0002xG-M7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 05 Aug 2008 09:02:12 -0700
-In-Reply-To: <20080805124221.GA27469@roarinelk.homelinux.net>
+	Wed, 06 Aug 2008 12:17:54 -0700
+In-Reply-To: <FE151544B54DB0428FFA9AE99C27A12102183DD0@az33exm22.fsl.freescale.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,30 +27,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: L-M-O <linux-mips@linux-mips.org>, linux-fbdev-devel@lists.sf.net
+To: sun york <yorksun@freescale.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-T24gVHVlLCAyMDA4LTA4LTA1IGF0IDE0OjQyICswMjAwLCBNYW51ZWwgTGF1c3Mgd3JvdGU6Cj4g
-UmVtb3ZlIGxhc3QgdHJhY2VzIG9mIHRoZSBjdXN0b20gQWxjaGVteSBsaW51eC0yLjQgUE0gY29k
-ZSwgaW1wbGVtZW50Cj4gc3VzcGVuZC9yZXN1bWUgY2FsbGJhY2tzLgo+IAo+IFNpZ25lZC1vZmYt
-Ynk6IE1hbnVlbCBMYXVzcyA8bWFub0Byb2FyaW5lbGsuaG9tZWxpbnV4Lm5ldD4KPiAtLS0KPiAg
-ZHJpdmVycy92aWRlby9hdTEyMDBmYi5jIHwgIDE2NCArKysrKysrKysrKystLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gIDEgZmlsZXMgY2hhbmdlZCwgNDEgaW5zZXJ0aW9ucygr
-KSwgMTIzIGRlbGV0aW9ucygtKQo+IApUaGlzIGxvb2tzIGdvb2QuICBJdCBhcHBsaWVkIHRvIG15
-IHRyZWUgYW5kIGFwcGVhcnMgZnVuY3Rpb25hbCBvbiBteQpib2FyZC4gIE9uZSBxdWVzdGlvbjog
-d2hhdCBhYm91dCBkeW5hbWljIGJyaWdodG5lc3M/ICBJdCB3YXMgcGFydCBvZiB0aGUKb2xkIFBN
-IGludGVyZmFjZSBhbmQgeW91IHNlZW0gdG8gaGF2ZSByZW1vdmVkIGl0LiAgQW55IGlkZWFzIGFi
-b3V0CnJlLWludGVncmF0aW5nIHRoYXQgaW50byB0aGUgY3VycmVudCBQTSBtb2RlbD8KCkFja2Vk
-LWJ5OiBLZXZpbiBIaWNrZXkgPGtoaWNrZXlAcm1pY29ycC5jb20+CgotLSAKS2V2aW4gSGlja2V5
-Cu+7v0FsY2hlbXkgU29sdXRpb25zClJNSSBDb3Jwb3JhdGlvbgpraGlja2V5QFJNSUNvcnAuY29t
-ClA6IDUxMi42OTEuODA0NAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFpbCBpcyBz
-cG9uc29yZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1
-aWxkIHRoZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxpbiBTREsg
-JiB3aW4gZ3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRvIGFuIE9w
-ZW4gU291cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGluLWNvbnRl
-c3Qub3JnL3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcg
-bGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0
-cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+On Wed, 6 Aug 2008, sun york wrote:
+> I was asked to add the support for virtual resolution for fsl_diu_fb. I
+> don't know how to test it without X. It seems that fbcon can use the
+> virtual resolution and pan around. Can someone shed some light on this?
+
+You can try fbtest (CVS module FBdev/utlilities/fbtest on
+http://sourceforge.net/projects/linux-fbdev).
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

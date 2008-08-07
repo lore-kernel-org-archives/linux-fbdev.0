@@ -1,30 +1,25 @@
-From: Stanislaw Gruszka <stf_xl@wp.pl>
-Subject: Re: [RFC] double buffering for atmel_lcdfb
-Date: Thu, 7 Aug 2008 09:25:54 +0200
-Message-ID: <200808070925.54552.stf_xl@wp.pl>
-References: <200808061136.16783.stf_xl@wp.pl>
-	<20080806141305.49e883a2@hskinnemo-gx745.norway.atmel.com>
-	<200808061553.03706.stf_xl@wp.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH]: radeonfb: Fix accel engine hangs
+Date: Thu, 07 Aug 2008 19:40:59 +1000
+Message-ID: <1218102059.24157.288.camel@pasglop>
+References: <200808070905.m7794xQ7009009@imap1.linux-foundation.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQzsq-0005eM-6y for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Aug 2008 00:26:04 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
+	id 1KR1zs-0003Gy-Rh for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 07 Aug 2008 02:41:29 -0700
+Received: from gate.crashing.org ([63.228.1.57]
+	ident=[U2FsdGVkX1983HM9eoJEvMUKOWJeRJo0e3ZxxR6wVuY=])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KQzsn-0007S9-7L
+	(Exim 4.44) id 1KR1zq-0002Sc-6R
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Aug 2008 00:26:04 -0700
-Received: from ebg226.internetdsl.tpnet.pl (HELO staszek-desktop.local)
-	(stf_xl@wp.pl@[83.14.136.226]) (envelope-sender <stf_xl@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with AES256-SHA encrypted SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>; 7 Aug 2008 09:25:55 +0200
-In-Reply-To: <200808061553.03706.stf_xl@wp.pl>
-Content-Disposition: inline
+	Thu, 07 Aug 2008 02:41:28 -0700
+In-Reply-To: <200808070905.m7794xQ7009009@imap1.linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,94 +30,129 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: akpm@linux-foundation.org
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, davem@davemloft.net, stable@kernel.org
 
-V2VkbmVzZGF5IDA2IEF1Z3VzdCAyMDA4IDE1OjUzOjAzIFN0YW5pc2xhdyBHcnVzemthIG5hcGlz
-YcWCKGEpOgo+IFdlZG5lc2RheSAwNiBBdWd1c3QgMjAwOCAxNDoxMzowNSBIYWF2YXJkIFNraW5u
-ZW1vZW4gbmFwaXNhxYIoYSk6Cj4gPiBTdGFuaXNsYXcgR3J1c3prYSA8c3RmX3hsQHdwLnBsPiB3
-cm90ZToKPiA+ID4gQmVsb3cgaXMgcGF0Y2ggSSBoYXZlIGFscmVhZHkgZG9uZS4gSSBhbHNvIGF0
-dGFjaGVkIHByb2dyYW0gd2hpY2ggSQo+ID4gPiB1c2VkIGZvciBmb3IgdGVzdHMgLSBhcyBmYXIg
-cmVzdWx0IGFyZSBxdWl0ZSBuaWNlLgo+ID4KPiA+IEkgc2VudCB0aGlzIHBhdGNoIGEgd2hpbGUg
-YWdvLCBidXQgSSBmb3Jnb3QgdG8gc2VuZCBOaWNvbGFzIGEgdGVzdAo+ID4gcHJvZ3JhbSB3aGVu
-IGhlIGFza2VkIGZvciBpdCA6LSgKPiA+Cj4gPiBDb3VsZCB5b3UgZ2l2ZSBpdCBhIHRyeT8gSWYg
-aXQgd29ya3MgZm9yIHlvdSwgSSB0aGluayB3ZSBjYW4gY29uY2x1ZGUKPiA+IHRoYXQgeS1wYW5u
-aW5nIGluZGVlZCB3b3JrcyBvbiBBVDkxIHNvIHRoZSBwYXRjaCBjYW4gYmUgYXBwbGllZC4KPgo+
-IFllcywgaXQgd29ya3Mgd2l0aCBteSBwcm9ncmFtIHdpdGggeXBhbnN0ZXAgPT0geXJlcyAoSSBk
-aWQgbm90IGNoZWNrIHdpdGgKPiB5cGFuc3RlcCA9PSAxIHlldCksClBhbm5pbmcgYnkgc3RlcCAx
-IHdvcmtzIHRvbyBvbiBteSBoYXJkd2FyZS4KCj4gPiBGcm9tIGMxZGMxNTVlM2MxYTgyOGZhYTQz
-NzlhMWY2ZjZkZTBiYjU4Mzg1Y2MgTW9uIFNlcCAxNyAwMDowMDowMCAyMDAxCj4gPiBGcm9tOiBI
-YWF2YXJkIFNraW5uZW1vZW4gPGhza2lubmVtb2VuQGF0bWVsLmNvbT4KPiA+IERhdGU6IFNhdCwg
-MjMgSnVuIDIwMDcgMTc6Mzg6MjYgKzAyMDAKPiA+IFN1YmplY3Q6IFtQQVRDSF0gYXRtZWxfbGNk
-ZmI6IFNldCB5cGFuc3RlcCB0byAxIGFuZCBlbmFibGUgeS1wYW5uaW5nIG9uCj4gPiBBVDkxCj4g
-Pgo+ID4gUGFubmluZyBpbiB0aGUgeS1kaXJlY3Rpb24gY2FuIGJlIGRvbmUgYnkgc2ltcGx5IGNo
-YW5naW5nIHRoZSBETUEgYmFzZQo+ID4gYWRkcmVzcy4gVGhpcyBjb2RlIGlzIGFscmVhZHkgaW4g
-cGxhY2UsIGJ1dCBGQklPUEFOX0RJU1BMQVkgd2lsbAo+ID4gY3VycmVudGx5IGZhaWwgYmVjYXVz
-ZSB5cGFuc3RlcCBpcyAwLgo+ID4KPiA+IFNldCB5cGFuc3RlcCB0byAxIHRvIGluZGljYXRlIHRo
-YXQgd2UgZG8gc3VwcG9ydCB5LXBhbm5pbmcgYW5kIGFsc28KPiA+IHNldCB0aGUgbmVjZXNzYXJ5
-IGFjY2VsZXJhdGlvbiBmbGFncyBvbiBBVDkxIChBVlIzMiBhbHJlYWR5IGhhdmUKPiA+IHRoZW0u
-KQo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IEhhYXZhcmQgU2tpbm5lbW9lbiA8aHNraW5uZW1vZW5A
-YXRtZWwuY29tPgo+ID4gLS0tCj4gPiAgZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jIHwgICAg
-NiArKysrLS0KPiA+ICAxIGZpbGVzIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlv
-bnMoLSkKPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jIGIv
-ZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gPiBpbmRleCBiMDA0MDM2Li5jMGEwMzY0IDEw
-MDY0NAo+ID4gLS0tIGEvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gPiArKysgYi9kcml2
-ZXJzL3ZpZGVvL2F0bWVsX2xjZGZiLmMKPiA+IEBAIC0zOSw3ICszOSw5IEBACj4gPiAgI2VuZGlm
-Cj4gPgo+ID4gICNpZiBkZWZpbmVkKENPTkZJR19BUkNIX0FUOTEpCj4gPiAtI2RlZmluZQlBVE1F
-TF9MQ0RGQl9GQklORk9fREVGQVVMVAlGQklORk9fREVGQVVMVAo+ID4gKyNkZWZpbmUJQVRNRUxf
-TENERkJfRkJJTkZPX0RFRkFVTFQJKEZCSU5GT19ERUZBVUxUIFwKPiA+ICsJCQkJCSB8IEZCSU5G
-T19QQVJUSUFMX1BBTl9PSyBcCj4gPiArCQkJCQkgfCBGQklORk9fSFdBQ0NFTF9ZUEFOKQo+ID4K
-PiA+ICBzdGF0aWMgaW5saW5lIHZvaWQgYXRtZWxfbGNkZmJfdXBkYXRlX2RtYTJkKHN0cnVjdCBh
-dG1lbF9sY2RmYl9pbmZvCj4gPiAqc2luZm8sIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFy
-KQo+ID4gQEAgLTE3Nyw3ICsxNzksNyBAQCBzdGF0aWMgc3RydWN0IGZiX2ZpeF9zY3JlZW5pbmZv
-IGF0bWVsX2xjZGZiX2ZpeAo+ID4gX19pbml0ZGF0YSA9IHsgLnR5cGUJCT0gRkJfVFlQRV9QQUNL
-RURfUElYRUxTLAo+ID4gIAkudmlzdWFsCQk9IEZCX1ZJU1VBTF9UUlVFQ09MT1IsCj4gPiAgCS54
-cGFuc3RlcAk9IDAsCj4gPiAtCS55cGFuc3RlcAk9IDAsCj4gPiArCS55cGFuc3RlcAk9IDEsCj4g
-PiAgCS55d3JhcHN0ZXAJPSAwLAo+ID4gIAkuYWNjZWwJCT0gRkJfQUNDRUxfTk9ORSwKPiA+ICB9
-Owo+Cj4gSSB0aGluayBzb21lIHZpZGVvIG1lbW9yeSBhbGxvY2F0aW9uIGNvbnRyb2wgaXMgYWxz
-byBuZWVkZWQgZm9yIHVzZXJzIHdoaWNoCj4gd2FudCB0byBoYXZlIGZyYW1lIGJ1ZmZlciBpbiBt
-YWluIG1lbW9yeSAodGhpcyBpcyBhIG11c3Qgd2l0aCBiaWdnZXIgTENEcykKPiBDdXJyZW50bHkg
-SSBqdXN0IGluY3JlYXNlIHNtZW1fbGVuIGp1c3QgYmVmb3JlIGRtYV9hbGxvY193cml0ZWNvbWJp
-bmUoKSBpcwo+IGNhbGxlZC4KPgo+IEBAIC0yNDEsNyArMjQzLDcgQEAgc3RhdGljIGludCBhdG1l
-bF9sY2RmYl9hbGxvY192aWRlb19tZW1vcnkoc3RydWN0Cj4gYXRtZWxfbGNkZmJfaW5mbyAqc2lu
-Zm8pIHN0cnVjdCBmYl9pbmZvICppbmZvID0gc2luZm8tPmluZm87Cj4gICAgICAgICBzdHJ1Y3Qg
-ZmJfdmFyX3NjcmVlbmluZm8gKnZhciA9ICZpbmZvLT52YXI7Cj4KPiAtICAgICAgIGluZm8tPmZp
-eC5zbWVtX2xlbiA9ICh2YXItPnhyZXNfdmlydHVhbCAqIHZhci0+eXJlc192aXJ0dWFsCj4gKyAg
-ICAgICBpbmZvLT5maXguc21lbV9sZW4gPSAodmFyLT54cmVzX3ZpcnR1YWwgKiB2YXItPnlyZXNf
-dmlydHVhbCAqIDIKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKiAoKHZhci0+Yml0c19w
-ZXJfcGl4ZWwgKyA3KSAvIDgpKTsKPgo+ICAgICAgICAgaW5mby0+c2NyZWVuX2Jhc2UgPSBkbWFf
-YWxsb2Nfd3JpdGVjb21iaW5lKGluZm8tPmRldmljZSwKPgo+IE9rIEkga25vdyB0aGF0IEkgY291
-bGQganVzdCBhZGQgbWVtb3J5IHJlc291cmNlIHRvIGF0OTFfbGNkY19kZXZpY2UsIGJ1dAo+IG1h
-aW4gUkFNIG1lbW9yeSBpcyBtYW5hZ2VkIGJ5IGxpbnV4IGFuZCBuZWVkIHRvIGJlIHNvbWVob3cg
-YWxsb2NhdGVkLgo+IFNvIG1heWJlIHdvcnRoIHRvIGFkZCBzbWVtX2xlbiBoaW50IGluIGF0OTFf
-bGNkY19kZXZpY2UgbGlrZSB0aGlzOgo+Cj4gLS0tIGEvZHJpdmVycy92aWRlby9hdG1lbF9sY2Rm
-Yi5jCj4gKysrIGIvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gQEAgLTI0MCw5ICsyNDIs
-MTEgQEAgc3RhdGljIGludCBhdG1lbF9sY2RmYl9hbGxvY192aWRlb19tZW1vcnkoc3RydWN0Cj4g
-YXRtZWxfbGNkZmJfaW5mbyAqc2luZm8pIHsKPiAgICAgICAgIHN0cnVjdCBmYl9pbmZvICppbmZv
-ID0gc2luZm8tPmluZm87Cj4gICAgICAgICBzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciA9
-ICZpbmZvLT52YXI7Cj4gLQo+IC0gICAgICAgaW5mby0+Zml4LnNtZW1fbGVuID0gKHZhci0+eHJl
-c192aXJ0dWFsICogdmFyLT55cmVzX3ZpcnR1YWwKPiArICAgICAgIHVuc2lnbmVkIGludCBzbWVt
-X2xlbjsKPiArCj4gKyAgICAgICBzbWVtX2xlbiA9ICh2YXItPnhyZXNfdmlydHVhbCAqIHZhci0+
-eXJlc192aXJ0dWFsCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICogKCh2YXItPmJpdHNf
-cGVyX3BpeGVsICsgNykgLyA4KSk7Cj4gKyAgICAgICBpbmZvLT5maXguc21lbV9sZW4gPSBtYXgo
-c21lbV9sZW4sIHNpbmZvLT5zbWVtX2xlbik7Cj4KPiAgICAgICAgIGluZm8tPnNjcmVlbl9iYXNl
-ID0gZG1hX2FsbG9jX3dyaXRlY29tYmluZShpbmZvLT5kZXZpY2UsCj4gaW5mby0+Zml4LnNtZW1f
-bGVuLCAoZG1hX2FkZHJfdCAqKSZpbmZvLT5maXguc21lbV9zdGFydCwgR0ZQX0tFUk5FTCk7IGRp
-ZmYKPiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vYXRtZWxfbGNkYy5oIGIvaW5jbHVkZS92aWRlby9h
-dG1lbF9sY2RjLmggaW5kZXgKPiBlZDY0ODYyLi43ZjNmZjc5IDEwMDY0NAo+IC0tLSBhL2luY2x1
-ZGUvdmlkZW8vYXRtZWxfbGNkYy5oCj4gKysrIGIvaW5jbHVkZS92aWRlby9hdG1lbF9sY2RjLmgK
-PiBAQCAtMzcsNiArMzcsNyBAQCBzdHJ1Y3QgYXRtZWxfbGNkZmJfaW5mbyB7Cj4gICAgICAgICBz
-dHJ1Y3QgZmJfaW5mbyAgICAgICAgICAqaW5mbzsKPiAgICAgICAgIHZvaWQgX19pb21lbSAgICAg
-ICAgICAgICptbWlvOwo+ICAgICAgICAgdW5zaWduZWQgbG9uZyAgICAgICAgICAgaXJxX2Jhc2U7
-Cj4gKyAgICAgICB1bnNpZ25lZCBpbnQgICAgICAgICAgICBzbWVtX2xlbjsKPgo+ICAgICAgICAg
-dW5zaWduZWQgaW50ICAgICAgICAgICAgZ3VhcmRfdGltZTsKPiAgICAgICAgIHN0cnVjdCBwbGF0
-Zm9ybV9kZXZpY2UgICpwZGV2OwpBbnkgY29tbWVudHMgb24gdGhpcz8KCkNoZWVycwpTdGFuaXNs
-YXcgR3J1c3prYQoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFpbCBpcyBzcG9uc29y
-ZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1aWxkIHRo
-ZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxpbiBTREsgJiB3aW4g
-Z3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRvIGFuIE9wZW4gU291
-cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGluLWNvbnRlc3Qub3Jn
-L3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApM
-aW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3Vy
-Y2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+From: David Miller <davem@davemloft.net>
+
+Some chips appear to have the 2D engine hang during screen redraw,
+typically in a sequence of copyarea operations. This appear to be
+solved by adding a flush of the engine destination pixel cache
+and waiting for the engine to be idle before issuing the accel
+operation. The performance impact seems to be fairly small.
+
+Here is a trace on an RV370 (PCI device ID 0x5b64), it records the
+RBBM_STATUS register, then the source x/y, destination x/y, and
+width/height used for the copy:
+
+----------------------------------------
+radeonfb_prim_copyarea: STATUS[00000140] src[210:70] dst[210:60] wh[a0:10]
+radeonfb_prim_copyarea: STATUS[00000140] src[2b8:70] dst[2b8:60] wh[88:10]
+radeonfb_prim_copyarea: STATUS[00000140] src[348:70] dst[348:60] wh[40:10]
+radeonfb_prim_copyarea: STATUS[80020140] src[390:70] dst[390:60] wh[88:10]
+radeonfb_prim_copyarea: STATUS[8002613f] src[40:80] dst[40:70] wh[28:10]
+radeonfb_prim_copyarea: STATUS[80026139] src[a8:80] dst[a8:70] wh[38:10]
+radeonfb_prim_copyarea: STATUS[80026133] src[e8:80] dst[e8:70] wh[80:10]
+radeonfb_prim_copyarea: STATUS[8002612d] src[170:80] dst[170:70] wh[30:10]
+radeonfb_prim_copyarea: STATUS[80026127] src[1a8:80] dst[1a8:70] wh[8:10]
+radeonfb_prim_copyarea: STATUS[80026121] src[1b8:80] dst[1b8:70] wh[88:10]
+radeonfb_prim_copyarea: STATUS[8002611b] src[248:80] dst[248:70] wh[68:10]
+----------------------------------------
+
+When things are going fine the copies complete before the next ROP is
+even issued, but all of a sudden the 2D unit becomes active (bit 17 in
+RBBM_STATUS) and the FIFO retry (bit 13) and FIFO pipeline busy (bit
+14) are set as well.  The FIFO begins to backup until it becomes full.
+
+What happens next is the radeon_fifo_wait() times out, and we access
+the chip illegally leading to a bus error which usually wedges the
+box.  None of this makes it to the console screen, of course :-)
+radeon_fifo_wait() should be modified to reset the accelerator when
+this timeout happens instead of programming the chip anyways.
+
+----------------------------------------
+radeonfb: FIFO Timeout !
+ERROR(0): Cheetah error trap taken afsr[0010080005000000] afar[000007f900800e40] TL1(0)
+ERROR(0): TPC[595114] TNPC[595118] O7[459788] TSTATE[11009601]
+ERROR(0): TPC<radeonfb_copyarea+0xfc/0x248>
+ERROR(0): M_SYND(0),  E_SYND(0), Privileged
+ERROR(0): Highest priority error (0000080000000000) "Bus error response from system bus"
+ERROR(0): D-cache idx[0] tag[0000000000000000] utag[0000000000000000] stag[0000000000000000]
+ERROR(0): D-cache data0[0000000000000000] data1[0000000000000000] data2[0000000000000000] data3[0000000000000000]
+ERROR(0): I-cache idx[0] tag[0000000000000000] utag[0000000000000000] stag[0000000000000000] u[0000000000000000] l[00\
+
+ERROR(0): I-cache INSN0[0000000000000000] INSN1[0000000000000000] INSN2[0000000000000000] INSN3[0000000000000000]
+ERROR(0): I-cache INSN4[0000000000000000] INSN5[0000000000000000] INSN6[0000000000000000] INSN7[0000000000000000]
+ERROR(0): E-cache idx[800e40] tag[000000000e049f4c]
+ERROR(0): E-cache data0[fffff8127d300180] data1[00000000004b5384] data2[0000000000000000] data3[0000000000000000]
+Ker:xnel panic - not syncing: Irrecoverable deferred error trap.
+----------------------------------------
+
+Another quirk is that these copyarea calls will not happen until the
+first drivers/char/vt.c:redraw_screen() occurs.  This will only happen
+if you 1) VC switch or 2) run "consolechars" or 3) unblank the screen.
+
+This seems to happen because until a redraw_screen() the screen scrolling
+method used by fbcon is not finalized yet.  I've seen this with other fb
+drivers too.
+
+So if all you do is boot straight into X you will never see this bug on
+the relevant chips.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+This replaces my previous ones. Just a minor change from David original
+one and suitable for both upstream and stable. I'll sort out the other
+stuff separately. Sorry for the confusion.
+
+Index: linux-work/drivers/video/aty/radeon_accel.c
+===================================================================
+--- linux-work.orig/drivers/video/aty/radeon_accel.c	2008-08-07 19:11:24.000000000 +1000
++++ linux-work/drivers/video/aty/radeon_accel.c	2008-08-07 19:28:33.000000000 +1000
+@@ -55,6 +55,10 @@ static void radeonfb_prim_fillrect(struc
+ 	OUTREG(DP_WRITE_MSK, 0xffffffff);
+ 	OUTREG(DP_CNTL, (DST_X_LEFT_TO_RIGHT | DST_Y_TOP_TO_BOTTOM));
+ 
++	radeon_fifo_wait(2);
++	OUTREG(DSTCACHE_CTLSTAT, RB2D_DC_FLUSH_ALL);
++	OUTREG(WAIT_UNTIL, (WAIT_2D_IDLECLEAN | WAIT_DMA_GUI_IDLE));
++
+ 	radeon_fifo_wait(2);  
+ 	OUTREG(DST_Y_X, (region->dy << 16) | region->dx);
+ 	OUTREG(DST_WIDTH_HEIGHT, (region->width << 16) | region->height);
+@@ -116,6 +120,10 @@ static void radeonfb_prim_copyarea(struc
+ 	OUTREG(DP_CNTL, (xdir>=0 ? DST_X_LEFT_TO_RIGHT : 0)
+ 			| (ydir>=0 ? DST_Y_TOP_TO_BOTTOM : 0));
+ 
++	radeon_fifo_wait(2);
++	OUTREG(DSTCACHE_CTLSTAT, RB2D_DC_FLUSH_ALL);
++	OUTREG(WAIT_UNTIL, (WAIT_2D_IDLECLEAN | WAIT_DMA_GUI_IDLE));
++
+ 	radeon_fifo_wait(3);
+ 	OUTREG(SRC_Y_X, (sy << 16) | sx);
+ 	OUTREG(DST_Y_X, (dy << 16) | dx);
+Index: linux-work/include/video/radeon.h
+===================================================================
+--- linux-work.orig/include/video/radeon.h	2008-08-07 19:11:24.000000000 +1000
++++ linux-work/include/video/radeon.h	2008-08-07 19:12:44.000000000 +1000
+@@ -742,6 +742,10 @@
+ #define SOFT_RESET_RB           		   (1 <<  6)
+ #define SOFT_RESET_HDP          		   (1 <<  7)
+ 
++/* WAIT_UNTIL bit constants */
++#define WAIT_DMA_GUI_IDLE			   (1 << 9)
++#define WAIT_2D_IDLECLEAN			   (1 << 16)
++
+ /* SURFACE_CNTL bit consants */
+ #define SURF_TRANSLATION_DIS			   (1 << 8)
+ #define NONSURF_AP0_SWP_16BPP			   (1 << 20)
+
+
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

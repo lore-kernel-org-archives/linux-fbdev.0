@@ -1,28 +1,30 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: How to test virtual resolution
-Date: Thu, 7 Aug 2008 09:02:41 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808070901480.17614@anakin>
-References: <FE151544B54DB0428FFA9AE99C27A12102183DD0@az33exm22.fsl.freescale.net>
-	<Pine.LNX.4.64.0808062116260.17614@anakin>
-	<1218052776.25178.5.camel@oslab.mtwk.freescale.net>
-	<Pine.LNX.4.64.0808062205040.17614@anakin>
-	<1218055896.25178.7.camel@oslab.mtwk.freescale.net>
-	<Pine.LNX.4.64.0808062257420.17614@anakin>
-	<1218056758.25178.10.camel@oslab.mtwk.freescale.net>
+From: Stanislaw Gruszka <stf_xl@wp.pl>
+Subject: Re: [RFC] double buffering for atmel_lcdfb
+Date: Thu, 7 Aug 2008 09:25:54 +0200
+Message-ID: <200808070925.54552.stf_xl@wp.pl>
+References: <200808061136.16783.stf_xl@wp.pl>
+	<20080806141305.49e883a2@hskinnemo-gx745.norway.atmel.com>
+	<200808061553.03706.stf_xl@wp.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KQzWI-0003Ed-TG for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Aug 2008 00:02:46 -0700
-Received: from nelson.telenet-ops.be ([195.130.133.66])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KQzWH-0001Iq-FG
+	id 1KQzsq-0005eM-6y for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 07 Aug 2008 00:26:04 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KQzsn-0007S9-7L
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 07 Aug 2008 00:02:46 -0700
-In-Reply-To: <1218056758.25178.10.camel@oslab.mtwk.freescale.net>
+	Thu, 07 Aug 2008 00:26:04 -0700
+Received: from ebg226.internetdsl.tpnet.pl (HELO staszek-desktop.local)
+	(stf_xl@wp.pl@[83.14.136.226]) (envelope-sender <stf_xl@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with AES256-SHA encrypted SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>; 7 Aug 2008 09:25:55 +0200
+In-Reply-To: <200808061553.03706.stf_xl@wp.pl>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,40 +35,94 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: York Sun <yorksun@freescale.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 6 Aug 2008, York Sun wrote:
-> On Wed, 2008-08-06 at 22:59 +0200, Geert Uytterhoeven wrote:
-> > On Wed, 6 Aug 2008, York Sun wrote:
-> > > I actually use fbset -g to set the resolutions. Does fbset have anything
-> > 
-> > So the third and fourth value for -g are the virtual resolution.
-> > 
-> > > to do with panning?
-> > 
-> > Not directly; it allows to set the virtual screen size, so the frame
-> > buffer console (or an application like fbtest) can make use of it.
-> 
-> Thanks, Geert. That's exact what I am asking -- what application can I
-> use and how?
-
-X? Just you specify a virtual screen in xorg.conf (see `Virtual' in
-xorg.conf(5)).
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+V2VkbmVzZGF5IDA2IEF1Z3VzdCAyMDA4IDE1OjUzOjAzIFN0YW5pc2xhdyBHcnVzemthIG5hcGlz
+YcWCKGEpOgo+IFdlZG5lc2RheSAwNiBBdWd1c3QgMjAwOCAxNDoxMzowNSBIYWF2YXJkIFNraW5u
+ZW1vZW4gbmFwaXNhxYIoYSk6Cj4gPiBTdGFuaXNsYXcgR3J1c3prYSA8c3RmX3hsQHdwLnBsPiB3
+cm90ZToKPiA+ID4gQmVsb3cgaXMgcGF0Y2ggSSBoYXZlIGFscmVhZHkgZG9uZS4gSSBhbHNvIGF0
+dGFjaGVkIHByb2dyYW0gd2hpY2ggSQo+ID4gPiB1c2VkIGZvciBmb3IgdGVzdHMgLSBhcyBmYXIg
+cmVzdWx0IGFyZSBxdWl0ZSBuaWNlLgo+ID4KPiA+IEkgc2VudCB0aGlzIHBhdGNoIGEgd2hpbGUg
+YWdvLCBidXQgSSBmb3Jnb3QgdG8gc2VuZCBOaWNvbGFzIGEgdGVzdAo+ID4gcHJvZ3JhbSB3aGVu
+IGhlIGFza2VkIGZvciBpdCA6LSgKPiA+Cj4gPiBDb3VsZCB5b3UgZ2l2ZSBpdCBhIHRyeT8gSWYg
+aXQgd29ya3MgZm9yIHlvdSwgSSB0aGluayB3ZSBjYW4gY29uY2x1ZGUKPiA+IHRoYXQgeS1wYW5u
+aW5nIGluZGVlZCB3b3JrcyBvbiBBVDkxIHNvIHRoZSBwYXRjaCBjYW4gYmUgYXBwbGllZC4KPgo+
+IFllcywgaXQgd29ya3Mgd2l0aCBteSBwcm9ncmFtIHdpdGggeXBhbnN0ZXAgPT0geXJlcyAoSSBk
+aWQgbm90IGNoZWNrIHdpdGgKPiB5cGFuc3RlcCA9PSAxIHlldCksClBhbm5pbmcgYnkgc3RlcCAx
+IHdvcmtzIHRvbyBvbiBteSBoYXJkd2FyZS4KCj4gPiBGcm9tIGMxZGMxNTVlM2MxYTgyOGZhYTQz
+NzlhMWY2ZjZkZTBiYjU4Mzg1Y2MgTW9uIFNlcCAxNyAwMDowMDowMCAyMDAxCj4gPiBGcm9tOiBI
+YWF2YXJkIFNraW5uZW1vZW4gPGhza2lubmVtb2VuQGF0bWVsLmNvbT4KPiA+IERhdGU6IFNhdCwg
+MjMgSnVuIDIwMDcgMTc6Mzg6MjYgKzAyMDAKPiA+IFN1YmplY3Q6IFtQQVRDSF0gYXRtZWxfbGNk
+ZmI6IFNldCB5cGFuc3RlcCB0byAxIGFuZCBlbmFibGUgeS1wYW5uaW5nIG9uCj4gPiBBVDkxCj4g
+Pgo+ID4gUGFubmluZyBpbiB0aGUgeS1kaXJlY3Rpb24gY2FuIGJlIGRvbmUgYnkgc2ltcGx5IGNo
+YW5naW5nIHRoZSBETUEgYmFzZQo+ID4gYWRkcmVzcy4gVGhpcyBjb2RlIGlzIGFscmVhZHkgaW4g
+cGxhY2UsIGJ1dCBGQklPUEFOX0RJU1BMQVkgd2lsbAo+ID4gY3VycmVudGx5IGZhaWwgYmVjYXVz
+ZSB5cGFuc3RlcCBpcyAwLgo+ID4KPiA+IFNldCB5cGFuc3RlcCB0byAxIHRvIGluZGljYXRlIHRo
+YXQgd2UgZG8gc3VwcG9ydCB5LXBhbm5pbmcgYW5kIGFsc28KPiA+IHNldCB0aGUgbmVjZXNzYXJ5
+IGFjY2VsZXJhdGlvbiBmbGFncyBvbiBBVDkxIChBVlIzMiBhbHJlYWR5IGhhdmUKPiA+IHRoZW0u
+KQo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IEhhYXZhcmQgU2tpbm5lbW9lbiA8aHNraW5uZW1vZW5A
+YXRtZWwuY29tPgo+ID4gLS0tCj4gPiAgZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jIHwgICAg
+NiArKysrLS0KPiA+ICAxIGZpbGVzIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlv
+bnMoLSkKPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jIGIv
+ZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gPiBpbmRleCBiMDA0MDM2Li5jMGEwMzY0IDEw
+MDY0NAo+ID4gLS0tIGEvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gPiArKysgYi9kcml2
+ZXJzL3ZpZGVvL2F0bWVsX2xjZGZiLmMKPiA+IEBAIC0zOSw3ICszOSw5IEBACj4gPiAgI2VuZGlm
+Cj4gPgo+ID4gICNpZiBkZWZpbmVkKENPTkZJR19BUkNIX0FUOTEpCj4gPiAtI2RlZmluZQlBVE1F
+TF9MQ0RGQl9GQklORk9fREVGQVVMVAlGQklORk9fREVGQVVMVAo+ID4gKyNkZWZpbmUJQVRNRUxf
+TENERkJfRkJJTkZPX0RFRkFVTFQJKEZCSU5GT19ERUZBVUxUIFwKPiA+ICsJCQkJCSB8IEZCSU5G
+T19QQVJUSUFMX1BBTl9PSyBcCj4gPiArCQkJCQkgfCBGQklORk9fSFdBQ0NFTF9ZUEFOKQo+ID4K
+PiA+ICBzdGF0aWMgaW5saW5lIHZvaWQgYXRtZWxfbGNkZmJfdXBkYXRlX2RtYTJkKHN0cnVjdCBh
+dG1lbF9sY2RmYl9pbmZvCj4gPiAqc2luZm8sIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFy
+KQo+ID4gQEAgLTE3Nyw3ICsxNzksNyBAQCBzdGF0aWMgc3RydWN0IGZiX2ZpeF9zY3JlZW5pbmZv
+IGF0bWVsX2xjZGZiX2ZpeAo+ID4gX19pbml0ZGF0YSA9IHsgLnR5cGUJCT0gRkJfVFlQRV9QQUNL
+RURfUElYRUxTLAo+ID4gIAkudmlzdWFsCQk9IEZCX1ZJU1VBTF9UUlVFQ09MT1IsCj4gPiAgCS54
+cGFuc3RlcAk9IDAsCj4gPiAtCS55cGFuc3RlcAk9IDAsCj4gPiArCS55cGFuc3RlcAk9IDEsCj4g
+PiAgCS55d3JhcHN0ZXAJPSAwLAo+ID4gIAkuYWNjZWwJCT0gRkJfQUNDRUxfTk9ORSwKPiA+ICB9
+Owo+Cj4gSSB0aGluayBzb21lIHZpZGVvIG1lbW9yeSBhbGxvY2F0aW9uIGNvbnRyb2wgaXMgYWxz
+byBuZWVkZWQgZm9yIHVzZXJzIHdoaWNoCj4gd2FudCB0byBoYXZlIGZyYW1lIGJ1ZmZlciBpbiBt
+YWluIG1lbW9yeSAodGhpcyBpcyBhIG11c3Qgd2l0aCBiaWdnZXIgTENEcykKPiBDdXJyZW50bHkg
+SSBqdXN0IGluY3JlYXNlIHNtZW1fbGVuIGp1c3QgYmVmb3JlIGRtYV9hbGxvY193cml0ZWNvbWJp
+bmUoKSBpcwo+IGNhbGxlZC4KPgo+IEBAIC0yNDEsNyArMjQzLDcgQEAgc3RhdGljIGludCBhdG1l
+bF9sY2RmYl9hbGxvY192aWRlb19tZW1vcnkoc3RydWN0Cj4gYXRtZWxfbGNkZmJfaW5mbyAqc2lu
+Zm8pIHN0cnVjdCBmYl9pbmZvICppbmZvID0gc2luZm8tPmluZm87Cj4gICAgICAgICBzdHJ1Y3Qg
+ZmJfdmFyX3NjcmVlbmluZm8gKnZhciA9ICZpbmZvLT52YXI7Cj4KPiAtICAgICAgIGluZm8tPmZp
+eC5zbWVtX2xlbiA9ICh2YXItPnhyZXNfdmlydHVhbCAqIHZhci0+eXJlc192aXJ0dWFsCj4gKyAg
+ICAgICBpbmZvLT5maXguc21lbV9sZW4gPSAodmFyLT54cmVzX3ZpcnR1YWwgKiB2YXItPnlyZXNf
+dmlydHVhbCAqIDIKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKiAoKHZhci0+Yml0c19w
+ZXJfcGl4ZWwgKyA3KSAvIDgpKTsKPgo+ICAgICAgICAgaW5mby0+c2NyZWVuX2Jhc2UgPSBkbWFf
+YWxsb2Nfd3JpdGVjb21iaW5lKGluZm8tPmRldmljZSwKPgo+IE9rIEkga25vdyB0aGF0IEkgY291
+bGQganVzdCBhZGQgbWVtb3J5IHJlc291cmNlIHRvIGF0OTFfbGNkY19kZXZpY2UsIGJ1dAo+IG1h
+aW4gUkFNIG1lbW9yeSBpcyBtYW5hZ2VkIGJ5IGxpbnV4IGFuZCBuZWVkIHRvIGJlIHNvbWVob3cg
+YWxsb2NhdGVkLgo+IFNvIG1heWJlIHdvcnRoIHRvIGFkZCBzbWVtX2xlbiBoaW50IGluIGF0OTFf
+bGNkY19kZXZpY2UgbGlrZSB0aGlzOgo+Cj4gLS0tIGEvZHJpdmVycy92aWRlby9hdG1lbF9sY2Rm
+Yi5jCj4gKysrIGIvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gQEAgLTI0MCw5ICsyNDIs
+MTEgQEAgc3RhdGljIGludCBhdG1lbF9sY2RmYl9hbGxvY192aWRlb19tZW1vcnkoc3RydWN0Cj4g
+YXRtZWxfbGNkZmJfaW5mbyAqc2luZm8pIHsKPiAgICAgICAgIHN0cnVjdCBmYl9pbmZvICppbmZv
+ID0gc2luZm8tPmluZm87Cj4gICAgICAgICBzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciA9
+ICZpbmZvLT52YXI7Cj4gLQo+IC0gICAgICAgaW5mby0+Zml4LnNtZW1fbGVuID0gKHZhci0+eHJl
+c192aXJ0dWFsICogdmFyLT55cmVzX3ZpcnR1YWwKPiArICAgICAgIHVuc2lnbmVkIGludCBzbWVt
+X2xlbjsKPiArCj4gKyAgICAgICBzbWVtX2xlbiA9ICh2YXItPnhyZXNfdmlydHVhbCAqIHZhci0+
+eXJlc192aXJ0dWFsCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICogKCh2YXItPmJpdHNf
+cGVyX3BpeGVsICsgNykgLyA4KSk7Cj4gKyAgICAgICBpbmZvLT5maXguc21lbV9sZW4gPSBtYXgo
+c21lbV9sZW4sIHNpbmZvLT5zbWVtX2xlbik7Cj4KPiAgICAgICAgIGluZm8tPnNjcmVlbl9iYXNl
+ID0gZG1hX2FsbG9jX3dyaXRlY29tYmluZShpbmZvLT5kZXZpY2UsCj4gaW5mby0+Zml4LnNtZW1f
+bGVuLCAoZG1hX2FkZHJfdCAqKSZpbmZvLT5maXguc21lbV9zdGFydCwgR0ZQX0tFUk5FTCk7IGRp
+ZmYKPiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vYXRtZWxfbGNkYy5oIGIvaW5jbHVkZS92aWRlby9h
+dG1lbF9sY2RjLmggaW5kZXgKPiBlZDY0ODYyLi43ZjNmZjc5IDEwMDY0NAo+IC0tLSBhL2luY2x1
+ZGUvdmlkZW8vYXRtZWxfbGNkYy5oCj4gKysrIGIvaW5jbHVkZS92aWRlby9hdG1lbF9sY2RjLmgK
+PiBAQCAtMzcsNiArMzcsNyBAQCBzdHJ1Y3QgYXRtZWxfbGNkZmJfaW5mbyB7Cj4gICAgICAgICBz
+dHJ1Y3QgZmJfaW5mbyAgICAgICAgICAqaW5mbzsKPiAgICAgICAgIHZvaWQgX19pb21lbSAgICAg
+ICAgICAgICptbWlvOwo+ICAgICAgICAgdW5zaWduZWQgbG9uZyAgICAgICAgICAgaXJxX2Jhc2U7
+Cj4gKyAgICAgICB1bnNpZ25lZCBpbnQgICAgICAgICAgICBzbWVtX2xlbjsKPgo+ICAgICAgICAg
+dW5zaWduZWQgaW50ICAgICAgICAgICAgZ3VhcmRfdGltZTsKPiAgICAgICAgIHN0cnVjdCBwbGF0
+Zm9ybV9kZXZpY2UgICpwZGV2OwpBbnkgY29tbWVudHMgb24gdGhpcz8KCkNoZWVycwpTdGFuaXNs
+YXcgR3J1c3prYQoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFpbCBpcyBzcG9uc29y
+ZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1aWxkIHRo
+ZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxpbiBTREsgJiB3aW4g
+Z3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRvIGFuIE9wZW4gU291
+cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGluLWNvbnRlc3Qub3Jn
+L3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApM
+aW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3Vy
+Y2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

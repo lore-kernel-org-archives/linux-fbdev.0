@@ -1,24 +1,24 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [patch 1/1] SM501: Update debugging/low
- information messages
-Date: Fri, 8 Aug 2008 18:59:47 +0200
-Message-ID: <20080808185947.478db561.krzysztof.h1@poczta.fm>
-References: <20080806144728.525306982@fluff.org>
-	<20080806144728.620509911@fluff.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] atmel_lcdfb: Set ypanstep to 1
+ and enable y-panning on AT91
+Date: Fri, 8 Aug 2008 13:41:45 -0700
+Message-ID: <20080808134145.e8b861c6.akpm@linux-foundation.org>
+References: <200808081446.43406.stf_xl@wp.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KRVED-00086N-Tq for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 09:54:14 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KRVEA-0007hG-GY
+	id 1KRYn7-0006Ag-Ha for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 08 Aug 2008 13:42:29 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KRYn6-0005Do-7c
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 09:54:13 -0700
-In-Reply-To: <20080806144728.620509911@fluff.org>
+	Fri, 08 Aug 2008 13:42:29 -0700
+In-Reply-To: <200808081446.43406.stf_xl@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,62 +29,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
+To: Stanislaw Gruszka <stf_xl@wp.pl>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 06 Aug 2008 15:47:29 +0100
-$mailname@fluff.org wrote:
+On Fri, 8 Aug 2008 14:46:43 +0200
+Stanislaw Gruszka <stf_xl@wp.pl> wrote:
 
-> Make the default output of the SM501 driver to be less noisy wrt to
-> message that have low informational value, or simply should be debug.
+> Panning in the y-direction can be done by simply changing the DMA base
+> address. This code is already in place, but FBIOPAN_DISPLAY will
+> currently fail because ypanstep is 0.
 > 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> Set ypanstep to 1 to indicate that we do support y-panning and also
+> set the necessary acceleration flags on AT91 (AVR32 already have
+> them.)
 > 
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+problems...
 
+a) Neither of these changelogs communicate the seriousness of the
+   problem which is being fixed, nor the benefit of the change.
 
-> Index: linux-2.6.26-quilt7/drivers/mfd/sm501.c
-> ===================================================================
-> --- linux-2.6.26-quilt7.orig/drivers/mfd/sm501.c	2008-08-05 11:54:26.000000000 +0100
-> +++ linux-2.6.26-quilt7/drivers/mfd/sm501.c	2008-08-05 11:56:09.000000000 +0100
-> @@ -624,8 +624,8 @@ unsigned long sm501_set_clock(struct dev
->  
->  	sm501_sync_regs(sm);
->  
-> -	dev_info(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
-> -		 gate, clock, mode);
-> +	dev_dbg(sm->dev, "gate %08lx, clock %08lx, mode %08lx\n",
-> +		gate, clock, mode);
->  
->  	sm501_mdelay(sm, 16);
->  	mutex_unlock(&sm->clock_lock);
-> @@ -743,7 +743,7 @@ static int sm501_register_device(struct 
->  	int ret;
->  
->  	for (ptr = 0; ptr < pdev->num_resources; ptr++) {
-> -		printk("%s[%d] flags %08lx: %08llx..%08llx\n",
-> +		printk(KERN_DEBUG "%s[%d] flags %08lx: %08llx..%08llx\n",
->  		       pdev->name, ptr,
->  		       pdev->resource[ptr].flags,
->  		       (unsigned long long)pdev->resource[ptr].start,
-> 
-> -- 
-> 
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-> Build the coolest Linux based applications with Moblin SDK & win great prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+   So when I go through my usual "do we need this in 2.6.27? 
+   2.6.26?  2.6.25?" exercise, I don't have enough information to be
+   able to tell.
 
-----------------------------------------------------------------------
-Taniej na zagraniczne komorki!
-Sprawdz >>> http://link.interia.pl/f1ece
+b) The second patch was wordwrapped by your email client.  I fixed that.
+
+c) The authorship/signoff is confusing.  The patch is From:you and
+   signed-off-by:Haavard but is missing your signed-off-by:.
+
+   Who wrote the patches?  If it was you then all we're missing is
+   your signed-off-by:.
+
+   If it was Haavard then you should have had his From: line at the
+   start of the chagnelog to indicate this.
+
+   Either way, it should have had your signed-off-by:, because you
+   were in the delivery path.
+
+   If Haavard did not participate in the development and was not in
+   the delivery path then his signed-off-by: was inappropriate, and an
+   acked-by: or tested-by: or reviewed-by: would be better.
 
 
 -------------------------------------------------------------------------

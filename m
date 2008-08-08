@@ -1,23 +1,22 @@
-From: Stanislaw Gruszka <stf_xl@wp.pl>
-Subject: [PATCH 2/2] atmel_lcdfb: Add board parameter
-	specify framebuffer memory size
-Date: Fri, 8 Aug 2008 14:47:05 +0200
-Message-ID: <200808081447.05445.stf_xl@wp.pl>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH 0/3] matroxfb fixes and improvements
+Date: Fri, 8 Aug 2008 16:49:37 +0200
+Message-ID: <20080808164937.141a95e0@hyperion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KRRN8-0003PI-Cx for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 05:47:10 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1KRRN7-0002jc-Vq
+	id 1KRTI0-0007ft-7P for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 08 Aug 2008 07:50:00 -0700
+Received: from zone0.gcu-squad.org ([212.85.147.21]
+	helo=services.gcu-squad.org)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KRTHy-0003LT-Re
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 05:47:10 -0700
-Content-Disposition: inline
+	Fri, 08 Aug 2008 07:50:00 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,63 +27,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, LKML <linux-kernel@vger.kernel.org>
 
-Specify how much physically continuous, DMA capable memory will be allocated
-at driver initialization time. This allow to create framebuffer device with
-larger virtual resolution. Combine with y-panning this can be used to 
-implement double buffering acceleration method.
+Hi Antonino,
 
-Signed-off-by: Stanislaw Gruszka <stf_xl@wp.pl>
-Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
- drivers/video/atmel_lcdfb.c |    7 +++++--
- include/video/atmel_lcdc.h  |    1 +
- 2 files changed, 6 insertions(+), 2 deletions(-)
+Not having heard of Petr in one month and a half, I am sending these 3
+patches again. Patch 1/3 (matrox maven: Fix a broken error path) in
+particular should be applied ASAP. Patch 2/3 (matroxfb: i2c structure
+templates clean-up) would be good to have as well and I tested it.
+Patch 3/3 (matrox maven: Convert to a new-style i2c driver) needs
+testing before it can go upstream. I can't test it myself, but it has
+been in linux-next for 6 weeks or so.
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index e1acfa7..a471a60 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -242,9 +242,11 @@ static int atmel_lcdfb_alloc_video_memory(struct 
-atmel_lcdfb_info *sinfo)
- {
- 	struct fb_info *info = sinfo->info;
- 	struct fb_var_screeninfo *var = &info->var;
-+	unsigned int smem_len;
- 
--	info->fix.smem_len = (var->xres_virtual * var->yres_virtual
--			    * ((var->bits_per_pixel + 7) / 8));
-+	smem_len = (var->xres_virtual * var->yres_virtual
-+		    * ((var->bits_per_pixel + 7) / 8));
-+	info->fix.smem_len = max(smem_len, sinfo->smem_len);
- 
- 	info->screen_base = dma_alloc_writecombine(info->device, info->fix.smem_len,
- 					(dma_addr_t *)&info->fix.smem_start, GFP_KERNEL);
-@@ -796,6 +798,7 @@ static int __init atmel_lcdfb_probe(struct platform_device 
-*pdev)
- 		sinfo->default_monspecs = pdata_sinfo->default_monspecs;
- 		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
- 		sinfo->guard_time = pdata_sinfo->guard_time;
-+		sinfo->smem_len = pdata_sinfo->smem_len;
- 		sinfo->lcdcon_is_backlight = pdata_sinfo->lcdcon_is_backlight;
- 		sinfo->lcd_wiring_mode = pdata_sinfo->lcd_wiring_mode;
- 	} else {
-diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
-index 613173b..920c4e9 100644
---- a/include/video/atmel_lcdc.h
-+++ b/include/video/atmel_lcdc.h
-@@ -41,6 +41,7 @@ struct atmel_lcdfb_info {
- 	struct work_struct	task;
- 
- 	unsigned int		guard_time;
-+	unsigned int 		smem_len;
- 	struct platform_device	*pdev;
- 	struct clk		*bus_clk;
- 	struct clk		*lcdc_clk;
+Thanks,
 -- 
-1.5.2.5
+Jean Delvare
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

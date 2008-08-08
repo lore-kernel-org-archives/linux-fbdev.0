@@ -1,64 +1,54 @@
 From: Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH 1/3] matrox maven: Fix a broken error
-	path
-Date: Fri, 8 Aug 2008 16:58:23 +0200
-Message-ID: <20080808165823.71d9bea3@hyperion.delvare>
+Subject: [PATCH 2/3] matroxfb: i2c structure templates clean-up
+Date: Fri, 8 Aug 2008 17:02:08 +0200
+Message-ID: <20080808170208.6c76ff46@hyperion.delvare>
 References: <20080808164937.141a95e0@hyperion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KRTQM-0000A4-0a for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 07:58:38 -0700
-Received: from zone0.gcu-squad.org ([212.85.147.21]
-	helo=services.gcu-squad.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KRTQK-00060G-LR
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 07:58:38 -0700
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754576AbYHHPC3@vger.kernel.org>
 In-Reply-To: <20080808164937.141a95e0@hyperion.delvare>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
 Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, LKML <linux-kernel@vger.kernel.org>
 
-I broke an error path with d03c21ec0be7787ff6b75dcf56c0e96209ccbfbd,
-sorry about that.
+Clean up the use of structure templates in i2c-matroxfb. In this case
+it's more efficient to initialize the few fields we need individually.
+This makes i2c-matroxfb.ko 16% smaller on my system.
 
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
 ---
- drivers/video/matrox/matroxfb_maven.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/matrox/i2c-matroxfb.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
---- linux-2.6.26-rc6.orig/drivers/video/matrox/matroxfb_maven.c	2008-06-17 17:22:42.000000000 +0200
-+++ linux-2.6.26-rc6/drivers/video/matrox/matroxfb_maven.c	2008-06-17 17:23:18.000000000 +0200
-@@ -1266,7 +1266,7 @@ static int maven_detect_client(struct i2
- ERROR4:;
- 	i2c_detach_client(new_client);
- ERROR3:;
--	kfree(new_client);
-+	kfree(data);
- ERROR0:;
- 	return err;
+--- linux-2.6.26-rc6.orig/drivers/video/matrox/i2c-matroxfb.c	2008-06-17 20:23:41.000000000 +0200
++++ linux-2.6.26-rc6/drivers/video/matrox/i2c-matroxfb.c	2008-06-17 20:27:36.000000000 +0200
+@@ -87,13 +87,7 @@ static int matroxfb_gpio_getscl(void* da
+ 	return (matroxfb_read_gpio(b->minfo) & b->mask.clock) ? 1 : 0;
  }
-
+ 
+-static struct i2c_adapter matrox_i2c_adapter_template =
+-{
+-	.owner =	THIS_MODULE,
+-	.id =		I2C_HW_B_G400,
+-};
+-
+-static struct i2c_algo_bit_data matrox_i2c_algo_template =
++static const struct i2c_algo_bit_data matrox_i2c_algo_template =
+ {
+ 	.setsda		= matroxfb_gpio_setsda,
+ 	.setscl		= matroxfb_gpio_setscl,
+@@ -112,7 +106,8 @@ static int i2c_bus_reg(struct i2c_bit_ad
+ 	b->minfo = minfo;
+ 	b->mask.data = data;
+ 	b->mask.clock = clock;
+-	b->adapter = matrox_i2c_adapter_template;
++	b->adapter.owner = THIS_MODULE;
++	b->adapter.id = I2C_HW_B_G400;
+ 	snprintf(b->adapter.name, sizeof(b->adapter.name), name,
+ 		minfo->fbcon.node);
+ 	i2c_set_adapdata(&b->adapter, b);
 
 -- 
 Jean Delvare
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/

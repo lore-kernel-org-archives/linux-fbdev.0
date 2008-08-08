@@ -1,8 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: Re: [PATCH 1/2] atmel_lcdfb: Set ypanstep to 1
  and enable y-panning on AT91
-Date: Fri, 8 Aug 2008 18:44:32 +0200
-Message-ID: <20080808184432.1c1b2c4d.krzysztof.h1@poczta.fm>
+Date: Fri, 8 Aug 2008 18:54:18 +0200
+Message-ID: <20080808185418.1beabf7c.krzysztof.h1@poczta.fm>
 References: <200808081446.43406.stf_xl@wp.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,12 +11,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KRUzN-0006QD-NP for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 09:38:55 -0700
+	id 1KRV8q-0007V8-MJ for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 08 Aug 2008 09:48:40 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KRUzN-0004q7-8x
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KRV8q-0008Jd-8Q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 09:38:53 -0700
+	Fri, 08 Aug 2008 09:48:40 -0700
 In-Reply-To: <200808081446.43406.stf_xl@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,7 +28,7 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Stanislaw Gruszka <stf_xl@wp.pl>
+To: Stanislaw Gruszka <stf_xl@wp.pl>, Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
 On Fri, 8 Aug 2008 14:46:43 +0200
@@ -45,9 +45,12 @@ Stanislaw Gruszka <stf_xl@wp.pl> wrote:
 > Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 > ---
 
-Probably you both (Haavard and Stanislaw) should sign-off this patch.
-
 Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+Once again, now with Andrew Morton included.
+
+Regards,
+Krzysztof
 
 >  drivers/video/atmel_lcdfb.c |    6 ++++--
 >  1 files changed, 4 insertions(+), 2 deletions(-)

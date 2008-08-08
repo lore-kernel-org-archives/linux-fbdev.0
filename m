@@ -1,23 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/13 v2] viafb: viafb.modes,
-	viafb.txt
-Date: Fri, 8 Aug 2008 13:32:21 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808081331130.420@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698D@exchtp03.taipei.via.com.tw>
+From: Stanislaw Gruszka <stf_xl@wp.pl>
+Subject: [PATCH 1/2] atmel_lcdfb: Set ypanstep to 1 and
+	enable y-panning on AT91
+Date: Fri, 8 Aug 2008 14:46:43 +0200
+Message-ID: <200808081446.43406.stf_xl@wp.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KRQCu-0004U5-Bv for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 04:32:32 -0700
-Received: from edna.telenet-ops.be ([195.130.132.58])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KRQCs-0001sU-Vg
+	id 1KRRMx-0003K7-Rf for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 08 Aug 2008 05:46:59 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KRRMw-0002bY-EJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 Aug 2008 04:32:32 -0700
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698D@exchtp03.taipei.via.com.tw>
+	Fri, 08 Aug 2008 05:46:59 -0700
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,27 +28,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: JosephChan@via.com.tw
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> +    4. VX800 2D accelerator hasn't been supported in this driver yet. When
-> +       using driver on VX800, one should add parameter "viafb_accel=0" to
-> +       disable 2D accelerator.
+Panning in the y-direction can be done by simply changing the DMA base
+address. This code is already in place, but FBIOPAN_DISPLAY will
+currently fail because ypanstep is 0.
 
-Can't the driver detect this automatically, and disable the 2D
-accelerator when running on a VX800?
+Set ypanstep to 1 to indicate that we do support y-panning and also
+set the necessary acceleration flags on AT91 (AVR32 already have
+them.)
 
-Gr{oetje,eeting}s,
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/video/atmel_lcdfb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-						Geert
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 5b3a15d..e1acfa7 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -39,7 +39,9 @@
+ #endif
+ 
+ #if defined(CONFIG_ARCH_AT91)
+-#define	ATMEL_LCDFB_FBINFO_DEFAULT	FBINFO_DEFAULT
++#define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
++					 | FBINFO_PARTIAL_PAN_OK \
++					 | FBINFO_HWACCEL_YPAN)
+ 
+ static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
+ 					struct fb_var_screeninfo *var)
+@@ -177,7 +179,7 @@ static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata 
+= {
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_TRUECOLOR,
+ 	.xpanstep	= 0,
+-	.ypanstep	= 0,
++	.ypanstep	= 1,
+ 	.ywrapstep	= 0,
+ 	.accel		= FB_ACCEL_NONE,
+ };
+-- 
+1.5.2.5
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

@@ -1,52 +1,70 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: RE: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
-Date: Fri, 8 Aug 2008 17:24:53 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808081724210.420@anakin>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698D@exchtp03.taipei.via.com.tw>
- <Pine.LNX.4.64.0808081331130.420@anakin>
- <C80EF34A3D2E494DBAF9AC29C7AE4EB8285FD7@exchtp03.taipei.via.com.tw>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH 0/13 v2] viafb: VIA Frame Buffer
+ Device Driver
+Date: Fri, 8 Aug 2008 18:27:04 +0200
+Message-ID: <20080808182704.28bd9fb3.krzysztof.h1@poczta.fm>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757248AbYHHPZJ@vger.kernel.org>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8285FD7@exchtp03.taipei.via.com.tw>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1KRUil-0004Yj-GW for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 08 Aug 2008 09:21:44 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KRUii-0003iS-Vm
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 08 Aug 2008 09:21:42 -0700
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: JosephChan@via.com.tw
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: geert@linux-m68k.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> It should be my carelessness. The check has been added in viafbdev.c already. 
+On Fri, 8 Aug 2008 18:09:21 +0800
+<JosephChan@via.com.tw> wrote:
 
-OK.
-
-> Do I need to re-send the patch for the documentation? Thanks for your reminding.
-
-Please send an incremental patch. Andrew is good in folding ;-)
-
-> From: Geert Uytterhoeven [mailto:geert@linux-m68k.org]
-> Sent: Fri 8/8/2008 7:32 PM
-> To: Joseph Chan
-> Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org
-> Subject: Re: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
+> Hi all,
 > 
+> Here comes the 13 updated patchs for VIA Frame Buffer Device Driver.
+> This driver could be used on VIA UniChrome (Pro) and Chrome9 family chips.
+> All the patches are based on linux kernel 2.6.27-rc2 and they're modified by adopting community's feedback.
+> I would like to thank all who provided their suggestions for VIAFB by mail.
+> Any question, please contact me. Thanks.
 > 
-> 
-> On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
-> > +    4. VX800 2D accelerator hasn't been supported in this driver yet. When
-> > +       using driver on VX800, one should add parameter "viafb_accel=0" to
-> > +       disable 2D accelerator.
-> 
-> Can't the driver detect this automatically, and disable the 2D
-> accelerator when running on a VX800?
 
-Gr{oetje,eeting}s,
+Please resend the 3rd patch as it is damaged (missing 3 lines of each file).
 
-						Geert
+I am for merging these patches as they are sent now. It allows sending 
+fixes to them as incremental patches.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+This set builds at least for my configuration (Pentium3 SMP). 
+Unfortunately, I do not have hardware to test. I though about
+buying one of these sexy VIA ITX boards but it is outside my
+budget now. Anyway, I have too many computers according
+to my spouse.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Kind regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Tylko dla detektywow! Konkurs na Smaker.pl
+Kliknij >>> http://link.interia.pl/f1eb1
+
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

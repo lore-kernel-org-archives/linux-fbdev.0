@@ -1,9 +1,10 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH 0/3] matroxfb fixes and improvements
-Date: Sat, 9 Aug 2008 10:57:56 +0200
-Message-ID: <20080809105756.633b3658@hyperion.delvare>
-References: <20080808164937.141a95e0@hyperion.delvare>
-	<20080808140019.32d949f7.akpm@linux-foundation.org>
+From: Stanislaw Gruszka <stf_xl@wp.pl>
+Subject: Re: [PATCH 1/2] atmel_lcdfb: Set ypanstep to 1
+	and enable y-panning on AT91
+Date: Sat, 9 Aug 2008 15:57:09 +0200
+Message-ID: <200808091557.09200.stf_xl@wp.pl>
+References: <200808081446.43406.stf_xl@wp.pl>
+	<20080808134145.e8b861c6.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,15 +12,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KRkH9-0008QG-0K for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 09 Aug 2008 01:58:15 -0700
-Received: from zone0.gcu-squad.org ([212.85.147.21]
-	helo=services.gcu-squad.org)
+	id 1KRowP-0003t7-Cu for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 09 Aug 2008 06:57:09 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KRkH6-0003gz-4c
+	(Exim 4.44) id 1KRowN-0004hx-Ts
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 09 Aug 2008 01:58:13 -0700
-In-Reply-To: <20080808140019.32d949f7.akpm@linux-foundation.org>
+	Sat, 09 Aug 2008 06:57:09 -0700
+In-Reply-To: <20080808134145.e8b861c6.akpm@linux-foundation.org>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,52 +32,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: vandrove@vc.cvut.cz, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Andrew,
+On Friday 08 August 2008, Andrew Morton wrote:
+> On Fri, 8 Aug 2008 14:46:43 +0200
+>
+> Stanislaw Gruszka <stf_xl@wp.pl> wrote:
+> > Panning in the y-direction can be done by simply changing the DMA base
+> > address. This code is already in place, but FBIOPAN_DISPLAY will
+> > currently fail because ypanstep is 0.
+> >
+> > Set ypanstep to 1 to indicate that we do support y-panning and also
+> > set the necessary acceleration flags on AT91 (AVR32 already have
+> > them.)
+> >
+> > Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+>
+> problems...
+>
+> a) Neither of these changelogs communicate the seriousness of the
+>    problem which is being fixed, nor the benefit of the change.
+>
+>    So when I go through my usual "do we need this in 2.6.27?
+>    2.6.26?  2.6.25?" exercise, I don't have enough information to be
+>    able to tell.
+I think this is a new feature, should go to future release i.e. 2.6.27.
 
-On Fri, 8 Aug 2008 14:00:19 -0700, Andrew Morton wrote:
-> On Fri, 8 Aug 2008 16:49:37 +0200
-> Jean Delvare <khali@linux-fr.org> wrote:
-> 
-> > Not having heard of Petr in one month and a half, I am sending these 3
-> > patches again. Patch 1/3 (matrox maven: Fix a broken error path) in
-> > particular should be applied ASAP. Patch 2/3 (matroxfb: i2c structure
-> > templates clean-up) would be good to have as well and I tested it.
-> > Patch 3/3 (matrox maven: Convert to a new-style i2c driver) needs
-> > testing before it can go upstream. I can't test it myself, but it has
-> > been in linux-next for 6 weeks or so.
-> 
-> I'll put all three into 2.6.27.
+> b) The second patch was wordwrapped by your email client.  I fixed that.
+I sent a patch average ones a year and never did it correctly, maybe if I will 
+be sending patches more frequently, I will learn do it good ;-)
 
-Thank you.
+> c) The authorship/signoff is confusing.  The patch is From:you and
+>    signed-off-by:Haavard but is missing your signed-off-by:.
+>
+>    Who wrote the patches?  If it was you then all we're missing is
+>    your signed-off-by:.
+>
+>    If it was Haavard then you should have had his From: line at the
+>    start of the chagnelog to indicate this.
+Patch is from Haavard, sorry for removing From:
 
-> I suspect that #1 should be backported to 2.6.25.x and to 2.6.26.x but
-> I am unsure about that due to its poor changelogging.
-> 
-> I _think_ that the machine will crash if the i2c_attach_client() or
-> maven_init_client() calls fail.  But I don't know under what
-> circumstances that can happen, nor whether the bug has been reported in
-> the field, etc.
-
-I found it while working on patch #3. I am not aware of it having been
-reported in the field. The maven driver doesn't have that many users
-(which is why I am struggling to get patch #3 tested.) And then the
-errors in question are unlikely to happen. In fact, maven_init_client()
-always returns 0, it simply cannot fail. So I'd say that the chances
-that someone hits that bug are thin.
-
-That would mean that we don't really need to backport the fix. But OTOH
-it's a regression and the fix is pretty easy and not intrusive. So, I
-think I would still backport it.
-
-> And the -stable people also will be interested in such information when
-> making their decisions.
-
-I think I will let them decide.
-
--- 
-Jean Delvare
+>    Either way, it should have had your signed-off-by:, because you
+>    were in the delivery path.
+Sorry again, to late but ...
+Signed-off-by: Stanislaw Gruszka <stf_xl@wp.pl>
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

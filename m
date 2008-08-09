@@ -1,66 +1,51 @@
-From: Frans Pop <elendil@planet.nl>
-Subject: Re: Framebuffer drivers that break the boot on
-	systemswithout the hardware
-Date: Sat, 9 Aug 2008 23:19:42 +0200
-Message-ID: <200808092319.43139.elendil@planet.nl>
-References: <489DFACC.6030009@keyaccess.nl>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer
+ Device Driver
+Date: Sat, 9 Aug 2008 23:32:09 +0200
+Message-ID: <20080809233209.543756ba@neptune.home>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KRvr3-0001Cc-7B for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 09 Aug 2008 14:20:05 -0700
-Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KRvr1-0004Mt-2H
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 09 Aug 2008 14:20:05 -0700
-In-reply-To: <489DFACC.6030009@keyaccess.nl>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: akpm@osdl.org, mingo@elte.hu, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754019AbYHIVcW@vger.kernel.org>
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: JosephChan@via.com.tw
+Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, geert@linux-m68k.org
 
-Rene Herman wrote:
-> Ingo Molnar posted a list of drivers he found to break the boot during
-> testing of randconfig kernels and among them are a number of FB drivers:
-> 
-> FB_VESA
+On Fri, 08 August 2008 <JosephChan@via.com.tw> wrote:
+> Here comes the 13 updated patchs for VIA Frame Buffer Device Driver.
+> This driver could be used on VIA UniChrome (Pro) and Chrome9 family
+> chips. All the patches are based on linux kernel 2.6.27-rc2
 
-This one is set to "y" in the kernel configs for the generic Debian 
-kernels for i386 and x86_64 and is used by default for the graphical 
-version of the Debian Installer, so I'd be very surprised if it broke 
-very many systems...
-AFAIK it is only actually enabled if the 'vga=' boot parameter is passed.
+Seems to work for me when compiled into kernel on Commell LE365D (Via
+CX700) though I get two unwanted effects:
+- boot logo does not show up, where it should appear I just get a
+  square of colored pixels (2 colors: background and foreground grid)
+- when blanking console colored text remains visible (e.g. green '*'
+  characters emitted during Gentoo boot)
+  Ideally the output/monitor should got into standby when console is
+  blanking
 
-Ingo's mail also lists FRAMEBUFFER_CONSOLE which again is set to "y" in 
-Debian's standard kernel configs for x86 (and probably most other 
-arches).
 
-> (and FB_VIRTUAL)
+The boot logo issue exists when patch is applied to 2.6.26.2 and
+2.6.27-rc2-git4, for the console blanking it's only tested on 2.6.26.2
+as 2.6.27-rc2-git4 panics while probing hard drives.
 
-This one should be fixed with 2.6.27-rc1. The commit that fixes it is:
-  commit b604838ac6d233fd6bffc0e758a818133a01ff22
-  Author: Frans Pop <elendil@planet.nl>
-  Date:   Wed Jul 23 21:31:26 2008 -0700
-    vfb: only enable if explicitly requested when compiled in
+Framebuffer related kernel commandline options:
+  video=viafb:viafb_mode=1280x1024,viafb_bpp=32,viafb_refresh=60
 
-Cheers,
-FJP
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Suspend to RAM (S3) works with BIOS configured to reinitialize the
+graphics at resume time, I have not yet checked without this option
+being enabled in BIOS (though it probably won't work as there is no
+suspend/resume callback in the patch-set).
+Have not checked yet if DRI has support for CX700 and can do the
+suspend/resume handling as the intel DRI can do.
+
+
+As Krzysztof Helt I'm in favor of merging and ironing out remaining
+issues with incremental patches
+
+Bruno

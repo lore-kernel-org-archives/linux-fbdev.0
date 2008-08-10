@@ -1,11 +1,10 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] fbdev kconfig update (2nd rev)
-Date: Sun, 10 Aug 2008 23:44:36 +0200
-Message-ID: <20080810234436.8c514eb6.krzysztof.h1@poczta.fm>
-References: <20080810192207.f65de894.krzysztof.h1@poczta.fm>
-	<Pine.LNX.4.64.0808102013500.10672@anakin>
-	<20080810224832.d9d7075e.krzysztof.h1@poczta.fm>
-	<Pine.LNX.4.64.0808102248420.10672@anakin>
+From: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: Framebuffer drivers that break the boot on
+ systemswithout the hardware
+Date: Sun, 10 Aug 2008 23:49:07 +0200
+Message-ID: <489F6253.3010703@keyaccess.nl>
+References: <489DFACC.6030009@keyaccess.nl>
+	<200808092319.43139.elendil@planet.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,13 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KSIcq-000503-8D for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 10 Aug 2008 14:38:56 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSIco-0003nB-Qh
+	id 1KSImV-0005xx-RE for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 10 Aug 2008 14:48:55 -0700
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSImT-00074l-9F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 10 Aug 2008 14:38:56 -0700
-In-Reply-To: <Pine.LNX.4.64.0808102248420.10672@anakin>
+	Sun, 10 Aug 2008 14:48:55 -0700
+In-Reply-To: <200808092319.43139.elendil@planet.nl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,42 +29,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Frans Pop <elendil@planet.nl>
+Cc: akpm@osdl.org, mingo@elte.hu, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On Sun, 10 Aug 2008 22:49:07 +0200 (CEST)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On 09-08-08 23:19, Frans Pop wrote:
 
-> On Sun, 10 Aug 2008, Krzysztof Helt wrote:
+> Rene Herman wrote:
 
-> > --- linux-old/drivers/video/Kconfig	2008-08-04 18:00:45.000000000 +0200
-> > +++ linux-mm/drivers/video/Kconfig	2008-08-10 19:15:39.463597618 +0200
-> > @@ -259,16 +259,24 @@ config FB_PM2
-> >  	select FB_CFB_COPYAREA
-> >  	select FB_CFB_IMAGEBLIT
-> >  	help
-> > -	  This is the frame buffer device driver for the Permedia2 AGP frame
-> > -	  buffer card from ASK, aka `Graphic Blaster Exxtreme'.  There is a
-> > -	  product page at
-> > -	  <http://www.ask.com.hk/product/Permedia%202/permedia2.htm>.
-> > +	  This is the frame buffer device driver for cards based on
-> > +	  the 3D Labs Permedia, Permedia 2 and Permedia 2V chips.
-> > +	  The driver was tested on following cards are:
->                                                    ^^^
-> still a bogus `are'.
+>> Ingo Molnar posted a list of drivers he found to break the boot during
+>> testing of randconfig kernels and among them are a number of FB drivers:
+>>
+>> FB_VESA
 > 
-> Gr{oetje,eeting}s,
->
+> This one is set to "y" in the kernel configs for the generic Debian 
+> kernels for i386 and x86_64 and is used by default for the graphical 
+> version of the Debian Installer, so I'd be very surprised if it broke 
+> very many systems...
+> AFAIK it is only actually enabled if the 'vga=' boot parameter is passed.
+> 
+> Ingo's mail also lists FRAMEBUFFER_CONSOLE which again is set to "y" in 
+> Debian's standard kernel configs for x86 (and probably most other 
+> arches).
 
-I give up for now. It is late night here.
+Okay. MDA_CONSOLE was also in there impying RAM at 0xb0000 which might 
+indicate a gun/foot situation here...
 
-Regards,
-Krzysztof
+>> (and FB_VIRTUAL)
+> 
+> This one should be fixed with 2.6.27-rc1. The commit that fixes it is:
+>   commit b604838ac6d233fd6bffc0e758a818133a01ff22
+>   Author: Frans Pop <elendil@planet.nl>
+>   Date:   Wed Jul 23 21:31:26 2008 -0700
+>     vfb: only enable if explicitly requested when compiled in
 
+Ah, thanks.
 
-----------------------------------------------------------------------
-Tylko dla detektywow! Konkurs na Smaker.pl
-Kliknij >>> http://link.interia.pl/f1eb1
+Rene.
 
 
 -------------------------------------------------------------------------

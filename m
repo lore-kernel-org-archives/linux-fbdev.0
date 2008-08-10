@@ -1,51 +1,104 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer
- Device Driver
-Date: Sat, 9 Aug 2008 23:32:09 +0200
-Message-ID: <20080809233209.543756ba@neptune.home>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Bugme-new] [Bug 11258] New: fbcon cursor
+ disappered after switch to 512 consolefont
+Date: Sun, 10 Aug 2008 18:38:28 +0200
+Message-ID: <20080810183828.d80c25bc.krzysztof.h1@poczta.fm>
+References: <bug-11258-10286@http.bugzilla.kernel.org/>
+	<20080806091204.25045807.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754019AbYHIVcW@vger.kernel.org>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078B698C@exchtp03.taipei.via.com.tw>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: JosephChan@via.com.tw
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, geert@linux-m68k.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1KSDqf-0000Ts-JU for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 10 Aug 2008 09:32:53 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSDqe-0004Mu-22
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 10 Aug 2008 09:32:53 -0700
+In-Reply-To: <20080806091204.25045807.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org
+Cc: hanzelpeter@gmail.com, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
 
-On Fri, 08 August 2008 <JosephChan@via.com.tw> wrote:
-> Here comes the 13 updated patchs for VIA Frame Buffer Device Driver.
-> This driver could be used on VIA UniChrome (Pro) and Chrome9 family
-> chips. All the patches are based on linux kernel 2.6.27-rc2
+On Wed, 6 Aug 2008 09:12:04 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Seems to work for me when compiled into kernel on Commell LE365D (Via
-CX700) though I get two unwanted effects:
-- boot logo does not show up, where it should appear I just get a
-  square of colored pixels (2 colors: background and foreground grid)
-- when blanking console colored text remains visible (e.g. green '*'
-  characters emitted during Gentoo boot)
-  Ideally the output/monitor should got into standby when console is
-  blanking
+> 
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+> 
+> On Wed,  6 Aug 2008 08:27:54 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11258
+> > 
+> >            Summary: fbcon cursor disappered after switch to 512 consolefont
 
-
-The boot logo issue exists when patch is applied to 2.6.26.2 and
-2.6.27-rc2-git4, for the console blanking it's only tested on 2.6.26.2
-as 2.6.27-rc2-git4 panics while probing hard drives.
-
-Framebuffer related kernel commandline options:
-  video=viafb:viafb_mode=1280x1024,viafb_bpp=32,viafb_refresh=60
+> 
+> A regression.
+> 
 
 
-Suspend to RAM (S3) works with BIOS configured to reinitialize the
-graphics at resume time, I have not yet checked without this option
-being enabled in BIOS (though it probably won't work as there is no
-suspend/resume callback in the patch-set).
-Have not checked yet if DRI has support for CX700 and can do the
-suspend/resume handling as the intel DRI can do.
+The patch for the issue is below. It is very similar to
+Peter Hanzel's patch already posted to the bugzilla
+but it honors vc_scrl_erase_char for scrolling.
+
+Regards,
+Krzysztof
+----
+
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+Adjust  and honor the vc_scrl_erase_char for
+256 and 512 character fonts.
+
+It fixes the issue with disappearing cursor during scrolling
+(kernel bug #11258). The issue was reported and tracked
+by Peter Hanzel.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+diff -urp linux-ref/drivers/video/console/fbcon.c linux-2.6.27/drivers/video/console/fbcon.c
+--- linux-ref/drivers/video/console/fbcon.c	2008-08-09 19:00:06.000000000 +0200
++++ linux-2.6.27/drivers/video/console/fbcon.c	2008-08-09 19:04:44.000000000 +0200
+@@ -2515,7 +2515,7 @@ static int fbcon_do_set_font(struct vc_d
+ 			c = vc->vc_video_erase_char;
+ 			vc->vc_video_erase_char =
+ 			    ((c & 0xfe00) >> 1) | (c & 0xff);
+-			c = vc->vc_def_color;
++			c = vc->vc_scrl_erase_char;
+ 			vc->vc_scrl_erase_char =
+ 			    ((c & 0xFE00) >> 1) | (c & 0xFF);
+ 			vc->vc_attr >>= 1;
+@@ -2548,7 +2548,7 @@ static int fbcon_do_set_font(struct vc_d
+ 			if (vc->vc_can_do_color) {
+ 				vc->vc_video_erase_char =
+ 				    ((c & 0xff00) << 1) | (c & 0xff);
+-				c = vc->vc_def_color;
++				c = vc->vc_scrl_erase_char;
+ 				vc->vc_scrl_erase_char =
+ 				    ((c & 0xFF00) << 1) | (c & 0xFF);
+ 				vc->vc_attr <<= 1;
 
 
-As Krzysztof Helt I'm in favor of merging and ironing out remaining
-issues with incremental patches
+----------------------------------------------------------------------
+Tylko dla detektywow! Konkurs na Smaker.pl
+Kliknij >>> http://link.interia.pl/f1eb1
 
-Bruno
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

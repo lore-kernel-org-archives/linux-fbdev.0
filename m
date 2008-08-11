@@ -1,21 +1,24 @@
-From: krzysztof.h1@poczta.fm
+From: <JosephChan@via.com.tw>
 Subject: Re: [PATCH 0/13 v2] viafb: VIA Frame Buffer
 	Device Driver
-Date: 11 Aug 2008 11:17:46 +0200
-Message-ID: <20080811091747.045A66D605@f09.poczta.interia.pl>
+Date: Mon, 11 Aug 2008 19:57:34 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F49B8@exchtp03.taipei.via.com.tw>
+References: <20080811091747.045A66D605@f09.poczta.interia.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KSTXK-0005Wm-6a for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 Aug 2008 02:17:58 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSTXI-00024T-On
+	id 1KSW1s-0005yc-Nm for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 Aug 2008 04:57:40 -0700
+Received: from mailtp.via.com.tw ([61.66.243.2])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSW1r-0004RA-Co
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 Aug 2008 02:17:58 -0700
+	Mon, 11 Aug 2008 04:57:40 -0700
+Content-class: urn:content-classes:message
+In-Reply-To: <20080811091747.045A66D605@f09.poczta.interia.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,18 +29,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "JosephChan@via.com.tw" <JosephChan@via.com.tw>, "krzysztof.h1@poczta.fm" <krzysztof.h1@poczta.fm>
-Cc: "geert@linux-m68k.org" <geert@linux-m68k.org>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: krzysztof.h1@poczta.fm
+Cc: geert@linux-m68k.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
+Hi Krzysztof,
+
+Thanks. After re-checking again, I met the malformed issue.
+I think that's my careless, I will re-submit the patch again later.
+
+BRs,
+Joseph
+
+-----Original Message-----
+From: krzysztof.h1@poczta.fm [mailto:krzysztof.h1@poczta.fm] 
+Sent: Monday, August 11, 2008 5:18 PM
+To: Joseph Chan; krzysztof.h1@poczta.fm
+Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org; geert@linux-m68k.org
+Subject: RE: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer Device Driver
 
 > Hi Krzysztof,
 > 
-> Thanks to remind, but after I checked the patches in linux-fbdev-devel
+> Thanks to remind, but after I checked the patches in linux-fbdev-devel 
 > mailing list.
 > It seems there is no missing lines as you mentioned. 
 > 
 
-There are 3 lines missing at the end of each file. I assume they are empty one
-so no content is missing but the command:
+There are 3 lines missing at the end of each file. I assume they are empty one so no content is missing but the command:
 
 patch -p1 < viafb3.patch
 

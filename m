@@ -1,9 +1,9 @@
 From: <JosephChan@via.com.tw>
-Subject: Re: [PATCH 0/13 v2] viafb: VIA Frame Buffer
-	Device Driver
-Date: Mon, 11 Aug 2008 19:57:34 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F49B8@exchtp03.taipei.via.com.tw>
-References: <20080811091747.045A66D605@f09.poczta.interia.pl>
+Subject: Re: [PATCH 1/13 v2] viafb: viafb.modes,
+	viafb.txt
+Date: Mon, 11 Aug 2008 20:07:03 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F49C6@exchtp03.taipei.via.com.tw>
+References: <Pine.LNX.4.64.0808081724210.420@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,14 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KSW1s-0005yc-Nm for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 Aug 2008 04:57:40 -0700
+	id 1KSWB0-00076D-Nl for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 Aug 2008 05:07:06 -0700
 Received: from mailtp.via.com.tw ([61.66.243.2])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSW1r-0004RA-Co
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSWB0-0000sM-9M
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 Aug 2008 04:57:40 -0700
+	Mon, 11 Aug 2008 05:07:06 -0700
 Content-class: urn:content-classes:message
-In-Reply-To: <20080811091747.045A66D605@f09.poczta.interia.pl>
+In-Reply-To: <Pine.LNX.4.64.0808081724210.420@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,52 +29,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: geert@linux-m68k.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: geert@linux-m68k.org
+Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Hi Krzysztof,
+Hi Geert,
 
-Thanks. After re-checking again, I met the malformed issue.
-I think that's my careless, I will re-submit the patch again later.
+> Please send an incremental patch.
+Do you mean that I can send a signle patch for fixing this issue. (v2 -> v3)
+And the subject of this mail should be " [PATCH 1/13 v3] viafb: viafb.modes, viafb.txt"
+Thanks.
 
 BRs,
-Joseph
-
+Joseph Chan 
 -----Original Message-----
-From: krzysztof.h1@poczta.fm [mailto:krzysztof.h1@poczta.fm] 
-Sent: Monday, August 11, 2008 5:18 PM
-To: Joseph Chan; krzysztof.h1@poczta.fm
-Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org; geert@linux-m68k.org
-Subject: RE: [Linux-fbdev-devel] [PATCH 0/13 v2] viafb: VIA Frame Buffer Device Driver
+From: geert@linux-m68k.org [mailto:geert@linux-m68k.org] 
+Sent: Friday, August 08, 2008 11:25 PM
+To: Joseph Chan
+Cc: linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; akpm@linux-foundation.org
+Subject: RE: [PATCH 1/13 v2] viafb: viafb.modes, viafb.txt
 
-> Hi Krzysztof,
+On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
+> It should be my carelessness. The check has been added in viafbdev.c already. 
+
+OK.
+
+> Do I need to re-send the patch for the documentation? Thanks for your reminding.
+
+Please send an incremental patch. Andrew is good in folding ;-)
+
 > 
-> Thanks to remind, but after I checked the patches in linux-fbdev-devel 
-> mailing list.
-> It seems there is no missing lines as you mentioned. 
 > 
+> 
+> On Fri, 8 Aug 2008, JosephChan@via.com.tw wrote:
+> > +    4. VX800 2D accelerator hasn't been supported in this driver yet. When
+> > +       using driver on VX800, one should add parameter "viafb_accel=0" to
+> > +       disable 2D accelerator.
+> 
+> Can't the driver detect this automatically, and disable the 2D 
+> accelerator when running on a VX800?
 
-There are 3 lines missing at the end of each file. I assume they are empty one so no content is missing but the command:
+Gr{oetje,eeting}s,
 
-patch -p1 < viafb3.patch
+						Geert
 
-ends with:
-patch: **** malformed patch at line 259: diff -Nurp a/drivers/video/via/accel.h b/drivers/video/via/accel.h
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-If one adds three lines "+" at the line 259, the patch command ends with:
-
-patching file drivers/video/via/accel.h
-patch: **** malformed patch at line 446:
-
-Adding three lines "+" at the mentioned file solves the problem.
-
-Kind regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Taniej na zagraniczne komorki!
-Sprawdz >>> http://link.interia.pl/f1ece
-
+In personal conversations with technical people, I call myself a hacker. But when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

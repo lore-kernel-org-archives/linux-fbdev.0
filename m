@@ -1,9 +1,9 @@
-From: Bernhard Fischer <rep.dot.nop@gmail.com>
-Subject: Re: [Patch 3/13 v3] [RESEND] viafb: fix for	the
-	malformed patch issue
-Date: Tue, 12 Aug 2008 18:47:13 +0200
-Message-ID: <20080812164713.GB3571@mx.loc>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F4A1A@exchtp03.taipei.via.com.tw>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/13 v3] viafb: fix for the
+ description of the VX800 2D acceleration issue in viafb.txt.
+Date: Tue, 12 Aug 2008 16:09:34 -0700
+Message-ID: <20080812160934.9371732e.akpm@linux-foundation.org>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F4A00@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,17 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KSx2I-0003NM-Hh for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Aug 2008 09:47:54 -0700
-Received: from fg-out-1718.google.com ([72.14.220.154])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KSx2H-0002HH-5P
+	id 1KT2zv-0008BG-EC for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 12 Aug 2008 16:09:51 -0700
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KT2zu-0006hl-3w
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 12 Aug 2008 09:47:54 -0700
-Received: by fg-out-1718.google.com with SMTP id d23so1283313fga.32
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 12 Aug 2008 09:47:51 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F4A1A@exchtp03.taipei.via.com.tw>
+	Tue, 12 Aug 2008 16:09:51 -0700
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB8078F4A00@exchtp03.taipei.via.com.tw>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,25 +29,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: JosephChan@via.com.tw
-Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, geert@linux-m68k.org, linux-kernel@vger.kernel.org
+Cc: JosephChan@via.com.tw, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, Aug 12, 2008 at 09:00:04AM +0800, JosephChan@via.com.tw wrote:
->Correct the malformed issue for v2's patch which .
->2D and HW cursor stuff of viafb driver.
->
->Signed-off-by: Joseph Chan <josephchan@via.com.tw>
->
->diff -Nurp a/drivers/video/via/accel.c b/drivers/video/via/accel.c
->--- a/drivers/video/via/accel.c	1970-01-01 08:00:00.000000000 +0800
->+++ b/drivers/video/via/accel.c	2008-07-22 02:07:29.000000000 +0800
+On Tue, 12 Aug 2008 08:53:47 +0800
+<JosephChan@via.com.tw> wrote:
 
->+void viafb_init_accel(void)
->+{
+> Correct the description of VX800 2D acceleration, the driver diables the acceleration
+> function by defualt if you use VX800 chip.
+> Correct via_fb_ to viafb_ and remove the Kconfig part in viafb.txt.
 
->+	/* Reverse 8*1024 memory space for cursor image */
+The difference betwee this patch and the previous one
+(viafb-viafbmodes-viafbtxt.patch) is:
 
-s/verse/serve/
+--- a/Documentation/fb/viafb.txt~viafb-viafbmodes-viafbtxt-fix
++++ a/Documentation/fb/viafb.txt
+@@ -182,8 +182,9 @@ Notes:
+        instead of calling common ioctl function FBIOPUT_VSCREENINFO since
+        viafb doesn't support multi-head well, or it will cause screen crush.
+     4. VX800 2D accelerator hasn't been supported in this driver yet. When
+-       using driver on VX800, one should add parameter "viafb_accel=0" to
+-       disable 2D accelerator.
++       using driver on VX800, the driver will disable the acceleration funciton.
++       as default.
++
+ 
+ [Configure viafb with "fbset" tool]
+ -----------------------------------
+_
+
+Which does not fully meet your description of it?
+
+I'll fix the "funciton" spelling.
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

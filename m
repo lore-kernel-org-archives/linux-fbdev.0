@@ -1,8 +1,10 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: intelfb crashes during modprobe
-Date: Sun, 17 Aug 2008 20:09:28 +0200
-Message-ID: <20080817200928.15da18c6.krzysztof.h1@poczta.fm>
-References: <376ea3380808140821k4e2ec102n452bcc7bb9cc3676@mail.gmail.com>
+Subject: Re: [PATCH 1/1] Video/Framebuffer: add
+ fuctional power management support to Blackfin BF54x LQ043 framebuffer
+ driver
+Date: Sun, 17 Aug 2008 20:46:23 +0200
+Message-ID: <20080817204623.47fd24a1.krzysztof.h1@poczta.fm>
+References: <1218791228-12974-1-git-send-email-cooloney@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,13 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KUmbM-00036A-GE for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Aug 2008 11:03:40 -0700
+	id 1KUnB7-0006as-0s for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 Aug 2008 11:40:37 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KUmbK-0003nL-03
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KUnB5-00069d-KB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 Aug 2008 11:03:40 -0700
-In-Reply-To: <376ea3380808140821k4e2ec102n452bcc7bb9cc3676@mail.gmail.com>
+	Sun, 17 Aug 2008 11:40:37 -0700
+In-Reply-To: <1218791228-12974-1-git-send-email-cooloney@kernel.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,41 +29,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jon Dufresne <jon.dufresne@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Bryan Wu <cooloney@kernel.org>
+Cc: Michael Hennerich <michael.hennerich@analog.com>, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On Thu, 14 Aug 2008 08:21:01 -0700
-"Jon Dufresne" <jon.dufresne@gmail.com> wrote:
+On Fri, 15 Aug 2008 17:07:08 +0800
+Bryan Wu <cooloney@kernel.org> wrote:
 
-> Hi,
+> From: Michael Hennerich <michael.hennerich@analog.com>
 > 
-> I am experimenting with using a framebuffer for video playback with
-> DirectFB. The first goal of mine is to get a stable fb driver working
-> that DirectFB can talk to.
+> Fix bug: does nor properply resume after suspend mem
+> Fix for PM_SUSPEND_MEM: Save and restore peripheral base and DMA registers
 > 
-> My target platform is an x86 with an intel 965G chipset running
-> fedora. I am attempting to use the intelfb driver to successfully
-> complete this project.
-> 
-> I let my system boot, and then modprobe intelfb with no parameters.
-> Every time the system always either reboots, or hangs with no response
-> to input. Has anyone experienced this before? I can successfully do
-> low resolution video playback using the vesa driver.
-> 
-> I've developed Linux drivers in the past and am going to dive into the
-> code to see if I can solve this, and other problems. Should I be in
-> direct contact with the current maintainer of this module to possibly
-> point me in the right direction?
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/video/bf54x-lq043fb.c |   15 ++++++++++++---
+>  1 files changed, 12 insertions(+), 3 deletions(-)
 > 
 
-Could you provide more details? Especially, if you have connected a CRT
-(either real CRT or external LCD panel) or the LVDS (LCD directly to
-the chip - like in laptops).
-
-I have not experienced this but I haven't tried it either.
-
-Regards,
-Krzysztof
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 ----------------------------------------------------------------------
 Igrzyska z nagrodami! Kliknij>>>> http://link.interia.pl/f1edb 

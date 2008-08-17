@@ -1,59 +1,109 @@
-From: Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] Video/Framebuffer: add fuctional power management support to Blackfin BF54x LQ043 framebuffer driver
-Date: Fri, 15 Aug 2008 17:07:08 +0800
-Message-ID: <1218791228-12974-1-git-send-email-cooloney@kernel.org>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757606AbYHOJHa@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: zhang wenjie <zwjsq@vip.sina.com>
+Subject: deferred_io problem
+Date: Sun, 17 Aug 2008 12:05:35 +0800
+Message-ID: <48A7A38F.2010305@vip.sina.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Michael Hennerich <michael.hennerich@analog.com>, Bryan Wu <cooloney@kernel.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, linux-fbdev-users <linux-fbdev-users@lists.sourceforge.net>
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+   I have counted a problem when i mmap the /dev/fb0 and memset it to 0( 
+the fb driver use deferred_io and when i do not use deferred_io it works 
+well) .This bug also showed int linux2.6.26 and linux2.6.25. does this 
+bug solved?
 
-Fix bug: does nor properply resume after suspend mem
-Fix for PM_SUSPEND_MEM: Save and restore peripheral base and DMA registers
+function fb_deferred_io_fault called<3>function fb_deferred_io_mkwrite 
+called<3>function fb_deferred_io_fault called<3>function 
+fb_deferred_io_mkwrite called<3>function fb_deferred_io_fault 
+called<3>function fb_deferred_io_mkwrite called<2>kernel BUG at 
+lib/radix-tree.c:474!
+Unable to handle kernel NULL pointer dereference at virtual address 
+00000000
+pgd = c3ef8000
+[00000000] *pgd=0bd25031, *pte=00000000, *ppte=00000000
+Internal error: Oops: 817 [#2]
+Modules linked in: etrackfb_new sony_prs_505
+CPU: 0    Tainted: G      D W  (2.6.26-rc9-00056-g99b0915-dirty #1)
+PC is at __bug+0x20/0x2c
+LR is at log_wait+0x0/0x8
+pc : [<c002118c>]    lr : [<c024f1f8>]    psr: 20000093
+sp : c3ed7d9c  ip : c3ed7ce0  fp : c3ed7da8
+r10: 00000002  r9 : 00000000  r8 : 40137000
+r7 : 00000000  r6 : c3811294  r5 : 00000000  r4 : 00000000
+r3 : 00000000  r2 : c024f214  r1 : 0001233d  r0 : 00000027
+Flags: nzCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
+Control: c000717f  Table: 0bef8000  DAC: 00000015
+Process framebuff.ko (pid: 215, stack limit = 0xc3ed6260)
+Stack: (0xc3ed7d9c to 0xc3ed8000)
+7d80:                                                                
+c3ed7dd8 7da0: c3ed7dac c01069d4 c002117c c3ed7db8 00000000 c0310b40 
+c3811290 00000000 7dc0: 40137000 c3d2c900 00000000 c3ed7df4 c3ed7ddc 
+c00a639c c010692c c0310b40 7de0: 00000001 c3d1339c c3ed7e04 c3ed7df8 
+c00a65f8 c00a6248 c3ed7e1c c3ed7e08 7e00: c00660d8 c00a6554 c0310b40 
+00000001 c3ed7e34 c3ed7e20 c0066ba4 c006609c 7e20: 0bd5a0ff c0310b40 
+c3ed7e7c c3ed7e38 c006d684 c0066b9c c3ef9000 00000001 7e40: 00000001 
+00000001 00000002 40137000 c0310b40 c3ef8000 00000000 c3d20f00 7e60: 
+c3d1339c 40137000 00000800 00001000 c3ed7ecc c3ed7e80 c006eb64 c006d318 
+7e80: 00000002 00000001 00000000 c02ffe60 c3d2c900 c3ed7eb4 000004dc 
+c3ef9000 7ea0: c004c368 ffffffff c3d1339c c3d20f00 c3d2c938 c3d2c900 
+c3ed7fb0 40137000 7ec0: c3ed7f04 c3ed7ed0 c0022dc0 c006e8b8 c02ffe60 
+c3ef8000 00000817 ffffffff 7ee0: c024e630 00000817 c3ed7fb0 40137000 
+00000000 4012f000 c3ed7fac c3ed7f08 7f00: c001d1dc c0022ce8 00000000 
+000000fb c3d2c900 c3d30680 00000224 c3ef9000 7f20: 00076000 ffffffff 
+00000200 c3d136e4 c3ed7f4c c3ed7f40 c004f998 c0107a20 7f40: c3ed7f84 
+c3ed7f50 c0022e50 c004f998 00075300 c3ed7f70 00000000 ffffffff 7f60: 
+00001000 000086c0 00000001 00008520 00000000 4012f000 c3ed7f9c c3ed7f88 
+7f80: c0022f98 c0022ce8 ffffffff ffffffff 000086b4 000086c0 00000001 
+00008520 7fa0: 00000000 c3ed7fb0 c001d9c0 c001d1b0 40135000 00000000 
+000732f8 40137000 7fc0: beb2bed4 000086b4 000086c0 00000001 00008520 
+00000000 4012f000 beb2bea8 7fe0: 40089810 beb2bd6c 00008674 40089838 
+20000010 ffffffff ffffffff ffffffff Backtrace: [<c002116c>] 
+(__bug+0x0/0x2c) from [<c01069d4>] (radix_tree_tag_set+0xb8/0xfc)
+[<c010691c>] (radix_tree_tag_set+0x0/0xfc) from [<c00a639c>] 
+(__set_page_dirty+0x164/0x198)
+[<c00a6238>] (__set_page_dirty+0x0/0x198) from [<c00a65f8>] 
+(__set_page_dirty_buffers+0xb4/0xc4)
+r6:c3d1339c r5:00000001 r4:c0310b40
+[<c00a6544>] (__set_page_dirty_buffers+0x0/0xc4) from [<c00660d8>] 
+(set_page_dirty+0x4c/0xd0)
+[<c006608c>] (set_page_dirty+0x0/0xd0) from [<c0066ba4>] 
+(set_page_dirty_balance+0x18/0x5c)
+r5:00000001 r4:c0310b40
+[<c0066b8c>] (set_page_dirty_balance+0x0/0x5c) from [<c006d684>] 
+(__do_fault+0x37c/0x3a4)
+r5:c0310b40 r4:0bd5a0ff
+[<c006d308>] (__do_fault+0x0/0x3a4) from [<c006eb64>] 
+(handle_mm_fault+0x2bc/0x5f0)
+[<c006e8a8>] (handle_mm_fault+0x0/0x5f0) from [<c0022dc0>] 
+(do_page_fault+0xe8/0x224)
+[<c0022cd8>] (do_page_fault+0x0/0x224) from [<c001d1dc>] 
+(do_DataAbort+0x3c/0xa0)
+[<c001d1a0>] (do_DataAbort+0x0/0xa0) from [<c001d9c0>] 
+(ret_from_exception+0x0/0x10)
+Exception stack(0xc3ed7fb0 to 0xc3ed7ff8)
+7fa0:                                     40135000 00000000 000732f8 
+40137000 7fc0: beb2bed4 000086b4 000086c0 00000001 00008520 00000000 
+4012f000 beb2bea8 7fe0: 40089810 beb2bd6c 00008674 40089838 20000010 
+ffffffff                   r8:00008520 r7:00000001 r6:000086c0 
+r5:000086b4 r4:ffffffff
+Code: e1a01000 e59f000c eb006243 e3a03000 (e5833000) ---[ end trace 
+4cc49dda9c86eac6 ]---
+Segmentation fault
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/video/bf54x-lq043fb.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-index 940467a..6d5aa80 100644
---- a/drivers/video/bf54x-lq043fb.c
-+++ b/drivers/video/bf54x-lq043fb.c
-@@ -733,7 +733,6 @@ static int bfin_bf54x_remove(struct platform_device *pdev)
- static int bfin_bf54x_suspend(struct platform_device *pdev, pm_message_t state)
- {
- 	struct fb_info *fbinfo = platform_get_drvdata(pdev);
--	struct bfin_bf54xfb_info *info = fbinfo->par;
- 
- 	bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() & ~EPPI_EN);
- 	disable_dma(CH_EPPI0);
-@@ -747,8 +746,18 @@ static int bfin_bf54x_resume(struct platform_device *pdev)
- 	struct fb_info *fbinfo = platform_get_drvdata(pdev);
- 	struct bfin_bf54xfb_info *info = fbinfo->par;
- 
--	enable_dma(CH_EPPI0);
--	bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() | EPPI_EN);
-+	if (info->lq043_open_cnt) {
-+
-+		bfin_write_EPPI0_CONTROL(0);
-+		SSYNC();
-+
-+		config_dma(info);
-+		config_ppi(info);
-+
-+		/* start dma */
-+		enable_dma(CH_EPPI0);
-+		bfin_write_EPPI0_CONTROL(bfin_read_EPPI0_CONTROL() | EPPI_EN);
-+	}
- 
- 	return 0;
- }
--- 
-1.5.6
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

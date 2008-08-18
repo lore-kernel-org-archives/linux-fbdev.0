@@ -1,27 +1,24 @@
-From: "Jon Dufresne" <jon.dufresne@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: intelfb crashes during modprobe
-Date: Mon, 18 Aug 2008 08:03:44 -0700
-Message-ID: <376ea3380808180803r58c16e4dhbc29549cd79c6785@mail.gmail.com>
+Date: Mon, 18 Aug 2008 17:09:15 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0808181708030.3969@anakin>
 References: <376ea3380808140821k4e2ec102n452bcc7bb9cc3676@mail.gmail.com>
-	<20080814161416.GG5916@omnius.localdomain>
+	<20080817200928.15da18c6.krzysztof.h1@poczta.fm>
+	<376ea3380808180800h308a5d89v5cd213acfa6b2c0c@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KV6Go-0004U6-8o for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Aug 2008 08:03:46 -0700
-Received: from nf-out-0910.google.com ([64.233.182.186])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KV6Gn-0001rm-OP
+	id 1KV6MF-0005f6-Dk for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 18 Aug 2008 08:09:23 -0700
+Received: from gerard.telenet-ops.be ([195.130.132.48])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KV6MD-00068A-KS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Aug 2008 08:03:46 -0700
-Received: by nf-out-0910.google.com with SMTP id g16so1091706nfd.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 18 Aug 2008 08:03:44 -0700 (PDT)
-In-Reply-To: <20080814161416.GG5916@omnius.localdomain>
-Content-Disposition: inline
+	Mon, 18 Aug 2008 08:09:23 -0700
+In-Reply-To: <376ea3380808180800h308a5d89v5cd213acfa6b2c0c@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,25 +29,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Scott Mcdermott <scott.m.mcdermott@gmail.com>
+To: Jon Dufresne <jon.dufresne@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, Aug 14, 2008 at 9:14 AM, Scott Mcdermott
-<scott.m.mcdermott@gmail.com> wrote:
-> Jon Dufresne on Thu 14/08 08:21 -0700:
->> My target platform is an x86 with an intel 965G
->> chipset running fedora.
->
-> I believe intelfb dev for later chipsets has gone here:
->
-> http://www.google.com/search?q=%22kernel%20modesetting%22
->
-> supposedly 965G works in that tree, and is enableable
-> with FC9 shipped kernel given the command line args
-> mentioned
+On Mon, 18 Aug 2008, Jon Dufresne wrote:
+> > Could you provide more details? Especially, if you have connected a CRT
+> > (either real CRT or external LCD panel) or the LVDS (LCD directly to
+> > the chip - like in laptops).
+> 
+> I have the graphics chip connected to an external LCD using the vga port.
+> 
+> Btw, I made a mistake in my first post. The chip is an intel 945GM, not 965G.
+> 
+> I've done a bit of experimenting and this crash only occurs when the
+> "accel" option is turned on. If accel is turned on (the default), then
+> when I modprobe the driver the system restarts. Otherwise the system
+> comes on.
 
-I took a look at that site. Does this modeset command line option
-affect the framebuffer, or X?
+Thanks, that may be a clue for the intelfb experts...
+
+> Is accel something crucial that I should be concerned about?
+
+It enables acceleration (rectangle fill and copy, monochrome color
+expansion) for the frame buffer console.
+
+If you disable it, your text console will become slower.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

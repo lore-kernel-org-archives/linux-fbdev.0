@@ -1,10 +1,11 @@
-From: Scott Mcdermott <vaxerdec@gmail.com>
+From: "Jon Dufresne" <jon.dufresne@gmail.com>
 Subject: Re: intelfb crashes during modprobe
-Date: Mon, 18 Aug 2008 08:41:26 -0700
-Message-ID: <20080818154126.GA3281@omnius.localdomain>
+Date: Mon, 18 Aug 2008 11:32:41 -0700
+Message-ID: <376ea3380808181132v18ece4aby939e8feaf533e766@mail.gmail.com>
 References: <376ea3380808140821k4e2ec102n452bcc7bb9cc3676@mail.gmail.com>
 	<20080814161416.GG5916@omnius.localdomain>
 	<376ea3380808180803r58c16e4dhbc29549cd79c6785@mail.gmail.com>
+	<20080818154126.GA3281@omnius.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,17 +13,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KV6sS-0003PZ-7x for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Aug 2008 08:42:40 -0700
-Received: from wf-out-1314.google.com ([209.85.200.168])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KV6rJ-0005zG-0E
+	id 1KV9X2-00056y-BN for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 18 Aug 2008 11:32:44 -0700
+Received: from ik-out-1112.google.com ([66.249.90.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KV9X0-0001Qw-VJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Aug 2008 08:41:30 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so3180019wfd.4
+	Mon, 18 Aug 2008 11:32:44 -0700
+Received: by ik-out-1112.google.com with SMTP id c21so2506915ika.2
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 18 Aug 2008 08:41:28 -0700 (PDT)
+	Mon, 18 Aug 2008 11:32:41 -0700 (PDT)
+In-Reply-To: <20080818154126.GA3281@omnius.localdomain>
 Content-Disposition: inline
-In-Reply-To: <376ea3380808180803r58c16e4dhbc29549cd79c6785@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,41 +34,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jon Dufresne <jon.dufresne@gmail.com>
+To: Scott Mcdermott <vaxerdec@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Jon Dufresne on Mon 18/08 08:03 -0700:
-> > I believe intelfb dev for later chipsets has gone
-> > here:
-> >
-> > http://www.google.com/search?q=%22kernel%20modesetting%22
-> >
-> > supposedly 965G works in that tree, and is enableable
-> > with FC9 shipped kernel given the command line args
-> > mentioned
-> 
-> I took a look at that site. Does this modeset command
-> line option affect the framebuffer, or X?
+I gave the kernel modesetting option a shot. It actually appears to
+get me to a framebuffer much smoother than the previous method. I have
+a good looking 720p framebuffer on the CRT port that I can play videos
+with. I am quite happy about that thanks.
 
-It moves all graphics modesetting code into the kernel.
-I believe X no longer does the modesetting and has been
-built to support the kernel changes.  Fbcon is just
-always running.  Haven't tried it yet myself yet
-though...
+I have a HDMI port attached to the same chip, using DVO port C. Using
+this port has much different results than the CRT port. I looked
+through the DMESG and the kernel code and it appears that all non-crt
+ports do not support mode switching.
 
-I believe the goal is to move the DRM portion that sets
-modes and such into the kernel for all drivers and X
-will no longer do low level mode switching.  No more
-several second pauses to switch console-X-console
-and/or start X.
+Is there a hardware limitation reason for this?
 
-This thread explains origins but it's a little old:
+I commented out the line in the kernel intelfb driver that disables
+mode switching for the non-CRT ports, I had no luck (thought I'd give
+it a shot just in case).
 
-http://kerneltrap.org/node/8242
+Anyone have an idea what it would take to fix this? I would be willing
+to give it a shot as this box will ideally hook up to a tv using HDMI,
+not a CRT monitor. I just need an idea where to start.
 
-I can't find a home site for this project.  But since
-RH is pushing it I'll bet money it will get into the
-standard kernel before long if it's not already.
+Thanks,
+Jon
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

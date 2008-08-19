@@ -1,26 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] RADEON: duplicate
-	PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb
-Date: Tue, 19 Aug 2008 08:06:40 +1000
-Message-ID: <1219097200.28339.94.camel@pasglop>
-References: <48AA3900.80305@gmail.com>
-Reply-To: benh@kernel.crashing.org
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC 2.6.26-rc9 0/2] metronomefb and
+	am200epd fixes v9
+Date: Tue, 19 Aug 2008 11:03:39 +0100
+Message-ID: <20080819100339.GD1067@flint.arm.linux.org.uk>
+References: <1217682500-31503-1-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVCsE-00015s-Rm for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Aug 2008 15:06:50 -0700
-Received: from gate.crashing.org ([63.228.1.57]
-	ident=[U2FsdGVkX1+Bu5GS2kcBpTdIlLxtB57IeFG/PCIkHqU=])
+	id 1KVO4G-0002IS-3I for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Aug 2008 03:04:00 -0700
+Received: from caramon.arm.linux.org.uk ([78.32.30.218])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KVCsD-0008FF-9w
+	(Exim 4.44) id 1KVO4F-0004Gl-3t
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 Aug 2008 15:06:50 -0700
-In-Reply-To: <48AA3900.80305@gmail.com>
+	Tue, 19 Aug 2008 03:03:59 -0700
+Content-Disposition: inline
+In-Reply-To: <1217682500-31503-1-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,42 +30,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: roel kluin <roel.kluin@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Mon, 2008-08-18 at 23:07 -0400, roel kluin wrote:
-> untested, is it correct?
-> ---
-> duplicate PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb
+On Sat, Aug 02, 2008 at 09:08:18AM -0400, Jaya Kumar wrote:
+> 
+> This is version 9 of this RFC and contains the following updates:
+> - switched to using fb notifiers. The benefit of this is that it avoids
+>   the need to add any custom callbacks in pxafb. Basically, using this
+>   mechanism there are no changes needed from the underlying host video driver.
+> - eliminates one patch. So we just have the new am200epd and changes to
+>   metronomefb.
 
-Hard to say... this code originates from ATI. I'll have to dig a bit
-to see what is the right bit combo I suppose.
+Well, somethings gone wrong - patch 1 doesn't compile.
 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-> index 675abda..74d2e65 100644
-> --- a/drivers/video/aty/radeon_pm.c
-> +++ b/drivers/video/aty/radeon_pm.c
-> @@ -210,7 +210,7 @@ static void radeon_pm_disable_dynamic_mode(struct radeonfb_info *rinfo)
->  			 PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb	|
->  			 PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb	|
->  			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
-> -			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
-> +			 PIXCLKS_CNTL__R300_P2G2CLK_DAC_ALWAYS_ONb	|
->  			 PIXCLKS_CNTL__R300_DISP_DAC_PIXCLK_DAC2_BLANK_OFF);
->                  OUTPLL(pllPIXCLKS_CNTL, tmp);
->  
-> @@ -392,7 +392,7 @@ static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
->  			PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb      |
->  			PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb        |
->  			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb           |
-> -			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb);
-> +			PIXCLKS_CNTL__R300_P2G2CLK_DAC_ALWAYS_ONb);
->  		OUTPLL(pllPIXCLKS_CNTL, tmp);
->  
->  		tmp = INPLL(pllMCLK_MISC);
-
+arch/arm/mach-pxa/am200epd.c: In function `am200_share_video_mem':
+arch/arm/mach-pxa/am200epd.c:151: error: structure has no member named `metromem'
+arch/arm/mach-pxa/am200epd.c:152: error: structure has no member named `host_fbinfo'
+<and lots more errors>
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

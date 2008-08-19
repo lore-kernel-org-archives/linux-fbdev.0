@@ -1,7 +1,7 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] pm2fb: free cmap memory on module remove
-Date: Tue, 19 Aug 2008 21:45:25 +0200
-Message-ID: <20080819214525.49643cde.krzysztof.h1@poczta.fm>
+From: "Jorge Marques Pelizzoni" <jpeliz@icmc.usp.br>
+Subject: newbie: fb specs and indirect VRAM access
+Date: Tue, 19 Aug 2008 17:31:34 -0300 (BRT)
+Message-ID: <47858.200.178.190.130.1219177894.squirrel@mail2.icmc.usp.br>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,12 +9,19 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVXOW-0000h7-Cp for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Aug 2008 13:01:32 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVXOU-0004js-Ry
+	id 1KVXs7-0003bd-8m for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Aug 2008 13:32:07 -0700
+Received: from mail.icmc.usp.br ([143.107.231.3] helo=mail2.icmc.usp.br)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KVXs4-0006r6-Pc
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Aug 2008 13:01:32 -0700
+	Tue, 19 Aug 2008 13:32:07 -0700
+Received: from mail2.icmc.usp.br (mail2 [143.107.231.3])
+	by mail2.icmc.usp.br (Postfix) with ESMTP id AC6B35136
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 19 Aug 2008 17:31:34 -0300 (BRT)
+References: 
+In-Reply-To: 
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,31 +32,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Hi, all!
 
-Release cmap memory allocated in the probe function.
+I am considering implementing a frame buffer device for a mobile platform
+(LPC2400 on uCLinux) that, as far as I can tell, seems to lack one. Well,
+I am a newbie to all things frame buffer-related (though familiar with
+kernel/device module implementation) and would most appreciate it if you
+could answer the following questions:
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
+1 - are there documents specifying frame buffer devices and how
+applications are expected to handle them (in short, their API)?
 
-diff -urp linux-ref/drivers/video/pm2fb.c linux-2.6/drivers/video/pm2fb.c
---- linux-ref/drivers/video/pm2fb.c	2008-08-09 05:09:05.000000000 +0200
-+++ linux-2.6/drivers/video/pm2fb.c	2008-08-20 20:58:14.000000000 +0200
-@@ -1746,6 +1746,7 @@ static void __devexit pm2fb_remove(struc
- 	release_mem_region(fix->mmio_start, fix->mmio_len);
- 
- 	pci_set_drvdata(pdev, NULL);
-+	fb_dealloc_cmap(&info->cmap);
- 	kfree(info->pixmap.addr);
- 	kfree(info);
- }
+2 - my CPU cannot address "real" VRAM directly, all control being carried
+out by means of a parallel interface. I gathered that an fb user is
+expected to write to (virtual) VRAM directly via a pointer provided by the
+driver and never notifies the driver of changes. Have you seen such a
+set-up before and do you think these requirements can be reconciled? The
+only way round this I can currently see is making the driver periodically
+check the virtual VRAM for changes and transmit only changed parts. All in
+all, a costly operation, as everything must be carried out by the same
+CPU. Could whatever is used to implement mmap be called into play (without
+whatever is used to implement msync)?
 
-----------------------------------------------------------------------
-Wygraj laptopa lub iPoda! Wez udzial w igrzyskach!
-Kliknij >>> http://link.interia.pl/f1eda 
+Thank you very much in advance.
+
+Cheers,
+
+Jorge M. Pelizzoni.
 
 
 

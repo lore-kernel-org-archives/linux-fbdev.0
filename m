@@ -1,28 +1,30 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.26-rc9 0/2] metronomefb and
-	am200epd fixes v9
-Date: Tue, 19 Aug 2008 06:13:32 -0400
-Message-ID: <45a44e480808190313y1f6e89a8r79611807664b712@mail.gmail.com>
-References: <1217682500-31503-1-git-send-email-jayakumar.lkml@gmail.com>
-	<20080819100339.GD1067@flint.arm.linux.org.uk>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: i.MX Framebuffer patches
+Date: Tue, 19 Aug 2008 17:06:39 +0200
+Message-ID: <1219158403-5180-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVODW-0003Nf-EF for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Aug 2008 03:13:34 -0700
-Received: from wf-out-1314.google.com ([209.85.200.173])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVODV-000053-4d
+	id 1KVSnK-0000aY-Lw for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Aug 2008 08:06:50 -0700
+Received: from metis.extern.pengutronix.de ([83.236.181.26])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KVSnJ-0005N5-5Q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Aug 2008 03:13:34 -0700
-Received: by wf-out-1314.google.com with SMTP id 27so3634095wfd.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 19 Aug 2008 03:13:32 -0700 (PDT)
-In-Reply-To: <20080819100339.GD1067@flint.arm.linux.org.uk>
-Content-Disposition: inline
+	Tue, 19 Aug 2008 08:06:50 -0700
+Received: from octopus.labnet.pengutronix.de ([10.1.1.3])
+	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
+	(envelope-from <sha@pengutronix.de>) id 1KVSnD-0000Jv-Ai
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Aug 2008 17:06:43 +0200
+Received: from sha by octopus.labnet.pengutronix.de with local (Exim 4.69)
+	(envelope-from <sha@pengutronix.de>) id 1KVSnD-0001M3-0j
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 Aug 2008 17:06:43 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,34 +35,14 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Aug 19, 2008 at 6:03 AM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Sat, Aug 02, 2008 at 09:08:18AM -0400, Jaya Kumar wrote:
->>
->> This is version 9 of this RFC and contains the following updates:
->> - switched to using fb notifiers. The benefit of this is that it avoids
->>   the need to add any custom callbacks in pxafb. Basically, using this
->>   mechanism there are no changes needed from the underlying host video driver.
->> - eliminates one patch. So we just have the new am200epd and changes to
->>   metronomefb.
->
-> Well, somethings gone wrong - patch 1 doesn't compile.
->
-> arch/arm/mach-pxa/am200epd.c: In function `am200_share_video_mem':
-> arch/arm/mach-pxa/am200epd.c:151: error: structure has no member named `metromem'
-> arch/arm/mach-pxa/am200epd.c:152: error: structure has no member named `host_fbinfo'
-> <and lots more errors>
->
+Here are some patches for the i.MX framebuffer driver. They mainly prepare
+the driver for use with other i.MX processors like the i.MX27.
 
-Ah sorry, it's missing metronomefb.h changes which is in patch 2/2. I
-had split them to make reviewing easier. I'll post patch 2/2 to the
-patch queue now.
+Sascha
 
-Thanks,
-jaya
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

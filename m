@@ -1,23 +1,28 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Amol Lad" <amol.lad@gmail.com>
 Subject: Re: Dynamic switch from Console on ttyS0 to
- fbcon
-Date: Wed, 20 Aug 2008 08:51:29 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808200850330.383@anakin>
+	fbcon
+Date: Wed, 20 Aug 2008 12:46:31 +0530
+Message-ID: <8c675e9b0808200016x6da4be9bm3f4cc697ffc5cac1@mail.gmail.com>
 References: <8c675e9b0808192118g598fc380kf3cb3aa22cf969c8@mail.gmail.com>
+	<Pine.LNX.4.64.0808200850330.383@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVhXd-0002QK-WC for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Aug 2008 23:51:38 -0700
-Received: from monty.telenet-ops.be ([195.130.132.56])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVhXc-00083L-KR
+	id 1KVhvl-0004yN-C8 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 Aug 2008 00:16:33 -0700
+Received: from fg-out-1718.google.com ([72.14.220.157])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVhvk-0007gs-R9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 Aug 2008 23:51:38 -0700
-In-Reply-To: <8c675e9b0808192118g598fc380kf3cb3aa22cf969c8@mail.gmail.com>
+	Wed, 20 Aug 2008 00:16:33 -0700
+Received: by fg-out-1718.google.com with SMTP id d23so210393fga.32
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 20 Aug 2008 00:16:31 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0808200850330.383@anakin>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,43 +33,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Amol Lad <amol.lad@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 20 Aug 2008, Amol Lad wrote:
-> I'm trying to switch the console from ttyS0 to frame buffer. This is
-> achieved using fbcon; you can either link it statically in kernel or
-> "modprobe fbcon" (Documentation/fb/fbcon.txt)
-> 
-> The problem is if "console=ttyS0,115200n8" is passed on u-boot command
-> line then the console switch to framebuffer does not happen after
-> doing modprobe fbcon.
-> 
-> If "console=ttyS0,115200n8" argument is not passed on u-boot then the
-> console switch happens after modprobe fbcon.
-> 
-> Any ideas why switch does not happen when "console=" argument is
-> passed to the kernel ? (In my application, I need to switch the
-> console dynamically to framebuffer from ttyS0. This decision cannot be
-> done in u-boot so u-boot will pass "console=ttyS0,115200n8" argument)
+On Wed, Aug 20, 2008 at 12:21 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Wed, 20 Aug 2008, Amol Lad wrote:
+>> I'm trying to switch the console from ttyS0 to frame buffer.
+>>
+>> The problem is if "console=ttyS0,115200n8" is passed on u-boot command
+>> line then the console switch to framebuffer does not happen after
+>> doing modprobe fbcon.
+>>
+>> If "console=ttyS0,115200n8" argument is not passed on u-boot then the
+>> console switch happens after modprobe fbcon.
+>>
 
-Have you tried
+> Have you tried
+>
+>    console=ttyS0,115200n8 console=tty0
+>
+> ? This will make console output go to both, and console input will come
+> from tty0.
 
-    console=ttyS0,115200n8 console=tty0
+I tried that. This makes user space to use tty0 as /dev/console. In
+this case I did "modprobe fbcon" (from telnet session) and I get
+console on FB.
+But I want console to stay on ttyS0 if "modprobe fbcon" is not done.
+This way based on some /proc entry I can decide to switch to frame
+buffer console in startup script or stay in ttyS0 mode
 
-? This will make console output go to both, and console input will come
-from tty0.
+>
+> Gr{oetje,eeting}s,
 
-Gr{oetje,eeting}s,
+Thanks
+Amol
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+>
+>                                                Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                                            -- Linus Torvalds
+>
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

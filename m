@@ -1,10 +1,10 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] i.MX Framebuffer: rename
- imxfb_mach_info to imx_fb_platform_data
-Date: Wed, 20 Aug 2008 17:51:12 +0200
-Message-ID: <20080820175112.c49ef384.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] i.MX Framebuffer: Use
+ iowrite/ioread instead of direct pointer deref
+Date: Wed, 20 Aug 2008 17:31:59 +0200
+Message-ID: <20080820173159.4bc56e34.krzysztof.h1@poczta.fm>
 References: <1219158403-5180-1-git-send-email-s.hauer@pengutronix.de>
-	<1219158403-5180-5-git-send-email-s.hauer@pengutronix.de>
+	<1219158403-5180-3-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,13 +12,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVpyW-0001r1-Bq for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 08:51:56 -0700
+	id 1KVq3A-00038Q-M3 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 Aug 2008 08:56:44 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVprw-0000RM-Cl
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVq37-0007UB-JZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 08:45:11 -0700
-In-Reply-To: <1219158403-5180-5-git-send-email-s.hauer@pengutronix.de>
+	Wed, 20 Aug 2008 08:56:44 -0700
+In-Reply-To: <1219158403-5180-3-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,105 +30,434 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Juergen Beisert <j.beisert@pengutronix.de>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 19 Aug 2008 17:06:43 +0200
+On Tue, 19 Aug 2008 17:06:41 +0200
 Sascha Hauer <s.hauer@pengutronix.de> wrote:
 
-> rename imxfb_mach_info to a name more common to kernel hackers
+> From: Juergen Beisert <j.beisert@pengutronix.de>
 > 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> This patch prepares the current i.MX1 framebuffer driver for usage in the
+> whole i.MX family. It switches to iowrite/ioread for register accesses.
+> Also it moves the register definitions to the driver where they belong.
+> 
+> Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
 > ---
->  arch/arm/mach-imx/include/mach/imxfb.h |    5 +-
->  drivers/video/imxfb.c                  |   68 ++++++++++++++++----------------
->  2 files changed, 37 insertions(+), 36 deletions(-)
+>  drivers/video/imxfb.c |  208 ++++++++++++++++++++++++++++++++++++++++---------
+>  drivers/video/imxfb.h |    4 +-
+>  2 files changed, 173 insertions(+), 39 deletions(-)
 > 
-> diff --git a/arch/arm/mach-imx/include/mach/imxfb.h b/arch/arm/mach-imx/include/mach/imxfb.h
-> index 3ed9ec8..ffcff5a 100644
-> --- a/arch/arm/mach-imx/include/mach/imxfb.h
-> +++ b/arch/arm/mach-imx/include/mach/imxfb.h
-> @@ -1,7 +1,7 @@
->  /*
->   * This structure describes the machine which we are running on.
->   */
-> -struct imxfb_mach_info {
-> +struct imx_fb_platform_data {
->  	u_long		pixclock;
->  
->  	u_short		xres;
-> @@ -34,4 +34,5 @@ struct imxfb_mach_info {
->  	void (*lcd_power)(int);
->  	void (*backlight_power)(int);
->  };
-> -void set_imx_fb_info(struct imxfb_mach_info *hard_imx_fb_info);
-> +
-> +void set_imx_fb_info(struct imx_fb_platform_data *);
 > diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> index e450e6b..a4a4940 100644
+> index a990d43..0622589 100644
 > --- a/drivers/video/imxfb.c
 > +++ b/drivers/video/imxfb.c
-> @@ -510,7 +510,7 @@ static int imxfb_resume(struct platform_device *dev)
+> @@ -16,7 +16,6 @@
+>   *	linux-arm-kernel@lists.arm.linux.org.uk
+>   */
 >  
->  static int __init imxfb_init_fbinfo(struct platform_device *pdev)
+> -//#define DEBUG 1
+>  
+>  #include <linux/module.h>
+>  #include <linux/kernel.h>
+> @@ -33,7 +32,6 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/dma-mapping.h>
+>  
+> -#include <mach/hardware.h>
+>  #include <asm/io.h>
+>  #include <mach/imxfb.h>
+>  
+> @@ -44,6 +42,124 @@
+>  
+>  #include "imxfb.h"
+>  
+> +#define DRIVER_NAME "imx-fb"
+> +
+
+All constants below should really be put into the imxfb.h. There is already such a file.
+
+> +#define LCDC_SSA	0x00
+> +
+> +#define LCDC_SIZE	0x04
+> +#define SIZE_XMAX(x)	((((x) >> 4) & 0x3f) << 20)
+> +#ifdef CONFIG_ARCH_IMX
+
+Is it possible to use this driver without CONFIG_ARCH_IMX defined?
+
+> +#define SIZE_YMAX(y)	((y) & 0x1ff)
+> +#else
+> +#define SIZE_YMAX(y)	((y) & 0x3ff)
+> +#endif
+> +
+> +#define LCDC_VPW	0x08
+> +#define VPW_VPW(x)	((x) & 0x3ff)
+> +
+> +#define LCDC_CPOS	0x0C
+> +#define CPOS_CC1	(1<<31)
+> +#define CPOS_CC0	(1<<30)
+> +#define CPOS_OP		(1<<28)
+> +#define CPOS_CXP(x)	(((x) & 3ff) << 16)
+> +#ifdef CONFIG_ARCH_IMX
+> +#define CPOS_CYP(y)	((y) & 0x1ff)
+> +#else
+> +#define CPOS_CYP(y)	((y) & 0x3ff)
+> +#endif
+> +
+> +#define LCDC_LCWHB	0x10
+> +#define LCWHB_BK_EN	(1<<31)
+> +#define LCWHB_CW(w)	(((w) & 0x1f) << 24)
+> +#define LCWHB_CH(h)	(((h) & 0x1f) << 16)
+> +#define LCWHB_BD(x)	((x) & 0xff)
+> +
+> +#define LCDC_LCHCC	0x14
+> +#ifdef CONFIG_ARCH_IMX
+> +#define LCHCC_CUR_COL_R(r) (((r) & 0x1f) << 11)
+> +#define LCHCC_CUR_COL_G(g) (((g) & 0x3f) << 5)
+> +#define LCHCC_CUR_COL_B(b) ((b) & 0x1f)
+> +#else
+> +#define LCHCC_CUR_COL_R(r) (((r) & 0x3f) << 12)
+> +#define LCHCC_CUR_COL_G(g) (((g) & 0x3f) << 6)
+> +#define LCHCC_CUR_COL_B(b) ((b) & 0x3f)
+> +#endif
+> +
+> +#define LCDC_PCR	0x18
+> +#define PCR_TFT		(1<<31)
+> +#define PCR_COLOR	(1<<30)
+> +#define PCR_PBSIZ_1	(0<<28)
+> +#define PCR_PBSIZ_2	(1<<28)
+> +#define PCR_PBSIZ_4	(2<<28)
+> +#define PCR_PBSIZ_8	(3<<28)
+> +#define PCR_BPIX_1	(0<<25)
+> +#define PCR_BPIX_2	(1<<25)
+> +#define PCR_BPIX_4	(2<<25)
+> +#define PCR_BPIX_8	(3<<25)
+> +#define PCR_BPIX_12	(4<<25)
+> +#define PCR_BPIX_16	(4<<25)
+> +#define PCR_PIXPOL	(1<<24)
+> +#define PCR_FLMPOL	(1<<23)
+> +#define PCR_LPPOL	(1<<22)
+> +#define PCR_CLKPOL	(1<<21)
+> +#define PCR_OEPOL	(1<<20)
+> +#define PCR_SCLKIDLE	(1<<19)
+> +#define PCR_END_SEL	(1<<18)
+> +#define PCR_END_BYTE_SWAP (1<<17)
+> +#define PCR_REV_VS	(1<<16)
+> +#define PCR_ACD_SEL	(1<<15)
+> +#define PCR_ACD(x)	(((x) & 0x7f) << 8)
+> +#define PCR_SCLK_SEL	(1<<7)
+> +#define PCR_SHARP	(1<<6)
+> +#define PCR_PCD(x)	((x) & 0x3f)
+> +
+> +#define LCDC_HCR	0x1C
+> +#define HCR_H_WIDTH(x)	(((x) & 0x3f) << 26)
+> +#define HCR_H_WAIT_1(x)	(((x) & 0xff) << 8)
+> +#define HCR_H_WAIT_2(x)	((x) & 0xff)
+> +
+> +#define LCDC_VCR	0x20
+> +#define VCR_V_WIDTH(x)	(((x) & 0x3f) << 26)
+> +#define VCR_V_WAIT_1(x)	(((x) & 0xff) << 8)
+> +#define VCR_V_WAIT_2(x)	((x) & 0xff)
+> +
+> +#define LCDC_POS	0x24
+> +#define POS_POS(x)	((x) & 1f)
+> +
+> +#define LCDC_LSCR1	0x28
+> +#define LSCR1_PS_RISE_DELAY(x)    (((x) & 0x7f) << 26)
+> +#define LSCR1_CLS_RISE_DELAY(x)   (((x) & 0x3f) << 16)
+> +#define LSCR1_REV_TOGGLE_DELAY(x) (((x) & 0xf) << 8)
+> +#define LSCR1_GRAY2(x)            (((x) & 0xf) << 4)
+> +#define LSCR1_GRAY1(x)            (((x) & 0xf))
+> +
+> +#define LCDC_PWMR	0x2C
+> +#define PWMR_CLS(x)	(((x) & 0x1ff) << 16)
+> +#define PWMR_LDMSK	(1<<15)
+> +#define PWMR_SCR1	(1<<10)
+> +#define PWMR_SCR0	(1<<9)
+> +#define PWMR_CC_EN	(1<<8)
+> +#define PWMR_PW(x)	((x) & 0xff)
+> +
+> +#define LCDC_DMACR	0x30
+> +#define DMACR_BURST	(1<<31)
+> +#define DMACR_HM(x)	(((x) & 0xf) << 16)
+> +#define DMACR_TM(x)	((x) &0xf)
+> +
+> +#define LCDC_RMCR	0x34
+> +#define RMCR_LCDC_EN	(1<<1)
+> +#define RMCR_SELF_REF	(1<<0)
+> +
+> +#define LCDC_LCDICR	0x38
+> +#define LCDICR_INT_SYN	(1<<2)
+> +#define LCDICR_INT_CON	(1)
+> +
+> +#define LCDC_LCDISR	0x40
+> +#define LCDISR_UDR_ERR	(1<<3)
+> +#define LCDISR_ERR_RES	(1<<2)
+> +#define LCDISR_EOF	(1<<1)
+> +#define LCDISR_BOF	(1<<0)
+> +
+>  static struct imxfb_rgb def_rgb_16 = {
+>  	.red	= { .offset = 8,  .length = 4, },
+>  	.green	= { .offset = 4,  .length = 4, },
+> @@ -67,7 +183,6 @@ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
+>  	return chan << bf->offset;
+>  }
+>  
+> -#define LCDC_PALETTE(x) __REG2(IMX_LCDC_BASE+0x800, (x)<<2)
+>  static int
+>  imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+>  		       u_int trans, struct fb_info *info)
+> @@ -81,7 +196,7 @@ imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+>  		      (CNVT_TOHW(green,4) << 4) |
+>  		      CNVT_TOHW(blue,  4);
+>  
+> -		LCDC_PALETTE(regno) = val;
+> +		iowrite32(val, fbi->regs + 0x800 + (regno << 2));
+
+One may define an inline function imxfb_write(fbi, val, reg) :
+
+ imxfb_iowrite(fbi, val, reg) 
+{
+	iowrite32(val, fbi->regs + reg);
+}
+
+It would make the code more readable. The imxfb_ioread() could be used as well.
+
+>  		ret = 0;
+>  	}
+>  	return ret;
+> @@ -235,18 +350,23 @@ static void imxfb_enable_controller(struct imxfb_info *fbi)
+>  	pr_debug("Enabling LCD controller\n");
+>  
+>  	/* initialize LCDC */
+> -	LCDC_RMCR &= ~RMCR_LCDC_EN;		/* just to be safe... */
+> +	iowrite32(ioread32(fbi->regs + LCDC_RMCR) & ~RMCR_LCDC_EN,
+> +		fbi->regs + LCDC_RMCR);	/* just to be safe... */
+> +
+> +	iowrite32(fbi->screen_dma, fbi->regs + LCDC_SSA);
+>  
+> -	LCDC_SSA	= fbi->screen_dma;
+>  	/* physical screen start address	    */
+> -	LCDC_VPW	= VPW_VPW(fbi->max_xres * fbi->max_bpp / 8 / 4);
+> +	iowrite32(VPW_VPW(fbi->max_xres * fbi->max_bpp / 8 / 4),
+> +		fbi->regs + LCDC_VPW);
+>  
+> -	LCDC_POS	= 0x00000000;   /* panning offset 0 (0 pixel offset)        */
+> +	/* panning offset 0 (0 pixel offset)        */
+> +	iowrite32(0x00000000, fbi->regs + LCDC_POS);
+>  
+>  	/* disable hardware cursor */
+> -	LCDC_CPOS	&= ~(CPOS_CC0 | CPOS_CC1);
+> +	iowrite32(ioread32(fbi->regs + LCDC_CPOS) & ~(CPOS_CC0 | CPOS_CC1),
+> +		fbi->regs + LCDC_CPOS);
+>  
+> -	LCDC_RMCR = RMCR_LCDC_EN;
+> +	iowrite32(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
+>  
+>  	if(fbi->backlight_power)
+>  		fbi->backlight_power(1);
+> @@ -263,7 +383,7 @@ static void imxfb_disable_controller(struct imxfb_info *fbi)
+>  	if(fbi->lcd_power)
+>  		fbi->lcd_power(0);
+>  
+> -	LCDC_RMCR = 0;
+> +	iowrite32(0, fbi->regs + LCDC_RMCR);
+>  }
+>  
+>  static int imxfb_blank(int blank, struct fb_info *info)
+> @@ -340,19 +460,22 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+>  			info->fix.id, var->lower_margin);
+>  #endif
+>  
+> -	LCDC_HCR	= HCR_H_WIDTH(var->hsync_len) |
+> -	                  HCR_H_WAIT_1(var->left_margin) |
+> -			  HCR_H_WAIT_2(var->right_margin);
+> +	iowrite32(HCR_H_WIDTH(var->hsync_len) |
+> +		HCR_H_WAIT_1(var->left_margin) |
+> +		HCR_H_WAIT_2(var->right_margin),
+> +		fbi->regs + LCDC_HCR);
+>  
+> -	LCDC_VCR	= VCR_V_WIDTH(var->vsync_len) |
+> -	                  VCR_V_WAIT_1(var->upper_margin) |
+> -			  VCR_V_WAIT_2(var->lower_margin);
+> +	iowrite32(VCR_V_WIDTH(var->vsync_len) |
+> +		VCR_V_WAIT_1(var->upper_margin) |
+> +		VCR_V_WAIT_2(var->lower_margin),
+> +		fbi->regs + LCDC_VCR);
+>  
+> -	LCDC_SIZE	= SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres);
+> -	LCDC_PCR	= fbi->pcr;
+> -	LCDC_PWMR	= fbi->pwmr;
+> -	LCDC_LSCR1	= fbi->lscr1;
+> -	LCDC_DMACR	= fbi->dmacr;
+> +	iowrite32(SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres),
+> +			fbi->regs + LCDC_SIZE);
+> +	iowrite32(fbi->pcr, fbi->regs + LCDC_PCR);
+> +	iowrite32(fbi->pwmr, fbi->regs + LCDC_PWMR);
+> +	iowrite32(fbi->lscr1, fbi->regs + LCDC_LSCR1);
+> +	iowrite32(fbi->dmacr, fbi->regs + LCDC_DMACR);
+>  
+>  	return 0;
+>  }
+> @@ -384,10 +507,10 @@ static int imxfb_resume(struct platform_device *dev)
+>  #define imxfb_resume	NULL
+>  #endif
+>  
+> -static int __init imxfb_init_fbinfo(struct device *dev)
+> +static int __init imxfb_init_fbinfo(struct platform_device *pdev)
 >  {
-> -	struct imxfb_mach_info *inf = pdev->dev.platform_data;
-> +	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
->  	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+> -	struct imxfb_mach_info *inf = dev->platform_data;
+> -	struct fb_info *info = dev_get_drvdata(dev);
+> +	struct imxfb_mach_info *inf = pdev->dev.platform_data;
+> +	struct fb_info *info = dev_get_drvdata(&pdev->dev);
 >  	struct imxfb_info *fbi = info->par;
 >  
-> @@ -546,32 +546,32 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
->  	fbi->rgb[RGB_16]		= &def_rgb_16;
->  	fbi->rgb[RGB_8]			= &def_rgb_8;
+>  	pr_debug("%s\n",__func__);
+> @@ -397,7 +520,7 @@ static int __init imxfb_init_fbinfo(struct device *dev)
+>  		return -ENOMEM;
 >  
-> -	fbi->max_xres			= inf->xres;
-> -	info->var.xres			= inf->xres;
-> -	info->var.xres_virtual		= inf->xres;
-> -	fbi->max_yres			= inf->yres;
-> -	info->var.yres			= inf->yres;
-> -	info->var.yres_virtual		= inf->yres;
-> -	fbi->max_bpp			= inf->bpp;
-> -	info->var.bits_per_pixel	= inf->bpp;
-> -	info->var.nonstd		= inf->nonstd;
-> -	info->var.pixclock		= inf->pixclock;
-> -	info->var.hsync_len		= inf->hsync_len;
-> -	info->var.left_margin		= inf->left_margin;
-> -	info->var.right_margin		= inf->right_margin;
-> -	info->var.vsync_len		= inf->vsync_len;
-> -	info->var.upper_margin		= inf->upper_margin;
-> -	info->var.lower_margin		= inf->lower_margin;
-> -	info->var.sync			= inf->sync;
-> -	info->var.grayscale		= inf->cmap_greyscale;
-> -	fbi->cmap_inverse		= inf->cmap_inverse;
-> -	fbi->cmap_static		= inf->cmap_static;
-> -	fbi->pcr			= inf->pcr;
-> -	fbi->lscr1			= inf->lscr1;
-> -	fbi->dmacr			= inf->dmacr;
-> -	fbi->pwmr			= inf->pwmr;
-> -	fbi->lcd_power			= inf->lcd_power;
-> -	fbi->backlight_power		= inf->backlight_power;
-> +	fbi->max_xres			= pdata->xres;
-> +	info->var.xres			= pdata->xres;
-> +	info->var.xres_virtual		= pdata->xres;
-> +	fbi->max_yres			= pdata->yres;
-> +	info->var.yres			= pdata->yres;
-> +	info->var.yres_virtual		= pdata->yres;
-> +	fbi->max_bpp			= pdata->bpp;
-> +	info->var.bits_per_pixel	= pdata->bpp;
+>  	memset(fbi, 0, sizeof(struct imxfb_info));
+> -	fbi->dev = dev;
+> +	fbi->pdev = pdev;
+>  
+>  	strlcpy(info->fix.id, IMX_NAME, sizeof(info->fix.id));
+>  
+> @@ -465,7 +588,7 @@ static int __init imxfb_map_video_memory(struct fb_info *info)
+>  	struct imxfb_info *fbi = info->par;
+>  
+>  	fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
+> -	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
+> +	fbi->map_cpu = dma_alloc_writecombine(&fbi->pdev->dev, fbi->map_size,
 
-These max_foo fields seem redundant. Especially, the max_bpp.
-Most ARM chips can handle any bpp regardless the connected 
-display (I don't know the iMX chips). Also, if resolution switching
-is not allowed (usual for LCD displays) max_xres/yres is also 
-redundant.
+Use &pdev->dev instead &fbi->pdev->dev
 
-Otherwise, the patch is fine.
+>  					&fbi->map_dma,GFP_KERNEL);
+>  
+>  	if (fbi->map_cpu) {
+> @@ -506,14 +629,21 @@ static int __init imxfb_probe(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, info);
+>  
+> -	ret = imxfb_init_fbinfo(&pdev->dev);
+> +	ret = imxfb_init_fbinfo(pdev);
+>  	if( ret < 0 )
+>  		goto failed_init;
+>  
+> -	res = request_mem_region(res->start, res->end - res->start + 1, "IMXFB");
+> +	res = request_mem_region(res->start, res->end - res->start + 1,
+> +				DRIVER_NAME);
 
-Regards,
-Krzysztof
+There is a function resource_size(res) which does (res->end - res->start + 1).
+It seems useful here and at few places below.
 
-----------------------------------------------------------------------
-Podbij Dziki Zachod, wygraj laptopa lub iPoda 
->> http://link.interia.pl/f1ede
+>  	if (!res) {
+>  		ret = -EBUSY;
+> -		goto failed_regs;
+> +		goto failed_req;
+> +	}
+> +
+> +	fbi->regs = ioremap(res->start, res->end - res->start + 1);
+> +	if (fbi->regs == NULL) {
+> +		printk(KERN_ERR"Cannot map frame buffer registers\n");
+> +		goto failed_ioremap;
+>  	}
+>  
+>  	if (!inf->fixed_screen_cpu) {
+> @@ -559,18 +689,20 @@ failed_register:
+>  failed_cmap:
+>  	if (!inf->fixed_screen_cpu)
+>  		dma_free_writecombine(&pdev->dev,fbi->map_size,fbi->map_cpu,
+> -		           fbi->map_dma);
+> +			fbi->map_dma);
+>  failed_map:
+> -	kfree(info->pseudo_palette);
+> -failed_regs:
+> +	iounmap(fbi->regs);
+> +failed_ioremap:
+>  	release_mem_region(res->start, res->end - res->start);
+> +failed_req:
+> +	kfree(info->pseudo_palette);
+>  failed_init:
+>  	platform_set_drvdata(pdev, NULL);
+>  	framebuffer_release(info);
+>  	return ret;
+>  }
+>  
+> -static int imxfb_remove(struct platform_device *pdev)
+> +static int __devexit imxfb_remove(struct platform_device *pdev)
+>  {
+>  	struct fb_info *info = platform_get_drvdata(pdev);
+>  	struct imxfb_info *fbi = info->par;
+> @@ -586,6 +718,7 @@ static int imxfb_remove(struct platform_device *pdev)
+>  	kfree(info->pseudo_palette);
+>  	framebuffer_release(info);
+>  
+> +	iounmap(fbi->regs);
+
+The fbi pointed does not exist here (after framebuffer_release(info)).
+
+>  	release_mem_region(res->start, res->end - res->start + 1);
+>  	platform_set_drvdata(pdev, NULL);
+>  
+> @@ -600,19 +733,18 @@ void  imxfb_shutdown(struct platform_device * dev)
+>  }
+>  
+>  static struct platform_driver imxfb_driver = {
+> -	.probe		= imxfb_probe,
+>  	.suspend	= imxfb_suspend,
+>  	.resume		= imxfb_resume,
+> -	.remove		= imxfb_remove,
+> +	.remove		= __devexit_p(imxfb_remove),
+>  	.shutdown	= imxfb_shutdown,
+>  	.driver		= {
+> -		.name	= "imx-fb",
+> +		.name	= DRIVER_NAME,
+>  	},
+>  };
+>  
+>  int __init imxfb_init(void)
+>  {
+> -	return platform_driver_register(&imxfb_driver);
+> +	return platform_driver_probe(&imxfb_driver, imxfb_probe);
+>  }
+>  
+>  static void __exit imxfb_cleanup(void)
+> diff --git a/drivers/video/imxfb.h b/drivers/video/imxfb.h
+> index e837a8b..766297e 100644
+> --- a/drivers/video/imxfb.h
+> +++ b/drivers/video/imxfb.h
+> @@ -29,7 +29,9 @@ struct imxfb_rgb {
+>  #define NR_RGB	2
+>  
+>  struct imxfb_info {
+> -	struct device		*dev;
+> +	struct platform_device  *pdev;
+
+Is this field really useful? It can be dropped.
+
+> +	void __iomem		*regs;
+> +
+>  	struct imxfb_rgb	*rgb[NR_RGB];
+>  
+>  	u_int			max_bpp;
+> -- 
+> 1.5.6.3
+> 
+> 
+> -------------------------------------------------------------------------
+> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+> Build the coolest Linux based applications with Moblin SDK & win great prizes
+> Grand prize is a trip for two to an Open Source event anywhere in the world
+> http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> 
+
+---------------------------------------------------------------------- 
+Igrzyska na Dzikim Zachodzie!
+Sprawdz >> http://link.interia.pl/f1edc 
+	
 
 
 -------------------------------------------------------------------------

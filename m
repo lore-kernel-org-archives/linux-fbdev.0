@@ -1,24 +1,24 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] i.MX Framebuffer: remove gpio setup
- function
-Date: Wed, 20 Aug 2008 17:52:52 +0200
-Message-ID: <20080820175252.e027037c.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] i.MX Framebuffer: rename
+ imxfb_mach_info to imx_fb_platform_data
+Date: Wed, 20 Aug 2008 17:51:12 +0200
+Message-ID: <20080820175112.c49ef384.krzysztof.h1@poczta.fm>
 References: <1219158403-5180-1-git-send-email-s.hauer@pengutronix.de>
-	<1219158403-5180-2-git-send-email-s.hauer@pengutronix.de>
+	<1219158403-5180-5-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVptU-0001F8-Ru for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 08:46:44 -0700
+	id 1KVpyW-0001r1-Bq for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 Aug 2008 08:51:56 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVptU-0006js-7O
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVprw-0000RM-Cl
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 08:46:44 -0700
-In-Reply-To: <1219158403-5180-2-git-send-email-s.hauer@pengutronix.de>
+	Wed, 20 Aug 2008 08:45:11 -0700
+In-Reply-To: <1219158403-5180-5-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,117 +32,103 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Sascha Hauer <s.hauer@pengutronix.de>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 19 Aug 2008 17:06:40 +0200
+On Tue, 19 Aug 2008 17:06:43 +0200
 Sascha Hauer <s.hauer@pengutronix.de> wrote:
 
-> Remove the gpio mux setup function from i.MX framebuffer driver.
-> This function is platform specific and thus should be done by
-> the board setup. As there are currently no in-kernel users
-> of this driver we do not break anything.
+> rename imxfb_mach_info to a name more common to kernel hackers
 > 
 > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 > ---
-
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-This is patch type I like the most: only deletions.
-
-Please number your patches with [PATCH 1/4], [PATCH 2/4], etc.
-in next repost. Please also add line From: and description
-to each patch.
-
->  drivers/video/imxfb.c |   53 -------------------------------------------------
->  1 files changed, 0 insertions(+), 53 deletions(-)
+>  arch/arm/mach-imx/include/mach/imxfb.h |    5 +-
+>  drivers/video/imxfb.c                  |   68 ++++++++++++++++----------------
+>  2 files changed, 37 insertions(+), 36 deletions(-)
 > 
+> diff --git a/arch/arm/mach-imx/include/mach/imxfb.h b/arch/arm/mach-imx/include/mach/imxfb.h
+> index 3ed9ec8..ffcff5a 100644
+> --- a/arch/arm/mach-imx/include/mach/imxfb.h
+> +++ b/arch/arm/mach-imx/include/mach/imxfb.h
+> @@ -1,7 +1,7 @@
+>  /*
+>   * This structure describes the machine which we are running on.
+>   */
+> -struct imxfb_mach_info {
+> +struct imx_fb_platform_data {
+>  	u_long		pixclock;
+>  
+>  	u_short		xres;
+> @@ -34,4 +34,5 @@ struct imxfb_mach_info {
+>  	void (*lcd_power)(int);
+>  	void (*backlight_power)(int);
+>  };
+> -void set_imx_fb_info(struct imxfb_mach_info *hard_imx_fb_info);
+> +
+> +void set_imx_fb_info(struct imx_fb_platform_data *);
 > diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> index ccd9861..a990d43 100644
+> index e450e6b..a4a4940 100644
 > --- a/drivers/video/imxfb.c
 > +++ b/drivers/video/imxfb.c
-> @@ -357,57 +357,6 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
->  	return 0;
->  }
+> @@ -510,7 +510,7 @@ static int imxfb_resume(struct platform_device *dev)
 >  
-> -static void imxfb_setup_gpio(struct imxfb_info *fbi)
-> -{
-> -	int width;
-> -
-> -	LCDC_RMCR	&= ~(RMCR_LCDC_EN | RMCR_SELF_REF);
-> -
-> -	if( fbi->pcr & PCR_TFT )
-> -		width = 16;
-> -	else
-> -		width = 1 << ((fbi->pcr >> 28) & 0x3);
-> -
-> -	switch(width) {
-> -	case 16:
-> -		imx_gpio_mode(PD30_PF_LD15);
-> -		imx_gpio_mode(PD29_PF_LD14);
-> -		imx_gpio_mode(PD28_PF_LD13);
-> -		imx_gpio_mode(PD27_PF_LD12);
-> -		imx_gpio_mode(PD26_PF_LD11);
-> -		imx_gpio_mode(PD25_PF_LD10);
-> -		imx_gpio_mode(PD24_PF_LD9);
-> -		imx_gpio_mode(PD23_PF_LD8);
-> -	case 8:
-> -		imx_gpio_mode(PD22_PF_LD7);
-> -		imx_gpio_mode(PD21_PF_LD6);
-> -		imx_gpio_mode(PD20_PF_LD5);
-> -		imx_gpio_mode(PD19_PF_LD4);
-> -	case 4:
-> -		imx_gpio_mode(PD18_PF_LD3);
-> -		imx_gpio_mode(PD17_PF_LD2);
-> -	case 2:
-> -		imx_gpio_mode(PD16_PF_LD1);
-> -	case 1:
-> -		imx_gpio_mode(PD15_PF_LD0);
-> -	}
-> -
-> -	/* initialize GPIOs */
-> -	imx_gpio_mode(PD6_PF_LSCLK);
-> -	imx_gpio_mode(PD11_PF_CONTRAST);
-> -	imx_gpio_mode(PD14_PF_FLM_VSYNC);
-> -	imx_gpio_mode(PD13_PF_LP_HSYNC);
-> -	imx_gpio_mode(PD12_PF_ACD_OE);
-> -
-> -	/* These are only needed for Sharp HR TFT displays */
-> -	if (fbi->pcr & PCR_SHARP) {
-> -		imx_gpio_mode(PD7_PF_REV);
-> -		imx_gpio_mode(PD8_PF_CLS);
-> -		imx_gpio_mode(PD9_PF_PS);
-> -		imx_gpio_mode(PD10_PF_SPL_SPR);
-> -	}
-> -}
-> -
->  #ifdef CONFIG_PM
->  /*
->   * Power management hooks.  Note that we won't be called from IRQ context,
-> @@ -594,8 +543,6 @@ static int __init imxfb_probe(struct platform_device *pdev)
->  	if (ret < 0)
->  		goto failed_cmap;
+>  static int __init imxfb_init_fbinfo(struct platform_device *pdev)
+>  {
+> -	struct imxfb_mach_info *inf = pdev->dev.platform_data;
+> +	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
+>  	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+>  	struct imxfb_info *fbi = info->par;
 >  
-> -	imxfb_setup_gpio(fbi);
-> -
->  	imxfb_set_par(info);
->  	ret = register_framebuffer(info);
->  	if (ret < 0) {
-> -- 
-> 1.5.6.3
-> 
-> 
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-> Build the coolest Linux based applications with Moblin SDK & win great prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+> @@ -546,32 +546,32 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
+>  	fbi->rgb[RGB_16]		= &def_rgb_16;
+>  	fbi->rgb[RGB_8]			= &def_rgb_8;
+>  
+> -	fbi->max_xres			= inf->xres;
+> -	info->var.xres			= inf->xres;
+> -	info->var.xres_virtual		= inf->xres;
+> -	fbi->max_yres			= inf->yres;
+> -	info->var.yres			= inf->yres;
+> -	info->var.yres_virtual		= inf->yres;
+> -	fbi->max_bpp			= inf->bpp;
+> -	info->var.bits_per_pixel	= inf->bpp;
+> -	info->var.nonstd		= inf->nonstd;
+> -	info->var.pixclock		= inf->pixclock;
+> -	info->var.hsync_len		= inf->hsync_len;
+> -	info->var.left_margin		= inf->left_margin;
+> -	info->var.right_margin		= inf->right_margin;
+> -	info->var.vsync_len		= inf->vsync_len;
+> -	info->var.upper_margin		= inf->upper_margin;
+> -	info->var.lower_margin		= inf->lower_margin;
+> -	info->var.sync			= inf->sync;
+> -	info->var.grayscale		= inf->cmap_greyscale;
+> -	fbi->cmap_inverse		= inf->cmap_inverse;
+> -	fbi->cmap_static		= inf->cmap_static;
+> -	fbi->pcr			= inf->pcr;
+> -	fbi->lscr1			= inf->lscr1;
+> -	fbi->dmacr			= inf->dmacr;
+> -	fbi->pwmr			= inf->pwmr;
+> -	fbi->lcd_power			= inf->lcd_power;
+> -	fbi->backlight_power		= inf->backlight_power;
+> +	fbi->max_xres			= pdata->xres;
+> +	info->var.xres			= pdata->xres;
+> +	info->var.xres_virtual		= pdata->xres;
+> +	fbi->max_yres			= pdata->yres;
+> +	info->var.yres			= pdata->yres;
+> +	info->var.yres_virtual		= pdata->yres;
+> +	fbi->max_bpp			= pdata->bpp;
+> +	info->var.bits_per_pixel	= pdata->bpp;
+
+These max_foo fields seem redundant. Especially, the max_bpp.
+Most ARM chips can handle any bpp regardless the connected 
+display (I don't know the iMX chips). Also, if resolution switching
+is not allowed (usual for LCD displays) max_xres/yres is also 
+redundant.
+
+Otherwise, the patch is fine.
+
+Regards,
+Krzysztof
 
 ----------------------------------------------------------------------
-Taniej na zagraniczne komorki!
-Sprawdz >>>  http://link.interia.pl/f1ee3 
+Podbij Dziki Zachod, wygraj laptopa lub iPoda 
+>> http://link.interia.pl/f1ede
 
 
 -------------------------------------------------------------------------

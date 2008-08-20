@@ -1,27 +1,27 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
 Subject: Re: [PATCH] i.MX Framebuffer:
-	rename	imxfb_mach_info to imx_fb_platform_data
-Date: Wed, 20 Aug 2008 18:18:00 +0200
-Message-ID: <20080820161800.GT4713@pengutronix.de>
+	Use	iowrite/ioread instead of direct pointer deref
+Date: Wed, 20 Aug 2008 18:31:09 +0200
+Message-ID: <20080820163109.GU4713@pengutronix.de>
 References: <1219158403-5180-1-git-send-email-s.hauer@pengutronix.de>
-	<1219158403-5180-5-git-send-email-s.hauer@pengutronix.de>
-	<20080820175112.c49ef384.krzysztof.h1@poczta.fm>
+	<1219158403-5180-3-git-send-email-s.hauer@pengutronix.de>
+	<20080820173159.4bc56e34.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVqH6-0004uh-MW for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 09:11:08 -0700
+	id 1KVqTl-0006aD-8V for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 Aug 2008 09:24:13 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KVqH0-0001CO-3r
+	(Exim 4.44) id 1KVqTj-0003CJ-Ua
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 09:11:06 -0700
+	Wed, 20 Aug 2008 09:24:13 -0700
 Content-Disposition: inline
-In-Reply-To: <20080820175112.c49ef384.krzysztof.h1@poczta.fm>
+In-Reply-To: <20080820173159.4bc56e34.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,114 +33,158 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Juergen Beisert <j.beisert@pengutronix.de>, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, Aug 20, 2008 at 05:51:12PM +0200, Krzysztof Helt wrote:
-> On Tue, 19 Aug 2008 17:06:43 +0200
+On Wed, Aug 20, 2008 at 05:31:59PM +0200, Krzysztof Helt wrote:
+> On Tue, 19 Aug 2008 17:06:41 +0200
 > Sascha Hauer <s.hauer@pengutronix.de> wrote:
 > 
-> > rename imxfb_mach_info to a name more common to kernel hackers
+> > From: Juergen Beisert <j.beisert@pengutronix.de>
 > > 
-> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> > This patch prepares the current i.MX1 framebuffer driver for usage in the
+> > whole i.MX family. It switches to iowrite/ioread for register accesses.
+> > Also it moves the register definitions to the driver where they belong.
+> > 
+> > Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
 > > ---
-> >  arch/arm/mach-imx/include/mach/imxfb.h |    5 +-
-> >  drivers/video/imxfb.c                  |   68 ++++++++++++++++----------------
-> >  2 files changed, 37 insertions(+), 36 deletions(-)
+> >  drivers/video/imxfb.c |  208 ++++++++++++++++++++++++++++++++++++++++---------
+> >  drivers/video/imxfb.h |    4 +-
+> >  2 files changed, 173 insertions(+), 39 deletions(-)
 > > 
-> > diff --git a/arch/arm/mach-imx/include/mach/imxfb.h b/arch/arm/mach-imx/include/mach/imxfb.h
-> > index 3ed9ec8..ffcff5a 100644
-> > --- a/arch/arm/mach-imx/include/mach/imxfb.h
-> > +++ b/arch/arm/mach-imx/include/mach/imxfb.h
-> > @@ -1,7 +1,7 @@
-> >  /*
-> >   * This structure describes the machine which we are running on.
-> >   */
-> > -struct imxfb_mach_info {
-> > +struct imx_fb_platform_data {
-> >  	u_long		pixclock;
-> >  
-> >  	u_short		xres;
-> > @@ -34,4 +34,5 @@ struct imxfb_mach_info {
-> >  	void (*lcd_power)(int);
-> >  	void (*backlight_power)(int);
-> >  };
-> > -void set_imx_fb_info(struct imxfb_mach_info *hard_imx_fb_info);
-> > +
-> > +void set_imx_fb_info(struct imx_fb_platform_data *);
 > > diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> > index e450e6b..a4a4940 100644
+> > index a990d43..0622589 100644
 > > --- a/drivers/video/imxfb.c
 > > +++ b/drivers/video/imxfb.c
-> > @@ -510,7 +510,7 @@ static int imxfb_resume(struct platform_device *dev)
+> > @@ -16,7 +16,6 @@
+> >   *	linux-arm-kernel@lists.arm.linux.org.uk
+> >   */
 > >  
-> >  static int __init imxfb_init_fbinfo(struct platform_device *pdev)
-> >  {
-> > -	struct imxfb_mach_info *inf = pdev->dev.platform_data;
-> > +	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
-> >  	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+> > -//#define DEBUG 1
+> >  
+> >  #include <linux/module.h>
+> >  #include <linux/kernel.h>
+> > @@ -33,7 +32,6 @@
+> >  #include <linux/platform_device.h>
+> >  #include <linux/dma-mapping.h>
+> >  
+> > -#include <mach/hardware.h>
+> >  #include <asm/io.h>
+> >  #include <mach/imxfb.h>
+> >  
+> > @@ -44,6 +42,124 @@
+> >  
+> >  #include "imxfb.h"
+> >  
+> > +#define DRIVER_NAME "imx-fb"
+> > +
+> 
+> All constants below should really be put into the imxfb.h. There is already such a file.
+
+AFAIK the-new-beautiful-way is not to have these header files next to
+the .c files at all and put this stuff into the .c file. So maybe it's
+better to move the rest of imxfb.h here aswell.
+
+
+> 
+> > +#define LCDC_SSA	0x00
+> > +
+> > +#define LCDC_SIZE	0x04
+> > +#define SIZE_XMAX(x)	((((x) >> 4) & 0x3f) << 20)
+> > +#ifdef CONFIG_ARCH_IMX
+> 
+> Is it possible to use this driver without CONFIG_ARCH_IMX defined?
+
+Oops, not yet. These are the differences between IMX and MX2, the
+architecture I'm currently preparing this driver for. This shouldn't
+show up in this patch of course.
+
+
+ >  
+> > -#define LCDC_PALETTE(x) __REG2(IMX_LCDC_BASE+0x800, (x)<<2)
+> >  static int
+> >  imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+> >  		       u_int trans, struct fb_info *info)
+> > @@ -81,7 +196,7 @@ imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+> >  		      (CNVT_TOHW(green,4) << 4) |
+> >  		      CNVT_TOHW(blue,  4);
+> >  
+> > -		LCDC_PALETTE(regno) = val;
+> > +		iowrite32(val, fbi->regs + 0x800 + (regno << 2));
+> 
+> One may define an inline function imxfb_write(fbi, val, reg) :
+> 
+>  imxfb_iowrite(fbi, val, reg) 
+> {
+> 	iowrite32(val, fbi->regs + reg);
+> }
+> 
+> It would make the code more readable. The imxfb_ioread() could be used as well.
+>
+
+Well, I think this is a matter of taste, I prefer not using wrappers
+around the access functions.
+
+
+
+>  	strlcpy(info->fix.id, IMX_NAME, sizeof(info->fix.id));
+> >  
+> > @@ -465,7 +588,7 @@ static int __init imxfb_map_video_memory(struct fb_info *info)
 > >  	struct imxfb_info *fbi = info->par;
 > >  
-> > @@ -546,32 +546,32 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
-> >  	fbi->rgb[RGB_16]		= &def_rgb_16;
-> >  	fbi->rgb[RGB_8]			= &def_rgb_8;
+> >  	fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
+> > -	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
+> > +	fbi->map_cpu = dma_alloc_writecombine(&fbi->pdev->dev, fbi->map_size,
+> 
+> Use &pdev->dev instead &fbi->pdev->dev
+
+ok
+
+> 
+> >  					&fbi->map_dma,GFP_KERNEL);
 > >  
-> > -	fbi->max_xres			= inf->xres;
-> > -	info->var.xres			= inf->xres;
-> > -	info->var.xres_virtual		= inf->xres;
-> > -	fbi->max_yres			= inf->yres;
-> > -	info->var.yres			= inf->yres;
-> > -	info->var.yres_virtual		= inf->yres;
-> > -	fbi->max_bpp			= inf->bpp;
-> > -	info->var.bits_per_pixel	= inf->bpp;
-> > -	info->var.nonstd		= inf->nonstd;
-> > -	info->var.pixclock		= inf->pixclock;
-> > -	info->var.hsync_len		= inf->hsync_len;
-> > -	info->var.left_margin		= inf->left_margin;
-> > -	info->var.right_margin		= inf->right_margin;
-> > -	info->var.vsync_len		= inf->vsync_len;
-> > -	info->var.upper_margin		= inf->upper_margin;
-> > -	info->var.lower_margin		= inf->lower_margin;
-> > -	info->var.sync			= inf->sync;
-> > -	info->var.grayscale		= inf->cmap_greyscale;
-> > -	fbi->cmap_inverse		= inf->cmap_inverse;
-> > -	fbi->cmap_static		= inf->cmap_static;
-> > -	fbi->pcr			= inf->pcr;
-> > -	fbi->lscr1			= inf->lscr1;
-> > -	fbi->dmacr			= inf->dmacr;
-> > -	fbi->pwmr			= inf->pwmr;
-> > -	fbi->lcd_power			= inf->lcd_power;
-> > -	fbi->backlight_power		= inf->backlight_power;
-> > +	fbi->max_xres			= pdata->xres;
-> > +	info->var.xres			= pdata->xres;
-> > +	info->var.xres_virtual		= pdata->xres;
-> > +	fbi->max_yres			= pdata->yres;
-> > +	info->var.yres			= pdata->yres;
-> > +	info->var.yres_virtual		= pdata->yres;
-> > +	fbi->max_bpp			= pdata->bpp;
-> > +	info->var.bits_per_pixel	= pdata->bpp;
+> >  	if (fbi->map_cpu) {
+> > @@ -506,14 +629,21 @@ static int __init imxfb_probe(struct platform_device *pdev)
+> >  
+> >  	platform_set_drvdata(pdev, info);
+> >  
+> > -	ret = imxfb_init_fbinfo(&pdev->dev);
+> > +	ret = imxfb_init_fbinfo(pdev);
+> >  	if( ret < 0 )
+> >  		goto failed_init;
+> >  
+> > -	res = request_mem_region(res->start, res->end - res->start + 1, "IMXFB");
+> > +	res = request_mem_region(res->start, res->end - res->start + 1,
+> > +				DRIVER_NAME);
 > 
-> These max_foo fields seem redundant. Especially, the max_bpp.
-> Most ARM chips can handle any bpp regardless the connected 
-> display (I don't know the iMX chips). Also, if resolution switching
-> is not allowed (usual for LCD displays) max_xres/yres is also 
-> redundant.
+> There is a function resource_size(res) which does (res->end - res->start + 1).
+> It seems useful here and at few places below.
 
-Ok, I'll prepare another patch for this and let this one as is so that
-it still only contains renaming.
+ok, haven't seen it so far, thanks
 
-Sascha
+ >  
+> > -static int imxfb_remove(struct platform_device *pdev)
+> > +static int __devexit imxfb_remove(struct platform_device *pdev)
+> >  {
+> >  	struct fb_info *info = platform_get_drvdata(pdev);
+> >  	struct imxfb_info *fbi = info->par;
+> > @@ -586,6 +718,7 @@ static int imxfb_remove(struct platform_device *pdev)
+> >  	kfree(info->pseudo_palette);
+> >  	framebuffer_release(info);
+> >  
+> > +	iounmap(fbi->regs);
+> 
+> The fbi pointed does not exist here (after framebuffer_release(info)).
 
+Ack
+
+ >  
+> >  struct imxfb_info {
+> > -	struct device		*dev;
+> > +	struct platform_device  *pdev;
 > 
-> Otherwise, the patch is fine.
-> 
-> Regards,
-> Krzysztof
-> 
-> ----------------------------------------------------------------------
-> Podbij Dziki Zachod, wygraj laptopa lub iPoda 
-> >> http://link.interia.pl/f1ede
-> 
-> 
+> Is this field really useful? It can be dropped.
+
+ok
 
 -- 
  Pengutronix - Linux Solutions for Science and Industry

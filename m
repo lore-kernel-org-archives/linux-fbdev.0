@@ -1,27 +1,29 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] i.MX Framebuffer: Use
- iowrite/ioread instead of direct pointer deref
-Date: Wed, 20 Aug 2008 22:23:40 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808202221590.16983@anakin>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] i.MX Framebuffer: Cleanup
+	Coding	style
+Date: Thu, 21 Aug 2008 09:13:36 +0200
+Message-ID: <20080821071336.GY4713@pengutronix.de>
 References: <1219158403-5180-1-git-send-email-s.hauer@pengutronix.de>
-	<1219158403-5180-3-git-send-email-s.hauer@pengutronix.de>
-	<20080820173159.4bc56e34.krzysztof.h1@poczta.fm>
-	<20080820163109.GU4713@pengutronix.de>
-	<20080820194246.0dc9a589.krzysztof.h1@poczta.fm>
+	<1219158403-5180-4-git-send-email-s.hauer@pengutronix.de>
+	<20080820173501.e82dbc93.krzysztof.h1@poczta.fm>
+	<20080820161521.GS4713@pengutronix.de>
+	<20080820193543.ba08c191.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KVuDc-0005Ew-8p for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 13:23:48 -0700
-Received: from winston.telenet-ops.be ([195.130.137.75])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KVuDa-000416-L8
+	id 1KW4Fh-0006BE-8Q for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 21 Aug 2008 00:06:37 -0700
+Received: from metis.extern.pengutronix.de ([83.236.181.26])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KW4Ff-0001DE-EL
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 Aug 2008 13:23:48 -0700
-In-Reply-To: <20080820194246.0dc9a589.krzysztof.h1@poczta.fm>
+	Thu, 21 Aug 2008 00:06:37 -0700
+Content-Disposition: inline
+In-Reply-To: <20080820193543.ba08c191.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,44 +35,95 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Juergen Beisert <j.beisert@pengutronix.de>, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 20 Aug 2008, Krzysztof Helt wrote:
-> On Wed, 20 Aug 2008 18:31:09 +0200
+On Wed, Aug 20, 2008 at 07:35:43PM +0200, Krzysztof Helt wrote:
+> On Wed, 20 Aug 2008 18:15:21 +0200
 > Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> > On Wed, Aug 20, 2008 at 05:31:59PM +0200, Krzysztof Helt wrote:
-> > > On Tue, 19 Aug 2008 17:06:41 +0200
+> 
+> > On Wed, Aug 20, 2008 at 05:35:01PM +0200, Krzysztof Helt wrote:
+> > > On Tue, 19 Aug 2008 17:06:42 +0200
 > > > Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> > > > +#define DRIVER_NAME "imx-fb"
-> > > > +
 > > > 
-> > > All constants below should really be put into the imxfb.h. There is already such a file.
+> > > > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> > > > ---
+> > > >  drivers/video/imxfb.c |   78 +++++++++++++++++++++++++------------------------
+> > > >  1 files changed, 40 insertions(+), 38 deletions(-)
+> > > > 
+> > > 
+> > > I don't like some of the changes like wrapping lines
+> > > which are not longer than 80 characters or removing
+> > > alignment vs previous line because it contains spaces.
+> > > There are also positive CS changes so not everything is bad.
 > > 
-> > AFAIK the-new-beautiful-way is not to have these header files next to
-> > the .c files at all and put this stuff into the .c file. So maybe it's
-> > better to move the rest of imxfb.h here aswell.
+> > Hm, this patch only wraps lines longer than 80 characters (in one case
+> > it even merges two lines to one because it's still shorter than 80
+> > chars).
 > 
-> I was not aware about "the-new-beautiful-way". I am just curious about this.
-> Normally, the headers for frame buffers are located at include/video. 
+> The change around line 250 wraps 80 chars line.
 > 
-> It can stay this way (no header) if you insist.
+> @@ -250,7 +249,8 @@ imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+>  
+>  	case FB_VISUAL_STATIC_PSEUDOCOLOR:
+>  	case FB_VISUAL_PSEUDOCOLOR:
+> -		ret = imxfb_setpalettereg(regno, red, green, blue, trans, info);
+> +		ret = imxfb_setpalettereg(regno, red, green, blue, trans,
+> +				info);
 
-If the header file is included by a single source file only, it doesn't
-make much sense to have the separate header file.
+Ok, you're right. I just saw my cursor blinking on position 81, but of
+course that means the line is 80 characters long. My bad
 
-include/video/ is for header files that are included by multiple source
-files, some outside drivers/video/.
+>  		break;
+>  	}
+> 
+> 
+> > It also does not remove alignment vs the previous line, instead
+> > it aligns some lines against the previous line. 
+> 
+> 
+> @@ -185,7 +184,7 @@ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
+> 
+>  static int
+>  imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+> -                      u_int trans, struct fb_info *info)
+> +               u_int trans, struct fb_info *info)
+>  {
+>         struct imxfb_info *fbi = info->par;
+>         u_int val, ret = 1;
+> 
+> The removed line was previously aligned to start after the "(" in the previous line.
+> One could move "static int" into the same line.
+> 
+> You have added spaces between sizeof operator and the opening parenthesis.
+> It is pointed out by the checkpatch script.
 
-Gr{oetje,eeting}s,
+Ah, yes. This one I have copied from a Lindent run.
 
-						Geert
+> 
+> > Maybe reading whitespace
+> > changes in patches is a bit confusing because the +/- at line starts
+> > mess it up.
+> >
+>  
+> The changes I pointed above are ones I don't like. They are not
+> bringing any benefit (nor better CS conformance nor readability).
+> 
+> However, I recognize your patch does more positive changes then these
+> pointed above. Also, my feelings toward some changes are my personal
+> opinion and I won't block the patch you have posted. I would like
+> to see the mentioned changes dropped but it is up to you.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I will rework it.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Regards,
+  Sascha
+
+
+-- 
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

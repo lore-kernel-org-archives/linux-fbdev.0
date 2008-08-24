@@ -1,20 +1,20 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] vga16fb: remove open_lock mutex
-Date: Sun, 24 Aug 2008 08:29:51 +0200
-Message-ID: <20080824082951.d344dea0.krzysztof.h1@poczta.fm>
+Subject: [PATCH] neofb: remove open_lock mutex
+Date: Sun, 24 Aug 2008 08:30:03 +0200
+Message-ID: <20080824083003.4837596d.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KX9J1-00055h-Hf for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Aug 2008 23:42:31 -0700
+	id 1KX9U1-000651-2g for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 Aug 2008 23:53:53 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KX9J0-0008Sg-3M
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KX9U0-0001Dl-Mj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 Aug 2008 23:42:31 -0700
+	Sat, 23 Aug 2008 23:53:53 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,27 +35,17 @@ as these operations are mutexed at fb layer.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
-
-diff -urp linux-ref/drivers/video/vga16fb.c linux-2.6/drivers/video/vga16fb.c
---- linux-ref/drivers/video/vga16fb.c	2008-08-09 05:09:05.000000000 +0200
-+++ linux-2.6/drivers/video/vga16fb.c	2008-08-25 03:10:07.000000000 +0200
-@@ -58,7 +58,6 @@ struct vga16fb_par {
- 		unsigned char	ClockingMode;	  /* Seq-Controller:01h */
- 	} vga_state;
- 	struct vgastate state;
--	struct mutex open_lock;
- 	unsigned int ref_count;
- 	int palette_blanked, vesa_blanked, mode, isVGA;
- 	u8 misc, pel_msk, vss, clkdiv;
-@@ -286,7 +285,6 @@ static int vga16fb_open(struct fb_info *
+diff -urp linux-ref/drivers/video/neofb.c linux-2.6/drivers/video/neofb.c
+--- linux-ref/drivers/video/neofb.c	2008-08-25 03:08:04.000000000 +0200
++++ linux-2.6/drivers/video/neofb.c	2008-08-25 03:09:38.000000000 +0200
+@@ -557,14 +557,12 @@ neofb_open(struct fb_info *info, int use
  {
- 	struct vga16fb_par *par = info->par;
+ 	struct neofb_par *par = info->par;
  
 -	mutex_lock(&par->open_lock);
  	if (!par->ref_count) {
  		memset(&par->state, 0, sizeof(struct vgastate));
- 		par->state.flags = VGA_SAVE_FONTS | VGA_SAVE_MODE |
-@@ -294,7 +292,6 @@ static int vga16fb_open(struct fb_info *
+ 		par->state.flags = VGA_SAVE_MODE | VGA_SAVE_FONTS;
  		save_vga(&par->state);
  	}
  	par->ref_count++;
@@ -63,9 +53,9 @@ diff -urp linux-ref/drivers/video/vga16fb.c linux-2.6/drivers/video/vga16fb.c
  
  	return 0;
  }
-@@ -303,15 +300,12 @@ static int vga16fb_release(struct fb_inf
+@@ -574,16 +572,13 @@ neofb_release(struct fb_info *info, int 
  {
- 	struct vga16fb_par *par = info->par;
+ 	struct neofb_par *par = info->par;
  
 -	mutex_lock(&par->open_lock);
 -	if (!par->ref_count) {
@@ -74,25 +64,37 @@ diff -urp linux-ref/drivers/video/vga16fb.c linux-2.6/drivers/video/vga16fb.c
  		return -EINVAL;
 -	}
 +
- 	if (par->ref_count == 1)
+ 	if (par->ref_count == 1) {
  		restore_vga(&par->state);
+ 	}
  	par->ref_count--;
 -	mutex_unlock(&par->open_lock);
  
  	return 0;
  }
-@@ -1326,7 +1320,6 @@ static int __init vga16fb_probe(struct p
- 	printk(KERN_INFO "vga16fb: mapped to 0x%p\n", info->screen_base);
- 	par = info->par;
+@@ -1957,7 +1952,6 @@ static struct fb_info *__devinit neo_all
+ 
+ 	info->fix.accel = id->driver_data;
  
 -	mutex_init(&par->open_lock);
- 	par->isVGA = screen_info.orig_video_isVGA;
- 	par->palette_blanked = 0;
- 	par->vesa_blanked = 0;
+ 	par->pci_burst = !nopciburst;
+ 	par->lcd_stretch = !nostretch;
+ 	par->libretto = libretto;
+diff -urp linux-ref/include/video/neomagic.h linux-2.6/include/video/neomagic.h
+--- linux-ref/include/video/neomagic.h	2008-08-09 05:09:31.000000000 +0200
++++ linux-2.6/include/video/neomagic.h	2008-08-25 03:09:07.000000000 +0200
+@@ -123,7 +123,6 @@ typedef volatile struct {
+ 
+ struct neofb_par {
+ 	struct vgastate state;
+-	struct mutex open_lock;
+ 	unsigned int ref_count;
+ 
+ 	unsigned char MiscOutReg;	/* Misc */
 
 ----------------------------------------------------------------------
-Alergia na seks?
->> http://link.interia.pl/f1eec
+Nie szukam kochanka!
+>> http://link.interia.pl/f1eeb
 
 
 -------------------------------------------------------------------------

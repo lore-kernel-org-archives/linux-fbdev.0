@@ -1,7 +1,8 @@
-From: "Nikita V. Youshchenko" <yoush@cs.msu.su>
-Subject: Initialize framebuffer in bootloader?
-Date: Sun, 24 Aug 2008 20:40:15 +0400
-Message-ID: <200808242040.15869@blacky.localdomain>
+From: Anatolij Gustschin <agust@denx.de>
+Subject: Re: Initialize framebuffer in bootloader?
+Date: Mon, 25 Aug 2008 10:55:02 +0200
+Message-ID: <48B27366.3000408@denx.de>
+References: <200808242040.15869@blacky.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,28 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KXIdm-0000Up-7o for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Aug 2008 09:40:34 -0700
-Received: from gate.lvk.cs.msu.su ([158.250.17.1] helo=lvk.cs.msu.su)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KXIdh-0005ts-El
+	id 1KXXr7-0006cc-PN for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 25 Aug 2008 01:55:21 -0700
+Received: from mail-out.m-online.net ([212.18.0.9])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KXXr5-0003Ro-4p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Aug 2008 09:40:33 -0700
-Received: from Debian-exim by zigzag.lvk.cs.msu.su with spam-scanned (Exim
-	4.63) (envelope-from <yoush@cs.msu.su>) id 1KXIdV-0008Go-CI
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Aug 2008 20:40:20 +0400
-Received: from ppp85-140-110-128.pppoe.mtu-net.ru ([85.140.110.128]
-	helo=blacky)
-	by zigzag.lvk.cs.msu.su with esmtpsa (TLS-1.0:RSA_AES_256_CBC_SHA1:32)
-	(Exim 4.63) (envelope-from <yoush@cs.msu.su>) id 1KXIdV-0008Gk-89
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Aug 2008 20:40:17 +0400
-Received: from nikita by blacky with local (Exim 4.63)
-	(envelope-from <yoush@cs.msu.su>) id 1KXIdT-000827-Vd
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 Aug 2008 20:40:16 +0400
-Content-Disposition: inline
+	Mon, 25 Aug 2008 01:55:21 -0700
+In-Reply-To: <200808242040.15869@blacky.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -41,30 +27,56 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hello
+Hello,
 
-In an embedded system I'm involved in, there is a requirement to get some 
-graphical information displayed very fast (about a second) after poweron, 
-and then keep the picture on screen without blinking etc.
+Nikita V. Youshchenko wrote:
 
-Since it is virtually impossible to boot the kernel and start the 
-application that fast, we are thinking about initializing display hardware 
-and drawing the picture in bootloader.
+> In an embedded system I'm involved in, there is a requirement to get some 
+> graphical information displayed very fast (about a second) after poweron, 
+> and then keep the picture on screen without blinking etc.
+> 
+> Since it is virtually impossible to boot the kernel and start the 
+> application that fast, we are thinking about initializing display hardware 
+> and drawing the picture in bootloader.
 
-There is no major problems in adding required code to U-Boot. What looks 
-more difficult s how to smoothly pass display hardware control to linux 
-framebuffer driver, such that "nobody will notice". Since main memory is 
-used for some hardware-accessed data structures and the frame buffer 
-itself, such a trick will likely require some altering of linux memory 
-management, etc
+We do the same in U-Boot on a couple of embedded boards.
 
-Before trying to implement all that, I'd like to ask if anyone has done 
-something similar, or maybe could provide some comments or pointers to any 
-related information.
+> There is no major problems in adding required code to U-Boot. What looks 
+> more difficult s how to smoothly pass display hardware control to linux 
+> framebuffer driver, such that "nobody will notice". Since main memory is 
+> used for some hardware-accessed data structures and the frame buffer 
+> itself, such a trick will likely require some altering of linux memory 
+> management, etc
+> 
+> Before trying to implement all that, I'd like to ask if anyone has done 
+> something similar, or maybe could provide some comments or pointers to any 
+> related information.
 
-Thanks.
+What we do in Linux to inherit the state set by the boot loader is
+maybe not very similar as we don't have shared frame buffer. We
+prevent graphics hardware reinitialization in the frame buffer
+driver if a pre_init flag of the driver's parameters structure was
+set before graphics controller init:
+
+#if defined(CONFIG_FB_PRE_INIT_FB)
+	par->pre_init = 1;
+#endif
+	...
+	if (!par->pre_init) {
+		/* do all the hw init */
+	}
+
+Additionally we return in driver's set_par() without accessing any
+registers if the pre_init flag was previously set and also use
+following patch for VT and fbcon code:
+
+http://git.denx.de/?p=linux-2.6-denx.git;a=commitdiff;h=ff84b47bb7ba0dfe99696ed5f7eee7a98174de9a;hp=25cb836dadabf8605cd83f9288493f9088d83c0f
+
+Best Regards,
+Anatolij
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

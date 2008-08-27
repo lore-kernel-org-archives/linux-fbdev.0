@@ -1,8 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Patch 3/13 v3] viafb: accel.c & accel.h
-Date: Wed, 27 Aug 2008 06:53:03 +0200
-Message-ID: <20080827065303.50e7a6ae.krzysztof.h1@poczta.fm>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A42C05@exchtp03.taipei.via.com.tw>
+Subject: Re: [PATCH 11/13 v3] viafb: viafbdev.c
+Date: Wed, 27 Aug 2008 06:54:10 +0200
+Message-ID: <20080827065410.d40b28a2.krzysztof.h1@poczta.fm>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A42C06@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,13 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYCvi-0006Yq-LR for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Aug 2008 21:46:50 -0700
+	id 1KYCwg-0006eB-Ft for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 Aug 2008 21:47:50 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYCvh-0002Ns-9t
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYCwg-0002l8-4i
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 Aug 2008 21:46:50 -0700
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A42C05@exchtp03.taipei.via.com.tw>
+	Tue, 26 Aug 2008 21:47:50 -0700
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A42C06@exchtp03.taipei.via.com.tw>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,10 +30,12 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: JosephChan@via.com.tw
 Cc: geert@linux-m68k.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, 26 Aug 2008 17:51:46 +0800
+On Tue, 26 Aug 2008 17:51:47 +0800
 <JosephChan@via.com.tw> wrote:
 
 > Remove the marco MMIO_OUT32, and replace it with writel() function.
+> And replace "u32" with "unsigned long" in writel() function (original 
+> MMIO_OUT32 marco) for avoiding warning message in 64bit OS.
 > 
 > 
 > Signed-off-by: Joseph Chan <josephchan@via.com.tw>

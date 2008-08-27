@@ -1,21 +1,35 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH 2/2] tdfxfb: fix frame buffer name
-	overrun
-Date: Wed, 27 Aug 2008 21:07:39 +0200
-Message-ID: <20080827210739.21936b36.krzysztof.h1@poczta.fm>
+From: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] Do set var even if no
+	fb_check_var() provided.
+Date: Wed, 27 Aug 2008 23:49:15 +0200
+Message-ID: <g94i4r$2hq$1@ger.gmane.org>
+References: <48B4E16C.4000107@renesas.com>
+	<Pine.LNX.4.64.0808270855110.7910@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYQGb-0005pR-4R for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 12:01:17 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYQGZ-0002he-D1
+	id 1KYStQ-0004zh-UF for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Aug 2008 14:49:32 -0700
+Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KYStO-0007me-SJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 12:01:16 -0700
+	Wed, 27 Aug 2008 14:49:32 -0700
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1KYStJ-0006Q0-St for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Aug 2008 21:49:25 +0000
+Received: from mnhm-590f6f04.pool.einsundeins.de ([89.15.111.4])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 27 Aug 2008 21:49:25 +0000
+Received: from deller by mnhm-590f6f04.pool.einsundeins.de with local (Gmexim
+	0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 27 Aug 2008 21:49:25 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,49 +40,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Geert Uytterhoeven wrote:
+> On Wed, 27 Aug 2008, Takashi Yoshii wrote:
+>> The behavior of FBIOSET_VSCREENINFO seems to be weired on FB which does
+>> not
+>>  provides fbops->fb_check_var.
+>> It doesn't set anything, but gets info->var instead, and returns no
+>> error. It is just same as FBIOGET_VSCREENINFO does.
+>> 
+>> IMHO, this should be one of the following candidates,
+>>  1. set var without check.
+>>  2. do nothing but return error (setting var is not supported).
+>> or
+>>  3. it's a bug (fb_check_var should always be provided).
+>> 
+>> The patch at the bottom implements "1".
+>> 
+>> Because I don't know API specification, nor the history of the code,
+>> I would like people who knows well to discuss this.
+> 
+> If the driver doesn't provide a fb_check_var(), it means it cannot
+> change video mode. Hence this rules out #1.
+> 
+> #2 is not acceptable, as it will break existing applications. It's also
+> incorrect, as FBIOPUT_VSCREENINFO should succeed for supported modes.
+> For unsupported modes, the mode should be rounded up to a supported mode,
+> if possible. In the case of drivers that support one fixed mode only, this
+> rounding up is relaxed to `rounding' to the sole supported mode.
+> 
+> #3 is also wrong, as fb_check_var() has been deliberately made optional to
+> simplify drivers that support one fixed mode only.
+> 
+> Conclusion: nothing should be changed?
 
-If there are more then one graphics card handled 
-by the tdfxfb driver the name of the frame buffer 
-overruns reserved name size.
----
-This also is good candidate for 2.6.27 fix.
+I'm not sure.
+On parisc we just stumbled over exactly this problem where I think Takashi's
+proposal "1." is probably the right solution.
 
- drivers/video/tdfxfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Please see my Xorg bugzilla entry:
+https://bugs.freedesktop.org/show_bug.cgi?id=17153 
+and this problem description/thread ("X won't start with VisEG and
+2.6.22.19"):
+http://thread.gmane.org/gmane.linux.ports.parisc/564/focus=592
 
-diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
-index fa7cbec..ed86ef3 100644
---- a/drivers/video/tdfxfb.c
-+++ b/drivers/video/tdfxfb.c
-@@ -95,7 +95,6 @@ static inline int mtrr_del(int reg, unsigned long base,
- #define VOODOO5_MAX_PIXCLOCK 350000
- 
- static struct fb_fix_screeninfo tdfx_fix __devinitdata = {
--	.id =		"3Dfx",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_PSEUDOCOLOR,
- 	.ypanstep =	1,
-@@ -1196,6 +1195,7 @@ static int __devinit tdfxfb_probe(struct pci_dev *pdev,
- 		return -ENOMEM;
- 
- 	default_par = info->par;
-+	strcpy(tdfx_fix.id, "3Dfx");
- 
- 	/* Configure the default fb_fix_screeninfo first */
- 	switch (pdev->device) {
--- 
-1.5.2.2
-
-
----------------------------------------------------------------
-Nasilaja sie kradzieze.
-Mieszkancy osiedli zaniepokojeni.
-Prosimy o pomoc w tej sprawie >>> http://link.interia.pl/f1eef
-
+Helge
 
 
 -------------------------------------------------------------------------

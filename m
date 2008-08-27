@@ -1,9 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Do set var even if no
- fb_check_var() provided.
-Date: Wed, 27 Aug 2008 09:08:09 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808270855110.7910@anakin>
-References: <48B4E16C.4000107@renesas.com>
+From: <JosephChan@via.com.tw>
+Subject: [PATCH 1/1] MAINTAINERS:
+Date: Wed, 27 Aug 2008 17:23:54 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB807A7759A@exchtp03.taipei.via.com.tw>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,13 +9,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYF8c-0003RC-5T for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 00:08:18 -0700
-Received: from nelson.telenet-ops.be ([195.130.133.66])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYF8a-0008Sz-Gh
+	id 1KYHFz-0000V5-0b for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Aug 2008 02:24:03 -0700
+Received: from mailtp.via.com.tw ([61.66.243.2])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYHFx-0006JM-Eq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 00:08:18 -0700
-In-Reply-To: <48B4E16C.4000107@renesas.com>
+	Wed, 27 Aug 2008 02:24:02 -0700
+Content-class: urn:content-classes:message
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,51 +26,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Takashi Yoshii <yoshii.takashi@renesas.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: JosephChan@via.com.tw, akpm@linux-foundation.org, ScottFang@viatech.com.cn, geert@linux-m68k.org
 
-On Wed, 27 Aug 2008, Takashi Yoshii wrote:
-> The behavior of FBIOSET_VSCREENINFO seems to be weired on FB which does not
->  provides fbops->fb_check_var.
-> It doesn't set anything, but gets info->var instead, and returns no error.
-> It is just same as FBIOGET_VSCREENINFO does.
-> 
-> IMHO, this should be one of the following candidates,
->  1. set var without check.
->  2. do nothing but return error (setting var is not supported).
-> or
->  3. it's a bug (fb_check_var should always be provided).
-> 
-> The patch at the bottom implements "1".
-> 
-> Because I don't know API specification, nor the history of the code, 
-> I would like people who knows well to discuss this.
+Add maintainers for VIA UniChrome(Pro)/Chrome9 Framebuffer driver
 
-If the driver doesn't provide a fb_check_var(), it means it cannot
-change video mode. Hence this rules out #1.
 
-#2 is not acceptable, as it will break existing applications. It's also
-incorrect, as FBIOPUT_VSCREENINFO should succeed for supported modes.
-For unsupported modes, the mode should be rounded up to a supported mode, if
-possible. In the case of drivers that support one fixed mode only, this
-rounding up is relaxed to `rounding' to the sole supported mode.
+Signed-off-by: Joseph Chan <josephchan@via.com.tw>
+Signed-off-by: Scott Fang <ScottFang@viatech.com.cn>
 
-#3 is also wrong, as fb_check_var() has been deliberately made optional to
-simplify drivers that support one fixed mode only.
-
-Conclusion: nothing should be changed?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+--- a/MAINTAINERS	2008-08-27 16:41:42.000000000 +0800
++++ b/MAINTAINERS	2008-08-27 16:56:36.000000000 +0800
+@@ -4441,6 +4441,14 @@
+ L:	i2c@lm-sensors.org
+ S:	Maintained
+ 
++VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER
++P:	Joseph Chan
++M:	JosephChan@via.com.tw
++P:	Scott Fang
++M:	ScottFang@viatech.com.cn
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
++S:	Maintained
++
+ VIA VELOCITY NETWORK DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes

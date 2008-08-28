@@ -1,21 +1,20 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH 1/4] cirrusfb: remove information about
- memory size during mode change
-Date: Thu, 28 Aug 2008 22:09:57 +0200
-Message-ID: <20080828220957.06d1f08a.krzysztof.h1@poczta.fm>
+Subject: [PATCH 2/4] cirrusfb: simplify clock calculation
+Date: Thu, 28 Aug 2008 22:12:13 +0200
+Message-ID: <20080828221213.caac0b14.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYniQ-0005H2-ED for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 13:03:34 -0700
+	id 1KYnkY-0005TY-C8 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 13:05:46 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYniP-0005co-0b
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYnkX-0000WI-0U
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 13:03:34 -0700
+	Thu, 28 Aug 2008 13:05:46 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,34 +30,83 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Remove information about memory size displayed
-twice each time a display mode change.
+Simplify clock calculation.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/cirrusfb.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/video/cirrusfb.c |   40 +++++++++++++++++++---------------------
+ 1 files changed, 19 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index c14b243..66e768d 100644
+index 09f4214..dfd12a2 100644
 --- a/drivers/video/cirrusfb.c
 +++ b/drivers/video/cirrusfb.c
-@@ -1972,8 +1972,6 @@ static void init_vgachip(struct fb_info *info)
- 	/* misc... */
- 	WHDR(cinfo, 0);	/* Hidden DAC register: - */
+@@ -3075,38 +3075,36 @@ static void bestclock(long freq, long *best, long *nom,
+ 	f = freq * 10;
  
--	printk(KERN_DEBUG "cirrusfb: This board has %ld bytes of DRAM memory\n",
--		info->screen_size);
- 	DPRINTK("EXIT\n");
- 	return;
- }
+ 	for (n = 32; n < 128; n++) {
++		int s = 0;
++
+ 		d = (143181 * n) / f;
+ 		if ((d >= 7) && (d <= 63)) {
+-			if (d > 31)
+-				d = (d / 2) * 2;
+-			h = (14318 * n) / d;
++			int temp = d;
++
++			if (temp > 31) {
++				s = 1;
++				temp >>= 1;
++			}
++			h = ((14318 * n) / temp) >> s;
+ 			if (abs(h - freq) < abs(*best - freq)) {
+ 				*best = h;
+ 				*nom = n;
+-				if (d < 32) {
+-					*den = d;
+-					*div = 0;
+-				} else {
+-					*den = d / 2;
+-					*div = 1;
+-				}
++				*den = temp;
++				*div = s;
+ 			}
+ 		}
+-		d = DIV_ROUND_UP(143181 * n, f);
++		d++;
+ 		if ((d >= 7) && (d <= 63)) {
+-			if (d > 31)
+-				d = (d / 2) * 2;
+-			h = (14318 * n) / d;
++			if (d > 31) {
++				s = 1;
++				d >>= 1;
++			}
++			h = ((14318 * n) / d) >> s;
+ 			if (abs(h - freq) < abs(*best - freq)) {
+ 				*best = h;
+ 				*nom = n;
+-				if (d < 32) {
+-					*den = d;
+-					*div = 0;
+-				} else {
+-					*den = d / 2;
+-					*div = 1;
+-				}
++				*den = d;
++				*div = s;
+ 			}
+ 		}
+ 	}
 -- 
 1.5.2.2
 
 
-----------------------------------------------------------------------
-Tani telefon!
-Sprawdz >>> http://link.interia.pl/f1ef5 
+---------------------------------------------------------------
+Nasilaja sie kradzieze.
+Mieszkancy osiedli zaniepokojeni.
+Prosimy o pomoc w tej sprawie >>> http://link.interia.pl/f1eef
 
 
 

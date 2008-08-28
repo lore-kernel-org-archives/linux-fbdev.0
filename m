@@ -1,27 +1,31 @@
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] Do set var even
- if	no	fb_check_var() provided.
-Date: Fri, 29 Aug 2008 00:16:18 +0200
-Message-ID: <48B723B2.9060306@gmx.de>
-References: <48B4E16C.4000107@renesas.com>	
-	<Pine.LNX.4.64.0808270855110.7910@anakin>
-	<g94i4r$2hq$1@ger.gmane.org>	
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+Subject: Re: [PATCH] Do set var
+	even	if	no	fb_check_var() provided.
+Date: Fri, 29 Aug 2008 00:18:47 +0200
+Message-ID: <1219961927.4421.220.camel@thor.sulgenrain.local>
+References: <48B4E16C.4000107@renesas.com>
+	<Pine.LNX.4.64.0808270855110.7910@anakin> <g94i4r$2hq$1@ger.gmane.org>
 	<1219906414.4421.142.camel@thor.sulgenrain.local>
 	<48B71C1D.9040908@gmx.de>
 	<1219961318.4421.213.camel@thor.sulgenrain.local>
+	<48B723B2.9060306@gmx.de>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYpn5-0000ol-Vo for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 15:16:32 -0700
-Received: from mail.gmx.net ([213.165.64.20])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1KYpn5-0003Dz-E3
+	id 1KYppQ-0000zq-GC for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 15:18:56 -0700
+Received: from fk-out-0910.google.com ([209.85.128.184])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYppP-0004DH-3r
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 15:16:31 -0700
-In-Reply-To: <1219961318.4421.213.camel@thor.sulgenrain.local>
+	Thu, 28 Aug 2008 15:18:56 -0700
+Received: by fk-out-0910.google.com with SMTP id 18so400316fkq.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 28 Aug 2008 15:18:52 -0700 (PDT)
+In-Reply-To: <48B723B2.9060306@gmx.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,43 +36,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@tungstengraphics.com>
+To: Helge Deller <deller@gmx.de>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-TWljaGVsIETDpG56ZXIgd3JvdGU6Cj4gT24gVGh1LCAyMDA4LTA4LTI4IGF0IDIzOjQzICswMjAw
-LCBIZWxnZSBEZWxsZXIgd3JvdGU6Cj4+IFlvdXIgaWRlYSBhYm91dCB0ZXN0aW5nIGEgZmV3IG1v
-ZGUgbGluZXMgaXMgbm9ybWFsbHkgYSBnb29kIGlkZWEuCj4gCj4gTXkgaWRlYSBpcyBxdWl0ZSB0
-aGUgb3Bwb3NpdGUgLSB0byB0cnkgKndpdGhvdXQqIGV2ZW4gdGhlIE1vZGVzIGxpbmUgaW4KPiBT
-dWJTZWN0aW9uICJEaXNwbGF5Ii4gQ2FuIHlvdSB0cnkgdGhhdCBwbGVhc2U/CgoKRG9lc24ndCB3
-b3JrIGVpdGhlci4KCmEpIElmIEkgZHJvcCB0aGUgIm1vbml0b3IiIGxpbmUgaW4gdGhlIFNjcmVl
-biBzZWN0aW9uIGl0IGNob29zZXMgYSAKImRlZmF1bHQgbW9uaXRvciIgYW5kIGZhaWxzOgooPT0p
-IFVzaW5nIGNvbmZpZyBmaWxlOiAiL2V0Yy9YMTEveG9yZy5jb25mIgooPT0pIFNlcnZlckxheW91
-dCAiRGVmYXVsdCBMYXlvdXQiCigqKikgfC0tPlNjcmVlbiAiU1RJIiAoMCkKKCoqKSB8ICAgfC0t
-Pk1vbml0b3IgIjxkZWZhdWx0IG1vbml0b3I+IgooKiopIHwgICB8LS0+RGV2aWNlICJHZW5lcmlj
-IFZpZGVvIENhcmQiCig9PSkgTm8gbW9uaXRvciBzcGVjaWZpZWQgZm9yIHNjcmVlbiAiU1RJIi4K
-ICAgICAgICAgVXNpbmcgYSBkZWZhdWx0IG1vbml0b3IgY29uZmlndXJhdGlvbi4KLT4gc2FtZSBm
-YWlsdXJlLgoKCmIpIElmIEkganVzdCBkcm9wIHRoZSBIb3JpelN5bmMgYW5kIFZlcnRSZWZyZXNo
-IGVudHJpZXMsIGl0IGZhaWxzIGFzIHdlbGw6CihJSSkgUnVubmluZyBpbiBGUkFNRUJVRkZFUiBN
-b2RlCigqKikgRkJERVYoMCk6IERlcHRoIDgsICgtLSkgZnJhbWVidWZmZXIgYnBwIDgKKD09KSBG
-QkRFVigwKTogRGVmYXVsdCB2aXN1YWwgaXMgUHNldWRvQ29sb3IKKD09KSBGQkRFVigwKTogVXNp
-bmcgZ2FtbWEgY29ycmVjdGlvbiAoMS4wLCAxLjAsIDEuMCkKKElJKSBGQkRFVigwKTogaGFyZHdh
-cmU6IHN0aWZiICh2aWRlbyBtZW1vcnk6IDE1MzZrQikKKCoqKSBGQkRFVigwKTogT3B0aW9uICJm
-YmRldiIgIi9kZXYvZmIwIgooSUkpIEZCREVWKDApOiBjaGVja2luZyBtb2RlcyBhZ2FpbnN0IGZy
-YW1lYnVmZmVyIGRldmljZS4uLgooSUkpIEZCREVWKDApOiAgbW9kZSAiMTAyNHg3NjgiIHRlc3Qg
-ZmFpbGVkCihJSSkgRkJERVYoMCk6IGNoZWNraW5nIG1vZGVzIGFnYWluc3QgbW9uaXRvci4uLgoo
-LS0pIEZCREVWKDApOiBWaXJ0dWFsIHNpemUgaXMgMTAyNHg3NjggKHBpdGNoIDEwMjQpCigqKikg
-RkJERVYoMCk6ICBCdWlsdC1pbiBtb2RlICJjdXJyZW50IjogMjgwMDAuMCBNSHosIDI3MzQzLjgg
-a0h6LCAKMzU2MDMuOCBIegooSUkpIEZCREVWKDApOiBNb2RlbGluZSAiY3VycmVudCJ4MC4wICAy
-ODAwMC4wMCAgMTAyNCAxMDI0IDEwMjQgMTAyNCAKNzY4IDc2OCA3NjggNzY4IC1oc3luYyAtdnN5
-bmMgLWNzeW5jICgyNzM0My44IGtIeikKKD09KSBGQkRFVigwKTogRFBJIHNldCB0byAoOTYsIDk2
-KQoKSGVsZ2UKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5OZXQgZW1haWwgaXMgc3BvbnNvcmVk
-IGJ5IHRoZSBNb2JsaW4gWW91ciBNb3ZlIERldmVsb3BlcidzIGNoYWxsZW5nZQpCdWlsZCB0aGUg
-Y29vbGVzdCBMaW51eCBiYXNlZCBhcHBsaWNhdGlvbnMgd2l0aCBNb2JsaW4gU0RLICYgd2luIGdy
-ZWF0IHByaXplcwpHcmFuZCBwcml6ZSBpcyBhIHRyaXAgZm9yIHR3byB0byBhbiBPcGVuIFNvdXJj
-ZSBldmVudCBhbnl3aGVyZSBpbiB0aGUgd29ybGQKaHR0cDovL21vYmxpbi1jb250ZXN0Lm9yZy9y
-ZWRpcmVjdC5waHA/YmFubmVyX2lkPTEwMCZ1cmw9LwpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGlu
-dXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNl
-Zm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+T24gRnJpLCAyMDA4LTA4LTI5IGF0IDAwOjE2ICswMjAwLCBIZWxnZSBEZWxsZXIgd3JvdGU6Cj4g
+TWljaGVsIETDpG56ZXIgd3JvdGU6Cj4gPiBPbiBUaHUsIDIwMDgtMDgtMjggYXQgMjM6NDMgKzAy
+MDAsIEhlbGdlIERlbGxlciB3cm90ZToKPiA+PiBZb3VyIGlkZWEgYWJvdXQgdGVzdGluZyBhIGZl
+dyBtb2RlIGxpbmVzIGlzIG5vcm1hbGx5IGEgZ29vZCBpZGVhLgo+ID4gCj4gPiBNeSBpZGVhIGlz
+IHF1aXRlIHRoZSBvcHBvc2l0ZSAtIHRvIHRyeSAqd2l0aG91dCogZXZlbiB0aGUgTW9kZXMgbGlu
+ZSBpbgo+ID4gU3ViU2VjdGlvbiAiRGlzcGxheSIuIENhbiB5b3UgdHJ5IHRoYXQgcGxlYXNlPwo+
+IAo+IAo+IERvZXNuJ3Qgd29yayBlaXRoZXIuCj4gCj4gYSkgSWYgSSBkcm9wIHRoZSAibW9uaXRv
+ciIgbGluZSBpbiB0aGUgU2NyZWVuIHNlY3Rpb24gaXQgY2hvb3NlcyBhIAoKWy4uLl0KCj4gYikg
+SWYgSSBqdXN0IGRyb3AgdGhlIEhvcml6U3luYyBhbmQgVmVydFJlZnJlc2ggZW50cmllcywgaXQg
+ZmFpbHMgYXMgd2VsbDoKClsuLi5dCgpXaGljaCBwYXJ0IG9mICd0aGUgTW9kZXMgbGluZSBpbiBT
+dWJTZWN0aW9uICJEaXNwbGF5IicgaXMgc28gaGFyZCB0bwp1bmRlcnN0YW5kPyAqc2hydWcqCgoK
+LS0gCkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAgICAgICAgICAgfCAgICAgICAgICBodHRwOi8v
+dHVuZ3N0ZW5ncmFwaGljcy5jb20KTGlicmUgc29mdHdhcmUgZW50aHVzaWFzdCAgICAgICAgIHwg
+ICAgICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2ZWxvcGVyCgoKLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpU
+aGlzIFNGLk5ldCBlbWFpbCBpcyBzcG9uc29yZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2
+ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1aWxkIHRoZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0
+aW9ucyB3aXRoIE1vYmxpbiBTREsgJiB3aW4gZ3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEg
+dHJpcCBmb3IgdHdvIHRvIGFuIE9wZW4gU291cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3Js
+ZApodHRwOi8vbW9ibGluLWNvbnRlc3Qub3JnL3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVy
+bD0vCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4
+LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vm
+b3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGlu
+dXgtZmJkZXYtZGV2ZWwK

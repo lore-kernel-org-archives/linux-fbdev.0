@@ -1,21 +1,25 @@
-From: krzysztof.h1@poczta.fm
-Subject: Re: [PATCH 2/2] tdfxfb: fix frame buffer name
-	overrun
-Date: 28 Aug 2008 10:20:19 +0200
-Message-ID: <20080828082020.525E411410@f07.poczta.interia.pl>
+From: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] Do set var even if
+ no	fb_check_var() provided.
+Date: Thu, 28 Aug 2008 23:43:57 +0200
+Message-ID: <48B71C1D.9040908@gmx.de>
+References: <48B4E16C.4000107@renesas.com>	
+	<Pine.LNX.4.64.0808270855110.7910@anakin>
+	<g94i4r$2hq$1@ger.gmane.org>
+	<1219906414.4421.142.camel@thor.sulgenrain.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYd8B-0007Qr-G5 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 01:45:27 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYd8A-0001aL-1g
+	id 1KYpHm-0006Jk-1O for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 14:44:10 -0700
+Received: from mail.gmx.net ([213.165.64.20])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1KYpHk-00079S-Bv
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 01:45:27 -0700
+	Thu, 28 Aug 2008 14:44:09 -0700
+In-Reply-To: <1219906414.4421.142.camel@thor.sulgenrain.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,62 +30,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@tungstengraphics.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-> On Wed, 27 Aug 2008, Krzysztof Helt wrote:
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > If there are more then one graphics card handled 
-> > by the tdfxfb driver the name of the frame buffer 
-> > overruns reserved name size.
-> 
-> Nice spot! Multiple strcat() will start overwriting other fields in
-> fb_fix_screeninfo.
-> 
-> 
-> At first I thought: but this doesn't fix all problems with multiple
-> cards, as tdfx_fix is still shared among all of them? But that's not
-> true (tdfx_fix is copied to info->fix later), so it is correct.
-> 
-> IMHO, as tdfx_fix is used as some `temporary' variable in tdfxfb_probe()
-> only,
-> a better fix would be to change the operation mode from:
-> 
->     info = framebuffer_alloc(...);
->     tdfx_fix.foo = ...; /* depends on probe value */
->     tdfx_fix.bar = ...; /* depends on probe value */
->     info->fix = tdfx_fix;
-> 
-> to
-> 
->     info = framebuffer_alloc(...);
->     info->fix = tdfx_fix;
->     info->fix.foo = ...; /* depends on probe value */
->     info->fix.bar = ...; /* depends on probe value */
-> 
-> and make tdfx_fix const. Then you don't have to initialize tdfx_fix.id
-> for every card, and make it clear that tdfx_fix is just used as a
-> template.
-> 
-
-Ok.
-
-Andrew, please drop this patch. I will prepare next version (with signed-off-by as well). I started playing with git and I haven't notice that I need "-s" option while generating patches.
-
-Regards,
-Krzysztof
-
-
----------------------------------------------------------------
-Nasilaja sie kradzieze.
-Mieszkancy osiedli zaniepokojeni.
-Prosimy o pomoc w tej sprawie >>> http://link.interia.pl/f1eef
-
-
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+TWljaGVsIETDpG56ZXIgd3JvdGU6Cj4gT24gV2VkLCAyMDA4LTA4LTI3IGF0IDIzOjQ5ICswMjAw
+LCBIZWxnZSBEZWxsZXIgd3JvdGU6Cj4+IEdlZXJ0IFV5dHRlcmhvZXZlbiB3cm90ZToKPj4+IE9u
+IFdlZCwgMjcgQXVnIDIwMDgsIFRha2FzaGkgWW9zaGlpIHdyb3RlOgo+Pj4+IFRoZSBiZWhhdmlv
+ciBvZiBGQklPU0VUX1ZTQ1JFRU5JTkZPIHNlZW1zIHRvIGJlIHdlaXJlZCBvbiBGQiB3aGljaCBk
+b2VzCj4+Pj4gbm90Cj4+Pj4gIHByb3ZpZGVzIGZib3BzLT5mYl9jaGVja192YXIuCj4+Pj4gSXQg
+ZG9lc24ndCBzZXQgYW55dGhpbmcsIGJ1dCBnZXRzIGluZm8tPnZhciBpbnN0ZWFkLCBhbmQgcmV0
+dXJucyBubwo+Pj4+IGVycm9yLiBJdCBpcyBqdXN0IHNhbWUgYXMgRkJJT0dFVF9WU0NSRUVOSU5G
+TyBkb2VzLgo+Pj4+Cj4+Pj4gSU1ITywgdGhpcyBzaG91bGQgYmUgb25lIG9mIHRoZSBmb2xsb3dp
+bmcgY2FuZGlkYXRlcywKPj4+PiAgMS4gc2V0IHZhciB3aXRob3V0IGNoZWNrLgo+Pj4+ICAyLiBk
+byBub3RoaW5nIGJ1dCByZXR1cm4gZXJyb3IgKHNldHRpbmcgdmFyIGlzIG5vdCBzdXBwb3J0ZWQp
+Lgo+Pj4+IG9yCj4+Pj4gIDMuIGl0J3MgYSBidWcgKGZiX2NoZWNrX3ZhciBzaG91bGQgYWx3YXlz
+IGJlIHByb3ZpZGVkKS4KPj4+Pgo+Pj4+IFRoZSBwYXRjaCBhdCB0aGUgYm90dG9tIGltcGxlbWVu
+dHMgIjEiLgo+Pj4+Cj4+Pj4gQmVjYXVzZSBJIGRvbid0IGtub3cgQVBJIHNwZWNpZmljYXRpb24s
+IG5vciB0aGUgaGlzdG9yeSBvZiB0aGUgY29kZSwKPj4+PiBJIHdvdWxkIGxpa2UgcGVvcGxlIHdo
+byBrbm93cyB3ZWxsIHRvIGRpc2N1c3MgdGhpcy4KPj4+IElmIHRoZSBkcml2ZXIgZG9lc24ndCBw
+cm92aWRlIGEgZmJfY2hlY2tfdmFyKCksIGl0IG1lYW5zIGl0IGNhbm5vdAo+Pj4gY2hhbmdlIHZp
+ZGVvIG1vZGUuIEhlbmNlIHRoaXMgcnVsZXMgb3V0ICMxLgo+Pj4KPj4+ICMyIGlzIG5vdCBhY2Nl
+cHRhYmxlLCBhcyBpdCB3aWxsIGJyZWFrIGV4aXN0aW5nIGFwcGxpY2F0aW9ucy4gSXQncyBhbHNv
+Cj4+PiBpbmNvcnJlY3QsIGFzIEZCSU9QVVRfVlNDUkVFTklORk8gc2hvdWxkIHN1Y2NlZWQgZm9y
+IHN1cHBvcnRlZCBtb2Rlcy4KPj4+IEZvciB1bnN1cHBvcnRlZCBtb2RlcywgdGhlIG1vZGUgc2hv
+dWxkIGJlIHJvdW5kZWQgdXAgdG8gYSBzdXBwb3J0ZWQgbW9kZSwKPj4+IGlmIHBvc3NpYmxlLiBJ
+biB0aGUgY2FzZSBvZiBkcml2ZXJzIHRoYXQgc3VwcG9ydCBvbmUgZml4ZWQgbW9kZSBvbmx5LCB0
+aGlzCj4+PiByb3VuZGluZyB1cCBpcyByZWxheGVkIHRvIGByb3VuZGluZycgdG8gdGhlIHNvbGUg
+c3VwcG9ydGVkIG1vZGUuCj4+Pgo+Pj4gIzMgaXMgYWxzbyB3cm9uZywgYXMgZmJfY2hlY2tfdmFy
+KCkgaGFzIGJlZW4gZGVsaWJlcmF0ZWx5IG1hZGUgb3B0aW9uYWwgdG8KPj4+IHNpbXBsaWZ5IGRy
+aXZlcnMgdGhhdCBzdXBwb3J0IG9uZSBmaXhlZCBtb2RlIG9ubHkuCj4+Pgo+Pj4gQ29uY2x1c2lv
+bjogbm90aGluZyBzaG91bGQgYmUgY2hhbmdlZD8KPj4gSSdtIG5vdCBzdXJlLgo+PiBPbiBwYXJp
+c2Mgd2UganVzdCBzdHVtYmxlZCBvdmVyIGV4YWN0bHkgdGhpcyBwcm9ibGVtIHdoZXJlIEkgdGhp
+bmsgVGFrYXNoaSdzCj4+IHByb3Bvc2FsICIxLiIgaXMgcHJvYmFibHkgdGhlIHJpZ2h0IHNvbHV0
+aW9uLgo+Pgo+PiBQbGVhc2Ugc2VlIG15IFhvcmcgYnVnemlsbGEgZW50cnk6Cj4+IGh0dHBzOi8v
+YnVncy5mcmVlZGVza3RvcC5vcmcvc2hvd19idWcuY2dpP2lkPTE3MTUzIAo+IAo+IEkgYmVsaWV2
+ZSAoYnVncy5mcmVlZGVza3RvcC5vcmcgaXMgY3VycmVudGx5IGRvd24pIHRoYXQncyBjdXJyZW50
+bHkKPiB3YWl0aW5nIGZvciBpbmZvcm1hdGlvbiBmcm9tIHlvdS4gTmFtZWx5LCBoYXZlIHlvdSB0
+cmllZCBub3Qgc3BlY2lmeWluZwo+IGEgTW9kZXMgbGluZSBpbiB0aGUgeG9yZy5jb25mIFN1YlNl
+Y3Rpb24gIkRpc3BsYXkiPyBJIHRoaW5rIHRoZSBYb3JnCj4gZmJkZXYgZHJpdmVyIHNob3VsZCBj
+b21lIHVwIHdpdGggdGhlIGN1cnJlbnRseSBhY3RpdmUgbW9kZSBpbiB0aGF0IGNhc2UuCj4gSWYg
+dGhhdCBkb2Vzbid0IHdvcmssIHBsZWFzZSBhdHRhY2ggdGhlIGNvcnJlc3BvbmRpbmcgWG9yZy4w
+LmxvZyB0byB0aGUKPiBidWcgcmVwb3J0IG9uY2UgYnVnemlsbGEgaXMgYmFjayBvbmxpbmUuCgpC
+dWd6aWxsYSAoaHR0cHM6Ly9idWdzLmZyZWVkZXNrdG9wLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTcx
+NTMgKSBpcyAKYXZhaWxhYmxlIGFnYWluLCBhbmQgSSd2ZSB1cGxvYWRlZCB0aGUgeG9yZy5jb25m
+IGZpbGUsIGFzIHdlbGwgYXMgdGhlIApYb3JnLjAubG9nIGxvZyBmaWxlIGFzIHJlcXVlc3RlZC4K
+CllvdXIgaWRlYSBhYm91dCB0ZXN0aW5nIGEgZmV3IG1vZGUgbGluZXMgaXMgbm9ybWFsbHkgYSBn
+b29kIGlkZWEuCk9uIGEgUEMgSSB3b3VsZCBkbyBleGFjdGx5IHRoaXMuCgpCdXQgb24gYSBwdXJl
+IGZyYW1lYnVmZmVyIGRyaXZlciBpdCdzIG9ubHkgbmVjZXNzYXJ5IHRvIGtub3cgKGFuZCB0byAK
+Y2hlY2spLCB0aGF0IGl0IHJ1bnMgKGZvciBleGFtcGxlKSBhdCAxMDI0eDc2OCBwaXhlbHMgd2l0
+aCA4YnBwLiAgVGhlIAptb25pdG9yIHN5bmMgdmFsdWVzIHNob3VsZG4ndCByZWFsbHkgbWF0dGVy
+IGFuZCB0aGF0IGlzIHRoZSBwcm9ibGVtIGluIAp0aGlzIHRocmVhZC4gWCBzaG91bGQgbm90IHRy
+eSB0byBmb3JjZSBhIHNwZWNpZmljIG1vbml0b3IgZnJlcXVlbmN5LiBJdCAKd29uJ3Qgc3VjZWVk
+IGFueXdheS4gSXQncyBmb3Igc29tZSBjYXJkcyBqdXN0IG5vdCBwb3NzaWJsZSB0byBzd2l0Y2gg
+Cm1vbml0b3IgZnJlcXVlbmNpZXMgb3IgdG8ga25vdyB0aGUgY3VycmVudCBvbmVzIChhbmQgdGhp
+cyBpcyB3aHkgdGhvc2UgCmRyaXZlcnMgZG9uJ3QgaW1wbGVtZW50IGZiX2NoZWNrX3ZhcigpKS4u
+LgoKSGVsZ2UKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5OZXQgZW1haWwgaXMgc3BvbnNvcmVk
+IGJ5IHRoZSBNb2JsaW4gWW91ciBNb3ZlIERldmVsb3BlcidzIGNoYWxsZW5nZQpCdWlsZCB0aGUg
+Y29vbGVzdCBMaW51eCBiYXNlZCBhcHBsaWNhdGlvbnMgd2l0aCBNb2JsaW4gU0RLICYgd2luIGdy
+ZWF0IHByaXplcwpHcmFuZCBwcml6ZSBpcyBhIHRyaXAgZm9yIHR3byB0byBhbiBPcGVuIFNvdXJj
+ZSBldmVudCBhbnl3aGVyZSBpbiB0aGUgd29ybGQKaHR0cDovL21vYmxpbi1jb250ZXN0Lm9yZy9y
+ZWRpcmVjdC5waHA/YmFubmVyX2lkPTEwMCZ1cmw9LwpfX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGlu
+dXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNl
+Zm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==

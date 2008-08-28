@@ -1,21 +1,26 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH 3/3] tdfxfb: do not make changes to
-	default tdfx_fix
-Date: Thu, 28 Aug 2008 22:20:30 +0200
-Message-ID: <20080828222030.60fcba44.krzysztof.h1@poczta.fm>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+Subject: Re: [PATCH] Do set var even if
+	no	fb_check_var() provided.
+Date: Thu, 28 Aug 2008 08:53:34 +0200
+Message-ID: <1219906414.4421.142.camel@thor.sulgenrain.local>
+References: <48B4E16C.4000107@renesas.com>
+	<Pine.LNX.4.64.0808270855110.7910@anakin> <g94i4r$2hq$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYnsa-0006Fk-0B for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 13:14:04 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYnsY-0000k0-2d
+	id 1KYbO4-0004G9-Hc for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 Aug 2008 23:53:44 -0700
+Received: from fg-out-1718.google.com ([72.14.220.159])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYbO1-000836-MF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 13:14:04 -0700
+	Wed, 27 Aug 2008 23:53:44 -0700
+Received: by fg-out-1718.google.com with SMTP id d23so168440fga.32
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 27 Aug 2008 23:53:39 -0700 (PDT)
+In-Reply-To: <g94i4r$2hq$1@ger.gmane.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,155 +31,57 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Helge Deller <deller@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-This was suggested by Geert Uytterhoeven
-to avoid overwriting of default values
-from the tdfx_fix.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
-
- drivers/video/tdfxfb.c |   48 ++++++++++++++++++++++++------------------------
- 1 files changed, 24 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
-index 4599a43..14bd3f3 100644
---- a/drivers/video/tdfxfb.c
-+++ b/drivers/video/tdfxfb.c
-@@ -1195,57 +1195,58 @@ static int __devinit tdfxfb_probe(struct pci_dev *pdev,
- 		return -ENOMEM;
- 
- 	default_par = info->par;
-+	info->fix = tdfx_fix;
- 
- 	/* Configure the default fb_fix_screeninfo first */
- 	switch (pdev->device) {
- 	case PCI_DEVICE_ID_3DFX_BANSHEE:
--		strcpy(tdfx_fix.id, "3Dfx Banshee");
-+		strcpy(info->fix.id, "3Dfx Banshee");
- 		default_par->max_pixclock = BANSHEE_MAX_PIXCLOCK;
- 		break;
- 	case PCI_DEVICE_ID_3DFX_VOODOO3:
--		strcpy(tdfx_fix.id, "3Dfx Voodoo3");
-+		strcpy(info->fix.id, "3Dfx Voodoo3");
- 		default_par->max_pixclock = VOODOO3_MAX_PIXCLOCK;
- 		break;
- 	case PCI_DEVICE_ID_3DFX_VOODOO5:
--		strcpy(tdfx_fix.id, "3Dfx Voodoo5");
-+		strcpy(info->fix.id, "3Dfx Voodoo5");
- 		default_par->max_pixclock = VOODOO5_MAX_PIXCLOCK;
- 		break;
- 	}
- 
--	tdfx_fix.mmio_start = pci_resource_start(pdev, 0);
--	tdfx_fix.mmio_len = pci_resource_len(pdev, 0);
--	if (!request_mem_region(tdfx_fix.mmio_start, tdfx_fix.mmio_len,
-+	info->fix.mmio_start = pci_resource_start(pdev, 0);
-+	info->fix.mmio_len = pci_resource_len(pdev, 0);
-+	if (!request_mem_region(info->fix.mmio_start, info->fix.mmio_len,
- 				"tdfx regbase")) {
- 		printk(KERN_ERR "tdfxfb: Can't reserve regbase\n");
- 		goto out_err;
- 	}
- 
- 	default_par->regbase_virt =
--		ioremap_nocache(tdfx_fix.mmio_start, tdfx_fix.mmio_len);
-+		ioremap_nocache(info->fix.mmio_start, info->fix.mmio_len);
- 	if (!default_par->regbase_virt) {
- 		printk(KERN_ERR "fb: Can't remap %s register area.\n",
--				tdfx_fix.id);
-+				info->fix.id);
- 		goto out_err_regbase;
- 	}
- 
--	tdfx_fix.smem_start = pci_resource_start(pdev, 1);
--	tdfx_fix.smem_len = do_lfb_size(default_par, pdev->device);
--	if (!tdfx_fix.smem_len) {
--		printk(KERN_ERR "fb: Can't count %s memory.\n", tdfx_fix.id);
-+	info->fix.smem_start = pci_resource_start(pdev, 1);
-+	info->fix.smem_len = do_lfb_size(default_par, pdev->device);
-+	if (!info->fix.smem_len) {
-+		printk(KERN_ERR "fb: Can't count %s memory.\n", info->fix.id);
- 		goto out_err_regbase;
- 	}
- 
--	if (!request_mem_region(tdfx_fix.smem_start,
-+	if (!request_mem_region(info->fix.smem_start,
- 				pci_resource_len(pdev, 1), "tdfx smem")) {
- 		printk(KERN_ERR "tdfxfb: Can't reserve smem\n");
- 		goto out_err_regbase;
- 	}
- 
--	info->screen_base = ioremap_nocache(tdfx_fix.smem_start,
--					    tdfx_fix.smem_len);
-+	info->screen_base = ioremap_nocache(info->fix.smem_start,
-+					    info->fix.smem_len);
- 	if (!info->screen_base) {
- 		printk(KERN_ERR "fb: Can't remap %s framebuffer.\n",
--				tdfx_fix.id);
-+				info->fix.id);
- 		goto out_err_screenbase;
- 	}
- 
-@@ -1257,20 +1258,19 @@ static int __devinit tdfxfb_probe(struct pci_dev *pdev,
- 		goto out_err_screenbase;
- 	}
- 
--	printk(KERN_INFO "fb: %s memory = %dK\n", tdfx_fix.id,
--			tdfx_fix.smem_len >> 10);
-+	printk(KERN_INFO "fb: %s memory = %dK\n", info->fix.id,
-+			info->fix.smem_len >> 10);
- 
- 	default_par->mtrr_handle = -1;
- 	if (!nomtrr)
- 		default_par->mtrr_handle =
--			mtrr_add(tdfx_fix.smem_start, tdfx_fix.smem_len,
-+			mtrr_add(info->fix.smem_start, info->fix.smem_len,
- 				 MTRR_TYPE_WRCOMB, 1);
- 
--	tdfx_fix.ypanstep	= nopan ? 0 : 1;
--	tdfx_fix.ywrapstep	= nowrap ? 0 : 1;
-+	info->fix.ypanstep	= nopan ? 0 : 1;
-+	info->fix.ywrapstep	= nowrap ? 0 : 1;
- 
- 	info->fbops		= &tdfxfb_ops;
--	info->fix		= tdfx_fix;
- 	info->pseudo_palette	= default_par->palette;
- 	info->flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
- #ifdef CONFIG_FB_3DFX_ACCEL
-@@ -1323,14 +1323,14 @@ out_err_iobase:
- out_err_screenbase:
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
--	release_mem_region(tdfx_fix.smem_start, pci_resource_len(pdev, 1));
-+	release_mem_region(info->fix.smem_start, pci_resource_len(pdev, 1));
- out_err_regbase:
- 	/*
- 	 * Cleanup after anything that was remapped/allocated.
- 	 */
- 	if (default_par->regbase_virt)
- 		iounmap(default_par->regbase_virt);
--	release_mem_region(tdfx_fix.mmio_start, tdfx_fix.mmio_len);
-+	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
- out_err:
- 	framebuffer_release(info);
- 	return -ENXIO;
--- 
-1.5.2.2
-
-
-----------------------------------------------------------------------
-Tani telefon!
-Sprawdz >>> http://link.interia.pl/f1ef5 
-
-
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+T24gV2VkLCAyMDA4LTA4LTI3IGF0IDIzOjQ5ICswMjAwLCBIZWxnZSBEZWxsZXIgd3JvdGU6Cj4g
+R2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOgo+ID4gT24gV2VkLCAyNyBBdWcgMjAwOCwgVGFrYXNo
+aSBZb3NoaWkgd3JvdGU6Cj4gPj4gVGhlIGJlaGF2aW9yIG9mIEZCSU9TRVRfVlNDUkVFTklORk8g
+c2VlbXMgdG8gYmUgd2VpcmVkIG9uIEZCIHdoaWNoIGRvZXMKPiA+PiBub3QKPiA+PiAgcHJvdmlk
+ZXMgZmJvcHMtPmZiX2NoZWNrX3Zhci4KPiA+PiBJdCBkb2Vzbid0IHNldCBhbnl0aGluZywgYnV0
+IGdldHMgaW5mby0+dmFyIGluc3RlYWQsIGFuZCByZXR1cm5zIG5vCj4gPj4gZXJyb3IuIEl0IGlz
+IGp1c3Qgc2FtZSBhcyBGQklPR0VUX1ZTQ1JFRU5JTkZPIGRvZXMuCj4gPj4gCj4gPj4gSU1ITywg
+dGhpcyBzaG91bGQgYmUgb25lIG9mIHRoZSBmb2xsb3dpbmcgY2FuZGlkYXRlcywKPiA+PiAgMS4g
+c2V0IHZhciB3aXRob3V0IGNoZWNrLgo+ID4+ICAyLiBkbyBub3RoaW5nIGJ1dCByZXR1cm4gZXJy
+b3IgKHNldHRpbmcgdmFyIGlzIG5vdCBzdXBwb3J0ZWQpLgo+ID4+IG9yCj4gPj4gIDMuIGl0J3Mg
+YSBidWcgKGZiX2NoZWNrX3ZhciBzaG91bGQgYWx3YXlzIGJlIHByb3ZpZGVkKS4KPiA+PiAKPiA+
+PiBUaGUgcGF0Y2ggYXQgdGhlIGJvdHRvbSBpbXBsZW1lbnRzICIxIi4KPiA+PiAKPiA+PiBCZWNh
+dXNlIEkgZG9uJ3Qga25vdyBBUEkgc3BlY2lmaWNhdGlvbiwgbm9yIHRoZSBoaXN0b3J5IG9mIHRo
+ZSBjb2RlLAo+ID4+IEkgd291bGQgbGlrZSBwZW9wbGUgd2hvIGtub3dzIHdlbGwgdG8gZGlzY3Vz
+cyB0aGlzLgo+ID4gCj4gPiBJZiB0aGUgZHJpdmVyIGRvZXNuJ3QgcHJvdmlkZSBhIGZiX2NoZWNr
+X3ZhcigpLCBpdCBtZWFucyBpdCBjYW5ub3QKPiA+IGNoYW5nZSB2aWRlbyBtb2RlLiBIZW5jZSB0
+aGlzIHJ1bGVzIG91dCAjMS4KPiA+IAo+ID4gIzIgaXMgbm90IGFjY2VwdGFibGUsIGFzIGl0IHdp
+bGwgYnJlYWsgZXhpc3RpbmcgYXBwbGljYXRpb25zLiBJdCdzIGFsc28KPiA+IGluY29ycmVjdCwg
+YXMgRkJJT1BVVF9WU0NSRUVOSU5GTyBzaG91bGQgc3VjY2VlZCBmb3Igc3VwcG9ydGVkIG1vZGVz
+Lgo+ID4gRm9yIHVuc3VwcG9ydGVkIG1vZGVzLCB0aGUgbW9kZSBzaG91bGQgYmUgcm91bmRlZCB1
+cCB0byBhIHN1cHBvcnRlZCBtb2RlLAo+ID4gaWYgcG9zc2libGUuIEluIHRoZSBjYXNlIG9mIGRy
+aXZlcnMgdGhhdCBzdXBwb3J0IG9uZSBmaXhlZCBtb2RlIG9ubHksIHRoaXMKPiA+IHJvdW5kaW5n
+IHVwIGlzIHJlbGF4ZWQgdG8gYHJvdW5kaW5nJyB0byB0aGUgc29sZSBzdXBwb3J0ZWQgbW9kZS4K
+PiA+IAo+ID4gIzMgaXMgYWxzbyB3cm9uZywgYXMgZmJfY2hlY2tfdmFyKCkgaGFzIGJlZW4gZGVs
+aWJlcmF0ZWx5IG1hZGUgb3B0aW9uYWwgdG8KPiA+IHNpbXBsaWZ5IGRyaXZlcnMgdGhhdCBzdXBw
+b3J0IG9uZSBmaXhlZCBtb2RlIG9ubHkuCj4gPiAKPiA+IENvbmNsdXNpb246IG5vdGhpbmcgc2hv
+dWxkIGJlIGNoYW5nZWQ/Cj4gCj4gSSdtIG5vdCBzdXJlLgo+IE9uIHBhcmlzYyB3ZSBqdXN0IHN0
+dW1ibGVkIG92ZXIgZXhhY3RseSB0aGlzIHByb2JsZW0gd2hlcmUgSSB0aGluayBUYWthc2hpJ3MK
+PiBwcm9wb3NhbCAiMS4iIGlzIHByb2JhYmx5IHRoZSByaWdodCBzb2x1dGlvbi4KPiAKPiBQbGVh
+c2Ugc2VlIG15IFhvcmcgYnVnemlsbGEgZW50cnk6Cj4gaHR0cHM6Ly9idWdzLmZyZWVkZXNrdG9w
+Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTcxNTMgCgpJIGJlbGlldmUgKGJ1Z3MuZnJlZWRlc2t0b3Au
+b3JnIGlzIGN1cnJlbnRseSBkb3duKSB0aGF0J3MgY3VycmVudGx5CndhaXRpbmcgZm9yIGluZm9y
+bWF0aW9uIGZyb20geW91LiBOYW1lbHksIGhhdmUgeW91IHRyaWVkIG5vdCBzcGVjaWZ5aW5nCmEg
+TW9kZXMgbGluZSBpbiB0aGUgeG9yZy5jb25mIFN1YlNlY3Rpb24gIkRpc3BsYXkiPyBJIHRoaW5r
+IHRoZSBYb3JnCmZiZGV2IGRyaXZlciBzaG91bGQgY29tZSB1cCB3aXRoIHRoZSBjdXJyZW50bHkg
+YWN0aXZlIG1vZGUgaW4gdGhhdCBjYXNlLgpJZiB0aGF0IGRvZXNuJ3Qgd29yaywgcGxlYXNlIGF0
+dGFjaCB0aGUgY29ycmVzcG9uZGluZyBYb3JnLjAubG9nIHRvIHRoZQpidWcgcmVwb3J0IG9uY2Ug
+YnVnemlsbGEgaXMgYmFjayBvbmxpbmUuCgoKLS0gCkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAg
+ICAgICAgICAgfCAgICAgICAgICBodHRwOi8vdHVuZ3N0ZW5ncmFwaGljcy5jb20KTGlicmUgc29m
+dHdhcmUgZW50aHVzaWFzdCAgICAgICAgIHwgICAgICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2
+ZWxvcGVyCgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFpbCBpcyBzcG9uc29yZWQg
+YnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1aWxkIHRoZSBj
+b29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxpbiBTREsgJiB3aW4gZ3Jl
+YXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRvIGFuIE9wZW4gU291cmNl
+IGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGluLWNvbnRlc3Qub3JnL3Jl
+ZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51
+eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vm
+b3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

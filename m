@@ -1,7 +1,8 @@
-From: "Jon Dufresne" <jon.dufresne@gmail.com>
-Subject: hdmi mode in intelfb
-Date: Thu, 28 Aug 2008 09:39:27 -0700
-Message-ID: <376ea3380808280939o7a1205edx2ee248111d0becfb@mail.gmail.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH 1/4] cirrusfb: remove information about
+ memory size during mode change
+Date: Thu, 28 Aug 2008 22:09:57 +0200
+Message-ID: <20080828220957.06d1f08a.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,16 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYkWw-000211-OR for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 09:39:30 -0700
-Received: from fk-out-0910.google.com ([209.85.128.187])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYkWv-0006Um-Cu
+	id 1KYniQ-0005H2-ED for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 13:03:34 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYniP-0005co-0b
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 09:39:30 -0700
-Received: by fk-out-0910.google.com with SMTP id 18so314249fkq.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 28 Aug 2008 09:39:27 -0700 (PDT)
-Content-Disposition: inline
+	Thu, 28 Aug 2008 13:03:34 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,31 +26,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-Hi,
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-I have a intel 945GM. This particular board has port sdvoc connected
-to an hdmi port.
+Remove information about memory size displayed
+twice each time a display mode change.
 
-I need to use the frame buffer connected to this port so I've been
-trying to hack the intelfb driver to support hdmi mode switching in
-the intelfb driver. I noticed it currently only supports the adpa port
-(analog crt).
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/cirrusfb.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-I can successfully get mode switching working on the adpa port and the
-sdvob port (connected to a dvi port on my board). I have read the
-documentation extensively as well as looked at the X driver, the drm
-driver and whatever else google turns up. But when I use the same
-procedure to do mode switching on the hdmi port the monitor goes blank
-every time and will not be able to lock onto the signal.
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index c14b243..66e768d 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -1972,8 +1972,6 @@ static void init_vgachip(struct fb_info *info)
+ 	/* misc... */
+ 	WHDR(cinfo, 0);	/* Hidden DAC register: - */
+ 
+-	printk(KERN_DEBUG "cirrusfb: This board has %ld bytes of DRAM memory\n",
+-		info->screen_size);
+ 	DPRINTK("EXIT\n");
+ 	return;
+ }
+-- 
+1.5.2.2
 
-I'm wondering if anyone has tried to get hdmi out working with a an
-intel card and had success, I just can't seem to get it to work. Would
-anyone be willing to give me a hand?
 
-Thanks,
-Jon
+----------------------------------------------------------------------
+Tani telefon!
+Sprawdz >>> http://link.interia.pl/f1ef5 
+
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

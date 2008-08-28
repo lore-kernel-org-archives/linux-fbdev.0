@@ -1,10 +1,7 @@
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH] Do set var even if no
-	fb_check_var() provided.
-Date: Wed, 27 Aug 2008 23:49:15 +0200
-Message-ID: <g94i4r$2hq$1@ger.gmane.org>
-References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin>
+From: "Jon Dufresne" <jon.dufresne@gmail.com>
+Subject: hdmi mode in intelfb
+Date: Thu, 28 Aug 2008 09:39:27 -0700
+Message-ID: <376ea3380808280939o7a1205edx2ee248111d0becfb@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,24 +9,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYStQ-0004zh-UF for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 14:49:32 -0700
-Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KYStO-0007me-SJ
+	id 1KYkWw-000211-OR for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 09:39:30 -0700
+Received: from fk-out-0910.google.com ([209.85.128.187])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYkWv-0006Um-Cu
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 14:49:32 -0700
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1KYStJ-0006Q0-St for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 21:49:25 +0000
-Received: from mnhm-590f6f04.pool.einsundeins.de ([89.15.111.4])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 27 Aug 2008 21:49:25 +0000
-Received: from deller by mnhm-590f6f04.pool.einsundeins.de with local (Gmexim
-	0.1 (Debian)) id 1AlnuQ-0007hv-00
+	Thu, 28 Aug 2008 09:39:30 -0700
+Received: by fk-out-0910.google.com with SMTP id 18so314249fkq.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 27 Aug 2008 21:49:25 +0000
+	Thu, 28 Aug 2008 09:39:27 -0700 (PDT)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -42,51 +31,29 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Geert Uytterhoeven wrote:
-> On Wed, 27 Aug 2008, Takashi Yoshii wrote:
->> The behavior of FBIOSET_VSCREENINFO seems to be weired on FB which does
->> not
->>  provides fbops->fb_check_var.
->> It doesn't set anything, but gets info->var instead, and returns no
->> error. It is just same as FBIOGET_VSCREENINFO does.
->> 
->> IMHO, this should be one of the following candidates,
->>  1. set var without check.
->>  2. do nothing but return error (setting var is not supported).
->> or
->>  3. it's a bug (fb_check_var should always be provided).
->> 
->> The patch at the bottom implements "1".
->> 
->> Because I don't know API specification, nor the history of the code,
->> I would like people who knows well to discuss this.
-> 
-> If the driver doesn't provide a fb_check_var(), it means it cannot
-> change video mode. Hence this rules out #1.
-> 
-> #2 is not acceptable, as it will break existing applications. It's also
-> incorrect, as FBIOPUT_VSCREENINFO should succeed for supported modes.
-> For unsupported modes, the mode should be rounded up to a supported mode,
-> if possible. In the case of drivers that support one fixed mode only, this
-> rounding up is relaxed to `rounding' to the sole supported mode.
-> 
-> #3 is also wrong, as fb_check_var() has been deliberately made optional to
-> simplify drivers that support one fixed mode only.
-> 
-> Conclusion: nothing should be changed?
+Hi,
 
-I'm not sure.
-On parisc we just stumbled over exactly this problem where I think Takashi's
-proposal "1." is probably the right solution.
+I have a intel 945GM. This particular board has port sdvoc connected
+to an hdmi port.
 
-Please see my Xorg bugzilla entry:
-https://bugs.freedesktop.org/show_bug.cgi?id=17153 
-and this problem description/thread ("X won't start with VisEG and
-2.6.22.19"):
-http://thread.gmane.org/gmane.linux.ports.parisc/564/focus=592
+I need to use the frame buffer connected to this port so I've been
+trying to hack the intelfb driver to support hdmi mode switching in
+the intelfb driver. I noticed it currently only supports the adpa port
+(analog crt).
 
-Helge
+I can successfully get mode switching working on the adpa port and the
+sdvob port (connected to a dvi port on my board). I have read the
+documentation extensively as well as looked at the X driver, the drm
+driver and whatever else google turns up. But when I use the same
+procedure to do mode switching on the hdmi port the monitor goes blank
+every time and will not be able to lock onto the signal.
 
+I'm wondering if anyone has tried to get hdmi out working with a an
+intel card and had success, I just can't seem to get it to work. Would
+anyone be willing to give me a hand?
+
+Thanks,
+Jon
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

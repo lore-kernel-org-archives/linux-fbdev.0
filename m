@@ -1,26 +1,23 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-Subject: Re: [PATCH] Do set var even if
-	no	fb_check_var() provided.
-Date: Thu, 28 Aug 2008 08:53:34 +0200
-Message-ID: <1219906414.4421.142.camel@thor.sulgenrain.local>
-References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin> <g94i4r$2hq$1@ger.gmane.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/2] tdfxfb: fix frame buffer name
+ overrun
+Date: Thu, 28 Aug 2008 09:01:54 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0808280854220.11935@anakin>
+References: <20080827210739.21936b36.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYbO4-0004G9-Hc for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 23:53:44 -0700
-Received: from fg-out-1718.google.com ([72.14.220.159])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYbO1-000836-MF
+	id 1KYbW6-00053h-Js for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 00:02:02 -0700
+Received: from wilson.telenet-ops.be ([195.130.132.42])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYbW4-0001iA-SE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 Aug 2008 23:53:44 -0700
-Received: by fg-out-1718.google.com with SMTP id d23so168440fga.32
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 27 Aug 2008 23:53:39 -0700 (PDT)
-In-Reply-To: <g94i4r$2hq$1@ger.gmane.org>
+	Thu, 28 Aug 2008 00:02:02 -0700
+In-Reply-To: <20080827210739.21936b36.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,57 +28,81 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-T24gV2VkLCAyMDA4LTA4LTI3IGF0IDIzOjQ5ICswMjAwLCBIZWxnZSBEZWxsZXIgd3JvdGU6Cj4g
-R2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOgo+ID4gT24gV2VkLCAyNyBBdWcgMjAwOCwgVGFrYXNo
-aSBZb3NoaWkgd3JvdGU6Cj4gPj4gVGhlIGJlaGF2aW9yIG9mIEZCSU9TRVRfVlNDUkVFTklORk8g
-c2VlbXMgdG8gYmUgd2VpcmVkIG9uIEZCIHdoaWNoIGRvZXMKPiA+PiBub3QKPiA+PiAgcHJvdmlk
-ZXMgZmJvcHMtPmZiX2NoZWNrX3Zhci4KPiA+PiBJdCBkb2Vzbid0IHNldCBhbnl0aGluZywgYnV0
-IGdldHMgaW5mby0+dmFyIGluc3RlYWQsIGFuZCByZXR1cm5zIG5vCj4gPj4gZXJyb3IuIEl0IGlz
-IGp1c3Qgc2FtZSBhcyBGQklPR0VUX1ZTQ1JFRU5JTkZPIGRvZXMuCj4gPj4gCj4gPj4gSU1ITywg
-dGhpcyBzaG91bGQgYmUgb25lIG9mIHRoZSBmb2xsb3dpbmcgY2FuZGlkYXRlcywKPiA+PiAgMS4g
-c2V0IHZhciB3aXRob3V0IGNoZWNrLgo+ID4+ICAyLiBkbyBub3RoaW5nIGJ1dCByZXR1cm4gZXJy
-b3IgKHNldHRpbmcgdmFyIGlzIG5vdCBzdXBwb3J0ZWQpLgo+ID4+IG9yCj4gPj4gIDMuIGl0J3Mg
-YSBidWcgKGZiX2NoZWNrX3ZhciBzaG91bGQgYWx3YXlzIGJlIHByb3ZpZGVkKS4KPiA+PiAKPiA+
-PiBUaGUgcGF0Y2ggYXQgdGhlIGJvdHRvbSBpbXBsZW1lbnRzICIxIi4KPiA+PiAKPiA+PiBCZWNh
-dXNlIEkgZG9uJ3Qga25vdyBBUEkgc3BlY2lmaWNhdGlvbiwgbm9yIHRoZSBoaXN0b3J5IG9mIHRo
-ZSBjb2RlLAo+ID4+IEkgd291bGQgbGlrZSBwZW9wbGUgd2hvIGtub3dzIHdlbGwgdG8gZGlzY3Vz
-cyB0aGlzLgo+ID4gCj4gPiBJZiB0aGUgZHJpdmVyIGRvZXNuJ3QgcHJvdmlkZSBhIGZiX2NoZWNr
-X3ZhcigpLCBpdCBtZWFucyBpdCBjYW5ub3QKPiA+IGNoYW5nZSB2aWRlbyBtb2RlLiBIZW5jZSB0
-aGlzIHJ1bGVzIG91dCAjMS4KPiA+IAo+ID4gIzIgaXMgbm90IGFjY2VwdGFibGUsIGFzIGl0IHdp
-bGwgYnJlYWsgZXhpc3RpbmcgYXBwbGljYXRpb25zLiBJdCdzIGFsc28KPiA+IGluY29ycmVjdCwg
-YXMgRkJJT1BVVF9WU0NSRUVOSU5GTyBzaG91bGQgc3VjY2VlZCBmb3Igc3VwcG9ydGVkIG1vZGVz
-Lgo+ID4gRm9yIHVuc3VwcG9ydGVkIG1vZGVzLCB0aGUgbW9kZSBzaG91bGQgYmUgcm91bmRlZCB1
-cCB0byBhIHN1cHBvcnRlZCBtb2RlLAo+ID4gaWYgcG9zc2libGUuIEluIHRoZSBjYXNlIG9mIGRy
-aXZlcnMgdGhhdCBzdXBwb3J0IG9uZSBmaXhlZCBtb2RlIG9ubHksIHRoaXMKPiA+IHJvdW5kaW5n
-IHVwIGlzIHJlbGF4ZWQgdG8gYHJvdW5kaW5nJyB0byB0aGUgc29sZSBzdXBwb3J0ZWQgbW9kZS4K
-PiA+IAo+ID4gIzMgaXMgYWxzbyB3cm9uZywgYXMgZmJfY2hlY2tfdmFyKCkgaGFzIGJlZW4gZGVs
-aWJlcmF0ZWx5IG1hZGUgb3B0aW9uYWwgdG8KPiA+IHNpbXBsaWZ5IGRyaXZlcnMgdGhhdCBzdXBw
-b3J0IG9uZSBmaXhlZCBtb2RlIG9ubHkuCj4gPiAKPiA+IENvbmNsdXNpb246IG5vdGhpbmcgc2hv
-dWxkIGJlIGNoYW5nZWQ/Cj4gCj4gSSdtIG5vdCBzdXJlLgo+IE9uIHBhcmlzYyB3ZSBqdXN0IHN0
-dW1ibGVkIG92ZXIgZXhhY3RseSB0aGlzIHByb2JsZW0gd2hlcmUgSSB0aGluayBUYWthc2hpJ3MK
-PiBwcm9wb3NhbCAiMS4iIGlzIHByb2JhYmx5IHRoZSByaWdodCBzb2x1dGlvbi4KPiAKPiBQbGVh
-c2Ugc2VlIG15IFhvcmcgYnVnemlsbGEgZW50cnk6Cj4gaHR0cHM6Ly9idWdzLmZyZWVkZXNrdG9w
-Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTcxNTMgCgpJIGJlbGlldmUgKGJ1Z3MuZnJlZWRlc2t0b3Au
-b3JnIGlzIGN1cnJlbnRseSBkb3duKSB0aGF0J3MgY3VycmVudGx5CndhaXRpbmcgZm9yIGluZm9y
-bWF0aW9uIGZyb20geW91LiBOYW1lbHksIGhhdmUgeW91IHRyaWVkIG5vdCBzcGVjaWZ5aW5nCmEg
-TW9kZXMgbGluZSBpbiB0aGUgeG9yZy5jb25mIFN1YlNlY3Rpb24gIkRpc3BsYXkiPyBJIHRoaW5r
-IHRoZSBYb3JnCmZiZGV2IGRyaXZlciBzaG91bGQgY29tZSB1cCB3aXRoIHRoZSBjdXJyZW50bHkg
-YWN0aXZlIG1vZGUgaW4gdGhhdCBjYXNlLgpJZiB0aGF0IGRvZXNuJ3Qgd29yaywgcGxlYXNlIGF0
-dGFjaCB0aGUgY29ycmVzcG9uZGluZyBYb3JnLjAubG9nIHRvIHRoZQpidWcgcmVwb3J0IG9uY2Ug
-YnVnemlsbGEgaXMgYmFjayBvbmxpbmUuCgoKLS0gCkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAg
-ICAgICAgICAgfCAgICAgICAgICBodHRwOi8vdHVuZ3N0ZW5ncmFwaGljcy5jb20KTGlicmUgc29m
-dHdhcmUgZW50aHVzaWFzdCAgICAgICAgIHwgICAgICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2
-ZWxvcGVyCgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFpbCBpcyBzcG9uc29yZWQg
-YnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1aWxkIHRoZSBj
-b29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxpbiBTREsgJiB3aW4gZ3Jl
-YXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRvIGFuIE9wZW4gU291cmNl
-IGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGluLWNvbnRlc3Qub3JnL3Jl
-ZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51
-eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vm
-b3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+On Wed, 27 Aug 2008, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> If there are more then one graphics card handled 
+> by the tdfxfb driver the name of the frame buffer 
+> overruns reserved name size.
+
+Nice spot! Multiple strcat() will start overwriting other fields in
+fb_fix_screeninfo.
+
+> ---
+> This also is good candidate for 2.6.27 fix.
+> 
+>  drivers/video/tdfxfb.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
+> index fa7cbec..ed86ef3 100644
+> --- a/drivers/video/tdfxfb.c
+> +++ b/drivers/video/tdfxfb.c
+> @@ -95,7 +95,6 @@ static inline int mtrr_del(int reg, unsigned long base,
+>  #define VOODOO5_MAX_PIXCLOCK 350000
+>  
+>  static struct fb_fix_screeninfo tdfx_fix __devinitdata = {
+> -	.id =		"3Dfx",
+>  	.type =		FB_TYPE_PACKED_PIXELS,
+>  	.visual =	FB_VISUAL_PSEUDOCOLOR,
+>  	.ypanstep =	1,
+> @@ -1196,6 +1195,7 @@ static int __devinit tdfxfb_probe(struct pci_dev *pdev,
+>  		return -ENOMEM;
+>  
+>  	default_par = info->par;
+> +	strcpy(tdfx_fix.id, "3Dfx");
+>  
+>  	/* Configure the default fb_fix_screeninfo first */
+>  	switch (pdev->device) {
+
+At first I thought: but this doesn't fix all problems with multiple
+cards, as tdfx_fix is still shared among all of them? But that's not
+true (tdfx_fix is copied to info->fix later), so it is correct.
+
+IMHO, as tdfx_fix is used as some `temporary' variable in tdfxfb_probe() only,
+a better fix would be to change the operation mode from:
+
+    info = framebuffer_alloc(...);
+    tdfx_fix.foo = ...; /* depends on probe value */
+    tdfx_fix.bar = ...; /* depends on probe value */
+    info->fix = tdfx_fix;
+
+to
+
+    info = framebuffer_alloc(...);
+    info->fix = tdfx_fix;
+    info->fix.foo = ...; /* depends on probe value */
+    info->fix.bar = ...; /* depends on probe value */
+
+and make tdfx_fix const. Then you don't have to initialize tdfx_fix.id
+for every card, and make it clear that tdfx_fix is just used as a template.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

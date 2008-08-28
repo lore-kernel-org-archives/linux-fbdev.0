@@ -1,25 +1,25 @@
 From: Helge Deller <deller@gmx.de>
 Subject: Re: [PATCH] Do set var even if
  no	fb_check_var() provided.
-Date: Thu, 28 Aug 2008 23:43:57 +0200
-Message-ID: <48B71C1D.9040908@gmx.de>
-References: <48B4E16C.4000107@renesas.com>	
+Date: Thu, 28 Aug 2008 23:45:41 +0200
+Message-ID: <48B71C85.5060001@gmx.de>
+References: <48B4E16C.4000107@renesas.com>
 	<Pine.LNX.4.64.0808270855110.7910@anakin>
-	<g94i4r$2hq$1@ger.gmane.org>
-	<1219906414.4421.142.camel@thor.sulgenrain.local>
+	<g94i4r$2hq$1@ger.gmane.org> <20080828074521.GO16680@sci.fi>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYpHm-0006Jk-1O for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 14:44:10 -0700
+	id 1KYpJO-0006QZ-KR for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 14:45:50 -0700
 Received: from mail.gmx.net ([213.165.64.20])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1KYpHk-00079S-Bv
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1KYpJO-0001i5-18
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 14:44:09 -0700
-In-Reply-To: <1219906414.4421.142.camel@thor.sulgenrain.local>
+	Thu, 28 Aug 2008 14:45:50 -0700
+In-Reply-To: <20080828074521.GO16680@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,68 +30,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@tungstengraphics.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Helge Deller <deller@gmx.de>, linux-fbdev-devel@lists.sourceforge.net
 
-TWljaGVsIETDpG56ZXIgd3JvdGU6Cj4gT24gV2VkLCAyMDA4LTA4LTI3IGF0IDIzOjQ5ICswMjAw
-LCBIZWxnZSBEZWxsZXIgd3JvdGU6Cj4+IEdlZXJ0IFV5dHRlcmhvZXZlbiB3cm90ZToKPj4+IE9u
-IFdlZCwgMjcgQXVnIDIwMDgsIFRha2FzaGkgWW9zaGlpIHdyb3RlOgo+Pj4+IFRoZSBiZWhhdmlv
-ciBvZiBGQklPU0VUX1ZTQ1JFRU5JTkZPIHNlZW1zIHRvIGJlIHdlaXJlZCBvbiBGQiB3aGljaCBk
-b2VzCj4+Pj4gbm90Cj4+Pj4gIHByb3ZpZGVzIGZib3BzLT5mYl9jaGVja192YXIuCj4+Pj4gSXQg
-ZG9lc24ndCBzZXQgYW55dGhpbmcsIGJ1dCBnZXRzIGluZm8tPnZhciBpbnN0ZWFkLCBhbmQgcmV0
-dXJucyBubwo+Pj4+IGVycm9yLiBJdCBpcyBqdXN0IHNhbWUgYXMgRkJJT0dFVF9WU0NSRUVOSU5G
-TyBkb2VzLgo+Pj4+Cj4+Pj4gSU1ITywgdGhpcyBzaG91bGQgYmUgb25lIG9mIHRoZSBmb2xsb3dp
-bmcgY2FuZGlkYXRlcywKPj4+PiAgMS4gc2V0IHZhciB3aXRob3V0IGNoZWNrLgo+Pj4+ICAyLiBk
-byBub3RoaW5nIGJ1dCByZXR1cm4gZXJyb3IgKHNldHRpbmcgdmFyIGlzIG5vdCBzdXBwb3J0ZWQp
-Lgo+Pj4+IG9yCj4+Pj4gIDMuIGl0J3MgYSBidWcgKGZiX2NoZWNrX3ZhciBzaG91bGQgYWx3YXlz
-IGJlIHByb3ZpZGVkKS4KPj4+Pgo+Pj4+IFRoZSBwYXRjaCBhdCB0aGUgYm90dG9tIGltcGxlbWVu
-dHMgIjEiLgo+Pj4+Cj4+Pj4gQmVjYXVzZSBJIGRvbid0IGtub3cgQVBJIHNwZWNpZmljYXRpb24s
-IG5vciB0aGUgaGlzdG9yeSBvZiB0aGUgY29kZSwKPj4+PiBJIHdvdWxkIGxpa2UgcGVvcGxlIHdo
-byBrbm93cyB3ZWxsIHRvIGRpc2N1c3MgdGhpcy4KPj4+IElmIHRoZSBkcml2ZXIgZG9lc24ndCBw
-cm92aWRlIGEgZmJfY2hlY2tfdmFyKCksIGl0IG1lYW5zIGl0IGNhbm5vdAo+Pj4gY2hhbmdlIHZp
-ZGVvIG1vZGUuIEhlbmNlIHRoaXMgcnVsZXMgb3V0ICMxLgo+Pj4KPj4+ICMyIGlzIG5vdCBhY2Nl
-cHRhYmxlLCBhcyBpdCB3aWxsIGJyZWFrIGV4aXN0aW5nIGFwcGxpY2F0aW9ucy4gSXQncyBhbHNv
-Cj4+PiBpbmNvcnJlY3QsIGFzIEZCSU9QVVRfVlNDUkVFTklORk8gc2hvdWxkIHN1Y2NlZWQgZm9y
-IHN1cHBvcnRlZCBtb2Rlcy4KPj4+IEZvciB1bnN1cHBvcnRlZCBtb2RlcywgdGhlIG1vZGUgc2hv
-dWxkIGJlIHJvdW5kZWQgdXAgdG8gYSBzdXBwb3J0ZWQgbW9kZSwKPj4+IGlmIHBvc3NpYmxlLiBJ
-biB0aGUgY2FzZSBvZiBkcml2ZXJzIHRoYXQgc3VwcG9ydCBvbmUgZml4ZWQgbW9kZSBvbmx5LCB0
-aGlzCj4+PiByb3VuZGluZyB1cCBpcyByZWxheGVkIHRvIGByb3VuZGluZycgdG8gdGhlIHNvbGUg
-c3VwcG9ydGVkIG1vZGUuCj4+Pgo+Pj4gIzMgaXMgYWxzbyB3cm9uZywgYXMgZmJfY2hlY2tfdmFy
-KCkgaGFzIGJlZW4gZGVsaWJlcmF0ZWx5IG1hZGUgb3B0aW9uYWwgdG8KPj4+IHNpbXBsaWZ5IGRy
-aXZlcnMgdGhhdCBzdXBwb3J0IG9uZSBmaXhlZCBtb2RlIG9ubHkuCj4+Pgo+Pj4gQ29uY2x1c2lv
-bjogbm90aGluZyBzaG91bGQgYmUgY2hhbmdlZD8KPj4gSSdtIG5vdCBzdXJlLgo+PiBPbiBwYXJp
-c2Mgd2UganVzdCBzdHVtYmxlZCBvdmVyIGV4YWN0bHkgdGhpcyBwcm9ibGVtIHdoZXJlIEkgdGhp
-bmsgVGFrYXNoaSdzCj4+IHByb3Bvc2FsICIxLiIgaXMgcHJvYmFibHkgdGhlIHJpZ2h0IHNvbHV0
-aW9uLgo+Pgo+PiBQbGVhc2Ugc2VlIG15IFhvcmcgYnVnemlsbGEgZW50cnk6Cj4+IGh0dHBzOi8v
-YnVncy5mcmVlZGVza3RvcC5vcmcvc2hvd19idWcuY2dpP2lkPTE3MTUzIAo+IAo+IEkgYmVsaWV2
-ZSAoYnVncy5mcmVlZGVza3RvcC5vcmcgaXMgY3VycmVudGx5IGRvd24pIHRoYXQncyBjdXJyZW50
-bHkKPiB3YWl0aW5nIGZvciBpbmZvcm1hdGlvbiBmcm9tIHlvdS4gTmFtZWx5LCBoYXZlIHlvdSB0
-cmllZCBub3Qgc3BlY2lmeWluZwo+IGEgTW9kZXMgbGluZSBpbiB0aGUgeG9yZy5jb25mIFN1YlNl
-Y3Rpb24gIkRpc3BsYXkiPyBJIHRoaW5rIHRoZSBYb3JnCj4gZmJkZXYgZHJpdmVyIHNob3VsZCBj
-b21lIHVwIHdpdGggdGhlIGN1cnJlbnRseSBhY3RpdmUgbW9kZSBpbiB0aGF0IGNhc2UuCj4gSWYg
-dGhhdCBkb2Vzbid0IHdvcmssIHBsZWFzZSBhdHRhY2ggdGhlIGNvcnJlc3BvbmRpbmcgWG9yZy4w
-LmxvZyB0byB0aGUKPiBidWcgcmVwb3J0IG9uY2UgYnVnemlsbGEgaXMgYmFjayBvbmxpbmUuCgpC
-dWd6aWxsYSAoaHR0cHM6Ly9idWdzLmZyZWVkZXNrdG9wLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTcx
-NTMgKSBpcyAKYXZhaWxhYmxlIGFnYWluLCBhbmQgSSd2ZSB1cGxvYWRlZCB0aGUgeG9yZy5jb25m
-IGZpbGUsIGFzIHdlbGwgYXMgdGhlIApYb3JnLjAubG9nIGxvZyBmaWxlIGFzIHJlcXVlc3RlZC4K
-CllvdXIgaWRlYSBhYm91dCB0ZXN0aW5nIGEgZmV3IG1vZGUgbGluZXMgaXMgbm9ybWFsbHkgYSBn
-b29kIGlkZWEuCk9uIGEgUEMgSSB3b3VsZCBkbyBleGFjdGx5IHRoaXMuCgpCdXQgb24gYSBwdXJl
-IGZyYW1lYnVmZmVyIGRyaXZlciBpdCdzIG9ubHkgbmVjZXNzYXJ5IHRvIGtub3cgKGFuZCB0byAK
-Y2hlY2spLCB0aGF0IGl0IHJ1bnMgKGZvciBleGFtcGxlKSBhdCAxMDI0eDc2OCBwaXhlbHMgd2l0
-aCA4YnBwLiAgVGhlIAptb25pdG9yIHN5bmMgdmFsdWVzIHNob3VsZG4ndCByZWFsbHkgbWF0dGVy
-IGFuZCB0aGF0IGlzIHRoZSBwcm9ibGVtIGluIAp0aGlzIHRocmVhZC4gWCBzaG91bGQgbm90IHRy
-eSB0byBmb3JjZSBhIHNwZWNpZmljIG1vbml0b3IgZnJlcXVlbmN5LiBJdCAKd29uJ3Qgc3VjZWVk
-IGFueXdheS4gSXQncyBmb3Igc29tZSBjYXJkcyBqdXN0IG5vdCBwb3NzaWJsZSB0byBzd2l0Y2gg
-Cm1vbml0b3IgZnJlcXVlbmNpZXMgb3IgdG8ga25vdyB0aGUgY3VycmVudCBvbmVzIChhbmQgdGhp
-cyBpcyB3aHkgdGhvc2UgCmRyaXZlcnMgZG9uJ3QgaW1wbGVtZW50IGZiX2NoZWNrX3ZhcigpKS4u
-LgoKSGVsZ2UKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5OZXQgZW1haWwgaXMgc3BvbnNvcmVk
-IGJ5IHRoZSBNb2JsaW4gWW91ciBNb3ZlIERldmVsb3BlcidzIGNoYWxsZW5nZQpCdWlsZCB0aGUg
-Y29vbGVzdCBMaW51eCBiYXNlZCBhcHBsaWNhdGlvbnMgd2l0aCBNb2JsaW4gU0RLICYgd2luIGdy
-ZWF0IHByaXplcwpHcmFuZCBwcml6ZSBpcyBhIHRyaXAgZm9yIHR3byB0byBhbiBPcGVuIFNvdXJj
-ZSBldmVudCBhbnl3aGVyZSBpbiB0aGUgd29ybGQKaHR0cDovL21vYmxpbi1jb250ZXN0Lm9yZy9y
-ZWRpcmVjdC5waHA/YmFubmVyX2lkPTEwMCZ1cmw9LwpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGlu
-dXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNl
-Zm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+Ville Syrj=E4l=E4 wrote:
+> On Wed, Aug 27, 2008 at 11:49:15PM +0200, Helge Deller wrote:
+>> Geert Uytterhoeven wrote:
+>>> On Wed, 27 Aug 2008, Takashi Yoshii wrote:
+>>>> The behavior of FBIOSET_VSCREENINFO seems to be weired on FB which does
+>>>> not
+>>>>  provides fbops->fb_check_var.
+>>>> It doesn't set anything, but gets info->var instead, and returns no
+>>>> error. It is just same as FBIOGET_VSCREENINFO does.
+>>>>
+>>>> IMHO, this should be one of the following candidates,
+>>>>  1. set var without check.
+>>>>  2. do nothing but return error (setting var is not supported).
+>>>> or
+>>>>  3. it's a bug (fb_check_var should always be provided).
+>>>>
+>>>> The patch at the bottom implements "1".
+>>>>
+>>>> Because I don't know API specification, nor the history of the code,
+>>>> I would like people who knows well to discuss this.
+>>> If the driver doesn't provide a fb_check_var(), it means it cannot
+>>> change video mode. Hence this rules out #1.
+>>>
+>>> #2 is not acceptable, as it will break existing applications. It's also
+>>> incorrect, as FBIOPUT_VSCREENINFO should succeed for supported modes.
+>>> For unsupported modes, the mode should be rounded up to a supported mod=
+e,
+>>> if possible. In the case of drivers that support one fixed mode only, t=
+his
+>>> rounding up is relaxed to `rounding' to the sole supported mode.
+>>>
+>>> #3 is also wrong, as fb_check_var() has been deliberately made optional=
+ to
+>>> simplify drivers that support one fixed mode only.
+>>>
+>>> Conclusion: nothing should be changed?
+>> I'm not sure.
+>> On parisc we just stumbled over exactly this problem where I think Takas=
+hi's
+>> proposal "1." is probably the right solution.
+> =
+
+> What about this?
+> =
+
+> 4. Provide a generic check_var() that does some basic sanity checking
+> against info->var (eg. check xres, yres and bits_per_pixel).
+
+Yes, possible.
+But that wouldn't solve issues with Xorg's current implementation, as =
+
+Xorg is currently checking the monitor sync values as well (see =
+
+https://bugs.freedesktop.org/show_bug.cgi?id=3D17153)
+
+Helge
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great priz=
+es
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=3D100&url=3D/

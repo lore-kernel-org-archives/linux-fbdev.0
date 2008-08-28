@@ -1,26 +1,21 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH] Do set var even if
-	no	fb_check_var() provided.
-Date: Thu, 28 Aug 2008 10:45:21 +0300
-Message-ID: <20080828074521.GO16680@sci.fi>
-References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin>
-	<g94i4r$2hq$1@ger.gmane.org>
+From: krzysztof.h1@poczta.fm
+Subject: Re: [PATCH 2/2] tdfxfb: fix frame buffer name
+	overrun
+Date: 28 Aug 2008 10:20:19 +0200
+Message-ID: <20080828082020.525E411410@f07.poczta.interia.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYcCA-000102-6K for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 00:45:30 -0700
-Received: from smtp4.pp.htv.fi ([213.243.153.38])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYcC7-0004iJ-I4
+	id 1KYd8B-0007Qr-G5 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 01:45:27 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYd8A-0001aL-1g
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 00:45:30 -0700
-Content-Disposition: inline
-In-Reply-To: <g94i4r$2hq$1@ger.gmane.org>
+	Thu, 28 Aug 2008 01:45:27 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,73 +26,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Aug 27, 2008 at 11:49:15PM +0200, Helge Deller wrote:
-> Geert Uytterhoeven wrote:
-> > On Wed, 27 Aug 2008, Takashi Yoshii wrote:
-> >> The behavior of FBIOSET_VSCREENINFO seems to be weired on FB which does
-> >> not
-> >>  provides fbops->fb_check_var.
-> >> It doesn't set anything, but gets info->var instead, and returns no
-> >> error. It is just same as FBIOGET_VSCREENINFO does.
-> >> =
+> On Wed, 27 Aug 2008, Krzysztof Helt wrote:
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > If there are more then one graphics card handled 
+> > by the tdfxfb driver the name of the frame buffer 
+> > overruns reserved name size.
+> 
+> Nice spot! Multiple strcat() will start overwriting other fields in
+> fb_fix_screeninfo.
+> 
+> 
+> At first I thought: but this doesn't fix all problems with multiple
+> cards, as tdfx_fix is still shared among all of them? But that's not
+> true (tdfx_fix is copied to info->fix later), so it is correct.
+> 
+> IMHO, as tdfx_fix is used as some `temporary' variable in tdfxfb_probe()
+> only,
+> a better fix would be to change the operation mode from:
+> 
+>     info = framebuffer_alloc(...);
+>     tdfx_fix.foo = ...; /* depends on probe value */
+>     tdfx_fix.bar = ...; /* depends on probe value */
+>     info->fix = tdfx_fix;
+> 
+> to
+> 
+>     info = framebuffer_alloc(...);
+>     info->fix = tdfx_fix;
+>     info->fix.foo = ...; /* depends on probe value */
+>     info->fix.bar = ...; /* depends on probe value */
+> 
+> and make tdfx_fix const. Then you don't have to initialize tdfx_fix.id
+> for every card, and make it clear that tdfx_fix is just used as a
+> template.
+> 
 
-> >> IMHO, this should be one of the following candidates,
-> >>  1. set var without check.
-> >>  2. do nothing but return error (setting var is not supported).
-> >> or
-> >>  3. it's a bug (fb_check_var should always be provided).
-> >> =
+Ok.
 
-> >> The patch at the bottom implements "1".
-> >> =
+Andrew, please drop this patch. I will prepare next version (with signed-off-by as well). I started playing with git and I haven't notice that I need "-s" option while generating patches.
 
-> >> Because I don't know API specification, nor the history of the code,
-> >> I would like people who knows well to discuss this.
-> > =
+Regards,
+Krzysztof
 
-> > If the driver doesn't provide a fb_check_var(), it means it cannot
-> > change video mode. Hence this rules out #1.
-> > =
 
-> > #2 is not acceptable, as it will break existing applications. It's also
-> > incorrect, as FBIOPUT_VSCREENINFO should succeed for supported modes.
-> > For unsupported modes, the mode should be rounded up to a supported mod=
-e,
-> > if possible. In the case of drivers that support one fixed mode only, t=
-his
-> > rounding up is relaxed to `rounding' to the sole supported mode.
-> > =
+---------------------------------------------------------------
+Nasilaja sie kradzieze.
+Mieszkancy osiedli zaniepokojeni.
+Prosimy o pomoc w tej sprawie >>> http://link.interia.pl/f1eef
 
-> > #3 is also wrong, as fb_check_var() has been deliberately made optional=
- to
-> > simplify drivers that support one fixed mode only.
-> > =
 
-> > Conclusion: nothing should be changed?
-> =
-
-> I'm not sure.
-> On parisc we just stumbled over exactly this problem where I think Takash=
-i's
-> proposal "1." is probably the right solution.
-
-What about this?
-
-4. Provide a generic check_var() that does some basic sanity checking
-against info->var (eg. check xres, yres and bits_per_pixel).
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great priz=
-es
+Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=3D100&url=3D/
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

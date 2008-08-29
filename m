@@ -1,24 +1,25 @@
 From: Takashi Yoshii <yoshii.takashi@renesas.com>
-Subject: Re: [PATCH] Do set var even if no
- fb_check_var() provided.
-Date: Fri, 29 Aug 2008 11:06:40 +0900
-Message-ID: <48B759B0.4010001@renesas.com>
+Subject: [PATCH] Add fb_check_var() for fixed mode
+	device.
+Date: Fri, 29 Aug 2008 14:15:06 +0900
+Message-ID: <48B785DA.1030408@renesas.com>
 References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin>
+	<Pine.LNX.4.64.0808270855110.7910@anakin> <g94i4r$2hq$1@ger.gmane.org>
+	<20080828074521.GO16680@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYtOT-0004yP-VI for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 19:07:22 -0700
-Received: from mail.renesas.com ([202.234.163.13] helo=mail06.idc.renesas.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYtOS-0004rQ-EZ
+	id 1KYwKM-0004rT-8E for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 Aug 2008 22:15:18 -0700
+Received: from mail.renesas.com ([202.234.163.13] helo=mail01.idc.renesas.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYwKJ-0000Uj-Dx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 Aug 2008 19:07:21 -0700
-In-reply-to: <Pine.LNX.4.64.0808270855110.7910@anakin>
+	Thu, 28 Aug 2008 22:15:16 -0700
+In-reply-to: <20080828074521.GO16680@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,75 +30,99 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net
 
-Thank you for your explanation.
-Sorry for slow, long response.
-Summary:
- 1. I understand your strategy (no check == fix video).
- 2. pan should be fixed state after set var.
- 3. pixclock can be any, OK?
+Sounds good.
+> 4. Provide a generic check_var() that does some basic sanity checking
+> against info->var (eg. check xres, yres and bits_per_pixel).
+How about this.
+Any comments? Expecially about what to check, what to restore.
 
----
-1. 
-> > If the driver doesn't provide a fb_check_var(), it means it cannot
-> > change video mode. Hence this rules out #1.
-Well, this logic looks like "A is B because A is B".
-But, anyway this should be this because you say so.
-Accepting this as a fixed rule, things becomes simple.
+Cheers,
+/yoshii # Restoring pixclock would be a workaround for Xorg issue :)
 
-I guess this is based on the idea
- var should always be corresponding to HW state.
-My patch was based on the idea
- var can be any, because HW accept all (by just ignoring all).
+drivers/video/fbmem.c:fb_check_var()
+ New function for fixed mode device which doesn't provide its own
+ check_var function.
 
-> > #2 is not acceptable, as it will break existing applications. It's also
-> > incorrect, as FBIOPUT_VSCREENINFO should succeed for supported modes.
-Right. It's important not to break existing application. I found Xorg server
- does set var then check it to see if the operation was successful.
-Perhaps that is the usage of this API. So, returning error seems bad.
+Signed-off-by: Takashi YOSHII <yoshii.takashi@renesas.com>
 
-> > #3 is also wrong, as fb_check_var() has been deliberately made optional to
-> > simplify drivers that support one fixed mode only.
-OK. I don't think it is bad idea.
-
----
-2. pan should be fixed state after set var.
-
-# This is becoming another topic, though...
-One small problem of current code is that
- FBIOPUT_VSCREENINFO sometimes set PAN but sometimes does not.
-# assuming pan is not a part of "video mode".
-
-It will be 1.unchanged, or 2.info->var, or 3.var, or 4.var+rounding?,
-but generally pan state after FBIOPUT_VSCREENINFO should be considered
- as unknown(but something valid), even if passing valid value(say, (0,0)).
-
-It's ok if set or not. But, I believe it should be deterministic.
-
----
-3. pixclock can be any, OK?
-
-The real problem(for me;) might be
-. Habit of applications that check the var by themselves.
-This is  not actually a topic on this ML. But I want to confirm that
-  pixclock can be any. Even 0 is a kind of "Valid" value.
-OK?
-
-I'm asking because, there are drivers return timing parameters as 0.
-- HW has clock, known, but set 0 (sh_mobile_lcdfb).
-- HW must have clock, but unknown (hitfb, stifb, xilinxfb).
-- No clock (xenfb).
-There are drivers return false value.
-- No clock but return some (vfb).
-
-If 0 is valid, problem is Xorg's issue.
-X(at least 1.4) doesn't accept clock=0. (and the reason looks be buggy)
-
-Regards,
-/yoshii
-
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index c6b8e92..ff94eaf 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -904,6 +904,56 @@ static int fb_check_caps(struct fb_info *info, struct fb_var_screeninfo *var,
+ 	return err;
+ }
+ 
++/* Sanity check for drivers which can't change video mode */
++static int
++fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
++{
++	struct fb_var_screeninfo *constant = &info->var;
++        __u32 xoffset = var->xoffset;
++	__u32 yoffset = var->yoffset;
++	__u32 activate = var->activate;
++	__u32 yres = (constant->vmode & FB_VMODE_YWRAP)? 0: var->yres; 
++
++	/* do round _up_ */
++	if (var->xres_virtual < xoffset + var->xres)
++		var->xres_virtual = xoffset + var->xres;
++	if (var->yres_virtual < yoffset + yres)
++		var->yres_virtual = yoffset + yres;
++
++	/* bigger is error, smaller is OK */
++	if( ( var->xres > constant->xres )
++	  ||( var->yres > constant->yres )
++	  ||( var->xres_virtual > constant->xres_virtual )
++	  ||( var->yres_virtual > constant->yres_virtual ))
++		return -EINVAL;
++
++	/* only length are checked for bitfields */
++	if( ( var->bits_per_pixel > constant->bits_per_pixel )
++	  ||( var->red.length > constant->red.length )
++	  ||( var->green.length > constant->green.length )
++	  ||( var->blue.length > constant->blue.length ))
++		return -EINVAL;
++
++	/* boolean parameters can't be rounded, should be equal */
++	if( ( !var->grayscale != !constant->grayscale )
++	  ||( !var->nonstd != !constant->nonstd )
++	  ||( var->vmode != constant->vmode ))
++		return -EINVAL;
++
++	/* pan is acceptable only if we have fb_pan_display) */
++	if ( (var->yoffset || var->xoffset) && !info->fbops->fb_pan_display )
++		return -EINVAL;
++
++	/* copy most */
++	*var = *constant;
++	/* resotore some that are not a part of viede mode */
++	var->xoffset = xoffset;
++	var->yoffset = yoffset;
++	var->activate = activate;
++
++	return 0;
++}
++
+ int
+ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ {
+@@ -940,9 +990,11 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 
+ 		if (info->fbops->fb_check_var) {
+ 			ret = info->fbops->fb_check_var(var, info);
+-			if (ret)
+-				goto done;
+-		}
++		} else
++			ret = fb_check_var(var, info);
++
++		if (ret)
++			goto done;
+ 
+ 		if ((var->activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW) {
+ 			struct fb_videomode mode;
 
 
 -------------------------------------------------------------------------

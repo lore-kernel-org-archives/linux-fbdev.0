@@ -1,179 +1,159 @@
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
-Subject: [PATCH] intelfb: support 945GME (as used in ASUS Eee 901)
-Date: Fri, 29 Aug 2008 12:50:45 +0100
-Message-ID: <1220010645384@dmwebmail.dmwebmail.chezphil.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] Add fb_check_var() for fixed mode
+ device.
+Date: Fri, 29 Aug 2008 14:16:50 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0808291127510.18326@anakin>
+References: <48B4E16C.4000107@renesas.com>
+	<Pine.LNX.4.64.0808270855110.7910@anakin>
+	<g94i4r$2hq$1@ger.gmane.org> <20080828074521.GO16680@sci.fi> 
+	<48B785DA.1030408@renesas.com>
+	<1219999758.4421.259.camel@thor.sulgenrain.local>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757178AbYH2LvA@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; format="fixed"; charset="iso-8859-1"
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-1463808415-1213681410-1220002728=:18326"
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1KZ2uP-0004Sy-Sf for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 Aug 2008 05:16:58 -0700
+Received: from nelson.telenet-ops.be ([195.130.133.66])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KZ2uN-0006Go-6T
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 Aug 2008 05:16:57 -0700
+In-Reply-To: <1219999758.4421.259.camel@thor.sulgenrain.local>
+Content-ID: <Pine.LNX.4.64.0808291403050.18326@anakin>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+Cc: Helge Deller <deller@gmx.de>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, =?UTF-8?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---1463808415-1213681410-1220002728=:18326
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-ID: <Pine.LNX.4.64.0808291403051.18326@anakin>
 Content-Transfer-Encoding: quoted-printable
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: sylvain.meyer@worldonline.fr, linux-fbdev-devel@lists.sourceforge.net
 
-The following patch adds support for Intel's 945GME graphics chip to
-the intelfb driver.  I have assumed that the 945GME is identical to the
-already-supported 945GM apart from its PCI IDs; this is based on a quick
-look at the X driver for these chips which seems to treat them
-identically.
+On Fri, 29 Aug 2008, Michel D=E4nzer wrote:
+> On Fri, 2008-08-29 at 14:15 +0900, Takashi Yoshii wrote:
+> > +	/* bigger is error, smaller is OK */
+> > +	if( ( var->xres > constant->xres )
+> > +	  ||( var->yres > constant->yres )
+>=20
+> The resolution must match, otherwise userspace thinks it can e.g. set
+> 800x600 when the fixed mode is 1024x768.
 
-Signed-off-by: Phil Endecott <spam_from_intelfb@chezphil.org>
+It will be set later to the correct resolution. The above hunk just taks
+care of the rounding rules.
 
----
+Anyway, I'm still wondering whether this check is really needed. If your
+application doesn't look at how fb_var_screeninfo was changed by calling
+FBIOPUT_VSCREENINFO, you're in deep trouble anyway, due to the rounding
+rules.
 
-The 945GME is used in the ASUS Eee 901, and I coded this in the hope that=20
-I'd be able to use it to get a console at the native 1024x600 resolution=20
-which is not known to the BIOS.  I realised too late that the intelfb=20
-driver does not support mode changing on laptops, so it won't be any=20
-use for me.  But rather than throw it away I will post it here as=20
-essentially "untested"; maybe someone who knows more about this driver,=20
-and with more useful hardware to test on, can pick it up.
+As I don't have access to a PA-RISC machine with the mentioned hardware,
+I modified ps3fb by commenting out its fb_check_var() and fb_set_par()
+routines (this also gave a black screen, but as far as the fbdev subsyste=
+m
+is concerned, it has a working frame buffer device that supports one sing=
+le
+video mode only). Surprisingly, X indeed didn't like it:
 
-diff --git a/Documentation/fb/intelfb.txt b/Documentation/fb/intelfb.txt
-index 27a3160..dd9e944 100644
---- a/Documentation/fb/intelfb.txt
-+++ b/Documentation/fb/intelfb.txt
-@@ -14,6 +14,7 @@ graphics devices.  These would include:
- 	Intel 915GM
- 	Intel 945G
- 	Intel 945GM
-+	Intel 945GME
- 	Intel 965G
- 	Intel 965GM
-=20
-diff --git a/drivers/video/intelfb/intelfb.h b/drivers/video/intelfb/intelf=
-b.h
-index 3325fbd..a50bea6 100644
---- a/drivers/video/intelfb/intelfb.h
-+++ b/drivers/video/intelfb/intelfb.h
-@@ -12,9 +12,9 @@
- #endif
-=20
- /*** Version/name ***/
--#define INTELFB_VERSION			"0.9.5"
-+#define INTELFB_VERSION			"0.9.6"
- #define INTELFB_MODULE_NAME		"intelfb"
--#define SUPPORTED_CHIPSETS		"830M/845G/852GM/855GM/865G/915G/915GM/945G/94=
-5GM/965G/965GM"
-+#define SUPPORTED_CHIPSETS		"830M/845G/852GM/855GM/865G/915G/915GM/945G/94=
-5GM/945GME/965G/965GM"
-=20
-=20
- /*** Debug/feature defines ***/
-@@ -58,6 +58,7 @@
- #define PCI_DEVICE_ID_INTEL_915GM	0x2592
- #define PCI_DEVICE_ID_INTEL_945G	0x2772
- #define PCI_DEVICE_ID_INTEL_945GM	0x27A2
-+#define PCI_DEVICE_ID_INTEL_945GME	0x27AE
- #define PCI_DEVICE_ID_INTEL_965G	0x29A2
- #define PCI_DEVICE_ID_INTEL_965GM	0x2A02
-=20
-@@ -160,6 +161,7 @@ enum intel_chips {
- 	INTEL_915GM,
- 	INTEL_945G,
- 	INTEL_945GM,
-+	INTEL_945GME,
- 	INTEL_965G,
- 	INTEL_965GM,
- };
-@@ -363,6 +365,7 @@ struct intelfb_info {
- 			((dinfo)->chipset =3D=3D INTEL_915GM) ||	\
- 			((dinfo)->chipset =3D=3D INTEL_945G) ||	\
- 			((dinfo)->chipset =3D=3D INTEL_945GM) ||	\
-+			((dinfo)->chipset =3D=3D INTEL_945GME) ||	\
- 			((dinfo)->chipset =3D=3D INTEL_965G) ||	\
- 			((dinfo)->chipset =3D=3D INTEL_965GM))
-=20
-diff --git a/drivers/video/intelfb/intelfb_i2c.c b/drivers/video/intelfb/in=
-telfb_i2c.c
-index fcf9fad..5d896b8 100644
---- a/drivers/video/intelfb/intelfb_i2c.c
-+++ b/drivers/video/intelfb/intelfb_i2c.c
-@@ -171,6 +171,7 @@ void intelfb_create_i2c_busses(struct intelfb_info *din=
-fo)
- 		/* has some LVDS + tv-out */
- 	case INTEL_945G:
- 	case INTEL_945GM:
-+	case INTEL_945GME:
- 	case INTEL_965G:
- 	case INTEL_965GM:
- 		/* SDVO ports have a single control bus - 2 devices */
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/int=
-elfbdrv.c
-index e44303f..a09e236 100644
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -2,7 +2,7 @@
-  * intelfb
-  *
-  * Linux framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G/9=
-15GM/
-- * 945G/945GM/965G/965GM integrated graphics chips.
-+ * 945G/945GM/945GME/965G/965GM integrated graphics chips.
-  *
-  * Copyright =C2=A9 2002, 2003 David Dawes <dawes@xfree86.org>
-  *                   2004 Sylvain Meyer
-@@ -102,6 +102,9 @@
-  *
-  *    04/2008 - Version 0.9.5
-  *              Add support for 965G/965GM. (Maik Broemme <mbroemme@plusse=
-rver.de>)
-+ *
-+ *    08/2008 - Version 0.9.6
-+ *              Add support for 945GME. (Phil Endecott <spam_from_intelfb@=
-chezphil.org>)
-  */
-=20
- #include <linux/module.h>
-@@ -183,6 +186,7 @@ static struct pci_device_id intelfb_pci_table[] __devin=
-itdata =3D {
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_915GM, PCI_ANY_ID, PCI_ANY_ID,=
- PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915GM },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945G, PCI_ANY_ID, PCI_ANY_ID, =
-PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945G },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GM, PCI_ANY_ID, PCI_ANY_ID,=
- PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GM },
-+	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GME, PCI_ANY_ID, PCI_ANY_ID=
-, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GME },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965G, PCI_ANY_ID, PCI_ANY_ID, =
-PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965G },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965GM, PCI_ANY_ID, PCI_ANY_ID,=
- PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965GM },
- 	{ 0, }
-@@ -555,6 +559,7 @@ static int __devinit intelfb_pci_register(struct pci_de=
-v *pdev,
- 	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_915GM) ||
- 	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_945G)  ||
- 	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_945GM) ||
-+	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_945GME) ||
- 	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_965G) ||
- 	    (ent->device =3D=3D PCI_DEVICE_ID_INTEL_965GM)) {
-=20
-diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/inte=
-lfbhw.c
-index 8e6d6a4..8b26b27 100644
---- a/drivers/video/intelfb/intelfbhw.c
-+++ b/drivers/video/intelfb/intelfbhw.c
-@@ -143,6 +143,12 @@ int intelfbhw_get_chipset(struct pci_dev *pdev, struct=
- intelfb_info *dinfo)
- 		dinfo->mobile =3D 1;
- 		dinfo->pll_index =3D PLLS_I9xx;
- 		return 0;
-+	case PCI_DEVICE_ID_INTEL_945GME:
-+		dinfo->name =3D "Intel(R) 945GME";
-+		dinfo->chipset =3D INTEL_945GME;
-+		dinfo->mobile =3D 1;
-+		dinfo->pll_index =3D PLLS_I9xx;
-+		return 0;
- 	case PCI_DEVICE_ID_INTEL_965G:
- 		dinfo->name =3D "Intel(R) 965G";
- 		dinfo->chipset =3D INTEL_965G;
-@@ -186,6 +192,7 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *ape=
-rture_size,
- 	case PCI_DEVICE_ID_INTEL_915GM:
- 	case PCI_DEVICE_ID_INTEL_945G:
- 	case PCI_DEVICE_ID_INTEL_945GM:
-+	case PCI_DEVICE_ID_INTEL_945GME:
- 	case PCI_DEVICE_ID_INTEL_965G:
- 	case PCI_DEVICE_ID_INTEL_965GM:
- 		/* 915, 945 and 965 chipsets support a 256MB aperture.
+| X.Org X Server 1.4.2
+| Release Date: 11 June 2008
+| X Protocol Version 11, Revision 0
+| Build Operating System: Linux Debian (xorg-server 2:1.4.2-3)
+| Current Operating System: Linux ps3 2.6.27-rc4-00176-gb8e6c91-dirty #18=
+15 SMP Fri Aug 29 13:54:57 CEST 2008 ppc64
+| Build Date: 03 August 2008  03:08:04AM
+| =20
+|         Before reporting problems, check http://wiki.x.org
+|         to make sure that you have the latest version.
+| Module Loader present
+| Markers: (--) probed, (**) from config file, (=3D=3D) default setting,
+|         (++) from command line, (!!) notice, (II) informational,
+|         (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+| (=3D=3D) Log file: "/var/log/Xorg.0.log", Time: Fri Aug 29 13:57:26 200=
+8
+| (=3D=3D) Using config file: "/etc/X11/xorg.conf"
+| (EE) FBDEV(0): FBIOPUT_VSCREENINFO succeeded but modified mode
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| (EE) FBDEV(0): mode initialization failed
+|=20
+| Fatal server error:
+| AddScreen/ScreenInit failed for driver 0
+
+The "Screen" / "Display" (sub)section has `Modes "1920x1200"'. Removing
+this indeed doesn't make a difference.
+
+As I had added debug code to drivers/video/fbmem.c:fb_set_var(), I could
+see what happened in the working version with mode-setting vs. the non-wo=
+rking
+version without modesetting:
+  - working, with mode-setting:
+      o fb_set_var() fails for the standard 1920x1200 mode in the Xorg
+        database,
+      o X fallbacks to the current 1920x1200 mode.
+  - non-working, without modesetting:
+      o fb_set_var() doesn't fail for the standard 1920x1200 mode in the
+        Xorg database, but it returns the current 1920x1200 mode,
+      o X complains that the mode got modified.
+
+Hence Xorg is broken on all embedded devices with a frame buffer driver
+that supports a single fixed video mode only?
+
+BTW, I know current Xorg is broken on several m68k platforms with non-chu=
+nky
+frame buffer layouts, due to some serious bugs in the way some uncommon v=
+alues
+of frame buffer parameters are handled, but IIRC they shouldn't affect
+`common' chunky frame buffers. Still have to look into it to fix it prope=
+rly
+(anyone who can donate me some spare time? ;-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
+---1463808415-1213681410-1220002728=:18326
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/
+---1463808415-1213681410-1220002728=:18326
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+---1463808415-1213681410-1220002728=:18326--

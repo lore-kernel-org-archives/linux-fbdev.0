@@ -1,12 +1,8 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Add fb_check_var() for fixed mode
- device.
-Date: Fri, 29 Aug 2008 09:10:48 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808290906370.22326@anakin>
-References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin>
-	<g94i4r$2hq$1@ger.gmane.org> <20080828074521.GO16680@sci.fi>
-	<48B785DA.1030408@renesas.com>
+From: "Eric Miao" <eric.y.miao@gmail.com>
+Subject: [PATCH 3/8] lcd: allow lcd device to handle
+	mode change events
+Date: Fri, 29 Aug 2008 15:26:46 +0800
+Message-ID: <f17812d70808290026y39163cccy2d4b1fa3b30c8625@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,13 +10,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYy8M-0007qJ-84 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 29 Aug 2008 00:11:02 -0700
-Received: from monty.telenet-ops.be ([195.130.132.56])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYy8L-0003kX-94
+	id 1KYyNb-0000zg-J6 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 Aug 2008 00:26:47 -0700
+Received: from yx-out-1718.google.com ([74.125.44.154])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYyNb-0000NH-5G
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 29 Aug 2008 00:11:02 -0700
-In-Reply-To: <48B785DA.1030408@renesas.com>
+	Fri, 29 Aug 2008 00:26:47 -0700
+Received: by yx-out-1718.google.com with SMTP id 3so376193yxi.82
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 29 Aug 2008 00:26:46 -0700 (PDT)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,81 +30,82 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Takashi Yoshii <yoshii.takashi@renesas.com>
-Cc: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net
+To: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 29 Aug 2008, Takashi Yoshii wrote:
-> Sounds good.
-> > 4. Provide a generic check_var() that does some basic sanity checking
-> > against info->var (eg. check xres, yres and bits_per_pixel).
-> How about this.
-> Any comments? Expecially about what to check, what to restore.
-> 
-> Cheers,
-> /yoshii # Restoring pixclock would be a workaround for Xorg issue :)
-> 
-> drivers/video/fbmem.c:fb_check_var()
->  New function for fixed mode device which doesn't provide its own
->  check_var function.
-> 
-> Signed-off-by: Takashi YOSHII <yoshii.takashi@renesas.com>
-> 
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index c6b8e92..ff94eaf 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -904,6 +904,56 @@ static int fb_check_caps(struct fb_info *info, struct fb_var_screeninfo *var,
->  	return err;
->  }
->  
-> +/* Sanity check for drivers which can't change video mode */
-> +static int
-> +fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
-> +{
-> +	struct fb_var_screeninfo *constant = &info->var;
-> +        __u32 xoffset = var->xoffset;
-> +	__u32 yoffset = var->yoffset;
-> +	__u32 activate = var->activate;
-> +	__u32 yres = (constant->vmode & FB_VMODE_YWRAP)? 0: var->yres; 
-> +
-> +	/* do round _up_ */
-> +	if (var->xres_virtual < xoffset + var->xres)
-> +		var->xres_virtual = xoffset + var->xres;
-> +	if (var->yres_virtual < yoffset + yres)
-> +		var->yres_virtual = yoffset + yres;
+Some LCD panels are capable of different resolutions, and is allowed
+to change at run-time, so to make "struct lcd_device" to be able to
+handle mode change events here.
 
-Why this part? var->[xy]res{,_virtual} will be overwritten by the
-correct values later anyway.
+Signed-off-by: Eric Miao <eric.miao@marvell.com>
+---
+ drivers/video/backlight/lcd.c |   18 +++++++++++++++---
+ drivers/video/fbmem.c         |    1 +
+ include/linux/lcd.h           |    2 ++
+ 3 files changed, 18 insertions(+), 3 deletions(-)
 
-> +	/* pan is acceptable only if we have fb_pan_display) */
-> +	if ( (var->yoffset || var->xoffset) && !info->fbops->fb_pan_display )
-> +		return -EINVAL;
+diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+index b15b2b8..8e1731d 100644
+--- a/drivers/video/backlight/lcd.c
++++ b/drivers/video/backlight/lcd.c
+@@ -27,14 +27,26 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 	struct fb_event *evdata = data;
 
-You should validate var->[xy]offset against constant->[xy]res_virtual
-and info->fix.[xy]{pan,wrap}step.
+ 	/* If we aren't interested in this event, skip it immediately ... */
+-	if (event != FB_EVENT_BLANK)
++	switch (event) {
++	case FB_EVENT_BLANK:
++	case FB_EVENT_MODE_CHANGE:
++	case FB_EVENT_MODE_CHANGE_ALL:
++		break;
++	default:
+ 		return 0;
++	}
 
-> +	/* copy most */
-> +	*var = *constant;
-> +	/* resotore some that are not a part of viede mode */
-           ^^^^^^^^
-	   restore
-> +	var->xoffset = xoffset;
-> +	var->yoffset = yoffset;
-> +	var->activate = activate;
-> +
-> +	return 0;
-> +}
+ 	ld = container_of(self, struct lcd_device, fb_notif);
++	if (!ld->ops)
++		return 0;
++
+ 	mutex_lock(&ld->ops_lock);
+-	if (ld->ops)
+-		if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info))
++	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
++		if (event == FB_EVENT_BLANK)
+ 			ld->ops->set_power(ld, *(int *)evdata->data);
++		else
++			ld->ops->set_mode(ld, evdata->data);
++	}
+ 	mutex_unlock(&ld->ops_lock);
+ 	return 0;
+ }
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 6b48780..fdfb0e5 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -979,6 +979,7 @@ fb_set_var(struct fb_info *info, struct
+fb_var_screeninfo *var)
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ 				info->flags &= ~FBINFO_MISC_USEREVENT;
+ 				event.info = info;
++				event.data = &mode;
+ 				fb_notifier_call_chain(evnt, &event);
+ 			}
+ 		}
+diff --git a/include/linux/lcd.h b/include/linux/lcd.h
+index 173feba..f2d223b 100644
+--- a/include/linux/lcd.h
++++ b/include/linux/lcd.h
+@@ -45,6 +45,8 @@ struct lcd_ops {
+ 	int (*get_contrast)(struct lcd_device *);
+ 	/* Set LCD panel contrast */
+         int (*set_contrast)(struct lcd_device *, int contrast);
++	/* Set LCD panel mode (resolutions ...) */
++	int (*set_mode)(struct lcd_device *, struct fb_videomode *);
+ 	/* Check if given framebuffer device is the one LCD is bound to;
+ 	   return 0 if not, !=0 if it is. If NULL, lcd always matches the fb. */
+ 	int (*check_fb)(struct lcd_device *, struct fb_info *);
+-- 
+1.5.4.3
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

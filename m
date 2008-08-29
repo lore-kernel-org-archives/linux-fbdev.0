@@ -1,25 +1,27 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Do set var even if no
- fb_check_var() provided.
-Date: Fri, 29 Aug 2008 09:03:43 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0808290902190.22326@anakin>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+Subject: Re: [PATCH] Add fb_check_var() for fixed
+	mode	device.
+Date: Fri, 29 Aug 2008 09:07:13 +0200
+Message-ID: <1219993633.4421.248.camel@thor.sulgenrain.local>
 References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin>
-	<48B759B0.4010001@renesas.com>
+	<Pine.LNX.4.64.0808270855110.7910@anakin> <g94i4r$2hq$1@ger.gmane.org>
+	<20080828074521.GO16680@sci.fi>  <48B785DA.1030408@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KYy1O-00073p-5B for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 29 Aug 2008 00:03:50 -0700
-Received: from monty.telenet-ops.be ([195.130.132.56])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYy1M-0004OQ-GR
+	id 1KYy4p-0007UU-Dn for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 Aug 2008 00:07:23 -0700
+Received: from fk-out-0910.google.com ([209.85.128.184])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KYy4n-0002Zk-OZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 29 Aug 2008 00:03:50 -0700
-In-Reply-To: <48B759B0.4010001@renesas.com>
+	Fri, 29 Aug 2008 00:07:23 -0700
+Received: by fk-out-0910.google.com with SMTP id 18so499170fkq.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 29 Aug 2008 00:07:17 -0700 (PDT)
+In-Reply-To: <48B785DA.1030408@renesas.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,79 +32,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
 To: Takashi Yoshii <yoshii.takashi@renesas.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 29 Aug 2008, Takashi Yoshii wrote:
-> Thank you for your explanation.
-> Sorry for slow, long response.
-> Summary:
-> 1. I understand your strategy (no check == fix video).
-> 2. pan should be fixed state after set var.
-> 3. pixclock can be any, OK?
-> 
-> ---
-> 1. 
-> > > If the driver doesn't provide a fb_check_var(), it means it cannot
-> > > change video mode. Hence this rules out #1.
-> Well, this logic looks like "A is B because A is B".
-> But, anyway this should be this because you say so.
-> Accepting this as a fixed rule, things becomes simple.
-> 
-> I guess this is based on the idea
-> var should always be corresponding to HW state.
-> My patch was based on the idea
-> var can be any, because HW accept all (by just ignoring all).
-
-No, var cannot be any. Var can only be the single tuple of values the
-hardware supports.
-
-> 2. pan should be fixed state after set var.
-> 
-> # This is becoming another topic, though...
-> One small problem of current code is that
-> FBIOPUT_VSCREENINFO sometimes set PAN but sometimes does not.
-> # assuming pan is not a part of "video mode".
-> 
-> It will be 1.unchanged, or 2.info->var, or 3.var, or 4.var+rounding?,
-> but generally pan state after FBIOPUT_VSCREENINFO should be considered
-> as unknown(but something valid), even if passing valid value(say, (0,0)).
-
-Panning state is not unknown. It's in var.
-
-> 3. pixclock can be any, OK?
-> 
-> The real problem(for me;) might be
-> . Habit of applications that check the var by themselves.
-> This is  not actually a topic on this ML. But I want to confirm that
->  pixclock can be any. Even 0 is a kind of "Valid" value.
-> OK?
-> 
-> I'm asking because, there are drivers return timing parameters as 0.
-> - HW has clock, known, but set 0 (sh_mobile_lcdfb).
-> - HW must have clock, but unknown (hitfb, stifb, xilinxfb).
-> - No clock (xenfb).
-> There are drivers return false value.
-> - No clock but return some (vfb).
-> 
-> If 0 is valid, problem is Xorg's issue.
-> X(at least 1.4) doesn't accept clock=0. (and the reason looks be buggy)
-
-If you don't know the pixclock, set it to 0.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+T24gRnJpLCAyMDA4LTA4LTI5IGF0IDE0OjE1ICswOTAwLCBUYWthc2hpIFlvc2hpaSB3cm90ZToK
+PiAKPiAveW9zaGlpICMgUmVzdG9yaW5nIHBpeGNsb2NrIHdvdWxkIGJlIGEgd29ya2Fyb3VuZCBm
+b3IgWG9yZyBpc3N1ZSA6KQoKV2hhdCAnWG9yZyBpc3N1ZSc/IEkndmUgb25seSBzZWVuIGEgbWlz
+Y29uZmlndXJhdGlvbiBhbmQgYSBwaXhjbG9jayAwCmlzc3VlIHdoaWNoIGhhcyBiZWVuIGZpeGVk
+IGluIFhvcmcuCgoKLS0gCkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAgICAgICAgICAgfCAgICAg
+ICAgICBodHRwOi8vdHVuZ3N0ZW5ncmFwaGljcy5jb20KTGlicmUgc29mdHdhcmUgZW50aHVzaWFz
+dCAgICAgICAgIHwgICAgICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2ZWxvcGVyCgoKLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFpbCBpcyBzcG9uc29yZWQgYnkgdGhlIE1vYmxpbiBZ
+b3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxlbmdlCkJ1aWxkIHRoZSBjb29sZXN0IExpbnV4IGJh
+c2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxpbiBTREsgJiB3aW4gZ3JlYXQgcHJpemVzCkdyYW5k
+IHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRvIGFuIE9wZW4gU291cmNlIGV2ZW50IGFueXdoZXJl
+IGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGluLWNvbnRlc3Qub3JnL3JlZGlyZWN0LnBocD9iYW5u
+ZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBs
+aXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMv
+bGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

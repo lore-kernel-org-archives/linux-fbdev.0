@@ -1,21 +1,29 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cirrusfb: use modedb and add
-	mode_option parameter
-Date: Sun, 31 Aug 2008 16:00:40 +0200
-Message-ID: <20080831160040.8237ad31.krzysztof.h1@poczta.fm>
+From: "Phil Endecott" <phil_utscv_endecott@chezphil.org>
+Subject: Re: [PATCH] intelfb: support 945GME (as used
+	in	ASUS Eee 901)
+Date: Sun, 31 Aug 2008 15:50:54 +0100
+Message-ID: <1220194254502@dmwebmail.dmwebmail.chezphil.org>
+References: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KZnNY-0003mp-QQ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 06:54:09 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KZnNV-0002Se-UX
+	id 1KZoGi-0000WR-Vv for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 31 Aug 2008 07:51:09 -0700
+Received: from japan.chezphil.org ([77.240.5.4])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KZoGi-00078o-LL
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 06:54:08 -0700
+	Sun, 31 Aug 2008 07:51:08 -0700
+Received: from localhost ([127.0.0.1] helo=chezphil.org)
+	by japan.chezphil.org with esmtp (Exim 4.69)
+	(envelope-from <phil_utscv_endecott@chezphil.org>)
+	id 1KZoGX-0003wA-67 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 31 Aug 2008 15:50:57 +0100
+In-Reply-To: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,235 +34,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: sylvain.meyer@worldonline.fr, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Krzysztof Helt wrote:
+> On Fri, 29 Aug 2008 12:50:45 +0100
+> "Phil Endecott" <phil_utscv_endecott@chezphil.org> wrote:
+>
+>> The following patch adds support for Intel's 945GME graphics chip to
+>> the intelfb driver.  I have assumed that the 945GME is identical to the
+>> already-supported 945GM apart from its PCI IDs; this is based on a quick
+>> look at the X driver for these chips which seems to treat them
+>> identically.
 
-Use modedb for initial mode instead of a table
-of few predefined modes. Leave 640x480@60 mode
-in case the modedb failed.
-Add mode_option module parameter as a step toward
-unification of frame buffers' parameters.
+[snip]
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
+>> -#define SUPPORTED_CHIPSETS	"830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM"
+>> +#define SUPPORTED_CHIPSETS  "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM"
+>>  
+>
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+>
+> BTW, Is it possible to shorten this list by something like "830/845/852/865/915/945/965 models G, GM and GME" or 
+> "830M/8x5G/8x5GM/9x5G/9x5GM/9x5GME" or maybe something else?
 
-This is patch against the current -mm tree.
-
- drivers/video/cirrusfb.c |  141 ++++++++++++++--------------------------------
- 1 files changed, 42 insertions(+), 99 deletions(-)
-
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 0eb429a..7344005 100644
---- a/drivers/video/cirrusfb.c
-+++ b/drivers/video/cirrusfb.c
-@@ -372,99 +372,36 @@ struct cirrusfb_info {
- 	void (*unmap)(struct fb_info *info);
- };
- 
--static unsigned cirrusfb_def_mode = 1;
- static int noaccel;
-+static char *mode_option __devinitdata;
- 
- /*
-  *    Predefined Video Modes
-  */
- 
--static const struct {
--	const char *name;
--	struct fb_var_screeninfo var;
--} cirrusfb_predefined[] = {
--	{
--		/* autodetect mode */
--		.name	= "Autodetect",
--	}, {
--		/* 640x480, 31.25 kHz, 60 Hz, 25 MHz PixClock */
--		.name	= "640x480",
--		.var	= {
--			.xres		= 640,
--			.yres		= 480,
--			.xres_virtual	= 640,
--			.yres_virtual	= 480,
--			.bits_per_pixel	= 8,
--			.red		= { .length = 8 },
--			.green		= { .length = 8 },
--			.blue		= { .length = 8 },
--			.width		= -1,
--			.height		= -1,
--			.pixclock	= 40000,
--			.left_margin	= 48,
--			.right_margin	= 16,
--			.upper_margin	= 32,
--			.lower_margin	= 8,
--			.hsync_len	= 96,
--			.vsync_len	= 4,
--			.sync	= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
--			.vmode		= FB_VMODE_NONINTERLACED
--		 }
--	}, {
--		/* 800x600, 48 kHz, 76 Hz, 50 MHz PixClock */
--		.name	= "800x600",
--		.var	= {
--			.xres		= 800,
--			.yres		= 600,
--			.xres_virtual	= 800,
--			.yres_virtual	= 600,
--			.bits_per_pixel	= 8,
--			.red		= { .length = 8 },
--			.green		= { .length = 8 },
--			.blue		= { .length = 8 },
--			.width		= -1,
--			.height		= -1,
--			.pixclock	= 20000,
--			.left_margin	= 128,
--			.right_margin	= 16,
--			.upper_margin	= 24,
--			.lower_margin	= 2,
--			.hsync_len	= 96,
--			.vsync_len	= 6,
--			.vmode		= FB_VMODE_NONINTERLACED
--		 }
--	}, {
--		/*
--		 * Modeline from XF86Config:
--		 * Mode "1024x768" 80  1024 1136 1340 1432  768 770 774 805
--		 */
--		/* 1024x768, 55.8 kHz, 70 Hz, 80 MHz PixClock */
--		.name	= "1024x768",
--		.var	= {
--			.xres		= 1024,
--			.yres		= 768,
--			.xres_virtual	= 1024,
--			.yres_virtual	= 768,
--			.bits_per_pixel	= 8,
--			.red		= { .length = 8 },
--			.green		= { .length = 8 },
--			.blue		= { .length = 8 },
--			.width		= -1,
--			.height		= -1,
--			.pixclock	= 12500,
--			.left_margin	= 144,
--			.right_margin	= 32,
--			.upper_margin	= 30,
--			.lower_margin	= 2,
--			.hsync_len	= 192,
--			.vsync_len	= 6,
--			.vmode		= FB_VMODE_NONINTERLACED
--		}
--	}
-+static struct fb_var_screeninfo cirrusfb_var __devinitdata = {
-+	/* 640x480, 31.25 kHz, 60 Hz, 25 MHz PixClock */
-+	.xres		= 640,
-+	.yres		= 480,
-+	.xres_virtual	= 640,
-+	.yres_virtual	= 480,
-+	.bits_per_pixel	= 8,
-+	.red		= { .length = 8 },
-+	.green		= { .length = 8 },
-+	.blue		= { .length = 8 },
-+	.width		= -1,
-+	.height		= -1,
-+	.pixclock	= 40000,
-+	.left_margin	= 48,
-+	.right_margin	= 16,
-+	.upper_margin	= 32,
-+	.lower_margin	= 8,
-+	.hsync_len	= 96,
-+	.vsync_len	= 4,
-+	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-+	.vmode		= FB_VMODE_NONINTERLACED
- };
- 
--#define NUM_TOTAL_MODES    ARRAY_SIZE(cirrusfb_predefined)
--
- /****************************************************************************/
- /**** BEGIN PROTOTYPES ******************************************************/
- 
-@@ -2267,23 +2204,27 @@ static int cirrusfb_register(struct fb_info *info)
- 	/* sanity checks */
- 	assert(btype != BT_NONE);
- 
-+	/* set all the vital stuff */
-+	cirrusfb_set_fbinfo(info);
-+
- 	DPRINTK("cirrusfb: (RAM start set to: 0x%p)\n", info->screen_base);
- 
--	/* Make pretend we've set the var so our structures are in a "good" */
--	/* state, even though we haven't written the mode to the hw yet...  */
--	info->var = cirrusfb_predefined[cirrusfb_def_mode].var;
-+	if (!mode_option)
-+		mode_option = "640x480@60";
-+
-+	err = fb_find_mode(&info->var, info, mode_option, NULL, 0, NULL, 8);
-+	if (!err || err == 4)
-+		info->var = cirrusfb_var;
-+
- 	info->var.activate = FB_ACTIVATE_NOW;
- 
- 	err = cirrusfb_decode_var(&info->var, &cinfo->currentmode, info);
- 	if (err < 0) {
- 		/* should never happen */
- 		DPRINTK("choking on default var... umm, no good.\n");
--		goto err_unmap_cirrusfb;
-+		goto err_dealloc_cmap;
- 	}
- 
--	/* set all the vital stuff */
--	cirrusfb_set_fbinfo(info);
--
- 	err = register_framebuffer(info);
- 	if (err < 0) {
- 		printk(KERN_ERR "cirrusfb: could not register "
-@@ -2296,7 +2237,6 @@ static int cirrusfb_register(struct fb_info *info)
- 
- err_dealloc_cmap:
- 	fb_dealloc_cmap(&info->cmap);
--err_unmap_cirrusfb:
- 	cinfo->unmap(info);
- 	framebuffer_release(info);
- 	return err;
-@@ -2608,17 +2548,17 @@ static int __init cirrusfb_setup(char *options) {
- 		return 0;
- 
- 	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt) continue;
-+		if (!*this_opt)
-+			continue;
- 
- 		DPRINTK("cirrusfb_setup: option '%s'\n", this_opt);
- 
--		for (i = 0; i < NUM_TOTAL_MODES; i++) {
--			sprintf(s, "mode:%s", cirrusfb_predefined[i].name);
--			if (strcmp(this_opt, s) == 0)
--				cirrusfb_def_mode = i;
--		}
- 		if (!strcmp(this_opt, "noaccel"))
- 			noaccel = 1;
-+		else if (!strncmp(this_opt, "mode:", 5))
-+			mode_option = this_opt + 5;
-+		else
-+			mode_option = this_opt;
- 	}
- 	return 0;
- }
-@@ -2644,6 +2584,9 @@ static void __exit cirrusfb_exit(void)
- 
- module_init(cirrusfb_init);
- 
-+module_param(mode_option, charp, 0);
-+MODULE_PARM_DESC(mode_option, "Initial video mode e.g. '648x480-8@60'");
-+
- #ifdef MODULE
- module_exit(cirrusfb_exit);
- #endif
--- 
-1.5.2.2
+Doing so would reduce grep-ability.  I did a lot of "grep -r 945GM ." 
+while trying to understand this.
 
 
-----------------------------------------------------------------------
-Nie szukam kochanka!
->> http://link.interia.pl/f1eeb
+Phil.
+
+
 
 
 -------------------------------------------------------------------------

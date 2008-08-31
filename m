@@ -1,9 +1,9 @@
-From: "Phil Endecott" <phil_utscv_endecott@chezphil.org>
-Subject: Re: [PATCH] intelfb: support 945GME (as used
-	in	ASUS Eee 901)
-Date: Sun, 31 Aug 2008 15:50:54 +0100
-Message-ID: <1220194254502@dmwebmail.dmwebmail.chezphil.org>
-References: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] cirrusfb: use modedb and add
+ mode_option parameter
+Date: Sun, 31 Aug 2008 20:10:20 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0808312009460.8062@anakin>
+References: <20080831160040.8237ad31.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,19 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KZoGi-0000WR-Vv for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 07:51:09 -0700
-Received: from japan.chezphil.org ([77.240.5.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KZoGi-00078o-LL
+	id 1KZrNe-0005wV-Vi for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 31 Aug 2008 11:10:31 -0700
+Received: from harold.telenet-ops.be ([195.130.133.65])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KZrNc-0002V8-I2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 07:51:08 -0700
-Received: from localhost ([127.0.0.1] helo=chezphil.org)
-	by japan.chezphil.org with esmtp (Exim 4.69)
-	(envelope-from <phil_utscv_endecott@chezphil.org>)
-	id 1KZoGX-0003wA-67 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 15:50:57 +0100
-In-Reply-To: <20080831092722.c80c73c5.krzysztof.h1@poczta.fm>
+	Sun, 31 Aug 2008 11:10:30 -0700
+In-Reply-To: <20080831160040.8237ad31.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,37 +29,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: sylvain.meyer@worldonline.fr, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Krzysztof Helt wrote:
-> On Fri, 29 Aug 2008 12:50:45 +0100
-> "Phil Endecott" <phil_utscv_endecott@chezphil.org> wrote:
->
->> The following patch adds support for Intel's 945GME graphics chip to
->> the intelfb driver.  I have assumed that the 945GME is identical to the
->> already-supported 945GM apart from its PCI IDs; this is based on a quick
->> look at the X driver for these chips which seems to treat them
->> identically.
+On Sun, 31 Aug 2008, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> Use modedb for initial mode instead of a table
+> of few predefined modes. Leave 640x480@60 mode
+> in case the modedb failed.
 
-[snip]
+Any specific reason you left the 640x480@60 mode?
 
->> -#define SUPPORTED_CHIPSETS	"830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM"
->> +#define SUPPORTED_CHIPSETS  "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM"
->>  
->
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
->
-> BTW, Is it possible to shorten this list by something like "830/845/852/865/915/945/965 models G, GM and GME" or 
-> "830M/8x5G/8x5GM/9x5G/9x5GM/9x5GME" or maybe something else?
+Gr{oetje,eeting}s,
 
-Doing so would reduce grep-ability.  I did a lot of "grep -r 945GM ." 
-while trying to understand this.
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Phil.
-
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

@@ -1,10 +1,8 @@
 From: "Eric Miao" <eric.y.miao@gmail.com>
-Subject: Re: [PATCH 3/8] lcd: allow lcd device to handle
-	mode change events
-Date: Mon, 1 Sep 2008 09:56:23 +0800
-Message-ID: <f17812d70808311856u5ba27570kd490e05594ed455e@mail.gmail.com>
-References: <f17812d70808290026y39163cccy2d4b1fa3b30c8625@mail.gmail.com>
-	<20080831092009.69d2f56a.krzysztof.h1@poczta.fm>
+Subject: [PATCH 1/2] lcd: add support for Toppoly TDO24M
+	series LCD panels
+Date: Mon, 1 Sep 2008 14:10:44 +0800
+Message-ID: <f17812d70808312310r6c8e8ad6s4f0abd69f1c2ec97@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,16 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KZyeW-00065f-7O for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 18:56:24 -0700
-Received: from yx-out-1718.google.com ([74.125.44.155])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KZyeW-0002VN-1W
+	id 1Ka2cg-0003NW-1Z for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 31 Aug 2008 23:10:46 -0700
+Received: from yx-out-1718.google.com ([74.125.44.157])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Ka2cf-0006Yi-FB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 18:56:24 -0700
-Received: by yx-out-1718.google.com with SMTP id 3so765493yxi.82
+	Sun, 31 Aug 2008 23:10:46 -0700
+Received: by yx-out-1718.google.com with SMTP id 3so784729yxi.82
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 31 Aug 2008 18:56:23 -0700 (PDT)
-In-Reply-To: <20080831092009.69d2f56a.krzysztof.h1@poczta.fm>
+	Sun, 31 Aug 2008 23:10:44 -0700 (PDT)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,24 +30,446 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
+To: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, Aug 31, 2008 at 3:20 PM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> On Fri, 29 Aug 2008 15:26:46 +0800
-> "Eric Miao" <eric.y.miao@gmail.com> wrote:
->
->> Some LCD panels are capable of different resolutions, and is allowed
->> to change at run-time, so to make "struct lcd_device" to be able to
->> handle mode change events here.
->>
->> Signed-off-by: Eric Miao <eric.miao@marvell.com>
->> ---
->
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
->
+This type of LCD panel can be found on PXA3xx/Littleton platforms.
+Add LCD device and SPI-based driver for this.
 
-OK, thanks. I'll queue this patch for next merge window then.
+Signed-off-by: Eric Miao <eric.miao@marvell.com>
+---
+ drivers/video/backlight/Kconfig  |    8 +
+ drivers/video/backlight/Makefile |    1 +
+ drivers/video/backlight/tdo24m.c |  388 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 397 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/backlight/tdo24m.c
+
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index b48fdb0..8854dbb 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -52,6 +52,14 @@ config LCD_ILI9320
+ 	  If you have a panel based on the ILI9320 controller chip
+ 	  then say y to include a power driver for it.
+
++config LCD_TDO24M
++	tristate "Toppoly TDO24M LCD Panels support"
++	depends on LCD_CLASS_DEVICE && SPI_MASTER
++	default n
++	help
++	  If you have a Toppoly TDO24M series LCD panel, say y here to
++	  include the support for it.
++
+ config LCD_VGG2432A4
+ 	tristate "VGG2432A4 LCM device support"
+ 	depends on BACKLIGHT_LCD_SUPPORT && LCD_CLASS_DEVICE && SPI_MASTER
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index cf12d58..3ec551e 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -6,6 +6,7 @@ obj-$(CONFIG_LCD_LTV350QV)	   += ltv350qv.o
+ obj-$(CONFIG_LCD_ILI9320)	   += ili9320.o
+ obj-$(CONFIG_LCD_PLATFORM)	   += platform_lcd.o
+ obj-$(CONFIG_LCD_VGG2432A4)	   += vgg2432a4.o
++obj-$(CONFIG_LCD_TDO24M)	   += tdo24m.o
+
+ obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
+ obj-$(CONFIG_BACKLIGHT_ATMEL_PWM)    += atmel-pwm-bl.o
+diff --git a/drivers/video/backlight/tdo24m.c b/drivers/video/backlight/tdo24m.c
+new file mode 100644
+index 0000000..9d3015c
+--- /dev/null
++++ b/drivers/video/backlight/tdo24m.c
+@@ -0,0 +1,388 @@
++/*
++ * tdo24m - SPI-based drivers for Toppoly TDO24M series LCD panels
++ *
++ * Copyright (C) 2008 Marvell International Ltd.
++ * 	Eric Miao <eric.miao@marvell.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  publishhed by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/spi/spi.h>
++#include <linux/fb.h>
++#include <linux/lcd.h>
++
++#define POWER_IS_ON(pwr)	((pwr) <= FB_BLANK_NORMAL)
++
++#define MODE_QVGA	0
++#define MODE_VGA	1
++
++struct tdo24m {
++	struct spi_device	*spi_dev;
++	struct lcd_device	*lcd_dev;
++
++	struct spi_message	msg;
++	struct spi_transfer	xfer;
++	uint8_t			buf[4];
++
++	int			power;
++	int			mode;
++};
++
++/* use bit 30, 31 as the indicator of command parameter number */
++#define CMD0(x)		((0 << 30) | (x))
++#define CMD1(x, x1)	((1 << 30) | ((x) << 9) | 0x100 | (x1))
++#define CMD2(x, x1, x2)	((2 << 30) | ((x) << 18) | 0x20000 |\
++			((x1) << 9) | 0x100 | (x2))
++#define CMD_NULL	(-1)
++
++static uint32_t lcd_panel_reset[] = {
++	CMD0(0x1), /* reset */
++	CMD0(0x0), /* nop */
++	CMD0(0x0), /* nop */
++	CMD0(0x0), /* nop */
++	CMD_NULL,
++};
++
++static uint32_t lcd_panel_on[] = {
++	CMD0(0x29),		/* Display ON */
++	CMD2(0xB8, 0xFF, 0xF9),	/* Output Control */
++	CMD0(0x11),		/* Sleep out */
++	CMD1(0xB0, 0x16),	/* Wake */
++	CMD_NULL,
++};
++
++static uint32_t lcd_panel_off[] = {
++	CMD0(0x28),		/* Display OFF */
++	CMD2(0xB8, 0x80, 0x02),	/* Output Control */
++	CMD0(0x10),		/* Sleep in */
++	CMD1(0xB0, 0x00),	/* Deep stand by in */
++	CMD_NULL,
++};
++
++static uint32_t lcd_vga_pass_through[] = {
++	CMD1(0xB0, 0x16),
++	CMD1(0xBC, 0x80),
++	CMD1(0xE1, 0x00),
++	CMD1(0x36, 0x50),
++	CMD1(0x3B, 0x00),
++	CMD_NULL,
++};
++
++static uint32_t lcd_qvga_pass_through[] = {
++	CMD1(0xB0, 0x16),
++	CMD1(0xBC, 0x81),
++	CMD1(0xE1, 0x00),
++	CMD1(0x36, 0x50),
++	CMD1(0x3B, 0x22),
++	CMD_NULL,
++};
++
++static uint32_t lcd_vga_transfer[] = {
++	CMD1(0xcf, 0x02), 	/* Blanking period control (1) */
++	CMD2(0xd0, 0x08, 0x04),	/* Blanking period control (2) */
++	CMD1(0xd1, 0x01),	/* CKV timing control on/off */
++	CMD2(0xd2, 0x14, 0x00),	/* CKV 1,2 timing control */
++	CMD2(0xd3, 0x1a, 0x0f),	/* OEV timing control */
++	CMD2(0xd4, 0x1f, 0xaf),	/* ASW timing control (1) */
++	CMD1(0xd5, 0x14),	/* ASW timing control (2) */
++	CMD0(0x21),		/* Invert for normally black display */
++	CMD0(0x29),		/* Display on */
++	CMD_NULL,
++};
++
++static uint32_t lcd_qvga_transfer[] = {
++	CMD1(0xd6, 0x02),	/* Blanking period control (1) */
++	CMD2(0xd7, 0x08, 0x04),	/* Blanking period control (2) */
++	CMD1(0xd8, 0x01),	/* CKV timing control on/off */
++	CMD2(0xd9, 0x00, 0x08),	/* CKV 1,2 timing control */
++	CMD2(0xde, 0x05, 0x0a),	/* OEV timing control */
++	CMD2(0xdf, 0x0a, 0x19),	/* ASW timing control (1) */
++	CMD1(0xe0, 0x0a),	/* ASW timing control (2) */
++	CMD0(0x21),		/* Invert for normally black display */
++	CMD0(0x29),		/* Display on */
++	CMD_NULL,
++};
++
++static uint32_t lcd_panel_config[] = {
++	CMD2(0xb8, 0xff, 0xf9),	/* Output control */
++	CMD0(0x11),		/* sleep out */
++	CMD1(0xba, 0x01),	/* Display mode (1) */
++	CMD1(0xbb, 0x00),	/* Display mode (2) */
++	CMD1(0x3a, 0x60),	/* Display mode 18-bit RGB */
++	CMD1(0xbf, 0x10),	/* Drive system change control */
++	CMD1(0xb1, 0x56),	/* Booster operation setup */
++	CMD1(0xb2, 0x33),	/* Booster mode setup */
++	CMD1(0xb3, 0x11),	/* Booster frequency setup */
++	CMD1(0xb4, 0x02),	/* Op amp/system clock */
++	CMD1(0xb5, 0x35),	/* VCS voltage */
++	CMD1(0xb6, 0x40),	/* VCOM voltage */
++	CMD1(0xb7, 0x03),	/* External display signal */
++	CMD1(0xbd, 0x00),	/* ASW slew rate */
++	CMD1(0xbe, 0x00),	/* Dummy data for QuadData operation */
++	CMD1(0xc0, 0x11),	/* Sleep out FR count (A) */
++	CMD1(0xc1, 0x11),	/* Sleep out FR count (B) */
++	CMD1(0xc2, 0x11),	/* Sleep out FR count (C) */
++	CMD2(0xc3, 0x20, 0x40),	/* Sleep out FR count (D) */
++	CMD2(0xc4, 0x60, 0xc0),	/* Sleep out FR count (E) */
++	CMD2(0xc5, 0x10, 0x20),	/* Sleep out FR count (F) */
++	CMD1(0xc6, 0xc0),	/* Sleep out FR count (G) */
++	CMD2(0xc7, 0x33, 0x43),	/* Gamma 1 fine tuning (1) */
++	CMD1(0xc8, 0x44),	/* Gamma 1 fine tuning (2) */
++	CMD1(0xc9, 0x33),	/* Gamma 1 inclination adjustment */
++	CMD1(0xca, 0x00),	/* Gamma 1 blue offset adjustment */
++	CMD2(0xec, 0x01, 0xf0),	/* Horizontal clock cycles */
++	CMD_NULL,
++};
++
++static int tdo24m_writes(struct tdo24m *lcd, uint32_t *array)
++{
++	struct spi_transfer *x = &lcd->xfer;
++	uint32_t data, *p = array;
++	int nparams, err = 0;
++
++	for (; *p != CMD_NULL; p++) {
++
++		nparams = (*p >> 30) & 0x3;
++		
++		data = *p << (7 - nparams);
++		switch (nparams) {
++		case 0:
++			lcd->buf[0] = (data >> 8) & 0xff;
++			lcd->buf[1] = data & 0xff;
++			break;
++		case 1:
++			lcd->buf[0] = (data >> 16) & 0xff;
++			lcd->buf[1] = (data >> 8) & 0xff;
++			lcd->buf[2] = data & 0xff;
++			break;
++		case 2:
++			lcd->buf[0] = (data >> 24) & 0xff;
++			lcd->buf[1] = (data >> 16) & 0xff;
++			lcd->buf[2] = (data >> 8) & 0xff;
++			lcd->buf[3] = data & 0xff;
++			break;
++		default:
++			continue;
++		}
++		x->len = nparams + 2;
++		err = spi_sync(lcd->spi_dev, &lcd->msg);
++		if (err)
++			break;
++	}
++
++	return err;
++}
++
++static int tdo24m_adj_mode(struct tdo24m *lcd, int mode)
++{
++	switch (mode) {
++	case MODE_VGA:
++		tdo24m_writes(lcd, lcd_vga_pass_through);
++		tdo24m_writes(lcd, lcd_panel_config);
++		tdo24m_writes(lcd, lcd_vga_transfer);
++		break;
++	case MODE_QVGA:
++		tdo24m_writes(lcd, lcd_qvga_pass_through);
++		tdo24m_writes(lcd, lcd_panel_config);
++		tdo24m_writes(lcd, lcd_qvga_transfer);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	lcd->mode = mode;
++	return 0;
++}
++
++static int tdo24m_power_on(struct tdo24m *lcd)
++{
++	int err;
++
++	err = tdo24m_writes(lcd, lcd_panel_on);
++	if (err)
++		goto out;
++
++	err = tdo24m_writes(lcd, lcd_panel_reset);
++	if (err)
++		goto out;
++	
++	err = tdo24m_adj_mode(lcd, lcd->mode);
++out:
++	return err;
++}
++
++static int tdo24m_power_off(struct tdo24m *lcd)
++{
++	return tdo24m_writes(lcd, lcd_panel_off);
++}
++
++static int tdo24m_power(struct tdo24m *lcd, int power)
++{
++	int ret = 0;
++
++	if (POWER_IS_ON(power) && !POWER_IS_ON(lcd->power))
++		ret = tdo24m_power_on(lcd);
++	else if (!POWER_IS_ON(power) && POWER_IS_ON(lcd->power))
++		ret = tdo24m_power_off(lcd);
++
++	if (!ret)
++		lcd->power = power;
++
++	return ret;
++}
++
++
++static int tdo24m_set_power(struct lcd_device *ld, int power)
++{
++	struct tdo24m *lcd = lcd_get_data(ld);
++	return tdo24m_power(lcd, power);
++}
++
++static int tdo24m_get_power(struct lcd_device *ld)
++{
++	struct tdo24m *lcd = lcd_get_data(ld);
++	return lcd->power;
++}
++
++static int tdo24m_set_mode(struct lcd_device *ld, struct fb_videomode *m)
++{
++	struct tdo24m *lcd = lcd_get_data(ld);
++	int mode = MODE_QVGA;
++
++	if (m->xres == 640 || m->xres == 480)
++		mode = MODE_VGA;
++
++	if (lcd->mode == mode)
++		return 0;
++
++	return tdo24m_adj_mode(lcd, mode);
++}
++
++static struct lcd_ops tdo24m_ops = {
++	.get_power	= tdo24m_get_power,
++	.set_power	= tdo24m_set_power,
++	.set_mode	= tdo24m_set_mode,
++};
++
++static int __devinit tdo24m_probe(struct spi_device *spi)
++{
++	struct tdo24m *lcd;
++	struct spi_message *m;
++	struct spi_transfer *x;
++	int err;
++
++	spi->bits_per_word = 8;
++	spi->mode = SPI_MODE_3;
++	err = spi_setup(spi);
++	if (err)
++		return err;
++
++	lcd = kzalloc(sizeof(struct tdo24m), GFP_KERNEL);
++	if (!lcd)
++		return -ENOMEM;
++
++	lcd->spi_dev = spi;
++	lcd->power = FB_BLANK_POWERDOWN;
++	lcd->mode = MODE_VGA;	/* default to VGA */
++
++	m = &lcd->msg;
++	x = &lcd->xfer;
++
++	spi_message_init(m);
++
++	x->tx_buf = &lcd->buf[0];
++	x->len = 2;
++	spi_message_add_tail(x, m);
++
++	lcd->lcd_dev = lcd_device_register("tdo24m", &spi->dev,
++					lcd, &tdo24m_ops);
++	if (IS_ERR(lcd->lcd_dev)) {
++		err = PTR_ERR(lcd->lcd_dev);
++		goto out_free;
++	}
++
++	dev_set_drvdata(&spi->dev, lcd);
++	err = tdo24m_power(lcd, FB_BLANK_UNBLANK);
++	if (err)
++		goto out_unregister;
++
++	return 0;
++
++out_unregister:
++	lcd_device_unregister(lcd->lcd_dev);
++out_free:
++	kfree(lcd);
++	return err;
++}
++
++static int __devexit tdo24m_remove(struct spi_device *spi)
++{
++	struct tdo24m *lcd = dev_get_drvdata(&spi->dev);
++
++	tdo24m_power(lcd, FB_BLANK_POWERDOWN);
++	lcd_device_unregister(lcd->lcd_dev);
++	kfree(lcd);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int tdo24m_suspend(struct spi_device *spi, pm_message_t state)
++{
++	struct tdo24m *lcd = dev_get_drvdata(&spi->dev);
++
++	return tdo24m_power(lcd, FB_BLANK_POWERDOWN);
++}
++
++static int tdo24m_resume(struct spi_device *spi)
++{
++	struct tdo24m *lcd = dev_get_drvdata(&spi->dev);
++
++	return tdo24m_power(lcd, FB_BLANK_UNBLANK);
++}
++#else
++#define tdo24m_suspend	NULL
++#define tdo24m_resume	NULL
++#endif
++
++/* Power down all displays on reboot, poweroff or halt */
++static void tdo24m_shutdown(struct spi_device *spi)
++{
++	struct tdo24m *lcd = dev_get_drvdata(&spi->dev);
++
++	tdo24m_power(lcd, FB_BLANK_POWERDOWN);
++}
++
++static struct spi_driver tdo24m_driver = {
++	.driver = {
++		.name		= "tdo24m",
++		.owner		= THIS_MODULE,
++	},
++	.probe		= tdo24m_probe,
++	.remove		= __devexit_p(tdo24m_remove),
++	.shutdown	= tdo24m_shutdown,
++	.suspend	= tdo24m_suspend,
++	.resume		= tdo24m_resume,
++};
++
++static int __init tdo24m_init(void)
++{
++	return spi_register_driver(&tdo24m_driver);
++}
++module_init(tdo24m_init);
++
++static void __exit tdo24m_exit(void)
++{
++	spi_unregister_driver(&tdo24m_driver);
++}
++module_exit(tdo24m_exit);
++
++MODULE_AUTHOR("Eric Miao <eric.miao@marvell.com>");
++MODULE_DESCRIPTION("Driver for Toppoly TDO24M LCD Panel");
++MODULE_LICENSE("GPL");
+-- 
+1.5.4.3
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

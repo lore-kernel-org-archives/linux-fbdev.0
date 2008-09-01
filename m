@@ -1,26 +1,28 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] cirrusfb: use modedb and add
- mode_option parameter
-Date: Sun, 31 Aug 2008 23:36:08 +0200
-Message-ID: <20080831233608.cc144b7b.krzysztof.h1@poczta.fm>
-References: <20080831160040.8237ad31.krzysztof.h1@poczta.fm>
-	<Pine.LNX.4.64.0808312009460.8062@anakin>
-	<20080831220101.0cffb6f0.krzysztof.h1@poczta.fm>
-	<Pine.LNX.4.64.0808312250130.8062@anakin>
+From: "Eric Miao" <eric.y.miao@gmail.com>
+Subject: Re: [PATCH 3/8] lcd: allow lcd device to handle
+	mode change events
+Date: Mon, 1 Sep 2008 09:56:23 +0800
+Message-ID: <f17812d70808311856u5ba27570kd490e05594ed455e@mail.gmail.com>
+References: <f17812d70808290026y39163cccy2d4b1fa3b30c8625@mail.gmail.com>
+	<20080831092009.69d2f56a.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KZuUH-0007Zh-3L for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 14:29:33 -0700
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KZuUF-0005A6-M6
+	id 1KZyeW-00065f-7O for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 31 Aug 2008 18:56:24 -0700
+Received: from yx-out-1718.google.com ([74.125.44.155])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KZyeW-0002VN-1W
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 31 Aug 2008 14:29:33 -0700
-In-Reply-To: <Pine.LNX.4.64.0808312250130.8062@anakin>
+	Sun, 31 Aug 2008 18:56:24 -0700
+Received: by yx-out-1718.google.com with SMTP id 3so765493yxi.82
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 31 Aug 2008 18:56:23 -0700 (PDT)
+In-Reply-To: <20080831092009.69d2f56a.krzysztof.h1@poczta.fm>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,43 +33,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-fbdev-devel@lists.sourceforge.net, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
 
-On Sun, 31 Aug 2008 22:52:37 +0200 (CEST)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Sun, Aug 31, 2008 at 3:20 PM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> On Fri, 29 Aug 2008 15:26:46 +0800
+> "Eric Miao" <eric.y.miao@gmail.com> wrote:
+>
+>> Some LCD panels are capable of different resolutions, and is allowed
+>> to change at run-time, so to make "struct lcd_device" to be able to
+>> handle mode change events here.
+>>
+>> Signed-off-by: Eric Miao <eric.miao@marvell.com>
+>> ---
+>
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+>
 
-> On Sun, 31 Aug 2008, Krzysztof Helt wrote:
-> > On Sun, 31 Aug 2008 20:10:20 +0200 (CEST)
-> > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > On Sun, 31 Aug 2008, Krzysztof Helt wrote:
-> > > > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > > > 
-> > > > Use modedb for initial mode instead of a table
-> > > > of few predefined modes. Leave 640x480@60 mode
-> > > > in case the modedb failed.
-> > > 
-> > > Any specific reason you left the 640x480@60 mode?
-> > 
-> > I left the lowest one to have a safe setting in case the
-> > modedb does not match specified one.
-> > If you have a better way, let me know.
-> 
-> It's almost the same as the `640x480 @ 60 Hz, 31.5 kHz hsync' and the
-> `640x480-60 VESA' mode in the modedb, so I think it's safe to rely on
-> modedb only.
-> 
-
-Ok. I'll fix it.
-
-Regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Tani telefon!
-Sprawdz >>> http://link.interia.pl/f1ef5 
-
-
+OK, thanks. I'll queue this patch for next merge window then.
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

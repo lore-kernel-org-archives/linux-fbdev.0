@@ -1,22 +1,23 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] i.MX Framebuffer: fix margins
-Date: Tue,  2 Sep 2008 13:24:47 +0200
-Message-ID: <1220354697-13648-5-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH] i.MX Framebuffer: remove gpio setup
+	function
+Date: Tue,  2 Sep 2008 13:24:45 +0200
+Message-ID: <1220354697-13648-3-git-send-email-s.hauer@pengutronix.de>
 References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU1z-0000lF-Sw for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:26:46 -0700
+	id 1KaU2P-0000rg-P4 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 04:27:09 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU1w-0000hk-Sg
+	(Exim 4.44) id 1KaU2O-0007OX-8s
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:26:43 -0700
+	Tue, 02 Sep 2008 04:27:09 -0700
 In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,36 +32,87 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Andrew Dyer <amdyer@gmail.com>
 
-The upper/lower and left/right margins are mixed up in the driver.
-Fix it
+Remove the gpio mux setup function from i.MX framebuffer driver.
+This function is platform specific and thus should be done by
+the board setup. As there are currently no in-kernel users
+of this driver we do not break anything.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/video/imxfb.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/imxfb.c |   53 -------------------------------------------------
+ 1 files changed, 0 insertions(+), 53 deletions(-)
 
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 1bccf5a..feaae73 100644
+index 60015d5..bfc537f 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
-@@ -410,13 +410,13 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
- #endif
+@@ -358,57 +358,6 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ 	return 0;
+ }
  
- 	writel(HCR_H_WIDTH(var->hsync_len) |
--		HCR_H_WAIT_1(var->left_margin) |
--		HCR_H_WAIT_2(var->right_margin),
-+		HCR_H_WAIT_1(var->right_margin) |
-+		HCR_H_WAIT_2(var->left_margin),
- 		fbi->regs + LCDC_HCR);
+-static void imxfb_setup_gpio(struct imxfb_info *fbi)
+-{
+-	int width;
+-
+-	LCDC_RMCR	&= ~(RMCR_LCDC_EN | RMCR_SELF_REF);
+-
+-	if( fbi->pcr & PCR_TFT )
+-		width = 16;
+-	else
+-		width = 1 << ((fbi->pcr >> 28) & 0x3);
+-
+-	switch(width) {
+-	case 16:
+-		imx_gpio_mode(PD30_PF_LD15);
+-		imx_gpio_mode(PD29_PF_LD14);
+-		imx_gpio_mode(PD28_PF_LD13);
+-		imx_gpio_mode(PD27_PF_LD12);
+-		imx_gpio_mode(PD26_PF_LD11);
+-		imx_gpio_mode(PD25_PF_LD10);
+-		imx_gpio_mode(PD24_PF_LD9);
+-		imx_gpio_mode(PD23_PF_LD8);
+-	case 8:
+-		imx_gpio_mode(PD22_PF_LD7);
+-		imx_gpio_mode(PD21_PF_LD6);
+-		imx_gpio_mode(PD20_PF_LD5);
+-		imx_gpio_mode(PD19_PF_LD4);
+-	case 4:
+-		imx_gpio_mode(PD18_PF_LD3);
+-		imx_gpio_mode(PD17_PF_LD2);
+-	case 2:
+-		imx_gpio_mode(PD16_PF_LD1);
+-	case 1:
+-		imx_gpio_mode(PD15_PF_LD0);
+-	}
+-
+-	/* initialize GPIOs */
+-	imx_gpio_mode(PD6_PF_LSCLK);
+-	imx_gpio_mode(PD11_PF_CONTRAST);
+-	imx_gpio_mode(PD14_PF_FLM_VSYNC);
+-	imx_gpio_mode(PD13_PF_LP_HSYNC);
+-	imx_gpio_mode(PD12_PF_ACD_OE);
+-
+-	/* These are only needed for Sharp HR TFT displays */
+-	if (fbi->pcr & PCR_SHARP) {
+-		imx_gpio_mode(PD7_PF_REV);
+-		imx_gpio_mode(PD8_PF_CLS);
+-		imx_gpio_mode(PD9_PF_PS);
+-		imx_gpio_mode(PD10_PF_SPL_SPR);
+-	}
+-}
+-
+ #ifdef CONFIG_PM
+ /*
+  * Power management hooks.  Note that we won't be called from IRQ context,
+@@ -595,8 +544,6 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto failed_cmap;
  
- 	writel(VCR_V_WIDTH(var->vsync_len) |
--		VCR_V_WAIT_1(var->upper_margin) |
--		VCR_V_WAIT_2(var->lower_margin),
-+		VCR_V_WAIT_1(var->lower_margin) |
-+		VCR_V_WAIT_2(var->upper_margin),
- 		fbi->regs + LCDC_VCR);
- 
- 	writel(SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres),
+-	imxfb_setup_gpio(fbi);
+-
+ 	imxfb_set_par(info);
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
 -- 
 1.5.6.3
 

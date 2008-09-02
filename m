@@ -1,8 +1,8 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] i.MX Framebuffer: add TFT support
-Date: Tue,  2 Sep 2008 13:24:55 +0200
-Message-ID: <1220354697-13648-13-git-send-email-s.hauer@pengutronix.de>
-References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] cirrusfb: use modedb and add
+ mode_option parameter (2nd rev)
+Date: Tue, 2 Sep 2008 18:19:14 +0200
+Message-ID: <20080902181914.53707df2.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,14 +10,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU6Z-0001JG-MF for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:31:27 -0700
-Received: from metis.extern.pengutronix.de ([83.236.181.26])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU6X-0000cn-Ot
+	id 1KaZ0Y-0004si-QZ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 09:45:34 -0700
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KaZ0V-0002yQ-GQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:31:27 -0700
-In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
+	Tue, 02 Sep 2008 09:45:34 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,111 +26,215 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Dyer <amdyer@gmail.com>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-From: sascha Hauer <s.hauer@pengutronix.de>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+cirrusfb: use modedb and add mode_option parameter
 
-With TFTs we can do 5/6/5 instead of 4/4/4. Add a bitfield for this
-and use it with TFTs.
+Use modedb for initial mode instead of table
+of few predefined modes.
+Add mode_option module parameter as a step toward
+unification of frame buffers' parameters.
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/imxfb.c |   38 +++++++++++++++++++-------------------
- 1 files changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 3d1db00..4757ec6 100644
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -116,16 +116,10 @@ struct imxfb_rgb {
- 	struct fb_bitfield	transp;
+The 640x480@60 mode was dropped as well.
+
+ drivers/video/cirrusfb.c |  126 ++++++++--------------------------------------
+ 1 files changed, 21 insertions(+), 105 deletions(-)
+
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index 0eb429a..4c16b68 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -372,98 +372,8 @@ struct cirrusfb_info {
+ 	void (*unmap)(struct fb_info *info);
  };
  
--#define RGB_16	(0)
--#define RGB_8	(1)
--#define NR_RGB	2
+-static unsigned cirrusfb_def_mode = 1;
+ static int noaccel;
 -
- struct imxfb_info {
- 	struct platform_device  *pdev;
- 	void __iomem		*regs;
- 
--	struct imxfb_rgb	*rgb[NR_RGB];
+-/*
+- *    Predefined Video Modes
+- */
 -
- 	u_int			max_bpp;
- 	u_int			max_xres;
- 	u_int			max_yres;
-@@ -165,7 +159,14 @@ struct imxfb_info {
- #define MIN_XRES	64
- #define MIN_YRES	64
+-static const struct {
+-	const char *name;
+-	struct fb_var_screeninfo var;
+-} cirrusfb_predefined[] = {
+-	{
+-		/* autodetect mode */
+-		.name	= "Autodetect",
+-	}, {
+-		/* 640x480, 31.25 kHz, 60 Hz, 25 MHz PixClock */
+-		.name	= "640x480",
+-		.var	= {
+-			.xres		= 640,
+-			.yres		= 480,
+-			.xres_virtual	= 640,
+-			.yres_virtual	= 480,
+-			.bits_per_pixel	= 8,
+-			.red		= { .length = 8 },
+-			.green		= { .length = 8 },
+-			.blue		= { .length = 8 },
+-			.width		= -1,
+-			.height		= -1,
+-			.pixclock	= 40000,
+-			.left_margin	= 48,
+-			.right_margin	= 16,
+-			.upper_margin	= 32,
+-			.lower_margin	= 8,
+-			.hsync_len	= 96,
+-			.vsync_len	= 4,
+-			.sync	= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-			.vmode		= FB_VMODE_NONINTERLACED
+-		 }
+-	}, {
+-		/* 800x600, 48 kHz, 76 Hz, 50 MHz PixClock */
+-		.name	= "800x600",
+-		.var	= {
+-			.xres		= 800,
+-			.yres		= 600,
+-			.xres_virtual	= 800,
+-			.yres_virtual	= 600,
+-			.bits_per_pixel	= 8,
+-			.red		= { .length = 8 },
+-			.green		= { .length = 8 },
+-			.blue		= { .length = 8 },
+-			.width		= -1,
+-			.height		= -1,
+-			.pixclock	= 20000,
+-			.left_margin	= 128,
+-			.right_margin	= 16,
+-			.upper_margin	= 24,
+-			.lower_margin	= 2,
+-			.hsync_len	= 96,
+-			.vsync_len	= 6,
+-			.vmode		= FB_VMODE_NONINTERLACED
+-		 }
+-	}, {
+-		/*
+-		 * Modeline from XF86Config:
+-		 * Mode "1024x768" 80  1024 1136 1340 1432  768 770 774 805
+-		 */
+-		/* 1024x768, 55.8 kHz, 70 Hz, 80 MHz PixClock */
+-		.name	= "1024x768",
+-		.var	= {
+-			.xres		= 1024,
+-			.yres		= 768,
+-			.xres_virtual	= 1024,
+-			.yres_virtual	= 768,
+-			.bits_per_pixel	= 8,
+-			.red		= { .length = 8 },
+-			.green		= { .length = 8 },
+-			.blue		= { .length = 8 },
+-			.width		= -1,
+-			.height		= -1,
+-			.pixclock	= 12500,
+-			.left_margin	= 144,
+-			.right_margin	= 32,
+-			.upper_margin	= 30,
+-			.lower_margin	= 2,
+-			.hsync_len	= 192,
+-			.vsync_len	= 6,
+-			.vmode		= FB_VMODE_NONINTERLACED
+-		}
+-	}
+-};
+-
+-#define NUM_TOTAL_MODES    ARRAY_SIZE(cirrusfb_predefined)
++static char *mode_option __devinitdata = "640x480@60";
  
--static struct imxfb_rgb def_rgb_16 = {
-+static struct imxfb_rgb def_rgb_16_tft = {
-+	.red	= {.offset = 11, .length = 5,},
-+	.green	= {.offset = 5, .length = 6,},
-+	.blue	= {.offset = 0, .length = 5,},
-+	.transp = {.offset = 0, .length = 0,},
-+};
+ /****************************************************************************/
+ /**** BEGIN PROTOTYPES ******************************************************/
+@@ -2267,23 +2177,27 @@ static int cirrusfb_register(struct fb_info *info)
+ 	/* sanity checks */
+ 	assert(btype != BT_NONE);
+ 
++	/* set all the vital stuff */
++	cirrusfb_set_fbinfo(info);
 +
-+static struct imxfb_rgb def_rgb_16_stn = {
- 	.red	= {.offset = 8, .length = 4,},
- 	.green	= {.offset = 4, .length = 4,},
- 	.blue	= {.offset = 0, .length = 4,},
-@@ -270,7 +271,7 @@ static int imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	struct imxfb_info *fbi = info->par;
--	int rgbidx;
-+	struct imxfb_rgb *rgb;
+ 	DPRINTK("cirrusfb: (RAM start set to: 0x%p)\n", info->screen_base);
  
- 	if (var->xres < MIN_XRES)
- 		var->xres = MIN_XRES;
-@@ -286,23 +287,25 @@ static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 	pr_debug("var->bits_per_pixel=%d\n", var->bits_per_pixel);
- 	switch (var->bits_per_pixel) {
- 	case 16:
--		rgbidx = RGB_16;
-+	default:
-+		if (ioread32(fbi->regs + LCDC_PCR) & PCR_TFT)
-+			rgb = &def_rgb_16_tft;
-+		else
-+			rgb = &def_rgb_16_stn;
- 		break;
- 	case 8:
--		rgbidx = RGB_8;
-+		rgb = &def_rgb_8;
- 		break;
--	default:
--		rgbidx = RGB_16;
+-	/* Make pretend we've set the var so our structures are in a "good" */
+-	/* state, even though we haven't written the mode to the hw yet...  */
+-	info->var = cirrusfb_predefined[cirrusfb_def_mode].var;
++	err = fb_find_mode(&info->var, info, mode_option, NULL, 0, NULL, 8);
++	if (!err) {
++		DPRINTK("wrong initial video mode\n");
++		err = -EINVAL;
++		goto err_dealloc_cmap;
++	}
++
+ 	info->var.activate = FB_ACTIVATE_NOW;
+ 
+ 	err = cirrusfb_decode_var(&info->var, &cinfo->currentmode, info);
+ 	if (err < 0) {
+ 		/* should never happen */
+ 		DPRINTK("choking on default var... umm, no good.\n");
+-		goto err_unmap_cirrusfb;
++		goto err_dealloc_cmap;
  	}
  
- 	/*
- 	 * Copy the RGB parameters for this display
- 	 * from the machine specific parameters.
- 	 */
--	var->red    = fbi->rgb[rgbidx]->red;
--	var->green  = fbi->rgb[rgbidx]->green;
--	var->blue   = fbi->rgb[rgbidx]->blue;
--	var->transp = fbi->rgb[rgbidx]->transp;
-+	var->red    = rgb->red;
-+	var->green  = rgb->green;
-+	var->blue   = rgb->blue;
-+	var->transp = rgb->transp;
- 
- 	pr_debug("RGBT length = %d:%d:%d:%d\n",
- 		var->red.length, var->green.length, var->blue.length,
-@@ -545,9 +548,6 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
- 	info->flags			= FBINFO_FLAG_DEFAULT |
- 					  FBINFO_READS_FAST;
- 
--	fbi->rgb[RGB_16]		= &def_rgb_16;
--	fbi->rgb[RGB_8]			= &def_rgb_8;
+-	/* set all the vital stuff */
+-	cirrusfb_set_fbinfo(info);
 -
- 	fbi->max_xres			= pdata->xres;
- 	info->var.xres			= pdata->xres;
- 	info->var.xres_virtual		= pdata->xres;
+ 	err = register_framebuffer(info);
+ 	if (err < 0) {
+ 		printk(KERN_ERR "cirrusfb: could not register "
+@@ -2296,7 +2210,6 @@ static int cirrusfb_register(struct fb_info *info)
+ 
+ err_dealloc_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+-err_unmap_cirrusfb:
+ 	cinfo->unmap(info);
+ 	framebuffer_release(info);
+ 	return err;
+@@ -2608,17 +2521,17 @@ static int __init cirrusfb_setup(char *options) {
+ 		return 0;
+ 
+ 	while ((this_opt = strsep(&options, ",")) != NULL) {
+-		if (!*this_opt) continue;
++		if (!*this_opt)
++			continue;
+ 
+ 		DPRINTK("cirrusfb_setup: option '%s'\n", this_opt);
+ 
+-		for (i = 0; i < NUM_TOTAL_MODES; i++) {
+-			sprintf(s, "mode:%s", cirrusfb_predefined[i].name);
+-			if (strcmp(this_opt, s) == 0)
+-				cirrusfb_def_mode = i;
+-		}
+ 		if (!strcmp(this_opt, "noaccel"))
+ 			noaccel = 1;
++		else if (!strncmp(this_opt, "mode:", 5))
++			mode_option = this_opt + 5;
++		else
++			mode_option = this_opt;
+ 	}
+ 	return 0;
+ }
+@@ -2644,6 +2557,9 @@ static void __exit cirrusfb_exit(void)
+ 
+ module_init(cirrusfb_init);
+ 
++module_param(mode_option, charp, 0);
++MODULE_PARM_DESC(mode_option, "Initial video mode e.g. '648x480-8@60'");
++
+ #ifdef MODULE
+ module_exit(cirrusfb_exit);
+ #endif
 -- 
-1.5.6.3
+1.5.2.2
+
+
+---------------------------------------------------------------
+Nasilaja sie kradzieze.
+Mieszkancy osiedli zaniepokojeni.
+Prosimy o pomoc w tej sprawie >>> http://link.interia.pl/f1eef
+
 
 
 -------------------------------------------------------------------------

@@ -1,22 +1,22 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
 Subject: [PATCH] i.MX Framebuffer: Cleanup Coding style
-Date: Tue,  2 Sep 2008 13:24:51 +0200
-Message-ID: <1220354697-13648-9-git-send-email-s.hauer@pengutronix.de>
+Date: Tue,  2 Sep 2008 13:24:53 +0200
+Message-ID: <1220354697-13648-11-git-send-email-s.hauer@pengutronix.de>
 References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU2m-0000s8-36 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:27:32 -0700
+	id 1KaU39-0000sN-EI for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 04:27:55 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU2l-0007YC-1A
+	(Exim 4.44) id 1KaU38-00015f-CV
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:27:32 -0700
+	Tue, 02 Sep 2008 04:27:55 -0700
 In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -37,7 +37,7 @@ Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
  1 files changed, 34 insertions(+), 36 deletions(-)
 
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 7b3400c..25323ea 100644
+index 7de3796..00c7560 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
 @@ -1,6 +1,4 @@

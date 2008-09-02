@@ -1,23 +1,23 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] i.MX Framebuffer: rename
-	imxfb_mach_info to imx_fb_platform_data
-Date: Tue,  2 Sep 2008 13:24:54 +0200
-Message-ID: <1220354697-13648-12-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH] i.MX Framebuffer: Use readl/writel
+	instead of direct pointer deref
+Date: Tue,  2 Sep 2008 13:24:46 +0200
+Message-ID: <1220354697-13648-4-git-send-email-s.hauer@pengutronix.de>
 References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU3w-0000z0-WC for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:28:45 -0700
+	id 1KaU4L-00014s-8H for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 04:29:09 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU3v-0007wN-VY
+	(Exim 4.44) id 1KaU4J-0001Vu-PX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:28:44 -0700
+	Tue, 02 Sep 2008 04:29:09 -0700
 In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,157 +30,433 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Dyer <amdyer@gmail.com>
+Cc: Juergen Beisert <j.beisert@pengutronix.de>, Andrew Dyer <amdyer@gmail.com>
 
-rename imxfb_mach_info to a name more common to kernel hackers
+From: Juergen Beisert <j.beisert@pengutronix.de>
 
+This patch prepares the current i.MX1 framebuffer driver for usage in the
+whole i.MX family. It switches to readl/writel for register accesses.
+Also it moves the register definitions to the driver where they belong.
+
+Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- arch/arm/mach-imx/include/mach/imxfb.h |    5 +-
- drivers/video/imxfb.c                  |   68 ++++++++++++++++----------------
- 2 files changed, 37 insertions(+), 36 deletions(-)
+ arch/arm/mach-imx/include/mach/imxfb.h |   45 ++++++++
+ drivers/video/imxfb.c                  |  193 +++++++++++++++++++++-----------
+ drivers/video/imxfb.h                  |    3 +-
+ 3 files changed, 175 insertions(+), 66 deletions(-)
 
 diff --git a/arch/arm/mach-imx/include/mach/imxfb.h b/arch/arm/mach-imx/include/mach/imxfb.h
-index 3f24f74..870d0d9 100644
+index 3ed9ec8..3f24f74 100644
 --- a/arch/arm/mach-imx/include/mach/imxfb.h
 +++ b/arch/arm/mach-imx/include/mach/imxfb.h
-@@ -46,7 +46,7 @@
- #define DMACR_HM(x)	(((x) & 0xf) << 16)
- #define DMACR_TM(x)	((x) & 0xf)
- 
--struct imxfb_mach_info {
-+struct imx_fb_platform_data {
+@@ -1,6 +1,51 @@
+ /*
+  * This structure describes the machine which we are running on.
+  */
++
++#define PCR_TFT		(1 << 31)
++#define PCR_COLOR	(1 << 30)
++#define PCR_PBSIZ_1	(0 << 28)
++#define PCR_PBSIZ_2	(1 << 28)
++#define PCR_PBSIZ_4	(2 << 28)
++#define PCR_PBSIZ_8	(3 << 28)
++#define PCR_BPIX_1	(0 << 25)
++#define PCR_BPIX_2	(1 << 25)
++#define PCR_BPIX_4	(2 << 25)
++#define PCR_BPIX_8	(3 << 25)
++#define PCR_BPIX_12	(4 << 25)
++#define PCR_BPIX_16	(4 << 25)
++#define PCR_PIXPOL	(1 << 24)
++#define PCR_FLMPOL	(1 << 23)
++#define PCR_LPPOL	(1 << 22)
++#define PCR_CLKPOL	(1 << 21)
++#define PCR_OEPOL	(1 << 20)
++#define PCR_SCLKIDLE	(1 << 19)
++#define PCR_END_SEL	(1 << 18)
++#define PCR_END_BYTE_SWAP (1 << 17)
++#define PCR_REV_VS	(1 << 16)
++#define PCR_ACD_SEL	(1 << 15)
++#define PCR_ACD(x)	(((x) & 0x7f) << 8)
++#define PCR_SCLK_SEL	(1 << 7)
++#define PCR_SHARP	(1 << 6)
++#define PCR_PCD(x)	((x) & 0x3f)
++
++#define PWMR_CLS(x)	(((x) & 0x1ff) << 16)
++#define PWMR_LDMSK	(1 << 15)
++#define PWMR_SCR1	(1 << 10)
++#define PWMR_SCR0	(1 << 9)
++#define PWMR_CC_EN	(1 << 8)
++#define PWMR_PW(x)	((x) & 0xff)
++
++#define LSCR1_PS_RISE_DELAY(x)    (((x) & 0x7f) << 26)
++#define LSCR1_CLS_RISE_DELAY(x)   (((x) & 0x3f) << 16)
++#define LSCR1_REV_TOGGLE_DELAY(x) (((x) & 0xf) << 8)
++#define LSCR1_GRAY2(x)            (((x) & 0xf) << 4)
++#define LSCR1_GRAY1(x)            (((x) & 0xf))
++
++#define DMACR_BURST	(1 << 31)
++#define DMACR_HM(x)	(((x) & 0xf) << 16)
++#define DMACR_TM(x)	((x) & 0xf)
++
+ struct imxfb_mach_info {
  	u_long		pixclock;
  
- 	u_short		xres;
-@@ -79,4 +79,5 @@ struct imxfb_mach_info {
- 	void (*lcd_power)(int);
- 	void (*backlight_power)(int);
- };
--void set_imx_fb_info(struct imxfb_mach_info *hard_imx_fb_info);
-+
-+void set_imx_fb_info(struct imx_fb_platform_data *);
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 25323ea..3d1db00 100644
+index a990d43..1bccf5a 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
-@@ -513,7 +513,7 @@ static int imxfb_resume(struct platform_device *dev)
+@@ -16,7 +16,6 @@
+  *	linux-arm-kernel@lists.arm.linux.org.uk
+  */
  
- static int __init imxfb_init_fbinfo(struct platform_device *pdev)
+-//#define DEBUG 1
+ 
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+@@ -32,9 +31,8 @@
+ #include <linux/cpufreq.h>
+ #include <linux/platform_device.h>
+ #include <linux/dma-mapping.h>
++#include <linux/io.h>
+ 
+-#include <mach/hardware.h>
+-#include <asm/io.h>
+ #include <mach/imxfb.h>
+ 
+ /*
+@@ -44,6 +42,73 @@
+ 
+ #include "imxfb.h"
+ 
++#define DRIVER_NAME "imx-fb"
++
++#define LCDC_SSA	0x00
++
++#define LCDC_SIZE	0x04
++#define SIZE_XMAX(x)	((((x) >> 4) & 0x3f) << 20)
++#define SIZE_YMAX(y)	((y) & 0x1ff)
++
++#define LCDC_VPW	0x08
++#define VPW_VPW(x)	((x) & 0x3ff)
++
++#define LCDC_CPOS	0x0C
++#define CPOS_CC1	(1<<31)
++#define CPOS_CC0	(1<<30)
++#define CPOS_OP		(1<<28)
++#define CPOS_CXP(x)	(((x) & 3ff) << 16)
++#define CPOS_CYP(y)	((y) & 0x1ff)
++
++#define LCDC_LCWHB	0x10
++#define LCWHB_BK_EN	(1<<31)
++#define LCWHB_CW(w)	(((w) & 0x1f) << 24)
++#define LCWHB_CH(h)	(((h) & 0x1f) << 16)
++#define LCWHB_BD(x)	((x) & 0xff)
++
++#define LCDC_LCHCC	0x14
++#define LCHCC_CUR_COL_R(r) (((r) & 0x1f) << 11)
++#define LCHCC_CUR_COL_G(g) (((g) & 0x3f) << 5)
++#define LCHCC_CUR_COL_B(b) ((b) & 0x1f)
++
++#define LCDC_PCR	0x18
++
++#define LCDC_HCR	0x1C
++#define HCR_H_WIDTH(x)	(((x) & 0x3f) << 26)
++#define HCR_H_WAIT_1(x)	(((x) & 0xff) << 8)
++#define HCR_H_WAIT_2(x)	((x) & 0xff)
++
++#define LCDC_VCR	0x20
++#define VCR_V_WIDTH(x)	(((x) & 0x3f) << 26)
++#define VCR_V_WAIT_1(x)	(((x) & 0xff) << 8)
++#define VCR_V_WAIT_2(x)	((x) & 0xff)
++
++#define LCDC_POS	0x24
++#define POS_POS(x)	((x) & 1f)
++
++#define LCDC_LSCR1	0x28
++/* bit fields in imxfb.h */
++
++#define LCDC_PWMR	0x2C
++/* bit fields in imxfb.h */
++
++#define LCDC_DMACR	0x30
++/* bit fields in imxfb.h */
++
++#define LCDC_RMCR	0x34
++#define RMCR_LCDC_EN	(1<<1)
++#define RMCR_SELF_REF	(1<<0)
++
++#define LCDC_LCDICR	0x38
++#define LCDICR_INT_SYN	(1<<2)
++#define LCDICR_INT_CON	(1)
++
++#define LCDC_LCDISR	0x40
++#define LCDISR_UDR_ERR	(1<<3)
++#define LCDISR_ERR_RES	(1<<2)
++#define LCDISR_EOF	(1<<1)
++#define LCDISR_BOF	(1<<0)
++
+ static struct imxfb_rgb def_rgb_16 = {
+ 	.red	= { .offset = 8,  .length = 4, },
+ 	.green	= { .offset = 4,  .length = 4, },
+@@ -67,7 +132,6 @@ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
+ 	return chan << bf->offset;
+ }
+ 
+-#define LCDC_PALETTE(x) __REG2(IMX_LCDC_BASE+0x800, (x)<<2)
+ static int
+ imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+ 		       u_int trans, struct fb_info *info)
+@@ -81,7 +145,7 @@ imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+ 		      (CNVT_TOHW(green,4) << 4) |
+ 		      CNVT_TOHW(blue,  4);
+ 
+-		LCDC_PALETTE(regno) = val;
++		writel(val, fbi->regs + 0x800 + (regno << 2));
+ 		ret = 0;
+ 	}
+ 	return ret;
+@@ -235,18 +299,23 @@ static void imxfb_enable_controller(struct imxfb_info *fbi)
+ 	pr_debug("Enabling LCD controller\n");
+ 
+ 	/* initialize LCDC */
+-	LCDC_RMCR &= ~RMCR_LCDC_EN;		/* just to be safe... */
++	writel(readl(fbi->regs + LCDC_RMCR) & ~RMCR_LCDC_EN,
++		fbi->regs + LCDC_RMCR);	/* just to be safe... */
++
++	writel(fbi->screen_dma, fbi->regs + LCDC_SSA);
+ 
+-	LCDC_SSA	= fbi->screen_dma;
+ 	/* physical screen start address	    */
+-	LCDC_VPW	= VPW_VPW(fbi->max_xres * fbi->max_bpp / 8 / 4);
++	writel(VPW_VPW(fbi->max_xres * fbi->max_bpp / 8 / 4),
++		fbi->regs + LCDC_VPW);
+ 
+-	LCDC_POS	= 0x00000000;   /* panning offset 0 (0 pixel offset)        */
++	/* panning offset 0 (0 pixel offset)        */
++	writel(0x00000000, fbi->regs + LCDC_POS);
+ 
+ 	/* disable hardware cursor */
+-	LCDC_CPOS	&= ~(CPOS_CC0 | CPOS_CC1);
++	writel(readl(fbi->regs + LCDC_CPOS) & ~(CPOS_CC0 | CPOS_CC1),
++		fbi->regs + LCDC_CPOS);
+ 
+-	LCDC_RMCR = RMCR_LCDC_EN;
++	writel(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
+ 
+ 	if(fbi->backlight_power)
+ 		fbi->backlight_power(1);
+@@ -263,7 +332,7 @@ static void imxfb_disable_controller(struct imxfb_info *fbi)
+ 	if(fbi->lcd_power)
+ 		fbi->lcd_power(0);
+ 
+-	LCDC_RMCR = 0;
++	writel(0, fbi->regs + LCDC_RMCR);
+ }
+ 
+ static int imxfb_blank(int blank, struct fb_info *info)
+@@ -340,19 +409,22 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ 			info->fix.id, var->lower_margin);
+ #endif
+ 
+-	LCDC_HCR	= HCR_H_WIDTH(var->hsync_len) |
+-	                  HCR_H_WAIT_1(var->left_margin) |
+-			  HCR_H_WAIT_2(var->right_margin);
++	writel(HCR_H_WIDTH(var->hsync_len) |
++		HCR_H_WAIT_1(var->left_margin) |
++		HCR_H_WAIT_2(var->right_margin),
++		fbi->regs + LCDC_HCR);
+ 
+-	LCDC_VCR	= VCR_V_WIDTH(var->vsync_len) |
+-	                  VCR_V_WAIT_1(var->upper_margin) |
+-			  VCR_V_WAIT_2(var->lower_margin);
++	writel(VCR_V_WIDTH(var->vsync_len) |
++		VCR_V_WAIT_1(var->upper_margin) |
++		VCR_V_WAIT_2(var->lower_margin),
++		fbi->regs + LCDC_VCR);
+ 
+-	LCDC_SIZE	= SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres);
+-	LCDC_PCR	= fbi->pcr;
+-	LCDC_PWMR	= fbi->pwmr;
+-	LCDC_LSCR1	= fbi->lscr1;
+-	LCDC_DMACR	= fbi->dmacr;
++	writel(SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres),
++			fbi->regs + LCDC_SIZE);
++	writel(fbi->pcr, fbi->regs + LCDC_PCR);
++	writel(fbi->pwmr, fbi->regs + LCDC_PWMR);
++	writel(fbi->lscr1, fbi->regs + LCDC_LSCR1);
++	writel(fbi->dmacr, fbi->regs + LCDC_DMACR);
+ 
+ 	return 0;
+ }
+@@ -384,10 +456,10 @@ static int imxfb_resume(struct platform_device *dev)
+ #define imxfb_resume	NULL
+ #endif
+ 
+-static int __init imxfb_init_fbinfo(struct device *dev)
++static int __init imxfb_init_fbinfo(struct platform_device *pdev)
  {
--	struct imxfb_mach_info *inf = pdev->dev.platform_data;
-+	struct imx_fb_platform_data *pdata = pdev->dev.platform_data;
- 	struct fb_info *info = dev_get_drvdata(&pdev->dev);
+-	struct imxfb_mach_info *inf = dev->platform_data;
+-	struct fb_info *info = dev_get_drvdata(dev);
++	struct imxfb_mach_info *inf = pdev->dev.platform_data;
++	struct fb_info *info = dev_get_drvdata(&pdev->dev);
  	struct imxfb_info *fbi = info->par;
  
-@@ -548,32 +548,32 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
- 	fbi->rgb[RGB_16]		= &def_rgb_16;
- 	fbi->rgb[RGB_8]			= &def_rgb_8;
+ 	pr_debug("%s\n",__func__);
+@@ -397,7 +469,6 @@ static int __init imxfb_init_fbinfo(struct device *dev)
+ 		return -ENOMEM;
  
--	fbi->max_xres			= inf->xres;
--	info->var.xres			= inf->xres;
--	info->var.xres_virtual		= inf->xres;
--	fbi->max_yres			= inf->yres;
--	info->var.yres			= inf->yres;
--	info->var.yres_virtual		= inf->yres;
--	fbi->max_bpp			= inf->bpp;
--	info->var.bits_per_pixel	= inf->bpp;
--	info->var.nonstd		= inf->nonstd;
--	info->var.pixclock		= inf->pixclock;
--	info->var.hsync_len		= inf->hsync_len;
--	info->var.left_margin		= inf->left_margin;
--	info->var.right_margin		= inf->right_margin;
--	info->var.vsync_len		= inf->vsync_len;
--	info->var.upper_margin		= inf->upper_margin;
--	info->var.lower_margin		= inf->lower_margin;
--	info->var.sync			= inf->sync;
--	info->var.grayscale		= inf->cmap_greyscale;
--	fbi->cmap_inverse		= inf->cmap_inverse;
--	fbi->cmap_static		= inf->cmap_static;
--	fbi->pcr			= inf->pcr;
--	fbi->lscr1			= inf->lscr1;
--	fbi->dmacr			= inf->dmacr;
--	fbi->pwmr			= inf->pwmr;
--	fbi->lcd_power			= inf->lcd_power;
--	fbi->backlight_power		= inf->backlight_power;
-+	fbi->max_xres			= pdata->xres;
-+	info->var.xres			= pdata->xres;
-+	info->var.xres_virtual		= pdata->xres;
-+	fbi->max_yres			= pdata->yres;
-+	info->var.yres			= pdata->yres;
-+	info->var.yres_virtual		= pdata->yres;
-+	fbi->max_bpp			= pdata->bpp;
-+	info->var.bits_per_pixel	= pdata->bpp;
-+	info->var.nonstd		= pdata->nonstd;
-+	info->var.pixclock		= pdata->pixclock;
-+	info->var.hsync_len		= pdata->hsync_len;
-+	info->var.left_margin		= pdata->left_margin;
-+	info->var.right_margin		= pdata->right_margin;
-+	info->var.vsync_len		= pdata->vsync_len;
-+	info->var.upper_margin		= pdata->upper_margin;
-+	info->var.lower_margin		= pdata->lower_margin;
-+	info->var.sync			= pdata->sync;
-+	info->var.grayscale		= pdata->cmap_greyscale;
-+	fbi->cmap_inverse		= pdata->cmap_inverse;
-+	fbi->cmap_static		= pdata->cmap_static;
-+	fbi->pcr			= pdata->pcr;
-+	fbi->lscr1			= pdata->lscr1;
-+	fbi->dmacr			= pdata->dmacr;
-+	fbi->pwmr			= pdata->pwmr;
-+	fbi->lcd_power			= pdata->lcd_power;
-+	fbi->backlight_power		= pdata->backlight_power;
- 	info->fix.smem_len		= fbi->max_xres * fbi->max_yres *
- 					  fbi->max_bpp / 8;
+ 	memset(fbi, 0, sizeof(struct imxfb_info));
+-	fbi->dev = dev;
  
-@@ -584,7 +584,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 	strlcpy(info->fix.id, IMX_NAME, sizeof(info->fix.id));
+ 
+@@ -453,31 +524,6 @@ static int __init imxfb_init_fbinfo(struct device *dev)
+ 	return 0;
+ }
+ 
+-/*
+- *      Allocates the DRAM memory for the frame buffer.  This buffer is
+- *	remapped into a non-cached, non-buffered, memory region to
+- *      allow pixel writes to occur without flushing the cache.
+- *      Once this area is remapped, all virtual memory access to the
+- *      video memory should occur at the new region.
+- */
+-static int __init imxfb_map_video_memory(struct fb_info *info)
+-{
+-	struct imxfb_info *fbi = info->par;
+-
+-	fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
+-	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
+-					&fbi->map_dma,GFP_KERNEL);
+-
+-	if (fbi->map_cpu) {
+-		info->screen_base = fbi->map_cpu;
+-		fbi->screen_cpu = fbi->map_cpu;
+-		fbi->screen_dma = fbi->map_dma;
+-		info->fix.smem_start = fbi->screen_dma;
+-	}
+-
+-	return fbi->map_cpu ? 0 : -ENOMEM;
+-}
+-
+ static int __init imxfb_probe(struct platform_device *pdev)
  {
  	struct imxfb_info *fbi;
- 	struct fb_info *info;
--	struct imxfb_mach_info *inf;
-+	struct imx_fb_platform_data *pdata;
- 	struct resource *res;
- 	int ret;
+@@ -506,23 +552,38 @@ static int __init imxfb_probe(struct platform_device *pdev)
  
-@@ -594,8 +594,8 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 	if (!res)
- 		return -ENODEV;
+ 	platform_set_drvdata(pdev, info);
  
--	inf = pdev->dev.platform_data;
--	if (!inf) {
-+	pdata = pdev->dev.platform_data;
-+	if (!pdata) {
- 		dev_err(&pdev->dev,"No platform_data available\n");
- 		return -ENOMEM;
+-	ret = imxfb_init_fbinfo(&pdev->dev);
++	ret = imxfb_init_fbinfo(pdev);
+ 	if( ret < 0 )
+ 		goto failed_init;
+ 
+-	res = request_mem_region(res->start, res->end - res->start + 1, "IMXFB");
++	res = request_mem_region(res->start, resource_size(res),
++				DRIVER_NAME);
+ 	if (!res) {
+ 		ret = -EBUSY;
+-		goto failed_regs;
++		goto failed_req;
++	}
++
++	fbi->regs = ioremap(res->start, resource_size(res));
++	if (fbi->regs == NULL) {
++		printk(KERN_ERR"Cannot map frame buffer registers\n");
++		goto failed_ioremap;
  	}
-@@ -625,7 +625,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 		goto failed_ioremap;
- 	}
  
--	if (!inf->fixed_screen_cpu) {
-+	if (!pdata->fixed_screen_cpu) {
- 		fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
- 		fbi->map_cpu = dma_alloc_writecombine(&pdev->dev,
- 				fbi->map_size, &fbi->map_dma, GFP_KERNEL);
-@@ -642,8 +642,8 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 		info->fix.smem_start = fbi->screen_dma;
+ 	if (!inf->fixed_screen_cpu) {
+-		ret = imxfb_map_video_memory(info);
+-		if (ret) {
++		fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
++		fbi->map_cpu = dma_alloc_writecombine(&pdev->dev,
++				fbi->map_size, &fbi->map_dma, GFP_KERNEL);
++
++		if (!fbi->map_cpu) {
+ 			dev_err(&pdev->dev, "Failed to allocate video RAM: %d\n", ret);
+ 			ret = -ENOMEM;
+ 			goto failed_map;
+ 		}
++
++		info->screen_base = fbi->map_cpu;
++		fbi->screen_cpu = fbi->map_cpu;
++		fbi->screen_dma = fbi->map_dma;
++		info->fix.smem_start = fbi->screen_dma;
  	} else {
  		/* Fixed framebuffer mapping enables location of the screen in eSRAM */
--		fbi->map_cpu = inf->fixed_screen_cpu;
--		fbi->map_dma = inf->fixed_screen_dma;
-+		fbi->map_cpu = pdata->fixed_screen_cpu;
-+		fbi->map_dma = pdata->fixed_screen_dma;
- 		info->screen_base = fbi->map_cpu;
- 		fbi->screen_cpu = fbi->map_cpu;
- 		fbi->screen_dma = fbi->map_dma;
-@@ -674,7 +674,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
- failed_register:
- 	fb_dealloc_cmap(&info->cmap);
+ 		fbi->map_cpu = inf->fixed_screen_cpu;
+@@ -559,18 +620,20 @@ failed_register:
  failed_cmap:
--	if (!inf->fixed_screen_cpu)
-+	if (!pdata->fixed_screen_cpu)
+ 	if (!inf->fixed_screen_cpu)
  		dma_free_writecombine(&pdev->dev,fbi->map_size,fbi->map_cpu,
- 			fbi->map_dma);
+-		           fbi->map_dma);
++			fbi->map_dma);
  failed_map:
+-	kfree(info->pseudo_palette);
+-failed_regs:
++	iounmap(fbi->regs);
++failed_ioremap:
+ 	release_mem_region(res->start, res->end - res->start);
++failed_req:
++	kfree(info->pseudo_palette);
+ failed_init:
+ 	platform_set_drvdata(pdev, NULL);
+ 	framebuffer_release(info);
+ 	return ret;
+ }
+ 
+-static int imxfb_remove(struct platform_device *pdev)
++static int __devexit imxfb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 	struct imxfb_info *fbi = info->par;
+@@ -586,6 +649,7 @@ static int imxfb_remove(struct platform_device *pdev)
+ 	kfree(info->pseudo_palette);
+ 	framebuffer_release(info);
+ 
++	iounmap(fbi->regs);
+ 	release_mem_region(res->start, res->end - res->start + 1);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+@@ -600,19 +664,18 @@ void  imxfb_shutdown(struct platform_device * dev)
+ }
+ 
+ static struct platform_driver imxfb_driver = {
+-	.probe		= imxfb_probe,
+ 	.suspend	= imxfb_suspend,
+ 	.resume		= imxfb_resume,
+-	.remove		= imxfb_remove,
++	.remove		= __devexit_p(imxfb_remove),
+ 	.shutdown	= imxfb_shutdown,
+ 	.driver		= {
+-		.name	= "imx-fb",
++		.name	= DRIVER_NAME,
+ 	},
+ };
+ 
+ int __init imxfb_init(void)
+ {
+-	return platform_driver_register(&imxfb_driver);
++	return platform_driver_probe(&imxfb_driver, imxfb_probe);
+ }
+ 
+ static void __exit imxfb_cleanup(void)
+diff --git a/drivers/video/imxfb.h b/drivers/video/imxfb.h
+index e837a8b..baa86a0 100644
+--- a/drivers/video/imxfb.h
++++ b/drivers/video/imxfb.h
+@@ -29,7 +29,8 @@ struct imxfb_rgb {
+ #define NR_RGB	2
+ 
+ struct imxfb_info {
+-	struct device		*dev;
++	void __iomem		*regs;
++
+ 	struct imxfb_rgb	*rgb[NR_RGB];
+ 
+ 	u_int			max_bpp;
 -- 
 1.5.6.3
 

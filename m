@@ -1,22 +1,22 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
 Subject: [PATCH] i.MX Framebuffer: add TFT support
-Date: Tue,  2 Sep 2008 13:24:57 +0200
-Message-ID: <1220354697-13648-15-git-send-email-s.hauer@pengutronix.de>
+Date: Tue,  2 Sep 2008 13:24:55 +0200
+Message-ID: <1220354697-13648-13-git-send-email-s.hauer@pengutronix.de>
 References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU65-0001Dc-MB for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:30:57 -0700
+	id 1KaU6Z-0001JG-MF for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 04:31:27 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU64-00025R-IC
+	(Exim 4.44) id 1KaU6X-0000cn-Ot
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:30:57 -0700
+	Tue, 02 Sep 2008 04:31:27 -0700
 In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -42,7 +42,7 @@ Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
  1 files changed, 19 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index db97353..a8d3e61 100644
+index 3d1db00..4757ec6 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
 @@ -116,16 +116,10 @@ struct imxfb_rgb {

@@ -1,8 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] i.MX Framebuffer: remove gpio setup
-	function
-Date: Tue,  2 Sep 2008 13:24:44 +0200
-Message-ID: <1220354697-13648-2-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH] i.MX Framebuffer: remove header file
+Date: Tue,  2 Sep 2008 13:24:52 +0200
+Message-ID: <1220354697-13648-10-git-send-email-s.hauer@pengutronix.de>
 References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU0g-0000eO-Mi for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:25:22 -0700
+	id 1KaU15-0000ej-Ns for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 04:25:47 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU0f-0000Et-Tu
+	(Exim 4.44) id 1KaU15-0000Lj-0J
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:25:22 -0700
+	Tue, 02 Sep 2008 04:25:47 -0700
 In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,87 +31,176 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Andrew Dyer <amdyer@gmail.com>
 
-Remove the gpio mux setup function from i.MX framebuffer driver.
-This function is platform specific and thus should be done by
-the board setup. As there are currently no in-kernel users
-of this driver we do not break anything.
+Move contents of imxfb.h to imxfb.c since it is used only
+in this file
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/video/imxfb.c |   53 -------------------------------------------------
- 1 files changed, 0 insertions(+), 53 deletions(-)
+ drivers/video/imxfb.c |   62 +++++++++++++++++++++++++++++++++++++++-
+ drivers/video/imxfb.h |   74 -------------------------------------------------
+ 2 files changed, 60 insertions(+), 76 deletions(-)
+ delete mode 100644 drivers/video/imxfb.h
 
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index ccd9861..a990d43 100644
+index c62e9d4..7de3796 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
-@@ -357,57 +357,6 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
- 	return 0;
- }
+@@ -40,8 +40,6 @@
+  */
+ #define DEBUG_VAR 1
  
--static void imxfb_setup_gpio(struct imxfb_info *fbi)
--{
--	int width;
+-#include "imxfb.h"
 -
--	LCDC_RMCR	&= ~(RMCR_LCDC_EN | RMCR_SELF_REF);
--
--	if( fbi->pcr & PCR_TFT )
--		width = 16;
--	else
--		width = 1 << ((fbi->pcr >> 28) & 0x3);
--
--	switch(width) {
--	case 16:
--		imx_gpio_mode(PD30_PF_LD15);
--		imx_gpio_mode(PD29_PF_LD14);
--		imx_gpio_mode(PD28_PF_LD13);
--		imx_gpio_mode(PD27_PF_LD12);
--		imx_gpio_mode(PD26_PF_LD11);
--		imx_gpio_mode(PD25_PF_LD10);
--		imx_gpio_mode(PD24_PF_LD9);
--		imx_gpio_mode(PD23_PF_LD8);
--	case 8:
--		imx_gpio_mode(PD22_PF_LD7);
--		imx_gpio_mode(PD21_PF_LD6);
--		imx_gpio_mode(PD20_PF_LD5);
--		imx_gpio_mode(PD19_PF_LD4);
--	case 4:
--		imx_gpio_mode(PD18_PF_LD3);
--		imx_gpio_mode(PD17_PF_LD2);
--	case 2:
--		imx_gpio_mode(PD16_PF_LD1);
--	case 1:
--		imx_gpio_mode(PD15_PF_LD0);
--	}
--
--	/* initialize GPIOs */
--	imx_gpio_mode(PD6_PF_LSCLK);
--	imx_gpio_mode(PD11_PF_CONTRAST);
--	imx_gpio_mode(PD14_PF_FLM_VSYNC);
--	imx_gpio_mode(PD13_PF_LP_HSYNC);
--	imx_gpio_mode(PD12_PF_ACD_OE);
--
--	/* These are only needed for Sharp HR TFT displays */
--	if (fbi->pcr & PCR_SHARP) {
--		imx_gpio_mode(PD7_PF_REV);
--		imx_gpio_mode(PD8_PF_CLS);
--		imx_gpio_mode(PD9_PF_PS);
--		imx_gpio_mode(PD10_PF_SPL_SPR);
--	}
--}
--
- #ifdef CONFIG_PM
- /*
-  * Power management hooks.  Note that we won't be called from IRQ context,
-@@ -594,8 +543,6 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto failed_cmap;
+ #define DRIVER_NAME "imx-fb"
  
--	imxfb_setup_gpio(fbi);
+ #define LCDC_SSA	0x00
+@@ -109,6 +107,66 @@
+ #define LCDISR_EOF	(1<<1)
+ #define LCDISR_BOF	(1<<0)
+ 
++/*
++ * These are the bitfields for each
++ * display depth that we support.
++ */
++struct imxfb_rgb {
++	struct fb_bitfield	red;
++	struct fb_bitfield	green;
++	struct fb_bitfield	blue;
++	struct fb_bitfield	transp;
++};
++
++#define RGB_16	(0)
++#define RGB_8	(1)
++#define NR_RGB	2
++
++struct imxfb_info {
++	struct platform_device  *pdev;
++	void __iomem		*regs;
++
++	struct imxfb_rgb	*rgb[NR_RGB];
++
++	u_int			max_bpp;
++	u_int			max_xres;
++	u_int			max_yres;
++
++	/*
++	 * These are the addresses we mapped
++	 * the framebuffer memory region to.
++	 */
++	dma_addr_t		map_dma;
++	u_char			*map_cpu;
++	u_int			map_size;
++
++	u_char			*screen_cpu;
++	dma_addr_t		screen_dma;
++	u_int			palette_size;
++
++	dma_addr_t		dbar1;
++	dma_addr_t		dbar2;
++
++	u_int			pcr;
++	u_int			pwmr;
++	u_int			lscr1;
++	u_int			dmacr;
++	u_int			cmap_inverse:1,
++				cmap_static:1,
++				unused:30;
++
++	void (*lcd_power)(int);
++	void (*backlight_power)(int);
++};
++
++#define IMX_NAME	"IMX"
++
++/*
++ * Minimum X and Y resolutions
++ */
++#define MIN_XRES	64
++#define MIN_YRES	64
++
+ static struct imxfb_rgb def_rgb_16 = {
+ 	.red	= { .offset = 8,  .length = 4, },
+ 	.green	= { .offset = 4,  .length = 4, },
+diff --git a/drivers/video/imxfb.h b/drivers/video/imxfb.h
+deleted file mode 100644
+index baa86a0..0000000
+--- a/drivers/video/imxfb.h
++++ /dev/null
+@@ -1,74 +0,0 @@
+-/*
+- * linux/drivers/video/imxfb.h
+- *
+- *  Freescale i.MX Frame Buffer device driver
+- *
+- *  Copyright (C) 2004 S.Hauer, Pengutronix
+- *
+- *  Copyright (C) 1999 Eric A. Thomas
+- *   Based on acornfb.c Copyright (C) Russell King.
+- *
+- * This file is subject to the terms and conditions of the GNU General Public
+- * License.  See the file COPYING in the main directory of this archive
+- * for more details.
+- */
 -
- 	imxfb_set_par(info);
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
+-/*
+- * These are the bitfields for each
+- * display depth that we support.
+- */
+-struct imxfb_rgb {
+-	struct fb_bitfield	red;
+-	struct fb_bitfield	green;
+-	struct fb_bitfield	blue;
+-	struct fb_bitfield	transp;
+-};
+-
+-#define RGB_16	(0)
+-#define RGB_8	(1)
+-#define NR_RGB	2
+-
+-struct imxfb_info {
+-	void __iomem		*regs;
+-
+-	struct imxfb_rgb	*rgb[NR_RGB];
+-
+-	u_int			max_bpp;
+-	u_int			max_xres;
+-	u_int			max_yres;
+-
+-	/*
+-	 * These are the addresses we mapped
+-	 * the framebuffer memory region to.
+-	 */
+-	dma_addr_t		map_dma;
+-	u_char *		map_cpu;
+-	u_int			map_size;
+-
+-	u_char *		screen_cpu;
+-	dma_addr_t		screen_dma;
+-	u_int			palette_size;
+-
+-	dma_addr_t		dbar1;
+-	dma_addr_t		dbar2;
+-
+-	u_int			pcr;
+-	u_int			pwmr;
+-	u_int			lscr1;
+-	u_int			dmacr;
+-	u_int			cmap_inverse:1,
+-				cmap_static:1,
+-				unused:30;
+-
+-	void (*lcd_power)(int);
+-	void (*backlight_power)(int);
+-};
+-
+-#define IMX_NAME	"IMX"
+-
+-/*
+- * Minimum X and Y resolutions
+- */
+-#define MIN_XRES	64
+-#define MIN_YRES	64
+-
 -- 
 1.5.6.3
 

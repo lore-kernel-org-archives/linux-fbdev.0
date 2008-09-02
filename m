@@ -1,22 +1,22 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] i.MX Framebuffer: Cleanup Coding style
-Date: Tue,  2 Sep 2008 13:24:53 +0200
-Message-ID: <1220354697-13648-11-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH] i.MX Framebuffer: fix margins
+Date: Tue,  2 Sep 2008 13:24:49 +0200
+Message-ID: <1220354697-13648-7-git-send-email-s.hauer@pengutronix.de>
 References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU39-0000sN-EI for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:27:55 -0700
+	id 1KaU3W-0000xe-5z for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 04:28:18 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU38-00015f-CV
+	(Exim 4.44) id 1KaU3V-0007oD-H8
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:27:55 -0700
+	Tue, 02 Sep 2008 04:28:18 -0700
 In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,215 +31,36 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Andrew Dyer <amdyer@gmail.com>
 
+The upper/lower and left/right margins are mixed up in the driver.
+Fix it
+
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/video/imxfb.c |   70 +++++++++++++++++++++++-------------------------
- 1 files changed, 34 insertions(+), 36 deletions(-)
+ drivers/video/imxfb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 7de3796..00c7560 100644
+index af48044..c62e9d4 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
-@@ -1,6 +1,4 @@
- /*
-- *  linux/drivers/video/imxfb.c
-- *
-  *  Freescale i.MX Frame Buffer device driver
-  *
-  *  Copyright (C) 2004 Sascha Hauer, Pengutronix
-@@ -168,20 +166,21 @@ struct imxfb_info {
- #define MIN_YRES	64
+@@ -410,13 +410,13 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ #endif
  
- static struct imxfb_rgb def_rgb_16 = {
--	.red	= { .offset = 8,  .length = 4, },
--	.green	= { .offset = 4,  .length = 4, },
--	.blue	= { .offset = 0,  .length = 4, },
--	.transp = { .offset = 0,  .length = 0, },
-+	.red	= {.offset = 8, .length = 4,},
-+	.green	= {.offset = 4, .length = 4,},
-+	.blue	= {.offset = 0, .length = 4,},
-+	.transp = {.offset = 0, .length = 0,},
- };
+ 	writel(HCR_H_WIDTH(var->hsync_len) |
+-		HCR_H_WAIT_1(var->left_margin) |
+-		HCR_H_WAIT_2(var->right_margin),
++		HCR_H_WAIT_1(var->right_margin) |
++		HCR_H_WAIT_2(var->left_margin),
+ 		fbi->regs + LCDC_HCR);
  
- static struct imxfb_rgb def_rgb_8 = {
--	.red	= { .offset = 0,  .length = 8, },
--	.green	= { .offset = 0,  .length = 8, },
--	.blue	= { .offset = 0,  .length = 8, },
--	.transp = { .offset = 0,  .length = 0, },
-+	.red	= {.offset = 0, .length = 8,},
-+	.green	= {.offset = 0, .length = 8,},
-+	.blue	= {.offset = 0, .length = 8,},
-+	.transp = {.offset = 0, .length = 0,},
- };
+ 	writel(VCR_V_WIDTH(var->vsync_len) |
+-		VCR_V_WAIT_1(var->upper_margin) |
+-		VCR_V_WAIT_2(var->lower_margin),
++		VCR_V_WAIT_1(var->lower_margin) |
++		VCR_V_WAIT_2(var->upper_margin),
+ 		fbi->regs + LCDC_VCR);
  
--static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *info);
-+static int imxfb_activate_var(struct fb_var_screeninfo *var,
-+		struct fb_info *info);
- 
- static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
- {
-@@ -190,9 +189,8 @@ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
- 	return chan << bf->offset;
- }
- 
--static int
--imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
--		       u_int trans, struct fb_info *info)
-+static int imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
-+		u_int trans, struct fb_info *info)
- {
- 	struct imxfb_info *fbi = info->par;
- 	u_int val, ret = 1;
-@@ -209,8 +207,7 @@ imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
- 	return ret;
- }
- 
--static int
--imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
-+static int imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 		   u_int trans, struct fb_info *info)
- {
- 	struct imxfb_info *fbi = info->par;
-@@ -270,8 +267,7 @@ imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
-  *    yres, xres_virtual, yres_virtual, xoffset, yoffset, grayscale,
-  *    bitfields, horizontal timing, vertical timing.
-  */
--static int
--imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
-+static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	struct imxfb_info *fbi = info->par;
- 	int rgbidx;
-@@ -343,8 +339,7 @@ static int imxfb_set_par(struct fb_info *info)
- 		info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR;
- 	}
- 
--	info->fix.line_length = var->xres_virtual *
--				  var->bits_per_pixel / 8;
-+	info->fix.line_length = var->xres_virtual * var->bits_per_pixel / 8;
- 	fbi->palette_size = var->bits_per_pixel == 8 ? 256 : 16;
- 
- 	imxfb_activate_var(var, info);
-@@ -375,9 +370,9 @@ static void imxfb_enable_controller(struct imxfb_info *fbi)
- 
- 	writel(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
- 
--	if(fbi->backlight_power)
-+	if (fbi->backlight_power)
- 		fbi->backlight_power(1);
--	if(fbi->lcd_power)
-+	if (fbi->lcd_power)
- 		fbi->lcd_power(1);
- }
- 
-@@ -385,9 +380,9 @@ static void imxfb_disable_controller(struct imxfb_info *fbi)
- {
- 	pr_debug("Disabling LCD controller\n");
- 
--	if(fbi->backlight_power)
-+	if (fbi->backlight_power)
- 		fbi->backlight_power(0);
--	if(fbi->lcd_power)
-+	if (fbi->lcd_power)
- 		fbi->lcd_power(0);
- 
- 	writel(0, fbi->regs + LCDC_RMCR);
-@@ -495,7 +490,8 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
- static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	struct imxfb_info *fbi = platform_get_drvdata(dev);
--	pr_debug("%s\n",__func__);
-+
-+	pr_debug("%s\n", __func__);
- 
- 	imxfb_disable_controller(fbi);
- 	return 0;
-@@ -504,7 +500,8 @@ static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
- static int imxfb_resume(struct platform_device *dev)
- {
- 	struct imxfb_info *fbi = platform_get_drvdata(dev);
--	pr_debug("%s\n",__func__);
-+
-+	pr_debug("%s\n", __func__);
- 
- 	imxfb_enable_controller(fbi);
- 	return 0;
-@@ -522,7 +519,7 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
- 
- 	pr_debug("%s\n",__func__);
- 
--	info->pseudo_palette = kmalloc( sizeof(u32) * 16, GFP_KERNEL);
-+	info->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
- 	if (!info->pseudo_palette)
- 		return -ENOMEM;
- 
-@@ -530,22 +527,23 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
- 
- 	strlcpy(info->fix.id, IMX_NAME, sizeof(info->fix.id));
- 
--	info->fix.type	= FB_TYPE_PACKED_PIXELS;
-+	info->fix.type			= FB_TYPE_PACKED_PIXELS;
- 	info->fix.type_aux		= 0;
- 	info->fix.xpanstep		= 0;
- 	info->fix.ypanstep		= 0;
- 	info->fix.ywrapstep		= 0;
--	info->fix.accel	= FB_ACCEL_NONE;
-+	info->fix.accel			= FB_ACCEL_NONE;
- 
- 	info->var.nonstd		= 0;
- 	info->var.activate		= FB_ACTIVATE_NOW;
- 	info->var.height		= -1;
- 	info->var.width	= -1;
- 	info->var.accel_flags		= 0;
--	info->var.vmode	= FB_VMODE_NONINTERLACED;
-+	info->var.vmode			= FB_VMODE_NONINTERLACED;
- 
- 	info->fbops			= &imxfb_ops;
--	info->flags			= FBINFO_FLAG_DEFAULT | FBINFO_READS_FAST;
-+	info->flags			= FBINFO_FLAG_DEFAULT |
-+					  FBINFO_READS_FAST;
- 
- 	fbi->rgb[RGB_16]		= &def_rgb_16;
- 	fbi->rgb[RGB_8]			= &def_rgb_8;
-@@ -593,17 +591,17 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 	printk("i.MX Framebuffer driver\n");
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if(!res)
-+	if (!res)
- 		return -ENODEV;
- 
- 	inf = pdev->dev.platform_data;
--	if(!inf) {
-+	if (!inf) {
- 		dev_err(&pdev->dev,"No platform_data available\n");
- 		return -ENOMEM;
- 	}
- 
- 	info = framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
--	if(!info)
-+	if (!info)
- 		return -ENOMEM;
- 
- 	fbi = info->par;
-@@ -611,7 +609,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, info);
- 
- 	ret = imxfb_init_fbinfo(pdev);
--	if( ret < 0 )
-+	if (ret < 0)
- 		goto failed_init;
- 
- 	res = request_mem_region(res->start, resource_size(res),
-@@ -658,7 +656,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
- 	 */
- 	imxfb_check_var(&info->var, info);
- 
--	ret = fb_alloc_cmap(&info->cmap, 1<<info->var.bits_per_pixel, 0);
-+	ret = fb_alloc_cmap(&info->cmap, 1 << info->var.bits_per_pixel, 0);
- 	if (ret < 0)
- 		goto failed_cmap;
- 
+ 	writel(SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres),
 -- 
 1.5.6.3
 

@@ -1,8 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] i.MX Framebuffer: remove gpio setup
-	function
-Date: Tue,  2 Sep 2008 13:24:45 +0200
-Message-ID: <1220354697-13648-3-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH] i.MX Framebuffer: Cleanup Coding style
+Date: Tue,  2 Sep 2008 13:24:51 +0200
+Message-ID: <1220354697-13648-9-git-send-email-s.hauer@pengutronix.de>
 References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaU2P-0000rg-P4 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:27:09 -0700
+	id 1KaU2m-0000s8-36 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Sep 2008 04:27:32 -0700
 Received: from metis.extern.pengutronix.de ([83.236.181.26])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KaU2O-0007OX-8s
+	(Exim 4.44) id 1KaU2l-0007YC-1A
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Sep 2008 04:27:09 -0700
+	Tue, 02 Sep 2008 04:27:32 -0700
 In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,87 +31,215 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Andrew Dyer <amdyer@gmail.com>
 
-Remove the gpio mux setup function from i.MX framebuffer driver.
-This function is platform specific and thus should be done by
-the board setup. As there are currently no in-kernel users
-of this driver we do not break anything.
-
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/video/imxfb.c |   53 -------------------------------------------------
- 1 files changed, 0 insertions(+), 53 deletions(-)
+ drivers/video/imxfb.c |   70 +++++++++++++++++++++++-------------------------
+ 1 files changed, 34 insertions(+), 36 deletions(-)
 
 diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-index 60015d5..bfc537f 100644
+index 7b3400c..25323ea 100644
 --- a/drivers/video/imxfb.c
 +++ b/drivers/video/imxfb.c
-@@ -358,57 +358,6 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
- 	return 0;
+@@ -1,6 +1,4 @@
+ /*
+- *  linux/drivers/video/imxfb.c
+- *
+  *  Freescale i.MX Frame Buffer device driver
+  *
+  *  Copyright (C) 2004 Sascha Hauer, Pengutronix
+@@ -168,20 +166,21 @@ struct imxfb_info {
+ #define MIN_YRES	64
+ 
+ static struct imxfb_rgb def_rgb_16 = {
+-	.red	= { .offset = 8,  .length = 4, },
+-	.green	= { .offset = 4,  .length = 4, },
+-	.blue	= { .offset = 0,  .length = 4, },
+-	.transp = { .offset = 0,  .length = 0, },
++	.red	= {.offset = 8, .length = 4,},
++	.green	= {.offset = 4, .length = 4,},
++	.blue	= {.offset = 0, .length = 4,},
++	.transp = {.offset = 0, .length = 0,},
+ };
+ 
+ static struct imxfb_rgb def_rgb_8 = {
+-	.red	= { .offset = 0,  .length = 8, },
+-	.green	= { .offset = 0,  .length = 8, },
+-	.blue	= { .offset = 0,  .length = 8, },
+-	.transp = { .offset = 0,  .length = 0, },
++	.red	= {.offset = 0, .length = 8,},
++	.green	= {.offset = 0, .length = 8,},
++	.blue	= {.offset = 0, .length = 8,},
++	.transp = {.offset = 0, .length = 0,},
+ };
+ 
+-static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *info);
++static int imxfb_activate_var(struct fb_var_screeninfo *var,
++		struct fb_info *info);
+ 
+ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
+ {
+@@ -190,9 +189,8 @@ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
+ 	return chan << bf->offset;
  }
  
--static void imxfb_setup_gpio(struct imxfb_info *fbi)
--{
--	int width;
--
--	LCDC_RMCR	&= ~(RMCR_LCDC_EN | RMCR_SELF_REF);
--
--	if( fbi->pcr & PCR_TFT )
--		width = 16;
--	else
--		width = 1 << ((fbi->pcr >> 28) & 0x3);
--
--	switch(width) {
--	case 16:
--		imx_gpio_mode(PD30_PF_LD15);
--		imx_gpio_mode(PD29_PF_LD14);
--		imx_gpio_mode(PD28_PF_LD13);
--		imx_gpio_mode(PD27_PF_LD12);
--		imx_gpio_mode(PD26_PF_LD11);
--		imx_gpio_mode(PD25_PF_LD10);
--		imx_gpio_mode(PD24_PF_LD9);
--		imx_gpio_mode(PD23_PF_LD8);
--	case 8:
--		imx_gpio_mode(PD22_PF_LD7);
--		imx_gpio_mode(PD21_PF_LD6);
--		imx_gpio_mode(PD20_PF_LD5);
--		imx_gpio_mode(PD19_PF_LD4);
--	case 4:
--		imx_gpio_mode(PD18_PF_LD3);
--		imx_gpio_mode(PD17_PF_LD2);
--	case 2:
--		imx_gpio_mode(PD16_PF_LD1);
--	case 1:
--		imx_gpio_mode(PD15_PF_LD0);
--	}
--
--	/* initialize GPIOs */
--	imx_gpio_mode(PD6_PF_LSCLK);
--	imx_gpio_mode(PD11_PF_CONTRAST);
--	imx_gpio_mode(PD14_PF_FLM_VSYNC);
--	imx_gpio_mode(PD13_PF_LP_HSYNC);
--	imx_gpio_mode(PD12_PF_ACD_OE);
--
--	/* These are only needed for Sharp HR TFT displays */
--	if (fbi->pcr & PCR_SHARP) {
--		imx_gpio_mode(PD7_PF_REV);
--		imx_gpio_mode(PD8_PF_CLS);
--		imx_gpio_mode(PD9_PF_PS);
--		imx_gpio_mode(PD10_PF_SPL_SPR);
--	}
--}
--
- #ifdef CONFIG_PM
- /*
-  * Power management hooks.  Note that we won't be called from IRQ context,
-@@ -595,8 +544,6 @@ static int __init imxfb_probe(struct platform_device *pdev)
+-static int
+-imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+-		       u_int trans, struct fb_info *info)
++static int imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
++		u_int trans, struct fb_info *info)
+ {
+ 	struct imxfb_info *fbi = info->par;
+ 	u_int val, ret = 1;
+@@ -209,8 +207,7 @@ imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
+ 	return ret;
+ }
+ 
+-static int
+-imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
++static int imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 		   u_int trans, struct fb_info *info)
+ {
+ 	struct imxfb_info *fbi = info->par;
+@@ -270,8 +267,7 @@ imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+  *    yres, xres_virtual, yres_virtual, xoffset, yoffset, grayscale,
+  *    bitfields, horizontal timing, vertical timing.
+  */
+-static int
+-imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
++static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	struct imxfb_info *fbi = info->par;
+ 	int rgbidx;
+@@ -343,8 +339,7 @@ static int imxfb_set_par(struct fb_info *info)
+ 		info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR;
+ 	}
+ 
+-	info->fix.line_length = var->xres_virtual *
+-				  var->bits_per_pixel / 8;
++	info->fix.line_length = var->xres_virtual * var->bits_per_pixel / 8;
+ 	fbi->palette_size = var->bits_per_pixel == 8 ? 256 : 16;
+ 
+ 	imxfb_activate_var(var, info);
+@@ -375,9 +370,9 @@ static void imxfb_enable_controller(struct imxfb_info *fbi)
+ 
+ 	writel(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
+ 
+-	if(fbi->backlight_power)
++	if (fbi->backlight_power)
+ 		fbi->backlight_power(1);
+-	if(fbi->lcd_power)
++	if (fbi->lcd_power)
+ 		fbi->lcd_power(1);
+ }
+ 
+@@ -385,9 +380,9 @@ static void imxfb_disable_controller(struct imxfb_info *fbi)
+ {
+ 	pr_debug("Disabling LCD controller\n");
+ 
+-	if(fbi->backlight_power)
++	if (fbi->backlight_power)
+ 		fbi->backlight_power(0);
+-	if(fbi->lcd_power)
++	if (fbi->lcd_power)
+ 		fbi->lcd_power(0);
+ 
+ 	writel(0, fbi->regs + LCDC_RMCR);
+@@ -495,7 +490,8 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
+ {
+ 	struct imxfb_info *fbi = platform_get_drvdata(dev);
+-	pr_debug("%s\n",__func__);
++
++	pr_debug("%s\n", __func__);
+ 
+ 	imxfb_disable_controller(fbi);
+ 	return 0;
+@@ -504,7 +500,8 @@ static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
+ static int imxfb_resume(struct platform_device *dev)
+ {
+ 	struct imxfb_info *fbi = platform_get_drvdata(dev);
+-	pr_debug("%s\n",__func__);
++
++	pr_debug("%s\n", __func__);
+ 
+ 	imxfb_enable_controller(fbi);
+ 	return 0;
+@@ -522,7 +519,7 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
+ 
+ 	pr_debug("%s\n",__func__);
+ 
+-	info->pseudo_palette = kmalloc( sizeof(u32) * 16, GFP_KERNEL);
++	info->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!info->pseudo_palette)
+ 		return -ENOMEM;
+ 
+@@ -530,22 +527,23 @@ static int __init imxfb_init_fbinfo(struct platform_device *pdev)
+ 
+ 	strlcpy(info->fix.id, IMX_NAME, sizeof(info->fix.id));
+ 
+-	info->fix.type	= FB_TYPE_PACKED_PIXELS;
++	info->fix.type			= FB_TYPE_PACKED_PIXELS;
+ 	info->fix.type_aux		= 0;
+ 	info->fix.xpanstep		= 0;
+ 	info->fix.ypanstep		= 0;
+ 	info->fix.ywrapstep		= 0;
+-	info->fix.accel	= FB_ACCEL_NONE;
++	info->fix.accel			= FB_ACCEL_NONE;
+ 
+ 	info->var.nonstd		= 0;
+ 	info->var.activate		= FB_ACTIVATE_NOW;
+ 	info->var.height		= -1;
+ 	info->var.width	= -1;
+ 	info->var.accel_flags		= 0;
+-	info->var.vmode	= FB_VMODE_NONINTERLACED;
++	info->var.vmode			= FB_VMODE_NONINTERLACED;
+ 
+ 	info->fbops			= &imxfb_ops;
+-	info->flags			= FBINFO_FLAG_DEFAULT | FBINFO_READS_FAST;
++	info->flags			= FBINFO_FLAG_DEFAULT |
++					  FBINFO_READS_FAST;
+ 
+ 	fbi->rgb[RGB_16]		= &def_rgb_16;
+ 	fbi->rgb[RGB_8]			= &def_rgb_8;
+@@ -593,17 +591,17 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 	printk("i.MX Framebuffer driver\n");
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if(!res)
++	if (!res)
+ 		return -ENODEV;
+ 
+ 	inf = pdev->dev.platform_data;
+-	if(!inf) {
++	if (!inf) {
+ 		dev_err(&pdev->dev,"No platform_data available\n");
+ 		return -ENOMEM;
+ 	}
+ 
+ 	info = framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
+-	if(!info)
++	if (!info)
+ 		return -ENOMEM;
+ 
+ 	fbi = info->par;
+@@ -611,7 +609,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, info);
+ 
+ 	ret = imxfb_init_fbinfo(pdev);
+-	if( ret < 0 )
++	if (ret < 0)
+ 		goto failed_init;
+ 
+ 	res = request_mem_region(res->start, resource_size(res),
+@@ -658,7 +656,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
+ 	 */
+ 	imxfb_check_var(&info->var, info);
+ 
+-	ret = fb_alloc_cmap(&info->cmap, 1<<info->var.bits_per_pixel, 0);
++	ret = fb_alloc_cmap(&info->cmap, 1 << info->var.bits_per_pixel, 0);
  	if (ret < 0)
  		goto failed_cmap;
  
--	imxfb_setup_gpio(fbi);
--
- 	imxfb_set_par(info);
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
 -- 
 1.5.6.3
 

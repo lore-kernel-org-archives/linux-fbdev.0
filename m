@@ -1,23 +1,27 @@
-From: =?utf-8?Q?Tam=C3=A1s_K=C3=A1roly?= <tamas.karoly@anyaspect.hu>
-Subject: Latest radeonfb driver
-Date: Wed, 3 Sep 2008 13:20:42 +0200
-Message-ID: <000001c90db7$1a01ed80$7200a8c0@tomithecat>
+From: Stanislaw Gruszka <stf_xl@wp.pl>
+Subject: [PATCH 1/2] atmel_lcdfb: Fix oops in rmmod when
+	framebuffer fail to register
+Date: Wed, 3 Sep 2008 15:36:50 +0200
+Message-ID: <200809031536.50390.stf_xl@wp.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0074915667=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KaqPo-0004qQ-Ux for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Sep 2008 04:20:49 -0700
-Received: from mail01a.mail.t-online.hu ([84.2.40.6])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KaqPm-0003k6-Ff
+	id 1KasWl-0001VG-De for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 03 Sep 2008 06:36:07 -0700
+Received: from mx1.wp.pl ([212.77.101.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1KasWk-0003KV-L9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Sep 2008 04:20:48 -0700
-Received: from tomithecat (183-105-155.ip.adsl.hu [81.183.105.155])
-	by mail01a.mail.t-online.hu (Postfix) with ESMTPA id E9BEE43F41F
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed,  3 Sep 2008 13:20:41 +0200 (CEST)
+	Wed, 03 Sep 2008 06:36:07 -0700
+Received: from ebg226.internetdsl.tpnet.pl (HELO [192.168.1.13])
+	(stf_xl@wp.pl@[83.14.136.226]) (envelope-sender <stf_xl@wp.pl>)
+	by smtp.wp.pl (WP-SMTPD) with AES256-SHA encrypted SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>; 3 Sep 2008 15:36:01 +0200
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,96 +34,109 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format.
+If framebuffer registration failed in platform driver ->probe() callback,
+dev_get_drvdata() points to freed memory region, but ->remove()
+function try to use it and the following oops occurs:
 
---===============0074915667==
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0001_01C90DC7.DD8ABD80"
+Unable to handle kernel NULL pointer dereference at virtual address 00000228
+pgd = c3a20000
+[00000228] *pgd=23a2b031, *pte=00000000, *ppte=00000000
+Internal error: Oops: 17 [#1]
+Modules linked in: atmel_lcdfb(-) cfbcopyarea cfbimgblt cfbfillrect [last unloaded: atmel_lcdfb]
+CPU: 0    Not tainted  (2.6.27-rc2 #116)
+PC is at atmel_lcdfb_remove+0x14/0xf8 [atmel_lcdfb]
+LR is at platform_drv_remove+0x20/0x24
+pc : [<bf006bc4>]    lr : [<c0157d28>]    psr: a0000013
+sp : c3a45e84  ip : c3a45ea0  fp : c3a45e9c
+r10: 00000002  r9 : c3a44000  r8 : c0026c04
+r7 : 00000880  r6 : c02bb228  r5 : 00000000  r4 : c02bb230
+r3 : bf007e3c  r2 : c02bb230  r1 : 00000004  r0 : c02bb228
+Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment user
+Control: 0005317f  Table: 23a20000  DAC: 00000015
+Process rmmod (pid: 6799, stack limit = 0xc3a44260)
+Stack: (0xc3a45e84 to 0xc3a46000)
+5e80:          c02bb230 bf007e3c bf007e3c c3a45eac c3a45ea0 c0157d28 bf006bc0
+5ea0: c3a45ec4 c3a45eb0 c0156d20 c0157d18 c02bb230 c02bb2d8 c3a45ee0 c3a45ec8
+5ec0: c0156da8 c0156cb8 bf007e3c bf007ee0 c02c8e14 c3a45efc c3a45ee4 c0156018
+5ee0: c0156d50 bf007e3c bf007ee0 00000000 c3a45f18 c3a45f00 c0157220 c0155f9c
+5f00: 00000000 bf007ee0 bf008000 c3a45f28 c3a45f1c c0157e34 c01571ec c3a45f38
+5f20: c3a45f2c bf006ba8 c0157e30 c3a45fa4 c3a45f3c c005772c bf006ba4 656d7461
+5f40: 636c5f6c 00626664 c004c988 c3a45f80 c3a45f5c 00000000 c3a45fb0 00000000
+5f60: ffffffff becaccd8 00000880 00000000 000a5e80 00000001 bf007ee0 00000880
+5f80: c3a45f84 00000000 becaccd4 00000002 000003df 00000081 00000000 c3a45fa8
+5fa0: c0026a60 c0057584 00000002 000003df 00900081 000a5e80 00000880 00000000
+5fc0: becaccd4 00000002 000003df 00000000 000a5e80 00000001 00000002 0000005f
+5fe0: 4004f5ec becacbe8 0001a158 4004f5fc 20000010 00900081 f9ffbadf 7bbfb2bb
+Backtrace:
+[<bf006bb0>] (atmel_lcdfb_remove+0x0/0xf8 [atmel_lcdfb]) from [<c0157d28>] (platform_drv_remove+0x20/0x24)
+ r6:bf007e3c r5:bf007e3c r4:c02bb230
+[<c0157d08>] (platform_drv_remove+0x0/0x24) from [<c0156d20>] (__device_release_driver+0x78/0x98)
+[<c0156ca8>] (__device_release_driver+0x0/0x98) from [<c0156da8>] (driver_detach+0x68/0x90)
+ r5:c02bb2d8 r4:c02bb230
+[<c0156d40>] (driver_detach+0x0/0x90) from [<c0156018>] (bus_remove_driver+0x8c/0xb4)
+ r6:c02c8e14 r5:bf007ee0 r4:bf007e3c
+[<c0155f8c>] (bus_remove_driver+0x0/0xb4) from [<c0157220>] (driver_unregister+0x44/0x48)
+ r6:00000000 r5:bf007ee0 r4:bf007e3c
+[<c01571dc>] (driver_unregister+0x0/0x48) from [<c0157e34>] (platform_driver_unregister+0x14/0x18)
+ r6:bf008000 r5:bf007ee0 r4:00000000
+[<c0157e20>] (platform_driver_unregister+0x0/0x18) from [<bf006ba8>] (atmel_lcdfb_exit+0x14/0x1c [atmel_lcdfb])
+[<bf006b94>] (atmel_lcdfb_exit+0x0/0x1c [atmel_lcdfb]) from [<c005772c>] (sys_delete_module+0x1b8/0x22c)
+[<c0057574>] (sys_delete_module+0x0/0x22c) from [<c0026a60>] (ret_fast_syscall+0x0/0x2c)
+ r7:00000081 r6:000003df r5:00000002 r4:becaccd4
+Code: e92dd870 e24cb004 e59050c4 e1a06000 (e5954228)
+---[ end trace 85476b184d9e68d8 ]---
 
-This is a multi-part message in MIME format.
+This patch fix oops.
 
-------=_NextPart_000_0001_01C90DC7.DD8ABD80
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Stanislaw Gruszka <stf_xl@wp.pl>
+CC: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ drivers/video/atmel_lcdfb.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-Dear Ben,
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index a471a60..3376f35 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -939,7 +939,7 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+ 	ret = register_framebuffer(info);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to register framebuffer device: %d\n", ret);
+-		goto free_cmap;
++		goto reset_drvdata;
+ 	}
+ 
+ 	/* add selected videomode to modelist */
+@@ -955,7 +955,8 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
+-
++reset_drvdata:
++	dev_set_drvdata(dev, NULL);
+ free_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+ unregister_irqs:
+@@ -992,10 +993,11 @@ static int __exit atmel_lcdfb_remove(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct fb_info *info = dev_get_drvdata(dev);
+-	struct atmel_lcdfb_info *sinfo = info->par;
++	struct atmel_lcdfb_info *sinfo;
+ 
+-	if (!sinfo)
++	if (!info || !info->par)
+ 		return 0;
++	sinfo = info->par;
+ 
+ 	cancel_work_sync(&sinfo->task);
+ 	exit_backlight(sinfo);
+-- 
+1.5.2.5
 
-I saw on the mailing list that you have patches to the radeonfb driver =
-to make it accelerate imageblit, etc. I've been struggling to apply =
-these patches to my source, but I just can't make it work. (I =
-don=E2=80=99t know which version these patches patch). I'm going =
-crazy=E2=80=A6 The CVS on sourceforge seems empty.
-
-Would you be so kind to send me the latest-gratest source that YOU have =
-on your machine? This would save me days of suffer.
-
-Thank you in advance,
-Tamas Karoly
-
-
-------=_NextPart_000_0001_01C90DC7.DD8ABD80
-Content-Type: text/html;
-	charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dutf-8">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7036.0">
-<TITLE>Latest radeonfb driver</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Dear Ben,</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I saw on the mailing list that you have =
-patches to the radeonfb driver to make it accelerate imageblit, etc. =
-I've been struggling to apply these patches to my source, but I just =
-can't make it work. (I don=E2=80=99t know which version these patches =
-patch). I'm going crazy=E2=80=A6 The CVS on sourceforge seems =
-empty.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Would you be so kind to send me the =
-latest-gratest source that YOU have on your machine? This would save me =
-days of suffer.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thank you in advance,</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">Tamas Karoly</FONT>
-</P>
-
-</BODY>
-</HTML>
-------=_NextPart_000_0001_01C90DC7.DD8ABD80--
-
-
-
---===============0074915667==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
---===============0074915667==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0074915667==--

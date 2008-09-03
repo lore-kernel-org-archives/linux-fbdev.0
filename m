@@ -1,25 +1,24 @@
-From: "Jorge Marques Pelizzoni" <jpeliz@icmc.usp.br>
-Subject: LPC2478: how far from a frame buffer driver?
-Date: Wed, 3 Sep 2008 11:08:25 -0300 (BRT)
-Message-ID: <56392.200.178.190.130.1220450905.squirrel@mail2.icmc.usp.br>
+From: "Jon Dufresne" <jon.dufresne@gmail.com>
+Subject: Autodectect best video mode at module load time
+Date: Wed, 3 Sep 2008 10:43:31 -0700
+Message-ID: <376ea3380809031043w1ef9c0deh76557df0b5629ca2@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Kat2Z-0004jr-IP for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Sep 2008 07:08:59 -0700
-Received: from mail.icmc.usp.br ([143.107.231.3] helo=mail2.icmc.usp.br)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Kat2W-0004qG-2P
+	id 1KawOE-0005Wt-3n for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 03 Sep 2008 10:43:34 -0700
+Received: from ey-out-1920.google.com ([74.125.78.146])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KawOD-00062q-Mi
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Sep 2008 07:08:59 -0700
-Received: from mail2.icmc.usp.br (mail2 [143.107.231.3])
-	by mail2.icmc.usp.br (Postfix) with ESMTP id CD6435139
+	Wed, 03 Sep 2008 10:43:34 -0700
+Received: by ey-out-1920.google.com with SMTP id 4so1164452eyk.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed,  3 Sep 2008 11:08:25 -0300 (BRT)
+	Wed, 03 Sep 2008 10:43:31 -0700 (PDT)
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,24 +29,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: fbdev  <linux-fbdev-devel@lists.sourceforge.net>
+To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
+Hi,
 
+I want to add support to my framebuffer driver to add support to
+autodetect the best video mode and resolution, at module load time. I
+am good for calculating this, but I'm curious where the fbdev can get
+information on the monitor attached. Is this something that should be
+found in the device hardware itself, or should I look elsewhere in the
+kernel.
 
-Hi all,
-
-I am considering using microcontroller LPC2478 by NXP (for its built-in,
-DMA performing LCD controller) in a project. Has any of you heard of
-someone developing a fb driver for it? Anyway, I'll probably be working on
-that in no time. So those of you knowleadgeable of this MCU's architecture
-have any pointers (e.g. most suitable sample code to base on) regarding
-such effort?
-
-Thanks in advance. Cheers,
-
-Jorge M. Pelizzoni.
-
-
+Thanks,
+Jon
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

@@ -1,8 +1,7 @@
-From: Stanislaw Gruszka <stf_xl@wp.pl>
-Subject: [PATCH 2/2] atmel_lcdfb: Disallow to set larger
-	resolution than framebuffer memory can handle
-Date: Wed, 3 Sep 2008 15:37:40 +0200
-Message-ID: <200809031537.40702.stf_xl@wp.pl>
+From: "Jorge Marques Pelizzoni" <jpeliz@icmc.usp.br>
+Subject: LPC2478: how far from a frame buffer driver?
+Date: Wed, 3 Sep 2008 11:08:25 -0300 (BRT)
+Message-ID: <56392.200.178.190.130.1220450905.squirrel@mail2.icmc.usp.br>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,18 +9,17 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KasXQ-0001Xg-E1 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Sep 2008 06:36:48 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
+	id 1Kat2Z-0004jr-IP for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 03 Sep 2008 07:08:59 -0700
+Received: from mail.icmc.usp.br ([143.107.231.3] helo=mail2.icmc.usp.br)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KasXQ-0003Vm-1H
+	(Exim 4.44) id 1Kat2W-0004qG-2P
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Sep 2008 06:36:48 -0700
-Received: from ebg226.internetdsl.tpnet.pl (HELO [192.168.1.13])
-	(stf_xl@wp.pl@[83.14.136.226]) (envelope-sender <stf_xl@wp.pl>)
-	by smtp.wp.pl (WP-SMTPD) with AES256-SHA encrypted SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>; 3 Sep 2008 15:36:45 +0200
-Content-Disposition: inline
+	Wed, 03 Sep 2008 07:08:59 -0700
+Received: from mail2.icmc.usp.br (mail2 [143.107.231.3])
+	by mail2.icmc.usp.br (Postfix) with ESMTP id CD6435139
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed,  3 Sep 2008 11:08:25 -0300 (BRT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,34 +30,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: fbdev  <linux-fbdev-devel@lists.sourceforge.net>
 
-Signed-off-by: Stanislaw Gruszka <stf_xl@wp.pl>
-CC: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- drivers/video/atmel_lcdfb.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 3376f35..5d6cf33 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -342,6 +342,13 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
- 	var->transp.offset = var->transp.length = 0;
- 	var->xoffset = var->yoffset = 0;
- 
-+	if (info->fix.smem_len) {
-+		unsigned int smem_len = (var->xres_virtual * var->yres_virtual
-+					 * ((var->bits_per_pixel + 7) / 8));
-+		if (smem_len > info->fix.smem_len)
-+			return -EINVAL;
-+	}
-+
- 	/* Saturate vertical and horizontal timings at maximum values */
- 	var->vsync_len = min_t(u32, var->vsync_len,
- 			(ATMEL_LCDC_VPW >> ATMEL_LCDC_VPW_OFFSET) + 1);
--- 
-1.5.2.5
+
+Hi all,
+
+I am considering using microcontroller LPC2478 by NXP (for its built-in,
+DMA performing LCD controller) in a project. Has any of you heard of
+someone developing a fb driver for it? Anyway, I'll probably be working on
+that in no time. So those of you knowleadgeable of this MCU's architecture
+have any pointers (e.g. most suitable sample code to base on) regarding
+such effort?
+
+Thanks in advance. Cheers,
+
+Jorge M. Pelizzoni.
+
 
 
 -------------------------------------------------------------------------

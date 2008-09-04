@@ -1,12 +1,11 @@
-From: Takashi Yoshii <yoshii.takashi@renesas.com>
-Subject: Re: [PATCH] Do set var even if no
- fb_check_var() provided.
-Date: Thu, 04 Sep 2008 16:38:20 +0900
-Message-ID: <48BF906C.4020904@renesas.com>
-References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin>
-	<48B759B0.4010001@renesas.com>
-	<Pine.LNX.4.64.0808290902190.22326@anakin>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] i.MX Framebuffer: Cleanup Coding
+	style
+Date: Thu, 4 Sep 2008 09:59:33 +0200
+Message-ID: <20080904075933.GI4941@pengutronix.de>
+References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
+	<1220354697-13648-9-git-send-email-s.hauer@pengutronix.de>
+	<20080903211917.0c03e23a.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,13 +13,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Kb9QN-0001M2-4g for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 00:38:39 -0700
-Received: from mail.renesas.com ([202.234.163.13] helo=mail01.idc.renesas.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Kb9QM-00004t-MT
+	id 1Kb9kn-0003bF-VX for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 04 Sep 2008 00:59:46 -0700
+Received: from metis.extern.pengutronix.de ([83.236.181.26])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1Kb9km-0000OZ-Gg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 00:38:39 -0700
-In-reply-to: <Pine.LNX.4.64.0808290902190.22326@anakin>
+	Thu, 04 Sep 2008 00:59:45 -0700
+Content-Disposition: inline
+In-Reply-To: <20080903211917.0c03e23a.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,44 +32,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Dyer <amdyer@gmail.com>
 
-Geert Uytterhoeven wrote:
-> Panning state is not unknown. It's in var.
-I don't think it is not always in var.
-I found there are following three types of drivers.
+On Wed, Sep 03, 2008 at 09:19:17PM +0200, Krzysztof Helt wrote:
+> On Tue,  2 Sep 2008 13:24:51 +0200
+> Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> 
+> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> > ---
+> >  drivers/video/imxfb.c |   70 +++++++++++++++++++++++-------------------------
+> >  1 files changed, 34 insertions(+), 36 deletions(-)
+> > 
+> 
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> One offtopic comment: do you really want the FBINFO_READS_FAST set?
+> 
+> It means that the driver prefer copyarea to imgblit function. It is
+> usually slower on most drivers (opposite on chips with attached
+> very fast memory: 3Dfx, GeForce, probably new ATI chips as well).
+> 
+> Please test your driver with and without this option if possible.
 
-1. ideal(?) driver
-FBIOPUT_VSCREENINFO: pan (rounded a_set_varnd) done, no error, pan in returned var
-FBIOGET_VSCREENINFO: returns pan
+I'll keep that in mind and test it. I'm sure this flag never went in on
+purpose, it went in with copy-paste.
 
-2. driver which doesn't provide own check_var (fixed mode drivers)
-FBIOPUT_VSCREENINFO: no pan done, no error, false pan in returned var
-FBIOGET_VSCREENINFO: returns pan
+Regards,
+ Sascha
 
-3. driver which doesn't provede pan_display nor check pan in check_var
-FBIOPUT_VSCREENINFO: no pan done, no error, false pan in returned var
-FBIOGET_VSCREENINFO: returns false pan
-
-2 will be trouble if people expect they can initialize pan by
-FBIOPUT_VSCREENINFO. Actually, you need FBIOPAN_DISPLAY afterwards.
-Or when they believe returned var have valid value for pan.
-Actually, you need FBIOGET_VSCREENINFO (anyway, you need FBIOPAN_DISPLAY as
- described above, this one is not so big problem).
-
-3 is weired. info->var continuously have value which can not be set to HW.
-Many drivers which doesn't support pan seems to be this type
-(sstfb is one of exceptions).
-Possibly, we can fix it at the middle of fb_set_var().
-But because of the rule(?) that only *_check_var() can freely modify var, 
-In this case, *_check_var() in each driver should do return error, or set
- them 0. Right?
-
-> If you don't know the pixclock, set it to 0.
-OK. Thank you.
-/yoshii
-
+-- 
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

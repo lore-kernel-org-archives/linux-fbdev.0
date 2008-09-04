@@ -1,25 +1,31 @@
-From: Stanislaw Gruszka <stf_xl@wp.pl>
-Subject: Re: [PATCH 2/2] atmel_lcdfb: Disallow to set
-	larger resolution than framebuffer memory can handle
-Date: Thu, 4 Sep 2008 09:14:16 +0200
-Message-ID: <200809040914.16493.stf_xl@wp.pl>
-References: <200809031537.40702.stf_xl@wp.pl>
-	<20080903205926.c5bd06fd.krzysztof.h1@poczta.fm>
+From: Takashi Yoshii <yoshii.takashi@renesas.com>
+Subject: Re: [PATCH] Add fb_check_var() for fixed mode
+ device.
+Date: Thu, 04 Sep 2008 16:21:27 +0900
+Message-ID: <48BF8C77.70607@renesas.com>
+References: <48B4E16C.4000107@renesas.com>
+	<Pine.LNX.4.64.0808270855110.7910@anakin> <g94i4r$2hq$1@ger.gmane.org>
+	<20080828074521.GO16680@sci.fi> <48B785DA.1030408@renesas.com>
+	<1219999758.4421.259.camel@thor.sulgenrain.local>
+	<Pine.LNX.4.64.0808291127510.18326@anakin>
+	<1220017912.4421.291.camel@thor.sulgenrain.local>
+	<Pine.LNX.4.64.0808291610230.18326@anakin>
+	<1220019790.4421.297.camel@thor.sulgenrain.local>
+	<48B90BD3.4020702@gmx.de> <48BD8FF0.5050905@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Kb932-0007OZ-BI for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 00:14:32 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Kb930-00076Y-T4
+	id 1Kb9AB-00087Z-2W for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 04 Sep 2008 00:21:55 -0700
+Received: from mail.renesas.com ([202.234.163.13] helo=mail03.idc.renesas.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Kb9A9-0003I1-Jv
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 00:14:32 -0700
-In-Reply-To: <20080903205926.c5bd06fd.krzysztof.h1@poczta.fm>
-Content-Disposition: inline
+	Thu, 04 Sep 2008 00:21:55 -0700
+In-reply-to: <48BD8FF0.5050905@gmx.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,45 +36,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="windows-1252"
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Helge Deller <deller@gmx.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ville Syrj?l? <syrjala@sci.fi>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@tungstengraphics.com>
 
-V2VkbmVzZGF5IDAzIFNlcHRlbWJlciAyMDA4IDIwOjU5OjI2IEtyenlzenRvZiBIZWx0IG5hcGlz
-YcWCKGEpOgo+IE9uIFdlZCwgMyBTZXAgMjAwOCAxNTozNzo0MCArMDIwMAo+IFN0YW5pc2xhdyBH
-cnVzemthIDxzdGZfeGxAd3AucGw+IHdyb3RlOgo+IAo+ID4gU2lnbmVkLW9mZi1ieTogU3Rhbmlz
-bGF3IEdydXN6a2EgPHN0Zl94bEB3cC5wbD4KPiA+IENDOiBOaWNvbGFzIEZlcnJlIDxuaWNvbGFz
-LmZlcnJlQGF0bWVsLmNvbT4KPiA+IC0tLQo+ID4gIGRyaXZlcnMvdmlkZW8vYXRtZWxfbGNkZmIu
-YyB8ICAgIDcgKysrKysrKwo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgNyBpbnNlcnRpb25zKCspLCAw
-IGRlbGV0aW9ucygtKQo+ID4gCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9hdG1lbF9s
-Y2RmYi5jIGIvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gPiBpbmRleCAzMzc2ZjM1Li41
-ZDZjZjMzIDEwMDY0NAo+ID4gLS0tIGEvZHJpdmVycy92aWRlby9hdG1lbF9sY2RmYi5jCj4gPiAr
-KysgYi9kcml2ZXJzL3ZpZGVvL2F0bWVsX2xjZGZiLmMKPiA+IEBAIC0zNDIsNiArMzQyLDEzIEBA
-IHN0YXRpYyBpbnQgYXRtZWxfbGNkZmJfY2hlY2tfdmFyKHN0cnVjdCBmYl92YXJfc2NyZWVuaW5m
-byAqdmFyLAo+ID4gIAl2YXItPnRyYW5zcC5vZmZzZXQgPSB2YXItPnRyYW5zcC5sZW5ndGggPSAw
-Owo+ID4gIAl2YXItPnhvZmZzZXQgPSB2YXItPnlvZmZzZXQgPSAwOwo+ID4gIAo+ID4gKwlpZiAo
-aW5mby0+Zml4LnNtZW1fbGVuKSB7Cj4gCj4gSXMgaXQgcG9zc2libGUgdG8gaGF2ZSBzbWVtX2xl
-biBub3Qgc2V0IGluIHRoZSBhdG1lbF9sY2RmYj8KPiBQcm9iYWJseSBub3QgYXMgaXQgaXMgYWx3
-YXlzIHNldCBpbiB0aGUgcHJvYmUgZnVuY3Rpb24uCmZiX2NoZWNrX3ZhcigpIGlzIGNhbGxlZCBp
-bmRpcmVjdGx5ICh2aWEgZmJfZmluZF9tb2RlKCkgY2FsbCkgYmVmb3JlIHNtZW1fbGVuCmlzIHNl
-dHRlZCBpbiBwcm9iZSBmdW5jdGlvbi4gQW5kIGluIHNvbWUgY2FzZXMgd2UgbmVlZCB0byBrbm93
-IHJlc29sdXRpb24KdG8gc2V0IHVwIHNtZW1fbGVuIGFuZCBhbGxvY2F0ZSBtZW1vcnkgKGVnZyBh
-bmQgY2hpY2tlbiBwcm9ibGVtKS4gClNvIHN1Y2ggY2hlY2sgaXMgbmVlZGVkIGluIGF0bWVsX2xj
-ZGZiX2NoZWNrX3ZhcigpLgoKQ2hlZXJzClN0YW5pc2xhdyBHcnVzemthCgo+IEtpbmQgcmVnYXJk
-cywKPiBLcnp5c3p0b2YKPiAKPiA+ICsJCXVuc2lnbmVkIGludCBzbWVtX2xlbiA9ICh2YXItPnhy
-ZXNfdmlydHVhbCAqIHZhci0+eXJlc192aXJ0dWFsCj4gPiArCQkJCQkgKiAoKHZhci0+Yml0c19w
-ZXJfcGl4ZWwgKyA3KSAvIDgpKTsKPiA+ICsJCWlmIChzbWVtX2xlbiA+IGluZm8tPmZpeC5zbWVt
-X2xlbikKPiA+ICsJCQlyZXR1cm4gLUVJTlZBTDsKPiA+ICsJfQo+ID4gKwo+ID4gIAkvKiBTYXR1
-cmF0ZSB2ZXJ0aWNhbCBhbmQgaG9yaXpvbnRhbCB0aW1pbmdzIGF0IG1heGltdW0gdmFsdWVzICov
-Cj4gPiAgCXZhci0+dnN5bmNfbGVuID0gbWluX3QodTMyLCB2YXItPnZzeW5jX2xlbiwKPiA+ICAJ
-CQkoQVRNRUxfTENEQ19WUFcgPj4gQVRNRUxfTENEQ19WUFdfT0ZGU0VUKSArIDEpOwo+ID4gLS0g
-Cj4gPiAxLjUuMi41Cj4gPiAKPiA+IAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBlbWFp
-bCBpcyBzcG9uc29yZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hhbGxl
-bmdlCkJ1aWxkIHRoZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1vYmxp
-biBTREsgJiB3aW4gZ3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdvIHRv
-IGFuIE9wZW4gU291cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9ibGlu
-LWNvbnRlc3Qub3JnL3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1h
-aWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6
-Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+Hi,
+
+>> Basic idea is, that when we have fixed mode devices (aka drivers which 
+>> don't implement fb_check_var) we just simply fill in a "emulated" valid 
+>> monitor/modeline into the var struct during the register_framebuffer() 
+>> initialization call. Since the modeline is valid, X does not has any 
+>> problems with it.
+It works nicely, and simple. but,
+IMHO, It is not bad for workaround, but not for merging into mainline.
+If it is only for workaround, setting info->var->pixclock(and some others)
+ in your driver, is simpler (assuming we have source code).
+
+Generally, pixclock is 0 in purpose.
+It means there really is no clock, or author didn't have enough HW spec.
+Anyway, it indicate there is no information about pixclock.
+I think nothing other than 0 is suitable for this, because 
+this is T of clock, and T=0 is logically invalid (f=INF?).
+.... I think.
+
+If it is true as fbdev specification, that means applications must ignore
+ timings when pixclock==0.
+/yoshii
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

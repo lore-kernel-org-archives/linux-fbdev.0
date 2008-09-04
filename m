@@ -1,17 +1,12 @@
 From: Takashi Yoshii <yoshii.takashi@renesas.com>
-Subject: Re: [PATCH] Add fb_check_var() for fixed mode
- device.
-Date: Thu, 04 Sep 2008 16:21:27 +0900
-Message-ID: <48BF8C77.70607@renesas.com>
+Subject: Re: [PATCH] Do set var even if no
+ fb_check_var() provided.
+Date: Thu, 04 Sep 2008 16:38:20 +0900
+Message-ID: <48BF906C.4020904@renesas.com>
 References: <48B4E16C.4000107@renesas.com>
-	<Pine.LNX.4.64.0808270855110.7910@anakin> <g94i4r$2hq$1@ger.gmane.org>
-	<20080828074521.GO16680@sci.fi> <48B785DA.1030408@renesas.com>
-	<1219999758.4421.259.camel@thor.sulgenrain.local>
-	<Pine.LNX.4.64.0808291127510.18326@anakin>
-	<1220017912.4421.291.camel@thor.sulgenrain.local>
-	<Pine.LNX.4.64.0808291610230.18326@anakin>
-	<1220019790.4421.297.camel@thor.sulgenrain.local>
-	<48B90BD3.4020702@gmx.de> <48BD8FF0.5050905@gmx.de>
+	<Pine.LNX.4.64.0808270855110.7910@anakin>
+	<48B759B0.4010001@renesas.com>
+	<Pine.LNX.4.64.0808290902190.22326@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,13 +14,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Kb9AB-00087Z-2W for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 00:21:55 -0700
-Received: from mail.renesas.com ([202.234.163.13] helo=mail03.idc.renesas.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Kb9A9-0003I1-Jv
+	id 1Kb9QN-0001M2-4g for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 04 Sep 2008 00:38:39 -0700
+Received: from mail.renesas.com ([202.234.163.13] helo=mail01.idc.renesas.com)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Kb9QM-00004t-MT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 00:21:55 -0700
-In-reply-to: <48BD8FF0.5050905@gmx.de>
+	Thu, 04 Sep 2008 00:38:39 -0700
+In-reply-to: <Pine.LNX.4.64.0808290902190.22326@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,31 +31,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Helge Deller <deller@gmx.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ville Syrj?l? <syrjala@sci.fi>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@tungstengraphics.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+Geert Uytterhoeven wrote:
+> Panning state is not unknown. It's in var.
+I don't think it is not always in var.
+I found there are following three types of drivers.
 
->> Basic idea is, that when we have fixed mode devices (aka drivers which 
->> don't implement fb_check_var) we just simply fill in a "emulated" valid 
->> monitor/modeline into the var struct during the register_framebuffer() 
->> initialization call. Since the modeline is valid, X does not has any 
->> problems with it.
-It works nicely, and simple. but,
-IMHO, It is not bad for workaround, but not for merging into mainline.
-If it is only for workaround, setting info->var->pixclock(and some others)
- in your driver, is simpler (assuming we have source code).
+1. ideal(?) driver
+FBIOPUT_VSCREENINFO: pan (rounded a_set_varnd) done, no error, pan in returned var
+FBIOGET_VSCREENINFO: returns pan
 
-Generally, pixclock is 0 in purpose.
-It means there really is no clock, or author didn't have enough HW spec.
-Anyway, it indicate there is no information about pixclock.
-I think nothing other than 0 is suitable for this, because 
-this is T of clock, and T=0 is logically invalid (f=INF?).
-.... I think.
+2. driver which doesn't provide own check_var (fixed mode drivers)
+FBIOPUT_VSCREENINFO: no pan done, no error, false pan in returned var
+FBIOGET_VSCREENINFO: returns pan
 
-If it is true as fbdev specification, that means applications must ignore
- timings when pixclock==0.
+3. driver which doesn't provede pan_display nor check pan in check_var
+FBIOPUT_VSCREENINFO: no pan done, no error, false pan in returned var
+FBIOGET_VSCREENINFO: returns false pan
+
+2 will be trouble if people expect they can initialize pan by
+FBIOPUT_VSCREENINFO. Actually, you need FBIOPAN_DISPLAY afterwards.
+Or when they believe returned var have valid value for pan.
+Actually, you need FBIOGET_VSCREENINFO (anyway, you need FBIOPAN_DISPLAY as
+ described above, this one is not so big problem).
+
+3 is weired. info->var continuously have value which can not be set to HW.
+Many drivers which doesn't support pan seems to be this type
+(sstfb is one of exceptions).
+Possibly, we can fix it at the middle of fb_set_var().
+But because of the rule(?) that only *_check_var() can freely modify var, 
+In this case, *_check_var() in each driver should do return error, or set
+ them 0. Right?
+
+> If you don't know the pixclock, set it to 0.
+OK. Thank you.
 /yoshii
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

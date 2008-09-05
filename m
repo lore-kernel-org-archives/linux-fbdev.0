@@ -1,8 +1,7 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH 2/4] cirrusfb: add noaccel module
-	parameter
-Date: Fri, 5 Sep 2008 23:53:18 +0200
-Message-ID: <20080905235318.f961240d.krzysztof.h1@poczta.fm>
+Subject: [PATCH 3/4] cirrusfb: fix 16bpp modes
+Date: Fri, 5 Sep 2008 23:53:33 +0200
+Message-ID: <20080905235333.9ec7e038.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,12 +9,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Kbj8J-0007nz-3E for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Sep 2008 14:46:23 -0700
+	id 1Kbj8U-0007oH-K4 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 05 Sep 2008 14:46:34 -0700
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Kbj8I-0001dG-ND
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Kbj8U-0001ga-7x
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Sep 2008 14:46:23 -0700
+	Fri, 05 Sep 2008 14:46:34 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,36 +30,47 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-The noaccel parameter is already handled
-if the driver is not built as module.
+The 16bpp mode did not work on the
+Cirrus cards as the visual type was
+set to DIRECTCOLOR instead of TRUECOLOR.
+The Alpine family used one incorrect
+register setting so this 16bpp modes
+generated wrong horizontal frequency.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/cirrusfb.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+
+I think it is not worth to push it into 2.6.27. This is
+an old error.
+
+ drivers/video/cirrusfb.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 30c47f1..245005e 100644
+index 245005e..9e0a1c5 100644
 --- a/drivers/video/cirrusfb.c
 +++ b/drivers/video/cirrusfb.c
-@@ -352,7 +352,7 @@ struct cirrusfb_info {
- 	void (*unmap)(struct fb_info *info);
- };
+@@ -657,7 +657,7 @@ static int cirrusfb_decode_var(const struct fb_var_screeninfo *var,
+ 	case 16:
+ 	case 32:
+ 		info->fix.line_length = var->xres_virtual * maxclockidx;
+-		info->fix.visual = FB_VISUAL_DIRECTCOLOR;
++		info->fix.visual = FB_VISUAL_TRUECOLOR;
+ 		break;
  
--static int noaccel;
-+static int noaccel __devinitdata;
- static char *mode_option __devinitdata = "640x480@60";
+ 	default:
+@@ -1178,10 +1178,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
  
- /****************************************************************************/
-@@ -2525,6 +2525,8 @@ module_init(cirrusfb_init);
+ 		case BT_ALPINE:
+ 			DPRINTK(" (for GD543x)\n");
+-			if (var->xres >= 1024)
+-				vga_wseq(regbase, CL_SEQR7, 0xa7);
+-			else
+-				vga_wseq(regbase, CL_SEQR7, 0xa3);
++			vga_wseq(regbase, CL_SEQR7, 0xa7);
+ 			cirrusfb_set_mclk(cinfo, regs.mclk, regs.divMCLK);
+ 			break;
  
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Initial video mode e.g. '648x480-8@60'");
-+module_param(noaccel, bool, 0);
-+MODULE_PARM_DESC(noaccel, "Disable acceleration");
- 
- #ifdef MODULE
- module_exit(cirrusfb_exit);
 -- 
 1.5.2.2
 

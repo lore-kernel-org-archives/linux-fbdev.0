@@ -1,24 +1,23 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] efifb/imacfb consolidation +
-	hardware support
-Date: Thu, 4 Sep 2008 17:10:06 -0700
-Message-ID: <20080904171006.3698819b.akpm@linux-foundation.org>
-References: <48C001EC.3040205@redhat.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH 1/2] atmel_lcdfb: Fix oops in rmmod
+ when framebuffer fail to register
+Date: Fri, 05 Sep 2008 09:24:00 +0200
+Message-ID: <48C0DE90.5060505@atmel.com>
+References: <200809031536.50390.stf_xl@wp.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KbOu1-0005BM-FC for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 17:10:17 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KbOu0-0005Ph-45
+	id 1KbVgO-000358-34 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 05 Sep 2008 00:24:40 -0700
+Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KbVgM-0005mv-DA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Sep 2008 17:10:17 -0700
-In-Reply-To: <48C001EC.3040205@redhat.com>
+	Fri, 05 Sep 2008 00:24:40 -0700
+In-Reply-To: <200809031536.50390.stf_xl@wp.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,27 +28,70 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Peter Jones <pjones@redhat.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Stanislaw Gruszka <stf_xl@wp.pl>, Andrew Morton <akpm@linux-foundation.org>
+Cc: krzysztof.h1@wp.pl, linux-fbdev-devel@lists.sourceforge.net, Haavard Skinnemoen <hskinnemoen@atmel.com>
 
+Stanislaw Gruszka :
+> If framebuffer registration failed in platform driver ->probe() callback,
+> dev_get_drvdata() points to freed memory region, but ->remove()
+> function try to use it and the following oops occurs:
 
-> User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+[..]
 
-uh-oh.
-
-On Thu, 04 Sep 2008 11:42:36 -0400
-Peter Jones <pjones@redhat.com> wrote:
-
-> Hi.  Below is a patch that removes imacfb entirely, merging its DMI
-> table into the (otherwise very similar) efifb driver.  This also adds
-> hardware support for many of the newer Intel Apple hardware.  This has
-> been fairly well tested; we've been shipping it in Fedora for some time.
+> This patch fix oops.
 > 
+> Signed-off-by: Stanislaw Gruszka <stf_xl@wp.pl>
+> CC: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-The patch was space-stuffed.  I fixed that.  Please see
-Documentation/email-clients.txt to fix it.
+Feel free to add :
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-Please send a Signed-off-by: for this change.
+> ---
+>  drivers/video/atmel_lcdfb.c |   10 ++++++----
+>  1 files changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+> index a471a60..3376f35 100644
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -939,7 +939,7 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+>  	ret = register_framebuffer(info);
+>  	if (ret < 0) {
+>  		dev_err(dev, "failed to register framebuffer device: %d\n", ret);
+> -		goto free_cmap;
+> +		goto reset_drvdata;
+>  	}
+>  
+>  	/* add selected videomode to modelist */
+> @@ -955,7 +955,8 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+>  
+>  	return 0;
+>  
+> -
+> +reset_drvdata:
+> +	dev_set_drvdata(dev, NULL);
+>  free_cmap:
+>  	fb_dealloc_cmap(&info->cmap);
+>  unregister_irqs:
+> @@ -992,10 +993,11 @@ static int __exit atmel_lcdfb_remove(struct platform_device *pdev)
+>  {
+>  	struct device *dev = &pdev->dev;
+>  	struct fb_info *info = dev_get_drvdata(dev);
+> -	struct atmel_lcdfb_info *sinfo = info->par;
+> +	struct atmel_lcdfb_info *sinfo;
+>  
+> -	if (!sinfo)
+> +	if (!info || !info->par)
+>  		return 0;
+> +	sinfo = info->par;
+>  
+>  	cancel_work_sync(&sinfo->task);
+>  	exit_backlight(sinfo);
+
+
+-- 
+Nicolas Ferre
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

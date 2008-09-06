@@ -1,26 +1,23 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/8] lcd: allow lcd device to handle
- mode change events
-Date: Fri, 5 Sep 2008 15:41:26 -0700
-Message-ID: <20080905154126.fe3842b8.akpm@linux-foundation.org>
-References: <f17812d70808290026y39163cccy2d4b1fa3b30c8625@mail.gmail.com>
-	<20080831092009.69d2f56a.krzysztof.h1@poczta.fm>
-	<f17812d70808311856u5ba27570kd490e05594ed455e@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/4] cirrusfb: fix up debug printk
+ types
+Date: Sat, 6 Sep 2008 10:37:27 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0809061035360.4138@anakin>
+References: <20080905235312.ae259d60.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Kbk0M-0004ZP-DD for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Sep 2008 15:42:14 -0700
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Kbk0L-0007kd-5P
+	id 1KbtIa-00006d-DM for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 06 Sep 2008 01:37:40 -0700
+Received: from edna.telenet-ops.be ([195.130.132.58])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KbtIZ-0005xm-0a
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Sep 2008 15:42:14 -0700
-In-Reply-To: <f17812d70808311856u5ba27570kd490e05594ed455e@mail.gmail.com>
+	Sat, 06 Sep 2008 01:37:40 -0700
+In-Reply-To: <20080905235312.ae259d60.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,30 +28,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 1 Sep 2008 09:56:23 +0800
-"Eric Miao" <eric.y.miao@gmail.com> wrote:
-
-> On Sun, Aug 31, 2008 at 3:20 PM, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> > On Fri, 29 Aug 2008 15:26:46 +0800
-> > "Eric Miao" <eric.y.miao@gmail.com> wrote:
-> >
-> >> Some LCD panels are capable of different resolutions, and is allowed
-> >> to change at run-time, so to make "struct lcd_device" to be able to
-> >> handle mode change events here.
-> >>
-> >> Signed-off-by: Eric Miao <eric.miao@marvell.com>
-> >> ---
-> >
-> > Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> >
+On Fri, 5 Sep 2008, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> OK, thanks. I'll queue this patch for next merge window then.
-> 
+> Fix debug printk types mismatch after
+> my earlier changes.
 
-It isn't in linux-next after eight days.  Where did this get queued?  
+#define DPRINTK(fmt, args...)	pr_debug("%s: " fmt, __func__ , ## args)
+
+unconditionally, so you always catch these?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

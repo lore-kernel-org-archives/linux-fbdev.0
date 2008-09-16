@@ -1,8 +1,8 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [fbdev] Lockdep error
-Date: Tue, 16 Sep 2008 23:39:16 +0200
-Message-ID: <20080916233916.4f9c0dfd.krzysztof.h1@wp.pl>
-References: <20080915122152.GA4570@doriath.ww600.siemens.net>
+From: Alessio Sangalli <alesan@manoweb.com>
+Subject: Re: Implementing new fb driver
+Date: Tue, 16 Sep 2008 15:58:53 -0700
+Message-ID: <48D03A2D.3020608@manoweb.com>
+References: <20080731081154.57D5320B413@f26.poczta.interia.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,14 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KfiFz-00047g-ST for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 16 Sep 2008 14:38:47 -0700
-Received: from mx1.wp.pl ([212.77.101.5])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KfiFy-0004gH-G7
+	id 1KfjV8-00033t-2o for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 16 Sep 2008 15:58:30 -0700
+Received: from moutng.kundenserver.de ([212.227.126.188])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1KfjV6-0008Tt-Hs
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 16 Sep 2008 14:38:47 -0700
-In-Reply-To: <20080915122152.GA4570@doriath.ww600.siemens.net>
+	Tue, 16 Sep 2008 15:58:30 -0700
+In-Reply-To: <20080731081154.57D5320B413@f26.poczta.interia.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,51 +27,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: rpurdie@rpsys.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+To: krzysztof.h1@poczta.fm
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 15 Sep 2008 16:21:52 +0400
-Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+krzysztof.h1@poczta.fm wrote:
 
-> Hi,
+>> Hi there, I will be implementing a framebuffer driver for an
+>> internally developed video adapter.
+
+> There is a driver template called skeletonfb.c. It has extensive
+> comments. Please use it as your template and report any problem (it
+> should be up to date with API but something maybe missing).
 > 
-> After doing
-> # echo 1 > /sys/class/graphics/fb0/blank
-> I got the following in my kernel log:
-> 
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.27-rc6-00086-gda63874-dirty #97
-> ---------------------------------------------
-> echo/1564 is trying to acquire lock:
->  ((fb_notifier_list).rwsem){..--}, at: [<c005a384>] __blocking_notifier_call_chain+0x38/0x6c
-> 
+> A good example of working ARM fb driver is s3c2410fb driver.
 
-Does the patch below fix the problem for you?
 
-Kind regards,
-Krzysztof
+I have a question; this hardware supports (only) true color cursors. Is
+the fb API unable to deal with this? I have read only 1-bit cursor
+images are supported.
 
-diff -urp linux-ref/drivers/video/console/fbcon.c linux-mm/drivers/video/console/fbcon.c
---- linux-ref/drivers/video/console/fbcon.c	2008-09-05 23:38:47.000000000 +0200
-+++ linux-mm/drivers/video/console/fbcon.c	2008-09-16 23:30:52.309604454 +0200
-@@ -2400,11 +2400,15 @@ static int fbcon_blank(struct vc_data *v
- 
-  	if (!fbcon_is_inactive(vc, info)) {
- 		if (ops->blank_state != blank) {
-+			int ret = 1;
-+
- 			ops->blank_state = blank;
- 			fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
- 			ops->cursor_flash = (!blank);
- 
--			if (fb_blank(info, blank))
-+			if (info->fbops->fb_blank)
-+				ret = info->fbops->fb_blank(blank, info);
-+			if (ret)
- 				fbcon_generic_blank(vc, info, blank);
- 		}
- 
+This said, I ma confused by the hw cursors calls, and I am not sure how
+to proceed. Basically my hardware can store a number of cursor images,
+enable or disable the cursor, and move the cursor at a specified
+position. How do I implement that?
+
+Thank you!
+Alessio
+
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

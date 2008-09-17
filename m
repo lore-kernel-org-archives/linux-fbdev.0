@@ -1,9 +1,8 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Subject: Re: [PATCH] OMAP 2/3 V4L2 display driver on
-	video planes
-Date: Wed, 17 Sep 2008 21:12:08 +0530
-Message-ID: <19F8576C6E063C45BE387C64729E739403CD770929@dbde02.ent.ti.com>
-References: <48D1227D.5070207@nokia.com>
+From: Alessio Sangalli <alesan@manoweb.com>
+Subject: Re: Implementing new fb driver
+Date: Wed, 17 Sep 2008 10:14:39 -0700
+Message-ID: <48D13AFF.3050803@manoweb.com>
+References: <20080917133444.11D82CF1A0@f21.poczta.interia.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,15 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1KfzAc-0006Hn-N4 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Sep 2008 08:42:23 -0700
-Received: from arroyo.ext.ti.com ([192.94.94.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1KfzAb-0008Gx-4d
+	id 1Kg0bV-0002lc-58 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 17 Sep 2008 10:14:13 -0700
+Received: from moutng.kundenserver.de ([212.227.126.171])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Kg0bT-0001b7-GO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Sep 2008 08:42:22 -0700
-In-Reply-To: <48D1227D.5070207@nokia.com>
-Content-Language: en-US
+	Wed, 17 Sep 2008 10:14:13 -0700
+In-Reply-To: <20080917133444.11D82CF1A0@f21.poczta.interia.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,111 +27,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Sakari Ailus <sakari.ailus@nokia.com>, "Shah, Hardik" <hardik.shah@ti.com>
-Cc: "video4linux-list@redhat.com" <video4linux-list@redhat.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: krzysztof.h1@poczta.fm
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi Ailus,
+krzysztof.h1@poczta.fm wrote:
 
-Thanks,
-Vaibhav Hiremath
-Senior Software Engg.
-Platform Support Products
-Texas Instruments Inc
-Ph: +91-80-25099927
-
-> -----Original Message-----
-> From: video4linux-list-bounces@redhat.com [mailto:video4linux-list-bounces@redhat.com] On Behalf Of
-> Sakari Ailus
-> Sent: Wednesday, September 17, 2008 9:00 PM
-> To: Shah, Hardik
-> Cc: video4linux-list@redhat.com; linux-omap@vger.kernel.org; linux-fbdev-devel@lists.sourceforge.net
-> Subject: Re: [PATCH] OMAP 2/3 V4L2 display driver on video planes
+>> the fb API unable to deal with this? I have read only 1-bit cursor
+>> images are supported.
+>>
 > 
-> Hi, Hardik!
-> 
-> ext Hardik Shah wrote:
-> > diff --git a/drivers/media/video/Kconfig b/drivers/media/video/Kconfig
-> > index 2703c66..e899dd2 100644
-> > --- a/drivers/media/video/Kconfig
-> > +++ b/drivers/media/video/Kconfig
-> > @@ -762,8 +762,6 @@ source "drivers/media/video/au0828/Kconfig"
-> >
-> >  source "drivers/media/video/ivtv/Kconfig"
-> >
-> > -source drivers/media/video/omap/Kconfig
-> > -
-> >  source "drivers/media/video/cx18/Kconfig"
-> >
-> >  config VIDEO_M32R_AR
-> > @@ -802,6 +800,14 @@ config VIDEO_OMAP2
-> >  	---help---
-> >  	  Driver for an OMAP 2 camera controller.
-> >
-> > +config VIDEO_OMAP3
-> 
-> This is the same configuration option as we are using for the OMAP 3
-> camera driver at the moment.
-> 
-> Could you, for example, call this VIDEO_OMAP3_VIDEOOUT?
-> 
-> CONFIG_VIDEO_OMAP2 enables the OMAP 2 camera driver.
-> 
-I am aware of camera config options, but since now V4l started supporting
-output devices (like display) widely, we should have some meaningful
-config options here. I propose something following -
+> No. Look at the include/linux/fb.h
+[...]
+> You can set colormap for the cursor. 
 
-config VIDEO_OMAP3
-        bool "OMAP2/OMAP3 V4L2 drivers"
-        depends on VIDEO_DEV && (ARCH_OMAP24XX || ARCH_OMAP34XX)
-        default y
-        help
-          V4L2 DSS driver support for OMAP2/3 based boards.
+Umh... I really have to go and get more details, this part of the driver
+is the one I do not really understand well. You mean colormap as in
+'palette'? or as in 'bitmap'; this hardware will only support truecolor.
 
-source "drivers/media/video/omap/Kconfig"
-
-config VIDEO_OMAP3_CAMERA
-        tristate "OMAP 3 Camera support"
-        select VIDEOBUF_GEN
-        select VIDEOBUF_DMA_SG
-        select VIDEO_OMAP3_ISP
-        depends on VIDEO_V4L2 && ARCH_OMAP34XX && VIDEO_OMAP3
-        default VIDEO_OMAP3
-        ---help---
-          Driver for an OMAP 3 camera controller.
-
-source "drivers/media/video/isp/Kconfig"
+> There is only one function to handle cursor (fb_cursor) which set appropriate properties based on set flags (the constants above). 
+> One file I fixed cursor handling is the tdfxfb driver (look there).
 
 
-> > diff --git a/drivers/media/video/Makefile b/drivers/media/video/Makefile
-> > index 3e580e8..10f879c 100644
-> > --- a/drivers/media/video/Makefile
-> > +++ b/drivers/media/video/Makefile
-> > @@ -107,6 +107,8 @@ obj-$(CONFIG_VIDEO_CAFE_CCIC) += cafe_ccic.o
-> >  obj-$(CONFIG_VIDEO_OV7670) 	+= ov7670.o
-> >
-> >  obj-$(CONFIG_VIDEO_OMAP2) += omap24xxcam.o omap24xxcam-dma.o
-> > +obj-$(CONFIG_VIDEO_OMAP3) += omap/
-> 
-> It's just two C source code files --- how about putting them into the
-> parent directory? The omap directory has just one driver in it, the OMAP
-> 1 camera driver. I think at some point it was intended to be moved to
-> the parent directory although this hasn't happened.
-> 
+I will thank you.
 
-But with addition of V4L2 display patch the number of files got increased, now we
-have 4 files for display driver. I would prefer other way, move OMAP specific files
-to omap directory.
-
-> Best regards,
-> 
-> --
-> Sakari Ailus
-> sakari.ailus@nokia.com
-> 
-> --
-> video4linux-list mailing list
-> Unsubscribe mailto:video4linux-list-request@redhat.com?subject=unsubscribe
-> https://www.redhat.com/mailman/listinfo/video4linux-list
+Bye
+as
 
 
 -------------------------------------------------------------------------

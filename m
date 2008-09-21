@@ -1,78 +1,92 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] fbdev: don't allow to set a video mode via vga= if FB
-	doesn't support it
-Date: Sun, 21 Sep 2008 23:02:19 +0200
-Message-ID: <20080921210219.GC21215@spock.one.pl>
-Reply-To: spock@gentoo.org
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] vgacon: optimize scrolling
+Date: Sun, 21 Sep 2008 23:22:17 +0200
+Message-ID: <20080921212205.GA5740@joi>
+References: <1222012809-5783-1-git-send-email-marcin.slusarz@gmail.com> <1222012809-5783-2-git-send-email-marcin.slusarz@gmail.com> <20080921203757.455ead71.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753870AbYIUVDr@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753724AbYIUVXS@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <20080921203757.455ead71.krzysztof.h1@poczta.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
 
-From: Michal Januszewski <spock@gentoo.org>
+On Sun, Sep 21, 2008 at 08:37:57PM +0200, Krzysztof Helt wrote:
+> On Sun, 21 Sep 2008 18:00:08 +0200
+> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> 
+> > Join multiple scr_memcpyw into 1-3 calls (usually 2).
+> > (benchmarked average speedup: 1%)
+> > 
+> 
+> The scr_memcpyw is an inline function so there is no real call here.
 
-Currently, it is possible to set a VESA graphics mode at boot time via
-the vga= parameter even when no framebuffer driver supporting this is
-configured.  This could lead to the system booting with a black screen,
-without a usable console.
-
-Fix this problem by only allowing to set graphics modes at boot time
-if a supporting framebuffer driver is configured.
-
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-index 401ad99..32a6045 100644
---- a/arch/x86/boot/video-vesa.c
-+++ b/arch/x86/boot/video-vesa.c
-@@ -88,14 +88,11 @@ static int vesa_probe(void)
- 			   (vminfo.memory_layout == 4 ||
- 			    vminfo.memory_layout == 6) &&
- 			   vminfo.memory_planes == 1) {
--#ifdef CONFIG_FB
-+#if FB_SUPPORTS_BOOT_VESA
- 			/* Graphics mode, color, linear frame buffer
- 			   supported.  Only register the mode if
- 			   if framebuffer is configured, however,
--			   otherwise the user will be left without a screen.
--			   We don't require CONFIG_FB_VESA, however, since
--			   some of the other framebuffer drivers can use
--			   this mode-setting, too. */
-+			   otherwise the user will be left without a screen. */
- 			mi = GET_HEAP(struct mode_info, 1);
- 			mi->mode = mode + VIDEO_FIRST_VESA;
- 			mi->depth = vminfo.bpp;
-@@ -134,9 +131,13 @@ static int vesa_set_mode(struct mode_info *mode)
- 		/* It's a supported text mode */
- 		is_graphic = 0;
- 	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
-+#if FB_SUPPORTS_BOOT_VESA
- 		/* It's a graphics mode with linear frame buffer */
- 		is_graphic = 1;
- 		vesa_mode |= 0x4000; /* Request linear frame buffer */
-+#else
-+		return -1;
-+#endif
- 	} else {
- 		return -1;	/* Invalid mode */
- 	}
-diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-index 1ee2c05..20fdc2f 100644
---- a/include/linux/screen_info.h
-+++ b/include/linux/screen_info.h
-@@ -76,6 +76,10 @@ extern struct screen_info screen_info;
- #define ORIG_VIDEO_LINES	(screen_info.orig_video_lines)
- #define ORIG_VIDEO_ISVGA	(screen_info.orig_video_isVGA)
- #define ORIG_VIDEO_POINTS       (screen_info.orig_video_points)
-+
-+#define FB_SUPPORTS_BOOT_VESA (defined(CONFIG_FB_VESA) || \
-+		defined(CONFIG_FB_SIS) || defined(CONFIG_FB_IMAC) || \
-+		defined(CONFIG_FB_INTEL))
- #endif /* __KERNEL__ */
+... or it's defined to memcpy
  
- #endif /* _SCREEN_INFO_H */
+> However, have you tested the patch with scroll range > 2 *  vgacon_scrollback_size?
+>
+> It seems that your patch only handles scrolling if it is not bigger than 2 * vgacon_scrollback_size.
+
+No. count is always within range <0, c->vc_rows> (look how it's computed
+just before this loop). Second copy is needed only when end of screen
+crosses end/beginning of scrollback (it's a circular buffer).
+
+> Regards,
+> Krzysztof
+> 
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > Cc: Antonino Daplas <adaplas@gmail.com>
+> > Cc: linux-fbdev-devel@lists.sourceforge.net
+> > ---
+> >  drivers/video/console/vgacon.c |   28 ++++++++++++++++------------
+> >  1 files changed, 16 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+> > index bd1f57b..de4f66c 100644
+> > --- a/drivers/video/console/vgacon.c
+> > +++ b/drivers/video/console/vgacon.c
+> > @@ -292,23 +292,27 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
+> >  	d = (void *) c->vc_origin;
+> >  	s = (void *) c->vc_screenbuf;
+> >  
+> > -	while (count--) {
+> > -		scr_memcpyw(d, vgacon_scrollback + soff, c->vc_size_row);
+> > -		d += c->vc_size_row;
+> > -		soff += c->vc_size_row;
+> > -
+> > -		if (soff >= vgacon_scrollback_size)
+> > -			soff = 0;
+> > +	if (count) {
+> > +		int copysize;
+> > +		count *= c->vc_size_row;
+> > +		/* how much memory to end of buffer left? */
+> > +		copysize = min(count, vgacon_scrollback_size - soff);
+> > +		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
+> > +		d += copysize;
+> > +		count -= copysize;
+> > +		
+> > +		if (count) {
+> > +			copysize = min(count, vgacon_scrollback_size);
+> > +			scr_memcpyw(d, vgacon_scrollback, copysize);
+> > +			d += copysize;
+> > +		}
+> >  	}
+> >  
+> >  	if (diff == c->vc_rows) {
+> >  		vgacon_cursor(c, CM_MOVE);
+> >  	} else {
+> > -		while (diff--) {
+> > -			scr_memcpyw(d, s, c->vc_size_row);
+> > -			d += c->vc_size_row;
+> > -			s += c->vc_size_row;
+> > -		}
+> > +		if (diff)
+> > +			scr_memcpyw(d, s, diff * c->vc_size_row);
+> >  	}
+> >  
+> >  	return 1;
+> > -- 
+> > 1.5.6.4

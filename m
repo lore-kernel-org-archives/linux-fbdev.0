@@ -1,101 +1,86 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] vgacon: optimize scrolling
-Date: Sun, 21 Sep 2008 20:37:57 +0200
-Message-ID: <20080921203757.455ead71.krzysztof.h1@poczta.fm>
-References: <1222012809-5783-1-git-send-email-marcin.slusarz@gmail.com>
-	<1222012809-5783-2-git-send-email-marcin.slusarz@gmail.com>
+From: Michal Januszewski <spock@gentoo.org>
+Subject: [PATCH] uvesafb: don't treat mode info
+	retrieval failures as errors
+Date: Sun, 21 Sep 2008 22:45:42 +0200
+Message-ID: <20080921204542.GA21215@spock.one.pl>
+Reply-To: spock@gentoo.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752804AbYIUShZ@vger.kernel.org>
-In-Reply-To: <1222012809-5783-2-git-send-email-marcin.slusarz@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <michalj@gmail.com>) id 1KhVpf-0004Sn-Bq
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 21 Sep 2008 20:47:03 +0000
+Received: from fg-out-1718.google.com ([72.14.220.157])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KhVpb-0001bJ-7T for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 21 Sep 2008 20:47:03 +0000
+Received: by fg-out-1718.google.com with SMTP id d23so1327768fga.32
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 21 Sep 2008 13:46:57 -0700 (PDT)
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 21 Sep 2008 18:00:08 +0200
-Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+From: Michal Januszewski <spock@gentoo.org>
 
-> Join multiple scr_memcpyw into 1-3 calls (usually 2).
-> (benchmarked average speedup: 1%)
-> 
+Some BIOSes return error codes when queried for information about
+modes from their own modelist.  uvesafb treats this as an error
+case and bails out.
 
-The scr_memcpyw is an inline function so there is no real call here.
+Change this behavior so that broken modes do not prevent the driver
+from working.  Only the failure to retrieve information about any
+usable video mode is considered to be an error case.
 
-However, have you tested the patch with scroll range > 2 *  vgacon_scrollback_size?
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 5074422..6c2d37f 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -516,10 +516,12 @@ static int __devinit uvesafb_vbe_getmodes(struct uvesafb_ktask *task,
+ 
+ 		err = uvesafb_exec(task);
+ 		if (err || (task->t.regs.eax & 0xffff) != 0x004f) {
+-			printk(KERN_ERR "uvesafb: Getting mode info block "
++			printk(KERN_WARNING "uvesafb: Getting mode info block "
+ 				"for mode 0x%x failed (eax=0x%x, err=%d)\n",
+ 				*mode, (u32)task->t.regs.eax, err);
+-			return -EINVAL;
++			mode++;
++			par->vbe_modes_cnt--;
++			continue;
+ 		}
+ 
+ 		mib = task->buf;
+@@ -548,7 +550,10 @@ static int __devinit uvesafb_vbe_getmodes(struct uvesafb_ktask *task,
+ 			mib->depth = mib->bits_per_pixel;
+ 	}
+ 
+-	return 0;
++	if (par->vbe_modes_cnt > 0)
++		return 0;
++	else
++		return -EINVAL;
+ }
+ 
+ /*
 
-It seems that your patch only handles scrolling if it is not bigger than 2 * vgacon_scrollback_size.
 
-Regards,
-Krzysztof
-
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Antonino Daplas <adaplas@gmail.com>
-> Cc: linux-fbdev-devel@lists.sourceforge.net
-> ---
->  drivers/video/console/vgacon.c |   28 ++++++++++++++++------------
->  1 files changed, 16 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-> index bd1f57b..de4f66c 100644
-> --- a/drivers/video/console/vgacon.c
-> +++ b/drivers/video/console/vgacon.c
-> @@ -292,23 +292,27 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
->  	d = (void *) c->vc_origin;
->  	s = (void *) c->vc_screenbuf;
->  
-> -	while (count--) {
-> -		scr_memcpyw(d, vgacon_scrollback + soff, c->vc_size_row);
-> -		d += c->vc_size_row;
-> -		soff += c->vc_size_row;
-> -
-> -		if (soff >= vgacon_scrollback_size)
-> -			soff = 0;
-> +	if (count) {
-> +		int copysize;
-> +		count *= c->vc_size_row;
-> +		/* how much memory to end of buffer left? */
-> +		copysize = min(count, vgacon_scrollback_size - soff);
-> +		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-> +		d += copysize;
-> +		count -= copysize;
-> +		
-> +		if (count) {
-> +			copysize = min(count, vgacon_scrollback_size);
-> +			scr_memcpyw(d, vgacon_scrollback, copysize);
-> +			d += copysize;
-> +		}
->  	}
->  
->  	if (diff == c->vc_rows) {
->  		vgacon_cursor(c, CM_MOVE);
->  	} else {
-> -		while (diff--) {
-> -			scr_memcpyw(d, s, c->vc_size_row);
-> -			d += c->vc_size_row;
-> -			s += c->vc_size_row;
-> -		}
-> +		if (diff)
-> +			scr_memcpyw(d, s, diff * c->vc_size_row);
->  	}
->  
->  	return 1;
-> -- 
-> 1.5.6.4
-> 
-> 
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-> Build the coolest Linux based applications with Moblin SDK & win great prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
-
-----------------------------------------------------------------------
-Kredyt Hipoteczny w Banku Millennium - zdobywca Zlotego Lauru Klienta!
-Sprawdz >> http://link.interia.pl/f1f15
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

@@ -1,26 +1,25 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] uvesafb: don't treat mode info
-	retrieval failures as errors
-Date: Sun, 21 Sep 2008 22:45:42 +0200
-Message-ID: <20080921204542.GA21215@spock.one.pl>
+Subject: [PATCH] MAINTAINERS: add entry for uvesafb
+Date: Sun, 21 Sep 2008 22:47:25 +0200
+Message-ID: <20080921204725.GB21215@spock.one.pl>
 Reply-To: spock@gentoo.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <michalj@gmail.com>) id 1KhVpf-0004Sn-Bq
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <michalj@gmail.com>) id 1KhVrL-0004wA-SX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 21 Sep 2008 20:47:03 +0000
-Received: from fg-out-1718.google.com ([72.14.220.157])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KhVpb-0001bJ-7T for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 21 Sep 2008 20:47:03 +0000
-Received: by fg-out-1718.google.com with SMTP id d23so1327768fga.32
+	Sun, 21 Sep 2008 20:48:47 +0000
+Received: from fg-out-1718.google.com ([72.14.220.152])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KhVrG-0005s2-Pi for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 21 Sep 2008 20:48:47 +0000
+Received: by fg-out-1718.google.com with SMTP id d23so1328198fga.32
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 21 Sep 2008 13:46:57 -0700 (PDT)
+	Sun, 21 Sep 2008 13:48:41 -0700 (PDT)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,49 +33,28 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-kernel@vger.kernel.org
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Michal Januszewski <spock@gentoo.org>
-
-Some BIOSes return error codes when queried for information about
-modes from their own modelist.  uvesafb treats this as an error
-case and bails out.
-
-Change this behavior so that broken modes do not prevent the driver
-from working.  Only the failure to retrieve information about any
-usable video mode is considered to be an error case.
+Add a maintainer entry for the uvesafb driver.
 
 Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 5074422..6c2d37f 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -516,10 +516,12 @@ static int __devinit uvesafb_vbe_getmodes(struct uvesafb_ktask *task,
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0a613cb..26c8ddb 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4431,6 +4431,13 @@ W:	http://kernel.org/~kzak/util-linux-ng/
+ T:	git://git.kernel.org/pub/scm/utils/util-linux-ng/util-linux-ng.git
+ S:	Maintained
  
- 		err = uvesafb_exec(task);
- 		if (err || (task->t.regs.eax & 0xffff) != 0x004f) {
--			printk(KERN_ERR "uvesafb: Getting mode info block "
-+			printk(KERN_WARNING "uvesafb: Getting mode info block "
- 				"for mode 0x%x failed (eax=0x%x, err=%d)\n",
- 				*mode, (u32)task->t.regs.eax, err);
--			return -EINVAL;
-+			mode++;
-+			par->vbe_modes_cnt--;
-+			continue;
- 		}
- 
- 		mib = task->buf;
-@@ -548,7 +550,10 @@ static int __devinit uvesafb_vbe_getmodes(struct uvesafb_ktask *task,
- 			mib->depth = mib->bits_per_pixel;
- 	}
- 
--	return 0;
-+	if (par->vbe_modes_cnt > 0)
-+		return 0;
-+	else
-+		return -EINVAL;
- }
- 
- /*
++UVESAFB DRIVER
++P:	Michal Januszewski
++M:	spock@gentoo.org
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
++W:	http://dev.gentoo.org/~spock/projects/uvesafb/
++S:	Maintained
++
+ VFAT/FAT/MSDOS FILESYSTEM:
+ P:	OGAWA Hirofumi
+ M:	hirofumi@mail.parknet.co.jp
 
 
 -------------------------------------------------------------------------

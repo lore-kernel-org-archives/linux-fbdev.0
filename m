@@ -1,65 +1,66 @@
-From: "Jon Dufresne" <jon.dufresne@gmail.com>
-Subject: [PATCH] fix EDID parser to detect interlace
-	modes
-Date: Mon, 22 Sep 2008 13:45:54 -0700
-Message-ID: <376ea3380809221345o6718da05rb645340e9e9408cf@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: don't allow to set a video
+ mode via vga= if FB doesn't support it
+Date: Mon, 22 Sep 2008 13:54:38 -0700
+Message-ID: <20080922135438.c8a10da7.akpm@linux-foundation.org>
+References: <20080921210219.GC21215@spock.one.pl>
+	<20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
+	<20080922220054.4e74c099@neptune.home>
+	<5d9b736f0809221332q21dea0a1lb8159b64391ee978@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jon.dufresne@gmail.com>) id 1KhsIF-0001QX-2M
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 22 Sep 2008 20:46:03 +0000
-Received: from ey-out-1920.google.com ([74.125.78.145])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KhsI9-0007N2-9t for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 22 Sep 2008 20:46:03 +0000
-Received: by ey-out-1920.google.com with SMTP id 4so451462eyk.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 22 Sep 2008 13:45:54 -0700 (PDT)
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753367AbYIVUzi@vger.kernel.org>
+In-Reply-To: <5d9b736f0809221332q21dea0a1lb8159b64391ee978@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Michal Januszewski <michalj@gmail.com>
+Cc: bonbons@linux-vserver.org, krzysztof.h1@poczta.fm, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-The current EDID parser in the linux kernel ignores interlace modes.
-The patch below looks for the edid interlace flag and adjusts the
-vertical resolution if it is found.
+On Mon, 22 Sep 2008 22:32:40 +0200
+"Michal Januszewski" <michalj@gmail.com> wrote:
 
-Signed-off-by: Jon Dufresne <jon.dufresne@gmail.com>
----
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 6a0aa18..5c1a2c0 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -564,7 +564,13 @@ static void get_detailed_timing(unsigned char *block,
- 		mode->sync |= FB_SYNC_VERT_HIGH_ACT;
- 	mode->refresh = PIXEL_CLOCK/((H_ACTIVE + H_BLANKING) *
- 				     (V_ACTIVE + V_BLANKING));
--	mode->vmode = 0;
-+	if (INTERLACED) {
-+		mode->yres *= 2;
-+		mode->upper_margin *= 2;
-+		mode->lower_margin *= 2;
-+		mode->vsync_len *= 2;
-+		mode->vmode |= FB_VMODE_INTERLACED;
-+	}
- 	mode->flag = FB_MODE_IS_DETAILED;
+> On Mon, Sep 22, 2008 at 22:00, Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
+> 
+> > This looks pretty much the same as what I requested some time ago:
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8062
+> >
+> > Would need to check -mm archives for the actual patch.
+> >
+> > Don't remember why it did not make it to mainline...
+> 
+> Well, the bug and the mm fix [1] are about a similar, yet slightly different
+> issue than the one I'm trying to fix with my patch (note that the issue
+> reported in the bug is currently fixed in the kernel, but the actual fix
+> is differrent than the one in -mm due to x86 boot code refactoring
+> that took place since then).
+> 
+> My patch fixes the case where the framebuffer is enabled, but none of
+> the drivers support boot-time video mode setting, whereas the old
+> patch fixed the case where it was possible to set a video mode even
+> though the kernel didn't contain the framebuffer layer.
+> 
+> [1] http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc2/2.6.21-rc2-mm1/broken-out/fbdev-ignore-vesa-modes-if-framebuffer-is-disabled.patch
+> 
 
- 	DPRINTK("      %d MHz ",  PIXEL_CLOCK/1000000);
+OK.  It was merged into mainline but was later reverted by Linus:
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+
+commit 01e73be3c8f254ef19d787f9b6757468175267eb
+Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+Date:   Tue May 8 20:12:30 2007 -0700
+
+    Revert "fbdev: ignore VESA modes if framebuffer is disabled"
+    
+    This reverts commit 464bdd33e9baad9806c7adbd8dfc37081a55f27e.
+    
+    Peter Anvin correctly points out that VESA modes have nothing to do with
+    frame buffers per se - they are often just regular extended text modes.
+    Disabling them just because we don't have frame buffer support is very
+    wrong.
+    
+    Cc: H. Peter Anvin <hpa@zytor.com>
+    Cc: Antonino A. Daplas <adaplas@gmail.com>,
+    Cc: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>

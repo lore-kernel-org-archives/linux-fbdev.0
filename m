@@ -1,71 +1,62 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] fbdev: don't allow to set a video mode via vga= if FB
- doesn't support it
-Date: Mon, 22 Sep 2008 21:47:47 +0200
-Message-ID: <20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
-References: <20080921210219.GC21215@spock.one.pl>
+Subject: Re: Setting interlace mode with fbdev fbset
+Date: Mon, 22 Sep 2008 21:54:02 +0200
+Message-ID: <20080922215402.cb977d66.krzysztof.h1@poczta.fm>
+References: <376ea3380809221057j2bb9115did274c3d96a11ec2a@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753885AbYIVTuY@vger.kernel.org>
-In-Reply-To: <20080921210219.GC21215@spock.one.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: spock@gentoo.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1KhrUt-0005j8-Ie
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Sep 2008 19:55:03 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KhrUf-0006dO-WA for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Sep 2008 19:55:03 +0000
+In-Reply-To: <376ea3380809221057j2bb9115did274c3d96a11ec2a@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Jon Dufresne <jon.dufresne@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 21 Sep 2008 23:02:19 +0200
-Michal Januszewski <spock@gentoo.org> wrote:
+On Mon, 22 Sep 2008 10:57:02 -0700
+"Jon Dufresne" <jon.dufresne@gmail.com> wrote:
 
-> From: Michal Januszewski <spock@gentoo.org>
+> Hi,
 > 
-> Currently, it is possible to set a VESA graphics mode at boot time via
-> the vga= parameter even when no framebuffer driver supporting this is
-> configured.  This could lead to the system booting with a black screen,
-> without a usable console.
+> I am trying to confirm that the fbdev driver I'm developing works
+> correctly with interlace modes. First thing I need to know, is when
+> passing mode parameters to the fbdev using fbset, should the values be
+> per field, or per frame? So for example I want to set my monitor to
+> 1080i, which of the following commands looks more correct:
+> 
+> fbset -g 1920 1080 2048 2048 32 -t 13468 148 88 30 4 44 10 -hsync high
+> -vsync high -laced true
+> 
+> or
+> 
+> fbset -g 1920 540 2048 2048 32 -t 13468 148 88 15 2 44 5 -hsync high
+> -vsync high -laced true
+> 
+> notice in the second command (which is the specs per field), more than
+> just the vertical lines is halved.
 > 
 
-Right.
-
-> ---
-> diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-> index 401ad99..32a6045 100644
-> --- a/arch/x86/boot/video-vesa.c
-> +++ b/arch/x86/boot/video-vesa.c
-> @@ -134,9 +131,13 @@ static int vesa_set_mode(struct mode_info *mode)
->  		/* It's a supported text mode */
->  		is_graphic = 0;
->  	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
-> +#if FB_SUPPORTS_BOOT_VESA
->  		/* It's a graphics mode with linear frame buffer */
->  		is_graphic = 1;
->  		vesa_mode |= 0x4000; /* Request linear frame buffer */
-> +#else
-> +		return -1;
-> +#endif
->  	} else {
->  		return -1;	/* Invalid mode */
->  	}
-
-
-This one could be simpler:
-
-  		/* It's a supported text mode */
-  		is_graphic = 0;
- +#if FB_SUPPORTS_BOOT_VESA
-  	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
-  		/* It's a graphics mode with linear frame buffer */
-  		is_graphic = 1;
-  		vesa_mode |= 0x4000; /* Request linear frame buffer */
- +#endif
-  	} else {
-  		return -1;	/* Invalid mode */
-  	}
-
-
-Other than this, the patch is fine to me.
-
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Look at the /etc/fb.modes file. The interlaced modes does not set
+ any halves of values.  The values are the same as for the non-interlaced
+ modes. It is up to driver to convert them into correct register settings
+if the "laced" parameter is set (see tridentfb or pm2fb drivers).
 
 Regards,
 Krzysztof
@@ -73,3 +64,10 @@ Krzysztof
 ----------------------------------------------------------------------
 Kredyt Hipoteczny w Banku Millennium - zdobywca Zlotego Lauru Klienta!
 Sprawdz >> http://link.interia.pl/f1f15
+
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

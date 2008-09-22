@@ -1,42 +1,65 @@
-From: "Michal Januszewski" <michalj@gmail.com>
-Subject: Re: [PATCH] fbdev: don't allow to set a video mode via vga= if FB doesn't support it
-Date: Mon, 22 Sep 2008 22:34:14 +0200
-Message-ID: <5d9b736f0809221334i773a500eu5ff61884729a4367@mail.gmail.com>
-References: <20080921210219.GC21215@spock.one.pl>
-	 <20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
+From: "Jon Dufresne" <jon.dufresne@gmail.com>
+Subject: [PATCH] fix EDID parser to detect interlace
+	modes
+Date: Mon, 22 Sep 2008 13:45:54 -0700
+Message-ID: <376ea3380809221345o6718da05rb645340e9e9408cf@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754148AbYIVUe0@vger.kernel.org>
-In-Reply-To: <20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jon.dufresne@gmail.com>) id 1KhsIF-0001QX-2M
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Sep 2008 20:46:03 +0000
+Received: from ey-out-1920.google.com ([74.125.78.145])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KhsI9-0007N2-9t for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Sep 2008 20:46:03 +0000
+Received: by ey-out-1920.google.com with SMTP id 4so451462eyk.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 22 Sep 2008 13:45:54 -0700 (PDT)
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, Sep 22, 2008 at 21:47, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+The current EDID parser in the linux kernel ignores interlace modes.
+The patch below looks for the edid interlace flag and adjusts the
+vertical resolution if it is found.
 
-> This one could be simpler:
->
->                /* It's a supported text mode */
->                is_graphic = 0;
->  +#if FB_SUPPORTS_BOOT_VESA
->        } else if ((vminfo.mode_attr & 0x99) == 0x99) {
->                /* It's a graphics mode with linear frame buffer */
->                is_graphic = 1;
->                vesa_mode |= 0x4000; /* Request linear frame buffer */
->  +#endif
->        } else {
->                return -1;      /* Invalid mode */
->        }
+Signed-off-by: Jon Dufresne <jon.dufresne@gmail.com>
+---
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 6a0aa18..5c1a2c0 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -564,7 +564,13 @@ static void get_detailed_timing(unsigned char *block,
+ 		mode->sync |= FB_SYNC_VERT_HIGH_ACT;
+ 	mode->refresh = PIXEL_CLOCK/((H_ACTIVE + H_BLANKING) *
+ 				     (V_ACTIVE + V_BLANKING));
+-	mode->vmode = 0;
++	if (INTERLACED) {
++		mode->yres *= 2;
++		mode->upper_margin *= 2;
++		mode->lower_margin *= 2;
++		mode->vsync_len *= 2;
++		mode->vmode |= FB_VMODE_INTERLACED;
++	}
+ 	mode->flag = FB_MODE_IS_DETAILED;
 
-Agreed.
+ 	DPRINTK("      %d MHz ",  PIXEL_CLOCK/1000000);
 
-I'll wait at least one more day for any additional comments and repost
-a fixed version.
-
-Thanks for doing the code review.
--- 
-Michal Januszewski, Gentoo Linux Developer
-http://people.gentoo.org/spock
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

@@ -1,39 +1,42 @@
 From: "Michal Januszewski" <michalj@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: don't allow to set a video mode via vga= if FB doesn't support it
-Date: Mon, 22 Sep 2008 22:32:40 +0200
-Message-ID: <5d9b736f0809221332q21dea0a1lb8159b64391ee978@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: don't allow to set a video mode via vga= if FB doesn't support it
+Date: Mon, 22 Sep 2008 22:34:14 +0200
+Message-ID: <5d9b736f0809221334i773a500eu5ff61884729a4367@mail.gmail.com>
 References: <20080921210219.GC21215@spock.one.pl>
 	 <20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
-	 <20080922220054.4e74c099@neptune.home>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754016AbYIVUcw@vger.kernel.org>
-In-Reply-To: <20080922220054.4e74c099@neptune.home>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754148AbYIVUe0@vger.kernel.org>
+In-Reply-To: <20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-T24gTW9uLCBTZXAgMjIsIDIwMDggYXQgMjI6MDAsIEJydW5vIFByw6ltb250IDxib25ib25zQGxp
-bnV4LXZzZXJ2ZXIub3JnPiB3cm90ZToKCj4gVGhpcyBsb29rcyBwcmV0dHkgbXVjaCB0aGUgc2Ft
-ZSBhcyB3aGF0IEkgcmVxdWVzdGVkIHNvbWUgdGltZSBhZ286Cj4KPiBodHRwOi8vYnVnemlsbGEu
-a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9ODA2Mgo+Cj4gV291bGQgbmVlZCB0byBjaGVjayAt
-bW0gYXJjaGl2ZXMgZm9yIHRoZSBhY3R1YWwgcGF0Y2guCj4KPiBEb24ndCByZW1lbWJlciB3aHkg
-aXQgZGlkIG5vdCBtYWtlIGl0IHRvIG1haW5saW5lLi4uCgpXZWxsLCB0aGUgYnVnIGFuZCB0aGUg
-bW0gZml4IFsxXSBhcmUgYWJvdXQgYSBzaW1pbGFyLCB5ZXQgc2xpZ2h0bHkgZGlmZmVyZW50Cmlz
-c3VlIHRoYW4gdGhlIG9uZSBJJ20gdHJ5aW5nIHRvIGZpeCB3aXRoIG15IHBhdGNoIChub3RlIHRo
-YXQgdGhlIGlzc3VlCnJlcG9ydGVkIGluIHRoZSBidWcgaXMgY3VycmVudGx5IGZpeGVkIGluIHRo
-ZSBrZXJuZWwsIGJ1dCB0aGUgYWN0dWFsIGZpeAppcyBkaWZmZXJyZW50IHRoYW4gdGhlIG9uZSBp
-biAtbW0gZHVlIHRvIHg4NiBib290IGNvZGUgcmVmYWN0b3JpbmcKdGhhdCB0b29rIHBsYWNlIHNp
-bmNlIHRoZW4pLgoKTXkgcGF0Y2ggZml4ZXMgdGhlIGNhc2Ugd2hlcmUgdGhlIGZyYW1lYnVmZmVy
-IGlzIGVuYWJsZWQsIGJ1dCBub25lIG9mCnRoZSBkcml2ZXJzIHN1cHBvcnQgYm9vdC10aW1lIHZp
-ZGVvIG1vZGUgc2V0dGluZywgd2hlcmVhcyB0aGUgb2xkCnBhdGNoIGZpeGVkIHRoZSBjYXNlIHdo
-ZXJlIGl0IHdhcyBwb3NzaWJsZSB0byBzZXQgYSB2aWRlbyBtb2RlIGV2ZW4KdGhvdWdoIHRoZSBr
-ZXJuZWwgZGlkbid0IGNvbnRhaW4gdGhlIGZyYW1lYnVmZmVyIGxheWVyLgoKWzFdIGh0dHA6Ly93
-d3cua2VybmVsLm9yZy9wdWIvbGludXgva2VybmVsL3Blb3BsZS9ha3BtL3BhdGNoZXMvMi42LzIu
-Ni4yMS1yYzIvMi42LjIxLXJjMi1tbTEvYnJva2VuLW91dC9mYmRldi1pZ25vcmUtdmVzYS1tb2Rl
-cy1pZi1mcmFtZWJ1ZmZlci1pcy1kaXNhYmxlZC5wYXRjaAoKQmVzdCByZWdhcmRzLAotLSAKTWlj
-aGFsIEphbnVzemV3c2tpLCBHZW50b28gTGludXggRGV2ZWxvcGVyCmh0dHA6Ly9wZW9wbGUuZ2Vu
-dG9vLm9yZy9zcG9jawo=
+On Mon, Sep 22, 2008 at 21:47, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+
+> This one could be simpler:
+>
+>                /* It's a supported text mode */
+>                is_graphic = 0;
+>  +#if FB_SUPPORTS_BOOT_VESA
+>        } else if ((vminfo.mode_attr & 0x99) == 0x99) {
+>                /* It's a graphics mode with linear frame buffer */
+>                is_graphic = 1;
+>                vesa_mode |= 0x4000; /* Request linear frame buffer */
+>  +#endif
+>        } else {
+>                return -1;      /* Invalid mode */
+>        }
+
+Agreed.
+
+I'll wait at least one more day for any additional comments and repost
+a fixed version.
+
+Thanks for doing the code review.
+-- 
+Michal Januszewski, Gentoo Linux Developer
+http://people.gentoo.org/spock

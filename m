@@ -1,92 +1,60 @@
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] vgacon: optimize scrolling
-Date: Sun, 21 Sep 2008 23:22:17 +0200
-Message-ID: <20080921212205.GA5740@joi>
-References: <1222012809-5783-1-git-send-email-marcin.slusarz@gmail.com> <1222012809-5783-2-git-send-email-marcin.slusarz@gmail.com> <20080921203757.455ead71.krzysztof.h1@poczta.fm>
+From: "Jon Dufresne" <jon.dufresne@gmail.com>
+Subject: Setting interlace mode with fbdev fbset
+Date: Mon, 22 Sep 2008 10:57:02 -0700
+Message-ID: <376ea3380809221057j2bb9115did274c3d96a11ec2a@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753724AbYIUVXS@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20080921203757.455ead71.krzysztof.h1@poczta.fm>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jon.dufresne@gmail.com>) id 1Khpeo-00038M-2h
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Sep 2008 17:57:10 +0000
+Received: from nf-out-0910.google.com ([64.233.182.187])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Khpei-0002Qe-9z for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Sep 2008 17:57:10 +0000
+Received: by nf-out-0910.google.com with SMTP id g16so565772nfd.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 22 Sep 2008 10:57:02 -0700 (PDT)
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, Sep 21, 2008 at 08:37:57PM +0200, Krzysztof Helt wrote:
-> On Sun, 21 Sep 2008 18:00:08 +0200
-> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> 
-> > Join multiple scr_memcpyw into 1-3 calls (usually 2).
-> > (benchmarked average speedup: 1%)
-> > 
-> 
-> The scr_memcpyw is an inline function so there is no real call here.
+Hi,
 
-... or it's defined to memcpy
- 
-> However, have you tested the patch with scroll range > 2 *  vgacon_scrollback_size?
->
-> It seems that your patch only handles scrolling if it is not bigger than 2 * vgacon_scrollback_size.
+I am trying to confirm that the fbdev driver I'm developing works
+correctly with interlace modes. First thing I need to know, is when
+passing mode parameters to the fbdev using fbset, should the values be
+per field, or per frame? So for example I want to set my monitor to
+1080i, which of the following commands looks more correct:
 
-No. count is always within range <0, c->vc_rows> (look how it's computed
-just before this loop). Second copy is needed only when end of screen
-crosses end/beginning of scrollback (it's a circular buffer).
+fbset -g 1920 1080 2048 2048 32 -t 13468 148 88 30 4 44 10 -hsync high
+-vsync high -laced true
 
-> Regards,
-> Krzysztof
-> 
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > Cc: Antonino Daplas <adaplas@gmail.com>
-> > Cc: linux-fbdev-devel@lists.sourceforge.net
-> > ---
-> >  drivers/video/console/vgacon.c |   28 ++++++++++++++++------------
-> >  1 files changed, 16 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-> > index bd1f57b..de4f66c 100644
-> > --- a/drivers/video/console/vgacon.c
-> > +++ b/drivers/video/console/vgacon.c
-> > @@ -292,23 +292,27 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
-> >  	d = (void *) c->vc_origin;
-> >  	s = (void *) c->vc_screenbuf;
-> >  
-> > -	while (count--) {
-> > -		scr_memcpyw(d, vgacon_scrollback + soff, c->vc_size_row);
-> > -		d += c->vc_size_row;
-> > -		soff += c->vc_size_row;
-> > -
-> > -		if (soff >= vgacon_scrollback_size)
-> > -			soff = 0;
-> > +	if (count) {
-> > +		int copysize;
-> > +		count *= c->vc_size_row;
-> > +		/* how much memory to end of buffer left? */
-> > +		copysize = min(count, vgacon_scrollback_size - soff);
-> > +		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-> > +		d += copysize;
-> > +		count -= copysize;
-> > +		
-> > +		if (count) {
-> > +			copysize = min(count, vgacon_scrollback_size);
-> > +			scr_memcpyw(d, vgacon_scrollback, copysize);
-> > +			d += copysize;
-> > +		}
-> >  	}
-> >  
-> >  	if (diff == c->vc_rows) {
-> >  		vgacon_cursor(c, CM_MOVE);
-> >  	} else {
-> > -		while (diff--) {
-> > -			scr_memcpyw(d, s, c->vc_size_row);
-> > -			d += c->vc_size_row;
-> > -			s += c->vc_size_row;
-> > -		}
-> > +		if (diff)
-> > +			scr_memcpyw(d, s, diff * c->vc_size_row);
-> >  	}
-> >  
-> >  	return 1;
-> > -- 
-> > 1.5.6.4
+or
+
+fbset -g 1920 540 2048 2048 32 -t 13468 148 88 15 2 44 5 -hsync high
+-vsync high -laced true
+
+notice in the second command (which is the specs per field), more than
+just the vertical lines is halved.
+
+Thanks,
+Jon
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

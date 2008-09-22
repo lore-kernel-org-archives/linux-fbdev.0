@@ -1,37 +1,39 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: don't allow to set a video
- mode via vga= if FB doesn't support it
-Date: Mon, 22 Sep 2008 13:28:30 -0700
-Message-ID: <20080922132830.359bc001.akpm@linux-foundation.org>
+From: "Michal Januszewski" <michalj@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: don't allow to set a video mode via vga= if FB doesn't support it
+Date: Mon, 22 Sep 2008 22:32:40 +0200
+Message-ID: <5d9b736f0809221332q21dea0a1lb8159b64391ee978@mail.gmail.com>
 References: <20080921210219.GC21215@spock.one.pl>
-	<20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
-	<20080922220054.4e74c099@neptune.home>
+	 <20080922214747.c8bc57eb.krzysztof.h1@poczta.fm>
+	 <20080922220054.4e74c099@neptune.home>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754061AbYIVU3Y@vger.kernel.org>
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754016AbYIVUcw@vger.kernel.org>
 In-Reply-To: <20080922220054.4e74c099@neptune.home>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="iso-8859-1"
-To: Bruno =?ISO-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: krzysztof.h1@poczta.fm, spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-On Mon, 22 Sep 2008 22:00:54 +0200
-Bruno Pr=E9mont <bonbons@linux-vserver.org> wrote:
-
-> From: Michal Januszewski <spock@gentoo.org>
-> > Currently, it is possible to set a VESA graphics mode at boot time
-> > via the vga=3D parameter even when no framebuffer driver supporting
-> > this is configured.  This could lead to the system booting with a
-> > black screen, without a usable console.
-> >=20
-> This looks pretty much the same as what I requested some time ago:
->=20
-> http://bugzilla.kernel.org/show_bug.cgi?id=3D8062
->=20
-> Would need to check -mm archives for the actual patch.
->=20
-> Don't remember why it did not make it to mainline...
-
-If someone can give me some idea of what that patch looked
-like then I can go hunt it down, find out why it didn't make it.
+T24gTW9uLCBTZXAgMjIsIDIwMDggYXQgMjI6MDAsIEJydW5vIFByw6ltb250IDxib25ib25zQGxp
+bnV4LXZzZXJ2ZXIub3JnPiB3cm90ZToKCj4gVGhpcyBsb29rcyBwcmV0dHkgbXVjaCB0aGUgc2Ft
+ZSBhcyB3aGF0IEkgcmVxdWVzdGVkIHNvbWUgdGltZSBhZ286Cj4KPiBodHRwOi8vYnVnemlsbGEu
+a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9ODA2Mgo+Cj4gV291bGQgbmVlZCB0byBjaGVjayAt
+bW0gYXJjaGl2ZXMgZm9yIHRoZSBhY3R1YWwgcGF0Y2guCj4KPiBEb24ndCByZW1lbWJlciB3aHkg
+aXQgZGlkIG5vdCBtYWtlIGl0IHRvIG1haW5saW5lLi4uCgpXZWxsLCB0aGUgYnVnIGFuZCB0aGUg
+bW0gZml4IFsxXSBhcmUgYWJvdXQgYSBzaW1pbGFyLCB5ZXQgc2xpZ2h0bHkgZGlmZmVyZW50Cmlz
+c3VlIHRoYW4gdGhlIG9uZSBJJ20gdHJ5aW5nIHRvIGZpeCB3aXRoIG15IHBhdGNoIChub3RlIHRo
+YXQgdGhlIGlzc3VlCnJlcG9ydGVkIGluIHRoZSBidWcgaXMgY3VycmVudGx5IGZpeGVkIGluIHRo
+ZSBrZXJuZWwsIGJ1dCB0aGUgYWN0dWFsIGZpeAppcyBkaWZmZXJyZW50IHRoYW4gdGhlIG9uZSBp
+biAtbW0gZHVlIHRvIHg4NiBib290IGNvZGUgcmVmYWN0b3JpbmcKdGhhdCB0b29rIHBsYWNlIHNp
+bmNlIHRoZW4pLgoKTXkgcGF0Y2ggZml4ZXMgdGhlIGNhc2Ugd2hlcmUgdGhlIGZyYW1lYnVmZmVy
+IGlzIGVuYWJsZWQsIGJ1dCBub25lIG9mCnRoZSBkcml2ZXJzIHN1cHBvcnQgYm9vdC10aW1lIHZp
+ZGVvIG1vZGUgc2V0dGluZywgd2hlcmVhcyB0aGUgb2xkCnBhdGNoIGZpeGVkIHRoZSBjYXNlIHdo
+ZXJlIGl0IHdhcyBwb3NzaWJsZSB0byBzZXQgYSB2aWRlbyBtb2RlIGV2ZW4KdGhvdWdoIHRoZSBr
+ZXJuZWwgZGlkbid0IGNvbnRhaW4gdGhlIGZyYW1lYnVmZmVyIGxheWVyLgoKWzFdIGh0dHA6Ly93
+d3cua2VybmVsLm9yZy9wdWIvbGludXgva2VybmVsL3Blb3BsZS9ha3BtL3BhdGNoZXMvMi42LzIu
+Ni4yMS1yYzIvMi42LjIxLXJjMi1tbTEvYnJva2VuLW91dC9mYmRldi1pZ25vcmUtdmVzYS1tb2Rl
+cy1pZi1mcmFtZWJ1ZmZlci1pcy1kaXNhYmxlZC5wYXRjaAoKQmVzdCByZWdhcmRzLAotLSAKTWlj
+aGFsIEphbnVzemV3c2tpLCBHZW50b28gTGludXggRGV2ZWxvcGVyCmh0dHA6Ly9wZW9wbGUuZ2Vu
+dG9vLm9yZy9zcG9jawo=

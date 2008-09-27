@@ -1,66 +1,74 @@
-From: Julien Brunel <brunel@diku.dk>
-Subject: [PATCH] drivers/video: Bad error test before a dereference
-Date: Fri, 26 Sep 2008 15:53:44 +0200
-Message-ID: <200809261553.45301.brunel@diku.dk>
+From: Elimar Riesebieter <riesebie@lxtec.de>
+Subject: RV5|6 support
+Date: Sat, 27 Sep 2008 13:30:21 +0200
+Message-ID: <20080927113021.GA4211@aragorn.home.lxtec.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753988AbYIZNyB@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: nicolas.ferre@atmel.com, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <riesebie@lxtec.de>) id 1KjYtJ-0003di-5x
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 27 Sep 2008 12:27:17 +0000
+Received: from smtpout.hostsharing.net ([83.223.95.99])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1KjYtC-0000JI-By
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 27 Sep 2008 12:27:17 +0000
+Received: from h01.hostsharing.net (h01.hostsharing.net [212.42.230.152])
+	(using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtpout.hostsharing.net (Postfix) with ESMTP id 1851F200016F
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 27 Sep 2008 13:30:27 +0200 (CEST)
+Received: from mail.home.lxtec.de (p5B146D1D.dip.t-dialin.net [91.20.109.29])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by h01.hostsharing.net (Postfix) with ESMTP id CBF8418389D87
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 27 Sep 2008 13:30:26 +0200 (CEST)
+Received: from localhost ([127.0.0.1])
+	by mail.home.lxtec.de with esmtp (Exim 4.69 1 (LXTEC))
+	id 1KjY0H-0005MN-J9 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 27 Sep 2008 13:30:25 +0200
+Received: from mail.home.lxtec.de ([127.0.0.1])
+	by localhost (mail.home.lxtec.de [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 7L2ckn6C7Ahm
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 27 Sep 2008 13:30:21 +0200 (CEST)
+Received: from aragorn.home.lxtec.de ([192.168.200.203] ident=Debian-exim)
+	by mail.home.lxtec.de with esmtps (Exim 4.69 1 (LXTEC))
+	id 1KjY0D-0005MC-Q3 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 27 Sep 2008 13:30:21 +0200
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-The error test that follows the call to backlight_device_register
-semms not to concern the right variable.
+Hi all,
 
-A simplified version of the semantic match that finds this problem is
-as follows: 
-(http://www.emn.fr/x-info/coccinelle/)
-// <smpl>
-@def0@
-expression x;
-position p0;
-@@
-x@p0 = backlight_device_register(...)
+is there support for ATI RV5* RV6* (RV670) chips with radeonfb?
+Where can I find a patch to support RV670?
 
-@protected@
-expression def0.x,E;
-position def0.p0;
-position p;
-statement S;
-@@
-x@p0
-... when != x = E
-if (!IS_ERR(x) && ...) {<... x@p ...>} else S
+Thanks
+Elimar
 
-@unprotected@
-expression def0.x;
-identifier fld;
-position def0.p0;
-position p != protected.p;
-@@
-x@p0
-... when != x = E
-* x@p->fld
-// </smpl>
 
-Signed-off-by: Julien Brunel <brunel@diku.dk>
-Signed-off-by: Julia Lawall <julia@diku.dk>
 
----
- drivers/video/atmel_lcdfb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+-- 
+  Do you smell something burning or ist it me?
 
-diff -u -p a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -132,7 +132,7 @@ static void init_backlight(struct atmel_
- 
- 	bl = backlight_device_register("backlight", &sinfo->pdev->dev,
- 			sinfo, &atmel_lcdc_bl_ops);
--	if (IS_ERR(sinfo->backlight)) {
-+	if (IS_ERR(bl)) {
- 		dev_err(&sinfo->pdev->dev, "error %ld on backlight register\n",
- 				PTR_ERR(bl));
- 		return;
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

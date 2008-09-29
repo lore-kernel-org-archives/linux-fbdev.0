@@ -1,24 +1,27 @@
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: Allow more revisions in epson s1d13... driver
-Date: Mon, 29 Sep 2008 15:47:35 +0200
-Message-ID: <20080929154735.a7cc4a29.kristoffer.ericson@gmail.com>
+From: "Thibaut VARENE" <varenet@parisc-linux.org>
+Subject: Re: Allow more revisions in epson s1d13...
+	driver
+Date: Mon, 29 Sep 2008 17:03:22 +0200
+Message-ID: <7d01f9f00809290803x603491e9w52891e767eade471@mail.gmail.com>
+References: <20080929154735.a7cc4a29.kristoffer.ericson@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <kristoffer.ericson@gmail.com>) id 1KkJ6q-0001kY-6g
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <varenet@gmail.com>) id 1KkKHd-0001ag-4K
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Sep 2008 13:48:20 +0000
-Received: from ey-out-1920.google.com ([74.125.78.147])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KkJ6l-0005Tb-0I for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Sep 2008 13:48:20 +0000
-Received: by ey-out-1920.google.com with SMTP id 4so506233eyk.4
+	Mon, 29 Sep 2008 15:03:33 +0000
+Received: from mail-gx0-f19.google.com ([209.85.217.19])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KkKHX-0004UP-C9 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Sep 2008 15:03:33 +0000
+Received: by gxk12 with SMTP id 12so11445452gxk.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 29 Sep 2008 06:48:12 -0700 (PDT)
+	Mon, 29 Sep 2008 08:03:24 -0700 (PDT)
+In-Reply-To: <20080929154735.a7cc4a29.kristoffer.ericson@gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,101 +31,72 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@linux-foundation.org
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, varenet@parisc-linux.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: akpm@linux-foundation.org, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Andrew,
-
-I've been trying to get someones attention to this patch. Currently the
-file in question is without maintainer. 
-Ive however talked to Author Thiabaut Varene and adapted according
-to his suggestions (he's cc'ed in this mail).
-
-Is there anyone special that I should email?
-
-/Kristoffer
-
-Patch included below.
-
------------------
-
-The Epson s1d13xxx hardware is common in many handhelds, but our
-driver is currently locked to a single chip revision. This patch
-adds an array of known to work revisions (which can be extended).
-
-Signed-off-by: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
-
-diff --git a/drivers/video/s1d13xxxfb.c b/drivers/video/s1d13xxxfb.c
-index b829dc7..c674949 100644
---- a/drivers/video/s1d13xxxfb.c
-+++ b/drivers/video/s1d13xxxfb.c
-@@ -50,6 +50,11 @@
- #define dbg(fmt, args...) do { } while (0)
- #endif
- 
-+static const int s1d13xxxfb_revisions[] = {
-+	S1D13506_CHIP_REV,/* Rev.4 on HP Jornada 7xx S1D13506 */
-+	S1D13806_CHIP_REV /* Rev.7 on .. */
-+};
-+
- /*
-  * Here we define the default struct fb_fix_screeninfo
-  */
-@@ -538,6 +543,7 @@ s1d13xxxfb_probe(struct platform_device *pdev)
- 	struct fb_info *info;
- 	struct s1d13xxxfb_pdata *pdata = NULL;
- 	int ret = 0;
-+	int i;
- 	u8 revision;
- 
- 	dbg("probe called: device is %p\n", pdev);
-@@ -607,10 +613,19 @@ s1d13xxxfb_probe(struct platform_device *pdev)
- 		goto bail;
- 	}
- 
--	revision = s1d13xxxfb_readreg(default_par, S1DREG_REV_CODE);
--	if ((revision >> 2) != S1D_CHIP_REV) {
--		printk(KERN_INFO PFX "chip not found: %i\n", (revision >> 2));
--		ret = -ENODEV;
-+	revision = s1d13xxxfb_readreg(default_par, S1DREG_REV_CODE) >> 2;
-+
-+	ret = -ENODEV;
-+
-+	for (i = 0; i < ARRAY_SIZE(s1d13xxxfb_revisions); i++) {
-+		if (revision == s1d13xxxfb_revisions[i])
-+			ret = 0;
-+	}
-+
-+	if (!ret)
-+		printk(KERN_INFO PFX "chip revision %i\n", (revision));
-+	else {
-+		printk(KERN_INFO PFX "unknown chip revision %i\n", (revision));
- 		goto bail;
- 	}
- 
-diff --git a/include/video/s1d13xxxfb.h b/include/video/s1d13xxxfb.h
-index c99d261..fe41b84 100644
---- a/include/video/s1d13xxxfb.h
-+++ b/include/video/s1d13xxxfb.h
-@@ -14,7 +14,8 @@
- #define	S1D13XXXFB_H
- 
- #define S1D_PALETTE_SIZE		256
--#define S1D_CHIP_REV			7	/* expected chip revision number for s1d13806 */
-+#define S1D13506_CHIP_REV		4	/* expected chip revision number for s1d13506 */
-+#define S1D13806_CHIP_REV		7	/* expected chip revision number for s1d13806 */
- #define S1D_FBID			"S1D13806"
- #define S1D_DEVICENAME			"s1d13806fb"
- 
-
-
-
-
--- 
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+T24gTW9uLCBTZXAgMjksIDIwMDggYXQgMzo0NyBQTSwgS3Jpc3RvZmZlciBFcmljc29uCjxrcmlz
+dG9mZmVyLmVyaWNzb25AZ21haWwuY29tPiB3cm90ZToKPiBBbmRyZXcsCj4KPiBJJ3ZlIGJlZW4g
+dHJ5aW5nIHRvIGdldCBzb21lb25lcyBhdHRlbnRpb24gdG8gdGhpcyBwYXRjaC4gQ3VycmVudGx5
+IHRoZQo+IGZpbGUgaW4gcXVlc3Rpb24gaXMgd2l0aG91dCBtYWludGFpbmVyLgo+IEl2ZSBob3dl
+dmVyIHRhbGtlZCB0byBBdXRob3IgVGhpYWJhdXQgVmFyZW5lIGFuZCBhZGFwdGVkIGFjY29yZGlu
+Zwo+IHRvIGhpcyBzdWdnZXN0aW9ucyAoaGUncyBjYydlZCBpbiB0aGlzIG1haWwpLgoKVGhpcyBw
+YXRjaCBpcyBhIEFjayBmcm9tIG15IHNpZGUsIHNhdmUgbWF5YmUgZm9yIGEgdGlueSBuaXRwaWNr
+IG9uIHRoZQpmYWN0IHRoYXQgSSB0aGluayBzMWQxM3h4eGZiX3JldmlzaW9ucyBzaG91bGQgYmUg
+X19kZXZpbml0ZGF0YSwgYnV0CmRvaW5nIHNvIHNlZW1zIHRvIHRyaWdnZXIgY29tcGlsZSBpc3N1
+ZXMuIEhhdmVuJ3QgaGFkIHRpbWUgeWV0IHRvIGRpZwp0aGF0IG91dC4KCj4gU2lnbmVkLW9mZi1i
+eTogS3Jpc3RvZmZlciBFcmljc29uIDxLcmlzdG9mZmVyLkVyaWNzb25AZ21haWwuY29tPgoKQWNr
+ZWQtYnk6IFRoaWJhdXQgVmFyw6huZSA8dmFyZW5ldEBwYXJpc2MtbGludXgub3JnPgoKPiBkaWZm
+IC0tZ2l0IGEvZHJpdmVycy92aWRlby9zMWQxM3h4eGZiLmMgIGIvZHJpdmVycy92aWRlby9zMWQx
+M3h4eGZiLmMKPiBpbmRleCBiODI5ZGM3Li5jNjc0OTQ5IDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMv
+dmlkZW8vczFkMTN4eHhmYi5jCj4gKysrIGIvZHJpdmVycy92aWRlby9zMWQxM3h4eGZiLmMKPiBA
+QCAtNTAsNiArNTAsMTEgQEAKPiAgI2RlZmluZSBkYmcoZm10LCBhcmdzLi4uKSBkbyB7IH0gd2hp
+bGUgKDApCj4gICNlbmRpZgo+Cj4gK3N0YXRpYyBjb25zdCBpbnQgczFkMTN4eHhmYl9yZXZpc2lv
+bnNbXSA9IHsKPiArICAgICAgIFMxRDEzNTA2X0NISVBfUkVWLC8qIFJldi40IG9uIEhQIEpvcm5h
+ZGEgN3h4IFMxRDEzNTA2ICovCj4gKyAgICAgICBTMUQxMzgwNl9DSElQX1JFViAvKiBSZXYuNyBv
+biAuLiAqLwo+ICt9Owo+ICsKPiAgLyoKPiAgKiBIZXJlIHdlIGRlZmluZSB0aGUgZGVmYXVsdCBz
+dHJ1Y3QgZmJfZml4X3NjcmVlbmluZm8KPiAgKi8KPiBAQCAtNTM4LDYgKzU0Myw3IEBAIHMxZDEz
+eHh4ZmJfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPiAgICAgICAgc3RydWN0
+IGZiX2luZm8gKmluZm87Cj4gICAgICAgIHN0cnVjdCBzMWQxM3h4eGZiX3BkYXRhICpwZGF0YSA9
+IE5VTEw7Cj4gICAgICAgIGludCByZXQgPSAwOwo+ICsgICAgICAgaW50IGk7Cj4gICAgICAgIHU4
+IHJldmlzaW9uOwo+Cj4gICAgICAgIGRiZygicHJvYmUgY2FsbGVkOiBkZXZpY2UgaXMgJXBcbiIs
+IHBkZXYpOwo+IEBAIC02MDcsMTAgKzYxMywxOSBAQCBzMWQxM3h4eGZiX3Byb2JlKHN0cnVjdCBw
+bGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gICAgICAgICAgICAgICAgZ290byBiYWlsOwo+ICAgICAg
+ICB9Cj4KPiAtICAgICAgIHJldmlzaW9uID0gczFkMTN4eHhmYl9yZWFkcmVnKGRlZmF1bHRfcGFy
+LCBTMURSRUdfUkVWX0NPREUpOwo+IC0gICAgICAgaWYgKChyZXZpc2lvbiA+PiAyKSAhPSBTMURf
+Q0hJUF9SRVYpIHsKPiAtICAgICAgICAgICAgICAgcHJpbnRrKEtFUk5fSU5GTyBQRlggImNoaXAg
+bm90IGZvdW5kOiAlaVxuIiwgKHJldmlzaW9uID4+IDIpKTsKPiAtICAgICAgICAgICAgICAgcmV0
+ID0gLUVOT0RFVjsKPiArICAgICAgIHJldmlzaW9uID0gczFkMTN4eHhmYl9yZWFkcmVnKGRlZmF1
+bHRfcGFyLCBTMURSRUdfUkVWX0NPREUpID4+IDI7Cj4gKwo+ICsgICAgICAgcmV0ID0gLUVOT0RF
+VjsKPiArCj4gKyAgICAgICBmb3IgKGkgPSAwOyBpIDwgQVJSQVlfU0laRShzMWQxM3h4eGZiX3Jl
+dmlzaW9ucyk7IGkrKykgewo+ICsgICAgICAgICAgICAgICBpZiAocmV2aXNpb24gPT0gczFkMTN4
+eHhmYl9yZXZpc2lvbnNbaV0pCj4gKyAgICAgICAgICAgICAgICAgICAgICAgcmV0ID0gMDsKPiAr
+ICAgICAgIH0KPiArCj4gKyAgICAgICBpZiAoIXJldCkKPiArICAgICAgICAgICAgICAgcHJpbnRr
+KEtFUk5fSU5GTyBQRlggImNoaXAgcmV2aXNpb24gJWlcbiIsIChyZXZpc2lvbikpOwo+ICsgICAg
+ICAgZWxzZSB7Cj4gKyAgICAgICAgICAgICAgIHByaW50ayhLRVJOX0lORk8gUEZYICJ1bmtub3du
+IGNoaXAgcmV2aXNpb24gJWlcbiIsIChyZXZpc2lvbikpOwo+ICAgICAgICAgICAgICAgIGdvdG8g
+YmFpbDsKPiAgICAgICAgfQo+Cj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vczFkMTN4eHhm
+Yi5oIGIvaW5jbHVkZS92aWRlby9zMWQxM3h4eGZiLmgKPiBpbmRleCBjOTlkMjYxLi5mZTQxYjg0
+IDEwMDY0NAo+IC0tLSBhL2luY2x1ZGUvdmlkZW8vczFkMTN4eHhmYi5oCj4gKysrIGIvaW5jbHVk
+ZS92aWRlby9zMWQxM3h4eGZiLmgKPiBAQCAtMTQsNyArMTQsOCBAQAo+ICAjZGVmaW5lICAgICAg
+ICBTMUQxM1hYWEZCX0gKPgo+ICAjZGVmaW5lIFMxRF9QQUxFVFRFX1NJWkUgICAgICAgICAgICAg
+ICAyNTYKPiAtI2RlZmluZSBTMURfQ0hJUF9SRVYgICAgICAgICAgICAgICAgICAgNyAgICAgICAv
+KiBleHBlY3RlZCBjaGlwIHJldmlzaW9uIG51bWJlciBmb3IgczFkMTM4MDYgKi8KPiArI2RlZmlu
+ZSBTMUQxMzUwNl9DSElQX1JFViAgICAgICAgICAgICAgNCAgICAgICAvKiBleHBlY3RlZCBjaGlw
+IHJldmlzaW9uIG51bWJlciBmb3IgczFkMTM1MDYgKi8KPiArI2RlZmluZSBTMUQxMzgwNl9DSElQ
+X1JFViAgICAgICAgICAgICAgNyAgICAgICAvKiBleHBlY3RlZCBjaGlwIHJldmlzaW9uIG51bWJl
+ciBmb3IgczFkMTM4MDYgKi8KPiAgI2RlZmluZSBTMURfRkJJRCAgICAgICAgICAgICAgICAgICAg
+ICAgIlMxRDEzODA2Igo+ICAjZGVmaW5lIFMxRF9ERVZJQ0VOQU1FICAgICAgICAgICAgICAgICAi
+czFkMTM4MDZmYiIKPgo+Cj4KPgo+Cj4gLS0KPiBLcmlzdG9mZmVyIEVyaWNzb24gPGtyaXN0b2Zm
+ZXIuZXJpY3NvbkBnbWFpbC5jb20+Cj4KCgoKLS0gClRoaWJhdXQgVkFSRU5FCmh0dHA6Ly93d3cu
+cGFyaXNjLWxpbnV4Lm9yZy9+dmFyZW5ldC8KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBl
+bWFpbCBpcyBzcG9uc29yZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hh
+bGxlbmdlCkJ1aWxkIHRoZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1v
+YmxpbiBTREsgJiB3aW4gZ3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdv
+IHRvIGFuIE9wZW4gU291cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9i
+bGluLWNvbnRlc3Qub3JnL3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVs
+IG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0
+cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2
+ZWwK

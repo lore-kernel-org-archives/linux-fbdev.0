@@ -1,27 +1,29 @@
-From: "Thibaut VARENE" <varenet@parisc-linux.org>
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Subject: Re: Allow more revisions in epson s1d13...
-	driver
-Date: Mon, 29 Sep 2008 17:03:22 +0200
-Message-ID: <7d01f9f00809290803x603491e9w52891e767eade471@mail.gmail.com>
+ driver
+Date: Mon, 29 Sep 2008 17:32:02 +0200
+Message-ID: <20080929173202.1edd25e0.kristoffer.ericson@gmail.com>
 References: <20080929154735.a7cc4a29.kristoffer.ericson@gmail.com>
+	<7d01f9f00809290803x603491e9w52891e767eade471@mail.gmail.com>
+	<Pine.LNX.4.64.0809291717510.24296@anakin>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <varenet@gmail.com>) id 1KkKHd-0001ag-4K
+	(envelope-from <kristoffer.ericson@gmail.com>) id 1KkKjr-0003Z9-SO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Sep 2008 15:03:33 +0000
-Received: from mail-gx0-f19.google.com ([209.85.217.19])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KkKHX-0004UP-C9 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Sep 2008 15:03:33 +0000
-Received: by gxk12 with SMTP id 12so11445452gxk.10
+	Mon, 29 Sep 2008 15:32:43 +0000
+Received: from ey-out-1920.google.com ([74.125.78.146])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KkKjl-0004VC-Vi for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Sep 2008 15:32:43 +0000
+Received: by ey-out-1920.google.com with SMTP id 4so524752eyk.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 29 Sep 2008 08:03:24 -0700 (PDT)
-In-Reply-To: <20080929154735.a7cc4a29.kristoffer.ericson@gmail.com>
-Content-Disposition: inline
+	Mon, 29 Sep 2008 08:32:35 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0809291717510.24296@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,72 +33,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: akpm@linux-foundation.org, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: akpm@linux-foundation.org, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Thibaut VARENE <varenet@parisc-linux.org>
 
-T24gTW9uLCBTZXAgMjksIDIwMDggYXQgMzo0NyBQTSwgS3Jpc3RvZmZlciBFcmljc29uCjxrcmlz
-dG9mZmVyLmVyaWNzb25AZ21haWwuY29tPiB3cm90ZToKPiBBbmRyZXcsCj4KPiBJJ3ZlIGJlZW4g
-dHJ5aW5nIHRvIGdldCBzb21lb25lcyBhdHRlbnRpb24gdG8gdGhpcyBwYXRjaC4gQ3VycmVudGx5
-IHRoZQo+IGZpbGUgaW4gcXVlc3Rpb24gaXMgd2l0aG91dCBtYWludGFpbmVyLgo+IEl2ZSBob3dl
-dmVyIHRhbGtlZCB0byBBdXRob3IgVGhpYWJhdXQgVmFyZW5lIGFuZCBhZGFwdGVkIGFjY29yZGlu
-Zwo+IHRvIGhpcyBzdWdnZXN0aW9ucyAoaGUncyBjYydlZCBpbiB0aGlzIG1haWwpLgoKVGhpcyBw
-YXRjaCBpcyBhIEFjayBmcm9tIG15IHNpZGUsIHNhdmUgbWF5YmUgZm9yIGEgdGlueSBuaXRwaWNr
-IG9uIHRoZQpmYWN0IHRoYXQgSSB0aGluayBzMWQxM3h4eGZiX3JldmlzaW9ucyBzaG91bGQgYmUg
-X19kZXZpbml0ZGF0YSwgYnV0CmRvaW5nIHNvIHNlZW1zIHRvIHRyaWdnZXIgY29tcGlsZSBpc3N1
-ZXMuIEhhdmVuJ3QgaGFkIHRpbWUgeWV0IHRvIGRpZwp0aGF0IG91dC4KCj4gU2lnbmVkLW9mZi1i
-eTogS3Jpc3RvZmZlciBFcmljc29uIDxLcmlzdG9mZmVyLkVyaWNzb25AZ21haWwuY29tPgoKQWNr
-ZWQtYnk6IFRoaWJhdXQgVmFyw6huZSA8dmFyZW5ldEBwYXJpc2MtbGludXgub3JnPgoKPiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy92aWRlby9zMWQxM3h4eGZiLmMgIGIvZHJpdmVycy92aWRlby9zMWQx
-M3h4eGZiLmMKPiBpbmRleCBiODI5ZGM3Li5jNjc0OTQ5IDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMv
-dmlkZW8vczFkMTN4eHhmYi5jCj4gKysrIGIvZHJpdmVycy92aWRlby9zMWQxM3h4eGZiLmMKPiBA
-QCAtNTAsNiArNTAsMTEgQEAKPiAgI2RlZmluZSBkYmcoZm10LCBhcmdzLi4uKSBkbyB7IH0gd2hp
-bGUgKDApCj4gICNlbmRpZgo+Cj4gK3N0YXRpYyBjb25zdCBpbnQgczFkMTN4eHhmYl9yZXZpc2lv
-bnNbXSA9IHsKPiArICAgICAgIFMxRDEzNTA2X0NISVBfUkVWLC8qIFJldi40IG9uIEhQIEpvcm5h
-ZGEgN3h4IFMxRDEzNTA2ICovCj4gKyAgICAgICBTMUQxMzgwNl9DSElQX1JFViAvKiBSZXYuNyBv
-biAuLiAqLwo+ICt9Owo+ICsKPiAgLyoKPiAgKiBIZXJlIHdlIGRlZmluZSB0aGUgZGVmYXVsdCBz
-dHJ1Y3QgZmJfZml4X3NjcmVlbmluZm8KPiAgKi8KPiBAQCAtNTM4LDYgKzU0Myw3IEBAIHMxZDEz
-eHh4ZmJfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPiAgICAgICAgc3RydWN0
-IGZiX2luZm8gKmluZm87Cj4gICAgICAgIHN0cnVjdCBzMWQxM3h4eGZiX3BkYXRhICpwZGF0YSA9
-IE5VTEw7Cj4gICAgICAgIGludCByZXQgPSAwOwo+ICsgICAgICAgaW50IGk7Cj4gICAgICAgIHU4
-IHJldmlzaW9uOwo+Cj4gICAgICAgIGRiZygicHJvYmUgY2FsbGVkOiBkZXZpY2UgaXMgJXBcbiIs
-IHBkZXYpOwo+IEBAIC02MDcsMTAgKzYxMywxOSBAQCBzMWQxM3h4eGZiX3Byb2JlKHN0cnVjdCBw
-bGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gICAgICAgICAgICAgICAgZ290byBiYWlsOwo+ICAgICAg
-ICB9Cj4KPiAtICAgICAgIHJldmlzaW9uID0gczFkMTN4eHhmYl9yZWFkcmVnKGRlZmF1bHRfcGFy
-LCBTMURSRUdfUkVWX0NPREUpOwo+IC0gICAgICAgaWYgKChyZXZpc2lvbiA+PiAyKSAhPSBTMURf
-Q0hJUF9SRVYpIHsKPiAtICAgICAgICAgICAgICAgcHJpbnRrKEtFUk5fSU5GTyBQRlggImNoaXAg
-bm90IGZvdW5kOiAlaVxuIiwgKHJldmlzaW9uID4+IDIpKTsKPiAtICAgICAgICAgICAgICAgcmV0
-ID0gLUVOT0RFVjsKPiArICAgICAgIHJldmlzaW9uID0gczFkMTN4eHhmYl9yZWFkcmVnKGRlZmF1
-bHRfcGFyLCBTMURSRUdfUkVWX0NPREUpID4+IDI7Cj4gKwo+ICsgICAgICAgcmV0ID0gLUVOT0RF
-VjsKPiArCj4gKyAgICAgICBmb3IgKGkgPSAwOyBpIDwgQVJSQVlfU0laRShzMWQxM3h4eGZiX3Jl
-dmlzaW9ucyk7IGkrKykgewo+ICsgICAgICAgICAgICAgICBpZiAocmV2aXNpb24gPT0gczFkMTN4
-eHhmYl9yZXZpc2lvbnNbaV0pCj4gKyAgICAgICAgICAgICAgICAgICAgICAgcmV0ID0gMDsKPiAr
-ICAgICAgIH0KPiArCj4gKyAgICAgICBpZiAoIXJldCkKPiArICAgICAgICAgICAgICAgcHJpbnRr
-KEtFUk5fSU5GTyBQRlggImNoaXAgcmV2aXNpb24gJWlcbiIsIChyZXZpc2lvbikpOwo+ICsgICAg
-ICAgZWxzZSB7Cj4gKyAgICAgICAgICAgICAgIHByaW50ayhLRVJOX0lORk8gUEZYICJ1bmtub3du
-IGNoaXAgcmV2aXNpb24gJWlcbiIsIChyZXZpc2lvbikpOwo+ICAgICAgICAgICAgICAgIGdvdG8g
-YmFpbDsKPiAgICAgICAgfQo+Cj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vczFkMTN4eHhm
-Yi5oIGIvaW5jbHVkZS92aWRlby9zMWQxM3h4eGZiLmgKPiBpbmRleCBjOTlkMjYxLi5mZTQxYjg0
-IDEwMDY0NAo+IC0tLSBhL2luY2x1ZGUvdmlkZW8vczFkMTN4eHhmYi5oCj4gKysrIGIvaW5jbHVk
-ZS92aWRlby9zMWQxM3h4eGZiLmgKPiBAQCAtMTQsNyArMTQsOCBAQAo+ICAjZGVmaW5lICAgICAg
-ICBTMUQxM1hYWEZCX0gKPgo+ICAjZGVmaW5lIFMxRF9QQUxFVFRFX1NJWkUgICAgICAgICAgICAg
-ICAyNTYKPiAtI2RlZmluZSBTMURfQ0hJUF9SRVYgICAgICAgICAgICAgICAgICAgNyAgICAgICAv
-KiBleHBlY3RlZCBjaGlwIHJldmlzaW9uIG51bWJlciBmb3IgczFkMTM4MDYgKi8KPiArI2RlZmlu
-ZSBTMUQxMzUwNl9DSElQX1JFViAgICAgICAgICAgICAgNCAgICAgICAvKiBleHBlY3RlZCBjaGlw
-IHJldmlzaW9uIG51bWJlciBmb3IgczFkMTM1MDYgKi8KPiArI2RlZmluZSBTMUQxMzgwNl9DSElQ
-X1JFViAgICAgICAgICAgICAgNyAgICAgICAvKiBleHBlY3RlZCBjaGlwIHJldmlzaW9uIG51bWJl
-ciBmb3IgczFkMTM4MDYgKi8KPiAgI2RlZmluZSBTMURfRkJJRCAgICAgICAgICAgICAgICAgICAg
-ICAgIlMxRDEzODA2Igo+ICAjZGVmaW5lIFMxRF9ERVZJQ0VOQU1FICAgICAgICAgICAgICAgICAi
-czFkMTM4MDZmYiIKPgo+Cj4KPgo+Cj4gLS0KPiBLcmlzdG9mZmVyIEVyaWNzb24gPGtyaXN0b2Zm
-ZXIuZXJpY3NvbkBnbWFpbC5jb20+Cj4KCgoKLS0gClRoaWJhdXQgVkFSRU5FCmh0dHA6Ly93d3cu
-cGFyaXNjLWxpbnV4Lm9yZy9+dmFyZW5ldC8KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpUaGlzIFNGLk5ldCBl
-bWFpbCBpcyBzcG9uc29yZWQgYnkgdGhlIE1vYmxpbiBZb3VyIE1vdmUgRGV2ZWxvcGVyJ3MgY2hh
-bGxlbmdlCkJ1aWxkIHRoZSBjb29sZXN0IExpbnV4IGJhc2VkIGFwcGxpY2F0aW9ucyB3aXRoIE1v
-YmxpbiBTREsgJiB3aW4gZ3JlYXQgcHJpemVzCkdyYW5kIHByaXplIGlzIGEgdHJpcCBmb3IgdHdv
-IHRvIGFuIE9wZW4gU291cmNlIGV2ZW50IGFueXdoZXJlIGluIHRoZSB3b3JsZApodHRwOi8vbW9i
-bGluLWNvbnRlc3Qub3JnL3JlZGlyZWN0LnBocD9iYW5uZXJfaWQ9MTAwJnVybD0vCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVs
-IG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0
-cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2
-ZWwK
+On Mon, 29 Sep 2008 17:18:26 +0200 (CEST)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+
+> On Mon, 29 Sep 2008, Thibaut VARENE wrote:
+> > On Mon, Sep 29, 2008 at 3:47 PM, Kristoffer Ericson
+> > <kristoffer.ericson@gmail.com> wrote:
+> > > I've been trying to get someones attention to this patch. Currently the
+> > > file in question is without maintainer.
+> > > Ive however talked to Author Thiabaut Varene and adapted according
+> > > to his suggestions (he's cc'ed in this mail).
+> > 
+> > This patch is a Ack from my side, save maybe for a tiny nitpick on the
+> > fact that I think s1d13xxxfb_revisions should be __devinitdata, but
+> > doing so seems to trigger compile issues. Haven't had time yet to dig
+> > that out.
+> 
+> > > +static const int s1d13xxxfb_revisions[] = {
+> > > +       S1D13506_CHIP_REV,/* Rev.4 on HP Jornada 7xx S1D13506 */
+> > > +       S1D13806_CHIP_REV /* Rev.7 on .. */
+> > > +};
+> 
+> Does the compile issue go away if you use __devinitconst instead of
+> __devinitdata?
+> 
+
+Yes, thanks for clearing that up. Going to resend with fixed also adding the ack.
+
+
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+
+
+-- 
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

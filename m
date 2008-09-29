@@ -1,27 +1,29 @@
-From: "Alex Deucher" <alexdeucher@gmail.com>
-Subject: Re: RV5|6 support
-Date: Sat, 27 Sep 2008 10:45:47 -0400
-Message-ID: <a728f9f90809270745v5c93a93bmf96dd4feaa40adf1@mail.gmail.com>
-References: <20080927113021.GA4211@aragorn.home.lxtec.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Allow more revisions in epson s1d13...
+	driver
+Date: Mon, 29 Sep 2008 17:18:26 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0809291717510.24296@anakin>
+References: <20080929154735.a7cc4a29.kristoffer.ericson@gmail.com>
+	<7d01f9f00809290803x603491e9w52891e767eade471@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <alexdeucher@gmail.com>) id 1Kjb3T-0002Cf-Fw
+	(envelope-from <geert@linux-m68k.org>) id 1KkKi8-0007Zv-9v
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Sep 2008 14:45:55 +0000
-Received: from nf-out-0910.google.com ([64.233.182.190])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Kjb3O-0004tH-NC for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Sep 2008 14:45:55 +0000
-Received: by nf-out-0910.google.com with SMTP id g16so602208nfd.2
+	Mon, 29 Sep 2008 15:30:56 +0000
+Received: from yergi.telenet-ops.be ([195.130.132.36])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KkKhz-0004Pa-Lg for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 29 Sep 2008 15:30:56 +0000
+Received: from edna.telenet-ops.be (unknown [195.130.132.58])
+	by yergi.telenet-ops.be (Postfix) with ESMTP id 9C7605CB450
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 27 Sep 2008 07:45:47 -0700 (PDT)
-In-Reply-To: <20080927113021.GA4211@aragorn.home.lxtec.de>
-Content-Disposition: inline
+	Mon, 29 Sep 2008 17:19:01 +0200 (CEST)
+In-Reply-To: <7d01f9f00809290803x603491e9w52891e767eade471@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,20 +33,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Thibaut VARENE <varenet@parisc-linux.org>
+Cc: akpm@linux-foundation.org, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, Sep 27, 2008 at 7:30 AM, Elimar Riesebieter <riesebie@lxtec.de> wrote:
-> Hi all,
->
-> is there support for ATI RV5* RV6* (RV670) chips with radeonfb?
-> Where can I find a patch to support RV670?
+On Mon, 29 Sep 2008, Thibaut VARENE wrote:
+> On Mon, Sep 29, 2008 at 3:47 PM, Kristoffer Ericson
+> <kristoffer.ericson@gmail.com> wrote:
+> > I've been trying to get someones attention to this patch. Currently the
+> > file in question is without maintainer.
+> > Ive however talked to Author Thiabaut Varene and adapted according
+> > to his suggestions (he's cc'ed in this mail).
+> 
+> This patch is a Ack from my side, save maybe for a tiny nitpick on the
+> fact that I think s1d13xxxfb_revisions should be __devinitdata, but
+> doing so seems to trigger compile issues. Haven't had time yet to dig
+> that out.
 
-There is not.  If you need kernel fb support for newer asics, your
-best bet is the new drm modesetting stuff.  It provides fb interfaces.
-http://airlied.livejournal.com/62269.html
-http://cgit.freedesktop.org/mesa/drm/log/?h=modesetting-gem
+> > +static const int s1d13xxxfb_revisions[] = {
+> > +       S1D13506_CHIP_REV,/* Rev.4 on HP Jornada 7xx S1D13506 */
+> > +       S1D13806_CHIP_REV /* Rev.7 on .. */
+> > +};
 
-Alex
+Does the compile issue go away if you use __devinitconst instead of
+__devinitdata?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

@@ -1,49 +1,64 @@
-From: Ian Molton <spyro@f2s.com>
-Subject: Re: [RESEND][PATCH 1/2] fbdev: add new TMIO
-	framebuffer driver
-Date: Tue, 30 Sep 2008 15:37:26 +0100
-Message-ID: <48E239A6.5080405@f2s.com>
-References: <1222763910-22816-1-git-send-email-dbaryshkov@gmail.com>
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH] matroxfb: Support G200eV chip
+Date: Wed, 1 Oct 2008 17:21:37 -0700
+Message-ID: <20081002002136.GJ10750@tree.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753382AbYJBAQd@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <spyro@f2s.com>) id 1KkgLh-0000yz-Pd
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Sep 2008 14:37:13 +0000
-Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KkgLd-0007qU-8B for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Sep 2008 14:37:13 +0000
-In-Reply-To: <1222763910-22816-1-git-send-email-dbaryshkov@gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Samuel Ortiz <sameo@openedhand.com>, linux-fbdev-devel@lists.sourceforge.net
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Dmitry Baryshkov wrote:
-> Add driver for TMIO framebuffer cells as found e.g. in Toshiba TC6393XB
-> chips.
-> 
-> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Support the Matrox G200eV chip, based on timings that I found in the
+X.org matrox driver.
 
-On the grounds that this wont hurt any current e-series platforms, Go 
-for it. I havent checked the code, but Im ok with it.
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-Acked-by: Ian Molton <spyro@f2s.com>
+ drivers/video/matrox/matroxfb_base.c |    9 +++++++++
+ include/linux/pci_ids.h              |    1 +
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index c021362..8e7a275 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -1453,6 +1453,13 @@ static struct board {
+ 		MGA_G100,
+ 		&vbG100,
+ 		"MGA-G100 (AGP)"},
++	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,	0xFF,
++		0,			0,
++		DEVF_G200,
++		230000,
++		MGA_G200,
++		&vbG200,
++		"MGA-G200eV (PCI)"},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,	0xFF,
+ 		0,			0,
+ 		DEVF_G200,
+@@ -2118,6 +2125,8 @@ static struct pci_device_id matroxfb_devices[] = {
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G100_AGP,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
++	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,
++		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_AGP,
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index f1624b3..6260fab 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -577,6 +577,7 @@
+ #define PCI_DEVICE_ID_MATROX_G200_PCI	0x0520
+ #define PCI_DEVICE_ID_MATROX_G200_AGP	0x0521
+ #define	PCI_DEVICE_ID_MATROX_G400	0x0525
++#define	PCI_DEVICE_ID_MATROX_G200EV_PCI	0x0530
+ #define PCI_DEVICE_ID_MATROX_G550	0x2527
+ #define PCI_DEVICE_ID_MATROX_VIA	0x4536
+ 

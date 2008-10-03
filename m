@@ -1,91 +1,121 @@
-From: krzysztof.h1@poczta.fm
-Subject: Re: [Linux-fbdev-devel] [PATCH] matroxfb: Support G200eV chip
-Date: 02 Oct 2008 11:29:33 +0200
-Message-ID: <20081002092933.2EFC4199B267@f14.poczta.interia.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v3] fbdev: ignore VESA modes if framebuffer does not
+ support them
+Date: Thu, 2 Oct 2008 23:40:11 -0700
+Message-ID: <20081002234011.51ad28b1.akpm@linux-foundation.org>
+References: <20080928125414.GA27703@spock.one.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754017AbYJBJ3s@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755294AbYJCGlH@vger.kernel.org>
+In-Reply-To: <20080928125414.GA27703@spock.one.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/plain; charset="us-ascii"
-To: "djwong@us.ibm.com" <djwong@us.ibm.com>, Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: spock@gentoo.org
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, krzysztof.h1@poczta.fm, bonbons@linux-vserver.org, hpa@zytor.com
 
-> Support the Matrox G200eV chip, based on timings that I found in the
-> X.org matrox driver.
+On Sun, 28 Sep 2008 14:54:15 +0200 Michal Januszewski <spock@gentoo.org> wrote:
+
+> Currently, it is possible to set a graphics VESA mode at boot time via
+> the vga= parameter even when no framebuffer driver supporting this is
+> configured.  This could lead to the system booting with a black screen,
+> without a usable console.
 > 
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> Fix this problem by only allowing to set graphics modes at boot time
+> if a supporting framebuffer driver is configured.
+> 
+> Signed-off-by: Michal Januszewski <spock@gentoo.org>
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 > ---
+> This version of the patch replaces the FB_SUPPORTS_BOOT_VESA macro from
+> screen-info.h with a config option in drivers/video/Kconfig.
 > 
-
-Is the new chip requires some changes in handling (e.g. diffrent clock ranges/setting, etc)?
-There is nothing about timings in the patch (aside 230MHz).
-
-Kind regards,
-Krzysztof
-
-
->  drivers/video/matrox/matroxfb_base.c |    9 +++++++++
->  include/linux/pci_ids.h              |    1 +
->  2 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/matrox/matroxfb_base.c
-> b/drivers/video/matrox/matroxfb_base.c
-> index c021362..8e7a275 100644
-> --- a/drivers/video/matrox/matroxfb_base.c
-> +++ b/drivers/video/matrox/matroxfb_base.c
-> @@ -1453,6 +1453,13 @@ static struct board {
->  		MGA_G100,
->  		&vbG100,
->  		"MGA-G100 (AGP)"},
-> +	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,	0xFF,
-> +		0,			0,
-> +		DEVF_G200,
-> +		230000,
-> +		MGA_G200,
-> +		&vbG200,
-> +		"MGA-G200eV (PCI)"},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,	0xFF,
->  		0,			0,
->  		DEVF_G200,
-> @@ -2118,6 +2125,8 @@ static struct pci_device_id matroxfb_devices[] = {
->  		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G100_AGP,
->  		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
-> +	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,
-> +		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,
->  		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_AGP,
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index f1624b3..6260fab 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -577,6 +577,7 @@
->  #define PCI_DEVICE_ID_MATROX_G200_PCI	0x0520
->  #define PCI_DEVICE_ID_MATROX_G200_AGP	0x0521
->  #define	PCI_DEVICE_ID_MATROX_G400	0x0525
-> +#define	PCI_DEVICE_ID_MATROX_G200EV_PCI	0x0530
->  #define PCI_DEVICE_ID_MATROX_G550	0x2527
->  #define PCI_DEVICE_ID_MATROX_VIA	0x4536
+> diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
+> index 401ad99..47e5080 100644
+> --- a/arch/x86/boot/video-vesa.c
+> +++ b/arch/x86/boot/video-vesa.c
+> @@ -88,14 +88,11 @@ static int vesa_probe(void)
+>  			   (vminfo.memory_layout == 4 ||
+>  			    vminfo.memory_layout == 6) &&
+>  			   vminfo.memory_planes == 1) {
+> -#ifdef CONFIG_FB
+> +#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
+>  			/* Graphics mode, color, linear frame buffer
+>  			   supported.  Only register the mode if
+>  			   if framebuffer is configured, however,
+> -			   otherwise the user will be left without a screen.
+> -			   We don't require CONFIG_FB_VESA, however, since
+> -			   some of the other framebuffer drivers can use
+> -			   this mode-setting, too. */
+> +			   otherwise the user will be left without a screen. */
+>  			mi = GET_HEAP(struct mode_info, 1);
+>  			mi->mode = mode + VIDEO_FIRST_VESA;
+>  			mi->depth = vminfo.bpp;
+> @@ -133,10 +130,12 @@ static int vesa_set_mode(struct mode_info *mode)
+>  	if ((vminfo.mode_attr & 0x15) == 0x05) {
+>  		/* It's a supported text mode */
+>  		is_graphic = 0;
+> +#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
+>  	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
+>  		/* It's a graphics mode with linear frame buffer */
+>  		is_graphic = 1;
+>  		vesa_mode |= 0x4000; /* Request linear frame buffer */
+> +#endif
+>  	} else {
+>  		return -1;	/* Invalid mode */
+>  	}
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 70d135e..651249d 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -76,6 +76,14 @@ config FB_DDC
+>         select I2C
+>         default n
 >  
-> 
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's
-> challenge
-> Build the coolest Linux based applications with Moblin SDK & win great
-> prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the
-> world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
-> 
+> +config FB_BOOT_VESA_SUPPORT
+> +	bool
+> +	depends on FB
+> +	default n
+> +	---help---
+> +	  If true, at least one selected framebuffer driver can take advantage
+> +	  of VESA video modes set at an early boot stage via the vga= parameter.
+> +
+>  config FB_CFB_FILLRECT
+>  	tristate
+>  	depends on FB
+> @@ -679,6 +687,7 @@ config FB_VESA
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+>  	select VIDEO_SELECT
+> +	select FB_BOOT_VESA_SUPPORT
+>  	help
+>  	  This is the frame buffer device driver for generic VESA 2.0
+>  	  compliant graphic cards. The older VESA 1.2 cards are not supported.
+> @@ -702,6 +711,7 @@ config FB_IMAC
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> +	select FB_BOOT_VESA_SUPPORT
+>  	help
+>  	  This is the frame buffer device driver for the Intel-based Macintosh
+>  
+> @@ -1124,6 +1134,7 @@ config FB_INTEL
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> +	select FB_BOOT_VESA_SUPPORT
+>  	help
+>  	  This driver supports the on-board graphics built in to the Intel
+>            830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.
+> @@ -1476,6 +1487,7 @@ config FB_SIS
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> +	select FB_BOOT_VESA_SUPPORT
+>  	help
+>  	  This is the frame buffer device driver for the SiS 300, 315, 330
+>  	  and 340 series as well as XGI V3XT, V5, V8, Z7 graphics chipsets.
 
-
-----------------------------------------------------------------------
-Zapytaj o Milosc, Prace, Zdrowie, Rodzine ...
-Sprawdz >> http://link.interia.pl/f1f27 
+-mm's efifb-imacfb-consolidation-hardware-support.patch removed FB_IMAC
+and moved it into FB_EDD.  But your patch changes FB_IMAC and not
+FB_EDD, so I don't know what needs to be done here.

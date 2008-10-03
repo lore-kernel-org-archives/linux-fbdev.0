@@ -1,121 +1,84 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3] fbdev: ignore VESA modes if framebuffer does not
- support them
-Date: Thu, 2 Oct 2008 23:40:11 -0700
-Message-ID: <20081002234011.51ad28b1.akpm@linux-foundation.org>
-References: <20080928125414.GA27703@spock.one.pl>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Subject: Re: [PATCH] OMAP 2/3 V4L2 display driver on video planes
+Date: Fri, 3 Oct 2008 16:33:43 +0200
+Message-ID: <200810031633.43418.hverkuil@xs4all.nl>
+References: <hardik.shah@ti.com> <1221663942-7160-1-git-send-email-hardik.shah@ti.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755294AbYJCGlH@vger.kernel.org>
-In-Reply-To: <20080928125414.GA27703@spock.one.pl>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1221663942-7160-1-git-send-email-hardik.shah@ti.com>
+Content-Disposition: inline
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: spock@gentoo.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, krzysztof.h1@poczta.fm, bonbons@linux-vserver.org, hpa@zytor.com
+To: video4linux-list@redhat.com
+Cc: Hardik Shah <hardik.shah@ti.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 28 Sep 2008 14:54:15 +0200 Michal Januszewski <spock@gentoo.org> wrote:
+On Wednesday 17 September 2008 17:05:42 Hardik Shah wrote:
+> From: Vaibhav Hiremath <hvaibhav@ti.com>
+>
+> OMAP 2/3 V4L2 display driver sits on top of DSS library
+> and uses TV overlay and 2 video pipelines (video1 and video2)
+> to display image on TV. It exposes 2 V4L2 nodes for user
+> interface.
+> It supports standard V4L2 ioctls.
+>
+> Signed-off-by: Brijesh Jadav <brijesh.j@ti.com>
+> 		Hari Nagalla <hnagalla@ti.com>
+> 		Hardik Shah <hardik.shah@ti.com>
+> 		Manju Hadli <mrh@ti.com>
+> 		R Sivaraj <sivaraj@ti.com>
+> 		Vaibhav Hiremath <hvaibhav@ti.com>
 
-> Currently, it is possible to set a graphics VESA mode at boot time via
-> the vga= parameter even when no framebuffer driver supporting this is
-> configured.  This could lead to the system booting with a black screen,
-> without a usable console.
-> 
-> Fix this problem by only allowing to set graphics modes at boot time
-> if a supporting framebuffer driver is configured.
-> 
-> Signed-off-by: Michal Januszewski <spock@gentoo.org>
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+I've taken a quick look and I have a two main comments:
+
+1) Please use video_ioctl2 rather than setting up your own ioctl 
+callback. New drivers should use it.
+
+2) Can you describe what the non-standard v4l2 ioctls are used for? I 
+suspect that some of these can be done differently. Something like a 
+chromakey is already available in v4l2 (through VIDIOC_G/S_FBUF and 
+VIDIOC_G/S_FMT), things like mirror is available as a control, and 
+rotation should perhaps be a control as well. Ditto for background 
+color. These are just ideas, it depends on how it is used exactly.
+
+3) Some of the lines are broken up rather badly probably to respect the 
+80 column maximum. Note that the 80 column maximum is a recommendation, 
+and that readability is more important. So IMHO it's better to have a 
+slightly longer line and break it up at a more logical place. However, 
+switching to video_ioctl2 will automatically reduce the indentation, so 
+this might not be that much of an issue anymore.
+
+It is possible to setup a mercurial repository on linuxtv.org? I thought 
+that Manju has an account by now. This is useful as well for all the 
+other omap camera patches. I've seen omap patches popping up all over 
+the place for the past six months (if not longer) but it needs to be a 
+bit more organized if you want it to be merged. Setting up v4l-dvb 
+repositories containing the new patches is a good way of streamlining 
+the process.
+
+Obviously the process is more complicated for you since the omap stuff 
+relies on various subsystems and platform code. Perhaps someone within 
+TI should be coordinating this?
+
+Regards,
+
+	Hans
+
 > ---
-> This version of the patch replaces the FB_SUPPORTS_BOOT_VESA macro from
-> screen-info.h with a config option in drivers/video/Kconfig.
-> 
-> diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-> index 401ad99..47e5080 100644
-> --- a/arch/x86/boot/video-vesa.c
-> +++ b/arch/x86/boot/video-vesa.c
-> @@ -88,14 +88,11 @@ static int vesa_probe(void)
->  			   (vminfo.memory_layout == 4 ||
->  			    vminfo.memory_layout == 6) &&
->  			   vminfo.memory_planes == 1) {
-> -#ifdef CONFIG_FB
-> +#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
->  			/* Graphics mode, color, linear frame buffer
->  			   supported.  Only register the mode if
->  			   if framebuffer is configured, however,
-> -			   otherwise the user will be left without a screen.
-> -			   We don't require CONFIG_FB_VESA, however, since
-> -			   some of the other framebuffer drivers can use
-> -			   this mode-setting, too. */
-> +			   otherwise the user will be left without a screen. */
->  			mi = GET_HEAP(struct mode_info, 1);
->  			mi->mode = mode + VIDEO_FIRST_VESA;
->  			mi->depth = vminfo.bpp;
-> @@ -133,10 +130,12 @@ static int vesa_set_mode(struct mode_info *mode)
->  	if ((vminfo.mode_attr & 0x15) == 0x05) {
->  		/* It's a supported text mode */
->  		is_graphic = 0;
-> +#ifdef CONFIG_FB_BOOT_VESA_SUPPORT
->  	} else if ((vminfo.mode_attr & 0x99) == 0x99) {
->  		/* It's a graphics mode with linear frame buffer */
->  		is_graphic = 1;
->  		vesa_mode |= 0x4000; /* Request linear frame buffer */
-> +#endif
->  	} else {
->  		return -1;	/* Invalid mode */
->  	}
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 70d135e..651249d 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -76,6 +76,14 @@ config FB_DDC
->         select I2C
->         default n
->  
-> +config FB_BOOT_VESA_SUPPORT
-> +	bool
-> +	depends on FB
-> +	default n
-> +	---help---
-> +	  If true, at least one selected framebuffer driver can take advantage
-> +	  of VESA video modes set at an early boot stage via the vga= parameter.
-> +
->  config FB_CFB_FILLRECT
->  	tristate
->  	depends on FB
-> @@ -679,6 +687,7 @@ config FB_VESA
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
->  	select VIDEO_SELECT
-> +	select FB_BOOT_VESA_SUPPORT
->  	help
->  	  This is the frame buffer device driver for generic VESA 2.0
->  	  compliant graphic cards. The older VESA 1.2 cards are not supported.
-> @@ -702,6 +711,7 @@ config FB_IMAC
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> +	select FB_BOOT_VESA_SUPPORT
->  	help
->  	  This is the frame buffer device driver for the Intel-based Macintosh
->  
-> @@ -1124,6 +1134,7 @@ config FB_INTEL
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> +	select FB_BOOT_VESA_SUPPORT
->  	help
->  	  This driver supports the on-board graphics built in to the Intel
->            830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.
-> @@ -1476,6 +1487,7 @@ config FB_SIS
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> +	select FB_BOOT_VESA_SUPPORT
->  	help
->  	  This is the frame buffer device driver for the SiS 300, 315, 330
->  	  and 340 series as well as XGI V3XT, V5, V8, Z7 graphics chipsets.
-
--mm's efifb-imacfb-consolidation-hardware-support.patch removed FB_IMAC
-and moved it into FB_EDD.  But your patch changes FB_IMAC and not
-FB_EDD, so I don't know what needs to be done here.
+>  drivers/media/video/Kconfig             |   10 +-
+>  drivers/media/video/Makefile            |    2 +
+>  drivers/media/video/omap/Kconfig        |   12 +
+>  drivers/media/video/omap/Makefile       |    2 +
+>  drivers/media/video/omap/omap_vout.c    | 3524
+> +++++++++++++++++++++++++++++++
+> drivers/media/video/omap/omap_voutdef.h |  196 ++
+>  drivers/media/video/omap/omap_voutlib.c |  283 +++
+>  drivers/media/video/omap/omap_voutlib.h |   34 +
+>  include/linux/omap_vout.h               |   60 +
+>  9 files changed, 4121 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/media/video/omap/omap_vout.c
+>  create mode 100644 drivers/media/video/omap/omap_voutdef.h
+>  create mode 100644 drivers/media/video/omap/omap_voutlib.c
+>  create mode 100644 drivers/media/video/omap/omap_voutlib.h
+>  create mode 100644 include/linux/omap_vout.h

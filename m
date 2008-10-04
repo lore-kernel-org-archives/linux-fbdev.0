@@ -1,75 +1,32 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Allow more revisions in epson s1d13...
-	driver
-Date: Mon, 29 Sep 2008 17:18:26 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0809291717510.24296@anakin>
-References: <20080929154735.a7cc4a29.kristoffer.ericson@gmail.com>
-	<7d01f9f00809290803x603491e9w52891e767eade471@mail.gmail.com>
+From: "Michal Januszewski" <michalj@gmail.com>
+Subject: Re: [PATCH v3] fbdev: ignore VESA modes if framebuffer does not support them
+Date: Sat, 4 Oct 2008 21:45:31 +0200
+Message-ID: <5d9b736f0810041245g4f05326sdf98e9d86472f874@mail.gmail.com>
+References: <20080928125414.GA27703@spock.one.pl>
+	 <20081002234011.51ad28b1.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@linux-m68k.org>) id 1KkKi8-0007Zv-9v
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Sep 2008 15:30:56 +0000
-Received: from yergi.telenet-ops.be ([195.130.132.36])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KkKhz-0004Pa-Lg for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Sep 2008 15:30:56 +0000
-Received: from edna.telenet-ops.be (unknown [195.130.132.58])
-	by yergi.telenet-ops.be (Postfix) with ESMTP id 9C7605CB450
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 29 Sep 2008 17:19:01 +0200 (CEST)
-In-Reply-To: <7d01f9f00809290803x603491e9w52891e767eade471@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Thibaut VARENE <varenet@parisc-linux.org>
-Cc: akpm@linux-foundation.org, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754725AbYJDTpr@vger.kernel.org>
+In-Reply-To: <20081002234011.51ad28b1.akpm@linux-foundation.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, krzysztof.h1@poczta.fm, bonbons@linux-vserver.org, hpa@zytor.com
 
-On Mon, 29 Sep 2008, Thibaut VARENE wrote:
-> On Mon, Sep 29, 2008 at 3:47 PM, Kristoffer Ericson
-> <kristoffer.ericson@gmail.com> wrote:
-> > I've been trying to get someones attention to this patch. Currently the
-> > file in question is without maintainer.
-> > Ive however talked to Author Thiabaut Varene and adapted according
-> > to his suggestions (he's cc'ed in this mail).
-> 
-> This patch is a Ack from my side, save maybe for a tiny nitpick on the
-> fact that I think s1d13xxxfb_revisions should be __devinitdata, but
-> doing so seems to trigger compile issues. Haven't had time yet to dig
-> that out.
+On Fri, Oct 3, 2008 at 08:40, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > +static const int s1d13xxxfb_revisions[] = {
-> > +       S1D13506_CHIP_REV,/* Rev.4 on HP Jornada 7xx S1D13506 */
-> > +       S1D13806_CHIP_REV /* Rev.7 on .. */
-> > +};
+> -mm's efifb-imacfb-consolidation-hardware-support.patch removed FB_IMAC
+> and moved it into FB_EDD.  But your patch changes FB_IMAC and not
+> FB_EDD, so I don't know what needs to be done here.
 
-Does the compile issue go away if you use __devinitconst instead of
-__devinitdata?
+I had a look at that patch and it looks like simply dropping the FB_IMAC
+part from my patch is correct (i.e. the version of
+fbdev-ignore-vesa-modes-if-framebuffer-does-not-support-them
+that is currently in -mm is fine).
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Best regards,
+-- 
+Michal Januszewski, Gentoo Linux Developer
+http://people.gentoo.org/spock

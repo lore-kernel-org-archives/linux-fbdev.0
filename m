@@ -1,64 +1,87 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] OMAP 2/3 V4L2 display driver on
- video planes
-Date: Mon, 6 Oct 2008 13:22:39 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0810061320170.9028@anakin>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB02D61074A6@dbde02.ent.ti.com>
+From: a a <batic62@yahoo.com>
+Subject: disableing screen saver
+Date: Tue, 7 Oct 2008 05:09:15 -0700 (PDT)
+Message-ID: <331533.68660.qm@web38101.mail.mud.yahoo.com>
+Reply-To: batic62@yahoo.com
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02D61074A6@dbde02.ent.ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: multipart/mixed; boundary="===============2524500762105581075=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <batic62@yahoo.com>) id 1KnD3Y-0001Gv-Jx
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 07 Oct 2008 13:56:56 +0000
+Received: from web38101.mail.mud.yahoo.com ([209.191.124.128])
+	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1KnD2a-0000OB-DQ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 07 Oct 2008 13:56:56 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+
+--===============2524500762105581075==
+Content-Type: multipart/alternative; boundary="0-844862507-1223381355=:68660"
+
+--0-844862507-1223381355=:68660
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hello all
+
+When we are in console of linux ( and not in X-Window)
+the console have screen saver ( that will blank the console after a
+period of time).
+
+How we can disable this screen saver ( of console frame buffer) ?
+
+Thanks
+=0A=0A=0A      Get your preferred Email name!=0ANow you can @ymail.com and =
+@rocketmail.com. =0Ahttp://mail.promotions.yahoo.com/newdomains/aa/
+--0-844862507-1223381355=:68660
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0" ><tr><td valign=3D"=
+top" style=3D"font: inherit;">Hello all<br><br>When we are in console of li=
+nux ( and not in X-Window)
+the console have screen saver ( that will blank the console after a
+period of time).<br><br>How we can disable this screen saver ( of console f=
+rame buffer) ?<br><br>Thanks<br></td></tr></table><br>=0A      <hr size=3D1=
+> <a href=3D"http://sg.rd.yahoo.com/aa/mail/domainchoice/mail/signature/*ht=
+tp://mail.promotions.yahoo.com/newdomains/aa/"> Get your new Email address!=
+ </a> <br>=0AGrab the Email name you&#39;ve always wanted before someone el=
+se does!
+--0-844862507-1223381355=:68660--
+
+
+--===============2524500762105581075==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: "Shah, Hardik" <hardik.shah@ti.com>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, "video4linux-list@redhat.com" <video4linux-list@redhat.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "Hadli, Manjunath" <mrh@ti.com>, Mauro Carvalho Chehab <mchehab@infradead.org>
+Content-Disposition: inline
 
-On Mon, 6 Oct 2008, Shah, Hardik wrote:
-> > -----Original Message-----
-> > From: Hans Verkuil [mailto:hverkuil@xs4all.nl]
-> > On Monday 06 October 2008 08:06:30 Shah, Hardik wrote:
-> > > > -----Original Message-----
-> > > > From: Mauro Carvalho Chehab [mailto:mchehab@infradead.org]
-> > > 4.  VIDIOC_S/G_OMAP2_COLORKEY:  Color keying allows the pixels with
-> > > the defined color on the video pipelines to be replaced with the
-> > > pixels on the graphics pipelines.  I believe similar feature must be
-> > > available on almost all next generation of video hardware. We can add
-> > > new ioctl for this feature in V4L2 framework. I think VIDIOC_S_FBUF
-> > > ioctl is used for setting up the buffer parameters on per buffer
-> > > basis.  So IMHO this ioctl is not a natural fit for the above
-> > > functionality. Please provide your comments on same.
-> > 
-> > Do I understand correctly that if the color in the *video* streams
-> > matches the colorkey, then it is replaced by the color in the
-> > *framebuffer* (aka menu/overlay)? Usually it is the other way around:
-> > if the framebuffer (menu) has chromakey pixels, then those pixels are
-> > replaced by pixels from the video stream. That's what the current API
-> > does
-> [Shah, Hardik] This is a hardware provided feature. It can be both ways as
-> hardware supports both the features. It means replacing the graphics
-> pipelines pixels with video pipeline pixels and other way is also true.
-> When both graphics and video pipelines are going to the same output device
-> and when the colorkeying is enabled then the pixels of the video pipelines
-> of specific color are replaced by the pixels of the graphics pipeline.
-> This is done automatically done by the overlay manager aka compositor.
-> Graphics pipeline can be controlled by frame buffer interface or V4L2
-> interface.
-> In driver we only need to enable the color keying and state that whether
-> it is a source color keying or destination color keying along with the
-> color code.
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/
+--===============2524500762105581075==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-As video input usually contains noise: is it an exact color match, or a
-range? IIRC, I saw a similar feature on a different chip some years ago,
-and there the color key was a (YCbCr) range.
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--===============2524500762105581075==--

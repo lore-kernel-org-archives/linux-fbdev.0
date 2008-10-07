@@ -1,77 +1,47 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH] matroxfb: Support G200eV chip
-Date: Tue, 7 Oct 2008 23:04:58 +0200
-Message-ID: <20081007230458.286e187a.krzysztof.h1@poczta.fm>
-References: <20081002002136.GJ10750@tree.beaverton.ibm.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] OMAP 2/3 V4L2 display driver on
+ video planes
+Date: Tue, 7 Oct 2008 23:48:31 +0200
+Message-ID: <20081007234831.a7d8db49.krzysztof.h1@poczta.fm>
+References: <200810031633.43418.hverkuil@xs4all.nl>
+	<5A47E75E594F054BAF48C5E4FC4B92AB02D603E9FB@dbde02.ent.ti.com>
+	<20081005081931.1dfdd7b4@pedra.chehab.org>
+	<48E8ABA0.8070305@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753488AbYJGVDd@vger.kernel.org>
-In-Reply-To: <20081002002136.GJ10750@tree.beaverton.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <48E8ABA0.8070305@gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: djwong@us.ibm.com
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Robert William Fuller <hydrologiccycle@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, "video4linux-list@redhat.com" <video4linux-list@redhat.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 1 Oct 2008 17:21:37 -0700
-"Darrick J. Wong" <djwong@us.ibm.com> wrote:
+On Sun, 05 Oct 2008 07:57:20 -0400
+Robert William Fuller <hydrologiccycle@gmail.com> wrote:
 
-> Support the Matrox G200eV chip, based on timings that I found in the
-> X.org matrox driver.
 > 
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> ---
+> The 80 column rule is retarded.  None of this code needs to fit on punch 
+> cards, nor is it COBOL.  There are legitimate reasons to have lines 
+> longer than 80 columns.  No matter how simple a program is, it is likely 
+> to have an expression that is longer than 80 characters.  Most people's 
+> displays are wider than 80 columns these days.  Vertical real estate is 
+> at a greater premium than horizontal real estate these days with wider 
+> aspect ratio monitors, which better approximate the human field of 
+> vision.  Why make people scan more than one line for a single expression?
 > 
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+A printed page is still 80 column with very readable characters. 
+The human vision may be better approximated by wide screen 
+monitors but human reading vision not. That's why nobody publish
+a printed newspaper or a book in a "wide-page" format. Even more,
+one can hardly find a newspaper which has no columns (each line
+as wide as a whole page).
 
-
-
->  drivers/video/matrox/matroxfb_base.c |    9 +++++++++
->  include/linux/pci_ids.h              |    1 +
->  2 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
-> index c021362..8e7a275 100644
-> --- a/drivers/video/matrox/matroxfb_base.c
-> +++ b/drivers/video/matrox/matroxfb_base.c
-> @@ -1453,6 +1453,13 @@ static struct board {
->  		MGA_G100,
->  		&vbG100,
->  		"MGA-G100 (AGP)"},
-> +	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,	0xFF,
-> +		0,			0,
-> +		DEVF_G200,
-> +		230000,
-> +		MGA_G200,
-> +		&vbG200,
-> +		"MGA-G200eV (PCI)"},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,	0xFF,
->  		0,			0,
->  		DEVF_G200,
-> @@ -2118,6 +2125,8 @@ static struct pci_device_id matroxfb_devices[] = {
->  		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G100_AGP,
->  		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
-> +	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,
-> +		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,
->  		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
->  	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_AGP,
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index f1624b3..6260fab 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -577,6 +577,7 @@
->  #define PCI_DEVICE_ID_MATROX_G200_PCI	0x0520
->  #define PCI_DEVICE_ID_MATROX_G200_AGP	0x0521
->  #define	PCI_DEVICE_ID_MATROX_G400	0x0525
-> +#define	PCI_DEVICE_ID_MATROX_G200EV_PCI	0x0530
->  #define PCI_DEVICE_ID_MATROX_G550	0x2527
->  #define PCI_DEVICE_ID_MATROX_VIA	0x4536
->  
-> 
+My two cents,
+Krzysztof
 
 ----------------------------------------------------------------------
 Dzwon taniej na zagraniczne komorki!
 Sprawdz >> http://link.interia.pl/f1f26 
+

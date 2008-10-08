@@ -1,62 +1,67 @@
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: PATCH - New S1D1... Epson frambuffer maintainer
-Date: Wed, 8 Oct 2008 13:08:06 +0200
-Message-ID: <20081008130806.958423b3.kristoffer.ericson@gmail.com>
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 3/8] lcd: allow lcd device to
+	handle	mode change events
+Date: Wed, 8 Oct 2008 14:07:51 +0000 (UTC)
+Message-ID: <gciern$sc1$1@ger.gmane.org>
+References: <f17812d70808290026y39163cccy2d4b1fa3b30c8625@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755347AbYJHLIv@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, varenet@parisc-linux.org
-
-This is a multi-part message in MIME format.
-
---Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <glfd-linux-fbdev-devel@m.gmane.org>)
+	id 1KnZiC-00072i-Do for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Oct 2008 14:08:24 +0000
+Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1KnZhy-0007UL-Cy
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Oct 2008 14:08:24 +0000
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1KnZhp-0005YJ-64 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Oct 2008 14:08:01 +0000
+Received: from iap-pxy-mow1.siemens.ru ([212.248.25.26])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 08 Oct 2008 14:08:01 +0000
+Received: from dbaryshkov by iap-pxy-mow1.siemens.ru with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 08 Oct 2008 14:08:01 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
 
-I'm stepping up as maintainer for the Epson S1D13XXXFB driver
-since I have 2 platforms currently using it.
+Eric Miao wrote:
 
-Signed-off-by: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
-Acked-by: Thibaut Var_ne <varenet@parisc-linux.org>
+> Some LCD panels are capable of different resolutions, and is allowed to
+> change at run-time, so to make "struct lcd_device" to be able to handle
+> mode change events here.
+> 
+> Signed-off-by: Eric Miao <eric.miao@marvell.com>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8dae455..aed3ee5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1610,6 +1610,11 @@ P:	Christopher Hoover
- M:	ch@murgatroid.com, ch@hpl.hp.com
- S:	Maintained
- 
-+EPSON S1D13XXX FRAMEBUFFER DRIVER
-+P:	Kristoffer Ericson
-+M:	kristoffer.ericson@gmail.com
-+S:	Maintained
-+
- ETHEREXPRESS-16 NETWORK DRIVER
- P:	Philip Blundell
- M:	philb@gnu.org
-
+This patch broke a bit all existing fb drivers. At least you'll get a nice
+segfault on modechange, if any lcd driver w/o set_mode is registered.
+Please add a check for ld->ops->set_mode being non-NULL.
 
 -- 
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
+With best wishes
+Dmitry
 
---Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke
-Content-Type: application/octet-stream;
- name="epson-add-maintainer.patch"
-Content-Disposition: attachment;
- filename="epson-add-maintainer.patch"
-Content-Transfer-Encoding: base64
 
-ZGlmZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRBSU5FUlMKaW5kZXggOGRhZTQ1NS4uYWVk
-M2VlNSAxMDA2NDQKLS0tIGEvTUFJTlRBSU5FUlMKKysrIGIvTUFJTlRBSU5FUlMKQEAgLTE2MTAs
-NiArMTYxMCwxMSBAQCBQOglDaHJpc3RvcGhlciBIb292ZXIKIE06CWNoQG11cmdhdHJvaWQuY29t
-LCBjaEBocGwuaHAuY29tCiBTOglNYWludGFpbmVkCiAKK0VQU09OIFMxRDEzWFhYIEZSQU1FQlVG
-RkVSIERSSVZFUgorUDoJS3Jpc3RvZmZlciBFcmljc29uCitNOglrcmlzdG9mZmVyLmVyaWNzb25A
-Z21haWwuY29tCitTOglNYWludGFpbmVkCisKIEVUSEVSRVhQUkVTUy0xNiBORVRXT1JLIERSSVZF
-UgogUDoJUGhpbGlwIEJsdW5kZWxsCiBNOglwaGlsYkBnbnUub3JnCg==
 
---Multipart=_Wed__8_Oct_2008_13_08_06_+0200_r2eVRFw8uQuKY6ke--
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

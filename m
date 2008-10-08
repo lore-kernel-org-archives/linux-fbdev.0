@@ -1,24 +1,26 @@
 From: "Stefan Husemann" <shusemann@googlemail.com>
 Subject: Patch to support i854 with intelfb
-Date: Wed, 8 Oct 2008 21:00:59 +0200
-Message-ID: <f43011d0810081200v7ed6b3fbl7c60ce4197e95f3@mail.gmail.com>
+Date: Wed, 8 Oct 2008 21:13:28 +0200
+Message-ID: <f43011d0810081213h520c40dcw2369a1f387962c96@mail.gmail.com>
+References: <f43011d0810081200v7ed6b3fbl7c60ce4197e95f3@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_87661_13531805.1223492459579"
+	boundary="----=_Part_87775_13614149.1223493208329"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <shusemann@googlemail.com>) id 1KneHY-0007P1-5t
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <shusemann@googlemail.com>) id 1KneTf-0007NS-D6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Oct 2008 19:01:12 +0000
+	Wed, 08 Oct 2008 19:13:43 +0000
 Received: from mail-gx0-f19.google.com ([209.85.217.19])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KneHM-000554-MP for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Oct 2008 19:01:12 +0000
-Received: by gxk12 with SMTP id 12so9161226gxk.10
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KneTW-0001ZP-CE for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Oct 2008 19:13:43 +0000
+Received: by gxk12 with SMTP id 12so9182406gxk.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 08 Oct 2008 12:00:59 -0700 (PDT)
+	Wed, 08 Oct 2008 12:13:31 -0700 (PDT)
+In-Reply-To: <f43011d0810081200v7ed6b3fbl7c60ce4197e95f3@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,22 +32,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-------=_Part_87661_13531805.1223492459579
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_87662_73638.1223492459579"
-
-------=_Part_87662_73638.1223492459579
+------=_Part_87775_13614149.1223493208329
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
+Sorry! Again in plaintext:
+
 Hello,
 
-I attached a small and simple patch for intelfb to support Intel 854
-Chipset.
+I attached a small and simple patch for intelfb to support Intel 854 Chipset.
 
-We test and use the patch on a Thomson IP1101 IPTV-Box. On the VGA-Port we
-get a normal signal.
+We test and use the patch on a Thomson IP1101 IPTV-Box. On the
+VGA-Port we get a normal signal.
 
 Here is the link to the Mambux-Project: http://www.mambux.de
 
@@ -53,17 +52,7 @@ We hope that we find our patch later inside the Linux-Kernel ;-)
 
 Have an nice day
 
-------=_Part_87662_73638.1223492459579
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div dir="ltr">Hello,<br><br>I attached a small and simple patch for intelfb to support Intel 854 Chipset.<br><br>We test and use the patch on a Thomson IP1101 IPTV-Box. On the VGA-Port we get a normal signal.<br><br>
-Here is the link to the Mambux-Project: <a href="http://www.mambux.de/" target="_blank">http://www.mambux.de</a><br><br>We hope that we find our patch later inside the Linux-Kernel ;-)<br><br>Have an nice day</div>
-
-------=_Part_87662_73638.1223492459579--
-
-------=_Part_87661_13531805.1223492459579
+------=_Part_87775_13614149.1223493208329
 Content-Type: text/x-diff; name=i854_linux-2.6.26.5.patch
 Content-Transfer-Encoding: base64
 X-Attachment-Id: f_fm2bimj10
@@ -171,7 +160,7 @@ ZWZpbmUgUENJX0RFVklDRV9JRF9JTlRFTF84Mjg1NF9JRwkweDM1OGUKICNkZWZpbmUgUENJX0RF
 VklDRV9JRF9JTlRFTF84Mjg1NUdNX0hCCTB4MzU4MAogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lO
 VEVMXzgyODU1R01fSUcJMHgzNTgyCiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfSU5URUxfRTc1MjBf
 TUNICTB4MzU5MAo=
-------=_Part_87661_13531805.1223492459579
+------=_Part_87775_13614149.1223493208329
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -182,7 +171,7 @@ This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
-------=_Part_87661_13531805.1223492459579
+------=_Part_87775_13614149.1223493208329
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -193,4 +182,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-------=_Part_87661_13531805.1223492459579--
+------=_Part_87775_13614149.1223493208329--

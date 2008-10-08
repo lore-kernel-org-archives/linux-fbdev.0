@@ -1,26 +1,23 @@
-From: "Stefan Husemann" <shusemann@googlemail.com>
-Subject: Patch to support i854 with intelfb
-Date: Wed, 8 Oct 2008 21:13:28 +0200
-Message-ID: <f43011d0810081213h520c40dcw2369a1f387962c96@mail.gmail.com>
-References: <f43011d0810081200v7ed6b3fbl7c60ce4197e95f3@mail.gmail.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH] framebuffer: fix carminefb section
+	mismatch
+Date: Wed, 08 Oct 2008 14:20:49 -0700
+Message-ID: <48ED2431.40609@oracle.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_87775_13614149.1223493208329"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <shusemann@googlemail.com>) id 1KneTf-0007NS-D6
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <randy.dunlap@oracle.com>) id 1KngUc-0008Rq-Jf
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Oct 2008 19:13:43 +0000
-Received: from mail-gx0-f19.google.com ([209.85.217.19])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KneTW-0001ZP-CE for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Oct 2008 19:13:43 +0000
-Received: by gxk12 with SMTP id 12so9182406gxk.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 08 Oct 2008 12:13:31 -0700 (PDT)
-In-Reply-To: <f43011d0810081200v7ed6b3fbl7c60ce4197e95f3@mail.gmail.com>
+	Wed, 08 Oct 2008 21:22:50 +0000
+Received: from agminet01.oracle.com ([141.146.126.228])
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1KngUG-0003HV-HU
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Oct 2008 21:22:50 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,156 +27,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, akpm <akpm@linux-foundation.org>
+Cc: Sebastian Siewior <bigeasy@linutronix.de>
 
-------=_Part_87775_13614149.1223493208329
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Sorry! Again in plaintext:
+Could fix a dangerous problem since
+	info->fix = carminefb_fix;
+and info->fix can be used at any time later (in carmine_set_par()).
 
-Hello,
+WARNING: drivers/video/carminefb.o(.text+0x81b): Section mismatch in reference from the function alloc_carmine_fb() to the variable .devinit.data:carminefb_fix
+The function alloc_carmine_fb() references
+the variable __devinitdata carminefb_fix.
+This is often because alloc_carmine_fb lacks a __devinitdata 
+annotation or the annotation of carminefb_fix is wrong.
 
-I attached a small and simple patch for intelfb to support Intel 854 Chipset.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Sebastian Siewior <bigeasy@linutronix.de>
+---
+ drivers/video/carminefb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-We test and use the patch on a Thomson IP1101 IPTV-Box. On the
-VGA-Port we get a normal signal.
-
-Here is the link to the Mambux-Project: http://www.mambux.de
-
-We hope that we find our patch later inside the Linux-Kernel ;-)
-
-Have an nice day
-
-------=_Part_87775_13614149.1223493208329
-Content-Type: text/x-diff; name=i854_linux-2.6.26.5.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fm2bimj10
-Content-Disposition: attachment; filename=i854_linux-2.6.26.5.patch
-
-ZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL2NoYXIvYWdwL2ludGVsLWFncC5j
-IGxpbnV4LTIuNi4yNi41L2RyaXZlcnMvY2hhci9hZ3AvaW50ZWwtYWdwLmMKLS0tIGxpbnV4LTIu
-Ni4yNi41Lm9yaWcvZHJpdmVycy9jaGFyL2FncC9pbnRlbC1hZ3AuYwkyMDA4LTA5LTA4IDE5OjQw
-OjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUvZHJpdmVycy9jaGFyL2FncC9p
-bnRlbC1hZ3AuYwkyMDA4LTEwLTA4IDE0OjEyOjU5LjAwMDAwMDAwMCArMDIwMApAQCAtMjA3OCw2
-ICsyMDc4LDggQEAKIAl7IFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NDVHX0hCLCBQQ0lfREVWSUNF
-X0lEX0lOVEVMXzgyODQ1R19JRywgMCwgIjgzME0iLAogCQkmaW50ZWxfODQ1X2RyaXZlciwgJmlu
-dGVsXzgzMF9kcml2ZXIgfSwKIAl7IFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTBfSEIsIDAsIDAs
-ICJpODUwIiwgJmludGVsXzg1MF9kcml2ZXIsIE5VTEwgfSwKKwl7IFBDSV9ERVZJQ0VfSURfSU5U
-RUxfODI4NTRfSEIsIFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTRfSUcsIDAsICI4NTQiLAorCQkm
-aW50ZWxfODQ1X2RyaXZlciwgJmludGVsXzgzMF9kcml2ZXIgfSwKIAl7IFBDSV9ERVZJQ0VfSURf
-SU5URUxfODI4NTVQTV9IQiwgMCwgMCwgIjg1NVBNIiwgJmludGVsXzg0NV9kcml2ZXIsIE5VTEwg
-fSwKIAl7IFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTVHTV9IQiwgUENJX0RFVklDRV9JRF9JTlRF
-TF84Mjg1NUdNX0lHLCAwLCAiODU1R00iLAogCQkmaW50ZWxfODQ1X2RyaXZlciwgJmludGVsXzgz
-MF9kcml2ZXIgfSwKQEAgLTIyOTMsNiArMjI5NSw3IEBACiAJSUQoUENJX0RFVklDRV9JRF9JTlRF
-TF84Mjg0NV9IQiksCiAJSUQoUENJX0RFVklDRV9JRF9JTlRFTF84Mjg0NUdfSEIpLAogCUlEKFBD
-SV9ERVZJQ0VfSURfSU5URUxfODI4NTBfSEIpLAorCUlEKFBDSV9ERVZJQ0VfSURfSU5URUxfODI4
-NTRfSEIpLAogCUlEKFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTVQTV9IQiksCiAJSUQoUENJX0RF
-VklDRV9JRF9JTlRFTF84Mjg1NUdNX0hCKSwKIAlJRChQQ0lfREVWSUNFX0lEX0lOVEVMXzgyODYw
-X0hCKSwKZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL2NoYXIvZHJtL2RybV9w
-Y2lpZHMuaCBsaW51eC0yLjYuMjYuNS9kcml2ZXJzL2NoYXIvZHJtL2RybV9wY2lpZHMuaAotLS0g
-bGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL2NoYXIvZHJtL2RybV9wY2lpZHMuaAkyMDA4LTA5
-LTA4IDE5OjQwOjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUvZHJpdmVycy9j
-aGFyL2RybS9kcm1fcGNpaWRzLmgJMjAwOC0xMC0wOCAxNDoxNjowOS4wMDAwMDAwMDAgKzAyMDAK
-QEAgLTM1Myw2ICszNTMsNyBAQAogCXsweDgwODYsIDB4MjU2MiwgUENJX0FOWV9JRCwgUENJX0FO
-WV9JRCwgMCwgMCwgMH0sIFwKIAl7MHg4MDg2LCAweDM1ODIsIFBDSV9BTllfSUQsIFBDSV9BTllf
-SUQsIDAsIDAsIDB9LCBcCiAJezB4ODA4NiwgMHgyNTcyLCBQQ0lfQU5ZX0lELCBQQ0lfQU5ZX0lE
-LCAwLCAwLCAwfSwgXAorCXsweDgwODYsIDB4MzU4ZSwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwg
-MCwgMCwgMH0sIFwKIAl7MCwgMCwgMH0KIAogI2RlZmluZSBnYW1tYV9QQ0lfSURTIFwKQEAgLTQw
-OCw2ICs0MDksNyBAQAogCXsweDgwODYsIDB4MjlkMiwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwg
-MCwgMCwgMH0sIFwKIAl7MHg4MDg2LCAweDJhMDIsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAs
-IDAsIDB9LCBcCiAJezB4ODA4NiwgMHgyYTEyLCBQQ0lfQU5ZX0lELCBQQ0lfQU5ZX0lELCAwLCAw
-LCAwfSwgXAorCXsweDgwODYsIDB4MzU4ZSwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgMCwgMCwg
-MH0sIFwKIAl7MHg4MDg2LCAweDJhNDIsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAsIDAsIDB9
-LCBcCiAJezB4ODA4NiwgMHgyZTAyLCBQQ0lfQU5ZX0lELCBQQ0lfQU5ZX0lELCAwLCAwLCAwfSwg
-XAogCXsweDgwODYsIDB4MmUxMiwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgMCwgMCwgMH0sIFwK
-ZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50ZWxm
-YmRydi5jIGxpbnV4LTIuNi4yNi41L2RyaXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiZHJ2LmMK
-LS0tIGxpbnV4LTIuNi4yNi41Lm9yaWcvZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJkcnYu
-YwkyMDA4LTA5LTA4IDE5OjQwOjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUv
-ZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJkcnYuYwkyMDA4LTEwLTA4IDE0OjE3OjUwLjAw
-MDAwMDAwMCArMDIwMApAQCAtMTc5LDYgKzE3OSw3IEBACiAJeyBQQ0lfVkVORE9SX0lEX0lOVEVM
-LCBQQ0lfREVWSUNFX0lEX0lOVEVMXzg0NUcsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIFBDSV9D
-TEFTU19ESVNQTEFZX1ZHQSA8PCA4LCBJTlRFTEZCX0NMQVNTX01BU0ssIElOVEVMXzg0NUcgfSwK
-IAl7IFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxfODVYR00sIFBDSV9B
-TllfSUQsIFBDSV9BTllfSUQsIFBDSV9DTEFTU19ESVNQTEFZX1ZHQSA8PCA4LCBJTlRFTEZCX0NM
-QVNTX01BU0ssIElOVEVMXzg1WEdNIH0sCiAJeyBQQ0lfVkVORE9SX0lEX0lOVEVMLCBQQ0lfREVW
-SUNFX0lEX0lOVEVMXzg2NUcsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIFBDSV9DTEFTU19ESVNQ
-TEFZX1ZHQSA8PCA4LCBJTlRFTEZCX0NMQVNTX01BU0ssIElOVEVMXzg2NUcgfSwKKwl7IFBDSV9W
-RU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxfODU0LCBQQ0lfQU5ZX0lELCBQQ0lf
-QU5ZX0lELCBQQ0lfQ0xBU1NfRElTUExBWV9WR0EgPDwgOCwgSU5URUxGQl9DTEFTU19NQVNLLCBJ
-TlRFTF84NTQgfSwKIAl7IFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxf
-OTE1RywgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgUENJX0NMQVNTX0RJU1BMQVlfVkdBIDw8IDgs
-IElOVEVMRkJfQ0xBU1NfTUFTSywgSU5URUxfOTE1RyB9LAogCXsgUENJX1ZFTkRPUl9JRF9JTlRF
-TCwgUENJX0RFVklDRV9JRF9JTlRFTF85MTVHTSwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgUENJ
-X0NMQVNTX0RJU1BMQVlfVkdBIDw8IDgsIElOVEVMRkJfQ0xBU1NfTUFTSywgSU5URUxfOTE1R00g
-fSwKIAl7IFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxfOTQ1RywgUENJ
-X0FOWV9JRCwgUENJX0FOWV9JRCwgUENJX0NMQVNTX0RJU1BMQVlfVkdBIDw8IDgsIElOVEVMRkJf
-Q0xBU1NfTUFTSywgSU5URUxfOTQ1RyB9LApkaWZmIC11ciBsaW51eC0yLjYuMjYuNS5vcmlnL2Ry
-aXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiLmggbGludXgtMi42LjI2LjUvZHJpdmVycy92aWRl
-by9pbnRlbGZiL2ludGVsZmIuaAotLS0gbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL3ZpZGVv
-L2ludGVsZmIvaW50ZWxmYi5oCTIwMDgtMDktMDggMTk6NDA6MjAuMDAwMDAwMDAwICswMjAwCisr
-KyBsaW51eC0yLjYuMjYuNS9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50ZWxmYi5oCTIwMDgtMTAt
-MDggMTQ6MjA6MDguMDAwMDAwMDAwICswMjAwCkBAIC01Myw2ICs1Myw3IEBACiAjZGVmaW5lIFBD
-SV9ERVZJQ0VfSURfSU5URUxfODMwTQkweDM1NzcKICNkZWZpbmUgUENJX0RFVklDRV9JRF9JTlRF
-TF84NDVHCTB4MjU2MgogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzg1WEdNCTB4MzU4Mgor
-I2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzg1NAkJMHgzNThFCiAjZGVmaW5lIFBDSV9ERVZJ
-Q0VfSURfSU5URUxfODY1RwkweDI1NzIKICNkZWZpbmUgUENJX0RFVklDRV9JRF9JTlRFTF85MTVH
-CTB4MjU4MgogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzkxNUdNCTB4MjU5MgpAQCAtMTUz
-LDYgKzE1NCw3IEBACiAJSU5URUxfODVYR00sCiAJSU5URUxfODUyR00sCiAJSU5URUxfODUyR01F
-LAorCUlOVEVMXzg1NCwKIAlJTlRFTF84NTVHTSwKIAlJTlRFTF84NTVHTUUsCiAJSU5URUxfODY1
-RywKZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50
-ZWxmYmh3LmMgbGludXgtMi42LjI2LjUvZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJody5j
-Ci0tLSBsaW51eC0yLjYuMjYuNS5vcmlnL2RyaXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiaHcu
-YwkyMDA4LTA5LTA4IDE5OjQwOjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUv
-ZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJody5jCTIwMDgtMTAtMDggMTQ6MjM6MTcuMDAw
-MDAwMDAwICswMjAwCkBAIC04NCw2ICs4NCwxMSBAQAogCQlkaW5mby0+bW9iaWxlID0gMDsKIAkJ
-ZGluZm8tPnBsbF9pbmRleCA9IFBMTFNfSTh4eDsKIAkJcmV0dXJuIDA7CisJY2FzZSBQQ0lfREVW
-SUNFX0lEX0lOVEVMXzg1NDoKKwkJZGluZm8tPm1vYmlsZSA9IDE7CisJCWRpbmZvLT5uYW1lID0g
-IkludGVsKFIpIDg1NCI7CisJCWRpbmZvLT5jaGlwc2V0ID0gSU5URUxfODU0OworCQlyZXR1cm4g
-MDsKIAljYXNlIFBDSV9ERVZJQ0VfSURfSU5URUxfODVYR006CiAJCXRtcCA9IDA7CiAJCWRpbmZv
-LT5tb2JpbGUgPSAxOwpkaWZmIC11ciBsaW51eC0yLjYuMjYuNS5vcmlnL2RyaXZlcnMvdmlkZW8v
-aW50ZWxmYi9pbnRlbGZiX2kyYy5jIGxpbnV4LTIuNi4yNi41L2RyaXZlcnMvdmlkZW8vaW50ZWxm
-Yi9pbnRlbGZiX2kyYy5jCi0tLSBsaW51eC0yLjYuMjYuNS5vcmlnL2RyaXZlcnMvdmlkZW8vaW50
-ZWxmYi9pbnRlbGZiX2kyYy5jCTIwMDgtMDktMDggMTk6NDA6MjAuMDAwMDAwMDAwICswMjAwCisr
-KyBsaW51eC0yLjYuMjYuNS9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50ZWxmYl9pMmMuYwkyMDA4
-LTEwLTA4IDE0OjMyOjM4LjAwMDAwMDAwMCArMDIwMApAQCAtMTU1LDYgKzE1NSw3IEBACiAJc3dp
-dGNoKGRpbmZvLT5jaGlwc2V0KSB7CiAJY2FzZSBJTlRFTF84MzBNOgogCWNhc2UgSU5URUxfODQ1
-RzoKKwljYXNlIElOVEVMXzg1NDoKIAljYXNlIElOVEVMXzg1NUdNOgogCWNhc2UgSU5URUxfODY1
-RzoKIAkJZGluZm8tPm91dHB1dFtpXS50eXBlID0gSU5URUxGQl9PVVRQVVRfRFZPOwpkaWZmIC11
-ciBsaW51eC0yLjYuMjYuNS5vcmlnL2luY2x1ZGUvbGludXgvcGNpX2lkcy5oIGxpbnV4LTIuNi4y
-Ni41L2luY2x1ZGUvbGludXgvcGNpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjYuNS5vcmlnL2luY2x1
-ZGUvbGludXgvcGNpX2lkcy5oCTIwMDgtMDktMDggMTk6NDA6MjAuMDAwMDAwMDAwICswMjAwCisr
-KyBsaW51eC0yLjYuMjYuNS9pbmNsdWRlL2xpbnV4L3BjaV9pZHMuaAkyMDA4LTEwLTA4IDE0OjMw
-OjUzLjAwMDAwMDAwMCArMDIwMApAQCAtMjM2Nyw2ICsyMzY3LDggQEAKICNkZWZpbmUgUENJX0RF
-VklDRV9JRF9JTlRFTF84Mjg1NVBNX0hCCTB4MzM0MAogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lO
-VEVMXzgyODMwX0hCCTB4MzU3NQogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzgyODMwX0NH
-QwkweDM1NzcKKyNkZWZpbmUgUENJX0RFVklDRV9JRF9JTlRFTF84Mjg1NF9IQgkweDM1OGMKKyNk
-ZWZpbmUgUENJX0RFVklDRV9JRF9JTlRFTF84Mjg1NF9JRwkweDM1OGUKICNkZWZpbmUgUENJX0RF
-VklDRV9JRF9JTlRFTF84Mjg1NUdNX0hCCTB4MzU4MAogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lO
-VEVMXzgyODU1R01fSUcJMHgzNTgyCiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfSU5URUxfRTc1MjBf
-TUNICTB4MzU5MAo=
-------=_Part_87775_13614149.1223493208329
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--- lin2627-r9g1-sections.orig/drivers/video/carminefb.c
++++ lin2627-r9g1-sections/drivers/video/carminefb.c
+@@ -76,7 +76,7 @@ struct carmine_fb {
+ 	u32 pseudo_palette[16];
+ };
+ 
+-static struct fb_fix_screeninfo carminefb_fix __devinitdata = {
++static struct fb_fix_screeninfo carminefb_fix = {
+ 	.id = "Carmine",
+ 	.type = FB_TYPE_PACKED_PIXELS,
+ 	.visual = FB_VISUAL_TRUECOLOR,
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
-------=_Part_87775_13614149.1223493208329
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
-------=_Part_87775_13614149.1223493208329--

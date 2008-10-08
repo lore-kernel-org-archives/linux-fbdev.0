@@ -1,30 +1,24 @@
-From: Dmitry <dbaryshkov@gmail.com>
-Subject: Re: [PATCH v4] fbdev: add new TMIO framebuffer
-	driver
-Date: Wed, 8 Oct 2008 22:52:19 +0400
-Message-ID: <bc64b4640810081152v36a35913n5f4f5f6a03484bff@mail.gmail.com>
-References: <1223463303-32700-1-git-send-email-dbaryshkov@gmail.com>
-	<20081008171546.GA4766@localdomain> <gcisol$ico$1@ger.gmane.org>
-	<20081008111653.67c55f12.akpm@linux-foundation.org>
+From: "Stefan Husemann" <shusemann@googlemail.com>
+Subject: Patch to support i854 with intelfb
+Date: Wed, 8 Oct 2008 21:00:59 +0200
+Message-ID: <f43011d0810081200v7ed6b3fbl7c60ce4197e95f3@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_87661_13531805.1223492459579"
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <dbaryshkov@gmail.com>) id 1Kne98-0003MR-5V
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <shusemann@googlemail.com>) id 1KneHY-0007P1-5t
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Oct 2008 18:52:30 +0000
+	Wed, 08 Oct 2008 19:01:12 +0000
 Received: from mail-gx0-f19.google.com ([209.85.217.19])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Kne8z-0002Ix-CD for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 08 Oct 2008 18:52:30 +0000
-Received: by gxk12 with SMTP id 12so9146124gxk.10
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KneHM-000554-MP for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Oct 2008 19:01:12 +0000
+Received: by gxk12 with SMTP id 12so9161226gxk.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 08 Oct 2008 11:52:20 -0700 (PDT)
-In-Reply-To: <20081008111653.67c55f12.akpm@linux-foundation.org>
-Content-Disposition: inline
+	Wed, 08 Oct 2008 12:00:59 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,47 +28,169 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-2008/10/8 Andrew Morton <akpm@linux-foundation.org>:
->
-> Please never change the Cc: list.  Just do reply-to-all all the time.
+------=_Part_87661_13531805.1223492459579
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_87662_73638.1223492459579"
 
-I do reply-to-all, when I use mail client. However sometimes I use gmane, and so
-all to:/cc: list is dropped.
+------=_Part_87662_73638.1223492459579
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
->
-> On Wed, 8 Oct 2008 18:05:09 +0000 (UTC) Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
->
->> Samuel Ortiz wrote:
->>
->> > On Wed, Oct 08, 2008 at 02:55:03PM +0400, Dmitry Baryshkov wrote:
->> >> Add driver for TMIO framebuffer cells as found e.g. in Toshiba TC6393XB
->> >> chips.
->> >>
->> >> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com> Cc: Ian Molton
->> >> <spyro@f2s.com>
->> >> Cc: Samuel Ortiz <sameo@openedhand.com>
->> > Acked-by: Samuel Ortiz <sameo@openedhand.com>
->>
->> Thanks. And as Kristoffer acked one of previous revisions of this driver,
->> I hope he will also ack this one. Now the question is: via which tree should
->> this driver be merged? Is there any specific FB tree? Or should I send pull
->> request directly to Linus when the window will open :) ?
->
-> fbdev patches are meged via the -mm tree.  I have this email thread
-> saved away for review-and-merge.  It might take me a few days - I like
-> to leave things, to let the dust settle.
+Hello,
 
-Fine with me, thank you. I just wanted to know the way for fbdev patches.
+I attached a small and simple patch for intelfb to support Intel 854
+Chipset.
 
--- 
-With best wishes
-Dmitry
+We test and use the patch on a Thomson IP1101 IPTV-Box. On the VGA-Port we
+get a normal signal.
+
+Here is the link to the Mambux-Project: http://www.mambux.de
+
+We hope that we find our patch later inside the Linux-Kernel ;-)
+
+Have an nice day
+
+------=_Part_87662_73638.1223492459579
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div dir="ltr">Hello,<br><br>I attached a small and simple patch for intelfb to support Intel 854 Chipset.<br><br>We test and use the patch on a Thomson IP1101 IPTV-Box. On the VGA-Port we get a normal signal.<br><br>
+Here is the link to the Mambux-Project: <a href="http://www.mambux.de/" target="_blank">http://www.mambux.de</a><br><br>We hope that we find our patch later inside the Linux-Kernel ;-)<br><br>Have an nice day</div>
+
+------=_Part_87662_73638.1223492459579--
+
+------=_Part_87661_13531805.1223492459579
+Content-Type: text/x-diff; name=i854_linux-2.6.26.5.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fm2bimj10
+Content-Disposition: attachment; filename=i854_linux-2.6.26.5.patch
+
+ZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL2NoYXIvYWdwL2ludGVsLWFncC5j
+IGxpbnV4LTIuNi4yNi41L2RyaXZlcnMvY2hhci9hZ3AvaW50ZWwtYWdwLmMKLS0tIGxpbnV4LTIu
+Ni4yNi41Lm9yaWcvZHJpdmVycy9jaGFyL2FncC9pbnRlbC1hZ3AuYwkyMDA4LTA5LTA4IDE5OjQw
+OjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUvZHJpdmVycy9jaGFyL2FncC9p
+bnRlbC1hZ3AuYwkyMDA4LTEwLTA4IDE0OjEyOjU5LjAwMDAwMDAwMCArMDIwMApAQCAtMjA3OCw2
+ICsyMDc4LDggQEAKIAl7IFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NDVHX0hCLCBQQ0lfREVWSUNF
+X0lEX0lOVEVMXzgyODQ1R19JRywgMCwgIjgzME0iLAogCQkmaW50ZWxfODQ1X2RyaXZlciwgJmlu
+dGVsXzgzMF9kcml2ZXIgfSwKIAl7IFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTBfSEIsIDAsIDAs
+ICJpODUwIiwgJmludGVsXzg1MF9kcml2ZXIsIE5VTEwgfSwKKwl7IFBDSV9ERVZJQ0VfSURfSU5U
+RUxfODI4NTRfSEIsIFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTRfSUcsIDAsICI4NTQiLAorCQkm
+aW50ZWxfODQ1X2RyaXZlciwgJmludGVsXzgzMF9kcml2ZXIgfSwKIAl7IFBDSV9ERVZJQ0VfSURf
+SU5URUxfODI4NTVQTV9IQiwgMCwgMCwgIjg1NVBNIiwgJmludGVsXzg0NV9kcml2ZXIsIE5VTEwg
+fSwKIAl7IFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTVHTV9IQiwgUENJX0RFVklDRV9JRF9JTlRF
+TF84Mjg1NUdNX0lHLCAwLCAiODU1R00iLAogCQkmaW50ZWxfODQ1X2RyaXZlciwgJmludGVsXzgz
+MF9kcml2ZXIgfSwKQEAgLTIyOTMsNiArMjI5NSw3IEBACiAJSUQoUENJX0RFVklDRV9JRF9JTlRF
+TF84Mjg0NV9IQiksCiAJSUQoUENJX0RFVklDRV9JRF9JTlRFTF84Mjg0NUdfSEIpLAogCUlEKFBD
+SV9ERVZJQ0VfSURfSU5URUxfODI4NTBfSEIpLAorCUlEKFBDSV9ERVZJQ0VfSURfSU5URUxfODI4
+NTRfSEIpLAogCUlEKFBDSV9ERVZJQ0VfSURfSU5URUxfODI4NTVQTV9IQiksCiAJSUQoUENJX0RF
+VklDRV9JRF9JTlRFTF84Mjg1NUdNX0hCKSwKIAlJRChQQ0lfREVWSUNFX0lEX0lOVEVMXzgyODYw
+X0hCKSwKZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL2NoYXIvZHJtL2RybV9w
+Y2lpZHMuaCBsaW51eC0yLjYuMjYuNS9kcml2ZXJzL2NoYXIvZHJtL2RybV9wY2lpZHMuaAotLS0g
+bGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL2NoYXIvZHJtL2RybV9wY2lpZHMuaAkyMDA4LTA5
+LTA4IDE5OjQwOjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUvZHJpdmVycy9j
+aGFyL2RybS9kcm1fcGNpaWRzLmgJMjAwOC0xMC0wOCAxNDoxNjowOS4wMDAwMDAwMDAgKzAyMDAK
+QEAgLTM1Myw2ICszNTMsNyBAQAogCXsweDgwODYsIDB4MjU2MiwgUENJX0FOWV9JRCwgUENJX0FO
+WV9JRCwgMCwgMCwgMH0sIFwKIAl7MHg4MDg2LCAweDM1ODIsIFBDSV9BTllfSUQsIFBDSV9BTllf
+SUQsIDAsIDAsIDB9LCBcCiAJezB4ODA4NiwgMHgyNTcyLCBQQ0lfQU5ZX0lELCBQQ0lfQU5ZX0lE
+LCAwLCAwLCAwfSwgXAorCXsweDgwODYsIDB4MzU4ZSwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwg
+MCwgMCwgMH0sIFwKIAl7MCwgMCwgMH0KIAogI2RlZmluZSBnYW1tYV9QQ0lfSURTIFwKQEAgLTQw
+OCw2ICs0MDksNyBAQAogCXsweDgwODYsIDB4MjlkMiwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwg
+MCwgMCwgMH0sIFwKIAl7MHg4MDg2LCAweDJhMDIsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAs
+IDAsIDB9LCBcCiAJezB4ODA4NiwgMHgyYTEyLCBQQ0lfQU5ZX0lELCBQQ0lfQU5ZX0lELCAwLCAw
+LCAwfSwgXAorCXsweDgwODYsIDB4MzU4ZSwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgMCwgMCwg
+MH0sIFwKIAl7MHg4MDg2LCAweDJhNDIsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIDAsIDAsIDB9
+LCBcCiAJezB4ODA4NiwgMHgyZTAyLCBQQ0lfQU5ZX0lELCBQQ0lfQU5ZX0lELCAwLCAwLCAwfSwg
+XAogCXsweDgwODYsIDB4MmUxMiwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgMCwgMCwgMH0sIFwK
+ZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50ZWxm
+YmRydi5jIGxpbnV4LTIuNi4yNi41L2RyaXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiZHJ2LmMK
+LS0tIGxpbnV4LTIuNi4yNi41Lm9yaWcvZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJkcnYu
+YwkyMDA4LTA5LTA4IDE5OjQwOjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUv
+ZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJkcnYuYwkyMDA4LTEwLTA4IDE0OjE3OjUwLjAw
+MDAwMDAwMCArMDIwMApAQCAtMTc5LDYgKzE3OSw3IEBACiAJeyBQQ0lfVkVORE9SX0lEX0lOVEVM
+LCBQQ0lfREVWSUNFX0lEX0lOVEVMXzg0NUcsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIFBDSV9D
+TEFTU19ESVNQTEFZX1ZHQSA8PCA4LCBJTlRFTEZCX0NMQVNTX01BU0ssIElOVEVMXzg0NUcgfSwK
+IAl7IFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxfODVYR00sIFBDSV9B
+TllfSUQsIFBDSV9BTllfSUQsIFBDSV9DTEFTU19ESVNQTEFZX1ZHQSA8PCA4LCBJTlRFTEZCX0NM
+QVNTX01BU0ssIElOVEVMXzg1WEdNIH0sCiAJeyBQQ0lfVkVORE9SX0lEX0lOVEVMLCBQQ0lfREVW
+SUNFX0lEX0lOVEVMXzg2NUcsIFBDSV9BTllfSUQsIFBDSV9BTllfSUQsIFBDSV9DTEFTU19ESVNQ
+TEFZX1ZHQSA8PCA4LCBJTlRFTEZCX0NMQVNTX01BU0ssIElOVEVMXzg2NUcgfSwKKwl7IFBDSV9W
+RU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxfODU0LCBQQ0lfQU5ZX0lELCBQQ0lf
+QU5ZX0lELCBQQ0lfQ0xBU1NfRElTUExBWV9WR0EgPDwgOCwgSU5URUxGQl9DTEFTU19NQVNLLCBJ
+TlRFTF84NTQgfSwKIAl7IFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxf
+OTE1RywgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgUENJX0NMQVNTX0RJU1BMQVlfVkdBIDw8IDgs
+IElOVEVMRkJfQ0xBU1NfTUFTSywgSU5URUxfOTE1RyB9LAogCXsgUENJX1ZFTkRPUl9JRF9JTlRF
+TCwgUENJX0RFVklDRV9JRF9JTlRFTF85MTVHTSwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgUENJ
+X0NMQVNTX0RJU1BMQVlfVkdBIDw8IDgsIElOVEVMRkJfQ0xBU1NfTUFTSywgSU5URUxfOTE1R00g
+fSwKIAl7IFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSV9ERVZJQ0VfSURfSU5URUxfOTQ1RywgUENJ
+X0FOWV9JRCwgUENJX0FOWV9JRCwgUENJX0NMQVNTX0RJU1BMQVlfVkdBIDw8IDgsIElOVEVMRkJf
+Q0xBU1NfTUFTSywgSU5URUxfOTQ1RyB9LApkaWZmIC11ciBsaW51eC0yLjYuMjYuNS5vcmlnL2Ry
+aXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiLmggbGludXgtMi42LjI2LjUvZHJpdmVycy92aWRl
+by9pbnRlbGZiL2ludGVsZmIuaAotLS0gbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL3ZpZGVv
+L2ludGVsZmIvaW50ZWxmYi5oCTIwMDgtMDktMDggMTk6NDA6MjAuMDAwMDAwMDAwICswMjAwCisr
+KyBsaW51eC0yLjYuMjYuNS9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50ZWxmYi5oCTIwMDgtMTAt
+MDggMTQ6MjA6MDguMDAwMDAwMDAwICswMjAwCkBAIC01Myw2ICs1Myw3IEBACiAjZGVmaW5lIFBD
+SV9ERVZJQ0VfSURfSU5URUxfODMwTQkweDM1NzcKICNkZWZpbmUgUENJX0RFVklDRV9JRF9JTlRF
+TF84NDVHCTB4MjU2MgogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzg1WEdNCTB4MzU4Mgor
+I2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzg1NAkJMHgzNThFCiAjZGVmaW5lIFBDSV9ERVZJ
+Q0VfSURfSU5URUxfODY1RwkweDI1NzIKICNkZWZpbmUgUENJX0RFVklDRV9JRF9JTlRFTF85MTVH
+CTB4MjU4MgogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzkxNUdNCTB4MjU5MgpAQCAtMTUz
+LDYgKzE1NCw3IEBACiAJSU5URUxfODVYR00sCiAJSU5URUxfODUyR00sCiAJSU5URUxfODUyR01F
+LAorCUlOVEVMXzg1NCwKIAlJTlRFTF84NTVHTSwKIAlJTlRFTF84NTVHTUUsCiAJSU5URUxfODY1
+RywKZGlmZiAtdXIgbGludXgtMi42LjI2LjUub3JpZy9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50
+ZWxmYmh3LmMgbGludXgtMi42LjI2LjUvZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJody5j
+Ci0tLSBsaW51eC0yLjYuMjYuNS5vcmlnL2RyaXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiaHcu
+YwkyMDA4LTA5LTA4IDE5OjQwOjIwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LjUv
+ZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJody5jCTIwMDgtMTAtMDggMTQ6MjM6MTcuMDAw
+MDAwMDAwICswMjAwCkBAIC04NCw2ICs4NCwxMSBAQAogCQlkaW5mby0+bW9iaWxlID0gMDsKIAkJ
+ZGluZm8tPnBsbF9pbmRleCA9IFBMTFNfSTh4eDsKIAkJcmV0dXJuIDA7CisJY2FzZSBQQ0lfREVW
+SUNFX0lEX0lOVEVMXzg1NDoKKwkJZGluZm8tPm1vYmlsZSA9IDE7CisJCWRpbmZvLT5uYW1lID0g
+IkludGVsKFIpIDg1NCI7CisJCWRpbmZvLT5jaGlwc2V0ID0gSU5URUxfODU0OworCQlyZXR1cm4g
+MDsKIAljYXNlIFBDSV9ERVZJQ0VfSURfSU5URUxfODVYR006CiAJCXRtcCA9IDA7CiAJCWRpbmZv
+LT5tb2JpbGUgPSAxOwpkaWZmIC11ciBsaW51eC0yLjYuMjYuNS5vcmlnL2RyaXZlcnMvdmlkZW8v
+aW50ZWxmYi9pbnRlbGZiX2kyYy5jIGxpbnV4LTIuNi4yNi41L2RyaXZlcnMvdmlkZW8vaW50ZWxm
+Yi9pbnRlbGZiX2kyYy5jCi0tLSBsaW51eC0yLjYuMjYuNS5vcmlnL2RyaXZlcnMvdmlkZW8vaW50
+ZWxmYi9pbnRlbGZiX2kyYy5jCTIwMDgtMDktMDggMTk6NDA6MjAuMDAwMDAwMDAwICswMjAwCisr
+KyBsaW51eC0yLjYuMjYuNS9kcml2ZXJzL3ZpZGVvL2ludGVsZmIvaW50ZWxmYl9pMmMuYwkyMDA4
+LTEwLTA4IDE0OjMyOjM4LjAwMDAwMDAwMCArMDIwMApAQCAtMTU1LDYgKzE1NSw3IEBACiAJc3dp
+dGNoKGRpbmZvLT5jaGlwc2V0KSB7CiAJY2FzZSBJTlRFTF84MzBNOgogCWNhc2UgSU5URUxfODQ1
+RzoKKwljYXNlIElOVEVMXzg1NDoKIAljYXNlIElOVEVMXzg1NUdNOgogCWNhc2UgSU5URUxfODY1
+RzoKIAkJZGluZm8tPm91dHB1dFtpXS50eXBlID0gSU5URUxGQl9PVVRQVVRfRFZPOwpkaWZmIC11
+ciBsaW51eC0yLjYuMjYuNS5vcmlnL2luY2x1ZGUvbGludXgvcGNpX2lkcy5oIGxpbnV4LTIuNi4y
+Ni41L2luY2x1ZGUvbGludXgvcGNpX2lkcy5oCi0tLSBsaW51eC0yLjYuMjYuNS5vcmlnL2luY2x1
+ZGUvbGludXgvcGNpX2lkcy5oCTIwMDgtMDktMDggMTk6NDA6MjAuMDAwMDAwMDAwICswMjAwCisr
+KyBsaW51eC0yLjYuMjYuNS9pbmNsdWRlL2xpbnV4L3BjaV9pZHMuaAkyMDA4LTEwLTA4IDE0OjMw
+OjUzLjAwMDAwMDAwMCArMDIwMApAQCAtMjM2Nyw2ICsyMzY3LDggQEAKICNkZWZpbmUgUENJX0RF
+VklDRV9JRF9JTlRFTF84Mjg1NVBNX0hCCTB4MzM0MAogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lO
+VEVMXzgyODMwX0hCCTB4MzU3NQogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lOVEVMXzgyODMwX0NH
+QwkweDM1NzcKKyNkZWZpbmUgUENJX0RFVklDRV9JRF9JTlRFTF84Mjg1NF9IQgkweDM1OGMKKyNk
+ZWZpbmUgUENJX0RFVklDRV9JRF9JTlRFTF84Mjg1NF9JRwkweDM1OGUKICNkZWZpbmUgUENJX0RF
+VklDRV9JRF9JTlRFTF84Mjg1NUdNX0hCCTB4MzU4MAogI2RlZmluZSBQQ0lfREVWSUNFX0lEX0lO
+VEVMXzgyODU1R01fSUcJMHgzNTgyCiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfSU5URUxfRTc1MjBf
+TUNICTB4MzU5MAo=
+------=_Part_87661_13531805.1223492459579
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
+------=_Part_87661_13531805.1223492459579
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+------=_Part_87661_13531805.1223492459579--

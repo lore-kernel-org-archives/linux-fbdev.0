@@ -1,63 +1,84 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH] video: add sh_mobile_lcdc platform flags
-Date: Thu, 09 Oct 2008 18:48:16 +0900
-Message-ID: <20081009094816.6478.31468.sendpatchset@rx1.opensource.se>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] framebuffer: fix carminefb section
+ mismatch
+Date: Thu, 09 Oct 2008 08:10:07 -0700
+Message-ID: <48EE1ECF.6040707@oracle.com>
+References: <48ED2431.40609@oracle.com>
+	<Pine.LNX.4.64.0810090927350.6769@anakin>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-sh@vger.kernel.org
-Cc: Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <randy.dunlap@oracle.com>) id 1KnxC2-0004Qv-Lj
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 09 Oct 2008 15:12:46 +0000
+Received: from rgminet01.oracle.com ([148.87.113.118])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1KnxBt-0005Or-1x
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 09 Oct 2008 15:12:46 +0000
+In-Reply-To: <Pine.LNX.4.64.0810090927350.6769@anakin>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: akpm <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, Sebastian Siewior <bigeasy@linutronix.de>
 
-From: Magnus Damm <damm@igel.co.jp>
+Geert Uytterhoeven wrote:
+> On Wed, 8 Oct 2008, Randy Dunlap wrote:
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Could fix a dangerous problem since
+>> 	info->fix = carminefb_fix;
+>> and info->fix can be used at any time later (in carmine_set_par()).
+> 
+> This is a full copy of the contents, not a pointer to the original.
 
-Add platform data flags for detailed lcd display configuration.
+Argh, darn it.  Thanks.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
+>> WARNING: drivers/video/carminefb.o(.text+0x81b): Section mismatch in reference from the function alloc_carmine_fb() to the variable .devinit.data:carminefb_fix
+>> The function alloc_carmine_fb() references
+>> the variable __devinitdata carminefb_fix.
+>> This is often because alloc_carmine_fb lacks a __devinitdata 
+>> annotation or the annotation of carminefb_fix is wrong.
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> cc: Sebastian Siewior <bigeasy@linutronix.de>
+>> ---
+>>  drivers/video/carminefb.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> --- lin2627-r9g1-sections.orig/drivers/video/carminefb.c
+>> +++ lin2627-r9g1-sections/drivers/video/carminefb.c
+>> @@ -76,7 +76,7 @@ struct carmine_fb {
+>>  	u32 pseudo_palette[16];
+>>  };
+>>  
+>> -static struct fb_fix_screeninfo carminefb_fix __devinitdata = {
+>> +static struct fb_fix_screeninfo carminefb_fix = {
+>>  	.id = "Carmine",
+>>  	.type = FB_TYPE_PACKED_PIXELS,
+>>  	.visual = FB_VISUAL_TRUECOLOR,
+> 
+> alloc_carmine_fb() should be __devinit instead?
 
- Paul, can you please handle this one together with the other patch?
+I'll check on that.
 
- drivers/video/sh_mobile_lcdcfb.c |    5 +++++
- include/video/sh_mobile_lcdc.h   |    7 +++++++
- 2 files changed, 12 insertions(+)
+Thanks again for checking.
+-- 
+~Randy
 
---- 0014/drivers/video/sh_mobile_lcdcfb.c
-+++ work/drivers/video/sh_mobile_lcdcfb.c	2008-10-09 18:08:33.000000000 +0900
-@@ -262,6 +262,11 @@ static int sh_mobile_lcdc_start(struct s
- 		tmp = ch->ldmt1r_value;
- 		tmp |= (lcd_cfg->sync & FB_SYNC_VERT_HIGH_ACT) ? 0 : 1 << 28;
- 		tmp |= (lcd_cfg->sync & FB_SYNC_HOR_HIGH_ACT) ? 0 : 1 << 27;
-+		tmp |= (ch->cfg.flags & LCDC_FLAGS_DWPOL) ? 1 << 26 : 0;
-+		tmp |= (ch->cfg.flags & LCDC_FLAGS_DIPOL) ? 1 << 25 : 0;
-+		tmp |= (ch->cfg.flags & LCDC_FLAGS_DAPOL) ? 1 << 24 : 0;
-+		tmp |= (ch->cfg.flags & LCDC_FLAGS_HSCNT) ? 1 << 17 : 0;
-+		tmp |= (ch->cfg.flags & LCDC_FLAGS_DWCNT) ? 1 << 16 : 0;
- 		lcdc_write_chan(ch, LDMT1R, tmp);
- 
- 		/* setup SYS bus */
---- 0014/include/video/sh_mobile_lcdc.h
-+++ work/include/video/sh_mobile_lcdc.h	2008-10-09 18:04:53.000000000 +0900
-@@ -28,6 +28,12 @@ enum { LCDC_CHAN_DISABLED = 0,
- 
- enum { LCDC_CLK_BUS, LCDC_CLK_PERIPHERAL, LCDC_CLK_EXTERNAL };
- 
-+#define LCDC_FLAGS_DWPOL (1 << 0) /* Rising edge dot clock data latch */
-+#define LCDC_FLAGS_DIPOL (1 << 1) /* Active low display enable polarity */
-+#define LCDC_FLAGS_DAPOL (1 << 2) /* Active low display data polarity */
-+#define LCDC_FLAGS_HSCNT (1 << 3) /* Disable HSYNC during VBLANK */
-+#define LCDC_FLAGS_DWCNT (1 << 4) /* Disable dotclock during blanking */
-+
- struct sh_mobile_lcdc_sys_bus_cfg {
- 	unsigned long ldmt2r;
- 	unsigned long ldmt3r;
-@@ -57,6 +63,7 @@ struct sh_mobile_lcdc_chan_cfg {
- 	int bpp;
- 	int interface_type; /* selects RGBn or SYSn I/F, see above */
- 	int clock_divider;
-+	unsigned long flags; /* LCDC_FLAGS_... */
- 	struct fb_videomode lcd_cfg;
- 	struct sh_mobile_lcdc_lcd_size_cfg lcd_size_cfg;
- 	struct sh_mobile_lcdc_board_cfg board_cfg;
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

@@ -1,26 +1,23 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] framebuffer: fix carminefb section
- mismatch
-Date: Thu, 09 Oct 2008 08:10:07 -0700
-Message-ID: <48EE1ECF.6040707@oracle.com>
-References: <48ED2431.40609@oracle.com>
-	<Pine.LNX.4.64.0810090927350.6769@anakin>
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Where to send patches?
+Date: Thu, 9 Oct 2008 17:53:36 +0200
+Message-ID: <20081009175336.f813bdd1.kristoffer.ericson@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============7319017598672536543=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <randy.dunlap@oracle.com>) id 1KnxC2-0004Qv-Lj
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <kristoffer.ericson@gmail.com>) id 1KnxqL-0004hJ-EI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Oct 2008 15:12:46 +0000
-Received: from rgminet01.oracle.com ([148.87.113.118])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1KnxBt-0005Or-1x
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Oct 2008 15:12:46 +0000
-In-Reply-To: <Pine.LNX.4.64.0810090927350.6769@anakin>
+	Thu, 09 Oct 2008 15:54:25 +0000
+Received: from nf-out-0910.google.com ([64.233.182.185])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KnxqB-0002Mk-DB for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 09 Oct 2008 15:54:24 +0000
+Received: by nf-out-0910.google.com with SMTP id g16so45355nfd.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 09 Oct 2008 08:54:09 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,55 +27,67 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: akpm <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, Sebastian Siewior <bigeasy@linutronix.de>
+To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Geert Uytterhoeven wrote:
-> On Wed, 8 Oct 2008, Randy Dunlap wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> Could fix a dangerous problem since
->> 	info->fix = carminefb_fix;
->> and info->fix can be used at any time later (in carmine_set_par()).
-> 
-> This is a full copy of the contents, not a pointer to the original.
+--===============7319017598672536543==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv"
 
-Argh, darn it.  Thanks.
+--Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> WARNING: drivers/video/carminefb.o(.text+0x81b): Section mismatch in reference from the function alloc_carmine_fb() to the variable .devinit.data:carminefb_fix
->> The function alloc_carmine_fb() references
->> the variable __devinitdata carminefb_fix.
->> This is often because alloc_carmine_fb lacks a __devinitdata 
->> annotation or the annotation of carminefb_fix is wrong.
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> cc: Sebastian Siewior <bigeasy@linutronix.de>
->> ---
->>  drivers/video/carminefb.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> --- lin2627-r9g1-sections.orig/drivers/video/carminefb.c
->> +++ lin2627-r9g1-sections/drivers/video/carminefb.c
->> @@ -76,7 +76,7 @@ struct carmine_fb {
->>  	u32 pseudo_palette[16];
->>  };
->>  
->> -static struct fb_fix_screeninfo carminefb_fix __devinitdata = {
->> +static struct fb_fix_screeninfo carminefb_fix = {
->>  	.id = "Carmine",
->>  	.type = FB_TYPE_PACKED_PIXELS,
->>  	.visual = FB_VISUAL_TRUECOLOR,
-> 
-> alloc_carmine_fb() should be __devinit instead?
+Greetings,
 
-I'll check on that.
+Just have to ask, who is handling patches and so on. I've
+had great difficulty getting anyone to grab the patches
+I send out. Last time I ended up mailing Andrew to
+get it inside -mm.
 
-Thanks again for checking.
--- 
-~Randy
+Anyone special I should CC?
+
+Best wishes
+Kristoffer
+
+--=20
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+--Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjuKQAACgkQPQls10ERAGc/kgCfYrc5K7LR/cCvO+pgrILfc6LX
+CvYAn0qudxWIEraEpVaFyr8pyRo8Q+V+
+=QucQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv--
+
+
+--===============7319017598672536543==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
+--===============7319017598672536543==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============7319017598672536543==--

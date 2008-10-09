@@ -1,23 +1,24 @@
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: Where to send patches?
-Date: Thu, 9 Oct 2008 17:53:36 +0200
-Message-ID: <20081009175336.f813bdd1.kristoffer.ericson@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Where to send patches?
+Date: Thu, 9 Oct 2008 11:25:22 -0700
+Message-ID: <20081009112522.0a3c89b6.akpm@linux-foundation.org>
+References: <20081009175336.f813bdd1.kristoffer.ericson@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7319017598672536543=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <kristoffer.ericson@gmail.com>) id 1KnxqL-0004hJ-EI
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1Ko0Cc-000644-GY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Oct 2008 15:54:25 +0000
-Received: from nf-out-0910.google.com ([64.233.182.185])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KnxqB-0002Mk-DB for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 09 Oct 2008 15:54:24 +0000
-Received: by nf-out-0910.google.com with SMTP id g16so45355nfd.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 09 Oct 2008 08:54:09 -0700 (PDT)
+	Thu, 09 Oct 2008 18:25:34 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Ko0CW-0003Wd-Bw
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 09 Oct 2008 18:25:34 +0000
+In-Reply-To: <20081009175336.f813bdd1.kristoffer.ericson@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,67 +28,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
---===============7319017598672536543==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv"
+On Thu, 9 Oct 2008 17:53:36 +0200 Kristoffer Ericson <kristoffer.ericson@gmail.com> wrote:
 
---Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Just have to ask, who is handling patches and so on. I've
+> had great difficulty getting anyone to grab the patches
+> I send out. Last time I ended up mailing Andrew to
+> get it inside -mm.
+> 
+> Anyone special I should CC?
 
-Greetings,
-
-Just have to ask, who is handling patches and so on. I've
-had great difficulty getting anyone to grab the patches
-I send out. Last time I ended up mailing Andrew to
-get it inside -mm.
-
-Anyone special I should CC?
-
-Best wishes
-Kristoffer
-
---=20
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
-
---Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjuKQAACgkQPQls10ERAGc/kgCfYrc5K7LR/cCvO+pgrILfc6LX
-CvYAn0qudxWIEraEpVaFyr8pyRo8Q+V+
-=QucQ
------END PGP SIGNATURE-----
-
---Signature=_Thu__9_Oct_2008_17_53_36_+0200_MjfmfAO6o87roxVv--
-
-
---===============7319017598672536543==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Me and linux-fbdev-devel, please.
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
---===============7319017598672536543==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============7319017598672536543==--

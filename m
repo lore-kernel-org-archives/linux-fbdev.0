@@ -1,27 +1,27 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH v2] framebuffer: fix carminefb section
-	mismatch
-Date: Fri, 10 Oct 2008 13:25:18 -0700
-Message-ID: <20081010132518.c6615b54.randy.dunlap@oracle.com>
-References: <48ED2431.40609@oracle.com>
-	<Pine.LNX.4.64.0810090927350.6769@anakin>
-	<48EE1ECF.6040707@oracle.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 11734] New: Ramdonly linux
+ don't boot,
+ it hangs at the very first stage of booting with some error related with
+ uvesafb
+Date: Fri, 10 Oct 2008 13:50:45 -0700
+Message-ID: <20081010135045.8b4772f5.akpm@linux-foundation.org>
+References: <bug-11734-10286@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <randy.dunlap@oracle.com>) id 1KoOb1-0005GG-C2
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1KoOwm-0003xV-Gj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 10 Oct 2008 20:28:23 +0000
-Received: from rgminet01.oracle.com ([148.87.113.118])
+	Fri, 10 Oct 2008 20:50:52 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1KoOav-00029c-Vt
+	(Exim 4.69) id 1KoOwi-00037T-4g
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 10 Oct 2008 20:28:23 +0000
-In-Reply-To: <48EE1ECF.6040707@oracle.com>
+	Fri, 10 Oct 2008 20:50:52 +0000
+In-Reply-To: <bug-11734-10286@http.bugzilla.kernel.org/>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,35 +32,57 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Sebastian Siewior <bigeasy@linutronix.de>
+Cc: diegoocampo8@gmail.com, Michal, Januszewski <spock@gentoo.org>, bugme-daemon@bugzilla.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Make alloc_carmine_fb() __devinit.
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-WARNING: drivers/video/carminefb.o(.text+0x81b): Section mismatch in reference from the function alloc_carmine_fb() to the variable .devinit.data:carminefb_fix
-The function alloc_carmine_fb() references
-the variable __devinitdata carminefb_fix.
-This is often because alloc_carmine_fb lacks a __devinitdata 
-annotation or the annotation of carminefb_fix is wrong.
+On Fri, 10 Oct 2008 13:37:41 -0700 (PDT)
+bugme-daemon@bugzilla.kernel.org wrote:
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Sebastian Siewior <bigeasy@linutronix.de>
----
- drivers/video/carminefb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> http://bugzilla.kernel.org/show_bug.cgi?id=11734
+> 
+>            Summary: Ramdonly linux don't boot, it hangs at the very first
+>                     stage of booting with some error related with uvesafb
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: 2.6.27-6
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Video(Other)
+>         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
+>         ReportedBy: diegoocampo8@gmail.com
+> 
+> 
+> Latest working kernel version: 2.6.24-xx
+> Earliest failing kernel version: ----
+> Distribution: Ubuntu Intrepid Ibex
+> Hardware Environment: Samsung R70 / A009
+> Software Environment: Ubuntu Intrepid Ibex Beta.
+> Problem Description: First of all: I am not a linux expert so please don't ask
+> me too much technical questions about the problem, but i will try to help as
+> much as i can...
+> I am not sure if it is related with Ubuntu or with the kernel but the problems
+> take place in the very first stage of booting (maybe with the loading of the
+> kernel??) and I get the following error messages:
+> "606627 uvesafb: failed to execute /sbin/v86d"
+> "606719 uvesafb: make sure that the v86d helper is installed and executable"
+> "606814 uvesafb: Getting VBE info block failed (eax=0x4f00, err=-2)"
+> "606905 uvesafb: vbe_init() failed with -22
+> 
+> Then the loading goes on a little bit until reaching the message: 
+> "Loading hardware drivers ....... " and the laptop freezers at this point.
+> 
+> Like i said this is a ramdonly problem,if i restart the computer most probably
+> ubuntu starts, but i think it is very annoying anyway!.
+> 
 
---- lin2627-r9g1-sections.orig/drivers/video/carminefb.c
-+++ lin2627-r9g1-sections/drivers/video/carminefb.c
-@@ -535,7 +535,7 @@ static struct fb_ops carminefb_ops = {
- 	.fb_setcolreg	= carmine_setcolreg,
- };
- 
--static int alloc_carmine_fb(void __iomem *regs, void __iomem *smem_base,
-+static int __devinit alloc_carmine_fb(void __iomem *regs, void __iomem *smem_base,
- 		int smem_offset, struct device *device, struct fb_info **rinfo)
- {
- 	int ret;
+hm.  firmware loader problems, perhaps?
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

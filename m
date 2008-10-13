@@ -1,61 +1,185 @@
-From: "Michal Januszewski" <michalj@gmail.com>
-Subject: Re: [Bugme-new] [Bug 11734] New: Ramdonly linux
-	don't boot,
-	it hangs at the very first stage of booting with some error related
-	with uvesafb
-Date: Sat, 11 Oct 2008 11:38:00 +0200
-Message-ID: <5d9b736f0810110238v6290ec5dm8d1621edaa99c12e@mail.gmail.com>
-References: <bug-11734-10286@http.bugzilla.kernel.org/>
-	<20081010135045.8b4772f5.akpm@linux-foundation.org>
+From: "Geoffroy Carrier" <geoffroy.carrier@koon.fr>
+Subject: Re: [PATCH] intelfb: support 945GME (as used in ASUS Eee 901)
+Date: Mon, 13 Oct 2008 03:09:32 +0200
+Message-ID: <c9084260810121809y54397bf2h9a602d4aa2468e2e@mail.gmail.com>
+References: <1220010645384@dmwebmail.dmwebmail.chezphil.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <michalj@gmail.com>) id 1KoazO-0006iO-Pl
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 11 Oct 2008 09:42:22 +0000
-Received: from wf-out-1314.google.com ([209.85.200.175])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KoavC-0003Vi-LT for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 11 Oct 2008 09:42:22 +0000
-Received: by wf-out-1314.google.com with SMTP id 27so912371wfd.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 11 Oct 2008 02:38:00 -0700 (PDT)
-In-Reply-To: <20081010135045.8b4772f5.akpm@linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755309AbYJMBJq@vger.kernel.org>
+In-Reply-To: <1220010645384@dmwebmail.dmwebmail.chezphil.org>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: diegoocampo8@gmail.com, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Oct 10, 2008 at 22:50, Andrew Morton <akpm@linux-foundation.org> wrote:
-
->> I am not sure if it is related with Ubuntu or with the kernel but the problems
->> take place in the very first stage of booting (maybe with the loading of the
->> kernel??) and I get the following error messages:
->> "606627 uvesafb: failed to execute /sbin/v86d"
->> "606719 uvesafb: make sure that the v86d helper is installed and executable"
->> "606814 uvesafb: Getting VBE info block failed (eax=0x4f00, err=-2)"
->> "606905 uvesafb: vbe_init() failed with -22
+On Fri, Aug 29, 2008 at 13:50, Phil Endecott
+<phil_wueww_endecott@chezphil.org> wrote:
+> The following patch adds support for Intel's 945GME graphics chip to
+> the intelfb driver.  I have assumed that the 945GME is identical to the
+> already-supported 945GM apart from its PCI IDs; this is based on a quick
+> look at the X driver for these chips which seems to treat them
+> identically.
 >
->> Like i said this is a ramdonly problem,if i restart the computer most probably
->> ubuntu starts, but i think it is very annoying anyway!.
+> Signed-off-by: Phil Endecott <spam_from_intelfb@chezphil.org>
+>
+> ---
+>
+> The 945GME is used in the ASUS Eee 901, and I coded this in the hope that
+> I'd be able to use it to get a console at the native 1024x600 resolution
+> which is not known to the BIOS.  I realised too late that the intelfb
+> driver does not support mode changing on laptops, so it won't be any
+> use for me.  But rather than throw it away I will post it here as
+> essentially "untested"; maybe someone who knows more about this driver,
+> and with more useful hardware to test on, can pick it up.
+>
+> diff --git a/Documentation/fb/intelfb.txt b/Documentation/fb/intelfb.txt
+> index 27a3160..dd9e944 100644
+> --- a/Documentation/fb/intelfb.txt
+> +++ b/Documentation/fb/intelfb.txt
+> @@ -14,6 +14,7 @@ graphics devices.  These would include:
+>        Intel 915GM
+>        Intel 945G
+>        Intel 945GM
+> +       Intel 945GME
+>        Intel 965G
+>        Intel 965GM
+>
+> diff --git a/drivers/video/intelfb/intelfb.h b/drivers/video/intelfb/intelfb.h
+> index 3325fbd..a50bea6 100644
+> --- a/drivers/video/intelfb/intelfb.h
+> +++ b/drivers/video/intelfb/intelfb.h
+> @@ -12,9 +12,9 @@
+>  #endif
+>
+>  /*** Version/name ***/
+> -#define INTELFB_VERSION                        "0.9.5"
+> +#define INTELFB_VERSION                        "0.9.6"
+>  #define INTELFB_MODULE_NAME            "intelfb"
+> -#define SUPPORTED_CHIPSETS             "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM"
+> +#define SUPPORTED_CHIPSETS             "830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM"
+>
+>
+>  /*** Debug/feature defines ***/
+> @@ -58,6 +58,7 @@
+>  #define PCI_DEVICE_ID_INTEL_915GM      0x2592
+>  #define PCI_DEVICE_ID_INTEL_945G       0x2772
+>  #define PCI_DEVICE_ID_INTEL_945GM      0x27A2
+> +#define PCI_DEVICE_ID_INTEL_945GME     0x27AE
+>  #define PCI_DEVICE_ID_INTEL_965G       0x29A2
+>  #define PCI_DEVICE_ID_INTEL_965GM      0x2A02
+>
+> @@ -160,6 +161,7 @@ enum intel_chips {
+>        INTEL_915GM,
+>        INTEL_945G,
+>        INTEL_945GM,
+> +       INTEL_945GME,
+>        INTEL_965G,
+>        INTEL_965GM,
+>  };
+> @@ -363,6 +365,7 @@ struct intelfb_info {
+>                        ((dinfo)->chipset == INTEL_915GM) ||    \
+>                        ((dinfo)->chipset == INTEL_945G) ||     \
+>                        ((dinfo)->chipset == INTEL_945GM) ||    \
+> +                       ((dinfo)->chipset == INTEL_945GME) ||   \
+>                        ((dinfo)->chipset == INTEL_965G) ||     \
+>                        ((dinfo)->chipset == INTEL_965GM))
+>
+> diff --git a/drivers/video/intelfb/intelfb_i2c.c b/drivers/video/intelfb/intelfb_i2c.c
+> index fcf9fad..5d896b8 100644
+> --- a/drivers/video/intelfb/intelfb_i2c.c
+> +++ b/drivers/video/intelfb/intelfb_i2c.c
+> @@ -171,6 +171,7 @@ void intelfb_create_i2c_busses(struct intelfb_info *dinfo)
+>                /* has some LVDS + tv-out */
+>        case INTEL_945G:
+>        case INTEL_945GM:
+> +       case INTEL_945GME:
+>        case INTEL_965G:
+>        case INTEL_965GM:
+>                /* SDVO ports have a single control bus - 2 devices */
+> diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+> index e44303f..a09e236 100644
+> --- a/drivers/video/intelfb/intelfbdrv.c
+> +++ b/drivers/video/intelfb/intelfbdrv.c
+> @@ -2,7 +2,7 @@
+>  * intelfb
+>  *
+>  * Linux framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G/915GM/
+> - * 945G/945GM/965G/965GM integrated graphics chips.
+> + * 945G/945GM/945GME/965G/965GM integrated graphics chips.
+>  *
+>  * Copyright (c) 2002, 2003 David Dawes <dawes@xfree86.org>
+>  *                   2004 Sylvain Meyer
+> @@ -102,6 +102,9 @@
+>  *
+>  *    04/2008 - Version 0.9.5
+>  *              Add support for 965G/965GM. (Maik Broemme <mbroemme@plusserver.de>)
+> + *
+> + *    08/2008 - Version 0.9.6
+> + *              Add support for 945GME. (Phil Endecott <spam_from_intelfb@chezphil.org>)
+>  */
+>
+>  #include <linux/module.h>
+> @@ -183,6 +186,7 @@ static struct pci_device_id intelfb_pci_table[] __devinitdata = {
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_915GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_915GM },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945G },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GM },
+> +       { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_945GME, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_945GME },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965G },
+>        { PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_965GM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_965GM },
+>        { 0, }
+> @@ -555,6 +559,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+>            (ent->device == PCI_DEVICE_ID_INTEL_915GM) ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_945G)  ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_945GM) ||
+> +           (ent->device == PCI_DEVICE_ID_INTEL_945GME) ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_965G) ||
+>            (ent->device == PCI_DEVICE_ID_INTEL_965GM)) {
+>
+> diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
+> index 8e6d6a4..8b26b27 100644
+> --- a/drivers/video/intelfb/intelfbhw.c
+> +++ b/drivers/video/intelfb/intelfbhw.c
+> @@ -143,6 +143,12 @@ int intelfbhw_get_chipset(struct pci_dev *pdev, struct intelfb_info *dinfo)
+>                dinfo->mobile = 1;
+>                dinfo->pll_index = PLLS_I9xx;
+>                return 0;
+> +       case PCI_DEVICE_ID_INTEL_945GME:
+> +               dinfo->name = "Intel(R) 945GME";
+> +               dinfo->chipset = INTEL_945GME;
+> +               dinfo->mobile = 1;
+> +               dinfo->pll_index = PLLS_I9xx;
+> +               return 0;
+>        case PCI_DEVICE_ID_INTEL_965G:
+>                dinfo->name = "Intel(R) 965G";
+>                dinfo->chipset = INTEL_965G;
+> @@ -186,6 +192,7 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
+>        case PCI_DEVICE_ID_INTEL_915GM:
+>        case PCI_DEVICE_ID_INTEL_945G:
+>        case PCI_DEVICE_ID_INTEL_945GM:
+> +       case PCI_DEVICE_ID_INTEL_945GME:
+>        case PCI_DEVICE_ID_INTEL_965G:
+>        case PCI_DEVICE_ID_INTEL_965GM:
+>                /* 915, 945 and 965 chipsets support a 256MB aperture.
 
-Do you have these uvesafb error messages in the kernel log (run `dmesg`
-to check the kernel log) when your laptop boots successfully?
+Acked-by: Geoffroy Carrier <geoffroy.carrier@koon.fr>
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Used with success on mainline 2.6.27.
+
+For your resolution problem, here is my solution.
+Set modes in grub2, thanks to the 915resolution module from:
+http://www.nathancoulson.com/proj_eee.shtml
+It didn't work with 0.5.2-2 (unrecognized chipset), but 0.5.2-3
+includes its support. The new patch was originally written for the
+eeepc901 (AFAIK), but works fine on my laptop (MSI Wind U100).
+
+FYI, I used in grub.cfg:
+insmod 915resolution
+915resolution 32 1024 600
+[...]
+linux /boot/[...] vga=789
+
+I can't wait for kernel modesetting...
+
+-- 
+Geoffroy Carrier

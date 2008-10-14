@@ -1,13 +1,18 @@
-From: Matteo Fortini <m.fortini@selcomgroup.com>
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu MB862xx GDCs
-Date: Tue, 14 Oct 2008 19:10:55 +0200
-Message-ID: <48F4D29F.6090909@selcomgroup.com>
-References: <1223997906-19900-1-git-send-email-agust@denx.de>	<gd2f4s$82f$1@ger.gmane.org>
+Date: Tue, 14 Oct 2008 21:53:22 +0400
+Message-ID: <20081014175322.GA30941@oksana.dev.rtsoft.ru>
+References: <1223997906-19900-1-git-send-email-agust@denx.de>
+	<gd2f4s$82f$1@ger.gmane.org>
 	<20081014170455.GA16338@oksana.dev.rtsoft.ru>
+	<48F4D29F.6090909@selcomgroup.com>
+Reply-To: avorontsov@ru.mvista.com
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <20081014170455.GA16338@oksana.dev.rtsoft.ru>
+Content-Disposition: inline
+In-Reply-To: <48F4D29F.6090909@selcomgroup.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,41 +23,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
 Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: avorontsov@ru.mvista.com
+To: Matteo Fortini <m.fortini@selcomgroup.com>
 Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linuxppc-dev@ozlabs.org, Anatolij Gustschin <agust@denx.de>, linux-fbdev-devel@lists.sourceforge.net
 
-Carminefb driver, though, supports 800x600 resolution.
-
-BTW, I tried this patch and I get wrong colors on a patched DirectFB 
-which is changing the endianness on the fly. Is this driver already 
-taking care of this?
-
-Regards,
-M
-
-Anton Vorontsov ha scritto:
-> On Tue, Oct 14, 2008 at 03:50:52PM +0000, Dmitry Baryshkov wrote:
->   
->> Anatolij Gustschin wrote:
->>
->>     
->>> This patch adds framebuffer driver for Fujitsu Carmine/Coral-P(A)/Lime
->>> graphics controllers. Lime GDC support is known to work on PPC440EPx
->>> based lwmon5 and MPC8544E based socrates embedded boards, both equipped
->>> with Lime GDC. Carmine/Coral-P PCI GDC support is known to work on
->>> PPC440EPx based Sequoia board and also on x86 platform.
->>>
->>> Signed-off-by: Anatolij Gustschin <agust@denx.de> ---
->>> There are some PPC OF bits, so I'm cc'ing linuxppc-dev list.
->>>       
->> I though there is already carminefb driver.
->>     
+On Tue, Oct 14, 2008 at 07:10:55PM +0200, Matteo Fortini wrote:
+> Carminefb driver, though, supports 800x600 resolution.
 >
-> FWIW, I quite like Anatolij's driver: it has PCI and OF bindings, plus
-> the patch description states that the driver supports Mint controllers
-> as well, and I have some hardware that actually needs the support for
-> Mint GDCs. (Today we just configure the GDC in the firmware and linux
-> use offb.c driver with static setup, w/o ability to change modes e.t.c.)
->
->   
+> BTW, I tried this patch and I get wrong colors on a patched DirectFB  
+> which is changing the endianness on the fly. Is this driver already  
+> taking care of this?
+
+Yup. But you can change that, just delete FB_*_ENDIAN stuff from
+drivers/video/Kconfig:
+
++config FB_MB862XX_LIME
++       bool "Lime GDC"
++       depends on FB_MB862XX
++       select FB_FOREIGN_ENDIAN
++       select FB_LITTLE_ENDIAN
+
+..but then the kernel's fb console will be with the wrong colors.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2

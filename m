@@ -1,107 +1,86 @@
-From: Anatolij Gustschin <agust@denx.de>
-Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu MB862xx GDCs
-Date: Tue, 14 Oct 2008 23:24:39 +0200
-Message-ID: <48F50E17.7020801@denx.de>
-References: <1223997906-19900-1-git-send-email-agust@denx.de>	<gd2f4s$82f$1@ger.gmane.org>
-	<20081014170455.GA16338@oksana.dev.rtsoft.ru>
-	<48F4D29F.6090909@selcomgroup.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: i.MX framebuffer patches
+Date: Wed, 15 Oct 2008 10:28:00 +0200
+Message-ID: <20081015082800.GG756@pengutronix.de>
+References: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <48F4D29F.6090909@selcomgroup.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sha@pengutronix.de>) id 1Kq1nZ-0000LZ-4P
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 15 Oct 2008 08:32:05 +0000
+Received: from metis.extern.pengutronix.de ([83.236.181.26])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Kq1jh-0000bA-JR
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 15 Oct 2008 08:32:03 +0000
+Content-Disposition: inline
+In-Reply-To: <1220354697-13648-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Matteo Fortini <m.fortini@selcomgroup.com>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Dyer <amdyer@gmail.com>
 
-Matteo Fortini wrote:
+On Tue, Sep 02, 2008 at 01:24:43PM +0200, Sascha Hauer wrote:
+> These patches are the rework of the patches I sent some time ago based
+> on comments from Krzysztof Helt, Andrew Dyer and Russell King. The patches
+> are also available as git:
+> 
+> git://pasiphae.extern.pengutronix.de/git/imx/linux-2.6.git imxfb
 
-> Carminefb driver, though, supports 800x600 resolution.
+Are these patches being cared upon? They didn't show up in any tree yet.
+To show off my growing git experience here's a proper pull request ;)
 
-if you use this patch below
+Sascha
 
-diff --git a/drivers/video/mb862xx/mb862xxfb.c b/drivers/video/mb862xx/mb862xxfb.c
-index 26b66cb..904a111 100644
---- a/drivers/video/mb862xx/mb862xxfb.c
-+++ b/drivers/video/mb862xx/mb862xxfb.c
-@@ -218,6 +218,8 @@ static int mb862xxfb_set_par(struct fb_info *fbi)
- 	if (par->pre_init)
- 		return 0;
- 
-+	fbi->fix.line_length = (fbi->var.xres_virtual *
-+				fbi->var.bits_per_pixel) / 8;
- 	/* disp off */
- 	reg = inreg(disp, GC_DCM1);
- 	reg &= ~GC_DCM01_DEN;
+The following changes since commit 278429cff8809958d25415ba0ed32b59866ab1a8:
+  Linus Torvalds (1):
+        Merge branch 'i2c-for-linus' of git://jdelvare.pck.nerim.net/jdelvare-2.6
 
-and something like this in user space:
+are available in the git repository at:
 
-int fd;
-struct fb_var_screeninfo var_info;
+  git://pasiphae.extern.pengutronix.de/git/imx/linux-2.6.git imxfb
 
-if ((fd=open("/dev/fb0", O_RDWR))==-1) {
-	fprintf(stderr, "Cannot open /dev/fb0\n");
-	exit(1);
-}
-var_info.xres = 800;
-var_info.yres = 600;
-var_info.xres_virtual = 800;
-var_info.yres_virtual = 600;
-var_info.pixclock = 25000;
-var_info.left_margin = 88;
-var_info.right_margin = 40;
-var_info.lower_margin = 1;
-var_info.upper_margin = 23;
-var_info.hsync_len = 128;
-var_info.vsync_len = 4;
+Juergen Beisert (1):
+      i.MX Framebuffer: Use readl/writel instead of direct pointer deref
 
-if (ioctl(fd, FBIOPUT_VSCREENINFO, &var_info)<0) {
-	fprintf(stderr, "Cannot set fb var_info\n");
-	exit(1);
-}
+Sascha Hauer (5):
+      i.MX Framebuffer: remove gpio setup function
+      i.MX Framebuffer: fix margins
+      i.MX Framebuffer: remove header file
+      i.MX Framebuffer: Cleanup Coding style
+      i.MX Framebuffer: rename imxfb_mach_info to imx_fb_platform_data
 
-than 800x600 resolution should be possible too. Also 1024x768
-resolution should be possible with appropriate parameters.
+sascha Hauer (1):
+      i.MX Framebuffer: add TFT support
 
-> BTW, I tried this patch and I get wrong colors on a patched DirectFB
-> which is changing the endianness on the fly. Is this driver already
-> taking care of this?
+ arch/arm/mach-imx/include/mach/imxfb.h |   50 ++++-
+ drivers/video/imxfb.c                  |  468 ++++++++++++++++++--------------
+ drivers/video/imxfb.h                  |   73 -----
+ 3 files changed, 315 insertions(+), 276 deletions(-)
+ delete mode 100644 drivers/video/imxfb.h
 
-I don't know how it behaves with DirectFB. But to get proper
-framebuffer console colors with carmine/coralp GDCs I used a
-small patch below:
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ae4ecdf..e998048 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -891,11 +891,11 @@ struct fb_info {
- 
- #define fb_readb __raw_readb
- #define fb_readw __raw_readw
--#define fb_readl __raw_readl
-+#define fb_readl readl
- #define fb_readq __raw_readq
- #define fb_writeb __raw_writeb
- #define fb_writew __raw_writew
--#define fb_writel __raw_writel
-+#define fb_writel writel
- #define fb_writeq __raw_writeq
- #define fb_memset memset_io
- 
-Best regards,
-Anatolij
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

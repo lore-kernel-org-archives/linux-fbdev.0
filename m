@@ -1,38 +1,73 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Add new framebuffer driver for Fujitsu MB862xx GDCs
-Date: Thu, 16 Oct 2008 14:17:29 -0700
-Message-ID: <20081016141729.1f6550f0.akpm@linux-foundation.org>
-References: <1223997906-19900-1-git-send-email-agust@denx.de>
+From: Huang Weiyi <weiyi.huang@gmail.com>
+Subject: viafb: removed duplicated #include's
+Date: Fri, 17 Oct 2008 06:53:24 +0800
+Message-ID: <20081017065315.2AEF.WEIYI.HUANG@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <1223997906-19900-1-git-send-email-agust@denx.de>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <weiyi.huang@gmail.com>) id 1Kqbim-0005eo-O0
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 16 Oct 2008 22:53:32 +0000
+Received: from ti-out-0910.google.com ([209.85.142.191])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Kqbii-0002bq-7v for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 16 Oct 2008 22:53:32 +0000
+Received: by ti-out-0910.google.com with SMTP id y6so95778tia.18
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 16 Oct 2008 15:53:26 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: Anatolij Gustschin <agust@denx.de>
-Cc: Dmitry@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, Baryshkov <dbaryshkov@gmail.com>, Matteo Fortini <m.fortini@selcomgroup.com>, linuxppc-dev@ozlabs.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: JosephChan@via.com.tw, ScottFang@viatech.com.cn
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 14 Oct 2008 17:25:06 +0200
-Anatolij Gustschin <agust@denx.de> wrote:
+Removed duplicated #include's in drivers/video/via/global.h.
+  debug.h
+  viafbdev.h
+  viamode.h
 
-> This patch adds framebuffer driver for Fujitsu
-> Carmine/Coral-P(A)/Lime graphics controllers.
-> Lime GDC support is known to work on PPC440EPx
-> based lwmon5 and MPC8544E based socrates embedded
-> boards, both equipped with Lime GDC. Carmine/Coral-P
-> PCI GDC support is known to work on PPC440EPx based
-> Sequoia board and also on x86 platform.
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
-Well I've read all the followup discussion and now I don't know what
-to do.
+diff --git a/drivers/video/via/global.h b/drivers/video/via/global.h
+index 8e5263c..7543d5f 100644
+--- a/drivers/video/via/global.h
++++ b/drivers/video/via/global.h
+@@ -38,7 +38,6 @@
+ #include "iface.h"
+ #include "viafbdev.h"
+ #include "chip.h"
+-#include "debug.h"
+ #include "accel.h"
+ #include "share.h"
+ #include "dvi.h"
+@@ -48,12 +47,10 @@
 
-I think I'll just merge it and see if anyone shouts at me.
+ #include "lcd.h"
+ #include "ioctl.h"
+-#include "viamode.h"
+ #include "via_utility.h"
+ #include "vt1636.h"
+ #include "tblDPASetting.h"
+ #include "tbl1636.h"
+-#include "viafbdev.h"
+
+ /* External struct*/
+
+
+
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

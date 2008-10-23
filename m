@@ -1,24 +1,38 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Freeze when calling ioctl with VT_ACTIVATE
- request code number on intelfb
-Date: Thu, 23 Oct 2008 09:29:45 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0810230907560.7533@anakin>
-References: <db471ace0810221552k158829d0te481c8f4483754fa@mail.gmail.com>
+Subject: lockdep splat from fbmem (fwd)
+Date: Thu, 23 Oct 2008 09:30:47 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0810230930431.7533@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@linux-m68k.org>) id 1Ksudn-0005R3-HV
+	(envelope-from <geert@linux-m68k.org>) id 1Ksuev-0005YQ-8N
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Oct 2008 07:29:55 +0000
-Received: from monty.telenet-ops.be ([195.130.132.56])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Ksudl-0006Vz-Pi for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Oct 2008 07:29:55 +0000
-In-Reply-To: <db471ace0810221552k158829d0te481c8f4483754fa@mail.gmail.com>
+	Thu, 23 Oct 2008 07:31:05 +0000
+Received: from wilson.telenet-ops.be ([195.130.132.42])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Ksuel-0005b6-TO for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 23 Oct 2008 07:31:05 +0000
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by wilson.telenet-ops.be (Postfix) with SMTP id 5FE7F3402C
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 23 Oct 2008 09:30:48 +0200 (CEST)
+Received: from anakin.of.borg (d54C15368.access.telenet.be [84.193.83.104])
+	by wilson.telenet-ops.be (Postfix) with ESMTP id 4704E34023
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 23 Oct 2008 09:30:48 +0200 (CEST)
+Received: from anakin.of.borg (localhost [127.0.0.1])
+	by anakin.of.borg (8.14.3/8.14.3/Debian-5) with ESMTP id m9N7UlhA018045
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 23 Oct 2008 09:30:47 +0200
+Received: from localhost (geert@localhost)
+	by anakin.of.borg (8.14.3/8.14.3/Submit) with ESMTP id m9N7Ulj0018042
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 23 Oct 2008 09:30:47 +0200
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,75 +42,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Peter Geoghegan <peter.geoghegan86@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 22 Oct 2008, Peter Geoghegan wrote:
-> I hoped one of you could weigh in, and help me find out why a utility
-> that writes to the framebuffer causes my system to freeze (the
-> applicaton immediately freezes, and I can only restart through ctrl,
-> alt, del). It's called ts_calibrate, and it's a utility for
-> calibrating touchscreens that use Tslib, an abstraction layer for
-> touchscreen panel events.
-> 
-> When I start the program, I am prompted with a message, but it is
-> totally unresponsive (save for the ctrl, alt, del thing). I decided to
-> run it through GDB, to isolate the problem.
-> 
-> Here is where the problem occurs:
-> 
-> *snip*
-> (gdb) n
-> 79                      sprintf(vtname, "%s%d", consoledevice, nr);
+---------- Forwarded message ----------
+Date: Thu, 23 Oct 2008 05:23:38 +0200
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Andrea Righi <righi.andrea@gmail.com>,
+    Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: lockdep splat from fbmem
 
-I guess `consoledevice' contains `/dev/tty', not `/dev/fb'?
+Hi,
 
-> (gdb) n
-> 81                      con_fd = open(vtname, O_RDWR | O_NDELAY);
-> (gdb) n
-> 82                      if (con_fd < 0) {
-> (gdb) n
-> 81                      con_fd = open(vtname, O_RDWR | O_NDELAY);
-> (gdb) n
-> 82                      if (con_fd < 0) {
-> (gdb) n
-> 87                      if (ioctl(con_fd, VT_GETSTATE, &vts) == 0)
-> (gdb) n
-> 88                              last_vt = vts.v_active;
-> (gdb) n
-> 90                      if (ioctl(con_fd, VT_ACTIVATE, nr) < 0) {
-> (gdb) n
-> 
-> ...
-> 
-> And now, the screen goes black. As I've said, when I'm not debugging,
-> I can see an appropriate message that indicates that the framebuffer
-> is succesfully written to at least initally, but it's still not
-> responsive.
+fb_mmap() is called under mmap_sem and acquires fb_info->lock.
 
-Are you debugging this from the frame buffer console? If yes, please try
-a serial console or remote login.
+Since 3e680aae4e53ab "fb: convert lock/unlock_kernel() into local fb
+mutex", fb_ioctl() takes fb_info->lock and does copy_to/from_user()
+under it, which in turn might acquire mmap_sem.
 
-> I'm using the intelfb kernel module for intel graphics controllers. I
-> run the X server on a separate virtual terminal.
-> 
-> I guess the ioctl system call is responsible, but I'm unsure of how,
-> or what can be done about it. If someone could offer advice on how to
-> prevent this from occurring, that would be greatly appreciated,
+Just noticed the trace and wanted to let you know.
 
-So far this looks virtual console specific, not frame buffer specific.
-Does switching virtual consoles manually work?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
+        Hannes
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

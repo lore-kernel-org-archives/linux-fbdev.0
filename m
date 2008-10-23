@@ -1,38 +1,29 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: lockdep splat from fbmem (fwd)
-Date: Thu, 23 Oct 2008 09:30:47 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0810230930431.7533@anakin>
+From: "Peter Geoghegan" <peter.geoghegan86@gmail.com>
+Subject: Re: Freeze when calling ioctl with VT_ACTIVATE
+	request code number on intelfb
+Date: Thu, 23 Oct 2008 09:50:57 +0100
+Message-ID: <db471ace0810230150m710f2adfif38f16df584e858d@mail.gmail.com>
+References: <db471ace0810221552k158829d0te481c8f4483754fa@mail.gmail.com>
+	<Pine.LNX.4.64.0810230907560.7533@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@linux-m68k.org>) id 1Ksuev-0005YQ-8N
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <peter.geoghegan86@gmail.com>) id 1Ksvwo-0007yw-G5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Oct 2008 07:31:05 +0000
-Received: from wilson.telenet-ops.be ([195.130.132.42])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Ksuel-0005b6-TO for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 23 Oct 2008 07:31:05 +0000
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by wilson.telenet-ops.be (Postfix) with SMTP id 5FE7F3402C
+	Thu, 23 Oct 2008 08:53:38 +0000
+Received: from yw-out-1718.google.com ([74.125.46.153])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KsvuE-0007YZ-DI for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 23 Oct 2008 08:53:38 +0000
+Received: by yw-out-1718.google.com with SMTP id 6so38089ywa.82
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 23 Oct 2008 09:30:48 +0200 (CEST)
-Received: from anakin.of.borg (d54C15368.access.telenet.be [84.193.83.104])
-	by wilson.telenet-ops.be (Postfix) with ESMTP id 4704E34023
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 23 Oct 2008 09:30:48 +0200 (CEST)
-Received: from anakin.of.borg (localhost [127.0.0.1])
-	by anakin.of.borg (8.14.3/8.14.3/Debian-5) with ESMTP id m9N7UlhA018045
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 23 Oct 2008 09:30:47 +0200
-Received: from localhost (geert@localhost)
-	by anakin.of.borg (8.14.3/8.14.3/Submit) with ESMTP id m9N7Ulj0018042
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 23 Oct 2008 09:30:47 +0200
+	Thu, 23 Oct 2008 01:50:57 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0810230907560.7533@anakin>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -42,32 +33,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 
----------- Forwarded message ----------
-Date: Thu, 23 Oct 2008 05:23:38 +0200
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-    Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: lockdep splat from fbmem
+Geert,
 
-Hi,
+> I guess `consoledevice' contains `/dev/tty', not `/dev/fb'?
 
-fb_mmap() is called under mmap_sem and acquires fb_info->lock.
+Yes. I just thought I'd put the really relevant line in context in
+case someone wanted to refer to the Tslib source
 
-Since 3e680aae4e53ab "fb: convert lock/unlock_kernel() into local fb
-mutex", fb_ioctl() takes fb_info->lock and does copy_to/from_user()
-under it, which in turn might acquire mmap_sem.
+> So far this looks virtual console specific, not frame buffer specific.
+> Does switching virtual consoles manually work?
 
-Just noticed the trace and wanted to let you know.
+No, it does not. That is what led me to believe that it was frame
+buffer specific,
 
-        Hannes
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Thanks,
+Peter
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

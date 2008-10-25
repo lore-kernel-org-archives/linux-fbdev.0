@@ -1,168 +1,45 @@
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH RESEND] vgacon: remember scrollback buffer on console switch
-Date: Sat, 25 Oct 2008 21:58:19 +0200
-Message-ID: <20081025195814.GD10932@joi>
+Subject: [PATCH] fbcon: don't inline updatescrollmode
+Date: Sat, 25 Oct 2008 22:00:59 +0200
+Message-ID: <20081025200055.GE10932@joi>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752101AbYJYT6z@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751768AbYJYUBa@vger.kernel.org>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Antonino Daplas <adaplas@gmail.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+Cc: Antonino Daplas <adaplas@gmail.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, linux-fbdev-devel@lists.sourceforge.net
 
-Add support for persistent console history, surviving
-console switches. It allocates new scrollback buffer only when
-user switches console for the first time.
+Updatescrollmode is marked inline, but it's big and is called only from
+non-critical codepaths (fbcon_resize, fbcon_switch, fbcon_modechanged).
+Dropping it saves almost 800 bytes of text size.
+
+   text    data     bss     dec     hex filename
+  23859     287    8448   32594    7f52 drivers/video/console/fbcon.o.before
+  23065     287    8448   31800    7c38 drivers/video/console/fbcon.o.after
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 Cc: Antonino Daplas <adaplas@gmail.com>
 Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 ---
- drivers/video/console/Kconfig  |   11 ++++++
- drivers/video/console/vgacon.c |   75 +++++++++++++++++++++++++++++++++++++--
- 2 files changed, 82 insertions(+), 4 deletions(-)
+ drivers/video/console/fbcon.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 2f50a80..09e3d98 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -43,6 +43,17 @@ config VGACON_SOFT_SCROLLBACK_SIZE
- 	 buffer.  Each 64KB will give you approximately 16 80x25
- 	 screenfuls of scrollback buffer
- 
-+config VGACON_REMEMBER_SCROLLBACK
-+	bool "Remember scrollback buffer on console switch"
-+	depends on VGACON_SOFT_SCROLLBACK
-+	default y
-+	help
-+	 Say 'Y' here if you want the scrollback buffer to be remembered
-+	 on console switch and restored when you switch back.
-+
-+	 Note: every VGA console will use its own buffer, but it will be
-+	 allocated only when you switch to this console for the first time.
-+
- config MDA_CONSOLE
- 	depends on !M68K && !PARISC && ISA
- 	tristate "MDA text console (dual-headed) (EXPERIMENTAL)"
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 448d209..15ee7e1 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -174,9 +174,11 @@ static int vgacon_scrollback_cur;
- static int vgacon_scrollback_save;
- static int vgacon_scrollback_restore;
- 
-+#define SCROLLBACK_SIZE (CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024)
-+
- static void vgacon_scrollback_init(int pitch)
- {
--	int rows = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-+	int rows = SCROLLBACK_SIZE / pitch;
- 
- 	if (vgacon_scrollback) {
- 		vgacon_scrollback_cnt  = 0;
-@@ -187,15 +189,76 @@ static void vgacon_scrollback_init(int pitch)
- 	}
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 64b3d30..b92947d 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2118,7 +2118,7 @@ static void fbcon_bmove_rec(struct vc_data *vc, struct display *p, int sy, int s
+ 		   height, width);
  }
  
-+#ifdef CONFIG_VGACON_REMEMBER_SCROLLBACK
-+static struct vgacon_scrollback_info {
-+	void *data;
-+	int cnt;
-+	int tail;
-+	int cur;
-+	int rows;
-+	int size;
-+} vgacon_scrollbacks[MAX_NR_CONSOLES];
-+static int vgacon_last_vc_num;
-+
-+static void vgacon_switch_scrollback(struct vc_data *c)
-+{
-+	int num = c->vc_num;
-+	struct vgacon_scrollback_info *old_scrollback =
-+				&vgacon_scrollbacks[vgacon_last_vc_num];
-+	struct vgacon_scrollback_info *new_scrollback =
-+				&vgacon_scrollbacks[num];
-+
-+	old_scrollback->cnt  = vgacon_scrollback_cnt;
-+	old_scrollback->tail = vgacon_scrollback_tail;
-+	old_scrollback->cur  = vgacon_scrollback_cur;
-+	old_scrollback->rows = vgacon_scrollback_rows;
-+	old_scrollback->size = vgacon_scrollback_size;
-+
-+	if (!new_scrollback->data) {
-+		int rows = SCROLLBACK_SIZE / c->vc_size_row;
-+
-+		new_scrollback->data = kmalloc(SCROLLBACK_SIZE, GFP_KERNEL);
-+		new_scrollback->cnt  = 0;
-+		new_scrollback->tail = 0;
-+		new_scrollback->cur  = 0;
-+		new_scrollback->rows = rows - 1;
-+		new_scrollback->size = rows * c->vc_size_row;
-+
-+		if (!new_scrollback->data) {
-+			printk(KERN_WARNING "VGAcon: failed to allocate memory for scrollback of console %d, using scrollback of console %d.\n",
-+						num, vgacon_last_vc_num);
-+			new_scrollback->data = old_scrollback->data;
-+			old_scrollback->data = NULL;
-+		}
-+	}
-+
-+	vgacon_scrollback      = new_scrollback->data;
-+	vgacon_scrollback_cnt  = new_scrollback->cnt;
-+	vgacon_scrollback_tail = new_scrollback->tail;
-+	vgacon_scrollback_cur  = new_scrollback->cur;
-+	vgacon_scrollback_rows = new_scrollback->rows;
-+	vgacon_scrollback_size = new_scrollback->size;
-+
-+	vgacon_last_vc_num = num;
-+}
-+#else
-+static inline void vgacon_switch_scrollback(struct vc_data *c)
-+{
-+	vgacon_scrollback_init(c->vc_size_row);
-+}
-+#endif
- /*
-  * Called only duing init so call of alloc_bootmen is ok.
-  * Marked __init_refok to silence modpost.
-  */
- static void __init_refok vgacon_scrollback_startup(void)
+-static __inline__ void updatescrollmode(struct display *p,
++static void updatescrollmode(struct display *p,
+ 					struct fb_info *info,
+ 					struct vc_data *vc)
  {
--	vgacon_scrollback = alloc_bootmem(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE
--					  * 1024);
-+	vgacon_scrollback = alloc_bootmem(SCROLLBACK_SIZE);
- 	vgacon_scrollback_init(vga_video_num_columns * 2);
-+#ifdef CONFIG_VGACON_REMEMBER_SCROLLBACK
-+	vgacon_scrollbacks[0].data = vgacon_scrollback;
-+	vgacon_last_vc_num = 0;
-+#endif
- }
- 
- static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
-@@ -317,6 +380,10 @@ static int vgacon_scrolldelta(struct vc_data *c, int lines)
- #define vgacon_scrollback_init(...)    do { } while (0)
- #define vgacon_scrollback_update(...)  do { } while (0)
- 
-+static inline void vgacon_switch_scrollback(struct vc_data *c)
-+{
-+}
-+
- static void vgacon_restore_screen(struct vc_data *c)
- {
- 	if (c->vc_origin != c->vc_visible_origin)
-@@ -823,7 +890,7 @@ static int vgacon_switch(struct vc_data *c)
- 			vgacon_doresize(c, c->vc_cols, c->vc_rows);
- 	}
- 
--	vgacon_scrollback_init(c->vc_size_row);
-+	vgacon_switch_scrollback(c);
- 	return 0;		/* Redrawing not needed */
- }
- 
 -- 
 1.5.6.4

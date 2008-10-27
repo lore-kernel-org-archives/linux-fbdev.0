@@ -1,254 +1,75 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] macfb: Do not overflow fb_fix_screeninfo.id
-Date: Mon, 27 Oct 2008 08:23:43 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0810270822540.15317@anakin>
+From: James Cloos <cloos@jhcloos.com>
+Subject: radeonfb lockup in .28-rc (bisected)
+Date: Mon, 27 Oct 2008 19:45:58 -0400
+Message-ID: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
 Mime-Version: 1.0
-Return-path: <linux-m68k-owner@vger.kernel.org>
-Sender: linux-m68k-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>, Finn Thain <fthain@telegraphics.com.au>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <cloos@jhcloos.com>) id 1Kubqz-0000qF-F5
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Oct 2008 23:50:33 +0000
+Received: from eagle.jhcloos.com ([207.210.242.212])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Kubqw-0005Bf-Gb
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Oct 2008 23:50:33 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 
-From: Finn Thain <fthain@telegraphics.com.au>
+Commit b1ee26bab1 breaks radeonfb on my inspiron 8100 (P3-M with a
+Mobility M7 LW [7500] (1002:4c57 1028:00e6)).
 
-Don't overflow the 16-character fb_fix_screeninfo id string (fixes some 
-console erasing and blanking artifacts). Have the ID default to "Unknown" 
-on machines with no built-in video and no nubus devices. Check for 
-fb_alloc_cmap failure.
+The boot is OK until init(8) starts; after init outputs its version info
+it calls rc(8), which starts by setting the fb font.  At that point any
+kernel with b1ee26bab1 locks hard.  The cursor stops flashing, magic
+sysrq stops working and the fan starts up after a few seconds.  (I can't
+tell whether it is the CPU or the GPU that heats up.)
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/video/macfb.c |   74 +++++++++++++++++++++++---------------------------
- 1 file changed, 35 insertions(+), 39 deletions(-)
+If it is relevant, I use a 10x20 font, so the font change means the
+console converts from 200x75, 8x16 to 160x60, 10x20.
 
---- a/drivers/video/macfb.c
-+++ b/drivers/video/macfb.c
-@@ -164,7 +164,6 @@ static struct fb_var_screeninfo macfb_de
- };
- 
- static struct fb_fix_screeninfo macfb_fix = {
--	.id	= "Macintosh ",
- 	.type	= FB_TYPE_PACKED_PIXELS,
- 	.accel	= FB_ACCEL_NONE,
- };
-@@ -760,22 +759,22 @@ static int __init macfb_init(void)
- 
- 		switch(ndev->dr_hw) {
- 		case NUBUS_DRHW_APPLE_MDC:
--			strcat( macfb_fix.id, "Display Card" );
-+			strcpy(macfb_fix.id, "Mac Disp. Card");
- 			macfb_setpalette = mdc_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 		case NUBUS_DRHW_APPLE_TFB:
--			strcat( macfb_fix.id, "Toby" );
-+			strcpy(macfb_fix.id, "Toby");
- 			macfb_setpalette = toby_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 		case NUBUS_DRHW_APPLE_JET:
--			strcat( macfb_fix.id, "Jet");
-+			strcpy(macfb_fix.id, "Jet");
- 			macfb_setpalette = jet_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;			
- 		default:
--			strcat( macfb_fix.id, "Generic NuBus" );
-+			strcpy(macfb_fix.id, "Generic NuBus");
- 			break;
- 		}
- 	}
-@@ -786,21 +785,11 @@ static int __init macfb_init(void)
- 	if (!video_is_nubus)
- 		switch( mac_bi_data.id )
- 		{
--			/* These don't have onboard video.  Eventually, we may
--			   be able to write separate framebuffer drivers for
--			   them (tobyfb.c, hiresfb.c, etc, etc) */
--		case MAC_MODEL_II:
--		case MAC_MODEL_IIX:
--		case MAC_MODEL_IICX:
--		case MAC_MODEL_IIFX:
--			strcat( macfb_fix.id, "Generic NuBus" );
--			break;
--
- 			/* Valkyrie Quadras */
- 		case MAC_MODEL_Q630:
- 			/* I'm not sure about this one */
- 		case MAC_MODEL_P588:
--			strcat( macfb_fix.id, "Valkyrie built-in" );
-+			strcpy(macfb_fix.id, "Valkyrie");
- 			macfb_setpalette = valkyrie_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			valkyrie_cmap_regs = ioremap(DAC_BASE, 0x1000);
-@@ -823,7 +812,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_Q700:
- 		case MAC_MODEL_Q900:
- 		case MAC_MODEL_Q950:
--			strcat( macfb_fix.id, "DAFB built-in" );
-+			strcpy(macfb_fix.id, "DAFB");
- 			macfb_setpalette = dafb_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			dafb_cmap_regs = ioremap(DAFB_BASE, 0x1000);
-@@ -831,7 +820,7 @@ static int __init macfb_init(void)
- 
- 			/* LC II uses the V8 framebuffer */
- 		case MAC_MODEL_LCII:
--			strcat( macfb_fix.id, "V8 built-in" );
-+			strcpy(macfb_fix.id, "V8");
- 			macfb_setpalette = v8_brazil_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-@@ -843,7 +832,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_IIVI:
- 		case MAC_MODEL_IIVX:
- 		case MAC_MODEL_P600:
--			strcat( macfb_fix.id, "Brazil built-in" );
-+			strcpy(macfb_fix.id, "Brazil");
- 			macfb_setpalette = v8_brazil_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-@@ -860,7 +849,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_P460:
- 			macfb_setpalette = v8_brazil_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "Sonora built-in" );
-+			strcpy(macfb_fix.id, "Sonora");
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
- 			break;
- 
-@@ -871,7 +860,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_IISI:
- 			macfb_setpalette = rbv_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "RBV built-in" );
-+			strcpy(macfb_fix.id, "RBV");
- 			rbv_cmap_regs = ioremap(DAC_BASE, 0x1000);
- 			break;
- 
-@@ -880,7 +869,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_C660:
- 			macfb_setpalette = civic_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "Civic built-in" );
-+			strcpy(macfb_fix.id, "Civic");
- 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
- 			break;
- 
-@@ -901,7 +890,7 @@ static int __init macfb_init(void)
- 				v8_brazil_cmap_regs =
- 					ioremap(DAC_BASE, 0x1000);
- 			}
--			strcat( macfb_fix.id, "LC built-in" );
-+			strcpy(macfb_fix.id, "LC");
- 			break;
- 			/* We think this may be like the LC II */
- 		case MAC_MODEL_CCL:
-@@ -911,18 +900,18 @@ static int __init macfb_init(void)
- 				v8_brazil_cmap_regs =
- 					ioremap(DAC_BASE, 0x1000);
- 			}
--			strcat( macfb_fix.id, "Color Classic built-in" );
-+			strcpy(macfb_fix.id, "Color Classic");
- 			break;
- 
- 			/* And we *do* mean "weirdos" */
- 		case MAC_MODEL_TV:
--			strcat( macfb_fix.id, "Mac TV built-in" );
-+			strcpy(macfb_fix.id, "Mac TV");
- 			break;
- 
- 			/* These don't have colour, so no need to worry */
- 		case MAC_MODEL_SE30:
- 		case MAC_MODEL_CLII:
--			strcat( macfb_fix.id, "Monochrome built-in" );
-+			strcpy(macfb_fix.id, "Monochrome");
- 			break;
- 
- 			/* Powerbooks are particularly difficult.  Many of
-@@ -935,7 +924,7 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB140:
- 		case MAC_MODEL_PB145:
- 		case MAC_MODEL_PB170:
--			strcat( macfb_fix.id, "DDC built-in" );
-+			strcpy(macfb_fix.id, "DDC");
- 			break;
- 
- 			/* Internal is GSC, External (if present) is ViSC */
-@@ -945,13 +934,13 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB180:
- 		case MAC_MODEL_PB210:
- 		case MAC_MODEL_PB230:
--			strcat( macfb_fix.id, "GSC built-in" );
-+			strcpy(macfb_fix.id, "GSC");
- 			break;
- 
- 			/* Internal is TIM, External is ViSC */
- 		case MAC_MODEL_PB165C:
- 		case MAC_MODEL_PB180C:
--			strcat( macfb_fix.id, "TIM built-in" );
-+			strcpy(macfb_fix.id, "TIM");
- 			break;
- 
- 			/* Internal is CSC, External is Keystone+Ariel. */
-@@ -963,12 +952,12 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB280C:
- 			macfb_setpalette = csc_setpalette;
- 			macfb_defined.activate = FB_ACTIVATE_NOW;
--			strcat( macfb_fix.id, "CSC built-in" );
-+			strcpy(macfb_fix.id, "CSC");
- 			csc_cmap_regs = ioremap(CSC_BASE, 0x1000);
- 			break;
- 		
- 		default:
--			strcat( macfb_fix.id, "Unknown/Unsupported built-in" );
-+			strcpy(macfb_fix.id, "Unknown");
- 			break;
- 		}
- 
-@@ -978,16 +967,23 @@ static int __init macfb_init(void)
- 	fb_info.pseudo_palette	= pseudo_palette;
- 	fb_info.flags		= FBINFO_DEFAULT;
- 
--	fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
-+	err = fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
-+	if (err)
-+		goto fail_unmap;
- 	
- 	err = register_framebuffer(&fb_info);
--	if (!err)
--		printk("fb%d: %s frame buffer device\n",
--		       fb_info.node, fb_info.fix.id);
--	else {
--		iounmap(fb_info.screen_base);
--		iounmap_macfb();
--	}
-+	if (err)
-+		goto fail_dealloc;
-+
-+	printk("fb%d: %s frame buffer device\n",
-+	       fb_info.node, fb_info.fix.id);
-+	return 0;
-+
-+fail_dealloc:
-+	fb_dealloc_cmap(&fb_info.cmap);
-+fail_unmap:
-+	iounmap(fb_info.screen_base);
-+	iounmap_macfb();
- 	return err;
- }
- 
+I can boot the bad kernels with init=/bin/bash, and was able to get
+dmesg output.  The differences between rc2 and rc2+revert are limited
+to some changes in the size of the kernel:
 
-Gr{oetje,eeting}s,
+-Memory: 512232k/524200k available (4376k kernel code, 11428k reserved, 1707k data, 320k init, 0k highmem)
++Memory: 512272k/524200k available (4354k kernel code, 11388k reserved, 1693k data, 316k init, 0k highmem)
 
-						Geert
+the sizes of some hash allocations as a result of the above, the normal
+randomish variances in the detected CPU speed, a few minor ordering
+changes:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+-input: AT Translated Set 2 keyboard as /class/input/input5
+ Marking TSC unstable due to TSC halts in idle
++input: AT Translated Set 2 keyboard as /class/input/input5
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+and the output of the various modules that load during a normal boot but
+which I did not load in the init=/bin/bash boot.
+
+I'm running rc2 with b1ee26bab1 reverted now, and nothing else has been
+a problem.
+
+[CC list from the commit's Signed-off-By/Acked-By/CC list.]
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

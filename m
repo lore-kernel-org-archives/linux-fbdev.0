@@ -1,35 +1,29 @@
-From: James Cloos <cloos@jhcloos.com>
-Subject: Re: radeonfb lockup in .28-rc (bisected)
-Date: Mon, 27 Oct 2008 21:50:57 -0400
-Message-ID: <m3prllij1j.fsf@lugabout.jhcloos.org>
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] macfb: Do not overflow fb_fix_screeninfo.id
+Date: Mon, 27 Oct 2008 22:09:57 -0700
+Message-ID: <20081027220957.42cac1db.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0810270822540.15317@anakin>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752793AbYJ1BwD@vger.kernel.org>
-In-Reply-To: <1225152347.8004.49.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Tue, 28 Oct 2008 11:05:47 +1100")
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-m68k-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0810270822540.15317@anakin>
+Sender: linux-m68k-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Halasa <khc@pm.waw.pl>, "David S. Miller" <davem@davemloft.net>, linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@vger.kernel.org>, Finn Thain <fthain@telegraphics.com.au>, stable@kernel.org
 
->>>>> "Benjamin" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, 27 Oct 2008 08:23:43 +0100 (CET) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Benjamin> Annoying... Either I'm doing something wrong (which is always
-Benjamin> possible) or we're hitting yet another fancy ATI bug (the M7
-Benjamin> generation is known to be pretty bad in that area).
+> From: Finn Thain <fthain@telegraphics.com.au>
+> 
+> Don't overflow the 16-character fb_fix_screeninfo id string (fixes some 
+> console erasing and blanking artifacts). Have the ID default to "Unknown" 
+> on machines with no built-in video and no nubus devices. Check for 
+> fb_alloc_cmap failure.
 
-Yes, M7 does have its idiosyncrasies. :)
+The patch applies OK to 2.6.27, 2.6.26 and 2.6.25 (at least).
 
-Benjamin> First, let's see if it's related to the imageblit. Can you
-Benjamin> re-apply the reverted patch and apply this little hack on top
-Benjamin> :
+Should we backport it and if so, how far?
 
-I'm starting a compile now.  It'll be a couple of hours until I can
-reboot.
-
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+Thanks.

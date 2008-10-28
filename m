@@ -1,45 +1,72 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: Re: [PATCH] macfb: Do not overflow fb_fix_screeninfo.id
-Date: Tue, 28 Oct 2008 19:58:00 +1100 (EST)
-Message-ID: <Pine.LNX.4.64.0810281845250.31382@loopy.telegraphics.com.au>
-References: <Pine.LNX.4.64.0810270822540.15317@anakin>
- <20081027220957.42cac1db.akpm@linux-foundation.org>
+From: James Cloos <cloos@jhcloos.com>
+Subject: Re: radeonfb lockup in .28-rc (bisected)
+Date: Tue, 28 Oct 2008 05:24:44 -0400
+Message-ID: <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	<1225152347.8004.49.camel@pasglop>
 Mime-Version: 1.0
-Return-path: <linux-m68k-owner@vger.kernel.org>
-In-Reply-To: <20081027220957.42cac1db.akpm@linux-foundation.org>
-Sender: linux-m68k-owner@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753462AbYJ1JZx@vger.kernel.org>
+In-Reply-To: <1225152347.8004.49.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Tue, 28 Oct 2008 11:05:47 +1100")
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@vger.kernel.org>, stable@kernel.org
+To: benh@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Halasa <khc@pm.waw.pl>, "David S. Miller" <davem@davemloft.net>, linux-fbdev-devel@lists.sourceforge.net
 
+>>>>> "Benjamin" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
+Benjamin> First, let's see if it's related to the imageblit. Can you
+Benjamin> re-apply the reverted patch and apply this little hack on top:
 
-On Mon, 27 Oct 2008, Andrew Morton wrote:
+Benjamin> +#if 0
+Benjamin>  	/* We only do 1 bpp color expansion for now */
+Benjamin>  	if (info->flags & FBINFO_HWACCEL_DISABLED || image->depth != 1)
+Benjamin>  		goto fallback;
+Benjamin> @@ -275,6 +276,7 @@ void radeonfb_imageblit(struct fb_info *
+Benjamin>  	return;
+ 
+Benjamin>   fallback:
+Benjamin> +#endif
 
-> On Mon, 27 Oct 2008 08:23:43 +0100 (CET) Geert Uytterhoeven 
-> <geert@linux-m68k.org> wrote:
-> 
-> > From: Finn Thain <fthain@telegraphics.com.au>
-> > 
-> > Don't overflow the 16-character fb_fix_screeninfo id string (fixes 
-> > some console erasing and blanking artifacts). Have the ID default to 
-> > "Unknown" on machines with no built-in video and no nubus devices. 
-> > Check for fb_alloc_cmap failure.
-> 
-> The patch applies OK to 2.6.27, 2.6.26 and 2.6.25 (at least).
-> 
-> Should we backport it and if so, how far?
+Benjamin> And let me know if that makes it not lockup.
 
-Please do. The problem was introduced somewhere in the 2.5 series.
+Indeed, if-zero-ing out that block does work.
 
-Thanks,
+Since that if essentially removes to call to radeonfb_prim_imageblit(),
+I wonder whether:
 
-Finn
+        /* X here pads width to a multiple of 32 and uses the clipper to
+         * adjust the result. Is that really necessary ? Things seem to
+         * work ok for me without that and the doco doesn't seem to imply
+         * there is such a restriction.
+         */
 
-> 
-> Thanks. -- To unsubscribe from this list: send the line "unsubscribe 
-> linux-m68k" in the body of a message to majordomo@vger.kernel.org More 
-> majordomo info at http://vger.kernel.org/majordomo-info.html
-> 
+is relevant?
+
+Or whether the card is unhappy with the creg settings.  It does seem,
+now that I read the code, that:
+
+void radeon_fifo_update_and_wait(struct radeonfb_info *rinfo, int entries)
+{
+        int i;
+
+        for (i=0; i<2000000; i++) {
+                rinfo->fifo_free = INREG(RBBM_STATUS) & 0x7f;
+                if (rinfo->fifo_free >= entries)
+                        return;
+                udelay(10);
+        }
+        printk(KERN_ERR "radeonfb: FIFO Timeout !\n");
+        /* XXX Todo: attempt to reset the engine */
+}
+
+is in play.  It is probably spinning through all of the 2000000 possible
+udelay(10) calls.  I don't think I ever gave it twenty seconds before
+giving up.  And certainly not forty seconds, if the freeze happens after
+setting the DST_Y_X register.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6

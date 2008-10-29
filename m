@@ -1,21 +1,25 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: framebuffer compat_ioctl deadlock
-Date: Tue, 28 Oct 2008 11:02:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.64.0810281059350.17438@hs20-bc2-1.build.redhat.com>
+From: roel kluin <roel.kluin@gmail.com>
+Subject: [PATCH] gbefb: unsigned var->pixclock cannot be
+	less than 0
+Date: Wed, 29 Oct 2008 17:29:51 -0400
+Message-ID: <4908D5CF.5080103@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <mpatocka@redhat.com>) id 1Kuq6D-0003fG-6A
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1KvIc4-0005Ll-5u
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 28 Oct 2008 15:03:13 +0000
-Received: from mx1.redhat.com ([66.187.233.31])
+	Wed, 29 Oct 2008 21:30:00 +0000
+Received: from ug-out-1314.google.com ([66.249.92.169])
 	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Kuq5y-0002BV-NK for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 28 Oct 2008 15:03:13 +0000
+	id 1KvIc1-0006PM-QW for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 29 Oct 2008 21:30:00 +0000
+Received: by ug-out-1314.google.com with SMTP id 36so857151uga.17
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 29 Oct 2008 14:29:55 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,43 +29,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
 
-Hi
+unsigned var->pixclock cannot be less than 0
 
-lock_kernel was converted to mutexes in framebuffer driver, but it 
-deadlocks because fb_compat_ioctl takes the lock and calls fb_ioctl that 
-takes that lock too.
-
-Mikulas
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
-
-Fix deadlock in fb_compat_ioctl. fb_compat_ioctl acquires a mutex and 
-calls fb_ioctl that tries to acquire that mutex too.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
----
- drivers/video/fbmem.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.28-rc2-devel/drivers/video/fbmem.c
-===================================================================
---- linux-2.6.28-rc2-devel.orig/drivers/video/fbmem.c	2008-10-28 15:48:18.000000000 +0100
-+++ linux-2.6.28-rc2-devel/drivers/video/fbmem.c	2008-10-28 15:42:53.000000000 +0100
-@@ -1262,8 +1262,8 @@ fb_compat_ioctl(struct file *file, unsig
- 	case FBIOPUT_CON2FBMAP:
- 		arg = (unsigned long) compat_ptr(arg);
- 	case FBIOBLANK:
--		ret = fb_ioctl(file, cmd, arg);
--		break;
-+		mutex_unlock(&info->lock);
-+		return fb_ioctl(file, cmd, arg);
+diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
+index f89c3cc..a386443 100644
+--- a/drivers/video/gbefb.c
++++ b/drivers/video/gbefb.c
+@@ -912,6 +912,7 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	unsigned int line_length;
+ 	struct gbe_timing_info timing;
++	int ret;
  
- 	case FBIOGET_FSCREENINFO:
- 		ret = fb_get_fscreeninfo(inode, file, cmd, arg);
+ 	/* Limit bpp to 8, 16, and 32 */
+ 	if (var->bits_per_pixel <= 8)
+@@ -930,8 +931,10 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 
+ 	var->grayscale = 0;	/* No grayscale for now */
+ 
+-	if ((var->pixclock = compute_gbe_timing(var, &timing)) < 0)
++	ret = compute_gbe_timing(var, &timing);
++	if (ret < 0)
+ 		return(-EINVAL);
++	var->pixclock = ret;
+ 
+ 	/* Adjust virtual resolution, if necessary */
+ 	if (var->xres > var->xres_virtual || (!ywrap && !ypan))
+
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

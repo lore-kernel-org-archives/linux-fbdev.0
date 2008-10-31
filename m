@@ -1,99 +1,233 @@
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: [PATCH] tmiofb: fix compilation with ACCEL
-	disabled
-Date: Fri, 31 Oct 2008 01:45:49 +0300
-Message-ID: <1225406749-18282-1-git-send-email-dbaryshkov@gmail.com>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH] fbdev: Fix fb_compat_ioctl() deadlocks (was: Re:
+ [Linux-fbdev-devel] framebuffer compat_ioctl deadlock)
+Date: Fri, 31 Oct 2008 15:55:12 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0810311351200.15181@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0810281059350.17438@hs20-bc2-1.build.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <dbaryshkov@gmail.com>) id 1KvgHJ-00057x-Lg
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 30 Oct 2008 22:46:09 +0000
-Received: from fg-out-1718.google.com ([72.14.220.158])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KvgHH-00031t-0z for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 30 Oct 2008 22:46:09 +0000
-Received: by fg-out-1718.google.com with SMTP id d23so684116fga.32
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 30 Oct 2008 15:46:05 -0700 (PDT)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1128215830-1225460572=:15181"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752617AbYJaOzc@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0810281059350.17438@hs20-bc2-1.build.redhat.com>
+Content-ID: <Pine.LNX.4.64.0810311553280.15181@vixen.sonytel.be>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+To: Mikulas Patocka <mpatocka@redhat.com>, Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Restore support for compiling tmiofb with acceleration disabled.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+---584349381-1128215830-1225460572=:15181
+Content-Type: TEXT/PLAIN; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-ID: <Pine.LNX.4.64.0810311553281.15181@vixen.sonytel.be>
+
+On Tue, 28 Oct 2008, Mikulas Patocka wrote:
+> lock_kernel was converted to mutexes in framebuffer driver, but it 
+> deadlocks because fb_compat_ioctl takes the lock and calls fb_ioctl that 
+> takes that lock too.
+
+Indeed: while lock_kernel() handled recursive locking, mutex_lock() doesn't.
+
+BTW, there are still a few other callpaths from fb_compat_ioctl() that cause
+deadlocks. I tried to fix them (verified on PS3 (ppc64 with ppc32 userland)).
+
+Subject: [PATCH] fbdev: Fix fb_compat_ioctl() deadlocks
+
+commit 3e680aae4e53ab54cdbb0c29257dae0cbb158e1c ("fb: convert
+lock/unlock_kernel() into local fb mutex") introduced several deadlocks in the
+fb_compat_ioctl() path, as mutex_lock() doesn't allow recursion, unlike
+lock_kernel(). This broke frame buffer applications on 64-bit systems with a
+32-bit userland.
+
+commit 120a37470c2831fea49fdebaceb5a7039f700ce6 ("framebuffer compat_ioctl
+deadlock") fixed one of the deadlocks.
+
+This patch fixes the remaining deadlocks:
+  - Revert commit 120a37470c2831fea49fdebaceb5a7039f700ce6,
+  - Extract the core logic of fb_ioctl() into a new function do_fb_ioctl(),
+  - Change all callsites of fb_ioctl() where info->lock is already held to
+    call do_fb_ioctl() instead,
+  - Add sparse annotations to all routines that take info->lock.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/tmiofb.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/video/fbmem.c |   63 ++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 39 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
-index 2a38001..7baf2dd 100644
---- a/drivers/video/tmiofb.c
-+++ b/drivers/video/tmiofb.c
-@@ -222,6 +222,9 @@ static irqreturn_t tmiofb_irq(int irq, void *__info)
- 	unsigned int bbisc = tmio_ioread16(par->lcr + LCR_BBISC);
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1002,13 +1002,9 @@ fb_blank(struct fb_info *info, int blank
+  	return ret;
+ }
  
- 
-+	tmio_iowrite16(bbisc, par->lcr + LCR_BBISC);
-+
-+#ifdef CONFIG_FB_TMIO_ACCELL
- 	/*
- 	 * We were in polling mode and now we got correct irq.
- 	 * Switch back to IRQ-based sync of command FIFO
-@@ -231,9 +234,6 @@ static irqreturn_t tmiofb_irq(int irq, void *__info)
- 		par->use_polling = false;
- 	}
- 
--	tmio_iowrite16(bbisc, par->lcr + LCR_BBISC);
--
--#ifdef CONFIG_FB_TMIO_ACCELL
- 	if (bbisc & 1)
- 		wake_up(&par->wait_acc);
- #endif
-@@ -938,7 +938,9 @@ static void tmiofb_dump_regs(struct platform_device *dev)
- static int tmiofb_suspend(struct platform_device *dev, pm_message_t state)
+-static long
+-fb_ioctl(struct file *file, unsigned int cmd,
+-	 unsigned long arg)
++static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
++			unsigned long arg)
  {
- 	struct fb_info *info = platform_get_drvdata(dev);
-+#ifdef CONFIG_FB_TMIO_ACCELL
- 	struct tmiofb_par *par = info->par;
-+#endif
- 	struct mfd_cell *cell = dev->dev.platform_data;
- 	int retval = 0;
+-	struct inode *inode = file->f_path.dentry->d_inode;
+-	int fbidx = iminor(inode);
+-	struct fb_info *info;
+ 	struct fb_ops *fb;
+ 	struct fb_var_screeninfo var;
+ 	struct fb_fix_screeninfo fix;
+@@ -1018,14 +1014,10 @@ fb_ioctl(struct file *file, unsigned int
+ 	void __user *argp = (void __user *)arg;
+ 	long ret = 0;
  
-@@ -950,12 +952,14 @@ static int tmiofb_suspend(struct platform_device *dev, pm_message_t state)
- 		info->fbops->fb_sync(info);
+-	info = registered_fb[fbidx];
+-	mutex_lock(&info->lock);
+ 	fb = info->fbops;
+-
+-	if (!fb) {
+-		mutex_unlock(&info->lock);
++	if (!fb)
+ 		return -ENODEV;
+-	}
++
+ 	switch (cmd) {
+ 	case FBIOGET_VSCREENINFO:
+ 		ret = copy_to_user(argp, &info->var,
+@@ -1126,6 +1118,21 @@ fb_ioctl(struct file *file, unsigned int
+ 		else
+ 			ret = fb->fb_ioctl(info, cmd, arg);
+ 	}
++	return ret;
++}
++
++static long fb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++__acquires(&info->lock)
++__releases(&info->lock)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	int fbidx = iminor(inode);
++	struct fb_info *info;
++	long ret;
++
++	info = registered_fb[fbidx];
++	mutex_lock(&info->lock);
++	ret = do_fb_ioctl(info, cmd, arg);
+ 	mutex_unlock(&info->lock);
+ 	return ret;
+ }
+@@ -1157,8 +1164,8 @@ struct fb_cmap32 {
+ 	compat_caddr_t	transp;
+ };
  
+-static int fb_getput_cmap(struct inode *inode, struct file *file,
+-			unsigned int cmd, unsigned long arg)
++static int fb_getput_cmap(struct fb_info *info, unsigned int cmd,
++			  unsigned long arg)
+ {
+ 	struct fb_cmap_user __user *cmap;
+ 	struct fb_cmap32 __user *cmap32;
+@@ -1181,7 +1188,7 @@ static int fb_getput_cmap(struct inode *
+ 	    put_user(compat_ptr(data), &cmap->transp))
+ 		return -EFAULT;
  
-+#ifdef CONFIG_FB_TMIO_ACCELL
- 	/*
- 	 * The fb should be usable even if interrupts are disabled (and they are
- 	 * during suspend/resume). Switch temporary to forced polling.
- 	 */
- 	printk(KERN_INFO "tmiofb: switching to polling\n");
- 	par->use_polling = true;
-+#endif
- 	tmiofb_hw_stop(dev);
+-	err = fb_ioctl(file, cmd, (unsigned long) cmap);
++	err = do_fb_ioctl(info, cmd, (unsigned long) cmap);
  
- 	if (cell->suspend)
--- 
-1.5.6.5
+ 	if (!err) {
+ 		if (copy_in_user(&cmap32->start,
+@@ -1223,8 +1230,8 @@ static int do_fscreeninfo_to_user(struct
+ 	return err;
+ }
+ 
+-static int fb_get_fscreeninfo(struct inode *inode, struct file *file,
+-				unsigned int cmd, unsigned long arg)
++static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
++			      unsigned long arg)
+ {
+ 	mm_segment_t old_fs;
+ 	struct fb_fix_screeninfo fix;
+@@ -1235,7 +1242,7 @@ static int fb_get_fscreeninfo(struct ino
+ 
+ 	old_fs = get_fs();
+ 	set_fs(KERNEL_DS);
+-	err = fb_ioctl(file, cmd, (unsigned long) &fix);
++	err = do_fb_ioctl(info, cmd, (unsigned long) &fix);
+ 	set_fs(old_fs);
+ 
+ 	if (!err)
+@@ -1244,8 +1251,10 @@ static int fb_get_fscreeninfo(struct ino
+ 	return err;
+ }
+ 
+-static long
+-fb_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++static long fb_compat_ioctl(struct file *file, unsigned int cmd,
++			    unsigned long arg)
++__acquires(&info->lock)
++__releases(&info->lock)
+ {
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+ 	int fbidx = iminor(inode);
+@@ -1262,16 +1271,16 @@ fb_compat_ioctl(struct file *file, unsig
+ 	case FBIOPUT_CON2FBMAP:
+ 		arg = (unsigned long) compat_ptr(arg);
+ 	case FBIOBLANK:
+-		mutex_unlock(&info->lock);
+-		return fb_ioctl(file, cmd, arg);
++		ret = do_fb_ioctl(info, cmd, arg);
++		break;
+ 
+ 	case FBIOGET_FSCREENINFO:
+-		ret = fb_get_fscreeninfo(inode, file, cmd, arg);
++		ret = fb_get_fscreeninfo(info, cmd, arg);
+ 		break;
+ 
+ 	case FBIOGETCMAP:
+ 	case FBIOPUTCMAP:
+-		ret = fb_getput_cmap(inode, file, cmd, arg);
++		ret = fb_getput_cmap(info, cmd, arg);
+ 		break;
+ 
+ 	default:
+@@ -1286,6 +1295,8 @@ fb_compat_ioctl(struct file *file, unsig
+ 
+ static int
+ fb_mmap(struct file *file, struct vm_area_struct * vma)
++__acquires(&info->lock)
++__releases(&info->lock)
+ {
+ 	int fbidx = iminor(file->f_path.dentry->d_inode);
+ 	struct fb_info *info = registered_fb[fbidx];
+@@ -1339,6 +1350,8 @@ fb_mmap(struct file *file, struct vm_are
+ 
+ static int
+ fb_open(struct inode *inode, struct file *file)
++__acquires(&info->lock)
++__releases(&info->lock)
+ {
+ 	int fbidx = iminor(inode);
+ 	struct fb_info *info;
+@@ -1374,6 +1387,8 @@ out:
+ 
+ static int 
+ fb_release(struct inode *inode, struct file *file)
++__acquires(&info->lock)
++__releases(&info->lock)
+ {
+ 	struct fb_info * const info = file->private_data;
+ 
 
+With kind regards,
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
+---584349381-1128215830-1225460572=:15181--

@@ -1,233 +1,70 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH] fbdev: Fix fb_compat_ioctl() deadlocks (was: Re:
- [Linux-fbdev-devel] framebuffer compat_ioctl deadlock)
-Date: Fri, 31 Oct 2008 15:55:12 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0810311351200.15181@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0810281059350.17438@hs20-bc2-1.build.redhat.com>
+From: Michal Januszewski <spock@gentoo.org>
+Subject: [PATCH] uvesafb: fix selecting mode with the vbemode option
+Date: Sun, 2 Nov 2008 13:35:06 +0100
+Message-ID: <20081102123506.GA3977@spock.one.pl>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1128215830-1225460572=:15181"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752617AbYJaOzc@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0810281059350.17438@hs20-bc2-1.build.redhat.com>
-Content-ID: <Pine.LNX.4.64.0810311553280.15181@vixen.sonytel.be>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753926AbYKBMfc@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Mikulas Patocka <mpatocka@redhat.com>, Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+If the vbemode option is used, uvesafb calls fb_get_mode() without
+first setting the resolution in info->var.  This results in a division
+by zero in fb_get_mode(), as evidenced e.g. in [1].  Fix this by ensuring
+the info->var structure is populated before fb_get_mode() is called.
 
----584349381-1128215830-1225460572=:15181
-Content-Type: TEXT/PLAIN; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-ID: <Pine.LNX.4.64.0810311553281.15181@vixen.sonytel.be>
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=11661#c37
 
-On Tue, 28 Oct 2008, Mikulas Patocka wrote:
-> lock_kernel was converted to mutexes in framebuffer driver, but it 
-> deadlocks because fb_compat_ioctl takes the lock and calls fb_ioctl that 
-> takes that lock too.
-
-Indeed: while lock_kernel() handled recursive locking, mutex_lock() doesn't.
-
-BTW, there are still a few other callpaths from fb_compat_ioctl() that cause
-deadlocks. I tried to fix them (verified on PS3 (ppc64 with ppc32 userland)).
-
-Subject: [PATCH] fbdev: Fix fb_compat_ioctl() deadlocks
-
-commit 3e680aae4e53ab54cdbb0c29257dae0cbb158e1c ("fb: convert
-lock/unlock_kernel() into local fb mutex") introduced several deadlocks in the
-fb_compat_ioctl() path, as mutex_lock() doesn't allow recursion, unlike
-lock_kernel(). This broke frame buffer applications on 64-bit systems with a
-32-bit userland.
-
-commit 120a37470c2831fea49fdebaceb5a7039f700ce6 ("framebuffer compat_ioctl
-deadlock") fixed one of the deadlocks.
-
-This patch fixes the remaining deadlocks:
-  - Revert commit 120a37470c2831fea49fdebaceb5a7039f700ce6,
-  - Extract the core logic of fb_ioctl() into a new function do_fb_ioctl(),
-  - Change all callsites of fb_ioctl() where info->lock is already held to
-    call do_fb_ioctl() instead,
-  - Add sparse annotations to all routines that take info->lock.
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
- drivers/video/fbmem.c |   63 ++++++++++++++++++++++++++++++--------------------
- 1 file changed, 39 insertions(+), 24 deletions(-)
-
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1002,13 +1002,9 @@ fb_blank(struct fb_info *info, int blank
-  	return ret;
- }
- 
--static long
--fb_ioctl(struct file *file, unsigned int cmd,
--	 unsigned long arg)
-+static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
-+			unsigned long arg)
- {
--	struct inode *inode = file->f_path.dentry->d_inode;
--	int fbidx = iminor(inode);
--	struct fb_info *info;
- 	struct fb_ops *fb;
- 	struct fb_var_screeninfo var;
- 	struct fb_fix_screeninfo fix;
-@@ -1018,14 +1014,10 @@ fb_ioctl(struct file *file, unsigned int
- 	void __user *argp = (void __user *)arg;
- 	long ret = 0;
- 
--	info = registered_fb[fbidx];
--	mutex_lock(&info->lock);
- 	fb = info->fbops;
--
--	if (!fb) {
--		mutex_unlock(&info->lock);
-+	if (!fb)
- 		return -ENODEV;
--	}
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 5074422..592c302 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -842,14 +842,16 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
+ 	if (vbemode) {
+ 		for (i = 0; i < par->vbe_modes_cnt; i++) {
+ 			if (par->vbe_modes[i].mode_id == vbemode) {
++				modeid = i;
++				uvesafb_setup_var(&info->var, info,
++						&par->vbe_modes[modeid]);
+ 				fb_get_mode(FB_VSYNCTIMINGS | FB_IGNOREMON, 60,
+-							&info->var, info);
++						&info->var, info);
+ 				/*
+ 				 * With pixclock set to 0, the default BIOS
+ 				 * timings will be used in set_par().
+ 				 */
+ 				info->var.pixclock = 0;
+-				modeid = i;
+ 				goto gotmode;
+ 			}
+ 		}
+@@ -896,8 +898,11 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
+ 			fb_videomode_to_var(&info->var, mode);
+ 		} else {
+ 			modeid = par->vbe_modes[0].mode_id;
++			uvesafb_setup_var(&info->var, info,
++					&par->vbe_modes[modeid]);
+ 			fb_get_mode(FB_VSYNCTIMINGS | FB_IGNOREMON, 60,
+-				    &info->var, info);
++					&info->var, info);
 +
- 	switch (cmd) {
- 	case FBIOGET_VSCREENINFO:
- 		ret = copy_to_user(argp, &info->var,
-@@ -1126,6 +1118,21 @@ fb_ioctl(struct file *file, unsigned int
- 		else
- 			ret = fb->fb_ioctl(info, cmd, arg);
+ 			goto gotmode;
+ 		}
  	}
-+	return ret;
-+}
-+
-+static long fb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+__acquires(&info->lock)
-+__releases(&info->lock)
-+{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	int fbidx = iminor(inode);
-+	struct fb_info *info;
-+	long ret;
-+
-+	info = registered_fb[fbidx];
-+	mutex_lock(&info->lock);
-+	ret = do_fb_ioctl(info, cmd, arg);
- 	mutex_unlock(&info->lock);
- 	return ret;
- }
-@@ -1157,8 +1164,8 @@ struct fb_cmap32 {
- 	compat_caddr_t	transp;
- };
+@@ -909,9 +914,9 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
+ 	if (modeid == -1)
+ 		return -EINVAL;
  
--static int fb_getput_cmap(struct inode *inode, struct file *file,
--			unsigned int cmd, unsigned long arg)
-+static int fb_getput_cmap(struct fb_info *info, unsigned int cmd,
-+			  unsigned long arg)
- {
- 	struct fb_cmap_user __user *cmap;
- 	struct fb_cmap32 __user *cmap32;
-@@ -1181,7 +1188,7 @@ static int fb_getput_cmap(struct inode *
- 	    put_user(compat_ptr(data), &cmap->transp))
- 		return -EFAULT;
+-gotmode:
+ 	uvesafb_setup_var(&info->var, info, &par->vbe_modes[modeid]);
  
--	err = fb_ioctl(file, cmd, (unsigned long) cmap);
-+	err = do_fb_ioctl(info, cmd, (unsigned long) cmap);
- 
- 	if (!err) {
- 		if (copy_in_user(&cmap32->start,
-@@ -1223,8 +1230,8 @@ static int do_fscreeninfo_to_user(struct
- 	return err;
- }
- 
--static int fb_get_fscreeninfo(struct inode *inode, struct file *file,
--				unsigned int cmd, unsigned long arg)
-+static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
-+			      unsigned long arg)
- {
- 	mm_segment_t old_fs;
- 	struct fb_fix_screeninfo fix;
-@@ -1235,7 +1242,7 @@ static int fb_get_fscreeninfo(struct ino
- 
- 	old_fs = get_fs();
- 	set_fs(KERNEL_DS);
--	err = fb_ioctl(file, cmd, (unsigned long) &fix);
-+	err = do_fb_ioctl(info, cmd, (unsigned long) &fix);
- 	set_fs(old_fs);
- 
- 	if (!err)
-@@ -1244,8 +1251,10 @@ static int fb_get_fscreeninfo(struct ino
- 	return err;
- }
- 
--static long
--fb_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+static long fb_compat_ioctl(struct file *file, unsigned int cmd,
-+			    unsigned long arg)
-+__acquires(&info->lock)
-+__releases(&info->lock)
- {
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	int fbidx = iminor(inode);
-@@ -1262,16 +1271,16 @@ fb_compat_ioctl(struct file *file, unsig
- 	case FBIOPUT_CON2FBMAP:
- 		arg = (unsigned long) compat_ptr(arg);
- 	case FBIOBLANK:
--		mutex_unlock(&info->lock);
--		return fb_ioctl(file, cmd, arg);
-+		ret = do_fb_ioctl(info, cmd, arg);
-+		break;
- 
- 	case FBIOGET_FSCREENINFO:
--		ret = fb_get_fscreeninfo(inode, file, cmd, arg);
-+		ret = fb_get_fscreeninfo(info, cmd, arg);
- 		break;
- 
- 	case FBIOGETCMAP:
- 	case FBIOPUTCMAP:
--		ret = fb_getput_cmap(inode, file, cmd, arg);
-+		ret = fb_getput_cmap(info, cmd, arg);
- 		break;
- 
- 	default:
-@@ -1286,6 +1295,8 @@ fb_compat_ioctl(struct file *file, unsig
- 
- static int
- fb_mmap(struct file *file, struct vm_area_struct * vma)
-+__acquires(&info->lock)
-+__releases(&info->lock)
- {
- 	int fbidx = iminor(file->f_path.dentry->d_inode);
- 	struct fb_info *info = registered_fb[fbidx];
-@@ -1339,6 +1350,8 @@ fb_mmap(struct file *file, struct vm_are
- 
- static int
- fb_open(struct inode *inode, struct file *file)
-+__acquires(&info->lock)
-+__releases(&info->lock)
- {
- 	int fbidx = iminor(inode);
- 	struct fb_info *info;
-@@ -1374,6 +1387,8 @@ out:
- 
- static int 
- fb_release(struct inode *inode, struct file *file)
-+__acquires(&info->lock)
-+__releases(&info->lock)
- {
- 	struct fb_info * const info = file->private_data;
- 
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1128215830-1225460572=:15181--
++gotmode:
+ 	/*
+ 	 * If we are not VBE3.0+ compliant, we're done -- the BIOS will
+ 	 * ignore our timings anyway.

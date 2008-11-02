@@ -1,70 +1,74 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] uvesafb: fix selecting mode with the vbemode option
-Date: Sun, 2 Nov 2008 13:35:06 +0100
-Message-ID: <20081102123506.GA3977@spock.one.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+Date: Mon, 03 Nov 2008 08:48:59 +1100
+Message-ID: <1225662539.8004.237.camel@pasglop>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	 <1225152347.8004.49.camel@pasglop>  <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753926AbYKBMfc@vger.kernel.org>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754968AbYKBVtg@vger.kernel.org>
+In-Reply-To: <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+To: James Cloos <cloos@jhcloos.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 
-If the vbemode option is used, uvesafb calls fb_get_mode() without
-first setting the resolution in info->var.  This results in a division
-by zero in fb_get_mode(), as evidenced e.g. in [1].  Fix this by ensuring
-the info->var structure is populated before fb_get_mode() is called.
 
-[1] http://bugzilla.kernel.org/show_bug.cgi?id=11661#c37
+>         /* X here pads width to a multiple of 32 and uses the clipper to
+>          * adjust the result. Is that really necessary ? Things seem to
+>          * work ok for me without that and the doco doesn't seem to imply
+>          * there is such a restriction.
+>          */
+> 
+> is relevant?
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 5074422..592c302 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -842,14 +842,16 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
- 	if (vbemode) {
- 		for (i = 0; i < par->vbe_modes_cnt; i++) {
- 			if (par->vbe_modes[i].mode_id == vbemode) {
-+				modeid = i;
-+				uvesafb_setup_var(&info->var, info,
-+						&par->vbe_modes[modeid]);
- 				fb_get_mode(FB_VSYNCTIMINGS | FB_IGNOREMON, 60,
--							&info->var, info);
-+						&info->var, info);
- 				/*
- 				 * With pixclock set to 0, the default BIOS
- 				 * timings will be used in set_par().
- 				 */
- 				info->var.pixclock = 0;
--				modeid = i;
- 				goto gotmode;
- 			}
- 		}
-@@ -896,8 +898,11 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
- 			fb_videomode_to_var(&info->var, mode);
- 		} else {
- 			modeid = par->vbe_modes[0].mode_id;
-+			uvesafb_setup_var(&info->var, info,
-+					&par->vbe_modes[modeid]);
- 			fb_get_mode(FB_VSYNCTIMINGS | FB_IGNOREMON, 60,
--				    &info->var, info);
-+					&info->var, info);
-+
- 			goto gotmode;
- 		}
- 	}
-@@ -909,9 +914,9 @@ static int __devinit uvesafb_vbe_init_mode(struct fb_info *info)
- 	if (modeid == -1)
- 		return -EINVAL;
- 
--gotmode:
- 	uvesafb_setup_var(&info->var, info, &par->vbe_modes[modeid]);
- 
-+gotmode:
- 	/*
- 	 * If we are not VBE3.0+ compliant, we're done -- the BIOS will
- 	 * ignore our timings anyway.
+Possibly.
+
+> Or whether the card is unhappy with the creg settings.  It does seem,
+> now that I read the code, that:
+> 
+> void radeon_fifo_update_and_wait(struct radeonfb_info *rinfo, int entries)
+> {
+>         int i;
+> 
+>         for (i=0; i<2000000; i++) {
+>                 rinfo->fifo_free = INREG(RBBM_STATUS) & 0x7f;
+>                 if (rinfo->fifo_free >= entries)
+>                         return;
+>                 udelay(10);
+>         }
+>         printk(KERN_ERR "radeonfb: FIFO Timeout !\n");
+>         /* XXX Todo: attempt to reset the engine */
+> }
+> 
+> is in play.  It is probably spinning through all of the 2000000 possible
+> udelay(10) calls.  I don't think I ever gave it twenty seconds before
+> giving up.  And certainly not forty seconds, if the freeze happens after
+> setting the DST_Y_X register.
+
+Well, setting DST_Y_X is what triggers the transfer. The above means
+that the FIFO isn't emptying (ie, the engine is locked up).
+
+There's a few things we can do from here:
+
+ - We can try indeed to do the alignment things though that involves
+using the clipper etc... and thus complicates things significantly
+
+ - We can also try putting a few more bubbles in the FIFO in case that's
+where the problem is
+
+ - We can blacklist that chip for imageblit (it's not a huge improvement
+on x86 anyway).
+
+ - We can be smart, reduce the timeout above, and "detect" the lockup,
+when it happens, reset the engine and disable the acceleration that
+locked up.
+
+Now, the problem is ... My second son was just born last wed. so I'm
+pretty unavailable right now. Thus, for .29, I'm tempted to go for the
+simpler approach which is to blacklist M7's from imageblit acceleration.
+
+Cheers,
+Ben.

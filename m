@@ -1,78 +1,57 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] [drivers/video/fb] Eliminate recursive mutex in compat
- fb ioctl path
-Date: Mon, 3 Nov 2008 11:12:18 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0811031110450.12897@vixen.sonytel.be>
-References: <1225696010-6574-1-git-send-email-keithp@keithp.com>
+From: James Cloos <cloos@jhcloos.com>
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+Date: Mon, 03 Nov 2008 10:33:04 -0500
+Message-ID: <m33ai8akoo.fsf@lugabout.jhcloos.org>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	<1225152347.8004.49.camel@pasglop>
+	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+	<1225662539.8004.237.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1721940234-1225707050=:12897"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755472AbYKCKMk@vger.kernel.org>
-In-Reply-To: <1225696010-6574-1-git-send-email-keithp@keithp.com>
-Content-ID: <Pine.LNX.4.64.0811031111210.12897@vixen.sonytel.be>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756144AbYKCPeY@vger.kernel.org>
+In-Reply-To: <1225662539.8004.237.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Mon, 03 Nov 2008 08:48:59 +1100")
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Keith Packard <keithp@keithp.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: benh@kernel.crashing.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+>>>>> "Benjamin" == Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
----584349381-1721940234-1225707050=:12897
-Content-Type: TEXT/PLAIN; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-ID: <Pine.LNX.4.64.0811031111211.12897@vixen.sonytel.be>
+>> is in play.  It is probably spinning through all of the 2000000 possible
+>> udelay(10) calls.  I don't think I ever gave it twenty seconds before
+>> giving up.  And certainly not forty seconds, if the freeze happens after
+>> setting the DST_Y_X register.
 
-On Sun, 2 Nov 2008, Keith Packard wrote:
-> fb_compat_ioctl grabbed the fb mutex and then called fb_ioctl, which also
-> grabs the same mutex. I traced through all existing fb_compat_ioctl
-> functions in the various fb drivers and found that they also transform their
-> arguments and call the native fb_ioctl function. So, it is correct to just
-> remove the mutex_lock/mutex_unlock pair in the top-level compat path.
+Benjamin> Well, setting DST_Y_X is what triggers the transfer. The above
+Benjamin> means that the FIFO isn't emptying (ie, the engine is locked up).
 
-Last week I submitted an alternative fix: http://lkml.org/lkml/2008/10/31/162
+I gave it another try over the weekend and let it sit for five minutes.
+The reset message never appeared.
 
-Probably Rafael wants to keep track of this regression, too?
+Benjamin>  - We can blacklist that chip for imageblit (it's not a huge
+Benjamin> improvement on x86 anyway).
 
-> Signed-off-by: Keith Packard <keithp@keithp.com>
-> ---
->  drivers/video/fbmem.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index cd5f20d..548cf26 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1253,7 +1253,6 @@ fb_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
->  	struct fb_ops *fb = info->fbops;
->  	long ret = -ENOIOCTLCMD;
->  
-> -	mutex_lock(&info->lock);
->  	switch(cmd) {
->  	case FBIOGET_VSCREENINFO:
->  	case FBIOPUT_VSCREENINFO:
-> @@ -1279,7 +1278,6 @@ fb_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
->  			ret = fb->fb_compat_ioctl(info, cmd, arg);
->  		break;
->  	}
-> -	mutex_unlock(&info->lock);
->  	return ret;
->  }
->  #endif
+No objections here.
 
-With kind regards,
+Benjamin>  - We can be smart, reduce the timeout above, and "detect" the
+Benjamin> lockup, when it happens, reset the engine and disable the
+Benjamin> acceleration that locked up.
 
-Geert Uytterhoeven
-Software Architect
+Given Paul's report, that seems like the long term solution.
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Benjamin> Now, the problem is ... My second son was just born last
+Benjamin> wed. so I'm pretty unavailable right now.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+Congrats!
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-1721940234-1225707050=:12897--
+Benjamin>  Thus, for .29, I'm tempted to go for the simpler approach
+Benjamin> which is to blacklist M7's from imageblit acceleration.
+
+Again, that is fine by me.  Otherwise I'll just leave the #if0 commit
+in my compile clone.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6

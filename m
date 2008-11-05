@@ -1,70 +1,38 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [REVIEW PATCH 1/9] DSS: Documentation for
- OMAP2/3 display subsystem
-Date: Wed, 5 Nov 2008 08:56:30 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0811050855180.15985@anakin>
-References: <20081104160946.19071.44903.stgit@tubuntu>
- <20081104160953.19071.49965.stgit@tubuntu>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+Date: Wed, 05 Nov 2008 19:39:21 +1100
+Message-ID: <1225874361.13603.12.camel@pasglop>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+	 <1225662539.8004.237.camel@pasglop>
+	 <871vxtthr3.fsf@burly.wgtn.ondioline.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20081104160953.19071.49965.stgit@tubuntu>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755925AbYKEIkc@vger.kernel.org>
+In-Reply-To: <871vxtthr3.fsf@burly.wgtn.ondioline.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Paul Collins <paul@burly.ondioline.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, James Cloos <cloos@jhcloos.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 
-On Tue, 4 Nov 2008, Tomi Valkeinen wrote:
-> +Sysfs
-> +-----
-> +The sysfs interface is a hack, but works for testing. I don't think sysfs
-> +interface is the best for this in the final version, but I don't quite know
-> +what would be the best interfaces for these things.
-> +
-> +In /sys/devices/platform/omapfb we have four files: framebuffers,
-> +overlays, managers and displays. You can read them so see the current
-> +setup, and change them by writing to it in the form of
-> +"<item-id> <opt1>:<val1> <opt2>:<val2>..."
-> +
-> +"framebuffers" lists all framebuffers. Its format is:
-> +	<fb number>
-> +	t:<target overlay>
-> +
-> +"overlays" lists all overlays. Its format is:
-> +	<overlay name>
-> +	t:<target manager>
-> +	x:<xpos>
-> +	y:<ypos>
-> +	iw:<input width, read only>
-> +	ih:<input height, read only>
-> +	w:<output width>
-> +	h:<output height>
-> +	e:<enabled>
-> +
-> +"managers" lists all overlay managers. Its format is:
-> +	<manager name>
-> +	t:<target display>
-> +
-> +"displays" lists all displays. Its format is:
-> +	<display name>
-> +	w:<width>
-> +	h:<height>
-> +	e:<enabled>
-> +	u:<update mode>
-> +	t:<tear sync on/off>
+On Mon, 2008-11-03 at 20:01 +1300, Paul Collins wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> > Now, the problem is ... My second son was just born last wed. so I'm
+> > pretty unavailable right now. Thus, for .29, I'm tempted to go for the
+> > simpler approach which is to blacklist M7's from imageblit acceleration.
+> 
+> I am also experiencing this problem on a PowerBook G4 with an M10.
+> 
+> 0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
+> 
+> Here are the fonts I'm using:
+> 
+>         http://ondioline.org/~paul/consolefonts/
+> 
 
-As all of these contain lists of sections (one for each
-fb/overlay/manager/display), what about making them directories, with each
-section an individual file?
+For some reason, that font gives me "Bad font file format". 
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Cheers,
+Ben.

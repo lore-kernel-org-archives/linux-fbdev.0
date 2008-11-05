@@ -1,38 +1,56 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-Date: Wed, 05 Nov 2008 19:39:21 +1100
-Message-ID: <1225874361.13603.12.camel@pasglop>
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	 <1225662539.8004.237.camel@pasglop>
-	 <871vxtthr3.fsf@burly.wgtn.ondioline.org>
-Reply-To: benh@kernel.crashing.org
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: Re: [REVIEW  PATCH 8/9] DSS: support for Beagle Board
+Date: Wed, 05 Nov 2008 12:05:56 +0200
+Message-ID: <1225879556.8052.5.camel@tubuntu>
+References: <20081104160946.19071.44903.stgit@tubuntu>
+	 <20081104161038.19071.98198.stgit@tubuntu>
+	 <D518F5F9-95AB-4881-BD63-8135263203AC@student.utwente.nl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755925AbYKEIkc@vger.kernel.org>
-In-Reply-To: <871vxtthr3.fsf@burly.wgtn.ondioline.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <D518F5F9-95AB-4881-BD63-8135263203AC@student.utwente.nl>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Paul Collins <paul@burly.ondioline.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, James Cloos <cloos@jhcloos.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+To: ext Koen Kooi <k.kooi@student.utwente.nl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
-On Mon, 2008-11-03 at 20:01 +1300, Paul Collins wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> > Now, the problem is ... My second son was just born last wed. so I'm
-> > pretty unavailable right now. Thus, for .29, I'm tempted to go for the
-> > simpler approach which is to blacklist M7's from imageblit acceleration.
+On Tue, 2008-11-04 at 18:28 +0100, ext Koen Kooi wrote:
+> Op 4 nov 2008, om 17:10 heeft Tomi Valkeinen het volgende geschreven:
 > 
-> I am also experiencing this problem on a PowerBook G4 with an M10.
+> > Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> > ---
+> >
+> > arch/arm/mach-omap2/board-omap3beagle.c |  121 ++++++++++++++++++++++ 
+> > ++++++---
+> > 1 files changed, 108 insertions(+), 13 deletions(-)
+> >
+> > +static struct omap_display_data beagle_display_data_dvi = {
+> > +	.type = OMAP_DISPLAY_TYPE_DPI,
+> > +	.name = "dvi",
+> > +	.panel_name = "panel-dvi",
+> > +	.u.dpi.data_lines = 24,
+> > +	.panel_reset_gpio = 170,
+> > +	.panel_enable = beagle_enable_dvi,
+> > +	.panel_disable = beagle_disable_dvi,
 > 
-> 0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
-> 
-> Here are the fonts I'm using:
-> 
->         http://ondioline.org/~paul/consolefonts/
-> 
+> gpio 170 is the enable (or disable, I forget which) for the DVI framer  
+> (TFP410), not a reset gpio. It would be nice to have a way to enable/ 
+> disable the framer  from userspace since it burns 60-100mA.
 
-For some reason, that font gives me "Bad font file format". 
+Well, is there a big difference between reset and enable? Anyway, you
+can do
 
-Cheers,
-Ben.
+echo "dvi e:0" > /sys/devices/platform/omapfb/displays
+
+and it will turn off the power.
+
+Or, alternatively, use the framebuffer blanking, although that has not
+been implemented to the panel-dvi.c (it's in panel-sdp3430.c). 
+
+> regards,
+> 
+> Koen
+
+ Tom
+

@@ -1,43 +1,63 @@
-From: Paul Collins <paul@burly.ondioline.org>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-Date: Wed, 05 Nov 2008 23:28:01 +1300
-Message-ID: <87skq6sc0e.fsf@burly.wgtn.ondioline.org>
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	<1225662539.8004.237.camel@pasglop>
-	<871vxtthr3.fsf@burly.wgtn.ondioline.org>
-	<1225874361.13603.12.camel@pasglop>
+From: Jarkko Nikula <jarkko.nikula@nokia.com>
+Subject: Re: [REVIEW  PATCH 9/9] DSS: support for OMAP3 SDP board
+Date: Wed, 5 Nov 2008 12:54:56 +0200
+Message-ID: <20081105125456.721aabf0.jarkko.nikula@nokia.com>
+References: <20081104160946.19071.44903.stgit@tubuntu>
+	<20081104161045.19071.33189.stgit@tubuntu>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756385AbYKEK2V@vger.kernel.org>
-In-Reply-To: <1225874361.13603.12.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Wed, 05 Nov 2008 19:39:21 +1100")
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20081104161045.19071.33189.stgit@tubuntu>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: benh@kernel.crashing.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, James Cloos <cloos@jhcloos.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+To: ext Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Tue, 04 Nov 2008 18:10:45 +0200
+"ext Tomi Valkeinen" <tomi.valkeinen@nokia.com> wrote:
 
-> On Mon, 2008-11-03 at 20:01 +1300, Paul Collins wrote:
->> I am also experiencing this problem on a PowerBook G4 with an M10.
->>
->> 0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
->> 
->> Here are the fonts I'm using:
->> 
->>         http://ondioline.org/~paul/consolefonts/
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> ---
+> 
+>  arch/arm/mach-omap2/board-3430sdp.c |  234 +++++++++++++++++++++++++++++++++--
+>  drivers/video/omap2/Kconfig         |    7 +
+>  drivers/video/omap2/Makefile        |    1 
+>  drivers/video/omap2/panel-sdp3430.c |  110 ++++++++++++++++
+>  4 files changed, 340 insertions(+), 12 deletions(-)
+>  create mode 100644 drivers/video/omap2/panel-sdp3430.c
+> 
+
+> +static void __init display_init(void)
 >
-> For some reason, that font gives me "Bad font file format". 
+I would use unique 3430sdp_display_init even the function is static.
+Cleaner symbol names and cleaner oops dumps.
 
-Odd.  I'm using setfont from Debian's kbd 1.14.1-4 to load it.
+> +{
+> +	int r;
+> +
+> +	enable_gpio    = SDP3430_LCD_PANEL_ENABLE_GPIO;
+> +	backlight_gpio = SDP3430_LCD_PANEL_BACKLIGHT_GPIO;
+> +
+> +	r = gpio_request(enable_gpio, "OMAP SDP LCD Reset GPIO");
+> +	if (r) {
+> +		printk(KERN_ERR "failed to get LCD reset GPIO\n");
+> +		goto err0;
+> +	}
+> +
+> +	r = gpio_request(backlight_gpio, "OMAP SDP LCD Backlight GPIO");
+> +	if (r) {
 
-P.S. I haven't had time to play with the 32-roundup thing any further yet.
+How about labels "LCD reset" and "LCD backlight" (actually bit too
+long).
 
--- 
-Paul Collins
-Wellington, New Zealand
+> +static int panel_enable_lcd(struct omap_display *display)
+> +static void panel_disable_lcd(struct omap_display *display)
+> +static int panel_enable_dvi(struct omap_display *display)
 
-Dag vijandelijk luchtschip de huismeester is dood
+Would it better to rename these as sdp3430_enable_lcd etc since
+otherwise looks somewhat confusing to see them in board-3430sdp.c where
+there is also panel-sdp3430.c?
+
+
+Jarkko

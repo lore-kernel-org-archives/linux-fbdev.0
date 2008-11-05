@@ -1,66 +1,70 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-Date: Wed, 05 Nov 2008 08:36:00 +1100
-Message-ID: <1225834560.8004.275.camel@pasglop>
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	 <1225662539.8004.237.camel@pasglop>
-	 <871vxtthr3.fsf@burly.wgtn.ondioline.org>
-	 <1225697689.8004.245.camel@pasglop>
-	 <87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
-Reply-To: benh@kernel.crashing.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [Linux-fbdev-devel] [REVIEW PATCH 1/9] DSS: Documentation for
+ OMAP2/3 display subsystem
+Date: Wed, 5 Nov 2008 08:56:30 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0811050855180.15985@anakin>
+References: <20081104160946.19071.44903.stgit@tubuntu>
+ <20081104160953.19071.49965.stgit@tubuntu>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756401AbYKDVlb@vger.kernel.org>
-In-Reply-To: <87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20081104160953.19071.49965.stgit@tubuntu>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: Paul Collins <paul@burly.ondioline.org>
-Cc: James Cloos <cloos@jhcloos.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
-On Tue, 2008-11-04 at 19:49 +1300, Paul Collins wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > One thing you may want to try .. it will result in crap results on
-> > screen but would help telling us if that's the cause, is to hack
-> > radeonfb to round the image size to a multiple of 32 and see if that
-> > stops the lockup.
-> 
-> I took a guess at how to do this and ended up with the patch below.
-> 
-> With the patch applied, the screen turns almost completely to gibberish
-> at console handover and the machine hangs.  At the top I get two lines
-> of old output from the previous boot.  (I'm pretty sure it's hung
-> because the optical drive init happens after console handover, and I
-> don't get the usual chunka-chunka noise.)
-> 
-> The corruption I get is very similar to what I got when I originally
-> reported the problem when I was using my patched-in 12x24 font.  (I
-> created the .psf version later and switched back to default 8x16 to
-> verify my problem was the same as James's.)
-> 
-> 
-> diff --git a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
-> index 8718f73..848e9bc 100644
-> --- a/drivers/video/aty/radeon_accel.c
-> +++ b/drivers/video/aty/radeon_accel.c
-> @@ -208,7 +208,11 @@ static void radeonfb_prim_imageblit(struct radeonfb_info *rinfo,
->  	 * work ok for me without that and the doco doesn't seem to imply
->  	 * there is such a restriction.
->  	 */
-> -	OUTREG(DST_WIDTH_HEIGHT, (image->width << 16) | image->height);
-> +	{
-> +		/* Hack attack. */
-> +		int width = ((image->width - 1) / 32 + 1) * 32;
-> +		OUTREG(DST_WIDTH_HEIGHT, (width << 16) | image->height);
-> +	}
->  
->  	src_bytes = (((image->width * image->depth) + 7) / 8) * image->height;
->  	dwords = (src_bytes + 3) / 4;
+On Tue, 4 Nov 2008, Tomi Valkeinen wrote:
+> +Sysfs
+> +-----
+> +The sysfs interface is a hack, but works for testing. I don't think sysfs
+> +interface is the best for this in the final version, but I don't quite know
+> +what would be the best interfaces for these things.
+> +
+> +In /sys/devices/platform/omapfb we have four files: framebuffers,
+> +overlays, managers and displays. You can read them so see the current
+> +setup, and change them by writing to it in the form of
+> +"<item-id> <opt1>:<val1> <opt2>:<val2>..."
+> +
+> +"framebuffers" lists all framebuffers. Its format is:
+> +	<fb number>
+> +	t:<target overlay>
+> +
+> +"overlays" lists all overlays. Its format is:
+> +	<overlay name>
+> +	t:<target manager>
+> +	x:<xpos>
+> +	y:<ypos>
+> +	iw:<input width, read only>
+> +	ih:<input height, read only>
+> +	w:<output width>
+> +	h:<output height>
+> +	e:<enabled>
+> +
+> +"managers" lists all overlay managers. Its format is:
+> +	<manager name>
+> +	t:<target display>
+> +
+> +"displays" lists all displays. Its format is:
+> +	<display name>
+> +	w:<width>
+> +	h:<height>
+> +	e:<enabled>
+> +	u:<update mode>
+> +	t:<tear sync on/off>
 
-Oh and you also need to change the src_bytes calculation 
+As all of these contain lists of sections (one for each
+fb/overlay/manager/display), what about making them directories, with each
+section an individual file?
 
-Ben.
+Gr{oetje,eeting}s,
 
-> 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

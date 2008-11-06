@@ -1,50 +1,38 @@
-From: Koen Kooi <k.kooi@student.utwente.nl>
-Subject: Re: [REVIEW  PATCH 8/9] DSS: support for Beagle Board
-Date: Thu, 6 Nov 2008 09:30:51 +0100
-Message-ID: <3833079A-AA89-423E-9A23-DC00EA26DC03@student.utwente.nl>
-References: <20081104160946.19071.44903.stgit@tubuntu> <20081104161038.19071.98198.stgit@tubuntu> <20081105122725.cb1c0b2f.jarkko.nikula@nokia.com> <200811051521.48924.david-b@pacbell.net> <1225959787.8052.27.camel@tubuntu>
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-16-692431776"
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH] atmel_lcdfb: Change irq_base definition to allow error reporting
+Date: Thu, 06 Nov 2008 16:23:15 +0100
+Message-ID: <49130BE3.1030108@atmel.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1225959787.8052.27.camel@tubuntu>
-Sender: linux-omap-owner@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752305AbYKFPXy@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: ext David Brownell <david-b@pacbell.net>, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>, Andrew Victor <linux@maxim.org.za>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---Apple-Mail-16-692431776
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
+Change irq_base definition to allow error reporting
 
+Changed because old definition : unsigned long cannot be negative.
 
-Op 6 nov 2008, om 09:23 heeft Tomi Valkeinen het volgende geschreven:
->
-> However, the bootloader turns the DVI chip on (at least the default
-> beagle board u-boot).
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Reported-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ include/video/atmel_lcdc.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Only the old and broken TI u-boots do that, recent ones (2008.10) with  
-the patches that are going upstream don't touch the DVI chip (nor the  
-audio chips for that matter.
-
-regards,
-
-Koen
-
---Apple-Mail-16-692431776
-content-type: application/pgp-signature; x-mac-type=70674453;
-	name=PGP.sig
-content-description: This is a digitally signed message part
-content-disposition: inline; filename=PGP.sig
-content-transfer-encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (Darwin)
-
-iD8DBQFJEqs9MkyGM64RGpERAt2LAJ4yutXFMC12wwQfXaScA48MmmD3YgCggcOC
-7NpxoskE7eyIwgOW4RtvCJ8=
-=zflr
------END PGP SIGNATURE-----
-
---Apple-Mail-16-692431776--
+diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
+index 6ad87f4..0c864db 100644
+--- a/include/video/atmel_lcdc.h
++++ b/include/video/atmel_lcdc.h
+@@ -38,7 +38,7 @@ struct atmel_lcdfb_info {
+ 	spinlock_t		lock;
+ 	struct fb_info		*info;
+ 	void __iomem		*mmio;
+-	unsigned long		irq_base;
++	int			irq_base;
+ 	struct work_struct	task;
+ 
+ 	unsigned int		guard_time;
+-- 
+1.5.3.7

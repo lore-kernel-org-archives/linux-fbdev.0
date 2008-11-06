@@ -1,50 +1,47 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [REVIEW  PATCH 8/9] DSS: support for Beagle Board
-Date: Wed, 5 Nov 2008 15:21:48 -0800
-Message-ID: <200811051521.48924.david-b@pacbell.net>
-References: <20081104160946.19071.44903.stgit@tubuntu> <20081104161038.19071.98198.stgit@tubuntu> <20081105122725.cb1c0b2f.jarkko.nikula@nokia.com>
+From: "stanley.miao" <stanley.miao@windriver.com>
+Subject: What is the linux-fbdev-devel's git address ?
+Date: Thu, 06 Nov 2008 09:33:11 +0800
+Message-ID: <1225935191.7811.126.camel@localhost>
+Reply-To: stanley.miao@windriver.com
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20081105122725.cb1c0b2f.jarkko.nikula@nokia.com>
-Content-Disposition: inline
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Jarkko Nikula <jarkko.nikula@nokia.com>
-Cc: ext Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <Stanley.Miao@windriver.com>) id 1Kxtex-0001Hd-8M
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 06 Nov 2008 01:27:43 +0000
+Received: from mail.windriver.com ([147.11.1.11] helo=mail.wrs.com)
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Kxtes-00061z-9q for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 06 Nov 2008 01:27:43 +0000
+Received: from ALA-MAIL03.corp.ad.wrs.com (ala-mail03 [147.11.57.144])
+	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id mA61RZjm003835
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 5 Nov 2008 17:27:35 -0800 (PST)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wednesday 05 November 2008, Jarkko Nikula wrote:
-> > +=A0=A0=A0=A0=A0r =3D gpio_request(beagle_display_data_dvi.panel_re=
-set_gpio, "DVI reset GPIO");
-> > +=A0=A0=A0=A0=A0if(r < 0) {
->=20
-> GPIO label "DVI reset" is enough.
+I want generate the diffs and submit my patch. so what is the git server
+address ?
 
-Surely this ** doesn't work ** at least against the OMAP git tree
-which already has:
+Thanks.
 
-        omap_cfg_reg(J25_34XX_GPIO170);
-        gpio_request(170, "DVI_nPD");
-        /* REVISIT leave DVI powered down until it's needed ... */
-        gpio_direction_output(170, true);
+Stanley.
 
-Label matches the DVI chip, not board schematics.  Agreed,
-it's not a reset.
 
-I'd like to see any FB/DSS/... updates have the property that
-the TFP410 chip is powered down *unless* both (a) the frame
-buffer/DSS/... driver is active, and (b) the DVI channel is
-in use.
-
-So for example a kernel without FB/DSS/... configured, that
-DVI chip is never powered up.  And when only the S-Video channel
-is used, DVI isn't powered up either.
-
-- Dave
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

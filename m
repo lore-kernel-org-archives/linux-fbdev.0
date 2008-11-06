@@ -1,58 +1,46 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: What is the linux-fbdev-devel's git address
-	?
-Date: Thu, 6 Nov 2008 09:46:43 +0800
-Message-ID: <45a44e480811051746m1cbe7f17s82791d641ac4d853@mail.gmail.com>
-References: <1225935191.7811.126.camel@localhost>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+Date: Thu, 06 Nov 2008 14:49:17 +1100
+Message-ID: <1225943357.13603.41.camel@pasglop>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+	 <1225662539.8004.237.camel@pasglop>
+	 <871vxtthr3.fsf@burly.wgtn.ondioline.org>
+	 <1225874361.13603.12.camel@pasglop>
+	 <87skq6sc0e.fsf@burly.wgtn.ondioline.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jayakumar.lkml@gmail.com>) id 1KxtxS-0006mG-Vr
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Nov 2008 01:46:50 +0000
-Received: from ey-out-1920.google.com ([74.125.78.148])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KxtxN-0003SQ-RV for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Nov 2008 01:46:50 +0000
-Received: by ey-out-1920.google.com with SMTP id 4so161730eyk.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 05 Nov 2008 17:46:43 -0800 (PST)
-In-Reply-To: <1225935191.7811.126.camel@localhost>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: stanley.miao@windriver.com
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755314AbYKFDum@vger.kernel.org>
+In-Reply-To: <87skq6sc0e.fsf@burly.wgtn.ondioline.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Paul Collins <paul@burly.ondioline.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, James Cloos <cloos@jhcloos.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 
-On Thu, Nov 6, 2008 at 9:33 AM, stanley.miao <stanley.miao@windriver.com> wrote:
-> I want generate the diffs and submit my patch. so what is the git server
-> address ?
->
-> Thanks.
->
-> Stanley.
+On Wed, 2008-11-05 at 23:28 +1300, Paul Collins wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > On Mon, 2008-11-03 at 20:01 +1300, Paul Collins wrote:
+> >> I am also experiencing this problem on a PowerBook G4 with an M10.
+> >>
+> >> 0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
+> >> 
+> >> Here are the fonts I'm using:
+> >> 
+> >>         http://ondioline.org/~paul/consolefonts/
+> >
+> > For some reason, that font gives me "Bad font file format". 
+> 
+> Odd.  I'm using setfont from Debian's kbd 1.14.1-4 to load it.
+> 
+> P.S. I haven't had time to play with the 32-roundup thing any further yet.
 
-Hi Stanley,
+Ok so I can't get it to die on my M9 (rv250) tipb here, I can try next
+week on a albook with an M10 (rv350). Just to make sure I'm doing the
+same as you, does it boot fine if you don't change the font and does it
+lockup if, after it's fully booted, you do a setfont neepalt10x20.psf ?
 
-I don't think there is a fbdev specific git tree. I think the
-encouraged practice is to submit against the mainline tree unless you
-have specific dependencies on another tree.
-
-jaya
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Cheers,
+Ben.

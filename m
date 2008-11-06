@@ -1,66 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+From: Koen Kooi <k.kooi@student.utwente.nl>
 Subject: Re: [REVIEW  PATCH 8/9] DSS: support for Beagle Board
-Date: Thu, 06 Nov 2008 10:23:07 +0200
-Message-ID: <1225959787.8052.27.camel@tubuntu>
-References: <20081104160946.19071.44903.stgit@tubuntu>
-	 <20081104161038.19071.98198.stgit@tubuntu>
-	 <20081105122725.cb1c0b2f.jarkko.nikula@nokia.com>
-	 <200811051521.48924.david-b@pacbell.net>
-Mime-Version: 1.0
+Date: Thu, 6 Nov 2008 09:30:51 +0100
+Message-ID: <3833079A-AA89-423E-9A23-DC00EA26DC03@student.utwente.nl>
+References: <20081104160946.19071.44903.stgit@tubuntu> <20081104161038.19071.98198.stgit@tubuntu> <20081105122725.cb1c0b2f.jarkko.nikula@nokia.com> <200811051521.48924.david-b@pacbell.net> <1225959787.8052.27.camel@tubuntu>
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-16-692431776"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <200811051521.48924.david-b@pacbell.net>
+In-Reply-To: <1225959787.8052.27.camel@tubuntu>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: ext David Brownell <david-b@pacbell.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: ext David Brownell <david-b@pacbell.net>, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
-On Thu, 2008-11-06 at 01:21 +0200, ext David Brownell wrote:
-> On Wednesday 05 November 2008, Jarkko Nikula wrote:
-> > > +     r = gpio_request(beagle_display_data_dvi.panel_reset_gpio,
-> "DVI reset GPIO");
-> > > +     if(r < 0) {
-> >
-> > GPIO label "DVI reset" is enough.
-> 
-> Surely this ** doesn't work ** at least against the OMAP git tree
-> which already has:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--Apple-Mail-16-692431776
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
 
-Well, it surely does! =)
 
-But good catch, I'll fix it. There's probably a warning on kernel log
-about "can't get a gpio".
+Op 6 nov 2008, om 09:23 heeft Tomi Valkeinen het volgende geschreven:
+>
+> However, the bootloader turns the DVI chip on (at least the default
+> beagle board u-boot).
 
-> 
->         omap_cfg_reg(J25_34XX_GPIO170);
->         gpio_request(170, "DVI_nPD");
->         /* REVISIT leave DVI powered down until it's needed ... */
->         gpio_direction_output(170, true);
-> 
-> Label matches the DVI chip, not board schematics.  Agreed,
-> it's not a reset.
-> 
-> I'd like to see any FB/DSS/... updates have the property that
-> the TFP410 chip is powered down *unless* both (a) the frame
-> buffer/DSS/... driver is active, and (b) the DVI channel is
-> in use.
-> 
-> So for example a kernel without FB/DSS/... configured, that
-> DVI chip is never powered up.  And when only the S-Video channel
-> is used, DVI isn't powered up either.
-> 
-Well, my drivers do not enable the DVI chip unless DVI is in use. It is
-in use by default, but you can turn it off. And if the whole DSS is not
-compiled in, then no body will turn the DVI chip on.
+Only the old and broken TI u-boots do that, recent ones (2008.10) with  
+the patches that are going upstream don't touch the DVI chip (nor the  
+audio chips for that matter.
 
-However, the bootloader turns the DVI chip on (at least the default
-beagle board u-boot). If the kernel by default turns the DVI chip off,
-and then later on when the DSS starts, we'll have a glitch on the
-display. Not that there currently is support for glitchless transition
-from bootloader display to kernel display, but still...
+regards,
 
-> - Dave
-> 
- Tomi
+Koen
 
+--Apple-Mail-16-692431776
+content-type: application/pgp-signature; x-mac-type=70674453;
+	name=PGP.sig
+content-description: This is a digitally signed message part
+content-disposition: inline; filename=PGP.sig
+content-transfer-encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (Darwin)
+
+iD8DBQFJEqs9MkyGM64RGpERAt2LAJ4yutXFMC12wwQfXaScA48MmmD3YgCggcOC
+7NpxoskE7eyIwgOW4RtvCJ8=
+=zflr
+-----END PGP SIGNATURE-----
+
+--Apple-Mail-16-692431776--

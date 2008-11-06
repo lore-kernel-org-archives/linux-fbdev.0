@@ -1,74 +1,68 @@
-From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: What is the linux-fbdev-devel's git address
- ?
-Date: Wed, 5 Nov 2008 21:06:48 -0800
-Message-ID: <20081105210648.a1541ede.rdunlap@xenotime.net>
-References: <1225935191.7811.126.camel@localhost>
-	<45a44e480811051746m1cbe7f17s82791d641ac4d853@mail.gmail.com>
-	<1225944946.7337.2.camel@localhost>
+From: Paul Collins <paul@burly.ondioline.org>
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+Date: Thu, 06 Nov 2008 19:00:48 +1300
+Message-ID: <87k5bhs8a7.fsf@burly.wgtn.ondioline.org>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	<1225152347.8004.49.camel@pasglop>
+	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+	<1225662539.8004.237.camel@pasglop>
+	<871vxtthr3.fsf@burly.wgtn.ondioline.org>
+	<1225697689.8004.245.camel@pasglop>
+	<87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
+	<1225834394.8004.273.camel@pasglop>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755787AbYKFGBA@vger.kernel.org>
+In-Reply-To: <1225834394.8004.273.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Wed, 05 Nov 2008 08:33:14 +1100")
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <rdunlap@xenotime.net>) id 1KxxNw-0006gh-JC
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Nov 2008 05:26:24 +0000
-Received: from xenotime.net ([72.52.64.118])
-	by 29vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1KxxNs-0008MG-Rl for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Nov 2008 05:26:24 +0000
-Received: from chimera.site ([71.117.247.66]) by xenotime.net for
-	<linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 5 Nov 2008 21:07:14 -0800
-In-Reply-To: <1225944946.7337.2.camel@localhost>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: stanley.miao@windriver.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, Jaya Kumar <jayakumar.lkml@gmail.com>
+To: benh@kernel.crashing.org
+Cc: James Cloos <cloos@jhcloos.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Krzysztof Halasa <khc@pm.waw.pl>
 
-On Thu, 06 Nov 2008 12:15:46 +0800 stanley.miao wrote:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> Heh, it would have been easier to do
+>
+> 	width = (image->width | 0x1f) + 1; 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> Oh and you also need to change the src_bytes calculation 
 
-> Thanks, Jaya, 
-> 
-> Now there isn't a fbdev specific git tree, so who is responsible for
-> pushing the fbdev patches into mainline tree ?
-
-Andrew Morton is.  Please cc: akpm@linux-foundation.org on all fbdev patches.
+With the slightly less embarrassing patch below applied and using the
+default 8x16 font, the machine boots successfully with the expected
+gibberish console display.  I can then setfont one of the large fonts
+and it does not lock up.  The gibberish changes and if I do dmesg I even
+get a few chunks of legible output: http://ondioline.org/~paul/corruption.png
 
 
-> Stanley.
-> 
-> On Thu, 2008-11-06 at 09:46 +0800, Jaya Kumar wrote:
-> > On Thu, Nov 6, 2008 at 9:33 AM, stanley.miao <stanley.miao@windriver.com> wrote:
-> > > I want generate the diffs and submit my patch. so what is the git server
-> > > address ?
-> > >
-> > > Thanks.
-> > >
-> > > Stanley.
-> > 
-> > Hi Stanley,
-> > 
-> > I don't think there is a fbdev specific git tree. I think the
-> > encouraged practice is to submit against the mainline tree unless you
-> > have specific dependencies on another tree.
+diff --git a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
+index 8718f73..6dbd24a 100644
+--- a/drivers/video/aty/radeon_accel.c
++++ b/drivers/video/aty/radeon_accel.c
+@@ -176,6 +176,7 @@ static void radeonfb_prim_imageblit(struct radeonfb_info *rinfo,
+ {
+ 	unsigned int src_bytes, dwords;
+ 	u32 *bits;
++	int width;
+ 
+ 	radeonfb_set_creg(rinfo, DP_GUI_MASTER_CNTL, &rinfo->dp_gui_mc_cache,
+ 			  rinfo->dp_gui_mc_base |
+@@ -208,9 +209,11 @@ static void radeonfb_prim_imageblit(struct radeonfb_info *rinfo,
+ 	 * work ok for me without that and the doco doesn't seem to imply
+ 	 * there is such a restriction.
+ 	 */
+-	OUTREG(DST_WIDTH_HEIGHT, (image->width << 16) | image->height);
++	/* Let us pad. */
++	width = (image->width | 0x1f) + 1;
++	OUTREG(DST_WIDTH_HEIGHT, (width << 16) | image->height);
+ 
+-	src_bytes = (((image->width * image->depth) + 7) / 8) * image->height;
++	src_bytes = (((width * image->depth) + 7) / 8) * image->height;
+ 	dwords = (src_bytes + 3) / 4;
+ 	bits = (u32*)(image->data);
 
+-- 
+Paul Collins
+Wellington, New Zealand
 
----
-~Randy
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Dag vijandelijk luchtschip de huismeester is dood

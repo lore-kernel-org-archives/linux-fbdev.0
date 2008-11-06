@@ -1,26 +1,28 @@
-From: "stanley.miao" <stanley.miao@windriver.com>
-Subject: What is the linux-fbdev-devel's git address ?
-Date: Thu, 06 Nov 2008 09:33:11 +0800
-Message-ID: <1225935191.7811.126.camel@localhost>
-Reply-To: stanley.miao@windriver.com
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: What is the linux-fbdev-devel's git address
+	?
+Date: Thu, 6 Nov 2008 09:46:43 +0800
+Message-ID: <45a44e480811051746m1cbe7f17s82791d641ac4d853@mail.gmail.com>
+References: <1225935191.7811.126.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <Stanley.Miao@windriver.com>) id 1Kxtex-0001Hd-8M
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1KxtxS-0006mG-Vr
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Nov 2008 01:27:43 +0000
-Received: from mail.windriver.com ([147.11.1.11] helo=mail.wrs.com)
+	Thu, 06 Nov 2008 01:46:50 +0000
+Received: from ey-out-1920.google.com ([74.125.78.148])
 	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Kxtes-00061z-9q for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 06 Nov 2008 01:27:43 +0000
-Received: from ALA-MAIL03.corp.ad.wrs.com (ala-mail03 [147.11.57.144])
-	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id mA61RZjm003835
+	id 1KxtxN-0003SQ-RV for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 06 Nov 2008 01:46:50 +0000
+Received: by ey-out-1920.google.com with SMTP id 4so161730eyk.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 5 Nov 2008 17:27:35 -0800 (PST)
+	Wed, 05 Nov 2008 17:46:43 -0800 (PST)
+In-Reply-To: <1225935191.7811.126.camel@localhost>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,15 +32,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: stanley.miao@windriver.com
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-I want generate the diffs and submit my patch. so what is the git server
-address ?
+On Thu, Nov 6, 2008 at 9:33 AM, stanley.miao <stanley.miao@windriver.com> wrote:
+> I want generate the diffs and submit my patch. so what is the git server
+> address ?
+>
+> Thanks.
+>
+> Stanley.
 
-Thanks.
+Hi Stanley,
 
-Stanley.
+I don't think there is a fbdev specific git tree. I think the
+encouraged practice is to submit against the mainline tree unless you
+have specific dependencies on another tree.
 
+jaya
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

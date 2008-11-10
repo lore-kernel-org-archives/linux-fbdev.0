@@ -1,99 +1,567 @@
-From: "Shah, Hardik" <hardik.shah@ti.com>
-Subject: RE: [Linux-fbdev-devel] [REVIEW  PATCH 0/9] DSS: Series description
-Date: Mon, 10 Nov 2008 17:33:58 +0530
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB02DF3030A2@dbde02.ent.ti.com>
-References: <alpine.DEB.2.00.0811101313400.11080@tubuntu>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Subject: Re: [PATCH] Fix crash in viafb due to 4k stack
+	overflow
+Date: Mon, 10 Nov 2008 22:00:46 +0100
+Message-ID: <20081110220046.10376327@neptune.home>
+References: <20081109202537.33ead0a2@neptune.home>
+	<20081109113603.d45361ad.akpm@linux-foundation.org>
+	<20081109122515.1deb9ec2@infradead.org>
+	<20081109213811.4b85adc6@neptune.home>
+	<20081109125522.b5266352.akpm@linux-foundation.org>
+	<20081109223748.3182e31d@neptune.home>
+	<20081109145959.6a8d9e8e.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.00.0811101313400.11080@tubuntu>
-Content-Language: en-US
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Tomi Valkeinen <valkeine@nokia.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <bonbons@linux-vserver.org>) id 1KzdsX-0004sY-Fx
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Nov 2008 21:00:57 +0000
+Received: from [158.64.111.12] (helo=bonbons.gotdns.org)
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KzdsS-000233-Hx for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Nov 2008 21:00:57 +0000
+In-Reply-To: <20081109145959.6a8d9e8e.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: JosephChan@via.com.tw, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+
+On Sun, 09 November 2008 Andrew Morton wrote:
+> > It show a nice candidate, viafb_ioctl in top-6:
+> > 0xc011612b identity_mapped [vmlinux]:                   4096
+> 
+> erk!
+> 
+> > 0xc017896b do_sys_poll [vmlinux]:                       888
+> > 0xc0178bdd do_sys_poll [vmlinux]:                       888
+> > 0xc024506b sha256_transform [vmlinux]:                  752
+> > 0xc024768b sha256_transform [vmlinux]:                  752
+> > 0xc027d933 viafb_ioctl [vmlinux]:                       728
+> > 0xc01783c8 do_select [vmlinux]:                         708
+> > 0xc0178853 do_select [vmlinux]:                         708
+> > 
+> > 
+> > On a new attempt the box survived fbset "1280x1024-60" though
+> > I did wait some time after boot up before calling it.
+> > So it's pretty probable that either it gets near the limit of stack
+> > or this time the neighborhood of the stack was not just as
+> > critical :/
+> > 
+> > Shall I trim down that function's stack usage as well?
+> > (many structs allocated from stack)
+> 
+> Yes please.
+
+I did a first attempt, based on suggested technique.
+For viafb_ioctl() I did put all the structs in a single union (on stack)
+and used the appropriate one depending on the cmd.
+This saves 276 bytes out of 728 according to check_stack.pl
+
+The most clean approach would probably be to split out the parts using
+bigger structs into separate functions and allocating the required
+memory from there.
+
+I also switched viafb_cursor() to the struct technique.
+
+See patch below for both.
 
 
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:valkeine@nokia.com]
-> Sent: Monday, November 10, 2008 5:01 PM
-> To: Shah, Hardik
-> Cc: Tomi Valkeinen; linux-fbdev-devel@lists.sourceforge.net; linux-
-> omap@vger.kernel.org
-> Subject: RE: [Linux-fbdev-devel] [REVIEW PATCH 0/9] DSS: Series description
-> 
-> Hi,
-> 
-> On Mon, 10 Nov 2008, ext Shah, Hardik wrote:
-> 
-> >>
-> > [Shah, Hardik] We have reviewed the patches in detail and even made
-> modifications to make it work on the OMAP3EVM. Here are our observations:
-> >
-> > 1) The overall implementation is very much in line with our earlier proposal
-> to provide generic API that supports both V4L2 and FBDEV.
-> > 2) The implementation supports multiple output interfaces e.g. RFBI, SDI,
-> DSI, ... that we did not have in our plans
-> > 3) You have also validated it on lot many platforms that we do not have
-> access.
-> >
-> > We believe patches are a good step in right direction.
-> >
-> > We plan to use this patchset as base for supporting these additional use
-> cases:
-> >
-> > a) Adding the V4L2 user interface to the video pipelines (I believe video
-> pipelines are natural fit for the V4L2 frame work.  If use case is there for
-> FBDEV interface we can have compile time option to expose the video pipelines
-> as the either FBDEV or v4L2 interface).
-> > b) Modification of the DSS/DISPC library for supporting V4L2 user interface.
-> > c) Supporting the functionality like alpha blending, global alpha blending,
-> setting of various TV standards etc.
-> > d) Supporting the mirroring and rotation in both FBDEV and V4L2 driver.
-> >
-> > Do let us know if you aren't already working on any of these.
-> 
-> This sounds very good. I am not currently working on any of those items
-> you mentioned. A couple of comments/thoughts about them:
-> 
-> a) Yes, V4L2 interface would be nice. But there are use cases for FB
-> devices also, and sometimes you don't want V4L2 devices at all. So as you
-> suggested, a compile time option to select this is necessary. Or, better
-> yet, a runtime option.
-> 
-> One way to implement simultaneous FB and V4L2 devices is to have to
-> separate drivers. But then this needs more locking support to DSS, and
-> pobably some kind of event mechanism. For example, if both FB and V4L2
-> have overlays on the same display, and one of them changes the screen
-> resolution, the other one needs to know about this also.
-> 
-> So what I have been thinking is to have both FB and V4L2 in the same
-> driver. This would make things easier. But then again, I don't know how
-> much code V4L2 needs, and if the combined driver would get too complex.
-> 
-[Shah, Hardik] As long as the screen resolutions and timings are concerned, V4L2 driver will always take into account resolution before setting the format. Same is true for frame buffer driver before panning the display it should get the fscreen info and vscreen info and then start panning. While panning/streaming is going on any of the V4L2/FBDEV driver application has to take care of not changing the screen resolution/timing.
 
-> b) Do you already have ideas what features V4L2 needs that are not present
-> in DSS currently?
-> 
-[Shah, Hardik] We are working on that. We will be providing the comments on changes/modification in the DSS/DISPC in next two/three days.
-> c) Yes, these would be nice.
-> 
-> d) These would be nice also. About rotation, I think there are three kinds
-> of rotation that are handled by different entities:
-> - DMA rotation, for framebuffers in SRAM. Handled by DSS.
-> - External framebuffer rotation, handled by the external framebuffer
-> controller.
-> - VRFB rotation. This is basically a memory handling configuration, and is
-> transparent to the end user (in this case, DSS) of the memory. Should be
-> handled by the entity that allocates the memory, ie. omapfb.
-[Shah, Hardik] so how are you planning to take care of rotation/mirroring.  We have board that only supports VRFB rotation. 
+During conversion of viafb_ioctl() I noticed the following:
 
-Hardik
-Vaibhav
+Those two cases just copy_from_user and do nothing with copied data,
+incomplete implementation?:
+        case VIAFB_SET_PANEL_POSITION:
+                if (copy_from_user(&u.panel_pos_size_para, argp,
+                                   sizeof(u.panel_pos_size_para)))
+                        return -EFAULT;
+                break;
+        case VIAFB_SET_PANEL_SIZE:
+                if (copy_from_user(&u.panel_pos_size_para, argp,
+                                   sizeof(u.panel_pos_size_para)))
+                        return -EFAULT;
+                break;
 
-> 
->   Tomi
+Handling of GET/SET GAMMA looks buggy:
+In each case 256*4 bytes are allocated but only 4 bytes (size of pointer)
+are copied to/from userspace though viafb_(get|set)_gamma_table() operates
+on the full 256 elements...
+        case VIAFB_SET_GAMMA_LUT:
+                viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
+                if (!viafb_gamma_table)
+                        return -ENOMEM;
+                if (copy_from_user(viafb_gamma_table, argp,
+                                sizeof(viafb_gamma_table))) {
+                        kfree(viafb_gamma_table);
+                        return -EFAULT;
+                }
+                viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
+                kfree(viafb_gamma_table);
+                break;
 
+        case VIAFB_GET_GAMMA_LUT:
+                viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
+                if (!viafb_gamma_table)
+                        return -ENOMEM;
+                viafb_get_gamma_table(viafb_gamma_table);
+                if (copy_to_user(argp, viafb_gamma_table,
+                        sizeof(viafb_gamma_table))) {
+                        kfree(viafb_gamma_table);
+                        return -EFAULT;
+                }
+                kfree(viafb_gamma_table);
+                break;
+
+I don't know if there is a userspace app that uses these VIA IOCTLs...
+so the ioctl part is just compile-tested.
+After checking, fbset just uses some generic framebuffer IOCTLs outside
+of viafb's scope, thus not passing through viafb_ioctl().
+
+
+
+---
+--- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig	2008-11-09 19:36:47.000000000 +0100
++++ linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10 20:50:32.000000000 +0100
+@@ -546,23 +546,25 @@ static int viafb_blank(int blank_mode, s
+ 
+ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ {
+-	struct viafb_ioctl_mode viamode;
+-	struct viafb_ioctl_samm viasamm;
+-	struct viafb_driver_version driver_version;
+-	struct fb_var_screeninfo sec_var;
+-	struct _panel_size_pos_info panel_pos_size_para;
++	union {
++		struct viafb_ioctl_mode viamode;
++		struct viafb_ioctl_samm viasamm;
++		struct viafb_driver_version driver_version;
++		struct fb_var_screeninfo sec_var;
++		struct _panel_size_pos_info panel_pos_size_para;
++		struct viafb_ioctl_setting viafb_setting;
++		struct device_t active_dev;
++	} u;
+ 	u32 state_info = 0;
+-	u32 viainfo_size = sizeof(struct viafb_ioctl_info);
+ 	u32 *viafb_gamma_table;
+ 	char driver_name[] = "viafb";
+ 
+ 	u32 __user *argp = (u32 __user *) arg;
+ 	u32 gpu32;
+ 	u32 video_dev_info = 0;
+-	struct viafb_ioctl_setting viafb_setting = {};
+-	struct device_t active_dev = {};
+ 
+ 	DEBUG_MSG(KERN_INFO "viafb_ioctl: 0x%X !!\n", cmd);
++	memset(&u, 0, sizeof(u));
+ 
+ 	switch (cmd) {
+ 	case VIAFB_GET_CHIP_INFO:
+@@ -571,7 +573,7 @@ static int viafb_ioctl(struct fb_info *i
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_INFO_SIZE:
+-		return put_user(viainfo_size, argp);
++		return put_user((u32)sizeof(struct viafb_ioctl_info), argp);
+ 	case VIAFB_GET_INFO:
+ 		return viafb_ioctl_get_viafb_info(arg);
+ 	case VIAFB_HOTPLUG:
+@@ -584,60 +586,60 @@ static int viafb_ioctl(struct fb_info *i
+ 		viafb_hotplug = (gpu32) ? 1 : 0;
+ 		break;
+ 	case VIAFB_GET_RESOLUTION:
+-		viamode.xres = (u32) viafb_hotplug_Xres;
+-		viamode.yres = (u32) viafb_hotplug_Yres;
+-		viamode.refresh = (u32) viafb_hotplug_refresh;
+-		viamode.bpp = (u32) viafb_hotplug_bpp;
++		u.viamode.xres = (u32) viafb_hotplug_Xres;
++		u.viamode.yres = (u32) viafb_hotplug_Yres;
++		u.viamode.refresh = (u32) viafb_hotplug_refresh;
++		u.viamode.bpp = (u32) viafb_hotplug_bpp;
+ 		if (viafb_SAMM_ON == 1) {
+-			viamode.xres_sec = viafb_second_xres;
+-			viamode.yres_sec = viafb_second_yres;
+-			viamode.virtual_xres_sec = viafb_second_virtual_xres;
+-			viamode.virtual_yres_sec = viafb_second_virtual_yres;
+-			viamode.refresh_sec = viafb_refresh1;
+-			viamode.bpp_sec = viafb_bpp1;
++			u.viamode.xres_sec = viafb_second_xres;
++			u.viamode.yres_sec = viafb_second_yres;
++			u.viamode.virtual_xres_sec = viafb_second_virtual_xres;
++			u.viamode.virtual_yres_sec = viafb_second_virtual_yres;
++			u.viamode.refresh_sec = viafb_refresh1;
++			u.viamode.bpp_sec = viafb_bpp1;
+ 		} else {
+-			viamode.xres_sec = 0;
+-			viamode.yres_sec = 0;
+-			viamode.virtual_xres_sec = 0;
+-			viamode.virtual_yres_sec = 0;
+-			viamode.refresh_sec = 0;
+-			viamode.bpp_sec = 0;
++			u.viamode.xres_sec = 0;
++			u.viamode.yres_sec = 0;
++			u.viamode.virtual_xres_sec = 0;
++			u.viamode.virtual_yres_sec = 0;
++			u.viamode.refresh_sec = 0;
++			u.viamode.bpp_sec = 0;
+ 		}
+-		if (copy_to_user(argp, &viamode, sizeof(viamode)))
++		if (copy_to_user(argp, &u.viamode, sizeof(u.viamode)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_SAMM_INFO:
+-		viasamm.samm_status = viafb_SAMM_ON;
++		u.viasamm.samm_status = viafb_SAMM_ON;
+ 
+ 		if (viafb_SAMM_ON == 1) {
+ 			if (viafb_dual_fb) {
+-				viasamm.size_prim = viaparinfo->fbmem_free;
+-				viasamm.size_sec = viaparinfo1->fbmem_free;
++				u.viasamm.size_prim = viaparinfo->fbmem_free;
++				u.viasamm.size_sec = viaparinfo1->fbmem_free;
+ 			} else {
+ 				if (viafb_second_size) {
+-					viasamm.size_prim =
++					u.viasamm.size_prim =
+ 					    viaparinfo->fbmem_free -
+ 					    viafb_second_size * 1024 * 1024;
+-					viasamm.size_sec =
++					u.viasamm.size_sec =
+ 					    viafb_second_size * 1024 * 1024;
+ 				} else {
+-					viasamm.size_prim =
++					u.viasamm.size_prim =
+ 					    viaparinfo->fbmem_free >> 1;
+-					viasamm.size_sec =
++					u.viasamm.size_sec =
+ 					    (viaparinfo->fbmem_free >> 1);
+ 				}
+ 			}
+-			viasamm.mem_base = viaparinfo->fbmem;
+-			viasamm.offset_sec = viafb_second_offset;
++			u.viasamm.mem_base = viaparinfo->fbmem;
++			u.viasamm.offset_sec = viafb_second_offset;
+ 		} else {
+-			viasamm.size_prim =
++			u.viasamm.size_prim =
+ 			    viaparinfo->memsize - viaparinfo->fbmem_used;
+-			viasamm.size_sec = 0;
+-			viasamm.mem_base = viaparinfo->fbmem;
+-			viasamm.offset_sec = 0;
++			u.viasamm.size_sec = 0;
++			u.viasamm.mem_base = viaparinfo->fbmem;
++			u.viasamm.offset_sec = 0;
+ 		}
+ 
+-		if (copy_to_user(argp, &viasamm, sizeof(viasamm)))
++		if (copy_to_user(argp, &u.viasamm, sizeof(u.viasamm)))
+ 			return -EFAULT;
+ 
+ 		break;
+@@ -662,74 +664,75 @@ static int viafb_ioctl(struct fb_info *i
+ 			viafb_lcd_disable();
+ 		break;
+ 	case VIAFB_SET_DEVICE:
+-		if (copy_from_user(&active_dev, (void *)argp,
+-			sizeof(active_dev)))
++		if (copy_from_user(&u.active_dev, (void *)argp,
++			sizeof(u.active_dev)))
+ 			return -EFAULT;
+-		viafb_set_device(active_dev);
++		viafb_set_device(u.active_dev);
+ 		viafb_set_par(info);
+ 		break;
+ 	case VIAFB_GET_DEVICE:
+-		active_dev.crt = viafb_CRT_ON;
+-		active_dev.dvi = viafb_DVI_ON;
+-		active_dev.lcd = viafb_LCD_ON;
+-		active_dev.samm = viafb_SAMM_ON;
+-		active_dev.primary_dev = viafb_primary_dev;
+-
+-		active_dev.lcd_dsp_cent = viafb_lcd_dsp_method;
+-		active_dev.lcd_panel_id = viafb_lcd_panel_id;
+-		active_dev.lcd_mode = viafb_lcd_mode;
+-
+-		active_dev.xres = viafb_hotplug_Xres;
+-		active_dev.yres = viafb_hotplug_Yres;
+-
+-		active_dev.xres1 = viafb_second_xres;
+-		active_dev.yres1 = viafb_second_yres;
+-
+-		active_dev.bpp = viafb_bpp;
+-		active_dev.bpp1 = viafb_bpp1;
+-		active_dev.refresh = viafb_refresh;
+-		active_dev.refresh1 = viafb_refresh1;
+-
+-		active_dev.epia_dvi = viafb_platform_epia_dvi;
+-		active_dev.lcd_dual_edge = viafb_device_lcd_dualedge;
+-		active_dev.bus_width = viafb_bus_width;
++		u.active_dev.crt = viafb_CRT_ON;
++		u.active_dev.dvi = viafb_DVI_ON;
++		u.active_dev.lcd = viafb_LCD_ON;
++		u.active_dev.samm = viafb_SAMM_ON;
++		u.active_dev.primary_dev = viafb_primary_dev;
++
++		u.active_dev.lcd_dsp_cent = viafb_lcd_dsp_method;
++		u.active_dev.lcd_panel_id = viafb_lcd_panel_id;
++		u.active_dev.lcd_mode = viafb_lcd_mode;
++
++		u.active_dev.xres = viafb_hotplug_Xres;
++		u.active_dev.yres = viafb_hotplug_Yres;
++
++		u.active_dev.xres1 = viafb_second_xres;
++		u.active_dev.yres1 = viafb_second_yres;
++
++		u.active_dev.bpp = viafb_bpp;
++		u.active_dev.bpp1 = viafb_bpp1;
++		u.active_dev.refresh = viafb_refresh;
++		u.active_dev.refresh1 = viafb_refresh1;
++
++		u.active_dev.epia_dvi = viafb_platform_epia_dvi;
++		u.active_dev.lcd_dual_edge = viafb_device_lcd_dualedge;
++		u.active_dev.bus_width = viafb_bus_width;
+ 
+-		if (copy_to_user(argp, &active_dev, sizeof(active_dev)))
++		if (copy_to_user(argp, &u.active_dev, sizeof(u.active_dev)))
+ 			return -EFAULT;
+ 		break;
+ 
+ 	case VIAFB_GET_DRIVER_VERSION:
+-		driver_version.iMajorNum = VERSION_MAJOR;
+-		driver_version.iKernelNum = VERSION_KERNEL;
+-		driver_version.iOSNum = VERSION_OS;
+-		driver_version.iMinorNum = VERSION_MINOR;
++		u.driver_version.iMajorNum = VERSION_MAJOR;
++		u.driver_version.iKernelNum = VERSION_KERNEL;
++		u.driver_version.iOSNum = VERSION_OS;
++		u.driver_version.iMinorNum = VERSION_MINOR;
+ 
+-		if (copy_to_user(argp, &driver_version,
+-			sizeof(driver_version)))
++		if (copy_to_user(argp, &u.driver_version,
++			sizeof(u.driver_version)))
+ 			return -EFAULT;
+ 
+ 		break;
+ 
+ 	case VIAFB_SET_DEVICE_INFO:
+-		if (copy_from_user(&viafb_setting,
+-			argp, sizeof(viafb_setting)))
++		if (copy_from_user(&u.viafb_setting,
++			argp, sizeof(u.viafb_setting)))
+ 			return -EFAULT;
+-		if (apply_device_setting(viafb_setting, info) < 0)
++		if (apply_device_setting(u.viafb_setting, info) < 0)
+ 			return -EINVAL;
+ 
+ 		break;
+ 
+ 	case VIAFB_SET_SECOND_MODE:
+-		if (copy_from_user(&sec_var, argp, sizeof(sec_var)))
++		if (copy_from_user(&u.sec_var, argp, sizeof(u.sec_var)))
+ 			return -EFAULT;
+-		apply_second_mode_setting(&sec_var);
++		apply_second_mode_setting(&u.sec_var);
+ 		break;
+ 
+ 	case VIAFB_GET_DEVICE_INFO:
+ 
+-		retrieve_device_setting(&viafb_setting);
++		retrieve_device_setting(&u.viafb_setting);
+ 
+-		if (copy_to_user(argp, &viafb_setting, sizeof(viafb_setting)))
++		if (copy_to_user(argp, &u.viafb_setting,
++				 sizeof(u.viafb_setting)))
+ 			return -EFAULT;
+ 
+ 		break;
+@@ -806,51 +809,51 @@ static int viafb_ioctl(struct fb_info *i
+ 		break;
+ 
+ 	case VIAFB_GET_PANEL_MAX_SIZE:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++		     sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_PANEL_MAX_POSITION:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++				 sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 
+ 	case VIAFB_GET_PANEL_POSITION:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++				 sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_PANEL_SIZE:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++				 sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 
+ 	case VIAFB_SET_PANEL_POSITION:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_SET_PANEL_SIZE:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 
+@@ -1052,10 +1055,8 @@ static void viafb_imageblit(struct fb_in
+ 
+ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+-	u8 data[CURSOR_SIZE / 8];
+-	u32 data_bak[CURSOR_SIZE / 32];
+ 	u32 temp, xx, yy, bg_col = 0, fg_col = 0;
+-	int size, i, j = 0;
++	int i, j = 0;
+ 	static int hw_cursor;
+ 	struct viafb_par *p_viafb_par;
+ 
+@@ -1178,22 +1179,29 @@ static int viafb_cursor(struct fb_info *
+ 	}
+ 
+ 	if (cursor->set & FB_CUR_SETSHAPE) {
+-		size =
++		struct {
++			u8 data[CURSOR_SIZE / 8];
++			u32 bak[CURSOR_SIZE / 32];
++		} *cr_data = kzalloc(sizeof(*cr_data), GFP_ATOMIC);
++		int size =
+ 		    ((viacursor.image.width + 7) >> 3) *
+ 		    viacursor.image.height;
+ 
++		if (cr_data == NULL)
++			goto out;
++
+ 		if (MAX_CURS == 32) {
+ 			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
+-				data_bak[i] = 0x0;
+-				data_bak[i + 1] = 0xFFFFFFFF;
++				cr_data->bak[i] = 0x0;
++				cr_data->bak[i + 1] = 0xFFFFFFFF;
+ 				i += 1;
+ 			}
+ 		} else if (MAX_CURS == 64) {
+ 			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
+-				data_bak[i] = 0x0;
+-				data_bak[i + 1] = 0x0;
+-				data_bak[i + 2] = 0xFFFFFFFF;
+-				data_bak[i + 3] = 0xFFFFFFFF;
++				cr_data->bak[i] = 0x0;
++				cr_data->bak[i + 1] = 0x0;
++				cr_data->bak[i + 2] = 0xFFFFFFFF;
++				cr_data->bak[i + 3] = 0xFFFFFFFF;
+ 				i += 3;
+ 			}
+ 		}
+@@ -1201,12 +1209,12 @@ static int viafb_cursor(struct fb_info *
+ 		switch (viacursor.rop) {
+ 		case ROP_XOR:
+ 			for (i = 0; i < size; i++)
+-				data[i] = viacursor.mask[i];
++				cr_data->data[i] = viacursor.mask[i];
+ 			break;
+ 		case ROP_COPY:
+ 
+ 			for (i = 0; i < size; i++)
+-				data[i] = viacursor.mask[i];
++				cr_data->data[i] = viacursor.mask[i];
+ 			break;
+ 		default:
+ 			break;
+@@ -1214,23 +1222,25 @@ static int viafb_cursor(struct fb_info *
+ 
+ 		if (MAX_CURS == 32) {
+ 			for (i = 0; i < size; i++) {
+-				data_bak[j] = (u32) data[i];
+-				data_bak[j + 1] = ~data_bak[j];
++				cr_data->bak[j] = (u32) cr_data->data[i];
++				cr_data->bak[j + 1] = ~cr_data->bak[j];
+ 				j += 2;
+ 			}
+ 		} else if (MAX_CURS == 64) {
+ 			for (i = 0; i < size; i++) {
+-				data_bak[j] = (u32) data[i];
+-				data_bak[j + 1] = 0x0;
+-				data_bak[j + 2] = ~data_bak[j];
+-				data_bak[j + 3] = ~data_bak[j + 1];
++				cr_data->bak[j] = (u32) cr_data->data[i];
++				cr_data->bak[j + 1] = 0x0;
++				cr_data->bak[j + 2] = ~cr_data->bak[j];
++				cr_data->bak[j + 3] = ~cr_data->bak[j + 1];
+ 				j += 4;
+ 			}
+ 		}
+ 
+ 		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
+ 		       ((struct viafb_par *)(info->par))->cursor_start,
+-		       data_bak, CURSOR_SIZE);
++		       cr_data->bak, CURSOR_SIZE);
++out:
++		kfree(cr_data);
+ 	}
+ 
+ 	if (viacursor.enable)
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

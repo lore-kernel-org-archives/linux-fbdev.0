@@ -1,24 +1,28 @@
-From: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
-Subject: Re: Seg fault on any FB write (Epson S1D13A04
- on	Coldfire running 2.6.25)
-Date: Tue, 11 Nov 2008 10:57:58 +0100
-Message-ID: <49195726.2060103@cetrtapot.si>
-References: <4918E5C3.2090108@one.net>
+From: jkimble@one.net
+Subject: Epson S1D13xxxfb.c on 2.6.25 kernel: wierd seg
+	faults...
+Date: Mon, 10 Nov 2008 17:14:58 -0500 (EST)
+Message-ID: <50026.137.237.242.42.1226355298.squirrel@webmail.nuvox.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hinko.kocevar@cetrtapot.si>) id 1KzqJZ-00084C-SF
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jkimble@one.net>) id 1KzfOU-0001JR-1Q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 10:17:41 +0000
-Received: from zimbra-mta.cetrtapot.si ([89.212.80.172])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KzqJW-0002yj-0g for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 10:17:41 +0000
-In-Reply-To: <4918E5C3.2090108@one.net>
+	Mon, 10 Nov 2008 22:38:02 +0000
+Received: from smtp-out2.atlngahp.sys.nuvox.net ([70.43.63.19]
+	helo=smtp02.atlngahp.sys.nuvox.net)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1KzfOQ-0005FD-UA
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 10 Nov 2008 22:38:02 +0000
+Received: from webmail.nuvox.net (webmail.nuvox.net [64.89.70.59])
+	by smtp02.atlngahp.sys.nuvox.net (8.13.1/8.13.1) with ESMTP id
+	mAAMEwxm017790 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 10 Nov 2008 17:14:58 -0500
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,44 +32,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Kimble <jkimble@one.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-SmFtZXMgS2ltYmxlIHdyb3RlOgo+IEkndmUgYmVlbiB3b3JraW5nIG9uIHBvcnRpbmcgdGhlIHMx
-ZDEzeHh4ZmIgZHJpdmVyIGZyb20gdGhlIGxhdGVzdCAKPiBrZXJuZWwgZnJvbSBGcmVlc2NhbGUg
-Zm9yIENvbGRmaXJlIHRvIHdvcmsgd2l0aCB0aGUgUzFEMTNBMDQgY2hpcC4gSSB3YXMgCj4gYWJs
-ZSB0byBnZXQgdGhpbmdzIHdvcmtpbmcgdG8gdGhlIHBvaW50IHRoYXQgSSBkbyBnZXQgYSBsaXR0
-bGUgVFVYIGxvZ28gCj4gdXAgb24gdGhlIHNjcmVlbiBhdCBib290IHVwLiBTZWVtZWQgbGlrZSBh
-IGdvb2Qgc3RhcnQgYnV0IG5vbmUgb2YgbXkgCj4gdXNlciBzcGFjZSBhcHBsaWNhdGlvbnMgd2ls
-bCB3b3JrLiBJIGNhbiBvcGVuIHRoZSAvZGV2L2ZiMCBkZXZpY2UgYW5kIAo+IHRoZSBkYXRhIGlu
-IHRoZSBpbmZvIHN0cnVjdHVyZSBpcyBjb3JyZWN0IGJ1dCBpZiBJIHRyeSB0byB3cml0ZSB0byBh
-bnkgCj4gcmVnaXN0ZXIgb3IgYXJlYSBpbiB0aGUgZnJhbWUgYnVmZmVyIChvciB3cml0ZSB0byB0
-aGUgZGV2aWNlIGF0IGFsbCkgSSAKPiBnZXQgYSBzZWcgZmF1bHQuCj4gCj4gSSBoYWQgYW4gZWFy
-bGllciBkcml2ZXIgd29ya2luZyB3aXRoIHRoZSAyLjYuMTAga2VybmVsIHdpdGggdGhlIHNhbWUg
-Cj4gaGFyZHdhcmUuIFRoZSBzYW1lIGFwcGxpY2F0aW9uIHNwYWNlIHByb2dyYW0gc2hvdWxkIHdv
-cmsgKCBJIHdvdWxkIAo+IHRoaW5rLi4uKSBidXQgSSBnZXQgdGhlIHNlZyBmYXVsdCBvbiB0aGUg
-Zmlyc3Qgd3JpdGUgdG8gZmIwLiBJIHRyaWVkIGEgCj4gZGlmZmVyZW50IG1lbW9yeSBsb2NhdGlv
-biAob3g0NDAwIDAwMDAgdG8gMHg3NDAwIDAwMDApIGZvciB0aGUgQ1MgCj4gYXNzb2NpYXRlZCB3
-aXRoIHRoZSB2aWRlbyAgY2hpcCwgbm8gIGRpZmZlcmVuY2UuIFBlcm1pc3Npb25zIGZvciAKPiAv
-ZGV2L2ZiMCBhcmUgInJ3Ii4gTm8gb3RoZXIgcHJvY2VzcyB1c2luZyBmYjAuIFRoaXMgaXMgcmVh
-bGx5IHdlaXJkLgo+IAo+IEFueSBoZWxwIG9yIHN1Z2dlc3Rpb25zIE1VQ0ggYXBwcmVjaWF0ZWQu
-Cj4gCgpZb3UgYXJlIHByb2JhYmx5IG5vdCByZXNlcnZpbmcgYW5kL29yIHRyYW5zbGF0aW5nIHBo
-eXNpY2FsIG1lbW9yeSBzcGFjZQp0byB2aXJ0dWFsIGlmIHlvdSBnZXQgYSBzZWdmYXVsdCBvbiBl
-dmVyeSBhY2Nlc3MuIFRyeSBjYXQgL3Byb2MvaW9tZW0uIElzCnlvdXIgZGV2aWNlIGxpc3RlZD8K
-Ck9UT0gsIGEgbG90IG9mIGFyY2ggc3BlY2lmaWMgY29kZSBoYXMgcHJvYmFibHkgY2hhbmdlZCBz
-aW5jZSAyLjYuMTAgLQoyLjYuMjUgdGhhdCBtaWdodCBub3QgZXZlbiBiZSBkaXJlY3RseSByZWxh
-dGVkIHRvIGZiLiBJcyB5b3VyIGFyY2ggcG9ydAp1cCB0byBkYXRlPwoKQWxzbyB5b3UgbWlnaHQg
-cG9zdCB5b3VyIGZiIGRyaXZlciBhbmQgc29tZW9uZSBtaWdodCBzcG90IHRoZSBmYXVsdCBmYXN0
-ZXIuLgoKCkhUSCwKSEsKLS0gCkhpbmtvIEtvxI1ldmFyLCBPU1MgZGV2ZWxvcGVyCsSMRVRSVEEg
-UE9ULCBkLm8uby4KUGxhbmluYSAzLCA0MDAwIEtyYW5qLCBTSSBFVQp0ZWwgICAgICsrMzg2ICgw
-KSA0IDI4MCA2NiAwMwplLW1haWwgIGhpbmtvLmtvY2V2YXJAY2V0cnRhcG90LnNpCmh0dHAgICAg
-d3d3LmNldHJ0YXBvdC5zaQoKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5OZXQgZW1haWwgaXMg
-c3BvbnNvcmVkIGJ5IHRoZSBNb2JsaW4gWW91ciBNb3ZlIERldmVsb3BlcidzIGNoYWxsZW5nZQpC
-dWlsZCB0aGUgY29vbGVzdCBMaW51eCBiYXNlZCBhcHBsaWNhdGlvbnMgd2l0aCBNb2JsaW4gU0RL
-ICYgd2luIGdyZWF0IHByaXplcwpHcmFuZCBwcml6ZSBpcyBhIHRyaXAgZm9yIHR3byB0byBhbiBP
-cGVuIFNvdXJjZSBldmVudCBhbnl3aGVyZSBpbiB0aGUgd29ybGQKaHR0cDovL21vYmxpbi1jb250
-ZXN0Lm9yZy9yZWRpcmVjdC5waHA/YmFubmVyX2lkPTEwMCZ1cmw9LwpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5n
-IGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlz
-dHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+
+Maybe this is a dumb question but bear with me. I'm running an Epson
+S1D13A04 video chip with a Coldfire processor (5484) running the latest
+kernel for this chip from Freescale (2.6.25). I had this device working
+with the older 2.6.10 kernel and I've been working to port the driver that
+came with the 2.6.25 kernel to work with this particular chip (it's a
+device "family" driver).
+
+Got things going fairly well, I thought, to the point that I even get a
+little Tux logo up when the driver loads. However when I go to use the
+frame buffer device, though I can open it and read the data from the info
+structure (size, bpp, etc..) any attempt to write the fb0 device causes a
+seg fault. I've been looking at this for hours and I cannot get why.
+
+I'm configuring the RAM in exactly the same way I was before (went from
+colilo to U-Boot). I'm mapping the CS associated with this device to the
+same memory space I was on the 2.6.10 kernel (0x4400 0000). I tried moving
+it and it made no difference. I don't get it... Is this a 2.6.25 thing I'm
+missing?
+
+Any help/suggestions GREATLY appreciated.
+
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

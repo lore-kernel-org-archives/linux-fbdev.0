@@ -1,48 +1,71 @@
-From: Jianjun Kong <jianjun@zeuux.org>
-Subject: [PATCH] drivers: process failure of sysfs_create_group()
-Date: Mon, 10 Nov 2008 18:53:32 +0800
-Message-ID: <20081110105332.GA19358@ubuntu>
+From: Tomi Valkeinen <valkeine@nokia.com>
+Subject: RE: [Linux-fbdev-devel] [REVIEW  PATCH 0/9] DSS: Series
+ description
+Date: Mon, 10 Nov 2008 13:31:08 +0200 (EET)
+Message-ID: <alpine.DEB.2.00.0811101313400.11080@tubuntu>
+References: <5A47E75E594F054BAF48C5E4FC4B92AB02DF302D4D@dbde02.ent.ti.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754923AbYKJKx1@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02DF302D4D@dbde02.ent.ti.com>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
 Content-Transfer-Encoding: 7bit
-To: spock@gentoo.org
-Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+To: "ext Shah, Hardik" <hardik.shah@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
+Hi,
 
-drivers: drivers/video/uvesafb.c:
-When fail to call sysfs_create_group(), it should recycle resources and return the error.
-This patch fix for processing failure of sysfs_create_group().
+On Mon, 10 Nov 2008, ext Shah, Hardik wrote:
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- drivers/video/uvesafb.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+>>
+> [Shah, Hardik] We have reviewed the patches in detail and even made modifications to make it work on the OMAP3EVM. Here are our observations:
+>
+> 1) The overall implementation is very much in line with our earlier proposal to provide generic API that supports both V4L2 and FBDEV.
+> 2) The implementation supports multiple output interfaces e.g. RFBI, SDI, DSI, ... that we did not have in our plans
+> 3) You have also validated it on lot many platforms that we do not have access.
+>
+> We believe patches are a good step in right direction.
+>
+> We plan to use this patchset as base for supporting these additional use cases:
+>
+> a) Adding the V4L2 user interface to the video pipelines (I believe video pipelines are natural fit for the V4L2 frame work.  If use case is there for FBDEV interface we can have compile time option to expose the video pipelines as the either FBDEV or v4L2 interface).
+> b) Modification of the DSS/DISPC library for supporting V4L2 user interface.
+> c) Supporting the functionality like alpha blending, global alpha blending, setting of various TV standards etc.
+> d) Supporting the mirroring and rotation in both FBDEV and V4L2 driver.
+>
+> Do let us know if you aren't already working on any of these.
 
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 6c2d37f..a78d4d9 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -1811,12 +1811,16 @@ static int __devinit uvesafb_probe(struct platform_device *dev)
- 			info->fix.id);
- 
- 	err = sysfs_create_group(&dev->dev.kobj, &uvesafb_dev_attgrp);
--	if (err != 0)
-+	if (err != 0) {
- 		printk(KERN_WARNING "fb%d: failed to register attributes\n",
- 			info->node);
-+		goto out_frame;
-+	}
- 
- 	return 0;
- 
-+our_frame:
-+	unregister_framebuffer(info);
- out_reg:
- 	release_region(0x3c0, 32);
- out_unmap:
--- 
-1.5.6.3
+This sounds very good. I am not currently working on any of those items 
+you mentioned. A couple of comments/thoughts about them:
+
+a) Yes, V4L2 interface would be nice. But there are use cases for FB 
+devices also, and sometimes you don't want V4L2 devices at all. So as you 
+suggested, a compile time option to select this is necessary. Or, better 
+yet, a runtime option.
+
+One way to implement simultaneous FB and V4L2 devices is to have to 
+separate drivers. But then this needs more locking support to DSS, and 
+pobably some kind of event mechanism. For example, if both FB and V4L2 
+have overlays on the same display, and one of them changes the screen 
+resolution, the other one needs to know about this also.
+
+So what I have been thinking is to have both FB and V4L2 in the same 
+driver. This would make things easier. But then again, I don't know how 
+much code V4L2 needs, and if the combined driver would get too complex.
+
+b) Do you already have ideas what features V4L2 needs that are not present 
+in DSS currently?
+
+c) Yes, these would be nice.
+
+d) These would be nice also. About rotation, I think there are three kinds 
+of rotation that are handled by different entities:
+- DMA rotation, for framebuffers in SRAM. Handled by DSS.
+- External framebuffer rotation, handled by the external framebuffer 
+controller.
+- VRFB rotation. This is basically a memory handling configuration, and is 
+transparent to the end user (in this case, DSS) of the memory. Should be 
+handled by the entity that allocates the memory, ie. omapfb.
+
+  Tomi

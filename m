@@ -1,80 +1,131 @@
-From: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
-Date: Sun, 9 Nov 2008 14:57:59 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0811091439310.22998@t2.domain.actdsltmp>
-References: <20081109202537.33ead0a2@neptune.home>
- <20081109113603.d45361ad.akpm@linux-foundation.org> <20081109122515.1deb9ec2@infradead.org>
- <20081109213811.4b85adc6@neptune.home> <20081109125522.b5266352.akpm@linux-foundation.org>
- <20081109223748.3182e31d@neptune.home>
+From: "Shah, Hardik" <hardik.shah@ti.com>
+Subject: RE: [Linux-fbdev-devel] [REVIEW  PATCH 0/9] DSS: Series description
+Date: Mon, 10 Nov 2008 09:33:41 +0530
+Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB02DF302D4D@dbde02.ent.ti.com>
+References: <20081104160946.19071.44903.stgit@tubuntu>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811584-259581870-1226271479=:22998"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757180AbYKIXHO@vger.kernel.org>
-In-Reply-To: <20081109223748.3182e31d@neptune.home>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20081104160946.19071.44903.stgit@tubuntu>
+Content-Language: en-US
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, JosephChan@via.com.tw, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1463811584-259581870-1226271479=:22998
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-On Sun, 9 Nov 2008, Bruno Pr=C3=A9mont wrote:
-> What is preferred, allocating a big block of memory and point various
-> variables inside that block or do multiple individual allocations?
->
-> e.g.
->  u8 data[CURSOR_SIZE/8]
->  u32 data_bak[CURSOR_SIZE/32]
-> =3D>
->  u8 *data =3D kzalloc(...)
->  u32 *data_bak =3D kzalloc(...)
-> or
->  u8 *data =3D kzalloc(CURSOR_SIZE/8 + CURSOR_SIZE/32, ...)
->  u32 *data_bak =3D (u32*)(data+CURSOR_SIZE/8);
->
-> First option is more readable, second should be more efficient...
+> -----Original Message-----
+> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
+> Sent: Tuesday, November 04, 2008 9:40 PM
+> To: linux-fbdev-devel@lists.sourceforge.net
+> Cc: linux-omap@vger.kernel.org
+> Subject: [Linux-fbdev-devel] [REVIEW PATCH 0/9] DSS: Series description
+> 
+> New Display Subsystem for OMAP2/3
+> ---------------------------------
+> 
+> This patch set implements new Display Subsystem (DSS) for OMAP2/3 processors.
+> The DSS is still under work and these patches are for review. Note that there
+> is also another new DSS implementation from TI.
+> 
+> The DSS has been tested on OMAP3 SDP board, Beagle Board and on two unreleased
+> boards with DSI and SDI displays. The DSS used to work on OMAP2 board also,
+> but
+> it's been a while since I was able to test with OMAP2 board.
+> 
+> The first patch is a doc file that tries to explain a bit how the drivers
+> work.
+> 
+> The patch set is based on the current linux-omap tree.
+> 
+> You can find the patches also from a git tree at
+> http://www.bat.org/~tomba/git/linux-omap-dss.git/
+> 
+> Note that you also need two patches from Mans Rullgard to make things work.
+> These
+> are needed to be able to reconfigure DSS functional clock.
+> http://git.mansr.com/?p=linux-
+> omap;a=commit;h=e2de5e5578fbaa9b4b75074796da0608fc93e6ae
+> http://git.mansr.com/?p=linux-
+> omap;a=commit;h=2b7b958dc79e51127d7a4ecf88ce12dbc6c31426
+> 
+> Questions/problems
+> ------------------
+> 
+> Perhaps the biggest problems I have is the interface to user space. OMAP
+> hardware doesn't quite fit in to the framebuffer framework. The problem is
+> that
+> a framebuffer can go to multiple overlays, and also the target display, to
+> which a framebuffer goes, can change.  In addition, the framebuffer size is
+> used as overlay size, not display resolution. So a framebuffer != display.
+> 
+> I believe DRM modesetting could be of help here, at least partially, but I
+> haven't tried that approach yet.
+> 
+> But DRM modesetting wouldn't solve all the problems. For example, we still
+> need
+> to configure overlays and overlay managers, and they don't quite belong to
+> either the framebuffer side or the display side. Currently you configure them
+> via a hackish sysfs interface, but I've been wondering if a /dev/omap-dss
+> device with ioctls would be a better choice.
+> 
+> There's currently no V4L2 support, but I have been thinking about that. I
+> don't
+> want to make any hardcoded configuration for those, because sometimes you want
+> to use framebuffer devices for video overlays. So what I'd like to have is a
+> way, compile time or run time, to configure which overlays go to framebuffer
+> devices and which go to V4L2 devices.
+> 
+> ---
+> 
+> Tomi Valkeinen (9):
+>       DSS: support for OMAP3 SDP board
+>       DSS: support for Beagle Board
+>       DSS: Add generic DVI panel
+>       DSS: OMAPFB: fb driver for new display subsystem
+>       DSS: DSI support for OMAP2/3 DSS
+>       DSS: TV-out support for OMAP2/3 DSS
+>       DSS: RFBI support for OMAP2/3 DSS
+>       DSS: New display subsystem driver for OMAP2/3
+>       DSS: Documentation for OMAP2/3 display subsystem
+> 
+[Shah, Hardik] We have reviewed the patches in detail and even made modifications to make it work on the OMAP3EVM. Here are our observations:
 
-I like this method:
+1) The overall implementation is very much in line with our earlier proposal to provide generic API that supports both V4L2 and FBDEV.
+2) The implementation supports multiple output interfaces e.g. RFBI, SDI, DSI, ... that we did not have in our plans
+3) You have also validated it on lot many platforms that we do not have access.
 
-foo()
-{
- =09/* anonymous struct, you don't need to think of a name */
- =09struct {
- =09=09u8 data[CURSOR_SIZE/8];
- =09=09u32 data_bak[CURSOR_SIZE/32];
- =09} *cursor;
+We believe patches are a good step in right direction.
 
- =09cursor =3D kzalloc(sizeof(*cursor), ...);
+We plan to use this patchset as base for supporting these additional use cases:
 
- =09/* for remaining code:
- =09 * s/data/cursor->data/
- =09 * s/data_bak/cursor->data_bak/
- =09 */
+ a) Adding the V4L2 user interface to the video pipelines (I believe video pipelines are natural fit for the V4L2 frame work.  If use case is there for FBDEV interface we can have compile time option to expose the video pipelines as the either FBDEV or v4L2 interface).
+ b) Modification of the DSS/DISPC library for supporting V4L2 user interface.
+ c) Supporting the functionality like alpha blending, global alpha blending, setting of various TV standards etc.
+ d) Supporting the mirroring and rotation in both FBDEV and V4L2 driver.
 
- =09free(cursor);
-}
+Do let us know if you aren't already working on any of these.
 
-A number of advantages over multiple allocations:
-The alloc code and free code only has to run once.
+BTW, patch for supporting omap3evm will be submitted shortly.
 
-Likely less memory will be allocated, due to allocation granularity.
+Regards,
+Vaibhav Hiremath <hvaibhav@ti.com>
+Hardik Shah <hardik.shah@ti.com>
+> 
+> 
+> --
+>  Tomi Valkeinen
+> 
+> 
+> -------------------------------------------------------------------------
+> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+> Build the coolest Linux based applications with Moblin SDK & win great prizes
+> Grand prize is a trip for two to an Open Source event anywhere in the world
+> http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-Only one pointer is needed to keep track of the allocations instead of two.=
-=20
-This frees up a pointer's worth of stack space and/or another register for
-the compiler to use.
-
-More readable than u32 *data_bak =3D (u32*)(data+CURSOR_SIZE/8) and so on.
-
-If you check for kzalloc failure, you only need code to check once.  And
-you can avoid the need for rolling back the first allocation if the second
-fails.
-
-The disadvantage is that you can't free just one of the allocations and big
-allocations are harder to satisfy than small ones.  When you get up to the
-megabyte range, combining allocations into bigger ones becomes a bad idea.
----1463811584-259581870-1226271479=:22998--

@@ -1,31 +1,71 @@
-From: "Michal Januszewski" <michalj@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] drivers: process failure of sysfs_create_group()
-Date: Tue, 11 Nov 2008 11:05:15 +0100
-Message-ID: <5d9b736f0811110205q719ad246t81cc00fd9997b10@mail.gmail.com>
-References: <20081110105332.GA19358@ubuntu>
-	 <Pine.LNX.4.64.0811102229170.19341@anakin>
+From: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
+Subject: Re: Seg fault on any FB write (Epson S1D13A04
+ on	Coldfire running 2.6.25)
+Date: Tue, 11 Nov 2008 10:57:58 +0100
+Message-ID: <49195726.2060103@cetrtapot.si>
+References: <4918E5C3.2090108@one.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755361AbYKKKFl@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0811102229170.19341@anakin>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jianjun Kong <jianjun@zeuux.org>, linux-fbdev-devel@lists.sourceforge.net, Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <hinko.kocevar@cetrtapot.si>) id 1KzqJZ-00084C-SF
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Nov 2008 10:17:41 +0000
+Received: from zimbra-mta.cetrtapot.si ([89.212.80.172])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KzqJW-0002yj-0g for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Nov 2008 10:17:41 +0000
+In-Reply-To: <4918E5C3.2090108@one.net>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: James Kimble <jkimble@one.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Nov 10, 2008 at 22:30, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
->> When fail to call sysfs_create_group(), it should recycle resources and return the error.
->> This patch fix for processing failure of sysfs_create_group().
->
-> IIRC, the reasoning behind the current code is that a failure to create sysfs
-> entries is not critical, as it doesn't impact the correct functioning of the
-> core of the driver.
-
-That's correct -- that was exactly my reasoning behind this code.
-
--- 
-Michal Januszewski, Gentoo Linux Developer
-http://people.gentoo.org/spock
+SmFtZXMgS2ltYmxlIHdyb3RlOgo+IEkndmUgYmVlbiB3b3JraW5nIG9uIHBvcnRpbmcgdGhlIHMx
+ZDEzeHh4ZmIgZHJpdmVyIGZyb20gdGhlIGxhdGVzdCAKPiBrZXJuZWwgZnJvbSBGcmVlc2NhbGUg
+Zm9yIENvbGRmaXJlIHRvIHdvcmsgd2l0aCB0aGUgUzFEMTNBMDQgY2hpcC4gSSB3YXMgCj4gYWJs
+ZSB0byBnZXQgdGhpbmdzIHdvcmtpbmcgdG8gdGhlIHBvaW50IHRoYXQgSSBkbyBnZXQgYSBsaXR0
+bGUgVFVYIGxvZ28gCj4gdXAgb24gdGhlIHNjcmVlbiBhdCBib290IHVwLiBTZWVtZWQgbGlrZSBh
+IGdvb2Qgc3RhcnQgYnV0IG5vbmUgb2YgbXkgCj4gdXNlciBzcGFjZSBhcHBsaWNhdGlvbnMgd2ls
+bCB3b3JrLiBJIGNhbiBvcGVuIHRoZSAvZGV2L2ZiMCBkZXZpY2UgYW5kIAo+IHRoZSBkYXRhIGlu
+IHRoZSBpbmZvIHN0cnVjdHVyZSBpcyBjb3JyZWN0IGJ1dCBpZiBJIHRyeSB0byB3cml0ZSB0byBh
+bnkgCj4gcmVnaXN0ZXIgb3IgYXJlYSBpbiB0aGUgZnJhbWUgYnVmZmVyIChvciB3cml0ZSB0byB0
+aGUgZGV2aWNlIGF0IGFsbCkgSSAKPiBnZXQgYSBzZWcgZmF1bHQuCj4gCj4gSSBoYWQgYW4gZWFy
+bGllciBkcml2ZXIgd29ya2luZyB3aXRoIHRoZSAyLjYuMTAga2VybmVsIHdpdGggdGhlIHNhbWUg
+Cj4gaGFyZHdhcmUuIFRoZSBzYW1lIGFwcGxpY2F0aW9uIHNwYWNlIHByb2dyYW0gc2hvdWxkIHdv
+cmsgKCBJIHdvdWxkIAo+IHRoaW5rLi4uKSBidXQgSSBnZXQgdGhlIHNlZyBmYXVsdCBvbiB0aGUg
+Zmlyc3Qgd3JpdGUgdG8gZmIwLiBJIHRyaWVkIGEgCj4gZGlmZmVyZW50IG1lbW9yeSBsb2NhdGlv
+biAob3g0NDAwIDAwMDAgdG8gMHg3NDAwIDAwMDApIGZvciB0aGUgQ1MgCj4gYXNzb2NpYXRlZCB3
+aXRoIHRoZSB2aWRlbyAgY2hpcCwgbm8gIGRpZmZlcmVuY2UuIFBlcm1pc3Npb25zIGZvciAKPiAv
+ZGV2L2ZiMCBhcmUgInJ3Ii4gTm8gb3RoZXIgcHJvY2VzcyB1c2luZyBmYjAuIFRoaXMgaXMgcmVh
+bGx5IHdlaXJkLgo+IAo+IEFueSBoZWxwIG9yIHN1Z2dlc3Rpb25zIE1VQ0ggYXBwcmVjaWF0ZWQu
+Cj4gCgpZb3UgYXJlIHByb2JhYmx5IG5vdCByZXNlcnZpbmcgYW5kL29yIHRyYW5zbGF0aW5nIHBo
+eXNpY2FsIG1lbW9yeSBzcGFjZQp0byB2aXJ0dWFsIGlmIHlvdSBnZXQgYSBzZWdmYXVsdCBvbiBl
+dmVyeSBhY2Nlc3MuIFRyeSBjYXQgL3Byb2MvaW9tZW0uIElzCnlvdXIgZGV2aWNlIGxpc3RlZD8K
+Ck9UT0gsIGEgbG90IG9mIGFyY2ggc3BlY2lmaWMgY29kZSBoYXMgcHJvYmFibHkgY2hhbmdlZCBz
+aW5jZSAyLjYuMTAgLQoyLjYuMjUgdGhhdCBtaWdodCBub3QgZXZlbiBiZSBkaXJlY3RseSByZWxh
+dGVkIHRvIGZiLiBJcyB5b3VyIGFyY2ggcG9ydAp1cCB0byBkYXRlPwoKQWxzbyB5b3UgbWlnaHQg
+cG9zdCB5b3VyIGZiIGRyaXZlciBhbmQgc29tZW9uZSBtaWdodCBzcG90IHRoZSBmYXVsdCBmYXN0
+ZXIuLgoKCkhUSCwKSEsKLS0gCkhpbmtvIEtvxI1ldmFyLCBPU1MgZGV2ZWxvcGVyCsSMRVRSVEEg
+UE9ULCBkLm8uby4KUGxhbmluYSAzLCA0MDAwIEtyYW5qLCBTSSBFVQp0ZWwgICAgICsrMzg2ICgw
+KSA0IDI4MCA2NiAwMwplLW1haWwgIGhpbmtvLmtvY2V2YXJAY2V0cnRhcG90LnNpCmh0dHAgICAg
+d3d3LmNldHJ0YXBvdC5zaQoKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5OZXQgZW1haWwgaXMg
+c3BvbnNvcmVkIGJ5IHRoZSBNb2JsaW4gWW91ciBNb3ZlIERldmVsb3BlcidzIGNoYWxsZW5nZQpC
+dWlsZCB0aGUgY29vbGVzdCBMaW51eCBiYXNlZCBhcHBsaWNhdGlvbnMgd2l0aCBNb2JsaW4gU0RL
+ICYgd2luIGdyZWF0IHByaXplcwpHcmFuZCBwcml6ZSBpcyBhIHRyaXAgZm9yIHR3byB0byBhbiBP
+cGVuIFNvdXJjZSBldmVudCBhbnl3aGVyZSBpbiB0aGUgd29ybGQKaHR0cDovL21vYmxpbi1jb250
+ZXN0Lm9yZy9yZWRpcmVjdC5waHA/YmFubmVyX2lkPTEwMCZ1cmw9LwpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5n
+IGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlz
+dHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==

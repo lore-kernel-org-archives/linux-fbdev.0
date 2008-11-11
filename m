@@ -1,25 +1,27 @@
-From: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
-Subject: Re: Seg fault on any FB write (Epson S1D13A04on
- Coldfire running 2.6.25)
-Date: Tue, 11 Nov 2008 16:04:03 +0100
-Message-ID: <49199EE3.5090101@cetrtapot.si>
+From: jkimble@one.net
+Subject: Re: Seg fault on any FB write (Epson
+ S1D13A04onColdfire running 2.6.25)
+Date: Tue, 11 Nov 2008 11:10:28 -0500 (EST)
+Message-ID: <1210.137.237.242.125.1226419828.squirrel@webmail.nuvox.net>
 References: <4918E5C3.2090108@one.net> <49195726.2060103@cetrtapot.si>
 	<43185.137.237.242.42.1226415047.squirrel@webmail.nuvox.net>
+	<49199EE3.5090101@cetrtapot.si>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hinko.kocevar@cetrtapot.si>) id 1KzuqK-0008W1-Bi
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jkimble@one.net>) id 1KzvpD-0003N8-Fg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 15:07:48 +0000
-Received: from zimbra-mta.cetrtapot.si ([89.212.80.172])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KzuqI-00029r-3H for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 15:07:48 +0000
-In-Reply-To: <43185.137.237.242.42.1226415047.squirrel@webmail.nuvox.net>
+	Tue, 11 Nov 2008 16:10:44 +0000
+Received: from smtp-out5.atlngahp.sys.nuvox.net ([70.43.63.23]
+	helo=smtp05.atlngahp.sys.nuvox.net)
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Kzvp8-00044D-VY
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Nov 2008 16:10:43 +0000
+In-Reply-To: <49199EE3.5090101@cetrtapot.si>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,35 +31,70 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: jkimble@one.net
+Content-Type: text/plain; charset="utf-8"
+To: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-amtpbWJsZUBvbmUubmV0IHdyb3RlOgo+PiBKYW1lcyBLaW1ibGUgd3JvdGU6Cj4gCj4gL3Byb2Mv
-aW9tZW0gc2hvd3M6Cj4gCj4gNzQwMDAwMDAtNzQwMDkwMDAgOiBzMWQxM2EwNGZiLjAKPiA3NDAw
-MDAwMC03NDAwOTAwMCA6IHMxZDEzeHh4ZmIgcmVncwo+IDc0MDQwMDAwLTc0MDY4MDAwIDogczFk
-MTNhMDRmYi4wCj4gNzQwNDAwMDAtNzQwNjgwMDAgOiBzMWQxM3h4eGZiIG1lbQoKSSdtIG5vdCBz
-dXJlIGlmIHRoaXMgaXMgY29ycmVjdCAtIHR3byBkcml2ZXJzIG1hcHBlZCB0aGUgc2FtZSByZWdp
-b24gdHdpY2UgIT8KTWF5YmUgdGhlIGV4cGVydHMgd2lsbCBzaGVkIHNvbWUgbGlnaHQgb24gdGhp
-cy4uCgo+IGYwMDAwNzBjLWYwMDAwNzBjIDogc3BpLWludC1tYXNrCj4gZjAwMDA3NDAtZjAwMDA3
-NWYgOiBzcGktaW50LWxldmVsCj4gZjAwMDBhNTAtZjAwMDBhNTAgOiBzcGktcGFyCj4gZjAwMDhh
-MDAtZjAwMDhhYjggOiBzcGktbW9kdWxlCj4gZjAwMDhmMDAtZjAwMDhmMjAgOiBNQ0Y1NDhYLWky
-Ywo+IGYwMDBhMDAwLWYwMDBhN2ZmIDogbWNmNTQ4eC1mbGV4Y2FuLjAKPiBmMDAwYTAwMC1mMDAw
-YTdmZiA6IG1jZjU0OHgtZmxleGNhbgo+IGYwMDBhODAwLWYwMDBhZmZmIDogbWNmNTQ4eC1mbGV4
-Y2FuLjEKPiBmMDAwYTgwMC1mMDAwYWZmZiA6IG1jZjU0OHgtZmxleGNhbgo+IGYwMDIwMDAwLWYw
-MDMzMDAwIDogZnNsLXNlYzEKPiBmYzAwMDAwMC1mZmZmZmZmZiA6IHBoeXNtYXAtZmxhc2guMAo+
-IAoKSSBoYXZlbid0IHRvb2sgYSBsb25nIGxvb2sgYXQgeW91ciBkcml2ZXIsIGJ1dCBoZXJlIGlz
-IG91ciBkcml2ZXIgZm9yIFMxMzcwNkZCIHRoYXQKd2UgdXNlIG9uIG91ciBlbWJlZGRlZCBwbGF0
-Zm9ybS4gSG9wZSBpdCBoZWxwcy4KClJlZ2FyZHMsCkhpbmtvCi0tIApIaW5rbyBLb8SNZXZhciwg
-T1NTIGRldmVsb3BlcgrEjEVUUlRBIFBPVCwgZC5vLm8uClBsYW5pbmEgMywgNDAwMCBLcmFuaiwg
-U0kgRVUKdGVsICAgICArKzM4NiAoMCkgNCAyODAgNjYgMDMKZS1tYWlsICBoaW5rby5rb2NldmFy
-QGNldHJ0YXBvdC5zaQpodHRwICAgIHd3dy5jZXRydGFwb3Quc2kKCgotLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-ClRoaXMgU0YuTmV0IGVtYWlsIGlzIHNwb25zb3JlZCBieSB0aGUgTW9ibGluIFlvdXIgTW92ZSBE
-ZXZlbG9wZXIncyBjaGFsbGVuZ2UKQnVpbGQgdGhlIGNvb2xlc3QgTGludXggYmFzZWQgYXBwbGlj
-YXRpb25zIHdpdGggTW9ibGluIFNESyAmIHdpbiBncmVhdCBwcml6ZXMKR3JhbmQgcHJpemUgaXMg
-YSB0cmlwIGZvciB0d28gdG8gYW4gT3BlbiBTb3VyY2UgZXZlbnQgYW55d2hlcmUgaW4gdGhlIHdv
-cmxkCmh0dHA6Ly9tb2JsaW4tY29udGVzdC5vcmcvcmVkaXJlY3QucGhwP2Jhbm5lcl9pZD0xMDAm
-dXJsPS8KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGlu
-dXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJj
-ZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9s
-aW51eC1mYmRldi1kZXZlbAo=
+
+I thought it looked OK because it looks the same as the flexCAN stuff.
+However I just noticed that flexCAN has a .0 and .1 whereas the s1d13 are
+both .0. Yeah, I hope an expert weighs in on this because I'm not sure
+now.
+
+I didn't get your attachement.
+
+Thanks for your help!
+
+
+
+> jkimble@one.net wrote:
+>>> James Kimble wrote:
+>>
+>> /proc/iomem shows:
+>>
+>> 74000000-74009000 : s1d13a04fb.0
+>> 74000000-74009000 : s1d13xxxfb regs
+>> 74040000-74068000 : s1d13a04fb.0
+>> 74040000-74068000 : s1d13xxxfb mem
+>
+> I'm not sure if this is correct - two drivers mapped the same region twice
+> !?
+> Maybe the experts will shed some light on this..
+>
+>> f000070c-f000070c : spi-int-mask
+>> f0000740-f000075f : spi-int-level
+>> f0000a50-f0000a50 : spi-par
+>> f0008a00-f0008ab8 : spi-module
+>> f0008f00-f0008f20 : MCF548X-i2c
+>> f000a000-f000a7ff : mcf548x-flexcan.0
+>> f000a000-f000a7ff : mcf548x-flexcan
+>> f000a800-f000afff : mcf548x-flexcan.1
+>> f000a800-f000afff : mcf548x-flexcan
+>> f0020000-f0033000 : fsl-sec1
+>> fc000000-ffffffff : physmap-flash.0
+>>
+>
+> I haven't took a long look at your driver, but here is our driver for
+> S13706FB that
+> we use on our embedded platform. Hope it helps.
+>
+> Regards,
+> Hinko
+> --
+> Hinko Ko=C4=8Devar, OSS developer
+> =C4=8CETRTA POT, d.o.o.
+> Planina 3, 4000 Kranj, SI EU
+> tel     ++386 (0) 4 280 66 03
+> e-mail  hinko.kocevar@cetrtapot.si
+> http    www.cetrtapot.si
+>
+>
+
+
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great priz=
+es
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=3D100&url=3D/

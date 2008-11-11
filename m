@@ -1,63 +1,63 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] drivers: process failure of
- sysfs_create_group()
-Date: Mon, 10 Nov 2008 22:30:35 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0811102229170.19341@anakin>
-References: <20081110105332.GA19358@ubuntu>
+From: James Kimble <jkimble@one.net>
+Subject: Seg fault on any FB write (Epson S1D13A04 on
+	Coldfire running 2.6.25)
+Date: Mon, 10 Nov 2008 20:54:11 -0500
+Message-ID: <4918E5C3.2090108@one.net>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752692AbYKJVbA@vger.kernel.org>
-In-Reply-To: <20081110105332.GA19358@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jianjun Kong <jianjun@zeuux.org>
-Cc: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net, Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jkimble@one.net>) id 1KziSY-0006qL-Ad
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Nov 2008 01:54:26 +0000
+Received: from smtp-out3.atlngahp.sys.nuvox.net ([70.43.63.20]
+	helo=smtp03.atlngahp.sys.nuvox.net)
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1KziSW-00078X-Lf
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Nov 2008 01:54:26 +0000
+Received: from localhost.localdomain (cpe-69-133-20-201.cinci.res.rr.com
+	[69.133.20.201]) (authenticated bits=0)
+	by smtp03.atlngahp.sys.nuvox.net (8.13.1/8.13.1) with ESMTP id
+	mAB1sHAi025891
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 10 Nov 2008 20:54:18 -0500
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 10 Nov 2008, Jianjun Kong wrote:
-> drivers: drivers/video/uvesafb.c:
-> When fail to call sysfs_create_group(), it should recycle resources and return the error.
-> This patch fix for processing failure of sysfs_create_group().
 
-IIRC, the reasoning behind the current code is that a failure to create sysfs
-entries is not critical, as it doesn't impact the correct functioning of the
-core of the driver.
+I've been working on porting the s1d13xxxfb driver from the latest 
+kernel from Freescale for Coldfire to work with the S1D13A04 chip. I was 
+able to get things working to the point that I do get a little TUX logo 
+up on the screen at boot up. Seemed like a good start but none of my 
+user space applications will work. I can open the /dev/fb0 device and 
+the data in the info structure is correct but if I try to write to any 
+register or area in the frame buffer (or write to the device at all) I 
+get a seg fault.
 
-> Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
-> ---
->  drivers/video/uvesafb.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-> index 6c2d37f..a78d4d9 100644
-> --- a/drivers/video/uvesafb.c
-> +++ b/drivers/video/uvesafb.c
-> @@ -1811,12 +1811,16 @@ static int __devinit uvesafb_probe(struct platform_device *dev)
->  			info->fix.id);
->  
->  	err = sysfs_create_group(&dev->dev.kobj, &uvesafb_dev_attgrp);
-> -	if (err != 0)
-> +	if (err != 0) {
->  		printk(KERN_WARNING "fb%d: failed to register attributes\n",
->  			info->node);
-> +		goto out_frame;
-> +	}
->  
->  	return 0;
->  
-> +our_frame:
-> +	unregister_framebuffer(info);
->  out_reg:
->  	release_region(0x3c0, 32);
->  out_unmap:
+I had an earlier driver working with the 2.6.10 kernel with the same 
+hardware. The same application space program should work ( I would 
+think...) but I get the seg fault on the first write to fb0. I tried a 
+different memory location (ox4400 0000 to 0x7400 0000) for the CS 
+associated with the video  chip, no  difference. Permissions for 
+/dev/fb0 are "rw". No other process using fb0. This is really weird.
 
-Gr{oetje,eeting}s,
+Any help or suggestions MUCH appreciated.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

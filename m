@@ -1,26 +1,28 @@
 From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: Re: Seg fault on any FB write (Epson S1D13A04
- on Coldfire running 2.6.25)
-Date: Tue, 11 Nov 2008 19:50:43 +0100
-Message-ID: <20081111195043.2e24ad61.kristoffer.ericson@gmail.com>
-References: <4918E5C3.2090108@one.net>
+Subject: Re: Seg fault on any FB write (Epson S1D13A04on
+ Coldfire running 2.6.25)
+Date: Tue, 11 Nov 2008 19:52:08 +0100
+Message-ID: <20081111195208.e2da189f.kristoffer.ericson@gmail.com>
+References: <4918E5C3.2090108@one.net> <49195726.2060103@cetrtapot.si>
+	<43185.137.237.242.42.1226415047.squirrel@webmail.nuvox.net>
+	<49199EE3.5090101@cetrtapot.si>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1371514456406285621=="
+Content-Type: multipart/mixed; boundary="===============7848290998067566484=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <kristoffer.ericson@gmail.com>) id 1KzxNh-0008KI-K9
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <kristoffer.ericson@gmail.com>) id 1KzxP4-0003xi-Pm
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 17:50:25 +0000
-Received: from ey-out-1920.google.com ([74.125.78.147])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KzxNb-0002i5-Ka for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 17:50:25 +0000
-Received: by ey-out-1920.google.com with SMTP id 4so2254eyk.4
+	Tue, 11 Nov 2008 17:51:50 +0000
+Received: from ug-out-1314.google.com ([66.249.92.172])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KzxOv-00042x-Go for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Nov 2008 17:51:50 +0000
+Received: by ug-out-1314.google.com with SMTP id 36so966065uga.17
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 11 Nov 2008 09:50:17 -0800 (PST)
-In-Reply-To: <4918E5C3.2090108@one.net>
+	Tue, 11 Nov 2008 09:51:39 -0800 (PST)
+In-Reply-To: <49199EE3.5090101@cetrtapot.si>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,45 +32,66 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: James Kimble <jkimble@one.net>
+To: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
---===============1371514456406285621==
+--===============7848290998067566484==
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__11_Nov_2008_19_50_43_+0100_Fsi2IXLMT8GhR8Yo"
+	boundary="Signature=_Tue__11_Nov_2008_19_52_08_+0100_abk8YJLR4AZbaiKk"
 
---Signature=_Tue__11_Nov_2008_19_50_43_+0100_Fsi2IXLMT8GhR8Yo
-Content-Type: text/plain; charset=US-ASCII
+--Signature=_Tue__11_Nov_2008_19_52_08_+0100_abk8YJLR4AZbaiKk
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 10 Nov 2008 20:54:11 -0500
-James Kimble <jkimble@one.net> wrote:
+On Tue, 11 Nov 2008 16:04:03 +0100
+Hinko Kocevar <hinko.kocevar@cetrtapot.si> wrote:
+
+> jkimble@one.net wrote:
+> >> James Kimble wrote:
+> >=20
+> > /proc/iomem shows:
+> >=20
+> > 74000000-74009000 : s1d13a04fb.0
+> > 74000000-74009000 : s1d13xxxfb regs
+> > 74040000-74068000 : s1d13a04fb.0
+> > 74040000-74068000 : s1d13xxxfb mem
+>=20
+> I'm not sure if this is correct - two drivers mapped the same region twic=
+e !?
+> Maybe the experts will shed some light on this..
+>=20
+> > f000070c-f000070c : spi-int-mask
+> > f0000740-f000075f : spi-int-level
+> > f0000a50-f0000a50 : spi-par
+> > f0008a00-f0008ab8 : spi-module
+> > f0008f00-f0008f20 : MCF548X-i2c
+> > f000a000-f000a7ff : mcf548x-flexcan.0
+> > f000a000-f000a7ff : mcf548x-flexcan
+> > f000a800-f000afff : mcf548x-flexcan.1
+> > f000a800-f000afff : mcf548x-flexcan
+> > f0020000-f0033000 : fsl-sec1
+> > fc000000-ffffffff : physmap-flash.0
+> >=20
+>=20
+> I haven't took a long look at your driver, but here is our driver for S13=
+706FB that
+> we use on our embedded platform. Hope it helps.
+
+Any chance of getting a patch against s1d13xxxfb?
 
 >=20
-> I've been working on porting the s1d13xxxfb driver from the latest=20
-> kernel from Freescale for Coldfire to work with the S1D13A04 chip. I was=
-=20
-> able to get things working to the point that I do get a little TUX logo=20
-> up on the screen at boot up. Seemed like a good start but none of my=20
-> user space applications will work. I can open the /dev/fb0 device and=20
-> the data in the info structure is correct but if I try to write to any=20
-> register or area in the frame buffer (or write to the device at all) I=20
-> get a seg fault.
-
-Please drop me a mail with patch attached and I'll look at it,
-you must have hit something nasty.
-
+> Regards,
+> Hinko
+> --=20
+> Hinko Ko=C4=8Devar, OSS developer
+> =C4=8CETRTA POT, d.o.o.
+> Planina 3, 4000 Kranj, SI EU
+> tel     ++386 (0) 4 280 66 03
+> e-mail  hinko.kocevar@cetrtapot.si
+> http    www.cetrtapot.si
 >=20
-> I had an earlier driver working with the 2.6.10 kernel with the same=20
-> hardware. The same application space program should work ( I would=20
-> think...) but I get the seg fault on the first write to fb0. I tried a=20
-> different memory location (ox4400 0000 to 0x7400 0000) for the CS=20
-> associated with the video  chip, no  difference. Permissions for=20
-> /dev/fb0 are "rw". No other process using fb0. This is really weird.
->=20
-> Any help or suggestions MUCH appreciated.
 >=20
 > -------------------------------------------------------------------------
 > This SF.Net email is sponsored by the Moblin Your Move Developer's challe=
@@ -87,21 +110,21 @@ ld
 --=20
 Kristoffer Ericson <kristoffer.ericson@gmail.com>
 
---Signature=_Tue__11_Nov_2008_19_50_43_+0100_Fsi2IXLMT8GhR8Yo
+--Signature=_Tue__11_Nov_2008_19_52_08_+0100_abk8YJLR4AZbaiKk
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkkZ1AMACgkQPQls10ERAGcadgCgimihE/B4Csu4hj1MwZ/qiKag
-cm8An0IKbmgCUPYCfFO7U6Y4e1ewVGUS
-=m0Qr
+iEYEARECAAYFAkkZ1FgACgkQPQls10ERAGcVkQCcCJZheoNQTMBjm54r7dYtfkPE
+8oIAn2pJp3q5qvU5Sh1jUU5C6nKvHYry
+=+SPF
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__11_Nov_2008_19_50_43_+0100_Fsi2IXLMT8GhR8Yo--
+--Signature=_Tue__11_Nov_2008_19_52_08_+0100_abk8YJLR4AZbaiKk--
 
 
---===============1371514456406285621==
+--===============7848290998067566484==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -112,7 +135,7 @@ This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
---===============1371514456406285621==
+--===============7848290998067566484==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -123,4 +146,4 @@ Linux-fbdev-devel mailing list
 Linux-fbdev-devel@lists.sourceforge.net
 https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
---===============1371514456406285621==--
+--===============7848290998067566484==--

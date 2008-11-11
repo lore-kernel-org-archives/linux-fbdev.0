@@ -1,23 +1,27 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] fb: clean the penguin's dirty feet
-Date: Tue, 11 Nov 2008 13:27:42 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0811111325590.19341@anakin>
-References: <4918047A.5000902@ladisch.de>
+From: Jianjun Kong <jianjun@zeuux.org>
+Subject: Re: [PATCH] drivers: process failure
+	of	sysfs_create_group()
+Date: Tue, 11 Nov 2008 21:30:41 +0800
+Message-ID: <20081111133041.GA10576@ubuntu>
+References: <20081110105332.GA19358@ubuntu>
+	<Pine.LNX.4.64.0811102229170.19341@anakin>
+	<5d9b736f0811110205q719ad246t81cc00fd9997b10@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@linux-m68k.org>) id 1KzsLd-0001mB-SB
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jianjun@zeuux.org>) id 1KztKF-00068i-KK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 12:27:57 +0000
-Received: from edna.telenet-ops.be ([195.130.132.58])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1KzsLb-00006j-7E for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 11 Nov 2008 12:27:57 +0000
-In-Reply-To: <4918047A.5000902@ladisch.de>
+	Tue, 11 Nov 2008 13:30:35 +0000
+Received: from smtp.zeuux.org ([210.51.160.52] helo=z.billxu.com)
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1KztK7-0003eB-4N for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Nov 2008 13:30:35 +0000
+Content-Disposition: inline
+In-Reply-To: <5d9b736f0811110205q719ad246t81cc00fd9997b10@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,45 +31,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Clemens Ladisch <clemens@ladisch.de>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Michal Januszewski <michalj@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Mon, 10 Nov 2008, Clemens Ladisch wrote:
-> When booting in a direct color mode, the penguin has dirty feet,
-> i.e., some pixels have the wrong color.  This is caused by
-> fb_set_logo_directpalette() which does not initialize the last 32
-> palette entries.
+On Tue, Nov 11, 2008 at 11:05:15AM +0100, Michal Januszewski wrote:
+>On Mon, Nov 10, 2008 at 22:30, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+>>> When fail to call sysfs_create_group(), it should recycle resources and return the error.
+>>> This patch fix for processing failure of sysfs_create_group().
+>>
+>> IIRC, the reasoning behind the current code is that a failure to create sysfs
+>> entries is not critical, as it doesn't impact the correct functioning of the
+>> core of the driver.
+>
+>That's correct -- that was exactly my reasoning behind this code.
 
-Nice catch!
-It seems to be introduced by commit 0bcb4ab100ef9ac2afaab3e0e929314e43820fc8
-("Supprt for switching hardware from/to vga text mode.", from
-full-history-linux) back in 2002...
+Thanks for your confirm.
 
-> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-> --- linux-2.6.orig/drivers/video/fbmem.c
-> +++ linux-2.6/drivers/video/fbmem.c
-> @@ -232,7 +232,7 @@ static void fb_set_logo_directpalette(st
->  	greenshift = info->var.green.offset;
->  	blueshift = info->var.blue.offset;
-> 
-> -	for (i = 32; i < logo->clutsize; i++)
-> +	for (i = 32; i < 32 + logo->clutsize; i++)
->  		palette[i] = i << redshift | i << greenshift | i << blueshift;
->  }
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Jianjun Kong @_@ Happy Hacking
+Homepage: http://kongove.cn/
+Gtalk: kongjianjun@gmail.com
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

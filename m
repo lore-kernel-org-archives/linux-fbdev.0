@@ -1,85 +1,87 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] drivers/video: Bad error test	before
- a dereference
-Date: Thu, 13 Nov 2008 09:26:46 +0100
-Message-ID: <491BE4C6.2040109@atmel.com>
-References: <200809261553.45301.brunel@diku.dk> <49130E50.8090009@atmel.com>
+From: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
+Subject: Re: Seg fault on any FB write (Epson
+ S1D13A04onColdfire running 2.6.25)
+Date: Thu, 13 Nov 2008 09:50:50 +0100
+Message-ID: <491BEA6A.5060402@cetrtapot.si>
+References: <4918E5C3.2090108@one.net> <49195726.2060103@cetrtapot.si>
+	<43185.137.237.242.42.1226415047.squirrel@webmail.nuvox.net>
+	<49199EE3.5090101@cetrtapot.si>
+	<1210.137.237.242.125.1226419828.squirrel@webmail.nuvox.net>
+	<491A930F.2040507@cetrtapot.si> <491BB164.2020203@one.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751878AbYKMI1L@vger.kernel.org>
-In-Reply-To: <49130E50.8090009@atmel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Julien Brunel <brunel@diku.dk>, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <hinko.kocevar@cetrtapot.si>) id 1L0XyL-0007ro-DO
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 13 Nov 2008 08:54:41 +0000
+Received: from zimbra-mta.cetrtapot.si ([89.212.80.172])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1L0XyI-0001x2-U7 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 13 Nov 2008 08:54:41 +0000
+In-Reply-To: <491BB164.2020203@one.net>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: James Kimble <jkimble@one.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Andrew,
-
-Nicolas Ferre :
-> Julien Brunel :
->> The error test that follows the call to backlight_device_register
->> semms not to concern the right variable.
->>
->> A simplified version of the semantic match that finds this problem is
->> as follows: 
->> (http://www.emn.fr/x-info/coccinelle/)
->> // <smpl>
->> @def0@
->> expression x;
->> position p0;
->> @@
->> x@p0 = backlight_device_register(...)
->>
->> @protected@
->> expression def0.x,E;
->> position def0.p0;
->> position p;
->> statement S;
->> @@
->> x@p0
->> ... when != x = E
->> if (!IS_ERR(x) && ...) {<... x@p ...>} else S
->>
->> @unprotected@
->> expression def0.x;
->> identifier fld;
->> position def0.p0;
->> position p != protected.p;
->> @@
->> x@p0
->> ... when != x = E
->> * x@p->fld
->> // </smpl>
->>
->> Signed-off-by: Julien Brunel <brunel@diku.dk>
->> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-
-I do not know if you noticed this little patch but
-I think it will be good if we can queue it for -final.
-
-Do you want me to reformulate the submission or the
-original email ok for you ?
-
->> ---
->>  drivers/video/atmel_lcdfb.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff -u -p a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
->> --- a/drivers/video/atmel_lcdfb.c
->> +++ b/drivers/video/atmel_lcdfb.c
->> @@ -132,7 +132,7 @@ static void init_backlight(struct atmel_
->>  
->>  	bl = backlight_device_register("backlight", &sinfo->pdev->dev,
->>  			sinfo, &atmel_lcdc_bl_ops);
->> -	if (IS_ERR(sinfo->backlight)) {
->> +	if (IS_ERR(bl)) {
->>  		dev_err(&sinfo->pdev->dev, "error %ld on backlight register\n",
->>  				PTR_ERR(bl));
->>  		return;
-
-Thanks, regards,
--- 
-Nicolas Ferre
+SmFtZXMgS2ltYmxlIHdyb3RlOgo+IAo+IEluIGxvb2tpbmcgYXQgeW91ciBkcml2ZXIgKHdoaWNo
+IEkgdGhpbmsgaXMgYSBsb3QgYmV0dGVyIG9yZ2FuaXplZCB0aGFuCj4gdGhlIGdlbmVyYWwgb25l
+IHRoYXQgY2FtZSB3aXRoIHRoZSBrZXJuZWwgYnkgdGhlIHdheSkgSSBzZWUgdGhhdCB5b3UncmUK
+PiBkb2luZyBhIHdob2xlIHN0cmluZyBvZjoKPiAKPiAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgfn5+fn5+fn5+fgo+ICAgIGRldmljZV9jcmVhdGVfZmlsZSgmczFk
+MTM3MDZmYl9kZXZpY2UuZGV2LCAmZGV2X2F0dHJfcmVnXzB4MTIpOwo+ICAgIGRldmljZV9jcmVh
+dGVfZmlsZSgmczFkMTM3MDZmYl9kZXZpY2UuZGV2LCAmZGV2X2F0dHJfcmVnXzB4MTQpOwo+ICAg
+IGRldmljZV9jcmVhdGVfZmlsZSgmczFkMTM3MDZmYl9kZXZpY2UuZGV2LCAmZGV2X2F0dHJfcmVn
+XzB4MTYpOwo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfn5+
+fn5+fn5+fiAgICAgCj4gSW4gIHMxZDEzNzA2ZmJfaW5pdCgpLiBJIGRpZG4ndCBkbyBhbnkgb2Yg
+dGhpcyBteSBkcml2ZXIuIElzIHRoaXMgbmVlZGVkCj4gZm9yIGFueSBwdXJwb3NlIG90aGVyIHRo
+YW4gdG8gYWxsb3cgZWFzeSBhY2Nlc3MgdG8gY2hhbmdlIHRoZSB2YWx1ZXMgaW4KPiB0aGVzZSBy
+ZWdpc3RlcnMgaW4gdXNlciBzcGFjZT8KPiAKCkl0IGlzIHRoZXJlIHB1cmVseSBmb3IgZGVidWdn
+aW5nIHB1cnBvc2VzLiBJdCBhbHNvIGFsbG93cyBxdWljayBzZXR1cCBvZgplZy4gZGlmZmVyZW50
+IExDRCBwYW5lbHMgdGhhdCByZXF1aXJlIHNvbWUgdHdlYWtpbmcgaW4gb3JkZXIgdG8gY2VudGVy
+IHRoZQppbWFnZSBvciBmaXggcmVmcmVzaCByYXRlLgoKPiBJIHdhcyBhYmxlIHRvIHBvcnQgeW91
+ciBkcml2ZXIgdG8gdGhlIHZhbHVlcyBhbmQgcmVnaXN0ZXJzIHVzZWQgYnkgbXkKPiBkZXZpY2Ug
+YW5kIHRoZSBiZWhhdmlvciBpcyB2aXJ0dWFsbHkgdGhlIHNhbWUgYXMgd2l0aCBteSBkcml2ZXIu
+IFNjcmVlbgo+IGlzIGluaXRpYWxpemVkLCBJIGNhbiBzZWUgdGhlIGNvbG9yIHBhbGV0dGUgZ2V0
+IHNldCBhbmQgdGhlIHBhbmVsCgpBbmQgaWYgeW91IGRyYXcgYSBwaXhlbCBmcm9tIHRoZSBkcml2
+ZXIgLSBkb2VzIGl0IHdvcms/IEFub3RoZXIgcXVpY2sgdGVzdAppcyB0byBzZXQgY29sb3IgcGFs
+ZXR0ZSBhbmQgdGhlbiBtZW1zZXQoKSBjb21wbGV0ZSBmcmFtZWJ1ZmZlciBtZW1vcnkgdG8KYSBz
+aW5nbGVzIHZhbHVlIHN0b3JlZCBpbiBwYWxldHRlLCBvciBjaGFuZ2UgdGhlIHBhbGV0dGUgaW5k
+ZXggdmFsdWUgdG8KYWNoaWV2ZSBpbWFnZSBjb2xvciBjaGFuZ2Ugb24gdGhlIHNjcmVlbi4KCj4g
+ZW5hYmxlLiBFdmVyeXRoaW5nIGJvb3RzIHVwIGZpbmUgYnV0IG5vbmUgb2YgbXkgdXNlciBzcGFj
+ZSBhcHBsaWNhdGlvbnMKPiB3b3JrLiBUaGUgZmlyc3QgdGltZSBJIHRyeSB0byB3cml0ZSB0byBh
+IHJlZ2lzdGVyIG9yIHZpZGVvIG1lbW9yeSBJIGdldAo+IGEgc2VnIGZhdWx0Lgo+IAoKRG9lcyB0
+aGUgb29wcyBhcHBlYXIgaW4gdGhlIGRtZXNnLCB0b28/Cgo+IFRoaXMgaGFzIGdvdCB0byBiZSBz
+b21lIGtpbmQgb2YgbWVtb3J5IGNvbmZpZ3VyYXRpb24gaXNzdWUuIEkndmUgbW92ZWQKPiB0aGUg
+Q1MgY29uZmlndXJhdGlvbiBmb3IgdGhpcyBkZXZpY2UgdG8gZGlmZmVyZW50IG1lbW9yeSBsb2Nh
+dGlvbnMgYnV0Cj4gaXQgZG9lc24ndCBjaGFuZ2UgdGhlIGJlaGF2aW9yLiBJJ20gc2V0dGluZyB0
+aGluZ3MgdXAgaW4gVS1Cb290IGluCj4gZXhhY3RseSB0aGUgc2FtZSB3YXkgSSBoYWQgYmVlbiBz
+ZXR0aW5nIHRoZW0gdXAgaW4gQ29saWxvIGZvciB0aGUgMi42LjEwCj4ga2VybmVsICh3aGVyZSBl
+dmVyeXRoaW5nIHdvcmtlZCkuCj4gCgpXaGF0IGFib3V0IG90aGVyIG1lbW9yeSBtYXBwZWQgZGV2
+aWNlcyB5b3UgbWlnaHQgaGF2ZSBvbiB0aGUgc3lzdGVtPyBEbwp0aGV5IGZ1bmN0aW9uIHByb3Bl
+cmx5PyBJZiBub3QgdGhpcyBtaWdodCBiZSBpbmRpY2F0b3Igd2hlcmUgbG9vayBmb3IKdGhlIHBy
+b2JsZW0uCgpSZWdhcmRzLApIaW5rbwoKLS0gCkhpbmtvIEtvxI1ldmFyLCBPU1MgZGV2ZWxvcGVy
+CsSMRVRSVEEgUE9ULCBkLm8uby4KUGxhbmluYSAzLCA0MDAwIEtyYW5qLCBTSSBFVQp0ZWwgICAg
+ICsrMzg2ICgwKSA0IDI4MCA2NiAwMwplLW1haWwgIGhpbmtvLmtvY2V2YXJAY2V0cnRhcG90LnNp
+Cmh0dHAgICAgd3d3LmNldHJ0YXBvdC5zaQoKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KVGhpcyBTRi5OZXQg
+ZW1haWwgaXMgc3BvbnNvcmVkIGJ5IHRoZSBNb2JsaW4gWW91ciBNb3ZlIERldmVsb3BlcidzIGNo
+YWxsZW5nZQpCdWlsZCB0aGUgY29vbGVzdCBMaW51eCBiYXNlZCBhcHBsaWNhdGlvbnMgd2l0aCBN
+b2JsaW4gU0RLICYgd2luIGdyZWF0IHByaXplcwpHcmFuZCBwcml6ZSBpcyBhIHRyaXAgZm9yIHR3
+byB0byBhbiBPcGVuIFNvdXJjZSBldmVudCBhbnl3aGVyZSBpbiB0aGUgd29ybGQKaHR0cDovL21v
+Ymxpbi1jb250ZXN0Lm9yZy9yZWRpcmVjdC5waHA/YmFubmVyX2lkPTEwMCZ1cmw9LwpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZl
+bCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
+dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRl
+dmVsCg==

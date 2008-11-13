@@ -1,26 +1,26 @@
 From: Dmitry Baryshkov <dbaryshkov@gmail.com>
 Subject: Re: [PATCH] tmiofb: fix compilation with ACCEL
 	disabled
-Date: Thu, 13 Nov 2008 21:04:29 +0300
-Message-ID: <20081113180429.GA28643@doriath.ww600.siemens.net>
+Date: Thu, 13 Nov 2008 23:19:29 +0300
+Message-ID: <20081113201929.GA30344@doriath.ww600.siemens.net>
 References: <1225406749-18282-1-git-send-email-dbaryshkov@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <dbaryshkov@gmail.com>) id 1L0gZS-00074Q-Vt
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <dbaryshkov@gmail.com>) id 1L0ig9-0006bu-6A
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Nov 2008 18:05:34 +0000
-Received: from yw-out-1718.google.com ([74.125.46.152])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1L0gZP-0008CJ-39 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Nov 2008 18:05:34 +0000
-Received: by yw-out-1718.google.com with SMTP id 6so428200ywa.82
+	Thu, 13 Nov 2008 20:20:37 +0000
+Received: from nf-out-0910.google.com ([64.233.182.186])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1L0ig5-0004LG-2X for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 13 Nov 2008 20:20:37 +0000
+Received: by nf-out-0910.google.com with SMTP id g16so540362nfd.2
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 13 Nov 2008 10:05:29 -0800 (PST)
+	Thu, 13 Nov 2008 12:20:32 -0800 (PST)
 Content-Disposition: inline
 In-Reply-To: <1225406749-18282-1-git-send-email-dbaryshkov@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -33,6 +33,7 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
 On Fri, Oct 31, 2008 at 01:45:49AM +0300, Dmitry Baryshkov wrote:
 > Restore support for compiling tmiofb with acceleration disabled.

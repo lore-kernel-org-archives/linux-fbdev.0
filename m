@@ -1,101 +1,85 @@
-From: James Kimble <jkimble@one.net>
-Subject: Re: Seg fault on any FB write (Epson
- S1D13A04onColdfire running 2.6.25)
-Date: Wed, 12 Nov 2008 23:47:32 -0500
-Message-ID: <491BB164.2020203@one.net>
-References: <4918E5C3.2090108@one.net> <49195726.2060103@cetrtapot.si>
-	<43185.137.237.242.42.1226415047.squirrel@webmail.nuvox.net>
-	<49199EE3.5090101@cetrtapot.si>
-	<1210.137.237.242.125.1226419828.squirrel@webmail.nuvox.net>
-	<491A930F.2040507@cetrtapot.si>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] drivers/video: Bad error test	before
+ a dereference
+Date: Thu, 13 Nov 2008 09:26:46 +0100
+Message-ID: <491BE4C6.2040109@atmel.com>
+References: <200809261553.45301.brunel@diku.dk> <49130E50.8090009@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jkimble@one.net>) id 1L0U7M-0003kG-Mf
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Nov 2008 04:47:44 +0000
-Received: from smtp-out5.atlngahp.sys.nuvox.net ([70.43.63.23]
-	helo=smtp05.atlngahp.sys.nuvox.net)
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1L0U7L-0008Hl-7X
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 13 Nov 2008 04:47:44 +0000
-In-Reply-To: <491A930F.2040507@cetrtapot.si>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Hinko Kocevar <hinko.kocevar@cetrtapot.si>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751878AbYKMI1L@vger.kernel.org>
+In-Reply-To: <49130E50.8090009@atmel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Julien Brunel <brunel@diku.dk>, adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Hi Andrew,
 
-In looking at your driver (which I think is a lot better organized than 
-the general one that came with the kernel by the way) I see that you're 
-doing a whole string of:
-
-                                            ~~~~~~~~~~
-    device_create_file(&s1d13706fb_device.dev, &dev_attr_reg_0x12);
-    device_create_file(&s1d13706fb_device.dev, &dev_attr_reg_0x14);
-    device_create_file(&s1d13706fb_device.dev, &dev_attr_reg_0x16);
-                                             ~~~~~~~~~~      
-
-In  s1d13706fb_init(). I didn't do any of this my driver. Is this needed 
-for any purpose other than to allow easy access to change the values in 
-these registers in user space?
-
-I was able to port your driver to the values and registers used by my 
-device and the behavior is virtually the same as with my driver. Screen 
-is initialized, I can see the color palette get set and the panel 
-enable. Everything boots up fine but none of my user space applications 
-work. The first time I try to write to a register or video memory I get 
-a seg fault.
-
-This has got to be some kind of memory configuration issue. I've moved 
-the CS configuration for this device to different memory locations but 
-it doesn't change the behavior. I'm setting things up in U-Boot in 
-exactly the same way I had been setting them up in Colilo for the 2.6.10 
-kernel (where everything worked).
-
-I'm really stuck. If anyone has any ideas or suggestions I'd really 
-appreciate your thoughts.
-
-Thanks for your attention...
-
-
-Hinko Kocevar wrote:
-> jkimble@one.net wrote:
->   
->> I thought it looked OK because it looks the same as the flexCAN stuff.
->> However I just noticed that flexCAN has a .0 and .1 whereas the s1d13 are
->> both .0. Yeah, I hope an expert weighs in on this because I'm not sure
->> now.
+Nicolas Ferre :
+> Julien Brunel :
+>> The error test that follows the call to backlight_device_register
+>> semms not to concern the right variable.
 >>
->> I didn't get your attachement.
+>> A simplified version of the semantic match that finds this problem is
+>> as follows: 
+>> (http://www.emn.fr/x-info/coccinelle/)
+>> // <smpl>
+>> @def0@
+>> expression x;
+>> position p0;
+>> @@
+>> x@p0 = backlight_device_register(...)
 >>
->>     
->
-> Maybe I forgot to attach it :P
-> Here it is.
->
->
-> HTH,
-> HK
->
->
->   
+>> @protected@
+>> expression def0.x,E;
+>> position def0.p0;
+>> position p;
+>> statement S;
+>> @@
+>> x@p0
+>> ... when != x = E
+>> if (!IS_ERR(x) && ...) {<... x@p ...>} else S
+>>
+>> @unprotected@
+>> expression def0.x;
+>> identifier fld;
+>> position def0.p0;
+>> position p != protected.p;
+>> @@
+>> x@p0
+>> ... when != x = E
+>> * x@p->fld
+>> // </smpl>
+>>
+>> Signed-off-by: Julien Brunel <brunel@diku.dk>
+>> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
+I do not know if you noticed this little patch but
+I think it will be good if we can queue it for -final.
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Do you want me to reformulate the submission or the
+original email ok for you ?
+
+>> ---
+>>  drivers/video/atmel_lcdfb.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff -u -p a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+>> --- a/drivers/video/atmel_lcdfb.c
+>> +++ b/drivers/video/atmel_lcdfb.c
+>> @@ -132,7 +132,7 @@ static void init_backlight(struct atmel_
+>>  
+>>  	bl = backlight_device_register("backlight", &sinfo->pdev->dev,
+>>  			sinfo, &atmel_lcdc_bl_ops);
+>> -	if (IS_ERR(sinfo->backlight)) {
+>> +	if (IS_ERR(bl)) {
+>>  		dev_err(&sinfo->pdev->dev, "error %ld on backlight register\n",
+>>  				PTR_ERR(bl));
+>>  		return;
+
+Thanks, regards,
+-- 
+Nicolas Ferre

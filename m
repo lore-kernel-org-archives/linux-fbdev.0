@@ -1,587 +1,165 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: RE: [REVIEW PATCH] Added OMAP3EVM support on Tomis FBDEV/DSS
- Patches
-Date: Fri, 14 Nov 2008 17:53:57 +0200
-Message-ID: <1226678037.32348.81.camel@tubuntu>
-References: <19F8576C6E063C45BE387C64729E739403E5F2B69C@dbde02.ent.ti.com>
-Mime-Version: 1.0
+From: Koen Kooi <k.kooi@student.utwente.nl>
+Subject: Re: [REVIEW PATCH] Added OMAP3EVM support on Tomis FBDEV/DSS Patches
+Date: Fri, 14 Nov 2008 20:44:28 +0100
+Message-ID: <C98171C5-A13C-4FE0-97DD-8BCF356212F2@student.utwente.nl>
+References: <19F8576C6E063C45BE387C64729E739403E5F2B69C@dbde02.ent.ti.com> <1226678037.32348.81.camel@tubuntu>
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-22--723434171"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <19F8576C6E063C45BE387C64729E739403E5F2B69C@dbde02.ent.ti.com>
+In-Reply-To: <1226678037.32348.81.camel@tubuntu>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: "ext Hiremath, Vaibhav" <hvaibhav@ti.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: "ext Hiremath, Vaibhav" <hvaibhav@ti.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-Hi,
-On Fri, 2008-11-14 at 18:05 +0530, ext Hiremath, Vaibhav wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--Apple-Mail-22--723434171
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
 
-> >
-> > I think the LCD panel on SDP and EVM boards are the same, so we
-> > should
-> > only have one driver. Do you have specifications about the LCD? The
-> > manufacturer, model etc?. I didn't find any proper information about
-> > the
-> > LCD.
-> >
-> [Hiremath, Vaibhav] The LCD on OMAP3EVM is Sharp LCD (Model No. - LS037V7DW01).
-> Koen has already conformed that panel3430sdp.c is working with OMAP3EVM, let me try at my end. If it works properly then we can have same file to build for both SDP and EVM. But in that case it make sense to rename file to panel-lcd.c.
-> 
 
-I took the liberty to add you EVM changes to my tree, with a comment
-about the origin. I also changed the SDP panel name to sharp panel, and
-made both EVM and SDP use that. But I can't test the EVM, as I don't
-have one.
+Op 14 nov 2008, om 16:53 heeft Tomi Valkeinen het volgende geschreven:
 
-> > The #ifdef mode selection in DVI panel is quit hack, I agree. The
-> > mode
-> > selection should be possible to be done runtime (or with kernel boot
-> > option at minimum), but I'm not yet sure how to implement it. But I
-> > guess I could at least name the mode config options a bit better.
-> >
-> [Hiremath, Vaibhav] We will also work on this and let you know.
-> 
-> > You also set the LCD's bpp to 18, why is that? The bpp in panel
-> > driver
-> > is currently only used as a default bpp for omapfb, but there's no
-> > 18bpp
-> > mode in OMAP. For some reason omapfb let's the 18bpp through, but it
-> > acts like it is 16bpp. I can't remember why it does that, I think
-> > I'll
-> > remove it from omapfb.
-> >
-> [Hiremath, Vaibhav] LCD panel connected to OMAP3EVM is 18 bit LCD, the interface is also 18 bit in schematics. I am not sure about SDP board though.
+> Hi,
+> On Fri, 2008-11-14 at 18:05 +0530, ext Hiremath, Vaibhav wrote:
+>
+>>>
+>>> I think the LCD panel on SDP and EVM boards are the same, so we
+>>> should
+>>> only have one driver. Do you have specifications about the LCD? The
+>>> manufacturer, model etc?. I didn't find any proper information about
+>>> the
+>>> LCD.
+>>>
+>> [Hiremath, Vaibhav] The LCD on OMAP3EVM is Sharp LCD (Model No. -  
+>> LS037V7DW01).
+>> Koen has already conformed that panel3430sdp.c is working with  
+>> OMAP3EVM, let me try at my end. If it works properly then we can  
+>> have same file to build for both SDP and EVM. But in that case it  
+>> make sense to rename file to panel-lcd.c.
+>>
+>
+> I took the liberty to add you EVM changes to my tree, with a comment
+> about the origin. I also changed the SDP panel name to sharp panel,  
+> and
+> made both EVM and SDP use that. But I can't test the EVM, as I don't
+> have one.
 
-Then you should change the dpi.data_lines from 16 to 18. On SDP it seems
-that a dip-switch controls if there are 16 or 18 lines going to the LCD.
+I finally got rc4 working on evm and with your latest patches I get:
 
-Although I'm not quite sure what 18bit LCD helps. If you use 16 bit
-color mode, it doesn't help anything. With 24bit color mode I guess it
-helps a bit, but is that enough reason use more memory for the
-framebuffer... 
+udevd version 124 started
+eth0: link down
+eth0: link up, 100Mbps, full-duplex, lpa 0x8DE1
+DSS2 debug: best_ld is 1, best_pd is 3
+DSS2 debug: best_ld is 1, best_pd is 3
+DSS2 debug: best.lck_div is 1, best.pck_div is 3
+omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
+omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640 ->  
+480x640, (ilace 0)
+omap-dss DISPC: dispc_enable_plane 0, 1
+omap-dss DISPC: dispc_enable_plane 1, 0
+omap-dss DISPC: dispc_enable_plane 2, 0
+omap-dss DISPC: GO LCD
+Division by zero in kernel.
+[<c0033a60>] (dump_stack+0x0/0x14) from [<c0033a8c>] (__div0+0x18/0x20)
+[<c0033a74>] (__div0+0x0/0x20) from [<c01a235c>] (Ldiv0+0x8/0x10)
+[<c01c7f08>] (check_fb_var+0x0/0x35c) from [<c01c8280>]  
+(omapfb_check_var+0x1c/0x20)
+  r7:c6711e08 r6:c708bc00 r5:00004601 r4:c01c8264
+[<c01c8264>] (omapfb_check_var+0x0/0x20) from [<c01b55dc>] (fb_set_var 
++0xd4/0x254)
+[<c01b5508>] (fb_set_var+0x0/0x254) from [<c01b59c0>] (fb_ioctl 
++0x170/0x4f0)
+[<c01b5850>] (fb_ioctl+0x0/0x4f0) from [<c00c59c8>] (vfs_ioctl 
++0x34/0x94)
+  r8:c0030004 r7:c7b4e6c0 r6:03d7ca30 r5:00004601 r4:c7b4e6c0
+[<c00c5994>] (vfs_ioctl+0x0/0x94) from [<c00c5fc8>] (do_vfs_ioctl 
++0x4a4/0x4e4)
+  r7:c7b4e6c0 r6:03d7ca30 r5:c7b4e6c0 r4:c70f9290
+[<c00c5b24>] (do_vfs_ioctl+0x0/0x4e4) from [<c00c6048>] (sys_ioctl 
++0x40/0x64)
+  r9:c6710000 r8:c0030004 r6:00004601 r5:03d7ca30 r4:00000006
+[<c00c6008>] (sys_ioctl+0x0/0x64) from [<c002fe80>] (ret_fast_syscall 
++0x0/0x2c)
+  r7:00000036 r6:00000281 r5:000001fc r4:00000000
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best_ld is 255, best_pd is 255
+DSS2 debug: best.lck_div is 0, best.pck_div is 0
+Division by zero in kernel.
+[<c0033a60>] (dump_stack+0x0/0x14) from [<c0033a8c>] (__div0+0x18/0x20)
+[<c0033a74>] (__div0+0x0/0x20) from [<c01a235c>] (Ldiv0+0x8/0x10)
+[<c01c7f08>] (check_fb_var+0x0/0x35c) from [<c01c8280>]  
+(omapfb_check_var+0x1c/0x20)
+  r7:c6711e08 r6:c708bc00 r5:00004601 r4:c01c8264
+[<c01c8264>] (omapfb_check_var+0x0/0x20) from [<c01b55dc>] (fb_set_var 
++0xd4/0x254)
+[<c01b5508>] (fb_set_var+0x0/0x254) from [<c01b59c0>] (fb_ioctl 
++0x170/0x4f0)
+[<c01b5850>] (fb_ioctl+0x0/0x4f0) from [<c00c59c8>] (vfs_ioctl 
++0x34/0x94)
+  r8:c0030004 r7:c7b4e6c0 r6:03d7ca30 r5:00004601 r4:c7b4e6c0
+[<c00c5994>] (vfs_ioctl+0x0/0x94) from [<c00c5fc8>] (do_vfs_ioctl 
++0x4a4/0x4e4)
+  r7:c7b4e6c0 r6:03d7ca30 r5:c7b4e6c0 r4:c70f9290
+[<c00c5b24>] (do_vfs_ioctl+0x0/0x4e4) from [<c00c6048>] (sys_ioctl 
++0x40/0x64)
+  r9:c6710000 r8:c0030004 r6:00004601 r5:03d7ca30 r4:00000006
+[<c00c6008>] (sys_ioctl+0x0/0x64) from [<c002fe80>] (ret_fast_syscall 
++0x0/0x2c)
+  r7:00000036 r6:00000281 r5:000001fc r4:00000000
+omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
+omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640 ->  
+480x640, (ilace 0)
+omap-dss DISPC: dispc_enable_plane 0, 1
+omap-dss DISPC: dispc_enable_plane 1, 0
+omap-dss DISPC: dispc_enable_plane 2, 0
+omap-dss DISPC: GO LCD
+omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
+omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640 ->  
+480x640, (ilace 0)
+omap-dss DISPC: dispc_enable_plane 0, 1
+omap-dss DISPC: dispc_enable_plane 1, 0
+omap-dss DISPC: dispc_enable_plane 2, 0
+omap-dss DISPC: GO LCD
+omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
+omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640 ->  
+480x640, (ilace 0)
+omap-dss DISPC: dispc_enable_plane 0, 1
+omap-dss DISPC: dispc_enable_plane 1, 0
+omap-dss DISPC: dispc_enable_plane 2, 0
+omap-dss DISPC: GO LCD
 
- Tomi
+the DSS2 printks are at the end of find_lck_pck_divs() and  
+dispc_calc_clock_div() in dispc.c.
 
-> >  Tomi
-> >
-> >
-> > > ---
-> > >  arch/arm/mach-omap2/board-omap3evm.c |  224
-> > ++++++++++++++++++++++++++++++++--
-> > >  drivers/video/omap2/Kconfig          |    5 +
-> > >  drivers/video/omap2/Makefile         |    1 +
-> > >  drivers/video/omap2/panel-dvi.c      |   54 ++-------
-> > >  drivers/video/omap2/panel-omap3evm.c |  110 +++++++++++++++++
-> > >  5 files changed, 341 insertions(+), 53 deletions(-)
-> > >  create mode 100644 drivers/video/omap2/panel-omap3evm.c
-> > >
-> > > diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-
-> > omap2/board-omap3evm.c
-> > > index 42ab826..e244fa7 100644
-> > > --- a/arch/arm/mach-omap2/board-omap3evm.c
-> > > +++ b/arch/arm/mach-omap2/board-omap3evm.c
-> > > @@ -37,6 +37,8 @@
-> > >  #include <mach/usb-ehci.h>
-> > >  #include <mach/common.h>
-> > >  #include <mach/mcspi.h>
-> > > +#include <mach/omapfb.h>
-> > > +#include <mach/display.h>
-> > >
-> > >  #include "sdram-micron-mt46h32m32lf-6.h"
-> > >  #include "twl4030-generic-scripts.h"
-> > > @@ -161,14 +163,215 @@ static int __init omap3_evm_i2c_init(void)
-> > >     omap_register_i2c_bus(3, 400, NULL, 0);
-> > >     return 0;
-> > >  }
-> > > +static struct omap_fbmem_config evm_fbmem0_config = {
-> > > +           .size = 480*720*4,
-> > > +           .start = OMAPFB_MEMTYPE_SDRAM,
-> > > +};
-> > >
-> > > -static struct platform_device omap3_evm_lcd_device = {
-> > > -   .name           = "omap3evm_lcd",
-> > > -   .id             = -1,
-> > > +static struct omap_fbmem_config evm_fbmem1_config = {
-> > > +           .size = 480*720*4,
-> > > +           .start = OMAPFB_MEMTYPE_SDRAM,
-> > >  };
-> > >
-> > > -static struct omap_lcd_config omap3_evm_lcd_config __initdata = {
-> > > -   .ctrl_name      = "internal",
-> > > +static struct omap_fbmem_config evm_fbmem2_config = {
-> > > +           .size = 480*720*4,
-> > > +           .start = OMAPFB_MEMTYPE_SDRAM,
-> > > +};
-> > > +#define LCD_PANEL_LR               2
-> > > +#define LCD_PANEL_UD               3
-> > > +#define LCD_PANEL_INI              152
-> > > +#define LCD_PANEL_ENABLE_GPIO      153
-> > > +#define LCD_PANEL_QVGA             154
-> > > +#define LCD_PANEL_RESB             155
-> > > +
-> > > +#define ENABLE_VDAC_DEDICATED      0x03
-> > > +#define ENABLE_VDAC_DEV_GRP        0x20
-> > > +#define ENABLE_VPLL2_DEDICATED     0x05
-> > > +#define ENABLE_VPLL2_DEV_GRP       0xE0
-> > > +
-> > > +#define TWL4030_GPIODATA_IN3       0x03
-> > > +#define TWL4030_GPIODATA_DIR3      0x06
-> > > +#define TWL4030_VPLL2_DEV_GRP      0x33
-> > > +#define TWL4030_VPLL2_DEDICATED    0x36
-> > > +
-> > > +static int lcd_enabled;
-> > > +static int dvi_enabled;
-> > > +
-> > > +static void __init evm_display_init(void)
-> > > +{
-> > > +   int r;
-> > > +   r = gpio_request(LCD_PANEL_LR, "lcd_panel_lr");
-> > > +   if (r) {
-> > > +           printk(KERN_ERR "failed to get LCD_PANEL_LR\n");
-> > > +           return;
-> > > +   }
-> > > +   r = gpio_request(LCD_PANEL_UD, "lcd_panel_ud");
-> > > +   if (r) {
-> > > +           printk(KERN_ERR "failed to get LCD_PANEL_UD\n");
-> > > +           goto err_1;
-> > > +   }
-> > > +
-> > > +   r = gpio_request(LCD_PANEL_INI, "lcd_panel_ini");
-> > > +   if (r) {
-> > > +           printk(KERN_ERR "failed to get LCD_PANEL_INI\n");
-> > > +           goto err_2;
-> > > +   }
-> > > +   r = gpio_request(LCD_PANEL_RESB, "lcd_panel_resb");
-> > > +   if (r) {
-> > > +           printk(KERN_ERR "failed to get LCD_PANEL_RESB\n");
-> > > +           goto err_3;
-> > > +   }
-> > > +   r = gpio_request(LCD_PANEL_QVGA, "lcd_panel_qvga");
-> > > +   if (r) {
-> > > +           printk(KERN_ERR "failed to get LCD_PANEL_QVGA\n");
-> > > +           goto err_4;
-> > > +   }
-> > > +
-> > > +   gpio_direction_output(LCD_PANEL_LR, 0);
-> > > +   gpio_direction_output(LCD_PANEL_UD, 0);
-> > > +   gpio_direction_output(LCD_PANEL_INI, 0);
-> > > +   gpio_direction_output(LCD_PANEL_RESB, 0);
-> > > +   gpio_direction_output(LCD_PANEL_QVGA, 0);
-> > > +
-> > > +#define TWL_LED_LEDEN           0x00
-> > > +#define TWL_PWMA_PWMAON         0x00
-> > > +#define TWL_PWMA_PWMAOFF        0x01
-> > > +
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_LED, 0x11, TWL_LED_LEDEN);
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_PWMA, 0x01,
-> > TWL_PWMA_PWMAON);
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_PWMA, 0x02,
-> > TWL_PWMA_PWMAOFF);
-> > > +
-> > > +   gpio_direction_output(LCD_PANEL_RESB, 1);
-> > > +   gpio_direction_output(LCD_PANEL_INI, 1);
-> > > +   gpio_direction_output(LCD_PANEL_QVGA, 0);
-> > > +   gpio_direction_output(LCD_PANEL_LR, 1);
-> > > +   gpio_direction_output(LCD_PANEL_UD, 1);
-> > > +
-> > > +   return;
-> > > +
-> > > +err_4:
-> > > +   gpio_free(LCD_PANEL_RESB);
-> > > +err_3:
-> > > +   gpio_free(LCD_PANEL_INI);
-> > > +err_2:
-> > > +   gpio_free(LCD_PANEL_UD);
-> > > +err_1:
-> > > +   gpio_free(LCD_PANEL_LR);
-> > > +
-> > > +}
-> > > +
-> > > +static int panel_enable_lcd(struct omap_display *display)
-> > > +{
-> > > +   if (dvi_enabled) {
-> > > +           printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
-> > > +           return -EINVAL;
-> > > +   }
-> > > +   if (system_rev > OMAP3430_REV_ES1_0) {
-> > > +           twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-> > > +                   ENABLE_VPLL2_DEDICATED, TWL4030_VPLL2_DEDICATED);
-> > > +           twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-> > > +                   ENABLE_VPLL2_DEV_GRP, TWL4030_VPLL2_DEV_GRP);
-> > > +   }
-> > > +   gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 0);
-> > > +   lcd_enabled = 1;
-> > > +   return 0;
-> > > +}
-> > > +
-> > > +static void panel_disable_lcd(struct omap_display *display)
-> > > +{
-> > > +   if (system_rev > OMAP3430_REV_ES1_0) {
-> > > +           twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x0,
-> > > +                           TWL4030_VPLL2_DEDICATED);
-> > > +           twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x0,
-> > > +                           TWL4030_VPLL2_DEV_GRP);
-> > > +   }
-> > > +   omap_set_gpio_dataout(LCD_PANEL_ENABLE_GPIO, 1);
-> > > +   lcd_enabled = 0;
-> > > +}
-> > > +
-> > > +static struct omap_display_data evm_display_data = {
-> > > +   .type = OMAP_DISPLAY_TYPE_DPI,
-> > > +   .name = "lcd",
-> > > +   .panel_name = "panel-evm",
-> > > +   .u.dpi.data_lines = 16,
-> > > +   .panel_enable = panel_enable_lcd,
-> > > +   .panel_disable = panel_disable_lcd,
-> > > +};
-> > > +
-> > > +static int panel_enable_tv(struct omap_display *display)
-> > > +{
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-> > > +                   ENABLE_VDAC_DEDICATED, TWL4030_VDAC_DEDICATED);
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-> > > +                   ENABLE_VDAC_DEV_GRP, TWL4030_VDAC_DEV_GRP);
-> > > +   return 0;
-> > > +}
-> > > +
-> > > +static void panel_disable_tv(struct omap_display *display)
-> > > +{
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x00,
-> > > +                   TWL4030_VDAC_DEDICATED);
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x00,
-> > > +                   TWL4030_VDAC_DEV_GRP);
-> > > +}
-> > > +
-> > > +static struct omap_display_data evm_display_data_tv = {
-> > > +   .type = OMAP_DISPLAY_TYPE_VENC,
-> > > +   .name = "tv",
-> > > +   .u.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
-> > > +   .panel_enable = panel_enable_tv,
-> > > +   .panel_disable = panel_disable_tv,
-> > > +};
-> > > +
-> > > +
-> > > +static int panel_enable_dvi(struct omap_display *display)
-> > > +{
-> > > +   if (lcd_enabled) {
-> > > +           printk(KERN_ERR "cannot enable DVI, LCD is enabled\n");
-> > > +           return -EINVAL;
-> > > +   }
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x80,
-> > > +                   TWL4030_GPIODATA_IN3);
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x80,
-> > > +                   TWL4030_GPIODATA_DIR3);
-> > > +   dvi_enabled = 1;
-> > > +
-> > > +   return 0;
-> > > +}
-> > > +
-> > > +static void panel_disable_dvi(struct omap_display *display)
-> > > +{
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x00,
-> > > +                   TWL4030_GPIODATA_IN3);
-> > > +   twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x00,
-> > > +                   TWL4030_GPIODATA_DIR3);
-> > > +   dvi_enabled = 0;
-> > > +}
-> > > +
-> > > +
-> > > +static struct omap_display_data evm_display_data_dvi = {
-> > > +   .type = OMAP_DISPLAY_TYPE_DPI,
-> > > +   .name = "dvi",
-> > > +   .panel_name = "panel-dvi",
-> > > +   .u.dpi.data_lines = 24,
-> > > +   .panel_enable = panel_enable_dvi,
-> > > +   .panel_disable = panel_disable_dvi,
-> > > +};
-> > > +
-> > > +static struct omap_dss_platform_data evm_dss_data = {
-> > > +   .num_displays = 3,
-> > > +   .displays = {
-> > > +           &evm_display_data,
-> > > +           &evm_display_data_dvi,
-> > > +           &evm_display_data_tv,
-> > > +   }
-> > > +};
-> > > +static struct platform_device evm_dss_device = {
-> > > +   .name           = "omap-dss",
-> > > +   .id             = -1,
-> > > +   .dev            = {
-> > > +           .platform_data = &evm_dss_data,
-> > > +   },
-> > >  };
-> > >
-> > >  static void ads7846_dev_init(void)
-> > > @@ -227,11 +430,13 @@ static void __init omap3_evm_init_irq(void)
-> > >
-> > >  static struct omap_board_config_kernel omap3_evm_config[]
-> > __initdata = {
-> > >     { OMAP_TAG_UART,        &omap3_evm_uart_config },
-> > > -   { OMAP_TAG_LCD,         &omap3_evm_lcd_config },
-> > > +   { OMAP_TAG_FBMEM,       &evm_fbmem0_config },
-> > > +   { OMAP_TAG_FBMEM,       &evm_fbmem1_config },
-> > > +   { OMAP_TAG_FBMEM,       &evm_fbmem2_config },
-> > >  };
-> > >
-> > >  static struct platform_device *omap3_evm_devices[] __initdata = {
-> > > -   &omap3_evm_lcd_device,
-> > > +   &evm_dss_device,
-> > >     &omap3evm_smc911x_device,
-> > >  };
-> > >
-> > > @@ -250,8 +455,6 @@ static void __init omap3_evm_init(void)
-> > >     omap3_evm_i2c_init();
-> > >
-> > >     platform_add_devices(omap3_evm_devices,
-> > ARRAY_SIZE(omap3_evm_devices));
-> > > -   omap_board_config = omap3_evm_config;
-> > > -   omap_board_config_size = ARRAY_SIZE(omap3_evm_config);
-> > >
-> > >     spi_register_board_info(omap3evm_spi_board_info,
-> > >                             ARRAY_SIZE(omap3evm_spi_board_info));
-> > > @@ -262,10 +465,13 @@ static void __init omap3_evm_init(void)
-> > >     usb_ehci_init();
-> > >     omap3evm_flash_init();
-> > >     ads7846_dev_init();
-> > > +   evm_display_init();
-> > >  }
-> > >
-> > >  static void __init omap3_evm_map_io(void)
-> > >  {
-> > > +   omap_board_config = omap3_evm_config;
-> > > +   omap_board_config_size = ARRAY_SIZE(omap3_evm_config);
-> > >     omap2_set_globals_343x();
-> > >     omap2_map_common_io();
-> > >  }
-> > > diff --git a/drivers/video/omap2/Kconfig
-> > b/drivers/video/omap2/Kconfig
-> > > index 95691ad..8211ffd 100644
-> > > --- a/drivers/video/omap2/Kconfig
-> > > +++ b/drivers/video/omap2/Kconfig
-> > > @@ -51,4 +51,9 @@ config PANEL_SDP3430
-> > >          help
-> > >            SDP3430 LCD
-> > >
-> > > +config PANEL_OMAP3EVM
-> > > +        tristate "OMAP3EVM Panel"
-> > > +        depends on OMAP2_DSS
-> > > +        help
-> > > +          OMAP3EVM LCD Panel
-> > >  endmenu
-> > > diff --git a/drivers/video/omap2/Makefile
-> > b/drivers/video/omap2/Makefile
-> > > index 73ab1c0..668e8c6 100644
-> > > --- a/drivers/video/omap2/Makefile
-> > > +++ b/drivers/video/omap2/Makefile
-> > > @@ -3,3 +3,4 @@ omapfb-y := omapfb-main.o omapfb-sysfs.o omapfb-
-> > ioctl.o
-> > >
-> > >  obj-$(CONFIG_PANEL_DVI) += panel-dvi.o
-> > >  obj-$(CONFIG_PANEL_SDP3430) += panel-sdp3430.o
-> > > +obj-$(CONFIG_PANEL_OMAP3EVM) += panel-omap3evm.o
-> > > diff --git a/drivers/video/omap2/panel-dvi.c
-> > b/drivers/video/omap2/panel-dvi.c
-> > > index 2d053df..2a52897 100644
-> > > --- a/drivers/video/omap2/panel-dvi.c
-> > > +++ b/drivers/video/omap2/panel-dvi.c
-> > > @@ -52,54 +52,20 @@ static struct omap_panel dvi_panel = {
-> > >     .disable        = dvi_panel_disable,
-> > >     /*.set_mode     = dvi_set_mode, */
-> > >
-> > > -#if defined(CONFIG_PANEL_DVI_LOWRES)
-> > >     .timings = {
-> > > -           /* 800 x 600 @ 60 Hz  Reduced blanking VESA CVT 0.48M3-R
-> > */
-> > > -           .pixel_clock    = 35500,
-> > > -           .hfp            = 48,
-> > > -           .hsw            = 32,
-> > > -           .hbp            = 80,
-> > > -           .vfp            = 3,
-> > > -           .vsw            = 4,
-> > > -           .vbp            = 11,
-> > > +           /* 480P */
-> > > +           .pixel_clock    = 30000,
-> > > +           .hfp            = 24,
-> > > +           .hsw            = 40,
-> > > +           .hbp            = 96,
-> > > +           .vfp            = 10,
-> > > +           .vsw            = 3,
-> > > +           .vbp            = 32,
-> > >     },
-> > >
-> > > -   .x_res          = 800,
-> > > -   .y_res          = 600,
-> > > +   .x_res          = 480,
-> > > +   .y_res          = 720,
-> > >     .bpp            = 24,
-> > > -#elif defined(CONFIG_PANEL_DVI_HIGHRES)
-> > > -   .timings = {
-> > > -           /* 1024 x 768 @ 60 Hz Reduced blanking */
-> > > -           .pixel_clock    = 56000,
-> > > -           .hfp            = 48,
-> > > -           .hsw            = 32,
-> > > -           .hbp            = 80,
-> > > -           .vfp            = 3,
-> > > -           .vsw            = 4,
-> > > -           .vbp            = 15,
-> > > -   },
-> > > -
-> > > -   .x_res          = 1024,
-> > > -   .y_res          = 768,
-> > > -   .bpp            = 24,
-> > > -#elif defined(CONFIG_PANEL_DVI_VERYHIGHRES)
-> > > -   .timings = {
-> > > -           /* 1280 x 1024 @ 57 Hz Reduced blanking */
-> > > -           .pixel_clock    = 86500,
-> > > -           .hfp            = 48,
-> > > -           .hsw            = 32,
-> > > -           .hbp            = 80,
-> > > -           .vfp            = 3,
-> > > -           .vsw            = 4,
-> > > -           .vbp            = 15,
-> > > -   },
-> > > -
-> > > -   .x_res          = 1280,
-> > > -   .y_res          = 1024,
-> > > -   .bpp            = 16,
-> > > -#else
-> > > -#error Undefined default mode
-> > > -#endif
-> > >
-> > >     .config         = OMAP_DSS_LCD_TFT,
-> > >  };
-> > > diff --git a/drivers/video/omap2/panel-omap3evm.c
-> > b/drivers/video/omap2/panel-omap3evm.c
-> > > new file mode 100644
-> > > index 0000000..4a00b02
-> > > --- /dev/null
-> > > +++ b/drivers/video/omap2/panel-omap3evm.c
-> > > @@ -0,0 +1,110 @@
-> > > +/*
-> > > + * LCD panel support for the TI OMAP3EVM board
-> > > + *
-> > > + * Copyright (C) 2008 Texas Instruments, Inc.
-> > > + * Author: Vaibhav Hiremath <hvaibhav@ti.com>
-> > > + *
-> > > + * Derived from drivers/video/omap2/panel-sdp3430.c
-> > > + *
-> > > + * This program is free software; you can redistribute it and/or
-> > modify it
-> > > + * under the terms of the GNU General Public License version 2 as
-> > published by
-> > > + * the Free Software Foundation.
-> > > + *
-> > > + * This program is distributed in the hope that it will be
-> > useful, but WITHOUT
-> > > + * ANY WARRANTY; without even the implied warranty of
-> > MERCHANTABILITY or
-> > > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-> > License for
-> > > + * more details.
-> > > + *
-> > > + * You should have received a copy of the GNU General Public
-> > License along with
-> > > + * this program.  If not, see <http://www.gnu.org/licenses/>.
-> > > + */
-> > > +
-> > > +#include <linux/module.h>
-> > > +#include <linux/delay.h>
-> > > +
-> > > +#include <mach/display.h>
-> > > +
-> > > +static int omap3evm_panel_init(struct omap_display *display)
-> > > +{
-> > > +   return 0;
-> > > +}
-> > > +
-> > > +static void omap3evm_panel_cleanup(struct omap_display *display)
-> > > +{
-> > > +}
-> > > +
-> > > +static int omap3evm_panel_enable(struct omap_display *display)
-> > > +{
-> > > +   int r = 0;
-> > > +
-> > > +   if (display->hw_config.panel_enable)
-> > > +           r = display->hw_config.panel_enable(display);
-> > > +
-> > > +   return r;
-> > > +}
-> > > +
-> > > +static void omap3evm_panel_disable(struct omap_display *display)
-> > > +{
-> > > +   if (display->hw_config.panel_disable)
-> > > +           display->hw_config.panel_disable(display);
-> > > +}
-> > > +
-> > > +static int omap3evm_panel_suspend(struct omap_display *display)
-> > > +{
-> > > +   omap3evm_panel_disable(display);
-> > > +   return 0;
-> > > +}
-> > > +
-> > > +static int omap3evm_panel_resume(struct omap_display *display)
-> > > +{
-> > > +   return omap3evm_panel_enable(display);
-> > > +}
-> > > +
-> > > +static struct omap_panel omap3evm_panel = {
-> > > +   .owner          = THIS_MODULE,
-> > > +   .name           = "panel-evm",
-> > > +   .init           = omap3evm_panel_init,
-> > > +   .cleanup        = omap3evm_panel_cleanup,
-> > > +   .enable         = omap3evm_panel_enable,
-> > > +   .disable        = omap3evm_panel_disable,
-> > > +   .suspend        = omap3evm_panel_suspend,
-> > > +   .resume         = omap3evm_panel_resume,
-> > > +   /*.set_mode     = omap3evm_set_mode, */
-> > > +
-> > > +   .timings = {
-> > > +           .pixel_clock    = 26000,
-> > > +
-> > > +           .hsw            = 4,
-> > > +           .hfp            = 4,
-> > > +           .hbp            = 40,
-> > > +
-> > > +           .vsw            = 2,
-> > > +           .vfp            = 2,
-> > > +           .vbp            = 7,
-> > > +   },
-> > > +
-> > > +   .acb            = 0x28,
-> > > +
-> > > +   .config         = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-> > > +           OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
-> > > +
-> > > +   .x_res = 480,
-> > > +   .y_res = 640,
-> > > +   .bpp = 18,
-> > > +};
-> > > +
-> > > +
-> > > +static int __init omap3evm_panel_drv_init(void)
-> > > +{
-> > > +   omap_dss_register_panel(&omap3evm_panel);
-> > > +   return 0;
-> > > +}
-> > > +
-> > > +static void __exit omap3evm_panel_drv_exit(void)
-> > > +{
-> > > +   omap_dss_unregister_panel(&omap3evm_panel);
-> > > +}
-> > > +
-> > > +module_init(omap3evm_panel_drv_init);
-> > > +module_exit(omap3evm_panel_drv_exit);
-> > > +MODULE_LICENSE("GPL");
-> > > --
-> > > 1.5.6
-> > >
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-
-> > omap" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> 
+regards,
 
+Koen
+
+--Apple-Mail-22--723434171
+content-type: application/pgp-signature; x-mac-type=70674453;
+	name=PGP.sig
+content-description: This is a digitally signed message part
+content-disposition: inline; filename=PGP.sig
+content-transfer-encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (Darwin)
+
+iD8DBQFJHdUfMkyGM64RGpERAnWiAJ9o2FZ4nGHAArFLuM/HPuliyPMLsACfXt7d
+zLXScVZU0VSbGyteeOK/GM0=
+=a7Yq
+-----END PGP SIGNATURE-----
+
+--Apple-Mail-22--723434171--

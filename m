@@ -1,517 +1,135 @@
-From: hvaibhav@ti.com
-Subject: [REVIEW PATCH] Added OMAP3EVM support on Tomis FBDEV/DSS Patches
-Date: Fri, 14 Nov 2008 12:02:32 +0530
-Message-ID: <1226644352-22060-1-git-send-email-hvaibhav@ti.com>
-References: <hvaibhav@ti.com>
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <hvaibhav@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
+From: <JosephChan@via.com.tw>
+Subject: RE: [PATCH] Fix crash in viafb due to 4k stack overflow
+Date: Fri, 14 Nov 2008 16:41:26 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB808226A07@exchtp03.taipei.via.com.tw>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752498AbYKNIlp@vger.kernel.org>
+Content-class: urn:content-classes:message
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
-Cc: Vaibhav Hiremath <hvaibhav@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: JosephChan@via.com.tw, akpm@linux-foundation.org, bonbons@linux-vserver.org
+Cc: arjan@infradead.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, ScottFang@viatech.com.cn
 
-From: Vaibhav Hiremath <hvaibhav@ti.com>
+After testing the patch with 2.6.28-rc4 kernel, I found something stran=
+ge in both viafb built-in and module modes.
+See the result on my EPIA-EX (CX700) below. Based on the result, it loo=
+ks like something wrong with the new patch.
 
-Tested LCD, TV, DVI (480P) out on OMAP3EVM board.
+Kernel 2.6.28-rc4 + viafb-fix-crash-due-to-4k-stack-overflow.patch
 
-Please make sure that you change the option
-CONFIG_FB_OMAP_CONSISTENT_DMA_SIZE=7  and apply the
-Mans Rullgard clock patches to support set_rate and round_rate API.
+1. w/o patching the viafb-fix-crash-due-to-4k-stack-overflow.patch
+=3D> System works properly without "kernel panic" issue.
 
-Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
----
- arch/arm/mach-omap2/board-omap3evm.c |  224 ++++++++++++++++++++++++++++++++--
- drivers/video/omap2/Kconfig          |    5 +
- drivers/video/omap2/Makefile         |    1 +
- drivers/video/omap2/panel-dvi.c      |   54 ++-------
- drivers/video/omap2/panel-omap3evm.c |  110 +++++++++++++++++
- 5 files changed, 341 insertions(+), 53 deletions(-)
- create mode 100644 drivers/video/omap2/panel-omap3evm.c
+2. w/ patching the viafb-fix-crash-due-to-4k-stack-overflow.patch
+=3D> System hangs with "kernel panic" randomly after loading the viafb =
+module.
+     Such as:
+BUG: unable to handle kernel NULL pointer dereference at 000000c7
+IP: [<c03dc6ec>] rt_worker_func+0xc7/0x15d
+Last sysfs file: /sys/class/graphics/fb0/dev
+Modules linked in: viafb i2c_algo_bit via_rhine sg pata_via sd_mod ehci=
+_hcd
 
-diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
-index 42ab826..e244fa7 100644
---- a/arch/arm/mach-omap2/board-omap3evm.c
-+++ b/arch/arm/mach-omap2/board-omap3evm.c
-@@ -37,6 +37,8 @@
- #include <mach/usb-ehci.h>
- #include <mach/common.h>
- #include <mach/mcspi.h>
-+#include <mach/omapfb.h>
-+#include <mach/display.h>
+Pid: 6, comm: events/0 Not tainted (2.6.28-rc4b #1) pn test
+EIP: 0060:[<c03dc6ec>] EFLAGS: 00010286 CPU:0
+EIP is at rt_worker_func+0xc7/0x15d
+=2E.....
+=2E...
+=2E....
 
- #include "sdram-micron-mt46h32m32lf-6.h"
- #include "twl4030-generic-scripts.h"
-@@ -161,14 +163,215 @@ static int __init omap3_evm_i2c_init(void)
- 	omap_register_i2c_bus(3, 400, NULL, 0);
- 	return 0;
- }
-+static struct omap_fbmem_config evm_fbmem0_config = {
-+		.size = 480*720*4,
-+		.start = OMAPFB_MEMTYPE_SDRAM,
-+};
 
--static struct platform_device omap3_evm_lcd_device = {
--	.name		= "omap3evm_lcd",
--	.id		= -1,
-+static struct omap_fbmem_config evm_fbmem1_config = {
-+		.size = 480*720*4,
-+		.start = OMAPFB_MEMTYPE_SDRAM,
- };
+BRs,
+Joseph
 
--static struct omap_lcd_config omap3_evm_lcd_config __initdata = {
--	.ctrl_name	= "internal",
-+static struct omap_fbmem_config evm_fbmem2_config = {
-+		.size = 480*720*4,
-+		.start = OMAPFB_MEMTYPE_SDRAM,
-+};
-+#define LCD_PANEL_LR		2
-+#define LCD_PANEL_UD		3
-+#define LCD_PANEL_INI		152
-+#define LCD_PANEL_ENABLE_GPIO	153
-+#define LCD_PANEL_QVGA		154
-+#define LCD_PANEL_RESB		155
-+
-+#define ENABLE_VDAC_DEDICATED	0x03
-+#define ENABLE_VDAC_DEV_GRP	0x20
-+#define ENABLE_VPLL2_DEDICATED	0x05
-+#define ENABLE_VPLL2_DEV_GRP	0xE0
-+
-+#define TWL4030_GPIODATA_IN3	0x03
-+#define TWL4030_GPIODATA_DIR3	0x06
-+#define TWL4030_VPLL2_DEV_GRP	0x33
-+#define TWL4030_VPLL2_DEDICATED	0x36
-+
-+static int lcd_enabled;
-+static int dvi_enabled;
-+
-+static void __init evm_display_init(void)
-+{
-+	int r;
-+	r = gpio_request(LCD_PANEL_LR, "lcd_panel_lr");
-+	if (r) {
-+		printk(KERN_ERR "failed to get LCD_PANEL_LR\n");
-+		return;
-+	}
-+	r = gpio_request(LCD_PANEL_UD, "lcd_panel_ud");
-+	if (r) {
-+		printk(KERN_ERR "failed to get LCD_PANEL_UD\n");
-+		goto err_1;
-+	}
-+
-+	r = gpio_request(LCD_PANEL_INI, "lcd_panel_ini");
-+	if (r) {
-+		printk(KERN_ERR "failed to get LCD_PANEL_INI\n");
-+		goto err_2;
-+	}
-+	r = gpio_request(LCD_PANEL_RESB, "lcd_panel_resb");
-+	if (r) {
-+		printk(KERN_ERR "failed to get LCD_PANEL_RESB\n");
-+		goto err_3;
-+	}
-+	r = gpio_request(LCD_PANEL_QVGA, "lcd_panel_qvga");
-+	if (r) {
-+		printk(KERN_ERR "failed to get LCD_PANEL_QVGA\n");
-+		goto err_4;
-+	}
-+
-+	gpio_direction_output(LCD_PANEL_LR, 0);
-+	gpio_direction_output(LCD_PANEL_UD, 0);
-+	gpio_direction_output(LCD_PANEL_INI, 0);
-+	gpio_direction_output(LCD_PANEL_RESB, 0);
-+	gpio_direction_output(LCD_PANEL_QVGA, 0);
-+
-+#define TWL_LED_LEDEN           0x00
-+#define TWL_PWMA_PWMAON         0x00
-+#define TWL_PWMA_PWMAOFF        0x01
-+
-+	twl4030_i2c_write_u8(TWL4030_MODULE_LED, 0x11, TWL_LED_LEDEN);
-+	twl4030_i2c_write_u8(TWL4030_MODULE_PWMA, 0x01, TWL_PWMA_PWMAON);
-+	twl4030_i2c_write_u8(TWL4030_MODULE_PWMA, 0x02, TWL_PWMA_PWMAOFF);
-+
-+	gpio_direction_output(LCD_PANEL_RESB, 1);
-+	gpio_direction_output(LCD_PANEL_INI, 1);
-+	gpio_direction_output(LCD_PANEL_QVGA, 0);
-+	gpio_direction_output(LCD_PANEL_LR, 1);
-+	gpio_direction_output(LCD_PANEL_UD, 1);
-+
-+	return;
-+
-+err_4:
-+	gpio_free(LCD_PANEL_RESB);
-+err_3:
-+	gpio_free(LCD_PANEL_INI);
-+err_2:
-+	gpio_free(LCD_PANEL_UD);
-+err_1:
-+	gpio_free(LCD_PANEL_LR);
-+
-+}
-+
-+static int panel_enable_lcd(struct omap_display *display)
-+{
-+	if (dvi_enabled) {
-+		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
-+		return -EINVAL;
-+	}
-+	if (system_rev > OMAP3430_REV_ES1_0) {
-+		twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-+			ENABLE_VPLL2_DEDICATED, TWL4030_VPLL2_DEDICATED);
-+		twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-+			ENABLE_VPLL2_DEV_GRP, TWL4030_VPLL2_DEV_GRP);
-+	}
-+	gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 0);
-+	lcd_enabled = 1;
-+	return 0;
-+}
-+
-+static void panel_disable_lcd(struct omap_display *display)
-+{
-+	if (system_rev > OMAP3430_REV_ES1_0) {
-+		twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x0,
-+				TWL4030_VPLL2_DEDICATED);
-+		twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x0,
-+				TWL4030_VPLL2_DEV_GRP);
-+	}
-+	omap_set_gpio_dataout(LCD_PANEL_ENABLE_GPIO, 1);
-+	lcd_enabled = 0;
-+}
-+
-+static struct omap_display_data evm_display_data = {
-+	.type = OMAP_DISPLAY_TYPE_DPI,
-+	.name = "lcd",
-+	.panel_name = "panel-evm",
-+	.u.dpi.data_lines = 16,
-+	.panel_enable = panel_enable_lcd,
-+	.panel_disable = panel_disable_lcd,
-+};
-+
-+static int panel_enable_tv(struct omap_display *display)
-+{
-+	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-+			ENABLE_VDAC_DEDICATED, TWL4030_VDAC_DEDICATED);
-+	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
-+			ENABLE_VDAC_DEV_GRP, TWL4030_VDAC_DEV_GRP);
-+	return 0;
-+}
-+
-+static void panel_disable_tv(struct omap_display *display)
-+{
-+	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x00,
-+			TWL4030_VDAC_DEDICATED);
-+	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x00,
-+			TWL4030_VDAC_DEV_GRP);
-+}
-+
-+static struct omap_display_data evm_display_data_tv = {
-+	.type = OMAP_DISPLAY_TYPE_VENC,
-+	.name = "tv",
-+	.u.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
-+	.panel_enable = panel_enable_tv,
-+	.panel_disable = panel_disable_tv,
-+};
-+
-+
-+static int panel_enable_dvi(struct omap_display *display)
-+{
-+	if (lcd_enabled) {
-+		printk(KERN_ERR "cannot enable DVI, LCD is enabled\n");
-+		return -EINVAL;
-+	}
-+	twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x80,
-+			TWL4030_GPIODATA_IN3);
-+	twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x80,
-+			TWL4030_GPIODATA_DIR3);
-+	dvi_enabled = 1;
-+
-+	return 0;
-+}
-+
-+static void panel_disable_dvi(struct omap_display *display)
-+{
-+	twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x00,
-+			TWL4030_GPIODATA_IN3);
-+	twl4030_i2c_write_u8(TWL4030_MODULE_GPIO, 0x00,
-+			TWL4030_GPIODATA_DIR3);
-+	dvi_enabled = 0;
-+}
-+
-+
-+static struct omap_display_data evm_display_data_dvi = {
-+	.type = OMAP_DISPLAY_TYPE_DPI,
-+	.name = "dvi",
-+	.panel_name = "panel-dvi",
-+	.u.dpi.data_lines = 24,
-+	.panel_enable = panel_enable_dvi,
-+	.panel_disable = panel_disable_dvi,
-+};
-+
-+static struct omap_dss_platform_data evm_dss_data = {
-+	.num_displays = 3,
-+	.displays = {
-+		&evm_display_data,
-+		&evm_display_data_dvi,
-+		&evm_display_data_tv,
-+	}
-+};
-+static struct platform_device evm_dss_device = {
-+	.name		= "omap-dss",
-+	.id		= -1,
-+	.dev            = {
-+		.platform_data = &evm_dss_data,
-+	},
- };
+-----Original Message-----
+=46rom: Joseph Chan=20
+Sent: Thursday, November 13, 2008 8:58 AM
+To: 'Andrew Morton'; Bruno Pr=E9mont
+Cc: arjan@infradead.org; linux-fbdev-devel@lists.sourceforge.net; linux=
+-kernel@vger.kernel.org
+Subject: RE: [PATCH] Fix crash in viafb due to 4k stack overflow
 
- static void ads7846_dev_init(void)
-@@ -227,11 +430,13 @@ static void __init omap3_evm_init_irq(void)
+I will try this new patch later. :)
 
- static struct omap_board_config_kernel omap3_evm_config[] __initdata = {
- 	{ OMAP_TAG_UART,	&omap3_evm_uart_config },
--	{ OMAP_TAG_LCD,		&omap3_evm_lcd_config },
-+	{ OMAP_TAG_FBMEM,       &evm_fbmem0_config },
-+	{ OMAP_TAG_FBMEM,       &evm_fbmem1_config },
-+	{ OMAP_TAG_FBMEM,       &evm_fbmem2_config },
- };
+BRs,
+Joseph Chan
 
- static struct platform_device *omap3_evm_devices[] __initdata = {
--	&omap3_evm_lcd_device,
-+	&evm_dss_device,
- 	&omap3evm_smc911x_device,
- };
+-----Original Message-----
+=46rom: Andrew Morton [mailto:akpm@linux-foundation.org]
+Sent: Thursday, November 13, 2008 7:01 AM
+To: Bruno Pr=E9mont
+Cc: arjan@infradead.org; Joseph Chan; linux-fbdev-devel@lists.sourcefor=
+ge.net; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
 
-@@ -250,8 +455,6 @@ static void __init omap3_evm_init(void)
- 	omap3_evm_i2c_init();
+On Mon, 10 Nov 2008 22:00:46 +0100
+Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
 
- 	platform_add_devices(omap3_evm_devices, ARRAY_SIZE(omap3_evm_devices));
--	omap_board_config = omap3_evm_config;
--	omap_board_config_size = ARRAY_SIZE(omap3_evm_config);
+> During conversion of viafb_ioctl() I noticed the following:
+>=20
+> Those two cases just copy_from_user and do nothing with copied data,=20
+> incomplete implementation?:
+>         case VIAFB_SET_PANEL_POSITION:
+>                 if (copy_from_user(&u.panel_pos_size_para, argp,
+>                                    sizeof(u.panel_pos_size_para)))
+>                         return -EFAULT;
+>                 break;
+>         case VIAFB_SET_PANEL_SIZE:
+>                 if (copy_from_user(&u.panel_pos_size_para, argp,
+>                                    sizeof(u.panel_pos_size_para)))
+>                         return -EFAULT;
+>                 break;
+>=20
+> Handling of GET/SET GAMMA looks buggy:
+> In each case 256*4 bytes are allocated but only 4 bytes (size of
+> pointer) are copied to/from userspace though
+> viafb_(get|set)_gamma_table() operates on the full 256 elements...
+>         case VIAFB_SET_GAMMA_LUT:
+>                 viafb_gamma_table =3D kmalloc(256 * sizeof(u32), GFP_=
+KERNEL);
+>                 if (!viafb_gamma_table)
+>                         return -ENOMEM;
+>                 if (copy_from_user(viafb_gamma_table, argp,
+>                                 sizeof(viafb_gamma_table))) {
+>                         kfree(viafb_gamma_table);
+>                         return -EFAULT;
+>                 }
+>                 viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
+>                 kfree(viafb_gamma_table);
+>                 break;
+>=20
+>         case VIAFB_GET_GAMMA_LUT:
+>                 viafb_gamma_table =3D kmalloc(256 * sizeof(u32), GFP_=
+KERNEL);
+>                 if (!viafb_gamma_table)
+>                         return -ENOMEM;
+>                 viafb_get_gamma_table(viafb_gamma_table);
+>                 if (copy_to_user(argp, viafb_gamma_table,
+>                         sizeof(viafb_gamma_table))) {
+>                         kfree(viafb_gamma_table);
+>                         return -EFAULT;
+>                 }
+>                 kfree(viafb_gamma_table);
+>                 break;
+>=20
+> I don't know if there is a userspace app that uses these VIA IOCTLs..=
+=2E
+> so the ioctl part is just compile-tested.
+> After checking, fbset just uses some generic framebuffer IOCTLs=20
+> outside of viafb's scope, thus not passing through viafb_ioctl().
+>=20
+>=20
+>=20
+> ---
+> --- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig	2008-11-09 19:=
+36:47.000000000 +0100
+> +++ linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10 20:50:32=
+=2E000000000 +0100
 
- 	spi_register_board_info(omap3evm_spi_board_info,
- 				ARRAY_SIZE(omap3evm_spi_board_info));
-@@ -262,10 +465,13 @@ static void __init omap3_evm_init(void)
- 	usb_ehci_init();
- 	omap3evm_flash_init();
- 	ads7846_dev_init();
-+	evm_display_init();
- }
+hm, OK, I dropped the old patch and merged this one.
 
- static void __init omap3_evm_map_io(void)
- {
-+	omap_board_config = omap3_evm_config;
-+	omap_board_config_size = ARRAY_SIZE(omap3_evm_config);
- 	omap2_set_globals_343x();
- 	omap2_map_common_io();
- }
-diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
-index 95691ad..8211ffd 100644
---- a/drivers/video/omap2/Kconfig
-+++ b/drivers/video/omap2/Kconfig
-@@ -51,4 +51,9 @@ config PANEL_SDP3430
-         help
-           SDP3430 LCD
-
-+config PANEL_OMAP3EVM
-+        tristate "OMAP3EVM Panel"
-+        depends on OMAP2_DSS
-+        help
-+          OMAP3EVM LCD Panel
- endmenu
-diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
-index 73ab1c0..668e8c6 100644
---- a/drivers/video/omap2/Makefile
-+++ b/drivers/video/omap2/Makefile
-@@ -3,3 +3,4 @@ omapfb-y := omapfb-main.o omapfb-sysfs.o omapfb-ioctl.o
-
- obj-$(CONFIG_PANEL_DVI) += panel-dvi.o
- obj-$(CONFIG_PANEL_SDP3430) += panel-sdp3430.o
-+obj-$(CONFIG_PANEL_OMAP3EVM) += panel-omap3evm.o
-diff --git a/drivers/video/omap2/panel-dvi.c b/drivers/video/omap2/panel-dvi.c
-index 2d053df..2a52897 100644
---- a/drivers/video/omap2/panel-dvi.c
-+++ b/drivers/video/omap2/panel-dvi.c
-@@ -52,54 +52,20 @@ static struct omap_panel dvi_panel = {
- 	.disable	= dvi_panel_disable,
- 	/*.set_mode	= dvi_set_mode, */
-
--#if defined(CONFIG_PANEL_DVI_LOWRES)
- 	.timings = {
--		/* 800 x 600 @ 60 Hz  Reduced blanking VESA CVT 0.48M3-R */
--		.pixel_clock	= 35500,
--		.hfp		= 48,
--		.hsw		= 32,
--		.hbp		= 80,
--		.vfp		= 3,
--		.vsw		= 4,
--		.vbp		= 11,
-+		/* 480P */
-+		.pixel_clock	= 30000,
-+		.hfp		= 24,
-+		.hsw		= 40,
-+		.hbp		= 96,
-+		.vfp		= 10,
-+		.vsw		= 3,
-+		.vbp		= 32,
- 	},
-
--	.x_res		= 800,
--	.y_res		= 600,
-+	.x_res		= 480,
-+	.y_res		= 720,
- 	.bpp		= 24,
--#elif defined(CONFIG_PANEL_DVI_HIGHRES)
--	.timings = {
--		/* 1024 x 768 @ 60 Hz Reduced blanking */
--		.pixel_clock	= 56000,
--		.hfp		= 48,
--		.hsw		= 32,
--		.hbp		= 80,
--		.vfp		= 3,
--		.vsw		= 4,
--		.vbp		= 15,
--	},
--
--	.x_res		= 1024,
--	.y_res		= 768,
--	.bpp		= 24,
--#elif defined(CONFIG_PANEL_DVI_VERYHIGHRES)
--	.timings = {
--		/* 1280 x 1024 @ 57 Hz Reduced blanking */
--		.pixel_clock	= 86500,
--		.hfp		= 48,
--		.hsw		= 32,
--		.hbp		= 80,
--		.vfp		= 3,
--		.vsw		= 4,
--		.vbp		= 15,
--	},
--
--	.x_res		= 1280,
--	.y_res		= 1024,
--	.bpp		= 16,
--#else
--#error Undefined default mode
--#endif
-
- 	.config		= OMAP_DSS_LCD_TFT,
- };
-diff --git a/drivers/video/omap2/panel-omap3evm.c b/drivers/video/omap2/panel-omap3evm.c
-new file mode 100644
-index 0000000..4a00b02
---- /dev/null
-+++ b/drivers/video/omap2/panel-omap3evm.c
-@@ -0,0 +1,110 @@
-+/*
-+ * LCD panel support for the TI OMAP3EVM board
-+ *
-+ * Copyright (C) 2008 Texas Instruments, Inc.
-+ * Author: Vaibhav Hiremath <hvaibhav@ti.com>
-+ *
-+ * Derived from drivers/video/omap2/panel-sdp3430.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/delay.h>
-+
-+#include <mach/display.h>
-+
-+static int omap3evm_panel_init(struct omap_display *display)
-+{
-+	return 0;
-+}
-+
-+static void omap3evm_panel_cleanup(struct omap_display *display)
-+{
-+}
-+
-+static int omap3evm_panel_enable(struct omap_display *display)
-+{
-+	int r = 0;
-+
-+	if (display->hw_config.panel_enable)
-+		r = display->hw_config.panel_enable(display);
-+
-+	return r;
-+}
-+
-+static void omap3evm_panel_disable(struct omap_display *display)
-+{
-+	if (display->hw_config.panel_disable)
-+		display->hw_config.panel_disable(display);
-+}
-+
-+static int omap3evm_panel_suspend(struct omap_display *display)
-+{
-+	omap3evm_panel_disable(display);
-+	return 0;
-+}
-+
-+static int omap3evm_panel_resume(struct omap_display *display)
-+{
-+	return omap3evm_panel_enable(display);
-+}
-+
-+static struct omap_panel omap3evm_panel = {
-+	.owner		= THIS_MODULE,
-+	.name		= "panel-evm",
-+	.init		= omap3evm_panel_init,
-+	.cleanup	= omap3evm_panel_cleanup,
-+	.enable		= omap3evm_panel_enable,
-+	.disable	= omap3evm_panel_disable,
-+	.suspend	= omap3evm_panel_suspend,
-+	.resume		= omap3evm_panel_resume,
-+	/*.set_mode	= omap3evm_set_mode, */
-+
-+	.timings = {
-+		.pixel_clock	= 26000,
-+
-+		.hsw		= 4,
-+		.hfp		= 4,
-+		.hbp		= 40,
-+
-+		.vsw		= 2,
-+		.vfp		= 2,
-+		.vbp		= 7,
-+	},
-+
-+	.acb		= 0x28,
-+
-+	.config		= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-+		OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
-+
-+	.x_res = 480,
-+	.y_res = 640,
-+	.bpp = 18,
-+};
-+
-+
-+static int __init omap3evm_panel_drv_init(void)
-+{
-+	omap_dss_register_panel(&omap3evm_panel);
-+	return 0;
-+}
-+
-+static void __exit omap3evm_panel_drv_exit(void)
-+{
-+	omap_dss_unregister_panel(&omap3evm_panel);
-+}
-+
-+module_init(omap3evm_panel_drv_init);
-+module_exit(omap3evm_panel_drv_exit);
-+MODULE_LICENSE("GPL");
---
-1.5.6
-
+It'd be nice to have it runtime tested and reviewed by Joseph, but we h=
+aven't heard from him yet.  viafb might be 8k-stacks-only in 2.6.27, wh=
+ich would be bad.

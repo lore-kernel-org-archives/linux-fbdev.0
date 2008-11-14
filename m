@@ -1,150 +1,118 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
-Date: Fri, 14 Nov 2008 10:01:56 +0100
-Message-ID: <20081114100156.4557760c@pluto.restena.lu>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB808226A07@exchtp03.taipei.via.com.tw>
+From: <JosephChan@via.com.tw>
+Subject: RE: [PATCH] Fix crash in viafb due to 4k stack overflow
+Date: Fri, 14 Nov 2008 18:20:12 +0800
+Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB808226B80@exchtp03.taipei.via.com.tw>
+References: <20081114100156.4557760c@pluto.restena.lu>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752717AbYKNJNN@vger.kernel.org>
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB808226A07@exchtp03.taipei.via.com.tw>
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754917AbYKNKUq@vger.kernel.org>
+Content-class: urn:content-classes:message
+In-Reply-To: <20081114100156.4557760c@pluto.restena.lu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="utf-8"
-To: JosephChan@via.com.tw
+To: bonbons@linux-vserver.org
 Cc: akpm@linux-foundation.org, arjan@infradead.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, ScottFang@viatech.com.cn
 
-Joseph,
-
-Are you testing with 4k stacks or with 8k stacks (CONFIG_4KSTACKS)?
-
-Note that your failure looks pretty much like the ones I mentionned in
-  http://lkml.org/lkml/2008/11/9/204
-It looks like some kernel text/data got corrupted though I have no
-idea what caused it. For me this kind of NULL pointer dereference did
-happen a few times then stopped showing up (just a reboot, not kernel
-change/recompile)
-
-Bruno
-
-
-On Fri, 14 Nov 2008 <JosephChan@via.com.tw> wrote:
-> After testing the patch with 2.6.28-rc4 kernel, I found something
-> strange in both viafb built-in and module modes. See the result on my
-> EPIA-EX (CX700) below. Based on the result, it looks like something
-> wrong with the new patch.
->=20
-> Kernel 2.6.28-rc4 + viafb-fix-crash-due-to-4k-stack-overflow.patch
->=20
-> 1. w/o patching the viafb-fix-crash-due-to-4k-stack-overflow.patch
-> =3D> System works properly without "kernel panic" issue.
->=20
-> 2. w/ patching the viafb-fix-crash-due-to-4k-stack-overflow.patch
-> =3D> System hangs with "kernel panic" randomly after loading the viaf=
-b
-> module. Such as:
-> BUG: unable to handle kernel NULL pointer dereference at 000000c7
-> IP: [<c03dc6ec>] rt_worker_func+0xc7/0x15d
-> Last sysfs file: /sys/class/graphics/fb0/dev
-> Modules linked in: viafb i2c_algo_bit via_rhine sg pata_via sd_mod
-> ehci_hcd
->=20
-> Pid: 6, comm: events/0 Not tainted (2.6.28-rc4b #1) pn test
-> EIP: 0060:[<c03dc6ec>] EFLAGS: 00010286 CPU:0
-> EIP is at rt_worker_func+0xc7/0x15d
-> ......
-> ....
-> .....
->=20
->=20
-> BRs,
-> Joseph
->=20
-> -----Original Message-----
-> From: Joseph Chan=20
-> Sent: Thursday, November 13, 2008 8:58 AM
-> To: 'Andrew Morton'; Bruno Pr=C3=A9mont
-> Cc: arjan@infradead.org; linux-fbdev-devel@lists.sourceforge.net;
-> linux-kernel@vger.kernel.org Subject: RE: [PATCH] Fix crash in viafb
-> due to 4k stack overflow
->=20
-> I will try this new patch later. :)
->=20
-> BRs,
-> Joseph Chan
->=20
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> Sent: Thursday, November 13, 2008 7:01 AM
-> To: Bruno Pr=C3=A9mont
-> Cc: arjan@infradead.org; Joseph Chan;
-> linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
->=20
-> On Mon, 10 Nov 2008 22:00:46 +0100
-> Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
->=20
-> > During conversion of viafb_ioctl() I noticed the following:
-> >=20
-> > Those two cases just copy_from_user and do nothing with copied
-> > data, incomplete implementation?:
-> >         case VIAFB_SET_PANEL_POSITION:
-> >                 if (copy_from_user(&u.panel_pos_size_para, argp,
-> >                                    sizeof(u.panel_pos_size_para)))
-> >                         return -EFAULT;
-> >                 break;
-> >         case VIAFB_SET_PANEL_SIZE:
-> >                 if (copy_from_user(&u.panel_pos_size_para, argp,
-> >                                    sizeof(u.panel_pos_size_para)))
-> >                         return -EFAULT;
-> >                 break;
-> >=20
-> > Handling of GET/SET GAMMA looks buggy:
-> > In each case 256*4 bytes are allocated but only 4 bytes (size of
-> > pointer) are copied to/from userspace though
-> > viafb_(get|set)_gamma_table() operates on the full 256 elements...
-> >         case VIAFB_SET_GAMMA_LUT:
-> >                 viafb_gamma_table =3D kmalloc(256 * sizeof(u32),
-> > GFP_KERNEL); if (!viafb_gamma_table)
-> >                         return -ENOMEM;
-> >                 if (copy_from_user(viafb_gamma_table, argp,
-> >                                 sizeof(viafb_gamma_table))) {
-> >                         kfree(viafb_gamma_table);
-> >                         return -EFAULT;
-> >                 }
-> >                 viafb_set_gamma_table(viafb_bpp, viafb_gamma_table)=
-;
-> >                 kfree(viafb_gamma_table);
-> >                 break;
-> >=20
-> >         case VIAFB_GET_GAMMA_LUT:
-> >                 viafb_gamma_table =3D kmalloc(256 * sizeof(u32),
-> > GFP_KERNEL); if (!viafb_gamma_table)
-> >                         return -ENOMEM;
-> >                 viafb_get_gamma_table(viafb_gamma_table);
-> >                 if (copy_to_user(argp, viafb_gamma_table,
-> >                         sizeof(viafb_gamma_table))) {
-> >                         kfree(viafb_gamma_table);
-> >                         return -EFAULT;
-> >                 }
-> >                 kfree(viafb_gamma_table);
-> >                 break;
-> >=20
-> > I don't know if there is a userspace app that uses these VIA
-> > IOCTLs... so the ioctl part is just compile-tested.
-> > After checking, fbset just uses some generic framebuffer IOCTLs=20
-> > outside of viafb's scope, thus not passing through viafb_ioctl().
-> >=20
-> >=20
-> >=20
-> > ---
-> > --- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig
-> > 2008-11-09 19:36:47.000000000 +0100 +++
-> > linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10
-> > 20:50:32.000000000 +0100
->=20
-> hm, OK, I dropped the old patch and merged this one.
->=20
-> It'd be nice to have it runtime tested and reviewed by Joseph, but we
-> haven't heard from him yet.  viafb might be 8k-stacks-only in 2.6.27,
-> which would be bad.
->=20
+IA0KOEsgc3RhY2tzLCBJIGRvbid0IGVuYWJsZSB0aGUgQ09ORklHXzRLU1RBQ0tTLg0KSW4gYWRk
+aXRpb24sIEkgYWxzbyB0cmllZCB0byBlbmFibGUgQ09ORklHXzRLU1RBQ0tTLCB0aGUgc3lzdGVt
+IHN0aWxsIHJldHVybnMgbWUgbG90cyAicGFuaWMiIGR1cmluZyBzeXN0ZW0gYm9vdHVwLiA6KA0K
+DQpCUnMsDQpKb3NlcGggQ2hhbiANCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206
+IEJydW5vIFByw6ltb250IFttYWlsdG86Ym9uYm9uc0BsaW51eC12c2VydmVyLm9yZ10gDQpTZW50
+OiBGcmlkYXksIE5vdmVtYmVyIDE0LCAyMDA4IDU6MDIgUE0NClRvOiBKb3NlcGggQ2hhbg0KQ2M6
+IGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmc7IGFyamFuQGluZnJhZGVhZC5vcmc7IGxpbnV4LWZi
+ZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldDsgbGludXgta2VybmVsQHZnZXIua2VybmVs
+Lm9yZzsgU2NvdHQgRmFuZw0KU3ViamVjdDogUmU6IFtQQVRDSF0gRml4IGNyYXNoIGluIHZpYWZi
+IGR1ZSB0byA0ayBzdGFjayBvdmVyZmxvdw0KDQpKb3NlcGgsDQoNCkFyZSB5b3UgdGVzdGluZyB3
+aXRoIDRrIHN0YWNrcyBvciB3aXRoIDhrIHN0YWNrcyAoQ09ORklHXzRLU1RBQ0tTKT8NCg0KTm90
+ZSB0aGF0IHlvdXIgZmFpbHVyZSBsb29rcyBwcmV0dHkgbXVjaCBsaWtlIHRoZSBvbmVzIEkgbWVu
+dGlvbm5lZCBpbg0KICBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA4LzExLzkvMjA0DQpJdCBsb29r
+cyBsaWtlIHNvbWUga2VybmVsIHRleHQvZGF0YSBnb3QgY29ycnVwdGVkIHRob3VnaCBJIGhhdmUg
+bm8gaWRlYSB3aGF0IGNhdXNlZCBpdC4gRm9yIG1lIHRoaXMga2luZCBvZiBOVUxMIHBvaW50ZXIg
+ZGVyZWZlcmVuY2UgZGlkIGhhcHBlbiBhIGZldyB0aW1lcyB0aGVuIHN0b3BwZWQgc2hvd2luZyB1
+cCAoanVzdCBhIHJlYm9vdCwgbm90IGtlcm5lbA0KY2hhbmdlL3JlY29tcGlsZSkNCg0KQnJ1bm8N
+Cg0KDQpPbiBGcmksIDE0IE5vdiAyMDA4IDxKb3NlcGhDaGFuQHZpYS5jb20udHc+IHdyb3RlOg0K
+PiBBZnRlciB0ZXN0aW5nIHRoZSBwYXRjaCB3aXRoIDIuNi4yOC1yYzQga2VybmVsLCBJIGZvdW5k
+IHNvbWV0aGluZyANCj4gc3RyYW5nZSBpbiBib3RoIHZpYWZiIGJ1aWx0LWluIGFuZCBtb2R1bGUg
+bW9kZXMuIFNlZSB0aGUgcmVzdWx0IG9uIG15IA0KPiBFUElBLUVYIChDWDcwMCkgYmVsb3cuIEJh
+c2VkIG9uIHRoZSByZXN1bHQsIGl0IGxvb2tzIGxpa2Ugc29tZXRoaW5nIA0KPiB3cm9uZyB3aXRo
+IHRoZSBuZXcgcGF0Y2guDQo+IA0KPiBLZXJuZWwgMi42LjI4LXJjNCArIHZpYWZiLWZpeC1jcmFz
+aC1kdWUtdG8tNGstc3RhY2stb3ZlcmZsb3cucGF0Y2gNCj4gDQo+IDEuIHcvbyBwYXRjaGluZyB0
+aGUgdmlhZmItZml4LWNyYXNoLWR1ZS10by00ay1zdGFjay1vdmVyZmxvdy5wYXRjaA0KPiA9PiBT
+eXN0ZW0gd29ya3MgcHJvcGVybHkgd2l0aG91dCAia2VybmVsIHBhbmljIiBpc3N1ZS4NCj4gDQo+
+IDIuIHcvIHBhdGNoaW5nIHRoZSB2aWFmYi1maXgtY3Jhc2gtZHVlLXRvLTRrLXN0YWNrLW92ZXJm
+bG93LnBhdGNoDQo+ID0+IFN5c3RlbSBoYW5ncyB3aXRoICJrZXJuZWwgcGFuaWMiIHJhbmRvbWx5
+IGFmdGVyIGxvYWRpbmcgdGhlIHZpYWZiIA0KPiBtb2R1bGUuIFN1Y2ggYXM6DQo+IEJVRzogdW5h
+YmxlIHRvIGhhbmRsZSBrZXJuZWwgTlVMTCBwb2ludGVyIGRlcmVmZXJlbmNlIGF0IDAwMDAwMGM3
+DQo+IElQOiBbPGMwM2RjNmVjPl0gcnRfd29ya2VyX2Z1bmMrMHhjNy8weDE1ZCBMYXN0IHN5c2Zz
+IGZpbGU6IA0KPiAvc3lzL2NsYXNzL2dyYXBoaWNzL2ZiMC9kZXYgTW9kdWxlcyBsaW5rZWQgaW46
+IHZpYWZiIGkyY19hbGdvX2JpdCANCj4gdmlhX3JoaW5lIHNnIHBhdGFfdmlhIHNkX21vZCBlaGNp
+X2hjZA0KPiANCj4gUGlkOiA2LCBjb21tOiBldmVudHMvMCBOb3QgdGFpbnRlZCAoMi42LjI4LXJj
+NGIgIzEpIHBuIHRlc3QNCj4gRUlQOiAwMDYwOls8YzAzZGM2ZWM+XSBFRkxBR1M6IDAwMDEwMjg2
+IENQVTowIEVJUCBpcyBhdCANCj4gcnRfd29ya2VyX2Z1bmMrMHhjNy8weDE1ZCAuLi4uLi4NCj4g
+Li4uLg0KPiAuLi4uLg0KPiANCj4gDQo+IEJScywNCj4gSm9zZXBoDQo+IA0KPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKb3NlcGggQ2hhbg0KPiBTZW50OiBUaHVyc2RheSwg
+Tm92ZW1iZXIgMTMsIDIwMDggODo1OCBBTQ0KPiBUbzogJ0FuZHJldyBNb3J0b24nOyBCcnVubyBQ
+csOpbW9udA0KPiBDYzogYXJqYW5AaW5mcmFkZWFkLm9yZzsgbGludXgtZmJkZXYtZGV2ZWxAbGlz
+dHMuc291cmNlZm9yZ2UubmV0Ow0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnIFN1Ympl
+Y3Q6IFJFOiBbUEFUQ0hdIEZpeCBjcmFzaCBpbiB2aWFmYiANCj4gZHVlIHRvIDRrIHN0YWNrIG92
+ZXJmbG93DQo+IA0KPiBJIHdpbGwgdHJ5IHRoaXMgbmV3IHBhdGNoIGxhdGVyLiA6KQ0KPiANCj4g
+QlJzLA0KPiBKb3NlcGggQ2hhbg0KPiANCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
+RnJvbTogQW5kcmV3IE1vcnRvbiBbbWFpbHRvOmFrcG1AbGludXgtZm91bmRhdGlvbi5vcmddDQo+
+IFNlbnQ6IFRodXJzZGF5LCBOb3ZlbWJlciAxMywgMjAwOCA3OjAxIEFNDQo+IFRvOiBCcnVubyBQ
+csOpbW9udA0KPiBDYzogYXJqYW5AaW5mcmFkZWFkLm9yZzsgSm9zZXBoIENoYW47DQo+IGxpbnV4
+LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldDsgbGludXgta2VybmVsQHZnZXIua2Vy
+bmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBGaXggY3Jhc2ggaW4gdmlhZmIgZHVlIHRv
+IDRrIHN0YWNrIG92ZXJmbG93DQo+IA0KPiBPbiBNb24sIDEwIE5vdiAyMDA4IDIyOjAwOjQ2ICsw
+MTAwDQo+IEJydW5vIFByX19tb250IDxib25ib25zQGxpbnV4LXZzZXJ2ZXIub3JnPiB3cm90ZToN
+Cj4gDQo+ID4gRHVyaW5nIGNvbnZlcnNpb24gb2YgdmlhZmJfaW9jdGwoKSBJIG5vdGljZWQgdGhl
+IGZvbGxvd2luZzoNCj4gPiANCj4gPiBUaG9zZSB0d28gY2FzZXMganVzdCBjb3B5X2Zyb21fdXNl
+ciBhbmQgZG8gbm90aGluZyB3aXRoIGNvcGllZCBkYXRhLCANCj4gPiBpbmNvbXBsZXRlIGltcGxl
+bWVudGF0aW9uPzoNCj4gPiAgICAgICAgIGNhc2UgVklBRkJfU0VUX1BBTkVMX1BPU0lUSU9OOg0K
+PiA+ICAgICAgICAgICAgICAgICBpZiAoY29weV9mcm9tX3VzZXIoJnUucGFuZWxfcG9zX3NpemVf
+cGFyYSwgYXJncCwNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNpemVv
+Zih1LnBhbmVsX3Bvc19zaXplX3BhcmEpKSkNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICBy
+ZXR1cm4gLUVGQVVMVDsNCj4gPiAgICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4gICAgICAgICBj
+YXNlIFZJQUZCX1NFVF9QQU5FTF9TSVpFOg0KPiA+ICAgICAgICAgICAgICAgICBpZiAoY29weV9m
+cm9tX3VzZXIoJnUucGFuZWxfcG9zX3NpemVfcGFyYSwgYXJncCwNCj4gPiAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIHNpemVvZih1LnBhbmVsX3Bvc19zaXplX3BhcmEpKSkNCj4g
+PiAgICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4gLUVGQVVMVDsNCj4gPiAgICAgICAgICAg
+ICAgICAgYnJlYWs7DQo+ID4gDQo+ID4gSGFuZGxpbmcgb2YgR0VUL1NFVCBHQU1NQSBsb29rcyBi
+dWdneToNCj4gPiBJbiBlYWNoIGNhc2UgMjU2KjQgYnl0ZXMgYXJlIGFsbG9jYXRlZCBidXQgb25s
+eSA0IGJ5dGVzIChzaXplIG9mDQo+ID4gcG9pbnRlcikgYXJlIGNvcGllZCB0by9mcm9tIHVzZXJz
+cGFjZSB0aG91Z2gNCj4gPiB2aWFmYl8oZ2V0fHNldClfZ2FtbWFfdGFibGUoKSBvcGVyYXRlcyBv
+biB0aGUgZnVsbCAyNTYgZWxlbWVudHMuLi4NCj4gPiAgICAgICAgIGNhc2UgVklBRkJfU0VUX0dB
+TU1BX0xVVDoNCj4gPiAgICAgICAgICAgICAgICAgdmlhZmJfZ2FtbWFfdGFibGUgPSBrbWFsbG9j
+KDI1NiAqIHNpemVvZih1MzIpLCANCj4gPiBHRlBfS0VSTkVMKTsgaWYgKCF2aWFmYl9nYW1tYV90
+YWJsZSkNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICByZXR1cm4gLUVOT01FTTsNCj4gPiAg
+ICAgICAgICAgICAgICAgaWYgKGNvcHlfZnJvbV91c2VyKHZpYWZiX2dhbW1hX3RhYmxlLCBhcmdw
+LA0KPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc2l6ZW9mKHZpYWZiX2dhbW1h
+X3RhYmxlKSkpIHsNCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICBrZnJlZSh2aWFmYl9nYW1t
+YV90YWJsZSk7DQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIC1FRkFVTFQ7DQo+
+ID4gICAgICAgICAgICAgICAgIH0NCj4gPiAgICAgICAgICAgICAgICAgdmlhZmJfc2V0X2dhbW1h
+X3RhYmxlKHZpYWZiX2JwcCwgdmlhZmJfZ2FtbWFfdGFibGUpOw0KPiA+ICAgICAgICAgICAgICAg
+ICBrZnJlZSh2aWFmYl9nYW1tYV90YWJsZSk7DQo+ID4gICAgICAgICAgICAgICAgIGJyZWFrOw0K
+PiA+IA0KPiA+ICAgICAgICAgY2FzZSBWSUFGQl9HRVRfR0FNTUFfTFVUOg0KPiA+ICAgICAgICAg
+ICAgICAgICB2aWFmYl9nYW1tYV90YWJsZSA9IGttYWxsb2MoMjU2ICogc2l6ZW9mKHUzMiksIA0K
+PiA+IEdGUF9LRVJORUwpOyBpZiAoIXZpYWZiX2dhbW1hX3RhYmxlKQ0KPiA+ICAgICAgICAgICAg
+ICAgICAgICAgICAgIHJldHVybiAtRU5PTUVNOw0KPiA+ICAgICAgICAgICAgICAgICB2aWFmYl9n
+ZXRfZ2FtbWFfdGFibGUodmlhZmJfZ2FtbWFfdGFibGUpOw0KPiA+ICAgICAgICAgICAgICAgICBp
+ZiAoY29weV90b191c2VyKGFyZ3AsIHZpYWZiX2dhbW1hX3RhYmxlLA0KPiA+ICAgICAgICAgICAg
+ICAgICAgICAgICAgIHNpemVvZih2aWFmYl9nYW1tYV90YWJsZSkpKSB7DQo+ID4gICAgICAgICAg
+ICAgICAgICAgICAgICAga2ZyZWUodmlhZmJfZ2FtbWFfdGFibGUpOw0KPiA+ICAgICAgICAgICAg
+ICAgICAgICAgICAgIHJldHVybiAtRUZBVUxUOw0KPiA+ICAgICAgICAgICAgICAgICB9DQo+ID4g
+ICAgICAgICAgICAgICAgIGtmcmVlKHZpYWZiX2dhbW1hX3RhYmxlKTsNCj4gPiAgICAgICAgICAg
+ICAgICAgYnJlYWs7DQo+ID4gDQo+ID4gSSBkb24ndCBrbm93IGlmIHRoZXJlIGlzIGEgdXNlcnNw
+YWNlIGFwcCB0aGF0IHVzZXMgdGhlc2UgVklBIA0KPiA+IElPQ1RMcy4uLiBzbyB0aGUgaW9jdGwg
+cGFydCBpcyBqdXN0IGNvbXBpbGUtdGVzdGVkLg0KPiA+IEFmdGVyIGNoZWNraW5nLCBmYnNldCBq
+dXN0IHVzZXMgc29tZSBnZW5lcmljIGZyYW1lYnVmZmVyIElPQ1RMcyANCj4gPiBvdXRzaWRlIG9m
+IHZpYWZiJ3Mgc2NvcGUsIHRodXMgbm90IHBhc3NpbmcgdGhyb3VnaCB2aWFmYl9pb2N0bCgpLg0K
+PiA+IA0KPiA+IA0KPiA+IA0KPiA+IC0tLQ0KPiA+IC0tLSBsaW51eC0yLjYuMjgtcmMzL2RyaXZl
+cnMvdmlkZW8vdmlhL3ZpYWZiZGV2LmMub3JpZw0KPiA+IDIwMDgtMTEtMDkgMTk6MzY6NDcuMDAw
+MDAwMDAwICswMTAwICsrKw0KPiA+IGxpbnV4LTIuNi4yOC1yYzMvZHJpdmVycy92aWRlby92aWEv
+dmlhZmJkZXYuYwkyMDA4LTExLTEwDQo+ID4gMjA6NTA6MzIuMDAwMDAwMDAwICswMTAwDQo+IA0K
+PiBobSwgT0ssIEkgZHJvcHBlZCB0aGUgb2xkIHBhdGNoIGFuZCBtZXJnZWQgdGhpcyBvbmUuDQo+
+IA0KPiBJdCdkIGJlIG5pY2UgdG8gaGF2ZSBpdCBydW50aW1lIHRlc3RlZCBhbmQgcmV2aWV3ZWQg
+YnkgSm9zZXBoLCBidXQgd2UgDQo+IGhhdmVuJ3QgaGVhcmQgZnJvbSBoaW0geWV0LiAgdmlhZmIg
+bWlnaHQgYmUgOGstc3RhY2tzLW9ubHkgaW4gMi42LjI3LCANCj4gd2hpY2ggd291bGQgYmUgYmFk
+Lg0KPiANCg0K

@@ -1,178 +1,117 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Subject: RE: [REVIEW PATCH] Added OMAP3EVM support on Tomis FBDEV/DSS Patches
-Date: Sat, 15 Nov 2008 14:15:24 +0530
-Message-ID: <19F8576C6E063C45BE387C64729E739403E5F2B75D@dbde02.ent.ti.com>
-References: <C98171C5-A13C-4FE0-97DD-8BCF356212F2@student.utwente.nl>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Subject: [PATCH] viafb: fix releasing of /proc/viafb/
+	subtree
+Date: Sun, 16 Nov 2008 11:42:12 +0100
+Message-ID: <20081116114212.26370ef8@neptune.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <C98171C5-A13C-4FE0-97DD-8BCF356212F2@student.utwente.nl>
-Content-Language: en-US
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Koen Kooi <k.kooi@student.utwente.nl>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <bonbons@linux-vserver.org>) id 1L1f5B-0007XQ-T2
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 16 Nov 2008 10:42:21 +0000
+Received: from ppp-111-253.adsl.restena.lu ([158.64.111.253]
+	helo=bonbons.gotdns.org) by 1b2kzd1.ch3.sourceforge.com with esmtp 
+	(Exim 4.69) id 1L1f57-0001eP-3y
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 16 Nov 2008 10:42:21 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: JosephChan@via.com.tw, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-
-
-Thanks,
-Vaibhav Hiremath
-
-> -----Original Message-----
-> From: Koen Kooi [mailto:k.kooi@student.utwente.nl]
-> Sent: Saturday, November 15, 2008 1:14 AM
-> To: Tomi Valkeinen
-> Cc: Hiremath, Vaibhav; linux-fbdev-devel@lists.sourceforge.net;
-> linux-omap@vger.kernel.org
-> Subject: Re: [REVIEW PATCH] Added OMAP3EVM support on Tomis
-> FBDEV/DSS Patches
-> 
-> 
-> Op 14 nov 2008, om 16:53 heeft Tomi Valkeinen het volgende
-> geschreven:
-> 
-> > Hi,
-> > On Fri, 2008-11-14 at 18:05 +0530, ext Hiremath, Vaibhav wrote:
-> >
-> >>>
-> >>> I think the LCD panel on SDP and EVM boards are the same, so we
-> >>> should
-> >>> only have one driver. Do you have specifications about the LCD?
-> The
-> >>> manufacturer, model etc?. I didn't find any proper information
-> about
-> >>> the
-> >>> LCD.
-> >>>
-> >> [Hiremath, Vaibhav] The LCD on OMAP3EVM is Sharp LCD (Model No. -
-> >> LS037V7DW01).
-> >> Koen has already conformed that panel3430sdp.c is working with
-> >> OMAP3EVM, let me try at my end. If it works properly then we can
-> >> have same file to build for both SDP and EVM. But in that case it
-> >> make sense to rename file to panel-lcd.c.
-> >>
-> >
-> > I took the liberty to add you EVM changes to my tree, with a
-> comment
-> > about the origin. I also changed the SDP panel name to sharp
-> panel,
-> > and
-> > made both EVM and SDP use that. But I can't test the EVM, as I
-> don't
-> > have one.
-> 
-> I finally got rc4 working on evm and with your latest patches I get:
-> 
-[Hiremath, Vaibhav] What was the issue you figured out?
-
-> udevd version 124 started
-> eth0: link down
-> eth0: link up, 100Mbps, full-duplex, lpa 0x8DE1
-> DSS2 debug: best_ld is 1, best_pd is 3
-> DSS2 debug: best_ld is 1, best_pd is 3
-> DSS2 debug: best.lck_div is 1, best.pck_div is 3
-> omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
-> omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640
-> ->
-> 480x640, (ilace 0)
-> omap-dss DISPC: dispc_enable_plane 0, 1
-> omap-dss DISPC: dispc_enable_plane 1, 0
-> omap-dss DISPC: dispc_enable_plane 2, 0
-> omap-dss DISPC: GO LCD
-> Division by zero in kernel.
-[Hiremath, Vaibhav] Are you using the patch I submitted or the merged code from Tomi?
-
-> [<c0033a60>] (dump_stack+0x0/0x14) from [<c0033a8c>]
-> (__div0+0x18/0x20)
-> [<c0033a74>] (__div0+0x0/0x20) from [<c01a235c>] (Ldiv0+0x8/0x10)
-> [<c01c7f08>] (check_fb_var+0x0/0x35c) from [<c01c8280>]
-> (omapfb_check_var+0x1c/0x20)
->   r7:c6711e08 r6:c708bc00 r5:00004601 r4:c01c8264
-> [<c01c8264>] (omapfb_check_var+0x0/0x20) from [<c01b55dc>]
-> (fb_set_var
-> +0xd4/0x254)
-> [<c01b5508>] (fb_set_var+0x0/0x254) from [<c01b59c0>] (fb_ioctl
-> +0x170/0x4f0)
-> [<c01b5850>] (fb_ioctl+0x0/0x4f0) from [<c00c59c8>] (vfs_ioctl
-> +0x34/0x94)
->   r8:c0030004 r7:c7b4e6c0 r6:03d7ca30 r5:00004601 r4:c7b4e6c0
-> [<c00c5994>] (vfs_ioctl+0x0/0x94) from [<c00c5fc8>] (do_vfs_ioctl
-> +0x4a4/0x4e4)
->   r7:c7b4e6c0 r6:03d7ca30 r5:c7b4e6c0 r4:c70f9290
-> [<c00c5b24>] (do_vfs_ioctl+0x0/0x4e4) from [<c00c6048>] (sys_ioctl
-> +0x40/0x64)
->   r9:c6710000 r8:c0030004 r6:00004601 r5:03d7ca30 r4:00000006
-> [<c00c6008>] (sys_ioctl+0x0/0x64) from [<c002fe80>]
-> (ret_fast_syscall
-> +0x0/0x2c)
->   r7:00000036 r6:00000281 r5:000001fc r4:00000000
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best_ld is 255, best_pd is 255
-> DSS2 debug: best.lck_div is 0, best.pck_div is 0
-> Division by zero in kernel.
-> [<c0033a60>] (dump_stack+0x0/0x14) from [<c0033a8c>]
-> (__div0+0x18/0x20)
-> [<c0033a74>] (__div0+0x0/0x20) from [<c01a235c>] (Ldiv0+0x8/0x10)
-> [<c01c7f08>] (check_fb_var+0x0/0x35c) from [<c01c8280>]
-> (omapfb_check_var+0x1c/0x20)
->   r7:c6711e08 r6:c708bc00 r5:00004601 r4:c01c8264
-> [<c01c8264>] (omapfb_check_var+0x0/0x20) from [<c01b55dc>]
-> (fb_set_var
-> +0xd4/0x254)
-> [<c01b5508>] (fb_set_var+0x0/0x254) from [<c01b59c0>] (fb_ioctl
-> +0x170/0x4f0)
-> [<c01b5850>] (fb_ioctl+0x0/0x4f0) from [<c00c59c8>] (vfs_ioctl
-> +0x34/0x94)
->   r8:c0030004 r7:c7b4e6c0 r6:03d7ca30 r5:00004601 r4:c7b4e6c0
-> [<c00c5994>] (vfs_ioctl+0x0/0x94) from [<c00c5fc8>] (do_vfs_ioctl
-> +0x4a4/0x4e4)
->   r7:c7b4e6c0 r6:03d7ca30 r5:c7b4e6c0 r4:c70f9290
-> [<c00c5b24>] (do_vfs_ioctl+0x0/0x4e4) from [<c00c6048>] (sys_ioctl
-> +0x40/0x64)
->   r9:c6710000 r8:c0030004 r6:00004601 r5:03d7ca30 r4:00000006
-> [<c00c6008>] (sys_ioctl+0x0/0x64) from [<c002fe80>]
-> (ret_fast_syscall
-> +0x0/0x2c)
->   r7:00000036 r6:00000281 r5:000001fc r4:00000000
-> omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
-> omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640
-> ->
-> 480x640, (ilace 0)
-> omap-dss DISPC: dispc_enable_plane 0, 1
-> omap-dss DISPC: dispc_enable_plane 1, 0
-> omap-dss DISPC: dispc_enable_plane 2, 0
-> omap-dss DISPC: GO LCD
-> omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
-> omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640
-> ->
-> 480x640, (ilace 0)
-> omap-dss DISPC: dispc_enable_plane 0, 1
-> omap-dss DISPC: dispc_enable_plane 1, 0
-> omap-dss DISPC: dispc_enable_plane 2, 0
-> omap-dss DISPC: GO LCD
-> omap-dss DISPLAY: omap_dss_mgr_apply(lcd)
-> omap-dss DISPC: dispc_setup_plane 0, 87200000, sw 480, 0,0, 480x640
-> ->
-> 480x640, (ilace 0)
-> omap-dss DISPC: dispc_enable_plane 0, 1
-> omap-dss DISPC: dispc_enable_plane 1, 0
-> omap-dss DISPC: dispc_enable_plane 2, 0
-> omap-dss DISPC: GO LCD
-> 
-> the DSS2 printks are at the end of find_lck_pck_divs() and
-> dispc_calc_clock_div() in dispc.c.
-> 
-> regards,
-> 
-> Koen
+V2hlbiB1bmxvYWRpbmcgdmlhZmIgbW9kdWxlIGl0IGRvZXMgbm90IHJlbW92ZSBpdCdzIC9wcm9j
+L3ZpYWZiLwpzdWJ0cmVlIHdoaWNoIGNhdXNlcyBtdWx0aXBsZSB2aWFmYiBkaXJlY3RvcmllcyB0
+byBhcHBlYXIgYmVsb3cKcHJvYyB3aGVuIG1vYnByb2JpbmcgdmlhZmIgYW5kIGFsc28gbGV0cyBr
+ZXJuZWwgV0FSTigpIG9uIGR1cGxpY2F0ZQpwcm9jIGVudHJpZXM6CgpbICAxNDUuNDU4Mzg3XSBX
+QVJOSU5HOiBhdCAvdXNyL3NyYy9saW51eC0yLjYuMjgtcmMzLWdpdDYvZnMvcHJvYy9nZW5lcmlj
+LmM6NTUxIHByb2NfcmVnaXN0ZXIrMHhlNi8weDE2MCgpClsgIDE0NS40NTg5NDVdIHByb2NfZGly
+X2VudHJ5ICcvcHJvYy92aWFmYicgYWxyZWFkeSByZWdpc3RlcmVkClsgIDE0NS40NTkyNzhdIE1v
+ZHVsZXMgbGlua2VkIGluOiB2aWFmYigrKSBpMmNfYWxnb19iaXQgY2ZiY29weWFyZWEgY2ZiaW1n
+Ymx0IGNmYmZpbGxyZWN0IHNuZF9oZGFfaW50ZWwgc25kX3BjbSBzbmRfdGltZXIgc25kIHNvdW5k
+Y29yZSBzbmRfcGFnZV9hbGxvYyBzZyB2aWFfYWdwIGFncGdhcnQgW2xhc3QgdW5sb2FkZWQ6IGRy
+bV0KWyAgMTQ1LjQ2MDY0N10gUGlkOiAxOTA0LCBjb21tOiBtb2Rwcm9iZSBUYWludGVkOiBHICAg
+ICAgICBXICAyLjYuMjgtcmMzLWdpdDYgIzQKWyAgMTQ1LjQ2MTA2NF0gQ2FsbCBUcmFjZToKWyAg
+MTQ1LjQ2MTI0OF0gIFs8YzAxMDY2ZjE+XSA/IGR1bXBfc3RhY2srMHgxLzB4ODAKWyAgMTQ1LjQ2
+MTUzM10gIFs8YzAxMjI4YTM+XSB3YXJuX3Nsb3dwYXRoKzB4NjMvMHg4MApbICAxNDUuNDYxODUx
+XSAgWzxjMDI1M2VjOT5dID8gaWRyX2dldF9lbXB0eV9zbG90KzB4ZTkvMHgyNTAKWyAgMTQ1LjQ2
+MjE4Nl0gIFs8YzAyNTQxMjA+XSA/IGlkYV9nZXRfbmV3X2Fib3ZlKzB4ZjAvMHgxNTAKWyAgMTQ1
+LjQ2MjUyOF0gIFs8YzAxOWZiODY+XSBwcm9jX3JlZ2lzdGVyKzB4ZTYvMHgxNjAKWyAgMTQ1LjQ2
+MjgyN10gIFs8YzAxOWZkYzY+XSBwcm9jX21rZGlyX21vZGUrMHgzNi8weDUwClsgIDE0NS40NjMx
+MzVdICBbPGMwMTlmZGVmPl0gcHJvY19ta2RpcisweGYvMHgyMApbICAxNDUuNDYzNDU3XSAgWzxm
+ODA3MTczYz5dIHZpYWZiX2luaXQrMHg3M2MvMHhjODYgW3ZpYWZiXQpbICAxNDUuNDYzODIzXSAg
+WzxmODA3MTAwMD5dID8gdmlhZmJfaW5pdCsweDAvMHhjODYgW3ZpYWZiXQpbICAxNDUuNDY0MTQ3
+XSAgWzxjMDEwMTExZD5dIGRvX29uZV9pbml0Y2FsbCsweDJkLzB4MTYwClsgIDE0NS40NjQ0NjBd
+ICBbPGMwMWE2NTQzPl0gPyBzeXNmc19hZGRfZmlsZSsweDEzLzB4MjAKWyAgMTQ1LjQ2NDc4Nl0g
+IFs8YzAxNWYwMzE+XSA/IHZmcmVlKzB4MjEvMHgzMApbICAxNDUuNDY1MDQ5XSAgWzxjMDE0MzNi
+NT5dID8gbG9hZF9tb2R1bGUrMHgxMjE1LzB4MTUwMApbICAxNDUuNDY1MzgxXSAgWzxjMDE0ZTQ1
+NT5dID8gX19hbGxvY19wYWdlc19pbnRlcm5hbCsweDk1LzB4NDAwClsgIDE0NS40NjU3NTVdICBb
+PGMwMTQzNzIzPl0gc3lzX2luaXRfbW9kdWxlKzB4ODMvMHgxYTAKWyAgMTQ1LjQ2NjA2NV0gIFs8
+YzAxNmNlZWQ+XSA/IHN5c19yZWFkKzB4M2QvMHg3MApbICAxNDUuNDY2MzU0XSAgWzxjMDEwM2Jj
+MT5dIHN5c2VudGVyX2RvX2NhbGwrMHgxMi8weDI1ClsgIDE0NS40NjY2NTNdIC0tLVsgZW5kIHRy
+YWNlIGM4NGIzNzgyNmUxNjc0OGMgXS0tLQoKU2lnbmVkLW9mZi1ieTogQnJ1bm8gUHLDqW1vbnQg
+PGJvbmJvbnNAbGludXgtdnNlcnZlci5vcmc+Ci0tLQotLS0gbGludXgtMi42LjI4LXJjMy1naXQ2
+Lm9yaWcvZHJpdmVycy92aWRlby92aWEvdmlhZmJkZXYuYwkyMDA4LTExLTA5IDE5OjM2OjQ3LjAw
+MDAwMDAwMCArMDEwMAorKysgbGludXgtMi42LjI4LXJjMy1naXQ2L2RyaXZlcnMvdmlkZW8vdmlh
+L3ZpYWZiZGV2LmMJMjAwOC0xMS0xNiAwMDoyMDoxMC4wMDAwMDAwMDAgKzAxMDAKQEAgLTIwMzYs
+MzAgKzIwMzYsMzAgQEAgc3RhdGljIGludCB2aWFmYl92dDE2MzZfcHJvY193cml0ZShzdHJ1Ywog
+CXJldHVybiBjb3VudDsKIH0KIAotc3RhdGljIHZvaWQgdmlhZmJfaW5pdF9wcm9jKHN0cnVjdCBw
+cm9jX2Rpcl9lbnRyeSAqdmlhZmJfZW50cnkpCitzdGF0aWMgdm9pZCB2aWFmYl9pbml0X3Byb2Mo
+c3RydWN0IHByb2NfZGlyX2VudHJ5ICoqdmlhZmJfZW50cnkpCiB7CiAJc3RydWN0IHByb2NfZGly
+X2VudHJ5ICplbnRyeTsKLQl2aWFmYl9lbnRyeSA9IHByb2NfbWtkaXIoInZpYWZiIiwgTlVMTCk7
+CisJKnZpYWZiX2VudHJ5ID0gcHJvY19ta2RpcigidmlhZmIiLCBOVUxMKTsKIAlpZiAodmlhZmJf
+ZW50cnkpIHsKLQkJZW50cnkgPSBjcmVhdGVfcHJvY19lbnRyeSgiZHZwMCIsIDAsIHZpYWZiX2Vu
+dHJ5KTsKKwkJZW50cnkgPSBjcmVhdGVfcHJvY19lbnRyeSgiZHZwMCIsIDAsICp2aWFmYl9lbnRy
+eSk7CiAJCWlmIChlbnRyeSkgewogCQkJZW50cnktPm93bmVyID0gVEhJU19NT0RVTEU7CiAJCQll
+bnRyeS0+cmVhZF9wcm9jID0gdmlhZmJfZHZwMF9wcm9jX3JlYWQ7CiAJCQllbnRyeS0+d3JpdGVf
+cHJvYyA9IHZpYWZiX2R2cDBfcHJvY193cml0ZTsKIAkJfQotCQllbnRyeSA9IGNyZWF0ZV9wcm9j
+X2VudHJ5KCJkdnAxIiwgMCwgdmlhZmJfZW50cnkpOworCQllbnRyeSA9IGNyZWF0ZV9wcm9jX2Vu
+dHJ5KCJkdnAxIiwgMCwgKnZpYWZiX2VudHJ5KTsKIAkJaWYgKGVudHJ5KSB7CiAJCQllbnRyeS0+
+b3duZXIgPSBUSElTX01PRFVMRTsKIAkJCWVudHJ5LT5yZWFkX3Byb2MgPSB2aWFmYl9kdnAxX3By
+b2NfcmVhZDsKIAkJCWVudHJ5LT53cml0ZV9wcm9jID0gdmlhZmJfZHZwMV9wcm9jX3dyaXRlOwog
+CQl9Ci0JCWVudHJ5ID0gY3JlYXRlX3Byb2NfZW50cnkoImRmcGgiLCAwLCB2aWFmYl9lbnRyeSk7
+CisJCWVudHJ5ID0gY3JlYXRlX3Byb2NfZW50cnkoImRmcGgiLCAwLCAqdmlhZmJfZW50cnkpOwog
+CQlpZiAoZW50cnkpIHsKIAkJCWVudHJ5LT5vd25lciA9IFRISVNfTU9EVUxFOwogCQkJZW50cnkt
+PnJlYWRfcHJvYyA9IHZpYWZiX2RmcGhfcHJvY19yZWFkOwogCQkJZW50cnktPndyaXRlX3Byb2Mg
+PSB2aWFmYl9kZnBoX3Byb2Nfd3JpdGU7CiAJCX0KLQkJZW50cnkgPSBjcmVhdGVfcHJvY19lbnRy
+eSgiZGZwbCIsIDAsIHZpYWZiX2VudHJ5KTsKKwkJZW50cnkgPSBjcmVhdGVfcHJvY19lbnRyeSgi
+ZGZwbCIsIDAsICp2aWFmYl9lbnRyeSk7CiAJCWlmIChlbnRyeSkgewogCQkJZW50cnktPm93bmVy
+ID0gVEhJU19NT0RVTEU7CiAJCQllbnRyeS0+cmVhZF9wcm9jID0gdmlhZmJfZGZwbF9wcm9jX3Jl
+YWQ7CkBAIC0yMDY4LDcgKzIwNjgsNyBAQCBzdGF0aWMgdm9pZCB2aWFmYl9pbml0X3Byb2Moc3Ry
+dWN0IHByb2NfCiAJCWlmIChWVDE2MzZfTFZEUyA9PSB2aWFwYXJpbmZvLT5jaGlwX2luZm8tPmx2
+ZHNfY2hpcF9pbmZvLgogCQkJbHZkc19jaGlwX25hbWUgfHwgVlQxNjM2X0xWRFMgPT0KIAkJICAg
+IHZpYXBhcmluZm8tPmNoaXBfaW5mby0+bHZkc19jaGlwX2luZm8yLmx2ZHNfY2hpcF9uYW1lKSB7
+Ci0JCQllbnRyeSA9IGNyZWF0ZV9wcm9jX2VudHJ5KCJ2dDE2MzYiLCAwLCB2aWFmYl9lbnRyeSk7
+CisJCQllbnRyeSA9IGNyZWF0ZV9wcm9jX2VudHJ5KCJ2dDE2MzYiLCAwLCAqdmlhZmJfZW50cnkp
+OwogCQkJaWYgKGVudHJ5KSB7CiAJCQkJZW50cnktPm93bmVyID0gVEhJU19NT0RVTEU7CiAJCQkJ
+ZW50cnktPnJlYWRfcHJvYyA9IHZpYWZiX3Z0MTYzNl9wcm9jX3JlYWQ7CkBAIC0yMDg3LDYgKzIw
+ODcsNyBAQCBzdGF0aWMgdm9pZCB2aWFmYl9yZW1vdmVfcHJvYyhzdHJ1Y3QgcHJvCiAJcmVtb3Zl
+X3Byb2NfZW50cnkoImRmcGwiLCB2aWFmYl9lbnRyeSk7CiAJcmVtb3ZlX3Byb2NfZW50cnkoInZ0
+MTYzNiIsIHZpYWZiX2VudHJ5KTsKIAlyZW1vdmVfcHJvY19lbnRyeSgidnQxNjI1IiwgdmlhZmJf
+ZW50cnkpOworCXJlbW92ZV9wcm9jX2VudHJ5KCJ2aWFmYiIsIE5VTEwpOwogfQogCiBzdGF0aWMg
+aW50IF9fZGV2aW5pdCB2aWFfcGNpX3Byb2JlKHZvaWQpCkBAIC0yMzQ4LDcgKzIzNDksNyBAQCBz
+dGF0aWMgaW50IF9fZGV2aW5pdCB2aWFfcGNpX3Byb2JlKHZvaWQpCiAJCSAgdmlhZmJpbmZvLT5u
+b2RlLCB2aWFmYmluZm8tPmZpeC5pZCwgZGVmYXVsdF92YXIueHJlcywKIAkJICBkZWZhdWx0X3Zh
+ci55cmVzLCBkZWZhdWx0X3Zhci5iaXRzX3Blcl9waXhlbCk7CiAKLQl2aWFmYl9pbml0X3Byb2Mo
+dmlhcGFyaW5mby0+cHJvY19lbnRyeSk7CisJdmlhZmJfaW5pdF9wcm9jKCZ2aWFwYXJpbmZvLT5w
+cm9jX2VudHJ5KTsKIAl2aWFmYl9pbml0X2RhYyhJR0EyKTsKIAlyZXR1cm4gMDsKIH0KCi0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0KVGhpcyBTRi5OZXQgZW1haWwgaXMgc3BvbnNvcmVkIGJ5IHRoZSBNb2JsaW4g
+WW91ciBNb3ZlIERldmVsb3BlcidzIGNoYWxsZW5nZQpCdWlsZCB0aGUgY29vbGVzdCBMaW51eCBi
+YXNlZCBhcHBsaWNhdGlvbnMgd2l0aCBNb2JsaW4gU0RLICYgd2luIGdyZWF0IHByaXplcwpHcmFu
+ZCBwcml6ZSBpcyBhIHRyaXAgZm9yIHR3byB0byBhbiBPcGVuIFNvdXJjZSBldmVudCBhbnl3aGVy
+ZSBpbiB0aGUgd29ybGQKaHR0cDovL21vYmxpbi1jb250ZXN0Lm9yZy9yZWRpcmVjdC5waHA/YmFu
+bmVyX2lkPTEwMCZ1cmw9LwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxA
+bGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3Rz
+L2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==

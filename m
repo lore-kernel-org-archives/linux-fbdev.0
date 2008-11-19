@@ -1,26 +1,23 @@
-From: Ben Dooks <ben-linux@fluff.org>
-Subject: Re: LCD: fix oops if driver only interested
-	in	.set_power
-Date: Tue, 18 Nov 2008 18:31:47 +0000
-Message-ID: <20081118183147.GB15652@fluff.org.uk>
-References: <20081118180350.390792130@fluff.org.uk>
+From: "Jatin Kumar" <jatin.kumar@gatech.edu>
+Subject: asynchronous resolution change
+Date: Tue, 18 Nov 2008 20:04:20 -0500
+Message-ID: <333fec630811181704t19194e5et6d5299e2305f4401@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============2290578991378029513=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <ben@fluff.org.uk>) id 1L2VMe-00074e-MD
+	(envelope-from <jatinkumar@gmail.com>) id 1L2bUY-0003lc-N0
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Nov 2008 18:31:52 +0000
-Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1L2VMc-0004fw-8k
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 18 Nov 2008 18:31:51 +0000
-Content-Disposition: inline
-In-Reply-To: <20081118180350.390792130@fluff.org.uk>
+	Wed, 19 Nov 2008 01:04:26 +0000
+Received: from rv-out-0708.google.com ([209.85.198.249])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1L2bUU-0007PP-Ow for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 19 Nov 2008 01:04:26 +0000
+Received: by rv-out-0708.google.com with SMTP id f25so3032831rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 18 Nov 2008 17:04:20 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,69 +27,73 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Nov 18, 2008 at 06:03:50PM +0000, Ben Dooks wrote:
-> The LCD driver core calls LCD drivers when either the
-> blanking state or the display mode has changed, but
-> does not make any check to see if the called driver
-> has a .set_mode method.
-> 
-> This means if a driver only has a .set_power method
-> then the system will OOPS on changing mode (and with
-> the console semaphore held so you cannot easily see
-> the problem).
-> 
-> Fix the problem by ensuring that either callback is
-> valid before calling it.
-> 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> Index: linux.git/drivers/video/backlight/lcd.c
-> ===================================================================
-> --- linux.git.orig/drivers/video/backlight/lcd.c	2008-11-18 12:59:21.000000000 +0000
-> +++ linux.git/drivers/video/backlight/lcd.c	2008-11-18 15:07:25.000000000 +0000
-> @@ -43,9 +43,11 @@ static int fb_notifier_callback(struct n
->  	mutex_lock(&ld->ops_lock);
->  	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
->  		if (event == FB_EVENT_BLANK)
-> -			ld->ops->set_power(ld, *(int *)evdata->data);
-> +			if (ld->ops->set_power)
-> +				ld->ops->set_power(ld, *(int *)evdata->data);
->  		else
+--===============2290578991378029513==
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_55208_10564789.1227056660678"
 
-sorry, needed to put {} around the outer if block to keep gcc
-happy.
+------=_Part_55208_10564789.1227056660678
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> -			ld->ops->set_mode(ld, evdata->data);
-> +			if (ld->ops->set_mode)
-> +				ld->ops->set_mode(ld, evdata->data);
->  	}
->  	mutex_unlock(&ld->ops_lock);
->  	return 0;
-> 
-> -- 
-> Ben (ben@fluff.org, http://www.fluff.org/)
-> 
->   'a smiley only costs 4 bytes'
-> 
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-> Build the coolest Linux based applications with Moblin SDK & win great prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+Hi,
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+I am new to linux fb model and had some queries regarding resolution change
+mechanisms.
 
-  'a smiley only costs 4 bytes'
+Consider a situation where the frambuffer kernel module (vfb/xenfb etc)
+wants to change the resolution.
+
+1. Is there a mechanism to this, considering the applications/windowing
+system/console above the framebuffer hasnt initiated the size change?
+
+2. Is there a way to do an upcall into the application/windowing
+system/console modules to inform them about the size change asynchronously?
+
+In this particular case ; the display hardware(instead of the user) has
+initiated the resolution change.Is it possible in the current fb framework
+to support it?
+
+Excuse me for the lack of knowledge in this area.
+Any other suggstions/explanations are welcome.
+
+Thanks
+jk
+
+------=_Part_55208_10564789.1227056660678
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br><br>I am new to linux fb model and had some queries regarding resolution change mechanisms.<br><br>Consider a situation where the frambuffer kernel module (vfb/xenfb etc) wants to change the resolution.<br><br>1. Is there a mechanism to this, considering the applications/windowing system/console above the framebuffer hasnt initiated the size change?<br>
+<br>2. Is there a way to do an upcall into the application/windowing system/console modules to inform them about the size change asynchronously?<br><br>In this particular case ; the display hardware(instead of the user) has initiated the resolution change.Is it possible in the current fb framework to support it?<br>
+<br>Excuse me for the lack of knowledge in this area.<br>Any other suggstions/explanations are welcome.<br><br>Thanks<br>jk<br>
+
+------=_Part_55208_10564789.1227056660678--
+
+
+--===============2290578991378029513==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
 Build the coolest Linux based applications with Moblin SDK & win great prizes
 Grand prize is a trip for two to an Open Source event anywhere in the world
 http://moblin-contest.org/redirect.php?banner_id=100&url=/
+--===============2290578991378029513==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============2290578991378029513==--

@@ -1,63 +1,43 @@
-From: Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [Review Patch] V4L2 driver on Tomis DSS patches
-Date: Sat, 22 Nov 2008 00:20:00 +0200
-Message-ID: <20081121222000.GA4971@gandalf.research.nokia.com>
-References: <1227077327-23114-1-git-send-email-hardik.shah@ti.com> <b293b9830811211348j5619e1b5k5880d4cd1abc93de@mail.gmail.com>
-Reply-To: felipe.balbi@nokia.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: fbtest (was: Re: [PATCH/RFC] atafb and panning)
+Date: Sun, 23 Nov 2008 11:34:43 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0811231133580.30025@anakin>
+References: <Pine.LNX.4.64.0811162235251.20005@anakin>
+ <alpine.DEB.1.00.0811190828090.6915@zirkon.biophys.uni-duesseldorf.de>
+ <Pine.LNX.4.64.0811190912190.27671@anakin>
+ <alpine.DEB.1.00.0811230336120.8478@zirkon.biophys.uni-duesseldorf.de>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <b293b9830811211348j5619e1b5k5880d4cd1abc93de@mail.gmail.com>
-Sender: linux-omap-owner@vger.kernel.org
+Return-path: <linux-m68k-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.00.0811230336120.8478@zirkon.biophys.uni-duesseldorf.de>
+Sender: linux-m68k-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Ogeid Alavaz <omzatru@gmail.com>
-Cc: Hardik Shah <hardik.shah@ti.com>, video4linux-list@redhat.com, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, Nov 21, 2008 at 03:48:22PM -0600, ext Ogeid Alavaz wrote:
-> Hi all,
-> I am working with the linux-omap tree, and one month ago I can see
-> this directory, with the files in side, "drivers/media/video/omap/"
-> but now I cant find it, and I tried to look it on the emails list but
-> with out any succes,
-> any of you have an idea??
+On Sun, 23 Nov 2008, Michael Schmitz wrote:
+> > > I'll test your patch as soon as I get fbtest to work (missing libgcc_s.so.2).
+> > The alternative is to compile fbtest yourself (CVS module
+> > FBdev/utlilities/fbtest from project linux-fbdev on sf.net).
+> 
+> Logging in to :pserver:anonymous@cvs.sourceforge.net:2401/cvsroot/linux-fbdev
+> CVS password: 
+> cvs [login aborted]: connect to cvs.sourceforge.net(216.34.181.96):2401 failed: 
+> Connection refused
+> 
+> cvsweb access is down as well. 
 
-All the legacy omap v4l2 drivers were dropped:
+I put a git clone at
+git://git.kernel.org/pub/scm/linux/kernel/git/geert/fbtest.git
 
-commit ebdae9abf598ae8a3ee1c8c477138f82b40e7809
-Author: Tony Lindgren <tony@atomide.com>
-Date:   Mon Oct 27 13:33:13 2008 -0700
+Gr{oetje,eeting}s,
 
-REMOVE OMAP LEGACY CODE: Delete all old omap specific v4l drivers
+						Geert
 
-All v4l development must be done on the v4l mailing list with
-linux-omap list cc'd.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-
- drivers/media/common/tuners/tea5761.c   |   55 +-
- drivers/media/radio/Kconfig             |   13 -
- drivers/media/radio/Makefile            |    1 -
- drivers/media/radio/radio-tea5761.c     |  517 ---------
- drivers/media/video/Makefile            |    3 -
- drivers/media/video/omap/Kconfig        |    7 -
- drivers/media/video/omap/Makefile       |    9 -
- drivers/media/video/omap/camera_core.c  | 1280 ---------------------
- drivers/media/video/omap/camera_core.h  |  156 ---
- drivers/media/video/omap/camera_hw_if.h |   50 -
- drivers/media/video/omap/omap16xxcam.c  |  579 ----------
- drivers/media/video/omap/omap16xxcam.h  |  106 --
- drivers/media/video/omap24xxcam-dma.c   |  601 ----------
- drivers/media/video/omap24xxcam.c       | 1908
--------------------------------
- drivers/media/video/omap24xxcam.h       |  593 ----------
- drivers/media/video/ov9640.c            | 1279 ---------------------
- drivers/media/video/ov9640.h            |  194 ----
- 17 files changed, 4 insertions(+), 7347 deletions(-)
-
-If you wanna work on them, you'd have to get the old diff out of
-linux-omap history and push it via v4l2 maintainer ;-)
-
--- 
-balbi
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

@@ -1,25 +1,30 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: asynchronous resolution change
-Date: Tue, 25 Nov 2008 09:36:10 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0811250934280.21179@anakin>
-References: <333fec630811181704t19194e5et6d5299e2305f4401@mail.gmail.com>
-	<Pine.LNX.4.64.0811190933200.27671@anakin>
-	<333fec630811241752i616754f5wcde88e812a439b01@mail.gmail.com>
+From: Karim 'Kasi Mir' Senoucci <lists@tvetc.de>
+Subject: Re: Radeon framebuffer not working on MSI
+ K9A2VM-FD
+Date: Tue, 25 Nov 2008 11:01:56 +0100 (CET)
+Message-ID: <Pine.LNX.4.61.0811251101210.31185@jericho.melzone.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@linux-m68k.org>) id 1L4tPJ-0008Pi-KP
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <lists@tvetc.de>) id 1L4uku-0007UU-TF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Nov 2008 08:36:29 +0000
-Received: from wilson.telenet-ops.be ([195.130.132.42])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1L4tPH-00019g-Mt for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Nov 2008 08:36:29 +0000
-In-Reply-To: <333fec630811241752i616754f5wcde88e812a439b01@mail.gmail.com>
+	Tue, 25 Nov 2008 10:02:52 +0000
+Received: from mx1.melzone.de ([81.169.156.183])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1L4uks-0002bZ-3P
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 25 Nov 2008 10:02:52 +0000
+Received: from uucp by mx1.melzone.de with local-rmail (Exim 4.69)
+	(envelope-from <lists@tvetc.de>) id 1L4ukp-0001oZ-4a
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 25 Nov 2008 11:02:47 +0100
+Received: by jericho.melzone.de with esmtp (Exim 4.62 #1) id 1L4uk0-00087F-0G 
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 25 Nov 2008 11:01:56 +0100
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,66 +34,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jatin Kumar <jatin.kumar@gatech.edu>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 24 Nov 2008, Jatin Kumar wrote:
-> On Wed, Nov 19, 2008 at 3:35 AM, Geert Uytterhoeven <geert@linux-m68k.org>wrote:
-> > On Tue, 18 Nov 2008, Jatin Kumar wrote:
-> > > I am new to linux fb model and had some queries regarding resolution
-> > change
-> > > mechanisms.
-> > >
-> > > Consider a situation where the frambuffer kernel module (vfb/xenfb etc)
-> > > wants to change the resolution.
-> > >
-> > > 1. Is there a mechanism to this, considering the applications/windowing
-> > > system/console above the framebuffer hasnt initiated the size change?
-> > >
-> > > 2. Is there a way to do an upcall into the application/windowing
-> > > system/console modules to inform them about the size change
-> > asynchronously?
-> > >
-> > > In this particular case ; the display hardware(instead of the user) has
-> > > initiated the resolution change.Is it possible in the current fb
-> > framework
-> > > to support it?
+Hello again,
+On Mon, 24 Nov 2008, Alex Deucher wrote:
+
+> On Mon, Nov 24, 2008 at 3:59 AM, Karim 'Kasi Mir' Senoucci
+> <lists@tvetc.de> wrote:
+> > Hello all,
+> > I cannot get the Radeon kernel framebuffer to work with the above MSI
+> > mainboard which uses a AMD780V chipset featuring what the call Radeon
+> > HD 3100 on-board graphics.
 > >
-> > Yes there is! If the resolution is changed, and the number of columns and
-> > lines of the console changes, the tty subsystem will send the SIGWINCH
-> > signal
-> > to the application, cfr. tty_do_resize() in drivers/char/tty_io.c.
-> >
-> > Note that not all applications handle it. E.g. X doesn't, AFAIK.
-> 
-> Thanks much for the info.
-> 
-> Is the tty_io_resize( ) relatively new? .
+>
+> radeonfb does not support your chip.  if you want an fb console you'll
+> either have to use vesa or the new drm modesetting stuff.
 
-tty_do_resize
+Thanks for the info, Alex. As the vesa framebuffer is unusably slow, I'd 
+like to try out the drm modesetting option, but I'm having trouble 
+finding anything useful as to how to configure this. All the HowTos or 
+blog entries I can find are talking about configuring X11 in conjuction 
+with drm/dri kernel modules - but I just want to have a framebuffer 
+console. Can you give me any pointers to a website or article that 
+explains how to do this?
 
-> I am looking at 2.6.18.8 src code (used for xen) and could not find the
-> function.
+Greetings and Thanks in Advance
+Kasi Mir
 
-No, it's older than the frame buffer device framework. If you can't find it,
-search for SIGWINCH.
-
-> Also are there any plans for exposing a similar callback api in the linux fb
-> model to make the applications stay updated about the underlying
-> resolution/hardware mode changes?
-
-What exactly are you missing that SIGWINCH doesn't provide?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 -------------------------------------------------------------------------
 This SF.Net email is sponsored by the Moblin Your Move Developer's challenge

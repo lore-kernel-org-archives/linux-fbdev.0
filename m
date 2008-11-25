@@ -1,433 +1,97 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH] ARM: OMAP: Remove broken LCD driver for SX1 (Re: Please
-	fix lcd_sx1.c)
-Date: Mon, 24 Nov 2008 18:22:41 -0800
-Message-ID: <20081125022240.GE11997@atomide.com>
-References: <20081123164618.GA17438@flint.arm.linux.org.uk> <20081123165748.GC17438@flint.arm.linux.org.uk> <20081124212003.GC11997@atomide.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: asynchronous resolution change
+Date: Tue, 25 Nov 2008 09:36:10 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0811250934280.21179@anakin>
+References: <333fec630811181704t19194e5et6d5299e2305f4401@mail.gmail.com>
+	<Pine.LNX.4.64.0811190933200.27671@anakin>
+	<333fec630811241752i616754f5wcde88e812a439b01@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="ZoaI/ZTpAVc4A5k6"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20081124212003.GC11997@atomide.com>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, Vovan888@gmail.com
-
-
---ZoaI/ZTpAVc4A5k6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-* Tony Lindgren <tony@atomide.com> [081124 13:21]:
-> * Russell King - ARM Linux <linux@arm.linux.org.uk> [081123 08:58]:
-> > On Sun, Nov 23, 2008 at 04:46:18PM +0000, Russell King - ARM Linux wrote:
-> > > To me, it looks like this driver was tossed over into mainline without
-> > > any thought - it has never been in a buildable state.  Please fix or
-> > > remove this driver from mainline.
-> > 
-> > Actually, it was buildable, until this commit:
-> > 
-> > commit b4b58f5834a023dab67201db9a626bef07bb200c
-> > Author: Chandra Shekhar <x0044955@ti.com>
-> > Date:   Wed Oct 8 10:01:39 2008 +0300
-> > 
-> >     ARM: OMAP: Allocate McBSP devices dynamically
-> >     
-> >     Based on Chandra's earlier patches in linux-omap tree.
-> >     
-> >     Note that omap1_mcbsp_check and omap2_mcbsp_check are no longer
-> >     needed as there's now omap_mcbsp_check_valid_id() defined.
-> >     
-> >     Also some functions can now be marked __init.
-> >     
-> >     Signed-off-by: Chandra Shekhar <x0044955@ti.com>
-> >     Signed-off-by: Tony Lindgren <tony@atomide.com>
-> > 
-> > which means it's a regression and therefore needs fixing before 2.6.28.
-> 
-> Will send you a patch for this today.
-
-Well looks like there's no way I can fix this. I don't have the
-hardware, so people using sx1 would need to fix this.
-
-Looks like the driver is attempting to use SPI mode, but is doing it
-in a different way compared to mcbsp.c.
-
-I'm suggesting the following patch unless somebody can do a real patch
-for this over next few days.
-
-Regards,
-
-Tony
-
---ZoaI/ZTpAVc4A5k6
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: inline; filename="lcd-sx1-remove.patch"
-
-From 7953031da4200323ab5d85bd514054ca4ba9d225 Mon Sep 17 00:00:00 2001
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 24 Nov 2008 18:11:16 -0800
-Subject: [PATCH] ARM: OMAP: Remove broken LCD driver for SX1
-
-Recently the omap McBSP code was cleaned up to get rid of
-direct McBSP register tinkering by the drivers. Looks like
-lcd_sx1.c never got converted, and now it breaks builds.
-
-It seems the lcd_sx1.c driver is attempting SPI mode, but
-doing it in a different way compared to omap_mcbsp_set_spi_mode().
-
-Remove the broken driver, patches welcome to add it back when
-done properly by patching both mcbsp.c and lcd_sx1.c.
-
-Cc: Vovan888@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert@linux-m68k.org>) id 1L4tPJ-0008Pi-KP
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 25 Nov 2008 08:36:29 +0000
+Received: from wilson.telenet-ops.be ([195.130.132.42])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1L4tPH-00019g-Mt for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 25 Nov 2008 08:36:29 +0000
+In-Reply-To: <333fec630811241752i616754f5wcde88e812a439b01@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Jatin Kumar <jatin.kumar@gatech.edu>
 Cc: linux-fbdev-devel@lists.sourceforge.net
-Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
-index 99da8b6..ed13889 100644
---- a/drivers/video/omap/Makefile
-+++ b/drivers/video/omap/Makefile
-@@ -23,7 +23,6 @@ objs-y$(CONFIG_MACH_OMAP_PALMZ71) += lcd_palmz71.o
- objs-$(CONFIG_ARCH_OMAP16XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1610.o
- objs-$(CONFIG_ARCH_OMAP15XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1510.o
- objs-y$(CONFIG_MACH_OMAP_OSK) += lcd_osk.o
--objs-y$(CONFIG_MACH_SX1) += lcd_sx1.o
- 
- omapfb-objs := $(objs-yy)
- 
-diff --git a/drivers/video/omap/lcd_sx1.c b/drivers/video/omap/lcd_sx1.c
-deleted file mode 100644
-index e55de20..0000000
---- a/drivers/video/omap/lcd_sx1.c
-+++ /dev/null
-@@ -1,327 +0,0 @@
--/*
-- * LCD panel support for the Siemens SX1 mobile phone
-- *
-- * Current version : Vovan888@gmail.com, great help from FCA00000
-- *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License as published by the
-- * Free Software Foundation; either version 2 of the License, or (at your
-- * option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-- */
--
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/delay.h>
--#include <linux/io.h>
--
--#include <mach/gpio.h>
--#include <mach/omapfb.h>
--#include <mach/mcbsp.h>
--#include <mach/mux.h>
--
--/*
-- * OMAP310 GPIO registers
-- */
--#define GPIO_DATA_INPUT		0xfffce000
--#define GPIO_DATA_OUTPUT	0xfffce004
--#define GPIO_DIR_CONTROL	0xfffce008
--#define GPIO_INT_CONTROL	0xfffce00c
--#define GPIO_INT_MASK		0xfffce010
--#define GPIO_INT_STATUS		0xfffce014
--#define GPIO_PIN_CONTROL	0xfffce018
--
--
--#define A_LCD_SSC_RD	3
--#define A_LCD_SSC_SD	7
--#define _A_LCD_RESET	9
--#define _A_LCD_SSC_CS	12
--#define _A_LCD_SSC_A0	13
--
--#define DSP_REG		0xE1017024
--
--const unsigned char INIT_1[12] = {
--	0x1C, 0x02, 0x88, 0x00, 0x1E, 0xE0, 0x00, 0xDC, 0x00, 0x02, 0x00
--};
--
--const unsigned char INIT_2[127] = {
--	0x15, 0x00, 0x29, 0x00, 0x3E, 0x00, 0x51, 0x00,
--	0x65, 0x00, 0x7A, 0x00, 0x8D, 0x00, 0xA1, 0x00,
--	0xB6, 0x00, 0xC7, 0x00, 0xD8, 0x00, 0xEB, 0x00,
--	0xFB, 0x00, 0x0B, 0x01, 0x1B, 0x01, 0x27, 0x01,
--	0x34, 0x01, 0x41, 0x01, 0x4C, 0x01, 0x55, 0x01,
--	0x5F, 0x01, 0x68, 0x01, 0x70, 0x01, 0x78, 0x01,
--	0x7E, 0x01, 0x86, 0x01, 0x8C, 0x01, 0x94, 0x01,
--	0x9B, 0x01, 0xA1, 0x01, 0xA4, 0x01, 0xA9, 0x01,
--	0xAD, 0x01, 0xB2, 0x01, 0xB7, 0x01, 0xBC, 0x01,
--	0xC0, 0x01, 0xC4, 0x01, 0xC8, 0x01, 0xCB, 0x01,
--	0xCF, 0x01, 0xD2, 0x01, 0xD5, 0x01, 0xD8, 0x01,
--	0xDB, 0x01, 0xE0, 0x01, 0xE3, 0x01, 0xE6, 0x01,
--	0xE8, 0x01, 0xEB, 0x01, 0xEE, 0x01, 0xF1, 0x01,
--	0xF3, 0x01, 0xF8, 0x01, 0xF9, 0x01, 0xFC, 0x01,
--	0x00, 0x02, 0x03, 0x02, 0x07, 0x02, 0x09, 0x02,
--	0x0E, 0x02, 0x13, 0x02, 0x1C, 0x02, 0x00
--};
--
--const unsigned char INIT_3[15] = {
--	0x14, 0x26, 0x33, 0x3D, 0x45, 0x4D, 0x53, 0x59,
--	0x5E, 0x63, 0x67, 0x6D, 0x71, 0x78, 0xFF
--};
--
--static void epson_sendbyte(int flag, unsigned char byte)
--{
--	int i, shifter = 0x80;
--
--	if (!flag)
--		gpio_set_value(_A_LCD_SSC_A0, 0);
--	mdelay(2);
--	gpio_set_value(A_LCD_SSC_RD, 1);
--
--	gpio_set_value(A_LCD_SSC_SD, flag);
--
--	OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2200);
--	OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2202);
--	for (i = 0; i < 8; i++) {
--		OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2200);
--		gpio_set_value(A_LCD_SSC_SD, shifter & byte);
--		OMAP_MCBSP_WRITE(OMAP1510_MCBSP3_BASE, PCR0, 0x2202);
--		shifter >>= 1;
--	}
--	gpio_set_value(_A_LCD_SSC_A0, 1);
--}
--
--static void init_system(void)
--{
--	omap_mcbsp_request(OMAP_MCBSP3);
--	omap_mcbsp_stop(OMAP_MCBSP3);
--}
--
--static void setup_GPIO(void)
--{
--	/* new wave */
--	gpio_request(A_LCD_SSC_RD, "lcd_ssc_rd");
--	gpio_request(A_LCD_SSC_SD, "lcd_ssc_sd");
--	gpio_request(_A_LCD_RESET, "lcd_reset");
--	gpio_request(_A_LCD_SSC_CS, "lcd_ssc_cs");
--	gpio_request(_A_LCD_SSC_A0, "lcd_ssc_a0");
--
--	/* set GPIOs to output, with initial data */
--	gpio_direction_output(A_LCD_SSC_RD, 1);
--	gpio_direction_output(A_LCD_SSC_SD, 0);
--	gpio_direction_output(_A_LCD_RESET, 0);
--	gpio_direction_output(_A_LCD_SSC_CS, 1);
--	gpio_direction_output(_A_LCD_SSC_A0, 1);
--}
--
--static void display_init(void)
--{
--	int i;
--
--	omap_cfg_reg(MCBSP3_CLKX);
--
--	mdelay(2);
--	setup_GPIO();
--	mdelay(2);
--
--	/* reset LCD */
--	gpio_set_value(A_LCD_SSC_SD, 1);
--	epson_sendbyte(0, 0x25);
--
--	gpio_set_value(_A_LCD_RESET, 0);
--	mdelay(10);
--	gpio_set_value(_A_LCD_RESET, 1);
--
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	mdelay(2);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD, phase 1 */
--	epson_sendbyte(0, 0xCA);
--	for (i = 0; i < 10; i++)
--		epson_sendbyte(1, INIT_1[i]);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 2 */
--	epson_sendbyte(0, 0xCB);
--	for (i = 0; i < 125; i++)
--		epson_sendbyte(1, INIT_2[i]);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 2a */
--	epson_sendbyte(0, 0xCC);
--	for (i = 0; i < 14; i++)
--		epson_sendbyte(1, INIT_3[i]);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 3 */
--	epson_sendbyte(0, 0xBC);
--	epson_sendbyte(1, 0x08);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 4 */
--	epson_sendbyte(0, 0x07);
--	epson_sendbyte(1, 0x05);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 5 */
--	epson_sendbyte(0, 0x94);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 6 */
--	epson_sendbyte(0, 0xC6);
--	epson_sendbyte(1, 0x80);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	mdelay(100); /* used to be 1000 */
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 7 */
--	epson_sendbyte(0, 0x16);
--	epson_sendbyte(1, 0x02);
--	epson_sendbyte(1, 0x00);
--	epson_sendbyte(1, 0xB1);
--	epson_sendbyte(1, 0x00);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 8 */
--	epson_sendbyte(0, 0x76);
--	epson_sendbyte(1, 0x00);
--	epson_sendbyte(1, 0x00);
--	epson_sendbyte(1, 0xDB);
--	epson_sendbyte(1, 0x00);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	/* init LCD phase 9 */
--	epson_sendbyte(0, 0xAF);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--}
--
--static int sx1_panel_init(struct lcd_panel *panel, struct omapfb_device *fbdev)
--{
--	return 0;
--}
--
--static void sx1_panel_cleanup(struct lcd_panel *panel)
--{
--}
--
--static void sx1_panel_disable(struct lcd_panel *panel)
--{
--	printk(KERN_INFO "SX1: LCD panel disable\n");
--	sx1_setmmipower(0);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--
--	epson_sendbyte(0, 0x25);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	epson_sendbyte(0, 0xAE);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--	mdelay(100);
--	gpio_set_value(_A_LCD_SSC_CS, 0);
--
--	epson_sendbyte(0, 0x95);
--	gpio_set_value(_A_LCD_SSC_CS, 1);
--}
--
--static int sx1_panel_enable(struct lcd_panel *panel)
--{
--	printk(KERN_INFO "lcd_sx1: LCD panel enable\n");
--	init_system();
--	display_init();
--
--	sx1_setmmipower(1);
--	sx1_setbacklight(0x18);
--	sx1_setkeylight (0x06);
--	return 0;
--}
--
--
--static unsigned long sx1_panel_get_caps(struct lcd_panel *panel)
--{
--	return 0;
--}
--
--struct lcd_panel sx1_panel = {
--	.name		= "sx1",
--	.config		= OMAP_LCDC_PANEL_TFT | OMAP_LCDC_INV_VSYNC |
--			  OMAP_LCDC_INV_HSYNC | OMAP_LCDC_INV_PIX_CLOCK |
--			  OMAP_LCDC_INV_OUTPUT_EN,
--
--	.x_res		= 176,
--	.y_res		= 220,
--	.data_lines	= 16,
--	.bpp		= 16,
--	.hsw		= 5,
--	.hfp		= 5,
--	.hbp		= 5,
--	.vsw		= 2,
--	.vfp		= 1,
--	.vbp		= 1,
--	.pixel_clock	= 1500,
--
--	.init		= sx1_panel_init,
--	.cleanup	= sx1_panel_cleanup,
--	.enable		= sx1_panel_enable,
--	.disable	= sx1_panel_disable,
--	.get_caps	= sx1_panel_get_caps,
--};
--
--static int sx1_panel_probe(struct platform_device *pdev)
--{
--	omapfb_register_panel(&sx1_panel);
--	return 0;
--}
--
--static int sx1_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
--static int sx1_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
--{
--	return 0;
--}
--
--static int sx1_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
--struct platform_driver sx1_panel_driver = {
--	.probe		= sx1_panel_probe,
--	.remove		= sx1_panel_remove,
--	.suspend	= sx1_panel_suspend,
--	.resume		= sx1_panel_resume,
--	.driver	= {
--		.name	= "lcd_sx1",
--		.owner	= THIS_MODULE,
--	},
--};
--
--static int sx1_panel_drv_init(void)
--{
--	return platform_driver_register(&sx1_panel_driver);
--}
--
--static void sx1_panel_drv_cleanup(void)
--{
--	platform_driver_unregister(&sx1_panel_driver);
--}
--
--module_init(sx1_panel_drv_init);
--module_exit(sx1_panel_drv_cleanup);
+On Mon, 24 Nov 2008, Jatin Kumar wrote:
+> On Wed, Nov 19, 2008 at 3:35 AM, Geert Uytterhoeven <geert@linux-m68k.org>wrote:
+> > On Tue, 18 Nov 2008, Jatin Kumar wrote:
+> > > I am new to linux fb model and had some queries regarding resolution
+> > change
+> > > mechanisms.
+> > >
+> > > Consider a situation where the frambuffer kernel module (vfb/xenfb etc)
+> > > wants to change the resolution.
+> > >
+> > > 1. Is there a mechanism to this, considering the applications/windowing
+> > > system/console above the framebuffer hasnt initiated the size change?
+> > >
+> > > 2. Is there a way to do an upcall into the application/windowing
+> > > system/console modules to inform them about the size change
+> > asynchronously?
+> > >
+> > > In this particular case ; the display hardware(instead of the user) has
+> > > initiated the resolution change.Is it possible in the current fb
+> > framework
+> > > to support it?
+> >
+> > Yes there is! If the resolution is changed, and the number of columns and
+> > lines of the console changes, the tty subsystem will send the SIGWINCH
+> > signal
+> > to the application, cfr. tty_do_resize() in drivers/char/tty_io.c.
+> >
+> > Note that not all applications handle it. E.g. X doesn't, AFAIK.
+> 
+> Thanks much for the info.
+> 
+> Is the tty_io_resize( ) relatively new? .
 
---ZoaI/ZTpAVc4A5k6--
+tty_do_resize
+
+> I am looking at 2.6.18.8 src code (used for xen) and could not find the
+> function.
+
+No, it's older than the frame buffer device framework. If you can't find it,
+search for SIGWINCH.
+
+> Also are there any plans for exposing a similar callback api in the linux fb
+> model to make the applications stay updated about the underlying
+> resolution/hardware mode changes?
+
+What exactly are you missing that SIGWINCH doesn't provide?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+-------------------------------------------------------------------------
+This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
+Build the coolest Linux based applications with Moblin SDK & win great prizes
+Grand prize is a trip for two to an Open Source event anywhere in the world
+http://moblin-contest.org/redirect.php?banner_id=100&url=/

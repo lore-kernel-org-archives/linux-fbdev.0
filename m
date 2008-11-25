@@ -1,69 +1,247 @@
-From: Karim 'Kasi Mir' Senoucci <lists@tvetc.de>
-Subject: Re: Radeon framebuffer not working on MSI
- K9A2VM-FD
-Date: Tue, 25 Nov 2008 11:01:56 +0100 (CET)
-Message-ID: <Pine.LNX.4.61.0811251101210.31185@jericho.melzone.de>
-Mime-Version: 1.0
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Wed, 26 Nov 2008 06:52:43 +0800
+Message-ID: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753953AbYKYWxN@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <lists@tvetc.de>) id 1L4uku-0007UU-TF
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Nov 2008 10:02:52 +0000
-Received: from mx1.melzone.de ([81.169.156.183])
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1L4uks-0002bZ-3P
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Nov 2008 10:02:52 +0000
-Received: from uucp by mx1.melzone.de with local-rmail (Exim 4.69)
-	(envelope-from <lists@tvetc.de>) id 1L4ukp-0001oZ-4a
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Nov 2008 11:02:47 +0100
-Received: by jericho.melzone.de with esmtp (Exim 4.62 #1) id 1L4uk0-00087F-0G 
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 25 Nov 2008 11:01:56 +0100
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, David Brownell <dbrownell@users.sourceforge.net>, David Brownell <david-b@pacbell.net>, Sam Ravnborg <sam@ravnborg.org>, Jean Delvare <khali@linux-fr.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Hello again,
-On Mon, 24 Nov 2008, Alex Deucher wrote:
+Beloved friends,
 
-> On Mon, Nov 24, 2008 at 3:59 AM, Karim 'Kasi Mir' Senoucci
-> <lists@tvetc.de> wrote:
-> > Hello all,
-> > I cannot get the Radeon kernel framebuffer to work with the above MSI
-> > mainboard which uses a AMD780V chipset featuring what the call Radeon
-> > HD 3100 on-board graphics.
-> >
->
-> radeonfb does not support your chip.  if you want an fb console you'll
-> either have to use vesa or the new drm modesetting stuff.
+I would like to request your feedback on the following idea. I hope I have
+made sure to CC all the right people and the right lists! If not, PLEASE
+let me know! I couldn't find a MAINTAINERS entry for gpiolib so I just
+used what I saw in the git log and have also added people and lists that
+I think may be interested.
 
-Thanks for the info, Alex. As the vesa framebuffer is unusably slow, I'd 
-like to try out the drm modesetting option, but I'm having trouble 
-finding anything useful as to how to configure this. All the HowTos or 
-blog entries I can find are talking about configuring X11 in conjuction 
-with drm/dri kernel modules - but I just want to have a framebuffer 
-console. Can you give me any pointers to a website or article that 
-explains how to do this?
+This is just an RFC. If you all feel it is looking like the right approach
+then I'll clean it up and make it a patch.
 
-Greetings and Thanks in Advance
-Kasi Mir
+Thanks,
+jaya
 
+am300epd was doing 800*600*16*gpio_set_value for each framebuffer transfer
+(it uses 16-pins of gpio as its data bus). I found this caused a wee
+performance limitation. This patch adds an API for gpio_set_value_bus
+which allows users to set batches of consecutive gpio together in a single
+call. I have done a test implementation on gumstix (pxa255) with am300epd
+and it provides a nice improvement in performance.
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Eric Miao <eric.miao@marvell.com>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Ben Gardner <bgardner@wabtec.com>
+CC: Greg KH <greg@kroah.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+
+---
+ arch/arm/mach-pxa/am300epd.c          |    9 ++++++
+ arch/arm/mach-pxa/gpio.c              |   28 +++++++++++++++++++++
+ arch/arm/mach-pxa/include/mach/gpio.h |   24 ++++++++++++++++++
+ drivers/gpio/gpiolib.c                |   44 +++++++++++++++++++++++++++++++++
+ include/asm-generic/gpio.h            |    6 ++++
+ 5 files changed, 111 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-pxa/am300epd.c b/arch/arm/mach-pxa/am300epd.c
+index bb81564..f741a98 100644
+--- a/arch/arm/mach-pxa/am300epd.c
++++ b/arch/arm/mach-pxa/am300epd.c
+@@ -222,8 +222,17 @@ static void am300_set_hdb(struct broadsheetfb_par *par, u16 data)
+ {
+ 	int i;
+ 
++#if 1
++	gpio_set_value_bus(DB0_GPIO_PIN, data, 16);
++#endif
++#if 0
++	gpio_set_value_bus(DB0_GPIO_PIN, data, 6);
++	gpio_set_value_bus(DB0_GPIO_PIN + 6, data >> 6, 10);
++#endif
++#if 0 /* simple set */
+ 	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
+ 		gpio_set_value(DB0_GPIO_PIN + i, (data >> i) & 0x01);
++#endif
+ }
+ 
+ 
+diff --git a/arch/arm/mach-pxa/gpio.c b/arch/arm/mach-pxa/gpio.c
+index 14930cf..80b0aa1 100644
+--- a/arch/arm/mach-pxa/gpio.c
++++ b/arch/arm/mach-pxa/gpio.c
+@@ -132,6 +132,33 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+ 		__raw_writel(mask, pxa->regbase + GPCR_OFFSET);
+ }
+ 
++/*
++ * Set output GPIO level in batches
++ */
++static void pxa_gpio_set_bus(struct gpio_chip *chip, unsigned offset,
++				int values, int bitwidth)
++{
++	struct pxa_gpio_chip *pxa;
++	int mask;
++
++	/* we're guaranteed by the caller that offset + bitwidth remains
++	 * in this chip.
++	 */
++	pxa = container_of(chip, struct pxa_gpio_chip, chip);
++
++	mask = ((1 << bitwidth) - 1) << offset;
++	values <<= offset;
++
++	values &= mask;
++	if (values)
++		__raw_writel(values, pxa->regbase + GPSR_OFFSET);
++
++	values = ~values;
++	values &= mask;
++	if (values)
++		__raw_writel(values, pxa->regbase + GPCR_OFFSET);
++}
++
+ #define GPIO_CHIP(_n)							\
+ 	[_n] = {							\
+ 		.regbase = GPIO##_n##_BASE,				\
+@@ -141,6 +168,7 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+ 			.direction_output = pxa_gpio_direction_output,	\
+ 			.get		  = pxa_gpio_get,		\
+ 			.set		  = pxa_gpio_set,		\
++			.set_bus	  = pxa_gpio_set_bus,		\
+ 			.base		  = (_n) * 32,			\
+ 			.ngpio		  = 32,				\
+ 		},							\
+diff --git a/arch/arm/mach-pxa/include/mach/gpio.h b/arch/arm/mach-pxa/include/mach/gpio.h
+index 2c538d8..6ee92d3 100644
+--- a/arch/arm/mach-pxa/include/mach/gpio.h
++++ b/arch/arm/mach-pxa/include/mach/gpio.h
+@@ -56,6 +56,30 @@ static inline void gpio_set_value(unsigned gpio, int value)
+ 	}
+ }
+ 
++static inline void gpio_set_value_bus(unsigned gpio, int values, int bitwidth)
++{
++	if (__builtin_constant_p(gpio) &&
++		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
++		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
++		int shift, mask;
++
++		shift = gpio % 32;
++		mask = ((1 << bitwidth) - 1) << shift;
++		values <<= shift;
++
++		values &= mask;
++		if (values)
++			GPSR(gpio) = values;
++
++		values = ~values;
++		values &= mask;
++		if (values)
++			GPCR(gpio) = values;
++	} else {
++		__gpio_set_value_bus(gpio, values, bitwidth);
++	}
++}
++
+ #define gpio_cansleep __gpio_cansleep
+ 
+ #define gpio_to_irq(gpio)	IRQ_GPIO(gpio)
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 9112830..fddf3af 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1057,6 +1057,50 @@ void __gpio_set_value(unsigned gpio, int value)
+ EXPORT_SYMBOL_GPL(__gpio_set_value);
+ 
+ /**
++ * __gpio_set_value_bus() - assign a batch of consecutive gpio pins together
++ * @gpio: starting gpio pin
++ * @values: values to assign, sequential in host ordering
++ * @bitwidth: total width of bits to be assigned
++ * Context: any
++ *
++ * This is used directly or indirectly to implement gpio_set_value().
++ * It invokes the associated gpio_chip.set() method.
++ */
++void __gpio_set_value_bus(unsigned gpio, int values, int bitwidth)
++{
++	struct gpio_chip	*chip;
++	int i = 0;
++	int value, width, remwidth;
++
++	do {
++		chip = gpio_to_chip(gpio + i);
++		WARN_ON(extra_checks && chip->can_sleep);
++
++		if (!chip->set_bus) {
++			while (((gpio + i) < (chip->base + chip->ngpio))
++				&& bitwidth) {
++				value = values & (1 << i);
++				chip->set(chip, gpio + i - chip->base, value);
++				i++;
++				bitwidth--;
++			}
++		} else {
++			value = values >> i; /* shift off the used stuff */
++			remwidth = ((chip->base + (int) chip->ngpio) -
++					((int) gpio + i));
++			width = min(bitwidth, remwidth);
++
++			chip->set_bus(chip, gpio + i - chip->base, value,
++					width);
++			i += width;
++			bitwidth -= width;
++		}
++	} while (bitwidth);
++}
++EXPORT_SYMBOL_GPL(__gpio_set_value_bus);
++
++
++/**
+  * __gpio_cansleep() - report whether gpio value access will sleep
+  * @gpio: gpio in question
+  * Context: any
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 81797ec..9747517 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -44,6 +44,8 @@ struct module;
+  *	returns either the value actually sensed, or zero
+  * @direction_output: configures signal "offset" as output, or returns error
+  * @set: assigns output value for signal "offset"
++ * @set_bus: batch assigns output values for consecutive signals starting at
++ *	"offset" with width in bits "bitwidth"
+  * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
+  *	implementation may not sleep
+  * @dbg_show: optional routine to show contents in debugfs; default code
+@@ -84,6 +86,9 @@ struct gpio_chip {
+ 						unsigned offset, int value);
+ 	void			(*set)(struct gpio_chip *chip,
+ 						unsigned offset, int value);
++	void			(*set_bus)(struct gpio_chip *chip,
++						unsigned offset, int values,
++						int bitwidth);
+ 
+ 	int			(*to_irq)(struct gpio_chip *chip,
+ 						unsigned offset);
+@@ -124,6 +129,7 @@ extern void gpio_set_value_cansleep(unsigned gpio, int value);
+  */
+ extern int __gpio_get_value(unsigned gpio);
+ extern void __gpio_set_value(unsigned gpio, int value);
++extern void __gpio_set_value_bus(unsigned gpio, int values, int bitwidth);
+ 
+ extern int __gpio_cansleep(unsigned gpio);
+ 
+-- 
+1.5.2.3

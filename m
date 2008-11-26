@@ -1,176 +1,110 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
 Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Wed, 26 Nov 2008 00:51:27 -0500
-Message-ID: <45a44e480811252151q54580e07xfa73d69596fbfaac@mail.gmail.com>
+Date: Wed, 26 Nov 2008 11:09:49 +0200
+Message-ID: <492D125D.5010607@teltonika.lt>
 References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
-	 <f17812d70811251720u47bec50dt3734f5b2bb0d339@mail.gmail.com>
-	 <200811252015.57870.david-b@pacbell.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-embedded-owner@vger.kernel.org>
-In-Reply-To: <200811252015.57870.david-b@pacbell.net>
-Content-Disposition: inline
-Sender: linux-embedded-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: David Brownell <david-b@pacbell.net>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Jean Delvare <khali@linux-fr.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+In-Reply-To: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>, David Brownell <david-b@pacbell.net>, Sam Ravnborg <sam@ravnborg.org>, Jean Delvare <khali@linux-fr.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, Nov 25, 2008 at 11:15 PM, David Brownell <david-b@pacbell.net> wrote:
-> On Tuesday 25 November 2008, Eric Miao wrote:
->> Using a bit mask will be more generic if the GPIOs are not contiguous.
->> Yet I still doubt this will be generic enough to be added to gpiolib.
->
-> My expectation for this kind of mechanism was that systems who need
-> to craft another parallel bus out of GPIO pins would be doing this
-> with some system-specific utility functions.
->
-> So my "is it generic enough" question is more at the level of "Are
-> there enough Linux systems that need this sort of thing to justify
-> generic support?".  I happen not to have come across the need for
-> such ganged access from Linux (yet).  Whereas I've yet to use non-x86
-> Linux systems that don't need to manipulate individual GPIO pins...
+Jaya Kumar wrote:
+> Beloved friends,
+> 
+> I would like to request your feedback on the following idea. I hope I have
+> made sure to CC all the right people and the right lists! If not, PLEASE
+> let me know! I couldn't find a MAINTAINERS entry for gpiolib so I just
+> used what I saw in the git log and have also added people and lists that
+> I think may be interested.
+> 
+> This is just an RFC. If you all feel it is looking like the right approach
+> then I'll clean it up and make it a patch.
+> 
+> Thanks,
+> jaya
+> 
+> am300epd was doing 800*600*16*gpio_set_value for each framebuffer transfer
+> (it uses 16-pins of gpio as its data bus). I found this caused a wee
+> performance limitation. This patch adds an API for gpio_set_value_bus
+> which allows users to set batches of consecutive gpio together in a single
+> call. I have done a test implementation on gumstix (pxa255) with am300epd
+> and it provides a nice improvement in performance.
+> 
+> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Cc: David Brownell <david-b@pacbell.net>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Jean Delvare <khali@linux-fr.org>
+> Cc: Eric Miao <eric.miao@marvell.com>
+> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> Cc: Philipp Zabel <philipp.zabel@gmail.com>
+> Cc: Russell King <rmk@arm.linux.org.uk>
+> Cc: Ben Gardner <bgardner@wabtec.com>
+> CC: Greg KH <greg@kroah.com>
+> Cc: linux-arm-kernel@lists.arm.linux.org.uk
+> Cc: linux-fbdev-devel@lists.sourceforge.net
+> Cc: linux-kernel@vger.kernel.org
+> 
+> ---
+>  arch/arm/mach-pxa/am300epd.c          |    9 ++++++
+>  arch/arm/mach-pxa/gpio.c              |   28 +++++++++++++++++++++
+>  arch/arm/mach-pxa/include/mach/gpio.h |   24 ++++++++++++++++++
+>  drivers/gpio/gpiolib.c                |   44 +++++++++++++++++++++++++++++++++
+>  include/asm-generic/gpio.h            |    6 ++++
+>  5 files changed, 111 insertions(+), 0 deletions(-)
+> 
 
-I have come across the following scenarios where a bus set of gpio is useful:
-- Broadsheet E-Ink controller (uses 16-bit data bus over GPIO)
-framebuffer device (this patch is for this)
-- Apollo/Hecuba E-Ink controller (uses 8-bit data bus over GPIO)
-framebuffer device
-- 8-bit parallel IO matrix LCD controllers, such as the Samsung KS108,
-also Hitachi, etc
+[...]
 
-In the area of framebuffers for lower end display devices, I find this
-to be quite common.
+> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+> index 81797ec..9747517 100644
+> --- a/include/asm-generic/gpio.h
+> +++ b/include/asm-generic/gpio.h
+> @@ -44,6 +44,8 @@ struct module;
+>   *	returns either the value actually sensed, or zero
+>   * @direction_output: configures signal "offset" as output, or returns error
+>   * @set: assigns output value for signal "offset"
+> + * @set_bus: batch assigns output values for consecutive signals starting at
+> + *	"offset" with width in bits "bitwidth"
+>   * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
+>   *	implementation may not sleep
+>   * @dbg_show: optional routine to show contents in debugfs; default code
+> @@ -84,6 +86,9 @@ struct gpio_chip {
+>  						unsigned offset, int value);
+>  	void			(*set)(struct gpio_chip *chip,
+>  						unsigned offset, int value);
+> +	void			(*set_bus)(struct gpio_chip *chip,
+> +						unsigned offset, int values,
 
-I have also seen this in systems such as 8-bit A2D devices, also with
-various coprocessor solutions where a smaller CPU like a msp430 or
-HC05 would clock data to the host using 8-bit gpio data.
+I think values should be unsigned
 
->
->
->> The user of this gpio_set_value_bus() may assume too much about
->> the internal, e.g. how many GPIOs on the chip and whether these GPIOs
->> are contiguous or not, and whether this GPIO chip support bitwise
->> operations.
->
-> Actually I would expect that to be addressed by the hardware designer.
+> +						int bitwidth);
+>  
+>  	int			(*to_irq)(struct gpio_chip *chip,
+>  						unsigned offset);
+> @@ -124,6 +129,7 @@ extern void gpio_set_value_cansleep(unsigned gpio, int value);
+>   */
+>  extern int __gpio_get_value(unsigned gpio);
+>  extern void __gpio_set_value(unsigned gpio, int value);
+> +extern void __gpio_set_value_bus(unsigned gpio, int values, int bitwidth);
+>  
+>  extern int __gpio_cansleep(unsigned gpio);
+>  
 
-I agree that the gpio's are always contiguous. It would be very
-unusual (I've never seen it yet) where a hardware designer picked
-non-consecutive pins to be used for a bus. In the case of AM300, the
-board designer picked the xscale's 58 - 73 gpio pins.
-
->
-> As in, if you're bitbanging a 16-bit parallel bus (plus several
-> control signals -- chip select lines, address latch, r/w, etc) the
-> board would be designed for efficient bitbanging, by taking care
-> that the software bus ops aren't stupidly complex.  So I guess I'm
-> agreeing with Eric there:  wanting this kind of stuff at all seems
-> to imply being fairly low-down'n'dirty.
-
-Yes, agreed, handling the contiguous bus case turned out to be quite
-straightforward and the core is just about 30 lines of code.
-
-+       do {
-+               chip = gpio_to_chip(gpio + i);
-+               WARN_ON(extra_checks && chip->can_sleep);
-+
-+               if (!chip->set_bus) {
-+                       while (((gpio + i) < (chip->base + chip->ngpio))
-+                               && bitwidth) {
-+                               value = values & (1 << i);
-+                               chip->set(chip, gpio + i - chip->base, value);
-+                               i++;
-+                               bitwidth--;
-+                       }
-+               } else {
-+                       value = values >> i; /* shift off the used stuff */
-+                       remwidth = ((chip->base + (int) chip->ngpio) -
-+                                       ((int) gpio + i));
-+                       width = min(bitwidth, remwidth);
-+
-+                       chip->set_bus(chip, gpio + i - chip->base, value,
-+                                       width);
-+                       i += width;
-+                       bitwidth -= width;
-+               }
-+       } while (bitwidth);
-
-
->
->
-> Example, assuming a 32 bit GPIO bank, the data lines would probably
-> be all adjacent and politely ordered by the board designer so that
-
-A typical board designer will ensure that the selected pins are
-consecutive. But I think given today's rapid development time, I'd be
-hard pressed to ensure that they're also register consecutive. In the
-case of AM300, the designer picked a pin sequence that spans 2 32-bit
-registers since it starts at 58 and ends at 73. So it spans the 32-63
-and 64-95 registers. The code handles that case fine.
-
->
->        /* write a 16 bit value on the specfied data lines,
->         * assuming the intermediate state doesn't matter...
->         */
->        writew(0xffff << N, &bank->clear_bits);
->        writew(value << N, &bank->set_bits);
->
-> instead of needing to compute some complex permutation of those
-> bits ... and similarly
->
->        /* read a 16 bit value from the specified data lines */
->        value = 0xffff & (readw(&bank->read_bits) >> N);
->
-> possibly after handshaking with the device on the other side
-> about changing signal direction, again without permutation.
->
-> But heck, maybe there just aren't that many adjacent GPIOs free,
-> because of alternate functions that are used... ugh.
->
->
-> Note also that this proposal only includes
->
->> > +       void                    (*set_bus)(struct gpio_chip *chip,
->> > +                                          unsigned offset, int values,
->> > +                                          int bitwidth);
->
-> not its sibling read operation.
->
-
-Yes, I figured I'd start with the most basic approach. Also, the
-costliest operation in am300epd is the the actual framebuffer transfer
-to the device which is just a lot of writes. If people want me to do
-it, I can also implement get_bus.
-
->
->> Let's have a concrete example: what if the user gives a bunch of GPIOs
->> that crosses the chip boundary, say, GPIO29 - GPIO35 (with each chip
->> covering 32 GPIOs).
->
-> I'd care more about the upper level operation being performed ... like the
-> control protocol for passing the address of a word being read or written
-> and then switching the bus from address to data read (or write) mode to
-> get the word, then yielding the bus access.
-
-The upper level protocol in this case is from broadsheetfb (also
-posted). Here's the relevant code:
-
-+static void broadsheet_issue_data(struct broadsheetfb_par *par, u16 data)
-+{
-+       par->board->set_ctl(par, BS_WR, 0);
-+       par->board->set_hdb(par, data);
-+       par->board->set_ctl(par, BS_WR, 1);
-+}
-...
-which is called to transfer the fb via:
-+static void broadsheet_burst_write(struct broadsheetfb_par *par, int size,
-+                                       u16 *data)
-+{
-...
-+       for (i = 0; i < size; i++) {
-...
-+               par->board->set_hdb(par, tmp);
-
-Thanks,
-jaya
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

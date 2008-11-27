@@ -1,78 +1,46 @@
-From: Mike Rapoport <mike@compulab.co.il>
-Subject: [PATCH 2/2] pxa/littleton: update tdo24m LCD
-	panel support
-Date: Thu, 27 Nov 2008 13:26:42 +0200
-Message-ID: <492E83F2.4040806@compulab.co.il>
+From: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Thu, 27 Nov 2008 21:01:02 +0100
+Message-ID: <20081127200102.GB20443@uranus.ravnborg.org>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <f17812d70811251720u47bec50dt3734f5b2bb0d339@mail.gmail.com> <200811252015.57870.david-b@pacbell.net> <45a44e480811252151q54580e07xfa73d69596fbfaac@mail.gmail.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754396AbYK0T7w@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <45a44e480811252151q54580e07xfa73d69596fbfaac@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <mike@compulab.co.il>) id 1L5f1L-0005JK-5o
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Nov 2008 11:26:55 +0000
-Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]
-	helo=cathcart.site5.com)
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1L5f1C-0002Pe-BS
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Nov 2008 11:26:55 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: eric miao <eric.miao@marvell.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.y.miao@gmail.com>, Jean Delvare <khali@linux-fr.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+On Wed, Nov 26, 2008 at 12:51:27AM -0500, Jaya Kumar wrote:
+> On Tue, Nov 25, 2008 at 11:15 PM, David Brownell <david-b@pacbell.net> wrote:
+> > On Tuesday 25 November 2008, Eric Miao wrote:
+> >> Using a bit mask will be more generic if the GPIOs are not contiguous.
+> >> Yet I still doubt this will be generic enough to be added to gpiolib.
+> >
+> > My expectation for this kind of mechanism was that systems who need
+> > to craft another parallel bus out of GPIO pins would be doing this
+> > with some system-specific utility functions.
+> >
+> > So my "is it generic enough" question is more at the level of "Are
+> > there enough Linux systems that need this sort of thing to justify
+> > generic support?".  I happen not to have come across the need for
+> > such ganged access from Linux (yet).  Whereas I've yet to use non-x86
+> > Linux systems that don't need to manipulate individual GPIO pins...
+> 
+> I have come across the following scenarios where a bus set of gpio is useful:
+> - Broadsheet E-Ink controller (uses 16-bit data bus over GPIO)
+> framebuffer device (this patch is for this)
+> - Apollo/Hecuba E-Ink controller (uses 8-bit data bus over GPIO)
+> framebuffer device
+> - 8-bit parallel IO matrix LCD controllers, such as the Samsung KS108,
+> also Hitachi, etc
 
-diff --git a/arch/arm/mach-pxa/littleton.c b/arch/arm/mach-pxa/littleton.c
-index b4d00ab..2aad849 100644
---- a/arch/arm/mach-pxa/littleton.c
-+++ b/arch/arm/mach-pxa/littleton.c
-@@ -23,6 +23,8 @@
- #include <linux/spi/spi.h>
- #include <linux/smc91x.h>
+We have such a system at work. And we need fast acces to the gpio pins
+when updating the LCD.
+I have not written/looked to deep at the code I just recall it was
+a bit messy and not something I would be proud of submitting to any ML.
 
-+#include <video/tdo24m.h>
-+
- #include <asm/types.h>
- #include <asm/setup.h>
- #include <asm/memory.h>
-@@ -186,6 +188,10 @@ static struct pxa2xx_spi_chip littleton_tdo24m_chip = {
- 	.cs_control	= littleton_tdo24m_cs,
- };
-
-+static struct tdo24m_platform_data littleton_tdo24m_pdata = {
-+	.model = TDO24M,
-+};
-+
- static struct spi_board_info littleton_spi_devices[] __initdata = {
- 	{
- 		.modalias	= "tdo24m",
-@@ -193,6 +199,7 @@ static struct spi_board_info littleton_spi_devices[] __initdata = {
- 		.bus_num	= 2,
- 		.chip_select	= 0,
- 		.controller_data= &littleton_tdo24m_chip,
-+		.platform_data	= &littleton_tdo24m_pdata,
- 	},
- };
-
-
--- 
-Sincerely yours,
-Mike.
-
-
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+	Sam

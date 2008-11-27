@@ -1,48 +1,75 @@
-From: roel kluin <roel.kluin@gmail.com>
-Subject: [PATCH] gbefb: unsigned var->pixclock cannot be less than 0
-Date: Wed, 26 Nov 2008 17:18:56 -0500
-Message-ID: <492DCB50.9040005@gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754043AbYKZWTT@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: OMAP VRAM patch set intro
+Date: Thu, 27 Nov 2008 12:36:52 +0200
+Message-ID: <1227782215-9325-1-git-send-email-tomi.valkeinen@nokia.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@gmail.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-omap@vger.kernel.org
 
-unsigned var->pixclock cannot be less than 0
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-var->pixclock has type __u32, see
-vi include/linux/fb.h +231
+Hi,
 
-compute_gbe_timing() returns int, see
-vi drivers/video/gbefb.c +466
+This patch set is a prototype video ram allocator for OMAP for review.
 
-diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
-index f89c3cc..fe5b519 100644
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -912,6 +912,7 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	unsigned int line_length;
- 	struct gbe_timing_info timing;
-+	int ret;
- 
- 	/* Limit bpp to 8, 16, and 32 */
- 	if (var->bits_per_pixel <= 8)
-@@ -930,8 +931,10 @@ static int gbefb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 
- 	var->grayscale = 0;	/* No grayscale for now */
- 
--	if ((var->pixclock = compute_gbe_timing(var, &timing)) < 0)
--		return(-EINVAL);
-+	ret = compute_gbe_timing(var, &timing);
-+	var->pixclock = ret;
-+	if (ret < 0)
-+		return -EINVAL;
- 
- 	/* Adjust virtual resolution, if necessary */
- 	if (var->xres > var->xres_virtual || (!ywrap && !ypan))
+The reasons I made this are:
+
+- The DMA_CONSISTENT memory area is only 14M, and that may not be enough.
+  1280*1024*4 framebuffer takes more than 5M. Three of those, and perhaps
+  double buffering, and we are easily over the 14M limit.
+
+- dma_alloc doesn't let you allocate big areas (I think the limit is ~4M).
+
+- You can't specify the physical memory address where you want to alloc the
+  memory. This is needed if the bootloader sets up the display and the kernel
+  continues using that same memory area.
+
+- dma_alloc doesn't support SRAM
+
+At boot time memory areas (SDRAM or SRAM) defined in board file are reserved
+with reserve_bootmem() or alloc_bootmem(). These areas are added to the VRAM
+memory pool. Later on the OMAPFB or V4L2 devices can allocate needed memory
+from the VRAM manager. If there's no VRAM left, the VRAM manager will fall back
+to dma_alloc. The VRAM manager automatically mmaps the memory areas with
+ioremap_wc() when the driver allocates VRAM.
+
+The OMAPFB patch removes the old memory manager from dispc.c, which did mostly
+the same thing as this one, and replaces it with this one.
+
+Now some questions as I'm not too familiar with memory management:
+
+Is it ok to use ioremap() to map SRAM/SDRAM? If not, how should the mapping be
+done?
+
+What actually are the types that should be used with physical and virtual
+addresses here? dma_alloc() returns dma_addr_t and void * for physical and
+virtual addresses. ioremap() takes unsigned long as physical address and
+returns void __iomem *. What does __iomem mean? "This is pointer to memory that
+is not RAM"?
+
+How do other platforms implement video ram that is in the main memory?
+
+Is it better to ioremap the whole VRAM area at boot time, or is it better to
+ioremap the smaller pieces when the driver allocates memory?
+
+Is it possible to not ioremap at all (in SDRAM case), but use the direct SDRAM
+mapping that already exists? This would need modification of that mapping so
+that the memory is not cached.
+
+ Tomi Valkeinen
+
+--
+
+ arch/arm/mach-omap2/board-3430sdp.c      |   10 +
+ arch/arm/plat-omap/Makefile              |    2 +-
+ arch/arm/plat-omap/fb-vram.c             |  439 ++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/fb.c                  |   22 ++-
+ arch/arm/plat-omap/include/mach/omapfb.h |    8 +
+ drivers/video/omap/dispc.c               |  281 ++-----------------
+ drivers/video/omap/omapfb_main.c         |   11 +-
+ 7 files changed, 504 insertions(+), 269 deletions(-)
+

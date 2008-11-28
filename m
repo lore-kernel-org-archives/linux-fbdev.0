@@ -1,55 +1,69 @@
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH] nvidia: fix sparse warnings
-Date: Fri, 28 Nov 2008 17:15:26 +0100
-Message-ID: <4930502e.06e2660a.7d1e.ffffb800@mx.google.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753535AbYK1UKh@vger.kernel.org>
+Subject: [PATCH] viafb: fix sparse warnings
+Date: Fri, 28 Nov 2008 17:18:40 +0100
+Message-ID: <493050b9.0aa1660a.74cd.ffffb85a@mx.google.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755212AbYK1UMz@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>
+To: Joseph Chan <JosephChan@via.com.tw>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, trivial@kernel.org
 
 Fix this sparse warnings:
 
-  drivers/video/nvidia/nv_accel.c:304:3: warning: returning void-valued expression
-  drivers/video/nvidia/nv_accel.c:323:3: warning: returning void-valued expression
+  drivers/video/via/viafbdev.c:871:3: warning: returning void-valued expression
+  drivers/video/via/viafbdev.c:938:3: warning: returning void-valued expression
+  drivers/video/via/viafbdev.c:995:3: warning: returning void-valued expression
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/video/nvidia/nv_accel.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/video/via/viafbdev.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_accel.c b/drivers/video/nvidia/nv_accel.c
-index fa4821c..ad6472a 100644
---- a/drivers/video/nvidia/nv_accel.c
-+++ b/drivers/video/nvidia/nv_accel.c
-@@ -300,8 +300,10 @@ void nvidiafb_copyarea(struct fb_info *info, const struct fb_copyarea *region)
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return;
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 73ac754..243fde6 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -867,8 +867,10 @@ static void viafb_fillrect(struct fb_info *info,
+ 	u32 col = 0, rop = 0;
+ 	int pitch;
  
--	if (par->lockup)
--		return cfb_copyarea(info, region);
-+	if (par->lockup) {
-+		cfb_copyarea(info, region);
-+		return;
-+	}
- 
- 	NVDmaStart(info, par, BLIT_POINT_SRC, 3);
- 	NVDmaNext(par, (region->sy << 16) | region->sx);
-@@ -319,8 +321,10 @@ void nvidiafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return;
- 
--	if (par->lockup)
+-	if (!viafb_accel)
 -		return cfb_fillrect(info, rect);
-+	if (par->lockup) {
++	if (!viafb_accel) {
 +		cfb_fillrect(info, rect);
 +		return;
 +	}
  
- 	if (info->var.bits_per_pixel == 8)
- 		color = rect->color;
+ 	if (!rect->width || !rect->height)
+ 		return;
+@@ -934,8 +936,10 @@ static void viafb_copyarea(struct fb_info *info,
+ 
+ 	DEBUG_MSG(KERN_INFO "viafb_copyarea!!\n");
+ 
+-	if (!viafb_accel)
+-		return cfb_copyarea(info, area);
++	if (!viafb_accel) {
++		cfb_copyarea(info, area);
++		return;
++	}
+ 
+ 	if (!area->width || !area->height)
+ 		return;
+@@ -991,8 +995,10 @@ static void viafb_imageblit(struct fb_info *info,
+ 	int i;
+ 	int pitch;
+ 
+-	if (!viafb_accel)
+-		return cfb_imageblit(info, image);
++	if (!viafb_accel) {
++		cfb_imageblit(info, image);
++		return;
++	}
+ 
+ 	udata = (u32 *) image->data;
+ 
 -- 
 1.5.6.3

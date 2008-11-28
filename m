@@ -1,41 +1,49 @@
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH] pm3fb: fix sparse warning
-Date: Fri, 28 Nov 2008 18:16:20 +0100
-Message-ID: <493050da.02e2660a.5173.ffffbf69@mx.google.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755434AbYK1UN3@vger.kernel.org>
+Subject: [PATCH] neofb: fix sparse warnings
+Date: Fri, 28 Nov 2008 18:19:24 +0100
+Message-ID: <49305146.170e660a.2535.ffffbeb9@mx.google.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755353AbYK1UPZ@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, trivial@kernel.org
 
-Fix this sparse warning:
+Fix this sparse warnings:
 
-  drivers/video/pm3fb.c:543:3: warning: returning void-valued expression
+  drivers/video/neofb.c:1456:4: warning: returning void-valued expression
+  drivers/video/neofb.c:1464:3: warning: returning void-valued expression
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/video/pm3fb.c |    6 ++++--
+ drivers/video/neofb.c |    6 ++++--
  1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
-index 68089d1..6666f45 100644
---- a/drivers/video/pm3fb.c
-+++ b/drivers/video/pm3fb.c
-@@ -539,8 +539,10 @@ static void pm3fb_imageblit(struct fb_info *info, const struct fb_image *image)
- 		bgx = par->palette[image->bg_color];
- 		break;
- 	}
--	if (image->depth != 1)
+diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
+index bfb802d..588527a 100644
+--- a/drivers/video/neofb.c
++++ b/drivers/video/neofb.c
+@@ -1453,7 +1453,8 @@ neo2200_imageblit(struct fb_info *info, const struct fb_image *image)
+ 			 * is less than 16 bits wide. This is due to insufficient
+ 			 * padding when writing the image. We need to adjust
+ 			 * struct fb_pixmap. Not yet done. */
+-			return cfb_imageblit(info, image);
++			cfb_imageblit(info, image);
++			return;
+ 		}
+ 		bltCntl_flags = NEO_BC0_SRC_MONO;
+ 	} else if (image->depth == info->var.bits_per_pixel) {
+@@ -1461,7 +1462,8 @@ neo2200_imageblit(struct fb_info *info, const struct fb_image *image)
+ 	} else {
+ 		/* We don't currently support hardware acceleration if image
+ 		 * depth is different from display */
 -		return cfb_imageblit(info, image);
-+	if (image->depth != 1) {
 +		cfb_imageblit(info, image);
 +		return;
-+	}
+ 	}
  
- 	if (info->var.bits_per_pixel == 8) {
- 		fgx |= fgx << 8;
+ 	switch (info->var.bits_per_pixel) {
 -- 
 1.5.6.3

@@ -1,83 +1,68 @@
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH] intelfb: fix sparse warnings
-Date: Fri, 28 Nov 2008 18:28:49 +0100
-Message-ID: <493051d1.0c11660a.4d00.ffffb9b4@mx.google.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755431AbYK1URf@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Sat, 29 Nov 2008 14:48:51 -0800
+Message-ID: <200811291448.52483.david-b@pacbell.net>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <45a44e480811252151q54580e07xfa73d69596fbfaac@mail.gmail.com> <20081127200102.GB20443@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-embedded-owner@vger.kernel.org>
+In-Reply-To: <20081127200102.GB20443@uranus.ravnborg.org>
+Content-Disposition: inline
+Sender: linux-embedded-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sylvain Meyer <sylvain.meyer@worldonline.fr>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, trivial@kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Sam Ravnborg <sam@ravnborg.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Jean Delvare <khali@linux-fr.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-Fix this sparse warnings:
+On Thursday 27 November 2008, Sam Ravnborg wrote:
+> > > So my "is it generic enough" question is more at the level of "Ar=
+e
+> > > there enough Linux systems that need this sort of thing to justif=
+y
+> > > generic support?". =A0I happen not to have come across the need f=
+or
+> > > such ganged access from Linux (yet). =A0Whereas I've yet to use n=
+on-x86
+> > > Linux systems that don't need to manipulate individual GPIO pins.=
+=2E.
+> >=20
+> > I have come across the following scenarios where a bus set of gpio =
+is useful:
+> > - Broadsheet E-Ink controller (uses 16-bit data bus over GPIO)
+> >   framebuffer device (this patch is for this)
+> > - Apollo/Hecuba E-Ink controller (uses 8-bit data bus over GPIO)
+> >   framebuffer device
+> > - 8-bit parallel IO matrix LCD controllers, such as the Samsung KS1=
+08,
+> >   also Hitachi, etc
 
-  drivers/video/intelfb/intelfbdrv.c:1497:3: warning: returning void-valued expression
-  drivers/video/intelfb/intelfbdrv.c:1525:3: warning: returning void-valued expression
-  drivers/video/intelfb/intelfbdrv.c:1544:3: warning: returning void-valued expression
-  drivers/video/intelfb/intelfbdrv.c:1558:3: warning: returning void-valued expression
+All of those can also be handled with traditional parallel data
+busses too, of course.  Are you saying you've seen these used
+with Linux systems?  Enough to justify generic support?
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- drivers/video/intelfb/intelfbdrv.c |   24 ++++++++++++++++--------
- 1 files changed, 16 insertions(+), 8 deletions(-)
+I've certainly seen how some of those LCD controllers, graphical
+or character based, work with microcontrollers.  They're very
+widely available too ... so I can imagine various uClinux systems
+have one hooked up.  Most of the Linux system hookups I've happened
+across use USB or serial links (e.g. the crystalfontz.com stuff)
+since modern PCs are severely GPIO-deprived.
 
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
-index a09e236..6d8e541 100644
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -1493,8 +1493,10 @@ static void intelfb_fillrect (struct fb_info *info,
- 	DBG_MSG("intelfb_fillrect\n");
- #endif
- 
--	if (!ACCEL(dinfo, info) || dinfo->depth == 4)
--		return cfb_fillrect(info, rect);
-+	if (!ACCEL(dinfo, info) || dinfo->depth == 4) {
-+		cfb_fillrect(info, rect);
-+		return;
-+	}
- 
- 	if (rect->rop == ROP_COPY)
- 		rop = PAT_ROP_GXCOPY;
-@@ -1521,8 +1523,10 @@ static void intelfb_copyarea(struct fb_info *info,
- 	DBG_MSG("intelfb_copyarea\n");
- #endif
- 
--	if (!ACCEL(dinfo, info) || dinfo->depth == 4)
--		return cfb_copyarea(info, region);
-+	if (!ACCEL(dinfo, info) || dinfo->depth == 4) {
-+		cfb_copyarea(info, region);
-+		return;
-+	}
- 
- 	intelfbhw_do_bitblt(dinfo, region->sx, region->sy, region->dx,
- 			    region->dy, region->width, region->height,
-@@ -1540,8 +1544,10 @@ static void intelfb_imageblit(struct fb_info *info,
- #endif
- 
- 	if (!ACCEL(dinfo, info) || dinfo->depth == 4
--	    || image->depth != 1)
--		return cfb_imageblit(info, image);
-+	    || image->depth != 1) {
-+		cfb_imageblit(info, image);
-+		return;
-+	}
- 
- 	if (dinfo->depth != 8) {
- 		fgcolor = dinfo->pseudo_palette[image->fg_color];
-@@ -1554,8 +1560,10 @@ static void intelfb_imageblit(struct fb_info *info,
- 	if (!intelfbhw_do_drawglyph(dinfo, fgcolor, bgcolor, image->width,
- 				    image->height, image->data,
- 				    image->dx, image->dy,
--				    dinfo->pitch, info->var.bits_per_pixel))
--		return cfb_imageblit(info, image);
-+				    dinfo->pitch, info->var.bits_per_pixel)) {
-+		cfb_imageblit(info, image);
-+		return;
-+	}
- }
- 
- static int intelfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
--- 
-1.5.6.3
+Another example where ganged access might help is keypad matrices.
+
+
+> We have such a system at work. And we need fast acces to the gpio pin=
+s
+> when updating the LCD.
+> I have not written/looked to deep at the code I just recall it was
+> a bit messy and not something I would be proud of submitting to any M=
+L.
+
+Often times such messiness is more because the code never got
+cleaned up, because it's kind of a one-off to support particular
+boards.
+
+You could say that the gpiolib implementation framework got its
+start, in part, as a way to unclutter some kernel trees that
+had way too much one-off stuff like that.  ;)
+
+- Dave

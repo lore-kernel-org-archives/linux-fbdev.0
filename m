@@ -1,61 +1,105 @@
-From: "Eric Miao" <eric.y.miao@gmail.com>
-Subject: Re: [PATCH 1/2] lcd: add support for Toppoly
-	TDO35S series to tdo24m driver
-Date: Sun, 30 Nov 2008 15:40:01 +0800
-Message-ID: <f17812d70811292340s6ca3cf4ds64070c8d9a5c42ec@mail.gmail.com>
-References: <492E8349.40309@compulab.co.il>
-	<f17812d70811271713v7cc0e798pcd3c35bf2b3c84e8@mail.gmail.com>
-	<49324176.8040904@compulab.co.il>
+From: David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Sun, 30 Nov 2008 09:55:28 -0800
+Message-ID: <200811300955.30180.david-b@pacbell.net>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <200811291454.17110.david-b@pacbell.net> <45a44e480811291552i77878bcdn5fe33f48fc4236eb@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1L6guU-0006y0-05
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 30 Nov 2008 07:40:06 +0000
-Received: from rv-out-0708.google.com ([209.85.198.251])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1L6guR-0007QU-1r for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 30 Nov 2008 07:40:05 +0000
-Received: by rv-out-0708.google.com with SMTP id f25so1883958rvb.22
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 29 Nov 2008 23:40:01 -0800 (PST)
-In-Reply-To: <49324176.8040904@compulab.co.il>
+Return-path: <linux-embedded-owner@vger.kernel.org>
+In-Reply-To: <45a44e480811291552i77878bcdn5fe33f48fc4236eb@mail.gmail.com>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, eric miao <eric.miao@marvell.com>, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
+Sender: linux-embedded-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-On Sun, Nov 30, 2008 at 3:32 PM, Mike Rapoport <mike@compulab.co.il> wrote:
-> Eric Miao wrote:
->> Looks generally OK, yet I'd prefer
->>
->>   1. tdo24m.h being placed in "include/linux/spi/"
->>   2. when platform_data == NULL, default to TDO24M model?
->
-> Ok, no problem.
->
-> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+On Saturday 29 November 2008, Jaya Kumar wrote:
+> On Sun, Nov 30, 2008 at 6:54 AM, David Brownell <david-b@pacbell.net> wrote:
+> > If you want to pursue this, I'd like to get the gpio_chip
+> > proposal in place first:  bitmask read and write, without
+> > forcing an "all bits are contiguous" policy.  Lightweight.
+> 
+> Yup, yup, I definitely want to pursue it. I want Linux e-paper
+> displays to be zippy. :-) Agreed, I will do bitmask read and write.
+> Hey, wait a sec, bitmask write definitely. but bitmask read is
+> peculiar to me. I can understand the caller would want to do something
+> like foo = gpio_get_values(gpio, bitwidth). But would they really want
+> to do foo = gpio_get_values(gpio, bitwidth, bitmask) rather than deal
+> with it appropriately themselves?
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
+They wouldn't want names so easily confused with the current set
+of GPIO calls, no.
 
-Richard,
+But if they're using GPIOs as a low-bandwidth parallel bus they'd
+most *certainly* need to be able to read, not just write.  That's
+what the "I" part of "GPIO" represents:  "I"nput (vs "O"utput).
 
-Could you please help merge this into your backlight tree?
 
--------------------------------------------------------------------------
-This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-Build the coolest Linux based applications with Moblin SDK & win great prizes
-Grand prize is a trip for two to an Open Source event anywhere in the world
-http://moblin-contest.org/redirect.php?banner_id=100&url=/
+> > Maybe it should suffice to have a gpio_chip support the
+> > bitmask ops, instead of just bit-at-a-time ones... so it'd
+> > be practical to incorporate this by itself, given patches
+> > to convert a couple gpio_chip implementations.
+> 
+> Ok, you've scared me there. I only have a Gumstix board so I can do it
+> for the pxa255 but will need help if more platforms are needed.
+> Exploiting this opportunity for hardware whoring, if anyone wants to
+> send me free hardware, I'll be ecstatic and will eagerly do support
+> duty on said platforms. :-)
+
+Doesn't necessarily need to be *you* doing that, but if it only
+works on older gumstix boards it'd not be general enough.  Which
+is part of why I say to get the lowest level proposal out there
+first.  If done right, it'll be easy to support on other chips.
+
+
+> >
+> > Then separately two more things:
+> >
+> >  - A gpio_* interface proposal for higher-level bitmask calls.
+> >   This is worth some discussion; the calls should clearly
+> >   be optional (not everything will implement them), and I
+> >   can't help but suspect <linux/bitmap.h> interfaces should
+> >   interoperate smoothly.
+
+... including probably ganged request/free, and direction updates.
+When bitbanging a multiplexed parallel databus, you'll often need
+to change directions.
+
+
+> >
+> >  - A gpiolib based implementation, using those new gpio_chip
+> >   methods as accelerators if they're present.  This should
+> >   probably also be optional, even at the Kconfig level; many
+> >   systems won't need to spend memory on these calls.
+> 
+> Understood. I will make it optional. Does
+> CONFIG_GPIOLIB_MULTIBIT_ACCESS sound okay?
+
+Kind of verbose for my taste, and it's already "multibit" (one
+at a time, but still multiple) ... let's see some more mergeable
+proposals and code first.  Different C file too, I suspect.
+
+
+> > Don't assume gpiolib when defining the interface.
+> 
+> Ok, I didn't understand this part. I think you mentioned a higher
+> level interface before but I didn't fully understand, if not gpiolib,
+> then at what level do you recommend?
+
+The gpio_*() interfaces are how system glue code and drivers
+access GPIOs, unless they roll their own chip-specific calls.
+
+Whereas gpiolib (and gpio_chip) are an *optional* framework
+for implementing those calls.  Platforms can (and do!) use
+other frameworks ... maybe they don't want to pay its costs,
+and don't need the various GPIO expander drivers.
+
+So to repeat:  don't assume the interface is implemented in
+one particular way (using gpiolib).  It has to make sense
+with other implementation strategies too.  Standard split
+between interface and implementation, that's all.  (Some folk
+have been heard to talk about "gpiolib" as the interface to
+drivers ... it's not, it's a provider-only interface library.)
+
+- Dave

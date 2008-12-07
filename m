@@ -1,26 +1,25 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Userspace blit API
-Date: Fri, 5 Dec 2008 10:15:54 -0800
-Message-ID: <200812051015.54871.jbarnes@virtuousgeek.org>
-References: <200812040927.24861.thomas.cooksey@nokia.com>
-	<200812041141.40350.thomas.cooksey@nokia.com>
-	<a728f9f90812040634o4f7afdcbqb0056521f501b740@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] fbcon: Fix workqueue shutdown
+Date: Sat, 6 Dec 2008 23:16:42 -0800
+Message-ID: <20081206231642.e685d7f0.akpm@linux-foundation.org>
+References: <4909EB41.40100@am.sony.com>
+	<493722F0.5070707@am.sony.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jbarnes@virtuousgeek.org>) id 1L8fDd-0003SS-20
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1L9Dsp-0004Xv-Pb
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Dec 2008 18:16:01 +0000
-Received: from outbound-mail-135.bluehost.com ([67.222.39.25])
-	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1L8fDZ-00027g-Sp for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Dec 2008 18:16:01 +0000
-In-Reply-To: <a728f9f90812040634o4f7afdcbqb0056521f501b740@mail.gmail.com>
-Content-Disposition: inline
+	Sun, 07 Dec 2008 07:16:51 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1L9Dsn-00008k-2H
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 07 Dec 2008 07:16:51 +0000
+In-Reply-To: <493722F0.5070707@am.sony.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,124 +29,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Alex Deucher <alexdeucher@gmail.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.netGeert, adaplas@gmail.com
 
-On Thursday, December 4, 2008 6:34 am Alex Deucher wrote:
-> On Thu, Dec 4, 2008 at 5:41 AM, Tom Cooksey <thomas.cooksey@nokia.com> 
-wrote:
-> > On Thursday 04 December 2008 10:03:34 ext Dave Airlie wrote:
-> >> On Thu, Dec 4, 2008 at 6:27 PM, Tom Cooksey <thomas.cooksey@nokia.com>
-> >
-> > wrote:
-> >> > Hi,
-> >> >
-> >> > I'm a developer working on Qt for Embedded Linux.
-> >> >
-> >> > We have customers with hardware blitters who want to use them with Qt.
-> >> > Currently, this is done by either mmap'ing the device's registers or
-> >> > by adding special, device-specific ioctls to their fbdev driver. What
-> >> > would be nice is to have a generic blit API as part of fbdev -
-> >> > preferably one we can query to ask "Is this kind of blit accelerated?"
-> >> > and drop to pure user-space if it's not accelerated. This seems like a
-> >> > pretty common thing to want, which probably means there's a very good
-> >> > reason it has not already been implemented. I've searched the mailing
-> >> > list archives, Google and Documentation/fb but not found a huge amount
-> >> > of information.
-> >> >
-> >> > Also, how does fbdev fit with the DRM modesetting API? I've had a look
-> >> > at the modesetting stuff and it seems to be providing pretty much the
-> >> > same functionality?
-> >>
-> >> The rule we have for the DRM is the kernel doesn't provide
-> >> acceleration, except for a fast
-> >> memcpy (using blit hw if necessary) to move buffers in/out of VRAM.
-> >
-> > That does make sense from that I've read on the DRI-devel list....
-> >
-> >> DRM kms is mainly going to provide a modesetting interface that
-> >> reflects what modern gpu hw wants.
-> >> GPU hw with multiple crtcs and outputs, needs something that fbdev
-> >> really can't provide with its interfaces.
-> >
-> > Well, I'd argue that it's not just super-amazing desktop 3D drivers which
-> > need this. Pretty much all embedded display controllers I've come across
-> > in the last few years have had at least a TV-out and often support for 2
-> > LCDs. I've seen a "Display control" sysfs interface for omap fb hardware
-> > which controls which /dev/fbx is mapped to which output. I think it even
-> > allows multiple outputs to share the same fb device and stack several
-> > framebuffers on top of each other with a global alpha. Seems very similar
-> > to the drm modesetting interface (apart from the overlay support).
+On Wed, 3 Dec 2008 16:23:12 -0800 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
+
+> Add a call to cancel_work_sync() in fbcon_exit() to cancel
+> any pending work in the fbcon workqueue.  Also, change the
+> assignment of the workqueue function info->queue.func from
+> NULL to fb_flashcursor(),
+
+OK.
+
+> and add a corresponding check in
+> fb_flashcursor() to exit immediately if the variable
+> fbcon_has_exited is set.
+
+Why was this second part added?
+
+> The current implementation of fbcon_exit() sets the fbcon
+> workqueue function info->queue.func to NULL, but does not
+> assure that there is no work pending when it does so.  On
+> occasion, depending on system timing, there will still be
+> pending work in the queue when fbcon_exit() is called.
+> This results in a null pointer deference when
+> run_workqueue() tries to call the queue's work function.
+> 
+> Fixes errors on shutdown similar to these:
+> 
+>   Console: switching to colour dummy device 80x25
+>   Unable to handle kernel paging request for data at address 0x00000000
+> 
+> ...
 >
-> Ideally they'd eventually provide a drm kms interface.
->
-> >> What we are planning on with kms is to provide fbdev drivers as part
-> >> of the kms drivers, but really for legacy users and to provide a
-> >> console.
-> >
-> > Yup, I've played with this on my laptop with the i915 driver in jbarnes's
-> > tree. It's quite nice to have /dev/fb0 again :-). Although I see no
-> > problem in writing a Qt/Embedded driver which uses the libdrm interfaces
-> > to map the framebuffer directly (something I want to play with anyway). I
-> > think it's going to be a little more involved than just mmap'ing
-> > /dev/fb0, but not too much so.
-> >
-> >> Things like current directfb accel won't work with these fbdev
-> >> drivers, mapping card regs into userspace won't be allowed.
-> >
-> > What are your thoughts on expanding libdrm's scope beyond 3D drivers? I
-> > do think the modesetting API it provides is useful for embedded hardware
-> > too.
-> >
-> > I'm basically just lazy - I don't like having to support fbdev, directfb,
-> > drm (we have customers asking for it) as well as proprietary fbdev
-> > extensions for one-off devices.
-> >
-> >> For cards using kms, the DRM will provide a per-driver accel interface
-> >> (just like it does now) as many cards just don't provide blit engines
-> >> and the like anymore, so even though a generic blit interface might
-> >> seem sensible now, cards like the ATI r600, nvidia G80, etc don't have
-> >> 2D engines so you have to execute 3D state to do a blit.
-> >
-> > ... Then perhaps it would make sense to add a blit API to libdrm? The
-> > important bit I want to emphasize is that the entire API would be
-> > optional - We've learned from experience with XRender that providing an
-> > API with software fallbacks doesn't work very well. It's better to query
-> > "can the device accelerate this?" and do something else if it doesn't.
-> > So, hardware without a blitter will just say "I don't support this, do it
-> > yourself". This would apply to both high-end 3d chips which lack a
-> > blitter and to the ultra low-end framebuffer only chips. Plus, if it's
-> > exposed via libdrm, the device-specific part of the library could fire-up
-> > the 3d core to do the blit in userspace (well, assemble the command
-> > buffer in usespace anyway). Although to be honest, I'd expect people will
-> > want a 3d-composited UI if there's 3d available.
-> >
-> >
-> > I'm also not sure how video overlays play into this. Using the v4l API to
-> > accelerate video on top of fbdev seems odd. I think even ultra-high end
-> > mobile hardware will always have overlay hardware simply because it uses
-> > less power than the 3D core (I could be wrong about that though!).
->
-> Just like acceleration.  You'd built a command buffer or mmio list in
-> your usersapce accel driver and submit it to the drm just like you
-> would for 2D or 3D.  Since the the kms drm is no longer tied directly
-> to X, you can use the modesetting api directly and a separate lib for
-> accel.  Create a userspace blit or overlay lib with drm backends for
-> various hw that builds command packets if you don't want to use X.
+> --- a/drivers/video/console/fbcon.c
+> +++ b/drivers/video/console/fbcon.c
+> @@ -394,13 +394,19 @@ static void fbcon_update_softback(struct
+>  
+>  static void fb_flashcursor(struct work_struct *work)
+>  {
+> -	struct fb_info *info = container_of(work, struct fb_info, queue);
+> -	struct fbcon_ops *ops = info->fbcon_par;
+> +	struct fb_info *info;
+> +	struct fbcon_ops *ops;
+>  	struct display *p;
+>  	struct vc_data *vc = NULL;
+>  	int c;
+>  	int mode;
+>  
+> +	if (fbcon_has_exited)
+> +		return;
 
-The other great thing KMS gives you over fb is integration with the DRM based 
-memory manager.  That means all your clients, be they video, 2D or 3D can 
-allocate memory from the same pool, pass handles back and forth for zero copy 
-texturing for example, and generally not stomp on one another.
+This whole fbcon_has_exited thing has big red "wrong" lights flashing
+all over it.
 
-I definitely agree that it's useful outside the high end 3D space, but so far 
-we only have DRM KMS drivers for Intel and ATI; no one's done VIA or any other 
-chip yet afaik.  I'll be adding some documentation for the external and 
-internal interfaces next week (now that Eric pulled the base bits into his 
-tree, yay!), that might help people get started.
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+If drivers get all their refcounting, locking and synchronisation
+correct, such things are unneeded.
 
 
 ------------------------------------------------------------------------------

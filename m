@@ -1,24 +1,24 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] fbcon: Fix workqueue shutdown
-Date: Sat, 6 Dec 2008 23:16:42 -0800
-Message-ID: <20081206231642.e685d7f0.akpm@linux-foundation.org>
-References: <4909EB41.40100@am.sony.com>
-	<493722F0.5070707@am.sony.com>
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [patch v2] fbcon: Fix workqueue shutdown
+Date: Mon, 8 Dec 2008 12:58:44 -0800
+Message-ID: <493D8A84.1050107@am.sony.com>
+References: <4909EB41.40100@am.sony.com> <493722F0.5070707@am.sony.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1L9Dsp-0004Xv-Pb
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <Geoffrey.Levand@am.sony.com>) id 1L9nBu-0002LL-AY
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 07 Dec 2008 07:16:51 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1L9Dsn-00008k-2H
+	Mon, 08 Dec 2008 20:58:54 +0000
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]
+	helo=WA4EHSOBE002.bigfish.com)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:RC4-MD5:128)
+	(Exim 4.69) id 1L9nBr-0001f4-Aa
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 07 Dec 2008 07:16:51 +0000
+	Mon, 08 Dec 2008 20:58:54 +0000
 In-Reply-To: <493722F0.5070707@am.sony.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,62 +29,53 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.netGeert, adaplas@gmail.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
 
-On Wed, 3 Dec 2008 16:23:12 -0800 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
+Add a call to cancel_work_sync() in fbcon_exit() to cancel
+any pending work in the fbcon workqueue.
 
-> Add a call to cancel_work_sync() in fbcon_exit() to cancel
-> any pending work in the fbcon workqueue.  Also, change the
-> assignment of the workqueue function info->queue.func from
-> NULL to fb_flashcursor(),
+The current implementation of fbcon_exit() sets the fbcon
+workqueue function info->queue.func to NULL, but does not
+assure that there is no work pending when it does so.  On
+occasion, depending on system timing, there will still be
+pending work in the queue when fbcon_exit() is called.
+This results in a null pointer deference when
+run_workqueue() tries to call the queue's work function.
 
-OK.
+Fixes errors on shutdown similar to these:
 
-> and add a corresponding check in
-> fb_flashcursor() to exit immediately if the variable
-> fbcon_has_exited is set.
+  Console: switching to colour dummy device 80x25
+  Unable to handle kernel paging request for data at address 0x00000000
 
-Why was this second part added?
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+v2: Remove use of the fbcon_has_exited variable.
 
-> The current implementation of fbcon_exit() sets the fbcon
-> workqueue function info->queue.func to NULL, but does not
-> assure that there is no work pending when it does so.  On
-> occasion, depending on system timing, there will still be
-> pending work in the queue when fbcon_exit() is called.
-> This results in a null pointer deference when
-> run_workqueue() tries to call the queue's work function.
-> 
-> Fixes errors on shutdown similar to these:
-> 
->   Console: switching to colour dummy device 80x25
->   Unable to handle kernel paging request for data at address 0x00000000
-> 
-> ...
->
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -394,13 +394,19 @@ static void fbcon_update_softback(struct
->  
->  static void fb_flashcursor(struct work_struct *work)
->  {
-> -	struct fb_info *info = container_of(work, struct fb_info, queue);
-> -	struct fbcon_ops *ops = info->fbcon_par;
-> +	struct fb_info *info;
-> +	struct fbcon_ops *ops;
->  	struct display *p;
->  	struct vc_data *vc = NULL;
->  	int c;
->  	int mode;
->  
-> +	if (fbcon_has_exited)
-> +		return;
+ drivers/video/console/fbcon.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-This whole fbcon_has_exited thing has big red "wrong" lights flashing
-all over it.
-
-If drivers get all their refcounting, locking and synchronisation
-correct, such things are unneeded.
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -3531,12 +3531,18 @@ static void fbcon_exit(void)
+ 	softback_buf = 0UL;
+ 
+ 	for (i = 0; i < FB_MAX; i++) {
++		int pending;
++
+ 		mapped = 0;
+ 		info = registered_fb[i];
+ 
+ 		if (info == NULL)
+ 			continue;
+ 
++		pending = cancel_work_sync(&info->queue);
++		DPRINTK("fbcon: %s pending work\n", (pending ? "canceled" :
++			"no"));
++
+ 		for (j = first_fb_vc; j <= last_fb_vc; j++) {
+ 			if (con2fb_map[j] == i)
+ 				mapped = 1;
 
 
 ------------------------------------------------------------------------------

@@ -1,65 +1,71 @@
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch] fbcon: Fix workqueue shutdown
-Date: Mon, 8 Dec 2008 12:54:44 -0800
-Message-ID: <493D8994.3020605@am.sony.com>
-References: <4909EB41.40100@am.sony.com>	<493722F0.5070707@am.sony.com>
-	<20081206231642.e685d7f0.akpm@linux-foundation.org>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH] fbdev/logo: Check compatibility of main and extra logos
+Date: Tue, 9 Dec 2008 14:15:33 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0812091413200.30985@vixen.sonytel.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <Geoffrey.Levand@am.sony.com>) id 1L9nMd-0005fA-Bq
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 08 Dec 2008 21:09:59 +0000
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]
-	helo=IE1EHSOBE001.bigfish.com)
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:RC4-MD5:128)
-	(Exim 4.69) id 1L9nMY-0001HS-Fp
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 08 Dec 2008 21:09:58 +0000
-In-Reply-To: <20081206231642.e685d7f0.akpm@linux-foundation.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
-
-Andrew Morton wrote:
-> On Wed, 3 Dec 2008 16:23:12 -0800 Geoff Levand <geoffrey.levand@am.sony.com> wrote:
-> 
->> Add a call to cancel_work_sync() in fbcon_exit() to cancel
->> any pending work in the fbcon workqueue.  Also, change the
->> assignment of the workqueue function info->queue.func from
->> NULL to fb_flashcursor(),
-> 
-> OK.
-> 
->> and add a corresponding check in
->> fb_flashcursor() to exit immediately if the variable
->> fbcon_has_exited is set.
-> 
-> Why was this second part added?
-
-Paranoia.  cancel_work_sync() should assure fb_flashcursor()
-is not called after fbcon_exit().
-
-I'll post an updated patch.
-
--Geoff
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753934AbYLINPr@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="utf-8"
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Debian GNU/Linux PPC <debian-powerpc@lists.d>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
 
+Subject: [PATCH] fbdev/logo: Check compatibility of main and extra logo=
+s
 
-------------------------------------------------------------------------------
-SF.Net email is Sponsored by MIX09, March 18-20, 2009 in Las Vegas, Nevada.
-The future of the web can't happen without you.  Join us at MIX09 to help
-pave the way to the Next Web now. Learn more and register at
-http://ad.doubleclick.net/clk;208669438;13503038;i?http://2009.visitmix.com/
+The code to draw penguin logos always uses some properties of the main =
+logo.
+This is incorrect if additional logos (CONFIG_FB_LOGO_EXTRA=3Dy) have d=
+ifferent
+types than the main logo, which causes corrupted logo images.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=3D12181
+
+Hence skip additional logos that are not compatible with the main logo.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+Technically, it's possible to draw multiple logos of different types on
+truecolor displays, but this would complicate the (already quite compli=
+cated)
+logo drawing code even more.
+
+This patch fixes a problem with Debian's linux-image-2.6.26-1-powerpc64
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=3D508173
+
+ drivers/video/fbmem.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -510,6 +510,10 @@ static int fb_prepare_extra_logos(struct
+ 		fb_logo_ex_num =3D 0;
+=20
+ 	for (i =3D 0; i < fb_logo_ex_num; i++) {
++		if (fb_logo_ex[i].logo->type !=3D fb_logo.logo->type) {
++			fb_logo_ex[i].logo =3D NULL;
++			continue;
++		}
+ 		height +=3D fb_logo_ex[i].logo->height;
+ 		if (height > yres) {
+ 			height -=3D fb_logo_ex[i].logo->height;
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village =C2=B7 Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=
+=B7 Belgium
+
+Phone:    +32 (0)2 700 8453
+=46ax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 =C2=B7 RPR Brussels
+=46ortis =C2=B7 BIC GEBABEBB =C2=B7 IBAN BE41293037680010

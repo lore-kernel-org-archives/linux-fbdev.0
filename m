@@ -1,25 +1,25 @@
 From: "Eric Miao" <eric.y.miao@gmail.com>
-Subject: [PATCH 2/5] pxafb: allow better platform
-	configurable smart panel timing
-Date: Thu, 11 Dec 2008 17:47:24 +0800
-Message-ID: <f17812d70812110147m27338bbbs5f21e42d9cf94a1@mail.gmail.com>
+Subject: [PATCH 3/5] pxafb: allow insertion of delay to
+	the smart panel command sequence
+Date: Thu, 11 Dec 2008 17:48:17 +0800
+Message-ID: <f17812d70812110148y5dbd75e1j24341d561324d213@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1LAi8n-0004ys-Ks
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <eric.y.miao@gmail.com>) id 1LAi9c-0001SG-Uh
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Dec 2008 09:47:29 +0000
-Received: from rv-out-0708.google.com ([209.85.198.240])
+	Thu, 11 Dec 2008 09:48:20 +0000
+Received: from rv-out-0708.google.com ([209.85.198.249])
 	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LAi8k-0007Bb-6D for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Dec 2008 09:47:29 +0000
-Received: by rv-out-0708.google.com with SMTP id f25so796219rvb.22
+	id 1LAi9a-0007FG-Tw for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 11 Dec 2008 09:48:20 +0000
+Received: by rv-out-0708.google.com with SMTP id f25so796567rvb.22
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 11 Dec 2008 01:47:24 -0800 (PST)
+	Thu, 11 Dec 2008 01:48:17 -0800 (PST)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,58 +33,64 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-For smart panels (LCD panel with internal framebuffer), the following
-LCCR3 register bits have different meanings than the parallel one:
+Some smart panel requires a delay between command sequences, while PXA
+LCD controller didn't provide such one, let's emulate this by software.
 
-  LCCR3_PCP - controls the L_PCLK_WR polarity
-  LCCR3_HSP - controls the L_LCLK_A0 polarity
-  LCCR3_VSP - controls the L_FCLK_RD polarity
-
-To keep minimum change to the original parallel timing, the .lcd_conn
-flags and 'pxafb_mode_info.sync' are re-used to reflect this:
-
-  LCD_PCLK_EDGE_{RISE,FALL} - configures LCCR3_PCP
-  sync & FB_SYNC_{HOR,VERT}_HIGH_ACT - configures LCCR3_{HSP,VSP}
+A software delay marker can be inserted into the command sequence, once
+pxafb_smart_queue() detects this, it flushes the previous commands and
+delay for a specified number of milliseconds.
 
 Signed-off-by: Eric Miao <eric.miao@marvell.com>
 ---
- arch/arm/mach-pxa/include/mach/pxafb.h |    4 ++++
- drivers/video/pxafb.c                  |    4 +++-
- 2 files changed, 7 insertions(+), 1 deletions(-)
+ arch/arm/mach-pxa/include/mach/regs-lcd.h |    7 +++++++
+ drivers/video/pxafb.c                     |   13 ++++++++++---
+ 2 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/include/mach/pxafb.h
-b/arch/arm/mach-pxa/include/mach/pxafb.h
-index cb44410..4201a88 100644
---- a/arch/arm/mach-pxa/include/mach/pxafb.h
-+++ b/arch/arm/mach-pxa/include/mach/pxafb.h
-@@ -95,6 +95,10 @@ struct pxafb_mode_info {
- 	 *    in pxa27x and pxa3xx, initialize them to the same value or
- 	 *    the larger one will be used
- 	 * 3. same to {rd,wr}_pulse_width
-+	 *
-+	 * 4. LCD_PCLK_EDGE_{RISE,FALL} controls the L_PCLK_WR polarity
-+	 * 5. sync & FB_SYNC_HOR_HIGH_ACT controls the L_LCLK_A0
-+	 * 6. sync & FB_SYNC_VERT_HIGH_ACT controls the L_LCLK_RD
- 	 */
- 	unsigned	a0csrd_set_hld;	/* A0 and CS Setup/Hold Time before/after
-L_FCLK_RD */
- 	unsigned	a0cswr_set_hld;	/* A0 and CS Setup/Hold Time before/after
-L_PCLK_WR */
+diff --git a/arch/arm/mach-pxa/include/mach/regs-lcd.h
+b/arch/arm/mach-pxa/include/mach/regs-lcd.h
+index c689c4e..f817878 100644
+--- a/arch/arm/mach-pxa/include/mach/regs-lcd.h
++++ b/arch/arm/mach-pxa/include/mach/regs-lcd.h
+@@ -177,4 +177,11 @@
+
+ #define SMART_CMD(x)	(SMART_CMD_WRITE_COMMAND | ((x) & 0xff))
+ #define SMART_DAT(x)	(SMART_CMD_WRITE_DATA | ((x) & 0xff))
++
++/* SMART_DELAY() is introduced for software controlled delay primitive which
++ * can be inserted between command sequences, unused command 0x6 is used here
++ * and delay ranges from 0ms ~ 255ms
++ */
++#define SMART_CMD_DELAY		(0x6 << 9)
++#define SMART_DELAY(ms)		(SMART_CMD_DELAY | ((ms) & 0xff))
+ #endif /* __ASM_ARCH_REGS_LCD_H */
 diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index e0bba02..c082547 100644
+index c082547..15177ef 100644
 --- a/drivers/video/pxafb.c
 +++ b/drivers/video/pxafb.c
-@@ -760,7 +760,9 @@ static void setup_smart_timing(struct pxafb_info *fbi,
- 		LCCR1_HorSnchWdth(__smart_timing(t3, lclk));
+@@ -723,12 +723,19 @@ int pxafb_smart_queue(struct fb_info *info,
+uint16_t *cmds, int n_cmds)
+ 	int i;
+ 	struct pxafb_info *fbi = container_of(info, struct pxafb_info, fb);
 
- 	fbi->reg_lccr2 = LCCR2_DisHght(var->yres);
--	fbi->reg_lccr3 = LCCR3_PixClkDiv(__smart_timing(t4, lclk));
-+	fbi->reg_lccr3 = fbi->lccr3 | LCCR3_PixClkDiv(__smart_timing(t4, lclk));
-+	fbi->reg_lccr3 |= (var->sync & FB_SYNC_HOR_HIGH_ACT) ? LCCR3_HSP : 0;
-+	fbi->reg_lccr3 |= (var->sync & FB_SYNC_VERT_HIGH_ACT) ? LCCR3_VSP : 0;
+-	/* leave 2 commands for INTERRUPT and WAIT_FOR_SYNC */
+-	for (i = 0; i < n_cmds; i++) {
++	for (i = 0; i < n_cmds; i++, cmds++) {
++		/* if it is a software delay, flush and delay */
++		if ((*cmds & 0xff00) == SMART_CMD_DELAY) {
++			pxafb_smart_flush(info);
++			mdelay(*cmds & 0xff);
++			continue;
++		}
++
++		/* leave 2 commands for INTERRUPT and WAIT_FOR_SYNC */
+ 		if (fbi->n_smart_cmds == CMD_BUFF_SIZE - 8)
+ 			pxafb_smart_flush(info);
 
- 	/* FIXME: make this configurable */
- 	fbi->reg_cmdcr = 1;
+-		fbi->smart_cmds[fbi->n_smart_cmds++] = *cmds++;
++		fbi->smart_cmds[fbi->n_smart_cmds++] = *cmds;
+ 	}
+
+ 	return 0;
 -- 
 1.6.0.4
 

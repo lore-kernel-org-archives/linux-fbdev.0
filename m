@@ -1,506 +1,99 @@
-From: "Eric Miao" <eric.y.miao@gmail.com>
-Subject: [PATCH 5/5] pxa/saar: add support for the
-	on-board smart panel LCD
-Date: Thu, 11 Dec 2008 17:51:21 +0800
-Message-ID: <f17812d70812110151u33f05bccrb2c12a9289ef5545@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 1/4 v2] dmaengine: add a tx_free method to struct
+ dma_async_tx_descriptor
+Date: Thu, 11 Dec 2008 16:55:41 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0812111639540.6881@axis700.grange>
+References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange> 
+ <Pine.LNX.4.64.0812101129340.4578@axis700.grange> 
+ <e9c3a7c20812101158h3de9c604i1c88bb7c412ccf02@mail.gmail.com> 
+ <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
+ <e9c3a7c20812101801r19c8fb40s6b8ce9bd6c565fed@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756757AbYLKPzl@vger.kernel.org>
+In-Reply-To: <e9c3a7c20812101801r19c8fb40s6b8ce9bd6c565fed@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1LAiCd-0005GU-6f
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Dec 2008 09:51:27 +0000
-Received: from rv-out-0708.google.com ([209.85.198.240])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LAiCZ-0005Ib-Ol for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Dec 2008 09:51:27 +0000
-Received: by rv-out-0708.google.com with SMTP id f25so797658rvb.22
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 11 Dec 2008 01:51:21 -0800 (PST)
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.arm.linux.org.uk
 
-Signed-off-by: Eric Miao <eric.miao@marvell.com>
+On Wed, 10 Dec 2008, Dan Williams wrote:
+
+> On Wed, Dec 10, 2008 at 5:30 PM, Guennadi Liakhovetski
+> <g.liakhovetski@gmx.de> wrote:
+> > Hi Dan,
+> >
+> > On Wed, 10 Dec 2008, Dan Williams wrote:
+> >
+> >> On Wed, Dec 10, 2008 at 3:36 AM, Guennadi Liakhovetski
+> >> <g.liakhovetski@gmx.de> wrote:
+> >> > From: Guennadi Liakhovetski <lg@denx.de>
+> >> >
+> >> > Some users reuse DMA transaction descriptors multiple times and need an
+> >> > explicit call to release them. An example of such a user is Video4Linux, which
+> >> > has to be able to release descriptors on ioctl(VIDIOC_DQBUF).
+> >> >
+> >> > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+> >>
+> >>
+> >> Hi Guennadi,
+> >>
+> >> Other dmaengine drivers have tasklets that scan the list of completed
+> >> descriptors and free the "acked" ones.  This happens in the cleanup
+> >> tasklet...
+> >> /me looks
+> >> ...hmm this driver does not have a cleanup routine?  Ideally support
+> >> for ioctl(VIDIOC_DQBUF) could be achieved through this mechanism
+> >> without needing to increase the size of dma_async_tx_descriptor (which
+> >> has cache utilization impacts on other drivers).
+> >
+> > You mean there are drivers, that have struct dma_async_tx_descriptor on
+> > stack?
+> 
+> huh?
+
+How does the struct's size impact their cache utilisation then?
+
+> > And you mean, that increasing the size
+> > of the struct by one pointer and letting users explicitly free those
+> > descriptors when they want is worse than introducing a tasklet that will
+> > have to periodically scan the list of descriptors while other hot paths
+> > will move elements to and from this list, look for acked elements, lock
+> > the list and free those elements? Periodically, because although we have
+> > an event when to free them - on ioctl - there is no API to trigger that
+> > tasklet.
+> 
+> There are a few events that trigger this: completion interrupt,
+> someone polls is_tx_complete, we run out of descriptors.
+
+Sorry, actually, it's not VIDIOC_DQBUF where we have to free buffer(s), 
+it's VIDIOC_STREAMOFF. And in a normal case there are no more completion 
+interrupts, no allocation requests, and noone is interested in 
+is_tx_complete. Normally you would just get a dma_release_channel after 
+that. Or, of course, the application may decide to restart capture, then 
+we get requests, completions, etc. again. So, yes, I could do this, it 
+just seems a bit unnatural to me.
+
+> > Or am I missing something? I can do this, it just sounds strange
+> > to me.
+> 
+> You are missing that existing drivers need to do this anyway to to
+> handle operation completion actions.  So, while they are at it they
+> also free the descriptor which relieves client code from needing to
+> track what it has in-flight versus completed, especially since clients
+> may not get a handle to each descriptor a driver creates on its
+> behalf.
+> 
+> What I am suggesting is that other dmaengine drivers would handle this
+> implicitly after one of the above events...  can this happen in the
+> ipu_idmac case as well?
+
+Sure it can... Ok, so, the decision is - a garbage-collection tasklet? Ok, 
+will do this.
+
+Thanks
+Guennadi
 ---
- arch/arm/mach-pxa/saar.c |  421 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 421 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/mach-pxa/saar.c b/arch/arm/mach-pxa/saar.c
-index e7ea91c..5d02a73 100644
---- a/arch/arm/mach-pxa/saar.c
-+++ b/arch/arm/mach-pxa/saar.c
-@@ -17,19 +17,44 @@
- #include <linux/platform_device.h>
- #include <linux/clk.h>
- #include <linux/gpio.h>
-+#include <linux/delay.h>
-+#include <linux/fb.h>
-+#include <linux/i2c.h>
- #include <linux/smc91x.h>
-+#include <linux/mfd/da903x.h>
-
- #include <asm/mach-types.h>
- #include <asm/mach/arch.h>
- #include <mach/hardware.h>
- #include <mach/pxa3xx-regs.h>
- #include <mach/mfp-pxa930.h>
-+#include <mach/i2c.h>
-+#include <mach/regs-lcd.h>
-+#include <mach/pxafb.h>
-
- #include "devices.h"
- #include "generic.h"
-
-+#define GPIO_LCD_RESET	(16)
-+
- /* SAAR MFP configurations */
- static mfp_cfg_t saar_mfp_cfg[] __initdata = {
-+	/* LCD */
-+	GPIO23_LCD_DD0,
-+	GPIO24_LCD_DD1,
-+	GPIO25_LCD_DD2,
-+	GPIO26_LCD_DD3,
-+	GPIO27_LCD_DD4,
-+	GPIO28_LCD_DD5,
-+	GPIO29_LCD_DD6,
-+	GPIO44_LCD_DD7,
-+	GPIO21_LCD_CS,
-+	GPIO22_LCD_VSYNC,
-+	GPIO17_LCD_FCLK_RD,
-+	GPIO18_LCD_LCLK_A0,
-+	GPIO19_LCD_PCLK_WR,
-+	GPIO16_GPIO, /* LCD reset */
-+
- 	/* Ethernet */
- 	DF_nCS1_nCS3,
- 	GPIO97_GPIO,
-@@ -64,12 +89,408 @@ static struct platform_device smc91x_device = {
- 	},
- };
-
-+#if defined(CONFIG_FB_PXA) || (CONFIG_FB_PXA_MODULE)
-+static uint16_t lcd_power_on[] = {
-+	/* single frame */
-+	SMART_CMD_NOOP,
-+	SMART_CMD(0x00),
-+	SMART_DELAY(0),
-+
-+	SMART_CMD_NOOP,
-+	SMART_CMD(0x00),
-+	SMART_DELAY(0),
-+
-+	SMART_CMD_NOOP,
-+	SMART_CMD(0x00),
-+	SMART_DELAY(0),
-+
-+	SMART_CMD_NOOP,
-+	SMART_CMD(0x00),
-+	SMART_DELAY(10),
-+
-+	/* calibration control */
-+	SMART_CMD(0x00),
-+	SMART_CMD(0xA4),
-+	SMART_DAT(0x80),
-+	SMART_DAT(0x01),
-+	SMART_DELAY(150),
-+
-+	/*Power-On Init sequence*/
-+	SMART_CMD(0x00),	/* output ctrl */
-+	SMART_CMD(0x01),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),	/* wave ctrl */
-+	SMART_CMD(0x02),
-+	SMART_DAT(0x07),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x03),	/* entry mode */
-+	SMART_DAT(0xD0),
-+	SMART_DAT(0x30),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x08),	/* display ctrl 2 */
-+	SMART_DAT(0x08),
-+	SMART_DAT(0x08),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x09),	/* display ctrl 3 */
-+	SMART_DAT(0x04),
-+	SMART_DAT(0x2F),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x0A),	/* display ctrl 4 */
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x08),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x0D),	/* Frame Marker position */
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x08),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x60),	/* Driver output control */
-+	SMART_DAT(0x27),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x61),	/* Base image display control */
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x01),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x30),	/* Y settings 30h-3Dh */
-+	SMART_DAT(0x07),
-+	SMART_DAT(0x07),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x31),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x07),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x32),	/* Timing(3), ASW HOLD=0.5CLK */
-+	SMART_DAT(0x04),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x33),	/* Timing(4), CKV ST=0CLK, CKV ED=1CLK */
-+	SMART_DAT(0x03),
-+	SMART_DAT(0x03),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x34),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x35),
-+	SMART_DAT(0x02),
-+	SMART_DAT(0x05),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x36),
-+	SMART_DAT(0x1F),
-+	SMART_DAT(0x1F),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x37),
-+	SMART_DAT(0x07),
-+	SMART_DAT(0x07),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x38),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x07),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x39),
-+	SMART_DAT(0x04),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x3A),
-+	SMART_DAT(0x03),
-+	SMART_DAT(0x03),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x3B),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x3C),
-+	SMART_DAT(0x02),
-+	SMART_DAT(0x05),
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x3D),
-+	SMART_DAT(0x1F),
-+	SMART_DAT(0x1F),
-+	SMART_CMD(0x00),	/* Display control 1 */
-+	SMART_CMD(0x07),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x01),
-+	SMART_CMD(0x00),	/* Power control 5 */
-+	SMART_CMD(0x17),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x01),
-+	SMART_CMD(0x00),	/* Power control 1 */
-+	SMART_CMD(0x10),
-+	SMART_DAT(0x10),
-+	SMART_DAT(0xB0),
-+	SMART_CMD(0x00),	/* Power control 2 */
-+	SMART_CMD(0x11),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0x30),
-+	SMART_CMD(0x00),	/* Power control 3 */
-+	SMART_CMD(0x12),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0x9E),
-+	SMART_CMD(0x00),	/* Power control 4 */
-+	SMART_CMD(0x13),
-+	SMART_DAT(0x17),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),	/* Power control 3 */
-+	SMART_CMD(0x12),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0xBE),
-+	SMART_DELAY(100),
-+
-+	/* display mode : 240*320 */
-+	SMART_CMD(0x00),	/* RAM address set(H) 0*/
-+	SMART_CMD(0x20),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),	/* RAM address set(V)   4*/
-+	SMART_CMD(0x21),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),	/* Start of Window RAM address set(H) 8*/
-+	SMART_CMD(0x50),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00), 	/* End of Window RAM address set(H) 12*/
-+	SMART_CMD(0x51),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0xEF),
-+	SMART_CMD(0x00),	/* Start of Window RAM address set(V) 16*/
-+	SMART_CMD(0x52),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00),	/* End of Window RAM address set(V) 20*/
-+	SMART_CMD(0x53),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0x3F),
-+	SMART_CMD(0x00), 	/* Panel interface control 1 */
-+	SMART_CMD(0x90),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x1A),
-+	SMART_CMD(0x00), 	/* Panel interface control 2 */
-+	SMART_CMD(0x92),
-+	SMART_DAT(0x04),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00), 	/* Panel interface control 3 */
-+	SMART_CMD(0x93),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x05),
-+	SMART_DELAY(20),
-+};
-+
-+static uint16_t lcd_panel_on[] = {
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x07),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x21),
-+	SMART_DELAY(1),
-+
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x07),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x61),
-+	SMART_DELAY(100),
-+
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x07),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0x73),
-+	SMART_DELAY(1),
-+};
-+
-+static uint16_t lcd_panel_off[] = {
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x07),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x72),
-+	SMART_DELAY(40),
-+
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x07),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x01),
-+	SMART_DELAY(1),
-+
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x07),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_DELAY(1),
-+};
-+
-+static uint16_t lcd_power_off[] = {
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x10),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x80),
-+
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x11),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0x60),
-+
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x12),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0xAE),
-+	SMART_DELAY(40),
-+
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x10),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+};
-+
-+static uint16_t update_framedata[] = {
-+	/* set display ram: 240*320 */
-+	SMART_CMD(0x00), /* RAM address set(H) 0*/
-+	SMART_CMD(0x20),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00), /* RAM address set(V) 4*/
-+	SMART_CMD(0x21),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00), /* Start of Window RAM address set(H) 8 */
-+	SMART_CMD(0x50),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00), /* End of Window RAM address set(H) 12 */
-+	SMART_CMD(0x51),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0xEF),
-+	SMART_CMD(0x00), /* Start of Window RAM address set(V) 16 */
-+	SMART_CMD(0x52),
-+	SMART_DAT(0x00),
-+	SMART_DAT(0x00),
-+	SMART_CMD(0x00), /* End of Window RAM address set(V) 20 */
-+	SMART_CMD(0x53),
-+	SMART_DAT(0x01),
-+	SMART_DAT(0x3F),
-+
-+	/* wait for vsync cmd before transferring frame data */
-+	SMART_CMD_WAIT_FOR_VSYNC,
-+
-+	/* write ram */
-+	SMART_CMD(0x00),
-+	SMART_CMD(0x22),
-+
-+	/* write frame data */
-+	SMART_CMD_WRITE_FRAME,
-+};
-+
-+static void ltm022a97a_lcd_power(int on, struct fb_var_screeninfo *var)
-+{
-+	static int pin_requested = 0;
-+	struct fb_info *info = container_of(var, struct fb_info, var);
-+	int err;
-+
-+	if (!pin_requested) {
-+		err = gpio_request(GPIO_LCD_RESET, "lcd reset");
-+		if (err) {
-+			pr_err("failed to request gpio for LCD reset\n");
-+			return;
-+		}
-+
-+		gpio_direction_output(GPIO_LCD_RESET, 0);
-+		pin_requested = 1;
-+	}
-+
-+	if (on) {
-+		gpio_set_value(GPIO_LCD_RESET, 0); msleep(100);
-+		gpio_set_value(GPIO_LCD_RESET, 1); msleep(10);
-+
-+		pxafb_smart_queue(info, ARRAY_AND_SIZE(lcd_power_on));
-+		pxafb_smart_queue(info, ARRAY_AND_SIZE(lcd_panel_on));
-+	} else {
-+		pxafb_smart_queue(info, ARRAY_AND_SIZE(lcd_panel_off));
-+		pxafb_smart_queue(info, ARRAY_AND_SIZE(lcd_power_off));
-+	}
-+
-+	err = pxafb_smart_flush(info);
-+	if (err)
-+		pr_err("%s: timed out\n", __func__);
-+}
-+
-+static void ltm022a97a_update(struct fb_info *info)
-+{
-+	pxafb_smart_queue(info, ARRAY_AND_SIZE(update_framedata));
-+	pxafb_smart_flush(info);
-+}
-+
-+static struct pxafb_mode_info toshiba_ltm022a97a_modes[] = {
-+	[0] = {
-+		.xres			= 240,
-+		.yres			= 320,
-+		.bpp			= 16,
-+		.a0csrd_set_hld		= 30,
-+		.a0cswr_set_hld		= 30,
-+		.wr_pulse_width		= 30,
-+		.rd_pulse_width 	= 30,
-+		.op_hold_time 		= 30,
-+		.cmd_inh_time		= 60,
-+
-+		/* L_LCLK_A0 and L_LCLK_RD active low */
-+		.sync			= FB_SYNC_HOR_HIGH_ACT |
-+					  FB_SYNC_VERT_HIGH_ACT,
-+	},
-+};
-+
-+static struct pxafb_mach_info saar_lcd_info = {
-+	.modes			= toshiba_ltm022a97a_modes,
-+	.num_modes		= 1,
-+	.lcd_conn		= LCD_SMART_PANEL_8BPP | LCD_PCLK_EDGE_FALL,
-+	.pxafb_lcd_power	= ltm022a97a_lcd_power,
-+	.smart_update		= ltm022a97a_update,
-+};
-+
-+static void __init saar_init_lcd(void)
-+{
-+	set_pxa_fb_info(&saar_lcd_info);
-+}
-+#else
-+static inline void saar_init_lcd(void) {}
-+#endif
-+
-+#if defined(CONFIG_I2C_PXA) || defined(CONFIG_I2C_PXA_MODULE)
-+static struct da903x_subdev_info saar_da9034_subdevs[] = {
-+	[0] = {
-+		.name		= "da903x-backlight",
-+		.id		= DA9034_ID_WLED,
-+	},
-+};
-+
-+static struct da903x_platform_data saar_da9034_info = {
-+	.num_subdevs	= ARRAY_SIZE(saar_da9034_subdevs),
-+	.subdevs	= saar_da9034_subdevs,
-+};
-+
-+static struct i2c_board_info saar_i2c_info[] = {
-+	[0] = {
-+		.type		= "da9034",
-+		.addr		= 0x34,
-+		.platform_data	= &saar_da9034_info,
-+		.irq		= gpio_to_irq(mfp_to_gpio(MFP_PIN_GPIO83)),
-+	},
-+};
-+
-+static void __init saar_init_i2c(void)
-+{
-+	pxa_set_i2c_info(NULL);
-+	i2c_register_board_info(0, ARRAY_AND_SIZE(saar_i2c_info));
-+}
-+#else
-+static inline void saar_init_i2c(void) {}
-+#endif
- static void __init saar_init(void)
- {
- 	/* initialize MFP configurations */
- 	pxa3xx_mfp_config(ARRAY_AND_SIZE(saar_mfp_cfg));
-
- 	platform_device_register(&smc91x_device);
-+
-+	saar_init_i2c();
-+	saar_init_lcd();
- }
-
- MACHINE_START(SAAR, "PXA930 Handheld Platform (aka SAAR)")
--- 
-1.6.0.4
-
-------------------------------------------------------------------------------
-SF.Net email is Sponsored by MIX09, March 18-20, 2009 in Las Vegas, Nevada.
-The future of the web can't happen without you.  Join us at MIX09 to help
-pave the way to the Next Web now. Learn more and register at
-http://ad.doubleclick.net/clk;208669438;13503038;i?http://2009.visitmix.com/
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer

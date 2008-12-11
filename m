@@ -1,25 +1,25 @@
 From: "Eric Miao" <eric.y.miao@gmail.com>
-Subject: [PATCH 2/2] pxafb: remove now unused
-	pxafb_setup_gpio() and related stuffs
-Date: Thu, 11 Dec 2008 17:06:21 +0800
-Message-ID: <f17812d70812110106h47a53304nb02b14391aee77bb@mail.gmail.com>
+Subject: [PATCH 1/5] pxafb: small cleanup of the smart
+	panel code
+Date: Thu, 11 Dec 2008 17:46:30 +0800
+Message-ID: <f17812d70812110146x5392f222ke41e5d8dc4ea40dc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1LAhV7-00084j-SY
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <eric.y.miao@gmail.com>) id 1LAi7v-0006gI-Qj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Dec 2008 09:06:29 +0000
-Received: from rv-out-0708.google.com ([209.85.198.244])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LAhV5-0005uL-K7 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 11 Dec 2008 09:06:29 +0000
-Received: by rv-out-0708.google.com with SMTP id f25so783555rvb.22
+	Thu, 11 Dec 2008 09:46:35 +0000
+Received: from rv-out-0708.google.com ([209.85.198.245])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LAi7s-00066I-CB for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 11 Dec 2008 09:46:35 +0000
+Received: by rv-out-0708.google.com with SMTP id f25so795928rvb.22
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 11 Dec 2008 01:06:21 -0800 (PST)
+	Thu, 11 Dec 2008 01:46:30 -0800 (PST)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,121 +31,76 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Ian Molton <spyro@f2s.com>, Marek Vasut <marek.vasut@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, pHilipp Zabel <philipp.zabel@gmail.com>, Marc Zyngier <maz@misterjones.org>, Juergen Schindele <linux@schindele.name>, Jaya Kumar <jayakumar.lkml@gmail.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Stefan Schmidt <stefan@datenfreihafen.org>
-
-From ad6c7f8030e440049c152af25fa59c6fcd0336e7 Mon Sep 17 00:00:00 2001
-From: Eric Miao <eric.miao@marvell.com>
-Date: Thu, 11 Dec 2008 14:06:43 +0800
-Subject: [PATCH] [ARM] pxafb: remove now unused pxafb_setup_gpio() and
-related stuffs
-
-platform should now initialize the pin usage for the LCD controller
-to correctly work.
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 Signed-off-by: Eric Miao <eric.miao@marvell.com>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Mike Rapoport <mike@compulab.co.il>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: Ian Molton <spyro@f2s.com>
-Cc: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: Stefan Schmidt <stefan@datenfreihafen.org>
-Cc: Marek Vasut <marek.vasut@gmail.com>
-Cc: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-Cc: Marc Zyngier <marc.zyngier@altran.com>
-Cc: Jrgen Schindele <linux@schindele.name>
 ---
- drivers/video/pxafb.c |   54 -------------------------------------------------
- 1 files changed, 0 insertions(+), 54 deletions(-)
+ drivers/video/pxafb.c |   19 +++++++++----------
+ 1 files changed, 9 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index d6aa07b..ab60537 100644
+index ab60537..e0bba02 100644
 --- a/drivers/video/pxafb.c
 +++ b/drivers/video/pxafb.c
-@@ -50,7 +50,6 @@
- #include <asm/irq.h>
- #include <asm/div64.h>
- #include <mach/pxa-regs.h>
--#include <mach/pxa2xx-gpio.h>
- #include <mach/bitfield.h>
- #include <mach/pxafb.h>
+@@ -800,14 +800,16 @@ static int pxafb_smart_thread(void *arg)
 
-@@ -986,57 +985,6 @@ static inline void __pxafb_lcd_power(struct
-pxafb_info *fbi, int on)
- 		fbi->lcd_power(on, &fbi->fb.var);
- }
-
--static void pxafb_setup_gpio(struct pxafb_info *fbi)
--{
--	int gpio, ldd_bits;
--	unsigned int lccr0 = fbi->lccr0;
--
--	/*
--	 * setup is based on type of panel supported
--	 */
--
--	/* 4 bit interface */
--	if ((lccr0 & LCCR0_CMS) == LCCR0_Mono &&
--	    (lccr0 & LCCR0_SDS) == LCCR0_Sngl &&
--	    (lccr0 & LCCR0_DPD) == LCCR0_4PixMono)
--		ldd_bits = 4;
--
--	/* 8 bit interface */
--	else if (((lccr0 & LCCR0_CMS) == LCCR0_Mono &&
--		  ((lccr0 & LCCR0_SDS) == LCCR0_Dual ||
--		   (lccr0 & LCCR0_DPD) == LCCR0_8PixMono)) ||
--		 ((lccr0 & LCCR0_CMS) == LCCR0_Color &&
--		  (lccr0 & LCCR0_PAS) == LCCR0_Pas &&
--		  (lccr0 & LCCR0_SDS) == LCCR0_Sngl))
--		ldd_bits = 8;
--
--	/* 16 bit interface */
--	else if ((lccr0 & LCCR0_CMS) == LCCR0_Color &&
--		 ((lccr0 & LCCR0_SDS) == LCCR0_Dual ||
--		  (lccr0 & LCCR0_PAS) == LCCR0_Act))
--		ldd_bits = 16;
--
--	else {
--		printk(KERN_ERR "pxafb_setup_gpio: unable to determine "
--			       "bits per pixel\n");
--		return;
--	}
--
--	for (gpio = 58; ldd_bits; gpio++, ldd_bits--)
--		pxa_gpio_mode(gpio | GPIO_ALT_FN_2_OUT);
--	/* 18 bit interface */
--	if (fbi->fb.var.bits_per_pixel > 16) {
--		pxa_gpio_mode(86 | GPIO_ALT_FN_2_OUT);
--		pxa_gpio_mode(87 | GPIO_ALT_FN_2_OUT);
--	}
--	pxa_gpio_mode(GPIO74_LCD_FCLK_MD);
--	pxa_gpio_mode(GPIO75_LCD_LCLK_MD);
--	pxa_gpio_mode(GPIO76_LCD_PCLK_MD);
--
--	if ((lccr0 & LCCR0_PAS) == 0)
--		pxa_gpio_mode(GPIO77_LCD_ACBIAS_MD);
--}
--
- static void pxafb_enable_controller(struct pxafb_info *fbi)
+ static int pxafb_smart_init(struct pxafb_info *fbi)
  {
- 	pr_debug("pxafb: Enabling LCD controller\n");
-@@ -1179,7 +1127,6 @@ static void set_ctrlr_state(struct pxafb_info
-*fbi, u_int state)
- 		if (old_state == C_ENABLE) {
- 			__pxafb_lcd_power(fbi, 0);
- 			pxafb_disable_controller(fbi);
--			pxafb_setup_gpio(fbi);
- 			pxafb_enable_controller(fbi);
- 			__pxafb_lcd_power(fbi, 1);
- 		}
-@@ -1202,7 +1149,6 @@ static void set_ctrlr_state(struct pxafb_info
-*fbi, u_int state)
- 		 */
- 		if (old_state != C_ENABLE) {
- 			fbi->state = C_ENABLE;
--			pxafb_setup_gpio(fbi);
- 			pxafb_enable_controller(fbi);
- 			__pxafb_lcd_power(fbi, 1);
- 			__pxafb_backlight_power(fbi, 1);
+-	if (!(fbi->lccr0 | LCCR0_LCDT))
++	if (!(fbi->lccr0 & LCCR0_LCDT))
+ 		return 0;
+
++	init_completion(&fbi->command_done);
++	init_completion(&fbi->refresh_done);
++
+ 	fbi->smart_thread = kthread_run(pxafb_smart_thread, fbi,
+ 					"lcd_refresh");
+ 	if (IS_ERR(fbi->smart_thread)) {
+-		printk(KERN_ERR "%s: unable to create kernel thread\n",
+-				__func__);
++		pr_err("%s: unable to create kernel thread\n", __func__);
+ 		return PTR_ERR(fbi->smart_thread);
+ 	}
+
+@@ -823,7 +825,9 @@ int pxafb_smart_flush(struct fb_info *info)
+ {
+ 	return 0;
+ }
+-#endif /* CONFIG_FB_SMART_PANEL */
++
++static inline int pxafb_smart_init(struct pxafb_info *fbi) { return 0; }
++#endif /* CONFIG_FB_PXA_SMARTPANEL */
+
+ static void setup_parallel_timing(struct pxafb_info *fbi,
+ 				  struct fb_var_screeninfo *var)
+@@ -1412,10 +1416,6 @@ static struct pxafb_info * __devinit
+pxafb_init_fbinfo(struct device *dev)
+ 	INIT_WORK(&fbi->task, pxafb_task);
+ 	mutex_init(&fbi->ctrlr_lock);
+ 	init_completion(&fbi->disable_done);
+-#ifdef CONFIG_FB_PXA_SMARTPANEL
+-	init_completion(&fbi->command_done);
+-	init_completion(&fbi->refresh_done);
+-#endif
+
+ 	return fbi;
+ }
+@@ -1747,13 +1747,12 @@ static int __devinit pxafb_probe(struct
+platform_device *dev)
+ 		goto failed_free_mem;
+ 	}
+
+-#ifdef CONFIG_FB_PXA_SMARTPANEL
+ 	ret = pxafb_smart_init(fbi);
+ 	if (ret) {
+ 		dev_err(&dev->dev, "failed to initialize smartpanel\n");
+ 		goto failed_free_irq;
+ 	}
+-#endif
++
+ 	/*
+ 	 * This makes sure that our colour bitfield
+ 	 * descriptors are correctly initialised.
 -- 
 1.6.0.4
 

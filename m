@@ -1,132 +1,80 @@
-From: "Herring Robert" <R.Herring@freescale.com>
-Subject: RE: [PATCH 3/4 v2] i.MX31: framebuffer driver
-Date: Wed, 10 Dec 2008 18:32:21 -0700
-Message-ID: <DE2504B3A515524BBE6934369EFDC0DA06FBD7E5@az33exm20.fsl.freescale.net>
-References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange> <Pine.LNX.4.64.0812101131530.4578@axis700.grange> <DE2504B3A515524BBE6934369EFDC0DA06FBD5E8@az33exm20.fsl.freescale.net> <Pine.LNX.4.64.0812101727270.4578@axis700.grange>
+From: "Dan Williams" <dan.j.williams@intel.com>
+Subject: Re: [PATCH 1/4 v2] dmaengine: add a tx_free method to struct dma_async_tx_descriptor
+Date: Wed, 10 Dec 2008 19:01:49 -0700
+Message-ID: <e9c3a7c20812101801r19c8fb40s6b8ce9bd6c565fed@mail.gmail.com>
+References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange>
+	 <Pine.LNX.4.64.0812101129340.4578@axis700.grange>
+	 <e9c3a7c20812101158h3de9c604i1c88bb7c412ccf02@mail.gmail.com>
+	 <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756461AbYLKBcm@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <Pine.LNX.4.64.0812101727270.4578@axis700.grange>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755996AbYLKCCB@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0812110011440.8273@axis700.grange>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.arm.linux.org.uk, Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.arm.linux.org.uk
 
-Guennadi,
+On Wed, Dec 10, 2008 at 5:30 PM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> Hi Dan,
+>
+> On Wed, 10 Dec 2008, Dan Williams wrote:
+>
+>> On Wed, Dec 10, 2008 at 3:36 AM, Guennadi Liakhovetski
+>> <g.liakhovetski@gmx.de> wrote:
+>> > From: Guennadi Liakhovetski <lg@denx.de>
+>> >
+>> > Some users reuse DMA transaction descriptors multiple times and need an
+>> > explicit call to release them. An example of such a user is Video4Linux, which
+>> > has to be able to release descriptors on ioctl(VIDIOC_DQBUF).
+>> >
+>> > Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+>>
+>>
+>> Hi Guennadi,
+>>
+>> Other dmaengine drivers have tasklets that scan the list of completed
+>> descriptors and free the "acked" ones.  This happens in the cleanup
+>> tasklet...
+>> /me looks
+>> ...hmm this driver does not have a cleanup routine?  Ideally support
+>> for ioctl(VIDIOC_DQBUF) could be achieved through this mechanism
+>> without needing to increase the size of dma_async_tx_descriptor (which
+>> has cache utilization impacts on other drivers).
+>
+> You mean there are drivers, that have struct dma_async_tx_descriptor on
+> stack?
 
-> -----Original Message-----
-> From: Guennadi Liakhovetski [mailto:g.liakhovetski@gmx.de] 
-> Sent: Wednesday, December 10, 2008 10:48 AM
-> To: Herring Robert-RA7055
-> Cc: linux-fbdev-devel@lists.sourceforge.net; 
-> adaplas@gmail.com; Sascha Hauer; 
-> linux-arm-kernel@lists.arm.linux.org.uk; Dan Williams; 
-> linux-kernel@vger.kernel.org
-> Subject: RE: [PATCH 3/4 v2] i.MX31: framebuffer driver
-> 
-> On Wed, 10 Dec 2008, Herring Robert wrote:
-> 
-> > You have obviously started with Freescale copyrighted GPL 
-> code, but you
-> > have not given credit or maintained our copyrights.
-> 
-> I did try to do this, at least in those files, which contain 
-> significant 
-> portions of Freescale code. If you feel that I missed it in 
-> some specific 
-> files please let me know, I'll happily add it, it was in no way my 
-> intension to steal the authorschip. E.g.:
-> 
+huh?
 
-Sorry, my mistake. I looked at the headers and missed the copyrights on
-the C files.
+> And you mean, that increasing the size
+> of the struct by one pointer and letting users explicitly free those
+> descriptors when they want is worse than introducing a tasklet that will
+> have to periodically scan the list of descriptors while other hot paths
+> will move elements to and from this list, look for acked elements, lock
+> the list and free those elements? Periodically, because although we have
+> an event when to free them - on ioctl - there is no API to trigger that
+> tasklet.
 
-> > > diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-> > > new file mode 100644
-> > > index 0000000..e8084ae
-> > > --- /dev/null
-> > > +++ b/drivers/video/mx3fb.c
-> > > @@ -0,0 +1,1843 @@
-> > > +/*
-> > > + * Copyright (C) 2008
-> > > + * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
-> > > + *
-> > > + * Copyright 2004-2007 Freescale Semiconductor, Inc. All 
-> Rights Reserved.
-> ...
-> > > +MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-> 
-> ...
-> 
-> From IPU IDMAC driver:
-> 
-> diff --git a/drivers/mfd/ipu/ipu_idmac.c b/drivers/mfd/ipu/ipu_idmac.c
-> new file mode 100644
-> index 0000000..939acbf
-> --- /dev/null
-> +++ b/drivers/mfd/ipu/ipu_idmac.c
-> @@ -0,0 +1,1617 @@
-> +/*
-> + * Copyright (C) 2008
-> + * Guennadi Liakhovetski, DENX Software Engineering, <lg@denx.de>
-> + *
-> + * Copyright (C) 2005-2007 Freescale Semiconductor, Inc. All 
-> Rights Reserved.
-> 
-> Please tell me in which other files and in which form you'd 
-> like to see 
-> Freescale mentioned.
-> 
-> > The way you have structured the code moving the low-level 
-> SDC setup to
-> > the framebuffer will cause problems. There are lots of inter-module
-> > dependencies that have to be handled in the correct order to avoid
-> > hanging the h/w. For example, the SDC BG_EN has to be cleared before
-> > disabling the IDMA channel.
-> 
-> I tried to preserve the hardware handling code and the 
-> calling sequence. 
-> For example, I think, this is exactly what I do in this driver - 
-> sdc_disable_channel() first calls sdc_fb_uninit(), which clears the 
-> SDC_COM_FG_EN bit in SDC_COM_CONF, and then idmac_terminate_all() is 
-> called, which disables the IDMAC channel. Or have I 
-> understood you wrong?
-> 
-> > This structure will also not allow reuse of framebuffer, 
-> camera, and 
-> > v4l2 output drivers with the next version of h/w.
-> 
-> Why? All the generic (IDMAC, interrupt controller) code is put in a 
-> separate driver under drivers/mfd/ipu (see my patch 2/4), and only 
-> Synchronous Display Controller and Display Interface handling 
-> code is in 
-> the framebuffer driver. And the generic code is also used by 
-> the camera 
-> driver, whose second version is also going to be submitted to 
-> the V4L list 
-> soon. As for the "next version of h/w" - sorry, obviously I 
-> know nothing 
-> about it, so I cannot programme for it.
-> 
-> Besides, please understand, that I can develop and submit 
-> only parts that 
-> I test. Having no smart displays I cannot develop, test and submit 
-> Asynchronous Display Controller code, etc.
-> 
+There are a few events that trigger this: completion interrupt,
+someone polls is_tx_complete, we run out of descriptors.
 
-Smart panels aren't too widely used anyway.
+> Or am I missing something? I can do this, it just sounds strange
+> to me.
 
-> May I also note, that if Freescale made the effort and 
-> integrated their 
-> sources into the mainline, we wouldn't have this discussion 
-> now, the code 
-> would be structured the way you see best (as long as it is 
-> accepted by the 
-> maintainers) and would support any versions of hardware you like.
+You are missing that existing drivers need to do this anyway to to
+handle operation completion actions.  So, while they are at it they
+also free the descriptor which relieves client code from needing to
+track what it has in-flight versus completed, especially since clients
+may not get a handle to each descriptor a driver creates on its
+behalf.
 
-Yes, I know and wish we were not in this situation.
+What I am suggesting is that other dmaengine drivers would handle this
+implicitly after one of the above events...  can this happen in the
+ipu_idmac case as well?
 
-Regards,
-Rob
+Thanks,
+Dan

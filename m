@@ -1,49 +1,62 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 1/4 v2] dmaengine: add a tx_free method to struct
- dma_async_tx_descriptor
-Date: Thu, 11 Dec 2008 17:56:51 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0812111750130.6881@axis700.grange>
-References: <Pine.LNX.4.64.0812101122250.4578@axis700.grange> 
- <Pine.LNX.4.64.0812101129340.4578@axis700.grange> 
- <e9c3a7c20812101158h3de9c604i1c88bb7c412ccf02@mail.gmail.com> 
- <Pine.LNX.4.64.0812110011440.8273@axis700.grange> 
- <e9c3a7c20812101801r19c8fb40s6b8ce9bd6c565fed@mail.gmail.com> 
- <Pine.LNX.4.64.0812111639540.6881@axis700.grange>
- <e9c3a7c20812110843p32d768c1k8e119d23b12a5fd0@mail.gmail.com>
+From: Marc Zyngier <maz@misterjones.org>
+Subject: Re: [PATCH 1/2] pxa: introduce GPIOxx_LCD_* macros for easier pin
+	configuration
+Date: Thu, 11 Dec 2008 19:43:58 +0100
+Message-ID: <20081211194358.44af1dc5@why>
+References: <f17812d70812110104y4b3d9b40i2f1c5d22e97988db@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758203AbYLKQ45@vger.kernel.org>
-In-Reply-To: <e9c3a7c20812110843p32d768c1k8e119d23b12a5fd0@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.arm.linux.org.uk
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+In-Reply-To: <f17812d70812110104y4b3d9b40i2f1c5d22e97988db@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, Jaya Kumar <jayakumar.lkml@gmail.com>, Mike Rapoport <mike@compulab.co.il>, Richard
+	Purdie <rpurdie@rpsys.net>, Ian Molton <spyro@f2s.com>, pHilipp Zabel <philipp.zabel@gmail.com>, Stefan Schmidt <stefan@datenfreihafen.org>, Marek Vasut <marek.vasut@gmail.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Juergen Schindele <linux@schindele.name>
 
-On Thu, 11 Dec 2008, Dan Williams wrote:
+On Thu, 11 Dec 2008 17:04:22 +0800
+"Eric Miao" <eric.y.miao@gmail.com> wrote:
 
-> On Thu, Dec 11, 2008 at 8:55 AM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> >
-> > Sorry, actually, it's not VIDIOC_DQBUF where we have to free buffer(s),
-> > it's VIDIOC_STREAMOFF. And in a normal case there are no more completion
-> > interrupts, no allocation requests, and noone is interested in
-> > is_tx_complete. Normally you would just get a dma_release_channel after
-> > that. Or, of course, the application may decide to restart capture, then
-> > we get requests, completions, etc. again. So, yes, I could do this, it
-> > just seems a bit unnatural to me.
+> From ed2c9a22a9653880fad7e22333c7d6155c45c399 Mon Sep 17 00:00:00 2001
+> From: Eric Miao <eric.miao@marvell.com>
+> Date: Thu, 11 Dec 2008 13:34:54 +0800
+> Subject: [PATCH] [ARM] pxa: introduce GPIOxx_LCD_* macros for easier
+> pin configuration
 > 
-> Could the application tolerate another call to dma_request_channel
-> when it restarts?  I.e. just call dma_release_channel from the ioctl
-> to clean everything up and not worry about another free() mechanism?
+> For those peripherals with only one possible pin configuration,
+> introduce handy macros of GPIOxx_*, it also avoids potential
+> copy-and-paste errors.
+> 
+> Let's start from LCD for PXA25x/PXA27x, depending on the different
+> mode used: passive (STN), active (TFT) and LCD with internal
+> framebuffer (i.e. smart panel), and the actual number of pins used to
+> connect to the LCD panel, the configurations slightly differ.
+> 
+> Also, let's fix the issue of LCD pin configurations are missed from
+> some platforms (e.g. am200epd, cm-x270, e400)
+> 
+> NOTE: the 18bpp and smart panel are only available on PXA27x.
+> 
+> Signed-off-by: Eric Miao <eric.miao@marvell.com>
 
-For V4L - yes, I could do this. But is it a good idea to hard-code into a 
-"generic" dma driver (or at least something that pretends to be a generic 
-driver), that descriptors can only ever be freed by releasing the 
-channel?...
+For the Viper part:
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Acked-by: Marc Zyngier <maz@misterjones.org>
+
+	M;
+-- 
+And if you don't know where you're going, any road will take you there.
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

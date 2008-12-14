@@ -1,26 +1,28 @@
-From: Mike Rapoport <mike@compulab.co.il>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
 Subject: Re: [PATCH 1/2] pxa: introduce GPIOxx_LCD_*
- macros for easier pin configuration
-Date: Sun, 14 Dec 2008 08:54:06 +0200
-Message-ID: <4944AD8E.7080504@compulab.co.il>
+	macros for easier pin configuration
+Date: Mon, 15 Dec 2008 00:22:04 +0800
+Message-ID: <45a44e480812140822j541d81f3x63cf13ccc4e4e24e@mail.gmail.com>
 References: <f17812d70812110104y4b3d9b40i2f1c5d22e97988db@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <mike@compulab.co.il>) id 1LBks3-0003GD-Jh
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LBtjN-000480-Lk
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 14 Dec 2008 06:54:31 +0000
-Received: from 89.6b.364a.static.theplanet.com ([74.54.107.137]
-	helo=cathcart.site5.com)
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LBks1-0001yB-SU
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 14 Dec 2008 06:54:31 +0000
+	Sun, 14 Dec 2008 16:22:09 +0000
+Received: from mail-ew0-f21.google.com ([209.85.219.21])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LBtjK-0003cB-Qh for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 14 Dec 2008 16:22:09 +0000
+Received: by ewy14 with SMTP id 14so2690402ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 14 Dec 2008 08:22:05 -0800 (PST)
 In-Reply-To: <f17812d70812110104y4b3d9b40i2f1c5d22e97988db@mail.gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,39 +33,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Ian Molton <spyro@f2s.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Marek Vasut <marek.vasut@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, pHilipp Zabel <philipp.zabel@gmail.com>, Marc Zyngier <maz@misterjones.org>, Juergen Schindele <linux@schindele.name>, Jaya Kumar <jayakumar.lkml@gmail.com>, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>, Stefan Schmidt <stefan@datenfreihafen.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Ian Molton <spyro@f2s.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Marek Vasut <marek.vasut@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, pHilipp Zabel <philipp.zabel@gmail.com>, Marc Zyngier <maz@misterjones.org>, Juergen Schindele <linux@schindele.name>, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>, Stefan Schmidt <stefan@datenfreihafen.org>
 
-
-
-Eric Miao wrote:
->>From ed2c9a22a9653880fad7e22333c7d6155c45c399 Mon Sep 17 00:00:00 2001
+On Thu, Dec 11, 2008 at 5:04 PM, Eric Miao <eric.y.miao@gmail.com> wrote:
+> From ed2c9a22a9653880fad7e22333c7d6155c45c399 Mon Sep 17 00:00:00 2001
 > From: Eric Miao <eric.miao@marvell.com>
 > Date: Thu, 11 Dec 2008 13:34:54 +0800
 > Subject: [PATCH] [ARM] pxa: introduce GPIOxx_LCD_* macros for easier
 > pin configuration
-> 
+>
 > For those peripherals with only one possible pin configuration, introduce
 > handy macros of GPIOxx_*, it also avoids potential copy-and-paste errors.
-> 
+>
 > Let's start from LCD for PXA25x/PXA27x, depending on the different mode
 > used: passive (STN), active (TFT) and LCD with internal framebuffer (i.e.
 > smart panel), and the actual number of pins used to connect to the LCD
 > panel, the configurations slightly differ.
-> 
+>
 > Also, let's fix the issue of LCD pin configurations are missed from some
 > platforms (e.g. am200epd, cm-x270, e400)
-> 
+>
 > NOTE: the 18bpp and smart panel are only available on PXA27x.
-> 
+>
 > Signed-off-by: Eric Miao <eric.miao@marvell.com>
 
-For CM-X2xx and EM-X270:
-Acked-by: Mike Rapoport <mike@compulab.co.il>
+Looks good for the am200epd changes. Thanks.
 
--- 
-Sincerely yours,
-Mike.
-
+Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 
 ------------------------------------------------------------------------------
 SF.Net email is Sponsored by MIX09, March 18-20, 2009 in Las Vegas, Nevada.

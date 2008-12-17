@@ -1,23 +1,23 @@
 From: Ico Doornekamp <fbdev@zevv.nl>
 Subject: Re: Xorg dies on my deferred I/O fb driver
-Date: Wed, 17 Dec 2008 15:50:22 +0100
-Message-ID: <20081217145022.GM12994@pruts.nl>
+Date: Wed, 17 Dec 2008 17:35:18 +0100
+Message-ID: <20081217163518.GP12994@pruts.nl>
 References: <20081217140141.GL12994@pruts.nl>
 	<Pine.LNX.4.64.0812171515220.11971@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <ico@pruts.nl>) id 1LCxjR-0000zF-Rr
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ico@pruts.nl>) id 1LCzN1-0006hm-B9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Dec 2008 14:50:37 +0000
+	Wed, 17 Dec 2008 16:35:35 +0000
 Received: from pruts.nl ([82.94.235.106] helo=iron.pruts.nl)
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LCxjN-0002aF-VH for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Dec 2008 14:50:37 +0000
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LCzMx-0006bx-FZ for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 17 Dec 2008 16:35:35 +0000
 Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.64.0812171515220.11971@anakin>
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -63,21 +63,16 @@ Cc: linux-fbdev-devel@lists.sourceforge.net
 > > Running Xorg 1.4.2 on Linux 2.6.27.4
 > 
 > I guess your frame buffer device driver supports one single video mode only?
-
-Indeed, good guess.
-
-> There's a bug in Xorg that doesn't like drivers that support one
-> single video mode only, and always return that single video mode in
-> the FBIOPUT_VSCREENINFO ioctl (cfr. the "FBIOPUT_VSCREENINFO succeeded
-> but modified mode" message).
 > 
-> One fix is to modify your frame buffer device driver to reject all
-> modes that are not identical to the single supported mode.
+> There's a bug in Xorg that doesn't like drivers that support one single video
+> mode only, and always return that single video mode in the FBIOPUT_VSCREENINFO
+> ioctl (cfr. the "FBIOPUT_VSCREENINFO succeeded but modified mode" message).
+> 
+> One fix is to modify your frame buffer device driver to reject all modes that
+> are not identical to the single supported mode.
 
-Ok, that's the kind of hint I needed, I'll go steal some code from other
-drivers right away.
-
-Thanks,
+Thanks again, I add a f b_check_var handler, and Xorg works
+like a charm now. 
 
 Ico
 

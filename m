@@ -1,25 +1,30 @@
-From: "Eric Miao" <eric.y.miao@gmail.com>
-Subject: [PATCH 3/3] pxafb: add support for
-	FBIOPAN_DISPLAY by dma braching
-Date: Wed, 17 Dec 2008 16:59:43 +0800
-Message-ID: <f17812d70812170059k3ab9ca00y1245cda34387df0b@mail.gmail.com>
+From: Ico Doornekamp <fbdev@zevv.nl>
+Subject: Xorg dies on my deferred I/O fb driver
+Date: Wed, 17 Dec 2008 15:01:41 +0100
+Message-ID: <20081217140141.GL12994@pruts.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1LCsFv-0002s7-JJ
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ico@pruts.nl>) id 1LCwyH-0006ka-10
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Dec 2008 08:59:47 +0000
-Received: from rv-out-0708.google.com ([209.85.198.243])
+	Wed, 17 Dec 2008 14:01:53 +0000
+Received: from pruts.nl ([82.94.235.106] helo=iron.pruts.nl)
 	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LCsFr-0007QO-Tp for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Dec 2008 08:59:47 +0000
-Received: by rv-out-0708.google.com with SMTP id f25so3407104rvb.22
+	id 1LCwyD-0008Ds-0A for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 17 Dec 2008 14:01:52 +0000
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by iron.pruts.nl (Postfix) with ESMTP id 97AA912E445
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 17 Dec 2008 00:59:43 -0800 (PST)
+	Wed, 17 Dec 2008 15:01:46 +0100 (CET)
+Received: from iron.pruts.nl ([127.0.0.1])
+	by localhost (iron.pruts.nl [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id rOFlurI8Yqld
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 17 Dec 2008 15:01:41 +0100 (CET)
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,216 +35,120 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-dma branching is enabled by extending the current setup_frame_dma()
-function to allow a 2nd set of frame/palette dma descriptors to be
-used.
 
-As a result, pxafb_dma_buff.dma_desc[], pxafb_dma_buff.pal_desc[]
-and pxafb_info.fdadr[] are doubled.
+Hello,
 
-This allows maximum re-use of the current dma setup code, although
-the pxafb_info.fdadr[xx] for FBRx register values looks a bit odd.
+Today I wrote a simple framebuffer driver for a SPI driven LCD display
+with internal memory, using the deferred I/O framework. The display is
+capable of grayscale, 384x160 pixels.
 
-Signed-off-by: Eric Miao <eric.miao@marvell.com>
----
- arch/arm/mach-pxa/include/mach/regs-lcd.h |   10 ++++-
- drivers/video/pxafb.c                     |   61 +++++++++++++++++++++--------
- drivers/video/pxafb.h                     |    9 +++-
- 3 files changed, 59 insertions(+), 21 deletions(-)
+My driver resembles the metronomefb driver, and seems to work using
+write() and mmap() with my own test tools.
 
-diff --git a/arch/arm/mach-pxa/include/mach/regs-lcd.h
-b/arch/arm/mach-pxa/include/mach/regs-lcd.h
-index f817878..c15df55 100644
---- a/arch/arm/mach-pxa/include/mach/regs-lcd.h
-+++ b/arch/arm/mach-pxa/include/mach/regs-lcd.h
-@@ -12,13 +12,19 @@
- #define LCCR3		(0x00C)	/* LCD Controller Control Register 3 */
- #define LCCR4		(0x010)	/* LCD Controller Control Register 4 */
- #define LCCR5		(0x014)	/* LCD Controller Control Register 5 */
--#define DFBR0		(0x020)	/* DMA Channel 0 Frame Branch Register */
--#define DFBR1		(0x024)	/* DMA Channel 1 Frame Branch Register */
- #define LCSR		(0x038)	/* LCD Controller Status Register */
- #define LIIDR		(0x03C)	/* LCD Controller Interrupt ID Register */
- #define TMEDRGBR	(0x040)	/* TMED RGB Seed Register */
- #define TMEDCR		(0x044)	/* TMED Control Register */
+The next step would be to run Xorg/fbdev on top, but things don't seem
+to simple work this way.
 
-+#define FBR0		(0x020)	/* DMA Channel 0 Frame Branch Register */
-+#define FBR1		(0x024)	/* DMA Channel 1 Frame Branch Register */
-+#define FBR2		(0x028) /* DMA Channel 2 Frame Branch Register */
-+#define FBR3		(0x02C) /* DMA Channel 2 Frame Branch Register */
-+#define FBR4		(0x030) /* DMA Channel 2 Frame Branch Register */
-+#define FBR5		(0x110) /* DMA Channel 2 Frame Branch Register */
-+#define FBR6		(0x114) /* DMA Channel 2 Frame Branch Register */
-+
- #define CMDCR		(0x100)	/* Command Control Register */
- #define PRSR		(0x104)	/* Panel Read Status Register */
+Xorg starts and detects te framebuffer driver, but dies with the message
 
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index d09c804..d9eac3a 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -71,6 +71,7 @@
- static int pxafb_activate_var(struct fb_var_screeninfo *var,
- 				struct pxafb_info *);
- static void set_ctrlr_state(struct pxafb_info *fbi, u_int state);
-+static void setup_base_frame(struct pxafb_info *fbi, int branch);
+  (EE) FBDEV(0): FBIOPUT_VSCREENINFO succeeded but modified mode
+  (EE) FBDEV(0): mode initialization failed
 
- static unsigned long video_mem_size = 0;
+I'm kind of stuck here. Any tips on how to solve or debug this one ?
 
-@@ -462,6 +463,24 @@ static int pxafb_set_par(struct fb_info *info)
- 	return 0;
- }
+On the bottom of this mail I pasted:
 
-+static int pxafb_pan_display(struct fb_var_screeninfo *var,
-+			     struct fb_info *info)
-+{
-+	struct pxafb_info *fbi = (struct pxafb_info *)info;
-+	int dma = DMA_MAX + DMA_BASE;
-+
-+	if (fbi->state != C_ENABLE)
-+		return 0;
-+
-+	setup_base_frame(fbi, 1);
-+
-+	if (fbi->lccr0 & LCCR0_SDS)
-+		lcd_writel(fbi, FBR1, fbi->fdadr[dma + 1] | 0x1);
-+
-+	lcd_writel(fbi, FBR0, fbi->fdadr[dma] | 0x1);
-+	return 0;
-+}
-+
- /*
-  * pxafb_blank():
-  *	Blank the display by setting all palette values to zero.  Note, the
-@@ -501,6 +520,7 @@ static struct fb_ops pxafb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_check_var	= pxafb_check_var,
- 	.fb_set_par	= pxafb_set_par,
-+	.fb_pan_display	= pxafb_pan_display,
- 	.fb_setcolreg	= pxafb_setcolreg,
- 	.fb_fillrect	= cfb_fillrect,
- 	.fb_copyarea	= cfb_copyarea,
-@@ -592,7 +612,7 @@ static int setup_frame_dma(struct pxafb_info *fbi,
-int dma, int pal,
- 	struct pxafb_dma_descriptor *dma_desc, *pal_desc;
- 	unsigned int dma_desc_off, pal_desc_off;
+- fbinfo -i output
+- Xorg log
+- fb_fix_screeninfoa and fb_var_screeninfo from my driver
 
--	if (dma < 0 || dma >= DMA_MAX)
-+	if (dma < 0 || dma >= DMA_MAX * 2)
- 		return -EINVAL;
+Running Xorg 1.4.2 on Linux 2.6.27.4
 
- 	dma_desc = &fbi->dma_buff->dma_desc[dma];
-@@ -602,7 +622,7 @@ static int setup_frame_dma(struct pxafb_info *fbi,
-int dma, int pal,
- 	dma_desc->fidr  = 0;
- 	dma_desc->ldcmd = size;
+Thank you,
 
--	if (pal < 0 || pal >= PAL_MAX) {
-+	if (pal < 0 || pal >= PAL_MAX * 2) {
- 		dma_desc->fdadr = fbi->dma_buff_phys + dma_desc_off;
- 		fbi->fdadr[dma] = fbi->dma_buff_phys + dma_desc_off;
- 	} else {
-@@ -628,6 +648,27 @@ static int setup_frame_dma(struct pxafb_info
-*fbi, int dma, int pal,
- 	return 0;
- }
+Ico
 
-+static void setup_base_frame(struct pxafb_info *fbi, int branch)
-+{
-+	struct fb_var_screeninfo *var = &fbi->fb.var;
-+	struct fb_fix_screeninfo *fix = &fbi->fb.fix;
-+	unsigned int nbytes, offset;
-+	int dma, pal, bpp = var->bits_per_pixel;
-+
-+	dma = DMA_BASE + (branch ? DMA_MAX : 0);
-+	pal = (bpp >= 16) ? PAL_NONE : PAL_BASE + (branch ? PAL_MAX : 0);
-+
-+	nbytes = fix->line_length * var->yres;
-+	offset = fix->line_length * var->yoffset;
-+
-+	if (fbi->lccr0 & LCCR0_SDS) {
-+		nbytes = nbytes / 2;
-+		setup_frame_dma(fbi, dma + 1, PAL_NONE, offset + nbytes, nbytes);
-+	}
-+
-+	setup_frame_dma(fbi, dma, pal, offset, nbytes);
-+}
-+
- #ifdef CONFIG_FB_PXA_SMARTPANEL
- static int setup_smart_dma(struct pxafb_info *fbi)
- {
-@@ -875,7 +916,6 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
- 			      struct pxafb_info *fbi)
- {
- 	u_long flags;
--	size_t nbytes, offset;
 
- #if DEBUG_VAR
- 	if (!(fbi->lccr0 & LCCR0_LCDT)) {
-@@ -930,25 +970,14 @@ static int pxafb_activate_var(struct
-fb_var_screeninfo *var,
- #endif
- 		setup_parallel_timing(fbi, var);
+P.S. Jaya, thanks for your lecture at CELF a few weeks ago!
 
-+	setup_base_frame(fbi, 0);
-+
- 	fbi->reg_lccr0 = fbi->lccr0 |
- 		(LCCR0_LDM | LCCR0_SFM | LCCR0_IUM | LCCR0_EFM |
- 		 LCCR0_QDM | LCCR0_BM  | LCCR0_OUM);
 
- 	fbi->reg_lccr3 |= pxafb_bpp_to_lccr3(var);
+----------------------------------------------------------------------
+# fbinfo -i
 
--	nbytes = fbi->fb.fix.line_length * var->yres;
--	offset = fbi->fb.fix.line_length * var->yoffset;
--
--	if ((fbi->lccr0 & LCCR0_SDS) == LCCR0_Dual) {
--		nbytes = nbytes / 2;
--		setup_frame_dma(fbi, DMA_LOWER, PAL_NONE, offset + nbytes, nbytes);
--	}
--
--	if ((var->bits_per_pixel >= 16) || (fbi->lccr0 & LCCR0_LCDT))
--		setup_frame_dma(fbi, DMA_BASE, PAL_NONE, offset, nbytes);
--	else
--		setup_frame_dma(fbi, DMA_BASE, PAL_BASE, offset, nbytes);
--
- 	fbi->reg_lccr4 = lcd_readl(fbi, LCCR4) & ~LCCR4_PAL_FOR_MASK;
- 	fbi->reg_lccr4 |= (fbi->lccr4 & LCCR4_PAL_FOR_MASK);
- 	local_irq_restore(flags);
-diff --git a/drivers/video/pxafb.h b/drivers/video/pxafb.h
-index 0981938..e0f90f4 100644
---- a/drivers/video/pxafb.h
-+++ b/drivers/video/pxafb.h
-@@ -54,11 +54,14 @@ enum {
- #define PALETTE_SIZE	(256 * 4)
- #define CMD_BUFF_SIZE	(1024 * 50)
+mode "384x160"
+    geometry 384 160 384 160 8
+    timings 0 0 0 0 0 0 0
+    grayscale true
+    rgba 0/0,0/0,0/0,0/0
+endmode
 
-+/* NOTE: the palette and frame dma descriptors are doubled to allow
-+ * the 2nd set for branch settings (FBRx)
-+ */
- struct pxafb_dma_buff {
- 	unsigned char palette[PAL_MAX * PALETTE_SIZE];
- 	uint16_t cmd_buff[CMD_BUFF_SIZE];
--	struct pxafb_dma_descriptor pal_desc[PAL_MAX];
--	struct pxafb_dma_descriptor dma_desc[DMA_MAX];
-+	struct pxafb_dma_descriptor pal_desc[PAL_MAX * 2];
-+	struct pxafb_dma_descriptor dma_desc[DMA_MAX * 2];
- };
+Frame buffer device information:
+    Name        : uc1698fb
+    Address     : 0
+    Size        : 61440
+    Type        : PACKED PIXELS
+    Visual      : STATIC PSEUDOCOLOR
+    XPanStep    : 0
+    YPanStep    : 0
+    YWrapStep   : 0
+    LineLength  : 384
+    Accelerator : No
 
- struct pxafb_info {
-@@ -71,7 +74,7 @@ struct pxafb_info {
- 	struct pxafb_dma_buff	*dma_buff;
- 	size_t			dma_buff_size;
- 	dma_addr_t		dma_buff_phys;
--	dma_addr_t		fdadr[DMA_MAX];
-+	dma_addr_t		fdadr[DMA_MAX * 2];
+----------------------------------------------------------------------
+Xorg.0.log
 
- 	void __iomem		*video_mem;	/* virtual address of frame buffer */
- 	unsigned long		video_mem_phys;	/* physical address of frame buffer */
+(II) FBDEV(0): Creating default Display subsection in Screen section
+        "Default Screen" for depth/fbbpp 8/8
+(==) FBDEV(0): Depth 8, (==) framebuffer bpp 8
+(==) FBDEV(0): Default visual is PseudoColor
+(==) FBDEV(0): Using gamma correction (1.0, 1.0, 1.0)
+(II) FBDEV(0): hardware: uc1698fb (video memory: 60kB)
+(**) FBDEV(0): Option "ShadowFB" "false"
+(II) FBDEV(0): checking modes against framebuffer device...
+(II) FBDEV(0): checking modes against monitor...
+(--) FBDEV(0): Virtual size is 384x160 (pitch 384)
+(**) FBDEV(0):  Built-in mode "current"
+(==) FBDEV(0): DPI set to (96, 96)
+(II) Loading sub module "fb"
+(II) LoadModule: "fb"
+(II) Loading /usr/lib/xorg/modules//libfb.so
+(II) Module fb: vendor="X.Org Foundation"
+        compiled for 1.4.2, module version = 1.0.0
+        ABI class: X.Org ANSI C Emulation, version 0.3
+(EE) FBDEV(0): FBIOPUT_VSCREENINFO succeeded but modified mode
+(EE) FBDEV(0): mode initialization failed
+
+
+----------------------------------------------------------------------
+FB setup data structures from driver
+
+tatic struct fb_fix_screeninfo uc1698fb_fix __devinitdata = {
+        .id =           "uc1698fb",
+        .type =         FB_TYPE_PACKED_PIXELS,
+        .visual =       FB_VISUAL_STATIC_PSEUDOCOLOR,
+        .xpanstep =     0,
+        .ypanstep =     0,
+        .ywrapstep =    0,
+        .line_length =  DPY_W,
+        .accel =        FB_ACCEL_NONE,
+};
+
+static struct fb_var_screeninfo uc1698fb_var __devinitdata = {
+        .xres           = DPY_W,
+        .yres           = DPY_H,
+        .xres_virtual   = DPY_W,
+        .yres_virtual   = DPY_H,
+        .bits_per_pixel = 8,
+        .grayscale      = 1,
+        .nonstd         = 0,
+
+};
+
+
 -- 
-1.6.0.4
+:wq
+^X^Cy^K^X^C^C^C^C
 
 ------------------------------------------------------------------------------
 SF.Net email is Sponsored by MIX09, March 18-20, 2009 in Las Vegas, Nevada.

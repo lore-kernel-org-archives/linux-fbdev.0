@@ -1,22 +1,24 @@
 From: Luotao Fu <l.fu@pengutronix.de>
-Subject: [PATCH] pxafb: turn off unused return value
-Date: Thu, 18 Dec 2008 16:05:37 +0100
-Message-ID: <1229612737-12628-1-git-send-email-l.fu@pengutronix.de>
+Subject: [PATCH] pxafb: additional check for 24bpp
+Date: Thu, 18 Dec 2008 16:06:08 +0100
+Message-ID: <1229612768-12651-1-git-send-email-l.fu@pengutronix.de>
+References: <1229612737-12628-1-git-send-email-l.fu@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <l.fu@pengutronix.de>) id 1LDKRc-0005XW-W4
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <l.fu@pengutronix.de>) id 1LDKS6-0003dw-SS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Dec 2008 15:05:44 +0000
+	Thu, 18 Dec 2008 15:06:14 +0000
 Received: from metis.ext.pengutronix.de ([92.198.50.35])
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LDKRZ-0002tg-CU
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LDKS3-0005aV-P5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 18 Dec 2008 15:05:44 +0000
+	Thu, 18 Dec 2008 15:06:14 +0000
+In-Reply-To: <1229612737-12628-1-git-send-email-l.fu@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,45 +31,46 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-arm-kernel@lists.arm.linux.org.uk
 Cc: linux-fbdev-devel@lists.sourceforge.net, Luotao Fu <l.fu@pengutronix.de>
 
-Nobody cares for the return value of pxafb_activate_var(). Indeed it always
-returns with 0. Hence change it to void type. 
+The pxa270 Manual reads: "NOTE: Configuring the LCD controller for 24bpp output
+(BPP3.BPPto either 0b1001 or 0b1010) is invalid for panels without an internal
+frame buffer (LCCR0[LCDT] clear) and will result in indeterminate behavior."
+Add an additional check to make sure that only smartpanels can be configured
+with 24bpp.
 
 Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
 ---
- drivers/video/pxafb.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/pxafb.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index cc59c52..b079f10 100644
+index b079f10..48dc565 100644
 --- a/drivers/video/pxafb.c
 +++ b/drivers/video/pxafb.c
-@@ -72,7 +72,7 @@
- static void (*pxafb_backlight_power)(int);
- static void (*pxafb_lcd_power)(int, struct fb_var_screeninfo *);
+@@ -370,6 +370,9 @@ static int pxafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 		if (!mode)
+ 			return -EINVAL;
  
--static int pxafb_activate_var(struct fb_var_screeninfo *var,
-+static void pxafb_activate_var(struct fb_var_screeninfo *var,
- 				struct pxafb_info *);
- static void set_ctrlr_state(struct pxafb_info *fbi, u_int state);
- 
-@@ -870,7 +870,7 @@ static void setup_parallel_timing(struct pxafb_info *fbi,
-  *	Configures LCD Controller based on entries in var parameter.
-  *	Settings are only written to the controller if changes were made.
-  */
--static int pxafb_activate_var(struct fb_var_screeninfo *var,
-+static void pxafb_activate_var(struct fb_var_screeninfo *var,
- 			      struct pxafb_info *fbi)
- {
- 	u_long flags;
-@@ -962,8 +962,6 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
- 	    (lcd_readl(fbi, FDADR0) != fbi->fdadr[0]) ||
- 	    (lcd_readl(fbi, FDADR1) != fbi->fdadr[1]))
- 		pxafb_schedule_work(fbi, C_REENABLE);
--
--	return 0;
- }
- 
- /*
++		if (mode->depth > 19 && !(fbi->lccr0 & LCCR0_LCDT))
++			return -EINVAL;
++
+ 		switch (mode->depth) {
+ 		case 18: /* RGB666 */
+ 			var->transp.offset = var->transp.length     = 0;
+@@ -887,8 +890,14 @@ static void pxafb_activate_var(struct fb_var_screeninfo *var,
+ 		case 4:
+ 		case 8:
+ 		case 16:
++			break;
+ 		case 24:
+ 		case 32:
++			if (var->red.length + var->green.length +
++					var->blue.length > 18)
++				printk(KERN_ERR "%s: 24bpp on pxafb is only"
++						"supported with smartpanel\n",
++						fbi->fb.fix.id);
+ 			break;
+ 		default:
+ 			printk(KERN_ERR "%s: invalid bit depth %d\n",
 -- 
 1.5.6.5
 

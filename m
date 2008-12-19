@@ -1,8 +1,10 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 00/05] video: deferred io fixes and sh_mobile_lcdcfb support
-Date: Fri, 19 Dec 2008 15:33:59 +0900
-Message-ID: <20081219063359.2703.85817.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 01/05] video: fix deferred io fsync()
+Date: Fri, 19 Dec 2008 15:34:09 +0900
+Message-ID: <20081219063409.2703.3880.sendpatchset@rx1.opensource.se>
+References: <20081219063359.2703.85817.sendpatchset@rx1.opensource.se>
 Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20081219063359.2703.85817.sendpatchset@rx1.opensource.se>
 Sender: linux-sh-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
@@ -11,40 +13,32 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org, adaplas@gmail.com, linux-sh@vger.kernel.org
 
-video: deferred io fixes and sh_mobile_lcdcfb support
+From: Magnus Damm <damm@igel.co.jp>
 
-[PATCH 01/05] video: fix deferred io fsync()
-[PATCH 02/05] video: deferred io cleanup
-[PATCH 03/05] video: deferred io with physically contiguous memory
-[PATCH 04/05] video: sh_mobile_lcdcfb deferred io support 
-[PATCH 05/05] sh: enable deferred io LCDC on Migo-R
+If CONFIG_FB_DEFERRED_IO is set, but there are framebuffers 
+registered that does not make use of deferred io, then fsync()
+on those framebuffers will result in a crash. Fix that.
 
-This patchset adds deferred io support to sh_mobile_lcdcfb.
-
-The LCDC hardware block managed by the sh_mobile_lcdcfb driver supports
-RGB or SYS panel configurations. SYS panels come with an external display
-controller that is resposible for refreshing the actual LCD panel. RGB
-panels are controlled directly by the LCDC and they need to be refreshed
-by the LCDC hardware.
-
-In the case of SYS panels we can save some power by configuring the LCDC
-hardware block in one-shot mode. In this one-shot mode panel refresh is
-managed by software. This works well together with deferred io since it
-allows us to stop clocks for most of the time and only enable clocks when
-we actually want to trigger an update. When there is no fbdev activity
-the clocks are kept stopped which allows us to deep sleep.
-
-May I suggest merging the first 3 patches with other framebuffer changes,
-but handling patch 4 and 5 with other SuperH changes? That strategy
-should be fine since there are no compile time dependencies. To keep
-things running please apply patch number 5 when all other changes are in.
+This is needed for sh_mobile_lcdcfb since we always enable
+deferred io at compile time but we may disable deferred io
+for some types of hardware configurations.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- arch/sh/boards/mach-migor/setup.c |    2 
- drivers/video/Kconfig             |    1 
- drivers/video/fb_defio.c          |   27 ++++-
- drivers/video/sh_mobile_lcdcfb.c  |  170 ++++++++++++++++++++++++++++++++-----
- include/video/sh_mobile_lcdc.h    |    1 
- 5 files changed, 174 insertions(+), 27 deletions(-)
+ drivers/video/fb_defio.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- 0001/drivers/video/fb_defio.c
++++ work/drivers/video/fb_defio.c	2008-12-17 15:27:44.000000000 +0900
+@@ -60,6 +60,10 @@ int fb_deferred_io_fsync(struct file *fi
+ {
+ 	struct fb_info *info = file->private_data;
+ 
++	/* Skip if deferred io is complied-in but disabled on this fbdev */
++	if (!info->fbdefio)
++		return 0;
++
+ 	/* Kill off the delayed work */
+ 	cancel_rearming_delayed_work(&info->deferred_work);
+ 

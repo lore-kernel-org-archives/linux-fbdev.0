@@ -1,10 +1,10 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch 2/6] fbdev: atafb - Fix 16 bpp console
-Date: Sun, 21 Dec 2008 16:01:01 +0100
-Message-ID: <20081221150122.191178920@mail.of.borg>
+Subject: [patch 3/6] fbdev: c2p - Cleanups
+Date: Sun, 21 Dec 2008 16:01:02 +0100
+Message-ID: <20081221150122.473385775@mail.of.borg>
 References: <20081221150059.844577615@mail.of.borg>
 Return-path: <linux-m68k-owner@vger.kernel.org>
-Content-Disposition: inline; filename=atafb-16bpp.diff
+Content-Disposition: inline; filename=c2p-prepare.diff
 Sender: linux-m68k-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
@@ -13,148 +13,219 @@ Content-Transfer-Encoding: 7bit
 To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>, linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
 
-  - 16 bpp must use the cfb_*() ops
-  - 16 bpp needs to set up info->pseudo_palette[] (was fbcon_cfb16_cmap[] in
-    2.4.x)
-  - Kill commented out 2.4.x fbcon remnants
+  - Improve comments and naming
+  - Use void * for arbitrary pointers
+  - Use a union to represent pixels/words, to avoid casts
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/atafb.c |   74 ++++++++++++++++++++------------------------------
- 1 file changed, 30 insertions(+), 44 deletions(-)
+ drivers/video/c2p.c |   80 +++++++++++++++++++++++++++-------------------------
+ drivers/video/c2p.h |    6 +--
+ 2 files changed, 45 insertions(+), 41 deletions(-)
 
---- a/drivers/video/atafb.c
-+++ b/drivers/video/atafb.c
-@@ -149,6 +149,7 @@ static struct atafb_par {
- 			short mono;
- 			short ste_mode;
- 			short bpp;
-+			u32 pseudo_palette[16];
- 		} falcon;
- #endif
- 		/* Nothing needed for external mode */
-@@ -885,10 +886,6 @@ static int vdl_prescale[4][3] = {
- /* Default hsync timing [mon_type] in picoseconds */
- static long h_syncs[4] = { 3000000, 4875000, 4000000, 4875000 };
- 
--#ifdef FBCON_HAS_CFB16
--static u16 fbcon_cfb16_cmap[16];
--#endif
--
- static inline int hxx_prescale(struct falcon_hw *hw)
- {
- 	return hw->ste_mode ? 16
-@@ -1736,10 +1733,10 @@ static int falcon_setcolreg(unsigned int
- 			(((red & 0xe000) >> 13) | ((red & 0x1000) >> 12) << 8) |
- 			(((green & 0xe000) >> 13) | ((green & 0x1000) >> 12) << 4) |
- 			((blue & 0xe000) >> 13) | ((blue & 0x1000) >> 12);
--#ifdef FBCON_HAS_CFB16
--		fbcon_cfb16_cmap[regno] = ((red & 0xf800) |
--					   ((green & 0xfc00) >> 5) |
--					   ((blue & 0xf800) >> 11));
-+#ifdef ATAFB_FALCON
-+		((u32 *)info->pseudo_palette)[regno] = ((red & 0xf800) |
-+						       ((green & 0xfc00) >> 5) |
-+						       ((blue & 0xf800) >> 11));
- #endif
- 	}
- 	return 0;
-@@ -2447,42 +2444,6 @@ static void atafb_set_disp(struct fb_inf
- 	atafb_get_fix(&info->fix, info);
- 
- 	info->screen_base = (void *)info->fix.smem_start;
--
--	switch (info->fix.type) {
--	case FB_TYPE_INTERLEAVED_PLANES:
--		switch (info->var.bits_per_pixel) {
--		case 2:
--			// display->dispsw = &fbcon_iplan2p2;
--			break;
--		case 4:
--			// display->dispsw = &fbcon_iplan2p4;
--			break;
--		case 8:
--			// display->dispsw = &fbcon_iplan2p8;
--			break;
--		}
--		break;
--	case FB_TYPE_PACKED_PIXELS:
--		switch (info->var.bits_per_pixel) {
--#ifdef FBCON_HAS_MFB
--		case 1:
--			// display->dispsw = &fbcon_mfb;
--			break;
--#endif
--#ifdef FBCON_HAS_CFB8
--		case 8:
--			// display->dispsw = &fbcon_cfb8;
--			break;
--#endif
--#ifdef FBCON_HAS_CFB16
--		case 16:
--			// display->dispsw = &fbcon_cfb16;
--			// display->dispsw_data = fbcon_cfb16_cmap;
--			break;
--#endif
--		}
--		break;
--	}
+--- a/drivers/video/c2p.c
++++ b/drivers/video/c2p.c
+@@ -54,7 +54,7 @@ static inline u32 get_mask(int n)
+     return 0;
  }
  
- static int atafb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
-@@ -2553,6 +2514,13 @@ static void atafb_fillrect(struct fb_inf
- 	if (!rect->width || !rect->height)
- 		return;
+-#define transp_nx1(d, n)				\
++#define transp8_nx1(d, n)				\
+     do {						\
+ 	u32 mask = get_mask(n);				\
+ 	/* First block */				\
+@@ -67,7 +67,7 @@ static inline u32 get_mask(int n)
+ 	_transp(d, 6, 7, n, mask);			\
+     } while (0)
  
-+#ifdef ATAFB_FALCON
-+	if (info->var.bits_per_pixel == 16) {
-+		cfb_fillrect(info, rect);
-+		return;
-+	}
-+#endif
-+
- 	/*
- 	 * We could use hardware clipping but on many cards you get around
- 	 * hardware clipping by writing to framebuffer directly.
-@@ -2587,6 +2555,13 @@ static void atafb_copyarea(struct fb_inf
- 	u32 dx, dy, sx, sy, width, height;
- 	int rev_copy = 0;
+-#define transp_nx2(d, n)				\
++#define transp8_nx2(d, n)				\
+     do {						\
+ 	u32 mask = get_mask(n);				\
+ 	/* First block */				\
+@@ -78,40 +78,41 @@ static inline u32 get_mask(int n)
+ 	_transp(d, 5, 7, n, mask);			\
+     } while (0)
  
-+#ifdef ATAFB_FALCON
-+	if (info->var.bits_per_pixel == 16) {
-+		cfb_copyarea(info, area);
-+		return;
-+	}
-+#endif
-+
- 	/* clip the destination */
- 	x2 = area->dx + area->width;
- 	y2 = area->dy + area->height;
-@@ -2636,6 +2611,13 @@ static void atafb_imageblit(struct fb_in
- 	const char *src;
- 	u32 dx, dy, width, height, pitch;
+-#define transp_nx4(d, n)				\
++#define transp8_nx4(d, n)				\
+     do {						\
+ 	u32 mask = get_mask(n);				\
++	/* Single block */				\
+ 	_transp(d, 0, 4, n, mask);			\
+ 	_transp(d, 1, 5, n, mask);			\
+ 	_transp(d, 2, 6, n, mask);			\
+ 	_transp(d, 3, 7, n, mask);			\
+     } while (0)
  
-+#ifdef ATAFB_FALCON
-+	if (info->var.bits_per_pixel == 16) {
-+		cfb_imageblit(info, image);
-+		return;
-+	}
-+#endif
-+
- 	/*
- 	 * We could use hardware clipping but on many cards you get around
- 	 * hardware clipping by writing to framebuffer directly like we are
-@@ -3229,6 +3211,10 @@ int __init atafb_init(void)
- 	// tries to read from HW which may not be initialized yet
- 	// so set sane var first, then call atafb_set_par
- 	atafb_get_var(&fb_info.var, &fb_info);
-+
-+#ifdef ATAFB_FALCON
-+	fb_info.pseudo_palette = current_par.hw.falcon.pseudo_palette;
-+#endif
- 	fb_info.flags = FBINFO_FLAG_DEFAULT;
+-#define transp(d, n, m)	transp_nx ## m(d, n)
++#define transp8(d, n, m)	transp8_nx ## m(d, n)
  
- 	if (!fb_find_mode(&fb_info.var, &fb_info, mode_option, atafb_modedb,
+ 
+     /*
+      *  Perform a full C2P step on 32 8-bit pixels, stored in 8 32-bit words
+      *  containing
+      *    - 32 8-bit chunky pixels on input
+-     *    - permuted planar data on output
++     *    - permutated planar data (1 plane per 32-bit word) on output
+      */
+ 
+-static void c2p_8bpp(u32 d[8])
++static void c2p_32x8(u32 d[8])
+ {
+-    transp(d, 16, 4);
+-    transp(d, 8, 2);
+-    transp(d, 4, 1);
+-    transp(d, 2, 4);
+-    transp(d, 1, 2);
++    transp8(d, 16, 4);
++    transp8(d, 8, 2);
++    transp8(d, 4, 1);
++    transp8(d, 2, 4);
++    transp8(d, 1, 2);
+ }
+ 
+ 
+     /*
+-     *  Array containing the permution indices of the planar data after c2p
++     *  Array containing the permutation indices of the planar data after c2p
+      */
+ 
+-static const int perm_c2p_8bpp[8] = { 7, 5, 3, 1, 6, 4, 2, 0 };
++static const int perm_c2p_32x8[8] = { 7, 5, 3, 1, 6, 4, 2, 0 };
+ 
+ 
+     /*
+@@ -130,12 +131,12 @@ static inline unsigned long comp(unsigne
+      *  Store a full block of planar data after c2p conversion
+      */
+ 
+-static inline void store_planar(char *dst, u32 dst_inc, u32 bpp, u32 d[8])
++static inline void store_planar(void *dst, u32 dst_inc, u32 bpp, u32 d[8])
+ {
+     int i;
+ 
+     for (i = 0; i < bpp; i++, dst += dst_inc)
+-	*(u32 *)dst = d[perm_c2p_8bpp[i]];
++	*(u32 *)dst = d[perm_c2p_32x8[i]];
+ }
+ 
+ 
+@@ -143,13 +144,13 @@ static inline void store_planar(char *ds
+      *  Store a partial block of planar data after c2p conversion
+      */
+ 
+-static inline void store_planar_masked(char *dst, u32 dst_inc, u32 bpp,
++static inline void store_planar_masked(void *dst, u32 dst_inc, u32 bpp,
+ 				       u32 d[8], u32 mask)
+ {
+     int i;
+ 
+     for (i = 0; i < bpp; i++, dst += dst_inc)
+-	*(u32 *)dst = comp(d[perm_c2p_8bpp[i]], *(u32 *)dst, mask);
++	*(u32 *)dst = comp(d[perm_c2p_32x8[i]], *(u32 *)dst, mask);
+ }
+ 
+ 
+@@ -166,18 +167,21 @@ static inline void store_planar_masked(c
+      *  @bpp: Bits per pixel of the planar frame buffer (1-8)
+      */
+ 
+-void c2p(u8 *dst, const u8 *src, u32 dx, u32 dy, u32 width, u32 height,
++void c2p(void *dst, const void *src, u32 dx, u32 dy, u32 width, u32 height,
+ 	 u32 dst_nextline, u32 dst_nextplane, u32 src_nextline, u32 bpp)
+ {
+-    int dst_idx;
+-    u32 d[8], first, last, w;
++    union {
++	u8 pixels[32];
++	u32 words[8];
++    } d;
++    u32 dst_idx, first, last, w;
+     const u8 *c;
+-    u8 *p;
++    void *p;
+ 
+     dst += dy*dst_nextline+(dx & ~31);
+     dst_idx = dx % 32;
+-    first = ~0UL >> dst_idx;
+-    last = ~(~0UL >> ((dst_idx+width) % 32));
++    first = 0xffffffffU >> dst_idx;
++    last = ~(0xffffffffU >> ((dst_idx+width) % 32));
+     while (height--) {
+ 	c = src;
+ 	p = dst;
+@@ -185,11 +189,11 @@ void c2p(u8 *dst, const u8 *src, u32 dx,
+ 	if (dst_idx+width <= 32) {
+ 	    /* Single destination word */
+ 	    first &= last;
+-	    memset(d, 0, sizeof(d));
+-	    memcpy((u8 *)d+dst_idx, c, width);
++	    memset(d.pixels, 0, sizeof(d));
++	    memcpy(d.pixels+dst_idx, c, width);
+ 	    c += width;
+-	    c2p_8bpp(d);
+-	    store_planar_masked(p, dst_nextplane, bpp, d, first);
++	    c2p_32x8(d.words);
++	    store_planar_masked(p, dst_nextplane, bpp, d.words, first);
+ 	    p += 4;
+ 	} else {
+ 	    /* Multiple destination words */
+@@ -197,30 +201,30 @@ void c2p(u8 *dst, const u8 *src, u32 dx,
+ 	    /* Leading bits */
+ 	    if (dst_idx) {
+ 		w = 32 - dst_idx;
+-		memset(d, 0, dst_idx);
+-		memcpy((u8 *)d+dst_idx, c, w);
++		memset(d.pixels, 0, dst_idx);
++		memcpy(d.pixels+dst_idx, c, w);
+ 		c += w;
+-		c2p_8bpp(d);
+-		store_planar_masked(p, dst_nextplane, bpp, d, first);
++		c2p_32x8(d.words);
++		store_planar_masked(p, dst_nextplane, bpp, d.words, first);
+ 		p += 4;
+ 		w = width-w;
+ 	    }
+ 	    /* Main chunk */
+ 	    while (w >= 32) {
+-		memcpy(d, c, 32);
++		memcpy(d.pixels, c, 32);
+ 		c += 32;
+-		c2p_8bpp(d);
+-		store_planar(p, dst_nextplane, bpp, d);
++		c2p_32x8(d.words);
++		store_planar(p, dst_nextplane, bpp, d.words);
+ 		p += 4;
+ 		w -= 32;
+ 	    }
+ 	    /* Trailing bits */
+ 	    w %= 32;
+ 	    if (w > 0) {
+-		memcpy(d, c, w);
+-		memset((u8 *)d+w, 0, 32-w);
+-		c2p_8bpp(d);
+-		store_planar_masked(p, dst_nextplane, bpp, d, last);
++		memcpy(d.pixels, c, w);
++		memset(d.pixels+w, 0, 32-w);
++		c2p_32x8(d.words);
++		store_planar_masked(p, dst_nextplane, bpp, d.words, last);
+ 	    }
+ 	}
+ 	src += src_nextline;
+--- a/drivers/video/c2p.h
++++ b/drivers/video/c2p.h
+@@ -10,7 +10,7 @@
+ 
+ #include <linux/types.h>
+ 
+-extern void c2p(u8 *dst, const u8 *src, u32 dx, u32 dy, u32 width, u32 height,
+-		u32 dst_nextline, u32 dst_nextplane, u32 src_nextline,
+-		u32 bpp);
++extern void c2p(void *dst, const void *src, u32 dx, u32 dy, u32 width,
++	        u32 height, u32 dst_nextline, u32 dst_nextplane,
++		u32 src_nextline, u32 bpp);
+ 
 
 -- 
 Gr{oetje,eeting}s,

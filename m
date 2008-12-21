@@ -1,10 +1,10 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch 4/6] fbdev: c2p - Extract common c2p core to c2p_core.h
-Date: Sun, 21 Dec 2008 16:01:03 +0100
-Message-ID: <20081221150122.756673142@mail.of.borg>
+Subject: [patch 1/6] fbdev: atafb - Fix line length handling
+Date: Sun, 21 Dec 2008 16:01:00 +0100
+Message-ID: <20081221150121.904146951@mail.of.borg>
 References: <20081221150059.844577615@mail.of.borg>
 Return-path: <linux-m68k-owner@vger.kernel.org>
-Content-Disposition: inline; filename=c2p-extract-common.diff
+Content-Disposition: inline; filename=atafb-linelen.diff
 Sender: linux-m68k-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
@@ -13,219 +13,79 @@ Content-Transfer-Encoding: 7bit
 To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>, linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
 
+  - Make sure par->next_line is always set (this was done for Falcon only),
+    as all the text console drawing operations need a valid par->next_line,
+  - Make sure fix->line_length is always set, as some userspace applications
+    need it because they don't have fallback code for the case where it's zero.
+
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/c2p.c      |   87 ----------------------------------------
- drivers/video/c2p_core.h |  101 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 102 insertions(+), 86 deletions(-)
+ drivers/video/atafb.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
---- a/drivers/video/c2p.c
-+++ b/drivers/video/c2p.c
-@@ -15,80 +15,7 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include "c2p.h"
--
--
--    /*
--     *  Basic transpose step
--     */
--
--#define _transp(d, i1, i2, shift, mask)			\
--    do {						\
--	u32 t = (d[i1] ^ (d[i2] >> shift)) & mask;	\
--	d[i1] ^= t;					\
--	d[i2] ^= t << shift;				\
--    } while (0)
--
--static inline u32 get_mask(int n)
--{
--    switch (n) {
--	case 1:
--	    return 0x55555555;
--	    break;
--
--	case 2:
--	    return 0x33333333;
--	    break;
--
--	case 4:
--	    return 0x0f0f0f0f;
--	    break;
--
--	case 8:
--	    return 0x00ff00ff;
--	    break;
--
--	case 16:
--	    return 0x0000ffff;
--	    break;
--    }
--    return 0;
--}
--
--#define transp8_nx1(d, n)				\
--    do {						\
--	u32 mask = get_mask(n);				\
--	/* First block */				\
--	_transp(d, 0, 1, n, mask);			\
--	/* Second block */				\
--	_transp(d, 2, 3, n, mask);			\
--	/* Third block */				\
--	_transp(d, 4, 5, n, mask);			\
--	/* Fourth block */				\
--	_transp(d, 6, 7, n, mask);			\
--    } while (0)
--
--#define transp8_nx2(d, n)				\
--    do {						\
--	u32 mask = get_mask(n);				\
--	/* First block */				\
--	_transp(d, 0, 2, n, mask);			\
--	_transp(d, 1, 3, n, mask);			\
--	/* Second block */				\
--	_transp(d, 4, 6, n, mask);			\
--	_transp(d, 5, 7, n, mask);			\
--    } while (0)
--
--#define transp8_nx4(d, n)				\
--    do {						\
--	u32 mask = get_mask(n);				\
--	/* Single block */				\
--	_transp(d, 0, 4, n, mask);			\
--	_transp(d, 1, 5, n, mask);			\
--	_transp(d, 2, 6, n, mask);			\
--	_transp(d, 3, 7, n, mask);			\
--    } while (0)
--
--#define transp8(d, n, m)	transp8_nx ## m(d, n)
-+#include "c2p_core.h"
+--- a/drivers/video/atafb.c
++++ b/drivers/video/atafb.c
+@@ -614,7 +614,7 @@ static int tt_encode_fix(struct fb_fix_s
+ 	fix->xpanstep = 0;
+ 	fix->ypanstep = 1;
+ 	fix->ywrapstep = 0;
+-	fix->line_length = 0;
++	fix->line_length = par->next_line;
+ 	fix->accel = FB_ACCEL_ATARIBLITT;
+ 	return 0;
+ }
+@@ -691,6 +691,7 @@ static int tt_decode_var(struct fb_var_s
+ 		return -EINVAL;
+ 	par->yres_virtual = yres_virtual;
+ 	par->screen_base = screen_base + var->yoffset * linelen;
++	par->next_line = linelen;
+ 	return 0;
+ }
  
+@@ -918,7 +919,7 @@ static int falcon_encode_fix(struct fb_f
+ 		fix->visual = FB_VISUAL_TRUECOLOR;
+ 		fix->xpanstep = 2;
+ 	}
+-	fix->line_length = 0;
++	fix->line_length = par->next_line;
+ 	fix->accel = FB_ACCEL_ATARIBLITT;
+ 	return 0;
+ }
+@@ -1852,7 +1853,7 @@ static int stste_encode_fix(struct fb_fi
+ 		fix->ypanstep = 0;
+ 	}
+ 	fix->ywrapstep = 0;
+-	fix->line_length = 0;
++	fix->line_length = par->next_line;
+ 	fix->accel = FB_ACCEL_ATARIBLITT;
+ 	return 0;
+ }
+@@ -1910,6 +1911,7 @@ static int stste_decode_var(struct fb_va
+ 		return -EINVAL;
+ 	par->yres_virtual = yres_virtual;
+ 	par->screen_base = screen_base + var->yoffset * linelen;
++	par->next_line = linelen;
+ 	return 0;
+ }
  
-     /*
-@@ -116,18 +43,6 @@ static const int perm_c2p_32x8[8] = { 7,
+@@ -2169,7 +2171,7 @@ static int ext_encode_fix(struct fb_fix_
+ 	fix->xpanstep = 0;
+ 	fix->ypanstep = 0;
+ 	fix->ywrapstep = 0;
+-	fix->line_length = 0;
++	fix->line_length = par->next_line;
+ 	return 0;
+ }
  
+@@ -2184,6 +2186,8 @@ static int ext_decode_var(struct fb_var_
+ 	    var->xoffset > 0 ||
+ 	    var->yoffset > 0)
+ 		return -EINVAL;
++
++	par->next_line = external_xres_virtual * external_depth / 8;
+ 	return 0;
+ }
  
-     /*
--     *  Compose two values, using a bitmask as decision value
--     *  This is equivalent to (a & mask) | (b & ~mask)
--     */
--
--static inline unsigned long comp(unsigned long a, unsigned long b,
--				 unsigned long mask)
--{
--	return ((a ^ b) & mask) ^ b;
--}
--
--
--    /*
-      *  Store a full block of planar data after c2p conversion
-      */
- 
---- /dev/null
-+++ b/drivers/video/c2p_core.h
-@@ -0,0 +1,101 @@
-+/*
-+ *  Fast C2P (Chunky-to-Planar) Conversion
-+ *
-+ *  Copyright (C) 2003-2008 Geert Uytterhoeven
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License. See the file COPYING in the main directory of this archive
-+ *  for more details.
-+ */
-+
-+
-+    /*
-+     *  Basic transpose step
-+     */
-+
-+#define _transp(d, i1, i2, shift, mask)				\
-+	do {							\
-+		u32 t = (d[i1] ^ (d[i2] >> shift)) & mask;	\
-+		d[i1] ^= t;					\
-+		d[i2] ^= t << shift;				\
-+	} while (0)
-+
-+
-+static inline u32 get_mask(int n)
-+{
-+	switch (n) {
-+	case 1:
-+		return 0x55555555;
-+		break;
-+
-+	case 2:
-+		return 0x33333333;
-+		break;
-+
-+	case 4:
-+		return 0x0f0f0f0f;
-+		break;
-+
-+	case 8:
-+		return 0x00ff00ff;
-+		break;
-+
-+	case 16:
-+		return 0x0000ffff;
-+		break;
-+	}
-+	return 0;
-+}
-+
-+
-+    /*
-+     *  Transpose operations on 8 32-bit words
-+     */
-+
-+#define transp8_nx1(d, n)					\
-+	do {							\
-+		u32 mask = get_mask(n);				\
-+		/* First block */				\
-+		_transp(d, 0, 1, n, mask);			\
-+		/* Second block */				\
-+		_transp(d, 2, 3, n, mask);			\
-+		/* Third block */				\
-+		_transp(d, 4, 5, n, mask);			\
-+		/* Fourth block */				\
-+		_transp(d, 6, 7, n, mask);			\
-+	} while (0)
-+
-+#define transp8_nx2(d, n)					\
-+	do {							\
-+		u32 mask = get_mask(n);				\
-+		/* First block */				\
-+		_transp(d, 0, 2, n, mask);			\
-+		_transp(d, 1, 3, n, mask);			\
-+		/* Second block */				\
-+		_transp(d, 4, 6, n, mask);			\
-+		_transp(d, 5, 7, n, mask);			\
-+	} while (0)
-+
-+#define transp8_nx4(d, n)					\
-+	do {							\
-+		u32 mask = get_mask(n);				\
-+		/* Single block */				\
-+		_transp(d, 0, 4, n, mask);			\
-+		_transp(d, 1, 5, n, mask);			\
-+		_transp(d, 2, 6, n, mask);			\
-+		_transp(d, 3, 7, n, mask);			\
-+	} while (0)
-+
-+#define transp8(d, n, m)	transp8_nx ## m(d, n)
-+
-+
-+    /*
-+     *  Compose two values, using a bitmask as decision value
-+     *  This is equivalent to (a & mask) | (b & ~mask)
-+     */
-+
-+static inline unsigned long comp(unsigned long a, unsigned long b,
-+				 unsigned long mask)
-+{
-+	return ((a ^ b) & mask) ^ b;
-+}
 
 -- 
 Gr{oetje,eeting}s,

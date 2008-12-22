@@ -1,25 +1,22 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 12271] New: kernel crash
- during startup with intelfb compiled into kernel
-Date: Mon, 22 Dec 2008 10:06:55 -0800
-Message-ID: <20081222100655.361b808d.akpm@linux-foundation.org>
-References: <bug-12271-10286@http.bugzilla.kernel.org/>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [PATCH 0/4 v5] i.MX31: dmaengine and
+	framebuffer drivers
+Date: Mon, 22 Dec 2008 19:31:41 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0812221922200.5241@axis700.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1LEpBG-0003Az-Lb
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <g.liakhovetski@gmx.de>) id 1LEpZ1-00060t-SQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 22 Dec 2008 18:07:02 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LEpBD-0008Fs-TD
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 22 Dec 2008 18:07:02 +0000
-In-Reply-To: <bug-12271-10286@http.bugzilla.kernel.org/>
+	Mon, 22 Dec 2008 18:31:35 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 29vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1LEpYy-0002sx-Tw for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Dec 2008 18:31:35 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,52 +26,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: dennis.jansen@web.de
-Cc: linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Dan Williams <dan.j.williams@intel.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, adaplas@gmail.com
 
+Hi,
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+This is version 5 of dmaengine and framebuffer drivers for i.MX31.
 
-On Mon, 22 Dec 2008 03:46:45 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+Changes since version 4: addressed comments from Sascha Hauer, apart from: 
+the idmac driver still uses two locks - a mutex and a spinlock, the "ugly" 
+construction like "to_ipu(to_idmac(ichan->dma_chan.device));" is still 
+there, still all 144 IRQs are registered. So now the driver is under 
+drivers/dma, also fixed all docbook comments.
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=12271
-> 
->            Summary: kernel crash during startup with intelfb compiled into
->                     kernel
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.28-rc9-git
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Video(Other)
->         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
->         ReportedBy: dennis.jansen@web.de
-> 
-> 
-> Distribution: Ubuntu 8.10
-> Hardware Environment: Acer Extensa 5220
-> Software Environment: N/A
-> Problem Description: 
-> 
-> When I boot with the intelfb and vesafb modules compiled into the kernel, the
-> kernel crashes quickly during boot (probably during intelfb initialization -
-> the timing seems fit). The displays goes completely blank / off, the keyboard
-> does no longer respond at all (even reisub). I have to power off hard by
-> pressing the power button for a few seconds.
-> 
-> I can avoid the crash by having vesafb switch the display resolution
-> (vga=0x0362).
-> 
+Changes since version 3: fixed idmac_issue_pending() to not reset the 
+current buffer, fixed return value from idmac_tx_submit(), fixed 
+framebuffer panning.
 
-Sorry, I don't know of anyone who can work on this :( If there's any
-earlier kenrel which worked OK then performing a bisection search would
-be most valuable.  http://www.kernel.org/doc/local/git-quick.html has
-some tips.
+Changes since version 2: now uses a tasklet to clean up completed 
+transaction descriptors, as suggested by Dan Williams.
 
+Changes since version 1: rebased on the updated dmaengine framework.
+
+Aimed at 2.6.29.
+
+Based on linux-next as of commit f0e0e8954d03b414927650a6129ace01d554afdc.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
 
 ------------------------------------------------------------------------------

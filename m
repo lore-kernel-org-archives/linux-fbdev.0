@@ -1,7 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 03/05] video: deferred io sys helpers - hecuba / n411
-Date: Mon, 22 Dec 2008 14:53:01 +0900
-Message-ID: <20081222055301.27821.25166.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 04/05] video: deferred io sys helpers - metronome
+Date: Mon, 22 Dec 2008 14:53:09 +0900
+Message-ID: <20081222055309.27821.40219.sendpatchset@rx1.opensource.se>
 References: <20081222055233.27821.68008.sendpatchset@rx1.opensource.se>
 Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <20081222055233.27821.68008.sendpatchset@rx1.opensource.se>
@@ -15,89 +15,103 @@ Cc: aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@red
 
 From: Magnus Damm <damm@igel.co.jp>
 
-Change the hecubafb driver and the n411 code to use the new shared sys
-helpers. This allows us to remove some duplicated code. In the future
-this driver can setup the "sysdelay" value to delay flushing.
-
-While at it, convert space to tabs for the n411 kconfig entry.
+Change the metronome driver to use the new shared sys helpers.
+In the future this driver can setup the "sysdelay" value to
+delay flushing.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- drivers/video/Kconfig    |   17 +++------
- drivers/video/hecubafb.c |   86 ++--------------------------------------------
- 2 files changed, 11 insertions(+), 92 deletions(-)
+ drivers/video/Kconfig       |    4 -
+ drivers/video/metronomefb.c |  102 +++++++------------------------------------
+ 2 files changed, 17 insertions(+), 89 deletions(-)
 
---- 0050/drivers/video/Kconfig
-+++ work/drivers/video/Kconfig	2008-12-22 14:06:31.000000000 +0900
-@@ -712,17 +712,12 @@ config FB_EFI
- 	  using the EFI framebuffer as your console.
+--- 0051/drivers/video/Kconfig
++++ work/drivers/video/Kconfig	2008-12-22 14:07:15.000000000 +0900
+@@ -2071,10 +2071,6 @@ config XEN_FBDEV_FRONTEND
+ config FB_METRONOME
+ 	tristate "E-Ink Metronome/8track controller support"
+ 	depends on FB
+-	select FB_SYS_FILLRECT
+-	select FB_SYS_COPYAREA
+-	select FB_SYS_IMAGEBLIT
+-	select FB_SYS_FOPS
+ 	select FB_DEFERRED_IO
+ 	help
+ 	  This driver implements support for the E-Ink Metronome
+--- 0001/drivers/video/metronomefb.c
++++ work/drivers/video/metronomefb.c	2008-12-22 14:07:15.000000000 +0900
+@@ -445,7 +445,6 @@ static void metronomefb_dpy_update(struc
  
- config FB_N411
--       tristate "N411 Apollo/Hecuba devkit support"
--       depends on FB && X86 && MMU
--       select FB_SYS_FILLRECT
--       select FB_SYS_COPYAREA
--       select FB_SYS_IMAGEBLIT
--       select FB_SYS_FOPS
--       select FB_DEFERRED_IO
--       select FB_HECUBA
--       help
--         This enables support for the Apollo display controller in its
--         Hecuba form using the n411 devkit.
-+	tristate "N411 Apollo/Hecuba devkit support"
-+	depends on FB && X86 && MMU
-+	select FB_HECUBA
-+	help
-+	  This enables support for the Apollo display controller in its
-+	  Hecuba form using the n411 devkit.
- 
- config FB_HGA
- 	tristate "Hercules mono graphics support"
---- 0001/drivers/video/hecubafb.c
-+++ work/drivers/video/hecubafb.c	2008-12-22 14:06:31.000000000 +0900
-@@ -122,89 +122,13 @@ static void hecubafb_dpy_deferred_io(str
- 	hecubafb_dpy_update(info->par);
+ 	cksum = calc_img_cksum((u16 *) par->metromem_img, fbsize/2);
+ 	*((u16 *)(par->metromem_img) + fbsize/2) = cksum;
+-	metronome_display_cmd(par);
  }
  
--static void hecubafb_fillrect(struct fb_info *info,
+ static u16 metronomefb_dpy_update_page(struct metronomefb_par *par, int index)
+@@ -472,97 +471,30 @@ static void metronomefb_dpy_deferred_io(
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+ 	struct metronomefb_par *par = info->par;
+ 
+-	/* walk the written page list and swizzle the data */
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+-		cksum = metronomefb_dpy_update_page(par,
+-					(cur->index << PAGE_SHIFT));
+-		par->metromem_img_csum -= par->csum_table[cur->index];
+-		par->csum_table[cur->index] = cksum;
+-		par->metromem_img_csum += cksum;
++	if (fbdefio->dx != -1) {
++		/* update the entire screen */
++		metronomefb_dpy_update(par);
++	} else {
++		/* walk the written page list and swizzle the data */
++		list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++			cksum = metronomefb_dpy_update_page(par,
++						(cur->index << PAGE_SHIFT));
++			par->metromem_img_csum -= par->csum_table[cur->index];
++			par->csum_table[cur->index] = cksum;
++			par->metromem_img_csum += cksum;
++		}
+ 	}
+ 
+ 	metronome_display_cmd(par);
+ }
+ 
+-static void metronomefb_fillrect(struct fb_info *info,
 -				   const struct fb_fillrect *rect)
 -{
--	struct hecubafb_par *par = info->par;
+-	struct metronomefb_par *par = info->par;
 -
 -	sys_fillrect(info, rect);
--
--	hecubafb_dpy_update(par);
+-	metronomefb_dpy_update(par);
 -}
 -
--static void hecubafb_copyarea(struct fb_info *info,
+-static void metronomefb_copyarea(struct fb_info *info,
 -				   const struct fb_copyarea *area)
 -{
--	struct hecubafb_par *par = info->par;
+-	struct metronomefb_par *par = info->par;
 -
 -	sys_copyarea(info, area);
--
--	hecubafb_dpy_update(par);
+-	metronomefb_dpy_update(par);
 -}
 -
--static void hecubafb_imageblit(struct fb_info *info,
+-static void metronomefb_imageblit(struct fb_info *info,
 -				const struct fb_image *image)
 -{
--	struct hecubafb_par *par = info->par;
+-	struct metronomefb_par *par = info->par;
 -
 -	sys_imageblit(info, image);
--
--	hecubafb_dpy_update(par);
+-	metronomefb_dpy_update(par);
 -}
 -
 -/*
 - * this is the slow path from userspace. they can seek and write to
-- * the fb. it's inefficient to do anything less than a full screen draw
+- * the fb. it is based on fb_sys_write
 - */
--static ssize_t hecubafb_write(struct fb_info *info, const char __user *buf,
+-static ssize_t metronomefb_write(struct fb_info *info, const char __user *buf,
 -				size_t count, loff_t *ppos)
 -{
--	struct hecubafb_par *par = info->par;
+-	struct metronomefb_par *par = info->par;
 -	unsigned long p = *ppos;
 -	void *dst;
 -	int err = 0;
@@ -123,7 +137,7 @@ Signed-off-by: Magnus Damm <damm@igel.co.jp>
 -		count = total_size - p;
 -	}
 -
--	dst = (void __force *) (info->screen_base + p);
+-	dst = (void __force *)(info->screen_base + p);
 -
 -	if (copy_from_user(dst, buf, count))
 -		err = -EFAULT;
@@ -131,18 +145,17 @@ Signed-off-by: Magnus Damm <damm@igel.co.jp>
 -	if  (!err)
 -		*ppos += count;
 -
--	hecubafb_dpy_update(par);
+-	metronomefb_dpy_update(par);
 -
 -	return (err) ? err : count;
 -}
 -
- static struct fb_ops hecubafb_ops = {
+ static struct fb_ops metronomefb_ops = {
  	.owner		= THIS_MODULE,
--	.fb_read        = fb_sys_read,
--	.fb_write	= hecubafb_write,
--	.fb_fillrect	= hecubafb_fillrect,
--	.fb_copyarea	= hecubafb_copyarea,
--	.fb_imageblit	= hecubafb_imageblit,
+-	.fb_write	= metronomefb_write,
+-	.fb_fillrect	= metronomefb_fillrect,
+-	.fb_copyarea	= metronomefb_copyarea,
+-	.fb_imageblit	= metronomefb_imageblit,
 +	.fb_read        = fb_deferred_io_read,
 +	.fb_write	= fb_deferred_io_write,
 +	.fb_fillrect	= fb_deferred_io_fillrect,
@@ -150,4 +163,4 @@ Signed-off-by: Magnus Damm <damm@igel.co.jp>
 +	.fb_imageblit	= fb_deferred_io_imageblit,
  };
  
- static struct fb_deferred_io hecubafb_defio = {
+ static struct fb_deferred_io metronomefb_defio = {

@@ -1,56 +1,62 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ
-	drivers
-Date: Tue, 23 Dec 2008 13:08:15 +0100
-Message-ID: <20081223120815.GA17159@pengutronix.de>
-References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange> <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de> <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de> <20081222200337.GD9472@pengutronix.de> <4950B8C6.30309@gmail.com> <20081223105246.GF1614@pengutronix.de> <4950CC38.3090200@gmail.com>
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+Subject: Re: [PATCH] pxafb: add support for overlay1 and overlay2 as
+	framebuffer devices
+Date: Tue, 23 Dec 2008 13:07:06 +0100
+Message-ID: <20081223120706.GK9472@pengutronix.de>
+References: <f17812d70812230247l78bd6010v4fd6c94e49523175@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751598AbYLWMI2@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4950CC38.3090200@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk, Dan Williams <dan.j.williams@intel.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <f17812d70812230247l78bd6010v4fd6c94e49523175@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Eric Miao <eric.y.miao@gmail.com>, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, Sascha Hauer <sha@pengutronix.de>
 
-On Tue, Dec 23, 2008 at 02:32:08PM +0300, Dmitry Krivoschekov wrote:
-> Sascha Hauer wrote:
-> > On Tue, Dec 23, 2008 at 01:09:10PM +0300, Dmitry Krivoschekov wrote:
-> >> Robert Schwebel wrote:
-> >>> On Mon, Dec 22, 2008 at 07:37:53PM +0100, Sascha Hauer wrote:
-> >>>> Another thing is the overlay framebuffer. I think it's mainly useful
-> >>>> to display video streams.
-> >>> Right. The idea is that you can push a video stream into /dev/fb1 (for
-> >>> example by using the gstreamer fbdev sink) while displaying widgets from
-> >>> a GUI toolkit on /dev/fb0.
-> >>>
-> >>>> Maybe it's better to implement this as a v4l device as unlike the
-> >>>> framebuffer API the v4l API is designed to handle different image
-> >>>> buffers.
-> >>> Huh? v4l is image-frames-to-userspace, not vice versa.
-> >>>
-> >> ...and vice versa too, v4l2 is not about input devices only but it is
-> >> also related to output devices, v4l2 spec even has a special chapter
-> >> dedicated to overlays [1]. Moreover, you can find such a driver within
-> >> Freescale's BSP [2]. Another example is Omap's videoout driver [3].
-> >
-> > Are you aware of any application making use of this feature?
-> 
-> IIRC, mplayer is able to output on a v4l2 device. 
+Guennadi,
 
-Yes, but only on some MPEG decoder cards. Raw frames are not supported.
+On Tue, Dec 23, 2008 at 06:47:32PM +0800, Eric Miao wrote:
+> PXA27x and later processors support overlay1 and overlay2 on-top of the
+> base framebuffer (although under-neath the base is also possible).
 
-> Also, Freescale's
-> i.MX31 ADS BSP contained a bunch of V4L2 unit tests, including v4l2 output.
+[...]
 
-Ah ok, didn't know that
+> +     Applications should follow the sequence below to operate an overlay
+> +     framebuffer:
+> +
+> +         a. open("/dev/fb[1-2]", ...)
+> +	 b. ioctl(fd, FBIOGET_VSCREENINFO, ...)
+> +	 c. modify 'var' with desired parameters:
+> +	    1) var->xres and var->yres
+> +	    2) larger var->yres_virtual if more memory is required,
+> +	       usually for double-buffering
+> +	    3) var->nonstd for starting (x, y) and color format
+> +	    4) var->{red, green, blue, transp} if RGB mode is to be used
+> +	 d. ioctl(fd, FBIOPUT_VSCREENINFO, ...)
+> +	 e. ioctl(fd, FBIOGET_FSCREENINFO, ...)
+> +	 f. mmap
+> +	 g. ...
 
-Sascha
+That looks like a good pattern to me and we should re-use it on i.MX.
 
+rsc
 -- 
 Pengutronix e.K.                           |                             |
 Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
 Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

@@ -1,93 +1,60 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ
-	drivers
-Date: Tue, 23 Dec 2008 13:56:12 +0100
-Message-ID: <20081223125612.GB17159@pengutronix.de>
-References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange> <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de> <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de> <Pine.LNX.4.64.0812221942480.7796@axis700.grange> <20081223105006.GE1614@pengutronix.de> <20081223121300.GL9472@pengutronix.de> <Pine.LNX.4.64.0812231327310.5188@axis700.grange>
+From: Valentin Longchamp <valentin.longchamp@epfl.ch>
+Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ drivers
+Date: Tue, 23 Dec 2008 13:56:06 +0100
+Message-ID: <4950DFE6.2060901@epfl.ch>
+References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange>	<Pine.LNX.4.64.0812181414280.5510@axis700.grange>	<20081218225834.GJ20756@pengutronix.de>	<Pine.LNX.4.64.0812221240210.5241@axis700.grange>	<20081222183753.GD1614@pengutronix.de>	<Pine.LNX.4.64.0812221942480.7796@axis700.grange>
+	<20081223105006.GE1614@pengutronix.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752096AbYLWM4Z@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812231327310.5188@axis700.grange>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk, Dan Williams <dan.j.williams@intel.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+In-Reply-To: <20081223105006.GE1614@pengutronix.de>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk, Da
 
-On Tue, Dec 23, 2008 at 01:45:14PM +0100, Guennadi Liakhovetski wrote:
-> Hi Robert,
+Sascha Hauer wrote:
+> On Mon, Dec 22, 2008 at 09:10:03PM +0100, Guennadi Liakhovetski wrote:
 > 
-> On Tue, 23 Dec 2008, Robert Schwebel wrote:
+>> If there are no other problems with v5, could we maybe take it as a basis
+>> and then I would submit a patch to reduce the number of IRQs?
 > 
-> > On Tue, Dec 23, 2008 at 11:50:06AM +0100, Sascha Hauer wrote:
-> > > > You mean an output v4l device? I think overlays are handled by framebuffer 
-> > > > drivers... But I'm also not quite sure about it, however, handling overlay 
-> > > > as another framebuffer seems logical to me.
-> > >
-> > > Well the DMA engine seems to suggest that frames should be passed around
-> > > whereas the framebuffer API only has a single frame. That would fit
-> > > better into the v4l API. Also the IPU can do things like colourspace
-> > > conversion and hw scaling which would fit into the V4L API.
-> > 
-> > Looks like a candidate for gstreamer on the userspace end. Can it be
-> > decoupled enough to make proper plugins out of it?
+> Please understand my concerns with this driver. It's a quite complex
+> beast and experience shows that once a driver is in the kernel it is far
+> more complicated to change it than to do it right the first way. You
+> know that I'm also interested in having a MX31 framebuffer (and camera)
+> driver in kernel but I want to make sure that it works properly and leaves
+> room for feature enhancements without having to refactor the whole
+> driver.
+> It would be good if someone else could throw his 2 cents into this
+> discussion.
 > 
-> I think, the question is rather "can a driver be written for IPU to 
-> support some sane hardware-neutral image data manipulation API, like v4l?" 
-> Then you can start writing any user-space apps on top of that API. So, as 
-> long as there is such an API, I think, we can put it on IPU, yes. My 
-> problems ATM is - no use-case. What concerns overlay, it is not used in 
-> the current application, as for image format conversion from the camera - 
-> I only have a Bayer camera to test with. I even cannot test monochrome 
-> sanely, because of a lack of a cable:-) And Bayer and monochrome don't 
-> make good candidates for such conversions - they are not supported by the 
-> IPU.
-> 
-> > > BTW is the overlay framebuffer useful in it's current implementation?
-> > > There seems to be no way to adjust the x/y offset or the blending
-> > > modes.
-> > 
-> > The API Eric Miao just posted for the PXA looks sane to me.
-> 
-> I'll have a look, but as I said: -ENOUSER:-)
-> 
-> > > > If there are no other problems with v5, could we maybe take it as a
-> > > > basis and then I would submit a patch to reduce the number of IRQs?
-> > >
-> > > Please understand my concerns with this driver. It's a quite complex
-> > > beast and experience shows that once a driver is in the kernel it is
-> > > far more complicated to change it than to do it right the first way.
-> > 
-> > Especially when it comes to userspace visible things.
-> > 
-> > > You know that I'm also interested in having a MX31 framebuffer (and
-> > > camera) driver in kernel but I want to make sure that it works
-> > > properly and leaves room for feature enhancements without having to
-> > > refactor the whole driver.
-> > 
-> > Yup, looks like it would be better to cook it another round instead of
-> > trying to bring in a half-tested driver with brute-force.
-> 
-> Ok, no problem. Let's just decide
-> 
-> 1. is the drivers/dma the final location.
-> 2. do dmaengine maintainers accept it in present form or require any 
->    amendments.
-> 3. which interrupts we make visible by default for irq_desc[] and what 
->    granularity we want to enable the rest (we could even just make 
->    CONFIG_ALL_IPU_IRQS and be 95% sure noone will ever need them.)
-> 4. throw away every trace of overlay support - if anyone ever needs it 
->    they should be able to dig it out in ML archives.
 
-Or from the Freescale BSP. This sounds good to me. It would also enable
-someone to write a v4l2 based overlay driver without interfering with
-the existing framebuffer driver.
+I have been on holiday since last week and I don't really have time to 
+comment on all this until my return from great ski weeks, but I have 
+been following the discussion very attentively and I will for sure test 
+and comment on these patches (camera is very important for our 
+application) as soon as I get back to work in January.
 
-Sascha
+It's a bit tricky with this merge window in the "middle" of holidays for me.
+
+Valentin
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Valentin Longchamp, PhD Student, EPFL-STI-LSRO1
+valentin.longchamp@epfl.ch, Phone: +41216937827
+http://people.epfl.ch/valentin.longchamp
+MEA3485, Station 9, CH-1015 Lausanne
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

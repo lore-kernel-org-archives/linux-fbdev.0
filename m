@@ -1,75 +1,41 @@
-From: =?iso-8859-15?q?Lothar_Wa=DFmann?= <LW@KARO-electronics.de>
-Subject: Re: [RFC 2.6.27 2/2] mach-pxa: add AM300 platform driver
-Date: Tue, 23 Dec 2008 10:24:37 +0100
-Message-ID: <18768.44629.937505.213868@ipc1.ka-ro>
-References: <12298571881580-git-send-email-jayakumar.lkml@gmail.com>
-	<f17812d70812230047g54cae195g8cf6297783d2602c@mail.gmail.com>
-Content-Type: multipart/mixed; boundary="===============1040446154=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <f17812d70812230047g54cae195g8cf6297783d2602c@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Eric Miao <eric.miao@marvell.com>, Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
-
---===============1040446154==
-
-Hi,
-
-Eric Miao writes:
-> On Sun, Dec 21, 2008 at 6:59 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> > This patch adds support for the AM300 platform driver.
-> >
-> 
-> Patch looks good, I feel I'm nit-picking. Anyway , see my comments below:
-> 
-[...]
-> > +static int am300_wait_for_rdy(struct broadsheetfb_par *par)
-> > +{
-> > +       unsigned long flags;
-> > +       DEFINE_WAIT(wait);
-> > +
-> > +       spin_lock_irqsave(par->lock, flags);
-> > +       while (!gpio_get_value(RDY_GPIO_PIN)) {
-> > +               prepare_to_wait(&par->waitq, &wait, TASK_INTERRUPTIBLE);
-                                                             ^^^^^^^^^^^^^
-This should be TASK_UNINTERRUPTIBLE, or the case of an interrupted
-wait need to be handled in some way!
-
-> wait_event() might be the perfect choice for the above case, unless your
->
-... which would also fix the above bug.
-
-
-Lothar Wa���mann
--- 
-___________________________________________________________
-
-Ka-Ro electronics GmbH | Pascalstra���e 22 | D - 52076 Aachen
-Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
-Gesch���ftsf���hrer: Matthias Kaussen
-Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
-
-www.karo-electronics.de | info@karo-electronics.de
-___________________________________________________________
-
-
---===============1040446154==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ	drivers
+Date: Tue, 23 Dec 2008 13:09:10 +0300
+Message-ID: <4950B8C6.30309@gmail.com>
+References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange> <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de> <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de> <20081222200337.GD9472@pengutronix.de>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755555AbYLWKJe@vger.kernel.org>
+In-Reply-To: <20081222200337.GD9472@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk, Dan Williams <dan.j.williams@intel.com>
 
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
---===============1040446154==--
+Robert Schwebel wrote:
+> On Mon, Dec 22, 2008 at 07:37:53PM +0100, Sascha Hauer wrote:
+>> Another thing is the overlay framebuffer. I think it's mainly useful
+>> to display video streams.
+>
+> Right. The idea is that you can push a video stream into /dev/fb1 (for
+> example by using the gstreamer fbdev sink) while displaying widgets from
+> a GUI toolkit on /dev/fb0.
+>
+>> Maybe it's better to implement this as a v4l device as unlike the
+>> framebuffer API the v4l API is designed to handle different image
+>> buffers.
+>
+> Huh? v4l is image-frames-to-userspace, not vice versa.
+>
+...and vice versa too, v4l2 is not about input devices only but it is
+also related to output devices, v4l2 spec even has a special chapter
+dedicated to overlays [1]. Moreover, you can find such a driver within
+Freescale's BSP [2]. Another example is Omap's videoout driver [3].
+
+
+Dmitry
+
+[1]http://v4l2spec.bytesex.org/spec-single/v4l2.html#OVERLAY
+[2]http://opensource.freescale.com/git?p=linux-2.6-mx.git;a=blob;f=drivers/media/video/mxc/output/mxc_v4l2_output.c;h=309700bb9d1f3b3f9dcac8a48a16d0775b8ed93a;hb=refs/heads/bsp-imx31ads-rel5
+[3]http://git.omapzoom.org/?p=omapkernel.git;a=blob;f=drivers/media/video/omap/omap24xxvout.c;h=25ac1319bae58751cd1a543aa0f320159e10a475;hb=HEAD

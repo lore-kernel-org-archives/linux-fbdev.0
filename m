@@ -1,90 +1,147 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing Unit DMA and IRQ drivers
-Date: Tue, 23 Dec 2008 14:14:12 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0812231359030.5188@axis700.grange>
-References: <Pine.LNX.4.64.0812181406000.5510@axis700.grange>
- <Pine.LNX.4.64.0812181414280.5510@axis700.grange> <20081218225834.GJ20756@pengutronix.de>
- <Pine.LNX.4.64.0812221240210.5241@axis700.grange> <20081222183753.GD1614@pengutronix.de>
- <Pine.LNX.4.64.0812221942480.7796@axis700.grange> <20081223105006.GE1614@pengutronix.de>
- <Pine.LNX.4.64.0812231157180.5188@axis700.grange> <20081223125015.GG1614@pengutronix.de>
+From: "Eric Miao" <eric.y.miao@gmail.com>
+Subject: Re: [PATCH] pxafb: add support for overlay1 and
+	overlay2 as framebuffer devices
+Date: Tue, 23 Dec 2008 21:23:13 +0800
+Message-ID: <f17812d70812230523y4c67dad0pc4d195928d04a1cf@mail.gmail.com>
+References: <f17812d70812230247l78bd6010v4fd6c94e49523175@mail.gmail.com>
+	<Pine.LNX.4.64.0812231354250.17497@anakin>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751966AbYLWNOU@vger.kernel.org>
-In-Reply-To: <20081223125015.GG1614@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk, Dan Williams <dan.j.williams@intel.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <eric.y.miao@gmail.com>) id 1LF7EC-0000rd-RH
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Dec 2008 13:23:16 +0000
+Received: from rv-out-0708.google.com ([209.85.198.246])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LF7EB-00072G-8H for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Dec 2008 13:23:16 +0000
+Received: by rv-out-0708.google.com with SMTP id f25so2299583rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 23 Dec 2008 05:23:13 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0812231354250.17497@anakin>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, ARM Linux <linux-arm-kernel@lists.arm.linux.org.uk>
 
-On Tue, 23 Dec 2008, Sascha Hauer wrote:
+On Tue, Dec 23, 2008 at 9:10 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Tue, 23 Dec 2008, Eric Miao wrote:
+>> +Overlay Support for PXA27x and later LCD controllers
+>> +====================================================
+>> +
+>> +  PXA27x and later processors support overlay1 and overlay2 on-top of the
+>> +  base framebuffer (although under-neath the base is also possible). They
+>> +  support palette and no-palette RGB formats, as well as YUV formats (only
+>> +  available on overlay2). These overlays have dedicated DMA channels and
+>> +  behave in a similar way as a framebuffer.
+>> +
+>> +  However, there are some differences between these overlay framebuffers
+>> +  and normal framebuffers, as listed below:
+>> +
+>> +  1. overlay can start at a 32-bit word aligned position within the base
+>> +     framebuffer, which means they have a start (x, y). This information
+>> +     is encoded into var->nonstd (no, var->xoffset and var->yoffset are
+>> +     not for such purpose).
+>> +
+>> +  2. overlay framebuffer is allocated dynamically according to specified
+>> +     'struct fb_var_screeninfo', the amount is decided by:
+>> +
+>> +        var->xres_virtual * var->yres_virtual * bpp
+>> +
+>> +     bpp = 16 -- for RGB565 or RGBT555
+>> +         = 24 -- for YUV444 packed
+>> +         = 24 -- for YUV444 planar
+>> +      = 16 -- for YUV422 planar (1 pixel = 1 Y + 1/2 Cb + 1/2 Cr)
+>> +      = 12 -- for YUV420 planar (1 pixel = 1 Y + 1/4 Cb + 1/4 Cr)
+>> +
+>> +     NOTE:
+>> +
+>> +     a. overlay does not support panning in x-direction, thus
+>> +        var->xres_virtual will always be equal to var->xres
+>> +
+>> +     b. line length of overlay(s) must be on a 32-bit word boundary,
+>> +        for YUV planar modes, it is a requirement for the component
+>> +     with minimum bits per pixel,  e.g. for YUV420, Cr component
+>> +     for one pixel is actually 2-bits, it means the line length
+>> +     should be a multiple of 16-pixels
+>> +
+>> +     c. starting horizontal position (XPOS) should start on a 32-bit
+>> +        word boundary, otherwise the fb_check_var() will just fail.
+>> +
+>> +     d. the rectangle of the overlay should be within the base plane,
+>> +        otherwise fail
+>> +
+>> +     Applications should follow the sequence below to operate an overlay
+>> +     framebuffer:
+>> +
+>> +         a. open("/dev/fb[1-2]", ...)
+>> +      b. ioctl(fd, FBIOGET_VSCREENINFO, ...)
+>> +      c. modify 'var' with desired parameters:
+>> +         1) var->xres and var->yres
+>> +         2) larger var->yres_virtual if more memory is required,
+>> +            usually for double-buffering
+>> +         3) var->nonstd for starting (x, y) and color format
+>> +         4) var->{red, green, blue, transp} if RGB mode is to be used
+>> +      d. ioctl(fd, FBIOPUT_VSCREENINFO, ...)
+>> +      e. ioctl(fd, FBIOGET_FSCREENINFO, ...)
+>> +      f. mmap
+>> +      g. ...
+>> +
+>> +  3. for YUV planar formats, these are actually not supported within the
+>> +     framebuffer framework, application has to take care of the offsets
+>> +     and lengths of each component within the framebuffer.
+>> +
+>> +  4. var->nonstd is used to pass starting (x, y) position and color format,
+>> +     the detailed bit fields are shown below:
+>> +
+>> +    31                23  20         10          0
+>> +     +-----------------+---+----------+----------+
+>> +     |  ... unused ... |FOR|   XPOS   |   YPOS   |
+>> +     +-----------------+---+----------+----------+
+>> +
+>> +     FOR  - color format, as defined by OVERLAY_FORMAT_* in pxafb.h
+>> +            0 - RGB
+>> +         1 - YUV444 PACKED
+>> +         2 - YUV444 PLANAR
+>> +         3 - YUV422 PLANAR
+>> +         4 - YUR420 PLANAR
+>> +
+>> +     XPOS - starting horizontal position
+>> +     YPOS - starting vertical position
+>
+> I'm not so fond of this use of .nonstd for specifying the relative position of
+> (overlay) frame buffers.
+>
+> What about the (years old) idea of having separate sysfs-based way to configure
+> relative position, scale, order, and alpha of multiple frame buffer devices?
+>
 
-> On Tue, Dec 23, 2008 at 12:21:54PM +0100, Guennadi Liakhovetski wrote:
-> > Hi Sascha
-> > 
-> > On Tue, 23 Dec 2008, Sascha Hauer wrote:
-> > 
-> > > On Mon, Dec 22, 2008 at 09:10:03PM +0100, Guennadi Liakhovetski wrote:
-> > > > 
-> > > > Ok, so, what would we like to have there? We agree that the proper way to 
-> > > > serve them is a irq-chip driver, right?
-> > > 
-> > > In case of the *_EOF interrupts when they can be used outside the idmac
-> > > driver then yes. If not then not for the reasons I explained.
-> > 
-> > Wait a minute, are you suggesting to handle interrupts that are exported 
-> > to client drivers and that are "internal" to ipu_idmac differently? Like 
-> > exported once - properly using the irq chip machinery, and internal once 
-> > just demux in the driver hiding them from the kernel?... Or have I 
-> > misunderstood you? If this is indeed what you mean, then that doesn't 
-> > sound like a good idea to me, sorry. Like you configure a chained handler, 
-> > then when it is called on an IRQ, you check if the reason is bits 0, 1, or 
-> > 2 you call generic_handle_irq(), for other bits you handle them 
-> > internally... grrrr... 
-> 
-> I'm not suggesting that. The *_EOF registers are all 32 bits on the *same*
-> register. And these 32 interrupts are inherently occupied by ipu_idmac.c
-> as you cannot request a idmac channel without requesting this interrupt.
-> So at the moment you are passing 32 bits of the same register through a
-> chained interrupt handler and *all* these interrupts go to the very same
-> interrupt handler.
-> For the corresponding 32 error interrupts it's probably also the idmac
-> engine that has to react to these interrupts, not the drivers using it.
-> Not sure about the remaining assorted interrupts.
+Actually, I was not fond of the way overlay uses framebuffer interface
+at all. This is so because there are many existing applications assume so,
+long since we were still developing drivers in Intel. Keeping things in
+var->nonstd started from those old days.
 
-Yes, I understand that. So, you're suggesting to put all EOF interrupts 
-under 1 irq-number. Just for example: now I have
+The overlay, from my POV, is more like a video output device, which the
+V4L2 output overlay may fit better. However, back in old days, the V4L2
+does not provide such an output overlay (it did have an overlay concept,
+but that's for input, i.e. capturing overlay).
 
-167:        351     ipu_irq  idmac
-174:        752     ipu_irq  idmac
-175:          0     ipu_irq  idmac
-230:          1     ipu_irq  csi
+Or much simpler, some additional IOCTLs will just do the work.
 
-where 167 - camera IRQs, 174 - framebuffer (panning), 175 - overlay (ok, 
-this one will go), 230 - CSI_EOF from IPU_INT_STAT_3 (ok, it is not used 
-ATM, can go too).
+But, the problem lies in legacy support. So I'd prefer this patch being
+kept so and later morph into a more reasonable shape.
 
-So, there are at least two valid users of EOF interrupts. And you're 
-suggesting to put them on one interrupt, and even not as a shared IRQ with 
-two handlers - one interrupt with one handler with multiple sources / 
-users behind it... What likely will happen someone will add support for 
-YUV / RGB cameras and will want to use hardware processing for them, like 
-encoding and / or rotation, which will add DMA channels DMAIC_0, DMAIC_8, 
-DMAIC_6, DMAIC_10... and you want to put them all on one IRQ?... What we 
-could improve in the above /proc/interrupts output is register interrupts 
-with different names to make distinguishing them easier. But I really 
-would not like to put them all together.
-
-> > This is a framebuffer driver for i.MX31 SoCs. It only supports synchronous
-> > displays, overlay support is included but has never been tested.
-> 
-> No, it's not working. The overlay framebuffer maybe there, but it's
-> configured to be invisible.
-
-Good, will remove it then.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+------------------------------------------------------------------------------

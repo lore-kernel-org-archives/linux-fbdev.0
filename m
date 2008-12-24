@@ -1,13 +1,13 @@
 From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 02/05] video: deferred io cleanup
-Date: Wed, 24 Dec 2008 00:05:52 -0500
-Message-ID: <45a44e480812232105y160f49e6g4e7953956fd9a707@mail.gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 03/05] video: deferred io with physically contiguous memory
+Date: Wed, 24 Dec 2008 00:13:40 -0500
+Message-ID: <45a44e480812232113g4a0fa80euda568035a3202aee@mail.gmail.com>
 References: <20081219063359.2703.85817.sendpatchset@rx1.opensource.se>
-	 <20081219063423.2703.88796.sendpatchset@rx1.opensource.se>
+	 <20081219063432.2703.91443.sendpatchset@rx1.opensource.se>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20081219063423.2703.88796.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20081219063432.2703.91443.sendpatchset@rx1.opensource.se>
 Content-Disposition: inline
 Sender: linux-sh-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
@@ -18,11 +18,86 @@ Cc: linux-fbdev-devel@lists.sourceforge.net, lethal@linux-sh.org, adaplas@gmail.
 On Fri, Dec 19, 2008 at 1:34 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
 > From: Magnus Damm <damm@igel.co.jp>
 >
-> Make sure the mmap callback is set to NULL in the deferred io
-> cleanup function. This way we can enable and disable deferred
-> io on the fly.
+> Extend the deferred io code from only supporting vmalloc()ed frame
+> buffer memory to support both vmalloc()ed and physically contiguous
+> frame buffer memory.
+>
+> The sh_mobile_lcdcfb hardware does not support scatter gather so
+> we need physically contiguous memory to back our frame buffer.
 >
 > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+>
+>  drivers/video/fb_defio.c |   20 +++++++++++++++-----
+>  1 file changed, 15 insertions(+), 5 deletions(-)
+>
+> --- 0003/drivers/video/fb_defio.c
+> +++ work/drivers/video/fb_defio.c       2008-12-19 14:29:45.000000000 +0900
+> @@ -24,6 +24,19 @@
+>  #include <linux/rmap.h>
+>  #include <linux/pagemap.h>
+>
+> +struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs)
+> +{
+> +       void *screen_base = (void __force *) info->screen_base;
+> +       struct page *page;
+> +
+> +       if (is_vmalloc_addr(screen_base + offs))
+> +               page = vmalloc_to_page(screen_base + offs);
+> +       else
+> +               page = pfn_to_page((info->fix.smem_start + offs) >> PAGE_SHIFT);
+> +
+> +       return page;
+> +}
+> +
 
+Just nitpicking about naming. I think a better name is possible for
+above, no? Like fb_to_page or fbdefio_to_page or similar to remain
+consistent with vmalloc/pfn_to_page. Also the comment below about
+vmalloc-ed pages would no longer be accurate. Otherwise, looks fine.
 
 Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+
+>  /* this is to find and return the vmalloc-ed fb pages */
+>  static int fb_deferred_io_fault(struct vm_area_struct *vma,
+>                                struct vm_fault *vmf)
+> @@ -31,14 +44,12 @@ static int fb_deferred_io_fault(struct v
+>        unsigned long offset;
+>        struct page *page;
+>        struct fb_info *info = vma->vm_private_data;
+> -       /* info->screen_base is virtual memory */
+> -       void *screen_base = (void __force *) info->screen_base;
+>
+>        offset = vmf->pgoff << PAGE_SHIFT;
+>        if (offset >= info->fix.smem_len)
+>                return VM_FAULT_SIGBUS;
+>
+> -       page = vmalloc_to_page(screen_base + offset);
+> +       page = fb_deferred_io_page(info, offset);
+>        if (!page)
+>                return VM_FAULT_SIGBUS;
+>
+> @@ -188,7 +199,6 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_open);
+>
+>  void fb_deferred_io_cleanup(struct fb_info *info)
+>  {
+> -       void *screen_base = (void __force *) info->screen_base;
+>        struct fb_deferred_io *fbdefio = info->fbdefio;
+>        struct page *page;
+>        int i;
+> @@ -199,7 +209,7 @@ void fb_deferred_io_cleanup(struct fb_in
+>
+>        /* clear out the mapping that we setup */
+>        for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
+> -               page = vmalloc_to_page(screen_base + i);
+> +               page = fb_deferred_io_page(info, i);
+>                page->mapping = NULL;
+>        }
+>
+>
+> ------------------------------------------------------------------------------
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+>

@@ -1,103 +1,110 @@
 From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 03/05] video: deferred io with physically contiguous memory
-Date: Wed, 24 Dec 2008 00:13:40 -0500
-Message-ID: <45a44e480812232113g4a0fa80euda568035a3202aee@mail.gmail.com>
-References: <20081219063359.2703.85817.sendpatchset@rx1.opensource.se>
-	 <20081219063432.2703.91443.sendpatchset@rx1.opensource.se>
+Subject: Re: [RFC 2.6.27 2/2] mach-pxa: add AM300
+	platform driver
+Date: Wed, 24 Dec 2008 00:25:18 -0500
+Message-ID: <45a44e480812232125k2feb1daar57cb6fbe44f050cc@mail.gmail.com>
+References: <12298571881580-git-send-email-jayakumar.lkml@gmail.com>
+	<f17812d70812230047g54cae195g8cf6297783d2602c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20081219063432.2703.91443.sendpatchset@rx1.opensource.se>
-Content-Disposition: inline
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, lethal@linux-sh.org, adaplas@gmail.com, linux-sh@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LFMFM-0001us-Nm
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 24 Dec 2008 05:25:28 +0000
+Received: from rv-out-0708.google.com ([209.85.198.243])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LFMFE-0008Ns-1q for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 24 Dec 2008 05:25:28 +0000
+Received: by rv-out-0708.google.com with SMTP id f25so2632236rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 23 Dec 2008 21:25:18 -0800 (PST)
+In-Reply-To: <f17812d70812230047g54cae195g8cf6297783d2602c@mail.gmail.com>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Eric Miao <eric.miao@marvell.com>, linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Fri, Dec 19, 2008 at 1:34 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
-> From: Magnus Damm <damm@igel.co.jp>
+On Tue, Dec 23, 2008 at 3:47 AM, Eric Miao <eric.y.miao@gmail.com> wrote:
+> On Sun, Dec 21, 2008 at 6:59 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+>> This patch adds support for the AM300 platform driver.
+>>
 >
-> Extend the deferred io code from only supporting vmalloc()ed frame
-> buffer memory to support both vmalloc()ed and physically contiguous
-> frame buffer memory.
+> Patch looks good, I feel I'm nit-picking. Anyway , see my comments below:
 >
-> The sh_mobile_lcdcfb hardware does not support scatter gather so
-> we need physically contiguous memory to back our frame buffer.
+>> +/* register offsets for gpio control */
+>> +#define PWR_GPIO_PIN 16
+>> +#define CFG_GPIO_PIN 17
+>> +#define RDY_GPIO_PIN 32
+>> +#define DC_GPIO_PIN 48
+>> +#define RST_GPIO_PIN 49
+>> +#define LED_GPIO_PIN 51
+>> +#define RD_GPIO_PIN 74
+>> +#define WR_GPIO_PIN 75
+>> +#define CS_GPIO_PIN 76
+>> +#define IRQ_GPIO_PIN 77
+>> +
+>> +/* hdb bus */
+>> +#define DB0_GPIO_PIN 58
+>> +#define DB15_GPIO_PIN 73
 >
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> ---
->
->  drivers/video/fb_defio.c |   20 +++++++++++++++-----
->  1 file changed, 15 insertions(+), 5 deletions(-)
->
-> --- 0003/drivers/video/fb_defio.c
-> +++ work/drivers/video/fb_defio.c       2008-12-19 14:29:45.000000000 +0900
-> @@ -24,6 +24,19 @@
->  #include <linux/rmap.h>
->  #include <linux/pagemap.h>
->
-> +struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs)
-> +{
-> +       void *screen_base = (void __force *) info->screen_base;
-> +       struct page *page;
-> +
-> +       if (is_vmalloc_addr(screen_base + offs))
-> +               page = vmalloc_to_page(screen_base + offs);
-> +       else
-> +               page = pfn_to_page((info->fix.smem_start + offs) >> PAGE_SHIFT);
-> +
-> +       return page;
-> +}
-> +
+> indentation?
 
-Just nitpicking about naming. I think a better name is possible for
-above, no? Like fb_to_page or fbdefio_to_page or similar to remain
-consistent with vmalloc/pfn_to_page. Also the comment below about
-vmalloc-ed pages would no longer be accurate. Otherwise, looks fine.
+Ok, will fix.
 
-Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 
->  /* this is to find and return the vmalloc-ed fb pages */
->  static int fb_deferred_io_fault(struct vm_area_struct *vma,
->                                struct vm_fault *vmf)
-> @@ -31,14 +44,12 @@ static int fb_deferred_io_fault(struct v
->        unsigned long offset;
->        struct page *page;
->        struct fb_info *info = vma->vm_private_data;
-> -       /* info->screen_base is virtual memory */
-> -       void *screen_base = (void __force *) info->screen_base;
+>> +       gpio_set_value(RST_GPIO_PIN, 0);
+>> +       mdelay(10);
 >
->        offset = vmf->pgoff << PAGE_SHIFT;
->        if (offset >= info->fix.smem_len)
->                return VM_FAULT_SIGBUS;
+> which deserves a msleep(10) if the timing is relaxed enough.
+
+True. Will fix.
+
 >
-> -       page = vmalloc_to_page(screen_base + offset);
-> +       page = fb_deferred_io_page(info, offset);
->        if (!page)
->                return VM_FAULT_SIGBUS;
+>> +       gpio_set_value(RST_GPIO_PIN, 1);
+>> +       mdelay(10);
+>> +       am300_wait_for_rdy(par);
+>> +
+>> +       return 0;
+>> +
+>> +err_req_gpio:
+>> +       while (i > 0)
+>> +               gpio_free(gpios[i--]);
+>> +
+>> +       return err;
+>> +}
+>> +
+>> +static int am300_init_board(struct broadsheetfb_par *par)
+>> +{
+>> +       int ret;
+>> +
+>> +       /* setup pins */
+>> +       ret = am300_init_gpio_regs(par);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>> +       return 0;
+>> +}
 >
-> @@ -188,7 +199,6 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_open);
+> which can be shortened to one statement 'return am300_init_gpio_regs(par)'
 >
->  void fb_deferred_io_cleanup(struct fb_info *info)
->  {
-> -       void *screen_base = (void __force *) info->screen_base;
->        struct fb_deferred_io *fbdefio = info->fbdefio;
->        struct page *page;
->        int i;
-> @@ -199,7 +209,7 @@ void fb_deferred_io_cleanup(struct fb_in
->
->        /* clear out the mapping that we setup */
->        for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
-> -               page = vmalloc_to_page(screen_base + i);
-> +               page = fb_deferred_io_page(info, i);
->                page->mapping = NULL;
->        }
->
->
-> ------------------------------------------------------------------------------
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
+
+Yes, sorry, there was other stuff I had been doing in that function
+while trying to trim down the board init to the minimum needed for
+things to work. Okay, will fix.
+
+Thanks,
+jaya
+
+------------------------------------------------------------------------------

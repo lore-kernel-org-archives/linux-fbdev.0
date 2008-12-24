@@ -1,167 +1,61 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 03/05] video: deferred io sys helpers - hecuba / n411 V2
-Date: Wed, 24 Dec 2008 17:30:09 +0900
-Message-ID: <20081224083009.1848.84015.sendpatchset@rx1.opensource.se>
-References: <20081224082946.1848.46644.sendpatchset@rx1.opensource.se>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20081224082946.1848.46644.sendpatchset@rx1.opensource.se>
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: Yauhen Kharuzhy <jekhor@gmail.com>
+Subject: Metronome specifications
+Date: Wed, 24 Dec 2008 23:57:36 +0200
+Message-ID: <20081224215736.GA1788@jeknote.loshitsa1.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@redhat.com, lethal@linux-sh.org, Magnus Damm <magnus.damm@gmail.com>, jayakumar.lkml@gmail.com
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jekhor@gmail.com>) id 1LFbjs-0005sz-O5
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 24 Dec 2008 21:58:00 +0000
+Received: from qw-out-1920.google.com ([74.125.92.147])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LFbjn-0006Kq-UB for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 24 Dec 2008 21:58:00 +0000
+Received: by qw-out-1920.google.com with SMTP id 5so1620904qwc.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 24 Dec 2008 13:57:54 -0800 (PST)
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Magnus Damm <damm@igel.co.jp>
+Hi!
 
-Change the hecubafb driver and the n411 code to use the new shared sys
-helpers. This allows us to remove some duplicated code. The use of the
-new shared sys helpers will change the behavior of this driver from
-syncing all fillrect/copyarea/imageblit/write operations directly to
-using the deferred io delay.
+I write board driver for Sony PRS-505 book reader display controller and
+need some help. Controller seems to be respond for first command only (RDY is
+0 before powerup and 1 after and it won't change on any other steps).
+I cannot localize cause of problem because controller behaviour is
+undocumented and non-trivial. I compare Sony's driver and metronomefb,
+and don't understand differences due lack of documentation.
 
-While at it, convert space to tabs for the n411 kconfig entry.
+Can you help to find any documentation for Metronome or, if it
+is distrubuted under NDA, explain some moments for me?
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
+How dimensions of image and size of buffer are set in controller? What
+does define positions of command buffer, waveforms, image data etc. in
+controller memory? What are arguments of config (0xCC10) command mean?
 
- Changes since V1:
- - fix FB_HECUBA select of FB_DEFERRED_IO, thanks Paul!
+I feel that I will find answers for most of this questions after some
+time, but with documentation it will happen soon...
 
- drivers/video/Kconfig    |   19 +++-------
- drivers/video/hecubafb.c |   86 ++--------------------------------------------
- 2 files changed, 12 insertions(+), 93 deletions(-)
+-- 
+Yauhen Kharuzhy		jekhor _at_ gmail.com
+			JID: jek@jabber.ru
 
---- 0003/drivers/video/Kconfig
-+++ work/drivers/video/Kconfig	2008-12-24 15:32:30.000000000 +0900
-@@ -187,7 +187,7 @@ config FB_DEFERRED_IO
- config FB_HECUBA
- 	tristate
- 	depends on FB
--	depends on FB_DEFERRED_IO
-+	select FB_DEFERRED_IO
- 
- config FB_SVGALIB
- 	tristate
-@@ -712,17 +712,12 @@ config FB_EFI
- 	  using the EFI framebuffer as your console.
- 
- config FB_N411
--       tristate "N411 Apollo/Hecuba devkit support"
--       depends on FB && X86 && MMU
--       select FB_SYS_FILLRECT
--       select FB_SYS_COPYAREA
--       select FB_SYS_IMAGEBLIT
--       select FB_SYS_FOPS
--       select FB_DEFERRED_IO
--       select FB_HECUBA
--       help
--         This enables support for the Apollo display controller in its
--         Hecuba form using the n411 devkit.
-+	tristate "N411 Apollo/Hecuba devkit support"
-+	depends on FB && X86 && MMU
-+	select FB_HECUBA
-+	help
-+	  This enables support for the Apollo display controller in its
-+	  Hecuba form using the n411 devkit.
- 
- config FB_HGA
- 	tristate "Hercules mono graphics support"
---- 0001/drivers/video/hecubafb.c
-+++ work/drivers/video/hecubafb.c	2008-12-24 15:32:30.000000000 +0900
-@@ -122,89 +122,13 @@ static void hecubafb_dpy_deferred_io(str
- 	hecubafb_dpy_update(info->par);
- }
- 
--static void hecubafb_fillrect(struct fb_info *info,
--				   const struct fb_fillrect *rect)
--{
--	struct hecubafb_par *par = info->par;
--
--	sys_fillrect(info, rect);
--
--	hecubafb_dpy_update(par);
--}
--
--static void hecubafb_copyarea(struct fb_info *info,
--				   const struct fb_copyarea *area)
--{
--	struct hecubafb_par *par = info->par;
--
--	sys_copyarea(info, area);
--
--	hecubafb_dpy_update(par);
--}
--
--static void hecubafb_imageblit(struct fb_info *info,
--				const struct fb_image *image)
--{
--	struct hecubafb_par *par = info->par;
--
--	sys_imageblit(info, image);
--
--	hecubafb_dpy_update(par);
--}
--
--/*
-- * this is the slow path from userspace. they can seek and write to
-- * the fb. it's inefficient to do anything less than a full screen draw
-- */
--static ssize_t hecubafb_write(struct fb_info *info, const char __user *buf,
--				size_t count, loff_t *ppos)
--{
--	struct hecubafb_par *par = info->par;
--	unsigned long p = *ppos;
--	void *dst;
--	int err = 0;
--	unsigned long total_size;
--
--	if (info->state != FBINFO_STATE_RUNNING)
--		return -EPERM;
--
--	total_size = info->fix.smem_len;
--
--	if (p > total_size)
--		return -EFBIG;
--
--	if (count > total_size) {
--		err = -EFBIG;
--		count = total_size;
--	}
--
--	if (count + p > total_size) {
--		if (!err)
--			err = -ENOSPC;
--
--		count = total_size - p;
--	}
--
--	dst = (void __force *) (info->screen_base + p);
--
--	if (copy_from_user(dst, buf, count))
--		err = -EFAULT;
--
--	if  (!err)
--		*ppos += count;
--
--	hecubafb_dpy_update(par);
--
--	return (err) ? err : count;
--}
--
- static struct fb_ops hecubafb_ops = {
- 	.owner		= THIS_MODULE,
--	.fb_read        = fb_sys_read,
--	.fb_write	= hecubafb_write,
--	.fb_fillrect	= hecubafb_fillrect,
--	.fb_copyarea	= hecubafb_copyarea,
--	.fb_imageblit	= hecubafb_imageblit,
-+	.fb_read        = fb_deferred_io_read,
-+	.fb_write	= fb_deferred_io_write,
-+	.fb_fillrect	= fb_deferred_io_fillrect,
-+	.fb_copyarea	= fb_deferred_io_copyarea,
-+	.fb_imageblit	= fb_deferred_io_imageblit,
- };
- 
- static struct fb_deferred_io hecubafb_defio = {
+A: No
+Q: Should I quote below my post?
+
+------------------------------------------------------------------------------

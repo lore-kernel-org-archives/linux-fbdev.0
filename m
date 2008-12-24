@@ -1,110 +1,65 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.27 2/2] mach-pxa: add AM300
-	platform driver
-Date: Wed, 24 Dec 2008 00:25:18 -0500
-Message-ID: <45a44e480812232125k2feb1daar57cb6fbe44f050cc@mail.gmail.com>
-References: <12298571881580-git-send-email-jayakumar.lkml@gmail.com>
-	<f17812d70812230047g54cae195g8cf6297783d2602c@mail.gmail.com>
+From: "Magnus Damm" <magnus.damm@gmail.com>
+Subject: Re: [PATCH 04/05] video: deferred io sys helpers - metronome
+Date: Wed, 24 Dec 2008 14:46:59 +0900
+Message-ID: <aec7e5c30812232146t5dff36act9f4d5badc25bef22@mail.gmail.com>
+References: <20081222055233.27821.68008.sendpatchset@rx1.opensource.se>
+	 <20081222055309.27821.40219.sendpatchset@rx1.opensource.se>
+	 <45a44e480812232058g5e81ee97r95c4b9c1ed81066@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jayakumar.lkml@gmail.com>) id 1LFMFM-0001us-Nm
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 24 Dec 2008 05:25:28 +0000
-Received: from rv-out-0708.google.com ([209.85.198.243])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LFMFE-0008Ns-1q for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 24 Dec 2008 05:25:28 +0000
-Received: by rv-out-0708.google.com with SMTP id f25so2632236rvb.22
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 23 Dec 2008 21:25:18 -0800 (PST)
-In-Reply-To: <f17812d70812230047g54cae195g8cf6297783d2602c@mail.gmail.com>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <45a44e480812232058g5e81ee97r95c4b9c1ed81066@mail.gmail.com>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Eric Miao <eric.miao@marvell.com>, linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>, linux-arm-kernel@lists.arm.linux.org.uk
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@redhat.com, lethal@linux-sh.org
 
-On Tue, Dec 23, 2008 at 3:47 AM, Eric Miao <eric.y.miao@gmail.com> wrote:
-> On Sun, Dec 21, 2008 at 6:59 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
->> This patch adds support for the AM300 platform driver.
->>
+On Wed, Dec 24, 2008 at 1:58 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> On Mon, Dec 22, 2008 at 12:53 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
+>> +       if (fbdefio->dx != -1) {
+>> +               /* update the entire screen */
+>> +               metronomefb_dpy_update(par);
 >
-> Patch looks good, I feel I'm nit-picking. Anyway , see my comments below:
->
->> +/* register offsets for gpio control */
->> +#define PWR_GPIO_PIN 16
->> +#define CFG_GPIO_PIN 17
->> +#define RDY_GPIO_PIN 32
->> +#define DC_GPIO_PIN 48
->> +#define RST_GPIO_PIN 49
->> +#define LED_GPIO_PIN 51
->> +#define RD_GPIO_PIN 74
->> +#define WR_GPIO_PIN 75
->> +#define CS_GPIO_PIN 76
->> +#define IRQ_GPIO_PIN 77
->> +
->> +/* hdb bus */
->> +#define DB0_GPIO_PIN 58
->> +#define DB15_GPIO_PIN 73
->
-> indentation?
+> Okay, overall seems okay. But I'm not confident about this specific
+> change above. The meaning of dx, etc is not clear to me. Okay, I think
+> I found a problem with above. Here's my explanation, please correct me
+> if I'm wrong in my reading of the code you've posted. The typical use
+> case is just a single mmap client (eg: Xfbdev) and nothing else. No
+> fbcon. The only code path I see that sets defio->dx is in the
+> write/blit/* paths via the defio_touch in patch 1/5 and none in the
+> mmap path so with this implementation, all mmap clients would
+> repeatedly only hit the above full update scenario and never use the
+> page based update mechanism.
 
-Ok, will fix.
+Hm, I wonder if I reversed the logic by mistake, but I don't think so.
+The idea is that dx should be set to -1 by default and stay that way
+unless write/blit/* has been used. After each deferred io work dx is
+reset to -1. If dx is not -1 in the deferred io callback then we need
+to refresh the area specified by dx, dy, width, height _and_ the
+pages. The xen driver does this.
 
+In the metronome driver case we update the entire screen if dx has
+been set which means we can skip the pages since they are considered
+part of the entire screen. This should be the same behavior as before,
+the local write/bit/* functions all call metronome_dpy_update()
+without this patch.
 
->> +       gpio_set_value(RST_GPIO_PIN, 0);
->> +       mdelay(10);
->
-> which deserves a msleep(10) if the timing is relaxed enough.
+Or maybe my logic is broken?
 
-True. Will fix.
+Btw, patch [1/5] is somewhat broken today with the handling of
+sysdelay vs delay. Ideally I'd like to get rid of sysdelay and let
+write/blit/* use the same delay as mmap(). Not sure if you are keen on
+that though since it changes the behavior of your drivers. Otoh that
+may make fbcon usable on e-paper since it decouples the soft cursor
+refresh rate from the screen refresh rate.
 
->
->> +       gpio_set_value(RST_GPIO_PIN, 1);
->> +       mdelay(10);
->> +       am300_wait_for_rdy(par);
->> +
->> +       return 0;
->> +
->> +err_req_gpio:
->> +       while (i > 0)
->> +               gpio_free(gpios[i--]);
->> +
->> +       return err;
->> +}
->> +
->> +static int am300_init_board(struct broadsheetfb_par *par)
->> +{
->> +       int ret;
->> +
->> +       /* setup pins */
->> +       ret = am300_init_gpio_regs(par);
->> +       if (ret)
->> +               return ret;
->> +
->> +       return 0;
->> +}
->
-> which can be shortened to one statement 'return am300_init_gpio_regs(par)'
->
+> Other than the above problem, looks okay and its nice to get rid of
+> all that stuff above. :-)
 
-Yes, sorry, there was other stuff I had been doing in that function
-while trying to trim down the board init to the minimum needed for
-things to work. Okay, will fix.
+Excellent, thanks!
 
-Thanks,
-jaya
+Cheers,
 
-------------------------------------------------------------------------------
+/ magnus

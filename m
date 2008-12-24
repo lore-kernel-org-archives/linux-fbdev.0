@@ -1,7 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 05/05] video: deferred io sys helpers - xen V2
-Date: Wed, 24 Dec 2008 17:30:26 +0900
-Message-ID: <20081224083026.1848.92193.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 03/05] video: deferred io sys helpers - hecuba / n411 V2
+Date: Wed, 24 Dec 2008 17:30:09 +0900
+Message-ID: <20081224083009.1848.84015.sendpatchset@rx1.opensource.se>
 References: <20081224082946.1848.46644.sendpatchset@rx1.opensource.se>
 Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <20081224082946.1848.46644.sendpatchset@rx1.opensource.se>
@@ -15,111 +15,153 @@ Cc: aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@red
 
 From: Magnus Damm <damm@igel.co.jp>
 
-Change the xen driver to use the new shared sys helpers. This
-allows us to remove some duplicated code. The use of the new
-shared sys helpers will change the behavior of this driver from
-syncing all operations directly to using the deferred io delay.
+Change the hecubafb driver and the n411 code to use the new shared sys
+helpers. This allows us to remove some duplicated code. The use of the
+new shared sys helpers will change the behavior of this driver from
+syncing all fillrect/copyarea/imageblit/write operations directly to
+using the deferred io delay.
+
+While at it, convert space to tabs for the n411 kconfig entry.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
  Changes since V1:
- - Only cosmetic
+ - fix FB_HECUBA select of FB_DEFERRED_IO, thanks Paul!
 
- drivers/video/Kconfig       |    4 ---
- drivers/video/xen-fbfront.c |   51 +++++++++----------------------------------
- 2 files changed, 11 insertions(+), 44 deletions(-)
+ drivers/video/Kconfig    |   19 +++-------
+ drivers/video/hecubafb.c |   86 ++--------------------------------------------
+ 2 files changed, 12 insertions(+), 93 deletions(-)
 
---- 0005/drivers/video/Kconfig
-+++ work/drivers/video/Kconfig	2008-12-24 16:42:47.000000000 +0900
-@@ -2057,10 +2057,6 @@ config FB_VIRTUAL
- config XEN_FBDEV_FRONTEND
- 	tristate "Xen virtual frame buffer support"
- 	depends on FB && XEN
--	select FB_SYS_FILLRECT
--	select FB_SYS_COPYAREA
--	select FB_SYS_IMAGEBLIT
--	select FB_SYS_FOPS
- 	select FB_DEFERRED_IO
- 	default y
- 	help
---- 0001/drivers/video/xen-fbfront.c
-+++ work/drivers/video/xen-fbfront.c	2008-12-24 16:44:19.000000000 +0900
-@@ -177,11 +177,17 @@ static void xenfb_refresh(struct xenfb_i
- static void xenfb_deferred_io(struct fb_info *fb_info,
- 			      struct list_head *pagelist)
- {
-+	struct fb_deferred_io *fbdefio = fb_info->fbdefio;
- 	struct xenfb_info *info = fb_info->par;
- 	struct page *page;
- 	unsigned long beg, end;
- 	int y1, y2, miny, maxy;
+--- 0003/drivers/video/Kconfig
++++ work/drivers/video/Kconfig	2008-12-24 15:32:30.000000000 +0900
+@@ -187,7 +187,7 @@ config FB_DEFERRED_IO
+ config FB_HECUBA
+ 	tristate
+ 	depends on FB
+-	depends on FB_DEFERRED_IO
++	select FB_DEFERRED_IO
  
-+	if (fbdefio->dx != -1)
-+		xenfb_refresh(info, fbdefio->dx, fbdefio->dy,
-+			      min_t(int, info->page->width, fbdefio->width),
-+			      min_t(int, info->page->height, fbdefio->height));
-+
- 	miny = INT_MAX;
- 	maxy = 0;
- 	list_for_each_entry(page, pagelist, lru) {
-@@ -235,41 +241,6 @@ static int xenfb_setcolreg(unsigned regn
- 	return 0;
+ config FB_SVGALIB
+ 	tristate
+@@ -712,17 +712,12 @@ config FB_EFI
+ 	  using the EFI framebuffer as your console.
+ 
+ config FB_N411
+-       tristate "N411 Apollo/Hecuba devkit support"
+-       depends on FB && X86 && MMU
+-       select FB_SYS_FILLRECT
+-       select FB_SYS_COPYAREA
+-       select FB_SYS_IMAGEBLIT
+-       select FB_SYS_FOPS
+-       select FB_DEFERRED_IO
+-       select FB_HECUBA
+-       help
+-         This enables support for the Apollo display controller in its
+-         Hecuba form using the n411 devkit.
++	tristate "N411 Apollo/Hecuba devkit support"
++	depends on FB && X86 && MMU
++	select FB_HECUBA
++	help
++	  This enables support for the Apollo display controller in its
++	  Hecuba form using the n411 devkit.
+ 
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+--- 0001/drivers/video/hecubafb.c
++++ work/drivers/video/hecubafb.c	2008-12-24 15:32:30.000000000 +0900
+@@ -122,89 +122,13 @@ static void hecubafb_dpy_deferred_io(str
+ 	hecubafb_dpy_update(info->par);
  }
  
--static void xenfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+-static void hecubafb_fillrect(struct fb_info *info,
+-				   const struct fb_fillrect *rect)
 -{
--	struct xenfb_info *info = p->par;
+-	struct hecubafb_par *par = info->par;
 -
--	sys_fillrect(p, rect);
--	xenfb_refresh(info, rect->dx, rect->dy, rect->width, rect->height);
+-	sys_fillrect(info, rect);
+-
+-	hecubafb_dpy_update(par);
 -}
 -
--static void xenfb_imageblit(struct fb_info *p, const struct fb_image *image)
+-static void hecubafb_copyarea(struct fb_info *info,
+-				   const struct fb_copyarea *area)
 -{
--	struct xenfb_info *info = p->par;
+-	struct hecubafb_par *par = info->par;
 -
--	sys_imageblit(p, image);
--	xenfb_refresh(info, image->dx, image->dy, image->width, image->height);
+-	sys_copyarea(info, area);
+-
+-	hecubafb_dpy_update(par);
 -}
 -
--static void xenfb_copyarea(struct fb_info *p, const struct fb_copyarea *area)
+-static void hecubafb_imageblit(struct fb_info *info,
+-				const struct fb_image *image)
 -{
--	struct xenfb_info *info = p->par;
+-	struct hecubafb_par *par = info->par;
 -
--	sys_copyarea(p, area);
--	xenfb_refresh(info, area->dx, area->dy, area->width, area->height);
+-	sys_imageblit(info, image);
+-
+-	hecubafb_dpy_update(par);
 -}
 -
--static ssize_t xenfb_write(struct fb_info *p, const char __user *buf,
--			size_t count, loff_t *ppos)
+-/*
+- * this is the slow path from userspace. they can seek and write to
+- * the fb. it's inefficient to do anything less than a full screen draw
+- */
+-static ssize_t hecubafb_write(struct fb_info *info, const char __user *buf,
+-				size_t count, loff_t *ppos)
 -{
--	struct xenfb_info *info = p->par;
--	ssize_t res;
+-	struct hecubafb_par *par = info->par;
+-	unsigned long p = *ppos;
+-	void *dst;
+-	int err = 0;
+-	unsigned long total_size;
 -
--	res = fb_sys_write(p, buf, count, ppos);
--	xenfb_refresh(info, 0, 0, info->page->width, info->page->height);
--	return res;
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+-	total_size = info->fix.smem_len;
+-
+-	if (p > total_size)
+-		return -EFBIG;
+-
+-	if (count > total_size) {
+-		err = -EFBIG;
+-		count = total_size;
+-	}
+-
+-	if (count + p > total_size) {
+-		if (!err)
+-			err = -ENOSPC;
+-
+-		count = total_size - p;
+-	}
+-
+-	dst = (void __force *) (info->screen_base + p);
+-
+-	if (copy_from_user(dst, buf, count))
+-		err = -EFAULT;
+-
+-	if  (!err)
+-		*ppos += count;
+-
+-	hecubafb_dpy_update(par);
+-
+-	return (err) ? err : count;
 -}
 -
- static int
- xenfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
-@@ -323,12 +294,12 @@ static int xenfb_set_par(struct fb_info 
- 
- static struct fb_ops xenfb_fb_ops = {
+ static struct fb_ops hecubafb_ops = {
  	.owner		= THIS_MODULE,
--	.fb_read	= fb_sys_read,
--	.fb_write	= xenfb_write,
+-	.fb_read        = fb_sys_read,
+-	.fb_write	= hecubafb_write,
+-	.fb_fillrect	= hecubafb_fillrect,
+-	.fb_copyarea	= hecubafb_copyarea,
+-	.fb_imageblit	= hecubafb_imageblit,
 +	.fb_read        = fb_deferred_io_read,
 +	.fb_write	= fb_deferred_io_write,
 +	.fb_fillrect	= fb_deferred_io_fillrect,
 +	.fb_copyarea	= fb_deferred_io_copyarea,
 +	.fb_imageblit	= fb_deferred_io_imageblit,
- 	.fb_setcolreg	= xenfb_setcolreg,
--	.fb_fillrect	= xenfb_fillrect,
--	.fb_copyarea	= xenfb_copyarea,
--	.fb_imageblit	= xenfb_imageblit,
- 	.fb_check_var	= xenfb_check_var,
- 	.fb_set_par     = xenfb_set_par,
  };
+ 
+ static struct fb_deferred_io hecubafb_defio = {

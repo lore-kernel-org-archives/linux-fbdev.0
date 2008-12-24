@@ -1,7 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 02/05] video: deferred io sys helpers - sh_mobile_lcdcfb V2
-Date: Wed, 24 Dec 2008 17:30:01 +0900
-Message-ID: <20081224083001.1848.97506.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 04/05] video: deferred io sys helpers - metronome V2
+Date: Wed, 24 Dec 2008 17:30:18 +0900
+Message-ID: <20081224083018.1848.67243.sendpatchset@rx1.opensource.se>
 References: <20081224082946.1848.46644.sendpatchset@rx1.opensource.se>
 Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <20081224082946.1848.46644.sendpatchset@rx1.opensource.se>
@@ -15,86 +15,164 @@ Cc: aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@red
 
 From: Magnus Damm <damm@igel.co.jp>
 
-Change the sh_mobile_lcdcfb driver to use the new shared sys helpers.
-This allows us to remove some code.
+Change the metronome driver to use the new shared sys helpers. This
+allows us to remove some duplicated code. The use of the new shared
+sys helpers will change the behavior of this driver from syncing all
+fillrect/copyarea/imageblit/write operations directly to using the
+deferred io delay.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
  Changes since V1:
- - remove sysdelay
+ - added dirty area update comment
 
- drivers/video/Kconfig            |    4 ---
- drivers/video/sh_mobile_lcdcfb.c |   39 ++++----------------------------------
- 2 files changed, 5 insertions(+), 38 deletions(-)
+ drivers/video/Kconfig       |    4 -
+ drivers/video/metronomefb.c |  109 +++++++++----------------------------------
+ 2 files changed, 24 insertions(+), 89 deletions(-)
 
---- 0002/drivers/video/Kconfig
-+++ work/drivers/video/Kconfig	2008-12-24 16:29:02.000000000 +0900
-@@ -1893,10 +1893,6 @@ config FB_W100
- config FB_SH_MOBILE_LCDC
- 	tristate "SuperH Mobile LCDC framebuffer support"
- 	depends on FB && SUPERH
+--- 0004/drivers/video/Kconfig
++++ work/drivers/video/Kconfig	2008-12-24 16:33:39.000000000 +0900
+@@ -2071,10 +2071,6 @@ config XEN_FBDEV_FRONTEND
+ config FB_METRONOME
+ 	tristate "E-Ink Metronome/8track controller support"
+ 	depends on FB
 -	select FB_SYS_FILLRECT
 -	select FB_SYS_COPYAREA
 -	select FB_SYS_IMAGEBLIT
 -	select FB_SYS_FOPS
  	select FB_DEFERRED_IO
- 	---help---
- 	  Frame buffer driver for the on-chip SH-Mobile LCD controller.
---- 0001/drivers/video/sh_mobile_lcdcfb.c
-+++ work/drivers/video/sh_mobile_lcdcfb.c	2008-12-24 16:29:09.000000000 +0900
-@@ -215,14 +215,6 @@ static void sh_mobile_lcdc_deferred_io(s
- 	lcdc_write_chan(ch, LDSM2R, 1);
+ 	help
+ 	  This driver implements support for the E-Ink Metronome
+--- 0001/drivers/video/metronomefb.c
++++ work/drivers/video/metronomefb.c	2008-12-24 16:41:55.000000000 +0900
+@@ -445,7 +445,6 @@ static void metronomefb_dpy_update(struc
+ 
+ 	cksum = calc_img_cksum((u16 *) par->metromem_img, fbsize/2);
+ 	*((u16 *)(par->metromem_img) + fbsize/2) = cksum;
+-	metronome_display_cmd(par);
  }
  
--static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
--{
--	struct fb_deferred_io *fbdefio = info->fbdefio;
--
--	if (fbdefio)
--		schedule_delayed_work(&info->deferred_work, fbdefio->delay);
--}
--
- static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
- {
- 	struct sh_mobile_lcdc_priv *priv = data;
-@@ -586,34 +578,13 @@ static struct fb_fix_screeninfo sh_mobil
- 	.accel =	FB_ACCEL_NONE,
- };
+ static u16 metronomefb_dpy_update_page(struct metronomefb_par *par, int index)
+@@ -472,97 +471,37 @@ static void metronomefb_dpy_deferred_io(
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+ 	struct metronomefb_par *par = info->par;
  
--static void sh_mobile_lcdc_fillrect(struct fb_info *info,
--				    const struct fb_fillrect *rect)
+-	/* walk the written page list and swizzle the data */
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+-		cksum = metronomefb_dpy_update_page(par,
+-					(cur->index << PAGE_SHIFT));
+-		par->metromem_img_csum -= par->csum_table[cur->index];
+-		par->csum_table[cur->index] = cksum;
+-		par->metromem_img_csum += cksum;
++	/* force full screen update if dx is set or walk page list.
++	 *
++	 * normally, we need to update the dirty area pointed out by dx and
++	 * plus all dirty pages. in this driver any dirty area pointed out
++	 * by dx results in a full screen update. and since the entire screen
++	 * is updated in that case we can skip walking the page list.
++	 */
++	if (fbdefio->dx != -1) {
++		/* update the entire screen */
++		metronomefb_dpy_update(par);
++	} else {
++		/* walk the written page list and swizzle the data */
++		list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++			cksum = metronomefb_dpy_update_page(par,
++						(cur->index << PAGE_SHIFT));
++			par->metromem_img_csum -= par->csum_table[cur->index];
++			par->csum_table[cur->index] = cksum;
++			par->metromem_img_csum += cksum;
++		}
+ 	}
+ 
+ 	metronome_display_cmd(par);
+ }
+ 
+-static void metronomefb_fillrect(struct fb_info *info,
+-				   const struct fb_fillrect *rect)
 -{
+-	struct metronomefb_par *par = info->par;
+-
 -	sys_fillrect(info, rect);
--	sh_mobile_lcdc_deferred_io_touch(info);
+-	metronomefb_dpy_update(par);
 -}
 -
--static void sh_mobile_lcdc_copyarea(struct fb_info *info,
--				    const struct fb_copyarea *area)
+-static void metronomefb_copyarea(struct fb_info *info,
+-				   const struct fb_copyarea *area)
 -{
+-	struct metronomefb_par *par = info->par;
+-
 -	sys_copyarea(info, area);
--	sh_mobile_lcdc_deferred_io_touch(info);
+-	metronomefb_dpy_update(par);
 -}
 -
--static void sh_mobile_lcdc_imageblit(struct fb_info *info,
--				     const struct fb_image *image)
+-static void metronomefb_imageblit(struct fb_info *info,
+-				const struct fb_image *image)
 -{
+-	struct metronomefb_par *par = info->par;
+-
 -	sys_imageblit(info, image);
--	sh_mobile_lcdc_deferred_io_touch(info);
+-	metronomefb_dpy_update(par);
 -}
 -
- static struct fb_ops sh_mobile_lcdc_ops = {
- 	.fb_setcolreg	= sh_mobile_lcdc_setcolreg,
--	.fb_read        = fb_sys_read,
--	.fb_write       = fb_sys_write,
--	.fb_fillrect	= sh_mobile_lcdc_fillrect,
--	.fb_copyarea	= sh_mobile_lcdc_copyarea,
--	.fb_imageblit	= sh_mobile_lcdc_imageblit,
+-/*
+- * this is the slow path from userspace. they can seek and write to
+- * the fb. it is based on fb_sys_write
+- */
+-static ssize_t metronomefb_write(struct fb_info *info, const char __user *buf,
+-				size_t count, loff_t *ppos)
+-{
+-	struct metronomefb_par *par = info->par;
+-	unsigned long p = *ppos;
+-	void *dst;
+-	int err = 0;
+-	unsigned long total_size;
+-
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+-	total_size = info->fix.smem_len;
+-
+-	if (p > total_size)
+-		return -EFBIG;
+-
+-	if (count > total_size) {
+-		err = -EFBIG;
+-		count = total_size;
+-	}
+-
+-	if (count + p > total_size) {
+-		if (!err)
+-			err = -ENOSPC;
+-
+-		count = total_size - p;
+-	}
+-
+-	dst = (void __force *)(info->screen_base + p);
+-
+-	if (copy_from_user(dst, buf, count))
+-		err = -EFAULT;
+-
+-	if  (!err)
+-		*ppos += count;
+-
+-	metronomefb_dpy_update(par);
+-
+-	return (err) ? err : count;
+-}
+-
+ static struct fb_ops metronomefb_ops = {
+ 	.owner		= THIS_MODULE,
+-	.fb_write	= metronomefb_write,
+-	.fb_fillrect	= metronomefb_fillrect,
+-	.fb_copyarea	= metronomefb_copyarea,
+-	.fb_imageblit	= metronomefb_imageblit,
 +	.fb_read        = fb_deferred_io_read,
-+	.fb_write       = fb_deferred_io_write,
++	.fb_write	= fb_deferred_io_write,
 +	.fb_fillrect	= fb_deferred_io_fillrect,
 +	.fb_copyarea	= fb_deferred_io_copyarea,
 +	.fb_imageblit	= fb_deferred_io_imageblit,
  };
  
- static int sh_mobile_lcdc_set_bpp(struct fb_var_screeninfo *var, int bpp)
+ static struct fb_deferred_io metronomefb_defio = {

@@ -1,35 +1,29 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/4 v4] i.MX31: Image Processing
-	Unit DMA and IRQ	drivers
-Date: Tue, 23 Dec 2008 18:14:37 +0100
-Message-ID: <20081223171437.GK1614@pengutronix.de>
-References: <20081222183753.GD1614@pengutronix.de>
-	<Pine.LNX.4.64.0812221942480.7796@axis700.grange>
-	<20081223105006.GE1614@pengutronix.de>
-	<Pine.LNX.4.64.0812231157180.5188@axis700.grange>
-	<20081223125015.GG1614@pengutronix.de>
-	<Pine.LNX.4.64.0812231359030.5188@axis700.grange>
-	<20081223140320.GH1614@pengutronix.de>
-	<Pine.LNX.4.64.0812231529080.5188@axis700.grange>
-	<20081223160942.GJ1614@pengutronix.de>
-	<Pine.LNX.4.64.0812231727460.5188@axis700.grange>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.27 1/2] fbdev: add E-Ink
+	Broadsheet controller support
+Date: Tue, 23 Dec 2008 23:22:55 -0500
+Message-ID: <45a44e480812232022n576b009tf0a97ac1561b729f@mail.gmail.com>
+References: <12298571743158-git-send-email-jayakumar.lkml@gmail.com>
+	<Pine.LNX.4.64.0812231351360.17497@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <sha@pengutronix.de>) id 1LFAqE-0000uZ-Bs
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LFLGw-0005a0-2D
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Dec 2008 17:14:46 +0000
-Received: from metis.ext.pengutronix.de ([92.198.50.35])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LFAqB-0005pl-Hz
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Dec 2008 17:14:46 +0000
+	Wed, 24 Dec 2008 04:23:02 +0000
+Received: from mail-ew0-f21.google.com ([209.85.219.21])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LFLGr-00069N-IK for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 24 Dec 2008 04:23:00 +0000
+Received: by ewy14 with SMTP id 14so3296995ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 23 Dec 2008 20:22:56 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.0812231351360.17497@anakin>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812231727460.5188@axis700.grange>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,38 +33,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Dan Williams <dan.j.williams@intel.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Eric Miao <eric.miao@marvell.com>, linux-arm-kernel@lists.arm.linux.org.uk
 
-On Tue, Dec 23, 2008 at 05:33:11PM +0100, Guennadi Liakhovetski wrote:
-> 
-> These all are just slightly different variations - with this one you'd 
-> have to scan dma channels in your dma irq handler, which I currently don't 
-> have to do.
-> 
-> > That said I'm not sure whether we need a chained interrupt handler at all.
-> > Looking at the remaining interrupts it seems that for example the
-> > CSI_EOF (IPU_INT_STAT3 bit 5) interrupt is redundant to the corresponding
-> > channels interrupt. In the camera driver you already realized that it's
-> > the dma end event you're interested in, not the CSI_EOF event. Not sure
-> > if that holds for the other interrupts though.
-> 
-> I think the version with a lookup table is optimal - it uses standard 
-> mechanisms for irq handling and doesn't waste RAM. The disadvantage - 
-> every addition will need driver modification...
-> 
-> But ok, this is taking way too long. Just tell me which way you'd like to 
-> have it and I'll do it.
+On Tue, Dec 23, 2008 at 7:52 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Sun, 21 Dec 2008, Jaya Kumar wrote:
+>> --- /dev/null
+>> +++ b/drivers/video/broadsheetfb.c
+>
+>> +static struct fb_var_screeninfo broadsheetfb_var __devinitdata = {
+>> +     .xres           = DPY_W,
+>> +     .yres           = DPY_H,
+>> +     .xres_virtual   = DPY_W,
+>> +     .yres_virtual   = DPY_H,
+>> +     .bits_per_pixel = 8,
+>> +     .grayscale      = 1,
+>> +     .nonstd         = 1,
+>
+> Why do you set .nonstd?
+>
+> #define FB_NONSTD_HAM           1       /* Hold-And-Modify (HAM)        */
+>
 
-Preferably a way which does not involve introducing 100+ unused
-interrupts.
+Good point, shouldn't be set. Will take it out of broadsheetfb and
+also the other e-ink drivers that set it.
 
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Thanks,
+jaya
 
 ------------------------------------------------------------------------------

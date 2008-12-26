@@ -1,71 +1,53 @@
-From: "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: [RFC 2.6.27 1/1] fb_defio: generic write support
-Date: Fri, 26 Dec 2008 11:58:05 +0900
-Message-ID: <aec7e5c30812251858x1df4701fv6f3650ca650a6f13@mail.gmail.com>
-References: <12302345513642-git-send-email-jayakumar.lkml@gmail.com>
+From: "Eric Miao" <eric.y.miao@gmail.com>
+Subject: Re: [RFC 2.6.27 2/2] mach-pxa: add AM300
+	platform driver v3
+Date: Fri, 26 Dec 2008 10:58:13 +0800
+Message-ID: <f17812d70812251858p7c8dbf4xbdbb338a22f9335e@mail.gmail.com>
+References: <1230259693262-git-send-email-jayakumar.lkml@gmail.com>
+	<1230259703338-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <12302345513642-git-send-email-jayakumar.lkml@gmail.com>
-Content-Disposition: inline
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <eric.y.miao@gmail.com>) id 1LG2u7-0003p1-9K
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 26 Dec 2008 02:58:23 +0000
+Received: from rv-out-0708.google.com ([209.85.198.245])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LG2ty-00087b-CT for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 26 Dec 2008 02:58:23 +0000
+Received: by rv-out-0708.google.com with SMTP id f25so3250915rvb.22
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 25 Dec 2008 18:58:13 -0800 (PST)
+In-Reply-To: <1230259703338-git-send-email-jayakumar.lkml@gmail.com>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@redhat.com, lethal@linux-sh.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, Eric Miao <eric.miao@marvell.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-arm-kernel@lists.arm.linux.org.uk, =?UTF-8?Q?Lothar_Wa=C3=83=C5=B8mann?= <LW@karo-electronics.de>
 
-Hi Jaya,
-
-On Fri, Dec 26, 2008 at 4:49 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> This patch implements generic write support that can be used by deferred IO
-> client drivers. It reuses the same deferred IO callback mechanism in existing
-> client drivers and uses the pagelist to inform the client driver which pages
-> were modified in the write call. It should be possible to extend this same
-> method to imageblit/copyarea/fillrect as well. metronomefb's write has been
-> removed in favour of using this mechanism. This patch depends on Magnus'
-> patchset to add defio support for dma/kmalloc-ed memory.
+On Fri, Dec 26, 2008 at 10:48 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> This patch adds support for the AM300 platform driver.
 >
 > Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 
-Good plan, I agree that having more fine grained dirty page handling
-makes sense. However, if this or a dirty rectangle is better
-performance wise is not so clear. I'd say that for the write()
-operation this pagelist modification makes sense, but for
-fillrect/copyarea/imageblit it becomes more complicated since we
-depend on video mode all of a sudden. But maybe that's a non-issue.
+Looks OK to me.
 
-In my mind, the best strategy is to look at drivers and see which
-interface they need:
+Geert and Krzystof,
 
-- hecubafb: full frames
-- sh_mobile_lcdcfb: full frames
-- metronomefb: pages
-- xen-fbfront: area
+Who's going to take the other one, which looks good to me as well, or
+giving your Ack so that these two can be go through ARM tree together.
 
-Basically we have three different requirements. For full frames the
-struct page handling is just plain overhead. So is any dirty area
-handling code. Just having the deferred io callback by itself is
-enough for the full frame type of drivers. Metronomefb would be very
-happy to just receive pages. And xen just a dirty area, unless I'm
-misunderstanding the code. The sh_mobile_lcdc hardware also supports
-partial screen update, so more fine grained dirty area/page handling
-is doable there as well.
+Thanks.
 
-I suggest adding a flag variable and two flags that enable the
-pagelist and the dirty area. The full frame drivers keep the flags
-unset to get improved performance (no need to traverse the pagelist
-anymore) and the other drivers can select which modes that should be
-enabled depending on the hardware requirements.
-
-Or just have a single flag enabling the pagelist, and provide helper
-code for area based drivers that converts dirty pages to rectangles
-suitable for that type of hardware. The latter may be a bit too
-complicated though.
-
-This may be a good first step in the right direction though. I'd like
-to add code on top of this that disables the pagelist handling for
-full frame drivers though. Any thoughts?
-
-Cheers,
-
-/ magnus
+------------------------------------------------------------------------------

@@ -1,68 +1,71 @@
 From: "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: fb_defio with a coherent DMA framebuffer
-Date: Fri, 26 Dec 2008 11:22:58 +0900
-Message-ID: <aec7e5c30812251822u2b593432n1d76083eeaa56760@mail.gmail.com>
-References: <8CF9D79FB605004381900048F600598803352F5D72@mucse405.eu.infineon.com>
-	<45a44e480812251243w5f5ece16s9c480fa3499dac4a@mail.gmail.com>
+Subject: Re: [RFC 2.6.27 1/1] fb_defio: generic write support
+Date: Fri, 26 Dec 2008 11:58:05 +0900
+Message-ID: <aec7e5c30812251858x1df4701fv6f3650ca650a6f13@mail.gmail.com>
+References: <12302345513642-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <magnus.damm@gmail.com>) id 1LG2Lt-00068r-Iv
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Dec 2008 02:23:01 +0000
-Received: from rv-out-0708.google.com ([209.85.198.250])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LG2Lr-0003uI-Hx for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Dec 2008 02:23:01 +0000
-Received: by rv-out-0708.google.com with SMTP id f25so3243714rvb.22
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 25 Dec 2008 18:22:58 -0800 (PST)
-In-Reply-To: <45a44e480812251243w5f5ece16s9c480fa3499dac4a@mail.gmail.com>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <12302345513642-git-send-email-jayakumar.lkml@gmail.com>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Nick.Thompson@infineon.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@redhat.com, lethal@linux-sh.org
 
-On Fri, Dec 26, 2008 at 5:43 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> On Fri, Dec 12, 2008 at 8:00 PM,  <Nick.Thompson@infineon.com> wrote:
->> Is fb_defio supposed to work with DMA memory? I saw a thread from over a year ago about defio's nopage (we're still using 2.6.24) being written to use driver supplied flags to specify what memory allocation type nopage is dealing with. Was this not implemented or not deemed necessary? I would be very interested to hear any suggestions about how we should tackle making this work.
+Hi Jaya,
+
+On Fri, Dec 26, 2008 at 4:49 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> This patch implements generic write support that can be used by deferred IO
+> client drivers. It reuses the same deferred IO callback mechanism in existing
+> client drivers and uses the pagelist to inform the client driver which pages
+> were modified in the write call. It should be possible to extend this same
+> method to imageblit/copyarea/fillrect as well. metronomefb's write has been
+> removed in favour of using this mechanism. This patch depends on Magnus'
+> patchset to add defio support for dma/kmalloc-ed memory.
 >
-> The current defio code does not work with DMA memory. This has been
-> recently rectified by Magnus Damm. This effort is still in progress in
-> some areas but I think it is usable. As for using 2.6.24, my response
-> to that would be: Why? We're on 2.6.28 and defio has seen a reasonable
-> amount of change since 24. :-)
+> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 
-The patch that Jaya referrers to simply adds support for physically
-contiguous frame buffers. This means that the frame buffer is
-contiguous both in virtual space and physical space. Your frame buffer
-memory must be backed with struct page though. The patch can be found
-here:
+Good plan, I agree that having more fine grained dirty page handling
+makes sense. However, if this or a dirty rectangle is better
+performance wise is not so clear. I'd say that for the write()
+operation this pagelist modification makes sense, but for
+fillrect/copyarea/imageblit it becomes more complicated since we
+depend on video mode all of a sudden. But maybe that's a non-issue.
 
-http://thread.gmane.org/gmane.linux.ports.sh.devel/5012/focus=5015
+In my mind, the best strategy is to look at drivers and see which
+interface they need:
 
-However, your coherent memory may or may not be backed by struct page.
-Some types of memories may have pfn mappings only. If your memory is
-backed by struct page or not depends on your coherent DMA memory
-implementation. On SuperH we use __get_free_pages() and split_page()
-unless dma_declare_coherent() has been used. This works well for me.
-Have a look at arch/sh/mm/consistent.c and kernel/dma-coherent.c in a
-recent kernel.
+- hecubafb: full frames
+- sh_mobile_lcdcfb: full frames
+- metronomefb: pages
+- xen-fbfront: area
+
+Basically we have three different requirements. For full frames the
+struct page handling is just plain overhead. So is any dirty area
+handling code. Just having the deferred io callback by itself is
+enough for the full frame type of drivers. Metronomefb would be very
+happy to just receive pages. And xen just a dirty area, unless I'm
+misunderstanding the code. The sh_mobile_lcdc hardware also supports
+partial screen update, so more fine grained dirty area/page handling
+is doable there as well.
+
+I suggest adding a flag variable and two flags that enable the
+pagelist and the dirty area. The full frame drivers keep the flags
+unset to get improved performance (no need to traverse the pagelist
+anymore) and the other drivers can select which modes that should be
+enabled depending on the hardware requirements.
+
+Or just have a single flag enabling the pagelist, and provide helper
+code for area based drivers that converts dirty pages to rectangles
+suitable for that type of hardware. The latter may be a bit too
+complicated though.
+
+This may be a good first step in the right direction though. I'd like
+to add code on top of this that disables the pagelist handling for
+full frame drivers though. Any thoughts?
 
 Cheers,
 
 / magnus
-
-------------------------------------------------------------------------------

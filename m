@@ -1,438 +1,101 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.27 1/1] gpiolib: add batch set/get
-Date: Sun, 28 Dec 2008 00:24:08 +0800
-Message-ID: <1230395048446-git-send-email-jayakumar.lkml@gmail.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754745AbYL0QYc@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.27 1/1] fb_defio: generic write support
+Date: Sun, 28 Dec 2008 01:01:00 +0800
+Message-ID: <45a44e480812270901r4cda5477v86479aec62d0ba4a@mail.gmail.com>
+References: <12302345513642-git-send-email-jayakumar.lkml@gmail.com>
+	 <aec7e5c30812251858x1df4701fv6f3650ca650a6f13@mail.gmail.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, David Brownell <dbrownell@users.sourceforge.net>, Eric Miao <eric.miao@marvell.com>, Paulius Zaleckas <paulius.zaleckas@teltonika.lt>, Geert Uytterhoeven <geert@linux-m68k.org>, David Brownell <david-b@pacbell.net>, Sam Ravnborg <sam@ravnborg.org>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <aec7e5c30812251858x1df4701fv6f3650ca650a6f13@mail.gmail.com>
+Content-Disposition: inline
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@redhat.com, lethal@linux-sh.org
 
-Hi friends,
+On Fri, Dec 26, 2008 at 10:58 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
+> Hi Jaya,
+>
+> On Fri, Dec 26, 2008 at 4:49 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+>> This patch implements generic write support that can be used by deferred IO
+>> client drivers. It reuses the same deferred IO callback mechanism in existing
+>> client drivers and uses the pagelist to inform the client driver which pages
+>> were modified in the write call. It should be possible to extend this same
+>> method to imageblit/copyarea/fillrect as well. metronomefb's write has been
+>> removed in favour of using this mechanism. This patch depends on Magnus'
+>> patchset to add defio support for dma/kmalloc-ed memory.
+>>
+>> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+>
+> Good plan, I agree that having more fine grained dirty page handling
+> makes sense. However, if this or a dirty rectangle is better
+> performance wise is not so clear. I'd say that for the write()
+> operation this pagelist modification makes sense, but for
+> fillrect/copyarea/imageblit it becomes more complicated since we
 
-This is v2 of my attempt to add batch support to gpiolib. Thanks to
-David Brownell, Eric Miao, Paulius Zaleckas, Geert, and Sam for prior
-feedback. I have tested set_batch using the am300 driver. get_batch
-is not tested.
+Yes, you're right.
 
-Please let me know your feedback.
+> depend on video mode all of a sudden. But maybe that's a non-issue.
+
+I think your original insight is correct, it can be complicated to
+translate between pages and the structures used for the
+fillrect/copyarea/imageblit operations.
+
+>
+> In my mind, the best strategy is to look at drivers and see which
+> interface they need:
+>
+> - hecubafb: full frames
+
+hecubafb uses pages. oh wait, I see, I had posted a patch to support
+pages but I never got it merged. I'll put that on the todo list.
+
+> - sh_mobile_lcdcfb: full frames
+> - metronomefb: pages
+> - xen-fbfront: area
+>
+> Basically we have three different requirements. For full frames the
+> struct page handling is just plain overhead. So is any dirty area
+> handling code. Just having the deferred io callback by itself is
+> enough for the full frame type of drivers. Metronomefb would be very
+
+Agreed.
+
+> happy to just receive pages. And xen just a dirty area, unless I'm
+> misunderstanding the code. The sh_mobile_lcdc hardware also supports
+> partial screen update, so more fine grained dirty area/page handling
+> is doable there as well.
+>
+> I suggest adding a flag variable and two flags that enable the
+> pagelist and the dirty area. The full frame drivers keep the flags
+> unset to get improved performance (no need to traverse the pagelist
+> anymore) and the other drivers can select which modes that should be
+> enabled depending on the hardware requirements.
+
+Yes, this sounds reasonable.
+
+>
+> Or just have a single flag enabling the pagelist, and provide helper
+> code for area based drivers that converts dirty pages to rectangles
+> suitable for that type of hardware. The latter may be a bit too
+> complicated though.
+
+I think I agree that conversion routines would start getting messy and
+require hardware specific knowledge in which case, I think we might as
+well leave it for the drivers to do.
+
+>
+> This may be a good first step in the right direction though. I'd like
+> to add code on top of this that disables the pagelist handling for
+> full frame drivers though. Any thoughts?
+
+Sounds like a reasonable plan. However, I think you're planning to do
+page support in sh_mobile and hecubafb should be page based so that
+would indicate there won't be any full frame drivers in the long term,
+right? That said, I think its still valuable to have that code to make
+that a possible option.
 
 Thanks,
 jaya
-
-am300epd was doing 800*600*16*gpio_set_value for each framebuffer transfer
-(it uses 16-pins of gpio as its data bus). I found this caused a wee
-performance limitation. This patch adds an API for gpio_s/get_batch
-which allows drivers to s/get batches of gpio together in a single call.
-I have done a test implementation on gumstix (pxa255) with am300epd
-and it provides a nice improvement in performance.
-
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Eric Miao <eric.miao@marvell.com>
-Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: David Brownell <david-b@pacbell.net>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Ben Gardner <bgardner@wabtec.com>
-CC: Greg KH <greg@kroah.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
----
- arch/arm/mach-pxa/Kconfig             |    1 +
- arch/arm/mach-pxa/am300epd.c          |    9 ++-
- arch/arm/mach-pxa/gpio.c              |   72 +++++++++++++++++++
- arch/arm/mach-pxa/include/mach/gpio.h |   47 +++++++++++++
- drivers/gpio/Kconfig                  |    5 ++
- drivers/gpio/gpiolib.c                |  122 +++++++++++++++++++++++++++++++++
- include/asm-generic/gpio.h            |   15 ++++-
- 7 files changed, 269 insertions(+), 2 deletions(-)
-
-diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
-index 768618b..a5a306e 100644
---- a/arch/arm/mach-pxa/Kconfig
-+++ b/arch/arm/mach-pxa/Kconfig
-@@ -41,6 +41,7 @@ config GUMSTIX_AM200EPD
- 	bool "Enable AM200EPD board support"
- 
- config GUMSTIX_AM300EPD
-+	select GPIOLIB_BATCH
- 	bool "Enable AM300EPD board support"
- 
- endchoice
-diff --git a/arch/arm/mach-pxa/am300epd.c b/arch/arm/mach-pxa/am300epd.c
-index 4bd10a1..9594cf0 100644
---- a/arch/arm/mach-pxa/am300epd.c
-+++ b/arch/arm/mach-pxa/am300epd.c
-@@ -190,9 +190,12 @@ static u16 am300_get_hdb(struct broadsheetfb_par *par)
- 	u16 res = 0;
- 	int i;
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+	res = gpio_get_batch(DB0_GPIO_PIN, 0xFFFF, 16);
-+#else
- 	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
- 		res |= (gpio_get_value(DB0_GPIO_PIN + i)) ? (1 << i) : 0;
--
-+#endif
- 	return res;
- }
- 
-@@ -200,8 +203,12 @@ static void am300_set_hdb(struct broadsheetfb_par *par, u16 data)
- {
- 	int i;
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+	gpio_set_batch(DB0_GPIO_PIN, data, 0xFFFF, 16);
-+#else
- 	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
- 		gpio_set_value(DB0_GPIO_PIN + i, (data >> i) & 0x01);
-+#endif
- }
- 
- 
-diff --git a/arch/arm/mach-pxa/gpio.c b/arch/arm/mach-pxa/gpio.c
-index 5fec1e4..d85cf2e 100644
---- a/arch/arm/mach-pxa/gpio.c
-+++ b/arch/arm/mach-pxa/gpio.c
-@@ -162,6 +162,76 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 		__raw_writel(mask, pxa->regbase + GPCR_OFFSET);
- }
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+/*
-+ * Set output GPIO level in batches
-+ */
-+static void pxa_gpio_set_batch(struct gpio_chip *chip, unsigned offset,
-+				u32 values, u32 bitmask)
-+{
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that offset + bitmask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	/* shift the bits into our register specific position */
-+	values <<= offset;
-+	bitmask <<= offset;
-+
-+	values &= bitmask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPSR_OFFSET);
-+
-+	values = ~values;
-+	values &= bitmask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPCR_OFFSET);
-+}
-+
-+/*
-+ * Get output GPIO level in batches
-+ */
-+static u32 pxa_gpio_get_batch(struct gpio_chip *chip, unsigned offset,
-+				u32 bitmask)
-+{
-+	u32 values;
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that offset + bitmask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	values = __raw_readl(pxa->regbase + GPLR_OFFSET);
-+
-+	/* shift the result back into original position */
-+	values >>= offset;
-+	/* no need to shift bitmask since we've already shifted values */
-+	values &= bitmask;
-+
-+	return values;
-+}
-+#endif
-+
-+#ifdef CONFIG_GPIOLIB_BATCH
-+#define GPIO_CHIP(_n)							\
-+	[_n] = {							\
-+		.regbase = GPIO##_n##_BASE,				\
-+		.chip = {						\
-+			.label		  = "gpio-" #_n,		\
-+			.direction_input  = pxa_gpio_direction_input,	\
-+			.direction_output = pxa_gpio_direction_output,	\
-+			.get		  = pxa_gpio_get,		\
-+			.set		  = pxa_gpio_set,		\
-+			.base		  = (_n) * 32,			\
-+			.ngpio		  = 32,				\
-+			.set_batch 	  = pxa_gpio_set_batch,		\
-+			.get_batch	  = pxa_gpio_get_batch,		\
-+		},							\
-+	}
-+#else
- #define GPIO_CHIP(_n)							\
- 	[_n] = {							\
- 		.regbase = GPIO##_n##_BASE,				\
-@@ -175,6 +245,8 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 			.ngpio		  = 32,				\
- 		},							\
- 	}
-+#endif
-+
- 
- static struct pxa_gpio_chip pxa_gpio_chip[] = {
- 	GPIO_CHIP(0),
-diff --git a/arch/arm/mach-pxa/include/mach/gpio.h b/arch/arm/mach-pxa/include/mach/gpio.h
-index 2c538d8..e66e752 100644
---- a/arch/arm/mach-pxa/include/mach/gpio.h
-+++ b/arch/arm/mach-pxa/include/mach/gpio.h
-@@ -56,6 +56,53 @@ static inline void gpio_set_value(unsigned gpio, int value)
- 	}
- }
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+static inline void gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
-+					int bitwidth)
-+{
-+	if (__builtin_constant_p(gpio) &&
-+		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
-+		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
-+		int shift;
-+
-+		shift = gpio % 32;
-+		values <<= shift;
-+		bitmask <<= shift;
-+
-+		values &= bitmask;
-+		if (values)
-+			GPSR(gpio) = values;
-+
-+		values = ~values;
-+		values &= bitmask;
-+		if (values)
-+			GPCR(gpio) = values;
-+	} else {
-+		__gpio_set_batch(gpio, values, bitmask, bitwidth);
-+	}
-+}
-+
-+static inline u32 gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth)
-+{
-+	if (__builtin_constant_p(gpio) &&
-+		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
-+		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
-+		int shift;
-+		u32 values;
-+
-+		shift = gpio % 32;
-+
-+		values = GPLR(gpio);
-+		values >>= shift;
-+		values &= bitmask;
-+
-+		return values;
-+	} else {
-+		return __gpio_get_batch(gpio, bitmask, bitwidth);
-+	}
-+}
-+#endif
-+
- #define gpio_cansleep __gpio_cansleep
- 
- #define gpio_to_irq(gpio)	IRQ_GPIO(gpio)
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 48f49d9..aeeb83c 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -37,6 +37,11 @@ menuconfig GPIOLIB
- 
- if GPIOLIB
- 
-+config GPIOLIB_BATCH
-+	bool "Batch GPIO support"
-+	help
-+	  Say Y here to add the capability to batch set/get GPIOs.
-+
- config DEBUG_GPIO
- 	bool "Debug GPIO calls"
- 	depends on DEBUG_KERNEL
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 82020ab..7b36573 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1056,6 +1056,128 @@ void __gpio_set_value(unsigned gpio, int value)
- }
- EXPORT_SYMBOL_GPL(__gpio_set_value);
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+/**
-+ * __gpio_set_batch() - assign a batch of gpio pins together
-+ * @gpio: starting gpio pin
-+ * @values: values to assign, sequential and including masked bits
-+ * @bitmask: bitmask to be applied to values
-+ * @bitwidth: width inclusive of masked-off bits
-+ * Context: any
-+ *
-+ * This is used directly or indirectly to implement gpio_set_value().
-+ * It invokes the associated gpio_chip.set_batch() method. If that
-+ * method does not exist for any segment that is involved, then it drops
-+ * back down to standard gpio_chip.set()
-+ */
-+void __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bitwidth)
-+{
-+	struct gpio_chip *chip;
-+	int i = 0;
-+	int value, width, remwidth;
-+	u32 mask;
-+
-+	do {
-+		chip = gpio_to_chip(gpio + i);
-+		WARN_ON(extra_checks && chip->can_sleep);
-+
-+		if (!chip->set_batch) {
-+			while (((gpio + i) < (chip->base + chip->ngpio))
-+				&& bitwidth) {
-+				mask = 1 << i;
-+				value = values & mask;
-+				if (bitmask & mask)
-+					chip->set(chip, gpio + i - chip->base,
-+							value);
-+				i++;
-+				bitwidth--;
-+			}
-+		} else {
-+			value = values >> i; /* shift off the used data bits */
-+			remwidth = ((chip->base + (int) chip->ngpio) -
-+					((int) gpio + i));
-+			width = min(bitwidth, remwidth);
-+
-+			/* shift off the used mask bits */
-+			mask = bitmask >> i;
-+			/* now adjust mask by width of set */
-+			mask &= ((1 << width) - 1);
-+
-+			chip->set_batch(chip, gpio + i - chip->base, value,
-+						mask);
-+			i += width;
-+			bitwidth -= width;
-+		}
-+	} while (bitwidth);
-+}
-+EXPORT_SYMBOL_GPL(__gpio_set_batch);
-+
-+/**
-+ * __gpio_get_batch() - get a batch of gpio pins together
-+ * @gpio: starting gpio pin
-+ * @bitmask: bitmask to be applied to values
-+ * @bitwidth: width inclusive of masked-off bits
-+ * Context: any
-+ *
-+ * This is used directly or indirectly to implement gpio_get_value().
-+ * It invokes the associated gpio_chip.get_batch() method and returns
-+ * zero if no such method is provided.
-+ */
-+u32 __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth)
-+{
-+	struct gpio_chip *chip;
-+	int i = 0;
-+	int width, remwidth;
-+	u32 mask;
-+	u32 values = 0;
-+	u32 value;
-+
-+	do {
-+		chip = gpio_to_chip(gpio + i);
-+		WARN_ON(extra_checks && chip->can_sleep);
-+
-+		/*
-+		 * check if we have batch capability on this chip.
-+		 * if not, then we use the single bit gets
-+		 * any masked or inaccessible bits are already 0
-+		 */
-+		if (!chip->get_batch) {
-+			while (((gpio + i) < (chip->base + chip->ngpio))
-+				&& bitwidth) {
-+				mask = 1 << i;
-+				/* skip if no get or masked out */
-+				if (chip->get && (bitmask & mask)) {
-+					if (chip->get(chip,
-+						gpio + i - chip->base))
-+						values |= mask;
-+				}
-+				i++;
-+				bitwidth--;
-+			}
-+		} else {
-+			remwidth = ((chip->base + (int) chip->ngpio) -
-+					((int) gpio + i));
-+			width = min(bitwidth, remwidth);
-+
-+			/* shift off the used mask bits */
-+			mask = bitmask >> i;
-+			/* now adjust mask by width of get */
-+			mask &= ((1 << width) - 1);
-+
-+			value = chip->get_batch(chip, gpio + i - chip->base,
-+							mask);
-+			/* shift result back into caller position */
-+			values |= value << i;
-+			i += width;
-+			bitwidth -= width;
-+		}
-+	} while (bitwidth);
-+
-+	return values;
-+}
-+EXPORT_SYMBOL_GPL(__gpio_get_batch);
-+#endif
-+
- /**
-  * __gpio_cansleep() - report whether gpio value access will sleep
-  * @gpio: gpio in question
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index 81797ec..fa716a7 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -44,6 +44,8 @@ struct module;
-  *	returns either the value actually sensed, or zero
-  * @direction_output: configures signal "offset" as output, or returns error
-  * @set: assigns output value for signal "offset"
-+ * @set_batch: batch assigns output values for consecutive signals starting at
-+ *	"offset" with mask in "bitmask" all within this gpio_chip
-  * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
-  *	implementation may not sleep
-  * @dbg_show: optional routine to show contents in debugfs; default code
-@@ -84,7 +86,13 @@ struct gpio_chip {
- 						unsigned offset, int value);
- 	void			(*set)(struct gpio_chip *chip,
- 						unsigned offset, int value);
--
-+#ifdef CONFIG_GPIOLIB_BATCH
-+	void			(*set_batch)(struct gpio_chip *chip,
-+						unsigned offset, u32 values,
-+						u32 bitmask);
-+	u32			(*get_batch)(struct gpio_chip *chip,
-+						unsigned offset, u32 bitmask);
-+#endif
- 	int			(*to_irq)(struct gpio_chip *chip,
- 						unsigned offset);
- 
-@@ -124,6 +132,11 @@ extern void gpio_set_value_cansleep(unsigned gpio, int value);
-  */
- extern int __gpio_get_value(unsigned gpio);
- extern void __gpio_set_value(unsigned gpio, int value);
-+#ifdef CONFIG_GPIOLIB_BATCH
-+extern void __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
-+				int bitwidth);
-+extern u32 __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth);
-+#endif
- 
- extern int __gpio_cansleep(unsigned gpio);
- 
--- 
-1.5.2.3

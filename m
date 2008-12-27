@@ -1,107 +1,165 @@
-From: Bill Unruh <unruh@physics.ubc.ca>
-Subject: Re: [Bugme-new] [Bug 12300] New: The VGA
- console driver does not work with the Panasonic W7 (Intel 965 video)
-Date: Fri, 26 Dec 2008 19:04:33 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0812261857050.11676@info.physics.ubc.ca>
-References: <bug-12300-10286@http.bugzilla.kernel.org/>
-	<20081225202510.3bfb7a4d.akpm@linux-foundation.org>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Sat, 27 Dec 2008 22:55:20 +0800
+Message-ID: <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
+	 <200811291454.17110.david-b@pacbell.net>
+	 <45a44e480811291552i77878bcdn5fe33f48fc4236eb@mail.gmail.com>
+	 <200811300955.30180.david-b@pacbell.net>
+	 <45a44e480811301710v78875425p75dedd850728cbec@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <unruh@physics.ubc.ca>) id 1LGPTp-0001Vw-95
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Dec 2008 03:04:45 +0000
-Received: from info.physics.ubc.ca ([142.103.234.23])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LGPTl-00028P-6X for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Dec 2008 03:04:45 +0000
-In-Reply-To: <20081225202510.3bfb7a4d.akpm@linux-foundation.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+Return-path: <linux-embedded-owner@vger.kernel.org>
+In-Reply-To: <45a44e480811301710v78875425p75dedd850728cbec@mail.gmail.com>
+Content-Disposition: inline
+Sender: linux-embedded-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: David Brownell <david-b@pacbell.net>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-
-It looks like the problem was with the standard vga=788 mode that at least
-mandriva uses. When managed to switch to text mode, and used vga=ask and chose
-the first mode , everything suddenly worked. It seems that Mandriva outsmarted
-themselves (well at least me) with their installation routine. Sorry about the
-alarm re the kernel itself. (and the console modes also now work--
-alt-ctrl-F1-6).
-
-
-On Thu, 25 Dec 2008, Andrew Morton wrote:
-
+On Mon, Dec 1, 2008 at 9:10 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> On Mon, Dec 1, 2008 at 1:55 AM, David Brownell <david-b@pacbell.net> wrote:
+>>
+>> They wouldn't want names so easily confused with the current set
+>> of GPIO calls, no.
+>>
 >
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
+> Okay, how does gpio_set/get_values_batch() sound?
 >
-> On Thu, 25 Dec 2008 19:22:25 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+>>
+>>> >
+>>> > Then separately two more things:
+>>> >
+>>> >  - A gpio_* interface proposal for higher-level bitmask calls.
+>>> >   This is worth some discussion; the calls should clearly
+>>> >   be optional (not everything will implement them), and I
+>>> >   can't help but suspect <linux/bitmap.h> interfaces should
+>>> >   interoperate smoothly.
+>>
+>> ... including probably ganged request/free, and direction updates.
+>> When bitbanging a multiplexed parallel databus, you'll often need
+>> to change directions.
 >
->> http://bugzilla.kernel.org/show_bug.cgi?id=12300
->>
->>            Summary: The VGA console driver does not work with the Panasonic
->>                     W7 (Intel 965 video)
->>            Product: Drivers
->>            Version: 2.5
->>      KernelVersion: 2.6.24.4
->>           Platform: All
->>         OS/Version: Linux
->>               Tree: Mainline
->>             Status: NEW
->>           Severity: blocking
->>           Priority: P1
->>          Component: Console/Framebuffers
->>         AssignedTo: jsimmons@infradead.org
->>         ReportedBy: unruh@physics.ubc.ca
+> Okay, so I'll also add gpio_direction_output/input_batch and request/free_batch.
+>
 >>
 >>
->> Latest working kernel version:Unknown
->> Earliest failing kernel version: At least 2.6.17
->> Distribution:Mandriva 2007.1-2008.1
->> Hardware Environment:Panasonic toughbook W7
->> Software Environment:Mandriva 2008.1 installation
->> Problem Description:
->> When I try to install Mandriva 2008.1 onto a Panasonic Toughbook W7 after
->> intial splash sceen ( which displays presumably because it uses the bios) and
->> the loading of the kernel, the screen goes blank. This seems to be because the
->> kernel is unable to actually display any of the text in the VGA console mode
->> onto the screen. If I make menu choices blindly, the DVD disk is read.
+>>> >
+>>> >  - A gpiolib based implementation, using those new gpio_chip
+>>> >   methods as accelerators if they're present.  This should
+>>> >   probably also be optional, even at the Kconfig level; many
+>>> >   systems won't need to spend memory on these calls.
+>>>
+>>> Understood. I will make it optional. Does
+>>> CONFIG_GPIOLIB_MULTIBIT_ACCESS sound okay?
 >>
->> When I used the MCNLinux Toronto ( based on the Mandriva 2007.1 with the 2.6.17
->> kernel) after the kernel loads I see nothing until finally X is started and it
->> displays fine. If I do alt-ctrl-F1 (or F2 or ..) ( which should open a console
->> screen) I again see nothing. This makes me think strongly that the problem is
->> taht somehow the console VGA driver within the kernel is not working, although
->> the xorg video card works fine (since X displays without problem). Of course
->> not having the VGA console output makes it impossible to actually install
->> Mandriva or any Linux onto the system.
->> The Panasonic toughbook line has been wonderful with Linux, until the W7.
+>> Kind of verbose for my taste, and it's already "multibit" (one
+>> at a time, but still multiple) ... let's see some more mergeable
+>> proposals and code first.  Different C file too, I suspect.
+>
+> Ok, CONFIG_GPIOLIB_BATCH and I'll add this code in
+> drivers/gpio/gpiolib_batch.c. I hope I have understood that suggestion
+> correctly.
+>
 >>
->> Perhaps there are some kernel options I could try, to see where the problem
->> lies, but have no idea what they might be (I tried to remove the vga=788 kernel
->> option but that made no difference, nor did putting in vga=normal)
 >>
->> How in the world can bog standard VGA not work?
+>>> > Don't assume gpiolib when defining the interface.
+>>>
+>>> Ok, I didn't understand this part. I think you mentioned a higher
+>>> level interface before but I didn't fully understand, if not gpiolib,
+>>> then at what level do you recommend?
 >>
->> Steps to reproduce: See above.
+>> The gpio_*() interfaces are how system glue code and drivers
+>> access GPIOs, unless they roll their own chip-specific calls.
+>>
+>> Whereas gpiolib (and gpio_chip) are an *optional* framework
+>> for implementing those calls.  Platforms can (and do!) use
+>> other frameworks ... maybe they don't want to pay its costs,
+>> and don't need the various GPIO expander drivers.
+>>
+>> So to repeat:  don't assume the interface is implemented in
+>> one particular way (using gpiolib).  It has to make sense
+>> with other implementation strategies too.  Standard split
+>> between interface and implementation, that's all.  (Some folk
+>> have been heard to talk about "gpiolib" as the interface to
+>> drivers ... it's not, it's a provider-only interface library.)
+>>
+>
+> Okay, I read above several times and I read Documentation/gpio.txt.
+> But... I'm not confident I've understood your meanings above in terms
+> of how it should change the code. What I know so far is:
+>
+> a)
+> arch/arm/mach-pxa/include/mach/gpio.h is where the pxa GPIO api
+> interface is defined. So that's where I will put the
+> gpio_get/set_values_batch functions. This will match the existing
+> gpio_set/get_value code there.
+>
+> b)
+> arch/arm/mach-pxa/gpio.c is where the implementation is.
+> So I'll put the pxa_gpio_direction_input/output_batch and
+> pxa_gpio_set/get_batch there.
+>
+> c)
+> drivers/gpio/gpiolib_batch.c
+>
+> This is where I'd put the generic platform independent implementations
+> of __gpio_set/get_values_batch
+>
+> Does this sound consistent with your recommendation? If not, I need
+> more help to understand what changes you are recommending.
+>
+>
+>> Doesn't necessarily need to be *you* doing that, but if it only
+>> works on older gumstix boards it'd not be general enough.  Which
+>> is part of why I say to get the lowest level proposal out there
+>> first.  If done right, it'll be easy to support on other chips.
+>
+> Yes, I completely agree that it must work on a wide range of
+> architectures. But I don't understand what you mean when you say get
+> the lowest level proposal out there first. I see the RFC code that I
+> posted as being the lowest level proposal (albeit needing better name
+> and bitmask support) and one that is sufficiently general that it can
+> be implemented on other architectures. If it can't, can you help me
+> understand by pointing to which portion would break on other archs?
 >
 
--- 
-William G. Unruh   |  Canadian Institute for|     Tel: +1(604)822-3273
-Physics&Astronomy  |     Advanced Research  |     Fax: +1(604)822-5324
-UBC, Vancouver,BC  |   Program in Cosmology |     unruh@physics.ubc.ca
-Canada V6T 1Z1     |      and Gravity       |  www.theory.physics.ubc.ca/
+Oh, gosh darn it, how time has flown. My email above was to make sure
+I have understood the feedback. I assume I should just get started on
+implementing. Just to double check, the plan is:
+- add bitmask support.
+- add get_batch support
+- improve naming. I think gpio_get_batch/gpio_set_batch sounds good. I
+plan to have something like:
 
-------------------------------------------------------------------------------
+void gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bitwidth);
+u32 gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth);
+
+I think I should explain the bitmask and bitwidth choice. The intended
+use case is:
+for (i=0; i < 800*600; i++) {
+ gpio_set_batch(...)
+}
+
+bitwidth (needed to iterate and map to chip ngpios) could be
+calculated from bitmask, but that involves iteratively counting bits
+from the mask, so we would have to do 800*600 bit counts. Unless, we
+do ugly things like cache the previous bitwidth/mask and compare
+against the current caller arguments. Given that the bitwidth would
+typically be a fixed value, I believe it is more intuitive for the
+caller to provide it, eg:
+
+gpio_set_batch(DB0, value, 0xFFFF, 16)
+
+which has the nice performance benefit of skipping all the bit
+counting in the most common use case scenario.
+
+While we are here, I was thinking about it, and its better if I give
+gpio_request/free/direction_batch a miss for now. Nothing prevents
+those features being added at a later point. That way I can focus on
+getting gpio_set/get_batch implemented correctly and merged as the
+first step.
+
+Thanks,
+jaya

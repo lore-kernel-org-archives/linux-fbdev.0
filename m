@@ -1,101 +1,114 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.27 1/1] fb_defio: generic write support
-Date: Sun, 28 Dec 2008 01:01:00 +0800
-Message-ID: <45a44e480812270901r4cda5477v86479aec62d0ba4a@mail.gmail.com>
-References: <12302345513642-git-send-email-jayakumar.lkml@gmail.com>
-	 <aec7e5c30812251858x1df4701fv6f3650ca650a6f13@mail.gmail.com>
+From: Bill Unruh <unruh@physics.ubc.ca>
+Subject: Re: [Bugme-new] [Bug 12300] New: The VGA
+ console driver does not work with the Panasonic W7 (Intel 965 video)
+Date: Sat, 27 Dec 2008 10:18:18 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0812271015400.19292@info.physics.ubc.ca>
+References: <bug-12300-10286@http.bugzilla.kernel.org/>
+	<20081225202510.3bfb7a4d.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <aec7e5c30812251858x1df4701fv6f3650ca650a6f13@mail.gmail.com>
-Content-Disposition: inline
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, aliguori@us.ibm.com, adaplas@gmail.com, linux-sh@vger.kernel.org, armbru@redhat.com, lethal@linux-sh.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <unruh@physics.ubc.ca>) id 1LGdjz-0006aA-P2
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 27 Dec 2008 18:18:23 +0000
+Received: from info.physics.ubc.ca ([142.103.234.23])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LGdjw-0001bj-IS for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 27 Dec 2008 18:18:23 +0000
+In-Reply-To: <20081225202510.3bfb7a4d.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
 
-On Fri, Dec 26, 2008 at 10:58 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
-> Hi Jaya,
+
+I have now used the vga=ask  kernel parameter and tried a large fraction of the VESA modes and
+the VGA modes listed. (7 VGA modes F00-F03 F05-7 and 9 VESA modes
+305 307 318 312 314 315 301 303 311) .  None of the VESA modes I tried worked
+. All of the VGA modes I tried work.
+By work I mean display anything after the mode is selected
+  In the VESA modes the screen is
+simply blank.-- no cursor, no nothing. In the VGA modes, text appears,
+scrolling
+by (various kernel reports during the startup). Ie, the kernel's handling of
+the VESA modes on this system do not seem to work at all.
+
+I have no idea if the fault lies within the kernel or whether Mandriva did
+something to the kernel. Note again that the xorg drivers work fine, as X
+works and displays.
+
+On Thu, 25 Dec 2008, Andrew Morton wrote:
+
 >
-> On Fri, Dec 26, 2008 at 4:49 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
->> This patch implements generic write support that can be used by deferred IO
->> client drivers. It reuses the same deferred IO callback mechanism in existing
->> client drivers and uses the pagelist to inform the client driver which pages
->> were modified in the write call. It should be possible to extend this same
->> method to imageblit/copyarea/fillrect as well. metronomefb's write has been
->> removed in favour of using this mechanism. This patch depends on Magnus'
->> patchset to add defio support for dma/kmalloc-ed memory.
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+>
+> On Thu, 25 Dec 2008 19:22:25 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=12300
 >>
->> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+>>            Summary: The VGA console driver does not work with the Panasonic
+>>                     W7 (Intel 965 video)
+>>            Product: Drivers
+>>            Version: 2.5
+>>      KernelVersion: 2.6.24.4
+>>           Platform: All
+>>         OS/Version: Linux
+>>               Tree: Mainline
+>>             Status: NEW
+>>           Severity: blocking
+>>           Priority: P1
+>>          Component: Console/Framebuffers
+>>         AssignedTo: jsimmons@infradead.org
+>>         ReportedBy: unruh@physics.ubc.ca
+>>
+>>
+>> Latest working kernel version:Unknown
+>> Earliest failing kernel version: At least 2.6.17
+>> Distribution:Mandriva 2007.1-2008.1
+>> Hardware Environment:Panasonic toughbook W7
+>> Software Environment:Mandriva 2008.1 installation
+>> Problem Description:
+>> When I try to install Mandriva 2008.1 onto a Panasonic Toughbook W7 after
+>> intial splash sceen ( which displays presumably because it uses the bios) and
+>> the loading of the kernel, the screen goes blank. This seems to be because the
+>> kernel is unable to actually display any of the text in the VGA console mode
+>> onto the screen. If I make menu choices blindly, the DVD disk is read.
+>>
+>> When I used the MCNLinux Toronto ( based on the Mandriva 2007.1 with the 2.6.17
+>> kernel) after the kernel loads I see nothing until finally X is started and it
+>> displays fine. If I do alt-ctrl-F1 (or F2 or ..) ( which should open a console
+>> screen) I again see nothing. This makes me think strongly that the problem is
+>> taht somehow the console VGA driver within the kernel is not working, although
+>> the xorg video card works fine (since X displays without problem). Of course
+>> not having the VGA console output makes it impossible to actually install
+>> Mandriva or any Linux onto the system.
+>> The Panasonic toughbook line has been wonderful with Linux, until the W7.
+>>
+>> Perhaps there are some kernel options I could try, to see where the problem
+>> lies, but have no idea what they might be (I tried to remove the vga=788 kernel
+>> option but that made no difference, nor did putting in vga=normal)
+>>
+>> How in the world can bog standard VGA not work?
+>>
+>> Steps to reproduce: See above.
 >
-> Good plan, I agree that having more fine grained dirty page handling
-> makes sense. However, if this or a dirty rectangle is better
-> performance wise is not so clear. I'd say that for the write()
-> operation this pagelist modification makes sense, but for
-> fillrect/copyarea/imageblit it becomes more complicated since we
 
-Yes, you're right.
+-- 
+William G. Unruh   |  Canadian Institute for|     Tel: +1(604)822-3273
+Physics&Astronomy  |     Advanced Research  |     Fax: +1(604)822-5324
+UBC, Vancouver,BC  |   Program in Cosmology |     unruh@physics.ubc.ca
+Canada V6T 1Z1     |      and Gravity       |  www.theory.physics.ubc.ca/
 
-> depend on video mode all of a sudden. But maybe that's a non-issue.
-
-I think your original insight is correct, it can be complicated to
-translate between pages and the structures used for the
-fillrect/copyarea/imageblit operations.
-
->
-> In my mind, the best strategy is to look at drivers and see which
-> interface they need:
->
-> - hecubafb: full frames
-
-hecubafb uses pages. oh wait, I see, I had posted a patch to support
-pages but I never got it merged. I'll put that on the todo list.
-
-> - sh_mobile_lcdcfb: full frames
-> - metronomefb: pages
-> - xen-fbfront: area
->
-> Basically we have three different requirements. For full frames the
-> struct page handling is just plain overhead. So is any dirty area
-> handling code. Just having the deferred io callback by itself is
-> enough for the full frame type of drivers. Metronomefb would be very
-
-Agreed.
-
-> happy to just receive pages. And xen just a dirty area, unless I'm
-> misunderstanding the code. The sh_mobile_lcdc hardware also supports
-> partial screen update, so more fine grained dirty area/page handling
-> is doable there as well.
->
-> I suggest adding a flag variable and two flags that enable the
-> pagelist and the dirty area. The full frame drivers keep the flags
-> unset to get improved performance (no need to traverse the pagelist
-> anymore) and the other drivers can select which modes that should be
-> enabled depending on the hardware requirements.
-
-Yes, this sounds reasonable.
-
->
-> Or just have a single flag enabling the pagelist, and provide helper
-> code for area based drivers that converts dirty pages to rectangles
-> suitable for that type of hardware. The latter may be a bit too
-> complicated though.
-
-I think I agree that conversion routines would start getting messy and
-require hardware specific knowledge in which case, I think we might as
-well leave it for the drivers to do.
-
->
-> This may be a good first step in the right direction though. I'd like
-> to add code on top of this that disables the pagelist handling for
-> full frame drivers though. Any thoughts?
-
-Sounds like a reasonable plan. However, I think you're planning to do
-page support in sh_mobile and hecubafb should be page based so that
-would indicate there won't be any full frame drivers in the long term,
-right? That said, I think its still valuable to have that code to make
-that a possible option.
-
-Thanks,
-jaya
+------------------------------------------------------------------------------

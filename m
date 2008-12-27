@@ -1,24 +1,25 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: [PATCH 4/4 v6] i.MX31: platform bindings and
- initialisation for IPU and framebuffer drivers
-Date: Fri, 26 Dec 2008 18:11:36 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0812261729320.4895@axis700.grange>
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
+From: Bill Unruh <unruh@physics.ubc.ca>
+Subject: Re: [Bugme-new] [Bug 12300] New: The VGA
+ console driver does not work with the Panasonic W7 (Intel 965 video)
+Date: Fri, 26 Dec 2008 19:04:33 -0800 (PST)
+Message-ID: <Pine.LNX.4.64.0812261857050.11676@info.physics.ubc.ca>
+References: <bug-12300-10286@http.bugzilla.kernel.org/>
+	<20081225202510.3bfb7a4d.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <g.liakhovetski@gmx.de>) id 1LGGDh-0007oQ-HW
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <unruh@physics.ubc.ca>) id 1LGPTp-0001Vw-95
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Dec 2008 17:11:29 +0000
-Received: from mail.gmx.net ([213.165.64.20])
-	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1LGGDa-0008Cg-BP for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Dec 2008 17:11:29 +0000
-In-Reply-To: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
+	Sat, 27 Dec 2008 03:04:45 +0000
+Received: from info.physics.ubc.ca ([142.103.234.23])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LGPTl-00028P-6X for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 27 Dec 2008 03:04:45 +0000
+In-Reply-To: <20081225202510.3bfb7a4d.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,211 +29,79 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Geert Uytterhoeven <geert@linux-m68k.org>, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.arm.linux.org.uk
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
 
-From: Guennadi Liakhovetski <lg@denx.de>
 
-This patch includes platform device data for IPU and framebuffer devices
-and pin initialisation for the pcm037 platform.
+It looks like the problem was with the standard vga=788 mode that at least
+mandriva uses. When managed to switch to text mode, and used vga=ask and chose
+the first mode , everything suddenly worked. It seems that Mandriva outsmarted
+themselves (well at least me) with their installation routine. Sorry about the
+alarm re the kernel itself. (and the console modes also now work--
+alt-ctrl-F1-6).
 
-Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
----
 
-v5 -> v6: removed unused interrupt framebuffer resources
+On Thu, 25 Dec 2008, Andrew Morton wrote:
 
- arch/arm/mach-mx3/devices.c |   81 +++++++++++++++++++++++++++++++++++++++++++
- arch/arm/mach-mx3/pcm037.c  |   55 ++++++++++++++++++++++++++++-
- 2 files changed, 135 insertions(+), 1 deletions(-)
+>
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+>
+> On Thu, 25 Dec 2008 19:22:25 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
+>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=12300
+>>
+>>            Summary: The VGA console driver does not work with the Panasonic
+>>                     W7 (Intel 965 video)
+>>            Product: Drivers
+>>            Version: 2.5
+>>      KernelVersion: 2.6.24.4
+>>           Platform: All
+>>         OS/Version: Linux
+>>               Tree: Mainline
+>>             Status: NEW
+>>           Severity: blocking
+>>           Priority: P1
+>>          Component: Console/Framebuffers
+>>         AssignedTo: jsimmons@infradead.org
+>>         ReportedBy: unruh@physics.ubc.ca
+>>
+>>
+>> Latest working kernel version:Unknown
+>> Earliest failing kernel version: At least 2.6.17
+>> Distribution:Mandriva 2007.1-2008.1
+>> Hardware Environment:Panasonic toughbook W7
+>> Software Environment:Mandriva 2008.1 installation
+>> Problem Description:
+>> When I try to install Mandriva 2008.1 onto a Panasonic Toughbook W7 after
+>> intial splash sceen ( which displays presumably because it uses the bios) and
+>> the loading of the kernel, the screen goes blank. This seems to be because the
+>> kernel is unable to actually display any of the text in the VGA console mode
+>> onto the screen. If I make menu choices blindly, the DVD disk is read.
+>>
+>> When I used the MCNLinux Toronto ( based on the Mandriva 2007.1 with the 2.6.17
+>> kernel) after the kernel loads I see nothing until finally X is started and it
+>> displays fine. If I do alt-ctrl-F1 (or F2 or ..) ( which should open a console
+>> screen) I again see nothing. This makes me think strongly that the problem is
+>> taht somehow the console VGA driver within the kernel is not working, although
+>> the xorg video card works fine (since X displays without problem). Of course
+>> not having the VGA console output makes it impossible to actually install
+>> Mandriva or any Linux onto the system.
+>> The Panasonic toughbook line has been wonderful with Linux, until the W7.
+>>
+>> Perhaps there are some kernel options I could try, to see where the problem
+>> lies, but have no idea what they might be (I tried to remove the vga=788 kernel
+>> option but that made no difference, nor did putting in vga=normal)
+>>
+>> How in the world can bog standard VGA not work?
+>>
+>> Steps to reproduce: See above.
+>
 
-diff --git a/arch/arm/mach-mx3/devices.c b/arch/arm/mach-mx3/devices.c
-index a6bdcc0..8ac2c5e 100644
---- a/arch/arm/mach-mx3/devices.c
-+++ b/arch/arm/mach-mx3/devices.c
-@@ -21,8 +21,11 @@
- #include <linux/platform_device.h>
- #include <linux/serial.h>
- #include <linux/gpio.h>
-+
- #include <mach/hardware.h>
- #include <mach/imx-uart.h>
-+#include <mach/ipu.h>
-+#include <mach/mx3fb.h>
- 
- static struct resource uart0[] = {
- 	{
-@@ -145,3 +148,81 @@ int __init mxc_register_gpios(void)
- {
- 	return mxc_gpio_init(imx_gpio_ports, ARRAY_SIZE(imx_gpio_ports));
- }
-+
-+/* i.MX31 Image Processing Unit */
-+
-+/* The resource order is important! */
-+static struct resource mx3_ipu_rsrc[] = {
-+	{
-+		.start = IPU_CTRL_BASE_ADDR,
-+		.end = IPU_CTRL_BASE_ADDR + 0x5F,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = IPU_CTRL_BASE_ADDR + 0x88,
-+		.end = IPU_CTRL_BASE_ADDR + 0xB3,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = MXC_INT_IPU_SYN,
-+		.end = MXC_INT_IPU_SYN,
-+		.flags = IORESOURCE_IRQ,
-+	}, {
-+		.start = MXC_INT_IPU_ERR,
-+		.end = MXC_INT_IPU_ERR,
-+		.flags = IORESOURCE_IRQ,
-+	}
-+};
-+
-+static struct ipu_platform_data mx3_ipu_data = {
-+	.irq_base = MXC_MAX_INT_LINES + MXC_MAX_GPIO_LINES,
-+};
-+
-+static struct platform_device mx3_ipu = {
-+	.name = "ipu-core",
-+	.id = -1,
-+	.resource = mx3_ipu_rsrc,
-+	.num_resources = ARRAY_SIZE(mx3_ipu_rsrc),
-+	.dev = {
-+		.platform_data = &mx3_ipu_data,
-+	},
-+};
-+
-+static bool ipu_registered = false;
-+
-+static struct resource fb_resources[] = {
-+	{
-+		.start		= IPU_CTRL_BASE_ADDR + 0xB4,
-+		.end		= IPU_CTRL_BASE_ADDR + 0x1BF,
-+		.flags		= IORESOURCE_MEM,
-+	},
-+};
-+
-+static struct mx3fb_platform_data mx3fb_data = {
-+	.dma_dev	= &mx3_ipu.dev,
-+};
-+
-+static struct platform_device mx3_fb = {
-+	.name		= "mx3_sdc_fb",
-+	.id		= -1,
-+	.num_resources	= ARRAY_SIZE(fb_resources),
-+	.resource	= fb_resources,
-+	.dev		= {
-+		.platform_data = &mx3fb_data,
-+		.coherent_dma_mask = 0xffffffff,
-+	},
-+};
-+
-+int __init mx3_register_fb(const char *name, const struct fb_videomode *modes,
-+			   int num_modes)
-+{
-+	if (!ipu_registered) {
-+		int ret = platform_device_register(&mx3_ipu);
-+		if (ret < 0)
-+			return ret;
-+		ipu_registered = true;
-+	}
-+
-+	mx3fb_data.name = name;
-+	mx3fb_data.mode = modes;
-+	mx3fb_data.num_modes = num_modes;
-+	return platform_device_register(&mx3_fb);
-+}
-diff --git a/arch/arm/mach-mx3/pcm037.c b/arch/arm/mach-mx3/pcm037.c
-index 4ebfceb..0492c89 100644
---- a/arch/arm/mach-mx3/pcm037.c
-+++ b/arch/arm/mach-mx3/pcm037.c
-@@ -26,15 +26,17 @@
- #include <linux/gpio.h>
- #include <linux/smc911x.h>
- 
--#include <mach/hardware.h>
- #include <asm/mach-types.h>
- #include <asm/mach/arch.h>
- #include <asm/mach/time.h>
- #include <asm/mach/map.h>
-+
-+#include <mach/hardware.h>
- #include <mach/common.h>
- #include <mach/imx-uart.h>
- #include <mach/iomux-mx3.h>
- #include <mach/board-pcm037.h>
-+#include <mach/mx3fb.h>
- 
- #include "devices.h"
- 
-@@ -95,6 +97,27 @@ static struct platform_device *devices[] __initdata = {
- 	&pcm037_eth,
- };
- 
-+static const struct fb_videomode fb_modedb[] = {
-+	{
-+		/* 240x320 @ 60 Hz */
-+		.name		= "Sharp-LQ035Q7DH06-QVGA",
-+		.refresh	= 60,
-+		.xres		= 240,
-+		.yres		= 320,
-+		.pixclock	= 185925,
-+		.left_margin	= 9,
-+		.right_margin	= 16,
-+		.upper_margin	= 7,
-+		.lower_margin	= 9,
-+		.hsync_len	= 1,
-+		.vsync_len	= 1,
-+		.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_SHARP_MODE |
-+				  FB_SYNC_CLK_INVERT | FB_SYNC_CLK_IDLE_EN,
-+		.vmode		= FB_VMODE_NONINTERLACED,
-+		.flag		= 0,
-+	},
-+};
-+
- /*
-  * Board specific initialization.
-  */
-@@ -118,6 +141,36 @@ static void __init mxc_board_init(void)
- 	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_GPIO3_1, IOMUX_CONFIG_GPIO));
- 	if (!gpio_request(MX31_PIN_GPIO3_1, "pcm037-eth"))
- 		gpio_direction_input(MX31_PIN_GPIO3_1);
-+
-+	/* Display Interface #3 */
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD0, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD1, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD2, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD3, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD4, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD5, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD6, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD7, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD8, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD9, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD10, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD11, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD12, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD13, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD14, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD15, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD16, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_LD17, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_VSYNC3, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_HSYNC, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_FPSHIFT, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_DRDY0, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_D3_REV, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_CONTRAST, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_D3_SPL, IOMUX_CONFIG_FUNC));
-+	mxc_iomux_mode(IOMUX_MODE(MX31_PIN_D3_CLS, IOMUX_CONFIG_FUNC));
-+
-+	mx3_register_fb(fb_modedb[0].name, fb_modedb, ARRAY_SIZE(fb_modedb));
- }
- 
- /*
 -- 
-1.5.4
-
+William G. Unruh   |  Canadian Institute for|     Tel: +1(604)822-3273
+Physics&Astronomy  |     Advanced Research  |     Fax: +1(604)822-5324
+UBC, Vancouver,BC  |   Program in Cosmology |     unruh@physics.ubc.ca
+Canada V6T 1Z1     |      and Gravity       |  www.theory.physics.ubc.ca/
 
 ------------------------------------------------------------------------------

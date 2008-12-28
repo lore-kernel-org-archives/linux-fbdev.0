@@ -1,114 +1,144 @@
-From: Bill Unruh <unruh@physics.ubc.ca>
-Subject: Re: [Bugme-new] [Bug 12300] New: The VGA
- console driver does not work with the Panasonic W7 (Intel 965 video)
-Date: Sat, 27 Dec 2008 10:18:18 -0800 (PST)
-Message-ID: <Pine.LNX.4.64.0812271015400.19292@info.physics.ubc.ca>
-References: <bug-12300-10286@http.bugzilla.kernel.org/>
-	<20081225202510.3bfb7a4d.akpm@linux-foundation.org>
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Sun, 28 Dec 2008 13:46:56 -0500
+Message-ID: <200812281346.56703.rgetz@blackfin.uclinux.org>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <45a44e480811301710v78875425p75dedd850728cbec@mail.gmail.com> <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <unruh@physics.ubc.ca>) id 1LGdjz-0006aA-P2
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Dec 2008 18:18:23 +0000
-Received: from info.physics.ubc.ca ([142.103.234.23])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LGdjw-0001bj-IS for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 27 Dec 2008 18:18:23 +0000
-In-Reply-To: <20081225202510.3bfb7a4d.akpm@linux-foundation.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+Return-path: <linux-embedded-owner@vger.kernel.org>
+In-Reply-To: <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com>
+Content-Disposition: inline
+Sender: linux-embedded-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+
+On Sat 27 Dec 2008 09:55, Jaya Kumar pondered:
+> Oh, gosh darn it, how time has flown. My email above was to make sure
+> I have understood the feedback. I assume I should just get started on
+> implementing. Just to double check, the plan is:
+> - add bitmask support.
+> - add get_batch support
+> - improve naming. I think gpio_get_batch/gpio_set_batch sounds good.
+
+for what it is worth - I don't like 'batch'.
+
+According to wikipedia[1] - in computer science, batch typically refers to:
+  * Batch (Unix), a command to queue jobs for later execution
+  * Batch file, in DOS, OS/2, and Microsoft Windows, a text file containing
+    a series of commands intended to be executed
+  * Batch processing, execution of a series of programs on a computer 
+    without human interaction
+  * Batch renaming, the process of renaming multiple computer files 
+    and folders in an automated fashion
+
+None of these are really what you are talking about. Batch normally only 
+refers to a group when taking about baking - A batch of cookies - at least 
+where I grew up....
+
+I think that I would prefer 'group' or 'collection' to use some of the words 
+that David described things as 'ganged' or 'bus' or 'bank' or 'adjacent'. 
+(but I think 'adjacent' or 'bank' really is an implementation convention).
+
+I think I would also prefer to name things like gpio_bus_* as a rather than 
+gpio_*_bus - so the operation always is on the end...
+
+> I 
+> plan to have something like:
+> 
+> void gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bitwidth);
+
+Shouldn't the write return an error code (if the data was not written)?
+
+> u32 gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth);
+
+Both assume specific SoC and board level impmentation details (which I ask 
+below).
+
+> I think I should explain the bitmask and bitwidth choice. The intended
+> use case is:
+> for (i=0; i < 800*600; i++) {
+>  gpio_set_batch(...)
+> }
+> 
+> bitwidth (needed to iterate and map to chip ngpios) could be
+> calculated from bitmask, but that involves iteratively counting bits
+> from the mask, so we would have to do 800*600 bit counts. Unless, we
+> do ugly things like cache the previous bitwidth/mask and compare
+> against the current caller arguments. Given that the bitwidth would
+> typically be a fixed value, I believe it is more intuitive for the
+> caller to provide it, eg:
+> 
+> gpio_set_batch(DB0, value, 0xFFFF, 16)
+> 
+> which has the nice performance benefit of skipping all the bit
+> counting in the most common use case scenario.
+
+but has the requirement that the driver know exactly the board level 
+impmentation details (something that doesn't sound generic).
+
+> While we are here, I was thinking about it, and its better if I give
+> gpio_request/free/direction_batch a miss for now. Nothing prevents
+> those features being added at a later point.
+
+I don't think that request/free are optional.
+
+For example - in most SoC implementations - gpios are implemented as banks of 
+16 or 32. (a 16 or 32 bit register).
+
+Are there facilities to span these registers? 
+ - can you request 64 gpios as a 'bank'?
+ - can you request gpio_8 -> gpio_40 as a 'bank' on a 32-bit system?
+
+Are non-adjacent/non-contiguous gpios avaliable to be put into 
+a 'bank/batch/bus'? can you use gpio_8 -> 11 &  28 -> 31 as a 8-bit 'bus'? 
+
+How do you know what is avaliable to be talked to as a bank/bus/batch without 
+the request/free operation?
 
 
-I have now used the vga=ask  kernel parameter and tried a large fraction of the VESA modes and
-the VGA modes listed. (7 VGA modes F00-F03 F05-7 and 9 VESA modes
-305 307 318 312 314 315 301 303 311) .  None of the VESA modes I tried worked
-. All of the VGA modes I tried work.
-By work I mean display anything after the mode is selected
-  In the VESA modes the screen is
-simply blank.-- no cursor, no nothing. In the VGA modes, text appears,
-scrolling
-by (various kernel reports during the startup). Ie, the kernel's handling of
-the VESA modes on this system do not seem to work at all.
+I have seen various hardware designs (both at the PCB and SoC level) require 
+all of these options, and would like to see common infrastructure which 
+handles this.
 
-I have no idea if the fault lies within the kernel or whether Mandriva did
-something to the kernel. Note again that the xorg drivers work fine, as X
-works and displays.
+The issue is that on many SoC implementations - dedicated peripherals can also 
+be GPIOs - so it someone wants to use SPI (for example) GPIO's 3->7 might be 
+removed from the avaliable 'gpio' resources. This is determined by the 
+silicon designer - and even the PCB designer has little to no flexibility on 
+this. It gets worse as multiple SPI or I2C are used on the PCB (which can 
+have lots of small (less than 5) dedicated pins in the middle of the larger 
+gpio resources)....
 
-On Thu, 25 Dec 2008, Andrew Morton wrote:
+I would think that a 'bank' / 'bus' (whatever) would be a collection of 
+random/multiple GPIOs (a struct of gpio_port_t) rather than a start/length 
+(as you described) - or better yet - the request function takes a list (of 
+individual GPIO's - defined in the platform data), and creates the struct 
+itself.
 
->
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
->
-> On Thu, 25 Dec 2008 19:22:25 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
->
->> http://bugzilla.kernel.org/show_bug.cgi?id=12300
->>
->>            Summary: The VGA console driver does not work with the Panasonic
->>                     W7 (Intel 965 video)
->>            Product: Drivers
->>            Version: 2.5
->>      KernelVersion: 2.6.24.4
->>           Platform: All
->>         OS/Version: Linux
->>               Tree: Mainline
->>             Status: NEW
->>           Severity: blocking
->>           Priority: P1
->>          Component: Console/Framebuffers
->>         AssignedTo: jsimmons@infradead.org
->>         ReportedBy: unruh@physics.ubc.ca
->>
->>
->> Latest working kernel version:Unknown
->> Earliest failing kernel version: At least 2.6.17
->> Distribution:Mandriva 2007.1-2008.1
->> Hardware Environment:Panasonic toughbook W7
->> Software Environment:Mandriva 2008.1 installation
->> Problem Description:
->> When I try to install Mandriva 2008.1 onto a Panasonic Toughbook W7 after
->> intial splash sceen ( which displays presumably because it uses the bios) and
->> the loading of the kernel, the screen goes blank. This seems to be because the
->> kernel is unable to actually display any of the text in the VGA console mode
->> onto the screen. If I make menu choices blindly, the DVD disk is read.
->>
->> When I used the MCNLinux Toronto ( based on the Mandriva 2007.1 with the 2.6.17
->> kernel) after the kernel loads I see nothing until finally X is started and it
->> displays fine. If I do alt-ctrl-F1 (or F2 or ..) ( which should open a console
->> screen) I again see nothing. This makes me think strongly that the problem is
->> taht somehow the console VGA driver within the kernel is not working, although
->> the xorg video card works fine (since X displays without problem). Of course
->> not having the VGA console output makes it impossible to actually install
->> Mandriva or any Linux onto the system.
->> The Panasonic toughbook line has been wonderful with Linux, until the W7.
->>
->> Perhaps there are some kernel options I could try, to see where the problem
->> lies, but have no idea what they might be (I tried to remove the vga=788 kernel
->> option but that made no difference, nor did putting in vga=normal)
->>
->> How in the world can bog standard VGA not work?
->>
->> Steps to reproduce: See above.
->
+Something like the way gpio_keys are defined...
 
--- 
-William G. Unruh   |  Canadian Institute for|     Tel: +1(604)822-3273
-Physics&Astronomy  |     Advanced Research  |     Fax: +1(604)822-5324
-UBC, Vancouver,BC  |   Program in Cosmology |     unruh@physics.ubc.ca
-Canada V6T 1Z1     |      and Gravity       |  www.theory.physics.ubc.ca/
+static struct gpio_bus bfin_gpio_bus_table[] = {
+        {BIT_0, GPIO_PB8, 1, "gpio-bus: BIT0"},
+        {BIT_1, GPIO_PB9, 1, "gpio-bus: BIT1"},
+        {BIT_2, GPIO_PB10, 1, "gpio-bus: BIT2"},
+        {BIT_3, GPIO_PB11, 1, "gpio-bus: BIT3"},
+};
 
-------------------------------------------------------------------------------
+static struct gpio_bus_data bfin_gpio_bus_data = {
+        .bits        = bfin_gpio_bus_table, 
+        .width       = ARRAY_SIZE(bfin_gpio_keys_table),
+};
+
+static struct platform_device bfin_device_gpiobus = {
+        .name      = "gpio-bus",
+        .dev = {
+                .platform_data = &bfin_gpio_bus_data,
+        },
+};
+
+The request function builds up the bus/masks/shifts from that...
+
+-Robin
+
+[1] http://en.wikipedia.org/wiki/Batch

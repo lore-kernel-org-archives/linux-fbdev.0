@@ -1,136 +1,30 @@
 From: David Brownell <david-b@pacbell.net>
 Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Mon, 29 Dec 2008 11:56:11 -0800
-Message-ID: <200812291156.12230.david-b@pacbell.net>
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com> <200812281346.56703.rgetz@blackfin.uclinux.org>
+Date: Mon, 29 Dec 2008 11:59:36 -0800
+Message-ID: <200812291159.37449.david-b@pacbell.net>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <200812281346.56703.rgetz@blackfin.uclinux.org> <1230501634.16910.57.camel@linux-51e8.site>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-embedded-owner@vger.kernel.org>
-In-Reply-To: <200812281346.56703.rgetz@blackfin.uclinux.org>
+In-Reply-To: <1230501634.16910.57.camel@linux-51e8.site>
 Content-Disposition: inline
 Sender: linux-embedded-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+To: Ben Nizette <bn@niasdigital.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-On Sunday 28 December 2008, Robin Getz wrote:
-> On Sat 27 Dec 2008 09:55, Jaya Kumar pondered:
+On Sunday 28 December 2008, Ben Nizette wrote:
+> > > gpio_set_batch(DB0, value, 0xFFFF, 16)
+> > > 
+> > > which has the nice performance benefit of skipping all the bit
+> > > counting in the most common use case scenario.
+> > 
+> > but has the requirement that the driver know exactly the board level 
+> > impmentation details (something that doesn't sound generic).
 > 
-> I think that I would prefer 'group' or 'collection' to use some of the words 
-> that David described things as 'ganged' or 'bus' or 'bank' or 'adjacent'. 
-> (but I think 'adjacent' or 'bank' really is an implementation convention).
-> 
-> I think I would also prefer to name things like gpio_bus_* as a rather than 
-> gpio_*_bus - so the operation always is on the end...
+> The original use case for these batch operations was in a fastpath -
+> setting data lines on a framebuffer.
 
-I'd avoid "bus"; the term has specific meanings, which aren't necessarily
-relevant in these contexts.  Agreed about "adjacent" and "bank".
-
-If it weren't for its verb usage, I'd suggest "set".  :)
-
-
-> Shouldn't the write return an error code (if the data was not written)?
-
-For these operations, I think reads/writes should have that possibility.
-
-The reason single-bit operations don't provide error paths is twofold.
-First, they started as wrappers for can't-fail register accessors.
-Second, it's extremely unrealisitic to expect much code to handle any
-kind of faults in the middle of bitbanging loops ... or even just in
-classic "set this bit and continue" configuration code.
-
-Those reasons don't apply well to these multi-bit cases.
-
-
-> > While we are here, I was thinking about it, and its better if I give
-> > gpio_request/free/direction_batch a miss for now. Nothing prevents
-> > those features being added at a later point.
-> 
-> I don't think that request/free are optional.
-
-Agreed.  If there's any difficulty implementing them, that would
-suggest there's a significant conceptual problem to address ...
-
-
-> For example - in most SoC implementations - gpios are implemented as banks of 
-> 16 or 32. (a 16 or 32 bit register).
-> 
-> Are there facilities to span these registers? 
->  - can you request 64 gpios as a 'bank'?
->  - can you request gpio_8 -> gpio_40 as a 'bank' on a 32-bit system?
-> 
-> Are non-adjacent/non-contiguous gpios avaliable to be put into 
-> a 'bank/batch/bus'? can you use gpio_8 -> 11 &  28 -> 31 as a 8-bit 'bus'? 
-> 
-> How do you know what is avaliable to be talked to as a bank/bus/batch without 
-> the request/free operation?
-> 
-> 
-> I have seen various hardware designs (both at the PCB and SoC level) require 
-> all of these options, and would like to see common infrastructure which 
-> handles this.
-
-Right.  Get the interface right -- it should allow all those
-complexities! -- and maybe take shortcuts in the first versions
-of the implementation, by only talking to one gpio_chip at a
-time.  I'd expect any shortcuts would be resolved quickly, to
-the extent they cause problems.
-
-
-> The issue is that on many SoC implementations - dedicated peripherals can also 
-> be GPIOs - so it someone wants to use SPI (for example) GPIO's 3->7 might be 
-> removed from the avaliable 'gpio' resources. This is determined by the 
-> silicon designer - and even the PCB designer has little to no flexibility on 
-> this. It gets worse as multiple SPI or I2C are used on the PCB (which can 
-> have lots of small (less than 5) dedicated pins in the middle of the larger 
-> gpio resources)....
-
-Such pin-muxing is a different issue though.  Don't expect GPIO
-calls to resolve those problems.
-  
-
-> I would think that a 'bank' / 'bus' (whatever) would be a collection of 
-> random/multiple GPIOs (a struct of gpio_port_t) rather than a start/length 
-> (as you described) - or better yet - the request function takes a list (of 
-> individual GPIO's - defined in the platform data), and creates the struct 
-> itself.
-
-That's why I pointed to <linux/bitmask.h> as one model:  it allows
-an arbitrary set of bits (GPIOs) to be specified.
-
-I'll NAK any "gpio_port_t" name based entirely on kernel coding
-conventions though.  ;)
-
-
-> Something like the way gpio_keys are defined...
-> 
-> static struct gpio_bus bfin_gpio_bus_table[] = {
->         {BIT_0, GPIO_PB8, 1, "gpio-bus: BIT0"},
->         {BIT_1, GPIO_PB9, 1, "gpio-bus: BIT1"},
->         {BIT_2, GPIO_PB10, 1, "gpio-bus: BIT2"},
->         {BIT_3, GPIO_PB11, 1, "gpio-bus: BIT3"},
-> };
-> 
-> static struct gpio_bus_data bfin_gpio_bus_data = {
->         .bits        = bfin_gpio_bus_table, 
->         .width       = ARRAY_SIZE(bfin_gpio_keys_table),
-> };
-> 
-> static struct platform_device bfin_device_gpiobus = {
->         .name      = "gpio-bus",
->         .dev = {
->                 .platform_data = &bfin_gpio_bus_data,
->         },
-> };
-> 
-> The request function builds up the bus/masks/shifts from that...
-
-That sort of thing might be made to work.  Whatever this
-multiple-GPIO-set abstraction is, I suspect you're right
-about wanting the request function to be able to build
-up some data structures behind it.  And that it would be
-simpler to require all the GPIOs to be listed up front,
-rather than support "add these to the set" requests.
-
-- Dave
+And the rationale for generalizing them was to let such fastpaths
+stop being board-specific hacks.  :)

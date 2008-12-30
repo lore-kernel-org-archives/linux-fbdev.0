@@ -1,72 +1,71 @@
-From: David Brownell <david-b@pacbell.net>
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
 Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Mon, 29 Dec 2008 16:43:03 -0800
-Message-ID: <200812291643.03798.david-b@pacbell.net>
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <200812291156.12230.david-b@pacbell.net> <20081230002023.GA5309@shareable.org>
+Date: Tue, 30 Dec 2008 23:45:58 +0800
+Message-ID: <45a44e480812300745p969f1dfi9ea837b611395a3e@mail.gmail.com>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
+	 <45a44e480811301710v78875425p75dedd850728cbec@mail.gmail.com>
+	 <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com>
+	 <200812291132.14806.david-b@pacbell.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-embedded-owner@vger.kernel.org>
-In-Reply-To: <20081230002023.GA5309@shareable.org>
+In-Reply-To: <200812291132.14806.david-b@pacbell.net>
 Content-Disposition: inline
 Sender: linux-embedded-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+To: David Brownell <david-b@pacbell.net>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-On Monday 29 December 2008, Jamie Lokier wrote:
-> David Brownell wrote:
-> > The reason single-bit operations don't provide error paths is twofold.
-> > First, they started as wrappers for can't-fail register accessors.
-> > Second, it's extremely unrealisitic to expect much code to handle any
-> > kind of faults in the middle of bitbanging loops ... or even just in
-> > classic "set this bit and continue" configuration code.
-> 
-> That's interesting.  I'm not sure it's a good idea not to return an
-> error code.  The caller can just ignore it if they don't care, and
-> it's extremely cheap to "return 0" in GPIO drivers which can't error.
+Hi David,
 
-I'm not sure either; at this point I *might* consider doing
-it differently -- but primarily for the case of external GPIO
-chips, e.g. over I2C or SPI -- where errors are realistic.  But
-it's been this way for a few years now, and changing stuff
-that hasn't been observed to be a problem isn't on my list.
+On Mon, Dec 29, 2008 at 2:32 PM, David Brownell <david-b@pacbell.net> wrote:
+>
+>  - passing bitmasks as {unsigned long *bits, int count} tuples
+>  - separate calls to:
+>     * zero a set of bits (loop: gpio_set_value to 0)
+>     * fill a set of bits (loop: gpio_set_value to 1)
+>     * copy a set of bits (loop: gpio_set_value to src[i])
+>     * read a set of bits (loop: dst[i] = gpio_get_value)
+>     * ... maybe more
 
-But as I noted:  patches for $SUBJECT don't seem to have any
-reason not to report whatever faults they encounter.
+I had read bitmasks.h as per your recommendation and my thought on
+that was: How do I reconcile such a substantial API when the use case
+is just setting/getting a bunch of gpio pins?
 
-Also worth remembering:  when reading a GPIO value, it's not
-so easy to "ignore" a tristate (0, 1, error) return value.
+>
+> Any restriction to 32 bit value seems shortsighted.  It would
+> make sense to wrap the GPIO bitmask descriptions in a struct,
+> letting drivers work with smaller sets -- probably most would
+> fit into a single "unsigned long".
+>
 
- 
-> If I were bit-banging on GPIOs reached via some peripheral chip (such
-> a GPIO-fanout chip over I2C/SPI, where that chip is itself feeding a
-> secondary I2C or similar bit-banging bus), I probably would like to
-> check for errors and take emergency action if the peripheral chip
-> isn't responding, or just report to userspace.
+Hmm. Well. Currently, there's only been 1 bit support and its been
+that way for years, hasn't it? It was not shortsighted at that time to
+have only 1 bit access. No one raised a need for more. There weren't
+any complaints about the 1-bit gpio API until am300epd.c came along.
 
-If I had to do that, I'd *certainly* want to bang the hardware
-designer over the head with some sort of cluebat or cluebrick.  :(
+You had correctly pointed out "I happen not to have come across the
+need for such ganged access from Linux" in the start of this thread. I
+think that you raised a strong point there. If I understood you
+correctly, it implies it is NOT likely that there'll be many users of
+this ganged access API.
 
+Which is precisely why I took your suggestion to heart and stuck to
+the middle path. For better or worse, we currently have a grand total
+of just one use case for this ganged API: am300epd.c which does a
+16-bit write. No one has spoken up with another concrete use case. So
+I say we stick to the simple 32-bit startpin/mask/length API. Lets see
+if people start using it. If more than a few do and issues are raised
+with it being limited to "just 32 bits", then we can rearchitecht as
+needed. After all, as you requested, it's an optional in-kernel only
+API so we're in no danger of shooting ourselves in the foot here.
+Further more, we've gone from years of 1-bit access with no complaints
+to 32-bit access. A factor of 32 improvement seems a reasonably good
+bet for the next few years to me. :-)
 
-> This has actually happened on a board I worked with, where the primary
-> I2C failed due to a plugged in peripheral loading it too much, and a
-> secondary bit-banging bus was not then reachable.
+If any of my assertions are mistaken, I'll need your help to
+understand which specific part of the conversation I've misunderstood.
 
-It should now be realistic for I2C device drivers to have
-fault recovery logic...
-
-But for a long time, I2c only returned -EPERM so it was
-completely hopeless trying to figure out how to "handle"
-any problem beyond logging the problem and hoping someone
-is watching syslog output.  That's a big part of why most
-current I2C drivers have such unfriendly fault handling.
-
-- Dave
-
-
-
-> 
-> -- Jamie
-> 
-> 
+Thanks,
+jaya

@@ -1,71 +1,99 @@
 From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Tue, 30 Dec 2008 23:45:58 +0800
-Message-ID: <45a44e480812300745p969f1dfi9ea837b611395a3e@mail.gmail.com>
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
-	 <45a44e480811301710v78875425p75dedd850728cbec@mail.gmail.com>
-	 <45a44e480812270655u10bde0d2mc7f429cf47ed7bc6@mail.gmail.com>
-	 <200812291132.14806.david-b@pacbell.net>
+Subject: Re: [jekhor@gmail.com: Metronome specifications]
+Date: Tue, 30 Dec 2008 23:56:22 +0800
+Message-ID: <45a44e480812300756m2adbe0dfg2a401f8d92939d43@mail.gmail.com>
+References: <20081230154614.GA30164@jeknote.loshitsa1.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-embedded-owner@vger.kernel.org>
-In-Reply-To: <200812291132.14806.david-b@pacbell.net>
-Content-Disposition: inline
-Sender: linux-embedded-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: David Brownell <david-b@pacbell.net>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LHgxH-0000vJ-9g
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Dec 2008 15:56:27 +0000
+Received: from mail-ew0-f21.google.com ([209.85.219.21])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LHgxD-0003rb-OC for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Dec 2008 15:56:27 +0000
+Received: by ewy14 with SMTP id 14so5939178ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 30 Dec 2008 07:56:23 -0800 (PST)
+In-Reply-To: <20081230154614.GA30164@jeknote.loshitsa1.net>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Yauhen Kharuzhy <jekhor@gmail.com>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi David,
+Hi Yauhen,
 
-On Mon, Dec 29, 2008 at 2:32 PM, David Brownell <david-b@pacbell.net> wrote:
->
->  - passing bitmasks as {unsigned long *bits, int count} tuples
->  - separate calls to:
->     * zero a set of bits (loop: gpio_set_value to 0)
->     * fill a set of bits (loop: gpio_set_value to 1)
->     * copy a set of bits (loop: gpio_set_value to src[i])
->     * read a set of bits (loop: dst[i] = gpio_get_value)
->     * ... maybe more
+My apologies for the delay in replying. As you can imagine, life is
+busy at Christmas and New Year and trying to clean out my patch box.
+Yes, I will be happy to help in any way that I can. I think it is
+great that you're doing the work to get the prs-505 supported. I
+unfortunately have no documentation that I can pass along but will be
+happy to take a look at any code.
 
-I had read bitmasks.h as per your recommendation and my thought on
-that was: How do I reconcile such a substantial API when the use case
-is just setting/getting a bunch of gpio pins?
-
->
-> Any restriction to 32 bit value seems shortsighted.  It would
-> make sense to wrap the GPIO bitmask descriptions in a struct,
-> letting drivers work with smaller sets -- probably most would
-> fit into a single "unsigned long".
->
-
-Hmm. Well. Currently, there's only been 1 bit support and its been
-that way for years, hasn't it? It was not shortsighted at that time to
-have only 1 bit access. No one raised a need for more. There weren't
-any complaints about the 1-bit gpio API until am300epd.c came along.
-
-You had correctly pointed out "I happen not to have come across the
-need for such ganged access from Linux" in the start of this thread. I
-think that you raised a strong point there. If I understood you
-correctly, it implies it is NOT likely that there'll be many users of
-this ganged access API.
-
-Which is precisely why I took your suggestion to heart and stuck to
-the middle path. For better or worse, we currently have a grand total
-of just one use case for this ganged API: am300epd.c which does a
-16-bit write. No one has spoken up with another concrete use case. So
-I say we stick to the simple 32-bit startpin/mask/length API. Lets see
-if people start using it. If more than a few do and issues are raised
-with it being limited to "just 32 bits", then we can rearchitecht as
-needed. After all, as you requested, it's an optional in-kernel only
-API so we're in no danger of shooting ourselves in the foot here.
-Further more, we've gone from years of 1-bit access with no complaints
-to 32-bit access. A factor of 32 improvement seems a reasonably good
-bet for the next few years to me. :-)
-
-If any of my assertions are mistaken, I'll need your help to
-understand which specific part of the conversation I've misunderstood.
+Ok, in response to the technical questions, can you please post the
+code for the board driver here. For the other people who also asked
+similar questions about broadsheet and other controllers, please post
+your questions and code here on the mailing list rather than to me
+alone. The fbdev mailing list is the right place for all of us to work
+together on this.
 
 Thanks,
 jaya
+
+On Tue, Dec 30, 2008 at 11:46 PM, Yauhen Kharuzhy <jekhor@gmail.com> wrote:
+>
+> Excuse me for double posting, but can you send any response to me, ever
+> negative? I also wrote to eInk and they refer me to you as expert in
+> this area.
+>
+> ----- Forwarded message from Yauhen Kharuzhy <jekhor@gmail.com> -----
+>
+> From: Yauhen Kharuzhy <jekhor@gmail.com>
+> To: Jaya Kumar <jayakumar.lkml@gmail.com>
+> Cc: linux-fbdev-devel@lists.sourceforge.net
+> Subject: Metronome specifications
+> Date: Wed, 24 Dec 2008 23:57:36 +0200
+>
+> Hi!
+>
+> I write board driver for Sony PRS-505 book reader display controller and
+> need some help. Controller seems to be respond for first command only (RDY is
+> 0 before powerup and 1 after and it won't change on any other steps).
+> I cannot localize cause of problem because controller behaviour is
+> undocumented and non-trivial. I compare Sony's driver and metronomefb,
+> and don't understand differences due lack of documentation.
+>
+> Can you help to find any documentation for Metronome or, if it
+> is distrubuted under NDA, explain some moments for me?
+>
+> How dimensions of image and size of buffer are set in controller? What
+> does define positions of command buffer, waveforms, image data etc. in
+> controller memory? What are arguments of config (0xCC10) command mean?
+>
+> I feel that I will find answers for most of this questions after some
+> time, but with documentation it will happen soon...
+>
+> ----- End forwarded message -----
+>
+> --
+> Yauhen Kharuzhy         jekhor _at_ gmail.com
+>                        JID: jek@jabber.ru
+>
+> A: No
+> Q: Should I quote below my post?
+>
+
+------------------------------------------------------------------------------

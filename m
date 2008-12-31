@@ -1,547 +1,463 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.28 1/1] gpiolib: add set/get batch v3
-Date: Wed, 31 Dec 2008 17:27:52 +0800
-Message-ID: <12307156721518-git-send-email-jayakumar.lkml@gmail.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756086AbYLaJ2T@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>, Paulius Zaleckas <paulius.zaleckas@teltonika.lt>, Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+From: Yauhen Kharuzhy <jekhor@gmail.com>
+Subject: Re: [jekhor@gmail.com: Metronome specifications]
+Date: Wed, 31 Dec 2008 14:16:59 +0200
+Message-ID: <20081231121659.GA1761@jeknote.loshitsa1.net>
+References: <20081230154614.GA30164@jeknote.loshitsa1.net>
+	<45a44e480812300756m2adbe0dfg2a401f8d92939d43@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="liOOAslEiF7prFVr"
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jekhor@gmail.com>) id 1LI00n-0006VD-HE
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 31 Dec 2008 12:17:21 +0000
+Received: from qw-out-1920.google.com ([74.125.92.144])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LI00j-0002Jl-Cl for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 31 Dec 2008 12:17:21 +0000
+Received: by qw-out-1920.google.com with SMTP id 5so2596978qwc.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 31 Dec 2008 04:17:15 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <45a44e480812300756m2adbe0dfg2a401f8d92939d43@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi friends,
 
-This is v3 of my attempt to add batch support to gpiolib. Thanks to David
-Brownell, Eric Miao, Robin, Ben, Jamie and others for prior feedback.  Here
-are my notes to summarize some of the lengthy previous discussion (long):
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-*- naming choice
-I had previously suggested set_value_bus, set_values, set_multiple, and
-these weren't well liked. Rightfully so, as they weren't quite right. After
-some thought, I've picked gpio_set/get_batch and stuck with it because I
-think this reflects accurately what my code is doing. I checked google
-define:batch
+On Tue, Dec 30, 2008 at 11:56:22PM +0800, Jaya Kumar wrote:
+> Hi Yauhen,
+> 
+> My apologies for the delay in replying. As you can imagine, life is
+> busy at Christmas and New Year and trying to clean out my patch box.
+> Yes, I will be happy to help in any way that I can. I think it is
+> great that you're doing the work to get the prs-505 supported. I
+> unfortunately have no documentation that I can pass along but will be
+> happy to take a look at any code.
+> 
+> Ok, in response to the technical questions, can you please post the
+> code for the board driver here. For the other people who also asked
+> similar questions about broadsheet and other controllers, please post
+> your questions and code here on the mailing list rather than to me
+> alone. The fbdev mailing list is the right place for all of us to work
+> together on this.
 
-1: batch together; assemble or process as a batch
-2: In Unix-like computer operating systems, the at command is used to schedule
-commands to be executed once, at a particular time in the future.
-3: A collection of products or data which is treated as one entity with
-respect to certain operations eg processing and production.
-4: A group of records or documents considered as a single unit for the
-purpose of data processing.
+OK. I am sorry for my impatience.
 
-*- API choice of using startpin, bitmask and length
-Okay, this one is harder for me to defend since it is more subjective. I
-read through Robin and David's remarks carefully. The points are valid about
-creating a more generic API that is not limited to 32-bits of GPIO being
-set/get at a time. I agree that that type of an API is more elegant and more
-capable. But we have to look at the use cases. We need to ask ourselves, is
-there a use case out there where a driver is trying to set more than 32-bits
-of GPIO at a time AND needs such a set to be very fast. My opinion is that
-such a case doesn't currently exist. Also, I'd like to emphasize that nothing
-prevents such an API from being added in future if by some luck, we encounter
-the need for it.
+I just wrote a "new style" (for 2.6.28 kernel) board driver using of
+the existing imxfb driver similar to you am200epd board driver. I found two
+problems:
+1) the metronomefb driver initializes before imxfb driver and a
+kernel Oops caused in the setup_fb() function because the board.host_fbinfo is not
+initialized yet. For prevent this, I placed a call of my prs505_presetup_fb()
+function immediately after the fb_register_client() call.
 
-I think I should also clarify that this start/mask/width API doesn't
-require that the 32-bits all be in the same register. The code is designed
-to handle crossing multiple register boundaries and in fact, the only
-current use case, a 16-bit bus in am300epd.c sits between 2 32-bit register
-boundaries, so this code is tested to support crossing reg boundaries.
+2) the LCD controller in IMX SoCs supports LCD panels with height <= 511 (9 bit in
+LCD_SIZE register). In the original Sony driver this height is 312. As I
+suppose, it is half of the real height because LCD controller uses 16 bit
+per pixel. I set yres in my prs505_fb_info to 622 / 2.
 
-There was a question about why have both bitmask AND width when width
-could be worked out from bitmask. The reason for having both bitmask and
-length is for performance. Let's compare the following two scenarios:
+Now metronomefb initializes but nothing happen on the screen.
 
-/* flash to black */
-for (i=0; i < 800*600; i++)
-	gpio_set_batch(DB0, 0x00000000, 0x0000FFFF)
+I attached my board driver.
+Sony driver, if needed, can be found here:
+http://users.openinkpot.org/~jekhor/8track20070714.tgz
 
-Internally, the above implementation has to work out the length of bits
-that are being set in bitmask in order to figure out which register
-boundaries are being crossed. That means looping through the bitmask
-and counting bits. That would need to be repeated for every call of
-gpio_set_batch in the above loop and would be a relatively high expense.
 
-/* flash to black */
-for (i=0; i < 800*600; i++)
-	gpio_set_batch(DB0, 0x00000000, 0x0000FFFF, 16)
-
-In the 2nd case, the implementation is able to skip all the bit counting.
-This usage method is also the intuitive way for drivers that are trying
-to push data across a gpio bus since they explicitly know the bus length.
-
-*- returning an error
-I thought this was an excellent idea. But then while writing the code, I
-realized the error paths in this startpin/mask/width usage scenario would
-be due to API usage errors rather than return errors. For example:
-
-if a caller hit the generic case, it would go through:
-+       for (i = 0; i < width; i++) {
-+               mask = 1 << i;
-+               if (bitmask & mask) {
-+                       value = values & mask;
-+                       chip->set(chip, offset + i, value);
-+               }
-+       }
-
-The pre-existing chip->set API returns no error so there isn't one that we
-create in order to pass back to the caller.
-
-I've put in:
-+       BUG_ON(offset + width >  chip->ngpio);
-+       BUG_ON(bitwidth > 32);
-to capture API usage errors. I think this was the right thing to do. If not,
-please let me know and I can return such conditions as errors and move the
-return value to an argument.
-
-Whew, I hope I have addressed everyone's feedback. I appreciate the strong
-feedback, it took me a bit by surprise, but it is very useful and I am
-grateful for it. Please let me know your thoughts on the appended code.
-
-Thanks and Happy New Year,
-jaya
-
-am300epd was doing 800*600*16*gpio_set_value for each framebuffer transfer
-(it uses 16-pins of gpio as its data bus). I found this caused a wee
-performance limitation. This patch adds an API for gpio_s/get_batch
-which allows drivers to s/get batches of gpio together in a single call.
-I have done a test implementation on gumstix (pxa255) with am300epd
-and it provides a nice improvement in performance.
-
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>
-Cc: Eric Miao <eric.miao@marvell.com>
-Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Ben Gardner <bgardner@wabtec.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
----
- arch/arm/mach-pxa/Kconfig             |    1 +
- arch/arm/mach-pxa/am300epd.c          |   14 +---
- arch/arm/mach-pxa/gpio.c              |   60 ++++++++++++
- arch/arm/mach-pxa/include/mach/gpio.h |   43 +++++++++
- drivers/gpio/Kconfig                  |    5 +
- drivers/gpio/gpiolib.c                |  161 +++++++++++++++++++++++++++++++++
- include/asm-generic/gpio.h            |   18 ++++-
- 7 files changed, 289 insertions(+), 13 deletions(-)
-
-diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
-index 768618b..a5a306e 100644
---- a/arch/arm/mach-pxa/Kconfig
-+++ b/arch/arm/mach-pxa/Kconfig
-@@ -41,6 +41,7 @@ config GUMSTIX_AM200EPD
- 	bool "Enable AM200EPD board support"
- 
- config GUMSTIX_AM300EPD
-+	select GPIOLIB_BATCH
- 	bool "Enable AM300EPD board support"
- 
- endchoice
-diff --git a/arch/arm/mach-pxa/am300epd.c b/arch/arm/mach-pxa/am300epd.c
-index 4bd10a1..19c8af2 100644
---- a/arch/arm/mach-pxa/am300epd.c
-+++ b/arch/arm/mach-pxa/am300epd.c
-@@ -187,24 +187,14 @@ static void am300_cleanup(struct broadsheetfb_par *par)
- 
- static u16 am300_get_hdb(struct broadsheetfb_par *par)
- {
--	u16 res = 0;
--	int i;
--
--	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
--		res |= (gpio_get_value(DB0_GPIO_PIN + i)) ? (1 << i) : 0;
--
--	return res;
-+	return gpio_get_batch(DB0_GPIO_PIN, 0xFFFF, 16);
- }
- 
- static void am300_set_hdb(struct broadsheetfb_par *par, u16 data)
- {
--	int i;
--
--	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
--		gpio_set_value(DB0_GPIO_PIN + i, (data >> i) & 0x01);
-+	gpio_set_batch(DB0_GPIO_PIN, data, 0xFFFF, 16);
- }
- 
--
- static void am300_set_ctl(struct broadsheetfb_par *par, unsigned char bit,
- 				u8 state)
- {
-diff --git a/arch/arm/mach-pxa/gpio.c b/arch/arm/mach-pxa/gpio.c
-index 5fec1e4..1cee979 100644
---- a/arch/arm/mach-pxa/gpio.c
-+++ b/arch/arm/mach-pxa/gpio.c
-@@ -162,6 +162,64 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 		__raw_writel(mask, pxa->regbase + GPCR_OFFSET);
- }
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+/*
-+ * Set output GPIO level in batches
-+ */
-+static void pxa_gpio_set_batch(struct gpio_chip *chip, unsigned offset,
-+				u32 values, u32 bitmask, int width)
-+{
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that offset + bitmask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	/* bitmask is used twice in shifted form */
-+	bitmask <<= offset;
-+
-+	values = (values << offset) & bitmask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPSR_OFFSET);
-+
-+	values = ~values & bitmask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPCR_OFFSET);
-+}
-+
-+/*
-+ * Get output GPIO level in batches
-+ */
-+static u32 pxa_gpio_get_batch(struct gpio_chip *chip, unsigned offset,
-+				u32 bitmask, int width)
-+{
-+	u32 values;
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that offset + bitmask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	values = __raw_readl(pxa->regbase + GPLR_OFFSET);
-+
-+	/* shift the result back into original position */
-+	return (values >> offset) & bitmask;
-+}
-+#endif
-+
-+/* this is done this way so that we can insert an ifdef-able value
-+ * into the following GPIO_CHIP macro
-+ */
-+#ifdef CONFIG_GPIOLIB_BATCH
-+#define SET_BATCH_MACRO	.set_batch 	  = pxa_gpio_set_batch,
-+#define GET_BATCH_MACRO	.get_batch	  = pxa_gpio_get_batch,
-+#else
-+#define SET_BATCH_MACRO
-+#define GET_BATCH_MACRO
-+#endif
-+
- #define GPIO_CHIP(_n)							\
- 	[_n] = {							\
- 		.regbase = GPIO##_n##_BASE,				\
-@@ -173,6 +231,8 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 			.set		  = pxa_gpio_set,		\
- 			.base		  = (_n) * 32,			\
- 			.ngpio		  = 32,				\
-+			SET_BATCH_MACRO					\
-+			GET_BATCH_MACRO					\
- 		},							\
- 	}
- 
-diff --git a/arch/arm/mach-pxa/include/mach/gpio.h b/arch/arm/mach-pxa/include/mach/gpio.h
-index 2c538d8..fd20129 100644
---- a/arch/arm/mach-pxa/include/mach/gpio.h
-+++ b/arch/arm/mach-pxa/include/mach/gpio.h
-@@ -56,6 +56,49 @@ static inline void gpio_set_value(unsigned gpio, int value)
- 	}
- }
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+static inline void gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
-+					int bitwidth)
-+{
-+	if (__builtin_constant_p(gpio) &&
-+		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
-+		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
-+		int shift;
-+
-+		shift = gpio % 32;
-+		bitmask <<= shift;
-+
-+		values = (values << shift) & bitmask;
-+		if (values)
-+			GPSR(gpio) = values;
-+
-+		values = ~values & bitmask;
-+		if (values)
-+			GPCR(gpio) = values;
-+	} else {
-+		__gpio_set_batch(gpio, values, bitmask, bitwidth);
-+	}
-+}
-+
-+static inline u32 gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth)
-+{
-+	if (__builtin_constant_p(gpio) &&
-+		(gpio + bitwidth < NR_BUILTIN_GPIO) &&
-+		((gpio + bitwidth) <= roundup(gpio+1, 32))) {
-+		int shift;
-+		u32 values;
-+
-+		shift = gpio % 32;
-+
-+		values = GPLR(gpio);
-+
-+		return (values >> shift) & bitmask;
-+	} else {
-+		return __gpio_get_batch(gpio, bitmask, bitwidth);
-+	}
-+}
-+#endif
-+
- #define gpio_cansleep __gpio_cansleep
- 
- #define gpio_to_irq(gpio)	IRQ_GPIO(gpio)
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 48f49d9..aeeb83c 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -37,6 +37,11 @@ menuconfig GPIOLIB
- 
- if GPIOLIB
- 
-+config GPIOLIB_BATCH
-+	bool "Batch GPIO support"
-+	help
-+	  Say Y here to add the capability to batch set/get GPIOs.
-+
- config DEBUG_GPIO
- 	bool "Debug GPIO calls"
- 	depends on DEBUG_KERNEL
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 82020ab..3d4c39a 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -643,6 +643,161 @@ static inline void gpiochip_unexport(struct gpio_chip *chip)
- 
- #endif /* CONFIG_GPIO_SYSFS */
- 
-+#ifdef CONFIG_GPIOLIB_BATCH
-+/**
-+ * __generic_gpio_set_batch() - assigns a batch of gpio pins
-+ * @chip: gpio_chip containing this set of pins
-+ * @offset: starting gpio pin
-+ * @values: unshifted values to assign, sequential and including masked bits
-+ * @bitmask: unshifted bitmask to be applied to values
-+ * Context: any
-+ *
-+ * This provides a generic platform independent set_batch capability.
-+ * It invokes the associated gpio_chip.set() method to actually set the
-+ * value.
-+ */
-+static void __generic_gpio_set_batch(struct gpio_chip *chip, unsigned offset,
-+					u32 values, u32 bitmask, int width)
-+{
-+	int i;
-+	int value;
-+	u32 mask;
-+
-+	BUG_ON(offset + width >  chip->ngpio);
-+
-+	/* loop between the starting bit and the width and if the bitmask
-+	 * enables this bit, then we set the specified value */
-+	for (i = 0; i < width; i++) {
-+		mask = 1 << i;
-+		if (bitmask & mask) {
-+			value = values & mask;
-+			chip->set(chip, offset + i, value);
-+		}
-+	}
-+}
-+
-+/**
-+ * __generic_gpio_get_batch() - get a batch of gpio pins together
-+ * @chip: gpio_chip containing this set of pins
-+ * @offset: starting gpio pin
-+ * @bitmask: unshifted bitmask to be applied to values
-+ * Context: any
-+ *
-+ * This provides a generic platform independent get_batch capability.
-+ * It invokes the associated gpio_chip.get() method to actually get the
-+ * value.
-+ */
-+static u32 __generic_gpio_get_batch(struct gpio_chip *chip, unsigned offset,
-+					u32 bitmask, int width)
-+{
-+	int i;
-+	u32 mask;
-+	u32 values = 0;
-+
-+	BUG_ON(offset + width >  chip->ngpio);
-+	/* loop between the starting bit and the width and if the bitmask
-+	 * matches this bit, then we get the value and track it */
-+	for (i = 0; i < width; i++) {
-+		mask = 1 << i;
-+		if (bitmask & mask) {
-+			if (chip->get(chip, offset + i))
-+				values |= mask;
-+		}
-+	}
-+
-+	return values;
-+}
-+
-+/**
-+ * __gpio_set_batch() - assign a batch of gpio pins together
-+ * @gpio: starting gpio pin
-+ * @values: values to assign, sequential and including masked bits
-+ * @bitmask: bitmask to be applied to values
-+ * @bitwidth: width inclusive of masked-off bits
-+ * Context: any
-+ *
-+ * This is used directly or indirectly to implement gpio_set_value().
-+ * It invokes the associated gpio_chip.set_batch() method. If that
-+ * method does not exist for any segment that is involved, then it drops
-+ * back down to standard gpio_chip.set()
-+ */
-+void __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bitwidth)
-+{
-+	struct gpio_chip *chip;
-+	int i = 0;
-+	int value, width, remwidth;
-+	u32 mask;
-+
-+	BUG_ON(bitwidth > 32);
-+	do {
-+		chip = gpio_to_chip(gpio + i);
-+		WARN_ON(extra_checks && chip->can_sleep);
-+
-+		value = values >> i; /* shift off the used data bits */
-+		remwidth = ((chip->base + (int) chip->ngpio) -
-+					((int) gpio + i));
-+		width = min(bitwidth, remwidth);
-+
-+		/* shift off the used mask bits */
-+		mask = bitmask >> i;
-+		/* now adjust mask by width of this set */
-+		mask &= ((1 << width) - 1);
-+
-+		chip->set_batch(chip, gpio + i - chip->base, value, mask,
-+					width);
-+		i += width;
-+		bitwidth -= width;
-+	} while (bitwidth);
-+}
-+EXPORT_SYMBOL_GPL(__gpio_set_batch);
-+
-+/**
-+ * __gpio_get_batch() - get a batch of gpio pins together
-+ * @gpio: starting gpio pin
-+ * @bitmask: bitmask to be applied to values
-+ * @bitwidth: width inclusive of masked-off bits
-+ * Context: any
-+ *
-+ * This is used directly or indirectly to implement gpio_get_value().
-+ * It invokes the associated gpio_chip.get_batch() method and returns
-+ * zero if no such method is provided.
-+ */
-+u32 __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth)
-+{
-+	struct gpio_chip *chip;
-+	int i = 0;
-+	int width, remwidth;
-+	u32 mask;
-+	u32 values = 0;
-+	u32 value;
-+
-+	BUG_ON(bitwidth > 32);
-+	do {
-+		chip = gpio_to_chip(gpio + i);
-+		WARN_ON(extra_checks && chip->can_sleep);
-+
-+		remwidth = ((chip->base + (int) chip->ngpio) -
-+					((int) gpio + i));
-+		width = min(bitwidth, remwidth);
-+
-+		/* shift off the used mask bits */
-+		mask = bitmask >> i;
-+		/* now adjust mask by width of get */
-+		mask &= ((1 << width) - 1);
-+
-+		value = chip->get_batch(chip, gpio + i - chip->base, mask,
-+					width);
-+		/* shift result back into caller position */
-+		values |= value << i;
-+		i += width;
-+		bitwidth -= width;
-+	} while (bitwidth);
-+
-+	return values;
-+}
-+EXPORT_SYMBOL_GPL(__gpio_get_batch);
-+#endif
-+
- /**
-  * gpiochip_add() - register a gpio_chip
-  * @chip: the chip to register, with chip->base initialized
-@@ -683,6 +838,12 @@ int gpiochip_add(struct gpio_chip *chip)
- 		}
- 		chip->base = base;
- 	}
-+#ifdef CONFIG_GPIOLIB_BATCH
-+	if (!chip->set_batch)
-+		chip->set_batch = __generic_gpio_set_batch;
-+	if (!chip->get_batch)
-+		chip->get_batch = __generic_gpio_get_batch;
-+#endif
- 
- 	/* these GPIO numbers must not be managed by another gpio_chip */
- 	for (id = base; id < base + chip->ngpio; id++) {
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index 81797ec..6cfe275 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -44,6 +44,10 @@ struct module;
-  *	returns either the value actually sensed, or zero
-  * @direction_output: configures signal "offset" as output, or returns error
-  * @set: assigns output value for signal "offset"
-+ * @set_batch: batch assigns output values for signals starting at
-+ *	"offset" with mask in "bitmask" all within this gpio_chip
-+ * @get_batch: batch fetches values for consecutive signals starting at
-+ *	"offset" with mask in "bitmask" all within this gpio_chip
-  * @to_irq: optional hook supporting non-static gpio_to_irq() mappings;
-  *	implementation may not sleep
-  * @dbg_show: optional routine to show contents in debugfs; default code
-@@ -84,7 +88,14 @@ struct gpio_chip {
- 						unsigned offset, int value);
- 	void			(*set)(struct gpio_chip *chip,
- 						unsigned offset, int value);
--
-+#ifdef CONFIG_GPIOLIB_BATCH
-+	void			(*set_batch)(struct gpio_chip *chip,
-+						unsigned offset, u32 values,
-+						u32 bitmask, int width);
-+	u32			(*get_batch)(struct gpio_chip *chip,
-+						unsigned offset, u32 bitmask,
-+						int width);
-+#endif
- 	int			(*to_irq)(struct gpio_chip *chip,
- 						unsigned offset);
- 
-@@ -124,6 +135,11 @@ extern void gpio_set_value_cansleep(unsigned gpio, int value);
-  */
- extern int __gpio_get_value(unsigned gpio);
- extern void __gpio_set_value(unsigned gpio, int value);
-+#ifdef CONFIG_GPIOLIB_BATCH
-+extern void __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask,
-+				int bitwidth);
-+extern u32 __gpio_get_batch(unsigned gpio, u32 bitmask, int bitwidth);
-+#endif
- 
- extern int __gpio_cansleep(unsigned gpio);
- 
 -- 
-1.5.2.3
+Yauhen Kharuzhy		jekhor _at_ gmail.com
+			JID: jek@jabber.ru
+
+A: No
+Q: Should I quote below my post?
+
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="prs505-display.c"
+
+/*
+ * prs505-display.c -- Platform device for Sony PRS-505 display driver
+ *
+ * Copyright (C) 2008, Yauhen Kharuzhy
+ *
+ * This file is subject to the terms and conditions of the GNU General Public
+ * License. See the file COPYING in the main directory of this archive for
+ * more details.
+ *
+ * This driver is written to be used with the Metronome display controller.
+ *
+ */
+
+#define DEBUG
+
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/errno.h>
+#include <linux/string.h>
+#include <linux/delay.h>
+#include <linux/interrupt.h>
+#include <linux/fb.h>
+#include <linux/init.h>
+#include <linux/platform_device.h>
+#include <linux/irq.h>
+#include <linux/gpio.h>
+
+#include <mach/imxfb.h>
+#include <mach/irqs.h>
+#include <video/metronomefb.h>
+
+#include "generic.h"
+
+static struct platform_device *prs505_display_device;
+static struct metronome_board prs505_board;
+
+struct imxfb_mach_info prs505_fb_info = {
+	.pixclock	= 40189,
+	.xres		= 832,
+	.yres		= 622 / 2,
+	.bpp		= 16,
+	.hsync_len	= 28,
+	.left_margin	= 34,
+	.right_margin	= 34,
+	.vsync_len	= 25,
+	.upper_margin	= 0,
+	.lower_margin	= 2,
+	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+	.pcr		= PCR_TFT | PCR_BPIX_16 | PCR_CLKPOL | PCR_SCLKIDLE |
+				PCR_SCLK_SEL | PCR_PCD(2),
+	.dmacr		= DMACR_HM(3) | DMACR_TM(10), 
+};
+
+#define STDBY_GPIO_PIN		(GPIO_PORTD | 10)
+#define RST_GPIO_PIN		(GPIO_PORTD | 11)
+#define RDY_GPIO_PIN		(GPIO_PORTD | 9)
+#define ERR_GPIO_PIN		(GPIO_PORTD | 7)
+#define PWR_VIO_GPIO_PIN	(GPIO_PORTA | 2)
+#define PWR_VCORE_GPIO_PIN	(GPIO_PORTA | 4)
+
+static int gpios[] = {  STDBY_GPIO_PIN , RST_GPIO_PIN,
+			RDY_GPIO_PIN, ERR_GPIO_PIN, PWR_VCORE_GPIO_PIN,
+			PWR_VIO_GPIO_PIN };
+
+static char *gpio_names[] = { "STDBY" , "RST", "RDY", "ERR",
+	"VCORE", "VIO" };
+
+static int prs505_init_gpio_regs(struct metronomefb_par *par)
+{
+	int i;
+	int err;
+
+	for (i = 0; i < ARRAY_SIZE(gpios); i++) {
+		err = gpio_request(gpios[i], gpio_names[i]);
+		if (err) {
+			dev_err(&prs505_display_device->dev, "failed requesting "
+				"gpio %s, err=%d\n", gpio_names[i], err);
+			goto err_req_gpio;
+		}
+	}
+
+	gpio_direction_output(STDBY_GPIO_PIN, 0);
+	gpio_direction_output(RST_GPIO_PIN, 0);
+
+	gpio_direction_input(RDY_GPIO_PIN);
+	gpio_direction_input(ERR_GPIO_PIN);
+
+	gpio_direction_output(PWR_VCORE_GPIO_PIN, 1);
+	gpio_direction_output(PWR_VIO_GPIO_PIN, 1);
+
+	return 0;
+
+err_req_gpio:
+	while (i > 0)
+		gpio_free(gpios[i--]);
+
+	return err;
+}
+
+static void prs505_cleanup(struct metronomefb_par *par)
+{
+	int i;
+
+	free_irq(gpio_to_irq(RDY_GPIO_PIN), par);
+
+	for (i = 0; i < ARRAY_SIZE(gpios); i++)
+		gpio_free(gpios[i]);
+}
+
+static int prs505_share_video_mem(struct fb_info *info)
+{
+	/* rough check if this is our desired fb and not something else */
+	if ((info->var.xres != prs505_fb_info.xres)
+		|| (info->var.yres != prs505_fb_info.yres))
+		return 0;
+
+	/* we've now been notified that we have our new fb */
+	prs505_board.metromem = info->screen_base;
+	prs505_board.host_fbinfo = info;
+
+	/* try to refcount host drv since we are the consumer after this */
+	if (!try_module_get(info->fbops->owner))
+		return -ENODEV;
+
+	return 0;
+}
+
+static int prs505_unshare_video_mem(struct fb_info *info)
+{
+	dev_dbg(&prs505_display_device->dev, "ENTER %s\n", __func__);
+
+	if (info != prs505_board.host_fbinfo)
+		return 0;
+
+	module_put(prs505_board.host_fbinfo->fbops->owner);
+	return 0;
+}
+
+static int prs505_fb_notifier_callback(struct notifier_block *self,
+				 unsigned long event, void *data)
+{
+	struct fb_event *evdata = data;
+	struct fb_info *info = evdata->info;
+
+//	dev_dbg(&prs505_display_device->dev, "ENTER %s\n", __func__);
+
+	if (event == FB_EVENT_FB_REGISTERED)
+		return prs505_share_video_mem(info);
+	else if (event == FB_EVENT_FB_UNREGISTERED)
+		return prs505_unshare_video_mem(info);
+
+	return 0;
+}
+
+static struct notifier_block prs505_fb_notif = {
+	.notifier_call = prs505_fb_notifier_callback,
+};
+
+/* this gets called as part of our init. these steps must be done now so
+ * that we can use set_pxa_fb_info */
+static int __init prs505_presetup_fb(void)
+{
+	int fw;
+	int fh;
+	int padding_size;
+	int totalsize;
+	int ret;
+
+	/* the frame buffer is divided as follows:
+	command | CRC | padding
+	16kb waveform data | CRC | padding
+	image data | CRC
+	*/
+
+	fw = prs505_fb_info.xres;
+	fh = prs505_fb_info.yres;
+
+	/* waveform must be 16k + 2 for checksum */
+	prs505_board.wfm_size = roundup(16*1024 + 2, fw);
+
+	padding_size = PAGE_SIZE + (4 * fw);
+
+	/* total is 1 cmd , 1 wfm, padding and image */
+	totalsize = fw + prs505_board.wfm_size + padding_size + (fw*fh);
+
+	/* save this off because we're manipulating fw after this and
+	 * we'll need it when we're ready to setup the framebuffer */
+	prs505_board.fw = fw;
+	prs505_board.fh = fh;
+
+	/* the reason we do this adjustment is because we want to acquire
+	 * more framebuffer memory without imposing custom awareness on the
+	 * underlying pxafb driver */
+	prs505_fb_info.yres = DIV_ROUND_UP(totalsize, fw);
+
+	/* we divide since we told the LCD controller we're 16bpp */
+	prs505_fb_info.xres /= 2;
+
+	set_imx_fb_info(&prs505_fb_info);
+
+	ret = platform_device_register(&imxfb_device);
+	if (ret)
+		dev_err(&prs505_display_device->dev, "Failed to register imxfb platform device\n");
+
+	return ret;
+}
+
+/* this gets called by metronomefb as part of its init, in our case, we
+ * have already completed initial framebuffer init in presetup_fb so we
+ * can just setup the fb access pointers */
+static int prs505_setup_fb(struct metronomefb_par *par)
+{
+	int fw;
+	int fh;
+
+	fw = prs505_board.fw;
+	fh = prs505_board.fh;
+
+	/* metromem was set up by the notifier in share_video_mem so now
+	 * we can use its value to calculate the other entries */
+	par->metromem_cmd = (struct metromem_cmd *) prs505_board.metromem;
+	par->metromem_wfm = prs505_board.metromem + fw;
+	par->metromem_img = par->metromem_wfm + prs505_board.wfm_size;
+	par->metromem_img_csum = (u16 *) (par->metromem_img + (fw * fh));
+	par->metromem_dma = prs505_board.host_fbinfo->fix.smem_start;
+
+	return 0;
+}
+
+static int prs505_get_panel_type(void)
+{
+	return 6;
+}
+
+static irqreturn_t prs505_handle_irq(int irq, void *dev_id)
+{
+	struct metronomefb_par *par = dev_id;
+
+	wake_up_interruptible(&par->waitq);
+	return IRQ_HANDLED;
+}
+
+static int prs505_setup_irq(struct fb_info *info)
+{
+	int ret;
+
+	ret = request_irq(gpio_to_irq(RDY_GPIO_PIN), prs505_handle_irq,
+				IRQF_DISABLED | IRQF_TRIGGER_FALLING,
+				"PRS505-display", info->par);
+	if (ret)
+		dev_err(&prs505_display_device->dev, "request_irq failed: %d\n", ret);
+
+	return ret;
+}
+
+static void prs505_set_rst(struct metronomefb_par *par, int state)
+{
+	if (state && gpio_get_value(RDY_GPIO_PIN))
+		dev_err(&prs505_display_device->dev, "RDY != 0 before set_rst\n");
+	gpio_set_value(RST_GPIO_PIN, state);
+}
+
+static void prs505_set_stdby(struct metronomefb_par *par, int state)
+{
+	gpio_set_value(STDBY_GPIO_PIN, state);
+}
+
+static int prs505_wait_event(struct metronomefb_par *par)
+{
+	int ret;
+	ret = wait_event_timeout(par->waitq, gpio_get_value(RDY_GPIO_PIN), HZ);
+	dev_dbg(&prs505_display_device->dev, "%s: ret = %d\n", __FUNCTION__, ret);
+	return ret;
+}
+
+static int prs505_wait_event_intr(struct metronomefb_par *par)
+{
+	return wait_event_interruptible_timeout(par->waitq,
+					gpio_get_value(RDY_GPIO_PIN), HZ);
+}
+
+static struct metronome_board prs505_board = {
+	.owner			= THIS_MODULE,
+	.setup_irq		= prs505_setup_irq,
+	.setup_io		= prs505_init_gpio_regs,
+	.setup_fb		= prs505_setup_fb,
+	.set_rst		= prs505_set_rst,
+	.set_stdby		= prs505_set_stdby,
+	.met_wait_event		= prs505_wait_event,
+	.met_wait_event_intr	= prs505_wait_event_intr,
+	.get_panel_type		= prs505_get_panel_type,
+	.cleanup		= prs505_cleanup,
+};
+
+static int __init prs505_init(void)
+{
+	int ret;
+
+	/* before anything else, we request notification for any fb
+	 * creation events */
+	fb_register_client(&prs505_fb_notif);
+
+	prs505_presetup_fb();
+
+	if (!prs505_board.host_fbinfo) {
+		printk(KERN_ERR "prs505_board.host_fbinfo is NULL. Probably you don't have the imxfb driver enabled\n");
+		platform_device_unregister(&imxfb_device);
+		return -ENODEV;
+	}
+	/* request our platform independent driver */
+	request_module("metronomefb");
+
+	prs505_display_device = platform_device_alloc("metronomefb", -1);
+	if (!prs505_display_device) {
+		platform_device_unregister(&imxfb_device);
+		return -ENOMEM;
+	}
+
+	/* the prs505_board that will be seen by metronomefb is a copy */
+	platform_device_add_data(prs505_display_device, &prs505_board,
+					sizeof(prs505_board));
+
+	/* this _add binds metronomefb to prs505. metronomefb refcounts prs505 */
+	ret = platform_device_add(prs505_display_device);
+
+	if (ret) {
+		platform_device_put(prs505_display_device);
+		fb_unregister_client(&prs505_fb_notif);
+		platform_device_unregister(&imxfb_device);
+		return ret;
+	}
+
+	return 0;
+}
+
+static void __exit prs505_exit(void)
+{
+		platform_device_put(prs505_display_device);
+		fb_unregister_client(&prs505_fb_notif);
+		platform_device_unregister(&imxfb_device);
+}
+
+
+module_init(prs505_init);
+module_exit(prs505_exit);
+
+MODULE_DESCRIPTION("board driver for Sony PRS-505 book reader display controller");
+MODULE_AUTHOR("Yauhen Kharuzhy");
+MODULE_LICENSE("GPL");
+
+
+
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+------------------------------------------------------------------------------
+
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--liOOAslEiF7prFVr--

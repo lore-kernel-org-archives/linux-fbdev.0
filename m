@@ -1,59 +1,55 @@
-From: Yauhen Kharuzhy <jekhor@gmail.com>
-Subject: Re: [jekhor@gmail.com: Metronome specifications]
-Date: Wed, 31 Dec 2008 16:16:45 +0200
-Message-ID: <20081231141645.GA24153@jeknote.loshitsa1.net>
-References: <20081230154614.GA30164@jeknote.loshitsa1.net>
-	<45a44e480812300756m2adbe0dfg2a401f8d92939d43@mail.gmail.com>
-	<20081231121659.GA1761@jeknote.loshitsa1.net>
-	<20081231125936.GA18373@jeknote.loshitsa1.net>
+From: "Dave Hylands" <dhylands@gmail.com>
+Subject: Re: [RFC 2.6.28 1/1] gpiolib: add set/get batch v3
+Date: Wed, 31 Dec 2008 07:22:08 -0800
+Message-ID: <c32efac40812310722x238c8348j5f4ed48ae87c4704@mail.gmail.com>
+References: <12307156721518-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jekhor@gmail.com>) id 1LI1sa-0002By-Pw
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Dec 2008 14:17:00 +0000
-Received: from rn-out-0910.google.com ([64.233.170.188])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LI1sX-0002hJ-ME for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Dec 2008 14:17:01 +0000
-Received: by rn-out-0910.google.com with SMTP id j66so3731487rne.9
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 31 Dec 2008 06:16:55 -0800 (PST)
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756524AbYLaPWW@vger.kernel.org>
+In-Reply-To: <12307156721518-git-send-email-jayakumar.lkml@gmail.com>
 Content-Disposition: inline
-In-Reply-To: <20081231125936.GA18373@jeknote.loshitsa1.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>, Paulius Zaleckas <paulius.zaleckas@teltonika.lt>, Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Wed, Dec 31, 2008 at 02:59:36PM +0200, Yauhen Kharuzhy wrote:
- 
-> static int am200_wait_event(struct metronomefb_par *par)
-> {
-> 	return wait_event_timeout(par->waitq, gpio_get_value(RDY_GPIO_PIN), HZ);
-> }
+Hi Jaya,
 
-I also noticed error in your am200_wait_event() implementation:
+...snip...
+> There was a question about why have both bitmask AND width when width
+> could be worked out from bitmask. The reason for having both bitmask and
+> length is for performance. Let's compare the following two scenarios:
+>
+> /* flash to black */
+> for (i=0; i < 800*600; i++)
+>        gpio_set_batch(DB0, 0x00000000, 0x0000FFFF)
+>
+> Internally, the above implementation has to work out the length of bits
+> that are being set in bitmask in order to figure out which register
+> boundaries are being crossed. That means looping through the bitmask
+> and counting bits. That would need to be repeated for every call of
+> gpio_set_batch in the above loop and would be a relatively high expense.
+>
+> /* flash to black */
+> for (i=0; i < 800*600; i++)
+>        gpio_set_batch(DB0, 0x00000000, 0x0000FFFF, 16)
+>
+> In the 2nd case, the implementation is able to skip all the bit counting.
+> This usage method is also the intuitive way for drivers that are trying
+> to push data across a gpio bus since they explicitly know the bus length.
+...snip...
 
-metronomefb supposed that return value of met_wait_event() will be zero
-on successful case, but wait_event_timeout() returns zero on timeout.
+I haven't been following too closely, but what about
+
+        gpio_set_batch(DB0, 0x00000000, 0x00FF00FF, 16)
+
+That also has 16 bits set, but in different positions.
+
+Shouldn't you just not bother with the length and optimize particular
+bitmasks (i.e. 0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF)?
 
 -- 
-Yauhen Kharuzhy		jekhor _at_ gmail.com
-			JID: jek@jabber.ru
-
-A: No
-Q: Should I quote below my post?
-
-------------------------------------------------------------------------------
+Dave Hylands
+Shuswap, BC, Canada
+http://www.DaveHylands.com/

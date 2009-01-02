@@ -1,67 +1,47 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] m68k: atafb - kill warn_unused_result warnings
-Date: Fri,  2 Jan 2009 11:41:25 +0100
-Message-ID: <1230892892-25751-13-git-send-email-geert@linux-m68k.org>
-References: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-2-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-3-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-4-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-5-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-6-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-7-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-8-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-9-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-10-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-11-git-send-email-geert@linux-m68k.org>
- <1230892892-25751-12-git-send-email-geert@linux-m68k.org>
-Return-path: <linux-m68k-owner@vger.kernel.org>
-In-Reply-To: <1230892892-25751-12-git-send-email-geert@linux-m68k.org>
-Sender: linux-m68k-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC 2.6.27 1/2] fbdev: add E-Ink
+	Broadsheet controller support
+Date: Fri, 2 Jan 2009 21:24:26 +0000
+Message-ID: <20090102212426.GC10677@n2100.arm.linux.org.uk>
+References: <12298571743158-git-send-email-jayakumar.lkml@gmail.com>
+	<aec7e5c30812210658m4fe9b00eibc8f68dd5216b756@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69) (envelope-from
+	<linux+linux-fbdev-devel=lists.sourceforge.net@arm.linux.org.uk>)
+	id 1LIrVk-0008G5-1x for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Jan 2009 21:24:52 +0000
+Received: from caramon.arm.linux.org.uk ([78.32.30.218])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LIrVg-0008Vr-5A
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Jan 2009 21:24:52 +0000
+Content-Disposition: inline
+In-Reply-To: <aec7e5c30812210658m4fe9b00eibc8f68dd5216b756@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Eric Miao <eric.miao@marvell.com>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk, Geert Uytterhoeven <geert@linux-m68k.org>
 
-warning: ignoring return value of 'request_irq', declared with attribute
-warn_unused_result
+On Sun, Dec 21, 2008 at 11:58:53PM +0900, Magnus Damm wrote:
+> By using the <censored>_dpy_update() function these drivers seem to force a
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
----
- drivers/video/atafb.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+Please don't use "ex ex ex" in email messages, it causes list admins
+grief when they get lots of errors from stupidly setup domains such as:
 
-diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
-index 477ce55..8058572 100644
---- a/drivers/video/atafb.c
-+++ b/drivers/video/atafb.c
-@@ -3075,8 +3075,7 @@ int __init atafb_setup(char *options)
- 
- int __init atafb_init(void)
- {
--	int pad;
--	int detected_mode;
-+	int pad, detected_mode, error;
- 	unsigned int defmode = 0;
- 	unsigned long mem_req;
- 
-@@ -3116,8 +3115,12 @@ int __init atafb_init(void)
- 			printk("atafb_init: initializing Falcon hw\n");
- 			fbhw = &falcon_switch;
- 			atafb_ops.fb_setcolreg = &falcon_setcolreg;
--			request_irq(IRQ_AUTO_4, falcon_vbl_switcher, IRQ_TYPE_PRIO,
--			            "framebuffer/modeswitch", falcon_vbl_switcher);
-+			error = request_irq(IRQ_AUTO_4, falcon_vbl_switcher,
-+					    IRQ_TYPE_PRIO,
-+					    "framebuffer/modeswitch",
-+					    falcon_vbl_switcher);
-+			if (error)
-+				return error;
- 			defmode = DEFMODE_F30;
- 			break;
- 		}
--- 
-1.5.6.5
+    host asuka.sanyo.co.in [202.54.90.7]: 554 5.7.1 This message has been blocked because it contains a banned word.
 
+Thank you.
+
+------------------------------------------------------------------------------

@@ -1,61 +1,108 @@
-From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Subject: Re: [jekhor@gmail.com: Metronome specifications]
-Date: Thu, 1 Jan 2009 04:42:56 +0800
-Message-ID: <45a44e480812311242y632e8efl6816e895b48a797e@mail.gmail.com>
-References: <20081230154614.GA30164@jeknote.loshitsa1.net>
-	<45a44e480812300756m2adbe0dfg2a401f8d92939d43@mail.gmail.com>
-	<20081231121659.GA1761@jeknote.loshitsa1.net>
-	<20081231125936.GA18373@jeknote.loshitsa1.net>
-	<20081231141645.GA24153@jeknote.loshitsa1.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] fbdev: Kill Atari vblank cursor blinking
+Date: Fri, 2 Jan 2009 11:11:05 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0901021109210.24191@anakin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-m68k-owner@vger.kernel.org>
+Sender: linux-m68k-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jayakumar.lkml@gmail.com>) id 1LI7u9-0002sb-HW
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Dec 2008 20:43:01 +0000
-Received: from mail-ew0-f21.google.com ([209.85.219.21])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LI7u7-0007aL-RB for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 31 Dec 2008 20:43:01 +0000
-Received: by ewy14 with SMTP id 14so6586412ewy.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 31 Dec 2008 12:42:57 -0800 (PST)
-In-Reply-To: <20081231141645.GA24153@jeknote.loshitsa1.net>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Yauhen Kharuzhy <jekhor@gmail.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>
 
-On Wed, Dec 31, 2008 at 10:16 PM, Yauhen Kharuzhy <jekhor@gmail.com> wrote:
-> On Wed, Dec 31, 2008 at 02:59:36PM +0200, Yauhen Kharuzhy wrote:
->
->> static int am200_wait_event(struct metronomefb_par *par)
->> {
->>       return wait_event_timeout(par->waitq, gpio_get_value(RDY_GPIO_PIN), HZ);
->> }
->
-> I also noticed error in your am200_wait_event() implementation:
->
-> metronomefb supposed that return value of met_wait_event() will be zero
-> on successful case, but wait_event_timeout() returns zero on timeout.
->
+Kill the last remaining vblank cursor blinking user
 
-ah, ok, good catch, I had not noticed this mistake. I will fix this
-asap or you can also submit a patch to do this if possible.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/video/console/fbcon.c |   38 --------------------------------------
+ 1 files changed, 0 insertions(+), 38 deletions(-)
 
-Thanks,
-jaya
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 4bcff81..1657b96 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -78,13 +78,6 @@
+ #include <asm/fb.h>
+ #include <asm/irq.h>
+ #include <asm/system.h>
+-#ifdef CONFIG_ATARI
+-#include <asm/atariints.h>
+-#endif
+-#if defined(__mc68000__)
+-#include <asm/machdep.h>
+-#include <asm/setup.h>
+-#endif
+ 
+ #include "fbcon.h"
+ 
+@@ -155,9 +148,6 @@ static int fbcon_set_origin(struct vc_data *);
+ 
+ #define CURSOR_DRAW_DELAY		(1)
+ 
+-/* # VBL ints between cursor state changes */
+-#define ATARI_CURSOR_BLINK_RATE		(42)
+-
+ static int vbl_cursor_cnt;
+ static int fbcon_cursor_noblink;
+ 
+@@ -403,20 +393,6 @@ static void fb_flashcursor(struct work_struct *work)
+ 	release_console_sem();
+ }
+ 
+-#ifdef CONFIG_ATARI
+-static int cursor_blink_rate;
+-static irqreturn_t fb_vbl_handler(int irq, void *dev_id)
+-{
+-	struct fb_info *info = dev_id;
+-
+-	if (vbl_cursor_cnt && --vbl_cursor_cnt == 0) {
+-		schedule_work(&info->queue);	
+-		vbl_cursor_cnt = cursor_blink_rate; 
+-	}
+-	return IRQ_HANDLED;
+-}
+-#endif
+-	
+ static void cursor_timer_handler(unsigned long dev_addr)
+ {
+ 	struct fb_info *info = (struct fb_info *) dev_addr;
+@@ -1017,15 +993,6 @@ static const char *fbcon_startup(void)
+ 		info->var.yres,
+ 		info->var.bits_per_pixel);
+ 
+-#ifdef CONFIG_ATARI
+-	if (MACH_IS_ATARI) {
+-		cursor_blink_rate = ATARI_CURSOR_BLINK_RATE;
+-		(void)request_irq(IRQ_AUTO_4, fb_vbl_handler,
+-				IRQ_TYPE_PRIO, "framebuffer vbl",
+-				info);
+-	}
+-#endif /* CONFIG_ATARI */
+-
+ 	fbcon_add_cursor_timer(info);
+ 	fbcon_has_exited = 0;
+ 	return display_desc;
+@@ -3454,11 +3421,6 @@ static void fbcon_exit(void)
+ 	if (fbcon_has_exited)
+ 		return;
+ 
+-#ifdef CONFIG_ATARI
+-	if (MACH_IS_ATARI)
+-		free_irq(IRQ_AUTO_4, fb_vbl_handler);
+-#endif
+-
+ 	kfree((void *)softback_buf);
+ 	softback_buf = 0UL;
+ 
 
-------------------------------------------------------------------------------
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

@@ -1,108 +1,67 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] fbdev: Kill Atari vblank cursor blinking
-Date: Fri, 2 Jan 2009 11:11:05 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0901021109210.24191@anakin>
-Mime-Version: 1.0
+Subject: [PATCH] m68k: atafb - kill warn_unused_result warnings
+Date: Fri,  2 Jan 2009 11:41:25 +0100
+Message-ID: <1230892892-25751-13-git-send-email-geert@linux-m68k.org>
+References: <1230892892-25751-1-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-2-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-3-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-4-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-5-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-6-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-7-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-8-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-9-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-10-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-11-git-send-email-geert@linux-m68k.org>
+ <1230892892-25751-12-git-send-email-geert@linux-m68k.org>
 Return-path: <linux-m68k-owner@vger.kernel.org>
+In-Reply-To: <1230892892-25751-12-git-send-email-geert@linux-m68k.org>
 Sender: linux-m68k-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>
+To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Kill the last remaining vblank cursor blinking user
+warning: ignoring return value of 'request_irq', declared with attribute
+warn_unused_result
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 ---
- drivers/video/console/fbcon.c |   38 --------------------------------------
- 1 files changed, 0 insertions(+), 38 deletions(-)
+ drivers/video/atafb.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 4bcff81..1657b96 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -78,13 +78,6 @@
- #include <asm/fb.h>
- #include <asm/irq.h>
- #include <asm/system.h>
--#ifdef CONFIG_ATARI
--#include <asm/atariints.h>
--#endif
--#if defined(__mc68000__)
--#include <asm/machdep.h>
--#include <asm/setup.h>
--#endif
+diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
+index 477ce55..8058572 100644
+--- a/drivers/video/atafb.c
++++ b/drivers/video/atafb.c
+@@ -3075,8 +3075,7 @@ int __init atafb_setup(char *options)
  
- #include "fbcon.h"
- 
-@@ -155,9 +148,6 @@ static int fbcon_set_origin(struct vc_data *);
- 
- #define CURSOR_DRAW_DELAY		(1)
- 
--/* # VBL ints between cursor state changes */
--#define ATARI_CURSOR_BLINK_RATE		(42)
--
- static int vbl_cursor_cnt;
- static int fbcon_cursor_noblink;
- 
-@@ -403,20 +393,6 @@ static void fb_flashcursor(struct work_struct *work)
- 	release_console_sem();
- }
- 
--#ifdef CONFIG_ATARI
--static int cursor_blink_rate;
--static irqreturn_t fb_vbl_handler(int irq, void *dev_id)
--{
--	struct fb_info *info = dev_id;
--
--	if (vbl_cursor_cnt && --vbl_cursor_cnt == 0) {
--		schedule_work(&info->queue);	
--		vbl_cursor_cnt = cursor_blink_rate; 
--	}
--	return IRQ_HANDLED;
--}
--#endif
--	
- static void cursor_timer_handler(unsigned long dev_addr)
+ int __init atafb_init(void)
  {
- 	struct fb_info *info = (struct fb_info *) dev_addr;
-@@ -1017,15 +993,6 @@ static const char *fbcon_startup(void)
- 		info->var.yres,
- 		info->var.bits_per_pixel);
+-	int pad;
+-	int detected_mode;
++	int pad, detected_mode, error;
+ 	unsigned int defmode = 0;
+ 	unsigned long mem_req;
  
--#ifdef CONFIG_ATARI
--	if (MACH_IS_ATARI) {
--		cursor_blink_rate = ATARI_CURSOR_BLINK_RATE;
--		(void)request_irq(IRQ_AUTO_4, fb_vbl_handler,
--				IRQ_TYPE_PRIO, "framebuffer vbl",
--				info);
--	}
--#endif /* CONFIG_ATARI */
--
- 	fbcon_add_cursor_timer(info);
- 	fbcon_has_exited = 0;
- 	return display_desc;
-@@ -3454,11 +3421,6 @@ static void fbcon_exit(void)
- 	if (fbcon_has_exited)
- 		return;
- 
--#ifdef CONFIG_ATARI
--	if (MACH_IS_ATARI)
--		free_irq(IRQ_AUTO_4, fb_vbl_handler);
--#endif
--
- 	kfree((void *)softback_buf);
- 	softback_buf = 0UL;
- 
+@@ -3116,8 +3115,12 @@ int __init atafb_init(void)
+ 			printk("atafb_init: initializing Falcon hw\n");
+ 			fbhw = &falcon_switch;
+ 			atafb_ops.fb_setcolreg = &falcon_setcolreg;
+-			request_irq(IRQ_AUTO_4, falcon_vbl_switcher, IRQ_TYPE_PRIO,
+-			            "framebuffer/modeswitch", falcon_vbl_switcher);
++			error = request_irq(IRQ_AUTO_4, falcon_vbl_switcher,
++					    IRQ_TYPE_PRIO,
++					    "framebuffer/modeswitch",
++					    falcon_vbl_switcher);
++			if (error)
++				return error;
+ 			defmode = DEFMODE_F30;
+ 			break;
+ 		}
+-- 
+1.5.6.5
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds

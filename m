@@ -1,12 +1,15 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 3/7] fbdev: c2p - Correct indentation
-Date: Sun,  4 Jan 2009 12:47:00 +0100
-Message-ID: <1231069624-13362-4-git-send-email-geert@linux-m68k.org>
+Subject: [PATCH 6/7] fbdev: c2p/atafb - Add support for Atari interleaved bitplanes
+Date: Sun,  4 Jan 2009 12:47:03 +0100
+Message-ID: <1231069624-13362-7-git-send-email-geert@linux-m68k.org>
 References: <1231069624-13362-1-git-send-email-geert@linux-m68k.org>
  <1231069624-13362-2-git-send-email-geert@linux-m68k.org>
  <1231069624-13362-3-git-send-email-geert@linux-m68k.org>
+ <1231069624-13362-4-git-send-email-geert@linux-m68k.org>
+ <1231069624-13362-5-git-send-email-geert@linux-m68k.org>
+ <1231069624-13362-6-git-send-email-geert@linux-m68k.org>
 Return-path: <linux-m68k-owner@vger.kernel.org>
-In-Reply-To: <1231069624-13362-3-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1231069624-13362-6-git-send-email-geert@linux-m68k.org>
 Sender: linux-m68k-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
@@ -15,305 +18,310 @@ Content-Transfer-Encoding: 7bit
 To: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>, linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
+The c2p() for normal bitplanes is not suitable for interleaved bitplanes with
+2 bytes of interleave, causing a garbled penguin logo. Add c2p_iplan2().
+
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/c2p.c |  238 ++++++++++++++++++++++++++-------------------------
- 1 files changed, 120 insertions(+), 118 deletions(-)
+ drivers/video/Makefile     |    2 +-
+ drivers/video/atafb.c      |   15 +----
+ drivers/video/c2p.h        |    5 +-
+ drivers/video/c2p_core.h   |   47 ++++++++++++++
+ drivers/video/c2p_iplan2.c |  153 ++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 208 insertions(+), 14 deletions(-)
+ create mode 100644 drivers/video/c2p_iplan2.c
 
-diff --git a/drivers/video/c2p.c b/drivers/video/c2p.c
-index 376bc07..f102b57 100644
---- a/drivers/video/c2p.c
-+++ b/drivers/video/c2p.c
-@@ -21,71 +21,71 @@
-      *  Basic transpose step
-      */
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index e39e33e..4fc29ea 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -72,7 +72,7 @@ obj-$(CONFIG_FB_TCX)              += tcx.o sbuslib.o
+ obj-$(CONFIG_FB_LEO)              += leo.o sbuslib.o
+ obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o
+ obj-$(CONFIG_FB_ACORN)            += acornfb.o
+-obj-$(CONFIG_FB_ATARI)            += atafb.o c2p.o atafb_mfb.o \
++obj-$(CONFIG_FB_ATARI)            += atafb.o c2p_iplan2.o atafb_mfb.o \
+                                      atafb_iplan2p2.o atafb_iplan2p4.o atafb_iplan2p8.o
+ obj-$(CONFIG_FB_MAC)              += macfb.o
+ obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
+diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
+index f932c13..477ce55 100644
+--- a/drivers/video/atafb.c
++++ b/drivers/video/atafb.c
+@@ -122,7 +122,6 @@ static struct atafb_par {
+ 	void *screen_base;
+ 	int yres_virtual;
+ 	u_long next_line;
+-	u_long next_plane;
+ #if defined ATAFB_TT || defined ATAFB_STE
+ 	union {
+ 		struct {
+@@ -1392,14 +1391,7 @@ set_screen_base:
+ 	par->screen_base = screen_base + var->yoffset * linelen;
+ 	par->hw.falcon.xoffset = 0;
  
--#define _transp(d, i1, i2, shift, mask)			\
--    do {						\
--	u32 t = (d[i1] ^ (d[i2] >> shift)) & mask;	\
--	d[i1] ^= t;					\
--	d[i2] ^= t << shift;				\
--    } while (0)
-+#define _transp(d, i1, i2, shift, mask)				\
-+	do {							\
-+		u32 t = (d[i1] ^ (d[i2] >> shift)) & mask;	\
-+		d[i1] ^= t;					\
-+		d[i2] ^= t << shift;				\
-+	} while (0)
+-	// FIXME!!! sort of works, no crash
+-	//par->next_line = linelen;
+-	//par->next_plane = yres_virtual * linelen;
+ 	par->next_line = linelen;
+-	par->next_plane = 2;
+-	// crashes
+-	//par->next_plane = linelen;
+-	//par->next_line  = yres_virtual * linelen;
  
- static inline u32 get_mask(int n)
- {
--    switch (n) {
-+	switch (n) {
- 	case 1:
--	    return 0x55555555;
--	    break;
-+		return 0x55555555;
-+		break;
+ 	return 0;
+ }
+@@ -2662,10 +2654,9 @@ static void atafb_imageblit(struct fb_info *info, const struct fb_image *image)
+ 			src += pitch;
+ 		}
+ 	} else {
+-		// only used for logo; broken
+-		c2p(info->screen_base, image->data, dx, dy, width, height,
+-		    par->next_line, par->next_plane, image->width,
+-		    info->var.bits_per_pixel);
++		c2p_iplan2(info->screen_base, image->data, dx, dy, width,
++			   height, par->next_line, image->width,
++			   info->var.bits_per_pixel);
+ 	}
+ }
  
- 	case 2:
--	    return 0x33333333;
--	    break;
-+		return 0x33333333;
-+		break;
+diff --git a/drivers/video/c2p.h b/drivers/video/c2p.h
+index daafd87..5364129 100644
+--- a/drivers/video/c2p.h
++++ b/drivers/video/c2p.h
+@@ -1,7 +1,7 @@
+ /*
+  *  Fast C2P (Chunky-to-Planar) Conversion
+  *
+- *  Copyright (C) 2003 Geert Uytterhoeven
++ *  Copyright (C) 2003-2008 Geert Uytterhoeven
+  *
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License. See the file COPYING in the main directory of this archive
+@@ -14,3 +14,6 @@ extern void c2p(void *dst, const void *src, u32 dx, u32 dy, u32 width,
+ 		u32 height, u32 dst_nextline, u32 dst_nextplane,
+ 		u32 src_nextline, u32 bpp);
  
- 	case 4:
--	    return 0x0f0f0f0f;
--	    break;
-+		return 0x0f0f0f0f;
-+		break;
++extern void c2p_iplan2(void *dst, const void *src, u32 dx, u32 dy, u32 width,
++		       u32 height, u32 dst_nextline, u32 src_nextline,
++		       u32 bpp);
+diff --git a/drivers/video/c2p_core.h b/drivers/video/c2p_core.h
+index 3573cf7..e1035a8 100644
+--- a/drivers/video/c2p_core.h
++++ b/drivers/video/c2p_core.h
+@@ -96,6 +96,53 @@ static inline void transp8(u32 d[], unsigned int n, unsigned int m)
  
- 	case 8:
--	    return 0x00ff00ff;
--	    break;
-+		return 0x00ff00ff;
-+		break;
  
- 	case 16:
--	    return 0x0000ffff;
--	    break;
--    }
--    return 0;
-+		return 0x0000ffff;
-+		break;
+     /*
++     *  Transpose operations on 4 32-bit words
++     */
++
++static inline void transp4(u32 d[], unsigned int n, unsigned int m)
++{
++	u32 mask = get_mask(n);
++
++	switch (m) {
++	case 1:
++		/* First n x 1 block */
++		_transp(d, 0, 1, n, mask);
++		/* Second n x 1 block */
++		_transp(d, 2, 3, n, mask);
++		return;
++
++	case 2:
++		/* Single n x 2 block */
++		_transp(d, 0, 2, n, mask);
++		_transp(d, 1, 3, n, mask);
++		return;
 +	}
-+	return 0;
- }
- 
--#define transp_nx1(d, n)				\
--    do {						\
--	u32 mask = get_mask(n);				\
--	/* First block */				\
--	_transp(d, 0, 1, n, mask);			\
--	/* Second block */				\
--	_transp(d, 2, 3, n, mask);			\
--	/* Third block */				\
--	_transp(d, 4, 5, n, mask);			\
--	/* Fourth block */				\
--	_transp(d, 6, 7, n, mask);			\
--    } while (0)
--
--#define transp_nx2(d, n)				\
--    do {						\
--	u32 mask = get_mask(n);				\
--	/* First block */				\
--	_transp(d, 0, 2, n, mask);			\
--	_transp(d, 1, 3, n, mask);			\
--	/* Second block */				\
--	_transp(d, 4, 6, n, mask);			\
--	_transp(d, 5, 7, n, mask);			\
--    } while (0)
--
--#define transp_nx4(d, n)				\
--    do {						\
--	u32 mask = get_mask(n);				\
--	_transp(d, 0, 4, n, mask);			\
--	_transp(d, 1, 5, n, mask);			\
--	_transp(d, 2, 6, n, mask);			\
--	_transp(d, 3, 7, n, mask);			\
--    } while (0)
-+#define transp_nx1(d, n)					\
-+	do {							\
-+		u32 mask = get_mask(n);				\
-+		/* First block */				\
-+		_transp(d, 0, 1, n, mask);			\
-+		/* Second block */				\
-+		_transp(d, 2, 3, n, mask);			\
-+		/* Third block */				\
-+		_transp(d, 4, 5, n, mask);			\
-+		/* Fourth block */				\
-+		_transp(d, 6, 7, n, mask);			\
-+	} while (0)
 +
-+#define transp_nx2(d, n)					\
-+	do {							\
-+		u32 mask = get_mask(n);				\
-+		/* First block */				\
-+		_transp(d, 0, 2, n, mask);			\
-+		_transp(d, 1, 3, n, mask);			\
-+		/* Second block */				\
-+		_transp(d, 4, 6, n, mask);			\
-+		_transp(d, 5, 7, n, mask);			\
-+	} while (0)
++	c2p_unsupported();
++}
 +
-+#define transp_nx4(d, n)					\
-+	do {							\
-+		u32 mask = get_mask(n);				\
-+		_transp(d, 0, 4, n, mask);			\
-+		_transp(d, 1, 5, n, mask);			\
-+		_transp(d, 2, 6, n, mask);			\
-+		_transp(d, 3, 7, n, mask);			\
-+	} while (0)
- 
- #define transp(d, n, m)	transp_nx ## m(d, n)
- 
-@@ -99,11 +99,11 @@ static inline u32 get_mask(int n)
- 
- static void c2p_8bpp(u32 d[8])
- {
--    transp(d, 16, 4);
--    transp(d, 8, 2);
--    transp(d, 4, 1);
--    transp(d, 2, 4);
--    transp(d, 1, 2);
-+	transp(d, 16, 4);
-+	transp(d, 8, 2);
-+	transp(d, 4, 1);
-+	transp(d, 2, 4);
-+	transp(d, 1, 2);
- }
- 
- 
-@@ -132,10 +132,10 @@ static inline unsigned long comp(unsigned long a, unsigned long b,
- 
- static inline void store_planar(char *dst, u32 dst_inc, u32 bpp, u32 d[8])
- {
--    int i;
++
++    /*
++     *  Transpose operations on 4 32-bit words (reverse order)
++     */
++
++static inline void transp4x(u32 d[], unsigned int n, unsigned int m)
++{
++	u32 mask = get_mask(n);
++
++	switch (m) {
++	case 2:
++		/* Single n x 2 block */
++		_transp(d, 2, 0, n, mask);
++		_transp(d, 3, 1, n, mask);
++		return;
++	}
++
++	c2p_unsupported();
++}
++
++
++    /*
+      *  Compose two values, using a bitmask as decision value
+      *  This is equivalent to (a & mask) | (b & ~mask)
+      */
+diff --git a/drivers/video/c2p_iplan2.c b/drivers/video/c2p_iplan2.c
+new file mode 100644
+index 0000000..19156dc
+--- /dev/null
++++ b/drivers/video/c2p_iplan2.c
+@@ -0,0 +1,153 @@
++/*
++ *  Fast C2P (Chunky-to-Planar) Conversion
++ *
++ *  Copyright (C) 2003-2008 Geert Uytterhoeven
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License. See the file COPYING in the main directory of this archive
++ *  for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/string.h>
++
++#include <asm/unaligned.h>
++
++#include "c2p.h"
++#include "c2p_core.h"
++
++
++    /*
++     *  Perform a full C2P step on 16 8-bit pixels, stored in 4 32-bit words
++     *  containing
++     *    - 16 8-bit chunky pixels on input
++     *    - permutated planar data (2 planes per 32-bit word) on output
++     */
++
++static void c2p_16x8(u32 d[4])
++{
++	transp4(d, 8, 2);
++	transp4(d, 1, 2);
++	transp4x(d, 16, 2);
++	transp4x(d, 2, 2);
++	transp4(d, 4, 1);
++}
++
++
++    /*
++     *  Array containing the permutation indices of the planar data after c2p
++     */
++
++static const int perm_c2p_16x8[4] = { 1, 3, 0, 2 };
++
++
++    /*
++     *  Store a full block of iplan2 data after c2p conversion
++     */
++
++static inline void store_iplan2(void *dst, u32 bpp, u32 d[4])
++{
 +	int i;
- 
--    for (i = 0; i < bpp; i++, dst += dst_inc)
--	*(u32 *)dst = d[perm_c2p_8bpp[i]];
-+	for (i = 0; i < bpp; i++, dst += dst_inc)
-+		*(u32 *)dst = d[perm_c2p_8bpp[i]];
- }
- 
- 
-@@ -146,10 +146,10 @@ static inline void store_planar(char *dst, u32 dst_inc, u32 bpp, u32 d[8])
- static inline void store_planar_masked(char *dst, u32 dst_inc, u32 bpp,
- 				       u32 d[8], u32 mask)
- {
--    int i;
++
++	for (i = 0; i < bpp/2; i++, dst += 4)
++		put_unaligned_be32(d[perm_c2p_16x8[i]], dst);
++}
++
++
++    /*
++     *  Store a partial block of iplan2 data after c2p conversion
++     */
++
++static inline void store_iplan2_masked(void *dst, u32 bpp, u32 d[4], u32 mask)
++{
 +	int i;
- 
--    for (i = 0; i < bpp; i++, dst += dst_inc)
--	*(u32 *)dst = comp(d[perm_c2p_8bpp[i]], *(u32 *)dst, mask);
-+	for (i = 0; i < bpp; i++, dst += dst_inc)
-+		*(u32 *)dst = comp(d[perm_c2p_8bpp[i]], *(u32 *)dst, mask);
- }
- 
- 
-@@ -169,63 +169,65 @@ static inline void store_planar_masked(char *dst, u32 dst_inc, u32 bpp,
- void c2p(u8 *dst, const u8 *src, u32 dx, u32 dy, u32 width, u32 height,
- 	 u32 dst_nextline, u32 dst_nextplane, u32 src_nextline, u32 bpp)
- {
--    int dst_idx;
--    u32 d[8], first, last, w;
--    const u8 *c;
--    u8 *p;
--
--    dst += dy*dst_nextline+(dx & ~31);
--    dst_idx = dx % 32;
--    first = ~0UL >> dst_idx;
--    last = ~(~0UL >> ((dst_idx+width) % 32));
--    while (height--) {
--	c = src;
--	p = dst;
--	w = width;
--	if (dst_idx+width <= 32) {
--	    /* Single destination word */
--	    first &= last;
--	    memset(d, 0, sizeof(d));
--	    memcpy((u8 *)d+dst_idx, c, width);
--	    c += width;
--	    c2p_8bpp(d);
--	    store_planar_masked(p, dst_nextplane, bpp, d, first);
--	    p += 4;
--	} else {
--	    /* Multiple destination words */
--	    w = width;
--	    /* Leading bits */
--	    if (dst_idx) {
--		w = 32 - dst_idx;
--		memset(d, 0, dst_idx);
--		memcpy((u8 *)d+dst_idx, c, w);
--		c += w;
--		c2p_8bpp(d);
--		store_planar_masked(p, dst_nextplane, bpp, d, first);
--		p += 4;
--		w = width-w;
--	    }
--	    /* Main chunk */
--	    while (w >= 32) {
--		memcpy(d, c, 32);
--		c += 32;
--		c2p_8bpp(d);
--		store_planar(p, dst_nextplane, bpp, d);
--		p += 4;
--		w -= 32;
--	    }
--	    /* Trailing bits */
--	    w %= 32;
--	    if (w > 0) {
--		memcpy(d, c, w);
--		memset((u8 *)d+w, 0, 32-w);
--		c2p_8bpp(d);
--		store_planar_masked(p, dst_nextplane, bpp, d, last);
--	    }
-+	int dst_idx;
-+	u32 d[8], first, last, w;
++
++	for (i = 0; i < bpp/2; i++, dst += 4)
++		put_unaligned_be32(comp(d[perm_c2p_16x8[i]],
++					get_unaligned_be32(dst), mask),
++				   dst);
++}
++
++
++    /*
++     *  c2p_iplan2 - Copy 8-bit chunky image data to an interleaved planar
++     *  frame buffer with 2 bytes of interleave
++     *  @dst: Starting address of the planar frame buffer
++     *  @dx: Horizontal destination offset (in pixels)
++     *  @dy: Vertical destination offset (in pixels)
++     *  @width: Image width (in pixels)
++     *  @height: Image height (in pixels)
++     *  @dst_nextline: Frame buffer offset to the next line (in bytes)
++     *  @src_nextline: Image offset to the next line (in bytes)
++     *  @bpp: Bits per pixel of the planar frame buffer (2, 4, or 8)
++     */
++
++void c2p_iplan2(void *dst, const void *src, u32 dx, u32 dy, u32 width,
++		u32 height, u32 dst_nextline, u32 src_nextline, u32 bpp)
++{
++	union {
++		u8 pixels[16];
++		u32 words[4];
++	} d;
++	u32 dst_idx, first, last, w;
 +	const u8 *c;
-+	u8 *p;
++	void *p;
 +
-+	dst += dy*dst_nextline+(dx & ~31);
-+	dst_idx = dx % 32;
-+	first = ~0UL >> dst_idx;
-+	last = ~(~0UL >> ((dst_idx+width) % 32));
++	dst += dy*dst_nextline+(dx & ~15)*bpp;
++	dst_idx = dx % 16;
++	first = 0xffffU >> dst_idx;
++	first |= first << 16;
++	last = 0xffffU ^ (0xffffU >> ((dst_idx+width) % 16));
++	last |= last << 16;
 +	while (height--) {
 +		c = src;
 +		p = dst;
 +		w = width;
-+		if (dst_idx+width <= 32) {
++		if (dst_idx+width <= 16) {
 +			/* Single destination word */
 +			first &= last;
-+			memset(d, 0, sizeof(d));
-+			memcpy((u8 *)d+dst_idx, c, width);
++			memset(d.pixels, 0, sizeof(d));
++			memcpy(d.pixels+dst_idx, c, width);
 +			c += width;
-+			c2p_8bpp(d);
-+			store_planar_masked(p, dst_nextplane, bpp, d, first);
-+			p += 4;
++			c2p_16x8(d.words);
++			store_iplan2_masked(p, bpp, d.words, first);
++			p += bpp*2;
 +		} else {
 +			/* Multiple destination words */
 +			w = width;
 +			/* Leading bits */
 +			if (dst_idx) {
-+				w = 32 - dst_idx;
-+				memset(d, 0, dst_idx);
-+				memcpy((u8 *)d+dst_idx, c, w);
++				w = 16 - dst_idx;
++				memset(d.pixels, 0, dst_idx);
++				memcpy(d.pixels+dst_idx, c, w);
 +				c += w;
-+				c2p_8bpp(d);
-+				store_planar_masked(p, dst_nextplane, bpp, d,
-+						    first);
-+				p += 4;
++				c2p_16x8(d.words);
++				store_iplan2_masked(p, bpp, d.words, first);
++				p += bpp*2;
 +				w = width-w;
 +			}
 +			/* Main chunk */
-+			while (w >= 32) {
-+				memcpy(d, c, 32);
-+				c += 32;
-+				c2p_8bpp(d);
-+				store_planar(p, dst_nextplane, bpp, d);
-+				p += 4;
-+				w -= 32;
++			while (w >= 16) {
++				memcpy(d.pixels, c, 16);
++				c += 16;
++				c2p_16x8(d.words);
++				store_iplan2(p, bpp, d.words);
++				p += bpp*2;
++				w -= 16;
 +			}
 +			/* Trailing bits */
-+			w %= 32;
++			w %= 16;
 +			if (w > 0) {
-+				memcpy(d, c, w);
-+				memset((u8 *)d+w, 0, 32-w);
-+				c2p_8bpp(d);
-+				store_planar_masked(p, dst_nextplane, bpp, d,
-+						    last);
++				memcpy(d.pixels, c, w);
++				memset(d.pixels+w, 0, 16-w);
++				c2p_16x8(d.words);
++				store_iplan2_masked(p, bpp, d.words, last);
 +			}
 +		}
 +		src += src_nextline;
 +		dst += dst_nextline;
- 	}
--	src += src_nextline;
--	dst += dst_nextline;
--    }
- }
- EXPORT_SYMBOL_GPL(c2p);
- 
++	}
++}
++EXPORT_SYMBOL_GPL(c2p_iplan2);
++
++MODULE_LICENSE("GPL");
 -- 
 1.5.6.5
 

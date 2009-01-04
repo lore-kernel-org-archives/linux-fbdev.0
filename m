@@ -1,75 +1,64 @@
-From: "Dan Williams" <dan.j.williams@intel.com>
-Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
-Date: Mon, 5 Jan 2009 14:35:55 -0700
-Message-ID: <e9c3a7c20901051335h6f311d02off6700b54f2d1c24@mail.gmail.com>
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
-	 <e9c3a7c20901051143m37c0d7c0x5779475ddc7c5dc2@mail.gmail.com>
-	 <Pine.LNX.4.64.0901052139400.8605@axis700.grange>
+From: Marc Blumentritt <marc.blumentritt@arcor.de>
+Subject: where does viafb go?
+Date: Sun, 04 Jan 2009 13:24:22 +0100
+Message-ID: <gjq9pm$p5u$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754796AbZAEVgN@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0901052139400.8605@axis700.grange>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, linux-arm-kernel@lists.arm.linux.org.uk, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <glfd-linux-fbdev-devel@m.gmane.org>)
+	id 1LK69f-0002yQ-DW for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Jan 2009 07:15:11 +0000
+Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LK69e-00028G-H4
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Jan 2009 07:15:10 +0000
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1LK69X-0001g9-KX for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Jan 2009 07:15:04 +0000
+Received: from dslb-088-070-011-246.pools.arcor-ip.net ([88.70.11.246])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 06 Jan 2009 07:15:03 +0000
+Received: from marc.blumentritt by dslb-088-070-011-246.pools.arcor-ip.net
+	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 06 Jan 2009 07:15:03 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Jan 5, 2009 at 2:02 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> On Mon, 5 Jan 2009, Dan Williams wrote:
->
->> On Fri, Dec 26, 2008 at 10:11 AM, Guennadi Liakhovetski
->> <g.liakhovetski@gmx.de> wrote:
->> > Hi,
->> >
->> > This is version 6 of dmaengine and framebuffer drivers for i.MX31.
->> >
->>
->> Tha drivers/dma/ bits look ok to me minus the new warnings:
->>
->> drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_fn':
->> drivers/dma/ipu/ipu_irq.c:328: warning: 'irq' may be used
->> uninitialized in this function
->> drivers/dma/ipu/ipu_irq.c: In function 'ipu_irq_err':
->> drivers/dma/ipu/ipu_irq.c:290: warning: 'irq' may be used
->> uninitialized in this function
->
-> Wow... with what gcc version? My 4.1.2 correctly recognises, that it
-> _doesn't_ get used uninitialised.
+Hi,
 
-hmm... this was with:
-$ arm-none-linux-gnueabi-gcc --version
-arm-none-linux-gnueabi-gcc (CodeSourcery Sourcery G++ Lite 2007q1-21)
-4.2.0 20070413 (prerelease)
+recently viafb was added to linux 2.6.28. While it allows to use VIA's
+graphic cards directly via framebuffer, it does not support all hardware
+features (e.g. the mpeg-2 decoder or mpeg-4 accelerator). As far as I
+know VIA will not publish any code about this, because of possibly
+License problems [1]. On the other hand, there is a X driver [2], which
+does support at least part of these features (mpeg-2 decoder) and VIA is
+working together with this project.
 
-...and also with:
-$ arm-none-linux-gnueabi-gcc --version
-arm-none-linux-gnueabi-gcc (Sourcery G++ Lite 2008q3-72) 4.3.2
+My question is: does anyone here now about future development of the
+viafb driver to support these features?
 
->> I can take patches 1 and 2 through the async_tx tree, or if you would
->> rather, add my Acked-by to those and take 1-4 through the MXC tree.
->> I'll be sending the async_tx pull request for 2.6.29 in the next few
->> days.
->
-> Thanks, great! Don't know what's better, let's see what Sascha says. But
-> there's one small problem with the patch 2/4: it breaks compilation on
-> i.MX31 if IPU is _not_ set, so, default imx31 configs would break:-( The
-> problem is, that I use CONFIG_MX3_IPU_IRQS unconditionally in calculation
-> of NR_IRQ. The easiest for me is to fix it in mx31.h like
->
-> #ifdef CONFIG_MX3_IPU_IRQS
-> #define MX3_IPU_IRQS CONFIG_MX3_IPU_IRQS
-> #else
-> #define MX3_IPU_IRQS 0
-> #endif
->
-> but that's less than elegant:-) A probably better solution would be to fix
-> this in Kconfig, best would be to show
+Thanks for any info in advance.
+Marc
 
-I think the header file is the proper place for this... the Kconfig
-trickery ends up being just another way to say !CONFIG_MX3_IPU_IRQS.
 
-Regards,
-Dan
+[1]
+http://laforge.gnumonks.org/weblog/2008/09/01#20080901-via-xorg-opensource-faq
+[2] http://www.openchrome.org/
+
+
+------------------------------------------------------------------------------

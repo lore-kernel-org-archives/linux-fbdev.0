@@ -1,56 +1,38 @@
-From: "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
-Date: Tue, 6 Jan 2009 14:20:25 +0100
-Message-ID: <20090106132025.GB3057@local>
-References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange> <20090106090422.GC18861@pengutronix.de> <Pine.LNX.4.64.0901061021180.5393@axis700.grange> <20090106101929.GD18861@pengutronix.de>
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
+Date: Tue, 6 Jan 2009 17:41:12 -0500
+Message-ID: <200901061741.12410.rgetz@blackfin.uclinux.org>
+References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com> <200812311238.13810.rgetz@blackfin.uclinux.org> <45a44e480812311005k709c410ao1116187e9427e452@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753370AbZAFNVF@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-embedded-owner@vger.kernel.org>
+In-Reply-To: <45a44e480812311005k709c410ao1116187e9427e452@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <20090106101929.GD18861@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-embedded-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk, Dan Williams <dan.j.williams@intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-On Tue, Jan 06, 2009 at 11:19:29AM +0100, Sascha Hauer wrote:
-> On Tue, Jan 06, 2009 at 10:51:37AM +0100, Guennadi Liakhovetski wrote:
-> > Hi Sascha
-> > 
-> > On Tue, 6 Jan 2009, Sascha Hauer wrote:
-> > 
-> > > Hi Guennadi,
-> > > 
-> > > On Fri, Dec 26, 2008 at 06:11:13PM +0100, Guennadi Liakhovetski wrote:
-> > > > Hi,
-> > > > 
-> > > > This is version 6 of dmaengine and framebuffer drivers for i.MX31.
-> > > > 
-> > > > Changes since version 5: as requested by Sascha Hauer switched to dynamic 
-> > > > IPU IRQ mapping.
-> > > 
-> > > I tried to express that it's really odd that you demux your _internal_
-> > > interrupts as chained handlers.
-> > 
-> > Your last comment was:
-> > 
-> > > Preferably a way which does not involve introducing 100+ unused
-> > > interrupts.
-> > 
-> > which I have done. Now we're back to demux / not demux...
+On Wed 31 Dec 2008 13:05, Jaya Kumar pondered:
+> On Thu, Jan 1, 2009 at 1:38 AM, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> > On Tue 30 Dec 2008 23:58, Jaya Kumar pondered:
+> >> On Tue, Dec 30, 2008 at 11:55 PM, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> >> > Yeah, I hadn't thought about spanning more than one gpio_chip. That's a good
+> >> > point.
+> >>
+> >> The currently posted code already supports spanning more than one gpio_chip.
+> >>
+> >
+> > But doesn't do all the other things that David suggested/requested.
 > 
-> Can *please* anybody else say something to this issue to calm this down?
-> To make it easier for you please sign:
+> Hi Robin,
 > 
-> [ ] The code is fine the way it is. Sascha go home.
-> [ ] The code could be better, but hey, it works and the world is not
->     perfect.
-> [x] No, we shouldn't abuse chained interrupts for internal irq
->     dispatching.
+> Yes, you are right. My implementation does not support a driver that
+> needs to set/get more than 32-bits of gpio in a single call. I'm okay
+> with that restriction as I don't see a concrete use case for that.
 
-Definitly the last one, for the reasons you gave in your last mail.
-Using chained irqs is not the natural thing to do here.
-
-Thanks,
-Hans
+It's not the more than 32-bits that I'm concerned about - it is spanning
+more than one register. (if all the GPIOs that are left on the board are 
+2, 64, and 128, where 2, and 64 are part of the SOC's GPIO, and 128 is on
+a GPIO expander - which is a common use case - is this handled?)

@@ -1,64 +1,50 @@
-From: Marc Blumentritt <marc.blumentritt@arcor.de>
-Subject: where does viafb go?
-Date: Sun, 04 Jan 2009 13:24:22 +0100
-Message-ID: <gjq9pm$p5u$1@ger.gmane.org>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 0/4 v6] i.MX31: dmaengine and framebuffer drivers
+Date: Tue, 6 Jan 2009 10:04:22 +0100
+Message-ID: <20090106090422.GC18861@pengutronix.de>
+References: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753880AbZAFJEq@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812261714290.4895@axis700.grange>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <glfd-linux-fbdev-devel@m.gmane.org>)
-	id 1LK69f-0002yQ-DW for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Jan 2009 07:15:11 +0000
-Received: from main.gmane.org ([80.91.229.2] helo=ciao.gmane.org)
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LK69e-00028G-H4
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Jan 2009 07:15:10 +0000
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1LK69X-0001g9-KX for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Jan 2009 07:15:04 +0000
-Received: from dslb-088-070-011-246.pools.arcor-ip.net ([88.70.11.246])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 06 Jan 2009 07:15:03 +0000
-Received: from marc.blumentritt by dslb-088-070-011-246.pools.arcor-ip.net
-	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 06 Jan 2009 07:15:03 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk, Dan Williams <dan.j.williams@intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Hi,
+Hi Guennadi,
 
-recently viafb was added to linux 2.6.28. While it allows to use VIA's
-graphic cards directly via framebuffer, it does not support all hardware
-features (e.g. the mpeg-2 decoder or mpeg-4 accelerator). As far as I
-know VIA will not publish any code about this, because of possibly
-License problems [1]. On the other hand, there is a X driver [2], which
-does support at least part of these features (mpeg-2 decoder) and VIA is
-working together with this project.
+On Fri, Dec 26, 2008 at 06:11:13PM +0100, Guennadi Liakhovetski wrote:
+> Hi,
+> 
+> This is version 6 of dmaengine and framebuffer drivers for i.MX31.
+> 
+> Changes since version 5: as requested by Sascha Hauer switched to dynamic 
+> IPU IRQ mapping.
 
-My question is: does anyone here now about future development of the
-viafb driver to support these features?
+I tried to express that it's really odd that you demux your _internal_
+interrupts as chained handlers. Consider a network driver which has a
+rx, tx and an error status bit, all of them can trigger an interrupt. A
+you aware of a single driver that uses chained interrupts for this
+case?
+No, they don't have to, because all this happens inside one driver
+and this can easily be dispatched in one interrupt handler. IMHO chained
+interrupts only make sense when you have an interrupt source which
+leaves your driver code and you don't know who might be interested in,
+like the assorted non channel interrupts the IPU also provides.
 
-Thanks for any info in advance.
-Marc
+I bet you'd never have the idea for such a code design without the
+Freescale code as a sample.
 
+Note that arch/arm/plat-mxc/include/mach/mx31.h does not apply anymore
+due to upstream changes.
 
-[1]
-http://laforge.gnumonks.org/weblog/2008/09/01#20080901-via-xorg-opensource-faq
-[2] http://www.openchrome.org/
+Sascha
 
-
-------------------------------------------------------------------------------
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

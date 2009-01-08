@@ -1,11 +1,11 @@
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Subject: Re: [PATCH 1/3] radeonfb: Fix 64 bits resources on 32 bits archs
-Date: Thu, 08 Jan 2009 13:20:19 +0300
-Message-ID: <4965D363.6040608@ru.mvista.com>
+Date: Thu, 08 Jan 2009 13:26:25 +0300
+Message-ID: <4965D4D1.2010901@ru.mvista.com>
 References: <20080422012723.BA9F2DE13F@ozlabs.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759200AbZAHKUi@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758030AbZAHK0o@vger.kernel.org>
 In-Reply-To: <20080422012723.BA9F2DE13F@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
@@ -25,7 +25,7 @@ Benjamin Herrenschmidt wrote:
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 >   
 
-   I'm seeing that these 3 patch series (dating back to April) still 
+   I'm seeing that this 3 patch series (dating back to April) still 
 unapplied. Have everybody forgotten about them? I'd like to see them 
 finally applied.
 

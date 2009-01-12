@@ -1,113 +1,299 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.27 1/1] gpiolib: add support for batch set of pins
-Date: Sat, 10 Jan 2009 15:37:19 +0800
-Message-ID: <45a44e480901092337vbd08832l79436786f848e102@mail.gmail.com>
-References: <12276535632759-git-send-email-jayakumar.lkml@gmail.com>
-	 <200812311238.13810.rgetz@blackfin.uclinux.org>
-	 <45a44e480812311005k709c410ao1116187e9427e452@mail.gmail.com>
-	 <200901061741.12410.rgetz@blackfin.uclinux.org>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: [PATCH 01/12] DSS: Documentation for DSS2
+Date: Mon, 12 Jan 2009 13:47:25 +0200
+Message-ID: <20090112114725.1003.72269.stgit@tubuntu>
+References: <20090112114718.1003.23643.stgit@tubuntu>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-embedded-owner@vger.kernel.org>
-In-Reply-To: <200901061741.12410.rgetz@blackfin.uclinux.org>
-Sender: linux-embedded-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20090112114718.1003.23643.stgit@tubuntu>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.y.miao@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Eric Miao <eric.miao@marvell.com>, Haavard Skinnemoen <hskinnemoen@atmel.com>, Philipp Zabel <philipp.zabel@gmail.com>, Russell King <rmk@arm.linux.org.uk>, Ben Gardner <bgardner@wabtec.com>, Greg KH <greg@kroah.com>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-omap@vger.kernel.org
 
-On Wed, Jan 7, 2009 at 6:41 AM, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> On Wed 31 Dec 2008 13:05, Jaya Kumar pondered:
->> On Thu, Jan 1, 2009 at 1:38 AM, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
->> > On Tue 30 Dec 2008 23:58, Jaya Kumar pondered:
->> >> On Tue, Dec 30, 2008 at 11:55 PM, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
->> >> > Yeah, I hadn't thought about spanning more than one gpio_chip. That's a good
->> >> > point.
->> >>
->> >> The currently posted code already supports spanning more than one gpio_chip.
->> >>
->> >
->> > But doesn't do all the other things that David suggested/requested.
->>
->> Hi Robin,
->>
->> Yes, you are right. My implementation does not support a driver that
->> needs to set/get more than 32-bits of gpio in a single call. I'm okay
->> with that restriction as I don't see a concrete use case for that.
->
-> It's not the more than 32-bits that I'm concerned about - it is spanning
-> more than one register. (if all the GPIOs that are left on the board are
-> 2, 64, and 128, where 2, and 64 are part of the SOC's GPIO, and 128 is on
-> a GPIO expander - which is a common use case - is this handled?)
->
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
 
-Hi Robin,
+ Documentation/arm/OMAP/DSS |  270 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 270 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/arm/OMAP/DSS
 
-You are correct in that the 2, 64, 128 case would not be accelarated
-by my current implementation. The reason is that those 3 numbers can't
-fit into a 32 bit bitmask (the mask is for consecutive bits). The user
-would need to use the pre-existing single bit API for that scenario,
-ie: gpio_set_value(2, val); (64, val), (128, val);
+diff --git a/Documentation/arm/OMAP/DSS b/Documentation/arm/OMAP/DSS
+new file mode 100644
+index 0000000..011fee1
+--- /dev/null
++++ b/Documentation/arm/OMAP/DSS
+@@ -0,0 +1,270 @@
++OMAP2/3 Display Subsystem
++-------------------------
++
++This is an almost total rewrite of the OMAP FB driver in drivers/video/omap
++(let's call it DSS1). The main differences between DSS1 and DSS2 are DSI,
++TV-out and multiple display support, but there are lots of small improvements
++also.
++
++The DSS2 driver (omap-dss module) is in arch/arm/plat-omap/dss/, and the FB,
++panel and controller drivers are in drivers/video/omap2/. DSS1 and DSS2 live
++currently side by side, you can choose which one to use.
++
++Features
++--------
++
++Working and tested features include:
++
++- MIPI DPI (parallel) output
++- MIPI DSI output in command mode
++- MIPI DBI (RFBI) output
++- SDI output
++- TV output
++- All pieces can be compiled as a module or inside kernel
++- Use DISPC to update any of the outputs
++- Use CPU to update RFBI or DSI output
++- OMAP DISPC planes
++- RGB16, RGB24 packed, RGB24 unpacked
++- YUV2, UYVY
++- Scaling
++- Adjusting DSS FCK to find a good pixel clock
++- Use DSI DPLL to create DSS FCK
++
++Tested boards include:
++- OMAP3 SDP board
++- Beagle board
++- N810
++
++omap-dss driver
++------------
++
++The DSS driver does not itself have any support for Linux framebuffer, V4L or
++such like the current ones, but it has an internal kernel API that upper level
++drivers can use.
++
++The DSS driver models OMAP's overlays, overlay managers and displays in a
++flexible way to enable non-common multi-display configuration. In addition to
++modelling the hardware overlays, omap-dss supports virtual overlays and overlay
++managers. These can be used when updating a display with CPU or system DMA.
++
++Panel and controller drivers
++----------------------------
++
++The drivers implement panel or controller specific functionality and are not
++usually visible to users except through omapfb driver.  They register
++themselves to the DSS driver.
++
++omapfb driver
++-------------
++
++The omapfb driver implements arbitrary number of standard linux framebuffers.
++These framebuffers can be routed flexibly to any overlays, thus allowing very
++dynamic display architecture.
++
++The driver exports some omapfb specific ioctls, which are compatible with the
++ioctls in the old driver.
++
++The rest of the non standard features are exported via sysfs. Whether the final
++implementation will use sysfs, or ioctls, is still open.
++
++V4L2 drivers
++------------
++
++V4L2 is being implemented in TI.
++
++From omap-dss point of view the V4L2 drivers should be similar to framebuffer
++driver.
++
++Architecture
++--------------------
++
++Some clarification what the different components do:
++
++    - Framebuffer is a memory area inside OMAP's SRAM/SDRAM that contains the
++      pixel data for the image. Framebuffer has width and height and color
++      depth.
++    - Overlay defines where the pixels are read from and where they go on the
++      screen. The overlay may be smaller than framebuffer, thus displaying only
++      part of the framebuffer. The position of the overlay may be changed if
++      the overlay is smaller than the display.
++    - Overlay manager combines the overlays in to one image and feeds them to
++      display.
++    - Display is the actual physical display device.
++
++A framebuffer can be connected to multiple overlays to show the same pixel data
++on all of the overlays. Note that in this case the overlay input sizes must be
++the same, but, in case of video overlays, the output size can be different. Any
++framebuffer can be connected to any overlay.
++
++An overlay can be connected to one overlay manager. Also DISPC overlays can be
++connected only to DISPC overlay managers, and virtual overlays can be only
++connected to virtual overlays.
++
++An overlay manager can be connected to one display. There are certain
++restrictions which kinds of displays an overlay manager can be connected:
++
++    - DISPC TV overlay manager can be only connected to TV display.
++    - Virtual overlay managers can only be connected to DBI or DSI displays.
++    - DISPC LCD overlay manager can be connected to all displays, except TV
++      display.
++
++Sysfs
++-----
++The sysfs interface is a hack, but works for testing. I don't think sysfs
++interface is the best for this in the final version, but I don't quite know
++what would be the best interfaces for these things.
++
++In /sys/devices/platform/omapfb we have four files: framebuffers,
++overlays, managers and displays. You can read them so see the current
++setup, and change them by writing to it in the form of
++"<item-id> <opt1>:<val1> <opt2>:<val2>..."
++
++"framebuffers" lists all framebuffers. Its format is:
++	<fb number>
++	p:<physical address, read only>
++	v:<virtual address, read only>
++	s:<size, read only>
++	t:<target overlay>
++
++"overlays" lists all overlays. Its format is:
++	<overlay name>
++	t:<target manager>
++	x:<xpos>
++	y:<ypos>
++	iw:<input width, read only>
++	ih:<input height, read only>
++	w:<output width>
++	h:<output height>
++	e:<enabled>
++
++"managers" lists all overlay managers. Its format is:
++	<manager name>
++	t:<target display>
++
++"displays" lists all displays. Its format is:
++	<display name>
++	e:<enabled>
++	u:<update mode>
++	t:<tear sync on/off>
++	h:<xres/hfp/hbp/hsw>
++	v:<yres/vfp/vbp/vsw>
++	p:<pix clock, in kHz>
++	m:<mode str, as in drivers/video/modedb.c:fb_find_mode>
++
++There is also a debug sysfs file at /sys/devices/platform/omap-dss/clk which
++shows how DSS has configured the clocks.
++
++Examples
++--------
++
++In the example scripts "omapfb" is a symlink to /sys/devices/platform/omapfb/.
++
++Default setup on OMAP3 SDP
++--------------------------
++
++Here's the default setup on OMAP3 SDP board. All planes go to LCD. DVI
++and TV-out are not in use. The columns from left to right are:
++framebuffers, overlays, overlay managers, displays. Framebuffers are
++handled by omapfb, and the rest by the DSS.
++
++FB0 --- GFX  -\            DVI
++FB1 --- VID1 --+- LCD ---- LCD
++FB2 --- VID2 -/   TV ----- TV
++
++Switch from LCD to DVI
++----------------------
++
++dviline=`cat omapfb/displays |grep dvi`
++w=`echo $dviline | cut -d " " -f 5 | cut -d ":" -f 2 | cut -d "/" -f 1`
++h=`echo $dviline | cut -d " " -f 6 | cut -d ":" -f 2 | cut -d "/" -f 1`
++
++echo "lcd e:0" > omapfb/displays
++echo "lcd t:none" > omapfb/managers
++fbset -fb /dev/fb0 -xres $w -yres $h -vxres $w -vyres $h
++# at this point you have to switch the dvi/lcd dip-switch from the omap board
++echo "lcd t:dvi" > omapfb/managers
++echo "dvi e:1" > omapfb/displays
++
++After this the configuration looks like:
++
++FB0 --- GFX  -\         -- DVI
++FB1 --- VID1 --+- LCD -/   LCD
++FB2 --- VID2 -/   TV ----- TV
++
++Clone GFX overlay to LCD and TV
++-------------------------------
++
++tvline=`cat /sys/devices/platform/omapfb/displays |grep tv`
++w=`echo $tvline | cut -d " " -f 5 | cut -d ":" -f 2 | cut -d "/" -f 1`
++h=`echo $tvline | cut -d " " -f 6 | cut -d ":" -f 2 | cut -d "/" -f 1`
++
++echo "1 t:none" > omapfb/framebuffers
++echo "0 t:gfx,vid1" > omapfb/framebuffers
++echo "gfx e:1" > omapfb/overlays
++echo "vid1 t:tv w:$w h:$h e:1" > omapfb/overlays
++echo "tv e:1" > omapfb/displays
++
++After this the configuration looks like (only relevant parts shown):
++
++FB0 +-- GFX  ---- LCD ---- LCD
++     \- VID1 ---- TV  ---- TV
++
++Misc notes
++----------
++
++OMAP FB allocates the framebuffer memory using the OMAP VRAM allocator. If
++that fails, it will fall back to dma_alloc_writecombine().
++
++Using DSI DPLL to generate pixel clock it is possible produce the pixel clock
++of 86.5MHz (max possible), and with that you get 1280x1024@57 output from DVI.
++
++Arguments
++---------
++
++vram
++	- Amount of total VRAM to preallocate. For example, "10M". omapfb
++	  allocates memory for framebuffers from VRAM.
++
++omapfb.video_mode
++	- Default video mode for default display. For example,
++	  "800x400MR-24@60".  See drivers/video/modedb.c
++
++omapfb.vram
++	- VRAM allocated for each framebuffer. Normally omapfb allocates vram
++	  depending on the display size. With this you can manually allocate
++	  more. For example "4M,3M" allocates 4M for fb0, 3M for fb1.
++
++omapfb.debug
++	- Enable debug printing. You have to have OMAPFB debug support enabled
++	  in kernel config.
++
++omap-dss.def_disp
++	- Name of default display, to which all overlays will be connected.
++	  Common examples are "lcd" or "tv".
++
++omap-dss.debug
++	- Enable debug printing. You have to have DSS debug support enabled in
++	  kernel config.
++
++TODO
++----
++
++DSS locking
++
++Error checking
++- Lots of checks are missing or implemented just as BUG()
++
++Rotate (external FB)
++Rotate (VRFB)
++Rotate (SMS)
++
++System DMA update for DSI
++- Can be used for RGB16 and RGB24P modes. Probably not for RGB24U (how
++  to skip the empty byte?)
++
++Power management
++- Context saving
++
++OMAP1 support
++- Not sure if needed
++
 
-In my current patch, I'm trying to address the performance issue seen
-by am300epd.c because of the use of gpio as a 16-bit data bus to
-transfer framebuffer data using the current single bit gpio API. I
-want to make my implementation more generic than just that which is
-why I've added the bitmask and support up to 32-bits. I want to expand
-on that to the extent that that can be done without diluting the
-performance and without losing the simplicity of the current gpiolib
-API.
-
-After reading your points, I think I understand that you would prefer
-a higher level API. I am thinking along the lines of:
-array_of_gpio_numbers[] = [ 2 , 64, 128 ];
-cookie = gpio_register_bundle(array_of_gpio_numbers, sizeof(array));
-error = gpio_set_bundle(cookie, values[]);
-error = gpio_get_bundle(cookie, values[]);
-gpio_unregister_bundle(cookie);
-
-I think that's elegant and I agree that it is feasible but it is a
-level higher than what I'm trying to achieve. Would you agree with me
-that the above API could be implemented on top of the lower level API
-that I have proposed? To be specific, I imagine something along the
-lines of:
-
-int gpio_set_bundle(int cookie, u32 *values)
-{
-  offsets = retrieve_offsets_from_cookie(cookie);
-  err = generate_chips_from_offsets(offsets, &chips);
-  err = merge_consecutive_chips(chips, &merged_chips)
-  foreach chip (merged_chips) {
-   values = generate_values(chip, offset);
-   mask = generate_mask(chip, offset);
-   masklength = calculate_length(mask);
-   gpio_set_batch(chip, offset, values, mask, masklength);
- }
-}
-
-forgive the naming, I'm just hurrying to illustrate what I mean.
-
-So my goal is to get the lower level batch API working and solid. It
-would solve the am300epd.c problem and put into place a framework for
-others[1]. Once we've gotten to that level of support, I believe we
-could start implementing the higher level API that you've described on
-top of that. Does this sound like a reasonable plan that would address
-your concerns?
-
-Thanks,
-jaya
-
-[1]  The same underlying display controller that I seek to support,
-broadsheet, will be used across more than just am300epd.c's pxa255. I
-know with certainty that it has been used on iMX31L. Several other
-SoCs including the S3C6410 are likely. So if we've got this lower
-level batch API done, I hope to see it commonly implemented across
-those other SoCs too in order to ensure all of those use cases are
-accelerated. I am happy to work on that, especially if I can get
-hardware. :-)
-
-ps: I noticed you said the above 2, 64, 128 is a common use case. I
-don't dispute that, but is that a case where acceleration is
-essential? It would also help if I could look through an example of
-this use case in the tree or elsewhere so that I can improve my
-understanding.

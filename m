@@ -1,24 +1,25 @@
 From: Roel Kluin <roel.kluin@gmail.com>
-Subject: [PATCH] fbdev: correct tests on unsigned
-Date: Sun, 18 Jan 2009 21:07:13 +0100
-Message-ID: <49738BF1.2030908@gmail.com>
+Subject: [PATCH] fbdev: asiliantfb: unsigned subtraction
+	not less than 0
+Date: Sun, 18 Jan 2009 23:17:38 +0100
+Message-ID: <4973AA82.2070205@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <roel.kluin@gmail.com>) id 1LOdvT-0005XT-87
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1LOgIh-00023c-OH
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jan 2009 20:07:19 +0000
-Received: from mail-ew0-f21.google.com ([209.85.219.21])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LOdvP-0003U0-1D for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jan 2009 20:07:19 +0000
-Received: by ewy14 with SMTP id 14so416388ewy.10
+	Sun, 18 Jan 2009 22:39:27 +0000
+Received: from ey-out-1920.google.com ([74.125.78.144])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LOgIf-00071n-4q for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 18 Jan 2009 22:39:27 +0000
+Received: by ey-out-1920.google.com with SMTP id 26so248757eyw.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 18 Jan 2009 12:07:12 -0800 (PST)
+	Sun, 18 Jan 2009 14:39:24 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,48 +32,32 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: adaplas@gmail.com
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-image->dx, ->dy and con2fb.framebuffer are unsigned, so the tests for
-negatives are wrong or redundant. correct them.
+An unsigned subtraction does not become less than 0
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 756efeb..4f576bb 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -393,8 +393,10 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dx += image->width + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_UD) {
--		for (x = 0; x < num && image->dx >= 0; x++) {
-+		for (x = 0; x < num; x++) {
- 			info->fbops->fb_imageblit(info, image);
-+			if (image->dx < image->width + 8)
-+				break;
- 			image->dx -= image->width + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_CW) {
-@@ -405,8 +407,10 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dy += image->height + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_CCW) {
--		for (x = 0; x < num && image->dy >= 0; x++) {
-+		for (x = 0; x < num; x++) {
- 			info->fbops->fb_imageblit(info, image);
-+			if (image->dx < image->width + 8)
-+				break;
- 			image->dy -= image->height + 8;
- 		}
- 	}
-@@ -1094,7 +1098,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 			ret = -EINVAL;
- 			break;
- 		}
--		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX) {
-+		if (con2fb.framebuffer >= FB_MAX) {
- 			ret = -EINVAL;
- 			break;
- 		}
+diff --git a/drivers/video/asiliantfb.c b/drivers/video/asiliantfb.c
+index 1fd22f4..de6c408 100644
+--- a/drivers/video/asiliantfb.c
++++ b/drivers/video/asiliantfb.c
+@@ -140,7 +140,7 @@ static void asiliant_calc_dclk2(u32 *ppixclock, u8 *dclk2_m, u8 *dclk2_n, u8 *dc
+ 
+ 		/* 3 <= m <= 257 */
+ 		if (m >= 3 && m <= 257) {
+-			unsigned new_error = ((Ftarget * n) - (Fref * m)) >= 0 ?
++			unsigned new_error = Ftarget * n >= Fref * m ?
+ 					       ((Ftarget * n) - (Fref * m)) : ((Fref * m) - (Ftarget * n));
+ 			if (new_error < best_error) {
+ 				best_n = n;
+@@ -152,7 +152,7 @@ static void asiliant_calc_dclk2(u32 *ppixclock, u8 *dclk2_m, u8 *dclk2_n, u8 *dc
+ 		else if (m <= 1028) {
+ 			/* remember there are still only 8-bits of precision in m, so
+ 			 * avoid over-optimistic error calculations */
+-			unsigned new_error = ((Ftarget * n) - (Fref * (m & ~3))) >= 0 ?
++			unsigned new_error = Ftarget * n >= Fref * (m & ~3) ?
+ 					       ((Ftarget * n) - (Fref * (m & ~3))) : ((Fref * (m & ~3)) - (Ftarget * n));
+ 			if (new_error < best_error) {
+ 				best_n = n;
 
 ------------------------------------------------------------------------------
 This SF.net email is sponsored by:

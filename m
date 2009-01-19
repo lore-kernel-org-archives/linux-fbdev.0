@@ -1,87 +1,72 @@
-From: Ryan Mallon <ryan@bluewatersys.com>
-Subject: Re: [RFC 2.6.28 1/2] gpiolib: add set/get batch v4
-Date: Mon, 19 Jan 2009 13:15:18 +1300
-Message-ID: <4973C616.4010009@bluewatersys.com>
-References: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>	 <49738B8C.7020404@bluewatersys.com> <45a44e480901181546t140f7127hb2f2b5fbfdec8464@mail.gmail.com>
+From: "Magnus Damm" <magnus.damm@gmail.com>
+Subject: Re: [RFC 2.6.28 1/1] defio: convert pagelist
+	into pagemap
+Date: Mon, 19 Jan 2009 12:22:45 +0900
+Message-ID: <aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
+References: <12321948953089-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-embedded-owner@vger.kernel.org>
-In-Reply-To: <45a44e480901181546t140f7127hb2f2b5fbfdec8464@mail.gmail.com>
-Sender: linux-embedded-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <magnus.damm@gmail.com>) id 1LOkiw-0002xg-U0
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jan 2009 03:22:50 +0000
+Received: from yw-out-1718.google.com ([74.125.46.155])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LOkiu-0000Bw-Bc for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jan 2009 03:22:50 +0000
+Received: by yw-out-1718.google.com with SMTP id 6so1053948ywa.82
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 18 Jan 2009 19:22:45 -0800 (PST)
+In-Reply-To: <12321948953089-git-send-email-jayakumar.lkml@gmail.com>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>, Paulius Zaleckas <paulius.zaleckas@teltonika.lt>, Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Jaya Kumar wrote:
-> On Mon, Jan 19, 2009 at 4:05 AM, Ryan Mallon <ryan@bluewatersys.com> wrote:
->> Jaya Kumar wrote:
->>> Hi friends,
->>>
->>> +
->>> +     /* BATCH GPIO OUTPUT */
->>> +int gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int maskwidth);
->>> +
->>> +The following examples help explain how this function is to be used.
->>> + Q: How to set gpio pins 0 through 7 to all 0? (8 bits)
->>> + A: gpio_set_batch(gpio=0, values=0x0, bitmask=0xFF, width=8);
->>> + Q: How to set gpio pins 58 through 73 to all 1? (16 bits)
->>> + A: gpio_set_batch(gpio=58, values=0xFFFF, bitmask=0xFFFF, width=16);
->>> + Q: How to set gpio pins 16 through 47 to 0xCAFEC001? (32 bits)
->>> + A: gpio_set_batch(gpio=16, values=0xCAFEC001, bitmask=0xFFFFFFFF, width=32);
->>> +
->> Can the gpio_set_batch function be used to set non-consecutive gpios?
->> For example:
->>
->>  gpio_set_batch(0, 0x0, 0x88, 8);
->>
->> To clear gpios 3 and 7? It looks like the pxa implementation will
-> 
-> Hi Ryan,
-> 
-> For the first part, yes, it can do non-consecutive gpios by using the
-> mask. Pins 3 and 7 are handled using a 5-bit mask. You'd  do
-> gpio_set_batch(3 <- starting pin is gpio 3, 0x0 <- clear, 0x1F <-
-> mask, 5 <- bit width of mask);
-> 
->> support this, but can it be guaranteed for other architectures? If so,
-> 
-> That's a tough question. My basic answer would be yes because I've
-> provided the generic set_batch handler that just uses single bit sets
-> to achieve it. See __generic_gpio_set_batch() in patch). But if your
-> question is deeper, ie: can it be optimized for other architectures? ;
-> then I think I have to handwave a bit. I believe it can, as most of
-> the CPUs I've seen expose gpio via a set register and clear register
-> with variation between a context register to select which bank/module
-> of gpios is being accessed versus just having a pool of set and clear
-> registers (like pxa). If a CPU didn't have this and just had a blanket
-> gpio register then the implementation would have to first read the
-> previous register value (or cache it) in order to support doing the
-> mask.
+Hi Jaya,
 
-The EP93xx has a single register for reading, set and clearing the
-states of gpios, so it would have to be read, masked and written. I'm
-not sure if that would be quicker than doing a for-loop over the 8-bits
-in the register (the EP93xx has 8 register banks of 8 gpios, each with
-their own reigster set). I guess that even if it cannot be optimised for
-a given architecture, then the standard for-loop method can be used. As
-long as it is documented that non-consecutive setting should work so
-that arch implementers can get it correct.
+On Sat, Jan 17, 2009 at 9:21 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> Hi Magnus, fbdev friends,
+>
+> As discussed yesterday, this is an attempt to convert pagelist use
+> in defio over to pagemap. If everyone is okay with this, then we will
+> also need to convert over xen-pvfb, sh and any other drivers using
+> defio. Let me know your thoughts.
 
->> can we put an example in the documentation. If not, can we make it clear
-> 
-> Good point. I'll put it in the docs.
+This is much better. But I really think you should make use of the
+optimized functions in asm/bitops.h and linux/bitmap.h.
 
-Cool, thanks.
+If you use the atomic versions of the bitop set (set_bit() instead of
+__set_bit()) then there is no need for the mutex in
+fb_defio_set_pagemap() - the entire function can maybe be reduced into
+a single set_bit().
 
-~Ryan
+Also, in fb_deferred_io_work() you may want to switch to use the
+find_first_bit() and find_next_bit() to figure out which pages to
+clean.
 
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
+On top of this, it would be great to have another tile based bitmap. I
+have no time to hack on that now, but I'll keep it high on my todo
+list. =)
 
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
+Cheers,
+
+/ magnus
+
+------------------------------------------------------------------------------
+This SF.net email is sponsored by:
+SourcForge Community
+SourceForge wants to tell your story.
+http://p.sf.net/sfu/sf-spreadtheword

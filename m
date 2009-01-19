@@ -1,28 +1,36 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.28 1/1] defio: convert pagelist
-	into pagemap
-Date: Mon, 19 Jan 2009 22:58:25 +0800
-Message-ID: <45a44e480901190658o78353f53x264bca09003b4b21@mail.gmail.com>
-References: <12321948953089-git-send-email-jayakumar.lkml@gmail.com>
-	<aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
+Subject: Re: [RFC 2.6.28 1/2] fbdev: add ability to set
+	damage
+Date: Mon, 19 Jan 2009 23:15:36 +0800
+Message-ID: <45a44e480901190715x8de194bwd3c8383207488696@mail.gmail.com>
+References: <12319779622958-git-send-email-jayakumar.lkml@gmail.com>
+	<1232011502.900.107.camel@tubuntu>
+	<45a44e480901150153ta1fbe5fk5480dc5630cf1d6b@mail.gmail.com>
+	<aec7e5c30901150229g3e262adeje1776fc22cac1d64@mail.gmail.com>
+	<45a44e480901150308l63b4ea97rd2fbfe4fa9e2cbb4@mail.gmail.com>
+	<aec7e5c30901151909k1374ae65rf52c031e5b25387f@mail.gmail.com>
+	<45a44e480901160124g54547437pf5eca85c8ee52be6@mail.gmail.com>
+	<aec7e5c30901160308l3f3830c7gc53717ab8cce649e@mail.gmail.com>
+	<45a44e480901161414r7f0d0bc4x582c1597d439d116@mail.gmail.com>
+	<aec7e5c30901182044x2fbd49f2ve0aa1b433bb4ce14@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jayakumar.lkml@gmail.com>) id 1LOvaF-0008Mq-FR
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LOvqr-00067r-Sc
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jan 2009 14:58:35 +0000
-Received: from wf-out-1314.google.com ([209.85.200.170])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LOva6-0003uo-Lm for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jan 2009 14:58:35 +0000
-Received: by wf-out-1314.google.com with SMTP id 27so3228636wfd.4
+	Mon, 19 Jan 2009 15:15:45 +0000
+Received: from yx-out-1718.google.com ([74.125.44.158])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LOvqj-0000ic-4Z for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jan 2009 15:15:45 +0000
+Received: by yx-out-1718.google.com with SMTP id 3so1133896yxi.82
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 19 Jan 2009 06:58:25 -0800 (PST)
-In-Reply-To: <aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
+	Mon, 19 Jan 2009 07:15:36 -0800 (PST)
+In-Reply-To: <aec7e5c30901182044x2fbd49f2ve0aa1b433bb4ce14@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,55 +43,35 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Magnus Damm <magnus.damm@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Mon, Jan 19, 2009 at 11:22 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
-> Hi Jaya,
+On Mon, Jan 19, 2009 at 12:44 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
 >
-> On Sat, Jan 17, 2009 at 9:21 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
->> Hi Magnus, fbdev friends,
->>
->> As discussed yesterday, this is an attempt to convert pagelist use
->> in defio over to pagemap. If everyone is okay with this, then we will
->> also need to convert over xen-pvfb, sh and any other drivers using
->> defio. Let me know your thoughts.
->
-> This is much better. But I really think you should make use of the
-> optimized functions in asm/bitops.h and linux/bitmap.h.
 
-Agreed. I thought about it yesterday and was lazy. I'll look at doing
-this shortly.
+Wow, I think there's a lot to discuss and its late so I'll focus on
+one question for now.
 
 >
-> If you use the atomic versions of the bitop set (set_bit() instead of
-> __set_bit()) then there is no need for the mutex in
-> fb_defio_set_pagemap() - the entire function can maybe be reduced into
-> a single set_bit().
-
-Ok, will check it out.
-
+> I guess the main question is how the user space interface should look
+> like. Should it export hardware capabilities?
 >
-> Also, in fb_deferred_io_work() you may want to switch to use the
-> find_first_bit() and find_next_bit() to figure out which pages to
-> clean.
 
-Good point.
+I agree that above is the key question for now. What is the best way
+for userspace to expose this information to the kernel? Two approaches
+have been proposed which are that userspace does:
 
->
-> On top of this, it would be great to have another tile based bitmap. I
-> have no time to hack on that now, but I'll keep it high on my todo
-> list. =)
+a) provide a tile based bitmap with bits set for modified tiles.
+driver will provide information about expected tile size.
+b) provide an array of rectangles. driver will provide information
+about preferred rectangle count, preferred alignment. i took out
+overlap (since i think it is always preferable to not have any
+overlapping rectangles)
 
-Cool. Just to check, by tile based bitmap, you mean tiles less than
-PAGE_SIZE so I think you're implying we'll need to do double buffering
-and differencing to find the modified tiles. Drivers would provide the
-minimum tilesize that they're interested in and defio would need to
-build the multilevel tilemap to accomodate this granularity. I am
-interested in that for broadsheetfb and have a different
-implementation that did prewrite buffering. ie: when we get the fault,
-I copy the current page into a page pulled from a pool, then continue
-on. Then do differencing before the write to detect the minimum data
-in the page to transfer to the framebuffer. That approach didn't work
-so well for broadsheetfb for performance reasons but maybe a second
-look will help.
+Okay, since I have been backing approach b up till now, I will try to
+switch positions and defend a. The main benefit I see of point a is
+that it is always a fixed amount of memory to represent the updated
+pages. The other is that it would be fairly easy for this to hook into
+the deferred IO pagemap/tilemap approach. Are there other benefits?
+What are the weaknesses? Okay, I need to reread your mails and will
+try to summarize this tomorrow. Then I will do same for approach b.
 
 Thanks,
 jaya

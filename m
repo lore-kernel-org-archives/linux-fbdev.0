@@ -1,113 +1,95 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.28 1/2] gpiolib: add set/get batch v4
-Date: Mon, 19 Jan 2009 22:19:40 +0800
-Message-ID: <45a44e480901190619i18749c75jaa2d4606da251921@mail.gmail.com>
-References: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
-	 <20090119100342.GA16400@pengutronix.de>
+Subject: Re: [RFC 2.6.28 1/1] defio: convert pagelist
+	into pagemap
+Date: Mon, 19 Jan 2009 22:58:25 +0800
+Message-ID: <45a44e480901190658o78353f53x264bca09003b4b21@mail.gmail.com>
+References: <12321948953089-git-send-email-jayakumar.lkml@gmail.com>
+	<aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-embedded-owner@vger.kernel.org>
-In-Reply-To: <20090119100342.GA16400@pengutronix.de>
-Sender: linux-embedded-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>, Paulius Zaleckas <paulius.zaleckas@teltonika.lt>, Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LOvaF-0008Mq-FR
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jan 2009 14:58:35 +0000
+Received: from wf-out-1314.google.com ([209.85.200.170])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LOva6-0003uo-Lm for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jan 2009 14:58:35 +0000
+Received: by wf-out-1314.google.com with SMTP id 27so3228636wfd.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 19 Jan 2009 06:58:25 -0800 (PST)
+In-Reply-To: <aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Mon, Jan 19, 2009 at 6:03 PM, Uwe Kleine-K=F6nig
-<u.kleine-koenig@pengutronix.de> wrote:
+On Mon, Jan 19, 2009 at 11:22 AM, Magnus Damm <magnus.damm@gmail.com> wrote:
 > Hi Jaya,
 >
-> On Sat, Jan 17, 2009 at 05:57:17PM +0800, Jaya Kumar wrote:
->> Hi friends,
+> On Sat, Jan 17, 2009 at 9:21 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+>> Hi Magnus, fbdev friends,
 >>
->> This is v4 of batch support for gpiolib. Thanks to David Brownell, E=
-ric Miao,
->> David Hylands, Robin, Ben, Jamie and others for prior feedback. The =
-post for
->> v3 summarized the previous discussion. Since then the changes I've m=
-ade are:
->> - split the patches into generic and arch specific
-> IMHO this should be three patches: "gpiolib", "pxa" and "am300epd".
-> Well, ...
+>> As discussed yesterday, this is an attempt to convert pagelist use
+>> in defio over to pagemap. If everyone is okay with this, then we will
+>> also need to convert over xen-pvfb, sh and any other drivers using
+>> defio. Let me know your thoughts.
+>
+> This is much better. But I really think you should make use of the
+> optimized functions in asm/bitops.h and linux/bitmap.h.
 
-Hi Uwe,
-
-Ok, will do.
+Agreed. I thought about it yesterday and was lazy. I'll look at doing
+this shortly.
 
 >
->> +[OPTIONAL] Spinlock-Safe GPIO Batch access
-> Is it really spinlock safe in general?  Or only if gpio_cansleep(gpio=
-)
-> if false for each gpio to get or set?
+> If you use the atomic versions of the bitop set (set_bit() instead of
+> __set_bit()) then there is no need for the mutex in
+> fb_defio_set_pagemap() - the entire function can maybe be reduced into
+> a single set_bit().
 
-You are correct to raise this issue. It is only spinlock safe if
-chip->cansleep is false. Initially, I wasn't sure what to do. The
-original gpio set/get_value() just does;
-        WARN_ON(extra_checks && chip->can_sleep);
-and it is documented as:
-
-"
-Spinlock-Safe GPIO access
--------------------------
-<snip>
-return zero.  Also, using these calls for GPIOs that can't safely be ac=
-cessed
-without sleeping (see below) is an error.
-"
-
-I will change this in the batch code to return an error if can_sleep
-is detected on any involved gpio_chip.
+Ok, will check it out.
 
 >
->> +static int __generic_gpio_set_batch(struct gpio_chip *chip, unsigne=
-d offset,
->> +                                     u32 values, u32 bitmask, int w=
-idth)
-> IMHO a better name is __gpio_set_batch_generic (or
-> __gpiolib_set_batch_generic?), YMMV.
+> Also, in fb_deferred_io_work() you may want to switch to use the
+> find_first_bit() and find_next_bit() to figure out which pages to
+> clean.
 
-Agreed. Will change.
+Good point.
 
 >
->> +int __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bi=
-twidth)
-> Sometimes your width parameter is called bitwidth, sometimes width.  =
-I'd
-> like to have that consistant.
+> On top of this, it would be great to have another tile based bitmap. I
+> have no time to hack on that now, but I'll keep it high on my todo
+> list. =)
 
-Ok, you're right. I'll fix this.
-
->
-> While talking about this parameter.  I don't really like it, because =
-you
-> can calculate it from bitmask.  In an earlier mail you write:
-
-Agreed.
-
->
->        bitwidth (needed to iterate and map to chip ngpios) could be
->        calculated from bitmask, but that involves iteratively countin=
-g
->        bits from the mask, so we would have to do 800*600 bit counts.
->        Unless, we do ugly things like cache the previous bitwidth/mas=
-k
->        and compare against the current caller arguments. Given that t=
-he
->        bitwidth would typically be a fixed value, I believe it is mor=
-e
->        intuitive for the caller to provide it, ...
->
-> I think it's easier than that.  bitwidth is just fls(bitmask) which
-> should be efficient enough not to bother the programmer.  If bitmask =
-is
-> constant it's even the compiler that does the work here.
->
-
-That is a good point. I agree that width is ugly in the main API. It
-is just fls(mask) and I now realize that this is an inline so you're
-right it would get taken care of by the compiler. fls is checked with
-__constant_fls first. Beauty! Thanks Uwe! I'll make these changes.
+Cool. Just to check, by tile based bitmap, you mean tiles less than
+PAGE_SIZE so I think you're implying we'll need to do double buffering
+and differencing to find the modified tiles. Drivers would provide the
+minimum tilesize that they're interested in and defio would need to
+build the multilevel tilemap to accomodate this granularity. I am
+interested in that for broadsheetfb and have a different
+implementation that did prewrite buffering. ie: when we get the fault,
+I copy the current page into a page pulled from a pool, then continue
+on. Then do differencing before the write to detect the minimum data
+in the page to transfer to the framebuffer. That approach didn't work
+so well for broadsheetfb for performance reasons but maybe a second
+look will help.
 
 Thanks,
 jaya
+
+------------------------------------------------------------------------------
+This SF.net email is sponsored by:
+SourcForge Community
+SourceForge wants to tell your story.
+http://p.sf.net/sfu/sf-spreadtheword

@@ -1,136 +1,113 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: Re: [RFC 2.6.28 1/2] fbdev: add ability to set
- damage
-Date: Mon, 19 Jan 2009 14:59:00 +0200
-Message-ID: <1232369940.6481.136.camel@tubuntu>
-References: <12319779622958-git-send-email-jayakumar.lkml@gmail.com>
-	<1232011502.900.107.camel@tubuntu>
-	<45a44e480901150153ta1fbe5fk5480dc5630cf1d6b@mail.gmail.com>
-	<aec7e5c30901150229g3e262adeje1776fc22cac1d64@mail.gmail.com>
-	<45a44e480901150308l63b4ea97rd2fbfe4fa9e2cbb4@mail.gmail.com>
-	<aec7e5c30901151909k1374ae65rf52c031e5b25387f@mail.gmail.com>
-	<45a44e480901160124g54547437pf5eca85c8ee52be6@mail.gmail.com>
-	<aec7e5c30901160308l3f3830c7gc53717ab8cce649e@mail.gmail.com>
-	<45a44e480901161414r7f0d0bc4x582c1597d439d116@mail.gmail.com>
-Reply-To: tomi.valkeinen@nokia.com
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.28 1/2] gpiolib: add set/get batch v4
+Date: Mon, 19 Jan 2009 22:19:40 +0800
+Message-ID: <45a44e480901190619i18749c75jaa2d4606da251921@mail.gmail.com>
+References: <12321862383405-git-send-email-jayakumar.lkml@gmail.com>
+	 <20090119100342.GA16400@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <Tomi.Valkeinen@nokia.com>) id 1LOtwx-00043H-UJ
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jan 2009 13:13:55 +0000
-Received: from smtp.nokia.com ([192.100.122.230] helo=mgw-mx03.nokia.com)
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LOtwt-0006l8-82
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jan 2009 13:13:55 +0000
-In-Reply-To: <45a44e480901161414r7f0d0bc4x582c1597d439d116@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: ext Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Magnus Damm <magnus.damm@gmail.com>, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-embedded-owner@vger.kernel.org>
+In-Reply-To: <20090119100342.GA16400@pengutronix.de>
+Sender: linux-embedded-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>, Paulius Zaleckas <paulius.zaleckas@teltonika.lt>, Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>, linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
 
-On Sat, 2009-01-17 at 06:14 +0800, ext Jaya Kumar wrote:
-> On Fri, Jan 16, 2009 at 7:08 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
-> > Any examples of non deferred io use cases? =)
-> 
-> Yes, I'm glad you asked. The first one that came to mind is the NO-MMU
-> case. As you know, defio is MMU only today and I have no hopes of
-> removing that. I had damage in mind especially for these NO-MMU cases
-> (btw, if any vendor of such devices/cpus/boards is reading, please
-> drop me a mail, i would like to help support this ).
-> 
-> Okay, so the above was the easy answer. There are also others I have
-> in mind but it is debatable whether they should use damage API or
-> whether they should use deferred IO. I would like to discuss the range
-> of scenarios here:
-> 
-> a) Tomi raised omapfb at the start of this thread. He or she mentioned:
+On Mon, Jan 19, 2009 at 6:03 PM, Uwe Kleine-K=F6nig
+<u.kleine-koenig@pengutronix.de> wrote:
+> Hi Jaya,
+>
+> On Sat, Jan 17, 2009 at 05:57:17PM +0800, Jaya Kumar wrote:
+>> Hi friends,
+>>
+>> This is v4 of batch support for gpiolib. Thanks to David Brownell, E=
+ric Miao,
+>> David Hylands, Robin, Ben, Jamie and others for prior feedback. The =
+post for
+>> v3 summarized the previous discussion. Since then the changes I've m=
+ade are:
+>> - split the patches into generic and arch specific
+> IMHO this should be three patches: "gpiolib", "pxa" and "am300epd".
+> Well, ...
 
-He =).
+Hi Uwe,
 
-> OMAPFB_UPDATE_WINDOW
-> I looked thru the code and saw:
-> 
-> +static int omapfb_update_window(struct fb_info *fbi,
-> +               u32 x, u32 y, u32 w, u32 h)
-> 
-> [ btw, interesting to see use of u32 above, why not just u16? ]
-> 
-> I noticed dsi_update_screen_dispc. After reading this code, I formed
-> the following conclusion:
-> - this is to support the use of externally buffered displays. that is,
-> there is an external sdram being handled by a separate controller,
-> probably a MIPI-DSI controller
-> - basically omapfb wants to know exactly what and when stuff is
-> written from userspace because it has to push that manually through
-> the MIPI-DSI interface
-> 
-> That driver currently uses a private ioctl to achieve that through the
-> transfer of a single rectangle from userspace. It could, I believe,
-> achieve the same effect using deferred IO since it has an MMU but lets
-> leave that to one side for now. This kind of driver would be able to
-> use the damage API with little change. They would add a GETDAMAGE
-> handler that reports back their max rectangles (1) and then a
-> PUTDAMAGE handler that does what they already do today.
+Ok, will do.
 
-You are obviously reading the new, not yet merged, display subsystem
-code that I've been writing. Your analysis is correct.
+>
+>> +[OPTIONAL] Spinlock-Safe GPIO Batch access
+> Is it really spinlock safe in general?  Or only if gpio_cansleep(gpio=
+)
+> if false for each gpio to get or set?
 
-Both MIPI DSI (in command mode) and MIPI DBI (or RFBI) are "manual
-update" displays, so, as you said, there's an external framebuffer with
-its own RAM which refreshes the LCD independently, and OMAP pushes the
-pixels to the ext FB only when needed.
+You are correct to raise this issue. It is only spinlock safe if
+chip->cansleep is false. Initially, I wasn't sure what to do. The
+original gpio set/get_value() just does;
+        WARN_ON(extra_checks && chip->can_sleep);
+and it is documented as:
 
-There's one more ioctl related to this, OMAPFB_SYNC_GFX. This ioctl will
-wait until the ongoing update has been done.
+"
+Spinlock-Safe GPIO access
+-------------------------
+<snip>
+return zero.  Also, using these calls for GPIOs that can't safely be ac=
+cessed
+without sleeping (see below) is an error.
+"
 
-The DSI implementation does not queue the updates in any way: if there
-is an update ongoing when a new update ioctl is issued, omapfb will
-return EBUSY. The old implementation for DBI in the current linux-omap
-does queue the updates up to n (~5?) updates, but I didn't want to
-implement queuing without knowing that it is really needed. I still
-don't know =).
+I will change this in the batch code to return an error if can_sleep
+is detected on any involved gpio_chip.
 
-And an extra complexity comes from so called Tearing Elimination, in
-which the ext FB informs OMAP when the LCD is drawing particular line,
-usually the first or last line on screen. OMAP can then synchronize the
-start of an update for this TE signal to prevent visible tearing on
-screen. And having TE enabled and queuing the updates it could take
-multiple frames until the update is on the screen. Probably not
-intended.
+>
+>> +static int __generic_gpio_set_batch(struct gpio_chip *chip, unsigne=
+d offset,
+>> +                                     u32 values, u32 bitmask, int w=
+idth)
+> IMHO a better name is __gpio_set_batch_generic (or
+> __gpiolib_set_batch_generic?), YMMV.
 
-We don't use deferred io, that is also something I should take time to
-study at some point. And generally, I'm quite at loss which would be the
-most efficient way of handling the updates. I guess I should just
-implement all the possible options and do benchmarking.
+Agreed. Will change.
 
-Btw, how does the X damage extension work? I suppose you need some extra
-code in X for it to be able to report the changes to the actual driver
-below? And in this extra code you can choose how to report the damages
-to the driver, either giving them one by one or combining them to a
-larger area?
+>
+>> +int __gpio_set_batch(unsigned gpio, u32 values, u32 bitmask, int bi=
+twidth)
+> Sometimes your width parameter is called bitwidth, sometimes width.  =
+I'd
+> like to have that consistant.
 
-> Thanks, u2,
-> jaya
+Ok, you're right. I'll fix this.
 
- Tomi
+>
+> While talking about this parameter.  I don't really like it, because =
+you
+> can calculate it from bitmask.  In an earlier mail you write:
 
+Agreed.
 
+>
+>        bitwidth (needed to iterate and map to chip ngpios) could be
+>        calculated from bitmask, but that involves iteratively countin=
+g
+>        bits from the mask, so we would have to do 800*600 bit counts.
+>        Unless, we do ugly things like cache the previous bitwidth/mas=
+k
+>        and compare against the current caller arguments. Given that t=
+he
+>        bitwidth would typically be a fixed value, I believe it is mor=
+e
+>        intuitive for the caller to provide it, ...
+>
+> I think it's easier than that.  bitwidth is just fls(bitmask) which
+> should be efficient enough not to bother the programmer.  If bitmask =
+is
+> constant it's even the compiler that does the work here.
+>
 
-------------------------------------------------------------------------------
-This SF.net email is sponsored by:
-SourcForge Community
-SourceForge wants to tell your story.
-http://p.sf.net/sfu/sf-spreadtheword
+That is a good point. I agree that width is ugly in the main API. It
+is just fls(mask) and I now realize that this is an inline so you're
+right it would get taken care of by the compiler. fls is checked with
+__constant_fls first. Beauty! Thanks Uwe! I'll make these changes.
+
+Thanks,
+jaya

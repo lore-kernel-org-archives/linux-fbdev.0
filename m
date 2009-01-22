@@ -1,22 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] fbmem: copy_from/to_user() with mutex
-	held (v3) (fwd)
-Date: Thu, 22 Jan 2009 06:12:36 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0901220611550.4000@anakin>
+From: Valentin Longchamp <valentin.longchamp@epfl.ch>
+Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing
+	Unit DMA and IRQ drivers
+Date: Thu, 22 Jan 2009 19:51:07 +0100
+Message-ID: <4978C01B.8080707@epfl.ch>
+References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
+	<Pine.LNX.4.64.0901081857170.6387@axis700.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@linux-m68k.org>) id 1LPrs2-0001Ut-O2
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <valentin.longchamp@epfl.ch>) id 1LQ4eX-0002x1-FC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jan 2009 05:12:50 +0000
-Received: from edna.telenet-ops.be ([195.130.132.58])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LPrry-0005W4-8V for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jan 2009 05:12:50 +0000
+	Thu, 22 Jan 2009 18:51:45 +0000
+Received: from smtp3.epfl.ch ([128.178.224.226])
+	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1LQ4eN-0005ts-QJ for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Jan 2009 18:51:45 +0000
+In-Reply-To: <Pine.LNX.4.64.0901081857170.6387@axis700.grange>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,352 +29,234 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrea Righi <righi.andrea@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Dan Williams <dan.j.williams@intel.com>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
+
+Hi Guennadi,
+
+I wanted to test this driver on my board. However it does not work for
+me. I have pulled the version that is on async-tx tree so it should be
+up to date and it compiles fine.
+
+Unfortunately the fb driver cannot register because it cannot request a
+dma channel (there are no dma registered in dmaengive, the list is
+empty). This is because the ipu-core platform_driver is never
+registered. This is supposed to be done thanks to the
+subsys_initcall(ipu_init) as we can see it in the patch (which is then
+going to be linked with the ipu-core device that is registered witth the
+other mx3 device). I never happen to see one of the ipu_probe messages
+(even for failure) with dynamic_printk enabled.
+
+Here is the log of what happens for me when I load the mx3fb driver:
+
+root@mx31moboard:~# insmod mx3fb.ko
+kobject:kobject: 'mx3fb' (bf00cf68): kobject_add_internal: parent:
+'module', set: 'module'
+kobject:kobject: 'holders' (c78fcda0): kobject_add_internal: parent:
+'mx3fb', set: '<NULL>'
+kobject_uevent:kobject: 'mx3fb' (bf00cf68): kobject_uevent_env
+kobject:kobject: 'mx3fb' (bf00cf68): fill_kobj_path: path = '/module/mx3fb'
+kobject:kobject: 'notes' (c78fcd20): kobject_add_internal: parent:
+'mx3fb', set: '<NULL>'
+bus:bus: 'platform': add driver mx3_sdc_fb
+kobject:kobject: 'mx3_sdc_fb' (c78fd960): kobject_add_internal: parent:
+'drivers', set: 'drivers'
+dd:bus: 'platform': driver_probe_device: matched device mx3_sdc_fb with
+driver mx3_sdc_fb
+dd:bus: 'platform': really_probe: probing driver mx3_sdc_fb with device
+mx3_sdc_fb
+mx3fb:Remapped 53fc00b4 to 53fc01bf at c88980b4
+dmaengine:__dma_request_channel: fail (<NULL>)
+mx3_sdc_fb mx3_sdc_fb: mx3fb: failed to register fb
+mx3_sdc_fb: probe of mx3_sdc_fb failed with error -16
+kobject_uevent:kobject: 'mx3_sdc_fb' (c78fd960): kobject_uevent_env
+kobject:kobject: 'mx3_sdc_fb' (c78fd960): fill_kobj_path: path =
+'/bus/platform/drivers/mx3_sdc_fb'
 
 
-Please cc linux-fbdev-devel@lists.sourceforge.net
+Do you have any idea why this subsys_initcall is not called for me ? Do
+I have to use a certain config or boot options ? What are these initcall
+levels (subsys corresponding to level 4) ?
 
----------- Forwarded message ----------
-Date: Tue, 20 Jan 2009 10:27:56 +0100
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Johannes Weiner <hannes@cmpxchg.org>, Dave Jones <davej@redhat.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>, Johannes Weiner <hannes@saeurebad.de>,
-    Krzysztof Helt <krzysztof.h1@wp.pl>,
-    Harvey Harrison <harvey.harrison@gmail.com>,
-    Stefan Richter <stefanr@s5r6.in-berlin.de>,
-    Andrew Morton <akpm@linux-foundation.org>,
-    LKML <linux-kernel@vger.kernel.org>, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH] fbmem: copy_from/to_user() with mutex held (v3)
+Thank you for your help.
 
-Avoid to call copy_from/to_user() with fb_info->lock mutex held in fbmem
-ioctl().
+Val
 
-fb_mmap() is called under mm->mmap_sem (A) held, that also acquires
-fb_info->lock (B); fb_ioctl() takes fb_info->lock (B) and does
-copy_from/to_user() that might acquire mm->mmap_sem (A), causing a
-deadlock.
+Guennadi Liakhovetski wrote:
+> From: Guennadi Liakhovetski <lg@denx.de>
+> 
+> i.MX3x SoCs contain an Image Processing Unit, consisting of a Control
+> Module (CM), Display Interface (DI), Synchronous Display Controller (SDC),
+> Asynchronous Display Controller (ADC), Image Converter (IC), Post-Filter
+> (PF), Camera Sensor Interface (CSI), and an Image DMA Controller (IDMAC).
+> CM contains, among other blocks, an Interrupt Generator (IG) and a Clock
+> and Reset Control Unit (CRCU). This driver serves IDMAC and IG. They are
+> supported over dmaengine and irq-chip APIs respectively.
+> 
+> IDMAC is a specialised DMA controller, its DMA channels cannot be used for
+> general-purpose operations, even though it might be possible to configure
+> a memory-to-memory channel for memcpy operation. This driver will not work
+> with generic dmaengine clients, clients, wishing to use it must use
+> respective wrapper structures, they also must specify which channels they
+> require, as channels are hard-wired to specific IPU functions.
+> 
+> Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+> diff --git a/drivers/dma/ipu/ipu_idmac.c b/drivers/dma/ipu/ipu_idmac.c
+> new file mode 100644
+> index 0000000..1f154d0
+> --- /dev/null
+> +++ b/drivers/dma/ipu/ipu_idmac.c
+[snip]
+> +
+> +/*****************************************************************************
+> + * IPU common probe / remove
+> + */
+> +
+> +static int ipu_probe(struct platform_device *pdev)
+> +{
+> +       struct ipu_platform_data *pdata = pdev->dev.platform_data;
+> +       struct resource *mem_ipu, *mem_ic;
+> +       int ret;
+> +
+> +       spin_lock_init(&ipu_data.lock);
+> +
+> +       mem_ipu = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +       mem_ic  = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> +       if (!pdata || !mem_ipu || !mem_ic)
+> +               return -EINVAL;
+> +
+> +       ipu_data.dev = &pdev->dev;
+> +
+> +       platform_set_drvdata(pdev, &ipu_data);
+> +
+> +       ret = platform_get_irq(pdev, 0);
+> +       if (ret < 0)
+> +               goto err_noirq;
+> +
+> +       ipu_data.irq_fn = ret;
+> +       ret = platform_get_irq(pdev, 1);
+> +       if (ret < 0)
+> +               goto err_noirq;
+> +
+> +       ipu_data.irq_err = ret;
+> +       ipu_data.irq_base = pdata->irq_base;
+> +
+> +       dev_dbg(&pdev->dev, "fn irq %u, err irq %u, irq-base %u\n",
+> +               ipu_data.irq_fn, ipu_data.irq_err, ipu_data.irq_base);
+> +
+> +       /* Remap IPU common registers */
+> +       ipu_data.reg_ipu = ioremap(mem_ipu->start,
+> +                                  mem_ipu->end - mem_ipu->start + 1);
+> +       if (!ipu_data.reg_ipu) {
+> +               ret = -ENOMEM;
+> +               goto err_ioremap_ipu;
+> +       }
+> +
+> +       /* Remap Image Converter and Image DMA Controller registers */
+> +       ipu_data.reg_ic = ioremap(mem_ic->start,
+> +                                 mem_ic->end - mem_ic->start + 1);
+> +       if (!ipu_data.reg_ic) {
+> +               ret = -ENOMEM;
+> +               goto err_ioremap_ic;
+> +       }
+> +
+> +       /* Get IPU clock */
+> +       ipu_data.ipu_clk = clk_get(&pdev->dev, "ipu_clk");
+> +       if (IS_ERR(ipu_data.ipu_clk)) {
+> +               ret = PTR_ERR(ipu_data.ipu_clk);
+> +               goto err_clk_get;
+> +       }
+> +
+> +       /* Make sure IPU HSP clock is running */
+> +       clk_enable(ipu_data.ipu_clk);
+> +
+> +       /* Disable all interrupts */
+> +       idmac_write_ipureg(&ipu_data, 0, IPU_INT_CTRL_1);
+> +       idmac_write_ipureg(&ipu_data, 0, IPU_INT_CTRL_2);
+> +       idmac_write_ipureg(&ipu_data, 0, IPU_INT_CTRL_3);
+> +       idmac_write_ipureg(&ipu_data, 0, IPU_INT_CTRL_4);
+> +       idmac_write_ipureg(&ipu_data, 0, IPU_INT_CTRL_5);
+> +
+> +       dev_dbg(&pdev->dev, "%s @ 0x%08lx, fn irq %u, err irq %u\n", pdev->name,
+> +               (unsigned long)mem_ipu->start, ipu_data.irq_fn, ipu_data.irq_err);
+> +
+> +       ret = ipu_irq_attach_irq(&ipu_data, pdev);
+> +       if (ret < 0)
+> +               goto err_attach_irq;
+> +
+> +       /* Initialize DMA engine */
+> +       ret = ipu_idmac_init(&ipu_data);
+> +       if (ret < 0)
+> +               goto err_idmac_init;
+> +
+> +       tasklet_init(&ipu_data.tasklet, ipu_gc_tasklet, (unsigned long)&ipu_data);
+> +
+> +       ipu_data.dev = &pdev->dev;
+> +
+> +       dev_dbg(ipu_data.dev, "IPU initialized\n");
+> +
+> +       return 0;
+> +
+> +err_idmac_init:
+> +err_attach_irq:
+> +       ipu_irq_detach_irq(&ipu_data, pdev);
+> +       clk_disable(ipu_data.ipu_clk);
+> +       clk_put(ipu_data.ipu_clk);
+> +err_clk_get:
+> +       iounmap(ipu_data.reg_ic);
+> +err_ioremap_ic:
+> +       iounmap(ipu_data.reg_ipu);
+> +err_ioremap_ipu:
+> +err_noirq:
+> +       dev_err(&pdev->dev, "Failed to probe IPU: %d\n", ret);
+> +       return ret;
+> +}
+> +
+> +static int ipu_remove(struct platform_device *pdev)
+> +{
+> +       struct ipu *ipu = platform_get_drvdata(pdev);
+> +
+> +       ipu_idmac_exit(ipu);
+> +       ipu_irq_detach_irq(ipu, pdev);
+> +       clk_disable(ipu->ipu_clk);
+> +       clk_put(ipu->ipu_clk);
+> +       iounmap(ipu->reg_ic);
+> +       iounmap(ipu->reg_ipu);
+> +       tasklet_kill(&ipu->tasklet);
+> +       platform_set_drvdata(pdev, NULL);
+> +
+> +       return 0;
+> +}
+> +
+> +/*
+> + * We need two MEM resources - with IPU-common and Image Converter registers,
+> + * including PF_CONF and IDMAC_* registers, and two IRQs - function and error
+> + */
+> +static struct platform_driver ipu_platform_driver = {
+> +       .driver = {
+> +               .name   = "ipu-core",
+> +               .owner  = THIS_MODULE,
+> +       },
+> +       .remove         = ipu_remove,
+> +};
+> +
+> +static int __init ipu_init(void)
+> +{
+> +       return platform_driver_probe(&ipu_platform_driver, ipu_probe);
+> +}
+> +subsys_initcall(ipu_init);
+> +
+> +MODULE_DESCRIPTION("IPU core driver");
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_AUTHOR("Guennadi Liakhovetski <lg@denx.de>");
+> +MODULE_ALIAS("platform:ipu-core");
 
-NOTE: it doesn't push down the fb_info->lock in each own driver's
-fb_ioctl(), so there're still potential deadlocks somewhere.
 
-ChangeLog (v2 -> v3):
- * fix: added a missing unlock_fb_info() in FBIOPUT_VSCREENINFO
-   (thanks to Krzysztof Helt)
-
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- drivers/video/fbcmap.c |   20 +++++--
- drivers/video/fbmem.c  |  135 ++++++++++++++++++++++++-----------------------
- include/linux/fb.h     |   15 +++++
- 3 files changed, 98 insertions(+), 72 deletions(-)
-
-diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-index 91b78e6..f53b9f1 100644
---- a/drivers/video/fbcmap.c
-+++ b/drivers/video/fbcmap.c
-@@ -250,10 +250,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 	int rc, size = cmap->len * sizeof(u16);
- 	struct fb_cmap umap;
- 
--	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
--			        !info->fbops->fb_setcmap))
--		return -EINVAL;
--
- 	memset(&umap, 0, sizeof(struct fb_cmap));
- 	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
- 	if (rc)
-@@ -262,11 +258,23 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 	    copy_from_user(umap.green, cmap->green, size) ||
- 	    copy_from_user(umap.blue, cmap->blue, size) ||
- 	    (cmap->transp && copy_from_user(umap.transp, cmap->transp, size))) {
--		fb_dealloc_cmap(&umap);
--		return -EFAULT;
-+		rc = -EFAULT;
-+		goto out;
- 	}
- 	umap.start = cmap->start;
-+	if (!lock_fb_info(info)) {
-+		rc = -ENODEV;
-+		goto out;
-+	}
-+	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-+				!info->fbops->fb_setcmap)) {
-+		rc = -EINVAL;
-+		goto out1;
-+	}
- 	rc = fb_set_cmap(&umap, info);
-+out1:
-+	unlock_fb_info(info);
-+out:
- 	fb_dealloc_cmap(&umap);
- 	return rc;
- }
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 756efeb..cfd9dce 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1013,132 +1013,139 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 	struct fb_var_screeninfo var;
- 	struct fb_fix_screeninfo fix;
- 	struct fb_con2fbmap con2fb;
-+	struct fb_cmap cmap_from;
- 	struct fb_cmap_user cmap;
- 	struct fb_event event;
- 	void __user *argp = (void __user *)arg;
- 	long ret = 0;
- 
--	fb = info->fbops;
--	if (!fb)
--		return -ENODEV;
--
- 	switch (cmd) {
- 	case FBIOGET_VSCREENINFO:
--		ret = copy_to_user(argp, &info->var,
--				    sizeof(var)) ? -EFAULT : 0;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		var = info->var;
-+		unlock_fb_info(info);
-+
-+		ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
- 		break;
- 	case FBIOPUT_VSCREENINFO:
--		if (copy_from_user(&var, argp, sizeof(var))) {
--			ret =  -EFAULT;
--			break;
--		}
-+		if (copy_from_user(&var, argp, sizeof(var)))
-+			return -EFAULT;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		acquire_console_sem();
- 		info->flags |= FBINFO_MISC_USEREVENT;
- 		ret = fb_set_var(info, &var);
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
- 		release_console_sem();
--		if (ret == 0 && copy_to_user(argp, &var, sizeof(var)))
-+		unlock_fb_info(info);
-+		if (!ret && copy_to_user(argp, &var, sizeof(var)))
- 			ret = -EFAULT;
- 		break;
- 	case FBIOGET_FSCREENINFO:
--		ret = copy_to_user(argp, &info->fix,
--				    sizeof(fix)) ? -EFAULT : 0;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		fix = info->fix;
-+		unlock_fb_info(info);
-+
-+		ret = copy_to_user(argp, &fix, sizeof(fix)) ? -EFAULT : 0;
- 		break;
- 	case FBIOPUTCMAP:
- 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
--			ret = -EFAULT;
--		else
--			ret = fb_set_user_cmap(&cmap, info);
-+			return -EFAULT;
-+		ret = fb_set_user_cmap(&cmap, info);
- 		break;
- 	case FBIOGETCMAP:
- 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
--			ret = -EFAULT;
--		else
--			ret = fb_cmap_to_user(&info->cmap, &cmap);
-+			return -EFAULT;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		cmap_from = info->cmap;
-+		unlock_fb_info(info);
-+		ret = fb_cmap_to_user(&cmap_from, &cmap);
- 		break;
- 	case FBIOPAN_DISPLAY:
--		if (copy_from_user(&var, argp, sizeof(var))) {
--			ret = -EFAULT;
--			break;
--		}
-+		if (copy_from_user(&var, argp, sizeof(var)))
-+			return -EFAULT;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		acquire_console_sem();
- 		ret = fb_pan_display(info, &var);
- 		release_console_sem();
-+		unlock_fb_info(info);
- 		if (ret == 0 && copy_to_user(argp, &var, sizeof(var)))
--			ret = -EFAULT;
-+			return -EFAULT;
- 		break;
- 	case FBIO_CURSOR:
- 		ret = -EINVAL;
- 		break;
- 	case FBIOGET_CON2FBMAP:
- 		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
--			ret = -EFAULT;
--		else if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
--			ret = -EINVAL;
--		else {
--			con2fb.framebuffer = -1;
--			event.info = info;
--			event.data = &con2fb;
--			fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP,
--								&event);
--			ret = copy_to_user(argp, &con2fb,
--				    sizeof(con2fb)) ? -EFAULT : 0;
--		}
-+			return -EFAULT;
-+		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
-+			return -EINVAL;
-+		con2fb.framebuffer = -1;
-+		event.data = &con2fb;
-+
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		event.info = info;
-+		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
-+		unlock_fb_info(info);
-+
-+		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
- 		break;
- 	case FBIOPUT_CON2FBMAP:
--		if (copy_from_user(&con2fb, argp, sizeof(con2fb))) {
--			ret = -EFAULT;
--			break;
--		}
--		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES) {
--			ret = -EINVAL;
--			break;
--		}
--		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX) {
--			ret = -EINVAL;
--			break;
--		}
-+		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
-+			return -EFAULT;
-+		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
-+			return -EINVAL;
-+		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
-+			return -EINVAL;
- 		if (!registered_fb[con2fb.framebuffer])
- 			request_module("fb%d", con2fb.framebuffer);
- 		if (!registered_fb[con2fb.framebuffer]) {
- 			ret = -EINVAL;
- 			break;
- 		}
--		event.info = info;
- 		event.data = &con2fb;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		event.info = info;
- 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
- 					      &event);
-+		unlock_fb_info(info);
- 		break;
- 	case FBIOBLANK:
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		acquire_console_sem();
- 		info->flags |= FBINFO_MISC_USEREVENT;
- 		ret = fb_blank(info, arg);
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
- 		release_console_sem();
--		break;;
-+		unlock_fb_info(info);
-+		break;
- 	default:
--		if (fb->fb_ioctl == NULL)
--			ret = -ENOTTY;
--		else
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		fb = info->fbops;
-+		if (fb->fb_ioctl)
- 			ret = fb->fb_ioctl(info, cmd, arg);
-+		else
-+			ret = -ENOTTY;
-+		unlock_fb_info(info);
- 	}
- 	return ret;
- }
- 
- static long fb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
--__acquires(&info->lock)
--__releases(&info->lock)
- {
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	int fbidx = iminor(inode);
--	struct fb_info *info;
--	long ret;
-+	struct fb_info *info = registered_fb[fbidx];
- 
--	info = registered_fb[fbidx];
--	mutex_lock(&info->lock);
--	ret = do_fb_ioctl(info, cmd, arg);
--	mutex_unlock(&info->lock);
--	return ret;
-+	return do_fb_ioctl(info, cmd, arg);
- }
- 
- #ifdef CONFIG_COMPAT
-@@ -1257,8 +1264,6 @@ static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
- 
- static long fb_compat_ioctl(struct file *file, unsigned int cmd,
- 			    unsigned long arg)
--__acquires(&info->lock)
--__releases(&info->lock)
- {
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	int fbidx = iminor(inode);
-@@ -1266,7 +1271,6 @@ __releases(&info->lock)
- 	struct fb_ops *fb = info->fbops;
- 	long ret = -ENOIOCTLCMD;
- 
--	mutex_lock(&info->lock);
- 	switch(cmd) {
- 	case FBIOGET_VSCREENINFO:
- 	case FBIOPUT_VSCREENINFO:
-@@ -1292,7 +1296,6 @@ __releases(&info->lock)
- 			ret = fb->fb_compat_ioctl(info, cmd, arg);
- 		break;
- 	}
--	mutex_unlock(&info->lock);
- 	return ret;
- }
- #endif
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 818fe21..31527e1 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -960,6 +960,21 @@ extern struct fb_info *registered_fb[FB_MAX];
- extern int num_registered_fb;
- extern struct class *fb_class;
- 
-+static inline int lock_fb_info(struct fb_info *info)
-+{
-+	mutex_lock(&info->lock);
-+	if (!info->fbops) {
-+		mutex_unlock(&info->lock);
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static inline void unlock_fb_info(struct fb_info *info)
-+{
-+	mutex_unlock(&info->lock);
-+}
-+
- static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
- 					   u8 *src, u32 s_pitch, u32 height)
- {
 -- 
-1.5.6.3
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Valentin Longchamp, PhD Student, EPFL-STI-LSRO1
+valentin.longchamp@epfl.ch, Phone: +41216937827
+http://people.epfl.ch/valentin.longchamp
+MEA3485, Station 9, CH-1015 Lausanne
 
 ------------------------------------------------------------------------------
 This SF.net email is sponsored by:

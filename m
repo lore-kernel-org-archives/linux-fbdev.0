@@ -1,79 +1,72 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing
-	Unit DMA and IRQ drivers
-Date: Thu, 22 Jan 2009 21:27:51 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0901222122150.7935@axis700.grange>
-References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
-	<Pine.LNX.4.64.0901081857170.6387@axis700.grange>
-	<4978C01B.8080707@epfl.ch>
-	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>
-	<4978CD75.70203@epfl.ch>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [PATCH] atyfb: fix distorted image on PowerMacs
+Date: Thu, 22 Jan 2009 22:12:04 +0200
+Message-ID: <20090122201204.GD4996@sci.fi>
+References: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <g.liakhovetski@gmx.de>) id 1LQ69m-0005nk-V8
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jan 2009 20:28:06 +0000
-Received: from mail.gmx.net ([213.165.64.20])
-	by 29vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1LQ69d-0004dM-MN for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jan 2009 20:28:06 +0000
-In-Reply-To: <4978CD75.70203@epfl.ch>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Valentin Longchamp <valentin.longchamp@epfl.ch>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Dan Williams <dan.j.williams@intel.com>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757722AbZAVUbq@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Risto Suominen <risto.suominen@gmail.com>
+Cc: Alex Kern <alex.kern@gmx.de>, linux-kernel@vger.kernel.org, benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 22 Jan 2009, Valentin Longchamp wrote:
+On Thu, Jan 22, 2009 at 08:22:48PM +0200, Risto Suominen wrote:
+> Since the complete re-write in 2.6.10, some PowerMacs (At least Power=
+Mac 5500
+> and PowerMac G3 Beige rev A) with ATI Mach64 chip have suffered from =
+unstable
+> columns in their framebuffer image. This seems to depend on a value (=
+4) read
+> from PLL_EXT_CNTL register, which leads to incorrect DSP config param=
+eters to
+> be written to the chip. This patch uses a value calculated by aty_ini=
+t_pll_ct
+> instead, as a starting point.
 
-> Guennadi Liakhovetski wrote:
-> > On Thu, 22 Jan 2009, Valentin Longchamp wrote:
-> > 
-> > You need the patch 4/4 - platform bindings, which is not in that queue and
-> > will only be merged in the next kernel version. You can so far pick it up
-> > here:
-> > 
-> > http://marc.info/?l=linux-arm-kernel&m=123143901514438&w=2
-> > 
-> 
-> I have the platform bindings, the ipu-core platform_device (from patch 4/4) is
-> registered on my system. It's only the ipu-core platform_driver  (from patch
-> 2/4) that is not registered and I don't understand why.
+AFAICS it should be the right thing to do on other systems too. I have
+a good collection of mach64 pci cards and laptops so I'll try to find
+some time next week to test that theory on x86.
 
-Ok, you didn't mention this in your previous mail. I don't think the 
-platform-driver is not registered. Can you check whether the ipu_init() 
-function gets called? Looks like the ipu platform device is not registered 
-on your system. Look at patch 4/4. In your board code you do something 
-like
+Also cc:ing fbdev-devel...
 
-+	mx3_register_fb(fb_modedb[0].name, fb_modedb, ARRAY_SIZE(fb_modedb));
+> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
+> ---
+> The testing is done on kernel version 2.6.18.
+>=20
+> --- a/drivers/video/aty/mach64_ct.c.org	2006-09-20 06:42:06.000000000=
+ +0300
+> +++ b/drivers/video/aty/mach64_ct.c	2009-01-22 14:28:13.000000000 +02=
+00
+> @@ -7,6 +7,7 @@
+>  #include <linux/delay.h>
+>  #include <asm/io.h>
+>  #include <video/mach64.h>
+> +#include <asm/machdep.h>
+>  #include "atyfb.h"
+>=20
+>  #undef DEBUG
+> @@ -536,6 +537,14 @@ static int __init aty_init_pll_ct(const
+>  	pll->ct.xclk_post_div_real =3D postdividers[xpost_div];
+>  	pll->ct.mclk_fb_div =3D q * pll->ct.xclk_post_div_real / 8;
+>=20
+> +#ifdef CONFIG_PPC
+> +	if (machine_is(powermac)) {
+> +		/* Override PLL_EXT_CNTL & 0x07. */
+> +		pll->ct.xclk_post_div =3D xpost_div;
+> +		pll->ct.xclk_ref_div =3D 1;
+> +	}
+> +#endif
+> +
+>  #ifdef DEBUG
+>  	pllmclk =3D (1000000 * pll->ct.mclk_fb_mult * pll->ct.mclk_fb_div) =
+/
+>  			(par->ref_clk_per * pll->ct.pll_ref_div);
 
-in that function
-
-+	if (!ipu_registered) {
-+		int ret = platform_device_register(&mx3_ipu);
-
-Do you have the ipu platform device under /sys/devices/platform/?
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-
-------------------------------------------------------------------------------
-This SF.net email is sponsored by:
-SourcForge Community
-SourceForge wants to tell your story.
-http://p.sf.net/sfu/sf-spreadtheword
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

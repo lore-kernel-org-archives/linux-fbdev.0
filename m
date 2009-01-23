@@ -1,8 +1,10 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing Unit DMA and IRQ drivers
-Date: Fri, 23 Jan 2009 13:26:10 +0000
-Message-ID: <20090123132610.GK26184@n2100.arm.linux.org.uk>
-References: <4978CD75.70203@epfl.ch>
+Date: Fri, 23 Jan 2009 14:27:35 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0901231425470.6497@axis700.grange>
+References: <4978C01B.8080707@epfl.ch>
+	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>
+	<4978CD75.70203@epfl.ch>
 	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>
 	<49798E4A.4030709@epfl.ch>
 	<Pine.LNX.4.64.0901231040420.4463@axis700.grange>
@@ -11,13 +13,12 @@ References: <4978CD75.70203@epfl.ch>
 	<4979BFC1.1070504@epfl.ch>
 	<Pine.LNX.4.64.0901231407030.6497@axis700.grange>
 	<20090123131804.GI26184@n2100.arm.linux.org.uk>
-	<Pine.LNX.4.64.0901231421400.6497@axis700.grange>
+	<4979C472.10707@epfl.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901231421400.6497@axis700.grange>
+In-Reply-To: <4979C472.10707@epfl.ch>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
 	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
@@ -28,18 +29,22 @@ List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
 	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
 Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Valentin Longchamp <valentin.longchamp@epfl.ch>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Dan Williams <dan.j.williams@intel.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: Valentin Longchamp <valentin.longchamp@epfl.ch>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Dan Williams <dan.j.williams@intel.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, Jan 23, 2009 at 02:22:33PM +0100, Guennadi Liakhovetski wrote:
-> On Fri, 23 Jan 2009, Russell King - ARM Linux wrote:
-> > I've personally never seen a situation where only some initcalls are
-> > called, but then I tend to hang on to known reliable toolchains.
-> 
-> The easiest for him is probably just put a printk in the loop in 
-> do_initcalls(), printing out function addresses.
+On Fri, 23 Jan 2009, Valentin Longchamp wrote:
 
-Even easier is to pass "initcall_debug=1" to the kernel.
+> OK this may be a problem: I use the toolchain that is built by
+> OpeneEmbedded. I could give a try to another one. Where can I download
+> the ones you use Guennadi or Russell ?
+
+Try ELDK: http://denx.de/en/News/WebHome#NewsEldk42Arm
+
+Regards
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
 
 -------------------------------------------------------------------
 List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel

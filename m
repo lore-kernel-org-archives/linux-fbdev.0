@@ -1,34 +1,30 @@
-From: Michal Suchanek <hramrach@centrum.cz>
-Subject: Re: [RFC 2.6.28 1/1] defio: convert pagelist
-	into pagemap
-Date: Fri, 23 Jan 2009 10:42:53 +0100
-Message-ID: <a5d587fb0901230142h598ec47fy6883727377ebd927@mail.gmail.com>
-References: <12321948953089-git-send-email-jayakumar.lkml@gmail.com>
-	<aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
-	<45a44e480901190658o78353f53x264bca09003b4b21@mail.gmail.com>
-	<aec7e5c30901192138m1ec51767m44dc39d61ae270ce@mail.gmail.com>
-	<a5d587fb0901210545l679c106lebadd7b7134a8ead@mail.gmail.com>
-	<aec7e5c30901210618q1dd418b3xe580551cdf5e29e5@mail.gmail.com>
-	<a5d587fb0901210636s11f629ccl7ba5312e746b0ba1@mail.gmail.com>
-	<aec7e5c30901222040y5007c614ya2c6baeb48f601d9@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing
+	Unit DMA and IRQ drivers
+Date: Fri, 23 Jan 2009 10:46:11 +0100 (CET)
+Message-ID: <Pine.LNX.4.64.0901231040420.4463@axis700.grange>
+References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
+	<Pine.LNX.4.64.0901081857170.6387@axis700.grange>
+	<4978C01B.8080707@epfl.ch>
+	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>
+	<4978CD75.70203@epfl.ch>
+	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>
+	<49798E4A.4030709@epfl.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hramrach@gmail.com>) id 1LQIZ0-0008CI-I7
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <g.liakhovetski@gmx.de>) id 1LQIcC-0003jr-Tt
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jan 2009 09:42:58 +0000
-Received: from fg-out-1718.google.com ([72.14.220.154])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LQIYw-0005IV-U1 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jan 2009 09:42:58 +0000
-Received: by fg-out-1718.google.com with SMTP id d23so2393496fga.32
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 23 Jan 2009 01:42:53 -0800 (PST)
-In-Reply-To: <aec7e5c30901222040y5007c614ya2c6baeb48f601d9@mail.gmail.com>
+	Fri, 23 Jan 2009 09:46:16 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1LQIc9-0003Oi-1F for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Jan 2009 09:46:16 +0000
+In-Reply-To: <49798E4A.4030709@epfl.ch>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,60 +34,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
+To: Valentin Longchamp <valentin.longchamp@epfl.ch>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Dan Williams <dan.j.williams@intel.com>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
 
-2009/1/23 Magnus Damm <magnus.damm@gmail.com>:
-> On Wed, Jan 21, 2009 at 11:36 PM, Michal Suchanek <hramrach@centrum.cz> wrote:
->> 2009/1/21 Magnus Damm <magnus.damm@gmail.com>:
->>> On Wed, Jan 21, 2009 at 10:45 PM, Michal Suchanek <hramrach@centrum.cz> wrote:
->>>> Yes, it does.
->>>>
->>>> Suppose I write an application that plots a pixel on the framebuffer,
->>>> and tells the kernel that this particular 1x1 square is dirty.
->>>>
->>>> Now the kernel expands the 1x1 square to a tile and marks it dirty,
->>>> and it also finds out that the FB memory was written and one of its
->>>> pages is dirty. So it
->>>>
->>>> a) expands the page to tiles, resulting in a whole row(s) of tiles dirtied
->>>>
->>>> b) expands the tile to pages resulting in several consecutive pages
->>>> that cross the tile dirtied
->>>>
->>>> Either way it expands the area that is transferred which is what this
->>>> whole thing was trying to prevent, right?
->>>
->>> Correct. If both the tile bits and page bits are used together it will
->>> be suboptimal. But this problem will exist regardless of tile bitmap
->>> or not, right? Unless we change the format of the frame buffer pixels
->>> which will lead to all sorts of other problems.
->>>
->>> The deferred io code and the damage API need to work together somehow.
->>>
->>> I suppose the driver could be in "damage mode" when using the damage
->>> API and ignore the page bits?
->>
->> I suppose this would lead to unexpected problems. If my application
->> sets the driver into damage mode and crashes I will likely not get any
->> output anymore.
->
-> Bad luck. =)
->
->> However, this could be probably solved by a timeout - the driver would
->> still collect the page dirty bits even in "damage mode", and if a page
->> is dirtied and no damage info comes within specified timeout it would
->> transfer the pages.
->
-> Timeout is one way, or we could cleanup things then the file
-> descriptor gets closed.
->
+On Fri, 23 Jan 2009, Valentin Longchamp wrote:
 
-It could lock up instead of crashing, too ;-)
+> > root@mx31moboard:~# ls -al /sys/bus/platform/drivers
+> > drwxr-xr-x    6 root     root            0 Oct 16 13:50 .
+> > drwxr-xr-x    4 root     root            0 Jan  1  1970 ..
+> > drwxr-xr-x    2 root     root            0 Jan  1  1970 generic-bl
+> > drwxr-xr-x    2 root     root            0 Jan  1  1970 imx-uart
+> > drwxr-xr-x    2 root     root            0 Oct 16 14:05 mx3_sdc_fb
+> > drwxr-xr-x    2 root     root            0 Jan  1  1970 physmap-flash
+> 
+> So the devices are registered fine. My problem is that the driver is not
+> registered for me: This should be done by the subsys_initcall but
+> ipu_init is never called.
+
+Are you sure you have CONFIG_MX3_IPU=y?... sorry, I don't see any other 
+possibility why a subsys_initcall() would not be called. You can also 
+check if it's being compiled and linked, and if you do
+
+arm-linux-objdump -Dr vmlinux |grep ipu_init
+
+you should see something like
+
+c0014c94 <ipu_init>:
+c0014c94:       e1a0c00d        mov     ip, sp
+--
+c0019c70 <__initcall_ipu_init4>:
+c0019c70:       c0014c94        mulgt   r1, r4, ip
 
 Thanks
-
-Michal
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
 
 ------------------------------------------------------------------------------
 This SF.net email is sponsored by:

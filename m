@@ -1,36 +1,33 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: Re: [RFC 2.6.28 1/2] fbdev: add ability to set
-	damage
-Date: Fri, 23 Jan 2009 05:51:10 +0800
-Message-ID: <45a44e480901221351y17c2224ci321657c797d57480@mail.gmail.com>
-References: <12319779622958-git-send-email-jayakumar.lkml@gmail.com>
-	<aec7e5c30901151909k1374ae65rf52c031e5b25387f@mail.gmail.com>
-	<45a44e480901160124g54547437pf5eca85c8ee52be6@mail.gmail.com>
-	<aec7e5c30901160308l3f3830c7gc53717ab8cce649e@mail.gmail.com>
-	<45a44e480901161414r7f0d0bc4x582c1597d439d116@mail.gmail.com>
-	<aec7e5c30901182044x2fbd49f2ve0aa1b433bb4ce14@mail.gmail.com>
-	<45a44e480901190715x8de194bwd3c8383207488696@mail.gmail.com>
-	<aec7e5c30901192017p44204224w70032c2f367cd5fc@mail.gmail.com>
-	<8763ka4ngd.fsf@frontier.dottedmag.net>
-	<aec7e5c30901192034o5bf8b29av2f409357553338a2@mail.gmail.com>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [RFC 2.6.28 1/1] defio: convert pagelist
+	into pagemap
+Date: Fri, 23 Jan 2009 13:40:39 +0900
+Message-ID: <aec7e5c30901222040y5007c614ya2c6baeb48f601d9@mail.gmail.com>
+References: <12321948953089-git-send-email-jayakumar.lkml@gmail.com>
+	<aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
+	<45a44e480901190658o78353f53x264bca09003b4b21@mail.gmail.com>
+	<aec7e5c30901192138m1ec51767m44dc39d61ae270ce@mail.gmail.com>
+	<a5d587fb0901210545l679c106lebadd7b7134a8ead@mail.gmail.com>
+	<aec7e5c30901210618q1dd418b3xe580551cdf5e29e5@mail.gmail.com>
+	<a5d587fb0901210636s11f629ccl7ba5312e746b0ba1@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jayakumar.lkml@gmail.com>) id 1LQ7wf-0005jN-1f
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <magnus.damm@gmail.com>) id 1LQDqZ-0006uq-2l
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jan 2009 22:22:41 +0000
-Received: from wf-out-1314.google.com ([209.85.200.173])
+	Fri, 23 Jan 2009 04:40:47 +0000
+Received: from fk-out-0910.google.com ([209.85.128.186])
 	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LQ7wa-0008Oy-3v for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jan 2009 22:22:40 +0000
-Received: by wf-out-1314.google.com with SMTP id 27so5185307wfd.4
+	id 1LQDqT-0007Kq-Bz for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Jan 2009 04:40:47 +0000
+Received: by fk-out-0910.google.com with SMTP id 19so1063964fkr.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 22 Jan 2009 14:22:35 -0800 (PST)
-In-Reply-To: <aec7e5c30901192034o5bf8b29av2f409357553338a2@mail.gmail.com>
+	Thu, 22 Jan 2009 20:40:39 -0800 (PST)
+In-Reply-To: <a5d587fb0901210636s11f629ccl7ba5312e746b0ba1@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,58 +37,56 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michal Suchanek <hramrach@centrum.cz>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-On Tue, Jan 20, 2009 at 12:34 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
-> I'm not against rectangles or the damage interface at all, I'm just
-> wondering how we're supposed to tie it all together. In a frame buffer
-
-Yup, no problems. I understand your position and agree that the issue
-of combining everything cleanly is a question we haven't yet answered.
-
-> driver we receive data from multiple interfaces:
+On Wed, Jan 21, 2009 at 11:36 PM, Michal Suchanek <hramrach@centrum.cz> wrote:
+> 2009/1/21 Magnus Damm <magnus.damm@gmail.com>:
+>> On Wed, Jan 21, 2009 at 10:45 PM, Michal Suchanek <hramrach@centrum.cz> wrote:
+>>> Yes, it does.
+>>>
+>>> Suppose I write an application that plots a pixel on the framebuffer,
+>>> and tells the kernel that this particular 1x1 square is dirty.
+>>>
+>>> Now the kernel expands the 1x1 square to a tile and marks it dirty,
+>>> and it also finds out that the FB memory was written and one of its
+>>> pages is dirty. So it
+>>>
+>>> a) expands the page to tiles, resulting in a whole row(s) of tiles dirtied
+>>>
+>>> b) expands the tile to pages resulting in several consecutive pages
+>>> that cross the tile dirtied
+>>>
+>>> Either way it expands the area that is transferred which is what this
+>>> whole thing was trying to prevent, right?
+>>
+>> Correct. If both the tile bits and page bits are used together it will
+>> be suboptimal. But this problem will exist regardless of tile bitmap
+>> or not, right? Unless we change the format of the frame buffer pixels
+>> which will lead to all sorts of other problems.
+>>
+>> The deferred io code and the damage API need to work together somehow.
+>>
+>> I suppose the driver could be in "damage mode" when using the damage
+>> API and ignore the page bits?
 >
-> 1) read/write
-> 2) fillrect/copyarea/imageblit
-> 3) deferred io mmap pages
-> 4) damage api
->
+> I suppose this would lead to unexpected problems. If my application
+> sets the driver into damage mode and crashes I will likely not get any
+> output anymore.
 
-Ok, this is an interesting one to discuss. In the broadsheetfb damage
-patch, currently write() and defio-mmap are treated together as they
-both deliver via the pagemap. [ write() could achieve better
-granularity than defio-mmap if we delivered via rects or a tilemap. ]
-damage is handled separately where it delivers to an accumulating
-rectlist. Then at actual transfer time (induced via defio), I check
-whether we a) have damage info or b) just pagemap. If damage is
-available then I treat it as the more accurate source and discard all
-defio pagemap info.
+Bad luck. =)
 
-This works fine for broadsheetfb because I haven't tried or really
-needed to support multiple simultaneous fbdev clients. That is, I just
-run X and X11 apps. I don't run X and another fbdev client, say fbcon
-or say mplayer-fbdev, simultaneously or within a single defio
-interval. At any one point in time, I only expect there to be one
-source of data so picking the most accurate source and discarding the
-others seemed reasonable.
+> However, this could be probably solved by a timeout - the driver would
+> still collect the page dirty bits even in "damage mode", and if a page
+> is dirtied and no damage info comes within specified timeout it would
+> transfer the pages.
 
-I can see that this assumption may not hold true for the general case.
-A basic case would be a user switching from X to mplayer-fbdev and
-then back within a single defio interval. In that scenario, we would
-receive separate sources of data. I believe it would be possible to
-address this issue. I'll try to sketch some code to handle this soon.
+Timeout is one way, or we could cleanup things then the file
+descriptor gets closed.
 
-> I'm wondering if we can tie in 1->4 using bitmaps and generate dma
-> requests from that. I guess everyone else talks about 4 only. =)
->
+Cheers,
 
-That's what I'm wondering about too and yes, previously I had only
-considered 4, but now I'll think about the bigger picture as you
-suggested.
-
-Thanks,
-jaya
+/ magnus
 
 ------------------------------------------------------------------------------
 This SF.net email is sponsored by:

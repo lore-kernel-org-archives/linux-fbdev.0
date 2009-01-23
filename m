@@ -1,25 +1,35 @@
-From: Valentin Longchamp <valentin.longchamp@epfl.ch>
+From: Robert Schwebel <r.schwebel@pengutronix.de>
 Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing
-	Unit DMA and IRQ drivers
-Date: Fri, 23 Jan 2009 16:09:05 +0100
-Message-ID: <4979DD91.4030807@epfl.ch>
-References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>	<Pine.LNX.4.64.0901081857170.6387@axis700.grange>	<4978C01B.8080707@epfl.ch>	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>	<4978CD75.70203@epfl.ch>	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>	<49798E4A.4030709@epfl.ch>	<Pine.LNX.4.64.0901231040420.4463@axis700.grange>
-	<4979D97F.7030007@epfl.ch>
+	Unit DMA and IRQ	drivers
+Date: Fri, 23 Jan 2009 21:55:28 +0100
+Message-ID: <20090123205528.GP29067@pengutronix.de>
+References: <4978CD75.70203@epfl.ch>
+	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>
+	<49798E4A.4030709@epfl.ch>
+	<Pine.LNX.4.64.0901231040420.4463@axis700.grange>
+	<4979A88A.5010102@epfl.ch>
+	<Pine.LNX.4.64.0901231308040.4463@axis700.grange>
+	<4979BFC1.1070504@epfl.ch>
+	<Pine.LNX.4.64.0901231407030.6497@axis700.grange>
+	<20090123131804.GI26184@n2100.arm.linux.org.uk>
+	<4979C472.10707@epfl.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <valentin.longchamp@epfl.ch>) id 1LQNem-0003QE-UL
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <rsc@pengutronix.de>) id 1LQT4M-0006Ic-RA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jan 2009 15:09:16 +0000
-Received: from smtp3.epfl.ch ([128.178.224.226])
-	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1LQNed-0004Wn-CR for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jan 2009 15:09:16 +0000
-In-Reply-To: <4979D97F.7030007@epfl.ch>
+	Fri, 23 Jan 2009 20:56:02 +0000
+Received: from metis.ext.pengutronix.de ([92.198.50.35])
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LQT4H-0002GC-IU
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Jan 2009 20:56:02 +0000
+Content-Disposition: inline
+In-Reply-To: <4979C472.10707@epfl.ch>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,29 +39,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Dan Williams <dan.j.williams@intel.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Valentin Longchamp <valentin.longchamp@epfl.ch>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-Valentin Longchamp wrote:
-> 
-> Ok let's get back to this point. The initcall_debug=1 boot option helped
-> a lot (thanks Russel). So all initcalls correctly are called ipu_init
-> inclusive (my pr_debug calls did show nothing even with the debug and
-> dynamic_printk option, so I thought initcalls were not called ... I
-> don't understand what happened here)
+On Fri, Jan 23, 2009 at 02:21:54PM +0100, Valentin Longchamp wrote:
+> OK this may be a problem: I use the toolchain that is built by
+> OpeneEmbedded. I could give a try to another one. Where can I download
+> the ones you use Guennadi or Russel ?
 
-I undestrand what happened: dynamic_printk also are enabled by an
-initcall, and this initcall happens AFTER the ipu_init inicall, so the
-dynamic_printks are not enabled when I try to output something in the
-ipu_init (so all my pr_debug output were silent).
+You can also try OSELAS.Toolchain-1.99.2 which is able to build a
+gcc-4.3.2 compiler. It works fine here on several ARM boards, but
+Russell mentioned problems with it...
 
-Val
-
+rsc
 -- 
-Valentin Longchamp, PhD Student, EPFL-STI-LSRO1
-valentin.longchamp@epfl.ch, Phone: +41216937827
-http://people.epfl.ch/valentin.longchamp
-MEA3485, Station 9, CH-1015 Lausanne
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
 ------------------------------------------------------------------------------
 This SF.net email is sponsored by:

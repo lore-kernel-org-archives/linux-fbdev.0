@@ -1,99 +1,60 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing Unit DMA and IRQ drivers
-Date: Fri, 23 Jan 2009 13:13:26 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0901231308040.4463@axis700.grange>
-References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
-	<Pine.LNX.4.64.0901081857170.6387@axis700.grange>
-	<4978C01B.8080707@epfl.ch>
-	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>
-	<4978CD75.70203@epfl.ch>
-	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>
-	<49798E4A.4030709@epfl.ch>
-	<Pine.LNX.4.64.0901231040420.4463@axis700.grange>
-	<4979A88A.5010102@epfl.ch>
+From: Risto Suominen <risto.suominen@gmail.com>
+Subject: [PATCH] fb: hide cursor in graphics mode
+Date: Fri, 23 Jan 2009 14:33:53 +0200
+Message-ID: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/mixed; boundary=001636c595490dcbc00461259a81
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757513AbZAWMeL@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+To: adaplas@pol.net
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+
+--001636c595490dcbc00461259a81
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <4979A88A.5010102@epfl.ch>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-To: Valentin Longchamp <valentin.longchamp@epfl.ch>
-Cc: "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Dan Williams <dan.j.williams@intel.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 23 Jan 2009, Valentin Longchamp wrote:
+Xserver Xfbdev (kdrive) uses linux framebuffer in graphics mode. It doesn't
+need the text mode cursor, it's a bit annoying to have it there sitting in a
+corner. This patch disables the cursor even when in graphics mode.
 
-> Guennadi Liakhovetski wrote:
-> > On Fri, 23 Jan 2009, Valentin Longchamp wrote:
-> >> So the devices are registered fine. My problem is that the driver is not
-> >> registered for me: This should be done by the subsys_initcall but
-> >> ipu_init is never called.
-> > 
-> > Are you sure you have CONFIG_MX3_IPU=y?... sorry, I don't see any other 
-> > possibility why a subsys_initcall() would not be called. You can also 
-> > check if it's being compiled and linked, and if you do
-> > 
-> > arm-linux-objdump -Dr vmlinux |grep ipu_init
-> > 
-> > you should see something like
-> > 
-> > c0014c94 <ipu_init>:
-> > c0014c94:       e1a0c00d        mov     ip, sp
-> > --
-> > c0019c70 <__initcall_ipu_init4>:
-> > c0019c70:       c0014c94        mulgt   r1, r4, ip
-> > 
-> 
-> Well I have all of them ... Taht's why I really don't understand what's
-> going on.
-> 
-> However I don't have the same asm instruction for the initcall:
-> 
-> c00192b4 <__initcall_ipu_init4>:
-> c00192b4:       c00141e8        .word   0xc00141e8
-> 
-> But that's the address of my ipu_init
-> c00141e8 <ipu_init>:
-> c00141e8:       e1a0c00d        mov     ip, sp
-> c00141ec:       e92dd800        push    {fp, ip, lr, pc}
-> c00141f0:       e24cb004        sub     fp, ip, #4      ; 0x4
-> 
-> I think something is working badly with the initcall (subsys). Has
-> someone already experienced something similar ?
-
-Strange, try to look which initcalls are before and after ipu_init in your 
-kernel:
-
-arm-linux-objdump -Dr vmlinux |grep __initcall_ |less
-
-which on my kernel produces
-
-...
-c0019c6c <__initcall_input_init4>:
-c0019c70 <__initcall_ipu_init4>:
-c0019c74 <__initcall_proto_init4>:
-...
-
-and see whether those other two initcalls get called, if they do, then 
-either you're running a different kernel from the one you're looking at, 
-or it _does_ get called and you're debugging wrongly, or you have a very 
-selective memory corruption, or... a miracle is taking place.
-
-Thanks
-Guennadi
+Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+The testing is done on kernel version 2.6.18.
 
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+--- a/drivers/video/console/fbcon.c.org	2007-03-03 07:14:54.000000000 +0200
++++ b/drivers/video/console/fbcon.c	2009-01-23 12:42:14.000000000 +0200
+@@ -1363,6 +1363,12 @@ static void fbcon_cursor(struct vc_data
+ 	int y;
+  	int c = scr_readw((u16 *) vc->vc_pos);
+
++	if (mode == CM_ERASE && info->fbops->fb_cursor) {
++		/* Hide H/W-cursor unconditionally */
++		ops->cursor(vc, info, mode, 0, 0, 0);
++		return;
++	}
++
+ 	if (fbcon_is_inactive(vc, info))
+ 		return;
+
+--001636c595490dcbc00461259a81
+Content-Type: text/x-diff; charset=US-ASCII; name="fbcon-graphics-nocursor.diff"
+Content-Disposition: attachment; filename="fbcon-graphics-nocursor.diff"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fqau2uvc1
+
+WHNlcnZlciBYZmJkZXYgKGtkcml2ZSkgdXNlcyBsaW51eCBmcmFtZWJ1ZmZlciBpbiBncmFwaGlj
+cyBtb2RlLiBJdCBkb2Vzbid0Cm5lZWQgdGhlIHRleHQgbW9kZSBjdXJzb3IsIGl0J3MgYSBiaXQg
+YW5ub3lpbmcgdG8gaGF2ZSBpdCB0aGVyZSBzaXR0aW5nIGluIGEKY29ybmVyLiBUaGlzIHBhdGNo
+IGRpc2FibGVzIHRoZSBjdXJzb3IgZXZlbiB3aGVuIGluIGdyYXBoaWNzIG1vZGUuCgpTaWduZWQt
+b2ZmLWJ5OiBSaXN0byBTdW9taW5lbiA8UmlzdG8uU3VvbWluZW5AZ21haWwuY29tPgotLS0KVGhl
+IHRlc3RpbmcgaXMgZG9uZSBvbiBrZXJuZWwgdmVyc2lvbiAyLjYuMTguCgotLS0gYS9kcml2ZXJz
+L3ZpZGVvL2NvbnNvbGUvZmJjb24uYy5vcmcJMjAwNy0wMy0wMyAwNzoxNDo1NC4wMDAwMDAwMDAg
+KzAyMDAKKysrIGIvZHJpdmVycy92aWRlby9jb25zb2xlL2ZiY29uLmMJMjAwOS0wMS0yMyAxMjo0
+MjoxNC4wMDAwMDAwMDAgKzAyMDAKQEAgLTEzNjMsNiArMTM2MywxMiBAQCBzdGF0aWMgdm9pZCBm
+YmNvbl9jdXJzb3Ioc3RydWN0IHZjX2RhdGEgCiAJaW50IHk7CiAgCWludCBjID0gc2NyX3JlYWR3
+KCh1MTYgKikgdmMtPnZjX3Bvcyk7CiAKKwlpZiAobW9kZSA9PSBDTV9FUkFTRSAmJiBpbmZvLT5m
+Ym9wcy0+ZmJfY3Vyc29yKSB7CisJCS8qIEhpZGUgSC9XLWN1cnNvciB1bmNvbmRpdGlvbmFsbHkg
+Ki8KKwkJb3BzLT5jdXJzb3IodmMsIGluZm8sIG1vZGUsIDAsIDAsIDApOworCQlyZXR1cm47CisJ
+fQorCiAJaWYgKGZiY29uX2lzX2luYWN0aXZlKHZjLCBpbmZvKSkKIAkJcmV0dXJuOwogCg==
+--001636c595490dcbc00461259a81--

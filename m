@@ -1,33 +1,29 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [RFC 2.6.28 1/1] defio: convert pagelist
-	into pagemap
-Date: Fri, 23 Jan 2009 13:40:39 +0900
-Message-ID: <aec7e5c30901222040y5007c614ya2c6baeb48f601d9@mail.gmail.com>
-References: <12321948953089-git-send-email-jayakumar.lkml@gmail.com>
-	<aec7e5c30901181922o65e7eb4avc57a5e93ad517ddf@mail.gmail.com>
-	<45a44e480901190658o78353f53x264bca09003b4b21@mail.gmail.com>
-	<aec7e5c30901192138m1ec51767m44dc39d61ae270ce@mail.gmail.com>
-	<a5d587fb0901210545l679c106lebadd7b7134a8ead@mail.gmail.com>
-	<aec7e5c30901210618q1dd418b3xe580551cdf5e29e5@mail.gmail.com>
-	<a5d587fb0901210636s11f629ccl7ba5312e746b0ba1@mail.gmail.com>
+From: Valentin Longchamp <valentin.longchamp@epfl.ch>
+Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing
+	Unit DMA and IRQ drivers
+Date: Fri, 23 Jan 2009 10:30:50 +0100
+Message-ID: <49798E4A.4030709@epfl.ch>
+References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
+	<Pine.LNX.4.64.0901081857170.6387@axis700.grange>
+	<4978C01B.8080707@epfl.ch>
+	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>
+	<4978CD75.70203@epfl.ch>
+	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <magnus.damm@gmail.com>) id 1LQDqZ-0006uq-2l
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <valentin.longchamp@epfl.ch>) id 1LQINX-0006Av-Jj
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jan 2009 04:40:47 +0000
-Received: from fk-out-0910.google.com ([209.85.128.186])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LQDqT-0007Kq-Bz for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jan 2009 04:40:47 +0000
-Received: by fk-out-0910.google.com with SMTP id 19so1063964fkr.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 22 Jan 2009 20:40:39 -0800 (PST)
-In-Reply-To: <a5d587fb0901210636s11f629ccl7ba5312e746b0ba1@mail.gmail.com>
+	Fri, 23 Jan 2009 09:31:07 +0000
+Received: from smtp0.epfl.ch ([128.178.224.219])
+	by 29vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1LQINT-0007Yo-5a for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Jan 2009 09:31:07 +0000
+In-Reply-To: <Pine.LNX.4.64.0901222122150.7935@axis700.grange>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,56 +33,84 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Michal Suchanek <hramrach@centrum.cz>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Dan Williams <dan.j.williams@intel.com>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>
 
-On Wed, Jan 21, 2009 at 11:36 PM, Michal Suchanek <hramrach@centrum.cz> wrote:
-> 2009/1/21 Magnus Damm <magnus.damm@gmail.com>:
->> On Wed, Jan 21, 2009 at 10:45 PM, Michal Suchanek <hramrach@centrum.cz> wrote:
->>> Yes, it does.
+Guennadi Liakhovetski wrote:
+> On Thu, 22 Jan 2009, Valentin Longchamp wrote:
+> 
+>> Guennadi Liakhovetski wrote:
+>>> On Thu, 22 Jan 2009, Valentin Longchamp wrote:
 >>>
->>> Suppose I write an application that plots a pixel on the framebuffer,
->>> and tells the kernel that this particular 1x1 square is dirty.
+>>> You need the patch 4/4 - platform bindings, which is not in that queue and
+>>> will only be merged in the next kernel version. You can so far pick it up
+>>> here:
 >>>
->>> Now the kernel expands the 1x1 square to a tile and marks it dirty,
->>> and it also finds out that the FB memory was written and one of its
->>> pages is dirty. So it
+>>> http://marc.info/?l=linux-arm-kernel&m=123143901514438&w=2
 >>>
->>> a) expands the page to tiles, resulting in a whole row(s) of tiles dirtied
->>>
->>> b) expands the tile to pages resulting in several consecutive pages
->>> that cross the tile dirtied
->>>
->>> Either way it expands the area that is transferred which is what this
->>> whole thing was trying to prevent, right?
->>
->> Correct. If both the tile bits and page bits are used together it will
->> be suboptimal. But this problem will exist regardless of tile bitmap
->> or not, right? Unless we change the format of the frame buffer pixels
->> which will lead to all sorts of other problems.
->>
->> The deferred io code and the damage API need to work together somehow.
->>
->> I suppose the driver could be in "damage mode" when using the damage
->> API and ignore the page bits?
->
-> I suppose this would lead to unexpected problems. If my application
-> sets the driver into damage mode and crashes I will likely not get any
-> output anymore.
+>> I have the platform bindings, the ipu-core platform_device (from patch 4/4) is
+>> registered on my system. It's only the ipu-core platform_driver  (from patch
+>> 2/4) that is not registered and I don't understand why.
+> 
+> Ok, you didn't mention this in your previous mail. I don't think the 
+> platform-driver is not registered. Can you check whether the ipu_init() 
+> function gets called? Looks like the ipu platform device is not registered 
+> on your system. Look at patch 4/4. In your board code you do something 
+> like
+> 
+> +	mx3_register_fb(fb_modedb[0].name, fb_modedb, ARRAY_SIZE(fb_modedb));
 
-Bad luck. =)
+Yes I do this in my board initialisation code. Yes I have it and it also
+works, see below.
 
-> However, this could be probably solved by a timeout - the driver would
-> still collect the page dirty bits even in "damage mode", and if a page
-> is dirtied and no damage info comes within specified timeout it would
-> transfer the pages.
+> 
+> in that function
+> 
+> +	if (!ipu_registered) {
+> +		int ret = platform_device_register(&mx3_ipu);
 
-Timeout is one way, or we could cleanup things then the file
-descriptor gets closed.
+Yes I also have this in my devices.c file (just as you proposed it in
+your 4/4 patch). And if works, see below.
 
-Cheers,
+> 
+> Do you have the ipu platform device under /sys/devices/platform/?
+> 
 
-/ magnus
+Yes I do have it. But I do not it under /sys/bus/platform/drivers.
+
+> root@mx31moboard:~# ls -al /sys/devices/platform/
+> drwxr-xr-x    8 root     root            0 Oct 16 14:04 .
+> drwxr-xr-x    4 root     root            0 Oct 16 14:04 ..
+> drwxr-xr-x    2 root     root            0 Oct 16 14:04 imx-uart.0
+> drwxr-xr-x    2 root     root            0 Oct 16 14:04 imx-uart.1
+> drwxr-xr-x    2 root     root            0 Oct 16 14:04 imx-uart.4
+> drwxr-xr-x    2 root     root            0 Oct 16 14:04 ipu_core
+> drwxr-xr-x    2 root     root            0 Oct 16 14:04 mx3_sdc_fb
+> drwxr-xr-x    2 root     root            0 Oct 16 14:04 physmap-flash.0
+> -rw-r--r--    1 root     root         4096 Oct 16 14:04 uevent
+
+> root@mx31moboard:~# ls -al /sys/bus/platform/drivers
+> drwxr-xr-x    6 root     root            0 Oct 16 13:50 .
+> drwxr-xr-x    4 root     root            0 Jan  1  1970 ..
+> drwxr-xr-x    2 root     root            0 Jan  1  1970 generic-bl
+> drwxr-xr-x    2 root     root            0 Jan  1  1970 imx-uart
+> drwxr-xr-x    2 root     root            0 Oct 16 14:05 mx3_sdc_fb
+> drwxr-xr-x    2 root     root            0 Jan  1  1970 physmap-flash
+
+So the devices are registered fine. My problem is that the driver is not
+registered for me: This should be done by the subsys_initcall but
+ipu_init is never called.
+
+Thanks for your help.
+
+Val
+
+-- 
+Valentin Longchamp, PhD Student, EPFL-STI-LSRO1
+valentin.longchamp@epfl.ch, Phone: +41216937827
+http://people.epfl.ch/valentin.longchamp
+MEA3485, Station 9, CH-1015 Lausanne
+
 
 ------------------------------------------------------------------------------
 This SF.net email is sponsored by:

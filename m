@@ -1,60 +1,99 @@
-From: Risto Suominen <risto.suominen@gmail.com>
-Subject: [PATCH] fb: hide cursor in graphics mode
-Date: Fri, 23 Jan 2009 14:33:53 +0200
-Message-ID: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+From: Valentin Longchamp <valentin.longchamp@epfl.ch>
+Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing Unit DMA and IRQ drivers
+Date: Fri, 23 Jan 2009 14:01:53 +0100
+Message-ID: <4979BFC1.1070504@epfl.ch>
+References: <Pine.LNX.4.64.0901081850280.6387@axis700.grange>
+	<Pine.LNX.4.64.0901081857170.6387@axis700.grange>
+	<4978C01B.8080707@epfl.ch>
+	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>
+	<4978CD75.70203@epfl.ch>
+	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>
+	<49798E4A.4030709@epfl.ch>
+	<Pine.LNX.4.64.0901231040420.4463@axis700.grange>
+	<4979A88A.5010102@epfl.ch>
+	<Pine.LNX.4.64.0901231308040.4463@axis700.grange>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=001636c595490dcbc00461259a81
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757513AbZAWMeL@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: adaplas@pol.net
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
-
---001636c595490dcbc00461259a81
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0901231308040.4463@axis700.grange>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Longchamp Valentin <valentin.longchamp@epfl.ch>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Dan Williams <dan.j.williams@intel.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Xserver Xfbdev (kdrive) uses linux framebuffer in graphics mode. It doesn't
-need the text mode cursor, it's a bit annoying to have it there sitting in a
-corner. This patch disables the cursor even when in graphics mode.
+Guennadi Liakhovetski wrote:
+> On Fri, 23 Jan 2009, Valentin Longchamp wrote:
+>> I think something is working badly with the initcall (subsys). Has
+>> someone already experienced something similar ?
+> 
+> Strange, try to look which initcalls are before and after ipu_init in your 
+> kernel:
+> 
+> arm-linux-objdump -Dr vmlinux |grep __initcall_ |less
+> 
+> which on my kernel produces
+> 
+> ...
+> c0019c6c <__initcall_input_init4>:
+> c0019c70 <__initcall_ipu_init4>:
+> c0019c74 <__initcall_proto_init4>:
+> ...
+> 
+> and see whether those other two initcalls get called, if they do, then 
+> either you're running a different kernel from the one you're looking at, 
+> or it _does_ get called and you're debugging wrongly, or you have a very 
+> selective memory corruption, or... a miracle is taking place.
+> 
 
-Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
----
-The testing is done on kernel version 2.6.18.
+Well no miracle is taking place (And I have checked, the kernel I am
+running is the correct one according to the build date tag with uname).
+For me the initcalls are:
 
---- a/drivers/video/console/fbcon.c.org	2007-03-03 07:14:54.000000000 +0200
-+++ b/drivers/video/console/fbcon.c	2009-01-23 12:42:14.000000000 +0200
-@@ -1363,6 +1363,12 @@ static void fbcon_cursor(struct vc_data
- 	int y;
-  	int c = scr_readw((u16 *) vc->vc_pos);
+c0019390 <__initcall_misc_init4>:
+c0019394 <__initcall_ipu_init4>:
+c0019398 <__initcall_proto_init4>:
 
-+	if (mode == CM_ERASE && info->fbops->fb_cursor) {
-+		/* Hide H/W-cursor unconditionally */
-+		ops->cursor(vc, info, mode, 0, 0, 0);
-+		return;
-+	}
-+
- 	if (fbcon_is_inactive(vc, info))
- 		return;
+(Not exactly the same addresses as before because I add some pr_debug
+calls for debug). But none of them are called. And all of them are
+subsys_initcall. Do I have to enable something in my configuration so
+that these initcall actually get called ?
 
---001636c595490dcbc00461259a81
-Content-Type: text/x-diff; charset=US-ASCII; name="fbcon-graphics-nocursor.diff"
-Content-Disposition: attachment; filename="fbcon-graphics-nocursor.diff"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fqau2uvc1
+However, they all have the same "look" so to say: no real ARM assembly
+instruction but only addresses as Russel pointed it before:
 
-WHNlcnZlciBYZmJkZXYgKGtkcml2ZSkgdXNlcyBsaW51eCBmcmFtZWJ1ZmZlciBpbiBncmFwaGlj
-cyBtb2RlLiBJdCBkb2Vzbid0Cm5lZWQgdGhlIHRleHQgbW9kZSBjdXJzb3IsIGl0J3MgYSBiaXQg
-YW5ub3lpbmcgdG8gaGF2ZSBpdCB0aGVyZSBzaXR0aW5nIGluIGEKY29ybmVyLiBUaGlzIHBhdGNo
-IGRpc2FibGVzIHRoZSBjdXJzb3IgZXZlbiB3aGVuIGluIGdyYXBoaWNzIG1vZGUuCgpTaWduZWQt
-b2ZmLWJ5OiBSaXN0byBTdW9taW5lbiA8UmlzdG8uU3VvbWluZW5AZ21haWwuY29tPgotLS0KVGhl
-IHRlc3RpbmcgaXMgZG9uZSBvbiBrZXJuZWwgdmVyc2lvbiAyLjYuMTguCgotLS0gYS9kcml2ZXJz
-L3ZpZGVvL2NvbnNvbGUvZmJjb24uYy5vcmcJMjAwNy0wMy0wMyAwNzoxNDo1NC4wMDAwMDAwMDAg
-KzAyMDAKKysrIGIvZHJpdmVycy92aWRlby9jb25zb2xlL2ZiY29uLmMJMjAwOS0wMS0yMyAxMjo0
-MjoxNC4wMDAwMDAwMDAgKzAyMDAKQEAgLTEzNjMsNiArMTM2MywxMiBAQCBzdGF0aWMgdm9pZCBm
-YmNvbl9jdXJzb3Ioc3RydWN0IHZjX2RhdGEgCiAJaW50IHk7CiAgCWludCBjID0gc2NyX3JlYWR3
-KCh1MTYgKikgdmMtPnZjX3Bvcyk7CiAKKwlpZiAobW9kZSA9PSBDTV9FUkFTRSAmJiBpbmZvLT5m
-Ym9wcy0+ZmJfY3Vyc29yKSB7CisJCS8qIEhpZGUgSC9XLWN1cnNvciB1bmNvbmRpdGlvbmFsbHkg
-Ki8KKwkJb3BzLT5jdXJzb3IodmMsIGluZm8sIG1vZGUsIDAsIDAsIDApOworCQlyZXR1cm47CisJ
-fQorCiAJaWYgKGZiY29uX2lzX2luYWN0aXZlKHZjLCBpbmZvKSkKIAkJcmV0dXJuOwogCg==
---001636c595490dcbc00461259a81--
+> c0019390 <__initcall_misc_init4>:
+> c0019390:       c001349c        .word   0xc001349c
+> 
+> c0019394 <__initcall_ipu_init4>:
+> c0019394:       c0014258        .word   0xc0014258
+> 
+> c0019398 <__initcall_proto_init4>:
+> c0019398:       c00143e4        .word   0xc00143e4
+
+This may be the reason why these initcall are not actually called:
+Guennadi's ones had a real ARM assembly instruction. To solve all my
+problems I need to understand why my subsys_initcall do not get called.
+
+Thank you all for your great help
+
+Val
+
+-- 
+Valentin Longchamp, PhD Student, EPFL-STI-LSRO1
+valentin.longchamp@epfl.ch, Phone: +41216937827
+http://people.epfl.ch/valentin.longchamp
+MEA3485, Station 9, CH-1015 Lausanne
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

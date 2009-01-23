@@ -1,17 +1,8 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
 Subject: Re: [PATCH 2/4 v8] i.MX31: Image Processing Unit DMA and IRQ drivers
-Date: Fri, 23 Jan 2009 14:27:35 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0901231425470.6497@axis700.grange>
+Date: Fri, 23 Jan 2009 14:54:54 +0100
+Message-ID: <200901231454.54179.hs4233@mail.mn-solutions.de>
 References: <4978C01B.8080707@epfl.ch>
-	<Pine.LNX.4.64.0901221959100.7935@axis700.grange>
-	<4978CD75.70203@epfl.ch>
-	<Pine.LNX.4.64.0901222122150.7935@axis700.grange>
-	<49798E4A.4030709@epfl.ch>
-	<Pine.LNX.4.64.0901231040420.4463@axis700.grange>
-	<4979A88A.5010102@epfl.ch>
-	<Pine.LNX.4.64.0901231308040.4463@axis700.grange>
-	<4979BFC1.1070504@epfl.ch>
-	<Pine.LNX.4.64.0901231407030.6497@axis700.grange>
 	<20090123131804.GI26184@n2100.arm.linux.org.uk>
 	<4979C472.10707@epfl.ch>
 Mime-Version: 1.0
@@ -19,6 +10,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
 In-Reply-To: <4979C472.10707@epfl.ch>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
 	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
@@ -29,22 +21,20 @@ List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
 	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
 Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-To: Valentin Longchamp <valentin.longchamp@epfl.ch>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, Sascha Hauer <s.hauer@pengutronix.de>, Dan Williams <dan.j.williams@intel.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
-
-On Fri, 23 Jan 2009, Valentin Longchamp wrote:
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Valentin Longchamp <valentin.longchamp@epfl.ch>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Sascha Hauer <s.hauer@pengutronix.de>, Dan Williams <dan.j.williams@intel.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
 > OK this may be a problem: I use the toolchain that is built by
-> OpeneEmbedded. I could give a try to another one. Where can I download
-> the ones you use Guennadi or Russell ?
+> OpeneEmbedded.
 
-Try ELDK: http://denx.de/en/News/WebHome#NewsEldk42Arm
+OpenEmbedded can built a lot of toolchains. I for example also
+use an OpenEmbedded toolchain, with binutils 2.19 and gcc 4.2.4.
+I don't have the problems you describe.
 
-Regards
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+$ arm-linux-uclibcgnueabi-objdump --version
+GNU objdump (GNU Binutils) 2.19
+$ arm-linux-uclibcgnueabi-gcc --version
+arm-linux-uclibcgnueabi-gcc (GCC) 4.2.4
 
 -------------------------------------------------------------------
 List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel

@@ -1,27 +1,25 @@
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.28 2/2] broadsheetfb: add damage
-	handling
-Date: Sun, 25 Jan 2009 20:15:45 +0800
-Message-ID: <12328857513006-git-send-email-jayakumar.lkml@gmail.com>
-References: <12328857453626-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.28 1/1] fbdev: defio pagelist to
+	pagemap
+Date: Mon, 26 Jan 2009 10:15:43 +0800
+Message-ID: <12329361431140-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jayakumar.lkml@gmail.com>) id 1LR3zC-0003WH-32
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LRH7x-0001HE-G0
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Jan 2009 12:21:10 +0000
-Received: from wf-out-1314.google.com ([209.85.200.170])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LR3z6-0006VV-Dq for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 25 Jan 2009 12:21:09 +0000
-Received: by wf-out-1314.google.com with SMTP id 27so6435205wfd.4
+	Mon, 26 Jan 2009 02:23:05 +0000
+Received: from rv-out-0708.google.com ([209.85.198.241])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LRH7o-0007T9-G3 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 26 Jan 2009 02:23:05 +0000
+Received: by rv-out-0708.google.com with SMTP id f25so5830542rvb.22
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 25 Jan 2009 04:20:59 -0800 (PST)
-In-Reply-To: <12328857453626-git-send-email-jayakumar.lkml@gmail.com>
+	Sun, 25 Jan 2009 18:22:55 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,11 +31,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Magnus Damm <magnus.damm@gmail.com>, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-This patch adds support within broadsheetfb to process damage information
-provided by userspace in order to perform more accurate partial updates. It
-does not yet handle the scenario where the user may be switching from a
-damage providing client to a non-damage providing client within a single
-transfer interval.
+Hi Magnus, fbdev friends,
+
+As discussed previously, this is version 2 of converting pagelist use
+in defio over to pagemap. Thanks to Magnus for ideas and discussion.
+The primary change is the use of bitmap ops rather than manual setting
+of bits. If everyone is okay with the idea, then we will also need to
+convert xen-pvfb, sh and any other drivers using defio. Let me know
+your thoughts.
+
+Thanks,
+jaya
+
+The defio implementation was using a list structure in order to
+track which pages had been written to. Basically, that was a poor
+choice and this had been correctly raised as an issue by Tony
+a while back and Magnus more recently. This patch is an attempt to
+rectify the issue. These changes aren't tested yet, just compiles.
 
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
@@ -48,272 +58,307 @@ Cc: adaplas@gmail.com
 Cc: linux-fbdev-devel@lists.sourceforge.net
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 ---
- drivers/video/broadsheetfb.c |  165 +++++++++++++++++++++++++++++++++++++++++-
- include/video/broadsheetfb.h |   10 +++
- 2 files changed, 174 insertions(+), 1 deletions(-)
+ drivers/video/broadsheetfb.c |   24 ++++++++-------
+ drivers/video/fb_defio.c     |   69 +++++++++++++++++-------------------------
+ drivers/video/hecubafb.c     |    3 +-
+ drivers/video/metronomefb.c  |   21 +++++++------
+ include/linux/fb.h           |    7 ++--
+ 5 files changed, 57 insertions(+), 67 deletions(-)
 
 diff --git a/drivers/video/broadsheetfb.c b/drivers/video/broadsheetfb.c
-index 509cb92..5654376 100644
+index 83fa537..c698935 100644
 --- a/drivers/video/broadsheetfb.c
 +++ b/drivers/video/broadsheetfb.c
-@@ -293,6 +293,83 @@ static void broadsheetfb_dpy_update(struct broadsheetfb_par *par)
+@@ -381,17 +381,16 @@ finish:
  
- }
  
-+static void broadsheetfb_upd_full(struct broadsheetfb_par *par)
-+{
-+	u16 args[5];
-+	args[0] = 0x4300;
-+	broadsheet_send_cmdargs(par, BS_CMD_UPD_FULL, 1, args);
-+
-+	broadsheet_send_command(par, BS_CMD_WAIT_DSPE_TRG);
-+
-+	broadsheet_send_command(par, BS_CMD_WAIT_DSPE_FREND);
-+
-+	par->board->wait_for_rdy(par);
-+}
-+
-+static void broadsheetfb_load_image_area(struct broadsheetfb_par *par, u16 x,
-+						u16 y, u16 w, u16 h)
-+{
-+	u16 args[5];
-+	unsigned char *sbuf = (unsigned char *)par->info->screen_base;
-+	unsigned char *buf;
-+	int j;
-+
-+	/* x must be a multiple of 4 so drop the lower bits */
-+	x &= 0xFFFC;
-+
-+	/* y must be a multiple of 4 so drop the lower bits */
-+	y &= 0xFFFC;
-+
-+	args[0] = 0x3 << 4;
-+	args[1] = x;
-+	args[2] = y;
-+	args[3] = w;
-+	args[4] = h;
-+	broadsheet_send_cmdargs(par, BS_CMD_LD_IMG_AREA, 5, args);
-+
-+	args[0] = 0x154;
-+	broadsheet_send_cmdargs(par, BS_CMD_WR_REG, 1, args);
-+
-+	for (j = y; j < y + h; j++) {
-+		buf = sbuf + x + (j * par->info->var.xres);
-+		broadsheet_burst_write(par, (w+1)/2, (u16 *) buf);
-+	}
-+	broadsheet_send_command(par, BS_CMD_LD_IMG_END);
-+}
-+
-+static int broadsheetfb_process_damage(struct fb_info *info)
-+{
-+	struct broadsheetfb_par *par = info->par;
-+	struct broadsheetfb_damage *cur, *next;
-+	int ret = -EINVAL;
-+	int i;
-+	struct fb_damage_rect *rect;
-+
-+	mutex_lock(&par->damage_lock);
-+	/* if there is no damage, then caller has to do work to figure out
-+	 * the changes on its own */
-+	if (list_empty(&par->damagelist))
-+		goto finish;
-+
-+	list_for_each_entry_safe(cur, next, &par->damagelist, list) {
-+		for (i = 0; i < cur->len; i++) {
-+			rect = &(cur->rects[i]);
-+			broadsheetfb_load_image_area(par, rect->x, rect->y,
-+							rect->w, rect->h);
-+		}
-+		list_del(&cur->list);
-+		kfree(cur->rects);
-+		kfree(cur);
-+	}
-+
-+	broadsheetfb_upd_full(par);
-+	ret = 0;
-+finish:
-+	mutex_unlock(&par->damage_lock);
-+	return ret;
-+}
-+
-+
  /* this is called back from the deferred io workqueue */
- static void broadsheetfb_dpy_deferred_io(struct fb_info *info,
- 				struct list_head *pagelist)
-@@ -304,6 +381,14 @@ static void broadsheetfb_dpy_deferred_io(struct fb_info *info,
+-static void broadsheetfb_dpy_deferred_io(struct fb_info *info,
+-				struct list_head *pagelist)
++static void broadsheetfb_dpy_deferred_io(struct fb_info *info)
+ {
+ 	u16 y1 = 0, h = 0;
+ 	int prev_index = -1;
+-	struct page *cur;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
  	int h_inc;
  	u16 yres = info->var.yres;
  	u16 xres = info->var.xres;
-+	int ret;
-+
-+	/* if we have damage data then use it exclusively */
-+	ret = broadsheetfb_process_damage(info);
-+	if (!ret)
-+		return;
-+
-+	/* if no damage then rely on page information */
+ 	int ret;
++	int i;
  
+ 	/* if we have damage data then use it exclusively */
+ 	ret = broadsheetfb_process_damage(info);
+@@ -403,26 +402,29 @@ static void broadsheetfb_dpy_deferred_io(struct fb_info *info,
  	/* height increment is fixed per page */
  	h_inc = DIV_ROUND_UP(PAGE_SIZE , xres);
-@@ -413,6 +498,67 @@ static ssize_t broadsheetfb_write(struct fb_info *info, const char __user *buf,
- 	return (err) ? err : count;
- }
  
-+static int broadsheetfb_alloc_damage(struct broadsheetfb_damage **damagep,
-+					int len)
-+{
-+	struct broadsheetfb_damage *damage;
-+
-+	damage = kzalloc(sizeof(struct broadsheetfb_damage), GFP_KERNEL);
-+	if (!damage)
-+		return -ENOMEM;
-+
-+	damage->len = len;
-+	damage->rects = kzalloc(sizeof(struct fb_damage_rect) * len,
-+				GFP_KERNEL);
-+	if (!damage->rects) {
-+		kfree(damage);
-+		return -ENOMEM;
-+	}
-+
-+	*damagep = damage;
-+	return 0;
-+}
-+
-+static void broadsheetfb_free_damage(struct broadsheetfb_damage *damage)
-+{
-+	if (damage)
-+		kfree(damage->rects);
-+	kfree(damage);
-+}
-+
-+static int broadsheetfb_set_damage(struct fb_info *info,
-+				struct fb_damage_user *udamage)
-+{
-+	struct broadsheetfb_par *par = info->par;
-+	struct broadsheetfb_damage *damage;
-+	int ret = -EINVAL;
-+	int size = udamage->len;
-+
-+	if (size > BROADSHEETFB_DAMAGE_COUNT_MAX)
-+		goto fail;
-+
-+	ret = broadsheetfb_alloc_damage(&damage, size);
-+	if (ret)
-+		goto fail;
-+
-+	if (copy_from_user(damage->rects, udamage->rects,
-+				sizeof(struct fb_damage_rect)*size)) {
-+		ret = -EFAULT;
-+		goto fail2;
-+	}
-+
-+	mutex_lock(&par->damage_lock);
-+	list_add_tail(&damage->list, &par->damagelist);
-+	mutex_unlock(&par->damage_lock);
-+
-+	return 0;
-+
-+fail2:
-+	broadsheetfb_free_damage(damage);
-+fail:
-+	return ret;
-+}
-+
- static struct fb_ops broadsheetfb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_read        = fb_sys_read,
-@@ -420,6 +566,7 @@ static struct fb_ops broadsheetfb_ops = {
- 	.fb_fillrect	= broadsheetfb_fillrect,
- 	.fb_copyarea	= broadsheetfb_copyarea,
- 	.fb_imageblit	= broadsheetfb_imageblit,
-+	.fb_set_damage	= broadsheetfb_set_damage,
- };
+-	/* walk the written page list and swizzle the data */
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++	for (i = find_first_bit(fbdefio->pagemap, fbdefio->pagecount);
++		i < fbdefio->pagecount;
++		i = find_next_bit(fbdefio->pagemap, fbdefio->pagecount, i),
++		i++) {
+ 		if (prev_index < 0) {
+ 			/* just starting so assign first page */
+-			y1 = (cur->index << PAGE_SHIFT) / xres;
++			y1 = (i << PAGE_SHIFT) / xres;
+ 			h = h_inc;
+-		} else if ((prev_index + 1) == cur->index) {
++		} else if ((prev_index + 1) == i) {
+ 			/* this page is consecutive so increase our height */
+ 			h += h_inc;
+ 		} else {
+ 			/* page not consecutive, issue previous update first */
+-			broadsheetfb_dpy_update_pages(info->par, y1,
+-							min(y1 + h, yres));
++			broadsheetfb_dpy_update_pages(info->par,
++					y1, min((u16) (y1 + h), yres));
+ 			/* start over with our non consecutive page */
+-			y1 = (cur->index << PAGE_SHIFT) / xres;
++			y1 = (i << PAGE_SHIFT) / xres;
+ 			h = h_inc;
+ 		}
+-		prev_index = cur->index;
++		prev_index = i;
+ 	}
  
- static struct fb_deferred_io broadsheetfb_defio = {
-@@ -498,6 +645,9 @@ static int __devinit broadsheetfb_probe(struct platform_device *dev)
- 
- 	broadsheet_init(par);
- 
-+	INIT_LIST_HEAD(&par->damagelist);
-+	mutex_init(&par->damage_lock);
 +
- 	retval = register_framebuffer(info);
- 	if (retval < 0)
- 		goto err_free_irq;
-@@ -512,8 +662,10 @@ static int __devinit broadsheetfb_probe(struct platform_device *dev)
+ 	/* if we still have any pages to update we do so now */
+ 	if (h >= yres) {
+ 		/* its a full screen update, just do it */
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index bcc3175..dbe9f32 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -18,9 +18,9 @@
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/fb.h>
+-#include <linux/list.h>
+ #include <linux/rmap.h>
+ #include <linux/pagemap.h>
++#include <linux/bitops.h>
  
- err_free_irq:
- 	board->cleanup(par);
-+	mutex_destroy(&par->damage_lock);
- err_cmap:
- 	fb_dealloc_cmap(&info->cmap);
-+	fb_deferred_io_cleanup(info);
- err_vfree:
- 	vfree(videomemory);
- err_fb_rel:
-@@ -524,16 +676,27 @@ err:
- 
- }
- 
-+static void __devexit broadsheetfb_cleanup_damage(struct broadsheetfb_par *par)
-+{
-+	broadsheetfb_process_damage(par->info);
-+	mutex_destroy(&par->damage_lock);
-+}
-+
- static int __devexit broadsheetfb_remove(struct platform_device *dev)
+ static struct page *fb_deferred_io_page(struct fb_info *info, unsigned long offs)
  {
- 	struct fb_info *info = platform_get_drvdata(dev);
+@@ -82,37 +82,14 @@ int fb_deferred_io_fsync(struct file *file, struct dentry *dentry, int datasync)
+ EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
  
- 	if (info) {
- 		struct broadsheetfb_par *par = info->par;
-+
- 		unregister_framebuffer(info);
--		fb_deferred_io_cleanup(info);
-+
-+		/* cleanup any pending damage */
-+		broadsheetfb_cleanup_damage(par);
-+
- 		par->board->cleanup(par);
- 		fb_dealloc_cmap(&info->cmap);
-+		fb_deferred_io_cleanup(info);
- 		vfree((void *)info->screen_base);
- 		module_put(par->board->owner);
- 		framebuffer_release(info);
-diff --git a/include/video/broadsheetfb.h b/include/video/broadsheetfb.h
-index a758534..14f4594 100644
---- a/include/video/broadsheetfb.h
-+++ b/include/video/broadsheetfb.h
-@@ -34,6 +34,8 @@
- #define BS_DC 	0x02
- #define BS_WR 	0x03
+ /*
+- * Adds page to list of dirty pages, keeps it in sorted order and handles
+- * checking for duplicates.
++ * Set page to mark it dirty in our pagemap
+  */
+-static void fb_defio_pagelist_add(struct fb_deferred_io *fbdefio,
++static void fb_defio_set_pagemap(struct fb_deferred_io *fbdefio,
+ 					struct page *page)
+ {
+-	struct page *cur;
+-	/* protect against the workqueue changing the page list */
++	/* protect against the workqueue changing the pagemap */
+ 	mutex_lock(&fbdefio->lock);
+-
+-	/*
+-	 * We loop through the pagelist before adding in order
+-	 * to keep the pagelist sorted.
+-	 */
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+-		/*
+-		 * This check is to catch the case where a new
+-		 * process could start writing to the same page
+-		 * through a new pte. This new access will cause the
+-		 * mkwrite even when the original ps's pte is marked
+-		 * writable.
+-		 */
+-		if (unlikely(cur == page))
+-			goto page_already_added;
+-		else if (cur->index > page->index)
+-			break;
+-	}
+-
+-	list_add_tail(&page->lru, &cur->lru);
+-
+-page_already_added:
++	set_bit(page->index, fbdefio->pagemap);
+ 	mutex_unlock(&fbdefio->lock);
+ }
  
-+#define BROADSHEETFB_DAMAGE_COUNT_MAX 255
+@@ -131,7 +108,7 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ 	 * again, we repeat the same scheme
+ 	 */
+ 
+-	fb_defio_pagelist_add(fbdefio, page);
++	fb_defio_set_pagemap(fbdefio, page);
+ 
+ 	/* Come back after delay to process the deferred IO */
+ 	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
+@@ -167,37 +144,44 @@ static void fb_deferred_io_work(struct work_struct *work)
+ {
+ 	struct fb_info *info = container_of(work, struct fb_info,
+ 						deferred_work.work);
+-	struct list_head *node, *next;
+ 	struct page *cur;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	int i;
+ 
+ 	/* Here we mkclean the pages, then do all deferred IO */
+ 	mutex_lock(&fbdefio->lock);
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
 +
- /* struct used by broadsheet. board specific stuff comes from *board */
- struct broadsheetfb_par {
- 	struct fb_info *info;
-@@ -41,6 +43,8 @@ struct broadsheetfb_par {
- 	void (*write_reg)(struct broadsheetfb_par *, u16 reg, u16 val);
- 	u16 (*read_reg)(struct broadsheetfb_par *, u16 reg);
- 	wait_queue_head_t waitq;
-+	struct mutex damage_lock;
-+	struct list_head damagelist;
++	/* walk the pagemap to find written pages and then clean them */
++	for (i = find_first_bit(fbdefio->pagemap, fbdefio->pagecount);
++		i < fbdefio->pagecount;
++		i = find_next_bit(fbdefio->pagemap, fbdefio->pagecount, i),
++		i++) {
++		cur = fb_deferred_io_page(info, i * PAGE_SIZE);
+ 		lock_page(cur);
+ 		page_mkclean(cur);
+ 		unlock_page(cur);
+ 	}
+ 
+-	/* driver's callback with pagelist */
+-	fbdefio->deferred_io(info, &fbdefio->pagelist);
++	/* now do driver's callback to pass them the pagemap */
++	fbdefio->deferred_io(info);
+ 
+-	/* Clear the list */
+-	list_for_each_safe(node, next, &fbdefio->pagelist) {
+-		list_del(node);
+-	}
++	/* Clear the pagemap */
++	bitmap_zero(fbdefio->pagemap, fbdefio->pagecount);
+ 	mutex_unlock(&fbdefio->lock);
+ }
+ 
+ void fb_deferred_io_init(struct fb_info *info)
+ {
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	int pmap_bytes;
+ 
+ 	BUG_ON(!fbdefio);
+ 	mutex_init(&fbdefio->lock);
+ 	info->fbops->fb_mmap = fb_deferred_io_mmap;
+ 	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
+-	INIT_LIST_HEAD(&fbdefio->pagelist);
++	fbdefio->pagecount = DIV_ROUND_UP(info->fix.smem_len, PAGE_SIZE);
++	pmap_bytes = DIV_ROUND_UP(fbdefio->pagecount, sizeof(u32));
++	fbdefio->pagemap = kzalloc(pmap_bytes, GFP_KERNEL);
+ 	if (fbdefio->delay == 0) /* set a default of 1 s */
+ 		fbdefio->delay = HZ;
+ }
+@@ -224,11 +208,14 @@ void fb_deferred_io_cleanup(struct fb_info *info)
+ 	/* clear out the mapping that we setup */
+ 	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
+ 		page = fb_deferred_io_page(info, i);
++		lock_page(page);
+ 		page->mapping = NULL;
++		unlock_page(page);
+ 	}
+ 
+ 	info->fbops->fb_mmap = NULL;
+ 	mutex_destroy(&fbdefio->lock);
++	kfree(fbdefio->pagemap);
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
+ 
+@@ -256,7 +243,7 @@ ssize_t fb_defio_write(struct fb_info *info, const char __user *buf,
+ 	if (!fbdefio)
+ 		return wr_count;
+ 
+-	/* now we must list the pages fb_sys_write has written. */
++	/* now we must walk the pages fb_sys_write has written. */
+ 	for (i = orig_p ; i < (orig_p + wr_count) ; i += PAGE_SIZE) {
+ 
+ 		/* get the right page */
+@@ -273,8 +260,8 @@ ssize_t fb_defio_write(struct fb_info *info, const char __user *buf,
+ 		if (!page->index)
+ 			page->index = i >> PAGE_SHIFT;
+ 
+-		/* add it to our touched list */
+-		fb_defio_pagelist_add(fbdefio, page);
++		/* set it in our pagemap */
++		fb_defio_set_pagemap(fbdefio, page);
+ 	}
+ 
+ 	/* now we schedule our deferred work */
+diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
+index 0b4bffb..7d2a80b 100644
+--- a/drivers/video/hecubafb.c
++++ b/drivers/video/hecubafb.c
+@@ -116,8 +116,7 @@ static void hecubafb_dpy_update(struct hecubafb_par *par)
+ }
+ 
+ /* this is called back from the deferred io workqueue */
+-static void hecubafb_dpy_deferred_io(struct fb_info *info,
+-				struct list_head *pagelist)
++static void hecubafb_dpy_deferred_io(struct fb_info *info)
+ {
+ 	hecubafb_dpy_update(info->par);
+ }
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index 1de2081..cc29711 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -30,7 +30,6 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+-#include <linux/list.h>
+ #include <linux/firmware.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/uaccess.h>
+@@ -464,20 +463,22 @@ static u16 metronomefb_dpy_update_page(struct metronomefb_par *par, int index)
+ }
+ 
+ /* this is called back from the deferred io workqueue */
+-static void metronomefb_dpy_deferred_io(struct fb_info *info,
+-				struct list_head *pagelist)
++static void metronomefb_dpy_deferred_io(struct fb_info *info)
+ {
+ 	u16 cksum;
+-	struct page *cur;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+ 	struct metronomefb_par *par = info->par;
++	int i;
++
++	/* walk the written page map and swizzle the data */
++	for (i = find_first_bit(fbdefio->pagemap, fbdefio->pagecount);
++		i < fbdefio->pagecount;
++		i = find_next_bit(fbdefio->pagemap, fbdefio->pagecount, i),
++		i++) {
+ 
+-	/* walk the written page list and swizzle the data */
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+-		cksum = metronomefb_dpy_update_page(par,
+-					(cur->index << PAGE_SHIFT));
+-		par->metromem_img_csum -= par->csum_table[cur->index];
+-		par->csum_table[cur->index] = cksum;
++		cksum = metronomefb_dpy_update_page(par, (i << PAGE_SHIFT));
++		par->metromem_img_csum -= par->csum_table[i];
++		par->csum_table[i] = cksum;
+ 		par->metromem_img_csum += cksum;
+ 	}
+ 
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a92ed07..d1e849a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -600,10 +600,11 @@ struct fb_pixmap {
+ struct fb_deferred_io {
+ 	/* delay between mkwrite and deferred handler */
+ 	unsigned long delay;
+-	struct mutex lock; /* mutex that protects the page list */
+-	struct list_head pagelist; /* list of touched pages */
++	struct mutex lock; /* mutex that protects the pagemap */
++	int pagecount; /* count of pages */
++	unsigned long *pagemap; /* bitmap of touched pages */
+ 	/* callback */
+-	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
++	void (*deferred_io)(struct fb_info *info);
  };
- 
- /* board specific routines */
-@@ -56,4 +60,10 @@ struct broadsheet_board {
- 	int (*setup_irq)(struct fb_info *);
- };
- 
-+struct broadsheetfb_damage {
-+	struct list_head list;
-+	__u32 len;		/* Number of entries */
-+	struct fb_damage_rect *rects; /* array of damage rectangles */
-+};
-+
  #endif
+ 
 -- 
 1.5.2.3
 

@@ -1,7 +1,7 @@
 From: Andres Salomon <dilinger-pFFUokh25LWsTnJN9+BGXg@public.gmane.org>
-Subject: [PATCH 2/3] gxfb: properly alloc cmap and plug cmap leak
-Date: Thu, 29 Jan 2009 18:45:52 +0000
-Message-ID: <20090129184552.74b11173@ephemeral>
+Subject: [PATCH 3/3] gx1fb: properly alloc cmap and plug cmap leak
+Date: Thu, 29 Jan 2009 18:46:02 +0000
+Message-ID: <20090129184602.6005697a@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -26,19 +26,19 @@ cmap memory upon module unload..
 
 Signed-off-by: Andres Salomon <dilinger-8fiUuRrzOP0dnm+yROfE0A@public.gmane.org>
 ---
- drivers/video/geode/gxfb_core.c |   17 +++++++++++------
+ drivers/video/geode/gx1fb_core.c |   17 +++++++++++------
  1 files changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-index 4841189..2552cac 100644
---- a/drivers/video/geode/gxfb_core.c
-+++ b/drivers/video/geode/gxfb_core.c
-@@ -171,13 +171,10 @@ static int gxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 
- static int gxfb_set_par(struct fb_info *info)
+diff --git a/drivers/video/geode/gx1fb_core.c b/drivers/video/geode/gx1fb_core.c
+index 751e491..f20eff8 100644
+--- a/drivers/video/geode/gx1fb_core.c
++++ b/drivers/video/geode/gx1fb_core.c
+@@ -136,13 +136,10 @@ static int gx1fb_set_par(struct fb_info *info)
  {
--	if (info->var.bits_per_pixel > 8) {
-+	if (info->var.bits_per_pixel > 8)
+ 	struct geodefb_par *par = info->par;
+ 
+-	if (info->var.bits_per_pixel == 16) {
++	if (info->var.bits_per_pixel == 16)
  		info->fix.visual = FB_VISUAL_TRUECOLOR;
 -		fb_dealloc_cmap(&info->cmap);
 -	} else {
@@ -47,22 +47,21 @@ index 4841189..2552cac 100644
 -		fb_alloc_cmap(&info->cmap, 1<<info->var.bits_per_pixel, 0);
 -	}
  
- 	info->fix.line_length = gx_line_delta(info->var.xres, info->var.bits_per_pixel);
+ 	info->fix.line_length = gx1_line_delta(info->var.xres, info->var.bits_per_pixel);
  
-@@ -331,6 +328,11 @@ static struct fb_info * __init gxfb_init_fbinfo(struct device *dev)
- 
- 	info->var.grayscale	= 0;
+@@ -315,6 +312,10 @@ static struct fb_info * __init gx1fb_init_fbinfo(struct device *dev)
+ 	if (!par->panel_x)
+ 		par->enable_crt = 1; /* fall back to CRT if no panel is specified */
  
 +	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
 +		framebuffer_release(info);
 +		return NULL;
 +	}
-+
  	return info;
  }
  
-@@ -443,8 +445,10 @@ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *i
- 		pci_release_region(pdev, 1);
+@@ -374,8 +375,11 @@ static int __init gx1fb_probe(struct pci_dev *pdev, const struct pci_device_id *
+ 		release_mem_region(gx1_gx_base() + 0x8300, 0x100);
  	}
  
 -	if (info)
@@ -70,12 +69,13 @@ index 4841189..2552cac 100644
 +		fb_dealloc_cmap(&info->cmap);
  		framebuffer_release(info);
 +	}
++
  	return ret;
  }
  
-@@ -467,6 +471,7 @@ static void gxfb_remove(struct pci_dev *pdev)
- 	iounmap(par->gp_regs);
- 	pci_release_region(pdev, 1);
+@@ -395,6 +399,7 @@ static void gx1fb_remove(struct pci_dev *pdev)
+ 	iounmap(par->dc_regs);
+ 	release_mem_region(gx1_gx_base() + 0x8300, 0x100);
  
 +	fb_dealloc_cmap(&info->cmap);
  	pci_set_drvdata(pdev, NULL);

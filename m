@@ -1,100 +1,100 @@
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular locking 
-	dependency on hibernation
-Date: Thu, 29 Jan 2009 11:03:24 +0100
-Message-ID: <a2776ec50901290203k427868bq5d863ae82a98b4ca@mail.gmail.com>
-References: <200901272137.57757.arvidjaar@mail.ru>
-	 <Pine.LNX.4.64.0901291009220.13600@anakin>
+From: Andres Salomon <dilinger-pFFUokh25LWsTnJN9+BGXg@public.gmane.org>
+Subject: [PATCH 1/3] lxfb: properly alloc cmap in all cases and don't leak
+	the memory
+Date: Thu, 29 Jan 2009 18:45:34 +0000
+Message-ID: <20090129184534.45de4b19@ephemeral>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756833AbZA2KDh@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0901291009220.13600@anakin>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-pm@lists.linux-foundation.org, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-geode-bounces-PfSpb0PWhxZc2C7mugBRk2EX/6BAtgUQ@public.gmane.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://bombadil.infradead.org/mailman/listinfo/linux-geode>, 
+	<mailto:linux-geode-request-PfSpb0PWhxZc2C7mugBRk2EX/6BAtgUQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://bombadil.infradead.org/pipermail/linux-geode>
+List-Post: <mailto:linux-geode-PfSpb0PWhxZc2C7mugBRk2EX/6BAtgUQ@public.gmane.org>
+List-Help: <mailto:linux-geode-request-PfSpb0PWhxZc2C7mugBRk2EX/6BAtgUQ@public.gmane.org?subject=help>
+List-Subscribe: <http://bombadil.infradead.org/mailman/listinfo/linux-geode>, 
+	<mailto:linux-geode-request-PfSpb0PWhxZc2C7mugBRk2EX/6BAtgUQ@public.gmane.org?subject=subscribe>
+Sender: linux-geode-bounces-PfSpb0PWhxZc2C7mugBRk2EX/6BAtgUQ@public.gmane.org
+Errors-To: linux-geode-bounces-PfSpb0PWhxZc2C7mugBRk2EX/6BAtgUQ@public.gmane.org
+To: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Cc: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, lkml-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, adaplas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-geode-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Marco La Porta <marco-laporta-IWqWACnzNjyonA0d6jMUrA@public.gmane.org>
 
-On Thu, Jan 29, 2009 at 10:10 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Tue, 27 Jan 2009, Andrey Borzenkov wrote:
->> I do not know if this is new; I usually do not hibernate at all and was
->> testing another driver actually. I do not remember such issues in 2.6.28
->> though. Dmesg follows; config attached.
->
->> [11715.652498] =======================================================
->> [11715.652520] [ INFO: possible circular locking dependency detected ]
->> [11715.652534] 2.6.29-rc2-1avb #11
->> [11715.652541] -------------------------------------------------------
->> [11715.652550] s2disk/25519 is trying to acquire lock:
->> [11715.652562]  (&fb_info->lock){--..}, at: [<c0223017>] fb_mmap+0x97/0x170
->> [11715.652623]
->> [11715.652625] but task is already holding lock:
->> [11715.652632]  (&mm->mmap_sem){----}, at: [<c010639e>] sys_mmap2+0x8e/0xc0
->> [11715.652669]
->> [11715.652671] which lock already depends on the new lock.
->> [11715.652675]
->> [11715.652681]
->> [11715.652683] the existing dependency chain (in reverse order) is:
->> [11715.652691]
->> [11715.652693] -> #1 (&mm->mmap_sem){----}:
->> [11715.652707]        [<c0144ecf>] __lock_acquire+0x129f/0x1930
->> [11715.652730]        [<c01455bc>] lock_acquire+0x5c/0x80
->> [11715.652742]        [<c0181e57>] might_fault+0x77/0xa0
->> [11715.652764]        [<c0209325>] copy_from_user+0x35/0x130
->> [11715.652782]        [<c0223ef5>] fb_ioctl+0x1d5/0x3f0
->> [11715.652797]        [<c01a51d0>] vfs_ioctl+0x20/0x80
->> [11715.652832]        [<c01a53e2>] do_vfs_ioctl+0x72/0x570
->> [11715.652845]        [<c01a5919>] sys_ioctl+0x39/0x70
->> [11715.652857]        [<c0103371>] sysenter_do_call+0x12/0x31
->> [11715.652870]        [<ffffffff>] 0xffffffff
->> [11715.652973]
->> [11715.652975] -> #0 (&fb_info->lock){--..}:
->> [11715.652988]        [<c014503c>] __lock_acquire+0x140c/0x1930
->> [11715.653000]        [<c01455bc>] lock_acquire+0x5c/0x80
->> [11715.653011]        [<c030761a>] mutex_lock_nested+0xba/0x2f0
->> [11715.653032]        [<c0223017>] fb_mmap+0x97/0x170
->> [11715.653044]        [<c0188996>] mmap_region+0x1d6/0x530
->> [11715.653067]        [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
->> [11715.653079]        [<c01063bd>] sys_mmap2+0xad/0xc0
->> [11715.653091]        [<c0103371>] sysenter_do_call+0x12/0x31
->> [11715.653102]        [<ffffffff>] 0xffffffff
->> [11715.653116]
->> [11715.653119] other info that might help us debug this:
->> [11715.653122]
->> [11715.653130] 1 lock held by s2disk/25519:
->> [11715.653137]  #0:  (&mm->mmap_sem){----}, at: [<c010639e>]
->> sys_mmap2+0x8e/0xc0
->> [11715.653156]
->> [11715.653158] stack backtrace:
->> [11715.653170] Pid: 25519, comm: s2disk Not tainted 2.6.29-rc2-1avb #11
->> [11715.653179] Call Trace:
->> [11715.653190]  [<c0306248>] ? printk+0x18/0x20
->> [11715.653202]  [<c01437df>] print_circular_bug_tail+0xcf/0xe0
->> [11715.653213]  [<c014503c>] __lock_acquire+0x140c/0x1930
->> [11715.653224]  [<c014328b>] ? trace_hardirqs_on+0xb/0x10
->> [11715.653242]  [<c0309125>] ? _spin_unlock_irqrestore+0x35/0x60
->> [11715.653254]  [<c0140dc5>] ? lock_release_holdtime+0x35/0x210
->> [11715.653265]  [<c01455bc>] lock_acquire+0x5c/0x80
->> [11715.653277]  [<c0223017>] ? fb_mmap+0x97/0x170
->> [11715.653287]  [<c030761a>] mutex_lock_nested+0xba/0x2f0
->> [11715.653298]  [<c0223017>] ? fb_mmap+0x97/0x170
->> [11715.653309]  [<c0223017>] ? fb_mmap+0x97/0x170
->> [11715.653335]  [<c019514d>] ? kmem_cache_alloc+0xad/0x100
->> [11715.653347]  [<c0223017>] fb_mmap+0x97/0x170
->> [11715.653358]  [<c0188996>] mmap_region+0x1d6/0x530
->> [11715.653371]  [<c0186a9d>] ? arch_get_unmapped_area_topdown+0x10d/0x170
->> [11715.653383]  [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
->> [11715.653395]  [<c01063bd>] sys_mmap2+0xad/0xc0
->> [11715.653406]  [<c0103371>] sysenter_do_call+0x12/0x31
->
-> Is this fixed by http://patchwork.kernel.org/patch/3259/?
+Hi Andrew,
 
-Correct.
+Can you please replace Marco's patch with this one?  Marco, can you please
+verify that this fixes your DirectFB issues?  Linux-fb folks, can you please
+verify that we should always have a cmap allocated (if so, there are other
+drivers that need fixing as well)?
 
-As I said in the note there're still some potential deadlocks into
-some driver's specific fb_ioctl(), but at least for the common
-fb_ioctl() implementation, and for this problem in particular, the
-patch avoids the circular locking.
 
--Andrea
+
+
+From: Marco La Porta <marco-laporta-IWqWACnzNjyonA0d6jMUrA@public.gmane.org>
+
+We weren't properly allocating the cmap for depths greater than 8bpp,
+which caused pain for things like DirectFB.  Also, we never freed the
+cmap memory upon module unload..
+
+[dilinger-8fiUuRrzOP0dnm+yROfE0A@public.gmane.org: dropped unnecessary code and clean up patch]
+[dilinger-8fiUuRrzOP0dnm+yROfE0A@public.gmane.org: add error checking and handling]
+
+Signed-off-by: Andres Salomon <dilinger-8fiUuRrzOP0dnm+yROfE0A@public.gmane.org>
+---
+ drivers/video/geode/lxfb_core.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/geode/lxfb_core.c b/drivers/video/geode/lxfb_core.c
+index b965ecd..889cbe3 100644
+--- a/drivers/video/geode/lxfb_core.c
++++ b/drivers/video/geode/lxfb_core.c
+@@ -278,13 +278,10 @@ static int lxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 
+ static int lxfb_set_par(struct fb_info *info)
+ {
+-	if (info->var.bits_per_pixel > 8) {
++	if (info->var.bits_per_pixel > 8)
+ 		info->fix.visual = FB_VISUAL_TRUECOLOR;
+-		fb_dealloc_cmap(&info->cmap);
+-	} else {
++	else
+ 		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+-		fb_alloc_cmap(&info->cmap, 1<<info->var.bits_per_pixel, 0);
+-	}
+ 
+ 	info->fix.line_length = lx_get_pitch(info->var.xres,
+ 		info->var.bits_per_pixel);
+@@ -451,6 +448,11 @@ static struct fb_info * __init lxfb_init_fbinfo(struct device *dev)
+ 
+ 	info->pseudo_palette	= (void *)par + sizeof(struct lxfb_par);
+ 
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
++		framebuffer_release(info);
++		return NULL;
++	}
++
+ 	info->var.grayscale	= 0;
+ 
+ 	return info;
+@@ -579,8 +581,10 @@ err:
+ 		pci_release_region(pdev, 3);
+ 	}
+ 
+-	if (info)
++	if (info) {
++		fb_dealloc_cmap(&info->cmap);
+ 		framebuffer_release(info);
++	}
+ 
+ 	return ret;
+ }
+@@ -604,6 +608,7 @@ static void lxfb_remove(struct pci_dev *pdev)
+ 	iounmap(par->vp_regs);
+ 	pci_release_region(pdev, 3);
+ 
++	fb_dealloc_cmap(&info->cmap);
+ 	pci_set_drvdata(pdev, NULL);
+ 	framebuffer_release(info);
+ }
+-- 
+1.5.6.5

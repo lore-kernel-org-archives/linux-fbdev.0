@@ -1,26 +1,27 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [RFC 2.6.28 1/2] fbdev: add damage support
-Date: Fri, 30 Jan 2009 20:01:42 +0900
-Message-ID: <aec7e5c30901300301o74937c9fvb8c59bb6739a84d6@mail.gmail.com>
-References: <12328857453626-git-send-email-jayakumar.lkml@gmail.com>
+Subject: Re: [RFC 2.6.28 1/1] fbdev: defio pagelist to
+	pagemap
+Date: Fri, 30 Jan 2009 20:07:59 +0900
+Message-ID: <aec7e5c30901300307i4d1eeb7cmcf83bef39e14b855@mail.gmail.com>
+References: <12329361431140-git-send-email-jayakumar.lkml@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <magnus.damm@gmail.com>) id 1LSr86-0002mu-KE
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <magnus.damm@gmail.com>) id 1LSrED-0007MH-Dy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 Jan 2009 11:01:46 +0000
-Received: from fg-out-1718.google.com ([72.14.220.156])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LSr84-0002qY-HI for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 30 Jan 2009 11:01:46 +0000
-Received: by fg-out-1718.google.com with SMTP id 16so293058fgg.32
+	Fri, 30 Jan 2009 11:08:05 +0000
+Received: from fk-out-0910.google.com ([209.85.128.189])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LSrEA-0000XN-1G for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 30 Jan 2009 11:08:05 +0000
+Received: by fk-out-0910.google.com with SMTP id 19so406192fkr.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 30 Jan 2009 03:01:42 -0800 (PST)
-In-Reply-To: <12328857453626-git-send-email-jayakumar.lkml@gmail.com>
+	Fri, 30 Jan 2009 03:07:59 -0800 (PST)
+In-Reply-To: <12329361431140-git-send-email-jayakumar.lkml@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,36 +34,53 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Jaya Kumar <jayakumar.lkml@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, armbru@redhat.com, lethal@linux-sh.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Sun, Jan 25, 2009 at 9:15 PM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
-> This is version 2 of an idea about allowing userspace to provide damage
-> information to drivers. Thanks to Magnus, Tomi, and others for discussion
-> and ideas.
-
-...
-
-> This patch adds the ability for userspace applications to provide damage
-> information to the underlying driver. This is useful in scenarios where the
-> underlying driver can perform transfer optimizations based on knowing
-> exactly which framebuffer areas that were updated. This functionality is
-> exposed by using a simple x,y,w,h bounding box structure. Userspace is
-> expected to perform its damage and then perform the ioctl. The underlying
-> driver is free to use this information as it sees fit including ignoring it
-> if it chooses to. An example use case will be provided in the case of
-> broadsheetfb.c where the damage information is aggregated for deferred use.
+On Mon, Jan 26, 2009 at 11:15 AM, Jaya Kumar <jayakumar.lkml@gmail.com> wrote:
+> Hi Magnus, fbdev friends,
 >
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-> Cc: Magnus Damm <magnus.damm@gmail.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-> Cc: armbru@redhat.com
-> Cc: lethal@linux-sh.org
-> Cc: adaplas@gmail.com
-> Cc: linux-fbdev-devel@lists.sourceforge.net
-> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+> As discussed previously, this is version 2 of converting pagelist use
+> in defio over to pagemap. Thanks to Magnus for ideas and discussion.
+> The primary change is the use of bitmap ops rather than manual setting
+> of bits. If everyone is okay with the idea, then we will also need to
+> convert xen-pvfb, sh and any other drivers using defio. Let me know
+> your thoughts.
 
-Looking good except that the patch doesn't apply on new kernels.
+I hope the sh changes will be trivial. Any change that you can include
+it in your patch?
 
-Acked-by: Magnus Damm <damm@igel.co.jp>
+> The defio implementation was using a list structure in order to
+> track which pages had been written to. Basically, that was a poor
+> choice and this had been correctly raised as an issue by Tony
+> a while back and Magnus more recently. This patch is an attempt to
+> rectify the issue. These changes aren't tested yet, just compiles.
+
+Hm, what are the requirements for this patch? It doesn't apply to
+2.6.28 or latest git.
+
+> @@ -82,37 +82,14 @@ int fb_deferred_io_fsync(struct file *file, struct dentry *dentry, int datasync)
+>  EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
+>
+>  /*
+> - * Adds page to list of dirty pages, keeps it in sorted order and handles
+> - * checking for duplicates.
+> + * Set page to mark it dirty in our pagemap
+>  */
+> -static void fb_defio_pagelist_add(struct fb_deferred_io *fbdefio,
+> +static void fb_defio_set_pagemap(struct fb_deferred_io *fbdefio,
+>                                        struct page *page)
+>  {
+> -       struct page *cur;
+> -       /* protect against the workqueue changing the page list */
+> +       /* protect against the workqueue changing the pagemap */
+>        mutex_lock(&fbdefio->lock);
+
+I don't think the mutex is needed since you now are using atomic bitops.
+
+Can you please post up-port your patch to a more recent kernel? I'll
+have a look at your code again late next week.
+
+Cheers,
+
+/ magnus
 
 ------------------------------------------------------------------------------
 This SF.net email is sponsored by:

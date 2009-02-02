@@ -1,1278 +1,442 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cirrusfb: convert printks to dev_foo
-Date: Mon, 2 Feb 2009 19:56:59 +0100
-Message-ID: <20090202195659.67b12917.krzysztof.h1@poczta.fm>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 1/2] atyfb: fix CONFIG_ namespace violations
+Date: Mon, 2 Feb 2009 15:00:02 -0800
+Message-ID: <20090202150002.05838fed.randy.dunlap@oracle.com>
+References: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org>
+	<4984AC40.8030708@oracle.com>
+	<20090131121008.eb7f5ddd.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LU3vK-0007C5-ED
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Feb 2009 18:53:34 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LU3vA-00029n-1Q for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Feb 2009 18:53:34 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759320AbZBBXBe@vger.kernel.org>
+In-Reply-To: <20090131121008.eb7f5ddd.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Author: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Sat, 31 Jan 2009 12:10:08 -0800 Andrew Morton wrote:
 
-Convert all printks to dev_dbg, dev_info
-or dev_err. Kill some excessive debug
-information and code in the process.
+> On Sat, 31 Jan 2009 11:53:36 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > so staging adds a new config symbol that conflicts with the
+> > (incorrect namespace) usage in mach64.h.
+> > 
+> > mach64 needs to change IMO, even though it is older.
+> 
+> Sigh, yes, that file has gone on a rampage through the namespace
+> rules.  I'll take a look at it sometime.
+> --
+
+I went ahead with a minimal set of changes, but you can toss them
+and do more if you prefer.
 
 ---
 
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 30684fb..21302d1 100644
---- a/drivers/video/cirrusfb.c
-+++ b/drivers/video/cirrusfb.c
-@@ -34,8 +34,6 @@
-  *
-  */
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+[1/2] Fix namespace violations by changing non-kconfig CONFIG_ names
+to CNFG_*.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ drivers/video/aty/aty128fb.c    |    8 ++++----
+ drivers/video/aty/atyfb_base.c  |   22 +++++++++++-----------
+ drivers/video/aty/radeon_base.c |   10 +++++-----
+ drivers/video/aty/radeon_pm.c   |   18 +++++++++---------
+ include/video/aty128.h          |    4 ++--
+ include/video/mach64.h          |   24 ++++++++++++------------
+ include/video/radeon.h          |   18 +++++++++---------
+ 7 files changed, 52 insertions(+), 52 deletions(-)
+
+--- linux-2.6.29-rc3-git3.orig/drivers/video/aty/atyfb_base.c
++++ linux-2.6.29-rc3-git3/drivers/video/aty/atyfb_base.c
+@@ -135,7 +135,7 @@
+ #if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
+ defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
+ static const u32 lt_lcd_regs[] = {
+-	CONFIG_PANEL_LG,
++	CNFG_PANEL_LG,
+ 	LCD_GEN_CNTL_LG,
+ 	DSTN_CONTROL_LG,
+ 	HFB_PITCH_ADDR_LG,
+@@ -446,7 +446,7 @@ static int __devinit correct_chipset(str
+ 	par->pll_limits.ecp_max = aty_chips[i].ecp_max;
+ 	par->features = aty_chips[i].features;
  
--#define CIRRUSFB_VERSION "2.0-pre2"
--
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -72,20 +70,9 @@
-  *
-  */
+-	chip_id = aty_ld_le32(CONFIG_CHIP_ID, par);
++	chip_id = aty_ld_le32(CNFG_CHIP_ID, par);
+ 	type = chip_id & CFG_CHIP_TYPE;
+ 	rev = (chip_id & CFG_CHIP_REV) >> 24;
  
--/* enable debug output? */
--/* #define CIRRUSFB_DEBUG 1 */
--
- /* disable runtime assertions? */
- /* #define CIRRUSFB_NDEBUG */
- 
--/* debug output */
--#ifdef CIRRUSFB_DEBUG
--#define DPRINTK(fmt, args...) \
--	printk(KERN_DEBUG "%s: " fmt, __func__ , ## args)
--#else
--#define DPRINTK(fmt, args...)
--#endif
--
- /* debugging assertions */
- #ifndef CIRRUSFB_NDEBUG
- #define assert(expr) \
-@@ -426,11 +413,10 @@ static void cirrusfb_RectFill(u8 __iomem *regbase, int bits_per_pixel,
- static void bestclock(long freq, int *nom, int *den, int *div);
- 
- #ifdef CIRRUSFB_DEBUG
--static void cirrusfb_dump(void);
--static void cirrusfb_dbg_reg_dump(caddr_t regbase);
--static void cirrusfb_dbg_print_regs(caddr_t regbase,
-+static void cirrusfb_dbg_reg_dump(struct fb_info *info, caddr_t regbase);
-+static void cirrusfb_dbg_print_regs(struct fb_info *info,
-+				    caddr_t regbase,
- 				    enum cirrusfb_dbg_reg_class reg_class, ...);
--static void cirrusfb_dbg_print_byte(const char *name, unsigned char val);
- #endif /* CIRRUSFB_DEBUG */
- 
- /*** END   PROTOTYPES ********************************************************/
-@@ -460,23 +446,24 @@ static int cirrusfb_release(struct fb_info *info, int user)
- /**** BEGIN Hardware specific Routines **************************************/
- 
- /* Check if the MCLK is not a better clock source */
--static int cirrusfb_check_mclk(struct cirrusfb_info *cinfo, long freq)
-+static int cirrusfb_check_mclk(struct fb_info *info, long freq)
- {
-+	struct cirrusfb_info *cinfo = info->par;
- 	long mclk = vga_rseq(cinfo->regbase, CL_SEQR1F) & 0x3f;
- 
- 	/* Read MCLK value */
- 	mclk = (14318 * mclk) >> 3;
--	DPRINTK("Read MCLK of %ld kHz\n", mclk);
-+	dev_dbg(info->device, "Read MCLK of %ld kHz\n", mclk);
- 
- 	/* Determine if we should use MCLK instead of VCLK, and if so, what we
- 	 * should divide it by to get VCLK
- 	 */
- 
- 	if (abs(freq - mclk) < 250) {
--		DPRINTK("Using VCLK = MCLK\n");
-+		dev_dbg(info->device, "Using VCLK = MCLK\n");
- 		return 1;
- 	} else if (abs(freq - mclk / 2) < 250) {
--		DPRINTK("Using VCLK = MCLK/2\n");
-+		dev_dbg(info->device, "Using VCLK = MCLK/2\n");
- 		return 2;
- 	}
- 
-@@ -492,56 +479,6 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
- 
- 	switch (var->bits_per_pixel) {
- 	case 1:
--		pixels /= 4;
--		break;		/* 8 pixel per byte, only 1/4th of mem usable */
--	case 8:
--	case 16:
--	case 32:
--		break;		/* 1 pixel == 1 byte */
--	default:
--		printk(KERN_ERR "cirrusfb: mode %dx%dx%d rejected..."
--			"color depth not supported.\n",
--			var->xres, var->yres, var->bits_per_pixel);
--		DPRINTK("EXIT - EINVAL error\n");
--		return -EINVAL;
--	}
--
--	if (var->xres_virtual < var->xres)
--		var->xres_virtual = var->xres;
--	/* use highest possible virtual resolution */
--	if (var->yres_virtual == -1) {
--		var->yres_virtual = pixels / var->xres_virtual;
--
--		printk(KERN_INFO "cirrusfb: virtual resolution set to "
--			"maximum of %dx%d\n", var->xres_virtual,
--			var->yres_virtual);
--	}
--	if (var->yres_virtual < var->yres)
--		var->yres_virtual = var->yres;
--
--	if (var->xres_virtual * var->yres_virtual > pixels) {
--		printk(KERN_ERR "cirrusfb: mode %dx%dx%d rejected... "
--		      "virtual resolution too high to fit into video memory!\n",
--			var->xres_virtual, var->yres_virtual,
--			var->bits_per_pixel);
--		DPRINTK("EXIT - EINVAL error\n");
--		return -EINVAL;
--	}
--
--
--	if (var->xoffset < 0)
--		var->xoffset = 0;
--	if (var->yoffset < 0)
--		var->yoffset = 0;
--
--	/* truncate xoffset and yoffset to maximum if too high */
--	if (var->xoffset > var->xres_virtual - var->xres)
--		var->xoffset = var->xres_virtual - var->xres - 1;
--	if (var->yoffset > var->yres_virtual - var->yres)
--		var->yoffset = var->yres_virtual - var->yres - 1;
--
--	switch (var->bits_per_pixel) {
--	case 1:
- 		var->red.offset = 0;
- 		var->red.length = 1;
- 		var->green = var->red;
-@@ -586,12 +523,46 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
- 		break;
- 
- 	default:
--		DPRINTK("Unsupported bpp size: %d\n", var->bits_per_pixel);
-+		dev_dbg(info->device,
-+			"Unsupported bpp size: %d\n", var->bits_per_pixel);
- 		assert(false);
- 		/* should never occur */
- 		break;
- 	}
- 
-+	if (var->xres_virtual < var->xres)
-+		var->xres_virtual = var->xres;
-+	/* use highest possible virtual resolution */
-+	if (var->yres_virtual == -1) {
-+		var->yres_virtual = pixels / var->xres_virtual;
-+
-+		dev_info(info->device,
-+			 "virtual resolution set to maximum of %dx%d\n",
-+			 var->xres_virtual, var->yres_virtual);
-+	}
-+	if (var->yres_virtual < var->yres)
-+		var->yres_virtual = var->yres;
-+
-+	if (var->xres_virtual * var->yres_virtual > pixels) {
-+		dev_err(info->device, "mode %dx%dx%d rejected... "
-+		      "virtual resolution too high to fit into video memory!\n",
-+			var->xres_virtual, var->yres_virtual,
-+			var->bits_per_pixel);
-+		return -EINVAL;
-+	}
-+
-+
-+	if (var->xoffset < 0)
-+		var->xoffset = 0;
-+	if (var->yoffset < 0)
-+		var->yoffset = 0;
-+
-+	/* truncate xoffset and yoffset to maximum if too high */
-+	if (var->xoffset > var->xres_virtual - var->xres)
-+		var->xoffset = var->xres_virtual - var->xres - 1;
-+	if (var->yoffset > var->yres_virtual - var->yres)
-+		var->yoffset = var->yres_virtual - var->yres - 1;
-+
- 	var->red.msb_right =
- 	    var->green.msb_right =
- 	    var->blue.msb_right =
-@@ -606,9 +577,8 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
- 		yres = (yres + 1) / 2;
- 
- 	if (yres >= 1280) {
--		printk(KERN_ERR "cirrusfb: ERROR: VerticalTotal >= 1280; "
-+		dev_err(info->device, "ERROR: VerticalTotal >= 1280; "
- 			"special treatment required! (TODO)\n");
--		DPRINTK("EXIT - EINVAL error\n");
- 		return -EINVAL;
- 	}
- 
-@@ -642,7 +612,8 @@ static int cirrusfb_decode_var(const struct fb_var_screeninfo *var,
- 		break;
- 
- 	default:
--		DPRINTK("Unsupported bpp size: %d\n", var->bits_per_pixel);
-+		dev_dbg(info->device,
-+			"Unsupported bpp size: %d\n", var->bits_per_pixel);
- 		assert(false);
- 		/* should never occur */
- 		break;
-@@ -653,7 +624,7 @@ static int cirrusfb_decode_var(const struct fb_var_screeninfo *var,
- 	/* convert from ps to kHz */
- 	freq = PICOS2KHZ(var->pixclock);
- 
--	DPRINTK("desired pixclock: %ld kHz\n", freq);
-+	dev_dbg(info->device, "desired pixclock: %ld kHz\n", freq);
- 
- 	maxclock = cirrusfb_board_info[cinfo->btype].maxclock[maxclockidx];
- 	regs->multiplexing = 0;
-@@ -668,9 +639,9 @@ static int cirrusfb_decode_var(const struct fb_var_screeninfo *var,
- 			break;
- 
- 		default:
--			printk(KERN_ERR "cirrusfb: Frequency greater "
--				"than maxclock (%ld kHz)\n", maxclock);
--			DPRINTK("EXIT - return -EINVAL\n");
-+			dev_err(info->device,
-+				"Frequency greater than maxclock (%ld kHz)\n",
-+				maxclock);
- 			return -EINVAL;
+@@ -629,7 +629,7 @@ static void aty_get_crtc(const struct at
+ 		    crtc->lcd_index = aty_ld_le32(LCD_INDEX, par);
+ 		    aty_st_le32(LCD_INDEX, crtc->lcd_index, par);
  		}
+-		crtc->lcd_config_panel = aty_ld_lcd(CONFIG_PANEL, par);
++		crtc->lcd_config_panel = aty_ld_lcd(CNFG_PANEL, par);
+ 		crtc->lcd_gen_cntl = aty_ld_lcd(LCD_GEN_CNTL, par);
+ 
+ 
+@@ -676,7 +676,7 @@ static void aty_set_crtc(const struct at
+ 		aty_st_le32(CRTC_GEN_CNTL, crtc->gen_cntl & ~(CRTC_EXT_DISP_EN | CRTC_EN), par);
+ 
+ 		/* update non-shadow registers first */
+-		aty_st_lcd(CONFIG_PANEL, crtc->lcd_config_panel, par);
++		aty_st_lcd(CNFG_PANEL, crtc->lcd_config_panel, par);
+ 		aty_st_lcd(LCD_GEN_CNTL, crtc->lcd_gen_cntl &
+ 			~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN), par);
+ 
+@@ -858,7 +858,7 @@ static int aty_var_to_crtc(const struct 
+ 		if (!M64_HAS(MOBIL_BUS))
+ 			crtc->lcd_index |= CRTC2_DISPLAY_DIS;
+ 
+-		crtc->lcd_config_panel = aty_ld_lcd(CONFIG_PANEL, par) | 0x4000;
++		crtc->lcd_config_panel = aty_ld_lcd(CNFG_PANEL, par) | 0x4000;
+ 		crtc->lcd_gen_cntl = aty_ld_lcd(LCD_GEN_CNTL, par) & ~CRTC_RW_SELECT;
+ 
+ 		crtc->lcd_gen_cntl &=
+@@ -2254,7 +2254,7 @@ static int __devinit aty_init(struct fb_
+ 	if (!M64_HAS(INTEGRATED)) {
+ 		u32 stat0;
+ 		u8 dac_type, dac_subtype, clk_type;
+-		stat0 = aty_ld_le32(CONFIG_STAT0, par);
++		stat0 = aty_ld_le32(CNFG_STAT0, par);
+ 		par->bus_type = (stat0 >> 0) & 0x07;
+ 		par->ram_type = (stat0 >> 3) & 0x07;
+ 		ramname = aty_gx_ram[par->ram_type];
+@@ -2324,7 +2324,7 @@ static int __devinit aty_init(struct fb_
+ 		par->dac_ops = &aty_dac_ct;
+ 		par->pll_ops = &aty_pll_ct;
+ 		par->bus_type = PCI;
+-		par->ram_type = (aty_ld_le32(CONFIG_STAT0, par) & 0x07);
++		par->ram_type = (aty_ld_le32(CNFG_STAT0, par) & 0x07);
+ 		ramname = aty_ct_ram[par->ram_type];
+ 		/* for many chips, the mclk is 67 MHz for SDRAM, 63 MHz otherwise */
+ 		if (par->pll_limits.mclk == 67 && par->ram_type < SDRAM)
+@@ -2433,7 +2433,7 @@ static int __devinit aty_init(struct fb_
+ 		}
+ 
+ 	if (M64_HAS(MAGIC_VRAM_SIZE)) {
+-		if (aty_ld_le32(CONFIG_STAT1, par) & 0x40000000)
++		if (aty_ld_le32(CNFG_STAT1, par) & 0x40000000)
+ 			info->fix.smem_len += 0x400000;
  	}
-@@ -689,16 +660,17 @@ static int cirrusfb_decode_var(const struct fb_var_screeninfo *var,
- 	return 0;
- }
  
--static void cirrusfb_set_mclk_as_source(const struct cirrusfb_info *cinfo,
--					int div)
-+static void cirrusfb_set_mclk_as_source(const struct fb_info *info, int div)
- {
-+	struct cirrusfb_info *cinfo = info->par;
- 	unsigned char old1f, old1e;
-+
- 	assert(cinfo != NULL);
- 	old1f = vga_rseq(cinfo->regbase, CL_SEQR1F) & ~0x40;
- 
- 	if (div) {
--		DPRINTK("Set %s as pixclock source.\n",
--					(div == 2) ? "MCLK/2" : "MCLK");
-+		dev_dbg(info->device, "Set %s as pixclock source.\n",
-+			(div == 2) ? "MCLK/2" : "MCLK");
- 		old1f |= 0x40;
- 		old1e = vga_rseq(cinfo->regbase, CL_SEQR1E) & ~0x1;
- 		if (div == 2)
-@@ -728,17 +700,16 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	long freq;
- 	int nom, den, div;
- 
--	DPRINTK("ENTER\n");
--	DPRINTK("Requested mode: %dx%dx%d\n",
-+	dev_dbg(info->device, "Requested mode: %dx%dx%d\n",
- 	       var->xres, var->yres, var->bits_per_pixel);
--	DPRINTK("pixclock: %d\n", var->pixclock);
-+	dev_dbg(info->device, "pixclock: %d\n", var->pixclock);
- 
- 	init_vgachip(info);
- 
- 	err = cirrusfb_decode_var(var, &regs, info);
- 	if (err) {
- 		/* should never happen */
--		DPRINTK("mode change aborted.  invalid var.\n");
-+		dev_dbg(info->device, "mode change aborted.  invalid var.\n");
- 		return -EINVAL;
- 	}
- 
-@@ -789,30 +760,30 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	vga_wcrt(regbase, VGA_CRTC_V_SYNC_END, 0x20);	/* previously: 0x00) */
- 
- 	/* if debugging is enabled, all parameters get output before writing */
--	DPRINTK("CRT0: %d\n", htotal);
-+	dev_dbg(info->device, "CRT0: %d\n", htotal);
- 	vga_wcrt(regbase, VGA_CRTC_H_TOTAL, htotal);
- 
--	DPRINTK("CRT1: %d\n", hdispend);
-+	dev_dbg(info->device, "CRT1: %d\n", hdispend);
- 	vga_wcrt(regbase, VGA_CRTC_H_DISP, hdispend);
- 
--	DPRINTK("CRT2: %d\n", var->xres / 8);
-+	dev_dbg(info->device, "CRT2: %d\n", var->xres / 8);
- 	vga_wcrt(regbase, VGA_CRTC_H_BLANK_START, var->xres / 8);
- 
- 	/*  + 128: Compatible read */
--	DPRINTK("CRT3: 128+%d\n", (htotal + 5) % 32);
-+	dev_dbg(info->device, "CRT3: 128+%d\n", (htotal + 5) % 32);
- 	vga_wcrt(regbase, VGA_CRTC_H_BLANK_END,
- 		 128 + ((htotal + 5) % 32));
- 
--	DPRINTK("CRT4: %d\n", hsyncstart);
-+	dev_dbg(info->device, "CRT4: %d\n", hsyncstart);
- 	vga_wcrt(regbase, VGA_CRTC_H_SYNC_START, hsyncstart);
- 
- 	tmp = hsyncend % 32;
- 	if ((htotal + 5) & 32)
- 		tmp += 128;
--	DPRINTK("CRT5: %d\n", tmp);
-+	dev_dbg(info->device, "CRT5: %d\n", tmp);
- 	vga_wcrt(regbase, VGA_CRTC_H_SYNC_END, tmp);
- 
--	DPRINTK("CRT6: %d\n", vtotal & 0xff);
-+	dev_dbg(info->device, "CRT6: %d\n", vtotal & 0xff);
- 	vga_wcrt(regbase, VGA_CRTC_V_TOTAL, vtotal & 0xff);
- 
- 	tmp = 16;		/* LineCompare bit #9 */
-@@ -830,7 +801,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 		tmp |= 64;
- 	if (vsyncstart & 512)
- 		tmp |= 128;
--	DPRINTK("CRT7: %d\n", tmp);
-+	dev_dbg(info->device, "CRT7: %d\n", tmp);
- 	vga_wcrt(regbase, VGA_CRTC_OVERFLOW, tmp);
- 
- 	tmp = 0x40;		/* LineCompare bit #8 */
-@@ -838,25 +809,25 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 		tmp |= 0x20;
- 	if (var->vmode & FB_VMODE_DOUBLE)
- 		tmp |= 0x80;
--	DPRINTK("CRT9: %d\n", tmp);
-+	dev_dbg(info->device, "CRT9: %d\n", tmp);
- 	vga_wcrt(regbase, VGA_CRTC_MAX_SCAN, tmp);
- 
--	DPRINTK("CRT10: %d\n", vsyncstart & 0xff);
-+	dev_dbg(info->device, "CRT10: %d\n", vsyncstart & 0xff);
- 	vga_wcrt(regbase, VGA_CRTC_V_SYNC_START, vsyncstart & 0xff);
- 
--	DPRINTK("CRT11: 64+32+%d\n", vsyncend % 16);
-+	dev_dbg(info->device, "CRT11: 64+32+%d\n", vsyncend % 16);
- 	vga_wcrt(regbase, VGA_CRTC_V_SYNC_END, vsyncend % 16 + 64 + 32);
- 
--	DPRINTK("CRT12: %d\n", vdispend & 0xff);
-+	dev_dbg(info->device, "CRT12: %d\n", vdispend & 0xff);
- 	vga_wcrt(regbase, VGA_CRTC_V_DISP_END, vdispend & 0xff);
- 
--	DPRINTK("CRT15: %d\n", (vdispend + 1) & 0xff);
-+	dev_dbg(info->device, "CRT15: %d\n", (vdispend + 1) & 0xff);
- 	vga_wcrt(regbase, VGA_CRTC_V_BLANK_START, (vdispend + 1) & 0xff);
- 
--	DPRINTK("CRT16: %d\n", vtotal & 0xff);
-+	dev_dbg(info->device, "CRT16: %d\n", vtotal & 0xff);
- 	vga_wcrt(regbase, VGA_CRTC_V_BLANK_END, vtotal & 0xff);
- 
--	DPRINTK("CRT18: 0xff\n");
-+	dev_dbg(info->device, "CRT18: 0xff\n");
- 	vga_wcrt(regbase, VGA_CRTC_LINE_COMPARE, 0xff);
- 
- 	tmp = 0;
-@@ -871,12 +842,15 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	if (vtotal & 512)
- 		tmp |= 128;
- 
--	DPRINTK("CRT1a: %d\n", tmp);
-+	dev_dbg(info->device, "CRT1a: %d\n", tmp);
- 	vga_wcrt(regbase, CL_CRT1A, tmp);
- 
- 	freq = PICOS2KHZ(var->pixclock);
- 	bestclock(freq, &nom, &den, &div);
- 
-+	dev_dbg(info->device, "VCLK freq: %ld kHz  nom: %d  den: %d  div: %d\n",
-+		freq, nom, den, div);
-+
- 	/* set VCLK0 */
- 	/* hardware RefClock: 14.31818 MHz */
- 	/* formula: VClk = (OSC * N) / (D * (1+P)) */
-@@ -886,10 +860,10 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 		/* if freq is close to mclk or mclk/2 select mclk
- 		 * as clock source
+@@ -2946,7 +2946,7 @@ static int __devinit atyfb_setup_sparc(s
+ 		 * Fix PROMs idea of MEM_CNTL settings...
  		 */
--		int divMCLK = cirrusfb_check_mclk(cinfo, freq);
-+		int divMCLK = cirrusfb_check_mclk(info, freq);
- 		if (divMCLK)  {
- 			nom = 0;
--			cirrusfb_set_mclk_as_source(cinfo, divMCLK);
-+			cirrusfb_set_mclk_as_source(info, divMCLK);
+ 		mem = aty_ld_le32(MEM_CNTL, par);
+-		chip_id = aty_ld_le32(CONFIG_CHIP_ID, par);
++		chip_id = aty_ld_le32(CNFG_CHIP_ID, par);
+ 		if (((chip_id & CFG_CHIP_TYPE) == VT_CHIP_ID) && !((chip_id >> 24) & 1)) {
+ 			switch (mem & 0x0f) {
+ 			case 3:
+@@ -2964,7 +2964,7 @@ static int __devinit atyfb_setup_sparc(s
+ 			default:
+ 				break;
+ 			}
+-			if ((aty_ld_le32(CONFIG_STAT0, par) & 7) >= SDRAM)
++			if ((aty_ld_le32(CNFG_STAT0, par) & 7) >= SDRAM)
+ 				mem &= ~(0x00700000);
  		}
- 	}
- 	if (nom) {
-@@ -904,7 +878,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 		    (cinfo->btype == BT_GD5480))
- 			tmp |= 0x80;
- 
--		DPRINTK("CL_SEQR1B: %ld\n", (long) tmp);
-+		dev_dbg(info->device, "CL_SEQR1B: %ld\n", (long) tmp);
- 		vga_wseq(regbase, CL_SEQR1B, tmp);
- 	}
- 
-@@ -952,7 +926,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 
- 	/* programming for different color depths */
- 	if (var->bits_per_pixel == 1) {
--		DPRINTK("cirrusfb: preparing for 1 bit deep display\n");
-+		dev_dbg(info->device, "preparing for 1 bit deep display\n");
- 		vga_wgfx(regbase, VGA_GFX_MODE, 0);	/* mode register */
- 
- 		/* SR07 */
-@@ -964,20 +938,18 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 		case BT_PICASSO4:
- 		case BT_ALPINE:
- 		case BT_GD5480:
--			DPRINTK(" (for GD54xx)\n");
- 			vga_wseq(regbase, CL_SEQR7,
--				  regs.multiplexing ?
-+				 regs.multiplexing ?
- 					bi->sr07_1bpp_mux : bi->sr07_1bpp);
- 			break;
- 
- 		case BT_LAGUNA:
--			DPRINTK(" (for GD546x)\n");
- 			vga_wseq(regbase, CL_SEQR7,
- 				vga_rseq(regbase, CL_SEQR7) & ~0x01);
- 			break;
- 
- 		default:
--			printk(KERN_WARNING "cirrusfb: unknown Board\n");
-+			dev_warn(info->device, "unknown Board\n");
- 			break;
+ 		mem &= ~(0xcf80e000);	/* Turn off all undocumented bits. */
+@@ -3572,7 +3572,7 @@ static int __init atyfb_atari_probe(void
  		}
  
-@@ -987,14 +959,12 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 			/* setting the SEQRF on SD64 is not necessary
- 			 * (only during init)
- 			 */
--			DPRINTK("(for SD64)\n");
- 			/*  MCLK select */
- 			vga_wseq(regbase, CL_SEQR1F, 0x1a);
+ 		/* Fake pci_id for correct_chipset() */
+-		switch (aty_ld_le32(CONFIG_CHIP_ID, par) & CFG_CHIP_TYPE) {
++		switch (aty_ld_le32(CNFG_CHIP_ID, par) & CFG_CHIP_TYPE) {
+ 		case 0x00d7:
+ 			par->pci_id = PCI_CHIP_MACH64GX;
  			break;
+--- linux-2.6.29-rc3-git3.orig/include/video/mach64.h
++++ linux-2.6.29-rc3-git3/include/video/mach64.h
+@@ -103,7 +103,7 @@
+ #define CUR_HORZ_VERT_OFF	0x0070	/* Dword offset 0_1C */
+ #define CUR2_HORZ_VERT_OFF	0x0070	/* Dword offset 0_1C */
  
- 		case BT_PICCOLO:
- 		case BT_SPECTRUM:
--			DPRINTK("(for Piccolo/Spectrum)\n");
- 			/* ### ueberall 0x22? */
- 			/* ##vorher 1c MCLK select */
- 			vga_wseq(regbase, CL_SEQR1F, 0x22);
-@@ -1003,7 +973,6 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 			break;
+-#define CONFIG_PANEL_LG		0x0074	/* Dword offset 0_1D (LG) */
++#define CNFG_PANEL_LG		0x0074	/* Dword offset 0_1D (LG) */
  
- 		case BT_PICASSO:
--			DPRINTK("(for Picasso)\n");
- 			/* ##vorher 22 MCLK select */
- 			vga_wseq(regbase, CL_SEQR1F, 0x22);
- 			/* ## vorher d0 avoid FIFO underruns..? */
-@@ -1014,12 +983,11 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 		case BT_ALPINE:
- 		case BT_GD5480:
- 		case BT_LAGUNA:
--			DPRINTK(" (for GD54xx)\n");
- 			/* do nothing */
- 			break;
+ /* General I/O Control */
+ #define GP_IO			0x0078	/* Dword offset 0_1E */
+@@ -146,8 +146,8 @@
+ #define CLOCK_SEL_CNTL		0x0090	/* Dword offset 0_24 */
  
- 		default:
--			printk(KERN_WARNING "cirrusfb: unknown Board\n");
-+			dev_warn(info->device, "unknown Board\n");
- 			break;
- 		}
+ /* Configuration */
+-#define CONFIG_STAT1		0x0094	/* Dword offset 0_25 */
+-#define CONFIG_STAT2		0x0098	/* Dword offset 0_26 */
++#define CNFG_STAT1		0x0094	/* Dword offset 0_25 */
++#define CNFG_STAT2		0x0098	/* Dword offset 0_26 */
  
-@@ -1045,7 +1013,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	 */
+ /* Bus Control */
+ #define BUS_CNTL		0x00A0	/* Dword offset 0_28 */
+@@ -190,9 +190,9 @@
+ #define POWER_MANAGEMENT_LG	0x00D8	/* Dword offset 0_36 (LG) */
  
- 	else if (var->bits_per_pixel == 8) {
--		DPRINTK("cirrusfb: preparing for 8 bit deep display\n");
-+		dev_dbg(info->device, "preparing for 8 bit deep display\n");
- 		switch (cinfo->btype) {
- 		case BT_SD64:
- 		case BT_PICCOLO:
-@@ -1054,20 +1022,18 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 		case BT_PICASSO4:
- 		case BT_ALPINE:
- 		case BT_GD5480:
--			DPRINTK(" (for GD54xx)\n");
- 			vga_wseq(regbase, CL_SEQR7,
- 				  regs.multiplexing ?
- 					bi->sr07_8bpp_mux : bi->sr07_8bpp);
- 			break;
+ /* Configuration */
+-#define CONFIG_CNTL		0x00DC	/* Dword offset 0_37 (CT, ET, VT) */
+-#define CONFIG_CHIP_ID		0x00E0	/* Dword offset 0_38 */
+-#define CONFIG_STAT0		0x00E4	/* Dword offset 0_39 */
++#define CNFG_CNTL		0x00DC	/* Dword offset 0_37 (CT, ET, VT) */
++#define CNFG_CHIP_ID		0x00E0	/* Dword offset 0_38 */
++#define CNFG_STAT0		0x00E4	/* Dword offset 0_39 */
  
- 		case BT_LAGUNA:
--			DPRINTK(" (for GD546x)\n");
- 			vga_wseq(regbase, CL_SEQR7,
- 				vga_rseq(regbase, CL_SEQR7) | 0x01);
- 			break;
+ /* Test and Debug */
+ #define CRC_SIG			0x00E8	/* Dword offset 0_3A */
+@@ -851,17 +851,17 @@
+ #define PLL_YCLK_CNTL		0x29
+ #define PM_DYN_CLK_CNTL		0x2A
  
- 		default:
--			printk(KERN_WARNING "cirrusfb: unknown Board\n");
-+			dev_warn(info->device, "unknown Board\n");
- 			break;
- 		}
+-/* CONFIG_CNTL register constants */
++/* CNFG_CNTL register constants */
+ #define APERTURE_4M_ENABLE	1
+ #define APERTURE_8M_ENABLE	2
+ #define VGA_APERTURE_ENABLE	4
  
-@@ -1095,18 +1061,16 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 			break;
+-/* CONFIG_STAT0 register constants (GX, CX) */
++/* CNFG_STAT0 register constants (GX, CX) */
+ #define CFG_BUS_TYPE		0x00000007
+ #define CFG_MEM_TYPE		0x00000038
+ #define CFG_INIT_DAC_TYPE	0x00000e00
  
- 		case BT_ALPINE:
--			DPRINTK(" (for GD543x)\n");
- 			/* We already set SRF and SR1F */
- 			break;
+-/* CONFIG_STAT0 register constants (CT, ET, VT) */
++/* CNFG_STAT0 register constants (CT, ET, VT) */
+ #define CFG_MEM_TYPE_xT		0x00000007
  
- 		case BT_GD5480:
- 		case BT_LAGUNA:
--			DPRINTK(" (for GD54xx)\n");
- 			/* do nothing */
- 			break;
+ #define ISA			0
+@@ -942,7 +942,7 @@
+ #define PCI_ATI_VENDOR_ID	0x1002
  
- 		default:
--			printk(KERN_WARNING "cirrusfb: unknown Board\n");
-+			dev_warn(info->device, "unknown board\n");
- 			break;
- 		}
  
-@@ -1134,7 +1098,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	 */
+-/* CONFIG_CHIP_ID register constants */
++/* CNFG_CHIP_ID register constants */
+ #define CFG_CHIP_TYPE		0x0000FFFF
+ #define CFG_CHIP_CLASS		0x00FF0000
+ #define CFG_CHIP_REV		0xFF000000
+@@ -951,7 +951,7 @@
+ #define CFG_CHIP_MINOR		0xC0000000
  
- 	else if (var->bits_per_pixel == 16) {
--		DPRINTK("cirrusfb: preparing for 16 bit deep display\n");
-+		dev_dbg(info->device, "preparing for 16 bit deep display\n");
- 		switch (cinfo->btype) {
- 		case BT_SD64:
- 			/* Extended Sequencer Mode: 256c col. mode */
-@@ -1166,24 +1130,21 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 			break;
  
- 		case BT_ALPINE:
--			DPRINTK(" (for GD543x)\n");
- 			vga_wseq(regbase, CL_SEQR7, 0xa7);
- 			break;
+-/* Chip IDs read from CONFIG_CHIP_ID */
++/* Chip IDs read from CNFG_CHIP_ID */
  
- 		case BT_GD5480:
--			DPRINTK(" (for GD5480)\n");
- 			vga_wseq(regbase, CL_SEQR7, 0x17);
- 			/* We already set SRF and SR1F */
- 			break;
+ /* mach64GX family */
+ #define GX_CHIP_ID	0xD7	/* mach64GX (ATI888GX00) */
+@@ -1254,7 +1254,7 @@
+ #define CRTC2_DISPLAY_DIS	0x00000400
  
- 		case BT_LAGUNA:
--			DPRINTK(" (for GD546x)\n");
- 			vga_wseq(regbase, CL_SEQR7,
- 				vga_rseq(regbase, CL_SEQR7) & ~0x01);
- 			break;
+ /* LCD register indices */
+-#define CONFIG_PANEL		0x00
++#define CNFG_PANEL		0x00
+ #define LCD_GEN_CNTL		0x01
+ #define DSTN_CONTROL		0x02
+ #define HFB_PITCH_ADDR		0x03
+--- linux-2.6.29-rc3-git3.orig/drivers/video/aty/aty128fb.c
++++ linux-2.6.29-rc3-git3/drivers/video/aty/aty128fb.c
+@@ -1475,7 +1475,7 @@ static int aty128fb_set_par(struct fb_in
+ 	aty128_set_pll(&par->pll, par);
+ 	aty128_set_fifo(&par->fifo_reg, par);
  
- 		default:
--			printk(KERN_WARNING "CIRRUSFB: unknown Board\n");
-+			dev_warn(info->device, "unknown Board\n");
- 			break;
- 		}
+-	config = aty_ld_le32(CONFIG_CNTL) & ~3;
++	config = aty_ld_le32(CNFG_CNTL) & ~3;
  
-@@ -1211,7 +1172,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	 */
- 
- 	else if (var->bits_per_pixel == 32) {
--		DPRINTK("cirrusfb: preparing for 32 bit deep display\n");
-+		dev_dbg(info->device, "preparing for 32 bit deep display\n");
- 		switch (cinfo->btype) {
- 		case BT_SD64:
- 			/* Extended Sequencer Mode: 256c col. mode */
-@@ -1243,24 +1204,21 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 			break;
- 
- 		case BT_ALPINE:
--			DPRINTK(" (for GD543x)\n");
- 			vga_wseq(regbase, CL_SEQR7, 0xa9);
- 			break;
- 
- 		case BT_GD5480:
--			DPRINTK(" (for GD5480)\n");
- 			vga_wseq(regbase, CL_SEQR7, 0x19);
- 			/* We already set SRF and SR1F */
- 			break;
- 
- 		case BT_LAGUNA:
--			DPRINTK(" (for GD546x)\n");
- 			vga_wseq(regbase, CL_SEQR7,
- 				vga_rseq(regbase, CL_SEQR7) & ~0x01);
- 			break;
- 
- 		default:
--			printk(KERN_WARNING "cirrusfb: unknown Board\n");
-+			dev_warn(info->device, "unknown Board\n");
- 			break;
- 		}
- 
-@@ -1284,8 +1242,8 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	 */
- 
- 	else
--		printk(KERN_ERR "cirrusfb: What's this?? "
--			" requested color depth == %d.\n",
-+		dev_err(info->device,
-+			"What's this? requested color depth == %d.\n",
- 			var->bits_per_pixel);
- 
- 	vga_wcrt(regbase, VGA_CRTC_OFFSET, offset & 0xff);
-@@ -1355,7 +1313,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- */
- 
- 	vga_wseq(regbase, VGA_SEQ_CLOCK_MODE, tmp);
--	DPRINTK("CL_SEQR1: %d\n", tmp);
-+	dev_dbg(info->device, "CL_SEQR1: %d\n", tmp);
- 
- 	cinfo->currentmode = regs;
- 
-@@ -1363,10 +1321,9 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	cirrusfb_pan_display(var, info);
- 
- #ifdef CIRRUSFB_DEBUG
--	cirrusfb_dump();
-+	cirrusfb_dbg_reg_dump(info, NULL);
+ #if defined(__BIG_ENDIAN)
+ 	if (par->crtc.bpp == 32)
+@@ -1484,7 +1484,7 @@ static int aty128fb_set_par(struct fb_in
+ 		config |= 1;	/* make aperture do 16 bit swapping */
  #endif
  
--	DPRINTK("EXIT\n");
- 	return 0;
+-	aty_st_le32(CONFIG_CNTL, config);
++	aty_st_le32(CNFG_CNTL, config);
+ 	aty_st_8(CRTC_EXT_CNTL + 1, 0);	/* turn the video back on */
+ 
+ 	info->fix.line_length = (par->crtc.vxres * par->crtc.bpp) >> 3;
+@@ -1875,7 +1875,7 @@ static int __devinit aty128_init(struct 
+ 	u32 dac;
+ 
+ 	/* Get the chip revision */
+-	chip_rev = (aty_ld_le32(CONFIG_CNTL) >> 16) & 0x1F;
++	chip_rev = (aty_ld_le32(CNFG_CNTL) >> 16) & 0x1F;
+ 
+ 	strcpy(video_card, "Rage128 XX ");
+ 	video_card[8] = ent->device >> 8;
+@@ -2057,7 +2057,7 @@ static int __devinit aty128_probe(struct
+ 
+ 	/* Grab memory size from the card */
+ 	// How does this relate to the resource length from the PCI hardware?
+-	par->vram_size = aty_ld_le32(CONFIG_MEMSIZE) & 0x03FFFFFF;
++	par->vram_size = aty_ld_le32(CNFG_MEMSIZE) & 0x03FFFFFF;
+ 
+ 	/* Virtualize the framebuffer */
+ 	info->screen_base = ioremap(fb_addr, par->vram_size);
+--- linux-2.6.29-rc3-git3.orig/include/video/aty128.h
++++ linux-2.6.29-rc3-git3/include/video/aty128.h
+@@ -21,9 +21,9 @@
+ #define I2C_CNTL_1				0x0094
+ #define PALETTE_INDEX				0x00b0
+ #define PALETTE_DATA				0x00b4
+-#define CONFIG_CNTL				0x00e0
++#define CNFG_CNTL				0x00e0
+ #define GEN_RESET_CNTL				0x00f0
+-#define CONFIG_MEMSIZE				0x00f8
++#define CNFG_MEMSIZE				0x00f8
+ #define MEM_CNTL				0x0140
+ #define MEM_POWER_MISC				0x015c
+ #define AGP_BASE				0x0170
+--- linux-2.6.29-rc3-git3.orig/drivers/video/aty/radeon_base.c
++++ linux-2.6.29-rc3-git3/drivers/video/aty/radeon_base.c
+@@ -1936,8 +1936,8 @@ static void fixup_memory_mappings(struct
+ 	OUTREG(CRTC_GEN_CNTL, save_crtc_gen_cntl | CRTC_DISP_REQ_EN_B);
+ 	mdelay(100);
+ 
+-	aper_base = INREG(CONFIG_APER_0_BASE);
+-	aper_size = INREG(CONFIG_APER_SIZE);
++	aper_base = INREG(CNFG_APER_0_BASE);
++	aper_size = INREG(CNFG_APER_SIZE);
+ 
+ #ifdef SET_MC_FB_FROM_APERTURE
+ 	/* Set framebuffer to be at the same address as set in PCI BAR */
+@@ -2024,11 +2024,11 @@ static void radeon_identify_vram(struct 
+                      ~CRTC_H_CUTOFF_ACTIVE_EN);
+           }
+         } else {
+-          tmp = INREG(CONFIG_MEMSIZE);
++          tmp = INREG(CNFG_MEMSIZE);
+         }
+ 
+ 	/* mem size is bits [28:0], mask off the rest */
+-	rinfo->video_ram = tmp & CONFIG_MEMSIZE_MASK;
++	rinfo->video_ram = tmp & CNFG_MEMSIZE_MASK;
+ 
+ 	/*
+ 	 * Hack to get around some busted production M6's
+@@ -2228,7 +2228,7 @@ static int __devinit radeonfb_pci_regist
+ 	 */
+ 	rinfo->errata = 0;
+ 	if (rinfo->family == CHIP_FAMILY_R300 &&
+-	    (INREG(CONFIG_CNTL) & CFG_ATI_REV_ID_MASK)
++	    (INREG(CNFG_CNTL) & CFG_ATI_REV_ID_MASK)
+ 	    == CFG_ATI_REV_A11)
+ 		rinfo->errata |= CHIP_ERRATA_R300_CG;
+ 
+--- linux-2.6.29-rc3-git3.orig/drivers/video/aty/radeon_pm.c
++++ linux-2.6.29-rc3-git3/drivers/video/aty/radeon_pm.c
+@@ -333,7 +333,7 @@ static void radeon_pm_enable_dynamic_mod
+ 	if (!rinfo->has_CRTC2) {
+                 tmp = INPLL(pllSCLK_CNTL);
+ 
+-		if ((INREG(CONFIG_CNTL) & CFG_ATI_REV_ID_MASK) > CFG_ATI_REV_A13)
++		if ((INREG(CNFG_CNTL) & CFG_ATI_REV_ID_MASK) > CFG_ATI_REV_A13)
+                     tmp &= ~(SCLK_CNTL__FORCE_CP	| SCLK_CNTL__FORCE_RB);
+                 tmp &= ~(SCLK_CNTL__FORCE_HDP		| SCLK_CNTL__FORCE_DISP1 |
+ 			 SCLK_CNTL__FORCE_TOP		| SCLK_CNTL__FORCE_SE   |
+@@ -468,9 +468,9 @@ static void radeon_pm_enable_dynamic_mod
+ 
+ 	/*RAGE_6::A11 A12 A12N1 A13, RV250::A11 A12, R300*/
+ 	if ((rinfo->family == CHIP_FAMILY_RV250 &&
+-	     ((INREG(CONFIG_CNTL) & CFG_ATI_REV_ID_MASK) < CFG_ATI_REV_A13)) ||
++	     ((INREG(CNFG_CNTL) & CFG_ATI_REV_ID_MASK) < CFG_ATI_REV_A13)) ||
+ 	    ((rinfo->family == CHIP_FAMILY_RV100) &&
+-	     ((INREG(CONFIG_CNTL) & CFG_ATI_REV_ID_MASK) <= CFG_ATI_REV_A13))) {
++	     ((INREG(CNFG_CNTL) & CFG_ATI_REV_ID_MASK) <= CFG_ATI_REV_A13))) {
+ 		tmp |= SCLK_CNTL__FORCE_CP;
+ 		tmp |= SCLK_CNTL__FORCE_VIP;
+ 	}
+@@ -486,7 +486,7 @@ static void radeon_pm_enable_dynamic_mod
+ 		/* RV200::A11 A12 RV250::A11 A12 */
+ 		if (((rinfo->family == CHIP_FAMILY_RV200) ||
+ 		     (rinfo->family == CHIP_FAMILY_RV250)) &&
+-		    ((INREG(CONFIG_CNTL) & CFG_ATI_REV_ID_MASK) < CFG_ATI_REV_A13))
++		    ((INREG(CNFG_CNTL) & CFG_ATI_REV_ID_MASK) < CFG_ATI_REV_A13))
+ 			tmp |= SCLK_MORE_CNTL__FORCEON;
+ 
+ 		OUTPLL(pllSCLK_MORE_CNTL, tmp);
+@@ -497,7 +497,7 @@ static void radeon_pm_enable_dynamic_mod
+ 	/* RV200::A11 A12, RV250::A11 A12 */
+ 	if (((rinfo->family == CHIP_FAMILY_RV200) ||
+ 	     (rinfo->family == CHIP_FAMILY_RV250)) &&
+-	    ((INREG(CONFIG_CNTL) & CFG_ATI_REV_ID_MASK) < CFG_ATI_REV_A13)) {
++	    ((INREG(CNFG_CNTL) & CFG_ATI_REV_ID_MASK) < CFG_ATI_REV_A13)) {
+ 		tmp = INPLL(pllPLL_PWRMGT_CNTL);
+ 		tmp |= PLL_PWRMGT_CNTL__TCL_BYPASS_DISABLE;
+ 		OUTPLL(pllPLL_PWRMGT_CNTL, tmp);
+@@ -702,7 +702,7 @@ static void radeon_pm_restore_regs(struc
+ 	OUTREG(DISPLAY_BASE_ADDR, rinfo->save_regs[31]);
+ 	OUTREG(MC_AGP_LOCATION, rinfo->save_regs[32]);
+ 	OUTREG(CRTC2_DISPLAY_BASE_ADDR, rinfo->save_regs[33]);
+-	OUTREG(CONFIG_MEMSIZE, rinfo->video_ram);
++	OUTREG(CNFG_MEMSIZE, rinfo->video_ram);
+ 
+ 	OUTREG(DISP_MISC_CNTL, rinfo->save_regs[9]);
+ 	OUTREG(DISP_PWR_MAN, rinfo->save_regs[10]);
+@@ -1723,7 +1723,7 @@ static void radeon_reinitialize_M10(stru
+ 	OUTREG(CRTC2_DISPLAY_BASE_ADDR, rinfo->save_regs[33]);
+ 	OUTREG(MC_FB_LOCATION, rinfo->save_regs[30]);
+ 	OUTREG(OV0_BASE_ADDR, rinfo->save_regs[80]);
+-	OUTREG(CONFIG_MEMSIZE, rinfo->video_ram);
++	OUTREG(CNFG_MEMSIZE, rinfo->video_ram);
+ 	OUTREG(BUS_CNTL, rinfo->save_regs[36]);
+ 	OUTREG(BUS_CNTL1, rinfo->save_regs[14]);
+ 	OUTREG(MPP_TB_CONFIG, rinfo->save_regs[37]);
+@@ -1961,7 +1961,7 @@ static void radeon_pm_m9p_reconfigure_mc
+ 	OUTMC(rinfo, ixMC_CHP_IO_CNTL_B1, rinfo->save_regs[68] /*0x141555ff*/);
+ 	OUTMC(rinfo, ixMC_IMP_CNTL_0, rinfo->save_regs[71] /*0x00009249*/);
+ 	OUTREG(MC_IND_INDEX, 0);
+-	OUTREG(CONFIG_MEMSIZE, rinfo->video_ram);
++	OUTREG(CNFG_MEMSIZE, rinfo->video_ram);
+ 
+ 	mdelay(20);
  }
- 
-@@ -1424,8 +1381,8 @@ static int cirrusfb_pan_display(struct fb_var_screeninfo *var,
- 	unsigned char tmp = 0, tmp2 = 0, xpix;
- 	struct cirrusfb_info *cinfo = info->par;
- 
--	DPRINTK("ENTER\n");
--	DPRINTK("virtual offset: (%d,%d)\n", var->xoffset, var->yoffset);
-+	dev_dbg(info->device,
-+		"virtual offset: (%d,%d)\n", var->xoffset, var->yoffset);
- 
- 	/* no range checks for xoffset and yoffset,   */
- 	/* as fb_pan_display has already done this */
-@@ -1481,7 +1438,6 @@ static int cirrusfb_pan_display(struct fb_var_screeninfo *var,
- 
- 	cirrusfb_WaitBLT(cinfo->regbase);
- 
--	DPRINTK("EXIT\n");
- 	return 0;
- }
- 
-@@ -1502,11 +1458,11 @@ static int cirrusfb_blank(int blank_mode, struct fb_info *info)
- 	struct cirrusfb_info *cinfo = info->par;
- 	int current_mode = cinfo->blank_mode;
- 
--	DPRINTK("ENTER, blank mode = %d\n", blank_mode);
-+	dev_dbg(info->device, "ENTER, blank mode = %d\n", blank_mode);
- 
- 	if (info->state != FBINFO_STATE_RUNNING ||
- 	    current_mode == blank_mode) {
--		DPRINTK("EXIT, returning 0\n");
-+		dev_dbg(info->device, "EXIT, returning 0\n");
- 		return 0;
- 	}
- 
-@@ -1543,12 +1499,12 @@ static int cirrusfb_blank(int blank_mode, struct fb_info *info)
- 		vga_wgfx(cinfo->regbase, CL_GRE, 0x06);
- 		break;
- 	default:
--		DPRINTK("EXIT, returning 1\n");
-+		dev_dbg(info->device, "EXIT, returning 1\n");
- 		return 1;
- 	}
- 
- 	cinfo->blank_mode = blank_mode;
--	DPRINTK("EXIT, returning 0\n");
-+	dev_dbg(info->device, "EXIT, returning 0\n");
- 
- 	/* Let fbcon do a soft blank for us */
- 	return (blank_mode == FB_BLANK_NORMAL) ? 1 : 0;
-@@ -1562,8 +1518,6 @@ static void init_vgachip(struct fb_info *info)
- 	struct cirrusfb_info *cinfo = info->par;
- 	const struct cirrusfb_board_info_rec *bi;
- 
--	DPRINTK("ENTER\n");
--
- 	assert(cinfo != NULL);
- 
- 	bi = &cirrusfb_board_info[cinfo->btype];
-@@ -1609,7 +1563,7 @@ static void init_vgachip(struct fb_info *info)
- 		break;
- 
- 	default:
--		printk(KERN_ERR "cirrusfb: Warning: Unknown board type\n");
-+		dev_err(info->device, "Warning: Unknown board type\n");
- 		break;
- 	}
- 
-@@ -1798,8 +1752,6 @@ static void init_vgachip(struct fb_info *info)
- 
- 	/* misc... */
- 	WHDR(cinfo, 0);	/* Hidden DAC register: - */
--
--	DPRINTK("EXIT\n");
- 	return;
- }
- 
-@@ -1808,8 +1760,6 @@ static void switch_monitor(struct cirrusfb_info *cinfo, int on)
- #ifdef CONFIG_ZORRO /* only works on Zorro boards */
- 	static int IsOn = 0;	/* XXX not ok for multiple boards */
- 
--	DPRINTK("ENTER\n");
--
- 	if (cinfo->btype == BT_PICASSO4)
- 		return;		/* nothing to switch */
- 	if (cinfo->btype == BT_ALPINE)
-@@ -1819,8 +1769,6 @@ static void switch_monitor(struct cirrusfb_info *cinfo, int on)
- 	if (cinfo->btype == BT_PICASSO) {
- 		if ((on && !IsOn) || (!on && IsOn))
- 			WSFR(cinfo, 0xff);
--
--		DPRINTK("EXIT\n");
- 		return;
- 	}
- 	if (on) {
-@@ -1847,11 +1795,10 @@ static void switch_monitor(struct cirrusfb_info *cinfo, int on)
- 		case BT_SPECTRUM:
- 			WSFR(cinfo, 0x4f);
- 			break;
--		default: /* do nothing */ break;
-+		default: /* do nothing */
-+			break;
- 		}
- 	}
--
--	DPRINTK("EXIT\n");
- #endif /* CONFIG_ZORRO */
- }
- 
-@@ -1953,12 +1900,8 @@ static void cirrusfb_imageblit(struct fb_info *info,
- #define PREP_IO_BASE    ((volatile unsigned char *) 0x80000000)
- static void get_prep_addrs(unsigned long *display, unsigned long *registers)
- {
--	DPRINTK("ENTER\n");
--
- 	*display = PREP_VIDEO_BASE;
- 	*registers = (unsigned long) PREP_IO_BASE;
--
--	DPRINTK("EXIT\n");
- }
- 
- #endif				/* CONFIG_PPC_PREP */
-@@ -1970,13 +1913,12 @@ static int release_io_ports;
-  * based on the DRAM bandwidth bit and DRAM bank switching bit.  This
-  * works with 1MB, 2MB and 4MB configurations (which the Motorola boards
-  * seem to have. */
--static unsigned int __devinit cirrusfb_get_memsize(u8 __iomem *regbase)
-+static unsigned int __devinit cirrusfb_get_memsize(struct fb_info *info,
-+						   u8 __iomem *regbase)
- {
- 	unsigned long mem;
- 	unsigned char SRF;
- 
--	DPRINTK("ENTER\n");
--
- 	SRF = vga_rseq(regbase, CL_SEQRF);
- 	switch ((SRF & 0x18)) {
- 	case 0x08:
-@@ -1992,7 +1934,7 @@ static unsigned int __devinit cirrusfb_get_memsize(u8 __iomem *regbase)
- 		mem = 2048 * 1024;
- 		break;
- 	default:
--		printk(KERN_WARNING "CLgenfb: Unknown memory size!\n");
-+		dev_warn(info->device, "CLgenfb: Unknown memory size!\n");
- 		mem = 1024 * 1024;
- 	}
- 	if (SRF & 0x80)
-@@ -2002,8 +1944,6 @@ static unsigned int __devinit cirrusfb_get_memsize(u8 __iomem *regbase)
- 		mem *= 2;
- 
- 	/* TODO: Handling of GD5446/5480 (see XF86 sources ...) */
--
--	DPRINTK("EXIT\n");
- 	return mem;
- }
- 
-@@ -2014,8 +1954,6 @@ static void get_pci_addrs(const struct pci_dev *pdev,
- 	assert(display != NULL);
- 	assert(registers != NULL);
- 
--	DPRINTK("ENTER\n");
--
- 	*display = 0;
- 	*registers = 0;
- 
-@@ -2030,8 +1968,6 @@ static void get_pci_addrs(const struct pci_dev *pdev,
- 	}
- 
- 	assert(*display != 0);
--
--	DPRINTK("EXIT\n");
- }
- 
- static void cirrusfb_pci_unmap(struct fb_info *info)
-@@ -2117,11 +2053,6 @@ static int __devinit cirrusfb_register(struct fb_info *info)
- 	int err;
- 	enum cirrus_board btype;
- 
--	DPRINTK("ENTER\n");
--
--	printk(KERN_INFO "cirrusfb: Driver for Cirrus Logic based "
--		"graphic boards, v" CIRRUSFB_VERSION "\n");
--
- 	btype = cinfo->btype;
- 
- 	/* sanity checks */
-@@ -2130,11 +2061,11 @@ static int __devinit cirrusfb_register(struct fb_info *info)
- 	/* set all the vital stuff */
- 	cirrusfb_set_fbinfo(info);
- 
--	DPRINTK("cirrusfb: (RAM start set to: 0x%p)\n", info->screen_base);
-+	dev_dbg(info->device, "(RAM start set to: 0x%p)\n", info->screen_base);
- 
- 	err = fb_find_mode(&info->var, info, mode_option, NULL, 0, NULL, 8);
- 	if (!err) {
--		DPRINTK("wrong initial video mode\n");
-+		dev_dbg(info->device, "wrong initial video mode\n");
- 		err = -EINVAL;
- 		goto err_dealloc_cmap;
- 	}
-@@ -2144,18 +2075,18 @@ static int __devinit cirrusfb_register(struct fb_info *info)
- 	err = cirrusfb_decode_var(&info->var, &cinfo->currentmode, info);
- 	if (err < 0) {
- 		/* should never happen */
--		DPRINTK("choking on default var... umm, no good.\n");
-+		dev_dbg(info->device,
-+			"choking on default var... umm, no good.\n");
- 		goto err_dealloc_cmap;
- 	}
- 
- 	err = register_framebuffer(info);
- 	if (err < 0) {
--		printk(KERN_ERR "cirrusfb: could not register "
--			"fb device; err = %d!\n", err);
-+		dev_err(info->device,
-+			"could not register fb device; err = %d!\n", err);
- 		goto err_dealloc_cmap;
- 	}
- 
--	DPRINTK("EXIT, returning 0\n");
- 	return 0;
- 
- err_dealloc_cmap:
-@@ -2168,17 +2099,13 @@ err_dealloc_cmap:
- static void __devexit cirrusfb_cleanup(struct fb_info *info)
- {
- 	struct cirrusfb_info *cinfo = info->par;
--	DPRINTK("ENTER\n");
- 
- 	switch_monitor(cinfo, 0);
--
- 	unregister_framebuffer(info);
- 	fb_dealloc_cmap(&info->cmap);
--	printk("Framebuffer unregistered\n");
-+	dev_dbg(info->device, "Framebuffer unregistered\n");
- 	cinfo->unmap(info);
- 	framebuffer_release(info);
--
--	DPRINTK("EXIT\n");
- }
- 
- #ifdef CONFIG_PCI
-@@ -2207,9 +2134,11 @@ static int __devinit cirrusfb_pci_register(struct pci_dev *pdev,
- 	cinfo = info->par;
- 	cinfo->btype = btype = (enum cirrus_board) ent->driver_data;
- 
--	DPRINTK(" Found PCI device, base address 0 is 0x%x, btype set to %d\n",
-+	dev_dbg(info->device,
-+		" Found PCI device, base address 0 is 0x%x, btype set to %d\n",
- 		pdev->resource[0].start, btype);
--	DPRINTK(" base address 1 is 0x%x\n", pdev->resource[1].start);
-+	dev_dbg(info->device,
-+		" base address 1 is 0x%x\n", pdev->resource[1].start);
- 
- 	if (isPReP) {
- 		pci_write_config_dword(pdev, PCI_BASE_ADDRESS_0, 0x00000000);
-@@ -2219,30 +2148,29 @@ static int __devinit cirrusfb_pci_register(struct pci_dev *pdev,
- 	/* PReP dies if we ioremap the IO registers, but it works w/out... */
- 		cinfo->regbase = (char __iomem *) info->fix.mmio_start;
- 	} else {
--		DPRINTK("Attempt to get PCI info for Cirrus Graphics Card\n");
-+		dev_dbg(info->device,
-+			"Attempt to get PCI info for Cirrus Graphics Card\n");
- 		get_pci_addrs(pdev, &board_addr, &info->fix.mmio_start);
- 		/* FIXME: this forces VGA.  alternatives? */
- 		cinfo->regbase = NULL;
- 	}
- 
--	DPRINTK("Board address: 0x%lx, register address: 0x%lx\n",
-+	dev_dbg(info->device, "Board address: 0x%lx, register address: 0x%lx\n",
- 		board_addr, info->fix.mmio_start);
- 
- 	board_size = (btype == BT_GD5480) ?
--		32 * MB_ : cirrusfb_get_memsize(cinfo->regbase);
-+		32 * MB_ : cirrusfb_get_memsize(info, cinfo->regbase);
- 
- 	ret = pci_request_regions(pdev, "cirrusfb");
- 	if (ret < 0) {
--		printk(KERN_ERR "cirrusfb: cannot reserve region 0x%lx, "
--		       "abort\n",
--		       board_addr);
-+		dev_err(info->device, "cannot reserve region 0x%lx, abort\n",
-+			board_addr);
- 		goto err_release_fb;
- 	}
- #if 0 /* if the system didn't claim this region, we would... */
- 	if (!request_mem_region(0xA0000, 65535, "cirrusfb")) {
--		printk(KERN_ERR "cirrusfb: cannot reserve region 0x%lx, abort\n"
--,
--		       0xA0000L);
-+		dev_err(info->device, "cannot reserve region 0x%lx, abort\n",
-+			0xA0000L);
- 		ret = -EBUSY;
- 		goto err_release_regions;
- 	}
-@@ -2260,9 +2188,9 @@ static int __devinit cirrusfb_pci_register(struct pci_dev *pdev,
- 	info->screen_size = board_size;
- 	cinfo->unmap = cirrusfb_pci_unmap;
- 
--	printk(KERN_INFO "RAM (%lu kB) at 0x%lx, Cirrus "
--			"Logic chipset on PCI bus\n",
--			info->screen_size >> 10, board_addr);
-+	dev_info(info->device,
-+		 "Cirrus Logic chipset on PCI bus, RAM (%lu kB) at 0x%lx\n",
-+		 info->screen_size >> 10, board_addr);
- 	pci_set_drvdata(pdev, info);
- 
- 	ret = cirrusfb_register(info);
-@@ -2288,11 +2216,8 @@ err_out:
- static void __devexit cirrusfb_pci_unregister(struct pci_dev *pdev)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
--	DPRINTK("ENTER\n");
- 
- 	cirrusfb_cleanup(info);
--
--	DPRINTK("EXIT\n");
- }
- 
- static struct pci_driver cirrusfb_pci_driver = {
-@@ -2324,8 +2249,6 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 	if (cirrusfb_zorro_table2[btype].id2)
- 		z2 = zorro_find_device(cirrusfb_zorro_table2[btype].id2, NULL);
- 	size = cirrusfb_zorro_table2[btype].size;
--	printk(KERN_INFO "cirrusfb: %s board detected; ",
--	       cirrusfb_board_info[btype].name);
- 
- 	info = framebuffer_alloc(sizeof(struct cirrusfb_info), &z->dev);
- 	if (!info) {
-@@ -2334,6 +2257,9 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 		goto err_out;
- 	}
- 
-+	dev_info(info->device, "%s board detected\n",
-+		 cirrusfb_board_info[btype].name);
-+
- 	cinfo = info->par;
- 	cinfo->btype = btype;
- 
-@@ -2345,19 +2271,16 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 	info->screen_size = size;
- 
- 	if (!zorro_request_device(z, "cirrusfb")) {
--		printk(KERN_ERR "cirrusfb: cannot reserve region 0x%lx, "
--		       "abort\n",
--		       board_addr);
-+		dev_err(info->device, "cannot reserve region 0x%lx, abort\n",
-+			board_addr);
- 		ret = -EBUSY;
- 		goto err_release_fb;
- 	}
- 
--	printk(" RAM (%lu MB) at $%lx, ", board_size / MB_, board_addr);
--
- 	ret = -EIO;
- 
- 	if (btype == BT_PICASSO4) {
--		printk(KERN_INFO " REG at $%lx\n", board_addr + 0x600000);
-+		dev_info(info->device, " REG at $%lx\n", board_addr + 0x600000);
- 
- 		/* To be precise, for the P4 this is not the */
- 		/* begin of the board, but the begin of RAM. */
-@@ -2367,7 +2290,7 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 		if (!cinfo->regbase)
- 			goto err_release_region;
- 
--		DPRINTK("cirrusfb: Virtual address for board set to: $%p\n",
-+		dev_dbg(info->device, "Virtual address for board set to: $%p\n",
- 			cinfo->regbase);
- 		cinfo->regbase += 0x600000;
- 		info->fix.mmio_start = board_addr + 0x600000;
-@@ -2377,8 +2300,8 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 		if (!info->screen_base)
- 			goto err_unmap_regbase;
- 	} else {
--		printk(KERN_INFO " REG at $%lx\n",
--			(unsigned long) z2->resource.start);
-+		dev_info(info->device, " REG at $%lx\n",
-+			 (unsigned long) z2->resource.start);
- 
- 		info->fix.smem_start = board_addr;
- 		if (board_addr > 0x01000000)
-@@ -2392,12 +2315,15 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 		cinfo->regbase = (caddr_t) ZTWO_VADDR(z2->resource.start);
- 		info->fix.mmio_start = z2->resource.start;
- 
--		DPRINTK("cirrusfb: Virtual address for board set to: $%p\n",
-+		dev_dbg(info->device, "Virtual address for board set to: $%p\n",
- 			cinfo->regbase);
- 	}
- 	cinfo->unmap = cirrusfb_zorro_unmap;
- 
--	printk(KERN_INFO "Cirrus Logic chipset on Zorro bus\n");
-+	dev_info(info->device,
-+		 "Cirrus Logic chipset on Zorro bus, RAM (%lu MB) at $%lx\n"
-+		 board_size / MB_, board_addr);
-+
- 	zorro_set_drvdata(z, info);
- 
- 	ret = cirrusfb_register(info);
-@@ -2424,11 +2350,8 @@ err_out:
- void __devexit cirrusfb_zorro_unregister(struct zorro_dev *z)
- {
- 	struct fb_info *info = zorro_get_drvdata(z);
--	DPRINTK("ENTER\n");
- 
- 	cirrusfb_cleanup(info);
--
--	DPRINTK("EXIT\n");
- }
- 
- static struct zorro_driver cirrusfb_zorro_driver = {
-@@ -2465,8 +2388,6 @@ static int __init cirrusfb_setup(char *options) {
- 	char *this_opt, s[32];
- 	int i;
- 
--	DPRINTK("ENTER\n");
--
- 	if (!options || !*options)
- 		return 0;
- 
-@@ -2474,7 +2395,8 @@ static int __init cirrusfb_setup(char *options) {
- 		if (!*this_opt)
- 			continue;
- 
--		DPRINTK("cirrusfb_setup: option '%s'\n", this_opt);
-+		dev_dbg(info->device,
-+			"cirrusfb_setup: option '%s'\n", this_opt);
- 
- 		if (!strcmp(this_opt, "noaccel"))
- 			noaccel = 1;
-@@ -2561,8 +2483,6 @@ static void AttrOn(const struct cirrusfb_info *cinfo)
- {
- 	assert(cinfo != NULL);
- 
--	DPRINTK("ENTER\n");
--
- 	if (vga_rcrt(cinfo->regbase, CL_CRT24) & 0x80) {
- 		/* if we're just in "write value" mode, write back the */
- 		/* same value as before to not modify anything */
-@@ -2575,8 +2495,6 @@ static void AttrOn(const struct cirrusfb_info *cinfo)
- 
- 	/* dummy write on Reg0 to be on "write index" mode next time */
- 	vga_w(cinfo->regbase, VGA_ATT_IW, 0x00);
--
--	DPRINTK("EXIT\n");
- }
- 
- /*** WHDR() - write into the Hidden DAC register ***/
-@@ -2724,8 +2642,6 @@ static void cirrusfb_BitBLT(u8 __iomem *regbase, int bits_per_pixel,
- 	u_long nsrc, ndest;
- 	u_char bltmode;
- 
--	DPRINTK("ENTER\n");
--
- 	nwidth = width - 1;
- 	nheight = height - 1;
- 
-@@ -2814,8 +2730,6 @@ static void cirrusfb_BitBLT(u8 __iomem *regbase, int bits_per_pixel,
- 
- 	/* and finally: GO! */
- 	vga_wgfx(regbase, CL_GR31, 0x02);	/* BLT Start/status */
--
--	DPRINTK("EXIT\n");
- }
- 
- /*******************************************************************
-@@ -2832,8 +2746,6 @@ static void cirrusfb_RectFill(u8 __iomem *regbase, int bits_per_pixel,
- 	u_long ndest;
- 	u_char op;
- 
--	DPRINTK("ENTER\n");
--
- 	nwidth = width - 1;
- 	nheight = height - 1;
- 
-@@ -2897,8 +2809,6 @@ static void cirrusfb_RectFill(u8 __iomem *regbase, int bits_per_pixel,
- 
- 	/* and finally: GO! */
- 	vga_wgfx(regbase, CL_GR31, 0x02);	/* BLT Start/status */
--
--	DPRINTK("EXIT\n");
- }
- 
- /**************************************************************************
-@@ -2918,8 +2828,6 @@ static void bestclock(long freq, int *nom, int *den, int *div)
- 	*den = 0;
- 	*div = 0;
- 
--	DPRINTK("ENTER\n");
--
- 	if (freq < 8000)
- 		freq = 8000;
- 
-@@ -2961,12 +2869,6 @@ static void bestclock(long freq, int *nom, int *den, int *div)
- 			}
- 		}
- 	}
--
--	DPRINTK("Best possible values for given frequency:\n");
--	DPRINTK("	freq: %ld kHz  nom: %d  den: %d  div: %d\n",
--		freq, *nom, *den, *div);
--
--	DPRINTK("EXIT\n");
- }
- 
- /* -------------------------------------------------------------------------
-@@ -2979,32 +2881,6 @@ static void bestclock(long freq, int *nom, int *den, int *div)
- #ifdef CIRRUSFB_DEBUG
- 
- /**
-- * cirrusfb_dbg_print_byte
-- * @name: name associated with byte value to be displayed
-- * @val: byte value to be displayed
-- *
-- * DESCRIPTION:
-- * Display an indented string, along with a hexidecimal byte value, and
-- * its decoded bits.  Bits 7 through 0 are listed in left-to-right
-- * order.
-- */
--
--static
--void cirrusfb_dbg_print_byte(const char *name, unsigned char val)
--{
--	DPRINTK("%8s = 0x%02X (bits 7-0: %c%c%c%c%c%c%c%c)\n",
--		name, val,
--		val & 0x80 ? '1' : '0',
--		val & 0x40 ? '1' : '0',
--		val & 0x20 ? '1' : '0',
--		val & 0x10 ? '1' : '0',
--		val & 0x08 ? '1' : '0',
--		val & 0x04 ? '1' : '0',
--		val & 0x02 ? '1' : '0',
--		val & 0x01 ? '1' : '0');
--}
--
--/**
-  * cirrusfb_dbg_print_regs
-  * @base: If using newmmio, the newmmio base address, otherwise %NULL
-  * @reg_class: type of registers to read: %CRT, or %SEQ
-@@ -3015,9 +2891,9 @@ void cirrusfb_dbg_print_byte(const char *name, unsigned char val)
-  * used at the given @base address to query the information.
-  */
- 
--static
--void cirrusfb_dbg_print_regs(caddr_t regbase,
--			     enum cirrusfb_dbg_reg_class reg_class, ...)
-+static void cirrusfb_dbg_print_regs(struct fb_info *info,
-+				    caddr_t regbase,
-+				    enum cirrusfb_dbg_reg_class reg_class, ...)
- {
- 	va_list list;
- 	unsigned char val = 0;
-@@ -3043,7 +2919,7 @@ void cirrusfb_dbg_print_regs(caddr_t regbase,
- 			break;
- 		}
- 
--		cirrusfb_dbg_print_byte(name, val);
-+		dev_dbg(info->device, "%8s = 0x%02X\n", name, val);
- 
- 		name = va_arg(list, char *);
- 	}
-@@ -3052,18 +2928,6 @@ void cirrusfb_dbg_print_regs(caddr_t regbase,
- }
- 
- /**
-- * cirrusfb_dump
-- * @cirrusfbinfo:
-- *
-- * DESCRIPTION:
-- */
--
--static void cirrusfb_dump(void)
--{
--	cirrusfb_dbg_reg_dump(NULL);
--}
--
--/**
-  * cirrusfb_dbg_reg_dump
-  * @base: If using newmmio, the newmmio base address, otherwise %NULL
-  *
-@@ -3073,12 +2937,11 @@ static void cirrusfb_dump(void)
-  * used at the given @base address to query the information.
-  */
- 
--static
--void cirrusfb_dbg_reg_dump(caddr_t regbase)
-+static void cirrusfb_dbg_reg_dump(struct fb_info *info, caddr_t regbase)
- {
--	DPRINTK("CIRRUSFB VGA CRTC register dump:\n");
-+	dev_dbg(info->device, "VGA CRTC register dump:\n");
- 
--	cirrusfb_dbg_print_regs(regbase, CRT,
-+	cirrusfb_dbg_print_regs(info, regbase, CRT,
- 			   "CR00", 0x00,
- 			   "CR01", 0x01,
- 			   "CR02", 0x02,
-@@ -3128,11 +2991,11 @@ void cirrusfb_dbg_reg_dump(caddr_t regbase)
- 			   "CR3F", 0x3F,
- 			   NULL);
- 
--	DPRINTK("\n");
-+	dev_dbg(info->device, "\n");
- 
--	DPRINTK("CIRRUSFB VGA SEQ register dump:\n");
-+	dev_dbg(info->device, "VGA SEQ register dump:\n");
- 
--	cirrusfb_dbg_print_regs(regbase, SEQ,
-+	cirrusfb_dbg_print_regs(info, regbase, SEQ,
- 			   "SR00", 0x00,
- 			   "SR01", 0x01,
- 			   "SR02", 0x02,
-@@ -3161,7 +3024,7 @@ void cirrusfb_dbg_reg_dump(caddr_t regbase)
- 			   "SR1F", 0x1F,
- 			   NULL);
- 
--	DPRINTK("\n");
-+	dev_dbg(info->device, "\n");
- }
- 
- #endif				/* CIRRUSFB_DEBUG */
-
-----------------------------------------------------------------------
-Nie boj sie przyszlosci!
-Zapytaj wrozke >>  http://link.interia.pl/f2049 
-
-
-------------------------------------------------------------------------------
-This SF.net email is sponsored by:
-SourcForge Community
-SourceForge wants to tell your story.
-http://p.sf.net/sfu/sf-spreadtheword
+@@ -2361,7 +2361,7 @@ static void radeon_reinitialize_QW(struc
+ 	OUTMC(rinfo, ixMC_IMP_CNTL_0, 0x00009249);
+ 	OUTREG(MC_IND_INDEX, 0);
+ 
+-	OUTREG(CONFIG_MEMSIZE, rinfo->video_ram);
++	OUTREG(CNFG_MEMSIZE, rinfo->video_ram);
+ 
+ 	radeon_pm_full_reset_sdram(rinfo);
+ 
+--- linux-2.6.29-rc3-git3.orig/include/video/radeon.h
++++ linux-2.6.29-rc3-git3/include/video/radeon.h
+@@ -11,13 +11,13 @@
+ #define HI_STAT                                0x004C  
+ #define BUS_CNTL1                              0x0034
+ #define I2C_CNTL_1			       0x0094  
+-#define CONFIG_CNTL                            0x00E0  
+-#define CONFIG_MEMSIZE                         0x00F8  
+-#define CONFIG_APER_0_BASE                     0x0100  
+-#define CONFIG_APER_1_BASE                     0x0104  
+-#define CONFIG_APER_SIZE                       0x0108  
+-#define CONFIG_REG_1_BASE                      0x010C  
+-#define CONFIG_REG_APER_SIZE                   0x0110  
++#define CNFG_CNTL                              0x00E0  
++#define CNFG_MEMSIZE                           0x00F8  
++#define CNFG_APER_0_BASE                       0x0100  
++#define CNFG_APER_1_BASE                       0x0104  
++#define CNFG_APER_SIZE                         0x0108  
++#define CNFG_REG_1_BASE                        0x010C  
++#define CNFG_REG_APER_SIZE                     0x0110  
+ #define PAD_AGPINPUT_DELAY                     0x0164  
+ #define PAD_CTLR_STRENGTH                      0x0168  
+ #define PAD_CTLR_UPDATE                        0x016C
+@@ -509,7 +509,7 @@
+ /* CLOCK_CNTL_INDEX bit constants */
+ #define PLL_WR_EN                                  0x00000080
+ 
+-/* CONFIG_CNTL bit constants */
++/* CNFG_CNTL bit constants */
+ #define CFG_VGA_RAM_EN                             0x00000100
+ #define CFG_ATI_REV_ID_MASK			   (0xf << 16)
+ #define CFG_ATI_REV_A11				   (0 << 16)
+@@ -980,7 +980,7 @@
+ 
+ /* masks */
+ 
+-#define CONFIG_MEMSIZE_MASK		0x1f000000
++#define CNFG_MEMSIZE_MASK		0x1f000000
+ #define MEM_CFG_TYPE			0x40000000
+ #define DST_OFFSET_MASK			0x003fffff
+ #define DST_PITCH_MASK			0x3fc00000

@@ -1,53 +1,62 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] atyfb: fix distorted image on
- PowerMacs
-Date: Wed, 04 Feb 2009 08:06:12 +1100
-Message-ID: <1233695172.16867.91.camel@pasglop>
-References: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
-	 <20090122201204.GD4996@sci.fi>  <20090203185624.GC22401@sci.fi>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] cirrusfb: convert printks to dev_foo
+Date: Tue, 3 Feb 2009 13:50:18 -0800
+Message-ID: <20090203135018.03d5d59e.akpm@linux-foundation.org>
+References: <20090202195659.67b12917.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753104AbZBCVG4@vger.kernel.org>
-In-Reply-To: <20090203185624.GC22401@sci.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="euc-kr"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Risto Suominen <risto.suominen@gmail.com>, Alex Kern <alex.kern@gmx.de>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1LUTUK-0005pG-CI
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Feb 2009 22:11:24 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LUTUH-0000X8-1e
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 03 Feb 2009 22:11:24 +0000
+In-Reply-To: <20090202195659.67b12917.krzysztof.h1@poczta.fm>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 2009-02-03 at 20:56 +0200, Ville Syrj=C3=A4l=C3=A4 wrote:
-> On Thu, Jan 22, 2009 at 10:12:04PM +0200, Ville Syrj=C3=A4l=C3=A4 wro=
-te:
-> > On Thu, Jan 22, 2009 at 08:22:48PM +0200, Risto Suominen wrote:
-> > > Since the complete re-write in 2.6.10, some PowerMacs (At least P=
-owerMac 5500
-> > > and PowerMac G3 Beige rev A) with ATI Mach64 chip have suffered f=
-rom unstable
-> > > columns in their framebuffer image. This seems to depend on a val=
-ue (4) read
-> > > from PLL_EXT_CNTL register, which leads to incorrect DSP config p=
-arameters to
-> > > be written to the chip. This patch uses a value calculated by aty=
-_init_pll_ct
-> > > instead, as a starting point.
-> >=20
-> > AFAICS it should be the right thing to do on other systems too. I h=
-ave
-> > a good collection of mach64 pci cards and laptops so I'll try to fi=
-nd
-> > some time next week to test that theory on x86.
->=20
-> Well, the experiment failed on the first Mobility I tried. The FIFO
-> calculations aren't obvious from the code and there's no mention how
-> to actually calculate them in the programming guide. So I guess speci=
-al
-> casing powermacs is the best way forward.
+Thanks.
 
-There's one powermac with a M1 (the first clamshell ibook). I don't hav=
-e
-such a machine however, it would be useful if somebody who did could
-test if the patch caused a regression there...
 
-It's possible that we should instead base the code on the chip variant.
+On Mon, 2 Feb 2009 19:56:59 +0100
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-Ben.
+> Author: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+This isn't needed - it's a git thing.  For email we use From: lines.
+
+> Convert all printks to dev_dbg, dev_info
+> or dev_err. Kill some excessive debug
+> information and code in the process.
+
+I added your Signed-off-by: to this.
+
+> diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+> index 30684fb..21302d1 100644
+> --- a/drivers/video/cirrusfb.c
+> +++ b/drivers/video/cirrusfb.c
+
+I got a couple of rejects against current mainline, easily fixed.
+
+------------------------------------------------------------------------------
+Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
+software. With Adobe AIR, Ajax developers can use existing skills and code to
+build responsive, highly engaging applications that combine the power of local
+resources and data with the reach of the web. Download the Adobe AIR SDK and
+Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com

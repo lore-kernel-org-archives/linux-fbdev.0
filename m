@@ -1,154 +1,266 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cirrusfb: fix Laguna chipset memory
- detection and clock setting
-Date: Wed, 4 Feb 2009 17:39:57 +0100
-Message-ID: <20090204173957.68e3845a.krzysztof.h1@poczta.fm>
-Mime-Version: 1.0
+From: Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH -mmotm] fbmem: fix fb_info->lock and mm->mmap_sem circular locking dependency
+Date: Wed,  4 Feb 2009 22:46:23 +0100
+Message-ID: <1233783983-28802-1-git-send-email-righi.andrea@gmail.com>
+References: <498817E2.3020008@gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760556AbZBDVqk@vger.kernel.org>
+In-Reply-To: <498817E2.3020008@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LUkjV-0001Z4-I2
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Feb 2009 16:36:13 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LUkjS-0007Ti-A9 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Feb 2009 16:36:13 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>, Harvey Harrison <harvey.harrison@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Johannes Weiner <hannes@cmpxchg.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Andrea Righi <righi.andrea@gmail.com>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Fix this circular locking dependencies in the frame buffer console
+driver pushing down the mutex fb_info->lock.
 
-Fix memory detection and clock setting
-for Cirrus Laguna chipsets (GD5464/GD5465).
-The changes are done after the Xorg code.
+Circular locking dependecies occur calling the blocking
+fb_notifier_call_chain() with fb_info->lock held. Notifier callbacks can
+try to acquire mm->mmap_sem, while fb_mmap() acquires the locks in the
+reverse order mm->mmap_sem => fb_info->lock.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
-The driver still does not display anything on the GD5465 but
-it switches resolutions correctly at least.
+ drivers/video/backlight/backlight.c |    3 +
+ drivers/video/backlight/lcd.c       |    3 +
+ drivers/video/console/fbcon.c       |   73 ++++++++++++++++++++++++++++++-----
+ drivers/video/fbmem.c               |   11 +-----
+ 4 files changed, 70 insertions(+), 20 deletions(-)
 
- drivers/video/cirrusfb.c |   65 +++++++++++++++++++++++++++-------------------
- 1 files changed, 38 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 7ab555a..7e477d7 100644
---- a/drivers/video/cirrusfb.c
-+++ b/drivers/video/cirrusfb.c
-@@ -867,19 +867,24 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 157057c..dd37cbc 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -35,6 +35,8 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 		return 0;
+ 
+ 	bd = container_of(self, struct backlight_device, fb_notif);
++	if (!lock_fb_info(evdata->info))
++		return -ENODEV;
+ 	mutex_lock(&bd->ops_lock);
+ 	if (bd->ops)
+ 		if (!bd->ops->check_fb ||
+@@ -47,6 +49,7 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 			backlight_update_status(bd);
+ 		}
+ 	mutex_unlock(&bd->ops_lock);
++	unlock_fb_info(evdata->info);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+index b644947..0bb13df 100644
+--- a/drivers/video/backlight/lcd.c
++++ b/drivers/video/backlight/lcd.c
+@@ -40,6 +40,8 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 	if (!ld->ops)
+ 		return 0;
+ 
++	if (!lock_fb_info(evdata->info))
++		return -ENODEV;
+ 	mutex_lock(&ld->ops_lock);
+ 	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
+ 		if (event == FB_EVENT_BLANK) {
+@@ -51,6 +53,7 @@ static int fb_notifier_callback(struct notifier_block *self,
  		}
  	}
- 	if (nom) {
--		vga_wseq(regbase, CL_SEQRB, nom);
- 		tmp = den << 1;
- 		if (div != 0)
- 			tmp |= 1;
--
- 		/* 6 bit denom; ONLY 5434!!! (bugged me 10 days) */
- 		if ((cinfo->btype == BT_SD64) ||
- 		    (cinfo->btype == BT_ALPINE) ||
- 		    (cinfo->btype == BT_GD5480))
- 			tmp |= 0x80;
+ 	mutex_unlock(&ld->ops_lock);
++	unlock_fb_info(evdata->info);
+ 	return 0;
+ }
  
--		dev_dbg(info->device, "CL_SEQR1B: %ld\n", (long) tmp);
--		vga_wseq(regbase, CL_SEQR1B, tmp);
-+		dev_dbg(info->device, "CL_SEQR1B: %d\n", (int) tmp);
-+		/* Laguna chipset has reversed clock registers */
-+		if (cinfo->btype == BT_LAGUNA) {
-+			vga_wseq(regbase, CL_SEQRE, tmp);
-+			vga_wseq(regbase, CL_SEQR1E, nom);
-+		} else {
-+			vga_wseq(regbase, CL_SEQRB, nom);
-+			vga_wseq(regbase, CL_SEQR1B, tmp);
-+		}
- 	}
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 1657b96..2cd500a 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2954,8 +2954,11 @@ static int fbcon_fb_unbind(int idx)
  
- 	if (yres >= 1024)
-@@ -1917,31 +1922,37 @@ static unsigned int __devinit cirrusfb_get_memsize(struct fb_info *info,
- 						   u8 __iomem *regbase)
+ static int fbcon_fb_unregistered(struct fb_info *info)
  {
- 	unsigned long mem;
--	unsigned char SRF;
-+	struct cirrusfb_info *cinfo = info->par;
+-	int i, idx = info->node;
++	int i, idx;
  
--	SRF = vga_rseq(regbase, CL_SEQRF);
--	switch ((SRF & 0x18)) {
--	case 0x08:
--		mem = 512 * 1024;
--		break;
--	case 0x10:
--		mem = 1024 * 1024;
--		break;
--	/* 64-bit DRAM data bus width; assume 2MB. Also indicates 2MB memory
--	 * on the 5430.
--	 */
--	case 0x18:
--		mem = 2048 * 1024;
--		break;
--	default:
--		dev_warn(info->device, "CLgenfb: Unknown memory size!\n");
--		mem = 1024 * 1024;
-+	if (cinfo->btype == BT_LAGUNA) {
-+		unsigned char SR14 = vga_rseq(regbase, CL_SEQR14);
-+
-+		mem = ((SR14 & 7) + 1) << 20;
-+	} else {
-+		unsigned char SRF = vga_rseq(regbase, CL_SEQRF);
-+		switch ((SRF & 0x18)) {
-+		case 0x08:
-+			mem = 512 * 1024;
-+			break;
-+		case 0x10:
-+			mem = 1024 * 1024;
-+			break;
-+		/* 64-bit DRAM data bus width; assume 2MB.
-+		 * Also indicates 2MB memory on the 5430.
-+		 */
-+		case 0x18:
-+			mem = 2048 * 1024;
-+			break;
-+		default:
-+			dev_warn(info->device, "Unknown memory size!\n");
-+			mem = 1024 * 1024;
-+		}
-+		/* If DRAM bank switching is enabled, there must be
-+		 * twice as much memory installed. (4MB on the 5434)
-+		 */
-+		if (SRF & 0x80)
-+			mem *= 2;
++	if (!lock_fb_info(info))
++		return -ENODEV;
++	idx = info->node;
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] == idx)
+ 			con2fb_map[i] = -1;
+@@ -2979,13 +2982,14 @@ static int fbcon_fb_unregistered(struct fb_info *info)
+ 		}
  	}
--	if (SRF & 0x80)
--	/* If DRAM bank switching is enabled, there must be twice as much
--	 * memory installed. (4MB on the 5434)
--	 */
--		mem *= 2;
  
- 	/* TODO: Handling of GD5446/5480 (see XF86 sources ...) */
- 	return mem;
+-	if (!num_registered_fb)
+-		unregister_con_driver(&fb_con);
+-
+-
+ 	if (primary_device == idx)
+ 		primary_device = -1;
+ 
++	unlock_fb_info(info);
++
++	if (!num_registered_fb)
++		unregister_con_driver(&fb_con);
++
+ 	return 0;
+ }
+ 
+@@ -3021,9 +3025,13 @@ static inline void fbcon_select_primary(struct fb_info *info)
+ 
+ static int fbcon_fb_registered(struct fb_info *info)
+ {
+-	int ret = 0, i, idx = info->node;
++	int ret = 0, i, idx;
+ 
++	if (!lock_fb_info(info))
++		return -ENODEV;
++	idx = info->node;
+ 	fbcon_select_primary(info);
++	unlock_fb_info(info);
+ 
+ 	if (info_idx == -1) {
+ 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+@@ -3124,7 +3132,7 @@ static void fbcon_get_requirement(struct fb_info *info,
+ 	}
+ }
+ 
+-static int fbcon_event_notify(struct notifier_block *self, 
++static int fbcon_event_notify(struct notifier_block *self,
+ 			      unsigned long action, void *data)
+ {
+ 	struct fb_event *event = data;
+@@ -3132,7 +3140,7 @@ static int fbcon_event_notify(struct notifier_block *self,
+ 	struct fb_videomode *mode;
+ 	struct fb_con2fbmap *con2fb;
+ 	struct fb_blit_caps *caps;
+-	int ret = 0;
++	int idx, ret = 0;
+ 
+ 	/*
+ 	 * ignore all events except driver registration and deregistration
+@@ -3144,23 +3152,54 @@ static int fbcon_event_notify(struct notifier_block *self,
+ 
+ 	switch(action) {
+ 	case FB_EVENT_SUSPEND:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_suspended(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_RESUME:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_resumed(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_modechanged(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_CHANGE_ALL:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_set_all_vcs(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_MODE_DELETE:
+ 		mode = event->data;
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		ret = fbcon_mode_deleted(info, mode);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_FB_UNBIND:
+-		ret = fbcon_fb_unbind(info->node);
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
++		idx = info->node;
++		unlock_fb_info(info);
++		ret = fbcon_fb_unbind(idx);
+ 		break;
+ 	case FB_EVENT_FB_REGISTERED:
+ 		ret = fbcon_fb_registered(info);
+@@ -3178,17 +3217,31 @@ static int fbcon_event_notify(struct notifier_block *self,
+ 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
+ 		break;
+ 	case FB_EVENT_BLANK:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_fb_blanked(info, *(int *)event->data);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_NEW_MODELIST:
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_new_modelist(info);
++		unlock_fb_info(info);
+ 		break;
+ 	case FB_EVENT_GET_REQ:
+ 		caps = event->data;
++		if (!lock_fb_info(info)) {
++			ret = -ENODEV;
++			goto done;
++		}
+ 		fbcon_get_requirement(info, caps);
++		unlock_fb_info(info);
+ 		break;
+ 	}
+-
+ done:
+ 	return ret;
+ }
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index cfd9dce..b64f061 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1086,13 +1086,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			return -EINVAL;
+ 		con2fb.framebuffer = -1;
+ 		event.data = &con2fb;
+-
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		event.info = info;
+ 		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
+-		unlock_fb_info(info);
+-
+ 		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUT_CON2FBMAP:
+@@ -1109,12 +1104,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			break;
+ 		}
+ 		event.data = &con2fb;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		event.info = info;
+-		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
+-					      &event);
+-		unlock_fb_info(info);
++		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
+ 		break;
+ 	case FBIOBLANK:
+ 		if (!lock_fb_info(info))
 -- 
-1.5.2.2
-
-
-----------------------------------------------------------------------
-Nie boj sie przyszlosci!
-Zapytaj wrozke >>  http://link.interia.pl/f2049 
-
-
-------------------------------------------------------------------------------
-Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
-software. With Adobe AIR, Ajax developers can use existing skills and code to
-build responsive, highly engaging applications that combine the power of local
-resources and data with the reach of the web. Download the Adobe AIR SDK and
-Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com
+1.5.6.3

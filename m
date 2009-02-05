@@ -1,34 +1,15 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/3] atyfb: Properly save PCI state
-	before changing PCI PM level
-Date: Thu, 05 Feb 2009 11:57:32 +1100
-Message-ID: <20090205005749.61CEDDDEE7@ozlabs.org>
-Mime-Version: 1.0
+Subject: [PATCH 1/3] atyfb: Properly save PCI state before changing PCI PM level
+Date: Thu, 05 Feb 2009 12:06:50 +1100
+Message-ID: <20090205010706.888F4DDEE2@ozlabs.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758837AbZBEBHZ@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <benh@ozlabs.org>) id 1LUsZ2-0007vu-BD
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 05 Feb 2009 00:57:56 +0000
-Received: from ozlabs.org ([203.10.76.45])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LUsYz-0007FS-VH
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 05 Feb 2009 00:57:56 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: fbdev list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 
 This fixes atyfb to properly save the PCI config space -before- it
 potentially switches the PM state of the chip. This avoids a
@@ -95,10 +76,3 @@ Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
  #endif
  
  	aty_resume_chip(info);
-
-------------------------------------------------------------------------------
-Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
-software. With Adobe AIR, Ajax developers can use existing skills and code to
-build responsive, highly engaging applications that combine the power of local
-resources and data with the reach of the web. Download the Adobe AIR SDK and
-Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com

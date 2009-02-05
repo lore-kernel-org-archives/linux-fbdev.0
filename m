@@ -1,274 +1,224 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mmotm] fbmem: fix fb_info->lock and mm->mmap_sem circular locking dependency
-Date: Thu, 5 Feb 2009 00:58:30 +0100
-Message-ID: <200902050058.31680.rjw@sisk.pl>
-References: <498817E2.3020008@gmail.com> <1233783983-28802-1-git-send-email-righi.andrea@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 3/3] radeonfb: Fix resume from D3Cold on
+	some platforms
+Date: Thu, 05 Feb 2009 11:57:34 +1100
+Message-ID: <20090205005750.CC8E4DDEEC@ozlabs.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757804AbZBDX7k@vger.kernel.org>
-In-Reply-To: <1233783983-28802-1-git-send-email-righi.andrea@gmail.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andrey Borzenkov <arvidjaar@mail.ru>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>, Harvey Harrison <harvey.harrison@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <benh@ozlabs.org>) id 1LUsZ2-0001Zt-BD
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 05 Feb 2009 00:57:56 +0000
+Received: from ozlabs.org ([203.10.76.45])
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LUsYz-0007G8-VG
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 05 Feb 2009 00:57:56 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: fbdev list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009, Andrea Righi wrote:
-> Fix this circular locking dependencies in the frame buffer console
-> driver pushing down the mutex fb_info->lock.
-> 
-> Circular locking dependecies occur calling the blocking
-> fb_notifier_call_chain() with fb_info->lock held. Notifier callbacks can
-> try to acquire mm->mmap_sem, while fb_mmap() acquires the locks in the
-> reverse order mm->mmap_sem => fb_info->lock.
+For historical reason, this driver used its own saving/restoring
+of the PCI config space, and used the state of it on resume as
+an indication as to whether it needed to re-POST the chip or not.
 
-Does this fix a Bugzilla bug?  If so, then which one?
+This methods breaks with the later core changes since the core will
+have restored things for us.
 
-> Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  drivers/video/backlight/backlight.c |    3 +
->  drivers/video/backlight/lcd.c       |    3 +
->  drivers/video/console/fbcon.c       |   73 ++++++++++++++++++++++++++++++-----
->  drivers/video/fbmem.c               |   11 +-----
->  4 files changed, 70 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index 157057c..dd37cbc 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -35,6 +35,8 @@ static int fb_notifier_callback(struct notifier_block *self,
->  		return 0;
->  
->  	bd = container_of(self, struct backlight_device, fb_notif);
-> +	if (!lock_fb_info(evdata->info))
-> +		return -ENODEV;
->  	mutex_lock(&bd->ops_lock);
->  	if (bd->ops)
->  		if (!bd->ops->check_fb ||
-> @@ -47,6 +49,7 @@ static int fb_notifier_callback(struct notifier_block *self,
->  			backlight_update_status(bd);
->  		}
->  	mutex_unlock(&bd->ops_lock);
-> +	unlock_fb_info(evdata->info);
->  	return 0;
->  }
->  
-> diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-> index b644947..0bb13df 100644
-> --- a/drivers/video/backlight/lcd.c
-> +++ b/drivers/video/backlight/lcd.c
-> @@ -40,6 +40,8 @@ static int fb_notifier_callback(struct notifier_block *self,
->  	if (!ld->ops)
->  		return 0;
->  
-> +	if (!lock_fb_info(evdata->info))
-> +		return -ENODEV;
->  	mutex_lock(&ld->ops_lock);
->  	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
->  		if (event == FB_EVENT_BLANK) {
-> @@ -51,6 +53,7 @@ static int fb_notifier_callback(struct notifier_block *self,
->  		}
->  	}
->  	mutex_unlock(&ld->ops_lock);
-> +	unlock_fb_info(evdata->info);
->  	return 0;
->  }
->  
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 1657b96..2cd500a 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -2954,8 +2954,11 @@ static int fbcon_fb_unbind(int idx)
->  
->  static int fbcon_fb_unregistered(struct fb_info *info)
->  {
-> -	int i, idx = info->node;
-> +	int i, idx;
->  
-> +	if (!lock_fb_info(info))
-> +		return -ENODEV;
-> +	idx = info->node;
->  	for (i = first_fb_vc; i <= last_fb_vc; i++) {
->  		if (con2fb_map[i] == idx)
->  			con2fb_map[i] = -1;
-> @@ -2979,13 +2982,14 @@ static int fbcon_fb_unregistered(struct fb_info *info)
->  		}
->  	}
->  
-> -	if (!num_registered_fb)
-> -		unregister_con_driver(&fb_con);
-> -
-> -
->  	if (primary_device == idx)
->  		primary_device = -1;
->  
-> +	unlock_fb_info(info);
-> +
-> +	if (!num_registered_fb)
-> +		unregister_con_driver(&fb_con);
-> +
->  	return 0;
->  }
->  
-> @@ -3021,9 +3025,13 @@ static inline void fbcon_select_primary(struct fb_info *info)
->  
->  static int fbcon_fb_registered(struct fb_info *info)
->  {
-> -	int ret = 0, i, idx = info->node;
-> +	int ret = 0, i, idx;
->  
-> +	if (!lock_fb_info(info))
-> +		return -ENODEV;
-> +	idx = info->node;
->  	fbcon_select_primary(info);
-> +	unlock_fb_info(info);
->  
->  	if (info_idx == -1) {
->  		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-> @@ -3124,7 +3132,7 @@ static void fbcon_get_requirement(struct fb_info *info,
->  	}
->  }
->  
-> -static int fbcon_event_notify(struct notifier_block *self, 
-> +static int fbcon_event_notify(struct notifier_block *self,
->  			      unsigned long action, void *data)
->  {
->  	struct fb_event *event = data;
-> @@ -3132,7 +3140,7 @@ static int fbcon_event_notify(struct notifier_block *self,
->  	struct fb_videomode *mode;
->  	struct fb_con2fbmap *con2fb;
->  	struct fb_blit_caps *caps;
-> -	int ret = 0;
-> +	int idx, ret = 0;
->  
->  	/*
->  	 * ignore all events except driver registration and deregistration
-> @@ -3144,23 +3152,54 @@ static int fbcon_event_notify(struct notifier_block *self,
->  
->  	switch(action) {
->  	case FB_EVENT_SUSPEND:
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_suspended(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_RESUME:
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_resumed(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_MODE_CHANGE:
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_modechanged(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_MODE_CHANGE_ALL:
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_set_all_vcs(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_MODE_DELETE:
->  		mode = event->data;
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		ret = fbcon_mode_deleted(info, mode);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_FB_UNBIND:
-> -		ret = fbcon_fb_unbind(info->node);
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
-> +		idx = info->node;
-> +		unlock_fb_info(info);
-> +		ret = fbcon_fb_unbind(idx);
->  		break;
->  	case FB_EVENT_FB_REGISTERED:
->  		ret = fbcon_fb_registered(info);
-> @@ -3178,17 +3217,31 @@ static int fbcon_event_notify(struct notifier_block *self,
->  		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
->  		break;
->  	case FB_EVENT_BLANK:
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_fb_blanked(info, *(int *)event->data);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_NEW_MODELIST:
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_new_modelist(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_GET_REQ:
->  		caps = event->data;
-> +		if (!lock_fb_info(info)) {
-> +			ret = -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_get_requirement(info, caps);
-> +		unlock_fb_info(info);
->  		break;
->  	}
-> -
->  done:
->  	return ret;
->  }
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index cfd9dce..b64f061 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1086,13 +1086,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  			return -EINVAL;
->  		con2fb.framebuffer = -1;
->  		event.data = &con2fb;
-> -
-> -		if (!lock_fb_info(info))
-> -			return -ENODEV;
->  		event.info = info;
->  		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
-> -		unlock_fb_info(info);
-> -
->  		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
->  		break;
->  	case FBIOPUT_CON2FBMAP:
-> @@ -1109,12 +1104,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  			break;
->  		}
->  		event.data = &con2fb;
-> -		if (!lock_fb_info(info))
-> -			return -ENODEV;
->  		event.info = info;
-> -		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
-> -					      &event);
-> -		unlock_fb_info(info);
-> +		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
->  		break;
->  	case FBIOBLANK:
->  		if (!lock_fb_info(info))
+This patch fixes it by removing that custom code, using standard
+core methods to save/restore state, and testing for the need to
+re-POST by comparing the content of a few key PLL registers.
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
+This needs testing on the older latpops model that do D2 state !
+
+I have one of these at home, so I'll let you know tonight or tomorrow
+whether that's ok. Might be worth getting it tested on some of the
+thinkpad models that are using that code too.
+
+ drivers/video/aty/radeon_pm.c |   85 +++++++++---------------------------------
+ drivers/video/aty/radeonfb.h  |    2 
+ 2 files changed, 20 insertions(+), 67 deletions(-)
+
+--- linux-work.orig/drivers/video/aty/radeon_pm.c	2009-02-04 13:35:46.000000000 +1100
++++ linux-work/drivers/video/aty/radeon_pm.c	2009-02-04 13:36:58.000000000 +1100
+@@ -2509,9 +2509,7 @@ static void radeon_reinitialize_QW(struc
+ 
+ static void radeon_set_suspend(struct radeonfb_info *rinfo, int suspend)
+ {
+-	u16 pwr_cmd;
+ 	u32 tmp;
+-	int i;
+ 
+ 	if (!rinfo->pm_reg)
+ 		return;
+@@ -2557,32 +2555,14 @@ static void radeon_set_suspend(struct ra
+ 			}
+ 		}
+ 
+-		for (i = 0; i < 64; ++i)
+-			pci_read_config_dword(rinfo->pdev, i * 4,
+-					      &rinfo->cfg_save[i]);
+-
+ 		/* Switch PCI power management to D2. */
+ 		pci_disable_device(rinfo->pdev);
+-		for (;;) {
+-			pci_read_config_word(
+-				rinfo->pdev, rinfo->pm_reg+PCI_PM_CTRL,
+-				&pwr_cmd);
+-			if (pwr_cmd & 2)
+-				break;			
+-			pci_write_config_word(
+-				rinfo->pdev, rinfo->pm_reg+PCI_PM_CTRL,
+-				(pwr_cmd & ~PCI_PM_CTRL_STATE_MASK) | 2);
+-			mdelay(500);
+-		}
++		pci_save_state(rinfo->pdev);
++		pci_set_power_state(rinfo->pdev, PCI_D2);
+ 	} else {
+ 		printk(KERN_DEBUG "radeonfb (%s): switching to D0 state...\n",
+ 		       pci_name(rinfo->pdev));
+ 
+-		/* Switch back PCI powermanagment to D0 */
+-		mdelay(200);
+-		pci_write_config_word(rinfo->pdev, rinfo->pm_reg+PCI_PM_CTRL, 0);
+-		mdelay(500);
+-
+ 		if (rinfo->family <= CHIP_FAMILY_RV250) {
+ 			/* Reset the SDRAM controller  */
+ 			radeon_pm_full_reset_sdram(rinfo);
+@@ -2598,37 +2578,10 @@ static void radeon_set_suspend(struct ra
+ 	}
+ }
+ 
+-static int radeon_restore_pci_cfg(struct radeonfb_info *rinfo)
+-{
+-	int i;
+-	static u32 radeon_cfg_after_resume[64];
+-
+-	for (i = 0; i < 64; ++i)
+-		pci_read_config_dword(rinfo->pdev, i * 4,
+-				      &radeon_cfg_after_resume[i]);
+-
+-	if (radeon_cfg_after_resume[PCI_BASE_ADDRESS_0/4]
+-	    == rinfo->cfg_save[PCI_BASE_ADDRESS_0/4])
+-		return 0;	/* assume everything is ok */
+-
+-	for (i = PCI_BASE_ADDRESS_0/4; i < 64; ++i) {
+-		if (radeon_cfg_after_resume[i] != rinfo->cfg_save[i])
+-			pci_write_config_dword(rinfo->pdev, i * 4,
+-					       rinfo->cfg_save[i]);
+-	}
+-	pci_write_config_word(rinfo->pdev, PCI_CACHE_LINE_SIZE,
+-			      rinfo->cfg_save[PCI_CACHE_LINE_SIZE/4]);
+-	pci_write_config_word(rinfo->pdev, PCI_COMMAND,
+-			      rinfo->cfg_save[PCI_COMMAND/4]);
+-	return 1;
+-}
+-
+-
+ int radeonfb_pci_suspend(struct pci_dev *pdev, pm_message_t mesg)
+ {
+         struct fb_info *info = pci_get_drvdata(pdev);
+         struct radeonfb_info *rinfo = info->par;
+-	int i;
+ 
+ 	if (mesg.event == pdev->dev.power.power_state.event)
+ 		return 0;
+@@ -2674,6 +2627,11 @@ int radeonfb_pci_suspend(struct pci_dev 
+ 	pmac_suspend_agp_for_card(pdev);
+ #endif /* CONFIG_PPC_PMAC */
+ 
++	/* It's unclear whether or when the generic code will do that, so let's
++	 * do it ourselves. We save state before we do any power management
++	 */
++	pci_save_state(pdev);
++
+ 	/* If we support wakeup from poweroff, we save all regs we can including cfg
+ 	 * space
+ 	 */
+@@ -2698,9 +2656,6 @@ int radeonfb_pci_suspend(struct pci_dev 
+ 			mdelay(20);
+ 			OUTREG(LVDS_GEN_CNTL, INREG(LVDS_GEN_CNTL) & ~(LVDS_DIGON));
+ 		}
+-		// FIXME: Use PCI layer
+-		for (i = 0; i < 64; ++i)
+-			pci_read_config_dword(pdev, i * 4, &rinfo->cfg_save[i]);
+ 		pci_disable_device(pdev);
+ 	}
+ 	/* If we support D2, we go to it (should be fixed later with a flag forcing
+@@ -2717,6 +2672,13 @@ int radeonfb_pci_suspend(struct pci_dev 
+ 	return 0;
+ }
+ 
++static int radeon_check_power_loss(struct radeonfb_info *rinfo)
++{
++	return rinfo->save_regs[4] != INPLL(CLK_PIN_CNTL) ||
++	       rinfo->save_regs[2] != INPLL(MCLK_CNTL) ||
++	       rinfo->save_regs[3] != INPLL(SCLK_CNTL);
++}
++
+ int radeonfb_pci_resume(struct pci_dev *pdev)
+ {
+         struct fb_info *info = pci_get_drvdata(pdev);
+@@ -2735,20 +2697,13 @@ int radeonfb_pci_resume(struct pci_dev *
+ 	printk(KERN_DEBUG "radeonfb (%s): resuming from state: %d...\n",
+ 	       pci_name(pdev), pdev->dev.power.power_state.event);
+ 
+-
+-	if (pci_enable_device(pdev)) {
+-		rc = -ENODEV;
+-		printk(KERN_ERR "radeonfb (%s): can't enable PCI device !\n",
+-		       pci_name(pdev));
+-		goto bail;
+-	}
+-	pci_set_master(pdev);
+-
++	/* PCI state will have been restored by the core, so
++	 * we should be in D0 now with our config space fully
++	 * restored
++	 */
+ 	if (pdev->dev.power.power_state.event == PM_EVENT_SUSPEND) {
+-		/* Wakeup chip. Check from config space if we were powered off
+-		 * (todo: additionally, check CLK_PIN_CNTL too)
+-		 */
+-		if ((rinfo->pm_mode & radeon_pm_off) && radeon_restore_pci_cfg(rinfo)) {
++		/* Wakeup chip */
++		if ((rinfo->pm_mode & radeon_pm_off) && radeon_check_power_loss(rinfo)) {
+ 			if (rinfo->reinit_func != NULL)
+ 				rinfo->reinit_func(rinfo);
+ 			else {
+Index: linux-work/drivers/video/aty/radeonfb.h
+===================================================================
+--- linux-work.orig/drivers/video/aty/radeonfb.h	2009-02-04 13:35:46.000000000 +1100
++++ linux-work/drivers/video/aty/radeonfb.h	2009-02-04 13:36:06.000000000 +1100
+@@ -361,8 +361,6 @@ struct radeonfb_info {
+ #ifdef CONFIG_FB_RADEON_I2C
+ 	struct radeon_i2c_chan 	i2c[4];
+ #endif
+-
+-	u32			cfg_save[64];
+ };
+ 
+ 
+
+------------------------------------------------------------------------------
+Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
+software. With Adobe AIR, Ajax developers can use existing skills and code to
+build responsive, highly engaging applications that combine the power of local
+resources and data with the reach of the web. Download the Adobe AIR SDK and
+Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com

@@ -1,21 +1,22 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 12/15] 68328fb: fix cmap memory leaks
-Date: Sat, 7 Feb 2009 12:18:40 -0500
-Message-ID: <20090207121840.5138cb3d@ephemeral>
+Subject: [PATCH 14/15] amifb: check fb_alloc_cmap return
+ value and handle failure properly
+Date: Sat, 7 Feb 2009 12:18:57 -0500
+Message-ID: <20090207121857.6bc5d5bc@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <dilinger@queued.net>) id 1LVqpI-0003G4-7E
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <dilinger@queued.net>) id 1LVqpZ-0001Lc-9L
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:18:44 +0000
+	Sat, 07 Feb 2009 17:19:01 +0000
 Received: from lunge.mit.edu ([18.54.1.69] helo=lunge.queued.net)
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LVqpG-00021e-WF for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:18:44 +0000
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LVqpX-0004zA-Ts for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 07 Feb 2009 17:19:01 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,40 +30,36 @@ To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
 
- - fix cmap leak in removal path
- - fix cmap leak when register_framebuffer fails
- - check return value of fb_alloc_cmap
-
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/68328fb.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/video/amifb.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
-index 7f907fb..0b17824 100644
---- a/drivers/video/68328fb.c
-+++ b/drivers/video/68328fb.c
-@@ -471,9 +471,11 @@ int __init mc68x328fb_init(void)
- 	fb_info.pseudo_palette = &mc68x328fb_pseudo_palette;
- 	fb_info.flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
- 
--	fb_alloc_cmap(&fb_info.cmap, 256, 0);
-+	if (fb_alloc_cmap(&fb_info.cmap, 256, 0))
-+		return -ENOMEM;
- 
- 	if (register_framebuffer(&fb_info) < 0) {
-+		fb_dealloc_cmap(&fb_info.cmap);
- 		return -EINVAL;
+diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
+index 100f236..82bedd7 100644
+--- a/drivers/video/amifb.c
++++ b/drivers/video/amifb.c
+@@ -2437,7 +2437,9 @@ default_chipset:
+ 		goto amifb_error;
  	}
  
-@@ -494,6 +496,7 @@ module_init(mc68x328fb_init);
- static void __exit mc68x328fb_cleanup(void)
- {
- 	unregister_framebuffer(&fb_info);
-+	fb_dealloc_cmap(&fb_info.cmap);
- }
+-	fb_alloc_cmap(&fb_info.cmap, 1<<fb_info.var.bits_per_pixel, 0);
++	err = fb_alloc_cmap(&fb_info.cmap, 1<<fb_info.var.bits_per_pixel, 0);
++	if (err)
++		goto amifb_error;
  
- module_exit(mc68x328fb_cleanup);
+ 	if (register_framebuffer(&fb_info) < 0) {
+ 		err = -EINVAL;
+@@ -2456,7 +2458,8 @@ amifb_error:
+ 
+ static void amifb_deinit(void)
+ {
+-	fb_dealloc_cmap(&fb_info.cmap);
++	if (fb_info.cmap.len)
++		fb_dealloc_cmap(&fb_info.cmap);
+ 	chipfree();
+ 	if (videomemory)
+ 		iounmap((void*)videomemory);
 -- 
 1.5.6.5
 

@@ -1,22 +1,22 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 7/15] sstfb: check fb_alloc_cmap return
- value and handle failure properly
-Date: Sat, 7 Feb 2009 12:14:57 -0500
-Message-ID: <20090207121457.28550bdd@ephemeral>
+Subject: [PATCH 9/15] valkyriefb: check fb_alloc_cmap
+ return value and handle failure properly
+Date: Sat, 7 Feb 2009 12:15:26 -0500
+Message-ID: <20090207121526.33494f59@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <dilinger@queued.net>) id 1LVqlh-0001Cc-9Q
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <dilinger@queued.net>) id 1LVqmE-0008WK-1e
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:15:01 +0000
+	Sat, 07 Feb 2009 17:15:34 +0000
 Received: from lunge.mit.edu ([18.54.1.69] helo=lunge.queued.net)
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LVqlg-0003IB-20 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:15:01 +0000
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LVqmC-0000d4-MT for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 07 Feb 2009 17:15:34 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,43 +32,65 @@ Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adapl
 
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/sstfb.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/video/valkyriefb.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
-index 5b11a00..609d0a5 100644
---- a/drivers/video/sstfb.c
-+++ b/drivers/video/sstfb.c
-@@ -1421,13 +1421,16 @@ static int __devinit sstfb_probe(struct pci_dev *pdev,
- 		goto fail;
- 	}
- 	
--	fb_alloc_cmap(&info->cmap, 256, 0);
-+	if (fb_alloc_cmap(&info->cmap, 256, 0)) {
-+		printk(KERN_ERR "sstfb: can't alloc cmap memory.\n");
-+		goto fail;
-+	}
+diff --git a/drivers/video/valkyriefb.c b/drivers/video/valkyriefb.c
+index 7b0cef9..4bb9a0b 100644
+--- a/drivers/video/valkyriefb.c
++++ b/drivers/video/valkyriefb.c
+@@ -119,7 +119,7 @@ static void set_valkyrie_clock(unsigned char *params);
+ static int valkyrie_var_to_par(struct fb_var_screeninfo *var,
+ 	struct fb_par_valkyrie *par, const struct fb_info *fb_info);
  
- 	/* register fb */
- 	info->device = &pdev->dev;
- 	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "sstfb: can't register framebuffer.\n");
--		goto fail;
-+		goto fail_register;
- 	}
+-static void valkyrie_init_info(struct fb_info *info, struct fb_info_valkyrie *p);
++static int valkyrie_init_info(struct fb_info *info, struct fb_info_valkyrie *p);
+ static void valkyrie_par_to_fix(struct fb_par_valkyrie *par, struct fb_fix_screeninfo *fix);
+ static void valkyrie_init_fix(struct fb_fix_screeninfo *fix, struct fb_info_valkyrie *p);
  
- 	sstfb_clear_screen(info);
-@@ -1441,8 +1444,9 @@ static int __devinit sstfb_probe(struct pci_dev *pdev,
+@@ -381,18 +381,22 @@ int __init valkyriefb_init(void)
  
+ 	valkyrie_choose_mode(p);
+ 	mac_vmode_to_var(default_vmode, default_cmode, &p->info.var);
+-	valkyrie_init_info(&p->info, p);
++	err = valkyrie_init_info(&p->info, p);
++	if (err < 0)
++		goto out_free;
+ 	valkyrie_init_fix(&p->info.fix, p);
+ 	if (valkyriefb_set_par(&p->info))
+ 		/* "can't happen" */
+ 		printk(KERN_ERR "valkyriefb: can't set default video mode\n");
+ 
+ 	if ((err = register_framebuffer(&p->info)) != 0)
+-		goto out_free;
++		goto out_cmap_free;
+ 
+ 	printk(KERN_INFO "fb%d: valkyrie frame buffer device\n", p->info.node);
  	return 0;
  
--fail:
-+fail_register:
- 	fb_dealloc_cmap(&info->cmap);
-+fail:
- 	iounmap(info->screen_base);
- fail_fb_remap:
- 	iounmap(par->mmio_vbase);
++ out_cmap_free:
++	fb_dealloc_cmap(&p->info.cmap);
+  out_free:
+ 	if (p->frame_buffer)
+ 		iounmap(p->frame_buffer);
+@@ -538,14 +542,15 @@ static void valkyrie_par_to_fix(struct fb_par_valkyrie *par,
+ 		/* ywrapstep, xpanstep, ypanstep */
+ }
+ 
+-static void __init valkyrie_init_info(struct fb_info *info, struct fb_info_valkyrie *p)
++static int __init valkyrie_init_info(struct fb_info *info,
++		struct fb_info_valkyrie *p)
+ {
+ 	info->fbops = &valkyriefb_ops;
+ 	info->screen_base = p->frame_buffer + 0x1000;
+ 	info->flags = FBINFO_DEFAULT;
+ 	info->pseudo_palette = p->pseudo_palette;
+-	fb_alloc_cmap(&info->cmap, 256, 0);
+ 	info->par = &p->par;
++	return fb_alloc_cmap(&info->cmap, 256, 0);
+ }
+ 
+ 
 -- 
 1.5.6.5
 

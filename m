@@ -1,22 +1,22 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 3/15] tridentfb: fix memory leaks in
+Subject: [PATCH 2/15] tdfxfb: fix memory leaks in
 	removal path
-Date: Sat, 7 Feb 2009 12:12:33 -0500
-Message-ID: <20090207121233.0a93b4db@ephemeral>
+Date: Sat, 7 Feb 2009 12:12:24 -0500
+Message-ID: <20090207121224.1e162373@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <dilinger@queued.net>) id 1LVqjN-0008NE-DW
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <dilinger@queued.net>) id 1LVqjE-000129-Pq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:12:37 +0000
+	Sat, 07 Feb 2009 17:12:28 +0000
 Received: from lunge.mit.edu ([18.54.1.69] helo=lunge.queued.net)
 	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LVqjL-0002JA-WA for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:12:37 +0000
+	id 1LVqjD-0002FJ-Ff for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 07 Feb 2009 17:12:28 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,17 +34,17 @@ We were leaking the cmap memory.
 
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/tridentfb.c |    1 +
+ drivers/video/tdfxfb.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/tridentfb.c b/drivers/video/tridentfb.c
-index 479b2e7..c5369ba 100644
---- a/drivers/video/tridentfb.c
-+++ b/drivers/video/tridentfb.c
-@@ -1563,6 +1563,7 @@ static void __devexit trident_pci_remove(struct pci_dev *dev)
- 	release_mem_region(tridentfb_fix.mmio_start, tridentfb_fix.mmio_len);
- 	pci_set_drvdata(dev, NULL);
- 	kfree(info->pixmap.addr);
+diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
+index 14bd3f3..ee64771 100644
+--- a/drivers/video/tdfxfb.c
++++ b/drivers/video/tdfxfb.c
+@@ -1393,6 +1393,7 @@ static void __devexit tdfxfb_remove(struct pci_dev *pdev)
+ 	release_mem_region(pci_resource_start(pdev, 0),
+ 			   pci_resource_len(pdev, 0));
+ 	pci_set_drvdata(pdev, NULL);
 +	fb_dealloc_cmap(&info->cmap);
  	framebuffer_release(info);
  }

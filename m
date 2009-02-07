@@ -1,22 +1,21 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: [PATCH 14/15] amifb: check fb_alloc_cmap return
- value and handle failure properly
-Date: Sat, 7 Feb 2009 12:18:57 -0500
-Message-ID: <20090207121857.6bc5d5bc@ephemeral>
+Subject: [PATCH 15/15] asiliantfb: fix cmap memory leaks
+Date: Sat, 7 Feb 2009 12:19:05 -0500
+Message-ID: <20090207121905.6d2d9575@ephemeral>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <dilinger@queued.net>) id 1LVqpZ-0001Lc-9L
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <dilinger@queued.net>) id 1LVqph-00023t-Qq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:19:01 +0000
+	Sat, 07 Feb 2009 17:19:09 +0000
 Received: from lunge.mit.edu ([18.54.1.69] helo=lunge.queued.net)
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LVqpX-0004zA-Ts for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 07 Feb 2009 17:19:01 +0000
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LVqpg-0003m8-Cq for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 07 Feb 2009 17:19:09 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,36 +29,81 @@ To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
 
+ - fix cmap leak in removal path
+ - fix cmap leak when register_framebuffer fails
+ - check return value of fb_alloc_cmap
+ - don't continue with driver setup if register_framebuffer fails
+
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/amifb.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/video/asiliantfb.c |   24 +++++++++++++++++++-----
+ 1 files changed, 19 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index 100f236..82bedd7 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -2437,7 +2437,9 @@ default_chipset:
- 		goto amifb_error;
+diff --git a/drivers/video/asiliantfb.c b/drivers/video/asiliantfb.c
+index 1fd22f4..cb89100 100644
+--- a/drivers/video/asiliantfb.c
++++ b/drivers/video/asiliantfb.c
+@@ -505,19 +505,26 @@ static struct fb_var_screeninfo asiliantfb_var __devinitdata = {
+ 	.vsync_len 	= 2,
+ };
+ 
+-static void __devinit init_asiliant(struct fb_info *p, unsigned long addr)
++static int __devinit init_asiliant(struct fb_info *p, unsigned long addr)
+ {
+ 	p->fix			= asiliantfb_fix;
+ 	p->fix.smem_start	= addr;
+ 	p->var			= asiliantfb_var;
+ 	p->fbops		= &asiliantfb_ops;
+ 	p->flags		= FBINFO_DEFAULT;
++	int err;
+ 
+-	fb_alloc_cmap(&p->cmap, 256, 0);
++	err = fb_alloc_cmap(&p->cmap, 256, 0);
++	if (err) {
++		printk(KERN_ERR "C&T 69000 fb failed to alloc cmap memory\n");
++		return err;
++	}
+ 
+-	if (register_framebuffer(p) < 0) {
++	err = register_framebuffer(p);
++	if (err < 0) {
+ 		printk(KERN_ERR "C&T 69000 framebuffer failed to register\n");
+-		return;
++		fb_dealloc_cmap(&p->cmap);
++		return err;
  	}
  
--	fb_alloc_cmap(&fb_info.cmap, 1<<fb_info.var.bits_per_pixel, 0);
-+	err = fb_alloc_cmap(&fb_info.cmap, 1<<fb_info.var.bits_per_pixel, 0);
-+	if (err)
-+		goto amifb_error;
- 
- 	if (register_framebuffer(&fb_info) < 0) {
- 		err = -EINVAL;
-@@ -2456,7 +2458,8 @@ amifb_error:
- 
- static void amifb_deinit(void)
+ 	printk(KERN_INFO "fb%d: Asiliant 69000 frame buffer (%dK RAM detected)\n",
+@@ -532,6 +539,7 @@ asiliantfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
  {
--	fb_dealloc_cmap(&fb_info.cmap);
-+	if (fb_info.cmap.len)
-+		fb_dealloc_cmap(&fb_info.cmap);
- 	chipfree();
- 	if (videomemory)
- 		iounmap((void*)videomemory);
+ 	unsigned long addr, size;
+ 	struct fb_info *p;
++	int err;
+ 
+ 	if ((dp->resource[0].flags & IORESOURCE_MEM) == 0)
+ 		return -ENODEV;
+@@ -560,7 +568,12 @@ asiliantfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+ 	pci_write_config_dword(dp, 4, 0x02800083);
+ 	writeb(3, p->screen_base + 0x400784);
+ 
+-	init_asiliant(p, addr);
++	err = init_asiliant(p, addr);
++	if (err) {
++		release_mem_region(addr, size);
++		framebuffer_release(p);
++		return err;
++	}
+ 
+ 	pci_set_drvdata(dp, p);
+ 	return 0;
+@@ -571,6 +584,7 @@ static void __devexit asiliantfb_remove(struct pci_dev *dp)
+ 	struct fb_info *p = pci_get_drvdata(dp);
+ 
+ 	unregister_framebuffer(p);
++	fb_dealloc_cmap(&p->cmap);
+ 	iounmap(p->screen_base);
+ 	release_mem_region(pci_resource_start(dp, 0), pci_resource_len(dp, 0));
+ 	pci_set_drvdata(dp, NULL);
 -- 
 1.5.6.5
 

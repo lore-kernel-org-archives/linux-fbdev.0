@@ -1,61 +1,86 @@
 From: Andres Salomon <dilinger@queued.net>
-Subject: Re: [Linux-fbdev-devel] [PATCH 13/15] amba-clcd: fix cmap memory
- leaks
-Date: Mon, 9 Feb 2009 16:55:40 -0500
-Message-ID: <20090209165540.523c2ce4@ephemeral>
-References: <20090207121848.536b136d@ephemeral>
-	<20090209211614.44459a12.krzysztof.h1@wp.pl>
+Subject: Re: [Linux-fbdev-devel] [PATCH 5/15] skeletonfb: check
+ fb_alloc_cmap return value and handle failure properly
+Date: Mon, 9 Feb 2009 17:32:00 -0500
+Message-ID: <20090209173200.1122808e@ephemeral>
+References: <20090207121302.55db6a87@ephemeral>
+	<20090209072929.29589e5d.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752970AbZBIVzy@vger.kernel.org>
-In-Reply-To: <20090209211614.44459a12.krzysztof.h1@wp.pl>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755096AbZBIWcV@vger.kernel.org>
+In-Reply-To: <20090209072929.29589e5d.krzysztof.h1@poczta.fm>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On Mon, 9 Feb 2009 21:16:14 +0100
-Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
+On Mon, 9 Feb 2009 07:29:29 +0100
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-> On Sat, 7 Feb 2009 12:18:48 -0500
+> On Sat, 7 Feb 2009 12:13:02 -0500
 > Andres Salomon <dilinger@queued.net> wrote:
 > 
 > > 
-> >  - fix cmap leak in removal path
-> >  - fix cmap leak when register_framebuffer fails
+> > Bad example code, no cookie!
 > > 
+> 
+> It is even worse than you thought.
+
+Maybe skeletonfb.c should simply be dropped completely?  Incorrect
+documentation is worse than no documentation.  If it's unmaintained,
+buggy, and incorrect in many places...
+
+
+
+> 
 > > Signed-off-by: Andres Salomon <dilinger@debian.org>
 > > ---
-> 
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> One comment (see below).
-> 
-[...]
-> > @@ -485,6 +489,8 @@ static int clcdfb_remove(struct amba_device
-> > *dev) 
-> >  	clcdfb_disable(fb);
-> >  	unregister_framebuffer(&fb->fb);
-> > +	if (fb->fb.cmap.len)
-> > +		fb_dealloc_cmap(&fb->fb.cmap);
-> 
-> Is this if() needed? Is this function called twice (or more) or
-> can it be called without the cmap allocated?
-
-
-It was added as a precaution due to the fb->board->remove callbacks,
-but I think I misunderstood the code.  So my official answer is "I'm not
-sure." :)
-
-
-
-
-
-> 
-> >  	iounmap(fb->regs);
-> >  	clk_put(fb->clk);
-> >  
-> > -- 
-> > 1.5.6.5
+> >  drivers/video/skeletonfb.c |    9 ++++++---
+> >  1 files changed, 6 insertions(+), 3 deletions(-)
 > > 
+> > diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
+> > index df53365..a439159 100644
+> > --- a/drivers/video/skeletonfb.c
+> > +++ b/drivers/video/skeletonfb.c
+> > @@ -795,8 +795,9 @@ static int __devinit xxxfb_probe(struct pci_dev
+> > *dev, if (!retval || retval == 4)
+> >  	return -EINVAL;			
+> >  
+> > -    /* This has to been done !!! */	
+> > -    fb_alloc_cmap(&info->cmap, cmap_len, 0);
+> > +    /* This has to be done! */
+> > +    if (fb_alloc_cmap(&info->cmap, cmap_len, 0))
+> > +	return -ENOMEM;
+> >  	
+> 
+> The info pointer should be freed before the return here ...
+> 
+> >      /* 
+> >       * The following is done in the case of having hardware with a
+> > static @@ -820,8 +821,10 @@ static int __devinit xxxfb_probe(struct
+> > pci_dev *dev, */
+> >      /* xxxfb_set_par(info); */
+> >  
+> > -    if (register_framebuffer(info) < 0)
+> > +    if (register_framebuffer(info) < 0) {
+> > +	fb_dealloc_cmap(&info->cmap);
+> 
+> ... and here.
+> 
+> >  	return -EINVAL;
+> > +    }
+> >      printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
+> >  	   info->fix.id);
+> >      pci_set_drvdata(dev, info); /* or platform_set_drvdata(pdev,
+> > info) */ -- 
+> 
+> 
+> Kind regards,
+> Krzysztof
+> 
+> 
+> ----------------------------------------------------------------------
+> Zostan mistrzem parkowania w Bombaju!
+> Zagraj >> http://link.interia.pl/f204e 
+> 

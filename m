@@ -1,61 +1,74 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 10/15] sunxvr500: fix cmap memory
-	leaks
-Date: Sun, 8 Feb 2009 17:50:24 -0800
-Message-ID: <20090208175024.6e58671f.akpm@linux-foundation.org>
-References: <20090207121540.0e618d0f@ephemeral>
-	<20090208.165925.240846008.davem@davemloft.net>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Linux-fbdev-devel] [PATCH 5/15] skeletonfb: check
+ fb_alloc_cmap return value and handle failure properly
+Date: Mon, 9 Feb 2009 07:29:29 +0100
+Message-ID: <20090209072929.29589e5d.krzysztof.h1@poczta.fm>
+References: <20090207121302.55db6a87@ephemeral>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1LWLJN-0002wD-Nb
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Feb 2009 01:51:49 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LWLJM-00036x-5L
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Feb 2009 01:51:49 +0000
-In-Reply-To: <20090208.165925.240846008.davem@davemloft.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: David Miller <davem@davemloft.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com, dilinger@queued.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754573AbZBIGZg@vger.kernel.org>
+In-Reply-To: <20090207121302.55db6a87@ephemeral>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andres Salomon <dilinger@queued.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On Sun, 08 Feb 2009 16:59:25 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+On Sat, 7 Feb 2009 12:13:02 -0500
+Andres Salomon <dilinger@queued.net> wrote:
 
-> From: Andres Salomon <dilinger@queued.net>
-> Date: Sat, 7 Feb 2009 12:15:40 -0500
 > 
-> [ Fixed typo in adaplas's email address ]
+> Bad example code, no cookie!
 > 
-> >  - fix cmap leak in removal path
-> >  - fix cmap leak when register_framebuffer fails
-> > 
-> > Signed-off-by: Andres Salomon <dilinger@debian.org>
+
+It is even worse than you thought.
+
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
+> ---
+>  drivers/video/skeletonfb.c |    9 ++++++---
+>  1 files changed, 6 insertions(+), 3 deletions(-)
 > 
-> I assume the fbdev folks will pick this up or should I take
-> it in my sparc tree?
+> diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
+> index df53365..a439159 100644
+> --- a/drivers/video/skeletonfb.c
+> +++ b/drivers/video/skeletonfb.c
+> @@ -795,8 +795,9 @@ static int __devinit xxxfb_probe(struct pci_dev *dev,
+>      if (!retval || retval == 4)
+>  	return -EINVAL;			
+>  
+> -    /* This has to been done !!! */	
+> -    fb_alloc_cmap(&info->cmap, cmap_len, 0);
+> +    /* This has to be done! */
+> +    if (fb_alloc_cmap(&info->cmap, cmap_len, 0))
+> +	return -ENOMEM;
+>  	
 
-(fbdev folks == me) at present.  I'll crunch on these 15 patches
-tomorrow.  If you want to queue it in in a sparc tree so that it gets
-more-than-zero runtine testing then go for it.
+The info pointer should be freed before the return here ...
+
+>      /* 
+>       * The following is done in the case of having hardware with a static 
+> @@ -820,8 +821,10 @@ static int __devinit xxxfb_probe(struct pci_dev *dev,
+>       */
+>      /* xxxfb_set_par(info); */
+>  
+> -    if (register_framebuffer(info) < 0)
+> +    if (register_framebuffer(info) < 0) {
+> +	fb_dealloc_cmap(&info->cmap);
+
+... and here.
+
+>  	return -EINVAL;
+> +    }
+>      printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
+>  	   info->fix.id);
+>      pci_set_drvdata(dev, info); /* or platform_set_drvdata(pdev, info) */
+> -- 
 
 
-------------------------------------------------------------------------------
-Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
-software. With Adobe AIR, Ajax developers can use existing skills and code to
-build responsive, highly engaging applications that combine the power of local
-resources and data with the reach of the web. Download the Adobe AIR SDK and
-Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com
+Kind regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Zostan mistrzem parkowania w Bombaju!
+Zagraj >> http://link.interia.pl/f204e 

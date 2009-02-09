@@ -1,73 +1,102 @@
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [Linux-fbdev-devel] [PATCH 13/15] amba-clcd: fix cmap memory
+Subject: Re: [Linux-fbdev-devel] [PATCH 15/15] asiliantfb: fix cmap memory
  leaks
-Date: Mon, 9 Feb 2009 21:16:14 +0100
-Message-ID: <20090209211614.44459a12.krzysztof.h1@wp.pl>
-References: <20090207121848.536b136d@ephemeral>
+Date: Mon, 9 Feb 2009 21:24:44 +0100
+Message-ID: <20090209212444.6d000750.krzysztof.h1@wp.pl>
+References: <20090207121905.6d2d9575@ephemeral>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756127AbZBIUMT@vger.kernel.org>
-In-Reply-To: <20090207121848.536b136d@ephemeral>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754776AbZBIUUq@vger.kernel.org>
+In-Reply-To: <20090207121905.6d2d9575@ephemeral>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 To: Andres Salomon <dilinger@queued.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
 
-On Sat, 7 Feb 2009 12:18:48 -0500
+On Sat, 7 Feb 2009 12:19:05 -0500
 Andres Salomon <dilinger@queued.net> wrote:
 
 > 
 >  - fix cmap leak in removal path
 >  - fix cmap leak when register_framebuffer fails
+>  - check return value of fb_alloc_cmap
+>  - don't continue with driver setup if register_framebuffer fails
 > 
 > Signed-off-by: Andres Salomon <dilinger@debian.org>
 > ---
-
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-One comment (see below).
-
->  drivers/video/amba-clcd.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
+>  drivers/video/asiliantfb.c |   24 +++++++++++++++++++-----
+>  1 files changed, 19 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
-> index 4e046fe..61050ab 100644
-> --- a/drivers/video/amba-clcd.c
-> +++ b/drivers/video/amba-clcd.c
-> @@ -408,7 +408,9 @@ static int clcdfb_register(struct clcd_fb *fb)
->  	/*
->  	 * Allocate colourmap.
->  	 */
-> -	fb_alloc_cmap(&fb->fb.cmap, 256, 0);
-> +	ret = fb_alloc_cmap(&fb->fb.cmap, 256, 0);
-> +	if (ret)
-> +		goto unmap;
+> diff --git a/drivers/video/asiliantfb.c b/drivers/video/asiliantfb.c
+> index 1fd22f4..cb89100 100644
+> --- a/drivers/video/asiliantfb.c
+> +++ b/drivers/video/asiliantfb.c
+> @@ -505,19 +505,26 @@ static struct fb_var_screeninfo asiliantfb_var __devinitdata = {
+>  	.vsync_len 	= 2,
+>  };
 >  
->  	/*
->  	 * Ensure interrupts are disabled.
-> @@ -426,6 +428,8 @@ static int clcdfb_register(struct clcd_fb *fb)
+> -static void __devinit init_asiliant(struct fb_info *p, unsigned long addr)
+> +static int __devinit init_asiliant(struct fb_info *p, unsigned long addr)
+>  {
+>  	p->fix			= asiliantfb_fix;
+>  	p->fix.smem_start	= addr;
+>  	p->var			= asiliantfb_var;
+>  	p->fbops		= &asiliantfb_ops;
+>  	p->flags		= FBINFO_DEFAULT;
+> +	int err;
 >  
->  	printk(KERN_ERR "CLCD: cannot register framebuffer (%d)\n", ret);
+> -	fb_alloc_cmap(&p->cmap, 256, 0);
+> +	err = fb_alloc_cmap(&p->cmap, 256, 0);
+> +	if (err) {
+> +		printk(KERN_ERR "C&T 69000 fb failed to alloc cmap memory\n");
+> +		return err;
+> +	}
 >  
-> +	fb_dealloc_cmap(&fb->fb.cmap);
-> + unmap:
->  	iounmap(fb->regs);
->   free_clk:
->  	clk_put(fb->clk);
-> @@ -485,6 +489,8 @@ static int clcdfb_remove(struct amba_device *dev)
+> -	if (register_framebuffer(p) < 0) {
+> +	err = register_framebuffer(p);
+> +	if (err < 0) {
+>  		printk(KERN_ERR "C&T 69000 framebuffer failed to register\n");
+> -		return;
+> +		fb_dealloc_cmap(&p->cmap);
+> +		return err;
+>  	}
 >  
->  	clcdfb_disable(fb);
->  	unregister_framebuffer(&fb->fb);
-> +	if (fb->fb.cmap.len)
-> +		fb_dealloc_cmap(&fb->fb.cmap);
+>  	printk(KERN_INFO "fb%d: Asiliant 69000 frame buffer (%dK RAM detected)\n",
+> @@ -532,6 +539,7 @@ asiliantfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+>  {
+>  	unsigned long addr, size;
+>  	struct fb_info *p;
+> +	int err;
+>  
+>  	if ((dp->resource[0].flags & IORESOURCE_MEM) == 0)
+>  		return -ENODEV;
+> @@ -560,7 +568,12 @@ asiliantfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+>  	pci_write_config_dword(dp, 4, 0x02800083);
+>  	writeb(3, p->screen_base + 0x400784);
+>  
+> -	init_asiliant(p, addr);
+> +	err = init_asiliant(p, addr);
+> +	if (err) {
+> +		release_mem_region(addr, size);
+> +		framebuffer_release(p);
+> +		return err;
+> +	}
+>  
 
-Is this if() needed? Is this function called twice (or more) or
-can it be called without the cmap allocated?
+There is a missing  iounmap(p->screen_base) here.
 
->  	iounmap(fb->regs);
->  	clk_put(fb->clk);
+>  	pci_set_drvdata(dp, p);
+>  	return 0;
+> @@ -571,6 +584,7 @@ static void __devexit asiliantfb_remove(struct pci_dev *dp)
+>  	struct fb_info *p = pci_get_drvdata(dp);
 >  
+>  	unregister_framebuffer(p);
+> +	fb_dealloc_cmap(&p->cmap);
+>  	iounmap(p->screen_base);
+>  	release_mem_region(pci_resource_start(dp, 0), pci_resource_len(dp, 0));
+>  	pci_set_drvdata(dp, NULL);
 > -- 
 > 1.5.6.5
+> 
 > 

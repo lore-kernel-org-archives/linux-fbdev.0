@@ -1,86 +1,69 @@
-From: Andres Salomon <dilinger@queued.net>
-Subject: Re: [Linux-fbdev-devel] [PATCH 5/15] skeletonfb: check
- fb_alloc_cmap return value and handle failure properly
-Date: Mon, 9 Feb 2009 17:32:00 -0500
-Message-ID: <20090209173200.1122808e@ephemeral>
-References: <20090207121302.55db6a87@ephemeral>
-	<20090209072929.29589e5d.krzysztof.h1@poczta.fm>
+From: Roel Kluin <roel.kluin@gmail.com>
+Subject: [PATCH] newport: newport_*wait() return 0 on
+	timeout
+Date: Mon, 09 Feb 2009 22:44:54 +0100
+Message-ID: <4990A3D6.9040406@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755096AbZBIWcV@vger.kernel.org>
-In-Reply-To: <20090209072929.29589e5d.krzysztof.h1@poczta.fm>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, adaplas@gmail.com
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1LWfU8-00061Q-M0
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Feb 2009 23:24:16 +0000
+Received: from nf-out-0910.google.com ([64.233.182.185])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LWfU6-00034V-3P for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Feb 2009 23:24:16 +0000
+Received: by nf-out-0910.google.com with SMTP id g16so324370nfd.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 09 Feb 2009 15:24:12 -0800 (PST)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: adaplas@gmail.com, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 9 Feb 2009 07:29:29 +0100
-Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+With a postfix decrement t reaches -1 on timeout which results in a
+return of 0.
 
-> On Sat, 7 Feb 2009 12:13:02 -0500
-> Andres Salomon <dilinger@queued.net> wrote:
-> 
-> > 
-> > Bad example code, no cookie!
-> > 
-> 
-> It is even worse than you thought.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/include/video/newport.h b/include/video/newport.h
+index 1f5ebea..001b935 100644
+--- a/include/video/newport.h
++++ b/include/video/newport.h
+@@ -453,7 +453,7 @@ static __inline__ int newport_wait(struct newport_regs *regs)
+ {
+ 	int t = BUSY_TIMEOUT;
+ 
+-	while (t--)
++	while (--t)
+ 		if (!(regs->cset.status & NPORT_STAT_GBUSY))
+ 			break;
+ 	return !t;
+@@ -463,7 +463,7 @@ static __inline__ int newport_bfwait(struct newport_regs *regs)
+ {
+ 	int t = BUSY_TIMEOUT;
+ 
+-	while (t--)
++	while (--t)
+ 		if(!(regs->cset.status & NPORT_STAT_BBUSY))
+ 			break;
+ 	return !t;
 
-Maybe skeletonfb.c should simply be dropped completely?  Incorrect
-documentation is worse than no documentation.  If it's unmaintained,
-buggy, and incorrect in many places...
 
-
-
-> 
-> > Signed-off-by: Andres Salomon <dilinger@debian.org>
-> > ---
-> >  drivers/video/skeletonfb.c |    9 ++++++---
-> >  1 files changed, 6 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
-> > index df53365..a439159 100644
-> > --- a/drivers/video/skeletonfb.c
-> > +++ b/drivers/video/skeletonfb.c
-> > @@ -795,8 +795,9 @@ static int __devinit xxxfb_probe(struct pci_dev
-> > *dev, if (!retval || retval == 4)
-> >  	return -EINVAL;			
-> >  
-> > -    /* This has to been done !!! */	
-> > -    fb_alloc_cmap(&info->cmap, cmap_len, 0);
-> > +    /* This has to be done! */
-> > +    if (fb_alloc_cmap(&info->cmap, cmap_len, 0))
-> > +	return -ENOMEM;
-> >  	
-> 
-> The info pointer should be freed before the return here ...
-> 
-> >      /* 
-> >       * The following is done in the case of having hardware with a
-> > static @@ -820,8 +821,10 @@ static int __devinit xxxfb_probe(struct
-> > pci_dev *dev, */
-> >      /* xxxfb_set_par(info); */
-> >  
-> > -    if (register_framebuffer(info) < 0)
-> > +    if (register_framebuffer(info) < 0) {
-> > +	fb_dealloc_cmap(&info->cmap);
-> 
-> ... and here.
-> 
-> >  	return -EINVAL;
-> > +    }
-> >      printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
-> >  	   info->fix.id);
-> >      pci_set_drvdata(dev, info); /* or platform_set_drvdata(pdev,
-> > info) */ -- 
-> 
-> 
-> Kind regards,
-> Krzysztof
-> 
-> 
-> ----------------------------------------------------------------------
-> Zostan mistrzem parkowania w Bombaju!
-> Zagraj >> http://link.interia.pl/f204e 
-> 
+------------------------------------------------------------------------------
+Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
+software. With Adobe AIR, Ajax developers can use existing skills and code to
+build responsive, highly engaging applications that combine the power of local
+resources and data with the reach of the web. Download the Adobe AIR SDK and
+Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com

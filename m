@@ -1,198 +1,81 @@
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: PATCH - Update s1d13xxxfb to differ between revisions and
- production ids
-Date: Tue, 10 Feb 2009 15:36:14 +0100
-Message-ID: <20090210153614.9938559c.kristoffer.ericson@gmail.com>
+From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Subject: RE: [PATCH] Backlight driver for omap3evm
+Date: Tue, 10 Feb 2009 22:52:16 +0530
+Message-ID: <19F8576C6E063C45BE387C64729E739403FA81B8D2@dbde02.ent.ti.com>
+References: <B85A65D85D7EB246BE421B3FB0FBB59301BB7E0701@dbde02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__10_Feb_2009_15_36_14_+0100_z8XatTsiC5UC262O"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755164AbZBJOhX@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <B85A65D85D7EB246BE421B3FB0FBB59301BB7E0701@dbde02.ent.ti.com>
+Content-Language: en-US
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-
---Signature=_Tue__10_Feb_2009_15_36_14_+0100_z8XatTsiC5UC262O
-Content-Type: multipart/mixed;
- boundary="Multipart=_Tue__10_Feb_2009_15_36_14_+0100_ElIYGYOQehK1wR3."
+To: "Premi, Sanjeev" <premi@ti.com>, Richard Purdie <rpurdie@rpsys.net>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
 
---Multipart=_Tue__10_Feb_2009_15_36_14_+0100_ElIYGYOQehK1wR3.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
+Thanks,
+Vaibhav Hiremath
 
-The s1d13xxx chip provides two values of identification value.
-The Production id (e.g 13506/13505/13806..)
-and a revision number 0,1,2,3). Together these
-can help us to differ between similiar setups.
+> -----Original Message-----
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of Premi, Sanjeev
+> Sent: Wednesday, January 07, 2009 8:52 PM
+> To: Richard Purdie
+> Cc: linux-omap@vger.kernel.org
+> Subject: RE: [PATCH] Backlight driver for omap3evm
+> 
+> 
+> > -----Original Message-----
+> > From: Richard Purdie [mailto:rpurdie@rpsys.net]
+> > Sent: Wednesday, January 07, 2009 8:37 PM
+> > To: Premi, Sanjeev
+> > Cc: linux-omap@vger.kernel.org
+> > Subject: Re: [PATCH] Backlight driver for omap3evm
+> >
+> > On Wed, 2009-01-07 at 20:25 +0530, Sanjeev Premi wrote:
+> > should be done in the platform code for the board, not in the
+> > general driver. If you do that, you should be able to reuse
+> > most of the generic-bl device code.
+> 
+> I tried so, but wasn't able to get the Kconfig dependencies right to
+> get 'generic-bl' into my build. Hence, removed the code that I
+> believed to be generic (since yesterday's mail) and created the
+> patch.
+> 
+> Will give another try.
+> 
+[Hiremath, Vaibhav] Now I will be following up for OMAP3EVM backlight driver patch initiated/posted by Sanjeev. I was just referring to the backlight drives currently available under Linux tree, and observed that almost all drivers have been implemented in different way. I could not able to get one driver to which I can refer to for adding support for OMAP3EVM backlight driver.
 
-This patch adds the proper way of grabbing both
-those values and save them for future
-reference (=3D in order to decide what functions
-a card supports, e.g acceleration).
+Can anybody tell me the expected way of implementation for backlight driver is?
 
-We also move away from the concept of
-all s1d13xxx =3D s1d13806 when we really
-support alot more.
+I have some questions here,
 
-Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com
+	- If I understand correctly (and as mentioned and pointed out by Richard in the mail-chain), platform_device should get added in platform file where it registers the pointer to the structure "struct generic_bl_info". 
+This I believe should be standard way everybody should follow, which is not the case.
+Am I missing something here?
 
-diff --git a/drivers/video/s1d13xxxfb.c b/drivers/video/s1d13xxxfb.c
-index a7b01d2..38ece73 100644
---- a/drivers/video/s1d13xxxfb.c
-+++ b/drivers/video/s1d13xxxfb.c
-@@ -50,9 +50,22 @@
- #define dbg(fmt, args...) do { } while (0)
- #endif
-=20
--static const int __devinitconst s1d13xxxfb_revisions[] =3D {
--	S1D13506_CHIP_REV,	/* Rev.4 on HP Jornada 7xx S1D13506 */
--	S1D13806_CHIP_REV,	/* Rev.7 on .. */
-+/*
-+ * List of card production ids
-+ */
-+static const int s1d13xxxfb_prod_ids[] =3D {
-+	S1D13505_PROD_ID,
-+	S1D13506_PROD_ID,
-+	S1D13806_PROD_ID,
-+};
-+
-+/*
-+ * List of card strings
-+ */
-+static const char *s1d13xxxfb_prod_names[] =3D {
-+	"S1D13505",
-+	"S1D13506",
-+	"S1D13806",
- };
-=20
- /*
-@@ -377,7 +390,6 @@ s1d13xxxfb_pan_display(struct fb_var_screeninfo *var, s=
-truct fb_info *info)
- 	return 0;
- }
-=20
--
- /* framebuffer information structures */
-=20
- static struct fb_ops s1d13xxxfb_fbops =3D {
-@@ -544,7 +556,7 @@ s1d13xxxfb_probe(struct platform_device *pdev)
- 	struct s1d13xxxfb_pdata *pdata =3D NULL;
- 	int ret =3D 0;
- 	int i;
--	u8 revision;
-+	u8 revision,prod_id;
-=20
- 	dbg("probe called: device is %p\n", pdev);
-=20
-@@ -613,19 +625,31 @@ s1d13xxxfb_probe(struct platform_device *pdev)
- 		goto bail;
- 	}
-=20
--	revision =3D s1d13xxxfb_readreg(default_par, S1DREG_REV_CODE) >> 2;
--
-+	/* production id is top 6 bits */
-+	prod_id =3D s1d13xxxfb_readreg(default_par, S1DREG_REV_CODE) >> 2;
-+	/* revision id is lower 2 bits */
-+	revision =3D s1d13xxxfb_readreg(default_par, S1DREG_REV_CODE) & 0x3;
- 	ret =3D -ENODEV;
-=20
--	for (i =3D 0; i < ARRAY_SIZE(s1d13xxxfb_revisions); i++) {
--		if (revision =3D=3D s1d13xxxfb_revisions[i])
-+	for (i =3D 0; i < ARRAY_SIZE(s1d13xxxfb_prod_ids); i++) {
-+		if (prod_id =3D=3D s1d13xxxfb_prod_ids[i]) {
-+			/* looks like we got it in our list */
-+			default_par->prod_id =3D prod_id;
-+			default_par->revision =3D revision;
- 			ret =3D 0;
-+		}
-+
-+		/* jump ship if we find something */
-+		if (!ret)
-+			break;
- 	}
-=20
--	if (!ret)
-+	if (!ret) {
-+		printk(KERN_INFO PFX "chip production id %i =3D %s\n", prod_id, s1d13xxx=
-fb_prod_names[i]);
- 		printk(KERN_INFO PFX "chip revision %i\n", revision);
--	else {
--		printk(KERN_INFO PFX "unknown chip revision %i\n", revision);
-+	} else {
-+		printk(KERN_INFO PFX "unknown chip production id %i, revision %i\n", pro=
-d_id, revision);
-+		printk(KERN_INFO PFX "please contant maintainer\n");
- 		goto bail;
- 	}
-=20
+	- The below question may sound foolish, but to is important for me to understand the framework.
 
+If I have simple and straight control of backlight, do I really required to have separate backlight driver for my platform? Can I make use of generic-bl driver?
+The only difference (atleast to my platform) would be the SYSFS entry, the entry will get created something like
+/sys/class/backlight/generic-bl/
 
---=20
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Is it required to make driver, Power aware and differentiate from generic driver?
 
---Multipart=_Tue__10_Feb_2009_15_36_14_+0100_ElIYGYOQehK1wR3.
-Content-Type: application/octet-stream;
- name="s1d13xxxfb_prodid_rev.patch"
-Content-Disposition: attachment;
- filename="s1d13xxxfb_prodid_rev.patch"
-Content-Transfer-Encoding: base64
+Do we have any document on backlight driver framework?
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vczFkMTN4eHhmYi5jIGIvZHJpdmVycy92aWRlby9z
-MWQxM3h4eGZiLmMKaW5kZXggYTdiMDFkMi4uMzhlY2U3MyAxMDA2NDQKLS0tIGEvZHJpdmVycy92
-aWRlby9zMWQxM3h4eGZiLmMKKysrIGIvZHJpdmVycy92aWRlby9zMWQxM3h4eGZiLmMKQEAgLTUw
-LDkgKzUwLDIyIEBACiAjZGVmaW5lIGRiZyhmbXQsIGFyZ3MuLi4pIGRvIHsgfSB3aGlsZSAoMCkK
-ICNlbmRpZgogCi1zdGF0aWMgY29uc3QgaW50IF9fZGV2aW5pdGNvbnN0IHMxZDEzeHh4ZmJfcmV2
-aXNpb25zW10gPSB7Ci0JUzFEMTM1MDZfQ0hJUF9SRVYsCS8qIFJldi40IG9uIEhQIEpvcm5hZGEg
-N3h4IFMxRDEzNTA2ICovCi0JUzFEMTM4MDZfQ0hJUF9SRVYsCS8qIFJldi43IG9uIC4uICovCisv
-KgorICogTGlzdCBvZiBjYXJkIHByb2R1Y3Rpb24gaWRzCisgKi8KK3N0YXRpYyBjb25zdCBpbnQg
-czFkMTN4eHhmYl9wcm9kX2lkc1tdID0geworCVMxRDEzNTA1X1BST0RfSUQsCisJUzFEMTM1MDZf
-UFJPRF9JRCwKKwlTMUQxMzgwNl9QUk9EX0lELAorfTsKKworLyoKKyAqIExpc3Qgb2YgY2FyZCBz
-dHJpbmdzCisgKi8KK3N0YXRpYyBjb25zdCBjaGFyICpzMWQxM3h4eGZiX3Byb2RfbmFtZXNbXSA9
-IHsKKwkiUzFEMTM1MDUiLAorCSJTMUQxMzUwNiIsCisJIlMxRDEzODA2IiwKIH07CiAKIC8qCkBA
-IC0zNzcsNyArMzkwLDYgQEAgczFkMTN4eHhmYl9wYW5fZGlzcGxheShzdHJ1Y3QgZmJfdmFyX3Nj
-cmVlbmluZm8gKnZhciwgc3RydWN0IGZiX2luZm8gKmluZm8pCiAJcmV0dXJuIDA7CiB9CiAKLQog
-LyogZnJhbWVidWZmZXIgaW5mb3JtYXRpb24gc3RydWN0dXJlcyAqLwogCiBzdGF0aWMgc3RydWN0
-IGZiX29wcyBzMWQxM3h4eGZiX2Zib3BzID0gewpAQCAtNTQ0LDcgKzU1Niw3IEBAIHMxZDEzeHh4
-ZmJfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKIAlzdHJ1Y3QgczFkMTN4eHhm
-Yl9wZGF0YSAqcGRhdGEgPSBOVUxMOwogCWludCByZXQgPSAwOwogCWludCBpOwotCXU4IHJldmlz
-aW9uOworCXU4IHJldmlzaW9uLHByb2RfaWQ7CiAKIAlkYmcoInByb2JlIGNhbGxlZDogZGV2aWNl
-IGlzICVwXG4iLCBwZGV2KTsKIApAQCAtNjEzLDE5ICs2MjUsMzEgQEAgczFkMTN4eHhmYl9wcm9i
-ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQogCQlnb3RvIGJhaWw7CiAJfQogCi0JcmV2
-aXNpb24gPSBzMWQxM3h4eGZiX3JlYWRyZWcoZGVmYXVsdF9wYXIsIFMxRFJFR19SRVZfQ09ERSkg
-Pj4gMjsKLQorCS8qIHByb2R1Y3Rpb24gaWQgaXMgdG9wIDYgYml0cyAqLworCXByb2RfaWQgPSBz
-MWQxM3h4eGZiX3JlYWRyZWcoZGVmYXVsdF9wYXIsIFMxRFJFR19SRVZfQ09ERSkgPj4gMjsKKwkv
-KiByZXZpc2lvbiBpZCBpcyBsb3dlciAyIGJpdHMgKi8KKwlyZXZpc2lvbiA9IHMxZDEzeHh4ZmJf
-cmVhZHJlZyhkZWZhdWx0X3BhciwgUzFEUkVHX1JFVl9DT0RFKSAmIDB4MzsKIAlyZXQgPSAtRU5P
-REVWOwogCi0JZm9yIChpID0gMDsgaSA8IEFSUkFZX1NJWkUoczFkMTN4eHhmYl9yZXZpc2lvbnMp
-OyBpKyspIHsKLQkJaWYgKHJldmlzaW9uID09IHMxZDEzeHh4ZmJfcmV2aXNpb25zW2ldKQorCWZv
-ciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKHMxZDEzeHh4ZmJfcHJvZF9pZHMpOyBpKyspIHsKKwkJ
-aWYgKHByb2RfaWQgPT0gczFkMTN4eHhmYl9wcm9kX2lkc1tpXSkgeworCQkJLyogbG9va3MgbGlr
-ZSB3ZSBnb3QgaXQgaW4gb3VyIGxpc3QgKi8KKwkJCWRlZmF1bHRfcGFyLT5wcm9kX2lkID0gcHJv
-ZF9pZDsKKwkJCWRlZmF1bHRfcGFyLT5yZXZpc2lvbiA9IHJldmlzaW9uOwogCQkJcmV0ID0gMDsK
-KwkJfQorCisJCS8qIGp1bXAgc2hpcCBpZiB3ZSBmaW5kIHNvbWV0aGluZyAqLworCQlpZiAoIXJl
-dCkKKwkJCWJyZWFrOwogCX0KIAotCWlmICghcmV0KQorCWlmICghcmV0KSB7CisJCXByaW50ayhL
-RVJOX0lORk8gUEZYICJjaGlwIHByb2R1Y3Rpb24gaWQgJWkgPSAlc1xuIiwgcHJvZF9pZCwgczFk
-MTN4eHhmYl9wcm9kX25hbWVzW2ldKTsKIAkJcHJpbnRrKEtFUk5fSU5GTyBQRlggImNoaXAgcmV2
-aXNpb24gJWlcbiIsIHJldmlzaW9uKTsKLQllbHNlIHsKLQkJcHJpbnRrKEtFUk5fSU5GTyBQRlgg
-InVua25vd24gY2hpcCByZXZpc2lvbiAlaVxuIiwgcmV2aXNpb24pOworCX0gZWxzZSB7CisJCXBy
-aW50ayhLRVJOX0lORk8gUEZYICJ1bmtub3duIGNoaXAgcHJvZHVjdGlvbiBpZCAlaSwgcmV2aXNp
-b24gJWlcbiIsIHByb2RfaWQsIHJldmlzaW9uKTsKKwkJcHJpbnRrKEtFUk5fSU5GTyBQRlggInBs
-ZWFzZSBjb250YW50IG1haW50YWluZXJcbiIpOwogCQlnb3RvIGJhaWw7CiAJfQogCg==
+> >
+> > Regards,
+> >
+> > Richard
+> >
+> >
+> > --
+> To unsubscribe from this list: send the line "unsubscribe linux-
+> omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
---Multipart=_Tue__10_Feb_2009_15_36_14_+0100_ElIYGYOQehK1wR3.--
-
---Signature=_Tue__10_Feb_2009_15_36_14_+0100_z8XatTsiC5UC262O
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmRkN4ACgkQPQls10ERAGcqNACgtMCCui0YEugDpewqhEj4qFi6
-oGUAn3ZfRvO2xI3wS/AqFB9Rx/y95J1D
-=Nynj
------END PGP SIGNATURE-----
-
---Signature=_Tue__10_Feb_2009_15_36_14_+0100_z8XatTsiC5UC262O--

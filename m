@@ -1,126 +1,63 @@
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: PATCH - Also update values to s1d13xxxfb.h
-Date: Wed, 11 Feb 2009 23:04:19 +0100
-Message-ID: <20090211230419.fc987c98.kristoffer.ericson@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
+Date: Wed, 11 Feb 2009 14:24:09 -0800
+Message-ID: <20090211142409.b88c577e.akpm@linux-foundation.org>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	<Pine.LNX.4.64.0901240951110.13803@anakin>
+	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
+	<Pine.LNX.4.64.0901241425310.13803@anakin>
+	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
+	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
+	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758095AbZBKWFY@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757474AbZBKWYp@vger.kernel.org>
+In-Reply-To: <46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Risto Suominen <risto.suominen@gmail.com>
+Cc: geert@linux-m68k.org, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
---Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66
-Content-Type: multipart/mixed;
- boundary="Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv"
+On Tue, 10 Feb 2009 23:50:08 +0200
+Risto Suominen <risto.suominen@gmail.com> wrote:
 
+> The same as attachment, so the last line won't disappear.
+> 
+> Risto
+> 
+> 
+> [fbcon-graphics-nocursor.diff  application/octet-stream (814B)]
 
---Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+help.  My knowledge of fbcon is near zero.
 
+> Xserver Xfbdev (kdrive) uses linux framebuffer in graphics mode. It doesn't
+> need the text mode cursor, it's a bit annoying to have it there sitting in a
+> corner. This patch disables the cursor even when in graphics mode.
+> 
+> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
+> ---
+> The testing is done on kernel version 2.6.18.
 
-This pach updates the s1d13xxxfb.h file to reflect the recent
-changes to the driver.
+That's a truly ancient kernel.  Is the patch needed on current kernels?
+Does it work correctly in current kernels?
 
-Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+> --- a/drivers/video/console/fbcon.c.org	2007-03-03 07:14:54.000000000 +0200
+> +++ b/drivers/video/console/fbcon.c	2009-01-23 12:42:14.000000000 +0200
+> @@ -1363,6 +1363,12 @@ static void fbcon_cursor(struct vc_data 
+>  	int y;
+>   	int c = scr_readw((u16 *) vc->vc_pos);
+>  
+> +	if (mode == CM_ERASE && info->fbops->fb_cursor) {
+> +		/* Hide H/W-cursor unconditionally */
+> +		ops->cursor(vc, info, mode, 0, 0, 0);
+> +		return;
+> +	}
+> +
+>  	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+>  		return;
+>  
 
-diff --git a/include/video/s1d13xxxfb.h b/include/video/s1d13xxxfb.h
-index fe41b84..c3b2a2a 100644
---- a/include/video/s1d13xxxfb.h
-+++ b/include/video/s1d13xxxfb.h
-@@ -14,13 +14,16 @@
- #define	S1D13XXXFB_H
-=20
- #define S1D_PALETTE_SIZE		256
--#define S1D13506_CHIP_REV		4	/* expected chip revision number for s1d13506=
- */
--#define S1D13806_CHIP_REV		7	/* expected chip revision number for s1d13806=
- */
--#define S1D_FBID			"S1D13806"
--#define S1D_DEVICENAME			"s1d13806fb"
-+#define S1D_FBID			"S1D13xxx"
-+#define S1D_DEVICENAME			"s1d13xxxfb"
-+
-+/* S1DREG_REV_CODE register =3D prod_id (6 bits) + revision (2 bits) */
-+#define S1D13505_PROD_ID		0x3	/* 000011 */
-+#define S1D13506_PROD_ID		0x4	/* 000100 */
-+#define S1D13806_PROD_ID		0x7	/* 000111 */
-=20
- /* register definitions (tested on s1d13896) */
--#define S1DREG_REV_CODE			0x0000	/* Revision Code Register */
-+#define S1DREG_REV_CODE			0x0000	/* Prod + Rev Code Register */
- #define S1DREG_MISC			0x0001	/* Miscellaneous Register */
- #define S1DREG_GPIO_CNF0		0x0004	/* General IO Pins Configuration Register=
- 0 */
- #define S1DREG_GPIO_CNF1		0x0005	/* General IO Pins Configuration Register=
- 1 */
-@@ -141,10 +144,11 @@ struct s1d13xxxfb_regval {
- 	u8	value;
- };
-=20
--
- struct s1d13xxxfb_par {
- 	void __iomem	*regs;
- 	unsigned char	display;
-+	unsigned char	prod_id;
-+	unsigned char	revision;
-=20
- 	unsigned int	pseudo_palette[16];
- #ifdef CONFIG_PM
+How does the cursor get re-enabled?
 
-
-
---=20
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
-
---Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv
-Content-Type: application/octet-stream;
- name="s1d13xxxfb-proid-include-updated.patch"
-Content-Disposition: attachment;
- filename="s1d13xxxfb-proid-include-updated.patch"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vczFkMTN4eHhmYi5oIGIvaW5jbHVkZS92aWRlby9z
-MWQxM3h4eGZiLmgKaW5kZXggZmU0MWI4NC4uYzNiMmEyYSAxMDA2NDQKLS0tIGEvaW5jbHVkZS92
-aWRlby9zMWQxM3h4eGZiLmgKKysrIGIvaW5jbHVkZS92aWRlby9zMWQxM3h4eGZiLmgKQEAgLTE0
-LDEzICsxNCwxNiBAQAogI2RlZmluZQlTMUQxM1hYWEZCX0gKIAogI2RlZmluZSBTMURfUEFMRVRU
-RV9TSVpFCQkyNTYKLSNkZWZpbmUgUzFEMTM1MDZfQ0hJUF9SRVYJCTQJLyogZXhwZWN0ZWQgY2hp
-cCByZXZpc2lvbiBudW1iZXIgZm9yIHMxZDEzNTA2ICovCi0jZGVmaW5lIFMxRDEzODA2X0NISVBf
-UkVWCQk3CS8qIGV4cGVjdGVkIGNoaXAgcmV2aXNpb24gbnVtYmVyIGZvciBzMWQxMzgwNiAqLwot
-I2RlZmluZSBTMURfRkJJRAkJCSJTMUQxMzgwNiIKLSNkZWZpbmUgUzFEX0RFVklDRU5BTUUJCQki
-czFkMTM4MDZmYiIKKyNkZWZpbmUgUzFEX0ZCSUQJCQkiUzFEMTN4eHgiCisjZGVmaW5lIFMxRF9E
-RVZJQ0VOQU1FCQkJInMxZDEzeHh4ZmIiCisKKy8qIFMxRFJFR19SRVZfQ09ERSByZWdpc3RlciA9
-IHByb2RfaWQgKDYgYml0cykgKyByZXZpc2lvbiAoMiBiaXRzKSAqLworI2RlZmluZSBTMUQxMzUw
-NV9QUk9EX0lECQkweDMJLyogMDAwMDExICovCisjZGVmaW5lIFMxRDEzNTA2X1BST0RfSUQJCTB4
-NAkvKiAwMDAxMDAgKi8KKyNkZWZpbmUgUzFEMTM4MDZfUFJPRF9JRAkJMHg3CS8qIDAwMDExMSAq
-LwogCiAvKiByZWdpc3RlciBkZWZpbml0aW9ucyAodGVzdGVkIG9uIHMxZDEzODk2KSAqLwotI2Rl
-ZmluZSBTMURSRUdfUkVWX0NPREUJCQkweDAwMDAJLyogUmV2aXNpb24gQ29kZSBSZWdpc3RlciAq
-LworI2RlZmluZSBTMURSRUdfUkVWX0NPREUJCQkweDAwMDAJLyogUHJvZCArIFJldiBDb2RlIFJl
-Z2lzdGVyICovCiAjZGVmaW5lIFMxRFJFR19NSVNDCQkJMHgwMDAxCS8qIE1pc2NlbGxhbmVvdXMg
-UmVnaXN0ZXIgKi8KICNkZWZpbmUgUzFEUkVHX0dQSU9fQ05GMAkJMHgwMDA0CS8qIEdlbmVyYWwg
-SU8gUGlucyBDb25maWd1cmF0aW9uIFJlZ2lzdGVyIDAgKi8KICNkZWZpbmUgUzFEUkVHX0dQSU9f
-Q05GMQkJMHgwMDA1CS8qIEdlbmVyYWwgSU8gUGlucyBDb25maWd1cmF0aW9uIFJlZ2lzdGVyIDEg
-Ki8KQEAgLTE0MSwxMCArMTQ0LDExIEBAIHN0cnVjdCBzMWQxM3h4eGZiX3JlZ3ZhbCB7CiAJdTgJ
-dmFsdWU7CiB9OwogCi0KIHN0cnVjdCBzMWQxM3h4eGZiX3BhciB7CiAJdm9pZCBfX2lvbWVtCSpy
-ZWdzOwogCXVuc2lnbmVkIGNoYXIJZGlzcGxheTsKKwl1bnNpZ25lZCBjaGFyCXByb2RfaWQ7CisJ
-dW5zaWduZWQgY2hhcglyZXZpc2lvbjsKIAogCXVuc2lnbmVkIGludAlwc2V1ZG9fcGFsZXR0ZVsx
-Nl07CiAjaWZkZWYgQ09ORklHX1BNCg==
-
---Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv--
-
---Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmTS2MACgkQPQls10ERAGc43wCbBOfXCgLIvsHUviMJy2SpuXQk
-5MoAn3Wt/csnTIVMZrI+6oM/uFMSGwI4
-=7c47
------END PGP SIGNATURE-----
-
---Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66--
+Should we be calling ops->cursor() if fbcon_is_inactive() is true?

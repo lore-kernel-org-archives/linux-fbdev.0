@@ -1,45 +1,62 @@
-From: Risto Suominen <risto.suominen@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
-Date: Thu, 12 Feb 2009 23:12:26 +0200
-Message-ID: <46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
-References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
-	 <Pine.LNX.4.64.0901240951110.13803@anakin>
-	 <46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
-	 <Pine.LNX.4.64.0901241425310.13803@anakin>
-	 <46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
-	 <46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
-	 <46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
-	 <20090211142409.b88c577e.akpm@linux-foundation.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 12690] New: DPMS (LCD powersave, poweroff)
+ don't work
+Date: Thu, 12 Feb 2009 14:15:21 -0800
+Message-ID: <20090212141521.1ed7acba.akpm@linux-foundation.org>
+References: <bug-12690-10286@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759969AbZBLVMi@vger.kernel.org>
-In-Reply-To: <20090211142409.b88c577e.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <bug-12690-10286@http.bugzilla.kernel.org/>
+Sender: linux-acpi-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: geert@linux-m68k.org, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: bugme-daemon@bugzilla.kernel.org, akolisek@linuxx.hyperlinx.cz
 
-2009/2/12 Andrew Morton <akpm@linux-foundation.org>:
->> ---
->> The testing is done on kernel version 2.6.18.
->
-> That's a truly ancient kernel.  Is the patch needed on current kernels?
-> Does it work correctly in current kernels?
->
-It does not on 2.6.24. The patch works.
 
-> How does the cursor get re-enabled?
->
-I have not thought of that.
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-> Should we be calling ops->cursor() if fbcon_is_inactive() is true?
->
-Maybe we shouldn't, but we must. The situation is that we are ordered
-to enter graphics mode and the variable saying 'graphics' is already
-set in vt_ioctl.c. fbcon_is_inactive() tests it and returns true.
+Help.
 
-The question is, whether this function is called later during normal
-operation, and how often?
+On Wed, 11 Feb 2009 09:40:40 -0800 (PST)
+bugme-daemon@bugzilla.kernel.org wrote:
 
-Risto
+> http://bugzilla.kernel.org/show_bug.cgi?id=12690
+> 
+>            Summary: DPMS (LCD powersave, poweroff) don't work
+>            Product: Power Management
+>            Version: 2.5
+>      KernelVersion: 2.6.28.4
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Other
+>         AssignedTo: power-management_other@kernel-bugs.osdl.org
+>         ReportedBy: akolisek@linuxx.hyperlinx.cz
+> 
+> 
+> Latest working kernel version: 2.6.27.X
+> Earliest failing kernel version: 2.6.28.X
+> Distribution:Slackware 12.2 (current)
+> Hardware Environment: Lenovo 3000 C100 (i915GM)
+> Software Environment:  
+> Problem Description: If I boot on my PC linux-2.6.28.X LCD powerdown isn't
+> functional.
+> 
+> Steps to reproduce:
+> If I set "setterm -blank 5 -powerdown on, setterm -powerdown 15" it goes only
+> LCD blanking but powerdown isn't functional. In the X (x11-xorg + KDE4.2) I set
+> xset +dpms
+> xset dpms force off
+> DPMS don't work too.
+> 
+
+We seem to have a DPMS-related regression here and I don't even know 
+which subsystem might have caused the breakage.  (iow: who do I blame? ;))
+
+Thanks.

@@ -1,63 +1,57 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
-Date: Wed, 11 Feb 2009 14:24:09 -0800
-Message-ID: <20090211142409.b88c577e.akpm@linux-foundation.org>
-References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
-	<Pine.LNX.4.64.0901240951110.13803@anakin>
-	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
-	<Pine.LNX.4.64.0901241425310.13803@anakin>
-	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
-	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
-	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+From: Trilok Soni <soni.trilok@gmail.com>
+Subject: Re: [PATCH] OMAP: div reaches max_clk_div.
+Date: Thu, 12 Feb 2009 11:32:11 +0530
+Message-ID: <5d5443650902112202k67304c03m14eba1988676f07@mail.gmail.com>
+References: <49933359.4070206@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757474AbZBKWYp@vger.kernel.org>
-In-Reply-To: <46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Risto Suominen <risto.suominen@gmail.com>
-Cc: geert@linux-m68k.org, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <soni.trilok@gmail.com>) id 1LXUeU-0007Li-NK
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Feb 2009 06:02:22 +0000
+Received: from el-out-1112.google.com ([209.85.162.182])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LXUeL-00063T-LF for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Feb 2009 06:02:22 +0000
+Received: by el-out-1112.google.com with SMTP id b25so388493elf.1
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 11 Feb 2009 22:02:12 -0800 (PST)
+In-Reply-To: <49933359.4070206@gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
 
-On Tue, 10 Feb 2009 23:50:08 +0200
-Risto Suominen <risto.suominen@gmail.com> wrote:
+Hi Roel,
 
-> The same as attachment, so the last line won't disappear.
-> 
-> Risto
-> 
-> 
-> [fbcon-graphics-nocursor.diff  application/octet-stream (814B)]
+On Thu, Feb 12, 2009 at 1:51 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
+> With for(div = 0; div < max_clk_div; div++) { ... } div reaches max_clk_div.
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-help.  My knowledge of fbcon is near zero.
+Looks good. Thanks.
 
-> Xserver Xfbdev (kdrive) uses linux framebuffer in graphics mode. It doesn't
-> need the text mode cursor, it's a bit annoying to have it there sitting in a
-> corner. This patch disables the cursor even when in graphics mode.
-> 
-> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
-> ---
-> The testing is done on kernel version 2.6.18.
+Signed-off-by: Trilok Soni <soni.trilok@gmail.com>
 
-That's a truly ancient kernel.  Is the patch needed on current kernels?
-Does it work correctly in current kernels?
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
 
-> --- a/drivers/video/console/fbcon.c.org	2007-03-03 07:14:54.000000000 +0200
-> +++ b/drivers/video/console/fbcon.c	2009-01-23 12:42:14.000000000 +0200
-> @@ -1363,6 +1363,12 @@ static void fbcon_cursor(struct vc_data 
->  	int y;
->   	int c = scr_readw((u16 *) vc->vc_pos);
->  
-> +	if (mode == CM_ERASE && info->fbops->fb_cursor) {
-> +		/* Hide H/W-cursor unconditionally */
-> +		ops->cursor(vc, info, mode, 0, 0, 0);
-> +		return;
-> +	}
-> +
->  	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
->  		return;
->  
-
-How does the cursor get re-enabled?
-
-Should we be calling ops->cursor() if fbcon_is_inactive() is true?
+------------------------------------------------------------------------------
+Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
+software. With Adobe AIR, Ajax developers can use existing skills and code to
+build responsive, highly engaging applications that combine the power of local
+resources and data with the reach of the web. Download the Adobe AIR SDK and
+Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com

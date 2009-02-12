@@ -1,57 +1,45 @@
-From: Trilok Soni <soni.trilok@gmail.com>
-Subject: Re: [PATCH] OMAP: div reaches max_clk_div.
-Date: Thu, 12 Feb 2009 11:32:11 +0530
-Message-ID: <5d5443650902112202k67304c03m14eba1988676f07@mail.gmail.com>
-References: <49933359.4070206@gmail.com>
+From: Risto Suominen <risto.suominen@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
+Date: Thu, 12 Feb 2009 23:12:26 +0200
+Message-ID: <46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	 <Pine.LNX.4.64.0901240951110.13803@anakin>
+	 <46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
+	 <Pine.LNX.4.64.0901241425310.13803@anakin>
+	 <46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
+	 <46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
+	 <46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+	 <20090211142409.b88c577e.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <soni.trilok@gmail.com>) id 1LXUeU-0007Li-NK
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Feb 2009 06:02:22 +0000
-Received: from el-out-1112.google.com ([209.85.162.182])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LXUeL-00063T-LF for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 12 Feb 2009 06:02:22 +0000
-Received: by el-out-1112.google.com with SMTP id b25so388493elf.1
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 11 Feb 2009 22:02:12 -0800 (PST)
-In-Reply-To: <49933359.4070206@gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759969AbZBLVMi@vger.kernel.org>
+In-Reply-To: <20090211142409.b88c577e.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: geert@linux-m68k.org, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>
 
-Hi Roel,
-
-On Thu, Feb 12, 2009 at 1:51 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
-> With for(div = 0; div < max_clk_div; div++) { ... } div reaches max_clk_div.
+2009/2/12 Andrew Morton <akpm@linux-foundation.org>:
+>> ---
+>> The testing is done on kernel version 2.6.18.
 >
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> That's a truly ancient kernel.  Is the patch needed on current kernels?
+> Does it work correctly in current kernels?
+>
+It does not on 2.6.24. The patch works.
 
-Looks good. Thanks.
+> How does the cursor get re-enabled?
+>
+I have not thought of that.
 
-Signed-off-by: Trilok Soni <soni.trilok@gmail.com>
+> Should we be calling ops->cursor() if fbcon_is_inactive() is true?
+>
+Maybe we shouldn't, but we must. The situation is that we are ordered
+to enter graphics mode and the variable saying 'graphics' is already
+set in vt_ioctl.c. fbcon_is_inactive() tests it and returns true.
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+The question is, whether this function is called later during normal
+operation, and how often?
 
-------------------------------------------------------------------------------
-Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
-software. With Adobe AIR, Ajax developers can use existing skills and code to
-build responsive, highly engaging applications that combine the power of local
-resources and data with the reach of the web. Download the Adobe AIR SDK and
-Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com
+Risto

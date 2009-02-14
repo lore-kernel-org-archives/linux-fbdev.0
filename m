@@ -1,60 +1,129 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
-Date: Fri, 13 Feb 2009 21:06:35 +0100
-Message-ID: <20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
-References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
-	<Pine.LNX.4.64.0901240951110.13803@anakin>
-	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
-	<Pine.LNX.4.64.0901241425310.13803@anakin>
-	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
-	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
-	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
-	<20090211142409.b88c577e.akpm@linux-foundation.org>
-	<46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
+Subject: [PATCH 1/2] cirrusfb: do not calculate line
+	length twice
+Date: Sat, 14 Feb 2009 18:50:45 +0100
+Message-ID: <20090214185045.c288650e.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760012AbZBMUCd@vger.kernel.org>
-In-Reply-To: <46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Risto Suominen <risto.suominen@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, geert@linux-m68k.org, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LYObA-0000Hw-Dc
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 14 Feb 2009 17:46:40 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LYOb3-0007AC-Ny for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 14 Feb 2009 17:46:40 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arthur Marsh <arthur.marsh@internode.on.net>
 
-On Thu, 12 Feb 2009 23:12:26 +0200
-Risto Suominen <risto.suominen@gmail.com> wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> 2009/2/12 Andrew Morton <akpm@linux-foundation.org>:
-> >> ---
-> >> The testing is done on kernel version 2.6.18.
-> >
-> > That's a truly ancient kernel.  Is the patch needed on current kernels?
-> > Does it work correctly in current kernels?
-> >
-> It does not on 2.6.24. The patch works.
-> 
+A line length is calculated twice: first in
+the cirrusfb_decode_var() then in 
+the cirrusfb_set_par_foo().
 
-I have tested two cards with the hardware cursor: 
-Permedia 2 (pm2fb) and Voodoo-3 (tdfxfb).
+Use the first calculated value. A nice side
+effect is that 32bpp mode works now.
 
-Both cards use the hardware cursor and both does
-not produce the bug you have described.
-I have used the Xorg version 7.2 included in the
-Slackware 12 and a current git version of the kernel
-(updated two days ago).
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/cirrusfb.c |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
 
-I do not have the ATI Mach64 card to test it.
-I will test my cards with the kernel 2.6.24.
-
-Either, this bug is related only to the atyfb driver
-or it was solved in the current kernel.
-I looked into the atyfb driver code and I did not
- see anything suspicious there.
-
-Kind regards,
-Krzysztof
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index e8cd60a..c98efd0 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -694,7 +694,8 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 	struct cirrusfb_regs regs;
+ 	u8 __iomem *regbase = cinfo->regbase;
+ 	unsigned char tmp;
+-	int offset = 0, err;
++	int err;
++	int pitch;
+ 	const struct cirrusfb_board_info_rec *bi;
+ 	int hdispend, hsyncstart, hsyncend, htotal;
+ 	int yres, vdispend, vsyncstart, vsyncend, vtotal;
+@@ -1027,7 +1028,6 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 		vga_wseq(regbase, VGA_SEQ_MEMORY_MODE, 0x06);
+ 		/* plane mask: only write to first plane */
+ 		vga_wseq(regbase, VGA_SEQ_PLANE_WRITE, 0x01);
+-		offset = var->xres_virtual / 16;
+ 	}
+ 
+ 	/******************************************************
+@@ -1113,7 +1113,6 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 		vga_wseq(regbase, VGA_SEQ_MEMORY_MODE, 0x0a);
+ 		/* plane mask: enable writing to all 4 planes */
+ 		vga_wseq(regbase, VGA_SEQ_PLANE_WRITE, 0xff);
+-		offset = var->xres_virtual / 8;
+ 	}
+ 
+ 	/******************************************************
+@@ -1190,7 +1189,6 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 		vga_wseq(regbase, VGA_SEQ_MEMORY_MODE, 0x0a);
+ 		/* plane mask: enable writing to all 4 planes */
+ 		vga_wseq(regbase, VGA_SEQ_PLANE_WRITE, 0xff);
+-		offset = var->xres_virtual / 4;
+ 	}
+ 
+ 	/******************************************************
+@@ -1263,7 +1261,6 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 		vga_wseq(regbase, VGA_SEQ_MEMORY_MODE, 0x0a);
+ 		/* plane mask: enable writing to all 4 planes */
+ 		vga_wseq(regbase, VGA_SEQ_PLANE_WRITE, 0xff);
+-		offset = var->xres_virtual / 4;
+ 	}
+ 
+ 	/******************************************************
+@@ -1277,9 +1274,10 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 			"What's this? requested color depth == %d.\n",
+ 			var->bits_per_pixel);
+ 
+-	vga_wcrt(regbase, VGA_CRTC_OFFSET, offset & 0xff);
++	pitch = info->fix.line_length >> 3;
++	vga_wcrt(regbase, VGA_CRTC_OFFSET, pitch & 0xff);
+ 	tmp = 0x22;
+-	if (offset & 0x100)
++	if (pitch & 0x100)
+ 		tmp |= 0x10;	/* offset overflow bit */
+ 
+ 	/* screen start addr #16-18, fastpagemode cycles */
+@@ -1287,7 +1285,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 
+ 	/* screen start address bit 19 */
+ 	if (cirrusfb_board_info[cinfo->btype].scrn_start_bit19)
+-		vga_wcrt(regbase, CL_CRT1D, 0x00);
++		vga_wcrt(regbase, CL_CRT1D, (pitch >> 9) & 1);
+ 
+ 	if (cinfo->btype == BT_LAGUNA ||
+ 	    cinfo->btype == BT_GD5480) {
+-- 
+1.5.2.2
 
 
 ----------------------------------------------------------------------
-Wyslij kartke walentynkowa
-Kliknij >>> http://link.interia.pl/f205f
+Wrozby dla zakochanych!
+Sprawdz >> http://link.interia.pl/f2054
+
+
+
+------------------------------------------------------------------------------
+Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
+-OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
+-Strategies to boost innovation and cut costs with open source participation
+-Receive a $600 discount off the registration fee with the source code: SFAD
+http://p.sf.net/sfu/XcvMzF8H

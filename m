@@ -1,24 +1,25 @@
-From: Roel Kluin <roel.kluin@gmail.com>
-Subject: [PATCH] vesafb: misplaced parentheses
-Date: Sun, 15 Feb 2009 18:31:52 +0100
-Message-ID: <49985188.1070701@gmail.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH 2/2] cirrusfb: use 5-6-5 RGB for
+ 16bpp mode
+Date: Sun, 15 Feb 2009 19:25:37 +0100
+Message-ID: <20090215192537.e5848d0d.krzysztof.h1@poczta.fm>
+References: <20090214185231.9158b170.krzysztof.h1@poczta.fm>
+	<10f740e80902150353v3c58d942m145c9e1f8ba10501@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
 	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <roel.kluin@gmail.com>) id 1LYkqS-0000SN-7B
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LYlcU-0001zc-Ma
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 17:31:56 +0000
-Received: from mail-ew0-f15.google.com ([209.85.219.15])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LYkqQ-0008DM-Gj for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 17:31:56 +0000
-Received: by ewy8 with SMTP id 8so1647593ewy.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 15 Feb 2009 09:31:52 -0800 (PST)
+	Sun, 15 Feb 2009 18:21:34 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LYlcJ-0000sL-VQ for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 15 Feb 2009 18:21:34 +0000
+In-Reply-To: <10f740e80902150353v3c58d942m145c9e1f8ba10501@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,26 +29,84 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: spock@gentoo.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+Cc: Arthur Marsh <arthur.marsh@internode.on.net>, Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Fix misplaced parentheses
+On Sun, 15 Feb 2009 12:53:36 +0100
+Geert Uytterhoeven <geert.uytterhoeven@gmail.com> wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-index e16322d..d6856f4 100644
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -438,7 +438,7 @@ static int __init vesafb_probe(struct platform_device *dev)
- 	info->var = vesafb_defined;
- 	info->fix = vesafb_fix;
- 	info->flags = FBINFO_FLAG_DEFAULT |
--		(ypan) ? FBINFO_HWACCEL_YPAN : 0;
-+		(ypan ? FBINFO_HWACCEL_YPAN : 0);
- 
- 	if (!ypan)
- 		info->fbops->fb_pan_display = NULL;
+> On Sat, Feb 14, 2009 at 18:52, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> >
+> > Use the 5-6-5 RGB mode instead of the 5-5-5 mode
+> > at 16bpp depth.
+> > It fixes colors in the 16bpp modes on Cirrus
+> > Laguna chips.
+> >
+> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > ---
+> >  drivers/video/cirrusfb.c |    6 +++---
+> >  1 files changed, 3 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+> > index c98efd0..bf3d9c3 100644
+> > --- a/drivers/video/cirrusfb.c
+> > +++ b/drivers/video/cirrusfb.c
+> > @@ -499,12 +499,12 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
+> >                        var->green.offset = -3;
+> >                        var->blue.offset = 8;
+> >                } else {
+> > -                       var->red.offset = 10;
+> > +                       var->red.offset = 11;
+> >                        var->green.offset = 5;
+> >                        var->blue.offset = 0;
+> >                }
+> >                var->red.length = 5;
+> > -               var->green.length = 5;
+> > +               var->green.length = 6;
+> >                var->blue.length = 5;
+> >                break;
+> >
+> > @@ -1180,7 +1180,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+> >                /* pixel mask: pass-through all planes */
+> >                WGen(cinfo, VGA_PEL_MSK, 0xff);
+> >  #ifdef CONFIG_PCI
+> > -               WHDR(cinfo, 0xc0);      /* Copy Xbh */
+> > +               WHDR(cinfo, 0xc1);      /* Copy Xbh */
+> >  #elif defined(CONFIG_ZORRO)
+> >                /* FIXME: CONFIG_PCI and CONFIG_ZORRO may be defined both */
+> >                WHDR(cinfo, 0xa0);      /* hidden dac reg: nothing special */
+> 
+> Does this need a similar or other change to cinfo for the Zorro case?
+> 
+
+The Zorro offsets are: red = 2, green = -3, blue = 8. It seems that
+Zorro uses 5-6-5 already (offset between 2 and 8).
+
+I contacted a person who reported that Zorro Cirrus card was not detected
+http://www.mail-archive.com/linux-m68k@vger.kernel.org/msg01505.html
+
+I have to cross-compile a kernel for him.
+
+However, I have a chance to big the Cirrus GD5446 on online auction this week.
+The Cirrus 5446 is supposedly the same chip as the Picasso 4 card so I can
+fix it on x86 first. My experience shows that the cirrusfb driver has still
+many bugs and may not handle some of chips it claims to handle (like Laguna chips).
+After the driver is fixed for the x86 GD5446 I will try to help him.
+
+Many bugs found during my work with the Laguna chips are bugs
+in the common code (like wrong line length for the 32-bit modes or
+overwritten 9-bit of line pitch in the chip register). These fixes
+helps (almost) all chips on all platforms.
+
+Regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Zostan mistrzem parkowania w Bombaju!
+Zagraj >> http://link.interia.pl/f204e 
+
 
 ------------------------------------------------------------------------------
 Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA

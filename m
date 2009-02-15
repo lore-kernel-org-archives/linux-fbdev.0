@@ -1,25 +1,23 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 12712] New: s2disk hangs
-	with nvidiafb
-Date: Sun, 15 Feb 2009 11:17:20 -0800
-Message-ID: <20090215111720.6860a225.akpm@linux-foundation.org>
-References: <bug-12712-10286@http.bugzilla.kernel.org/>
+From: Ondrej Zajicek <santiago@crfreenet.org>
+Subject: Re: [PATCH] arkfb: misplaced parentheses?
+Date: Sun, 15 Feb 2009 23:01:54 +0100
+Message-ID: <20090215220153.GC2078@localhost>
+References: <49983B84.7010002@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============5943145149298353963=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1LYmUa-0004Fs-JL
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <santiago@crfreenet.org>) id 1LYplw-0001Pv-Kq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 19:17:28 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LYmUY-0008HJ-22
+	Sun, 15 Feb 2009 22:47:36 +0000
+Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.10])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LYpls-0003QC-5r
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 19:17:28 +0000
-In-Reply-To: <bug-12712-10286@http.bugzilla.kernel.org/>
+	Sun, 15 Feb 2009 22:47:36 +0000
+In-Reply-To: <49983B84.7010002@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,70 +27,59 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: bender.rodriguez@open.by
-Cc: linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
 
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
-
-On Sun, 15 Feb 2009 09:41:11 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=12712
-> 
->            Summary: s2disk hangs with nvidiafb
->            Product: Drivers
->            Version: 2.5
->      KernelVersion: 2.6.29-rc5
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: high
->           Priority: P1
->          Component: Video(AGP)
->         AssignedTo: airlied@linux.ie
->         ReportedBy: bender.rodriguez@open.by
-
-This is an fbdev problem, I guess.  I'll reassign the report.
-
-> 
-> Latest working kernel version:2.6.29-rc5
-> Earliest failing kernel version:not tested
-
-I assume what you mean here is that 2.6.29-rc5 fails, and that you're
-not aware of any earlier kernel version which did not fail.
+--===============5943145149298353963==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zCKi3GIZzVBPywwA"
+Content-Disposition: inline
 
 
-> Distribution:debian lenny
-> Hardware Environment:asus f3jc
-> Software Environment:
-> Problem Description: s2disk hangs before switching to console ("s2disk:
-> Snapshotting system" message ->REISUB) with nvidiafb.
-> 
-> Device Drivers -> Graphics support -> Support for frame buffer devices -> [*]
-> nVidia Framebuffer Support
-> dmesg.0 | grep buf
-> [    1.658735] Console: switching to colour frame buffer device 160x50
-> [    1.659929] nvidiafb: PCI nVidia NV1d framebuffer (64MB @ 0xC0000000)
-> [    1.660386] vesafb: framebuffer at 0xc0000000, mapped to 0xfd180000, using
-> 6144k, total 131072k
-> [    1.660825] fb1: VESA VGA frame buffer device
-> 
-> hangs.
-> 
-> Device Drivers -> Graphics support -> Support for frame buffer devices -> []
-> nVidia Framebuffer Support
-> 
-> dmesg | grep buf
-> [    0.802424] vesafb: framebuffer at 0xc0000000, mapped to 0xf8080000, using
-> 6144k, total 131072k
-> [    0.862236] Console: switching to colour frame buffer device 128x48
-> [    0.922487] fb0: VESA VGA frame buffer device
-> 
-> in this case everything works OK.
-> 
+--zCKi3GIZzVBPywwA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Sun, Feb 15, 2009 at 04:57:56PM +0100, Roel Kluin wrote:
+> I think below is what was intended?
+
+Yes. By coincidence, the curent code also works, but
+it is definitely better to fix it.
+
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+
+Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
+
+--=20
+Elen sila lumenn' omentielvo
+
+Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
+
+--zCKi3GIZzVBPywwA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmYkNEACgkQw1GB2RHercONvQCePNVw2QSfQQN7nCEFezWVeMpl
+kTkAmwRxvgv3kd2QrIQop1l4JSHkhK2y
+=C+LX
+-----END PGP SIGNATURE-----
+
+--zCKi3GIZzVBPywwA--
+
+
+--===============5943145149298353963==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 ------------------------------------------------------------------------------
 Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
@@ -100,3 +87,15 @@ Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
 -Strategies to boost innovation and cut costs with open source participation
 -Receive a $600 discount off the registration fee with the source code: SFAD
 http://p.sf.net/sfu/XcvMzF8H
+--===============5943145149298353963==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============5943145149298353963==--

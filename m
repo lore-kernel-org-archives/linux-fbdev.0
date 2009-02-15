@@ -1,24 +1,24 @@
 From: Roel Kluin <roel.kluin@gmail.com>
-Subject: [PATCH] arkfb: misplaced parentheses?
-Date: Sun, 15 Feb 2009 16:57:56 +0100
-Message-ID: <49983B84.7010002@gmail.com>
+Subject: [PATCH] uvesafb: Fix misplaced parentheses
+Date: Sun, 15 Feb 2009 17:49:20 +0100
+Message-ID: <49984790.3060208@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <roel.kluin@gmail.com>) id 1LYjNd-0003Ag-AS
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1LYkBH-0002bf-3P
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 15:58:05 +0000
+	Sun, 15 Feb 2009 16:49:23 +0000
 Received: from mail-ew0-f15.google.com ([209.85.219.15])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LYjNX-00051w-CP for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 15:58:05 +0000
-Received: by ewy8 with SMTP id 8so1626536ewy.10
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LYkBF-0004yj-MP for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 15 Feb 2009 16:49:22 +0000
+Received: by ewy8 with SMTP id 8so1638464ewy.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 15 Feb 2009 07:57:57 -0800 (PST)
+	Sun, 15 Feb 2009 08:49:20 -0800 (PST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,43 +28,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com
+To: spock@gentoo.org
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 
-I think below is what was intended? otherwise we could as well have written:
-
-regval || (code[0] & 4) ? 0x80 : 0)
-
-But it doesn't seem likely that regval should be considered as boolean
-
-please review.
--------------------------->8------------------8<---------------------------
-fix misplaced parentheses
+Fix misplaced parentheses
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index 314d186..d583bea 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -470,7 +470,7 @@ static void ark_dac_read_regs(void *data, u8 *code, int count)
+// vi include/linux/fb.h +755
+#define FBINFO_MODULE           0x0001  /* Low-level driver is a module */
+
+// ... :778
+#define FBINFO_HWACCEL_YPAN             0x2000 /* optional */
+
+// ... :855
+#ifdef MODULE
+#define FBINFO_DEFAULT  FBINFO_MODULE
+#else
+#define FBINFO_DEFAULT  0
+#endif
+
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 6c2d37f..29dd4c3 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -1549,7 +1549,7 @@ static void __devinit uvesafb_init_info(struct fb_info *info,
+ 	}
  
- 	while (count != 0)
- 	{
--		vga_wseq(NULL, 0x1C, regval | (code[0] & 4) ? 0x80 : 0);
-+		vga_wseq(NULL, 0x1C, regval | (code[0] & 4 ? 0x80 : 0));
- 		code[1] = vga_r(NULL, dac_regs[code[0] & 3]);
- 		count--;
- 		code += 2;
-@@ -485,7 +485,7 @@ static void ark_dac_write_regs(void *data, u8 *code, int count)
+ 	info->flags = FBINFO_FLAG_DEFAULT |
+-			(par->ypan) ? FBINFO_HWACCEL_YPAN : 0;
++			(par->ypan ? FBINFO_HWACCEL_YPAN : 0);
  
- 	while (count != 0)
- 	{
--		vga_wseq(NULL, 0x1C, regval | (code[0] & 4) ? 0x80 : 0);
-+		vga_wseq(NULL, 0x1C, regval | (code[0] & 4 ? 0x80 : 0));
- 		vga_w(NULL, dac_regs[code[0] & 3], code[1]);
- 		count--;
- 		code += 2;
+ 	if (!par->ypan)
+ 		info->fbops->fb_pan_display = NULL;
 
 ------------------------------------------------------------------------------
 Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA

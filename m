@@ -1,23 +1,24 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH] arkfb: misplaced parentheses?
-Date: Sun, 15 Feb 2009 23:01:54 +0100
-Message-ID: <20090215220153.GC2078@localhost>
-References: <49983B84.7010002@gmail.com>
+From: "Sergei S." <bender.rodriguez@open.by>
+Subject: Re: [Bugme-new] [Bug 12712] New: s2disk hangs
+	with nvidiafb
+Date: Sun, 15 Feb 2009 23:11:26 +0200
+Message-ID: <web-45680874@post.open.by>
+References: <bug-12712-10286@http.bugzilla.kernel.org/>
+	<20090215111720.6860a225.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5943145149298353963=="
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <santiago@crfreenet.org>) id 1LYplw-0001Pv-Kq
+	(envelope-from <bender.rodriguez@open.by>) id 1LYpg8-000182-CH
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 22:47:36 +0000
-Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.10])
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LYpls-0003QC-5r
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 15 Feb 2009 22:47:36 +0000
-In-Reply-To: <49983B84.7010002@gmail.com>
+	Sun, 15 Feb 2009 22:41:36 +0000
+Received: from mail.open.by ([193.232.92.17] helo=post.open.by)
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LYpg3-0002hS-T7 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 15 Feb 2009 22:41:36 +0000
+In-Reply-To: <20090215111720.6860a225.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,75 +28,74 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+Content-Type: text/plain; charset="maccyrillic"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
 
-
---===============5943145149298353963==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zCKi3GIZzVBPywwA"
-Content-Disposition: inline
-
-
---zCKi3GIZzVBPywwA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, Feb 15, 2009 at 04:57:56PM +0100, Roel Kluin wrote:
-> I think below is what was intended?
-
-Yes. By coincidence, the curent code also works, but
-it is definitely better to fix it.
-
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-
-Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
-
---=20
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
-
---zCKi3GIZzVBPywwA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmYkNEACgkQw1GB2RHercONvQCePNVw2QSfQQN7nCEFezWVeMpl
-kTkAmwRxvgv3kd2QrIQop1l4JSHkhK2y
-=C+LX
------END PGP SIGNATURE-----
-
---zCKi3GIZzVBPywwA--
-
-
---===============5943145149298353963==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-------------------------------------------------------------------------------
-Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
--OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
--Strategies to boost innovation and cut costs with open source participation
--Receive a $600 discount off the registration fee with the source code: SFAD
-http://p.sf.net/sfu/XcvMzF8H
---===============5943145149298353963==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============5943145149298353963==--
+U3VuLCAxNSBGZWIgMjAwOSAxMToxNzoyMCAtMDgwMAogIEFuZHJldyBNb3J0b24gPGFrcG1AbGlu
+dXgtZm91bmRhdGlvbi5vcmc+IHdyb3RlOgoKSGVsbG8uCgo+IAo+IChzd2l0Y2hlZCB0byBlbWFp
+bC4gIFBsZWFzZSByZXNwb25kIHZpYSBlbWFpbGVkIHJlcGx5LXRvLWFsbCwgbm90IHZpYSB0aGUK
+PiBidWd6aWxsYSB3ZWIgaW50ZXJmYWNlKS4KPiAKPiBPbiBTdW4sIDE1IEZlYiAyMDA5IDA5OjQx
+OjExIC0wODAwIChQU1QpIGJ1Z21lLWRhZW1vbkBidWd6aWxsYS5rZXJuZWwub3JnIHdyb3RlOgo+
+IAo+PiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTI3MTIKPj4g
+Cj4+ICAgICAgICAgICAgU3VtbWFyeTogczJkaXNrIGhhbmdzIHdpdGggbnZpZGlhZmIKPj4gICAg
+ICAgICAgICBQcm9kdWN0OiBEcml2ZXJzCj4+ICAgICAgICAgICAgVmVyc2lvbjogMi41Cj4+ICAg
+ICAgS2VybmVsVmVyc2lvbjogMi42LjI5LXJjNQo+PiAgICAgICAgICAgUGxhdGZvcm06IEFsbAo+
+PiAgICAgICAgIE9TL1ZlcnNpb246IExpbnV4Cj4+ICAgICAgICAgICAgICAgVHJlZTogTWFpbmxp
+bmUKPj4gICAgICAgICAgICAgU3RhdHVzOiBORVcKPj4gICAgICAgICAgIFNldmVyaXR5OiBoaWdo
+Cj4+ICAgICAgICAgICBQcmlvcml0eTogUDEKPj4gICAgICAgICAgQ29tcG9uZW50OiBWaWRlbyhB
+R1ApCj4+ICAgICAgICAgQXNzaWduZWRUbzogYWlybGllZEBsaW51eC5pZQo+PiAgICAgICAgIFJl
+cG9ydGVkQnk6IGJlbmRlci5yb2RyaWd1ZXpAb3Blbi5ieQo+IAo+IFRoaXMgaXMgYW4gZmJkZXYg
+cHJvYmxlbSwgSSBndWVzcy4gIEknbGwgcmVhc3NpZ24gdGhlIHJlcG9ydC4KCk9LLgooVGhpcyBp
+cyBteSBmaXJzdCBidWctcmVwb3J0KQoKCj4gCj4+IAo+PiBMYXRlc3Qgd29ya2luZyBrZXJuZWwg
+dmVyc2lvbjoyLjYuMjktcmM1Cj4+IEVhcmxpZXN0IGZhaWxpbmcga2VybmVsIHZlcnNpb246bm90
+IHRlc3RlZAo+IAo+IEkgYXNzdW1lIHdoYXQgeW91IG1lYW4gaGVyZSBpcyB0aGF0IDIuNi4yOS1y
+YzUgZmFpbHMsIGFuZCB0aGF0IHlvdSdyZQo+IG5vdCBhd2FyZSBvZiBhbnkgZWFybGllciBrZXJu
+ZWwgdmVyc2lvbiB3aGljaCBkaWQgbm90IGZhaWwuCj4gCgpJJ3ZlIHRlc3RlZAoyLjYuMjctMTQs
+IDIuNi4yOS1yYzQgKGdpdC01LCBnaXQtNyksIDIuNi4yOS1yYzUKCmFsbCBvZiB0aGVtIGZhaWxz
+IHRvIHMyZGlzayB3aXRoIG52aWRpYWZiLgoKZG1lc2cgfCBncmVwIGJ1ZgpbICAgIDEuNjUxMjU4
+XSBDb25zb2xlOiBzd2l0Y2hpbmcgdG8gY29sb3VyIGZyYW1lIGJ1ZmZlciBkZXZpY2UgMTYweDUw
+ClsgICAgMS42NTI0NjZdIG52aWRpYWZiOiBQQ0kgblZpZGlhIE5WMWQgZnJhbWVidWZmZXIgKDY0
+TUIgQCAweEMwMDAwMDAwKQpbICAgIDEuNjUyODQ2XSB2ZXNhZmI6IGZyYW1lYnVmZmVyIGF0IDB4
+YzAwMDAwMDAsIG1hcHBlZCB0byAweGZkOTgwMDAwLCB1c2luZwo2MTQ0aywgdG90YWwgMTMxMDcy
+awpbICAgIDEuNjUzMzIwXSBmYjE6IFZFU0EgVkdBIGZyYW1lIGJ1ZmZlciBkZXZpY2UKCgpzMmRp
+c2sgd29ya3Mgb2sgd2l0aDoKZG1lc2cgfCBncmVwIGJ1ZgpbICAgIDAuODAyNDI0XSB2ZXNhZmI6
+IGZyYW1lYnVmZmVyIGF0IDB4YzAwMDAwMDAsIG1hcHBlZCB0byAweGY4MDgwMDAwLCB1c2luZwo2
+MTQ0aywgdG90YWwgMTMxMDcyawpbICAgIDAuODYyMjM2XSBDb25zb2xlOiBzd2l0Y2hpbmcgdG8g
+Y29sb3VyIGZyYW1lIGJ1ZmZlciBkZXZpY2UgMTI4eDQ4ClsgICAgMC45MjI0ODddIGZiMDogVkVT
+QSBWR0EgZnJhbWUgYnVmZmVyIGRldmljZQoKCnlvdSBjYW4gZG93bmxvYWQgbXkgLmNvbmZpZyBo
+ZXJlOgogIGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL2F0dGFjaG1lbnQuY2dpP2lkPTIwMjU1
+JmFjdGlvbj12aWV3CgoKCj4gCj4+IERpc3RyaWJ1dGlvbjpkZWJpYW4gbGVubnkKPj4gSGFyZHdh
+cmUgRW52aXJvbm1lbnQ6YXN1cyBmM2pjCj4+IFNvZnR3YXJlIEVudmlyb25tZW50Ogo+PiBQcm9i
+bGVtIERlc2NyaXB0aW9uOiBzMmRpc2sgaGFuZ3MgYmVmb3JlIHN3aXRjaGluZyB0byBjb25zb2xl
+ICgiczJkaXNrOgo+PiBTbmFwc2hvdHRpbmcgc3lzdGVtIiBtZXNzYWdlIC0+UkVJU1VCKSB3aXRo
+IG52aWRpYWZiLgo+PiAKPj4gRGV2aWNlIERyaXZlcnMgLT4gR3JhcGhpY3Mgc3VwcG9ydCAtPiBT
+dXBwb3J0IGZvciBmcmFtZSBidWZmZXIgZGV2aWNlcyAtPiBbKl0KPj4gblZpZGlhIEZyYW1lYnVm
+ZmVyIFN1cHBvcnQKPj4gZG1lc2cuMCB8IGdyZXAgYnVmCj4+IFsgICAgMS42NTg3MzVdIENvbnNv
+bGU6IHN3aXRjaGluZyB0byBjb2xvdXIgZnJhbWUgYnVmZmVyIGRldmljZSAxNjB4NTAKPj4gWyAg
+ICAxLjY1OTkyOV0gbnZpZGlhZmI6IFBDSSBuVmlkaWEgTlYxZCBmcmFtZWJ1ZmZlciAoNjRNQiBA
+IDB4QzAwMDAwMDApCj4+IFsgICAgMS42NjAzODZdIHZlc2FmYjogZnJhbWVidWZmZXIgYXQgMHhj
+MDAwMDAwMCwgbWFwcGVkIHRvIDB4ZmQxODAwMDAsIHVzaW5nCj4+IDYxNDRrLCB0b3RhbCAxMzEw
+NzJrCj4+IFsgICAgMS42NjA4MjVdIGZiMTogVkVTQSBWR0EgZnJhbWUgYnVmZmVyIGRldmljZQo+
+PiAKPj4gaGFuZ3MuCj4+IAo+PiBEZXZpY2UgRHJpdmVycyAtPiBHcmFwaGljcyBzdXBwb3J0IC0+
+IFN1cHBvcnQgZm9yIGZyYW1lIGJ1ZmZlciBkZXZpY2VzIC0+IFtdCj4+IG5WaWRpYSBGcmFtZWJ1
+ZmZlciBTdXBwb3J0Cj4+IAo+PiBkbWVzZyB8IGdyZXAgYnVmCj4+IFsgICAgMC44MDI0MjRdIHZl
+c2FmYjogZnJhbWVidWZmZXIgYXQgMHhjMDAwMDAwMCwgbWFwcGVkIHRvIDB4ZjgwODAwMDAsIHVz
+aW5nCj4+IDYxNDRrLCB0b3RhbCAxMzEwNzJrCj4+IFsgICAgMC44NjIyMzZdIENvbnNvbGU6IHN3
+aXRjaGluZyB0byBjb2xvdXIgZnJhbWUgYnVmZmVyIGRldmljZSAxMjh4NDgKPj4gWyAgICAwLjky
+MjQ4N10gZmIwOiBWRVNBIFZHQSBmcmFtZSBidWZmZXIgZGV2aWNlCj4+IAo+PiBpbiB0aGlzIGNh
+c2UgZXZlcnl0aGluZyB3b3JrcyBPSy4KPj4gCj4gCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCi4uLuAg8uXv5fD8IO7v6+Dy6PL8IPjo8O7q7u/u
+6+7x7fvpIOTu8fLz7wriIPHl8vwgyO3y5fDt5fIgQnlGbHkg7O7m7e4g/evl6vLw7u3t++zoIOTl
+7fzj4OzoIEVhc3lQYXkuCmh0dHA6Ly93d3cuZWFzeXBheS5ieS8KCi0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLQpPcGVuIFNvdXJjZSBCdXNpbmVzcyBDb25mZXJlbmNlIChPU0JDKSwgTWFyY2ggMjQtMjUs
+IDIwMDksIFNhbiBGcmFuY2lzY28sIENBCi1PU0JDIHRhY2tsZXMgdGhlIGJpZ2dlc3QgaXNzdWUg
+aW4gb3BlbiBzb3VyY2U6IE9wZW4gU291cmNpbmcgdGhlIEVudGVycHJpc2UKLVN0cmF0ZWdpZXMg
+dG8gYm9vc3QgaW5ub3ZhdGlvbiBhbmQgY3V0IGNvc3RzIHdpdGggb3BlbiBzb3VyY2UgcGFydGlj
+aXBhdGlvbgotUmVjZWl2ZSBhICQ2MDAgZGlzY291bnQgb2ZmIHRoZSByZWdpc3RyYXRpb24gZmVl
+IHdpdGggdGhlIHNvdXJjZSBjb2RlOiBTRkFECmh0dHA6Ly9wLnNmLm5ldC9zZnUvWGN2TXpGOEgK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtZmJk
+ZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdl
+Lm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9saW51eC1m
+YmRldi1kZXZlbAo=

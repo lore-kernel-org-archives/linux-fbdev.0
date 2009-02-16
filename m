@@ -1,26 +1,26 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+From: "Sergei S." <bender.rodriguez@open.by>
 Subject: Re: [Bugme-new] [Bug 12712] New: s2disk hangs
  with nvidiafb
-Date: Mon, 16 Feb 2009 20:59:47 +0100
-Message-ID: <20090216205947.d024cf25.krzysztof.h1@poczta.fm>
+Date: Tue, 17 Feb 2009 00:56:48 +0200
+Message-ID: <web-45816320@post.open.by>
 References: <bug-12712-10286@http.bugzilla.kernel.org/>
 	<20090215111720.6860a225.akpm@linux-foundation.org>
 	<web-45680874@post.open.by>
+	<20090216205947.d024cf25.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LZ9Yx-0002EV-NF
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <bender.rodriguez@open.by>) id 1LZCOW-0000x8-Ew
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Feb 2009 19:55:31 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LZ9Yp-00033v-CD for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 16 Feb 2009 19:55:31 +0000
-In-Reply-To: <web-45680874@post.open.by>
+	Mon, 16 Feb 2009 22:56:56 +0000
+Received: from mail.open.by ([193.232.92.17] helo=post.open.by)
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LZCOS-0005G4-8B for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 16 Feb 2009 22:56:56 +0000
+In-Reply-To: <20090216205947.d024cf25.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,43 +30,70 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Sergei S." <bender.rodriguez@open.by>
+Content-Type: text/plain; charset="maccyrillic"
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
 
-On Sun, 15 Feb 2009 23:11:26 +0200
-"Sergei S." <bender.rodriguez@open.by> wrote:
-> 
-> I've tested
-> 2.6.27-14, 2.6.29-rc4 (git-5, git-7), 2.6.29-rc5
-> 
-> all of them fails to s2disk with nvidiafb.
-> 
-> dmesg | grep buf
-> [    1.651258] Console: switching to colour frame buffer device 160x50
-> [    1.652466] nvidiafb: PCI nVidia NV1d framebuffer (64MB @ 0xC0000000)
-> [    1.652846] vesafb: framebuffer at 0xc0000000, mapped to 0xfd980000, using
-> 6144k, total 131072k
-> [    1.653320] fb1: VESA VGA frame buffer device
-> 
-
-Interesting, you have two framebuffers running on a single card. Does the s2disk
-works for you if you select nvidiafb and turn off vesa framebuffer?
-
-Can you post the same lines for the latest working kernel with both vesa and nvidia
-framebuffers selected?
-
-Regards,
-Krzysztof
-
-
-----------------------------------------------------------------------
-Zostan mistrzem parkowania w Bombaju!
-Zagraj >> http://link.interia.pl/f204e 
-
-
-------------------------------------------------------------------------------
-Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
--OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
--Strategies to boost innovation and cut costs with open source participation
--Receive a $600 discount off the registration fee with the source code: SFAD
-http://p.sf.net/sfu/XcvMzF8H
+TW9uLCAxNiBGZWIgMjAwOSAyMDo1OTo0NyArMDEwMAogIEtyenlzenRvZiBIZWx0IDxrcnp5c3p0
+b2YuaDFAcG9jenRhLmZtPiB3cm90ZToKCkhlbGxvLgoKPiBPbiBTdW4sIDE1IEZlYiAyMDA5IDIz
+OjExOjI2ICswMjAwCj4gIlNlcmdlaSBTLiIgPGJlbmRlci5yb2RyaWd1ZXpAb3Blbi5ieT4gd3Jv
+dGU6Cj4+IAo+PiBJJ3ZlIHRlc3RlZAo+PiAyLjYuMjctMTQsIDIuNi4yOS1yYzQgKGdpdC01LCBn
+aXQtNyksIDIuNi4yOS1yYzUKPj4gCj4+IGFsbCBvZiB0aGVtIGZhaWxzIHRvIHMyZGlzayB3aXRo
+IG52aWRpYWZiLgo+PiAKPj4gZG1lc2cgfCBncmVwIGJ1Zgo+PiBbICAgIDEuNjUxMjU4XSBDb25z
+b2xlOiBzd2l0Y2hpbmcgdG8gY29sb3VyIGZyYW1lIGJ1ZmZlciBkZXZpY2UgMTYweDUwCj4+IFsg
+ICAgMS42NTI0NjZdIG52aWRpYWZiOiBQQ0kgblZpZGlhIE5WMWQgZnJhbWVidWZmZXIgKDY0TUIg
+QCAweEMwMDAwMDAwKQo+PiBbICAgIDEuNjUyODQ2XSB2ZXNhZmI6IGZyYW1lYnVmZmVyIGF0IDB4
+YzAwMDAwMDAsIG1hcHBlZCB0byAweGZkOTgwMDAwLCB1c2luZwo+PiA2MTQ0aywgdG90YWwgMTMx
+MDcyawo+PiBbICAgIDEuNjUzMzIwXSBmYjE6IFZFU0EgVkdBIGZyYW1lIGJ1ZmZlciBkZXZpY2UK
+Pj4gCj4gCj4gSW50ZXJlc3RpbmcsIHlvdSBoYXZlIHR3byBmcmFtZWJ1ZmZlcnMgcnVubmluZyBv
+biBhIHNpbmdsZSBjYXJkLiBEb2VzIHRoZSBzMmRpc2sKPiB3b3JrcyBmb3IgeW91IGlmIHlvdSBz
+ZWxlY3QgbnZpZGlhZmIgYW5kIHR1cm4gb2ZmIHZlc2EgZnJhbWVidWZmZXI/Cj4KCjIuNi4yOS1y
+YzUgKHZlc2FmYiwgbm8gbnZpZGlhZmIpCmRtZXNnIHwgZ3JlcCBidWYKWyAgICAwLjc3OTg2MF0g
+dmVzYWZiOiBmcmFtZWJ1ZmZlciBhdCAweGMwMDAwMDAwLCBtYXBwZWQgdG8gMHhmODA4MDAwMCwg
+dXNpbmcgNjE0NGssIAp0b3RhbCAxMzEwNzJrClsgICAgMC44Mzk2ODhdIENvbnNvbGU6IHN3aXRj
+aGluZyB0byBjb2xvdXIgZnJhbWUgYnVmZmVyIGRldmljZSAxMjh4NDgKWyAgICAwLjg5OTkyMl0g
+ZmIwOiBWRVNBIFZHQSBmcmFtZSBidWZmZXIgZGV2aWNlCgpzMmRpc2sgd29ya3Mgb2suCgoKMi42
+LjI5LXJjNSAobm8gdmVzYWZiLCBudmlkaWFmYikKZG1lc2cgfCBncmVwIGJ1ZgpbICAgIDEuNTU2
+NjkyXSBDb25zb2xlOiBzd2l0Y2hpbmcgdG8gY29sb3VyIGZyYW1lIGJ1ZmZlciBkZXZpY2UgMTYw
+eDUwClsgICAgMS41NTg5MDVdIG52aWRpYWZiOiBQQ0kgblZpZGlhIE5WMWQgZnJhbWVidWZmZXIg
+KDY0TUIgQCAweEMwMDAwMDAwKQoKczJkaXNrIGRvZXNuJ3Qgd29yayB3aXRoIG52aWRpYWZiLgoK
+ICAKPiBDYW4geW91IHBvc3QgdGhlIHNhbWUgbGluZXMgZm9yIHRoZSBsYXRlc3Qgd29ya2luZyBr
+ZXJuZWwgd2l0aCBib3RoIHZlc2EgYW5kIG52aWRpYQo+IGZyYW1lYnVmZmVycyBzZWxlY3RlZD8K
+PgoKU3VyZS4KClshISFDb3B5LXBhc3RlIGZyb20gcHJldi4gcG9zdHNdCndvcmtpbmcga2VybmVs
+IHdpdGggdmVzYWZiIGFuZCBudmlkaWZiIHNlbGVjdGVkIChzMmRpc2sgZmFpbHMpLgoKMi42LjI5
+LXJjNQpkbWVzZyB8IGdyZXAgYnVmClsgICAgMS42NTg3MzVdIENvbnNvbGU6IHN3aXRjaGluZyB0
+byBjb2xvdXIgZnJhbWUgYnVmZmVyIGRldmljZSAxNjB4NTAKWyAgICAxLjY1OTkyOV0gbnZpZGlh
+ZmI6IFBDSSBuVmlkaWEgTlYxZCBmcmFtZWJ1ZmZlciAoNjRNQiBAIDB4QzAwMDAwMDApClsgICAg
+MS42NjAzODZdIHZlc2FmYjogZnJhbWVidWZmZXIgYXQgMHhjMDAwMDAwMCwgbWFwcGVkIHRvIDB4
+ZmQxODAwMDAsIHVzaW5nIDYxNDRrLCAKdG90YWwgMTMxMDcyawpbICAgIDEuNjYwODI1XSBmYjE6
+IFZFU0EgVkdBIGZyYW1lIGJ1ZmZlciBkZXZpY2UKICAKMi42LjI3LTE0CmRtZXNnIHwgZ3JlcCBi
+dWYKWyAgICAxLjY1MTI1OF0gQ29uc29sZTogc3dpdGNoaW5nIHRvIGNvbG91ciBmcmFtZSBidWZm
+ZXIgZGV2aWNlIDE2MHg1MApbICAgIDEuNjUyNDY2XSBudmlkaWFmYjogUENJIG5WaWRpYSBOVjFk
+IGZyYW1lYnVmZmVyICg2NE1CIEAgMHhDMDAwMDAwMCkKWyAgICAxLjY1Mjg0Nl0gdmVzYWZiOiBm
+cmFtZWJ1ZmZlciBhdCAweGMwMDAwMDAwLCBtYXBwZWQgdG8gMHhmZDk4MDAwMCwgdXNpbmcgNjE0
+NGssIAp0b3RhbCAxMzEwNzJrClsgICAgMS42NTMzMjBdIGZiMTogVkVTQSBWR0EgZnJhbWUgYnVm
+ZmVyIGRldmljZQoKClshIV0gY3VycmVudCBidWlsZCAoMi42LjI5LXJjNSB2ZXNhZmIsIG52aWRp
+YWZiKQpkbWVzZyB8IGdyZXAgYnVmClsgICAgMC45NDQwNDldIENvbnNvbGU6IHN3aXRjaGluZyB0
+byBjb2xvdXIgZnJhbWUgYnVmZmVyIGRldmljZSAxNjB4NTAKWyAgICAwLjk0NTIzM10gbnZpZGlh
+ZmI6IFBDSSBuVmlkaWEgTlYxZCBmcmFtZWJ1ZmZlciAoNjRNQiBAIDB4QzAwMDAwMDApClsgICAg
+MC45NDU2NzVdIHZlc2FmYjogZnJhbWVidWZmZXIgYXQgMHhjMDAwMDAwMCwgbWFwcGVkIHRvIDB4
+ZmQxODAwMDAsIHVzaW5nIDYxNDRrLCAKdG90YWwgMTMxMDcyawpbICAgIDAuOTQ2MTE5XSBmYjE6
+IFZFU0EgVkdBIGZyYW1lIGJ1ZmZlciBkZXZpY2UKCnMyZGlzayBmYWlscy4KCgpSZWdhcmRzLApT
+ZXJnZXkKICAKPiBSZWdhcmRzLAo+IEtyenlzenRvZgo+IAo+IAo+IC0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiBa
+b3N0YW4gbWlzdHJ6ZW0gcGFya293YW5pYSB3IEJvbWJhanUhCj4gWmFncmFqID4+IGh0dHA6Ly9s
+aW5rLmludGVyaWEucGwvZjIwNGUgCj4gCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tCi4uLuAg8uXv5fD8IO7v6+Dy6PL8IPjo8O7q7u/u6+7x7fvp
+IOTu8fLz7wriIPHl8vwgyO3y5fDt5fIgQnlGbHkg7O7m7e4g/evl6vLw7u3t++zoIOTl7fzj4Ozo
+IEVhc3lQYXkuCmh0dHA6Ly93d3cuZWFzeXBheS5ieS8KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpP
+cGVuIFNvdXJjZSBCdXNpbmVzcyBDb25mZXJlbmNlIChPU0JDKSwgTWFyY2ggMjQtMjUsIDIwMDks
+IFNhbiBGcmFuY2lzY28sIENBCi1PU0JDIHRhY2tsZXMgdGhlIGJpZ2dlc3QgaXNzdWUgaW4gb3Bl
+biBzb3VyY2U6IE9wZW4gU291cmNpbmcgdGhlIEVudGVycHJpc2UKLVN0cmF0ZWdpZXMgdG8gYm9v
+c3QgaW5ub3ZhdGlvbiBhbmQgY3V0IGNvc3RzIHdpdGggb3BlbiBzb3VyY2UgcGFydGljaXBhdGlv
+bgotUmVjZWl2ZSBhICQ2MDAgZGlzY291bnQgb2ZmIHRoZSByZWdpc3RyYXRpb24gZmVlIHdpdGgg
+dGhlIHNvdXJjZSBjb2RlOiBTRkFECmh0dHA6Ly9wLnNmLm5ldC9zZnUvWGN2TXpGOEgKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtZmJkZXYtZGV2
+ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApo
+dHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9saW51eC1mYmRldi1k
+ZXZlbAo=

@@ -1,24 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Incorrect URL given in
-	drivers/video/Kconfig
-Date: Thu, 19 Feb 2009 21:58:13 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0902192156560.2221@anakin>
-References: <20090117233539.07abdfc2@lithium.local.net>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] cirrusfb: do not calculate line
+	length twice
+Date: Thu, 19 Feb 2009 16:27:54 -0800
+Message-ID: <20090219162754.d175d6c0.akpm@linux-foundation.org>
+References: <20090214185045.c288650e.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@linux-m68k.org>) id 1LaFyX-0002eD-TV
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1LaJG7-0001Sr-6n
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 19 Feb 2009 20:58:29 +0000
-Received: from juliette.telenet-ops.be ([195.130.137.74])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LaFyS-000580-Ey for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 19 Feb 2009 20:58:29 +0000
-In-Reply-To: <20090117233539.07abdfc2@lithium.local.net>
+	Fri, 20 Feb 2009 00:28:51 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LaJG3-0004O2-6v
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 20 Feb 2009 00:28:51 +0000
+In-Reply-To: <20090214185045.c288650e.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,39 +29,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alex Buell <alex.buell@munted.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: arthur.marsh@internode.on.net, linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 17 Jan 2009, Alex Buell wrote:
-> --- linux/drivers/video/Kconfig.old	2009-01-17 23:31:53.831765544 +0000
-> +++ linux/drivers/video/Kconfig	2009-01-17 23:32:40.049414838 +0000
-> @@ -41,7 +41,7 @@
->  	  You need an utility program called fbset to make full use of frame
->  	  buffer devices. Please read <file:Documentation/fb/framebuffer.txt>
->  	  and the Framebuffer-HOWTO at
-> -	  <http://www.tahallah.demon.co.uk/programming/prog.html> for more
-> +	  <http://www.munted.org.uk/programming/Framebuffer-HOWTO-1.2.html> for more
+On Sat, 14 Feb 2009 18:50:45 +0100
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-Which got obsoleted by
-http://www.munted.org.uk/programming/Framebuffer-HOWTO-1.3.html in the mean
-time...
+> A line length is calculated twice: first in
+> the cirrusfb_decode_var() then in 
+> the cirrusfb_set_par_foo().
+> 
+> Use the first calculated value. A nice side
+> effect is that 32bpp mode works now.
 
-Any chance we could have a permanent link here?
+Do you get these as well?
 
->  	  information.
->  
->  	  Say Y here and to the driver for your graphics board below if you
+drivers/video/cirrusfb.c: In function 'cirrusfb_set_par_foo':
+drivers/video/cirrusfb.c:663: warning: 'format' may be used uninitialized in this function
+drivers/video/cirrusfb.c:663: warning: 'threshold' may be used uninitialized in this function
+drivers/video/cirrusfb.c:663: warning: 'control' may be used uninitialized in this function
 
-Gr{oetje,eeting}s,
+they're false positives, but it would be nice to squash them somehow.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 ------------------------------------------------------------------------------
 Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA

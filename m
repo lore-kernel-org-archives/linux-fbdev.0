@@ -1,122 +1,95 @@
-From: "Sergei S." <bender.rodriguez@open.by>
-Subject: Re: [Bugme-new] [Bug 12712] New: s2disk hangs
- with nvidiafb
-Date: Sun, 22 Feb 2009 01:23:23 +0200
-Message-ID: <web-46418079@post.open.by>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
+Date: Sun, 22 Feb 2009 08:15:17 +0100
+Message-ID: <20090222081517.567a29bd.krzysztof.h1@poczta.fm>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	<Pine.LNX.4.64.0901240951110.13803@anakin>
+	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
+	<Pine.LNX.4.64.0901241425310.13803@anakin>
+	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
+	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
+	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+	<20090211142409.b88c577e.akpm@linux-foundation.org>
+	<46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
+	<20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <bender.rodriguez@open.by>) id 1Lb1By-0007vr-7t
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 21 Feb 2009 23:23:30 +0000
-Received: from mail.open.by ([193.232.92.17] helo=post.open.by)
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Lb1Bv-0004fK-AN for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 21 Feb 2009 23:23:30 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="maccyrillic"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754292AbZBVHKh@vger.kernel.org>
+In-Reply-To: <20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+Cc: Risto Suominen <risto.suominen@gmail.com>, adaplas@pol.net, Andrew Morton <akpm@linux-foundation.org>, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-TW9uLCAxNiBGZWIgMjAwOSAyMDo1OTo0NyArMDEwMAogICBLcnp5c3p0b2YgSGVsdCA8a3J6eXN6
-dG9mLmgxQHBvY3p0YS5mbT4gd3JvdGU6Cgo+IEludGVyZXN0aW5nLCB5b3UgaGF2ZSB0d28gZnJh
-bWVidWZmZXJzIHJ1bm5pbmcgb24gYSBzaW5nbGUgY2FyZC4gRG9lcyB0aGUgczJkaXNrCj4gd29y
-a3MgZm9yIHlvdSBpZiB5b3Ugc2VsZWN0IG52aWRpYWZiIGFuZCB0dXJuIG9mZiB2ZXNhIGZyYW1l
-YnVmZmVyPwo+CgpIZWxsby4KCkxldCdzIHNlZSBkbWVzZzoKWyAgICAxLjUwMjAxMV0gbnZpZGlh
-ZmI6IENSVEMgMCBpcyBjdXJyZW50bHkgcHJvZ3JhbW1lZCBmb3IgREZQClsgICAgMS41MDIwMjJd
-IG52aWRpYWZiOiBVc2luZyBERlAgb24gQ1JUQyAwClsgICAgMS41MDIwMzFdIG52aWRpYWZiOiBQ
-YW5lbCBzaXplIGlzIDEyODAgeCA4MDAKWyAgICAxLjUwMjA0MF0gbnZpZGlhZmI6IFBhbmVsIGlz
-IExWRFMKWyAgICAxLjUwNTU4MF0gbnZpZGlhZmI6IE1UUlIgc2V0IHRvIE9OClsgICAgMS41MDU1
-OTldIGZiY3Z0OiAxMjgweDgwMEA2MDogQ1ZUIE5hbWUgLSAxLjAyNE1BLVIKWyAgICAxLjUwNTg1
-Nl0gZmJjb246IE5WMWQgKGZiMCkgaXMgcHJpbWFyeSBkZXZpY2UKWyAgICAxLjY1NzM3OV0gbnZp
-ZGlhZmI6IEZsYXQgcGFuZWwgZGl0aGVyaW5nIGRpc2FibGVkClsgICAgMS42NTg3MzVdIENvbnNv
-bGU6IHN3aXRjaGluZyB0byBjb2xvdXIgZnJhbWUgYnVmZmVyIGRldmljZSAxNjB4NTAKWyAgICAx
-LjY1OTkyOV0gbnZpZGlhZmI6IFBDSSBuVmlkaWEgTlYxZCBmcmFtZWJ1ZmZlciAoNjRNQiBAIDB4
-QzAwMDAwMDApClsgICAgMS42NjAwOTldIHZlc2FmYjogY2Fubm90IHJlc2VydmUgdmlkZW8gbWVt
-b3J5IGF0IDB4YzAwMDAwMDAKWyAgICAxLjY2MDM4Nl0gdmVzYWZiOiBmcmFtZWJ1ZmZlciBhdCAw
-eGMwMDAwMDAwLCBtYXBwZWQgdG8gMHhmZDE4MDAwMCwgdXNpbmcgNjE0NGssIAp0b3RhbCAxMzEw
-NzJrClsgICAgMS42NjA0MTldIHZlc2FmYjogbW9kZSBpcyAxMDI0eDc2OHgzMiwgbGluZWxlbmd0
-aD00MDk2LCBwYWdlcz0xClsgICAgMS42NjA0NDVdIHZlc2FmYjogcHJvdGVjdGVkIG1vZGUgaW50
-ZXJmYWNlIGluZm8gYXQgYzAwMDpkNWQwClsgICAgMS42NjA0NzFdIHZlc2FmYjogcG1pOiBzZXQg
-ZGlzcGxheSBzdGFydCA9IGMwMGNkNjA2LCBzZXQgcGFsZXR0ZSA9IGMwMGNkNjcwClsgICAgMS42
-NjA0OThdIHZlc2FmYjogcG1pOiBwb3J0cyA9IDNiNCAzYjUgM2JhIDNjMCAzYzEgM2M0IDNjNSAz
-YzYgM2M3IDNjOCAzYzkgM2NjIDNjZSAKM2NmIDNkMCAzZDEgM2QyIDNkMyAzZDQgM2Q1IDNkYQpb
-ICAgIDEuNjYwNzE0XSB2ZXNhZmI6IHNjcm9sbGluZzogcmVkcmF3ClsgICAgMS42NjA3MzRdIHZl
-c2FmYjogVHJ1ZWNvbG9yOiBzaXplPTg6ODo4OjgsIHNoaWZ0PTI0OjE2Ojg6MApbICAgIDEuNjYw
-ODI1XSBmYjE6IFZFU0EgVkdBIGZyYW1lIGJ1ZmZlciBkZXZpY2UKCgpUaGUgcHJvYmxlbSAoInR3
-byBmcmFtZWJ1ZmZlcnMgcnVubmluZyBvbiBhIHNpbmdsZSBjYXJkIikgaXMgYXQgZHJpdmVycy92
-aWRlby92ZXNhZmIuYwoKc3RhdGljIGludCBfX2luaXQgdmVzYWZiX3Byb2JlKHN0cnVjdCBwbGF0
-Zm9ybV9kZXZpY2UgKmRldikKCgp2ZXNhZmIgaWdub3JlcyBhbGxvY2F0aW9uIGZhaWx1cmUgYXQg
-MHhjMDAwMDAwMC4KCglpZiAoIXJlcXVlc3RfbWVtX3JlZ2lvbih2ZXNhZmJfZml4LnNtZW1fc3Rh
-cnQsIHNpemVfdG90YWwsICJ2ZXNhZmIiKSkgewoJCXByaW50ayhLRVJOX1dBUk5JTkcKCQkgICAg
-ICAgInZlc2FmYjogY2Fubm90IHJlc2VydmUgdmlkZW8gbWVtb3J5IGF0IDB4JWx4XG4iLAoJCQl2
-ZXNhZmJfZml4LnNtZW1fc3RhcnQpOwoJCS8qIFdlIGNhbm5vdCBtYWtlIHRoaXMgZmF0YWwuIFNv
-bWV0aW1lcyB0aGlzIGNvbWVzIGZyb20gbWFnaWMKCQkgICBzcGFjZXMgb3VyIHJlc291cmNlIGhh
-bmRsZXJzIHNpbXBseSBkb24ndCBrbm93IGFib3V0ICovCgl9CgoKU28sIG15IHByb3Bvc2FsIGlz
-IHNvbWV0aGluZyBsaWtlIHRoaXM6CgoJaWYgKCFyZXF1ZXN0X21lbV9yZWdpb24odmVzYWZiX2Zp
-eC5zbWVtX3N0YXJ0LCBzaXplX3RvdGFsLCAidmVzYWZiIikpIHsKCQlwcmludGsoS0VSTl9XQVJO
-SU5HCgkJICAgICAgICJ2ZXNhZmI6IGNhbm5vdCByZXNlcnZlIHZpZGVvIG1lbW9yeSBhdCAweCVs
-eFxuIiwKCQkJdmVzYWZiX2ZpeC5zbWVtX3N0YXJ0KTsKCQkvKiBXZSBjYW5ub3QgbWFrZSB0aGlz
-IGZhdGFsLiBTb21ldGltZXMgdGhpcyBjb21lcyBmcm9tIG1hZ2ljCgkJICAgc3BhY2VzIG91ciBy
-ZXNvdXJjZSBoYW5kbGVycyBzaW1wbHkgZG9uJ3Qga25vdyBhYm91dCAqLwoKLypOT1RFIDogZGlz
-Y3VzcyovCgkJaWYobnVtX3JlZ2lzdGVyZWRfZmIpIHsKCQkJcHJpbnRrKEtFUk5fRVJSCgkJCQki
-dmVzYWZiOiBhYm9ydCwgY2Fubm90IHJlc2VydmUgdmlkZW8gbWVtb3J5IGF0IDB4JWx4LiByZWdp
-c3RlcmVkIGZyYW1lYnVmZmVycyBjb3VudCAKJWRcbiIsCgkJCQl2ZXNhZmJfZml4LnNtZW1fc3Rh
-cnQsIG51bV9yZWdpc3RlcmVkX2ZiKTsKCQkJcmV0dXJuIC1FQlVTWTsKCQl9Cgl9CgpudW1fcmVn
-aXN0ZXJlZF9mYiBpcyBkZWNsYXJlZCBpbiBmYm1lbS5jCgpJcyB0aGF0IGFjY2VwdGFibGUgc29s
-dXRpb24/CgpJIGNhbid0IG1ha2UgYWxsIHRlc3RzLCBzaW5jZSBJIGhhdmUgUEMgd2l0aCBzaW5n
-bGUgdmlkZW8gY2FyZC4KCjIuNi4yOS1yYzUtZ2l0MwoKZG1lc2cgd2l0aCB2ZXNhZmIgYW5kIG52
-aWRpYWZiOgpbICAgIDEuNDkyMDA5XSBudmlkaWFmYjogQ1JUQyAwIGlzIGN1cnJlbnRseSBwcm9n
-cmFtbWVkIGZvciBERlAKWyAgICAxLjQ5MjAyMF0gbnZpZGlhZmI6IFVzaW5nIERGUCBvbiBDUlRD
-IDAKWyAgICAxLjQ5MjAyOV0gbnZpZGlhZmI6IFBhbmVsIHNpemUgaXMgMTI4MCB4IDgwMApbICAg
-IDEuNDkyMDM4XSBudmlkaWFmYjogUGFuZWwgaXMgTFZEUwpbICAgIDEuNDk1NTY2XSBudmlkaWFm
-YjogTVRSUiBzZXQgdG8gT04KWyAgICAxLjQ5NTU4NV0gZmJjdnQ6IDEyODB4ODAwQDYwOiBDVlQg
-TmFtZSAtIDEuMDI0TUEtUgpbICAgIDEuNDk1ODM4XSBmYmNvbjogTlYxZCAoZmIwKSBpcyBwcmlt
-YXJ5IGRldmljZQpbICAgIDEuNjQ3Mjk1XSBudmlkaWFmYjogRmxhdCBwYW5lbCBkaXRoZXJpbmcg
-ZGlzYWJsZWQKWyAgICAxLjY0ODY0OV0gQ29uc29sZTogc3dpdGNoaW5nIHRvIGNvbG91ciBmcmFt
-ZSBidWZmZXIgZGV2aWNlIDE2MHg1MApbICAgIDEuNjQ5ODQ3XSBudmlkaWFmYjogUENJIG5WaWRp
-YSBOVjFkIGZyYW1lYnVmZmVyICg2NE1CIEAgMHhDMDAwMDAwMCkKWyAgICAxLjY1MDAyOF0gdmVz
-YWZiOiBjYW5ub3QgcmVzZXJ2ZSB2aWRlbyBtZW1vcnkgYXQgMHhjMDAwMDAwMApbICAgIDEuNjUw
-MDU0XSB2ZXNhZmI6IGFib3J0LCBjYW5ub3QgcmVzZXJ2ZSB2aWRlbyBtZW1vcnkgYXQgMHhjMDAw
-MDAwMC4gcmVnaXN0ZXJlZCAKZnJhbWVidWZmZXJzIGNvdW50IDEKWyAgICAxLjY1MDA5Ml0gdmVz
-YWZiOiBwcm9iZSBvZiB2ZXNhZmIuMCBmYWlsZWQgd2l0aCBlcnJvciAtMTYKCgpzMmRpc2sgc3Rp
-bGwgZmFpbHMgKGl0IHdvcmtzIE9LIHdpdGhvdXQgbnZpZGlhZmIpLgpTeXN0ZW0ganVzdCBoYW5n
-cyBiZWZvcmUgc3dpdGNoaW5nIHRvIGNvbnNvbGUuCkknbGwgdHJ5IHRvIGZpZ3VyZSBvdXQuCgoK
-ZG1lc2cgd2l0aCB2ZXNhZmIgb25seToKWyAgICAwLjc2OTkyOF0gdmVzYWZiOiBmcmFtZWJ1ZmZl
-ciBhdCAweGMwMDAwMDAwLCBtYXBwZWQgdG8gMHhmODA4MDAwMCwgdXNpbmcgNjE0NGssIAp0b3Rh
-bCAxMzEwNzJrClsgICAgMC43Njk5NDZdIHZlc2FmYjogbW9kZSBpcyAxMDI0eDc2OHgzMiwgbGlu
-ZWxlbmd0aD00MDk2LCBwYWdlcz0xClsgICAgMC43Njk5NTddIHZlc2FmYjogcHJvdGVjdGVkIG1v
-ZGUgaW50ZXJmYWNlIGluZm8gYXQgYzAwMDpkNWQwClsgICAgMC43Njk5NjhdIHZlc2FmYjogcG1p
-OiBzZXQgZGlzcGxheSBzdGFydCA9IGMwMGNkNjA2LCBzZXQgcGFsZXR0ZSA9IGMwMGNkNjcwClsg
-ICAgMC43Njk5ODBdIHZlc2FmYjogcG1pOiBwb3J0cyA9IDNiNCAzYjUgM2JhIDNjMCAzYzEgM2M0
-IDNjNSAzYzYgM2M3IDNjOCAzYzkgM2NjIDNjZSAKM2NmIDNkMCAzZDEgM2QyIDNkMyAzZDQgM2Q1
-IDNkYQpbICAgIDAuNzcwMDEzXSB2ZXNhZmI6IHNjcm9sbGluZzogcmVkcmF3ClsgICAgMC43NzAw
-MjFdIHZlc2FmYjogVHJ1ZWNvbG9yOiBzaXplPTg6ODo4OjgsIHNoaWZ0PTI0OjE2Ojg6MApbICAg
-IDAuODI5NzM1XSBDb25zb2xlOiBzd2l0Y2hpbmcgdG8gY29sb3VyIGZyYW1lIGJ1ZmZlciBkZXZp
-Y2UgMTI4eDQ4ClsgICAgMC44ODk5NTNdIGZiMDogVkVTQSBWR0EgZnJhbWUgYnVmZmVyIGRldmlj
-ZQoKczJkaXNrIC0gT0suCgpCZXN0IHJlZ2FyZHMsClNlcmdleQotLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCi4uLuAg8uXv5fD8IO7v6+Dy6PL8IPjo
-8O7q7u/u6+7x7fvpIOTu8fLz7wriIPHl8vwgyO3y5fDt5fIgQnlGbHkg7O7m7e4g/evl6vLw7u3t
-++zoIOTl7fzj4OzoIEVhc3lQYXkuCmh0dHA6Ly93d3cuZWFzeXBheS5ieS8KCi0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLQpPcGVuIFNvdXJjZSBCdXNpbmVzcyBDb25mZXJlbmNlIChPU0JDKSwgTWFyY2gg
-MjQtMjUsIDIwMDksIFNhbiBGcmFuY2lzY28sIENBCi1PU0JDIHRhY2tsZXMgdGhlIGJpZ2dlc3Qg
-aXNzdWUgaW4gb3BlbiBzb3VyY2U6IE9wZW4gU291cmNpbmcgdGhlIEVudGVycHJpc2UKLVN0cmF0
-ZWdpZXMgdG8gYm9vc3QgaW5ub3ZhdGlvbiBhbmQgY3V0IGNvc3RzIHdpdGggb3BlbiBzb3VyY2Ug
-cGFydGljaXBhdGlvbgotUmVjZWl2ZSBhICQ2MDAgZGlzY291bnQgb2ZmIHRoZSByZWdpc3RyYXRp
-b24gZmVlIHdpdGggdGhlIHNvdXJjZSBjb2RlOiBTRkFECmh0dHA6Ly9wLnNmLm5ldC9zZnUvWGN2
-TXpGOEgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGlu
-dXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJj
-ZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9s
-aW51eC1mYmRldi1kZXZlbAo=
+On Fri, 13 Feb 2009 21:06:35 +0100
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+
+> On Thu, 12 Feb 2009 23:12:26 +0200
+> Risto Suominen <risto.suominen@gmail.com> wrote:
+> 
+> > 2009/2/12 Andrew Morton <akpm@linux-foundation.org>:
+> > >> ---
+> > >> The testing is done on kernel version 2.6.18.
+> > >
+> > > That's a truly ancient kernel.  Is the patch needed on current kernels?
+> > > Does it work correctly in current kernels?
+> > >
+> > It does not on 2.6.24. The patch works.
+> > 
+> 
+> I have tested two cards with the hardware cursor: 
+> Permedia 2 (pm2fb) and Voodoo-3 (tdfxfb).
+> 
+> Both cards use the hardware cursor and both does
+> not produce the bug you have described.
+> I have used the Xorg version 7.2 included in the
+> Slackware 12 and a current git version of the kernel
+> (updated two days ago).
+> 
+> I do not have the ATI Mach64 card to test it.
+> I will test my cards with the kernel 2.6.24.
+> 
+> Either, this bug is related only to the atyfb driver
+> or it was solved in the current kernel.
+> I looked into the atyfb driver code and I did not
+>  see anything suspicious there.
+> 
+
+I have done more testing.
+
+The pm2fb and tdfxfb work ok with Xorg 7.2 (xserver 1.3.0)
+and kernel 2.6.24 (the same cards as above used).
+
+I have build Xfbdev (kdrive) server for the same version of
+Xorg (xserver 1.3.0). The Xfbdev works ok (no cursor left)
+with both the pm2fb and tdfxfb.
+
+I start wondering what is your version of Xfbdev and how
+did you build it. I have build the Xfbdev with the following 
+options:
+
+./configure --enable-kdrive \
+--disable-xvmc --disable-glx \
+--disable-dri --disable-xinerama \
+--enable-static --disable-xnest \
+--disable-xvfb --disable-dmx \
+--disable-xprint --disable-xsdl \
+--disable-xorgcfg --disable-xorg
+
+Either, my Xfbdev version is too new to reproduce the bug
+(and then the problem is the Xfbdev regression) or the 
+problem shows only with special build option.
+
+Could you provide me with information how to build the
+Xfbdev to reproduce the problem?
+What is your platform (maybe it is not x86) and kernel
+configuration?
+
+Kind regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Zostan mistrzem parkowania w Bombaju!
+Zagraj >> http://link.interia.pl/f204e 

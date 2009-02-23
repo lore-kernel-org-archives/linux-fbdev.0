@@ -1,26 +1,22 @@
-From: "Bender aka Sergei S." <bender.rodriguez@open.by>
-Subject: Re: [Bugme-new] [Bug 12712] New: s2disk hangs
-	with nvidiafb
-Date: Mon, 23 Feb 2009 10:24:55 +0200
-Message-ID: <120778075.20090223102455@open.by>
-References: <web-46440394@post.open.by>
-	<20090222150504.a77dc9b3.krzysztof.h1@poczta.fm>
-Reply-To: Bender <bender.rodriguez@open.by>
+From: krzysztof.h1@poczta.fm
+Subject: Re: 
+	=?utf-8?q?=5BPATCH=5D_fb=3A_hide_cursor_in_gr?=
+	=?utf-8?q?aphics_mode?=
+Date: 23 Feb 2009 09:45:10 +0100
+Message-ID: <20090223084511.1CA9A36FDC8__35744.6732269183$1235378886$gmane$org@f44.poczta.interia.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <bender.rodriguez@open.by>) id 1LbW6f-00083W-Hm
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LbWRK-00029I-KD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Feb 2009 08:24:05 +0000
-Received: from mail.open.by ([193.232.92.17] helo=post.open.by)
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LbW6a-0002a3-Iy for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Feb 2009 08:24:05 +0000
-In-Reply-To: <20090222150504.a77dc9b3.krzysztof.h1@poczta.fm>
+	Mon, 23 Feb 2009 08:45:26 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LbWRA-0003gG-W1 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Feb 2009 08:45:26 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,107 +26,71 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Risto Suominen <risto.suominen@gmail.com>, Krzysztof Helt <krzysztof.h1@poczta.fm>, adaplas@pol.net, Andrew Morton <akpm@linux-foundation.org>, geert@linux-m68k.org, linux-fbdev-devel
 
-On Sunday, February 22, 2009, 4:05:04 PM, Krzysztof wrote:
-
-> On Sun, 22 Feb 2009 12:47:11 +0200
-> "Sergei S." <bender.rodriguez@open.by> wrote:
-
->> Hello.
->> 
->> By the way.
->> 
->> [drivers/video/vesafb.c
->> static int __init vesafb_probe(struct platform_device *dev)]
->> 
->>       if (!request_mem_region(vesafb_fix.smem_start, size_total, "vesafb")) {
->>               printk(KERN_WARNING
->>                      "vesafb: cannot reserve video memory at 0x%lx\n",
->>                       vesafb_fix.smem_start);
->>               /* We cannot make this fatal. Sometimes this comes from magic
->>                  spaces our resource handlers simply don't know about */
->>       }
->> 
->> Is there any reason not to make vesafb request_mem_region fail fatal?
->> 
->> In case we already have framebuffer at 0xc0000000 and framebuffer_alloc failed -
->> we'll release non-vesafb memory region.
->> 
->>       info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
->>       if (!info) {
->>               release_mem_region(vesafb_fix.smem_start, size_total);
->>               return -ENOMEM;
->>       }
->> 
->> 
->> So, what do you think about the idea to check num_registered_fb when request_mem_region 
->> fails?
+Risto Suominen napisa=B3(a):
+> Krzysztof, my patch is basically the same as yours. I already tried
+> to send it to Xorg mailing list, but did not receive any feedback.
+> =
 
 
-Hello.
+Right. One should set zero the xoffset also (can be non-zero on some cards).
 
-> I am not sure. Each request is done by a driver and it is assigned to it. Someone
-> with more knowledge should clear this doubts. I suppose if a driver does not
->  request a resource releasing it should be void.
+The Xfbdev is incorrectly designed as it uses settings read from one
+console to apply them to another console. It breaks if someone uses two =
 
-I think we should do some work at request_mem_region instead of simple
-printk KERN_WARNING (I may be wrong).
+graphics  cards and the target console is on a different card then a =
 
+current one.
 
-And what about:
-> In case we already have framebuffer at 0xc0000000 and framebuffer_alloc failed -
-> we'll release non-vesafb memory region.
->
->       info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
->       if (!info) {
->               release_mem_region(vesafb_fix.smem_start, size_total);
->               return -ENOMEM;
->       }
+I have to find out what how the problem above affects a HW cursor.
 
-IMHO at least we should have some bit showing that
-request_mem_region(vesafb_fix.smem_start, size_total, "vesafb")
-was successful. Just to call release_mem_region is not correct since
-we can release nvidiafb's (etc.) memory region.
+Regards,
+Krzysztof
 
+> If virtual resolution is higher than the screen (as in atyfb), and
+> yoffset
+> given by the framebuffer driver happens to be non-zero (fbcon changes it
+> on-
+> the-fly), Xfbdev places its image starting above the displayed part of
+> the
+> framebuffer. This patch makes sure that the whole picture is visible.
+> =
 
-> Your case is more simple - nvidiafb does not suspend/resume correctly. This
-> is easy to check - if only the nvidiafb is selected the s2disk does not work.
+> Signed-off-by: Risto Suominen >Risto.Suominen@gmail.com>
+> ---
+> The testing is done on version 1.1.1 and linux kernel version 2.6.18.
+> =
 
-Well, it's not so simple, I guess. Looks like s2disk works with
-nvidiafb built with "Lots of debug messages" and doesn't work
-otherwise.
+> --- a/hw/kdrive/fbdev/fbdev.c.org       2006-07-05 21:31:39.000000000
+> +0300
+> +++ b/hw/kdrive/fbdev/fbdev.c   2009-01-18 15:42:06.000000000 +0200
+> @@ -215,6 +215,8 @@ fbdevScreenInitialize (KdScreenInfo *scr
+> =
 
-Before hibernation we create virtual console and make switch to it (am
-I right?). I'm not sure, but it seems I have problems in switching to
-virtual console (or even earlier).
-I'll try to figure out.
+>      /* Now get the new screeninfo */
+>      ioctl (priv->fd, FBIOGET_VSCREENINFO, >priv->var);
+> +    /* We can get anything into yoffset if fbcon is active */
+> +    priv->var.yoffset =3D 0;
+>      depth =3D priv->var.bits_per_pixel;
+>      gray =3D priv->var.grayscale;
+> =
 
-
-> This is probably not a regression - you can check if your older kernel
-> works with only the nvidiafb selected.
-I've tested 2.6.27.11. It seems a bit senseless to test kernels earlier than 2.6.27
-(it can be difficult to find out the problem).
-
-
-> Unfortunately, I have no card to reproduce this and I don't know what
-> is wrong with the nvidiafb suspend/resume functions.
-
-> I hope someone will help you.
-
-Thanks.
+> =
 
 
-Best regards,
-Sergey
 
 
-> Kind regards,
-> Krzysztof
+----------------------------------------------------------------------
+Promocja w Speak Up. Angielski 50% gratis! =
+
+Liczba miejsc ograniczona. Sprawd=BC!>> http://link.interia.pl/f205c
 
 
-------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------=
+---
 Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
 -OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
 -Strategies to boost innovation and cut costs with open source participation

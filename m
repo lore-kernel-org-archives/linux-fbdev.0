@@ -1,22 +1,21 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH 4/4] cirrusfb: fix error paths in
-	cirrusfb_xxx_register()
-Date: Tue, 24 Feb 2009 22:37:02 +0100
-Message-ID: <20090224223702.86f7e129.krzysztof.h1@poczta.fm>
+Subject: [PATCH 1/4] cirrusfb: various Laguna fixes
+Date: Tue, 24 Feb 2009 22:28:22 +0100
+Message-ID: <20090224222822.fd2eea07.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1Lc6mr-0003hi-Mi
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1Lc6xw-0001Zf-SI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Feb 2009 23:34:07 +0000
+	Tue, 24 Feb 2009 23:45:32 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Lc6mn-0002s9-HF for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 24 Feb 2009 23:34:05 +0000
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Lc6xs-00077M-Do for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 24 Feb 2009 23:45:32 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,59 +30,325 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Balance iomap and iounmap and alloc and free
-calls in case of error druing device register
-(probing).
+1. The Laguna GD5465 (AGP) has one register
+more than non-AGP chips. Recognize the AGP
+version and write a tile control register
+only on the AGP version. Tested only on
+an AGP card.
+
+2. Bump up RAMDAC frequencies after X11 code.
+This allow to drive a flat panel resolution
+1680x1050 at 16bpp from the 4MB card.
+
+3. Fix screen start address overflow bits
+on Laguna cards (CRT1D register).
+
+4. Fix exit path in the cirrusfb_pci_register()
+in case of error.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
-It is not an end to cirrusfb patches unfortunately.
-I have just got a GD5446 (Picasso4) and it locks up 
-my computer when the cirrusfb module is loaded.
-Time to fix this model as well... 
-
- drivers/video/cirrusfb.c |   19 +++++++------------
- 1 files changed, 7 insertions(+), 12 deletions(-)
+ drivers/video/cirrusfb.c |   84 +++++++++++++++++++++++++++++++---------------
+ 1 files changed, 57 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 8e39637..b96bc5d 100644
+index aa4d620..d2b72c2 100644
 --- a/drivers/video/cirrusfb.c
 +++ b/drivers/video/cirrusfb.c
-@@ -2090,8 +2090,6 @@ static int __devinit cirrusfb_register(struct fb_info *info)
+@@ -102,7 +102,8 @@ enum cirrus_board {
+ 	BT_PICASSO4,	/* GD5446 */
+ 	BT_ALPINE,	/* GD543x/4x */
+ 	BT_GD5480,
+-	BT_LAGUNA,	/* GD546x */
++	BT_LAGUNA,	/* GD5462/64 */
++	BT_LAGUNAB,	/* GD5465 */
+ };
  
- err_dealloc_cmap:
- 	fb_dealloc_cmap(&info->cmap);
--	cinfo->unmap(info);
--	framebuffer_release(info);
- 	return err;
+ /*
+@@ -234,8 +235,18 @@ static const struct cirrusfb_board_info_rec {
+ 	[BT_LAGUNA] = {
+ 		.name			= "CL Laguna",
+ 		.maxclock		= {
+-			/* guess */
+-			135100, 135100, 135100, 135100, 135100,
++			/* taken from X11 code */
++			170000, 170000, 170000, 170000, 135100,
++		},
++		.init_sr07		= false,
++		.init_sr1f		= false,
++		.scrn_start_bit19	= true,
++	},
++	[BT_LAGUNAB] = {
++		.name			= "CL Laguna AGP",
++		.maxclock		= {
++			/* taken from X11 code */
++			170000, 250000, 170000, 170000, 135100,
+ 		},
+ 		.init_sr07		= false,
+ 		.init_sr1f		= false,
+@@ -258,7 +269,7 @@ static struct pci_device_id cirrusfb_pci_table[] = {
+ 	CHIP(PCI_DEVICE_ID_CIRRUS_5446, BT_PICASSO4), /* Picasso 4 is 5446 */
+ 	CHIP(PCI_DEVICE_ID_CIRRUS_5462, BT_LAGUNA), /* CL Laguna */
+ 	CHIP(PCI_DEVICE_ID_CIRRUS_5464, BT_LAGUNA), /* CL Laguna 3D */
+-	CHIP(PCI_DEVICE_ID_CIRRUS_5465, BT_LAGUNA), /* CL Laguna 3DA*/
++	CHIP(PCI_DEVICE_ID_CIRRUS_5465, BT_LAGUNAB), /* CL Laguna 3DA*/
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, cirrusfb_pci_table);
+@@ -385,6 +396,11 @@ static void cirrusfb_dbg_print_regs(struct fb_info *info,
+ /*****************************************************************************/
+ /*** BEGIN Interface Used by the World ***************************************/
+ 
++static inline int is_laguna(const struct cirrusfb_info *cinfo)
++{
++	return cinfo->btype == BT_LAGUNA || cinfo->btype == BT_LAGUNAB;
++}
++
+ static int opencount;
+ 
+ /*--- Open /dev/fbx ---------------------------------------------------------*/
+@@ -814,13 +830,16 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 			cirrusfb_set_mclk_as_source(info, divMCLK);
+ 		}
+ 	}
+-	if (cinfo->btype == BT_LAGUNA) {
++	if (is_laguna(cinfo)) {
+ 		long pcifc = fb_readl(cinfo->laguna_mmio + 0x3fc);
+ 		unsigned char tile = fb_readb(cinfo->laguna_mmio + 0x407);
+ 		unsigned short tile_control;
+ 
+-		tile_control = fb_readw(cinfo->laguna_mmio + 0x2c4);
+-		fb_writew(tile_control & ~0x80, cinfo->laguna_mmio + 0x2c4);
++		if (cinfo->btype == BT_LAGUNAB) {
++			tile_control = fb_readw(cinfo->laguna_mmio + 0x2c4);
++			tile_control &= ~0x80;
++			fb_writew(tile_control, cinfo->laguna_mmio + 0x2c4);
++		}
+ 
+ 		fb_writel(pcifc | 0x10000000l, cinfo->laguna_mmio + 0x3fc);
+ 		fb_writeb(tile & 0x3f, cinfo->laguna_mmio + 0x407);
+@@ -842,7 +861,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 
+ 		dev_dbg(info->device, "CL_SEQR1B: %d\n", (int) tmp);
+ 		/* Laguna chipset has reversed clock registers */
+-		if (cinfo->btype == BT_LAGUNA) {
++		if (is_laguna(cinfo)) {
+ 			vga_wseq(regbase, CL_SEQRE, tmp);
+ 			vga_wseq(regbase, CL_SEQR1E, nom);
+ 		} else {
+@@ -873,7 +892,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 		tmp |= 0x40;
+ 	if (var->sync & FB_SYNC_VERT_HIGH_ACT)
+ 		tmp |= 0x80;
+-	if (cinfo->btype == BT_LAGUNA)
++	if (is_laguna(cinfo))
+ 		tmp |= 0xc;
+ 	WGen(cinfo, VGA_MIS_W, tmp);
+ 
+@@ -908,6 +927,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 			break;
+ 
+ 		case BT_LAGUNA:
++		case BT_LAGUNAB:
+ 			vga_wseq(regbase, CL_SEQR7,
+ 				vga_rseq(regbase, CL_SEQR7) & ~0x01);
+ 			break;
+@@ -947,6 +967,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 		case BT_ALPINE:
+ 		case BT_GD5480:
+ 		case BT_LAGUNA:
++		case BT_LAGUNAB:
+ 			/* do nothing */
+ 			break;
+ 
+@@ -991,6 +1012,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 			break;
+ 
+ 		case BT_LAGUNA:
++		case BT_LAGUNAB:
+ 			vga_wseq(regbase, CL_SEQR7,
+ 				vga_rseq(regbase, CL_SEQR7) | 0x01);
+ 			threshold |= 0x10;
+@@ -1030,6 +1052,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 
+ 		case BT_GD5480:
+ 		case BT_LAGUNA:
++		case BT_LAGUNAB:
+ 			/* do nothing */
+ 			break;
+ 
+@@ -1096,6 +1119,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 			break;
+ 
+ 		case BT_LAGUNA:
++		case BT_LAGUNAB:
+ 			vga_wseq(regbase, CL_SEQR7,
+ 				vga_rseq(regbase, CL_SEQR7) & ~0x01);
+ 			control |= 0x2000;
+@@ -1166,6 +1190,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 			break;
+ 
+ 		case BT_LAGUNA:
++		case BT_LAGUNAB:
+ 			vga_wseq(regbase, CL_SEQR7,
+ 				vga_rseq(regbase, CL_SEQR7) & ~0x01);
+ 			control |= 0x6000;
+@@ -1208,7 +1233,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 	if (cirrusfb_board_info[cinfo->btype].scrn_start_bit19)
+ 		vga_wcrt(regbase, CL_CRT1D, (pitch >> 9) & 1);
+ 
+-	if (cinfo->btype == BT_LAGUNA) {
++	if (is_laguna(cinfo)) {
+ 		tmp = 0;
+ 		if ((htotal + 5) & 256)
+ 			tmp |= 128;
+@@ -1234,7 +1259,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 	/* From SetOffset(): Turn on VideoEnable bit in Attribute controller */
+ 	AttrOn(cinfo);
+ 
+-	if (cinfo->btype == BT_LAGUNA) {
++	if (is_laguna(cinfo)) {
+ 		/* no tiles */
+ 		fb_writew(control | 0x1000, cinfo->laguna_mmio + 0x402);
+ 		fb_writew(format, cinfo->laguna_mmio + 0xc0);
+@@ -1332,7 +1357,7 @@ static int cirrusfb_pan_display(struct fb_var_screeninfo *var,
+ 		xpix = (unsigned char) ((xoffset % 4) * 2);
+ 	}
+ 
+-	if (cinfo->btype != BT_LAGUNA)
++	if (!is_laguna(cinfo))
+ 		cirrusfb_WaitBLT(cinfo->regbase);
+ 
+ 	/* lower 8 + 8 bits of screen start address */
+@@ -1353,8 +1378,11 @@ static int cirrusfb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	/* construct bit 19 of screen start address */
+ 	if (cirrusfb_board_info[cinfo->btype].scrn_start_bit19) {
+-		tmp = vga_rcrt(cinfo->regbase, CL_CRT1D) & ~0x80;
+-		tmp |= (base >> 12) & 0x80;
++		tmp = vga_rcrt(cinfo->regbase, CL_CRT1D);
++		if (is_laguna(cinfo))
++			tmp = (tmp & ~0x18) | ((base >> 16) & 0x18);
++		else
++			tmp = (tmp & ~0x80) | ((base >> 12) & 0x80);
+ 		vga_wcrt(cinfo->regbase, CL_CRT1D, tmp);
+ 	}
+ 
+@@ -1365,7 +1393,7 @@ static int cirrusfb_pan_display(struct fb_var_screeninfo *var,
+ 	if (info->var.bits_per_pixel == 1)
+ 		vga_wattr(cinfo->regbase, CL_AR33, xpix);
+ 
+-	if (cinfo->btype != BT_LAGUNA)
++	if (!is_laguna(cinfo))
+ 		cirrusfb_WaitBLT(cinfo->regbase);
+ 
+ 	return 0;
+@@ -1486,6 +1514,7 @@ static void init_vgachip(struct fb_info *info)
+ 		break;
+ 
+ 	case BT_LAGUNA:
++	case BT_LAGUNAB:
+ 	case BT_ALPINE:
+ 		/* Nothing to do to reset the board. */
+ 		break;
+@@ -1530,6 +1559,7 @@ static void init_vgachip(struct fb_info *info)
+ 			break;
+ 		case BT_ALPINE:
+ 		case BT_LAGUNA:
++		case BT_LAGUNAB:
+ 			break;
+ 		case BT_SD64:
+ 			vga_wseq(cinfo->regbase, CL_SEQRF, 0xb8);
+@@ -1611,7 +1641,7 @@ static void init_vgachip(struct fb_info *info)
+ 	/* Bit Mask: no mask at all */
+ 	vga_wgfx(cinfo->regbase, VGA_GFX_BIT_MASK, 0xff);
+ 
+-	if (cinfo->btype == BT_ALPINE || cinfo->btype == BT_LAGUNA)
++	if (cinfo->btype == BT_ALPINE || is_laguna(cinfo))
+ 		/* (5434 can't have bit 3 set for bitblt) */
+ 		vga_wgfx(cinfo->regbase, CL_GRB, 0x20);
+ 	else
+@@ -1802,7 +1832,7 @@ static void cirrusfb_imageblit(struct fb_info *info,
+ {
+ 	struct cirrusfb_info *cinfo = info->par;
+ 
+-	if (cinfo->btype != BT_LAGUNA)
++	if (!is_laguna(cinfo))
+ 		cirrusfb_WaitBLT(cinfo->regbase);
+ 	cfb_imageblit(info, image);
  }
+@@ -1831,7 +1861,7 @@ static unsigned int __devinit cirrusfb_get_memsize(struct fb_info *info,
+ 	unsigned long mem;
+ 	struct cirrusfb_info *cinfo = info->par;
  
-@@ -2328,18 +2326,15 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 	zorro_set_drvdata(z, info);
+-	if (cinfo->btype == BT_LAGUNA) {
++	if (is_laguna(cinfo)) {
+ 		unsigned char SR14 = vga_rseq(regbase, CL_SEQR14);
+ 
+ 		mem = ((SR14 & 7) + 1) << 20;
+@@ -1950,7 +1980,7 @@ static int __devinit cirrusfb_set_fbinfo(struct fb_info *info)
+ 		    | FBINFO_HWACCEL_YPAN
+ 		    | FBINFO_HWACCEL_FILLRECT
+ 		    | FBINFO_HWACCEL_COPYAREA;
+-	if (noaccel || cinfo->btype == BT_LAGUNA)
++	if (noaccel || is_laguna(cinfo))
+ 		info->flags |= FBINFO_HWACCEL_DISABLED;
+ 	info->fbops = &cirrusfb_ops;
+ 	if (cinfo->btype == BT_GD5480) {
+@@ -2060,7 +2090,7 @@ static int __devinit cirrusfb_pci_register(struct pci_dev *pdev,
+ 	if (!info) {
+ 		printk(KERN_ERR "cirrusfb: could not allocate memory\n");
+ 		ret = -ENOMEM;
+-		goto err_disable;
++		goto err_out;
+ 	}
+ 
+ 	cinfo = info->par;
+@@ -2127,10 +2157,11 @@ static int __devinit cirrusfb_pci_register(struct pci_dev *pdev,
+ 	pci_set_drvdata(pdev, info);
  
  	ret = cirrusfb_register(info);
--	if (ret) {
--		if (btype == BT_PICASSO4) {
--			iounmap(info->screen_base);
--			iounmap(cinfo->regbase - 0x600000);
--		} else if (board_addr > 0x01000000)
--			iounmap(info->screen_base);
--	}
+-	if (ret)
+-		iounmap(info->screen_base);
 -	return ret;
 +	if (!ret)
-+		return 0
-+
-+	if (btype == BT_PICASSO4 || board_addr > 0x01000000)
-+		iounmap(info->screen_base);
++		return 0;
  
- err_unmap_regbase:
--	/* Parental advisory: explicit hack */
--	iounmap(cinfo->regbase - 0x600000);
-+	if (btype == BT_PICASSO4)
-+		iounmap(cinfo->regbase - 0x600000);
- err_release_region:
- 	release_region(board_addr, board_size);
++	pci_set_drvdata(pdev, NULL);
++	iounmap(info->screen_base);
+ err_release_legacy:
+ 	if (release_io_ports)
+ 		release_region(0x3C0, 32);
+@@ -2140,10 +2171,9 @@ err_release_regions:
+ #endif
+ 	pci_release_regions(pdev);
  err_release_fb:
+-	if (cinfo->laguna_mmio == NULL)
++	if (cinfo->laguna_mmio != NULL)
+ 		iounmap(cinfo->laguna_mmio);
+ 	framebuffer_release(info);
+-err_disable:
+ err_out:
+ 	return ret;
+ }
+@@ -2439,7 +2469,7 @@ static void WHDR(const struct cirrusfb_info *cinfo, unsigned char val)
+ {
+ 	unsigned char dummy;
+ 
+-	if (cinfo->btype == BT_LAGUNA)
++	if (is_laguna(cinfo))
+ 		return;
+ 	if (cinfo->btype == BT_PICASSO) {
+ 		/* Klaus' hint for correct access to HDR on some boards */
+@@ -2509,7 +2539,7 @@ static void WClut(struct cirrusfb_info *cinfo, unsigned char regnum, unsigned ch
+ 
+ 	if (cinfo->btype == BT_PICASSO || cinfo->btype == BT_PICASSO4 ||
+ 	    cinfo->btype == BT_ALPINE || cinfo->btype == BT_GD5480 ||
+-	    cinfo->btype == BT_LAGUNA) {
++	    is_laguna(cinfo)) {
+ 		/* but DAC data register IS, at least for Picasso II */
+ 		if (cinfo->btype == BT_PICASSO)
+ 			data += 0xfff;
 -- 
 1.5.2.2
 

@@ -1,62 +1,69 @@
-From: krzysztof.h1@poczta.fm
-Subject: =?UTF-8?q?Re:_Re:_[Linux-fbdev-devel]_[PATCH_4/4]_cirrusfb:_fix_error_paths_in__cirrusfb=5Fxxx=5Fregister()?=
-Date: 25 Feb 2009 10:42:10 +0100
-Message-ID: <20090225094210.5DB9D9F34DD@f34.poczta.interia.pl>
+From: Roel Kluin <roel.kluin@gmail.com>
+Subject: [PATCH] viafb: returns 0 two too early.
+Date: Wed, 25 Feb 2009 14:21:07 +0100
+Message-ID: <49A545C3.5060801@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-m68k-owner@vger.kernel.org>
-Sender: linux-m68k-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/plain; charset="iso-8859-1"
-To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foun>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1LcJhN-0002pP-Kf
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Feb 2009 13:21:17 +0000
+Received: from yw-out-1718.google.com ([74.125.46.156])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LcJhE-0003tx-Qd for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 25 Feb 2009 13:21:17 +0000
+Received: by yw-out-1718.google.com with SMTP id 6so9616ywa.82
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 25 Feb 2009 05:21:07 -0800 (PST)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: josephchan@via.com.tw
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Geert Uytterhoeven napisa=B3(a):
-> Hi Krzysztof,
->=20
-> On Tue, Feb 24, 2009 at 22:37, Krzysztof Helt >krzysztof.h1@poczta.fm=
->
-> wrote:
-> > It is not an end to cirrusfb patches unfortunately.
-> > I have just got a GD5446 (Picasso4) and it locks up
-> > my computer when the cirrusfb module is loaded.
-> > Time to fix this model as well...
->=20
-> Cool! Which Amiga model do you have?
->=20
+Otherwise this will already return 0 if iteration MAXLOOP-2 occurs in the first
+loop.
 
-I do not have the Amiga computer. I have a PC (x86) PCI card GP-5446.=20
-It does not work in the PC.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index 632523f..45c54bf 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -267,13 +267,17 @@ int viafb_wait_engine_idle(void)
+ 	int loop = 0;
+ 
+ 	while (!(readl(viaparinfo->io_virt + VIA_REG_STATUS) &
+-			VIA_VR_QUEUE_BUSY) && (loop++ < MAXLOOP))
++			VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
++		loop++;
+ 		cpu_relax();
++	}
+ 
+ 	while ((readl(viaparinfo->io_virt + VIA_REG_STATUS) &
+ 		    (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
+-		    (loop++ < MAXLOOP))
++		    (loop < MAXLOOP)) {
++		loop++;
+ 		cpu_relax();
++	}
+ 
+ 	return loop >= MAXLOOP;
+ }
 
-> The Picasso4 is also not yet supported in Zorro II mode. There are so=
-me
-> docs
-> available (it&#039;s just about using the right offsets), but as I do=
-n&#039;t
-> have the hardware,
-> I never did it myself. Christian Steigies is probably most interested=
-=2E..
->=20
-
-I promised to compile Amiga kernel for user who reported problem
-with Picasso4 (Amiga computer) card in January. I want to build=20
-Amiga kernel for him (and anybody interested in testing=20
-with Amiga computer).
-I want to fix the chip handling on x86 first (correct register
-values for modes, line pitches, offsets, colors etc.) then
-try to help Amiga guys.
-
-Regards,
-Krzysztof
-
-
-
-
-----------------------------------------------------------------------
-Strzelec, Byk, a moze Panna? Wszystkich 12 znakow zodiaku!
-Sprawd=BC swoj horoskop na dzis >> http://link.interia.pl/f2051
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-m68k" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+------------------------------------------------------------------------------
+Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
+-OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
+-Strategies to boost innovation and cut costs with open source participation
+-Receive a $600 discount off the registration fee with the source code: SFAD
+http://p.sf.net/sfu/XcvMzF8H

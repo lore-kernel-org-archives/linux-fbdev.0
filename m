@@ -1,24 +1,25 @@
-From: Roel Kluin <roel.kluin@gmail.com>
-Subject: [PATCH] viafb: returns 0 two too early.
-Date: Wed, 25 Feb 2009 14:21:07 +0100
-Message-ID: <49A545C3.5060801@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] cirrusfb: fix compilation in Zorro
+	code
+Date: Thu, 26 Feb 2009 12:50:32 -0800
+Message-ID: <20090226125032.29afcc66.akpm@linux-foundation.org>
+References: <20090225070956.41fff8e6.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <roel.kluin@gmail.com>) id 1LcJhN-0002pP-Kf
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1LcnBo-0006X8-9y
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Feb 2009 13:21:17 +0000
-Received: from yw-out-1718.google.com ([74.125.46.156])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LcJhE-0003tx-Qd for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 25 Feb 2009 13:21:17 +0000
-Received: by yw-out-1718.google.com with SMTP id 6so9616ywa.82
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 25 Feb 2009 05:21:07 -0800 (PST)
+	Thu, 26 Feb 2009 20:50:40 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LcnBj-0001xs-S3
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Feb 2009 20:50:40 +0000
+In-Reply-To: <20090225070956.41fff8e6.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,38 +29,17 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: josephchan@via.com.tw
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Otherwise this will already return 0 if iteration MAXLOOP-2 occurs in the first
-loop.
+On Wed, 25 Feb 2009 07:09:56 +0100
+Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index 632523f..45c54bf 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -267,13 +267,17 @@ int viafb_wait_engine_idle(void)
- 	int loop = 0;
- 
- 	while (!(readl(viaparinfo->io_virt + VIA_REG_STATUS) &
--			VIA_VR_QUEUE_BUSY) && (loop++ < MAXLOOP))
-+			VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
-+		loop++;
- 		cpu_relax();
-+	}
- 
- 	while ((readl(viaparinfo->io_virt + VIA_REG_STATUS) &
- 		    (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
--		    (loop++ < MAXLOOP))
-+		    (loop < MAXLOOP)) {
-+		loop++;
- 		cpu_relax();
-+	}
- 
- 	return loop >= MAXLOOP;
- }
+> Where can I get m68 cross compiler for PC able
+> to compile Amiga kernel?
+
+http://userweb.kernel.org/~akpm/cross-compilers/ has some cross-compilers.
+They're a bit crufty nowadays, but the m68k one works OK I think.
 
 ------------------------------------------------------------------------------
 Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA

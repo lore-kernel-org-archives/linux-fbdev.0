@@ -1,49 +1,48 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] cirrusfb: fix compilation in Zorro
-	code
-Date: Thu, 26 Feb 2009 12:50:32 -0800
-Message-ID: <20090226125032.29afcc66.akpm@linux-foundation.org>
-References: <20090225070956.41fff8e6.krzysztof.h1@poczta.fm>
+From: Hannes Eder <hannes@hanneseder.net>
+Subject: Re: [PATCH 10/16] viafb: fix sparse warning: Using plain integer as 
+	NULL pointer
+Date: Fri, 27 Feb 2009 02:07:29 +0100
+Message-ID: <154e089b0902261707j4e22787boecedaa097b2777b2@mail.gmail.com>
+References: <20090221235706.17557.97714.stgit@vmbox.hanneseder.net>
+	 <20090222000441.17557.22989.stgit@vmbox.hanneseder.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1LcnBo-0006X8-9y
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Feb 2009 20:50:40 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1LcnBj-0001xs-S3
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 26 Feb 2009 20:50:40 +0000
-In-Reply-To: <20090225070956.41fff8e6.krzysztof.h1@poczta.fm>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758222AbZB0BHo@vger.kernel.org>
+In-Reply-To: <20090222000441.17557.22989.stgit@vmbox.hanneseder.net>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: trivial@kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 25 Feb 2009 07:09:56 +0100
-Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+[Added To, Cc]
 
-> Where can I get m68 cross compiler for PC able
-> to compile Amiga kernel?
-
-http://userweb.kernel.org/~akpm/cross-compilers/ has some cross-compilers.
-They're a bit crufty nowadays, but the m68k one works OK I think.
-
-------------------------------------------------------------------------------
-Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
--OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
--Strategies to boost innovation and cut costs with open source participation
--Receive a $600 discount off the registration fee with the source code: SFAD
-http://p.sf.net/sfu/XcvMzF8H
+On Sun, Feb 22, 2009 at 1:04 AM, Hannes Eder <hannes@hanneseder.net> wr=
+ote:
+> Fix this sparse warning:
+> =A0drivers/video/via/hw.c:2020:46: warning: Using plain integer as NU=
+LL pointer
+>
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+> =A0drivers/video/via/hw.c | =A0 =A02 +-
+> =A01 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+> index fcd53ce..70d6b6c 100644
+> --- a/drivers/video/via/hw.c
+> +++ b/drivers/video/via/hw.c
+> @@ -2017,7 +2017,7 @@ static void init_gfx_chip_info(void)
+> =A0 =A0 =A0 =A0/* Indentify GFX Chip Name */
+> =A0 =A0 =A0 =A0for (i =3D 0; pciidlist[i].vendor !=3D 0; i++) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pdev =3D pci_get_device(pciidlist[i].v=
+endor,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pciidlist[i].device, 0)=
+;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pciidlist[i].device, NU=
+LL);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (pdev)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
+> =A0 =A0 =A0 =A0}
+>
+>

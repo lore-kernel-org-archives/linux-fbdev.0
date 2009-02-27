@@ -1,37 +1,104 @@
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Subject: [PATCH v2] n411: add missing Makefile entry
-Date: Fri, 27 Feb 2009 16:46:04 -0300
-Message-ID: <200902271646.05170.herton@mandriva.com.br>
+From: Ondrej Zajicek <santiago@crfreenet.org>
+Subject: Re: [PATCH 2/2] cirrusfb: use 24bpp instead
+	of	32bpp
+Date: Fri, 27 Feb 2009 23:30:31 +0100
+Message-ID: <20090227223031.GA12659@localhost>
+References: <20090227214853.b2de2273.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758609AbZB0TqN@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============0234605096245915453=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <santiago@crfreenet.org>) id 1LdB8x-0004my-4I
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 27 Feb 2009 22:25:19 +0000
+Received: from gateway.crfreenet.org ([81.92.146.254] helo=mail.crfreenet.org)
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LdB8u-0005rN-Oc
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 27 Feb 2009 22:25:19 +0000
+In-Reply-To: <20090227214853.b2de2273.krzysztof.h1@poczta.fm>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+
+
+--===============0234605096245915453==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
+
+
+--LZvS9be/3tNcYl/X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Feb 27, 2009 at 09:48:53PM +0100, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+>=20
+> The 32bpp is supported only on the latest
+> Cirrus Logic chips. Use the 24bpp which
+> is supported at least since Alpine chips
+> (GD543x).
+>=20
+> Change 32bpp mode setting to 24bpp mode.
+
+Why do not support both modes?
+
+--=20
+Elen sila lumenn' omentielvo
+
+Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
+
+--LZvS9be/3tNcYl/X
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmoaYcACgkQw1GB2RHercNESwCfSUBtfe4hb8LmJcodV0gbi13Y
+Q5MAn0DKDVAtQeIwDEa0fF8jT9bAdctU
+=wyfe
+-----END PGP SIGNATURE-----
+
+--LZvS9be/3tNcYl/X--
+
+
+--===============0234605096245915453==
 Content-Type: text/plain; charset="us-ascii"
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-There is no entry for n411.c to be built, include one in Makefile.
+------------------------------------------------------------------------------
+Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
+-OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
+-Strategies to boost innovation and cut costs with open source participation
+-Receive a $600 discount off the registration fee with the source code: SFAD
+http://p.sf.net/sfu/XcvMzF8H
+--===============0234605096245915453==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
----
- drivers/video/Makefile |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-v2: resend, proper patch without mailer line breaks
-
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 2a998ca..4bd8050 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -76,6 +76,7 @@ obj-$(CONFIG_FB_ATARI)            += atafb.o c2p_iplan2.o atafb_mfb.o \
-                                      atafb_iplan2p2.o atafb_iplan2p4.o atafb_iplan2p8.o
- obj-$(CONFIG_FB_MAC)              += macfb.o
- obj-$(CONFIG_FB_HECUBA)           += hecubafb.o
-+obj-$(CONFIG_FB_N411)             += n411.o
- obj-$(CONFIG_FB_HGA)              += hgafb.o
- obj-$(CONFIG_FB_XVR500)           += sunxvr500.o
- obj-$(CONFIG_FB_XVR2500)          += sunxvr2500.o
--- 
-1.6.1.3
+--===============0234605096245915453==--

@@ -1,21 +1,24 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cirrusfb: fix compilation of Zorro code
-Date: Sat, 28 Feb 2009 16:43:04 +0100
-Message-ID: <20090228164304.0ccae7c4.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] cirrusfb: fix compilation of Zorro
+ code
+Date: Sat, 28 Feb 2009 17:53:43 +0100
+Message-ID: <20090228175343.33fbdd96.krzysztof.h1@poczta.fm>
+References: <20090228164304.0ccae7c4.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LdRGD-0004dz-7k
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LdSMX-0000hd-Al
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Feb 2009 15:37:53 +0000
+	Sat, 28 Feb 2009 16:48:29 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LdRG3-0003Yl-W8 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 28 Feb 2009 15:37:53 +0000
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LdSMT-0006Lp-6z for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 28 Feb 2009 16:48:28 +0000
+In-Reply-To: <20090228164304.0ccae7c4.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,50 +28,17 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> Add a missing coma.
+> 
 
-Add a missing coma.
+It should be "Add a missing comma.", of course.
 
-Also, push down frequencies for the SD64
-card as it is based on a GD5434 chip
-and cannot do more than a GD5446 chip.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
-This patch is for the -mm tree and fixes compilation
-error in the -mm tree.
-
- drivers/video/cirrusfb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 9d72e1b..ec03506 100644
---- a/drivers/video/cirrusfb.c
-+++ b/drivers/video/cirrusfb.c
-@@ -138,7 +138,7 @@ static const struct cirrusfb_board_info_rec {
- 		.maxclock		= {
- 			/* guess */
- 			/* the SD64/P4 have a higher max. videoclock */
--			140000, 140000, 140000, 140000, 140000,
-+			135100, 135100, 85500, 85500, 0
- 		},
- 		.init_sr07		= true,
- 		.init_sr1f		= true,
-@@ -2317,7 +2317,7 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 	cinfo->unmap = cirrusfb_zorro_unmap;
- 
- 	dev_info(info->device,
--		 "Cirrus Logic chipset on Zorro bus, RAM (%lu MB) at $%lx\n"
-+		 "Cirrus Logic chipset on Zorro bus, RAM (%lu MB) at $%lx\n",
- 		 board_size / MB_, board_addr);
- 
- 	zorro_set_drvdata(z, info);
--- 
-1.5.2.2
-
+Krzysztof
 
 ----------------------------------------------------------------------
 Dzien Kobiet dniem wolnym od pracy? Wypowiedz sie i wygraj nagrode! 

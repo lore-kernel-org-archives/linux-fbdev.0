@@ -1,25 +1,21 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 2/2] cirrusfb: use 24bpp instead of
- 32bpp
-Date: Sat, 28 Feb 2009 00:29:39 +0100
-Message-ID: <20090228002939.73a7af76.krzysztof.h1@poczta.fm>
-References: <20090227214853.b2de2273.krzysztof.h1@poczta.fm>
-	<20090227223031.GA12659@localhost>
+Subject: [PATCH] cirrusfb: fix compilation of Zorro code
+Date: Sat, 28 Feb 2009 16:43:04 +0100
+Message-ID: <20090228164304.0ccae7c4.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LdC46-0001rZ-5C
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LdRGD-0004dz-7k
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 27 Feb 2009 23:24:22 +0000
+	Sat, 28 Feb 2009 15:37:53 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LdC43-0008Tp-L0 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 27 Feb 2009 23:24:22 +0000
-In-Reply-To: <20090227223031.GA12659@localhost>
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LdRG3-0003Yl-W8 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 28 Feb 2009 15:37:53 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,37 +25,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Fri, 27 Feb 2009 23:30:31 +0100
-Ondrej Zajicek <santiago@crfreenet.org> wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> On Fri, Feb 27, 2009 at 09:48:53PM +0100, Krzysztof Helt wrote:
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > The 32bpp is supported only on the latest
-> > Cirrus Logic chips. Use the 24bpp which
-> > is supported at least since Alpine chips
-> > (GD543x).
-> > 
-> > Change 32bpp mode setting to 24bpp mode.
-> 
-> Why do not support both modes?
-> 
+Add a missing coma.
 
-1. The 32bpp is broken or unsupported on all chips except Laguna ones (on Laguna I made it work a week or two ago).
-2. Very little to gain from 32-bit (is the alpha channel used on fb?). The previous implementation just set transparency to 0
-length.
-3. It is supported only on Laguna and GD5480 (and I have only one Laguna chip to test). It should work on GD5436/46 but it does not (even X11 driver left it out).
-4. Acceleration for GD5480 would be untested in 32-bit mode (Laguna has no acceleration anyway) - probably (surely) broken.
+Also, push down frequencies for the SD64
+card as it is based on a GD5434 chip
+and cannot do more than a GD5446 chip.
 
-Regards,
-Krzysztof
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+This patch is for the -mm tree and fixes compilation
+error in the -mm tree.
+
+ drivers/video/cirrusfb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index 9d72e1b..ec03506 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -138,7 +138,7 @@ static const struct cirrusfb_board_info_rec {
+ 		.maxclock		= {
+ 			/* guess */
+ 			/* the SD64/P4 have a higher max. videoclock */
+-			140000, 140000, 140000, 140000, 140000,
++			135100, 135100, 85500, 85500, 0
+ 		},
+ 		.init_sr07		= true,
+ 		.init_sr1f		= true,
+@@ -2317,7 +2317,7 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
+ 	cinfo->unmap = cirrusfb_zorro_unmap;
+ 
+ 	dev_info(info->device,
+-		 "Cirrus Logic chipset on Zorro bus, RAM (%lu MB) at $%lx\n"
++		 "Cirrus Logic chipset on Zorro bus, RAM (%lu MB) at $%lx\n",
+ 		 board_size / MB_, board_addr);
+ 
+ 	zorro_set_drvdata(z, info);
+-- 
+1.5.2.2
+
 
 ----------------------------------------------------------------------
-SPEAK UP uczysz sie przez 3 miesiace za darmo. 
-Sukces gwarantujemy na pismie! http://link.interia.pl/f206b
+Dzien Kobiet dniem wolnym od pracy? Wypowiedz sie i wygraj nagrode! 
+Sprawdz >> http://link.interia.pl/f2076 
 
 
 ------------------------------------------------------------------------------

@@ -1,26 +1,24 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: Re: Fix 8bpp RGB fields length
-Date: Mon, 2 Mar 2009 19:40:49 +0200
-Message-ID: <20090302174049.GB6298@sci.fi>
+Date: Mon, 2 Mar 2009 18:02:39 +0100
+Message-ID: <20090302180239.f6e67497.krzysztof.h1@poczta.fm>
 References: <20090301215556.8631c63c.krzysztof.h1@poczta.fm>
 	<20090302130202.GA6298@sci.fi>
-	<20090302180239.f6e67497.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1LeC8R-0001D9-JN
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LeBSD-0003sX-GD
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Mar 2009 17:40:59 +0000
-Received: from smtp5.welho.com ([213.243.153.39])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LeC8N-00019f-QI for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Mar 2009 17:40:59 +0000
-Content-Disposition: inline
-In-Reply-To: <20090302180239.f6e67497.krzysztof.h1@poczta.fm>
+	Mon, 02 Mar 2009 16:57:21 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LeBSB-000540-14 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 02 Mar 2009 16:57:21 +0000
+In-Reply-To: <20090302130202.GA6298@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,69 +28,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Ville =?UTF-8?Q?Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>
 Cc: spock@gentoo.org, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, Mar 02, 2009 at 06:02:39PM +0100, Krzysztof Helt wrote:
-> On Mon, 2 Mar 2009 15:02:02 +0200
-> Ville Syrj=E4l=E4 <syrjala@sci.fi> wrote:
-> =
-
-> > On Sun, Mar 01, 2009 at 09:55:56PM +0100, Krzysztof Helt wrote:
-> > > Hi,
-> > > =
-
-> > > I found that some fbdev drivers set RGB field's lengths incorrectly
-> > > to 6 bits. This is incorrect as the field's length says how many bits
-> > > has a color index when using color palette (6 bits =3D 64 colors).
-> > =
-
-> > A slight omission in the fbdev API I suppose since the LUT entries are
-> > nearly always 3*8bits wide. VGA being the exception.
-> > =
-
-> =
-
-> If offsets of all RGB components are the same the length field says
-> how lone the pallete index is. It does not say anything how long
-> the LUT entries are. This is the same misunderstanding as done
-> inside the driver.
-
-Yes. I meant that the change is correct but the API doesn't provide any
-means of conveying the LUT entry size to userspace which is a bit
-unfortunate.
-
-> > > Fix this error in uvesafb by dropping DAC switching to 8 bits =
-
-> > > completely. Advantage of this approach is making the driver shorter,
-> > > disadvantage is that some color fidelity is lost.
-> > =
-
-> > I don't see much point in dropping this. It would reduce the image
-> > quality and it looks like after your first fix this code would amount
-> > to less than a dozen lines. But not my call anyway.
-> > =
-
-> =
-
-> I wonder if it affects quality at all as with 256 different pixel values
-> selected from over 262000 is not much more better quality that
->  if these 256 values are taken from another set of values which
-> is only about 3% different.
-
-I suppose it doesn't matter much unless the palette is tuned to produce
-nice gradients.
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
-
----------------------------------------------------------------------------=
----
-Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
--OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
--Strategies to boost innovation and cut costs with open source participation
--Receive a $600 discount off the registration fee with the source code: SFAD
-http://p.sf.net/sfu/XcvMzF8H
+T24gTW9uLCAyIE1hciAyMDA5IDE1OjAyOjAyICswMjAwClZpbGxlIFN5cmrDpGzDpCA8c3lyamFs
+YUBzY2kuZmk+IHdyb3RlOgoKPiBPbiBTdW4sIE1hciAwMSwgMjAwOSBhdCAwOTo1NTo1NlBNICsw
+MTAwLCBLcnp5c3p0b2YgSGVsdCB3cm90ZToKPiA+IEhpLAo+ID4gCj4gPiBJIGZvdW5kIHRoYXQg
+c29tZSBmYmRldiBkcml2ZXJzIHNldCBSR0IgZmllbGQncyBsZW5ndGhzIGluY29ycmVjdGx5Cj4g
+PiB0byA2IGJpdHMuIFRoaXMgaXMgaW5jb3JyZWN0IGFzIHRoZSBmaWVsZCdzIGxlbmd0aCBzYXlz
+IGhvdyBtYW55IGJpdHMKPiA+IGhhcyBhIGNvbG9yIGluZGV4IHdoZW4gdXNpbmcgY29sb3IgcGFs
+ZXR0ZSAoNiBiaXRzID0gNjQgY29sb3JzKS4KPiAKPiBBIHNsaWdodCBvbWlzc2lvbiBpbiB0aGUg
+ZmJkZXYgQVBJIEkgc3VwcG9zZSBzaW5jZSB0aGUgTFVUIGVudHJpZXMgYXJlCj4gbmVhcmx5IGFs
+d2F5cyAzKjhiaXRzIHdpZGUuIFZHQSBiZWluZyB0aGUgZXhjZXB0aW9uLgo+IAoKSWYgb2Zmc2V0
+cyBvZiBhbGwgUkdCIGNvbXBvbmVudHMgYXJlIHRoZSBzYW1lIHRoZSBsZW5ndGggZmllbGQgc2F5
+cwpob3cgbG9uZSB0aGUgcGFsbGV0ZSBpbmRleCBpcy4gSXQgZG9lcyBub3Qgc2F5IGFueXRoaW5n
+IGhvdyBsb25nCnRoZSBMVVQgZW50cmllcyBhcmUuIFRoaXMgaXMgdGhlIHNhbWUgbWlzdW5kZXJz
+dGFuZGluZyBhcyBkb25lCmluc2lkZSB0aGUgZHJpdmVyLgoKPiA+IEZpeCB0aGlzIGVycm9yIGlu
+IHV2ZXNhZmIgYnkgZHJvcHBpbmcgREFDIHN3aXRjaGluZyB0byA4IGJpdHMgCj4gPiBjb21wbGV0
+ZWx5LiBBZHZhbnRhZ2Ugb2YgdGhpcyBhcHByb2FjaCBpcyBtYWtpbmcgdGhlIGRyaXZlciBzaG9y
+dGVyLAo+ID4gZGlzYWR2YW50YWdlIGlzIHRoYXQgc29tZSBjb2xvciBmaWRlbGl0eSBpcyBsb3N0
+Lgo+IAo+IEkgZG9uJ3Qgc2VlIG11Y2ggcG9pbnQgaW4gZHJvcHBpbmcgdGhpcy4gSXQgd291bGQg
+cmVkdWNlIHRoZSBpbWFnZQo+IHF1YWxpdHkgYW5kIGl0IGxvb2tzIGxpa2UgYWZ0ZXIgeW91ciBm
+aXJzdCBmaXggdGhpcyBjb2RlIHdvdWxkIGFtb3VudAo+IHRvIGxlc3MgdGhhbiBhIGRvemVuIGxp
+bmVzLiBCdXQgbm90IG15IGNhbGwgYW55d2F5Lgo+IAoKSSB3b25kZXIgaWYgaXQgYWZmZWN0cyBx
+dWFsaXR5IGF0IGFsbCBhcyB3aXRoIDI1NiBkaWZmZXJlbnQgcGl4ZWwgdmFsdWVzCnNlbGVjdGVk
+IGZyb20gb3ZlciAyNjIwMDAgaXMgbm90IG11Y2ggbW9yZSBiZXR0ZXIgcXVhbGl0eSB0aGF0CiBp
+ZiB0aGVzZSAyNTYgdmFsdWVzIGFyZSB0YWtlbiBmcm9tIGFub3RoZXIgc2V0IG9mIHZhbHVlcyB3
+aGljaAppcyBvbmx5IGFib3V0IDMlIGRpZmZlcmVudC4KCk15IHBhdGNoIGlzIGEgcHJvcG9zaXRp
+b24gbm90IGEgZmluYWwgc29sdXRpb24uIEkgaG9wZSBNaWNoYcWCIHdpbGwKcHJvcG9zZSBzb21l
+dGhpbmcgYmV0dGVyLgoKUmVnYXJkcywKS3J6eXN6dG9mCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkRvZGF0a293
+eSBkemllbiB3b2xueSBvZCBwcmFjeT8gV3lwb3dpZWR6IHNpZSBpIHd5Z3JhaiBuYWdyb2RlIQpX
+ZWpkeiA+PiAgaHR0cDovL2xpbmsuaW50ZXJpYS5wbC9mMjA3NyAKCgotLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0KT3BlbiBTb3VyY2UgQnVzaW5lc3MgQ29uZmVyZW5jZSAoT1NCQyksIE1hcmNoIDI0LTI1
+LCAyMDA5LCBTYW4gRnJhbmNpc2NvLCBDQQotT1NCQyB0YWNrbGVzIHRoZSBiaWdnZXN0IGlzc3Vl
+IGluIG9wZW4gc291cmNlOiBPcGVuIFNvdXJjaW5nIHRoZSBFbnRlcnByaXNlCi1TdHJhdGVnaWVz
+IHRvIGJvb3N0IGlubm92YXRpb24gYW5kIGN1dCBjb3N0cyB3aXRoIG9wZW4gc291cmNlIHBhcnRp
+Y2lwYXRpb24KLVJlY2VpdmUgYSAkNjAwIGRpc2NvdW50IG9mZiB0aGUgcmVnaXN0cmF0aW9uIGZl
+ZSB3aXRoIHRoZSBzb3VyY2UgY29kZTogU0ZBRApodHRwOi8vcC5zZi5uZXQvc2Z1L1hjdk16RjhI
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZi
+ZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3Jn
+ZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgt
+ZmJkZXYtZGV2ZWwK

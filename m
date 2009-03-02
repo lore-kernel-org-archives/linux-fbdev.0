@@ -1,24 +1,26 @@
 From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: Fix 8bpp RGB fields length
-Date: Mon, 2 Mar 2009 15:02:02 +0200
-Message-ID: <20090302130202.GA6298@sci.fi>
+Date: Mon, 2 Mar 2009 19:40:49 +0200
+Message-ID: <20090302174049.GB6298@sci.fi>
 References: <20090301215556.8631c63c.krzysztof.h1@poczta.fm>
+	<20090302130202.GA6298@sci.fi>
+	<20090302180239.f6e67497.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1Le7me-0003sl-OL
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <syrjala@sci.fi>) id 1LeC8R-0001D9-JN
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Mar 2009 13:02:12 +0000
-Received: from smtp4.welho.com ([213.243.153.38])
+	Mon, 02 Mar 2009 17:40:59 +0000
+Received: from smtp5.welho.com ([213.243.153.39])
 	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Le7mb-0005ma-Ea for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Mar 2009 13:02:12 +0000
+	id 1LeC8N-00019f-QI for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 02 Mar 2009 17:40:59 +0000
 Content-Disposition: inline
-In-Reply-To: <20090301215556.8631c63c.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090302180239.f6e67497.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,25 +33,55 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Cc: spock@gentoo.org, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sun, Mar 01, 2009 at 09:55:56PM +0100, Krzysztof Helt wrote:
-> Hi,
+On Mon, Mar 02, 2009 at 06:02:39PM +0100, Krzysztof Helt wrote:
+> On Mon, 2 Mar 2009 15:02:02 +0200
+> Ville Syrj=E4l=E4 <syrjala@sci.fi> wrote:
 > =
 
-> I found that some fbdev drivers set RGB field's lengths incorrectly
-> to 6 bits. This is incorrect as the field's length says how many bits
-> has a color index when using color palette (6 bits =3D 64 colors).
+> > On Sun, Mar 01, 2009 at 09:55:56PM +0100, Krzysztof Helt wrote:
+> > > Hi,
+> > > =
 
-A slight omission in the fbdev API I suppose since the LUT entries are
-nearly always 3*8bits wide. VGA being the exception.
+> > > I found that some fbdev drivers set RGB field's lengths incorrectly
+> > > to 6 bits. This is incorrect as the field's length says how many bits
+> > > has a color index when using color palette (6 bits =3D 64 colors).
+> > =
 
-> Fix this error in uvesafb by dropping DAC switching to 8 bits =
+> > A slight omission in the fbdev API I suppose since the LUT entries are
+> > nearly always 3*8bits wide. VGA being the exception.
+> > =
 
-> completely. Advantage of this approach is making the driver shorter,
-> disadvantage is that some color fidelity is lost.
+> =
 
-I don't see much point in dropping this. It would reduce the image
-quality and it looks like after your first fix this code would amount
-to less than a dozen lines. But not my call anyway.
+> If offsets of all RGB components are the same the length field says
+> how lone the pallete index is. It does not say anything how long
+> the LUT entries are. This is the same misunderstanding as done
+> inside the driver.
+
+Yes. I meant that the change is correct but the API doesn't provide any
+means of conveying the LUT entry size to userspace which is a bit
+unfortunate.
+
+> > > Fix this error in uvesafb by dropping DAC switching to 8 bits =
+
+> > > completely. Advantage of this approach is making the driver shorter,
+> > > disadvantage is that some color fidelity is lost.
+> > =
+
+> > I don't see much point in dropping this. It would reduce the image
+> > quality and it looks like after your first fix this code would amount
+> > to less than a dozen lines. But not my call anyway.
+> > =
+
+> =
+
+> I wonder if it affects quality at all as with 256 different pixel values
+> selected from over 262000 is not much more better quality that
+>  if these 256 values are taken from another set of values which
+> is only about 3% different.
+
+I suppose it doesn't matter much unless the palette is tuned to produce
+nice gradients.
 
 -- =
 

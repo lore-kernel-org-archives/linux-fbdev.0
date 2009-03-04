@@ -1,94 +1,118 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cirrusfb: fix clock doubling
-Date: Wed, 4 Mar 2009 18:38:12 +0100
-Message-ID: <20090304183812.90a996f4.krzysztof.h1@poczta.fm>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2.6.28 ] i810: kernel crash fix when  struct
+ fb_var_screeninfo is supplied
+Date: Wed, 4 Mar 2009 14:20:06 -0800
+Message-ID: <20090304142006.20ad72fe.akpm@linux-foundation.org>
+References: <02E43B9E8855E74E886358B5184B4CC9104620C0@mail2-aub1fr.esi-supinfo.com>
+	<alpine.LNX.2.00.0903041108470.4971@jikos.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1Leuxd-00038x-V7
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Mar 2009 17:32:49 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LeuxY-0004Zd-I4 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 04 Mar 2009 17:32:49 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755809AbZCDWVU@vger.kernel.org>
+In-Reply-To: <alpine.LNX.2.00.0903041108470.4971@jikos.suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Samuel.CUELLA@supinfo.com, adaplas@gmail.com, linux-kernel@vger.kernel.org, trivial@kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Wed, 4 Mar 2009 11:09:21 +0100 (CET)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
-Cirrus' Alpine and Picasso4 chips
-uses DAC clock doubling to achieve
-full range of pixclock frequencies.
+> On Thu, 26 Feb 2009, CUELLA Samuel wrote:
+> 
+> > from: Samuel CUELLA <samuel.cuella@supinfo.com>
+> > 
+> > This patch prevents the kernel from being crashed by a divide-by-zero operation when supplied an incorrectly filled 'struct fb_var_screeninfo' from userland.
+> > 
+> > Previously i810_main.c:1005 (i810_check_params) was using the global 'yres' symbol previously defined at i810_main.c:145
+> > as a module parameter value holder (i810_main.c:2174). If i810fb is compiled-in or if this param doesn't get a default value, 
+> > this direct usage leads to a divide-by-zero at i810_main.c:1005 (i810_check_params). The patch simply replace the 'yres' global,
+> > perhaps undefined symbol usage by a given parameter structure lookup.
+> > 
+> > This problem occurs with directfb, mplayer -vo fbdev, SDL library.
+> > It was also reported ( but non solved ) at : http://mail.directfb.org/pipermail/directfb-dev/2008-March/004050.html
+> > Sample code to reproduce :
+> > /*Comile with gcc crashfb.c -o crashfb*/
+> > #include <fcntl.h>
+> > #include <linux/fb.h>
+> > #include <stdio.h>
+> > #include <sys/ioctl.h>
+> > #include <sys/mman.h>
+> > #include <sys/stat.h>
+> > #include <string.h>
+> > #include <stdlib.h>
+> > 
+> > 
+> > #define FB "/dev/fb0"
+> > 
+> > int main(){
+> >         int fd;
+> >         int rv;
+> >         struct fb_var_screeninfo vinfo;
+> > 
+> >         fd = open(FB,O_RDWR);
+> >         if( fd ){
+> >                 vinfo.xres = 800;
+> >                 vinfo.yres = 600;
+> >                 rv =ioctl(fd, FBIOPUT_VSCREENINFO, &vinfo);
+> >         }
+> >         return(rv);
+> > }
+> > Leads to this crash dump:
+> > divide error: 0000 [#1]
+> > last sysfs file: /sys/kernel/uevent_seqnum
+> > Modules linked in:
+> > 
+> > Pid: 4058, comm: crashfb Not tainted (2.6.28 #4)
+> > EIP: 0060:[<c02558c8>] EFLAGS: 00010202 CPU: 0
+> > EIP is at i810fb_check_var+0x428/0x520
+> > EAX: 00400000 EBX: ce9d5e44 ECX: 001209a0 EDX: 00000000
+> > ESI: 00000020 EDI: 00000004 EBP: 00000000 ESP: ce9d5d0c
+> >  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> > Process crashfb (pid: 4058, ti=ce9d4000 task=cf8af0e0 task.ti=ce9d4000)
+> > Stack:
+> >  c014f993 00000000 00000001 00000000 00000000 00400000 0000001a cf811000
+> >  08048268 cf81123c 00000258 00000320 ffffffed cf811015 ce9d5e45 cf811000
+> >  c0224821 ce9d5e44 ce9b09a0 00000000 00012000 00000000 c0111a89 00000001
+> > Call Trace:
+> >  [<c014f993>] handle_mm_fault+0x5c3/0x650
+> >  [<c0224821>] fb_set_var+0x61/0x2d0
+> >  [<c0111a89>] do_page_fault+0x3a9/0x8b0
+> >  [<c016c935>] do_lookup+0x65/0x1a0
+> >  [<c02257aa>] fb_ioctl+0x21a/0x3c0
+> >  [<c014f577>] handle_mm_fault+0x1a7/0x650
+> >  [<c0225590>] fb_ioctl+0x0/0x3c0
+> >  [<c017077f>] vfs_ioctl+0x1f/0x70
+> >  [<c017096c>] do_vfs_ioctl+0x5c/0x430
+> >  [<c0111a89>] do_page_fault+0x3a9/0x8b0
+> >  [<c0170d7d>] sys_ioctl+0x3d/0x70
+> >  [<c0103af9>] sysenter_do_call+0x12/0x25
+> > Code: c0 0f 44 d0 89 54 24 04 e8 b6 5a ec ff b8 ea ff ff ff 83 c4 30 5b 5e 5f 5d c3 8b 2d ac 0e 4a c0 31 d2 89 f7 8b 44 24 14 c1 ef 03 <f7> f5 31 d2 f7 f7 3b 03 89 c7 0f 83 3c fd ff ff 89 c2 89 f1 89
+> > EIP: [<c02558c8>] i810fb_check_var+0x428/0x520 SS:ESP 0068:ce9d5d0c
+> > ---[ end trace 1840767f449d222e ]---
+> > 
+> > Despite this dump says that EIP was in 'i810fb_check_var' the divide by zero truly occurs in 'i810_check_params' called by 'i810fb_check_var' (i810_main.c:1466).
+> > 
+> > Signed-off-by: Samuel CUELLA <samuel.cuella@supinfo.com>
+> > ---
+> > --- linux-2.6.28/drivers/video/i810/i810_main.c.orig    2009-02-26 15:23:03.000000000 +0100
+> > +++ linux-2.6.28/drivers/video/i810/i810_main.c 2009-02-26 14:50:06.000000000 +0100
+> > @@ -993,6 +993,8 @@ static int i810_check_params(struct fb_v
+> >         struct i810fb_par *par = info->par;
+> >         int line_length, vidmem, mode_valid = 0, retval = 0;
+> >         u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
+> > +       u32 yres = info->var.yres;
+> > +
+> >         /*
+> >          *  Memory limit
+> >          */
+> > 
+> 
+> This is not appropriate for trivial tree. CCing akpm and lkml.
+> 
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
- drivers/video/cirrusfb.c |   17 ++++++++++++++++-
- 1 files changed, 16 insertions(+), 1 deletions(-)
+I don't have a copy of the original patch.
 
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index ec03506..0ef7ccc 100644
---- a/drivers/video/cirrusfb.c
-+++ b/drivers/video/cirrusfb.c
-@@ -470,10 +470,23 @@ static int cirrusfb_check_pixclock(const struct fb_var_screeninfo *var,
- 	/* If the frequency is greater than we can support, we might be able
- 	 * to use multiplexing for the video mode */
- 	if (freq > maxclock) {
-+		dev_err(info->device,
-+			"Frequency greater than maxclock (%ld kHz)\n",
-+			maxclock);
-+		return -EINVAL;
-+	}
-+	/* Additional constrain: 8bpp uses DAC clock doubling
-+	 * to allow maximum pixel clock */
-+	if (var->bits_per_pixel == 8) {
- 		switch (cinfo->btype) {
- 		case BT_ALPINE:
-+		case BT_PICASSO4:
-+			if (freq > 85500)
-+				cinfo->multiplexing = 1;
-+			break;
- 		case BT_GD5480:
--			cinfo->multiplexing = 1;
-+			if (freq > 135100)
-+				cinfo->multiplexing = 1;
- 			break;
- 
- 		default:
-@@ -815,6 +828,8 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
- 	freq = PICOS2KHZ(var->pixclock);
- 	if (cinfo->btype == BT_ALPINE && var->bits_per_pixel == 24)
- 		freq *= 3;
-+	if (cinfo->multiplexing)
-+		freq /= 2;
- 
- 	bestclock(freq, &nom, &den, &div);
- 
--- 
-1.5.2.2
-
-
-
-----------------------------------------------------------------------
-Udar sloneczny prezesa Kaczynskiego... >>> http://link.interia.pl/f2083
-
-
-------------------------------------------------------------------------------
-Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
--OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
--Strategies to boost innovation and cut costs with open source participation
--Receive a $600 discount off the registration fee with the source code: SFAD
-http://p.sf.net/sfu/XcvMzF8H
+Please resend everything, with full changelog and a Signed-off-by: as
+per Documentation/SubmittingPatches.  Please also cc
+linux-fbdev-devel@lists.sourceforge.net.

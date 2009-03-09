@@ -1,7 +1,7 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: Re: [PATCH] remove cyblafb driver
-Date: Mon, 9 Mar 2009 22:58:06 +0100
-Message-ID: <20090309225806.6cd027f1.krzysztof.h1@poczta.fm>
+Date: Mon, 9 Mar 2009 22:58:20 +0100
+Message-ID: <20090309225820.0bfea4a8.krzysztof.h1@poczta.fm>
 References: <20090307234902.55295e2c.krzysztof.h1@poczta.fm>
 	<20090309133432.ac6173cd.akpm@linux-foundation.org>
 Mime-Version: 1.0
@@ -10,14 +10,14 @@ Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LgnOX-00064E-6c
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LgnOi-0007Q1-G1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Mar 2009 21:52:21 +0000
+	Mon, 09 Mar 2009 21:52:32 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LgnON-0006lz-Qg for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Mar 2009 21:52:21 +0000
+	id 1LgnOZ-0006r8-LX for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Mar 2009 21:52:32 +0000
 In-Reply-To: <20090309133432.ac6173cd.akpm@linux-foundation.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -53,7 +53,7 @@ Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
 
 Well, a good stop gap is to rename a Kconfig option from
- "Trident support" to "Trident/CyberBlade support". It
+ "Trident support" to "Trident and CyberBlade support". It
 should help find a new driver to users.
 
 Regards,

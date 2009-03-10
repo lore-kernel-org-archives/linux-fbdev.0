@@ -1,54 +1,55 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH] video: deferred io cleanup fix for sh_mobile_lcdcfb
-Date: Tue, 10 Mar 2009 15:08:49 +0900
-Message-ID: <20090310060849.22278.94445.sendpatchset@rx1.opensource.se>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH] video: deferred io cleanup fix for
+	sh_mobile_lcdcfb
+Date: Tue, 10 Mar 2009 15:19:35 +0900
+Message-ID: <20090310061935.GD10393@linux-sh.org>
+References: <20090310060849.22278.94445.sendpatchset@rx1.opensource.se>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org, linux-sh@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <lethal@linux-sh.org>) id 1LgvhJ-00014b-I5
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Mar 2009 06:44:17 +0000
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]
+	helo=master.linux-sh.org)
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LgvhG-0003Du-P4
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Mar 2009 06:44:17 +0000
+Content-Disposition: inline
+In-Reply-To: <20090310060849.22278.94445.sendpatchset@rx1.opensource.se>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-sh@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+On Tue, Mar 10, 2009 at 03:08:49PM +0900, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
+> 
+> Fix deferred io cleanup patch in the sh_mobile_lcdcfb driver.
+> 
+> If probe() fails early the sh_mobile_lcdc_stop() function will
+> be called to clean up deferred io. This patch modifies the
+> code to only call fb_deferred_io_cleanup() after deferred io
+> has been initialized. 
+> 
+> With this patch applied we no longer hit BUG_ON() inside
+> fb_deferred_io_cleanup(). Triggers on a Migo-R with the
+> SYS QVGA panel board unmounted.
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
 
-Fix deferred io cleanup patch in the sh_mobile_lcdcfb driver.
+Rolled in to the for-2.6.29 queue, thanks.
 
-If probe() fails early the sh_mobile_lcdc_stop() function will
-be called to clean up deferred io. This patch modifies the
-code to only call fb_deferred_io_cleanup() after deferred io
-has been initialized. 
-
-With this patch applied we no longer hit BUG_ON() inside
-fb_deferred_io_cleanup(). Triggers on a Migo-R with the
-SYS QVGA panel board unmounted.
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
-
- drivers/video/sh_mobile_lcdcfb.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
---- 0001/drivers/video/sh_mobile_lcdcfb.c
-+++ work/drivers/video/sh_mobile_lcdcfb.c	2009-03-03 18:31:37.000000000 +0900
-@@ -446,7 +446,6 @@ static void sh_mobile_lcdc_stop(struct s
- {
- 	struct sh_mobile_lcdc_chan *ch;
- 	struct sh_mobile_lcdc_board_cfg	*board_cfg;
--	unsigned long tmp;
- 	int k;
- 
- 	/* tell the board code to disable the panel */
-@@ -456,9 +455,8 @@ static void sh_mobile_lcdc_stop(struct s
- 		if (board_cfg->display_off)
- 			board_cfg->display_off(board_cfg->board_data);
- 
--		/* cleanup deferred io if SYS bus */
--		tmp = ch->cfg.sys_bus_cfg.deferred_io_msec;
--		if (ch->ldmt1r_value & (1 << 12) && tmp) {
-+		/* cleanup deferred io if enabled */
-+		if (ch->info.fbdefio) {
- 			fb_deferred_io_cleanup(&ch->info);
- 			ch->info.fbdefio = NULL;
- 		}
+------------------------------------------------------------------------------

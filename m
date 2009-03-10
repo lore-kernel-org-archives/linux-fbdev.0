@@ -1,24 +1,27 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] remove cyblafb driver
-Date: Mon, 9 Mar 2009 22:58:20 +0100
-Message-ID: <20090309225820.0bfea4a8.krzysztof.h1@poczta.fm>
-References: <20090307234902.55295e2c.krzysztof.h1@poczta.fm>
-	<20090309133432.ac6173cd.akpm@linux-foundation.org>
+From: Sergey Kvachonok <ravenexp@gmail.com>
+Subject: Re: intelfb - full mode switching support on
+	laptops - done.
+Date: Tue, 10 Mar 2009 02:37:12 +0200
+Message-ID: <25a99abe0903091737t7f19bcaeo535f6f81febb999e@mail.gmail.com>
+References: <25a99abe0903071205j5d9c1cbcp971a7af5c8b40313@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LgnOi-0007Q1-G1
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Mar 2009 21:52:32 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LgnOZ-0006r8-LX for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Mar 2009 21:52:32 +0000
-In-Reply-To: <20090309133432.ac6173cd.akpm@linux-foundation.org>
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ravenexp@gmail.com>) id 1Lgpyd-0002yK-Eo
+	for Linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Mar 2009 00:37:47 +0000
+Received: from po-out-1718.google.com ([72.14.252.153])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LgpyQ-0000dL-2N for Linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Mar 2009 00:37:37 +0000
+Received: by po-out-1718.google.com with SMTP id y22so4432353pof.2
+	for <Linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 09 Mar 2009 17:37:14 -0700 (PDT)
+In-Reply-To: <25a99abe0903071205j5d9c1cbcp971a7af5c8b40313@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,45 +31,18 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jani@ubuntu.com, linux-fbdev-devel@lists.sourceforge.net, Knut_Petersen@t-online.de
+To: Linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 9 Mar 2009 13:34:32 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat, Mar 7, 2009 at 10:05 PM, Sergey Kvachonok <ravenexp@gmail.com> wrote:
 
-> On Sat, 7 Mar 2009 23:49:02 +0100
-> Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> 
-> > A tridentfb driver has all functionality
-> > of the cyblafb driver without bugs of
-> > the latter.
-> 
-> So what are the implications of this for users?  They'll do an
-> `oldconfig', will discover that their driver isn't there any more and
-> will then need to dig around through commit messges to find out what
-> happened to it?
-> 
-> I guess we can live with that, and I can't immediately think of a way
-> of improving their lives, so ho hum..
-> 
-> 
-> 
+> Source tarball:
+> http://intelfb2.googlecode.com/files/intelfb2-1.9.0.tar.gz
 
-Well, a good stop gap is to rename a Kconfig option from
- "Trident support" to "Trident and CyberBlade support". It
-should help find a new driver to users.
+Didn't compile on 2.6.29-rc5, fixed. var->pixclock == 0 from userspace
+oops fixed.
+http://intelfb2.googlecode.com/files/intelfb2-1.9.1.tar.gz
 
-Regards,
-Krzysztof
-
-
-----------------------------------------------------------------------
-Udar sloneczny prezesa Kaczynskiego... >>> http://link.interia.pl/f2083
-
+Has some serious issues too, subsequent updates will arrive at
+http://code.google.com/p/intelfb2/downloads/list
 
 ------------------------------------------------------------------------------
-Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
--OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
--Strategies to boost innovation and cut costs with open source participation
--Receive a $600 discount off the registration fee with the source code: SFAD
-http://p.sf.net/sfu/XcvMzF8H

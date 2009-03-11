@@ -1,22 +1,23 @@
-From: "Robert T. Drury" <rtdrury@earthlink.net>
-Subject: [PATCH] fix: radeon backlight shutoff flashes
- momentarily
-Date: Wed, 11 Mar 2009 04:53:25 -0700
-Message-ID: <49B7A635.1020409@earthlink.net>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [RFC] allow for PAL/SCART video timings
+Date: Wed, 11 Mar 2009 22:35:42 +0100
+Message-ID: <20090311223542.bfa9d1a9.krzysztof.h1@poczta.fm>
+References: <1236701836.4068.85.camel@mattotaupa.wohnung.familie-menzel.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <rtdrury@earthlink.net>) id 1LhMz1-0000RW-2P
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LhVzl-0002mu-Mk
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Mar 2009 11:52:23 +0000
-Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LhMyz-0004qf-JE for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 11 Mar 2009 11:52:23 +0000
+	Wed, 11 Mar 2009 21:29:45 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LhVzh-0001BY-LN for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 11 Mar 2009 21:29:45 +0000
+In-Reply-To: <1236701836.4068.85.camel@mattotaupa.wohnung.familie-menzel.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,44 +27,82 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org, akpm@linux-foundation.org
+To: Paul Menzel <paulepanter@users.sourceforge.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Petric Frank <pfrank@gmx.de>, sparkie@crashme.cx
 
-aluminum powerbook G4 with radeon 
-The backlight momentarily flashes brightly when turning off.
-If the backlight is originally dim, the flash is more noticeable.
-This momentary flash is stressful on the power circuit.
-The first OUTREG to LVDS_GEN_CNTL causes the flashing problem. 
-To fix, remove the first manipulation of lvds_gen_cntl above it.
-Second manipulation of lvds_gen_cntl does nothing (level always zero).
-The first manipulation was needed so the display would not be 
-garbled after turning the backlight back on, but at least on my powerbook,
-the garbling seems to go away when the udelay is 1000. 
-bugzilla[Bug 12845]
-
-Signed-off-by: Robert Drury <rtdrury@earthlink.net>
-
---- linux-2.6.23.9/drivers/video/aty/radeon_backlight.c.orig	2009-03-11 01:57:10.000000000 -0700
-+++ linux-2.6.23.9/drivers/video/aty/radeon_backlight.c	2009-03-11 02:26:28.000000000 -0700
-@@ -101,12 +101,9 @@ static int radeon_bl_update_status(struc
- 		tmpPixclksCntl = INPLL(PIXCLKS_CNTL);
- 		if (rinfo->is_mobility || rinfo->is_IGP)
- 			OUTPLLP(PIXCLKS_CNTL, 0, ~PIXCLK_LVDS_ALWAYS_ONb);
--		lvds_gen_cntl &= ~(LVDS_BL_MOD_LEVEL_MASK | LVDS_BL_MOD_EN);
--		lvds_gen_cntl |= (radeon_bl_get_level_brightness(pdata, 0) <<
--				  LVDS_BL_MOD_LEVEL_SHIFT);
- 		lvds_gen_cntl |= LVDS_DISPLAY_DIS;
- 		OUTREG(LVDS_GEN_CNTL, lvds_gen_cntl);
--		udelay(100);
-+		udelay(1000);
- 		lvds_gen_cntl &= ~(LVDS_ON | LVDS_EN);
- 		OUTREG(LVDS_GEN_CNTL, lvds_gen_cntl);
- 		lvds_gen_cntl &= ~(LVDS_DIGON);
-
-
-
-------------------------------------------------------------------------------
-Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are
-powering Web 2.0 with engaging, cross-platform capabilities. Quickly and
-easily build your RIAs with Flex Builder, the Eclipse(TM)based development
-software that enables intelligent coding and step-through debugging.
-Download the free 60 day trial. http://p.sf.net/sfu/www-adobe-com
+T24gVHVlLCAxMCBNYXIgMjAwOSAxNzoxNzoxNiArMDEwMApQYXVsIE1lbnplbCA8cGF1bGVwYW50
+ZXJAdXNlcnMuc291cmNlZm9yZ2UubmV0PiB3cm90ZToKCj4gRGVhciBkZXZlbG9wZXJzLAo+IAo+
+IAo+IHVzaW5nIGZvciBleGFtcGxlIGEgVkdBLXRvLVNDQVJULWFkYXB0ZXIgdGhlIFZHQTJTQ0FS
+VMK5IHByb2plY3QgWzFdCj4gdHJpZXMgdG8gZHJpdmUgZm9yIGV4YW1wbGUgYSBUViBzZXQgYnkg
+dGhlIGdyYXBoaWMgY2FyZC4KPiAKPiBUbyBnZXQgYSBwaWN0dXJlIHJpZ2h0IGZyb20gdGhlIGJl
+Z2lubmluZywgVGhvbWFzIEhpbGJlciB3cm90ZSBzb21lCj4gcGF0Y2hlcywgd2Ugd291bGQgbGlr
+ZSB0byBnZXQgbWVyZ2VkIHVwc3RyZWFtLiBVbmZvcnR1bmF0ZWx5IHRoaXMgaXMgbXkKPiBmaXJz
+dCBjb250YWN0IHRvIHRoZSBrZXJuZWwgYW5kIEkgZG8gbm90IGtub3cgaWYgd2hhdCBJIGFtIGRv
+aW5nIGlzIHRoZQo+IGFkaGVyZXMgdG8gdGhlIHN0YW5kYXJkIHByb2NlZHVyZS4KPiAKPiBUaGUg
+cGF0Y2ggWzJdIHdvdWxkIGJlIGZvciByYWRlb24gYW5kIGludGVsIGNhcmRzLCBidXQgZm9yIHN0
+YXJ0ZXJzIEkgYW0KPiBqdXN0IGluY2x1ZGluZyBkaXJlY3RseSB0aG9zZSBmb3IgdGhlIGludGVs
+IG9uZS4gSXQgaXMgYWRhcHRlZCBieSBQZXRyaWMKPiBGcmFuayBmb3IgR2VudG9vLgo+IAo+IEkg
+Z3Vlc3MgYWRkaXRpb25hbCBtb2RlbGluZXMgdG8gbW9kZWRiLmMgc2hvdWxkIG5vdCBiZSBhIHBy
+b2JsZW0uIEhvdwo+IGFib3V0IHRoZSBvdGhlciBjaGFuZ2VzPyBDb3VsZCBhIG5ldyBrZXJuZWwg
+b3B0aW9uIGJlIGludHJvZHVjZWQgdG8KPiBkaXNhYmxlIERQTExfQSBWQ08gYW5kIHRvIGxvd2Vy
+IE1JTl9DTE9DSywgb3Igc2hvdWxkIDEyMDAwIGJlIHNhZmU/Cj4gCgpQbGVhc2UgZGl2aWRlIHlv
+dXIgd29yayBpbnRvIDMgcGF0Y2hlczogZ2VuZXJhbCAobmV3IG1vZGVzKSwgaW50ZWwgYW5kIHJh
+ZGVvbi4KClRoZSBuZXcgbW9kZXMgYXJlIG5vIHByb2JsZW0uCgo+IEFmdGVyIHlvdXIgcmVzcG9u
+c2UsIHdlIHdvdWxkIGNsZWFuIHVwIHRoZSBwYXRjaCBhbmQgcmVzdWJtaXQuIEnigJltCj4gYWZy
+YWlkLCBJIGRpZCBub3QgZmluZCBjbGVhciBpbnN0cnVjdGlvbnMgaG93IHRvIGRvIGl0LiBUaGUg
+RFJJIHdlYnNpdGUKPiBbM10gbW9zdGx5IHN0aWxsIHRhbGtzIGFib3V0IENWUy4gSXMgdGhpcyBt
+ZXNzYWdlIGZyb20gRGF2ZSBbNF0gdGhlIHVwCj4gdG8gZGF0ZSBvbmU/Cj4gCj4gV2hhdCByZXBv
+c2l0b3J5IHNob3VsZCBJIHVzZSBmb3IgY2xvbmluZyBkcm0taW50ZWwgWzVdIG9yIGRybS0yLjYg
+ZnJvbQo+IERhdmU/Cj4gCgpJIHRoaW5rIHRoYXQgdGhlIGxpbnV4LW5leHQgdHJlZSBpcyB0aGUg
+YmVzdCByZXBvc2l0b3J5IHRvIGJhc2UgcGF0Y2hlcyBvbi4KVGhlIGRybSBwYXRjaGVzIGFyZSBu
+b3QgZGlyZWN0bHkgcmVsYXRlZCB0byB0aGUgZmJkZXYgbGF5ZXIgKEkgY2FuIGJlIAp3cm9uZyBm
+b3IgdGhlIGludGVsIGRyaXZlciwgdGhvdWdoKQoKPiAKPiBkaWZmIC11ck4gbGludXgtMi42LjI3
+LWdlbnRvby1yOC5vcmcvZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJkcnYuYyBsaW51eC0y
+LjYuMjctZ2VudG9vLXI4L2RyaXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiZHJ2LmMKPiAtLS0g
+bGludXgtMi42LjI3LWdlbnRvby1yOC5vcmcvZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJk
+cnYuYyAgICAgICAyMDA4LTEwLTEwIDAwOjEzOjUzLjAwMDAwMDAwMCArMDIwMAo+ICsrKyBsaW51
+eC0yLjYuMjctZ2VudG9vLXI4L2RyaXZlcnMvdmlkZW8vaW50ZWxmYi9pbnRlbGZiZHJ2LmMgICAy
+MDA5LTAzLTA5IDE4OjA5OjA5LjAwMDAwMDAwMCArMDEwMAo+IEBAIC0xMzU5LDYgKzEzNTksOSBA
+QAo+ICAgICAgICAgREJHX01TRygiaW50ZWxmYl9zZXRfcGFyICglZHglZC0lZClcbiIsIGluZm8t
+PnZhci54cmVzLAo+ICAgICAgICAgICAgICAgICBpbmZvLT52YXIueXJlcywgaW5mby0+dmFyLmJp
+dHNfcGVyX3BpeGVsKTsKPiAgCj4gKyAgICAgICBXUk5fTVNHKCJkaXNhYmxlZCBEUExMX0EgVkNP
+IGZvciBpbnRlcmxhY2VkIG1vZGUgODAweDUyMEA1MGlcbiIpOwo+ICsgICAgICAgT1VUUkVHKERQ
+TExfQSwgSU5SRUcoRFBMTF9BKSAmIH5EUExMX1ZDT19FTkFCTEUpOwo+ICsKPiAgICAgICAgIGlu
+dGVsZmJfYmxhbmsoRkJfQkxBTktfUE9XRVJET1dOLCBpbmZvKTsKPiAgCj4gICAgICAgICBpZiAo
+QUNDRUwoZGluZm8sIGluZm8pKQoKVGhpcyBvbmUgaXMgZWFzeToganVzdCBzd2l0Y2ggb2ZmIHRo
+ZSBWQ08gb25seSBpZiByZXF1aXJlZCBwaXhjbG9jayBpcyB0b28gbG93CmZvciB0aGUgVkNPIHRv
+IHdvcmsuCgo+IGRpZmYgLXVyTiBsaW51eC0yLjYuMjctZ2VudG9vLXI4Lm9yZy9kcml2ZXJzL3Zp
+ZGVvL2ludGVsZmIvaW50ZWxmYmh3LmMgbGludXgtMi42LjI3LWdlbnRvby1yOC9kcml2ZXJzL3Zp
+ZGVvL2ludGVsZmIvaW50ZWxmYmh3LmMKPiAtLS0gbGludXgtMi42LjI3LWdlbnRvby1yOC5vcmcv
+ZHJpdmVycy92aWRlby9pbnRlbGZiL2ludGVsZmJody5jICAgICAgICAyMDA4LTEwLTEwIDAwOjEz
+OjUzLjAwMDAwMDAwMCArMDIwMAo+ICsrKyBsaW51eC0yLjYuMjctZ2VudG9vLXI4L2RyaXZlcnMv
+dmlkZW8vaW50ZWxmYi9pbnRlbGZiaHcuYyAgICAyMDA5LTAzLTA5IDE4OjExOjMxLjAwMDAwMDAw
+MCArMDEwMAo+IEBAIC0zNTMsNiArMzUzLDEyIEBACj4gIAo+ICAgICAgICAgLyogQ2hlY2sgaWYg
+Y2xvY2sgaXMgT0suICovCj4gICAgICAgICB0bXAgPSAxMDAwMDAwMDAwIC8gdmFyLT5waXhjbG9j
+azsKPiArCj4gKyAgICAgICBXUk5fTVNHKCJsb3dlcmVkIE1JTl9DTE9DSyBmcm9tICVkIE1IeiAt
+PiAiLCBNSU5fQ0xPQ0sgLyAxMDAwKTsKPiArI3VuZGVmIE1JTl9DTE9DSwo+ICsjZGVmaW5lIE1J
+Tl9DTE9DSyAxMjAwMAo+ICsgICAgICAgcHJpbnRrKCIlZCBNSHpcbiIsIE1JTl9DTE9DSyAvIDEw
+MDApOwo+ICsKPiAgICAgICAgIGlmICh0bXAgPCBNSU5fQ0xPQ0spIHsKPiAgICAgICAgICAgICAg
+ICAgV1JOX01TRygiUGl4ZWwgY2xvY2sgaXMgdG9vIGxvdyAoJWQgTUh6IHZzICVkIE1IeikuXG4i
+LAo+ICAgICAgICAgICAgICAgICAgICAgICAgICh0bXAgKyA1MDApIC8gMTAwMCwgTUlOX0NMT0NL
+IC8gMTAwMCk7CgpUaGlzIG9uZSBpcyBoYXJkZXIgYmVjYXVzZSBJIGRvbid0IGtub3cgaWYgdGhl
+IDEyTUh6IGNsb2NrIGlzIHNhZmUgZm9yCmludGVsIGNoaXBzLiBJZiBpdCBpcyB0aGUgTUlOX0NM
+T0NLIGNhbiBiZSBjaGFuZ2VkIHdpdGhvdXQgYSB3YXJuaW5nLiAKSWYgaXQgY2FuIGJlIGRhbmdl
+cm91cywgcGxlYXNlIGFkZCBhIG1vZHVsZSBvcHRpb24gdG8gZW5hYmxlIHRoaXMgCihlLmcuICJ2
+Z2Eyc2NhcnQiIG9yICJhbGxvd19sb3dfcGl4Y2xvY2tzIikuIFRoZSBvcHRpb24gY2FuIGVuYWJs
+ZQpzd2l0Y2hpbmcgdGhlIFZDTyBhcyB3ZWxsIChzdGlsbCBjaGVja2luZyB0aGUgcGl4Y2xvY2sg
+c28gb2xkIChzdGFuZGFyZCkKbW9kZXMgc2hvdWxkIHdvcmsgZXZlbiB3aXRoIHRoZSBuZXcgb3B0
+aW9uIHNldCkuCgpLaW5kIHJlZ2FyZHMsCktyenlzenRvZgoKCi0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KWmF3c3pl
+IHdpbm55IGplc3QgbWV6Y3p5em5hPyEgPj4+IGh0dHA6Ly9saW5rLmludGVyaWEucGwvZjIwODQK
+CgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KQXBwcyBidWlsdCB3aXRoIHRoZSBBZG9iZShSKSBGbGV4
+KFIpIGZyYW1ld29yayBhbmQgRmxleCBCdWlsZGVyKFRNKSBhcmUKcG93ZXJpbmcgV2ViIDIuMCB3
+aXRoIGVuZ2FnaW5nLCBjcm9zcy1wbGF0Zm9ybSBjYXBhYmlsaXRpZXMuIFF1aWNrbHkgYW5kCmVh
+c2lseSBidWlsZCB5b3VyIFJJQXMgd2l0aCBGbGV4IEJ1aWxkZXIsIHRoZSBFY2xpcHNlKFRNKWJh
+c2VkIGRldmVsb3BtZW50CnNvZnR3YXJlIHRoYXQgZW5hYmxlcyBpbnRlbGxpZ2VudCBjb2Rpbmcg
+YW5kIHN0ZXAtdGhyb3VnaCBkZWJ1Z2dpbmcuCkRvd25sb2FkIHRoZSBmcmVlIDYwIGRheSB0cmlh
+bC4gaHR0cDovL3Auc2YubmV0L3NmdS93d3ctYWRvYmUtY29tCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlz
+dApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5z
+b3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

@@ -1,63 +1,29 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] omapfb: Fix argument of blank 
-	operation.
-Date: Thu, 12 Mar 2009 00:43:18 +0200
-Message-ID: <94a0d4530903111543y4745ade0ofac867ef43e7ab1b@mail.gmail.com>
-References: <1228430755-4221-1-git-send-email-felipe.contreras@gmail.com>
-	 <5d5443650903111017n9c818b0y2119d06ea84c3abf@mail.gmail.com>
-	 <20090311152000.8a3db19c.akpm@linux-foundation.org>
+From: Risto Suominen <risto.suominen@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
+Date: Thu, 12 Mar 2009 17:19:13 +0200
+Message-ID: <46e1c7760903120819s6f1c6695keba84d4315790e36@mail.gmail.com>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	 <20090211142409.b88c577e.akpm@linux-foundation.org>
+	 <46e1c7760902121312o1476e734xc1fc1d6e11ce4d2e@mail.gmail.com>
+	 <20090213210635.d094ffc8.krzysztof.h1@poczta.fm>
+	 <20090222081517.567a29bd.krzysztof.h1@poczta.fm>
+	 <46e1c7760902220125l61700421gc4045ca10ea4dd10@mail.gmail.com>
+	 <20090222164052.dd5442c4.krzysztof.h1@poczta.fm>
+	 <46e1c7760902222253p34a714bao5c06b0ad4d779337@mail.gmail.com>
+	 <20090228195143.03b1f600.krzysztof.h1@poczta.fm>
+	 <46e1c7760903010350i42d84257lc82c492139607bb8@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20090311152000.8a3db19c.akpm@linux-foundation.org>
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756610AbZCLPT3@vger.kernel.org>
+In-Reply-To: <46e1c7760903010350i42d84257lc82c492139607bb8@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org, felipe.contreras@nokia.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: adaplas@pol.net, Andrew Morton <akpm@linux-foundation.org>, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 12:20 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 11 Mar 2009 22:47:41 +0530
-> Trilok Soni <soni.trilok@gmail.com> wrote:
->
->> Hi Felipe,
->>
->> On Fri, Dec 5, 2008 at 4:15 AM, Felipe Contreras
->
-> I bet he thought we'd forgotten.
+Now I have changed the graphics card on my PC to 3dfx voodoo 3
+(tdfxfb), and indeed it made a difference: no cursor. So it begins to
+look like the problem only exists on atyfb.
 
-You bet correctly :)
-
->> <felipe.contreras@gmail.com> wrote:
->> > From: Felipe Contreras <felipe.contreras@nokia.com>
->> >
->> > The blank operation should receive FB_BLANK_POWERDOWN, not
->> > VESA_POWERDOWN.
->> >
->>
->> Thanks. Looks good.
->>
->> Signed-off-by: Trilok Soni <soni.trilok@gmail.com>
->>
->
-> Unfortunately the changelog didn't give me any hint as to the
-> seriousness of the problem which was fixed. =C2=A0So I queued it for =
-2.6.30,
-> perhaps inappropriately.
-
-I noticed because of another bug in omapfb which required blanking in
-order to actually see something (PM stuff?). If user-space tries to
-blank the usual way, it wouldn't work.
-
-My guess is that it's not a big issue, in part because nobody has
-noticed, but perhaps I'm wrong. I was hoping the fbdev guys would know
-better.
-
---=20
-=46elipe Contreras
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Risto

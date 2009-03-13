@@ -1,158 +1,111 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH] video: sh_mobile_lcdcfb suspend/resume support
-Date: Sat, 14 Mar 2009 00:36:55 +0900
-Message-ID: <20090313153655.20515.14828.sendpatchset@rx1.opensource.se>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+From: Paul Menzel <paulepanter@users.sourceforge.net>
+Subject: [PATCH] Fix typo.
+Date: Fri, 13 Mar 2009 23:26:11 +0100
+Message-ID: <1236983171.4376.3.camel@mattotaupa.wohnung.familie-menzel.net>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7429192767431679759=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <paulepanter@users.sourceforge.net>)
+	id 1LiFpp-0003K5-QD for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 13 Mar 2009 22:26:33 +0000
+Received: from b186.blue.fastwebserver.de ([62.141.42.186] helo=mail.gw90.de)
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LiFpb-0001ft-IW
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 13 Mar 2009 22:26:28 +0000
+Received: from f053037133.adsl.alicedsl.de ([78.53.37.133]
+	helo=[192.168.178.20])
+	by mail.gw90.de with esmtpsa (TLS1.0:DHE_RSA_AES_256_CBC_SHA1:32)
+	(Exim 4.69) (envelope-from <paulepanter@users.sourceforge.net>)
+	id 1LiFpZ-0003Xy-Pd for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 13 Mar 2009 22:26:17 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org, linux-sh@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
 
-This patch adds suspend/resume support to the LCDC
-driver for SuperH Mobile - sh_mobile_lcdcfb.
+--===============7429192767431679759==
+Content-Type: multipart/signed; micalg="pgp-sha1";
+	protocol="application/pgp-signature";
+	boundary="=-vM1PRc5bbLrfaN2uuN8x"
 
-We simply stop hardware on suspend and start it again
-on resume. For RGB panels this is trivial, but for SYS
-panels in deferred io mode this becomes a bit more
-difficult - we need to wait for a frame end interrupt
-to make sure the clocks are balanced before stopping
-the actual hardware.
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
+--=-vM1PRc5bbLrfaN2uuN8x
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Signed-off-by: Paul Menzel <paulepanter@users.sourceforge.net>
 ---
+ drivers/video/aty/radeon_base.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- Tested on ap325 and Migo-R.
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_bas=
+e.c
+index 8db675c..e33a1ea 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -701,8 +701,8 @@ static void __devinit radeon_get_pllinfo(struct radeonf=
+b_info *rinfo)
+ found:
+ 	/*
+ 	 * Some methods fail to retrieve SCLK and MCLK values, we apply default
+-	 * settings in this case (200Mhz). If that really happne often, we could
+-	 * fetch from registers instead...
++	 * settings in this case (200Mhz). If that really happens often, we
++	 * could fetch from registers instead...
+ 	 */
+ 	if (rinfo->pll.mclk =3D=3D 0)
+ 		rinfo->pll.mclk =3D 20000;
+--=20
+1.6.2
 
- drivers/video/sh_mobile_lcdcfb.c |   66 +++++++++++++++++++++++++++++++++-----
- 1 file changed, 59 insertions(+), 7 deletions(-)
+--=-vM1PRc5bbLrfaN2uuN8x
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Dies ist ein digital signierter Nachrichtenteil
 
---- 0001/drivers/video/sh_mobile_lcdcfb.c
-+++ work/drivers/video/sh_mobile_lcdcfb.c	2009-03-14 00:06:47.000000000 +0900
-@@ -33,6 +33,8 @@ struct sh_mobile_lcdc_chan {
- 	struct fb_info info;
- 	dma_addr_t dma_handle;
- 	struct fb_deferred_io defio;
-+	unsigned long frame_end;
-+	wait_queue_head_t frame_end_wait;
- };
- 
- struct sh_mobile_lcdc_priv {
-@@ -226,7 +228,10 @@ static void sh_mobile_lcdc_deferred_io_t
- static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
- {
- 	struct sh_mobile_lcdc_priv *priv = data;
-+	struct sh_mobile_lcdc_chan *ch;
- 	unsigned long tmp;
-+	int is_sub;
-+	int k;
- 
- 	/* acknowledge interrupt */
- 	tmp = lcdc_read(priv, _LDINTR);
-@@ -234,8 +239,24 @@ static irqreturn_t sh_mobile_lcdc_irq(in
- 	tmp |= 0x000000ff ^ LDINTR_FS; /* status in low 8 */
- 	lcdc_write(priv, _LDINTR, tmp);
- 
--	/* disable clocks */
--	sh_mobile_lcdc_clk_off(priv);
-+	/* figure out if this interrupt is for main or sub lcd */
-+	is_sub = (lcdc_read(priv, _LDSR) & (1 << 10)) ? 1 : 0;
-+
-+	/* wake up channel and disable clocks*/
-+	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
-+		ch = &priv->ch[k];
-+
-+		if (!ch->enabled)
-+			continue;
-+
-+		if (is_sub == lcdc_chan_is_sublcd(ch)) {
-+			ch->frame_end = 1;
-+			wake_up(&ch->frame_end_wait);
-+
-+			sh_mobile_lcdc_clk_off(priv);
-+		}
-+	}
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -448,18 +469,27 @@ static void sh_mobile_lcdc_stop(struct s
- 	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	int k;
- 
--	/* tell the board code to disable the panel */
-+	/* clean up deferred io and ask board code to disable panel */
- 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
- 		ch = &priv->ch[k];
--		board_cfg = &ch->cfg.board_cfg;
--		if (board_cfg->display_off)
--			board_cfg->display_off(board_cfg->board_data);
- 
--		/* cleanup deferred io if enabled */
-+		/* deferred io mode:
-+		 * flush frame, and wait for frame end interrupt
-+		 * clean up deferred io and enable clock
-+		 */
- 		if (ch->info.fbdefio) {
-+			ch->frame_end = 0;
-+			schedule_delayed_work(&ch->info.deferred_work, 0);
-+			wait_event(ch->frame_end_wait, ch->frame_end);
- 			fb_deferred_io_cleanup(&ch->info);
- 			ch->info.fbdefio = NULL;
-+			sh_mobile_lcdc_clk_on(priv);
- 		}
-+
-+		board_cfg = &ch->cfg.board_cfg;
-+		if (board_cfg->display_off)
-+			board_cfg->display_off(board_cfg->board_data);
-+
- 	}
- 
- 	/* stop the lcdc */
-@@ -652,6 +682,26 @@ static int sh_mobile_lcdc_set_bpp(struct
- 	return 0;
- }
- 
-+static int sh_mobile_lcdc_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+
-+	sh_mobile_lcdc_stop(platform_get_drvdata(pdev));
-+	return 0;
-+}
-+
-+static int sh_mobile_lcdc_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+
-+	return sh_mobile_lcdc_start(platform_get_drvdata(pdev));
-+}
-+
-+static struct dev_pm_ops sh_mobile_lcdc_dev_pm_ops = {
-+	.suspend = sh_mobile_lcdc_suspend,
-+	.resume = sh_mobile_lcdc_resume,
-+};
-+
- static int sh_mobile_lcdc_remove(struct platform_device *pdev);
- 
- static int __init sh_mobile_lcdc_probe(struct platform_device *pdev)
-@@ -707,6 +757,7 @@ static int __init sh_mobile_lcdc_probe(s
- 			dev_err(&pdev->dev, "unsupported interface type\n");
- 			goto err1;
- 		}
-+		init_waitqueue_head(&priv->ch[i].frame_end_wait);
- 
- 		switch (pdata->ch[i].chan) {
- 		case LCDC_CHAN_MAINLCD:
-@@ -860,6 +911,7 @@ static struct platform_driver sh_mobile_
- 	.driver		= {
- 		.name		= "sh_mobile_lcdc_fb",
- 		.owner		= THIS_MODULE,
-+		.pm		= &sh_mobile_lcdc_dev_pm_ops,
- 	},
- 	.probe		= sh_mobile_lcdc_probe,
- 	.remove		= sh_mobile_lcdc_remove,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkm63YMACgkQPX1aK2wOHVimVQCeINjgao1xN7uUTjIknrEc0VeM
+xYAAnRLGCJFKFtSv1dNKvbWnrMZrhCxX
+=Ul37
+-----END PGP SIGNATURE-----
+
+--=-vM1PRc5bbLrfaN2uuN8x--
+
+
+
+--===============7429192767431679759==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+------------------------------------------------------------------------------
+Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are
+powering Web 2.0 with engaging, cross-platform capabilities. Quickly and
+easily build your RIAs with Flex Builder, the Eclipse(TM)based development
+software that enables intelligent coding and step-through debugging.
+Download the free 60 day trial. http://p.sf.net/sfu/www-adobe-com
+--===============7429192767431679759==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============7429192767431679759==--

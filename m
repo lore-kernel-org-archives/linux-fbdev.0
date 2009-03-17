@@ -1,67 +1,89 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] fb: hide hardware cursor in graphics mode (Mach64)
-Date: Tue, 17 Mar 2009 22:02:51 +0100
-Message-ID: <20090317220251.d6fb00ff.krzysztof.h1@poczta.fm>
-References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
-	<Pine.LNX.4.64.0901240951110.13803@anakin>
-	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
-	<Pine.LNX.4.64.0901241425310.13803@anakin>
-	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
-	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
-	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
-	<20090211142409.b88c577e.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756557AbZCQU4u@vger.kernel.org>
-In-Reply-To: <20090211142409.b88c577e.akpm@linux-foundation.org>
+From: Alessio Igor Bogani <abogani@texware.it>
+Subject: [PATCH] nvidiafb: remove open_lock mutex
+Date: Tue, 17 Mar 2009 21:55:25 +0100
+Message-ID: <1237323325-6104-1-git-send-email-abogani@texware.it>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755171AbZCQVBy@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Risto Suominen <risto.suominen@gmail.com>, geert@linux-m68k.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@gmail.com>
+Cc: Linux FBDev <linux-fbdev-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>, Alessio Igor Bogani <abogani@texware.it>
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Remove mutex from the nvidiafb_open/nvidiafb_release functions as these
+operations are mutexed at fb layer.
 
-A hardware cursor is left enabled in
-the fb_set_par() which is called when
-a new console is created. This is
-inconsistent with software cursor's
-behaviour.
-
-Also, this makes a hardware cursor
-always visible in the Xfbdev
-(Xorg kdrive) server.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-CC: Risto Suominen=20
+Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
 ---
-Finally, I acquired a Mach64GZ card and was able to=20
-solve this puzzle.
+ drivers/video/nvidia/nv_type.h |    2 --
+ drivers/video/nvidia/nvidia.c  |    7 -------
+ 2 files changed, 0 insertions(+), 9 deletions(-)
 
-Risto, please test the patch.=20
-
- drivers/video/aty/mach64_accel.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/aty/mach64_accel.c b/drivers/video/aty/mach64_ac=
-cel.c
-index a8f60c3..0cc9724 100644
---- a/drivers/video/aty/mach64_accel.c
-+++ b/drivers/video/aty/mach64_accel.c
-@@ -39,7 +39,8 @@ void aty_reset_engine(const struct atyfb_par *par)
+diff --git a/drivers/video/nvidia/nv_type.h b/drivers/video/nvidia/nv_type.h
+index f132aab..c03f7f5 100644
+--- a/drivers/video/nvidia/nv_type.h
++++ b/drivers/video/nvidia/nv_type.h
+@@ -5,7 +5,6 @@
+ #include <linux/types.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-bit.h>
+-#include <linux/mutex.h>
+ #include <video/vga.h>
+ 
+ #define NV_ARCH_04  0x04
+@@ -99,7 +98,6 @@ struct nvidia_par {
+ 	RIVA_HW_STATE initial_state;
+ 	RIVA_HW_STATE *CurrentState;
+ 	struct vgastate vgastate;
+-	struct mutex open_lock;
+ 	u32 pseudo_palette[16];
+ 	struct pci_dev *pci_dev;
+ 	u32 Architecture;
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index 9dbb5a5..efe10ff 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -1004,15 +1004,12 @@ static int nvidiafb_open(struct fb_info *info, int user)
  {
- 	/* reset engine */
- 	aty_st_le32(GEN_TEST_CNTL,
--		aty_ld_le32(GEN_TEST_CNTL, par) & ~GUI_ENGINE_ENABLE, par);
-+		aty_ld_le32(GEN_TEST_CNTL, par) &
-+		~(GUI_ENGINE_ENABLE | HWCURSOR_ENABLE), par);
- 	/* enable engine */
- 	aty_st_le32(GEN_TEST_CNTL,
- 		aty_ld_le32(GEN_TEST_CNTL, par) | GUI_ENGINE_ENABLE, par);
---=20
-1.5.2.2
-
-
-----------------------------------------------------------------------
-Szukasz pieniedzy? Wez podw=F3jny limit zad=B3u=BFenia w koncie direct.
->> http://link.interia.pl/f20a3
+ 	struct nvidia_par *par = info->par;
+ 
+-	mutex_lock(&par->open_lock);
+-
+ 	if (!par->open_count) {
+ 		save_vga_x86(par);
+ 		nvidia_save_vga(par, &par->initial_state);
+ 	}
+ 
+ 	par->open_count++;
+-	mutex_unlock(&par->open_lock);
+ 	return 0;
+ }
+ 
+@@ -1021,8 +1018,6 @@ static int nvidiafb_release(struct fb_info *info, int user)
+ 	struct nvidia_par *par = info->par;
+ 	int err = 0;
+ 
+-	mutex_lock(&par->open_lock);
+-
+ 	if (!par->open_count) {
+ 		err = -EINVAL;
+ 		goto done;
+@@ -1035,7 +1030,6 @@ static int nvidiafb_release(struct fb_info *info, int user)
+ 
+ 	par->open_count--;
+ done:
+-	mutex_unlock(&par->open_lock);
+ 	return err;
+ }
+ 
+@@ -1300,7 +1294,6 @@ static int __devinit nvidiafb_probe(struct pci_dev *pd,
+ 
+ 	par = info->par;
+ 	par->pci_dev = pd;
+-	mutex_init(&par->open_lock);
+ 	info->pixmap.addr = kzalloc(8 * 1024, GFP_KERNEL);
+ 
+ 	if (info->pixmap.addr == NULL)
+-- 
+1.6.0.4

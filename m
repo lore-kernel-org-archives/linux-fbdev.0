@@ -1,27 +1,21 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: Re: fbdev intel with kernel modesetting
-Date: Tue, 17 Mar 2009 07:18:45 -0400
-Message-ID: <45a44e480903170418s7dd5cea1n96749a0c441d6a88@mail.gmail.com>
-References: <A71FB3B26F3F479BA375A7FA660E5E0F@avitech.sk>
-	<21d7e9970903170358x5482218ep695cdffa586fa806@mail.gmail.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH 1/2] cirrusfb: add accelerator constant
+Date: Tue, 17 Mar 2009 21:05:43 +0100
+Message-ID: <20090317210543.13571287.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jayakumar.lkml@gmail.com>) id 1LjXK0-0002dp-KT
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LjfRl-0001MV-7F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Mar 2009 11:19:00 +0000
-Received: from yw-out-1718.google.com ([74.125.46.156])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LjXJm-00061N-W8 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Mar 2009 11:18:55 +0000
-Received: by yw-out-1718.google.com with SMTP id 6so882185ywa.82
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 17 Mar 2009 04:18:45 -0700 (PDT)
-In-Reply-To: <21d7e9970903170358x5482218ep695cdffa586fa806@mail.gmail.com>
+	Tue, 17 Mar 2009 19:59:33 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LjfRa-0006OM-TC for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 17 Mar 2009 19:59:28 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,39 +25,73 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dave Airlie <airlied@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Tue, Mar 17, 2009 at 6:58 AM, Dave Airlie <airlied@gmail.com> wrote:
-> On Fri, Feb 27, 2009 at 9:13 PM, Peter Hanzel <hanzelpeter@gmail.com> wrote:
->> Hello.
->>
->> I have a question. I am using intelfb to get framebuffer console on Acer
->> Extensa 5220 notebeook. (VGA Intel 965GM)
->> In kernel 2.6.28.7 i must set video mode on boot with vga= param.
->> Now I have discovered that in 2.6.29 kernel, there is support for kernel
->> modesetting with gpu/drm/i915.
->>
->> Will this be joined with driver/video/intelfb ?
->
-> Not joined, hopefully driver/video/intelfb will die.
->
->> So mode switch will work with simple fbdev IOCTL.?
->> Like some cooperation between fbdev and gpu/drm?
->
-> The problem with simple ioctl is its simple, it can't express what
-> graphics cards actually look like.
->
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Hi Dave,
+Add an accelerator constant so almost all
+Cirrus are recognized as accelerators by
+the fbset command.
 
-Quick question, longer term, what's your take on fbdev and drm. How
-will the two interact (if at all)? Will fbdev be for 2D only devices,
-DRM for the GPU enabled devices? and/or will fbdev be deprecated and
-everyone including 2D devices use drivers/gpu drivers?
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/cirrusfb.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
-Thanks,
-jaya
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index 0ef7ccc..57a5856 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -517,6 +517,7 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
+ 	int yres;
+ 	/* memory size in pixels */
+ 	unsigned pixels = info->screen_size * 8 / var->bits_per_pixel;
++	struct cirrusfb_info *cinfo = info->par;
+ 
+ 	switch (var->bits_per_pixel) {
+ 	case 1:
+@@ -625,6 +626,9 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
+ 	if (cirrusfb_check_pixclock(var, info))
+ 		return -EINVAL;
+ 
++	if (!is_laguna(cinfo))
++		var->accel_flags = FB_ACCELF_TEXT;
++
+ 	return 0;
+ }
+ 
+@@ -2027,8 +2031,12 @@ static int __devinit cirrusfb_set_fbinfo(struct fb_info *info)
+ 		    | FBINFO_HWACCEL_FILLRECT
+ 		    | FBINFO_HWACCEL_IMAGEBLIT
+ 		    | FBINFO_HWACCEL_COPYAREA;
+-	if (noaccel || is_laguna(cinfo))
++	if (noaccel || is_laguna(cinfo)) {
+ 		info->flags |= FBINFO_HWACCEL_DISABLED;
++		info->fix.accel = FB_ACCEL_NONE;
++	} else
++		info->fix.accel = FB_ACCEL_CIRRUS_ALPINE;
++		
+ 	info->fbops = &cirrusfb_ops;
+ 
+ 	if (cinfo->btype == BT_GD5480) {
+@@ -2054,7 +2062,6 @@ static int __devinit cirrusfb_set_fbinfo(struct fb_info *info)
+ 
+ 	/* FIXME: map region at 0xB8000 if available, fill in here */
+ 	info->fix.mmio_len   = 0;
+-	info->fix.accel = FB_ACCEL_NONE;
+ 
+ 	fb_alloc_cmap(&info->cmap, 256, 0);
+ 
+-- 
+1.5.2.2
+
+
+
+----------------------------------------------------------------------
+Program tylko dla graczy komputerowych! 
+Ogladaj >>> http://link.interia.pl/f207f 
+
 
 ------------------------------------------------------------------------------
 Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are

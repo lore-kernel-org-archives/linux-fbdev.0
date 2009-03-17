@@ -1,89 +1,100 @@
-From: Alessio Igor Bogani <abogani@texware.it>
-Subject: [PATCH] nvidiafb: remove open_lock mutex
-Date: Tue, 17 Mar 2009 21:55:25 +0100
-Message-ID: <1237323325-6104-1-git-send-email-abogani@texware.it>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755171AbZCQVBy@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] atyfb: speed up Mach64 cursor
+Date: Tue, 17 Mar 2009 22:04:43 +0100
+Message-ID: <20090317220443.d8dd67bb.krzysztof.h1@poczta.fm>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>
-Cc: Linux FBDev <linux-fbdev-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>, Alessio Igor Bogani <abogani@texware.it>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LjgN4-0006PZ-BW
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 17 Mar 2009 20:58:46 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LjgMi-0007CO-Fo for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 17 Mar 2009 20:58:33 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-Remove mutex from the nvidiafb_open/nvidiafb_release functions as these
-operations are mutexed at fb layer.
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
+Save one fifo entry on cursor
+enabling and disabling.
+
+Save another fifo entry for
+FB_CUR_SETPOS operation
+by removing redundant one.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/nvidia/nv_type.h |    2 --
- drivers/video/nvidia/nvidia.c  |    7 -------
- 2 files changed, 0 insertions(+), 9 deletions(-)
+ drivers/video/aty/mach64_cursor.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_type.h b/drivers/video/nvidia/nv_type.h
-index f132aab..c03f7f5 100644
---- a/drivers/video/nvidia/nv_type.h
-+++ b/drivers/video/nvidia/nv_type.h
-@@ -5,7 +5,6 @@
- #include <linux/types.h>
- #include <linux/i2c.h>
- #include <linux/i2c-algo-bit.h>
--#include <linux/mutex.h>
- #include <video/vga.h>
+diff --git a/drivers/video/aty/mach64_cursor.c b/drivers/video/aty/mach64_cursor.c
+index faf95da..2eb3926 100644
+--- a/drivers/video/aty/mach64_cursor.c
++++ b/drivers/video/aty/mach64_cursor.c
+@@ -77,9 +77,13 @@ static int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 	if (par->asleep)
+ 		return -EPERM;
  
- #define NV_ARCH_04  0x04
-@@ -99,7 +98,6 @@ struct nvidia_par {
- 	RIVA_HW_STATE initial_state;
- 	RIVA_HW_STATE *CurrentState;
- 	struct vgastate vgastate;
--	struct mutex open_lock;
- 	u32 pseudo_palette[16];
- 	struct pci_dev *pci_dev;
- 	u32 Architecture;
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index 9dbb5a5..efe10ff 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -1004,15 +1004,12 @@ static int nvidiafb_open(struct fb_info *info, int user)
- {
- 	struct nvidia_par *par = info->par;
+-	/* Hide cursor */
+ 	wait_for_fifo(1, par);
+-	aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par) & ~HWCURSOR_ENABLE, par);
++	if (cursor->enable)
++		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
++			    | HWCURSOR_ENABLE, par);
++	else 
++		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
++				& ~HWCURSOR_ENABLE, par);
  
--	mutex_lock(&par->open_lock);
--
- 	if (!par->open_count) {
- 		save_vga_x86(par);
- 		nvidia_save_vga(par, &par->initial_state);
+ 	/* set position */
+ 	if (cursor->set & FB_CUR_SETPOS) {
+@@ -109,7 +113,7 @@ static int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 			y<<=1;
+ 			h<<=1;
+ 		}
+-		wait_for_fifo(4, par);
++		wait_for_fifo(3, par);
+ 		aty_st_le32(CUR_OFFSET, (info->fix.smem_len >> 3) + (yoff << 1), par);
+ 		aty_st_le32(CUR_HORZ_VERT_OFF,
+ 			    ((u32) (64 - h + yoff) << 16) | xoff, par);
+@@ -177,11 +181,6 @@ static int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 	    }
  	}
  
- 	par->open_count++;
--	mutex_unlock(&par->open_lock);
+-	if (cursor->enable) {
+-		wait_for_fifo(1, par);
+-		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
+-			    | HWCURSOR_ENABLE, par);
+-	}
  	return 0;
  }
  
-@@ -1021,8 +1018,6 @@ static int nvidiafb_release(struct fb_info *info, int user)
- 	struct nvidia_par *par = info->par;
- 	int err = 0;
- 
--	mutex_lock(&par->open_lock);
--
- 	if (!par->open_count) {
- 		err = -EINVAL;
- 		goto done;
-@@ -1035,7 +1030,6 @@ static int nvidiafb_release(struct fb_info *info, int user)
- 
- 	par->open_count--;
- done:
--	mutex_unlock(&par->open_lock);
- 	return err;
- }
- 
-@@ -1300,7 +1294,6 @@ static int __devinit nvidiafb_probe(struct pci_dev *pd,
- 
- 	par = info->par;
- 	par->pci_dev = pd;
--	mutex_init(&par->open_lock);
- 	info->pixmap.addr = kzalloc(8 * 1024, GFP_KERNEL);
- 
- 	if (info->pixmap.addr == NULL)
 -- 
-1.6.0.4
+1.5.2.2
+
+
+----------------------------------------------------------------------
+Dzwon taniej na zagraniczne komorki!
+Sprawdz >>  http://link.interia.pl/f20a2 
+
+
+------------------------------------------------------------------------------
+Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are
+powering Web 2.0 with engaging, cross-platform capabilities. Quickly and
+easily build your RIAs with Flex Builder, the Eclipse(TM)based development
+software that enables intelligent coding and step-through debugging.
+Download the free 60 day trial. http://p.sf.net/sfu/www-adobe-com

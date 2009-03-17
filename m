@@ -1,26 +1,27 @@
-From: Dave Airlie <airlied@gmail.com>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
 Subject: Re: fbdev intel with kernel modesetting
-Date: Tue, 17 Mar 2009 20:58:11 +1000
-Message-ID: <21d7e9970903170358x5482218ep695cdffa586fa806@mail.gmail.com>
+Date: Tue, 17 Mar 2009 07:18:45 -0400
+Message-ID: <45a44e480903170418s7dd5cea1n96749a0c441d6a88@mail.gmail.com>
 References: <A71FB3B26F3F479BA375A7FA660E5E0F@avitech.sk>
+	<21d7e9970903170358x5482218ep695cdffa586fa806@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <airlied@gmail.com>) id 1LjWzz-0007zf-5k
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jayakumar.lkml@gmail.com>) id 1LjXK0-0002dp-KT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Mar 2009 10:58:19 +0000
-Received: from rv-out-0708.google.com ([209.85.198.240])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LjWzr-0008GF-QX for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 17 Mar 2009 10:58:14 +0000
-Received: by rv-out-0708.google.com with SMTP id k29so1746282rvb.22
+	Tue, 17 Mar 2009 11:19:00 +0000
+Received: from yw-out-1718.google.com ([74.125.46.156])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LjXJm-00061N-W8 for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 17 Mar 2009 11:18:55 +0000
+Received: by yw-out-1718.google.com with SMTP id 6so882185ywa.82
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 17 Mar 2009 03:58:11 -0700 (PDT)
-In-Reply-To: <A71FB3B26F3F479BA375A7FA660E5E0F@avitech.sk>
+	Tue, 17 Mar 2009 04:18:45 -0700 (PDT)
+In-Reply-To: <21d7e9970903170358x5482218ep695cdffa586fa806@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,52 +31,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Peter Hanzel <hanzelpeter@gmail.com>
+To: Dave Airlie <airlied@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Feb 27, 2009 at 9:13 PM, Peter Hanzel <hanzelpeter@gmail.com> wrote:
-> Hello.
+On Tue, Mar 17, 2009 at 6:58 AM, Dave Airlie <airlied@gmail.com> wrote:
+> On Fri, Feb 27, 2009 at 9:13 PM, Peter Hanzel <hanzelpeter@gmail.com> wrote:
+>> Hello.
+>>
+>> I have a question. I am using intelfb to get framebuffer console on Acer
+>> Extensa 5220 notebeook. (VGA Intel 965GM)
+>> In kernel 2.6.28.7 i must set video mode on boot with vga= param.
+>> Now I have discovered that in 2.6.29 kernel, there is support for kernel
+>> modesetting with gpu/drm/i915.
+>>
+>> Will this be joined with driver/video/intelfb ?
 >
-> I have a question. I am using intelfb to get framebuffer console on Acer
-> Extensa 5220 notebeook. (VGA Intel 965GM)
-> In kernel 2.6.28.7 i must set video mode on boot with vga= param.
-> Now I have discovered that in 2.6.29 kernel, there is support for kernel
-> modesetting with gpu/drm/i915.
+> Not joined, hopefully driver/video/intelfb will die.
 >
-> Will this be joined with driver/video/intelfb ?
-
-Not joined, hopefully driver/video/intelfb will die.
-
-> So mode switch will work with simple fbdev IOCTL.?
-> Like some cooperation between fbdev and gpu/drm?
-
-The problem with simple ioctl is its simple, it can't express what
-graphics cards actually look like.
-
-At the moment fbset isn't hooked up, but it should be trivial to add
-the code to do it,
-we haven't hooked it up as there is no right answer for dual-head
-displays using fbdev on top of drm,
-
-Granted if someone was to implement something we'd probably go with it.
-
-Dave.
-
+>> So mode switch will work with simple fbdev IOCTL.?
+>> Like some cooperation between fbdev and gpu/drm?
 >
-> Thanks.
+> The problem with simple ioctl is its simple, it can't express what
+> graphics cards actually look like.
 >
->
-> ------------------------------------------------------------------------------
-> Open Source Business Conference (OSBC), March 24-25, 2009, San Francisco, CA
-> -OSBC tackles the biggest issue in open source: Open Sourcing the Enterprise
-> -Strategies to boost innovation and cut costs with open source participation
-> -Receive a $600 discount off the registration fee with the source code: SFAD
-> http://p.sf.net/sfu/XcvMzF8H
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
+
+Hi Dave,
+
+Quick question, longer term, what's your take on fbdev and drm. How
+will the two interact (if at all)? Will fbdev be for 2D only devices,
+DRM for the GPU enabled devices? and/or will fbdev be deprecated and
+everyone including 2D devices use drivers/gpu drivers?
+
+Thanks,
+jaya
 
 ------------------------------------------------------------------------------
 Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are

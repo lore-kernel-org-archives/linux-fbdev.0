@@ -1,9 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] Fix typo.
-Date: Thu, 19 Mar 2009 21:43:48 +0100
-Message-ID: <20090319214348.40feaaff.krzysztof.h1@poczta.fm>
-References: <1236983171.4376.3.camel@mattotaupa.wohnung.familie-menzel.net>
-	<1237493401.11987.1.camel@mattotaupa.wohnung.familie-menzel.net>
+Subject: [PATCH 2/2] cirrusfb: fix threshold register
+	mask for Laguna chips
+Date: Thu, 19 Mar 2009 21:48:16 +0100
+Message-ID: <20090319214816.f3925f18.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,14 +10,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LkP5K-0003FU-Ru
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LkP9X-0003cd-G6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 19 Mar 2009 20:43:26 +0000
+	Thu, 19 Mar 2009 20:47:47 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LkP5H-0007Il-Uw for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 19 Mar 2009 20:43:26 +0000
-In-Reply-To: <1237493401.11987.1.camel@mattotaupa.wohnung.familie-menzel.net>
+	id 1LkP9U-0007Xk-GR for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 19 Mar 2009 20:47:47 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,29 +26,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Menzel <paulepanter@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Thu, 19 Mar 2009 21:10:01 +0100
-Paul Menzel <paulepanter@users.sourceforge.net> wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> Dear developers,
-> 
-> 
-> will I get a confirmation if this is accepted or do I have to send this
-> patch somewhere else additionally?
-> 
-> 
+Fix threshold register mask for Laguna chips
+otherwise some 8bpp modes are garbled
+after selecting a 24bpp mode.
 
-When Andrew Morton queues your patch you will be notified.
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+This and the previous patch are for the -mm tree.
 
-Regards,
-Krzysztof
+ drivers/video/cirrusfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index 145bad3..6717b49 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -873,7 +873,7 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
+ 		threshold = fb_readw(cinfo->laguna_mmio + 0xea);
+ 		control &= ~0x6800;
+ 		format = 0;
+-		threshold &= 0xffe0 & 0x3fbf;
++		threshold &= 0xffc0 & 0x3fbf;
+ 	}
+ 	if (nom) {
+ 		tmp = den << 1;
+-- 
+1.5.2.2
+
 
 
 ----------------------------------------------------------------------
-Dzwon taniej na zagraniczne komorki!
-Sprawdz >>  http://link.interia.pl/f20a2 
+Udar sloneczny prezesa Kaczynskiego... >>> http://link.interia.pl/f2083
 
 
 ------------------------------------------------------------------------------

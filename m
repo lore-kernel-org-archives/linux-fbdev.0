@@ -1,36 +1,71 @@
-From: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH 1/1] Back-light class driver support for OMAP
-Date: Thu, 19 Mar 2009 15:00:33 -0700
-Message-ID: <200903191500.33977.david-b@pacbell.net>
-References: <hvaibhav@ti.com> <1237385410-29124-1-git-send-email-hvaibhav@ti.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] cirrusfb: fix compilation for Amiga
+Date: Fri, 20 Mar 2009 06:58:31 +0100
+Message-ID: <20090320065831.bf6af5c1.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1237385410-29124-1-git-send-email-hvaibhav@ti.com>
-Content-Disposition: inline
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: hvaibhav@ti.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org, premi@ti.com, Brijesh Jadav <brijesh.j@ti.com>, Hardik Shah <hardik.shah@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1LkXkB-0002N3-Qi
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 20 Mar 2009 05:58:11 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LkXk2-0004v7-9p for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 20 Mar 2009 05:58:11 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Wednesday 18 March 2009, hvaibhav@ti.com wrote:
-> +
-> +#if defined(CONFIG_TWL4030_CORE)
-> +=A0=A0=A0=A0=A0=A0=A0twl4030_i2c_write_u8(TWL4030_MODULE_LED, 0x11, =
-TWL4030_LED_EN);
-> +=A0=A0=A0=A0=A0=A0=A0twl4030_i2c_write_u8(TWL4030_MODULE_PWMA, c, TW=
-L_PWMA_PWMAOFF);
-> +#endif
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Hmm, I think I'm going to have to get off my butt and
-send in the PWM patches I have ... they work for the
-PWMs on the two LED outputs, but not yet for the two
-other PWM-equipped pins (GPIO-6, GPIO-7)
+Fix compilation for Amiga.
 
-- Dave
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/cirrusfb.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index 6717b49..4c61504 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -2304,8 +2304,9 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
+ 	zorro_set_drvdata(z, info);
+ 
+ 	/* MCLK select etc. */
+-	if (bi->init_sr1f)
+-		vga_wseq(cinfo->regbase, CL_SEQR1F, bi->sr1f);
++	if (cirrusfb_board_info[btype].init_sr1f)
++		vga_wseq(cinfo->regbase, CL_SEQR1F,
++			 cirrusfb_board_info[btype].sr1f);
+ 
+ 	ret = cirrusfb_register(info);
+ 	if (!ret)
+-- 
+1.5.2.2
+
+
+
+----------------------------------------------------------------------
+Doklej politykowi dymek!
+Tylko dla ludzi z poczuciem humoru >>> http://link.interia.pl/f20aa
+
+
+------------------------------------------------------------------------------
+Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are
+powering Web 2.0 with engaging, cross-platform capabilities. Quickly and
+easily build your RIAs with Flex Builder, the Eclipse(TM)based development
+software that enables intelligent coding and step-through debugging.
+Download the free 60 day trial. http://p.sf.net/sfu/www-adobe-com

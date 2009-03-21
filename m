@@ -1,24 +1,24 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: Re: [PATCH] atyfb: speed up Mach64 cursor
-Date: Sat, 21 Mar 2009 22:01:03 +0200
-Message-ID: <20090321200103.GU10127@sci.fi>
+Date: Sat, 21 Mar 2009 21:50:11 +0100
+Message-ID: <20090321215011.c67798f1.krzysztof.h1@poczta.fm>
 References: <20090317220443.d8dd67bb.krzysztof.h1@poczta.fm>
+	<20090321200103.GU10127@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1Ll7Ng-000470-Fl
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1Ll88c-00067D-0N
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 21 Mar 2009 20:01:20 +0000
-Received: from smtp5.welho.com ([213.243.153.39])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Ll7Nd-00065U-IE for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 21 Mar 2009 20:01:20 +0000
-Content-Disposition: inline
-In-Reply-To: <20090317220443.d8dd67bb.krzysztof.h1@poczta.fm>
+	Sat, 21 Mar 2009 20:49:50 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Ll88S-0002JP-4O for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 21 Mar 2009 20:49:49 +0000
+In-Reply-To: <20090321200103.GU10127@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,40 +28,61 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, Mar 17, 2009 at 10:04:43PM +0100, Krzysztof Helt wrote:
-> --- a/drivers/video/aty/mach64_cursor.c
-> +++ b/drivers/video/aty/mach64_cursor.c
-> @@ -77,9 +77,13 @@ static int atyfb_cursor(struct fb_info *info, struct f=
-b_cursor *cursor)
->  	if (par->asleep)
->  		return -EPERM;
->  =
+On Sat, 21 Mar 2009 22:01:03 +0200
+Ville Syrj=E4l=E4 <syrjala@sci.fi> wrote:
 
-> -	/* Hide cursor */
->  	wait_for_fifo(1, par);
-> -	aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par) & ~HWCURSOR_=
-ENABLE, par);
-> +	if (cursor->enable)
-> +		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
-> +			    | HWCURSOR_ENABLE, par);
-> +	else =
+> On Tue, Mar 17, 2009 at 10:04:43PM +0100, Krzysztof Helt wrote:
+> > --- a/drivers/video/aty/mach64_cursor.c
+> > +++ b/drivers/video/aty/mach64_cursor.c
+> > @@ -77,9 +77,13 @@ static int atyfb_cursor(struct fb_info *info, struct=
+ fb_cursor *cursor)
+> >  	if (par->asleep)
+> >  		return -EPERM;
+> >  =
 
-> +		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
-> +				& ~HWCURSOR_ENABLE, par);
+> > -	/* Hide cursor */
+> >  	wait_for_fifo(1, par);
+> > -	aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par) & ~HWCURSO=
+R_ENABLE, par);
+> > +	if (cursor->enable)
+> > +		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
+> > +			    | HWCURSOR_ENABLE, par);
+> > +	else =
+
+> > +		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
+> > +				& ~HWCURSOR_ENABLE, par);
+> =
+
+> =
+
+> It looks like you are now enabling the cursor before the cursor image
+> is loaded or the cursor is moved to the correct position so the user
+> could briefly see a corrupted and/or misplaced cursor.
+> =
 
 
-It looks like you are now enabling the cursor before the cursor image
-is loaded or the cursor is moved to the correct position so the user
-could briefly see a corrupted and/or misplaced cursor.
+Yes. At least two other drivers do the same (pm2fb and tdfxfb) and
+I have never experienced problems with visible corrupted cursor.
+This is probably unlikely as the cursor change must last longer
+then one full screen refresh.
 
--- =
+On the other hand, one wrote twice (cursor off and on) to
+the chip every time the cursor position changed.
+Also if the cursor was turned on the driver sent two writes
+to the chip (off then on). This was redundant. =
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+
+Regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Co m=F3wi Waldek, kiedy nikt go nie widzi:?
+Sprawd=BC >>> http://link.interia.pl/f20ab
+
 
 ---------------------------------------------------------------------------=
 ---

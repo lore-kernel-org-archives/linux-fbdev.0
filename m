@@ -1,21 +1,21 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cirrusfb: fix compilation for Amiga
-Date: Fri, 20 Mar 2009 06:58:31 +0100
-Message-ID: <20090320065831.bf6af5c1.krzysztof.h1@poczta.fm>
+Subject: [PATCH] cirrusfb: fix interlaced modes
+Date: Sat, 21 Mar 2009 20:23:01 +0100
+Message-ID: <20090321202301.06c3e60b.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1LkXkB-0002N3-Qi
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1Ll6m4-0005Sd-GO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 20 Mar 2009 05:58:11 +0000
+	Sat, 21 Mar 2009 19:22:28 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LkXk2-0004v7-9p for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 20 Mar 2009 05:58:11 +0000
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Ll6m2-0004ej-Bt for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 21 Mar 2009 19:22:28 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,37 +30,92 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Fix compilation for Amiga.
+Fix calculations of timings for
+interlaced modes.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/cirrusfb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/cirrusfb.c |   35 +++++++++++++++++++++--------------
+ 1 files changed, 21 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index 6717b49..4c61504 100644
+index 4c61504..9a9c679 100644
 --- a/drivers/video/cirrusfb.c
 +++ b/drivers/video/cirrusfb.c
-@@ -2304,8 +2304,9 @@ static int __devinit cirrusfb_zorro_register(struct zorro_dev *z,
- 	zorro_set_drvdata(z, info);
+@@ -699,45 +699,52 @@ static int cirrusfb_set_par_foo(struct fb_info *info)
  
- 	/* MCLK select etc. */
--	if (bi->init_sr1f)
--		vga_wseq(cinfo->regbase, CL_SEQR1F, bi->sr1f);
-+	if (cirrusfb_board_info[btype].init_sr1f)
-+		vga_wseq(cinfo->regbase, CL_SEQR1F,
-+			 cirrusfb_board_info[btype].sr1f);
+ 	hsyncstart = var->xres + var->right_margin;
+ 	hsyncend = hsyncstart + var->hsync_len;
+-	htotal = (hsyncend + var->left_margin) / 8 - 5;
+-	hdispend = var->xres / 8 - 1;
+-	hsyncstart = hsyncstart / 8 + 1;
+-	hsyncend = hsyncend / 8 + 1;
++	htotal = (hsyncend + var->left_margin) / 8;
++	hdispend = var->xres / 8;
++	hsyncstart = hsyncstart / 8;
++	hsyncend = hsyncend / 8;
  
- 	ret = cirrusfb_register(info);
- 	if (!ret)
+-	yres = var->yres;
+-	vsyncstart = yres + var->lower_margin;
++	vdispend = var->yres;
++	vsyncstart = vdispend + var->lower_margin;
+ 	vsyncend = vsyncstart + var->vsync_len;
+ 	vtotal = vsyncend + var->upper_margin;
+-	vdispend = yres - 1;
+ 
+ 	if (var->vmode & FB_VMODE_DOUBLE) {
+-		yres *= 2;
++		vdispend *= 2;
+ 		vsyncstart *= 2;
+ 		vsyncend *= 2;
+ 		vtotal *= 2;
+ 	} else if (var->vmode & FB_VMODE_INTERLACED) {
+-		yres = (yres + 1) / 2;
++		vdispend = (vdispend + 1) / 2;
+ 		vsyncstart = (vsyncstart + 1) / 2;
+ 		vsyncend = (vsyncend + 1) / 2;
+ 		vtotal = (vtotal + 1) / 2;
+ 	}
+-
+-	vtotal -= 2;
+-	vsyncstart -= 1;
+-	vsyncend -= 1;
+-
++	yres = vdispend;
+ 	if (yres >= 1024) {
+ 		vtotal /= 2;
+ 		vsyncstart /= 2;
+ 		vsyncend /= 2;
+ 		vdispend /= 2;
+ 	}
++
++	vdispend -= 1;
++	vsyncstart -= 1;
++	vsyncend -= 1;
++	vtotal -= 2;
++
+ 	if (cinfo->multiplexing) {
+ 		htotal /= 2;
+ 		hsyncstart /= 2;
+ 		hsyncend /= 2;
+ 		hdispend /= 2;
+ 	}
++
++	htotal -= 5;
++	hdispend -= 1;
++	hsyncstart += 1;
++	hsyncend += 1;
++
+ 	/* unlock register VGA_CRTC_H_TOTAL..CRT7 */
+ 	vga_wcrt(regbase, VGA_CRTC_V_SYNC_END, 0x20);	/* previously: 0x00) */
+ 
 -- 
 1.5.2.2
 
 
-
 ----------------------------------------------------------------------
-Doklej politykowi dymek!
-Tylko dla ludzi z poczuciem humoru >>> http://link.interia.pl/f20aa
+Szukasz pieniedzy? Wez podwojny limit zadluzenia w koncie direct.
+>> http://link.interia.pl/f20a3
 
 
 ------------------------------------------------------------------------------

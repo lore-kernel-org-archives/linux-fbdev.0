@@ -1,55 +1,65 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [PATCH] new fix: radeon backlight shutoff
- flashes momentarily
-Date: Mon, 23 Mar 2009 12:16:16 +0100
-Message-ID: <1237806976.25253.569.camel@thor.local>
-References: <49C719B2.8070701@earthlink.net>
+From: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH] tdfxfb: move I2C functionality into the tdfxfb
+Date: Mon, 23 Mar 2009 13:18:43 +0100
+Message-ID: <20090323131843.64eacafe@hyperion.delvare>
+References: <20090323110133.7CB7186118D@f35.poczta.interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <michel@daenzer.net>) id 1Lli9O-0005xq-LI
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Mar 2009 11:17:02 +0000
-Received: from darkcity.gna.ch ([195.226.6.51] helo=mail.gna.ch)
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Lli9J-0001sX-L7 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Mar 2009 11:17:02 +0000
-In-Reply-To: <49C719B2.8070701@earthlink.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: "Robert T. Drury" <rtdrury@earthlink.net>
-Cc: benh@kernel.crashing.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20090323110133.7CB7186118D-UW0e3zZ4DiCOitzWlErfBcT2TbGLZofU@public.gmane.org>
+Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="windows-1252"
+To: Krzysztof Helt <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
+Cc: Linux-fbdev-devel <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-T24gU3VuLCAyMDA5LTAzLTIyIGF0IDIyOjEwIC0wNzAwLCBSb2JlcnQgVC4gRHJ1cnkgd3JvdGU6
-Cj4gVGhpcyBwYXRjaCBzaG91bGQgcmVwbGFjZSB0aGUgcHJldmlvdXMKPiBmaXgtcmFkZW9uLWJh
-Y2tsaWdodC1zaHV0b2ZmLWZsYXNoZXMtbW9tZW50YXJpbHkucGF0Y2ggYWRkZWQgdG8gLW1tIHRy
-ZWUKPiAKPiBUaGlzIHJlcGxhY2VtZW50IHBhdGNoIHJlbW92ZXMgb25seSB0aGUgJiB+TFZEU19C
-TF9NT0RfRU4gb24gc2h1dG9mZiAKPiBhbmQgYXBwbGllcyBvbmx5IHRvIG1hY2hpbmUgcG93ZXJi
-b29rNSwzICYmIENISVBfRkFNSUxZX1JWMzUwLiAKCkkgdGhpbmsgSSdtIGFsc28gc2VlaW5nIHRo
-ZSBmbGFzaCBvbiBhIFBvd2VyQm9vazUsOC4gSXMgdGhlcmUgcmVhc29uIHRvCmJlbGlldmUgYW55
-IG1vZGVsIHdpdGggYW4gUlYzNTAgaXNuJ3QgYWZmZWN0ZWQ/CgoKLS0gCkVhcnRobGluZyBNaWNo
-ZWwgRMOkbnplciAgICAgICAgICAgfCAgICAgICAgICAgICAgICBodHRwOi8vd3d3LnZtd2FyZS5j
-b20KTGlicmUgc29mdHdhcmUgZW50aHVzaWFzdCAgICAgICAgIHwgICAgICAgICAgRGViaWFuLCBY
-IGFuZCBEUkkgZGV2ZWxvcGVyCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KQXBwcyBidWlsdCB3aXRo
-IHRoZSBBZG9iZShSKSBGbGV4KFIpIGZyYW1ld29yayBhbmQgRmxleCBCdWlsZGVyKFRNKSBhcmUK
-cG93ZXJpbmcgV2ViIDIuMCB3aXRoIGVuZ2FnaW5nLCBjcm9zcy1wbGF0Zm9ybSBjYXBhYmlsaXRp
-ZXMuIFF1aWNrbHkgYW5kCmVhc2lseSBidWlsZCB5b3VyIFJJQXMgd2l0aCBGbGV4IEJ1aWxkZXIs
-IHRoZSBFY2xpcHNlKFRNKWJhc2VkIGRldmVsb3BtZW50CnNvZnR3YXJlIHRoYXQgZW5hYmxlcyBp
-bnRlbGxpZ2VudCBjb2RpbmcgYW5kIHN0ZXAtdGhyb3VnaCBkZWJ1Z2dpbmcuCkRvd25sb2FkIHRo
-ZSBmcmVlIDYwIGRheSB0cmlhbC4gaHR0cDovL3Auc2YubmV0L3NmdS93d3ctYWRvYmUtY29tCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2
-LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5u
-ZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJk
-ZXYtZGV2ZWwK
+On 23 Mar 2009 12:01:33 +0100, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org wrote:
+> Jean Delvare napisa=C5=82(a):
+> > On Sat, 21 Mar 2009 20:29:54 +0100, Krzysztof Helt wrote:
+> > > +	depends on FB_3DFX >> EXPERIMENTAL
+> > > +	select FB_DDC
+> > > +	default y
+> > > +	help
+> > > +	  Say Y here if you want DDC/I2C support for your 3dfx Voodoo3.
+> >=20
+> > It might be worth adding a note that the driver itself doesn&#039;t=
+ yet take
+> > benefit of the DDC channel.
+>=20
+> IHMO, it does not matter. A separate patch which make use of it is al=
+ready
+> ready to post. If this patch is accepted, the second one will be post=
+ed. It=20
+> is not worth to add a comment then remove it in the next patch.
+
+Ah, very well then. I wasn't sure if you had already been working on it
+or if it was just a plan for the future. If you already have a patch
+implementing "full support" then I agree with you.
+
+> > > (...)
+> > > +	tdfxfb_setup_ddc_bus(>par->chan[0], "VOODOO3-DDC", info->dev);
+> > > +	tdfxfb_setup_i2c_bus(>par->chan[1], "VOODOO3-I2C", info->dev);
+> >=20
+> > Why all-caps names? What about "Voodoo3 DDC" and "Voodoo3 I2C" inst=
+ead?
+> >=20
+>=20
+> Just a choice. One other driver does it this way. I'll change to
+> the proposed names.
+
+The I2C bus names of framebuffer drivers have a rather bad history :(
+
+> > Next step is to deprecate i2c-voodoo3. This requires changes to
+> > drivers/i2c/busses/Kconfig and
+> > Documentation/feature-removal-schedule.txt. Are you going to do it =
+or
+> > should I?
+>=20
+> I don't care. First, this patch must be accepted.
+
+It will be accepted, don't worry :)
+
+I'll prepare the deprecation patch now, should be fairly trivial.
+
+--=20
+Jean Delvare

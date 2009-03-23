@@ -1,61 +1,66 @@
-From: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-Subject: [PATCH] i2c-voodoo3: Deprecate in favor of tdfxfb
-Date: Mon, 23 Mar 2009 13:30:29 +0100
-Message-ID: <20090323133029.4e1c1a79@hyperion.delvare>
+From: krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
+Subject: =?UTF-8?q?Re:_Re:_[PATCH]_tdfxfb:_move_I2C_functionality_into_the_tdfxfb?=
+Date: 23 Mar 2009 13:50:20 +0100
+Message-ID: <20090323125020.6BE7C386CB2@f02.poczta.interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: Linux I2C <linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Linux-fbdev-devel <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, Krzysztof Helt <krzysztof.h1-5tc4TXWwyLM@public.gmane.org>
+Content-Type: TEXT/plain; charset="iso-8859-1"
+To: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, Krzysztof Helt <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>, Linux-fbdev-devel <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Support for I2C/DDC was recently added to the tdfxfb driver, which
-means that the i2c-voodoo3 driver can be deprecated.
+Jean Delvare napisa=B3(a):
+> On 23 Mar 2009 12:01:33 +0100, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org wrote:
+> > Jean Delvare napisa=B3(a):
+> > > On Sat, 21 Mar 2009 20:29:54 +0100, Krzysztof Helt wrote:
+> > > > +	depends on FB_3DFX >> EXPERIMENTAL
+> > > > +	select FB_DDC
+> > > > +	default y
+> > > > +	help
+> > > > +	  Say Y here if you want DDC/I2C support for your 3dfx Voodoo=
+3.
+> > >=20
+> > > It might be worth adding a note that the driver itself doesn>#039=
+;t
+> yet take
+> > > benefit of the DDC channel.
+> >=20
+> > IHMO, it does not matter. A separate patch which make use of it is
+> already
+> > ready to post. If this patch is accepted, the second one will be po=
+sted.
+> It=20
+> > is not worth to add a comment then remove it in the next patch.
+>=20
+> Ah, very well then. I wasn&#039;t sure if you had already been workin=
+g on it
+> or if it was just a plan for the future. If you already have a patch
+> implementing "full support" then I agree with you.
+>=20
 
-Signed-off-by: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-Cc: Krzysztof Helt <krzysztof.h1-5tc4TXWwyLM@public.gmane.org>
----
- Documentation/feature-removal-schedule.txt |    9 +++++++++
- drivers/i2c/busses/Kconfig                 |    6 ++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+It was work in progress when the first patch was posted. It is ready no=
+w.
 
---- linux-2.6.29-rc8.orig/Documentation/feature-removal-schedule.txt	2009-03-20 09:46:26.000000000 +0100
-+++ linux-2.6.29-rc8/Documentation/feature-removal-schedule.txt	2009-03-23 13:21:51.000000000 +0100
-@@ -345,3 +345,12 @@ Why:	See commits 129f8ae9b1b5be94517da76
- 	Removal is subject to fixing any remaining bugs in ACPI which may
- 	cause the thermal throttling not to happen at the right time.
- Who:	Dave Jones <davej-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Matthew Garrett <mjg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-+
-+---------------------------
-+
-+What:	i2c-voodoo3 driver
-+When:	October 2009
-+Why:	Superseded by tdfxfb. I2C/DDC support used to live in a separate
-+	driver but this caused driver conflicts.
-+Who:	Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-+	Krzysztof Helt <krzysztof.h1-5tc4TXWwyLM@public.gmane.org>
---- linux-2.6.29-rc8.orig/drivers/i2c/busses/Kconfig	2009-03-20 18:54:07.000000000 +0100
-+++ linux-2.6.29-rc8/drivers/i2c/busses/Kconfig	2009-03-23 13:26:30.000000000 +0100
-@@ -583,12 +583,14 @@ comment "Graphics adapter I2C/DDC channe
- 	depends on PCI
- 
- config I2C_VOODOO3
--	tristate "Voodoo 3"
-+	tristate "Voodoo 3 (DEPRECATED)"
- 	depends on PCI
- 	select I2C_ALGOBIT
- 	help
- 	  If you say yes to this option, support will be included for the
--	  Voodoo 3 I2C interface.
-+	  Voodoo 3 I2C interface. This driver is deprecated and you should
-+	  use the tdfxfb driver instead, which additionally provides
-+	  framebuffer support.
- 
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called i2c-voodoo3.
+> > > Next step is to deprecate i2c-voodoo3. This requires changes to
+> > > drivers/i2c/busses/Kconfig and
+> > > Documentation/feature-removal-schedule.txt. Are you going to do i=
+t or
+> > > should I?
+> >=20
+> > I don&#039;t care. First, this patch must be accepted.
+>=20
+> It will be accepted, don&#039;t worry :)
+>=20
+> I&#039;ll prepare the deprecation patch now, should be fairly trivial=
+=2E
+>=20
 
+Thanks.
 
--- 
-Jean Delvare
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Szukasz pieniedzy? Wez podwojny limit zadluzenia w koncie direct.
+>> http://link.interia.pl/f20a3

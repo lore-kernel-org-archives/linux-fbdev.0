@@ -1,403 +1,99 @@
-From: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH] tdfxfb: move I2C functionality into the tdfxfb
-Date: Mon, 23 Mar 2009 11:07:32 +0100
-Message-ID: <20090323110732.2822f89c@hyperion.delvare>
-References: <20090321202954.2558a62b.krzysztof.h1@poczta.fm>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH] fbdev: Remove outdated advice about I2C
+	configuration
+Date: Mon, 23 Mar 2009 11:23:54 +0100
+Message-ID: <20090323112354.21585af5@hyperion.delvare>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20090321202954.2558a62b.krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
-Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Krzysztof Helt <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
-Cc: Linux-fbdev-devel <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <khali@linux-fr.org>) id 1LlhKD-0006g1-5D
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Mar 2009 10:24:09 +0000
+Received: from zone0.gcu-squad.org ([212.85.147.21]
+	helo=services.gcu-squad.org)
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LlhK8-00017g-Kz
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Mar 2009 10:24:09 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Krzysztof,
+The required I2C modules are now selected automatically by the means
+of select statements in Kconfig, so there is no point in confusing the
+users with options he/she would be supposed to enable manually.
 
-On Sat, 21 Mar 2009 20:29:54 +0100, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1-5tc4TXWwyLM@public.gmane.org>
-> 
-> The I2C functionality provided by the
-> i2c-voodoo3 driver is moved into the
-> tdfxfb (frame buffer driver for Voodoo3
-> cards). This way there is no conflict
-> between i2c driver and the fb driver.
-> 
-> The tdfxfb does not make use from the
-> DDC functionality yet. It just provides 
-> two I2C buses like the i2c-voodoo3 driver
-> (DDC and I2C).
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/video/Kconfig |   23 ++++-------------------
+ 1 file changed, 4 insertions(+), 19 deletions(-)
 
-This change has my full support. In fact it was on my to-do list for
-this year, so I am very happy to see someone else beat me at it :)
+--- linux-2.6.29-rc8.orig/drivers/video/Kconfig	2009-03-22 14:55:07.000000000 +0100
++++ linux-2.6.29-rc8/drivers/video/Kconfig	2009-03-23 11:16:19.000000000 +0100
+@@ -1128,13 +1128,6 @@ config FB_INTEL
+           830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.
+           Say Y if you have and plan to use such a board.
+ 
+-	  If you say Y here and want DDC/I2C support you must first say Y to
+-	  "I2C support" and "I2C bit-banging support" in the character devices
+-	  section.
+-
+-	  If you say M here then "I2C support" and "I2C bit-banging support"
+-	  can be build either as modules or built-in.
+-
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called intelfb.
+ 
+@@ -1207,11 +1200,10 @@ config FB_MATROX_G
+ 	  pixel and 32 bpp packed pixel. You can also use font widths
+ 	  different from 8.
+ 
+-	  If you need support for G400 secondary head, you must first say Y to
+-	  "I2C support" in the character devices section, and then to
+-	  "Matrox I2C support" and "G400 second head support" here in the
+-	  framebuffer section. G450/G550 secondary head and digital output
+-	  are supported without additional modules.
++	  If you need support for G400 secondary head, you must say Y to
++	  "Matrox I2C support" and "G400 second head support" right below.
++	  G450/G550 secondary head and digital output are supported without
++	  additional modules.
+ 
+ 	  The driver starts in monitor mode. You must use the matroxset tool 
+ 	  (available at <ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/>) to 
+@@ -1310,13 +1302,6 @@ config FB_RADEON
+ 	  a framebuffer device.  There are both PCI and AGP versions.  You
+ 	  don't need to choose this to run the Radeon in plain VGA mode.
+ 
+-	  If you say Y here and want DDC/I2C support you must first say Y to
+-	  "I2C support" and "I2C bit-banging support" in the character devices
+-	  section.
+-
+-	  If you say M here then "I2C support" and "I2C bit-banging support" 
+-	  can be build either as modules or built-in.
+-
+ 	  There is a product page at
+ 	  http://apps.ati.com/ATIcompare/
+ 
 
-(BTW: can you please trim lines at ~70 characters rather than 42? Too
-frequent new lines make the text harder to read IMHO.)
 
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1-5tc4TXWwyLM@public.gmane.org>
-> ---
-> 
-> This open way to remove the i2c-voodoo3 driver.
-> 
-> 
->  drivers/video/Kconfig  |    9 ++
->  drivers/video/tdfxfb.c |  191 +++++++++++++++++++++++++++++++++++++++++++++++-
->  include/video/tdfx.h   |   24 ++++++
->  3 files changed, 223 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 6ff3364..837479b 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -1550,6 +1550,7 @@ config FB_3DFX
->  	select FB_CFB_IMAGEBLIT
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
-> +	select FB_MODE_HELPERS
->  	help
->  	  This driver supports graphics boards with the 3Dfx Banshee,
->  	  Voodoo3 or VSA-100 (aka Voodoo4/5) chips. Say Y if you have
-> @@ -1565,6 +1566,14 @@ config FB_3DFX_ACCEL
->  	This will compile the 3Dfx Banshee/Voodoo3/VSA-100 frame buffer
->  	device driver with acceleration functions.
->  
-> +config FB_3DFX_I2C
-> +	bool "DDC/I2C for 3dfx Voodoo3 support"
-
-I see that some other drivers have a similarly unfortunate wording, but
-I'd prefer something clearer and less redundant such as "Enable DDC/I2C
-Support" (as the nvidiafb, rivafb and i810fb drivers do.)
-
-> +	depends on FB_3DFX && EXPERIMENTAL
-> +	select FB_DDC
-> +	default y
-> +	help
-> +	  Say Y here if you want DDC/I2C support for your 3dfx Voodoo3.
-
-It might be worth adding a note that the driver itself doesn't yet take
-benefit of the DDC channel.
-
-> +
->  config FB_VOODOO1
->  	tristate "3Dfx Voodoo Graphics (sst1) support"
->  	depends on FB && PCI
-> diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
-> index 14bd3f3..c4152a5 100644
-> --- a/drivers/video/tdfxfb.c
-> +++ b/drivers/video/tdfxfb.c
-> @@ -1167,6 +1167,190 @@ static struct fb_ops tdfxfb_ops = {
->  #endif
->  };
->  
-> +#ifdef CONFIG_FB_3DFX_I2C
-> +/* The voo GPIO registers don't have individual masks for each bit
-> +   so we always have to read before writing. */
-
-As far as I can see, some of the code and comments is taken directly
-from the i2c-voodoo3 driver, so it would seem fair to acknowledge the
-work of its author (Philip Edelbrock <phil-KXOFo5pg7o1l57MIdRCFDg@public.gmane.org>) in the
-header comment of the file.
-
-> +
-> +static void tdfxfb_i2c_setscl(void *data, int val)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +	unsigned int r;
-> +
-> +	r = tdfx_inl(par, VIDSERPARPORT);
-> +	if (val)
-> +		r |= I2C_SCL_OUT;
-> +	else
-> +		r &= ~I2C_SCL_OUT;
-> +	tdfx_outl(par, VIDSERPARPORT, r);
-> +	tdfx_inl(par, VIDSERPARPORT);	/* flush posted write */
-> +}
-> +
-> +static void tdfxfb_i2c_setsda(void *data, int val)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +	unsigned int r;
-> +
-> +	r = tdfx_inl(par, VIDSERPARPORT);
-> +	if (val)
-> +		r |= I2C_SDA_OUT;
-> +	else
-> +		r &= ~I2C_SDA_OUT;
-> +	tdfx_outl(par, VIDSERPARPORT, r);
-> +	tdfx_inl(par, VIDSERPARPORT);	/* flush posted write */
-> +}
-> +
-> +/* The GPIO pins are open drain, so the pins always remain outputs.
-> +   We rely on the i2c-algo-bit routines to set the pins high before
-> +   reading the input from other chips. */
-> +
-> +static int tdfxfb_i2c_getscl(void *data)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +
-> +	return (0 != (tdfx_inl(par, VIDSERPARPORT) & I2C_SCL_IN));
-> +}
-> +
-> +static int tdfxfb_i2c_getsda(void *data)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +
-> +	return (0 != (tdfx_inl(par, VIDSERPARPORT) & I2C_SDA_IN));
-> +}
-> +
-> +static void tdfxfb_ddc_setscl(void *data, int val)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +	unsigned int r;
-> +
-> +	r = tdfx_inl(par, VIDSERPARPORT);
-> +	if (val)
-> +		r |= DDC_SCL_OUT;
-> +	else
-> +		r &= ~DDC_SCL_OUT;
-> +	tdfx_outl(par, VIDSERPARPORT, r);
-> +	tdfx_inl(par, VIDSERPARPORT);	/* flush posted write */
-> +}
-> +
-> +static void tdfxfb_ddc_setsda(void *data, int val)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +	unsigned int r;
-> +
-> +	r = tdfx_inl(par, VIDSERPARPORT);
-> +	if (val)
-> +		r |= DDC_SDA_OUT;
-> +	else
-> +		r &= ~DDC_SDA_OUT;
-> +	tdfx_outl(par, VIDSERPARPORT, r);
-> +	tdfx_inl(par, VIDSERPARPORT);	/* flush posted write */
-> +}
-> +
-> +static int tdfxfb_ddc_getscl(void *data)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +
-> +	return (0 != (tdfx_inl(par, VIDSERPARPORT) & DDC_SCL_IN));
-> +}
-> +
-> +static int tdfxfb_ddc_getsda(void *data)
-> +{
-> +	struct tdfxfb_i2c_chan 	*chan = data;
-> +	struct tdfx_par 	*par = chan->par;
-> +
-> +	return (0 != (tdfx_inl(par, VIDSERPARPORT) & DDC_SDA_IN));
-> +}
-> +
-> +static int __devinit tdfxfb_setup_ddc_bus(struct tdfxfb_i2c_chan *chan,
-> +					  const char *name, struct device *dev)
-> +{
-> +	int rc;
-> +
-> +	strcpy(chan->adapter.name, name);
-
-Please use strlcpy() instead.
-
-> +	chan->adapter.owner		= THIS_MODULE;
-> +	chan->adapter.class		= I2C_CLASS_DDC;
-
-You must include <linux/i2c.h> to use this. I know it is indirectly
-included but relying on indirect includes is a bad practice.
-
-> +	chan->adapter.algo_data		= &chan->algo;
-> +	chan->adapter.dev.parent	= dev;
-> +	chan->algo.setsda		= tdfxfb_ddc_setsda;
-> +	chan->algo.setscl		= tdfxfb_ddc_setscl;
-> +	chan->algo.getsda		= tdfxfb_ddc_getsda;
-> +	chan->algo.getscl		= tdfxfb_ddc_getscl;
-> +	chan->algo.udelay		= 10;
-> +	chan->algo.timeout		= msecs_to_jiffies(500);
-> +	chan->algo.data 		= chan;
-> +
-> +	i2c_set_adapdata(&chan->adapter, chan);
-> +
-> +	rc = i2c_bit_add_bus(&chan->adapter);
-> +	if (rc == 0)
-> +		DPRINTK("I2C bus %s registered.\n", name);
-> +	else
-> +		chan->par = NULL;
-> +
-> +	return rc;
-> +}
-> +
-> +static int __devinit tdfxfb_setup_i2c_bus(struct tdfxfb_i2c_chan *chan,
-> +					  const char *name, struct device *dev)
-> +{
-> +	int rc;
-> +
-> +	strcpy(chan->adapter.name, name);
-
-Same here.
-
-> +	chan->adapter.owner		= THIS_MODULE;
-> +	chan->adapter.class		= I2C_CLASS_TV_ANALOG;
-> +	chan->adapter.algo_data		= &chan->algo;
-> +	chan->adapter.dev.parent	= dev;
-> +	chan->algo.setsda		= tdfxfb_i2c_setsda;
-> +	chan->algo.setscl		= tdfxfb_i2c_setscl;
-> +	chan->algo.getsda		= tdfxfb_i2c_getsda;
-> +	chan->algo.getscl		= tdfxfb_i2c_getscl;
-> +	chan->algo.udelay		= 10;
-> +	chan->algo.timeout		= msecs_to_jiffies(500);
-> +	chan->algo.data 		= chan;
-> +
-> +	i2c_set_adapdata(&chan->adapter, chan);
-> +
-> +	rc = i2c_bit_add_bus(&chan->adapter);
-> +	if (rc == 0)
-> +		DPRINTK("I2C bus %s registered.\n", name);
-> +	else
-> +		chan->par = NULL;
-> +
-> +	return rc;
-> +}
-> +
-> +static void __devinit tdfxfb_create_i2c_busses(struct fb_info *info)
-> +{
-> +	struct tdfx_par *par = info->par;
-> +
-> +	tdfx_outl(par, VIDINFORMAT, 0x8160);
-> +	tdfx_outl(par, VIDSERPARPORT, 0xcffc0020);
-> +
-> +	par->chan[0].par = par;
-> +	par->chan[1].par = par;
-> +
-> +	tdfxfb_setup_ddc_bus(&par->chan[0], "VOODOO3-DDC", info->dev);
-> +	tdfxfb_setup_i2c_bus(&par->chan[1], "VOODOO3-I2C", info->dev);
-
-Why all-caps names? What about "Voodoo3 DDC" and "Voodoo3 I2C" instead?
-
-> +}
-> +
-> +static void tdfxfb_delete_i2c_busses(struct tdfx_par *par)
-> +{
-> +	if (par->chan[0].par)
-> +		i2c_del_adapter(&par->chan[0].adapter);
-> +	par->chan[0].par = NULL;
-> +
-> +	if (par->chan[1].par)
-> +		i2c_del_adapter(&par->chan[1].adapter);
-> +	par->chan[1].par = NULL;
-> +}
-> +#endif /* CONFIG_FB_3DFX_I2C */
-> +
->  /**
->   *      tdfxfb_probe - Device Initializiation
->   *
-> @@ -1284,7 +1468,9 @@ static int __devinit tdfxfb_probe(struct pci_dev *pdev,
->  	if (hwcursor)
->  		info->fix.smem_len = (info->fix.smem_len - 1024) &
->  					(PAGE_MASK << 1);
-> -
-> +#ifdef CONFIG_FB_3DFX_I2C
-> +	tdfxfb_create_i2c_busses(info);
-> +#endif
->  	if (!mode_option)
->  		mode_option = "640x480@60";
->  
-
-Later in this function, errors can occur which cause an error path to
-be taken. There you should call tdfxfb_delete_i2c_busses(par) otherwise
-you're leaking resources.
-
-> @@ -1379,6 +1565,9 @@ static void __devexit tdfxfb_remove(struct pci_dev *pdev)
->  	struct tdfx_par *par = info->par;
->  
->  	unregister_framebuffer(info);
-> +#ifdef CONFIG_FB_3DFX_I2C
-> +	tdfxfb_delete_i2c_busses(par);
-> +#endif
->  	if (par->mtrr_handle >= 0)
->  		mtrr_del(par->mtrr_handle, info->fix.smem_start,
->  			 info->fix.smem_len);
-> diff --git a/include/video/tdfx.h b/include/video/tdfx.h
-> index 7431d96..bc37022 100644
-> --- a/include/video/tdfx.h
-> +++ b/include/video/tdfx.h
-> @@ -1,6 +1,9 @@
->  #ifndef _TDFX_H
->  #define _TDFX_H
->  
-> +#include <linux/i2c.h>
-> +#include <linux/i2c-algo-bit.h>
-> +
-
-It would seem fair to only include these header files...
-
->  /* membase0 register offsets */
->  #define STATUS		0x00
->  #define PCIINIT0	0x04
-> @@ -123,6 +126,18 @@
->  #define VIDCFG_PIXFMT_SHIFT             18
->  #define DACMODE_2X			BIT(0)
->  
-> +/* I2C bit locations in the VIDSERPARPORT register */
-> +#define DDC_ENAB	0x00040000
-> +#define DDC_SCL_OUT	0x00080000
-> +#define DDC_SDA_OUT	0x00100000
-> +#define DDC_SCL_IN	0x00200000
-> +#define DDC_SDA_IN	0x00400000
-> +#define I2C_ENAB	0x00800000
-> +#define I2C_SCL_OUT	0x01000000
-> +#define I2C_SDA_OUT	0x02000000
-> +#define I2C_SCL_IN	0x04000000
-> +#define I2C_SDA_IN	0x08000000
-> +
->  /* VGA rubbish, need to change this for multihead support */
->  #define MISC_W		0x3c2
->  #define MISC_R		0x3cc
-> @@ -168,12 +183,21 @@ struct banshee_reg {
->  	unsigned long miscinit0;
->  };
->  
-> +struct tdfx_par;
-> +
-> +struct tdfxfb_i2c_chan {
-> +	struct tdfx_par *par;
-> +	struct i2c_adapter adapter;
-> +	struct i2c_algo_bit_data algo;
-> +};
-> +
->  struct tdfx_par {
->  	u32 max_pixclock;
->  	u32 palette[16];
->  	void __iomem *regbase_virt;
->  	unsigned long iobase;
->  	int mtrr_handle;
-> +	struct tdfxfb_i2c_chan chan[2];
-
-... and this struct member if CONFIG_FB_3DFX_I2C is defined (same as
-intelfb and radeonfb are doing for example.)
-
->  };
->  
->  #endif	/* __KERNEL__ */
-
-Other than these details, it looks OK to me. Please send an updated
-version addressing my comments and I'll be happy to ack it. I've also
-tested the new code on my Voodoo3 and it worked just fine.
-
-Was your code tested on a Voodoo5? The i2c-voodoo3 driver didn't claim
-to support it, so I wonder if it is compatible DDC/I2C-wise.
-
-Next step is to deprecate i2c-voodoo3. This requires changes to
-drivers/i2c/busses/Kconfig and
-Documentation/feature-removal-schedule.txt. Are you going to do it or
-should I?
-
-Thanks,
 -- 
 Jean Delvare
+
+------------------------------------------------------------------------------
+Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are
+powering Web 2.0 with engaging, cross-platform capabilities. Quickly and
+easily build your RIAs with Flex Builder, the Eclipse(TM)based development
+software that enables intelligent coding and step-through debugging.
+Download the free 60 day trial. http://p.sf.net/sfu/www-adobe-com

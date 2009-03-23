@@ -1,66 +1,90 @@
-From: krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
-Subject: =?UTF-8?q?Re:_Re:_[PATCH]_tdfxfb:_move_I2C_functionality_into_the_tdfxfb?=
-Date: 23 Mar 2009 13:50:20 +0100
-Message-ID: <20090323125020.6BE7C386CB2@f02.poczta.interia.pl>
+From: Yauhen Kharuzhy <jekhor@gmail.com>
+Subject: jekhor@gmail.com: Metronomefb porting details
+Date: Mon, 23 Mar 2009 16:05:55 +0200
+Message-ID: <20090323140555.GA30847@jeknote.loshitsa1.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/plain; charset="iso-8859-1"
-To: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, Krzysztof Helt <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>, Linux-fbdev-devel <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jekhor@gmail.com>) id 1LlknB-0003fl-UG
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Mar 2009 14:06:17 +0000
+Received: from mail-ew0-f169.google.com ([209.85.219.169])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Llkn2-0005Fo-Te for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Mar 2009 14:06:17 +0000
+Received: by ewy17 with SMTP id 17so1613722ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 23 Mar 2009 07:06:06 -0700 (PDT)
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Jean Delvare napisa=B3(a):
-> On 23 Mar 2009 12:01:33 +0100, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org wrote:
-> > Jean Delvare napisa=B3(a):
-> > > On Sat, 21 Mar 2009 20:29:54 +0100, Krzysztof Helt wrote:
-> > > > +	depends on FB_3DFX >> EXPERIMENTAL
-> > > > +	select FB_DDC
-> > > > +	default y
-> > > > +	help
-> > > > +	  Say Y here if you want DDC/I2C support for your 3dfx Voodoo=
-3.
-> > >=20
-> > > It might be worth adding a note that the driver itself doesn>#039=
-;t
-> yet take
-> > > benefit of the DDC channel.
-> >=20
-> > IHMO, it does not matter. A separate patch which make use of it is
-> already
-> > ready to post. If this patch is accepted, the second one will be po=
-sted.
-> It=20
-> > is not worth to add a comment then remove it in the next patch.
->=20
-> Ah, very well then. I wasn&#039;t sure if you had already been workin=
-g on it
-> or if it was just a plan for the future. If you already have a patch
-> implementing "full support" then I agree with you.
->=20
+Forwarded message from me to Jaya Kumar (I forgot to add linux-fbdev-devel to Cc:).
 
-It was work in progress when the first patch was posted. It is ready no=
-w.
+----- Forwarded message from Yauhen Kharuzhy <jekhor@gmail.com> -----
 
-> > > Next step is to deprecate i2c-voodoo3. This requires changes to
-> > > drivers/i2c/busses/Kconfig and
-> > > Documentation/feature-removal-schedule.txt. Are you going to do i=
-t or
-> > > should I?
-> >=20
-> > I don&#039;t care. First, this patch must be accepted.
->=20
-> It will be accepted, don&#039;t worry :)
->=20
-> I&#039;ll prepare the deprecation patch now, should be fairly trivial=
-=2E
->=20
+From: Yauhen Kharuzhy <jekhor@gmail.com>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: openinkpot-hackers@googlegroups.com
+Subject: Metronomefb porting details
 
-Thanks.
+Hi.
 
-Regards,
-Krzysztof
+I am porting metronomefb to new 5-inch bookreader (HanWong N516) and
+have some questions.
 
-----------------------------------------------------------------------
-Szukasz pieniedzy? Wez podwojny limit zadluzenia w koncie direct.
->> http://link.interia.pl/f20a3
+1. metronomefb_var.[xy]res and [xy]res_virtual are set to fw/fh
+values, which are not equal to real size of panel. Then this values
+sending to X server and it make impropely decision about framebuffer
+parameters. In my hardware I was able to set xres of LCDC framebuffer to
+800 and set fw field of epd_frame_table entry to 800 for resolving
+this, but it only masks the problem.
+
+2. According with specifications, Metronome supports 4 bit per pixel,
+but in the metronomefb only 3 bpp format is used (metronomefb_var.red = { 4, 3, 0 }).
+Can you explain this moment? Is it real colordepth of panels?
+
+3. X server is works, but when I try to load gradient image directly to
+/dev/fb1 (file with blocks of bytes from 0x00 to 0x0f), only black
+screen is shown. When I load 0xff bytes to it, screen fills by white
+color. Can you comment this? 
+
+4. I found that error messages in the load_waveform function caused oops
+because info->dev is not initialised at this stage yet.
+
+5. I think that waveform filesize check is completely useless. I have
+two waveforms files for N516 and they have different sizes. I don't know
+which file is used in the original firmware, but I tried both and they
+work.
+
+6. load_waveform() cannot be called more than one times with one
+firmware because it changes fields trc and mc in the wfm_hdr structure.
+I think that this is bug.
+
+----- End forwarded message -----
+
+-- 
+Yauhen Kharuzhy		jekhor _at_ gmail.com
+			JID: jek@jabber.ru
+
+A: No
+Q: Should I quote below my post?
+
+------------------------------------------------------------------------------
+Apps built with the Adobe(R) Flex(R) framework and Flex Builder(TM) are
+powering Web 2.0 with engaging, cross-platform capabilities. Quickly and
+easily build your RIAs with Flex Builder, the Eclipse(TM)based development
+software that enables intelligent coding and step-through debugging.
+Download the free 60 day trial. http://p.sf.net/sfu/www-adobe-com

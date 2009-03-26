@@ -1,41 +1,39 @@
-From: Krzysztof Helt <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 2/2] tdfxfb: make use of DDC information about connected
- monitor
-Date: Wed, 25 Mar 2009 20:25:04 +0100
-Message-ID: <20090325202504.1a4690a4.krzysztof.h1@poczta.fm>
-References: <20090325063616.16A371D789D@f39.poczta.interia.pl>
-	<20090325090655.19fe3af2@hyperion.delvare>
+From: Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: Metronomefb porting details
+Date: Thu, 26 Mar 2009 17:05:01 +0800
+Message-ID: <45a44e480903260205k69426205ib802a5262883dd71@mail.gmail.com>
+References: <20090323131708.GA21177@jeknote.loshitsa1.net> <20090323140825.GB30847@jeknote.loshitsa1.net> <45a44e480903250203v39e040f6v3b16c27eb67fcc6a@mail.gmail.com> <20090325101049.GA3786@jeknote.loshitsa1.net>
+Reply-To: openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20090325090655.19fe3af2-ig7AzVSIIG7kN2dkZ6Wm7A@public.gmane.org>
-Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
+Return-path: <grbounce-qpToLQUAAABpAOdMKF8RyK0jmD8A53lq=gchlod-openinkpot-hackers=m.gmane.org-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <20090325101049.GA3786-Hf4asEuLYtTApnrAjwkxG0OZDFfiGV3a@public.gmane.org>
+Sender: openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <mailto:openinkpot-hackers+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <http://googlegroups.com/group/openinkpot-hackers/subscribe>,
+	<mailto:openinkpot-hackers+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-Cc: Linux-fbdev-devel <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
-
-On Wed, 25 Mar 2009 09:06:55 +0100
-Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org> wrote:
-
-> On 25 Mar 2009 07:36:15 +0100, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org wrote:
-
-> > If you can test the BT869 driver for a Voodoo3 card (mentioned
-> > in the i2c-voodoo3 doc) it would be great.
-> 
-> The bt869 driver was never ported to Linux 2.6, so no, I can't test it.
-> Not that I believe that the driver as it existed made much sense
-> anyway. It was more of an afternoon hack than anything else.
-> Controlling the video output using the BT869 should really be up to the
-> video driver (framebuffer or X) and not to the user.
-> 
-
-I see. I found that there is something like bt869 driver in the lm-sensors
-package but I didn't know details.
-
-Thanks for answer,
-Krzysztof
+To: Yauhen Kharuzhy <jekhor-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, "linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org" <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
 
 
-----------------------------------------------------------------------
-Udar sloneczny prezesa Kaczynskiego... >>> http://link.interia.pl/f2083
+On Wed, Mar 25, 2009 at 6:10 PM, Yauhen Kharuzhy <jekhor-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> OK. According to Metronome specifications, bits 4-7 in the pixel octet
+> is 'current image' pixel value and bits 0-3 --- 'next image' value. Why
+> metronomefb don't use this? As I understood, 'current image' values have
+> no meaning in mode 3 waveforms, doesn't it?
+
+In metronomefb, I used bits 5-7 in each octet because that's the mode
+in which the waveform I had worked.
+
+That is a good point about current image versus next image. I was not
+able to get that working with metronome and the waveform that I had.
+If it is working for you, then absolutely, yes, it makes sense to push
+the current image data from the image buffer into the previous image
+part of the octet when we perform the page update to push the new
+image bits.
+
+Thanks,
+jaya

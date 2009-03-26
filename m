@@ -1,39 +1,148 @@
-From: Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: Metronomefb porting details
-Date: Thu, 26 Mar 2009 17:05:01 +0800
-Message-ID: <45a44e480903260205k69426205ib802a5262883dd71@mail.gmail.com>
-References: <20090323131708.GA21177@jeknote.loshitsa1.net> <20090323140825.GB30847@jeknote.loshitsa1.net> <45a44e480903250203v39e040f6v3b16c27eb67fcc6a@mail.gmail.com> <20090325101049.GA3786@jeknote.loshitsa1.net>
-Reply-To: openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: pcolodron@uvigo.es
+Subject: Xilinx framebuffer
+Date: Thu, 26 Mar 2009 12:28:00 +0100
+Message-ID: <20090326122800.1txn5bh4lps044g0@correoweb.uvigo.es>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <grbounce-qpToLQUAAABpAOdMKF8RyK0jmD8A53lq=gchlod-openinkpot-hackers=m.gmane.org-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <20090325101049.GA3786-Hf4asEuLYtTApnrAjwkxG0OZDFfiGV3a@public.gmane.org>
-Sender: openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <mailto:openinkpot-hackers+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <http://googlegroups.com/group/openinkpot-hackers/subscribe>,
-	<mailto:openinkpot-hackers+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Type: text/plain; charset="us-ascii"
-To: Yauhen Kharuzhy <jekhor-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: openinkpot-hackers-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, "linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org" <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <pcolodron@uvigo.es>) id 1Lmnkt-0003Pi-1J
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Mar 2009 11:28:15 +0000
+Received: from cebola.uvigo.es ([193.146.32.124])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Lmnkj-0005TQ-7D
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Mar 2009 11:28:15 +0000
+Received: from millo.uvigo.es (millo.uvigo.es [193.146.32.82])
+	by cebola.uvigo.es (8.13.8/8.13.8/Debian-3) with ESMTP id
+	n2QBS00L018672
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 26 Mar 2009 12:28:00 +0100
+Received: from millo.uvigo.es (localhost [127.0.0.1])
+	by millo.uvigo.es (8.13.8/8.13.8/Debian-3) with ESMTP id n2QBS0v6018840
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 26 Mar 2009 12:28:00 +0100
+Received: (from www-data@localhost)
+	by millo.uvigo.es (8.13.8/8.13.8/Submit) id n2QBS0rA018839
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 26 Mar 2009 12:28:00 +0100
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+
+Hi all,
+
+My name is Pablo and I am a new subscriber of this list.
+
+I have seen many post here related to the framebuffer driver  
+'xilinxfb.c' and I hope you can solve some doubts that I have about it.
+
+I am actually trying to generate a uClinux core for my Virtex4  
+development kit, which uses Microblaze and has a Xilinx TFT controller  
+IP core (which I have tested and it works correctly).
+
+When it comes to boot the kernel, I have used some printk() functions  
+to follow the execution flow because I am quite unexperienced in  
+device drivers. I have seen something strange in silinxfb.c, and I  
+would like you to tell me if this is a common error of begginer users.  
+The issue is that I added printk() in the following parts of  
+'xilinxfb.c':
+
+/* ---------------------------------------------------------------------
+   * Module setup and teardown
+  */
+
+  static int __init
+  xilinxfb_init(void)
+  {
+          int rc;
+	printk("step 1\n");
+          rc = xilinxfb_of_register();
+	printk("step 2\n");
+          if (rc)
+                  return rc;
+  	printk("step 3\n");
+          rc = platform_driver_register(&xilinxfb_platform_driver);
+	printk("step 4, devuelve rc: %d\n",rc);
+
+          if (rc)
+                  xilinxfb_of_unregister();
+	printk("step 5\n");
+
+          return rc;
+  }
+
+I also added printk() in:
+
+/* ---------------------------------------------------------------------
+   * Platform bus binding
+   */
+
+  static int
+  xilinxfb_platform_probe(struct platform_device *pdev)
+  {
+          struct xilinxfb_platform_data *pdata;
+          struct resource *res;
+  	printk("step 7\n");
+          /* Find the registers address */
+          res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+          if (!res) {
+                  dev_err(&pdev->dev, "Couldn't get registers resource\n");
+                  return -ENODEV;
+          }
+
+Checking the message on the console when the system boots, I can see  
+the following:
+
+io scheduler deadline registered
+io scheduler cfq registered (default)
+step 1
+step 2
+step 3
+step 4
+paso 5
+xgpio0 #0 at 0x81400000 mapped to 0x81400000 device: 10,185 not using IRQ
+xgpio1 #1 at 0x81420000 mapped to 0x81420000 device: 10,186 not using IRQ
+
+I think this means that the function xilinxfb_platform_probe() in  
+'xilinxfb.c' is not being executed and, as a consequence, either  
+xilinxfb_assing() is. It seems logic because there are no message  
+about the framebuffer in the boot log (in xilinxfb_assign there are  
+some dev_dbg() functions that should show this information messages).
+
+Do you have any idea about why this is happening? Other devices like  
+xgpio are recognized by the kernel and the structure of the drivers is  
+similar to the one used in xilinxfb.c. Moreover, in my uClinux system  
+I can see the following:
+
+# ls sys/bus/platform/drivers/
+i8042        uartlite     xilinx_gpio  xilinxfb
+# ls sys/bus/platform/devices/
+i8042          uartlite.0     xilinx_gpio.0  xilinx_gpio.1
+
+The driver is in the folder but there are no fb0 devices.
+
+Any hint about all this would be very helpful.
+
+Thank you very much.
+
+Kind Regards,
+
+Pablo Colodron
 
 
-On Wed, Mar 25, 2009 at 6:10 PM, Yauhen Kharuzhy <jekhor-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> OK. According to Metronome specifications, bits 4-7 in the pixel octet
-> is 'current image' pixel value and bits 0-3 --- 'next image' value. Why
-> metronomefb don't use this? As I understood, 'current image' values have
-> no meaning in mode 3 waveforms, doesn't it?
 
-In metronomefb, I used bits 5-7 in each octet because that's the mode
-in which the waveform I had worked.
-
-That is a good point about current image versus next image. I was not
-able to get that working with metronome and the waveform that I had.
-If it is working for you, then absolutely, yes, it makes sense to push
-the current image data from the image buffer into the previous image
-part of the octet when we perform the page update to push the new
-image bits.
-
-Thanks,
-jaya
+------------------------------------------------------------------------------

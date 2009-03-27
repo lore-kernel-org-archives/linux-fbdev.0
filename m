@@ -1,23 +1,24 @@
-From: pcolodron@uvigo.es
-Subject: Re: Xilinx framebuffer
-Date: Fri, 27 Mar 2009 10:51:53 +0100
-Message-ID: <20090327105153.g55s75ug0gc8skww@correoweb.uvigo.es>
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 01/58] move acornfb's probe function to
+	.devinit.text
+Date: Sat, 28 Mar 2009 00:26:22 +0100
+Message-ID: <1238196439-16535-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20090327232153.GA16348@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <pcolodron@uvigo.es>) id 1Ln8jQ-0006qf-V0
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ukl@pengutronix.de>) id 1LnLSr-0006BO-IF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 27 Mar 2009 09:52:08 +0000
-Received: from cebola.uvigo.es ([193.146.32.124])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1Ln8jH-0005tq-4B
+	Fri, 27 Mar 2009 23:27:53 +0000
+Received: from metis.ext.pengutronix.de ([92.198.50.35])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LnLSn-0004mw-Q7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 27 Mar 2009 09:52:03 +0000
-Content-Disposition: inline
+	Fri, 27 Mar 2009 23:27:53 +0000
+In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,151 +28,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Cc: Antonino Daplas <adaplas@pol.net>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, Christoph Hellwig <hch@lst.de>
 
-Hi Krzysztof,
-
-First of all, thanks for replying so fast, I was starting to think  =
-
-that nobody could help with this...
-
-Due to my unexperience in this field I will have to ask you some basic  =
-
-questions. What do you mean when you say 'device definition file'? I  =
-
-have been reading some things about platform devices and drivers but I  =
-
-still don't know where can I find the file which defines the features  =
-
-of my platform device.
-
-Could be the problem that I am not configuring properly the parameters  =
-
-REG_FB_ADDR and REG_CTRL? As far as I know, these values are the  =
-
-addresses of the control registers of my TFT controller. In my case,  =
-
-the values are 0x86e00000 and 0x86e00004. Inside the first register,  =
-
-the starting address of the framebuffer can be found (which is  =
-
-0x8FC00000). Is this right or should I define the parameter  =
-
-REG_FB_ADDR as the physical address of the framebuffer directly  =
-
-(0x8FC00000)?
-
-Thank you so much for your help Krzysztof.
-
-Regards,
-
-Pablo
-
-
-Krzysztof Helt escribi=F3:
-> Hi Pablo,
->
->
-> On Thu, 26 Mar 2009 12:28:00 +0100
-> pcolodron@uvigo.es wrote:
->
->> Hi all,
->>
->> My name is Pablo and I am a new subscriber of this list.
->>
->> I have seen many post here related to the framebuffer driver   =
-
->> 'xilinxfb.c' and I hope you can solve some doubts that I have about  =
-
->> it.
->>
->> I am actually trying to generate a uClinux core for my Virtex4   =
-
->> development kit, which uses Microblaze and has a Xilinx TFT  =
-
->> controller  IP core (which I have tested and it works correctly).
->>
->> When it comes to boot the kernel, I have used some printk()  =
-
->> functions  to follow the execution flow because I am quite  =
-
->> unexperienced in  device drivers. I have seen something strange in  =
-
->> silinxfb.c, and I  would like you to tell me if this is a common  =
-
->> error of begginer users.  The issue is that I added printk() in the  =
-
->> following parts of  'xilinxfb.c':
->>
->
-> (... )
->> Checking the message on the console when the system boots, I can  =
-
->> see  the following:
->>
->> io scheduler deadline registered
->> io scheduler cfq registered (default)
->> step 1
->> step 2
->> step 3
->> step 4
->> paso 5
->> xgpio0 #0 at 0x81400000 mapped to 0x81400000 device: 10,185 not using IRQ
->> xgpio1 #1 at 0x81420000 mapped to 0x81420000 device: 10,186 not using IRQ
->>
->> I think this means that the function xilinxfb_platform_probe() in   =
-
->> 'xilinxfb.c' is not being executed and, as a consequence, either   =
-
->> xilinxfb_assing() is. It seems logic because there are no message   =
-
->> about the framebuffer in the boot log (in xilinxfb_assign there are  =
-
->>  some dev_dbg() functions that should show this information  =
-
->> messages).
->>
->> Do you have any idea about why this is happening? Other devices  =
-
->> like  xgpio are recognized by the kernel and the structure of the  =
-
->> drivers is  similar to the one used in xilinxfb.c. Moreover, in my  =
-
->> uClinux system  I can see the following:
->>
->> # ls sys/bus/platform/drivers/
->> i8042        uartlite     xilinx_gpio  xilinxfb
->> # ls sys/bus/platform/devices/
->> i8042          uartlite.0     xilinx_gpio.0  xilinx_gpio.1
->>
->
-> The xilinxfb_init function is called if only the xilinxfb driver is  =
-
-> loaded or during kernel boot if it is compiled into the kernel.
->
-> The xilinxfb_probe function is called if you registered a correct  =
-
-> xilinxfb platform device.
-> Can you post a part of your device definition file which contains  a  =
-
-> definition of the xilinxfb platform device?
->
-> The error seems to be in your platform definition. You have to  =
-
-> register a correct platform device
-> for the xilinxfb. Then the probe function will be called.
->
-> Regards,
-> Krzysztof
->
->
-> ----------------------------------------------------------------------
-> Udar sloneczny prezesa Kaczynskiego... >>> http://link.interia.pl/f2083
->
->
-
-
-
----------------------------------------------------------------------------=
----
+QSBwb2ludGVyIHRvIGFjb3JuZmJfcHJvYmUgaXMgcGFzc2VkIHRvIHRoZSBjb3JlIHZpYQpwbGF0
+Zm9ybV9kcml2ZXJfcmVnaXN0ZXIgYW5kIHNvIHRoZSBmdW5jdGlvbiBtdXN0IG5vdCBkaXNhcHBl
+YXIgd2hlbiB0aGUKLmluaXQgc2VjdGlvbnMgYXJlIGRpc2NhcmRlZC4gIE90aGVyd2lzZSAoaWYg
+YWxzbyBoYXZpbmcgSE9UUExVRz15KQp1bmJpbmRpbmcgYW5kIGJpbmRpbmcgYSBkZXZpY2UgdG8g
+dGhlIGRyaXZlciB2aWEgc3lzZnMgd2lsbCByZXN1bHQgaW4gYW4Kb29wcyBhcyBkb2VzIGEgZGV2
+aWNlIGJlaW5nIHJlZ2lzdGVyZWQgbGF0ZS4KCkFuIGFsdGVybmF0aXZlIHRvIHRoaXMgcGF0Y2gg
+aXMgdXNpbmcgcGxhdGZvcm1fZHJpdmVyX3Byb2JlIGluc3RlYWQgb2YKcGxhdGZvcm1fZHJpdmVy
+X3JlZ2lzdGVyIHBsdXMgcmVtb3ZpbmcgdGhlIHBvaW50ZXIgdG8gdGhlIHByb2JlIGZ1bmN0aW9u
+CmZyb20gdGhlIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIuCgpTaWduZWQtb2ZmLWJ5OiBVd2UgS2xl
+aW5lLUvDtm5pZyA8dS5rbGVpbmUta29lbmlnQHBlbmd1dHJvbml4LmRlPgpDYzogQ2hyaXN0b3Bo
+IEhlbGx3aWcgPGhjaEBsc3QuZGU+CkNjOiBBbnRvbmlubyBEYXBsYXMgPGFkYXBsYXNAcG9sLm5l
+dD4KQ2M6IGxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApDYzogQW5kcmV3
+IE1vcnRvbiA8YWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZz4KLS0tCiBkcml2ZXJzL3ZpZGVvL2Fj
+b3JuZmIuYyB8ICAgIDIgKy0KIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCAxIGRl
+bGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYWNvcm5mYi5jIGIvZHJpdmVy
+cy92aWRlby9hY29ybmZiLmMKaW5kZXggNjFjM2QzZi4uMTllNGIyMSAxMDA2NDQKLS0tIGEvZHJp
+dmVycy92aWRlby9hY29ybmZiLmMKKysrIGIvZHJpdmVycy92aWRlby9hY29ybmZiLmMKQEAgLTEy
+NTksNyArMTI1OSw3IEBAIGZyZWVfdW51c2VkX3BhZ2VzKHVuc2lnbmVkIGludCB2aXJ0dWFsX3N0
+YXJ0LCB1bnNpZ25lZCBpbnQgdmlydHVhbF9lbmQpCiAJcHJpbnRrKCJhY29ybmZiOiBmcmVlZCAl
+ZEsgbWVtb3J5XG4iLCBtYl9mcmVlZCk7CiB9CiAKLXN0YXRpYyBpbnQgX19pbml0IGFjb3JuZmJf
+cHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqZGV2KQorc3RhdGljIGludCBfX2RldmluaXQg
+YWNvcm5mYl9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYpCiB7CiAJdW5zaWduZWQg
+bG9uZyBzaXplOwogCXVfaW50IGhfc3luYywgdl9zeW5jOwotLSAKMS42LjIKCgotLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3Rz
+LnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0
+aW5mby9saW51eC1mYmRldi1kZXZlbAo=

@@ -1,29 +1,28 @@
-From: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: Fix 8bpp RGB fields length
-Date: Sun, 29 Mar 2009 21:26:02 +0200
-Message-ID: <10f740e80903291226m68689d51vf8b52a2e3beb9cf2@mail.gmail.com>
+Date: Mon, 30 Mar 2009 00:18:19 +0300
+Message-ID: <20090329211819.GX10127@sci.fi>
 References: <20090301215556.8631c63c.krzysztof.h1@poczta.fm>
 	<20090302130202.GA6298@sci.fi>
 	<20090302180239.f6e67497.krzysztof.h1@poczta.fm>
 	<5d9b736f0903291214r7e8cb250l432307d80deb5a35@mail.gmail.com>
+	<10f740e80903291226m68689d51vf8b52a2e3beb9cf2@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert.uytterhoeven@gmail.com>) id 1Lo0dz-0004St-V7
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <syrjala@sci.fi>) id 1Lo2Op-00030V-RZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 29 Mar 2009 19:26:07 +0000
-Received: from mail-ew0-f217.google.com ([209.85.219.217])
+	Sun, 29 Mar 2009 21:18:35 +0000
+Received: from smtp6.welho.com ([213.243.153.40])
 	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Lo0dw-0000O7-Jw for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 29 Mar 2009 19:26:07 +0000
-Received: by ewy17 with SMTP id 17so1877113ewy.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 29 Mar 2009 12:26:02 -0700 (PDT)
-In-Reply-To: <5d9b736f0903291214r7e8cb250l432307d80deb5a35@mail.gmail.com>
+	id 1Lo2Of-0004oq-Mp for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 29 Mar 2009 21:18:30 +0000
+Content-Disposition: inline
+In-Reply-To: <10f740e80903291226m68689d51vf8b52a2e3beb9cf2@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,61 +32,76 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Michal Januszewski <michalj@gmail.com>
-Cc: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Michal Januszewski <michalj@gmail.com>
 
-T24gU3VuLCBNYXIgMjksIDIwMDkgYXQgMjE6MTQsIE1pY2hhbCBKYW51c3pld3NraSA8bWljaGFs
-akBnbWFpbC5jb20+IHdyb3RlOgo+IE9uIE1vbiwgTWFyIDIsIDIwMDkgYXQgMTk6MDIsIEtyenlz
-enRvZiBIZWx0IDxrcnp5c3p0b2YuaDFAcG9jenRhLmZtPiB3cm90ZToKPiBBIHNsaWdodCBvbWlz
-c2lvbiBpbiB0aGUgZmJkZXYgQVBJIEkgc3VwcG9zZSBzaW5jZSB0aGUgTFVUIGVudHJpZXMgYXJl
-Cj4+PiBuZWFybHkgYWx3YXlzIDMqOGJpdHMgd2lkZS4gVkdBIGJlaW5nIHRoZSBleGNlcHRpb24u
-Cj4+Cj4+IElmIG9mZnNldHMgb2YgYWxsIFJHQiBjb21wb25lbnRzIGFyZSB0aGUgc2FtZSB0aGUg
-bGVuZ3RoIGZpZWxkIHNheXMKPj4gaG93IGxvbmUgdGhlIHBhbGxldGUgaW5kZXggaXMuIEl0IGRv
-ZXMgbm90IHNheSBhbnl0aGluZyBob3cgbG9uZwo+PiB0aGUgTFVUIGVudHJpZXMgYXJlLiBUaGlz
-IGlzIHRoZSBzYW1lIG1pc3VuZGVyc3RhbmRpbmcgYXMgZG9uZQo+PiBpbnNpZGUgdGhlIGRyaXZl
-ci4KPgo+IFdoZXJlIGlzIHRoaXMgbWVhbmluZyBvZiB0aGUgbGVuZ3RoIGZpZWxkIGRlZmluZWQ/
-IMKgV2hpbGUgSSBhZ3JlZQo+IHRoYXQgaW50ZXJwcmV0aW5nIGl0IGFzIHRoZSBsZW5ndGggb2Yg
-dGhlIHBhbGV0dGUgc2VlbXMgdG8gbWFrZQo+IG1vcmUgc2Vuc2UgKGNvbnNpZGVyaW5nIHRoZSBj
-dXJyZW50IEZCIEFQSSksIHRoZXJlIGFyZSBzZXZlcmFsCj4gcGxhY2VzIGluIHRoZSBmYmRldiBj
-b2RlIGNvbnRyYWRpY3RpbmcgdGhpcyBpbnRlcnByZXRhdGlvbgo+IChjb21tZW50cyBpbiBza2Vs
-ZXRvbmZiLmMsIHZmYi5jLCBjb2RlIGluIHZnYTE2ZmIuYywgLi4pLgoKT3JpZ2luYWxseSBpdCB3
-YXMgdGhlIHdpZHRoIG9mIHRoZSBjb2xvciBjb21wb25lbnQgaW4gdGhlIERBQywgaS5lLiA2CmZv
-ciBWR0Egd2l0aCAxOCBiaXQgY29sb3IgcGFsZXR0ZXMuCkxhdGVyIGlzIHdhcyByZWRlZmluZWQg
-dG8gYmUgdGhlIHdpZHRoIG9mIHRoZSBiaXRmaWVsZCBpbiB0aGUgcGl4ZWwKZGF0YSwgZm9yIGNv
-bnNpc3RlbmN5IHdpdGgKb3RoZXIgdmlzdWFscyAocHNldWRvY29sb3IgaXMgZGlyZWN0Y29sb3Ig
-d2hlcmUgdGhlIFIsIEcsIEIsIGFuZCBBCmJpdGZpZWxkcyBvdmVybGFwKSwKYW5kIHRvIGhhbmRs
-ZSBoYXJkd2FyZSB3aGVyZSB0aGUgbnVtYmVyIG9mIHBhbGV0dGUgZW50cmllcyBpcyBub3QgMSA8
-PCBicHAKKGUuZy4gNjQgY29sb3JzIGluIDggYnBwIHBhY2tlZCBwaXhlbHMpLgoKVGhhdCdzIHdo
-eSB2ZmIuYyBoYXMgYW4gKG9ic29sZXRlKSBjb21tZW50OgoKICAgICAgICAgKiBQc2V1ZG9jb2xv
-cjoKICAgICAgICAgKiAgICB1c2VzIG9mZnNldCA9IDAgJiYgbGVuZ3RoID0gUkFNREFDIHJlZ2lz
-dGVyIHdpZHRoLgogICAgICAgICAqICAgIHZhci0+e2NvbG9yfS5vZmZzZXQgaXMgMAogICAgICAg
-ICAqICAgIHZhci0+e2NvbG9yfS5sZW5ndGggY29udGFpbnMgd2lkaHQgb2YgREFDCgp3aGlsZSB0
-aGUgKG5ld2VyKSBza2VsZXRvbmZiIG1lbnRpb25zIGJvdGg6CgogICAgICogUHNldWRvY29sb3I6
-CiAgICAgKiAgICB2YXItPntjb2xvcn0ub2Zmc2V0IGlzIDAKICAgICAqICAgIHZhci0+e2NvbG9y
-fS5sZW5ndGggY29udGFpbnMgd2lkdGggb2YgREFDIG9yIHRoZSBudW1iZXIgb2YgdW5pcXVlCiAg
-ICAgKiAgICAgICAgICAgICAgICAgICAgICAgIGNvbG9ycyBhdmFpbGFibGUgKGNvbG9yIGRlcHRo
-KQoKdmdhMTZmYi5jIGlzIGFsc28gYW4gb2xkIGRyaXZlci4KCj4gSU1PLCBpZiB3ZSdyZSBnb2lu
-ZyB0byBmaXggdXZlc2FmYiwgd2Ugc2hvdWxkIGFsc28gZml4IGFsbCB0aGUKPiBvdGhlciBkcml2
-ZXJzIGFuZCBkb2N1bWVudGF0aW9uIGFsb25nIHdpdGggaXQuCgpZZXAuCgo+Pj4gPiBGaXggdGhp
-cyBlcnJvciBpbiB1dmVzYWZiIGJ5IGRyb3BwaW5nIERBQyBzd2l0Y2hpbmcgdG8gOCBiaXRzCj4+
-PiA+IGNvbXBsZXRlbHkuIEFkdmFudGFnZSBvZiB0aGlzIGFwcHJvYWNoIGlzIG1ha2luZyB0aGUg
-ZHJpdmVyIHNob3J0ZXIsCj4+PiA+IGRpc2FkdmFudGFnZSBpcyB0aGF0IHNvbWUgY29sb3IgZmlk
-ZWxpdHkgaXMgbG9zdC4KPj4+Cj4+IFsuLl0KPj4KPj4gTXkgcGF0Y2ggaXMgYSBwcm9wb3NpdGlv
-biBub3QgYSBmaW5hbCBzb2x1dGlvbi4gSSBob3BlIE1pY2hhxYIgd2lsbAo+PiBwcm9wb3NlIHNv
-bWV0aGluZyBiZXR0ZXIuCj4KPiBJIHdvdWxkIHByZWZlciBzb21ldGhpbmcgYWxvbmcgdGhlIGxp
-bmVzIG9mIHRoZSBwYXRjaCBiZWxvdywKPiBpLmUuIHNldCB0aGUgdmFyIGZpZWxkcyBjb3JyZWN0
-bHksIGJ1dCB0cmFjayBhbmQgdXNlIHRoZSBEQUMKPiB3aWR0aCBpbnRlcm5hbGx5LiDCoFRoaXMg
-bWFrZXMgc2Vuc2Ugc2luY2UgdGhlIERBQyB3aWR0aCBpcwo+IG5vdCB1c2VkIGJ5IHVzZXJzcGFj
-ZSBhbnl3YXkgLS0gdGhlIGNvbG9yIGRlZmluaXRpb25zIHBhc3NlZAo+IHRvIHNldGNvbHJlZyBh
-cmUgYWx3YXlzIDE2LWJpdCB3aWRlIGFuZCBpdCdzIHRoZSBkcml2ZXIncwo+IGpvYiB0byBzY2Fs
-ZSB0aGVtIGRvd24gYXBwcm9wcmlhdGVseS4KClllcywgSSBhZ3JlZS4KCkdye29ldGplLGVldGlu
-Z31zLAoKCQkJCQkJR2VlcnQKCi0tCkdlZXJ0IFV5dHRlcmhvZXZlbiAtLSBUaGVyZSdzIGxvdHMg
-b2YgTGludXggYmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtbTY4ay5vcmcKCkluIHBlcnNvbmFs
-IGNvbnZlcnNhdGlvbnMgd2l0aCB0ZWNobmljYWwgcGVvcGxlLCBJIGNhbGwgbXlzZWxmIGEgaGFj
-a2VyLiBCdXQKd2hlbiBJJ20gdGFsa2luZyB0byBqb3VybmFsaXN0cyBJIGp1c3Qgc2F5ICJwcm9n
-cmFtbWVyIiBvciBzb21ldGhpbmcgbGlrZSB0aGF0LgoJCQkJCQkJICAgIC0tIExpbnVzIFRvcnZh
-bGRzCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZi
-ZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdl
-Lm5ldC9saXN0cy9saXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=
+On Sun, Mar 29, 2009 at 09:26:02PM +0200, Geert Uytterhoeven wrote:
+> On Sun, Mar 29, 2009 at 21:14, Michal Januszewski <michalj@gmail.com> wro=
+te:
+> > On Mon, Mar 2, 2009 at 19:02, Krzysztof Helt <krzysztof.h1@poczta.fm> w=
+rote:
+> > A slight omission in the fbdev API I suppose since the LUT entries are
+> >>> nearly always 3*8bits wide. VGA being the exception.
+> >>
+> >> If offsets of all RGB components are the same the length field says
+> >> how lone the pallete index is. It does not say anything how long
+> >> the LUT entries are. This is the same misunderstanding as done
+> >> inside the driver.
+> >
+> > Where is this meaning of the length field defined? =A0While I agree
+> > that interpreting it as the length of the palette seems to make
+> > more sense (considering the current FB API), there are several
+> > places in the fbdev code contradicting this interpretation
+> > (comments in skeletonfb.c, vfb.c, code in vga16fb.c, ..).
+> =
+
+> Originally it was the width of the color component in the DAC, i.e. 6
+> for VGA with 18 bit color palettes.
+> Later is was redefined to be the width of the bitfield in the pixel
+> data, for consistency with
+> other visuals (pseudocolor is directcolor where the R, G, B, and A
+> bitfields overlap),
+> and to handle hardware where the number of palette entries is not 1 << bpp
+> (e.g. 64 colors in 8 bpp packed pixels).
+> =
+
+> That's why vfb.c has an (obsolete) comment:
+> =
+
+>          * Pseudocolor:
+>          *    uses offset =3D 0 && length =3D RAMDAC register width.
+>          *    var->{color}.offset is 0
+>          *    var->{color}.length contains widht of DAC
+> =
+
+> while the (newer) skeletonfb mentions both:
+> =
+
+>      * Pseudocolor:
+>      *    var->{color}.offset is 0
+>      *    var->{color}.length contains width of DAC or the number of uniq=
+ue
+>      *                        colors available (color depth)
+> =
+
+> vga16fb.c is also an old driver.
+> =
+
+> > IMO, if we're going to fix uvesafb, we should also fix all the
+> > other drivers and documentation along with it.
+> =
+
+> Yep.
+
+The comment explaining fb_bitfield in linux/fb.h seems to need some
+fixing too ie. remove the big-endian comment as I think everyone just
+assumes the fb_bitfield values are in the device's native endianness.
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
+
+---------------------------------------------------------------------------=
+---

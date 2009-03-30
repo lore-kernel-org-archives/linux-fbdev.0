@@ -1,10 +1,10 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] s3fb: fix color component length for pseudocolor modes
-Date: Tue, 31 Mar 2009 00:11:04 +0200
-Message-ID: <20090330221104.GD6993@spock.one.pl>
+Subject: [PATCH] sa1100fb: fix color component length for pseudocolor modes
+Date: Tue, 31 Mar 2009 00:12:05 +0200
+Message-ID: <20090330221205.GE6993@spock.one.pl>
 Reply-To: spock@gentoo.org
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760106AbZC3WL3@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762411AbZC3WMu@vger.kernel.org>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
@@ -13,28 +13,73 @@ Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-s3fb incorrectly sets the length of the color fields to 6 bits
-for PSEUDOCOLOR modes, even though 8 or 4 bits are used per pixel.
-Fix this by setting the length to 8 or 4, respectively.
+sa1100fb incorrectly sets the length of the color fields to 8 bits
+for PSEUDOCOLOR modes for which only 4 bits are used per pixel.
+Fix this by setting the length to 4 bits for these modes.
 
 Signed-off-by: Michal Januszewski <spock@gentoo.org>
 ---
-diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-index 4dcec48..c3fad34 100644
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -45,11 +45,11 @@ struct s3fb_info {
- static const struct svga_fb_format s3fb_formats[] = {
- 	{ 0,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 0,
- 		FB_TYPE_TEXT, FB_AUX_TEXT_SVGA_STEP4,	FB_VISUAL_PSEUDOCOLOR, 8, 16},
--	{ 4,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 0,
-+	{ 4,  {0, 4, 0},  {0, 4, 0},  {0, 4, 0}, {0, 0, 0}, 0,
- 		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_PSEUDOCOLOR, 8, 16},
--	{ 4,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 1,
-+	{ 4,  {0, 4, 0},  {0, 4, 0},  {0, 4, 0}, {0, 0, 0}, 1,
- 		FB_TYPE_INTERLEAVED_PLANES, 1,		FB_VISUAL_PSEUDOCOLOR, 8, 16},
--	{ 8,  {0, 6, 0},  {0, 6, 0},  {0, 6, 0}, {0, 0, 0}, 0,
-+	{ 8,  {0, 8, 0},  {0, 8, 0},  {0, 8, 0}, {0, 0, 0}, 0,
- 		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_PSEUDOCOLOR, 4, 8},
- 	{16,  {10, 5, 0}, {5, 5, 0},  {0, 5, 0}, {0, 0, 0}, 0,
- 		FB_TYPE_PACKED_PIXELS, 0,		FB_VISUAL_TRUECOLOR, 2, 4},
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index fad58cf..10ddad8 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -199,16 +199,20 @@
+ extern void (*sa1100fb_backlight_power)(int on);
+ extern void (*sa1100fb_lcd_power)(int on);
+ 
+-/*
+- * IMHO this looks wrong.  In 8BPP, length should be 8.
+- */
+-static struct sa1100fb_rgb rgb_8 = {
++static struct sa1100fb_rgb rgb_4 = {
+ 	.red	= { .offset = 0,  .length = 4, },
+ 	.green	= { .offset = 0,  .length = 4, },
+ 	.blue	= { .offset = 0,  .length = 4, },
+ 	.transp	= { .offset = 0,  .length = 0, },
+ };
+ 
++static struct sa1100fb_rgb rgb_8 = {
++	.red	= { .offset = 0,  .length = 8, },
++	.green	= { .offset = 0,  .length = 8, },
++	.blue	= { .offset = 0,  .length = 8, },
++	.transp	= { .offset = 0,  .length = 0, },
++};
++
+ static struct sa1100fb_rgb def_rgb_16 = {
+ 	.red	= { .offset = 11, .length = 5, },
+ 	.green	= { .offset = 5,  .length = 6, },
+@@ -613,7 +617,7 @@ sa1100fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	DPRINTK("var->bits_per_pixel=%d\n", var->bits_per_pixel);
+ 	switch (var->bits_per_pixel) {
+ 	case 4:
+-		rgbidx = RGB_8;
++		rgbidx = RGB_4;
+ 		break;
+ 	case 8:
+ 		rgbidx = RGB_8;
+@@ -1382,6 +1386,7 @@ static struct sa1100fb_info * __init sa1100fb_init_fbinfo(struct device *dev)
+ 	fbi->fb.monspecs	= monspecs;
+ 	fbi->fb.pseudo_palette	= (fbi + 1);
+ 
++	fbi->rgb[RGB_4]		= &rgb_4;
+ 	fbi->rgb[RGB_8]		= &rgb_8;
+ 	fbi->rgb[RGB_16]	= &def_rgb_16;
+ 
+diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
+index 86831db..1c3b459 100644
+--- a/drivers/video/sa1100fb.h
++++ b/drivers/video/sa1100fb.h
+@@ -57,9 +57,10 @@ struct sa1100fb_lcd_reg {
+ 	unsigned long lccr3;
+ };
+ 
+-#define RGB_8	(0)
+-#define RGB_16	(1)
+-#define NR_RGB	2
++#define RGB_4	(0)
++#define RGB_8	(1)
++#define RGB_16	(2)
++#define NR_RGB	3
+ 
+ struct sa1100fb_info {
+ 	struct fb_info		fb;

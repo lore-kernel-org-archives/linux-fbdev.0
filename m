@@ -1,53 +1,147 @@
-From: krzysztof.h1@poczta.fm
-Subject: =?UTF-8?q?Re:_[Linux-fbdev-devel]_[PATCH]_cyblafb:_fix_color_component_length_for_pseudocolor_modes?=
-Date: 31 Mar 2009 09:25:17 +0200
-Message-ID: <20090331072517.DC8B37DC90D@f20.poczta.interia.pl>
+From: Peter Jones <pjones@redhat.com>
+Subject: Re: + efifb-dmi-set-video-type.patch added to
+	-mm tree
+Date: Tue, 31 Mar 2009 09:57:21 -0400
+Message-ID: <49D22141.3090804@redhat.com>
+References: <200903302249.n2UMn89O012955@imap1.linux-foundation.org>
+	<49D159C7.2070503@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756235AbZCaHZn@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/plain; charset="iso-8859-1"
-To: Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Knut_Petersen@t-online.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <pjones@redhat.com>) id 1LoeVW-0005px-Ro
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 31 Mar 2009 14:00:02 +0000
+Received: from mx2.redhat.com ([66.187.237.31])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LoeVR-0007Ea-GK for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 31 Mar 2009 14:00:02 +0000
+In-Reply-To: <49D159C7.2070503@redhat.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Brian Maly <bmaly@redhat.com>
+Cc: mouli@linux.intel.com, adaplas@pol.net, mm-commits@vger.kernel.org, ying.huang@intel.com, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
 
-Michal Januszewski napisa=B3(a):
-> cyblafb incorrectly sets the length of the color fields to 6 bits
-> for PSEUDOCOLOR modes, even though 8 bits are always used per pixel.
-> Fix this by setting the length to 8.
->=20
-> Signed-off-by: Michal Januszewski >spock@gentoo.org>
-> Cc: Knut Petersen >Knut_Petersen@t-online.de>
-> ---
-> diff --git a/drivers/video/cyblafb.c b/drivers/video/cyblafb.c
-> index 9704b73..8e3a264 100644
-> --- a/drivers/video/cyblafb.c
-> +++ b/drivers/video/cyblafb.c
-> @@ -615,9 +615,9 @@ static int cyblafb_check_var(struct fb_var_screen=
-info
-> *var,
->  		var->red.offset =3D 0;
->  		var->green.offset =3D 0;
->  		var->blue.offset =3D 0;
-> -		var->red.length =3D 6;
-> -		var->green.length =3D 6;
-> -		var->blue.length =3D 6;
-> +		var->red.length =3D 8;
-> +		var->green.length =3D 8;
-> +		var->blue.length =3D 8;
->  		break;
->  	case 16:
->  		var->red.offset =3D 11;
->=20
-> ---------------------------------------------------------------------=
----------
->=20
+On 03/30/2009 07:46 PM, Brian Maly wrote:
+> Adding linux-fbdev-devel and Antonino Daplas to the CC list...
+> 
 
-This driver is already removed in the -mm tree (remove-cyblafb-driver.p=
-atch).
+Looks good to me.
 
-Regards,
-Krzysztof
+Signed-of-by: Peter Jones <pjones@redhat.com>
 
-----------------------------------------------------------------------
-Wybierz i wygraj wielkanocna nagrod=EA!
-Sprawdz >>> http://link.interia.pl/f20e8
+
+> Brian
+> 
+> akpm@linux-foundation.org wrote:
+>> The patch titled
+>>      efifb: dmi set video type
+>> has been added to the -mm tree.  Its filename is
+>>      efifb-dmi-set-video-type.patch
+>>
+>> Before you just go and hit "reply", please:
+>>    a) Consider who else should be cc'ed
+>>    b) Prefer to cc a suitable mailing list as well
+>>    c) Ideally: find the original patch on the mailing list and do a
+>>       reply-to-all to that, adding suitable additional cc's
+>>
+>> *** Remember to use Documentation/SubmitChecklist when testing your
+>> code ***
+>>
+>> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+>> out what to do about this
+>>
+>> The current -mm tree may be found at
+>> http://userweb.kernel.org/~akpm/mmotm/
+>>
+>> ------------------------------------------------------
+>> Subject: efifb: dmi set video type
+>> From: Brian Maly <bmaly@redhat.com>
+>>
+>> The current logic for dmi matching in efifb does not allow efifb to load
+>> on all hardware that we can dmi match for.
+>>
+>> For a real world example, boot with elilo (3.7 or 3.8 vanilla) and on a
+>> Apple (MacBook) and EFI framebuffer driver will not load (you will
+>> have no
+>> video).  This specific hardware is efi v1.10, so we have UGA and not
+>> GOP. Without special bootloader magic (i.e.  extra elilo patches for UGA
+>> graphics detection) no screen info will be passed to the kernel and as a
+>> result efifb will not load.
+>>
+>> This patch allows the dmi match to happen by moving it to earlier in
+>> efifb_init, and sets the video type (in set_system) so that efifb can
+>> load
+>> when we have a valid dmi match and already know the specifics of the
+>> hardware.
+>>
+>> Without this patch the efifb driver will fail to load in the event screen
+>> info is not found and passed in by the bootloader, being that we will
+>> never get to look for a dmi match.  A primary reason for matching with
+>> dmi
+>> is because not all bootloaders detect the video info properly.  The
+>> solution is that in the event of a dmi match, we should set
+>> screen_info.orig_video_isVGA.  Most bootloaders fail to set screen
+>> info on
+>> Apple hardware, and this is a big problem for people who use Apple
+>> hardware.
+>>
+>> Tested on a MacBook SantaRosa with elilo-3.8 (vanilla) and resolves the
+>> issue, the dmi match now works, EFI framebuffer now loads and video
+>> works.
+>>
+>> Signed-off-by: Brian Maly <bmaly@redhat.com>
+>> Acked-by: Huang Ying <ying.huang@intel.com>
+>> Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+>> Cc: Chandramouli Narayanan <mouli@linux.intel.com>
+>> Cc: Peter Jones <pjones@redhat.com>
+>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>> ---
+>>
+>>  drivers/video/efifb.c |    5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff -puN drivers/video/efifb.c~efifb-dmi-set-video-type
+>> drivers/video/efifb.c
+>> --- a/drivers/video/efifb.c~efifb-dmi-set-video-type
+>> +++ a/drivers/video/efifb.c
+>> @@ -129,6 +129,8 @@ static int set_system(const struct dmi_s
+>>          screen_info.lfb_width = info->width;
+>>      if (screen_info.lfb_height == 0)
+>>          screen_info.lfb_height = info->height;
+>> +    if (screen_info.orig_video_isVGA == 0)
+>> +        screen_info.orig_video_isVGA = VIDEO_TYPE_EFI;
+>>  
+>>      return 0;
+>>  }
+>> @@ -374,9 +376,10 @@ static int __init efifb_init(void)
+>>      int ret;
+>>      char *option = NULL;
+>>  
+>> +    dmi_check_system(dmi_system_table);
+>> +
+>>      if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
+>>          return -ENODEV;
+>> -    dmi_check_system(dmi_system_table);
+>>  
+>>      if (fb_get_options("efifb", &option))
+>>          return -ENODEV;
+>> _
+>>
+>> Patches currently in -mm which might be from bmaly@redhat.com are
+>>
+>> efifb-dmi-set-video-type.patch
+>>
+>>   
+
+------------------------------------------------------------------------------

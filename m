@@ -1,147 +1,109 @@
-From: Peter Jones <pjones@redhat.com>
-Subject: Re: + efifb-dmi-set-video-type.patch added to
-	-mm tree
-Date: Tue, 31 Mar 2009 09:57:21 -0400
-Message-ID: <49D22141.3090804@redhat.com>
-References: <200903302249.n2UMn89O012955@imap1.linux-foundation.org>
-	<49D159C7.2070503@redhat.com>
+From: Michal Januszewski <spock@gentoo.org>
+Subject: Re: [PATCH] fbdev: fix color component field length documentation
+Date: Wed, 1 Apr 2009 00:28:35 +0200
+Message-ID: <20090331222835.GA8482@tria>
+References: <20090330220007.GC6540@spock.one.pl> <10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
+Reply-To: spock@gentoo.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <pjones@redhat.com>) id 1LoeVW-0005px-Ro
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 31 Mar 2009 14:00:02 +0000
-Received: from mx2.redhat.com ([66.187.237.31])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LoeVR-0007Ea-GK for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 31 Mar 2009 14:00:02 +0000
-In-Reply-To: <49D159C7.2070503@redhat.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Brian Maly <bmaly@redhat.com>
-Cc: mouli@linux.intel.com, adaplas@pol.net, mm-commits@vger.kernel.org, ying.huang@intel.com, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1761392AbZCaW3D@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="utf-8"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>, Ville =?utf-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net
 
-On 03/30/2009 07:46 PM, Brian Maly wrote:
-> Adding linux-fbdev-devel and Antonino Daplas to the CC list...
-> 
+The documentation about the meaning of the color component bitfield len=
+gths
+in pseudocolor modes is inconsistent.  Fix it, so that it indicates the
+correct interpretation everywhere, i.e. that 1 << length is the number
+of palette entries.
 
-Looks good to me.
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Ville Syrj=C3=A4l=C3=A4 <syrjala@sci.fi>
+Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+---
+This version of the patch incorporates Geert's comments about the
+meaning of the offset field for pseudocolor modes.
 
-Signed-of-by: Peter Jones <pjones@redhat.com>
-
-
-> Brian
-> 
-> akpm@linux-foundation.org wrote:
->> The patch titled
->>      efifb: dmi set video type
->> has been added to the -mm tree.  Its filename is
->>      efifb-dmi-set-video-type.patch
->>
->> Before you just go and hit "reply", please:
->>    a) Consider who else should be cc'ed
->>    b) Prefer to cc a suitable mailing list as well
->>    c) Ideally: find the original patch on the mailing list and do a
->>       reply-to-all to that, adding suitable additional cc's
->>
->> *** Remember to use Documentation/SubmitChecklist when testing your
->> code ***
->>
->> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
->> out what to do about this
->>
->> The current -mm tree may be found at
->> http://userweb.kernel.org/~akpm/mmotm/
->>
->> ------------------------------------------------------
->> Subject: efifb: dmi set video type
->> From: Brian Maly <bmaly@redhat.com>
->>
->> The current logic for dmi matching in efifb does not allow efifb to load
->> on all hardware that we can dmi match for.
->>
->> For a real world example, boot with elilo (3.7 or 3.8 vanilla) and on a
->> Apple (MacBook) and EFI framebuffer driver will not load (you will
->> have no
->> video).  This specific hardware is efi v1.10, so we have UGA and not
->> GOP. Without special bootloader magic (i.e.  extra elilo patches for UGA
->> graphics detection) no screen info will be passed to the kernel and as a
->> result efifb will not load.
->>
->> This patch allows the dmi match to happen by moving it to earlier in
->> efifb_init, and sets the video type (in set_system) so that efifb can
->> load
->> when we have a valid dmi match and already know the specifics of the
->> hardware.
->>
->> Without this patch the efifb driver will fail to load in the event screen
->> info is not found and passed in by the bootloader, being that we will
->> never get to look for a dmi match.  A primary reason for matching with
->> dmi
->> is because not all bootloaders detect the video info properly.  The
->> solution is that in the event of a dmi match, we should set
->> screen_info.orig_video_isVGA.  Most bootloaders fail to set screen
->> info on
->> Apple hardware, and this is a big problem for people who use Apple
->> hardware.
->>
->> Tested on a MacBook SantaRosa with elilo-3.8 (vanilla) and resolves the
->> issue, the dmi match now works, EFI framebuffer now loads and video
->> works.
->>
->> Signed-off-by: Brian Maly <bmaly@redhat.com>
->> Acked-by: Huang Ying <ying.huang@intel.com>
->> Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
->> Cc: Chandramouli Narayanan <mouli@linux.intel.com>
->> Cc: Peter Jones <pjones@redhat.com>
->> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->> ---
->>
->>  drivers/video/efifb.c |    5 ++++-
->>  1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> diff -puN drivers/video/efifb.c~efifb-dmi-set-video-type
->> drivers/video/efifb.c
->> --- a/drivers/video/efifb.c~efifb-dmi-set-video-type
->> +++ a/drivers/video/efifb.c
->> @@ -129,6 +129,8 @@ static int set_system(const struct dmi_s
->>          screen_info.lfb_width = info->width;
->>      if (screen_info.lfb_height == 0)
->>          screen_info.lfb_height = info->height;
->> +    if (screen_info.orig_video_isVGA == 0)
->> +        screen_info.orig_video_isVGA = VIDEO_TYPE_EFI;
->>  
->>      return 0;
->>  }
->> @@ -374,9 +376,10 @@ static int __init efifb_init(void)
->>      int ret;
->>      char *option = NULL;
->>  
->> +    dmi_check_system(dmi_system_table);
->> +
->>      if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
->>          return -ENODEV;
->> -    dmi_check_system(dmi_system_table);
->>  
->>      if (fb_get_options("efifb", &option))
->>          return -ENODEV;
->> _
->>
->> Patches currently in -mm which might be from bmaly@redhat.com are
->>
->> efifb-dmi-set-video-type.patch
->>
->>   
-
-------------------------------------------------------------------------------
+diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
+index df53365..63cf3bf 100644
+--- a/drivers/video/skeletonfb.c
++++ b/drivers/video/skeletonfb.c
+@@ -308,9 +308,11 @@ static int xxxfb_setcolreg(unsigned regno, unsigne=
+d red, unsigned green,
+      *   color depth =3D SUM(var->{color}.length)
+      *
+      * Pseudocolor:
+-     *    var->{color}.offset is 0
+-     *    var->{color}.length contains width of DAC or the number of u=
+nique
+-     *                        colors available (color depth)
++     *    var->{color}.offset is 0 unless the palette index takes less=
+ than
++     *                        bits_per_pixel bits and is stored in the=
+ upper
++     *                        bits of the pixel value
++     *    var->{color}.length is set so that 1 << length is the number=
+ of
++     *                        available palette entries
+      *    pseudo_palette is not used
+      *    RAMDAC[X] is programmed to (red, green, blue)
+      *    color depth =3D var->{color}.length
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index 93fe08d..7d58c8a 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -318,13 +318,16 @@ static int vfb_setcolreg(u_int regno, u_int red, =
+u_int green, u_int blue,
+ 	 *   {hardwarespecific} contains width of RAMDAC
+ 	 *   cmap[X] is programmed to (X << red.offset) | (X << green.offset)=
+ | (X << blue.offset)
+ 	 *   RAMDAC[X] is programmed to (red, green, blue)
+-	 *=20
++	 *
+ 	 * Pseudocolor:
+-	 *    uses offset =3D 0 && length =3D RAMDAC register width.
+-	 *    var->{color}.offset is 0
+-	 *    var->{color}.length contains widht of DAC
++	 *    var->{color}.offset is 0 unless the palette index takes less th=
+an
++	 *                        bits_per_pixel bits and is stored in the up=
+per
++	 *                        bits of the pixel value
++	 *    var->{color}.length is set so that 1 << length is the number of=
+ available
++	 *                        palette entries
+ 	 *    cmap is not used
+ 	 *    RAMDAC[X] is programmed to (red, green, blue)
++	 *
+ 	 * Truecolor:
+ 	 *    does not use DAC. Usually 3 are present.
+ 	 *    var->{color}.offset contains start of bitfield
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 31527e1..0d52630 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -172,8 +172,12 @@ struct fb_fix_screeninfo {
+ /* Interpretation of offset for color fields: All offsets are from the=
+ right,
+  * inside a "pixel" value, which is exactly 'bits_per_pixel' wide (mea=
+ns: you
+  * can use the offset as right argument to <<). A pixel afterwards is =
+a bit
+- * stream and is written to video memory as that unmodified. This impl=
+ies
+- * big-endian byte order if bits_per_pixel is greater than 8.
++ * stream and is written to video memory as that unmodified.
++ *
++ * For pseudocolor: offset and length should be the same for all color
++ * components. Offset specifies the position of the least significant =
+bit
++ * of the pallette index in a pixel value. Length indicates the number
++ * of available palette entries (i.e. # of entries =3D 1 << length).
+  */
+ struct fb_bitfield {
+ 	__u32 offset;			/* beginning of bitfield	*/

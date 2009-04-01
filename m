@@ -1,109 +1,61 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: Re: [PATCH] fbdev: fix color component field length documentation
-Date: Wed, 1 Apr 2009 00:28:35 +0200
-Message-ID: <20090331222835.GA8482@tria>
-References: <20090330220007.GC6540@spock.one.pl> <10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
-Reply-To: spock@gentoo.org
+From: "Robert T. Drury" <rtdrury@earthlink.net>
+Subject: [PATCH] resend: radeon backlight shutoff
+ flashes momentarily
+Date: Wed, 01 Apr 2009 02:27:54 -0700
+Message-ID: <49D3339A.8070603@earthlink.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1761392AbZCaW3D@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="utf-8"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>, Ville =?utf-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <rtdrury@earthlink.net>) id 1Lowiz-0001bP-RD
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 01 Apr 2009 09:27:09 +0000
+Received: from elasmtp-masked.atl.sa.earthlink.net ([209.86.89.68])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Lowil-00019c-SC for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 01 Apr 2009 09:27:04 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org, akpm@linux-foundation.org
 
-The documentation about the meaning of the color component bitfield len=
-gths
-in pseudocolor modes is inconsistent.  Fix it, so that it indicates the
-correct interpretation everywhere, i.e. that 1 << length is the number
-of palette entries.
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=12845
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Ville Syrj=C3=A4l=C3=A4 <syrjala@sci.fi>
-Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
----
-This version of the patch incorporates Geert's comments about the
-meaning of the offset field for pseudocolor modes.
+Aluminum Powerbook G4 with Radeon 9600:
 
-diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
-index df53365..63cf3bf 100644
---- a/drivers/video/skeletonfb.c
-+++ b/drivers/video/skeletonfb.c
-@@ -308,9 +308,11 @@ static int xxxfb_setcolreg(unsigned regno, unsigne=
-d red, unsigned green,
-      *   color depth =3D SUM(var->{color}.length)
-      *
-      * Pseudocolor:
--     *    var->{color}.offset is 0
--     *    var->{color}.length contains width of DAC or the number of u=
-nique
--     *                        colors available (color depth)
-+     *    var->{color}.offset is 0 unless the palette index takes less=
- than
-+     *                        bits_per_pixel bits and is stored in the=
- upper
-+     *                        bits of the pixel value
-+     *    var->{color}.length is set so that 1 << length is the number=
- of
-+     *                        available palette entries
-      *    pseudo_palette is not used
-      *    RAMDAC[X] is programmed to (red, green, blue)
-      *    color depth =3D var->{color}.length
-diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
-index 93fe08d..7d58c8a 100644
---- a/drivers/video/vfb.c
-+++ b/drivers/video/vfb.c
-@@ -318,13 +318,16 @@ static int vfb_setcolreg(u_int regno, u_int red, =
-u_int green, u_int blue,
- 	 *   {hardwarespecific} contains width of RAMDAC
- 	 *   cmap[X] is programmed to (X << red.offset) | (X << green.offset)=
- | (X << blue.offset)
- 	 *   RAMDAC[X] is programmed to (red, green, blue)
--	 *=20
-+	 *
- 	 * Pseudocolor:
--	 *    uses offset =3D 0 && length =3D RAMDAC register width.
--	 *    var->{color}.offset is 0
--	 *    var->{color}.length contains widht of DAC
-+	 *    var->{color}.offset is 0 unless the palette index takes less th=
-an
-+	 *                        bits_per_pixel bits and is stored in the up=
-per
-+	 *                        bits of the pixel value
-+	 *    var->{color}.length is set so that 1 << length is the number of=
- available
-+	 *                        palette entries
- 	 *    cmap is not used
- 	 *    RAMDAC[X] is programmed to (red, green, blue)
-+	 *
- 	 * Truecolor:
- 	 *    does not use DAC. Usually 3 are present.
- 	 *    var->{color}.offset contains start of bitfield
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 31527e1..0d52630 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -172,8 +172,12 @@ struct fb_fix_screeninfo {
- /* Interpretation of offset for color fields: All offsets are from the=
- right,
-  * inside a "pixel" value, which is exactly 'bits_per_pixel' wide (mea=
-ns: you
-  * can use the offset as right argument to <<). A pixel afterwards is =
-a bit
-- * stream and is written to video memory as that unmodified. This impl=
-ies
-- * big-endian byte order if bits_per_pixel is greater than 8.
-+ * stream and is written to video memory as that unmodified.
-+ *
-+ * For pseudocolor: offset and length should be the same for all color
-+ * components. Offset specifies the position of the least significant =
-bit
-+ * of the pallette index in a pixel value. Length indicates the number
-+ * of available palette entries (i.e. # of entries =3D 1 << length).
-  */
- struct fb_bitfield {
- 	__u32 offset;			/* beginning of bitfield	*/
+The backlight momentarily flashes brightly when turning off.  If the
+backlight is originally dim, the flash is more noticeable.  This momentary
+flash is stressful on the power circuit.
+
+This patch removes the & ~LVDS_BL_MOD_EN above the first OUTREG to 
+LVDS_GEN_CNTL to eliminate the flash on shutoff, only for powerbook5,3 
+and CHIP_FAMILY_RV350.
+
+Signed-off-by: Robert Drury <rtdrury@earthlink.net>
+
+--- linux-2.6.23.9/drivers/video/aty/radeon_backlight.c.orig	2009-03-22 19:04:22.000000000 -0700
++++ linux-2.6.23.9/drivers/video/aty/radeon_backlight.c	2009-03-22 19:19:09.000000000 -0700
+@@ -101,7 +101,10 @@ static int radeon_bl_update_status(struc
+ 		tmpPixclksCntl = INPLL(PIXCLKS_CNTL);
+ 		if (rinfo->is_mobility || rinfo->is_IGP)
+ 			OUTPLLP(PIXCLKS_CNTL, 0, ~PIXCLK_LVDS_ALWAYS_ONb);
+-		lvds_gen_cntl &= ~(LVDS_BL_MOD_LEVEL_MASK | LVDS_BL_MOD_EN);
++		lvds_gen_cntl &= ~(LVDS_BL_MOD_LEVEL_MASK);
++		if(rinfo->family != CHIP_FAMILY_RV350 
++			|| !machine_is_compatible("PowerBook5,3"))
++				lvds_gen_cntl &= ~LVDS_BL_MOD_EN;
+ 		lvds_gen_cntl |= (radeon_bl_get_level_brightness(pdata, 0) <<
+ 				  LVDS_BL_MOD_LEVEL_SHIFT);
+ 		lvds_gen_cntl |= LVDS_DISPLAY_DIS;
+
+
+------------------------------------------------------------------------------

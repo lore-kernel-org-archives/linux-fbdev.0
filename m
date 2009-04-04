@@ -1,58 +1,67 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] vga16fb: fix color component length for pseudocolor
- modes
-Date: Sat, 4 Apr 2009 13:03:31 +0200
-Message-ID: <20090404130331.52ce51f4.krzysztof.h1@poczta.fm>
-References: <20090330220523.GA6993@spock.one.pl>
-	<20090401185856.44d89699.krzysztof.h1@poczta.fm>
-	<20090402122613.GA16899@tria>
+Subject: [PATCH] cirrusfb: do not allow unsupported
+	pixel depth
+Date: Sat, 4 Apr 2009 14:46:42 +0200
+Message-ID: <20090404144642.be0e3a17.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759284AbZDDLCU@vger.kernel.org>
-In-Reply-To: <20090402122613.GA16899@tria>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: spock@gentoo.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1Lq5FL-0003Em-Sb
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 04 Apr 2009 12:45:15 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Lq5FJ-0001tG-27 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 04 Apr 2009 12:45:15 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Thu, 2 Apr 2009 14:26:13 +0200
-Michal Januszewski <spock@gentoo.org> wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> vga16fb incorrectly sets the length of the color fields to 6 or 2 bits
-> for PSEUDOCOLOR modes, for which either 8 or 4 bits are used per pixel.
-> Fix this by setting the length to 8 or 4, respectively.
-> 
-> Signed-off-by: Michal Januszewski <spock@gentoo.org>
-> ---
+Do not allow modes with unsupported pixel depth.
+Otherwise, one can hang a computer by setting
+incorrect value with fbset command.
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/cirrusfb.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+index d42e385..4c2bf92 100644
+--- a/drivers/video/cirrusfb.c
++++ b/drivers/video/cirrusfb.c
+@@ -567,9 +567,7 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
+ 	default:
+ 		dev_dbg(info->device,
+ 			"Unsupported bpp size: %d\n", var->bits_per_pixel);
+-		assert(false);
+-		/* should never occur */
+-		break;
++		return -EINVAL;
+ 	}
+ 
+ 	if (var->xres_virtual < var->xres)
+-- 
+1.6.0.3
 
-> diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-> index 5b29389..8f1eb7f 100644
-> --- a/drivers/video/vga16fb.c
-> +++ b/drivers/video/vga16fb.c
-> @@ -506,7 +506,7 @@ static int vga16fb_check_var(struct fb_var_screeninfo *var,
->  	var->red.offset = var->green.offset = var->blue.offset = 
->  	var->transp.offset = 0;
->  	var->red.length = var->green.length = var->blue.length =
-> -		(par->isVGA) ? 6 : 2;
-> +		(par->isVGA) ? 8 : 4;
->  	var->transp.length = 0;
->  	var->activate = FB_ACTIVATE_NOW;
->  	var->height = -1;
-> @@ -1324,7 +1324,7 @@ static int __init vga16fb_probe(struct platform_device *dev)
->  	par->palette_blanked = 0;
->  	par->vesa_blanked = 0;
->  
-> -	i = par->isVGA? 6 : 2;
-> +	i = par->isVGA? 8 : 4;
->  	
->  	vga16fb_defined.red.length   = i;
->  	vga16fb_defined.green.length = i;
-> 
 
 ----------------------------------------------------------------------
-Kredyt z doplata, nawet 200 000 zl. Sprawdz!
-http://link.interia.pl/f20fc
+Kawalerka za 89 tys. zl!
+Sprawdz >>> http://link.interia.pl/f20fb
+
+
+------------------------------------------------------------------------------

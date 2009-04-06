@@ -1,74 +1,44 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [PATCH] resend: radeon backlight shutoff
- flashes momentarily
-Date: Mon, 06 Apr 2009 16:41:33 +0200
-Message-ID: <1239028893.6278.108.camel@thor.local>
-References: <49D3339A.8070603@earthlink.net>
-	<1238584865.7828.9462.camel@thor.local>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: commit 66c1ca breaks fbdev mode switching
+Date: Mon, 6 Apr 2009 20:47:18 +0200
+Message-ID: <20090406204718.ce4909b3.krzysztof.h1@poczta.fm>
+References: <498817E2.3020008@gmail.com>
+	<1233783983-28802-1-git-send-email-righi.andrea@gmail.com>
+	<200903221748.42871.arvidjaar@gmail.com>
+	<200903221857.20473.rjw@sisk.pl>
+	<20090322145219.ad294615.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <michel@daenzer.net>) id 1Lqq17-0000Zg-Hs
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 06 Apr 2009 14:41:41 +0000
-Received: from darkcity.gna.ch ([195.226.6.51] helo=mail.gna.ch)
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Lqq15-0008QF-HL for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 06 Apr 2009 14:41:41 +0000
-In-Reply-To: <1238584865.7828.9462.camel@thor.local>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Robert T. Drury" <rtdrury@earthlink.net>
-Cc: benh@kernel.crashing.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757880AbZDFSqX@vger.kernel.org>
+In-Reply-To: <20090322145219.ad294615.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andrey Borzenkov <arvidjaar@gmail.com>, Andrea Righi <righi.andrea@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>, Harvey Harrison <harvey.harrison@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-T24gV2VkLCAyMDA5LTA0LTAxIGF0IDEzOjIxICswMjAwLCBNaWNoZWwgRMOkbnplciB3cm90ZToK
-PiBPbiBXZWQsIDIwMDktMDQtMDEgYXQgMDI6MjcgLTA3MDAsIFJvYmVydCBULiBEcnVyeSB3cm90
-ZToKPiA+IEFkZHJlc3NlcyBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
-aWQ9MTI4NDUKPiA+IAo+ID4gQWx1bWludW0gUG93ZXJib29rIEc0IHdpdGggUmFkZW9uIDk2MDA6
-Cj4gPiAKPiA+IFRoZSBiYWNrbGlnaHQgbW9tZW50YXJpbHkgZmxhc2hlcyBicmlnaHRseSB3aGVu
-IHR1cm5pbmcgb2ZmLiAgSWYgdGhlCj4gPiBiYWNrbGlnaHQgaXMgb3JpZ2luYWxseSBkaW0sIHRo
-ZSBmbGFzaCBpcyBtb3JlIG5vdGljZWFibGUuICBUaGlzIG1vbWVudGFyeQo+ID4gZmxhc2ggaXMg
-c3RyZXNzZnVsIG9uIHRoZSBwb3dlciBjaXJjdWl0Lgo+ID4gCj4gPiBUaGlzIHBhdGNoIHJlbW92
-ZXMgdGhlICYgfkxWRFNfQkxfTU9EX0VOIGFib3ZlIHRoZSBmaXJzdCBPVVRSRUcgdG8gCj4gPiBM
-VkRTX0dFTl9DTlRMIHRvIGVsaW1pbmF0ZSB0aGUgZmxhc2ggb24gc2h1dG9mZiwgb25seSBmb3Ig
-cG93ZXJib29rNSwzIAo+ID4gYW5kIENISVBfRkFNSUxZX1JWMzUwLgo+IAo+IEFzIHlvdSdyZSBj
-aGVja2luZyBmb3IgYSBzcGVjaWZpYyBBcHBsZSBsYXB0b3AgbW9kZWwsIHRoZXJlJ3Mgbm8gbmVl
-ZCB0bwo+IGNoZWNrIHRoZSBjaGlwIGZhbWlseSBhcyB3ZWxsLgo+IAo+IChBcyBtZW50aW9uZWQg
-YmVmb3JlLCBJJ20gc2VlaW5nIHRoZSBmbGFzaCBvbiBhIFBvd2VyQm9vazUsOCBhcyB3ZWxsLAo+
-IGJ1dCBJIGhhdmVuJ3QgZ290IGFyb3VuZCB0byB0cnlpbmcgdGhlIHBhdGNoLCB3aWxsIGRvIHdo
-ZW4gSSBnZXQgdGltZSkKClVuZm9ydHVuYXRlbHksIDIuNi4yOS4xIHdpdGggdGhlIHBhdGNoIGJl
-bG93IGRvZXNuJ3Qgc2VlbSB0byBnZXQgcmlkIG9mCnRoZSBmbGFzaCBvbiBteSBQb3dlckJvb2s1
-LDguIFNvIG5vIG9iamVjdGlvbnMgdG8geW91ciBwYXRjaCBmcm9tIG1lLgoKCmRpZmYgLS1naXQg
-YS9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFja2xpZ2h0LmMgYi9kcml2ZXJzL3ZpZGVvL2F0
-eS9yYWRlb25fYmFja2xpZ2h0LmMKaW5kZXggMWEwNTZhZC4uMzYxYmI2NCAxMDA2NDQKLS0tIGEv
-ZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2JhY2tsaWdodC5jCisrKyBiL2RyaXZlcnMvdmlkZW8v
-YXR5L3JhZGVvbl9iYWNrbGlnaHQuYwpAQCAtMTAxLDcgKzEwMSwxMCBAQCBzdGF0aWMgaW50IHJh
-ZGVvbl9ibF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkKIAkJdG1w
-UGl4Y2xrc0NudGwgPSBJTlBMTChQSVhDTEtTX0NOVEwpOwogCQlpZiAocmluZm8tPmlzX21vYmls
-aXR5IHx8IHJpbmZvLT5pc19JR1ApCiAJCQlPVVRQTExQKFBJWENMS1NfQ05UTCwgMCwgflBJWENM
-S19MVkRTX0FMV0FZU19PTmIpOwotCQlsdmRzX2dlbl9jbnRsICY9IH4oTFZEU19CTF9NT0RfTEVW
-RUxfTUFTSyB8IExWRFNfQkxfTU9EX0VOKTsKKwkJbHZkc19nZW5fY250bCAmPSB+TFZEU19CTF9N
-T0RfTEVWRUxfTUFTSzsKKwkJaWYgKCEobWFjaGluZV9pc19jb21wYXRpYmxlKCJQb3dlckJvb2s1
-LDMiKSB8fAorCQkgICAgICBtYWNoaW5lX2lzX2NvbXBhdGlibGUoIlBvd2VyQm9vazUsOCIpKSkK
-KwkJCWx2ZHNfZ2VuX2NudGwgJj0gfkxWRFNfQkxfTU9EX0VOOwogCQlsdmRzX2dlbl9jbnRsIHw9
-IChyYWRlb25fYmxfZ2V0X2xldmVsX2JyaWdodG5lc3MocGRhdGEsIDApIDw8CiAJCQkJICBMVkRT
-X0JMX01PRF9MRVZFTF9TSElGVCk7CiAJCWx2ZHNfZ2VuX2NudGwgfD0gTFZEU19ESVNQTEFZX0RJ
-UzsKCgotLSAKRWFydGhsaW5nIE1pY2hlbCBEw6RuemVyICAgICAgICAgICB8ICAgICAgICAgICAg
-ICAgIGh0dHA6Ly93d3cudm13YXJlLmNvbQpMaWJyZSBzb2Z0d2FyZSBlbnRodXNpYXN0ICAgICAg
-ICAgfCAgICAgICAgICBEZWJpYW4sIFggYW5kIERSSSBkZXZlbG9wZXIKCi0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpM
-aW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291
-cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZv
-L2xpbnV4LWZiZGV2LWRldmVsCg==
+Hi,
+
+The commit 66c1ca breaks fbdev mode switching. The first mode
+(selected with mode_option or during boot) is ok but every mode
+switch with fbset locks up computer. If the commit is reverted
+mode switching works correctly.
+
+I do not understand why. I would be grateful if someone else
+can confirm the problem as well.
+
+The commit's details are:
+
+commit 66c1ca019078220dc1bf968f2bb18421100ef147
+Author: Andrea Righi <righi.andrea@gmail.com>
+Date:   Tue Mar 31 15:25:18 2009 -0700
+
+    fbmem: fix fb_info->lock and mm->mmap_sem circular locking dependency
+    
+
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Kto lepiej radzi sobie w kuchni?
+Odpowiedz i wygraj sprzet AGD! >> http://link.interia.pl/f2103 

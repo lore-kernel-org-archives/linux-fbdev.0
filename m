@@ -1,22 +1,25 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cirrusfb: do not allow unsupported
-	pixel depth
-Date: Sat, 4 Apr 2009 14:46:42 +0200
-Message-ID: <20090404144642.be0e3a17.krzysztof.h1@poczta.fm>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: [PATCH] resend: radeon backlight shutoff
+ flashes momentarily
+Date: Mon, 06 Apr 2009 16:41:33 +0200
+Message-ID: <1239028893.6278.108.camel@thor.local>
+References: <49D3339A.8070603@earthlink.net>
+	<1238584865.7828.9462.camel@thor.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1Lq5FL-0003Em-Sb
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <michel@daenzer.net>) id 1Lqq17-0000Zg-Hs
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 04 Apr 2009 12:45:15 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Lq5FJ-0001tG-27 for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 04 Apr 2009 12:45:15 +0000
+	Mon, 06 Apr 2009 14:41:41 +0000
+Received: from darkcity.gna.ch ([195.226.6.51] helo=mail.gna.ch)
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Lqq15-0008QF-HL for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 06 Apr 2009 14:41:41 +0000
+In-Reply-To: <1238584865.7828.9462.camel@thor.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,42 +29,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert T. Drury" <rtdrury@earthlink.net>
+Cc: benh@kernel.crashing.org, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-Do not allow modes with unsupported pixel depth.
-Otherwise, one can hang a computer by setting
-incorrect value with fbset command.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
- drivers/video/cirrusfb.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
-index d42e385..4c2bf92 100644
---- a/drivers/video/cirrusfb.c
-+++ b/drivers/video/cirrusfb.c
-@@ -567,9 +567,7 @@ static int cirrusfb_check_var(struct fb_var_screeninfo *var,
- 	default:
- 		dev_dbg(info->device,
- 			"Unsupported bpp size: %d\n", var->bits_per_pixel);
--		assert(false);
--		/* should never occur */
--		break;
-+		return -EINVAL;
- 	}
- 
- 	if (var->xres_virtual < var->xres)
--- 
-1.6.0.3
-
-
-----------------------------------------------------------------------
-Kawalerka za 89 tys. zl!
-Sprawdz >>> http://link.interia.pl/f20fb
-
-
-------------------------------------------------------------------------------
+T24gV2VkLCAyMDA5LTA0LTAxIGF0IDEzOjIxICswMjAwLCBNaWNoZWwgRMOkbnplciB3cm90ZToK
+PiBPbiBXZWQsIDIwMDktMDQtMDEgYXQgMDI6MjcgLTA3MDAsIFJvYmVydCBULiBEcnVyeSB3cm90
+ZToKPiA+IEFkZHJlc3NlcyBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/
+aWQ9MTI4NDUKPiA+IAo+ID4gQWx1bWludW0gUG93ZXJib29rIEc0IHdpdGggUmFkZW9uIDk2MDA6
+Cj4gPiAKPiA+IFRoZSBiYWNrbGlnaHQgbW9tZW50YXJpbHkgZmxhc2hlcyBicmlnaHRseSB3aGVu
+IHR1cm5pbmcgb2ZmLiAgSWYgdGhlCj4gPiBiYWNrbGlnaHQgaXMgb3JpZ2luYWxseSBkaW0sIHRo
+ZSBmbGFzaCBpcyBtb3JlIG5vdGljZWFibGUuICBUaGlzIG1vbWVudGFyeQo+ID4gZmxhc2ggaXMg
+c3RyZXNzZnVsIG9uIHRoZSBwb3dlciBjaXJjdWl0Lgo+ID4gCj4gPiBUaGlzIHBhdGNoIHJlbW92
+ZXMgdGhlICYgfkxWRFNfQkxfTU9EX0VOIGFib3ZlIHRoZSBmaXJzdCBPVVRSRUcgdG8gCj4gPiBM
+VkRTX0dFTl9DTlRMIHRvIGVsaW1pbmF0ZSB0aGUgZmxhc2ggb24gc2h1dG9mZiwgb25seSBmb3Ig
+cG93ZXJib29rNSwzIAo+ID4gYW5kIENISVBfRkFNSUxZX1JWMzUwLgo+IAo+IEFzIHlvdSdyZSBj
+aGVja2luZyBmb3IgYSBzcGVjaWZpYyBBcHBsZSBsYXB0b3AgbW9kZWwsIHRoZXJlJ3Mgbm8gbmVl
+ZCB0bwo+IGNoZWNrIHRoZSBjaGlwIGZhbWlseSBhcyB3ZWxsLgo+IAo+IChBcyBtZW50aW9uZWQg
+YmVmb3JlLCBJJ20gc2VlaW5nIHRoZSBmbGFzaCBvbiBhIFBvd2VyQm9vazUsOCBhcyB3ZWxsLAo+
+IGJ1dCBJIGhhdmVuJ3QgZ290IGFyb3VuZCB0byB0cnlpbmcgdGhlIHBhdGNoLCB3aWxsIGRvIHdo
+ZW4gSSBnZXQgdGltZSkKClVuZm9ydHVuYXRlbHksIDIuNi4yOS4xIHdpdGggdGhlIHBhdGNoIGJl
+bG93IGRvZXNuJ3Qgc2VlbSB0byBnZXQgcmlkIG9mCnRoZSBmbGFzaCBvbiBteSBQb3dlckJvb2s1
+LDguIFNvIG5vIG9iamVjdGlvbnMgdG8geW91ciBwYXRjaCBmcm9tIG1lLgoKCmRpZmYgLS1naXQg
+YS9kcml2ZXJzL3ZpZGVvL2F0eS9yYWRlb25fYmFja2xpZ2h0LmMgYi9kcml2ZXJzL3ZpZGVvL2F0
+eS9yYWRlb25fYmFja2xpZ2h0LmMKaW5kZXggMWEwNTZhZC4uMzYxYmI2NCAxMDA2NDQKLS0tIGEv
+ZHJpdmVycy92aWRlby9hdHkvcmFkZW9uX2JhY2tsaWdodC5jCisrKyBiL2RyaXZlcnMvdmlkZW8v
+YXR5L3JhZGVvbl9iYWNrbGlnaHQuYwpAQCAtMTAxLDcgKzEwMSwxMCBAQCBzdGF0aWMgaW50IHJh
+ZGVvbl9ibF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpiZCkKIAkJdG1w
+UGl4Y2xrc0NudGwgPSBJTlBMTChQSVhDTEtTX0NOVEwpOwogCQlpZiAocmluZm8tPmlzX21vYmls
+aXR5IHx8IHJpbmZvLT5pc19JR1ApCiAJCQlPVVRQTExQKFBJWENMS1NfQ05UTCwgMCwgflBJWENM
+S19MVkRTX0FMV0FZU19PTmIpOwotCQlsdmRzX2dlbl9jbnRsICY9IH4oTFZEU19CTF9NT0RfTEVW
+RUxfTUFTSyB8IExWRFNfQkxfTU9EX0VOKTsKKwkJbHZkc19nZW5fY250bCAmPSB+TFZEU19CTF9N
+T0RfTEVWRUxfTUFTSzsKKwkJaWYgKCEobWFjaGluZV9pc19jb21wYXRpYmxlKCJQb3dlckJvb2s1
+LDMiKSB8fAorCQkgICAgICBtYWNoaW5lX2lzX2NvbXBhdGlibGUoIlBvd2VyQm9vazUsOCIpKSkK
+KwkJCWx2ZHNfZ2VuX2NudGwgJj0gfkxWRFNfQkxfTU9EX0VOOwogCQlsdmRzX2dlbl9jbnRsIHw9
+IChyYWRlb25fYmxfZ2V0X2xldmVsX2JyaWdodG5lc3MocGRhdGEsIDApIDw8CiAJCQkJICBMVkRT
+X0JMX01PRF9MRVZFTF9TSElGVCk7CiAJCWx2ZHNfZ2VuX2NudGwgfD0gTFZEU19ESVNQTEFZX0RJ
+UzsKCgotLSAKRWFydGhsaW5nIE1pY2hlbCBEw6RuemVyICAgICAgICAgICB8ICAgICAgICAgICAg
+ICAgIGh0dHA6Ly93d3cudm13YXJlLmNvbQpMaWJyZSBzb2Z0d2FyZSBlbnRodXNpYXN0ICAgICAg
+ICAgfCAgICAgICAgICBEZWJpYW4sIFggYW5kIERSSSBkZXZlbG9wZXIKCi0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpM
+aW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291
+cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZv
+L2xpbnV4LWZiZGV2LWRldmVsCg==

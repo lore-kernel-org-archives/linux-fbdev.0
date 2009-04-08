@@ -1,52 +1,102 @@
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: commit 66c1ca breaks fbdev mode switching
-Date: Tue, 7 Apr 2009 11:54:44 +0200
-Message-ID: <20090407095443.GA9526@linux>
-References: <498817E2.3020008@gmail.com> <1233783983-28802-1-git-send-email-righi.andrea@gmail.com> <200903221748.42871.arvidjaar@gmail.com> <200903221857.20473.rjw@sisk.pl> <20090322145219.ad294615.akpm@linux-foundation.org> <20090406204718.ce4909b3.krzysztof.h1@poczta.fm> <20090406214528.GA17259@linux> <alpine.LRH.2.00.0904071105040.24773@vixen.sonytel.be>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [patch] mx3fb: Fix compilation with CONFIG_PM
+Date: Wed, 8 Apr 2009 11:45:47 +0200
+Message-ID: <20090408094547.GJ14383@pengutronix.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752634AbZDGJzC@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0904071105040.24773@vixen.sonytel.be>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrey Borzenkov <arvidjaar@gmail.com>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, linux-pm@lists.linux-foundation.org, Linux Kernel Development <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>, Harvey Harrison <harvey.harrison@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sha@pengutronix.de>) id 1LrUM6-0004Li-MT
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Apr 2009 09:46:02 +0000
+Received: from metis.ext.pengutronix.de ([92.198.50.35])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1LrULx-0005Tf-0p
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 08 Apr 2009 09:46:02 +0000
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Apr 07, 2009 at 11:17:00AM +0200, Geert Uytterhoeven wrote:
-> On Mon, 6 Apr 2009, Andrea Righi wrote:
-> > On Mon, Apr 06, 2009 at 08:47:18PM +0200, Krzysztof Helt wrote:
-> > > The commit 66c1ca breaks fbdev mode switching. The first mode
-> > > (selected with mode_option or during boot) is ok but every mode
-> > > switch with fbset locks up computer. If the commit is reverted
-> > > mode switching works correctly.
-> > > 
-> > > I do not understand why. I would be grateful if someone else
-> > > can confirm the problem as well.
-> > > 
-> > > The commit's details are:
-> > > 
-> > > commit 66c1ca019078220dc1bf968f2bb18421100ef147
-> > > Author: Andrea Righi <righi.andrea@gmail.com>
-> > > Date:   Tue Mar 31 15:25:18 2009 -0700
-> > > 
-> > >     fbmem: fix fb_info->lock and mm->mmap_sem circular locking dependency
-> > 
-> > Any lockdep info or oops? it just locks up the system?
-> 
-> # echo d > /proc/sysrq-trigger
-> 
-> [  187.654947] INFO: lockdep is turned off.
-> 
-> Strange, I do have lockdep enabled:
-> 
-> CONFIG_LOCKDEP_SUPPORT=y
-> CONFIG_LOCKDEP=y
-> CONFIG_DEBUG_LOCKDEP=y
+Hi Guennadi,
 
-Probably because lockdep reported the first lock bug and disabled the
-checking for the next lock bugs, to avoid log flooding of follow-up
-bugs. Search the first lockdep occurrence in dmesg.
+The following fixes mx3fb compilation with CONFIG_PM
 
--Andrea
+Sascha
+
+From cb9f64e5c9bc108d6b6bcf78ae19df45107d766c Mon Sep 17 00:00:00 2001
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Wed, 8 Apr 2009 11:41:49 +0200
+Subject: mx3fb: Fix compilation with CONFIG_PM
+
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/video/mx3fb.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 21b3692..9894de1 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -1152,11 +1152,11 @@ static struct fb_ops mx3fb_ops = {
+  */
+ static int mx3fb_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+-	struct mx3fb_data *drv_data = platform_get_drvdata(pdev);
+-	struct mx3fb_info *mx3_fbi = drv_data->fbi->par;
++	struct mx3fb_data *mx3fb = platform_get_drvdata(pdev);
++	struct mx3fb_info *mx3_fbi = mx3fb->fbi->par;
+ 
+ 	acquire_console_sem();
+-	fb_set_suspend(drv_data->fbi, 1);
++	fb_set_suspend(mx3fb->fbi, 1);
+ 	release_console_sem();
+ 
+ 	if (mx3_fbi->blank == FB_BLANK_UNBLANK) {
+@@ -1172,16 +1172,16 @@ static int mx3fb_suspend(struct platform_device *pdev, pm_message_t state)
+  */
+ static int mx3fb_resume(struct platform_device *pdev)
+ {
+-	struct mx3fb_data *drv_data = platform_get_drvdata(pdev);
+-	struct mx3fb_info *mx3_fbi = drv_data->fbi->par;
++	struct mx3fb_data *mx3fb = platform_get_drvdata(pdev);
++	struct mx3fb_info *mx3_fbi = mx3fb->fbi->par;
+ 
+ 	if (mx3_fbi->blank == FB_BLANK_UNBLANK) {
+ 		sdc_enable_channel(mx3_fbi);
+-		sdc_set_brightness(mx3fb, drv_data->backlight_level);
++		sdc_set_brightness(mx3fb, mx3fb->backlight_level);
+ 	}
+ 
+ 	acquire_console_sem();
+-	fb_set_suspend(drv_data->fbi, 0);
++	fb_set_suspend(mx3fb->fbi, 0);
+ 	release_console_sem();
+ 
+ 	return 0;
+-- 
+1.6.2.1
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+
+------------------------------------------------------------------------------
+This SF.net email is sponsored by:
+High Quality Requirements in a Collaborative Environment.
+Download a free trial of Rational Requirements Composer Now!
+http://p.sf.net/sfu/www-ibm-com

@@ -1,45 +1,78 @@
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix fb_info->lock and
-	mm->mmap_sem ...} causes Xfbdev not working
-Date: Thu, 9 Apr 2009 14:58:51 +0200
-Message-ID: <20090409125850.GA2727@linux>
-References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
+From: John Linn <John.Linn@xilinx.com>
+Subject: RE: [PATCH] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
+Date: Thu, 9 Apr 2009 08:16:48 -0600
+Message-ID: <20090409141651.72775AC0056@mail192-sin.bigfish.com>
+References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+	<20090409115147.5059493f.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S934038AbZDIM7Z@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrey Borzenkov <arvidjaar@gmail.com>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, Dave Jones <davej@redhat.com>, Harvey Harrison <harvey.harrison@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
+Content-Class: urn:content-classes:message
+In-Reply-To: <20090409115147.5059493f.sfr@canb.auug.org.au>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Suneel Garapati <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>, akonovalov@ru.mvista.com
 
-On Thu, Apr 09, 2009 at 07:36:24PM +0800, Eric Miao wrote:
-> This happens on my Marvell PXA310-based Littleton platform with
-> Angstrom Distribution. The offending paths are many:
+> -----Original Message-----
+> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au] 
+> Sent: Wednesday, April 08, 2009 7:52 PM
+> To: John Linn
+> Cc: grant.likely@secretlab.ca; jwboyer@linux.vnet.ibm.com; 
+> linuxppc-dev@ozlabs.org; 
+> linux-fbdev-devel@lists.sourceforge.net; 
+> akonovalov@ru.mvista.com; adaplas@gmail.com; Suneel Garapati; Suneel
+> Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB 
+> support (non-DCR)
 > 
-> FBIOPUT_VSCREENINFO:
->   lock_fb_info()
->   --> fb_set_var()
->     --> fb_notifier_call_chain() [FBINFO_MISC_USEREVENT]
->       --> fbcon_event_notifier() [FB_EVENT_MODE_CHANGE]
->         --> lock_fb_info()
+> Hi John,
 > 
-> OK, now hang. I'd suggest a clean fix to the original assumption of
-> circular locking
-> issue and revert this commit first.
+> On Wed, 8 Apr 2009 15:11:25 -0600 John Linn 
+> <john.linn@xilinx.com> wrote:
+> >
+> >   * 2002-2007 (c) MontaVista Software, Inc.
+> >   * 2007 (c) Secret Lab Technologies, Ltd.
+> > + * 2009 (c) Xilinx Inc.
+> >   *
+> > - * This file is licensed under the terms of the GNU 
+> General Public License
+> > - * version 2.  This program is licensed "as is" without 
+> any warranty of any
+> > - * kind, whether express or implied.
+> > + * This program is free software; you can redistribute it
+> > + * and/or modify it under the terms of the GNU General Public
+> > + * License as published by the Free Software Foundation;
+> > + * either version 2 of the License, or (at your option) any
+> > + * later version.
+> > + *
+> > + * You should have received a copy of the GNU General Public
+> > + * License along with this program; if not, write to the Free
+> > + * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+> > + * 02139, USA.
+> 
+> This changes the license for this file (from "GPLv2" to "GPLv2 or
+> later").  Have you asked the other copyright owners about that?
+
+Andrei was copied on the patch, we'll see if he has any thoughts about
+it. 
+
+Thanks,
+John
+
 > 
 > -- 
-> Cheers
-> - eric
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+> 
 
-I can agree to revert 66c1ca019078220dc1bf968f2bb18421100ef147, since I
-don't have a clean fix for this. Pushing down fb_info->lock in
-fb_set_var() excluding to call fb_notifier_call_chain with fb_info->lock
-held doesn't seem to be so trivial...
-
-However, reverting this will re-introduce the circular locking
-dependency fb_info->lock => mm->mmap_sem => fb_info->lock.
-
--Andrea
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.

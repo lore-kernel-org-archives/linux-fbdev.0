@@ -1,15 +1,16 @@
-From: Grant Likely <grant.likely@secretlab.ca>
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
-Date: Thu, 9 Apr 2009 07:30:15 -0700
-Message-ID: <fa686aa40904090730g3d75254cp529ca85c7599ad99@mail.gmail.com>
-References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com> 
-	<20090409115147.5059493f.sfr@canb.auug.org.au>
-	<20090409141651.72775AC0056@mail192-sin.bigfish.com>
+Date: Thu, 9 Apr 2009 10:33:19 -0400
+Message-ID: <20090409143319.GG18304@zod.rchland.ibm.com>
+References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+	<20090409124634.GF18304@zod.rchland.ibm.com>
+	<c8485d470904090706t4fd2893tdeaf3710b19bd0f1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org>
-In-Reply-To: <20090409141651.72775AC0056@mail192-sin.bigfish.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <c8485d470904090706t4fd2893tdeaf3710b19bd0f1@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,60 +19,37 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@ozlabs.org
-To: John Linn <John.Linn@xilinx.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Suneel Garapati <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>, akonovalov@ru.mvista.com
+Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+To: Roderick Colenbrander <thunderbird2k@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>, akonovalov@ru.mvista.com, John Linn <john.linn@xilinx.com>
 
-On Thu, Apr 9, 2009 at 7:16 AM, John Linn <John.Linn@xilinx.com> wrote:
->> -----Original Message-----
->> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]
->> Sent: Wednesday, April 08, 2009 7:52 PM
->> To: John Linn
->> Cc: grant.likely@secretlab.ca; jwboyer@linux.vnet.ibm.com;
->> linuxppc-dev@ozlabs.org;
->> linux-fbdev-devel@lists.sourceforge.net;
->> akonovalov@ru.mvista.com; adaplas@gmail.com; Suneel Garapati; Suneel
->> Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB
->> support (non-DCR)
->>
->> Hi John,
->>
->> On Wed, 8 Apr 2009 15:11:25 -0600 John Linn
->> <john.linn@xilinx.com> wrote:
+On Thu, Apr 09, 2009 at 04:06:56PM +0200, Roderick Colenbrander wrote:
+>On Thu, Apr 9, 2009 at 2:46 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com>wrote:
+>> > #define NUM_REGS      2
+>> > #define REG_FB_ADDR   0
+>> >@@ -112,6 +123,11 @@ struct xilinxfb_drvdata {
 >> >
->> > =A0 * 2002-2007 (c) MontaVista Software, Inc.
->> > =A0 * 2007 (c) Secret Lab Technologies, Ltd.
->> > + * 2009 (c) Xilinx Inc.
->> > =A0 *
->> > - * This file is licensed under the terms of the GNU
->> General Public License
->> > - * version 2. =A0This program is licensed "as is" without
->> any warranty of any
->> > - * kind, whether express or implied.
->> > + * This program is free software; you can redistribute it
->> > + * and/or modify it under the terms of the GNU General Public
->> > + * License as published by the Free Software Foundation;
->> > + * either version 2 of the License, or (at your option) any
->> > + * later version.
->> > + *
->> > + * You should have received a copy of the GNU General Public
->> > + * License along with this program; if not, write to the Free
->> > + * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
->> > + * 02139, USA.
+>> >       struct fb_info  info;           /* FB driver info record */
+>> >
+>> >+      u32             regs_phys;      /* phys. address of the control
+>> >+                                              registers */
 >>
->> This changes the license for this file (from "GPLv2" to "GPLv2 or
->> later"). =A0Have you asked the other copyright owners about that?
->
-> Andrei was copied on the patch, we'll see if he has any thoughts about
-> it.
+>> Is this driver usable on the 440 based Xilinx devices?  If so, is it
+>> possible
+>> to have the physical address of the registers above 4GiB, so is common with
+>> almost all the I/O on the other 440 boards?
+>>
+>>
+>The driver works fine on 440 based Xilinx boards (the ML510 I use has a 440
+>core). It might be nice to move physical addresses above 4GB for devices but
+>in all Xilinx tools and reference designs addresses below 4GB are used for
+>periperhals and I think even below 2GB (or even below 1GB). It depends on
+>the design.
 
-I also hold copyright on this file and I want the license to stay GPLv2.
+Right.  The "depends on the design" part is what I'm worried about.  Perhaps
+using resource_size_t here is more appropriate, given that designs can change
+and put the regs above 4GiB.  That way you can set the Kconfig option
+appropriately for both cases.
 
-g.
-
-
--- =
-
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+josh

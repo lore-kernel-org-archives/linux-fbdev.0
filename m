@@ -1,89 +1,82 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] Xilinx : Framebuffer Driver: Add PLB support (non-DCR)
-Date: Thu, 9 Apr 2009 11:51:47 +1000
-Message-ID: <20090409115147.5059493f.sfr@canb.auug.org.au>
-References: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
+From: InKi Dae <daeinki@gmail.com>
+Subject: It has added ARGB1888 and ARGB4888 features to Samsung SoC 
+	Framebuffer driver.
+Date: Thu, 9 Apr 2009 16:59:14 +0900
+Message-ID: <90b950fc0904090059l39229aa9hd3399782a15e1bf9@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2022042235=="
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-In-Reply-To: <20090408211521.D0EF411B8054@mail214-sin.bigfish.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: John Linn <john.linn@xilinx.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, Suneel <"[mailto:suneel.garapati@xilinx.com]"@xilinx.com>, akonovalov@ru.mvista.com
-
---===============2022042235==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact"
-
---Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi John,
-
-On Wed, 8 Apr 2009 15:11:25 -0600 John Linn <john.linn@xilinx.com> wrote:
->
->   * 2002-2007 (c) MontaVista Software, Inc.
->   * 2007 (c) Secret Lab Technologies, Ltd.
-> + * 2009 (c) Xilinx Inc.
->   *
-> - * This file is licensed under the terms of the GNU General Public Licen=
-se
-> - * version 2.  This program is licensed "as is" without any warranty of =
-any
-> - * kind, whether express or implied.
-> + * This program is free software; you can redistribute it
-> + * and/or modify it under the terms of the GNU General Public
-> + * License as published by the Free Software Foundation;
-> + * either version 2 of the License, or (at your option) any
-> + * later version.
-> + *
-> + * You should have received a copy of the GNU General Public
-> + * License along with this program; if not, write to the Free
-> + * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
-> + * 02139, USA.
-
-This changes the license for this file (from "GPLv2" to "GPLv2 or
-later").  Have you asked the other copyright owners about that?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkndVLMACgkQjjKRsyhoI8xUJQCgriUo58In7VKOiLweWatZr6HD
-CqgAniUR7qh6EcKQp+4kR57V6vVMFOgK
-=mB6A
------END PGP SIGNATURE-----
-
---Signature=_Thu__9_Apr_2009_11_51_47_+1000_Ava8=csgefhKmact--
-
---===============2022042235==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759382AbZDIH71@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: ben-linux@fluff.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
---===============2022042235==--
+This patch supports ARGB1888 and ARGB4888 for Samsung SoC Framebuffer
+driver. (s3c-fb.c)
+I tested and is working fine.
+
+If this patch has any problem, please let me know.
+I'll look forward to applying to mainline.
+
+Thank you,
+InKi Dae.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index e0e7899..55d2298 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -358,9 +358,16 @@ static int s3c_fb_set_par(struct fb_info *info)
+  writel(data, regs + VIDOSD_B(win_no));
+
+  data = var->xres * var->yres;
++
++ u32 osdc_data = 0;
++
++ osdc_data = VIDISD14C_ALPHA1_R(0xf) |
++  VIDISD14C_ALPHA1_G(0xf) |
++  VIDISD14C_ALPHA1_B(0xf);
++
+  if (s3c_fb_has_osd_d(win_no)) {
+   writel(data, regs + VIDOSD_D(win_no));
+-  writel(0, regs + VIDOSD_C(win_no));
++  writel(osdc_data, regs + VIDOSD_C(win_no));
+  } else
+   writel(data, regs + VIDOSD_C(win_no));
+
+@@ -409,8 +416,12 @@ static int s3c_fb_set_par(struct fb_info *info)
+     data |= WINCON1_BPPMODE_19BPP_A1666;
+    else
+     data |= WINCON1_BPPMODE_18BPP_666;
+-  } else if (var->transp.length != 0)
+-   data |= WINCON1_BPPMODE_25BPP_A1888;
++  } else if (var->transp.length == 1)
++   data |= WINCON1_BPPMODE_25BPP_A1888
++    | WINCON1_BLD_PIX;
++  else if (var->transp.length == 4)
++   data |= WINCON1_BPPMODE_28BPP_A4888
++    | WINCON1_BLD_PIX | WINCON1_ALPHA_SEL;
+   else
+    data |= WINCON0_BPPMODE_24BPP_888;
+
+@@ -418,6 +429,20 @@ static int s3c_fb_set_par(struct fb_info *info)
+   break;
+  }
+
++ /* It has no color key control register for window0 */
++ if (win_no > 0) {
++  u32 keycon0_data = 0, keycon1_data = 0;
++
++  keycon0_data = ~(WxKEYCON0_KEYBL_EN |
++    WxKEYCON0_KEYEN_F |
++    WxKEYCON0_DIRCON) | WxKEYCON0_COMPKEY(0);
++
++  keycon1_data = WxKEYCON1_COLVAL(0xffffff);
++
++  writel(keycon0_data, regs + WxKEYCONy(win_no-1, 0));
++  writel(keycon1_data, regs + WxKEYCONy(win_no-1, 1));
++ }
++
+  writel(data, regs + WINCON(win_no));
+  writel(0x0, regs + WINxMAP(win_no));

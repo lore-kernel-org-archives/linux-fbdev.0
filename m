@@ -1,40 +1,47 @@
-From: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix fb_info->lock and mm->mmap_sem ...} causes Xfbdev not working
-Date: Tue, 14 Apr 2009 01:34:47 +0200
-Message-ID: <m21vrwi0vc.fsf@igel.home>
-References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com>
-	<20090409125850.GA2727@linux>
-	<20090410222122.87be60f6.krzysztof.h1@poczta.fm>
-	<20090410220521.GB21294@linux>
-	<20090411080415.7fe924a2.krzysztof.h1@poczta.fm>
-	<49E05C36.9040204@s5r6.in-berlin.de> <20090411110840.GA7108@linux>
-	<20090411150359.GA8265@linux>
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Make radeon_reinitialize_M10() absent if its reference is
+	#ifdef'd out
+Date: Tue, 14 Apr 2009 16:56:52 +0100
+Message-ID: <20090414155651.27671.36394.stgit@warthog.procyon.org.uk>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754627AbZDMXf2@vger.kernel.org>
-In-Reply-To: <20090411150359.GA8265@linux> (Andrea Righi's message of "Sat, 11
-	Apr 2009 17:04:00 +0200")
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757425AbZDNP65@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, Eric Miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrey Borzenkov <arvidjaar@gmail.com>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, Dave Jones <davej@redhat.com>, Harvey Harrison <harvey.harrison@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Pavel Roskin <proski@gnu.org>
+To: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: dhowells@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 
-Andrea Righi <righi.andrea@gmail.com> writes:
+Make radeon_reinitialize_M10() absent if its reference is #ifdef'd out (if
+CONFIG_PM=n or CONFIG_PPC_PMAC=n.  Otherwise a warning is given:
 
-> Tested intelfb and X11 with fbdev. It seems to work fine, but I may be
-> unable to test the mode switching right now:
->
->   intelfb: Non-CRT device is enabled ( LVDS port ).  Disabling mode switching.
->
-> It would be great if someone could help me to test this patch (against
-> latest Linus' git - no need to revert 66c1ca).
+  CC      drivers/video/aty/radeon_pm.o
+drivers/video/aty/radeon_pm.c:1720: warning: 'radeon_reinitialize_M10' defined but not used
 
-I can confirm that it fixes the issue.  Tested with radeonfb and MOL.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Andreas.
+ drivers/video/aty/radeon_pm.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index 97a1f09..8655bbd 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -1716,6 +1716,7 @@ static void radeon_pm_m10_reconfigure_mc(struct radeonfb_info *rinfo)
+ 	OUTREG(MC_IND_INDEX, 0);
+ }
+ 
++#if defined(CONFIG_PM) && defined(CONFIG_PPC_PMAC)
+ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+ {
+ 	u32 tmp, i;
+@@ -1940,6 +1941,7 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+ 	 */
+ 	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
+ }
++#endif /* CONFIG_PM && CONFIG_PPC_PMAC */
+ 
+ #ifdef CONFIG_PPC_OF
+ 

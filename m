@@ -1,59 +1,60 @@
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-Subject: RE: [PATCH] [V3] Xilinx : Framebuffer Driver: Add PLB support and
-	cleanup DCR
-Date: Wed, 15 Apr 2009 08:58:29 -0700
-Message-ID: <20090415155837.139A119C0056@mail32-dub.bigfish.com>
-References: <20090414200834.D05446F8056@mail163-wa4.bigfish.com>
-	<fa686aa40904150814p40813d25w9d04f7e88897a88@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Make radeon_reinitialize_M10() absent if its reference
+ is #ifdef'd out
+Date: Wed, 15 Apr 2009 18:40:27 +0200
+Message-ID: <1239813627.7443.18.camel@pasglop>
+References: <20090414155651.27671.36394.stgit@warthog.procyon.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-Content-Class: urn:content-classes:message
-In-Reply-To: <fa686aa40904150814p40813d25w9d04f7e88897a88@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: Grant Likely <grant.likely@secretlab.ca>, John Linn <linnj@xilinx.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Suneel Garapati <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, akonovalov@ru.mvista.com
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754426AbZDOQmi@vger.kernel.org>
+In-Reply-To: <20090414155651.27671.36394.stgit@warthog.procyon.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: David Howells <dhowells@redhat.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 
-> > - =A0 =A0 =A0 rc =3D of_address_to_resource(op->node, 0, &res);
-> > - =A0 =A0 =A0 if (rc) {
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&op->dev, "invalid address\n");
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return rc;
-> > + =A0 =A0 =A0 /*
-> > + =A0 =A0 =A0 =A0* To check whether the core is connected directly to D=
-CR or PLB
-> > + =A0 =A0 =A0 =A0* interface and initialize the tft_access accordingly.
-> > + =A0 =A0 =A0 =A0*/
-> > + =A0 =A0 =A0 p =3D (u32 *)of_get_property(op->node, "xlnx,dcr-splb-sla=
-ve-if", NULL);
-> =
+On Tue, 2009-04-14 at 16:56 +0100, David Howells wrote:
+> Make radeon_reinitialize_M10() absent if its reference is #ifdef'd out
+> (if
+> CONFIG_PM=n or CONFIG_PPC_PMAC=n.  Otherwise a warning is given:
+> 
+>   CC      drivers/video/aty/radeon_pm.o
+> drivers/video/aty/radeon_pm.c:1720: warning: 'radeon_reinitialize_M10'
+> defined but not used
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-> Hmmm.  This binding is undocumented.  It would be better to make the
-> decision on the presence/absence of the dcr-reg and/or reg properties.
+Nah. You ifdef it with CONFIG_PPC_PMAC, but it can be used on x86
+too (see the "BUGFIX" entries).
 
-For backward compatibility with the 'old' way, the device tree generator fo=
-r this core has both dcr-reg and reg properties (where the reg has been tra=
-nslated back through the bridge).   =
+Cheers,
+Ben.
 
-
-You're probably right that it should just be one or the other, but the devi=
-ce tree generator change needs to be synchronized, and it will break backwa=
-rd compatibility with the older driver.
-
-Steve =
-
-
-This email and any attachments are intended for the sole use of the named r=
-ecipient(s) and contain(s) confidential information that may be proprietary=
-, privileged or copyrighted under applicable law. If you are not the intend=
-ed recipient, do not read, copy, or forward this email message or any attac=
-hments. Delete this email message and any attachments immediately.
+> ---
+> 
+>  drivers/video/aty/radeon_pm.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/drivers/video/aty/radeon_pm.c
+> b/drivers/video/aty/radeon_pm.c
+> index 97a1f09..8655bbd 100644
+> --- a/drivers/video/aty/radeon_pm.c
+> +++ b/drivers/video/aty/radeon_pm.c
+> @@ -1716,6 +1716,7 @@ static void radeon_pm_m10_reconfigure_mc(struct radeonfb_info *rinfo)
+>  	OUTREG(MC_IND_INDEX, 0);
+>  }
+>  
+> +#if defined(CONFIG_PM) && defined(CONFIG_PPC_PMAC)
+>  static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+>  {
+>  	u32 tmp, i;
+> @@ -1940,6 +1941,7 @@ static void radeon_reinitialize_M10(struct radeonfb_info *rinfo)
+>  	 */
+>  	radeon_pm_m10_enable_lvds_spread_spectrum(rinfo);
+>  }
+> +#endif /* CONFIG_PM && CONFIG_PPC_PMAC */
+>  
+>  #ifdef CONFIG_PPC_OF
+>  

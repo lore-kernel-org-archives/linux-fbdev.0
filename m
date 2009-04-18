@@ -1,32 +1,169 @@
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: [REGRESSION] commit 66c1ca0: {fbmem: fix fb_info->lock and
-	mm->mmap_sem ...} causes Xfbdev not working
-Date: Sat, 18 Apr 2009 00:51:11 +0200
-Message-ID: <20090417225110.GA6972@linux>
-References: <f17812d70904090436kd03744brca4a4bc4b85bba8@mail.gmail.com> <20090409125850.GA2727@linux> <20090410222122.87be60f6.krzysztof.h1@poczta.fm> <20090410220521.GB21294@linux> <20090411080415.7fe924a2.krzysztof.h1@poczta.fm> <49E05C36.9040204@s5r6.in-berlin.de> <20090411110840.GA7108@linux> <20090411150359.GA8265@linux> <20090417182507.0bd85ccc.krzysztof.h1@poczta.fm>
-Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755457AbZDQWvc@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20090417182507.0bd85ccc.krzysztof.h1@poczta.fm>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH/RFC 04/16] m68k: amiga - Frame buffer platform device conversion
+Date: Sat, 18 Apr 2009 20:52:12 +0200
+Message-ID: <1240080744-14995-5-git-send-email-geert@linux-m68k.org>
+References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
+ <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
+Return-path: <linux-m68k-owner@vger.kernel.org>
+In-Reply-To: <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
+Sender: linux-m68k-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Eric Miao <eric.y.miao@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Andrey Borzenkov <arvidjaar@gmail.com>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, Dave Jones <davej@redhat.com>, Harvey Harrison <harvey.harrison@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>, Pavel Roskin <proski@gnu.org>
+To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Apr 17, 2009 at 06:25:07PM +0200, Krzysztof Helt wrote:
-> On Sat, 11 Apr 2009 17:04:00 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
-> 
-> > It would be great if someone could help me to test this patch (against
-> > latest Linus' git - no need to revert 66c1ca).
-> > 
-> 
-> I can confirm the patch fixes the issue on radeonfb and cirrusfb drivers tested so far.
-> 
-> Regards,
-> Krzysztof
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+---
+ arch/m68k/amiga/platform.c |   15 +++++++++++++
+ drivers/video/amifb.c      |   49 +++++++++++++++++++++++++++----------------
+ 2 files changed, 46 insertions(+), 18 deletions(-)
 
-Thanks for testing!
--Andrea
+diff --git a/arch/m68k/amiga/platform.c b/arch/m68k/amiga/platform.c
+index 33a7669..7fa929c 100644
+--- a/arch/m68k/amiga/platform.c
++++ b/arch/m68k/amiga/platform.c
+@@ -56,3 +56,18 @@ static int __init amiga_init_bus(void)
+ subsys_initcall(amiga_init_bus);
+ 
+ #endif /* CONFIG_ZORRO */
++
++
++static int __init amiga_init_devices(void)
++{
++	if (!MACH_IS_AMIGA)
++		return -ENODEV;
++
++	/* video hardware */
++	if (AMIGAHW_PRESENT(AMI_VIDEO))
++		platform_device_register_simple("amiga-video", -1, NULL, 0);
++
++	return 0;
++}
++
++device_initcall(amiga_init_devices);
+diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
+index 82bedd7..36a4018 100644
+--- a/drivers/video/amifb.c
++++ b/drivers/video/amifb.c
+@@ -51,8 +51,9 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+-
++#include <linux/platform_device.h>
+ #include <linux/uaccess.h>
++
+ #include <asm/system.h>
+ #include <asm/irq.h>
+ #include <asm/amigahw.h>
+@@ -1136,7 +1137,7 @@ static int amifb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg
+ 	 * Interface to the low level console driver
+ 	 */
+ 
+-static void amifb_deinit(void);
++static void amifb_deinit(struct platform_device *pdev);
+ 
+ 	/*
+ 	 * Internal routines
+@@ -2247,7 +2248,7 @@ static inline void chipfree(void)
+ 	 * Initialisation
+ 	 */
+ 
+-static int __init amifb_init(void)
++static int __init amifb_probe(struct platform_device *pdev)
+ {
+ 	int tag, i, err = 0;
+ 	u_long chipptr;
+@@ -2262,16 +2263,6 @@ static int __init amifb_init(void)
+ 	}
+ 	amifb_setup(option);
+ #endif
+-	if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(AMI_VIDEO))
+-		return -ENODEV;
+-
+-	/*
+-	 * We request all registers starting from bplpt[0]
+-	 */
+-	if (!request_mem_region(CUSTOM_PHYSADDR+0xe0, 0x120,
+-				"amifb [Denise/Lisa]"))
+-		return -EBUSY;
+-
+ 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
+ 
+ 	switch (amiga_chipset) {
+@@ -2378,6 +2369,7 @@ default_chipset:
+ 	fb_info.fbops = &amifb_ops;
+ 	fb_info.par = &currentpar;
+ 	fb_info.flags = FBINFO_DEFAULT;
++	fb_info.device = &pdev->dev;
+ 
+ 	if (!fb_find_mode(&fb_info.var, &fb_info, mode_option, ami_modedb,
+ 			  NUM_TOTAL_MODES, &ami_modedb[defmode], 4)) {
+@@ -2452,18 +2444,18 @@ default_chipset:
+ 	return 0;
+ 
+ amifb_error:
+-	amifb_deinit();
++	amifb_deinit(pdev);
+ 	return err;
+ }
+ 
+-static void amifb_deinit(void)
++static void amifb_deinit(struct platform_device *pdev)
+ {
+ 	if (fb_info.cmap.len)
+ 		fb_dealloc_cmap(&fb_info.cmap);
++	fb_dealloc_cmap(&fb_info.cmap);
+ 	chipfree();
+ 	if (videomemory)
+ 		iounmap((void*)videomemory);
+-	release_mem_region(CUSTOM_PHYSADDR+0xe0, 0x120);
+ 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
+ }
+ 
+@@ -3795,14 +3787,35 @@ static void ami_rebuild_copper(void)
+ 	}
+ }
+ 
+-static void __exit amifb_exit(void)
++static int __exit amifb_remove(struct platform_device *pdev)
+ {
+ 	unregister_framebuffer(&fb_info);
+-	amifb_deinit();
++	amifb_deinit(pdev);
+ 	amifb_video_off();
++	return 0;
++}
++
++static struct platform_driver amifb_driver = {
++	.remove = __exit_p(amifb_remove),
++	.driver   = {
++		.name	= "amiga-video",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init amifb_init(void)
++{
++	return platform_driver_probe(&amifb_driver, amifb_probe);
+ }
+ 
+ module_init(amifb_init);
++
++static void __exit amifb_exit(void)
++{
++	platform_driver_unregister(&amifb_driver);
++}
++
+ module_exit(amifb_exit);
+ 
+ MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:amiga-video");
+-- 
+1.6.2.3
+

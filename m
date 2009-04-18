@@ -1,169 +1,171 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH/RFC 04/16] m68k: amiga - Frame buffer platform device conversion
-Date: Sat, 18 Apr 2009 20:52:12 +0200
-Message-ID: <1240080744-14995-5-git-send-email-geert@linux-m68k.org>
-References: <1240080744-14995-1-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-2-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-3-git-send-email-geert@linux-m68k.org>
- <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
-Return-path: <linux-m68k-owner@vger.kernel.org>
-In-Reply-To: <1240080744-14995-4-git-send-email-geert@linux-m68k.org>
-Sender: linux-m68k-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net
+From: Michal Januszewski <spock@gentoo.org>
+Subject: [PATCH v2] fbdev: fix fillrect for 24bpp modes
+Date: Sat, 18 Apr 2009 20:52:34 +0200
+Message-ID: <20090418185234.GA17853@tria>
+References: <20090413170954.GA8403@tria>
+	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
+	<20090417115048.0c5ca35d.akpm@linux-foundation.org>
+Reply-To: spock@gentoo.org
+Mime-Version: 1.0
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <michalj@gmail.com>) id 1LvFfW-000795-7w
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 18 Apr 2009 18:53:38 +0000
+Received: from mail-ew0-f169.google.com ([209.85.219.169])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LvFfU-0005Jz-QW for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 18 Apr 2009 18:53:38 +0000
+Received: by ewy17 with SMTP id 17so1323831ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 18 Apr 2009 11:53:35 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090417115048.0c5ca35d.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Type: text/plain; charset="windows-1252"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
----
- arch/m68k/amiga/platform.c |   15 +++++++++++++
- drivers/video/amifb.c      |   49 +++++++++++++++++++++++++++----------------
- 2 files changed, 46 insertions(+), 18 deletions(-)
-
-diff --git a/arch/m68k/amiga/platform.c b/arch/m68k/amiga/platform.c
-index 33a7669..7fa929c 100644
---- a/arch/m68k/amiga/platform.c
-+++ b/arch/m68k/amiga/platform.c
-@@ -56,3 +56,18 @@ static int __init amiga_init_bus(void)
- subsys_initcall(amiga_init_bus);
- 
- #endif /* CONFIG_ZORRO */
-+
-+
-+static int __init amiga_init_devices(void)
-+{
-+	if (!MACH_IS_AMIGA)
-+		return -ENODEV;
-+
-+	/* video hardware */
-+	if (AMIGAHW_PRESENT(AMI_VIDEO))
-+		platform_device_register_simple("amiga-video", -1, NULL, 0);
-+
-+	return 0;
-+}
-+
-+device_initcall(amiga_init_devices);
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index 82bedd7..36a4018 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -51,8 +51,9 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/ioport.h>
--
-+#include <linux/platform_device.h>
- #include <linux/uaccess.h>
-+
- #include <asm/system.h>
- #include <asm/irq.h>
- #include <asm/amigahw.h>
-@@ -1136,7 +1137,7 @@ static int amifb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg
- 	 * Interface to the low level console driver
- 	 */
- 
--static void amifb_deinit(void);
-+static void amifb_deinit(struct platform_device *pdev);
- 
- 	/*
- 	 * Internal routines
-@@ -2247,7 +2248,7 @@ static inline void chipfree(void)
- 	 * Initialisation
- 	 */
- 
--static int __init amifb_init(void)
-+static int __init amifb_probe(struct platform_device *pdev)
- {
- 	int tag, i, err = 0;
- 	u_long chipptr;
-@@ -2262,16 +2263,6 @@ static int __init amifb_init(void)
- 	}
- 	amifb_setup(option);
- #endif
--	if (!MACH_IS_AMIGA || !AMIGAHW_PRESENT(AMI_VIDEO))
--		return -ENODEV;
--
--	/*
--	 * We request all registers starting from bplpt[0]
--	 */
--	if (!request_mem_region(CUSTOM_PHYSADDR+0xe0, 0x120,
--				"amifb [Denise/Lisa]"))
--		return -EBUSY;
--
- 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
- 
- 	switch (amiga_chipset) {
-@@ -2378,6 +2369,7 @@ default_chipset:
- 	fb_info.fbops = &amifb_ops;
- 	fb_info.par = &currentpar;
- 	fb_info.flags = FBINFO_DEFAULT;
-+	fb_info.device = &pdev->dev;
- 
- 	if (!fb_find_mode(&fb_info.var, &fb_info, mode_option, ami_modedb,
- 			  NUM_TOTAL_MODES, &ami_modedb[defmode], 4)) {
-@@ -2452,18 +2444,18 @@ default_chipset:
- 	return 0;
- 
- amifb_error:
--	amifb_deinit();
-+	amifb_deinit(pdev);
- 	return err;
- }
- 
--static void amifb_deinit(void)
-+static void amifb_deinit(struct platform_device *pdev)
- {
- 	if (fb_info.cmap.len)
- 		fb_dealloc_cmap(&fb_info.cmap);
-+	fb_dealloc_cmap(&fb_info.cmap);
- 	chipfree();
- 	if (videomemory)
- 		iounmap((void*)videomemory);
--	release_mem_region(CUSTOM_PHYSADDR+0xe0, 0x120);
- 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
- }
- 
-@@ -3795,14 +3787,35 @@ static void ami_rebuild_copper(void)
- 	}
- }
- 
--static void __exit amifb_exit(void)
-+static int __exit amifb_remove(struct platform_device *pdev)
- {
- 	unregister_framebuffer(&fb_info);
--	amifb_deinit();
-+	amifb_deinit(pdev);
- 	amifb_video_off();
-+	return 0;
-+}
-+
-+static struct platform_driver amifb_driver = {
-+	.remove = __exit_p(amifb_remove),
-+	.driver   = {
-+		.name	= "amiga-video",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init amifb_init(void)
-+{
-+	return platform_driver_probe(&amifb_driver, amifb_probe);
- }
- 
- module_init(amifb_init);
-+
-+static void __exit amifb_exit(void)
-+{
-+	platform_driver_unregister(&amifb_driver);
-+}
-+
- module_exit(amifb_exit);
- 
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:amiga-video");
--- 
-1.6.2.3
-
+VGhlIHNvZnR3YXJlIGZpbGxyZWN0IHJvdXRpbmVzIGRvIG5vdCB3b3JrIHByb3Blcmx5IHdoZW4g
+dGhlIG51bWJlciBvZgpwaXhlbHMgcGVyIG1hY2hpbmUgd29yZCBpcyBub3QgYW4gaW50ZWdlci4g
+IFRvIHNlZSB0aGF0LCBydW4gdGhlIGZvbGxvd2luZwpjb21tYW5kIG9uIGEgZmJkZXYgY29uc29s
+ZSB3aXRoIGEgMjRicHAgdmlkZW8gbW9kZSwgdXNpbmcgYSBub24tYWNjZWxlcmF0ZWQKZHJpdmVy
+IHN1Y2ggYXMgKHUpdmVzYWZiOgoKICByZXNldCA7IGVjaG8gLWUgJ1xlWzQxbXRlc3RcZVtLJwoK
+VGhlIGV4cGVjdGVkIHJlc3VsdCBpcyAndGVzdCcgZGlzcGxheWVkIG9uIGEgbGluZSB3aXRoIHJl
+ZCBiYWNrZ3JvdW5kLgpJbnN0ZWFkIG9mIHRoYXQsICd0ZXN0JyBoYXMgYSByZWQgYmFja2dyb3Vu
+ZCwgYnV0IHRoZSByZXN0IG9mIHRoZSBsaW5lCihyZW5kZXJlZCB1c2luZyBmaWxscmVjdCgpKSBj
+b250YWlucyBhIGRpc3RvcmVkIGNvbG9yZnVsIHBhdHRlcm4uCgpUaGlzIHBhdGNoIGZpeGVzIHRo
+ZSBwcm9ibGVtIGJ5IGNvcnJlY3RseSBjb21wdXRpbmcgcm90YXRpb24gc2hpZnRzLgpJdCBoYXMg
+YmVlbiB0ZXN0ZWQgaW4gYSAyNGJwcCBtb2RlIG9uIDMyLSBhbmQgNjQtYml0IGxpdHRsZS1lbmRp
+YW4KbWFjaGluZXMuCgpTaWduZWQtb2ZmLWJ5OiBNaWNoYcWCIEphbnVzemV3c2tpIDxzcG9ja0Bn
+ZW50b28ub3JnPgotLS0KVGhpcyB2ZXJzaW9uIG9mIHRoZSBwYXRjaCBzaG91bGQgd29yayBjb3Jy
+ZWN0bHkgd2l0aCBtb2RlcyB3aGVyZQpsaW5lX2xlbmd0aCo4ICUgYnBwICE9IDAuCgpJdCBhbHNv
+IHJlcGxhY2VzIHRoZSByaWdodCBzaGlmdCBieSAoZmZzKGJpdHMpIC0gMSkgd2l0aCBhIGRpdmlz
+aW9uCmJ5IGJpdHMsIGFzIGJvdGggb3BlcmF0aW9ucyBhcmUgb3B0aW1pemVkIGludG8gYSBzaGlm
+dCBieSBhIGNvbnN0YW50CmFuZCB0aGUgbGF0dGVyIG9uZSBpbmNyZWFzZXMgY29kZSByZWFkYWJp
+bGl0eS4KCkluIGNhc2UgdGhpcyBzdGlsbCBicmVha3MgaW4gc29tZSBtb2RlcywgSSB3b3VsZCBh
+cHByZWNpYXRlIGEgZnVsbApsaXN0IG9mIHBhcmFtZXRlcnMgZGVzY3JpYmluZyB0aGUgcHJvYmxl
+bSwgaS5lLiBicHAsIGxpbmVfbGVuZ3RoCmFuZCB0aGUgdG9wIGxlZnQgY29vcmRpbmF0ZSBvZiB0
+aGUgcmVjdGFuZ2xlIHRoYXQgaXMgcGFpbnRlZAppbmNvcnJlY3RseS4KCmRpZmYgLS1naXQgYS9k
+cml2ZXJzL3ZpZGVvL2NmYmZpbGxyZWN0LmMgYi9kcml2ZXJzL3ZpZGVvL2NmYmZpbGxyZWN0LmMK
+aW5kZXggNjRiMzU3Ni4uZmFhMWEzOSAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9jZmJmaWxs
+cmVjdC5jCisrKyBiL2RyaXZlcnMvdmlkZW8vY2ZiZmlsbHJlY3QuYwpAQCAtOSwxMCArOSw2IEBA
+CiAgKgogICogTk9URVM6CiAgKgotICogIFRoZSBjb2RlIGZvciBkZXB0aHMgbGlrZSAyNCB0aGF0
+IGRvbid0IGhhdmUgaW50ZWdlciBudW1iZXIgb2YgcGl4ZWxzIHBlcgotICogIGxvbmcgaXMgYnJv
+a2VuIGFuZCBuZWVkcyB0byBiZSBmaXhlZC4gRm9yIG5vdyBJIHR1cm5lZCB0aGVzZSB0eXBlcyBv
+ZgotICogIG1vZGUgb2ZmLgotICoKICAqICBBbHNvIG5lZWQgdG8gYWRkIGNvZGUgdG8gZGVhbCB3
+aXRoIGNhcmRzIGVuZGlhbnMgdGhhdCBhcmUgZGlmZmVyZW50IHRoYW4KICAqICB0aGUgbmF0aXZl
+IGNwdSBlbmRpYW5zLiBJIGFsc28gbmVlZCB0byBkZWFsIHdpdGggTVNCIHBvc2l0aW9uIGluIHRo
+ZSB3b3JkLgogICoKQEAgLTEzOSw3ICsxMzUsNyBAQCBiaXRmaWxsX3VuYWxpZ25lZChzdHJ1Y3Qg
+ZmJfaW5mbyAqcCwgdW5zaWduZWQgbG9uZyBfX2lvbWVtICpkc3QsIGludCBkc3RfaWR4LAogCiAJ
+CS8vIFRyYWlsaW5nIGJpdHMKIAkJaWYgKGxhc3QpCi0JCQlGQl9XUklURUwoY29tcChwYXQsIEZC
+X1JFQURMKGRzdCksIGZpcnN0KSwgZHN0KTsKKwkJCUZCX1dSSVRFTChjb21wKHBhdCwgRkJfUkVB
+REwoZHN0KSwgbGFzdCksIGRzdCk7CiAJfQogfQogCkBAIC0yODEsNyArMjc3LDcgQEAgYml0Zmls
+bF91bmFsaWduZWRfcmV2KHN0cnVjdCBmYl9pbmZvICpwLCB1bnNpZ25lZCBsb25nIF9faW9tZW0g
+KmRzdCwKIAogdm9pZCBjZmJfZmlsbHJlY3Qoc3RydWN0IGZiX2luZm8gKnAsIGNvbnN0IHN0cnVj
+dCBmYl9maWxscmVjdCAqcmVjdCkKIHsKLQl1bnNpZ25lZCBsb25nIHBhdCwgZmc7CisJdW5zaWdu
+ZWQgbG9uZyBwYXQsIHBhdDIsIGZnOwogCXVuc2lnbmVkIGxvbmcgd2lkdGggPSByZWN0LT53aWR0
+aCwgaGVpZ2h0ID0gcmVjdC0+aGVpZ2h0OwogCWludCBiaXRzID0gQklUU19QRVJfTE9ORywgYnl0
+ZXMgPSBiaXRzID4+IDM7CiAJdTMyIGJwcCA9IHAtPnZhci5iaXRzX3Blcl9waXhlbDsKQEAgLTI5
+Nyw3ICsyOTMsNyBAQCB2b2lkIGNmYl9maWxscmVjdChzdHJ1Y3QgZmJfaW5mbyAqcCwgY29uc3Qg
+c3RydWN0IGZiX2ZpbGxyZWN0ICpyZWN0KQogCWVsc2UKIAkJZmcgPSByZWN0LT5jb2xvcjsKIAot
+CXBhdCA9IHBpeGVsX3RvX3BhdCggYnBwLCBmZyk7CisJcGF0ID0gcGl4ZWxfdG9fcGF0KGJwcCwg
+ZmcpOwogCiAJZHN0ID0gKHVuc2lnbmVkIGxvbmcgX19pb21lbSAqKSgodW5zaWduZWQgbG9uZylw
+LT5zY3JlZW5fYmFzZSAmIH4oYnl0ZXMtMSkpOwogCWRzdF9pZHggPSAoKHVuc2lnbmVkIGxvbmcp
+cC0+c2NyZWVuX2Jhc2UgJiAoYnl0ZXMgLSAxKSkqODsKQEAgLTMzMywxNyArMzI5LDE2IEBAIHZv
+aWQgY2ZiX2ZpbGxyZWN0KHN0cnVjdCBmYl9pbmZvICpwLCBjb25zdCBzdHJ1Y3QgZmJfZmlsbHJl
+Y3QgKnJlY3QpCiAJCQlkc3RfaWR4ICs9IHAtPmZpeC5saW5lX2xlbmd0aCo4OwogCQl9CiAJfSBl
+bHNlIHsKLQkJaW50IHJpZ2h0OwotCQlpbnQgcjsKLQkJaW50IHJvdCA9IChsZWZ0LWRzdF9pZHgp
+ICUgYnBwOworCQlpbnQgcmlnaHQsIHI7CiAJCXZvaWQgKCpmaWxsX29wKShzdHJ1Y3QgZmJfaW5m
+byAqcCwgdW5zaWduZWQgbG9uZyBfX2lvbWVtICpkc3QsCiAJCQkJaW50IGRzdF9pZHgsIHVuc2ln
+bmVkIGxvbmcgcGF0LCBpbnQgbGVmdCwKIAkJCQlpbnQgcmlnaHQsIHVuc2lnbmVkIG4sIGludCBi
+aXRzKSA9IE5VTEw7Ci0KLQkJLyogcm90YXRlIHBhdHRlcm4gdG8gY29ycmVjdCBzdGFydCBwb3Np
+dGlvbiAqLwotCQlwYXQgPSBwYXQgPDwgcm90IHwgcGF0ID4+IChicHAtcm90KTsKLQotCQlyaWdo
+dCA9IGJwcC1sZWZ0OworI2lmZGVmIF9fTElUVExFX0VORElBTgorCQlyaWdodCA9IGxlZnQ7CisJ
+CWxlZnQgPSBicHAgLSByaWdodDsKKyNlbHNlCisJCXJpZ2h0ID0gYnBwIC0gbGVmdDsKKyNlbmRp
+ZgogCQlzd2l0Y2ggKHJlY3QtPnJvcCkgewogCQljYXNlIFJPUF9YT1I6CiAJCQlmaWxsX29wID0g
+Yml0ZmlsbF91bmFsaWduZWRfcmV2OwpAQCAtMzU3LDEyICszNTIsMTcgQEAgdm9pZCBjZmJfZmls
+bHJlY3Qoc3RydWN0IGZiX2luZm8gKnAsIGNvbnN0IHN0cnVjdCBmYl9maWxscmVjdCAqcmVjdCkK
+IAkJCWJyZWFrOwogCQl9CiAJCXdoaWxlIChoZWlnaHQtLSkgewotCQkJZHN0ICs9IGRzdF9pZHgg
+Pj4gKGZmcyhiaXRzKSAtIDEpOworCQkJZHN0ICs9IGRzdF9pZHggLyBiaXRzOwogCQkJZHN0X2lk
+eCAmPSAoYml0cyAtIDEpOwotCQkJZmlsbF9vcChwLCBkc3QsIGRzdF9pZHgsIHBhdCwgbGVmdCwg
+cmlnaHQsCisJCQlyID0gZHN0X2lkeCAlIGJwcDsKKwkJCS8qIHJvdGF0ZSBwYXR0ZXJuIHRvIHRo
+ZSBjb3JyZWN0IHN0YXJ0IHBvc2l0aW9uICovCisjaWZkZWYgX19MSVRUTEVfRU5ESUFOCisJCQlw
+YXQyID0gcGF0IDw8IHIgfCBwYXQgPj4gKGJwcC1yKTsKKyNlbHNlCisJCQlwYXQyID0gcGF0IDw8
+IChicHAtcikgfCBwYXQgPj4gcjsKKyNlbmRpZgorCQkJZmlsbF9vcChwLCBkc3QsIGRzdF9pZHgs
+IHBhdDIsIGxlZnQsIHJpZ2h0LAogCQkJCXdpZHRoKmJwcCwgYml0cyk7Ci0JCQlyID0gKHAtPmZp
+eC5saW5lX2xlbmd0aCo4KSAlIGJwcDsKLQkJCXBhdCA9IHBhdCA8PCAoYnBwLXIpIHwgcGF0ID4+
+IHI7CiAJCQlkc3RfaWR4ICs9IHAtPmZpeC5saW5lX2xlbmd0aCo4OwogCQl9CiAJfQpkaWZmIC0t
+Z2l0IGEvZHJpdmVycy92aWRlby9mYl9kcmF3LmggYi9kcml2ZXJzL3ZpZGVvL2ZiX2RyYXcuaApp
+bmRleCAxZGI2MjIxLi5mYTk2MjZlIDEwMDY0NAotLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiX2RyYXcu
+aAorKysgYi9kcml2ZXJzL3ZpZGVvL2ZiX2RyYXcuaApAQCAtMzMsMTEgKzMzLDExIEBAIHBpeGVs
+X3RvX3BhdCggdTMyIGJwcCwgdTMyIHBpeGVsKQogCWNhc2UgODoKIAkJcmV0dXJuIDB4MDEwMTAx
+MDEwMTAxMDEwMXVsKnBpeGVsOwogCWNhc2UgMTI6Ci0JCXJldHVybiAweDAwMDEwMDEwMDEwMDEw
+MDF1bCpwaXhlbDsKKwkJcmV0dXJuIDB4MTAwMTAwMTAwMTAwMTAwMXVsKnBpeGVsOwogCWNhc2Ug
+MTY6CiAJCXJldHVybiAweDAwMDEwMDAxMDAwMTAwMDF1bCpwaXhlbDsKIAljYXNlIDI0OgotCQly
+ZXR1cm4gMHgwMDAwMDAwMDAxMDAwMDAxdWwqcGl4ZWw7CisJCXJldHVybiAweDAwMDEwMDAwMDEw
+MDAwMDF1bCpwaXhlbDsKIAljYXNlIDMyOgogCQlyZXR1cm4gMHgwMDAwMDAwMTAwMDAwMDAxdWwq
+cGl4ZWw7CiAJZGVmYXVsdDoKQEAgLTU4LDExICs1OCwxMSBAQCBwaXhlbF90b19wYXQoIHUzMiBi
+cHAsIHUzMiBwaXhlbCkKIAljYXNlIDg6CiAJCXJldHVybiAweDAxMDEwMTAxdWwqcGl4ZWw7CiAJ
+Y2FzZSAxMjoKLQkJcmV0dXJuIDB4MDAwMDEwMDF1bCpwaXhlbDsKKwkJcmV0dXJuIDB4MDEwMDEw
+MDF1bCpwaXhlbDsKIAljYXNlIDE2OgogCQlyZXR1cm4gMHgwMDAxMDAwMXVsKnBpeGVsOwogCWNh
+c2UgMjQ6Ci0JCXJldHVybiAweDAwMDAwMDAxdWwqcGl4ZWw7CisJCXJldHVybiAweDAxMDAwMDAx
+dWwqcGl4ZWw7CiAJY2FzZSAzMjoKIAkJcmV0dXJuIDB4MDAwMDAwMDF1bCpwaXhlbDsKIAlkZWZh
+dWx0OgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9zeXNmaWxscmVjdC5jIGIvZHJpdmVycy92
+aWRlby9zeXNmaWxscmVjdC5jCmluZGV4IGY5NGQ2YjYuLmZmMjU2YTQgMTAwNjQ0Ci0tLSBhL2Ry
+aXZlcnMvdmlkZW8vc3lzZmlsbHJlY3QuYworKysgYi9kcml2ZXJzL3ZpZGVvL3N5c2ZpbGxyZWN0
+LmMKQEAgLTEyNCw3ICsxMjQsNyBAQCBiaXRmaWxsX3VuYWxpZ25lZChzdHJ1Y3QgZmJfaW5mbyAq
+cCwgdW5zaWduZWQgbG9uZyAqZHN0LCBpbnQgZHN0X2lkeCwKIAogCQkvKiBUcmFpbGluZyBiaXRz
+ICovCiAJCWlmIChsYXN0KQotCQkJKmRzdCA9IGNvbXAocGF0LCAqZHN0LCBmaXJzdCk7CisJCQkq
+ZHN0ID0gY29tcChwYXQsICpkc3QsIGxhc3QpOwogCX0KIH0KIApAQCAtMjQyLDcgKzI0Miw3IEBA
+IGJpdGZpbGxfdW5hbGlnbmVkX3JldihzdHJ1Y3QgZmJfaW5mbyAqcCwgdW5zaWduZWQgbG9uZyAq
+ZHN0LCBpbnQgZHN0X2lkeCwKIAogdm9pZCBzeXNfZmlsbHJlY3Qoc3RydWN0IGZiX2luZm8gKnAs
+IGNvbnN0IHN0cnVjdCBmYl9maWxscmVjdCAqcmVjdCkKIHsKLQl1bnNpZ25lZCBsb25nIHBhdCwg
+Zmc7CisJdW5zaWduZWQgbG9uZyBwYXQsIHBhdDIsIGZnOwogCXVuc2lnbmVkIGxvbmcgd2lkdGgg
+PSByZWN0LT53aWR0aCwgaGVpZ2h0ID0gcmVjdC0+aGVpZ2h0OwogCWludCBiaXRzID0gQklUU19Q
+RVJfTE9ORywgYnl0ZXMgPSBiaXRzID4+IDM7CiAJdTMyIGJwcCA9IHAtPnZhci5iaXRzX3Blcl9w
+aXhlbDsKQEAgLTI5MiwxNyArMjkyLDE2IEBAIHZvaWQgc3lzX2ZpbGxyZWN0KHN0cnVjdCBmYl9p
+bmZvICpwLCBjb25zdCBzdHJ1Y3QgZmJfZmlsbHJlY3QgKnJlY3QpCiAJCQlkc3RfaWR4ICs9IHAt
+PmZpeC5saW5lX2xlbmd0aCo4OwogCQl9CiAJfSBlbHNlIHsKLQkJaW50IHJpZ2h0OwotCQlpbnQg
+cjsKLQkJaW50IHJvdCA9IChsZWZ0LWRzdF9pZHgpICUgYnBwOworCQlpbnQgcmlnaHQsIHI7CiAJ
+CXZvaWQgKCpmaWxsX29wKShzdHJ1Y3QgZmJfaW5mbyAqcCwgdW5zaWduZWQgbG9uZyAqZHN0LAog
+CQkJCWludCBkc3RfaWR4LCB1bnNpZ25lZCBsb25nIHBhdCwgaW50IGxlZnQsCiAJCQkJaW50IHJp
+Z2h0LCB1bnNpZ25lZCBuLCBpbnQgYml0cykgPSBOVUxMOwotCi0JCS8qIHJvdGF0ZSBwYXR0ZXJu
+IHRvIGNvcnJlY3Qgc3RhcnQgcG9zaXRpb24gKi8KLQkJcGF0ID0gcGF0IDw8IHJvdCB8IHBhdCA+
+PiAoYnBwLXJvdCk7Ci0KLQkJcmlnaHQgPSBicHAtbGVmdDsKKyNpZmRlZiBfX0xJVFRMRV9FTkRJ
+QU4KKwkJcmlnaHQgPSBsZWZ0OworCQlsZWZ0ID0gYnBwIC0gcmlnaHQ7CisjZWxzZQorCQlyaWdo
+dCA9IGJwcCAtIGxlZnQ7CisjZW5kaWYKIAkJc3dpdGNoIChyZWN0LT5yb3ApIHsKIAkJY2FzZSBS
+T1BfWE9SOgogCQkJZmlsbF9vcCA9IGJpdGZpbGxfdW5hbGlnbmVkX3JldjsKQEAgLTMxNywxMiAr
+MzE2LDE3IEBAIHZvaWQgc3lzX2ZpbGxyZWN0KHN0cnVjdCBmYl9pbmZvICpwLCBjb25zdCBzdHJ1
+Y3QgZmJfZmlsbHJlY3QgKnJlY3QpCiAJCQlicmVhazsKIAkJfQogCQl3aGlsZSAoaGVpZ2h0LS0p
+IHsKLQkJCWRzdCArPSBkc3RfaWR4ID4+IChmZnMoYml0cykgLSAxKTsKKwkJCWRzdCArPSBkc3Rf
+aWR4IC8gYml0czsKIAkJCWRzdF9pZHggJj0gKGJpdHMgLSAxKTsKLQkJCWZpbGxfb3AocCwgZHN0
+LCBkc3RfaWR4LCBwYXQsIGxlZnQsIHJpZ2h0LAorCQkJciA9IGRzdF9pZHggJSBicHA7CisJCQkv
+KiByb3RhdGUgcGF0dGVybiB0byB0aGUgY29ycmVjdCBzdGFydCBwb3NpdGlvbiAqLworI2lmZGVm
+IF9fTElUVExFX0VORElBTgorCQkJcGF0MiA9IHBhdCA8PCByIHwgcGF0ID4+IChicHAtcik7Cisj
+ZWxzZQorCQkJcGF0MiA9IHBhdCA8PCAoYnBwLXIpIHwgcGF0ID4+IHI7CisjZW5kaWYKKwkJCWZp
+bGxfb3AocCwgZHN0LCBkc3RfaWR4LCBwYXQyLCBsZWZ0LCByaWdodCwKIAkJCQl3aWR0aCpicHAs
+IGJpdHMpOwotCQkJciA9IChwLT5maXgubGluZV9sZW5ndGgqOCkgJSBicHA7Ci0JCQlwYXQgPSBw
+YXQgPDwgKGJwcC1yKSB8IHBhdCA+PiByOwogCQkJZHN0X2lkeCArPSBwLT5maXgubGluZV9sZW5n
+dGgqODsKIAkJfQogCX0KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpTdGF5IG9uIHRvcCBvZiBldmVy
+eXRoaW5nIG5ldyBhbmQgZGlmZmVyZW50LCBib3RoIGluc2lkZSBhbmQgCmFyb3VuZCBKYXZhIChU
+TSkgdGVjaG5vbG9neSAtIHJlZ2lzdGVyIGJ5IEFwcmlsIDIyLCBhbmQgc2F2ZQokMjAwIG9uIHRo
+ZSBKYXZhT25lIChTTSkgY29uZmVyZW5jZSwgSnVuZSAyLTUsIDIwMDksIFNhbiBGcmFuY2lzY28u
+CjMwMCBwbHVzIHRlY2huaWNhbCBhbmQgaGFuZHMtb24gc2Vzc2lvbnMuIFJlZ2lzdGVyIHRvZGF5
+LiAKVXNlIHByaW9yaXR5IGNvZGUgSjlKTVQzMi4gaHR0cDovL3Auc2YubmV0L3NmdS9wCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRl
+dmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQK
+aHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYt
+ZGV2ZWwK

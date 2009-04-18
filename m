@@ -1,21 +1,22 @@
 From: Troy Kisky <troy.kisky@boundarydevices.com>
-Subject: [PATCH] Fix edid hsync offset and width parsing.
-Date: Thu, 16 Apr 2009 23:04:48 -0700
-Message-ID: <1239948288-4325-1-git-send-email-troy.kisky@boundarydevices.com>
+Subject: [PATCH] cvt: Exchange v_front_porch and
+	v_back_porch
+Date: Fri, 17 Apr 2009 18:24:28 -0700
+Message-ID: <1240017868-16677-1-git-send-email-troy.kisky@boundarydevices.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <tkisky@boundarydevices.com>) id 1LuhR5-0005mU-Ph
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <tkisky@boundarydevices.com>) id 1LuzIU-0006UE-Tr
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Apr 2009 06:20:27 +0000
-Received: from mpls-qmqp-03.inet.qwest.net ([63.231.195.114])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LuhR4-00083b-PU for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 17 Apr 2009 06:20:27 +0000
+	Sat, 18 Apr 2009 01:24:46 +0000
+Received: from mpls-qmqp-04.inet.qwest.net ([63.231.195.115])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LuzIL-0008Vm-1C for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 18 Apr 2009 01:24:38 +0000
 In-Reply-To: <>
 References: <>
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -30,28 +31,32 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: adaplas@gmail.com, Troy Kisky <troy.kisky@boundarydevices.com>
 
+Make fbcvt agree with the cvt program output.
+cvt always assigns 3 to the front porch.
+
 Signed-off-by: Troy Kisky <troy.kisky@boundarydevices.com>
 
-I cannot test this, but it looks like a bug fix.
+Not tested, there could be another bug that
+cancels this out.
 ---
- drivers/video/edid.h |    4 ++--
+ drivers/video/fbcvt.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/edid.h b/drivers/video/edid.h
-index bd89fb3..c2d98de 100644
---- a/drivers/video/edid.h
-+++ b/drivers/video/edid.h
-@@ -101,8 +101,8 @@
- #define V_SYNC_WIDTH       COMBINE_HI_4LO( V_SYNC_WIDTH_HI, V_SYNC_WIDTH_LO )
- #define V_SYNC_OFFSET      COMBINE_HI_4LO( V_SYNC_OFFSET_HI, V_SYNC_OFFSET_LO )
- 
--#define H_SYNC_WIDTH       COMBINE_HI_4LO( H_SYNC_WIDTH_HI, H_SYNC_WIDTH_LO )
--#define H_SYNC_OFFSET      COMBINE_HI_4LO( H_SYNC_OFFSET_HI, H_SYNC_OFFSET_LO )
-+#define H_SYNC_WIDTH       COMBINE_HI_8LO(H_SYNC_WIDTH_HI, H_SYNC_WIDTH_LO)
-+#define H_SYNC_OFFSET      COMBINE_HI_8LO(H_SYNC_OFFSET_HI, H_SYNC_OFFSET_LO)
- 
- #define H_SIZE_LO          (unsigned)block[ 12 ]
- #define V_SIZE_LO          (unsigned)block[ 13 ]
+diff --git a/drivers/video/fbcvt.c b/drivers/video/fbcvt.c
+index 0847c5e..2230103 100644
+--- a/drivers/video/fbcvt.c
++++ b/drivers/video/fbcvt.c
+@@ -368,8 +368,8 @@ int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb)
+ 	cvt.h_back_porch = cvt.hblank/2 + cvt.h_margin;
+ 	cvt.h_front_porch = cvt.hblank - cvt.hsync - cvt.h_back_porch +
+ 		2 * cvt.h_margin;
+-	cvt.v_back_porch = 3 + cvt.v_margin;
+-	cvt.v_front_porch = cvt.vtotal - cvt.yres/cvt.interlace -
++	cvt.v_front_porch = 3 + cvt.v_margin;
++	cvt.v_back_porch = cvt.vtotal - cvt.yres/cvt.interlace -
+ 	    cvt.v_back_porch - cvt.vsync;
+ 	fb_cvt_print_name(&cvt);
+ 	fb_cvt_convert_to_mode(&cvt, mode);
 -- 
 1.5.4.3
 

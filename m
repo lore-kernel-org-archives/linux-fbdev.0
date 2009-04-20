@@ -1,76 +1,46 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: s13d...fb fill_rect accel giving wrong color
-Date: Mon, 20 Apr 2009 21:08:21 +0200
-Message-ID: <10f740e80904201208g1df7623ex3c9383d84acf1ce1@mail.gmail.com>
-References: <20090420202243.d1ad7cee.kristoffer.ericson@gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] fbdev: fix fillrect for 24bpp modes
+Date: Mon, 20 Apr 2009 16:07:33 -0700
+Message-ID: <20090420160733.07e27238.akpm@linux-foundation.org>
+References: <20090413170954.GA8403@tria>
+	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
+	<20090417115048.0c5ca35d.akpm@linux-foundation.org>
+	<20090418185234.GA17853@tria>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert.uytterhoeven@gmail.com>) id 1Lvyqx-0005L9-5E
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Apr 2009 19:08:27 +0000
-Received: from mail-ew0-f169.google.com ([209.85.219.169])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Lvyqt-0003xx-Mp for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Apr 2009 19:08:27 +0000
-Received: by ewy17 with SMTP id 17so1927587ewy.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 20 Apr 2009 12:08:21 -0700 (PDT)
-In-Reply-To: <20090420202243.d1ad7cee.kristoffer.ericson@gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752900AbZDTXT5@vger.kernel.org>
+In-Reply-To: <20090418185234.GA17853@tria>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: spock@gentoo.org
+Cc: krzysztof.h1@poczta.fm, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Mon, Apr 20, 2009 at 20:22, Kristoffer Ericson
-<kristoffer.ericson@gmail.com> wrote:
-> My accelerated fill_rect is working nicely apart from the fact that its
-> giving me the wrong colors. For instance mc has its empty spaces
-> being black when they should be blue.Its doesnt show up
-> in pure console but thats probably since its generally black :)
->
-> Ive added some debugging code to both cfb_fillrect and my routine
-> and its accessing the same pseudo_palette[x] color.
->
-> cfb_fillrect uses pixel_to_pat() to get its color value. I havent
-> completely understod whats the purpose of it. I cannot push
-> an 32bit value into my color registers since its only 16bit.
+On Sat, 18 Apr 2009 20:52:34 +0200
+Michal Januszewski <spock@gentoo.org> wrote:
 
-As cfb_fillrect() tries to write using quantities of `unsigned long'
-(either 32 or
-64 bit), while your pixels are 16 bit, it uses pixel_to_pat() to
-duplicate the 16 bit
-pixel values to fill an `unsigned long' quantity.
+>  		while (height--) {
+> -			dst += dst_idx >> (ffs(bits) - 1);
+> +			dst += dst_idx / bits;
+>  			dst_idx &= (bits - 1);
+> -			fill_op(p, dst, dst_idx, pat, left, right,
+> +			r = dst_idx % bpp;
+> +			/* rotate pattern to the correct start position */
+> +#ifdef __LITTLE_ENDIAN
+> +			pat2 = pat << r | pat >> (bpp-r);
+> +#else
+> +			pat2 = pat << (bpp-r) | pat >> r;
+> +#endif
+> +			fill_op(p, dst, dst_idx, pat2, left, right,
+>  				width*bpp, bits);
+> -			r = (p->fix.line_length*8) % bpp;
+> -			pat = pat << (bpp-r) | pat >> r;
+>  			dst_idx += p->fix.line_length*8;
 
-For hardware accelerated fillrect, I'd expect you just have to write
-the 16 bit pixel
-value to your hardware's color register.
+hm, that's fairly eye-popping.
 
-Gr{oetje,eeting}s,
+Could we do something like
 
-						Geert
+	pat2 = le32_to_cpu(rol32(cpu_to_le32(pat), r));
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-------------------------------------------------------------------------------
-Stay on top of everything new and different, both inside and 
-around Java (TM) technology - register by April 22, and save
-$200 on the JavaOne (SM) conference, June 2-5, 2009, San Francisco.
-300 plus technical and hands-on sessions. Register today. 
-Use priority code J9JMT32. http://p.sf.net/sfu/p
+(might be wrong, but you see what I mean...)

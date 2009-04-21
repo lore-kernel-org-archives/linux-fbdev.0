@@ -1,46 +1,56 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: Re: [PATCH v2] fbdev: fix fillrect for 24bpp modes
-Date: Mon, 20 Apr 2009 16:07:33 -0700
-Message-ID: <20090420160733.07e27238.akpm@linux-foundation.org>
+Date: Tue, 21 Apr 2009 07:10:03 +0200
+Message-ID: <20090421071003.ded2ae3f.krzysztof.h1@poczta.fm>
 References: <20090413170954.GA8403@tria>
 	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
 	<20090417115048.0c5ca35d.akpm@linux-foundation.org>
 	<20090418185234.GA17853@tria>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752900AbZDTXT5@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752417AbZDUFHX@vger.kernel.org>
 In-Reply-To: <20090418185234.GA17853@tria>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 To: spock@gentoo.org
-Cc: krzysztof.h1@poczta.fm, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
 On Sat, 18 Apr 2009 20:52:34 +0200
 Michal Januszewski <spock@gentoo.org> wrote:
 
->  		while (height--) {
-> -			dst += dst_idx >> (ffs(bits) - 1);
-> +			dst += dst_idx / bits;
->  			dst_idx &= (bits - 1);
-> -			fill_op(p, dst, dst_idx, pat, left, right,
-> +			r = dst_idx % bpp;
-> +			/* rotate pattern to the correct start position */
-> +#ifdef __LITTLE_ENDIAN
-> +			pat2 = pat << r | pat >> (bpp-r);
-> +#else
-> +			pat2 = pat << (bpp-r) | pat >> r;
-> +#endif
-> +			fill_op(p, dst, dst_idx, pat2, left, right,
->  				width*bpp, bits);
-> -			r = (p->fix.line_length*8) % bpp;
-> -			pat = pat << (bpp-r) | pat >> r;
->  			dst_idx += p->fix.line_length*8;
+> The software fillrect routines do not work properly when the number o=
+f
+> pixels per machine word is not an integer.  To see that, run the foll=
+owing
+> command on a fbdev console with a 24bpp video mode, using a non-accel=
+erated
+> driver such as (u)vesafb:
+>=20
+>   reset ; echo -e '\e[41mtest\e[K'
+>=20
+> The expected result is 'test' displayed on a line with red background=
+=2E
+> Instead of that, 'test' has a red background, but the rest of the lin=
+e
+> (rendered using fillrect()) contains a distored colorful pattern.
+>=20
+> This patch fixes the problem by correctly computing rotation shifts.
+> It has been tested in a 24bpp mode on 32- and 64-bit little-endian
+> machines.
+>=20
+> Signed-off-by: Micha=B3 Januszewski <spock@gentoo.org>
+> ---
 
-hm, that's fairly eye-popping.
+I have tested the patch and it has worked with padded lines.
 
-Could we do something like
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-	pat2 = le32_to_cpu(rol32(cpu_to_le32(pat), r));
+However, there is  a comment from Andrew Morton.
 
-(might be wrong, but you see what I mean...)
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Gotowka na koncie. Otworz konto direct i wez podwojny limit.
+http://link.interia.pl/f2115

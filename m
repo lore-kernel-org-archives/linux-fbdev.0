@@ -1,56 +1,103 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH v2] fbdev: fix fillrect for 24bpp modes
-Date: Tue, 21 Apr 2009 07:10:03 +0200
-Message-ID: <20090421071003.ded2ae3f.krzysztof.h1@poczta.fm>
-References: <20090413170954.GA8403@tria>
-	<20090417183617.ed7553cd.krzysztof.h1@poczta.fm>
-	<20090417115048.0c5ca35d.akpm@linux-foundation.org>
-	<20090418185234.GA17853@tria>
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: s13d...fb fill_rect accel giving wrong color
+Date: Tue, 21 Apr 2009 15:36:12 +0200
+Message-ID: <20090421153612.22c15f60.kristoffer.ericson@gmail.com>
+References: <20090420202243.d1ad7cee.kristoffer.ericson@gmail.com>
+	<10f740e80904201208g1df7623ex3c9383d84acf1ce1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752417AbZDUFHX@vger.kernel.org>
-In-Reply-To: <20090418185234.GA17853@tria>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: spock@gentoo.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <kristoffer.ericson@gmail.com>) id 1LwGLh-0008F4-R3
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 21 Apr 2009 13:49:21 +0000
+Received: from mail-fx0-f177.google.com ([209.85.220.177])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LwGLY-0006Ki-NS for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 21 Apr 2009 13:49:21 +0000
+Received: by fxm25 with SMTP id 25so2606071fxm.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 21 Apr 2009 06:41:55 -0700 (PDT)
+In-Reply-To: <10f740e80904201208g1df7623ex3c9383d84acf1ce1@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 18 Apr 2009 20:52:34 +0200
-Michal Januszewski <spock@gentoo.org> wrote:
+On Mon, 20 Apr 2009 21:08:21 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-> The software fillrect routines do not work properly when the number o=
-f
-> pixels per machine word is not an integer.  To see that, run the foll=
-owing
-> command on a fbdev console with a 24bpp video mode, using a non-accel=
-erated
-> driver such as (u)vesafb:
->=20
->   reset ; echo -e '\e[41mtest\e[K'
->=20
-> The expected result is 'test' displayed on a line with red background=
-=2E
-> Instead of that, 'test' has a red background, but the rest of the lin=
-e
-> (rendered using fillrect()) contains a distored colorful pattern.
->=20
-> This patch fixes the problem by correctly computing rotation shifts.
-> It has been tested in a 24bpp mode on 32- and 64-bit little-endian
-> machines.
->=20
-> Signed-off-by: Micha=B3 Januszewski <spock@gentoo.org>
-> ---
+> On Mon, Apr 20, 2009 at 20:22, Kristoffer Ericson
+> <kristoffer.ericson@gmail.com> wrote:
+> > My accelerated fill_rect is working nicely apart from the fact that its
+> > giving me the wrong colors. For instance mc has its empty spaces
+> > being black when they should be blue.Its doesnt show up
+> > in pure console but thats probably since its generally black :)
+> >
+> > Ive added some debugging code to both cfb_fillrect and my routine
+> > and its accessing the same pseudo_palette[x] color.
+> >
+> > cfb_fillrect uses pixel_to_pat() to get its color value. I havent
+> > completely understod whats the purpose of it. I cannot push
+> > an 32bit value into my color registers since its only 16bit.
+> 
+> As cfb_fillrect() tries to write using quantities of `unsigned long'
+> (either 32 or
+> 64 bit), while your pixels are 16 bit, it uses pixel_to_pat() to
+> duplicate the 16 bit
+> pixel values to fill an `unsigned long' quantity.
 
-I have tested the patch and it has worked with padded lines.
+Ah, thats about what I guessed.
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> For hardware accelerated fillrect, I'd expect you just have to write
+> the 16 bit pixel
+> value to your hardware's color register.
 
-However, there is  a comment from Andrew Morton.
+I tried that, it works well in console (probably due because it always writes black),
+in mc though instead of filling the "empty" spaces with blue it fills them with
+black. cfb_fillrect does not have this issue. Got any idea where I could look?
 
-Regards,
-Krzysztof
+Im basicly down to either rect->color being wrong or that Im writing
+to the wrong location (which would be odd since everything looks okey
+aside from the color). *shrug*
 
-----------------------------------------------------------------------
-Gotowka na koncie. Otworz konto direct i wez podwojny limit.
-http://link.interia.pl/f2115
+I also created an copyarea function which works perfectly fine.
+
+Any guesses are helpful at this point.
+
+
+
+
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+
+
+-- 
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+------------------------------------------------------------------------------
+Stay on top of everything new and different, both inside and 
+around Java (TM) technology - register by April 22, and save
+$200 on the JavaOne (SM) conference, June 2-5, 2009, San Francisco.
+300 plus technical and hands-on sessions. Register today. 
+Use priority code J9JMT32. http://p.sf.net/sfu/p

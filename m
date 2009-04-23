@@ -1,32 +1,32 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Subject: Re: DRM KMS + intel fb
-Date: Thu, 23 Apr 2009 13:15:31 +0200
-Message-ID: <49F04DD3.8020705@redhat.com>
-References: <7398C9BACDA74507AA9FCCCE4847C5A4@avitech.sk>
+From: Marek Vasut <marek.vasut@gmail.com>
+Subject: Re: build issue #7 for v2.6.30-rc3 :defined but not
+Date: Thu, 23 Apr 2009 20:11:28 +0200
+Message-ID: <200904232011.28308.marek.vasut@gmail.com>
+References: <200904232001.21042.toralf.foerster@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757830AbZDWLPv@vger.kernel.org>
-In-Reply-To: <7398C9BACDA74507AA9FCCCE4847C5A4@avitech.sk>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Peter Hanzel <hanzelpeter@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: base64
+Return-path: <lm-sensors-bounces@lm-sensors.org>
+In-Reply-To: <200904232001.21042.toralf.foerster@gmx.de>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
+	<mailto:lm-sensors-request@lm-sensors.org?subject=unsubscribe>
+List-Archive: <http://lists.lm-sensors.org/pipermail/lm-sensors>
+List-Post: <mailto:lm-sensors@lm-sensors.org>
+List-Help: <mailto:lm-sensors-request@lm-sensors.org?subject=help>
+List-Subscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
+	<mailto:lm-sensors-request@lm-sensors.org?subject=subscribe>
+Sender: lm-sensors-bounces@lm-sensors.org
+Errors-To: lm-sensors-bounces@lm-sensors.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Toralf =?utf-8?q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, lm-sensors@lm-sensors.org
 
-On 04/23/09 12:12, Peter Hanzel wrote:
-> Hello.
->
-> I am watching the KMS in DRM development. And now i want to try kernel
-> modesetting with framebuffer console.
-> I am only using console framebuffer. How it works with DRM KMS.
-
-Just works.  The kms code supports the fb interface.
-
-> Suppose I compile DRM i1915 with KMS. How can I swich video mode on
-> start  and than from user space.
-
-Loading the driver switches to the native resolution of the lcd monitor 
-connected and runs a fbcon on it.  Didn't try to switching modes later.
-
-HTH,
-   Gerd
+T24gVGh1cnNkYXkgMjMgb2YgQXByaWwgMjAwOSAyMDowMToyMCBUb3JhbGYgRsO2cnN0ZXIgd3Jv
+dGU6Cj4gaW5jbHVkZS9saW51eC91Y2IxNDAwLmg6MTM5OiB3YXJuaW5nOiAndWNiMTQwMF9hZGNf
+cmVhZCcgZGVmaW5lZCBidXQgbm90Cj4gdXNlZAoKaW5jbHVkZS9saW51eC91Y2IxNDAwLmg6MTM5
+OiB3YXJuaW5nOiAndWNiMTQwMF9hZGNfcmVhZCcgZGVmaW5lZCBidXQgbm90IHVzZWQKClRoYXQg
+ZnVuY3Rpb24gc2hvdWxkIHByb2JhYmx5IGdvIGludG8gdWNiMTQwMC1jb3JlLmMKCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxtLXNlbnNvcnMgbWFpbGlu
+ZyBsaXN0CmxtLXNlbnNvcnNAbG0tc2Vuc29ycy5vcmcKaHR0cDovL2xpc3RzLmxtLXNlbnNvcnMu
+b3JnL21haWxtYW4vbGlzdGluZm8vbG0tc2Vuc29ycw==

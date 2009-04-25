@@ -1,21 +1,26 @@
-From: Alessio Sangalli <alesan@manoweb.com>
-Subject: Framebuffer using system memory
-Date: Fri, 24 Apr 2009 18:13:52 -0700
-Message-ID: <49F263D0.4030108@manoweb.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Framebuffer using system memory
+Date: Sat, 25 Apr 2009 09:45:32 +0200
+Message-ID: <10f740e80904250045u1e617c9v2d49f30fce1cf40@mail.gmail.com>
+References: <49F263D0.4030108@manoweb.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <alesan@manoweb.com>) id 1LxWf3-0000oa-Cr
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1LxcZr-0004S7-LJ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 25 Apr 2009 01:26:33 +0000
-Received: from moutng.kundenserver.de ([212.227.126.177])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1LxWf2-0005K9-1M for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 25 Apr 2009 01:26:33 +0000
+	Sat, 25 Apr 2009 07:45:35 +0000
+Received: from ey-out-1920.google.com ([74.125.78.148])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1LxcZq-0007Kq-Ef for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 25 Apr 2009 07:45:35 +0000
+Received: by ey-out-1920.google.com with SMTP id 13so271100eye.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 25 Apr 2009 00:45:32 -0700 (PDT)
+In-Reply-To: <49F263D0.4030108@manoweb.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,26 +30,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: Alessio Sangalli <alesan@manoweb.com>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi I am working on a framebuffer that uses the system memory.
+On Sat, Apr 25, 2009 at 03:13, Alessio Sangalli <alesan@manoweb.com> wrote:
+> Hi I am working on a framebuffer that uses the system memory.
+>
+> What I mean here is that I need to pass mem=120M to a system that has
+> 128MB to "reserve" 8MB of memory for the framebuffer; then I program the
+> hardware to use that region of memory.
+>
+> The reason I do this is that it seems impossible to kmalloc more that
+> 4MB of contiguos physical memory with the Linux Kernel.
+>
+> Bottom line, I do not know how to map those 8MB back to userspace. If
+> userspace opens mmaps /dev/mem and writes to the appropriate location it
+> can access the fb perfectly.
+>
+> Any hints? All of this is on ARM9.
 
-What I mean here is that I need to pass mem=120M to a system that has
-128MB to "reserve" 8MB of memory for the framebuffer; then I program the
-hardware to use that region of memory.
+Alternatively, you could use__alloc_bootmem() in the early platform
+code to reserve
+the memory, cfr. arch/powerpc/platforms/ps3/setup.c
 
-The reason I do this is that it seems impossible to kmalloc more that
-4MB of contiguos physical memory with the Linux Kernel.
+Gr{oetje,eeting}s,
 
-Bottom line, I do not know how to map those 8MB back to userspace. If
-userspace opens mmaps /dev/mem and writes to the appropriate location it
-can access the fb perfectly.
+						Geert
 
-Any hints? All of this is on ARM9.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thank you
-Alessio
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ------------------------------------------------------------------------------
 Crystal Reports &#45; New Free Runtime and 30 Day Trial

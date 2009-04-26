@@ -1,21 +1,28 @@
-From: Paul Menzel <paulepanter@users.sourceforge.net>
-Subject: [PATCH] Fix typo in Documentation/fb/vesafb.txt.
-Date: Sun, 26 Apr 2009 12:06:34 +0200
-Message-ID: <1240740394.6022.3.camel@mattotaupa.wohnung.familie-menzel.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Framebuffer using system memory
+Date: Sun, 26 Apr 2009 20:03:58 +0200
+Message-ID: <10f740e80904261103t4bf54f13g47da6eea077c83c2@mail.gmail.com>
+References: <49F263D0.4030108@manoweb.com>
+	<10f740e80904250045u1e617c9v2d49f30fce1cf40@mail.gmail.com>
+	<49F35FA6.9020904@manoweb.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0698248721857233026=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <paulepanter@users.sourceforge.net>)
-	id 1Ly1G3-0003XK-Qx for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Apr 2009 10:06:47 +0000
-Received: from b186.blue.fastwebserver.de ([62.141.42.186] helo=mail.gw90.de)
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1Ly1G2-0004wu-As
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1Ly8i3-0002Cw-1c
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 26 Apr 2009 10:06:47 +0000
+	Sun, 26 Apr 2009 18:04:11 +0000
+Received: from mail-ew0-f217.google.com ([209.85.219.217])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Ly8hs-0004e0-OA for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 26 Apr 2009 18:04:11 +0000
+Received: by ewy17 with SMTP id 17so1808336ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 26 Apr 2009 11:03:58 -0700 (PDT)
+In-Reply-To: <49F35FA6.9020904@manoweb.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,65 +32,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Gerd Knorr <kraxel@goldbach.in-berlin.de>, Andrew Morton <akpm@linux-foundation.org>, Nico Schmoigl <schmoigl@rumms.uni-mannheim.de>
+To: Alessio Sangalli <alesan@manoweb.com>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
+On Sat, Apr 25, 2009 at 21:08, Alessio Sangalli <alesan@manoweb.com> wrote:
+> Geert Uytterhoeven wrote:
+>
+>> Alternatively, you could use__alloc_bootmem() in the early platform
+>> code to reserve
+>> the memory, cfr. arch/powerpc/platforms/ps3/setup.c
+>
+>
+> So the usage patter seems to be:
+>
+> - I use __alloc_bootmem() to reserve memory
+> - I export a structure that contains data about this memory (location
+> and size mainly)
+> - In the init of my framebuffer driver I use the data in that structure
+> to configure the hardware
+> - I map that area of memory to userspace when they try to mmap() this fb
+> device
+>
+> Can you comment on this?
 
---===============0698248721857233026==
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-rJPXtmwCrdz1Lfpk0JcN"
+That's correct. Note that you don't have to do anything special for mmap()
+(i.e. you do not need your own device-specific fb_mmap()), as the default one
+should work fine.
 
+If you use a platform device, you can store the memory location and size in the
+platform device's platform data.
 
---=-rJPXtmwCrdz1Lfpk0JcN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Gr{oetje,eeting}s,
 
-Signed-off-by: Paul Menzel <paulepanter@users.sourceforge.net>
-CC: Gerd Knorr <kraxel@goldbach.in-berlin.de>
-CC: Nico Schmoigl <schmoigl@rumms.uni-mannheim.de>
----
- Documentation/fb/vesafb.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+						Geert
 
-diff --git a/Documentation/fb/vesafb.txt b/Documentation/fb/vesafb.txt
-index ee277dd..950d5a6 100644
---- a/Documentation/fb/vesafb.txt
-+++ b/Documentation/fb/vesafb.txt
-@@ -95,7 +95,7 @@ There is no way to change the vesafb video mode and/or ti=
-mings after
- booting linux.  If you are not happy with the 60 Hz refresh rate, you
- have these options:
-=20
-- * configure and load the DOS-Tools for your the graphics board (if
-+ * configure and load the DOS-Tools for the graphics board (if
-    available) and boot linux with loadlin.
-  * use a native driver (matroxfb/atyfb) instead if vesafb.  If none
-    is available, write a new one!
---=20
-1.6.2.4
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---=-rJPXtmwCrdz1Lfpk0JcN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Dies ist ein digital signierter Nachrichtenteil
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkn0MiEACgkQPX1aK2wOHVh7AwCfTs4cDDTZ51fz7lT7OL8D5uii
-ZTgAoINnImklKv5OifUrUI7uLM6eC8UL
-=4EZL
------END PGP SIGNATURE-----
-
---=-rJPXtmwCrdz1Lfpk0JcN--
-
-
-
---===============0698248721857233026==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 ------------------------------------------------------------------------------
 Crystal Reports &#45; New Free Runtime and 30 Day Trial
@@ -91,15 +79,3 @@ Check out the new simplified licensign option that enables unlimited
 royalty&#45;free distribution of the report engine for externally facing 
 server and web deployment.
 http://p.sf.net/sfu/businessobjects
---===============0698248721857233026==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============0698248721857233026==--

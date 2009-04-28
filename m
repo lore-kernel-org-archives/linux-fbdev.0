@@ -1,37 +1,35 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [V5] Xilinx : Framebuffer Driver: Add PLB support and
-	cleanup DCR
-Date: Mon, 27 Apr 2009 22:58:07 +1000
-Message-ID: <1240837087.7169.11.camel@pasglop>
-References: <20090417205119.3D35660055@mail16-sin.bigfish.com>
-	<200904241301.59775.arnd@arndb.de>
+From: "Peter Hanzel" <hanzelpeter@gmail.com>
+Subject: KMS + fb + FBIOPUT_VSCREENINFO
+Date: Tue, 28 Apr 2009 10:32:34 +0200
+Message-ID: <8563BBE2A1F848B3B98C1A5FAE08BD09@avitech.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-In-Reply-To: <200904241301.59775.arnd@arndb.de>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, akonovalov@ru.mvista.com, John Linn <john.linn@xilinx.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753508AbZD1IcY@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 2009-04-24 at 13:01 +0200, Arnd Bergmann wrote:
+Hello.
 
-> I just said in another email thread that we would need a CONFIG_DCR
-> option that DCR using drivers should depend on, if it ever happened
-> outside of powerpc.
->
-> Well, apparently this happened earlier than I expected.
+I have tried DRM with intel KMS and it is workiing. I am using only 
+framebuffer console.
+Fbcon initializes 1280x800 mode and it works like a charm.
 
-Sadly...
+But when I try to call FBIOPUT_VSCREENINFO on /dev/fb0, it always returns 
+EINVAL,
+I have checked drivers/gpu/drm/i915/intel_fb.c
+and found that
 
-Cheers,
-Ben.
+intelfb_check_var        returns -EINVAL     if (var->pixclock == -1 || 
+!var->pixclock)
+intelfb_set_par             returns -EINVAL    if (var->pixclock != -1) { 
+DRM_ERROR("PIXEL CLCOK SET\n");  return
+
+So the FBIOPUT_VSCREENINFO always fails.
+
+So is the change of resolution not supported through FBIOPUT_VSCREENINFO 
+call?
+
+Thanks.

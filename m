@@ -1,19 +1,28 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Jakob Bornecrantz <jakob@vmware.com>
 Subject: Re: Intel KMS + fbcon + Mplayer
-Date: Wed, 29 Apr 2009 13:21:47 +0200
-Message-ID: <10f740e80904290421w3e914ebew94eb6081cbea1cdc@mail.gmail.com>
+Date: Wed, 29 Apr 2009 15:15:23 +0200
+Message-ID: <CCB52791-FFE9-487A-97E8-C902622CC162@vmware.com>
 References: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757518AbZD2LWD@vger.kernel.org>
-In-Reply-To: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
+Mime-Version: 1.0 (Apple Message framework v930.3)
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <dri-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <7D4BD025A2554467AD77428C455E1FE0@avitech.sk>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=dri-devel>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.sourceforge.net
 To: Peter Hanzel <hanzelpeter@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net
+Cc: "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wed, Apr 29, 2009 at 12:04, Peter Hanzel <hanzelpeter@gmail.com> wrote:
+On 29 apr 2009, at 12.04, Peter Hanzel wrote:
+> Hello.
+>
 > I have tried Intel KMS in kernel 2.6.91.1 with fbcon. I am using only
 > framebuffer console.
 > Most fb apps works, but I have problem with mplayer.
@@ -25,7 +34,8 @@ On Wed, Apr 29, 2009 at 12:04, Peter Hanzel <hanzelpeter@gmail.com> wrote:
 > var.bits_per_pixel=32
 > var.transp.length = 0.
 >
-> So the mplayer thinks we are in 24 bit mode (maybe this is bug in mplayer,
+> So the mplayer thinks we are in 24 bit mode (maybe this is bug in  
+> mplayer,
 > because bits_per_pixel is 32).
 >
 > But next I have checked it with kernel vesafb and for same mode
@@ -34,21 +44,23 @@ On Wed, Apr 29, 2009 at 12:04, Peter Hanzel <hanzelpeter@gmail.com> wrote:
 > var.bits_per_pixel=32
 > var.transp.length = 8.
 >
-> So is this intentionally made so. Because I think this mode use only red,
-> green,blue and no transp. But for one pixel you must write 4 bytes. (so
+> So is this intentionally made so. Because I think this mode use only  
+> red,
+> green,blue and no transp. But for one pixel you must write 4 bytes.  
+> (so
 > transp is not used).
 
-That must be a bug in mplayer, as var.bits_per_pixel = 32. If there's
-no transparency, it's
-correct to hav var.transp.length = 0 . The additional 8 bits may be unused.
+Hmm, if I remember correctly from running mplayer in the early days of  
+kms mplayer has two fbdev drivers and I think that only #2 worked. It  
+did worked back then but it was a long time ago. Heck it was one of  
+the first things we demoed kms with.
 
-Gr{oetje,eeting}s,
+Cheers Jakob.
 
-						Geert
-
+------------------------------------------------------------------------------
+Register Now & Save for Velocity, the Web Performance & Operations 
+Conference from O'Reilly Media. Velocity features a full day of 
+expert-led, hands-on workshops and two days of sessions from industry 
+leaders in dedicated Performance & Operations tracks. Use code vel09scf 
+and Save an extra 15% before 5/3. http://p.sf.net/sfu/velocityconf
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds

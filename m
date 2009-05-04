@@ -1,22 +1,27 @@
-From: krzysztof.h1@poczta.fm
-Subject: Re: 
-	=?utf-8?q?=5BPATCH=5D_initialize_fb=5Finfo-?=
-	=?utf-8?q?=3Elock_mutex_in_the_framebuffer=5Falloc=28=29?=
-Date: 04 May 2009 10:23:55 +0200
-Message-ID: <20090504082355.756042B7C45@f04.poczta.interia.pl>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] initialize fb_info->lock mutex in
+	the framebuffer_alloc()
+Date: Mon, 4 May 2009 10:50:28 +0200
+Message-ID: <10f740e80905040150uca8b35bxfa82ee1ae6005f1d@mail.gmail.com>
+References: <20090504080828.06FC42B7C46@f04.poczta.interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M0tT0-0001Co-8e
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1M0tsf-0006iX-IK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 08:24:02 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	Mon, 04 May 2009 08:50:33 +0000
+Received: from mail-ew0-f217.google.com ([209.85.219.217])
 	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M0tSv-0000xv-6r for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 08:24:02 +0000
+	id 1M0tsc-0004Cm-Ev for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 May 2009 08:50:33 +0000
+Received: by ewy17 with SMTP id 17so3736583ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 04 May 2009 01:50:28 -0700 (PDT)
+In-Reply-To: <20090504080828.06FC42B7C46@f04.poczta.interia.pl>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,57 +31,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Ville =?UTF-8?q?Syrj=E4l=E4?= <syrjala@sci.fi>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundat>
+To: krzysztof.h1@poczta.fm
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Ville Syrj=E4l=E4 napisa=B3(a):
-> On Sun, May 03, 2009 at 11:30:08PM +0200, Krzysztof Helt wrote:
-> > From: Krzysztof Helt >krzysztof.h1@wp.pl>
-> > =
-
-> > The fb_info->lock mutex should be initialized inside =
-
-> > the framebuffer_alloc() function. Otherwise, someone
-> > may call a fb layer function which indirectly uses uninitialized =
-
-> > mutex.
-> =
-
-> How can that someone find the fb_info without it being in the
-> registered_fb[] array?
-> =
-
-
-It cannot but one can call functions modyfing fb_info structure.
-
-An example is the fb_check_var() function which is called
-by most drivers indirectly by the fb_try_mode().
-
-The question to answer is what is a purpose of the
-fb_info->lock. What is there assumed to be protected?
-
-Currenlty, it seems randomly set all around the layer.
-Is supposed to protect against concurent access
-from the userspace or something more?
-
-Regards,
-Krzysztof
-
-
-----------------------------------------------------------------------
-Gotowka na koncie. Otworz konto direct i wez podwojny limit. 	 =
-
-http://link.interia.pl/f2145
-
-
----------------------------------------------------------------------------=
----
-Register Now & Save for Velocity, the Web Performance & Operations =
-
-Conference from O'Reilly Media. Velocity features a full day of =
-
-expert-led, hands-on workshops and two days of sessions from industry =
-
-leaders in dedicated Performance & Operations tracks. Use code vel09scf =
-
-and Save an extra 15% before 5/3. http://p.sf.net/sfu/velocityconf
+MjAwOS81LzQgIDxrcnp5c3p0b2YuaDFAcG9jenRhLmZtPjoKPiBHZWVydCBVeXR0ZXJob2V2ZW4g
+bmFwaXNhxYIoYSk6Cj4+IE9uIFN1biwgTWF5IDMsIDIwMDkgYXQgMjM6MzAsIEtyenlzenRvZiBI
+ZWx0ID5rcnp5c3p0b2YuaDFAcG9jenRhLmZtPgo+PiB3cm90ZToKPj4gPiBGcm9tOiBLcnp5c3p0
+b2YgSGVsdCA+a3J6eXN6dG9mLmgxQHdwLnBsPgo+PiA+Cj4+ID4gVGhlIGZiX2luZm8tPmxvY2sg
+bXV0ZXggc2hvdWxkIGJlIGluaXRpYWxpemVkIGluc2lkZQo+PiA+IHRoZSBmcmFtZWJ1ZmZlcl9h
+bGxvYygpIGZ1bmN0aW9uLiBPdGhlcndpc2UsIHNvbWVvbmUKPj4gPiBtYXkgY2FsbCBhIGZiIGxh
+eWVyIGZ1bmN0aW9uIHdoaWNoIGluZGlyZWN0bHkgdXNlcyB1bmluaXRpYWxpemVkCj4+ID4gbXV0
+ZXguCj4+ID4gTW92ZSBpbml0aWFsaXphdGlvbiBvZiB0aGUgbXV0ZXggZnJvbSB0aGUgcmVnaXN0
+ZXJfZnJhbWVidWZmZXIoKQo+PiA+IHRvIGZyYW1lYnVmZmVyX2FsbG9jKCkuCj4+ID4KPj4gPiBU
+aGlzIG1heSBjYXVzZSBwcm9ibGVtcyBmb3IgZHJpdmVycyB3aGljaCBkbyBub3QgdXNlCj4+ID4g
+dGhlIGZyYW1lYnVmZmVyX2FsbG9jKCkgdG8gYWxsb2NhdGUgdGhlIGZiX2luZm8gc3RydWN0dXJl
+Lgo+PiA+IENvbnZlcnQgdGhlIHR3byBsYXN0IGRyaXZlcnMgdG8gdXNlIHRoZSBmcmFtZWJ1ZmZl
+cl9hbGxvYygpLgo+Pgo+PiA+IGRpZmYgLXVycCBsaW51eC1vcmlnL2RyaXZlcnMvdmlkZW8vaWdh
+ZmIuYwo+PiBsaW51eC0yLjYuMzAvZHJpdmVycy92aWRlby9pZ2FmYi5jCj4+ID4gZGlmZiAtdXJw
+IGxpbnV4LW9yaWcvZHJpdmVycy92aWRlby9vZmZiLmMKPj4gbGludXgtMi42LjMwL2RyaXZlcnMv
+dmlkZW8vb2ZmYi5jCj4+Cj4+IEFyZSB0aGVzZSByZWFsbHkgdGhlIG9ubHkgMiByZW1haW5pbmcg
+b25lcz8gV2hhdCBhYm91dCBhbWlmYiBhbmQgYXRhZmIKPj4gKGZyb20gdGhlIHRvcCBvZiBteSBo
+ZWFkKT8KPj4KPgo+IFRoZXkgdXNlIHN0YXRpYyBnbG9iYWwgc3RydWN0dXJlcyBsaWtlIHRoaXM6
+Cj4KPiBzdGF0aWMgc3RydWN0IGZiX2luZm8gZmJfaW5mbyA9IHsKPiDCoCDCoC5maXggPSB7Cj4g
+wqAgwqAgwqAgwqAuaWQgPSAiQXRhcmkgIiwKPiDCoCDCoCDCoCDCoC52aXN1YWwgPSBGQl9WSVNV
+QUxfUFNFVURPQ09MT1IsCj4gwqAgwqAgwqAgwqAuYWNjZWwgwqA9IEZCX0FDQ0VMX05PTkUsCj4g
+wqAgwqB9Cj4gfTsKPgo+IFRoZSBmYl9pbmZvIGlzIG5vdCBhbGxvY2F0ZWQuCgpPSy4gQW55d2F5
+LCB0aGV5J3JlIG9uIG15IGxpc3QgdG8gYmUgY29udmVydGVkLCBhcyBhdCBsZWFzdCBhbWlmYgph
+bHJlYWR5IGhhcyBhIHBsYXRmb3JtX2RldmljZQppbiBteSBwcml2YXRlIHRyZWUuCgpHcntvZXRq
+ZSxlZXRpbmd9cywKCgkJCQkJCUdlZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUn
+cyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBw
+ZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2Vs
+ZiBhIGhhY2tlci4gQnV0CndoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNh
+eSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4KCQkJCQkJCSAgICAtLSBMaW51
+cyBUb3J2YWxkcwoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClJlZ2lzdGVyIE5vdyAmIFNhdmUgZm9y
+IFZlbG9jaXR5LCB0aGUgV2ViIFBlcmZvcm1hbmNlICYgT3BlcmF0aW9ucyAKQ29uZmVyZW5jZSBm
+cm9tIE8nUmVpbGx5IE1lZGlhLiBWZWxvY2l0eSBmZWF0dXJlcyBhIGZ1bGwgZGF5IG9mIApleHBl
+cnQtbGVkLCBoYW5kcy1vbiB3b3Jrc2hvcHMgYW5kIHR3byBkYXlzIG9mIHNlc3Npb25zIGZyb20g
+aW5kdXN0cnkgCmxlYWRlcnMgaW4gZGVkaWNhdGVkIFBlcmZvcm1hbmNlICYgT3BlcmF0aW9ucyB0
+cmFja3MuIFVzZSBjb2RlIHZlbDA5c2NmIAphbmQgU2F2ZSBhbiBleHRyYSAxNSUgYmVmb3JlIDUv
+My4gaHR0cDovL3Auc2YubmV0L3NmdS92ZWxvY2l0eWNvbmYKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0
+CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNv
+dXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=

@@ -1,21 +1,21 @@
 From: David Miller <davem@davemloft.net>
-Subject: Re: bw2: use standard fields for framebuffer physical address and
- length
-Date: Mon, 04 May 2009 14:09:22 -0700 (PDT)
-Message-ID: <20090504.140922.52991414.davem@davemloft.net>
-References: <20090504223536.fa9ee920.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] cg14: use standard fields for framebuffer physical
+ address and length
+Date: Mon, 04 May 2009 14:09:44 -0700 (PDT)
+Message-ID: <20090504.140944.238128956.davem@davemloft.net>
+References: <20090504223650.27f50a51.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <sparclinux-owner@vger.kernel.org>
-In-Reply-To: <20090504223536.fa9ee920.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090504223650.27f50a51.krzysztof.h1@poczta.fm>
 Sender: sparclinux-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: Text/Plain; charset="us-ascii"
 To: krzysztof.h1@poczta.fm
-Cc: linux-fbdev-devel@lists.sourceforge.net, sparclinux@vger.kernel.org
+Cc: sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Date: Mon, 4 May 2009 22:35:36 +0200
+Date: Mon, 4 May 2009 22:36:50 +0200
 
 > From: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 

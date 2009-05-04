@@ -1,22 +1,22 @@
 From: krzysztof.h1@poczta.fm
 Subject: Re: 
-	=?utf-8?q?=5BPATCH=5D_initialize_fb=5Finfo-?=
-	=?utf-8?q?=3Elock_mutex_in_the_framebuffer=5Falloc=28=29?=
-Date: 04 May 2009 10:08:27 +0200
-Message-ID: <20090504080828.06FC42B7C46@f04.poczta.interia.pl>
+	=?utf-8?q?fix_fb=5Finfo-=3Elock_and_mm-=3Emma?=
+	=?utf-8?q?p=5Fsem_problem_again?=
+Date: 04 May 2009 10:18:57 +0200
+Message-ID: <20090504081857.DA5C02B7C44@f04.poczta.interia.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
 	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M0tEA-0003Q8-8Q
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M0tOA-0004Mv-SF
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 08:08:42 +0000
+	Mon, 04 May 2009 08:19:02 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M0tE1-0001mi-2a for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 08:08:37 +0000
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M0tO9-0000Hk-I1 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 May 2009 08:19:02 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,52 +27,85 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 Content-Type: text/plain; charset="iso-8859-1"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
+To: Ville =?UTF-8?q?Syrj=E4l=E4?= <syrjala@sci.fi>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, Rafael
 
-Geert Uytterhoeven napisa=B3(a):
-> On Sun, May 3, 2009 at 23:30, Krzysztof Helt >krzysztof.h1@poczta.fm>
-> wrote:
-> > From: Krzysztof Helt >krzysztof.h1@wp.pl>
-> >
-> > The fb_info->lock mutex should be initialized inside
-> > the framebuffer_alloc() function. Otherwise, someone
-> > may call a fb layer function which indirectly uses uninitialized
-> > mutex.
-> > Move initialization of the mutex from the register_framebuffer()
-> > to framebuffer_alloc().
-> >
-> > This may cause problems for drivers which do not use
-> > the framebuffer_alloc() to allocate the fb_info structure.
-> > Convert the two last drivers to use the framebuffer_alloc().
+Ville Syrj=E4l=E4 napisa=B3(a):
+> On Sun, May 03, 2009 at 09:19:38PM +0200, Krzysztof Helt wrote:
+> > Hi,
+> > =
+
+> > I have run into the lockdep problem between the fb_info->lock and
+> mm->mmap_sem again.
+> > I run the Mplayer with fbdev output device. The latest git tree.
+> > =
+
+> > I looked through the fb_info->lock usage and I have some questions.
+> > =
+
+> > The main issue is that fb_mmap acquires the fb_info->lock. I wonder
+> > what is protected there. The part of the fb_mmap which uses the lock
+> > is below:
+> > =
+
+> > ...
+> >     if (fb->fb_mmap) {
+> >         int res;
+> >         mutex_lock(>info->lock);
+> >         res =3D fb->fb_mmap(info, vma);
+> >         mutex_unlock(>info->lock);
+> >         return res;
+> >     }
+> > =
+
+> >     mutex_lock(>info->lock);
+> > =
+
+> >     /* frame buffer memory */
+> >     start =3D info->fix.smem_start;
+> >     len =3D PAGE_ALIGN((start > ~PAGE_MASK) + info->fix.smem_len);
+> >     if (off >=3D len) {
+> >         /* memory mapped io */
+> >         off -=3D len;
+> >         if (info->var.accel_flags) {
+> >             mutex_unlock(>info->lock);
+> >             return -EINVAL;
+> >         }
+> >         start =3D info->fix.mmio_start;
+> >         len =3D PAGE_ALIGN((start > ~PAGE_MASK) + info->fix.mmio_len);
+> >     }
+> >     mutex_unlock(>info->lock);
+> > ...
+> > =
+
+> > The lock protects two things:
+> > 1. Read of the info->fix.smem_start and info->fix.smem_len.
+> > 2. The fbops->fb_mmap call.
+> > =
+
+> > The first point seems redundant as I have checked and
+> > the smem_start and smem_len are only set in the
+> > probe and release functions. They are always set
+> > before the register_framebuffer() is called and
+> > after the unregister_framebuffer() call.
 > =
 
-> > diff -urp linux-orig/drivers/video/igafb.c
-> linux-2.6.30/drivers/video/igafb.c
-> > diff -urp linux-orig/drivers/video/offb.c
-> linux-2.6.30/drivers/video/offb.c
-> =
-
-> Are these really the only 2 remaining ones? What about amifb and atafb
-> (from the top of my head)?
+> matroxfb changes smem_start/len in set_par().
 > =
 
 
-They use static global structures like this:
+I have missed it.
 
-static struct fb_info fb_info =3D {
-    .fix =3D {
-        .id =3D "Atari ",
-        .visual =3D FB_VISUAL_PSEUDOCOLOR,
-        .accel  =3D FB_ACCEL_NONE,
-    }
-};
+A plan B is to add a separate fb_info->mmap_lock to
+protect changes of the fbinfo->smem_* fields
+and fbops->fbmmap calls. Thus, the fb_mmap can be
+called with fb_info->lock held. Is it acceptable?
 
-The fb_info is not allocated.
-
-Still, there is a chance I have missed a driver. I will recheck each driver.
+This new mutex must be pushed into drivers which
+changes smem_* fields after the driver is registered.
 
 Regards,
 Krzysztof
+
 
 ----------------------------------------------------------------------
 Wygraj wycieczke do Eurodisneylandu!

@@ -1,15 +1,15 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] leo:  use standard fields for framebuffer physical address
+Subject: [PATCH] p9100: use standard fields for framebuffer physical address
  and length
-Date: Mon, 4 May 2009 22:41:56 +0200
-Message-ID: <20090504224156.058f65ea.krzysztof.h1@poczta.fm>
+Date: Mon, 4 May 2009 22:42:57 +0200
+Message-ID: <20090504224257.00514552.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <sparclinux-owner@vger.kernel.org>
 Sender: sparclinux-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: sparclinux <sparclinux@vger.kernel.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, sparclinux <sparclinux@vger.kernel.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
@@ -22,64 +22,93 @@ of the framebuffer are displayed correctly.
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
 
-diff -urp linux-orig/drivers/video/leo.c linux-2.6.30/drivers/video/leo.c
---- linux-orig/drivers/video/leo.c	2008-10-13 18:03:36.000000000 +0200
-+++ linux-2.6.30/drivers/video/leo.c	2009-05-04 01:00:11.000000000 +0200
-@@ -191,9 +191,7 @@ struct leo_par {
+diff -urp linux-orig/drivers/video/p9100.c linux-2.6.30/drivers/video/p9100.c
+--- linux-orig/drivers/video/p9100.c	2008-10-13 18:03:36.000000000 +0200
++++ linux-2.6.30/drivers/video/p9100.c	2009-05-04 00:59:22.000000000 +0200
+@@ -134,9 +134,7 @@ struct p9100_par {
  	u32			flags;
- #define LEO_FLAG_BLANKED	0x00000001
+ #define P9100_FLAG_BLANKED	0x00000001
  
 -	unsigned long		physbase;
  	unsigned long		which_io;
 -	unsigned long		fbsize;
  };
  
- static void leo_wait(struct leo_lx_krn __iomem *lx_krn)
-@@ -420,16 +418,14 @@ static int leo_mmap(struct fb_info *info
- 	struct leo_par *par = (struct leo_par *)info->par;
+ /**
+@@ -224,18 +222,16 @@ static int p9100_mmap(struct fb_info *in
+ 	struct p9100_par *par = (struct p9100_par *)info->par;
  
- 	return sbusfb_mmap_helper(leo_mmap_map,
+ 	return sbusfb_mmap_helper(p9100_mmap_map,
 -				  par->physbase, par->fbsize,
 +				  info->fix.smem_start, info->fix.smem_len,
  				  par->which_io, vma);
  }
  
- static int leo_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ static int p9100_ioctl(struct fb_info *info, unsigned int cmd,
+ 		       unsigned long arg)
  {
--	struct leo_par *par = (struct leo_par *) info->par;
+-	struct p9100_par *par = (struct p9100_par *) info->par;
 -
+ 	/* Make it look like a cg3. */
  	return sbusfb_ioctl_helper(cmd, arg, info,
--				   FBTYPE_SUNLEO, 32, par->fbsize);
-+				   FBTYPE_SUNLEO, 32, info->fix.smem_len);
+-				   FBTYPE_SUN3COLOR, 8, par->fbsize);
++				   FBTYPE_SUN3COLOR, 8, info->fix.smem_len);
  }
  
  /*
-@@ -569,7 +565,7 @@ static int __devinit leo_probe(struct of
- 
+@@ -271,7 +267,7 @@ static int __devinit p9100_probe(struct 
  	spin_lock_init(&par->lock);
  
--	par->physbase = op->resource[0].start;
-+	info->fix.smem_start = op->resource[0].start;
- 	par->which_io = op->resource[0].flags & IORESOURCE_BITS;
+ 	/* This is the framebuffer and the only resource apps can mmap.  */
+-	par->physbase = op->resource[2].start;
++	info->fix.smem_start = op->resource[2].start;
+ 	par->which_io = op->resource[2].flags & IORESOURCE_BITS;
  
- 	sbusfb_fill_var(&info->var, dp, 32);
-@@ -577,7 +573,7 @@ static int __devinit leo_probe(struct of
+ 	sbusfb_fill_var(&info->var, dp, 8);
+@@ -280,7 +276,7 @@ static int __devinit p9100_probe(struct 
+ 	info->var.blue.length = 8;
  
- 	linebytes = of_getintprop_default(dp, "linebytes",
- 					  info->var.xres);
+ 	linebytes = of_getintprop_default(dp, "linebytes", info->var.xres);
 -	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
 +	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
  
- 	par->lc_ss0_usr =
- 		of_ioremap(&op->resource[0], LEO_OFF_LC_SS0_USR,
-@@ -627,7 +623,7 @@ static int __devinit leo_probe(struct of
+ 	par->regs = of_ioremap(&op->resource[0], 0,
+ 			       sizeof(struct p9100_regs), "p9100 regs");
+@@ -290,7 +286,7 @@ static int __devinit p9100_probe(struct 
+ 	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &p9100_ops;
+ 	info->screen_base = of_ioremap(&op->resource[2], 0,
+-				       par->fbsize, "p9100 ram");
++				       info->fix.smem_len, "p9100 ram");
+ 	if (!info->screen_base)
+ 		goto out_unmap_regs;
  
- 	printk(KERN_INFO "%s: leo at %lx:%lx\n",
+@@ -311,7 +307,7 @@ static int __devinit p9100_probe(struct 
+ 
+ 	printk(KERN_INFO "%s: p9100 at %lx:%lx\n",
  	       dp->full_name,
 -	       par->which_io, par->physbase);
 +	       par->which_io, info->fix.smem_start);
  
  	return 0;
+ 
+@@ -319,7 +315,7 @@ out_dealloc_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+ 
+ out_unmap_screen:
+-	of_iounmap(&op->resource[2], info->screen_base, par->fbsize);
++	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
+ 
+ out_unmap_regs:
+ 	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
+@@ -340,7 +336,7 @@ static int __devexit p9100_remove(struct
+ 	fb_dealloc_cmap(&info->cmap);
+ 
+ 	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
+-	of_iounmap(&op->resource[2], info->screen_base, par->fbsize);
++	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
+ 
+ 	framebuffer_release(info);
  
 
 ----------------------------------------------------------------------

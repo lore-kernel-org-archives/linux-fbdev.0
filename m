@@ -2,21 +2,21 @@ From: krzysztof.h1@poczta.fm
 Subject: Re: 
 	=?utf-8?q?=5BPATCH=5D_initialize_fb=5Finfo-?=
 	=?utf-8?q?=3Elock_mutex_in_the_framebuffer=5Falloc=28=29?=
-Date: 04 May 2009 11:53:00 +0200
-Message-ID: <20090504095300.28D2CE715BF@f16.poczta.interia.pl>
+Date: 04 May 2009 13:47:07 +0200
+Message-ID: <20090504114707.A6CBA313C52@f48.poczta.interia.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M0urD-0008HQ-1f
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M0wde-0005WS-Nr
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 09:53:07 +0000
+	Mon, 04 May 2009 11:47:14 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M0urA-0005iy-UC for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 09:53:07 +0000
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M0wda-0007U5-JC for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 May 2009 11:47:14 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,48 +27,78 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 Content-Type: text/plain; charset="iso-8859-1"
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
 
-Krzysztof Helt napisa=B3(a):
-> From: Krzysztof Helt >krzysztof.h1@wp.pl>
+Geert Uytterhoeven napisa=B3(a):
+> On Sun, May 3, 2009 at 23:30, Krzysztof Helt >krzysztof.h1@poczta.fm>
+> wrote:
+> > From: Krzysztof Helt >krzysztof.h1@wp.pl>
+> >
+> > The fb_info->lock mutex should be initialized inside
+> > the framebuffer_alloc() function. Otherwise, someone
+> > may call a fb layer function which indirectly uses uninitialized
+> > mutex.
+> > Move initialization of the mutex from the register_framebuffer()
+> > to framebuffer_alloc().
+> >
+> > This may cause problems for drivers which do not use
+> > the framebuffer_alloc() to allocate the fb_info structure.
+> > Convert the two last drivers to use the framebuffer_alloc().
 > =
 
-> The fb_info->lock mutex should be initialized inside =
-
-> the framebuffer_alloc() function. Otherwise, someone
-> may call a fb layer function which indirectly uses uninitialized =
-
-> mutex.
-> Move initialization of the mutex from the register_framebuffer()
-> to framebuffer_alloc().
+> > diff -urp linux-orig/drivers/video/igafb.c
+> linux-2.6.30/drivers/video/igafb.c
+> > diff -urp linux-orig/drivers/video/offb.c
+> linux-2.6.30/drivers/video/offb.c
 > =
 
-> This may cause problems for drivers which do not use
-> the framebuffer_alloc() to allocate the fb_info structure.
-> Convert the two last drivers to use the framebuffer_alloc().
-> =
-
-> Signed-off-by: Krzysztof Helt >krzysztof.h1@wp.pl>
-> ---
+> Are these really the only 2 remaining ones? What about amifb and atafb
+> (from the top of my head)?
 > =
 
 
-Please drop this patch as it breaks framebuffers with
-static global fb_info structures. The fb_info->lock
-will be uninitialized. Thanks to Geert for helping
-me realizing that.
+I have checked the latest 2.6.30-rc4 tree and there are more drivers
+which do not use the framebuffer_alloc(). There are four groups:
 
-I will repost driver conversion to the framebuffer_alloc()
-without moving mutex initialization.
+1. The fb_info structure is declared as a static variable (9 drivers).  =
+
+
+2. The fb_info structure is part of another structure declared as
+the static variable (2 drivers)
+
+3. The fb_info structure is allocated using kzalloc or kmalloc (3 drivers).
+
+4. The fb_info structure is part of a bigger structure which is
+allocated using kzalloc or kmalloc (12 drivers).
+
+The third group is an obvious candidate to use the framebuffer_alloc() =
+
+and I will send patches for them (these are two drivers I already converted=
+).
+
+The fourth group should be converted to use framebuffer_alloc either by
+putting fb_info pointer in the bigger structure or
+using fb_info->par to point to the bigger structure.
+
+The groups 1 and 2 are probably not worth converting. It is
+ok to have a static fb_info if there is no physical possibility
+to have two the same framebuffers inside one machine, e.g.
+probably only one on-board amifb framebuffer is possible =
+
+in the Amiga computer.
+
+The 1 and 2 groups require a function fb_info_init() to
+initialize non-zero fields in the framebuffer (e.g. mutexes).
+The function can be used for the 4th group as well (at least
+as a temporary solution).
 
 Regards,
 Krzysztof
 
 
 ----------------------------------------------------------------------
-Gotowka na koncie. Otworz konto direct i wez podwojny limit. 	 =
-
-http://link.interia.pl/f2145
+Szukasz pracy? Sprawd=BC nasze oferty!
+http://link.interia.pl/f2142
 
 
 ---------------------------------------------------------------------------=

@@ -1,27 +1,28 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] initialize fb_info->lock mutex in
-	the framebuffer_alloc()
-Date: Mon, 4 May 2009 08:47:03 +0200
-Message-ID: <10f740e80905032347u6164d16tece3a9afac41e972@mail.gmail.com>
-References: <20090503233008.bf4b9f57.krzysztof.h1@poczta.fm>
+Subject: Re: fix fb_info->lock and mm->mmap_sem problem
+	again
+Date: Mon, 4 May 2009 08:49:52 +0200
+Message-ID: <10f740e80905032349gabf2908w8d2ecd64664fc768@mail.gmail.com>
+References: <20090503211938.c9293813.krzysztof.h1@poczta.fm>
+	<20090503225433.GB17782@sci.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert.uytterhoeven@gmail.com>) id 1M0rxD-0003Dp-Lx
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1M0rzz-0003TF-27
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 06:47:07 +0000
-Received: from mail-ew0-f217.google.com ([209.85.219.217])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M0rxB-0007x9-2p for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 06:47:07 +0000
-Received: by ewy17 with SMTP id 17so3677727ewy.10
+	Mon, 04 May 2009 06:49:59 +0000
+Received: from ey-out-1920.google.com ([74.125.78.149])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M0rzv-00017O-7w for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 May 2009 06:49:59 +0000
+Received: by ey-out-1920.google.com with SMTP id 13so707504eye.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 03 May 2009 23:47:03 -0700 (PDT)
-In-Reply-To: <20090503233008.bf4b9f57.krzysztof.h1@poczta.fm>
+	Sun, 03 May 2009 23:49:52 -0700 (PDT)
+In-Reply-To: <20090503225433.GB17782@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,44 +32,56 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>, Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-fbdev-devel@
 
-On Sun, May 3, 2009 at 23:30, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
->
-> The fb_info->lock mutex should be initialized inside
-> the framebuffer_alloc() function. Otherwise, someone
-> may call a fb layer function which indirectly uses uninitialized
-> mutex.
-> Move initialization of the mutex from the register_framebuffer()
-> to framebuffer_alloc().
->
-> This may cause problems for drivers which do not use
-> the framebuffer_alloc() to allocate the fb_info structure.
-> Convert the two last drivers to use the framebuffer_alloc().
-
-> diff -urp linux-orig/drivers/video/igafb.c linux-2.6.30/drivers/video/igafb.c
-> diff -urp linux-orig/drivers/video/offb.c linux-2.6.30/drivers/video/offb.c
-
-Are these really the only 2 remaining ones? What about amifb and atafb
-(from the top
-of my head)?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-------------------------------------------------------------------------------
-Register Now & Save for Velocity, the Web Performance & Operations 
-Conference from O'Reilly Media. Velocity features a full day of 
-expert-led, hands-on workshops and two days of sessions from industry 
-leaders in dedicated Performance & Operations tracks. Use code vel09scf 
-and Save an extra 15% before 5/3. http://p.sf.net/sfu/velocityconf
+T24gTW9uLCBNYXkgNCwgMjAwOSBhdCAwMDo1NCwgVmlsbGUgU3lyasOkbMOkIDxzeXJqYWxhQHNj
+aS5maT4gd3JvdGU6Cj4gT24gU3VuLCBNYXkgMDMsIDIwMDkgYXQgMDk6MTk6MzhQTSArMDIwMCwg
+S3J6eXN6dG9mIEhlbHQgd3JvdGU6Cj4+IEkgaGF2ZSBydW4gaW50byB0aGUgbG9ja2RlcCBwcm9i
+bGVtIGJldHdlZW4gdGhlIGZiX2luZm8tPmxvY2sgYW5kIG1tLT5tbWFwX3NlbSBhZ2Fpbi4KPj4g
+SSBydW4gdGhlIE1wbGF5ZXIgd2l0aCBmYmRldiBvdXRwdXQgZGV2aWNlLiBUaGUgbGF0ZXN0IGdp
+dCB0cmVlLgo+Pgo+PiBJIGxvb2tlZCB0aHJvdWdoIHRoZSBmYl9pbmZvLT5sb2NrIHVzYWdlIGFu
+ZCBJIGhhdmUgc29tZSBxdWVzdGlvbnMuCj4+Cj4+IFRoZSBtYWluIGlzc3VlIGlzIHRoYXQgZmJf
+bW1hcCBhY3F1aXJlcyB0aGUgZmJfaW5mby0+bG9jay4gSSB3b25kZXIKPj4gd2hhdCBpcyBwcm90
+ZWN0ZWQgdGhlcmUuIFRoZSBwYXJ0IG9mIHRoZSBmYl9tbWFwIHdoaWNoIHVzZXMgdGhlIGxvY2sK
+Pj4gaXMgYmVsb3c6Cj4+Cj4+IC4uLgo+PiDCoCDCoCBpZiAoZmItPmZiX21tYXApIHsKPj4gwqAg
+wqAgwqAgwqAgaW50IHJlczsKPj4gwqAgwqAgwqAgwqAgbXV0ZXhfbG9jaygmaW5mby0+bG9jayk7
+Cj4+IMKgIMKgIMKgIMKgIHJlcyA9IGZiLT5mYl9tbWFwKGluZm8sIHZtYSk7Cj4+IMKgIMKgIMKg
+IMKgIG11dGV4X3VubG9jaygmaW5mby0+bG9jayk7Cj4+IMKgIMKgIMKgIMKgIHJldHVybiByZXM7
+Cj4+IMKgIMKgIH0KPj4KPj4gwqAgwqAgbXV0ZXhfbG9jaygmaW5mby0+bG9jayk7Cj4+Cj4+IMKg
+IMKgIC8qIGZyYW1lIGJ1ZmZlciBtZW1vcnkgKi8KPj4gwqAgwqAgc3RhcnQgPSBpbmZvLT5maXgu
+c21lbV9zdGFydDsKPj4gwqAgwqAgbGVuID0gUEFHRV9BTElHTigoc3RhcnQgJiB+UEFHRV9NQVNL
+KSArIGluZm8tPmZpeC5zbWVtX2xlbik7Cj4+IMKgIMKgIGlmIChvZmYgPj0gbGVuKSB7Cj4+IMKg
+IMKgIMKgIMKgIC8qIG1lbW9yeSBtYXBwZWQgaW8gKi8KPj4gwqAgwqAgwqAgwqAgb2ZmIC09IGxl
+bjsKPj4gwqAgwqAgwqAgwqAgaWYgKGluZm8tPnZhci5hY2NlbF9mbGFncykgewo+PiDCoCDCoCDC
+oCDCoCDCoCDCoCBtdXRleF91bmxvY2soJmluZm8tPmxvY2spOwo+PiDCoCDCoCDCoCDCoCDCoCDC
+oCByZXR1cm4gLUVJTlZBTDsKPj4gwqAgwqAgwqAgwqAgfQo+PiDCoCDCoCDCoCDCoCBzdGFydCA9
+IGluZm8tPmZpeC5tbWlvX3N0YXJ0Owo+PiDCoCDCoCDCoCDCoCBsZW4gPSBQQUdFX0FMSUdOKChz
+dGFydCAmIH5QQUdFX01BU0spICsgaW5mby0+Zml4Lm1taW9fbGVuKTsKPj4gwqAgwqAgfQo+PiDC
+oCDCoCBtdXRleF91bmxvY2soJmluZm8tPmxvY2spOwo+PiAuLi4KPj4KPj4gVGhlIGxvY2sgcHJv
+dGVjdHMgdHdvIHRoaW5nczoKPj4gMS4gUmVhZCBvZiB0aGUgaW5mby0+Zml4LnNtZW1fc3RhcnQg
+YW5kIGluZm8tPmZpeC5zbWVtX2xlbi4KPj4gMi4gVGhlIGZib3BzLT5mYl9tbWFwIGNhbGwuCj4+
+Cj4+IFRoZSBmaXJzdCBwb2ludCBzZWVtcyByZWR1bmRhbnQgYXMgSSBoYXZlIGNoZWNrZWQgYW5k
+Cj4+IHRoZSBzbWVtX3N0YXJ0IGFuZCBzbWVtX2xlbiBhcmUgb25seSBzZXQgaW4gdGhlCj4+IHBy
+b2JlIGFuZCByZWxlYXNlIGZ1bmN0aW9ucy4gVGhleSBhcmUgYWx3YXlzIHNldAo+PiBiZWZvcmUg
+dGhlIHJlZ2lzdGVyX2ZyYW1lYnVmZmVyKCkgaXMgY2FsbGVkIGFuZAo+PiBhZnRlciB0aGUgdW5y
+ZWdpc3Rlcl9mcmFtZWJ1ZmZlcigpIGNhbGwuCj4KPiBtYXRyb3hmYiBjaGFuZ2VzIHNtZW1fc3Rh
+cnQvbGVuIGluIHNldF9wYXIoKS4KCkV4YWN0bHkgbXkgY29tbWVudDogbW9zdCBkcml2ZXJzIHRo
+YXQgc3VwcG9ydCBtdWx0aXBsZSBoZWFkcyBuZWVkIHNvbWUgbWVtb3J5Cm1hbmFnZW1lbnQgc2No
+ZW1lLCB3aGljaCBtZWFucyB0aGUgbG9jYXRpb24gYW5kIHNpemUgb2YgdGhlIG1lbW9yeSBhbGxv
+Y2F0ZWQKdG8gYSBzcGVjaWZpYyBoZWFkIG1heSBjaGFuZ2UuCgpHcntvZXRqZSxlZXRpbmd9cywK
+CgkJCQkJCUdlZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExp
+bnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252
+ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4g
+QnV0CndoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1l
+ciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4KCQkJCQkJCSAgICAtLSBMaW51cyBUb3J2YWxkcwoK
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tClJlZ2lzdGVyIE5vdyAmIFNhdmUgZm9yIFZlbG9jaXR5LCB0
+aGUgV2ViIFBlcmZvcm1hbmNlICYgT3BlcmF0aW9ucyAKQ29uZmVyZW5jZSBmcm9tIE8nUmVpbGx5
+IE1lZGlhLiBWZWxvY2l0eSBmZWF0dXJlcyBhIGZ1bGwgZGF5IG9mIApleHBlcnQtbGVkLCBoYW5k
+cy1vbiB3b3Jrc2hvcHMgYW5kIHR3byBkYXlzIG9mIHNlc3Npb25zIGZyb20gaW5kdXN0cnkgCmxl
+YWRlcnMgaW4gZGVkaWNhdGVkIFBlcmZvcm1hbmNlICYgT3BlcmF0aW9ucyB0cmFja3MuIFVzZSBj
+b2RlIHZlbDA5c2NmIAphbmQgU2F2ZSBhbiBleHRyYSAxNSUgYmVmb3JlIDUvMy4gaHR0cDovL3Au
+c2YubmV0L3NmdS92ZWxvY2l0eWNvbmYKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KTGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2
+LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5l
+dC9saXN0cy9saXN0aW5mby9saW51eC1mYmRldi1kZXZlbAo=

@@ -1,128 +1,94 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cg6: use standard fields for framebuffer physical address
- and length
-Date: Mon, 4 May 2009 22:39:45 +0200
-Message-ID: <20090504223945.88de6e37.krzysztof.h1@poczta.fm>
+Subject: ffb: use standard fields for framebuffer physical address and
+ length
+Date: Mon, 4 May 2009 22:40:55 +0200
+Message-ID: <20090504224055.f4292314.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <sparclinux-owner@vger.kernel.org>
 Sender: sparclinux-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: sparclinux <sparclinux@vger.kernel.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, sparclinux <sparclinux@vger.kernel.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
 Use standard fields fbinfo.fix.smem_start and fbinfo.fix.smem_len
 for physical address and length of framebuffer.
 
-This also fixes output of the 'fbset -i' command - address and length 
+This also fixes output of the 'fbset -i' command - address and length=20
 of the framebuffer are displayed correctly.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
-I tested this patch on a real hardware (SS20 + TGX card).
 
-diff -urp linux-orig/drivers/video/cg6.c linux-2.6.30/drivers/video/cg6.c
---- linux-orig/drivers/video/cg6.c	2008-10-13 18:03:36.000000000 +0200
-+++ linux-2.6.30/drivers/video/cg6.c	2009-05-04 00:49:28.000000000 +0200
-@@ -263,9 +263,7 @@ struct cg6_par {
- 	u32			flags;
- #define CG6_FLAG_BLANKED	0x00000001
- 
+diff -urp linux-orig/drivers/video/ffb.c linux-2.6.30/drivers/video/ffb.c
+--- linux-orig/drivers/video/ffb.c	2008-10-13 18:03:36.000000000 +0200
++++ linux-2.6.30/drivers/video/ffb.c	2009-05-04 01:02:36.000000000 +0200
+@@ -365,9 +365,6 @@ struct ffb_par {
+=20
+ 	int			fifo_cache;
+=20
 -	unsigned long		physbase;
- 	unsigned long		which_io;
 -	unsigned long		fbsize;
- };
- 
- static int cg6_sync(struct fb_info *info)
-@@ -596,16 +594,14 @@ static int cg6_mmap(struct fb_info *info
- 	struct cg6_par *par = (struct cg6_par *)info->par;
- 
- 	return sbusfb_mmap_helper(cg6_mmap_map,
+-
+ 	int			board_type;
+=20
+ 	u32			pseudo_palette[16];
+@@ -854,16 +851,14 @@ static int ffb_mmap(struct fb_info *info
+ 	struct ffb_par *par =3D (struct ffb_par *)info->par;
+=20
+ 	return sbusfb_mmap_helper(ffb_mmap_map,
 -				  par->physbase, par->fbsize,
 +				  info->fix.smem_start, info->fix.smem_len,
- 				  par->which_io, vma);
+ 				  0, vma);
  }
- 
- static int cg6_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+=20
+ static int ffb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long=
+ arg)
  {
--	struct cg6_par *par = (struct cg6_par *)info->par;
+-	struct ffb_par *par =3D (struct ffb_par *)info->par;
 -
  	return sbusfb_ioctl_helper(cmd, arg, info,
--				   FBTYPE_SUNFAST_COLOR, 8, par->fbsize);
-+				   FBTYPE_SUNFAST_COLOR, 8, info->fix.smem_len);
+-				   FBTYPE_CREATOR, 24, par->fbsize);
++				   FBTYPE_CREATOR, 24, info->fix.smem_len);
  }
- 
+=20
  /*
-@@ -631,12 +627,12 @@ static void __devinit cg6_init_fix(struc
- 		break;
- 	};
- 	if (((conf >> CG6_FHC_REV_SHIFT) & CG6_FHC_REV_MASK) >= 11) {
--		if (par->fbsize <= 0x100000)
-+		if (info->fix.smem_len <= 0x100000)
- 			cg6_card_name = "TGX";
- 		else
- 			cg6_card_name = "TGX+";
- 	} else {
--		if (par->fbsize <= 0x100000)
-+		if (info->fix.smem_len <= 0x100000)
- 			cg6_card_name = "GX";
- 		else
- 			cg6_card_name = "GX+";
-@@ -738,7 +734,8 @@ static void cg6_unmap_regs(struct of_dev
- 		of_iounmap(&op->resource[0], par->fhc, sizeof(u32));
- 
- 	if (info->screen_base)
--		of_iounmap(&op->resource[0], info->screen_base, par->fbsize);
-+		of_iounmap(&op->resource[0], info->screen_base,
-+			   info->fix.smem_len);
- }
- 
- static int __devinit cg6_probe(struct of_device *op,
-@@ -759,7 +756,7 @@ static int __devinit cg6_probe(struct of
- 
- 	spin_lock_init(&par->lock);
- 
--	par->physbase = op->resource[0].start;
-+	info->fix.smem_start = op->resource[0].start;
- 	par->which_io = op->resource[0].flags & IORESOURCE_BITS;
- 
- 	sbusfb_fill_var(&info->var, dp, 8);
-@@ -769,11 +766,11 @@ static int __devinit cg6_probe(struct of
- 
- 	linebytes = of_getintprop_default(dp, "linebytes",
- 					  info->var.xres);
--	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
-+	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
- 
- 	dblbuf = of_getintprop_default(dp, "dblbuf", 0);
- 	if (dblbuf)
--		par->fbsize *= 4;
-+		info->fix.smem_len *= 4;
- 
- 	par->fbc = of_ioremap(&op->resource[0], CG6_FBC_OFFSET,
- 				4096, "cgsix fbc");
-@@ -792,7 +789,7 @@ static int __devinit cg6_probe(struct of
- 	info->fbops = &cg6_ops;
- 
- 	info->screen_base = of_ioremap(&op->resource[0], CG6_RAM_OFFSET,
--					par->fbsize, "cgsix ram");
-+					info->fix.smem_len, "cgsix ram");
- 	if (!par->fbc || !par->tec || !par->thc ||
- 	    !par->bt || !par->fhc || !info->screen_base)
- 		goto out_unmap_regs;
-@@ -817,7 +814,7 @@ static int __devinit cg6_probe(struct of
- 
- 	printk(KERN_INFO "%s: CGsix [%s] at %lx:%lx\n",
- 	       dp->full_name, info->fix.id,
--	       par->which_io, par->physbase);
-+	       par->which_io, info->fix.smem_start);
- 
+@@ -925,7 +920,7 @@ static int __devinit ffb_probe(struct of
+ 		goto out_unmap_fbc;
+=20
+ 	par->rop_cache =3D FFB_ROP_NEW;
+-	par->physbase =3D op->resource[0].start;
++	info->fix.smem_start =3D op->resource[0].start;
+=20
+ 	/* Don't mention copyarea, so SCROLL_REDRAW is always
+ 	 * used.  It is the fastest on this chip.
+@@ -937,11 +932,11 @@ static int __devinit ffb_probe(struct of
+=20
+ 	info->fbops =3D &ffb_ops;
+=20
+-	info->screen_base =3D (char *) par->physbase + FFB_DFB24_POFF;
++	info->screen_base =3D (char *) info->fix.smem_start + FFB_DFB24_POFF;
+ 	info->pseudo_palette =3D par->pseudo_palette;
+=20
+ 	sbusfb_fill_var(&info->var, dp, 32);
+-	par->fbsize =3D PAGE_ALIGN(info->var.xres * info->var.yres * 4);
++	info->fix.smem_len =3D PAGE_ALIGN(info->var.xres * info->var.yres * 4);
+ 	ffb_fixup_var_rgb(&info->var);
+=20
+ 	info->var.accel_flags =3D FB_ACCELF_TEXT;
+@@ -1003,7 +998,7 @@ static int __devinit ffb_probe(struct of
+ 	       "DAC pnum[%x] rev[%d] manuf_rev[%d]\n",
+ 	       dp->full_name,
+ 	       ((par->flags & FFB_FLAG_AFB) ? "AFB" : "FFB"),
+-	       par->physbase, par->board_type,
++	       info->fix.smem_start, par->board_type,
+ 	       dac_pnum, dac_rev, dac_mrev);
+=20
  	return 0;
- 
 
 ----------------------------------------------------------------------
-Wygraj 3000 zl, wycieczke lub lot balonem!
-Sprawdz >> http://link.interia.pl/f2154
+Szukasz pracy? Sprawd=BC nasze oferty!
+http://link.interia.pl/f2142
 

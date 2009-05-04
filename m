@@ -1,22 +1,22 @@
-From: krzysztof.h1@poczta.fm
-Subject: Re: 
-	=?utf-8?q?=5BPATCH=5D_initialize_fb=5Finfo-?=
-	=?utf-8?q?=3Elock_mutex_in_the_framebuffer=5Falloc=28=29?=
-Date: 04 May 2009 13:47:07 +0200
-Message-ID: <20090504114707.A6CBA313C52@f48.poczta.interia.pl>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] remove makefile reference to removed
+	driver
+Date: Mon, 4 May 2009 18:54:01 +0200
+Message-ID: <20090504185401.c36a4a9d.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M0wde-0005WS-Nr
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M11M6-0000Cf-GW
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 11:47:14 +0000
+	Mon, 04 May 2009 16:49:26 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M0wda-0007U5-JC for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 04 May 2009 11:47:14 +0000
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M11M5-00048E-6h for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 04 May 2009 16:49:26 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,89 +26,47 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-Geert Uytterhoeven napisa=B3(a):
-> On Sun, May 3, 2009 at 23:30, Krzysztof Helt >krzysztof.h1@poczta.fm>
-> wrote:
-> > From: Krzysztof Helt >krzysztof.h1@wp.pl>
-> >
-> > The fb_info->lock mutex should be initialized inside
-> > the framebuffer_alloc() function. Otherwise, someone
-> > may call a fb layer function which indirectly uses uninitialized
-> > mutex.
-> > Move initialization of the mutex from the register_framebuffer()
-> > to framebuffer_alloc().
-> >
-> > This may cause problems for drivers which do not use
-> > the framebuffer_alloc() to allocate the fb_info structure.
-> > Convert the two last drivers to use the framebuffer_alloc().
-> =
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> > diff -urp linux-orig/drivers/video/igafb.c
-> linux-2.6.30/drivers/video/igafb.c
-> > diff -urp linux-orig/drivers/video/offb.c
-> linux-2.6.30/drivers/video/offb.c
-> =
+The cyblafb driver is removed so
+remove its last track in the makefile.
 
-> Are these really the only 2 remaining ones? What about amifb and atafb
-> (from the top of my head)?
-> =
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+It would be nice to have this patch in the 2.6.30
+as the rest of the cyblafb driver has been removed
+in the 2.6.30.
 
+ drivers/video/Makefile |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-I have checked the latest 2.6.30-rc4 tree and there are more drivers
-which do not use the framebuffer_alloc(). There are four groups:
-
-1. The fb_info structure is declared as a static variable (9 drivers).  =
-
-
-2. The fb_info structure is part of another structure declared as
-the static variable (2 drivers)
-
-3. The fb_info structure is allocated using kzalloc or kmalloc (3 drivers).
-
-4. The fb_info structure is part of a bigger structure which is
-allocated using kzalloc or kmalloc (12 drivers).
-
-The third group is an obvious candidate to use the framebuffer_alloc() =
-
-and I will send patches for them (these are two drivers I already converted=
-).
-
-The fourth group should be converted to use framebuffer_alloc either by
-putting fb_info pointer in the bigger structure or
-using fb_info->par to point to the bigger structure.
-
-The groups 1 and 2 are probably not worth converting. It is
-ok to have a static fb_info if there is no physical possibility
-to have two the same framebuffers inside one machine, e.g.
-probably only one on-board amifb framebuffer is possible =
-
-in the Amiga computer.
-
-The 1 and 2 groups require a function fb_info_init() to
-initialize non-zero fields in the framebuffer (e.g. mutexes).
-The function can be used for the 4th group as well (at least
-as a temporary solution).
-
-Regards,
-Krzysztof
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 0dbd6c6..d8d0be5 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -56,7 +56,6 @@ obj-$(CONFIG_FB_CT65550)          += chipsfb.o
+ obj-$(CONFIG_FB_IMSTT)            += imsttfb.o
+ obj-$(CONFIG_FB_FM2)              += fm2fb.o
+ obj-$(CONFIG_FB_VT8623)           += vt8623fb.o
+-obj-$(CONFIG_FB_CYBLA)            += cyblafb.o
+ obj-$(CONFIG_FB_TRIDENT)          += tridentfb.o
+ obj-$(CONFIG_FB_LE80578)          += vermilion/
+ obj-$(CONFIG_FB_S3)               += s3fb.o
+-- 
+1.6.0.3
 
 
 ----------------------------------------------------------------------
-Szukasz pracy? Sprawd=BC nasze oferty!
-http://link.interia.pl/f2142
+Gotowka na koncie. Otworz konto direct i wez podwojny limit. 	 
+http://link.interia.pl/f2145
 
 
----------------------------------------------------------------------------=
----
-Register Now & Save for Velocity, the Web Performance & Operations =
-
-Conference from O'Reilly Media. Velocity features a full day of =
-
-expert-led, hands-on workshops and two days of sessions from industry =
-
-leaders in dedicated Performance & Operations tracks. Use code vel09scf =
-
+------------------------------------------------------------------------------
+Register Now & Save for Velocity, the Web Performance & Operations 
+Conference from O'Reilly Media. Velocity features a full day of 
+expert-led, hands-on workshops and two days of sessions from industry 
+leaders in dedicated Performance & Operations tracks. Use code vel09scf 
 and Save an extra 15% before 5/3. http://p.sf.net/sfu/velocityconf

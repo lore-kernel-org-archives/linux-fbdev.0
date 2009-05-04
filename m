@@ -1,8 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] cg14: use standard fields for framebuffer physical address
+Subject: [PATCH] leo:  use standard fields for framebuffer physical address
  and length
-Date: Mon, 4 May 2009 22:36:50 +0200
-Message-ID: <20090504223650.27f50a51.krzysztof.h1@poczta.fm>
+Date: Mon, 4 May 2009 22:41:56 +0200
+Message-ID: <20090504224156.058f65ea.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <sparclinux-owner@vger.kernel.org>
@@ -17,90 +17,72 @@ Use standard fields fbinfo.fix.smem_start and fbinfo.fix.smem_len
 for physical address and length of framebuffer.
 
 This also fixes output of the 'fbset -i' command - address and length 
-of the framebuffer is displayed correctly.
+of the framebuffer are displayed correctly.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
 
-diff -urp linux-orig/drivers/video/cg14.c linux-2.6.30/drivers/video/cg14.c
---- linux-orig/drivers/video/cg14.c	2008-10-13 18:03:36.000000000 +0200
-+++ linux-2.6.30/drivers/video/cg14.c	2009-05-04 00:47:24.000000000 +0200
-@@ -196,9 +196,7 @@ struct cg14_par {
+diff -urp linux-orig/drivers/video/leo.c linux-2.6.30/drivers/video/leo.c
+--- linux-orig/drivers/video/leo.c	2008-10-13 18:03:36.000000000 +0200
++++ linux-2.6.30/drivers/video/leo.c	2009-05-04 01:00:11.000000000 +0200
+@@ -191,9 +191,7 @@ struct leo_par {
  	u32			flags;
- #define CG14_FLAG_BLANKED	0x00000001
+ #define LEO_FLAG_BLANKED	0x00000001
  
 -	unsigned long		physbase;
- 	unsigned long		iospace;
+ 	unsigned long		which_io;
 -	unsigned long		fbsize;
+ };
  
- 	struct sbus_mmap_map	mmap_map[CG14_MMAP_ENTRIES];
+ static void leo_wait(struct leo_lx_krn __iomem *lx_krn)
+@@ -420,16 +418,14 @@ static int leo_mmap(struct fb_info *info
+ 	struct leo_par *par = (struct leo_par *)info->par;
  
-@@ -271,7 +269,7 @@ static int cg14_mmap(struct fb_info *inf
- 	struct cg14_par *par = (struct cg14_par *) info->par;
- 
- 	return sbusfb_mmap_helper(par->mmap_map,
+ 	return sbusfb_mmap_helper(leo_mmap_map,
 -				  par->physbase, par->fbsize,
 +				  info->fix.smem_start, info->fix.smem_len,
- 				  par->iospace, vma);
+ 				  par->which_io, vma);
  }
  
-@@ -343,7 +341,8 @@ static int cg14_ioctl(struct fb_info *in
- 
- 	default:
- 		ret = sbusfb_ioctl_helper(cmd, arg, info,
--					  FBTYPE_MDICOLOR, 8, par->fbsize);
-+					  FBTYPE_MDICOLOR, 8,
-+					  info->fix.smem_len);
- 		break;
- 	};
- 
-@@ -462,7 +461,7 @@ static void cg14_unmap_regs(struct of_de
- 			   par->cursor, sizeof(struct cg14_cursor));
- 	if (info->screen_base)
- 		of_iounmap(&op->resource[1],
--			   info->screen_base, par->fbsize);
-+			   info->screen_base, info->fix.smem_len);
+ static int leo_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+-	struct leo_par *par = (struct leo_par *) info->par;
+-
+ 	return sbusfb_ioctl_helper(cmd, arg, info,
+-				   FBTYPE_SUNLEO, 32, par->fbsize);
++				   FBTYPE_SUNLEO, 32, info->fix.smem_len);
  }
  
- static int __devinit cg14_probe(struct of_device *op, const struct of_device_id *match)
-@@ -488,14 +487,14 @@ static int __devinit cg14_probe(struct o
+ /*
+@@ -569,7 +565,7 @@ static int __devinit leo_probe(struct of
+ 
+ 	spin_lock_init(&par->lock);
+ 
+-	par->physbase = op->resource[0].start;
++	info->fix.smem_start = op->resource[0].start;
+ 	par->which_io = op->resource[0].flags & IORESOURCE_BITS;
+ 
+ 	sbusfb_fill_var(&info->var, dp, 32);
+@@ -577,7 +573,7 @@ static int __devinit leo_probe(struct of
  
  	linebytes = of_getintprop_default(dp, "linebytes",
  					  info->var.xres);
 -	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
 +	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
  
- 	if (!strcmp(dp->parent->name, "sbus") ||
- 	    !strcmp(dp->parent->name, "sbi")) {
--		par->physbase = op->resource[0].start;
-+		info->fix.smem_start = op->resource[0].start;
- 		par->iospace = op->resource[0].flags & IORESOURCE_BITS;
- 	} else {
--		par->physbase = op->resource[1].start;
-+		info->fix.smem_start = op->resource[1].start;
- 		par->iospace = op->resource[0].flags & IORESOURCE_BITS;
- 	}
+ 	par->lc_ss0_usr =
+ 		of_ioremap(&op->resource[0], LEO_OFF_LC_SS0_USR,
+@@ -627,7 +623,7 @@ static int __devinit leo_probe(struct of
  
-@@ -507,7 +506,7 @@ static int __devinit cg14_probe(struct o
- 				 sizeof(struct cg14_cursor), "cg14 cursor");
- 
- 	info->screen_base = of_ioremap(&op->resource[1], 0,
--				       par->fbsize, "cg14 ram");
-+				       info->fix.smem_len, "cg14 ram");
- 
- 	if (!par->regs || !par->clut || !par->cursor || !info->screen_base)
- 		goto out_unmap_regs;
-@@ -557,7 +556,7 @@ static int __devinit cg14_probe(struct o
- 
- 	printk(KERN_INFO "%s: cgfourteen at %lx:%lx, %dMB\n",
+ 	printk(KERN_INFO "%s: leo at %lx:%lx\n",
  	       dp->full_name,
--	       par->iospace, par->physbase,
-+	       par->iospace, info->fix.smem_start,
- 	       par->ramsize >> 20);
+-	       par->which_io, par->physbase);
++	       par->which_io, info->fix.smem_start);
  
  	return 0;
+ 
 
 ----------------------------------------------------------------------
-Wygraj wycieczke do Eurodisneylandu!
-Sprawdz >> http://link.interia.pl/f2153
+Gotowka na koncie. Otworz konto direct i wez podwojny limit. 	 
+http://link.interia.pl/f2145
 

@@ -1,129 +1,93 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 10/15] ps3vram: GPU memory mapping
-	cleanup
-Date: Fri,  8 May 2009 16:01:19 +0200
-Message-ID: <1241791284-11490-11-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 07/15] ps3fb: Correct handling of device opening in ps3fb_probe()
+Date: Fri,  8 May 2009 16:01:16 +0200
+Message-ID: <1241791284-11490-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-9-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-10-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Mime-Version: 1.0
+ <1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1241791284-11490-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1241791284-11490-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1241791284-11490-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1241791284-11490-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1762276AbZEHOEI@vger.kernel.org>
+In-Reply-To: <1241791284-11490-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@sonycom.com>) id 1M2Qe1-0001r1-6l
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 May 2009 14:01:45 +0000
-Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=pophost.sonytel.be) by 1b2kzd1.ch3.sourceforge.com with esmtp 
-	(Exim 4.69) id 1M2Qdq-0007Sa-2A
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 08 May 2009 14:01:35 +0000
-In-Reply-To: <1241791284-11490-10-git-send-email-Geert.Uytterhoeven@sonycom.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, Jim Paris <jim@jtan.com>, linux-kernel@vger.kernel.org
+Cc: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-  - Make the IOMMU flags used for mapping main memory into the GPU's I/O space
-    explicit, instead of relying on the default in the hypervisor,
-  - Add missing calls to lv1_gpu_context_iomap(..., IOPTE_M) to unmap the
-    memory during cleanup.
+  - ps3_open_hv_device() returns a standard error value,
+  - Add missing call to ps3_close_hv_device() in the error path.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Jim Paris <jim@jtan.com>
 ---
- drivers/block/ps3vram.c |   18 +++++++++++++-----
- 1 files changed, 13 insertions(+), 5 deletions(-)
+ drivers/video/ps3fb.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 1396038..c58ac15 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -14,6 +14,7 @@
- #include <linux/seq_file.h>
- 
- #include <asm/firmware.h>
-+#include <asm/iommu.h>
- #include <asm/lv1call.h>
- #include <asm/ps3.h>
- 
-@@ -628,8 +629,8 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
- 	int error, status;
- 	struct request_queue *queue;
- 	struct gendisk *gendisk;
--	u64 ddr_lpar, ctrl_lpar, info_lpar, reports_lpar, ddr_size,
--	    reports_size;
-+	u64 ddr_size, ddr_lpar, ctrl_lpar, info_lpar, reports_lpar,
-+	    reports_size, xdr_lpar;
- 	char *rest;
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-@@ -700,9 +701,10 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index a745018..542ffc3 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -985,7 +985,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ {
+ 	struct fb_info *info;
+ 	struct ps3fb_par *par;
+-	int retval = -ENOMEM;
++	int retval;
+ 	u64 ddr_lpar = 0;
+ 	u64 lpar_dma_control = 0;
+ 	u64 lpar_driver_info = 0;
+@@ -1003,8 +1003,8 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 		return -ENOMEM;
  	}
  
- 	/* Map XDR buffer to RSX */
-+	xdr_lpar = ps3_mm_phys_to_lpar(__pa(priv->xdr_buf));
- 	status = lv1_gpu_context_iomap(priv->context_handle, XDR_IOIF,
--				       ps3_mm_phys_to_lpar(__pa(priv->xdr_buf)),
--				       XDR_BUF_SIZE, 0);
-+				       xdr_lpar, XDR_BUF_SIZE,
-+				       IOPTE_PP_W | IOPTE_PP_R | IOPTE_M);
+-	status = ps3_open_hv_device(dev);
+-	if (status) {
++	retval = ps3_open_hv_device(dev);
++	if (retval) {
+ 		dev_err(&dev->core, "%s: ps3_open_hv_device failed\n",
+ 			__func__);
+ 		goto err;
+@@ -1027,7 +1027,8 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 			"%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: "
+ 			"%d\n",
+ 			__func__, status);
+-		goto err;
++		retval = -ENODEV;
++		goto err_close_device;
+ 	}
+ #endif
+ #ifdef HEAD_B
+@@ -1040,7 +1041,8 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 			"%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: "
+ 			"%d\n",
+ 			__func__, status);
+-		goto err;
++		retval = -ENODEV;
++		goto err_close_device;
+ 	}
+ #endif
+ 
+@@ -1057,7 +1059,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
  	if (status) {
- 		dev_err(&dev->core, "lv1_gpu_context_iomap failed %d\n",
- 			status);
-@@ -715,7 +717,7 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
- 	if (!priv->ddr_base) {
- 		dev_err(&dev->core, "ioremap DDR failed\n");
- 		error = -ENOMEM;
--		goto out_free_context;
-+		goto out_unmap_context;
+ 		dev_err(&dev->core, "%s: lv1_gpu_memory_allocate failed: %d\n",
+ 			__func__, status);
+-		goto err;
++		goto err_close_device;
  	}
+ 	dev_dbg(&dev->core, "ddr:lpar:0x%llx\n", ddr_lpar);
  
- 	priv->ctrl = ioremap(ctrl_lpar, 64 * 1024);
-@@ -801,6 +803,9 @@ out_unmap_ctrl:
- 	iounmap(priv->ctrl);
- out_unmap_vram:
- 	iounmap(priv->ddr_base);
-+out_unmap_context:
-+	lv1_gpu_context_iomap(priv->context_handle, XDR_IOIF, xdr_lpar,
-+			      XDR_BUF_SIZE, IOPTE_M);
- out_free_context:
- 	lv1_gpu_context_free(priv->context_handle);
- out_free_memory:
-@@ -828,6 +833,9 @@ static int ps3vram_remove(struct ps3_system_bus_device *dev)
- 	iounmap(priv->reports);
- 	iounmap(priv->ctrl);
- 	iounmap(priv->ddr_base);
-+	lv1_gpu_context_iomap(priv->context_handle, XDR_IOIF,
-+			      ps3_mm_phys_to_lpar(__pa(priv->xdr_buf)),
-+			      XDR_BUF_SIZE, IOPTE_M);
- 	lv1_gpu_context_free(priv->context_handle);
- 	lv1_gpu_memory_free(priv->memory_handle);
- 	ps3_close_hv_device(dev);
+@@ -1221,6 +1223,8 @@ err_gpu_context_free:
+ 	lv1_gpu_context_free(ps3fb.context_handle);
+ err_gpu_memory_free:
+ 	lv1_gpu_memory_free(ps3fb.memory_handle);
++err_close_device:
++	ps3_close_hv_device(dev);
+ err:
+ 	return retval;
+ }
 -- 
 1.6.2.4
-
-
-------------------------------------------------------------------------------
-The NEW KODAK i700 Series Scanners deliver under ANY circumstances! Your
-production scanning environment may not be a perfect world - but thanks to
-Kodak, there's a perfect scanner to get the job done! With the NEW KODAK i700
-Series Scanner you'll get full speed at 300 dpi even with all image 
-processing features enabled. http://p.sf.net/sfu/kodak-com

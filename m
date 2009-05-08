@@ -1,50 +1,35 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 03/15] ps3vram: Correct exchanged gotos in ps3vram_probe() error path
-Date: Fri,  8 May 2009 16:01:12 +0200
-Message-ID: <1241791284-11490-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 01/15] ps3vram: Fix error path (return -EIO) for short read/write
+Date: Fri,  8 May 2009 16:01:10 +0200
+Message-ID: <1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760421AbZEHOCi@vger.kernel.org>
-In-Reply-To: <1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757490AbZEHOCT@vger.kernel.org>
+In-Reply-To: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Jim Paris <jim@jtan.com>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
-From: Jim Paris <jim@jtan.com>
-
-From: Jim Paris <jim@jtan.com>
+Cc: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Jim Paris <jim@jtan.com>
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Jim Paris <jim@jtan.com>
 ---
- drivers/block/ps3vram.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/block/ps3vram.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 6e73868..3c9ad19 100644
+index 8eddef3..2e79d2c 100644
 --- a/drivers/block/ps3vram.c
 +++ b/drivers/block/ps3vram.c
-@@ -635,7 +635,7 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
- 	if (ps3_open_hv_device(dev)) {
- 		dev_err(&dev->core, "ps3_open_hv_device failed\n");
- 		error = -EAGAIN;
--		goto out_close_gpu;
-+		goto out_free_xdr_buf;
- 	}
+@@ -585,6 +585,7 @@ static int ps3vram_make_request(struct request_queue *q, struct bio *bio)
  
- 	/* Request memory */
-@@ -659,7 +659,7 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
- 		dev_err(&dev->core, "lv1_gpu_memory_allocate failed %d\n",
- 			status);
- 		error = -ENOMEM;
--		goto out_free_xdr_buf;
-+		goto out_close_gpu;
- 	}
+ 		if (retlen != len) {
+ 			dev_err(&dev->core, "Short %s\n", op);
++			error = -EIO;
+ 			goto out;
+ 		}
  
- 	/* Request context */
 -- 
 1.6.2.4

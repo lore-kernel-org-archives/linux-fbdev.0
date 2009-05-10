@@ -1,49 +1,78 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 04/15] ps3vram: Replace mutex by spinlock + list
-Date: Fri, 8 May 2009 16:05:44 -0700
-Message-ID: <20090508160544.28189203.akpm@linux-foundation.org>
-References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1241791284-11490-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+From: InKi Dae <daeinki@gmail.com>
+Subject: Re: [PATCH] Alpha Channel support for Samsung SoC Framebuffer driver.
+Date: Sun, 10 May 2009 16:31:27 +0900
+Message-ID: <90b950fc0905100031xc2d2dfau2cb8e2ac9a3a4ebe@mail.gmail.com>
+References: <90b950fc0905062147w4673308ak54b9d8e348c23ad9@mail.gmail.com>
+	 <20090508121739.b58b2d57.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755626AbZEHXKt@vger.kernel.org>
-In-Reply-To: <1241791284-11490-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Content-Type: multipart/mixed; boundary=0016364ee2ea871f6f046989d928
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755202AbZEJHbi@vger.kernel.org>
+In-Reply-To: <20090508121739.b58b2d57.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Cc: benh@kernel.crashing.org, cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Geert.Uytterhoeven@sonycom.com, jim@jtan.com
+To: ben-linux@fluff.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kyungmin Park <kmpark@infradead.org>
 
-On Fri,  8 May 2009 16:01:13 +0200
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+--0016364ee2ea871f6f046989d928
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> +static int ps3vram_make_request(struct request_queue *q, struct bio *bio)
-> +{
-> +	struct ps3_system_bus_device *dev = q->queuedata;
-> +	struct ps3vram_priv *priv = dev->core.driver_data;
-> +
-> +	dev_dbg(&dev->core, "%s\n", __func__);
-> +
-> +	spin_lock_irq(&priv->lock);
-> +	if (priv->tail) {
-> +		priv->tail->bi_next = bio;
-> +		priv->tail = bio;
-> +		spin_unlock_irq(&priv->lock);
-> +		return 0;
-> +	}
-> +
-> +	priv->tail = bio;
-> +	spin_unlock_irq(&priv->lock);
-> +
-> +	do {
-> +		bio = ps3vram_do_bio(dev, bio);
-> +	} while (bio);
+I have modifed the space problem of my patch and then I am sending
+this patch modified again.
+You can see attached file.
 
-Is there something which prevents two threads of control from walking
-the same list at the same time?
+Thank you for your indication, Andrew Morton.
 
-> +
->  	return 0;
->  }
+2009/5/9 Andrew Morton <akpm@linux-foundation.org>:
+> On Thu, 7 May 2009 13:47:16 +0900
+> InKi Dae <daeinki@gmail.com> wrote:
+>
+>> This patch supports ARGB1888 and ARGB4888 for Samsung SoC Framebuffer
+>> driver. (s3c-fb.c)
+>
+> The patch was hopelessly mangled by your email client - all tabs
+> were replaced with single spaces.
+>
+> Please fix that up then resend. =A0Please cc myself on that resend.
+>
+> Thanks.
+>
+
+--0016364ee2ea871f6f046989d928
+Content-Type: application/octet-stream; name="s3c_lcd_alpha.patch"
+Content-Disposition: attachment; filename="s3c_lcd_alpha.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fujfa0rf0
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMgYi9kcml2ZXJzL3ZpZGVvL3MzYy1m
+Yi5jCmluZGV4IGUwZTc4OTkuLjU1ZDIyOTggMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vczNj
+LWZiLmMKKysrIGIvZHJpdmVycy92aWRlby9zM2MtZmIuYwpAQCAtMzU4LDkgKzM1OCwxNiBAQCBz
+dGF0aWMgaW50IHMzY19mYl9zZXRfcGFyKHN0cnVjdCBmYl9pbmZvICppbmZvKQogCXdyaXRlbChk
+YXRhLCByZWdzICsgVklET1NEX0Iod2luX25vKSk7CiAKIAlkYXRhID0gdmFyLT54cmVzICogdmFy
+LT55cmVzOworCisJdTMyIG9zZGNfZGF0YSA9IDA7CisKKwlvc2RjX2RhdGEgPSBWSURJU0QxNENf
+QUxQSEExX1IoMHhmKSB8CisJCVZJRElTRDE0Q19BTFBIQTFfRygweGYpIHwKKwkJVklESVNEMTRD
+X0FMUEhBMV9CKDB4Zik7CisKIAlpZiAoczNjX2ZiX2hhc19vc2RfZCh3aW5fbm8pKSB7CiAJCXdy
+aXRlbChkYXRhLCByZWdzICsgVklET1NEX0Qod2luX25vKSk7Ci0JCXdyaXRlbCgwLCByZWdzICsg
+VklET1NEX0Mod2luX25vKSk7CisJCXdyaXRlbChvc2RjX2RhdGEsIHJlZ3MgKyBWSURPU0RfQyh3
+aW5fbm8pKTsKIAl9IGVsc2UKIAkJd3JpdGVsKGRhdGEsIHJlZ3MgKyBWSURPU0RfQyh3aW5fbm8p
+KTsKIApAQCAtNDA5LDggKzQxNiwxMiBAQCBzdGF0aWMgaW50IHMzY19mYl9zZXRfcGFyKHN0cnVj
+dCBmYl9pbmZvICppbmZvKQogCQkJCWRhdGEgfD0gV0lOQ09OMV9CUFBNT0RFXzE5QlBQX0ExNjY2
+OwogCQkJZWxzZQogCQkJCWRhdGEgfD0gV0lOQ09OMV9CUFBNT0RFXzE4QlBQXzY2NjsKLQkJfSBl
+bHNlIGlmICh2YXItPnRyYW5zcC5sZW5ndGggIT0gMCkKLQkJCWRhdGEgfD0gV0lOQ09OMV9CUFBN
+T0RFXzI1QlBQX0ExODg4OworCQl9IGVsc2UgaWYgKHZhci0+dHJhbnNwLmxlbmd0aCA9PSAxKQor
+CQkJZGF0YSB8PSBXSU5DT04xX0JQUE1PREVfMjVCUFBfQTE4ODgKKwkJCQl8IFdJTkNPTjFfQkxE
+X1BJWDsKKwkJZWxzZSBpZiAodmFyLT50cmFuc3AubGVuZ3RoID09IDQpCisJCQlkYXRhIHw9IFdJ
+TkNPTjFfQlBQTU9ERV8yOEJQUF9BNDg4OAorCQkJCXwgV0lOQ09OMV9CTERfUElYIHwgV0lOQ09O
+MV9BTFBIQV9TRUw7CiAJCWVsc2UKIAkJCWRhdGEgfD0gV0lOQ09OMF9CUFBNT0RFXzI0QlBQXzg4
+ODsKIApAQCAtNDE4LDYgKzQyOSwyMCBAQCBzdGF0aWMgaW50IHMzY19mYl9zZXRfcGFyKHN0cnVj
+dCBmYl9pbmZvICppbmZvKQogCQlicmVhazsKIAl9CiAKKwkvKiBJdCBoYXMgbm8gY29sb3Iga2V5
+IGNvbnRyb2wgcmVnaXN0ZXIgZm9yIHdpbmRvdzAgKi8KKwlpZiAod2luX25vID4gMCkgeworCQl1
+MzIga2V5Y29uMF9kYXRhID0gMCwga2V5Y29uMV9kYXRhID0gMDsKKworCQlrZXljb24wX2RhdGEg
+PSB+KFd4S0VZQ09OMF9LRVlCTF9FTiB8CisJCQkJV3hLRVlDT04wX0tFWUVOX0YgfAorCQkJCVd4
+S0VZQ09OMF9ESVJDT04pIHwgV3hLRVlDT04wX0NPTVBLRVkoMCk7CisKKwkJa2V5Y29uMV9kYXRh
+ID0gV3hLRVlDT04xX0NPTFZBTCgweGZmZmZmZik7CisKKwkJd3JpdGVsKGtleWNvbjBfZGF0YSwg
+cmVncyArIFd4S0VZQ09OeSh3aW5fbm8tMSwgMCkpOworCQl3cml0ZWwoa2V5Y29uMV9kYXRhLCBy
+ZWdzICsgV3hLRVlDT055KHdpbl9uby0xLCAxKSk7CisJfQorCiAJd3JpdGVsKGRhdGEsIHJlZ3Mg
+KyBXSU5DT04od2luX25vKSk7CiAJd3JpdGVsKDB4MCwgcmVncyArIFdJTnhNQVAod2luX25vKSk7
+CiAK
+--0016364ee2ea871f6f046989d928--

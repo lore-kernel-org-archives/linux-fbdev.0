@@ -1,69 +1,96 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 04/15] ps3vram: Replace mutex by spinlock + list
-Date: Mon, 11 May 2009 08:38:06 +0200 (CEST)
-Message-ID: <alpine.LRH.2.00.0905110836500.14263@vixen.sonytel.be>
-References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1241791284-11490-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1241791284-11490-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090508160544.28189203.akpm@linux-foundation.org>
+From: krzysztof.h1@poczta.fm
+Subject: Re: 
+	=?utf-8?q?Locking_problem=3A_fb=5Finfo-=3Eloc?=
+	=?utf-8?q?k_and_mm-=3Emmap=5Fsem?=
+Date: 11 May 2009 08:46:28 +0200
+Message-ID: <20090511064629.0DB50860D99@f23.poczta.interia.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754524AbZEKGiW@vger.kernel.org>
-In-Reply-To: <20090508160544.28189203.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="ks_c_5601-1987"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: benh@kernel.crashing.org, cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, jim@jtan.com
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M3PHf-0006Kx-JZ
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 May 2009 06:46:43 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M3PHV-0003zk-Rt for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 May 2009 06:46:43 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.o>
 
-On Fri, 8 May 2009, Andrew Morton wrote:
-> On Fri,  8 May 2009 16:01:13 +0200
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
->=20
-> > +static int ps3vram_make_request(struct request_queue *q, struct bi=
-o *bio)
-> > +{
-> > +	struct ps3_system_bus_device *dev =3D q->queuedata;
-> > +	struct ps3vram_priv *priv =3D dev->core.driver_data;
-> > +
-> > +	dev_dbg(&dev->core, "%s\n", __func__);
-> > +
-> > +	spin_lock_irq(&priv->lock);
-> > +	if (priv->tail) {
-> > +		priv->tail->bi_next =3D bio;
-> > +		priv->tail =3D bio;
-> > +		spin_unlock_irq(&priv->lock);
-> > +		return 0;
-                ^^^^^^^^
-> > +	}
-> > +
-> > +	priv->tail =3D bio;
-> > +	spin_unlock_irq(&priv->lock);
-> > +
-> > +	do {
-> > +		bio =3D ps3vram_do_bio(dev, bio);
-> > +	} while (bio);
->=20
-> Is there something which prevents two threads of control from walking
-> the same list at the same time?
+Andrew Morton napisa=B3(a):
+> On Sun, 10 May 2009 20:34:55 +0200 Krzysztof Helt >krzysztof.h1@poczta.fm>
+> wrote:
+> =
 
-Sure: only the thread who adds the first request to the empty list will=
- walk
-the list later.
+> > I can prepare the patch which contains changes
+> > equivalent to revert of these fixes.
+> > =
 
-With kind regards,
+> > This version does not show any problems. =
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+> =
 
-Technology and Software Centre Europe
-The Corporate Village =B7 Da Vincilaan 7-D1 =B7 B-1935 Zaventem =B7 Bel=
-gium
+> That sounds like an OK plan to me.  Doing this via separate manual
+> reversion patches would make things easier to maintain, assuming that
+> this is a 2.6.31 activity.
+> =
 
-Phone:    +32 (0)2 700 8453
-=46ax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 =B7 RPR Brussels
-=46ortis =B7 BIC GEBABEBB =B7 IBAN BE41293037680010
+I suppose it should go into the 2.6.30 as it fixes a current problem.
+
+> It might be that the old bkl-based code was simply buggy, because
+> lock_kernel() gets secretly unlocked by so many operations.  It doesn't
+> matter, really.
+> =
+
+
+I suppose that the BKL worked because it was recursive.
+
+> Restoring the lock_kernel()s would make people sad.  Do you have a plan
+> to de-BKL the fbdev code via other means?  That wasn't clear from your
+> email.
+> =
+
+>
+
+
+Not at the moment. I would like to fix some issues pending (e.g.
+nvidia problem with suspend).
+
+I think it was very close to de-bKL with my mm_lock patch
+as the last issue I found can only happen if there is more
+than one framebuffer (probe and release at the same time).
+
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Do wygrania 100 podw=F3jnych zaprosze=F1!
+Sprawdz >> http://link.interia.pl/f2160 =
+
+
+
+
+
+
+---------------------------------------------------------------------------=
+---
+The NEW KODAK i700 Series Scanners deliver under ANY circumstances! Your
+production scanning environment may not be a perfect world - but thanks to
+Kodak, there's a perfect scanner to get the job done! With the NEW KODAK i7=
+00
+Series Scanner you'll get full speed at 300 dpi even with all image =
+
+processing features enabled. http://p.sf.net/sfu/kodak-com

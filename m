@@ -1,22 +1,22 @@
 From: Harald Welte <HaraldWelte@viatech.com>
 Subject: [PATCH] make viafb work on x86_64
-Date: Mon, 11 May 2009 18:26:04 +0800
-Message-ID: <20090511102604.GG8192@prithivi.gnumonks.org>
+Date: Tue, 12 May 2009 00:49:15 +0800
+Message-ID: <20090511164915.GC4163@prithivi.gnumonks.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <HaraldWelte@viatech.com>) id 1M3Ygu-0003Ot-O3
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <HaraldWelte@viatech.com>) id 1M3Yhs-0001q1-TI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 May 2009 16:49:24 +0000
+	Mon, 11 May 2009 16:50:24 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M3Ygc-00047V-CV
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M3Yhk-0007nW-Jr
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 May 2009 16:49:11 +0000
+	Mon, 11 May 2009 16:50:19 +0000
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,

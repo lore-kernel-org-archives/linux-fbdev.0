@@ -1,137 +1,76 @@
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [Cbe-oss-dev] [PATCH 04/15] ps3vram: Replace mutex by spinlock
- + list
-Date: Mon, 11 May 2009 16:20:20 +0200 (CEST)
-Message-ID: <alpine.LRH.2.00.0905111615460.302@vixen.sonytel.be>
-References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1241791284-11490-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1241791284-11490-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090510190505.GA23535@lst.de>
+From: Harald Welte <HaraldWelte@viatech.com>
+Subject: [PATCH] make viafb work on x86_64
+Date: Mon, 11 May 2009 18:26:04 +0800
+Message-ID: <20090511102604.GG8192@prithivi.gnumonks.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754027AbZEKOUe@vger.kernel.org>
-In-Reply-To: <20090510190505.GA23535@lst.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="ks_c_5601-1987"
-To: Christoph Hellwig <hch@lst.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org, Jim Paris <jim@jtan.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <HaraldWelte@viatech.com>) id 1M3Ygu-0003Ot-O3
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 May 2009 16:49:24 +0000
+Received: from ganesha.gnumonks.org ([213.95.27.120])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M3Ygc-00047V-CV
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 11 May 2009 16:49:11 +0000
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-On Sun, 10 May 2009, Christoph Hellwig wrote:
-> On Fri, May 08, 2009 at 04:01:13PM +0200, Geert Uytterhoeven wrote:
-> > Remove the mutex serializing access to the cache.
-> > Instead, queue up new requests on a list if the driver is busy.
->=20
-> This should use the bio list helpers moved into bio.h in commit
-> 8f3d8ba20e67991b531e9c0227dcd1f99271a32c
+[FB] make viafb work on x86_64
 
-Ah, those didn't exist at the time of my previous submission ;-)
+This patch makes fixes a bug in viafb on x86_64 builds (e.g. for VIA Nano CPU).
+You cannot make the assumption that sizeof(unsigned int) == sizeof(unsigned
+long), so the parsing of the default mode (640x480) fails, leading to a
+division by zero during insmod of the driver.
 
-Like this?
-Note that I had to introduce bio_list_peek(), as bio_list_pop() makes t=
-he list
-empty, and I cannot do that until the request has been processed.
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 
-I'll split of the introduction of bio_list_peek() in a separate patch a=
-nd will
-merge the rest in my earlier patches, if this is what you want.
-
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index abda565..aac51a2 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -81,7 +81,7 @@ struct ps3vram_priv {
- 	struct ps3vram_cache cache;
-=20
- 	spinlock_t lock;	/* protecting list of bios */
--	struct bio *tail;
-+	struct bio_list list;
- };
-=20
-=20
-@@ -579,11 +579,8 @@ static struct bio *ps3vram_do_bio(struct ps3_syste=
-m_bus_device *dev,
-=20
- out:
- 	spin_lock_irq(&priv->lock);
--	next =3D bio->bi_next;
--	if (!next)
--		priv->tail =3D NULL;
--	else
--		bio->bi_next =3D NULL;
-+	bio_list_pop(&priv->list);
-+	next =3D bio_list_peek(&priv->list);
- 	spin_unlock_irq(&priv->lock);
-=20
- 	bio_endio(bio, error);
-@@ -594,20 +591,18 @@ static int ps3vram_make_request(struct request_qu=
-eue *q, struct bio *bio)
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index e327b84..02e7a72 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -2103,7 +2106,7 @@ static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
+ 
+ static int __devinit via_pci_probe(void)
  {
- 	struct ps3_system_bus_device *dev =3D q->queuedata;
- 	struct ps3vram_priv *priv =3D dev_get_drvdata(&dev->core);
-+	int busy;
-=20
- 	dev_dbg(&dev->core, "%s\n", __func__);
-=20
- 	spin_lock_irq(&priv->lock);
--	if (priv->tail) {
--		priv->tail->bi_next =3D bio;
--		priv->tail =3D bio;
--		spin_unlock_irq(&priv->lock);
--		return 0;
--	}
--
--	priv->tail =3D bio;
-+	busy =3D !bio_list_empty(&priv->list);
-+	bio_list_add(&priv->list, bio);
- 	spin_unlock_irq(&priv->lock);
-=20
-+	if (busy)
-+		return 0;
-+
- 	do {
- 		bio =3D ps3vram_do_bio(dev, bio);
- 	} while (bio);
-@@ -632,6 +627,7 @@ static int __devinit ps3vram_probe(struct ps3_syste=
-m_bus_device *dev)
- 	}
-=20
- 	spin_lock_init(&priv->lock);
-+	bio_list_init(&priv->list);
- 	dev_set_drvdata(&dev->core, priv);
-=20
- 	/* Allocate XDR buffer (1MiB aligned) */
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 7b214fd..618bb7d 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -590,6 +590,11 @@ static inline void bio_list_merge_head(struct bio_=
-list *bl,
- 	bl->head =3D bl2->head;
- }
-=20
-+static inline struct bio *bio_list_peek(struct bio_list *bl)
-+{
-+	return bl->head;
-+}
-+
- static inline struct bio *bio_list_pop(struct bio_list *bl)
- {
- 	struct bio *bio =3D bl->head;
+-	unsigned int default_xres, default_yres;
++	unsigned long default_xres, default_yres;
+ 	char *tmpc, *tmpm;
+ 	char *tmpc_sec, *tmpm_sec;
+ 	int vmode_index;
+@@ -2196,8 +2199,8 @@ static int __devinit via_pci_probe(void)
+ 	viafb_FB_MM = viaparinfo->fbmem_virt;
+ 	tmpm = viafb_mode;
+ 	tmpc = strsep(&tmpm, "x");
+-	strict_strtoul(tmpc, 0, (unsigned long *)&default_xres);
+-	strict_strtoul(tmpm, 0, (unsigned long *)&default_yres);
++	strict_strtoul(tmpc, 0, &default_xres);
++	strict_strtoul(tmpm, 0, &default_yres);
+ 
+ 	vmode_index = viafb_get_mode_index(default_xres, default_yres, 0);
+ 	DEBUG_MSG(KERN_INFO "0->index=%d\n", vmode_index);
+-- 
+- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
+============================================================================
+VIA Open Source Liaison
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village =B7 Da Vincilaan 7-D1 =B7 B-1935 Zaventem =B7 Bel=
-gium
-
-Phone:    +32 (0)2 700 8453
-=46ax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 =B7 RPR Brussels
-=46ortis =B7 BIC GEBABEBB =B7 IBAN BE41293037680010
+------------------------------------------------------------------------------
+The NEW KODAK i700 Series Scanners deliver under ANY circumstances! Your
+production scanning environment may not be a perfect world - but thanks to
+Kodak, there's a perfect scanner to get the job done! With the NEW KODAK i700
+Series Scanner you'll get full speed at 300 dpi even with all image 
+processing features enabled. http://p.sf.net/sfu/kodak-com

@@ -1,65 +1,71 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Locking problem: fb_info->lock and
-	mm->mmap_sem
-Date: Mon, 11 May 2009 16:29:55 -0700
-Message-ID: <20090511162955.b4684e25.akpm@linux-foundation.org>
-References: <20090511064629.0DB50860D99@f23.poczta.interia.pl>
-Mime-Version: 1.0
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH] video: add sh_mobile_lcdcfb memory resource
+Date: Tue, 12 May 2009 18:57:45 +0900
+Message-ID: <20090512095745.25477.87326.sendpatchset@rx1.opensource.se>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1M3f0L-0007Ps-VU
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 May 2009 23:33:53 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M3f0K-0007WU-S2
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 11 May 2009 23:33:53 +0000
-In-Reply-To: <20090511064629.0DB50860D99@f23.poczta.interia.pl>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net, righi.andrea@gmail.com
+To: linux-sh@vger.kernel.org
+Cc: Magnus Damm <magnus.damm@gmail.com>, lethal@linux-sh.org, linux-fbdev-devel@lists.sourceforge.net
 
-On 11 May 2009 08:46:28 +0200
-krzysztof.h1@poczta.fm wrote:
+From: Magnus Damm <damm@igel.co.jp>
 
-> Andrew Morton napisa__(a):
-> > On Sun, 10 May 2009 20:34:55 +0200 Krzysztof Helt >krzysztof.h1@poczta.fm>
-> > wrote:
-> > 
-> > > I can prepare the patch which contains changes
-> > > equivalent to revert of these fixes.
-> > > 
-> > > This version does not show any problems. 
-> > 
-> > That sounds like an OK plan to me.  Doing this via separate manual
-> > reversion patches would make things easier to maintain, assuming that
-> > this is a 2.6.31 activity.
-> > 
-> 
-> I suppose it should go into the 2.6.30 as it fixes a current problem.
+This patch adds memory resource support to the LCDC driver.
+With this applied the physical memory range used for framebuffer
+data will show up in /proc/iomem together with other SuperH
+Mobile devices.
 
-OK.  Were you planning on sending the patches?
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-I could put the patches together here, but it'd be good if you could
-send along the git commit IDs to reduce the risk of me screwing it up.
+ drivers/video/sh_mobile_lcdcfb.c |   16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-
-------------------------------------------------------------------------------
-The NEW KODAK i700 Series Scanners deliver under ANY circumstances! Your
-production scanning environment may not be a perfect world - but thanks to
-Kodak, there's a perfect scanner to get the job done! With the NEW KODAK i700
-Series Scanner you'll get full speed at 300 dpi even with all image 
-processing features enabled. http://p.sf.net/sfu/kodak-com
+--- 0001/drivers/video/sh_mobile_lcdcfb.c
++++ work/drivers/video/sh_mobile_lcdcfb.c	2009-05-11 21:14:35.000000000 +0900
+@@ -35,6 +35,7 @@ struct sh_mobile_lcdc_chan {
+ 	struct fb_deferred_io defio;
+ 	unsigned long frame_end;
+ 	wait_queue_head_t frame_end_wait;
++	struct resource memory;
+ };
+ 
+ struct sh_mobile_lcdc_priv {
+@@ -813,12 +814,26 @@ static int __init sh_mobile_lcdc_probe(s
+ 			break;
+ 		}
+ 
++		res = &priv->ch[i].memory;
++		res->name = "lcdc";
++		res->start = priv->ch[i].dma_handle;
++		res->end = res->start + info->fix.smem_len - 1;
++		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
++		error = insert_resource(&iomem_resource, res);
++		if (error) {
++			dev_err(&pdev->dev, "unable to request resource\n");
++			dma_free_coherent(&pdev->dev, info->fix.smem_len,
++					  buf, priv->ch[i].dma_handle);
++			break;
++		}
++
+ 		info->pseudo_palette = &priv->ch[i].pseudo_palette;
+ 		info->flags = FBINFO_FLAG_DEFAULT;
+ 
+ 		error = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
+ 		if (error < 0) {
+ 			dev_err(&pdev->dev, "unable to allocate cmap\n");
++			release_resource(res);
+ 			dma_free_coherent(&pdev->dev, info->fix.smem_len,
+ 					  buf, priv->ch[i].dma_handle);
+ 			break;
+@@ -887,6 +902,7 @@ static int sh_mobile_lcdc_remove(struct 
+ 		if (!info->device)
+ 			continue;
+ 
++		release_resource(&priv->ch[i].memory);
+ 		dma_free_coherent(&pdev->dev, info->fix.smem_len,
+ 				  info->screen_base, priv->ch[i].dma_handle);
+ 		fb_dealloc_cmap(&info->cmap);

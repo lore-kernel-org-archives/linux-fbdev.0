@@ -1,196 +1,100 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 6/8] ARM: OMAP2/3: Change omapfb to use clkdev for
-	dispc and rfbi
-Date: Thu, 14 May 2009 13:28:06 -0700
-Message-ID: <20090514202805.GQ5593@atomide.com>
-References: <20090514174100.12080.9736.stgit@localhost> <20090514174959.12080.64417.stgit@localhost> <20090514210312.9fa02bb3.krzysztof.h1@poczta.fm>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] staging: misplaced parentheses?
+Date: Fri, 15 May 2009 09:24:19 +1000
+Message-ID: <1242343459.1867.27.camel@pasglop>
+References: <4A0C0C4E.6070401@gmail.com>
+	<20090514093827.33a099f7.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="va4/JQ6j8/8uipEp"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20090514210312.9fa02bb3.krzysztof.h1@poczta.fm>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <benh@kernel.crashing.org>) id 1M4kIY-00029p-Vi
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 14 May 2009 23:25:10 +0000
+Received: from gate.crashing.org ([63.228.1.57])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M4kIM-0002kt-Hi
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 14 May 2009 23:25:05 +0000
+In-Reply-To: <20090514093827.33a099f7.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
 
-
---va4/JQ6j8/8uipEp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-* Krzysztof Helt <krzysztof.h1@poczta.fm> [090514 11:57]:
-> On Thu, 14 May 2009 10:49:59 -0700
-> Tony Lindgren <tony@atomide.com> wrote:
+On Thu, 2009-05-14 at 09:38 -0700, Andrew Morton wrote:
+> > Subject: [PATCH] staging: misplaced parentheses?
 > 
-> > This makes the framebuffer work on omap3.
-> > 
-> > Also fix the clk_get usage for checkpatch.pl
-> > "ERROR: do not use assignment in if condition".
-> > 
-> > Cc: Imre Deak <imre.deak@nokia.com>
-> > Cc: linux-fbdev-devel@lists.sourceforge.net
-> > Signed-off-by: Tony Lindgren <tony@atomide.com>
+> The title is wrong.
+> 
+> On Thu, 14 May 2009 14:19:26 +0200
+> Roel Kluin <roel.kluin@gmail.com> wrote:
+> 
+> > The leftmost `+' has a higher precedence than the `?' so this returns
+> > (vres * hres * (1 << color_mode) + (VMODE && CMODE) ? 0x10 : 0x20) + 0x1000
+> 
+> That seems OK.
+
+Yes, the original code looks ok and the patches one not quite ...
+
+The idea is that the framebuffer is offset by 0x1020 normally, except
+when the video mode is VMODE_832_624_75 and the depth > 8 in which case
+it's offet by 0x1010. It's a weird piece of HW but I think the original
+code is correct. Or do I miss something ?
+
+Cheers,
+Ben.
+
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > > ---
+> > The original code looks odd, but I am not entirely certain whether my patch is
+> > correct. So please review.
+> > 
+> > diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
+> > index 03b3670..a88f4b6 100644
+> > --- a/drivers/video/platinumfb.c
+> > +++ b/drivers/video/platinumfb.c
+> > @@ -224,7 +224,7 @@ static inline int platinum_vram_reqd(int video_mode, int color_mode)
+> >  	return vmode_attrs[video_mode-1].vres *
+> >  	       (vmode_attrs[video_mode-1].hres * (1<<color_mode) +
+> >  		((video_mode == VMODE_832_624_75) &&
+> > -		 (color_mode > CMODE_8)) ? 0x10 : 0x20) + 0x1000;
+> > +		 (color_mode > CMODE_8) ? 0x10 : 0x20)) + 0x1000;
+> >  }
+> >  
+> >  #define STORE_D2(a, d) { \
 > 
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> The patch changes it to
+> 
+> (vres * hres * (1 << color_mode) + (VMODE && (CMODE ? 0x10 : 0x20)) + 0x1000
+> 
+> I think?  It makes no sense to do (foo && non-zero-value).
+> 
+> ------------------------------------------------------------------------------
+> The NEW KODAK i700 Series Scanners deliver under ANY circumstances! Your
+> production scanning environment may not be a perfect world - but thanks to
+> Kodak, there's a perfect scanner to get the job done! With the NEW KODAK i700
+> Series Scanner you'll get full speed at 300 dpi even with all image 
+> processing features enabled. http://p.sf.net/sfu/kodak-com
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-Thanks for looking. Here's v2 of the patch with one line fixed below.
 
-> > --- a/drivers/video/omap/dispc.c
-> > +++ b/drivers/video/omap/dispc.c
-> > @@ -880,23 +880,25 @@ static irqreturn_t omap_dispc_irq_handler(int irq, void *dev)
-> >  
-> >  static int get_dss_clocks(void)
-> >  {
-> > -	if (IS_ERR((dispc.dss_ick = clk_get(dispc.fbdev->dev, "dss_ick")))) {
-> > -		dev_err(dispc.fbdev->dev, "can't get dss_ick\n");
-> > +	dispc.dss_ick = clk_get(dispc.fbdev->dev, "ick");
-> > +	if (IS_ERR(dispc.dss_ick)) {
-> > +		dev_err(dispc.fbdev->dev, "can't get ick\n");
-> >  		return PTR_ERR(dispc.dss_ick);
-> >  	}
-> >  
-> > -	if (IS_ERR((dispc.dss1_fck = clk_get(dispc.fbdev->dev, "dss1_fck")))) {
-> > +	dispc.dss1_fck = clk_get(dispc.fbdev->dev, "dss1_fck");
-> > +	if (IS_ERR(dispc.dss1_fck)) {
-> >  		dev_err(dispc.fbdev->dev, "can't get dss1_fck\n");
-> >  		clk_put(dispc.dss_ick);
-> >  		return PTR_ERR(dispc.dss1_fck);
-> >  	}
-> >  
-> > -	if (IS_ERR((dispc.dss_54m_fck =
-> > -				clk_get(dispc.fbdev->dev, "dss_54m_fck")))) {
-> > -		dev_err(dispc.fbdev->dev, "can't get dss_54m_fck\n");
-> > +	dispc.dss_54m_fck = clk_get(dispc.fbdev->dev, "tv_fck");
-> > +	if (IS_ERR(dispc.dss_54m_fck)) {
-> > +		dev_err(dispc.fbdev->dev, "can't get tv_fck\n");
-> >  		clk_put(dispc.dss_ick);
-> >  		clk_put(dispc.dss1_fck);
-> > -		return PTR_ERR(dispc.dss_54m_fck);
-> > +
-> >  	}
-
-The return PTR_ERR(dispc.dss_54m_fck) should not be left out.
-
-Regards,
-
-Tony
-
---va4/JQ6j8/8uipEp
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: inline; filename="dispc-clkdev-v2.patch"
-
-commit 27db33cfadd3c47c9499def6e71aaf5d2fd51e60
-Author: Tony Lindgren <tony@atomide.com>
-Date:   Tue May 12 11:20:03 2009 -0700
-
-    ARM: OMAP2/3: Change omapfb to use clkdev for dispc and rfbi, v2
-    
-    This makes the framebuffer work on omap3.
-    
-    Also fix the clk_get usage for checkpatch.pl
-    "ERROR: do not use assignment in if condition".
-    
-    Cc: Imre Deak <imre.deak@nokia.com>
-    Cc: linux-fbdev-devel@lists.sourceforge.net
-    Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-    Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-diff --git a/arch/arm/mach-omap2/clock24xx.c b/arch/arm/mach-omap2/clock24xx.c
-index ff9b4c0..e4cef33 100644
---- a/arch/arm/mach-omap2/clock24xx.c
-+++ b/arch/arm/mach-omap2/clock24xx.c
-@@ -103,10 +103,10 @@ static struct omap_clk omap24xx_clks[] = {
- 	CLK(NULL,	"mdm_ick",	&mdm_ick,	CK_243X),
- 	CLK(NULL,	"mdm_osc_ck",	&mdm_osc_ck,	CK_243X),
- 	/* DSS domain clocks */
--	CLK(NULL,	"dss_ick",	&dss_ick,	CK_243X | CK_242X),
--	CLK(NULL,	"dss1_fck",	&dss1_fck,	CK_243X | CK_242X),
--	CLK(NULL,	"dss2_fck",	&dss2_fck,	CK_243X | CK_242X),
--	CLK(NULL,	"dss_54m_fck",	&dss_54m_fck,	CK_243X | CK_242X),
-+	CLK("omapfb",	"ick",		&dss_ick,	CK_243X | CK_242X),
-+	CLK("omapfb",	"dss1_fck",	&dss1_fck,	CK_243X | CK_242X),
-+	CLK("omapfb",	"dss2_fck",	&dss2_fck,	CK_243X | CK_242X),
-+	CLK("omapfb",	"tv_fck",	&dss_54m_fck,	CK_243X | CK_242X),
- 	/* L3 domain clocks */
- 	CLK(NULL,	"core_l3_ck",	&core_l3_ck,	CK_243X | CK_242X),
- 	CLK(NULL,	"ssi_fck",	&ssi_ssr_sst_fck, CK_243X | CK_242X),
-diff --git a/arch/arm/mach-omap2/clock34xx.c b/arch/arm/mach-omap2/clock34xx.c
-index a057539..ba05aa4 100644
---- a/arch/arm/mach-omap2/clock34xx.c
-+++ b/arch/arm/mach-omap2/clock34xx.c
-@@ -197,11 +197,11 @@ static struct omap_clk omap34xx_clks[] = {
- 	CLK("omap_rng",	"ick",		&rng_ick,	CK_343X),
- 	CLK(NULL,	"sha11_ick",	&sha11_ick,	CK_343X),
- 	CLK(NULL,	"des1_ick",	&des1_ick,	CK_343X),
--	CLK(NULL,	"dss1_alwon_fck", &dss1_alwon_fck, CK_343X),
--	CLK(NULL,	"dss_tv_fck",	&dss_tv_fck,	CK_343X),
--	CLK(NULL,	"dss_96m_fck",	&dss_96m_fck,	CK_343X),
--	CLK(NULL,	"dss2_alwon_fck", &dss2_alwon_fck, CK_343X),
--	CLK(NULL,	"dss_ick",	&dss_ick,	CK_343X),
-+	CLK("omapfb",	"dss1_fck",	&dss1_alwon_fck, CK_343X),
-+	CLK("omapfb",	"tv_fck",	&dss_tv_fck,	CK_343X),
-+	CLK("omapfb",	"video_fck",	&dss_96m_fck,	CK_343X),
-+	CLK("omapfb",	"dss2_fck",	&dss2_alwon_fck, CK_343X),
-+	CLK("omapfb",	"ick",		&dss_ick,	CK_343X),
- 	CLK(NULL,	"cam_mclk",	&cam_mclk,	CK_343X),
- 	CLK(NULL,	"cam_ick",	&cam_ick,	CK_343X),
- 	CLK(NULL,	"csi2_96m_fck",	&csi2_96m_fck,	CK_343X),
-diff --git a/drivers/video/omap/dispc.c b/drivers/video/omap/dispc.c
-index dfb72f5..148cbcc 100644
---- a/drivers/video/omap/dispc.c
-+++ b/drivers/video/omap/dispc.c
-@@ -880,20 +880,22 @@ static irqreturn_t omap_dispc_irq_handler(int irq, void *dev)
- 
- static int get_dss_clocks(void)
- {
--	if (IS_ERR((dispc.dss_ick = clk_get(dispc.fbdev->dev, "dss_ick")))) {
--		dev_err(dispc.fbdev->dev, "can't get dss_ick\n");
-+	dispc.dss_ick = clk_get(dispc.fbdev->dev, "ick");
-+	if (IS_ERR(dispc.dss_ick)) {
-+		dev_err(dispc.fbdev->dev, "can't get ick\n");
- 		return PTR_ERR(dispc.dss_ick);
- 	}
- 
--	if (IS_ERR((dispc.dss1_fck = clk_get(dispc.fbdev->dev, "dss1_fck")))) {
-+	dispc.dss1_fck = clk_get(dispc.fbdev->dev, "dss1_fck");
-+	if (IS_ERR(dispc.dss1_fck)) {
- 		dev_err(dispc.fbdev->dev, "can't get dss1_fck\n");
- 		clk_put(dispc.dss_ick);
- 		return PTR_ERR(dispc.dss1_fck);
- 	}
- 
--	if (IS_ERR((dispc.dss_54m_fck =
--				clk_get(dispc.fbdev->dev, "dss_54m_fck")))) {
--		dev_err(dispc.fbdev->dev, "can't get dss_54m_fck\n");
-+	dispc.dss_54m_fck = clk_get(dispc.fbdev->dev, "tv_fck");
-+	if (IS_ERR(dispc.dss_54m_fck)) {
-+		dev_err(dispc.fbdev->dev, "can't get tv_fck\n");
- 		clk_put(dispc.dss_ick);
- 		clk_put(dispc.dss1_fck);
- 		return PTR_ERR(dispc.dss_54m_fck);
-diff --git a/drivers/video/omap/rfbi.c b/drivers/video/omap/rfbi.c
-index a13c8dc..9332d6c 100644
---- a/drivers/video/omap/rfbi.c
-+++ b/drivers/video/omap/rfbi.c
-@@ -83,12 +83,14 @@ static inline u32 rfbi_read_reg(int idx)
- 
- static int rfbi_get_clocks(void)
- {
--	if (IS_ERR((rfbi.dss_ick = clk_get(rfbi.fbdev->dev, "dss_ick")))) {
--		dev_err(rfbi.fbdev->dev, "can't get dss_ick\n");
-+	rfbi.dss_ick = clk_get(rfbi.fbdev->dev, "ick");
-+	if (IS_ERR(rfbi.dss_ick)) {
-+		dev_err(rfbi.fbdev->dev, "can't get ick\n");
- 		return PTR_ERR(rfbi.dss_ick);
- 	}
- 
--	if (IS_ERR((rfbi.dss1_fck = clk_get(rfbi.fbdev->dev, "dss1_fck")))) {
-+	rfbi.dss1_fck = clk_get(rfbi.fbdev->dev, "dss1_fck");
-+	if (IS_ERR(rfbi.dss1_fck)) {
- 		dev_err(rfbi.fbdev->dev, "can't get dss1_fck\n");
- 		clk_put(rfbi.dss_ick);
- 		return PTR_ERR(rfbi.dss1_fck);
-
---va4/JQ6j8/8uipEp--
+------------------------------------------------------------------------------
+Crystal Reports - New Free Runtime and 30 Day Trial
+Check out the new simplified licensing option that enables 
+unlimited royalty-free distribution of the report engine 
+for externally facing server and web deployment. 
+http://p.sf.net/sfu/businessobjects

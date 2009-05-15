@@ -1,28 +1,25 @@
 From: Roel Kluin <roel.kluin@gmail.com>
-Subject: [PATCH] platinumfb: misplaced parenthesis
-Date: Fri, 15 May 2009 22:43:51 +0200
-Message-ID: <4A0DD407.9090206@gmail.com>
-References: <4A0C0C4E.6070401@gmail.com>	
-	<20090514093827.33a099f7.akpm@linux-foundation.org>
-	<1242343459.1867.27.camel@pasglop>
+Subject: [PATCH] radeon: P2G2CLK_ALWAYS_ONb tested twice,
+	should 2nd be P2G2CLK_DAC_ALWAYS_ONb?
+Date: Fri, 15 May 2009 22:45:27 +0200
+Message-ID: <4A0DD467.7040907@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <roel.kluin@gmail.com>) id 1M54GI-0007VJ-3L
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1M54Ha-0002l1-91
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 15 May 2009 20:44:10 +0000
-Received: from mail-ew0-f169.google.com ([209.85.219.169])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M54GC-0000N8-UR for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 15 May 2009 20:44:10 +0000
-Received: by ewy17 with SMTP id 17so2878063ewy.10
+	Fri, 15 May 2009 20:45:30 +0000
+Received: from ey-out-1920.google.com ([74.125.78.148])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M54HZ-0005ZY-Fn for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 15 May 2009 20:45:30 +0000
+Received: by ey-out-1920.google.com with SMTP id 13so553558eye.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 15 May 2009 13:44:03 -0700 (PDT)
-In-Reply-To: <1242343459.1867.27.camel@pasglop>
+	Fri, 15 May 2009 13:45:26 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,55 +30,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, adaplas@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Since `+' has a higher precedence than the trinary operator `?', this
-added `hres * (1 << color_mode)' to the boolean, testing videomode
-and depth.
+P2G2CLK_ALWAYS_ONb is tested twice, 2nd should be P2G2CLK_DAC_ALWAYS_ONb.
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
-Sorry for the dup. this title and changelog should be better.
+Is this correct? I am only guessing. Please review.
 
-> The idea is that the framebuffer is offset by 0x1020 normally, except
-> when the video mode is VMODE_832_624_75 and the depth > 8 in which case
-> it's offet by 0x1010. It's a weird piece of HW but I think the original
-> code is correct. Or do I miss something ?
-
-Thanks for this, let's simplify to explain what I think that goes wrong:
-
-printf("%d\n", 1 + 0 ? 2 : 4);
-
-This prints `2': since the `+' operator has a higher precedence than the
-trinary `?' operator.
-
-In the original code we had:
-
-return vmode_attrs[video_mode-1].vres *
-  	       (vmode_attrs[video_mode-1].hres * (1<<color_mode) +
-  		((video_mode == VMODE_832_624_75) &&
-		 (color_mode > CMODE_8)) ? 0x10 : 0x20) + 0x1000;
-
-note that `hres * (1 << color_mode)' is added to
-((video_mode == VMODE_832_624_75) && (color_mode > CMODE_8))
-before the trinary operator `?' occurs.
-
-So maybe instead of the first patch you may want to apply this?
-
-diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
-index 03b3670..2cc986f 100644
---- a/drivers/video/platinumfb.c
-+++ b/drivers/video/platinumfb.c
-@@ -224,7 +224,7 @@ static inline int platinum_vram_reqd(int video_mode, int color_mode)
- 	return vmode_attrs[video_mode-1].vres *
- 	       (vmode_attrs[video_mode-1].hres * (1<<color_mode) +
- 		((video_mode == VMODE_832_624_75) &&
--		 (color_mode > CMODE_8)) ? 0x10 : 0x20) + 0x1000;
-+		 (color_mode > CMODE_8) ? 0x1010 : 0x1020));
- }
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index 97a1f09..100112f 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -395,7 +395,7 @@ static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
+ 			PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb      |
+ 			PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb        |
+ 			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb           |
+-			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb);
++			PIXCLKS_CNTL__R300_P2G2CLK_DAC_ALWAYS_ONb);
+ 		OUTPLL(pllPIXCLKS_CNTL, tmp);
  
- #define STORE_D2(a, d) { \
-
+ 		tmp = INPLL(pllMCLK_MISC);
 
 ------------------------------------------------------------------------------
 Crystal Reports - New Free Runtime and 30 Day Trial

@@ -1,100 +1,81 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] staging: misplaced parentheses?
-Date: Fri, 15 May 2009 09:24:19 +1000
-Message-ID: <1242343459.1867.27.camel@pasglop>
-References: <4A0C0C4E.6070401@gmail.com>
-	<20090514093827.33a099f7.akpm@linux-foundation.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] offb: use framebuffer_alloc() to
+	allocate fb_info struct
+Date: Fri, 15 May 2009 16:28:34 +1000
+Message-ID: <1242368914.22331.18.camel@pasglop>
+References: <20090504190724.c2dfb53c.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <benh@kernel.crashing.org>) id 1M4kIY-00029p-Vi
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 May 2009 23:25:10 +0000
-Received: from gate.crashing.org ([63.228.1.57])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M4kIM-0002kt-Hi
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 14 May 2009 23:25:05 +0000
-In-Reply-To: <20090514093827.33a099f7.akpm@linux-foundation.org>
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
+In-Reply-To: <20090504190724.c2dfb53c.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Mackerras <paulus@samba.org>, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Thu, 2009-05-14 at 09:38 -0700, Andrew Morton wrote:
-> > Subject: [PATCH] staging: misplaced parentheses?
+On Mon, 2009-05-04 at 19:07 +0200, Krzysztof Helt wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> The title is wrong.
+> Use the framebuffer_alloc() function to allocate the fb_info
+> structure so the structure is correctly initialized after allocation.
 > 
-> On Thu, 14 May 2009 14:19:26 +0200
-> Roel Kluin <roel.kluin@gmail.com> wrote:
-> 
-> > The leftmost `+' has a higher precedence than the `?' so this returns
-> > (vres * hres * (1 << color_mode) + (VMODE && CMODE) ? 0x10 : 0x20) + 0x1000
-> 
-> That seems OK.
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Yes, the original code looks ok and the patches one not quite ...
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-The idea is that the framebuffer is offset by 0x1020 normally, except
-when the video mode is VMODE_832_624_75 and the depth > 8 in which case
-it's offet by 0x1010. It's a weird piece of HW but I think the original
-code is correct. Or do I miss something ?
-
-Cheers,
-Ben.
-
-> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> > ---
-> > The original code looks odd, but I am not entirely certain whether my patch is
-> > correct. So please review.
-> > 
-> > diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
-> > index 03b3670..a88f4b6 100644
-> > --- a/drivers/video/platinumfb.c
-> > +++ b/drivers/video/platinumfb.c
-> > @@ -224,7 +224,7 @@ static inline int platinum_vram_reqd(int video_mode, int color_mode)
-> >  	return vmode_attrs[video_mode-1].vres *
-> >  	       (vmode_attrs[video_mode-1].hres * (1<<color_mode) +
-> >  		((video_mode == VMODE_832_624_75) &&
-> > -		 (color_mode > CMODE_8)) ? 0x10 : 0x20) + 0x1000;
-> > +		 (color_mode > CMODE_8) ? 0x10 : 0x20)) + 0x1000;
-> >  }
-> >  
-> >  #define STORE_D2(a, d) { \
+> ---
 > 
-> The patch changes it to
+> diff -urp linux-orig/drivers/video/offb.c linux-2.6.30/drivers/video/offb.c
+> --- linux-orig/drivers/video/offb.c	2008-08-09 05:09:05.000000000 +0200
+> +++ linux-2.6.30/drivers/video/offb.c	2009-05-04 00:14:28.000000000 +0200
+> @@ -378,7 +378,6 @@ static void __init offb_init_fb(const ch
+>  	struct fb_fix_screeninfo *fix;
+>  	struct fb_var_screeninfo *var;
+>  	struct fb_info *info;
+> -	int size;
+>  
+>  	if (!request_mem_region(res_start, res_size, "offb"))
+>  		return;
+> @@ -393,15 +392,12 @@ static void __init offb_init_fb(const ch
+>  		return;
+>  	}
+>  
+> -	size = sizeof(struct fb_info) + sizeof(u32) * 16;
+> -
+> -	info = kmalloc(size, GFP_ATOMIC);
+> +	info = framebuffer_alloc(sizeof(u32) * 16, NULL);
+>  	
+>  	if (info == 0) {
+>  		release_mem_region(res_start, res_size);
+>  		return;
+>  	}
+> -	memset(info, 0, size);
+>  
+>  	fix = &info->fix;
+>  	var = &info->var;
 > 
-> (vres * hres * (1 << color_mode) + (VMODE && (CMODE ? 0x10 : 0x20)) + 0x1000
+> ----------------------------------------------------------------------
+> Wygraj 3000 zl, wycieczke lub lot balonem!
+> Sprawdz >> http://link.interia.pl/f2154
 > 
-> I think?  It makes no sense to do (foo && non-zero-value).
 > 
 > ------------------------------------------------------------------------------
-> The NEW KODAK i700 Series Scanners deliver under ANY circumstances! Your
-> production scanning environment may not be a perfect world - but thanks to
-> Kodak, there's a perfect scanner to get the job done! With the NEW KODAK i700
-> Series Scanner you'll get full speed at 300 dpi even with all image 
-> processing features enabled. http://p.sf.net/sfu/kodak-com
+> Register Now & Save for Velocity, the Web Performance & Operations 
+> Conference from O'Reilly Media. Velocity features a full day of 
+> expert-led, hands-on workshops and two days of sessions from industry 
+> leaders in dedicated Performance & Operations tracks. Use code vel09scf 
+> and Save an extra 15% before 5/3. http://p.sf.net/sfu/velocityconf
 > _______________________________________________
 > Linux-fbdev-devel mailing list
 > Linux-fbdev-devel@lists.sourceforge.net
 > https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
-
-------------------------------------------------------------------------------
-Crystal Reports - New Free Runtime and 30 Day Trial
-Check out the new simplified licensing option that enables 
-unlimited royalty-free distribution of the report engine 
-for externally facing server and web deployment. 
-http://p.sf.net/sfu/businessobjects

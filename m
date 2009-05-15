@@ -1,81 +1,76 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] offb: use framebuffer_alloc() to
-	allocate fb_info struct
-Date: Fri, 15 May 2009 16:28:34 +1000
-Message-ID: <1242368914.22331.18.camel@pasglop>
-References: <20090504190724.c2dfb53c.krzysztof.h1@poczta.fm>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH] atmel_lcdfb: Correct fifo size for some
+	products
+Date: Fri, 15 May 2009 12:34:18 +0200
+Message-ID: <4A0D452A.4000805@atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-In-Reply-To: <20090504190724.c2dfb53c.krzysztof.h1@poczta.fm>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <nicolas.ferre@atmel.com>) id 1M4uld-0004x7-72
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 15 May 2009 10:35:53 +0000
+Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M4ukK-0007sX-AP for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 15 May 2009 10:35:48 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>, Andrew Victor <avictor.za@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-On Mon, 2009-05-04 at 19:07 +0200, Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> Use the framebuffer_alloc() function to allocate the fb_info
-> structure so the structure is correctly initialized after allocation.
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Remove wrong fifo size definition for some AT91 products.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Due to a misunderstanding of some AT91 datasheets, a fifo size of 2048 (words)
+has been introduced by mistake. In fact, all products (AT91/AT32) are sharing
+the same fifo size of 512 words.
+
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
+Can we consider this fix for .30-final ?
 
-> ---
-> 
-> diff -urp linux-orig/drivers/video/offb.c linux-2.6.30/drivers/video/offb.c
-> --- linux-orig/drivers/video/offb.c	2008-08-09 05:09:05.000000000 +0200
-> +++ linux-2.6.30/drivers/video/offb.c	2009-05-04 00:14:28.000000000 +0200
-> @@ -378,7 +378,6 @@ static void __init offb_init_fb(const ch
->  	struct fb_fix_screeninfo *fix;
->  	struct fb_var_screeninfo *var;
->  	struct fb_info *info;
-> -	int size;
->  
->  	if (!request_mem_region(res_start, res_size, "offb"))
->  		return;
-> @@ -393,15 +392,12 @@ static void __init offb_init_fb(const ch
->  		return;
->  	}
->  
-> -	size = sizeof(struct fb_info) + sizeof(u32) * 16;
-> -
-> -	info = kmalloc(size, GFP_ATOMIC);
-> +	info = framebuffer_alloc(sizeof(u32) * 16, NULL);
->  	
->  	if (info == 0) {
->  		release_mem_region(res_start, res_size);
->  		return;
->  	}
-> -	memset(info, 0, size);
->  
->  	fix = &info->fix;
->  	var = &info->var;
-> 
-> ----------------------------------------------------------------------
-> Wygraj 3000 zl, wycieczke lub lot balonem!
-> Sprawdz >> http://link.interia.pl/f2154
-> 
-> 
-> ------------------------------------------------------------------------------
-> Register Now & Save for Velocity, the Web Performance & Operations 
-> Conference from O'Reilly Media. Velocity features a full day of 
-> expert-led, hands-on workshops and two days of sessions from industry 
-> leaders in dedicated Performance & Operations tracks. Use code vel09scf 
-> and Save an extra 15% before 5/3. http://p.sf.net/sfu/velocityconf
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+ drivers/video/atmel_lcdfb.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 9a577a8..2fb63f6 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -29,14 +29,8 @@
+ 
+ /* configurable parameters */
+ #define ATMEL_LCDC_CVAL_DEFAULT		0xc8
+-#define ATMEL_LCDC_DMA_BURST_LEN	8
+-
+-#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91CAP9) || \
+-	defined(CONFIG_ARCH_AT91SAM9RL)
+-#define ATMEL_LCDC_FIFO_SIZE		2048
+-#else
+-#define ATMEL_LCDC_FIFO_SIZE		512
+-#endif
++#define ATMEL_LCDC_DMA_BURST_LEN	8	/* words */
++#define ATMEL_LCDC_FIFO_SIZE		512	/* words */
+ 
+ #if defined(CONFIG_ARCH_AT91)
+ #define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
+-- 
+1.5.3.7
+
+
+
+------------------------------------------------------------------------------
+Crystal Reports - New Free Runtime and 30 Day Trial
+Check out the new simplified licensing option that enables 
+unlimited royalty-free distribution of the report engine 
+for externally facing server and web deployment. 
+http://p.sf.net/sfu/businessobjects

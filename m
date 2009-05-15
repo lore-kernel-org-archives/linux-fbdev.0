@@ -1,22 +1,28 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] atmel_lcdfb: Correct fifo size for some
-	products
-Date: Fri, 15 May 2009 12:34:18 +0200
-Message-ID: <4A0D452A.4000805@atmel.com>
+From: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] staging: misplaced parentheses?
+Date: Fri, 15 May 2009 12:51:43 +0200
+Message-ID: <4A0D493F.5010509@gmail.com>
+References: <4A0C0C4E.6070401@gmail.com>	
+	<20090514093827.33a099f7.akpm@linux-foundation.org>
+	<1242343459.1867.27.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <nicolas.ferre@atmel.com>) id 1M4uld-0004x7-72
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1M4v1z-0004kE-73
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 15 May 2009 10:35:53 +0000
-Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M4ukK-0007sX-AP for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 15 May 2009 10:35:48 +0000
+	Fri, 15 May 2009 10:52:47 +0000
+Received: from ey-out-1920.google.com ([74.125.78.145])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M4v11-0007Im-1I for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 15 May 2009 10:52:47 +0000
+Received: by ey-out-1920.google.com with SMTP id 13so468475eye.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 15 May 2009 03:51:45 -0700 (PDT)
+In-Reply-To: <1242343459.1867.27.camel@pasglop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,47 +32,58 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>, Andrew Victor <avictor.za@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras <paulus@samba.org>, adaplas@gmail.com
 
-Remove wrong fifo size definition for some AT91 products.
+The leftmost `+' has a higher precedence than the `?' so this returns
+(vres * (hres * (1 << color_mode) + (VMODE && CMODE) ? 0x10 : 0x20) + 0x1000
 
-Due to a misunderstanding of some AT91 datasheets, a fifo size of 2048 (words)
-has been introduced by mistake. In fact, all products (AT91/AT32) are sharing
-the same fifo size of 512 words.
-
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
-Can we consider this fix for .30-final ?
 
- drivers/video/atmel_lcdfb.c |   10 ++--------
- 1 files changed, 2 insertions(+), 8 deletions(-)
+> Yes, the original code looks ok and the patches one not quite ...
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 9a577a8..2fb63f6 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -29,14 +29,8 @@
+Ok, my former patch may have been wrong, but unless I am very much
+mistaken, there is something fishy here.
+
+> The idea is that the framebuffer is offset by 0x1020 normally, except
+> when the video mode is VMODE_832_624_75 and the depth > 8 in which case
+> it's offet by 0x1010. It's a weird piece of HW but I think the original
+> code is correct. Or do I miss something ?
+
+Thanks for this, let's simplify to explain what I think that goes wrong:
+
+printf("%d\n", 1 + 0 ? 2 : 4);
+
+This prints `2': since the `+' operator has a higher precedence than the
+trinary `?' operator.
+
+In the original code we had:
+
+return vmode_attrs[video_mode-1].vres *
+  	       (vmode_attrs[video_mode-1].hres * (1<<color_mode) +
+  		((video_mode == VMODE_832_624_75) &&
+		 (color_mode > CMODE_8)) ? 0x10 : 0x20) + 0x1000;
+
+note that `hres * (1<<color_mode)' is added to
+((video_mode == VMODE_832_624_75) && (color_mode > CMODE_8))
+before the trinary operator `?' occurs.
+
+So maybe instead of the first patch you may want to apply this?
+
+diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
+index 03b3670..2cc986f 100644
+--- a/drivers/video/platinumfb.c
++++ b/drivers/video/platinumfb.c
+@@ -224,7 +224,7 @@ static inline int platinum_vram_reqd(int video_mode, int color_mode)
+ 	return vmode_attrs[video_mode-1].vres *
+ 	       (vmode_attrs[video_mode-1].hres * (1<<color_mode) +
+ 		((video_mode == VMODE_832_624_75) &&
+-		 (color_mode > CMODE_8)) ? 0x10 : 0x20) + 0x1000;
++		 (color_mode > CMODE_8) ? 0x1010 : 0x1020));
+ }
  
- /* configurable parameters */
- #define ATMEL_LCDC_CVAL_DEFAULT		0xc8
--#define ATMEL_LCDC_DMA_BURST_LEN	8
--
--#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91CAP9) || \
--	defined(CONFIG_ARCH_AT91SAM9RL)
--#define ATMEL_LCDC_FIFO_SIZE		2048
--#else
--#define ATMEL_LCDC_FIFO_SIZE		512
--#endif
-+#define ATMEL_LCDC_DMA_BURST_LEN	8	/* words */
-+#define ATMEL_LCDC_FIFO_SIZE		512	/* words */
- 
- #if defined(CONFIG_ARCH_AT91)
- #define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
--- 
-1.5.3.7
-
-
+ #define STORE_D2(a, d) { \
 
 ------------------------------------------------------------------------------
 Crystal Reports - New Free Runtime and 30 Day Trial

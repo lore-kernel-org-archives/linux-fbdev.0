@@ -1,31 +1,86 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 6/8] ARM: OMAP2/3: Change omapfb to use clkdev for
-	dispc and rfbi
-Date: Sat, 16 May 2009 11:02:44 -0700
-Message-ID: <20090516180243.GN19742@atomide.com>
-References: <20090514174100.12080.9736.stgit@localhost> <20090514174959.12080.64417.stgit@localhost> <20090514210312.9fa02bb3.krzysztof.h1@poczta.fm> <20090514202805.GQ5593@atomide.com> <20090516090621.GC15328@n2100.arm.linux.org.uk> <20090516152543.GK19742@atomide.com> <20090516162228.GA25657@n2100.arm.linux.org.uk>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Bugme-new] [Bug 13285] New: INTELFB:
+ Colors display incorrectly
+Date: Sat, 16 May 2009 20:42:05 +0200
+Message-ID: <20090516204205.e91398b7.krzysztof.h1@poczta.fm>
+References: <bug-13285-10286@http.bugzilla.kernel.org/>
+	<20090512151934.d7e6c54e.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20090516162228.GA25657@n2100.arm.linux.org.uk>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20090512151934.d7e6c54e.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org, samanddeanus@yahoo.com
 
-* Russell King - ARM Linux <linux@arm.linux.org.uk> [090516 09:22]:
-> On Sat, May 16, 2009 at 08:25:43AM -0700, Tony Lindgren wrote:
-> > The code does not work for omap3 without this patch because of the
-> > different clock names. It only works for 24xx. And because of the
-> > different source clocks, it's pointless trying to fix it in any
-> > other way for -rc series.
+On Tue, 12 May 2009 15:19:34 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
 > 
-> If that's the case, leave it in please.
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+> 
+> On Tue, 12 May 2009 01:40:48 GMT
+> bugzilla-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13285
+> > 
+> >            Summary: INTELFB: Colors display incorrectly
+> >            Product: Drivers
+> >            Version: 2.5
+> >     Kernel Version: 2.6.30-rc5
+> 
+> This is a post-2.6.29 regression.
+> 
+> >           Platform: All
+> >         OS/Version: Linux
+> >               Tree: Mainline
+> >             Status: NEW
+> >           Severity: normal
+> >           Priority: P1
+> >          Component: Console/Framebuffers
+> >         AssignedTo: jsimmons@infradead.org
+> >         ReportedBy: samanddeanus@yahoo.com
+> >         Regression: Yes
+> > 
+> > 
+> > On my system, the colors are displaying incorrectly when using the Intel
+> > framebuffer.  For example the Tux penguin logo has a blue background, and when
+> > I start X11 with the fbdev drivers, the xterm also has a blue background, when
+> > it is set up to have a white background.
+> > 
+> > This does not occur in kernel 2.6.29 -- I can see the Tasmanian devil in a
+> > penguin mask (Tuz) just fine and can view images, etc on the framebuffer.
+> > 
+> 
 
-OK, thanks. I'll add it back and send an updated pull request too.
+I have reproduced the bug on Intel 852/855 chipset (Asus A3L laptop). 
+
+It took me long because I had problems with a hard drive and had to wipe it with a low-level format tool.
+
+I am trying to identify cause of the bug. 
 
 Regards,
+Krzysztof
 
-Tony
+----------------------------------------------------------------------
+Fantastyczne nagrody do zgarniecia!
+Zagraj >> http://link.interia.pl/f2177 
+
+
+
+------------------------------------------------------------------------------
+Crystal Reports - New Free Runtime and 30 Day Trial
+Check out the new simplified licensing option that enables 
+unlimited royalty-free distribution of the report engine 
+for externally facing server and web deployment. 
+http://p.sf.net/sfu/businessobjects

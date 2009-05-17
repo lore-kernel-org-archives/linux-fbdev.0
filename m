@@ -1,83 +1,69 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup
-	DCR in xilinxfb driver.
-Date: Sun, 17 May 2009 12:26:44 +0200
-Message-ID: <20090517122644.f537f500.krzysztof.h1@poczta.fm>
-References: <20090515181237.22961.64270.stgit@localhost.localdomain>
-	<20090517100643.9d00e980.krzysztof.h1@poczta.fm>
-	<10f740e80905170125ie1c1aew441de30874e6a72f@mail.gmail.com>
+From: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] platinumfb: misplaced parenthesis
+Date: Sun, 17 May 2009 13:53:00 +0200
+Message-ID: <4A0FFA9C.5000404@gmail.com>
+References: <4A0C0C4E.6070401@gmail.com>	
+	<20090514093827.33a099f7.akpm@linux-foundation.org>	
+	<1242343459.1867.27.camel@pasglop>
+	<4A0DD407.9090206@gmail.com>	 <20090515212449.GD6520@sci.fi>
+	<1242426067.9691.4.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-In-Reply-To: <10f740e80905170125ie1c1aew441de30874e6a72f@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1M5evR-0008Si-Lh
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 May 2009 11:53:05 +0000
+Received: from mail-ew0-f169.google.com ([209.85.219.169])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M5evQ-0007aZ-KW for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 May 2009 11:53:05 +0000
+Received: by ewy17 with SMTP id 17so3612978ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 17 May 2009 04:53:02 -0700 (PDT)
+In-Reply-To: <1242426067.9691.4.camel@pasglop>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>, adaplas@gmail.com
 
-On Sun, 17 May 2009 10:25:31 +0200
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Since `+' has a higher precedence than the trinary operator `?', this
+added `hres * (1 << color_mode)' to the boolean testing videomode
+and depth.
 
-> On Sun, May 17, 2009 at 10:06, Krzysztof Helt <krzysztof.h1@poczta.fm> wr=
-ote:
-> > On Fri, 15 May 2009 12:19:17 -0600 Grant Likely <grant.likely@secretlab=
-.ca> wrote:
-> >> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-> >> index 40a3a2a..7a868bd 100644
-> >> --- a/drivers/video/xilinxfb.c
-> >> +++ b/drivers/video/xilinxfb.c
-> >> @@ -107,17 +111,28 @@ static struct fb_var_screeninfo xilinx_fb_var =
-=3D {
-> >> =A0 =A0 =A0 .activate =3D =A0 =A0 FB_ACTIVATE_NOW
-> >> =A0};
-> >>
-> >> +
-> >> +#define PLB_ACCESS_FLAG =A0 =A0 =A00x1 =A0 =A0 =A0 =A0 =A0 =A0 /* 1 =
-=3D PLB, 0 =3D DCR */
-> >> +
-> >> =A0struct xilinxfb_drvdata {
-> >>
-> >> =A0 =A0 =A0 struct fb_info =A0info; =A0 =A0 =A0 =A0 =A0 /* FB driver i=
-nfo record */
-> >>
-> >> - =A0 =A0 u32 =A0 =A0 =A0 =A0 =A0 =A0 regs_phys; =A0 =A0 =A0/* phys. a=
-ddress of the control registers */
-> >> - =A0 =A0 u32 __iomem =A0 =A0 *regs; =A0 =A0 =A0 =A0 =A0/* virt. addre=
-ss of the control registers */
-> >> + =A0 =A0 phys_addr_t =A0 =A0 regs_phys; =A0 =A0 =A0/* phys. address o=
-f the control
-> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 registers */
-> >
-> > There are fields fb_info.fix.mmio_start and fb_info.fix.mmio_len for
-> > physical IO range used by framebuffer. There is no field for
-> > virtual IO address so the "regs" below must stay.
-> =
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ static inline int platinum_vram_reqd(int video_mode, int color_mode)
+ {
++	int offset;
++
++	if ((video_mode == VMODE_832_624_75) && (color_mode > CMODE_8))
++		offset = 0x1010;
++	else
++		offset = 0x1020;
++
+ 	return vmode_attrs[video_mode-1].vres *
+-	       (vmode_attrs[video_mode-1].hres * (1<<color_mode) +
+-		((video_mode == VMODE_832_624_75) &&
+-		 (color_mode > CMODE_8)) ? 0x10 : 0x20) + 0x1000;
++		(vmode_attrs[video_mode-1].hres * (1<<color_mode) + offset);
+ }
+ 
+ #define STORE_D2(a, d) { \
 
-> If I'm not mistaken, this driver is used on ppc44x, where phys_addr_t is =
-64-bit,
-> so the 32-bit unsigned long fb_info.fix.mmio_start is not large enough
-> to hold the
-> physical address.
-> =
-
-
-If so please ignore my comment.
-
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-Regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Dzwonki na komork=EA!
-Sprawdz >> http://link.interia.pl/f2161
+------------------------------------------------------------------------------
+Crystal Reports - New Free Runtime and 30 Day Trial
+Check out the new simplified licensing option that enables 
+unlimited royalty-free distribution of the report engine 
+for externally facing server and web deployment. 
+http://p.sf.net/sfu/businessobjects

@@ -1,18 +1,30 @@
-From: Michal Suchanek <hramrach@centrum.cz>
-Subject: Re: [Bugme-new] [Bug 13285] New: INTELFB:
-	Colors display incorrectly
-Date: Sun, 17 May 2009 17:07:46 +0200
-Message-ID: <a5d587fb0905170807j4cf60ce7ucf675cc6161e7850@mail.gmail.com>
-References: <bug-13285-10286@http.bugzilla.kernel.org/>
-	<20090512151934.d7e6c54e.akpm@linux-foundation.org>
-	<20090517081743.92002707.krzysztof.h1@poczta.fm>
-	<20090516231932.2e02647b.akpm@linux-foundation.org>
-	<20090517123032.2b8bad00.krzysztof.h1@poczta.fm>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] platinumfb: misplaced parenthesis
+Date: Sun, 17 May 2009 19:11:09 +0200
+Message-ID: <10f740e80905171011r7955a23bq24081e993b8f50cb@mail.gmail.com>
+References: <4A0C0C4E.6070401@gmail.com>
+	<20090514093827.33a099f7.akpm@linux-foundation.org>
+	<1242343459.1867.27.camel@pasglop> <4A0DD407.9090206@gmail.com>
+	<20090515212449.GD6520@sci.fi> <1242426067.9691.4.camel@pasglop>
+	<4A0FFA9C.5000404@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20090517123032.2b8bad00.krzysztof.h1@poczta.fm>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1M5jtM-0002qC-R2
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 May 2009 17:11:16 +0000
+Received: from mail-ew0-f169.google.com ([209.85.219.169])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M5jtI-0007cp-2l for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 May 2009 17:11:16 +0000
+Received: by ewy17 with SMTP id 17so3730573ewy.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sun, 17 May 2009 10:11:09 -0700 (PDT)
+In-Reply-To: <4A0FFA9C.5000404@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -22,35 +34,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, samanddeanus@yahoo.com, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>
 
-MjAwOS81LzE3IEtyenlzenRvZiBIZWx0IDxrcnp5c3p0b2YuaDFAcG9jenRhLmZtPjoKPiBPbiBT
-YXQsIDE2IE1heSAyMDA5IDIzOjE5OjMyIC0wNzAwCj4gQW5kcmV3IE1vcnRvbiA8YWtwbUBsaW51
-eC1mb3VuZGF0aW9uLm9yZz4gd3JvdGU6Cj4KPj4gT24gU3VuLCAxNyBNYXkgMjAwOSAwODoxNzo0
-MyArMDIwMCBLcnp5c3p0b2YgSGVsdCA8a3J6eXN6dG9mLmgxQHBvY3p0YS5mbT4gd3JvdGU6Cj4+
-Cj4+ID4gVGhpcyBpcyBub3QgYSByZWdyZXNzaW9uLiBJIGhhdmUgcmVwcm9kdWNlZCBpdCBpbiB0
-aGUgMi42LjI4IGVhc2lseS4KPj4KPj4gaG0sIERlYW4ncyBvcmlnaW5hbCByZXBvcnQgaGFkCj4+
-Cj4+IMKgIMKgIFRoaXMgZG9lcyBub3Qgb2NjdXIgaW4ga2VybmVsIDIuNi4yOSAtLSBJIGNhbiBz
-ZWUgdGhlIFRhc21hbmlhbgo+PiDCoCDCoCBkZXZpbCBpbiBhIHBlbmd1aW4gbWFzayAoVHV6KSBq
-dXN0IGZpbmUgYW5kIGNhbiB2aWV3IGltYWdlcywgZXRjIG9uCj4+IMKgIMKgIHRoZSBmcmFtZWJ1
-ZmZlci4KPj4KPgo+IEkgY2FuIGNvbmZpcm0gdGhhdCBUdXogaXMgYWxzbyBicm9rZW4gb24gbXkg
-bGFwdG9wIChrZXJuZWwgdjIuNi4yOSkuCj4gTWF5YmUgRGVhbiBoYWQgc2V0IGRpZmZlcmVudCBj
-b2xvciBkZXB0aCAoInZnYT0iIHBhcmFtZXRlcikgZm9yIHRoZSBvbGRlciBrZXJuZWw/Cj4KPiBU
-aGUgZG1lc2cgb3V0cHV0IGZvciB0aGUgMi42LjI5IHdvdWxkIGNsZWFyIGFueSBkb3VidHMuCj4K
-CkZvciBtZSB0aGlzIGlzIGJyb2tlbiBldmVyIHNpbmNlIDIuNi4yNiBvbiBhIE1hYyBNaW5pIHdp
-dGggYWxsIG9mCmVmaWZiL2ludGVsZmIvdmVzYWZiIGJ1dCBwZXJoYXBzIHRoaXMgaXMgYSBkaWZm
-ZXJlbnQgaXNzdWUuCgpJIHdpbGwgdHJ5IHRvIHJlYnVpbGQgMi42LjI5IHdpdGggaW50ZWxmYiBh
-bmQgdGhlIHBhdGNoIHRvIHNlZSBpZiB0aGF0Cm1ha2VzIGEgZGlmZmVyZW5jZS4KCkN1cnJlbnRs
-eSBlZmlmYiBkb2VzIGdpdmUgY29ycmVjdCBnZW9tZXRyeSBidXQgd3JvbmcgY29sb3VycyBmb3Ig
-bWUsCnRoZSBvdGhlciBmcmFtZWJ1ZmZlcnMgd291bGQgYWxzbyBwcm9kdWNlIHBpY3R1cmUgd2l0
-aCB3cm9uZyBnZW9tZXRyeQp3aXRoIDIuNi4yNi4KClRoYW5rcwoKTWljaGFsCgotLS0tLS0tLS0t
+T24gU3VuLCBNYXkgMTcsIDIwMDkgYXQgMTM6NTMsIFJvZWwgS2x1aW4gPHJvZWwua2x1aW5AZ21h
+aWwuY29tPiB3cm90ZToKPiBTaW5jZSBgKycgaGFzIGEgaGlnaGVyIHByZWNlZGVuY2UgdGhhbiB0
+aGUgdHJpbmFyeSBvcGVyYXRvciBgPycsIHRoaXMKPiBhZGRlZCBgaHJlcyAqICgxIDw8IGNvbG9y
+X21vZGUpJyB0byB0aGUgYm9vbGVhbiB0ZXN0aW5nIHZpZGVvbW9kZQo+IGFuZCBkZXB0aC4KPgo+
+IFNpZ25lZC1vZmYtYnk6IFJvZWwgS2x1aW4gPHJvZWwua2x1aW5AZ21haWwuY29tPgo+IC0tLQo+
+IMKgc3RhdGljIGlubGluZSBpbnQgcGxhdGludW1fdnJhbV9yZXFkKGludCB2aWRlb19tb2RlLCBp
+bnQgY29sb3JfbW9kZSkKPiDCoHsKPiArIMKgIMKgIMKgIGludCBvZmZzZXQ7Cj4gKwo+ICsgwqAg
+wqAgwqAgaWYgKCh2aWRlb19tb2RlID09IFZNT0RFXzgzMl82MjRfNzUpICYmIChjb2xvcl9tb2Rl
+ID4gQ01PREVfOCkpCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBvZmZzZXQgPSAweDEwMTA7Cj4g
+KyDCoCDCoCDCoCBlbHNlCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBvZmZzZXQgPSAweDEwMjA7
+Cj4gKwo+IMKgIMKgIMKgIMKgcmV0dXJuIHZtb2RlX2F0dHJzW3ZpZGVvX21vZGUtMV0udnJlcyAq
+Cj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCh2bW9kZV9hdHRyc1t2aWRlb19tb2RlLTFdLmhyZXMg
+KiAoMTw8Y29sb3JfbW9kZSkgKwo+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgKCh2aWRlb19tb2Rl
+ID09IFZNT0RFXzgzMl82MjRfNzUpICYmCj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoChjb2xv
+cl9tb2RlID4gQ01PREVfOCkpID8gMHgxMCA6IDB4MjApICsgMHgxMDAwOwo+ICsgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgKHZtb2RlX2F0dHJzW3ZpZGVvX21vZGUtMV0uaHJlcyAqICgxPDxjb2xvcl9t
+b2RlKSArIG9mZnNldCk7CgpOb3cgw7JmZnNldCcgaXMgaW5zaWRlIHRoZSBwYXJlbnRoZXNlcywg
+aGVuY2UgaXQncyBtdWx0aXBsaWVkIGJ5IC4uLnZyZXM/CgpHcntvZXRqZSxlZXRpbmd9cywKCgkJ
+CQkJCUdlZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4
+IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJz
+YXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0
+CndoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIg
+b3Igc29tZXRoaW5nIGxpa2UgdGhhdC4KCQkJCQkJCSAgICAtLSBMaW51cyBUb3J2YWxkcwoKLS0t
 LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0KQ3J5c3RhbCBSZXBvcnRzIC0gTmV3IEZyZWUgUnVudGltZSBhbmQgMzAgRGF5
-IFRyaWFsCkNoZWNrIG91dCB0aGUgbmV3IHNpbXBsaWZpZWQgbGljZW5zaW5nIG9wdGlvbiB0aGF0
-IGVuYWJsZXMgCnVubGltaXRlZCByb3lhbHR5LWZyZWUgZGlzdHJpYnV0aW9uIG9mIHRoZSByZXBv
-cnQgZW5naW5lIApmb3IgZXh0ZXJuYWxseSBmYWNpbmcgc2VydmVyIGFuZCB3ZWIgZGVwbG95bWVu
-dC4gCmh0dHA6Ly9wLnNmLm5ldC9zZnUvYnVzaW5lc3NvYmplY3RzCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcg
-bGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0
-cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK
+LS0tLS0tLS0tLS0tLS0tLS0tCkNyeXN0YWwgUmVwb3J0cyAtIE5ldyBGcmVlIFJ1bnRpbWUgYW5k
+IDMwIERheSBUcmlhbApDaGVjayBvdXQgdGhlIG5ldyBzaW1wbGlmaWVkIGxpY2Vuc2luZyBvcHRp
+b24gdGhhdCBlbmFibGVzIAp1bmxpbWl0ZWQgcm95YWx0eS1mcmVlIGRpc3RyaWJ1dGlvbiBvZiB0
+aGUgcmVwb3J0IGVuZ2luZSAKZm9yIGV4dGVybmFsbHkgZmFjaW5nIHNlcnZlciBhbmQgd2ViIGRl
+cGxveW1lbnQuIApodHRwOi8vcC5zZi5uZXQvc2Z1L2J1c2luZXNzb2JqZWN0cwpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBt
+YWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBz
+Oi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVs
+Cg==

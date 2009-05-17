@@ -1,22 +1,22 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [REPOST][PATCH 4/7] cg6: use standard fields
+Subject: [REPOST][PATCH 7/7] tcx: use standard fields
  for framebuffer physical address and length
-Date: Sun, 17 May 2009 14:30:37 +0200
-Message-ID: <20090517143037.ce3456ca.krzysztof.h1@poczta.fm>
+Date: Sun, 17 May 2009 14:31:07 +0200
+Message-ID: <20090517143107.8fa3828c.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M5fQ3-0007jx-FU
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M5fQO-0001UT-Un
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:24:43 +0000
+	Sun, 17 May 2009 12:25:04 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M5fPt-00075t-Pc for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:24:38 +0000
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M5fQN-0008SJ-Md for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 May 2009 12:25:04 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,110 +40,128 @@ of the framebuffer are displayed correctly.
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Acked-by: David S. Miller <davem@davemloft.net>
 ---
-I tested this patch on a real hardware (SS20 + TGX card).
 
-diff -urp linux-orig/drivers/video/cg6.c linux-2.6.30/drivers/video/cg6.c
---- linux-orig/drivers/video/cg6.c	2008-10-13 18:03:36.000000000 +0200
-+++ linux-2.6.30/drivers/video/cg6.c	2009-05-04 00:49:28.000000000 +0200
-@@ -263,9 +263,7 @@ struct cg6_par {
+diff -urp linux-orig/drivers/video/tcx.c linux-2.6.30/drivers/video/tcx.c
+--- linux-orig/drivers/video/tcx.c	2008-10-13 18:03:36.000000000 +0200
++++ linux-2.6.30/drivers/video/tcx.c	2009-05-04 00:59:47.000000000 +0200
+@@ -116,17 +116,16 @@ struct tcx_par {
  	u32			flags;
- #define CG6_FLAG_BLANKED	0x00000001
+ #define TCX_FLAG_BLANKED	0x00000001
  
 -	unsigned long		physbase;
  	unsigned long		which_io;
 -	unsigned long		fbsize;
+ 
+ 	struct sbus_mmap_map	mmap_map[TCX_MMAP_ENTRIES];
+ 	int			lowdepth;
  };
  
- static int cg6_sync(struct fb_info *info)
-@@ -596,16 +594,14 @@ static int cg6_mmap(struct fb_info *info
- 	struct cg6_par *par = (struct cg6_par *)info->par;
+ /* Reset control plane so that WID is 8-bit plane. */
+-static void __tcx_set_control_plane(struct tcx_par *par)
++static void __tcx_set_control_plane(struct fb_info *info)
+ {
++	struct tcx_par *par = info->par;
+ 	u32 __iomem *p, *pend;
  
- 	return sbusfb_mmap_helper(cg6_mmap_map,
+ 	if (par->lowdepth)
+@@ -135,7 +134,7 @@ static void __tcx_set_control_plane(stru
+ 	p = par->cplane;
+ 	if (p == NULL)
+ 		return;
+-	for (pend = p + par->fbsize; p < pend; p++) {
++	for (pend = p + info->fix.smem_len; p < pend; p++) {
+ 		u32 tmp = sbus_readl(p);
+ 
+ 		tmp &= 0xffffff;
+@@ -149,7 +148,7 @@ static void tcx_reset(struct fb_info *in
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&par->lock, flags);
+-	__tcx_set_control_plane(par);
++	__tcx_set_control_plane(info);
+ 	spin_unlock_irqrestore(&par->lock, flags);
+ }
+ 
+@@ -304,7 +303,7 @@ static int tcx_mmap(struct fb_info *info
+ 	struct tcx_par *par = (struct tcx_par *)info->par;
+ 
+ 	return sbusfb_mmap_helper(par->mmap_map,
 -				  par->physbase, par->fbsize,
 +				  info->fix.smem_start, info->fix.smem_len,
  				  par->which_io, vma);
  }
  
- static int cg6_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
- {
--	struct cg6_par *par = (struct cg6_par *)info->par;
--
+@@ -316,7 +315,7 @@ static int tcx_ioctl(struct fb_info *inf
  	return sbusfb_ioctl_helper(cmd, arg, info,
--				   FBTYPE_SUNFAST_COLOR, 8, par->fbsize);
-+				   FBTYPE_SUNFAST_COLOR, 8, info->fix.smem_len);
+ 				   FBTYPE_TCXCOLOR,
+ 				   (par->lowdepth ? 8 : 24),
+-				   par->fbsize);
++				   info->fix.smem_len);
  }
  
  /*
-@@ -631,12 +627,12 @@ static void __devinit cg6_init_fix(struc
- 		break;
- 	};
- 	if (((conf >> CG6_FHC_REV_SHIFT) & CG6_FHC_REV_MASK) >= 11) {
--		if (par->fbsize <= 0x100000)
-+		if (info->fix.smem_len <= 0x100000)
- 			cg6_card_name = "TGX";
- 		else
- 			cg6_card_name = "TGX+";
- 	} else {
--		if (par->fbsize <= 0x100000)
-+		if (info->fix.smem_len <= 0x100000)
- 			cg6_card_name = "GX";
- 		else
- 			cg6_card_name = "GX+";
-@@ -738,7 +734,8 @@ static void cg6_unmap_regs(struct of_dev
- 		of_iounmap(&op->resource[0], par->fhc, sizeof(u32));
- 
+@@ -358,10 +357,10 @@ static void tcx_unmap_regs(struct of_dev
+ 			   par->bt, sizeof(struct bt_regs));
+ 	if (par->cplane)
+ 		of_iounmap(&op->resource[4],
+-			   par->cplane, par->fbsize * sizeof(u32));
++			   par->cplane, info->fix.smem_len * sizeof(u32));
  	if (info->screen_base)
--		of_iounmap(&op->resource[0], info->screen_base, par->fbsize);
-+		of_iounmap(&op->resource[0], info->screen_base,
-+			   info->fix.smem_len);
+ 		of_iounmap(&op->resource[0],
+-			   info->screen_base, par->fbsize);
++			   info->screen_base, info->fix.smem_len);
  }
  
- static int __devinit cg6_probe(struct of_device *op,
-@@ -759,7 +756,7 @@ static int __devinit cg6_probe(struct of
- 
- 	spin_lock_init(&par->lock);
- 
--	par->physbase = op->resource[0].start;
-+	info->fix.smem_start = op->resource[0].start;
- 	par->which_io = op->resource[0].flags & IORESOURCE_BITS;
- 
- 	sbusfb_fill_var(&info->var, dp, 8);
-@@ -769,11 +766,11 @@ static int __devinit cg6_probe(struct of
+ static int __devinit tcx_probe(struct of_device *op,
+@@ -391,7 +390,7 @@ static int __devinit tcx_probe(struct of
  
  	linebytes = of_getintprop_default(dp, "linebytes",
  					  info->var.xres);
 -	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
 +	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
  
- 	dblbuf = of_getintprop_default(dp, "dblbuf", 0);
- 	if (dblbuf)
--		par->fbsize *= 4;
-+		info->fix.smem_len *= 4;
- 
- 	par->fbc = of_ioremap(&op->resource[0], CG6_FBC_OFFSET,
- 				4096, "cgsix fbc");
-@@ -792,7 +789,7 @@ static int __devinit cg6_probe(struct of
- 	info->fbops = &cg6_ops;
- 
- 	info->screen_base = of_ioremap(&op->resource[0], CG6_RAM_OFFSET,
--					par->fbsize, "cgsix ram");
-+					info->fix.smem_len, "cgsix ram");
- 	if (!par->fbc || !par->tec || !par->thc ||
- 	    !par->bt || !par->fhc || !info->screen_base)
+ 	par->tec = of_ioremap(&op->resource[7], 0,
+ 				  sizeof(struct tcx_tec), "tcx tec");
+@@ -400,7 +399,7 @@ static int __devinit tcx_probe(struct of
+ 	par->bt = of_ioremap(&op->resource[8], 0,
+ 				 sizeof(struct bt_regs), "tcx dac");
+ 	info->screen_base = of_ioremap(&op->resource[0], 0,
+-					   par->fbsize, "tcx ram");
++					   info->fix.smem_len, "tcx ram");
+ 	if (!par->tec || !par->thc ||
+ 	    !par->bt || !info->screen_base)
  		goto out_unmap_regs;
-@@ -817,7 +814,7 @@ static int __devinit cg6_probe(struct of
+@@ -408,7 +407,7 @@ static int __devinit tcx_probe(struct of
+ 	memcpy(&par->mmap_map, &__tcx_mmap_map, sizeof(par->mmap_map));
+ 	if (!par->lowdepth) {
+ 		par->cplane = of_ioremap(&op->resource[4], 0,
+-					     par->fbsize * sizeof(u32),
++					     info->fix.smem_len * sizeof(u32),
+ 					     "tcx cplane");
+ 		if (!par->cplane)
+ 			goto out_unmap_regs;
+@@ -419,7 +418,7 @@ static int __devinit tcx_probe(struct of
+ 		par->mmap_map[6].size = SBUS_MMAP_EMPTY;
+ 	}
  
- 	printk(KERN_INFO "%s: CGsix [%s] at %lx:%lx\n",
- 	       dp->full_name, info->fix.id,
--	       par->which_io, par->physbase);
-+	       par->which_io, info->fix.smem_start);
+-	par->physbase = op->resource[0].start;
++	info->fix.smem_start = op->resource[0].start;
+ 	par->which_io = op->resource[0].flags & IORESOURCE_BITS;
+ 
+ 	for (i = 0; i < TCX_MMAP_ENTRIES; i++) {
+@@ -473,7 +472,7 @@ static int __devinit tcx_probe(struct of
+ 	printk(KERN_INFO "%s: TCX at %lx:%lx, %s\n",
+ 	       dp->full_name,
+ 	       par->which_io,
+-	       par->physbase,
++	       info->fix.smem_start,
+ 	       par->lowdepth ? "8-bit only" : "24-bit depth");
  
  	return 0;
- 
 
 ----------------------------------------------------------------------
-Zrob sobie prezent. Wygraj nagrode!
-Sprawdz >>  http://link.interia.pl/f2176 
+Fantastyczne nagrody do zgarniecia!
+Zagraj >> http://link.interia.pl/f2177 
 
 
 

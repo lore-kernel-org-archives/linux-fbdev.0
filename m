@@ -1,22 +1,18 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [REPOST][PATCH 6/7] p9100: use standard fields
- for framebuffer physical address and length
-Date: Sun, 17 May 2009 14:31:02 +0200
-Message-ID: <20090517143102.5d881de9.krzysztof.h1@poczta.fm>
+From: Michal Suchanek <hramrach@centrum.cz>
+Subject: Re: [Bugme-new] [Bug 13285] New: INTELFB:
+	Colors display incorrectly
+Date: Sun, 17 May 2009 17:07:46 +0200
+Message-ID: <a5d587fb0905170807j4cf60ce7ucf675cc6161e7850@mail.gmail.com>
+References: <bug-13285-10286@http.bugzilla.kernel.org/>
+	<20090512151934.d7e6c54e.akpm@linux-foundation.org>
+	<20090517081743.92002707.krzysztof.h1@poczta.fm>
+	<20090516231932.2e02647b.akpm@linux-foundation.org>
+	<20090517123032.2b8bad00.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M5fQM-0008Oq-R5
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:25:02 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M5fQI-00079p-MH for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:25:02 +0000
+In-Reply-To: <20090517123032.2b8bad00.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,119 +22,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Miller <davem@davemloft.net>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, samanddeanus@yahoo.com, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-Use standard fields fbinfo.fix.smem_start and fbinfo.fix.smem_len
-for physical address and length of framebuffer.
-
-This also fixes output of the 'fbset -i' command - address and length 
-of the framebuffer are displayed correctly.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-Acked-by: David S. Miller <davem@davemloft.net>
----
-
-diff -urp linux-orig/drivers/video/p9100.c linux-2.6.30/drivers/video/p9100.c
---- linux-orig/drivers/video/p9100.c	2008-10-13 18:03:36.000000000 +0200
-+++ linux-2.6.30/drivers/video/p9100.c	2009-05-04 00:59:22.000000000 +0200
-@@ -134,9 +134,7 @@ struct p9100_par {
- 	u32			flags;
- #define P9100_FLAG_BLANKED	0x00000001
- 
--	unsigned long		physbase;
- 	unsigned long		which_io;
--	unsigned long		fbsize;
- };
- 
- /**
-@@ -224,18 +222,16 @@ static int p9100_mmap(struct fb_info *in
- 	struct p9100_par *par = (struct p9100_par *)info->par;
- 
- 	return sbusfb_mmap_helper(p9100_mmap_map,
--				  par->physbase, par->fbsize,
-+				  info->fix.smem_start, info->fix.smem_len,
- 				  par->which_io, vma);
- }
- 
- static int p9100_ioctl(struct fb_info *info, unsigned int cmd,
- 		       unsigned long arg)
- {
--	struct p9100_par *par = (struct p9100_par *) info->par;
--
- 	/* Make it look like a cg3. */
- 	return sbusfb_ioctl_helper(cmd, arg, info,
--				   FBTYPE_SUN3COLOR, 8, par->fbsize);
-+				   FBTYPE_SUN3COLOR, 8, info->fix.smem_len);
- }
- 
- /*
-@@ -271,7 +267,7 @@ static int __devinit p9100_probe(struct 
- 	spin_lock_init(&par->lock);
- 
- 	/* This is the framebuffer and the only resource apps can mmap.  */
--	par->physbase = op->resource[2].start;
-+	info->fix.smem_start = op->resource[2].start;
- 	par->which_io = op->resource[2].flags & IORESOURCE_BITS;
- 
- 	sbusfb_fill_var(&info->var, dp, 8);
-@@ -280,7 +276,7 @@ static int __devinit p9100_probe(struct 
- 	info->var.blue.length = 8;
- 
- 	linebytes = of_getintprop_default(dp, "linebytes", info->var.xres);
--	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
-+	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
- 
- 	par->regs = of_ioremap(&op->resource[0], 0,
- 			       sizeof(struct p9100_regs), "p9100 regs");
-@@ -290,7 +286,7 @@ static int __devinit p9100_probe(struct 
- 	info->flags = FBINFO_DEFAULT;
- 	info->fbops = &p9100_ops;
- 	info->screen_base = of_ioremap(&op->resource[2], 0,
--				       par->fbsize, "p9100 ram");
-+				       info->fix.smem_len, "p9100 ram");
- 	if (!info->screen_base)
- 		goto out_unmap_regs;
- 
-@@ -311,7 +307,7 @@ static int __devinit p9100_probe(struct 
- 
- 	printk(KERN_INFO "%s: p9100 at %lx:%lx\n",
- 	       dp->full_name,
--	       par->which_io, par->physbase);
-+	       par->which_io, info->fix.smem_start);
- 
- 	return 0;
- 
-@@ -319,7 +315,7 @@ out_dealloc_cmap:
- 	fb_dealloc_cmap(&info->cmap);
- 
- out_unmap_screen:
--	of_iounmap(&op->resource[2], info->screen_base, par->fbsize);
-+	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
- 
- out_unmap_regs:
- 	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
-@@ -340,7 +336,7 @@ static int __devexit p9100_remove(struct
- 	fb_dealloc_cmap(&info->cmap);
- 
- 	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
--	of_iounmap(&op->resource[2], info->screen_base, par->fbsize);
-+	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
- 
- 	framebuffer_release(info);
- 
-
-----------------------------------------------------------------------
-Zrob sobie prezent. Wygraj nagrode!
-Sprawdz >>  http://link.interia.pl/f2176 
-
-
-
-------------------------------------------------------------------------------
-Crystal Reports - New Free Runtime and 30 Day Trial
-Check out the new simplified licensing option that enables 
-unlimited royalty-free distribution of the report engine 
-for externally facing server and web deployment. 
-http://p.sf.net/sfu/businessobjects
+MjAwOS81LzE3IEtyenlzenRvZiBIZWx0IDxrcnp5c3p0b2YuaDFAcG9jenRhLmZtPjoKPiBPbiBT
+YXQsIDE2IE1heSAyMDA5IDIzOjE5OjMyIC0wNzAwCj4gQW5kcmV3IE1vcnRvbiA8YWtwbUBsaW51
+eC1mb3VuZGF0aW9uLm9yZz4gd3JvdGU6Cj4KPj4gT24gU3VuLCAxNyBNYXkgMjAwOSAwODoxNzo0
+MyArMDIwMCBLcnp5c3p0b2YgSGVsdCA8a3J6eXN6dG9mLmgxQHBvY3p0YS5mbT4gd3JvdGU6Cj4+
+Cj4+ID4gVGhpcyBpcyBub3QgYSByZWdyZXNzaW9uLiBJIGhhdmUgcmVwcm9kdWNlZCBpdCBpbiB0
+aGUgMi42LjI4IGVhc2lseS4KPj4KPj4gaG0sIERlYW4ncyBvcmlnaW5hbCByZXBvcnQgaGFkCj4+
+Cj4+IMKgIMKgIFRoaXMgZG9lcyBub3Qgb2NjdXIgaW4ga2VybmVsIDIuNi4yOSAtLSBJIGNhbiBz
+ZWUgdGhlIFRhc21hbmlhbgo+PiDCoCDCoCBkZXZpbCBpbiBhIHBlbmd1aW4gbWFzayAoVHV6KSBq
+dXN0IGZpbmUgYW5kIGNhbiB2aWV3IGltYWdlcywgZXRjIG9uCj4+IMKgIMKgIHRoZSBmcmFtZWJ1
+ZmZlci4KPj4KPgo+IEkgY2FuIGNvbmZpcm0gdGhhdCBUdXogaXMgYWxzbyBicm9rZW4gb24gbXkg
+bGFwdG9wIChrZXJuZWwgdjIuNi4yOSkuCj4gTWF5YmUgRGVhbiBoYWQgc2V0IGRpZmZlcmVudCBj
+b2xvciBkZXB0aCAoInZnYT0iIHBhcmFtZXRlcikgZm9yIHRoZSBvbGRlciBrZXJuZWw/Cj4KPiBU
+aGUgZG1lc2cgb3V0cHV0IGZvciB0aGUgMi42LjI5IHdvdWxkIGNsZWFyIGFueSBkb3VidHMuCj4K
+CkZvciBtZSB0aGlzIGlzIGJyb2tlbiBldmVyIHNpbmNlIDIuNi4yNiBvbiBhIE1hYyBNaW5pIHdp
+dGggYWxsIG9mCmVmaWZiL2ludGVsZmIvdmVzYWZiIGJ1dCBwZXJoYXBzIHRoaXMgaXMgYSBkaWZm
+ZXJlbnQgaXNzdWUuCgpJIHdpbGwgdHJ5IHRvIHJlYnVpbGQgMi42LjI5IHdpdGggaW50ZWxmYiBh
+bmQgdGhlIHBhdGNoIHRvIHNlZSBpZiB0aGF0Cm1ha2VzIGEgZGlmZmVyZW5jZS4KCkN1cnJlbnRs
+eSBlZmlmYiBkb2VzIGdpdmUgY29ycmVjdCBnZW9tZXRyeSBidXQgd3JvbmcgY29sb3VycyBmb3Ig
+bWUsCnRoZSBvdGhlciBmcmFtZWJ1ZmZlcnMgd291bGQgYWxzbyBwcm9kdWNlIHBpY3R1cmUgd2l0
+aCB3cm9uZyBnZW9tZXRyeQp3aXRoIDIuNi4yNi4KClRoYW5rcwoKTWljaGFsCgotLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0KQ3J5c3RhbCBSZXBvcnRzIC0gTmV3IEZyZWUgUnVudGltZSBhbmQgMzAgRGF5
+IFRyaWFsCkNoZWNrIG91dCB0aGUgbmV3IHNpbXBsaWZpZWQgbGljZW5zaW5nIG9wdGlvbiB0aGF0
+IGVuYWJsZXMgCnVubGltaXRlZCByb3lhbHR5LWZyZWUgZGlzdHJpYnV0aW9uIG9mIHRoZSByZXBv
+cnQgZW5naW5lIApmb3IgZXh0ZXJuYWxseSBmYWNpbmcgc2VydmVyIGFuZCB3ZWIgZGVwbG95bWVu
+dC4gCmh0dHA6Ly9wLnNmLm5ldC9zZnUvYnVzaW5lc3NvYmplY3RzCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcg
+bGlzdApMaW51eC1mYmRldi1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0
+cy5zb3VyY2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

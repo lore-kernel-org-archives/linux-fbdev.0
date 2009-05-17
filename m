@@ -1,14 +1,15 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup 
 	DCR in xilinxfb driver.
-Date: Sun, 17 May 2009 10:06:43 +0200
-Message-ID: <20090517100643.9d00e980.krzysztof.h1@poczta.fm>
+Date: Sun, 17 May 2009 10:25:31 +0200
+Message-ID: <10f740e80905170125ie1c1aew441de30874e6a72f@mail.gmail.com>
 References: <20090515181237.22961.64270.stgit@localhost.localdomain>
+	<20090517100643.9d00e980.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-In-Reply-To: <20090515181237.22961.64270.stgit@localhost.localdomain>
+In-Reply-To: <20090517100643.9d00e980.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,99 +20,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
 Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 
-Hi Grant and John,
-
-On Fri, 15 May 2009 12:19:17 -0600
-Grant Likely <grant.likely@secretlab.ca> wrote:
-
-> Antonino,
-> 
-
-Antonino is gone for quite a long time. I have reviewed your patch.
-I have two comments only. Both are of small caliber.
-
-> If you prefer, I'm willing to merge it via my powerpc tree.
-> 
-
-As you prefer. If you want to send it here, CC it top Andrew Morton.
-
->  drivers/video/xilinxfb.c |  290 ++++++++++++++++++++++++----------------------
->  1 files changed, 151 insertions(+), 139 deletions(-)
-> 
-> 
-> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-> index 40a3a2a..7a868bd 100644
-> --- a/drivers/video/xilinxfb.c
-> +++ b/drivers/video/xilinxfb.c
-
-(...)
-
-> @@ -107,17 +111,28 @@ static struct fb_var_screeninfo xilinx_fb_var = {
->  	.activate =	FB_ACTIVATE_NOW
->  };
->  
-> +
-> +#define PLB_ACCESS_FLAG	0x1		/* 1 = PLB, 0 = DCR */
-> +
->  struct xilinxfb_drvdata {
->  
->  	struct fb_info	info;		/* FB driver info record */
->  
-> -	u32		regs_phys;	/* phys. address of the control registers */
-> -	u32 __iomem	*regs;		/* virt. address of the control registers */
-> +	phys_addr_t	regs_phys;	/* phys. address of the control
-> +						registers */
-
-There are fields fb_info.fix.mmio_start and fb_info.fix.mmio_len for
-physical IO range used by framebuffer. There is no field for
-virtual IO address so the "regs" below must stay.
-
-> +	void __iomem	*regs;		/* virt. address of the control
-> +						registers */
-> +
-> +	dcr_host_t      dcr_host;
-> +	unsigned int    dcr_start;
-> +	unsigned int    dcr_len;
->  
->  	void		*fb_virt;	/* virt. address of the frame buffer */
->  	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
->  	int		fb_alloced;	/* Flag, was the fb memory alloced? */
->  
-> +	u8 		flags;		/* features of the driver */
-> +
->  	u32		reg_ctrl_default;
->  
->  	u32		pseudo_palette[PALETTE_ENTRIES_NO];
-
-(...)
-
-> @@ -247,7 +266,10 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
->  	if (!drvdata->fb_virt) {
->  		dev_err(dev, "Could not allocate frame buffer memory\n");
->  		rc = -ENOMEM;
-> -		goto err_fbmem;
-> +		if (drvdata->flags & PLB_ACCESS_FLAG)
-> +			goto err_fbmem;
-> +		else
-> +			goto err_region;
->  	}
->  
-
-The code after labels err_fbmem and err_region is also
-modified so there is no need for the if clause here (just
-do "goto err_fbmem").
-
->  	/* Clear (turn to black) the framebuffer */
-
-
-The rest of the patch is ok for me.
-
-Regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Fantastyczne nagrody do zgarniecia!
-Zagraj >> http://link.interia.pl/f2177 
+T24gU3VuLCBNYXkgMTcsIDIwMDkgYXQgMTA6MDYsIEtyenlzenRvZiBIZWx0IDxrcnp5c3p0b2Yu
+aDFAcG9jenRhLmZtPiB3cm90ZToKPiBPbiBGcmksIDE1IE1heSAyMDA5IDEyOjE5OjE3IC0wNjAw
+IEdyYW50IExpa2VseSA8Z3JhbnQubGlrZWx5QHNlY3JldGxhYi5jYT4gd3JvdGU6Cj4+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL3ZpZGVvL3hpbGlueGZiLmMgYi9kcml2ZXJzL3ZpZGVvL3hpbGlueGZi
+LmMKPj4gaW5kZXggNDBhM2EyYS4uN2E4NjhiZCAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy92aWRl
+by94aWxpbnhmYi5jCj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8veGlsaW54ZmIuYwo+PiBAQCAtMTA3
+LDE3ICsxMTEsMjggQEAgc3RhdGljIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyB4aWxpbnhfZmJf
+dmFyID0gewo+PiDCoCDCoCDCoCAuYWN0aXZhdGUgPSDCoCDCoCBGQl9BQ1RJVkFURV9OT1cKPj4g
+wqB9Owo+Pgo+PiArCj4+ICsjZGVmaW5lIFBMQl9BQ0NFU1NfRkxBRyDCoCDCoCDCoDB4MSDCoCDC
+oCDCoCDCoCDCoCDCoCAvKiAxID0gUExCLCAwID0gRENSICovCj4+ICsKPj4gwqBzdHJ1Y3QgeGls
+aW54ZmJfZHJ2ZGF0YSB7Cj4+Cj4+IMKgIMKgIMKgIHN0cnVjdCBmYl9pbmZvIMKgaW5mbzsgwqAg
+wqAgwqAgwqAgwqAgLyogRkIgZHJpdmVyIGluZm8gcmVjb3JkICovCj4+Cj4+IC0gwqAgwqAgdTMy
+IMKgIMKgIMKgIMKgIMKgIMKgIHJlZ3NfcGh5czsgwqAgwqAgwqAvKiBwaHlzLiBhZGRyZXNzIG9m
+IHRoZSBjb250cm9sIHJlZ2lzdGVycyAqLwo+PiAtIMKgIMKgIHUzMiBfX2lvbWVtIMKgIMKgICpy
+ZWdzOyDCoCDCoCDCoCDCoCDCoC8qIHZpcnQuIGFkZHJlc3Mgb2YgdGhlIGNvbnRyb2wgcmVnaXN0
+ZXJzICovCj4+ICsgwqAgwqAgcGh5c19hZGRyX3QgwqAgwqAgcmVnc19waHlzOyDCoCDCoCDCoC8q
+IHBoeXMuIGFkZHJlc3Mgb2YgdGhlIGNvbnRyb2wKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZWdpc3RlcnMgKi8K
+Pgo+IFRoZXJlIGFyZSBmaWVsZHMgZmJfaW5mby5maXgubW1pb19zdGFydCBhbmQgZmJfaW5mby5m
+aXgubW1pb19sZW4gZm9yCj4gcGh5c2ljYWwgSU8gcmFuZ2UgdXNlZCBieSBmcmFtZWJ1ZmZlci4g
+VGhlcmUgaXMgbm8gZmllbGQgZm9yCj4gdmlydHVhbCBJTyBhZGRyZXNzIHNvIHRoZSAicmVncyIg
+YmVsb3cgbXVzdCBzdGF5LgoKSWYgSSdtIG5vdCBtaXN0YWtlbiwgdGhpcyBkcml2ZXIgaXMgdXNl
+ZCBvbiBwcGM0NHgsIHdoZXJlIHBoeXNfYWRkcl90IGlzIDY0LWJpdCwKc28gdGhlIDMyLWJpdCB1
+bnNpZ25lZCBsb25nIGZiX2luZm8uZml4Lm1taW9fc3RhcnQgaXMgbm90IGxhcmdlIGVub3VnaAp0
+byBob2xkIHRoZQpwaHlzaWNhbCBhZGRyZXNzLgoKR3J7b2V0amUsZWV0aW5nfXMsCgoJCQkJCQlH
+ZWVydAoKLS0KR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51eCBiZXlv
+bmQgaWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZwoKSW4gcGVyc29uYWwgY29udmVyc2F0aW9u
+cyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNlbGYgYSBoYWNrZXIuIEJ1dAp3aGVu
+IEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInByb2dyYW1tZXIiIG9yIHNv
+bWV0aGluZyBsaWtlIHRoYXQuCgkJCQkJCQkgICAgLS0gTGludXMgVG9ydmFsZHMKX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxp
+bmcgbGlzdApMaW51eHBwYy1kZXZAb3psYWJzLm9yZwpodHRwczovL296bGFicy5vcmcvbWFpbG1h
+bi9saXN0aW5mby9saW51eHBwYy1kZXY=

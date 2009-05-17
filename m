@@ -1,81 +1,73 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Bugme-new] [Bug 13285] New: INTELFB:
- Colors display incorrectly
-Date: Sat, 16 May 2009 20:42:05 +0200
-Message-ID: <20090516204205.e91398b7.krzysztof.h1@poczta.fm>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Linux-fbdev-devel] [Bugme-new] [Bug 13285] New: INTELFB:
+	Colors display incorrectly
+Date: Sat, 16 May 2009 23:19:32 -0700
+Message-ID: <20090516231932.2e02647b.akpm@linux-foundation.org>
 References: <bug-13285-10286@http.bugzilla.kernel.org/>
 	<20090512151934.d7e6c54e.akpm@linux-foundation.org>
+	<20090517081743.92002707.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20090512151934.d7e6c54e.akpm@linux-foundation.org>
+Return-path: <dri-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20090517081743.92002707.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org, samanddeanus@yahoo.com
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=dri-devel>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: samanddeanus@yahoo.com, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org
 
-On Tue, 12 May 2009 15:19:34 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sun, 17 May 2009 08:17:43 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
+> The intelfb driver sets color map depending on currently active pipe. However, if an LVDS 
+> display is attached (like in laptop) the active pipe variable is never set. The default value is 
+> PIPE_A and can be wrong.
+> Set up the pipe variable during driver initialization after hardware state was read.
 > 
-> On Tue, 12 May 2009 01:40:48 GMT
-> bugzilla-daemon@bugzilla.kernel.org wrote:
+> I also found by experiment that if both pipes were enabled, the PIPE_B is used (active).
 > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=13285
-> > 
-> >            Summary: INTELFB: Colors display incorrectly
-> >            Product: Drivers
-> >            Version: 2.5
-> >     Kernel Version: 2.6.30-rc5
+> The problem is visible in the 8 bpp mode if colors above 15 are used. The first 16 color
+> entries are displayed correctly.
 > 
-> This is a post-2.6.29 regression.
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: normal
-> >           Priority: P1
-> >          Component: Console/Framebuffers
-> >         AssignedTo: jsimmons@infradead.org
-> >         ReportedBy: samanddeanus@yahoo.com
-> >         Regression: Yes
-> > 
-> > 
-> > On my system, the colors are displaying incorrectly when using the Intel
-> > framebuffer.  For example the Tux penguin logo has a blue background, and when
-> > I start X11 with the fbdev drivers, the xterm also has a blue background, when
-> > it is set up to have a white background.
-> > 
-> > This does not occur in kernel 2.6.29 -- I can see the Tasmanian devil in a
-> > penguin mask (Tuz) just fine and can view images, etc on the framebuffer.
-> > 
-> 
+> ---
+> This is not a regression. I have reproduced it in the 2.6.28 easily.
 
-I have reproduced the bug on Intel 852/855 chipset (Asus A3L laptop). 
+hm, Dean's original report had
 
-It took me long because I had problems with a hard drive and had to wipe it with a low-level format tool.
+    This does not occur in kernel 2.6.29 -- I can see the Tasmanian
+    devil in a penguin mask (Tuz) just fine and can view images, etc on
+    the framebuffer.
 
-I am trying to identify cause of the bug. 
+> Dean, please test the patch.
 
-Regards,
-Krzysztof
+Yes please.
 
-----------------------------------------------------------------------
-Fantastyczne nagrody do zgarniecia!
-Zagraj >> http://link.interia.pl/f2177 
-
+> diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+> index ace14fe..b47f6dd 100644
+> --- a/drivers/video/intelfb/intelfbdrv.c
+> +++ b/drivers/video/intelfb/intelfbdrv.c
+> @@ -871,6 +871,12 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+>  
+>  	intelfbhw_print_hw_state(dinfo, &dinfo->save_state);
+>  
+> +	/* Check whether pipe A or pipe B is enabled. */
+> +	if (dinfo->save_state.pipe_a_conf & PIPECONF_ENABLE)
+> +		dinfo->pipe = PIPE_A;
+> +	if (dinfo->save_state.pipe_b_conf & PIPECONF_ENABLE)
+> +		dinfo->pipe = PIPE_B;
+> +
+>  	if (bailearly == 18)
+>  		bailout(dinfo);
 
 
 ------------------------------------------------------------------------------
@@ -84,3 +76,4 @@ Check out the new simplified licensing option that enables
 unlimited royalty-free distribution of the report engine 
 for externally facing server and web deployment. 
 http://p.sf.net/sfu/businessobjects
+--

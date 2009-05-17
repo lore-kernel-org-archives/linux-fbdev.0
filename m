@@ -1,111 +1,83 @@
-From: Julia Lawall <julia@diku.dk>
-Subject: [PATCH 2/3] drivers/video: use dev_get_drvdata
-Date: Sun, 17 May 2009 11:29:00 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0905171128430.20440@pc-004.diku.dk>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup
+	DCR in xilinxfb driver.
+Date: Sun, 17 May 2009 12:26:44 +0200
+Message-ID: <20090517122644.f537f500.krzysztof.h1@poczta.fm>
+References: <20090515181237.22961.64270.stgit@localhost.localdomain>
+	<20090517100643.9d00e980.krzysztof.h1@poczta.fm>
+	<10f740e80905170125ie1c1aew441de30874e6a72f@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757086AbZEQJ3k@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
+In-Reply-To: <10f740e80905170125ie1c1aew441de30874e6a72f@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 
-From: Julia Lawall <julia@diku.dk>
+On Sun, 17 May 2009 10:25:31 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-Eliminate direct accesses to the driver_data field.
-cf 82ab13b26f15f49be45f15ccc96bfa0b81dfd015
+> On Sun, May 17, 2009 at 10:06, Krzysztof Helt <krzysztof.h1@poczta.fm> wr=
+ote:
+> > On Fri, 15 May 2009 12:19:17 -0600 Grant Likely <grant.likely@secretlab=
+.ca> wrote:
+> >> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> >> index 40a3a2a..7a868bd 100644
+> >> --- a/drivers/video/xilinxfb.c
+> >> +++ b/drivers/video/xilinxfb.c
+> >> @@ -107,17 +111,28 @@ static struct fb_var_screeninfo xilinx_fb_var =
+=3D {
+> >> =A0 =A0 =A0 .activate =3D =A0 =A0 FB_ACTIVATE_NOW
+> >> =A0};
+> >>
+> >> +
+> >> +#define PLB_ACCESS_FLAG =A0 =A0 =A00x1 =A0 =A0 =A0 =A0 =A0 =A0 /* 1 =
+=3D PLB, 0 =3D DCR */
+> >> +
+> >> =A0struct xilinxfb_drvdata {
+> >>
+> >> =A0 =A0 =A0 struct fb_info =A0info; =A0 =A0 =A0 =A0 =A0 /* FB driver i=
+nfo record */
+> >>
+> >> - =A0 =A0 u32 =A0 =A0 =A0 =A0 =A0 =A0 regs_phys; =A0 =A0 =A0/* phys. a=
+ddress of the control registers */
+> >> - =A0 =A0 u32 __iomem =A0 =A0 *regs; =A0 =A0 =A0 =A0 =A0/* virt. addre=
+ss of the control registers */
+> >> + =A0 =A0 phys_addr_t =A0 =A0 regs_phys; =A0 =A0 =A0/* phys. address o=
+f the control
+> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 registers */
+> >
+> > There are fields fb_info.fix.mmio_start and fb_info.fix.mmio_len for
+> > physical IO range used by framebuffer. There is no field for
+> > virtual IO address so the "regs" below must stay.
+> =
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+> If I'm not mistaken, this driver is used on ppc44x, where phys_addr_t is =
+64-bit,
+> so the 32-bit unsigned long fb_info.fix.mmio_start is not large enough
+> to hold the
+> physical address.
+> =
 
-// <smpl>
-@@
-struct device *dev;
-expression E;
-type T;
-@@
 
-- dev->driver_data = (T)E
-+ dev_set_drvdata(dev, E)
+If so please ignore my comment.
 
-@@
-struct device *dev;
-type T;
-@@
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-- (T)dev->driver_data
-+ dev_get_drvdata(dev)
-// </smpl>
+Regards,
+Krzysztof
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/video/omap/omapfb_main.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
-
-diff -u -p a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
---- a/drivers/video/omap/omapfb_main.c
-+++ b/drivers/video/omap/omapfb_main.c
-@@ -1250,7 +1250,7 @@ static struct fb_ops omapfb_ops = {
- static ssize_t omapfb_show_caps_num(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
--	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
-+	struct omapfb_device *fbdev = dev_get_drvdata(dev);
- 	int plane;
- 	size_t size;
- 	struct omapfb_caps caps;
-@@ -1270,7 +1270,7 @@ static ssize_t omapfb_show_caps_num(stru
- static ssize_t omapfb_show_caps_text(struct device *dev,
- 				     struct device_attribute *attr, char *buf)
- {
--	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
-+	struct omapfb_device *fbdev = dev_get_drvdata(dev);
- 	int i;
- 	struct omapfb_caps caps;
- 	int plane;
-@@ -1317,7 +1317,7 @@ static DEVICE_ATTR(caps_text, 0444, omap
- static ssize_t omapfb_show_panel_name(struct device *dev,
- 				      struct device_attribute *attr, char *buf)
- {
--	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
-+	struct omapfb_device *fbdev = dev_get_drvdata(dev);
- 
- 	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->panel->name);
- }
-@@ -1326,7 +1326,7 @@ static ssize_t omapfb_show_bklight_level
- 					 struct device_attribute *attr,
- 					 char *buf)
- {
--	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
-+	struct omapfb_device *fbdev = dev_get_drvdata(dev);
- 	int r;
- 
- 	if (fbdev->panel->get_bklight_level) {
-@@ -1341,7 +1341,7 @@ static ssize_t omapfb_store_bklight_leve
- 					  struct device_attribute *attr,
- 					  const char *buf, size_t size)
- {
--	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
-+	struct omapfb_device *fbdev = dev_get_drvdata(dev);
- 	int r;
- 
- 	if (fbdev->panel->set_bklight_level) {
-@@ -1360,7 +1360,7 @@ static ssize_t omapfb_store_bklight_leve
- static ssize_t omapfb_show_bklight_max(struct device *dev,
- 				       struct device_attribute *attr, char *buf)
- {
--	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
-+	struct omapfb_device *fbdev = dev_get_drvdata(dev);
- 	int r;
- 
- 	if (fbdev->panel->get_bklight_level) {
-@@ -1393,7 +1393,7 @@ static struct attribute_group panel_attr
- static ssize_t omapfb_show_ctrl_name(struct device *dev,
- 				     struct device_attribute *attr, char *buf)
- {
--	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
-+	struct omapfb_device *fbdev = dev_get_drvdata(dev);
- 
- 	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->ctrl->name);
- }
+----------------------------------------------------------------------
+Dzwonki na komork=EA!
+Sprawdz >> http://link.interia.pl/f2161

@@ -1,58 +1,111 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup 
-	DCR in xilinxfb driver.
-Date: Sun, 17 May 2009 10:25:31 +0200
-Message-ID: <10f740e80905170125ie1c1aew441de30874e6a72f@mail.gmail.com>
-References: <20090515181237.22961.64270.stgit@localhost.localdomain>
-	<20090517100643.9d00e980.krzysztof.h1@poczta.fm>
+From: Julia Lawall <julia@diku.dk>
+Subject: [PATCH 2/3] drivers/video: use dev_get_drvdata
+Date: Sun, 17 May 2009 11:29:00 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0905171128430.20440@pc-004.diku.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-In-Reply-To: <20090517100643.9d00e980.krzysztof.h1@poczta.fm>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757086AbZEQJ3k@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-T24gU3VuLCBNYXkgMTcsIDIwMDkgYXQgMTA6MDYsIEtyenlzenRvZiBIZWx0IDxrcnp5c3p0b2Yu
-aDFAcG9jenRhLmZtPiB3cm90ZToKPiBPbiBGcmksIDE1IE1heSAyMDA5IDEyOjE5OjE3IC0wNjAw
-IEdyYW50IExpa2VseSA8Z3JhbnQubGlrZWx5QHNlY3JldGxhYi5jYT4gd3JvdGU6Cj4+IGRpZmYg
-LS1naXQgYS9kcml2ZXJzL3ZpZGVvL3hpbGlueGZiLmMgYi9kcml2ZXJzL3ZpZGVvL3hpbGlueGZi
-LmMKPj4gaW5kZXggNDBhM2EyYS4uN2E4NjhiZCAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy92aWRl
-by94aWxpbnhmYi5jCj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8veGlsaW54ZmIuYwo+PiBAQCAtMTA3
-LDE3ICsxMTEsMjggQEAgc3RhdGljIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyB4aWxpbnhfZmJf
-dmFyID0gewo+PiDCoCDCoCDCoCAuYWN0aXZhdGUgPSDCoCDCoCBGQl9BQ1RJVkFURV9OT1cKPj4g
-wqB9Owo+Pgo+PiArCj4+ICsjZGVmaW5lIFBMQl9BQ0NFU1NfRkxBRyDCoCDCoCDCoDB4MSDCoCDC
-oCDCoCDCoCDCoCDCoCAvKiAxID0gUExCLCAwID0gRENSICovCj4+ICsKPj4gwqBzdHJ1Y3QgeGls
-aW54ZmJfZHJ2ZGF0YSB7Cj4+Cj4+IMKgIMKgIMKgIHN0cnVjdCBmYl9pbmZvIMKgaW5mbzsgwqAg
-wqAgwqAgwqAgwqAgLyogRkIgZHJpdmVyIGluZm8gcmVjb3JkICovCj4+Cj4+IC0gwqAgwqAgdTMy
-IMKgIMKgIMKgIMKgIMKgIMKgIHJlZ3NfcGh5czsgwqAgwqAgwqAvKiBwaHlzLiBhZGRyZXNzIG9m
-IHRoZSBjb250cm9sIHJlZ2lzdGVycyAqLwo+PiAtIMKgIMKgIHUzMiBfX2lvbWVtIMKgIMKgICpy
-ZWdzOyDCoCDCoCDCoCDCoCDCoC8qIHZpcnQuIGFkZHJlc3Mgb2YgdGhlIGNvbnRyb2wgcmVnaXN0
-ZXJzICovCj4+ICsgwqAgwqAgcGh5c19hZGRyX3QgwqAgwqAgcmVnc19waHlzOyDCoCDCoCDCoC8q
-IHBoeXMuIGFkZHJlc3Mgb2YgdGhlIGNvbnRyb2wKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZWdpc3RlcnMgKi8K
-Pgo+IFRoZXJlIGFyZSBmaWVsZHMgZmJfaW5mby5maXgubW1pb19zdGFydCBhbmQgZmJfaW5mby5m
-aXgubW1pb19sZW4gZm9yCj4gcGh5c2ljYWwgSU8gcmFuZ2UgdXNlZCBieSBmcmFtZWJ1ZmZlci4g
-VGhlcmUgaXMgbm8gZmllbGQgZm9yCj4gdmlydHVhbCBJTyBhZGRyZXNzIHNvIHRoZSAicmVncyIg
-YmVsb3cgbXVzdCBzdGF5LgoKSWYgSSdtIG5vdCBtaXN0YWtlbiwgdGhpcyBkcml2ZXIgaXMgdXNl
-ZCBvbiBwcGM0NHgsIHdoZXJlIHBoeXNfYWRkcl90IGlzIDY0LWJpdCwKc28gdGhlIDMyLWJpdCB1
-bnNpZ25lZCBsb25nIGZiX2luZm8uZml4Lm1taW9fc3RhcnQgaXMgbm90IGxhcmdlIGVub3VnaAp0
-byBob2xkIHRoZQpwaHlzaWNhbCBhZGRyZXNzLgoKR3J7b2V0amUsZWV0aW5nfXMsCgoJCQkJCQlH
-ZWVydAoKLS0KR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51eCBiZXlv
-bmQgaWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZwoKSW4gcGVyc29uYWwgY29udmVyc2F0aW9u
-cyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNlbGYgYSBoYWNrZXIuIEJ1dAp3aGVu
-IEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInByb2dyYW1tZXIiIG9yIHNv
-bWV0aGluZyBsaWtlIHRoYXQuCgkJCQkJCQkgICAgLS0gTGludXMgVG9ydmFsZHMKX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxp
-bmcgbGlzdApMaW51eHBwYy1kZXZAb3psYWJzLm9yZwpodHRwczovL296bGFicy5vcmcvbWFpbG1h
-bi9saXN0aW5mby9saW51eHBwYy1kZXY=
+From: Julia Lawall <julia@diku.dk>
+
+Eliminate direct accesses to the driver_data field.
+cf 82ab13b26f15f49be45f15ccc96bfa0b81dfd015
+
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+struct device *dev;
+expression E;
+type T;
+@@
+
+- dev->driver_data = (T)E
++ dev_set_drvdata(dev, E)
+
+@@
+struct device *dev;
+type T;
+@@
+
+- (T)dev->driver_data
++ dev_get_drvdata(dev)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/omap/omapfb_main.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff -u -p a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+--- a/drivers/video/omap/omapfb_main.c
++++ b/drivers/video/omap/omapfb_main.c
+@@ -1250,7 +1250,7 @@ static struct fb_ops omapfb_ops = {
+ static ssize_t omapfb_show_caps_num(struct device *dev,
+ 				    struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int plane;
+ 	size_t size;
+ 	struct omapfb_caps caps;
+@@ -1270,7 +1270,7 @@ static ssize_t omapfb_show_caps_num(stru
+ static ssize_t omapfb_show_caps_text(struct device *dev,
+ 				     struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int i;
+ 	struct omapfb_caps caps;
+ 	int plane;
+@@ -1317,7 +1317,7 @@ static DEVICE_ATTR(caps_text, 0444, omap
+ static ssize_t omapfb_show_panel_name(struct device *dev,
+ 				      struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 
+ 	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->panel->name);
+ }
+@@ -1326,7 +1326,7 @@ static ssize_t omapfb_show_bklight_level
+ 					 struct device_attribute *attr,
+ 					 char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int r;
+ 
+ 	if (fbdev->panel->get_bklight_level) {
+@@ -1341,7 +1341,7 @@ static ssize_t omapfb_store_bklight_leve
+ 					  struct device_attribute *attr,
+ 					  const char *buf, size_t size)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int r;
+ 
+ 	if (fbdev->panel->set_bklight_level) {
+@@ -1360,7 +1360,7 @@ static ssize_t omapfb_store_bklight_leve
+ static ssize_t omapfb_show_bklight_max(struct device *dev,
+ 				       struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int r;
+ 
+ 	if (fbdev->panel->get_bklight_level) {
+@@ -1393,7 +1393,7 @@ static struct attribute_group panel_attr
+ static ssize_t omapfb_show_ctrl_name(struct device *dev,
+ 				     struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 
+ 	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->ctrl->name);
+ }

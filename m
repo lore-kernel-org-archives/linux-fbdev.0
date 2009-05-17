@@ -1,79 +1,117 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Linux-fbdev-devel] [Bugme-new] [Bug 13285] New: INTELFB:
-	Colors display incorrectly
-Date: Sat, 16 May 2009 23:19:32 -0700
-Message-ID: <20090516231932.2e02647b.akpm@linux-foundation.org>
-References: <bug-13285-10286@http.bugzilla.kernel.org/>
-	<20090512151934.d7e6c54e.akpm@linux-foundation.org>
-	<20090517081743.92002707.krzysztof.h1@poczta.fm>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup
+	DCR in xilinxfb driver.
+Date: Sun, 17 May 2009 10:06:43 +0200
+Message-ID: <20090517100643.9d00e980.krzysztof.h1@poczta.fm>
+References: <20090515181237.22961.64270.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <20090517081743.92002707.krzysztof.h1@poczta.fm>
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
+In-Reply-To: <20090515181237.22961.64270.stgit@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=dri-devel>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: samanddeanus@yahoo.com, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org
+List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, John Linn <john.linn@xilinx.com>
 
-On Sun, 17 May 2009 08:17:43 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+Hi Grant and John,
 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Fri, 15 May 2009 12:19:17 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
+
+> Antonino,
 > 
-> The intelfb driver sets color map depending on currently active pipe. However, if an LVDS 
-> display is attached (like in laptop) the active pipe variable is never set. The default value is 
-> PIPE_A and can be wrong.
-> Set up the pipe variable during driver initialization after hardware state was read.
+
+Antonino is gone for quite a long time. I have reviewed your patch.
+I have two comments only. Both are of small caliber.
+
+> If you prefer, I'm willing to merge it via my powerpc tree.
 > 
-> I also found by experiment that if both pipes were enabled, the PIPE_B is used (active).
+
+As you prefer. If you want to send it here, CC it top Andrew Morton.
+
+>  drivers/video/xilinxfb.c |  290 ++++++++++++++++++++++++----------------------
+>  1 files changed, 151 insertions(+), 139 deletions(-)
 > 
-> The problem is visible in the 8 bpp mode if colors above 15 are used. The first 16 color
-> entries are displayed correctly.
 > 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> ---
-> This is not a regression. I have reproduced it in the 2.6.28 easily.
+> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> index 40a3a2a..7a868bd 100644
+> --- a/drivers/video/xilinxfb.c
+> +++ b/drivers/video/xilinxfb.c
 
-hm, Dean's original report had
+(...)
 
-    This does not occur in kernel 2.6.29 -- I can see the Tasmanian
-    devil in a penguin mask (Tuz) just fine and can view images, etc on
-    the framebuffer.
-
-> Dean, please test the patch.
-
-Yes please.
-
-> diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
-> index ace14fe..b47f6dd 100644
-> --- a/drivers/video/intelfb/intelfbdrv.c
-> +++ b/drivers/video/intelfb/intelfbdrv.c
-> @@ -871,6 +871,12 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+> @@ -107,17 +111,28 @@ static struct fb_var_screeninfo xilinx_fb_var = {
+>  	.activate =	FB_ACTIVATE_NOW
+>  };
 >  
->  	intelfbhw_print_hw_state(dinfo, &dinfo->save_state);
->  
-> +	/* Check whether pipe A or pipe B is enabled. */
-> +	if (dinfo->save_state.pipe_a_conf & PIPECONF_ENABLE)
-> +		dinfo->pipe = PIPE_A;
-> +	if (dinfo->save_state.pipe_b_conf & PIPECONF_ENABLE)
-> +		dinfo->pipe = PIPE_B;
 > +
->  	if (bailearly == 18)
->  		bailout(dinfo);
+> +#define PLB_ACCESS_FLAG	0x1		/* 1 = PLB, 0 = DCR */
+> +
+>  struct xilinxfb_drvdata {
+>  
+>  	struct fb_info	info;		/* FB driver info record */
+>  
+> -	u32		regs_phys;	/* phys. address of the control registers */
+> -	u32 __iomem	*regs;		/* virt. address of the control registers */
+> +	phys_addr_t	regs_phys;	/* phys. address of the control
+> +						registers */
+
+There are fields fb_info.fix.mmio_start and fb_info.fix.mmio_len for
+physical IO range used by framebuffer. There is no field for
+virtual IO address so the "regs" below must stay.
+
+> +	void __iomem	*regs;		/* virt. address of the control
+> +						registers */
+> +
+> +	dcr_host_t      dcr_host;
+> +	unsigned int    dcr_start;
+> +	unsigned int    dcr_len;
+>  
+>  	void		*fb_virt;	/* virt. address of the frame buffer */
+>  	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
+>  	int		fb_alloced;	/* Flag, was the fb memory alloced? */
+>  
+> +	u8 		flags;		/* features of the driver */
+> +
+>  	u32		reg_ctrl_default;
+>  
+>  	u32		pseudo_palette[PALETTE_ENTRIES_NO];
+
+(...)
+
+> @@ -247,7 +266,10 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
+>  	if (!drvdata->fb_virt) {
+>  		dev_err(dev, "Could not allocate frame buffer memory\n");
+>  		rc = -ENOMEM;
+> -		goto err_fbmem;
+> +		if (drvdata->flags & PLB_ACCESS_FLAG)
+> +			goto err_fbmem;
+> +		else
+> +			goto err_region;
+>  	}
+>  
+
+The code after labels err_fbmem and err_region is also
+modified so there is no need for the if clause here (just
+do "goto err_fbmem").
+
+>  	/* Clear (turn to black) the framebuffer */
 
 
-------------------------------------------------------------------------------
-Crystal Reports - New Free Runtime and 30 Day Trial
-Check out the new simplified licensing option that enables 
-unlimited royalty-free distribution of the report engine 
-for externally facing server and web deployment. 
-http://p.sf.net/sfu/businessobjects
---
+The rest of the patch is ok for me.
+
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Fantastyczne nagrody do zgarniecia!
+Zagraj >> http://link.interia.pl/f2177 

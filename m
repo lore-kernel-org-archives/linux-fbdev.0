@@ -1,22 +1,22 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [REPOST][PATCH 3/7] cg3: use standard fields
+Subject: [REPOST][PATCH 4/7] cg6: use standard fields
  for framebuffer physical address and length
-Date: Sun, 17 May 2009 14:30:28 +0200
-Message-ID: <20090517143028.3024bca2.krzysztof.h1@poczta.fm>
+Date: Sun, 17 May 2009 14:30:37 +0200
+Message-ID: <20090517143037.ce3456ca.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M5fPo-0001Qq-0K
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M5fQ3-0007jx-FU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:24:28 +0000
+	Sun, 17 May 2009 12:24:43 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M5fPm-00074t-Sw for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:24:27 +0000
+	id 1M5fPt-00075t-Pc for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 May 2009 12:24:38 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,46 +35,71 @@ Use standard fields fbinfo.fix.smem_start and fbinfo.fix.smem_len
 for physical address and length of framebuffer.
 
 This also fixes output of the 'fbset -i' command - address and length 
-of the framebuffer is displayed correctly.
+of the framebuffer are displayed correctly.
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Acked-by: David S. Miller <davem@davemloft.net>
 ---
+I tested this patch on a real hardware (SS20 + TGX card).
 
-diff -urp linux-orig/drivers/video/cg3.c linux-2.6.30/drivers/video/cg3.c
---- linux-orig/drivers/video/cg3.c	2008-10-13 18:03:36.000000000 +0200
-+++ linux-2.6.30/drivers/video/cg3.c	2009-05-04 00:49:43.000000000 +0200
-@@ -118,9 +118,7 @@ struct cg3_par {
- #define CG3_FLAG_BLANKED	0x00000001
- #define CG3_FLAG_RDI		0x00000002
+diff -urp linux-orig/drivers/video/cg6.c linux-2.6.30/drivers/video/cg6.c
+--- linux-orig/drivers/video/cg6.c	2008-10-13 18:03:36.000000000 +0200
++++ linux-2.6.30/drivers/video/cg6.c	2009-05-04 00:49:28.000000000 +0200
+@@ -263,9 +263,7 @@ struct cg6_par {
+ 	u32			flags;
+ #define CG6_FLAG_BLANKED	0x00000001
  
 -	unsigned long		physbase;
  	unsigned long		which_io;
 -	unsigned long		fbsize;
  };
  
- /**
-@@ -231,17 +229,15 @@ static int cg3_mmap(struct fb_info *info
- 	struct cg3_par *par = (struct cg3_par *)info->par;
+ static int cg6_sync(struct fb_info *info)
+@@ -596,16 +594,14 @@ static int cg6_mmap(struct fb_info *info
+ 	struct cg6_par *par = (struct cg6_par *)info->par;
  
- 	return sbusfb_mmap_helper(cg3_mmap_map,
+ 	return sbusfb_mmap_helper(cg6_mmap_map,
 -				  par->physbase, par->fbsize,
 +				  info->fix.smem_start, info->fix.smem_len,
- 				  par->which_io,
- 				  vma);
+ 				  par->which_io, vma);
  }
  
- static int cg3_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ static int cg6_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
  {
--	struct cg3_par *par = (struct cg3_par *) info->par;
+-	struct cg6_par *par = (struct cg6_par *)info->par;
 -
  	return sbusfb_ioctl_helper(cmd, arg, info,
--				   FBTYPE_SUN3COLOR, 8, par->fbsize);
-+				   FBTYPE_SUN3COLOR, 8, info->fix.smem_len);
+-				   FBTYPE_SUNFAST_COLOR, 8, par->fbsize);
++				   FBTYPE_SUNFAST_COLOR, 8, info->fix.smem_len);
  }
  
  /*
-@@ -368,7 +364,7 @@ static int __devinit cg3_probe(struct of
+@@ -631,12 +627,12 @@ static void __devinit cg6_init_fix(struc
+ 		break;
+ 	};
+ 	if (((conf >> CG6_FHC_REV_SHIFT) & CG6_FHC_REV_MASK) >= 11) {
+-		if (par->fbsize <= 0x100000)
++		if (info->fix.smem_len <= 0x100000)
+ 			cg6_card_name = "TGX";
+ 		else
+ 			cg6_card_name = "TGX+";
+ 	} else {
+-		if (par->fbsize <= 0x100000)
++		if (info->fix.smem_len <= 0x100000)
+ 			cg6_card_name = "GX";
+ 		else
+ 			cg6_card_name = "GX+";
+@@ -738,7 +734,8 @@ static void cg6_unmap_regs(struct of_dev
+ 		of_iounmap(&op->resource[0], par->fhc, sizeof(u32));
+ 
+ 	if (info->screen_base)
+-		of_iounmap(&op->resource[0], info->screen_base, par->fbsize);
++		of_iounmap(&op->resource[0], info->screen_base,
++			   info->fix.smem_len);
+ }
+ 
+ static int __devinit cg6_probe(struct of_device *op,
+@@ -759,7 +756,7 @@ static int __devinit cg6_probe(struct of
  
  	spin_lock_init(&par->lock);
  
@@ -83,50 +108,37 @@ diff -urp linux-orig/drivers/video/cg3.c linux-2.6.30/drivers/video/cg3.c
  	par->which_io = op->resource[0].flags & IORESOURCE_BITS;
  
  	sbusfb_fill_var(&info->var, dp, 8);
-@@ -382,7 +378,7 @@ static int __devinit cg3_probe(struct of
+@@ -769,11 +766,11 @@ static int __devinit cg6_probe(struct of
  
  	linebytes = of_getintprop_default(dp, "linebytes",
  					  info->var.xres);
 -	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
 +	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
  
- 	par->regs = of_ioremap(&op->resource[0], CG3_REGS_OFFSET,
- 			       sizeof(struct cg3_regs), "cg3 regs");
-@@ -392,7 +388,7 @@ static int __devinit cg3_probe(struct of
- 	info->flags = FBINFO_DEFAULT;
- 	info->fbops = &cg3_ops;
- 	info->screen_base = of_ioremap(&op->resource[0], CG3_RAM_OFFSET,
--				       par->fbsize, "cg3 ram");
-+				       info->fix.smem_len, "cg3 ram");
- 	if (!info->screen_base)
+ 	dblbuf = of_getintprop_default(dp, "dblbuf", 0);
+ 	if (dblbuf)
+-		par->fbsize *= 4;
++		info->fix.smem_len *= 4;
+ 
+ 	par->fbc = of_ioremap(&op->resource[0], CG6_FBC_OFFSET,
+ 				4096, "cgsix fbc");
+@@ -792,7 +789,7 @@ static int __devinit cg6_probe(struct of
+ 	info->fbops = &cg6_ops;
+ 
+ 	info->screen_base = of_ioremap(&op->resource[0], CG6_RAM_OFFSET,
+-					par->fbsize, "cgsix ram");
++					info->fix.smem_len, "cgsix ram");
+ 	if (!par->fbc || !par->tec || !par->thc ||
+ 	    !par->bt || !par->fhc || !info->screen_base)
  		goto out_unmap_regs;
+@@ -817,7 +814,7 @@ static int __devinit cg6_probe(struct of
  
-@@ -418,7 +414,7 @@ static int __devinit cg3_probe(struct of
- 	dev_set_drvdata(&op->dev, info);
- 
- 	printk(KERN_INFO "%s: cg3 at %lx:%lx\n",
--	       dp->full_name, par->which_io, par->physbase);
-+	       dp->full_name, par->which_io, info->fix.smem_start);
+ 	printk(KERN_INFO "%s: CGsix [%s] at %lx:%lx\n",
+ 	       dp->full_name, info->fix.id,
+-	       par->which_io, par->physbase);
++	       par->which_io, info->fix.smem_start);
  
  	return 0;
- 
-@@ -426,7 +422,7 @@ out_dealloc_cmap:
- 	fb_dealloc_cmap(&info->cmap);
- 
- out_unmap_screen:
--	of_iounmap(&op->resource[0], info->screen_base, par->fbsize);
-+	of_iounmap(&op->resource[0], info->screen_base, info->fix.smem_len);
- 
- out_unmap_regs:
- 	of_iounmap(&op->resource[0], par->regs, sizeof(struct cg3_regs));
-@@ -447,7 +443,7 @@ static int __devexit cg3_remove(struct o
- 	fb_dealloc_cmap(&info->cmap);
- 
- 	of_iounmap(&op->resource[0], par->regs, sizeof(struct cg3_regs));
--	of_iounmap(&op->resource[0], info->screen_base, par->fbsize);
-+	of_iounmap(&op->resource[0], info->screen_base, info->fix.smem_len);
- 
- 	framebuffer_release(info);
  
 
 ----------------------------------------------------------------------

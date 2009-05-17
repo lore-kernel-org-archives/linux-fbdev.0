@@ -1,22 +1,22 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [REPOST][PATCH 7/7] tcx: use standard fields
+Subject: [REPOST][PATCH 6/7] p9100: use standard fields
  for framebuffer physical address and length
-Date: Sun, 17 May 2009 14:31:07 +0200
-Message-ID: <20090517143107.8fa3828c.krzysztof.h1@poczta.fm>
+Date: Sun, 17 May 2009 14:31:02 +0200
+Message-ID: <20090517143102.5d881de9.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M5fQO-0001UT-Un
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M5fQM-0008Oq-R5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:25:04 +0000
+	Sun, 17 May 2009 12:25:02 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M5fQN-0008SJ-Md for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 17 May 2009 12:25:04 +0000
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M5fQI-00079p-MH for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 17 May 2009 12:25:02 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -41,127 +41,98 @@ Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 Acked-by: David S. Miller <davem@davemloft.net>
 ---
 
-diff -urp linux-orig/drivers/video/tcx.c linux-2.6.30/drivers/video/tcx.c
---- linux-orig/drivers/video/tcx.c	2008-10-13 18:03:36.000000000 +0200
-+++ linux-2.6.30/drivers/video/tcx.c	2009-05-04 00:59:47.000000000 +0200
-@@ -116,17 +116,16 @@ struct tcx_par {
+diff -urp linux-orig/drivers/video/p9100.c linux-2.6.30/drivers/video/p9100.c
+--- linux-orig/drivers/video/p9100.c	2008-10-13 18:03:36.000000000 +0200
++++ linux-2.6.30/drivers/video/p9100.c	2009-05-04 00:59:22.000000000 +0200
+@@ -134,9 +134,7 @@ struct p9100_par {
  	u32			flags;
- #define TCX_FLAG_BLANKED	0x00000001
+ #define P9100_FLAG_BLANKED	0x00000001
  
 -	unsigned long		physbase;
  	unsigned long		which_io;
 -	unsigned long		fbsize;
- 
- 	struct sbus_mmap_map	mmap_map[TCX_MMAP_ENTRIES];
- 	int			lowdepth;
  };
  
- /* Reset control plane so that WID is 8-bit plane. */
--static void __tcx_set_control_plane(struct tcx_par *par)
-+static void __tcx_set_control_plane(struct fb_info *info)
- {
-+	struct tcx_par *par = info->par;
- 	u32 __iomem *p, *pend;
+ /**
+@@ -224,18 +222,16 @@ static int p9100_mmap(struct fb_info *in
+ 	struct p9100_par *par = (struct p9100_par *)info->par;
  
- 	if (par->lowdepth)
-@@ -135,7 +134,7 @@ static void __tcx_set_control_plane(stru
- 	p = par->cplane;
- 	if (p == NULL)
- 		return;
--	for (pend = p + par->fbsize; p < pend; p++) {
-+	for (pend = p + info->fix.smem_len; p < pend; p++) {
- 		u32 tmp = sbus_readl(p);
- 
- 		tmp &= 0xffffff;
-@@ -149,7 +148,7 @@ static void tcx_reset(struct fb_info *in
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&par->lock, flags);
--	__tcx_set_control_plane(par);
-+	__tcx_set_control_plane(info);
- 	spin_unlock_irqrestore(&par->lock, flags);
- }
- 
-@@ -304,7 +303,7 @@ static int tcx_mmap(struct fb_info *info
- 	struct tcx_par *par = (struct tcx_par *)info->par;
- 
- 	return sbusfb_mmap_helper(par->mmap_map,
+ 	return sbusfb_mmap_helper(p9100_mmap_map,
 -				  par->physbase, par->fbsize,
 +				  info->fix.smem_start, info->fix.smem_len,
  				  par->which_io, vma);
  }
  
-@@ -316,7 +315,7 @@ static int tcx_ioctl(struct fb_info *inf
+ static int p9100_ioctl(struct fb_info *info, unsigned int cmd,
+ 		       unsigned long arg)
+ {
+-	struct p9100_par *par = (struct p9100_par *) info->par;
+-
+ 	/* Make it look like a cg3. */
  	return sbusfb_ioctl_helper(cmd, arg, info,
- 				   FBTYPE_TCXCOLOR,
- 				   (par->lowdepth ? 8 : 24),
--				   par->fbsize);
-+				   info->fix.smem_len);
+-				   FBTYPE_SUN3COLOR, 8, par->fbsize);
++				   FBTYPE_SUN3COLOR, 8, info->fix.smem_len);
  }
  
  /*
-@@ -358,10 +357,10 @@ static void tcx_unmap_regs(struct of_dev
- 			   par->bt, sizeof(struct bt_regs));
- 	if (par->cplane)
- 		of_iounmap(&op->resource[4],
--			   par->cplane, par->fbsize * sizeof(u32));
-+			   par->cplane, info->fix.smem_len * sizeof(u32));
- 	if (info->screen_base)
- 		of_iounmap(&op->resource[0],
--			   info->screen_base, par->fbsize);
-+			   info->screen_base, info->fix.smem_len);
- }
+@@ -271,7 +267,7 @@ static int __devinit p9100_probe(struct 
+ 	spin_lock_init(&par->lock);
  
- static int __devinit tcx_probe(struct of_device *op,
-@@ -391,7 +390,7 @@ static int __devinit tcx_probe(struct of
+ 	/* This is the framebuffer and the only resource apps can mmap.  */
+-	par->physbase = op->resource[2].start;
++	info->fix.smem_start = op->resource[2].start;
+ 	par->which_io = op->resource[2].flags & IORESOURCE_BITS;
  
- 	linebytes = of_getintprop_default(dp, "linebytes",
- 					  info->var.xres);
+ 	sbusfb_fill_var(&info->var, dp, 8);
+@@ -280,7 +276,7 @@ static int __devinit p9100_probe(struct 
+ 	info->var.blue.length = 8;
+ 
+ 	linebytes = of_getintprop_default(dp, "linebytes", info->var.xres);
 -	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
 +	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
  
- 	par->tec = of_ioremap(&op->resource[7], 0,
- 				  sizeof(struct tcx_tec), "tcx tec");
-@@ -400,7 +399,7 @@ static int __devinit tcx_probe(struct of
- 	par->bt = of_ioremap(&op->resource[8], 0,
- 				 sizeof(struct bt_regs), "tcx dac");
- 	info->screen_base = of_ioremap(&op->resource[0], 0,
--					   par->fbsize, "tcx ram");
-+					   info->fix.smem_len, "tcx ram");
- 	if (!par->tec || !par->thc ||
- 	    !par->bt || !info->screen_base)
+ 	par->regs = of_ioremap(&op->resource[0], 0,
+ 			       sizeof(struct p9100_regs), "p9100 regs");
+@@ -290,7 +286,7 @@ static int __devinit p9100_probe(struct 
+ 	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &p9100_ops;
+ 	info->screen_base = of_ioremap(&op->resource[2], 0,
+-				       par->fbsize, "p9100 ram");
++				       info->fix.smem_len, "p9100 ram");
+ 	if (!info->screen_base)
  		goto out_unmap_regs;
-@@ -408,7 +407,7 @@ static int __devinit tcx_probe(struct of
- 	memcpy(&par->mmap_map, &__tcx_mmap_map, sizeof(par->mmap_map));
- 	if (!par->lowdepth) {
- 		par->cplane = of_ioremap(&op->resource[4], 0,
--					     par->fbsize * sizeof(u32),
-+					     info->fix.smem_len * sizeof(u32),
- 					     "tcx cplane");
- 		if (!par->cplane)
- 			goto out_unmap_regs;
-@@ -419,7 +418,7 @@ static int __devinit tcx_probe(struct of
- 		par->mmap_map[6].size = SBUS_MMAP_EMPTY;
- 	}
  
--	par->physbase = op->resource[0].start;
-+	info->fix.smem_start = op->resource[0].start;
- 	par->which_io = op->resource[0].flags & IORESOURCE_BITS;
+@@ -311,7 +307,7 @@ static int __devinit p9100_probe(struct 
  
- 	for (i = 0; i < TCX_MMAP_ENTRIES; i++) {
-@@ -473,7 +472,7 @@ static int __devinit tcx_probe(struct of
- 	printk(KERN_INFO "%s: TCX at %lx:%lx, %s\n",
+ 	printk(KERN_INFO "%s: p9100 at %lx:%lx\n",
  	       dp->full_name,
- 	       par->which_io,
--	       par->physbase,
-+	       info->fix.smem_start,
- 	       par->lowdepth ? "8-bit only" : "24-bit depth");
+-	       par->which_io, par->physbase);
++	       par->which_io, info->fix.smem_start);
  
  	return 0;
+ 
+@@ -319,7 +315,7 @@ out_dealloc_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+ 
+ out_unmap_screen:
+-	of_iounmap(&op->resource[2], info->screen_base, par->fbsize);
++	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
+ 
+ out_unmap_regs:
+ 	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
+@@ -340,7 +336,7 @@ static int __devexit p9100_remove(struct
+ 	fb_dealloc_cmap(&info->cmap);
+ 
+ 	of_iounmap(&op->resource[0], par->regs, sizeof(struct p9100_regs));
+-	of_iounmap(&op->resource[2], info->screen_base, par->fbsize);
++	of_iounmap(&op->resource[2], info->screen_base, info->fix.smem_len);
+ 
+ 	framebuffer_release(info);
+ 
 
 ----------------------------------------------------------------------
-Fantastyczne nagrody do zgarniecia!
-Zagraj >> http://link.interia.pl/f2177 
+Zrob sobie prezent. Wygraj nagrode!
+Sprawdz >>  http://link.interia.pl/f2176 
 
 
 

@@ -1,29 +1,25 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: Re: [PATCH 01/11] video: Add support for
-	the	Avionic Design Xanthos framebuffer.
-Date: Mon, 18 May 2009 15:55:46 +0200
-Message-ID: <20090518135546.GA7364@avionic-design.de>
-References: <1242294422-10478-1-git-send-email-thierry.reding@avionic-design.de>
-	<4A0C334B.9040008@compulab.co.il>
-	<20090516112243.44194c20.krzysztof.h1@poczta.fm>
-	<20090518085300.GA14909@avionic-design.de>
-	<20090518144028.9b8dbc3f.krzysztof.h1@poczta.fm>
+From: Werner LEMBERG <wl@gnu.org>
+Subject: Re: bug #13249 - problem with intelfb on i845gm
+Date: Mon, 18 May 2009 15:29:03 +0200 (CEST)
+Message-ID: <20090518.152903.193209423.wl@gnu.org>
+References: <20090517140249.d3a1888c.krzysztof.h1@poczta.fm>
+	<20090518.124818.237161585.wl@gnu.org>
+	<20090518145125.f975ae2b.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <thierry.reding@avionic-design.de>)
-	id 1M63P9-0001lj-T8 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 May 2009 14:01:23 +0000
-Received: from moutng.kundenserver.de ([212.227.126.186])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M63P7-0001An-Fw for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 May 2009 14:01:23 +0000
-Content-Disposition: inline
-In-Reply-To: <20090518144028.9b8dbc3f.krzysztof.h1@poczta.fm>
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <werner.lemberg@gmx.de>) id 1M62uE-0004UH-DX
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 18 May 2009 13:29:26 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1M62u9-0003h5-U4 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 18 May 2009 13:29:26 +0000
+In-Reply-To: <20090518145125.f975ae2b.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,62 +29,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk, "Antonino A. Daplas" <adaplas@gmail.com>
+To: krzysztof.h1@poczta.fm
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-* Krzysztof Helt wrote:
-> On Mon, 18 May 2009 10:53:01 +0200
-> Thierry Reding <thierry.reding@avionic-design.de> wrote:
-[...]
-> > > I have no comments to rest of the patch so I removed it.
-> > > 
-> > > I have a general comment that you should make your driver
-> > > conform to the fbdev API (check_var/set_par) for mode setting.
-> > > I know you have the scaler, so leave the adfxfb_ioctl to handle it.
-> > > If you define the set_par/check_var functions to handle size of
-> > > the overlay's input (without scaling) and color format one can
-> > > use standard FBIOPUT_VSCREENINFO and 
-> > > FBIOGET_VSCREENINFO ioctls to set and read your overlay.
-> > > If the overlay should be scaled use the custom ioctls to set the 
-> > > scaling factors only.
-> > > Currently, your driver looks like it wants to work around the
-> > > fbdev API. See the skeletonfb.c for guidance.
-> > 
-> > I was under the impression that FBIOPUT_SCREENINFO was used to set the
-> > framebuffer resolution, which can be (even usually is) different from
-> > that of the overlay. How can I distinguish between which of the video
-> > pages (framebuffer or overlay) should be modified?
-> > 
+
+> What I see here is that for 2.6.27 you use the VESA framebuffer
+> while you do not use it for the 2.6.28
 > 
-> The FBIOPUT_SCREENINFO is used for the framebuffer and not the overlay.
-> I got an impression that your framebuffer has a scaler and can be scaled to
-> display resolution without changing framebuffer resolution.
+> Compare your configs:
+> 2.6.27 : CONFIG_FB_VESA=y
+> 2.6.28: # CONFIG_FB_VESA is not set
 
-It is possible to use the scaler for that purpose, but we've never done (or
-needed) that. The framebuffer always runs at the native resolution (the
-processor board is tightly coupled to the rest of the hardware, including
-display). The scaler is only used to take arbitrary-sized images and resize
-them to another arbitrary size for display in the overlay (used for video
-playback, for instance).
+This is intentional.  Reason is that in 2.6.28 option
+`CONFIG_FB_BOOT_VESA_SUPPORT' has been added, and it seems that this
+change introduced a bug.
 
-> How do you program framebuffer registers? Usually, there is a set_par()
-> function to do this. If you have a framebuffer that cannot change a resolution
-> (either fixed resolution framebuffer or with resolution which can be set only
-> during board set up) do not define fb_check_var() or check there if the mode
-> has not changed.
+> My advice is try using the Intel framebuffer (change it to Y not 'M'
+> like module).  It should be faster than VESA on your hardware.
+> Unselect VESA.
 
-The framebuffer can actually change the resolution, though we've never tried
-that in practice. Each derived board comes with a default predefined
-resolution that is never changed (because the displays we use don't support
-mode setting either). Therefore changing the resolution does not make sense.
-I guess it is better, as you say, to not define fb_check_var() in this case
-until at some point it may become relevant.
+I'm doing a git bisect right now to find out why
+CONFIG_FB_BOOT_VESA_SUPPORT doesn't work as advertised.
 
-> Regards,
-> Krzysztof
 
-Thierry
-
+    Werner
 
 ------------------------------------------------------------------------------
 Crystal Reports - New Free Runtime and 30 Day Trial

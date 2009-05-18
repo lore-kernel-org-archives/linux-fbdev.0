@@ -1,38 +1,70 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Add PLB support and cleanup
-	DCR in xilinxfb driver.
-Date: Mon, 18 May 2009 13:20:54 +1000
-Message-ID: <1242616854.18075.24.camel@pasglop>
-References: <20090515181237.22961.64270.stgit@localhost.localdomain>
-	<20090517100643.9d00e980.krzysztof.h1@poczta.fm>
-	<10f740e80905170125ie1c1aew441de30874e6a72f@mail.gmail.com>
-	<20090517122644.f537f500.krzysztof.h1@poczta.fm>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH] [drivers] [fb] S3C-fb: PM fix
+Date: Mon, 18 May 2009 08:05:46 +0200
+Message-ID: <E4D3F24EA6C9E54F817833EAE0D912AC0226526883@bssrvexch01.BS.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org>
-In-Reply-To: <20090517122644.f537f500.krzysztof.h1@poczta.fm>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+Content-language: en-US
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/mailman/options/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@ozlabs.org
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>, Suneel <suneelg@xilinx.com>, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>, John Linn <john.linn@xilinx.com>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Andrew Morton <akpm@linux-foundation.org>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Sun, 2009-05-17 at 12:26 +0200, Krzysztof Helt wrote:
+Restore correctly FrameBuffer registers state in resume function.
 
-> If so please ignore my comment.
-> 
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-Andrew, will you merge this or should I stick it into the powerpc.git
-tree ?
+--- 
 
-Cheers,
-Ben.
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 5e9c630..d3a568e 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -947,7 +947,8 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 	int win;
+ 
+ 	for (win = 0; win <= S3C_FB_MAX_WIN; win++)
+-		s3c_fb_release_win(sfb, sfb->windows[win]);
++		if (sfb->windows[win])
++			s3c_fb_release_win(sfb, sfb->windows[win]);
+ 
+ 	iounmap(sfb->regs);
+ 
+@@ -985,11 +986,20 @@ static int s3c_fb_suspend(struct platform_device *pdev, pm_message_t state)
+ static int s3c_fb_resume(struct platform_device *pdev)
+ {
+ 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
++	struct s3c_fb_platdata *pd = sfb->pdata;
+ 	struct s3c_fb_win *win;
+ 	int win_no;
+ 
+ 	clk_enable(sfb->bus_clk);
+ 
++	/* setup registers */
++	writel(pd->vidcon1, sfb->regs + VIDCON1);
++
++	/* zero all windows before we do anything */
++	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++)
++		s3c_fb_clear_win(sfb, win_no);
++
++	/* restore framebuffers */
+ 	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
+ 		win = sfb->windows[win_no];
+ 		if (!win)
+
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

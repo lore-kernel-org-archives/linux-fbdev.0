@@ -1,10 +1,8 @@
-From: Werner LEMBERG <wl@gnu.org>
-Subject: Re: bug #13249 - problem with intelfb on i845gm
-Date: Mon, 18 May 2009 15:29:03 +0200 (CEST)
-Message-ID: <20090518.152903.193209423.wl@gnu.org>
-References: <20090517140249.d3a1888c.krzysztof.h1@poczta.fm>
-	<20090518.124818.237161585.wl@gnu.org>
-	<20090518145125.f975ae2b.krzysztof.h1@poczta.fm>
+From: Harald Welte <HaraldWelte@viatech.com>
+Subject: [PATCH 1/3] viafb: Fix various resource leaks
+	during module_init()
+Date: Tue, 19 May 2009 11:51:05 +0800
+Message-ID: <20090519035105.GX19746@prithivi.gnumonks.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,14 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <werner.lemberg@gmx.de>) id 1M62uE-0004UH-DX
+	(envelope-from <HaraldWelte@viatech.com>) id 1M6GQc-00074p-OK
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 May 2009 13:29:26 +0000
-Received: from mail.gmx.net ([213.165.64.20])
-	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1M62u9-0003h5-U4 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 18 May 2009 13:29:26 +0000
-In-Reply-To: <20090518145125.f975ae2b.krzysztof.h1@poczta.fm>
+	Tue, 19 May 2009 03:55:46 +0000
+Received: from ganesha.gnumonks.org ([213.95.27.120])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M6GQW-00042n-NN
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 May 2009 03:55:46 +0000
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,30 +28,140 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
+The current code executed from module_init() in viafb does not have
+proper error checking and [partial] resoure release paths in case
+an error happens half way through driver initialization.
 
-> What I see here is that for 2.6.27 you use the VESA framebuffer
-> while you do not use it for the 2.6.28
-> 
-> Compare your configs:
-> 2.6.27 : CONFIG_FB_VESA=y
-> 2.6.28: # CONFIG_FB_VESA is not set
+This patch adresses the most obvious of those issues, such as a
+leftover i2c bus if module_init (and thus module load) fails.
 
-This is intentional.  Reason is that in 2.6.28 option
-`CONFIG_FB_BOOT_VESA_SUPPORT' has been added, and it seems that this
-change introduced a bug.
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+---
+ drivers/video/via/viafbdev.c |   51 +++++++++++++++++++++++++++++++----------
+ 1 files changed, 38 insertions(+), 13 deletions(-)
 
-> My advice is try using the Intel framebuffer (change it to Y not 'M'
-> like module).  It should be faster than VESA on your hardware.
-> Unselect VESA.
-
-I'm doing a git bisect right now to find out why
-CONFIG_FB_BOOT_VESA_SUPPORT doesn't work as advertised.
-
-
-    Werner
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index a0fec29..61dcb13 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 1998-2009 VIA Technologies, Inc. All Rights Reserved.
+  * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
+ 
+  * This program is free software; you can redistribute it and/or
+@@ -2106,7 +2106,7 @@ static int __devinit via_pci_probe(void)
+ 	unsigned long default_xres, default_yres;
+ 	char *tmpc, *tmpm;
+ 	char *tmpc_sec, *tmpm_sec;
+-	int vmode_index;
++	int rc, vmode_index;
+ 	u32 tmds_length, lvds_length, crt_length, chip_length, viafb_par_length;
+ 
+ 	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
+@@ -2127,7 +2127,7 @@ static int __devinit via_pci_probe(void)
+ 	tmds_length + crt_length + chip_length, NULL);
+ 	if (!viafbinfo) {
+ 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
+-		return -ENODEV;
++		return -ENOMEM;
+ 	}
+ 
+ 	viaparinfo = (struct viafb_par *)viafbinfo->par;
+@@ -2154,7 +2154,9 @@ static int __devinit via_pci_probe(void)
+ 		viafb_dual_fb = 0;
+ 
+ 	/* Set up I2C bus stuff */
+-	viafb_create_i2c_bus(viaparinfo);
++	rc = viafb_create_i2c_bus(viaparinfo);
++	if (rc)
++		goto out_fb_release;
+ 
+ 	viafb_init_chip_info();
+ 	viafb_get_fb_info(&viaparinfo->fbmem, &viaparinfo->memsize);
+@@ -2166,7 +2168,8 @@ static int __devinit via_pci_probe(void)
+ 
+ 	if (!viaparinfo->fbmem_virt) {
+ 		printk(KERN_INFO "ioremap failed\n");
+-		return -1;
++		rc = -EIO;
++		goto out_delete_i2c;
+ 	}
+ 
+ 	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
+@@ -2279,7 +2282,7 @@ static int __devinit via_pci_probe(void)
+ 			printk(KERN_ERR
+ 			"allocate the second framebuffer struct error\n");
+ 			framebuffer_release(viafbinfo);
+-			return -ENOMEM;
++			goto out_delete_i2c;
+ 		}
+ 		viaparinfo1 = viafbinfo1->par;
+ 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
+@@ -2340,21 +2343,26 @@ static int __devinit via_pci_probe(void)
+ 	viafb_update_viafb_par(viafbinfo);
+ 	viafb_update_fix(&viafbinfo->fix, viafbinfo);
+ 	default_var.activate = FB_ACTIVATE_NOW;
+-	fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
++	rc = fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
++	if (rc)
++		goto out_fb1_release;
+ 
+ 	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
+ 	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)) {
+-		if (register_framebuffer(viafbinfo1) < 0)
+-			return -EINVAL;
++		rc = register_framebuffer(viafbinfo1);
++		if (rc)
++			goto out_dealloc_cmap;
+ 	}
+-	if (register_framebuffer(viafbinfo) < 0)
+-		return -EINVAL;
++	rc = register_framebuffer(viafbinfo);
++	if (rc)
++		goto out_fb1_unreg_lcd_cle266;
+ 
+ 	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
+ 			|| (viaparinfo->chip_info->gfx_chip_name !=
+ 			UNICHROME_CLE266))) {
+-		if (register_framebuffer(viafbinfo1) < 0)
+-			return -EINVAL;
++		rc = register_framebuffer(viafbinfo1);
++		if (rc)
++			goto out_fb_unreg;
+ 	}
+ 	DEBUG_MSG(KERN_INFO "fb%d: %s frame buffer device %dx%d-%dbpp\n",
+ 		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
+@@ -2363,6 +2371,23 @@ static int __devinit via_pci_probe(void)
+ 	viafb_init_proc(&viaparinfo->proc_entry);
+ 	viafb_init_dac(IGA2);
+ 	return 0;
++
++out_fb_unreg:
++	unregister_framebuffer(viafbinfo);
++out_fb1_unreg_lcd_cle266:
++	if (viafbinfo1 && (viafb_primary_dev == LCD_Device)
++            && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
++		unregister_framebuffer(viafbinfo1);
++out_dealloc_cmap:
++	fb_dealloc_cmap(&viafbinfo->cmap);
++out_fb1_release:
++	if (viafbinfo1)
++		framebuffer_release(viafbinfo1);
++out_delete_i2c:
++	viafb_delete_i2c_buss(viaparinfo);
++out_fb_release:
++	framebuffer_release(viafbinfo);
++	return rc;
+ }
+ 
+ static void __devexit via_pci_remove(void)
+-- 
+1.6.2.4
 
 ------------------------------------------------------------------------------
 Crystal Reports - New Free Runtime and 30 Day Trial

@@ -1,109 +1,170 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 2/2] viafb: use proper pci config API
-Date: Tue, 19 May 2009 23:24:27 +0200
-Message-ID: <20090519232427.ca64ac83.krzysztof.h1@poczta.fm>
-References: <20090519083534.GI19746@prithivi.gnumonks.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 05/10] ARM: OMAP1: Make 770 LCD work
+Date: Tue, 19 May 2009 16:37:32 -0700
+Message-ID: <20090519233732.12760.34595.stgit@localhost>
+References: <20090519232905.12760.15490.stgit@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M6Whg-00057v-Cu
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 May 2009 21:18:28 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M6Whb-0008FW-ML for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 May 2009 21:18:28 +0000
-In-Reply-To: <20090519083534.GI19746@prithivi.gnumonks.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Harald Welte <HaraldWelte@viatech.com>
-Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20090519232905.12760.15490.stgit@localhost>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Imre Deak <imre.deak@nokia.com>, Andrew de Quincey <adq_dvb@lidskialf.net>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 19 May 2009 16:35:34 +0800
-Harald Welte <HaraldWelte@viatech.com> wrote:
+Make 770 LCD work by passing the clock from platform data.
+Also remove the old unused functions.
 
-> This patch alters viafb to use the proper Linux in-kernel API to access
-> PCI configuration space, rather than poking at I/O ports by itself.
-> 
-> It also removes a minor inconsistency with naming of constants for the
-> PCI device ID of the FUNCTION3 devices.
-> 
-> Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-> ---
->  drivers/video/via/hw.c |   64 +++++++++++++++++++++++++++++------------------
->  drivers/video/via/hw.h |    4 +-
->  2 files changed, 41 insertions(+), 27 deletions(-)
-> 
-> diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-> index 6306c88..40b7c0c 100644
-> --- a/drivers/video/via/hw.c
-> +++ b/drivers/video/via/hw.c
-> @@ -2599,24 +2599,37 @@ static void disable_second_display_channel(void)
->  	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
->  }
->  
-> +static u_int16_t via_function3[] = {
-> +	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
-> +	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
-> +	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
-> +};
-> +
-> +/* Get the BIOS-configured framebuffer size from PCI configuration space
-> + * of function 3 in the respective chipset */
->  int viafb_get_fb_size_from_pci(void)
->  {
-> -	unsigned long configid, deviceid, FBSize = 0;
-> -	int VideoMemSize;
-> -	int DeviceFound = false;
-> -
-> -	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
-> -		outl(configid, (unsigned long)0xCF8);
-> -		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
-> -
-> -		switch (deviceid) {
-> -		case CLE266:
-> -		case KM400:
-> -			outl(configid + 0xE0, (unsigned long)0xCF8);
-> -			FBSize = inl((unsigned long)0xCFC);
-> -			DeviceFound = true;	/* Found device id */
-> -			break;
-> +	int i;
-> +	u_int8_t offset = 0;
-> +	u_int32_t FBSize;
-> +	u_int32_t VideoMemSize;
-> +
-> +	/* search for the "FUNCTION3" device in this chipset */
-> +	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
-> +		struct pci_dev *pdev;
-> +
-> +		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
-> +				      NULL);
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Signed-off-by: Andrew de Quincey <adq_dvb@lidskialf.net>
+Signed-off-by: Imre Deak <imre.deak@nokia.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap1/board-nokia770.c     |   16 ++++++++++++++++
+ arch/arm/plat-omap/include/mach/hwa742.h |    5 +----
+ drivers/video/omap/hwa742.c              |   26 ++++++++++----------------
+ 3 files changed, 27 insertions(+), 20 deletions(-)
 
-Can  you pass the pdev pointer from the probe function
-here and skip the whole searching of the PCI device?
+diff --git a/arch/arm/mach-omap1/board-nokia770.c b/arch/arm/mach-omap1/board-nokia770.c
+index 8780ca6..2c4785e 100644
+--- a/arch/arm/mach-omap1/board-nokia770.c
++++ b/arch/arm/mach-omap1/board-nokia770.c
+@@ -33,6 +33,7 @@
+ #include <mach/common.h>
+ #include <mach/dsp_common.h>
+ #include <mach/omapfb.h>
++#include <mach/hwa742.h>
+ #include <mach/lcd_mipid.h>
+ #include <mach/mmc.h>
+ #include <mach/usb.h>
+@@ -163,6 +164,20 @@ static struct spi_board_info nokia770_spi_board_info[] __initdata = {
+ 	},
+ };
+ 
++static struct hwa742_platform_data nokia770_hwa742_platform_data = {
++	.sys_ck 		= NULL,
++	.te_connected		= 1,
++};
++
++static void hwa742_dev_init(void)
++{
++	nokia770_hwa742_platform_data.sys_ck = clk_get(NULL, "bclk");
++	if (IS_ERR(nokia770_hwa742_platform_data.sys_ck)) {
++		printk(KERN_ERR "can't get HWA742 clock\n");
++	} else {
++		omapfb_set_ctrl_platform_data(&nokia770_hwa742_platform_data);
++	}
++}
+ 
+ /* assume no Mini-AB port */
+ 
+@@ -371,6 +386,7 @@ static void __init omap_nokia770_init(void)
+ 	omap_serial_init();
+ 	omap_register_i2c_bus(1, 100, NULL, 0);
+ 	omap_dsp_init();
++	hwa742_dev_init();
+ 	ads7846_dev_init();
+ 	mipid_dev_init();
+ 	omap_usb_init(&nokia770_usb_config);
+diff --git a/arch/arm/plat-omap/include/mach/hwa742.h b/arch/arm/plat-omap/include/mach/hwa742.h
+index 577f492..c00e05d 100644
+--- a/arch/arm/plat-omap/include/mach/hwa742.h
++++ b/arch/arm/plat-omap/include/mach/hwa742.h
+@@ -2,10 +2,7 @@
+ #define _HWA742_H
+ 
+ struct hwa742_platform_data {
+-	void		(*power_up)(struct device *dev);
+-	void		(*power_down)(struct device *dev);
+-	unsigned long	(*get_clock_rate)(struct device *dev);
+-
++	struct clk 	*sys_ck;
+ 	unsigned	te_connected:1;
+ };
+ 
+diff --git a/drivers/video/omap/hwa742.c b/drivers/video/omap/hwa742.c
+index 8aa6e47..1230476 100644
+--- a/drivers/video/omap/hwa742.c
++++ b/drivers/video/omap/hwa742.c
+@@ -133,8 +133,7 @@ struct {
+ 	struct lcd_ctrl_extif	*extif;
+ 	struct lcd_ctrl		*int_ctrl;
+ 
+-	void			(*power_up)(struct device *dev);
+-	void			(*power_down)(struct device *dev);
++	struct clk		*sys_ck;
+ } hwa742;
+ 
+ struct lcd_ctrl hwa742_ctrl;
+@@ -915,14 +914,13 @@ static void hwa742_suspend(void)
+ 	hwa742_set_update_mode(OMAPFB_UPDATE_DISABLED);
+ 	/* Enable sleep mode */
+ 	hwa742_write_reg(HWA742_POWER_SAVE, 1 << 1);
+-	if (hwa742.power_down != NULL)
+-		hwa742.power_down(hwa742.fbdev->dev);
++	clk_disable(hwa742.sys_ck);
+ }
+ 
+ static void hwa742_resume(void)
+ {
+-	if (hwa742.power_up != NULL)
+-		hwa742.power_up(hwa742.fbdev->dev);
++	clk_enable(hwa742.sys_ck);
++
+ 	/* Disable sleep mode */
+ 	hwa742_write_reg(HWA742_POWER_SAVE, 0);
+ 	while (1) {
+@@ -955,14 +953,13 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
+ 	omapfb_conf = fbdev->dev->platform_data;
+ 	ctrl_conf = omapfb_conf->ctrl_platform_data;
+ 
+-	if (ctrl_conf == NULL || ctrl_conf->get_clock_rate == NULL) {
++	if (ctrl_conf == NULL || ctrl_conf->sys_ck == NULL) {
+ 		dev_err(fbdev->dev, "HWA742: missing platform data\n");
+ 		r = -ENOENT;
+ 		goto err1;
+ 	}
+ 
+-	hwa742.power_down = ctrl_conf->power_down;
+-	hwa742.power_up = ctrl_conf->power_up;
++	hwa742.sys_ck = ctrl_conf->sys_ck;
+ 
+ 	spin_lock_init(&hwa742.req_lock);
+ 
+@@ -972,12 +969,11 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
+ 	if ((r = hwa742.extif->init(fbdev)) < 0)
+ 		goto err2;
+ 
+-	ext_clk = ctrl_conf->get_clock_rate(fbdev->dev);
++	ext_clk = clk_get_rate(hwa742.sys_ck);
+ 	if ((r = calc_extif_timings(ext_clk, &extif_mem_div)) < 0)
+ 		goto err3;
+ 	hwa742.extif->set_timings(&hwa742.reg_timings);
+-	if (hwa742.power_up != NULL)
+-		hwa742.power_up(fbdev->dev);
++	clk_enable(hwa742.sys_ck);
+ 
+ 	calc_hwa742_clk_rates(ext_clk, &sys_clk, &pix_clk);
+ 	if ((r = calc_extif_timings(sys_clk, &extif_mem_div)) < 0)
+@@ -1040,8 +1036,7 @@ static int hwa742_init(struct omapfb_device *fbdev, int ext_mode,
+ 
+ 	return 0;
+ err4:
+-	if (hwa742.power_down != NULL)
+-		hwa742.power_down(fbdev->dev);
++	clk_disable(hwa742.sys_ck);
+ err3:
+ 	hwa742.extif->cleanup();
+ err2:
+@@ -1055,8 +1050,7 @@ static void hwa742_cleanup(void)
+ 	hwa742_set_update_mode(OMAPFB_UPDATE_DISABLED);
+ 	hwa742.extif->cleanup();
+ 	hwa742.int_ctrl->cleanup();
+-	if (hwa742.power_down != NULL)
+-		hwa742.power_down(hwa742.fbdev->dev);
++	clk_disable(hwa742.sys_ck);
+ }
+ 
+ struct lcd_ctrl hwa742_ctrl = {
 
-Regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Audi kilka tysiecy zlotych taniej? Przebieraj wsrod tysiecy ogloszen!
-Sprawdz: http://link.interia.pl/f216f
-
-
-------------------------------------------------------------------------------
-Crystal Reports - New Free Runtime and 30 Day Trial
-Check out the new simplified licensing option that enables 
-unlimited royalty-free distribution of the report engine 
-for externally facing server and web deployment. 
-http://p.sf.net/sfu/businessobjects

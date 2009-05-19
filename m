@@ -1,10 +1,10 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: [PATCH 1/3] viafb: Fix various
-	resource	leaks during module_init()
-Date: Tue, 19 May 2009 17:21:30 +0800
-Message-ID: <20090519092130.GL19746@prithivi.gnumonks.org>
-References: <20090519035105.GX19746@prithivi.gnumonks.org>
-	<20090519100043.4785c0c0.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH 3/3] viafb: Add support for
+	the	VX855 chipset
+Date: Tue, 19 May 2009 17:23:56 +0800
+Message-ID: <20090519092356.GM19746@prithivi.gnumonks.org>
+References: <20090519035254.GZ19746@prithivi.gnumonks.org>
+	<20090519100748.e471ea6d.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,16 +12,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
 	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <HaraldWelte@viatech.com>) id 1M6LeZ-0008Dd-6K
+	(envelope-from <HaraldWelte@viatech.com>) id 1M6LeZ-0008DY-3I
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Tue, 19 May 2009 09:30:31 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
 	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M6LeK-0004Ha-LN
+	(Exim 4.69) id 1M6LeK-0004Hb-LN
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Tue, 19 May 2009 09:30:31 +0000
 Content-Disposition: inline
-In-Reply-To: <20090519100043.4785c0c0.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090519100748.e471ea6d.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,60 +34,28 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn, linux-fbdev-devel@lists.sourceforge.net
 
-Hi Krysztof,
+On Tue, May 19, 2009 at 10:07:48AM +0200, Krzysztof Helt wrote:
 
-thanks for your feedback.
+> I believe it is correct. I have no chance to test. 
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-On Tue, May 19, 2009 at 10:00:43AM +0200, Krzysztof Helt wrote:
+Thanks for your review.  Right now, nobody but VIA and OLPC has hardware to test,
+as far as I know.  This is why I'm pushing for this code to get included now,
+i.e. the kernel works on the hardware once it ships in quantity.
 
-> I strongly recommend not to duplicate standard fields: fb_info.fix.smem_base and 
-> fb_info.fix.smem_len  (and fb_info.screen_base and fb_info.screen_size).
-
-of course.  I have just started to dig into viafb, and there is a long list of
-issues that I'd like to improve over time. getting rid of a lot of global
-variables, duplicated fields, bringing it more in line with the kernel
-infrastructure as well as improving the overall code structure...
-
-> I would like to see conversion:
-> viainfo->fbmem => viaifbnfo->screen_base (physical address)
-> ? => viafbinfo->screen_size (physical size)
-> viaparinfo->fbmem_virt => viafbinfo->fix.smem_start (virtual address)
-> viaparinfo->memsize => viafbinfo->fix.smem_len (virtual size)
->
-> You may try dropping the global viaparinfo pointer as well (and just get it
-> as viafbinfo->par if needed).
+ 
+> > +/* For VT3409 */
+> > +#define VX855_IGA1_FIFO_MAX_DEPTH               400
+> > +#define VX855_IGA1_FIFO_THRESHOLD               320
+> > +#define VX855_IGA1_FIFO_HIGH_THRESHOLD          320
 > 
-> These changes should be sent as a separate patch.
+> Are these two values above always the same? If so you can use
+> a single symbol. 
 
-yes, I will do this as a cleanup patch on top of my current work.
-
-> >  	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
-> > @@ -2279,7 +2282,7 @@ static int __devinit via_pci_probe(void)
-> >  			printk(KERN_ERR
-> >  			"allocate the second framebuffer struct error\n");
-> >  			framebuffer_release(viafbinfo);
-> > -			return -ENOMEM;
-> > +			goto out_delete_i2c;
-> >  		}
-> 
-> The framebuffer_release(viafbinfo) will be called twice now.
-
-good catch, fixed in my tree now.
-
-> > +
-> > +out_fb_unreg:
-> > +	unregister_framebuffer(viafbinfo);
-> > +out_fb1_unreg_lcd_cle266:
-> > +	if (viafbinfo1 && (viafb_primary_dev == LCD_Device)
-> > +            && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
-> > +		unregister_framebuffer(viafbinfo1);
-> 
-> The condition here differs from the condition used during viafbinfo1 register
-> (viafb_dual_fb vs. viafbinfo1).
-
-thanks.  This was actually intentional, since it only makes sense to unregister
-viafbinfo1 if it actually exists.  But in any case, it doesn't make a practical
-difference, so I have altered it to check for viafb_dual_info
+Well, as you can see, they are not the same on other chips than the VX855,
+so I left the two separate #defines to be orthogonal.  I hope I find enough
+time to clean this up and have all those values in a structure, indexed by
+the chip variant at some point.
 
 -- 
 - Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/

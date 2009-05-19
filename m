@@ -1,7 +1,8 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: [PATCH 2/2] viafb: use proper pci config API
-Date: Tue, 19 May 2009 16:35:34 +0800
-Message-ID: <20090519083534.GI19746@prithivi.gnumonks.org>
+Subject: [PATCH 1/2] viafb: make viafb a first-class
+	citizen using	pci_driver
+Date: Tue, 19 May 2009 16:34:18 +0800
+Message-ID: <20090519083418.GH19746@prithivi.gnumonks.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -9,14 +10,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
 	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <HaraldWelte@viatech.com>) id 1M6Knq-0008KL-J5
+	(envelope-from <HaraldWelte@viatech.com>) id 1M6Knt-0008M0-Tg
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 May 2009 08:36:02 +0000
+	Tue, 19 May 2009 08:36:05 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
 	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M6Knf-0001AB-Vv
+	(Exim 4.69) id 1M6Knk-0001AC-6L
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 May 2009 08:36:01 +0000
+	Tue, 19 May 2009 08:36:05 +0000
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,126 +31,369 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-This patch alters viafb to use the proper Linux in-kernel API to access
-PCI configuration space, rather than poking at I/O ports by itself.
+This patch modifies the viafb driver to use the normal 'struct pci_driver'
+method for registering a PCI driver with the Linux kernel.
 
-It also removes a minor inconsistency with naming of constants for the
-PCI device ID of the FUNCTION3 devices.
-
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 ---
- drivers/video/via/hw.c |   64 +++++++++++++++++++++++++++++------------------
- drivers/video/via/hw.h |    4 +-
- 2 files changed, 41 insertions(+), 27 deletions(-)
+ drivers/video/via/hw.c       |  116 +++--------------------------------------
+ drivers/video/via/hw.h       |    7 +--
+ drivers/video/via/viafbdev.c |   65 ++++++++++++++++++++---
+ 3 files changed, 68 insertions(+), 120 deletions(-)
 
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 6306c88..40b7c0c 100644
+index b111b6c..6306c88 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -2599,24 +2599,37 @@ static void disable_second_display_channel(void)
+@@ -21,22 +21,6 @@
+ 
+ #include "global.h"
+ 
+-static const struct pci_device_id_info pciidlist[] = {
+-	{PCI_VIA_VENDOR_ID, UNICHROME_CLE266_DID, UNICHROME_CLE266},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_PM800_DID, UNICHROME_PM800},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_K400_DID, UNICHROME_K400},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_K800_DID, UNICHROME_K800},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_CN700_DID, UNICHROME_CN700},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_P4M890_DID, UNICHROME_P4M890},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_K8M890_DID, UNICHROME_K8M890},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_CX700_DID, UNICHROME_CX700},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_P4M900_DID, UNICHROME_P4M900},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_CN750_DID, UNICHROME_CN750},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_VX800_DID, UNICHROME_VX800},
+-	{PCI_VIA_VENDOR_ID, UNICHROME_VX855_DID, UNICHROME_VX855},
+-	{0, 0, 0}
+-};
+-
+ struct offset offset_reg = {
+ 	/* IGA1 Offset Register */
+ 	{IGA1_OFFSET_REG_NUM, {{CR13, 0, 7}, {CR35, 5, 7} } },
+@@ -549,7 +533,8 @@ static void set_dvi_output_path(int set_iga, int output_interface);
+ static void set_lcd_output_path(int set_iga, int output_interface);
+ static int search_mode_setting(int ModeInfoIndex);
+ static void load_fix_bit_crtc_reg(void);
+-static void init_gfx_chip_info(void);
++static void init_gfx_chip_info(struct pci_dev *pdev,
++				const struct pci_device_id *pdi);
+ static void init_tmds_chip_info(void);
+ static void init_lvds_chip_info(void);
+ static void device_screen_off(void);
+@@ -559,7 +544,6 @@ static void device_off(void);
+ static void device_on(void);
+ static void enable_second_display_channel(void);
+ static void disable_second_display_channel(void);
+-static int get_fb_size_from_pci(void);
+ 
+ void viafb_write_reg(u8 index, u16 io_port, u8 data)
+ {
+@@ -1996,9 +1980,10 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
+ 
+ }
+ 
+-void viafb_init_chip_info(void)
++void viafb_init_chip_info(struct pci_dev *pdev,
++			  const struct pci_device_id *pdi)
+ {
+-	init_gfx_chip_info();
++	init_gfx_chip_info(pdev, pdi);
+ 	init_tmds_chip_info();
+ 	init_lvds_chip_info();
+ 
+@@ -2071,24 +2056,12 @@ void viafb_update_device_setting(int hres, int vres,
+ 	}
+ }
+ 
+-static void init_gfx_chip_info(void)
++static void init_gfx_chip_info(struct pci_dev *pdev,
++			       const struct pci_device_id *pdi)
+ {
+-	struct pci_dev *pdev = NULL;
+-	u32 i;
+ 	u8 tmp;
+ 
+-	/* Indentify GFX Chip Name */
+-	for (i = 0; pciidlist[i].vendor != 0; i++) {
+-		pdev = pci_get_device(pciidlist[i].vendor,
+-			pciidlist[i].device, 0);
+-		if (pdev)
+-			break;
+-	}
+-
+-	if (!pciidlist[i].vendor)
+-		return ;
+-
+-	viaparinfo->chip_info->gfx_chip_name = pciidlist[i].chip_index;
++	viaparinfo->chip_info->gfx_chip_name = pdi->driver_data;
+ 
+ 	/* Check revision of CLE266 Chip */
+ 	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
+@@ -2119,8 +2092,6 @@ static void init_gfx_chip_info(void)
+ 				CX700_REVISION_700;
+ 		}
+ 	}
+-
+-	pci_dev_put(pdev);
+ }
+ 
+ static void init_tmds_chip_info(void)
+@@ -2612,38 +2583,6 @@ void viafb_crt_enable(void)
+ 	viafb_write_reg_mask(CR36, VIACR, 0x0, BIT5 + BIT4);
+ }
+ 
+-void viafb_get_mmio_info(unsigned long *mmio_base,
+-	unsigned long *mmio_len)
+-{
+-	struct pci_dev *pdev = NULL;
+-	u32 vendor, device;
+-	u32 i;
+-
+-	for (i = 0; pciidlist[i].vendor != 0; i++)
+-		if (viaparinfo->chip_info->gfx_chip_name ==
+-			pciidlist[i].chip_index)
+-			break;
+-
+-	if (!pciidlist[i].vendor)
+-		return ;
+-
+-	vendor = pciidlist[i].vendor;
+-	device = pciidlist[i].device;
+-
+-	pdev = pci_get_device(vendor, device, NULL);
+-
+-	if (!pdev) {
+-		*mmio_base = 0;
+-		*mmio_len = 0;
+-		return ;
+-	}
+-
+-	*mmio_base = pci_resource_start(pdev, 1);
+-	*mmio_len = pci_resource_len(pdev, 1);
+-
+-	pci_dev_put(pdev);
+-}
+-
+ static void enable_second_display_channel(void)
+ {
+ 	/* to enable second display channel. */
+@@ -2660,44 +2599,7 @@ static void disable_second_display_channel(void)
  	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
  }
  
-+static u_int16_t via_function3[] = {
-+	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
-+	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
-+	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
-+};
-+
-+/* Get the BIOS-configured framebuffer size from PCI configuration space
-+ * of function 3 in the respective chipset */
- int viafb_get_fb_size_from_pci(void)
+-void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len)
+-{
+-	struct pci_dev *pdev = NULL;
+-	u32 vendor, device;
+-	u32 i;
+-
+-	for (i = 0; pciidlist[i].vendor != 0; i++)
+-		if (viaparinfo->chip_info->gfx_chip_name ==
+-			pciidlist[i].chip_index)
+-			break;
+-
+-	if (!pciidlist[i].vendor)
+-		return ;
+-
+-	vendor = pciidlist[i].vendor;
+-	device = pciidlist[i].device;
+-
+-	pdev = pci_get_device(vendor, device, NULL);
+-
+-	if (!pdev) {
+-		*fb_base = viafb_read_reg(VIASR, SR30) << 24;
+-		*fb_len = viafb_get_memsize();
+-		DEBUG_MSG(KERN_INFO "Get FB info from SR30!\n");
+-		DEBUG_MSG(KERN_INFO "fb_base = %08x\n", *fb_base);
+-		DEBUG_MSG(KERN_INFO "fb_len = %08x\n", *fb_len);
+-		return ;
+-	}
+-
+-	*fb_base = (unsigned int)pci_resource_start(pdev, 0);
+-	*fb_len = get_fb_size_from_pci();
+-	DEBUG_MSG(KERN_INFO "Get FB info from PCI system!\n");
+-	DEBUG_MSG(KERN_INFO "fb_base = %08x\n", *fb_base);
+-	DEBUG_MSG(KERN_INFO "fb_len = %08x\n", *fb_len);
+-
+-	pci_dev_put(pdev);
+-}
+-
+-static int get_fb_size_from_pci(void)
++int viafb_get_fb_size_from_pci(void)
  {
--	unsigned long configid, deviceid, FBSize = 0;
--	int VideoMemSize;
--	int DeviceFound = false;
--
--	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
--		outl(configid, (unsigned long)0xCF8);
--		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
--
--		switch (deviceid) {
--		case CLE266:
--		case KM400:
--			outl(configid + 0xE0, (unsigned long)0xCF8);
--			FBSize = inl((unsigned long)0xCFC);
--			DeviceFound = true;	/* Found device id */
--			break;
-+	int i;
-+	u_int8_t offset = 0;
-+	u_int32_t FBSize;
-+	u_int32_t VideoMemSize;
-+
-+	/* search for the "FUNCTION3" device in this chipset */
-+	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
-+		struct pci_dev *pdev;
-+
-+		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
-+				      NULL);
-+		if (!pdev)
-+			continue;
-+
-+		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
- 
-+		switch (pdev->device) {
-+		case CLE266_FUNCTION3:
-+		case KM400_FUNCTION3:
-+			offset = 0xE0;
-+			break;
- 		case CN400_FUNCTION3:
- 		case CN700_FUNCTION3:
- 		case CX700_FUNCTION3:
-@@ -2626,21 +2639,22 @@ int viafb_get_fb_size_from_pci(void)
- 		case P4M900_FUNCTION3:
- 		case VX800_FUNCTION3:
- 		case VX855_FUNCTION3:
--			/*case CN750_FUNCTION3: */
--			outl(configid + 0xA0, (unsigned long)0xCF8);
--			FBSize = inl((unsigned long)0xCFC);
--			DeviceFound = true;	/* Found device id */
--			break;
--
--		default:
-+		/*case CN750_FUNCTION3: */
-+			offset = 0xA0;
- 			break;
- 		}
--
--		if (DeviceFound)
-+		
-+		if (!offset)
- 			break;
-+
-+		pci_read_config_dword(pdev, offset, &FBSize);
-+		pci_dev_put(pdev);
- 	}
- 
--	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
-+	if (!offset) {
-+		printk(KERN_ERR "cannot determine framebuffer size\n");
-+		return -EIO;
-+	}
- 
- 	FBSize = FBSize & 0x00007000;
- 	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
+ 	unsigned long configid, deviceid, FBSize = 0;
+ 	int VideoMemSize;
 diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 1cd0648..a69e907 100644
+index 22786a5..1cd0648 100644
 --- a/drivers/video/via/hw.h
 +++ b/drivers/video/via/hw.h
-@@ -850,8 +850,8 @@ struct iga2_crtc_timing {
- };
+@@ -931,17 +931,16 @@ void viafb_set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
+ int viafb_setmode(int vmode_index, int hor_res, int ver_res,
+ 	    int video_bpp, int vmode_index1, int hor_res1,
+ 	    int ver_res1, int video_bpp1);
+-void viafb_init_chip_info(void);
++void viafb_init_chip_info(struct pci_dev *pdev,
++			  const struct pci_device_id *pdi);
+ void viafb_init_dac(int set_iga);
+ int viafb_get_pixclock(int hres, int vres, int vmode_refresh);
+ int viafb_get_refresh(int hres, int vres, u32 float_refresh);
+ void viafb_update_device_setting(int hres, int vres, int bpp,
+ 			   int vmode_refresh, int flag);
+-void viafb_get_mmio_info(unsigned long *mmio_base,
+-	unsigned long *mmio_len);
  
- /* device ID */
--#define CLE266              0x3123
--#define KM400               0x3205
-+#define CLE266_FUNCTION3    0x3123
-+#define KM400_FUNCTION3     0x3205
- #define CN400_FUNCTION2     0x2259
- #define CN400_FUNCTION3     0x3259
- /* support VT3314 chipset */
++int viafb_get_fb_size_from_pci(void);
+ void viafb_set_iga_path(void);
+ void viafb_set_start_addr(void);
+-void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
+ 
+ #endif /* __HW_H__ */
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 055d67d..32c26cc 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -2104,7 +2104,8 @@ static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
+ 	remove_proc_entry("viafb", NULL);
+ }
+ 
+-static int __devinit via_pci_probe(void)
++static int __devinit via_pci_probe(struct pci_dev *pdev,
++				   const struct pci_device_id *ent)
+ {
+ 	unsigned long default_xres, default_yres;
+ 	char *tmpc, *tmpm;
+@@ -2128,7 +2128,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	 * variables
+ 	*/
+ 	viafbinfo = framebuffer_alloc(viafb_par_length + 2 * lvds_length +
+-	tmds_length + crt_length + chip_length, NULL);
++				      tmds_length + crt_length + chip_length,
++				      &pdev->dev);
+ 	if (!viafbinfo) {
+ 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
+ 		return -ENOMEM;
+@@ -2161,8 +2162,9 @@ static int __devinit via_pci_probe(void)
+ 	if (rc)
+ 		goto out_fb_release;
+ 
+-	viafb_init_chip_info();
+-	viafb_get_fb_info(&viaparinfo->fbmem, &viaparinfo->memsize);
++	viafb_init_chip_info(pdev, ent);
++	viaparinfo->fbmem = pci_resource_start(pdev, 0);
++	viaparinfo->memsize = viafb_get_fb_size_from_pci();
+ 	viaparinfo->fbmem_free = viaparinfo->memsize;
+ 	viaparinfo->fbmem_used = 0;
+ 	viaparinfo->fbmem_virt = ioremap_nocache(viaparinfo->fbmem,
+@@ -2170,14 +2172,20 @@ static int __devinit via_pci_probe(void)
+ 	viafbinfo->screen_base = (char *)viaparinfo->fbmem_virt;
+ 
+ 	if (!viaparinfo->fbmem_virt) {
+-		printk(KERN_INFO "ioremap failed\n");
++		printk(KERN_ERR "ioremap of fbmem failed\n");
+ 		rc = -EIO;
+ 		goto out_delete_i2c;
+ 	}
+ 
+-	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
++	viaparinfo->mmio_base = pci_resource_start(pdev, 1);
++	viaparinfo->mmio_len = pci_resource_len(pdev, 1);
+ 	viaparinfo->io_virt = ioremap_nocache(viaparinfo->mmio_base,
+ 		viaparinfo->mmio_len);
++	if (!viaparinfo->io_virt) {
++		printk(KERN_ERR "ioremap of MMIO failed\n");
++		rc = -EIO;
++		goto out_unmap_fbmem;
++	}
+ 
+ 	viafbinfo->node = 0;
+ 	viafbinfo->fbops = &viafb_ops;
+@@ -2285,7 +2293,8 @@ static int __devinit via_pci_probe(void)
+ 			printk(KERN_ERR
+ 			"allocate the second framebuffer struct error\n");
+ 			framebuffer_release(viafbinfo);
+-			goto out_delete_i2c;
++			rc = -ENOMEM;
++			goto out_unmap_mmio;
+ 		}
+ 		viaparinfo1 = viafbinfo1->par;
+ 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
+@@ -2386,6 +2395,10 @@ out_dealloc_cmap:
+ out_fb1_release:
+ 	if (viafbinfo1)
+ 		framebuffer_release(viafbinfo1);
++out_unmap_mmio:
++	iounmap(viaparinfo->io_virt);
++out_unmap_fbmem:
++	iounmap((void *)viaparinfo->fbmem_virt);
+ out_delete_i2c:
+ 	viafb_delete_i2c_buss(viaparinfo);
+ out_fb_release:
+@@ -2393,7 +2406,7 @@ out_fb_release:
+ 	return rc;
+ }
+ 
+-static void __devexit via_pci_remove(void)
++static void __devexit via_pci_remove(struct pci_dev *pdev)
+ {
+ 	DEBUG_MSG(KERN_INFO "via_pci_remove!\n");
+ 	fb_dealloc_cmap(&viafbinfo->cmap);
+@@ -2487,6 +2500,40 @@ static int __init viafb_setup(char *options)
+ }
+ #endif
+ 
++static struct pci_device_id viafb_pci_table[] __devinitdata = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_CLE266_DID),
++	  .driver_data = UNICHROME_CLE266 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_PM800_DID),
++	  .driver_data = UNICHROME_PM800 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_K400_DID),
++	  .driver_data = UNICHROME_K400 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_K800_DID),
++	  .driver_data = UNICHROME_K800 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_P4M890_DID),
++	  .driver_data = UNICHROME_CN700 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_K8M890_DID),
++	  .driver_data = UNICHROME_K8M890 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_CX700_DID),
++	  .driver_data = UNICHROME_CX700 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_P4M900_DID),
++	  .driver_data = UNICHROME_P4M900 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_CN750_DID),
++	  .driver_data = UNICHROME_CN750 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_VX800_DID),
++	  .driver_data = UNICHROME_VX800 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_VX855_DID),
++	  .driver_data = UNICHROME_VX855 },
++	{ }
++};
++MODULE_DEVICE_TABLE(pci, viafb_pci_table);
++
++static struct pci_driver viafb_driver = {
++	.name		= "viafb",
++	.id_table	= viafb_pci_table,
++	.probe		= via_pci_probe,
++	.remove		= __devexit_p(via_pci_remove),
++};
++
+ static int __init viafb_init(void)
+ {
+ #ifndef MODULE
+@@ -2498,13 +2545,13 @@ static int __init viafb_init(void)
+ 	printk(KERN_INFO
+        "VIA Graphics Intergration Chipset framebuffer %d.%d initializing\n",
+ 	       VERSION_MAJOR, VERSION_MINOR);
+-	return via_pci_probe();
++	return pci_register_driver(&viafb_driver);
+ }
+ 
+ static void __exit viafb_exit(void)
+ {
+ 	DEBUG_MSG(KERN_INFO "viafb_exit!\n");
+-	via_pci_remove();
++	pci_unregister_driver(&viafb_driver);
+ }
+ 
+ static struct fb_ops viafb_ops = {
+
 -- 
 1.6.2.4
-
 
 ------------------------------------------------------------------------------
 Crystal Reports - New Free Runtime and 30 Day Trial

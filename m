@@ -1,24 +1,23 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 3/3] viafb: Add support for the
- VX855 chipset
-Date: Tue, 19 May 2009 10:07:48 +0200
-Message-ID: <20090519100748.e471ea6d.krzysztof.h1@poczta.fm>
-References: <20090519035254.GZ19746@prithivi.gnumonks.org>
+From: Harald Welte <HaraldWelte@viatech.com>
+Subject: [PATCH 2/2] viafb: use proper pci config API
+Date: Tue, 19 May 2009 16:35:34 +0800
+Message-ID: <20090519083534.GI19746@prithivi.gnumonks.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M6KGg-00007H-Fs
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <HaraldWelte@viatech.com>) id 1M6Knq-0008KL-J5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 May 2009 08:01:46 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M6KGa-00078i-UU for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 19 May 2009 08:01:46 +0000
-In-Reply-To: <20090519035254.GZ19746@prithivi.gnumonks.org>
+	Tue, 19 May 2009 08:36:02 +0000
+Received: from ganesha.gnumonks.org ([213.95.27.120])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M6Knf-0001AB-Vv
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 19 May 2009 08:36:01 +0000
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,85 +27,128 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Harald Welte <HaraldWelte@viatech.com>
-Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-On Tue, 19 May 2009 11:52:54 +0800
-Harald Welte <HaraldWelte@viatech.com> wrote:
+This patch alters viafb to use the proper Linux in-kernel API to access
+PCI configuration space, rather than poking at I/O ports by itself.
 
-> This patch adds support for a new VIA integrated graphics chipset, the VX855.
-> 
-> Signed-off-by: HaraldWelte <HaraldWelte@viatech.com>
-> ---
+It also removes a minor inconsistency with naming of constants for the
+PCI device ID of the FUNCTION3 devices.
 
-I believe it is correct. I have no chance to test. 
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+---
+ drivers/video/via/hw.c |   64 +++++++++++++++++++++++++++++------------------
+ drivers/video/via/hw.h |    4 +-
+ 2 files changed, 41 insertions(+), 27 deletions(-)
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-Only one small comment below.
-
-Kind regards,
-Krzysztof
-
->  drivers/video/via/chip.h     |    3 +
->  drivers/video/via/hw.c       |  203 ++++++++++++++++++++++++++++--------------
->  drivers/video/via/hw.h       |   14 +++
->  drivers/video/via/share.h    |   98 ++++++++++++++++++++
->  drivers/video/via/viafbdev.c |    7 +-
->  drivers/video/via/viamode.c  |   55 +++++++++++
->  drivers/video/via/viamode.h  |    2 +
->  7 files changed, 312 insertions(+), 70 deletions(-)
-> 
-
-(...)
-
-> diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-> index 6ff38fa..22786a5 100644
-> --- a/drivers/video/via/hw.h
-> +++ b/drivers/video/via/hw.h
-> @@ -335,6 +335,17 @@ is reserved, so it may have problem to set 1600x1200 on IGA2. */
->  /* location: {CR94,0,6} */
->  #define VX800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     128
->  
-> +/* For VT3409 */
-> +#define VX855_IGA1_FIFO_MAX_DEPTH               400
-> +#define VX855_IGA1_FIFO_THRESHOLD               320
-> +#define VX855_IGA1_FIFO_HIGH_THRESHOLD          320
-
-Are these two values above always the same? If so you can use
-a single symbol. 
-
-> +#define VX855_IGA1_DISPLAY_QUEUE_EXPIRE_NUM     160
-> +
-> +#define VX855_IGA2_FIFO_MAX_DEPTH               200
-> +#define VX855_IGA2_FIFO_THRESHOLD               160
-> +#define VX855_IGA2_FIFO_HIGH_THRESHOLD          160
-> +#define VX855_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     320
-> +
->  #define IGA1_FIFO_DEPTH_SELECT_REG_NUM          1
->  #define IGA1_FIFO_THRESHOLD_REG_NUM             2
->  #define IGA1_FIFO_HIGH_THRESHOLD_REG_NUM        2
-> @@ -716,6 +727,7 @@ struct pll_map {
->  	u32 cle266_pll;
->  	u32 k800_pll;
->  	u32 cx700_pll;
-> +	u32 vx855_pll;
->  };
->  
->  struct rgbLUT {
-> @@ -860,6 +872,8 @@ struct iga2_crtc_timing {
->  #define P4M900_FUNCTION3    0x3364
->  /* VT3353 chipset*/
->  #define VX800_FUNCTION3     0x3353
-> +/* VT3409 chipset*/
-> +#define VX855_FUNCTION3     0x3409
->  
->  #define NUM_TOTAL_PLL_TABLE ARRAY_SIZE(pll_value)
->  
-
-----------------------------------------------------------------------
-Audi kilka tysiecy zlotych taniej? Przebieraj wsrod tysiecy ogloszen!
-Sprawdz: http://link.interia.pl/f216f
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 6306c88..40b7c0c 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2599,24 +2599,37 @@ static void disable_second_display_channel(void)
+ 	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
+ }
+ 
++static u_int16_t via_function3[] = {
++	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
++	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
++	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
++};
++
++/* Get the BIOS-configured framebuffer size from PCI configuration space
++ * of function 3 in the respective chipset */
+ int viafb_get_fb_size_from_pci(void)
+ {
+-	unsigned long configid, deviceid, FBSize = 0;
+-	int VideoMemSize;
+-	int DeviceFound = false;
+-
+-	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
+-		outl(configid, (unsigned long)0xCF8);
+-		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
+-
+-		switch (deviceid) {
+-		case CLE266:
+-		case KM400:
+-			outl(configid + 0xE0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
++	int i;
++	u_int8_t offset = 0;
++	u_int32_t FBSize;
++	u_int32_t VideoMemSize;
++
++	/* search for the "FUNCTION3" device in this chipset */
++	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
++		struct pci_dev *pdev;
++
++		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
++				      NULL);
++		if (!pdev)
++			continue;
++
++		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
+ 
++		switch (pdev->device) {
++		case CLE266_FUNCTION3:
++		case KM400_FUNCTION3:
++			offset = 0xE0;
++			break;
+ 		case CN400_FUNCTION3:
+ 		case CN700_FUNCTION3:
+ 		case CX700_FUNCTION3:
+@@ -2626,21 +2639,22 @@ int viafb_get_fb_size_from_pci(void)
+ 		case P4M900_FUNCTION3:
+ 		case VX800_FUNCTION3:
+ 		case VX855_FUNCTION3:
+-			/*case CN750_FUNCTION3: */
+-			outl(configid + 0xA0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
+-
+-		default:
++		/*case CN750_FUNCTION3: */
++			offset = 0xA0;
+ 			break;
+ 		}
+-
+-		if (DeviceFound)
++		
++		if (!offset)
+ 			break;
++
++		pci_read_config_dword(pdev, offset, &FBSize);
++		pci_dev_put(pdev);
+ 	}
+ 
+-	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
++	if (!offset) {
++		printk(KERN_ERR "cannot determine framebuffer size\n");
++		return -EIO;
++	}
+ 
+ 	FBSize = FBSize & 0x00007000;
+ 	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 1cd0648..a69e907 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -850,8 +850,8 @@ struct iga2_crtc_timing {
+ };
+ 
+ /* device ID */
+-#define CLE266              0x3123
+-#define KM400               0x3205
++#define CLE266_FUNCTION3    0x3123
++#define KM400_FUNCTION3     0x3205
+ #define CN400_FUNCTION2     0x2259
+ #define CN400_FUNCTION3     0x3259
+ /* support VT3314 chipset */
+-- 
+1.6.2.4
 
 
 ------------------------------------------------------------------------------

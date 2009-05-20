@@ -1,7 +1,7 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: Re: bug #13249 - problem with intelfb on i845gm
-Date: Wed, 20 May 2009 10:44:40 +0200
-Message-ID: <20090520104440.3cd8a0ec.krzysztof.h1@poczta.fm>
+Date: Wed, 20 May 2009 10:50:01 +0200
+Message-ID: <20090520105001.fd12fe34.krzysztof.h1@poczta.fm>
 References: <20090518145125.f975ae2b.krzysztof.h1@poczta.fm>
 	<20090518.152903.193209423.wl@gnu.org>
 	<20090520075138.c8c7d84d.krzysztof.h1@poczta.fm>
@@ -10,16 +10,16 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M6hJm-0001da-SD
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M6hOx-0001Q4-Ln
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 08:38:30 +0000
+	Wed, 20 May 2009 08:43:51 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M6hJk-0005os-Q6 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 08:38:30 +0000
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M6hOv-00010s-Ek for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 May 2009 08:43:51 +0000
 In-Reply-To: <20090520.082548.01295500.wl@gnu.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -48,16 +48,17 @@ Werner LEMBERG <wl@gnu.org> wrote:
 > Well, I use the intelfb driver (CONFIG_FB_INTEL=m), but I get a black
 > screen for any VESA mode...
 > 
+> 
 
-You have to compile it into the kernel image (CONFIG_FB_INTEL=y) 
-otherwise no VESA mode is used.
+I see a problem here. If the intelfb is selected as a module the CONFIG_FB_BOOT_VESA_SUPPORT  should not be selected.
+I'll prepare a patch for it.
 
 Regards,
 Krzysztof
 
 ----------------------------------------------------------------------
-Zrob sobie prezent. Wygraj nagrode!
-Sprawdz >>  http://link.interia.pl/f2176 
+Fantastyczne nagrody do zgarniecia!
+Zagraj >> http://link.interia.pl/f2177 
 
 
 

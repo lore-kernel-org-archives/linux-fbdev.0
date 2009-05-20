@@ -1,27 +1,35 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: [PATCH 04/15] [FB] viafb: Fix various resource
-	leaks during module_init()
-Date: Thu, 21 May 2009 04:28:42 +0800
-Message-ID: <1242851333-325-4-git-send-email-HaraldWelte@viatech.com>
+Subject: [PATCH 12/15] viafb: introduce wrapper for 2D
+	engine registers
+Date: Thu, 21 May 2009 04:28:50 +0800
+Message-ID: <1242851333-325-12-git-send-email-HaraldWelte@viatech.com>
 References: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
 	<1242851333-325-2-git-send-email-HaraldWelte@viatech.com>
 	<1242851333-325-3-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-4-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-5-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-6-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-7-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-8-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-9-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-10-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-11-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <laforge@prithivi.openmoko.org>) id 1M6siD-00065N-U1
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <laforge@prithivi.openmoko.org>) id 1M6sj6-0002Ng-Kq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 20:48:29 +0000
+	Wed, 20 May 2009 20:49:24 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M6si3-0004yG-BT
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M6sj1-0005oJ-Nf
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 20:48:24 +0000
-In-Reply-To: <1242851333-325-3-git-send-email-HaraldWelte@viatech.com>
+	Wed, 20 May 2009 20:49:24 +0000
+In-Reply-To: <1242851333-325-11-git-send-email-HaraldWelte@viatech.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,136 +44,141 @@ Cc: Harald Welte <HaraldWelte@viatech.com>
 
 From: Harald Welte <laforge@gnumonks.org>
 
-The current code executed from module_init() in viafb does not have
-proper error checking and [partial] resoure release paths in case
-an error happens half way through driver initialization.
-
-This patch adresses the most obvious of those issues, such as a
-leftover i2c bus if module_init (and thus module load) fails.
+This is required as preparation for supporting the new M1 engine of the
+VX800/VX855 which has registers at permutated addresses.
 
 Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 ---
- drivers/video/via/viafbdev.c |   52 ++++++++++++++++++++++++++++++-----------
- 1 files changed, 38 insertions(+), 14 deletions(-)
+ drivers/video/via/accel.c    |   13 +++++++++----
+ drivers/video/via/accel.h    |    1 +
+ drivers/video/via/viafbdev.c |   38 +++++++++++++++++---------------------
+ 3 files changed, 27 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 02e7a72..72387d4 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 1998-2009 VIA Technologies, Inc. All Rights Reserved.
-  * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index 4a1183f..c3af95f 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -20,6 +20,11 @@
+  */
+ #include "global.h"
  
-  * This program is free software; you can redistribute it and/or
-@@ -2109,7 +2109,7 @@ static int __devinit via_pci_probe(void)
- 	unsigned long default_xres, default_yres;
- 	char *tmpc, *tmpm;
- 	char *tmpc_sec, *tmpm_sec;
--	int vmode_index;
-+	int rc, vmode_index;
- 	u32 tmds_length, lvds_length, crt_length, chip_length, viafb_par_length;
- 
- 	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
-@@ -2130,7 +2130,7 @@ static int __devinit via_pci_probe(void)
- 	tmds_length + crt_length + chip_length, NULL);
- 	if (!viafbinfo) {
- 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
--		return -ENODEV;
-+		return -ENOMEM;
- 	}
- 
- 	viaparinfo = (struct viafb_par *)viafbinfo->par;
-@@ -2157,7 +2157,9 @@ static int __devinit via_pci_probe(void)
- 		viafb_dual_fb = 0;
- 
- 	/* Set up I2C bus stuff */
--	viafb_create_i2c_bus(viaparinfo);
-+	rc = viafb_create_i2c_bus(viaparinfo);
-+	if (rc)
-+		goto out_fb_release;
- 
- 	viafb_init_chip_info();
- 	viafb_get_fb_info(&viaparinfo->fbmem, &viaparinfo->memsize);
-@@ -2169,7 +2171,8 @@ static int __devinit via_pci_probe(void)
- 
- 	if (!viaparinfo->fbmem_virt) {
- 		printk(KERN_INFO "ioremap failed\n");
--		return -1;
-+		rc = -EIO;
-+		goto out_delete_i2c;
- 	}
- 
- 	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
-@@ -2281,8 +2284,7 @@ static int __devinit via_pci_probe(void)
- 		if (!viafbinfo1) {
- 			printk(KERN_ERR
- 			"allocate the second framebuffer struct error\n");
--			framebuffer_release(viafbinfo);
--			return -ENOMEM;
-+			goto out_delete_i2c;
- 		}
- 		viaparinfo1 = viafbinfo1->par;
- 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-@@ -2343,21 +2345,26 @@ static int __devinit via_pci_probe(void)
- 	viafb_update_viafb_par(viafbinfo);
- 	viafb_update_fix(&viafbinfo->fix, viafbinfo);
- 	default_var.activate = FB_ACTIVATE_NOW;
--	fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
-+	rc = fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
-+	if (rc)
-+		goto out_fb1_release;
- 
- 	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
- 	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)) {
--		if (register_framebuffer(viafbinfo1) < 0)
--			return -EINVAL;
-+		rc = register_framebuffer(viafbinfo1);
-+		if (rc)
-+			goto out_dealloc_cmap;
- 	}
--	if (register_framebuffer(viafbinfo) < 0)
--		return -EINVAL;
-+	rc = register_framebuffer(viafbinfo);
-+	if (rc)
-+		goto out_fb1_unreg_lcd_cle266;
- 
- 	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
- 			|| (viaparinfo->chip_info->gfx_chip_name !=
- 			UNICHROME_CLE266))) {
--		if (register_framebuffer(viafbinfo1) < 0)
--			return -EINVAL;
-+		rc = register_framebuffer(viafbinfo1);
-+		if (rc)
-+			goto out_fb_unreg;
- 	}
- 	DEBUG_MSG(KERN_INFO "fb%d: %s frame buffer device %dx%d-%dbpp\n",
- 		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
-@@ -2366,6 +2373,23 @@ static int __devinit via_pci_probe(void)
- 	viafb_init_proc(&viaparinfo->proc_entry);
- 	viafb_init_dac(IGA2);
- 	return 0;
++void viafb_2d_writel(u_int32_t val, u_int32_t reg)
++{
++	writel(val, viaparinfo->io_virt + reg);
++}
 +
-+out_fb_unreg:
-+	unregister_framebuffer(viafbinfo);
-+out_fb1_unreg_lcd_cle266:
-+	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
-+            && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
-+		unregister_framebuffer(viafbinfo1);
-+out_dealloc_cmap:
-+	fb_dealloc_cmap(&viafbinfo->cmap);
-+out_fb1_release:
-+	if (viafbinfo1)
-+		framebuffer_release(viafbinfo1);
-+out_delete_i2c:
-+	viafb_delete_i2c_buss(viaparinfo);
-+out_fb_release:
-+	framebuffer_release(viafbinfo);
-+	return rc;
+ void viafb_init_accel(void)
+ {
+ 	viaparinfo->fbmem_free -= CURSOR_SIZE;
+@@ -213,18 +218,18 @@ void viafb_set_2d_mode(struct fb_info *info)
+ 		dwGEMode |= VIA_GEM_8bpp;
+ 		break;
+ 	}
+-	writel(dwGEMode, viaparinfo->io_virt + VIA_REG_GEMODE);
++	viafb_2d_writel(dwGEMode, VIA_REG_GEMODE);
+ 
+ 	/* Set source and destination base */
+ 	base = ((void *)info->screen_base - viafb_FB_MM);
+-	writel(base >> 3, viaparinfo->io_virt + VIA_REG_SRCBASE);
+-	writel(base >> 3, viaparinfo->io_virt + VIA_REG_DSTBASE);
++	viafb_2d_writel(base >> 3, VIA_REG_SRCBASE);
++	viafb_2d_writel(base >> 3, VIA_REG_DSTBASE);
+ 
+ 	/* Set source and destination pitch (128bit aligned) */
+ 	pitch = (viaparinfo->hres * viaparinfo->bpp >> 3) >> 3;
+ 	pitch_reg = pitch | (pitch << 16);
+ 	pitch_reg |= VIA_PITCH_ENABLE;
+-	writel(pitch_reg, viaparinfo->io_virt + VIA_REG_PITCH);
++	viafb_2d_writel(pitch_reg, VIA_REG_PITCH);
  }
  
- static void __devexit via_pci_remove(void)
+ void viafb_hw_cursor_init(void)
+diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
+index bef3134..5081ac2 100644
+--- a/drivers/video/via/accel.h
++++ b/drivers/video/via/accel.h
+@@ -159,6 +159,7 @@
+ 
+ #define MAXLOOP                 0xFFFFFF
+ 
++void viafb_2d_writel(u_int32_t val, u_int32_t reg);
+ void viafb_init_accel(void);
+ void viafb_init_2d_engine(void);
+ void viafb_set_2d_mode(struct fb_info *info);
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index af8acfe..859827b 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -899,16 +899,14 @@ static void viafb_fillrect(struct fb_info *info,
+ 	viafb_set_2d_mode(info);
+ 
+ 	/* BitBlt Destination Address */
+-	writel(((rect->dy << 16) | rect->dx),
+-		viaparinfo->io_virt + VIA_REG_DSTPOS);
++	viafb_2d_writel(((rect->dy << 16) | rect->dx), VIA_REG_DSTPOS);
+ 	/* Dimension: width & height */
+-	writel((((rect->height - 1) << 16) | (rect->width - 1)),
+-		viaparinfo->io_virt + VIA_REG_DIMENSION);
++	viafb_2d_writel((((rect->height - 1) << 16) | (rect->width - 1)),
++			VIA_REG_DIMENSION);
+ 	/* Forground color or Destination color */
+-	writel(col, viaparinfo->io_virt + VIA_REG_FGCOLOR);
++	viafb_2d_writel(col, VIA_REG_FGCOLOR);
+ 	/* GE Command */
+-	writel((0x01 | 0x2000 | (rop << 24)),
+-		viaparinfo->io_virt + VIA_REG_GECMD);
++	viafb_2d_writel((0x01 | 0x2000 | (rop << 24)), VIA_REG_GECMD);
+ 
+ }
+ 
+@@ -943,15 +941,14 @@ static void viafb_copyarea(struct fb_info *info,
+ 	viafb_set_2d_mode(info);
+ 
+ 	/* BitBlt Source Address */
+-	writel(((sy << 16) | sx), viaparinfo->io_virt + VIA_REG_SRCPOS);
++	viafb_2d_writel(((sy << 16) | sx), VIA_REG_SRCPOS);
+ 	/* BitBlt Destination Address */
+-	writel(((dy << 16) | dx), viaparinfo->io_virt + VIA_REG_DSTPOS);
++	viafb_2d_writel(((dy << 16) | dx), VIA_REG_DSTPOS);
+ 	/* Dimension: width & height */
+-	writel((((area->height - 1) << 16) | (area->width - 1)),
+-		   viaparinfo->io_virt + VIA_REG_DIMENSION);
++	viafb_2d_writel((((area->height - 1) << 16) | (area->width - 1)),
++			VIA_REG_DIMENSION);
+ 	/* GE Command */
+-	writel((0x01 | direction | (0xCC << 24)),
+-		viaparinfo->io_virt + VIA_REG_GECMD);
++	viafb_2d_writel((0x01 | direction | (0xCC << 24)), VIA_REG_GECMD);
+ 
+ }
+ 
+@@ -987,19 +984,18 @@ static void viafb_imageblit(struct fb_info *info,
+ 	viafb_set_2d_mode(info);
+ 
+ 	/* BitBlt Source Address */
+-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCPOS);
++	viafb_2d_writel(0x0, VIA_REG_SRCPOS);
+ 	/* BitBlt Destination Address */
+-	writel(((image->dy << 16) | image->dx),
+-		viaparinfo->io_virt + VIA_REG_DSTPOS);
++	viafb_2d_writel(((image->dy << 16) | image->dx), VIA_REG_DSTPOS);
+ 	/* Dimension: width & height */
+-	writel((((image->height - 1) << 16) | (image->width - 1)),
+-		   viaparinfo->io_virt + VIA_REG_DIMENSION);
++	viafb_2d_writel((((image->height - 1) << 16) | (image->width - 1)),
++			VIA_REG_DIMENSION);
+ 	/* fb color */
+-	writel(fg_col, viaparinfo->io_virt + VIA_REG_FGCOLOR);
++	viafb_2d_writel(fg_col, VIA_REG_FGCOLOR);
+ 	/* bg color */
+-	writel(bg_col, viaparinfo->io_virt + VIA_REG_BGCOLOR);
++	viafb_2d_writel(bg_col, VIA_REG_BGCOLOR);
+ 	/* GE Command */
+-	writel(0xCC020142, viaparinfo->io_virt + VIA_REG_GECMD);
++	viafb_2d_writel(0xCC020142, VIA_REG_GECMD);
+ 
+ 	for (i = 0; i < size / 4; i++) {
+ 		writel(*udata, viaparinfo->io_virt + VIA_MMIO_BLTBASE);
 -- 
 1.6.2.4
 

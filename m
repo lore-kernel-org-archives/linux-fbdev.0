@@ -1,25 +1,22 @@
-From: Werner LEMBERG <wl@gnu.org>
-Subject: Re: bug #13249 - problem with intelfb on i845gm
-Date: Wed, 20 May 2009 11:26:06 +0200 (CEST)
-Message-ID: <20090520.112606.49874447.wl@gnu.org>
-References: <20090520075138.c8c7d84d.krzysztof.h1@poczta.fm>
-	<20090520.082548.01295500.wl@gnu.org>
-	<20090520104440.3cd8a0ec.krzysztof.h1@poczta.fm>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] s3c-fb: fix resource releasing on error
+	during probing
+Date: Wed, 20 May 2009 14:14:31 +0200
+Message-ID: <20090520141431.d9b22439.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <werner.lemberg@gmx.de>) id 1M6i5c-0004f4-P9
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M6kav-0002HQ-JZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 09:27:56 +0000
-Received: from mail.gmx.net ([213.165.64.20])
-	by 1b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1M6i5P-0005WX-E9 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 09:27:56 +0000
-In-Reply-To: <20090520104440.3cd8a0ec.krzysztof.h1@poczta.fm>
+	Wed, 20 May 2009 12:08:25 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M6kar-0006qE-3B for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 20 May 2009 12:08:25 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,19 +26,90 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Ben Dooks <ben-linux-arm@fluff.org>
 
->> Well, I use the intelfb driver (CONFIG_FB_INTEL=m), but I get a black
->> screen for any VESA mode...
-> 
-> You have to compile it into the kernel image (CONFIG_FB_INTEL=y) 
-> otherwise no VESA mode is used.
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Aaah.  Will try soon, thanks.
+All resources are released in s3c_fb_win_release
+so remove other places of resources releasing.
+Add releasing of an allocated fb_info structure
+as well.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+ drivers/video/s3c-fb.c |   22 +++++++++-------------
+ 1 files changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 5e9c630..195cc27 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -700,9 +700,12 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
+  */
+ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+-	fb_dealloc_cmap(&win->fbinfo->cmap);
+-	unregister_framebuffer(win->fbinfo);
+-	s3c_fb_free_memory(sfb, win);
++	if (win->fbinfo) {
++		unregister_framebuffer(win->fbinfo);
++		fb_dealloc_cmap(&win->fbinfo->cmap);
++		s3c_fb_free_memory(sfb, win);
++		framebuffer_release(win->fbinfo);
++	}
+ }
+ 
+ /**
+@@ -753,7 +756,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	ret = s3c_fb_alloc_memory(sfb, win);
+ 	if (ret) {
+ 		dev_err(sfb->dev, "failed to allocate display memory\n");
+-		goto err_framebuffer;
++		return ret;
+ 	}
+ 
+ 	/* setup the r/b/g positions for the window's palette */
+@@ -776,7 +779,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	ret = s3c_fb_check_var(&fbinfo->var, fbinfo);
+ 	if (ret < 0) {
+ 		dev_err(sfb->dev, "check_var failed on initial video params\n");
+-		goto err_alloc_mem;
++		return ret;
+ 	}
+ 
+ 	/* create initial colour map */
+@@ -796,20 +799,13 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	ret = register_framebuffer(fbinfo);
+ 	if (ret < 0) {
+ 		dev_err(sfb->dev, "failed to register framebuffer\n");
+-		goto err_alloc_mem;
++		return ret;
+ 	}
+ 
+ 	*res = win;
+ 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
+ 
+ 	return 0;
+-
+-err_alloc_mem:
+-	s3c_fb_free_memory(sfb, win);
+-
+-err_framebuffer:
+-	unregister_framebuffer(fbinfo);
+-	return ret;
+ }
+ 
+ /**
+-- 
+1.6.0.3
 
 
-   Werner
+----------------------------------------------------------------------
+Zrob sobie prezent. Wygraj nagrode!
+Sprawdz >>  http://link.interia.pl/f2176 
+
+
 
 ------------------------------------------------------------------------------
 Crystal Reports - New Free Runtime and 30 Day Trial

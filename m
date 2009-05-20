@@ -1,29 +1,25 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: [PATCH 06/15] viafb: pass reference to pci
-	device when calling framebuffer_alloc()
-Date: Thu, 21 May 2009 04:28:44 +0800
-Message-ID: <1242851333-325-6-git-send-email-HaraldWelte@viatech.com>
+Subject: [PATCH 02/15] [FB] viafb: Add missing break
+	statement in switch
+Date: Thu, 21 May 2009 04:28:40 +0800
+Message-ID: <1242851333-325-2-git-send-email-HaraldWelte@viatech.com>
 References: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
-	<1242851333-325-2-git-send-email-HaraldWelte@viatech.com>
-	<1242851333-325-3-git-send-email-HaraldWelte@viatech.com>
-	<1242851333-325-4-git-send-email-HaraldWelte@viatech.com>
-	<1242851333-325-5-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
 	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <laforge@prithivi.openmoko.org>) id 1M6sio-0006Dh-Ro
+	(envelope-from <laforge@prithivi.openmoko.org>) id 1M6sjR-0006L0-T9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 20:49:06 +0000
+	Wed, 20 May 2009 20:49:45 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M6sim-0007BJ-Fy
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M6sjQ-0003q7-W7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 20 May 2009 20:49:06 +0000
-In-Reply-To: <1242851333-325-5-git-send-email-HaraldWelte@viatech.com>
+	Wed, 20 May 2009 20:49:45 +0000
+In-Reply-To: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,23 +36,21 @@ From: Harald Welte <laforge@gnumonks.org>
 
 Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 ---
- drivers/video/via/viafbdev.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/via/hw.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 3040dd9..7e8f2f6 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -2128,7 +2128,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	 * variables
- 	*/
- 	viafbinfo = framebuffer_alloc(viafb_par_length + 2 * lvds_length +
--	tmds_length + crt_length + chip_length, NULL);
-+				      tmds_length + crt_length + chip_length,
-+				      &pdev->dev);
- 	if (!viafbinfo) {
- 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
- 		return -ENOMEM;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index fcd53ce..59ddf09 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2272,6 +2272,7 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
+ 
+ 	case UNICHROME_CX700:
+ 		viafb_write_regx(CX700_ModeXregs, NUM_TOTAL_CX700_ModeXregs);
++		break;
+ 
+ 	case UNICHROME_VX800:
+ 		viafb_write_regx(VX800_ModeXregs, NUM_TOTAL_VX800_ModeXregs);
 -- 
 1.6.2.4
 

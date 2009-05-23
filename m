@@ -1,10 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 02/15] [FB] viafb: Add missing break
- statement in switch
-Date: Sat, 23 May 2009 08:54:37 +0200
-Message-ID: <20090523085437.220bdc5f.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH 01/15] [FB] make viafb work on x86_64
+Date: Sat, 23 May 2009 08:57:25 +0200
+Message-ID: <20090523085725.06ad0287.krzysztof.h1@poczta.fm>
 References: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
-	<1242851333-325-2-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,14 +10,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
 	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M7l1t-0001Ne-KH
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M7l4j-0001dR-13
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 May 2009 06:48:25 +0000
+	Sat, 23 May 2009 06:51:21 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M7l1j-0005xU-GS for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 May 2009 06:48:25 +0000
-In-Reply-To: <1242851333-325-2-git-send-email-HaraldWelte@viatech.com>
+	id 1M7l4Z-000184-Fl for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 May 2009 06:51:20 +0000
+In-Reply-To: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,51 +30,37 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Harald Welte <HaraldWelte@viatech.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 21 May 2009 04:28:40 +0800
+On Thu, 21 May 2009 04:28:39 +0800
 Harald Welte <HaraldWelte@viatech.com> wrote:
 
 > From: Harald Welte <laforge@gnumonks.org>
 > 
+> This patch makes fixes a bug in viafb on x86_64 builds (e.g. for VIA Nano CPU).
+> You cannot make the assumption that sizeof(unsigned int) == sizeof(unsigned
+> long), so the parsing of the default mode (640x480) fails, leading to a
+> division by zero during insmod of the driver.
+> 
 > Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 > ---
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
->  drivers/video/via/hw.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-> index fcd53ce..59ddf09 100644
-> --- a/drivers/video/via/hw.c
-> +++ b/drivers/video/via/hw.c
-> @@ -2272,6 +2272,7 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
->  
->  	case UNICHROME_CX700:
->  		viafb_write_regx(CX700_ModeXregs, NUM_TOTAL_CX700_ModeXregs);
-> +		break;
->  
->  	case UNICHROME_VX800:
->  		viafb_write_regx(VX800_ModeXregs, NUM_TOTAL_VX800_ModeXregs);
-> -- 
-> 1.6.2.4
-> 
-> 
-> ------------------------------------------------------------------------------
-> Crystal Reports - New Free Runtime and 30 Day Trial
-> Check out the new simplified licensing option that enables 
-> unlimited royalty-free distribution of the report engine 
-> for externally facing server and web deployment. 
-> http://p.sf.net/sfu/businessobjects
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+This patch seems already merged into Linus' tree.
+
+I have acked most of your patches. Please add the Acked-by:
+entry to patches which are already ready for submission.
+If a patch has the Acked-by: and a comment it means  that
+a comment is not that important to stop the patch from being
+merged (it is just nice to be fixed).
+
+Please cc: your set of patches to Andrew Morton next time you post
+them.
+
+Kind regards,
+Krzysztof
 
 ----------------------------------------------------------------------
-Zrob sobie prezent. Wygraj nagrode!
-Sprawdz >>  http://link.interia.pl/f2176 
-
+Weekend w gorach za 100 PLN!
+Sprawdz >>> http://link.interia.pl/f218c
 
 
 ------------------------------------------------------------------------------

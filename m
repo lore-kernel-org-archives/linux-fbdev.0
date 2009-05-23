@@ -1,75 +1,119 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 5/6] ARM: OMAP3: ZOOM MDK: Add FB support to board file
-Date: Fri, 22 May 2009 15:44:17 -0700
-Message-ID: <20090522224417.31586.81646.stgit@localhost>
-References: <20090522223543.31586.44534.stgit@localhost>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH 13/15] viafb: initialize 2D engine
+ registers from loop
+Date: Sat, 23 May 2009 08:27:04 +0200
+Message-ID: <20090523082704.d5dc7052.krzysztof.h1@poczta.fm>
+References: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-2-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-3-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-4-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-5-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-6-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-7-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-8-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-9-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-10-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-11-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-12-git-send-email-HaraldWelte@viatech.com>
+	<1242851333-325-13-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20090522223543.31586.44534.stgit@localhost>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: Imre Deak <imre.deak@nokia.com>, "Stanley.Miao" <stanley.miao@windriver.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-
-From: Imre Deak <imre.deak@nokia.com>
-
-Based on an earlier patch by Stanley.Miao <stanley.miao@windriver.com>
-with board-*.c changes split to avoid conflicts with other device updates.
-
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M7kbA-0002JL-Kv
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 May 2009 06:20:48 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M7kb5-0000Z5-Rs for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 May 2009 06:20:48 +0000
+In-Reply-To: <1242851333-325-13-git-send-email-HaraldWelte@viatech.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Harald Welte <HaraldWelte@viatech.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
-Signed-off-by: Stanley.Miao <stanley.miao@windriver.com>
-Signed-off-by: Imre Deak <imre.deak@nokia.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap2/board-ldp.c |   19 +++++++++++++++----
- 1 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
-index da57b0f..59ac8ed 100644
---- a/arch/arm/mach-omap2/board-ldp.c
-+++ b/arch/arm/mach-omap2/board-ldp.c
-@@ -77,10 +77,6 @@ static struct platform_device ldp_smsc911x_device = {
- 	},
- };
- 
--static struct platform_device *ldp_devices[] __initdata = {
--	&ldp_smsc911x_device,
--};
--
- static inline void __init ldp_init_smsc911x(void)
- {
- 	int eth_cs;
-@@ -122,8 +118,18 @@ static struct omap_uart_config ldp_uart_config __initdata = {
- 	.enabled_uarts	= ((1 << 0) | (1 << 1) | (1 << 2)),
- };
- 
-+static struct platform_device ldp_lcd_device = {
-+	.name		= "ldp_lcd",
-+	.id		= -1,
-+};
-+
-+static struct omap_lcd_config ldp_lcd_config __initdata = {
-+	.ctrl_name	= "internal",
-+};
-+
- static struct omap_board_config_kernel ldp_config[] __initdata = {
- 	{ OMAP_TAG_UART,	&ldp_uart_config },
-+	{ OMAP_TAG_LCD,		&ldp_lcd_config },
- };
- 
- static struct twl4030_gpio_platform_data ldp_gpio_data = {
-@@ -168,6 +174,11 @@ static struct twl4030_hsmmc_info mmc[] __initdata = {
- 	{}	/* Terminator */
- };
- 
-+static struct platform_device *ldp_devices[] __initdata = {
-+	&ldp_smsc911x_device,
-+	&ldp_lcd_device,
-+};
-+
- static void __init omap_ldp_init(void)
- {
- 	omap_i2c_init();
+On Thu, 21 May 2009 04:28:51 +0800
+Harald Welte <HaraldWelte@viatech.com> wrote:
 
+> From: Harald Welte <laforge@gnumonks.org>
+> 
+> We don't need to unroll the register initialization routine when
+> initializing the 2D engine registers
+> 
+> Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+> ---
+>  drivers/video/via/accel.c |   18 +++---------------
+>  1 files changed, 3 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+> index c3af95f..b3a414e 100644
+> --- a/drivers/video/via/accel.c
+> +++ b/drivers/video/via/accel.c
+> @@ -41,23 +41,11 @@ void viafb_init_2d_engine(void)
+>  {
+>  	u32 dwVQStartAddr, dwVQEndAddr;
+>  	u32 dwVQLen, dwVQStartL, dwVQEndL, dwVQStartEndH;
+> +	int i;
+>  
+>  	/* init 2D engine regs to reset 2D engine */
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_GEMODE);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCPOS);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_DSTPOS);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_DIMENSION);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_PATADDR);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_FGCOLOR);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_BGCOLOR);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_CLIPTL);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_CLIPBR);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_OFFSET);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_KEYCONTROL);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCBASE);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_DSTBASE);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_PITCH);
+> -	writel(0x0, viaparinfo->io_virt + VIA_REG_MONOPAT1);
+> +	for (i = 0; i <= 0x40; i+= 4)
+> +		writel(0x0, viaparinfo->io_virt + i);
+>  
+
+Use your new viafb_2d_writel() here.
+
+>  	/* Init AGP and VQ regs */
+>  	switch (viaparinfo->chip_info->gfx_chip_name) {
+> -- 
+> 1.6.2.4
+> 
+> 
+> ------------------------------------------------------------------------------
+> Crystal Reports - New Free Runtime and 30 Day Trial
+> Check out the new simplified licensing option that enables 
+> unlimited royalty-free distribution of the report engine 
+> for externally facing server and web deployment. 
+> http://p.sf.net/sfu/businessobjects
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> 
+
+----------------------------------------------------------------------
+Weekend w gorach za 100 PLN!
+Sprawdz >>> http://link.interia.pl/f218c
+
+
+------------------------------------------------------------------------------
+Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT
+is a gathering of tech-side developers & brand creativity professionals. Meet
+the minds behind Google Creative Lab, Visual Complexity, Processing, & 
+iPhoneDevCamp asthey present alongside digital heavyweights like Barbarian
+Group, R/GA, & Big Spaceship. http://www.creativitycat.com 

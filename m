@@ -1,8 +1,8 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 08/15] viafb: get rid of some
- duplicated fields in private structure
-Date: Sat, 23 May 2009 08:34:04 +0200
-Message-ID: <20090523083404.5b3d853e.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH 07/15] viafb: use proper pci config
+ API
+Date: Sat, 23 May 2009 08:52:04 +0200
+Message-ID: <20090523085204.ab138b47.krzysztof.h1@poczta.fm>
 References: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
 	<1242851333-325-2-git-send-email-HaraldWelte@viatech.com>
 	<1242851333-325-3-git-send-email-HaraldWelte@viatech.com>
@@ -10,22 +10,21 @@ References: <1242851333-325-1-git-send-email-HaraldWelte@viatech.com>
 	<1242851333-325-5-git-send-email-HaraldWelte@viatech.com>
 	<1242851333-325-6-git-send-email-HaraldWelte@viatech.com>
 	<1242851333-325-7-git-send-email-HaraldWelte@viatech.com>
-	<1242851333-325-8-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M7ki2-0004VY-Et
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M7kzT-0001B2-SB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 May 2009 06:27:54 +0000
+	Sat, 23 May 2009 06:45:55 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M7khs-0000Ja-9o for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 May 2009 06:27:54 +0000
-In-Reply-To: <1242851333-325-8-git-send-email-HaraldWelte@viatech.com>
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M7kzJ-0006jd-Je for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 23 May 2009 06:45:55 +0000
+In-Reply-To: <1242851333-325-7-git-send-email-HaraldWelte@viatech.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,197 +37,128 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Harald Welte <HaraldWelte@viatech.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 21 May 2009 04:28:46 +0800
+On Thu, 21 May 2009 04:28:45 +0800
 Harald Welte <HaraldWelte@viatech.com> wrote:
 
 > From: Harald Welte <laforge@gnumonks.org>
 > 
-> Instead of using private structure members, we use the standard ones:
->  * viapar->fbmem converted to fb_info->fix.smem_start
->  * viapar->memsize is converted to fb_info->fix.smem_len
->  * viapar->fbmem_virt is convereted to fb_info->screen_base
+> This patch alters viafb to use the proper Linux in-kernel API to access
+> PCI configuration space, rather than poking at I/O ports by itself.
 > 
 > Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 > ---
->  drivers/video/via/global.c   |    1 -
->  drivers/video/via/hw.c       |    2 +-
->  drivers/video/via/viafbdev.c |   47 +++++++++++++++++++----------------------
->  drivers/video/via/viafbdev.h |    3 --
->  4 files changed, 23 insertions(+), 30 deletions(-)
+
+Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+>  drivers/video/via/hw.c |   64 +++++++++++++++++++++++++++++------------------
+>  drivers/video/via/hw.h |    4 +-
+>  2 files changed, 41 insertions(+), 27 deletions(-)
 > 
-> diff --git a/drivers/video/via/global.c b/drivers/video/via/global.c
-> index 468be24..2b7d0d3 100644
-> --- a/drivers/video/via/global.c
-> +++ b/drivers/video/via/global.c
-> @@ -57,4 +57,3 @@ struct fb_info *viafbinfo;
->  struct fb_info *viafbinfo1;
->  struct viafb_par *viaparinfo;
->  struct viafb_par *viaparinfo1;
-> -
 > diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-> index 40b7c0c..e06d6b7 100644
+> index 6306c88..40b7c0c 100644
 > --- a/drivers/video/via/hw.c
 > +++ b/drivers/video/via/hw.c
-> @@ -680,7 +680,7 @@ void viafb_set_start_addr(void)
->  				size = 8 * 1024 * 1024;
->  		} else {
+> @@ -2599,24 +2599,37 @@ static void disable_second_display_channel(void)
+>  	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
+>  }
 >  
-> -			size = viaparinfo1->memsize;
-> +			size = viafbinfo1->fix.smem_len;
->  		}
->  		offset = viafb_second_offset;
->  		DEBUG_MSG(KERN_INFO
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 7e8f2f6..c420623 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -119,10 +119,8 @@ static int viafb_update_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
->  static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
->  	struct viafb_par *viaparinfo)
+> +static u_int16_t via_function3[] = {
+> +	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
+> +	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
+> +	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
+> +};
+> +
+> +/* Get the BIOS-configured framebuffer size from PCI configuration space
+> + * of function 3 in the respective chipset */
+>  int viafb_get_fb_size_from_pci(void)
 >  {
-> -	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
->  	strcpy(fix->id, viafb_name);
+> -	unsigned long configid, deviceid, FBSize = 0;
+> -	int VideoMemSize;
+> -	int DeviceFound = false;
+> -
+> -	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
+> -		outl(configid, (unsigned long)0xCF8);
+> -		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
+> -
+> -		switch (deviceid) {
+> -		case CLE266:
+> -		case KM400:
+> -			outl(configid + 0xE0, (unsigned long)0xCF8);
+> -			FBSize = inl((unsigned long)0xCFC);
+> -			DeviceFound = true;	/* Found device id */
+> -			break;
+> +	int i;
+> +	u_int8_t offset = 0;
+> +	u_int32_t FBSize;
+> +	u_int32_t VideoMemSize;
+> +
+> +	/* search for the "FUNCTION3" device in this chipset */
+> +	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
+> +		struct pci_dev *pdev;
+> +
+> +		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
+> +				      NULL);
+> +		if (!pdev)
+> +			continue;
+> +
+> +		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
 >  
-> -	fix->smem_start = viaparinfo->fbmem;
->  	fix->smem_len = viaparinfo->fbmem_free;
->  	fix->mmio_start = viaparinfo->mmio_base;
->  	fix->mmio_len = viaparinfo->mmio_len;
-> @@ -196,7 +194,7 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
->  		/*32 pixel alignment */
->  		var->xres_virtual = (var->xres_virtual + 31) & ~31;
->  	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
-> -		ppar->memsize)
-> +		info->fix.smem_len)
->  		return -EINVAL;
->  
->  	/* Based on var passed in to calculate the refresh,
-> @@ -630,13 +628,13 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
->  					    (viaparinfo->fbmem_free >> 1);
->  				}
->  			}
-> -			u.viasamm.mem_base = viaparinfo->fbmem;
-> +			u.viasamm.mem_base = viafbinfo->fix.smem_start;
->  			u.viasamm.offset_sec = viafb_second_offset;
->  		} else {
->  			u.viasamm.size_prim =
-> -			    viaparinfo->memsize - viaparinfo->fbmem_used;
-> +			    viafbinfo->fix.smem_len - viaparinfo->fbmem_used;
->  			u.viasamm.size_sec = 0;
-> -			u.viasamm.mem_base = viaparinfo->fbmem;
-> +			u.viasamm.mem_base = viafbinfo->fix.smem_start;
->  			u.viasamm.offset_sec = 0;
+> +		switch (pdev->device) {
+> +		case CLE266_FUNCTION3:
+> +		case KM400_FUNCTION3:
+> +			offset = 0xE0;
+> +			break;
+>  		case CN400_FUNCTION3:
+>  		case CN700_FUNCTION3:
+>  		case CX700_FUNCTION3:
+> @@ -2626,21 +2639,22 @@ int viafb_get_fb_size_from_pci(void)
+>  		case P4M900_FUNCTION3:
+>  		case VX800_FUNCTION3:
+>  		case VX855_FUNCTION3:
+> -			/*case CN750_FUNCTION3: */
+> -			outl(configid + 0xA0, (unsigned long)0xCF8);
+> -			FBSize = inl((unsigned long)0xCFC);
+> -			DeviceFound = true;	/* Found device id */
+> -			break;
+> -
+> -		default:
+> +		/*case CN750_FUNCTION3: */
+> +			offset = 0xA0;
+>  			break;
 >  		}
->  
-> @@ -1245,7 +1243,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
->  			}
->  		}
->  
-> -		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
-> +		memcpy(info->screen_base +
->  		       ((struct viafb_par *)(info->par))->cursor_start,
->  		       cr_data->bak, CURSOR_SIZE);
->  out:
-> @@ -2164,15 +2162,14 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		goto out_fb_release;
->  
->  	viafb_init_chip_info(pdev, ent);
-> -	viaparinfo->fbmem = pci_resource_start(pdev, 0);
-> -	viaparinfo->memsize = viafb_get_fb_size_from_pci();
-> -	viaparinfo->fbmem_free = viaparinfo->memsize;
-> +	viafbinfo->fix.smem_start = pci_resource_start(pdev, 0);
-> +	viafbinfo->fix.smem_len = viafb_get_fb_size_from_pci();
-> +	viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
->  	viaparinfo->fbmem_used = 0;
-> -	viaparinfo->fbmem_virt = ioremap_nocache(viaparinfo->fbmem,
-> -		viaparinfo->memsize);
-> -	viafbinfo->screen_base = (char *)viaparinfo->fbmem_virt;
-> +	viafbinfo->screen_base = ioremap_nocache(viafbinfo->fix.smem_start,
-> +						 viafbinfo->fix.smem_len);
->  
-> -	if (!viaparinfo->fbmem_virt) {
-> +	if (!viafbinfo->screen_base) {
->  		printk(KERN_ERR "ioremap of fbmem failed\n");
->  		rc = -EIO;
->  		goto out_delete_i2c;
-> @@ -2208,7 +2205,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  			viafb_second_size * 1024 * 1024;
+> -
+> -		if (DeviceFound)
+> +		
+> +		if (!offset)
+>  			break;
+> +
+> +		pci_read_config_dword(pdev, offset, &FBSize);
+> +		pci_dev_put(pdev);
 >  	}
 >  
-> -	viafb_FB_MM = viaparinfo->fbmem_virt;
-> +	viafb_FB_MM = viafbinfo->screen_base;
->  	tmpm = viafb_mode;
->  	tmpc = strsep(&tmpm, "x");
->  	strict_strtoul(tmpc, 0, &default_xres);
-> @@ -2298,17 +2295,18 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		}
->  		viaparinfo1 = viafbinfo1->par;
->  		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-> -		viaparinfo1->memsize = viaparinfo->memsize -
-> -			viafb_second_offset;
-> -		viaparinfo->memsize = viafb_second_offset;
-> -		viaparinfo1->fbmem_virt = viaparinfo->fbmem_virt +
-> +		viafbinfo1->fix.smem_len = viafbinfo->fix.smem_len -
-> +							viafb_second_offset;
-> +		viafbinfo->fix.smem_len = viafb_second_offset;
-> +		viafbinfo1->screen_base = viafbinfo->screen_base +
->  			viafb_second_offset;
-> -		viaparinfo1->fbmem = viaparinfo->fbmem + viafb_second_offset;
-> +		viafbinfo1->fix.smem_start = viafbinfo->fix.smem_start + 
-> +							viafb_second_offset;
+> -	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
+> +	if (!offset) {
+> +		printk(KERN_ERR "cannot determine framebuffer size\n");
+> +		return -EIO;
+> +	}
 >  
->  		viaparinfo1->fbmem_used = viaparinfo->fbmem_used;
-> -		viaparinfo1->fbmem_free = viaparinfo1->memsize -
-> +		viaparinfo1->fbmem_free = viafbinfo1->fix.smem_len -
->  			viaparinfo1->fbmem_used;
-> -		viaparinfo->fbmem_free = viaparinfo->memsize;
-> +		viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
->  		viaparinfo->fbmem_used = 0;
->  		if (viafb_accel) {
->  			viaparinfo1->cursor_start =
-> @@ -2322,7 +2320,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		memcpy(viafbinfo1, viafbinfo, sizeof(struct fb_info));
->  		viafbinfo1->screen_base = viafbinfo->screen_base +
->  			viafb_second_offset;
-> -		viafbinfo1->fix.smem_start = viaparinfo1->fbmem;
->  		viafbinfo1->fix.smem_len = viaparinfo1->fbmem_free;
+>  	FBSize = FBSize & 0x00007000;
+>  	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
+> diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+> index 1cd0648..a69e907 100644
+> --- a/drivers/video/via/hw.h
+> +++ b/drivers/video/via/hw.h
+> @@ -850,8 +850,8 @@ struct iga2_crtc_timing {
+>  };
 >  
->  		default_var.xres = viafb_second_xres;
-> @@ -2398,7 +2395,7 @@ out_fb1_release:
->  out_unmap_mmio:
->  	iounmap(viaparinfo->io_virt);
->  out_unmap_fbmem:
-> -	iounmap((void *)viaparinfo->fbmem_virt);
-> +	iounmap((void *)viafbinfo->screen_base);
-
-The cast here and below is not needed.
-
->  out_delete_i2c:
->  	viafb_delete_i2c_buss(viaparinfo);
->  out_fb_release:
-> @@ -2413,7 +2410,7 @@ static void __devexit via_pci_remove(struct pci_dev *pdev)
->  	unregister_framebuffer(viafbinfo);
->  	if (viafb_dual_fb)
->  		unregister_framebuffer(viafbinfo1);
-> -	iounmap((void *)viaparinfo->fbmem_virt);
-> +	iounmap((void *)viafbinfo->screen_base);
->  	iounmap(viaparinfo->io_virt);
->  
->  	viafb_delete_i2c_buss(viaparinfo);
-> diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-> index a4158e8..ed4129e 100644
-> --- a/drivers/video/via/viafbdev.h
-> +++ b/drivers/video/via/viafbdev.h
-> @@ -45,10 +45,7 @@ struct viafb_par {
->  	u32 xoffset;
->  	u32 yoffset;
->  
-> -	void __iomem *fbmem_virt;	/*framebuffer virtual memory address */
->  	void __iomem *io_virt;	/*iospace virtual memory address */
-> -	unsigned int fbmem;	/*framebuffer physical memory address */
-> -	unsigned int memsize;	/*size of fbmem */
->  	unsigned int io;	/*io space address */
->  	unsigned long mmio_base;	/*mmio base address */
->  	unsigned long mmio_len;	/*mmio base length */
+>  /* device ID */
+> -#define CLE266              0x3123
+> -#define KM400               0x3205
+> +#define CLE266_FUNCTION3    0x3123
+> +#define KM400_FUNCTION3     0x3205
+>  #define CN400_FUNCTION2     0x2259
+>  #define CN400_FUNCTION3     0x3259
+>  /* support VT3314 chipset */
 > -- 
 > 1.6.2.4
 > 
@@ -246,8 +176,9 @@ The cast here and below is not needed.
 > 
 
 ----------------------------------------------------------------------
-Fantastyczne nagrody do zgarniecia!
-Zagraj >> http://link.interia.pl/f2177 
+Chcesz miec nawigacje GPS ?
+Zamow lub przedluz umowe na neostrade, a nawigacja bedzie Twoja.
+Kliknij na link po szczegoly! http://link.interia.pl/f219a
 
 
 

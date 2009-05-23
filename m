@@ -1,23 +1,28 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: [PATCH 01/14] [FB] viafb: Add missing break
-	statement in switch
-Date: Sat, 23 May 2009 17:41:23 +0800
-Message-ID: <1243071696-9334-1-git-send-email-HaraldWelte@viatech.com>
+Subject: [PATCH 06/14] viafb: use proper pci config API
+Date: Sat, 23 May 2009 17:41:28 +0800
+Message-ID: <1243071696-9334-6-git-send-email-HaraldWelte@viatech.com>
+References: <1243071696-9334-1-git-send-email-HaraldWelte@viatech.com>
+	<1243071696-9334-2-git-send-email-HaraldWelte@viatech.com>
+	<1243071696-9334-3-git-send-email-HaraldWelte@viatech.com>
+	<1243071696-9334-4-git-send-email-HaraldWelte@viatech.com>
+	<1243071696-9334-5-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <laforge@prithivi.openmoko.org>) id 1M7nsD-0005Je-8k
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <laforge@prithivi.openmoko.org>) id 1M7nsD-0005wl-Sn
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 23 May 2009 09:50:37 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M7ns5-0007uP-V0
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M7ns6-0003Ym-G8
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 23 May 2009 09:50:37 +0000
+In-Reply-To: <1243071696-9334-5-git-send-email-HaraldWelte@viatech.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,24 +37,121 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Harald Welte <HaraldWelte@viatech
 
 From: Harald Welte <laforge@gnumonks.org>
 
+This patch alters viafb to use the proper Linux in-kernel API to access
+PCI configuration space, rather than poking at I/O ports by itself.
+
 Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/via/hw.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/via/hw.c |   64 +++++++++++++++++++++++++++++------------------
+ drivers/video/via/hw.h |    4 +-
+ 2 files changed, 41 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index fcd53ce..59ddf09 100644
+index 6306c88..40b7c0c 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -2272,6 +2272,7 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
+@@ -2599,24 +2599,37 @@ static void disable_second_display_channel(void)
+ 	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
+ }
  
- 	case UNICHROME_CX700:
- 		viafb_write_regx(CX700_ModeXregs, NUM_TOTAL_CX700_ModeXregs);
-+		break;
++static u_int16_t via_function3[] = {
++	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
++	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
++	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
++};
++
++/* Get the BIOS-configured framebuffer size from PCI configuration space
++ * of function 3 in the respective chipset */
+ int viafb_get_fb_size_from_pci(void)
+ {
+-	unsigned long configid, deviceid, FBSize = 0;
+-	int VideoMemSize;
+-	int DeviceFound = false;
+-
+-	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
+-		outl(configid, (unsigned long)0xCF8);
+-		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
+-
+-		switch (deviceid) {
+-		case CLE266:
+-		case KM400:
+-			outl(configid + 0xE0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
++	int i;
++	u_int8_t offset = 0;
++	u_int32_t FBSize;
++	u_int32_t VideoMemSize;
++
++	/* search for the "FUNCTION3" device in this chipset */
++	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
++		struct pci_dev *pdev;
++
++		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
++				      NULL);
++		if (!pdev)
++			continue;
++
++		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
  
- 	case UNICHROME_VX800:
- 		viafb_write_regx(VX800_ModeXregs, NUM_TOTAL_VX800_ModeXregs);
++		switch (pdev->device) {
++		case CLE266_FUNCTION3:
++		case KM400_FUNCTION3:
++			offset = 0xE0;
++			break;
+ 		case CN400_FUNCTION3:
+ 		case CN700_FUNCTION3:
+ 		case CX700_FUNCTION3:
+@@ -2626,21 +2639,22 @@ int viafb_get_fb_size_from_pci(void)
+ 		case P4M900_FUNCTION3:
+ 		case VX800_FUNCTION3:
+ 		case VX855_FUNCTION3:
+-			/*case CN750_FUNCTION3: */
+-			outl(configid + 0xA0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
+-
+-		default:
++		/*case CN750_FUNCTION3: */
++			offset = 0xA0;
+ 			break;
+ 		}
+-
+-		if (DeviceFound)
++		
++		if (!offset)
+ 			break;
++
++		pci_read_config_dword(pdev, offset, &FBSize);
++		pci_dev_put(pdev);
+ 	}
+ 
+-	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
++	if (!offset) {
++		printk(KERN_ERR "cannot determine framebuffer size\n");
++		return -EIO;
++	}
+ 
+ 	FBSize = FBSize & 0x00007000;
+ 	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 1cd0648..a69e907 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -850,8 +850,8 @@ struct iga2_crtc_timing {
+ };
+ 
+ /* device ID */
+-#define CLE266              0x3123
+-#define KM400               0x3205
++#define CLE266_FUNCTION3    0x3123
++#define KM400_FUNCTION3     0x3205
+ #define CN400_FUNCTION2     0x2259
+ #define CN400_FUNCTION3     0x3259
+ /* support VT3314 chipset */
 -- 
 1.6.2.4
 

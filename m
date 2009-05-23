@@ -1,36 +1,30 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: [PATCH 13/14] viafb: Determine type of 2D
-	engine and store it in chip_info
-Date: Sat, 23 May 2009 17:41:35 +0800
-Message-ID: <1243071696-9334-13-git-send-email-HaraldWelte@viatech.com>
+Subject: [PATCH 07/14] viafb: get rid of some duplicated
+	fields in private structure
+Date: Sat, 23 May 2009 17:41:29 +0800
+Message-ID: <1243071696-9334-7-git-send-email-HaraldWelte@viatech.com>
 References: <1243071696-9334-1-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-2-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-3-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-4-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-5-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-6-git-send-email-HaraldWelte@viatech.com>
-	<1243071696-9334-7-git-send-email-HaraldWelte@viatech.com>
-	<1243071696-9334-8-git-send-email-HaraldWelte@viatech.com>
-	<1243071696-9334-9-git-send-email-HaraldWelte@viatech.com>
-	<1243071696-9334-10-git-send-email-HaraldWelte@viatech.com>
-	<1243071696-9334-11-git-send-email-HaraldWelte@viatech.com>
-	<1243071696-9334-12-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <laforge@prithivi.openmoko.org>) id 1M7nsE-0005Jw-6s
+	(envelope-from <laforge@prithivi.openmoko.org>) id 1M7nsE-0005KE-9o
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 23 May 2009 09:50:38 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M7ns6-0007tr-Qp
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M7ns6-0005OA-M1
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Sat, 23 May 2009 09:50:38 +0000
-In-Reply-To: <1243071696-9334-12-git-send-email-HaraldWelte@viatech.com>
+In-Reply-To: <1243071696-9334-6-git-send-email-HaraldWelte@viatech.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -45,80 +39,189 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Harald Welte <HaraldWelte@viatech
 
 From: Harald Welte <laforge@gnumonks.org>
 
-This will help us for the upcoming support for 2D acceleration using
-the M1 engine.
+Instead of using private structure members, we use the standard ones:
+ * viapar->fbmem converted to fb_info->fix.smem_start
+ * viapar->memsize is converted to fb_info->fix.smem_len
+ * viapar->fbmem_virt is convereted to fb_info->screen_base
 
 Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/via/chip.h     |    8 ++++++++
- drivers/video/via/hw.c       |   15 +++++++++++++++
- drivers/video/via/viafbdev.c |    3 +--
- 3 files changed, 24 insertions(+), 2 deletions(-)
+ drivers/video/via/global.c   |    1 -
+ drivers/video/via/hw.c       |    2 +-
+ drivers/video/via/viafbdev.c |   47 +++++++++++++++++++----------------------
+ drivers/video/via/viafbdev.h |    3 --
+ 4 files changed, 23 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-index 03e90cf..7f4bf73 100644
---- a/drivers/video/via/chip.h
-+++ b/drivers/video/via/chip.h
-@@ -122,10 +122,18 @@ struct lvds_chip_information {
- 	int i2c_port;
- };
- 
-+/* The type of 2D engine */
-+enum via_2d_engine {
-+	VIA_2D_ENG_H2,
-+	VIA_2D_ENG_H5,
-+	VIA_2D_ENG_M1,
-+};
-+
- struct chip_information {
- 	int gfx_chip_name;
- 	int gfx_chip_revision;
- 	int chip_on_slot;
-+	enum via_2d_engine twod_engine;
- 	struct tmds_chip_information tmds_chip_info;
- 	struct lvds_chip_information lvds_chip_info;
- 	struct lvds_chip_information lvds_chip_info2;
+diff --git a/drivers/video/via/global.c b/drivers/video/via/global.c
+index 468be24..2b7d0d3 100644
+--- a/drivers/video/via/global.c
++++ b/drivers/video/via/global.c
+@@ -57,4 +57,3 @@ struct fb_info *viafbinfo;
+ struct fb_info *viafbinfo1;
+ struct viafb_par *viaparinfo;
+ struct viafb_par *viaparinfo1;
+-
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index e06d6b7..e14b852 100644
+index 40b7c0c..e06d6b7 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -2092,6 +2092,21 @@ static void init_gfx_chip_info(struct pci_dev *pdev,
- 				CX700_REVISION_700;
- 		}
- 	}
-+
-+	/* Determine which 2D engine we have */
-+	switch (viaparinfo->chip_info->gfx_chip_name) {
-+	case UNICHROME_VX800:
-+	case UNICHROME_VX855:
-+		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_M1;
-+		break;
-+	case UNICHROME_K8M890:
-+	case UNICHROME_P4M900:
-+		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H5;
-+		break;
-+	default:
-+		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H2;
-+		break;
-+	}
- }
+@@ -680,7 +680,7 @@ void viafb_set_start_addr(void)
+ 				size = 8 * 1024 * 1024;
+ 		} else {
  
- static void init_tmds_chip_info(void)
+-			size = viaparinfo1->memsize;
++			size = viafbinfo1->fix.smem_len;
+ 		}
+ 		offset = viafb_second_offset;
+ 		DEBUG_MSG(KERN_INFO
 diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 7d0c8ee..1357034 100644
+index 7e8f2f6..3c4651c 100644
 --- a/drivers/video/via/viafbdev.c
 +++ b/drivers/video/via/viafbdev.c
-@@ -214,8 +214,7 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
- 	if (!info->par)
- 		return -1;
- 	p_viafb_par = (struct viafb_par *)info->par;
--	if (p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX800 ||
--	    p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX855)
-+	if (p_viafb_par->chip_info->twod_engine == VIA_2D_ENG_M1)
- 		var->accel_flags = 0;
+@@ -119,10 +119,8 @@ static int viafb_update_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
+ static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
+ 	struct viafb_par *viaparinfo)
+ {
+-	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+ 	strcpy(fix->id, viafb_name);
  
- 	return 0;
+-	fix->smem_start = viaparinfo->fbmem;
+ 	fix->smem_len = viaparinfo->fbmem_free;
+ 	fix->mmio_start = viaparinfo->mmio_base;
+ 	fix->mmio_len = viaparinfo->mmio_len;
+@@ -196,7 +194,7 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
+ 		/*32 pixel alignment */
+ 		var->xres_virtual = (var->xres_virtual + 31) & ~31;
+ 	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
+-		ppar->memsize)
++		info->fix.smem_len)
+ 		return -EINVAL;
+ 
+ 	/* Based on var passed in to calculate the refresh,
+@@ -630,13 +628,13 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ 					    (viaparinfo->fbmem_free >> 1);
+ 				}
+ 			}
+-			u.viasamm.mem_base = viaparinfo->fbmem;
++			u.viasamm.mem_base = viafbinfo->fix.smem_start;
+ 			u.viasamm.offset_sec = viafb_second_offset;
+ 		} else {
+ 			u.viasamm.size_prim =
+-			    viaparinfo->memsize - viaparinfo->fbmem_used;
++			    viafbinfo->fix.smem_len - viaparinfo->fbmem_used;
+ 			u.viasamm.size_sec = 0;
+-			u.viasamm.mem_base = viaparinfo->fbmem;
++			u.viasamm.mem_base = viafbinfo->fix.smem_start;
+ 			u.viasamm.offset_sec = 0;
+ 		}
+ 
+@@ -1245,7 +1243,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 			}
+ 		}
+ 
+-		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
++		memcpy(info->screen_base +
+ 		       ((struct viafb_par *)(info->par))->cursor_start,
+ 		       cr_data->bak, CURSOR_SIZE);
+ out:
+@@ -2164,15 +2162,14 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		goto out_fb_release;
+ 
+ 	viafb_init_chip_info(pdev, ent);
+-	viaparinfo->fbmem = pci_resource_start(pdev, 0);
+-	viaparinfo->memsize = viafb_get_fb_size_from_pci();
+-	viaparinfo->fbmem_free = viaparinfo->memsize;
++	viafbinfo->fix.smem_start = pci_resource_start(pdev, 0);
++	viafbinfo->fix.smem_len = viafb_get_fb_size_from_pci();
++	viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
+ 	viaparinfo->fbmem_used = 0;
+-	viaparinfo->fbmem_virt = ioremap_nocache(viaparinfo->fbmem,
+-		viaparinfo->memsize);
+-	viafbinfo->screen_base = (char *)viaparinfo->fbmem_virt;
++	viafbinfo->screen_base = ioremap_nocache(viafbinfo->fix.smem_start,
++						 viafbinfo->fix.smem_len);
+ 
+-	if (!viaparinfo->fbmem_virt) {
++	if (!viafbinfo->screen_base) {
+ 		printk(KERN_ERR "ioremap of fbmem failed\n");
+ 		rc = -EIO;
+ 		goto out_delete_i2c;
+@@ -2208,7 +2205,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 			viafb_second_size * 1024 * 1024;
+ 	}
+ 
+-	viafb_FB_MM = viaparinfo->fbmem_virt;
++	viafb_FB_MM = viafbinfo->screen_base;
+ 	tmpm = viafb_mode;
+ 	tmpc = strsep(&tmpm, "x");
+ 	strict_strtoul(tmpc, 0, &default_xres);
+@@ -2298,17 +2295,18 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		}
+ 		viaparinfo1 = viafbinfo1->par;
+ 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
+-		viaparinfo1->memsize = viaparinfo->memsize -
+-			viafb_second_offset;
+-		viaparinfo->memsize = viafb_second_offset;
+-		viaparinfo1->fbmem_virt = viaparinfo->fbmem_virt +
++		viafbinfo1->fix.smem_len = viafbinfo->fix.smem_len -
++							viafb_second_offset;
++		viafbinfo->fix.smem_len = viafb_second_offset;
++		viafbinfo1->screen_base = viafbinfo->screen_base +
+ 			viafb_second_offset;
+-		viaparinfo1->fbmem = viaparinfo->fbmem + viafb_second_offset;
++		viafbinfo1->fix.smem_start = viafbinfo->fix.smem_start + 
++							viafb_second_offset;
+ 
+ 		viaparinfo1->fbmem_used = viaparinfo->fbmem_used;
+-		viaparinfo1->fbmem_free = viaparinfo1->memsize -
++		viaparinfo1->fbmem_free = viafbinfo1->fix.smem_len -
+ 			viaparinfo1->fbmem_used;
+-		viaparinfo->fbmem_free = viaparinfo->memsize;
++		viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
+ 		viaparinfo->fbmem_used = 0;
+ 		if (viafb_accel) {
+ 			viaparinfo1->cursor_start =
+@@ -2322,7 +2320,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		memcpy(viafbinfo1, viafbinfo, sizeof(struct fb_info));
+ 		viafbinfo1->screen_base = viafbinfo->screen_base +
+ 			viafb_second_offset;
+-		viafbinfo1->fix.smem_start = viaparinfo1->fbmem;
+ 		viafbinfo1->fix.smem_len = viaparinfo1->fbmem_free;
+ 
+ 		default_var.xres = viafb_second_xres;
+@@ -2398,7 +2395,7 @@ out_fb1_release:
+ out_unmap_mmio:
+ 	iounmap(viaparinfo->io_virt);
+ out_unmap_fbmem:
+-	iounmap((void *)viaparinfo->fbmem_virt);
++	iounmap(viafbinfo->screen_base);
+ out_delete_i2c:
+ 	viafb_delete_i2c_buss(viaparinfo);
+ out_fb_release:
+@@ -2413,7 +2410,7 @@ static void __devexit via_pci_remove(struct pci_dev *pdev)
+ 	unregister_framebuffer(viafbinfo);
+ 	if (viafb_dual_fb)
+ 		unregister_framebuffer(viafbinfo1);
+-	iounmap((void *)viaparinfo->fbmem_virt);
++	iounmap(viafbinfo->screen_base);
+ 	iounmap(viaparinfo->io_virt);
+ 
+ 	viafb_delete_i2c_buss(viaparinfo);
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index a4158e8..ed4129e 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -45,10 +45,7 @@ struct viafb_par {
+ 	u32 xoffset;
+ 	u32 yoffset;
+ 
+-	void __iomem *fbmem_virt;	/*framebuffer virtual memory address */
+ 	void __iomem *io_virt;	/*iospace virtual memory address */
+-	unsigned int fbmem;	/*framebuffer physical memory address */
+-	unsigned int memsize;	/*size of fbmem */
+ 	unsigned int io;	/*io space address */
+ 	unsigned long mmio_base;	/*mmio base address */
+ 	unsigned long mmio_len;	/*mmio base length */
 -- 
 1.6.2.4
 

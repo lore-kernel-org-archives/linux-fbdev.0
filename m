@@ -1,8 +1,8 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: [PATCH 09/14] viafb: make module parameters
-	visible in sysfs
-Date: Sat, 23 May 2009 17:41:31 +0800
-Message-ID: <1243071696-9334-9-git-send-email-HaraldWelte@viatech.com>
+Subject: [PATCH 08/14] viafb: Remove MMIO from private
+	structure
+Date: Sat, 23 May 2009 17:41:30 +0800
+Message-ID: <1243071696-9334-8-git-send-email-HaraldWelte@viatech.com>
 References: <1243071696-9334-1-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-2-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-3-git-send-email-HaraldWelte@viatech.com>
@@ -10,23 +10,22 @@ References: <1243071696-9334-1-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-5-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-6-git-send-email-HaraldWelte@viatech.com>
 	<1243071696-9334-7-git-send-email-HaraldWelte@viatech.com>
-	<1243071696-9334-8-git-send-email-HaraldWelte@viatech.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
 	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <laforge@prithivi.openmoko.org>) id 1M7nsD-0007xZ-Av
+	(envelope-from <laforge@prithivi.openmoko.org>) id 1M7nsE-0007xk-7f
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 May 2009 09:50:37 +0000
+	Sat, 23 May 2009 09:50:38 +0000
 Received: from ganesha.gnumonks.org ([213.95.27.120])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M7ns5-0007uW-Uz
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M7ns6-0007ts-Qp
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 23 May 2009 09:50:37 +0000
-In-Reply-To: <1243071696-9334-8-git-send-email-HaraldWelte@viatech.com>
+	Sat, 23 May 2009 09:50:38 +0000
+In-Reply-To: <1243071696-9334-7-git-send-email-HaraldWelte@viatech.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -41,129 +40,58 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Harald Welte <HaraldWelte@viatech
 
 From: Harald Welte <laforge@gnumonks.org>
 
+Rather than using our own private structure members for MMIO base
+and length, we use the fb_info->fix ones.
+
 Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/via/viafbdev.c |   45 +++++++++++++++++++++--------------------
- 1 files changed, 23 insertions(+), 22 deletions(-)
+ drivers/video/via/viafbdev.c |   11 ++++-------
+ drivers/video/via/viafbdev.h |    2 --
+ 2 files changed, 4 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index a8bfc0a..2e93f71 100644
+index 3c4651c..a8bfc0a 100644
 --- a/drivers/video/via/viafbdev.c
 +++ b/drivers/video/via/viafbdev.c
-@@ -20,6 +20,7 @@
-  */
+@@ -122,9 +122,6 @@ static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
+ 	strcpy(fix->id, viafb_name);
  
- #include <linux/module.h>
-+#include <linux/stat.h>
- #define _MASTER_FILE
+ 	fix->smem_len = viaparinfo->fbmem_free;
+-	fix->mmio_start = viaparinfo->mmio_base;
+-	fix->mmio_len = viaparinfo->mmio_len;
+-
+ 	fix->type = FB_TYPE_PACKED_PIXELS;
+ 	fix->type_aux = 0;
  
- #include "global.h"
-@@ -2570,82 +2571,82 @@ module_init(viafb_init);
- module_exit(viafb_exit);
+@@ -2175,10 +2172,10 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		goto out_delete_i2c;
+ 	}
  
- #ifdef MODULE
--module_param(viafb_memsize, int, 0);
-+module_param(viafb_memsize, int, S_IRUSR);
+-	viaparinfo->mmio_base = pci_resource_start(pdev, 1);
+-	viaparinfo->mmio_len = pci_resource_len(pdev, 1);
+-	viaparinfo->io_virt = ioremap_nocache(viaparinfo->mmio_base,
+-		viaparinfo->mmio_len);
++	viafbinfo->fix.mmio_start = pci_resource_start(pdev, 1);
++	viafbinfo->fix.mmio_len = pci_resource_len(pdev, 1);
++	viaparinfo->io_virt = ioremap_nocache(viafbinfo->fix.mmio_start,
++					      viafbinfo->fix.mmio_len);
+ 	if (!viaparinfo->io_virt) {
+ 		printk(KERN_ERR "ioremap of MMIO failed\n");
+ 		rc = -EIO;
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index ed4129e..0c1d734 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -47,8 +47,6 @@ struct viafb_par {
  
--module_param(viafb_mode, charp, 0);
-+module_param(viafb_mode, charp, S_IRUSR);
- MODULE_PARM_DESC(viafb_mode, "Set resolution (default=640x480)");
- 
--module_param(viafb_mode1, charp, 0);
-+module_param(viafb_mode1, charp, S_IRUSR);
- MODULE_PARM_DESC(viafb_mode1, "Set resolution (default=640x480)");
- 
--module_param(viafb_bpp, int, 0);
-+module_param(viafb_bpp, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_bpp, "Set color depth (default=32bpp)");
- 
--module_param(viafb_bpp1, int, 0);
-+module_param(viafb_bpp1, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_bpp1, "Set color depth (default=32bpp)");
- 
--module_param(viafb_refresh, int, 0);
-+module_param(viafb_refresh, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_refresh,
- 	"Set CRT viafb_refresh rate (default = 60)");
- 
--module_param(viafb_refresh1, int, 0);
-+module_param(viafb_refresh1, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_refresh1,
- 	"Set CRT refresh rate (default = 60)");
- 
--module_param(viafb_lcd_panel_id, int, 0);
-+module_param(viafb_lcd_panel_id, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_lcd_panel_id,
- 	"Set Flat Panel type(Default=1024x768)");
- 
--module_param(viafb_lcd_dsp_method, int, 0);
-+module_param(viafb_lcd_dsp_method, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_lcd_dsp_method,
- 	"Set Flat Panel display scaling method.(Default=Expandsion)");
- 
--module_param(viafb_SAMM_ON, int, 0);
-+module_param(viafb_SAMM_ON, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_SAMM_ON,
- 	"Turn on/off flag of SAMM(Default=OFF)");
- 
--module_param(viafb_accel, int, 0);
-+module_param(viafb_accel, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_accel,
- 	"Set 2D Hardware Acceleration.(Default = OFF)");
- 
--module_param(viafb_active_dev, charp, 0);
-+module_param(viafb_active_dev, charp, S_IRUSR);
- MODULE_PARM_DESC(viafb_active_dev, "Specify active devices.");
- 
--module_param(viafb_display_hardware_layout, int, 0);
-+module_param(viafb_display_hardware_layout, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_display_hardware_layout,
- 	"Display Hardware Layout (LCD Only, DVI Only...,etc)");
- 
--module_param(viafb_second_size, int, 0);
-+module_param(viafb_second_size, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_second_size,
- 	"Set secondary device memory size");
- 
--module_param(viafb_dual_fb, int, 0);
-+module_param(viafb_dual_fb, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_dual_fb,
- 	"Turn on/off flag of dual framebuffer devices.(Default = OFF)");
- 
--module_param(viafb_platform_epia_dvi, int, 0);
-+module_param(viafb_platform_epia_dvi, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_platform_epia_dvi,
- 	"Turn on/off flag of DVI devices on EPIA board.(Default = OFF)");
- 
--module_param(viafb_device_lcd_dualedge, int, 0);
-+module_param(viafb_device_lcd_dualedge, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_device_lcd_dualedge,
- 	"Turn on/off flag of dual edge panel.(Default = OFF)");
- 
--module_param(viafb_bus_width, int, 0);
-+module_param(viafb_bus_width, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_bus_width,
- 	"Set bus width of panel.(Default = 12)");
- 
--module_param(viafb_lcd_mode, int, 0);
-+module_param(viafb_lcd_mode, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_lcd_mode,
- 	"Set Flat Panel mode(Default=OPENLDI)");
- 
--module_param(viafb_video_dev, charp, 0);
-+module_param(viafb_video_dev, charp, S_IRUSR);
- MODULE_PARM_DESC(viafb_video_dev, "Specify video devices.");
- 
--module_param(viafb_lcd_port, charp, 0);
-+module_param(viafb_lcd_port, charp, S_IRUSR);
- MODULE_PARM_DESC(viafb_lcd_port, "Specify LCD output port.");
- 
--module_param(viafb_dvi_port, charp, 0);
-+module_param(viafb_dvi_port, charp, S_IRUSR);
- MODULE_PARM_DESC(viafb_dvi_port, "Specify DVI output port.");
- 
- MODULE_LICENSE("GPL");
+ 	void __iomem *io_virt;	/*iospace virtual memory address */
+ 	unsigned int io;	/*io space address */
+-	unsigned long mmio_base;	/*mmio base address */
+-	unsigned long mmio_len;	/*mmio base length */
+ 	u32 fbmem_free;		/* Free FB memory */
+ 	u32 fbmem_used;		/* Use FB memory size */
+ 	u32 cursor_start;	/* Cursor Start Address */
 -- 
 1.6.2.4
 

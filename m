@@ -1,25 +1,26 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 1/7] video: Add support for the
- Avionic Design Xanthos framebuffer.
-Date: Sun, 24 May 2009 08:45:25 +0200
-Message-ID: <20090524084525.65b471c0.krzysztof.h1@poczta.fm>
-References: <1243002576-14476-1-git-send-email-thierry.reding@avionic-design.de>
-	<1243002576-14476-2-git-send-email-thierry.reding@avionic-design.de>
+Subject: Re: [PATCH] fb: add support of LCD display
+ controller on pxa168/910 (base layer)
+Date: Sun, 24 May 2009 13:43:04 +0200
+Message-ID: <20090524134304.fcf906ad.krzysztof.h1@poczta.fm>
+References: <f17812d70905210203se23d5e7ya60cbb6eb93815aa@mail.gmail.com>
+	<20090521094157.GA24078@n2100.arm.linux.org.uk>
+	<f17812d70905210728k1349adb6se4ffc26bd5d9cf53@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1M87MV-0004rp-CF
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1M8C0e-0002na-Sz
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 May 2009 06:39:11 +0000
+	Sun, 24 May 2009 11:36:56 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M87MS-0008Lb-5Y for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 24 May 2009 06:39:11 +0000
-In-Reply-To: <1243002576-14476-2-git-send-email-thierry.reding@avionic-design.de>
+	id 1M8C0a-0000zI-Gt for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 24 May 2009 11:36:56 +0000
+In-Reply-To: <f17812d70905210728k1349adb6se4ffc26bd5d9cf53@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,1197 +30,1621 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel@lists.arm.linux.org.uk
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Green Wan <gwan@marvell.com>, linux-fbdev-devel@lists.sourceforge.net, Jun Nie <njun@marvell.com>, Peter Liao <pliao@marvell.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>, Lennert Buijtenhek <buytenh@marvell.com>, Kevin Liu <kliu5@marvell.com>
 
-On Fri, 22 May 2009 16:29:30 +0200
-Thierry Reding <thierry.reding@avionic-design.de> wrote:
 
-> This patch adds support for the Avionic Design Xanthos framebuffer.
+Hi Eric,
+
+My comments are below.
+
+Kind regards,
+Krzysztof
+
+On Thu, 21 May 2009 22:28:14 +0800
+Eric Miao <eric.y.miao@gmail.com> wrote:
+
+> Incorporated all the feedback, except for the duplicated fbi->dev with
+> info->dev, which could be easier for some function to do dev_xxx()
+> message output.
 > 
-> Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+> ===========>8===========
+> 
+> This driver is originally written by Lennert, modified by Green to be
+> feature complete,  and ported by Jun Nie and Kevin Liu for pxa168/910
+> processors.
+> 
+> The patch adds support for the on-chip LCD display controller, it
+> currently supports the base (graphics) layer only.
+> 
+> Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
+> Signed-off-by: Green Wan <gwan@marvell.com>
+> Cc: Peter Liao <pliao@marvell.com>
+> Signed-off-by: Jun Nie <njun@marvell.com>
+> Signed-off-by: Kevin Liu <kliu5@marvell.com>
+> Signed-off-by: Eric Miao <eric.miao@marvell.com>
 > ---
-
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
->  drivers/video/Kconfig         |   12 ++
->  drivers/video/Makefile        |    1 +
->  drivers/video/adxfb/Makefile  |    1 +
->  drivers/video/adxfb/adxfb.h   |  118 ++++++++++++
->  drivers/video/adxfb/fb.c      |  411 +++++++++++++++++++++++++++++++++++++++++
->  drivers/video/adxfb/overlay.c |  190 +++++++++++++++++++
->  drivers/video/adxfb/scaler.c  |  231 +++++++++++++++++++++++
->  include/video/Kbuild          |    1 +
->  include/video/adxfb.h         |  128 +++++++++++++
->  9 files changed, 1093 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/adxfb/Makefile
->  create mode 100644 drivers/video/adxfb/adxfb.h
->  create mode 100644 drivers/video/adxfb/fb.c
->  create mode 100644 drivers/video/adxfb/overlay.c
->  create mode 100644 drivers/video/adxfb/scaler.c
->  create mode 100644 include/video/adxfb.h
+>  drivers/video/Kconfig    |   10 +
+>  drivers/video/Makefile   |    1 +
+>  drivers/video/pxa168fb.c |  798 ++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/video/pxa168fb.h |  558 ++++++++++++++++++++++++++++++++
+>  include/video/pxa168fb.h |  128 ++++++++
+>  5 files changed, 1495 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/video/pxa168fb.c
+>  create mode 100644 drivers/video/pxa168fb.h
+>  create mode 100644 include/video/pxa168fb.h
 > 
 > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 0048f11..49e1b69 100644
+> index 0048f11..13fd66a 100644
 > --- a/drivers/video/Kconfig
 > +++ b/drivers/video/Kconfig
-> @@ -1663,6 +1663,18 @@ config CARMINE_DRAM_CUSTOM
->  	  Use custom board timings.
->  endchoice
->  
-> +config FB_ADX
-> +	tristate "Avionic Design Xanthos framebuffer support"
-> +	depends on FB
+> @@ -1759,6 +1759,16 @@ config FB_68328
+>  	  Say Y here if you want to support the built-in frame buffer of
+>  	  the Motorola 68328 CPU family.
+> 
+> +config FB_PXA168
+> +	tristate "PXA168/910 LCD framebuffer support"
+> +	depends on FB && (CPU_PXA168 || CPU_PXA910)
 > +	select FB_CFB_FILLRECT
 > +	select FB_CFB_COPYAREA
 > +	select FB_CFB_IMAGEBLIT
-> +	help
-> +	  Framebuffer driver for the LCD controller in Avionic Design
-> +	  Xanthos boards.
+> +	---help---
+> +	  Frame buffer driver for the built-in LCD controller in the Marvell
+> +	  MMP processor.
 > +
-> +	  If in doubt, say N.
-> +
->  config FB_AU1100
->  	bool "Au1100 LCD Driver"
->  	depends on (FB = y) && MIPS && SOC_AU1100
+>  config FB_PXA
+>  	tristate "PXA LCD framebuffer support"
+>  	depends on FB && ARCH_PXA
 > diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-> index d8d0be5..4de52a5 100644
+> index d8d0be5..01a819f 100644
 > --- a/drivers/video/Makefile
 > +++ b/drivers/video/Makefile
-> @@ -125,6 +125,7 @@ obj-$(CONFIG_FB_OMAP)             += omap/
->  obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
->  obj-$(CONFIG_FB_CARMINE)          += carminefb.o
->  obj-$(CONFIG_FB_MB862XX)	  += mb862xx/
-> +obj-$(CONFIG_FB_ADX)              += adxfb/
->  
->  # Platform or fallback drivers go here
->  obj-$(CONFIG_FB_UVESA)            += uvesafb.o
-> diff --git a/drivers/video/adxfb/Makefile b/drivers/video/adxfb/Makefile
+> @@ -97,6 +97,7 @@ obj-$(CONFIG_FB_GBE)              += gbefb.o
+>  obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o
+>  obj-$(CONFIG_FB_ASILIANT)	  += asiliantfb.o
+>  obj-$(CONFIG_FB_PXA)		  += pxafb.o
+> +obj-$(CONFIG_FB_PXA168)		  += pxa168fb.o
+>  obj-$(CONFIG_FB_W100)		  += w100fb.o
+>  obj-$(CONFIG_FB_TMIO)		  += tmiofb.o
+>  obj-$(CONFIG_FB_AU1100)		  += au1100fb.o
+> diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
 > new file mode 100644
-> index 0000000..389d65c
+> index 0000000..707f20c
 > --- /dev/null
-> +++ b/drivers/video/adxfb/Makefile
-> @@ -0,0 +1 @@
-> +obj-y	+= fb.o overlay.o scaler.o
-> diff --git a/drivers/video/adxfb/adxfb.h b/drivers/video/adxfb/adxfb.h
-> new file mode 100644
-> index 0000000..8238bf3
-> --- /dev/null
-> +++ b/drivers/video/adxfb/adxfb.h
-> @@ -0,0 +1,118 @@
+> +++ b/drivers/video/pxa168fb.c
+> @@ -0,0 +1,798 @@
 > +/*
-> + * linux/drivers/video/adxfb/adxfb.h
+> + * linux/drivers/video/pxa168fb.c -- Marvell PXA168 LCD Controller
 > + *
-> + * Copyright (C) 2007-2008 Avionic Design Development GmbH
-> + * Copyright (C) 2008-2009 Avionic Design GmbH
+> + *  Copyright (C) 2008 Marvell International Ltd.
+> + *  All rights reserved.
 > + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Written by Thierry Reding <thierry.reding@avionic-design.de>
-> + */
-> +
-> +#ifndef _DRIVERS_VIDEO_ADXFB_ADXFB_H
-> +#define _DRIVERS_VIDEO_ADXFB_ADXFB_H 1
-> +
-> +#include <linux/spinlock.h>
-> +#include <video/adxfb.h>
-> +
-> +/**
-> + * struct adxfb_info - Avionic Design Xanthos framebuffer info structure
-> + * @palette:		VGA palette storage
-> + * @io_base:		memory-mapped base address for graphics controller
-> + * @scaler_base:	memory-mapped base address for scaler
-> + * @ioctl:		machine-specific I/O control handler
-> + */
-> +struct adxfb_info {
-> +	u32 palette[16];
-> +
-> +	void __iomem *io_base;
-> +	void __iomem *scaler_base;
-> +	spinlock_t lock;
-> +
-> +	int (*ioctl)(struct fb_info *info, unsigned int command,
-> +			unsigned long arg);
-> +};
-> +
-> +/* register definitions */
-> +#define ADXFB_CONTROL			0x000
-> +#define ADXFB_CONTROL_ENABLE		(1 <<  0)
-> +#define ADXFB_CONTROL_SYNC		(1 <<  1)
-> +#define ADXFB_CONTROL_DOUBLE_Y		(1 <<  2)
-> +#define ADXFB_CONTROL_HALVE_X		(1 <<  3)
-> +#define ADXFB_CONTROL_TRIPLE_Y		(1 <<  4)
-> +#define ADXFB_CONTROL_LOCK		(1 << 31)
-> +#define ADXFB_OVERLAY_CONTROL		0x008
-> +#define ADXFB_OVERLAY_CONTROL_OVERLAY	(1 << 0)
-> +#define ADXFB_OVERLAY_CONTROL_ALPHA	(1 << 1)
-> +#define ADXFB_OVERLAY_START		0x010
-> +#define ADXFB_OVERLAY_END		0x018
-> +#define ADXFB_OVERLAY_PAGE0_START	0x020
-> +#define ADXFB_OVERLAY_PAGE0_END		0x028
-> +#define ADXFB_OVERLAY_PAGE0_SIZE	0x030
-> +#define ADXFB_OVERLAY_PAGE1_START	0x038
-> +#define ADXFB_OVERLAY_PAGE1_END		0x040
-> +#define ADXFB_OVERLAY_PAGE1_SIZE	0x048
-> +#define ADXFB_OVERLAY_LEVEL		0x050
-> +#define ADXFB_ALPHA_START		0x058
-> +#define ADXFB_ALPHA_END			0x060
-> +#define ADXFB_ALPHA_PAGE1_START		0x068
-> +#define ADXFB_ALPHA_PAGE1_END		0x070
-> +#define ADXFB_ALPHA_PAGE1_SIZE		0x078
-> +#define ADXFB_PAGE0_BASE		0x080
-> +#define ADXFB_PAGE0_FORMAT		0x088
-> +#define ADXFB_PAGE0_RESOLUTION		0x090
-> +#define ADXFB_PAGE0_RESOLUTION_BYTE	0x098
-> +#define ADXFB_PAGE0_SIZE		0x0a0
-> +#define ADXFB_PAGE1_BASE		0x0b0
-> +#define ADXFB_PAGE1_FORMAT		0x0b8
-> +#define ADXFB_PAGE1_RESOLUTION		0x0c0
-> +#define ADXFB_PAGE1_RESOLUTION_PHYSICAL	0x0c8
-> +#define ADXFB_PAGE1_RESOLUTION_VIRTUAL	0x0d0
-> +#define ADXFB_PAGE1_SIZE_PHYSICAL	0x0d8
-> +#define ADXFB_PAGE1_SIZE_VIRTUAL	0x0e0
-> +#define ADXFB_PAGE1_OFFSET		0x0e8
-> +#define ADXFB_PAGE1_SECONDARY_BASE	0x0f0
-> +#define ADXFB_COLOR_OFFSET		0x100
-> +#define ADXFB_COLOR_MUL			0x108
-> +
-> +/* page format (ADXFB_PAGE0_FORMAT, ADXFB_PAGE1_FORMAT) */
-> +#define ADXFB_FMT_NONE		0
-> +#define ADXFB_FMT_GRAYSCALE_8	1
-> +#define ADXFB_FMT_RGB_565	2
-> +#define ADXFB_FMT_RGB_888	3
-> +#define ADXFB_FMT_RGBA_8888	4
-> +
-> +/**
-> + * adxfb_r32() - read 32-bit register
-> + * @fb:		framebuffer context
-> + * @offset:	relative register offset
-> + */
-> +static inline u32 adxfb_r32(struct adxfb_info *fb, unsigned long offset)
-> +{
-> +	return readl(fb->io_base + offset);
-> +}
-> +
-> +/**
-> + * adxfb_w32() - write 32-bit register
-> + * @fb:		framebuffer context
-> + * @offset:	relative register offset
-> + * @value:	value to write to register
-> + */
-> +static inline void adxfb_w32(struct adxfb_info *fb, unsigned long offset,
-> +		u32 value)
-> +{
-> +	writel(value, fb->io_base + offset);
-> +}
-> +
-> +extern int adxfb_scaler_set_mode(struct fb_info *info,
-> +		struct adxfb_scaler_mode *mode);
-> +extern int adxfb_scaler_get_mode(struct fb_info *info,
-> +		struct adxfb_scaler_mode *mode);
-> +
-> +extern int adxfb_overlay_enable(struct fb_info *info, unsigned long flags);
-> +extern int adxfb_overlay_set_viewport(struct fb_info *info,
-> +		struct adxfb_viewport *viewport);
-> +
-> +#endif /* !_DRIVERS_VIDEO_ADXFB_ADXFB_H */
-> diff --git a/drivers/video/adxfb/fb.c b/drivers/video/adxfb/fb.c
-> new file mode 100644
-> index 0000000..7b6f0a5
-> --- /dev/null
-> +++ b/drivers/video/adxfb/fb.c
-> @@ -0,0 +1,411 @@
-> +/*
-> + * linux/drivers/video/adxfb/fb.c
-> + *
-> + * Copyright (C) 2007-2008 Avionic Design Development GmbH
-> + * Copyright (C) 2008-2009 Avionic Design GmbH
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Written by Thierry Reding <thierry.reding@avionic-design.de>
-> + */
-> +
-> +#include <linux/fb.h>
-> +#include <linux/io.h>
-> +#include <linux/mm.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/uaccess.h>
-> +
-> +#include "adxfb.h"
-> +
-> +/**
-> + * adxfb_setcolreg() - set color register
-> + * @regno:	register number to set
-> + * @red:	red color component
-> + * @green:	green color component
-> + * @blue:	blue color component
-> + * @transp:	transparency component
-> + * @info:	framebuffer context
-> + */
-> +static int adxfb_setcolreg(unsigned regno, unsigned red, unsigned green,
-> +		unsigned blue, unsigned transp, struct fb_info *info)
-> +{
-> +	if ((regno >= info->cmap.len) || (regno > 255))
-> +		return 1;
-> +
-> +#define CNVT_TOHW(val, width) ((((val) << (width)) + 0x7FFF - (val)) >> 16)
-> +	switch (info->fix.visual) {
-> +	case FB_VISUAL_TRUECOLOR:
-> +		if (regno < 16) {
-> +			((struct adxfb_info *)info->par)->palette[regno] =
-> +				(CNVT_TOHW(red, info->var.red.length)
-> +					<< info->var.red.offset) |
-> +				(CNVT_TOHW(green, info->var.green.length)
-> +					<< info->var.green.offset) |
-> +				(CNVT_TOHW(blue, info->var.blue.length)
-> +					<< info->var.blue.offset) |
-> +				(CNVT_TOHW(transp, info->var.transp.length)
-> +					<< info->var.transp.offset);
-> +		}
-> +		break;
-> +
-> +	default:
-> +		dev_err(info->dev, "bad depth: %u\n", info->var.bits_per_pixel);
-> +		break;
-> +	}
-> +#undef CNVT_TOHW
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * adxfb_ioctl() - handle I/O controls
-> + * @info:	framebuffer context
-> + * @command:	I/O control code
-> + * @arg:	I/O control argument
-> + */
-> +static int adxfb_ioctl(struct fb_info *info, unsigned int command,
-> +		unsigned long arg)
-> +{
-> +	struct adxfb_info *fb = info->par;
-> +	void __user *argp = (void __user *)arg;
-> +	struct adxfb_scaler_mode mode;
-> +	struct adxfb_viewport viewport;
-> +	int err = 0;
-> +
-> +	switch (command) {
-> +	case ADXFB_IOCTL_SCALER_SET_MODE:
-> +		if (copy_from_user(&mode, argp, sizeof(mode)))
-> +			return -EFAULT;
-> +
-> +		err = adxfb_scaler_set_mode(info, &mode);
-> +		if (err < 0)
-> +			return err;
-> +
-> +		break;
-> +
-> +	case ADXFB_IOCTL_SCALER_GET_MODE:
-> +		err = adxfb_scaler_get_mode(info, &mode);
-> +		if (err < 0)
-> +			return err;
-> +
-> +		if (copy_to_user(argp, &mode, sizeof(mode)))
-> +			return -EFAULT;
-> +
-> +		break;
-> +
-> +	case ADXFB_IOCTL_OVERLAY_ENABLE:
-> +		err = adxfb_overlay_enable(info, arg);
-> +		if (err < 0)
-> +			return err;
-> +
-> +		break;
-> +
-> +	case ADXFB_IOCTL_OVERLAY_SET_VIEWPORT:
-> +		if (copy_from_user(&viewport, argp, sizeof(viewport)))
-> +			return -EFAULT;
-> +
-> +		err = adxfb_overlay_set_viewport(info, &viewport);
-> +		if (err < 0)
-> +			return err;
-> +
-> +		break;
-> +
-> +	default:
-> +		if (fb && fb->ioctl)
-> +			return fb->ioctl(info, command, arg);
-> +
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/* framebuffer operations */
-> +static struct fb_ops adxfb_ops = {
-> +	.owner = THIS_MODULE,
-> +	.fb_setcolreg = adxfb_setcolreg,
-> +	.fb_ioctl = adxfb_ioctl,
-> +	.fb_fillrect = cfb_fillrect,
-> +	.fb_copyarea = cfb_copyarea,
-> +	.fb_imageblit = cfb_imageblit,
-> +};
-> +
-> +/**
-> + * adxfb_set_bitfield() - initialize a bitfield structure
-> + * @bf:		bitfield structure to fill
-> + * @offset:	value for offset field
-> + * @length:	value for length field
-> + * @msb_right:	value for msb_right field
-> + */
-> +static void adxfb_set_bitfield(struct fb_bitfield *bf, u32 offset, u32 length,
-> +		u32 msb_right)
-> +{
-> +	bf->offset = offset;
-> +	bf->length = length;
-> +	bf->msb_right = msb_right;
-> +}
-> +
-> +/**
-> + * adxfb_fmt_to_mode() - convert format type to video mode parameters
-> + * @fmt:	ADXFB format type
-> + * @mode:	video mode
-> + */
-> +static int adxfb_fmt_to_mode(u8 fmt, struct adxfb_mode_info *mode)
-> +{
-> +	switch (fmt) {
-> +	case ADXFB_FMT_GRAYSCALE_8:
-> +		/* FIXME: use correct values here */
-> +		adxfb_set_bitfield(&mode->red,   5, 3, 0);
-> +		adxfb_set_bitfield(&mode->green, 3, 2, 0);
-> +		adxfb_set_bitfield(&mode->blue,  0, 3, 0);
-> +		mode->bpp = 8;
-> +		break;
-> +
-> +	case ADXFB_FMT_RGB_565:
-> +		adxfb_set_bitfield(&mode->red,   11, 5, 0);
-> +		adxfb_set_bitfield(&mode->green,  5, 6, 0);
-> +		adxfb_set_bitfield(&mode->blue,   0, 5, 0);
-> +		mode->bpp = 16;
-> +		break;
-> +
-> +	case ADXFB_FMT_RGB_888:
-> +		/* FIXME: verify that these are correct values */
-> +		adxfb_set_bitfield(&mode->red,   16, 8, 0);
-> +		adxfb_set_bitfield(&mode->green,  8, 8, 0);
-> +		adxfb_set_bitfield(&mode->blue,   0, 8, 0);
-> +		mode->bpp = 24;
-> +		break;
-> +
-> +	case ADXFB_FMT_RGBA_8888:
-> +		/* FIXME: verify that these are correct values */
-> +		adxfb_set_bitfield(&mode->red,   16, 8, 0);
-> +		adxfb_set_bitfield(&mode->green,  8, 8, 0);
-> +		adxfb_set_bitfield(&mode->blue,   0, 8, 0);
-> +		mode->bpp = 32;
-> +		break;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * adxfb_get_mach_mode() - obtain the current video mode
-> + * @fb:		framebuffer context
-> + * @mode:	structure to return the video mode in
-> + */
-> +static int adxfb_get_mach_mode(struct adxfb_info *fb,
-> +		struct adxfb_mode_info *mode)
-> +{
-> +	u32 size;
-> +	u16 resx;
-> +	u16 resy;
-> +	u8 fmt;
-> +
-> +	size = adxfb_r32(fb, ADXFB_PAGE0_RESOLUTION);
-> +	resx = (size >> 16) & 0x7ff;
-> +	resy = (size >>  0) & 0x7ff;
-> +
-> +	fmt = adxfb_r32(fb, ADXFB_PAGE0_FORMAT) & 0xff;
-> +
-> +	mode->xres = resx;
-> +	mode->yres = resy;
-> +
-> +	return adxfb_fmt_to_mode(fmt, mode);
-> +}
-> +
-> +/**
-> + * adxfb_probe() - initialize the framebuffer device
-> + * @pdev:	platform device
-> + */
-> +static int __init adxfb_probe(struct platform_device *pdev)
-> +{
-> +	struct adxfb_mach_info *mach_info = pdev->dev.platform_data;
-> +	struct adxfb_mode_info mode;
-> +	struct adxfb_info *fb;
-> +	struct fb_info *info;
-> +	struct resource *res;
-> +	int err = 0;
-> +
-> +	info = framebuffer_alloc(sizeof(struct adxfb_info), &pdev->dev);
-> +	if (!info) {
-> +		dev_err(&pdev->dev, "failed to allocate framebuffer device\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	fb = info->par;
-> +	spin_lock_init(&fb->lock);
-> +
-> +	if (mach_info)
-> +		fb->ioctl = mach_info->ioctl;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "failed to get graphics controller I/O "
-> +				"memory resource\n");
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	res = devm_request_mem_region(&pdev->dev, res->start,
-> +			res->end - res->start + 1, res->name);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "failed to request graphics controller "
-> +				"I/O memory region\n");
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	fb->io_base = devm_ioremap_nocache(&pdev->dev, res->start,
-> +			res->end - res->start + 1);
-> +	if (!fb->io_base) {
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "failed to get scaler I/O memory "
-> +				"resource\n");
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	res = devm_request_mem_region(&pdev->dev, res->start,
-> +			res->end - res->start + 1, res->name);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "failed to request scaler I/O memory "
-> +				"region\n");
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	fb->scaler_base = devm_ioremap_nocache(&pdev->dev, res->start,
-> +			res->end - res->start + 1);
-> +	if (!fb->scaler_base) {
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "failed to get framebuffer I/O memory "
-> +				"resource\n");
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	res = devm_request_mem_region(&pdev->dev, res->start,
-> +			res->end - res->start + 1, res->name);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "failed to request framebuffer I/O "
-> +				"memory region\n");
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	info->screen_base = devm_ioremap_nocache(&pdev->dev, res->start,
-> +			res->end - res->start + 1);
-> +	if (!info->screen_base) {
-> +		err = -ENXIO;
-> +		goto free;
-> +	}
-> +
-> +	/* TODO: add some checking for these parameters */
-> +	memset(&mode, 0, sizeof(mode));
-> +	adxfb_get_mach_mode(fb, &mode);
-> +
-> +	snprintf(info->fix.id, sizeof(info->fix.id), "adxfb");
-> +	info->fix.type = FB_TYPE_PACKED_PIXELS;
-> +	info->fix.visual = FB_VISUAL_TRUECOLOR;
-> +	info->fix.accel = FB_ACCEL_NONE;
-> +	info->fix.line_length = mode.xres * (mode.bpp / 8);
-> +	info->fix.smem_start = res->start;
-> +	info->fix.smem_len = res->end - res->start + 1;
-> +
-> +	info->var.activate = FB_ACTIVATE_NOW;
-> +	info->var.vmode = FB_VMODE_NONINTERLACED;
-> +	info->var.xres = mode.xres;
-> +	info->var.yres = mode.yres;
-> +	info->var.xres_virtual = mode.xres;
-> +	info->var.yres_virtual = mode.yres;
-> +	info->var.bits_per_pixel = mode.bpp;
-> +	info->var.red = mode.red;
-> +	info->var.green = mode.green;
-> +	info->var.blue = mode.blue;
-> +	info->var.width = mode.xres;
-> +	info->var.height = mode.yres;
-> +
-> +	info->fbops = &adxfb_ops;
-> +	info->flags = FBINFO_DEFAULT;
-> +	info->pseudo_palette = fb->palette;
-> +
-> +	err = fb_alloc_cmap(&info->cmap, 256, 0);
-> +	if (err < 0) {
-> +		err = -ENOMEM;
-> +		goto free;
-> +	}
-> +
-> +	err = register_framebuffer(info);
-> +	if (err < 0) {
-> +		dev_err(&pdev->dev, "failed to register framebuffer\n");
-> +		goto cmap;
-> +	}
-> +
-> +	dev_info(info->dev, "ADX framebuffer initialized\n");
-> +	platform_set_drvdata(pdev, info);
-> +	return 0;
-> +
-> +cmap:
-> +	fb_dealloc_cmap(&info->cmap);
-> +free:
-> +	framebuffer_release(info);
-> +	return err;
-> +}
-> +
-> +/**
-> + * adxfb_remove() - shutdown the framebuffer device
-> + * @pdev:	platform device
-> + */
-> +static int adxfb_remove(struct platform_device *pdev)
-> +{
-> +	struct fb_info *info = platform_get_drvdata(pdev);
-> +	unregister_framebuffer(info);
-> +	return 0;
-> +}
-> +
-> +/* ADXFB platform driver */
-> +static struct platform_driver adxfb_driver = {
-> +	.probe = adxfb_probe,
-> +	.remove = adxfb_remove,
-> +	.driver = {
-> +		.name = "adxfb",
-> +	},
-> +};
-> +
-> +/**
-> + * adxfb_init() - module initialization
-> + */
-> +int __init adxfb_init(void)
-> +{
-> +	return platform_driver_register(&adxfb_driver);
-> +}
-> +
-> +/**
-> + * adxfb_exit() - module cleanup
-> + */
-> +void __exit adxfb_exit(void)
-> +{
-> +	platform_driver_unregister(&adxfb_driver);
-> +}
-> +
-> +module_init(adxfb_init);
-> +module_exit(adxfb_exit);
-> +
-> +MODULE_AUTHOR("Thierry Reding <thierry.reding@avionic-design.de>");
-> +MODULE_DESCRIPTION("Avionic Design Xanthos framebuffer driver");
-> +MODULE_LICENSE("GPL v2");
-> diff --git a/drivers/video/adxfb/overlay.c b/drivers/video/adxfb/overlay.c
-> new file mode 100644
-> index 0000000..f114a54
-> --- /dev/null
-> +++ b/drivers/video/adxfb/overlay.c
-> @@ -0,0 +1,190 @@
-> +/*
-> + * linux/drivers/video/adxfb/overlay.c
-> + *
-> + * Copyright (C) 2008 Avionic Design Development GmbH
-> + * Copyright (C) 2008 Avionic Design GmbH
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Written by Thierry Reding <thierry.reding@avionic-design.de>
-> + */
-> +
-> +#include <linux/fb.h>
-> +#include "adxfb.h"
-> +
-> +/* format to bit-depth table */
-> +struct fmt_bpp {
-> +	u8  fmt;
-> +	int bpp;
-> +};
-> +
-> +static struct fmt_bpp formats[] = {
-> +	{ ADXFB_FMT_GRAYSCALE_8,  8 },
-> +	{ ADXFB_FMT_RGB_565,     16 },
-> +	{ ADXFB_FMT_RGB_888,     24 },
-> +	{ ADXFB_FMT_RGBA_8888,   32 },
-> +};
-> +
-> +/**
-> + * fmt_to_bpp() - obtain the bit-depth for a given page format
-> + * @fmt:	format of which to retrieve the bit-depth
-> + */
-> +static int fmt_to_bpp(u8 fmt)
-> +{
-> +	int bpp = 0, i;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(formats); i++) {
-> +		if (fmt == formats[i].fmt) {
-> +			bpp = formats[i].bpp;
-> +			break;
-> +		}
-> +	}
-> +
-> +	return bpp;
-> +}
-> +
-> +/**
-> + * adxfb_disable() - disable the graphics controller
-> + * @fb:		framebuffer context
-> + */
-> +static inline void adxfb_disable(struct adxfb_info *fb)
-> +{
-> +	u32 ctrl;
-> +
-> +	spin_lock(&fb->lock);
-> +
-> +	ctrl = adxfb_r32(fb, ADXFB_CONTROL);
-> +	ctrl &= ~ADXFB_CONTROL_ENABLE;
-> +	ctrl |=  ADXFB_CONTROL_LOCK;
-> +	adxfb_w32(fb, ADXFB_CONTROL, ctrl);
-> +
-> +	spin_unlock(&fb->lock);
-> +}
-> +
-> +/**
-> + * adxfb_enable() - enable the graphics controller
-> + * @fb:		framebuffer context
-> + */
-> +static inline void adxfb_enable(struct adxfb_info *fb)
-> +{
-> +	u32 ctrl;
-> +
-> +	spin_lock(&fb->lock);
-> +
-> +	ctrl = adxfb_r32(fb, ADXFB_CONTROL);
-> +	ctrl &= ~ADXFB_CONTROL_LOCK;
-> +	ctrl |=  ADXFB_CONTROL_ENABLE;
-> +	adxfb_w32(fb, ADXFB_CONTROL, ctrl);
-> +
-> +	spin_unlock(&fb->lock);
-> +}
-> +
-> +/**
-> + * adxfb_overlay_enable() - enable the overlay window
-> + * @info:	framebuffer context
-> + * @flags:	flags for enabling/disabling
-> + */
-> +int adxfb_overlay_enable(struct fb_info *info, unsigned long flags)
-> +{
-> +	struct adxfb_info *fb = info->par;
-> +	u32 ctrl;
-> +
-> +	if (!info)
-> +		return -EINVAL;
-> +
-> +	spin_lock(&fb->lock);
-> +
-> +	ctrl = adxfb_r32(fb, ADXFB_OVERLAY_CONTROL);
-> +
-> +	if (flags & ADXFB_OVERLAY_ENABLE)
-> +		ctrl |=  ADXFB_OVERLAY_CONTROL_OVERLAY;
-> +	else
-> +		ctrl &= ~ADXFB_OVERLAY_CONTROL_OVERLAY;
-> +
-> +	adxfb_w32(fb, ADXFB_OVERLAY_CONTROL, ctrl);
-> +
-> +	spin_unlock(&fb->lock);
-> +	return 0;
-> +}
-> +
-> +/**
-> + * adxfb_overlay_set_viewport() - set the region for the overlay window
-> + * @info:	framebuffer context
-> + * @viewport:	new screen region for the overlay window
-> + */
-> +int adxfb_overlay_set_viewport(struct fb_info *info,
-> +		struct adxfb_viewport *viewport)
-> +{
-> +	struct adxfb_info *fb = info->par;
-> +	int sx, sy, dx, dy, ex, ey;
-> +	int p0dx, p0dy;
-> +	int p0ps, p1ps;
-> +	u32 size;
-> +
-> +	if (!info || !viewport)
-> +		return -EINVAL;
-> +
-> +	sx = viewport->x & ~0x3;
-> +	sy = viewport->y & ~0x3;
-> +	dx = viewport->width & ~0x3;
-> +	dy = viewport->height & ~0x3;
-> +	ex = sx + dx - 1;
-> +	ey = sy + dy - 1;
-> +
-> +	size = adxfb_r32(fb, ADXFB_PAGE0_RESOLUTION);
-> +	p0dx = (size >> 16) & 0x7ff;
-> +	p0dy = (size >>  0) & 0x7ff;
-> +
-> +	size = adxfb_r32(fb, ADXFB_PAGE0_FORMAT) & 0xff;
-> +	p0ps = fmt_to_bpp(size) / 8;
-> +
-> +	size = adxfb_r32(fb, ADXFB_PAGE1_FORMAT) & 0xff;
-> +	p1ps = fmt_to_bpp(size) / 8;
-> +
-> +	adxfb_disable(fb);
-> +	spin_lock(&fb->lock);
-> +
-> +	size = (((dx + 0) & 0x7ff) << 16) | (dy & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_PAGE1_RESOLUTION, size);
-> +
-> +	/* FIXME: (dx + 4) is a hack! */
-> +	size = ((((dx + 4) * p1ps) & 0x1fff) << 16) | (dy & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_PAGE1_RESOLUTION_PHYSICAL, size);
-> +
-> +	size = ((((p0dx + 0) * p1ps) & 0x1fff) << 16) | (p0dy & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_PAGE1_RESOLUTION_VIRTUAL, size);
-> +
-> +	adxfb_w32(fb, ADXFB_PAGE1_SIZE_PHYSICAL, dx * dy * p1ps);
-> +	adxfb_w32(fb, ADXFB_PAGE1_SIZE_VIRTUAL, p0dx * p0dy * p1ps);
-> +
-> +	size = ((sx & 0x7ff) << 16) | (sy & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_OVERLAY_START, size);
-> +
-> +	size = ((ex & 0x7ff) << 16) | (ey & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_OVERLAY_END, size);
-> +
-> +	size = (((sx * p0ps) & 0x1fff) << 16) | (sy & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_OVERLAY_PAGE0_START, size);
-> +	adxfb_w32(fb, ADXFB_PAGE1_OFFSET, size);
-> +
-> +	size = (((ex * p0ps) & 0x1fff) << 16) | (ey & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_OVERLAY_PAGE0_END, size);
-> +
-> +	size = (((sx * p1ps) & 0x1fff) << 16) | (sy & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_OVERLAY_PAGE1_START, size);
-> +
-> +	size = (((ex * p1ps) & 0x1fff) << 16) | (ey & 0x7ff);
-> +	adxfb_w32(fb, ADXFB_OVERLAY_PAGE1_END, size);
-> +
-> +	adxfb_w32(fb, ADXFB_OVERLAY_PAGE0_SIZE, dx * dy * p0ps);
-> +	adxfb_w32(fb, ADXFB_OVERLAY_PAGE1_SIZE, dx * dy * p1ps);
-> +
-> +	adxfb_w32(fb, ADXFB_OVERLAY_LEVEL, 0xff);
-> +
-> +	spin_unlock(&fb->lock);
-> +	adxfb_enable(fb);
-> +
-> +	return 0;
-> +}
-> diff --git a/drivers/video/adxfb/scaler.c b/drivers/video/adxfb/scaler.c
-> new file mode 100644
-> index 0000000..96e5796
-> --- /dev/null
-> +++ b/drivers/video/adxfb/scaler.c
-> @@ -0,0 +1,231 @@
-> +/*
-> + * linux/drivers/video/adxfb/fb.c
-> + *
-> + * Copyright (C) 2007-2008 Avionic Design Development GmbH
-> + * Copyright (C) 2008 Avionic Design GmbH
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Written by Thierry Reding <thierry.reding@avionic-design.de>
-> + */
-> +
-> +#include <linux/fb.h>
-> +#include "adxfb.h"
-> +
-> +/**
-> + * struct scaler_mode - scaler mode values
-> + * @uh:		horizontal up scaling factor
-> + * @dh:		horizontal down scaling factor
-> + * @uv:		vertical up scaling factor
-> + * @dv:		vertical down scaling factor
-> + * @ox:		original horizontal resolution
-> + * @oy:		original vertical resolution
-> + * @tx:		target horizontal resolution
-> + * @ty:		target vertical resolution
-> + */
-> +struct scaler_mode {
-> +	u16 uh, dh;
-> +	u16 uv, dv;
-> +	u16 ox, oy;
-> +	u16 tx, ty;
-> +};
-> +
-> +/* register definitions */
-> +#define SCALER_MODE				0x000
-> +#define SCALER_MODE_ENABLE_X	(1 <<  0)
-> +#define SCALER_MODE_ENABLE_Y	(1 <<  1)
-> +#define SCALER_MODE_BYPASS_X	(1 <<  2)
-> +#define SCALER_MODE_BYPASS_Y	(1 <<  3)
-> +#define SCALER_MODE_RGB_888	(1 <<  4)
-> +#define SCALER_MODE_LOWPASS	(1 <<  7)
-> +#define SCALER_MODE_SYNC	(1 <<  8)
-> +#define SCALER_MODE_RESET	(1 << 15)
-> +#define SCALER_MODE_LOCK	(1 << 31)
-> +#define SCALER_UH				0x008
-> +#define SCALER_DH				0x010
-> +#define SCALER_UV				0x030
-> +#define SCALER_DV				0x038
-> +#define SCALER_ORIGIN_X				0x040
-> +#define SCALER_ORIGIN_Y				0x048
-> +#define SCALER_OFFSET_X				0x050
-> +#define SCALER_OFFSET_Y				0x058
-> +#define SCALER_TARGET_X				0x060
-> +#define SCALER_TARGET_Y				0x068
-> +#define SCALER_ORIGIN_STRIDE			0x070
-> +#define SCALER_TARGET_STRIDE			0x078
-> +#define SCALER_ORIGIN_SIZE			0x080
-> +#define SCALER_TARGET_SIZE			0x088
-> +#define SCALER_PRIMARY_PRE_TARGET_ADDR		0x090
-> +#define SCALER_PRIMARY_TARGET_ADDR		0x098
-> +#define SCALER_SECONDARY_PRE_TARGET_ADDR	0x0a0
-> +#define SCALER_SECONDARY_TARGET_ADDR		0x0a8
-> +
-> +/**
-> + * scaler_r32() - read a 32-bit register
-> + * @fb:		framebuffer context
-> + * @offset:	relative register offset
-> + */
-> +static inline u32 scaler_r32(struct adxfb_info *fb, unsigned long offset)
-> +{
-> +	return readl(fb->scaler_base + offset);
-> +}
-> +
-> +/**
-> + * scaler_w32() - write a 32-bit register
-> + * @fb:		framebuffer context
-> + * @offset:	relative register offset
-> + * @value:	value to write to the register
-> + */
-> +static inline void scaler_w32(struct adxfb_info *fb, unsigned long offset,
-> +		u32 value)
-> +{
-> +	writel(value, fb->scaler_base + offset);
-> +}
-> +
-> +/**
-> + * scaler_enable() - enable the scaling unit
-> + * @fb:		framebuffer context
-> + */
-> +static inline void scaler_enable(struct adxfb_info *fb)
-> +{
-> +	u32 mode;
-> +
-> +	spin_lock(&fb->lock);
-> +
-> +	mode = scaler_r32(fb, SCALER_MODE);
-> +	mode |=  SCALER_MODE_ENABLE_X;
-> +	mode |=  SCALER_MODE_ENABLE_Y;
-> +	mode &= ~SCALER_MODE_LOCK;
-> +	scaler_w32(fb, SCALER_MODE, mode);
-> +
-> +	spin_unlock(&fb->lock);
-> +}
-> +
-> +/**
-> + * scaler_disable() - disable the scaling unit
-> + * @fb:		framebuffer context
-> + */
-> +static inline void scaler_disable(struct adxfb_info *fb)
-> +{
-> +	u32 mode;
-> +
-> +	spin_lock(&fb->lock);
-> +
-> +	mode = scaler_r32(fb, SCALER_MODE);
-> +	mode |=  SCALER_MODE_LOCK;
-> +	mode &= ~SCALER_MODE_ENABLE_Y;
-> +	mode &= ~SCALER_MODE_ENABLE_X;
-> +	scaler_w32(fb, SCALER_MODE, mode);
-> +
-> +	spin_unlock(&fb->lock);
-> +}
-> +
-> +/**
-> + * find_mode() - match a request to the best mode that can be achieved
-> + * @fb:		framebuffer context
-> + * @mode:	requested mode
-> + */
-> +static int find_mode(struct adxfb_info *fb, struct scaler_mode *mode)
-> +{
-> +	if (!fb || !mode)
-> +		return -EINVAL;
-> +
-> +	if ((mode->tx == 0) || (mode->ty == 0))
-> +		return 0;
-> +
-> +	mode->uh = scaler_r32(fb, SCALER_UH) & 0x7ff;
-> +	mode->uh = 128; /* FIXME: don't hardcode */
-> +	mode->uv = scaler_r32(fb, SCALER_UV) & 0x7ff;
-> +	mode->uv = 128; /* FIXME: don't hardcode */
-> +
-> +	mode->dh = (mode->ox * mode->uh) / mode->tx;
-> +	mode->dv = (mode->oy * mode->uv) / mode->ty;
-> +
-> +	mode->tx = (mode->ox * mode->uh) / mode->dh;
-> +	mode->ty = (mode->oy * mode->uv) / mode->dv;
-> +
-> +	/* TODO: check the parameters */
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * adxfb_scaler_set_mode() - set a given scaler mode
-> + * @info:	framebuffer context
-> + * @modep:	scaler mode
-> + */
-> +int adxfb_scaler_set_mode(struct fb_info *info,
-> +		struct adxfb_scaler_mode *modep)
-> +{
-> +	struct adxfb_info *fb = info->par;
-> +	struct scaler_mode mode;
-> +	int err, bpp;
-> +	u32 ctrl;
-> +
-> +	memset(&mode, 0, sizeof(mode));
-> +	mode.ox = modep->origin_x;
-> +	mode.oy = modep->origin_y;
-> +	mode.tx = modep->target_x;
-> +	mode.ty = modep->target_y;
-> +
-> +	scaler_disable(fb);
-> +	spin_lock(&fb->lock);
-> +
-> +	err = find_mode(fb, &mode);
-> +	if (err < 0) {
-> +		spin_unlock(&fb->lock);
-> +		scaler_enable(fb);
-> +		return err;
-> +	}
-> +
-> +	ctrl = scaler_r32(fb, SCALER_MODE);
-> +	if (ctrl & SCALER_MODE_RGB_888)
-> +		bpp = 24;
-> +	else
-> +		bpp = 16;
-> +
-> +	scaler_w32(fb, SCALER_UH, mode.uh);
-> +	scaler_w32(fb, SCALER_DH, mode.dh);
-> +	scaler_w32(fb, SCALER_UV, mode.uv);
-> +	scaler_w32(fb, SCALER_DV, mode.dv);
-> +
-> +	scaler_w32(fb, SCALER_OFFSET_X, 0);
-> +	scaler_w32(fb, SCALER_OFFSET_Y, 0);
-> +
-> +	scaler_w32(fb, SCALER_ORIGIN_X, mode.ox);
-> +	scaler_w32(fb, SCALER_ORIGIN_Y, mode.oy);
-> +	scaler_w32(fb, SCALER_TARGET_X, mode.tx);
-> +	scaler_w32(fb, SCALER_TARGET_Y, mode.ty);
-> +
-> +	scaler_w32(fb, SCALER_ORIGIN_STRIDE, mode.ox * (bpp / 8));
-> +	scaler_w32(fb, SCALER_TARGET_STRIDE, mode.tx * (bpp / 8));
-> +
-> +	scaler_w32(fb, SCALER_ORIGIN_SIZE, mode.ox * mode.oy * (bpp / 8));
-> +	scaler_w32(fb, SCALER_TARGET_SIZE, mode.tx * mode.ty * (bpp / 8));
-> +
-> +	spin_unlock(&fb->lock);
-> +	scaler_enable(fb);
-> +	return 0;
-> +}
-> +
-> +/**
-> + * adxfb_scaler_mode() - obtain the current scaler mode
-> + * @info:	framebuffer context
-> + * @modep:	structure to return the mode in
-> + */
-> +int adxfb_scaler_get_mode(struct fb_info *info, struct adxfb_scaler_mode *modep)
-> +{
-> +	struct adxfb_info *fb = info->par;
-> +
-> +	spin_lock(&fb->lock);
-> +
-> +	modep->origin_x = scaler_r32(fb, SCALER_ORIGIN_X) & 0x7ff;
-> +	modep->origin_y = scaler_r32(fb, SCALER_ORIGIN_Y) & 0x7ff;
-> +	modep->target_x = scaler_r32(fb, SCALER_TARGET_X) & 0x7ff;
-> +	modep->target_y = scaler_r32(fb, SCALER_TARGET_Y) & 0x7ff;
-> +
-> +	spin_unlock(&fb->lock);
-> +	return 0;
-> +}
-> diff --git a/include/video/Kbuild b/include/video/Kbuild
-> index 0e406f7..72fc9b0 100644
-> --- a/include/video/Kbuild
-> +++ b/include/video/Kbuild
-> @@ -1,2 +1,3 @@
->  unifdef-y += sisfb.h uvesafb.h
->  unifdef-y += edid.h
-> +unifdef-y += adxfb.h
-> diff --git a/include/video/adxfb.h b/include/video/adxfb.h
-> new file mode 100644
-> index 0000000..e7ef6d0
-> --- /dev/null
-> +++ b/include/video/adxfb.h
-> @@ -0,0 +1,128 @@
-> +/*
-> + * linux/include/video/adxfb.h
-> + *
-> + * Copyright (C) 2007-2008 Avionic Design Development GmbH
-> + * Copyright (C) 2008-2009 Avionic Design GmbH
+> + *  2009-02-16  adapted from original version for PXA168/910
+> + *              Jun Nie <njun@marvell.com>
 > + *
 > + * This file is subject to the terms and conditions of the GNU General Public
 > + * License. See the file COPYING in the main directory of this archive for
 > + * more details.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/sched.h>
+> +#include <linux/string.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/slab.h>
+> +#include <linux/fb.h>
+> +#include <linux/delay.h>
+> +#include <linux/init.h>
+> +#include <linux/ioport.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/clk.h>
+> +#include <linux/err.h>
+> +#include <linux/uaccess.h>
+> +#include <video/pxa168fb.h>
+> +
+> +#include "pxa168fb.h"
+> +
+> +#define DEFAULT_REFRESH		60	/* Hz */
+> +
+> +static int determine_best_pix_fmt(struct fb_var_screeninfo *var)
+> +{
+> +	/*
+> +	 * Pseudocolor mode?
+> +	 */
+> +	if (var->bits_per_pixel == 8)
+> +		return PIX_FMT_PSEUDOCOLOR;
+> +
+> +	/*
+> +	 * Check for 565/1555.
+> +	 */
+> +	if (var->bits_per_pixel == 16 && var->red.length <= 5 &&
+> +	    var->green.length <= 6 && var->blue.length <= 5) {
+> +		if (var->transp.length == 0) {
+> +			if (var->red.offset >= var->blue.offset)
+> +				return PIX_FMT_RGB565;
+> +			else
+> +				return PIX_FMT_BGR565;
+> +		}
+> +
+> +		if (var->transp.length == 1 && var->green.length <= 5) {
+> +			if (var->red.offset >= var->blue.offset)
+> +				return PIX_FMT_RGB1555;
+> +			else
+> +				return PIX_FMT_BGR1555;
+> +		}
+> +
+> +		/* fall through */
+> +	}
+> +
+> +	/*
+> +	 * Check for 888/A888.
+> +	 */
+> +	if (var->bits_per_pixel <= 32 && var->red.length <= 8 &&
+> +	    var->green.length <= 8 && var->blue.length <= 8) {
+> +		if (var->bits_per_pixel == 24 && var->transp.length == 0) {
+> +			if (var->red.offset >= var->blue.offset)
+> +				return PIX_FMT_RGB888PACK;
+> +			else
+> +				return PIX_FMT_BGR888PACK;
+> +		}
+> +
+> +		if (var->bits_per_pixel == 32 && var->transp.length == 8) {
+> +			if (var->red.offset >= var->blue.offset)
+> +				return PIX_FMT_RGBA888;
+> +			else
+> +				return PIX_FMT_BGRA888;
+> +		} else {
+> +			if (var->red.offset >= var->blue.offset)
+> +				return PIX_FMT_RGB888UNPACK;
+> +			else
+> +				return PIX_FMT_BGR888UNPACK;
+> +		}
+> +
+> +		/* fall through */
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +static void set_pix_fmt(struct fb_var_screeninfo *var, int pix_fmt)
+> +{
+> +	switch (pix_fmt) {
+> +	case PIX_FMT_RGB565:
+> +		var->bits_per_pixel = 16;
+> +		var->red.offset = 11;    var->red.length = 5;
+> +		var->green.offset = 5;   var->green.length = 6;
+> +		var->blue.offset = 0;    var->blue.length = 5;
+> +		var->transp.offset = 0;  var->transp.length = 0;
+> +		break;
+> +	case PIX_FMT_BGR565:
+> +		var->bits_per_pixel = 16;
+> +		var->red.offset = 0;     var->red.length = 5;
+> +		var->green.offset = 5;   var->green.length = 6;
+> +		var->blue.offset = 11;   var->blue.length = 5;
+> +		var->transp.offset = 0;  var->transp.length = 0;
+> +		break;
+> +	case PIX_FMT_RGB1555:
+> +		var->bits_per_pixel = 16;
+> +		var->red.offset = 10;    var->red.length = 5;
+> +		var->green.offset = 5;   var->green.length = 5;
+> +		var->blue.offset = 0;    var->blue.length = 5;
+> +		var->transp.offset = 15; var->transp.length = 1;
+> +		break;
+> +	case PIX_FMT_BGR1555:
+> +		var->bits_per_pixel = 16;
+> +		var->red.offset = 0;     var->red.length = 5;
+> +		var->green.offset = 5;   var->green.length = 5;
+> +		var->blue.offset = 10;   var->blue.length = 5;
+> +		var->transp.offset = 15; var->transp.length = 1;
+> +		break;
+> +	case PIX_FMT_RGB888PACK:
+> +		var->bits_per_pixel = 24;
+> +		var->red.offset = 16;    var->red.length = 8;
+> +		var->green.offset = 8;   var->green.length = 8;
+> +		var->blue.offset = 0;    var->blue.length = 8;
+> +		var->transp.offset = 0;  var->transp.length = 0;
+> +		break;
+> +	case PIX_FMT_BGR888PACK:
+> +		var->bits_per_pixel = 24;
+> +		var->red.offset = 0;     var->red.length = 8;
+> +		var->green.offset = 8;   var->green.length = 8;
+> +		var->blue.offset = 16;   var->blue.length = 8;
+> +		var->transp.offset = 0;  var->transp.length = 0;
+> +		break;
+> +	case PIX_FMT_RGBA888:
+> +		var->bits_per_pixel = 32;
+> +		var->red.offset = 16;    var->red.length = 8;
+> +		var->green.offset = 8;   var->green.length = 8;
+> +		var->blue.offset = 0;    var->blue.length = 8;
+> +		var->transp.offset = 24; var->transp.length = 8;
+> +		break;
+> +	case PIX_FMT_BGRA888:
+> +		var->bits_per_pixel = 32;
+> +		var->red.offset = 0;     var->red.length = 8;
+> +		var->green.offset = 8;   var->green.length = 8;
+> +		var->blue.offset = 16;   var->blue.length = 8;
+> +		var->transp.offset = 24; var->transp.length = 8;
+> +		break;
+> +	case PIX_FMT_PSEUDOCOLOR:
+> +		var->bits_per_pixel = 8;
+> +		var->red.offset = 0;     var->red.length = 8;
+> +		var->green.offset = 0;   var->green.length = 8;
+> +		var->blue.offset = 0;    var->blue.length = 8;
+> +		var->transp.offset = 0;  var->transp.length = 0;
+> +		break;
+> +	}
+> +}
+> +
+> +static void set_mode(struct pxa168fb_info *fbi, struct fb_var_screeninfo *var,
+> +		     struct fb_videomode *mode, int pix_fmt, int ystretch)
+> +{
+> +	set_pix_fmt(var, pix_fmt);
+> +
+> +	var->xres = mode->xres;
+> +	var->yres = mode->yres;
+> +	var->xres_virtual = max(var->xres, var->xres_virtual);
+> +	if (ystretch)
+> +		var->yres_virtual = fbi->fb_size /
+> +			(var->xres_virtual * (var->bits_per_pixel >> 3));
+> +	else
+> +		var->yres_virtual = max(var->yres, var->yres_virtual);
+> +	var->grayscale = 0;
+> +	var->accel_flags = FB_ACCEL_NONE;
+> +	var->pixclock = mode->pixclock;
+> +	var->left_margin = mode->left_margin;
+> +	var->right_margin = mode->right_margin;
+> +	var->upper_margin = mode->upper_margin;
+> +	var->lower_margin = mode->lower_margin;
+> +	var->hsync_len = mode->hsync_len;
+> +	var->vsync_len = mode->vsync_len;
+> +	var->sync = mode->sync;
+> +	var->vmode = FB_VMODE_NONINTERLACED;
+> +	var->rotate = FB_ROTATE_UR;
+> +}
+> +
+> +static int pxa168fb_check_var(struct fb_var_screeninfo *var,
+> +			      struct fb_info *info)
+> +{
+> +	struct pxa168fb_info *fbi = info->par;
+> +
+> +	if (var->bits_per_pixel == 8)
+> +		return -EINVAL;
+
+This blocks 8bpp (pseudocolor) mode which is handled in all switches.
+Also, there is no check here for modes above 8 bpp. The best solution
+is to call the set_pix_fmt() here and check its return
+value. Additional advantage is to update the var 
+settings (it should be done in the check_var() not
+in the set_par() function).
+
+> +	/*
+> +	 * Basic geometry sanity checks.
+> +	 */
+> +	if (var->xoffset + var->xres > var->xres_virtual)
+> +		return -EINVAL;
+> +	if (var->yoffset + var->yres > var->yres_virtual)
+> +		return -EINVAL;
+> +	if (var->xres + var->right_margin +
+> +	    var->hsync_len + var->left_margin > 2048)
+> +		return -EINVAL;
+> +	if (var->yres + var->lower_margin +
+> +	    var->vsync_len + var->upper_margin > 2048)
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * Check size of framebuffer.
+> +	 */
+> +	if (var->xres_virtual * var->yres_virtual *
+> +	    (var->bits_per_pixel >> 3) > fbi->fb_size)
+> +		return -EINVAL;
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * The hardware clock divider has an integer and a fractional
+> + * stage:
 > + *
-> + * Written by Thierry Reding <thierry.reding@avionic-design.de>
+> + *	clk2 = clk_in / integer_divider
+> + *	clk_out = clk2 * (1 - (fractional_divider >> 12))
+> + *
+> + * Calculate integer and fractional divider for given clk_in
+> + * and clk_out.
 > + */
+> +static void set_clock_divider(struct pxa168fb_info *fbi,
+> +			      const struct fb_videomode *m)
+> +{
+> +	int divider_int;
+> +	int needed_pixclk;
+> +	u64 div_result;
+> +	u32 x = 0;
 > +
-> +#ifndef _VIDEO_ADXFB_H
-> +#define _VIDEO_ADXFB_H
+> +	/*
+> +	 * Notice: The field pixclock is used by linux fb
+> +	 * is in pixel second. E.g. struct fb_videomode &
+> +	 * struct fb_var_screeninfo
+> +	 */
 > +
-> +#include <linux/ioctl.h>
-> +#include <linux/types.h>
+> +	/*
+> +	 * Check input values.
+> +	 */
+> +	if (!m || !m->pixclock || !m->refresh) {
+> +		dev_err(fbi->dev, "Input refresh or pixclock is wrong.\n");
+> +		return;
+> +	}
 > +
-> +#ifdef __KERNEL__
-> +/* overlay control register */
-> +#define ADXFB_OVERLAY_CONTROL			0x008
-> +#define ADXFB_OVERLAY_CONTROL_OVERLAY_ENABLE	(1 << 0)
-> +#define ADXFB_OVERLAY_CONTROL_ALPHA_ENABLE	(1 << 1)
+> +	/*
+> +	 * Using PLL/AXI clock.
+> +	 */
+> +	x = 0x80000000;
 > +
-> +#define ADXFB_PAGE0_BASE			0x080
+> +	/*
+> +	 * Calc divider according to refresh rate.
+> +	 */
+> +	div_result = 1000000000000ll;
+> +	do_div(div_result, m->pixclock);
+> +	needed_pixclk = (u32)div_result;
 > +
-> +/* color correction (brightness) register */
-> +#define ADXFB_COLOR_BRIGHTNESS			0x100
-> +#define ADXFB_COLOR_BRIGHTNESS_MIN		0x00
-> +#define ADXFB_COLOR_BRIGHTNESS_MAX		0x7f
+> +	divider_int = clk_get_rate(fbi->clk) / needed_pixclk;
 > +
-> +/* color correction (contrast) register */
-> +#define ADXFB_COLOR_CONTRAST			0x108
-> +#define ADXFB_COLOR_CONTRAST_MIN		0x48
-> +#define ADXFB_COLOR_CONTRAST_MAX		0x7f
+> +	/* check whether divisor is too small. */
+> +	if (divider_int < 2) {
+> +		dev_warn(fbi->dev, "Warning: clock source is too slow."
+> +				"Try smaller resolution\n");
+> +		divider_int = 2;
+> +	}
 > +
-> +/**
-> + * struct adxfb_mode_info - video mode information structure
-> + * @xres:	horizontal resolution
-> + * @yres:	vertical resolution
-> + * @bpp:	pixel depth
-> + * @red:	packing for red color component
-> + * @green:	packing for green color component
-> + * @blue:	packing for blue color component
-> + */
-> +struct adxfb_mode_info {
-> +	/* mode resolution */
-> +	u_short xres;
-> +	u_short yres;
-> +	u_short bpp;
+> +	/*
+> +	 * Set setting to reg.
+> +	 */
+> +	x |= divider_int;
+> +	writel(x, fbi->reg_base + LCD_CFG_SCLK_DIV);
+> +}
 > +
-> +	/* color packing specification */
-> +	struct fb_bitfield red;
-> +	struct fb_bitfield green;
-> +	struct fb_bitfield blue;
+> +static void set_dma_control0(struct pxa168fb_info *fbi)
+> +{
+> +	u32 x;
+> +
+> +	/*
+> +	 * Set bit to enable graphics DMA.
+> +	 */
+> +	x = readl(fbi->reg_base + LCD_SPU_DMA_CTRL0);
+> +	x |= fbi->active ? 0x00000100 : 0;
+> +	fbi->active = 0;
+> +
+> +	/*
+> +	 * If we are in a pseudo-color mode, we need to enable
+> +	 * palette lookup.
+> +	 */
+> +	if (fbi->pix_fmt == PIX_FMT_PSEUDOCOLOR)
+> +		x |= 0x10000000;
+> +
+> +	/*
+> +	 * Configure hardware pixel format.
+> +	 */
+> +	x &= ~(0xF << 16);
+> +	x |= (fbi->pix_fmt >> 1) << 16;
+> +
+> +	/*
+> +	 * Check red and blue pixel swap.
+> +	 * 1. source data swap
+> +	 * 2. panel output data swap
+> +	 */
+> +	x &= ~(1 << 12);
+> +	x |= ((fbi->pix_fmt & 1) ^ (fbi->panel_rbswap)) << 12;
+> +
+> +	writel(x, fbi->reg_base + LCD_SPU_DMA_CTRL0);
+> +}
+> +
+> +static void set_dma_control1(struct pxa168fb_info *fbi, int sync)
+> +{
+> +	u32 x;
+> +
+> +	/*
+> +	 * Configure default bits: vsync triggers DMA, gated clock
+> +	 * enable, power save enable, configure alpha registers to
+> +	 * display 100% graphics, and set pixel command.
+> +	 */
+> +	x = readl(fbi->reg_base + LCD_SPU_DMA_CTRL1);
+> +	x |= 0x2032ff81;
+> +
+> +	/*
+> +	 * We trigger DMA on the falling edge of vsync if vsync is
+> +	 * active low, or on the rising edge if vsync is active high.
+> +	 */
+> +	if (!(sync & FB_SYNC_VERT_HIGH_ACT))
+> +		x |= 0x08000000;
+> +
+> +	writel(x, fbi->reg_base + LCD_SPU_DMA_CTRL1);
+> +}
+> +
+> +static void set_graphics_start(struct fb_info *info, int xoffset, int yoffset)
+> +{
+> +	struct pxa168fb_info *fbi = info->par;
+> +	struct fb_var_screeninfo *var = &info->var;
+> +	int pixel_offset;
+> +	unsigned long addr;
+> +
+> +	pixel_offset = (yoffset * var->xres_virtual) + xoffset;
+> +
+> +	addr = fbi->fb_start_dma + (pixel_offset * (var->bits_per_pixel >> 3));
+> +	writel(addr, fbi->reg_base + LCD_CFG_GRA_START_ADDR0);
+> +}
+> +
+> +static void set_dumb_panel_control(struct fb_info *info)
+> +{
+> +	struct pxa168fb_info *fbi = info->par;
+> +	struct pxa168fb_mach_info *mi = fbi->dev->platform_data;
+> +	u32 x;
+> +
+> +	/*
+> +	 * Preserve enable flag.
+> +	 */
+> +	x = readl(fbi->reg_base + LCD_SPU_DUMB_CTRL) & 0x00000001;
+> +
+> +	x |= (fbi->is_blanked ? 0x7 : mi->dumb_mode) << 28;
+> +	x |= mi->gpio_output_data << 20;
+> +	x |= mi->gpio_output_mask << 12;
+> +	x |= mi->panel_rgb_reverse_lanes ? 0x00000080 : 0;
+> +	x |= mi->invert_composite_blank ? 0x00000040 : 0;
+> +	x |= (info->var.sync & FB_SYNC_COMP_HIGH_ACT) ? 0x00000020 : 0;
+> +	x |= mi->invert_pix_val_ena ? 0x00000010 : 0;
+> +	x |= (info->var.sync & FB_SYNC_VERT_HIGH_ACT) ? 0 : 0x00000008;
+> +	x |= (info->var.sync & FB_SYNC_HOR_HIGH_ACT) ? 0 : 0x00000004;
+> +	x |= mi->invert_pixclock ? 0x00000002 : 0;
+> +
+> +	writel(x, fbi->reg_base + LCD_SPU_DUMB_CTRL);
+> +}
+> +
+> +static void set_dumb_screen_dimensions(struct fb_info *info)
+> +{
+> +	struct pxa168fb_info *fbi = info->par;
+> +	struct fb_var_screeninfo *v = &info->var;
+> +	int x;
+> +	int y;
+> +
+> +	x = v->xres + v->right_margin + v->hsync_len + v->left_margin;
+> +	y = v->yres + v->lower_margin + v->vsync_len + v->upper_margin;
+> +
+> +	writel((y << 16) | x, fbi->reg_base + LCD_SPUT_V_H_TOTAL);
+> +}
+> +
+> +static int pxa168fb_set_par(struct fb_info *info)
+> +{
+> +	struct pxa168fb_info *fbi = info->par;
+> +	struct fb_var_screeninfo *var = &info->var;
+> +	struct fb_videomode mode;
+> +	int pix_fmt;
+> +	u32 x;
+> +	struct pxa168fb_mach_info *mi;
+> +
+> +	mi = fbi->dev->platform_data;
+> +	/*
+> +	 * Determine which pixel format we're going to use.
+> +	 */
+> +	pix_fmt = determine_best_pix_fmt(&info->var);
+> +	if (pix_fmt < 0)
+> +		return pix_fmt;
+> +	fbi->pix_fmt = pix_fmt;
+> +
+> +	/*
+> +	 * Set additional mode info.
+> +	 */
+> +	if (pix_fmt == PIX_FMT_PSEUDOCOLOR)
+> +		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+> +	else
+> +		info->fix.visual = FB_VISUAL_TRUECOLOR;
+> +	info->fix.line_length = var->xres_virtual * var->bits_per_pixel / 8;
+> +	info->fix.ypanstep = var->yres;
+> +
+> +	/*
+> +	 * Disable panel output while we setup the display.
+> +	 */
+> +	x = readl(fbi->reg_base + LCD_SPU_DUMB_CTRL);
+> +	writel(x & ~1, fbi->reg_base + LCD_SPU_DUMB_CTRL);
+> +
+> +	/*
+> +	 * Configure global panel parameters.
+> +	 */
+> +	writel((var->yres << 16) | var->xres,
+> +		fbi->reg_base + LCD_SPU_V_H_ACTIVE);
+> +
+> +	/*
+> +	 * convet var to video mode
+> +	 */
+> +	fb_var_to_videomode(&mode, &info->var);
+> +
+> +	/* Calculate clock divisor. */
+> +	set_clock_divider(fbi, &mode);
+> +
+> +	/* Configure dma ctrl regs. */
+> +	set_dma_control0(fbi);
+> +	set_dma_control1(fbi, info->var.sync);
+> +
+> +	/*
+> +	 * Configure graphics DMA parameters.
+> +	 */
+> +	set_graphics_start(info, info->var.xoffset, info->var.yoffset);
+
+The fb_pan_display() is called after the set_par() by a higher layer.
+There is no need to pan display here.
+
+> +	x = readl(fbi->reg_base + LCD_CFG_GRA_PITCH);
+> +	x = (x & ~0xFFFF) | ((var->xres_virtual * var->bits_per_pixel) >> 3);
+> +	writel(x, fbi->reg_base + LCD_CFG_GRA_PITCH);
+> +	writel((var->yres << 16) | var->xres,
+> +		fbi->reg_base + LCD_SPU_GRA_HPXL_VLN);
+> +	writel((var->yres << 16) | var->xres,
+> +		fbi->reg_base + LCD_SPU_GZM_HPXL_VLN);
+> +
+> +	/*
+> +	 * Configure dumb panel ctrl regs & timings.
+> +	 */
+> +	set_dumb_panel_control(info);
+> +	set_dumb_screen_dimensions(info);
+> +
+> +	writel((var->left_margin << 16) | var->right_margin,
+> +			fbi->reg_base + LCD_SPU_H_PORCH);
+> +	writel((var->upper_margin << 16) | var->lower_margin,
+> +			fbi->reg_base + LCD_SPU_V_PORCH);
+> +
+> +	/*
+> +	 * Re-enable panel output.
+> +	 */
+> +	x = readl(fbi->reg_base + LCD_SPU_DUMB_CTRL);
+> +	writel(x | 1, fbi->reg_base + LCD_SPU_DUMB_CTRL);
+> +
+> +	return 0;
+> +}
+> +
+> +static unsigned int chan_to_field(unsigned int chan, struct fb_bitfield *bf)
+> +{
+> +	return ((chan & 0xffff) >> (16 - bf->length)) << bf->offset;
+> +}
+> +
+> +static u32 to_rgb(u16 red, u16 green, u16 blue)
+> +{
+> +	red >>= 8;
+> +	green >>= 8;
+> +	blue >>= 8;
+> +
+> +	return (red << 16) | (green << 8) | blue;
+> +}
+> +
+> +static int
+> +pxa168fb_setcolreg(unsigned int regno, unsigned int red, unsigned int green,
+> +		 unsigned int blue, unsigned int trans, struct fb_info *info)
+> +{
+> +	struct pxa168fb_info *fbi = info->par;
+> +	u32 val;
+> +
+> +	if (info->var.grayscale)
+> +		red = green = blue = (19595 * red + 38470 * green +
+> +					7471 * blue) >> 16;
+> +
+> +	if (info->fix.visual == FB_VISUAL_TRUECOLOR && regno < 16) {
+> +		val =  chan_to_field(red,   &info->var.red);
+> +		val |= chan_to_field(green, &info->var.green);
+> +		val |= chan_to_field(blue , &info->var.blue);
+> +		fbi->pseudo_palette[regno] = val;
+> +	}
+> +
+> +	if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR && regno < 256) {
+> +		val = to_rgb(red, green, blue);
+> +		writel(val, fbi->reg_base + LCD_SPU_SRAM_WRDAT);
+> +		writel(0x8300 | regno, fbi->reg_base + LCD_SPU_SRAM_CTRL);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int pxa168fb_blank(int blank, struct fb_info *info)
+> +{
+> +	struct pxa168fb_info *fbi = info->par;
+> +
+> +	fbi->is_blanked = (blank == FB_BLANK_UNBLANK) ? 0 : 1;
+> +	set_dumb_panel_control(info);
+> +
+> +	return 0;
+> +}
+> +
+> +static int pxa168fb_pan_display(struct fb_var_screeninfo *var,
+> +				struct fb_info *info)
+> +{
+> +	set_graphics_start(info, var->xoffset, var->yoffset);
+> +
+
+The set_graphics_start() can be moved here.
+
+> +	return 0;
+> +}
+> +
+> +static irqreturn_t pxa168fb_handle_irq(int irq, void *dev_id)
+> +{
+> +	struct pxa168fb_info *fbi = dev_id;
+> +	u32 isr = readl(fbi->reg_base + SPU_IRQ_ISR);
+> +
+> +	if ((isr & GRA_FRAME_IRQ0_ENA_MASK)) {
+> +
+> +		writel(isr & (~GRA_FRAME_IRQ0_ENA_MASK),
+> +			fbi->reg_base + SPU_IRQ_ISR);
+> +
+> +		return IRQ_HANDLED;
+> +	}
+> +	return IRQ_NONE;
+> +}
+> +
+> +static struct fb_ops pxa168fb_ops = {
+> +	.owner		= THIS_MODULE,
+> +	.fb_check_var	= pxa168fb_check_var,
+> +	.fb_set_par	= pxa168fb_set_par,
+> +	.fb_setcolreg	= pxa168fb_setcolreg,
+> +	.fb_blank	= pxa168fb_blank,
+> +	.fb_pan_display	= pxa168fb_pan_display,
+> +	.fb_fillrect	= cfb_fillrect,
+> +	.fb_copyarea	= cfb_copyarea,
+> +	.fb_imageblit	= cfb_imageblit,
 > +};
 > +
-> +/**
-> + * struct adxfb_mach_info - machine-specific information structure
-> + * @ioctl:	machine-specific I/O control handler
-> + */
-> +struct adxfb_mach_info {
-> +	int (*ioctl)(struct fb_info *info, unsigned int command,
-> +			unsigned long arg);
+> +static int pxa168fb_init_mode(struct fb_info *info,
+> +			      struct pxa168fb_mach_info *mi)
+> +{
+
+It can be __init function.
+
+> +	struct pxa168fb_info *fbi = info->par;
+> +	struct fb_var_screeninfo *var = &info->var;
+> +	int ret = 0;
+> +	u32 total_w, total_h, refresh;
+> +	u64 div_result;
+> +	const struct fb_videomode *m;
+> +
+> +	/*
+> +	 * Set default value
+> +	 */
+> +	refresh = DEFAULT_REFRESH;
+> +
+> +	/* try to find best video mode. */
+> +	m = fb_find_best_mode(&info->var, &info->modelist);
+> +	if (m)
+> +		fb_videomode_to_var(&info->var, m);
+> +
+> +	/* Init settings. */
+> +	var->xres_virtual = var->xres;
+> +	var->yres_virtual = fbi->fb_size /
+> +		(var->xres_virtual * (var->bits_per_pixel >> 3));
+> +	dev_dbg(fbi->dev, "pxa168fb: find best mode: res = %dx%d\n",
+> +				var->xres, var->yres);
+> +
+> +	/* correct pixclock. */
+> +	total_w = var->xres + var->left_margin + var->right_margin +
+> +		  var->hsync_len;
+> +	total_h = var->yres + var->upper_margin + var->lower_margin +
+> +		  var->vsync_len;
+> +
+> +	div_result = 1000000000000ll;
+> +	do_div(div_result, total_w * total_h * refresh);
+> +	var->pixclock = (u32)div_result;
+> +
+> +	return ret;
+> +}
+> +
+> +static int __init pxa168fb_probe(struct platform_device *pdev)
+> +{
+> +	struct pxa168fb_mach_info *mi;
+> +	struct fb_info *info = 0;
+> +	struct pxa168fb_info *fbi = 0;
+> +	struct resource *res;
+> +	struct clk *clk;
+> +	int irq, ret;
+> +
+> +	mi = pdev->dev.platform_data;
+> +	if (mi == NULL) {
+> +		dev_err(&pdev->dev, "no platform data defined\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	clk = clk_get(&pdev->dev, "LCDCLK");
+> +	if (IS_ERR(clk)) {
+> +		dev_err(&pdev->dev, "unable to get LCDCLK");
+> +		return PTR_ERR(clk);
+> +	}
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (res == NULL) {
+> +		dev_err(&pdev->dev, "no IO memory defined\n");
+> +		return -ENOENT;
+> +	}
+> +
+> +	irq = platform_get_irq(pdev, 0);
+> +	if (irq < 0) {
+> +		dev_err(&pdev->dev, "no IRQ defined\n");
+> +		return -ENOENT;
+> +	}
+> +
+> +	info = framebuffer_alloc(sizeof(struct pxa168fb_info), &pdev->dev);
+> +	if (info == NULL)
+> +		return -ENOMEM;
+> +
+> +	/* Initialize private data */
+> +	fbi = info->par;
+> +	platform_set_drvdata(pdev, fbi);
+> +	fbi->clk = clk;
+> +	fbi->dev = info->dev = &pdev->dev;
+> +	fbi->panel_rbswap = mi->panel_rbswap;
+> +	fbi->is_blanked = 0;
+> +	fbi->active = mi->active;
+> +
+> +	/*
+> +	 * Initialise static fb parameters.
+> +	 */
+> +	info->flags = FBINFO_DEFAULT | FBINFO_PARTIAL_PAN_OK |
+> +		      FBINFO_HWACCEL_XPAN | FBINFO_HWACCEL_YPAN;
+> +	info->node = -1;
+> +	strlcpy(info->fix.id, mi->id, 16);
+> +	info->fix.type = FB_TYPE_PACKED_PIXELS;
+> +	info->fix.type_aux = 0;
+> +	info->fix.xpanstep = 0;
+> +	info->fix.ypanstep = 0;
+> +	info->fix.ywrapstep = 0;
+> +	info->fix.mmio_start = res->start;
+> +	info->fix.mmio_len = res->end - res->start + 1;
+> +	info->fix.accel = FB_ACCEL_NONE;
+> +	info->fbops = &pxa168fb_ops;
+> +	info->pseudo_palette = fbi->pseudo_palette;
+> +
+> +	/*
+> +	 * Map LCD controller registers.
+> +	 */
+> +	fbi->reg_base = ioremap_nocache(res->start, res->end - res->start);
+> +	if (fbi->reg_base == NULL) {
+> +		ret = -ENOMEM;
+> +		goto failed;
+> +	}
+> +
+> +	/*
+> +	 * Allocate framebuffer memory.
+> +	 */
+> +	fbi->fb_size = PAGE_ALIGN(DEFAULT_FB_SIZE);
+> +
+> +	fbi->fb_start = dma_alloc_writecombine(fbi->dev, fbi->fb_size,
+> +						&fbi->fb_start_dma,
+> +						GFP_KERNEL);
+> +	if (fbi->fb_start == NULL) {
+> +		ret = -ENOMEM;
+> +		goto failed;
+> +	}
+> +
+> +	info->fix.smem_start = fbi->fb_start_dma;
+> +	info->fix.smem_len = fbi->fb_size;
+> +	info->screen_base = fbi->fb_start;
+> +	info->screen_size = fbi->fb_size;
+> +
+
+Please do not duplicate standard fb_info fields. Just use the screen_base, screen_size and the smem_len. 
+The smem_start is only unsigned long type so it may be not the same as the dma_addr_t.
+
+> +	/*
+> +	 * Set video mode according to platform data.
+> +	 */
+> +	set_mode(fbi, &info->var, mi->modes, mi->pix_fmt, 1);
+> +
+> +	fb_videomode_to_modelist(mi->modes, mi->num_modes, &info->modelist);
+> +
+> +	/*
+> +	 * init video mode data.
+> +	 */
+> +	pxa168fb_init_mode(info, mi);
+> +
+> +	/*
+> +	 * enable controller clock
+> +	 */
+> +	clk_enable(fbi->clk);
+> +
+> +	/*
+> +	 * Fill in sane defaults.
+> +	 */
+> +	pxa168fb_set_par(info);
+
+The check_var() function should fill the sane defaults. The set_par() sends them
+to hardware's registers. This call is probably not needed here (the set_par() 
+is usually called by the framebuffer_register()).
+
+> +
+> +	/*
+> +	 * Configure default register values.
+> +	 */
+> +	writel(0, fbi->reg_base + LCD_SPU_BLANKCOLOR);
+> +	writel(mi->io_pin_allocation_mode, fbi->reg_base + SPU_IOPAD_CONTROL);
+> +	writel(0, fbi->reg_base + LCD_CFG_GRA_START_ADDR1);
+> +	writel(0, fbi->reg_base + LCD_SPU_GRA_OVSA_HPXL_VLN);
+> +	writel(0, fbi->reg_base + LCD_SPU_SRAM_PARA0);
+> +	writel(CFG_CSB_256x32(0x1)|CFG_CSB_256x24(0x1)|CFG_CSB_256x8(0x1),
+> +		fbi->reg_base + LCD_SPU_SRAM_PARA1);
+> +
+> +	/*
+> +	 * Allocate color map.
+> +	 */
+> +	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+> +		ret = -ENOMEM;
+> +		goto failed_free_clk;
+> +	}
+> +
+> +	/*
+> +	 * Register irq handler.
+> +	 */
+> +	ret = request_irq(irq, pxa168fb_handle_irq, IRQF_SHARED,
+> +					info->fix.id, fbi);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "unable to request IRQ\n");
+> +		ret = -ENXIO;
+> +		goto failed_free_cmap;
+> +	}
+> +
+> +	/*
+> +	 * Enable GFX interrupt
+> +	 */
+> +	writel(GRA_FRAME_IRQ0_ENA(0x1), fbi->reg_base + SPU_IRQ_ENA);
+> +
+> +	/*
+> +	 * Register framebuffer.
+> +	 */
+> +	ret = register_framebuffer(info);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "Failed to register pxa168-fb: %d\n", ret);
+> +		ret = -ENXIO;
+> +		goto failed_free_irq;
+> +	}
+> +
+> +	return 0;
+> +
+> +failed_free_irq:
+> +	free_irq(irq, fbi);
+> +failed_free_cmap:
+> +	fb_dealloc_cmap(&info->cmap);
+> +failed_free_clk:
+> +	clk_disable(fbi->clk);
+> +	clk_put(fbi->clk);
+> +failed:
+> +	pr_err("pxa168-fb: frame buffer device init failed\n");
+> +	platform_set_drvdata(pdev, NULL);
+> +	fb_dealloc_cmap(&info->cmap);
+
+It is deallocated here the second time.
+
+> +
+> +	if (fbi && fbi->reg_base) {
+> +		iounmap(fbi->reg_base);
+> +		kfree(fbi);
+
+The info structure is not deallocated here. Releasing the fbi pointer
+is an error.
+
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static struct platform_driver pxa168fb_driver = {
+> +	.driver		= {
+> +		.name	= "pxa168-fb",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe		= pxa168fb_probe,
 > +};
-> +#endif /* __KERNEL__ */
 > +
-> +/**
-> + * struct adxfb_scaler_mode - scaler mode definition structure
-> + * @origin_x:	original horizontal resolution
-> + * @origin_y:	original vertical resolution
-> + * @target_x:	targetted horizontal resolution
-> + * @target_y:	targetted vertical resolution
+> +static int __devinit pxa168fb_init(void)
+> +{
+> +	return platform_driver_register(&pxa168fb_driver);
+> +}
+> +module_init(pxa168fb_init);
+> +
+> +MODULE_AUTHOR("Lennert Buytenhek <buytenh@marvell.com> "
+> +	      "Green Wan <gwan@marvell.com>");
+> +MODULE_DESCRIPTION("Framebuffer driver for PXA168/910");
+> +MODULE_LICENSE("GPL");
+> diff --git a/drivers/video/pxa168fb.h b/drivers/video/pxa168fb.h
+> new file mode 100644
+> index 0000000..eee0927
+> --- /dev/null
+> +++ b/drivers/video/pxa168fb.h
+> @@ -0,0 +1,558 @@
+> +#ifndef __PXA168FB_H__
+> +#define __PXA168FB_H__
+> +
+> +/* ------------< LCD register >------------ */
+> +/* Video Frame 0&1 start address registers */
+> +#define	LCD_SPU_DMA_START_ADDR_Y0		0x00C0
+> +#define	LCD_SPU_DMA_START_ADDR_U0		0x00C4
+> +#define	LCD_SPU_DMA_START_ADDR_V0		0x00C8
+> +#define LCD_CFG_DMA_START_ADDR_0		0x00CC /* Cmd address */
+> +#define	LCD_SPU_DMA_START_ADDR_Y1		0x00D0
+> +#define	LCD_SPU_DMA_START_ADDR_U1		0x00D4
+> +#define	LCD_SPU_DMA_START_ADDR_V1		0x00D8
+> +#define LCD_CFG_DMA_START_ADDR_1		0x00DC /* Cmd address */
+> +
+> +/* YC & UV Pitch */
+> +#define LCD_SPU_DMA_PITCH_YC			0x00E0
+> +#define     SPU_DMA_PITCH_C(c)			((c) << 16)
+> +#define     SPU_DMA_PITCH_Y(y)			(y)
+> +#define LCD_SPU_DMA_PITCH_UV			0x00E4
+> +#define     SPU_DMA_PITCH_V(v)			((v) << 16)
+> +#define     SPU_DMA_PITCH_U(u)			(u)
+> +
+> +/* Video Starting Point on Screen Register */
+> +#define LCD_SPUT_DMA_OVSA_HPXL_VLN		0x00E8
+> +#define     CFG_DMA_OVSA_VLN(y)			((y) << 16) /* 0~0xfff */
+> +#define     CFG_DMA_OVSA_HPXL(x)		(x)     /* 0~0xfff */
+> +
+> +/* Video Size Register */
+> +#define LCD_SPU_DMA_HPXL_VLN			0x00EC
+> +#define     CFG_DMA_VLN(y)			((y) << 16)
+> +#define     CFG_DMA_HPXL(x)			(x)
+> +
+> +/* Video Size After zooming Register */
+> +#define LCD_SPU_DZM_HPXL_VLN			0x00F0
+> +#define     CFG_DZM_VLN(y)			((y) << 16)
+> +#define     CFG_DZM_HPXL(x)			(x)
+> +
+> +/* Graphic Frame 0&1 Starting Address Register */
+> +#define LCD_CFG_GRA_START_ADDR0			0x00F4
+> +#define LCD_CFG_GRA_START_ADDR1			0x00F8
+> +
+> +/* Graphic Frame Pitch */
+> +#define LCD_CFG_GRA_PITCH			0x00FC
+> +
+> +/* Graphic Starting Point on Screen Register */
+> +#define LCD_SPU_GRA_OVSA_HPXL_VLN		0x0100
+> +#define     CFG_GRA_OVSA_VLN(y)			((y) << 16)
+> +#define     CFG_GRA_OVSA_HPXL(x)		(x)
+> +
+> +/* Graphic Size Register */
+> +#define LCD_SPU_GRA_HPXL_VLN			0x0104
+> +#define     CFG_GRA_VLN(y)			((y) << 16)
+> +#define     CFG_GRA_HPXL(x)			(x)
+> +
+> +/* Graphic Size after Zooming Register */
+> +#define LCD_SPU_GZM_HPXL_VLN			0x0108
+> +#define     CFG_GZM_VLN(y)			((y) << 16)
+> +#define     CFG_GZM_HPXL(x)			(x)
+> +
+> +/* HW Cursor Starting Point on Screen Register */
+> +#define LCD_SPU_HWC_OVSA_HPXL_VLN		0x010C
+> +#define     CFG_HWC_OVSA_VLN(y)			((y) << 16)
+> +#define     CFG_HWC_OVSA_HPXL(x)		(x)
+> +
+> +/* HW Cursor Size */
+> +#define LCD_SPU_HWC_HPXL_VLN			0x0110
+> +#define     CFG_HWC_VLN(y)			((y) << 16)
+> +#define     CFG_HWC_HPXL(x)			(x)
+> +
+> +/* Total Screen Size Register */
+> +#define LCD_SPUT_V_H_TOTAL			0x0114
+> +#define     CFG_V_TOTAL(y)			((y) << 16)
+> +#define     CFG_H_TOTAL(x)			(x)
+> +
+> +/* Total Screen Active Size Register */
+> +#define LCD_SPU_V_H_ACTIVE			0x0118
+> +#define     CFG_V_ACTIVE(y)			((y) << 16)
+> +#define     CFG_H_ACTIVE(x)			(x)
+> +
+> +/* Screen H&V Porch Register */
+> +#define LCD_SPU_H_PORCH				0x011C
+> +#define     CFG_H_BACK_PORCH(b)			((b) << 16)
+> +#define     CFG_H_FRONT_PORCH(f)		(f)
+> +#define LCD_SPU_V_PORCH				0x0120
+> +#define     CFG_V_BACK_PORCH(b)			((b) << 16)
+> +#define     CFG_V_FRONT_PORCH(f)		(f)
+> +
+> +/* Screen Blank Color Register */
+> +#define LCD_SPU_BLANKCOLOR			0x0124
+> +#define     CFG_BLANKCOLOR_MASK			0x00FFFFFF
+> +#define     CFG_BLANKCOLOR_R_MASK		0x000000FF
+> +#define     CFG_BLANKCOLOR_G_MASK		0x0000FF00
+> +#define     CFG_BLANKCOLOR_B_MASK		0x00FF0000
+> +
+> +/* HW Cursor Color 1&2 Register */
+> +#define LCD_SPU_ALPHA_COLOR1			0x0128
+> +#define     CFG_HWC_COLOR1			0x00FFFFFF
+> +#define     CFG_HWC_COLOR1_R(red)		((red) << 16)
+> +#define     CFG_HWC_COLOR1_G(green)		((green) << 8)
+> +#define     CFG_HWC_COLOR1_B(blue)		(blue)
+> +#define     CFG_HWC_COLOR1_R_MASK		0x000000FF
+> +#define     CFG_HWC_COLOR1_G_MASK		0x0000FF00
+> +#define     CFG_HWC_COLOR1_B_MASK		0x00FF0000
+> +#define LCD_SPU_ALPHA_COLOR2			0x012C
+> +#define     CFG_HWC_COLOR2			0x00FFFFFF
+> +#define     CFG_HWC_COLOR2_R_MASK		0x000000FF
+> +#define     CFG_HWC_COLOR2_G_MASK		0x0000FF00
+> +#define     CFG_HWC_COLOR2_B_MASK		0x00FF0000
+> +
+> +/* Video YUV Color Key Control */
+> +#define LCD_SPU_COLORKEY_Y			0x0130
+> +#define     CFG_CKEY_Y2(y2)			((y2) << 24)
+> +#define     CFG_CKEY_Y2_MASK			0xFF000000
+> +#define     CFG_CKEY_Y1(y1)			((y1) << 16)
+> +#define     CFG_CKEY_Y1_MASK			0x00FF0000
+> +#define     CFG_CKEY_Y(y)			((y) << 8)
+> +#define     CFG_CKEY_Y_MASK			0x0000FF00
+> +#define     CFG_ALPHA_Y(y)			(y)
+> +#define     CFG_ALPHA_Y_MASK			0x000000FF
+> +#define LCD_SPU_COLORKEY_U			0x0134
+> +#define     CFG_CKEY_U2(u2)			((u2) << 24)
+> +#define     CFG_CKEY_U2_MASK			0xFF000000
+> +#define     CFG_CKEY_U1(u1)			((u1) << 16)
+> +#define     CFG_CKEY_U1_MASK			0x00FF0000
+> +#define     CFG_CKEY_U(u)			((u) << 8)
+> +#define     CFG_CKEY_U_MASK			0x0000FF00
+> +#define     CFG_ALPHA_U(u)			(u)
+> +#define     CFG_ALPHA_U_MASK			0x000000FF
+> +#define LCD_SPU_COLORKEY_V			0x0138
+> +#define     CFG_CKEY_V2(v2)			((v2) << 24)
+> +#define     CFG_CKEY_V2_MASK			0xFF000000
+> +#define     CFG_CKEY_V1(v1)			((v1) << 16)
+> +#define     CFG_CKEY_V1_MASK			0x00FF0000
+> +#define     CFG_CKEY_V(v)			((v) << 8)
+> +#define     CFG_CKEY_V_MASK			0x0000FF00
+> +#define     CFG_ALPHA_V(v)			(v)
+> +#define     CFG_ALPHA_V_MASK			0x000000FF
+> +
+> +/* SPI Read Data Register */
+> +#define LCD_SPU_SPI_RXDATA			0x0140
+> +
+> +/* Smart Panel Read Data Register */
+> +#define LCD_SPU_ISA_RSDATA			0x0144
+> +#define     ISA_RXDATA_16BIT_1_DATA_MASK	0x000000FF
+> +#define     ISA_RXDATA_16BIT_2_DATA_MASK	0x0000FF00
+> +#define     ISA_RXDATA_16BIT_3_DATA_MASK	0x00FF0000
+> +#define     ISA_RXDATA_16BIT_4_DATA_MASK	0xFF000000
+> +#define     ISA_RXDATA_32BIT_1_DATA_MASK	0x00FFFFFF
+> +
+> +/* HWC SRAM Read Data Register */
+> +#define LCD_SPU_HWC_RDDAT			0x0158
+> +
+> +/* Gamma Table SRAM Read Data Register */
+> +#define LCD_SPU_GAMMA_RDDAT			0x015c
+> +#define     CFG_GAMMA_RDDAT_MASK		0x000000FF
+> +
+> +/* Palette Table SRAM Read Data Register */
+> +#define LCD_SPU_PALETTE_RDDAT			0x0160
+> +#define     CFG_PALETTE_RDDAT_MASK		0x00FFFFFF
+> +
+> +/* I/O Pads Input Read Only Register */
+> +#define LCD_SPU_IOPAD_IN			0x0178
+> +#define     CFG_IOPAD_IN_MASK			0x0FFFFFFF
+> +
+> +/* Reserved Read Only Registers */
+> +#define LCD_CFG_RDREG5F				0x017C
+> +#define     IRE_FRAME_CNT_MASK			0x000000C0
+> +#define     IPE_FRAME_CNT_MASK			0x00000030
+> +#define     GRA_FRAME_CNT_MASK			0x0000000C  /* Graphic */
+> +#define     DMA_FRAME_CNT_MASK			0x00000003  /* Video */
+> +
+> +/* SPI Control Register. */
+> +#define LCD_SPU_SPI_CTRL			0x0180
+> +#define     CFG_SCLKCNT(div)			((div) << 24)  /* 0xFF~0x2 */
+> +#define     CFG_SCLKCNT_MASK			0xFF000000
+> +#define     CFG_RXBITS(rx)			((rx) << 16)   /* 0x1F~0x1 */
+> +#define     CFG_RXBITS_MASK			0x00FF0000
+> +#define     CFG_TXBITS(tx)			((tx) << 8)    /* 0x1F~0x1 */
+> +#define     CFG_TXBITS_MASK			0x0000FF00
+> +#define     CFG_CLKINV(clk)			((clk) << 7)
+> +#define     CFG_CLKINV_MASK			0x00000080
+> +#define     CFG_KEEPXFER(transfer)		((transfer) << 6)
+> +#define     CFG_KEEPXFER_MASK			0x00000040
+> +#define     CFG_RXBITSTO0(rx)			((rx) << 5)
+> +#define     CFG_RXBITSTO0_MASK			0x00000020
+> +#define     CFG_TXBITSTO0(tx)			((tx) << 4)
+> +#define     CFG_TXBITSTO0_MASK			0x00000010
+> +#define     CFG_SPI_ENA(spi)			((spi) << 3)
+> +#define     CFG_SPI_ENA_MASK			0x00000008
+> +#define     CFG_SPI_SEL(spi)			((spi) << 2)
+> +#define     CFG_SPI_SEL_MASK			0x00000004
+> +#define     CFG_SPI_3W4WB(wire)			((wire) << 1)
+> +#define     CFG_SPI_3W4WB_MASK			0x00000002
+> +#define     CFG_SPI_START(start)		(start)
+> +#define     CFG_SPI_START_MASK			0x00000001
+> +
+> +/* SPI Tx Data Register */
+> +#define LCD_SPU_SPI_TXDATA			0x0184
+> +
+> +/*
+> +   1. Smart Pannel 8-bit Bus Control Register.
+> +   2. AHB Slave Path Data Port Register
+> +*/
+> +#define LCD_SPU_SMPN_CTRL			0x0188
+> +
+> +/* DMA Control 0 Register */
+> +#define LCD_SPU_DMA_CTRL0			0x0190
+> +#define     CFG_NOBLENDING(nb)			((nb) << 31)
+> +#define     CFG_NOBLENDING_MASK			0x80000000
+> +#define     CFG_GAMMA_ENA(gn)			((gn) << 30)
+> +#define     CFG_GAMMA_ENA_MASK			0x40000000
+> +#define     CFG_CBSH_ENA(cn)			((cn) << 29)
+> +#define     CFG_CBSH_ENA_MASK			0x20000000
+> +#define     CFG_PALETTE_ENA(pn)			((pn) << 28)
+> +#define     CFG_PALETTE_ENA_MASK		0x10000000
+> +#define     CFG_ARBFAST_ENA(an)			((an) << 27)
+> +#define     CFG_ARBFAST_ENA_MASK		0x08000000
+> +#define     CFG_HWC_1BITMOD(mode)		((mode) << 26)
+> +#define     CFG_HWC_1BITMOD_MASK		0x04000000
+> +#define     CFG_HWC_1BITENA(mn)			((mn) << 25)
+> +#define     CFG_HWC_1BITENA_MASK		0x02000000
+> +#define     CFG_HWC_ENA(cn)		        ((cn) << 24)
+> +#define     CFG_HWC_ENA_MASK			0x01000000
+> +#define     CFG_DMAFORMAT(dmaformat)		((dmaformat) << 20)
+> +#define     CFG_DMAFORMAT_MASK			0x00F00000
+> +#define     CFG_GRAFORMAT(graformat)		((graformat) << 16)
+> +#define     CFG_GRAFORMAT_MASK			0x000F0000
+> +/* for graphic part */
+> +#define     CFG_GRA_FTOGGLE(toggle)		((toggle) << 15)
+> +#define     CFG_GRA_FTOGGLE_MASK		0x00008000
+> +#define     CFG_GRA_HSMOOTH(smooth)		((smooth) << 14)
+> +#define     CFG_GRA_HSMOOTH_MASK		0x00004000
+> +#define     CFG_GRA_TSTMODE(test)		((test) << 13)
+> +#define     CFG_GRA_TSTMODE_MASK		0x00002000
+> +#define     CFG_GRA_SWAPRB(swap)		((swap) << 12)
+> +#define     CFG_GRA_SWAPRB_MASK			0x00001000
+> +#define     CFG_GRA_SWAPUV(swap)		((swap) << 11)
+> +#define     CFG_GRA_SWAPUV_MASK			0x00000800
+> +#define     CFG_GRA_SWAPYU(swap)		((swap) << 10)
+> +#define     CFG_GRA_SWAPYU_MASK			0x00000400
+> +#define     CFG_YUV2RGB_GRA(cvrt)		((cvrt) << 9)
+> +#define     CFG_YUV2RGB_GRA_MASK		0x00000200
+> +#define     CFG_GRA_ENA(gra)			((gra) << 8)
+> +#define     CFG_GRA_ENA_MASK			0x00000100
+> +/* for video part */
+> +#define     CFG_DMA_FTOGGLE(toggle)		((toggle) << 7)
+> +#define     CFG_DMA_FTOGGLE_MASK		0x00000080
+> +#define     CFG_DMA_HSMOOTH(smooth)		((smooth) << 6)
+> +#define     CFG_DMA_HSMOOTH_MASK		0x00000040
+> +#define     CFG_DMA_TSTMODE(test)		((test) << 5)
+> +#define     CFG_DMA_TSTMODE_MASK		0x00000020
+> +#define     CFG_DMA_SWAPRB(swap)		((swap) << 4)
+> +#define     CFG_DMA_SWAPRB_MASK			0x00000010
+> +#define     CFG_DMA_SWAPUV(swap)		((swap) << 3)
+> +#define     CFG_DMA_SWAPUV_MASK			0x00000008
+> +#define     CFG_DMA_SWAPYU(swap)		((swap) << 2)
+> +#define     CFG_DMA_SWAPYU_MASK			0x00000004
+> +#define     CFG_DMA_SWAP_MASK			0x0000001C
+> +#define     CFG_YUV2RGB_DMA(cvrt)		((cvrt) << 1)
+> +#define     CFG_YUV2RGB_DMA_MASK		0x00000002
+> +#define     CFG_DMA_ENA(video)			(video)
+> +#define     CFG_DMA_ENA_MASK			0x00000001
+> +
+> +/* DMA Control 1 Register */
+> +#define LCD_SPU_DMA_CTRL1			0x0194
+> +#define     CFG_FRAME_TRIG(trig)		((trig) << 31)
+> +#define     CFG_FRAME_TRIG_MASK			0x80000000
+> +#define     CFG_VSYNC_TRIG(trig)		((trig) << 28)
+> +#define     CFG_VSYNC_TRIG_MASK			0x70000000
+> +#define     CFG_VSYNC_INV(inv)			((inv) << 27)
+> +#define     CFG_VSYNC_INV_MASK			0x08000000
+> +#define     CFG_COLOR_KEY_MODE(cmode)		((cmode) << 24)
+> +#define     CFG_COLOR_KEY_MASK			0x07000000
+> +#define     CFG_CARRY(carry)			((carry) << 23)
+> +#define     CFG_CARRY_MASK			0x00800000
+> +#define     CFG_LNBUF_ENA(lnbuf)		((lnbuf) << 22)
+> +#define     CFG_LNBUF_ENA_MASK			0x00400000
+> +#define     CFG_GATED_ENA(gated)		((gated) << 21)
+> +#define     CFG_GATED_ENA_MASK			0x00200000
+> +#define     CFG_PWRDN_ENA(power)		((power) << 20)
+> +#define     CFG_PWRDN_ENA_MASK			0x00100000
+> +#define     CFG_DSCALE(dscale)			((dscale) << 18)
+> +#define     CFG_DSCALE_MASK			0x000C0000
+> +#define     CFG_ALPHA_MODE(amode)		((amode) << 16)
+> +#define     CFG_ALPHA_MODE_MASK			0x00030000
+> +#define     CFG_ALPHA(alpha)			((alpha) << 8)
+> +#define     CFG_ALPHA_MASK			0x0000FF00
+> +#define     CFG_PXLCMD(pxlcmd)			(pxlcmd)
+> +#define     CFG_PXLCMD_MASK			0x000000FF
+> +
+> +/* SRAM Control Register */
+> +#define LCD_SPU_SRAM_CTRL			0x0198
+> +#define     CFG_SRAM_INIT_WR_RD(mode)		((mode) << 14)
+> +#define     CFG_SRAM_INIT_WR_RD_MASK		0x0000C000
+> +#define     CFG_SRAM_ADDR_LCDID(id)		((id) << 8)
+> +#define     CFG_SRAM_ADDR_LCDID_MASK		0x00000F00
+> +#define     CFG_SRAM_ADDR(addr)			(addr)
+> +#define     CFG_SRAM_ADDR_MASK			0x000000FF
+> +
+> +/* SRAM Write Data Register */
+> +#define LCD_SPU_SRAM_WRDAT			0x019C
+> +
+> +/* SRAM RTC/WTC Control Register */
+> +#define LCD_SPU_SRAM_PARA0			0x01A0
+> +
+> +/* SRAM Power Down Control Register */
+> +#define LCD_SPU_SRAM_PARA1			0x01A4
+> +#define     CFG_CSB_256x32(hwc)			((hwc) << 15)	/* HWC */
+> +#define     CFG_CSB_256x32_MASK			0x00008000
+> +#define     CFG_CSB_256x24(palette)		((palette) << 14)	/* Palette */
+> +#define     CFG_CSB_256x24_MASK			0x00004000
+> +#define     CFG_CSB_256x8(gamma)		((gamma) << 13)	/* Gamma */
+> +#define     CFG_CSB_256x8_MASK			0x00002000
+> +#define     CFG_PDWN256x32(pdwn)		((pdwn) << 7)	/* HWC */
+> +#define     CFG_PDWN256x32_MASK			0x00000080
+> +#define     CFG_PDWN256x24(pdwn)		((pdwn) << 6)	/* Palette */
+> +#define     CFG_PDWN256x24_MASK			0x00000040
+> +#define     CFG_PDWN256x8(pdwn)			((pdwn) << 5)	/* Gamma */
+> +#define     CFG_PDWN256x8_MASK			0x00000020
+> +#define     CFG_PDWN32x32(pdwn)			((pdwn) << 3)
+> +#define     CFG_PDWN32x32_MASK			0x00000008
+> +#define     CFG_PDWN16x66(pdwn)			((pdwn) << 2)
+> +#define     CFG_PDWN16x66_MASK			0x00000004
+> +#define     CFG_PDWN32x66(pdwn)			((pdwn) << 1)
+> +#define     CFG_PDWN32x66_MASK			0x00000002
+> +#define     CFG_PDWN64x66(pdwn)			(pdwn)
+> +#define     CFG_PDWN64x66_MASK			0x00000001
+> +
+> +/* Smart or Dumb Panel Clock Divider */
+> +#define LCD_CFG_SCLK_DIV			0x01A8
+> +#define     SCLK_SOURCE_SELECT(src)		((src) << 31)
+> +#define     SCLK_SOURCE_SELECT_MASK		0x80000000
+> +#define     CLK_FRACDIV(frac)			((frac) << 16)
+> +#define     CLK_FRACDIV_MASK			0x0FFF0000
+> +#define     CLK_INT_DIV(div)			(div)
+> +#define     CLK_INT_DIV_MASK			0x0000FFFF
+> +
+> +/* Video Contrast Register */
+> +#define LCD_SPU_CONTRAST			0x01AC
+> +#define     CFG_BRIGHTNESS(bright)		((bright) << 16)
+> +#define     CFG_BRIGHTNESS_MASK			0xFFFF0000
+> +#define     CFG_CONTRAST(contrast)		(contrast)
+> +#define     CFG_CONTRAST_MASK			0x0000FFFF
+> +
+> +/* Video Saturation Register */
+> +#define LCD_SPU_SATURATION			0x01B0
+> +#define     CFG_C_MULTS(mult)			((mult) << 16)
+> +#define     CFG_C_MULTS_MASK			0xFFFF0000
+> +#define     CFG_SATURATION(sat)			(sat)
+> +#define     CFG_SATURATION_MASK			0x0000FFFF
+> +
+> +/* Video Hue Adjust Register */
+> +#define LCD_SPU_CBSH_HUE			0x01B4
+> +#define     CFG_SIN0(sin0)			((sin0) << 16)
+> +#define     CFG_SIN0_MASK			0xFFFF0000
+> +#define     CFG_COS0(con0)			(con0)
+> +#define     CFG_COS0_MASK			0x0000FFFF
+> +
+> +/* Dump LCD Panel Control Register */
+> +#define LCD_SPU_DUMB_CTRL			0x01B8
+> +#define     CFG_DUMBMODE(mode)			((mode) << 28)
+> +#define     CFG_DUMBMODE_MASK			0xF0000000
+> +#define     CFG_LCDGPIO_O(data)			((data) << 20)
+> +#define     CFG_LCDGPIO_O_MASK			0x0FF00000
+> +#define     CFG_LCDGPIO_ENA(gpio)		((gpio) << 12)
+> +#define     CFG_LCDGPIO_ENA_MASK		0x000FF000
+> +#define     CFG_BIAS_OUT(bias)			((bias) << 8)
+> +#define     CFG_BIAS_OUT_MASK			0x00000100
+> +#define     CFG_REVERSE_RGB(rRGB)		((rRGB) << 7)
+> +#define     CFG_REVERSE_RGB_MASK		0x00000080
+> +#define     CFG_INV_COMPBLANK(blank)		((blank) << 6)
+> +#define     CFG_INV_COMPBLANK_MASK		0x00000040
+> +#define     CFG_INV_COMPSYNC(sync)		((sync) << 5)
+> +#define     CFG_INV_COMPSYNC_MASK		0x00000020
+> +#define     CFG_INV_HENA(hena)			((hena) << 4)
+> +#define     CFG_INV_HENA_MASK			0x00000010
+> +#define     CFG_INV_VSYNC(vsync)		((vsync) << 3)
+> +#define     CFG_INV_VSYNC_MASK			0x00000008
+> +#define     CFG_INV_HSYNC(hsync)		((hsync) << 2)
+> +#define     CFG_INV_HSYNC_MASK			0x00000004
+> +#define     CFG_INV_PCLK(pclk)			((pclk) << 1)
+> +#define     CFG_INV_PCLK_MASK			0x00000002
+> +#define     CFG_DUMB_ENA(dumb)			(dumb)
+> +#define     CFG_DUMB_ENA_MASK			0x00000001
+> +
+> +/* LCD I/O Pads Control Register */
+> +#define SPU_IOPAD_CONTROL			0x01BC
+> +#define     CFG_GRA_VM_ENA(vm)			((vm) << 15)        /* gfx */
+> +#define     CFG_GRA_VM_ENA_MASK			0x00008000
+> +#define     CFG_DMA_VM_ENA(vm)			((vm) << 13)	/* video */
+> +#define     CFG_DMA_VM_ENA_MASK			0x00002000
+> +#define     CFG_CMD_VM_ENA(vm)			((vm) << 13)
+> +#define     CFG_CMD_VM_ENA_MASK			0x00000800
+> +#define     CFG_CSC(csc)			((csc) << 8)	/* csc */
+> +#define     CFG_CSC_MASK			0x00000300
+> +#define     CFG_AXICTRL(axi)			((axi) << 4)
+> +#define     CFG_AXICTRL_MASK			0x000000F0
+> +#define     CFG_IOPADMODE(iopad)		(iopad)
+> +#define     CFG_IOPADMODE_MASK			0x0000000F
+> +
+> +/* LCD Interrupt Control Register */
+> +#define SPU_IRQ_ENA				0x01C0
+> +#define     DMA_FRAME_IRQ0_ENA(irq)		((irq) << 31)
+> +#define     DMA_FRAME_IRQ0_ENA_MASK		0x80000000
+> +#define     DMA_FRAME_IRQ1_ENA(irq)		((irq) << 30)
+> +#define     DMA_FRAME_IRQ1_ENA_MASK		0x40000000
+> +#define     DMA_FF_UNDERFLOW_ENA(ff)		((ff) << 29)
+> +#define     DMA_FF_UNDERFLOW_ENA_MASK		0x20000000
+> +#define     GRA_FRAME_IRQ0_ENA(irq)		((irq) << 27)
+> +#define     GRA_FRAME_IRQ0_ENA_MASK		0x08000000
+> +#define     GRA_FRAME_IRQ1_ENA(irq)		((irq) << 26)
+> +#define     GRA_FRAME_IRQ1_ENA_MASK		0x04000000
+> +#define     GRA_FF_UNDERFLOW_ENA(ff)		((ff) << 25)
+> +#define     GRA_FF_UNDERFLOW_ENA_MASK		0x02000000
+> +#define     VSYNC_IRQ_ENA(vsync_irq)		((vsync_irq) << 23)
+> +#define     VSYNC_IRQ_ENA_MASK			0x00800000
+> +#define     DUMB_FRAMEDONE_ENA(fdone)		((fdone) << 22)
+> +#define     DUMB_FRAMEDONE_ENA_MASK		0x00400000
+> +#define     TWC_FRAMEDONE_ENA(fdone)		((fdone) << 21)
+> +#define     TWC_FRAMEDONE_ENA_MASK		0x00200000
+> +#define     HWC_FRAMEDONE_ENA(fdone)		((fdone) << 20)
+> +#define     HWC_FRAMEDONE_ENA_MASK		0x00100000
+> +#define     SLV_IRQ_ENA(irq)			((irq) << 19)
+> +#define     SLV_IRQ_ENA_MASK			0x00080000
+> +#define     SPI_IRQ_ENA(irq)			((irq) << 18)
+> +#define     SPI_IRQ_ENA_MASK			0x00040000
+> +#define     PWRDN_IRQ_ENA(irq)			((irq) << 17)
+> +#define     PWRDN_IRQ_ENA_MASK			0x00020000
+> +#define     ERR_IRQ_ENA(irq)			((irq) << 16)
+> +#define     ERR_IRQ_ENA_MASK			0x00010000
+> +#define     CLEAN_SPU_IRQ_ISR(irq)		(irq)
+> +#define     CLEAN_SPU_IRQ_ISR_MASK		0x0000FFFF
+> +
+> +/* LCD Interrupt Status Register */
+> +#define SPU_IRQ_ISR				0x01C4
+> +#define     DMA_FRAME_IRQ0(irq)			((irq) << 31)
+> +#define     DMA_FRAME_IRQ0_MASK			0x80000000
+> +#define     DMA_FRAME_IRQ1(irq)			((irq) << 30)
+> +#define     DMA_FRAME_IRQ1_MASK			0x40000000
+> +#define     DMA_FF_UNDERFLOW(ff)		((ff) << 29)
+> +#define     DMA_FF_UNDERFLOW_MASK		0x20000000
+> +#define     GRA_FRAME_IRQ0(irq)			((irq) << 27)
+> +#define     GRA_FRAME_IRQ0_MASK			0x08000000
+> +#define     GRA_FRAME_IRQ1(irq)			((irq) << 26)
+> +#define     GRA_FRAME_IRQ1_MASK			0x04000000
+> +#define     GRA_FF_UNDERFLOW(ff)		((ff) << 25)
+> +#define     GRA_FF_UNDERFLOW_MASK		0x02000000
+> +#define     VSYNC_IRQ(vsync_irq)		((vsync_irq) << 23)
+> +#define     VSYNC_IRQ_MASK			0x00800000
+> +#define     DUMB_FRAMEDONE(fdone)		((fdone) << 22)
+> +#define     DUMB_FRAMEDONE_MASK			0x00400000
+> +#define     TWC_FRAMEDONE(fdone)		((fdone) << 21)
+> +#define     TWC_FRAMEDONE_MASK			0x00200000
+> +#define     HWC_FRAMEDONE(fdone)		((fdone) << 20)
+> +#define     HWC_FRAMEDONE_MASK			0x00100000
+> +#define     SLV_IRQ(irq)			((irq) << 19)
+> +#define     SLV_IRQ_MASK			0x00080000
+> +#define     SPI_IRQ(irq)			((irq) << 18)
+> +#define     SPI_IRQ_MASK			0x00040000
+> +#define     PWRDN_IRQ(irq)			((irq) << 17)
+> +#define     PWRDN_IRQ_MASK			0x00020000
+> +#define     ERR_IRQ(irq)			((irq) << 16)
+> +#define     ERR_IRQ_MASK			0x00010000
+> +/* read-only */
+> +#define     DMA_FRAME_IRQ0_LEVEL_MASK		0x00008000
+> +#define     DMA_FRAME_IRQ1_LEVEL_MASK		0x00004000
+> +#define     DMA_FRAME_CNT_ISR_MASK		0x00003000
+> +#define     GRA_FRAME_IRQ0_LEVEL_MASK		0x00000800
+> +#define     GRA_FRAME_IRQ1_LEVEL_MASK		0x00000400
+> +#define     GRA_FRAME_CNT_ISR_MASK		0x00000300
+> +#define     VSYNC_IRQ_LEVEL_MASK		0x00000080
+> +#define     DUMB_FRAMEDONE_LEVEL_MASK		0x00000040
+> +#define     TWC_FRAMEDONE_LEVEL_MASK		0x00000020
+> +#define     HWC_FRAMEDONE_LEVEL_MASK		0x00000010
+> +#define     SLV_FF_EMPTY_MASK			0x00000008
+> +#define     DMA_FF_ALLEMPTY_MASK		0x00000004
+> +#define     GRA_FF_ALLEMPTY_MASK		0x00000002
+> +#define     PWRDN_IRQ_LEVEL_MASK		0x00000001
+> +
+> +
+> +/*
+> + * defined Video Memory Color format for DMA control 0 register
+> + * DMA0 bit[23:20]
 > + */
-> +struct adxfb_scaler_mode {
-> +	/* original resolution */
-> +	__u16 origin_x;
-> +	__u16 origin_y;
-> +	/* target resolution */
-> +	__u16 target_x;
-> +	__u16 target_y;
+> +#define VMODE_RGB565		0x0
+> +#define VMODE_RGB1555		0x1
+> +#define VMODE_RGB888PACKED	0x2
+> +#define VMODE_RGB888UNPACKED	0x3
+> +#define VMODE_RGBA888		0x4
+> +#define VMODE_YUV422PACKED	0x5
+> +#define VMODE_YUV422PLANAR	0x6
+> +#define VMODE_YUV420PLANAR	0x7
+> +#define VMODE_SMPNCMD		0x8
+> +#define VMODE_PALETTE4BIT	0x9
+> +#define VMODE_PALETTE8BIT	0xa
+> +#define VMODE_RESERVED		0xb
+> +
+> +/*
+> + * defined Graphic Memory Color format for DMA control 0 register
+> + * DMA0 bit[19:16]
+> + */
+> +#define GMODE_RGB565		0x0
+> +#define GMODE_RGB1555		0x1
+> +#define GMODE_RGB888PACKED	0x2
+> +#define GMODE_RGB888UNPACKED	0x3
+> +#define GMODE_RGBA888		0x4
+> +#define GMODE_YUV422PACKED	0x5
+> +#define GMODE_YUV422PLANAR	0x6
+> +#define GMODE_YUV420PLANAR	0x7
+> +#define GMODE_SMPNCMD		0x8
+> +#define GMODE_PALETTE4BIT	0x9
+> +#define GMODE_PALETTE8BIT	0xa
+> +#define GMODE_RESERVED		0xb
+> +
+> +/*
+> + * define for DMA control 1 register
+> + */
+> +#define DMA1_FRAME_TRIG		31 /* bit location */
+> +#define DMA1_VSYNC_MODE		28
+> +#define DMA1_VSYNC_INV		27
+> +#define DMA1_CKEY		24
+> +#define DMA1_CARRY		23
+> +#define DMA1_LNBUF_ENA		22
+> +#define DMA1_GATED_ENA		21
+> +#define DMA1_PWRDN_ENA		20
+> +#define DMA1_DSCALE		18
+> +#define DMA1_ALPHA_MODE		16
+> +#define DMA1_ALPHA		08
+> +#define DMA1_PXLCMD		00
+> +
+> +/*
+> + * defined for Configure Dumb Mode
+> + * DUMB LCD Panel bit[31:28]
+> + */
+> +#define DUMB16_RGB565_0		0x0
+> +#define DUMB16_RGB565_1		0x1
+> +#define DUMB18_RGB666_0		0x2
+> +#define DUMB18_RGB666_1		0x3
+> +#define DUMB12_RGB444_0		0x4
+> +#define DUMB12_RGB444_1		0x5
+> +#define DUMB24_RGB888_0		0x6
+> +#define DUMB_BLANK		0x7
+> +
+> +/*
+> + * defined for Configure I/O Pin Allocation Mode
+> + * LCD LCD I/O Pads control register bit[3:0]
+> + */
+> +#define IOPAD_DUMB24		0x0
+> +#define IOPAD_DUMB18SPI		0x1
+> +#define IOPAD_DUMB18GPIO	0x2
+> +#define IOPAD_DUMB16SPI		0x3
+> +#define IOPAD_DUMB16GPIO	0x4
+> +#define IOPAD_DUMB12		0x5
+> +#define IOPAD_SMART18SPI	0x6
+> +#define IOPAD_SMART16SPI	0x7
+> +#define IOPAD_SMART8BOTH	0x8
+> +
+> +#endif /* __PXA168FB_H__ */
+> diff --git a/include/video/pxa168fb.h b/include/video/pxa168fb.h
+> new file mode 100644
+> index 0000000..65324e3
+> --- /dev/null
+> +++ b/include/video/pxa168fb.h
+> @@ -0,0 +1,128 @@
+> +/*
+> + * linux/arch/arm/mach-mmp/include/mach/pxa168fb.h
+> + *
+> + *  Copyright (C) 2009 Marvell International Ltd.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef __ASM_MACH_PXA168FB_H
+> +#define __ASM_MACH_PXA168FB_H
+> +
+> +#include <linux/fb.h>
+> +#include <linux/interrupt.h>
+> +
+> +/* Dumb interface */
+> +#define PIN_MODE_DUMB_24		0
+> +#define PIN_MODE_DUMB_18_SPI		1
+> +#define PIN_MODE_DUMB_18_GPIO		2
+> +#define PIN_MODE_DUMB_16_SPI		3
+> +#define PIN_MODE_DUMB_16_GPIO		4
+> +#define PIN_MODE_DUMB_12_SPI_GPIO	5
+> +#define PIN_MODE_SMART_18_SPI		6
+> +#define PIN_MODE_SMART_16_SPI		7
+> +#define PIN_MODE_SMART_8_SPI_GPIO	8
+> +
+> +/* Dumb interface pin allocation */
+> +#define DUMB_MODE_RGB565		0
+> +#define DUMB_MODE_RGB565_UPPER		1
+> +#define DUMB_MODE_RGB666		2
+> +#define DUMB_MODE_RGB666_UPPER		3
+> +#define DUMB_MODE_RGB444		4
+> +#define DUMB_MODE_RGB444_UPPER		5
+> +#define DUMB_MODE_RGB888		6
+> +
+> +/* default fb buffer size WVGA-32bits */
+> +#define DEFAULT_FB_SIZE	(800 * 480 * 4)
+> +
+> +/*
+> + * Buffer pixel format
+> + * bit0 is for rb swap.
+> + * bit12 is for Y UorV swap
+> + */
+> +#define PIX_FMT_RGB565		0
+> +#define PIX_FMT_BGR565		1
+> +#define PIX_FMT_RGB1555		2
+> +#define PIX_FMT_BGR1555		3
+> +#define PIX_FMT_RGB888PACK	4
+> +#define PIX_FMT_BGR888PACK	5
+> +#define PIX_FMT_RGB888UNPACK	6
+> +#define PIX_FMT_BGR888UNPACK	7
+> +#define PIX_FMT_RGBA888		8
+> +#define PIX_FMT_BGRA888		9
+> +#define PIX_FMT_YUV422PACK	10
+> +#define PIX_FMT_YVU422PACK	11
+> +#define PIX_FMT_YUV422PLANAR	12
+> +#define PIX_FMT_YVU422PLANAR	13
+> +#define PIX_FMT_YUV420PLANAR	14
+> +#define PIX_FMT_YVU420PLANAR	15
+> +#define PIX_FMT_PSEUDOCOLOR	20
+> +#define PIX_FMT_UYVY422PACK	(0x1000|PIX_FMT_YUV422PACK)
+> +
+> +/*
+> + * PXA LCD controller private state.
+> + */
+> +struct pxa168fb_info {
+> +	struct device		*dev;
+> +	struct clk		*clk;
+> +
+> +	void __iomem		*reg_base;
+> +	dma_addr_t		fb_start_dma;
+> +	void			*fb_start;
+> +	int			fb_size;
+> +	u32			pseudo_palette[16];
+> +
+> +	int			pix_fmt;
+> +	unsigned		is_blanked:1;
+> +	unsigned		panel_rbswap:1;
+> +	unsigned		active:1;
 > +};
 > +
-> +/**
-> + * struct adxfb_viewport - overlay viewport structure
-> + * @x:		horizontal start position of the overlay window
-> + * @y:		vertical start position of the overlay window
-> + * @width:	width of the overlay window
-> + * @height:	height of the overlay window
+> +/*
+> + * PXA fb machine information
 > + */
-> +struct adxfb_viewport {
-> +	/* viewport position */
-> +	__u16 x;
-> +	__u16 y;
-> +	/* viewport resolution */
-> +	__u16 width;
-> +	__u16 height;
+> +struct pxa168fb_mach_info {
+> +	char	id[16];
+> +
+> +	int		num_modes;
+> +	struct fb_videomode *modes;
+> +
+> +	/*
+> +	 * Pix_fmt
+> +	 */
+> +	unsigned	pix_fmt;
+> +
+> +	/*
+> +	 * I/O pin allocation.
+> +	 */
+> +	unsigned	io_pin_allocation_mode:4;
+> +
+> +	/*
+> +	 * Dumb panel -- assignment of R/G/B component info to the 24
+> +	 * available external data lanes.
+> +	 */
+> +	unsigned	dumb_mode:4;
+> +	unsigned	panel_rgb_reverse_lanes:1;
+> +
+> +	/*
+> +	 * Dumb panel -- GPIO output data.
+> +	 */
+> +	unsigned	gpio_output_mask:8;
+> +	unsigned	gpio_output_data:8;
+> +
+> +	/*
+> +	 * Dumb panel -- configurable output signal polarity.
+> +	 */
+> +	unsigned	invert_composite_blank:1;
+> +	unsigned	invert_pix_val_ena:1;
+> +	unsigned	invert_pixclock:1;
+> +	unsigned	invert_vsync:1;
+> +	unsigned	invert_hsync:1;
+> +	unsigned	panel_rbswap:1;
+> +	unsigned	active:1;
+> +	unsigned	enable_lcd:1;
 > +};
 > +
-> +/* I/O control codes */
-> +#define ADXFB_IOC_MAGIC 'a'
-> +
-> +/* set a new scaler mode */
-> +#define ADXFB_IOCTL_SCALER_SET_MODE \
-> +			_IOW(ADXFB_IOC_MAGIC, 0, struct adxfb_scaler_mode)
-> +/* obtain the current scaler mode */
-> +#define ADXFB_IOCTL_SCALER_GET_MODE \
-> +			_IOR(ADXFB_IOC_MAGIC, 1, struct adxfb_scaler_mode)
-> +/* enable/disable the overlay window */
-> +#define ADXFB_IOCTL_OVERLAY_ENABLE \
-> +			_IOW(ADXFB_IOC_MAGIC, 2, unsigned long)
-> +/* set a new region for the overlay window */
-> +#define ADXFB_IOCTL_OVERLAY_SET_VIEWPORT \
-> +			_IOW(ADXFB_IOC_MAGIC, 3, struct adxfb_viewport)
-> +/* set a new input video standard */
-> +#define ADXFB_IOCTL_SET_INPUT \
-> +			_IOW(ADXFB_IOC_MAGIC, 4, unsigned long)
-> +
-> +/* ADXFB_IOCTL_OVERLAY_ENABLE flags */
-> +#define ADXFB_OVERLAY_ENABLE	(1 << 0)	/* enable/disable overlay */
-> +
-> +/* ADXFB_IOCTL_SET_INPUT parameters */
-> +#define ADXFB_INPUT_PAL		(0x00)		/* input is PAL standard */
-> +#define ADXFB_INPUT_NTSC	(0x01)		/* input is NTSC stardard */
-> +#define ADXFB_INPUT_MASK	(0xff)		/* mask to extract input */
-> +
-> +#endif /* !_VIDEO_ADXFB_H */
+> +#endif /* __ASM_MACH_PXA168FB_H */
 > -- 
-> 1.6.3.1
-> 
+> 1.6.0.4
 > 
 > -------------------------------------------------------------------
 > List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel

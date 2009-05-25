@@ -1,142 +1,205 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 11/10] ARM: OMAP: Add some entries to MAINTAINERS
-Date: Mon, 25 May 2009 10:42:13 -0700
-Message-ID: <20090525174212.GF29933@atomide.com>
-References: <20090519232905.12760.15490.stgit@localhost> <20090519234408.12760.48406.stgit@localhost>
+From: Ville Syrjala <syrjala@sci.fi>
+Subject: [PATCH] atyfb: Fix HP OmniBook 500 reboot hang
+Date: Tue, 26 May 2009 02:05:14 +0300
+Message-ID: <1243292714-21193-1-git-send-email-syrjala@sci.fi>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="76DTJ5CE0DCVQemd"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20090519234408.12760.48406.stgit@localhost>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, jhnikula@gmail.com, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Hunyue Yau <hyau@mvista.com>, paul@pwsan.com, jarkko.lavinen@nokia.com, dsaxena@plexity.net, felipe.balbi@nokia.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <syrjala@sci.fi>) id 1M8jFg-0001ue-Bj
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 25 May 2009 23:06:40 +0000
+Received: from [213.243.153.40] (helo=smtp6.welho.com)
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M8jF1-0002oT-OI for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 25 May 2009 23:06:40 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+Cc: Ville Syrjala <syrjala@sci.fi>
 
+Apparently HP OmniBook 500's BIOS doesn't like the way atyfb reprograms
+the hardware. The BIOS will simply hang after a reboot. Fix the problem
+by restoring the hardware to it's original state on reboot.
 
---76DTJ5CE0DCVQemd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+---
+ drivers/video/aty/atyfb.h      |    2 +
+ drivers/video/aty/atyfb_base.c |   69 ++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 62 insertions(+), 9 deletions(-)
 
-Hi all,
-
-Here are few omap entries to MAINTAINERS as discussed several times
-before.
-
-Regards,
-
-Tony
-
---76DTJ5CE0DCVQemd
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: inline; filename="maintainers.patch"
-
-From 7b0476d90c713d7315161bbbfe7bdcd98f3f9853 Mon Sep 17 00:00:00 2001
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 25 May 2009 10:04:16 -0700
-Subject: [PATCH] ARM: OMAP: Add some entries to MAINTAINERS
-
-Add some entries to MAINTAINERS.
-
-Also regroup all omap entries together, and remove an inactive
-MMC maintainers entry, and Jarkko Lavinen instead.
-
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2b349ba..177f216 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4119,6 +4119,69 @@ S:	Maintained
- F:	drivers/video/riva/
- F:	drivers/video/nvidia/
+diff --git a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+index 7691e73..0369653 100644
+--- a/drivers/video/aty/atyfb.h
++++ b/drivers/video/aty/atyfb.h
+@@ -187,6 +187,8 @@ struct atyfb_par {
+ 	int mtrr_reg;
+ #endif
+ 	u32 mem_cntl;
++	struct crtc saved_crtc;
++	union aty_pll saved_pll;
+ };
  
-+OMAP SUPPORT
-+P:	Tony Lindgren <tony@atomide.com>
-+M:	tony@atomide.com
-+L:	linux-omap@vger.kernel.org
-+W:	http://www.muru.com/linux/omap/
-+W:	http://linux.omap.com/
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git
-+S:	Maintained
-+F:	arch/arm/*omap*
-+
-+OMAP CLOCK FRAMEWORK SUPPORT
-+P:	Paul Walmsley
-+M:	paul@pwsan.com
-+L:	linux-omap@vger.kernel.org
-+S:	Maintained
-+F:	arch/arm/*omap*/*clock*
-+
-+OMAP POWER MANAGEMENT SUPPORT
-+P:	Kevin Hilman
-+M:	khilman@deeprootsystems.com
-+L:	linux-omap@vger.kernel.org
-+S:	Maintained
-+F:	arch/arm/*omap*/*pm*
-+
-+OMAP AUDIO SUPPORT
-+P:	Jarkko Nikula
-+M:	jhnikula@gmail.com
-+L:	alsa-devel@alsa-project.org (subscribers-only)
-+L:	linux-omap@vger.kernel.org
-+S:	Maintained
-+F:	sound/soc/omap/
-+
-+OMAP FRAMEBUFFER SUPPORT
-+P:	Imre Deak
-+M:	imre.deak@nokia.com
-+L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
-+L:	linux-omap@vger.kernel.org
-+S:	Maintained
-+F:	drivers/video/omap/
-+
-+OMAP MMC SUPPORT
-+P:	Jarkko Lavinen
-+M:	jarkko.lavinen@nokia.com
-+L:	linux-kernel@vger.kernel.org
-+L:	linux-omap@vger.kernel.org
-+S:	Maintained
-+F:	drivers/mmc/host/*omap*
-+
-+OMAP RANDOM NUMBER GENERATOR SUPPORT
-+P:	Deepak Saxena
-+M:	dsaxena@plexity.net
-+S:	Maintained
-+F:	drivers/char/hw_random/omap-rng.c
-+
-+OMAP USB SUPPORT
-+P:	Felipe Balbi
-+M:	felipe.balbi@nokia.com
-+P:	David Brownell
-+M:	dbrownell@users.sourceforge.net
-+L:	linux-usb@vger.kernel.org
-+L:	linux-omap@vger.kernel.org
-+S:	Maintained
-+
- OMFS FILESYSTEM
- P:	Bob Copeland
- M:	me@bobcopeland.com
-@@ -5507,20 +5570,6 @@ F:	drivers/misc/tifm*
- F:	drivers/mmc/host/tifm_sd.c
- F:	include/linux/tifm.h
+     /*
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 1207c20..305f7c8 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -66,6 +66,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/wait.h>
+ #include <linux/backlight.h>
++#include <linux/reboot.h>
  
--TI OMAP MMC INTERFACE DRIVER
--P:	Carlos Aguiar, Anderson Briglia and Syed Khasim
--M:	linux-omap@vger.kernel.org
--W:	http://linux.omap.com
--W:	http://www.muru.com/linux/omap/
--S:	Maintained
--F:	drivers/mmc/host/omap.c
--
--TI OMAP RANDOM NUMBER GENERATOR SUPPORT
--P:	Deepak Saxena
--M:	dsaxena@plexity.net
--S:	Maintained
--F:	drivers/char/hw_random/omap-rng.c
--
- TIPC NETWORK LAYER
- P:	Per Liden
- M:	per.liden@ericsson.com
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+@@ -249,8 +250,6 @@ static int aty_init(struct fb_info *info);
+ static int store_video_par(char *videopar, unsigned char m64_num);
+ #endif
+ 
+-static struct crtc saved_crtc;
+-static union aty_pll saved_pll;
+ static void aty_get_crtc(const struct atyfb_par *par, struct crtc *crtc);
+ 
+ static void aty_set_crtc(const struct atyfb_par *par, const struct crtc *crtc);
+@@ -261,6 +260,8 @@ static void set_off_pitch(struct atyfb_par *par, const struct fb_info *info);
+ static int read_aty_sense(const struct atyfb_par *par);
+ #endif
+ 
++static DEFINE_MUTEX(reboot_lock);
++static struct fb_info *reboot_info;
+ 
+     /*
+      *  Interface used by the world
+@@ -2390,9 +2391,9 @@ static int __devinit aty_init(struct fb_info *info)
+ #endif /* CONFIG_FB_ATY_CT */
+ 
+ 	/* save previous video mode */
+-	aty_get_crtc(par, &saved_crtc);
++	aty_get_crtc(par, &par->saved_crtc);
+ 	if(par->pll_ops->get_pll)
+-		par->pll_ops->get_pll(info, &saved_pll);
++		par->pll_ops->get_pll(info, &par->saved_pll);
+ 
+ 	par->mem_cntl = aty_ld_le32(MEM_CNTL, par);
+ 	gtb_memsize = M64_HAS(GTB_DSP);
+@@ -2667,8 +2668,8 @@ static int __devinit aty_init(struct fb_info *info)
+ 
+ aty_init_exit:
+ 	/* restore video mode */
+-	aty_set_crtc(par, &saved_crtc);
+-	par->pll_ops->set_pll(info, &saved_pll);
++	aty_set_crtc(par, &par->saved_crtc);
++	par->pll_ops->set_pll(info, &par->saved_pll);
+ 
+ #ifdef CONFIG_MTRR
+ 	if (par->mtrr_reg >= 0) {
+@@ -3502,6 +3503,11 @@ static int __devinit atyfb_pci_probe(struct pci_dev *pdev, const struct pci_devi
+ 	par->mmap_map[1].prot_flag = _PAGE_E;
+ #endif /* __sparc__ */
+ 
++	mutex_lock(&reboot_lock);
++	if (!reboot_info)
++		reboot_info = info;
++	mutex_unlock(&reboot_lock);
++
+ 	return 0;
+ 
+ err_release_io:
+@@ -3613,9 +3619,14 @@ static void __devexit atyfb_remove(struct fb_info *info)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 
++	mutex_lock(&reboot_lock);
++	if (reboot_info == info)
++		reboot_info = NULL;
++	mutex_unlock(&reboot_lock);
++
+ 	/* restore video mode */
+-	aty_set_crtc(par, &saved_crtc);
+-	par->pll_ops->set_pll(info, &saved_pll);
++	aty_set_crtc(par, &par->saved_crtc);
++	par->pll_ops->set_pll(info, &par->saved_pll);
+ 
+ 	unregister_framebuffer(info);
+ 
+@@ -3808,6 +3819,39 @@ static int __init atyfb_setup(char *options)
+ }
+ #endif  /*  MODULE  */
+ 
++static int atyfb_reboot_notify(struct notifier_block *nb,
++			       unsigned long code, void *unused)
++{
++	struct atyfb_par *par;
++
++	if (code != SYS_RESTART)
++		return NOTIFY_DONE;
++
++	mutex_lock(&reboot_lock);
++
++	if (!reboot_info)
++		goto out;
++
++	par = reboot_info->par;
++
++	/*
++	 * HP OmniBook 500's BIOS doesn't like the state of the
++	 * hardware after atyfb has been used. Restore the hardware
++	 * to the original state to allow succesful reboots.
++	 */
++	aty_set_crtc(par, &par->saved_crtc);
++	par->pll_ops->set_pll(reboot_info, &par->saved_pll);
++
++ out:
++	mutex_unlock(&reboot_lock);
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block atyfb_reboot_notifier = {
++	.notifier_call = atyfb_reboot_notify,
++};
++
+ static int __init atyfb_init(void)
+ {
+     int err1 = 1, err2 = 1;
+@@ -3826,11 +3870,18 @@ static int __init atyfb_init(void)
+     err2 = atyfb_atari_probe();
+ #endif
+ 
+-    return (err1 && err2) ? -ENODEV : 0;
++    if (err1 && err2)
++	return -ENODEV;
++
++    register_reboot_notifier(&atyfb_reboot_notifier);
++
++    return 0;
+ }
+ 
+ static void __exit atyfb_exit(void)
+ {
++	unregister_reboot_notifier(&atyfb_reboot_notifier);
++
+ #ifdef CONFIG_PCI
+ 	pci_unregister_driver(&atyfb_driver);
+ #endif
+-- 
+1.6.0.6
 
---76DTJ5CE0DCVQemd--
+
+------------------------------------------------------------------------------
+Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT
+is a gathering of tech-side developers & brand creativity professionals. Meet
+the minds behind Google Creative Lab, Visual Complexity, Processing, & 
+iPhoneDevCamp asthey present alongside digital heavyweights like Barbarian
+Group, R/GA, & Big Spaceship. http://www.creativitycat.com 

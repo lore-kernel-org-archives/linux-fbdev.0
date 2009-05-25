@@ -1,25 +1,39 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+From: Andrew de Quincey <adq_dvb@lidskialf.net>
 Subject: Re: [PATCH 05/10] ARM: OMAP1: Make 770 LCD work
-Date: Mon, 25 May 2009 10:29:11 +0100
-Message-ID: <20090525092911.GC28195@n2100.arm.linux.org.uk>
-References: <20090519232905.12760.15490.stgit@localhost> <20090519233732.12760.34595.stgit@localhost>
+Date: Mon, 25 May 2009 14:21:28 +0100
+Message-ID: <20090525142128.17675cl0tvdr0y1k@lidskialf.net>
+References: <20090519232905.12760.15490.stgit@localhost>
+	<20090519233732.12760.34595.stgit@localhost>
+	<20090525092911.GC28195@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20090525092911.GC28195@n2100.arm.linux.org.uk>
 Content-Disposition: inline
-In-Reply-To: <20090519233732.12760.34595.stgit@localhost>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, Andrew de Quincey <adq_dvb@lidskialf.net>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; delsp="Yes"; format="flowed"
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, May 19, 2009 at 04:37:32PM -0700, Tony Lindgren wrote:
-> Make 770 LCD work by passing the clock from platform data.
-> Also remove the old unused functions.
+Quoting Russell King - ARM Linux <linux@arm.linux.org.uk>:
 
-I don't like this - because its passing struct clk's through platform
-data.  That's not how things are supposed to work.
+> On Tue, May 19, 2009 at 04:37:32PM -0700, Tony Lindgren wrote:
+>> Make 770 LCD work by passing the clock from platform data.
+>> Also remove the old unused functions.
+>
+> I don't like this - because its passing struct clk's through platform
+> data.  That's not how things are supposed to work.
+>
+> The way PXA solves this problem is to have clock aliases - see
+> clk_add_alias().
 
-The way PXA solves this problem is to have clock aliases - see
-clk_add_alias().
+Interesting idea - I now have a prototype patch implementing this,  
+which I'll send when I get home (otherwise it would be an "it  
+compiles" "test" :)
+
+There isn't a common definition of clk_add_alias() though - that  
+symbol is defined in arch/arm/mach-pxa/clock.c, so I had to copy it  
+into arch/arm/plat-omap/clock.c
+
+

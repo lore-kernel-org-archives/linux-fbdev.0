@@ -1,25 +1,25 @@
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Subject: Re: [RFC PATCH 2/2] ep93xx framebuffer driver
-Date: Tue, 26 May 2009 12:29:26 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909017FF7FC@mi8nycmail19.Mi8.com>
-References: <4A1A2ABD.8000104@bluewatersys.com>
-	<4A1A2DB7.1050500@bluewatersys.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] atyfb: Fix HP OmniBook 500 reboot
+	hang
+Date: Tue, 26 May 2009 13:49:18 -0700
+Message-ID: <20090526134918.096d49c4.akpm@linux-foundation.org>
+References: <1243292714-21193-1-git-send-email-syrjala@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hartleys@visionengravers.com>) id 1M8zXK-0004HS-Lt
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1M93aP-0004mE-VU
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 May 2009 16:29:58 +0000
-Received: from exprod6ob113.obsmtp.com ([64.18.1.30] helo=psmtp.com)
-	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1M8zXH-0003qp-EB for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 26 May 2009 16:29:58 +0000
-Content-class: urn:content-classes:message
-In-Reply-To: <4A1A2DB7.1050500@bluewatersys.com>
+	Tue, 26 May 2009 20:49:25 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M93aO-00080Q-Rm
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 26 May 2009 20:49:25 +0000
+In-Reply-To: <1243292714-21193-1-git-send-email-syrjala@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,88 +29,124 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ryan Mallon <ryan@bluewatersys.com>, arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net
+Cc: syrjala@sci.fi, linux-fbdev-devel@lists.sourceforge.net
 
-On Sunday, May 24, 2009 10:34 PM, Ryan Mallon wrote:
-> This patch adds support for the ep93xx framebuffer. Patch is against
-> arm ep93xx branch.
+On Tue, 26 May 2009 02:05:14 +0300
+Ville Syrjala <syrjala@sci.fi> wrote:
+
+> Apparently HP OmniBook 500's BIOS doesn't like the way atyfb reprograms
+> the hardware. The BIOS will simply hang after a reboot. Fix the problem
+> by restoring the hardware to it's original state on reboot.
+> 
 >
-> Can anybody with ep93xx hardware please test, specifically with regard
-> to the physical address bit 27 bug. My hardware has the bug, but I'm
-> not sure about other ep93xx chips.
+> ...
+>
+> @@ -3502,6 +3503,11 @@ static int __devinit atyfb_pci_probe(struct pci_dev *pdev, const struct pci_devi
+>  	par->mmap_map[1].prot_flag = _PAGE_E;
+>  #endif /* __sparc__ */
+>  
+> +	mutex_lock(&reboot_lock);
+> +	if (!reboot_info)
+> +		reboot_info = info;
+> +	mutex_unlock(&reboot_lock);
 
-I have not seen the address bit 27 bug on my custom hardware with
-EP9307 Rev E0 silicon.
+This looks risky to me.  We save away a pointer to a structure which
+was created by framebuffer_alloc().  What guarantee is there that this
+memory is still valid when the reboot happens later on?
 
-> Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
-> 
-> ---
-> 
-> diff --git a/arch/arm/mach-ep93xx/core.c b/arch/arm/mach-ep93xx/core.c
-> index c535e88..885786c 100644
-> --- a/arch/arm/mach-ep93xx/core.c
-> +++ b/arch/arm/mach-ep93xx/core.c
-> @@ -53,6 +53,7 @@
+
+>  	return 0;
 >  
->  #include <asm/hardware/vic.h>
+>  err_release_io:
+> @@ -3613,9 +3619,14 @@ static void __devexit atyfb_remove(struct fb_info *info)
+>  {
+>  	struct atyfb_par *par = (struct atyfb_par *) info->par;
 >  
-> +#include <mach/fb.h>
+> +	mutex_lock(&reboot_lock);
+> +	if (reboot_info == info)
+> +		reboot_info = NULL;
+> +	mutex_unlock(&reboot_lock);
+> +
+>  	/* restore video mode */
+> -	aty_set_crtc(par, &saved_crtc);
+> -	par->pll_ops->set_pll(info, &saved_pll);
+> +	aty_set_crtc(par, &par->saved_crtc);
+> +	par->pll_ops->set_pll(info, &par->saved_pll);
 >  
->  /*************************************************************************
->   * Static I/O mappings that are needed for all EP93xx platforms
-> @@ -546,6 +547,34 @@ void __init ep93xx_register_i2c(struct i2c_board_info *devices, int num)
->  	platform_device_register(&ep93xx_i2c_device);
+>  	unregister_framebuffer(info);
+>  
+> @@ -3808,6 +3819,39 @@ static int __init atyfb_setup(char *options)
 >  }
+>  #endif  /*  MODULE  */
 >  
-> +/*************************************************************************
-> + * EP93xx video peripheral handling
-> + *************************************************************************/
-> +static struct ep93xxfb_mach_info ep93xxfb_data;
-> +
-> +static struct resource ep93xx_fb_resource[] = {
-> +	{
-> +		.start		= EP93XX_RASTER_PHYS_BASE,
-> +		.end		= EP93XX_RASTER_PHYS_BASE + 0x800 - 1,
-> +		.flags		= IORESOURCE_MEM,
-> +	},
-> +};
-> +
-> +static struct platform_device ep93xx_fb_device = {
-> +	.name			= "ep93xxfb",
-> +	.id			= 0,
-
-Since there can only be one framebuffer device how about using
-.id = -1?  This will change the clk dev_id to "ep93xxfb".  Also,
-maybe change the name to "ep93xx-fb", that's how the usb host is
-named.
-
-> +	.dev.platform_data	= &ep93xxfb_data,
-> +	.dev.coherent_dma_mask	= 0xf7ffffff,
-
-I think this is supposed to be
-
-	.dev.coherent_dma_mask	= DMA_BIT_MASK(32),
-
-Or is the missing bit due to the address bit 27 bug?
-
-> +	.num_resources		= ARRAY_SIZE(ep93xx_fb_resource),
-> +	.resource		= ep93xx_fb_resource,
-> +};
-> +
-> +void __init ep93xx_register_fb(struct ep93xxfb_mach_info *data)
+> +static int atyfb_reboot_notify(struct notifier_block *nb,
+> +			       unsigned long code, void *unused)
 > +{
-> +	ep93xxfb_data = *data;
-> +	platform_device_register(&ep93xx_fb_device);
+> +	struct atyfb_par *par;
+> +
+> +	if (code != SYS_RESTART)
+> +		return NOTIFY_DONE;
+> +
+> +	mutex_lock(&reboot_lock);
+> +
+> +	if (!reboot_info)
+> +		goto out;
+> +
+> +	par = reboot_info->par;
+> +
+> +	/*
+> +	 * HP OmniBook 500's BIOS doesn't like the state of the
+> +	 * hardware after atyfb has been used. Restore the hardware
+> +	 * to the original state to allow succesful reboots.
+
+"successful" ;)
+
+> +	 */
+> +	aty_set_crtc(par, &par->saved_crtc);
+> +	par->pll_ops->set_pll(reboot_info, &par->saved_pll);
+> +
+> + out:
+> +	mutex_unlock(&reboot_lock);
+> +
+> +	return NOTIFY_DONE;
 > +}
 > +
->  extern void ep93xx_gpio_init(void);
+> +static struct notifier_block atyfb_reboot_notifier = {
+> +	.notifier_call = atyfb_reboot_notify,
+> +};
+> +
+>  static int __init atyfb_init(void)
+>  {
+>      int err1 = 1, err2 = 1;
+> @@ -3826,11 +3870,18 @@ static int __init atyfb_init(void)
+>      err2 = atyfb_atari_probe();
+>  #endif
 >  
->  void __init ep93xx_init_devices(void)
+> -    return (err1 && err2) ? -ENODEV : 0;
+> +    if (err1 && err2)
+> +	return -ENODEV;
+> +
+> +    register_reboot_notifier(&atyfb_reboot_notifier);
+> +
+> +    return 0;
+>  }
 
-I will test the remainder of this patch later this week and comment then.
+ick.  Please feel free to repair the indenting in atyfb_init().
 
-Regards,
-Hartley
+>  static void __exit atyfb_exit(void)
+>  {
+> +	unregister_reboot_notifier(&atyfb_reboot_notifier);
+> +
+>  #ifdef CONFIG_PCI
+>  	pci_unregister_driver(&atyfb_driver);
+>  #endif
+
+So we do the restoration for all supported devices on all machines,
+even though it's only known to be needed on one card on one machine.
+
+Hopefully that's safe, but a more cautious approach would use a
+whitelist of some form.  I don't have enough experience with these
+things to be able to judge the risk.
 
 ------------------------------------------------------------------------------
 Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 

@@ -1,27 +1,24 @@
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Subject: Re: [RFC PATCH 2/2] ep93xx framebuffer driver
-Date: Wed, 27 May 2009 12:35:27 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901862D66@mi8nycmail19.Mi8.com>
-References: <4A1A2ABD.8000104@bluewatersys.com>
-	<4A1A2DB7.1050500@bluewatersys.com>
-	<BD79186B4FD85F4B8E60E381CAEE1909017FF7FC@mi8nycmail19.Mi8.com>
-	<4A1CADD4.7000006@bluewatersys.com>
+From: Giuseppe Coviello <cjg@cruxppc.org>
+Subject: [PATCH] GXT400P and GXT6500P support
+Date: Wed, 27 May 2009 20:57:55 +0200
+Message-ID: <a265241c0905271157s45e23528haefbd2fa31ba6763@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hartleys@visionengravers.com>) id 1M9M6J-0001KD-2p
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <gicoviello@gmail.com>) id 1M9OL8-0005cn-LT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 16:35:35 +0000
-Received: from exprod6ob114.obsmtp.com ([64.18.1.32] helo=psmtp.com)
-	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1M9M6G-0002wc-Or for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 16:35:35 +0000
-Content-class: urn:content-classes:message
-In-Reply-To: <4A1CADD4.7000006@bluewatersys.com>
+	Wed, 27 May 2009 18:59:02 +0000
+Received: from mail-bw0-f222.google.com ([209.85.218.222])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M9OK5-00010B-Ae for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 27 May 2009 18:58:57 +0000
+Received: by bwz22 with SMTP id 22so4801378bwz.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 27 May 2009 11:57:55 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,81 +28,99 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tuesday, May 26, 2009 8:05 PM, Ryan Mallon wrote:
->>> This patch adds support for the ep93xx framebuffer. Patch is against
->>> arm ep93xx branch.
->>>
->>> Can anybody with ep93xx hardware please test, specifically with regard
->>> to the physical address bit 27 bug. My hardware has the bug, but I'm
->>> not sure about other ep93xx chips.
->> 
->> I have not seen the address bit 27 bug on my custom hardware with
->> EP9307 Rev E0 silicon.
->
-> Have you had the driver allocate a physical memory address which has bit
-> 27 set? I'm basically wondering whether to enable the check by default
-> or not. If the problem only exists on a few ep93xx chips then it may be
-> better to leave the check off by default.
+This patch adds support for GXT4000P and GXT6500P cards found on some
+IBM pSeries machines.
+GXT4000P/6000P and GXT4500P/6500P  couples are  identical from
+software's point of view and are based on the same  Raster Engine
+(RC1000), except for a different reference clock for the PLL.
+GXT6x00P models are equipped with an additional Geometry Engine
+(GT1000) but this driver doesn't use it.
 
-I just thought about it... On my platform it's impossible to allocate a
-physical memory address which has bit 27 set.
+Regards, Giuseppe
 
-My board has 64MB SDRAM on SDCE0 and the bootloader is setting the SROMLL
-bit when configuring the SDRAM controller.  This results in my SDRAM
-getting physically mapped to:
 
-0xc0000000 - 0xc1ffffff
-0xc4000000 - 0xc5ffffff
+Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
+Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
 
-Looking at the various SDRAM address mappings it appears the only way to
-get a physical address with bit 27 set is to have SROMLL = 0.  This is
-generally not a good idea because the SDRAM gets very segmented with
-certain memory configurations.
+--- /usr/src/linux-2.6.30-rc3/drivers/video/Kconfig	2009-04-22
+05:07:00.000000000 +0200
++++ Kconfig	2009-05-05 10:55:17.000000000 +0200
+@@ -1985,8 +1985,10 @@
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	---help---
+-	  Say Y here to enable support for the IBM GXT4500P display
+-	  adaptor, found on some IBM System P (pSeries) machines.
++	  Say Y here to enable support for the IBM GXT4000P/6000P and	
++	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
++	  found on some IBM System P (pSeries) machines. This driver
++	  doesn't use Geometry Engine GT1000.
 
-Refer to the following document for more information:
+ config FB_PS3
+ 	tristate "PS3 GPU framebuffer driver"
+--- /usr/src/linux-2.6.30-rc3/drivers/video/gxt4500.c	2009-04-22
+05:07:00.000000000 +0200
++++ gxt4500c	2009-05-05 10:47:41.000000000 +0200
+@@ -1,6 +1,7 @@
+ /*
+- * Frame buffer device for IBM GXT4500P and GXT6000P display adaptors
+- *
++ * Frame buffer device for IBM GXT4500P/6500P and GXT4000P/6000P
++ * display adaptors
++ *
+  * Copyright (C) 2006 Paul Mackerras, IBM Corp. <paulus@samba.org>
+  */
 
-http://arm.cirrus.com/files/HOWTO/EP93xx%20SDRAM%20Address%20Ranges.pdf
+@@ -14,6 +15,8 @@
+ #include <linux/string.h>
 
->>> +
->>> +static struct platform_device ep93xx_fb_device = {
->>> +	.name			= "ep93xxfb",
->>> +	.id			= 0,
->> 
->> Since there can only be one framebuffer device how about using
->> .id = -1?  This will change the clk dev_id to "ep93xxfb".  Also,
->> maybe change the name to "ep93xx-fb", that's how the usb host is
->> named.
->
-> Will fix both.
+ #define PCI_DEVICE_ID_IBM_GXT4500P	0x21c
++#define PCI_DEVICE_ID_IBM_GXT6500P      0x21b
++#define PCI_DEVICE_ID_IBM_GXT4000P      0x16e
+ #define PCI_DEVICE_ID_IBM_GXT6000P	0x170
 
-Ok.  You might need to change the name in the driver also.
+ /* GXT4500P registers */
+@@ -173,6 +176,8 @@
+ /* List of supported cards */
+ enum gxt_cards {
+ 	GXT4500P,
++	GXT6500P,
++	GXT4000P,
+ 	GXT6000P
+ };
 
->>> +	.dev.platform_data	= &ep93xxfb_data,
->>> +	.dev.coherent_dma_mask	= 0xf7ffffff,
->> 
->> I think this is supposed to be
->> 
->> 	.dev.coherent_dma_mask	= DMA_BIT_MASK(32),
->> 
->> Or is the missing bit due to the address bit 27 bug?
->
-> Yeah, its for bit 27. Not sure how to handle this correctly if the check
-> is a driver option. If you don't have this problem, just change it to
-> DMA_BIT_MASK(32) for testing.
+@@ -182,6 +187,8 @@
+ 	const char *cardname;
+ } cardinfo[] = {
+ 	[GXT4500P] = { .refclk_ps = 9259, .cardname = "IBM GXT4500P" },
++        [GXT6500P] = { .refclk_ps = 9259, .cardname = "IBM GXT6500P" },
++        [GXT4000P] = { .refclk_ps = 40000, .cardname = "IBM GXT4000P" },
+ 	[GXT6000P] = { .refclk_ps = 40000, .cardname = "IBM GXT6000P" },
+ };
 
-I have been using DMA_BIT_MASK(32) for quite a while with no problems.
+@@ -736,6 +743,10 @@
+ static const struct pci_device_id gxt4500_pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4500P),
+ 	  .driver_data = GXT4500P },
++        { PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6500P),
++          .driver_data = GXT6500P },
++        { PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4000P),
++          .driver_data = GXT4000P },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6000P),
+ 	  .driver_data = GXT6000P },
+ 	{ 0 }
+@@ -768,7 +779,7 @@
+ module_exit(gxt4500_exit);
 
-Isn't there also supposed to be a:
-
-	.dev.dma_mask	= &ep93xx_fb_device.dev.coherent_dma_mask,
-
-in the platform_device struct?  Look at the ep93xx_ohci_device for reference.
-
-Regards,
-Hartley
+ MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
+-MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6000P");
++MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6500P and GXT4000P/6000P");
+ MODULE_LICENSE("GPL");
+ module_param(mode_option, charp, 0);
+ MODULE_PARM_DESC(mode_option, "Specify resolution as
+\"<xres>x<yres>[-<bpp>][@<refresh>]\"");
 
 ------------------------------------------------------------------------------
 Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 

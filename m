@@ -1,25 +1,25 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fbdev: does not allow VESA modes
- without compiled-in drivers (bug #13249)
-Date: Tue, 26 May 2009 23:15:16 -0700
-Message-ID: <20090526231516.b0cf789f.akpm@linux-foundation.org>
-References: <20090520142704.0de8aa81.krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] carminefb: beyond ARRAY_SIZE of
+	carmine_modedb
+Date: Wed, 27 May 2009 00:15:46 -0700
+Message-ID: <20090527001546.40a870d6.akpm@linux-foundation.org>
+References: <4A1351AE.6010408@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1M9CQp-00023C-JV
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1M9DMt-0004ee-Pn
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 06:16:07 +0000
+	Wed, 27 May 2009 07:16:07 +0000
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M9CQl-0001BR-6X
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M9DMn-0006d0-K9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 06:16:07 +0000
-In-Reply-To: <20090520142704.0de8aa81.krzysztof.h1@poczta.fm>
+	Wed, 27 May 2009 07:16:07 +0000
+In-Reply-To: <4A1351AE.6010408@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,52 +29,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Werner, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Lemberg <wl@gnu.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Siewior <bigeasy@linutronix.de>, Sebastian, linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
 
-On Wed, 20 May 2009 14:27:04 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+On Wed, 20 May 2009 02:41:18 +0200 Roel Kluin <roel.kluin@gmail.com> wrote:
 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> Does not allow to accept VESA modes by the "vga=" kernel parameter
-> if there is no frame buffer driver compiled-in to handle it.
-> 
-> Bug was reported by Werner Lemberg as kernel bug #13249
-> "Intel 945GM: Boot option`vga=0x31a' breaks display of TTYs".
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> ---
-> 
-> Werner, please test it. It should produce a correct display
-> with intelfb compiled in (=y) and as a module (=m).
-> 
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 0048f11..c787357 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -1122,7 +1122,7 @@ config FB_INTEL
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> -	select FB_BOOT_VESA_SUPPORT
-> +	select FB_BOOT_VESA_SUPPORT if FB_INTEL = y
->  	help
->  	  This driver supports the on-board graphics built in to the Intel
->            830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.
-> @@ -1460,7 +1460,7 @@ config FB_SIS
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> -	select FB_BOOT_VESA_SUPPORT
-> +	select FB_BOOT_VESA_SUPPORT if FB_SIS = y
->  	help
->  	  This is the frame buffer device driver for the SiS 300, 315, 330
->  	  and 340 series as well as XGI V3XT, V5, V8, Z7 graphics chipsets.
+> CC: inux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
 
-I read through http://bugzilla.kernel.org/show_bug.cgi?id=13249 and am
-now unsure what to do with this patch?
+You mistyped the list address.
 
+> Subject: [PATCH] carminefb: beyond ARRAY_SIZE of carmine_modedb
+> Date: Wed, 20 May 2009 02:41:18 +0200
+> User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+> 
+> Do not go beyond ARRAY_SIZE ofcarmine_modedb
+
+Sort-of.  I changed the title and changelog:
+
+
+Subject: carminefb: fix possible access beyond end of carmine_modedb[]
+From: Roel Kluin <roel.kluin@gmail.com>
+
+This check is off-by-one.
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Cc: Sebastian Siewior <bigeasy@linutronix.de>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/video/carminefb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN drivers/video/carminefb.c~carminefb-beyond-array_size-of-carmine_modedb drivers/video/carminefb.c
+--- a/drivers/video/carminefb.c~carminefb-beyond-array_size-of-carmine_modedb
++++ a/drivers/video/carminefb.c
+@@ -562,7 +562,7 @@ static int __devinit alloc_carmine_fb(vo
+ 	if (ret < 0)
+ 		goto err_free_fb;
+ 
+-	if (fb_mode > ARRAY_SIZE(carmine_modedb))
++	if (fb_mode >= ARRAY_SIZE(carmine_modedb))
+ 		fb_mode = CARMINEFB_DEFAULT_VIDEO_MODE;
+ 
+ 	par->cur_mode = par->new_mode = ~0;
+_
 
 
 ------------------------------------------------------------------------------

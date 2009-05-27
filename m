@@ -1,27 +1,25 @@
-From: Ryan Mallon <ryan@bluewatersys.com>
-Subject: Re: [RFC PATCH 2/2] ep93xx framebuffer driver
-Date: Wed, 27 May 2009 15:04:52 +1200
-Message-ID: <4A1CADD4.7000006@bluewatersys.com>
-References: <4A1A2ABD.8000104@bluewatersys.com>
-	<4A1A2DB7.1050500@bluewatersys.com>
-	<BD79186B4FD85F4B8E60E381CAEE1909017FF7FC@mi8nycmail19.Mi8.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fbdev: does not allow VESA modes
+ without compiled-in drivers (bug #13249)
+Date: Tue, 26 May 2009 23:15:16 -0700
+Message-ID: <20090526231516.b0cf789f.akpm@linux-foundation.org>
+References: <20090520142704.0de8aa81.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <ryan@bluewatersys.com>) id 1M99Qs-00018O-Or
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1M9CQp-00023C-JV
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 03:03:58 +0000
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]
-	helo=hayes.bluewaternz.com)
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M99Qj-0001RG-VY
+	Wed, 27 May 2009 06:16:07 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M9CQl-0001BR-6X
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 03:03:53 +0000
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909017FF7FC@mi8nycmail19.Mi8.com>
+	Wed, 27 May 2009 06:16:07 +0000
+In-Reply-To: <20090520142704.0de8aa81.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,63 +29,53 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Werner, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Lemberg <wl@gnu.org>
 
-H Hartley Sweeten wrote:
-> On Sunday, May 24, 2009 10:34 PM, Ryan Mallon wrote:
->> This patch adds support for the ep93xx framebuffer. Patch is against
->> arm ep93xx branch.
->>
->> Can anybody with ep93xx hardware please test, specifically with regard
->> to the physical address bit 27 bug. My hardware has the bug, but I'm
->> not sure about other ep93xx chips.
+On Wed, 20 May 2009 14:27:04 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
 > 
-> I have not seen the address bit 27 bug on my custom hardware with
-> EP9307 Rev E0 silicon.
-
-Have you had the driver allocate a physical memory address which has bit
-27 set? I'm basically wondering whether to enable the check by default
-or not. If the problem only exists on a few ep93xx chips then it may be
-better to leave the check off by default.
-
->> +
->> +static struct platform_device ep93xx_fb_device = {
->> +	.name			= "ep93xxfb",
->> +	.id			= 0,
+> Does not allow to accept VESA modes by the "vga=" kernel parameter
+> if there is no frame buffer driver compiled-in to handle it.
 > 
-> Since there can only be one framebuffer device how about using
-> .id = -1?  This will change the clk dev_id to "ep93xxfb".  Also,
-> maybe change the name to "ep93xx-fb", that's how the usb host is
-> named.
-
-Will fix both.
-
+> Bug was reported by Werner Lemberg as kernel bug #13249
+> "Intel 945GM: Boot option`vga=0x31a' breaks display of TTYs".
 > 
->> +	.dev.platform_data	= &ep93xxfb_data,
->> +	.dev.coherent_dma_mask	= 0xf7ffffff,
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
 > 
-> I think this is supposed to be
+> Werner, please test it. It should produce a correct display
+> with intelfb compiled in (=y) and as a module (=m).
 > 
-> 	.dev.coherent_dma_mask	= DMA_BIT_MASK(32),
 > 
-> Or is the missing bit due to the address bit 27 bug?
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 0048f11..c787357 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -1122,7 +1122,7 @@ config FB_INTEL
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> -	select FB_BOOT_VESA_SUPPORT
+> +	select FB_BOOT_VESA_SUPPORT if FB_INTEL = y
+>  	help
+>  	  This driver supports the on-board graphics built in to the Intel
+>            830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.
+> @@ -1460,7 +1460,7 @@ config FB_SIS
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> -	select FB_BOOT_VESA_SUPPORT
+> +	select FB_BOOT_VESA_SUPPORT if FB_SIS = y
+>  	help
+>  	  This is the frame buffer device driver for the SiS 300, 315, 330
+>  	  and 340 series as well as XGI V3XT, V5, V8, Z7 graphics chipsets.
 
-Yeah, its for bit 27. Not sure how to handle this correctly if the check
-is a driver option. If you don't have this problem, just change it to
-DMA_BIT_MASK(32) for testing.
+I read through http://bugzilla.kernel.org/show_bug.cgi?id=13249 and am
+now unsure what to do with this patch?
 
-~Ryan
 
--- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
 
 ------------------------------------------------------------------------------
 Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 

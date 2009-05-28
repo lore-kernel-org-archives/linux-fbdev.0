@@ -1,26 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeon: P2G2CLK_ALWAYS_ONb tested
- twice, should 2nd be P2G2CLK_DAC_ALWAYS_ONb?
-Date: Thu, 28 May 2009 17:11:06 +1000
-Message-ID: <1243494666.3171.123.camel@pasglop>
-References: <4A0DD467.7040907@gmail.com>
-	<20090527235420.943cabfe.akpm@linux-foundation.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] atmel_lcdfb: Correct fifo size for
+	some products
+Date: Thu, 28 May 2009 00:35:26 -0700
+Message-ID: <20090528003526.542d306e.akpm@linux-foundation.org>
+References: <4A0D452A.4000805@atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <benh@kernel.crashing.org>) id 1M9Zlo-0007Lv-Ot
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1M9a9N-0003xb-8R
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 May 2009 07:11:20 +0000
-Received: from gate.crashing.org ([63.228.1.57])
+	Thu, 28 May 2009 07:35:41 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M9Zlj-0001Ie-5F
+	(Exim 4.69) id 1M9a9H-0008CM-UR
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 May 2009 07:11:20 +0000
-In-Reply-To: <20090527235420.943cabfe.akpm@linux-foundation.org>
+	Thu, 28 May 2009 07:35:41 +0000
+In-Reply-To: <4A0D452A.4000805@atmel.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,57 +29,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Andrew Victor <avictor.za@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-On Wed, 2009-05-27 at 23:54 -0700, Andrew Morton wrote:
-> On Fri, 15 May 2009 22:45:27 +0200 Roel Kluin <roel.kluin@gmail.com> wrote:
-> 
-> > P2G2CLK_ALWAYS_ONb is tested twice, 2nd should be P2G2CLK_DAC_ALWAYS_ONb.
-> > 
-> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> > ---
-> > Is this correct? I am only guessing. Please review.
-> 
-> Nobody knows?
+On Fri, 15 May 2009 12:34:18 +0200 Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-It looks ok, I've acked it, we'll see how it goes :-)
+> Remove wrong fifo size definition for some AT91 products.
+> 
+> Due to a misunderstanding of some AT91 datasheets, a fifo size of 2048 (words)
+> has been introduced by mistake. In fact, all products (AT91/AT32) are sharing
+> the same fifo size of 512 words.
+> 
 
-Cheers,
-Ben.
+Changelog fails to describe the impact of the bug, so people who are
+working out which kernel versions it should be ported into don't know
+what to do.
 
-> > diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-> > index 97a1f09..100112f 100644
-> > --- a/drivers/video/aty/radeon_pm.c
-> > +++ b/drivers/video/aty/radeon_pm.c
-> > @@ -395,7 +395,7 @@ static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
-> >  			PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb      |
-> >  			PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb        |
-> >  			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb           |
-> > -			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb);
-> > +			PIXCLKS_CNTL__R300_P2G2CLK_DAC_ALWAYS_ONb);
-> >  		OUTPLL(pllPIXCLKS_CNTL, tmp);
-> >  
-> >  		tmp = INPLL(pllMCLK_MISC);
-> 
-> The same thing happens at line 215:
-> 
->                 tmp &= ~(PIXCLKS_CNTL__PIX2CLK_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__PIX2CLK_DAC_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__DISP_TVOUT_PIXCLK_TV_ALWAYS_ONb	|
-> 			 PIXCLKS_CNTL__R300_DVOCLK_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__PIXCLK_BLEND_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__PIXCLK_GV_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__R300_PIXCLK_DVO_ALWAYS_ONb	|
-> 			 PIXCLKS_CNTL__PIXCLK_LVDS_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__PIXCLK_TMDS_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb	|
-> 			 PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb	|
-> 			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
-> 			 PIXCLKS_CNTL__R300_DISP_DAC_PIXCLK_DAC2_BLANK_OFF);
-> 
-> but that's easier to fix.
+Furthermore, people who are hitting a bug in this driver in older
+kernel versions will have difficulty working out whether this patch
+might fix their bug.
+
+> Can we consider this fix for .30-final ?
+
+Sure, but for what reason?
+
+What about 2.6.29.x, 2.6.28.x, earlier?
+
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -29,14 +29,8 @@
+>  
+>  /* configurable parameters */
+>  #define ATMEL_LCDC_CVAL_DEFAULT		0xc8
+> -#define ATMEL_LCDC_DMA_BURST_LEN	8
+> -
+> -#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91CAP9) || \
+> -	defined(CONFIG_ARCH_AT91SAM9RL)
+> -#define ATMEL_LCDC_FIFO_SIZE		2048
+> -#else
+> -#define ATMEL_LCDC_FIFO_SIZE		512
+> -#endif
+> +#define ATMEL_LCDC_DMA_BURST_LEN	8	/* words */
+> +#define ATMEL_LCDC_FIFO_SIZE		512	/* words */
+>  
+>  #if defined(CONFIG_ARCH_AT91)
+>  #define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
 
 
 ------------------------------------------------------------------------------

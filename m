@@ -1,24 +1,25 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [drivers] [fb] S3C-fb: PM fix
-Date: Wed, 27 May 2009 23:33:25 -0700
-Message-ID: <20090527233325.bb60a326.akpm@linux-foundation.org>
-References: <E4D3F24EA6C9E54F817833EAE0D912AC0226526883@bssrvexch01.BS.local>
+Subject: Re: [PATCH] radeon: P2G2CLK_ALWAYS_ONb tested
+ twice, should 2nd be P2G2CLK_DAC_ALWAYS_ONb?
+Date: Wed, 27 May 2009 23:54:20 -0700
+Message-ID: <20090527235420.943cabfe.akpm@linux-foundation.org>
+References: <4A0DD467.7040907@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1M9ZCJ-0006Ks-Fa
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1M9ZW7-0001nm-LR
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 May 2009 06:34:39 +0000
+	Thu, 28 May 2009 06:55:07 +0000
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1M9ZCH-0003qE-I2
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M9ZVy-0004vt-9F
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 28 May 2009 06:34:39 +0000
-In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC0226526883@bssrvexch01.BS.local>
+	Thu, 28 May 2009 06:55:02 +0000
+In-Reply-To: <4A0DD467.7040907@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,63 +29,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, "Antonino A. Daplas" <adaplas@gmail.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 18 May 2009 08:05:46 +0200 Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+On Fri, 15 May 2009 22:45:27 +0200 Roel Kluin <roel.kluin@gmail.com> wrote:
 
-> Restore correctly FrameBuffer registers state in resume function.
+> P2G2CLK_ALWAYS_ONb is tested twice, 2nd should be P2G2CLK_DAC_ALWAYS_ONb.
 > 
-> Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> 
-> --- 
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 5e9c630..d3a568e 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -947,7 +947,8 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
->  	int win;
->  
->  	for (win = 0; win <= S3C_FB_MAX_WIN; win++)
-> -		s3c_fb_release_win(sfb, sfb->windows[win]);
-> +		if (sfb->windows[win])
-> +			s3c_fb_release_win(sfb, sfb->windows[win]);
->  
->  	iounmap(sfb->regs);
->  
-> @@ -985,11 +986,20 @@ static int s3c_fb_suspend(struct platform_device *pdev, pm_message_t state)
->  static int s3c_fb_resume(struct platform_device *pdev)
->  {
->  	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-> +	struct s3c_fb_platdata *pd = sfb->pdata;
->  	struct s3c_fb_win *win;
->  	int win_no;
->  
->  	clk_enable(sfb->bus_clk);
->  
-> +	/* setup registers */
-> +	writel(pd->vidcon1, sfb->regs + VIDCON1);
-> +
-> +	/* zero all windows before we do anything */
-> +	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++)
-> +		s3c_fb_clear_win(sfb, win_no);
-> +
-> +	/* restore framebuffers */
->  	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
->  		win = sfb->windows[win_no];
->  		if (!win)
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Is this correct? I am only guessing. Please review.
 
-What are the consequences of the bug whcih you fixed?  Device
-inoperative after resume, I assume?  Does it affect all supported
-hardware, or just some particualr device(s)?
+Nobody knows?
 
-See, this is the sort of information whcih shuld be in the changelog,
-please, so I (and others) can make decisions about which kernel
-version(s) the patch should be merged into.
+> diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+> index 97a1f09..100112f 100644
+> --- a/drivers/video/aty/radeon_pm.c
+> +++ b/drivers/video/aty/radeon_pm.c
+> @@ -395,7 +395,7 @@ static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
+>  			PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb      |
+>  			PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb        |
+>  			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb           |
+> -			PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb);
+> +			PIXCLKS_CNTL__R300_P2G2CLK_DAC_ALWAYS_ONb);
+>  		OUTPLL(pllPIXCLKS_CNTL, tmp);
+>  
+>  		tmp = INPLL(pllMCLK_MISC);
 
-I assume we want it in 2.6.30.
+The same thing happens at line 215:
+
+                tmp &= ~(PIXCLKS_CNTL__PIX2CLK_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__PIX2CLK_DAC_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__DISP_TVOUT_PIXCLK_TV_ALWAYS_ONb	|
+			 PIXCLKS_CNTL__R300_DVOCLK_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__PIXCLK_BLEND_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__PIXCLK_GV_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__R300_PIXCLK_DVO_ALWAYS_ONb	|
+			 PIXCLKS_CNTL__PIXCLK_LVDS_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__PIXCLK_TMDS_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__R300_PIXCLK_TRANS_ALWAYS_ONb	|
+			 PIXCLKS_CNTL__R300_PIXCLK_TVO_ALWAYS_ONb	|
+			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__R300_P2G2CLK_ALWAYS_ONb		|
+			 PIXCLKS_CNTL__R300_DISP_DAC_PIXCLK_DAC2_BLANK_OFF);
+
+but that's easier to fix.
 
 ------------------------------------------------------------------------------
 Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 

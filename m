@@ -1,24 +1,24 @@
-From: Giuseppe Coviello <cjg@cruxppc.org>
-Subject: [PATCH] GXT400P and GXT6500P support
-Date: Wed, 27 May 2009 20:57:55 +0200
-Message-ID: <a265241c0905271157s45e23528haefbd2fa31ba6763@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [drivers] [fb] S3C-fb: PM fix
+Date: Wed, 27 May 2009 23:33:25 -0700
+Message-ID: <20090527233325.bb60a326.akpm@linux-foundation.org>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC0226526883@bssrvexch01.BS.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <gicoviello@gmail.com>) id 1M9OL8-0005cn-LT
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1M9ZCJ-0006Ks-Fa
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 18:59:02 +0000
-Received: from mail-bw0-f222.google.com ([209.85.218.222])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1M9OK5-00010B-Ae for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 27 May 2009 18:58:57 +0000
-Received: by bwz22 with SMTP id 22so4801378bwz.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 27 May 2009 11:57:55 -0700 (PDT)
+	Thu, 28 May 2009 06:34:39 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1M9ZCH-0003qE-I2
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 28 May 2009 06:34:39 +0000
+In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC0226526883@bssrvexch01.BS.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,99 +28,63 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-This patch adds support for GXT4000P and GXT6500P cards found on some
-IBM pSeries machines.
-GXT4000P/6000P and GXT4500P/6500P  couples are  identical from
-software's point of view and are based on the same  Raster Engine
-(RC1000), except for a different reference clock for the PLL.
-GXT6x00P models are equipped with an additional Geometry Engine
-(GT1000) but this driver doesn't use it.
+On Mon, 18 May 2009 08:05:46 +0200 Marek Szyprowski <m.szyprowski@samsung.com> wrote:
 
-Regards, Giuseppe
+> Restore correctly FrameBuffer registers state in resume function.
+> 
+> Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> 
+> --- 
+> 
+> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+> index 5e9c630..d3a568e 100644
+> --- a/drivers/video/s3c-fb.c
+> +++ b/drivers/video/s3c-fb.c
+> @@ -947,7 +947,8 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+>  	int win;
+>  
+>  	for (win = 0; win <= S3C_FB_MAX_WIN; win++)
+> -		s3c_fb_release_win(sfb, sfb->windows[win]);
+> +		if (sfb->windows[win])
+> +			s3c_fb_release_win(sfb, sfb->windows[win]);
+>  
+>  	iounmap(sfb->regs);
+>  
+> @@ -985,11 +986,20 @@ static int s3c_fb_suspend(struct platform_device *pdev, pm_message_t state)
+>  static int s3c_fb_resume(struct platform_device *pdev)
+>  {
+>  	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+> +	struct s3c_fb_platdata *pd = sfb->pdata;
+>  	struct s3c_fb_win *win;
+>  	int win_no;
+>  
+>  	clk_enable(sfb->bus_clk);
+>  
+> +	/* setup registers */
+> +	writel(pd->vidcon1, sfb->regs + VIDCON1);
+> +
+> +	/* zero all windows before we do anything */
+> +	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++)
+> +		s3c_fb_clear_win(sfb, win_no);
+> +
+> +	/* restore framebuffers */
+>  	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
+>  		win = sfb->windows[win_no];
+>  		if (!win)
 
+What are the consequences of the bug whcih you fixed?  Device
+inoperative after resume, I assume?  Does it affect all supported
+hardware, or just some particualr device(s)?
 
-Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
-Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
+See, this is the sort of information whcih shuld be in the changelog,
+please, so I (and others) can make decisions about which kernel
+version(s) the patch should be merged into.
 
---- /usr/src/linux-2.6.30-rc3/drivers/video/Kconfig	2009-04-22
-05:07:00.000000000 +0200
-+++ Kconfig	2009-05-05 10:55:17.000000000 +0200
-@@ -1985,8 +1985,10 @@
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	---help---
--	  Say Y here to enable support for the IBM GXT4500P display
--	  adaptor, found on some IBM System P (pSeries) machines.
-+	  Say Y here to enable support for the IBM GXT4000P/6000P and	
-+	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
-+	  found on some IBM System P (pSeries) machines. This driver
-+	  doesn't use Geometry Engine GT1000.
-
- config FB_PS3
- 	tristate "PS3 GPU framebuffer driver"
---- /usr/src/linux-2.6.30-rc3/drivers/video/gxt4500.c	2009-04-22
-05:07:00.000000000 +0200
-+++ gxt4500c	2009-05-05 10:47:41.000000000 +0200
-@@ -1,6 +1,7 @@
- /*
-- * Frame buffer device for IBM GXT4500P and GXT6000P display adaptors
-- *
-+ * Frame buffer device for IBM GXT4500P/6500P and GXT4000P/6000P
-+ * display adaptors
-+ *
-  * Copyright (C) 2006 Paul Mackerras, IBM Corp. <paulus@samba.org>
-  */
-
-@@ -14,6 +15,8 @@
- #include <linux/string.h>
-
- #define PCI_DEVICE_ID_IBM_GXT4500P	0x21c
-+#define PCI_DEVICE_ID_IBM_GXT6500P      0x21b
-+#define PCI_DEVICE_ID_IBM_GXT4000P      0x16e
- #define PCI_DEVICE_ID_IBM_GXT6000P	0x170
-
- /* GXT4500P registers */
-@@ -173,6 +176,8 @@
- /* List of supported cards */
- enum gxt_cards {
- 	GXT4500P,
-+	GXT6500P,
-+	GXT4000P,
- 	GXT6000P
- };
-
-@@ -182,6 +187,8 @@
- 	const char *cardname;
- } cardinfo[] = {
- 	[GXT4500P] = { .refclk_ps = 9259, .cardname = "IBM GXT4500P" },
-+        [GXT6500P] = { .refclk_ps = 9259, .cardname = "IBM GXT6500P" },
-+        [GXT4000P] = { .refclk_ps = 40000, .cardname = "IBM GXT4000P" },
- 	[GXT6000P] = { .refclk_ps = 40000, .cardname = "IBM GXT6000P" },
- };
-
-@@ -736,6 +743,10 @@
- static const struct pci_device_id gxt4500_pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4500P),
- 	  .driver_data = GXT4500P },
-+        { PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6500P),
-+          .driver_data = GXT6500P },
-+        { PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4000P),
-+          .driver_data = GXT4000P },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6000P),
- 	  .driver_data = GXT6000P },
- 	{ 0 }
-@@ -768,7 +779,7 @@
- module_exit(gxt4500_exit);
-
- MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
--MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6000P");
-+MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6500P and GXT4000P/6000P");
- MODULE_LICENSE("GPL");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Specify resolution as
-\"<xres>x<yres>[-<bpp>][@<refresh>]\"");
+I assume we want it in 2.6.30.
 
 ------------------------------------------------------------------------------
 Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 

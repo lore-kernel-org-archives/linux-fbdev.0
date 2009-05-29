@@ -1,65 +1,87 @@
-From: Andrew de Quincey <adq_dvb@lidskialf.net>
-Subject: Re: [PATCH 05/10] ARM: OMAP1: Make 770 LCD work
-Date: Fri, 29 May 2009 01:29:52 +0100
-Message-ID: <20090529012952.104144iws1glmow0@lidskialf.net>
-References: <20090519232905.12760.15490.stgit@localhost>
-	<20090519233732.12760.34595.stgit@localhost>
-	<20090525092911.GC28195@n2100.arm.linux.org.uk>
-	<20090525142128.17675cl0tvdr0y1k@lidskialf.net>
-	<20090525174055.127744136qxu9vk0@lidskialf.net>
-	<20090528182047.GF32453@atomide.com>
-	<20090528195046.GW20736@n2100.arm.linux.org.uk>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH] [drivers] [fb] S3C-fb: PM fix
+Date: Fri, 29 May 2009 09:16:39 +0200
+Message-ID: <000001c9e02d$6bff66a0$43fe33e0$%szyprowski@samsung.com>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC0226526883@bssrvexch01.BS.local>
+	<20090527233325.bb60a326.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20090528195046.GW20736@n2100.arm.linux.org.uk>
-Content-Disposition: inline
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; delsp="Yes"; format="flowed"
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <m.szyprowski@samsung.com>) id 1M9wMK-0000cX-JL
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 May 2009 07:18:32 +0000
+Received: from mailout1.samsung.com ([203.254.224.24])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1M9wMI-000161-Ps for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 May 2009 07:18:32 +0000
+Received: from epmmp1 (mailout1.samsung.com [203.254.224.24])
+	by mailout1.samsung.com
+	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
+	with ESMTP id <0KKE00F9X9MPPF@mailout1.samsung.com> for
+	linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 May 2009 16:18:25 +0900 (KST)
+Received: from AMDC159 ([106.116.37.153])
+	by mmp1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul 14
+	2004)) with ESMTPA id <0KKE0041Y9ME1G@mmp1.samsung.com> for
+	linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 29 May 2009 16:18:25 +0900 (KST)
+In-reply-to: <20090527233325.bb60a326.akpm@linux-foundation.org>
+Content-language: pl
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "'Antonino A. Daplas'" <adaplas@gmail.com>, kyungmin.park@samsung.com, 'Ben Dooks' <ben-linux@fluff.org>, linux-arm-kernel@lists.arm.linux.org.uk, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Quoting Russell King - ARM Linux <linux@arm.linux.org.uk>:
+Hello,
 
-> On Thu, May 28, 2009 at 11:20:48AM -0700, Tony Lindgren wrote:
->> * Andrew de Quincey <adq_dvb@lidskialf.net> [090525 09:41]:
->> > Quoting Andrew de Quincey <adq_dvb@lidskialf.net>:
->> >
->> >> Quoting Russell King - ARM Linux <linux@arm.linux.org.uk>:
->> >>
->> >>> On Tue, May 19, 2009 at 04:37:32PM -0700, Tony Lindgren wrote:
->> >>>> Make 770 LCD work by passing the clock from platform data.
->> >>>> Also remove the old unused functions.
->> >>>
->> >>> I don't like this - because its passing struct clk's through platform
->> >>> data.  That's not how things are supposed to work.
->> >>>
->> >>> The way PXA solves this problem is to have clock aliases - see
->> >>> clk_add_alias().
->> >>
->> >> Interesting idea - I now have a prototype patch implementing this,
->> >> which I'll send when I get home (otherwise it would be an "it
->> >> compiles" "test" :)
->> >>
->> >> There isn't a common definition of clk_add_alias() though - that
->> >> symbol is defined in arch/arm/mach-pxa/clock.c, so I had to copy it
->> >> into arch/arm/plat-omap/clock.c
->> >
->> > Attached is a patch implementing this method. I don't like the
->> > duplication of the clk_alias code, but I imagine that could be resolved
->> > if this method was chosen....
->>
->> Andrew, can you please reply with your Signed-off-by?
->
-> Actually, I'm very tempted to suggest that clk_add_alias() should go
-> into arch/arm/common/clkdev.c if we're going to have more people use it.
+On Thursday, May 28, 2009 8:33 AM Andrew Morton wrote:
 
-Cool!
+> On Mon, 18 May 2009 08:05:46 +0200 Marek Szyprowski
+> <m.szyprowski@samsung.com> wrote:
+> 
+> > Restore correctly FrameBuffer registers state in resume function.
+> >
+> > Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> > [...]
 
-Out of interest, what is the best practice way to pass platform  
-specific GPIOs around? There are a number of other n770 related  
-drivers I'm intending on cleaning up, several of which have GPIO  
-numbers hardcoded in them. Should these be passed in platform  
-structures, or is there something analogous to the clk_alias for GPIOs?
+> What are the consequences of the bug whcih you fixed?  Device
+> inoperative after resume, I assume?  Does it affect all supported
+> hardware, or just some particualr device(s)?
 
+Yes, the framebuffer was inoperative after resume. This bug was triggered on
+a system that has a power management circuit which disabled power in most
+S3C SOC power domains in suspend mode. In such case drivers need to restore
+all its registers state after resume.
+
+> See, this is the sort of information whcih shuld be in the changelog,
+> please, so I (and others) can make decisions about which kernel
+> version(s) the patch should be merged into.
+
+Ok. I will describe my patches more in detail in the future. Thanks for your
+comments.
+
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
+
+
+
+------------------------------------------------------------------------------
+Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 
+is a gathering of tech-side developers & brand creativity professionals. Meet
+the minds behind Google Creative Lab, Visual Complexity, Processing, & 
+iPhoneDevCamp as they present alongside digital heavyweights like Barbarian 
+Group, R/GA, & Big Spaceship. http://p.sf.net/sfu/creativitycat-com 

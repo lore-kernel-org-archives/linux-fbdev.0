@@ -1,23 +1,19 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] GXT400P and GXT6500P support
-Date: Sat, 30 May 2009 13:42:36 +0200
-Message-ID: <20090530134236.b97158c9.krzysztof.h1@poczta.fm>
-References: <a265241c0905271157s45e23528haefbd2fa31ba6763@mail.gmail.com>
+Subject: Re: [Bugme-new] [Bug 13285] New: INTELFB:
+ Colors display incorrectly
+Date: Sat, 30 May 2009 13:58:33 +0200
+Message-ID: <20090530135833.6a2c1bb2.krzysztof.h1@poczta.fm>
+References: <bug-13285-10286@http.bugzilla.kernel.org/>
+	<20090512151934.d7e6c54e.akpm@linux-foundation.org>
+	<20090517081743.92002707.krzysztof.h1@poczta.fm>
+	<20090516231932.2e02647b.akpm@linux-foundation.org>
+	<20090517123032.2b8bad00.krzysztof.h1@poczta.fm>
+	<a5d587fb0905170807j4cf60ce7ucf675cc6161e7850@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1MAMqw-0003qL-Pj
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 May 2009 11:35:54 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MAMqv-0005Ns-CA for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 30 May 2009 11:35:54 +0000
-In-Reply-To: <a265241c0905271157s45e23528haefbd2fa31ba6763@mail.gmail.com>
+In-Reply-To: <a5d587fb0905170807j4cf60ce7ucf675cc6161e7850@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,54 +23,160 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Giuseppe Coviello <cjg@cruxppc.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Michal Suchanek <hramrach@centrum.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, samanddeanus@yahoo.com, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org
 
-On Wed, 27 May 2009 20:57:55 +0200
-Giuseppe Coviello <cjg@cruxppc.org> wrote:
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> This patch adds support for GXT4000P and GXT6500P cards found on some
-> IBM pSeries machines.
-> GXT4000P/6000P and GXT4500P/6500P  couples are  identical from
-> software's point of view and are based on the same  Raster Engine
-> (RC1000), except for a different reference clock for the PLL.
-> GXT6x00P models are equipped with an additional Geometry Engine
-> (GT1000) but this driver doesn't use it.
-> 
-> Regards, Giuseppe
-> 
-> 
-> Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
-> Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
-> 
-> --- /usr/src/linux-2.6.30-rc3/drivers/video/Kconfig	2009-04-22
-> 05:07:00.000000000 +0200
-> +++ Kconfig	2009-05-05 10:55:17.000000000 +0200
-> @@ -1985,8 +1985,10 @@
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
->  	---help---
-> -	  Say Y here to enable support for the IBM GXT4500P display
-> -	  adaptor, found on some IBM System P (pSeries) machines.
-> +	  Say Y here to enable support for the IBM GXT4000P/6000P and	
-> +	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
-> +	  found on some IBM System P (pSeries) machines. This driver
-> +	  doesn't use Geometry Engine GT1000.
-> 
+The intelfb driver sets color map depending on currently active pipe. However, if an LVDS 
+display is attached (like in laptop) the active pipe variable is never set. The default value is 
+PIPE_A and can be wrong.
+Set up the pipe variable during driver initialization after hardware state was read.
 
-Please also change name of the option to reflect the fact it supports
-more than just the GXT4500P, e.g.
+Also, the detection of the active display (and hence the pipe) is wrong. The pipes are assigned
+to so called planes. Both pipes are always enabled on my laptop but only one plane is enabled
+(the plane A for the CRT or the plane B for the LVDS). Change active pipe detection code
+to take into account a status of the plane assigned to each pipe.
 
-"Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
+The problem is visible in the 8 bpp mode if colors above 15 are used. The first 16 color
+entries are displayed correctly.
 
-Please cc the updated patch to the linuxppc-dev@ozlabs.org.
+The graphics chip description is here (G45 vol. 3):
+http://intellinuxgraphics.org/documentation.html
 
-Regards,
-Krzysztof
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+---
+The second version of the fix to this problem. Now, it is much more sophisticated
+based on the knowledge gained from documentation available at http://intellinuxgraphics.org/.
+
+It does not change a default behaviour (assumed pipe A) for all cases except the case that only 
+the plane assigned to the pipe B is active. It is enough to fix the issue for me.
+
+Please test it.
+
+diff -urp linux-ref/drivers/video/intelfb/intelfbdrv.c linux-2.6.30-rc7/drivers/video/intelfb/intelfbdrv.c
+--- linux-ref/drivers/video/intelfb/intelfbdrv.c	2009-05-23 23:47:00.000000000 +0200
++++ linux-2.6.30-rc7/drivers/video/intelfb/intelfbdrv.c	2009-05-29 07:37:27.000000000 +0200
+@@ -874,6 +874,9 @@ static int __devinit intelfb_pci_registe
+ 	if (bailearly == 18)
+ 		bailout(dinfo);
+ 
++	/* read active pipe */
++	dinfo->pipe = intelfbhw_active_pipe(&dinfo->save_state);
++
+ 	/* Cursor initialisation */
+ 	if (dinfo->hwcursor) {
+ 		intelfbhw_cursor_init(dinfo);
+diff -urp linux-ref/drivers/video/intelfb/intelfbhw.c linux-2.6.30-rc7/drivers/video/intelfb/intelfbhw.c
+--- linux-ref/drivers/video/intelfb/intelfbhw.c	2009-05-23 23:47:00.000000000 +0200
++++ linux-2.6.30-rc7/drivers/video/intelfb/intelfbhw.c	2009-05-29 07:42:06.000000000 +0200
+@@ -469,6 +469,32 @@ void intelfbhw_do_blank(int blank, struc
+ }
+ 
+ 
++/* Check which pipe is connected to an active display plane. */
++int intelfbhw_active_pipe(const struct intelfb_hwstate *hw)
++{
++	int pipe = -1;
++
++	/* keep old default behaviour - prefer PIPE_A */
++	if (hw->disp_b_ctrl & DISPPLANE_PLANE_ENABLE) {
++		pipe = (hw->disp_b_ctrl >> DISPPLANE_SEL_PIPE_SHIFT);
++		pipe &= PIPE_MASK;
++		if (unlikely(pipe == PIPE_A))
++			return PIPE_A;
++	}
++	if (hw->disp_a_ctrl & DISPPLANE_PLANE_ENABLE) {
++		pipe = (hw->disp_a_ctrl >> DISPPLANE_SEL_PIPE_SHIFT);
++		pipe &= PIPE_MASK;
++		if (likely(pipe == PIPE_A))
++			return PIPE_A;
++	}
++	/* Impossible that no pipe is selected - return PIPE_A */
++	WARN_ON(pipe == -1);
++	if (unlikely(pipe == -1))
++		pipe = PIPE_A;
++
++	return pipe;
++}
++
+ void intelfbhw_setcolreg(struct intelfb_info *dinfo, unsigned regno,
+ 			 unsigned red, unsigned green, unsigned blue,
+ 			 unsigned transp)
+@@ -1019,7 +1045,7 @@ int intelfbhw_mode_to_hw(struct intelfb_
+ 			 struct intelfb_hwstate *hw,
+ 			 struct fb_var_screeninfo *var)
+ {
+-	int pipe = PIPE_A;
++	int pipe = intelfbhw_active_pipe(hw);
+ 	u32 *dpll, *fp0, *fp1;
+ 	u32 m1, m2, n, p1, p2, clock_target, clock;
+ 	u32 hsync_start, hsync_end, hblank_start, hblank_end, htotal, hactive;
+@@ -1033,12 +1059,6 @@ int intelfbhw_mode_to_hw(struct intelfb_
+ 	/* Disable VGA */
+ 	hw->vgacntrl |= VGA_DISABLE;
+ 
+-	/* Check whether pipe A or pipe B is enabled. */
+-	if (hw->pipe_a_conf & PIPECONF_ENABLE)
+-		pipe = PIPE_A;
+-	else if (hw->pipe_b_conf & PIPECONF_ENABLE)
+-		pipe = PIPE_B;
+-
+ 	/* Set which pipe's registers will be set. */
+ 	if (pipe == PIPE_B) {
+ 		dpll = &hw->dpll_b;
+@@ -1262,7 +1282,6 @@ int intelfbhw_mode_to_hw(struct intelfb_
+ int intelfbhw_program_mode(struct intelfb_info *dinfo,
+ 			   const struct intelfb_hwstate *hw, int blank)
+ {
+-	int pipe = PIPE_A;
+ 	u32 tmp;
+ 	const u32 *dpll, *fp0, *fp1, *pipe_conf;
+ 	const u32 *hs, *ht, *hb, *vs, *vt, *vb, *ss;
+@@ -1272,7 +1291,7 @@ int intelfbhw_program_mode(struct intelf
+ 	u32 src_size_reg;
+ 	u32 count, tmp_val[3];
+ 
+-	/* Assume single pipe, display plane A, analog CRT. */
++	/* Assume single pipe */
+ 
+ #if VERBOSE > 0
+ 	DBG_MSG("intelfbhw_program_mode\n");
+@@ -1283,15 +1302,9 @@ int intelfbhw_program_mode(struct intelf
+ 	tmp |= VGA_DISABLE;
+ 	OUTREG(VGACNTRL, tmp);
+ 
+-	/* Check whether pipe A or pipe B is enabled. */
+-	if (hw->pipe_a_conf & PIPECONF_ENABLE)
+-		pipe = PIPE_A;
+-	else if (hw->pipe_b_conf & PIPECONF_ENABLE)
+-		pipe = PIPE_B;
++	dinfo->pipe = intelfbhw_active_pipe(hw);
+ 
+-	dinfo->pipe = pipe;
+-
+-	if (pipe == PIPE_B) {
++	if (dinfo->pipe == PIPE_B) {
+ 		dpll = &hw->dpll_b;
+ 		fp0 = &hw->fpb0;
+ 		fp1 = &hw->fpb1;
+diff -urp linux-ref/drivers/video/intelfb/intelfbhw.h linux-2.6.30-rc7/drivers/video/intelfb/intelfbhw.h
+--- linux-ref/drivers/video/intelfb/intelfbhw.h	2009-05-23 23:47:00.000000000 +0200
++++ linux-2.6.30-rc7/drivers/video/intelfb/intelfbhw.h	2009-05-29 07:43:54.000000000 +0200
+@@ -604,5 +604,6 @@ extern void intelfbhw_cursor_reset(struc
+ extern int intelfbhw_enable_irq(struct intelfb_info *dinfo);
+ extern void intelfbhw_disable_irq(struct intelfb_info *dinfo);
+ extern int intelfbhw_wait_for_vsync(struct intelfb_info *dinfo, u32 pipe);
++extern int intelfbhw_active_pipe(const struct intelfb_hwstate *hw);
+ 
+ #endif /* _INTELFBHW_H */
+
+
 
 ----------------------------------------------------------------------
-Przekaz dalej wiadomosc: Zawsze warto oszczedzac. Teraz 5,5%!
-Sprawdz > http://link.interia.pl/f21b1
+Kup wlasne mieszkanie za 33 tys. zl.
+Sprawdz >>> http://link.interia.pl/f21a3
 
 
 ------------------------------------------------------------------------------

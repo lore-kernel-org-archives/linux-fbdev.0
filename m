@@ -1,107 +1,49 @@
-From: Jonathan Nieder <jrnieder@gmail.com>
-Subject: aty128fb artifacts
-Date: Mon, 1 Jun 2009 02:07:22 -0500
-Message-ID: <6f8c04400906010007x160bf846hbd8d8ece0277ea7c@mail.gmail.com>
+From: Kalle Valo <kalle.valo@iki.fi>
+Subject: Re: [PATCH 05/10] ARM: OMAP1: Make 770 LCD work
+Date: Mon, 01 Jun 2009 16:57:35 +0300
+Message-ID: <87oct8t5tc.fsf@litku.valot.fi>
+References: <20090519232905.12760.15490.stgit@localhost>
+	<20090519233732.12760.34595.stgit@localhost>
+	<20090525092911.GC28195@n2100.arm.linux.org.uk>
+	<20090525142128.17675cl0tvdr0y1k@lidskialf.net>
+	<20090525174055.127744136qxu9vk0@lidskialf.net>
+	<20090528182047.GF32453@atomide.com>
+	<20090528195046.GW20736@n2100.arm.linux.org.uk>
+	<20090529012952.104144iws1glmow0@lidskialf.net>
 Mime-Version: 1.0
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20090529012952.104144iws1glmow0@lidskialf.net> (Andrew de Quincey's message of "Fri\, 29 May 2009 01\:29\:52 +0100")
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jrnieder@gmail.com>) id 1MB1d9-0001TO-Fp
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jun 2009 07:08:23 +0000
-Received: from yx-out-1718.google.com ([74.125.44.154])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MB1cB-000461-Bc for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jun 2009 07:08:23 +0000
-Received: by yx-out-1718.google.com with SMTP id 6so3738349yxn.82
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 01 Jun 2009 00:07:22 -0700 (PDT)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew de Quincey <adq_dvb@lidskialf.net>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hi fbdev developers,
+Andrew de Quincey <adq_dvb@lidskialf.net> writes:
 
-On the laptop I use, the built-in display is a single-resolution
-1024x768 TFT, and the imperfect anti-aliasing makes it much harder to
-read text in the standard console than in X. I decided to try out
-fbcon so the console could have the appropriate resolution. Eventually
-I should learn to switch resolutions, but first I would like to report
-the quirks I have noticed so far. I am not knowledgeable enough to
-know what should trouble me and what is normal.
+> Out of interest, what is the best practice way to pass platform
+> specific GPIOs around? There are a number of other n770 related
+> drivers I'm intending on cleaning up, several of which have GPIO
+> numbers hardcoded in them. Should these be passed in platform
+> structures, or is there something analogous to the clk_alias for
+> GPIOs?
 
-The laptop is an Inspiron 4000, the video card a Rage Mobility M3 AGP
-2x [1002:4c46], and the display a Samsung LT141X8-L02. The kernel is
-Linus's v2.6.30-rc7-11-ga0c1af1, plus some wireless fixes.  I tested
-by running "modprobe aty128fb" and then "modprobe fbcon" and was
-impressed to see the console usable right away. But:
+I was told that platform structures are the preferred way. For wl12xx (a
+wi-fi driver) I created a set_power function pointer which will control
+the power gpio line:
 
- * A sort of gray stripe with vertical bands of various shades of gray
-was present on the bottom quarter-centimeter of the screen.  When I
-switched consoles, let the screen blank and wake up, switched to X and
-back, and so on, the color of the bands would change (sometimes red or
-green, different greys, ...).
+27 struct wl12xx_platform_data {
+28         void (*set_power)(bool enable);
+29 };
 
- * There were black horizontal stripes through the (gpm) mouse block
-cursor whenever I moved it.  They would go away once the mouse stopped
-moving.
+http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=blob;f=include/linux/spi/wl12xx.h;h=11430cab2aad71242946ebfc7c0ce778d8bf26a1;hb=HEAD
 
- * When I tried "fbset -xres 1024 -yres 768 -depth 16" (presumably
-this was a bad idea), a few vertical bands covering the entire height
-of the screen blinked black, then green, then black, then various
-colors. I quickly rebooted after that.
+And the irq is configured in the board file and provided to wl12xx with
+struct spi_device.irq. So wl12xx doesn't use gpio code at all, it's all
+done in the board file. 
 
- * After a soft reboot (back to vgacon), the console was mostly back
-to normal but something had happened to the cursor. The usual blinking
-underline was present until the cursor reached the bottom of the
-screen and then it disappeared.  Clearing the screen with ^L resulted
-in the cursor appearing approx halfway down.  I needed a cold boot to
-get the cursor back to normal. This same effect occurs whenever I load
-aty128fb and fbcon and soft reboot.
+Please comment if this isn't the correct way to do this.
 
- * When I tried "fbset 1024x768", a sort of speckled glow appeared in
-the middle of the screen and spread out, and I quickly rebooted.
-
- * With X driver "fbdev", the resolution was still 640x480 (I think),
-but the screen looked very strange. The virtual desktop was squished
-horizontally to leave about an inch to the right entirely black except
-at the bottom.  The grey rectangle at the bottom of approx a half a cm
-was still present, covering the entire width of the display. With my X
-setup, when X starts there is only a red border surrounding a black
-terminal. The grey rectangle appeared to reflect that border, with a
-vertical red band 1 pixel to the left of the right edge of the red
-rectangle.
-
- * When switching from VT6 (fbcon) to VT7 (X with fbdev driver) the
-text turned blue before the X desktop was shown. It was nice to see
-that the switch was smooth aside from that, since there are normally
-artifacts when I switch between vgacon and X with the r128 driver.
-
-I had no success unloading the fbcon driver. "vbetool vbestate
-restore" with state from the VGA console mangled the screen; switching
-to X and back revealed that it had output the text "Function not
-supported."
-
-I am interested to hear your thoughts. So far, I have found no
-documentation on the Rage M3's internals so I am clueless when faced
-with all these symptoms.
-
-Regards,
-Jonathan
-
-------------------------------------------------------------------------------
-Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 
-is a gathering of tech-side developers & brand creativity professionals. Meet
-the minds behind Google Creative Lab, Visual Complexity, Processing, & 
-iPhoneDevCamp as they present alongside digital heavyweights like Barbarian 
-Group, R/GA, & Big Spaceship. http://p.sf.net/sfu/creativitycat-com 
+-- 
+Kalle Valo

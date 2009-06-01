@@ -1,49 +1,54 @@
-From: Kalle Valo <kalle.valo@iki.fi>
-Subject: Re: [PATCH 05/10] ARM: OMAP1: Make 770 LCD work
-Date: Mon, 01 Jun 2009 16:57:35 +0300
-Message-ID: <87oct8t5tc.fsf@litku.valot.fi>
-References: <20090519232905.12760.15490.stgit@localhost>
-	<20090519233732.12760.34595.stgit@localhost>
-	<20090525092911.GC28195@n2100.arm.linux.org.uk>
-	<20090525142128.17675cl0tvdr0y1k@lidskialf.net>
-	<20090525174055.127744136qxu9vk0@lidskialf.net>
-	<20090528182047.GF32453@atomide.com>
-	<20090528195046.GW20736@n2100.arm.linux.org.uk>
-	<20090529012952.104144iws1glmow0@lidskialf.net>
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: aty128fb artifacts
+Date: Mon, 1 Jun 2009 09:57:09 -0400
+Message-ID: <a728f9f90906010657n4c1c3f2cr11073fabbd2b3284@mail.gmail.com>
+References: <6f8c04400906010007x160bf846hbd8d8ece0277ea7c@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20090529012952.104144iws1glmow0@lidskialf.net> (Andrew de Quincey's message of "Fri\, 29 May 2009 01\:29\:52 +0100")
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew de Quincey <adq_dvb@lidskialf.net>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <alexdeucher@gmail.com>) id 1MB88b-0007pZ-4s
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Jun 2009 14:05:17 +0000
+Received: from mail-fx0-f177.google.com ([209.85.220.177])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MB88W-0001g4-4F for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Jun 2009 14:05:17 +0000
+Received: by fxm25 with SMTP id 25so7354640fxm.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 01 Jun 2009 07:05:11 -0700 (PDT)
+In-Reply-To: <6f8c04400906010007x160bf846hbd8d8ece0277ea7c@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Jonathan Nieder <jrnieder@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Andrew de Quincey <adq_dvb@lidskialf.net> writes:
+On Mon, Jun 1, 2009 at 3:07 AM, Jonathan Nieder <jrnieder@gmail.com> wrote:
 
-> Out of interest, what is the best practice way to pass platform
-> specific GPIOs around? There are a number of other n770 related
-> drivers I'm intending on cleaning up, several of which have GPIO
-> numbers hardcoded in them. Should these be passed in platform
-> structures, or is there something analogous to the clk_alias for
-> GPIOs?
+> I am interested to hear your thoughts. So far, I have found no
+> documentation on the Rage M3's internals so I am clueless when faced
+> with all these symptoms.
 
-I was told that platform structures are the preferred way. For wl12xx (a
-wi-fi driver) I created a set_power function pointer which will control
-the power gpio line:
+The display engine is very similar the radeon display engine and is
+well documented in the xorg r128 and radeon drivers:
+http://cgit.freedesktop.org/xorg/driver/xf86-video-r128/
+http://cgit.freedesktop.org/xorg/driver/xf86-video-ati/
 
-27 struct wl12xx_platform_data {
-28         void (*set_power)(bool enable);
-29 };
+Alex
 
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=blob;f=include/linux/spi/wl12xx.h;h=11430cab2aad71242946ebfc7c0ce778d8bf26a1;hb=HEAD
-
-And the irq is configured in the board file and provided to wl12xx with
-struct spi_device.irq. So wl12xx doesn't use gpio code at all, it's all
-done in the board file. 
-
-Please comment if this isn't the correct way to do this.
-
--- 
-Kalle Valo
+------------------------------------------------------------------------------
+Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 
+is a gathering of tech-side developers & brand creativity professionals. Meet
+the minds behind Google Creative Lab, Visual Complexity, Processing, & 
+iPhoneDevCamp as they present alongside digital heavyweights like Barbarian 
+Group, R/GA, & Big Spaceship. http://p.sf.net/sfu/creativitycat-com 

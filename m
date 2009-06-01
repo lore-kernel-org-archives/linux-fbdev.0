@@ -1,26 +1,42 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: aty128fb artifacts
-Date: Mon, 1 Jun 2009 09:57:09 -0400
-Message-ID: <a728f9f90906010657n4c1c3f2cr11073fabbd2b3284@mail.gmail.com>
-References: <6f8c04400906010007x160bf846hbd8d8ece0277ea7c@mail.gmail.com>
+From: Stelios Xanthakis <sxanth@ceid.upatras.gr>
+Subject: Question about radeon 3000 driver
+Date: Mon, 1 Jun 2009 18:13:37 +0300 (EEST)
+Message-ID: <Pine.LNX.4.64.0906011805490.16330@diogenis.ceid.upatras.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <alexdeucher@gmail.com>) id 1MB88b-0007pZ-4s
+	(envelope-from <sxanth@ceid.upatras.gr>) id 1MB9Cq-00060Y-11
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jun 2009 14:05:17 +0000
-Received: from mail-fx0-f177.google.com ([209.85.220.177])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MB88W-0001g4-4F for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jun 2009 14:05:17 +0000
-Received: by fxm25 with SMTP id 25so7354640fxm.10
+	Mon, 01 Jun 2009 15:13:44 +0000
+Received: from poseidon.ceid.upatras.gr ([150.140.141.169])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MB9Cn-0002rn-FM for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Jun 2009 15:13:43 +0000
+Received: from mail.ceid.upatras.gr (unknown [10.1.0.143])
+	by poseidon.ceid.upatras.gr (Postfix) with ESMTP id B5B0CEB526A
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 01 Jun 2009 07:05:11 -0700 (PDT)
-In-Reply-To: <6f8c04400906010007x160bf846hbd8d8ece0277ea7c@mail.gmail.com>
+	Mon,  1 Jun 2009 18:13:37 +0300 (EEST)
+Received: from localhost (europa.ceid.upatras.gr [127.0.0.1])
+	by mail.ceid.upatras.gr (Postfix) with ESMTP id A4E28450ED
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  1 Jun 2009 18:13:37 +0300 (EEST)
+Received: from mail.ceid.upatras.gr ([127.0.0.1])
+	by localhost (europa.ceid.upatras.gr [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP id ZFo9MLKA6G6y
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  1 Jun 2009 18:13:37 +0300 (EEST)
+Received: from diogenis.ceid.upatras.gr (unknown [10.1.0.181])
+	by mail.ceid.upatras.gr (Postfix) with ESMTP id 796CE450C6
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  1 Jun 2009 18:13:37 +0300 (EEST)
+Received: from localhost (localhost [127.0.0.1])
+	by diogenis.ceid.upatras.gr (Postfix) with ESMTP id 6D5D0178002
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  1 Jun 2009 18:13:37 +0300 (EEST)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,21 +46,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jonathan Nieder <jrnieder@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Jun 1, 2009 at 3:07 AM, Jonathan Nieder <jrnieder@gmail.com> wrote:
+Hi.
 
-> I am interested to hear your thoughts. So far, I have found no
-> documentation on the Rage M3's internals so I am clueless when faced
-> with all these symptoms.
+I have a PC with an integrated radeon 3000 gfx card
+(pci id 9616) and I'd really like to be able to use
+the linux framebuffer with a proper driver because
+vesafb has all sorts of problems.
 
-The display engine is very similar the radeon display engine and is
-well documented in the xorg r128 and radeon drivers:
-http://cgit.freedesktop.org/xorg/driver/xf86-video-r128/
-http://cgit.freedesktop.org/xorg/driver/xf86-video-ati/
+I plan to start with the usual procedure of copying
+stuff from the xf86-video-ati drivers, since this
+card is already supported by xf86-video-ati-12.
 
-Alex
+The question is, are there any pending patches for
+the radeon drivers, or git trees that may have
+relevant work for the R600 chipsets?
+
+Thanks,
+
+Stelios
+
 
 ------------------------------------------------------------------------------
 Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 

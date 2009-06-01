@@ -1,26 +1,29 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: Question about radeon 3000 driver
-Date: Mon, 1 Jun 2009 11:49:39 -0400
-Message-ID: <a728f9f90906010849h394766d8yff547e2f2a3c80d0@mail.gmail.com>
-References: <Pine.LNX.4.64.0906011805490.16330@diogenis.ceid.upatras.gr>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] add mutex to fbdev for fb_mmap
+	locking
+Date: Mon, 1 Jun 2009 22:24:13 +0200
+Message-ID: <20090601222413.c2b57c9f.krzysztof.h1@poczta.fm>
+References: <200905282134.n4SLYNwv027999@imap1.linux-foundation.org>
+	<alpine.LFD.2.01.0905290820510.3435@localhost.localdomain>
+	<20090530121128.5f04179d.krzysztof.h1@poczta.fm>
+	<alpine.LFD.2.01.0905300805350.3435@localhost.localdomain>
+	<20090531162453.dff458cb.krzysztof.h1@poczta.fm>
+	<alpine.LFD.2.01.0905311006070.3435@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <alexdeucher@gmail.com>) id 1MB9lf-0000tU-A2
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MBE4V-0000WV-My
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jun 2009 15:49:43 +0000
-Received: from mail-fx0-f177.google.com ([209.85.220.177])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MB9lc-0000ZG-Ui for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 01 Jun 2009 15:49:43 +0000
-Received: by fxm25 with SMTP id 25so7421174fxm.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 01 Jun 2009 08:49:39 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.64.0906011805490.16330@diogenis.ceid.upatras.gr>
+	Mon, 01 Jun 2009 20:25:27 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MBE4G-0005Bp-65 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 01 Jun 2009 20:25:19 +0000
+In-Reply-To: <alpine.LFD.2.01.0905311006070.3435@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,39 +33,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Stelios Xanthakis <sxanth@ceid.upatras.gr>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: krzysztof.h1@wp.pl, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>, geert@linux-m68k.org, akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>, righi.andrea@gmail.com
 
-On Mon, Jun 1, 2009 at 11:13 AM, Stelios Xanthakis
-<sxanth@ceid.upatras.gr> wrote:
-> Hi.
->
-> I have a PC with an integrated radeon 3000 gfx card
-> (pci id 9616) and I'd really like to be able to use
-> the linux framebuffer with a proper driver because
-> vesafb has all sorts of problems.
->
-> I plan to start with the usual procedure of copying
-> stuff from the xf86-video-ati drivers, since this
-> card is already supported by xf86-video-ati-12.
->
-> The question is, are there any pending patches for
-> the radeon drivers, or git trees that may have
-> relevant work for the R600 chipsets?
+On Sun, 31 May 2009 10:09:01 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Support for modesetting and hence fb devices is being added to the radeon drm:
-http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=shortlog;h=drm-rawhide
-http://cgit.freedesktop.org/~glisse/drm-next/log/?h=drm-next-radeon
+> 
+> 
+> On Sun, 31 May 2009, Krzysztof Helt wrote:
+> >  
+> >  static int atafb_get_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
+> > +__acquires(&info->mm_lock)
+> > +__releases(&info->mm_lock)
+> 
+> Btw, you shouldn't do this when things nest "correctly" - sparse will see 
+> the fact that the function acquires and releases a lock and is perfectly 
+> happy.
+> 
 
-We hope to get support for r1xx-r5xx chips into 2.6.31.  Modesetting
-support for r6xx/r7xx chips is already in place, but they are still
-missing some memory management bits.
+I will fix it. 
+If the revert to BKL is rejected this patch may wait till 2.6.31.
 
-Alex
+Regards,
+Krzysztof
 
 ------------------------------------------------------------------------------
-Register Now for Creativity and Technology (CaT), June 3rd, NYC. CaT 
-is a gathering of tech-side developers & brand creativity professionals. Meet
-the minds behind Google Creative Lab, Visual Complexity, Processing, & 
-iPhoneDevCamp as they present alongside digital heavyweights like Barbarian 
-Group, R/GA, & Big Spaceship. http://p.sf.net/sfu/creativitycat-com 
+OpenSolaris 2009.06 is a cutting edge operating system for enterprises 
+looking to deploy the next generation of Solaris that includes the latest 
+innovations from Sun and the OpenSource community. Download a copy and 
+enjoy capabilities such as Networking, Storage and Virtualization. 
+Go to: http://p.sf.net/sfu/opensolaris-get

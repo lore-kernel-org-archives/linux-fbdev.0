@@ -1,31 +1,31 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Subject: Re: [PATCH] fb: add support of LCD display
-	controller on pxa168/910 (base layer)
-Date: Tue, 2 Jun 2009 10:32:50 +0800
-Message-ID: <f17812d70906011932u29386664uf4d7a573fee59075@mail.gmail.com>
-References: <f17812d70905210203se23d5e7ya60cbb6eb93815aa@mail.gmail.com>
-	<20090521094157.GA24078@n2100.arm.linux.org.uk>
-	<f17812d70905210728k1349adb6se4ffc26bd5d9cf53@mail.gmail.com>
-	<20090524134304.fcf906ad.krzysztof.h1@poczta.fm>
-	<f17812d70905270121od092964m673984c427942727@mail.gmail.com>
-	<20090601172815.c1631cf6.krzysztof.h1@poczta.fm>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] add mutex to fbdev for fb_mmap
+	locking
+Date: Tue, 2 Jun 2009 17:09:15 +0200
+Message-ID: <20090602170915.a8d99344.krzysztof.h1@poczta.fm>
+References: <200905282134.n4SLYNwv027999@imap1.linux-foundation.org>
+	<alpine.LFD.2.01.0905290820510.3435@localhost.localdomain>
+	<20090530121128.5f04179d.krzysztof.h1@poczta.fm>
+	<alpine.LFD.2.01.0905300805350.3435@localhost.localdomain>
+	<20090531162453.dff458cb.krzysztof.h1@poczta.fm>
+	<alpine.LFD.2.01.0905311006070.3435@localhost.localdomain>
+	<20090601222413.c2b57c9f.krzysztof.h1@poczta.fm>
+	<alpine.LFD.2.01.0906011329400.3435@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1MBJo4-0003iQ-Up
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MBVVP-0007YT-RX
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Jun 2009 02:32:52 +0000
-Received: from mail-qy0-f117.google.com ([209.85.221.117])
+	Tue, 02 Jun 2009 15:02:23 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MBJo4-0007w2-7W for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Jun 2009 02:32:52 +0000
-Received: by qyk15 with SMTP id 15so44673qyk.28
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 01 Jun 2009 19:32:50 -0700 (PDT)
-In-Reply-To: <20090601172815.c1631cf6.krzysztof.h1@poczta.fm>
+	id 1MBVVL-0007CU-4E for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 02 Jun 2009 15:02:23 +0000
+In-Reply-To: <alpine.LFD.2.01.0906011329400.3435@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,50 +35,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Green Wan <gwan@marvell.com>, linux-fbdev-devel@lists.sourceforge.net, Jun Nie <njun@marvell.com>, Peter Liao <pliao@marvell.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>, Lennert Buijtenhek <buytenh@marvell.com>, Kevin Liu <kliu5@marvell.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: krzysztof.h1@wp.pl, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>, geert@linux-m68k.org, akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>, righi.andrea@gmail.com
 
-T24gTW9uLCBKdW4gMSwgMjAwOSBhdCAxMToyOCBQTSwgS3J6eXN6dG9mIEhlbHQgPGtyenlzenRv
-Zi5oMUBwb2N6dGEuZm0+IHdyb3RlOgo+IE9uIFdlZCwgMjcgTWF5IDIwMDkgMTY6MjE6MTEgKzA4
-MDAKPiBFcmljIE1pYW8gPGVyaWMueS5taWFvQGdtYWlsLmNvbT4gd3JvdGU6Cj4KPj4gSGkgS3J6
-eXN6dG9mLAo+Pgo+PiBTb3JyeSBmb3IgbGF0ZSByZXBseSwgYW5kIHRoYW5rcyBmb3IgdGhlIHRp
-bWUgcmV2aWV3aW5nIHRoaXMuCj4+IFNlZSB0aGUgcmV2aXNlZCB2ZXJzaW9uIGJlbG93IHdpdGgg
-Y2hhbmdlczoKPj4KPj4gMS4gcmVtb3ZlZCB0aGUgdW5uZWNlc3NhcnkgZXJyb3IgY2hlY2tpbmcg
-b2YgcHNldWRvIGNvbG9yCj4+IGluIGNoZWNrX3ZhcigpLiBUaGUgcHNldWRvIGNvbG9yIG1vZGUg
-aXMgYWN0dWFsbHkgYmUgd2VsbAo+PiBzdXBwb3J0ZWQuCj4+Cj4+IDIuIGRldGVybWluZV9iZXN0
-X3BpeF9mbXQoKSBtb3ZlZCBpbnRvIGNoZWNrX3ZhcigpLCBhbmQKPj4gc2V0X3BpeF9mbXQoKSBp
-cyBjYWxsZWQgdG8gZW5zdXJlIGEgY29ycmVjdCB2YXIuCj4+Cj4+IDMuIHNldF9ncmFwaGljc19z
-dGFydCgpIHJlbW92ZWQgZnJvbSBzZXRfcGFyCj4+Cj4+IDQuIHJlbW92ZWQgZHVwbGljYXRlIGZp
-ZWxkcyBpbiBweGExNjhmYl9pbmZvIGFuZCBmYl9pbmZvCj4+Cj4+IDUuIGNvcnJlY3QgdGhlIGVy
-cm9yIGV4aXRpbmcgcGF0aAo+Pgo+PiA2LiBhZGQgX19pbml0IGF0dHJpYnV0ZSB0byBweGExNjhm
-Yl9pbml0X21vZGUoKQo+Pgo+PiA9PT09PT09PT09PT09PT09PT09Pjg9PT09PT09PT09PT09PT09
-PT09PT09PQo+Pgo+PiBGcm9tIDI3YTUzZGYwNDY3ZjM3OWRlNWNhMmQ2ZDExNzg1MmZiYWY5M2My
-ZmMgTW9uIFNlcCAxNyAwMDowMDowMCAyMDAxCj4+IEZyb206IExlbm5lcnQgQnV5dGVuaGVrIDxi
-dXl0ZW5oQG1hcnZlbGwuY29tPgo+PiBEYXRlOiBXZWQsIDExIEZlYiAyMDA5IDE3OjI1OjI0ICsw
-ODAwCj4+IFN1YmplY3Q6IFtQQVRDSF0gZmI6IGFkZCBzdXBwb3J0IG9mIExDRCBkaXNwbGF5IGNv
-bnRyb2xsZXIgb24KPj4gcHhhMTY4LzkxMCAoYmFzZSBsYXllcikKPj4KPj4gVGhpcyBkcml2ZXIg
-aXMgb3JpZ2luYWxseSB3cml0dGVuIGJ5IExlbm5lcnQsIG1vZGlmaWVkIGJ5IEdyZWVuIHRvIGJl
-Cj4+IGZlYXR1cmUgY29tcGxldGUsIMKgYW5kIHBvcnRlZCBieSBKdW4gTmllIGFuZCBLZXZpbiBM
-aXUgZm9yIHB4YTE2OC85MTAKPj4gcHJvY2Vzc29ycy4KPj4KPj4gVGhlIHBhdGNoIGFkZHMgc3Vw
-cG9ydCBmb3IgdGhlIG9uLWNoaXAgTENEIGRpc3BsYXkgY29udHJvbGxlciwgaXQKPj4gY3VycmVu
-dGx5IHN1cHBvcnRzIHRoZSBiYXNlIChncmFwaGljcykgbGF5ZXIgb25seS4KPj4KPj4gU2lnbmVk
-LW9mZi1ieTogTGVubmVydCBCdXl0ZW5oZWsgPGJ1eXRlbmhAbWFydmVsbC5jb20+Cj4+IFNpZ25l
-ZC1vZmYtYnk6IEdyZWVuIFdhbiA8Z3dhbkBtYXJ2ZWxsLmNvbT4KPj4gQ2M6IFBldGVyIExpYW8g
-PHBsaWFvQG1hcnZlbGwuY29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBKdW4gTmllIDxuanVuQG1hcnZl
-bGwuY29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBLZXZpbiBMaXUgPGtsaXU1QG1hcnZlbGwuY29tPgo+
-PiBTaWduZWQtb2ZmLWJ5OiBFcmljIE1pYW8gPGVyaWMubWlhb0BtYXJ2ZWxsLmNvbT4KPj4gLS0t
-Cj4KPiBBY2tlZC1ieTogS3J6eXN6dG9mIEhlbHQgPGtyenlzenRvZi5oMUB3cC5wbD4KPgo+IFlv
-dSBwcm9iYWJseSB3YW50IHRvIHNlbnQgdGhpcyBwYXRjaCB0byB0aGUgUk1LJ3MgdHJlZS4KPiBJ
-ZiBub3QgcGxlYXNlIHNlbnQgaXQgdG8gQW5kcmV3IE1vcnRvbi4KCk9LLiBBbmQgYSBiaWcgdGhh
-bmtzIGZvciB0aGUgdGltZS4KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpPcGVuU29sYXJpcyAyMDA5
-LjA2IGlzIGEgY3V0dGluZyBlZGdlIG9wZXJhdGluZyBzeXN0ZW0gZm9yIGVudGVycHJpc2VzIAps
-b29raW5nIHRvIGRlcGxveSB0aGUgbmV4dCBnZW5lcmF0aW9uIG9mIFNvbGFyaXMgdGhhdCBpbmNs
-dWRlcyB0aGUgbGF0ZXN0IAppbm5vdmF0aW9ucyBmcm9tIFN1biBhbmQgdGhlIE9wZW5Tb3VyY2Ug
-Y29tbXVuaXR5LiBEb3dubG9hZCBhIGNvcHkgYW5kIAplbmpveSBjYXBhYmlsaXRpZXMgc3VjaCBh
-cyBOZXR3b3JraW5nLCBTdG9yYWdlIGFuZCBWaXJ0dWFsaXphdGlvbi4gCkdvIHRvOiBodHRwOi8v
-cC5zZi5uZXQvc2Z1L29wZW5zb2xhcmlzLWdldApfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgt
-ZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9y
-Z2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+On Mon, 1 Jun 2009 13:38:40 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> 
+> 
+> On Mon, 1 Jun 2009, Krzysztof Helt wrote:
+> > If the revert to BKL is rejected this patch may wait till 2.6.31.
+> 
+> Ahh, so this one helps clean up locking, but doesn't fix any actual 
+> regressions? I was going to ask you about that.
+> 
+
+There is a problem with multihead configuration with and without the patch.
+I realize that it is late stage of the 2.6.30 so IMO it is not worth pushing it at 
+this moment .
+The patch is quite an improvement for smem_start/smem_len handling
+so it should find its way into the tree.
+
+> Btw - one thing you could try on the whole lockdep front - and I realize 
+> that this is a _total_ hack - is to try the patch below.
+> 
+> The _only_ thing it does is to hide the sysfs_mutex -> mm_lock chain from 
+> lockdep, by using the (incorrect) __copy_to_user_inatomic() instead of the 
+> (correct) copy_to_user(). But I'd like to hear if that sysfs_mutex in 
+> readdir is the only way you can get a chain.
+> 
+
+I'll test this.
+
+Best regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Chcesz miec nawigacje GPS ?
+Zamow lub przedluz umowe na neostrade, a nawigacja bedzie Twoja.
+Kliknij na link po szczegoly! http://link.interia.pl/f219a
+
+
+
+------------------------------------------------------------------------------
+OpenSolaris 2009.06 is a cutting edge operating system for enterprises 
+looking to deploy the next generation of Solaris that includes the latest 
+innovations from Sun and the OpenSource community. Download a copy and 
+enjoy capabilities such as Networking, Storage and Virtualization. 
+Go to: http://p.sf.net/sfu/opensolaris-get

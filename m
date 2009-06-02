@@ -1,8 +1,8 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH] add mutex to fbdev for fb_mmap
 	locking
-Date: Tue, 2 Jun 2009 12:11:59 -0700 (PDT)
-Message-ID: <alpine.LFD.2.01.0906021200420.3351@localhost.localdomain>
+Date: Tue, 2 Jun 2009 20:36:22 +0100
+Message-ID: <20090602203622.244b1a74@lxorguk.ukuu.org.uk>
 References: <200905282134.n4SLYNwv027999@imap1.linux-foundation.org>
 	<alpine.LFD.2.01.0905290820510.3435@localhost.localdomain>
 	<20090530121128.5f04179d.krzysztof.h1@poczta.fm>
@@ -15,22 +15,24 @@ References: <200905282134.n4SLYNwv027999@imap1.linux-foundation.org>
 	<alpine.LFD.2.01.0906021105340.3351@localhost.localdomain>
 	<20090602195240.0af2f21c@lxorguk.ukuu.org.uk>
 	<alpine.LFD.2.01.0906021154270.3351@localhost.localdomain>
+	<alpine.LFD.2.01.0906021200420.3351@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <torvalds@linux-foundation.org>) id 1MBZPx-0003SA-0Q
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <alan@lxorguk.ukuu.org.uk>) id 1MBZm9-0000AW-LM
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Jun 2009 19:13:01 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MBZPs-0006AY-9G
+	Tue, 02 Jun 2009 19:35:57 +0000
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]
+	helo=www.etchedpixels.co.uk)
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MBZm3-0006oh-2T
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Jun 2009 19:13:00 +0000
-In-Reply-To: <alpine.LFD.2.01.0906021154270.3351@localhost.localdomain>
+	Tue, 02 Jun 2009 19:35:52 +0000
+In-Reply-To: <alpine.LFD.2.01.0906021200420.3351@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,38 +42,21 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: krzysztof.h1@wp.pl, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>, geert@linux-m68k.org, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, righi.andrea@gmail.com
 
+> And then there is TIOCGSOFTCAR, which is just insane, and apparently gets 
+> the lock in order to just test _one_ bit (C_CLOCAL). Never mind that if 
 
+If you don't take it there are cases where it gets cleared by drivers
+momentarily and put back so you would give the wrong answer.
 
-On Tue, 2 Jun 2009, Linus Torvalds wrote:
-> 
-> I thought we already always copied things to a buffer (for conversion 
-> reasons, ie doing the whole "ktermios<->random-user-termios-of-the-day" 
-> thing), but I guess I was wrong.
+> something is changing it, we really don't care _which_ case we return, so 
+> the lock is likely pointless to begin with (can "termios" actually change 
+> as a pointer?). But then does the user space access with the lock held.
 
-Ahh. We do it in the other direction (ie set_termios), and for some 
-limited form of to-user (get_sgttyb, get_tchars etc) but apparently not 
-for TCGETS*.
-
-There's a few other odd corners there too. Look at TCGETA - it doesn't get 
-the lock at all. Why are TCGETS* and TCGETA so different?
-
-I wonder if we even really need that lock for TCGETS*. We clearly don't do 
-it for "struct termio" (TCGETA).
-
-The same imbalance seems to exist for get_termiox vs set_termiox. The 
-"set" part does the nice "copy outside the lock", while the "get" part 
-copies to user space inside the lock.
-
-And then there is TIOCGSOFTCAR, which is just insane, and apparently gets 
-the lock in order to just test _one_ bit (C_CLOCAL). Never mind that if 
-something is changing it, we really don't care _which_ case we return, so 
-the lock is likely pointless to begin with (can "termios" actually change 
-as a pointer?). But then does the user space access with the lock held.
-
-		Linus
+I'll fix those over the next few days to copy first, its pretty trivial
+stuff
 
 ------------------------------------------------------------------------------
 OpenSolaris 2009.06 is a cutting edge operating system for enterprises 

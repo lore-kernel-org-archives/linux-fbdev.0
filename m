@@ -1,8 +1,8 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH] add mutex to fbdev for fb_mmap
 	locking
-Date: Tue, 2 Jun 2009 11:56:41 -0700 (PDT)
-Message-ID: <alpine.LFD.2.01.0906021154270.3351@localhost.localdomain>
+Date: Tue, 2 Jun 2009 12:11:59 -0700 (PDT)
+Message-ID: <alpine.LFD.2.01.0906021200420.3351@localhost.localdomain>
 References: <200905282134.n4SLYNwv027999@imap1.linux-foundation.org>
 	<alpine.LFD.2.01.0905290820510.3435@localhost.localdomain>
 	<20090530121128.5f04179d.krzysztof.h1@poczta.fm>
@@ -14,22 +14,23 @@ References: <200905282134.n4SLYNwv027999@imap1.linux-foundation.org>
 	<20090602200626.1c3486e1.krzysztof.h1@poczta.fm>
 	<alpine.LFD.2.01.0906021105340.3351@localhost.localdomain>
 	<20090602195240.0af2f21c@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0906021154270.3351@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <torvalds@linux-foundation.org>) id 1MBZAr-0001jK-HB
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <torvalds@linux-foundation.org>) id 1MBZPx-0003SA-0Q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Jun 2009 18:57:25 +0000
+	Tue, 02 Jun 2009 19:13:01 +0000
 Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MBZAq-0001OC-0V
+	(Exim 4.69) id 1MBZPs-0006AY-9G
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 02 Jun 2009 18:57:25 +0000
-In-Reply-To: <20090602195240.0af2f21c@lxorguk.ukuu.org.uk>
+	Tue, 02 Jun 2009 19:13:00 +0000
+In-Reply-To: <alpine.LFD.2.01.0906021154270.3351@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -44,24 +45,31 @@ Cc: krzysztof.h1@wp.pl, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.n
 
 
 
-On Tue, 2 Jun 2009, Alan Cox wrote:
->
-> > ie the fact that the TTY layer does user-mode copies while holding some 
-> > tty lock. So now the tty layer introduces that chain from some random lock 
-> > to the mmap_sem.
+On Tue, 2 Jun 2009, Linus Torvalds wrote:
 > 
-> Its basically holding the termios lock to copy from the struct termios to
-> user space which means its trivial to do copy to a stack buffer first. I
-> can fix that pretty easily if you want.
+> I thought we already always copied things to a buffer (for conversion 
+> reasons, ie doing the whole "ktermios<->random-user-termios-of-the-day" 
+> thing), but I guess I was wrong.
 
-It would be good. I don't know if it matters for any other path, but 
-mmap_sem has always been a total _bitch_ to work around for deadlocks, so 
-it's always good to try to avoid holding another lock while doing copying 
-to/from user. 
+Ahh. We do it in the other direction (ie set_termios), and for some 
+limited form of to-user (get_sgttyb, get_tchars etc) but apparently not 
+for TCGETS*.
 
-I thought we already always copied things to a buffer (for conversion 
-reasons, ie doing the whole "ktermios<->random-user-termios-of-the-day" 
-thing), but I guess I was wrong.
+There's a few other odd corners there too. Look at TCGETA - it doesn't get 
+the lock at all. Why are TCGETS* and TCGETA so different?
+
+I wonder if we even really need that lock for TCGETS*. We clearly don't do 
+it for "struct termio" (TCGETA).
+
+The same imbalance seems to exist for get_termiox vs set_termiox. The 
+"set" part does the nice "copy outside the lock", while the "get" part 
+copies to user space inside the lock.
+
+And then there is TIOCGSOFTCAR, which is just insane, and apparently gets 
+the lock in order to just test _one_ bit (C_CLOCAL). Never mind that if 
+something is changing it, we really don't care _which_ case we return, so 
+the lock is likely pointless to begin with (can "termios" actually change 
+as a pointer?). But then does the user space access with the lock held.
 
 		Linus
 

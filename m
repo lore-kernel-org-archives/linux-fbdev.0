@@ -1,143 +1,137 @@
-From: Paul Menzel <paulepanter@users.sourceforge.net>
-Subject: [RESEND] [PATCH] Fix a bug in intelfb
- initialization.
-Date: Wed, 03 Jun 2009 14:35:55 +0000
-Message-ID: <1244039755.5947.91.camel@mattotaupa.wohnung.familie-menzel.net>
-References: <1241285539.20882.0.camel@mattotaupa.wohnung.familie-menzel.net>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] ARM: Move clk_add_alias() to arch/arm/common/clkdev.c
+	(Re: [PATCH 05/10] ARM: OMAP1: Make 770 LCD work)
+Date: Wed, 3 Jun 2009 09:44:33 -0700
+Message-ID: <20090603164432.GE5026@atomide.com>
+References: <20090519232905.12760.15490.stgit@localhost> <20090519233732.12760.34595.stgit@localhost> <20090525092911.GC28195@n2100.arm.linux.org.uk> <20090525142128.17675cl0tvdr0y1k@lidskialf.net> <20090525174055.127744136qxu9vk0@lidskialf.net> <20090528182047.GF32453@atomide.com> <20090528195320.GX20736@n2100.arm.linux.org.uk> <20090528210205.GH32453@atomide.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1027430756295702761=="
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <paulepanter@users.sourceforge.net>)
-	id 1MBrZc-0005eK-3e for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Jun 2009 14:36:12 +0000
-Received: from b186.blue.fastwebserver.de ([62.141.42.186] helo=mail.gw90.de)
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MBrZV-0006Fe-7P
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 03 Jun 2009 14:36:07 +0000
-In-Reply-To: <1241285539.20882.0.camel@mattotaupa.wohnung.familie-menzel.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: sylvain.meyer@worldonline.fr
-Cc: Andrew Morton <akpm@linux-foundation.org>, samanddeanus@yahoo.com, linux-fbdev-devel@lists.sourceforge.net, Michal Suchanek <hramrach@centrum.cz>
-
-
---===============1027430756295702761==
-Content-Type: multipart/signed; micalg="pgp-sha1";
-	protocol="application/pgp-signature";
-	boundary="=-2l2ub/DcQK7C6EDIoYP5"
-
-
---=-2l2ub/DcQK7C6EDIoYP5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Dear hackers,
-
-
-I sent this message already some time ago but probably not to the
-correct people. (Now I took the one from MAINTAINERS and the ones from
-this message [1].)
-
-
-Bests,
-
-Paul
-
-
-[1] http://marc.info/?l=3Dlinux-fbdev-devel&m=3D124388452327831&w=3D2
-
---
-When changing video timing dynamically via fbset the screen sporadically
-is rendered black.
-
-With the attached fix which disables VCO prior to timing register
-change the problem disappears.
-
-I had a look at the Xserver register setup code. Here the VCO is
-disabled in the same way [1].
-
-This patch is taken from vga-sync-field version 0.0.11 [2][3].
-
-[1] http://cgit.freedesktop.org/xorg/driver/xf86-video-intel/tree/src/i830_=
-driver.c
-[2] http://lowbyte.de/vga-sync-fields/vga-sync-fields-0.0.11.tgz
-[3] http://easy-vdr.de/git?p=3Dfrc.git/.git;a=3Dcommit;h=3Ddcc3b863e5a66365=
-2587619c357bd20075af6896
-
-Signed-off-by: Thomas Hilber <sparkie@lowbyte.de>
-Signed-off-by: Paul Menzel <paulepanter@users.sourceforge.net>
----
- drivers/video/intelfb/intelfbdrv.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/int=
-elfbdrv.c
-index 6d8e541..7ba8db5 100644
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -1364,6 +1364,11 @@ static int intelfb_set_par(struct fb_info *info)
- 	DBG_MSG("intelfb_set_par (%dx%d-%d)\n", info->var.xres,
- 		info->var.yres, info->var.bits_per_pixel);
-=20
-+	/*
-+	 * Disable VCO prior to timing register change.
-+	 */
-+	OUTREG(DPLL_A, INREG(DPLL_A) & ~DPLL_VCO_ENABLE);
-+
- 	intelfb_blank(FB_BLANK_POWERDOWN, info);
-=20
- 	if (ACCEL(dinfo, info))
---=20
-1.6.2.4
-
---=-2l2ub/DcQK7C6EDIoYP5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Dies ist ein digital signierter Nachrichtenteil
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkomiksACgkQPX1aK2wOHVh36ACfWtwKvnBHTpgS6ILKntHy/IuA
-HFIAnjLp5DZZBKjQmXgzzoEBnRGM5KH4
-=HcMq
------END PGP SIGNATURE-----
-
---=-2l2ub/DcQK7C6EDIoYP5--
-
-
-
---===============1027430756295702761==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
 Content-Disposition: inline
-
-------------------------------------------------------------------------------
-OpenSolaris 2009.06 is a cutting edge operating system for enterprises 
-looking to deploy the next generation of Solaris that includes the latest 
-innovations from Sun and the OpenSource community. Download a copy and 
-enjoy capabilities such as Networking, Storage and Virtualization. 
-Go to: http://p.sf.net/sfu/opensolaris-get
---===============1027430756295702761==
+In-Reply-To: <20090528210205.GH32453@atomide.com>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew de Quincey <adq_dvb@lidskialf.net>, linux-arm-kernel@lists.arm.linux.org.uk, Imre Deak <imre.deak@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+* Tony Lindgren <tony@atomide.com> [090528 14:05]:
+> * Russell King - ARM Linux <linux@arm.linux.org.uk> [090528 12:53]:
+> > On Thu, May 28, 2009 at 11:20:48AM -0700, Tony Lindgren wrote:
+> > > > +int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
+> > > > +	struct device *dev)
+> > > > +{
+> > > > +	struct clk *r = clk_get(dev, id);
+> > > > +	struct clk_lookup *l;
+> > > > +
+> > > > +	if (!r)
+> > > > +		return -ENODEV;
+> > > > +
+> > > > +	l = clkdev_alloc(r, alias, alias_dev_name);
+> > > > +	clk_put(r);
+> > > > +	if (!l)
+> > > > +		return -ENODEV;
+> > > > +	clkdev_add(l);
+> > > > +	return 0;
+> > > > +}
+> > > > +EXPORT_SYMBOL(clk_add_alias);
+> > 
+> > Oh, and a really good thing to do would be to fix the error checking and
+> > returning in there (why did I miss it in the original PXA version...)
+> 
+> How about this? The prototype is in clk.h now, is that OK?
 
---===============1027430756295702761==--
+Added to patch tracking as 5536/1.
+ 
+> Tony
+
+> From e4e651822967b0530a9d092894c04149e28efe39 Mon Sep 17 00:00:00 2001
+> From: Tony Lindgren <tony@atomide.com>
+> Date: Thu, 28 May 2009 13:24:12 -0700
+> Subject: [PATCH] ARM: Move clk_add_alias() to arch/arm/common/clkdev.c
+> 
+> This can be used for other arm platforms too as discussed
+> on the linux-arm-kernel list.
+> 
+> Also check the return value with IS_ERR and return PTR_ERR
+> as suggested by Russell King.
+> 
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> 
+> diff --git a/arch/arm/common/clkdev.c b/arch/arm/common/clkdev.c
+> index 5589444..f37afd9 100644
+> --- a/arch/arm/common/clkdev.c
+> +++ b/arch/arm/common/clkdev.c
+> @@ -135,6 +135,24 @@ struct clk_lookup *clkdev_alloc(struct clk *clk, const char *con_id,
+>  }
+>  EXPORT_SYMBOL(clkdev_alloc);
+>  
+> +int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
+> +	struct device *dev)
+> +{
+> +	struct clk *r = clk_get(dev, id);
+> +	struct clk_lookup *l;
+> +
+> +	if (IS_ERR(r))
+> +		return PTR_ERR(r);
+> +
+> +	l = clkdev_alloc(r, alias, alias_dev_name);
+> +	clk_put(r);
+> +	if (!l)
+> +		return -ENODEV;
+> +	clkdev_add(l);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(clk_add_alias);
+> +
+>  /*
+>   * clkdev_drop - remove a clock dynamically allocated
+>   */
+> diff --git a/arch/arm/mach-pxa/clock.c b/arch/arm/mach-pxa/clock.c
+> index db52d2c..49ae382 100644
+> --- a/arch/arm/mach-pxa/clock.c
+> +++ b/arch/arm/mach-pxa/clock.c
+> @@ -86,20 +86,3 @@ void clks_register(struct clk_lookup *clks, size_t num)
+>  	for (i = 0; i < num; i++)
+>  		clkdev_add(&clks[i]);
+>  }
+> -
+> -int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
+> -	struct device *dev)
+> -{
+> -	struct clk *r = clk_get(dev, id);
+> -	struct clk_lookup *l;
+> -
+> -	if (!r)
+> -		return -ENODEV;
+> -
+> -	l = clkdev_alloc(r, alias, alias_dev_name);
+> -	clk_put(r);
+> -	if (!l)
+> -		return -ENODEV;
+> -	clkdev_add(l);
+> -	return 0;
+> -}
+> diff --git a/include/linux/clk.h b/include/linux/clk.h
+> index 1db9bbf..1d37f42 100644
+> --- a/include/linux/clk.h
+> +++ b/include/linux/clk.h
+> @@ -142,4 +142,17 @@ struct clk *clk_get_parent(struct clk *clk);
+>   */
+>  struct clk *clk_get_sys(const char *dev_id, const char *con_id);
+>  
+> +/**
+> + * clk_add_alias - add a new clock alias
+> + * @alias: name for clock alias
+> + * @alias_dev_name: device name
+> + * @id: platform specific clock name
+> + * @dev: device
+> + *
+> + * Allows using generic clock names for drivers by adding a new alias.
+> + * Assumes clkdev, see clkdev.h for more info.
+> + */
+> +int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
+> +			struct device *dev);
+> +
+>  #endif
+

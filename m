@@ -1,25 +1,25 @@
-From: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
-Subject: Re: [PATCH] fb: add support for handoff from
-	firmware to hw framebuffers
-Date: Thu, 4 Jun 2009 09:17:22 +0200
-Message-ID: <10f740e80906040017v56d17ff5sbb3b0aa1298440b0@mail.gmail.com>
-References: <1244090788-31645-1-git-send-email-airlied@gmail.com>
-	<21d7e9970906032150w7a159b7bgaa9fa3c0c17eadb6@mail.gmail.com>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [REPOST][PATCH 0/7] sparc32: use standard
+ fields for framebuffer physical address and length
+Date: Thu, 04 Jun 2009 01:44:16 -0700 (PDT)
+Message-ID: <20090604.014416.100297774.davem@davemloft.net>
+References: <20090517143000.b5021c5a.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert.uytterhoeven@gmail.com>) id 1MC7CX-0005FZ-JO
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <davem@davemloft.net>) id 1MC8Yg-0005kE-K9
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Jun 2009 07:17:25 +0000
-Received: from mail-bw0-f218.google.com ([209.85.218.218])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MC7CW-0006zs-LM for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 04 Jun 2009 07:17:25 +0000
-In-Reply-To: <21d7e9970906032150w7a159b7bgaa9fa3c0c17eadb6@mail.gmail.com>
+	Thu, 04 Jun 2009 08:44:22 +0000
+Received: from 74-93-104-97-washington.hfc.comcastbusiness.net ([74.93.104.97]
+	helo=sunset.davemloft.net) by 72vjzd1.ch3.sourceforge.com with esmtp 
+	(Exim 4.69) id 1MC8Yd-0004j3-AO
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 04 Jun 2009 08:44:22 +0000
+In-Reply-To: <20090517143000.b5021c5a.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,32 +29,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dave Airlie <airlied@gmail.com>
-Cc: linux-fbdev-devel@lists.sf.net
+To: krzysztof.h1@poczta.fm
+Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, Jun 4, 2009 at 06:50, Dave Airlie <airlied@gmail.com> wrote:
-> On Thu, Jun 4, 2009 at 2:46 PM, Dave Airlie <airlied@gmail.com> wrote:
->> From: Dave Airlie <airlied@redhat.com>
->>
->> With KMS we have ran into an issue where we really want the KMS fb driver
->> to be the one running the console, so panics etc can be shown by switching
->> out of X etc.
->
-> btw so far this is just an RFC.
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Date: Sun, 17 May 2009 14:30:00 +0200
 
-But if it's accepted, you also want to add this support to offb.c, and
-probably even macfb.c (dupes with valkyriefb.c).
+> This is a series of patches to convert some drivers to use standard
+> smem_start and smem_len fields from the fb_info.fix structure.
+> One of reasons to make these patches is to unify fbdev layer to
+> use the smem_start and smem_len so it is easy to track where
+> they are set.
+> 
+> The patches were already sent to the sparc-linux mailing list and
+> the conclusion of discussion with David Miller was here:
+> 
+> http://marc.info/?l=linux-fbdev-devel&m=124172182126376&w=3
+> 
+> I assume he acked the whole series.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+All applied to sparc-next-2.6, thanks!
 
 ------------------------------------------------------------------------------
 OpenSolaris 2009.06 is a cutting edge operating system for enterprises 

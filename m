@@ -1,60 +1,233 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Subject: [PATCH] fbdev: Blackfin has __raw I/O accessors,
-	so use them in fb.h
-Date: Fri,  5 Jun 2009 04:10:32 -0400
-Message-ID: <1244189432-19907-1-git-send-email-vapier@gentoo.org>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Subject: Re: [PATCH 04/20] omapfb: Add support for the Amstrad Delta LCD
+Date: Fri, 5 Jun 2009 12:38:22 +0200
+Message-ID: <200906051238.23755.jkrzyszt@tis.icnet.pl>
+References: <1244137965-8937-1-git-send-email-imre.deak@nokia.com> <e9040774f324311979aebd3fa5fa71d20890d433.1244131952.git.imre.deak@nokia.com> <833ed44e61e3d4093eb27b55b97252967e042d41.1244131952.git.imre.deak@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <vapier@gentoo.org>) id 1MCUVe-0000cN-3M
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Jun 2009 08:10:42 +0000
-Received: from smtp.gentoo.org ([140.211.166.183])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MCUVd-00021e-6N
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 05 Jun 2009 08:10:42 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: adaplas@gmail.com
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <833ed44e61e3d4093eb27b55b97252967e042d41.1244131952.git.imre.deak@nokia.com>
+Content-Disposition: inline
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="windows-1252"
+To: Imre Deak <imre.deak@nokia.com>
+Cc: Antonino Daplas <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <Tomi.Valkeinen@nokia.com>, Jonathan McDowell <noodles@earth.li>
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- include/linux/fb.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thursday 04 June 2009 19:52:29 Imre Deak napisa=C5=82(a):
+> From: Jonathan McDowell <noodles@earth.li>
+>
+> This is an updated version of the LCD driver for the Amstrad Delta to
+> take into account the recent changes to the omapfb infrastructure. Th=
+e
+> Delta features a 480x320 12 bit DSTN panel.
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 330c4b1..3292a11 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -893,7 +893,7 @@ struct fb_info {
- #define fb_writeq sbus_writeq
- #define fb_memset sbus_memset_io
- 
--#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) || defined(__hppa__) || defined(__sh__) || defined(__powerpc__) || defined(__avr32__)
-+#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) || defined(__hppa__) || defined(__sh__) || defined(__powerpc__) || defined(__avr32__) || defined(__bfin__)
- 
- #define fb_readb __raw_readb
- #define fb_readw __raw_readw
--- 
-1.6.3.1
+Hi,
+
+I'd really love to see the lcd_ams_delta support included in the mainli=
+ne=20
+kernel, but I am not sure if it is ready for submission, as I still hav=
+e=20
+issues with it. It does work perfectly unless power management is turne=
+d on.
+With CONFIG_PM=3Dy, the omapfb device, after initially starting correct=
+ly,=20
+breaks with the following error messages:
+
+omapfb omapfb: resetting (status 0xffffff96,reset count 1)
+=2E..
+omapfb omapfb: resetting (status 0xffffff96,reset count 100)
+omapfb omapfb: too many reset attempts, giving up.
+
+Tested with linux-2.6.30-rc5 and linux-omap revision=20
+90e758af52ba803cba233fabee81176d99589f09. Error messages do not appear =
+when=20
+CONFIG_PM=3Dn or lcd_ams_delta.o is removed from omapfb-objs.
+
+Please let me know what else I can do to help in resolving this issue.
+
+Cheers,
+Janusz
+
+> Signed-off-by: Jonathan McDowell <noodles@earth.li>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Imre Deak <imre.deak@nokia.com>
+> ---
+>  drivers/video/omap/Makefile        |    1 +
+>  drivers/video/omap/lcd_ams_delta.c |  137
+> ++++++++++++++++++++++++++++++++++++ 2 files changed, 138 insertions(=
++), 0
+> deletions(-)
+>  create mode 100644 drivers/video/omap/lcd_ams_delta.c
+>
+> diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefil=
+e
+> index d86d54a..2bf94ad 100644
+> --- a/drivers/video/omap/Makefile
+> +++ b/drivers/video/omap/Makefile
+> @@ -15,6 +15,7 @@ objs-$(CONFIG_ARCH_OMAP2)$(CONFIG_FB_OMAP_LCDC_EXTE=
+RNAL)
+> +=3D rfbi.o objs-y$(CONFIG_FB_OMAP_LCDC_HWA742) +=3D hwa742.o
+>  objs-y$(CONFIG_FB_OMAP_LCDC_BLIZZARD) +=3D blizzard.o
+>
+> +objs-y$(CONFIG_MACH_AMS_DELTA) +=3D lcd_ams_delta.o
+>  objs-y$(CONFIG_MACH_OMAP_H4) +=3D lcd_h4.o
+>  objs-y$(CONFIG_MACH_OMAP_H3) +=3D lcd_h3.o
+>  objs-y$(CONFIG_MACH_OMAP_PALMTE) +=3D lcd_palmte.o
+> diff --git a/drivers/video/omap/lcd_ams_delta.c
+> b/drivers/video/omap/lcd_ams_delta.c new file mode 100644
+> index 0000000..1f74399
+> --- /dev/null
+> +++ b/drivers/video/omap/lcd_ams_delta.c
+> @@ -0,0 +1,137 @@
+> +/*
+> + * Based on drivers/video/omap/lcd_inn1510.c
+> + *
+> + * LCD panel support for the Amstrad E3 (Delta) videophone.
+> + *
+> + * Copyright (C) 2006 Jonathan McDowell <noodles@earth.li>
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify it
+> + * under the terms of the GNU General Public License as published by=
+ the
+> + * Free Software Foundation; either version 2 of the License, or (at=
+ your
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, b=
+ut
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License=
+ along
+> + * with this program; if not, write to the Free Software Foundation,=
+ Inc.,
+> + * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/io.h>
+> +#include <linux/delay.h>
+> +
+> +#include <mach/board-ams-delta.h>
+> +#include <mach/hardware.h>
+> +#include <mach/omapfb.h>
+> +
+> +#define AMS_DELTA_DEFAULT_CONTRAST	112
+> +
+> +static int ams_delta_panel_init(struct lcd_panel *panel,
+> +		struct omapfb_device *fbdev)
+> +{
+> +	return 0;
+> +}
+> +
+> +static void ams_delta_panel_cleanup(struct lcd_panel *panel)
+> +{
+> +}
+> +
+> +static int ams_delta_panel_enable(struct lcd_panel *panel)
+> +{
+> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP,
+> +			AMS_DELTA_LATCH2_LCD_NDISP);
+> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN,
+> +			AMS_DELTA_LATCH2_LCD_VBLEN);
+> +
+> +	omap_writeb(1, OMAP_PWL_CLK_ENABLE);
+> +	omap_writeb(AMS_DELTA_DEFAULT_CONTRAST, OMAP_PWL_ENABLE);
+> +
+> +	return 0;
+> +}
+> +
+> +static void ams_delta_panel_disable(struct lcd_panel *panel)
+> +{
+> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN, 0);
+> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP, 0);
+> +}
+> +
+> +static unsigned long ams_delta_panel_get_caps(struct lcd_panel *pane=
+l)
+> +{
+> +	return 0;
+> +}
+> +
+> +static struct lcd_panel ams_delta_panel =3D {
+> +	.name		=3D "ams-delta",
+> +	.config		=3D 0,
+> +
+> +	.bpp		=3D 12,
+> +	.data_lines	=3D 16,
+> +	.x_res		=3D 480,
+> +	.y_res		=3D 320,
+> +	.pixel_clock	=3D 4687,
+> +	.hsw		=3D 3,
+> +	.hfp		=3D 1,
+> +	.hbp		=3D 1,
+> +	.vsw		=3D 1,
+> +	.vfp		=3D 0,
+> +	.vbp		=3D 0,
+> +	.pcd		=3D 0,
+> +	.acb		=3D 37,
+> +
+> +	.init		=3D ams_delta_panel_init,
+> +	.cleanup	=3D ams_delta_panel_cleanup,
+> +	.enable		=3D ams_delta_panel_enable,
+> +	.disable	=3D ams_delta_panel_disable,
+> +	.get_caps	=3D ams_delta_panel_get_caps,
+> +};
+> +
+> +static int ams_delta_panel_probe(struct platform_device *pdev)
+> +{
+> +	omapfb_register_panel(&ams_delta_panel);
+> +	return 0;
+> +}
+> +
+> +static int ams_delta_panel_remove(struct platform_device *pdev)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int ams_delta_panel_suspend(struct platform_device *pdev,
+> +		pm_message_t mesg)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int ams_delta_panel_resume(struct platform_device *pdev)
+> +{
+> +	return 0;
+> +}
+> +
+> +struct platform_driver ams_delta_panel_driver =3D {
+> +	.probe		=3D ams_delta_panel_probe,
+> +	.remove		=3D ams_delta_panel_remove,
+> +	.suspend	=3D ams_delta_panel_suspend,
+> +	.resume		=3D ams_delta_panel_resume,
+> +	.driver		=3D {
+> +		.name	=3D "lcd_ams_delta",
+> +		.owner	=3D THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int ams_delta_panel_drv_init(void)
+> +{
+> +	return platform_driver_register(&ams_delta_panel_driver);
+> +}
+> +
+> +static void ams_delta_panel_drv_cleanup(void)
+> +{
+> +	platform_driver_unregister(&ams_delta_panel_driver);
+> +}
+> +
+> +module_init(ams_delta_panel_drv_init);
+> +module_exit(ams_delta_panel_drv_cleanup);
 
 
-------------------------------------------------------------------------------
-OpenSolaris 2009.06 is a cutting edge operating system for enterprises 
-looking to deploy the next generation of Solaris that includes the latest 
-innovations from Sun and the OpenSource community. Download a copy and 
-enjoy capabilities such as Networking, Storage and Virtualization. 
-Go to: http://p.sf.net/sfu/opensolaris-get
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

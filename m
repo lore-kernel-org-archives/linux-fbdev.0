@@ -1,243 +1,70 @@
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Subject: Re: [PATCH 04/20] omapfb: Add support for the Amstrad Delta LCD
-Date: Fri, 05 Jun 2009 13:39:51 +0200
-Message-ID: <4A290407.90402@tis.icnet.pl>
-References: <1244137965-8937-1-git-send-email-imre.deak@nokia.com> <e9040774f324311979aebd3fa5fa71d20890d433.1244131952.git.imre.deak@nokia.com> <833ed44e61e3d4093eb27b55b97252967e042d41.1244131952.git.imre.deak@nokia.com> <200906051238.23755.jkrzyszt@tis.icnet.pl>
+From: Michal Suchanek <hramrach@centrum.cz>
+Subject: Re: [Bugme-new] [Bug 13285] New: INTELFB:
+	Colors display incorrectly
+Date: Fri, 5 Jun 2009 14:14:56 +0200
+Message-ID: <a5d587fb0906050514q37d773abn9fe4375033a0d8a3@mail.gmail.com>
+References: <bug-13285-10286@http.bugzilla.kernel.org/>
+	<20090512151934.d7e6c54e.akpm@linux-foundation.org>
+	<20090517081743.92002707.krzysztof.h1@poczta.fm>
+	<20090516231932.2e02647b.akpm@linux-foundation.org>
+	<20090517123032.2b8bad00.krzysztof.h1@poczta.fm>
+	<a5d587fb0905170807j4cf60ce7ucf675cc6161e7850@mail.gmail.com>
+	<20090530135833.6a2c1bb2.krzysztof.h1@poczta.fm>
+	<20090602131855.1d69f442.akpm@linux-foundation.org>
+	<a5d587fb0906030227j634398c8k369492e1755f2938@mail.gmail.com>
+	<20090604225843.93bd964f.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <200906051238.23755.jkrzyszt@tis.icnet.pl>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-To: Imre Deak <imre.deak@nokia.com>
-Cc: Antonino Daplas <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <Tomi.Valkeinen@nokia.com>, Jonathan McDowell <noodles@earth.li>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <20090604225843.93bd964f.krzysztof.h1@poczta.fm>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, samanddeanus@yahoo.com, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org
 
-TIS - Janusz Krzysztofik napisa=C5=82(a):
-> Thursday 04 June 2009 19:52:29 Imre Deak napisa=C5=82(a):
->> From: Jonathan McDowell <noodles@earth.li>
->>
->> This is an updated version of the LCD driver for the Amstrad Delta t=
-o
->> take into account the recent changes to the omapfb infrastructure. T=
-he
->> Delta features a 480x320 12 bit DSTN panel.
->=20
-> Hi,
->=20
-> I'd really love to see the lcd_ams_delta support included in the main=
-line=20
-> kernel, but I am not sure if it is ready for submission, as I still h=
-ave=20
-> issues with it. It does work perfectly unless power management is tur=
-ned on.
-> With CONFIG_PM=3Dy, the omapfb device, after initially starting corre=
-ctly,=20
-> breaks with the following error messages:
->=20
-> omapfb omapfb: resetting (status 0xffffff96,reset count 1)
-> ...
-> omapfb omapfb: resetting (status 0xffffff96,reset count 100)
-> omapfb omapfb: too many reset attempts, giving up.
->=20
-> Tested with linux-2.6.30-rc5 and linux-omap revision=20
-> 90e758af52ba803cba233fabee81176d99589f09. Error messages do not appea=
-r when=20
-> CONFIG_PM=3Dn or lcd_ams_delta.o is removed from omapfb-objs.
-
-One idea for a temporary workaround: maybe we could just force PM=3Dn i=
-n=20
-case of MACH_AMS_DELTA && FB_OMAP? PM already depends on !IA64_HP_SIM.
-
-Janusz
-
-> Please let me know what else I can do to help in resolving this issue=
-=2E
->=20
-> Cheers,
-> Janusz
->=20
->> Signed-off-by: Jonathan McDowell <noodles@earth.li>
->> Signed-off-by: Tony Lindgren <tony@atomide.com>
->> Signed-off-by: Imre Deak <imre.deak@nokia.com>
->> ---
->>  drivers/video/omap/Makefile        |    1 +
->>  drivers/video/omap/lcd_ams_delta.c |  137
->> ++++++++++++++++++++++++++++++++++++ 2 files changed, 138 insertions=
-(+), 0
->> deletions(-)
->>  create mode 100644 drivers/video/omap/lcd_ams_delta.c
->>
->> diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefi=
-le
->> index d86d54a..2bf94ad 100644
->> --- a/drivers/video/omap/Makefile
->> +++ b/drivers/video/omap/Makefile
->> @@ -15,6 +15,7 @@ objs-$(CONFIG_ARCH_OMAP2)$(CONFIG_FB_OMAP_LCDC_EXT=
-ERNAL)
->> +=3D rfbi.o objs-y$(CONFIG_FB_OMAP_LCDC_HWA742) +=3D hwa742.o
->>  objs-y$(CONFIG_FB_OMAP_LCDC_BLIZZARD) +=3D blizzard.o
->>
->> +objs-y$(CONFIG_MACH_AMS_DELTA) +=3D lcd_ams_delta.o
->>  objs-y$(CONFIG_MACH_OMAP_H4) +=3D lcd_h4.o
->>  objs-y$(CONFIG_MACH_OMAP_H3) +=3D lcd_h3.o
->>  objs-y$(CONFIG_MACH_OMAP_PALMTE) +=3D lcd_palmte.o
->> diff --git a/drivers/video/omap/lcd_ams_delta.c
->> b/drivers/video/omap/lcd_ams_delta.c new file mode 100644
->> index 0000000..1f74399
->> --- /dev/null
->> +++ b/drivers/video/omap/lcd_ams_delta.c
->> @@ -0,0 +1,137 @@
->> +/*
->> + * Based on drivers/video/omap/lcd_inn1510.c
->> + *
->> + * LCD panel support for the Amstrad E3 (Delta) videophone.
->> + *
->> + * Copyright (C) 2006 Jonathan McDowell <noodles@earth.li>
->> + *
->> + * This program is free software; you can redistribute it and/or mo=
-dify it
->> + * under the terms of the GNU General Public License as published b=
-y the
->> + * Free Software Foundation; either version 2 of the License, or (a=
-t your
->> + * option) any later version.
->> + *
->> + * This program is distributed in the hope that it will be useful, =
-but
->> + * WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GN=
-U
->> + * General Public License for more details.
->> + *
->> + * You should have received a copy of the GNU General Public Licens=
-e along
->> + * with this program; if not, write to the Free Software Foundation=
-, Inc.,
->> + * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
->> + */
->> +
->> +#include <linux/module.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/io.h>
->> +#include <linux/delay.h>
->> +
->> +#include <mach/board-ams-delta.h>
->> +#include <mach/hardware.h>
->> +#include <mach/omapfb.h>
->> +
->> +#define AMS_DELTA_DEFAULT_CONTRAST	112
->> +
->> +static int ams_delta_panel_init(struct lcd_panel *panel,
->> +		struct omapfb_device *fbdev)
->> +{
->> +	return 0;
->> +}
->> +
->> +static void ams_delta_panel_cleanup(struct lcd_panel *panel)
->> +{
->> +}
->> +
->> +static int ams_delta_panel_enable(struct lcd_panel *panel)
->> +{
->> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP,
->> +			AMS_DELTA_LATCH2_LCD_NDISP);
->> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN,
->> +			AMS_DELTA_LATCH2_LCD_VBLEN);
->> +
->> +	omap_writeb(1, OMAP_PWL_CLK_ENABLE);
->> +	omap_writeb(AMS_DELTA_DEFAULT_CONTRAST, OMAP_PWL_ENABLE);
->> +
->> +	return 0;
->> +}
->> +
->> +static void ams_delta_panel_disable(struct lcd_panel *panel)
->> +{
->> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN, 0);
->> +	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP, 0);
->> +}
->> +
->> +static unsigned long ams_delta_panel_get_caps(struct lcd_panel *pan=
-el)
->> +{
->> +	return 0;
->> +}
->> +
->> +static struct lcd_panel ams_delta_panel =3D {
->> +	.name		=3D "ams-delta",
->> +	.config		=3D 0,
->> +
->> +	.bpp		=3D 12,
->> +	.data_lines	=3D 16,
->> +	.x_res		=3D 480,
->> +	.y_res		=3D 320,
->> +	.pixel_clock	=3D 4687,
->> +	.hsw		=3D 3,
->> +	.hfp		=3D 1,
->> +	.hbp		=3D 1,
->> +	.vsw		=3D 1,
->> +	.vfp		=3D 0,
->> +	.vbp		=3D 0,
->> +	.pcd		=3D 0,
->> +	.acb		=3D 37,
->> +
->> +	.init		=3D ams_delta_panel_init,
->> +	.cleanup	=3D ams_delta_panel_cleanup,
->> +	.enable		=3D ams_delta_panel_enable,
->> +	.disable	=3D ams_delta_panel_disable,
->> +	.get_caps	=3D ams_delta_panel_get_caps,
->> +};
->> +
->> +static int ams_delta_panel_probe(struct platform_device *pdev)
->> +{
->> +	omapfb_register_panel(&ams_delta_panel);
->> +	return 0;
->> +}
->> +
->> +static int ams_delta_panel_remove(struct platform_device *pdev)
->> +{
->> +	return 0;
->> +}
->> +
->> +static int ams_delta_panel_suspend(struct platform_device *pdev,
->> +		pm_message_t mesg)
->> +{
->> +	return 0;
->> +}
->> +
->> +static int ams_delta_panel_resume(struct platform_device *pdev)
->> +{
->> +	return 0;
->> +}
->> +
->> +struct platform_driver ams_delta_panel_driver =3D {
->> +	.probe		=3D ams_delta_panel_probe,
->> +	.remove		=3D ams_delta_panel_remove,
->> +	.suspend	=3D ams_delta_panel_suspend,
->> +	.resume		=3D ams_delta_panel_resume,
->> +	.driver		=3D {
->> +		.name	=3D "lcd_ams_delta",
->> +		.owner	=3D THIS_MODULE,
->> +	},
->> +};
->> +
->> +static int ams_delta_panel_drv_init(void)
->> +{
->> +	return platform_driver_register(&ams_delta_panel_driver);
->> +}
->> +
->> +static void ams_delta_panel_drv_cleanup(void)
->> +{
->> +	platform_driver_unregister(&ams_delta_panel_driver);
->> +}
->> +
->> +module_init(ams_delta_panel_drv_init);
->> +module_exit(ams_delta_panel_drv_cleanup);
->=20
->=20
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+MjAwOS82LzQgS3J6eXN6dG9mIEhlbHQgPGtyenlzenRvZi5oMUBwb2N6dGEuZm0+Ogo+IE9uIFdl
+ZCwgMyBKdW4gMjAwOSAxMToyNzoxNyArMDIwMAo+IE1pY2hhbCBTdWNoYW5layA8aHJhbXJhY2hA
+Y2VudHJ1bS5jej4gd3JvdGU6Cj4KPj4gVW5mb3J0dW5hdGVseSBJIGRpZCBub3QgZ2V0IHRvIHRl
+c3RpbmcgdGhlIHBhdGNoIHlldC4KPj4KPj4gQWNjb3JkaW5nIHRvIHRoZSBkZXNjcmlwdGlvbiBp
+dCBpcyBzdXBwb3NlZCB0byByZXNvbHZlIHNvbWUgY29uZnVzaW9uCj4+IG92ZXIgd2hhdCBwaXBl
+IGlzIGVuYWJsZWQgb3Igbm90Lgo+Pgo+PiBYIHNlcnZlciByZXBvcnRzIHRoZSBwaXBlcyBjb25u
+ZWN0ZWQgYXMgZm9sbG93czoKPj4gKElJKSBpbnRlbCgwKTogwqAgUGlwZSBBIGlzIG9uCj4+IChJ
+SSkgaW50ZWwoMCk6IMKgIERpc3BsYXkgcGxhbmUgQSBpcyBub3cgZW5hYmxlZCBhbmQgY29ubmVj
+dGVkIHRvIHBpcGUgQS4KPj4gKElJKSBpbnRlbCgwKTogwqAgUGlwZSBCIGlzIG9mZgo+PiAoSUkp
+IGludGVsKDApOiDCoCBEaXNwbGF5IHBsYW5lIEIgaXMgbm93IGRpc2FibGVkIGFuZCBjb25uZWN0
+ZWQgdG8gcGlwZSBBLgo+PiAoSUkpIGludGVsKDApOiDCoCBPdXRwdXQgVkdBIGlzIGNvbm5lY3Rl
+ZCB0byBwaXBlIG5vbmUKPj4gKElJKSBpbnRlbCgwKTogwqAgT3V0cHV0IFRNRFMtMSBpcyBjb25u
+ZWN0ZWQgdG8gcGlwZSBBCj4+IChJSSkgaW50ZWwoMCk6IMKgIE91dHB1dCBUViBpcyBjb25uZWN0
+ZWQgdG8gcGlwZSBub25lCj4+Cj4+IEhvd2V2ZXIsIEkgYWxzbyBnZXQgdGhpcyB3YXJuaW5nIGJl
+Zm9yZSB0aGUgb3V0cHV0cyBhcmUgbGlzdGVkOgo+PiAoV1cpIGludGVsKDApOiBDb3VsZG4ndCBk
+ZXRlY3QgcGFuZWwgbW9kZS4gwqBEaXNhYmxpbmcgcGFuZWwKPj4KPj4gSXMgdGhpcyBhIGNvbmZp
+Z3VyYXRpb24gdGhhdCB3b3VsZCBsaWtlbHkgYmUgYWZmZWN0ZWQgYnkgdGhlIGlzc3VlCj4+IGZp
+eGVkIGhlcmUgb3IgZG8gSSBoYXZlIGEgZGlmZmVyZW50IHByb2JsZW0/Cj4+Cj4KPiBGcmFua2x5
+IHNwZWFraW5nLCBJIGRvbid0IGtub3cuIFBsZWFzZSBkZXNjcmliZSB5b3VyIHByb2JsZW0uCj4K
+PiBUaGUgcGFuZWwgbW9kZSBJIHN1cHBvc2UgaXMgTFZEUyAoTENEIHBhbmVsIGRpcmVjdGx5IGNv
+bm5lY3RlZAo+IHRvIHRoZSBjaGlwKSB3aGljaCBpcyBwb3NzaWJsZSBvbmx5IGluIGxhcHRvcHMg
+YW5kIHRhYmxldHMgb3Igb3RoZXIKPiBjb21wdXRlcnMgd2hlcmUgdGhlIExDRCBwYW5lbCBpcyBp
+bnRlZ3JhdGVkIHdpdGggdGhlIG1haW4gdW5pdAo+IChlLmcuICJkZXNrLWxhbXAiIGxpa2UgQXBw
+bGUgY29tcHV0ZXJzKS4gQWxsIG90aGVyIGNvbXB1dGVycyB3aGljaCB5b3UKPiBjb25uZWN0IHRo
+ZSBkaXNwbGF5IGJ5IGV4dGVybmFsIGNhYmxlIChEVkkvSERNSSBvciBWR0EpIGRvZXMgbm90Cj4g
+d29yayBpbiB0aGUgInBhbmVsIG1vZGUiLgoKVGhpcyBpcyBhIG1hYyBtaW5pIHdpdGggc2luZ2xl
+IFRNRFMgZGlzcGxheSBvbmx5LgoKVGhhbmtzCgpNaWNoYWwKCi0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LQpPcGVuU29sYXJpcyAyMDA5LjA2IGlzIGEgY3V0dGluZyBlZGdlIG9wZXJhdGluZyBzeXN0ZW0g
+Zm9yIGVudGVycHJpc2VzIApsb29raW5nIHRvIGRlcGxveSB0aGUgbmV4dCBnZW5lcmF0aW9uIG9m
+IFNvbGFyaXMgdGhhdCBpbmNsdWRlcyB0aGUgbGF0ZXN0IAppbm5vdmF0aW9ucyBmcm9tIFN1biBh
+bmQgdGhlIE9wZW5Tb3VyY2UgY29tbXVuaXR5LiBEb3dubG9hZCBhIGNvcHkgYW5kIAplbmpveSBj
+YXBhYmlsaXRpZXMgc3VjaCBhcyBOZXR3b3JraW5nLCBTdG9yYWdlIGFuZCBWaXJ0dWFsaXphdGlv
+bi4gCkdvIHRvOiBodHRwOi8vcC5zZi5uZXQvc2Z1L29wZW5zb2xhcmlzLWdldApfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBt
+YWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBz
+Oi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVs
+Cg==

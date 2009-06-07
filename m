@@ -1,29 +1,25 @@
-From: amaora <nemashinist@rambler.ru>
-Subject: Re: True color framebuffer
-Date: Sat, 6 Jun 2009 23:00:31 +0400
-Message-ID: <20090606190031.GA30576@core>
-References: <20090605212517.GA19565@core>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: [PATCH] video: s3c_fb.c: fix build with
+	CONFIG_HOTPLUG=n
+Date: Sun,  7 Jun 2009 15:05:39 +0200
+Message-ID: <1244379939-23641-1-git-send-email-jacmet@sunsite.dk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
 	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <nemashinist@rambler.ru>) id 1MD13a-0007AM-4c
+	(envelope-from <jacmet@gmail.com>) id 1MDI4R-0007pX-0w
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 06 Jun 2009 18:55:54 +0000
-Received: from maild.rambler.ru ([81.19.66.33])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MD13Y-0005KL-AJ for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 06 Jun 2009 18:55:54 +0000
-Received: from localhost (unknown [83.149.41.24])
-	(Authenticated sender: nemashinist@rambler.ru)
-	by maild.rambler.ru (Postfix) with ESMTP id C8D718446D
+	Sun, 07 Jun 2009 13:05:55 +0000
+Received: from mail-fx0-f225.google.com ([209.85.220.225])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MDI4P-0002gA-1E for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 07 Jun 2009 13:05:53 +0000
+Received: by fxm25 with SMTP id 25so2414530fxm.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat,  6 Jun 2009 22:55:47 +0400 (MSD)
-Content-Disposition: inline
-In-Reply-To: <20090605212517.GA19565@core>
+	Sun, 07 Jun 2009 06:05:40 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,24 +29,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: ben-linux@fluff.org, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, wookey@wookware.org
 
-On Sat, Jun 06, 2009 at 01:25:17AM +0400, amaora wrote:
-> Hi,
-> 
-> I write framebuffer driver for the PCF8833, it work, but only if
-> xxx_fix.visual == FB_VISUAL_PSEUDOCOLOR, TRUECOLOR/DIRECTCOLOR don't work.
-> Kernel is blocked (stalled) in function register_framebuffer on line
-> fb_notifier_call_chain(...), i don't know how to find stall point more deep.
-> Why this happening?
-> 
-> Thanks,
-> 
-> Roman Belov
->
+Fixes `s3c_fb_remove' referenced in section `.data' of
+drivers/built-in.o: defined in discarded section `.devexit.text' of
+drivers/built-in.o
 
-It seems to me should not write it here, sorry. Problem solved, it was
-necessary to initialize a pointer to the pseudo palette, for true color.
+With CONFIG_HOTPLUG=n functions marked with __devexit gets removed, so
+make sure we use __devexit_p when referencing pointers to them.
+
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ drivers/video/s3c-fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index d3a568e..db71de1 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1018,7 +1018,7 @@ static int s3c_fb_resume(struct platform_device *pdev)
+ 
+ static struct platform_driver s3c_fb_driver = {
+ 	.probe		= s3c_fb_probe,
+-	.remove		= s3c_fb_remove,
++	.remove		= __devexit_p(s3c_fb_remove),
+ 	.suspend	= s3c_fb_suspend,
+ 	.resume		= s3c_fb_resume,
+ 	.driver		= {
+-- 
+1.6.2
 
 
 ------------------------------------------------------------------------------

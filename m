@@ -1,64 +1,52 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PATCH - Add accelerated bitblt functions to
-	s1d13xxxfb
-Date: Tue, 9 Jun 2009 17:58:07 -0700
-Message-ID: <20090609175807.65db0ebb.akpm@linux-foundation.org>
-References: <20090606141037.7debdb08.kristoffer.ericson@gmail.com>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 01/33] ps3av: Set 16:9 aspect ratio for 720p video modes
+Date: Wed, 10 Jun 2009 16:38:36 +0200
+Message-ID: <1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1MEC9M-0002U4-3N
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Jun 2009 00:58:44 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MEC9I-0004TN-5H
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Jun 2009 00:58:43 +0000
-In-Reply-To: <20090606141037.7debdb08.kristoffer.ericson@gmail.com>
+Return-path: <linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Sender: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org
+Errors-To: linuxppc-dev-bounces+glppd-linuxppc64-dev=m.gmane.org@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, "sebastian.blanes@gmail.com" <sebastian.blanes@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org
+
+From: sebastian.blanes@gmail.com <sebastian.blanes@gmail.com>
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
+---
+ drivers/ps3/ps3av.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-On Sat, 6 Jun 2009 14:10:37 +0200
-Kristoffer Ericson <kristoffer.ericson@gmail.com> wrote:
-
-> This patch adds accelerated bitblt functions to s1d13xxx based 
-> video chipsets, more specificly functions copyarea and fillrect. 
-> It has only been tested and activated for 13506 chipsets
-> but is expected to work for the majority of s1d13xxx based chips.
-> This patch also cleans up the driver with respect of whitespaces
-> and other formatting issues. We update the current status
-> comments.
-> 
-
-Was I sent half a patch?
-
-
-drivers/video/s1d13xxxfb.c: In function 'bltbit_fifo_status':
-drivers/video/s1d13xxxfb.c:470: error: 'BBLT_FIFO_EMPTY' undeclared (first use in this function)
-drivers/video/s1d13xxxfb.c:470: error: (Each undeclared identifier is reported only once
-drivers/video/s1d13xxxfb.c:470: error: for each function it appears in.)
-drivers/video/s1d13xxxfb.c:474: error: 'BBLT_FIFO_FULL' undeclared (first use in this function)
-drivers/video/s1d13xxxfb.c:478: error: 'BBLT_FIFO_NOT_FULL' undeclared (first use in this function)
-drivers/video/s1d13xxxfb.c: In function 's1d13xxxfb_bitblt_solidfill':
-drivers/video/s1d13xxxfb.c:640: error: 'BBLT_SOLID_FILL' undeclared (first use in this function)
-
-------------------------------------------------------------------------------
-Crystal Reports - New Free Runtime and 30 Day Trial
-Check out the new simplified licensing option that enables unlimited
-royalty-free distribution of the report engine for externally facing 
-server and web deployment.
-http://p.sf.net/sfu/businessobjects
+diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
+index 235e87f..4e4611e 100644
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -80,12 +80,12 @@ static const struct avset_video_mode {
+ 	{     0, }, /* auto */
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480},
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_W, 1280,  720},
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080},
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080},
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576},
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_W, 1280,  720},
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080},
+ 	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080},
+ 	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768},
+-- 
+1.6.2.4

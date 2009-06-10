@@ -1,8 +1,8 @@
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 08/33] ps3fb: Inline functions in
-	ps3fb_probe(), to ease cleanup in the error path
-Date: Wed, 10 Jun 2009 16:38:43 +0200
-Message-ID: <1244644748-24211-9-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 13/33] ps3fb/vram: Extract common GPU
+	stuff into <asm/ps3gpu.h>
+Date: Wed, 10 Jun 2009 16:38:48 +0200
+Message-ID: <1244644748-24211-14-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -11,22 +11,27 @@ References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
 	<1244644748-24211-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-9-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-10-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-11-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-12-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1244644748-24211-13-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert@sonycom.com>) id 1MEOy2-0002WS-O9
+	(envelope-from <geert@sonycom.com>) id 1MEOxj-0002VV-Ix
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Jun 2009 14:39:54 +0000
+	Wed, 10 Jun 2009 14:39:35 +0000
 Received: from vervifontaine.sonytel.be ([80.88.33.193]
-	helo=pophost.sonytel.be) by 29vjzd1.ch3.sourceforge.com with esmtp 
-	(Exim 4.69) id 1MEOxR-0005pG-PV
+	helo=pophost.sonytel.be) by 72vjzd1.ch3.sourceforge.com with esmtp 
+	(Exim 4.69) id 1MEOxV-0006lT-9m
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 10 Jun 2009 14:39:54 +0000
-In-Reply-To: <1244644748-24211-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	Wed, 10 Jun 2009 14:39:35 +0000
+In-Reply-To: <1244644748-24211-13-git-send-email-Geert.Uytterhoeven@sonycom.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,263 +42,333 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>, linux-fbdev-devel@lists.sourceforge.net, Jim Paris <jim@jtan.com>, linuxppc-dev@ozlabs.org, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, cbe-oss-dev@ozlabs.org
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Jim Paris <jim@jtan.com>
+Cc: Jens Axboe <axboe@kernel.dk>
 ---
- drivers/video/ps3fb.c |  192 ++++++++++++++++++++++---------------------------
- 1 files changed, 86 insertions(+), 106 deletions(-)
+ arch/powerpc/include/asm/ps3.h     |    3 -
+ arch/powerpc/include/asm/ps3gpu.h  |   78 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/ps3/setup.c |    1 +
+ drivers/block/ps3vram.c            |   21 +++------
+ drivers/ps3/ps3av_cmd.c            |    3 +-
+ drivers/video/ps3fb.c              |   72 ++++++++++-----------------------
+ 6 files changed, 110 insertions(+), 68 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/ps3gpu.h
 
+diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
+index cdb6fd8..b9e4987 100644
+--- a/arch/powerpc/include/asm/ps3.h
++++ b/arch/powerpc/include/asm/ps3.h
+@@ -520,7 +520,4 @@ void ps3_sync_irq(int node);
+ u32 ps3_get_hw_thread_id(int cpu);
+ u64 ps3_get_spe_id(void *arg);
+ 
+-/* mutex synchronizing GPU accesses and video mode changes */
+-extern struct mutex ps3_gpu_mutex;
+-
+ #endif
+diff --git a/arch/powerpc/include/asm/ps3gpu.h b/arch/powerpc/include/asm/ps3gpu.h
+new file mode 100644
+index 0000000..1037efa
+--- /dev/null
++++ b/arch/powerpc/include/asm/ps3gpu.h
+@@ -0,0 +1,78 @@
++/*
++ *  PS3 GPU declarations.
++ *
++ *  Copyright 2009 Sony Corporation
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program.
++ *  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef _ASM_POWERPC_PS3GPU_H
++#define _ASM_POWERPC_PS3GPU_H
++
++#include <linux/mutex.h>
++
++#include <asm/lv1call.h>
++
++
++#define L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC	0x101
++#define L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP	0x102
++
++#define L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP	0x600
++#define L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT		0x601
++#define L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT_SYNC	0x602
++
++#define L1GPU_FB_BLIT_WAIT_FOR_COMPLETION	(1ULL << 32)
++
++#define L1GPU_DISPLAY_SYNC_HSYNC		1
++#define L1GPU_DISPLAY_SYNC_VSYNC		2
++
++
++/* mutex synchronizing GPU accesses and video mode changes */
++extern struct mutex ps3_gpu_mutex;
++
++
++static inline int lv1_gpu_display_sync(u64 context_handle, u64 head,
++				       u64 ddr_offset)
++{
++	return lv1_gpu_context_attribute(context_handle,
++					 L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
++					 head, ddr_offset, 0, 0);
++}
++
++static inline int lv1_gpu_display_flip(u64 context_handle, u64 head,
++				       u64 ddr_offset)
++{
++	return lv1_gpu_context_attribute(context_handle,
++					 L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP,
++					 head, ddr_offset, 0, 0);
++}
++
++static inline int lv1_gpu_fb_setup(u64 context_handle, u64 xdr_lpar,
++				   u64 xdr_size, u64 ioif_offset)
++{
++	return lv1_gpu_context_attribute(context_handle,
++					 L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP,
++					 xdr_lpar, xdr_size, ioif_offset, 0);
++}
++
++static inline int lv1_gpu_fb_blit(u64 context_handle, u64 ddr_offset,
++				  u64 ioif_offset, u64 sync_width, u64 pitch)
++{
++	return lv1_gpu_context_attribute(context_handle,
++					 L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT,
++					 ddr_offset, ioif_offset, sync_width,
++					 pitch);
++}
++
++#endif /* _ASM_POWERPC_PS3GPU_H */
+diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
+index 1a7b5ae..149bea2 100644
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -32,6 +32,7 @@
+ #include <asm/udbg.h>
+ #include <asm/prom.h>
+ #include <asm/lv1call.h>
++#include <asm/ps3gpu.h>
+ 
+ #include "platform.h"
+ 
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index 4418d59..7d1c742 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -17,6 +17,7 @@
+ #include <asm/iommu.h>
+ #include <asm/lv1call.h>
+ #include <asm/ps3.h>
++#include <asm/ps3gpu.h>
+ 
+ 
+ #define DEVICE_NAME		"ps3vram"
+@@ -46,8 +47,6 @@
+ #define NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN	0x0000030c
+ #define NV_MEMORY_TO_MEMORY_FORMAT_NOTIFY	0x00000104
+ 
+-#define L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT 0x601
+-
+ #define CACHE_PAGE_PRESENT 1
+ #define CACHE_PAGE_DIRTY   2
+ 
+@@ -184,13 +183,10 @@ static void ps3vram_rewind_ring(struct ps3_system_bus_device *dev)
+ 	priv->ctrl[CTRL_PUT] = FIFO_BASE + FIFO_OFFSET;
+ 
+ 	/* asking the HV for a blit will kick the FIFO */
+-	status = lv1_gpu_context_attribute(priv->context_handle,
+-					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT, 0,
+-					   0, 0, 0);
++	status = lv1_gpu_fb_blit(priv->context_handle, 0, 0, 0, 0);
+ 	if (status)
+-		dev_err(&dev->core,
+-			"%s: lv1_gpu_context_attribute failed %d\n", __func__,
+-			status);
++		dev_err(&dev->core, "%s: lv1_gpu_fb_blit failed %d\n",
++			__func__, status);
+ 
+ 	priv->fifo_ptr = priv->fifo_base;
+ }
+@@ -206,13 +202,10 @@ static void ps3vram_fire_ring(struct ps3_system_bus_device *dev)
+ 			       (priv->fifo_ptr - priv->fifo_base) * sizeof(u32);
+ 
+ 	/* asking the HV for a blit will kick the FIFO */
+-	status = lv1_gpu_context_attribute(priv->context_handle,
+-					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT, 0,
+-					   0, 0, 0);
++	status = lv1_gpu_fb_blit(priv->context_handle, 0, 0, 0, 0);
+ 	if (status)
+-		dev_err(&dev->core,
+-			"%s: lv1_gpu_context_attribute failed %d\n", __func__,
+-			status);
++		dev_err(&dev->core, "%s: lv1_gpu_fb_blit failed %d\n",
++			__func__, status);
+ 
+ 	if ((priv->fifo_ptr - priv->fifo_base) * sizeof(u32) >
+ 	    FIFO_SIZE - 1024) {
+diff --git a/drivers/ps3/ps3av_cmd.c b/drivers/ps3/ps3av_cmd.c
+index 716596e..f555fed 100644
+--- a/drivers/ps3/ps3av_cmd.c
++++ b/drivers/ps3/ps3av_cmd.c
+@@ -21,9 +21,10 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
++
+ #include <asm/ps3av.h>
+-#include <asm/ps3fb.h>
+ #include <asm/ps3.h>
++#include <asm/ps3gpu.h>
+ 
+ #include "vuart.h"
+ 
 diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index ce0f873..a745018 100644
+index a61c1d8..13c876c 100644
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -956,73 +956,6 @@ static irqreturn_t ps3fb_vsync_interrupt(int irq, void *ptr)
+@@ -37,21 +37,11 @@
+ #include <asm/ps3av.h>
+ #include <asm/ps3fb.h>
+ #include <asm/ps3.h>
++#include <asm/ps3gpu.h>
+ 
+ 
+ #define DEVICE_NAME		"ps3fb"
+ 
+-#define L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC	0x101
+-#define L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP	0x102
+-#define L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP	0x600
+-#define L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT		0x601
+-#define L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT_SYNC	0x602
+-
+-#define L1GPU_FB_BLIT_WAIT_FOR_COMPLETION	(1ULL << 32)
+-
+-#define L1GPU_DISPLAY_SYNC_HSYNC		1
+-#define L1GPU_DISPLAY_SYNC_VSYNC		2
+-
+ #define GPU_CMD_BUF_SIZE			(2 * 1024 * 1024)
+ #define GPU_FB_START				(64 * 1024)
+ #define GPU_IOIF				(0x0d000000UL)
+@@ -463,33 +453,27 @@ static void ps3fb_sync_image(struct device *dev, u64 frame_offset,
+ 	src_offset += GPU_FB_START;
+ 
+ 	mutex_lock(&ps3_gpu_mutex);
+-	status = lv1_gpu_context_attribute(ps3fb.context_handle,
+-					   L1GPU_CONTEXT_ATTRIBUTE_FB_BLIT,
+-					   dst_offset, GPU_IOIF + src_offset,
+-					   L1GPU_FB_BLIT_WAIT_FOR_COMPLETION |
+-					   (width << 16) | height,
+-					   line_length);
++	status = lv1_gpu_fb_blit(ps3fb.context_handle, dst_offset,
++				 GPU_IOIF + src_offset,
++				 L1GPU_FB_BLIT_WAIT_FOR_COMPLETION |
++				 (width << 16) | height,
++				 line_length);
+ 	mutex_unlock(&ps3_gpu_mutex);
+ 
+ 	if (status)
+-		dev_err(dev,
+-			"%s: lv1_gpu_context_attribute FB_BLIT failed: %d\n",
+-			__func__, status);
++		dev_err(dev, "%s: lv1_gpu_fb_blit failed: %d\n", __func__,
++			status);
+ #ifdef HEAD_A
+-	status = lv1_gpu_context_attribute(ps3fb.context_handle,
+-					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP,
+-					   0, frame_offset, 0, 0);
++	status = lv1_gpu_display_flip(ps3fb.context_handle, 0, frame_offset);
+ 	if (status)
+-		dev_err(dev, "%s: lv1_gpu_context_attribute FLIP failed: %d\n",
+-			__func__, status);
++		dev_err(dev, "%s: lv1_gpu_display_flip failed: %d\n", __func__,
++			status);
+ #endif
+ #ifdef HEAD_B
+-	status = lv1_gpu_context_attribute(ps3fb.context_handle,
+-					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_FLIP,
+-					   1, frame_offset, 0, 0);
++	status = lv1_gpu_display_flip(ps3fb.context_handle, 1, frame_offset);
+ 	if (status)
+-		dev_err(dev, "%s: lv1_gpu_context_attribute FLIP failed: %d\n",
+-			__func__, status);
++		dev_err(dev, "%s: lv1_gpu_display_flip failed: %d\n", __func__,
++			status);
+ #endif
  }
  
+@@ -1020,27 +1004,18 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 	init_waitqueue_head(&ps3fb.wait_vsync);
  
--static int ps3fb_vsync_settings(struct gpu_driver_info *dinfo,
--				struct device *dev)
--{
--	int error;
--
--	dev_dbg(dev, "version_driver:%x\n", dinfo->version_driver);
--	dev_dbg(dev, "irq outlet:%x\n", dinfo->irq.irq_outlet);
--	dev_dbg(dev,
--		"version_gpu: %x memory_size: %x ch: %x core_freq: %d "
--		"mem_freq:%d\n",
--		dinfo->version_gpu, dinfo->memory_size, dinfo->hardware_channel,
--		dinfo->nvcore_frequency/1000000, dinfo->memory_frequency/1000000);
--
--	if (dinfo->version_driver != GPU_DRIVER_INFO_VERSION) {
--		dev_err(dev, "%s: version_driver err:%x\n", __func__,
--			dinfo->version_driver);
--		return -EINVAL;
--	}
--
--	error = ps3_irq_plug_setup(PS3_BINDING_CPU_ANY, dinfo->irq.irq_outlet,
--				   &ps3fb.irq_no);
--	if (error) {
--		dev_err(dev, "%s: ps3_alloc_irq failed %d\n", __func__, error);
--		return error;
--	}
--
--	error = request_irq(ps3fb.irq_no, ps3fb_vsync_interrupt, IRQF_DISABLED,
--			    DEVICE_NAME, dev);
--	if (error) {
--		dev_err(dev, "%s: request_irq failed %d\n", __func__, error);
--		ps3_irq_plug_destroy(ps3fb.irq_no);
--		return error;
--	}
--
--	dinfo->irq.mask = (1 << GPU_INTR_STATUS_VSYNC_1) |
--			  (1 << GPU_INTR_STATUS_FLIP_1);
--	return 0;
--}
--
--static int ps3fb_xdr_settings(u64 xdr_lpar, struct device *dev)
--{
--	int status;
--
--	status = lv1_gpu_context_iomap(ps3fb.context_handle, GPU_IOIF,
--				       xdr_lpar, ps3fb_videomemory.size, 0);
--	if (status) {
--		dev_err(dev, "%s: lv1_gpu_context_iomap failed: %d\n",
--			__func__, status);
--		return -ENXIO;
--	}
--	dev_dbg(dev, "video:%p ioif:%lx lpar:%llx size:%lx\n",
--		ps3fb_videomemory.address, GPU_IOIF, xdr_lpar,
--		ps3fb_videomemory.size);
--
--	status = lv1_gpu_context_attribute(ps3fb.context_handle,
--					   L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP,
--					   xdr_lpar, GPU_CMD_BUF_SIZE,
--					   GPU_IOIF, 0);
--	if (status) {
--		dev_err(dev,
--			"%s: lv1_gpu_context_attribute FB_SETUP failed: %d\n",
--			__func__, status);
--		return -ENXIO;
--	}
--	return 0;
--}
--
- static struct fb_ops ps3fb_ops = {
- 	.fb_open	= ps3fb_open,
- 	.fb_release	= ps3fb_release,
-@@ -1048,38 +981,6 @@ static struct fb_fix_screeninfo ps3fb_fix __initdata = {
- 	.accel =	FB_ACCEL_NONE,
- };
- 
--static int ps3fb_set_sync(struct device *dev)
--{
--	int status;
--
--#ifdef HEAD_A
+ #ifdef HEAD_A
 -	status = lv1_gpu_context_attribute(0x0,
 -					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
 -					   0, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
--	if (status) {
--		dev_err(dev,
++	status = lv1_gpu_display_sync(0x0, 0, L1GPU_DISPLAY_SYNC_VSYNC);
+ 	if (status) {
+-		dev_err(&dev->core,
 -			"%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: "
 -			"%d\n",
--			__func__, status);
--		return -1;
--	}
--#endif
--#ifdef HEAD_B
++		dev_err(&dev->core, "%s: lv1_gpu_display_sync failed: %d\n",
+ 			__func__, status);
+ 		retval = -ENODEV;
+ 		goto err_close_device;
+ 	}
+ #endif
+ #ifdef HEAD_B
 -	status = lv1_gpu_context_attribute(0x0,
 -					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
 -					   1, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
 -
--	if (status) {
--		dev_err(dev,
++	status = lv1_gpu_display_sync(0x0, 1, L1GPU_DISPLAY_SYNC_VSYNC);
+ 	if (status) {
+-		dev_err(&dev->core,
 -			"%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: "
 -			"%d\n",
--			__func__, status);
--		return -1;
--	}
--#endif
--	return 0;
--}
--
- static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- {
- 	struct fb_info *info;
-@@ -1091,6 +992,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- 	u64 lpar_reports = 0;
- 	u64 lpar_reports_size = 0;
- 	u64 xdr_lpar;
-+	struct gpu_driver_info *dinfo;
- 	void *fb_start;
- 	int status;
- 	struct task_struct *task;
-@@ -1116,7 +1018,31 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- 	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
- 	init_waitqueue_head(&ps3fb.wait_vsync);
- 
--	ps3fb_set_sync(&dev->core);
-+#ifdef HEAD_A
-+	status = lv1_gpu_context_attribute(0x0,
-+					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
-+					   0, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
-+	if (status) {
-+		dev_err(&dev->core,
-+			"%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: "
-+			"%d\n",
-+			__func__, status);
-+		goto err;
-+	}
-+#endif
-+#ifdef HEAD_B
-+	status = lv1_gpu_context_attribute(0x0,
-+					   L1GPU_CONTEXT_ATTRIBUTE_DISPLAY_SYNC,
-+					   1, L1GPU_DISPLAY_SYNC_VSYNC, 0, 0);
-+
-+	if (status) {
-+		dev_err(&dev->core,
-+			"%s: lv1_gpu_context_attribute DISPLAY_SYNC failed: "
-+			"%d\n",
-+			__func__, status);
-+		goto err;
-+	}
-+#endif
- 
- 	max_ps3fb_size = _ALIGN_UP(GPU_IOIF, 256*1024*1024) - GPU_IOIF;
- 	if (ps3fb_videomemory.size > max_ps3fb_size) {
-@@ -1147,23 +1073,76 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
++		dev_err(&dev->core, "%s: lv1_gpu_display_sync failed: %d\n",
+ 			__func__, status);
+ 		retval = -ENODEV;
+ 		goto err_close_device;
+@@ -1070,7 +1045,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 					  &lpar_reports, &lpar_reports_size);
+ 	if (status) {
+ 		dev_err(&dev->core,
+-			"%s: lv1_gpu_context_attribute failed: %d\n", __func__,
++			"%s: lv1_gpu_context_allocate failed: %d\n", __func__,
+ 			status);
+ 		goto err_gpu_memory_free;
  	}
+@@ -1137,13 +1112,10 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 		ps3fb_videomemory.address, GPU_IOIF, xdr_lpar,
+ 		ps3fb_videomemory.size);
  
- 	/* vsync interrupt */
--	ps3fb.dinfo = (void __force *)ioremap(lpar_driver_info, 128 * 1024);
--	if (!ps3fb.dinfo) {
-+	dinfo = (void __force *)ioremap(lpar_driver_info, 128 * 1024);
-+	if (!dinfo) {
- 		dev_err(&dev->core, "%s: ioremap failed\n", __func__);
- 		goto err_gpu_context_free;
- 	}
- 
--	retval = ps3fb_vsync_settings(ps3fb.dinfo, &dev->core);
--	if (retval)
-+	ps3fb.dinfo = dinfo;
-+	dev_dbg(&dev->core, "version_driver:%x\n", dinfo->version_driver);
-+	dev_dbg(&dev->core, "irq outlet:%x\n", dinfo->irq.irq_outlet);
-+	dev_dbg(&dev->core, "version_gpu: %x memory_size: %x ch: %x "
-+		"core_freq: %d mem_freq:%d\n", dinfo->version_gpu,
-+		dinfo->memory_size, dinfo->hardware_channel,
-+		dinfo->nvcore_frequency/1000000,
-+		dinfo->memory_frequency/1000000);
-+
-+	if (dinfo->version_driver != GPU_DRIVER_INFO_VERSION) {
-+		dev_err(&dev->core, "%s: version_driver err:%x\n", __func__,
-+			dinfo->version_driver);
-+		retval = -EINVAL;
- 		goto err_iounmap_dinfo;
-+	}
-+
-+	retval = ps3_irq_plug_setup(PS3_BINDING_CPU_ANY, dinfo->irq.irq_outlet,
-+				    &ps3fb.irq_no);
-+	if (retval) {
-+		dev_err(&dev->core, "%s: ps3_alloc_irq failed %d\n", __func__,
-+			retval);
-+		goto err_iounmap_dinfo;
-+	}
-+
-+	retval = request_irq(ps3fb.irq_no, ps3fb_vsync_interrupt,
-+			     IRQF_DISABLED, DEVICE_NAME, &dev->core);
-+	if (retval) {
-+		dev_err(&dev->core, "%s: request_irq failed %d\n", __func__,
-+			retval);
-+		goto err_destroy_plug;
-+	}
-+
-+	dinfo->irq.mask = (1 << GPU_INTR_STATUS_VSYNC_1) |
-+			  (1 << GPU_INTR_STATUS_FLIP_1);
- 
- 	/* Clear memory to prevent kernel info leakage into userspace */
- 	memset(ps3fb_videomemory.address, 0, ps3fb_videomemory.size);
- 
- 	xdr_lpar = ps3_mm_phys_to_lpar(__pa(ps3fb_videomemory.address));
--	retval = ps3fb_xdr_settings(xdr_lpar, &dev->core);
--	if (retval)
-+
-+	status = lv1_gpu_context_iomap(ps3fb.context_handle, GPU_IOIF,
-+				       xdr_lpar, ps3fb_videomemory.size, 0);
-+	if (status) {
-+		dev_err(&dev->core, "%s: lv1_gpu_context_iomap failed: %d\n",
-+			__func__, status);
-+		retval =  -ENXIO;
-+		goto err_free_irq;
-+	}
-+
-+	dev_dbg(&dev->core, "video:%p ioif:%lx lpar:%llx size:%lx\n",
-+		ps3fb_videomemory.address, GPU_IOIF, xdr_lpar,
-+		ps3fb_videomemory.size);
-+
-+	status = lv1_gpu_context_attribute(ps3fb.context_handle,
-+					   L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP,
-+					   xdr_lpar, GPU_CMD_BUF_SIZE,
-+					   GPU_IOIF, 0);
-+	if (status) {
-+		dev_err(&dev->core,
-+			"%s: lv1_gpu_context_attribute FB_SETUP failed: %d\n",
-+			__func__, status);
-+		retval = -ENXIO;
- 		goto err_free_irq;
-+	}
- 
- 	info = framebuffer_alloc(sizeof(struct ps3fb_par), &dev->core);
- 	if (!info)
-@@ -1234,6 +1213,7 @@ err_framebuffer_release:
- 	framebuffer_release(info);
- err_free_irq:
- 	free_irq(ps3fb.irq_no, &dev->core);
-+err_destroy_plug:
- 	ps3_irq_plug_destroy(ps3fb.irq_no);
- err_iounmap_dinfo:
- 	iounmap((u8 __force __iomem *)ps3fb.dinfo);
+-	status = lv1_gpu_context_attribute(ps3fb.context_handle,
+-					   L1GPU_CONTEXT_ATTRIBUTE_FB_SETUP,
+-					   xdr_lpar, GPU_CMD_BUF_SIZE,
+-					   GPU_IOIF, 0);
++	status = lv1_gpu_fb_setup(ps3fb.context_handle, xdr_lpar,
++				  GPU_CMD_BUF_SIZE, GPU_IOIF);
+ 	if (status) {
+-		dev_err(&dev->core,
+-			"%s: lv1_gpu_context_attribute FB_SETUP failed: %d\n",
++		dev_err(&dev->core, "%s: lv1_gpu_fb_setup failed: %d\n",
+ 			__func__, status);
+ 		retval = -ENXIO;
+ 		goto err_context_unmap;
 -- 
 1.6.2.4
 

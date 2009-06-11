@@ -1,117 +1,144 @@
-From: Imre Deak <imre.deak@nokia.com>
-Subject: [PULL REQUEST] omapfb: Add support for new LCDs / misc fixes
-Date: Thu, 11 Jun 2009 15:02:06 +0300
-Message-ID: <20090611120206.GD21836@localhost>
-References: <1244137965-8937-1-git-send-email-imre.deak@nokia.com> <fab39c1a822c428466db6a19531be646d483664e.1244131952.git.imre.deak@nokia.com>
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: PATCH - Add accelerated bitblt functions to
+	s1d13xxxfb
+Date: Thu, 11 Jun 2009 23:07:16 +0200
+Message-ID: <20090611230716.7965e16b.kristoffer.ericson@gmail.com>
+References: <20090606141037.7debdb08.kristoffer.ericson@gmail.com>
+	<20090609175807.65db0ebb.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Type: multipart/mixed;
+	boundary="Multipart=_Thu__11_Jun_2009_23_07_16_+0200_8jhZcx6eKRpoZK0K"
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <kristoffer.ericson@gmail.com>) id 1MErTk-0000Nv-7O
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 11 Jun 2009 21:06:32 +0000
+Received: from mail-bw0-f222.google.com ([209.85.218.222])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MErTj-0006sj-7B for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 11 Jun 2009 21:06:32 +0000
+Received: by bwz22 with SMTP id 22so1789152bwz.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 11 Jun 2009 14:06:29 -0700 (PDT)
+In-Reply-To: <20090609175807.65db0ebb.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+
+This is a multi-part message in MIME format.
+
+--Multipart=_Thu__11_Jun_2009_23_07_16_+0200_8jhZcx6eKRpoZK0K
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+
+On Tue, 9 Jun 2009 17:58:07 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Sat, 6 Jun 2009 14:10:37 +0200
+> Kristoffer Ericson <kristoffer.ericson@gmail.com> wrote:
+> 
+> > This patch adds accelerated bitblt functions to s1d13xxx based 
+> > video chipsets, more specificly functions copyarea and fillrect. 
+> > It has only been tested and activated for 13506 chipsets
+> > but is expected to work for the majority of s1d13xxx based chips.
+> > This patch also cleans up the driver with respect of whitespaces
+> > and other formatting issues. We update the current status
+> > comments.
+> > 
+> 
+> Was I sent half a patch?
+> 
+Sorry for late reply!
+
+I must have missed appending the changes in s1d13xxx.h. Do you want a resend of the complete
+patch or just whats missing? Here are the missing lines:
+
+diff --git a/include/video/s1d13xxxfb.h b/include/video/s1d13xxxfb.h
+index c3b2a2a..f0736cf 100644
+--- a/include/video/s1d13xxxfb.h
++++ b/include/video/s1d13xxxfb.h
+@@ -136,6 +136,15 @@
+ #define S1DREG_DELAYOFF			0xFFFE
+ #define S1DREG_DELAYON			0xFFFF
+ 
++#define BBLT_FIFO_EMPTY			0x00
++#define BBLT_FIFO_NOT_EMPTY		0x40
++#define BBLT_FIFO_NOT_FULL		0x30
++#define BBLT_FIFO_HALF_FULL		0x20
++#define BBLT_FIFO_FULL			0x10
++
++#define BBLT_SOLID_FILL			0x0c
++
++
+ /* Note: all above defines should go in separate header files
+    when implementing other S1D13xxx chip support. */
+ 
+
+
+> 
+> drivers/video/s1d13xxxfb.c: In function 'bltbit_fifo_status':
+> drivers/video/s1d13xxxfb.c:470: error: 'BBLT_FIFO_EMPTY' undeclared (first use in this function)
+> drivers/video/s1d13xxxfb.c:470: error: (Each undeclared identifier is reported only once
+> drivers/video/s1d13xxxfb.c:470: error: for each function it appears in.)
+> drivers/video/s1d13xxxfb.c:474: error: 'BBLT_FIFO_FULL' undeclared (first use in this function)
+> drivers/video/s1d13xxxfb.c:478: error: 'BBLT_FIFO_NOT_FULL' undeclared (first use in this function)
+> drivers/video/s1d13xxxfb.c: In function 's1d13xxxfb_bitblt_solidfill':
+> drivers/video/s1d13xxxfb.c:640: error: 'BBLT_SOLID_FILL' undeclared (first use in this function)
+
+
+-- 
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+--Multipart=_Thu__11_Jun_2009_23_07_16_+0200_8jhZcx6eKRpoZK0K
+Content-Type: application/octet-stream;
+ name="s1d13xxxfb.h.patch"
+Content-Disposition: attachment;
+ filename="s1d13xxxfb.h.patch"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vczFkMTN4eHhmYi5oIGIvaW5jbHVkZS92aWRlby9z
+MWQxM3h4eGZiLmgKaW5kZXggYzNiMmEyYS4uZjA3MzZjZiAxMDA2NDQKLS0tIGEvaW5jbHVkZS92
+aWRlby9zMWQxM3h4eGZiLmgKKysrIGIvaW5jbHVkZS92aWRlby9zMWQxM3h4eGZiLmgKQEAgLTEz
+Niw2ICsxMzYsMTUgQEAKICNkZWZpbmUgUzFEUkVHX0RFTEFZT0ZGCQkJMHhGRkZFCiAjZGVmaW5l
+IFMxRFJFR19ERUxBWU9OCQkJMHhGRkZGCiAKKyNkZWZpbmUgQkJMVF9GSUZPX0VNUFRZCQkJMHgw
+MAorI2RlZmluZSBCQkxUX0ZJRk9fTk9UX0VNUFRZCQkweDQwCisjZGVmaW5lIEJCTFRfRklGT19O
+T1RfRlVMTAkJMHgzMAorI2RlZmluZSBCQkxUX0ZJRk9fSEFMRl9GVUxMCQkweDIwCisjZGVmaW5l
+IEJCTFRfRklGT19GVUxMCQkJMHgxMAorCisjZGVmaW5lIEJCTFRfU09MSURfRklMTAkJCTB4MGMK
+KworCiAvKiBOb3RlOiBhbGwgYWJvdmUgZGVmaW5lcyBzaG91bGQgZ28gaW4gc2VwYXJhdGUgaGVh
+ZGVyIGZpbGVzCiAgICB3aGVuIGltcGxlbWVudGluZyBvdGhlciBTMUQxM3h4eCBjaGlwIHN1cHBv
+cnQuICovCiAK
+
+--Multipart=_Thu__11_Jun_2009_23_07_16_+0200_8jhZcx6eKRpoZK0K
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1244137965-8937-1-git-send-email-imre.deak@nokia.com>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Antonino Daplas <adaplas@gmail.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
 
-Hi,
+------------------------------------------------------------------------------
+Crystal Reports - New Free Runtime and 30 Day Trial
+Check out the new simplified licensing option that enables unlimited
+royalty-free distribution of the report engine for externally facing 
+server and web deployment.
+http://p.sf.net/sfu/businessobjects
+--Multipart=_Thu__11_Jun_2009_23_07_16_+0200_8jhZcx6eKRpoZK0K
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-the following pull request is for the patchset updated based on your co=
-mments:
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-The following changes since commit 07a2039b8eb0af4ff464efd3dfd95de5c026=
-48c6:
-  Linus Torvalds (1):
-        Linux 2.6.30
-
-are available in the git repository at:
-
-  git://koowaldah.org/people/imre/linux-2.6-fb master
-
-Daniel Stone (1):
-      omapfb: dispc: Allow multiple external IRQ handlers
-
-Hunyue Yau (1):
-      omapfb: Add support for the 2430SDP LCD
-
-Imre Deak (5):
-      omapfb: Add support for MIPI-DCS compatible LCDs
-      N770: Enable LCD MIPI-DCS in Kconfig
-      omapfb: dispc: Various typo fixes
-      omapfb: Add FB manual update option to Kconfig
-      omapfb: HWA742: fix pointer to be const
-
-Jonathan McDowell (1):
-      omapfb: Add support for the Amstrad Delta LCD
-
-Jouni Hogander (2):
-      omapfb: dispc: Disable iface clocks along with func clocks
-      omapfb: dispc: Enable wake up capability
-
-Jouni H=F6gander (1):
-      omapfb: suspend/resume only if FB device is already initialized
-
-Kevin Hilman (1):
-      omapfb: Add support for the 3430SDP LCD
-
-Koen Kooi (1):
-      omapfb: Add support for the OMAP3 Beagle DVI output
-
-Kyungmin Park (1):
-      omapfb: Add support for the Apollon LCD
-
-Rodrigo Vivi (1):
-      omapfb: Add support for rotation on the Blizzard LCD ctrl
-
-Stanley.Miao (1):
-      omapfb: Add support for the ZOOM MDK LCD
-
-Steve Sakoman (2):
-      omapfb: Add support for the OMAP3 EVM LCD
-      omapfb: Add support for the Gumstix Overo LCD
-
-arun c (2):
-      omapfb: Add support for the OMAP2EVM LCD
-      omapfb: Fix coding style / remove dead line
-
- arch/arm/configs/n770_defconfig             |    2 +-
- arch/arm/configs/omap3_beagle_defconfig     |   47 ++-
- arch/arm/configs/omap_3430sdp_defconfig     |   39 ++-
- arch/arm/configs/omap_ldp_defconfig         |   54 +++-
- arch/arm/plat-omap/include/mach/lcd_mipid.h |    5 +
- arch/arm/plat-omap/include/mach/omapfb.h    |    4 +-
- drivers/video/omap/Kconfig                  |   82 +++-
- drivers/video/omap/Makefile                 |   12 +
- drivers/video/omap/blizzard.c               |   91 ++++-
- drivers/video/omap/dispc.c                  |  130 ++++---
- drivers/video/omap/dispc.h                  |    7 +-
- drivers/video/omap/hwa742.c                 |    2 +-
- drivers/video/omap/lcd_2430sdp.c            |  200 +++++++++
- drivers/video/omap/lcd_ams_delta.c          |  137 ++++++
- drivers/video/omap/lcd_apollon.c            |  138 ++++++
- drivers/video/omap/lcd_ldp.c                |  200 +++++++++
- drivers/video/omap/lcd_mipid.c              |  625 +++++++++++++++++++=
-++++++++
- drivers/video/omap/lcd_omap2evm.c           |  189 ++++++++
- drivers/video/omap/lcd_omap3beagle.c        |  133 ++++++
- drivers/video/omap/lcd_omap3evm.c           |  191 ++++++++
- drivers/video/omap/lcd_overo.c              |  179 ++++++++
- drivers/video/omap/omapfb_main.c            |   64 ++-
- drivers/video/omap/rfbi.c                   |    7 +-
- 23 files changed, 2424 insertions(+), 114 deletions(-)
- create mode 100644 drivers/video/omap/lcd_2430sdp.c
- create mode 100644 drivers/video/omap/lcd_ams_delta.c
- create mode 100644 drivers/video/omap/lcd_apollon.c
- create mode 100644 drivers/video/omap/lcd_ldp.c
- create mode 100644 drivers/video/omap/lcd_mipid.c
- create mode 100644 drivers/video/omap/lcd_omap2evm.c
- create mode 100644 drivers/video/omap/lcd_omap3beagle.c
- create mode 100644 drivers/video/omap/lcd_omap3evm.c
- create mode 100644 drivers/video/omap/lcd_overo.c
-
---Imre
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--Multipart=_Thu__11_Jun_2009_23_07_16_+0200_8jhZcx6eKRpoZK0K--

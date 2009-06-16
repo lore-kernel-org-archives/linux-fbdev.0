@@ -1,41 +1,35 @@
-From: Imre Deak <imre.deak@nokia.com>
-Subject: Re: [PATCH 11/20] omapfb: Add support for the ZOOM MDK LCD
-Date: Tue, 16 Jun 2009 14:10:44 +0300
-Message-ID: <20090616111044.GF32105@localhost>
-References: <e9040774f324311979aebd3fa5fa71d20890d433.1244131952.git.imre.deak@nokia.com> <833ed44e61e3d4093eb27b55b97252967e042d41.1244131952.git.imre.deak@nokia.com> <5ba715a9dbc88b8c3a8225bc1cfdabd3faffe00f.1244131952.git.imre.deak@nokia.com> <646692ce09a12e1a8a2d4072097b4d440b7de5d5.1244131952.git.imre.deak@nokia.com> <b0e578438bb53d9fbf333e5bd10d4d33f869b373.1244131952.git.imre.deak@nokia.com> <9139035cc12b22600135677cd5d3096c1dcd286d.1244131952.git.imre.deak@nokia.com> <08ba068bda363adf4cb8a1f5afe11245c828d017.1244131952.git.imre.deak@nokia.com> <057471246e776de4c452b4ba2ebf2a4579f3171c.1244131952.git.imre.deak@nokia.com> <310d4aa52bfd6dd15664286643ca8a9703787dce.1244131952.git.imre.deak@nokia.com> <20090614234716.fa6f8f4b.krzysztof.h1@poczta.fm>
+From: Mikael Pettersson <mikpe@it.uu.se>
+Subject: [PATCH 2.6.30] nvidiafb: fix missing space in log message
+Date: Tue, 16 Jun 2009 17:51:14 +0200
+Message-ID: <18999.49010.127368.554600@pilspetsen.it.uu.se>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20090614234716.fa6f8f4b.krzysztof.h1@poczta.fm>
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758927AbZFPPv1@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: ext Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Antonino Daplas <adaplas@gmail.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>, "Stanley.Miao" <stanley.miao@windriver.com>
+To: adaplas@gmail.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sun, Jun 14, 2009 at 11:47:16PM +0200, ext Krzysztof Helt wrote:
-> On Thu,  4 Jun 2009 20:52:36 +0300
-> Imre Deak <imre.deak@nokia.com> wrote:
-> [...]
-> > diff --git a/drivers/video/omap/lcd_ldp.c b/drivers/video/omap/lcd_ldp.c
-> > new file mode 100644
-> > index 0000000..8925230
-> > --- /dev/null
-> > +++ b/drivers/video/omap/lcd_ldp.c
-> > [...]
-> > +static void ldp_panel_disable(struct lcd_panel *panel)
-> > +{
-> > +     gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 0);
-> > +     gpio_direction_output(LCD_PANEL_BACKLIGHT_GPIO, 0);
-> > +
-> > +     t2_out(PM_RECEIVER, 0x0, TWL4030_VPLL2_DEDICATED);
-> > +     t2_out(PM_RECEIVER, 0x0, TWL4030_VPLL2_DEV_GRP);
-> > +     mdelay(4);
-> 
-> Use the msleep() instead of the mdelay().
+On bootup nvidiafb prints the following on my Apple G5:
 
-Ok, will fix it and the similar places in the other panel drivers.
+	nvidiafb: CRTC 1appears to have a CRT attached
 
---Imre
+There should be a space between the '1' and the 'appears'.
 
+Fix: add the space
+
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+
+diff -rupN linux-2.6.30/drivers/video/nvidia/nv_setup.c linux-2.6.30.nvidiafb-logmsg-missing-space/drivers/video/nvidia/nv_setup.c
+--- linux-2.6.30/drivers/video/nvidia/nv_setup.c	2009-06-10 12:00:46.000000000 +0200
++++ linux-2.6.30.nvidiafb-logmsg-missing-space/drivers/video/nvidia/nv_setup.c	2009-06-16 17:41:21.000000000 +0200
+@@ -543,7 +543,7 @@ int NVCommonSetup(struct fb_info *info)
+ 		} else if (analog_on_B) {
+ 			CRTCnumber = outputBfromCRTC;
+ 			FlatPanel = 0;
+-			printk("nvidiafb: CRTC %i"
++			printk("nvidiafb: CRTC %i "
+ 			       "appears to have a "
+ 			       "CRT attached\n", CRTCnumber);
+ 		} else if (slaved_on_A) {

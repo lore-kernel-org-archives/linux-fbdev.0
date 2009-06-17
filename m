@@ -1,134 +1,76 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PULL REQUEST] omapfb: Add support for new LCDs / misc fixes
-Date: Tue, 16 Jun 2009 18:58:25 +0200
-Message-ID: <20090616185825.0343c9b2.krzysztof.h1@poczta.fm>
-References: <1244137965-8937-1-git-send-email-imre.deak@nokia.com>
-	<fab39c1a822c428466db6a19531be646d483664e.1244131952.git.imre.deak@nokia.com>
-	<20090611120206.GD21836@localhost>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH] Fix colors in mach64 accelerator
+Date: Wed, 17 Jun 2009 06:00:53 -0400 (EDT)
+Message-ID: <Pine.LNX.4.64.0906170559040.30231@hs20-bc2-1.build.redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20090611120206.GD21836@localhost>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Imre Deak <imre.deak@nokia.com>
-Cc: Antonino Daplas <adaplas@gmail.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <mpatocka@redhat.com>) id 1MGrwu-0004mB-UN
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 17 Jun 2009 10:00:56 +0000
+Received: from mx1.redhat.com ([66.187.233.31])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MGrwt-0008Hp-Jm for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 17 Jun 2009 10:00:56 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: paulus@samba.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 11 Jun 2009 15:02:06 +0300
-Imre Deak <imre.deak@nokia.com> wrote:
+Use the same color-calculating algorithm as in atyfb_imageblit in this driver
+or in generic cfb_fillrect.
 
-> Hi,
->=20
-> the following pull request is for the patchset updated based on your =
-comments:
->=20
-> The following changes since commit 07a2039b8eb0af4ff464efd3dfd95de5c0=
-2648c6:
->   Linus Torvalds (1):
->         Linux 2.6.30
->=20
-> are available in the git repository at:
->=20
->   git://koowaldah.org/people/imre/linux-2.6-fb master
->=20
-> Daniel Stone (1):
->       omapfb: dispc: Allow multiple external IRQ handlers
->=20
-> Hunyue Yau (1):
->       omapfb: Add support for the 2430SDP LCD
->=20
-> Imre Deak (5):
->       omapfb: Add support for MIPI-DCS compatible LCDs
->       N770: Enable LCD MIPI-DCS in Kconfig
->       omapfb: dispc: Various typo fixes
->       omapfb: Add FB manual update option to Kconfig
->       omapfb: HWA742: fix pointer to be const
->=20
-> Jonathan McDowell (1):
->       omapfb: Add support for the Amstrad Delta LCD
->=20
-> Jouni Hogander (2):
->       omapfb: dispc: Disable iface clocks along with func clocks
->       omapfb: dispc: Enable wake up capability
->=20
-> Jouni H=F6gander (1):
->       omapfb: suspend/resume only if FB device is already initialized
->=20
-> Kevin Hilman (1):
->       omapfb: Add support for the 3430SDP LCD
->=20
-> Koen Kooi (1):
->       omapfb: Add support for the OMAP3 Beagle DVI output
->=20
-> Kyungmin Park (1):
->       omapfb: Add support for the Apollon LCD
->=20
-> Rodrigo Vivi (1):
->       omapfb: Add support for rotation on the Blizzard LCD ctrl
->=20
-> Stanley.Miao (1):
->       omapfb: Add support for the ZOOM MDK LCD
->=20
-> Steve Sakoman (2):
->       omapfb: Add support for the OMAP3 EVM LCD
->       omapfb: Add support for the Gumstix Overo LCD
->=20
-> arun c (2):
->       omapfb: Add support for the OMAP2EVM LCD
->       omapfb: Fix coding style / remove dead line
->=20
->  arch/arm/configs/n770_defconfig             |    2 +-
->  arch/arm/configs/omap3_beagle_defconfig     |   47 ++-
->  arch/arm/configs/omap_3430sdp_defconfig     |   39 ++-
->  arch/arm/configs/omap_ldp_defconfig         |   54 +++-
->  arch/arm/plat-omap/include/mach/lcd_mipid.h |    5 +
->  arch/arm/plat-omap/include/mach/omapfb.h    |    4 +-
->  drivers/video/omap/Kconfig                  |   82 +++-
->  drivers/video/omap/Makefile                 |   12 +
->  drivers/video/omap/blizzard.c               |   91 ++++-
->  drivers/video/omap/dispc.c                  |  130 ++++---
->  drivers/video/omap/dispc.h                  |    7 +-
->  drivers/video/omap/hwa742.c                 |    2 +-
->  drivers/video/omap/lcd_2430sdp.c            |  200 +++++++++
->  drivers/video/omap/lcd_ams_delta.c          |  137 ++++++
->  drivers/video/omap/lcd_apollon.c            |  138 ++++++
->  drivers/video/omap/lcd_ldp.c                |  200 +++++++++
->  drivers/video/omap/lcd_mipid.c              |  625 +++++++++++++++++=
-++++++++++
->  drivers/video/omap/lcd_omap2evm.c           |  189 ++++++++
->  drivers/video/omap/lcd_omap3beagle.c        |  133 ++++++
->  drivers/video/omap/lcd_omap3evm.c           |  191 ++++++++
->  drivers/video/omap/lcd_overo.c              |  179 ++++++++
->  drivers/video/omap/omapfb_main.c            |   64 ++-
->  drivers/video/omap/rfbi.c                   |    7 +-
->  23 files changed, 2424 insertions(+), 114 deletions(-)
->  create mode 100644 drivers/video/omap/lcd_2430sdp.c
->  create mode 100644 drivers/video/omap/lcd_ams_delta.c
->  create mode 100644 drivers/video/omap/lcd_apollon.c
->  create mode 100644 drivers/video/omap/lcd_ldp.c
->  create mode 100644 drivers/video/omap/lcd_mipid.c
->  create mode 100644 drivers/video/omap/lcd_omap2evm.c
->  create mode 100644 drivers/video/omap/lcd_omap3beagle.c
->  create mode 100644 drivers/video/omap/lcd_omap3evm.c
->  create mode 100644 drivers/video/omap/lcd_overo.c
->
+This patch fixes bad colors when using an accelerator in 15-bit and 16-bit
+modes.
 
-I assume you introduced small changes after my review.=20
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
 
-=46or the whole patchset:
+---
+ drivers/video/aty/mach64_accel.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+Index: linux-2.6.30-fast/drivers/video/aty/mach64_accel.c
+===================================================================
+--- linux-2.6.30-fast.orig/drivers/video/aty/mach64_accel.c	2009-06-15 21:42:10.000000000 +0200
++++ linux-2.6.30-fast/drivers/video/aty/mach64_accel.c	2009-06-17 08:49:01.000000000 +0200
+@@ -239,7 +239,7 @@ void atyfb_copyarea(struct fb_info *info
+ void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+-	u32 color = rect->color, dx = rect->dx, width = rect->width, rotation = 0;
++	u32 color, dx = rect->dx, width = rect->width, rotation = 0;
+ 
+ 	if (par->asleep)
+ 		return;
+@@ -250,8 +250,11 @@ void atyfb_fillrect(struct fb_info *info
+ 		return;
+ 	}
+ 
+-	color |= (rect->color << 8);
+-	color |= (rect->color << 16);
++	if (info->fix.visual == FB_VISUAL_TRUECOLOR ||
++	    info->fix.visual == FB_VISUAL_DIRECTCOLOR)
++		color = ((u32 *)(info->pseudo_palette))[rect->color];
++	else
++		color = rect->color;
+ 
+ 	if (info->var.bits_per_pixel == 24) {
+ 		/* In 24 bpp, the engine is in 8 bpp - this requires that all */
 
-Regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Przekaz dalej wiadomosc: Zawsze warto oszczedzac. Teraz 5,5%!
-Sprawdz > http://link.interia.pl/f21b1
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+------------------------------------------------------------------------------
+Crystal Reports - New Free Runtime and 30 Day Trial
+Check out the new simplified licensing option that enables unlimited
+royalty-free distribution of the report engine for externally facing 
+server and web deployment.
+http://p.sf.net/sfu/businessobjects

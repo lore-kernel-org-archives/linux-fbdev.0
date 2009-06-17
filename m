@@ -1,112 +1,133 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: [PATCH] Disable mach64 accelerator if stride is
-	not multiple of 64
-Date: Wed, 17 Jun 2009 06:02:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.64.0906170600590.30231@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0906170559040.30231@hs20-bc2-1.build.redhat.com>
+From: Imre Deak <imre.deak@nokia.com>
+Subject: Re: [PULL REQUEST] omapfb: Add support for new LCDs / misc fixes
+Date: Wed, 17 Jun 2009 13:25:20 +0300
+Message-ID: <20090617102520.GC2926@localhost>
+References: <1244137965-8937-1-git-send-email-imre.deak@nokia.com> <fab39c1a822c428466db6a19531be646d483664e.1244131952.git.imre.deak@nokia.com> <20090611120206.GD21836@localhost> <20090616185825.0343c9b2.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <mpatocka@redhat.com>) id 1MGsBt-0006i5-5Z
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Jun 2009 10:16:25 +0000
-Received: from mx1.redhat.com ([66.187.233.31])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MGsBr-0006Yg-HM for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Jun 2009 10:16:25 +0000
-In-Reply-To: <Pine.LNX.4.64.0906170559040.30231@hs20-bc2-1.build.redhat.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: paulus@samba.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20090616185825.0343c9b2.krzysztof.h1@poczta.fm>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: ext Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Antonino Daplas <adaplas@gmail.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
 
-On my card, the accelerator corrupts display if its line length is not
-multiple of 64 bytes.
+On Tue, Jun 16, 2009 at 06:58:25PM +0200, ext Krzysztof Helt wrote:
+> On Thu, 11 Jun 2009 15:02:06 +0300
+> Imre Deak <imre.deak@nokia.com> wrote:
+>=20
+> > Hi,
+> >=20
+> > the following pull request is for the patchset updated based on you=
+r comments:
+> >=20
+> > The following changes since commit 07a2039b8eb0af4ff464efd3dfd95de5=
+c02648c6:
+> >   Linus Torvalds (1):
+> >         Linux 2.6.30
+> >=20
+> > are available in the git repository at:
+> >=20
+> >   git://koowaldah.org/people/imre/linux-2.6-fb master
+> >=20
+> > Daniel Stone (1):
+> >       omapfb: dispc: Allow multiple external IRQ handlers
+> >=20
+> > Hunyue Yau (1):
+> >       omapfb: Add support for the 2430SDP LCD
+> >=20
+> > Imre Deak (5):
+> >       omapfb: Add support for MIPI-DCS compatible LCDs
+> >       N770: Enable LCD MIPI-DCS in Kconfig
+> >       omapfb: dispc: Various typo fixes
+> >       omapfb: Add FB manual update option to Kconfig
+> >       omapfb: HWA742: fix pointer to be const
+> >=20
+> > Jonathan McDowell (1):
+> >       omapfb: Add support for the Amstrad Delta LCD
+> >=20
+> > Jouni Hogander (2):
+> >       omapfb: dispc: Disable iface clocks along with func clocks
+> >       omapfb: dispc: Enable wake up capability
+> >=20
+> > Jouni H=F6gander (1):
+> >       omapfb: suspend/resume only if FB device is already initializ=
+ed
+> >=20
+> > Kevin Hilman (1):
+> >       omapfb: Add support for the 3430SDP LCD
+> >=20
+> > Koen Kooi (1):
+> >       omapfb: Add support for the OMAP3 Beagle DVI output
+> >=20
+> > Kyungmin Park (1):
+> >       omapfb: Add support for the Apollon LCD
+> >=20
+> > Rodrigo Vivi (1):
+> >       omapfb: Add support for rotation on the Blizzard LCD ctrl
+> >=20
+> > Stanley.Miao (1):
+> >       omapfb: Add support for the ZOOM MDK LCD
+> >=20
+> > Steve Sakoman (2):
+> >       omapfb: Add support for the OMAP3 EVM LCD
+> >       omapfb: Add support for the Gumstix Overo LCD
+> >=20
+> > arun c (2):
+> >       omapfb: Add support for the OMAP2EVM LCD
+> >       omapfb: Fix coding style / remove dead line
+> >=20
+> >  arch/arm/configs/n770_defconfig             |    2 +-
+> >  arch/arm/configs/omap3_beagle_defconfig     |   47 ++-
+> >  arch/arm/configs/omap_3430sdp_defconfig     |   39 ++-
+> >  arch/arm/configs/omap_ldp_defconfig         |   54 +++-
+> >  arch/arm/plat-omap/include/mach/lcd_mipid.h |    5 +
+> >  arch/arm/plat-omap/include/mach/omapfb.h    |    4 +-
+> >  drivers/video/omap/Kconfig                  |   82 +++-
+> >  drivers/video/omap/Makefile                 |   12 +
+> >  drivers/video/omap/blizzard.c               |   91 ++++-
+> >  drivers/video/omap/dispc.c                  |  130 ++++---
+> >  drivers/video/omap/dispc.h                  |    7 +-
+> >  drivers/video/omap/hwa742.c                 |    2 +-
+> >  drivers/video/omap/lcd_2430sdp.c            |  200 +++++++++
+> >  drivers/video/omap/lcd_ams_delta.c          |  137 ++++++
+> >  drivers/video/omap/lcd_apollon.c            |  138 ++++++
+> >  drivers/video/omap/lcd_ldp.c                |  200 +++++++++
+> >  drivers/video/omap/lcd_mipid.c              |  625 +++++++++++++++=
+++++++++++++
+> >  drivers/video/omap/lcd_omap2evm.c           |  189 ++++++++
+> >  drivers/video/omap/lcd_omap3beagle.c        |  133 ++++++
+> >  drivers/video/omap/lcd_omap3evm.c           |  191 ++++++++
+> >  drivers/video/omap/lcd_overo.c              |  179 ++++++++
+> >  drivers/video/omap/omapfb_main.c            |   64 ++-
+> >  drivers/video/omap/rfbi.c                   |    7 +-
+> >  23 files changed, 2424 insertions(+), 114 deletions(-)
+> >  create mode 100644 drivers/video/omap/lcd_2430sdp.c
+> >  create mode 100644 drivers/video/omap/lcd_ams_delta.c
+> >  create mode 100644 drivers/video/omap/lcd_apollon.c
+> >  create mode 100644 drivers/video/omap/lcd_ldp.c
+> >  create mode 100644 drivers/video/omap/lcd_mipid.c
+> >  create mode 100644 drivers/video/omap/lcd_omap2evm.c
+> >  create mode 100644 drivers/video/omap/lcd_omap3beagle.c
+> >  create mode 100644 drivers/video/omap/lcd_omap3evm.c
+> >  create mode 100644 drivers/video/omap/lcd_overo.c
+> >
+>=20
+> I assume you introduced small changes after my review.=20
+>=20
+> For the whole patchset:
+>=20
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Misaligned lines in the drawn recrangle are shifted left, as if the accelerator
-thought that every line begins on 64-byte boundary. For example, in 800x600x8
-(scanlines are aligned on 32 bytes) every odd scanline is drawn shifted by
-32 bytes to the left.
+Yes, I've updated the patchset based on our discussion. I've also
+added your acked-by line.
 
-The card is ATI Technologies Inc 3D Rage Pro 215GP (rev 5c) onboard on
-Sparc64 Ultra 5.
+--Imre
 
-This patch disables accelerator if scanline is not multiple of 64 bytes.
-
-I don't have any other cards to test. If someone tests that his card doesn't
-have this bug, he can whitelist it.
-
-(note: if you find a better place where to disable the accelerator on 
-non-conforming modes, do it there)
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
-
----
- drivers/video/aty/mach64_accel.c |   14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.30-fast/drivers/video/aty/mach64_accel.c
-===================================================================
---- linux-2.6.30-fast.orig/drivers/video/aty/mach64_accel.c	2009-06-17 08:49:01.000000000 +0200
-+++ linux-2.6.30-fast/drivers/video/aty/mach64_accel.c	2009-06-17 10:46:03.000000000 +0200
-@@ -35,6 +35,14 @@ static u32 rotation24bpp(u32 dx, u32 dir
- 	return ((rotation << 8) | DST_24_ROTATION_ENABLE);
- }
- 
-+static inline int no_accel(struct fb_info *info)
-+{
-+	/*
-+	 * The lines must be aligned on 64-byte boundary.
-+	 */
-+	return (info->var.xres_virtual * ((info->var.bits_per_pixel + 7) >> 3)) & 63;
-+}
-+
- void aty_reset_engine(const struct atyfb_par *par)
- {
- 	/* reset engine */
-@@ -199,7 +207,7 @@ void atyfb_copyarea(struct fb_info *info
- 		return;
- 	if (!area->width || !area->height)
- 		return;
--	if (!par->accel_flags) {
-+	if (!par->accel_flags || no_accel(info)) {
- 		cfb_copyarea(info, area);
- 		return;
- 	}
-@@ -245,7 +253,7 @@ void atyfb_fillrect(struct fb_info *info
- 		return;
- 	if (!rect->width || !rect->height)
- 		return;
--	if (!par->accel_flags) {
-+	if (!par->accel_flags || no_accel(info)) {
- 		cfb_fillrect(info, rect);
- 		return;
- 	}
-@@ -285,7 +293,7 @@ void atyfb_imageblit(struct fb_info *inf
- 		return;
- 	if (!image->width || !image->height)
- 		return;
--	if (!par->accel_flags ||
-+	if (!par->accel_flags || no_accel(info) ||
- 	    (image->depth != 1 && info->var.bits_per_pixel != image->depth)) {
- 		cfb_imageblit(info, image);
- 		return;
-
-
-------------------------------------------------------------------------------
-Crystal Reports - New Free Runtime and 30 Day Trial
-Check out the new simplified licensing option that enables unlimited
-royalty-free distribution of the report engine for externally facing 
-server and web deployment.
-http://p.sf.net/sfu/businessobjects
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

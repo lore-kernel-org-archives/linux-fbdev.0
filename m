@@ -1,24 +1,22 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH] Fix colors in mach64 accelerator
-Date: Wed, 17 Jun 2009 20:24:18 +0300
-Message-ID: <20090617172418.GB9980@sci.fi>
-References: <Pine.LNX.4.64.0906170559040.30231@hs20-bc2-1.build.redhat.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH] add mutex to fbdev for fb_mmap locking
+	(v2)
+Date: Wed, 17 Jun 2009 20:26:58 +0200
+Message-ID: <20090617202658.de8f2ed7.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1MGys8-0000pe-9D
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MGzk3-00060b-LP
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Jun 2009 17:24:28 +0000
-Received: from smtp5.welho.com ([213.243.153.39])
+	Wed, 17 Jun 2009 18:20:11 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MGys4-00029r-9a for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Jun 2009 17:24:28 +0000
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906170559040.30231@hs20-bc2-1.build.redhat.com>
+	id 1MGzj0-0000J5-1A for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 17 Jun 2009 18:20:06 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,34 +26,550 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, paulus@samba.org
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Wed, Jun 17, 2009 at 06:00:53AM -0400, Mikulas Patocka wrote:
-> Use the same color-calculating algorithm as in atyfb_imageblit in this dr=
-iver
-> or in generic cfb_fillrect.
-> =
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-> This patch fixes bad colors when using an accelerator in 15-bit and 16-bit
-> modes.
-> =
+Add a mutex to avoid a circular locking problem between the mm layer semaphore 
+and fbdev ioctl mutex through the fb_mmap() call.
 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+Also, add mutex to all places where smem_start and smem_len fields change
+so the mutex inside the fb_mmap() is actually used. Changing of these fields
+before calling the framebuffer_register() are not mutexed.
 
-Acked-by: Ville Syrjala <syrjala@sci.fi>
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
-
----------------------------------------------------------------------------=
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
+Consider this is 2.6.31 material.
+It removes one lockdep (fb_mmap() and register_framebuffer()) but there is still
+ another one (fb_release() and register_framebuffer()).
+It also cleans up handling of the smem_start and smem_len fields used by mutexed 
+section of the fb_mmap().
+
+diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
+index 018850c..497ff8a 100644
+--- a/drivers/video/atafb.c
++++ b/drivers/video/atafb.c
+@@ -2414,7 +2414,10 @@ static int atafb_get_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
+ 	if (err)
+ 		return err;
+ 	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+-	return fbhw->encode_fix(fix, &par);
++	mutex_lock(&info->mm_lock);
++	err = fbhw->encode_fix(fix, &par);
++	mutex_unlock(&info->mm_lock);
++	return err;
+ }
+ 
+ static int atafb_get_var(struct fb_var_screeninfo *var, struct fb_info *info)
+@@ -2743,7 +2746,9 @@ static int atafb_set_par(struct fb_info *info)
+ 
+ 	/* Decode wanted screen parameters */
+ 	fbhw->decode_var(&info->var, par);
++	mutex_lock(&info->mm_lock);
+ 	fbhw->encode_fix(&info->fix, par);
++	mutex_unlock(&info->mm_lock);
+ 
+ 	/* Set new videomode */
+ 	ata_set_par(par);
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 2fb63f6..a443c5a 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -270,7 +270,9 @@ static int atmel_lcdfb_alloc_video_memory(struct atmel_lcdfb_info *sinfo)
+ 
+ 	smem_len = (var->xres_virtual * var->yres_virtual
+ 		    * ((var->bits_per_pixel + 7) / 8));
++	mutex_lock(&info->mm_lock);
+ 	info->fix.smem_len = max(smem_len, sinfo->smem_len);
++	mutex_unlock(&info->mm_lock);
+ 
+ 	info->screen_base = dma_alloc_writecombine(info->device, info->fix.smem_len,
+ 					(dma_addr_t *)&info->fix.smem_start, GFP_KERNEL);
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index d412a1d..5141ba2 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1310,8 +1310,6 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ 
+ static int
+ fb_mmap(struct file *file, struct vm_area_struct * vma)
+-__acquires(&info->lock)
+-__releases(&info->lock)
+ {
+ 	int fbidx = iminor(file->f_path.dentry->d_inode);
+ 	struct fb_info *info = registered_fb[fbidx];
+@@ -1325,16 +1323,14 @@ __releases(&info->lock)
+ 	off = vma->vm_pgoff << PAGE_SHIFT;
+ 	if (!fb)
+ 		return -ENODEV;
++	mutex_lock(&info->mm_lock);
+ 	if (fb->fb_mmap) {
+ 		int res;
+-		mutex_lock(&info->lock);
+ 		res = fb->fb_mmap(info, vma);
+-		mutex_unlock(&info->lock);
++		mutex_unlock(&info->mm_lock);
+ 		return res;
+ 	}
+ 
+-	mutex_lock(&info->lock);
+-
+ 	/* frame buffer memory */
+ 	start = info->fix.smem_start;
+ 	len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.smem_len);
+@@ -1342,13 +1338,13 @@ __releases(&info->lock)
+ 		/* memory mapped io */
+ 		off -= len;
+ 		if (info->var.accel_flags) {
+-			mutex_unlock(&info->lock);
++			mutex_unlock(&info->mm_lock);
+ 			return -EINVAL;
+ 		}
+ 		start = info->fix.mmio_start;
+ 		len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.mmio_len);
+ 	}
+-	mutex_unlock(&info->lock);
++	mutex_unlock(&info->mm_lock);
+ 	start &= PAGE_MASK;
+ 	if ((vma->vm_end - vma->vm_start + off) > len)
+ 		return -EINVAL;
+@@ -1491,6 +1487,7 @@ register_framebuffer(struct fb_info *fb_info)
+ 			break;
+ 	fb_info->node = i;
+ 	mutex_init(&fb_info->lock);
++	mutex_init(&fb_info->mm_lock);
+ 
+ 	fb_info->dev = device_create(fb_class, fb_info->device,
+ 				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index f153c58..0bf2190 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -750,24 +750,26 @@ static void update_lcdc(struct fb_info *info)
+ static int map_video_memory(struct fb_info *info)
+ {
+ 	phys_addr_t phys;
++	u32 smem_len = info->fix.line_length * info->var.yres_virtual;
+ 
+ 	pr_debug("info->var.xres_virtual = %d\n", info->var.xres_virtual);
+ 	pr_debug("info->var.yres_virtual = %d\n", info->var.yres_virtual);
+ 	pr_debug("info->fix.line_length  = %d\n", info->fix.line_length);
++	pr_debug("MAP_VIDEO_MEMORY: smem_len = %u\n", smem_len);
+ 
+-	info->fix.smem_len = info->fix.line_length * info->var.yres_virtual;
+-	pr_debug("MAP_VIDEO_MEMORY: smem_len = %d\n", info->fix.smem_len);
+-	info->screen_base = fsl_diu_alloc(info->fix.smem_len, &phys);
++	info->screen_base = fsl_diu_alloc(smem_len, &phys);
+ 	if (info->screen_base == NULL) {
+ 		printk(KERN_ERR "Unable to allocate fb memory\n");
+ 		return -ENOMEM;
+ 	}
++	mutex_lock(&info->mm_lock);
+ 	info->fix.smem_start = (unsigned long) phys;
++	info->fix.smem_len = smem_len;
++	mutex_unlock(&info->mm_lock);
+ 	info->screen_size = info->fix.smem_len;
+ 
+ 	pr_debug("Allocated fb @ paddr=0x%08lx, size=%d.\n",
+-				info->fix.smem_start,
+-		info->fix.smem_len);
++		 info->fix.smem_start, info->fix.smem_len);
+ 	pr_debug("screen base %p\n", info->screen_base);
+ 
+ 	return 0;
+@@ -776,9 +778,11 @@ static int map_video_memory(struct fb_info *info)
+ static void unmap_video_memory(struct fb_info *info)
+ {
+ 	fsl_diu_free(info->screen_base, info->fix.smem_len);
++	mutex_lock(&info->mm_lock);
+ 	info->screen_base = NULL;
+ 	info->fix.smem_start = 0;
+ 	info->fix.smem_len = 0;
++	mutex_unlock(&info->mm_lock);
+ }
+ 
+ /*
+diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+index 2e94019..7196067 100644
+--- a/drivers/video/i810/i810_main.c
++++ b/drivers/video/i810/i810_main.c
+@@ -1090,8 +1090,10 @@ static int encode_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
+     	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+ 
+     	strcpy(fix->id, "I810");
++	mutex_lock(&info->mm_lock);
+     	fix->smem_start = par->fb.physical;
+     	fix->smem_len = par->fb.size;
++	mutex_unlock(&info->mm_lock);
+     	fix->type = FB_TYPE_PACKED_PIXELS;
+     	fix->type_aux = 0;
+ 	fix->xpanstep = 8;
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index 8e7a275..59c3a2e 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -724,8 +724,10 @@ static void matroxfb_update_fix(WPMINFO2)
+ 	struct fb_fix_screeninfo *fix = &ACCESS_FBINFO(fbcon).fix;
+ 	DBG(__func__)
+ 
++	mutex_lock(&ACCESS_FBINFO(fbcon).mm_lock);
+ 	fix->smem_start = ACCESS_FBINFO(video.base) + ACCESS_FBINFO(curr.ydstorg.bytes);
+ 	fix->smem_len = ACCESS_FBINFO(video.len_usable) - ACCESS_FBINFO(curr.ydstorg.bytes);
++	mutex_unlock(&ACCESS_FBINFO(fbcon).mm_lock);
+ }
+ 
+ static int matroxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+@@ -2081,6 +2083,7 @@ static int matroxfb_probe(struct pci_dev* pdev, const struct pci_device_id* dumm
+ 	spin_lock_init(&ACCESS_FBINFO(lock.accel));
+ 	init_rwsem(&ACCESS_FBINFO(crtc2.lock));
+ 	init_rwsem(&ACCESS_FBINFO(altout.lock));
++	mutex_init(&ACCESS_FBINFO(fbcon).mm_lock);
+ 	ACCESS_FBINFO(irq_flags) = 0;
+ 	init_waitqueue_head(&ACCESS_FBINFO(crtc1.vsync.wait));
+ 	init_waitqueue_head(&ACCESS_FBINFO(crtc2.vsync.wait));
+diff --git a/drivers/video/matrox/matroxfb_crtc2.c b/drivers/video/matrox/matroxfb_crtc2.c
+index 7ac4c5f..909e10a 100644
+--- a/drivers/video/matrox/matroxfb_crtc2.c
++++ b/drivers/video/matrox/matroxfb_crtc2.c
+@@ -289,13 +289,16 @@ static int matroxfb_dh_release(struct fb_info* info, int user) {
+ #undef m2info
+ }
+ 
+-static void matroxfb_dh_init_fix(struct matroxfb_dh_fb_info *m2info) {
++static void matroxfb_dh_init_fix(struct matroxfb_dh_fb_info *m2info)
++{
+ 	struct fb_fix_screeninfo *fix = &m2info->fbcon.fix;
+ 
+ 	strcpy(fix->id, "MATROX DH");
+ 
++	mutex_lock(&m2info->fbcon.mm_lock);
+ 	fix->smem_start = m2info->video.base;
+ 	fix->smem_len = m2info->video.len_usable;
++	mutex_unlock(&m2info->fbcon.mm_lock);
+ 	fix->ypanstep = 1;
+ 	fix->ywrapstep = 0;
+ 	fix->xpanstep = 8;	/* TBD */
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index b7af525..567fb94 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -669,7 +669,7 @@ static uint32_t bpp_to_pixfmt(int bpp)
+ }
+ 
+ static int mx3fb_blank(int blank, struct fb_info *fbi);
+-static int mx3fb_map_video_memory(struct fb_info *fbi);
++static int mx3fb_map_video_memory(struct fb_info *fbi, unsigned int mem_len);
+ static int mx3fb_unmap_video_memory(struct fb_info *fbi);
+ 
+ /**
+@@ -742,8 +742,7 @@ static int mx3fb_set_par(struct fb_info *fbi)
+ 		if (fbi->fix.smem_start)
+ 			mx3fb_unmap_video_memory(fbi);
+ 
+-		fbi->fix.smem_len = mem_len;
+-		if (mx3fb_map_video_memory(fbi) < 0) {
++		if (mx3fb_map_video_memory(fbi, mem_len) < 0) {
+ 			mutex_unlock(&mx3_fbi->mutex);
+ 			return -ENOMEM;
+ 		}
+@@ -1198,6 +1197,7 @@ static int mx3fb_resume(struct platform_device *pdev)
+ /**
+  * mx3fb_map_video_memory() - allocates the DRAM memory for the frame buffer.
+  * @fbi:	framebuffer information pointer
++ * @mem_len:	length of mapped memory
+  * @return:	Error code indicating success or failure
+  *
+  * This buffer is remapped into a non-cached, non-buffered, memory region to
+@@ -1205,23 +1205,26 @@ static int mx3fb_resume(struct platform_device *pdev)
+  * area is remapped, all virtual memory access to the video memory should occur
+  * at the new region.
+  */
+-static int mx3fb_map_video_memory(struct fb_info *fbi)
++static int mx3fb_map_video_memory(struct fb_info *fbi, unsigned int mem_len)
+ {
+ 	int retval = 0;
+ 	dma_addr_t addr;
+ 
+ 	fbi->screen_base = dma_alloc_writecombine(fbi->device,
+-						  fbi->fix.smem_len,
++						  mem_len,
+ 						  &addr, GFP_DMA);
+ 
+ 	if (!fbi->screen_base) {
+ 		dev_err(fbi->device, "Cannot allocate %u bytes framebuffer memory\n",
+-			fbi->fix.smem_len);
++			mem_len);
+ 		retval = -EBUSY;
+ 		goto err0;
+ 	}
+ 
++	mutex_lock(&fbi->mm_lock);
+ 	fbi->fix.smem_start = addr;
++	fbi->fix.smem_len = mem_len;
++	mutex_unlock(&fbi->mm_lock);
+ 
+ 	dev_dbg(fbi->device, "allocated fb @ p=0x%08x, v=0x%p, size=%d.\n",
+ 		(uint32_t) fbi->fix.smem_start, fbi->screen_base, fbi->fix.smem_len);
+@@ -1251,8 +1254,10 @@ static int mx3fb_unmap_video_memory(struct fb_info *fbi)
+ 			      fbi->screen_base, fbi->fix.smem_start);
+ 
+ 	fbi->screen_base = 0;
++	mutex_lock(&fbi->mm_lock);
+ 	fbi->fix.smem_start = 0;
+ 	fbi->fix.smem_len = 0;
++	mutex_unlock(&fbi->mm_lock);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+index 060d72f..4ea99bf 100644
+--- a/drivers/video/omap/omapfb_main.c
++++ b/drivers/video/omap/omapfb_main.c
+@@ -393,8 +393,10 @@ static void set_fb_fix(struct fb_info *fbi)
+ 
+ 	rg = &plane->fbdev->mem_desc.region[plane->idx];
+ 	fbi->screen_base	= rg->vaddr;
++	mutex_lock(&fbi->mm_lock);
+ 	fix->smem_start		= rg->paddr;
+ 	fix->smem_len		= rg->size;
++	mutex_unlock(&fbi->mm_lock);
+ 
+ 	fix->type = FB_TYPE_PACKED_PIXELS;
+ 	bpp = var->bits_per_pixel;
+@@ -886,8 +888,10 @@ static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
+ 				 * plane memory is dealloce'd, the other
+ 				 * screen parameters in var / fix are invalid.
+ 				 */
++				mutex_lock(&fbi->mm_lock);
+ 				fbi->fix.smem_start = 0;
+ 				fbi->fix.smem_len = 0;
++				mutex_unlock(&fbi->mm_lock);
+ 			}
+ 		}
+ 	}
+diff --git a/drivers/video/platinumfb.c b/drivers/video/platinumfb.c
+index 03b3670..bacfabd 100644
+--- a/drivers/video/platinumfb.c
++++ b/drivers/video/platinumfb.c
+@@ -141,7 +141,9 @@ static int platinumfb_set_par (struct fb_info *info)
+   		offset = 0x10;
+ 
+ 	info->screen_base = pinfo->frame_buffer + init->fb_offset + offset;
++	mutex_lock(&info->mm_lock);
+ 	info->fix.smem_start = (pinfo->frame_buffer_phys) + init->fb_offset + offset;
++	mutex_unlock(&info->mm_lock);
+ 	info->fix.visual = (pinfo->cmode == CMODE_8) ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+  	info->fix.line_length = vmode_attrs[pinfo->vmode-1].hres * (1<<pinfo->cmode)
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 0889d50..6506117 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -815,8 +815,10 @@ static int overlayfb_map_video_memory(struct pxafb_layer *ofb)
+ 	ofb->video_mem_phys = virt_to_phys(ofb->video_mem);
+ 	ofb->video_mem_size = size;
+ 
++	mutex_lock(&ofb->fb.mm_lock);
+ 	ofb->fb.fix.smem_start	= ofb->video_mem_phys;
+ 	ofb->fb.fix.smem_len	= ofb->fb.fix.line_length * var->yres_virtual;
++	mutex_unlock(&ofb->fb.mm_lock);
+ 	ofb->fb.screen_base	= ofb->video_mem;
+ 	return 0;
+ }
+diff --git a/drivers/video/sh7760fb.c b/drivers/video/sh7760fb.c
+index 653bdfe..9f6d6e6 100644
+--- a/drivers/video/sh7760fb.c
++++ b/drivers/video/sh7760fb.c
+@@ -120,18 +120,6 @@ static int sh7760_setcolreg (u_int regno,
+ 	return 0;
+ }
+ 
+-static void encode_fix(struct fb_fix_screeninfo *fix, struct fb_info *info,
+-		       unsigned long stride)
+-{
+-	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+-	strcpy(fix->id, "sh7760-lcdc");
+-
+-	fix->smem_start = (unsigned long)info->screen_base;
+-	fix->smem_len = info->screen_size;
+-
+-	fix->line_length = stride;
+-}
+-
+ static int sh7760fb_get_color_info(struct device *dev,
+ 				   u16 lddfr, int *bpp, int *gray)
+ {
+@@ -334,7 +322,8 @@ static int sh7760fb_set_par(struct fb_info *info)
+ 
+ 	iowrite32(ldsarl, par->base + LDSARL);	/* mem for lower half of DSTN */
+ 
+-	encode_fix(&info->fix, info, stride);
++	info->fix.line_length = stride;
++
+ 	sh7760fb_check_var(&info->var, info);
+ 
+ 	sh7760fb_blank(FB_BLANK_UNBLANK, info);	/* panel on! */
+@@ -435,6 +424,8 @@ static int sh7760fb_alloc_mem(struct fb_info *info)
+ 
+ 	info->screen_base = fbmem;
+ 	info->screen_size = vram;
++	info->fix.smem_start = (unsigned long)info->screen_base;
++	info->fix.smem_len = info->screen_size;
+ 
+ 	return 0;
+ }
+@@ -520,6 +511,8 @@ static int __devinit sh7760fb_probe(struct platform_device *pdev)
+ 	info->var.transp.length = 0;
+ 	info->var.transp.msb_right = 0;
+ 
++	strcpy(info->fix.id, "sh7760-lcdc");
++
+ 	/* set the DON2 bit now, before cmap allocation, as it will randomize
+ 	 * palette memory.
+ 	 */
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 7e17ee9..b30176a 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -1847,8 +1847,10 @@ sisfb_get_fix(struct fb_fix_screeninfo *fix, int con, struct fb_info *info)
+ 
+ 	strcpy(fix->id, ivideo->myid);
+ 
++	mutex_lock(&info->mm_lock);
+ 	fix->smem_start  = ivideo->video_base + ivideo->video_offset;
+ 	fix->smem_len    = ivideo->sisfb_mem;
++	mutex_unlock(&info->mm_lock);
+ 	fix->type        = FB_TYPE_PACKED_PIXELS;
+ 	fix->type_aux    = 0;
+ 	fix->visual      = (ivideo->video_bpp == 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index eb5d73a..98f24f0 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -145,7 +145,7 @@ static inline void sm501fb_sync_regs(struct sm501fb_info *info)
+ #define SM501_MEMF_ACCEL		(8)
+ 
+ static int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
+-			   unsigned int why, size_t size)
++			   unsigned int why, size_t size, u32 smem_len)
+ {
+ 	struct sm501fb_par *par;
+ 	struct fb_info *fbi;
+@@ -172,7 +172,7 @@ static int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
+ 		if (ptr > 0)
+ 			ptr &= ~(PAGE_SIZE - 1);
+ 
+-		if (fbi && ptr < fbi->fix.smem_len)
++		if (fbi && ptr < smem_len)
+ 			return -ENOMEM;
+ 
+ 		break;
+@@ -197,7 +197,7 @@ static int sm501_alloc_mem(struct sm501fb_info *inf, struct sm501_mem *mem,
+ 
+ 	case SM501_MEMF_ACCEL:
+ 		fbi = inf->fb[HEAD_CRT];
+-		ptr = fbi ? fbi->fix.smem_len : 0;
++		ptr = fbi ? smem_len : 0;
+ 
+ 		fbi = inf->fb[HEAD_PANEL];
+ 		if (fbi) {
+@@ -413,6 +413,7 @@ static int sm501fb_set_par_common(struct fb_info *info,
+ 	unsigned int mem_type;
+ 	unsigned int clock_type;
+ 	unsigned int head_addr;
++	unsigned int smem_len;
+ 
+ 	dev_dbg(fbi->dev, "%s: %dx%d, bpp = %d, virtual %dx%d\n",
+ 		__func__, var->xres, var->yres, var->bits_per_pixel,
+@@ -453,18 +454,20 @@ static int sm501fb_set_par_common(struct fb_info *info,
+ 
+ 	/* allocate fb memory within 501 */
+ 	info->fix.line_length = (var->xres_virtual * var->bits_per_pixel)/8;
+-	info->fix.smem_len    = info->fix.line_length * var->yres_virtual;
++	smem_len = info->fix.line_length * var->yres_virtual;
+ 
+ 	dev_dbg(fbi->dev, "%s: line length = %u\n", __func__,
+ 		info->fix.line_length);
+ 
+-	if (sm501_alloc_mem(fbi, &par->screen, mem_type,
+-			    info->fix.smem_len)) {
++	if (sm501_alloc_mem(fbi, &par->screen, mem_type, smem_len, smem_len)) {
+ 		dev_err(fbi->dev, "no memory available\n");
+ 		return -ENOMEM;
+ 	}
+ 
++	mutex_lock(&info->mm_lock);
+ 	info->fix.smem_start = fbi->fbmem_res->start + par->screen.sm_addr;
++	info->fix.smem_len   = smem_len;
++	mutex_unlock(&info->mm_lock);
+ 
+ 	info->screen_base = fbi->fbmem + par->screen.sm_addr;
+ 	info->screen_size = info->fix.smem_len;
+@@ -637,7 +640,8 @@ static int sm501fb_set_par_crt(struct fb_info *info)
+ 	if ((control & SM501_DC_CRT_CONTROL_SEL) == 0) {
+ 		/* the head is displaying panel data... */
+ 
+-		sm501_alloc_mem(fbi, &par->screen, SM501_MEMF_CRT, 0);
++		sm501_alloc_mem(fbi, &par->screen, SM501_MEMF_CRT, 0,
++				info->fix.smem_len);
+ 		goto out_update;
+ 	}
+ 
+@@ -1289,7 +1293,8 @@ static int sm501_init_cursor(struct fb_info *fbi, unsigned int reg_base)
+ 
+ 	par->cursor_regs = info->regs + reg_base;
+ 
+-	ret = sm501_alloc_mem(info, &par->cursor, SM501_MEMF_CURSOR, 1024);
++	ret = sm501_alloc_mem(info, &par->cursor, SM501_MEMF_CURSOR, 1024,
++			      fbi->fix.smem_len);
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+index d0674f1..8a141c2 100644
+--- a/drivers/video/w100fb.c
++++ b/drivers/video/w100fb.c
+@@ -523,6 +523,7 @@ static int w100fb_set_par(struct fb_info *info)
+ 		info->fix.ywrapstep = 0;
+ 		info->fix.line_length = par->xres * BITS_PER_PIXEL / 8;
+ 
++		mutex_lock(&info->mm_lock);
+ 		if ((par->xres*par->yres*BITS_PER_PIXEL/8) > (MEM_INT_SIZE+1)) {
+ 			par->extmem_active = 1;
+ 			info->fix.smem_len = par->mach->mem->size+1;
+@@ -530,6 +531,7 @@ static int w100fb_set_par(struct fb_info *info)
+ 			par->extmem_active = 0;
+ 			info->fix.smem_len = MEM_INT_SIZE+1;
+ 		}
++		mutex_unlock(&info->mm_lock);
+ 
+ 		w100fb_activate_var(par);
+ 	}
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 330c4b1..89a4d91 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -814,6 +814,7 @@ struct fb_info {
+ 	int node;
+ 	int flags;
+ 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
++	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
+ 	struct fb_var_screeninfo var;	/* Current var */
+ 	struct fb_fix_screeninfo fix;	/* Current fix */
+ 	struct fb_monspecs monspecs;	/* Current Monitor specs */
+
+
+----------------------------------------------------------------------
+Interia.pl w Twojej kieszeni!
+Kliknij >>>http://link.interia.pl/f21b8
+
+
+
+
+------------------------------------------------------------------------------
 Crystal Reports - New Free Runtime and 30 Day Trial
 Check out the new simplified licensing option that enables unlimited
-royalty-free distribution of the report engine for externally facing =
-
+royalty-free distribution of the report engine for externally facing 
 server and web deployment.
 http://p.sf.net/sfu/businessobjects

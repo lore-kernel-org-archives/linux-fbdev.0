@@ -1,23 +1,22 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH] Fix colors in mach64 accelerator
-Date: Wed, 17 Jun 2009 23:40:09 +0200
-Message-ID: <20090617234009.b4d6df3c.krzysztof.h1@poczta.fm>
-References: <Pine.LNX.4.64.0906170559040.30231@hs20-bc2-1.build.redhat.com>
+From: krzysztof.h1@poczta.fm
+Subject: Re: 
+	=?utf-8?q?=5BPATCH=5D_Disable_mach64_accelera?=
+	=?utf-8?q?tor_if_stride_is_not_multiple_of_64?=
+Date: 18 Jun 2009 12:17:00 +0200
+Message-ID: <20090618101700.D192310824B8@f22.poczta.interia.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1MH2k0-0002dd-Fa
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MHEgA-0006Dz-Ez
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Jun 2009 21:32:20 +0000
+	Thu, 18 Jun 2009 10:17:10 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MH2jx-0001gp-5w for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 17 Jun 2009 21:32:18 +0000
-In-Reply-To: <Pine.LNX.4.64.0906170559040.30231@hs20-bc2-1.build.redhat.com>
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MHEg4-0004LH-EN for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 18 Jun 2009 10:17:10 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,31 +26,58 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, paulus@samba.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Mikulas Patocka <mpatocka@redhat.com>, Ville =?UTF-8?q?Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net, paulus@samba.org
 
-On Wed, 17 Jun 2009 06:00:53 -0400 (EDT)
-Mikulas Patocka <mpatocka@redhat.com> wrote:
+Mikulas Patocka napisa=B3(a):
+> =
 
-> Use the same color-calculating algorithm as in atyfb_imageblit in this driver
-> or in generic cfb_fillrect.
-> 
-> This patch fixes bad colors when using an accelerator in 15-bit and 16-bit
-> modes.
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
-> 
+> =
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> BTW. why doesn't it use accelerator for screen scrolling? It seems to =
+
+> redraw all non-empty characters, which is fast if most of the screen is =
+
+> empty but gets slower if the screen is full of text.
+> =
+
+
+It uses the accelerater.. The screen redraw uses accelerated imageblit() fu=
+nction =
+
+if it exists.
+In order to use the blitter one must define FBINFO_READS_FAST flag. However,
+it may not end up faster. It is faster if the memory is fast while chip is =
+not
+so fast relatively (e.g. all new GeForce and Radeon chips, 3DFxx Voodoo3+ h=
+ave =
+
+very fast memory attached).
+It  may vary for other chips, i.e. even if your ati card equiped with sgram=
+ it is =
+
+faster it may be slower for the same chip with sdram.
+
+Also, if blitter is used for scrolling the crolling speed goes down with in=
+creasing =
+
+pixel depth which is not a case for the redraw method.
+
+Regards,
+Krzysztof
 
 ----------------------------------------------------------------------
-Masz juz dosc wysokich rachunkow? Wygraj nowa mozliwosc komunikacji!
-Sprawdz >>> http://link.interia.pl/f21d2
+Nowa akcja Pepsi - nagrody za kody spod nakretek. Zarejestruj sie!
+http://link.interia.pl/f21cc =
 
 
-------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------=
+---
 Crystal Reports - New Free Runtime and 30 Day Trial
 Check out the new simplified licensing option that enables unlimited
-royalty-free distribution of the report engine for externally facing 
+royalty-free distribution of the report engine for externally facing =
+
 server and web deployment.
 http://p.sf.net/sfu/businessobjects

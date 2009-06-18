@@ -1,32 +1,42 @@
-From: "Rajashekhara, Sudhakar" <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-Subject: RE: [Linux-fbdev-devel] [Resend] [PATCH] Frame Buffer driver for
+From: "Rajashekhara, Sudhakar" <sudhakar.raj@ti.com>
+Subject: Re: [Resend] [PATCH] Frame Buffer driver for
 	DA8XX
 Date: Thu, 18 Jun 2009 19:00:06 +0530
-Message-ID: <24047.6728220985$1245331933@news.gmane.org>
+Message-ID: <38974.399949848$1245334776@news.gmane.org>
 References: <1245247270-5392-1-git-send-email-sudhakar.raj@ti.com>
 	<20090617233854.b25753cf.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: <20090617233854.b25753cf.krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sudhakar.raj@ti.com>) id 1MHIQQ-0006q3-4l
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 18 Jun 2009 14:17:10 +0000
+Received: from [192.94.94.41] (helo=bear.ext.ti.com)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MHIQO-0006vy-DA
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 18 Jun 2009 14:17:10 +0000
+In-Reply-To: <20090617233854.b25753cf.krzysztof.h1@poczta.fm>
 Content-Language: en-us
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Content-Type: text/plain; charset="us-ascii"
-To: 'Krzysztof Helt' <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, 'Pavel Kiryukhin' <pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: 'Krzysztof Helt' <krzysztof.h1@poczta.fm>
+Cc: 'Steve Chen' <schen@mvista.com>, davinci-linux-open-source@linux.davincidsp.com, linux-fbdev-devel@lists.sourceforge.net, 'Pavel Kiryukhin' <pkiryukhin@ru.mvista.com>
 
 On Thu, Jun 18, 2009 at 03:08:54, Krzysztof Helt wrote:
 > On Wed, 17 Jun 2009 10:01:10 -0400
-> "Rajashekhara, Sudhakar" <sudhakar.raj-l0cyMroinI0@public.gmane.org> wrote:
+> "Rajashekhara, Sudhakar" <sudhakar.raj@ti.com> wrote:
 > 
 > > Resending the same patch with additional Signed-off information.
 > > 
@@ -44,9 +54,9 @@ found on
 > > the DA830 based EVM. The EVM details can be found at:
 > > http://support.spectrumdigital.com/boards/dskda830/revc/.
 > > 
-> > Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-> > Signed-off-by: Pavel Kiryukhin <pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org>
-> > Signed-off-by: Steve Chen <schen-Igf4POYTYCDQT0dZR+AlfA@public.gmane.org>
+> > Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+> > Signed-off-by: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+> > Signed-off-by: Steve Chen <schen@mvista.com>
 > > ---
 > >  drivers/video/Kconfig    |   11 +
 > >  drivers/video/Makefile   |    1 +
@@ -1353,3 +1363,12 @@ any
 Thanks very much for your comments. I'll re-submit this patch.
 
 Regards, Sudhakar
+
+
+
+------------------------------------------------------------------------------
+Crystal Reports - New Free Runtime and 30 Day Trial
+Check out the new simplified licensing option that enables unlimited
+royalty-free distribution of the report engine for externally facing 
+server and web deployment.
+http://p.sf.net/sfu/businessobjects

@@ -1,8 +1,9 @@
 From: Ville Syrjala <syrjala@sci.fi>
-Subject: [PATCH 1/3] atyfb: Fix HP OmniBook 500 reboot
-	hang
-Date: Sun, 21 Jun 2009 00:29:42 +0300
-Message-ID: <1245533384-28371-1-git-send-email-syrjala@sci.fi>
+Subject: [PATCH 2/3] atyfb: Fix alignment for block
+	writes
+Date: Sun, 21 Jun 2009 00:29:43 +0300
+Message-ID: <1245533384-28371-2-git-send-email-syrjala@sci.fi>
+References: <1245533384-28371-1-git-send-email-syrjala@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,13 +11,14 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1MI88M-0007yC-0J
+	(envelope-from <syrjala@sci.fi>) id 1MI88J-0007xB-0p
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 20 Jun 2009 21:29:58 +0000
-Received: from smtp4.welho.com ([213.243.153.38])
+	Sat, 20 Jun 2009 21:29:55 +0000
+Received: from smtp6.welho.com ([213.243.153.40])
 	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MI88K-0002FW-Ln for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 20 Jun 2009 21:29:57 +0000
+	id 1MI88F-0002Fw-Sn for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 20 Jun 2009 21:29:54 +0000
+In-Reply-To: <1245533384-28371-1-git-send-email-syrjala@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,204 +31,200 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Andrew Morton <akpm@linux-foundation.org>, Mikulas Patocka <mpatocka@redhat.com>, Ville Syrjala <syrjala@sci.fi>
 
-Apparently HP OmniBook 500's BIOS doesn't like the way atyfb reprograms
-the hardware. The BIOS will simply hang after a reboot. Fix the problem
-by restoring the hardware to it's original state on reboot.
+Block writes require 64 byte alignment. Since block writes could be used
+with SGRAM or WRAM also refine the memory type detection to check for
+either type before deciding to use the 64 byte alignment.
 
 Signed-off-by: Ville Syrjala <syrjala@sci.fi>
 ---
-This is new version of the patch I sent earlier. I tested the earlier
-patch with another laptop (Dell Inspiron 7000) and restoring the mode
-caused the LCD to bloom briefly. The BIOS restored the LCD to a proper
-state but the blooming wasn't too pretty so I decided to add the DMI
-match. So now the reboot notifier is registered only on the affected
-laptop. I also added fb_info locking into the reboot notifier call.
-
- drivers/video/aty/atyfb.h      |    2 +
- drivers/video/aty/atyfb_base.c |   89 ++++++++++++++++++++++++++++++++++++----
- 2 files changed, 82 insertions(+), 9 deletions(-)
+ drivers/video/aty/atyfb.h        |    1 +
+ drivers/video/aty/atyfb_base.c   |   52 +++++++++++++++++++++++++++++--------
+ drivers/video/aty/mach64_accel.c |    7 +++-
+ 3 files changed, 46 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
-index 7691e73..0369653 100644
+index 0369653..1f39a62 100644
 --- a/drivers/video/aty/atyfb.h
 +++ b/drivers/video/aty/atyfb.h
-@@ -187,6 +187,8 @@ struct atyfb_par {
- 	int mtrr_reg;
- #endif
- 	u32 mem_cntl;
-+	struct crtc saved_crtc;
-+	union aty_pll saved_pll;
- };
- 
+@@ -219,6 +219,7 @@ struct atyfb_par {
+ #define M64F_XL_DLL		0x00080000
+ #define M64F_MFB_FORCE_4	0x00100000
+ #define M64F_HW_TRIPLE		0x00200000
++#define M64F_XL_MEM		0x00400000
      /*
+      *  Register access
+      */
 diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index 1207c20..0678290 100644
+index 0678290..63d3739 100644
 --- a/drivers/video/aty/atyfb_base.c
 +++ b/drivers/video/aty/atyfb_base.c
-@@ -66,6 +66,8 @@
- #include <linux/spinlock.h>
- #include <linux/wait.h>
- #include <linux/backlight.h>
-+#include <linux/reboot.h>
-+#include <linux/dmi.h>
+@@ -363,8 +363,8 @@ static unsigned long phys_guiregbase[FB_MAX] __devinitdata = { 0, };
+ #define ATI_CHIP_264GTPRO  (ATI_MODERN_SET | M64F_SDRAM_MAGIC_PLL | M64F_HW_TRIPLE | M64F_FIFO_32 | M64F_RESET_3D)
+ #define ATI_CHIP_264LTPRO  (ATI_MODERN_SET | M64F_HW_TRIPLE | M64F_FIFO_32 | M64F_RESET_3D)
  
- #include <asm/io.h>
- #include <linux/uaccess.h>
-@@ -249,8 +251,6 @@ static int aty_init(struct fb_info *info);
- static int store_video_par(char *videopar, unsigned char m64_num);
- #endif
+-#define ATI_CHIP_264XL     (ATI_MODERN_SET | M64F_HW_TRIPLE | M64F_FIFO_32 | M64F_RESET_3D | M64F_XL_DLL | M64F_MFB_FORCE_4)
+-#define ATI_CHIP_MOBILITY  (ATI_MODERN_SET | M64F_HW_TRIPLE | M64F_FIFO_32 | M64F_RESET_3D | M64F_XL_DLL | M64F_MFB_FORCE_4 | M64F_MOBIL_BUS)
++#define ATI_CHIP_264XL     (ATI_MODERN_SET | M64F_HW_TRIPLE | M64F_FIFO_32 | M64F_RESET_3D | M64F_XL_DLL | M64F_MFB_FORCE_4 | M64F_XL_MEM)
++#define ATI_CHIP_MOBILITY  (ATI_MODERN_SET | M64F_HW_TRIPLE | M64F_FIFO_32 | M64F_RESET_3D | M64F_XL_DLL | M64F_MFB_FORCE_4 | M64F_XL_MEM | M64F_MOBIL_BUS)
  
--static struct crtc saved_crtc;
--static union aty_pll saved_pll;
- static void aty_get_crtc(const struct atyfb_par *par, struct crtc *crtc);
- 
- static void aty_set_crtc(const struct atyfb_par *par, const struct crtc *crtc);
-@@ -261,6 +261,8 @@ static void set_off_pitch(struct atyfb_par *par, const struct fb_info *info);
- static int read_aty_sense(const struct atyfb_par *par);
- #endif
- 
-+static DEFINE_MUTEX(reboot_lock);
-+static struct fb_info *reboot_info;
- 
-     /*
-      *  Interface used by the world
-@@ -2390,9 +2392,9 @@ static int __devinit aty_init(struct fb_info *info)
+ static struct {
+ 	u16 pci_id;
+@@ -541,6 +541,7 @@ static char ram_edo[] __devinitdata = "EDO";
+ static char ram_sdram[] __devinitdata = "SDRAM (1:1)";
+ static char ram_sgram[] __devinitdata = "SGRAM (1:1)";
+ static char ram_sdram32[] __devinitdata = "SDRAM (2:1) (32-bit)";
++static char ram_wram[] __devinitdata = "WRAM";
+ static char ram_off[] __devinitdata = "OFF";
  #endif /* CONFIG_FB_ATY_CT */
  
- 	/* save previous video mode */
--	aty_get_crtc(par, &saved_crtc);
-+	aty_get_crtc(par, &par->saved_crtc);
- 	if(par->pll_ops->get_pll)
--		par->pll_ops->get_pll(info, &saved_pll);
-+		par->pll_ops->get_pll(info, &par->saved_pll);
- 
- 	par->mem_cntl = aty_ld_le32(MEM_CNTL, par);
- 	gtb_memsize = M64_HAS(GTB_DSP);
-@@ -2667,8 +2669,8 @@ static int __devinit aty_init(struct fb_info *info)
- 
- aty_init_exit:
- 	/* restore video mode */
--	aty_set_crtc(par, &saved_crtc);
--	par->pll_ops->set_pll(info, &saved_pll);
-+	aty_set_crtc(par, &par->saved_crtc);
-+	par->pll_ops->set_pll(info, &par->saved_pll);
- 
- #ifdef CONFIG_MTRR
- 	if (par->mtrr_reg >= 0) {
-@@ -3502,6 +3504,11 @@ static int __devinit atyfb_pci_probe(struct pci_dev *pdev, const struct pci_devi
- 	par->mmap_map[1].prot_flag = _PAGE_E;
- #endif /* __sparc__ */
- 
-+	mutex_lock(&reboot_lock);
-+	if (!reboot_info)
-+		reboot_info = info;
-+	mutex_unlock(&reboot_lock);
-+
- 	return 0;
- 
- err_release_io:
-@@ -3614,8 +3621,8 @@ static void __devexit atyfb_remove(struct fb_info *info)
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 
- 	/* restore video mode */
--	aty_set_crtc(par, &saved_crtc);
--	par->pll_ops->set_pll(info, &saved_pll);
-+	aty_set_crtc(par, &par->saved_crtc);
-+	par->pll_ops->set_pll(info, &par->saved_pll);
- 
- 	unregister_framebuffer(info);
- 
-@@ -3661,6 +3668,11 @@ static void __devexit atyfb_pci_remove(struct pci_dev *pdev)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 
-+	mutex_lock(&reboot_lock);
-+	if (reboot_info == info)
-+		reboot_info = NULL;
-+	mutex_unlock(&reboot_lock);
-+
- 	atyfb_remove(info);
+@@ -555,6 +556,10 @@ static char *aty_gx_ram[8] __devinitdata = {
+ #ifdef CONFIG_FB_ATY_CT
+ static char *aty_ct_ram[8] __devinitdata = {
+ 	ram_off, ram_dram, ram_edo, ram_edo,
++	ram_sdram, ram_sgram, ram_wram, ram_resv
++};
++static char *aty_xl_ram[8] __devinitdata = {
++	ram_off, ram_dram, ram_edo, ram_edo,
+ 	ram_sdram, ram_sgram, ram_sdram32, ram_resv
+ };
+ #endif /* CONFIG_FB_ATY_CT */
+@@ -762,6 +767,17 @@ static void aty_set_crtc(const struct atyfb_par *par, const struct crtc *crtc)
+ #endif /* CONFIG_FB_ATY_GENERIC_LCD */
  }
  
-@@ -3808,6 +3820,56 @@ static int __init atyfb_setup(char *options)
- }
- #endif  /*  MODULE  */
- 
-+static int atyfb_reboot_notify(struct notifier_block *nb,
-+			       unsigned long code, void *unused)
++static u32 calc_line_length(struct atyfb_par *par, u32 vxres, u32 bpp)
 +{
-+	struct atyfb_par *par;
++	u32 line_length = vxres * bpp / 8;
 +
-+	if (code != SYS_RESTART)
-+		return NOTIFY_DONE;
++	if (par->ram_type == SGRAM ||
++	    (!M64_HAS(XL_MEM) && par->ram_type == WRAM))
++		line_length = (line_length + 63) & ~63;
 +
-+	mutex_lock(&reboot_lock);
-+
-+	if (!reboot_info)
-+		goto out;
-+
-+	if (!lock_fb_info(reboot_info))
-+		goto out;
-+
-+	par = reboot_info->par;
-+
-+	/*
-+	 * HP OmniBook 500's BIOS doesn't like the state of the
-+	 * hardware after atyfb has been used. Restore the hardware
-+	 * to the original state to allow successful reboots.
-+	 */
-+	aty_set_crtc(par, &par->saved_crtc);
-+	par->pll_ops->set_pll(reboot_info, &par->saved_pll);
-+
-+	unlock_fb_info(reboot_info);
-+ out:
-+	mutex_unlock(&reboot_lock);
-+
-+	return NOTIFY_DONE;
++	return line_length;
 +}
 +
-+static struct notifier_block atyfb_reboot_notifier = {
-+	.notifier_call = atyfb_reboot_notify,
-+};
-+
-+static const struct dmi_system_id atyfb_reboot_ids[] = {
-+	{
-+		.ident = "HP OmniBook 500",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "HP OmniBook PC"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "HP OmniBook 500 FA"),
-+		},
-+	},
-+
-+	{ }
-+};
-+
- static int __init atyfb_init(void)
+ static int aty_var_to_crtc(const struct fb_info *info,
+ 	const struct fb_var_screeninfo *var, struct crtc *crtc)
  {
-     int err1 = 1, err2 = 1;
-@@ -3826,11 +3888,20 @@ static int __init atyfb_init(void)
-     err2 = atyfb_atari_probe();
- #endif
+@@ -771,13 +787,14 @@ static int aty_var_to_crtc(const struct fb_info *info,
+ 	u32 h_total, h_disp, h_sync_strt, h_sync_end, h_sync_dly, h_sync_wid, h_sync_pol;
+ 	u32 v_total, v_disp, v_sync_strt, v_sync_end, v_sync_wid, v_sync_pol, c_sync;
+ 	u32 pix_width, dp_pix_width, dp_chain_mask;
++	u32 line_length;
  
--    return (err1 && err2) ? -ENODEV : 0;
-+    if (err1 && err2)
-+	return -ENODEV;
+ 	/* input */
+-	xres = var->xres;
++	xres = (var->xres + 7) & ~7;
+ 	yres = var->yres;
+-	vxres = var->xres_virtual;
++	vxres = (var->xres_virtual + 7) & ~7;
+ 	vyres = var->yres_virtual;
+-	xoffset = var->xoffset;
++	xoffset = (var->xoffset + 7) & ~7;
+ 	yoffset = var->yoffset;
+ 	bpp = var->bits_per_pixel;
+ 	if (bpp == 16)
+@@ -829,7 +846,9 @@ static int aty_var_to_crtc(const struct fb_info *info,
+ 	} else
+ 		FAIL("invalid bpp");
+ 
+-	if (vxres * vyres * bpp / 8 > info->fix.smem_len)
++	line_length = calc_line_length(par, vxres, bpp);
 +
-+    if (dmi_check_system(atyfb_reboot_ids))
-+	register_reboot_notifier(&atyfb_reboot_notifier);
++	if (vyres * line_length > info->fix.smem_len)
+ 		FAIL("not enough video RAM");
+ 
+ 	h_sync_pol = sync & FB_SYNC_HOR_HIGH_ACT ? 0 : 1;
+@@ -971,7 +990,9 @@ static int aty_var_to_crtc(const struct fb_info *info,
+ 	crtc->xoffset = xoffset;
+ 	crtc->yoffset = yoffset;
+ 	crtc->bpp = bpp;
+-	crtc->off_pitch = ((yoffset*vxres+xoffset)*bpp/64) | (vxres<<19);
++	crtc->off_pitch =
++		((yoffset * line_length + xoffset * bpp / 8) / 8) |
++		((line_length / bpp) << 22);
+ 	crtc->vline_crnt_vline = 0;
+ 
+ 	crtc->h_tot_disp = h_total | (h_disp<<16);
+@@ -1396,7 +1417,9 @@ static int atyfb_set_par(struct fb_info *info)
+ 	}
+ 	aty_st_8(DAC_MASK, 0xff, par);
+ 
+-	info->fix.line_length = var->xres_virtual * var->bits_per_pixel/8;
++	info->fix.line_length = calc_line_length(par, var->xres_virtual,
++						 var->bits_per_pixel);
 +
-+    return 0;
+ 	info->fix.visual = var->bits_per_pixel <= 8 ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+ 
+@@ -1507,10 +1530,12 @@ static void set_off_pitch(struct atyfb_par *par, const struct fb_info *info)
+ {
+ 	u32 xoffset = info->var.xoffset;
+ 	u32 yoffset = info->var.yoffset;
+-	u32 vxres = par->crtc.vxres;
++	u32 line_length = info->fix.line_length;
+ 	u32 bpp = info->var.bits_per_pixel;
+ 
+-	par->crtc.off_pitch = ((yoffset * vxres + xoffset) * bpp / 64) | (vxres << 19);
++	par->crtc.off_pitch =
++		((yoffset * line_length + xoffset * bpp / 8) / 8) |
++		((line_length / bpp) << 22);
  }
  
- static void __exit atyfb_exit(void)
+ 
+@@ -2203,7 +2228,7 @@ static void __devinit aty_calc_mem_refresh(struct atyfb_par *par, int xclk)
+ 	const int *refresh_tbl;
+ 	int i, size;
+ 
+-	if (IS_XL(par->pci_id) || IS_MOBILITY(par->pci_id)) {
++	if (M64_HAS(XL_MEM)) {
+ 		refresh_tbl = ragexl_tbl;
+ 		size = ARRAY_SIZE(ragexl_tbl);
+ 	} else {
+@@ -2337,7 +2362,10 @@ static int __devinit aty_init(struct fb_info *info)
+ 		par->pll_ops = &aty_pll_ct;
+ 		par->bus_type = PCI;
+ 		par->ram_type = (aty_ld_le32(CNFG_STAT0, par) & 0x07);
+-		ramname = aty_ct_ram[par->ram_type];
++		if (M64_HAS(XL_MEM))
++			ramname = aty_xl_ram[par->ram_type];
++		else
++			ramname = aty_ct_ram[par->ram_type];
+ 		/* for many chips, the mclk is 67 MHz for SDRAM, 63 MHz otherwise */
+ 		if (par->pll_limits.mclk == 67 && par->ram_type < SDRAM)
+ 			par->pll_limits.mclk = 63;
+diff --git a/drivers/video/aty/mach64_accel.c b/drivers/video/aty/mach64_accel.c
+index 0cc9724..51fcc0a 100644
+--- a/drivers/video/aty/mach64_accel.c
++++ b/drivers/video/aty/mach64_accel.c
+@@ -63,14 +63,17 @@ static void reset_GTC_3D_engine(const struct atyfb_par *par)
+ void aty_init_engine(struct atyfb_par *par, struct fb_info *info)
  {
-+	if (dmi_check_system(atyfb_reboot_ids))
-+		unregister_reboot_notifier(&atyfb_reboot_notifier);
-+
- #ifdef CONFIG_PCI
- 	pci_unregister_driver(&atyfb_driver);
- #endif
+ 	u32 pitch_value;
++	u32 vxres;
+ 
+ 	/* determine modal information from global mode structure */
+-	pitch_value = info->var.xres_virtual;
++	pitch_value = info->fix.line_length / (info->var.bits_per_pixel / 8);
++	vxres = info->var.xres_virtual;
+ 
+ 	if (info->var.bits_per_pixel == 24) {
+ 		/* In 24 bpp, the engine is in 8 bpp - this requires that all */
+ 		/* horizontal coordinates and widths must be adjusted */
+ 		pitch_value *= 3;
++		vxres *= 3;
+ 	}
+ 
+ 	/* On GTC (RagePro), we need to reset the 3D engine before */
+@@ -133,7 +136,7 @@ void aty_init_engine(struct atyfb_par *par, struct fb_info *info)
+ 	aty_st_le32(SC_LEFT, 0, par);
+ 	aty_st_le32(SC_TOP, 0, par);
+ 	aty_st_le32(SC_BOTTOM, par->crtc.vyres - 1, par);
+-	aty_st_le32(SC_RIGHT, pitch_value - 1, par);
++	aty_st_le32(SC_RIGHT, vxres - 1, par);
+ 
+ 	/* set background color to minimum value (usually BLACK) */
+ 	aty_st_le32(DP_BKGD_CLR, 0, par);
 -- 
 1.6.0.6
 

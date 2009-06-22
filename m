@@ -1,28 +1,38 @@
-From: "Rajashekhara, Sudhakar" <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-Subject: RE: [Linux-fbdev-devel] [PATCH] Frame Buffer driver for TI
+From: "Rajashekhara, Sudhakar" <sudhakar.raj@ti.com>
+Subject: Re: [PATCH] Frame Buffer driver for TI
 	DA8xx/OMAP-L1xx
 Date: Mon, 22 Jun 2009 09:58:24 +0530
-Message-ID: <34307.9051854604$1245645023@news.gmane.org>
+Message-ID: <24687.9542516128$1245645113@news.gmane.org>
 References: <1245336154-11554-1-git-send-email-sudhakar.raj@ti.com>
 	<20090619113552.6c4f7b04.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: <20090619113552.6c4f7b04.krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sudhakar.raj@ti.com>) id 1MIb9y-00047d-8G
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Jun 2009 04:29:34 +0000
+Received: from arroyo.ext.ti.com ([192.94.94.40])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MIb9w-0006iV-Jy
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 22 Jun 2009 04:29:34 +0000
+In-Reply-To: <20090619113552.6c4f7b04.krzysztof.h1@poczta.fm>
 Content-Language: en-us
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Content-Type: text/plain; charset="us-ascii"
-To: 'Krzysztof Helt' <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, 'Pavel Kiryukhin' <pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: 'Krzysztof Helt' <krzysztof.h1@poczta.fm>
+Cc: 'Steve Chen' <schen@mvista.com>, davinci-linux-open-source@linux.davincidsp.com, linux-fbdev-devel@lists.sourceforge.net, 'Pavel Kiryukhin' <pkiryukhin@ru.mvista.com>
 
 Hi,
 
@@ -72,7 +82,7 @@ types of
 > Krzysztof
 > 
 > On Thu, 18 Jun 2009 10:42:34 -0400
-> "Rajashekhara, Sudhakar" <sudhakar.raj-l0cyMroinI0@public.gmane.org> wrote:
+> "Rajashekhara, Sudhakar" <sudhakar.raj@ti.com> wrote:
 > 
 > > Adds LCD controller (LCDC) driver for TI's DA8xx/OMAP-L1xx architecture.
 > > LCDC specifications can be found at http://www.ti.com/litv/pdf/sprufm0a.
@@ -88,9 +98,9 @@ found on
 > > the DA830 based EVM. The EVM details can be found at:
 > > http://support.spectrumdigital.com/boards/dskda830/revc/.
 > > 
-> > Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-> > Signed-off-by: Pavel Kiryukhin <pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org>
-> > Signed-off-by: Steve Chen <schen-Igf4POYTYCDQT0dZR+AlfA@public.gmane.org>
+> > Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+> > Signed-off-by: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+> > Signed-off-by: Steve Chen <schen@mvista.com>
 > > ---
 
 [. . . ]
@@ -430,3 +440,12 @@ OK.
 I'll submit the updated version of this patch soon.
 
 Thanks, Sudhakar
+
+
+
+
+------------------------------------------------------------------------------
+Are you an open source citizen? Join us for the Open Source Bridge conference!
+Portland, OR, June 17-19. Two days of sessions, one day of unconference: $250.
+Need another reason to go? 24-hour hacker lounge. Register today!
+http://ad.doubleclick.net/clk;215844324;13503038;v?http://opensourcebridge.org

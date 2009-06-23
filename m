@@ -1,27 +1,22 @@
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Subject: Re: [PATCH 3/3] atyfb: Coding style cleanup
-Date: Tue, 23 Jun 2009 14:20:14 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909019BDD55@mi8nycmail19.Mi8.com>
-References: <1245533384-28371-1-git-send-email-syrjala@sci.fi>
-	<1245533384-28371-3-git-send-email-syrjala@sci.fi>
-	<BD79186B4FD85F4B8E60E381CAEE1909019BDCF8@mi8nycmail19.Mi8.com>
-	<20090623173022.GD9980@sci.fi>
+From: Peter Jones <pjones@redhat.com>
+Subject: [PATCH] Add fb_destroy() callback to free up
+	reserved memory.
+Date: Tue, 23 Jun 2009 14:29:06 -0400
+Message-ID: <1245781746-15506-1-git-send-email-pjones@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hartleys@visionengravers.com>) id 1MJAbT-0007HM-PO
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <pjones@redhat.com>) id 1MJAk3-0004Ub-Ba
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Jun 2009 18:20:19 +0000
-Received: from exprod6og107.obsmtp.com ([64.18.1.208])
-	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1MJAbS-0004et-MQ for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Jun 2009 18:20:19 +0000
-Content-class: urn:content-classes:message
-In-Reply-To: <20090623173022.GD9980@sci.fi>
+	Tue, 23 Jun 2009 18:29:14 +0000
+Received: from mx2.redhat.com ([66.187.237.31])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MJAk2-0006UC-FL for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Jun 2009 18:29:11 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,67 +26,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Mikulas Patocka <mpatocka@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sf.net
+Cc: Peter Jones <pjones@redhat.com>, airlied@gmail.com
 
-On Tuesday, June 23, 2009 10:30 AM, Ville Syrj=E4l=E4 wrote:
-> On Tue, Jun 23, 2009 at 12:52:58PM -0400, H Hartley Sweeten wrote:
-> On Saturday, June 20, 2009 2:30 PM, Ville Syrjala wrote:
-> > > Fix a bunch of coding style problems in atyfb_base.c.
-> > > =
-
-> > > Signed-off-by: Ville Syrjala <syrjala@sci.fi>
-> > > ---
-> > > There are still some problems left, at least over 80 char lines, but
-> > > fixing those in a decent manner would require some code restructuring
-> > > to reduce the overly deep nesting. I decided to leave those bits most=
-ly
-> > > untouched for now.
-> > > =
-
-> > >  drivers/video/aty/atyfb_base.c |  829 ++++++++++++++++++++++--------=
-----------
-> > >  1 files changed, 458 insertions(+), 371 deletions(-)
-> > > =
-
-> > > diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb=
-_base.c
-> > > index 63d3739..913b4a4 100644
-> > > --- a/drivers/video/aty/atyfb_base.c
-> > > +++ b/drivers/video/aty/atyfb_base.c
-> > > @@ -132,7 +132,7 @@
-> > >  #endif
-> > >  =
-
-> > >  #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## arg=
-s)
-> > > -#define PRINTKE(fmt, args...)	 printk(KERN_ERR "atyfb: " fmt, ## arg=
-s)
-> > > +#define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
-> > =
-
-> > Why not: =
-
-> > =
-
-> > #define pr_fmt(fmt)	"atyfb: " fmt
-> > =
-
-> > Then just use pr_info() and pr_err()?  Also, pr_devel() could be used i=
-nstead
-> > of the private DPRINTK() definition.
-> =
-
-> Ideally it should use dev_info(), dev_err() and dev_dbg() but at the
-> moment I have no motivation to start cleaning up the printk mess in
-> this driver.
-
-Agree, the dev_* output would be better.
-
-I just happened to look over the patch and noticed the private printk usage.
-
-Regards,
-Hartley
-
----------------------------------------------------------------------------=
+We reserve some memory in efifb_probe that needs to be freed when we
+handoff to a KMS driver.  Also unmap the ioremap() done during
+probe/setup.
 ---
+ drivers/video/efifb.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index eb12182..41ba8cc 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -135,6 +135,14 @@ static int set_system(const struct dmi_system_id *id)
+ 	return 0;
+ }
+ 
++static int efifb_destroy(struct fb_info *info)
++{
++	if (info->screen_base)
++		iounmap(info->screen_base);
++	release_mem_region(info->aperture_base, info->aperture_size);
++	framebuffer_release(info);
++}
++
+ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			   unsigned blue, unsigned transp,
+ 			   struct fb_info *info)
+@@ -163,6 +171,7 @@ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ static struct fb_ops efifb_ops = {
+ 	.owner		= THIS_MODULE,
++	.fb_destroy	= efifb_destroy,
+ 	.fb_setcolreg	= efifb_setcolreg,
+ 	.fb_fillrect	= cfb_fillrect,
+ 	.fb_copyarea	= cfb_copyarea,
+-- 
+1.6.2.2
+
+
+------------------------------------------------------------------------------

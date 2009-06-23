@@ -1,26 +1,27 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
 Subject: Re: [PATCH 3/3] atyfb: Coding style cleanup
-Date: Tue, 23 Jun 2009 20:30:22 +0300
-Message-ID: <20090623173022.GD9980@sci.fi>
+Date: Tue, 23 Jun 2009 14:20:14 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909019BDD55@mi8nycmail19.Mi8.com>
 References: <1245533384-28371-1-git-send-email-syrjala@sci.fi>
 	<1245533384-28371-3-git-send-email-syrjala@sci.fi>
 	<BD79186B4FD85F4B8E60E381CAEE1909019BDCF8@mi8nycmail19.Mi8.com>
+	<20090623173022.GD9980@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1MJ9pM-0000j6-Rn
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <hartleys@visionengravers.com>) id 1MJAbT-0007HM-PO
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Jun 2009 17:30:36 +0000
-Received: from smtp5.welho.com ([213.243.153.39])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MJ9pF-00033Z-Ru for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Jun 2009 17:30:31 +0000
-Content-Disposition: inline
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909019BDCF8@mi8nycmail19.Mi8.com>
+	Tue, 23 Jun 2009 18:20:19 +0000
+Received: from exprod6og107.obsmtp.com ([64.18.1.208])
+	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MJAbS-0004et-MQ for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Jun 2009 18:20:19 +0000
+Content-class: urn:content-classes:message
+In-Reply-To: <20090623173022.GD9980@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,61 +31,67 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: H Hartley Sweeten <hartleys@visionengravers.com>
+To: =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
 Cc: Mikulas Patocka <mpatocka@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Jun 23, 2009 at 12:52:58PM -0400, H Hartley Sweeten wrote:
+On Tuesday, June 23, 2009 10:30 AM, Ville Syrj=E4l=E4 wrote:
+> On Tue, Jun 23, 2009 at 12:52:58PM -0400, H Hartley Sweeten wrote:
 > On Saturday, June 20, 2009 2:30 PM, Ville Syrjala wrote:
-> > Fix a bunch of coding style problems in atyfb_base.c.
+> > > Fix a bunch of coding style problems in atyfb_base.c.
+> > > =
+
+> > > Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+> > > ---
+> > > There are still some problems left, at least over 80 char lines, but
+> > > fixing those in a decent manner would require some code restructuring
+> > > to reduce the overly deep nesting. I decided to leave those bits most=
+ly
+> > > untouched for now.
+> > > =
+
+> > >  drivers/video/aty/atyfb_base.c |  829 ++++++++++++++++++++++--------=
+----------
+> > >  1 files changed, 458 insertions(+), 371 deletions(-)
+> > > =
+
+> > > diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb=
+_base.c
+> > > index 63d3739..913b4a4 100644
+> > > --- a/drivers/video/aty/atyfb_base.c
+> > > +++ b/drivers/video/aty/atyfb_base.c
+> > > @@ -132,7 +132,7 @@
+> > >  #endif
+> > >  =
+
+> > >  #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## arg=
+s)
+> > > -#define PRINTKE(fmt, args...)	 printk(KERN_ERR "atyfb: " fmt, ## arg=
+s)
+> > > +#define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
 > > =
 
-> > Signed-off-by: Ville Syrjala <syrjala@sci.fi>
-> > ---
-> > There are still some problems left, at least over 80 char lines, but
-> > fixing those in a decent manner would require some code restructuring
-> > to reduce the overly deep nesting. I decided to leave those bits mostly
-> > untouched for now.
+> > Why not: =
+
 > > =
 
-> >  drivers/video/aty/atyfb_base.c |  829 ++++++++++++++++++++++----------=
---------
-> >  1 files changed, 458 insertions(+), 371 deletions(-)
+> > #define pr_fmt(fmt)	"atyfb: " fmt
 > > =
 
-> > diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_b=
-ase.c
-> > index 63d3739..913b4a4 100644
-> > --- a/drivers/video/aty/atyfb_base.c
-> > +++ b/drivers/video/aty/atyfb_base.c
-> > @@ -132,7 +132,7 @@
-> >  #endif
-> >  =
-
-> >  #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
-> > -#define PRINTKE(fmt, args...)	 printk(KERN_ERR "atyfb: " fmt, ## args)
-> > +#define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
+> > Then just use pr_info() and pr_err()?  Also, pr_devel() could be used i=
+nstead
+> > of the private DPRINTK() definition.
 > =
 
-> Why not: =
+> Ideally it should use dev_info(), dev_err() and dev_dbg() but at the
+> moment I have no motivation to start cleaning up the printk mess in
+> this driver.
 
-> =
+Agree, the dev_* output would be better.
 
-> #define pr_fmt(fmt)	"atyfb: " fmt
-> =
+I just happened to look over the patch and noticed the private printk usage.
 
-> Then just use pr_info() and pr_err()?  Also, pr_devel() could be used ins=
-tead
-> of the private DPRINTK() definition.
-
-Ideally it should use dev_info(), dev_err() and dev_dbg() but at the
-moment I have no motivation to start cleaning up the printk mess in
-this driver.
-
--- =
-
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Regards,
+Hartley
 
 ---------------------------------------------------------------------------=
 ---

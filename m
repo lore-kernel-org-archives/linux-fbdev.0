@@ -1,71 +1,73 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2.6.30] nvidiafb: fix missing space in log message
-Date: Mon, 22 Jun 2009 23:11:31 -0700
-Message-ID: <20090622231131.772eea06.akpm@linux-foundation.org>
-References: <18999.49010.127368.554600@pilspetsen.it.uu.se>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+Subject: Re: [PATCH 3/3] atyfb: Coding style cleanup
+Date: Tue, 23 Jun 2009 12:52:58 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909019BDCF8@mi8nycmail19.Mi8.com>
+References: <1245533384-28371-1-git-send-email-syrjala@sci.fi>
+	<1245533384-28371-3-git-send-email-syrjala@sci.fi>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757216AbZFWGMt@vger.kernel.org>
-In-Reply-To: <18999.49010.127368.554600@pilspetsen.it.uu.se>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <hartleys@visionengravers.com>) id 1MJ9F8-00067x-4B
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Jun 2009 16:53:10 +0000
+Received: from exprod6og112.obsmtp.com ([64.18.1.29])
+	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MJ9F5-0003cc-PW for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Jun 2009 16:53:10 +0000
+Content-class: urn:content-classes:message
+In-Reply-To: <1245533384-28371-3-git-send-email-syrjala@sci.fi>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Ville Syrjala <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mikulas Patocka <mpatocka@redhat.com>
 
-On Tue, 16 Jun 2009 17:51:14 +0200 Mikael Pettersson <mikpe@it.uu.se> wrote:
-
-> On bootup nvidiafb prints the following on my Apple G5:
+On Saturday, June 20, 2009 2:30 PM, Ville Syrjala wrote:
+> Fix a bunch of coding style problems in atyfb_base.c.
 > 
-> 	nvidiafb: CRTC 1appears to have a CRT attached
+> Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+> ---
+> There are still some problems left, at least over 80 char lines, but
+> fixing those in a decent manner would require some code restructuring
+> to reduce the overly deep nesting. I decided to leave those bits mostly
+> untouched for now.
 > 
-> There should be a space between the '1' and the 'appears'.
+>  drivers/video/aty/atyfb_base.c |  829 ++++++++++++++++++++++------------------
+>  1 files changed, 458 insertions(+), 371 deletions(-)
 > 
-> Fix: add the space
-> 
-> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-> 
-> diff -rupN linux-2.6.30/drivers/video/nvidia/nv_setup.c linux-2.6.30.nvidiafb-logmsg-missing-space/drivers/video/nvidia/nv_setup.c
-> --- linux-2.6.30/drivers/video/nvidia/nv_setup.c	2009-06-10 12:00:46.000000000 +0200
-> +++ linux-2.6.30.nvidiafb-logmsg-missing-space/drivers/video/nvidia/nv_setup.c	2009-06-16 17:41:21.000000000 +0200
-> @@ -543,7 +543,7 @@ int NVCommonSetup(struct fb_info *info)
->  		} else if (analog_on_B) {
->  			CRTCnumber = outputBfromCRTC;
->  			FlatPanel = 0;
-> -			printk("nvidiafb: CRTC %i"
-> +			printk("nvidiafb: CRTC %i "
->  			       "appears to have a "
->  			       "CRT attached\n", CRTCnumber);
->  		} else if (slaved_on_A) {
+> diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+> index 63d3739..913b4a4 100644
+> --- a/drivers/video/aty/atyfb_base.c
+> +++ b/drivers/video/aty/atyfb_base.c
+> @@ -132,7 +132,7 @@
+>  #endif
+>  
+>  #define PRINTKI(fmt, args...)	printk(KERN_INFO "atyfb: " fmt, ## args)
+> -#define PRINTKE(fmt, args...)	 printk(KERN_ERR "atyfb: " fmt, ## args)
+> +#define PRINTKE(fmt, args...)	printk(KERN_ERR "atyfb: " fmt, ## args)
 
-Yeah, someone seems to have gone checkpatch-crazy there.
+Why not: 
 
-Let's be slightly less nutty and do
+#define pr_fmt(fmt)	"atyfb: " fmt
 
---- a/drivers/video/nvidia/nv_setup.c~nvidiafb-fix-missing-space-in-log-message
-+++ a/drivers/video/nvidia/nv_setup.c
-@@ -543,8 +543,7 @@ int NVCommonSetup(struct fb_info *info)
- 		} else if (analog_on_B) {
- 			CRTCnumber = outputBfromCRTC;
- 			FlatPanel = 0;
--			printk("nvidiafb: CRTC %i"
--			       "appears to have a "
-+			printk("nvidiafb: CRTC %i appears to have a "
- 			       "CRT attached\n", CRTCnumber);
- 		} else if (slaved_on_A) {
- 			CRTCnumber = 0;
-_
+Then just use pr_info() and pr_err()?  Also, pr_devel() could be used instead
+of the private DPRINTK() definition.
 
-Which happens to exactly copy the printk from five lines earlier...
+Regards,
+Hartley
 
-
-		} else if (analog_on_A) {
-			CRTCnumber = outputAfromCRTC;
-			FlatPanel = 0;
-			printk("nvidiafb: CRTC %i appears to have a "
-			       "CRT attached\n", CRTCnumber);
-		} else if (analog_on_B) {
-			CRTCnumber = outputBfromCRTC;
-			FlatPanel = 0;
-			printk("nvidiafb: CRTC %i appears to have a "
-			       "CRT attached\n", CRTCnumber);
+------------------------------------------------------------------------------
+Are you an open source citizen? Join us for the Open Source Bridge conference!
+Portland, OR, June 17-19. Two days of sessions, one day of unconference: $250.
+Need another reason to go? 24-hour hacker lounge. Register today!
+http://ad.doubleclick.net/clk;215844324;13503038;v?http://opensourcebridge.org

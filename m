@@ -1,116 +1,102 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH] video: arch specific page protection support for deferred io
-Date: Wed, 24 Jun 2009 19:54:13 +0900
-Message-ID: <20090624105413.13925.65192.sendpatchset@rx1.opensource.se>
-Return-path: <owner-linux-mm@kvack.org>
-Sender: owner-linux-mm@kvack.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-MIME-Version: 1.0
+From: "Rajashekhara, Sudhakar" <sudhakar.raj@ti.com>
+Subject: Re: [PATCH] Frame Buffer driver for TI
+	DA8xx/OMAP-L1xx
+Date: Wed, 24 Jun 2009 16:52:51 +0530
+Message-ID: <31722.3594444387$1245842822@news.gmane.org>
+References: <1245336154-11554-1-git-send-email-sudhakar.raj@ti.com>
+	<20090619113552.6c4f7b04.krzysztof.h1@poczta.fm>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: adaplas@gmail.com, arnd@arndb.de, linux-mm@kvack.org, lethal@linux-sh.org, Magnus Damm <magnus.damm@gmail.com>, jayakumar.lkml@gmail.com, akpm@linux-foundation.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sudhakar.raj@ti.com>) id 1MJQav-0000gu-N7
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 24 Jun 2009 11:24:49 +0000
+Received: from devils.ext.ti.com ([198.47.26.153])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MJQa0-0003Gu-H4
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 24 Jun 2009 11:24:49 +0000
+In-Reply-To: <20090619113552.6c4f7b04.krzysztof.h1@poczta.fm>
+Content-Language: en-us
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: 'Krzysztof Helt' <krzysztof.h1@poczta.fm>
+Cc: 'Steve Chen' <schen@mvista.com>, linux-fbdev-devel@lists.sourceforge.net, 'Pavel Kiryukhin' <pkiryukhin@ru.mvista.com>
 
-From: Magnus Damm <damm@igel.co.jp>
+Hi,
 
-This patch adds arch specific page protection support to deferred io.
+On Fri, Jun 19, 2009 at 15:05:52, Krzysztof Helt wrote:
+> HI,
+> 
+> This version of the driver is much cleaner however major issues still
+remains.
+> 
+> 1. The driver seems not able to change graphics mode (depth or resolution)
+> but check_var() and set_par() are defined. The set_par() function does not
+> modify any register. You should move this few settings done there to
+> lcd initialization functions and just remove the check_var() and
+set_par().
 
-Instead of overwriting the info->fbops->mmap pointer with the
-deferred io specific mmap callback, modify fb_mmap() to include
-a #ifdef wrapped call to fb_deferred_io_mmap().  The function
-fb_deferred_io_mmap() is extended to call fb_pgprotect() in the
-case of non-vmalloc() frame buffers.
+Though I was able to get rid of set_par() function inside the driver,
+removing
+check_var() function turned out to be little tough as based on
+"var.activate"
+flags the fb_set_var function is performing lot of things which will not be
+done
+if check_var() function is NULL. Hence I have retained the check_var()
+function
+as of now.
 
-With this patch uncached deferred io can be used together with
-the sh_mobile_lcdcfb driver. Without this patch arch specific
-page protection code in fb_pgprotect() never gets invoked with
-deferred io.
+> 
+> 2. The driver does not set pseudo palette entries but uses true color mode
+> (16-bit). See other driver show to do this (I advice tdfxfb.c).
+> 
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
+DA8XX/OMAP-L1xx LCD controller expects the first 2 bytes of palette to be
+0x4000
+for TRUECOLOR mode and I am doing this in fb_setcolreg. For further details,
+please
+refer to the controller spec which can be found at
+http://www.ti.com/litv/pdf/sprufm0a. 
 
- For proper runtime operation with uncached vmas make sure
- "[PATCH][RFC] mm: uncached vma support with writenotify"
- is applied. There are no merge order dependencies.
+> 3. The request_mem_region() should be accompanied by the
+release_mem_region()
+> (I have not noticed it in my previous review).
+> 
+> 4. Check error paths in the probing functions. Not all already
+requested/allocated
+> resources are released correctly (e.g. the in one path there is no
+clk_put() called).
+> 
+> Minor issues are in comments below.
+> 
+> If any of above issues is false let me know. I am not specialist in all
+types of 
+> embedded lcd controllers.
+> 
+> Kind regards,
+> Krzysztof
+> 
 
- drivers/video/fb_defio.c |   10 +++++++---
- drivers/video/fbmem.c    |    6 ++++++
- include/linux/fb.h       |    2 ++
- 3 files changed, 15 insertions(+), 3 deletions(-)
+I have taken care of all other review comments and I'll be submitting the
+version 3 of
+this patch shortly.
 
---- 0001/drivers/video/fb_defio.c
-+++ work/drivers/video/fb_defio.c	2009-06-24 19:07:11.000000000 +0900
-@@ -19,6 +19,7 @@
- #include <linux/interrupt.h>
- #include <linux/fb.h>
- #include <linux/list.h>
-+#include <asm/fb.h>
- 
- /* to support deferred IO */
- #include <linux/rmap.h>
-@@ -141,11 +142,16 @@ static const struct address_space_operat
- 	.set_page_dirty = fb_deferred_io_set_page_dirty,
- };
- 
--static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
-+int fb_deferred_io_mmap(struct file *file, struct fb_info *info,
-+			struct vm_area_struct *vma, unsigned long off)
- {
- 	vma->vm_ops = &fb_deferred_io_vm_ops;
- 	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
- 	vma->vm_private_data = info;
-+
-+	if (!is_vmalloc_addr(info->screen_base))
-+		fb_pgprotect(file, vma, off);
-+
- 	return 0;
- }
- 
-@@ -182,7 +188,6 @@ void fb_deferred_io_init(struct fb_info 
- 
- 	BUG_ON(!fbdefio);
- 	mutex_init(&fbdefio->lock);
--	info->fbops->fb_mmap = fb_deferred_io_mmap;
- 	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
- 	INIT_LIST_HEAD(&fbdefio->pagelist);
- 	if (fbdefio->delay == 0) /* set a default of 1 s */
-@@ -214,7 +219,6 @@ void fb_deferred_io_cleanup(struct fb_in
- 		page->mapping = NULL;
- 	}
- 
--	info->fbops->fb_mmap = NULL;
- 	mutex_destroy(&fbdefio->lock);
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
---- 0001/drivers/video/fbmem.c
-+++ work/drivers/video/fbmem.c	2009-06-24 19:12:29.000000000 +0900
-@@ -1325,6 +1325,12 @@ __releases(&info->lock)
- 	off = vma->vm_pgoff << PAGE_SHIFT;
- 	if (!fb)
- 		return -ENODEV;
-+
-+#ifdef CONFIG_FB_DEFERRED_IO
-+	if (info->fbdefio)
-+		return fb_deferred_io_mmap(file, info, vma, off);
-+#endif
-+
- 	if (fb->fb_mmap) {
- 		int res;
- 		mutex_lock(&info->lock);
---- 0001/include/linux/fb.h
-+++ work/include/linux/fb.h	2009-06-24 19:04:49.000000000 +0900
-@@ -1005,6 +1005,8 @@ extern void fb_deferred_io_open(struct f
- extern void fb_deferred_io_cleanup(struct fb_info *info);
- extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
- 				int datasync);
-+extern int fb_deferred_io_mmap(struct file *file, struct fb_info *info,
-+			       struct vm_area_struct *vma, unsigned long off);
- 
- static inline bool fb_be_math(struct fb_info *info)
- {
+Thanks for spending time to review the patches.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Regards, Sudhakar
+
+
+
+------------------------------------------------------------------------------

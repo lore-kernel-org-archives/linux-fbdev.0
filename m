@@ -1,70 +1,116 @@
-From: Peter Jones <pjones@redhat.com>
-Subject: [PATCH] Add fb_destroy() callback to free up
-	reserved memory.
-Date: Tue, 23 Jun 2009 14:29:06 -0400
-Message-ID: <1245781746-15506-1-git-send-email-pjones@redhat.com>
-Mime-Version: 1.0
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH] video: arch specific page protection support for deferred io
+Date: Wed, 24 Jun 2009 19:54:13 +0900
+Message-ID: <20090624105413.13925.65192.sendpatchset@rx1.opensource.se>
+Return-path: <owner-linux-mm@kvack.org>
+Sender: owner-linux-mm@kvack.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <pjones@redhat.com>) id 1MJAk3-0004Ub-Ba
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Jun 2009 18:29:14 +0000
-Received: from mx2.redhat.com ([66.187.237.31])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MJAk2-0006UC-FL for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 23 Jun 2009 18:29:11 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sf.net
-Cc: Peter Jones <pjones@redhat.com>, airlied@gmail.com
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@gmail.com, arnd@arndb.de, linux-mm@kvack.org, lethal@linux-sh.org, Magnus Damm <magnus.damm@gmail.com>, jayakumar.lkml@gmail.com, akpm@linux-foundation.org
 
-We reserve some memory in efifb_probe that needs to be freed when we
-handoff to a KMS driver.  Also unmap the ioremap() done during
-probe/setup.
+From: Magnus Damm <damm@igel.co.jp>
+
+This patch adds arch specific page protection support to deferred io.
+
+Instead of overwriting the info->fbops->mmap pointer with the
+deferred io specific mmap callback, modify fb_mmap() to include
+a #ifdef wrapped call to fb_deferred_io_mmap().  The function
+fb_deferred_io_mmap() is extended to call fb_pgprotect() in the
+case of non-vmalloc() frame buffers.
+
+With this patch uncached deferred io can be used together with
+the sh_mobile_lcdcfb driver. Without this patch arch specific
+page protection code in fb_pgprotect() never gets invoked with
+deferred io.
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
- drivers/video/efifb.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index eb12182..41ba8cc 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -135,6 +135,14 @@ static int set_system(const struct dmi_system_id *id)
+ For proper runtime operation with uncached vmas make sure
+ "[PATCH][RFC] mm: uncached vma support with writenotify"
+ is applied. There are no merge order dependencies.
+
+ drivers/video/fb_defio.c |   10 +++++++---
+ drivers/video/fbmem.c    |    6 ++++++
+ include/linux/fb.h       |    2 ++
+ 3 files changed, 15 insertions(+), 3 deletions(-)
+
+--- 0001/drivers/video/fb_defio.c
++++ work/drivers/video/fb_defio.c	2009-06-24 19:07:11.000000000 +0900
+@@ -19,6 +19,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/fb.h>
+ #include <linux/list.h>
++#include <asm/fb.h>
+ 
+ /* to support deferred IO */
+ #include <linux/rmap.h>
+@@ -141,11 +142,16 @@ static const struct address_space_operat
+ 	.set_page_dirty = fb_deferred_io_set_page_dirty,
+ };
+ 
+-static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
++int fb_deferred_io_mmap(struct file *file, struct fb_info *info,
++			struct vm_area_struct *vma, unsigned long off)
+ {
+ 	vma->vm_ops = &fb_deferred_io_vm_ops;
+ 	vma->vm_flags |= ( VM_IO | VM_RESERVED | VM_DONTEXPAND );
+ 	vma->vm_private_data = info;
++
++	if (!is_vmalloc_addr(info->screen_base))
++		fb_pgprotect(file, vma, off);
++
  	return 0;
  }
  
-+static int efifb_destroy(struct fb_info *info)
-+{
-+	if (info->screen_base)
-+		iounmap(info->screen_base);
-+	release_mem_region(info->aperture_base, info->aperture_size);
-+	framebuffer_release(info);
-+}
-+
- static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 			   unsigned blue, unsigned transp,
- 			   struct fb_info *info)
-@@ -163,6 +171,7 @@ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
+@@ -182,7 +188,6 @@ void fb_deferred_io_init(struct fb_info 
  
- static struct fb_ops efifb_ops = {
- 	.owner		= THIS_MODULE,
-+	.fb_destroy	= efifb_destroy,
- 	.fb_setcolreg	= efifb_setcolreg,
- 	.fb_fillrect	= cfb_fillrect,
- 	.fb_copyarea	= cfb_copyarea,
--- 
-1.6.2.2
+ 	BUG_ON(!fbdefio);
+ 	mutex_init(&fbdefio->lock);
+-	info->fbops->fb_mmap = fb_deferred_io_mmap;
+ 	INIT_DELAYED_WORK(&info->deferred_work, fb_deferred_io_work);
+ 	INIT_LIST_HEAD(&fbdefio->pagelist);
+ 	if (fbdefio->delay == 0) /* set a default of 1 s */
+@@ -214,7 +219,6 @@ void fb_deferred_io_cleanup(struct fb_in
+ 		page->mapping = NULL;
+ 	}
+ 
+-	info->fbops->fb_mmap = NULL;
+ 	mutex_destroy(&fbdefio->lock);
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
+--- 0001/drivers/video/fbmem.c
++++ work/drivers/video/fbmem.c	2009-06-24 19:12:29.000000000 +0900
+@@ -1325,6 +1325,12 @@ __releases(&info->lock)
+ 	off = vma->vm_pgoff << PAGE_SHIFT;
+ 	if (!fb)
+ 		return -ENODEV;
++
++#ifdef CONFIG_FB_DEFERRED_IO
++	if (info->fbdefio)
++		return fb_deferred_io_mmap(file, info, vma, off);
++#endif
++
+ 	if (fb->fb_mmap) {
+ 		int res;
+ 		mutex_lock(&info->lock);
+--- 0001/include/linux/fb.h
++++ work/include/linux/fb.h	2009-06-24 19:04:49.000000000 +0900
+@@ -1005,6 +1005,8 @@ extern void fb_deferred_io_open(struct f
+ extern void fb_deferred_io_cleanup(struct fb_info *info);
+ extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
+ 				int datasync);
++extern int fb_deferred_io_mmap(struct file *file, struct fb_info *info,
++			       struct vm_area_struct *vma, unsigned long off);
+ 
+ static inline bool fb_be_math(struct fb_info *info)
+ {
 
-
-------------------------------------------------------------------------------
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>

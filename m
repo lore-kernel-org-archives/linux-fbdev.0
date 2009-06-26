@@ -1,58 +1,37 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Joe Perches <joe@perches.com>
 Subject: Re: [PATCH 18/19] drivers/video: Use PCI_VDEVICE
-Date: Fri, 26 Jun 2009 12:54:54 +0300
-Message-ID: <20090626095454.GH9980@sci.fi>
+Date: Fri, 26 Jun 2009 09:35:26 -0700
+Message-ID: <1246034126.18587.19.camel@Joe-Laptop.home>
 References: <cover.1245906151.git.joe@perches.com>
-	<198c226b3dfd003881e7f95b3fbbc8d433804b01.1245906153.git.joe@perches.com>
+	 <198c226b3dfd003881e7f95b3fbbc8d433804b01.1245906153.git.joe@perches.com>
+	 <20090626095454.GH9980@sci.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1MK89C-0004aE-5w
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Jun 2009 09:55:06 +0000
-Received: from smtp4.welho.com ([213.243.153.38])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MK897-0008MD-RR for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Jun 2009 09:55:03 +0000
-Content-Disposition: inline
-In-Reply-To: <198c226b3dfd003881e7f95b3fbbc8d433804b01.1245906153.git.joe@perches.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Joe Perches <joe@perches.com>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Winischhofer <thomas@winischhofer.net>, linux-kernel@vger.kernel.org, Petr Vandrovec <vandrove@vc.cvut.cz>, Paul Mackerras <paulus@samba.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1760888AbZFZQfr@vger.kernel.org>
+In-Reply-To: <20090626095454.GH9980@sci.fi>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="utf-8"
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Russell King <linux@arm.linux.org.uk>, Antonino Daplas <adaplas@gmail.com>, Petr Vandrovec <vandrove@vc.cvut.cz>, Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, Jun 24, 2009 at 10:13:34PM -0700, Joe Perches wrote:
-<snip>
-> +	{ PCI_VDEVICE(ATI, PCI_DEVICE_ID_ATI_RAGE128_TS), rage_128_ultra },
-> +	{ PCI_VDEVICE(ATI, PCI_DEVICE_ID_ATI_RAGE128_TT), rage_128_ultra },
-> +	{ PCI_VDEVICE(ATI, PCI_DEVICE_ID_ATI_RAGE128_TU), rage_128_ultra },
->  	{ 0, }
->  };
+On Fri, 2009-06-26 at 12:54 +0300, Ville Syrj=C3=A4l=C3=A4 wrote:
+> Perhaps there should be a PCI_VDDEVICE() or something for this type o=
+f
+> stuff? Would make things even shorter.
 
-Perhaps there should be a PCI_VDDEVICE() or something for this type of
-stuff? Would make things even shorter.
+drivers/edac/edac_core.h has:
 
-Also PCI_VDEVICE() does not use named initializers for some reason.
-Might be worth fixing.
+#define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
+	PCI_DEVICE_ID_ ## vend ## _ ## dev
 
-It seems your script missed atyfb. It could use PCI_VDEVICE() too.
+Try submitting a patch and see what happens...
 
--- =
+> Also PCI_VDEVICE() does not use named initializers for some reason.
+> Might be worth fixing.
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Perhaps that's to avoid mixing named and unnamed initializers.
 
----------------------------------------------------------------------------=
----
+> It seems your script missed atyfb. It could use PCI_VDEVICE() too.
+
+Can you show an example please?

@@ -1,30 +1,24 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH] video: arch specific page
-	protection support for deferred io
-Date: Fri, 26 Jun 2009 14:37:14 +0900
-Message-ID: <aec7e5c30906252237x2f4d4f48teca1209e827f7640@mail.gmail.com>
-References: <20090624105413.13925.65192.sendpatchset@rx1.opensource.se>
-	<20090624195647.9d0064c7.akpm@linux-foundation.org>
-	<aec7e5c30906242306x64832a8dtfd78fa00ba751ca9@mail.gmail.com>
-	<20090625000359.7e201c58.akpm@linux-foundation.org>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH v3] Frame Buffer driver for TI
+ DA8xx/OMAP-L1xx
+Date: Fri, 26 Jun 2009 07:18:55 +0200
+Message-ID: <20090626071855.22518d52.krzysztof.h1@poczta.fm>
+References: <1245841101-3095-1-git-send-email-sudhakar.raj@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <magnus.damm@gmail.com>) id 1MK47g-00041T-LT
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MK4Bk-0004i5-H5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Jun 2009 05:37:16 +0000
-Received: from mail-yx0-f196.google.com ([209.85.210.196])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MK47f-0002BF-Jc for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 26 Jun 2009 05:37:16 +0000
-Received: by yxe34 with SMTP id 34so923033yxe.28
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 25 Jun 2009 22:37:14 -0700 (PDT)
-In-Reply-To: <20090625000359.7e201c58.akpm@linux-foundation.org>
+	Fri, 26 Jun 2009 05:41:28 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MK4Bg-0003r3-In for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 26 Jun 2009 05:41:28 +0000
+In-Reply-To: <1245841101-3095-1-git-send-email-sudhakar.raj@ti.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,79 +28,125 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com, arnd@arndb.de, linux-mm@kvack.org, lethal@linux-sh.org, jayakumar.lkml@gmail.com
+To: "Rajashekhara, Sudhakar" <sudhakar.raj@ti.com>
+Cc: Steve Chen <schen@mvista.com>, davinci-linux-open-source@linux.davincidsp.com, linux-fbdev-devel@lists.sourceforge.net, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
 
-On Thu, Jun 25, 2009 at 4:03 PM, Andrew Morton<akpm@linux-foundation.org> w=
-rote:
-> On Thu, 25 Jun 2009 15:06:24 +0900 Magnus Damm <magnus.damm@gmail.com> wr=
-ote:
->
->> On Thu, Jun 25, 2009 at 11:56 AM, Andrew
->> Morton<akpm@linux-foundation.org> wrote:
->> > On Wed, 24 Jun 2009 19:54:13 +0900 Magnus Damm <magnus.damm@gmail.com>=
- wrote:
->> >
->> >> From: Magnus Damm <damm@igel.co.jp>
->> >>
->> >> This patch adds arch specific page protection support to deferred io.
->> >>
->> >> Instead of overwriting the info->fbops->mmap pointer with the
->> >> deferred io specific mmap callback, modify fb_mmap() to include
->> >> a #ifdef wrapped call to fb_deferred_io_mmap(). __The function
->> >> fb_deferred_io_mmap() is extended to call fb_pgprotect() in the
->> >> case of non-vmalloc() frame buffers.
->> >>
->> >> With this patch uncached deferred io can be used together with
->> >> the sh_mobile_lcdcfb driver. Without this patch arch specific
->> >> page protection code in fb_pgprotect() never gets invoked with
->> >> deferred io.
->> >>
->> >> Signed-off-by: Magnus Damm <damm@igel.co.jp>
->> >> ---
->> >>
->> >> __For proper runtime operation with uncached vmas make sure
->> >> __"[PATCH][RFC] mm: uncached vma support with writenotify"
->> >> __is applied. There are no merge order dependencies.
->> >
->> > So this is dependent upon a patch which is in your tree, which is in
->> > linux-next?
->>
->> I tried to say that there were _no_ dependencies merge wise. =3D)
->>
->> There are 3 levels of dependencies:
->> 1: pgprot_noncached() patches from Arnd
->> 2: mm: uncached vma support with writenotify
->> 3: video: arch specfic page protection support for deferred io
->>
->> 2 depends on 1 to compile, but 3 (this one) is disconnected from 2 and
->> 1. So this patch can be merged independently.
->
-> OIC. =A0I didn't like the idea of improper runtime operation ;)
->
-> Still, it's messy. =A0If only because various trees might be running
-> untested combinations of patches. =A0Can we get these all into the same
-> tree? =A0Paul's?
+On Wed, 24 Jun 2009 06:58:21 -0400
+"Rajashekhara, Sudhakar" <sudhakar.raj@ti.com> wrote:
 
-There may also be some dependencies related to other patches posted to
-linux-fbdev-devel, for instance:
-[PATCH] add mutex to fbdev for fb_mmap locking (v2)
-The fb_mmap() locking will conflict with this patch.
+> Adds LCD controller (LCDC) driver for TI's DA8xx/OMAP-L1xx architecture.
+> LCDC specifications can be found at http://www.ti.com/litv/pdf/sprufm0a.
+> 
+> LCDC on DA8xx consists of two independent controllers, the Raster Controller
+> and the LCD Interface Display Driver (LIDD) controller. LIDD further supports
+> character and graphic displays.
+> 
+> This patch adds support for the graphic display (Sharp LQ035Q3DG01) found on
+> the DA830 based EVM. The EVM details can be found at:
+> http://support.spectrumdigital.com/boards/dskda830/revc/.
+> 
+> Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+> Signed-off-by: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+> Signed-off-by: Steve Chen <schen@mvista.com>
+> ---
+>  Since the previous version, error paths in probing function has been
+>  corected, removed set_par() function and added code in fb_setcolreg()
+>  function for TRUECOLOR mode.
+> 
+>  drivers/video/Kconfig    |   11 +
+>  drivers/video/Makefile   |    1 +
+>  drivers/video/da8xx-fb.c |  887 ++++++++++++++++++++++++++++++++++++++++++++++
+>  include/video/da8xx-fb.h |  106 ++++++
+>  4 files changed, 1005 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/video/da8xx-fb.c
+>  create mode 100644 include/video/da8xx-fb.h
+> 
+> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+> new file mode 100644
+> index 0000000..a41ae62
+> --- /dev/null
+> +++ b/drivers/video/da8xx-fb.c
+> @@ -0,0 +1,887 @@
 
-So it may make sense to group the fbdev patches together.
+(fast forward)
 
->>
->> The code is fbmem.c is currently filled with #ifdefs today, want me
->> create inline versions for fb_deferred_io_open() and
->> fb_deferred_io_fsync() as well?
->
-> It was a minor point. =A0Your call.
+> +
+> +static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+> +			      unsigned blue, unsigned transp,
+> +			      struct fb_info *info)
+> +{
+> +	struct da8xx_fb_par *par = info->par;
+> +	unsigned short *palette = (unsigned short *)par->v_palette_base;
+> +	u_short pal;
+> +
+> +	if (regno > 255)
+> +		return 1;
+> +
+> +	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR)
+> +		return 1;
+> +
+> +	if (info->var.bits_per_pixel == 8) {
+> +		red >>= 8;
+> +		green >>= 8;
+> +		blue >>= 8;
 
-I'd prefer to submit a patch on top of this one if possible.
+This function is still incorrect. Each color component value passed to the
+function is 16 bit.
 
-Cheers,
+I assume you have 16-bit word for each palette entry and you want
+to pack 4-bit colors like this 0RGB. The shift should be
 
-/ magnus
+red >>= 12;
 
----------------------------------------------------------------------------=
----
+so you reduced the component length to 4 bits then
+
+red <<= 8;
+
+so it is put on correct position in the palette entry.
+You fold these two shifts so it is
+
+red >>= 4;
+
+The same logic should be used for all color components.
+
+> +
+> +		pal = (red & 0x0f00);
+> +		pal |= (green & 0x00f0);
+> +		pal |= (blue & 0x000f);
+> +
+> +		palette[regno] = pal;
+> +
+> +	} else if ((info->var.bits_per_pixel == 16) && regno < 16) {
+> +		memset(palette, 0, 16);
+
+I do not understand what is achieved by zeroing the palette area.
+
+This is what you should use:
+
+red >>= (16 - info->var.red.len)
+red <<= info->var.red.offset;
+
+The same logic should be used for all color components.
+Then pack them into palette register:
+
+par->pseudo_palette[ regno ] = red | green | blue;
+
+The true color modes do not use the palette entry. I assume
+that the value below forces controller to use true color mode.
+
+> +		palette[0] = 0x4000;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+
+Regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Twoja pensja x 3? Otworz Konto Direct!
+Sprawdz >>  	 http://link.interia.pl/f2209
+
+
+------------------------------------------------------------------------------

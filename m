@@ -1,24 +1,33 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 13566] New: nvidiafb
- doesn't get my oooold monitor working
-Date: Mon, 29 Jun 2009 16:04:42 -0700
-Message-ID: <20090629160442.0cbd68b8.akpm@linux-foundation.org>
-References: <bug-13566-10286@http.bugzilla.kernel.org/>
+From: Kai Jiang <b18973@freescale.com>
+Subject: Re: 
+ [linux-fbdev-devel][PATCH]fb_pan_display:add x/yoffset check
+Date: Tue, 30 Jun 2009 11:25:52 +0800
+Message-ID: <4A4985C0.2040800@freescale.com>
+References: <4A4839CB.8020801@freescale.com> <20090629103936.GJ9980@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1MLPwd-0004r5-Nj
+	(envelope-from <Kai.Jiang@freescale.com>) id 1MLTvN-0006ao-NE
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Jun 2009 23:07:27 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MLPu3-0002li-Gj for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 29 Jun 2009 23:07:27 +0000
-In-Reply-To: <bug-13566-10286@http.bugzilla.kernel.org/>
+	Tue, 30 Jun 2009 03:22:25 +0000
+Received: from az33egw02.freescale.net ([192.88.158.103])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MLTvM-0007Mb-Bn for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 30 Jun 2009 03:22:25 +0000
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.14.3/az33egw02) with ESMTP id
+	n5U3LpIm024556 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 29 Jun 2009 20:21:59 -0700 (MST)
+Received: from zmy16exf40.fsl.freescale.net (zmy16exf40.ap.freescale.net
+	[10.211.3.4])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id n5U3Ln2X025488
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 29 Jun 2009 22:21:50 -0500 (CDT)
+In-Reply-To: <20090629103936.GJ9980@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,82 +37,82 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: bugzilla-daemon@bugzilla.kernel.org, ericitaquera@gmail.com, bugme-daemon@bugzilla.kernel.org
+To: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+xres,yres,xres_virtual,yres_virtual will be set in the display driver, they have actual value which match the screen(will not very huge).
 
-On Thu, 18 Jun 2009 13:04:12 GMT
-bugzilla-daemon@bugzilla.kernel.org wrote:
+And here, these lines are not checking the overflowing, but checking whether the virtual space display is beyond the real screen.
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13566
-> 
->            Summary: nvidiafb doesn't get my oooold monitor working
->            Product: Drivers
->            Version: 2.5
->     Kernel Version: 2.6.30
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Video(Other)
->         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
->         ReportedBy: ericitaquera@gmail.com
->         Regression: No
+Take x boundary for example:(the screen x and virtual x relationship should be:)
+xres+xoffset<xres_vritual && xoffset>0
+This insure that, in the real screen, there are virtual picture display in the screen. When we move the virtual picture to the left, the xoffset will be smaller and smaller
+to indicate the virtual picture is moving to the left. Finally, the xoffset will be zero when the screen left boundary and virtual picture left boundary overlap. When virtual display is still moving to the left, the xoffset will be negative. And what should be displayed in the gap between screen left boundary and virtual space left boundary?
 
-There's more info at the above link
+So here we have to check the whether the x/yoffset is smaller than zero. If the offset is smaller than zero, in the driver, we should not move the virtual screen any more.
 
-> 
-> Nvidiafb doesn't get my ooooooold black & white 7" CRT VGA monitor working. I
-> have an GeForce 6200 one:
-> 
-> root@slackade:~# lspci  | grep -i vga
-> 01:00.0 VGA compatible controller: nVidia Corporation NV44 [GeForce 6200
-> TurboCache(TM)] (rev a1)
-> 
-> 
-> This is the dmesg output with this old monitor ( or without any ) plugged to
-> the VGA output:
-> 
-> root@slackade:~# dmesg | grep nvidia
-> nvidiafb 0000:01:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> nvidiafb: Device ID: 10de0161 
-> nvidiafb: CRTC0 analog not found
-> nvidiafb: CRTC1 analog not found
-> nvidiafb: CRTC 1 is currently programmed for TV
-> nvidiafb: Using TV on CRTC 1
-> nvidiafb: Panel is TMDS
-> nvidiafb: MTRR set to ON
-> nvidiafb: Flat panel dithering disabled
-> nvidiafb: PCI nVidia NV16 framebuffer (64MB @ 0xD0000000)
-> root@slackade:~# 
-> 
-> After that, even if I switch to a brand new 1080p lcd the screen just blinks
-> with weird vertical stripes.
-> 
-> If I reboot with a newer monitor plugged to VGA output all works fine:
-> 
-> root@slackade:~# dmesg | grep nvidia
-> nvidiafb 0000:01:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> nvidiafb: Device ID: 10de0161 
-> nvidiafb: CRTC0 analog found
-> nvidiafb: CRTC1 analog not found
-> nvidiafb: CRTC 0 appears to have a CRT attached
-> nvidiafb: Using CRT on CRTC 0
-> nvidiafb: MTRR set to ON
-> nvidiafb: PCI nVidia NV16 framebuffer (64MB @ 0xD0000000)
-> root@slackade:~# 
-> 
-> Tnx in advance!
-> 
 
-hm.  drivers/video/nvidia/ isn't exactly a hive of development activity
-but let's switch this over to the mailing list and see if there's any
-help.
+Best Regards,
+
+Kai Jiang
+ 
+ 
+
+
+> On Mon, Jun 29, 2009 at 11:49:31AM +0800, Kai Jiang wrote:
+>   
+>
+>   
+>> >From a01ede69772634b30a83b44eada5a8db66f8463a Mon Sep 17 00:00:00 2001
+>> From: Kai Jiang <Kai.Jiang@freescale.com>
+>> Date: Mon, 29 Jun 2009 11:25:58 +0800
+>> Subject: [PATCH] When moving virtual space straight to one side in the screen(ex.
+>>  straight to the left),finally the virtual space will move outside
+>>  of the real screen. Then the xoffset or yoffset will be nagative
+>>  value(transfered from user application) to indicate that the virtual
+>>  space is beyond the screen boundary. In the function fb_pan_disaplay,
+>>  xoffset and yoffset should be checked to ensure that, when they are
+>>  negative, the virtual space will not move any more,and the function
+>>  will return an error. However, xoffset and yoffset in the structure
+>>  fb_var_screeninfo are "__u32" type, here need to transfer them to
+>>  "int" type for comparing.
+>>
+>> Signed-off-by: Kai Jiang <Kai.Jiang@freescale.com>
+>> ---
+>>  drivers/video/fbmem.c |    5 ++++-
+>>  1 files changed, 4 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+>> index d412a1d..27628de 100644
+>> --- a/drivers/video/fbmem.c
+>> +++ b/drivers/video/fbmem.c
+>> @@ -855,6 +855,8 @@ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
+>>  {
+>>  	struct fb_fix_screeninfo *fix = &info->fix;
+>>  	unsigned int yres = info->var.yres;
+>> +	int xoffset = var->xoffset;
+>> +	int yoffset = var->yoffset;
+>>  	int err = 0;
+>>  
+>>  	if (var->yoffset > 0) {
+>> @@ -873,7 +875,8 @@ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
+>>  
+>>  	if (err || !info->fbops->fb_pan_display ||
+>>  	    var->yoffset + yres > info->var.yres_virtual ||
+>> -	    var->xoffset + info->var.xres > info->var.xres_virtual)
+>> +	    var->xoffset + info->var.xres > info->var.xres_virtual ||
+>> +	    xoffset < 0 || yoffset < 0)
+>>     
+>
+> Well negative xoffset/yoffset don't really exist so what you're
+> essentially checking is whether offset+res overflows. Your check will
+> not catch all overflows though. xres/yres would have to be huge
+> (> 2^31) to cause such overflows though so your check should catch all
+> cases that can happen in practice. However I think it would be better
+> to make the overflow check clearer (eg. 'offset + res < res').
+>
+>   
 
 
 ------------------------------------------------------------------------------

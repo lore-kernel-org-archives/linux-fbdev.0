@@ -1,67 +1,41 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: 
- [linux-fbdev-devel][PATCH]fb_pan_display:add x/yoffset check
-Date: Fri, 03 Jul 2009 18:11:58 +0200
-Message-ID: <4A4E2DCE.1060706@gmx.de>
-References: <4A4839CB.8020801@freescale.com>
-	<20090629103936.GJ9980@sci.fi>	<4A4985C0.2040800@freescale.com>
-	<20090703153029.GK9980@sci.fi>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH] fb/intelfb: conflict with DRM_I915 and hide by default
+Date: Fri, 3 Jul 2009 11:24:46 -0700
+Message-ID: <20090703112446.5a69971b@jbarnes-g45>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <FlorianSchandinat@gmx.de>) id 1MMlRu-00022x-M8
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 16:17:18 +0000
-Received: from mail.gmx.net ([213.165.64.20])
-	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1MMlRn-000153-9J for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 16:17:18 +0000
-In-Reply-To: <20090703153029.GK9980@sci.fi>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Kai Jiang <b18973@freescale.com>, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758663AbZGCSY4@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: airlied@linux.ie, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Ville Syrj=E4l=E4 schrieb:
->> So here we have to check the whether the x/yoffset is smaller than zero.=
- If the offset is smaller than zero, in the driver, we should not move the =
-virtual screen any more.
-> =
+Users get confused by this driver.  It's really a special purpose
+embedded driver, and causes a lot of problems if enabled.  So hide it
+under EMBEDDED by default, and make sure it doesn't get enabled with
+the i915 DRM driver.
 
-> Checking for overflow will catch you buggy application's negative
-> values too.
+Dave, I'm hoping you can feed this to Linus through your tree.  It's
+appropriate for 2.6.31 I think.
 
-That's true, but the problem lies in the current implementation first =
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-adding the resolution, which results in small negative [0 to =
-
--resolution] values (=3Dlarge positives) being accepted as they overflow =
-
-during add and become small positive values.
-I'd recommend changing
-
-var->yoffset + yres > info->var.yres_virtual ||
-var->xoffset + info->var.xres > info->var.xres_virtual
-
-to
-
-var->yoffset > info->var.yres_virtual - yres ||
-var->xoffset > info->var.xres_virtual - info->var.xres
-
-
-Greetings,
-
-Florian Tobias Schandinat
-
----------------------------------------------------------------------------=
----
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d6d65ef..ec12f7a 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1117,12 +1117,13 @@ config FB_CARILLO_RANCH
+ 
+ config FB_INTEL
+ 	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
++	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL && EMBEDDED
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_BOOT_VESA_SUPPORT if FB_INTEL = y
++	depends on !DRM_I915
+ 	help
+ 	  This driver supports the on-board graphics built in to the Intel
+           830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.

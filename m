@@ -1,26 +1,26 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Subject: Re: 
-	[linux-fbdev-devel][PATCH]fb_pan_display:add x/yoffset check
-Date: Fri, 3 Jul 2009 18:30:29 +0300
-Message-ID: <20090703153029.GK9980@sci.fi>
-References: <4A4839CB.8020801@freescale.com> <20090629103936.GJ9980@sci.fi>
-	<4A4985C0.2040800@freescale.com>
+ [linux-fbdev-devel][PATCH]fb_pan_display:add x/yoffset check
+Date: Fri, 03 Jul 2009 18:11:58 +0200
+Message-ID: <4A4E2DCE.1060706@gmx.de>
+References: <4A4839CB.8020801@freescale.com>
+	<20090629103936.GJ9980@sci.fi>	<4A4985C0.2040800@freescale.com>
+	<20090703153029.GK9980@sci.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <syrjala@sci.fi>) id 1MMkiq-0000bO-2v
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <FlorianSchandinat@gmx.de>) id 1MMlRu-00022x-M8
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 15:30:44 +0000
-Received: from smtp6.welho.com ([213.243.153.40])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MMkil-0005KP-9H for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 15:30:44 +0000
-Content-Disposition: inline
-In-Reply-To: <4A4985C0.2040800@freescale.com>
+	Fri, 03 Jul 2009 16:17:18 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MMlRn-000153-9J for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 03 Jul 2009 16:17:18 +0000
+In-Reply-To: <20090703153029.GK9980@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,47 +30,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Kai Jiang <b18973@freescale.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Kai Jiang <b18973@freescale.com>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Jun 30, 2009 at 11:25:52AM +0800, Kai Jiang wrote:
+Ville Syrj=E4l=E4 schrieb:
+>> So here we have to check the whether the x/yoffset is smaller than zero.=
+ If the offset is smaller than zero, in the driver, we should not move the =
+virtual screen any more.
 > =
 
-> xres,yres,xres_virtual,yres_virtual will be set in the display driver, th=
-ey have actual value which match the screen(will not very huge).
-> =
+> Checking for overflow will catch you buggy application's negative
+> values too.
 
-> And here, these lines are not checking the overflowing, but checking whet=
-her the virtual space display is beyond the real screen.
-> =
+That's true, but the problem lies in the current implementation first =
 
-> Take x boundary for example:(the screen x and virtual x relationship shou=
-ld be:)
-> xres+xoffset<xres_vritual && xoffset>0
-> This insure that, in the real screen, there are virtual picture display i=
-n the screen. When we move the virtual picture to the left, the xoffset wil=
-l be smaller and smaller
-> to indicate the virtual picture is moving to the left. Finally, the xoffs=
-et will be zero when the screen left boundary and virtual picture left boun=
-dary overlap. When virtual display is still moving to the left, the xoffset=
- will be negative. And what should be displayed in the gap between screen l=
-eft boundary and virtual space left boundary?
+adding the resolution, which results in small negative [0 to =
 
-If you're storing negative values into xoffset/yoffset your application
-is buggy. Just fix it.
+-resolution] values (=3Dlarge positives) being accepted as they overflow =
 
-> So here we have to check the whether the x/yoffset is smaller than zero. =
-If the offset is smaller than zero, in the driver, we should not move the v=
-irtual screen any more.
+during add and become small positive values.
+I'd recommend changing
 
-Checking for overflow will catch you buggy application's negative
-values too.
+var->yoffset + yres > info->var.yres_virtual ||
+var->xoffset + info->var.xres > info->var.xres_virtual
 
--- =
+to
 
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+var->yoffset > info->var.yres_virtual - yres ||
+var->xoffset > info->var.xres_virtual - info->var.xres
+
+
+Greetings,
+
+Florian Tobias Schandinat
 
 ---------------------------------------------------------------------------=
 ---

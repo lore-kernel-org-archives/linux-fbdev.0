@@ -1,175 +1,76 @@
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-Subject: [PATCH] media/omap: adding __init/__exit macros to lcd_drivers
-Date: Fri, 3 Jul 2009 14:39:40 +0200
-Message-ID: <200907031439.40456.PeterHuewe@gmx.de>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: 
+	[linux-fbdev-devel][PATCH]fb_pan_display:add x/yoffset check
+Date: Fri, 3 Jul 2009 18:30:29 +0300
+Message-ID: <20090703153029.GK9980@sci.fi>
+References: <4A4839CB.8020801@freescale.com> <20090629103936.GJ9980@sci.fi>
+	<4A4985C0.2040800@freescale.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <syrjala@sci.fi>) id 1MMkiq-0000bO-2v
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 03 Jul 2009 15:30:44 +0000
+Received: from smtp6.welho.com ([213.243.153.40])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MMkil-0005KP-9H for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 03 Jul 2009 15:30:44 +0000
 Content-Disposition: inline
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: Jiri Kosina <trivial@kernel.org>
-Cc: imre.deak@nokia.com, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <4A4985C0.2040800@freescale.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Kai Jiang <b18973@freescale.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Peter Huewe <peterhuewe@gmx.de>
+On Tue, Jun 30, 2009 at 11:25:52AM +0800, Kai Jiang wrote:
+> =
 
-Trivial patch which adds the __init and __exit macros to the module_init /
-module_exit functions to several files in drivers/video/omap/
+> xres,yres,xres_virtual,yres_virtual will be set in the display driver, th=
+ey have actual value which match the screen(will not very huge).
+> =
 
-linux version 2.6.31-rc1 - linus git tree
+> And here, these lines are not checking the overflowing, but checking whet=
+her the virtual space display is beyond the real screen.
+> =
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> Take x boundary for example:(the screen x and virtual x relationship shou=
+ld be:)
+> xres+xoffset<xres_vritual && xoffset>0
+> This insure that, in the real screen, there are virtual picture display i=
+n the screen. When we move the virtual picture to the left, the xoffset wil=
+l be smaller and smaller
+> to indicate the virtual picture is moving to the left. Finally, the xoffs=
+et will be zero when the screen left boundary and virtual picture left boun=
+dary overlap. When virtual display is still moving to the left, the xoffset=
+ will be negative. And what should be displayed in the gap between screen l=
+eft boundary and virtual space left boundary?
+
+If you're storing negative values into xoffset/yoffset your application
+is buggy. Just fix it.
+
+> So here we have to check the whether the x/yoffset is smaller than zero. =
+If the offset is smaller than zero, in the driver, we should not move the v=
+irtual screen any more.
+
+Checking for overflow will catch you buggy application's negative
+values too.
+
+-- =
+
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
+
+---------------------------------------------------------------------------=
 ---
-diff --git a/drivers/video/omap/lcd_h3.c b/drivers/video/omap/lcd_h3.c
-index 2486237..417ae5e 100644
---- a/drivers/video/omap/lcd_h3.c
-+++ b/drivers/video/omap/lcd_h3.c
-@@ -124,12 +124,12 @@ struct platform_driver h3_panel_driver = {
- 	},
- };
- 
--static int h3_panel_drv_init(void)
-+static int __init h3_panel_drv_init(void)
- {
- 	return platform_driver_register(&h3_panel_driver);
- }
- 
--static void h3_panel_drv_cleanup(void)
-+static void __exit h3_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&h3_panel_driver);
- }
-diff --git a/drivers/video/omap/lcd_h4.c b/drivers/video/omap/lcd_h4.c
-index 6ff5643..0c398bd 100644
---- a/drivers/video/omap/lcd_h4.c
-+++ b/drivers/video/omap/lcd_h4.c
-@@ -102,12 +102,12 @@ static struct platform_driver h4_panel_driver = {
- 	},
- };
- 
--static int h4_panel_drv_init(void)
-+static int __init h4_panel_drv_init(void)
- {
- 	return platform_driver_register(&h4_panel_driver);
- }
- 
--static void h4_panel_drv_cleanup(void)
-+static void __exit h4_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&h4_panel_driver);
- }
-diff --git a/drivers/video/omap/lcd_inn1510.c b/drivers/video/omap/lcd_inn1510.c
-index 6953ed4..cdbd8bb 100644
---- a/drivers/video/omap/lcd_inn1510.c
-+++ b/drivers/video/omap/lcd_inn1510.c
-@@ -109,12 +109,12 @@ struct platform_driver innovator1510_panel_driver = {
- 	},
- };
- 
--static int innovator1510_panel_drv_init(void)
-+static int __init innovator1510_panel_drv_init(void)
- {
- 	return platform_driver_register(&innovator1510_panel_driver);
- }
- 
--static void innovator1510_panel_drv_cleanup(void)
-+static void __exit innovator1510_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&innovator1510_panel_driver);
- }
-diff --git a/drivers/video/omap/lcd_inn1610.c b/drivers/video/omap/lcd_inn1610.c
-index 4c4f7ee..268f7f8 100644
---- a/drivers/video/omap/lcd_inn1610.c
-+++ b/drivers/video/omap/lcd_inn1610.c
-@@ -133,12 +133,12 @@ struct platform_driver innovator1610_panel_driver = {
- 	},
- };
- 
--static int innovator1610_panel_drv_init(void)
-+static int __init innovator1610_panel_drv_init(void)
- {
- 	return platform_driver_register(&innovator1610_panel_driver);
- }
- 
--static void innovator1610_panel_drv_cleanup(void)
-+static void __exit innovator1610_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&innovator1610_panel_driver);
- }
-diff --git a/drivers/video/omap/lcd_osk.c b/drivers/video/omap/lcd_osk.c
-index 379c96d..b3fa88b 100644
---- a/drivers/video/omap/lcd_osk.c
-+++ b/drivers/video/omap/lcd_osk.c
-@@ -127,12 +127,12 @@ struct platform_driver osk_panel_driver = {
- 	},
- };
- 
--static int osk_panel_drv_init(void)
-+static int __init osk_panel_drv_init(void)
- {
- 	return platform_driver_register(&osk_panel_driver);
- }
- 
--static void osk_panel_drv_cleanup(void)
-+static void __exit osk_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&osk_panel_driver);
- }
-diff --git a/drivers/video/omap/lcd_palmte.c b/drivers/video/omap/lcd_palmte.c
-index 2183173..4bf3c79 100644
---- a/drivers/video/omap/lcd_palmte.c
-+++ b/drivers/video/omap/lcd_palmte.c
-@@ -108,12 +108,12 @@ struct platform_driver palmte_panel_driver = {
- 	},
- };
- 
--static int palmte_panel_drv_init(void)
-+static int __init palmte_panel_drv_init(void)
- {
- 	return platform_driver_register(&palmte_panel_driver);
- }
- 
--static void palmte_panel_drv_cleanup(void)
-+static void __exit palmte_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&palmte_panel_driver);
- }
-diff --git a/drivers/video/omap/lcd_palmtt.c b/drivers/video/omap/lcd_palmtt.c
-index 57b0f6c..48ea1f9 100644
---- a/drivers/video/omap/lcd_palmtt.c
-+++ b/drivers/video/omap/lcd_palmtt.c
-@@ -113,12 +113,12 @@ struct platform_driver palmtt_panel_driver = {
- 	},
- };
- 
--static int palmtt_panel_drv_init(void)
-+static int __init palmtt_panel_drv_init(void)
- {
- 	return platform_driver_register(&palmtt_panel_driver);
- }
- 
--static void palmtt_panel_drv_cleanup(void)
-+static void __exit palmtt_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&palmtt_panel_driver);
- }
-diff --git a/drivers/video/omap/lcd_palmz71.c b/drivers/video/omap/lcd_palmz71.c
-index d33d78b..0697d29 100644
---- a/drivers/video/omap/lcd_palmz71.c
-+++ b/drivers/video/omap/lcd_palmz71.c
-@@ -109,12 +109,12 @@ struct platform_driver palmz71_panel_driver = {
- 	},
- };
- 
--static int palmz71_panel_drv_init(void)
-+static int __init palmz71_panel_drv_init(void)
- {
- 	return platform_driver_register(&palmz71_panel_driver);
- }
- 
--static void palmz71_panel_drv_cleanup(void)
-+static void __exit palmz71_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&palmz71_panel_driver);
- }

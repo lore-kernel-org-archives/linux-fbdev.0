@@ -1,81 +1,175 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH] [drivers] [fb] S3C-fb: fix off-by-one
-	bug in loop indexes
-Date: Fri, 03 Jul 2009 08:56:38 +0200
-Message-ID: <E4D3F24EA6C9E54F817833EAE0D912AC076E71C036@bssrvexch01.BS.local>
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+Subject: [PATCH] media/omap: adding __init/__exit macros to lcd_drivers
+Date: Fri, 3 Jul 2009 14:39:40 +0200
+Message-ID: <200907031439.40456.PeterHuewe@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <m.szyprowski@samsung.com>) id 1MMciw-0001HX-4D
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 06:58:18 +0000
-Received: from mailout1.w1.samsung.com ([210.118.77.11])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MMcip-0004NB-M0 for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 06:58:18 +0000
-Received: from eu_spt2 (mailout1.w1.samsung.com [210.118.77.11])
-	by mailout1.w1.samsung.com
-	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
-	with ESMTP id <0KM700C9L20OMI@mailout1.w1.samsung.com> for
-	linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 07:58:00 +0100 (BST)
-Received: from linux.samsung.com ([106.116.38.10])
-	by spt2.w1.samsung.com (iPlanet Messaging Server 5.2 Patch 2 (built Jul
-	14 2004)) with ESMTPA id <0KM700LEM20OZT@spt2.w1.samsung.com> for
-	linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 03 Jul 2009 07:58:01 +0100 (BST)
-Content-language: en-US
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Jiri Kosina <trivial@kernel.org>
+Cc: imre.deak@nokia.com, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-From: Pawel Osciak <p.osciak@samsung.com>
+From: Peter Huewe <peterhuewe@gmx.de>
 
-Fixed off-by-one bug in loop indexes - some elements beyond windows' array were
-accessed, which might result in memory access violations when removing/suspending
-the device.
+Trivial patch which adds the __init and __exit macros to the module_init /
+module_exit functions to several files in drivers/video/omap/
 
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+linux version 2.6.31-rc1 - linus git tree
 
-
---- 
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 094bfeb..92f2a59 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -970,7 +970,7 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
- 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
- 	int win;
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+diff --git a/drivers/video/omap/lcd_h3.c b/drivers/video/omap/lcd_h3.c
+index 2486237..417ae5e 100644
+--- a/drivers/video/omap/lcd_h3.c
++++ b/drivers/video/omap/lcd_h3.c
+@@ -124,12 +124,12 @@ struct platform_driver h3_panel_driver = {
+ 	},
+ };
  
--	for (win = 0; win <= S3C_FB_MAX_WIN; win++)
-+	for (win = 0; win < S3C_FB_MAX_WIN; win++)
- 		if (sfb->windows[win])
- 			s3c_fb_release_win(sfb, sfb->windows[win]);
+-static int h3_panel_drv_init(void)
++static int __init h3_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&h3_panel_driver);
+ }
  
-@@ -994,7 +994,7 @@ static int s3c_fb_suspend(struct platform_device *pdev, pm_message_t state)
- 	struct s3c_fb_win *win;
- 	int win_no;
+-static void h3_panel_drv_cleanup(void)
++static void __exit h3_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&h3_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_h4.c b/drivers/video/omap/lcd_h4.c
+index 6ff5643..0c398bd 100644
+--- a/drivers/video/omap/lcd_h4.c
++++ b/drivers/video/omap/lcd_h4.c
+@@ -102,12 +102,12 @@ static struct platform_driver h4_panel_driver = {
+ 	},
+ };
  
--	for (win_no = S3C_FB_MAX_WIN; win_no >= 0; win_no--) {
-+	for (win_no = S3C_FB_MAX_WIN - 1; win_no >= 0; win_no--) {
- 		win = sfb->windows[win_no];
- 		if (!win)
- 			continue;
-
-
-------------------------------------------------------------------------------
+-static int h4_panel_drv_init(void)
++static int __init h4_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&h4_panel_driver);
+ }
+ 
+-static void h4_panel_drv_cleanup(void)
++static void __exit h4_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&h4_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_inn1510.c b/drivers/video/omap/lcd_inn1510.c
+index 6953ed4..cdbd8bb 100644
+--- a/drivers/video/omap/lcd_inn1510.c
++++ b/drivers/video/omap/lcd_inn1510.c
+@@ -109,12 +109,12 @@ struct platform_driver innovator1510_panel_driver = {
+ 	},
+ };
+ 
+-static int innovator1510_panel_drv_init(void)
++static int __init innovator1510_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&innovator1510_panel_driver);
+ }
+ 
+-static void innovator1510_panel_drv_cleanup(void)
++static void __exit innovator1510_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&innovator1510_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_inn1610.c b/drivers/video/omap/lcd_inn1610.c
+index 4c4f7ee..268f7f8 100644
+--- a/drivers/video/omap/lcd_inn1610.c
++++ b/drivers/video/omap/lcd_inn1610.c
+@@ -133,12 +133,12 @@ struct platform_driver innovator1610_panel_driver = {
+ 	},
+ };
+ 
+-static int innovator1610_panel_drv_init(void)
++static int __init innovator1610_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&innovator1610_panel_driver);
+ }
+ 
+-static void innovator1610_panel_drv_cleanup(void)
++static void __exit innovator1610_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&innovator1610_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_osk.c b/drivers/video/omap/lcd_osk.c
+index 379c96d..b3fa88b 100644
+--- a/drivers/video/omap/lcd_osk.c
++++ b/drivers/video/omap/lcd_osk.c
+@@ -127,12 +127,12 @@ struct platform_driver osk_panel_driver = {
+ 	},
+ };
+ 
+-static int osk_panel_drv_init(void)
++static int __init osk_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&osk_panel_driver);
+ }
+ 
+-static void osk_panel_drv_cleanup(void)
++static void __exit osk_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&osk_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_palmte.c b/drivers/video/omap/lcd_palmte.c
+index 2183173..4bf3c79 100644
+--- a/drivers/video/omap/lcd_palmte.c
++++ b/drivers/video/omap/lcd_palmte.c
+@@ -108,12 +108,12 @@ struct platform_driver palmte_panel_driver = {
+ 	},
+ };
+ 
+-static int palmte_panel_drv_init(void)
++static int __init palmte_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&palmte_panel_driver);
+ }
+ 
+-static void palmte_panel_drv_cleanup(void)
++static void __exit palmte_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&palmte_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_palmtt.c b/drivers/video/omap/lcd_palmtt.c
+index 57b0f6c..48ea1f9 100644
+--- a/drivers/video/omap/lcd_palmtt.c
++++ b/drivers/video/omap/lcd_palmtt.c
+@@ -113,12 +113,12 @@ struct platform_driver palmtt_panel_driver = {
+ 	},
+ };
+ 
+-static int palmtt_panel_drv_init(void)
++static int __init palmtt_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&palmtt_panel_driver);
+ }
+ 
+-static void palmtt_panel_drv_cleanup(void)
++static void __exit palmtt_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&palmtt_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_palmz71.c b/drivers/video/omap/lcd_palmz71.c
+index d33d78b..0697d29 100644
+--- a/drivers/video/omap/lcd_palmz71.c
++++ b/drivers/video/omap/lcd_palmz71.c
+@@ -109,12 +109,12 @@ struct platform_driver palmz71_panel_driver = {
+ 	},
+ };
+ 
+-static int palmz71_panel_drv_init(void)
++static int __init palmz71_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&palmz71_panel_driver);
+ }
+ 
+-static void palmz71_panel_drv_cleanup(void)
++static void __exit palmz71_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&palmz71_panel_driver);
+ }

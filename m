@@ -1,41 +1,66 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] fb/intelfb: conflict with DRM_I915 and hide by default
-Date: Fri, 3 Jul 2009 11:24:46 -0700
-Message-ID: <20090703112446.5a69971b@jbarnes-g45>
+From: Julia Lawall <julia@diku.dk>
+Subject: [PATCH 2/3] drivers/video/imxfb.c: Fix resource size off by 1 error
+Date: Sat, 4 Jul 2009 23:32:29 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.0907042331490.9841@ask.diku.dk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758663AbZGCSY4@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754421AbZGDVci@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: airlied@linux.ie, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: kernel@pengutronix.de, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-Users get confused by this driver.  It's really a special purpose
-embedded driver, and causes a lot of problems if enabled.  So hide it
-under EMBEDDED by default, and make sure it doesn't get enabled with
-the i915 DRM driver.
+From: Julia Lawall <julia@diku.dk>
 
-Dave, I'm hoping you can feed this to Linus through your tree.  It's
-appropriate for 2.6.31 I think.
+In the first case, the change is not semantics-preserving, but
+resource_size is used at the corresponding call to request_mem_region in
+the same function.
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+In the second case, the change is semantics-preserving.
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index d6d65ef..ec12f7a 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1117,12 +1117,13 @@ config FB_CARILLO_RANCH
+The problem was found using the following semantic patch:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+struct resource *res;
+@@
+
+- (res->end - res->start) + 1
++ resource_size(res)
+
+@@
+struct resource *res;
+@@
+
+- res->end - res->start
++ BAD(resource_size(res))
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/imxfb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -u -p a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+--- a/drivers/video/imxfb.c 2009-04-13 16:04:25.000000000 +0200
++++ b/drivers/video/imxfb.c 2009-07-04 21:37:48.000000000 +0200
+@@ -754,7 +754,7 @@ failed_map:
+ failed_getclock:
+ 	iounmap(fbi->regs);
+ failed_ioremap:
+-	release_mem_region(res->start, res->end - res->start);
++	release_mem_region(res->start, resource_size(res));
+ failed_req:
+ 	kfree(info->pseudo_palette);
+ failed_init:
+@@ -785,7 +785,7 @@ static int __devexit imxfb_remove(struct
+ 	framebuffer_release(info);
  
- config FB_INTEL
- 	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support (EXPERIMENTAL)"
--	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
-+	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL && EMBEDDED
- 	select FB_MODE_HELPERS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_BOOT_VESA_SUPPORT if FB_INTEL = y
-+	depends on !DRM_I915
- 	help
- 	  This driver supports the on-board graphics built in to the Intel
-           830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.
+ 	iounmap(fbi->regs);
+-	release_mem_region(res->start, res->end - res->start + 1);
++	release_mem_region(res->start, resource_size(res));
+ 	clk_disable(fbi->clk);
+ 	clk_put(fbi->clk);
+ 

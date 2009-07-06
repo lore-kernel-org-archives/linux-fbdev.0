@@ -1,102 +1,112 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [PATCH 5/5] at91/atmel_lcdfb: add at91sam9g10 support to atmel
- LCD	driver
-Date: Mon, 06 Jul 2009 12:32:53 +0200
-Message-ID: <4A51D2D5.2030707@atmel.com>
-References: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com> <1245341772-1689-6-git-send-email-nicolas.ferre@atmel.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Subject: Re: 
+ [linux-fbdev-devel][PATCH]fb_pan_display:add x/yoffset check
+Date: Mon, 06 Jul 2009 16:12:50 +0200
+Message-ID: <4A520662.1030504@gmx.de>
+References: <4A4839CB.8020801@freescale.com>
+	<20090629103936.GJ9980@sci.fi>	<4A4985C0.2040800@freescale.com>
+	<20090703153029.GK9980@sci.fi> <4A4E2DCE.1060706@gmx.de>
+	<4A5168D3.3050502@freescale.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755324AbZGFKpQ@vger.kernel.org>
-In-Reply-To: <1245341772-1689-6-git-send-email-nicolas.ferre@atmel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-arm-kernel@lists.arm.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, avictor.za@gmail.com, patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org, Hong Xu <hong.xu@atmel.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <FlorianSchandinat@gmx.de>) id 1MNp0v-0002Ew-DY
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 06 Jul 2009 14:17:49 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MNp0u-0004as-Sh for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 06 Jul 2009 14:17:49 +0000
+In-Reply-To: <4A5168D3.3050502@freescale.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Kai Jiang <b18973@freescale.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+Kai Jiang schrieb:
+> Florian Tobias Schandinat wrote:
+>> Ville Syrj=E4l=E4 schrieb:
+>>>> So here we have to check the whether the x/yoffset is smaller than =
 
-Nicolas Ferre :
-> From: Hong Xu <hong.xu@atmel.com>
-> 
-> Modify atmel LCD driver: atmel_lcdfb for at91sam9g10.  This add a clock
-> management equivalent to at91sam9261.
+>>>> zero. If the offset is smaller than zero, in the driver, we should =
 
-Can we consider an inclusion in linux-fbdev ?
+>>>> not move the virtual screen any more.
+>>>
+>>> Checking for overflow will catch you buggy application's negative
+>>> values too.
+>>
+>> That's true, but the problem lies in the current implementation first =
 
-> Signed-off-by: Hong Xu <hong.xu@atmel.com>
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>> adding the resolution, which results in small negative [0 to =
 
-Andrew Victor added his:
-Acked-by: Andrew Victor <linux@maxim.org.za>
+>> -resolution] values (=3Dlarge positives) being accepted as they overflow =
 
-> ---
->  drivers/video/Kconfig           |    4 ++--
->  drivers/video/atmel_lcdfb.c     |    6 ++++--
->  drivers/video/backlight/Kconfig |    2 +-
->  3 files changed, 7 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 5152168..2dbede4 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -933,7 +933,7 @@ config FB_S1D13XXX
->  
->  config FB_ATMEL
->  	tristate "AT91/AT32 LCD Controller support"
-> -	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
-> +	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9G10 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> @@ -949,7 +949,7 @@ config FB_INTSRAM
->  
->  config FB_ATMEL_STN
->  	bool "Use a STN display with AT91/AT32 LCD Controller"
-> -	depends on FB_ATMEL && MACH_AT91SAM9261EK
-> +	depends on FB_ATMEL && (MACH_AT91SAM9261EK || MACH_AT91SAM9G10EK)
->  	default n
->  	help
->  	  Say Y if you want to connect a STN LCD display to the AT91/AT32 LCD
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 9a577a8..fc10ac5 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -188,7 +188,8 @@ static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
->  {
->  	unsigned long value;
->  
-> -	if (!(cpu_is_at91sam9261() || cpu_is_at32ap7000()))
-> +	if (!(cpu_is_at91sam9261() || cpu_is_at91sam9g10()
-> +		|| cpu_is_at32ap7000()))
->  		return xres;
->  
->  	value = xres;
-> @@ -827,7 +828,8 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
->  	info->fix = atmel_lcdfb_fix;
->  
->  	/* Enable LCDC Clocks */
-> -	if (cpu_is_at91sam9261() || cpu_is_at32ap7000()) {
-> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()
-> +	 || cpu_is_at32ap7000()) {
->  		sinfo->bus_clk = clk_get(dev, "hck1");
->  		if (IS_ERR(sinfo->bus_clk)) {
->  			ret = PTR_ERR(sinfo->bus_clk);
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index f9d19be..90861cd 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -110,7 +110,7 @@ config BACKLIGHT_CLASS_DEVICE
->  config BACKLIGHT_ATMEL_LCDC
->  	bool "Atmel LCDC Contrast-as-Backlight control"
->  	depends on BACKLIGHT_CLASS_DEVICE && FB_ATMEL
-> -	default y if MACH_SAM9261EK || MACH_SAM9263EK
-> +	default y if MACH_SAM9261EK || MACH_SAM9G10EK || MACH_SAM9263EK
->  	help
->  	  This provides a backlight control internal to the Atmel LCDC
->  	  driver.  If the LCD "contrast control" on your board is wired
+>> during add and become small positive values.
+>> I'd recommend changing
+>>
+>> var->yoffset + yres > info->var.yres_virtual ||
+>> var->xoffset + info->var.xres > info->var.xres_virtual
+>>
+>> to
+>>
+>> var->yoffset > info->var.yres_virtual - yres ||
+>> var->xoffset > info->var.xres_virtual - info->var.xres
+>>
+> I am not sure why do we have these change. Could you give a detail =
+
+> description or an example?
+
+A small program to illustrate it:
+
+#include <stdio.h>
+int main()
+{
+         unsigned int    a =3D -1;
+         printf( "%X\n%X\n", a, a+1 );
+         return 0;
+}
+
+It starts with "-1" in an u32 being represented as "0xFFFFFFFF", which =
+
+would be caught by ">". The problem in the current code is it first adds =
+
+the resolution before comparison and this causes an overflow.
+Let's say the virtual resolution matches the real resolution:
+yoffset + yres > yres
+There the left side is evaluated at first:
+(yoffset + yres)
+You accept everything that is <=3Dyres. In classical mathematics you would =
+
+say yoffset has to be 0, but unfortunately this codes accept many more =
+
+as it can overflow. You get
+yoffset =3D -1:	(yres-1) > yres
+offset =3D -yres:	0 > yres
+So as you noticed, the current code will not just accept 0 as yoffset, =
+
+but the whole range [-yres..0]. This can be fixed by moving the =
+
+calculation to the right side, where we have trusted values, that do not =
+
+cause an overflow.
+
+Hope this helps.
 
 
-Best regards,
--- 
-Nicolas Ferre
+Greetings,
+
+Florian Tobias Schandinat
+
+---------------------------------------------------------------------------=
+---

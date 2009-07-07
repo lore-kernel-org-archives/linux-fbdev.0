@@ -1,26 +1,24 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: 
- [linux-fbdev-devel][PATCH]fb_pan_display:add x/yoffset check
-Date: Tue, 07 Jul 2009 06:01:10 +0200
-Message-ID: <4A52C886.4090605@gmx.de>
-References: <4A4839CB.8020801@freescale.com>	<20090629103936.GJ9980@sci.fi>	<4A4985C0.2040800@freescale.com>	<20090703153029.GK9980@sci.fi>
-	<4A4E2DCE.1060706@gmx.de>	<4A5168D3.3050502@freescale.com>
-	<4A520662.1030504@gmx.de> <4A52B63D.2050000@freescale.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: [PATCH] au1200fb: fix oops due to
+ uninitialized fb_info.lock mutex
+Date: Tue, 7 Jul 2009 17:44:11 +0200
+Message-ID: <20090707174411.887c7024.krzysztof.h1@poczta.fm>
+References: <4A53077F.50307@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <FlorianSchandinat@gmx.de>) id 1MO1wd-0001DK-2s
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MOCgj-0005HM-5k
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Jul 2009 04:06:15 +0000
-Received: from mail.gmx.net ([213.165.64.20])
-	by 1b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1MO1wP-0005Cm-To for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Jul 2009 04:06:10 +0000
-In-Reply-To: <4A52B63D.2050000@freescale.com>
+	Tue, 07 Jul 2009 15:34:33 +0000
+Received: from smtp239.poczta.interia.pl ([217.74.64.239])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MOCgZ-0001OT-Up for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 07 Jul 2009 15:34:28 +0000
+In-Reply-To: <4A53077F.50307@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,107 +28,49 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Kai Jiang <b18973@freescale.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Manuel Lauss <manuel.lauss@googlemail.com>
+Cc: linux-fbdev-devel@lists.sf.net
 
-Kai Jiang schrieb:
-> While, I suppose when the patch is applied, it should avoid what you =
+On Tue, 07 Jul 2009 10:29:51 +0200
+Manuel Lauss <manuel.lauss@googlemail.com> wrote:
 
-> mentioned. Following is the code applied patch.
-> (And the x/yres and x/yres_virtual have fix value which are defined and =
+> commit 4148df9b0f38bdd362dd91d52076926c11cbe5a9 breaks au1200fb due to
+> fb_info.lock now being uninitialized at the time of the
+> register_frambuffer call:
+> 
+> CPU 0 Unable to handle kernel paging request at virtual address 00000000, epc == 8038ccd4, ra == 802412d4
+> Call Trace:
+> [<8038ccd4>] __mutex_lock_slowpath+0x3c/0xe4
+> [<802412d4>] lock_fb_info+0x20/0x50
+> [<80242158>] register_framebuffer+0x264/0x2a4
+> [<8024f8c4>] au1200fb_drv_probe+0x308/0x444
+> [<80273ef8>] driver_probe_device+0xbc/0x184
+> [<8027402c>] __driver_attach+0x6c/0xa4
+> [<802736bc>] bus_for_each_dev+0x60/0xb0
+> [<80272e20>] bus_add_driver+0xc8/0x24c
+> [<802743f4>] driver_register+0xdc/0x190
+> [<8047d130>] au1200fb_init+0x39c/0x3cc
+> [<80100460>] _stext+0x60/0x1c8
+> [<8046f334>] kernel_init+0xc8/0x134
+> [<80106f64>] kernel_thread_helper+0x10/0x18
+> 
+> This band-aid fixes this oops.
+> 
 
-> checked in the driver.)
+Please wait a little. Currently, I, Paul Mundt and Linus discuss how to fix all drivers broken by the commit 4148df9b0f38bdd362dd91d52076.
 
-That's true as my explanation described the problem with the current =
+Kind regards,
+Krzysztof
 
-code you encountered.
-I also think that your patch will fix it:
-
-> fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
-> {      ......
->         int xoffset =3D var->xoffset;                 // here transfer =
-
-> x/yoffset to "int" type for comparison
->         int yoffset =3D var->yoffset;
->        ......
->         if (err || !info->fbops->fb_pan_display ||
->             var->yoffset + yres > info->var.yres_virtual ||        =
-
->             var->xoffset + info->var.xres > info->var.xres_virtual ||    =
-
->             xoffset < 0 || yoffset < 0)             // insure the =
-
-> x/yoffset is large than 0. I think this line can avoid what you concerned.
->                 return -EINVAL;
->        ......
-> }
-
-I only wanted to highlight, that as far as I can see the same behavior =
-
-you want to archive can be archived by changing the current code to:
-
-fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
-{
-        ......
-         if (err || !info->fbops->fb_pan_display ||
-             var->yoffset > info->var.yres_virtual - yres ||
-             var->xoffset > info->var.xres_virtual - info->var.xres)
-                 return -EINVAL;
-        ......
-}
-
-> Do you think so? I am happy to know your comments.
-
-I think your patch is fine as it fixes the accepted invalid value.
-There are only a few small disadvantages:
-- its a bit odd to convert unsigned to signed value to check its validity
-- it adds 2 extra compares
-- although not practically relevant, as virtual resolutions>2^31 would =
-
-require an enormous amount of video memory, it would be too strict on =
-
-this side (by checking for signedness in u32 you half the range of =
-
-allowed numbers)
-
-I first got Ville Syrj=E4l=E4 second email a bit wrong (sorry for that). He =
-
-suggests to change your check to an overflow check:
-
-fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
-{
-        ......
-         if (err || !info->fbops->fb_pan_display ||
-             var->yoffset + yres > info->var.yres_virtual ||
-             var->xoffset + info->var.xres > info->var.xres_virtual ||
-             var->yoffset + yres < yres ||
-             var->xoffset + info->var.xres < info->var.xres)
-                 return -EINVAL;
-      ......
-}
-
-while my approach is to prevent the overflow.
-I hope that after my last e-mail you understand, that all 3 suggested =
-
-approaches (yours, mine, Ville Syrj=E4l=E4) should fix (at least in my =
-
-opinion) your problem. (as negative values don't exist in unsigned types =
-
-or are actually very large positive integers)
+ 	 
+----------------------------------------------------------------------
+Sprawdz, czy wziac klapki, czy parasolke
+Pogoda na dzis, jutro i pojutrze >> http://link.interia.pl/f224d
 
 
-Greetings,
-
-Florian Tobias Schandinat
-
----------------------------------------------------------------------------=
----
-Enter the BlackBerry Developer Challenge  =
-
-This is your chance to win up to $100,000 in prizes! For a limited time, =
-
-vendors submitting new applications to BlackBerry App World(TM) will have =
-
-the opportunity to enter the BlackBerry Developer Challenge. See full prize =
-
+------------------------------------------------------------------------------
+Enter the BlackBerry Developer Challenge  
+This is your chance to win up to $100,000 in prizes! For a limited time, 
+vendors submitting new applications to BlackBerry App World(TM) will have 
+the opportunity to enter the BlackBerry Developer Challenge. See full prize 
 details at: http://p.sf.net/sfu/blackberry

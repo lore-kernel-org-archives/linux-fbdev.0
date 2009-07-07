@@ -1,27 +1,22 @@
-From: eric miranda <ericitaquera@gmail.com>
-Subject: Re: [Bugme-new] [Bug 13566] New: nvidiafb
-	doesn't get my oooold monitor working
-Date: Tue, 30 Jun 2009 00:11:53 -0300
-Message-ID: <6d1ac2120906292011m22b9eb30y5b9927598551041@mail.gmail.com>
-References: <bug-13566-10286@http.bugzilla.kernel.org/>
-	<20090629160442.0cbd68b8.akpm@linux-foundation.org>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Subject: [PATCH] au1200fb: fix oops due to uninitialized
+	fb_info.lock mutex
+Date: Tue, 07 Jul 2009 10:29:51 +0200
+Message-ID: <4A53077F.50307@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6407963441356503348=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <ericitaquera@gmail.com>) id 1MLTlI-00068K-R0
+	(envelope-from <manuel.lauss@googlemail.com>) id 1MO7dM-0007pM-4K
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jun 2009 03:12:00 +0000
-Received: from qw-out-1920.google.com ([74.125.92.150])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MLTlI-0006BT-0r for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 30 Jun 2009 03:12:00 +0000
-Received: by qw-out-1920.google.com with SMTP id 5so1718338qwc.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 29 Jun 2009 20:11:54 -0700 (PDT)
-In-Reply-To: <20090629160442.0cbd68b8.akpm@linux-foundation.org>
+	Tue, 07 Jul 2009 10:10:44 +0000
+Received: from mail-fx0-f228.google.com ([209.85.220.228])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MO7dF-0004tr-Nx for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 07 Jul 2009 10:10:44 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,207 +26,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: bugzilla-daemon@bugzilla.kernel.org, linux-fbdev-devel@lists.sourceforge.net, bugme-daemon@bugzilla.kernel.org
+To: linux-fbdev-devel@lists.sf.net, Krzysztof Helt <krzysztof.h1@wp.pl>
 
---===============6407963441356503348==
-Content-Type: multipart/alternative; boundary=0016e6469b6a289aa3046d882b91
+commit 4148df9b0f38bdd362dd91d52076926c11cbe5a9 breaks au1200fb due to
+fb_info.lock now being uninitialized at the time of the
+register_frambuffer call:
 
---0016e6469b6a289aa3046d882b91
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+CPU 0 Unable to handle kernel paging request at virtual address 00000000, epc == 8038ccd4, ra == 802412d4
+Call Trace:
+[<8038ccd4>] __mutex_lock_slowpath+0x3c/0xe4
+[<802412d4>] lock_fb_info+0x20/0x50
+[<80242158>] register_framebuffer+0x264/0x2a4
+[<8024f8c4>] au1200fb_drv_probe+0x308/0x444
+[<80273ef8>] driver_probe_device+0xbc/0x184
+[<8027402c>] __driver_attach+0x6c/0xa4
+[<802736bc>] bus_for_each_dev+0x60/0xb0
+[<80272e20>] bus_add_driver+0xc8/0x24c
+[<802743f4>] driver_register+0xdc/0x190
+[<8047d130>] au1200fb_init+0x39c/0x3cc
+[<80100460>] _stext+0x60/0x1c8
+[<8046f334>] kernel_init+0xc8/0x134
+[<80106f64>] kernel_thread_helper+0x10/0x18
 
-Tnx!
+This band-aid fixes this oops.
 
-2009/6/29 Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
+---
+ drivers/video/au1200fb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
->
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
->
-> On Thu, 18 Jun 2009 13:04:12 GMT
-> bugzilla-daemon@bugzilla.kernel.org wrote:
->
-> > http://bugzilla.kernel.org/show_bug.cgi?id=13566
-> >
-> >            Summary: nvidiafb doesn't get my oooold monitor working
-> >            Product: Drivers
-> >            Version: 2.5
-> >     Kernel Version: 2.6.30
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: normal
-> >           Priority: P1
-> >          Component: Video(Other)
-> >         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
-> >         ReportedBy: ericitaquera@gmail.com
-> >         Regression: No
->
-> There's more info at the above link
->
-> >
-> > Nvidiafb doesn't get my ooooooold black & white 7" CRT VGA monitor
-> working. I
-> > have an GeForce 6200 one:
-> >
-> > root@slackade:~# lspci  | grep -i vga
-> > 01:00.0 VGA compatible controller: nVidia Corporation NV44 [GeForce 6200
-> > TurboCache(TM)] (rev a1)
-> >
-> >
-> > This is the dmesg output with this old monitor ( or without any ) plugged
-> to
-> > the VGA output:
-> >
-> > root@slackade:~# dmesg | grep nvidia
-> > nvidiafb 0000:01:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> > nvidiafb: Device ID: 10de0161
-> > nvidiafb: CRTC0 analog not found
-> > nvidiafb: CRTC1 analog not found
-> > nvidiafb: CRTC 1 is currently programmed for TV
-> > nvidiafb: Using TV on CRTC 1
-> > nvidiafb: Panel is TMDS
-> > nvidiafb: MTRR set to ON
-> > nvidiafb: Flat panel dithering disabled
-> > nvidiafb: PCI nVidia NV16 framebuffer (64MB @ 0xD0000000)
-> > root@slackade:~#
-> >
-> > After that, even if I switch to a brand new 1080p lcd the screen just
-> blinks
-> > with weird vertical stripes.
-> >
-> > If I reboot with a newer monitor plugged to VGA output all works fine:
-> >
-> > root@slackade:~# dmesg | grep nvidia
-> > nvidiafb 0000:01:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> > nvidiafb: Device ID: 10de0161
-> > nvidiafb: CRTC0 analog found
-> > nvidiafb: CRTC1 analog not found
-> > nvidiafb: CRTC 0 appears to have a CRT attached
-> > nvidiafb: Using CRT on CRTC 0
-> > nvidiafb: MTRR set to ON
-> > nvidiafb: PCI nVidia NV16 framebuffer (64MB @ 0xD0000000)
-> > root@slackade:~#
-> >
-> > Tnx in advance!
-> >
->
-> hm.  drivers/video/nvidia/ isn't exactly a hive of development activity
-> but let's switch this over to the mailing list and see if there's any
-> help.
->
->
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index 0d96f1d..293aff9 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -1671,6 +1671,8 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 		if ((ret = au1200fb_init_fbinfo(fbdev)) < 0)
+ 			goto failed;
 
---0016e6469b6a289aa3046d882b91
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
++		mutex_init(&fbdev->fb_info.lock);
++
+ 		/* Register new framebuffer */
+ 		if ((ret = register_framebuffer(&fbdev->fb_info)) < 0) {
+ 			print_err("cannot register new framebuffer");
+--
+1.6.3.3
 
-Tnx!<br><br><div class=3D"gmail_quote">2009/6/29 Andrew Morton <span dir=3D=
-"ltr">&lt;<a href=3D"mailto:akpm@linux-foundation.org">akpm@linux-foundatio=
-n.org</a>&gt;</span><br><blockquote class=3D"gmail_quote" style=3D"border-l=
-eft: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left:=
- 1ex;">
-<br>
-(switched to email. =A0Please respond via emailed reply-to-all, not via the=
-<br>
-bugzilla web interface).<br>
-<br>
-On Thu, 18 Jun 2009 13:04:12 GMT<br>
-<a href=3D"mailto:bugzilla-daemon@bugzilla.kernel.org">bugzilla-daemon@bugz=
-illa.kernel.org</a> wrote:<br>
-<br>
-&gt; <a href=3D"http://bugzilla.kernel.org/show_bug.cgi?id=3D13566" target=
-=3D"_blank">http://bugzilla.kernel.org/show_bug.cgi?id=3D13566</a><br>
-&gt;<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0Summary: nvidiafb doesn&#39;t get my oooold mon=
-itor working<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0Product: Drivers<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0Version: 2.5<br>
-&gt; =A0 =A0 Kernel Version: 2.6.30<br>
-&gt; =A0 =A0 =A0 =A0 =A0 Platform: All<br>
-&gt; =A0 =A0 =A0 =A0 OS/Version: Linux<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 Tree: Mainline<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0 Status: NEW<br>
-&gt; =A0 =A0 =A0 =A0 =A0 Severity: normal<br>
-&gt; =A0 =A0 =A0 =A0 =A0 Priority: P1<br>
-&gt; =A0 =A0 =A0 =A0 =A0Component: Video(Other)<br>
-&gt; =A0 =A0 =A0 =A0 AssignedTo: <a href=3D"mailto:drivers_video-other@kern=
-el-bugs.osdl.org">drivers_video-other@kernel-bugs.osdl.org</a><br>
-&gt; =A0 =A0 =A0 =A0 ReportedBy: <a href=3D"mailto:ericitaquera@gmail.com">=
-ericitaquera@gmail.com</a><br>
-&gt; =A0 =A0 =A0 =A0 Regression: No<br>
-<br>
-There&#39;s more info at the above link<br>
-<br>
-&gt;<br>
-&gt; Nvidiafb doesn&#39;t get my ooooooold black &amp; white 7&quot; CRT VG=
-A monitor working. I<br>
-&gt; have an GeForce 6200 one:<br>
-&gt;<br>
-&gt; root@slackade:~# lspci =A0| grep -i vga<br>
-&gt; 01:00.0 VGA compatible controller: nVidia Corporation NV44 [GeForce 62=
-00<br>
-&gt; TurboCache(TM)] (rev a1)<br>
-&gt;<br>
-&gt;<br>
-&gt; This is the dmesg output with this old monitor ( or without any ) plug=
-ged to<br>
-&gt; the VGA output:<br>
-&gt;<br>
-&gt; root@slackade:~# dmesg | grep nvidia<br>
-&gt; nvidiafb 0000:01:00.0: PCI INT A -&gt; GSI 18 (level, low) -&gt; IRQ 1=
-8<br>
-&gt; nvidiafb: Device ID: 10de0161<br>
-&gt; nvidiafb: CRTC0 analog not found<br>
-&gt; nvidiafb: CRTC1 analog not found<br>
-&gt; nvidiafb: CRTC 1 is currently programmed for TV<br>
-&gt; nvidiafb: Using TV on CRTC 1<br>
-&gt; nvidiafb: Panel is TMDS<br>
-&gt; nvidiafb: MTRR set to ON<br>
-&gt; nvidiafb: Flat panel dithering disabled<br>
-&gt; nvidiafb: PCI nVidia NV16 framebuffer (64MB @ 0xD0000000)<br>
-&gt; root@slackade:~#<br>
-&gt;<br>
-&gt; After that, even if I switch to a brand new 1080p lcd the screen just =
-blinks<br>
-&gt; with weird vertical stripes.<br>
-&gt;<br>
-&gt; If I reboot with a newer monitor plugged to VGA output all works fine:=
-<br>
-&gt;<br>
-&gt; root@slackade:~# dmesg | grep nvidia<br>
-&gt; nvidiafb 0000:01:00.0: PCI INT A -&gt; GSI 18 (level, low) -&gt; IRQ 1=
-8<br>
-&gt; nvidiafb: Device ID: 10de0161<br>
-&gt; nvidiafb: CRTC0 analog found<br>
-&gt; nvidiafb: CRTC1 analog not found<br>
-&gt; nvidiafb: CRTC 0 appears to have a CRT attached<br>
-&gt; nvidiafb: Using CRT on CRTC 0<br>
-&gt; nvidiafb: MTRR set to ON<br>
-&gt; nvidiafb: PCI nVidia NV16 framebuffer (64MB @ 0xD0000000)<br>
-&gt; root@slackade:~#<br>
-&gt;<br>
-&gt; Tnx in advance!<br>
-&gt;<br>
-<br>
-hm. =A0drivers/video/nvidia/ isn&#39;t exactly a hive of development activi=
-ty<br>
-but let&#39;s switch this over to the mailing list and see if there&#39;s a=
-ny<br>
-help.<br>
-<br>
-</blockquote></div><br>
-
---0016e6469b6a289aa3046d882b91--
-
-
---===============6407963441356503348==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 ------------------------------------------------------------------------------
 Enter the BlackBerry Developer Challenge  
@@ -239,15 +78,3 @@ This is your chance to win up to $100,000 in prizes! For a limited time,
 vendors submitting new applications to BlackBerry App World(TM) will have
 the opportunity to enter the BlackBerry Developer Challenge. See full prize  
 details at: http://p.sf.net/sfu/Challenge
---===============6407963441356503348==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============6407963441356503348==--

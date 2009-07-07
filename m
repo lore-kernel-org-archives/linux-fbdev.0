@@ -1,22 +1,22 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Subject: atmelfb: fix regression with uninitalized
 	fb_info->mm_lock mutex
-Date: Tue, 7 Jul 2009 19:52:59 +0200
-Message-ID: <20090707195259.f3a02bca.krzysztof.h1@poczta.fm>
+Date: Tue, 7 Jul 2009 19:53:43 +0200
+Message-ID: <20090707195343.094d572e.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1MOEhK-0006Mr-NQ
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MOEi0-0004TK-4g
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Jul 2009 17:43:18 +0000
+	Tue, 07 Jul 2009 17:44:00 +0000
 Received: from smtp239.poczta.interia.pl ([217.74.64.239])
 	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MOEhB-0005rc-O9 for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Jul 2009 17:43:18 +0000
+	id 1MOEhu-00066m-Dp for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 07 Jul 2009 17:44:00 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -39,6 +39,11 @@ by the commit 537a1bf059f " fbdev: add mutex for fb_mmap locking"
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
+
+Nicolas, could you test this patch?
+
+Kind regard,
+Krzysztof
 
 diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
 index cb88394..da05f08 100644
@@ -67,9 +72,8 @@ index cb88394..da05f08 100644
 
 
 ----------------------------------------------------------------------
-O czym spiewa Ayo w piosence &#8222;Lonely&#8221;?
-U nas teledysk razem z tekstem piosenki! 
->>> http://link.interia.pl/f2240
+Daj odpoczac plecom - zmien auto na rower 
+Sprawdz >>>http://link.interia.pl/f2255
 
 
 ------------------------------------------------------------------------------

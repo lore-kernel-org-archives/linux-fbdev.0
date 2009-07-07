@@ -1,84 +1,45 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: atmelfb: fix regression with uninitalized
-	fb_info->mm_lock mutex
-Date: Tue, 7 Jul 2009 19:53:43 +0200
-Message-ID: <20090707195343.094d572e.krzysztof.h1@poczta.fm>
+Subject: matroxfb: fix regression with uninitalized fb_info->mm_lock mutex
+Date: Tue, 7 Jul 2009 22:06:48 +0200
+Message-ID: <20090707220648.4b2ee3d8.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1MOEi0-0004TK-4g
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Jul 2009 17:44:00 +0000
-Received: from smtp239.poczta.interia.pl ([217.74.64.239])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MOEhu-00066m-Dp for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 07 Jul 2009 17:44:00 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758140AbZGGT5S@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org, a.p.zijlstra@chello.nl, rjw@sisk.pl, stable@kernel.org
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Remove redundant locking of the fb_info->mm_lock mutex before the frambuffer 
+Remove redundant call to the matroxfb_update_fix() before matrox frambuffer
 is registered.
 
 This fixes a problem with uninitialized the fb_info->mm_lock mutex introduced 
 by the commit 537a1bf059f " fbdev: add mutex for fb_mmap locking"
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
 ---
 
-Nicolas, could you test this patch?
+This one I have been able to test. It fixed regression with the mm_lock mutex.
 
-Kind regard,
-Krzysztof
+It may not fix regression for a second head. I will investigate this issue.
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index cb88394..da05f08 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -261,6 +261,9 @@ static inline void atmel_lcdfb_free_video_memory(struct atmel_lcdfb_info *sinfo)
- /**
-  *	atmel_lcdfb_alloc_video_memory - Allocate framebuffer memory
-  *	@sinfo: the frame buffer to allocate memory for
-+ * 	
-+ * 	This function is called only from the atmel_lcdfb_probe()
-+ * 	so no locking by fb_info->mm_lock around smem_len setting is needed.
-  */
- static int atmel_lcdfb_alloc_video_memory(struct atmel_lcdfb_info *sinfo)
- {
-@@ -270,9 +273,7 @@ static int atmel_lcdfb_alloc_video_memory(struct atmel_lcdfb_info *sinfo)
- 
- 	smem_len = (var->xres_virtual * var->yres_virtual
- 		    * ((var->bits_per_pixel + 7) / 8));
--	mutex_lock(&info->mm_lock);
- 	info->fix.smem_len = max(smem_len, sinfo->smem_len);
--	mutex_unlock(&info->mm_lock);
- 
- 	info->screen_base = dma_alloc_writecombine(info->device, info->fix.smem_len,
- 					(dma_addr_t *)&info->fix.smem_start, GFP_KERNEL);
-
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index 76bc51b..721a87d 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -1876,7 +1876,6 @@ static int initMatrox2(WPMINFO struct board* b){
+ 	}
+ 	matroxfb_init_fix(PMINFO2);
+ 	ACCESS_FBINFO(fbcon.screen_base) = vaddr_va(ACCESS_FBINFO(video.vbase));
+-	matroxfb_update_fix(PMINFO2);
+ 	/* Normalize values (namely yres_virtual) */
+ 	matroxfb_check_var(&vesafb_defined, &ACCESS_FBINFO(fbcon));
+ 	/* And put it into "current" var. Do NOT program hardware yet, or we'll not take over
 
 ----------------------------------------------------------------------
-Daj odpoczac plecom - zmien auto na rower 
-Sprawdz >>>http://link.interia.pl/f2255
-
-
-------------------------------------------------------------------------------
-Enter the BlackBerry Developer Challenge  
-This is your chance to win up to $100,000 in prizes! For a limited time, 
-vendors submitting new applications to BlackBerry App World(TM) will have 
-the opportunity to enter the BlackBerry Developer Challenge. See full prize 
-details at: http://p.sf.net/sfu/blackberry
+Promocja ubezpieczen komunikacyjnych Ergo Hestia. Sprawdz!
+http://link.interia.pl/f222f

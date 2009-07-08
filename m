@@ -1,74 +1,54 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Framebuffer support for HTC Dream
-Date: Wed, 8 Jul 2009 11:19:31 +0200
-Message-ID: <20090708091930.GA24385@elf.ucw.cz>
-References: <20090629111029.GA15514@elf.ucw.cz> <20090629123840.1e20f17d.akpm@linux-foundation.org> <a55d774e0906291300u3bb9b491r124f27fdf832b495@mail.gmail.com> <20090629211931.GD6611@elf.ucw.cz> <404ea8000906291606u600673f3r63a9ac0dfe02eea@mail.gmail.com>
+From: "Rajashekhara, Sudhakar" <sudhakar.raj-l0cyMroinI0@public.gmane.org>
+Subject: RE: [PATCH v5] Frame Buffer driver for TI DA8xx/OMAP-L1xx
+Date: Wed, 8 Jul 2009 15:06:13 +0530
+Message-ID: <19130.4517248229$1247045901@news.gmane.org>
+References: <1246858151-16995-1-git-send-email-sudhakar.raj@ti.com>
+	<20090707220943.479940d7.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759363AbZGHJTv@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <404ea8000906291606u600673f3r63a9ac0dfe02eea@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dima Zavin <dima@android.com>
-Cc: Brian Swetland <swetland@google.com>, Andrew Morton <akpm@linux-foundation.org>, Rebecca Schultz Zavin <rebecca@android.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Content-Transfer-Encoding: 7bit
+Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+In-Reply-To: <20090707220943.479940d7.krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
+Content-Language: en-us
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
+List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
+List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
+Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+To: 'Krzysztof Helt' <krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org>
+Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, 'Pavel Kiryukhin' <pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org>
 
-Hi!
+On Wed, Jul 08, 2009 at 01:39:43, Krzysztof Helt wrote:
+> On Mon,  6 Jul 2009 01:29:11 -0400
+> "Rajashekhara, Sudhakar" <sudhakar.raj-l0cyMroinI0@public.gmane.org> wrote:
+> 
+> > Adds LCD controller (LCDC) driver for TI's DA8xx/OMAP-L1xx architecture.
+> > LCDC specifications can be found at http://www.ti.com/litv/pdf/sprufm0a.
+> > 
+> > LCDC on DA8xx consists of two independent controllers, the Raster 
+> > Controller and the LCD Interface Display Driver (LIDD) controller. 
+> > LIDD further supports character and graphic displays.
+> > 
+> > This patch adds support for the graphic display (Sharp LQ035Q3DG01) 
+> > found on the DA830 based EVM. The EVM details can be found at:
+> > http://support.spectrumdigital.com/boards/dskda830/revc/.
+> > 
+> > Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org>
+> > Signed-off-by: Pavel Kiryukhin <pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org>
+> > Signed-off-by: Steve Chen <schen-Igf4POYTYCDQT0dZR+AlfA@public.gmane.org>
+> > ---
+> >  This patch applies to Linus's Kernel tree.
+> > 
+> 
+> Acked-by: Krzysztof Helt <krzysztof.h1-5tc4TXWwyLM@public.gmane.org>
+> 
 
-> >> > Will it have a maintainer?
-> >>
-> >> I did the original quick and dirty version for bringup. =A0Rebecca=
- took
-> >> over and (re)wrote the bulk of the driver, getting things stable f=
-or
-> >> production ship of Dream and Sapphire, and Dima is currently addin=
-g
-> >> support for later Qualcomm chipsets (QSD8x50, etc). =A0Looping the=
-m into
-> >> this discussion.
-> >
-> > I can maintain it if noone else steps up. Of course, someone who
-> > actually knows the hw/has the docs would be preferable.
->=20
-> As Brian mentioned, I'm the last one to touch it here, so I now own
-> it. I've done a bunch refactoring to add support for the qsd8x50
+Thanks. What I should do to get this patch to Linus's tree?
 
-Can you submit a patch adding yourself into MAINTAINERS file?
-
-> devices. I'll post those up onto our experimental git tree (hopefully
-> sometime today), and once this patch goes in, I'll make sure that we
-> apply cleanly against it. Alternatively, if you like, I can
-> incorporate your comments into the refactoring work I'm doing, and ca=
-n
-> push out the combined patch. In the future though, I'll try to be a
-> lot more aggressive at sending these out for review earlier so you
-> don't have to clean up our mess.
-
-I believe it makes sense to submit patches relative to -mm tree now.
-
-
-> Please feel free to CC Rebecca and myself on all the msm_fb related
-> changes/discussions.
->=20
-> >> It would probably be worth referring to drivers like this as "for
-> >> Qualcomm MSM/QSD SoCs" or the like, since they do work with a lot =
-of
-> >> hardware beyond just Dream.
-> >
-> > Well, the Dream is why I'm doing it, hence patch title. Of course,
-> > Kconfig should say 'Qualcomm MSM/QSD SoCs', too.
->=20
-> I second the request that the patches for qualcomm msm7k/qsd8k generi=
-c
-> support would have descriptions that refer to them as such, since the
-> htc dream specific code is only in the board files in
-> arch/arm/mach-msm. Note that the HTC Magic (aka the Ion, myTouch 3G,
-
-Ok, I guess someone should do a picture of all the connections and
-dictionary of all the acronyms :-).
-								Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+Regards,
+Sudhakar

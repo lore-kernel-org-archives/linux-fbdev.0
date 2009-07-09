@@ -1,83 +1,43 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] drivers/video/imxfb.c: Fix resource size off by 1
-	error
-Date: Wed, 8 Jul 2009 14:41:38 +0200
-Message-ID: <20090708124138.GR2714@pengutronix.de>
-References: <Pine.LNX.4.64.0907042331490.9841@ask.diku.dk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Framebuffer support for HTC Dream
+Date: Thu, 9 Jul 2009 11:48:00 +0200
+Message-ID: <20090709094755.GA10937@elf.ucw.cz>
+References: <20090629111029.GA15514@elf.ucw.cz> <20090629123840.1e20f17d.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756289AbZGHMmi@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759861AbZGIJuK@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907042331490.9841@ask.diku.dk>
+In-Reply-To: <20090629123840.1e20f17d.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <julia@diku.dk>
-Cc: kernel@pengutronix.de, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk, swetland@google.com
 
-Hi Julia,
+> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> > index fb19803..4a7873b 100644
+> > --- a/drivers/video/Kconfig
+> > +++ b/drivers/video/Kconfig
+> > @@ -2119,6 +2119,14 @@ config FB_PRE_INIT_FB
+> >  	  Select this option if display contents should be inherited as set by
+> >  	  the bootloader.
+> >  
+> > +config FB_MSM
+> > +	tristate
+> > +	depends on FB && ARCH_MSM
+> > +	select FB_CFB_FILLRECT
+> > +	select FB_CFB_COPYAREA
+> > +	select FB_CFB_IMAGEBLIT
+> > +	default y
+> 
+> I'm seeing gpio calls in there.  Do we need a gpio dependency, or did
+> ARCH_MSM give us gpio anyway?
 
-On Sat, Jul 04, 2009 at 11:32:29PM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> In the first case, the change is not semantics-preserving, but
-> resource_size is used at the corresponding call to request_mem_region in
-> the same function.
-> 
-> In the second case, the change is semantics-preserving.
-> 
-> The problem was found using the following semantic patch:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> struct resource *res;
-> @@
-> 
-> - (res->end - res->start) + 1
-> + resource_size(res)
-> 
-> @@
-> struct resource *res;
-> @@
-> 
-> - res->end - res->start
-> + BAD(resource_size(res))
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/video/imxfb.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -u -p a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> --- a/drivers/video/imxfb.c 2009-04-13 16:04:25.000000000 +0200
-> +++ b/drivers/video/imxfb.c 2009-07-04 21:37:48.000000000 +0200
-> @@ -754,7 +754,7 @@ failed_map:
->  failed_getclock:
->  	iounmap(fbi->regs);
->  failed_ioremap:
-> -	release_mem_region(res->start, res->end - res->start);
-> +	release_mem_region(res->start, resource_size(res));
->  failed_req:
->  	kfree(info->pseudo_palette);
->  failed_init:
-> @@ -785,7 +785,7 @@ static int __devexit imxfb_remove(struct
->  	framebuffer_release(info);
->  
->  	iounmap(fbi->regs);
-> -	release_mem_region(res->start, res->end - res->start + 1);
-> +	release_mem_region(res->start, resource_size(res));
->  	clk_disable(fbi->clk);
->  	clk_put(fbi->clk);
+AFAICT, ARCH_MSM needs GENERIC_GPIO, so we are ok.
 
-I already have a patch queued for this issue in imxfb.c
-
-Sascha
+Thanks,
+									Pavel
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

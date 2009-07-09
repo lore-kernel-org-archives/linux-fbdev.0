@@ -1,43 +1,51 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Framebuffer support for HTC Dream
-Date: Thu, 9 Jul 2009 11:48:00 +0200
-Message-ID: <20090709094755.GA10937@elf.ucw.cz>
-References: <20090629111029.GA15514@elf.ucw.cz> <20090629123840.1e20f17d.akpm@linux-foundation.org>
+From: Pawel Osciak <p.osciak@samsung.com>
+Subject: [PATCH 1/4] [ARM] s3c-fb: Fix an off-by-one error at window release
+Date: Thu, 09 Jul 2009 17:08:53 +0200
+Message-ID: <E4D3F24EA6C9E54F817833EAE0D912AC076E71C7EB@bssrvexch01.BS.local>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1759861AbZGIJuK@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20090629123840.1e20f17d.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk, swetland@google.com
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+Content-language: en-US
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "adaplas@gmail.com" <adaplas@gmail.com>, "ben-linux@fluff.org" <ben-linux@fluff.org>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Pawel Osciak <p.osciak@samsung.com>
 
-> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > index fb19803..4a7873b 100644
-> > --- a/drivers/video/Kconfig
-> > +++ b/drivers/video/Kconfig
-> > @@ -2119,6 +2119,14 @@ config FB_PRE_INIT_FB
-> >  	  Select this option if display contents should be inherited as set by
-> >  	  the bootloader.
-> >  
-> > +config FB_MSM
-> > +	tristate
-> > +	depends on FB && ARCH_MSM
-> > +	select FB_CFB_FILLRECT
-> > +	select FB_CFB_COPYAREA
-> > +	select FB_CFB_IMAGEBLIT
-> > +	default y
-> 
-> I'm seeing gpio calls in there.  Do we need a gpio dependency, or did
-> ARCH_MSM give us gpio anyway?
+    
+This bug caused the release function being called on the first
+uninitialized window, instead of starting with the last successfully
+initialized one.    
 
-AFAICT, ARCH_MSM needs GENERIC_GPIO, so we are ok.
+Reviewed-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
 
-Thanks,
-									Pavel
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index bb63c07..ff0b1a3 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -926,7 +926,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 		ret = s3c_fb_probe_win(sfb, win, &sfb->windows[win]);
+ 		if (ret < 0) {
+ 			dev_err(dev, "failed to create window %d\n", win);
+-			for (; win >= 0; win--)
++			for ( win = win - 1; win >= 0; win--)
+ 				s3c_fb_release_win(sfb, sfb->windows[win]);
+ 			goto err_ioremap;
+ 		}
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

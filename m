@@ -1,13 +1,13 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [PATCH 3/4] [ARM] s3c-fb: Add support for display panning
-Date: Thu, 9 Jul 2009 19:49:12 +0200
-Message-ID: <20090709194912.5e3fcc8e.krzysztof.h1@poczta.fm>
-References: <E4D3F24EA6C9E54F817833EAE0D912AC076E71C7EE@bssrvexch01.BS.local>
+Subject: Re: [PATCH 4/4] [ARM] s3c-fb: Add wait for vsync support
+Date: Thu, 9 Jul 2009 19:51:45 +0200
+Message-ID: <20090709195145.fde4481e.krzysztof.h1@poczta.fm>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC076E71C7EF@bssrvexch01.BS.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC076E71C7EE@bssrvexch01.BS.local>
+In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC076E71C7EF@bssrvexch01.BS.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
 	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
@@ -21,10 +21,12 @@ Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux
 To: Pawel Osciak <p.osciak@samsung.com>
 Cc: "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "adaplas@gmail.com" <adaplas@gmail.com>, "ben-linux@fluff.org" <ben-linux@fluff.org>, =?UTF-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Thu, 09 Jul 2009 17:09:00 +0200
+On Thu, 09 Jul 2009 17:09:03 +0200
 Pawel Osciak <p.osciak@samsung.com> wrote:
 
-> Added support for panning the display in all directions.
+> Added VSYNC interrupt support.
+> Added FBIO_WAITFORVSYNC ioctl that allows sleeping on vsync
+> waitqueue.
 > 
 > 
 > Reviewed-by: Marek Szyprowski <m.szyprowski@samsung.com>
@@ -34,64 +36,198 @@ Pawel Osciak <p.osciak@samsung.com> wrote:
 > 
 > 
 > diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index ff0b1a3..77b77a2 100644
+> index 77b77a2..0c064c2 100644
 > --- a/drivers/video/s3c-fb.c
 > +++ b/drivers/video/s3c-fb.c
-> @@ -294,6 +294,8 @@ static int s3c_fb_set_par(struct fb_info *info)
->  	}
+> @@ -21,6 +21,8 @@
+>  #include <linux/clk.h>
+>  #include <linux/fb.h>
+>  #include <linux/io.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/interrupt.h>
 >  
->  	info->fix.line_length = (var->xres_virtual * var->bits_per_pixel) / 8;
-> +	info->fix.xpanstep = info->var.xres_virtual > info->var.xres ? 1 : 0;
-> +	info->fix.ypanstep = info->var.yres_virtual > info->var.yres ? 1 : 0;
+>  #include <mach/map.h>
+>  #include <mach/regs-fb.h>
+> @@ -48,6 +50,13 @@
+>  	__raw_writel(v, r); } while(0)
+>  #endif /* FB_S3C_DEBUG_REGWRITE */
 >  
-
-These two lines are not need. If the xres_virtual > xres  there is no 
-panning possible (the same is true for yres and yres_virtual).
-
->  	/* disable the window whilst we update it */
->  	writel(0, regs + WINCON(win_no));
-> @@ -640,6 +642,38 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
->  	return 0;
+> +/* Bit in irq_flags used to mark that interrupts are activated in device */
+> +#define S3C_FB_IRQ_ENABLED_BIT	0
+> +
+> +#ifndef FBIO_WAITFORVSYNC
+> +#define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
+> +#endif
+> +
+>  struct s3c_fb;
+>  
+>  /**
+> @@ -59,6 +68,7 @@ struct s3c_fb;
+>   * @pseudo_palette: For use in TRUECOLOUR modes for entries 0..15/
+>   * @index: The window number of this window.
+>   * @palette: The bitfields for changing r/g/b into a hardware palette entry.
+> + * @vsync: Vsync handling helper.
+>   */
+>  struct s3c_fb_win {
+>  	struct s3c_fb_pd_win	*windata;
+> @@ -72,14 +82,27 @@ struct s3c_fb_win {
+>  };
+>  
+>  /**
+> + * struct s3c_fb_vsync - vsync information for display.
+> + * @vsync_queue: A queue for processes waiting for vsync.
+> + * @vsync_count: Vsync interrupt count.
+> + */
+> +struct s3c_fb_vsync {
+> +	wait_queue_head_t	vsync_queue;
+> +	unsigned long		vsync_count;
+> +};
+> +
+> +/**
+>   * struct s3c_fb - overall hardware state of the hardware
+>   * @dev: The device that we bound to, for printing, etc.
+>   * @regs_res: The resource we claimed for the IO registers.
+>   * @bus_clk: The clk (hclk) feeding our interface and possibly pixclk.
+>   * @regs: The mapped hardware registers.
+>   * @enabled: A bitmask of enabled hardware windows.
+> + * @open_instances: How many times the driver has been opened.
+>   * @pdata: The platform configuration data passed with the device.
+>   * @windows: The hardware windows that have been claimed.
+> + * @irq_no: IRQ number for the device (acquired from platform data).
+> + * @vsync_info: VSYNC-related information (count, queues...)
+>   */
+>  struct s3c_fb {
+>  	struct device		*dev;
+> @@ -87,10 +110,16 @@ struct s3c_fb {
+>  	struct clk		*bus_clk;
+>  	void __iomem		*regs;
+>  
+> -	unsigned char		 enabled;
+> +	unsigned char		enabled;
+> +	atomic_t		open_instances;
+>  
+>  	struct s3c_fb_platdata	*pdata;
+>  	struct s3c_fb_win	*windows[S3C_FB_MAX_WIN];
+> +
+> +	unsigned int		irq_no;
+> +	unsigned long		irq_flags;
+> +
+> +	struct s3c_fb_vsync	vsync_info;
+>  };
+>  
+>  /**
+> @@ -643,6 +672,104 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
 >  }
 >  
-> +/**
-> + * s3c_fb_pan_display() - Pan the display.
-> + *
-> + * Note, that the offsets can be written to the device at any time, as their
-> + * values are latched at each vsync automatically. This also means that only
-> + * the last call to this function will have any effect on next vsync, but
-> + * there is no need to sleep waiting for it to prevent tearing.
-> + *
-> + * @var: The screen information to verify.
-> + * @info: The framebuffer device.
+>  /**
+> + * s3c_fb_enable_irq() - enable interrupts in hardware.
+> + * @sfb: The base resources for the hardware.
 > + */
-> +static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
-> +			      struct fb_info *info)
+> +static int s3c_fb_enable_irq(struct s3c_fb *sfb)
 > +{
-> +	struct s3c_fb_win *win	= info->par;
-> +	struct s3c_fb *sfb	= win->parent;
-> +	unsigned int start_byte_offset, end_byte_offset;
+> +	u32	     irq_ctrl_reg;
+> +	void __iomem *regs = sfb->regs;
 > +
-> +	/* Offset in bytes to the start of the displayed area */
-> +	start_byte_offset = var->yoffset * info->fix.line_length
-> +			    + var->xoffset * (info->var.bits_per_pixel) / 8;
-> +	writel(info->fix.smem_start + start_byte_offset,
-> +	       sfb->regs + VIDW_BUF_START(win->index));
+> +	if (!test_and_set_bit(S3C_FB_IRQ_ENABLED_BIT, &sfb->irq_flags)) {
+> +		/* IRQ was disabled, enable it */
+> +		irq_ctrl_reg = readl(regs + VIDINTCON0);
+> +
+> +		irq_ctrl_reg |= VIDINTCON0_INT_ENABLE;
+> +		irq_ctrl_reg |= VIDINTCON0_INT_FRAME;
+> +
+> +		irq_ctrl_reg &= ~VIDINTCON0_FRAMESEL0_MASK;
+> +		irq_ctrl_reg |= VIDINTCON0_FRAMESEL0_VSYNC;
+> +		irq_ctrl_reg &= ~VIDINTCON0_FRAMESEL1_MASK;
+> +		irq_ctrl_reg |= VIDINTCON0_FRAMESEL1_NONE;
+> +
+> +		writel(irq_ctrl_reg, regs + VIDINTCON0);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * s3c_fb_disable_irq() - disable interrupts in hardware.
+> + * @sfb: The base resources for the hardware.
+> + */
+> +static int s3c_fb_disable_irq(struct s3c_fb *sfb)
+> +{
+> +	u32	     irq_ctrl_reg;
+> +	void __iomem *regs = sfb->regs;
+> +
+> +	if (test_and_clear_bit(S3C_FB_IRQ_ENABLED_BIT, &sfb->irq_flags)) {
+> +		/* IRQ was enabled, disable it */
+> +		irq_ctrl_reg = readl(regs + VIDINTCON0);
+> +
+> +		irq_ctrl_reg &= ~VIDINTCON0_INT_FRAME;
+> +		irq_ctrl_reg &= ~VIDINTCON0_INT_ENABLE;
+> +
+> +		writel(irq_ctrl_reg, regs + VIDINTCON0);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static irqreturn_t s3c_fb_interrupt(int irq, void *dev_id)
+> +{
+> +	u32	      irq_sts_reg;
+> +	struct s3c_fb *sfb = dev_id;
+> +	void __iomem  *regs = sfb->regs;
+> +
+> +	irq_sts_reg = readl(regs + VIDINTCON1);
+> +
+> +	if (irq_sts_reg & VIDINTCON1_INT_FRAME) {
+> +
+> +		/* VSYNC interrupt, accept it */
+> +		writel(VIDINTCON1_INT_FRAME, regs + VIDINTCON1);
+> +
+> +		sfb->vsync_info.vsync_count++;
+> +		wake_up_interruptible(&sfb->vsync_info.vsync_queue);
+> +	}
+> +
+> +	/* We support only waiting for VSYNC interrupt for now,
+> +	 * so it's safe to disable irqs here. */
+> +	s3c_fb_disable_irq(sfb);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +/**
+> + * s3c_fb_wait_for_vsync() - sleep until next VSYNC interrupt or timeout.
+> + * @sfb: The base resources for the hardware.
+> + * @crtc: Head index.
+> + */
+> +static int s3c_fb_wait_for_vsync(struct s3c_fb *sfb, u32 crtc)
+> +{
+> +	unsigned long count;
+> +	int ret;
+> +
+> +	if (crtc != 0)
+> +		return -ENODEV;
+> +
+> +	s3c_fb_enable_irq(sfb);
+> +	count = sfb->vsync_info.vsync_count;
+> +	ret = wait_event_interruptible_timeout(sfb->vsync_info.vsync_queue,
+> +				       count != sfb->vsync_info.vsync_count,
+> +				       HZ / 10);
+> +	if (ret == 0)
+> +		return -ETIMEDOUT;
+> +
 > +
 
-Check out carefully what units are used for VIDW_BUF_START (pixels, bytes, words, 
-dwords). This x panning may not work on all depths supported by the driver
-(18-bit, 19-bit, 1-bit, etc). Do you really want panning in the x direction?
-Please test it in all depths.
+If you disable the irq here there is no need for open and release functions.
+You can also remove this disabling from all other places. Much less code then.
+
+> +	return 0;
+> +}
+> +
 
 Regards,
 Krzysztof
- 
-
 
 ----------------------------------------------------------------------
-Rowerem do pracy? Czemu nie!
-Kliknij >>> http://link.interia.pl/f2256
+Sprawdz promocje ubezpieczen komunikacyjnych w Ergo  Hestia
+http://link.interia.pl/f222c
 
 
 -------------------------------------------------------------------

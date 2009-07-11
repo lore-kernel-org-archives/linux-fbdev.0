@@ -1,96 +1,54 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Subject: [PATCH 3/4] [ARM] s3c-fb: Add support for display panning
-Date: Tue, 07 Jul 2009 12:23:10 +0200
-Message-ID: <E4D3F24EA6C9E54F817833EAE0D912AC076E71C42C@bssrvexch01.BS.local>
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: [PATCH] move acornfb's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:52:29 +0200
+Message-ID: <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20090711170548.GC5205@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-Content-language: en-US
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-To: "linux-arm-kernel@lists.arm.linux.org.uk" <linux-arm-kernel@lists.arm.linux.org.uk>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "adaplas@gmail.com" <adaplas@gmail.com>, "ben-linux@fluff.org" <ben-linux@fluff.org>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Pawel Osciak <p.osciak@samsung.com>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757262AbZGKU4P@vger.kernel.org>
+In-Reply-To: <20090711170548.GC5205@suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@lst.de>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
 
-Added support for panning the display in all directions.
+A pointer to acornfb_probe is passed to the core via
+platform_driver_register and so the function must not disappear when th=
+e
+=2Einit sections are discarded.  Otherwise (if also having HOTPLUG=3Dy)
+unbinding and binding a device to the driver via sysfs will result in a=
+n
+oops as does a device being registered late.
 
+An alternative to this patch is using platform_driver_probe instead of
+platform_driver_register plus removing the pointer to the probe functio=
+n
+from the struct platform_driver.
 
-Reviewed-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Antonino Daplas <adaplas@pol.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/video/acornfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index ff0b1a3..77b77a2 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -294,6 +294,8 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	}
- 
- 	info->fix.line_length = (var->xres_virtual * var->bits_per_pixel) / 8;
-+	info->fix.xpanstep = info->var.xres_virtual > info->var.xres ? 1 : 0;
-+	info->fix.ypanstep = info->var.yres_virtual > info->var.yres ? 1 : 0;
- 
- 	/* disable the window whilst we update it */
- 	writel(0, regs + WINCON(win_no));
-@@ -640,6 +642,38 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
- 	return 0;
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 0bcc59e..43d7d50 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -1221,7 +1221,7 @@ free_unused_pages(unsigned int virtual_start, uns=
+igned int virtual_end)
+ 	printk("acornfb: freed %dK memory\n", mb_freed);
  }
- 
-+/**
-+ * s3c_fb_pan_display() - Pan the display.
-+ *
-+ * Note, that the offsets can be written to the device at any time, as their
-+ * values are latched at each vsync automatically. This also means that only
-+ * the last call to this function will have any effect on next vsync, but
-+ * there is no need to sleep waiting for it to prevent tearing.
-+ *
-+ * @var: The screen information to verify.
-+ * @info: The framebuffer device.
-+ */
-+static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
-+			      struct fb_info *info)
-+{
-+	struct s3c_fb_win *win	= info->par;
-+	struct s3c_fb *sfb	= win->parent;
-+	unsigned int start_byte_offset, end_byte_offset;
-+
-+	/* Offset in bytes to the start of the displayed area */
-+	start_byte_offset = var->yoffset * info->fix.line_length
-+			    + var->xoffset * (info->var.bits_per_pixel) / 8;
-+	writel(info->fix.smem_start + start_byte_offset,
-+	       sfb->regs + VIDW_BUF_START(win->index));
-+
-+	/* Offset in bytes to the end of the displayed area */
-+	end_byte_offset = start_byte_offset + var->yres * info->fix.line_length;
-+	writel(info->fix.smem_start + end_byte_offset,
-+	       sfb->regs + VIDW_BUF_END(win->index));
-+
-+	return 0;
-+}
-+
- static struct fb_ops s3c_fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_check_var	= s3c_fb_check_var,
-@@ -649,6 +683,7 @@ static struct fb_ops s3c_fb_ops = {
- 	.fb_fillrect	= cfb_fillrect,
- 	.fb_copyarea	= cfb_copyarea,
- 	.fb_imageblit	= cfb_imageblit,
-+	.fb_pan_display	= s3c_fb_pan_display,
- };
- 
- /**
-
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+=20
+-static int __init acornfb_probe(struct platform_device *dev)
++static int __devinit acornfb_probe(struct platform_device *dev)
+ {
+ 	unsigned long size;
+ 	u_int h_sync, v_sync;
+--=20
+1.6.3.1

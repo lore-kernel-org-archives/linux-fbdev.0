@@ -1,54 +1,55 @@
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: [PATCH] move acornfb's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:52:29 +0200
-Message-ID: <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <20090711170548.GC5205@suse.de>
+From: Ali Gholami Rudi <ali@rudi.ir>
+Subject: [PATCH 0/2] fbdev: add fillrect and copyarea
+	ioctls
+Date: Mon, 13 Jul 2009 19:47:09 +0430
+Message-ID: <20090713151709.GA1297@lilem.mirepesht>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757262AbZGKU4P@vger.kernel.org>
-In-Reply-To: <20090711170548.GC5205@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@lst.de>, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <aligrudi@gmail.com>) id 1MQNJB-0002ev-BL
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Jul 2009 15:19:13 +0000
+Received: from fg-out-1718.google.com ([72.14.220.157])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MQNJ3-0003D0-9G for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 13 Jul 2009 15:19:13 +0000
+Received: by fg-out-1718.google.com with SMTP id e12so424699fga.9
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 13 Jul 2009 08:19:03 -0700 (PDT)
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Philippe De Muyter <phdm@macqel.be>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Andrew Morton <akpm@linux-foundation.org>, Andrea Righi <righi.andrea@gmail.com>
 
-A pointer to acornfb_probe is passed to the core via
-platform_driver_register and so the function must not disappear when th=
-e
-=2Einit sections are discarded.  Otherwise (if also having HOTPLUG=3Dy)
-unbinding and binding a device to the driver via sysfs will result in a=
-n
-oops as does a device being registered late.
+Hi,
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe functio=
-n
-from the struct platform_driver.
+Is there any reason for not adding these ioctls to fbdev?  I searched
+the net and couldn't any.  Anyway, these patches simply implement those
+ioctls.
 
-Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- drivers/video/acornfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Ali Gholami Rudi (2):
+  fbdev: add FBIOFILLRECT ioctl
+  fbdev: add FBIOCOPYAREA ioctl
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 0bcc59e..43d7d50 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -1221,7 +1221,7 @@ free_unused_pages(unsigned int virtual_start, uns=
-igned int virtual_end)
- 	printk("acornfb: freed %dK memory\n", mb_freed);
- }
-=20
--static int __init acornfb_probe(struct platform_device *dev)
-+static int __devinit acornfb_probe(struct platform_device *dev)
- {
- 	unsigned long size;
- 	u_int h_sync, v_sync;
---=20
-1.6.3.1
+ drivers/video/fbmem.c |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    2 +
+ 2 files changed, 52 insertions(+), 0 deletions(-)
+
+------------------------------------------------------------------------------
+Enter the BlackBerry Developer Challenge  
+This is your chance to win up to $100,000 in prizes! For a limited time, 
+vendors submitting new applications to BlackBerry App World(TM) will have
+the opportunity to enter the BlackBerry Developer Challenge. See full prize  
+details at: http://p.sf.net/sfu/Challenge

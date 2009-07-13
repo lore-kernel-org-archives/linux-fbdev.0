@@ -1,41 +1,37 @@
-From: Ali Gholami Rudi <ali@rudi.ir>
-Subject: Re: [PATCH 0/2] fbdev: add fillrect and copyarea ioctls
-Date: Tue, 14 Jul 2009 00:38:04 +0430
-Message-ID: <20090713200804.GB1280@lilem.mirepesht>
-References: <20090713151709.GA1297@lilem.mirepesht>
- <20090713163530.GA22251@suse.de>
+From: Peter Huewe <PeterHuewe@gmx.de>
+Subject: Re: [PATCH] media/omap: adding __init/__exit macros to lcd_drivers
+Date: Mon, 13 Jul 2009 22:56:16 +0200
+Message-ID: <200907132256.17036.PeterHuewe@gmx.de>
+References: <200907031439.40456.PeterHuewe@gmx.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756957AbZGMUGP@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <200907031439.40456.PeterHuewe@gmx.de>
 Content-Disposition: inline
-In-Reply-To: <20090713163530.GA22251@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Greg KH <gregkh@suse.de>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, Andrea Righi <righi.andrea@gmail.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Philippe De Muyter <phdm@macqel.be>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Jiri Kosina <trivial@kernel.org>
+Cc: imre.deak@nokia.com, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-Greg KH <gregkh@suse.de> wrote:
-> On Mon, Jul 13, 2009 at 07:47:09PM +0430, Ali Gholami Rudi wrote:
-> > Is there any reason for not adding these ioctls to fbdev?  I searched
-> > the net and couldn't any.  Anyway, these patches simply implement those
-> > ioctls.
-> 
-> Have you also added the needed 32 vs. 64 bit handlers for these ioctls?
+Am Freitag 03 Juli 2009 14:39:40 schrieb Peter H=FCwe:
+> From: Peter Huewe <peterhuewe@gmx.de>
+>
+> Trivial patch which adds the __init and __exit macros to the module_i=
+nit /
+> module_exit functions to several files in drivers/video/omap/
+>
+> linux version 2.6.31-rc1 - linus git tree
+>
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 
-I guess Arnd's patch will do.
+Hi Jini,
+any updates on this patch yet ? :)
 
-By the way, it should check for overflows, too?  I mean should I change
-this:
-
-> +       if (copy->dx + copy->width > info->var.xres ||
-> +           copy->sx + copy->width > info->var.xres ||
-> +           copy->dy + copy->height > info->var.yres ||
-> +           copy->sy + copy->height > info->var.yres) {
-
-#define ISSUMLESSTHAN(a, b, s)	(((a) <= (s)) && ((b) <= (s)) && \
-				 ((a) + (b) <= (s)))
-
-if (!ISSUMLESSTHAN(copy->dx, copy->width, info->var.xres) || ...
-
-	Ali
+Thanks,
+Peter
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

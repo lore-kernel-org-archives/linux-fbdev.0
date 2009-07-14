@@ -1,37 +1,47 @@
-From: Peter Huewe <PeterHuewe@gmx.de>
-Subject: Re: [PATCH] media/omap: adding __init/__exit macros to lcd_drivers
-Date: Mon, 13 Jul 2009 22:56:16 +0200
-Message-ID: <200907132256.17036.PeterHuewe@gmx.de>
-References: <200907031439.40456.PeterHuewe@gmx.de>
+From: Dave Airlie <airlied@gmail.com>
+Subject: Re: [PATCH 0/2] fbdev: add fillrect and copyarea ioctls
+Date: Tue, 14 Jul 2009 10:46:12 +1000
+Message-ID: <21d7e9970907131746q4f1a34efw9d3e6efaa78aea34@mail.gmail.com>
+References: <20090713151709.GA1297@lilem.mirepesht>
+	 <20090713084058.547e88f0@infradead.org>
+	 <20090713162559.GA1279@lilem.mirepesht>
 Mime-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <200907031439.40456.PeterHuewe@gmx.de>
-Content-Disposition: inline
-Sender: linux-omap-owner@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752086AbZGNAqP@vger.kernel.org>
+In-Reply-To: <20090713162559.GA1279@lilem.mirepesht>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="iso-8859-1"
-To: Jiri Kosina <trivial@kernel.org>
-Cc: imre.deak@nokia.com, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Ali Gholami Rudi <ali@rudi.ir>
+Cc: Arjan van de Ven <arjan@infradead.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@linux-foundation.org>, Andrea Righi <righi.andrea@gmail.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Greg Kroah-Hartman <gregkh@suse.de>, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Philippe De Muyter <phdm@macqel.be>, linux-kernel@vger.kernel.org
 
-Am Freitag 03 Juli 2009 14:39:40 schrieb Peter H=FCwe:
-> From: Peter Huewe <peterhuewe@gmx.de>
+On Tue, Jul 14, 2009 at 2:25 AM, Ali Gholami Rudi<ali@rudi.ir> wrote:
+> Arjan van de Ven <arjan@infradead.org> wrote:
+>> On Mon, 13 Jul 2009 19:47:09 +0430
+>> Ali Gholami Rudi <ali@rudi.ir> wrote:
+>> > Is there any reason for not adding these ioctls to fbdev? =A0I sea=
+rched
+>> > the net and couldn't any. =A0Anyway, these patches simply implemen=
+t
+>> > those ioctls.
+>> >
+>>
+>> can we turn this around, is there a reason to add them?
+>> or in other words, how / where would these be used ?
 >
-> Trivial patch which adds the __init and __exit macros to the module_i=
-nit /
-> module_exit functions to several files in drivers/video/omap/
->
-> linux version 2.6.31-rc1 - linus git tree
->
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> User-space programs that use framebuffer directly can use them. =A0I =
+was
+> writing a simple framebuffer virtual terminal (using libfreetype for
+> fonts; like fbterm); scrolling and painting boxes would be faster if
+> there was someway of using hardware accelerated operations. =A0I thin=
+k
+> other similar programs can benefit, too.
 
-Hi Jini,
-any updates on this patch yet ? :)
+The general opinion is we should keep acceleration in userspace if at
+all possible.
 
-Thanks,
-Peter
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Not all hw can implement these usefully in the kernel, directfb
+already does some
+things for this.
+
+Dave.

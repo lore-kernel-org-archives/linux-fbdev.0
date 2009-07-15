@@ -1,14 +1,14 @@
 From: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: [PATCH] viafb: update driver to use both I2C Channels
-Date: Wed, 15 Jul 2009 22:17:32 +0200
-Message-ID: <20090715201732.GZ11272@prithivi.gnumonks.org>
-References: <20090715190158.GA9699@plexity.net>
+Subject: Re: [PATCH] viafb: Don't accelerate blit of color images
+Date: Wed, 15 Jul 2009 22:34:49 +0200
+Message-ID: <20090715203449.GA11272@prithivi.gnumonks.org>
+References: <20090715111127.132C49D405C@zog.reactivated.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <devel-bounces@lists.laptop.org>
 Content-Disposition: inline
-In-Reply-To: <20090715190158.GA9699@plexity.net>
+In-Reply-To: <20090715111127.132C49D405C@zog.reactivated.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.laptop.org/listinfo/devel>,
 	<mailto:devel-request@lists.laptop.org?subject=unsubscribe>
@@ -19,21 +19,18 @@ List-Subscribe: <http://lists.laptop.org/listinfo/devel>,
 	<mailto:devel-request@lists.laptop.org?subject=subscribe>
 Sender: devel-bounces@lists.laptop.org
 Errors-To: devel-bounces@lists.laptop.org
-To: Deepak Saxena <dsaxena@laptop.org>
-Cc: JosephChan@via.com.tw, OLPC SW Development List <devel@lists.laptop.org>, ScottFang@viatech.com.cn, linux-fbdev-devel@lists.sourceforge.net
+To: Daniel Drake <dsd@laptop.org>
+Cc: JosephChan@via.com.tw, devel@lists.laptop.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hi Deepak,
+On Wed, Jul 15, 2009 at 12:11:27PM +0100, Daniel Drake wrote:
+> When the Tux boot logo is enabled, the boot penguin does not get rendered
+> correctly and under certain circumstances the system will hang.
+> 
+> This appears to be because the accelerated blitting code only supports
+> mono images at the moment, as suggested by a high bit 8 of the GECMD in
+> viafb_imageblit().
 
-as I have pointed out a couple of times to some OLPC folks (not sure if you
-were included), there is a via-viafb-i2c tree in my git tree (http://git.gnumonks.org/cgi-bin/gitweb.cgi?p=linux-2.6-via.git;a=shortlog;h=refs/heads/via-viafb-i2c)
-that tries to clean up the i2c mess (after cleaning up a lot of other mess).
-
-I've submitted a long series of those viafb patches some time ago, but somehow
-none of them was merged mainline yet :(
-
-Were you aware of this?  If yes, then it means that you're reluctant to merge
-the tons of not-yet-mainline cleanup code from my tree, which I could
-understand, too.
+Thanks, I've applied this to my via-viafb branch of linux-2.6-via.git
 
 -- 
 - Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/

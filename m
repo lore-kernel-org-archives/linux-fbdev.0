@@ -1,34 +1,44 @@
-From: "Sudhakar Rajashekhara" <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-Subject: RE: [PATCH v3] davinci: fb: Frame Buffer driver for TI
-	DA8xx/OMAP-L1xx
+From: "Sudhakar Rajashekhara" <sudhakar.raj@ti.com>
+Subject: Re: [PATCH v3] davinci: fb: Frame Buffer driver
+	for TI DA8xx/OMAP-L1xx
 Date: Thu, 16 Jul 2009 11:51:24 +0530
-Message-ID: <3802.42269388891$1247725397@news.gmane.org>
+Message-ID: <32850.5352874801$1247725537@news.gmane.org>
 References: <1247644654-10952-1-git-send-email-sudhakar.raj@ti.com>
 	<20090715140012.93397475.akpm@linux-foundation.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: <20090715140012.93397475.akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sudhakar.raj@ti.com>) id 1MRKNI-0008Rf-Ci
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 16 Jul 2009 06:23:24 +0000
+Received: from devils.ext.ti.com ([198.47.26.153])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MRKND-00057q-5b
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 16 Jul 2009 06:23:24 +0000
+In-Reply-To: <20090715140012.93397475.akpm@linux-foundation.org>
 Content-Language: en-us
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Content-Type: text/plain; charset="us-ascii"
-To: 'Andrew Morton' <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: davinci-linux-open-source@linux.davincidsp.com, linux-fbdev-devel@lists.sourceforge.net, schen@mvista.com, linux-kernel@vger.kernel.org, pkiryukhin@ru.mvista.com
 
 Thanks for your comments...
 
 On Thu, Jul 16, 2009 at 02:30:12, Andrew Morton wrote:
 > On Wed, 15 Jul 2009 03:57:34 -0400
-> Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org> wrote:
+> Sudhakar Rajashekhara <sudhakar.raj@ti.com> wrote:
 > 
 > > Adds LCD controller (LCDC) driver for TI's DA8xx/OMAP-L1xx
 > > architecture. LCDC specifications can be found at
@@ -160,3 +170,12 @@ I think -EINVAL is the proper return value here. I'll retain it.
 I'll submit an updated version of this patch with these changes.
 
 Regards, Sudhakar
+
+
+
+------------------------------------------------------------------------------
+Enter the BlackBerry Developer Challenge  
+This is your chance to win up to $100,000 in prizes! For a limited time, 
+vendors submitting new applications to BlackBerry App World(TM) will have
+the opportunity to enter the BlackBerry Developer Challenge. See full prize  
+details at: http://p.sf.net/sfu/Challenge

@@ -1,26 +1,38 @@
 From: Ryan Mallon <ryan@bluewatersys.com>
-Subject: Re: [PATCH 1/2] ep93xx framebuffer driver
-Date: Fri, 17 Jul 2009 15:57:47 +1200
-Message-ID: <4A5FF6BB.4000700@bluewatersys.com>
-References: <4A5FF431.2000308@bluewatersys.com>
+Subject: [PATCH v2 1/2] ep93xx video platform support
+Date: Sat, 18 Jul 2009 07:54:27 +1200
+Message-ID: <4A60D6F3.5060906@bluewatersys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <4A5FF431.2000308@bluewatersys.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ryan@bluewatersys.com>) id 1MRiH7-0005ae-0f
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 17 Jul 2009 07:54:37 +0000
+Received: from mail.bluewatersys.com ([202.124.120.130]
+	helo=hayes.bluewaternz.com)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MRiH0-0006CI-8H
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 17 Jul 2009 07:54:36 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
-To: arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, hartleys <hartleys@visionengravers.com>, Daniele Venzano <d.venzano@motronica.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, hartleys <hartleys@visionengravers.com>, d.venzano@motronica.com
 
-Add platform support and video clock for ep93xx framebuffer driver
+As pointed out by Daniele Venzano I missed a file in the previous patch
+set. I also messed up the order. The following series fixes these problems
+---
+Added platform and clock support for the ep93xx video driver
 
 Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
 ---
@@ -226,6 +238,67 @@ index a11ae77..33765fa 100644
  #define EP93XX_WATCHDOG_BASE		EP93XX_APB_IOMEM(0x00140000)
  
  
+diff --git a/arch/arm/mach-ep93xx/include/mach/fb.h b/arch/arm/mach-ep93xx/include/mach/fb.h
+new file mode 100644
+index 0000000..c16b622
+--- /dev/null
++++ b/arch/arm/mach-ep93xx/include/mach/fb.h
+@@ -0,0 +1,55 @@
++/*
++ * arch/arm/mach-ep93xx/include/mach/fb.h
++ */
++
++#ifndef __ASM_ARCH_EP93XXFB_H
++#define __ASM_ARCH_EP93XXFB_H
++
++struct fb_videomode;
++struct fb_info;
++
++#define EP93XXFB_USE_MODEDB		0
++
++/* VideoAttributes flags */
++#define EP93XXFB_STATE_MACHINE_ENABLE	(1 << 0)
++#define EP93XXFB_PIXEL_CLOCK_ENABLE	(1 << 1)
++#define EP93XXFB_VSYNC_ENABLE		(1 << 2)
++#define EP93XXFB_PIXEL_DATA_ENABLE	(1 << 3)
++#define EP93XXFB_COMPOSITE_SYNC		(1 << 4)
++#define EP93XXFB_SYNC_VERT_HIGH		(1 << 5)
++#define EP93XXFB_SYNC_HORIZ_HIGH	(1 << 6)
++#define EP93XXFB_SYNC_BLANK_HIGH	(1 << 7)
++#define EP93XXFB_PCLK_FALLING		(1 << 8)
++#define EP93XXFB_ENABLE_AC		(1 << 9)
++#define EP93XXFB_ENABLE_LCD		(1 << 10)
++#define EP93XXFB_ENABLE_CCIR		(1 << 12)
++#define EP93XXFB_USE_PARALLEL_INTERFACE	(1 << 13)
++#define EP93XXFB_ENABLE_INTERRUPT	(1 << 14)
++#define EP93XXFB_USB_INTERLACE		(1 << 16)
++#define EP93XXFB_USE_EQUALIZATION	(1 << 17)
++#define EP93XXFB_USE_DOUBLE_HORZ	(1 << 18)
++#define EP93XXFB_USE_DOUBLE_VERT	(1 << 19)
++#define EP93XXFB_USE_BLANK_PIXEL	(1 << 20)
++#define EP93XXFB_USE_SDCSN0		(0 << 21)
++#define EP93XXFB_USE_SDCSN1		(1 << 21)
++#define EP93XXFB_USE_SDCSN2		(2 << 21)
++#define EP93XXFB_USE_SDCSN3		(3 << 21)
++
++#define EP93XXFB_ENABLE			(EP93XXFB_STATE_MACHINE_ENABLE	| \
++					 EP93XXFB_PIXEL_CLOCK_ENABLE	| \
++					 EP93XXFB_VSYNC_ENABLE		| \
++					 EP93XXFB_PIXEL_DATA_ENABLE)
++
++struct ep93xxfb_mach_info {
++	unsigned int			num_modes;
++	const struct fb_videomode	*modes;
++	const struct fb_videomode	*default_mode;
++	int				bpp;
++	unsigned int			flags;
++
++	int	(*setup)(struct fb_info *info);
++	void	(*teardown)(struct fb_info *info);
++	void	(*blank)(int blank_mode, struct fb_info *info);
++};
++
++#endif /* __ASM_ARCH_EP93XXFB_H */
 diff --git a/arch/arm/mach-ep93xx/include/mach/platform.h b/arch/arm/mach-ep93xx/include/mach/platform.h
 index 0af0a3b..e8787e0 100644
 --- a/arch/arm/mach-ep93xx/include/mach/platform.h
@@ -249,7 +322,9 @@ index 0af0a3b..e8787e0 100644
  
 
 
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+------------------------------------------------------------------------------
+Enter the BlackBerry Developer Challenge  
+This is your chance to win up to $100,000 in prizes! For a limited time, 
+vendors submitting new applications to BlackBerry App World(TM) will have
+the opportunity to enter the BlackBerry Developer Challenge. See full prize  
+details at: http://p.sf.net/sfu/Challenge

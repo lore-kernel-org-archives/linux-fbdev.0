@@ -1,104 +1,77 @@
-From: Dave Airlie <airlied@gmail.com>
-Subject: Re: [PATCH] fb/intelfb: conflict with DRM_I915
-	and hide by default
-Date: Sat, 18 Jul 2009 13:34:34 +1000
-Message-ID: <21d7e9970907172034x40cbc65emb627ebc58b91a483@mail.gmail.com>
-References: <20090703112446.5a69971b@jbarnes-g45>
-	<20090717171326.4a71d8e3.akpm@linux-foundation.org>
-	<20090717182212.4675d0e1@jbarnes-g45>
+From: Ryan Mallon <ryan@bluewatersys.com>
+Subject: Re: [PATCH 1/2] ep93xx framebuffer driver
+Date: Sun, 19 Jul 2009 22:30:59 +1200
+Message-ID: <4A62F5E3.2000208@bluewatersys.com>
+References: <4A5FF431.2000308@bluewatersys.com>
+	<4A5FF6BB.4000700@bluewatersys.com>
+	<BD79186B4FD85F4B8E60E381CAEE190901AC1FF7@mi8nycmail19.Mi8.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <airlied@gmail.com>) id 1MS0h8-0007r0-R8
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 18 Jul 2009 03:34:42 +0000
-Received: from mail-gx0-f220.google.com ([209.85.217.220])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MS0h0-0007AJ-LN for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 18 Jul 2009 03:34:42 +0000
-Received: by gxk20 with SMTP id 20so5669140gxk.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 17 Jul 2009 20:34:34 -0700 (PDT)
-In-Reply-To: <20090717182212.4675d0e1@jbarnes-g45>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901AC1FF7@mi8nycmail19.Mi8.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: airlied@linux.ie, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/lurker/list/linux-arm-kernel.html>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, Daniele Venzano <d.venzano@motronica.com>
 
-On Sat, Jul 18, 2009 at 11:22 AM, Jesse Barnes<jbarnes@virtuousgeek.org> wr=
-ote:
-> On Fri, 17 Jul 2009 17:13:26 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> On Fri, 3 Jul 2009 11:24:46 -0700
->> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
->>
->> > Users get confused by this driver. =A0It's really a special purpose
->> > embedded driver, and causes a lot of problems if enabled. =A0So hide
->> > it under EMBEDDED by default, and make sure it doesn't get enabled
->> > with the i915 DRM driver.
->> >
->> > Dave, I'm hoping you can feed this to Linus through your tree. =A0It's
->> > appropriate for 2.6.31 I think.
->> >
->> > Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
->> >
->> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
->> > index d6d65ef..ec12f7a 100644
->> > --- a/drivers/video/Kconfig
->> > +++ b/drivers/video/Kconfig
->> > @@ -1117,12 +1117,13 @@ config FB_CARILLO_RANCH
->> >
->> > =A0config FB_INTEL
->> > =A0 =A0 tristate "Intel
->> > 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support
->> > (EXPERIMENTAL)"
->> > - =A0 depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
->> > + =A0 depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
->> > && EMBEDDED select FB_MODE_HELPERS
->> > =A0 =A0 select FB_CFB_FILLRECT
->> > =A0 =A0 select FB_CFB_COPYAREA
->> > =A0 =A0 select FB_CFB_IMAGEBLIT
->> > =A0 =A0 select FB_BOOT_VESA_SUPPORT if FB_INTEL =3D y
->> > + =A0 depends on !DRM_I915
->> > =A0 =A0 help
->> > =A0 =A0 =A0 This driver supports the on-board graphics built in to
->> > the Intel
->> > 830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM
->> > chipsets.
->>
->> Nothing happened?
->>
->> I'll merge this next week(ish) unless given a reason not to.
->
-> It's in Dave's tree, pull requested to Linus already, so it should land
-> soon.
->
+H Hartley Sweeten wrote:
+> On Thursday, July 16, 2009 8:58 PM, Ryan Mallon wrote:
+>> diff --git a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
+>> index a11ae77..33765fa 100644
+>> --- a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
+>> +++ b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
+>> @@ -70,6 +70,7 @@
+>>  #define EP93XX_USB_PHYS_BASE		(EP93XX_AHB_PHYS_BASE + 0x00020000)
+>>  #define EP93XX_USB_BASE			EP93XX_AHB_IOMEM(0x00020000)
+>>  
+>> +#define EP93XX_RASTER_PHYS_BASE		(EP93XX_AHB_PHYS_BASE + 0x00030000)
+>>  #define EP93XX_RASTER_BASE		EP93XX_AHB_IOMEM(0x00030000)
+>>  
+>>  #define EP93XX_GRAPHICS_ACCEL_BASE	EP93XX_AHB_IOMEM(0x00040000)
+>> @@ -206,13 +207,17 @@
+>>  #define EP93XX_SYSCON_DEVCFG_ADCPD	(1<<2)
+>>  #define EP93XX_SYSCON_DEVCFG_KEYS	(1<<1)
+>>  #define EP93XX_SYSCON_DEVCFG_SHENA	(1<<0)
+>> +#define EP93XX_SYSCON_VIDCLKDIV		EP93XX_SYSCON_REG(0x84)
+>> +#define EP93XX_SYSCON_CLKDIV_PSEL	(1 << 13)
+>> +#define EP93XX_SYSCON_CLKDIV_ESEL	(1 << 14)
+>> +#define EP93XX_SYSCON_CLKDIV_ENABLE	(1 << 15)
+>> +#define EP93XX_SYSCON_CLKDIV_PDIV_SHIFT	8
+>>  #define EP93XX_SYSCON_KEYTCHCLKDIV	EP93XX_SYSCON_REG(0x90)
+>>  #define EP93XX_SYSCON_KEYTCHCLKDIV_TSEN	(1<<31)
+>>  #define EP93XX_SYSCON_KEYTCHCLKDIV_ADIV	(1<<16)
+>>  #define EP93XX_SYSCON_KEYTCHCLKDIV_KEN	(1<<15)
+>>  #define EP93XX_SYSCON_KEYTCHCLKDIV_KDIV	(1<<0)
+>>  #define EP93XX_SYSCON_SWLOCK		EP93XX_SYSCON_REG(0xc0)
+> 
+> What tree is this patch based on?  The KEYTCHCLKDIV defines are not in Russell's
+> devel branch.
 
-I suspect Linus isn't pulling from me post -rc2 anymore, or maybe
-he just missed it.
+I put the patch to fix the keypad #defines in my tree before rebasing
+the driver. I think this order is preferred since the keypad defines
+patch is needed for the tree to build without errors.
 
-Dave.
+> If (1 << 13) is preferred over (1<<13) we should eventually update this entire file
+> so that the defines are consistent.
 
----------------------------------------------------------------------------=
----
-Enter the BlackBerry Developer Challenge  =
+I prefer the spaces, but I'll change them in the header file so it is
+consistent with the rest of the file. We can do a patch later to change
+all of the defines in the header file, but I honestly don't think it
+matters as long as it is consistent.
 
-This is your chance to win up to $100,000 in prizes! For a limited time, =
+~Ryan
 
-vendors submitting new applications to BlackBerry App World(TM) will have
-the opportunity to enter the BlackBerry Developer Challenge. See full prize=
-  =
 
-details at: http://p.sf.net/sfu/Challenge
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php

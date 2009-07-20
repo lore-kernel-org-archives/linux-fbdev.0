@@ -1,27 +1,29 @@
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH v2 1/2] ep93xx video platform support
-Date: Mon, 20 Jul 2009 23:15:20 +0100
-Message-ID: <20090720221520.GH11151@n2100.arm.linux.org.uk>
+Date: Mon, 20 Jul 2009 23:18:52 +0100
+Message-ID: <20090720221852.GI11151@n2100.arm.linux.org.uk>
 References: <4A60D6F3.5060906@bluewatersys.com>
 	<4A6309CD.9070505@bluewatersys.com>
 	<BD79186B4FD85F4B8E60E381CAEE190901AC23A5@mi8nycmail19.Mi8.com>
+	<4A64D9B7.8050005@bluewatersys.com>
+	<BD79186B4FD85F4B8E60E381CAEE190901AC23BF@mi8nycmail19.Mi8.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69) (envelope-from
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69) (envelope-from
 	<linux+linux-fbdev-devel=lists.sourceforge.net@arm.linux.org.uk>)
-	id 1MT19A-0004gq-2c for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Jul 2009 22:15:48 +0000
+	id 1MT1CT-0001Uq-1A for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 20 Jul 2009 22:19:13 +0000
 Received: from caramon.arm.linux.org.uk ([78.32.30.218])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MT195-0000bN-Fw
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MT1CQ-00085n-FT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Jul 2009 22:15:48 +0000
+	Mon, 20 Jul 2009 22:19:12 +0000
 Content-Disposition: inline
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901AC23A5@mi8nycmail19.Mi8.com>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901AC23BF@mi8nycmail19.Mi8.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,20 +36,18 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: H Hartley Sweeten <hartleys@visionengravers.com>
 Cc: Ryan Mallon <ryan@bluewatersys.com>, d.venzano@motronica.com, linux-fbdev-devel@lists.sourceforge.net, arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
 
-On Mon, Jul 20, 2009 at 04:42:09PM -0400, H Hartley Sweeten wrote:
-> I'm not sure which tag is appropriate for this patch.  So here's both.
+On Mon, Jul 20, 2009 at 05:01:00PM -0400, H Hartley Sweeten wrote:
+> On Monday, July 20, 2009 1:55 PM, Ryan Mallon wrote:
+> > Russell, will this eventually be okay to go through the ARM patch
+> > system, or does it need to go via the framebuffer people?
 > 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Acked-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> I think Russell could ok this part of the support.  The actual driver
+> will probably need to go via the framebuffer people.
 
-If you're directly involved in the patch delivery path, then the
-sign-off is what's required.  In other words, you take someone elses
-patch, decide you're happy with it and want to pass it along yourself.
-
-If you've just reviewed it and are happy with it, then it's the
-acked-by which is needed.  Or use one of the more specific
-Reviewed-by, Tested-by etc (whatever seems most appropriate for
-the amount of review or checking you've done.)
+I think it depends on whether there's any response from framebuffer
+folk.  I've heard many stories of people submitting patches to the
+framebuffer list and nothing happening.  Safest thing is probably to
+CC Andrew Morton as a just-in-case measure.
 
 ------------------------------------------------------------------------------
 Enter the BlackBerry Developer Challenge  

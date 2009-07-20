@@ -1,27 +1,26 @@
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Subject: Re: [PATCH v2 1/2] ep93xx video platform support
-Date: Mon, 20 Jul 2009 17:01:00 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901AC23BF@mi8nycmail19.Mi8.com>
+From: Ryan Mallon <ryan@bluewatersys.com>
+Subject: Re: [PATCH v2 3/2] ep93xx video driver
+	documentation
+Date: Tue, 21 Jul 2009 09:31:41 +1200
+Message-ID: <4A64E23D.9060007@bluewatersys.com>
 References: <4A60D6F3.5060906@bluewatersys.com>
-	<4A6309CD.9070505@bluewatersys.com>
-	<BD79186B4FD85F4B8E60E381CAEE190901AC23A5@mi8nycmail19.Mi8.com>
-	<4A64D9B7.8050005@bluewatersys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hartleys@visionengravers.com>) id 1MSzyu-0004Bq-QA
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ryan@bluewatersys.com>) id 1MT0RB-0000pp-C1
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Jul 2009 21:01:08 +0000
-Received: from exprod6og115.obsmtp.com ([64.18.1.35])
-	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
-	id 1MSzyq-0000Mb-I7 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 20 Jul 2009 21:01:08 +0000
-Content-class: urn:content-classes:message
-In-Reply-To: <4A64D9B7.8050005@bluewatersys.com>
+	Mon, 20 Jul 2009 21:30:21 +0000
+Received: from mail.bluewatersys.com ([202.124.120.130]
+	helo=hayes.bluewaternz.com)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MT0R3-0002dL-RT
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 20 Jul 2009 21:30:21 +0000
+In-Reply-To: <4A60D6F3.5060906@bluewatersys.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,99 +30,125 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, d.venzano@motronica.com, linux-fbdev-devel@lists.sourceforge.net, arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+To: arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>, linux-fbdev-devel@lists.sourceforge.net, hartleys <hartleys@visionengravers.com>, d.venzano@motronica.com
 
-On Monday, July 20, 2009 1:55 PM, Ryan Mallon wrote:
->>> Updated version of the ep93xx video driver platform support patch with
->>> fixes suggested by Hartley.
->>>
->>> Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
->>>     
->>
->> A couple more formatting issue comments below.
->>
->>   
->>>  static struct clk clk_uart1 = {
->>>  	.sw_locked	= 1,
->>> @@ -73,6 +73,13 @@ static struct clk clk_keypad = {
->>>  	.set_rate	= set_keytchclk_rate,
->>>  };
->>>  
->>> +static struct clk clk_video = {
->>>     
->>
->> Unnecessary blank line.
->>   
-> I like having blank lines between structures :-). I can remove it if you
-> want.
+Documentation for the ep93xx LCD controller
 
-Only because all the other clk's don't have a blank line separating them.
+Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
+---
 
->>>  
->>> +static unsigned long calc_clk_div(unsigned long rate, int *psel, int *esel, 
->>> +				  int *pdiv, int *div)
->>> +{
->>> +	unsigned long max_rate, best_rate = 0, 
->>> +		actual_rate = 0, mclk_rate = 0, rate_err = -1;
->>> +	int i, found = 0, __div = 0, __pdiv = 0;
->>> +	
->>> +	/* Don't exceed the maximum rate */
->>> +	max_rate = max(max(clk_pll1.rate / 4, clk_pll2.rate / 4),
->>> +		       (unsigned long)EP93XX_EXT_CLK_RATE / 4);
->>> +	rate = min(rate, max_rate);
->>> +	
->>> +	/*
->>> +	 * Try the two pll's and the external clock
->>> +	 * Because the valid predividers are 2, 2.5 and 3, we multiply
->>> +	 * all the clocks by 2 to avoid floating point math.
->>> +	 *
->>> +	 * This is based on the algorithm in the ep93xx raster guide:
->>> +	 * http://be-a-maverick.com/en/pubs/appNote/AN269REV1.pdf
->>> +	 *
->>>     
->>
->> Unnecessary extra '*'.
->>   
-> Again, I think this is okay, it spaces the comment out a bit and makes
-> it more readable (IMHO).
+diff --git a/Documentation/fb/ep93xx_fb.txt b/Documentation/fb/ep93xx_fb.txt
+new file mode 100644
+index 0000000..f77e6c4
+--- /dev/null
++++ b/Documentation/fb/ep93xx_fb.txt
+@@ -0,0 +1,105 @@
++================================
++Driver for EP93xx LCD controller
++================================
++
++The EP93xx LCD controller can drive both standard desktop monitors and
++embedded LCD displays. If you have a standard desktop monitor then you
++can use the standard Linux video mode database. In your board file:
++
++	static struct ep93xxfb_mach_info some_board_fb_info = {
++		.num_modes	= EP93XXFB_USE_MODEDB,
++		.bpp		= 16,
++	};
++
++If you have an embedded LCD display then you need to define a video
++mode for it as follows:
++
++	static struct fb_videomode some_board_video_modes[] = {
++		{
++			.name		= "some_lcd_name",
++			/* Pixel clock, porches, etc */
++		},
++	};
++
++	static struct ep93xxfb_mach_info some_board_fb_info = {
++		.num_modes	= ARRAY_SIZE(some_board_video_modes),
++		.modes		= some_board_video_modes,
++		.default_mode	= &some_board_video_modes[0],
++		.bpp		= 16,
++	};
++
++The framebuffer device can be registered by adding the following to
++your board initialisation function:
++
++	ep93xx_register_fb(&some_board_fb_info);
++
++=====================
++Video Attribute Flags
++=====================
++
++The ep93xxfb_mach_info structure has a flags field which can be used
++to configure the controller. The video attributes flags are fully
++documented in section 7 of the EP93xx users' guide. The following
++flags are available:
++
++EP93XXFB_PCLK_FALLING		Clock data on the falling edge of the
++				pixel clock. The default is to clock
++				data on the rising edge.
++
++EP93XXFB_SYNC_BLANK_HIGH	Blank signal is active high. By
++				default the blank signal is active low.
++
++EP93XXFB_SYNC_HORIZ_HIGH	Horizontal sync is active high. By
++				default the horizontal sync is active low.
++
++EP93XXFB_SYNC_VERT_HIGH		Vertical sync is active high. By
++				default the vertical sync is active high.
++
++The physical address of the framebuffer can be controlled using the
++following flags:
++
++EP93XXFB_USE_SDCSN0		Use SDCSn[0] for the framebuffer. This
++				is the default setting.
++
++EP93XXFB_USE_SDCSN1		Use SDCSn[1] for the framebuffer. 
++
++EP93XXFB_USE_SDCSN2		Use SDCSn[2] for the framebuffer. 
++
++EP93XXFB_USE_SDCSN3		Use SDCSn[3] for the framebuffer.
++
++======================
++Setting the video mode
++======================
++
++The video mode is set using the following syntax:
++
++	video=XRESxYRES[-BPP][@REFRESH]
++
++If the EP93xx video driver is built-in then the video mode is set on
++the Linux kernel command line, for example:
++
++	video=800x600-16@60
++
++If the EP93xx video driver is built as a module then the video mode is
++set when the module is installed:
++
++	modprobe ep93xx_fb video=320x240
++
++==============
++Screenpage bug
++==============
++
++At least on the EP9315 there is a silicon bug which causes bit 27 of
++the VIDSCRNPAGE (framebuffer physical offset) to be tied low. There is
++an unofficial errata for this bug at: 
++	http://marc.info/?l=linux-arm-kernel&m=110061245502000&w=2
++
++By default the EP93xx framebuffer driver checks if the allocated physical
++address has bit 27 set. If it does, then the memory is freed and an
++error is returned. The check can be disabled by adding the following
++option when loading the driver:
++
++      ep93xx_fb.check_screenpage_bug=0
++
++In some cases it may be possible to reconfigure your SDRAM layout to
++avoid this bug. See section 13 of the EP93xx users' guide for details.
 
-That's fine.
-
->> Looks good other than that.
->>
->> I'm not sure which tag is appropriate for this patch.  So here's both.
->>
->> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
->>   
-> Sorry, your signed-off-by should have been there from the start.
->> Acked-by: H Hartley Sweeten <hsweeten@visionengravers.com>
->>   
-> I'm not sure if you can have both a signed-off-by and acked-by tag on
-> the same patch. Russell?
-
-I guess it should be a Signed-off-by, you will need an ack from someone
-else (Russell?).
-
-> I'm also putting together a short document on how to use the driver
-> since Daniele was having trouble getting it going. I would like to wait
-> until he has it fully working before this gets applied since that gives
-> us a third independent person who can confirm it all works.
-
-I was going to suggest that.  Or you could submit a patch for the
-snappercl15 showing an example usage.
-
-> Russell, will this eventually be okay to go through the ARM patch
-> system, or does it need to go via the framebuffer people?
-
-I think Russell could ok this part of the support.  The actual driver
-will probably need to go via the framebuffer people.
-
-I'm reviewing the driver right now.  You should have my Signed-off-by
-later today.
-
-Regards,
-Hartley
 
 ------------------------------------------------------------------------------
 Enter the BlackBerry Developer Challenge  

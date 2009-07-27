@@ -1,34 +1,44 @@
-From: "Sudhakar Rajashekhara" <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-Subject: RE: [PATCH v4] davinci: fb: Frame Buffer driver for TI
-	DA8xx/OMAP-L1xx
+From: "Sudhakar Rajashekhara" <sudhakar.raj@ti.com>
+Subject: Re: [PATCH v4] davinci: fb: Frame Buffer driver
+	for TI DA8xx/OMAP-L1xx
 Date: Mon, 27 Jul 2009 18:23:02 +0530
-Message-ID: <178.172151982103$1248699331@news.gmane.org>
+Message-ID: <47745.9173104309$1248699419@news.gmane.org>
 References: <1248238020-8266-1-git-send-email-sudhakar.raj@ti.com>
 	<20090724142336.2b9b4082.akpm@linux-foundation.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: <20090724142336.2b9b4082.akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sudhakar.raj@ti.com>) id 1MVPjc-00064X-UL
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Jul 2009 12:55:20 +0000
+Received: from comal.ext.ti.com ([198.47.26.152])
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MVPjY-00026Z-Ni
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 27 Jul 2009 12:55:20 +0000
+In-Reply-To: <20090724142336.2b9b4082.akpm@linux-foundation.org>
 Content-Language: en-us
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Content-Type: text/plain; charset="us-ascii"
-To: 'Andrew Morton' <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: davinci-linux-open-source@linux.davincidsp.com, linux-fbdev-devel@lists.sourceforge.net, schen@mvista.com, linux-kernel@vger.kernel.org, pkiryukhin@ru.mvista.com
 
 Hi,
 
 On Sat, Jul 25, 2009 at 02:53:36, Andrew Morton wrote:
 > On Wed, 22 Jul 2009 00:47:00 -0400
-> Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org> wrote:
+> Sudhakar Rajashekhara <sudhakar.raj@ti.com> wrote:
 > 
 > > Adds LCD controller (LCDC) driver for TI's DA8xx/OMAP-L1xx
 > > architecture. LCDC specifications can be found at
@@ -42,10 +52,10 @@ On Sat, Jul 25, 2009 at 02:53:36, Andrew Morton wrote:
 > > found on the DA830 based EVM. The EVM details can be found at:
 > > http://support.spectrumdigital.com/boards/dskda830/revc/.
 > > 
-> > Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-> > Signed-off-by: Pavel Kiryukhin <pkiryukhin-hkdhdckH98+B+jHODAdFcQ@public.gmane.org>
-> > Signed-off-by: Steve Chen <schen-Igf4POYTYCDQT0dZR+AlfA@public.gmane.org>
-> > Acked-by: Krzysztof Helt <krzysztof.h1-5tc4TXWwyLM@public.gmane.org>
+> > Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+> > Signed-off-by: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+> > Signed-off-by: Steve Chen <schen@mvista.com>
+> > Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 > > ---
 > >  This patch applies to Linus's Kernel tree.
 > > 
@@ -159,3 +169,7 @@ these changes.
 
 Thanks,
 Sudhakar
+
+
+
+------------------------------------------------------------------------------

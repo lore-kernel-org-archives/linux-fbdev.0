@@ -1,48 +1,61 @@
-From: GnuCash Administrator <admin.gnucash@gmail.com>
-Subject: fbcon rotation on keypad event
-Date: Mon, 27 Jul 2009 14:19:23 +0100
-Message-ID: <8e9a4c730907270619w18e7813fl3735ed31cf14d601@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fbcon: rotate upside down crash
+Date: Mon, 27 Jul 2009 16:33:40 -0700
+Message-ID: <20090727163340.5009ff72.akpm@linux-foundation.org>
+References: <1248463426.30437.12.camel@wall-e>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <admin.gnucash@gmail.com>) id 1MVQ7A-0007It-Az
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Jul 2009 13:19:40 +0000
-Received: from mail-bw0-f215.google.com ([209.85.218.215])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MVQ71-00087i-6k for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 27 Jul 2009 13:19:40 +0000
-Received: by bwz11 with SMTP id 11so2674085bwz.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 27 Jul 2009 06:19:24 -0700 (PDT)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755592AbZG0XeZ@vger.kernel.org>
+In-Reply-To: <1248463426.30437.12.camel@wall-e>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hello to All.
 
-I need to rotate the framebuffer console on a keyboard event inside
-the keyboard driver itself.
+(cc linux-fbdev-devel)
+(un-cc adaplas - he hasn't been heard from for over a year)
 
-What for functions and header files ared needed to be included and
-started to get this to work in the driver.
+On Fri, 24 Jul 2009 21:23:46 +0200
+Stefani Seibold <stefani@seibold.net> wrote:
 
-In the file fbcon.c exist functions like "fbcon_rotate_all" but i dont
-know if it is possible and how it is possible to call this function
-from the keyboard driver.
+> Attached is a bug fix for the frame console. 
+> 
+> The current frame buffer console upside down functionality will crash
+> using a font which has not a width of multiple by 8. 
+> 
+> The following 1 liner will fix the rotate_ud() function,
+> 
+>  fbcon_rotate.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.31-rc4/drivers/video/console/fbcon_rotate.h	2009-07-24
+> 20:37:31.000000000 +0200
+> +++ linux-2.6.31-rc4.orig/drivers/video/console/fbcon_rotate.h
+> 2009-06-10 05:05:27.000000000 +0200
+> @@ -45,7 +45,7 @@
+>  	width = (width + 7) & ~7;
+>  
+>  	for (i = 0; i < height; i++) {
+> -		for (j = 0; j < width - shift; j++) {
+> +		for (j = 0; j < width; j++) {
+>  			if (pattern_test_bit(j, i, width, in))
+>  				pattern_set_bit(width - (1 + j + shift),
+>  						height - (1 + i),
+> 
 
-Thanks in advance for the start help.
-Greetings
+I suspect that the patch was reversed, and that you intended this:
 
-------------------------------------------------------------------------------
+-		for (j = 0; j < width; j++) {
++		for (j = 0; j < width - shift; j++) {
+
+yes?
+
+
+The patch was wordwrapped too - please fix the email client.
+
+
+If/when resending, please add to the changelog a bit of an explanation
+about the change - what was wrong with the old code and how does the
+new code fix it, thanks.

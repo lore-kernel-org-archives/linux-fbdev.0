@@ -1,61 +1,88 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fbcon: rotate upside down crash
-Date: Mon, 27 Jul 2009 16:33:40 -0700
-Message-ID: <20090727163340.5009ff72.akpm@linux-foundation.org>
-References: <1248463426.30437.12.camel@wall-e>
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+Subject: [PATCH] fbmon.c: variable err not needed
+Date: Tue, 28 Jul 2009 18:31:28 +0200
+Message-ID: <200907281831.28734.toralf.foerster@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755592AbZG0XeZ@vger.kernel.org>
-In-Reply-To: <1248463426.30437.12.camel@wall-e>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <toralf.foerster@gmx.de>) id 1MVpad-0003Ey-15
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 28 Jul 2009 16:31:47 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 72vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MVpaR-0004Ui-Rb for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 28 Jul 2009 16:31:41 +0000
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+Resend after checkpatch.pl doesn't complained about it :
 
 
-(cc linux-fbdev-devel)
-(un-cc adaplas - he hasn't been heard from for over a year)
+Signed-off-by: Toralf Foerster <toralf.foerster@gmx.de>
+---
+drivers/video/fbmon.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-On Fri, 24 Jul 2009 21:23:46 +0200
-Stefani Seibold <stefani@seibold.net> wrote:
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 9ae9cd3..e1b7073 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -277,17 +277,17 @@ static int edid_checksum(unsigned char *edid)
+ =
 
-> Attached is a bug fix for the frame console. 
-> 
-> The current frame buffer console upside down functionality will crash
-> using a font which has not a width of multiple by 8. 
-> 
-> The following 1 liner will fix the rotate_ud() function,
-> 
->  fbcon_rotate.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.31-rc4/drivers/video/console/fbcon_rotate.h	2009-07-24
-> 20:37:31.000000000 +0200
-> +++ linux-2.6.31-rc4.orig/drivers/video/console/fbcon_rotate.h
-> 2009-06-10 05:05:27.000000000 +0200
-> @@ -45,7 +45,7 @@
->  	width = (width + 7) & ~7;
->  
->  	for (i = 0; i < height; i++) {
-> -		for (j = 0; j < width - shift; j++) {
-> +		for (j = 0; j < width; j++) {
->  			if (pattern_test_bit(j, i, width, in))
->  				pattern_set_bit(width - (1 + j + shift),
->  						height - (1 + i),
-> 
+ static int edid_check_header(unsigned char *edid)
+ {
+-	int i, err =3D 1, fix =3D check_edid(edid);
++	int i, fix =3D check_edid(edid);
+ =
 
-I suspect that the patch was reversed, and that you intended this:
+ 	if (fix)
+ 		fix_edid(edid, fix);
+ =
 
--		for (j = 0; j < width; j++) {
-+		for (j = 0; j < width - shift; j++) {
+ 	for (i =3D 0; i < 8; i++) {
+ 		if (edid[i] !=3D edid_v1_header[i])
+-			err =3D 0;
++			return 0;
+ 	}
+ =
 
-yes?
+-	return err;
++	return 1;
+ }
+ =
 
+ static void parse_vendor_block(unsigned char *block, struct fb_monspecs *s=
+pecs)
 
-The patch was wordwrapped too - please fix the email client.
+-- =
+
+MfG/Sincerely
+
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
 
 
-If/when resending, please add to the changelog a bit of an explanation
-about the change - what was wrong with the old code and how does the
-new code fix it, thanks.
+---------------------------------------------------------------------------=
+---
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day =
+
+trial. Simplify your report design, integration and deployment - and focus =
+on =
+
+what you do best, core application coding. Discover what's new with =
+
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

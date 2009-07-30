@@ -1,131 +1,111 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH 1/2] viafb: remove duplicated CX700 register init
-Date: Thu, 30 Jul 2009 20:25:21 +0000
-Message-ID: <1248985522-4316-1-git-send-email-FlorianSchandinat@gmx.de>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752753AbZG3UXM@vger.kernel.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] fbcon: don't use vc_resize() on initialization
+Date: Thu, 30 Jul 2009 16:11:49 -0700
+Message-ID: <20090730161149.657e8e9a.akpm@linux-foundation.org>
+References: <1248859884.2305.7.camel@pc1117.cambridge.arm.com>
+	<20090729103903.GA2175@cmpxchg.org>
+	<1248865456.2305.12.camel@pc1117.cambridge.arm.com>
+	<20090729172123.GA14192@cmpxchg.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753153AbZG3XM1@vger.kernel.org>
+In-Reply-To: <20090729172123.GA14192@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, HaraldWelte@viatech.com
-Cc: linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: catalin.marinas@arm.com, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-viafb: remove duplicated CX700 register init
+On Wed, 29 Jul 2009 19:21:23 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-The current code initializes the register for CX700 chips 2 times due to a
-missing break as discovered by Harald Welte.
-As CX700 and VX800 have exactly the same register initialization we can use one
-for both to avoid duplicated code.
-As this is a pure code cleanup no measurable runtime effects are expected.
+> Catalin and kmemleak spotted a leak of a VC screen buffer in
+> vc_allocate() due to the following chain of events:
+> 
+> 	vc_allocate()
+> 	  visual_init(init=1)
+> 	    vc->vc_sw->con_init(init=1)
+>               fbcon_init()
+> 	        vc_resize()
+> 	          vc->screen_buf = kmalloc()
+> 	  vc->screen_buf = kmalloc()
+> 
+> The common way for the VC drivers is to set the screen dimension
+> parameters manually in the init case and only call vc_resize() for
+> !init - which allocates a screen buffer according to the new
+> dimensions.
+> 
+> fbcon instead would do vc_resize() unconditionally and afterwards set
+> the dimensions manually (again) for !init - i.e. completely upside
+> down.  The vc_resize() allocated buffer would then get lost by
+> vc_allocate() allocating a fresh one.
+> 
+> Use vc_resize() only for actual resizing to close the leak.
+> 
+> Set the dimensions manually only in initialization mode to remove the
+> redundant setting in resize mode.
+> 
+> The kmemleak trace from Catalin:
+> 
+> unreferenced object 0xde158000 (size 12288):
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- hw.c      |    5 +----
- viamode.c |   61 -------------------------------------------------------------
- viamode.h |    1 -
- 3 files changed, 1 insertions(+), 66 deletions(-)
+That's a big leak!
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index c896000..64a820c 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2271,11 +2271,8 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
- 		break;
- 
- 	case UNICHROME_CX700:
--		viafb_write_regx(CX700_ModeXregs, NUM_TOTAL_CX700_ModeXregs);
--
- 	case UNICHROME_VX800:
--		viafb_write_regx(VX800_ModeXregs, NUM_TOTAL_VX800_ModeXregs);
--
-+		viafb_write_regx(CX700_ModeXregs, NUM_TOTAL_CX700_ModeXregs);
- 		break;
- 	}
- 
-diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
-index 6dcf583..e799b2d 100644
---- a/drivers/video/via/viamode.c
-+++ b/drivers/video/via/viamode.c
-@@ -329,67 +329,6 @@ struct io_reg CX700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
- {VIACR, CRD2, 0xFF, 0xFF}	/* TMDS/LVDS control register.         */
- };
- 
--/* For VT3353: Common Setting for Video Mode */
--struct io_reg VX800_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
--{VIASR, SR15, 0x02, 0x02},
--{VIASR, SR16, 0xBF, 0x08},
--{VIASR, SR17, 0xFF, 0x1F},
--{VIASR, SR18, 0xFF, 0x4E},
--{VIASR, SR1A, 0xFB, 0x08},
--{VIASR, SR1B, 0xFF, 0xF0},
--{VIASR, SR1E, 0xFF, 0x01},
--{VIASR, SR2A, 0xFF, 0x00},
--{VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
--{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
--{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
--{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
--{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
--{VIACR, CR32, 0xFF, 0x00},
--{VIACR, CR33, 0xFF, 0x00},
--{VIACR, CR34, 0xFF, 0x00},
--{VIACR, CR35, 0xFF, 0x00},
--{VIACR, CR36, 0x08, 0x00},
--{VIACR, CR47, 0xC8, 0x00},	/* Clear VCK Plus. */
--{VIACR, CR62, 0xFF, 0x00},	/* Secondary Display Starting Address  */
--{VIACR, CR63, 0xFF, 0x00},	/* Secondary Display Starting Address  */
--{VIACR, CR64, 0xFF, 0x00},	/* Secondary Display Starting Address  */
--{VIACR, CRA3, 0xFF, 0x00},	/* Secondary Display Starting Address  */
--{VIACR, CR69, 0xFF, 0x00},
--{VIACR, CR6A, 0xFF, 0x40},
--{VIACR, CR6B, 0xFF, 0x00},
--{VIACR, CR6C, 0xFF, 0x00},
--{VIACR, CR7A, 0xFF, 0x01},	/* LCD Scaling Parameter 1             */
--{VIACR, CR7B, 0xFF, 0x02},	/* LCD Scaling Parameter 2             */
--{VIACR, CR7C, 0xFF, 0x03},	/* LCD Scaling Parameter 3             */
--{VIACR, CR7D, 0xFF, 0x04},	/* LCD Scaling Parameter 4             */
--{VIACR, CR7E, 0xFF, 0x07},	/* LCD Scaling Parameter 5             */
--{VIACR, CR7F, 0xFF, 0x0A},	/* LCD Scaling Parameter 6             */
--{VIACR, CR80, 0xFF, 0x0D},	/* LCD Scaling Parameter 7             */
--{VIACR, CR81, 0xFF, 0x13},	/* LCD Scaling Parameter 8             */
--{VIACR, CR82, 0xFF, 0x16},	/* LCD Scaling Parameter 9             */
--{VIACR, CR83, 0xFF, 0x19},	/* LCD Scaling Parameter 10            */
--{VIACR, CR84, 0xFF, 0x1C},	/* LCD Scaling Parameter 11            */
--{VIACR, CR85, 0xFF, 0x1D},	/* LCD Scaling Parameter 12            */
--{VIACR, CR86, 0xFF, 0x1E},	/* LCD Scaling Parameter 13            */
--{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14            */
--{VIACR, CR88, 0xFF, 0x40},	/* LCD Panel Type                      */
--{VIACR, CR89, 0xFF, 0x00},	/* LCD Timing Control 0                */
--{VIACR, CR8A, 0xFF, 0x88},	/* LCD Timing Control 1                */
--{VIACR, CRD4, 0xFF, 0x81},	/* Second power sequence control       */
--{VIACR, CR8B, 0xFF, 0x5D},	/* LCD Power Sequence Control 0        */
--{VIACR, CR8C, 0xFF, 0x2B},	/* LCD Power Sequence Control 1        */
--{VIACR, CR8D, 0xFF, 0x6F},	/* LCD Power Sequence Control 2        */
--{VIACR, CR8E, 0xFF, 0x2B},	/* LCD Power Sequence Control 3        */
--{VIACR, CR8F, 0xFF, 0x01},	/* LCD Power Sequence Control 4        */
--{VIACR, CR90, 0xFF, 0x01},	/* LCD Power Sequence Control 5        */
--{VIACR, CR91, 0xFF, 0x80},	/* 24/12 bit LVDS Data off             */
--{VIACR, CR96, 0xFF, 0x00},
--{VIACR, CR97, 0xFF, 0x00},
--{VIACR, CR99, 0xFF, 0x00},
--{VIACR, CR9B, 0xFF, 0x00},
--{VIACR, CRD2, 0xFF, 0xFF}	/* TMDS/LVDS control register.         */
--};
--
- /* Video Mode Table */
- /* Common Setting for Video Mode */
- struct io_reg CLE266_ModeXregs[] = { {VIASR, SR1E, 0xF0, 0x00},
-diff --git a/drivers/video/via/viamode.h b/drivers/video/via/viamode.h
-index 1a5de50..2ec8bfe 100644
---- a/drivers/video/via/viamode.h
-+++ b/drivers/video/via/viamode.h
-@@ -56,7 +56,6 @@ struct res_map_refresh {
- #define NUM_TOTAL_CN700_ModeXregs ARRAY_SIZE(CN700_ModeXregs)
- #define NUM_TOTAL_KM400_ModeXregs ARRAY_SIZE(KM400_ModeXregs)
- #define NUM_TOTAL_CX700_ModeXregs ARRAY_SIZE(CX700_ModeXregs)
--#define NUM_TOTAL_VX800_ModeXregs ARRAY_SIZE(VX800_ModeXregs)
- #define NUM_TOTAL_CLE266_ModeXregs ARRAY_SIZE(CLE266_ModeXregs)
- #define NUM_TOTAL_PATCH_MODE ARRAY_SIZE(res_patch_table)
- #define NUM_TOTAL_MODETABLE ARRAY_SIZE(CLE266Modes)
--- 
-1.6.3.2
+What sequence of user actions would cause it to occur?
+
+>   comm "Xorg", pid 1439, jiffies 4294961016
+>   hex dump (first 32 bytes):
+>     20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
+>     20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
+>   backtrace:
+>     [<c006f74b>] __save_stack_trace+0x17/0x1c
+>     [<c006f81d>] create_object+0xcd/0x188
+>     [<c01f5457>] kmemleak_alloc+0x1b/0x3c
+>     [<c006e303>] __kmalloc+0xdb/0xe8
+>     [<c012cc4b>] vc_do_resize+0x73/0x1e0
+>     [<c012cdf1>] vc_resize+0x15/0x18
+>     [<c011afc1>] fbcon_init+0x1f9/0x2b8
+>     [<c0129e87>] visual_init+0x9f/0xdc
+>     [<c012aff3>] vc_allocate+0x7f/0xfc
+>     [<c012b087>] con_open+0x17/0x80
+>     [<c0120e43>] tty_open+0x1f7/0x2e4
+>     [<c0072fa1>] chrdev_open+0x101/0x118
+>     [<c006ffad>] __dentry_open+0x105/0x1cc
+>     [<c00700fd>] nameidata_to_filp+0x2d/0x38
+>     [<c00788cd>] do_filp_open+0x2c1/0x54c
+>     [<c006fdff>] do_sys_open+0x3b/0xb4
+> 
+> Reported-by: Catalin Marinas <catalin.marinas@arm.com>
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Tested-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  drivers/video/console/fbcon.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+> index 471a9a6..3a44695 100644
+> --- a/drivers/video/console/fbcon.c
+> +++ b/drivers/video/console/fbcon.c
+> @@ -1082,7 +1082,6 @@ static void fbcon_init(struct vc_data *vc, int init)
+>  	new_rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+>  	new_cols /= vc->vc_font.width;
+>  	new_rows /= vc->vc_font.height;
+> -	vc_resize(vc, new_cols, new_rows);
+>  
+>  	/*
+>  	 * We must always set the mode. The mode of the previous console
+> @@ -1111,10 +1110,11 @@ static void fbcon_init(struct vc_data *vc, int init)
+>  	 *  vc_{cols,rows}, but we must not set those if we are only
+>  	 *  resizing the console.
+>  	 */
+> -	if (!init) {
+> +	if (init) {
+>  		vc->vc_cols = new_cols;
+>  		vc->vc_rows = new_rows;
+> -	}
+> +	} else
+> +		vc_resize(vc, new_cols, new_rows);
+>  
+>  	if (logo)
+>  		fbcon_prepare_logo(vc, info, cols, rows, new_cols, new_rows);

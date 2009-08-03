@@ -1,63 +1,66 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [patch] fbcon: don't use vc_resize() on initialization
-Date: Fri, 31 Jul 2009 10:09:15 +0100
-Message-ID: <1249031355.29967.1.camel@pc1117.cambridge.arm.com>
-References: <1248859884.2305.7.camel@pc1117.cambridge.arm.com>
-	 <20090729103903.GA2175@cmpxchg.org>
-	 <1248865456.2305.12.camel@pc1117.cambridge.arm.com>
-	 <20090729172123.GA14192@cmpxchg.org>
-	 <20090730161149.657e8e9a.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751830AbZGaJJx@vger.kernel.org>
-In-Reply-To: <20090730161149.657e8e9a.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: [PATCH 0/4) OMAPFB patches
+Date: Mon,  3 Aug 2009 16:15:11 +0300
+Message-ID: <1249305315-25595-1-git-send-email-tomi.valkeinen@nokia.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Johannes Weiner <hannes@cmpxchg.org>, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-omap@vger.kernel.org
 
-On Thu, 2009-07-30 at 16:11 -0700, Andrew Morton wrote:
-> On Wed, 29 Jul 2009 19:21:23 +0200
-> Johannes Weiner <hannes@cmpxchg.org> wrote:
-> 
-> > Catalin and kmemleak spotted a leak of a VC screen buffer in
-> > vc_allocate() due to the following chain of events:
-> > 
-> > 	vc_allocate()
-> > 	  visual_init(init=1)
-> > 	    vc->vc_sw->con_init(init=1)
-> >               fbcon_init()
-> > 	        vc_resize()
-> > 	          vc->screen_buf = kmalloc()
-> > 	  vc->screen_buf = kmalloc()
-> > 
-> > The common way for the VC drivers is to set the screen dimension
-> > parameters manually in the init case and only call vc_resize() for
-> > !init - which allocates a screen buffer according to the new
-> > dimensions.
-> > 
-> > fbcon instead would do vc_resize() unconditionally and afterwards set
-> > the dimensions manually (again) for !init - i.e. completely upside
-> > down.  The vc_resize() allocated buffer would then get lost by
-> > vc_allocate() allocating a fresh one.
-> > 
-> > Use vc_resize() only for actual resizing to close the leak.
-> > 
-> > Set the dimensions manually only in initialization mode to remove the
-> > redundant setting in resize mode.
-> > 
-> > The kmemleak trace from Catalin:
-> > 
-> > unreferenced object 0xde158000 (size 12288):
-> 
-> That's a big leak!
-> 
-> What sequence of user actions would cause it to occur?
+This patch set makes preparations for the new DSS2 driver. It implements VRFB
+support and a VRAM manager, omapfb.h is split and moved, and a dummy DSS device
+is created to make it possible for old DSS and new DSS2 to co-exist.
 
-In my case, I think anything that causes a tty_open() call with a
-framebuffer console. I get a leak when logging in on the console and
-another when starting the X server.
+VRFB and VRAM are not used by the current DSS driver.
 
--- 
-Catalin
+The patches are based on linux-omap, as omapfb seems to be broken in mainstream
+kernel.
+
+ Tomi Valkeinen
+
+ arch/arm/mach-omap1/board-nokia770.c     |    2 +-
+ arch/arm/mach-omap2/board-n800.c         |    2 +-
+ arch/arm/mach-omap2/clock24xx.c          |    8 +-
+ arch/arm/mach-omap2/clock34xx.c          |   10 +-
+ arch/arm/mach-omap2/io.c                 |    4 +-
+ arch/arm/plat-omap/Kconfig               |    6 +
+ arch/arm/plat-omap/Makefile              |    2 +
+ arch/arm/plat-omap/fb.c                  |    2 +-
+ arch/arm/plat-omap/include/mach/omapfb.h |  398 ------------------
+ arch/arm/plat-omap/include/mach/vram.h   |   63 +++
+ arch/arm/plat-omap/include/mach/vrfb.h   |   46 ++
+ arch/arm/plat-omap/sram.c                |    8 +
+ arch/arm/plat-omap/vram.c                |  655 ++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/vrfb.c                |  281 +++++++++++++
+ drivers/video/omap/blizzard.c            |    2 +-
+ drivers/video/omap/dispc.c               |   21 +-
+ drivers/video/omap/hwa742.c              |    2 +-
+ drivers/video/omap/lcd_2430sdp.c         |    2 +-
+ drivers/video/omap/lcd_ams_delta.c       |    2 +-
+ drivers/video/omap/lcd_apollon.c         |    2 +-
+ drivers/video/omap/lcd_h3.c              |    2 +-
+ drivers/video/omap/lcd_h4.c              |    2 +-
+ drivers/video/omap/lcd_inn1510.c         |    2 +-
+ drivers/video/omap/lcd_inn1610.c         |    2 +-
+ drivers/video/omap/lcd_ldp.c             |    2 +-
+ drivers/video/omap/lcd_mipid.c           |    3 +-
+ drivers/video/omap/lcd_omap2evm.c        |    2 +-
+ drivers/video/omap/lcd_omap3beagle.c     |    2 +-
+ drivers/video/omap/lcd_omap3evm.c        |    2 +-
+ drivers/video/omap/lcd_osk.c             |    2 +-
+ drivers/video/omap/lcd_overo.c           |    3 +-
+ drivers/video/omap/lcd_palmte.c          |    2 +-
+ drivers/video/omap/lcd_palmtt.c          |    2 +-
+ drivers/video/omap/lcd_palmz71.c         |    2 +-
+ drivers/video/omap/lcdc.c                |    3 +-
+ drivers/video/omap/omapfb.h              |  227 +++++++++++
+ drivers/video/omap/omapfb_main.c         |    2 +-
+ drivers/video/omap/rfbi.c                |    3 +-
+ drivers/video/omap/sossi.c               |    2 +-
+ include/linux/omapfb.h                   |  197 +++++++++
+ 40 files changed, 1543 insertions(+), 439 deletions(-)
+

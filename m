@@ -1,120 +1,90 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 10/15] OMAP: DSS2: DSI driver
-Date: Wed, 5 Aug 2009 18:04:47 +0300
-Message-ID: <20090805150446.GS7374@atomide.com>
-References: <1249481741-14008-2-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-3-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-4-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-5-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-6-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-7-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-8-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-9-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-10-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-11-git-send-email-tomi.valkeinen@nokia.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: Re: [PATCH 04/15] OMAP: Add support for VRFB rotation engine
+Date: Fri, 07 Aug 2009 11:33:53 +0300
+Message-ID: <4A7BE6F1.6070308@nokia.com>
+References: <1249481741-14008-1-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-2-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-3-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-4-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-5-git-send-email-tomi.valkeinen@nokia.com> <20090805143141.GI7374@atomide.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1249481741-14008-11-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <20090805143141.GI7374@atomide.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: ext Tony Lindgren <tony@atomide.com>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-* Tomi Valkeinen <tomi.valkeinen@nokia.com> [090805 17:19]:
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-> ---
->  drivers/video/omap2/dss/dsi.c | 3509 +++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 3509 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/omap2/dss/dsi.c
+ext Tony Lindgren wrote:
+> * Tomi Valkeinen <tomi.valkeinen@nokia.com> [090805 17:19]:
+>> VRFB rotation engine is a block in OMAP2/3 that offers 12 independent
+>> contexts that can be used for framebuffer rotation.
+>>
+>> Each context has a backend area of real memory, where it stores the
+>> pixels in undisclosed format. This memory is offered to users via 4
+>> virtual memory areas, which see the same memory area in different
+>> rotation angles (0, 90, 180 and 270 degrees).
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+>> ---
+>>  arch/arm/plat-omap/Kconfig             |    3 +
+>>  arch/arm/plat-omap/Makefile            |    1 +
+>>  arch/arm/plat-omap/include/mach/vrfb.h |   46 +++++
+>>  arch/arm/plat-omap/vrfb.c              |  281 ++++++++++++++++++++++++++++++++
+>>  4 files changed, 331 insertions(+), 0 deletions(-)
+>>  create mode 100644 arch/arm/plat-omap/include/mach/vrfb.h
+>>  create mode 100644 arch/arm/plat-omap/vrfb.c
+>>
+>> diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+>> index ca06037..2d6ae55 100644
+>> --- a/arch/arm/plat-omap/Kconfig
+>> +++ b/arch/arm/plat-omap/Kconfig
+>> @@ -186,6 +186,9 @@ config OMAP_SERIAL_WAKE
+>>  config OMAP2_VRAM
+>>       bool
+>>
+>> +config OMAP2_VRFB
+>> +     bool
+>> +
+>>  endmenu
+>>
+>>  endif
+>> diff --git a/arch/arm/plat-omap/Makefile b/arch/arm/plat-omap/Makefile
+>> index 0472bbe..462edf3 100644
+>> --- a/arch/arm/plat-omap/Makefile
+>> +++ b/arch/arm/plat-omap/Makefile
+>> @@ -26,3 +26,4 @@ obj-y += $(i2c-omap-m) $(i2c-omap-y)
+>>  obj-$(CONFIG_OMAP_MBOX_FWK) += mailbox.o
+>>
+>>  obj-$(CONFIG_OMAP2_VRAM) += vram.o
+>> +obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
 > 
-> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+> Can you please place this file under drivers/video?
 
-<snip snip>
+Ok. I still feel a common place, like plat-omap is better place for vrfb 
+and vram, but I don't feel too strongly about it =). drivers/video works 
+fine also.
 
-> +int dsi_vc_dcs_read(int channel, u8 dcs_cmd, u8 *buf, int buflen)
-> +{
-> +	u32 val;
-> +	u8 dt;
-> +	int r;
-> +
-> +	if (dsi.debug_read)
-> +		DSSDBG("dsi_vc_dcs_read(ch%d, dcs_cmd %u)\n", channel, dcs_cmd);
-> +
-> +	r = dsi_vc_send_short(channel, DSI_DT_DCS_READ, dcs_cmd, 0);
-> +	if (r)
-> +		return r;
-> +
-> +	r = dsi_vc_send_bta_sync(channel);
-> +	if (r)
-> +		return r;
-> +
-> +	/* RX_FIFO_NOT_EMPTY */
-> +	if (REG_GET(DSI_VC_CTRL(channel), 20, 20) == 0) {
-> +		DSSERR("RX fifo empty when trying to read.\n");
-> +		return -EIO;
-> +	}
-> +
-> +	val = dsi_read_reg(DSI_VC_SHORT_PACKET_HEADER(channel));
-> +	if (dsi.debug_read)
-> +		DSSDBG("\theader: %08x\n", val);
-> +	dt = FLD_GET(val, 5, 0);
-> +	if (dt == DSI_DT_RX_ACK_WITH_ERR) {
-> +		u16 err = FLD_GET(val, 23, 8);
-> +		dsi_show_rx_ack_with_err(err);
-> +		return -1;
+> 
+> 
+>> diff --git a/arch/arm/plat-omap/include/mach/vrfb.h b/arch/arm/plat-omap/include/mach/vrfb.h
+>> new file mode 100644
 
-Return something from err.h instead of -1 in various places in this function?
+<snip>
 
-> +
-> +	} else if (dt == DSI_DT_RX_SHORT_READ_1) {
-> +		u8 data = FLD_GET(val, 15, 8);
-> +		if (dsi.debug_read)
-> +			DSSDBG("\tDCS short response, 1 byte: %02x\n", data);
-> +
-> +		if (buflen < 1)
-> +			return -1;
-> +
-> +		buf[0] = data;
-> +
-> +		return 1;
-> +	} else if (dt == DSI_DT_RX_SHORT_READ_2) {
-> +		u16 data = FLD_GET(val, 23, 8);
-> +		if (dsi.debug_read)
-> +			DSSDBG("\tDCS short response, 2 byte: %04x\n", data);
-> +
-> +		if (buflen < 2)
-> +			return -1;
-> +
-> +		buf[0] = data & 0xff;
-> +		buf[1] = (data >> 8) & 0xff;
-> +
-> +		return 2;
-> +	} else if (dt == DSI_DT_RX_DCS_LONG_READ) {
-> +		int w;
-> +		int len = FLD_GET(val, 23, 8);
-> +		if (dsi.debug_read)
-> +			DSSDBG("\tDCS long response, len %d\n", len);
-> +
-> +		if (len > buflen)
-> +			return -1;
-> +
-> +		/* two byte checksum ends the packet, not included in len */
-> +		for (w = 0; w < len + 2;) {
-> +			int b;
-> +			val = dsi_read_reg(DSI_VC_SHORT_PACKET_HEADER(channel));
-> +			if (dsi.debug_read)
-> +				DSSDBG("\t\t%02x %02x %02x %02x\n",
-> +						(val >> 0) & 0xff,
-> +						(val >> 8) & 0xff,
-> +						(val >> 16) & 0xff,
-> +						(val >> 24) & 0xff);
-> +
-> +			for (b = 0; b < 4; ++b) {
-> +				if (w < len)
-> +					buf[w] = (val >> (b * 8)) & 0xff;
-> +				/* we discard the 2 byte checksum */
-> +				++w;
-> +			}
-> +		}
-> +
-> +		return len;
-> +
-> +	} else {
-> +		DSSERR("\tunknown datatype 0x%02x\n", dt);
-> +		return -1;
-> +	}
-> +}
+>> +
+>> +static inline void restore_hw_context(int ctx)
+>> +{
+>> +     omap_writel(vrfb_hw_context[ctx].control, SMS_ROT_CONTROL(ctx));
+>> +     omap_writel(vrfb_hw_context[ctx].size, SMS_ROT_SIZE(ctx));
+>> +     omap_writel(vrfb_hw_context[ctx].physical_ba, SMS_ROT_PHYSICAL_BA(ctx));
+>> +}
+> 
+> Please use ioremap + and readl/writel instead of omap_read/write for all new code.
+> 
+> Otherwise we'll have harder time to reclaim more address space for kernel
+> as discussed earlier on linux-omap list.
+
+True. But I noticed that SMS registers are already mapped by sdrc.c. I 
+sent a patch adding functions for manipulating SMS_ROT_* registers. I 
+think that's a cleaner way than remapping them again in VRFB.
+
+  Tomi

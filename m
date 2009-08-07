@@ -1,90 +1,72 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: Re: [PATCH 04/15] OMAP: Add support for VRFB rotation engine
-Date: Fri, 07 Aug 2009 11:33:53 +0300
-Message-ID: <4A7BE6F1.6070308@nokia.com>
-References: <1249481741-14008-1-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-2-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-3-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-4-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-5-git-send-email-tomi.valkeinen@nokia.com> <20090805143141.GI7374@atomide.com>
+From: Roger Quadros <ext-roger.quadros@nokia.com>
+Subject: Re: [PATCH 00/15] OMAP: DSS intro
+Date: Fri, 07 Aug 2009 14:17:42 +0300
+Message-ID: <4A7C0D56.2000106@nokia.com>
+References: <1249481741-14008-1-git-send-email-tomi.valkeinen@nokia.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20090805143141.GI7374@atomide.com>
+In-Reply-To: <1249481741-14008-1-git-send-email-tomi.valkeinen@nokia.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: ext Tony Lindgren <tony@atomide.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+To: ext Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
-ext Tony Lindgren wrote:
-> * Tomi Valkeinen <tomi.valkeinen@nokia.com> [090805 17:19]:
->> VRFB rotation engine is a block in OMAP2/3 that offers 12 independent
->> contexts that can be used for framebuffer rotation.
->>
->> Each context has a backend area of real memory, where it stores the
->> pixels in undisclosed format. This memory is offered to users via 4
->> virtual memory areas, which see the same memory area in different
->> rotation angles (0, 90, 180 and 270 degrees).
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
->> ---
->>  arch/arm/plat-omap/Kconfig             |    3 +
->>  arch/arm/plat-omap/Makefile            |    1 +
->>  arch/arm/plat-omap/include/mach/vrfb.h |   46 +++++
->>  arch/arm/plat-omap/vrfb.c              |  281 ++++++++++++++++++++++++++++++++
->>  4 files changed, 331 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/arm/plat-omap/include/mach/vrfb.h
->>  create mode 100644 arch/arm/plat-omap/vrfb.c
->>
->> diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
->> index ca06037..2d6ae55 100644
->> --- a/arch/arm/plat-omap/Kconfig
->> +++ b/arch/arm/plat-omap/Kconfig
->> @@ -186,6 +186,9 @@ config OMAP_SERIAL_WAKE
->>  config OMAP2_VRAM
->>       bool
->>
->> +config OMAP2_VRFB
->> +     bool
->> +
->>  endmenu
->>
->>  endif
->> diff --git a/arch/arm/plat-omap/Makefile b/arch/arm/plat-omap/Makefile
->> index 0472bbe..462edf3 100644
->> --- a/arch/arm/plat-omap/Makefile
->> +++ b/arch/arm/plat-omap/Makefile
->> @@ -26,3 +26,4 @@ obj-y += $(i2c-omap-m) $(i2c-omap-y)
->>  obj-$(CONFIG_OMAP_MBOX_FWK) += mailbox.o
->>
->>  obj-$(CONFIG_OMAP2_VRAM) += vram.o
->> +obj-$(CONFIG_OMAP2_VRFB) += vrfb.o
-> 
-> Can you please place this file under drivers/video?
+ext Tomi Valkeinen wrote:
+> This patch set implement new display subsystem driver (DSS2) and omap=
+fb driver
+> for OMAP2/3. The patches can also be found from
+> http://gitorious.org/linux-omap-dss2/linux
+>=20
+> The patches include DSS documentation patch that includes more instru=
+ctions for
+> module parameters, sysfs files etc.
+>=20
+> The patches enable DSS2 for SDP, Beagle and Overo boards.
+>=20
+> I don't currently have any OMAP2 board to test DSS2, but it has worke=
+d on OMAP2
+> and the possible fixes needed should be minimal.
+>=20
+> OMAP1 is not supported, and so the old DSS needs to be used on OMAP1 =
+boards.
+>=20
+> DSS2 is partly based on the old omapfb driver by Imre Deak, and Imre =
+has also
+> contributed to DSS2 quite a bit. Ville Syrj=C3=A4l=C3=A4 has been con=
+tributing to scaling
+> and tv-out work. Also some contributions have been made by Hardik Sha=
+h, Vaibhav
+> Hiremath, and perhaps some others that I have forgotten =3D).
+>=20
+> ---
+>=20
+> [PATCH 01/15] OMAP: OMAPFB: split omapfb.h
+> [PATCH 02/15] OMAP: OMAPFB: add omapdss device
+> [PATCH 03/15] OMAP: Add VRAM manager
+> [PATCH 04/15] OMAP: Add support for VRFB rotation engine
+> [PATCH 05/15] OMAP: DSS2: Documentation for DSS2
+> [PATCH 06/15] OMAP: DSS2: Display Subsystem Driver core
+> [PATCH 07/15] OMAP: DSS2: VENC driver
+> [PATCH 08/15] OMAP: DSS2: RFBI driver
+> [PATCH 09/15] OMAP: DSS2: SDI driver
+> [PATCH 10/15] OMAP: DSS2: DSI driver
+> [PATCH 11/15] OMAP: DSS2: omapfb driver
+> [PATCH 12/15] OMAP: DSS2: Add panel drivers
+> [PATCH 13/15] OMAP: SDP: Enable DSS2 for OMAP3 SDP board
+> [PATCH 14/15] OMAP: Beagle: Enable DSS2 for Beagle board
+> [PATCH 15/15] OMAP: Overo: Enable DSS2 for Overo
+>=20
 
-Ok. I still feel a common place, like plat-omap is better place for vrfb 
-and vram, but I don't feel too strongly about it =). drivers/video works 
-fine also.
+Tomi,
 
-> 
-> 
->> diff --git a/arch/arm/plat-omap/include/mach/vrfb.h b/arch/arm/plat-omap/include/mach/vrfb.h
->> new file mode 100644
+I didn't receive PATCH 06 from the series.
 
-<snip>
-
->> +
->> +static inline void restore_hw_context(int ctx)
->> +{
->> +     omap_writel(vrfb_hw_context[ctx].control, SMS_ROT_CONTROL(ctx));
->> +     omap_writel(vrfb_hw_context[ctx].size, SMS_ROT_SIZE(ctx));
->> +     omap_writel(vrfb_hw_context[ctx].physical_ba, SMS_ROT_PHYSICAL_BA(ctx));
->> +}
-> 
-> Please use ioremap + and readl/writel instead of omap_read/write for all new code.
-> 
-> Otherwise we'll have harder time to reclaim more address space for kernel
-> as discussed earlier on linux-omap list.
-
-True. But I noticed that SMS registers are already mapped by sdrc.c. I 
-sent a patch adding functions for manipulating SMS_ROT_* registers. I 
-think that's a cleaner way than remapping them again in VRFB.
-
-  Tomi
+cheers,
+-roger
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

@@ -1,31 +1,40 @@
 From: Roger Quadros <ext-roger.quadros@nokia.com>
-Subject: Re: [PATCH 00/15] OMAP: DSS intro
-Date: Fri, 07 Aug 2009 14:27:29 +0300
-Message-ID: <4A7C0FA1.9080507@nokia.com>
-References: <1249481741-14008-1-git-send-email-tomi.valkeinen@nokia.com> <4A7C0D56.2000106@nokia.com> <4A7C0EEF.6000506@nokia.com>
+Subject: Re: [PATCH 11/15] OMAP: DSS2: omapfb driver
+Date: Fri, 07 Aug 2009 14:47:39 +0300
+Message-ID: <4A7C145B.20800@nokia.com>
+References: <1249481741-14008-1-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-2-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-3-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-4-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-5-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-6-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-7-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-8-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-9-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-10-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-11-git-send-email-tomi.valkeinen@nokia.com> <1249481741-14008-12-git-send-email-tomi.valkeinen@nokia.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <4A7C0EEF.6000506@nokia.com>
+In-Reply-To: <1249481741-14008-12-git-send-email-tomi.valkeinen@nokia.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: ext Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
->>
->> Tomi,
->>
->> I didn't receive PATCH 06 from the series.
-> 
-> It was too big. It seems to have gone through to linux-fbdev-devel:
-> 
-> http://marc.info/?l=linux-fbdev-devel&r=1&b=200908&w=2
-> 
-> I have split it up more for next posting.
-> 
->  Tomi
 
-Thanks :), i'll pick it up from there.
+> diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
+> index 244b80d..89bf210 100644
+> --- a/drivers/video/omap2/Kconfig
+> +++ b/drivers/video/omap2/Kconfig
 
--roger
+This file does not exist in linus' tree or linux-omap so it fails to apply as it 
+does not have 'new file node' attribute
+
+> @@ -1,2 +1,3 @@
+>  source "drivers/video/omap2/dss/Kconfig"
+>  source "drivers/video/omap2/displays/Kconfig"
+> +source "drivers/video/omap2/omapfb/Kconfig"
+> diff --git a/drivers/video/omap2/Makefile b/drivers/video/omap2/Makefile
+> index 2d2c83e..0c0414f 100644
+> --- a/drivers/video/omap2/Makefile
+> +++ b/drivers/video/omap2/Makefile
+
+ditto
+
+> @@ -1,2 +1,3 @@
+>  obj-y += dss/
+>  obj-y += displays/
+> +obj-y += omapfb/
+

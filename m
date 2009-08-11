@@ -1,84 +1,423 @@
-From: Julia Lawall <julia@diku.dk>
-Subject: Re: [Linux-fbdev-devel] [PATCH 3/3] drivers/video: Correct use of 
- request_region/request_mem_region
-Date: Sun, 9 Aug 2009 11:42:32 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.0908091141150.13271@ask.diku.dk>
-References: <Pine.LNX.4.64.0908090943560.13271@ask.diku.dk>
- <10f740e80908090224p13d2119do9e4f4d7730ed001e@mail.gmail.com>
+From: hvaibhav@ti.com
+Subject: [PATCH] OMAP3: Enable DSS2 for OMAP3EVM board
+Date: Tue, 11 Aug 2009 16:10:43 +0530
+Message-ID: <1249987243-20741-1-git-send-email-hvaibhav@ti.com>
+References: <hvaibhav@ti.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753599AbZHIJsn@vger.kernel.org>
-In-Reply-To: <10f740e80908090224p13d2119do9e4f4d7730ed001e@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-mips@linux-mips.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <hvaibhav@ti.com>) id 1Maomw-0005it-R9
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Aug 2009 10:41:06 +0000
+Received: from bear.ext.ti.com ([192.94.94.41])
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Maomq-0006nM-De
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 11 Aug 2009 10:41:06 +0000
+In-Reply-To: <hvaibhav@ti.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-omap@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Julia Lawall <julia@diku.dk>
+From: Vaibhav Hiremath <hvaibhav@ti.com>
 
-request_region should be used with release_region, not request_mem_region.
+Tested -
+	- Validated all three outut interfaces (LCD, DVI and TV)
+TODO:
+	- Support for Backlight control range (0 - 100)
+	- Enable selection for both S-Video and Composite TV out
+	- DVI color (VPLL2_DEV_GRP should be equal to 0x7)
 
-Geert Uytterhoeven pointed out that in the case of drivers/video/gbefb.c,
-the problem is actually the other way around; request_mem_region should be
-used instead of request_region.
-
-The semantic patch that finds/fixes this problem is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@r1@
-expression start;
-@@
-
-request_region(start,...)
-
-@b1@
-expression r1.start;
-@@
-
-request_mem_region(start,...)
-
-@depends on !b1@
-expression r1.start;
-expression E;
-@@
-
-- release_mem_region
-+ release_region
-  (start,E)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
 ---
- drivers/video/gbefb.c  |    2 +-
- drivers/video/tdfxfb.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/arm/configs/omap3_evm_defconfig |   51 +++++++-
+ arch/arm/mach-omap2/board-omap3evm.c |  234 ++++++++++++++++++++++++++++++++--
+ 2 files changed, 273 insertions(+), 12 deletions(-)
 
-diff -u -p a/drivers/video/gbefb.c b/drivers/video/gbefb.c
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -1147,7 +1147,7 @@ static int __init gbefb_probe(struct pla
- 	gbefb_setup(options);
- #endif
- 
--	if (!request_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
-+	if (!request_mem_region(GBE_BASE, sizeof(struct sgi_gbe), "GBE")) {
- 		printk(KERN_ERR "gbefb: couldn't reserve mmio region\n");
- 		ret = -EBUSY;
- 		goto out_release_framebuffer;
-diff -u -p a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
---- a/drivers/video/tdfxfb.c
-+++ b/drivers/video/tdfxfb.c
-@@ -1571,8 +1571,8 @@ out_err_iobase:
- 	if (default_par->mtrr_handle >= 0)
- 		mtrr_del(default_par->mtrr_handle, info->fix.smem_start,
- 			 info->fix.smem_len);
--	release_mem_region(pci_resource_start(pdev, 2),
--			   pci_resource_len(pdev, 2));
-+	release_region(pci_resource_start(pdev, 2),
-+		       pci_resource_len(pdev, 2));
- out_err_screenbase:
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
+diff --git a/arch/arm/configs/omap3_evm_defconfig b/arch/arm/configs/omap3_evm_defconfig
+index 28be17f..c9cc935 100644
+--- a/arch/arm/configs/omap3_evm_defconfig
++++ b/arch/arm/configs/omap3_evm_defconfig
+@@ -903,7 +903,56 @@ CONFIG_DAB=y
+ #
+ # CONFIG_VGASTATE is not set
+ CONFIG_VIDEO_OUTPUT_CONTROL=m
+-# CONFIG_FB is not set
++CONFIG_FB=y
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB_DDC is not set
++# CONFIG_FB_BOOT_VESA_SUPPORT is not set
++CONFIG_FB_CFB_FILLRECT=y
++CONFIG_FB_CFB_COPYAREA=y
++CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
++# CONFIG_FB_SYS_FILLRECT is not set
++# CONFIG_FB_SYS_COPYAREA is not set
++# CONFIG_FB_SYS_IMAGEBLIT is not set
++# CONFIG_FB_FOREIGN_ENDIAN is not set
++# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_SVGALIB is not set
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++
++#
++# Frame buffer hardware drivers
++#
++# CONFIG_FB_S1D13XXX is not set
++# CONFIG_FB_VIRTUAL is not set
++# CONFIG_FB_METRONOME is not set
++# CONFIG_FB_MB862XX is not set
++# CONFIG_FB_BROADSHEET is not set
++# CONFIG_FB_OMAP_BOOTLOADER_INIT is not set
++CONFIG_OMAP2_VRAM=y
++CONFIG_OMAP2_VRFB=y
++CONFIG_OMAP2_DSS=y
++CONFIG_OMAP2_VRAM_SIZE=4
++# CONFIG_OMAP2_DSS_DEBUG_SUPPORT is not set
++# CONFIG_OMAP2_DSS_RFBI is not set
++CONFIG_OMAP2_DSS_VENC=y
++# CONFIG_OMAP2_DSS_SDI is not set
++# CONFIG_OMAP2_DSS_DSI is not set
++# CONFIG_OMAP2_DSS_FAKE_VSYNC is not set
++CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK=0
++CONFIG_FB_OMAP2=y
++# CONFIG_FB_OMAP2_DEBUG_SUPPORT is not set
++# CONFIG_FB_OMAP2_FORCE_AUTO_UPDATE is not set
++CONFIG_FB_OMAP2_NUM_FBS=3
++
++#
++# OMAP2/3 Display Device Drivers
++#
++CONFIG_PANEL_GENERIC=y
++# CONFIG_PANEL_SAMSUNG_LTE430WQ_F0C is not set
++CONFIG_PANEL_SHARP_LS037V7DW01=y
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+
+ #
+diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
+index 595beac..d488e29 100644
+--- a/arch/arm/mach-omap2/board-omap3evm.c
++++ b/arch/arm/mach-omap2/board-omap3evm.c
+@@ -22,6 +22,7 @@
+ #include <linux/input.h>
+ #include <linux/leds.h>
+
++#include <linux/regulator/machine.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/ads7846.h>
+ #include <linux/i2c/twl4030.h>
+@@ -37,6 +38,7 @@
+ #include <mach/common.h>
+ #include <mach/mcspi.h>
+ #include <mach/keypad.h>
++#include <mach/display.h>
+
+ #include "sdram-micron-mt46h32m32lf-6.h"
+ #include "mmc-twl4030.h"
+@@ -90,6 +92,174 @@ static inline void __init omap3evm_init_smc911x(void)
+
+ 	gpio_direction_input(OMAP3EVM_ETHR_GPIO_IRQ);
+ }
++/*
++ * OMAP3EVM LCD Panel control signals
++ */
++#define OMAP3EVM_LCD_PANEL_LR		2
++#define OMAP3EVM_LCD_PANEL_UD		3
++#define OMAP3EVM_LCD_PANEL_INI		152
++#define OMAP3EVM_LCD_PANEL_ENVDD	153
++#define OMAP3EVM_LCD_PANEL_QVGA		154
++#define OMAP3EVM_LCD_PANEL_RESB		155
++#define OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO	210
++#define OMAP3EVM_DVI_PANEL_EN_GPIO	199
++
++static int lcd_enabled;
++static int dvi_enabled;
++
++static void __init omap3_evm_display_init(void)
++{
++	int r;
++	r = gpio_request(OMAP3EVM_LCD_PANEL_RESB, "lcd_panel_resb");
++	if (r) {
++		printk(KERN_ERR "failed to get lcd_panel_resb\n");
++		return;
++	}
++	gpio_direction_output(OMAP3EVM_LCD_PANEL_RESB, 1);
++
++	r = gpio_request(OMAP3EVM_LCD_PANEL_INI, "lcd_panel_ini");
++	if (r) {
++		printk(KERN_ERR "failed to get lcd_panel_ini\n");
++		goto err_1;
++	}
++	gpio_direction_output(OMAP3EVM_LCD_PANEL_INI, 1);
++
++	r = gpio_request(OMAP3EVM_LCD_PANEL_QVGA, "lcd_panel_qvga");
++	if (r) {
++		printk(KERN_ERR "failed to get lcd_panel_qvga\n");
++		goto err_2;
++	}
++	gpio_direction_output(OMAP3EVM_LCD_PANEL_QVGA, 0);
++
++	r = gpio_request(OMAP3EVM_LCD_PANEL_LR, "lcd_panel_lr");
++	if (r) {
++		printk(KERN_ERR "failed to get lcd_panel_lr\n");
++		goto err_3;
++	}
++	gpio_direction_output(OMAP3EVM_LCD_PANEL_LR, 1);
++
++	r = gpio_request(OMAP3EVM_LCD_PANEL_UD, "lcd_panel_ud");
++	if (r) {
++		printk(KERN_ERR "failed to get lcd_panel_ud\n");
++		goto err_4;
++	}
++	gpio_direction_output(OMAP3EVM_LCD_PANEL_UD, 1);
++
++	r = gpio_request(OMAP3EVM_LCD_PANEL_ENVDD, "lcd_panel_envdd");
++	if (r) {
++		printk(KERN_ERR "failed to get lcd_panel_envdd\n");
++		goto err_5;
++	}
++
++	return;
++
++err_5:
++	gpio_free(OMAP3EVM_LCD_PANEL_UD);
++err_4:
++	gpio_free(OMAP3EVM_LCD_PANEL_LR);
++err_3:
++	gpio_free(OMAP3EVM_LCD_PANEL_QVGA);
++err_2:
++	gpio_free(OMAP3EVM_LCD_PANEL_INI);
++err_1:
++	gpio_free(OMAP3EVM_LCD_PANEL_RESB);
++
++}
++
++static int omap3_evm_enable_lcd(struct omap_dss_device *dssdev)
++{
++	if (dvi_enabled) {
++		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
++		return -EINVAL;
++	}
++
++	gpio_set_value(OMAP3EVM_LCD_PANEL_ENVDD, 0);
++	gpio_set_value(OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO, 1);
++	lcd_enabled = 1;
++	return 0;
++}
++
++static void omap3_evm_disable_lcd(struct omap_dss_device *dssdev)
++{
++	gpio_set_value(OMAP3EVM_LCD_PANEL_ENVDD, 1);
++	gpio_set_value(OMAP3EVM_LCD_PANEL_BKLIGHT_GPIO, 0);
++	lcd_enabled = 0;
++}
++
++static struct omap_dss_device omap3_evm_lcd_device = {
++	.type			= OMAP_DISPLAY_TYPE_DPI,
++	.name			= "lcd",
++	.driver_name		= "sharp_ls_panel",
++	.phy.dpi.data_lines	= 18,
++	.platform_enable	= omap3_evm_enable_lcd,
++	.platform_disable	= omap3_evm_disable_lcd,
++};
++
++static int omap3_evm_enable_tv(struct omap_dss_device *dssdev)
++{
++	return 0;
++}
++
++static void omap3_evm_disable_tv(struct omap_dss_device *dssdev)
++{
++}
++
++static struct omap_dss_device omap3_evm_tv_device = {
++	.type			= OMAP_DISPLAY_TYPE_VENC,
++	.name			= "tv",
++	.driver_name		= "venc",
++	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
++	.platform_enable	= omap3_evm_enable_tv,
++	.platform_disable	= omap3_evm_disable_tv,
++};
++
++static int omap3_evm_enable_dvi(struct omap_dss_device *dssdev)
++{
++	if (lcd_enabled) {
++		printk(KERN_ERR "cannot enable DVI, LCD is enabled\n");
++		return -EINVAL;
++	}
++
++	gpio_set_value(OMAP3EVM_DVI_PANEL_EN_GPIO, 1);
++	dvi_enabled = 1;
++
++	return 0;
++}
++
++static void omap3_evm_disable_dvi(struct omap_dss_device *dssdev)
++{
++	gpio_set_value(OMAP3EVM_DVI_PANEL_EN_GPIO, 0);
++	dvi_enabled = 0;
++}
++
++static struct omap_dss_device omap3_evm_dvi_device = {
++	.type			= OMAP_DISPLAY_TYPE_DPI,
++	.name			= "dvi",
++	.driver_name		= "generic_panel",
++	.phy.dpi.data_lines	= 24,
++	.platform_enable	= omap3_evm_enable_dvi,
++	.platform_disable	= omap3_evm_disable_dvi,
++};
++
++static struct omap_dss_device *omap3_evm_dss_devices[] = {
++	&omap3_evm_lcd_device,
++	&omap3_evm_tv_device,
++	&omap3_evm_dvi_device,
++};
++
++static struct omap_dss_board_info omap3_evm_dss_data = {
++	.num_devices	= ARRAY_SIZE(omap3_evm_dss_devices),
++	.devices	= omap3_evm_dss_devices,
++	.default_device	= &omap3_evm_lcd_device,
++};
++
++static struct platform_device omap3_evm_dss_device = {
++	.name		= "omapdss",
++	.id		= -1,
++	.dev		= {
++		.platform_data = &omap3_evm_dss_data,
++	},
++};
+
+ static struct omap_uart_config omap3_evm_uart_config __initdata = {
+ 	.enabled_uarts	= ((1 << 0) | (1 << 1) | (1 << 2)),
+@@ -142,6 +312,14 @@ static int omap3evm_twl_gpio_setup(struct device *dev,
+ 	 * the P2 connector; notably LEDA for the LCD backlight.
+ 	 */
+
++	/* TWL4030_GPIO_MAX + 0 == ledA, LCD Backlight control */
++	gpio_request(gpio + TWL4030_GPIO_MAX, "EN_LCD_BKL");
++	gpio_direction_output(gpio + TWL4030_GPIO_MAX, 0);
++
++	/* gpio + 7 == DVI Enable */
++	gpio_request(gpio + 7, "EN_DVI");
++	gpio_direction_output(gpio + 7, 0);
++
+ 	/* TWL4030_GPIO_MAX + 1 == ledB (out, active low LED) */
+ 	gpio_leds[2].gpio = gpio + TWL4030_GPIO_MAX + 1;
+
+@@ -193,6 +371,47 @@ static struct twl4030_madc_platform_data omap3evm_madc_data = {
+ 	.irq_line	= 1,
+ };
+
++static struct regulator_consumer_supply omap3_evm_vdda_dac_supply = {
++	.supply		= "vdda_dac",
++	.dev		= &omap3_evm_dss_device.dev,
++};
++
++/* VDAC for DSS driving S-Video */
++static struct regulator_init_data omap3_evm_vdac = {
++	.constraints = {
++		.min_uV			= 1800000,
++		.max_uV			= 1800000,
++		.apply_uV		= true,
++		.valid_modes_mask	= REGULATOR_MODE_NORMAL
++					| REGULATOR_MODE_STANDBY,
++		.valid_ops_mask		= REGULATOR_CHANGE_MODE
++					| REGULATOR_CHANGE_STATUS,
++	},
++	.num_consumer_supplies	= 1,
++	.consumer_supplies	= &omap3_evm_vdda_dac_supply,
++};
++
++/* VPLL2 for digital video outputs */
++static struct regulator_consumer_supply omap3_evm_vpll2_supply = {
++	.supply		= "vdvi",
++	.dev		= &omap3_evm_lcd_device.dev,
++};
++
++static struct regulator_init_data omap3_evm_vpll2 = {
++	.constraints = {
++		.name			= "VDVI",
++		.min_uV			= 1800000,
++		.max_uV			= 1800000,
++		.apply_uV		= true,
++		.valid_modes_mask	= REGULATOR_MODE_NORMAL
++					| REGULATOR_MODE_STANDBY,
++		.valid_ops_mask		= REGULATOR_CHANGE_MODE
++					| REGULATOR_CHANGE_STATUS,
++	},
++	.num_consumer_supplies	= 1,
++	.consumer_supplies	= &omap3_evm_vpll2_supply,
++};
++
+ static struct twl4030_platform_data omap3evm_twldata = {
+ 	.irq_base	= TWL4030_IRQ_BASE,
+ 	.irq_end	= TWL4030_IRQ_END,
+@@ -202,6 +421,8 @@ static struct twl4030_platform_data omap3evm_twldata = {
+ 	.madc		= &omap3evm_madc_data,
+ 	.usb		= &omap3evm_usb_data,
+ 	.gpio		= &omap3evm_gpio_data,
++	.vdac		= &omap3_evm_vdac,
++	.vpll2		= &omap3_evm_vpll2,
+ };
+
+ static struct i2c_board_info __initdata omap3evm_i2c_boardinfo[] = {
+@@ -222,15 +443,6 @@ static int __init omap3_evm_i2c_init(void)
+ 	return 0;
+ }
+
+-static struct platform_device omap3_evm_lcd_device = {
+-	.name		= "omap3evm_lcd",
+-	.id		= -1,
+-};
+-
+-static struct omap_lcd_config omap3_evm_lcd_config __initdata = {
+-	.ctrl_name	= "internal",
+-};
+-
+ static void ads7846_dev_init(void)
+ {
+ 	if (gpio_request(OMAP3_EVM_TS_GPIO, "ADS7846 pendown") < 0)
+@@ -287,11 +499,10 @@ static void __init omap3_evm_init_irq(void)
+
+ static struct omap_board_config_kernel omap3_evm_config[] __initdata = {
+ 	{ OMAP_TAG_UART,	&omap3_evm_uart_config },
+-	{ OMAP_TAG_LCD,		&omap3_evm_lcd_config },
+ };
+
+ static struct platform_device *omap3_evm_devices[] __initdata = {
+-	&omap3_evm_lcd_device,
++	&omap3_evm_dss_device,
+ 	&omap3evm_smc911x_device,
+ };
+
+@@ -310,6 +521,7 @@ static void __init omap3_evm_init(void)
+ 	usb_musb_init();
+ 	usb_ehci_init(EHCI_HCD_OMAP_MODE_PHY, true, true, 57, 61);
+ 	ads7846_dev_init();
++	omap3_evm_display_init();
+ }
+
+ static void __init omap3_evm_map_io(void)
+--
+1.6.2.4
+
+
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with 
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

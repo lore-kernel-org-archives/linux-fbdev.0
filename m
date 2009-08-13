@@ -1,21 +1,24 @@
-From: Mark Jackson <mpfj-list@mimc.co.uk>
-Subject: [RFC] Setting default virtual fb geometry
-Date: Wed, 12 Aug 2009 09:59:54 +0100
-Message-ID: <4A82848A.6020108@mimc.co.uk>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 13976] New: viafb + vmalloc
+Date: Thu, 13 Aug 2009 12:36:22 -0700
+Message-ID: <20090813123622.624240c7.akpm@linux-foundation.org>
+References: <bug-13976-10286@http.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <mpfj-list@mimc.co.uk>) id 1Mb9wj-0004gm-LS
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1Mbg6c-0007Pe-97
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 12 Aug 2009 09:16:37 +0000
-Received: from mercuryimc.plus.com ([80.229.200.144] helo=mimc.mimc.co.uk)
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Mb9wZ-0001eC-Ch for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 12 Aug 2009 09:16:37 +0000
+	Thu, 13 Aug 2009 19:36:58 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Mbg6W-0003Lv-Gv
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 13 Aug 2009 19:36:58 +0000
+In-Reply-To: <bug-13976-10286@http.bugzilla.kernel.org/>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,42 +28,121 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, Joseph Chan <JosephChan@via.com.tw>, Scott Fang <ScottFang@viatech.com.cn>
+Cc: bugzilla-daemon@bugzilla.kernel.org, sungeneral@gmail.com, bugme-daemon@bugzilla.kernel.org
 
-At the moment you can set fbmem from the kernel bootargs, and
-xres / yres are usually setup in the board init files.
 
-However, there doesn;t seem to be any simple way to specify
-the virtual size of the display (eg. for double buffering).
+(switched to email.  Please respond via emailed reply-to-all, not via the
+bugzilla web interface).
 
-I have "hacked" the Atmel display driver in a quick and dirty
-way to fulfil my needs, but I guess it needs a more formal
-approach.
+On Thu, 13 Aug 2009 15:22:41 GMT
+bugzilla-daemon@bugzilla.kernel.org wrote:
 
-Anyone care to comment on how this "issue" might be resolved ?
+> http://bugzilla.kernel.org/show_bug.cgi?id=13976
+> 
+>            Summary: viafb + vmalloc
+>            Product: Drivers
+>            Version: 2.5
+>     Kernel Version: 2.6.30.4
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Video(Other)
+>         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
+>         ReportedBy: sungeneral@gmail.com
+>         Regression: No
 
-Regards
-Mark
----
- drivers/video/atmel_lcdfb.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+OK, this is bad.
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 2864e05..54df737 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -353,6 +353,11 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
- 		return -EINVAL;
- 	}
- 
-+	/* Calculate virtual yres based on fbmem size */
-+	var->yres_virtual = info->fix.smem_len /
-+				(var->xres * var->yres * (var->bits_per_pixel / 8));
-+	var->yres_virtual *= var->yres;
-+
- 	/* Do not allow to have real resoulution larger than virtual */
- 	if (var->xres > var->xres_virtual)
- 		var->xres_virtual = var->xres;
+> 
+> #modprobe viafb
+> Jun 21 05:17:53 mini2133 [   50.504357] VIA Graphics Intergration Chipset
+> framebuffer 2.4 initializing
+> Jun 21 05:17:53 mini2133 [   50.583434] vmap allocation for size 268439552
+> failed: use vmalloc=<size> to increase size.
+> Jun 21 05:17:53 mini2133 [   50.583443] ioremap failed
+> 
+> if add parametr vmalloc=260M to kernel 
+> 
+> #modprobe viafb
+> Jun 21 05:11:17 mini2133 [   60.692317] VIA Graphics Intergration Chipset
+> framebuffer 2.4 initializing
+> Jun 21 05:11:17 mini2133 [   60.772731] vmap allocation for size 16781312
+> failed: use vmalloc=<size> to increase size.
+> Jun 21 05:11:17 mini2133 [   60.772750] BUG: unable to handle kernel NULL
+> pointer dereference at 00000004
+> Jun 21 05:11:17 mini2133 [   60.772921] IP: [<ef64a798>]
+> viafb_init_2d_engine+0x16/0x583 [viafb]
+> Jun 21 05:11:17 mini2133 [   60.773005] *pde = 00000000 
+> Jun 21 05:11:17 mini2133 [   60.773005] Oops: 0002 [#1] SMP 
+> Jun 21 05:11:17 mini2133 [   60.773005] last sysfs file:
+> /sys/devices/pci0000:00/0000:00:0f.0/host0/target0:0:0/0:0:0:0/block/sda/uevent
+> Jun 21 05:11:17 mini2133 [   60.773005] Modules linked in: viafb(+)
+> i2c_algo_bit via drm via_agp agpgart
+> Jun 21 05:11:17 mini2133 [   60.773005] 
+> Jun 21 05:11:17 mini2133 [   60.773005] Pid: 4084, comm: modprobe Not tainted
+> (2.6.30-gentoo-r4 #13)         
+> Jun 21 05:11:17 mini2133 [   60.773005] EIP: 0060:[<ef64a798>] EFLAGS: 00010202
+> CPU: 0
+> Jun 21 05:11:17 mini2133 [   60.773005] EIP is at
+> viafb_init_2d_engine+0x16/0x583 [viafb]
+> Jun 21 05:11:17 mini2133 [   60.773005] EAX: 00000004 EBX: ed8a5280 ECX:
+> c256d700 EDX: 00000000
+> Jun 21 05:11:17 mini2133 [   60.773005] ESI: fffffffc EDI: 00000000 EBP:
+> ed8b3f18 ESP: ed8b3f08
+> Jun 21 05:11:17 mini2133 [   60.773005]  DS: 007b ES: 007b FS: 00d8 GS: 0033
+> SS: 0068
+> Jun 21 05:11:17 mini2133 [   60.773005] Process modprobe (pid: 4084,
+> ti=ed8b2000 task=ee7da220 task.ti=ed8b2000)
+> Jun 21 05:11:17 mini2133 [   60.773005] Stack:
+> Jun 21 05:11:17 mini2133 [   60.773005]  00000000 ed8a5280 fffffffc 00000000
+> ed8b3f40 ef656505 00000000 ed8b3f40
+> Jun 21 05:11:17 mini2133 [   60.773005]  c1062132 00000000 00000000 ef6535e4
+> fffffffc 00000000 ed8b3f9c c1001137
+> Jun 21 05:11:17 mini2133 [   60.773005]  ef656000 00000000 ef6535e4 00000001
+> 00000000 c15dec24 00000000 c15dec34
+> Jun 21 05:11:17 mini2133 [   60.773005] Call Trace:
+> Jun 21 05:11:17 mini2133 [   60.773005]  [<ef656505>] ? viafb_init+0x505/0xd2c
+> [viafb]
+> Jun 21 05:11:17 mini2133 [   60.773005]  [<c1062132>] ?
+> marker_update_probe_range+0x1cf/0x1de
+> Jun 21 05:11:17 mini2133 [   60.773005]  [<c1001137>] ?
+> do_one_initcall+0x4a/0x10c
+> Jun 21 05:11:17 mini2133 [   60.773005]  [<ef656000>] ? viafb_init+0x0/0xd2c
+> [viafb]
+> Jun 21 05:11:17 mini2133 [   60.773005]  [<c103ae2d>] ?
+> __blocking_notifier_call_chain+0x40/0x4c
+> Jun 21 05:11:17 mini2133 [   60.773005]  [<c10481f6>] ?
+> sys_init_module+0x87/0x18b
+> Jun 21 05:11:17 mini2133 [   60.773005]  [<c1002a44>] ?
+> sysenter_do_call+0x12/0x22
+> Jun 21 05:11:17 mini2133 [   60.773005] Code: ff ff 03 00 89 42 44 a1 44 38 65
+> ef 81 40 38 00 20 04 00 5d c3 55 31 d2 89 e5 57 56 53 83 ec 04 a1 44 38 65 ef
+> 8b 40 1c 83 c0 04 <89> 10 a1 44 38 65 ef 8b 40 1c 83 c0 08 89 10 a1 44 38 65 ef
+> 8b 
+> Jun 21 05:11:17 mini2133 [   60.773005] EIP: [<ef64a798>]
+> viafb_init_2d_engine+0x16/0x583 [viafb] SS:ESP 0068:ed8b3f08
+> Jun 21 05:11:17 mini2133 [   60.773005] CR2: 0000000000000004
+> Jun 21 05:11:17 mini2133 [   60.779905] ---[ end trace c390d80983a29e06 ]---
+> 
+> ps: viafb build as a module
+> 
+
+a) The driver appears to be ioremapping more virtual address space
+   than the machine can provide.
+
+   Is that expected?
+
+b) When ioremap_nocache() failed, the driver went and crashed the
+   machine.  I don't see how this can happen - via_pci_probe() seems to
+   handle this correctly.
+
+   It should return -ENOMEM rather than -1, but that's minor.
+
+
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

@@ -1,32 +1,30 @@
 From: Roman Sergeev <sungeneral@gmail.com>
 Subject: Re: [Bugme-new] [Bug 13976] New: viafb + vmalloc
-Date: Fri, 14 Aug 2009 20:33:46 +0400
-Message-ID: <BE54F6D1-53DA-4989-A0BB-ECE309B1D921@gmail.com>
+Date: Fri, 14 Aug 2009 14:46:02 +0400
+Message-ID: <9B8E82A6-A4A5-4654-8555-5590A7B1D0F3@gmail.com>
 References: <bug-13976-10286@http.bugzilla.kernel.org/>
 	<20090813123622.624240c7.akpm@linux-foundation.org>
 	<4A84849A.3000807@gmx.de>
 	<FE2B7370-64DF-43D4-B0E3-C65EB1AD1986@gmail.com>
 	<4A852527.7040705@gmx.de>
-	<9B8E82A6-A4A5-4654-8555-5590A7B1D0F3@gmail.com>
-	<4A855C11.2020805@gmx.de>
 Mime-Version: 1.0 (Apple Message framework v935.3)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <sungeneral@gmail.com>) id 1Mbzj6-0008Dl-1m
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <sungeneral@gmail.com>) id 1MbuIf-0006pt-Qy
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Aug 2009 16:34:01 +0000
-Received: from ey-out-1920.google.com ([74.125.78.150])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Mbzj1-0001n5-VB for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Aug 2009 16:34:00 +0000
-Received: by ey-out-1920.google.com with SMTP id 5so332945eyb.4
+	Fri, 14 Aug 2009 10:46:21 +0000
+Received: from mail-ew0-f210.google.com ([209.85.219.210])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MbuIY-00010P-Fd for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 14 Aug 2009 10:46:21 +0000
+Received: by ewy6 with SMTP id 6so1404974ewy.10
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Aug 2009 09:33:50 -0700 (PDT)
-In-Reply-To: <4A855C11.2020805@gmx.de>
+	Fri, 14 Aug 2009 03:46:07 -0700 (PDT)
+In-Reply-To: <4A852527.7040705@gmx.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,109 +38,174 @@ To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: linux-fbdev-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org, Joseph Chan <JosephChan@via.com.tw>, Scott Fang <ScottFang@viatech.com.cn>, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
 Hi!
-On 14.08.2009, at 16:44, Florian Tobias Schandinat wrote:
 
-> Hi,
->
-> thanks a lot for your testing!
->
+On 14.08.2009, at 12:49, Florian Tobias Schandinat wrote:
+
 > Roman Sergeev schrieb:
->> test # 1
->> * send to kernel "vmalloc=260M"
->> # modprobe viafb
+>> 01:00.0 VGA compatible controller: VIA Technologies, Inc. P4M900  
+>> [Chrome 9 HC] (rev 01)
+>> with shadow ram (total 2Gb, but system see 1768Mb... maybe 280Mb)
 >
-> For my patch to fix this bug I would be interested in something like  
-> this:
-> * send to kernel "vmalloc=260M"
-> # modprobe viafb viafb_accel=0
-> If it is similar to the result of test #2 I could simply disable  
-> hardware acceleration if the second ioremap fails which is IMHO  
-> better than refusing to work as hardware acceleration is a nice to  
-> have but not crucial for device operation.
+> This makes sense:
+> 2 GB physical RAM
+> - 256 MB used as shared memory video RAM
+> = 1792 MB available
+> I don't know where the other memory is lost but the video memory  
+> size seems to be detected correctly.
 >
-yes, it's working
+>> after modprobe viafb don't die, they going to new state
+>> viafb 75212 1 - Loading 0xef642000
+>
+> I don't know if I get you right here:
+> After "modprobe viafb viafb_accel=0" the module does no longer  
+> crash? But I don't know what state you are talking about. Is the  
+> module usable? (i.e. does "modprobe fbcon" give you a working  
+> framebuffer console?) Or can you otherwise post a new log?
+>
+>
+
+i make some "test"
+
+test # 0
+
+# modprobe viafb
+FATAL: Error inserting viafb (/lib/modules/2.6.30-gentoo-r4/kernel/ 
+drivers/video/via/viafb.ko): Operation not permitted
+
 log:
-Jun 22 06:15:50 mini2133 [   59.646904] VIA Graphics Intergration  
+Jun 22 00:34:48 mini2133 [   89.952746] VIA Graphics Intergration  
 Chipset framebuffer 2.4 initializing
-Jun 22 06:15:50 mini2133 [   59.727808] vmap allocation for size  
+Jun 22 00:34:48 mini2133 [   90.031236] vmap allocation for size  
+268439552 failed: use vmalloc=<size> to increase size.
+Jun 22 00:34:48 mini2133 [   90.031244] ioremap failed
+
+test # 1
+* send to kernel "vmalloc=260M"
+
+# modprobe viafb
+Killed
+
+log:
+Jun 22 00:41:50 mini2133 [   46.690400] VIA Graphics Intergration  
+Chipset framebuffer 2.4 initializing
+Jun 22 00:41:50 mini2133 [   46.770663] vmap allocation for size  
 16781312 failed: use vmalloc=<size> to increase size.
-Jun 22 06:15:50 mini2133 [   59.732024] Console: switching to colour  
-frame buffer device 80x30
+Jun 22 00:41:50 mini2133 [   46.770684] BUG: unable to handle kernel  
+NULL pointer dereference at 00000004
+Jun 22 00:41:50 mini2133 [   46.770885] IP: [<ef64a798>]  
+viafb_init_2d_engine+0x16/0x583 [viafb]
+Jun 22 00:41:50 mini2133 [   46.771005] *pde = 00000000
+Jun 22 00:41:50 mini2133 [   46.771005] Oops: 0002 [#1] SMP
+Jun 22 00:41:50 mini2133 [   46.771005] last sysfs file: /sys/devices/ 
+pci0000:00/0000:00:0f.0/host0/target0:0:0/0:0:0:0/block/sda/uevent
+Jun 22 00:41:50 mini2133 [   46.771005] Modules linked in: viafb(+)  
+i2c_algo_bit via drm via_agp agpgart
+Jun 22 00:41:50 mini2133 [   46.771005]
+Jun 22 00:41:50 mini2133 [   46.771005] Pid: 4094, comm: modprobe Not  
+tainted (2.6.30-gentoo-r4 #13)
+Jun 22 00:41:50 mini2133 [   46.771005] EIP: 0060:[<ef64a798>] EFLAGS:  
+00010202 CPU: 0
+Jun 22 00:41:50 mini2133 [   46.771005] EIP is at viafb_init_2d_engine 
++0x16/0x583 [viafb]
+Jun 22 00:41:50 mini2133 [   46.771005] EAX: 00000004 EBX: ed8bd280  
+ECX: c256d700 EDX: 00000000
+Jun 22 00:41:50 mini2133 [   46.771005] ESI: fffffffc EDI: 00000000  
+EBP: ed8c1f18 ESP: ed8c1f08
+Jun 22 00:41:50 mini2133 [   46.771005]  DS: 007b ES: 007b FS: 00d8  
+GS: 0033 SS: 0068
+Jun 22 00:41:50 mini2133 [   46.771005] Process modprobe (pid: 4094,  
+ti=ed8c0000 task=ee7d84e0 task.ti=ed8c0000)
+Jun 22 00:41:50 mini2133 [   46.771005] Stack:
+Jun 22 00:41:50 mini2133 [   46.771005]  00000000 ed8bd280 fffffffc  
+00000000 ed8c1f40 ef656505 00000000 ed8c1f40
+Jun 22 00:41:50 mini2133 [   46.771005]  c1062132 00000000 00000000  
+ef6535e4 fffffffc 00000000 ed8c1f9c c1001137
+Jun 22 00:41:50 mini2133 [   46.771005]  ef656000 00000000 ef6535e4  
+00000001 00000000 c15dec24 00000000 c15dec34
+Jun 22 00:41:50 mini2133 [   46.771005] Call Trace:
+Jun 22 00:41:50 mini2133 [   46.771005]  [<ef656505>] ? viafb_init 
++0x505/0xd2c [viafb]
+Jun 22 00:41:50 mini2133 [   46.771005]  [<c1062132>] ?  
+marker_update_probe_range+0x1cf/0x1de
+Jun 22 00:41:50 mini2133 [   46.771005]  [<c1001137>] ? do_one_initcall 
++0x4a/0x10c
+Jun 22 00:41:50 mini2133 [   46.771005]  [<ef656000>] ? viafb_init 
++0x0/0xd2c [viafb]
+Jun 22 00:41:50 mini2133 [   46.771005]  [<c103ae2d>] ?  
+__blocking_notifier_call_chain+0x40/0x4c
+Jun 22 00:41:50 mini2133 [   46.771005]  [<c10481f6>] ? sys_init_module 
++0x87/0x18b
+Jun 22 00:41:50 mini2133 [   46.771005]  [<c1002a44>] ?  
+sysenter_do_call+0x12/0x22
+Jun 22 00:41:50 mini2133 [   46.771005] Code: ff ff 03 00 89 42 44 a1  
+44 38 65 ef 81 40 38 00 20 04 00 5d c3 55 31 d2 89 e5 57 56 53 83 ec  
+04 a1 44 38 65 ef 8b 40 1c 83 c0 04 <89> 10 a1 44 38 65 ef 8b 40 1c 83  
+c0 08 89 10 a1 44 38 65 ef 8b
+Jun 22 00:41:50 mini2133 [   46.771005] EIP: [<ef64a798>]  
+viafb_init_2d_engine+0x16/0x583 [viafb] SS:ESP 0068:ed8c1f08
+Jun 22 00:41:50 mini2133 [   46.771005] CR2: 0000000000000004
+Jun 22 00:41:50 mini2133 [   46.777862] ---[ end trace  
+e41091c450ca8ab2 ]---
+
+status:
 # grep viafb /proc/modules
-viafb 71840 1 - Live 0xef642000
+viafb 75212 1 - Loading 0xef642000
 i2c_algo_bit 4656 1 viafb, Live 0xef624000
 
 
->> test # 2
->> * send to kernel "vmalloc=300M"
->> * modprobe viafb
->> * loaded ok
->> status:
->> # grep viafb /proc/modules
->> viafb 71840 1 - Live 0xece42000
->> i2c_algo_bit 4656 1 viafb, Live 0xece24000
->> log:
->> Jun 21 23:52:12 mini2133 [   47.308459] VIA Graphics Intergration  
->> Chipset framebuffer 2.4 initializing
->> Jun 21 23:52:12 mini2133 [   47.393518] Console: switching to  
->> colour frame buffer device 80x30
->> but i see "test color mode"
->> ...
->> if i loading  module with parametrs "modprobe viafb  
->> viafb_mode=800x600 viafb_refresh=60"
->> they still go "test color mode"
->> log:
->> Jun 22 00:28:11 mini2133 [  142.994541] VIA Graphics Intergration  
->> Chipset framebuffer 2.4 initializing
->> Jun 22 00:28:11 mini2133 [  143.079079] Console: switching to  
->> colour frame buffer device 100x37
->
-> This looks fine. I'd guess the driver itself is working.  
-> Unfortunately I do not fully understand the term "test color mode".  
-> Can you describe what you see? monocolor, if yes what color or some  
-> strange patterns? even whether it is shown immediately or is somehow  
-> slowly painted might help.
->
-> Perhaps using the module parameter viafb_active_dev= with one of  
-> CRT, DVI or LCD helps?
-> If it doesn't....well I'm aware of one bug in that code that I hit  
-> on my netbook. Will send you a fix if your observations sound related.
+test # 2
+* send to kernel "vmalloc=300M"
+* modprobe viafb
+* loaded ok
 
-# modprobe viafb viafb_accel=0 viafb_active_dev=LCD viafb_mode=1024x768
-works....
+status:
+# grep viafb /proc/modules
+viafb 71840 1 - Live 0xece42000
+i2c_algo_bit 4656 1 viafb, Live 0xece24000
+
 log:
-Jun 22 06:30:01 mini2133 [   40.666874] VIA Graphics Intergration  
+Jun 21 23:52:12 mini2133 [   47.308459] VIA Graphics Intergration  
 Chipset framebuffer 2.4 initializing
-Jun 22 06:30:01 mini2133 [   40.748196] vmap allocation for size  
-16781312 failed: use vmalloc=<size> to increase size.
-Jun 22 06:30:01 mini2133 [   40.752198] Console: switching to colour  
-frame buffer device 128x48
+Jun 21 23:52:12 mini2133 [   47.393518] Console: switching to colour  
+frame buffer device 80x30
 
-# fbset -i
+but i see "test color mode"
 
-mode "1024x768-60"
-     # D: 64.998 MHz, H: 48.362 kHz, V: 60.002 Hz
-     geometry 1024 768 1024 768 32
-     timings 15385 160 24 29 3 136 6
+fbset -i
+
+mode "640x480-60"
+     # D: 25.175 MHz, H: 31.469 kHz, V: 59.940 Hz
+     geometry 640 480 640 480 32
+     timings 39722 48 16 33 10 96 2
+     accel true
      rgba 8/16,8/8,8/0,0/0
 endmode
 
 Frame buffer device information:
      Name        : Via
      Address     : 0xc0000000
-     Size        : 268435456
+     Size        : 268156928
      Type        : PACKED PIXELS
      Visual      : TRUECOLOR
      XPanStep    : 0
      YPanStep    : 1
      YWrapStep   : 0
-     LineLength  : 4096
+     LineLength  : 2560
      MMIO Address: 0xfc000000
      MMIO Size   : 16777216
      Accelerator : Unknown (50)
 
-"test color mode" - it's like lcd test : red-green-blue-grey- 
-gradient-...etc
+if i loading  module with parametrs "modprobe viafb viafb_mode=800x600  
+viafb_refresh=60"
+they still go "test color mode"
+log:
+Jun 22 00:28:11 mini2133 [  142.994541] VIA Graphics Intergration  
+Chipset framebuffer 2.4 initializing
+Jun 22 00:28:11 mini2133 [  143.079079] Console: switching to colour  
+frame buffer device 100x37
+
+ps: other \ standart  kernel framebuffer module on this card works well
+
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

@@ -1,50 +1,21 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH] viafb: fix ioremap_nocache error handling
-Date: Fri, 14 Aug 2009 19:47:56 +0000
-Message-ID: <1250279276-3936-1-git-send-email-FlorianSchandinat@gmx.de>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1757041AbZHNTqS@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: Getting DSS2 to mainline
+Date: Mon, 17 Aug 2009 14:24:36 +0300
+Message-ID: <4A893DF4.3050705@nokia.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Cc: ext Tony Lindgren <tony@atomide.com>
 
-viafb: fix ioremap_nocache error handling
+Hi,
 
-Correct the returned error code for remapping the video framebuffer.
-Introduce error handling for remapping MMIO register address space to
-avoid a NULL pointer dereference. Disable hardware acceleration if
-remapping MMIO register address space failed as those registers are only
-used for hardware acceleration.
+As I'm new to sending patches upstream, I'm not sure how to go forward 
+with DSS2 now. Should I send it to linux-arm-kernel mailing list, or 
+directly to main linux kernel mailing list? Or is there a route through 
+fbdev-devel list for DSS2 to go forward?
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- viafbdev.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 743eed4..72759b6 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -2134,12 +2134,16 @@ static int __devinit via_pci_probe(void)
- 
- 	if (!viaparinfo->fbmem_virt) {
- 		printk(KERN_INFO "ioremap failed\n");
--		return -1;
-+		return -ENOMEM;
- 	}
- 
- 	viafb_get_mmio_info(&viaparinfo->mmio_base, &viaparinfo->mmio_len);
- 	viaparinfo->io_virt = ioremap_nocache(viaparinfo->mmio_base,
- 		viaparinfo->mmio_len);
-+	if (!viaparinfo->io_virt) {
-+		printk(KERN_WARNING "ioremap failed: hardware acceleration disabled\n");
-+		viafb_accel = 0;
-+	}
- 
- 	viafbinfo->node = 0;
- 	viafbinfo->fbops = &viafb_ops;
--- 
-1.6.3.2
+  Tomi

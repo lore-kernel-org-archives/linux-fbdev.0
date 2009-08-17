@@ -1,214 +1,128 @@
-From: Roman Sergeev <sungeneral@gmail.com>
-Subject: Re: [Bugme-new] [Bug 13976] New: viafb + vmalloc
-Date: Fri, 14 Aug 2009 14:46:02 +0400
-Message-ID: <9B8E82A6-A4A5-4654-8555-5590A7B1D0F3@gmail.com>
-References: <bug-13976-10286@http.bugzilla.kernel.org/>
-	<20090813123622.624240c7.akpm@linux-foundation.org>
-	<4A84849A.3000807@gmx.de>
-	<FE2B7370-64DF-43D4-B0E3-C65EB1AD1986@gmail.com>
-	<4A852527.7040705@gmx.de>
-Mime-Version: 1.0 (Apple Message framework v935.3)
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Subject: [PATCH 2/4 v2] viafb: remove duplicated mode information
+Date: Mon, 17 Aug 2009 14:06:19 +0000
+Message-ID: <1250517979-15332-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1250510290-3327-2-git-send-email-FlorianSchandinat@gmx.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754091AbZHQODa@vger.kernel.org>
+In-Reply-To: <1250510290-3327-2-git-send-email-FlorianSchandinat@gmx.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <sungeneral@gmail.com>) id 1MbuIf-0006pt-Qy
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Aug 2009 10:46:21 +0000
-Received: from mail-ew0-f210.google.com ([209.85.219.210])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MbuIY-00010P-Fd for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 14 Aug 2009 10:46:21 +0000
-Received: by ewy6 with SMTP id 6so1404974ewy.10
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 14 Aug 2009 03:46:07 -0700 (PDT)
-In-Reply-To: <4A852527.7040705@gmx.de>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, bugzilla-daemon@bugzilla.kernel.org, Joseph Chan <JosephChan@via.com.tw>, Scott Fang <ScottFang@viatech.com.cn>, bugme-daemon@bugzilla.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi!
+viafb: remove duplicated mode information
 
-On 14.08.2009, at 12:49, Florian Tobias Schandinat wrote:
+This patch removes the mode information from viafbdev.c and uses the one
+of viamode.c instead. This is possible because horizontal and vertical
+address are the same as horizontal and vertical resolution. The  reduced
+blanking modes in the table are no problem because they have a higher
+index than the normal modes and therefore always the normal modes are
+selected just as the old behaviour.
 
-> Roman Sergeev schrieb:
->> 01:00.0 VGA compatible controller: VIA Technologies, Inc. P4M900  
->> [Chrome 9 HC] (rev 01)
->> with shadow ram (total 2Gb, but system see 1768Mb... maybe 280Mb)
->
-> This makes sense:
-> 2 GB physical RAM
-> - 256 MB used as shared memory video RAM
-> = 1792 MB available
-> I don't know where the other memory is lost but the video memory  
-> size seems to be detected correctly.
->
->> after modprobe viafb don't die, they going to new state
->> viafb 75212 1 - Loading 0xef642000
->
-> I don't know if I get you right here:
-> After "modprobe viafb viafb_accel=0" the module does no longer  
-> crash? But I don't know what state you are talking about. Is the  
-> module usable? (i.e. does "modprobe fbcon" give you a working  
-> framebuffer console?) Or can you otherwise post a new log?
->
->
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+v2: adjusted error handling
+---
+ viafbdev.c |   57 ++++++++-------------------------------------------------
+ viafbdev.h |    6 +-----
+ 2 files changed, 9 insertions(+), 54 deletions(-)
 
-i make some "test"
-
-test # 0
-
-# modprobe viafb
-FATAL: Error inserting viafb (/lib/modules/2.6.30-gentoo-r4/kernel/ 
-drivers/video/via/viafb.ko): Operation not permitted
-
-log:
-Jun 22 00:34:48 mini2133 [   89.952746] VIA Graphics Intergration  
-Chipset framebuffer 2.4 initializing
-Jun 22 00:34:48 mini2133 [   90.031236] vmap allocation for size  
-268439552 failed: use vmalloc=<size> to increase size.
-Jun 22 00:34:48 mini2133 [   90.031244] ioremap failed
-
-test # 1
-* send to kernel "vmalloc=260M"
-
-# modprobe viafb
-Killed
-
-log:
-Jun 22 00:41:50 mini2133 [   46.690400] VIA Graphics Intergration  
-Chipset framebuffer 2.4 initializing
-Jun 22 00:41:50 mini2133 [   46.770663] vmap allocation for size  
-16781312 failed: use vmalloc=<size> to increase size.
-Jun 22 00:41:50 mini2133 [   46.770684] BUG: unable to handle kernel  
-NULL pointer dereference at 00000004
-Jun 22 00:41:50 mini2133 [   46.770885] IP: [<ef64a798>]  
-viafb_init_2d_engine+0x16/0x583 [viafb]
-Jun 22 00:41:50 mini2133 [   46.771005] *pde = 00000000
-Jun 22 00:41:50 mini2133 [   46.771005] Oops: 0002 [#1] SMP
-Jun 22 00:41:50 mini2133 [   46.771005] last sysfs file: /sys/devices/ 
-pci0000:00/0000:00:0f.0/host0/target0:0:0/0:0:0:0/block/sda/uevent
-Jun 22 00:41:50 mini2133 [   46.771005] Modules linked in: viafb(+)  
-i2c_algo_bit via drm via_agp agpgart
-Jun 22 00:41:50 mini2133 [   46.771005]
-Jun 22 00:41:50 mini2133 [   46.771005] Pid: 4094, comm: modprobe Not  
-tainted (2.6.30-gentoo-r4 #13)
-Jun 22 00:41:50 mini2133 [   46.771005] EIP: 0060:[<ef64a798>] EFLAGS:  
-00010202 CPU: 0
-Jun 22 00:41:50 mini2133 [   46.771005] EIP is at viafb_init_2d_engine 
-+0x16/0x583 [viafb]
-Jun 22 00:41:50 mini2133 [   46.771005] EAX: 00000004 EBX: ed8bd280  
-ECX: c256d700 EDX: 00000000
-Jun 22 00:41:50 mini2133 [   46.771005] ESI: fffffffc EDI: 00000000  
-EBP: ed8c1f18 ESP: ed8c1f08
-Jun 22 00:41:50 mini2133 [   46.771005]  DS: 007b ES: 007b FS: 00d8  
-GS: 0033 SS: 0068
-Jun 22 00:41:50 mini2133 [   46.771005] Process modprobe (pid: 4094,  
-ti=ed8c0000 task=ee7d84e0 task.ti=ed8c0000)
-Jun 22 00:41:50 mini2133 [   46.771005] Stack:
-Jun 22 00:41:50 mini2133 [   46.771005]  00000000 ed8bd280 fffffffc  
-00000000 ed8c1f40 ef656505 00000000 ed8c1f40
-Jun 22 00:41:50 mini2133 [   46.771005]  c1062132 00000000 00000000  
-ef6535e4 fffffffc 00000000 ed8c1f9c c1001137
-Jun 22 00:41:50 mini2133 [   46.771005]  ef656000 00000000 ef6535e4  
-00000001 00000000 c15dec24 00000000 c15dec34
-Jun 22 00:41:50 mini2133 [   46.771005] Call Trace:
-Jun 22 00:41:50 mini2133 [   46.771005]  [<ef656505>] ? viafb_init 
-+0x505/0xd2c [viafb]
-Jun 22 00:41:50 mini2133 [   46.771005]  [<c1062132>] ?  
-marker_update_probe_range+0x1cf/0x1de
-Jun 22 00:41:50 mini2133 [   46.771005]  [<c1001137>] ? do_one_initcall 
-+0x4a/0x10c
-Jun 22 00:41:50 mini2133 [   46.771005]  [<ef656000>] ? viafb_init 
-+0x0/0xd2c [viafb]
-Jun 22 00:41:50 mini2133 [   46.771005]  [<c103ae2d>] ?  
-__blocking_notifier_call_chain+0x40/0x4c
-Jun 22 00:41:50 mini2133 [   46.771005]  [<c10481f6>] ? sys_init_module 
-+0x87/0x18b
-Jun 22 00:41:50 mini2133 [   46.771005]  [<c1002a44>] ?  
-sysenter_do_call+0x12/0x22
-Jun 22 00:41:50 mini2133 [   46.771005] Code: ff ff 03 00 89 42 44 a1  
-44 38 65 ef 81 40 38 00 20 04 00 5d c3 55 31 d2 89 e5 57 56 53 83 ec  
-04 a1 44 38 65 ef 8b 40 1c 83 c0 04 <89> 10 a1 44 38 65 ef 8b 40 1c 83  
-c0 08 89 10 a1 44 38 65 ef 8b
-Jun 22 00:41:50 mini2133 [   46.771005] EIP: [<ef64a798>]  
-viafb_init_2d_engine+0x16/0x583 [viafb] SS:ESP 0068:ed8c1f08
-Jun 22 00:41:50 mini2133 [   46.771005] CR2: 0000000000000004
-Jun 22 00:41:50 mini2133 [   46.777862] ---[ end trace  
-e41091c450ca8ab2 ]---
-
-status:
-# grep viafb /proc/modules
-viafb 75212 1 - Loading 0xef642000
-i2c_algo_bit 4656 1 viafb, Live 0xef624000
-
-
-test # 2
-* send to kernel "vmalloc=300M"
-* modprobe viafb
-* loaded ok
-
-status:
-# grep viafb /proc/modules
-viafb 71840 1 - Live 0xece42000
-i2c_algo_bit 4656 1 viafb, Live 0xece24000
-
-log:
-Jun 21 23:52:12 mini2133 [   47.308459] VIA Graphics Intergration  
-Chipset framebuffer 2.4 initializing
-Jun 21 23:52:12 mini2133 [   47.393518] Console: switching to colour  
-frame buffer device 80x30
-
-but i see "test color mode"
-
-fbset -i
-
-mode "640x480-60"
-     # D: 25.175 MHz, H: 31.469 kHz, V: 59.940 Hz
-     geometry 640 480 640 480 32
-     timings 39722 48 16 33 10 96 2
-     accel true
-     rgba 8/16,8/8,8/0,0/0
-endmode
-
-Frame buffer device information:
-     Name        : Via
-     Address     : 0xc0000000
-     Size        : 268156928
-     Type        : PACKED PIXELS
-     Visual      : TRUECOLOR
-     XPanStep    : 0
-     YPanStep    : 1
-     YWrapStep   : 0
-     LineLength  : 2560
-     MMIO Address: 0xfc000000
-     MMIO Size   : 16777216
-     Accelerator : Unknown (50)
-
-if i loading  module with parametrs "modprobe viafb viafb_mode=800x600  
-viafb_refresh=60"
-they still go "test color mode"
-log:
-Jun 22 00:28:11 mini2133 [  142.994541] VIA Graphics Intergration  
-Chipset framebuffer 2.4 initializing
-Jun 22 00:28:11 mini2133 [  143.079079] Console: switching to colour  
-frame buffer device 100x37
-
-ps: other \ standart  kernel framebuffer module on this card works well
-
-
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with 
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 72759b6..50e9300 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -53,51 +53,6 @@ static void retrieve_device_setting(struct viafb_ioctl_setting
+ static void viafb_set_video_device(u32 video_dev_info);
+ static void viafb_get_video_device(u32 *video_dev_info);
+ 
+-/* Mode information */
+-static const struct viafb_modeinfo viafb_modentry[] = {
+-	{480, 640, VIA_RES_480X640},
+-	{640, 480, VIA_RES_640X480},
+-	{800, 480, VIA_RES_800X480},
+-	{800, 600, VIA_RES_800X600},
+-	{1024, 768, VIA_RES_1024X768},
+-	{1152, 864, VIA_RES_1152X864},
+-	{1280, 1024, VIA_RES_1280X1024},
+-	{1600, 1200, VIA_RES_1600X1200},
+-	{1440, 1050, VIA_RES_1440X1050},
+-	{1280, 768, VIA_RES_1280X768,},
+-	{1280, 800, VIA_RES_1280X800},
+-	{1280, 960, VIA_RES_1280X960},
+-	{1920, 1440, VIA_RES_1920X1440},
+-	{848, 480, VIA_RES_848X480},
+-	{1400, 1050, VIA_RES_1400X1050},
+-	{720, 480, VIA_RES_720X480},
+-	{720, 576, VIA_RES_720X576},
+-	{1024, 512, VIA_RES_1024X512},
+-	{1024, 576, VIA_RES_1024X576},
+-	{1024, 600, VIA_RES_1024X600},
+-	{1280, 720, VIA_RES_1280X720},
+-	{1920, 1080, VIA_RES_1920X1080},
+-	{1366, 768, VIA_RES_1368X768},
+-	{1680, 1050, VIA_RES_1680X1050},
+-	{960, 600, VIA_RES_960X600},
+-	{1000, 600, VIA_RES_1000X600},
+-	{1024, 576, VIA_RES_1024X576},
+-	{1024, 600, VIA_RES_1024X600},
+-	{1088, 612, VIA_RES_1088X612},
+-	{1152, 720, VIA_RES_1152X720},
+-	{1200, 720, VIA_RES_1200X720},
+-	{1280, 600, VIA_RES_1280X600},
+-	{1360, 768, VIA_RES_1360X768},
+-	{1440, 900, VIA_RES_1440X900},
+-	{1600, 900, VIA_RES_1600X900},
+-	{1600, 1024, VIA_RES_1600X1024},
+-	{1792, 1344, VIA_RES_1792X1344},
+-	{1856, 1392, VIA_RES_1856X1392},
+-	{1920, 1200, VIA_RES_1920X1200},
+-	{2048, 1536, VIA_RES_2048X1536},
+-	{0, 0, VIA_RES_INVALID}
+-};
+-
+ static struct fb_ops viafb_ops;
+ 
+ 
+@@ -1239,12 +1194,16 @@ int viafb_get_mode_index(int hres, int vres)
+ 	u32 i;
+ 	DEBUG_MSG(KERN_INFO "viafb_get_mode_index!\n");
+ 
+-	for (i = 0; viafb_modentry[i].mode_index != VIA_RES_INVALID; i++)
+-		if (viafb_modentry[i].xres == hres &&
+-			viafb_modentry[i].yres == vres)
++	for (i = 0; i < NUM_TOTAL_MODETABLE; i++)
++		if (CLE266Modes[i].mode_array &&
++			CLE266Modes[i].crtc[0].crtc.hor_addr == hres &&
++			CLE266Modes[i].crtc[0].crtc.ver_addr == vres)
+ 			break;
+ 
+-	return viafb_modentry[i].mode_index;
++	if (i == NUM_TOTAL_MODETABLE)
++		return VIA_RES_INVALID;
++
++	return CLE266Modes[i].ModeIndex;
+ }
+ 
+ static void check_available_device_to_enable(int device_id)
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index ea0df4f..cd3dff7 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -70,11 +70,7 @@ struct viafb_par {
+ 	int video_on_lcd;
+ 
+ };
+-struct viafb_modeinfo {
+-	u32 xres;
+-	u32 yres;
+-	int mode_index;
+-};
++
+ extern unsigned int viafb_second_virtual_yres;
+ extern unsigned int viafb_second_virtual_xres;
+ extern unsigned int viafb_second_offset;
+-- 
+1.6.3.2

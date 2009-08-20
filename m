@@ -1,71 +1,60 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH] fb: do not ignore fb_set_par errors
-Date: Thu, 20 Aug 2009 11:59:57 +0000
-Message-ID: <1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
-References: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754161AbZHTL5d@vger.kernel.org>
-In-Reply-To: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
+Subject: [RFC] fbcon: fb_set_par error handling
+Date: Thu, 20 Aug 2009 11:59:56 +0000
+Message-ID: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754145AbZHTL53@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 
-fb: do not ignore fb_set_par errors
 
-At the moment about half of the framebuffer drivers can return an error
+Hi all,
+
+at the moment about half of the framebuffer drivers can return an error
 code in fb_set_par. Until now it would be silently ignored by fbmem.c
-and fbcon.c. This patch fixes fbmem.c to return the error code and
-restore var on error. But it is not clear in which video mode the device
-is when fb_set_par fails. It would be good and reasonable if it were in
-the old state but there is no guarantee that this is true for all
-existing drivers.
-Although most errors should be caught by the previous fb_check_var some
-errors can't as they are dynamic (memory allocations, ...) and can only
-be detected while performing the operations which is forbidden in
-fb_check_var.
-This patch shouldn't have a negative impact on normal operation as all
-drivers return 0 on success. The impact in case of error depends heavily
-on the driver and caller but it's expected to be better than before.
+and fbcon.c. The following patch fixes fbmem.c to pass it on but I have
+no idea what the right behaviour in fbcon.c would look like.
+Any comments?
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- drivers/video/fbmem.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+The following files might return a non-zero value:
+(false positives are possible as I scanned them only superficial)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index a85c818..85c1595 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -954,6 +954,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- 			goto done;
- 
- 		if ((var->activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW) {
-+			struct fb_var_screeninfo old_var;
- 			struct fb_videomode mode;
- 
- 			if (info->fbops->fb_get_caps) {
-@@ -963,10 +964,17 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- 					goto done;
- 			}
- 
-+			old_var = info->var;
- 			info->var = *var;
- 
--			if (info->fbops->fb_set_par)
--				info->fbops->fb_set_par(info);
-+			if (info->fbops->fb_set_par) {
-+				ret = info->fbops->fb_set_par(info);
-+
-+				if (ret) {
-+					info->var = old_var;
-+					goto done;
-+				}
-+			}
- 
- 			fb_pan_display(info, &info->var);
- 			fb_set_cmap(&info->cmap, info);
--- 
-1.6.3.2
+drivers/gpu/drm/i915/intel_fb.c
+drivers/gpu/drm/radeon/radeon_fb.c
+drivers/video/matrox/matroxfb_crtc2.c
+drivers/video/matrox/matroxfb_base.c
+drivers/video/vt8623fb.c
+drivers/video/vermilion/vermilion.c
+drivers/video/uvesafb.c
+drivers/video/neofb.c
+drivers/video/aty/radeon_base.c
+drivers/video/aty/atyfb_base.c
+drivers/video/aty/aty128fb.c
+drivers/video/platinumfb.c
+drivers/video/intelfb/intelfbdrv.c
+drivers/video/omap/omapfb_main.c
+drivers/video/skeletonfb.c
+drivers/video/s3fb.c
+drivers/video/savage/savagefb_driver.c
+drivers/video/gxt4500.c
+drivers/video/tmiofb.c
+drivers/video/pxafb.c
+drivers/video/mbx/mbxfb.c
+drivers/video/sis/sis_main.c
+drivers/video/mx3fb.c
+drivers/video/arkfb.c
+drivers/video/fsl-diu-fb.c
+drivers/video/valkyriefb.c
+drivers/video/pm2fb.c
+drivers/video/sstfb.c
+drivers/video/imsttfb.c
+drivers/video/carminefb.c
+drivers/video/riva/fbdev.c
+drivers/video/sh7760fb.c
+drivers/video/sm501fb.c
+drivers/video/ps3fb.c
+drivers/video/controlfb.c

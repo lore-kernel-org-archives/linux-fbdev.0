@@ -1,74 +1,96 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: s3c2410fb: fix clockrate calculation
-Date: Thu, 20 Aug 2009 15:19:44 -0700
-Message-ID: <20090820151944.9c29607c.akpm@linux-foundation.org>
-References: <20090820215047.717581584@fluff.org.uk>
+Subject: Re: [PATCH] fb: do not ignore fb_set_par errors
+Date: Thu, 20 Aug 2009 15:31:00 -0700
+Message-ID: <20090820153100.eec12070.akpm@linux-foundation.org>
+References: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
+	<1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1MeFzD-0007tE-U4
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 20 Aug 2009 22:19:59 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MeFz8-0000hH-EP
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 20 Aug 2009 22:19:59 +0000
-In-Reply-To: <20090820215047.717581584@fluff.org.uk>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ben Dooks <ben@simtec.co.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932111AbZHTWbR@vger.kernel.org>
+In-Reply-To: <1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, FlorianSchandinat@gmx.de
 
-On Thu, 20 Aug 2009 22:50:47 +0100
-Ben Dooks <ben@simtec.co.uk> wrote:
 
-> In the final part of the calculation for the tft display clockrate we
-> divide the output pf s3c2410fb_calc_pixclk() by 2 which leaves us with
-> a rounding error if the result is odd.
+On Thu, 20 Aug 2009 11:59:56 +0000
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+
+> at the moment about half of the framebuffer drivers can return an error
+> code in fb_set_par. Until now it would be silently ignored by fbmem.c
+> and fbcon.c. The following patch fixes fbmem.c to pass it on but I have
+> no idea what the right behaviour in fbcon.c would look like.
+> Any comments?
+
+Nobody really maintains this code any more and I don't know to whom
+your question should be addressed.  All I can suggest is that you
+decide what is the best path to take, and propose that we take it!  
+
+On Thu, 20 Aug 2009 11:59:57 +0000
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+
+> fb: do not ignore fb_set_par errors
 > 
-> Change to using DIV_ROUND_UP() to ensure that we always choose a higher
-> divisor and thus a lower frequency.
+> At the moment about half of the framebuffer drivers can return an error
+> code in fb_set_par. Until now it would be silently ignored by fbmem.c
+> and fbcon.c. This patch fixes fbmem.c to return the error code and
+> restore var on error. But it is not clear in which video mode the device
+> is when fb_set_par fails. It would be good and reasonable if it were in
+> the old state but there is no guarantee that this is true for all
+> existing drivers.
+> Although most errors should be caught by the previous fb_check_var some
+> errors can't as they are dynamic (memory allocations, ...) and can only
+> be detected while performing the operations which is forbidden in
+> fb_check_var.
+> This patch shouldn't have a negative impact on normal operation as all
+> drivers return 0 on success. The impact in case of error depends heavily
+> on the driver and caller but it's expected to be better than before.
 > 
-> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
-> 
+> Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 > ---
->  drivers/video/s3c2410fb.c |    4 +++-
->  2 files changed, 5 insertions(+), 2 deletions(-)
+>  drivers/video/fbmem.c |   12 ++++++++++--
+>  1 files changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index a85c818..85c1595 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -954,6 +954,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+>  			goto done;
 >  
-> Index: b/drivers/video/s3c2410fb.c
-> ===================================================================
-> --- a/drivers/video/s3c2410fb.c	2009-08-20 08:45:41.000000000 +0100
-> +++ b/drivers/video/s3c2410fb.c	2009-08-20 08:45:42.000000000 +0100
-> @@ -369,7 +369,9 @@ static void s3c2410fb_activate_var(struc
->  	void __iomem *regs = fbi->io;
->  	int type = fbi->regs.lcdcon1 & S3C2410_LCDCON1_TFT;
->  	struct fb_var_screeninfo *var = &info->var;
-> -	int clkdiv = s3c2410fb_calc_pixclk(fbi, var->pixclock) / 2;
-> +	int clkdiv;
+>  		if ((var->activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW) {
+> +			struct fb_var_screeninfo old_var;
+>  			struct fb_videomode mode;
+>  
+>  			if (info->fbops->fb_get_caps) {
+> @@ -963,10 +964,17 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+>  					goto done;
+>  			}
+>  
+> +			old_var = info->var;
+>  			info->var = *var;
+>  
+> -			if (info->fbops->fb_set_par)
+> -				info->fbops->fb_set_par(info);
+> +			if (info->fbops->fb_set_par) {
+> +				ret = info->fbops->fb_set_par(info);
 > +
-> +	clkdiv = DIV_ROUND_UP(s3c2410fb_calc_pixclk(fbi, var->pixclock), 2);
->  
->  	printk(KERN_INFO "%s: pixclock=%d, clkdiv=%d\n",
->  	       __func__, var->pixclock, clkdiv);
+> +				if (ret) {
+> +					info->var = old_var;
+> +					goto done;
+> +				}
+> +			}
 
-The changelog forgot to tell us what the impact of this bug is, so I
-cannot work out whether we need this fix in 2.6.32, 2.6.31, 2.6.30.x, ....
+Yes, it seems reasonable to me - if we ignore this the machine will
+probably crash later anyway.
 
+A well-behaved driver should leave the hardware in an unchanged state
+if it's going to return an error (IMO).
 
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with 
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+Do you know of any bug reports which are due to this lack of checking?
+
+If you're concerned about the effects of this change, perhaps you
+should add a nice big printk when we decide to error out, so that it
+makes it easier for bug reporters (and responders!) to work out what
+happened?

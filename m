@@ -1,128 +1,71 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH 2/4 v2] viafb: remove duplicated mode information
-Date: Mon, 17 Aug 2009 14:06:19 +0000
-Message-ID: <1250517979-15332-1-git-send-email-FlorianSchandinat@gmx.de>
-References: <1250510290-3327-2-git-send-email-FlorianSchandinat@gmx.de>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754091AbZHQODa@vger.kernel.org>
-In-Reply-To: <1250510290-3327-2-git-send-email-FlorianSchandinat@gmx.de>
+Subject: [PATCH] fb: do not ignore fb_set_par errors
+Date: Thu, 20 Aug 2009 11:59:57 +0000
+Message-ID: <1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
+References: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754161AbZHTL5d@vger.kernel.org>
+In-Reply-To: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-viafb: remove duplicated mode information
+fb: do not ignore fb_set_par errors
 
-This patch removes the mode information from viafbdev.c and uses the one
-of viamode.c instead. This is possible because horizontal and vertical
-address are the same as horizontal and vertical resolution. The  reduced
-blanking modes in the table are no problem because they have a higher
-index than the normal modes and therefore always the normal modes are
-selected just as the old behaviour.
+At the moment about half of the framebuffer drivers can return an error
+code in fb_set_par. Until now it would be silently ignored by fbmem.c
+and fbcon.c. This patch fixes fbmem.c to return the error code and
+restore var on error. But it is not clear in which video mode the device
+is when fb_set_par fails. It would be good and reasonable if it were in
+the old state but there is no guarantee that this is true for all
+existing drivers.
+Although most errors should be caught by the previous fb_check_var some
+errors can't as they are dynamic (memory allocations, ...) and can only
+be detected while performing the operations which is forbidden in
+fb_check_var.
+This patch shouldn't have a negative impact on normal operation as all
+drivers return 0 on success. The impact in case of error depends heavily
+on the driver and caller but it's expected to be better than before.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
-v2: adjusted error handling
----
- viafbdev.c |   57 ++++++++-------------------------------------------------
- viafbdev.h |    6 +-----
- 2 files changed, 9 insertions(+), 54 deletions(-)
+ drivers/video/fbmem.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 72759b6..50e9300 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -53,51 +53,6 @@ static void retrieve_device_setting(struct viafb_ioctl_setting
- static void viafb_set_video_device(u32 video_dev_info);
- static void viafb_get_video_device(u32 *video_dev_info);
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index a85c818..85c1595 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -954,6 +954,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 			goto done;
  
--/* Mode information */
--static const struct viafb_modeinfo viafb_modentry[] = {
--	{480, 640, VIA_RES_480X640},
--	{640, 480, VIA_RES_640X480},
--	{800, 480, VIA_RES_800X480},
--	{800, 600, VIA_RES_800X600},
--	{1024, 768, VIA_RES_1024X768},
--	{1152, 864, VIA_RES_1152X864},
--	{1280, 1024, VIA_RES_1280X1024},
--	{1600, 1200, VIA_RES_1600X1200},
--	{1440, 1050, VIA_RES_1440X1050},
--	{1280, 768, VIA_RES_1280X768,},
--	{1280, 800, VIA_RES_1280X800},
--	{1280, 960, VIA_RES_1280X960},
--	{1920, 1440, VIA_RES_1920X1440},
--	{848, 480, VIA_RES_848X480},
--	{1400, 1050, VIA_RES_1400X1050},
--	{720, 480, VIA_RES_720X480},
--	{720, 576, VIA_RES_720X576},
--	{1024, 512, VIA_RES_1024X512},
--	{1024, 576, VIA_RES_1024X576},
--	{1024, 600, VIA_RES_1024X600},
--	{1280, 720, VIA_RES_1280X720},
--	{1920, 1080, VIA_RES_1920X1080},
--	{1366, 768, VIA_RES_1368X768},
--	{1680, 1050, VIA_RES_1680X1050},
--	{960, 600, VIA_RES_960X600},
--	{1000, 600, VIA_RES_1000X600},
--	{1024, 576, VIA_RES_1024X576},
--	{1024, 600, VIA_RES_1024X600},
--	{1088, 612, VIA_RES_1088X612},
--	{1152, 720, VIA_RES_1152X720},
--	{1200, 720, VIA_RES_1200X720},
--	{1280, 600, VIA_RES_1280X600},
--	{1360, 768, VIA_RES_1360X768},
--	{1440, 900, VIA_RES_1440X900},
--	{1600, 900, VIA_RES_1600X900},
--	{1600, 1024, VIA_RES_1600X1024},
--	{1792, 1344, VIA_RES_1792X1344},
--	{1856, 1392, VIA_RES_1856X1392},
--	{1920, 1200, VIA_RES_1920X1200},
--	{2048, 1536, VIA_RES_2048X1536},
--	{0, 0, VIA_RES_INVALID}
--};
--
- static struct fb_ops viafb_ops;
+ 		if ((var->activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW) {
++			struct fb_var_screeninfo old_var;
+ 			struct fb_videomode mode;
  
+ 			if (info->fbops->fb_get_caps) {
+@@ -963,10 +964,17 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 					goto done;
+ 			}
  
-@@ -1239,12 +1194,16 @@ int viafb_get_mode_index(int hres, int vres)
- 	u32 i;
- 	DEBUG_MSG(KERN_INFO "viafb_get_mode_index!\n");
++			old_var = info->var;
+ 			info->var = *var;
  
--	for (i = 0; viafb_modentry[i].mode_index != VIA_RES_INVALID; i++)
--		if (viafb_modentry[i].xres == hres &&
--			viafb_modentry[i].yres == vres)
-+	for (i = 0; i < NUM_TOTAL_MODETABLE; i++)
-+		if (CLE266Modes[i].mode_array &&
-+			CLE266Modes[i].crtc[0].crtc.hor_addr == hres &&
-+			CLE266Modes[i].crtc[0].crtc.ver_addr == vres)
- 			break;
- 
--	return viafb_modentry[i].mode_index;
-+	if (i == NUM_TOTAL_MODETABLE)
-+		return VIA_RES_INVALID;
+-			if (info->fbops->fb_set_par)
+-				info->fbops->fb_set_par(info);
++			if (info->fbops->fb_set_par) {
++				ret = info->fbops->fb_set_par(info);
 +
-+	return CLE266Modes[i].ModeIndex;
- }
++				if (ret) {
++					info->var = old_var;
++					goto done;
++				}
++			}
  
- static void check_available_device_to_enable(int device_id)
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index ea0df4f..cd3dff7 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -70,11 +70,7 @@ struct viafb_par {
- 	int video_on_lcd;
- 
- };
--struct viafb_modeinfo {
--	u32 xres;
--	u32 yres;
--	int mode_index;
--};
-+
- extern unsigned int viafb_second_virtual_yres;
- extern unsigned int viafb_second_virtual_xres;
- extern unsigned int viafb_second_offset;
+ 			fb_pan_display(info, &info->var);
+ 			fb_set_cmap(&info->cmap, info);
 -- 
 1.6.3.2

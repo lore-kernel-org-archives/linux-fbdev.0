@@ -1,121 +1,70 @@
-From: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Subject: [RFC][PATCH] omapfb: Reorder Register_framebuffer call
-Date: Thu, 20 Aug 2009 15:12:56 -0500
-Message-ID: <A24693684029E5489D1D202277BE89444BA0DB52@dlee02.ent.ti.com>
+From: Ben Dooks <ben@simtec.co.uk>
+Subject: s3c2410fb: fix clockrate calculation
+Date: Thu, 20 Aug 2009 22:50:47 +0100
+Message-ID: <20090820215047.717581584@fluff.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="_002_A24693684029E5489D1D202277BE89444BA0DB52dlee02entticom_"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Language: en-US
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Imre Deak <imre.deak@nokia.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-
---_002_A24693684029E5489D1D202277BE89444BA0DB52dlee02entticom_
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ben@fluff.org.uk>) id 1MeFx4-0001yU-P8
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 20 Aug 2009 22:17:46 +0000
+Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MeFwy-0000Sj-3x
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 20 Aug 2009 22:17:46 +0000
+Content-Disposition: inline; filename=s3c2410-fb-fix-rounding.patch
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net
 
-From: Sergio Aguirre <saaguirre@ti.com>
+In the final part of the calculation for the tft display clockrate we
+divide the output pf s3c2410fb_calc_pixclk() by 2 which leaves us with
+a rounding error if the result is odd.
 
-This fixes the issue in which mm_lock mutex was attempted to be
-used without initializing previously.
+Change to using DIV_ROUND_UP() to ensure that we always choose a higher
+divisor and thus a lower frequency.
 
-Signed-off-by: Sergio Aguirre <saaguirre@ti.com>
+Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+
 ---
- drivers/video/omap/omapfb_main.c |   20 +++++++++++---------
- 1 files changed, 11 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_m=
-ain.c
-index 125e605..60f9482 100644
---- a/drivers/video/omap/omapfb_main.c
-+++ b/drivers/video/omap/omapfb_main.c
-@@ -1503,12 +1503,21 @@ static int fbinfo_init(struct omapfb_device *fbdev,=
- struct fb_info *info)
- 	var->rotate	  =3D def_rotate;
- 	var->bits_per_pixel =3D fbdev->panel->bpp;
-=20
-+	r =3D register_framebuffer(info);
-+	if (r !=3D 0) {
-+		dev_err(fbdev->dev,
-+			"registering framebuffer failed\n");
-+		return r;
-+	}
+ drivers/video/s3c2410fb.c |    4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+ 
+Index: b/drivers/video/s3c2410fb.c
+===================================================================
+--- a/drivers/video/s3c2410fb.c	2009-08-20 08:45:41.000000000 +0100
++++ b/drivers/video/s3c2410fb.c	2009-08-20 08:45:42.000000000 +0100
+@@ -369,7 +369,9 @@ static void s3c2410fb_activate_var(struc
+ 	void __iomem *regs = fbi->io;
+ 	int type = fbi->regs.lcdcon1 & S3C2410_LCDCON1_TFT;
+ 	struct fb_var_screeninfo *var = &info->var;
+-	int clkdiv = s3c2410fb_calc_pixclk(fbi, var->pixclock) / 2;
++	int clkdiv;
 +
- 	set_fb_var(info, var);
- 	set_fb_fix(info);
-=20
- 	r =3D fb_alloc_cmap(&info->cmap, 16, 0);
--	if (r !=3D 0)
-+	if (r !=3D 0) {
- 		dev_err(fbdev->dev, "unable to allocate color map memory\n");
-+		unregister_framebuffer(info);
-+	}
-=20
- 	return r;
- }
-@@ -1773,15 +1782,8 @@ static int omapfb_do_probe(struct platform_device *p=
-dev,
- 	init_state++;
-=20
- 	vram =3D 0;
--	for (i =3D 0; i < fbdev->mem_desc.region_cnt; i++) {
--		r =3D register_framebuffer(fbdev->fb_info[i]);
--		if (r !=3D 0) {
--			dev_err(fbdev->dev,
--				"registering framebuffer %d failed\n", i);
--			goto cleanup;
--		}
-+	for (i =3D 0; i < fbdev->mem_desc.region_cnt; i++)
- 		vram +=3D fbdev->mem_desc.region[i].size;
--	}
-=20
- 	fbdev->state =3D OMAPFB_ACTIVE;
-=20
---=20
-1.6.3.2
++	clkdiv = DIV_ROUND_UP(s3c2410fb_calc_pixclk(fbi, var->pixclock), 2);
+ 
+ 	printk(KERN_INFO "%s: pixclock=%d, clkdiv=%d\n",
+ 	       __func__, var->pixclock, clkdiv);
 
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
---_002_A24693684029E5489D1D202277BE89444BA0DB52dlee02entticom_
-Content-Type: application/octet-stream;
-	name="0001-omapfb-Reorder-Register_framebuffer-call.patch"
-Content-Description: 0001-omapfb-Reorder-Register_framebuffer-call.patch
-Content-Disposition: attachment;
-	filename="0001-omapfb-Reorder-Register_framebuffer-call.patch"; size=1681;
-	creation-date="Thu, 20 Aug 2009 15:08:11 GMT";
-	modification-date="Thu, 20 Aug 2009 15:08:11 GMT"
-Content-Transfer-Encoding: base64
+  'a smiley only costs 4 bytes'
 
-RnJvbSBiZjY4MTM0YzBkMTNjOWRmNjE4ZDllZjRkM2U5ZDA2NTU4NWYzZDE1IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBTZXJnaW8gQWd1aXJyZSA8c2FhZ3VpcnJlQHRpLmNvbT4KRGF0
-ZTogVGh1LCAyMCBBdWcgMjAwOSAxNDo1ODoyMiAtMDUwMApTdWJqZWN0OiBbUEFUQ0hdIG9tYXBm
-YjogUmVvcmRlciBSZWdpc3Rlcl9mcmFtZWJ1ZmZlciBjYWxsCgpUaGlzIGZpeGVzIHRoZSBpc3N1
-ZSBpbiB3aGljaCBtbV9sb2NrIG11dGV4IHdhcyBhdHRlbXB0ZWQgdG8gYmUKdXNlZCB3aXRob3V0
-IGluaXRpYWxpemluZyBwcmV2aW91c2x5LgoKU2lnbmVkLW9mZi1ieTogU2VyZ2lvIEFndWlycmUg
-PHNhYWd1aXJyZUB0aS5jb20+Ci0tLQogZHJpdmVycy92aWRlby9vbWFwL29tYXBmYl9tYWluLmMg
-fCAgIDIwICsrKysrKysrKysrLS0tLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDExIGluc2VydGlv
-bnMoKyksIDkgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9vbWFwL29t
-YXBmYl9tYWluLmMgYi9kcml2ZXJzL3ZpZGVvL29tYXAvb21hcGZiX21haW4uYwppbmRleCAxMjVl
-NjA1Li42MGY5NDgyIDEwMDY0NAotLS0gYS9kcml2ZXJzL3ZpZGVvL29tYXAvb21hcGZiX21haW4u
-YworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAvb21hcGZiX21haW4uYwpAQCAtMTUwMywxMiArMTUw
-MywyMSBAQCBzdGF0aWMgaW50IGZiaW5mb19pbml0KHN0cnVjdCBvbWFwZmJfZGV2aWNlICpmYmRl
-diwgc3RydWN0IGZiX2luZm8gKmluZm8pCiAJdmFyLT5yb3RhdGUJICA9IGRlZl9yb3RhdGU7CiAJ
-dmFyLT5iaXRzX3Blcl9waXhlbCA9IGZiZGV2LT5wYW5lbC0+YnBwOwogCisJciA9IHJlZ2lzdGVy
-X2ZyYW1lYnVmZmVyKGluZm8pOworCWlmIChyICE9IDApIHsKKwkJZGV2X2VycihmYmRldi0+ZGV2
-LAorCQkJInJlZ2lzdGVyaW5nIGZyYW1lYnVmZmVyIGZhaWxlZFxuIik7CisJCXJldHVybiByOwor
-CX0KKwogCXNldF9mYl92YXIoaW5mbywgdmFyKTsKIAlzZXRfZmJfZml4KGluZm8pOwogCiAJciA9
-IGZiX2FsbG9jX2NtYXAoJmluZm8tPmNtYXAsIDE2LCAwKTsKLQlpZiAociAhPSAwKQorCWlmIChy
-ICE9IDApIHsKIAkJZGV2X2VycihmYmRldi0+ZGV2LCAidW5hYmxlIHRvIGFsbG9jYXRlIGNvbG9y
-IG1hcCBtZW1vcnlcbiIpOworCQl1bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKGluZm8pOworCX0KIAog
-CXJldHVybiByOwogfQpAQCAtMTc3MywxNSArMTc4Miw4IEBAIHN0YXRpYyBpbnQgb21hcGZiX2Rv
-X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsCiAJaW5pdF9zdGF0ZSsrOwogCiAJ
-dnJhbSA9IDA7Ci0JZm9yIChpID0gMDsgaSA8IGZiZGV2LT5tZW1fZGVzYy5yZWdpb25fY250OyBp
-KyspIHsKLQkJciA9IHJlZ2lzdGVyX2ZyYW1lYnVmZmVyKGZiZGV2LT5mYl9pbmZvW2ldKTsKLQkJ
-aWYgKHIgIT0gMCkgewotCQkJZGV2X2VycihmYmRldi0+ZGV2LAotCQkJCSJyZWdpc3RlcmluZyBm
-cmFtZWJ1ZmZlciAlZCBmYWlsZWRcbiIsIGkpOwotCQkJZ290byBjbGVhbnVwOwotCQl9CisJZm9y
-IChpID0gMDsgaSA8IGZiZGV2LT5tZW1fZGVzYy5yZWdpb25fY250OyBpKyspCiAJCXZyYW0gKz0g
-ZmJkZXYtPm1lbV9kZXNjLnJlZ2lvbltpXS5zaXplOwotCX0KIAogCWZiZGV2LT5zdGF0ZSA9IE9N
-QVBGQl9BQ1RJVkU7CiAKLS0gCjEuNi4zLjIKCg==
-
---_002_A24693684029E5489D1D202277BE89444BA0DB52dlee02entticom_--
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with 
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

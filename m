@@ -1,96 +1,55 @@
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Subject: Re: [PATCH] fb: do not ignore fb_set_par errors
-Date: Thu, 20 Aug 2009 15:31:00 -0700
-Message-ID: <20090820153100.eec12070.akpm@linux-foundation.org>
-References: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
-	<1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
+Date: Fri, 21 Aug 2009 19:42:09 +0200
+Message-ID: <4A8EDC71.10403@gmx.de>
+References: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>	<1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de> <20090820153100.eec12070.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932111AbZHTWbR@vger.kernel.org>
-In-Reply-To: <1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753447AbZHURlt@vger.kernel.org>
+In-Reply-To: <20090820153100.eec12070.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, FlorianSchandinat@gmx.de
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-
-On Thu, 20 Aug 2009 11:59:56 +0000
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-
-> at the moment about half of the framebuffer drivers can return an error
-> code in fb_set_par. Until now it would be silently ignored by fbmem.c
-> and fbcon.c. The following patch fixes fbmem.c to pass it on but I have
-> no idea what the right behaviour in fbcon.c would look like.
-> Any comments?
-
-Nobody really maintains this code any more and I don't know to whom
-your question should be addressed.  All I can suggest is that you
-decide what is the best path to take, and propose that we take it!  
-
-On Thu, 20 Aug 2009 11:59:57 +0000
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-
-> fb: do not ignore fb_set_par errors
+Andrew Morton schrieb:
+> On Thu, 20 Aug 2009 11:59:56 +0000
+> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 > 
-> At the moment about half of the framebuffer drivers can return an error
-> code in fb_set_par. Until now it would be silently ignored by fbmem.c
-> and fbcon.c. This patch fixes fbmem.c to return the error code and
-> restore var on error. But it is not clear in which video mode the device
-> is when fb_set_par fails. It would be good and reasonable if it were in
-> the old state but there is no guarantee that this is true for all
-> existing drivers.
-> Although most errors should be caught by the previous fb_check_var some
-> errors can't as they are dynamic (memory allocations, ...) and can only
-> be detected while performing the operations which is forbidden in
-> fb_check_var.
-> This patch shouldn't have a negative impact on normal operation as all
-> drivers return 0 on success. The impact in case of error depends heavily
-> on the driver and caller but it's expected to be better than before.
+>> at the moment about half of the framebuffer drivers can return an error
+>> code in fb_set_par. Until now it would be silently ignored by fbmem.c
+>> and fbcon.c. The following patch fixes fbmem.c to pass it on but I have
+>> no idea what the right behaviour in fbcon.c would look like.
+>> Any comments?
 > 
-> Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> ---
->  drivers/video/fbmem.c |   12 ++++++++++--
->  1 files changed, 10 insertions(+), 2 deletions(-)
+> Nobody really maintains this code any more and I don't know to whom
+> your question should be addressed.  All I can suggest is that you
+> decide what is the best path to take, and propose that we take it!  
+
+Okay. I think it's difficult to ensure that we always end up with a 
+working console. I assume that this is a very very rare case and as a 
+start it should be enough to detect those cases and print an error message.
+
+> Yes, it seems reasonable to me - if we ignore this the machine will
+> probably crash later anyway.
 > 
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index a85c818..85c1595 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -954,6 +954,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
->  			goto done;
->  
->  		if ((var->activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW) {
-> +			struct fb_var_screeninfo old_var;
->  			struct fb_videomode mode;
->  
->  			if (info->fbops->fb_get_caps) {
-> @@ -963,10 +964,17 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
->  					goto done;
->  			}
->  
-> +			old_var = info->var;
->  			info->var = *var;
->  
-> -			if (info->fbops->fb_set_par)
-> -				info->fbops->fb_set_par(info);
-> +			if (info->fbops->fb_set_par) {
-> +				ret = info->fbops->fb_set_par(info);
-> +
-> +				if (ret) {
-> +					info->var = old_var;
-> +					goto done;
-> +				}
-> +			}
+> A well-behaved driver should leave the hardware in an unchanged state
+> if it's going to return an error (IMO).
+> 
+> Do you know of any bug reports which are due to this lack of checking?
 
-Yes, it seems reasonable to me - if we ignore this the machine will
-probably crash later anyway.
+No, I just hit the problem by thinking about how dynamic errors can be 
+handled and looking at some drivers and fbmem.c.
 
-A well-behaved driver should leave the hardware in an unchanged state
-if it's going to return an error (IMO).
+> If you're concerned about the effects of this change, perhaps you
+> should add a nice big printk when we decide to error out, so that it
+> makes it easier for bug reporters (and responders!) to work out what
+> happened?
 
-Do you know of any bug reports which are due to this lack of checking?
+That's a very good idea. Will add this too and resend the patch.
 
-If you're concerned about the effects of this change, perhaps you
-should add a nice big printk when we decide to error out, so that it
-makes it easier for bug reporters (and responders!) to work out what
-happened?
+
+Thanks,
+
+Florian Tobias Schandinat

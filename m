@@ -1,223 +1,81 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH] viafb: remove unused video device stuff
-Date: Fri, 21 Aug 2009 18:55:54 +0000
-Message-ID: <1250880954-26822-1-git-send-email-FlorianSchandinat@gmx.de>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755794AbZHUSx0@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: Rui Santos <rsantos@grupopie.com>
+Subject: radeonfb cannot map FB
+Date: Mon, 24 Aug 2009 20:45:31 +0100
+Message-ID: <4A92EDDB.6040806@grupopie.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <rsantos@grupopie.com>) id 1MffqC-0003EO-Hd
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 24 Aug 2009 20:08:32 +0000
+Received: from bipbip.grupopie.com ([195.23.16.24])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Mffq7-0002K3-UX for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 24 Aug 2009 20:08:32 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux FB-Devel <linux-fbdev-devel@lists.sourceforge.net>
 
-viafb: remove unused video device stuff
+Dear Benjamin Herrenschmidt, dear mailing list subscribers,
 
-This patch removes everything related to video devices from the driver
-as it did not influence the driver operation. This patch does change the
-userspace behaviour as it removes two IOCTLs and one module parameter.
-But this is good as it removes useless stuff and helps the user to
-figure out the options that do affect the driver behaviour (which are
-still too many).
+     I'm trying to load radeonfb for an RV100 QY chipset. Whatever I
+type in the modprobe I always get:
+       radeonfb (0000:01:0c.0): cannot map FB
+       radeonfb: probe of 0000:01:0c.0 failed with error -5
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- ioctl.h    |    6 +----
- viafbdev.c |   77 ------------------------------------------------------------
- viafbdev.h |    6 ----
- 3 files changed, 1 insertions(+), 88 deletions(-)
+    I've tried latest 2.6.27.x and 2.6.30.x kernels. This a secondary
+video card that I would like to connect a monitor to. The first video
+card is an Intel 915G, which is working with vesafb.
 
-diff --git a/drivers/video/via/ioctl.h b/drivers/video/via/ioctl.h
-index 842fe30..de89980 100644
---- a/drivers/video/via/ioctl.h
-+++ b/drivers/video/via/ioctl.h
-@@ -50,8 +50,6 @@
- #define VIAFB_GET_GAMMA_LUT		0x56494124
- #define VIAFB_SET_GAMMA_LUT		0x56494125
- #define VIAFB_GET_GAMMA_SUPPORT_STATE	0x56494126
--#define VIAFB_SET_VIDEO_DEVICE		0x56494127
--#define VIAFB_GET_VIDEO_DEVICE		0x56494128
- #define VIAFB_SET_SECOND_MODE		0x56494129
- #define VIAFB_SYNC_SURFACE		0x56494130
- #define VIAFB_GET_DRIVER_CAPS		0x56494131
-@@ -179,9 +177,7 @@ struct viafb_ioctl_setting {
- 	unsigned short second_dev_bpp;
- 	/* Indicate which device are primary display device. */
- 	unsigned int primary_device;
--	/* Indicate which device will show video. only valid in duoview mode */
--	unsigned int video_device_status;
--	unsigned int struct_reserved[34];
-+	unsigned int struct_reserved[35];
- 	struct viafb_ioctl_lcd_attribute lcd_attributes;
- };
- 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 86835ee..924177c 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -36,9 +36,6 @@ static char *viafb_mode1 = "640x480";
- /* Added for specifying active devices.*/
- char *viafb_active_dev = "";
- 
--/* Added for specifying video on devices.*/
--char *viafb_video_dev = "";
--
- /*Added for specify lcd output port*/
- char *viafb_lcd_port = "";
- char *viafb_dvi_port = "";
-@@ -50,8 +47,6 @@ static void apply_second_mode_setting(struct fb_var_screeninfo
- 	*sec_var);
- static void retrieve_device_setting(struct viafb_ioctl_setting
- 	*setting_info);
--static void viafb_set_video_device(u32 video_dev_info);
--static void viafb_get_video_device(u32 *video_dev_info);
- 
- static struct fb_ops viafb_ops;
- 
-@@ -488,7 +483,6 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
- 
- 	u32 __user *argp = (u32 __user *) arg;
- 	u32 gpu32;
--	u32 video_dev_info = 0;
- 
- 	DEBUG_MSG(KERN_INFO "viafb_ioctl: 0x%X !!\n", cmd);
- 	memset(&u, 0, sizeof(u));
-@@ -720,15 +714,6 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
- 		if (put_user(state_info, argp))
- 			return -EFAULT;
- 		break;
--	case VIAFB_SET_VIDEO_DEVICE:
--		get_user(video_dev_info, argp);
--		viafb_set_video_device(video_dev_info);
--		break;
--	case VIAFB_GET_VIDEO_DEVICE:
--		viafb_get_video_device(&video_dev_info);
--		if (put_user(video_dev_info, argp))
--			return -EFAULT;
--		break;
- 	case VIAFB_SYNC_SURFACE:
- 		DEBUG_MSG(KERN_INFO "lobo VIAFB_SYNC_SURFACE\n");
- 		break;
-@@ -1309,32 +1294,6 @@ static void viafb_set_device(struct device_t active_dev)
- 	viafb_set_iga_path();
- }
- 
--static void viafb_set_video_device(u32 video_dev_info)
--{
--	viaparinfo->video_on_crt = STATE_OFF;
--	viaparinfo->video_on_dvi = STATE_OFF;
--	viaparinfo->video_on_lcd = STATE_OFF;
--
--	/* Check available device to enable: */
--	if ((video_dev_info & CRT_Device) == CRT_Device)
--		viaparinfo->video_on_crt = STATE_ON;
--	else if ((video_dev_info & DVI_Device) == DVI_Device)
--		viaparinfo->video_on_dvi = STATE_ON;
--	else if ((video_dev_info & LCD_Device) == LCD_Device)
--		viaparinfo->video_on_lcd = STATE_ON;
--}
--
--static void viafb_get_video_device(u32 *video_dev_info)
--{
--	*video_dev_info = None_Device;
--	if (viaparinfo->video_on_crt == STATE_ON)
--		*video_dev_info |= CRT_Device;
--	else if (viaparinfo->video_on_dvi == STATE_ON)
--		*video_dev_info |= DVI_Device;
--	else if (viaparinfo->video_on_lcd == STATE_ON)
--		*video_dev_info |= LCD_Device;
--}
--
- static int get_primary_device(void)
- {
- 	int primary_device = 0;
-@@ -1506,18 +1465,6 @@ static void retrieve_device_setting(struct viafb_ioctl_setting
- 		setting_info->device_status |= LCD_Device;
- 	if (viafb_LCD2_ON == 1)
- 		setting_info->device_status |= LCD2_Device;
--	if ((viaparinfo->video_on_crt == 1) && (viafb_CRT_ON == 1)) {
--		setting_info->video_device_status =
--			viaparinfo->crt_setting_info->iga_path;
--	} else if ((viaparinfo->video_on_dvi == 1) && (viafb_DVI_ON == 1)) {
--		setting_info->video_device_status =
--			viaparinfo->tmds_setting_info->iga_path;
--	} else if ((viaparinfo->video_on_lcd == 1) && (viafb_LCD_ON == 1)) {
--		setting_info->video_device_status =
--			viaparinfo->lvds_setting_info->iga_path;
--	} else {
--		setting_info->video_device_status = 0;
--	}
- 
- 	setting_info->samm_status = viafb_SAMM_ON;
- 	setting_info->primary_device = get_primary_device();
-@@ -1606,24 +1553,6 @@ static void parse_active_dev(void)
- 	}
- }
- 
--static void parse_video_dev(void)
--{
--	viaparinfo->video_on_crt = STATE_OFF;
--	viaparinfo->video_on_dvi = STATE_OFF;
--	viaparinfo->video_on_lcd = STATE_OFF;
--
--	if (!strncmp(viafb_video_dev, "CRT", 3)) {
--		/* Video on CRT */
--		viaparinfo->video_on_crt = STATE_ON;
--	} else if (!strncmp(viafb_video_dev, "DVI", 3)) {
--		/* Video on DVI */
--		viaparinfo->video_on_dvi = STATE_ON;
--	} else if (!strncmp(viafb_video_dev, "LCD", 3)) {
--		/* Video on LCD */
--		viaparinfo->video_on_lcd = STATE_ON;
--	}
--}
--
- static int parse_port(char *opt_str, int *output_interface)
- {
- 	if (!strncmp(opt_str, "DVP0", 4))
-@@ -2054,7 +1983,6 @@ static int __devinit via_pci_probe(void)
- 	if (viafb_dual_fb)
- 		viafb_SAMM_ON = 1;
- 	parse_active_dev();
--	parse_video_dev();
- 	parse_lcd_port();
- 	parse_dvi_port();
- 
-@@ -2354,8 +2282,6 @@ static int __init viafb_setup(char *options)
- 		else if (!strncmp(this_opt, "viafb_lcd_mode=", 15))
- 			strict_strtoul(this_opt + 15, 0,
- 				(unsigned long *)&viafb_lcd_mode);
--		else if (!strncmp(this_opt, "viafb_video_dev=", 16))
--			viafb_video_dev = kstrdup(this_opt + 16, GFP_KERNEL);
- 		else if (!strncmp(this_opt, "viafb_lcd_port=", 15))
- 			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
- 		else if (!strncmp(this_opt, "viafb_dvi_port=", 15))
-@@ -2476,9 +2402,6 @@ module_param(viafb_lcd_mode, int, 0);
- MODULE_PARM_DESC(viafb_lcd_mode,
- 	"Set Flat Panel mode(Default=OPENLDI)");
- 
--module_param(viafb_video_dev, charp, 0);
--MODULE_PARM_DESC(viafb_video_dev, "Specify video devices.");
--
- module_param(viafb_lcd_port, charp, 0);
- MODULE_PARM_DESC(viafb_lcd_port, "Specify LCD output port.");
- 
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index e5a247c..cd871f9 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -61,12 +61,6 @@ struct viafb_par {
- 	struct lvds_setting_information *lvds_setting_info;
- 	struct lvds_setting_information *lvds_setting_info2;
- 	struct chip_information *chip_info;
--
--	/* some information related to video playing */
--	int video_on_crt;
--	int video_on_dvi;
--	int video_on_lcd;
--
- };
- 
- extern unsigned int viafb_second_virtual_yres;
--- 
-1.6.3.2
+    Here is the output of lspci -vvv
+    01:0c.0 VGA compatible controller: ATI Technologies Inc Radeon RV100
+QY [Radeon 7000/VE] (prog-if 00 [VGA controller])
+            Subsystem: ATI Technologies Inc Device 013b
+            Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping+ SERR- FastB2B- DisINTx-
+            Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
+>TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+            Interrupt: pin A routed to IRQ 18
+            Region 0: Memory at d8000000 (32-bit, prefetchable) [size=128M]
+            Region 1: I/O ports at dc00 [size=256]
+            Region 2: Memory at fdee0000 (32-bit, non-prefetchable)
+[size=64K]
+            [virtual] Expansion ROM at fde00000 [disabled] [size=128K]
+            Capabilities: [50] Power Management version 2
+                    Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                    Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+            Kernel modules: radeonfb
+
+    Can you or anyone give a hint on what I might be doing wrong:
+modprobe radeonfb mode_option=800x600-16 panel_yres=600
+    Or could this be some kind of hardware issue ?
+
+    Thanks a lot for your help,
+
+Regards,
+
+Rui Santos
+http://www.ruisantos.com/
+
+Veni, vidi, Linux!
+
+
+
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with 
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

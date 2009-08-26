@@ -1,98 +1,46 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb cannot map FB
-Date: Wed, 26 Aug 2009 19:54:25 +1000
-Message-ID: <1251280465.1379.64.camel@pasglop>
-References: <4A92EDDB.6040806@grupopie.com>
-Mime-Version: 1.0
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Subject: [PATCH 1/3] viafb: remove LVDS initialization
+Date: Wed, 26 Aug 2009 17:29:11 +0000
+Message-ID: <1251307753-5209-1-git-send-email-FlorianSchandinat@gmx.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752426AbZHZR0V@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <benh@kernel.crashing.org>) id 1MgFDe-0004H8-5D
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Aug 2009 09:55:06 +0000
-Received: from gate.crashing.org ([63.228.1.57])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MgFDY-0006vH-E6
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 26 Aug 2009 09:55:06 +0000
-In-Reply-To: <4A92EDDB.6040806@grupopie.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Rui Santos <rsantos@grupopie.com>
-Cc: Linux FB-Devel <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Mon, 2009-08-24 at 20:45 +0100, Rui Santos wrote:
-> Dear Benjamin Herrenschmidt, dear mailing list subscribers,
-> 
->      I'm trying to load radeonfb for an RV100 QY chipset. Whatever I
-> type in the modprobe I always get:
->        radeonfb (0000:01:0c.0): cannot map FB
->        radeonfb: probe of 0000:01:0c.0 failed with error -5
+viafb: remove LVDS initialization
 
-I suspect your BIOS isn't initializing the secondary card, radeonfb is
-thus unable to use it.
+At least for VX800 this initialization is not very good as some parts of
+the register are written with reserved values. This makes the display go
+white in some configurations and not usable until the framebuffer is
+removed. It's better to not initialize it as it allows to use a
+previously (by BIOS) correctly configured display.
+This patch makes some displays work but might cause problems on others.
+This is bad but can not be easily avoided. If this causes some
+regressions it's probably the best to fix it in the 'active' display
+setup code.
 
-However, you probably don't need radeonfb. X.org should be able to get
-it going as a secondary just fine, but your text consoles will have to
-remain on the intel.
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ viamode.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-In the long run (though it might already work with latest upstream), the
-new radeon KMS should be able to initialize those.
-
-Cheers,
-Ben.
-
->     I've tried latest 2.6.27.x and 2.6.30.x kernels. This a secondary
-> video card that I would like to connect a monitor to. The first video
-> card is an Intel 915G, which is working with vesafb.
-> 
->     Here is the output of lspci -vvv
->     01:0c.0 VGA compatible controller: ATI Technologies Inc Radeon RV100
-> QY [Radeon 7000/VE] (prog-if 00 [VGA controller])
->             Subsystem: ATI Technologies Inc Device 013b
->             Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop-
-> ParErr- Stepping+ SERR- FastB2B- DisINTx-
->             Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
-> >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->             Interrupt: pin A routed to IRQ 18
->             Region 0: Memory at d8000000 (32-bit, prefetchable) [size=128M]
->             Region 1: I/O ports at dc00 [size=256]
->             Region 2: Memory at fdee0000 (32-bit, non-prefetchable)
-> [size=64K]
->             [virtual] Expansion ROM at fde00000 [disabled] [size=128K]
->             Capabilities: [50] Power Management version 2
->                     Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
-> PME(D0-,D1-,D2-,D3hot-,D3cold-)
->                     Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->             Kernel modules: radeonfb
-> 
->     Can you or anyone give a hint on what I might be doing wrong:
-> modprobe radeonfb mode_option=800x600-16 panel_yres=600
->     Or could this be some kind of hardware issue ?
-> 
->     Thanks a lot for your help,
-> 
-> Regards,
-> 
-> Rui Santos
-> http://www.ruisantos.com/
-> 
-> Veni, vidi, Linux!
-> 
-
-
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with 
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+index 464903c..fbc2013 100644
+--- a/drivers/video/via/viamode.c
++++ b/drivers/video/via/viamode.c
+@@ -313,8 +313,7 @@ struct io_reg CX700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
+ {VIACR, CR96, 0xFF, 0x00},
+ {VIACR, CR97, 0xFF, 0x00},
+ {VIACR, CR99, 0xFF, 0x00},
+-{VIACR, CR9B, 0xFF, 0x00},
+-{VIACR, CRD2, 0xFF, 0xFF}	/* TMDS/LVDS control register.         */
++{VIACR, CR9B, 0xFF, 0x00}
+ };
+ 
+ /* Video Mode Table */
+-- 
+1.6.3.2

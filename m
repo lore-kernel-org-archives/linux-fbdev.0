@@ -1,22 +1,22 @@
-From: Alessio Sangalli <alesan@manoweb.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Subject: Re: open and close semanthics
-Date: Thu, 27 Aug 2009 15:52:37 -0700
-Message-ID: <4A970E35.4000903@manoweb.com>
+Date: Fri, 28 Aug 2009 11:43:28 +0200
+Message-ID: <4A97A6C0.1000006@gmx.de>
 References: <4A946A59.20307@manoweb.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <alesan@manoweb.com>) id 1Mgnpw-0003hk-3z
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <FlorianSchandinat@gmx.de>) id 1Mgxzd-0007PW-SA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Aug 2009 22:52:56 +0000
-Received: from moutng.kundenserver.de ([212.227.126.187])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Mgnpp-0000Fq-Dl for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 27 Aug 2009 22:52:56 +0000
+	Fri, 28 Aug 2009 09:43:37 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 29vjzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MgxzY-0007fR-Oo for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 28 Aug 2009 09:43:37 +0000
 In-Reply-To: <4A946A59.20307@manoweb.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,16 +27,14 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: Alessio Sangalli <alesan@manoweb.com>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-No indications on this request?
-thank you
-Alessio
+Hi,
 
+this is not authoritative but I hope that's better than no answer:
 
-
-
-Alessio Sangalli wrote:
+Alessio Sangalli schrieb:
 > Hi, can somebody give me an authoritative answer:
 > what is the semanthics associated to the "open" and "release" (close) calls?
 > 
@@ -45,6 +43,21 @@ Alessio Sangalli wrote:
 > 
 > Should those functions keep a "counter" of how many programs opened it?
 
+I'd say that's not well defined. skeletonfb lists them even as optional. 
+I've read that some drivers use it for mode changes, some keep counters 
+and others just return 0.
+If you are writing a driver: use it as you need it or don't use it at all.
+If you write something that needs this behavior: there is none you can 
+expect along all drivers, sorry.
+
+For more information:
+http://www.linux-fbdev.org/HOWTO/4.html
+<linux kernel tree>/drivers/video/skeletonfb.c
+
+
+Regards,
+
+Florian Tobias Schandinat
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

@@ -1,33 +1,25 @@
-From: Chris Jones <cjns1989@gmail.com>
-Subject: Turn off LCD back light.
-Date: Mon, 31 Aug 2009 15:23:09 -0400
-Message-ID: <20090831192309.GA6937@turki.gavron.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Subject: Re: [OT] - Is the sister "user" list still
+	alive?
+Date: Mon, 31 Aug 2009 21:26:44 +0200
+Message-ID: <4A9C23F4.6030408@gmx.de>
+References: <20090831175522.GB7217@turki.gavron.org>
+	<20090831110124.ea7ae208.rdunlap@xenotime.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <cjns1989@gmail.com>) id 1MiCTH-0000p2-Q7
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <FlorianSchandinat@gmx.de>) id 1MiCWr-00033H-3s
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 19:23:19 +0000
-Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MiCTD-0004tx-S1 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 19:23:19 +0000
-Received: from turki.gavron.org
-	(ool-45704694.dyn.optonline.net [69.112.70.148]) by
-	mta4.srv.hcvlny.cv.net
-	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
-	with ESMTP id <0KP900BWN9ULOW10@mta4.srv.hcvlny.cv.net> for
-	linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 15:23:10 -0400 (EDT)
-Received: from gavron by turki.gavron.org with local (Exim 4.69)
-	(envelope-from <cjns1989@gmail.com>)
-	id 1MiCT7-0005fw-9Q	for linux-fbdev-devel@lists.sourceforge.net; Mon,
-	31 Aug 2009 15:23:09 -0400
-Content-disposition: inline
+	Mon, 31 Aug 2009 19:27:01 +0000
+Received: from mail.gmx.net ([213.165.64.20])
+	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MiCWm-0001Bd-IL for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 31 Aug 2009 19:27:01 +0000
+In-Reply-To: <20090831110124.ea7ae208.rdunlap@xenotime.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,44 +29,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hopefully, this is the correct place to ask such questions - I tried the
-fbdev-users mailing list a couple of days ago, but is looks like it's
-not currently very active.
+Hi,
 
-I would like my laptop's  LCD panel to switch itself off automatically
-after a few minutes of inactivity.
+Randy Dunlap schrieb:
+> On Mon, 31 Aug 2009 13:55:22 -0400 Chris Jones wrote:
+> 
+>> I posted on linux-fbdev-users list re: an issued with dpms a couple of
+>> days ago and I was wondering if anyone is still subscribed to this list
+>> apart from myself.
+> 
+> Hi,
+> The -users mailing list has had 12 postings in 2009.
+> I'd say it's mostly dead.  Just use this (fbdev-devel) list.
 
-The /etc/kbd/config file specifies:
+After having a look at the archive I agree.
+If this is the consensus wouldn't it be a good idea to shut the users 
+list down and point to the devel mailing list to avoid misleading 
+anyone? (perhaps -announce too?)
 
-BLANK_DPMS=on
-POWERDOWN_TIME=2
 
-The /etc/init.d/console-screen.kbd.sh script appears to issue a setterm
-command with the above options a boot time, yet nothing happens.
+Regards,
 
-I issued the corresponding "setterm" command manually also to no effect.
-
-Is there something that I need to configure in the linux kernel?
-
-Is this a limitation of the frambuffer console with the atyfb driver?
-
-Manually executing "vbetool dpms off" does the trick, so it doesn't look
-like this is a hardware limitation per se.
-
-The video card is an ATI Technologies Rage Mobility P/M AGP 2x (rev 64).
-
-Relevant (?) software:
-
-linux-image      :       2.6.26-1-686
-acpid            :       1.0.8-1
-util-linux       :       2.13.1.1-1
-kbd              :       1.14.1-4
-
-Thanks,
-
-CJ.
+Florian Tobias Schandinat
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

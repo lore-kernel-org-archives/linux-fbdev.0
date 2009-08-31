@@ -1,36 +1,32 @@
 From: Chris Jones <cjns1989@gmail.com>
-Subject: Re: [OT] - Is the sister "user" list
-	still	alive?
-Date: Mon, 31 Aug 2009 14:45:46 -0400
-Message-ID: <20090831184546.GC7217@turki.gavron.org>
-References: <20090831175522.GB7217@turki.gavron.org>
-	<20090831110124.ea7ae208.rdunlap@xenotime.net>
+Subject: Turn off LCD back light.
+Date: Mon, 31 Aug 2009 15:23:09 -0400
+Message-ID: <20090831192309.GA6937@turki.gavron.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <cjns1989@gmail.com>) id 1MiBt8-0000ME-9j
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <cjns1989@gmail.com>) id 1MiCTH-0000p2-Q7
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 18:45:58 +0000
+	Mon, 31 Aug 2009 19:23:19 +0000
 Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MiBt4-0002pI-12 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 18:45:58 +0000
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MiCTD-0004tx-S1 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 31 Aug 2009 19:23:19 +0000
 Received: from turki.gavron.org
 	(ool-45704694.dyn.optonline.net [69.112.70.148]) by
 	mta4.srv.hcvlny.cv.net
 	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
-	with ESMTP id <0KP90058S84AQ3B0@mta4.srv.hcvlny.cv.net> for
+	with ESMTP id <0KP900BWN9ULOW10@mta4.srv.hcvlny.cv.net> for
 	linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 14:45:47 -0400 (EDT)
+	Mon, 31 Aug 2009 15:23:10 -0400 (EDT)
 Received: from gavron by turki.gavron.org with local (Exim 4.69)
 	(envelope-from <cjns1989@gmail.com>)
-	id 1MiBsw-00086Q-9f	for linux-fbdev-devel@lists.sourceforge.net; Mon,
-	31 Aug 2009 14:45:46 -0400
-In-reply-to: <20090831110124.ea7ae208.rdunlap@xenotime.net>
+	id 1MiCT7-0005fw-9Q	for linux-fbdev-devel@lists.sourceforge.net; Mon,
+	31 Aug 2009 15:23:09 -0400
 Content-disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -43,20 +39,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Aug 31, 2009 at 02:01:24PM EDT, Randy Dunlap wrote:
-> On Mon, 31 Aug 2009 13:55:22 -0400 Chris Jones wrote:
-> 
-> > I posted on linux-fbdev-users list re: an issued with dpms a couple
-> > of days ago and I was wondering if anyone is still subscribed to
-> > this list apart from myself.
+Hopefully, this is the correct place to ask such questions - I tried the
+fbdev-users mailing list a couple of days ago, but is looks like it's
+not currently very active.
 
-> Hi,
-> The -users mailing list has had 12 postings in 2009.
-> I'd say it's mostly dead.  Just use this (fbdev-devel) list.
+I would like my laptop's  LCD panel to switch itself off automatically
+after a few minutes of inactivity.
 
-Thanks, pretty much confirms what I saw in the list's archive.
+The /etc/kbd/config file specifies:
 
-CJ
+BLANK_DPMS=on
+POWERDOWN_TIME=2
+
+The /etc/init.d/console-screen.kbd.sh script appears to issue a setterm
+command with the above options a boot time, yet nothing happens.
+
+I issued the corresponding "setterm" command manually also to no effect.
+
+Is there something that I need to configure in the linux kernel?
+
+Is this a limitation of the frambuffer console with the atyfb driver?
+
+Manually executing "vbetool dpms off" does the trick, so it doesn't look
+like this is a hardware limitation per se.
+
+The video card is an ATI Technologies Rage Mobility P/M AGP 2x (rev 64).
+
+Relevant (?) software:
+
+linux-image      :       2.6.26-1-686
+acpid            :       1.0.8-1
+util-linux       :       2.13.1.1-1
+kbd              :       1.14.1-4
+
+Thanks,
+
+CJ.
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

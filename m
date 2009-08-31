@@ -1,33 +1,27 @@
-From: Chris Jones <cjns1989@gmail.com>
-Subject: [OT] - Is the sister "user" list still alive?
-Date: Mon, 31 Aug 2009 13:55:22 -0400
-Message-ID: <20090831175522.GB7217@turki.gavron.org>
+From: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [OT] - Is the sister "user" list still
+ alive?
+Date: Mon, 31 Aug 2009 11:01:24 -0700
+Message-ID: <20090831110124.ea7ae208.rdunlap@xenotime.net>
+References: <20090831175522.GB7217@turki.gavron.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <cjns1989@gmail.com>) id 1MiB6R-0007fl-7s
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <rdunlap@xenotime.net>) id 1MiBOO-0006XN-QT
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 17:55:39 +0000
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MiB6O-0004UO-Pm for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 17:55:38 +0000
-Received: from turki.gavron.org
-	(ool-45704694.dyn.optonline.net [69.112.70.148]) by
-	mta2.srv.hcvlny.cv.net
-	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
-	with ESMTP id <0KP900EUA5SAH490@mta2.srv.hcvlny.cv.net> for
-	linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 31 Aug 2009 13:55:22 -0400 (EDT)
-Received: from gavron by turki.gavron.org with local (Exim 4.69)
-	(envelope-from <cjns1989@gmail.com>)
-	id 1MiB6A-000737-5R	for linux-fbdev-devel@lists.sourceforge.net; Mon,
-	31 Aug 2009 13:55:22 -0400
-Content-disposition: inline
+	Mon, 31 Aug 2009 18:14:12 +0000
+Received: from xenotime.net ([72.52.64.118])
+	by 3b2kzd1.ch3.sourceforge.com with smtp (Exim 4.69)
+	id 1MiBOI-0002c4-5h for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 31 Aug 2009 18:14:12 +0000
+Received: from chimera.site ([96.253.169.185]) by xenotime.net for
+	<linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 31 Aug 2009 11:01:24 -0700
+In-Reply-To: <20090831175522.GB7217@turki.gavron.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,15 +31,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Chris Jones <cjns1989@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-I posted on linux-fbdev-users list re: an issued with dpms a couple of
-days ago and I was wondering if anyone is still subscribed to this list
-apart from myself.
+On Mon, 31 Aug 2009 13:55:22 -0400 Chris Jones wrote:
 
-Thanks,
+> I posted on linux-fbdev-users list re: an issued with dpms a couple of
+> days ago and I was wondering if anyone is still subscribed to this list
+> apart from myself.
 
-CJ
+Hi,
+The -users mailing list has had 12 postings in 2009.
+I'd say it's mostly dead.  Just use this (fbdev-devel) list.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

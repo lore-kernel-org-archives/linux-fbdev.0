@@ -1,112 +1,103 @@
-From: Daniel Mack <daniel@caiaq.de>
-Subject: Re: [PATCH 4/4] video: add driver for PXA3xx 2D graphics accelerator
-Date: Wed, 2 Sep 2009 23:24:07 +0200
-Message-ID: <20090902212407.GJ9410@buzzloop.caiaq.de>
-References: <1247159091-28697-4-git-send-email-daniel@caiaq.de>
-	<1247159091-28697-5-git-send-email-daniel@caiaq.de>
-	<4A56F02D.1000007@gmail.com>
-	<20090718080736.GL13236@buzzloop.caiaq.de>
-	<4A63E08F.4090409@gmail.com>
-	<20090720102239.GA3809@buzzloop.caiaq.de>
-	<4A645A38.1080008@gmail.com>
-	<20090720134703.GE19257@buzzloop.caiaq.de>
-	<4A64830F.2020701@gmail.com>
-	<20090722120433.GA9464@buzzloop.caiaq.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [OT] - Is the sister "user" list still
+	alive?
+Date: Thu, 3 Sep 2009 08:06:00 +0200
+Message-ID: <10f740e80909022306s5ed591b7qc8229224b72cbca6@mail.gmail.com>
+References: <20090831175522.GB7217@turki.gavron.org>
+	<20090831110124.ea7ae208.rdunlap@xenotime.net>
+	<4A9C23F4.6030408@gmx.de>
+	<20090831123547.f1977036.rdunlap@xenotime.net> <4A9C29E3.40807@gmx.de>
+	<20090831125724.7c2357db.rdunlap@xenotime.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20090722120433.GA9464@buzzloop.caiaq.de>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1Mj5SY-0005Mm-45
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 03 Sep 2009 06:06:14 +0000
+Received: from mail-px0-f195.google.com ([209.85.216.195])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Mj5SR-0006yw-U8 for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 03 Sep 2009 06:06:14 +0000
+Received: by pxi33 with SMTP id 33so1585223pxi.11
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 02 Sep 2009 23:06:01 -0700 (PDT)
+In-Reply-To: <20090831125724.7c2357db.rdunlap@xenotime.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Sven Neumann <s.neumann@raumfeld.com>, linux-fbdev-devel@lists.sourceforge.net, dok@directfb.org, linux-arm-kernel@lists.infradead.org, Eric Miao <eric.y.miao@gmail.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: wyo@users.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Wed, Jul 22, 2009 at 02:04:33PM +0200, Daniel Mack wrote:
-> On Mon, Jul 20, 2009 at 10:45:35PM +0800, Eric Miao wrote:
-> > Daniel Mack wrote:
-> > >> Cool - I'll find a time slot to test this, and maybe someone else wants to
-> > >> have a try either. Thanks.
-> > > 
-> > > Will that accelerator ID patch (the one I sent today) go thru your
-> > > channel or are the fbdev people supposed to pick it?
-> > > 
-> > 
-> > Better to go through fbdev people - or at least I need an Ack before it
-> > goes through my tree.
-> > 
-> > Krzysztof Cc'ed.
-> 
-> Krzysztof,
-> 
-> resending this because I don't known whether you got the first copy of
-> that patch.
+On 2009-08-31, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> On Mon, 31 Aug 2009 21:52:03 +0200 Florian Tobias Schandinat wrote:
+>> Randy Dunlap schrieb:
+>> > On Mon, 31 Aug 2009 21:26:44 +0200 Florian Tobias Schandinat wrote:
+>> >> Randy Dunlap schrieb:
+>> >>> On Mon, 31 Aug 2009 13:55:22 -0400 Chris Jones wrote:
+>> >>>> I posted on linux-fbdev-users list re: an issued with dpms a couple
+>> >>>> of
+>> >>>> days ago and I was wondering if anyone is still subscribed to this
+>> >>>> list
+>> >>>> apart from myself.
+>> >>> Hi,
+>> >>> The -users mailing list has had 12 postings in 2009.
+>> >>> I'd say it's mostly dead.  Just use this (fbdev-devel) list.
+>> >> After having a look at the archive I agree.
+>> >> If this is the consensus wouldn't it be a good idea to shut the users
+>> >> list down and point to the devel mailing list to avoid misleading
+>> >> anyone? (perhaps -announce too?)
+>> >
+>> > Yes, that's a good idea.  Is it possible?
+>> > It used to be nearly impossible to kill off a mailing list at
+>> > sourceforge.net...
+>>
+>> I think it is.
+>> I was subscribed to a mailing list of this project:
+>> http://sourceforge.net/projects/rt2400/
+>> until they decided to move away from sourceforge and in this process
+>> shut the mailing lists they had there down. So it seems possible
+>> although I don't know the technical details how to do this.
+>
+> OK, thanks.
+>
+> Hi Otto,
+> Do you still maintain linux-fbdev.sf.net ?
+>
+> If so:  the fbdev-users mailing list is no longer being used.
+> Please try to shut it down and don't mention it on the FBDEV project web
+> pages.
+> Also, the fbdev-devel mailing list should be added to the project web pages
+> (linux-fbdev-devel@lists.sourceforge.net).
 
-I'm sending this patch for the the forth time now, this time with the
-fbdev-devel list copied. Maybe that helps.
+My plan was to merge both lists and move them to vger. That would also
+relieve me from
+having to moderate postings from non-subscribers.
 
-This is fairly simple, but it's blocking the pxa3xx-gcu driver to be
-merged.
+Unfortunately that hasn't happened yet due to my lack of time...
 
-Any feedback is appreciated.
+Gr{oetje,eeting}s,
 
-Thanks,
-Daniel
+						Geert
 
-From 8b200756251e3dcdc91d506e9dbc9846ccaa91d3 Mon Sep 17 00:00:00 2001
-From: Daniel Mack <daniel@caiaq.de>
-Date: Mon, 20 Jul 2009 11:18:43 +0200
-Subject: [PATCH] video: add PXA3xx accelerator ID
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Add ID 99 for PXA3xx frame buffers and use it in pxafb when running on a
-pxa with acceleration enabled.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Eric Miao <eric.miao@marvell.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Cc: Dennis Oliver Kropp <dok@directfb.org>
-Cc: Sven Neumann <s.neumann@raumfeld.com>
----
- drivers/video/pxafb.c |    5 +++++
- include/linux/fb.h    |    1 +
- 2 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 3951cc5..922ed8a 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -2083,6 +2083,11 @@ static int __devinit pxafb_probe(struct platform_device *dev)
- 		goto failed;
- 	}
- 
-+#ifdef CONFIG_PXA3XX_GCU
-+	if (cpu_is_pxa3xx())
-+		fbi->fb.fix.accel = FB_ACCEL_PXA3XX;
-+#endif
-+
- 	fbi->backlight_power = inf->pxafb_backlight_power;
- 	fbi->lcd_power = inf->pxafb_lcd_power;
- 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index f847df9..a34bdf5 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -133,6 +133,7 @@ struct dentry;
- #define FB_ACCEL_NEOMAGIC_NM2230 96	/* NeoMagic NM2230              */
- #define FB_ACCEL_NEOMAGIC_NM2360 97	/* NeoMagic NM2360              */
- #define FB_ACCEL_NEOMAGIC_NM2380 98	/* NeoMagic NM2380              */
-+#define FB_ACCEL_PXA3XX		 99	/* PXA3xx			*/
- 
- #define FB_ACCEL_SAVAGE4        0x80	/* S3 Savage4                   */
- #define FB_ACCEL_SAVAGE3D       0x81	/* S3 Savage3D                  */
--- 
-1.6.3.1
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with 
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

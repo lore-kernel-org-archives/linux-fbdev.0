@@ -1,103 +1,310 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [OT] - Is the sister "user" list still
-	alive?
-Date: Thu, 3 Sep 2009 08:06:00 +0200
-Message-ID: <10f740e80909022306s5ed591b7qc8229224b72cbca6@mail.gmail.com>
-References: <20090831175522.GB7217@turki.gavron.org>
-	<20090831110124.ea7ae208.rdunlap@xenotime.net>
-	<4A9C23F4.6030408@gmx.de>
-	<20090831123547.f1977036.rdunlap@xenotime.net> <4A9C29E3.40807@gmx.de>
-	<20090831125724.7c2357db.rdunlap@xenotime.net>
+From: Pawel Osciak <p.osciak@samsung.com>
+Subject: [PATCH v2 3/3] [ARM] s3c-fb: Added wait for VSYNC support.
+Date: Thu, 03 Sep 2009 14:44:51 +0200
+Message-ID: <E4D3F24EA6C9E54F817833EAE0D912AC077065804B@bssrvexch01.BS.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert.uytterhoeven@gmail.com>) id 1Mj5SY-0005Mm-45
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Sep 2009 06:06:14 +0000
-Received: from mail-px0-f195.google.com ([209.85.216.195])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Mj5SR-0006yw-U8 for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 03 Sep 2009 06:06:14 +0000
-Received: by pxi33 with SMTP id 33so1585223pxi.11
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 02 Sep 2009 23:06:01 -0700 (PDT)
-In-Reply-To: <20090831125724.7c2357db.rdunlap@xenotime.net>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-language: en-US
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: wyo@users.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Pawel Osciak <p.osciak@samsung.com>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "ben-linux@fluff.org" <ben-linux@fluff.org>, "adaplas@gmail.com" <adaplas@gmail.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On 2009-08-31, Randy Dunlap <rdunlap@xenotime.net> wrote:
-> On Mon, 31 Aug 2009 21:52:03 +0200 Florian Tobias Schandinat wrote:
->> Randy Dunlap schrieb:
->> > On Mon, 31 Aug 2009 21:26:44 +0200 Florian Tobias Schandinat wrote:
->> >> Randy Dunlap schrieb:
->> >>> On Mon, 31 Aug 2009 13:55:22 -0400 Chris Jones wrote:
->> >>>> I posted on linux-fbdev-users list re: an issued with dpms a couple
->> >>>> of
->> >>>> days ago and I was wondering if anyone is still subscribed to this
->> >>>> list
->> >>>> apart from myself.
->> >>> Hi,
->> >>> The -users mailing list has had 12 postings in 2009.
->> >>> I'd say it's mostly dead.  Just use this (fbdev-devel) list.
->> >> After having a look at the archive I agree.
->> >> If this is the consensus wouldn't it be a good idea to shut the users
->> >> list down and point to the devel mailing list to avoid misleading
->> >> anyone? (perhaps -announce too?)
->> >
->> > Yes, that's a good idea.  Is it possible?
->> > It used to be nearly impossible to kill off a mailing list at
->> > sourceforge.net...
->>
->> I think it is.
->> I was subscribed to a mailing list of this project:
->> http://sourceforge.net/projects/rt2400/
->> until they decided to move away from sourceforge and in this process
->> shut the mailing lists they had there down. So it seems possible
->> although I don't know the technical details how to do this.
->
-> OK, thanks.
->
-> Hi Otto,
-> Do you still maintain linux-fbdev.sf.net ?
->
-> If so:  the fbdev-users mailing list is no longer being used.
-> Please try to shut it down and don't mention it on the FBDEV project web
-> pages.
-> Also, the fbdev-devel mailing list should be added to the project web pages
-> (linux-fbdev-devel@lists.sourceforge.net).
+Added FBIO_WAITFORVSYNC ioctl that allows sleeping on vsync
+waitqueue.
 
-My plan was to merge both lists and move them to vger. That would also
-relieve me from
-having to moderate postings from non-subscribers.
+Reviewed-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
 
-Unfortunately that hasn't happened yet due to my lack of time...
+---
+ drivers/video/s3c-fb.c |  170 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 168 insertions(+), 2 deletions(-)
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with 
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 3dd4327..001a1a1 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -21,6 +21,8 @@
+ #include <linux/clk.h>
+ #include <linux/fb.h>
+ #include <linux/io.h>
++#include <linux/uaccess.h>
++#include <linux/interrupt.h>
+ 
+ #include <mach/map.h>
+ #include <mach/regs-fb.h>
+@@ -48,6 +50,13 @@
+ 	__raw_writel(v, r); } while(0)
+ #endif /* FB_S3C_DEBUG_REGWRITE */
+ 
++/* Bit in irq_flags used to mark that interrupts are activated in device */
++#define S3C_FB_IRQ_ENABLED_BIT	0
++
++#ifndef FBIO_WAITFORVSYNC
++#define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
++#endif
++
+ struct s3c_fb;
+ 
+ /**
+@@ -59,6 +68,7 @@ struct s3c_fb;
+  * @pseudo_palette: For use in TRUECOLOUR modes for entries 0..15/
+  * @index: The window number of this window.
+  * @palette: The bitfields for changing r/g/b into a hardware palette entry.
++ * @vsync: Vsync handling helper.
+  */
+ struct s3c_fb_win {
+ 	struct s3c_fb_pd_win	*windata;
+@@ -72,6 +82,16 @@ struct s3c_fb_win {
+ };
+ 
+ /**
++ * struct s3c_fb_vsync - vsync information for display.
++ * @vsync_queue: A queue for processes waiting for vsync.
++ * @vsync_count: Vsync interrupt count.
++ */
++struct s3c_fb_vsync {
++	wait_queue_head_t	vsync_queue;
++	unsigned long		vsync_count;
++};
++
++/**
+  * struct s3c_fb - overall hardware state of the hardware
+  * @dev: The device that we bound to, for printing, etc.
+  * @regs_res: The resource we claimed for the IO registers.
+@@ -80,6 +100,8 @@ struct s3c_fb_win {
+  * @enabled: A bitmask of enabled hardware windows.
+  * @pdata: The platform configuration data passed with the device.
+  * @windows: The hardware windows that have been claimed.
++ * @irq_no: IRQ number for the device (acquired from platform data).
++ * @vsync_info: VSYNC-related information (count, queues...)
+  */
+ struct s3c_fb {
+ 	struct device		*dev;
+@@ -87,10 +109,15 @@ struct s3c_fb {
+ 	struct clk		*bus_clk;
+ 	void __iomem		*regs;
+ 
+-	unsigned char		 enabled;
++	unsigned char		enabled;
+ 
+ 	struct s3c_fb_platdata	*pdata;
+ 	struct s3c_fb_win	*windows[S3C_FB_MAX_WIN];
++
++	unsigned int		irq_no;
++	unsigned long		irq_flags;
++
++	struct s3c_fb_vsync	vsync_info;
+ };
+ 
+ /**
+@@ -643,6 +670,103 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ }
+ 
+ /**
++ * s3c_fb_enable_irq() - enable interrupts in hardware.
++ * @sfb: The base resources for the hardware.
++ */
++static int s3c_fb_enable_irq(struct s3c_fb *sfb)
++{
++	u32	     irq_ctrl_reg;
++	void __iomem *regs = sfb->regs;
++
++	if (!test_and_set_bit(S3C_FB_IRQ_ENABLED_BIT, &sfb->irq_flags)) {
++		/* IRQ was disabled, enable it */
++		irq_ctrl_reg = readl(regs + VIDINTCON0);
++
++		irq_ctrl_reg |= VIDINTCON0_INT_ENABLE;
++		irq_ctrl_reg |= VIDINTCON0_INT_FRAME;
++
++		irq_ctrl_reg &= ~VIDINTCON0_FRAMESEL0_MASK;
++		irq_ctrl_reg |= VIDINTCON0_FRAMESEL0_VSYNC;
++		irq_ctrl_reg &= ~VIDINTCON0_FRAMESEL1_MASK;
++		irq_ctrl_reg |= VIDINTCON0_FRAMESEL1_NONE;
++
++		writel(irq_ctrl_reg, regs + VIDINTCON0);
++	}
++
++	return 0;
++}
++
++/**
++ * s3c_fb_disable_irq() - disable interrupts in hardware.
++ * @sfb: The base resources for the hardware.
++ */
++static int s3c_fb_disable_irq(struct s3c_fb *sfb)
++{
++	u32	     irq_ctrl_reg;
++	void __iomem *regs = sfb->regs;
++
++	if (test_and_clear_bit(S3C_FB_IRQ_ENABLED_BIT, &sfb->irq_flags)) {
++		/* IRQ was enabled, disable it */
++		irq_ctrl_reg = readl(regs + VIDINTCON0);
++
++		irq_ctrl_reg &= ~VIDINTCON0_INT_FRAME;
++		irq_ctrl_reg &= ~VIDINTCON0_INT_ENABLE;
++
++		writel(irq_ctrl_reg, regs + VIDINTCON0);
++	}
++
++	return 0;
++}
++
++static irqreturn_t s3c_fb_interrupt(int irq, void *dev_id)
++{
++	u32	      irq_sts_reg;
++	struct s3c_fb *sfb = dev_id;
++	void __iomem  *regs = sfb->regs;
++
++	irq_sts_reg = readl(regs + VIDINTCON1);
++
++	if (irq_sts_reg & VIDINTCON1_INT_FRAME) {
++
++		/* VSYNC interrupt, accept it */
++		writel(VIDINTCON1_INT_FRAME, regs + VIDINTCON1);
++
++		sfb->vsync_info.vsync_count++;
++		wake_up_interruptible(&sfb->vsync_info.vsync_queue);
++	}
++
++	/* We support only waiting for VSYNC interrupt for now,
++	 * so it's safe to disable irqs here. */
++	s3c_fb_disable_irq(sfb);
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * s3c_fb_wait_for_vsync() - sleep until next VSYNC interrupt or timeout.
++ * @sfb: The base resources for the hardware.
++ * @crtc: Head index.
++ */
++static int s3c_fb_wait_for_vsync(struct s3c_fb *sfb, u32 crtc)
++{
++	unsigned long count;
++	int ret;
++
++	if (crtc != 0)
++		return -ENODEV;
++
++	s3c_fb_enable_irq(sfb);
++	count = sfb->vsync_info.vsync_count;
++	ret = wait_event_interruptible_timeout(sfb->vsync_info.vsync_queue,
++				       count != sfb->vsync_info.vsync_count,
++				       HZ / 10);
++	if (ret == 0)
++		return -ETIMEDOUT;
++
++	return 0;
++}
++
++/**
+  * s3c_fb_pan_display() - Pan the display.
+  *
+  * Note, that the offsets can be written to the device at any time, as their
+@@ -697,6 +821,27 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
+ 	return 0;
+ }
+ 
++static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
++			unsigned long arg)
++{
++	struct s3c_fb_win *win = info->par;
++	struct s3c_fb *sfb = win->parent;
++
++	switch (cmd) {
++	case FBIO_WAITFORVSYNC: {
++		u32 crtc;
++		if (get_user(crtc, (u32 __user *)arg))
++			return -EFAULT;
++
++		return s3c_fb_wait_for_vsync(sfb, crtc);
++		}
++	default:
++		return -ENOTTY;
++	}
++
++	return 0;
++}
++
+ static struct fb_ops s3c_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_check_var	= s3c_fb_check_var,
+@@ -706,6 +851,7 @@ static struct fb_ops s3c_fb_ops = {
+ 	.fb_fillrect	= cfb_fillrect,
+ 	.fb_copyarea	= cfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
++	.fb_ioctl	= s3c_fb_ioctl,
+ 	.fb_pan_display	= s3c_fb_pan_display,
+ };
+ 
+@@ -931,6 +1077,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	sfb->dev = dev;
+ 	sfb->pdata = pd;
++	init_waitqueue_head(&sfb->vsync_info.vsync_queue);
+ 
+ 	sfb->bus_clk = clk_get(dev, "lcd");
+ 	if (IS_ERR(sfb->bus_clk)) {
+@@ -962,6 +1109,20 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 		goto err_req_region;
+ 	}
+ 
++	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (!res) {
++		dev_err(dev, "failed to acquire irq resource\n");
++		ret = -ENOENT;
++		goto err_ioremap;
++	}
++	sfb->irq_no = res->start;
++	ret = request_irq(sfb->irq_no, s3c_fb_interrupt,
++			  0, "s3c_fb", sfb);
++	if (ret) {
++		dev_err(dev, "irq request failed\n");
++		goto err_ioremap;
++	}
++
+ 	dev_dbg(dev, "got resources (regs %p), probing windows\n", sfb->regs);
+ 
+ 	/* setup gpio and output polarity controls */
+@@ -986,7 +1147,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 			dev_err(dev, "failed to create window %d\n", win);
+ 			for (; win >= 0; win--)
+ 				s3c_fb_release_win(sfb, sfb->windows[win]);
+-			goto err_ioremap;
++			goto err_irq;
+ 		}
+ 	}
+ 
+@@ -994,6 +1155,9 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_irq:
++	free_irq(sfb->irq_no, sfb);
++
+ err_ioremap:
+ 	iounmap(sfb->regs);
+ 
+@@ -1026,6 +1190,8 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 		if (sfb->windows[win])
+ 			s3c_fb_release_win(sfb, sfb->windows[win]);
+ 
++	free_irq(sfb->irq_no, sfb);
++
+ 	iounmap(sfb->regs);
+ 
+ 	clk_disable(sfb->bus_clk);
+-- 
+1.6.4.2.253.g0b1fac

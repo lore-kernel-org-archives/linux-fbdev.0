@@ -1,107 +1,122 @@
-From: Eric Witcher <ewitcher@mindspring.com>
-Subject: Re: [RFC][PATCH] omapfb: Reorder Register_framebuffer call
-Date: Fri, 4 Sep 2009 21:41:12 -0400
-Message-ID: <D67BC5B6-D17B-45FE-9B6A-806CEC6CA785@mindspring.com>
-References: <A24693684029E5489D1D202277BE89444BA0DB52@dlee02.ent.ti.com> <5A47E75E594F054BAF48C5E4FC4B92AB030A0071B9@dbde02.ent.ti.com> <1252071268.2507.1.camel@blitz>
-Mime-Version: 1.0 (Apple Message framework v936)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [OT] - Is the sister "user" list still
+	alive?
+Date: Sat, 5 Sep 2009 08:42:07 +0200
+Message-ID: <10f740e80909042342h51f4d01exc1745fce0b74795f@mail.gmail.com>
+References: <20090831175522.GB7217@turki.gavron.org>
+	<20090831110124.ea7ae208.rdunlap@xenotime.net>
+	<4A9C23F4.6030408@gmx.de>
+	<20090831123547.f1977036.rdunlap@xenotime.net> <4A9C29E3.40807@gmx.de>
+	<20090831125724.7c2357db.rdunlap@xenotime.net>
+	<10f740e80909022306s5ed591b7qc8229224b72cbca6@mail.gmail.com>
+	<20090903081647.772ed7a2.rdunlap@xenotime.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1252071268.2507.1.camel@blitz>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"; delsp="yes"
-To: Peter Barada <peterb@logicpd.com>
-Cc: "Gadiyar, Anand" <gadiyar@ti.com>, "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Imre Deak <imre.deak@nokia.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1Mjoya-00038D-Vr
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 05 Sep 2009 06:42:20 +0000
+Received: from mail-pz0-f175.google.com ([209.85.222.175])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MjoyU-0001f5-Jb for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 05 Sep 2009 06:42:20 +0000
+Received: by pzk5 with SMTP id 5so1308089pzk.10
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 04 Sep 2009 23:42:08 -0700 (PDT)
+In-Reply-To: <20090903081647.772ed7a2.rdunlap@xenotime.net>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: wyo@users.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-
-On Sep 4, 2009, at 9:34 AM, Peter Barada wrote:
-
-> On Fri, 2009-09-04 at 12:14 +0530, Gadiyar, Anand wrote:
->>> From: Sergio Aguirre <saaguirre@ti.com>
->>>
->>> This fixes the issue in which mm_lock mutex was attempted to be
->>> used without initializing previously.
->>>
->>> Signed-off-by: Sergio Aguirre <saaguirre@ti.com>
+On 2009-09-03, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> On Thu, 3 Sep 2009 08:06:00 +0200 Geert Uytterhoeven wrote:
+>
+>> On 2009-08-31, Randy Dunlap <rdunlap@xenotime.net> wrote:
+>> > On Mon, 31 Aug 2009 21:52:03 +0200 Florian Tobias Schandinat wrote:
+>> >> Randy Dunlap schrieb:
+>> >> > On Mon, 31 Aug 2009 21:26:44 +0200 Florian Tobias Schandinat wrote:
+>> >> >> Randy Dunlap schrieb:
+>> >> >>> On Mon, 31 Aug 2009 13:55:22 -0400 Chris Jones wrote:
+>> >> >>>> I posted on linux-fbdev-users list re: an issued with dpms a
+>> >> >>>> couple
+>> >> >>>> of
+>> >> >>>> days ago and I was wondering if anyone is still subscribed to this
+>> >> >>>> list
+>> >> >>>> apart from myself.
+>> >> >>> Hi,
+>> >> >>> The -users mailing list has had 12 postings in 2009.
+>> >> >>> I'd say it's mostly dead.  Just use this (fbdev-devel) list.
+>> >> >> After having a look at the archive I agree.
+>> >> >> If this is the consensus wouldn't it be a good idea to shut the
+>> >> >> users
+>> >> >> list down and point to the devel mailing list to avoid misleading
+>> >> >> anyone? (perhaps -announce too?)
+>> >> >
+>> >> > Yes, that's a good idea.  Is it possible?
+>> >> > It used to be nearly impossible to kill off a mailing list at
+>> >> > sourceforge.net...
+>> >>
+>> >> I think it is.
+>> >> I was subscribed to a mailing list of this project:
+>> >> http://sourceforge.net/projects/rt2400/
+>> >> until they decided to move away from sourceforge and in this process
+>> >> shut the mailing lists they had there down. So it seems possible
+>> >> although I don't know the technical details how to do this.
+>> >
+>> > OK, thanks.
+>> >
+>> > Hi Otto,
+>> > Do you still maintain linux-fbdev.sf.net ?
+>> >
+>> > If so:  the fbdev-users mailing list is no longer being used.
+>> > Please try to shut it down and don't mention it on the FBDEV project web
+>> > pages.
+>> > Also, the fbdev-devel mailing list should be added to the project web
+>> > pages
+>> > (linux-fbdev-devel@lists.sourceforge.net).
 >>
->> Tested-by: Anand Gadiyar <gadiyar@ti.com>
+>> My plan was to merge both lists and move them to vger. That would also
+>> relieve me from
+>> having to moderate postings from non-subscribers.
 >>
->> This patch on top of current linux-omap kernel allows me to
->> boot with the default SDP defconfig on a 3430 SDP.
+>> Unfortunately that hasn't happened yet due to my lack of time...
 >
-> Tested-by: Peter Barada <peterb@logicpd.com>
->
-> This patch on top of current linux-omap kernel allows me to boot with
-> the LCD enabled on LogicPD's OMAP boards.
->
-Tested-by: Eric Witcher <ewitcher@mindspring.com>
-Ditto for omap3_beagle_defconfig on Beagle Rev. C2
+> Other than asking davem for a new vger mailing list, what do you
+> plan to do?  Did you plan to auto-subscribe people to the new list?
 
->>> ---
->>> drivers/video/omap/omapfb_main.c |   20 +++++++++++---------
->>> 1 files changed, 11 insertions(+), 9 deletions(-)
->>>
->>> diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/ 
->>> omapfb_main.c
->>> index 125e605..60f9482 100644
->>> --- a/drivers/video/omap/omapfb_main.c
->>> +++ b/drivers/video/omap/omapfb_main.c
->>> @@ -1503,12 +1503,21 @@ static int fbinfo_init(struct  
->>> omapfb_device *fbdev, struct fb_info *info)
->>> 	var->rotate	  = def_rotate;
->>> 	var->bits_per_pixel = fbdev->panel->bpp;
->>>
->>> +	r = register_framebuffer(info);
->>> +	if (r != 0) {
->>> +		dev_err(fbdev->dev,
->>> +			"registering framebuffer failed\n");
->>> +		return r;
->>> +	}
->>> +
->>> 	set_fb_var(info, var);
->>> 	set_fb_fix(info);
->>>
->>> 	r = fb_alloc_cmap(&info->cmap, 16, 0);
->>> -	if (r != 0)
->>> +	if (r != 0) {
->>> 		dev_err(fbdev->dev, "unable to allocate color map memory\n");
->>> +		unregister_framebuffer(info);
->>> +	}
->>>
->>> 	return r;
->>> }
->>> @@ -1773,15 +1782,8 @@ static int omapfb_do_probe(struct  
->>> platform_device *pdev,
->>> 	init_state++;
->>>
->>> 	vram = 0;
->>> -	for (i = 0; i < fbdev->mem_desc.region_cnt; i++) {
->>> -		r = register_framebuffer(fbdev->fb_info[i]);
->>> -		if (r != 0) {
->>> -			dev_err(fbdev->dev,
->>> -				"registering framebuffer %d failed\n", i);
->>> -			goto cleanup;
->>> -		}
->>> +	for (i = 0; i < fbdev->mem_desc.region_cnt; i++)
->>> 		vram += fbdev->mem_desc.region[i].size;
->>> -	}
->>>
->>> 	fbdev->state = OMAPFB_ACTIVE;
->>>
->>> -- 
->>> 1.6.3.2
->>>
->>> --
->> To unsubscribe from this list: send the line "unsubscribe linux- 
->> omap" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> -- 
-> Peter Barada <peterb@logicpd.com>
-> Logic Product Development, Inc.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+No auto-subscribe. But setting up an auto-responder on sf.net.
 
+> I would just announce on the old lists that they will be dead
+> in one week's time -- don't try to subscribe people to the new list,
+> let them do that.
+
+OK, I'll ask davem.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with 
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

@@ -1,8 +1,11 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH 1/3] viafb: cleanup viafb_cursor
-Date: Sat,  5 Sep 2009 19:55:55 +0000
-Message-ID: <1252180557-4133-1-git-send-email-FlorianSchandinat@gmx.de>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753171AbZIETyT@vger.kernel.org>
+Subject: [PATCH 3/3] viafb: hardware acceleration initialization cleanup
+Date: Sat,  5 Sep 2009 19:55:57 +0000
+Message-ID: <1252180557-4133-3-git-send-email-FlorianSchandinat@gmx.de>
+References: <1252180557-4133-1-git-send-email-FlorianSchandinat@gmx.de>
+ <1252180557-4133-2-git-send-email-FlorianSchandinat@gmx.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753298AbZIETyb@vger.kernel.org>
+In-Reply-To: <1252180557-4133-2-git-send-email-FlorianSchandinat@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
@@ -11,372 +14,701 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-viafb: cleanup viafb_cursor
+viafb: hardware acceleration initialization cleanup
 
-This patch cleans the hardware cursor handling up. The most notable
-change is that it no longer buffers the values in viacursor but uses the
-ones in cursor instead as they are guaranteed to be always valid.
-Furthermore it uses local instead global variables where possible, moves
-the cursor variable in shared as only one hardware cursor is supported
-and returns an error if memory allocation fails. Last but not least it
-fixes a too small buffer (as u32 has only 4 and not 32 bytes) but this
-did not produce any known problems.
-This is mostly a code cleanup, no negative runtime changes are expected.
+The main motivation of this patch was to merge the three initialization
+functions in one and clean it up. However as some changes in other code
+areas where needed to do it right some small other changes were made.
+Changes to viafb_par:
+io_virt renamed as engine_mmio and moved to shared
+VQ_start renamed as vq_vram_addr and moved to shared
+VQ_end removed as it is easily recalculatable
+
+vq_vram_addr is not strictly needed but keep it to track where we
+allocated video memory. The memory allocated for the virtual queue was
+shrunk to VQ_SIZE as VQ_SIZE+CURSOR_SIZE looked like a bug to me. But to
+be honest I don't have the faintest idea what virtual queues are for in
+the graphic hardware and whether the driver needs them in any way. I
+only know that they aren't directly accessed by the driver and so the
+only potential current use would be as hardware internal buffers. For
+now keep them to avoid regressions and only remove the double cursor
+allocation.
+
+The most changes were caused by renames and the mentioned structure
+changes so the chance of regressions is pretty low.
+The meaning of viafb_accel changed slightly as previously it was changed
+back and forth in the code and allowed to enable the hardware
+acceleration by software if previously disabled. The new behaviour is
+that viafb_accel=0 always prevents hardware acceleration. With
+viafb_accel!=0 the acceleration can be freely choosen by set_var. This
+means viafb_accel is a diagnostic tool and if someone has to use
+viafb_accel=0 the driver needs to be fixed.
+
+As this is mostly a code cleanup no regressions beside the slightly
+change of viafb_accel is expected.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- accel.c    |    4 +-
+ accel.c    |  268 ++++++++++++++++++++++++------------------------------------
+ accel.h    |    8 +-
  global.c   |    1 -
- global.h   |    1 -
- viafbdev.c |  186 +++++++++++++++++++++---------------------------------------
- viafbdev.h |    2 +-
- 5 files changed, 68 insertions(+), 126 deletions(-)
+ hw.h       |    1 -
+ viafbdev.c |   80 ++++++++----------
+ viafbdev.h |    7 +-
+ 6 files changed, 148 insertions(+), 217 deletions(-)
 
 diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index 8ac0251..503f9d8 100644
+index 503f9d8..42ab4b4 100644
 --- a/drivers/video/via/accel.c
 +++ b/drivers/video/via/accel.c
-@@ -331,7 +331,7 @@ void viafb_init_accel(struct viafb_shared *shared)
+@@ -308,9 +308,22 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 	return 0;
+ }
+ 
+-void viafb_init_accel(struct viafb_shared *shared)
++int viafb_init_engine(struct fb_info *info)
+ {
+-	switch (shared->chip_info.gfx_chip_name) {
++	struct viafb_par *viapar = info->par;
++	void __iomem *engine;
++	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
++		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
++
++	engine = ioremap_nocache(info->fix.mmio_start, info->fix.mmio_len);
++	viapar->shared->engine_mmio = engine;
++	if (!engine) {
++		printk(KERN_WARNING "viafb_init_accel: ioremap failed, "
++			"hardware acceleration disabled\n");
++		return -ENOMEM;
++	}
++
++	switch (chip_name) {
+ 	case UNICHROME_CLE266:
+ 	case UNICHROME_K400:
+ 	case UNICHROME_K800:
+@@ -321,186 +334,115 @@ void viafb_init_accel(struct viafb_shared *shared)
+ 	case UNICHROME_K8M890:
+ 	case UNICHROME_P4M890:
+ 	case UNICHROME_P4M900:
+-		shared->hw_bitblt = hw_bitblt_1;
++		viapar->shared->hw_bitblt = hw_bitblt_1;
+ 		break;
+ 	case UNICHROME_VX800:
+-		shared->hw_bitblt = hw_bitblt_2;
++		viapar->shared->hw_bitblt = hw_bitblt_2;
+ 		break;
+ 	default:
+-		shared->hw_bitblt = NULL;
++		viapar->shared->hw_bitblt = NULL;
  	}
  
- 	viaparinfo->fbmem_free -= CURSOR_SIZE;
--	viaparinfo->cursor_start = viaparinfo->fbmem_free;
-+	shared->cursor_vram_addr = viaparinfo->fbmem_free;
- 	viaparinfo->fbmem_used += CURSOR_SIZE;
+-	viaparinfo->fbmem_free -= CURSOR_SIZE;
+-	shared->cursor_vram_addr = viaparinfo->fbmem_free;
+-	viaparinfo->fbmem_used += CURSOR_SIZE;
++	viapar->fbmem_free -= CURSOR_SIZE;
++	viapar->shared->cursor_vram_addr = viapar->fbmem_free;
++	viapar->fbmem_used += CURSOR_SIZE;
  
- 	/* Reverse 8*1024 memory space for cursor image */
-@@ -487,7 +487,7 @@ void viafb_init_2d_engine(void)
- void viafb_hw_cursor_init(void)
- {
+-	/* Reverse 8*1024 memory space for cursor image */
+-	viaparinfo->fbmem_free -= (CURSOR_SIZE + VQ_SIZE);
+-	viaparinfo->VQ_start = viaparinfo->fbmem_free;
+-	viaparinfo->VQ_end = viaparinfo->VQ_start + VQ_SIZE - 1;
+-	viaparinfo->fbmem_used += (CURSOR_SIZE + VQ_SIZE);
+-}
+-
+-void viafb_init_2d_engine(void)
+-{
+-	u32 dwVQStartAddr, dwVQEndAddr;
+-	u32 dwVQLen, dwVQStartL, dwVQEndL, dwVQStartEndH;
++	viapar->fbmem_free -= VQ_SIZE;
++	viapar->shared->vq_vram_addr = viapar->fbmem_free;
++	viapar->fbmem_used += VQ_SIZE;
+ 
+ 	/* Init AGP and VQ regs */
+-	switch (viaparinfo->chip_info->gfx_chip_name) {
++	switch (chip_name) {
+ 	case UNICHROME_K8M890:
+ 	case UNICHROME_P4M900:
+-		writel(0x00100000, viaparinfo->io_virt + VIA_REG_CR_TRANSET);
+-		writel(0x680A0000, viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-		writel(0x02000000, viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
++		writel(0x00100000, engine + VIA_REG_CR_TRANSET);
++		writel(0x680A0000, engine + VIA_REG_CR_TRANSPACE);
++		writel(0x02000000, engine + VIA_REG_CR_TRANSPACE);
+ 		break;
+ 
+ 	default:
+-		writel(0x00100000, viaparinfo->io_virt + VIA_REG_TRANSET);
+-		writel(0x00000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-		writel(0x00333004, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-		writel(0x60000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-		writel(0x61000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-		writel(0x62000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-		writel(0x63000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-		writel(0x64000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-		writel(0x7D000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-
+-		writel(0xFE020000, viaparinfo->io_virt + VIA_REG_TRANSET);
+-		writel(0x00000000, viaparinfo->io_virt + VIA_REG_TRANSPACE);
++		writel(0x00100000, engine + VIA_REG_TRANSET);
++		writel(0x00000000, engine + VIA_REG_TRANSPACE);
++		writel(0x00333004, engine + VIA_REG_TRANSPACE);
++		writel(0x60000000, engine + VIA_REG_TRANSPACE);
++		writel(0x61000000, engine + VIA_REG_TRANSPACE);
++		writel(0x62000000, engine + VIA_REG_TRANSPACE);
++		writel(0x63000000, engine + VIA_REG_TRANSPACE);
++		writel(0x64000000, engine + VIA_REG_TRANSPACE);
++		writel(0x7D000000, engine + VIA_REG_TRANSPACE);
++
++		writel(0xFE020000, engine + VIA_REG_TRANSET);
++		writel(0x00000000, engine + VIA_REG_TRANSPACE);
+ 		break;
+ 	}
+-	if (viaparinfo->VQ_start != 0) {
+-		/* Enable VQ */
+-		dwVQStartAddr = viaparinfo->VQ_start;
+-		dwVQEndAddr = viaparinfo->VQ_end;
+-
+-		dwVQStartL = 0x50000000 | (dwVQStartAddr & 0xFFFFFF);
+-		dwVQEndL = 0x51000000 | (dwVQEndAddr & 0xFFFFFF);
+-		dwVQStartEndH = 0x52000000 |
+-			((dwVQStartAddr & 0xFF000000) >> 24) |
+-			((dwVQEndAddr & 0xFF000000) >> 16);
+-		dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
+-		switch (viaparinfo->chip_info->gfx_chip_name) {
+-		case UNICHROME_K8M890:
+-		case UNICHROME_P4M900:
+-			dwVQStartL |= 0x20000000;
+-			dwVQEndL |= 0x20000000;
+-			dwVQStartEndH |= 0x20000000;
+-			dwVQLen |= 0x20000000;
+-			break;
+-		default:
+-			break;
+-		}
+ 
+-		switch (viaparinfo->chip_info->gfx_chip_name) {
+-		case UNICHROME_K8M890:
+-		case UNICHROME_P4M900:
+-			writel(0x00100000,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSET);
+-			writel(dwVQStartEndH,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-			writel(dwVQStartL,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-			writel(dwVQEndL,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-			writel(dwVQLen,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-			writel(0x74301001,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-			writel(0x00000000,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-			break;
+-		default:
+-			writel(0x00FE0000,
+-				viaparinfo->io_virt + VIA_REG_TRANSET);
+-			writel(0x080003FE,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x0A00027C,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x0B000260,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x0C000274,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x0D000264,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x0E000000,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x0F000020,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x1000027E,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x110002FE,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x200F0060,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-
+-			writel(0x00000006,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x40008C0F,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x44000000,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x45080C04,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x46800408,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-
+-			writel(dwVQStartEndH,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(dwVQStartL,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(dwVQEndL,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(dwVQLen,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			break;
+-		}
+-	} else {
+-		/* Disable VQ */
+-		switch (viaparinfo->chip_info->gfx_chip_name) {
+-		case UNICHROME_K8M890:
+-		case UNICHROME_P4M900:
+-			writel(0x00100000,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSET);
+-			writel(0x74301000,
+-				viaparinfo->io_virt + VIA_REG_CR_TRANSPACE);
+-			break;
+-		default:
+-			writel(0x00FE0000,
+-				viaparinfo->io_virt + VIA_REG_TRANSET);
+-			writel(0x00000004,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x40008C0F,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x44000000,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x45080C04,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			writel(0x46800408,
+-				viaparinfo->io_virt + VIA_REG_TRANSPACE);
+-			break;
+-		}
++	/* Enable VQ */
++	vq_start_addr = viapar->shared->vq_vram_addr;
++	vq_end_addr = viapar->shared->vq_vram_addr + VQ_SIZE - 1;
++
++	vq_start_low = 0x50000000 | (vq_start_addr & 0xFFFFFF);
++	vq_end_low = 0x51000000 | (vq_end_addr & 0xFFFFFF);
++	vq_high = 0x52000000 | ((vq_start_addr & 0xFF000000) >> 24) |
++		((vq_end_addr & 0xFF000000) >> 16);
++	vq_len = 0x53000000 | (VQ_SIZE >> 3);
++
++	switch (chip_name) {
++	case UNICHROME_K8M890:
++	case UNICHROME_P4M900:
++		vq_start_low |= 0x20000000;
++		vq_end_low |= 0x20000000;
++		vq_high |= 0x20000000;
++		vq_len |= 0x20000000;
++
++		writel(0x00100000, engine + VIA_REG_CR_TRANSET);
++		writel(vq_high, engine + VIA_REG_CR_TRANSPACE);
++		writel(vq_start_low, engine + VIA_REG_CR_TRANSPACE);
++		writel(vq_end_low, engine + VIA_REG_CR_TRANSPACE);
++		writel(vq_len, engine + VIA_REG_CR_TRANSPACE);
++		writel(0x74301001, engine + VIA_REG_CR_TRANSPACE);
++		writel(0x00000000, engine + VIA_REG_CR_TRANSPACE);
++		break;
++	default:
++		writel(0x00FE0000, engine + VIA_REG_TRANSET);
++		writel(0x080003FE, engine + VIA_REG_TRANSPACE);
++		writel(0x0A00027C, engine + VIA_REG_TRANSPACE);
++		writel(0x0B000260, engine + VIA_REG_TRANSPACE);
++		writel(0x0C000274, engine + VIA_REG_TRANSPACE);
++		writel(0x0D000264, engine + VIA_REG_TRANSPACE);
++		writel(0x0E000000, engine + VIA_REG_TRANSPACE);
++		writel(0x0F000020, engine + VIA_REG_TRANSPACE);
++		writel(0x1000027E, engine + VIA_REG_TRANSPACE);
++		writel(0x110002FE, engine + VIA_REG_TRANSPACE);
++		writel(0x200F0060, engine + VIA_REG_TRANSPACE);
++
++		writel(0x00000006, engine + VIA_REG_TRANSPACE);
++		writel(0x40008C0F, engine + VIA_REG_TRANSPACE);
++		writel(0x44000000, engine + VIA_REG_TRANSPACE);
++		writel(0x45080C04, engine + VIA_REG_TRANSPACE);
++		writel(0x46800408, engine + VIA_REG_TRANSPACE);
++
++		writel(vq_high, engine + VIA_REG_TRANSPACE);
++		writel(vq_start_low, engine + VIA_REG_TRANSPACE);
++		writel(vq_end_low, engine + VIA_REG_TRANSPACE);
++		writel(vq_len, engine + VIA_REG_TRANSPACE);
++		break;
+ 	}
+-}
+ 
+-void viafb_hw_cursor_init(void)
+-{
  	/* Set Cursor Image Base Address */
--	writel(viaparinfo->cursor_start,
-+	writel(viaparinfo->shared->cursor_vram_addr,
- 		viaparinfo->io_virt + VIA_REG_CURSOR_MODE);
- 	writel(0x0, viaparinfo->io_virt + VIA_REG_CURSOR_POS);
- 	writel(0x0, viaparinfo->io_virt + VIA_REG_CURSOR_ORG);
+-	writel(viaparinfo->shared->cursor_vram_addr,
+-		viaparinfo->io_virt + VIA_REG_CURSOR_MODE);
+-	writel(0x0, viaparinfo->io_virt + VIA_REG_CURSOR_POS);
+-	writel(0x0, viaparinfo->io_virt + VIA_REG_CURSOR_ORG);
+-	writel(0x0, viaparinfo->io_virt + VIA_REG_CURSOR_BG);
+-	writel(0x0, viaparinfo->io_virt + VIA_REG_CURSOR_FG);
++	writel(viapar->shared->cursor_vram_addr, engine + VIA_REG_CURSOR_MODE);
++	writel(0x0, engine + VIA_REG_CURSOR_POS);
++	writel(0x0, engine + VIA_REG_CURSOR_ORG);
++	writel(0x0, engine + VIA_REG_CURSOR_BG);
++	writel(0x0, engine + VIA_REG_CURSOR_FG);
++	return 0;
+ }
+ 
+ void viafb_show_hw_cursor(struct fb_info *info, int Status)
+ {
+-	u32 temp;
+-	u32 iga_path = ((struct viafb_par *)(info->par))->iga_path;
++	struct viafb_par *viapar = info->par;
++	u32 temp, iga_path = viapar->iga_path;
+ 
+-	temp = readl(viaparinfo->io_virt + VIA_REG_CURSOR_MODE);
++	temp = readl(viapar->shared->engine_mmio + VIA_REG_CURSOR_MODE);
+ 	switch (Status) {
+ 	case HW_Cursor_ON:
+ 		temp |= 0x1;
+@@ -517,25 +459,27 @@ void viafb_show_hw_cursor(struct fb_info *info, int Status)
+ 	default:
+ 		temp &= 0x7FFFFFFF;
+ 	}
+-	writel(temp, viaparinfo->io_virt + VIA_REG_CURSOR_MODE);
++	writel(temp, viapar->shared->engine_mmio + VIA_REG_CURSOR_MODE);
+ }
+ 
+-int viafb_wait_engine_idle(void)
++void viafb_wait_engine_idle(struct fb_info *info)
+ {
++	struct viafb_par *viapar = info->par;
+ 	int loop = 0;
+ 
+-	while (!(readl(viaparinfo->io_virt + VIA_REG_STATUS) &
++	while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
+ 			VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
+ 		loop++;
+ 		cpu_relax();
+ 	}
+ 
+-	while ((readl(viaparinfo->io_virt + VIA_REG_STATUS) &
++	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
+ 		    (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
+ 		    (loop < MAXLOOP)) {
+ 		loop++;
+ 		cpu_relax();
+ 	}
+ 
+-	return loop >= MAXLOOP;
++	if (loop >= MAXLOOP)
++		printk(KERN_ERR "viafb_wait_engine_idle: not syncing\n");
+ }
+diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
+index 4d93eba..615c84a 100644
+--- a/drivers/video/via/accel.h
++++ b/drivers/video/via/accel.h
+@@ -163,10 +163,8 @@
+ #define VIA_BITBLT_MONO		2
+ #define VIA_BITBLT_FILL		3
+ 
+-void viafb_init_accel(struct viafb_shared *shared);
+-void viafb_init_2d_engine(void);
+-void viafb_hw_cursor_init(void);
+-void viafb_show_hw_cursor(struct fb_info *info, int Status); int
+-viafb_wait_engine_idle(void); void viafb_set_2d_color_depth(int bpp);
++int viafb_init_engine(struct fb_info *info);
++void viafb_show_hw_cursor(struct fb_info *info, int Status);
++void viafb_wait_engine_idle(struct fb_info *info);
+ 
+ #endif /* __ACCEL_H__ */
 diff --git a/drivers/video/via/global.c b/drivers/video/via/global.c
-index 1096fd5..33e7c45 100644
+index 33e7c45..b675cdb 100644
 --- a/drivers/video/via/global.c
 +++ b/drivers/video/via/global.c
-@@ -51,7 +51,6 @@ unsigned int viafb_second_yres = 480;
- unsigned int viafb_second_virtual_xres;
- unsigned int viafb_second_virtual_yres;
- int viafb_lcd_panel_id = LCD_PANEL_ID_MAXIMUM + 1;
--struct fb_cursor viacursor;
- struct fb_info *viafbinfo;
- struct fb_info *viafbinfo1;
- struct viafb_par *viaparinfo;
-diff --git a/drivers/video/via/global.h b/drivers/video/via/global.h
-index 11382e5..d69d0ca 100644
---- a/drivers/video/via/global.h
-+++ b/drivers/video/via/global.h
-@@ -77,7 +77,6 @@ extern int viafb_hotplug_Yres;
- extern int viafb_hotplug_bpp;
- extern int viafb_hotplug_refresh;
- extern int viafb_primary_dev;
--extern struct fb_cursor viacursor;
+@@ -32,7 +32,6 @@ int viafb_lcd_dsp_method = LCD_EXPANDSION;
+ int viafb_lcd_mode = LCD_OPENLDI;
+ int viafb_bpp = 32;
+ int viafb_bpp1 = 32;
+-int viafb_accel = 1;
+ int viafb_CRT_ON = 1;
+ int viafb_DVI_ON;
+ int viafb_LCD_ON ;
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 817033d..7302b40 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -855,7 +855,6 @@ extern int viafb_dual_fb;
+ extern int viafb_LCD2_ON;
+ extern int viafb_LCD_ON;
+ extern int viafb_DVI_ON;
+-extern int viafb_accel;
+ extern int viafb_hotplug;
  
- extern unsigned int viafb_second_xres;
- extern unsigned int viafb_second_yres;
+ void viafb_write_reg_mask(u8 index, int io_port, u8 data, u8 mask);
 diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 66921de..9a2d833 100644
+index 3d639df..34e49b8 100644
 --- a/drivers/video/via/viafbdev.c
 +++ b/drivers/video/via/viafbdev.c
-@@ -24,7 +24,6 @@
+@@ -32,6 +32,8 @@ static u32 pseudo_pal[17];
+ static char *viafb_mode = "640x480";
+ static char *viafb_mode1 = "640x480";
  
- #include "global.h"
++static int viafb_accel = 1;
++
+ /* Added for specifying active devices.*/
+ char *viafb_active_dev = "";
  
--static int MAX_CURS = 32;
- static struct fb_var_screeninfo default_var;
- static char *viafb_name = "Via";
- static u32 pseudo_pal[17];
-@@ -855,150 +854,99 @@ static void viafb_imageblit(struct fb_info *info,
+@@ -139,6 +141,9 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
  
+ 	/* Adjust var according to our driver's own table */
+ 	viafb_fill_var_timing_info(var, viafb_refresh, vmode_index);
++	if (info->var.accel_flags & FB_ACCELF_TEXT &&
++		!ppar->shared->engine_mmio)
++		info->var.accel_flags = 0;
+ 
+ 	return 0;
+ }
+@@ -176,8 +181,10 @@ static int viafb_set_par(struct fb_info *info)
+ 
+ 		viafb_update_fix(info);
+ 		viafb_bpp = info->var.bits_per_pixel;
+-		/* Update viafb_accel, it is necessary to our 2D accelerate */
+-		viafb_accel = info->var.accel_flags;
++		if (info->var.accel_flags & FB_ACCELF_TEXT)
++			info->flags &= ~FBINFO_HWACCEL_DISABLED;
++		else
++			info->flags |= FBINFO_HWACCEL_DISABLED;
+ 	}
+ 
+ 	return 0;
+@@ -763,10 +770,11 @@ static void viafb_fillrect(struct fb_info *info,
+ 	const struct fb_fillrect *rect)
+ {
+ 	struct viafb_par *viapar = info->par;
++	struct viafb_shared *shared = viapar->shared;
+ 	u32 fg_color;
+ 	u8 rop;
+ 
+-	if (!viapar->shared->hw_bitblt) {
++	if (info->flags & FBINFO_HWACCEL_DISABLED || !shared->hw_bitblt) {
+ 		cfb_fillrect(info, rect);
+ 		return;
+ 	}
+@@ -785,7 +793,7 @@ static void viafb_fillrect(struct fb_info *info,
+ 		rop = 0xF0;
+ 
+ 	DEBUG_MSG(KERN_DEBUG "viafb 2D engine: fillrect\n");
+-	if (viapar->shared->hw_bitblt(viapar->io_virt, VIA_BITBLT_FILL,
++	if (shared->hw_bitblt(shared->engine_mmio, VIA_BITBLT_FILL,
+ 		rect->width, rect->height, info->var.bits_per_pixel,
+ 		viapar->vram_addr, info->fix.line_length, rect->dx, rect->dy,
+ 		NULL, 0, 0, 0, 0, fg_color, 0, rop))
+@@ -796,8 +804,9 @@ static void viafb_copyarea(struct fb_info *info,
+ 	const struct fb_copyarea *area)
+ {
+ 	struct viafb_par *viapar = info->par;
++	struct viafb_shared *shared = viapar->shared;
+ 
+-	if (!viapar->shared->hw_bitblt) {
++	if (info->flags & FBINFO_HWACCEL_DISABLED || !shared->hw_bitblt) {
+ 		cfb_copyarea(info, area);
+ 		return;
+ 	}
+@@ -806,7 +815,7 @@ static void viafb_copyarea(struct fb_info *info,
+ 		return;
+ 
+ 	DEBUG_MSG(KERN_DEBUG "viafb 2D engine: copyarea\n");
+-	if (viapar->shared->hw_bitblt(viapar->io_virt, VIA_BITBLT_COLOR,
++	if (shared->hw_bitblt(shared->engine_mmio, VIA_BITBLT_COLOR,
+ 		area->width, area->height, info->var.bits_per_pixel,
+ 		viapar->vram_addr, info->fix.line_length, area->dx, area->dy,
+ 		NULL, viapar->vram_addr, info->fix.line_length,
+@@ -818,10 +827,11 @@ static void viafb_imageblit(struct fb_info *info,
+ 	const struct fb_image *image)
+ {
+ 	struct viafb_par *viapar = info->par;
++	struct viafb_shared *shared = viapar->shared;
+ 	u32 fg_color = 0, bg_color = 0;
+ 	u8 op;
+ 
+-	if (!viapar->shared->hw_bitblt ||
++	if (info->flags & FBINFO_HWACCEL_DISABLED || !shared->hw_bitblt ||
+ 		(image->depth != 1 && image->depth != viapar->depth)) {
+ 		cfb_imageblit(info, image);
+ 		return;
+@@ -842,7 +852,7 @@ static void viafb_imageblit(struct fb_info *info,
+ 		op = VIA_BITBLT_COLOR;
+ 
+ 	DEBUG_MSG(KERN_DEBUG "viafb 2D engine: imageblit\n");
+-	if (viapar->shared->hw_bitblt(viapar->io_virt, op,
++	if (shared->hw_bitblt(shared->engine_mmio, op,
+ 		image->width, image->height, info->var.bits_per_pixel,
+ 		viapar->vram_addr, info->fix.line_length, image->dx, image->dy,
+ 		(u32 *)image->data, 0, 0, 0, 0, fg_color, bg_color, 0))
+@@ -852,6 +862,7 @@ static void viafb_imageblit(struct fb_info *info,
  static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
  {
--	u32 temp, xx, yy, bg_col = 0, fg_col = 0;
--	int i, j = 0;
--	static int hw_cursor;
--	struct viafb_par *p_viafb_par;
--
--	if (viafb_accel)
--		hw_cursor = 1;
--
--	if (!viafb_accel) {
--		if (hw_cursor) {
--			viafb_show_hw_cursor(info, HW_Cursor_OFF);
--			hw_cursor = 0;
--		}
--		return -ENODEV;
--	}
-+	struct viafb_par *viapar = info->par;
-+	u32 temp, xx, yy, bg_color = 0, fg_color = 0,
-+		chip_name = viapar->shared->chip_info.gfx_chip_name;
-+	int i, j = 0, cur_size = 64;
- 
--	if ((((struct viafb_par *)(info->par))->iga_path == IGA2)
--	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
-+	if (info->flags & FBINFO_HWACCEL_DISABLED || info != viafbinfo)
- 		return -ENODEV;
- 
--	/* When duoview and using lcd , use soft cursor */
--	if (viafb_LCD_ON || (!viafb_SAMM_ON &&
--		viafb_LCD2_ON + viafb_DVI_ON + viafb_CRT_ON == 2))
-+	if (chip_name == UNICHROME_CLE266 && viapar->iga_path == IGA2)
- 		return -ENODEV;
- 
- 	viafb_show_hw_cursor(info, HW_Cursor_OFF);
--	viacursor = *cursor;
+ 	struct viafb_par *viapar = info->par;
++	void __iomem *engine = viapar->shared->engine_mmio;
+ 	u32 temp, xx, yy, bg_color = 0, fg_color = 0,
+ 		chip_name = viapar->shared->chip_info.gfx_chip_name;
+ 	int i, j = 0, cur_size = 64;
+@@ -866,7 +877,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
  
  	if (cursor->set & FB_CUR_SETHOT) {
--		viacursor.hot = cursor->hot;
--		temp = ((viacursor.hot.x) << 16) + viacursor.hot.y;
--		writel(temp, viaparinfo->io_virt + VIA_REG_CURSOR_ORG);
-+		temp = (cursor->hot.x << 16) + cursor->hot.y;
-+		writel(temp, viapar->io_virt + VIA_REG_CURSOR_ORG);
+ 		temp = (cursor->hot.x << 16) + cursor->hot.y;
+-		writel(temp, viapar->io_virt + VIA_REG_CURSOR_ORG);
++		writel(temp, engine + VIA_REG_CURSOR_ORG);
  	}
  
  	if (cursor->set & FB_CUR_SETPOS) {
--		viacursor.image.dx = cursor->image.dx;
--		viacursor.image.dy = cursor->image.dy;
- 		yy = cursor->image.dy - info->var.yoffset;
+@@ -874,7 +885,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
  		xx = cursor->image.dx - info->var.xoffset;
  		temp = yy & 0xFFFF;
  		temp |= (xx << 16);
--		writel(temp, viaparinfo->io_virt + VIA_REG_CURSOR_POS);
-+		writel(temp, viapar->io_virt + VIA_REG_CURSOR_POS);
+-		writel(temp, viapar->io_virt + VIA_REG_CURSOR_POS);
++		writel(temp, engine + VIA_REG_CURSOR_POS);
  	}
  
--	if (cursor->set & FB_CUR_SETSIZE) {
--		temp = readl(viaparinfo->io_virt + VIA_REG_CURSOR_MODE);
-+	if (cursor->image.width <= 32 && cursor->image.height <= 32)
-+		cur_size = 32;
-+	else if (cursor->image.width <= 64 && cursor->image.height <= 64)
-+		cur_size = 64;
-+	else {
-+		printk(KERN_WARNING "viafb_cursor: The cursor is too large "
-+			"%dx%d", cursor->image.width, cursor->image.height);
-+		return -ENXIO;
-+	}
+ 	if (cursor->image.width <= 32 && cursor->image.height <= 32)
+@@ -888,13 +899,13 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 	}
  
--		if ((cursor->image.width <= 32)
--		    && (cursor->image.height <= 32)) {
--			MAX_CURS = 32;
-+	if (cursor->set & FB_CUR_SETSIZE) {
-+		temp = readl(viapar->io_virt + VIA_REG_CURSOR_MODE);
-+		if (cur_size == 32)
+ 	if (cursor->set & FB_CUR_SETSIZE) {
+-		temp = readl(viapar->io_virt + VIA_REG_CURSOR_MODE);
++		temp = readl(engine + VIA_REG_CURSOR_MODE);
+ 		if (cur_size == 32)
  			temp |= 0x2;
--		} else if ((cursor->image.width <= 64)
--			   && (cursor->image.height <= 64)) {
--			MAX_CURS = 64;
--			temp &= 0xFFFFFFFD;
--		} else {
--			DEBUG_MSG(KERN_INFO
--			"The cursor image is biger than 64x64 bits...\n");
--			return -ENXIO;
--		}
--		writel(temp, viaparinfo->io_virt + VIA_REG_CURSOR_MODE);
-+		else
-+			temp &= ~0x2;
+ 		else
+ 			temp &= ~0x2;
  
--		viacursor.image.height = cursor->image.height;
--		viacursor.image.width = cursor->image.width;
-+		writel(temp, viapar->io_virt + VIA_REG_CURSOR_MODE);
+-		writel(temp, viapar->io_virt + VIA_REG_CURSOR_MODE);
++		writel(temp, engine + VIA_REG_CURSOR_MODE);
  	}
  
  	if (cursor->set & FB_CUR_SETCMAP) {
--		viacursor.image.fg_color = cursor->image.fg_color;
--		viacursor.image.bg_color = cursor->image.bg_color;
--
--		switch (info->var.bits_per_pixel) {
--		case 8:
--		case 16:
--		case 32:
--			bg_col =
--			    (0xFF << 24) |
--			    (((info->cmap.red)[viacursor.image.bg_color] &
--			    0xFF00) << 8) |
--			    ((info->cmap.green)[viacursor.image.bg_color] &
--			    0xFF00) |
--			    (((info->cmap.blue)[viacursor.image.bg_color] &
--			    0xFF00) >> 8);
--			fg_col =
--			    (0xFF << 24) |
--			    (((info->cmap.red)[viacursor.image.fg_color] &
--			    0xFF00) << 8) |
--			    ((info->cmap.green)[viacursor.image.fg_color] &
--			    0xFF00) |
--			    (((info->cmap.blue)[viacursor.image.fg_color] &
--			    0xFF00) >> 8);
--			break;
--		default:
--			return 0;
--		}
--
--		/* This is indeed a patch for VT3324/VT3353 */
--		if (!info->par)
--			return 0;
--		p_viafb_par = (struct viafb_par *)info->par;
--
--		if ((p_viafb_par->chip_info->gfx_chip_name ==
--			UNICHROME_CX700) ||
--			((p_viafb_par->chip_info->gfx_chip_name ==
--			UNICHROME_VX800))) {
--			bg_col =
--			    (((info->cmap.red)[viacursor.image.bg_color] &
--			    0xFFC0) << 14) |
--			    (((info->cmap.green)[viacursor.image.bg_color] &
--			    0xFFC0) << 4) |
--			    (((info->cmap.blue)[viacursor.image.bg_color] &
--			    0xFFC0) >> 6);
--			fg_col =
--			    (((info->cmap.red)[viacursor.image.fg_color] &
--			    0xFFC0) << 14) |
--			    (((info->cmap.green)[viacursor.image.fg_color] &
--			    0xFFC0) << 4) |
--			    (((info->cmap.blue)[viacursor.image.fg_color] &
--			    0xFFC0) >> 6);
-+		fg_color = cursor->image.fg_color;
-+		bg_color = cursor->image.bg_color;
-+		if (chip_name == UNICHROME_CX700 ||
-+			chip_name == UNICHROME_VX800) {
-+			fg_color =
-+				((info->cmap.red[fg_color] & 0xFFC0) << 14) |
-+				((info->cmap.green[fg_color] & 0xFFC0) << 4) |
-+				((info->cmap.blue[fg_color] & 0xFFC0) >> 6);
-+			bg_color =
-+				((info->cmap.red[bg_color] & 0xFFC0) << 14) |
-+				((info->cmap.green[bg_color] & 0xFFC0) << 4) |
-+				((info->cmap.blue[bg_color] & 0xFFC0) >> 6);
-+		} else {
-+			fg_color =
-+				((info->cmap.red[fg_color] & 0xFF00) << 8) |
-+				(info->cmap.green[fg_color] & 0xFF00) |
-+				((info->cmap.blue[fg_color] & 0xFF00) >> 8);
-+			bg_color =
-+				((info->cmap.red[bg_color] & 0xFF00) << 8) |
-+				(info->cmap.green[bg_color] & 0xFF00) |
-+				((info->cmap.blue[bg_color] & 0xFF00) >> 8);
+@@ -921,8 +932,8 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 				((info->cmap.blue[bg_color] & 0xFF00) >> 8);
  		}
  
--		writel(bg_col, viaparinfo->io_virt + VIA_REG_CURSOR_BG);
--		writel(fg_col, viaparinfo->io_virt + VIA_REG_CURSOR_FG);
-+		writel(bg_color, viapar->io_virt + VIA_REG_CURSOR_BG);
-+		writel(fg_color, viapar->io_virt + VIA_REG_CURSOR_FG);
+-		writel(bg_color, viapar->io_virt + VIA_REG_CURSOR_BG);
+-		writel(fg_color, viapar->io_virt + VIA_REG_CURSOR_FG);
++		writel(bg_color, engine + VIA_REG_CURSOR_BG);
++		writel(fg_color, engine + VIA_REG_CURSOR_FG);
  	}
  
  	if (cursor->set & FB_CUR_SETSHAPE) {
- 		struct {
--			u8 data[CURSOR_SIZE / 8];
--			u32 bak[CURSOR_SIZE / 32];
-+			u8 data[CURSOR_SIZE];
-+			u32 bak[CURSOR_SIZE / 4];
- 		} *cr_data = kzalloc(sizeof(*cr_data), GFP_ATOMIC);
--		int size =
--		    ((viacursor.image.width + 7) >> 3) *
--		    viacursor.image.height;
-+		int size = ((cursor->image.width + 7) >> 3) *
-+			cursor->image.height;
+@@ -995,8 +1006,8 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
  
--		if (cr_data == NULL)
--			goto out;
-+		if (!cr_data)
-+			return -ENOMEM;
+ static int viafb_sync(struct fb_info *info)
+ {
+-	if (viafb_accel)
+-		viafb_wait_engine_idle();
++	if (!(info->flags & FBINFO_HWACCEL_DISABLED))
++		viafb_wait_engine_idle(info);
+ 	return 0;
+ }
  
--		if (MAX_CURS == 32) {
--			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
-+		if (cur_size == 32) {
-+			for (i = 0; i < (CURSOR_SIZE / 4); i++) {
- 				cr_data->bak[i] = 0x0;
- 				cr_data->bak[i + 1] = 0xFFFFFFFF;
- 				i += 1;
- 			}
--		} else if (MAX_CURS == 64) {
--			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
-+		} else {
-+			for (i = 0; i < (CURSOR_SIZE / 4); i++) {
- 				cr_data->bak[i] = 0x0;
- 				cr_data->bak[i + 1] = 0x0;
- 				cr_data->bak[i + 2] = 0xFFFFFFFF;
-@@ -1007,27 +955,27 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- 			}
- 		}
+@@ -1826,22 +1837,18 @@ static int __devinit via_pci_probe(void)
  
--		switch (viacursor.rop) {
-+		switch (cursor->rop) {
- 		case ROP_XOR:
- 			for (i = 0; i < size; i++)
--				cr_data->data[i] = viacursor.mask[i];
-+				cr_data->data[i] = cursor->mask[i];
- 			break;
- 		case ROP_COPY:
+ 	viafb_get_mmio_info(&viafbinfo->fix.mmio_start,
+ 		&viafbinfo->fix.mmio_len);
+-	viaparinfo->io_virt = ioremap_nocache(viafbinfo->fix.mmio_start,
+-		viafbinfo->fix.mmio_len);
+-	if (!viaparinfo->io_virt) {
+-		printk(KERN_WARNING "ioremap failed: hardware acceleration disabled\n");
+-		viafb_accel = 0;
+-	}
+-
+ 	viafbinfo->node = 0;
+ 	viafbinfo->fbops = &viafb_ops;
+ 	viafbinfo->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
  
- 			for (i = 0; i < size; i++)
--				cr_data->data[i] = viacursor.mask[i];
-+				cr_data->data[i] = cursor->mask[i];
- 			break;
- 		default:
- 			break;
- 		}
- 
--		if (MAX_CURS == 32) {
-+		if (cur_size == 32) {
- 			for (i = 0; i < size; i++) {
- 				cr_data->bak[j] = (u32) cr_data->data[i];
- 				cr_data->bak[j + 1] = ~cr_data->bak[j];
- 				j += 2;
- 			}
--		} else if (MAX_CURS == 64) {
-+		} else {
- 			for (i = 0; i < size; i++) {
- 				cr_data->bak[j] = (u32) cr_data->data[i];
- 				cr_data->bak[j + 1] = 0x0;
-@@ -1037,14 +985,12 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- 			}
- 		}
- 
--		memcpy(viafbinfo->screen_base +
--		       ((struct viafb_par *)(info->par))->cursor_start,
--		       cr_data->bak, CURSOR_SIZE);
--out:
-+		memcpy_toio(viafbinfo->screen_base + viapar->shared->
-+			cursor_vram_addr, cr_data->bak, CURSOR_SIZE);
- 		kfree(cr_data);
+ 	viafbinfo->pseudo_palette = pseudo_pal;
+-	if (viafb_accel) {
+-		viafb_init_accel(viaparinfo->shared);
+-		viafb_init_2d_engine();
+-		viafb_hw_cursor_init();
++	if (viafb_accel && !viafb_init_engine(viafbinfo)) {
++		viafbinfo->flags |= FBINFO_HWACCEL_COPYAREA |
++			FBINFO_HWACCEL_FILLRECT |  FBINFO_HWACCEL_IMAGEBLIT;
++		default_var.accel_flags = FB_ACCELF_TEXT;
++	} else {
++		viafbinfo->flags |= FBINFO_HWACCEL_DISABLED;
++		default_var.accel_flags = 0;
  	}
  
--	if (viacursor.enable)
-+	if (cursor->enable)
- 		viafb_show_hw_cursor(info, HW_Cursor_ON);
+ 	if (viafb_second_size && (viafb_second_size < 8)) {
+@@ -1922,15 +1929,6 @@ static int __devinit via_pci_probe(void)
+ 	default_var.lower_margin = 4;
+ 	default_var.hsync_len = default_var.left_margin;
+ 	default_var.vsync_len = 4;
+-	default_var.accel_flags = 0;
+-
+-	if (viafb_accel) {
+-		viafbinfo->flags |=
+-		    (FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
+-		     FBINFO_HWACCEL_IMAGEBLIT);
+-		default_var.accel_flags |= FB_ACCELF_TEXT;
+-	} else
+-		viafbinfo->flags |= FBINFO_HWACCEL_DISABLED;
  
- 	return 0;
-@@ -2011,8 +1957,6 @@ static int __devinit via_pci_probe(void)
+ 	if (viafb_dual_fb) {
+ 		viafbinfo1 = framebuffer_alloc(viafb_par_length, NULL);
+@@ -1953,12 +1951,6 @@ static int __devinit via_pci_probe(void)
+ 			viaparinfo1->fbmem_used;
  		viaparinfo->fbmem_free = viaparinfo->memsize;
  		viaparinfo->fbmem_used = 0;
- 		if (viafb_accel) {
--			viaparinfo1->cursor_start =
--			    viaparinfo->cursor_start - viafb_second_offset;
- 			viaparinfo1->VQ_start = viaparinfo->VQ_start -
- 				viafb_second_offset;
- 			viaparinfo1->VQ_end = viaparinfo->VQ_end -
+-		if (viafb_accel) {
+-			viaparinfo1->VQ_start = viaparinfo->VQ_start -
+-				viafb_second_offset;
+-			viaparinfo1->VQ_end = viaparinfo->VQ_end -
+-				viafb_second_offset;
+-		}
+ 
+ 		viaparinfo->iga_path = IGA1;
+ 		viaparinfo1->iga_path = IGA2;
+@@ -2032,7 +2024,7 @@ static void __devexit via_pci_remove(void)
+ 	if (viafb_dual_fb)
+ 		unregister_framebuffer(viafbinfo1);
+ 	iounmap((void *)viafbinfo->screen_base);
+-	iounmap(viaparinfo->io_virt);
++	iounmap(viaparinfo->shared->engine_mmio);
+ 
+ 	viafb_delete_i2c_buss(viaparinfo);
+ 
+@@ -2194,7 +2186,7 @@ MODULE_PARM_DESC(viafb_SAMM_ON,
+ 
+ module_param(viafb_accel, int, 0);
+ MODULE_PARM_DESC(viafb_accel,
+-	"Set 2D Hardware Acceleration.(Default = OFF)");
++	"Set 2D Hardware Acceleration: 0 = OFF, 1 = ON (default)");
+ 
+ module_param(viafb_active_dev, charp, 0);
+ MODULE_PARM_DESC(viafb_active_dev, "Specify active devices.");
 diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index beb4703..ca39ec1 100644
+index 159619b..0c94d24 100644
 --- a/drivers/video/via/viafbdev.h
 +++ b/drivers/video/via/viafbdev.h
-@@ -51,6 +51,7 @@ struct viafb_shared {
+@@ -51,7 +51,9 @@ struct viafb_shared {
  	struct chip_information chip_info;
  
  	/* hardware acceleration stuff */
-+	u32 cursor_vram_addr;
++	void __iomem *engine_mmio;
+ 	u32 cursor_vram_addr;
++	u32 vq_vram_addr;	/* virtual queue address in video ram */
  	int (*hw_bitblt)(void __iomem *engine, u8 op, u32 width, u32 height,
  		u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
  		u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
-@@ -65,7 +66,6 @@ struct viafb_par {
+@@ -61,13 +63,11 @@ struct viafb_shared {
+ struct viafb_par {
+ 	u8 depth;
+ 	u32 vram_addr;
+-	void __iomem *io_virt;	/*iospace virtual memory address */
++
+ 	unsigned int fbmem;	/*framebuffer physical memory address */
  	unsigned int memsize;	/*size of fbmem */
  	u32 fbmem_free;		/* Free FB memory */
  	u32 fbmem_used;		/* Use FB memory size */
--	u32 cursor_start;	/* Cursor Start Address */
- 	u32 VQ_start;		/* Virtual Queue Start Address */
- 	u32 VQ_end;		/* Virtual Queue End Address */
+-	u32 VQ_start;		/* Virtual Queue Start Address */
+-	u32 VQ_end;		/* Virtual Queue End Address */
  	u32 iga_path;
+ 
+ 	struct viafb_shared *shared;
+@@ -90,7 +90,6 @@ extern int viafb_dual_fb;
+ extern int viafb_LCD2_ON;
+ extern int viafb_LCD_ON;
+ extern int viafb_DVI_ON;
+-extern int viafb_accel;
+ extern int viafb_hotplug;
+ extern int viafb_memsize;
+ 
 -- 
 1.6.3.2

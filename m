@@ -1,67 +1,89 @@
-From: Sergey Lapin <slapin@ossfans.org>
-Subject: fbcon and framebuffer app
-Date: Mon, 7 Sep 2009 18:01:05 +0400
-Message-ID: <20090907140105.GB5083@build.ossfans.org>
+From: Daniel Mack <daniel@caiaq.de>
+Subject: [PATCH] video: add PXA3xx accelerator ID [v2]
+Date: Thu, 10 Sep 2009 15:26:30 +0200
+Message-ID: <20090910132630.GZ9410@buzzloop.caiaq.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <slapin@build.ossfans.org>) id 1MkfZR-0007SQ-Pq
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Sep 2009 14:51:53 +0000
-Received: from build.ossfans.org ([67.223.233.67])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MkfZP-0000G1-7m
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 07 Sep 2009 14:51:53 +0000
-Received: from build.ossfans.org ([127.0.0.1])
-	by build.ossfans.org (8.14.3/8.14.3/Debian-5) with ESMTP id
-	n87EpgsL005397 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 7 Sep 2009 18:51:42 +0400
-Received: (from slapin@localhost)
-	by build.ossfans.org (8.14.3/8.14.3/Submit) id n87Epg29005396
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 7 Sep 2009 18:51:42 +0400
-Resent-Message-ID: <20090907145142.GA5235@build.ossfans.org>
-Resent-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Dmitry <dbaryshkov@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Sven Neumann <s.neumann@raumfeld.com>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Dennis Oliver Kropp <dok@directfb.org>
 
-Hi, all!
+Ok, here goes a new patch as just discussed.
+Does that look good to everyone?
 
-I have special framebuffer device (128x128x2bpp display via external
-framebuffer interface on OMAP3), which works quite well, switching off
-backlight with fbcon on, and blanking. A problem is that I need
-to run graphics application on a framebuffer. But I also need blanking
-on inactivity. Application works perfectly until blanking occurs,
-then display is zeroed-out and application still redraws regions it
-changes. This is ok while not really clean, but also, when activity
-is recieved, backlight is on, but screen is not redrawn, since
-application is not aware of blanking, so I have to force it to readraw
-all screen.
-So, how this should be fixed? I want to keep fbcon
-auto-blanking functionality and tty, so removing fbcon is not an option.
+Thanks,
+Daniel
 
-Thanks beforehand,
-S.
+From 32b1fa824cd78f9ba6169b90c5d01870de05c86f Mon Sep 17 00:00:00 2001
+From: Daniel Mack <daniel@caiaq.de>
+Date: Mon, 20 Jul 2009 11:18:43 +0200
+Subject: [PATCH] video: add PXA3xx accelerator ID
 
+Add ID 99 for PXA3xx frame buffers and report it in the pxa frame buffer
+conditionally, depending on a new flag in struct pxafb_mach_info.
 
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with 
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Eric Miao <eric.miao@marvell.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Dennis Oliver Kropp <dok@directfb.org>
+Cc: Sven Neumann <s.neumann@raumfeld.com>
+---
+ arch/arm/mach-pxa/include/mach/pxafb.h |    3 ++-
+ drivers/video/pxafb.c                  |    3 +++
+ include/linux/fb.h                     |    1 +
+ 3 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-pxa/include/mach/pxafb.h b/arch/arm/mach-pxa/include/mach/pxafb.h
+index 6932720..f73061c 100644
+--- a/arch/arm/mach-pxa/include/mach/pxafb.h
++++ b/arch/arm/mach-pxa/include/mach/pxafb.h
+@@ -118,7 +118,8 @@ struct pxafb_mach_info {
+ 	u_int		fixed_modes:1,
+ 			cmap_inverse:1,
+ 			cmap_static:1,
+-			unused:29;
++			acceleration_enabled:1,
++			unused:28;
+ 
+ 	/* The following should be defined in LCCR0
+ 	 *      LCCR0_Act or LCCR0_Pas          Active or Passive
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 3951cc5..b65cc2d 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -2083,6 +2083,9 @@ static int __devinit pxafb_probe(struct platform_device *dev)
+ 		goto failed;
+ 	}
+ 
++	if (cpu_is_pxa3xx() && inf->acceleration_enabled)
++		fbi->fb.fix.accel = FB_ACCEL_PXA3XX;
++
+ 	fbi->backlight_power = inf->pxafb_backlight_power;
+ 	fbi->lcd_power = inf->pxafb_lcd_power;
+ 
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index f847df9..a34bdf5 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -133,6 +133,7 @@ struct dentry;
+ #define FB_ACCEL_NEOMAGIC_NM2230 96	/* NeoMagic NM2230              */
+ #define FB_ACCEL_NEOMAGIC_NM2360 97	/* NeoMagic NM2360              */
+ #define FB_ACCEL_NEOMAGIC_NM2380 98	/* NeoMagic NM2380              */
++#define FB_ACCEL_PXA3XX		 99	/* PXA3xx			*/
+ 
+ #define FB_ACCEL_SAVAGE4        0x80	/* S3 Savage4                   */
+ #define FB_ACCEL_SAVAGE3D       0x81	/* S3 Savage3D                  */
+-- 
+1.6.3.3

@@ -1,65 +1,51 @@
-From: Daniel Mack <daniel@caiaq.de>
-Subject: Re: [PATCH] video: add PXA3xx accelerator ID
-	[v2]
-Date: Fri, 11 Sep 2009 17:20:19 +0200
-Message-ID: <20090911152019.GZ18340@buzzloop.caiaq.de>
+From: Eric Miao <eric.y.miao@gmail.com>
+Subject: Re: [PATCH] video: add PXA3xx accelerator ID [v2]
+Date: Sat, 12 Sep 2009 00:12:52 +0800
+Message-ID: <f17812d70909110912q41c45dcfl8410e3fb51ec7e9c@mail.gmail.com>
 References: <20090910132630.GZ9410@buzzloop.caiaq.de>
 	<Pine.LNX.4.64.0909101530120.4458@axis700.grange>
-	<20090910133327.GA9410@buzzloop.caiaq.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <daniel@caiaq.de>) id 1Mm7vQ-00014Z-VH
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 Sep 2009 15:20:36 +0000
-Received: from buzzloop.caiaq.de ([212.112.241.133])
-	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1Mm7vK-0002pp-Hl
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 11 Sep 2009 15:20:36 +0000
-Content-Disposition: inline
-In-Reply-To: <20090910133327.GA9410@buzzloop.caiaq.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <Pine.LNX.4.64.0909101530120.4458@axis700.grange>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Sven Neumann <s.neumann@raumfeld.com>, linux-fbdev-devel@lists.sourceforge.net, Eric Miao <eric.y.miao@gmail.com>, Dennis Oliver Kropp <dok@directfb.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Sven Neumann <s.neumann@raumfeld.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Daniel Mack <daniel@caiaq.de>, Dennis Oliver Kropp <dok@directfb.org>
 
-On Thu, Sep 10, 2009 at 03:33:27PM +0200, Daniel Mack wrote:
-> On Thu, Sep 10, 2009 at 03:31:34PM +0200, Guennadi Liakhovetski wrote:
-> > > +	if (cpu_is_pxa3xx() && inf->acceleration_enabled)
-> > > +		fbi->fb.fix.accel = FB_ACCEL_PXA3XX;
-> > > +
-> > 
-> > Ok, now remove 'cpu_is_pxa3xx() && ' above and you should be good to go:-) 
-> > What if tomorrow pxa4xx comes (ok, Eric will disagree, but wtill:-))
-> 
-> Don't know. I left it in there intentionally, but I'm fine to remove it.
-> Or Eric does it when applying ;) Eric?
-
-What I was considering are cases where a kernel binary that works on
-both PXA3xx and other PXAs shares the same pxafb_mach_info struct across
-different board support code. The accel flag would then be set for wrong
-platforms.
-
-But this might be academic, that's why I don't have a strong opinion on
-that :)
-
-Daniel
-
-
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with 
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+PiBPaywgbm93IHJlbW92ZSAnY3B1X2lzX3B4YTN4eCgpICYmICcgYWJvdmUgYW5kIHlvdSBzaG91
+bGQgYmUgZ29vZCB0byBnbzotKQo+IFdoYXQgaWYgdG9tb3Jyb3cgcHhhNHh4IGNvbWVzIChvaywg
+RXJpYyB3aWxsIGRpc2FncmVlLCBidXQgd3RpbGw6LSkpCgpJdCBpcyBub3QgbGlrZWx5IHRvIGJl
+IHB4YTR4eCwgKGNoaW5lc2UgcGVvcGxlIGRvbid0IGxpa2UgJzQnLCBhbmQgdGhlcmUgYXJlCmEg
+bG90IGNoaW5lc2UgaW4gTWFydmVsbCwgU2hoaC4uLi4uIGRvbid0IGxldCB0aGVtIGtub3cgSSBz
+YWlkIHRoaXMgOy0pCgpTdGlsbCwgSSBndWVzcyBoYXZpbmcgYSBjcHVfaXNfcHhhM3h4KCkgc2hv
+dWxkIGJlIE9LIGhlcmUuCgo+Cj4+IMKgIMKgIMKgIGZiaS0+YmFja2xpZ2h0X3Bvd2VyID0gaW5m
+LT5weGFmYl9iYWNrbGlnaHRfcG93ZXI7Cj4+IMKgIMKgIMKgIGZiaS0+bGNkX3Bvd2VyID0gaW5m
+LT5weGFmYl9sY2RfcG93ZXI7Cj4+Cj4+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2ZiLmgg
+Yi9pbmNsdWRlL2xpbnV4L2ZiLmgKPj4gaW5kZXggZjg0N2RmOS4uYTM0YmRmNSAxMDA2NDQKPj4g
+LS0tIGEvaW5jbHVkZS9saW51eC9mYi5oCj4+ICsrKyBiL2luY2x1ZGUvbGludXgvZmIuaAo+PiBA
+QCAtMTMzLDYgKzEzMyw3IEBAIHN0cnVjdCBkZW50cnk7Cj4+IMKgI2RlZmluZSBGQl9BQ0NFTF9O
+RU9NQUdJQ19OTTIyMzAgOTYgwqAvKiBOZW9NYWdpYyBOTTIyMzAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAqLwo+PiDCoCNkZWZpbmUgRkJfQUNDRUxfTkVPTUFHSUNfTk0yMzYwIDk3IMKgLyogTmVvTWFn
+aWMgTk0yMzYwIMKgIMKgIMKgIMKgIMKgIMKgIMKgKi8KPj4gwqAjZGVmaW5lIEZCX0FDQ0VMX05F
+T01BR0lDX05NMjM4MCA5OCDCoC8qIE5lb01hZ2ljIE5NMjM4MCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCovCj4+ICsjZGVmaW5lIEZCX0FDQ0VMX1BYQTNYWCDCoCDCoCDCoCDCoCDCoCDCoCDCoCA5OSDC
+oCDCoCAvKiBQWEEzeHggwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgKi8KPj4KPj4g
+wqAjZGVmaW5lIEZCX0FDQ0VMX1NBVkFHRTQgwqAgwqAgwqAgwqAweDgwIC8qIFMzIFNhdmFnZTQg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgKi8KPj4gwqAjZGVmaW5lIEZCX0FDQ0VMX1NBVkFH
+RTNEIMKgIMKgIMKgIDB4ODEgLyogUzMgU2F2YWdlM0QgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAqLwo+PiAtLQo+PiAxLjYuMy4zCj4+Cj4KPiBUaGFua3MKPiBHdWVubmFkaQo+IC0tLQo+IEd1
+ZW5uYWRpIExpYWtob3ZldHNraSwgUGguRC4KPiBGcmVlbGFuY2UgT3Blbi1Tb3VyY2UgU29mdHdh
+cmUgRGV2ZWxvcGVyCj4gaHR0cDovL3d3dy5vcGVuLXRlY2hub2xvZ3kuZGUvCj4KCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwg
+bWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8v
+bGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK

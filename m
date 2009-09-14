@@ -1,41 +1,43 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Subject: Re: [PATCH] omapfb: Reorder Register_framebuffer call
-Date: Mon, 14 Sep 2009 18:22:32 +0300
-Message-ID: <94a0d4530909140822h59937984hae3dea70d52fff18@mail.gmail.com>
-References: <1252773249-24444-1-git-send-email-saaguirre@ti.com>
-	 <A24693684029E5489D1D202277BE89444C327E31@dlee02.ent.ti.com>
-Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <A24693684029E5489D1D202277BE89444C327E31@dlee02.ent.ti.com>
-Sender: linux-omap-owner@vger.kernel.org
+From: Mike Frysinger <vapier@gentoo.org>
+Subject: [PATCH] fbdev: bfin-t350mcqb-fb: fix LCD dimensions
+Date: Mon, 14 Sep 2009 13:49:09 -0400
+Message-ID: <1252950549-9838-3-git-send-email-vapier@gentoo.org>
+References: <1252950549-9838-1-git-send-email-vapier@gentoo.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755810AbZINRtX@vger.kernel.org>
+In-Reply-To: <1252950549-9838-1-git-send-email-vapier@gentoo.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Cc: Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, Michael Hennerich <michael.hennerich@analog.com>
 
-On Mon, Sep 14, 2009 at 5:43 PM, Aguirre Rodriguez, Sergio Alberto
-<saaguirre@ti.com> wrote:
-> Hi,
->
-> This patch has been lying around for some weeks now, with just responses about successful testing (detailed in the description).
->
-> Is there anything holding it for merge? Or should I try sending it to other ML?
->
-> BTW, It applies cleanly on mainline aswell.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Try running 'get_maintainer' script to find other people that have
-worked on this code:
-Trilok Soni <soni.trilok@gmail.com>
-Andrew Morton <akpm@linux-foundation.org>
-Tony Lindgren <tony@atomide.com>
-Russell King <rmk+kernel@arm.linux.org.uk>
-Krzysztof Helt <krzysztof.h1@wp.pl>
+The height/width framebuffer members need to be set in millimeters so that
+software can do proper scaling.
 
-My feedback is: please mention in the message how the bug can be triggered.
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/video/bfin-t350mcqb-fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-And watch your uppercases:
-omapfb: reorder register_framebuffer call
-
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index 46cb07f..2549c53 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -487,8 +487,8 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 
+ 	fbinfo->var.nonstd = 0;
+ 	fbinfo->var.activate = FB_ACTIVATE_NOW;
+-	fbinfo->var.height = -1;
+-	fbinfo->var.width = -1;
++	fbinfo->var.height = 53;
++	fbinfo->var.width = 70;
+ 	fbinfo->var.accel_flags = 0;
+ 	fbinfo->var.vmode = FB_VMODE_NONINTERLACED;
+ 
 -- 
-Felipe Contreras
+1.6.4.2

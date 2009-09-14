@@ -1,105 +1,41 @@
-From: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Subject: RE: [PATCH] omapfb: Reorder Register_framebuffer call
-Date: Mon, 14 Sep 2009 09:43:20 -0500
-Message-ID: <A24693684029E5489D1D202277BE89444C327E31@dlee02.ent.ti.com>
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: Re: [PATCH] omapfb: Reorder Register_framebuffer call
+Date: Mon, 14 Sep 2009 18:22:32 +0300
+Message-ID: <94a0d4530909140822h59937984hae3dea70d52fff18@mail.gmail.com>
 References: <1252773249-24444-1-git-send-email-saaguirre@ti.com>
+	 <A24693684029E5489D1D202277BE89444C327E31@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1252773249-24444-1-git-send-email-saaguirre@ti.com>
-Content-Language: en-US
+In-Reply-To: <A24693684029E5489D1D202277BE89444C327E31@dlee02.ent.ti.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>, Imre Deak <imre.deak@nokia.com>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
+Cc: Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-Hi,
+On Mon, Sep 14, 2009 at 5:43 PM, Aguirre Rodriguez, Sergio Alberto
+<saaguirre@ti.com> wrote:
+> Hi,
+>
+> This patch has been lying around for some weeks now, with just responses about successful testing (detailed in the description).
+>
+> Is there anything holding it for merge? Or should I try sending it to other ML?
+>
+> BTW, It applies cleanly on mainline aswell.
 
-This patch has been lying around for some weeks now, with just responses about successful testing (detailed in the description).
+Try running 'get_maintainer' script to find other people that have
+worked on this code:
+Trilok Soni <soni.trilok@gmail.com>
+Andrew Morton <akpm@linux-foundation.org>
+Tony Lindgren <tony@atomide.com>
+Russell King <rmk+kernel@arm.linux.org.uk>
+Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Is there anything holding it for merge? Or should I try sending it to other ML?
+My feedback is: please mention in the message how the bug can be triggered.
 
-BTW, It applies cleanly on mainline aswell.
+And watch your uppercases:
+omapfb: reorder register_framebuffer call
 
-Regards,
-Sergio
-
-> -----Original Message-----
-> From: Sergio Aguirre [mailto:sergio.a.aguirre@gmail.com] On Behalf Of
-> Sergio Aguirre
-> Sent: Saturday, September 12, 2009 11:34 AM
-> To: Imre Deak
-> Cc: linux-fbdev-devel@lists.sourceforge.net; linux-omap@vger.kernel.org;
-> Aguirre Rodriguez, Sergio Alberto
-> Subject: [PATCH] omapfb: Reorder Register_framebuffer call
-> 
-> This fixes the issue in which mm_lock mutex was attempted to be
-> used without initializing previously.
-> 
-> Thanks to the testers!
->  - OMAP3430 SDP (Anand Gadiyar)
->  - OMAP3530 EVM (Vaibhav Hiremath)
->  - LogicPD's OMAP boards (Peter Brada)
->  - Beagleboard Rev. C2 (Eric Witcher)
-> 
-> Signed-off-by: Sergio Aguirre <saaguirre@ti.com>
-> Tested-by: Vaibhav Hiremath <hvaibhav@ti.com>
-> Tested-by: Anand Gadiyar <gadiyar@ti.com>
-> Tested-by: Peter Barada <peterb@logicpd.com>
-> Tested-by: Eric Witcher <ewitcher@mindspring.com>
-> ---
->  drivers/video/omap/omapfb_main.c |   20 +++++++++++---------
->  1 files changed, 11 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/video/omap/omapfb_main.c
-> b/drivers/video/omap/omapfb_main.c
-> index 125e605..60f9482 100644
-> --- a/drivers/video/omap/omapfb_main.c
-> +++ b/drivers/video/omap/omapfb_main.c
-> @@ -1503,12 +1503,21 @@ static int fbinfo_init(struct omapfb_device
-> *fbdev, struct fb_info *info)
->  	var->rotate	  = def_rotate;
->  	var->bits_per_pixel = fbdev->panel->bpp;
-> 
-> +	r = register_framebuffer(info);
-> +	if (r != 0) {
-> +		dev_err(fbdev->dev,
-> +			"registering framebuffer failed\n");
-> +		return r;
-> +	}
-> +
->  	set_fb_var(info, var);
->  	set_fb_fix(info);
-> 
->  	r = fb_alloc_cmap(&info->cmap, 16, 0);
-> -	if (r != 0)
-> +	if (r != 0) {
->  		dev_err(fbdev->dev, "unable to allocate color map memory\n");
-> +		unregister_framebuffer(info);
-> +	}
-> 
->  	return r;
->  }
-> @@ -1773,15 +1782,8 @@ static int omapfb_do_probe(struct platform_device
-> *pdev,
->  	init_state++;
-> 
->  	vram = 0;
-> -	for (i = 0; i < fbdev->mem_desc.region_cnt; i++) {
-> -		r = register_framebuffer(fbdev->fb_info[i]);
-> -		if (r != 0) {
-> -			dev_err(fbdev->dev,
-> -				"registering framebuffer %d failed\n", i);
-> -			goto cleanup;
-> -		}
-> +	for (i = 0; i < fbdev->mem_desc.region_cnt; i++)
->  		vram += fbdev->mem_desc.region[i].size;
-> -	}
-> 
->  	fbdev->state = OMAPFB_ACTIVE;
-> 
-> --
-> 1.6.3.2
-> 
-
+-- 
+Felipe Contreras

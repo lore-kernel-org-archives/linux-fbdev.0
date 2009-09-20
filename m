@@ -1,25 +1,25 @@
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: [PATCH RESEND] video: s3c_fb.c: fix build with
-	CONFIG_HOTPLUG=n
-Date: Sun, 20 Sep 2009 17:29:22 +0200
-Message-ID: <1253460562-691-1-git-send-email-jacmet@sunsite.dk>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] aty128fb: move block to where it
+ should be in function aty128_var_to_pll
+Date: Mon, 21 Sep 2009 08:19:42 +1000
+Message-ID: <1253485182.7103.30.camel@pasglop>
+References: <1253434454.19515.10.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jacmet@gmail.com>) id 1MpOM9-0001xB-Nt
+	(envelope-from <benh@kernel.crashing.org>) id 1MpUpz-0000ud-NL
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Sep 2009 15:29:41 +0000
-Received: from mail-ew0-f225.google.com ([209.85.219.225])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MpOM2-0000eH-5F for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Sep 2009 15:29:41 +0000
-Received: by ewy25 with SMTP id 25so2345483ewy.33
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 20 Sep 2009 08:29:27 -0700 (PDT)
+	Sun, 20 Sep 2009 22:24:55 +0000
+Received: from gate.crashing.org ([63.228.1.57])
+	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MpUpt-0000Nt-6g
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 20 Sep 2009 22:24:55 +0000
+In-Reply-To: <1253434454.19515.10.camel@ht.satnam>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,45 +29,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: akpm@linux-foundation.org, ben-linux@fluff.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: Peter Korsgaard <jacmet@sunsite.dk>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>
 
-Fixes `s3c_fb_remove' referenced in section `.data' of
-drivers/built-in.o: defined in discarded section `.devexit.text' of
-drivers/built-in.o
-
-With CONFIG_HOTPLUG=n, functions marked with __devexit gets removed,
-so make sure we use __devexit_p when referencing pointers to them.
-
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-Acked-by: Ben Dooks <ben-linux@fluff.org>
----
- drivers/video/s3c-fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-Seems like this never made it to mainline, even though Ben acked it back
-in June. Andrew, please push to Linus.
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 5a72083..adf9632 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1036,7 +1036,7 @@ static int s3c_fb_resume(struct platform_device *pdev)
- 
- static struct platform_driver s3c_fb_driver = {
- 	.probe		= s3c_fb_probe,
--	.remove		= s3c_fb_remove,
-+	.remove		= __devexit_p(s3c_fb_remove),
- 	.suspend	= s3c_fb_suspend,
- 	.resume		= s3c_fb_resume,
- 	.driver		= {
--- 
-1.6.3.3
-
-
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
-http://p.sf.net/sfu/devconf
+T24gU3VuLCAyMDA5LTA5LTIwIGF0IDEzOjQ0ICswNTMwLCBKYXN3aW5kZXIgU2luZ2ggUmFqcHV0
+IHdyb3RlOgo+IEluIGZ1bmN0aW9uIGF0eTEyOF92YXJfdG9fcGxsIG1vdmluZyBibG9jayB0byB3
+aGVyZSBpdCBzaG91bGQgYmUuCj4gCj4gVGhpcyBhbHNvIGZpeGVkIGZvbGxvd2luZyBjb21waWxh
+dGlvbiB3YXJuaW5nOgo+ICAgQ0MgW01dICBkcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5vCj4g
+ZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYzogSW4gZnVuY3Rpb24g4oCYYXR5MTI4X2RlY29k
+ZV92YXLigJk6Cj4gZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYzoxNTIwOiB3YXJuaW5nOiDi
+gJhwbGwucG9zdF9kaXZpZGVy4oCZIG1heSBiZSB1c2VkIHVuaW5pdGlhbGl6ZWQgaW4gdGhpcyBm
+dW5jdGlvbgoKSSBkaXNsaWtlIG1vdmluZyBwcmV0dHkgbXVjaCB0aGUgd2hvbGUgZnVuY3Rpb24g
+MiBpbmRlbnRhdGlvbiBsZXZlbHMgdG8KdGhlIHJpZ2h0IGp1c3QgYmVjYXVzZSBnY2MgaXMgYmVp
+bmcgc2lsbHkuCgpJZiB5b3UgcmVhbGx5IHdhbnQgdG8gc2lsZW5jZSB0aGF0IHdhcm5pbmcsIGp1
+c3QgaW5pdGlhbGl6ZSB0aGUgdmFsdWUKCkJlbi4KIAo+IFNpZ25lZC1vZmYtYnk6IEphc3dpbmRl
+ciBTaW5naCBSYWpwdXQgPGphc3dpbmRlcnJhanB1dEBnbWFpbC5jb20+Cj4gLS0tCj4gIGRyaXZl
+cnMvdmlkZW8vYXR5L2F0eTEyOGZiLmMgfCAgIDMzICsrKysrKysrKysrKysrKystLS0tLS0tLS0t
+LS0tLS0tLQo+ICAxIGZpbGVzIGNoYW5nZWQsIDE2IGluc2VydGlvbnMoKyksIDE3IGRlbGV0aW9u
+cygtKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5jIGIvZHJp
+dmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYwo+IGluZGV4IGU0ZTRkNDMuLmZkNjc0NmUgMTAwNjQ0
+Cj4gLS0tIGEvZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYwo+ICsrKyBiL2RyaXZlcnMvdmlk
+ZW8vYXR5L2F0eTEyOGZiLmMKPiBAQCAtMTMyOCw4ICsxMzI4LDcgQEAgc3RhdGljIGludCBhdHkx
+MjhfdmFyX3RvX3BsbCh1MzIgcGVyaW9kX2luX3BzLCBzdHJ1Y3QgYXR5MTI4X3BsbCAqcGxsLAo+
+ICAJdW5zaWduZWQgY2hhciBwb3N0X2RpdmlkZXJzW10gPSB7MSwyLDQsOCwzLDYsMTJ9Owo+ICAJ
+dTMyIG91dHB1dF9mcmVxOwo+ICAJdTMyIHZjbGs7ICAgICAgICAvKiBpbiAuMDEgTUh6ICovCj4g
+LQlpbnQgaSA9IDA7Cj4gLQl1MzIgbiwgZDsKPiArCWludCBpOwo+ICAKPiAgCXZjbGsgPSAxMDAw
+MDAwMDAgLyBwZXJpb2RfaW5fcHM7CS8qIGNvbnZlcnQgdW5pdHMgdG8gMTAga0h6ICovCj4gIAo+
+IEBAIC0xMzQzLDI3ICsxMzQyLDI3IEBAIHN0YXRpYyBpbnQgYXR5MTI4X3Zhcl90b19wbGwodTMy
+IHBlcmlvZF9pbl9wcywgc3RydWN0IGF0eTEyOF9wbGwgKnBsbCwKPiAgCWZvciAoaSA9IDA7IGkg
+PCBBUlJBWV9TSVpFKHBvc3RfZGl2aWRlcnMpOyBpKyspIHsKPiAgCQlvdXRwdXRfZnJlcSA9IHBv
+c3RfZGl2aWRlcnNbaV0gKiB2Y2xrOwo+ICAJCWlmIChvdXRwdXRfZnJlcSA+PSBjLnBwbGxfbWlu
+ICYmIG91dHB1dF9mcmVxIDw9IGMucHBsbF9tYXgpIHsKPiArCQkJdTMyIG4sIGQ7Cj4gKwo+ICAJ
+CQlwbGwtPnBvc3RfZGl2aWRlciA9IHBvc3RfZGl2aWRlcnNbaV07Cj4gLQkJCWJyZWFrOwo+IC0J
+CX0KPiAtCX0KPiAgCj4gLQlpZiAoaSA9PSBBUlJBWV9TSVpFKHBvc3RfZGl2aWRlcnMpKQo+IC0J
+CXJldHVybiAtRUlOVkFMOwo+ICsJCQkvKiBjYWxjdWxhdGUgZmVlZGJhY2sgZGl2aWRlciAqLwo+
+ICsJCQluID0gYy5yZWZfZGl2aWRlciAqIG91dHB1dF9mcmVxOwo+ICsJCQlkID0gYy5yZWZfY2xr
+Owo+ICAKPiAtCS8qIGNhbGN1bGF0ZSBmZWVkYmFjayBkaXZpZGVyICovCj4gLQluID0gYy5yZWZf
+ZGl2aWRlciAqIG91dHB1dF9mcmVxOwo+IC0JZCA9IGMucmVmX2NsazsKPiArCQkJcGxsLT5mZWVk
+YmFja19kaXZpZGVyID0gcm91bmRfZGl2KG4sIGQpOwo+ICsJCQlwbGwtPnZjbGsgPSB2Y2xrOwo+
+ICAKPiAtCXBsbC0+ZmVlZGJhY2tfZGl2aWRlciA9IHJvdW5kX2RpdihuLCBkKTsKPiAtCXBsbC0+
+dmNsayA9IHZjbGs7Cj4gKwkJCURCRygicG9zdCAlZCBmZWVkYmFjayAlZCB2bGNrICVkIG91dHB1
+dCAlZCAiCj4gKwkJCSAgICAicmVmX2RpdmlkZXIgJWQgdmNsa19wZXI6ICVkXG4iLCBwbGwtPnBv
+c3RfZGl2aWRlciwKPiArCQkJICAgIHBsbC0+ZmVlZGJhY2tfZGl2aWRlciwgdmNsaywgb3V0cHV0
+X2ZyZXEsCj4gKwkJCSAgICBjLnJlZl9kaXZpZGVyLCBwZXJpb2RfaW5fcHMpOwo+ICAKPiAtCURC
+RygicG9zdCAlZCBmZWVkYmFjayAlZCB2bGNrICVkIG91dHB1dCAlZCByZWZfZGl2aWRlciAlZCAi
+Cj4gLQkgICAgInZjbGtfcGVyOiAlZFxuIiwgcGxsLT5wb3N0X2RpdmlkZXIsCj4gLQkgICAgcGxs
+LT5mZWVkYmFja19kaXZpZGVyLCB2Y2xrLCBvdXRwdXRfZnJlcSwKPiAtCSAgICBjLnJlZl9kaXZp
+ZGVyLCBwZXJpb2RfaW5fcHMpOwo+ICsJCQlyZXR1cm4gMDsKPiArCQl9Cj4gKwl9Cj4gIAo+IC0J
+cmV0dXJuIDA7Cj4gKwlyZXR1cm4gLUVJTlZBTDsKPiAgfQo+ICAKPiAKCgotLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0KQ29tZSBidWlsZCB3aXRoIHVzISBUaGUgQmxhY2tCZXJyeSZyZWc7IERldmVsb3Bl
+ciBDb25mZXJlbmNlIGluIFNGLCBDQQppcyB0aGUgb25seSBkZXZlbG9wZXIgZXZlbnQgeW91IG5l
+ZWQgdG8gYXR0ZW5kIHRoaXMgeWVhci4gSnVtcHN0YXJ0IHlvdXIKZGV2ZWxvcGluZyBza2lsbHMs
+IHRha2UgQmxhY2tCZXJyeSBtb2JpbGUgYXBwbGljYXRpb25zIHRvIG1hcmtldCBhbmQgc3RheSAK
+YWhlYWQgb2YgdGhlIGN1cnZlLiBKb2luIHVzIGZyb20gTm92ZW1iZXIgOSYjNDU7MTIsIDIwMDku
+IFJlZ2lzdGVyIG5vdyYjMzM7Cmh0dHA6Ly9wLnNmLm5ldC9zZnUvZGV2Y29uZgpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBt
+YWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBz
+Oi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVs
+Cg==

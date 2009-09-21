@@ -1,26 +1,26 @@
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] aty128fb: move block to where it
  should be in function aty128_var_to_pll
-Date: Mon, 21 Sep 2009 18:27:23 +0530
-Message-ID: <1253537843.3207.5.camel@ht.satnam>
+Date: Tue, 22 Sep 2009 09:51:12 +1000
+Message-ID: <1253577072.7103.168.camel@pasglop>
 References: <1253434454.19515.10.camel@ht.satnam>
-	<1253485182.7103.30.camel@pasglop>
+	<1253485182.7103.30.camel@pasglop> <1253537843.3207.5.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jaswinder@kernel.org>) id 1MpiTt-0004v4-7P
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <benh@kernel.crashing.org>) id 1MptOG-0003SG-3X
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Sep 2009 12:59:01 +0000
-Received: from hera.kernel.org ([140.211.167.34])
+	Tue, 22 Sep 2009 00:37:56 +0000
+Received: from gate.crashing.org ([63.228.1.57])
 	by 3b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MpiTm-00084a-Uy
+	(Exim 4.69) id 1MptO7-0000jy-Nq
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 21 Sep 2009 12:59:01 +0000
-In-Reply-To: <1253485182.7103.30.camel@pasglop>
+	Tue, 22 Sep 2009 00:37:56 +0000
+In-Reply-To: <1253537843.3207.5.camel@ht.satnam>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,71 +30,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, Paul Mackerras <paulus@samba.org>
 
-SGVsbG8gQmVuLAoKT24gTW9uLCAyMDA5LTA5LTIxIGF0IDA4OjE5ICsxMDAwLCBCZW5qYW1pbiBI
-ZXJyZW5zY2htaWR0IHdyb3RlOgo+IE9uIFN1biwgMjAwOS0wOS0yMCBhdCAxMzo0NCArMDUzMCwg
-SmFzd2luZGVyIFNpbmdoIFJhanB1dCB3cm90ZToKPiA+IEluIGZ1bmN0aW9uIGF0eTEyOF92YXJf
-dG9fcGxsIG1vdmluZyBibG9jayB0byB3aGVyZSBpdCBzaG91bGQgYmUuCj4gPiAKPiA+IFRoaXMg
-YWxzbyBmaXhlZCBmb2xsb3dpbmcgY29tcGlsYXRpb24gd2FybmluZzoKPiA+ICAgQ0MgW01dICBk
-cml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5vCj4gPiBkcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhm
-Yi5jOiBJbiBmdW5jdGlvbiDigJhhdHkxMjhfZGVjb2RlX3ZhcuKAmToKPiA+IGRyaXZlcnMvdmlk
-ZW8vYXR5L2F0eTEyOGZiLmM6MTUyMDogd2FybmluZzog4oCYcGxsLnBvc3RfZGl2aWRlcuKAmSBt
-YXkgYmUgdXNlZCB1bmluaXRpYWxpemVkIGluIHRoaXMgZnVuY3Rpb24KPiAKPiBJIGRpc2xpa2Ug
-bW92aW5nIHByZXR0eSBtdWNoIHRoZSB3aG9sZSBmdW5jdGlvbiAyIGluZGVudGF0aW9uIGxldmVs
-cyB0bwo+IHRoZSByaWdodCBqdXN0IGJlY2F1c2UgZ2NjIGlzIGJlaW5nIHNpbGx5Lgo+IAoKSW5k
-ZW50YXRpb24gaXMgbm90IGFuIGlzc3VlIGlmIEkgYW0gbm90IGJyZWFraW5nIGFueSBsaW5lcy4g
-SSBhbSBtb3ZpbmcKdGhlIGZ1bmN0aW9uIHdoZXJlIGl0IHNob3VsZCBiZSBhbmQgYXZvaWQgdW5u
-ZWNlc3NhcnkgZ290byhicmVhaykgYW5kCmR1cGxpY2F0ZSBjaGVja2luZyAnaWYgKGkgPT0gQVJS
-QVlfU0laRShwb3N0X2RpdmlkZXJzKSknLgoKPiBJZiB5b3UgcmVhbGx5IHdhbnQgdG8gc2lsZW5j
-ZSB0aGF0IHdhcm5pbmcsIGp1c3QgaW5pdGlhbGl6ZSB0aGUgdmFsdWUKPiAKCkkgYW0gdHJ5aW5n
-IHRvIHNhdmUgc29tZSBDUFUgY3ljbGVzIGFuZCB5b3UgYXJlIHN1Z2dlc3RpbmcgdG8gYWRkIHNv
-bWUKbW9yZSA7LSkKCi0tCkpTUgoKPiAgCj4gPiBTaWduZWQtb2ZmLWJ5OiBKYXN3aW5kZXIgU2lu
-Z2ggUmFqcHV0IDxqYXN3aW5kZXJyYWpwdXRAZ21haWwuY29tPgo+ID4gLS0tCj4gPiAgZHJpdmVy
-cy92aWRlby9hdHkvYXR5MTI4ZmIuYyB8ICAgMzMgKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0t
-LS0tLS0tCj4gPiAgMSBmaWxlcyBjaGFuZ2VkLCAxNiBpbnNlcnRpb25zKCspLCAxNyBkZWxldGlv
-bnMoLSkKPiA+IAo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYXR5L2F0eTEyOGZiLmMg
-Yi9kcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5jCj4gPiBpbmRleCBlNGU0ZDQzLi5mZDY3NDZl
-IDEwMDY0NAo+ID4gLS0tIGEvZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYwo+ID4gKysrIGIv
-ZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYwo+ID4gQEAgLTEzMjgsOCArMTMyOCw3IEBAIHN0
-YXRpYyBpbnQgYXR5MTI4X3Zhcl90b19wbGwodTMyIHBlcmlvZF9pbl9wcywgc3RydWN0IGF0eTEy
-OF9wbGwgKnBsbCwKPiA+ICAJdW5zaWduZWQgY2hhciBwb3N0X2RpdmlkZXJzW10gPSB7MSwyLDQs
-OCwzLDYsMTJ9Owo+ID4gIAl1MzIgb3V0cHV0X2ZyZXE7Cj4gPiAgCXUzMiB2Y2xrOyAgICAgICAg
-LyogaW4gLjAxIE1IeiAqLwo+ID4gLQlpbnQgaSA9IDA7Cj4gPiAtCXUzMiBuLCBkOwo+ID4gKwlp
-bnQgaTsKPiA+ICAKPiA+ICAJdmNsayA9IDEwMDAwMDAwMCAvIHBlcmlvZF9pbl9wczsJLyogY29u
-dmVydCB1bml0cyB0byAxMCBrSHogKi8KPiA+ICAKPiA+IEBAIC0xMzQzLDI3ICsxMzQyLDI3IEBA
-IHN0YXRpYyBpbnQgYXR5MTI4X3Zhcl90b19wbGwodTMyIHBlcmlvZF9pbl9wcywgc3RydWN0IGF0
-eTEyOF9wbGwgKnBsbCwKPiA+ICAJZm9yIChpID0gMDsgaSA8IEFSUkFZX1NJWkUocG9zdF9kaXZp
-ZGVycyk7IGkrKykgewo+ID4gIAkJb3V0cHV0X2ZyZXEgPSBwb3N0X2RpdmlkZXJzW2ldICogdmNs
-azsKPiA+ICAJCWlmIChvdXRwdXRfZnJlcSA+PSBjLnBwbGxfbWluICYmIG91dHB1dF9mcmVxIDw9
-IGMucHBsbF9tYXgpIHsKPiA+ICsJCQl1MzIgbiwgZDsKPiA+ICsKPiA+ICAJCQlwbGwtPnBvc3Rf
-ZGl2aWRlciA9IHBvc3RfZGl2aWRlcnNbaV07Cj4gPiAtCQkJYnJlYWs7Cj4gPiAtCQl9Cj4gPiAt
-CX0KPiA+ICAKPiA+IC0JaWYgKGkgPT0gQVJSQVlfU0laRShwb3N0X2RpdmlkZXJzKSkKPiA+IC0J
-CXJldHVybiAtRUlOVkFMOwo+ID4gKwkJCS8qIGNhbGN1bGF0ZSBmZWVkYmFjayBkaXZpZGVyICov
-Cj4gPiArCQkJbiA9IGMucmVmX2RpdmlkZXIgKiBvdXRwdXRfZnJlcTsKPiA+ICsJCQlkID0gYy5y
-ZWZfY2xrOwo+ID4gIAo+ID4gLQkvKiBjYWxjdWxhdGUgZmVlZGJhY2sgZGl2aWRlciAqLwo+ID4g
-LQluID0gYy5yZWZfZGl2aWRlciAqIG91dHB1dF9mcmVxOwo+ID4gLQlkID0gYy5yZWZfY2xrOwo+
-ID4gKwkJCXBsbC0+ZmVlZGJhY2tfZGl2aWRlciA9IHJvdW5kX2RpdihuLCBkKTsKPiA+ICsJCQlw
-bGwtPnZjbGsgPSB2Y2xrOwo+ID4gIAo+ID4gLQlwbGwtPmZlZWRiYWNrX2RpdmlkZXIgPSByb3Vu
-ZF9kaXYobiwgZCk7Cj4gPiAtCXBsbC0+dmNsayA9IHZjbGs7Cj4gPiArCQkJREJHKCJwb3N0ICVk
-IGZlZWRiYWNrICVkIHZsY2sgJWQgb3V0cHV0ICVkICIKPiA+ICsJCQkgICAgInJlZl9kaXZpZGVy
-ICVkIHZjbGtfcGVyOiAlZFxuIiwgcGxsLT5wb3N0X2RpdmlkZXIsCj4gPiArCQkJICAgIHBsbC0+
-ZmVlZGJhY2tfZGl2aWRlciwgdmNsaywgb3V0cHV0X2ZyZXEsCj4gPiArCQkJICAgIGMucmVmX2Rp
-dmlkZXIsIHBlcmlvZF9pbl9wcyk7Cj4gPiAgCj4gPiAtCURCRygicG9zdCAlZCBmZWVkYmFjayAl
-ZCB2bGNrICVkIG91dHB1dCAlZCByZWZfZGl2aWRlciAlZCAiCj4gPiAtCSAgICAidmNsa19wZXI6
-ICVkXG4iLCBwbGwtPnBvc3RfZGl2aWRlciwKPiA+IC0JICAgIHBsbC0+ZmVlZGJhY2tfZGl2aWRl
-ciwgdmNsaywgb3V0cHV0X2ZyZXEsCj4gPiAtCSAgICBjLnJlZl9kaXZpZGVyLCBwZXJpb2RfaW5f
-cHMpOwo+ID4gKwkJCXJldHVybiAwOwo+ID4gKwkJfQo+ID4gKwl9Cj4gPiAgCj4gPiAtCXJldHVy
-biAwOwo+ID4gKwlyZXR1cm4gLUVJTlZBTDsKPiA+ICB9Cj4gPiAgCj4gPiAKCgotLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0KQ29tZSBidWlsZCB3aXRoIHVzISBUaGUgQmxhY2tCZXJyeSZyZWc7IERldmVs
-b3BlciBDb25mZXJlbmNlIGluIFNGLCBDQQppcyB0aGUgb25seSBkZXZlbG9wZXIgZXZlbnQgeW91
-IG5lZWQgdG8gYXR0ZW5kIHRoaXMgeWVhci4gSnVtcHN0YXJ0IHlvdXIKZGV2ZWxvcGluZyBza2ls
-bHMsIHRha2UgQmxhY2tCZXJyeSBtb2JpbGUgYXBwbGljYXRpb25zIHRvIG1hcmtldCBhbmQgc3Rh
-eSAKYWhlYWQgb2YgdGhlIGN1cnZlLiBKb2luIHVzIGZyb20gTm92ZW1iZXIgOSYjNDU7MTIsIDIw
-MDkuIFJlZ2lzdGVyIG5vdyYjMzM7Cmh0dHA6Ly9wLnNmLm5ldC9zZnUvZGV2Y29uZgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZl
-bCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
-dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRl
-dmVsCg==
+On Mon, 2009-09-21 at 18:27 +0530, Jaswinder Singh Rajput wrote:
+> Indentation is not an issue if I am not breaking any lines. I am
+> moving
+> the function where it should be and avoid unnecessary goto(break) and
+> duplicate checking 'if (i == ARRAY_SIZE(post_dividers))'.
+
+Where it "should be" is a matter of taste :-)
+
+> > If you really want to silence that warning, just initialize the
+> value
+> > 
+> 
+> I am trying to save some CPU cycles and you are suggesting to add some
+> more ;-)
+
+Saving CPU cycles in the mode setting code ? :-)
+
+Anyway, Paul maintains this driver afaik so it's his call :-)
+
+Cheers,
+Ben.
+
+
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
+http://p.sf.net/sfu/devconf

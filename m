@@ -1,80 +1,37 @@
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: [PATCH] aty128fb: move block to where it should
- be in function aty128_var_to_pll
-Date: Sun, 20 Sep 2009 13:44:14 +0530
-Message-ID: <1253434454.19515.10.camel@ht.satnam>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jaswinder@kernel.org>) id 1MpHZk-0008I9-GA
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Sep 2009 08:15:16 +0000
-Received: from hera.kernel.org ([140.211.167.34])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MpHZc-0003qa-TH
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 20 Sep 2009 08:15:16 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
+From: Tommi Rantala <tt.rantala@gmail.com>
+Subject: [PATCH] omapfb: Blizzard: fix pointer to be const
+Date: Mon, 21 Sep 2009 15:47:22 +0300
+Message-ID: <1253537242-5300-1-git-send-email-tt.rantala@gmail.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>, Siarhei Siamashka <siarhei.siamashka@nokia.com>, Rodrigo Vivi <rodrigo.vivi@openbossa.org>, Tommi Rantala <tt.rantala@gmail.com>
 
-CkluIGZ1bmN0aW9uIGF0eTEyOF92YXJfdG9fcGxsIG1vdmluZyBibG9jayB0byB3aGVyZSBpdCBz
-aG91bGQgYmUuCgpUaGlzIGFsc28gZml4ZWQgZm9sbG93aW5nIGNvbXBpbGF0aW9uIHdhcm5pbmc6
-CiAgQ0MgW01dICBkcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5vCmRyaXZlcnMvdmlkZW8vYXR5
-L2F0eTEyOGZiLmM6IEluIGZ1bmN0aW9uIOKAmGF0eTEyOF9kZWNvZGVfdmFy4oCZOgpkcml2ZXJz
-L3ZpZGVvL2F0eS9hdHkxMjhmYi5jOjE1MjA6IHdhcm5pbmc6IOKAmHBsbC5wb3N0X2RpdmlkZXLi
-gJkgbWF5IGJlIHVzZWQgdW5pbml0aWFsaXplZCBpbiB0aGlzIGZ1bmN0aW9uCgpTaWduZWQtb2Zm
-LWJ5OiBKYXN3aW5kZXIgU2luZ2ggUmFqcHV0IDxqYXN3aW5kZXJyYWpwdXRAZ21haWwuY29tPgot
-LS0KIGRyaXZlcnMvdmlkZW8vYXR5L2F0eTEyOGZiLmMgfCAgIDMzICsrKysrKysrKysrKysrKyst
-LS0tLS0tLS0tLS0tLS0tLQogMSBmaWxlcyBjaGFuZ2VkLCAxNiBpbnNlcnRpb25zKCspLCAxNyBk
-ZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5jIGIv
-ZHJpdmVycy92aWRlby9hdHkvYXR5MTI4ZmIuYwppbmRleCBlNGU0ZDQzLi5mZDY3NDZlIDEwMDY0
-NAotLS0gYS9kcml2ZXJzL3ZpZGVvL2F0eS9hdHkxMjhmYi5jCisrKyBiL2RyaXZlcnMvdmlkZW8v
-YXR5L2F0eTEyOGZiLmMKQEAgLTEzMjgsOCArMTMyOCw3IEBAIHN0YXRpYyBpbnQgYXR5MTI4X3Zh
-cl90b19wbGwodTMyIHBlcmlvZF9pbl9wcywgc3RydWN0IGF0eTEyOF9wbGwgKnBsbCwKIAl1bnNp
-Z25lZCBjaGFyIHBvc3RfZGl2aWRlcnNbXSA9IHsxLDIsNCw4LDMsNiwxMn07CiAJdTMyIG91dHB1
-dF9mcmVxOwogCXUzMiB2Y2xrOyAgICAgICAgLyogaW4gLjAxIE1IeiAqLwotCWludCBpID0gMDsK
-LQl1MzIgbiwgZDsKKwlpbnQgaTsKIAogCXZjbGsgPSAxMDAwMDAwMDAgLyBwZXJpb2RfaW5fcHM7
-CS8qIGNvbnZlcnQgdW5pdHMgdG8gMTAga0h6ICovCiAKQEAgLTEzNDMsMjcgKzEzNDIsMjcgQEAg
-c3RhdGljIGludCBhdHkxMjhfdmFyX3RvX3BsbCh1MzIgcGVyaW9kX2luX3BzLCBzdHJ1Y3QgYXR5
-MTI4X3BsbCAqcGxsLAogCWZvciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKHBvc3RfZGl2aWRlcnMp
-OyBpKyspIHsKIAkJb3V0cHV0X2ZyZXEgPSBwb3N0X2RpdmlkZXJzW2ldICogdmNsazsKIAkJaWYg
-KG91dHB1dF9mcmVxID49IGMucHBsbF9taW4gJiYgb3V0cHV0X2ZyZXEgPD0gYy5wcGxsX21heCkg
-eworCQkJdTMyIG4sIGQ7CisKIAkJCXBsbC0+cG9zdF9kaXZpZGVyID0gcG9zdF9kaXZpZGVyc1tp
-XTsKLQkJCWJyZWFrOwotCQl9Ci0JfQogCi0JaWYgKGkgPT0gQVJSQVlfU0laRShwb3N0X2Rpdmlk
-ZXJzKSkKLQkJcmV0dXJuIC1FSU5WQUw7CisJCQkvKiBjYWxjdWxhdGUgZmVlZGJhY2sgZGl2aWRl
-ciAqLworCQkJbiA9IGMucmVmX2RpdmlkZXIgKiBvdXRwdXRfZnJlcTsKKwkJCWQgPSBjLnJlZl9j
-bGs7CiAKLQkvKiBjYWxjdWxhdGUgZmVlZGJhY2sgZGl2aWRlciAqLwotCW4gPSBjLnJlZl9kaXZp
-ZGVyICogb3V0cHV0X2ZyZXE7Ci0JZCA9IGMucmVmX2NsazsKKwkJCXBsbC0+ZmVlZGJhY2tfZGl2
-aWRlciA9IHJvdW5kX2RpdihuLCBkKTsKKwkJCXBsbC0+dmNsayA9IHZjbGs7CiAKLQlwbGwtPmZl
-ZWRiYWNrX2RpdmlkZXIgPSByb3VuZF9kaXYobiwgZCk7Ci0JcGxsLT52Y2xrID0gdmNsazsKKwkJ
-CURCRygicG9zdCAlZCBmZWVkYmFjayAlZCB2bGNrICVkIG91dHB1dCAlZCAiCisJCQkgICAgInJl
-Zl9kaXZpZGVyICVkIHZjbGtfcGVyOiAlZFxuIiwgcGxsLT5wb3N0X2RpdmlkZXIsCisJCQkgICAg
-cGxsLT5mZWVkYmFja19kaXZpZGVyLCB2Y2xrLCBvdXRwdXRfZnJlcSwKKwkJCSAgICBjLnJlZl9k
-aXZpZGVyLCBwZXJpb2RfaW5fcHMpOwogCi0JREJHKCJwb3N0ICVkIGZlZWRiYWNrICVkIHZsY2sg
-JWQgb3V0cHV0ICVkIHJlZl9kaXZpZGVyICVkICIKLQkgICAgInZjbGtfcGVyOiAlZFxuIiwgcGxs
-LT5wb3N0X2RpdmlkZXIsCi0JICAgIHBsbC0+ZmVlZGJhY2tfZGl2aWRlciwgdmNsaywgb3V0cHV0
-X2ZyZXEsCi0JICAgIGMucmVmX2RpdmlkZXIsIHBlcmlvZF9pbl9wcyk7CisJCQlyZXR1cm4gMDsK
-KwkJfQorCX0KIAotCXJldHVybiAwOworCXJldHVybiAtRUlOVkFMOwogfQogCiAKLS0gCjEuNi40
-LjQKCgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkNvbWUgYnVpbGQgd2l0aCB1cyEgVGhlIEJsYWNr
-QmVycnkmcmVnOyBEZXZlbG9wZXIgQ29uZmVyZW5jZSBpbiBTRiwgQ0EKaXMgdGhlIG9ubHkgZGV2
-ZWxvcGVyIGV2ZW50IHlvdSBuZWVkIHRvIGF0dGVuZCB0aGlzIHllYXIuIEp1bXBzdGFydCB5b3Vy
-CmRldmVsb3Bpbmcgc2tpbGxzLCB0YWtlIEJsYWNrQmVycnkgbW9iaWxlIGFwcGxpY2F0aW9ucyB0
-byBtYXJrZXQgYW5kIHN0YXkgCmFoZWFkIG9mIHRoZSBjdXJ2ZS4gSm9pbiB1cyBmcm9tIE5vdmVt
-YmVyIDkmIzQ1OzEyLCAyMDA5LiBSZWdpc3RlciBub3cmIzMzOwpodHRwOi8vcC5zZi5uZXQvc2Z1
-L2RldmNvbmYKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-TGludXgtZmJkZXYtZGV2ZWwgbWFpbGluZyBsaXN0CkxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNv
-dXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5m
-by9saW51eC1mYmRldi1kZXZlbAo=
+Fixes a compiler warning:
+warning: assignment discards qualifiers from pointer target type
+
+Signed-off-by: Tommi Rantala <tt.rantala@gmail.com>
+---
+ drivers/video/omap/blizzard.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/omap/blizzard.c b/drivers/video/omap/blizzard.c
+index d5e5955..ce28be6 100644
+--- a/drivers/video/omap/blizzard.c
++++ b/drivers/video/omap/blizzard.c
+@@ -191,7 +191,7 @@ struct blizzard_struct {
+ 
+ 	struct omapfb_device	*fbdev;
+ 	struct lcd_ctrl_extif	*extif;
+-	struct lcd_ctrl		*int_ctrl;
++	const struct lcd_ctrl	*int_ctrl;
+ 
+ 	void			(*power_up)(struct device *dev);
+ 	void			(*power_down)(struct device *dev);
+-- 
+1.5.6.5
+

@@ -1,67 +1,53 @@
-From: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Subject: RE: [APPLIED] [PATCH] omapfb: Reorder Register_framebuffer call
-Date: Tue, 22 Sep 2009 11:57:04 -0500
-Message-ID: <A24693684029E5489D1D202277BE89444B781B4E@dlee02.ent.ti.com>
-References: <1252773249-24444-1-git-send-email-saaguirre@ti.com>
- <notify-1253583118@atomide.com>
- <4de7f8a60909220759g63b592eek85a2bca04b264d2e@mail.gmail.com>,<20090922162853.GC14890@atomide.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
+Date: Tue, 22 Sep 2009 13:03:04 -0700
+Message-ID: <20090922130304.ffe24448.akpm@linux-foundation.org>
+References: <1253622588.25232.11.camel@tubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20090922162853.GC14890@atomide.com>
-Content-Language: en-US
+In-Reply-To: <1253622588.25232.11.camel@tubuntu>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Tony Lindgren <tony@atomide.com>, Jan Blunck <jblunck@infradead.org>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: tomi.valkeinen@nokia.com
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-From: Tony Lindgren [tony@atomide.com]
-Sent: Tuesday, September 22, 2009 11:28 AM
-> * Jan Blunck <jblunck@infradead.org> [090922 07:59]:
-> > On Tue, Sep 22, 2009 at 3:31 AM, Tony Lindgren <tony@atomide.com> wrote:
-> > > This patch has been applied to the linux-omap
-> > > by youw fwiendly patch wobot.
-> > >
-> > > Branch in linux-omap: omap-fixes
-> > >
-> > > Initial commit ID (Likely to change): 9aef1066fb5ca8506068eaab1c552ecca4c85475
-> > >
-> > > PatchWorks
-> > > http://patchwork.kernel.org/patch/47089/
-> > >
-> >
-> 
-> Added back the original Cc's that were dropped from the linux-omap
-> commit message.
-> 
-> > Is it actually safe to do this? The framebuffer can be used directly
-> > after it is registered. In this case it would mean it is used before
-> > it is even fully initialized (set_fb_var(), set_fb_fix(), ... are
-> > being called).
-> 
-> Good point, dropping the patch.
+On Tue, 22 Sep 2009 15:29:48 +0300
+Tomi Valkeinen <tomi.valkeinen@nokia.com> wrote:
 
-Hmm, ok. I guess i'll rework this patch considering that..
-
-I ran some framebuffer tests with this patch applied, and they worked fine for me.
-
-The only thing is that i didn't saw Tux on bootup...
-
-Actually, nobody ever gave this kind of feedback, which was the initial idea.
-
-Just people worried about booting properly.
-
-Anyways, thanks for your time! I appreciate it.
-
-Regards,
-Sergio
+> Linus,
 > 
-> Also, let's let Tomi Valkeinen deal with queueing up the omap fb code.
-> I can then merge Tomi's branck into linux-omap master branch as needed.
+> Here's the new display subsystem and framebuffer driver for OMAP2/3.
 > 
-> Regards,
+> The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
+> use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
+> the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
 > 
-> Tony
+> We have gotten positive feedback about the driver, for example in this thread:
+> http://marc.info/?l=linux-kernel&m=125171081901820&w=2
 > 
+> The driver is actively maintained and developed further, and I have already a
+> bunch of patches on top of these patches, but I would like to get the big core
+> driver merged first. After the driver is merged, other people can send patches
+> to LCD drivers and board files to enable the new display subsystem on their
+> boards.
 > 
+> Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
+> through it), but he hasn't responded since then. I'm guessing he's quite busy.
+
+That's because it came very late and conflicts considerably with
+changes which are already pending.
+
+> Please pull the new OMAP2/3 display subsystem driver from:
+> 
+>   git://gitorious.org/linux-omap-dss2/linux.git for-linus
+> 
+
+Confused.  These conflicts heavily with the changes which I've already
+queued, does it not?  Ones which were queued way earlier than this
+material.
+
+If so, why on earth did you send a pull request, knowing that it would
+trash my tree?
+

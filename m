@@ -1,48 +1,45 @@
 From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
-Date: Tue, 22 Sep 2009 07:33:02 -0700
-Message-ID: <20090922143301.GN27699@atomide.com>
-References: <1253622588.25232.11.camel@tubuntu> <4AB8C429.60804@gmail.com>
+Subject: Re: [APPLIED] [PATCH] omapfb: Reorder Register_framebuffer call
+Date: Tue, 22 Sep 2009 09:28:54 -0700
+Message-ID: <20090922162853.GC14890@atomide.com>
+References: <1252773249-24444-1-git-send-email-saaguirre@ti.com> <notify-1253583118@atomide.com> <4de7f8a60909220759g63b592eek85a2bca04b264d2e@mail.gmail.com>
 Mime-Version: 1.0
 Return-path: <linux-omap-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4AB8C429.60804@gmail.com>
+In-Reply-To: <4de7f8a60909220759g63b592eek85a2bca04b264d2e@mail.gmail.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: torvalds@linux-foundation.org, tomi.valkeinen@nokia.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org, linux-omap@vger.kernel.org, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Jan Blunck <jblunck@infradead.org>
+Cc: linux-omap@vger.kernel.org, Sergio Aguirre <saaguirre@ti.com>, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net
 
-* Artem Bityutskiy <dedekind1@gmail.com> [090922 05:36]:
-> On 09/22/2009 03:29 PM, Tomi Valkeinen wrote:
->> Linus,
->>
->> Here's the new display subsystem and framebuffer driver for OMAP2/3.
->>
->> The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
->> use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
->> the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
->>
->> We have gotten positive feedback about the driver, for example in this thread:
->> http://marc.info/?l=linux-kernel&m=125171081901820&w=2
->>
->> The driver is actively maintained and developed further, and I have already a
->> bunch of patches on top of these patches, but I would like to get the big core
->> driver merged first. After the driver is merged, other people can send patches
->> to LCD drivers and board files to enable the new display subsystem on their
->> boards.
->>
->> Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
->> through it), but he hasn't responded since then. I'm guessing he's quite busy.
+* Jan Blunck <jblunck@infradead.org> [090922 07:59]:
+> On Tue, Sep 22, 2009 at 3:31 AM, Tony Lindgren <tony@atomide.com> wrote:
+> > This patch has been applied to the linux-omap
+> > by youw fwiendly patch wobot.
+> >
+> > Branch in linux-omap: omap-fixes
+> >
+> > Initial commit ID (Likely to change): 9aef1066fb5ca8506068eaab1c552ecca4c85475
+> >
+> > PatchWorks
+> > http://patchwork.kernel.org/patch/47089/
+> >
+> 
 
-I guess that was because there were some merge conflicts at that point, but
-those are sorted out now.
+Added back the original Cc's that were dropped from the linux-omap
+commit message.
 
-> Just in case it matters, here is my redundant confirmation that we are
-> successfully using this piece of software for about a year.
+> Is it actually safe to do this? The framebuffer can be used directly
+> after it is registered. In this case it would mean it is used before
+> it is even fully initialized (set_fb_var(), set_fb_fix(), ... are
+> being called).
 
-Ack, it would be nice to get this merged.
+Good point, dropping the patch.
+
+Also, let's let Tomi Valkeinen deal with queueing up the omap fb code.
+I can then merge Tomi's branck into linux-omap master branch as needed.
 
 Regards,
 

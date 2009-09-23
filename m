@@ -1,55 +1,64 @@
-From: Sedji Gaouaou <sedji.gaouaou@atmel.com>
-Subject: How to test overlay functionalities
-Date: Wed, 23 Sep 2009 15:23:24 +0200
-Message-ID: <4ABA214C.4080605@atmel.com>
+From: Jan Blunck <jblunck@infradead.org>
+Subject: Re: [APPLIED] [PATCH] omapfb: Reorder Register_framebuffer call
+Date: Wed, 23 Sep 2009 19:03:37 +0200
+Message-ID: <4de7f8a60909231003w7bb9fdb9p7cf6fa0b2bc7e3c@mail.gmail.com>
+References: <1252773249-24444-1-git-send-email-saaguirre@ti.com>
+	 <notify-1253583118@atomide.com>
+	 <4de7f8a60909220759g63b592eek85a2bca04b264d2e@mail.gmail.com>
+	 <20090922162853.GC14890@atomide.com>
+	 <A24693684029E5489D1D202277BE89444B781B4E@dlee02.ent.ti.com>
 Mime-Version: 1.0
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <A24693684029E5489D1D202277BE89444B781B4E@dlee02.ent.ti.com>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <sedji.gaouaou@atmel.com>) id 1MqRoz-0002Ge-Bm
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Sep 2009 13:23:49 +0000
-Received: from mail.atmel.fr ([81.80.104.162] helo=atmel-es2.atmel.fr)
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MqRou-0001Oi-QL for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Sep 2009 13:23:49 +0000
-Received: from fwat.rfo.atmel.com (gateway [192.168.1.1])
-	by atmel-es2.atmel.fr (8.11.6+Sun/8.11.6) with SMTP id n8NDGxO21141
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 23 Sep 2009 15:17:07 +0200 (MEST)
-Received: from [10.159.245.197] ([10.159.245.197])
-	by meyreuil.atmel.fr (8.11.7p1+Sun/8.11.7) with ESMTP id n8NDNNg04179
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 23 Sep 2009 15:23:23 +0200 (MEST)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi,
+On Tue, Sep 22, 2009 at 6:57 PM, Aguirre Rodriguez, Sergio Alberto
+<saaguirre@ti.com> wrote:
+> From: Tony Lindgren [tony@atomide.com]
+> Sent: Tuesday, September 22, 2009 11:28 AM
+>> * Jan Blunck <jblunck@infradead.org> [090922 07:59]:
+>> > On Tue, Sep 22, 2009 at 3:31 AM, Tony Lindgren <tony@atomide.com> wrote:
+>> > > This patch has been applied to the linux-omap
+>> > > by youw fwiendly patch wobot.
+>> > >
+>> > > Branch in linux-omap: omap-fixes
+>> > >
+>> > > Initial commit ID (Likely to change): 9aef1066fb5ca8506068eaab1c552ecca4c85475
+>> > >
+>> > > PatchWorks
+>> > > http://patchwork.kernel.org/patch/47089/
+>> > >
+>> >
+>>
+>> Added back the original Cc's that were dropped from the linux-omap
+>> commit message.
+>>
+>> > Is it actually safe to do this? The framebuffer can be used directly
+>> > after it is registered. In this case it would mean it is used before
+>> > it is even fully initialized (set_fb_var(), set_fb_fix(), ... are
+>> > being called).
+>>
+>> Good point, dropping the patch.
+>
+> Hmm, ok. I guess i'll rework this patch considering that..
+>
+> I ran some framebuffer tests with this patch applied, and they worked fine for me.
+>
+> The only thing is that i didn't saw Tux on bootup...
+>
+> Actually, nobody ever gave this kind of feedback, which was the initial idea.
+>
 
-I am currently writing a driver for a LCD controller that has overlay 
-layers.
-My concern is that I would like to know how can I test such 
-functionalities? For instance is mplayer able to handle overlay layers?
-I can see in the kernel 2.6.30 that the pxa handles overlay layers, so 
-there should be a way to use/test these layers.
+Sorry, I didn't look into it earlier.
 
-Regards,
-Sedji
+BTW, I actually wonder if it's really necessary to initialize the
+mutex in register_framebuffer() or why it couldn't be done during
+allocation.
 
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
-http://p.sf.net/sfu/devconf
+Cheers,
+Jan

@@ -1,66 +1,65 @@
-From: Dave Airlie <airlied@gmail.com>
-Subject: [PATCH 1/2] fb: change rules for global rules
-	match.
-Date: Wed, 23 Sep 2009 14:42:59 +1000
-Message-ID: <1253680979-25454-1-git-send-email-airlied@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
+Date: Wed, 23 Sep 2009 09:42:24 +0300
+Message-ID: <1253688144.14841.7.camel@tubuntu>
+References: <1253622588.25232.11.camel@tubuntu>
+	 <20090922130304.ffe24448.akpm@linux-foundation.org>
+Reply-To: tomi.valkeinen@nokia.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <airlied@gmail.com>) id 1MqJhC-0000xU-1G
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Sep 2009 04:43:14 +0000
-Received: from mx1.redhat.com ([209.132.183.28])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MqJh5-0005Sw-ID for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 23 Sep 2009 04:43:13 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sf.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754205AbZIWGnQ@vger.kernel.org>
+In-Reply-To: <20090922130304.ffe24448.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: ext Andrew Morton <akpm@linux-foundation.org>
+Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Dave Airlie <airlied@linux.ie>
+On Tue, 2009-09-22 at 22:03 +0200, ext Andrew Morton wrote:
+> On Tue, 22 Sep 2009 15:29:48 +0300
+> Tomi Valkeinen <tomi.valkeinen@nokia.com> wrote:
+> 
+> > Linus,
+> > 
+> > Here's the new display subsystem and framebuffer driver for OMAP2/3.
+> > 
+> > The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
+> > use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
+> > the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
+> > 
+> > We have gotten positive feedback about the driver, for example in this thread:
+> > http://marc.info/?l=linux-kernel&m=125171081901820&w=2
+> > 
+> > The driver is actively maintained and developed further, and I have already a
+> > bunch of patches on top of these patches, but I would like to get the big core
+> > driver merged first. After the driver is merged, other people can send patches
+> > to LCD drivers and board files to enable the new display subsystem on their
+> > boards.
+> > 
+> > Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
+> > through it), but he hasn't responded since then. I'm guessing he's quite busy.
+> 
+> That's because it came very late and conflicts considerably with
+> changes which are already pending.
+> 
+> > Please pull the new OMAP2/3 display subsystem driver from:
+> > 
+> >   git://gitorious.org/linux-omap-dss2/linux.git for-linus
+> > 
+> 
+> Confused.  These conflicts heavily with the changes which I've already
+> queued, does it not?  Ones which were queued way earlier than this
+> material.
+> 
+> If so, why on earth did you send a pull request, knowing that it would
+> trash my tree?
 
-Having a : should be enough 'fb:' isn't really useful
-if the fb wants to a kms output ID.
+Ah, my mistake. I'm new to getting patches merged and the process
+involved. Somehow I thought the patches you have went already in, and as
+I didn't get any replies for couple of week, I pursued another route.
+Sorry about the confusion.
 
-Andrew: I can push this via the drm tree if no objections, as
-I have a kms patch that requires it.
+Let's continue this with less audience, no need to bother everyone with
+this.
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
----
- drivers/video/fbmem.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index a85c818..41a6162 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1789,7 +1789,7 @@ static int __init video_setup(char *options)
-  		global = 1;
-  	}
- 
-- 	if (!global && !strstr(options, "fb:")) {
-+ 	if (!global && !strstr(options, ":")) {
-  		fb_mode_option = options;
-  		global = 1;
-  	}
--- 
-1.6.4.4
-
-
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
-http://p.sf.net/sfu/devconf
+ Tomi

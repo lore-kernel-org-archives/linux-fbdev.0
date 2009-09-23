@@ -1,65 +1,70 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: Re: [GIT PULL]: OMAP2/3 Display Subsystem
-Date: Wed, 23 Sep 2009 09:42:24 +0300
-Message-ID: <1253688144.14841.7.camel@tubuntu>
-References: <1253622588.25232.11.camel@tubuntu>
-	 <20090922130304.ffe24448.akpm@linux-foundation.org>
-Reply-To: tomi.valkeinen@nokia.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/2] fb: change rules for global
+	rules match.
+Date: Wed, 23 Sep 2009 08:50:18 +0200
+Message-ID: <10f740e80909222350s3a785a4dm7b98586a86bebf70@mail.gmail.com>
+References: <1253680979-25454-1-git-send-email-airlied@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754205AbZIWGnQ@vger.kernel.org>
-In-Reply-To: <20090922130304.ffe24448.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: ext Andrew Morton <akpm@linux-foundation.org>
-Cc: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1MqLgN-00064N-FB
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Sep 2009 06:50:31 +0000
+Received: from mail-pz0-f184.google.com ([209.85.222.184])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MqLgH-0001RA-0t for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 23 Sep 2009 06:50:31 +0000
+In-Reply-To: <1253680979-25454-1-git-send-email-airlied@gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Dave Airlie <airlied@gmail.com>
+Cc: linux-fbdev-devel@lists.sf.net
 
-On Tue, 2009-09-22 at 22:03 +0200, ext Andrew Morton wrote:
-> On Tue, 22 Sep 2009 15:29:48 +0300
-> Tomi Valkeinen <tomi.valkeinen@nokia.com> wrote:
-> 
-> > Linus,
-> > 
-> > Here's the new display subsystem and framebuffer driver for OMAP2/3.
-> > 
-> > The driver has been reviewed on linux-omap and linux-fbdev-devel, and is in
-> > use, for example, on N900, Beagle Board and Overo boards. We have an ACK for
-> > the OMAP parts from Tony Lindgren, who maintains the OMAP platform.
-> > 
-> > We have gotten positive feedback about the driver, for example in this thread:
-> > http://marc.info/?l=linux-kernel&m=125171081901820&w=2
-> > 
-> > The driver is actively maintained and developed further, and I have already a
-> > bunch of patches on top of these patches, but I would like to get the big core
-> > driver merged first. After the driver is merged, other people can send patches
-> > to LCD drivers and board files to enable the new display subsystem on their
-> > boards.
-> > 
-> > Andrew said 2-3 weeks ago that he'll merge the driver (after he has looked
-> > through it), but he hasn't responded since then. I'm guessing he's quite busy.
-> 
-> That's because it came very late and conflicts considerably with
-> changes which are already pending.
-> 
-> > Please pull the new OMAP2/3 display subsystem driver from:
-> > 
-> >   git://gitorious.org/linux-omap-dss2/linux.git for-linus
-> > 
-> 
-> Confused.  These conflicts heavily with the changes which I've already
-> queued, does it not?  Ones which were queued way earlier than this
-> material.
-> 
-> If so, why on earth did you send a pull request, knowing that it would
-> trash my tree?
-
-Ah, my mistake. I'm new to getting patches merged and the process
-involved. Somehow I thought the patches you have went already in, and as
-I didn't get any replies for couple of week, I pursued another route.
-Sorry about the confusion.
-
-Let's continue this with less audience, no need to bother everyone with
-this.
-
- Tomi
+T24gV2VkLCBTZXAgMjMsIDIwMDkgYXQgMDY6NDIsIERhdmUgQWlybGllIDxhaXJsaWVkQGdtYWls
+LmNvbT4gd3JvdGU6Cj4gRnJvbTogRGF2ZSBBaXJsaWUgPGFpcmxpZWRAbGludXguaWU+Cj4KPiBI
+YXZpbmcgYSA6IHNob3VsZCBiZSBlbm91Z2ggJ2ZiOicgaXNuJ3QgcmVhbGx5IHVzZWZ1bAo+IGlm
+IHRoZSBmYiB3YW50cyB0byBhIGttcyBvdXRwdXQgSUQuCj4KPiBBbmRyZXc6IEkgY2FuIHB1c2gg
+dGhpcyB2aWEgdGhlIGRybSB0cmVlIGlmIG5vIG9iamVjdGlvbnMsIGFzCj4gSSBoYXZlIGEga21z
+IHBhdGNoIHRoYXQgcmVxdWlyZXMgaXQuCj4KPiBTaWduZWQtb2ZmLWJ5OiBEYXZlIEFpcmxpZSA8
+YWlybGllZEByZWRoYXQuY29tPgo+IC0tLQo+IMKgZHJpdmVycy92aWRlby9mYm1lbS5jIHwgwqAg
+wqAyICstCj4gwqAxIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMo
+LSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZibWVtLmMgYi9kcml2ZXJzL3ZpZGVv
+L2ZibWVtLmMKPiBpbmRleCBhODVjODE4Li40MWE2MTYyIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMv
+dmlkZW8vZmJtZW0uYwo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJtZW0uYwo+IEBAIC0xNzg5LDcg
+KzE3ODksNyBAQCBzdGF0aWMgaW50IF9faW5pdCB2aWRlb19zZXR1cChjaGFyICpvcHRpb25zKQo+
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZ2xvYmFsID0gMTsKPiDCoCDCoCDCoCDCoH0KPgo+IC0g
+wqAgwqAgwqAgaWYgKCFnbG9iYWwgJiYgIXN0cnN0cihvcHRpb25zLCAiZmI6IikpIHsKPiArIMKg
+IMKgIMKgIGlmICghZ2xvYmFsICYmICFzdHJzdHIob3B0aW9ucywgIjoiKSkgewo+IMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgZmJfbW9kZV9vcHRpb24gPSBvcHRpb25zOwo+IMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgZ2xvYmFsID0gMTsKPiDCoCDCoCDCoCDCoH0KClBsZWFzZSBkb24ndCB1c2Ugc3Ry
+c3RyKCkgd2l0aCBzaW5nbGUtY2hhcmFjdGVyIG5lZWRsZSBwYXJhbWV0ZXIgc3RyaW5ncy4KVXNl
+IHN0cmNocigpIGluc3RlYWQuCgpHY2MgbWF5IGNoYW5nZSBzdWNoIGEgc3Ryc3RyKCkgdG8gc3Ry
+Y2hyKCkgYmVoaW5kIG91ciBiYWNrLCBjYXVzaW5nCmxpbmtpbmcgZXJyb3JzCm9uIHBsYXRmb3Jt
+cyB0aGF0IG9ubHkgcHJvdmlkZSBhbiBpbmxpbmUgdmVyc2lvbiBvZiBzdHJjaHIoKS4KCkdye29l
+dGplLGVldGluZ31zLAoKCQkJCQkJR2VlcnQKCi0tCkdlZXJ0IFV5dHRlcmhvZXZlbiAtLSBUaGVy
+ZSdzIGxvdHMgb2YgTGludXggYmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtbTY4ay5vcmcKCklu
+IHBlcnNvbmFsIGNvbnZlcnNhdGlvbnMgd2l0aCB0ZWNobmljYWwgcGVvcGxlLCBJIGNhbGwgbXlz
+ZWxmIGEgaGFja2VyLiBCdXQKd2hlbiBJJ20gdGFsa2luZyB0byBqb3VybmFsaXN0cyBJIGp1c3Qg
+c2F5ICJwcm9ncmFtbWVyIiBvciBzb21ldGhpbmcgbGlrZSB0aGF0LgoJCQkJCQkJICAgIC0tIExp
+bnVzIFRvcnZhbGRzCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KQ29tZSBidWlsZCB3aXRoIHVzISBU
+aGUgQmxhY2tCZXJyeSZyZWc7IERldmVsb3BlciBDb25mZXJlbmNlIGluIFNGLCBDQQppcyB0aGUg
+b25seSBkZXZlbG9wZXIgZXZlbnQgeW91IG5lZWQgdG8gYXR0ZW5kIHRoaXMgeWVhci4gSnVtcHN0
+YXJ0IHlvdXIKZGV2ZWxvcGluZyBza2lsbHMsIHRha2UgQmxhY2tCZXJyeSBtb2JpbGUgYXBwbGlj
+YXRpb25zIHRvIG1hcmtldCBhbmQgc3RheSAKYWhlYWQgb2YgdGhlIGN1cnZlLiBKb2luIHVzIGZy
+b20gTm92ZW1iZXIgOSYjNDU7MTIsIDIwMDkuIFJlZ2lzdGVyIG5vdyYjMzM7Cmh0dHA6Ly9wLnNm
+Lm5ldC9zZnUvZGV2Y29uZgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxA
+bGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3Rz
+L2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==

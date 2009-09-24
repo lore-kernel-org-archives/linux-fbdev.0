@@ -1,69 +1,92 @@
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: [PATCH] video: includecheck fix: da8xx-fb.c
-Date: Thu, 24 Sep 2009 16:37:10 +0530
-Message-ID: <1253790430.5860.11.camel__39611.1376503997$1253790717$gmane$org@ht.satnam>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] fbdev: bfin-lq035q1-fb: new Blackfin Landscape LCD
+ EZ-Extender driver
+Date: Thu, 24 Sep 2009 16:32:40 -0700
+Message-ID: <20090924163240.d03127e3.akpm@linux-foundation.org>
+References: <1252950549-9838-1-git-send-email-vapier@gentoo.org>
+	<1253223426-5938-1-git-send-email-vapier@gentoo.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <jaswinder@kernel.org>) id 1MqmBg-0003Z3-TF
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Sep 2009 11:08:36 +0000
-Received: from hera.kernel.org ([140.211.167.34])
-	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1MqmBb-0002IO-Tm
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 24 Sep 2009 11:08:36 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Kevin Hilman <khilman@deeprootsystems.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>, Steve Chen <schen@mvista.com>, Sudhakar Rajashekhara <sudh>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752669AbZIXXd7@vger.kernel.org>
+In-Reply-To: <1253223426-5938-1-git-send-email-vapier@gentoo.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, michael.hennerich@analog.com, cooloney@kernel.org
 
+On Thu, 17 Sep 2009 17:37:06 -0400
+Mike Frysinger <vapier@gentoo.org> wrote:
 
-fix the following 'make includecheck' warning:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+> 
+> Framebuffer driver for the Landscape LCD EZ-Extender (ADZS-BFLLCD-EZEXT)
+> http://docs.blackfin.uclinux.org/doku.php?id=hw:cards:landscape_lcd_ez-extender
+> 
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>
+> ...
+>
+> +config FB_BFIN_LQ035Q1
+> +	tristate "SHARP LQ035Q1DH02 TFT LCD"
+> +	depends on FB && BLACKFIN
+> +	select FB_CFB_FILLRECT
+> +	select FB_CFB_COPYAREA
+> +	select FB_CFB_IMAGEBLIT
+> +	select BFIN_GPTIMERS
+> +	select SPI
 
-  drivers/video/da8xx-fb.c: linux/device.h is included more than once.
+Are we sure about the `select SPI'?  There's only one other place in
+the kernel which does this, and `select' often makes things explode.  I
+fear that you're either selecting the wrong thing or you're selecting
+something which won't work well.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
-Cc: Steve Chen <schen@mvista.com>
-Cc: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- drivers/video/da8xx-fb.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> +	help
+> +	  This is the framebuffer device driver for a SHARP LQ035Q1DH02 TFT display found on
+> +	  the Blackfin Landscape LCD EZ-Extender Card.
+> +	  This display is a QVGA 320x240 18-bit RGB display interfaced by an 16-bit wide PPI
+> +	  It uses PPI[0..15] PPI_FS1, PPI_FS2 and PPI_CLK.
+>  
+>
+> ...
+>
+> +
+> +#define DRIVER_NAME "bfin-lq035q1"
+> +static char driver_name[] = DRIVER_NAME;
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 42e1005..d065894 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -26,7 +26,6 @@
- #include <linux/device.h>
- #include <linux/platform_device.h>
- #include <linux/uaccess.h>
--#include <linux/device.h>
- #include <linux/interrupt.h>
- #include <linux/clk.h>
- #include <video/da8xx-fb.h>
--- 
-1.6.0.6
+Will the compielr magically put this string into read-only storage for
+us, or should we do that manually with `const'?
 
+>
+> ...
+>
+> +static int lq035q1_control(unsigned char reg, unsigned short value)
+> +{
+> +	int ret;
+> +	u8 regs[3] = {LQ035_INDEX, 0, 0};
+> +	u8 dat[3] = {LQ035_DATA, 0, 0};
+> +
+> +	if (spi_control.spidev) {
+> +		regs[2] = reg;
+> +		dat[1] = value >> 8;
+> +		dat[2] = value & 0xFF;
+> +
+> +		ret = spi_write(spi_control.spidev, regs, ARRAY_SIZE(regs));
+> +		ret |= spi_write(spi_control.spidev, dat, ARRAY_SIZE(dat));
+> +	} else
+> +		return -ENODEV;
+> +
+> +	return ret;
+> +}
 
+I am suspecting that this function (and the similar ones below) rely
+upon state within the hardware and will hence misbehave if two
+instances are run concurrently.
 
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
-http://p.sf.net/sfu/devconf
+Is that correct>  If so, is there locking to prevent this from occurring?
+
+>
+> ...
+>

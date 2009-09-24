@@ -1,64 +1,69 @@
-From: Jan Blunck <jblunck@infradead.org>
-Subject: Re: [APPLIED] [PATCH] omapfb: Reorder Register_framebuffer call
-Date: Wed, 23 Sep 2009 19:03:37 +0200
-Message-ID: <4de7f8a60909231003w7bb9fdb9p7cf6fa0b2bc7e3c@mail.gmail.com>
-References: <1252773249-24444-1-git-send-email-saaguirre@ti.com>
-	 <notify-1253583118@atomide.com>
-	 <4de7f8a60909220759g63b592eek85a2bca04b264d2e@mail.gmail.com>
-	 <20090922162853.GC14890@atomide.com>
-	 <A24693684029E5489D1D202277BE89444B781B4E@dlee02.ent.ti.com>
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: [PATCH] video: includecheck fix: da8xx-fb.c
+Date: Thu, 24 Sep 2009 16:37:10 +0530
+Message-ID: <1253790430.5860.11.camel__39611.1376503997$1253790717$gmane$org@ht.satnam>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <A24693684029E5489D1D202277BE89444B781B4E@dlee02.ent.ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <jaswinder@kernel.org>) id 1MqmBg-0003Z3-TF
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 24 Sep 2009 11:08:36 +0000
+Received: from hera.kernel.org ([140.211.167.34])
+	by 29vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1MqmBb-0002IO-Tm
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 24 Sep 2009 11:08:36 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Kevin Hilman <khilman@deeprootsystems.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Pavel Kiryukhin <pkiryukhin@ru.mvista.com>, Steve Chen <schen@mvista.com>, Sudhakar Rajashekhara <sudh>
 
-On Tue, Sep 22, 2009 at 6:57 PM, Aguirre Rodriguez, Sergio Alberto
-<saaguirre@ti.com> wrote:
-> From: Tony Lindgren [tony@atomide.com]
-> Sent: Tuesday, September 22, 2009 11:28 AM
->> * Jan Blunck <jblunck@infradead.org> [090922 07:59]:
->> > On Tue, Sep 22, 2009 at 3:31 AM, Tony Lindgren <tony@atomide.com> wrote:
->> > > This patch has been applied to the linux-omap
->> > > by youw fwiendly patch wobot.
->> > >
->> > > Branch in linux-omap: omap-fixes
->> > >
->> > > Initial commit ID (Likely to change): 9aef1066fb5ca8506068eaab1c552ecca4c85475
->> > >
->> > > PatchWorks
->> > > http://patchwork.kernel.org/patch/47089/
->> > >
->> >
->>
->> Added back the original Cc's that were dropped from the linux-omap
->> commit message.
->>
->> > Is it actually safe to do this? The framebuffer can be used directly
->> > after it is registered. In this case it would mean it is used before
->> > it is even fully initialized (set_fb_var(), set_fb_fix(), ... are
->> > being called).
->>
->> Good point, dropping the patch.
->
-> Hmm, ok. I guess i'll rework this patch considering that..
->
-> I ran some framebuffer tests with this patch applied, and they worked fine for me.
->
-> The only thing is that i didn't saw Tux on bootup...
->
-> Actually, nobody ever gave this kind of feedback, which was the initial idea.
->
 
-Sorry, I didn't look into it earlier.
+fix the following 'make includecheck' warning:
 
-BTW, I actually wonder if it's really necessary to initialize the
-mutex in register_framebuffer() or why it couldn't be done during
-allocation.
+  drivers/video/da8xx-fb.c: linux/device.h is included more than once.
 
-Cheers,
-Jan
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+Cc: Steve Chen <schen@mvista.com>
+Cc: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/video/da8xx-fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 42e1005..d065894 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -26,7 +26,6 @@
+ #include <linux/device.h>
+ #include <linux/platform_device.h>
+ #include <linux/uaccess.h>
+-#include <linux/device.h>
+ #include <linux/interrupt.h>
+ #include <linux/clk.h>
+ #include <video/da8xx-fb.h>
+-- 
+1.6.0.6
+
+
+
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
+http://p.sf.net/sfu/devconf

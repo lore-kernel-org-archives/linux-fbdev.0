@@ -1,92 +1,65 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] fbdev: bfin-lq035q1-fb: new Blackfin Landscape LCD
- EZ-Extender driver
-Date: Thu, 24 Sep 2009 16:32:40 -0700
-Message-ID: <20090924163240.d03127e3.akpm@linux-foundation.org>
-References: <1252950549-9838-1-git-send-email-vapier@gentoo.org>
-	<1253223426-5938-1-git-send-email-vapier@gentoo.org>
+From: Dave Airlie <airlied@gmail.com>
+Subject: [PATCH 1/2] fb: change rules for global rules
+	match.
+Date: Fri, 25 Sep 2009 12:58:32 +1000
+Message-ID: <1253847512-22994-1-git-send-email-airlied@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752669AbZIXXd7@vger.kernel.org>
-In-Reply-To: <1253223426-5938-1-git-send-email-vapier@gentoo.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, michael.hennerich@analog.com, cooloney@kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <airlied@gmail.com>) id 1Mr11C-0004xC-OO
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Sep 2009 02:58:46 +0000
+Received: from mx1.redhat.com ([209.132.183.28])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Mr116-0008Fg-Bh for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 25 Sep 2009 02:58:46 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sf.net
 
-On Thu, 17 Sep 2009 17:37:06 -0400
-Mike Frysinger <vapier@gentoo.org> wrote:
+From: Dave Airlie <airlied@linux.ie>
 
-> From: Michael Hennerich <michael.hennerich@analog.com>
-> 
-> Framebuffer driver for the Landscape LCD EZ-Extender (ADZS-BFLLCD-EZEXT)
-> http://docs.blackfin.uclinux.org/doku.php?id=hw:cards:landscape_lcd_ez-extender
-> 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->
-> ...
->
-> +config FB_BFIN_LQ035Q1
-> +	tristate "SHARP LQ035Q1DH02 TFT LCD"
-> +	depends on FB && BLACKFIN
-> +	select FB_CFB_FILLRECT
-> +	select FB_CFB_COPYAREA
-> +	select FB_CFB_IMAGEBLIT
-> +	select BFIN_GPTIMERS
-> +	select SPI
+Having a : should be enough 'fb:' isn't really useful
+if the fb wants to a kms output ID.
 
-Are we sure about the `select SPI'?  There's only one other place in
-the kernel which does this, and `select' often makes things explode.  I
-fear that you're either selecting the wrong thing or you're selecting
-something which won't work well.
+Changed to use strchr as per feedback from Geert.
 
-> +	help
-> +	  This is the framebuffer device driver for a SHARP LQ035Q1DH02 TFT display found on
-> +	  the Blackfin Landscape LCD EZ-Extender Card.
-> +	  This display is a QVGA 320x240 18-bit RGB display interfaced by an 16-bit wide PPI
-> +	  It uses PPI[0..15] PPI_FS1, PPI_FS2 and PPI_CLK.
->  
->
-> ...
->
-> +
-> +#define DRIVER_NAME "bfin-lq035q1"
-> +static char driver_name[] = DRIVER_NAME;
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+---
+ drivers/video/fbmem.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Will the compielr magically put this string into read-only storage for
-us, or should we do that manually with `const'?
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index a85c818..750c71f 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1789,7 +1789,7 @@ static int __init video_setup(char *options)
+  		global = 1;
+  	}
+ 
+- 	if (!global && !strstr(options, "fb:")) {
++ 	if (!global && !strchr(options, ':')) {
+  		fb_mode_option = options;
+  		global = 1;
+  	}
+-- 
+1.6.4.2
 
->
-> ...
->
-> +static int lq035q1_control(unsigned char reg, unsigned short value)
-> +{
-> +	int ret;
-> +	u8 regs[3] = {LQ035_INDEX, 0, 0};
-> +	u8 dat[3] = {LQ035_DATA, 0, 0};
-> +
-> +	if (spi_control.spidev) {
-> +		regs[2] = reg;
-> +		dat[1] = value >> 8;
-> +		dat[2] = value & 0xFF;
-> +
-> +		ret = spi_write(spi_control.spidev, regs, ARRAY_SIZE(regs));
-> +		ret |= spi_write(spi_control.spidev, dat, ARRAY_SIZE(dat));
-> +	} else
-> +		return -ENODEV;
-> +
-> +	return ret;
-> +}
 
-I am suspecting that this function (and the similar ones below) rely
-upon state within the hardware and will hence misbehave if two
-instances are run concurrently.
-
-Is that correct>  If so, is there locking to prevent this from occurring?
-
->
-> ...
->
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
+http://p.sf.net/sfu/devconf

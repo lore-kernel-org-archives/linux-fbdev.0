@@ -1,65 +1,68 @@
-From: Dave Airlie <airlied@gmail.com>
-Subject: [PATCH 1/2] fb: change rules for global rules
-	match.
-Date: Fri, 25 Sep 2009 12:58:32 +1000
-Message-ID: <1253847512-22994-1-git-send-email-airlied@gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Subject: Re: [Linux-fbdev-devel] [APPLIED] [PATCH] omapfb: Reorder	Register_framebuffer
+ call
+Date: Fri, 25 Sep 2009 12:13:12 +0200
+Message-ID: <4ABC97B8.80206@gmx.de>
+References: <1252773249-24444-1-git-send-email-saaguirre@ti.com>	<notify-1253583118@atomide.com>	<4de7f8a60909220759g63b592eek85a2bca04b264d2e@mail.gmail.com>	<20090922162853.GC14890@atomide.com>	<A24693684029E5489D1D202277BE89444B781B4E@dlee02.ent.ti.com> <4de7f8a60909231003w7bb9fdb9p7cf6fa0b2bc7e3c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <airlied@gmail.com>) id 1Mr11C-0004xC-OO
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Sep 2009 02:58:46 +0000
-Received: from mx1.redhat.com ([209.132.183.28])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Mr116-0008Fg-Bh for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 25 Sep 2009 02:58:46 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sf.net
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <4de7f8a60909231003w7bb9fdb9p7cf6fa0b2bc7e3c@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Jan Blunck <jblunck@infradead.org>
+Cc: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Dave Airlie <airlied@linux.ie>
+Jan Blunck schrieb:
+> On Tue, Sep 22, 2009 at 6:57 PM, Aguirre Rodriguez, Sergio Alberto
+> <saaguirre@ti.com> wrote:
+>> From: Tony Lindgren [tony@atomide.com]
+>> Sent: Tuesday, September 22, 2009 11:28 AM
+>>> * Jan Blunck <jblunck@infradead.org> [090922 07:59]:
+>>>> On Tue, Sep 22, 2009 at 3:31 AM, Tony Lindgren <tony@atomide.com> wrote:
+>>>>> This patch has been applied to the linux-omap
+>>>>> by youw fwiendly patch wobot.
+>>>>>
+>>>>> Branch in linux-omap: omap-fixes
+>>>>>
+>>>>> Initial commit ID (Likely to change): 9aef1066fb5ca8506068eaab1c552ecca4c85475
+>>>>>
+>>>>> PatchWorks
+>>>>> http://patchwork.kernel.org/patch/47089/
+>>>>>
+>>> Added back the original Cc's that were dropped from the linux-omap
+>>> commit message.
+>>>
+>>>> Is it actually safe to do this? The framebuffer can be used directly
+>>>> after it is registered. In this case it would mean it is used before
+>>>> it is even fully initialized (set_fb_var(), set_fb_fix(), ... are
+>>>> being called).
+>>> Good point, dropping the patch.
+>> Hmm, ok. I guess i'll rework this patch considering that..
+>>
+>> I ran some framebuffer tests with this patch applied, and they worked fine for me.
+>>
+>> The only thing is that i didn't saw Tux on bootup...
+>>
+>> Actually, nobody ever gave this kind of feedback, which was the initial idea.
+>>
+> 
+> Sorry, I didn't look into it earlier.
+> 
+> BTW, I actually wonder if it's really necessary to initialize the
+> mutex in register_framebuffer() or why it couldn't be done during
+> allocation.
 
-Having a : should be enough 'fb:' isn't really useful
-if the fb wants to a kms output ID.
+This small discussion between Linus and Krzysztof might explain it:
+http://marc.info/?l=linux-kernel&m=124703449332064&w=2
+or to summarize:
+It is done the way it is done to keep drivers working that use 
+statically declared fb_info.
 
-Changed to use strchr as per feedback from Geert.
-
-Signed-off-by: Dave Airlie <airlied@redhat.com>
----
- drivers/video/fbmem.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index a85c818..750c71f 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1789,7 +1789,7 @@ static int __init video_setup(char *options)
-  		global = 1;
-  	}
- 
-- 	if (!global && !strstr(options, "fb:")) {
-+ 	if (!global && !strchr(options, ':')) {
-  		fb_mode_option = options;
-  		global = 1;
-  	}
--- 
-1.6.4.2
+Although I agree, that it would be cleaner the other way around.
 
 
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
-http://p.sf.net/sfu/devconf
+Regards,
+
+Florian Tobias Schandinat

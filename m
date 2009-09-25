@@ -1,68 +1,86 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [Linux-fbdev-devel] [APPLIED] [PATCH] omapfb: Reorder	Register_framebuffer
- call
-Date: Fri, 25 Sep 2009 12:13:12 +0200
-Message-ID: <4ABC97B8.80206@gmx.de>
-References: <1252773249-24444-1-git-send-email-saaguirre@ti.com>	<notify-1253583118@atomide.com>	<4de7f8a60909220759g63b592eek85a2bca04b264d2e@mail.gmail.com>	<20090922162853.GC14890@atomide.com>	<A24693684029E5489D1D202277BE89444B781B4E@dlee02.ent.ti.com> <4de7f8a60909231003w7bb9fdb9p7cf6fa0b2bc7e3c@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH v2] fbdev: bfin-lq035q1-fb: new Blackfin Landscape LCD 
+	EZ-Extender driver
+Date: Fri, 25 Sep 2009 16:24:10 -0400
+Message-ID: <8bd0f97a0909251324h115c5c47wb2d50cc982ba17dd@mail.gmail.com>
+References: <1252950549-9838-1-git-send-email-vapier@gentoo.org> 
+	<1253223426-5938-1-git-send-email-vapier@gentoo.org> <20090924163240.d03127e3.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <4de7f8a60909231003w7bb9fdb9p7cf6fa0b2bc7e3c@mail.gmail.com>
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752234AbZIYUY1@vger.kernel.org>
+In-Reply-To: <20090924163240.d03127e3.akpm@linux-foundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Jan Blunck <jblunck@infradead.org>
-Cc: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, michael.hennerich@analog.com, cooloney@kernel.org
 
-Jan Blunck schrieb:
-> On Tue, Sep 22, 2009 at 6:57 PM, Aguirre Rodriguez, Sergio Alberto
-> <saaguirre@ti.com> wrote:
->> From: Tony Lindgren [tony@atomide.com]
->> Sent: Tuesday, September 22, 2009 11:28 AM
->>> * Jan Blunck <jblunck@infradead.org> [090922 07:59]:
->>>> On Tue, Sep 22, 2009 at 3:31 AM, Tony Lindgren <tony@atomide.com> wrote:
->>>>> This patch has been applied to the linux-omap
->>>>> by youw fwiendly patch wobot.
->>>>>
->>>>> Branch in linux-omap: omap-fixes
->>>>>
->>>>> Initial commit ID (Likely to change): 9aef1066fb5ca8506068eaab1c552ecca4c85475
->>>>>
->>>>> PatchWorks
->>>>> http://patchwork.kernel.org/patch/47089/
->>>>>
->>> Added back the original Cc's that were dropped from the linux-omap
->>> commit message.
->>>
->>>> Is it actually safe to do this? The framebuffer can be used directly
->>>> after it is registered. In this case it would mean it is used before
->>>> it is even fully initialized (set_fb_var(), set_fb_fix(), ... are
->>>> being called).
->>> Good point, dropping the patch.
->> Hmm, ok. I guess i'll rework this patch considering that..
->>
->> I ran some framebuffer tests with this patch applied, and they worked fine for me.
->>
->> The only thing is that i didn't saw Tux on bootup...
->>
->> Actually, nobody ever gave this kind of feedback, which was the initial idea.
->>
-> 
-> Sorry, I didn't look into it earlier.
-> 
-> BTW, I actually wonder if it's really necessary to initialize the
-> mutex in register_framebuffer() or why it couldn't be done during
-> allocation.
+On Thu, Sep 24, 2009 at 19:32, Andrew Morton wrote:
+> On Thu, 17 Sep 2009 17:37:06 -0400 Mike Frysinger wrote:
+>> +config FB_BFIN_LQ035Q1
+>> + =C2=A0 =C2=A0 tristate "SHARP LQ035Q1DH02 TFT LCD"
+>> + =C2=A0 =C2=A0 depends on FB && BLACKFIN
+>> + =C2=A0 =C2=A0 select FB_CFB_FILLRECT
+>> + =C2=A0 =C2=A0 select FB_CFB_COPYAREA
+>> + =C2=A0 =C2=A0 select FB_CFB_IMAGEBLIT
+>> + =C2=A0 =C2=A0 select BFIN_GPTIMERS
+>> + =C2=A0 =C2=A0 select SPI
+>
+> Are we sure about the `select SPI'? =C2=A0There's only one other plac=
+e in
+> the kernel which does this, and `select' often makes things explode. =
+=C2=A0I
+> fear that you're either selecting the wrong thing or you're selecting
+> something which won't work well.
 
-This small discussion between Linus and Krzysztof might explain it:
-http://marc.info/?l=linux-kernel&m=124703449332064&w=2
-or to summarize:
-It is done the way it is done to keep drivers working that use 
-statically declared fb_info.
+is it there on purpose and is it not just a mistaken typo ?  yes.  do
+we really need it and will we cry if it changes to a "depends" ?  no.
 
-Although I agree, that it would be cleaner the other way around.
+it's just confusing to have a device driver disappear if SPI is
+disabled, but considering SPI is enabled by default now, it's not a
+big deal.
 
+>> +#define DRIVER_NAME "bfin-lq035q1"
+>> +static char driver_name[] =3D DRIVER_NAME;
+>
+> Will the compielr magically put this string into read-only storage fo=
+r
+> us, or should we do that manually with `const'?
 
-Regards,
+is this question a rhetorical one ?  oh no, infinite loop ...
 
-Florian Tobias Schandinat
+i'll fix it up in v3
+
+>> +static int lq035q1_control(unsigned char reg, unsigned short value)
+>> +{
+>> + =C2=A0 =C2=A0 int ret;
+>> + =C2=A0 =C2=A0 u8 regs[3] =3D {LQ035_INDEX, 0, 0};
+>> + =C2=A0 =C2=A0 u8 dat[3] =3D {LQ035_DATA, 0, 0};
+>> +
+>> + =C2=A0 =C2=A0 if (spi_control.spidev) {
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 regs[2] =3D reg;
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dat[1] =3D value >> 8;
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dat[2] =3D value & 0xFF;
+>> +
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D spi_write(spi_co=
+ntrol.spidev, regs, ARRAY_SIZE(regs));
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ret |=3D spi_write(spi_c=
+ontrol.spidev, dat, ARRAY_SIZE(dat));
+>> + =C2=A0 =C2=A0 } else
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -ENODEV;
+>> +
+>> + =C2=A0 =C2=A0 return ret;
+>> +}
+>
+> I am suspecting that this function (and the similar ones below) rely
+> upon state within the hardware and will hence misbehave if two
+> instances are run concurrently.
+>
+> Is that correct> =C2=A0If so, is there locking to prevent this from o=
+ccurring?
+
+if by "instances" you mean "users" as in "multiple programs
+reading/writing the framebuffer concurrently", then probably.  rather
+than handle the locking ourselves, it can be pushed to the SPI bus by
+having the regs/dat be transfers in a single message.
+-mike

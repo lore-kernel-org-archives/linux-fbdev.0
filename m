@@ -1,42 +1,37 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Subject: RE: [PATCH v2 0/3] v2: s3c-fb panning and vsync support
-Date: Tue, 29 Sep 2009 13:45:05 +0200
-Message-ID: <000401ca40fa$4967c6e0$dc3754a0$%osciak@samsung.com>
-References: <E4D3F24EA6C9E54F817833EAE0D912AC0770658048@bssrvexch01.BS.local>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] video/omap:  adding __init/__exit macros to various
+ drivers
+Date: Tue, 29 Sep 2009 14:07:48 +0200 (CEST)
+Message-ID: <alpine.LSU.2.00.0909291401060.9280@wotan.suse.de>
+References: <200909290318.07309.PeterHuewe@gmx.de> <20090929091853.GC9536@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20090929091853.GC9536@localhost>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <E4D3F24EA6C9E54F817833EAE0D912AC0770658048@bssrvexch01.BS.local>
-Content-language: pl
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: Pawel Osciak <p.osciak@samsung.com>, =?utf-8?B?J+uwleqyveuvvCc=?= <kyungmin.park@samsung.com>, ben-linux@fluff.org, adaplas@gmail.com, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Imre Deak <imre.deak@nokia.com>
+Cc: ext Peter Huewe <PeterHuewe@gmx.de>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@wp.pl>, Jonathan McDowell <noodles@earth.li>, Arnaud Patard <arnaud.patard@rtp-net.org>, Mike Wege <ext-mike.wege@nokia.com>, "Doyu Hiroshi (Nokia-D/Helsinki)" <hiroshi.doyu@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hello,
+On Tue, 29 Sep 2009, Imre Deak wrote:
 
->this is the second version of my previous patchset, corrected after your feedback (thank you).
-[...]
->The series contains:
->
->[PATCH v2 1/3] [ARM] s3c-fb: Corrected defines for framesel1 register.
->[PATCH v2 2/3] [ARM] s3c-fb: Added support for panning the display in both directions.
->[PATCH v2 3/3] [ARM] s3c-fb: Added wait for VSYNC support.
+> > Trivial patch which adds the __init/__exit macros to the module_init/
+> > module_exit functions of the following drivers in media/omap:
+> > drivers/video/omap/lcd_ams_delta.c
+> > drivers/video/omap/lcd_mipid.c
+> > 
+> > Please have a look at the small patch and either pull it through
+> > your tree, or please ack' it so Jiri can pull it through the trivial tree.
+> > 
+> > linux version v2.6.32-rc1 - linus git tree, Di 29. Sep 01:10:18 CEST 2009
+> > 
+> > Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> 
+> Acked-by: Imre Deak <imre.deak@nokia.com>
 
-may I ask for comments on this patchset (and possibly the later one)?
-Is it suitable for merging? What could I do for it to be merged?
+Applied, thanks.
 
-Thank you and best regards,
---
-Pawel Osciak
-Linux Platform Group
-Samsung Poland R&D Center
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.

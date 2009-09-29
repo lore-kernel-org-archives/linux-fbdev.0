@@ -1,63 +1,69 @@
-From: Huang Weiyi <weiyi.huang@gmail.com>
-Subject: [PATCH 3/5] fbdev: remove duplicated #include
-Date: Sun, 27 Sep 2009 11:15:20 +0800
-Message-ID: <1254021320-2920-1-git-send-email-weiyi.huang@gmail.com>
+From: Peter Huewe <PeterHuewe@gmx.de>
+Subject: [PATCH] video/omap:  adding __init/__exit macros to various drivers
+Date: Tue, 29 Sep 2009 03:18:06 +0200
+Message-ID: <200909290318.07309.PeterHuewe@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <weiyi.huang@gmail.com>) id 1MrkEd-0003RG-Jn
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Sep 2009 03:15:39 +0000
-Received: from mail-px0-f194.google.com ([209.85.216.194])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MrkEW-0002zD-1u for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 27 Sep 2009 03:15:39 +0000
-Received: by pxi32 with SMTP id 32so2723997pxi.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 26 Sep 2009 20:15:26 -0700 (PDT)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Huang Weiyi <weiyi.huang@gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753923AbZI2BSK@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Jiri Kosina <trivial@kernel.org>
+Cc: kernel-janitors@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@wp.pl>, Jonathan McDowell <noodles@earth.li>, Arnaud Patard <arnaud.patard@rtp-net.org>, Mike Wege <ext-mike.wege@nokia.com>, Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Remove duplicated #include('s) in
-  drivers/video/msm/mddi.c
+From: Peter Huewe <peterhuewe@gmx.de>
 
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+Trivial patch which adds the __init/__exit macros to the module_init/
+module_exit functions of the following drivers in media/omap:
+drivers/video/omap/lcd_ams_delta.c
+drivers/video/omap/lcd_mipid.c
+
+Please have a look at the small patch and either pull it through
+your tree, or please ack' it so Jiri can pull it through the trivial tree.
+
+linux version v2.6.32-rc1 - linus git tree, Di 29. Sep 01:10:18 CEST 2009
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 ---
- drivers/video/msm/mddi.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/msm/mddi.c b/drivers/video/msm/mddi.c
-index f2de5a1..b520f10 100644
---- a/drivers/video/msm/mddi.c
-+++ b/drivers/video/msm/mddi.c
-@@ -27,7 +27,6 @@
- #include <mach/msm_iomap.h>
- #include <mach/irqs.h>
- #include <mach/board.h>
--#include <linux/delay.h>
+diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
+index 1f74399..319a9a2 100644
+--- a/drivers/video/omap/lcd_ams_delta.c
++++ b/drivers/video/omap/lcd_ams_delta.c
+@@ -123,12 +123,12 @@ struct platform_driver ams_delta_panel_driver = {
+ 	},
+ };
  
- #include <mach/msm_fb.h>
- #include "mddi_hw.h"
--- 
-1.6.1.3
-
-
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
-http://p.sf.net/sfu/devconf
+-static int ams_delta_panel_drv_init(void)
++static int __init ams_delta_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&ams_delta_panel_driver);
+ }
+ 
+-static void ams_delta_panel_drv_cleanup(void)
++static void __exit ams_delta_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&ams_delta_panel_driver);
+ }
+diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
+index 918ee89..d88a792 100644
+--- a/drivers/video/omap/lcd_mipid.c
++++ b/drivers/video/omap/lcd_mipid.c
+@@ -607,7 +607,7 @@ static struct spi_driver mipid_spi_driver = {
+ 	.remove	= __devexit_p(mipid_spi_remove),
+ };
+ 
+-static int mipid_drv_init(void)
++static int __init mipid_drv_init(void)
+ {
+ 	spi_register_driver(&mipid_spi_driver);
+ 
+@@ -615,7 +615,7 @@ static int mipid_drv_init(void)
+ }
+ module_init(mipid_drv_init);
+ 
+-static void mipid_drv_cleanup(void)
++static void __exit mipid_drv_cleanup(void)
+ {
+ 	spi_unregister_driver(&mipid_spi_driver);
+ }

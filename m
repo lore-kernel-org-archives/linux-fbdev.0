@@ -1,76 +1,42 @@
-From: Imre Deak <imre.deak@nokia.com>
-Subject: Re: [PATCH] video/omap:  adding __init/__exit macros to various
-	drivers
-Date: Tue, 29 Sep 2009 12:18:53 +0300
-Message-ID: <20090929091853.GC9536@localhost>
-References: <200909290318.07309.PeterHuewe@gmx.de>
+From: Pawel Osciak <p.osciak@samsung.com>
+Subject: RE: [PATCH v2 0/3] v2: s3c-fb panning and vsync support
+Date: Tue, 29 Sep 2009 13:45:05 +0200
+Message-ID: <000401ca40fa$4967c6e0$dc3754a0$%osciak@samsung.com>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC0770658048@bssrvexch01.BS.local>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753729AbZI2JUK@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200909290318.07309.PeterHuewe@gmx.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Peter Huewe <PeterHuewe@gmx.de>
-Cc: Jiri Kosina <trivial@kernel.org>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@wp.pl>, Jonathan McDowell <noodles@earth.li>, Arnaud Patard <arnaud.patard@rtp-net.org>, Mike Wege <ext-mike.wege@nokia.com>, "Doyu Hiroshi (Nokia-D/Helsinki)" <hiroshi.doyu@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-reply-to: <E4D3F24EA6C9E54F817833EAE0D912AC0770658048@bssrvexch01.BS.local>
+Content-language: pl
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: Pawel Osciak <p.osciak@samsung.com>, =?utf-8?B?J+uwleqyveuvvCc=?= <kyungmin.park@samsung.com>, ben-linux@fluff.org, adaplas@gmail.com, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Tue, Sep 29, 2009 at 03:18:06AM +0200, ext Peter Huewe wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
-> 
-> Trivial patch which adds the __init/__exit macros to the module_init/
-> module_exit functions of the following drivers in media/omap:
-> drivers/video/omap/lcd_ams_delta.c
-> drivers/video/omap/lcd_mipid.c
-> 
-> Please have a look at the small patch and either pull it through
-> your tree, or please ack' it so Jiri can pull it through the trivial tree.
-> 
-> linux version v2.6.32-rc1 - linus git tree, Di 29. Sep 01:10:18 CEST 2009
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Hello,
 
-Acked-by: Imre Deak <imre.deak@nokia.com>
+>this is the second version of my previous patchset, corrected after your feedback (thank you).
+[...]
+>The series contains:
+>
+>[PATCH v2 1/3] [ARM] s3c-fb: Corrected defines for framesel1 register.
+>[PATCH v2 2/3] [ARM] s3c-fb: Added support for panning the display in both directions.
+>[PATCH v2 3/3] [ARM] s3c-fb: Added wait for VSYNC support.
 
-> ---
-> diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
-> index 1f74399..319a9a2 100644
-> --- a/drivers/video/omap/lcd_ams_delta.c
-> +++ b/drivers/video/omap/lcd_ams_delta.c
-> @@ -123,12 +123,12 @@ struct platform_driver ams_delta_panel_driver = {
->  	},
->  };
->  
-> -static int ams_delta_panel_drv_init(void)
-> +static int __init ams_delta_panel_drv_init(void)
->  {
->  	return platform_driver_register(&ams_delta_panel_driver);
->  }
->  
-> -static void ams_delta_panel_drv_cleanup(void)
-> +static void __exit ams_delta_panel_drv_cleanup(void)
->  {
->  	platform_driver_unregister(&ams_delta_panel_driver);
->  }
-> diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
-> index 918ee89..d88a792 100644
-> --- a/drivers/video/omap/lcd_mipid.c
-> +++ b/drivers/video/omap/lcd_mipid.c
-> @@ -607,7 +607,7 @@ static struct spi_driver mipid_spi_driver = {
->  	.remove	= __devexit_p(mipid_spi_remove),
->  };
->  
-> -static int mipid_drv_init(void)
-> +static int __init mipid_drv_init(void)
->  {
->  	spi_register_driver(&mipid_spi_driver);
->  
-> @@ -615,7 +615,7 @@ static int mipid_drv_init(void)
->  }
->  module_init(mipid_drv_init);
->  
-> -static void mipid_drv_cleanup(void)
-> +static void __exit mipid_drv_cleanup(void)
->  {
->  	spi_unregister_driver(&mipid_spi_driver);
->  }
+may I ask for comments on this patchset (and possibly the later one)?
+Is it suitable for merging? What could I do for it to be merged?
+
+Thank you and best regards,
+--
+Pawel Osciak
+Linux Platform Group
+Samsung Poland R&D Center

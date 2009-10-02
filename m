@@ -1,41 +1,42 @@
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 5/8] dm/connector: Only process connector packages from privileged processes
-Date: Fri,  2 Oct 2009 14:40:08 +0200
-Message-ID: <1254487211-11810-6-git-send-email-philipp.reisner@linbit.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
+Date: Fri, 2 Oct 2009 06:58:59 -0700
+Message-ID: <20091002135859.GA9383@kroah.com>
 References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
- <1254487211-11810-2-git-send-email-philipp.reisner@linbit.com>
- <1254487211-11810-3-git-send-email-philipp.reisner@linbit.com>
- <1254487211-11810-4-git-send-email-philipp.reisner@linbit.com>
- <1254487211-11810-5-git-send-email-philipp.reisner@linbit.com>
+Mime-Version: 1.0
 Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <1254487211-11810-5-git-send-email-philipp.reisner@linbit.com>
+Content-Disposition: inline
+In-Reply-To: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
 Sender: netdev-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Greg KH <greg@kroah.com>
-Cc: dm-devel@redhat.com, Evgeniy Polyakov <zbr@ioremap.net>, linux-fbdev-devel@lists.sourceforge.net, Philipp Reisner <philipp.reisner@linbit.com>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, dm-devel@redhat.com, Evgeniy Polyakov <zbr@ioremap.net>, linux-fbdev-devel@lists.sourceforge.net
 
-Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
----
- drivers/md/dm-log-userspace-transfer.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner wrote:
+> Affected: All code that uses connector, in kernel and out of mainline
+> 
+> The connector, as it is today, does not allow the in kernel receiving
+> parts to do any checks on privileges of a message's sender.
 
-diff --git a/drivers/md/dm-log-userspace-transfer.c b/drivers/md/dm-log-userspace-transfer.c
-index 1327e1a..54abf9e 100644
---- a/drivers/md/dm-log-userspace-transfer.c
-+++ b/drivers/md/dm-log-userspace-transfer.c
-@@ -133,6 +133,9 @@ static void cn_ulog_callback(struct cn_msg *msg, struct netlink_skb_parms *nsp)
- {
- 	struct dm_ulog_request *tfr = (struct dm_ulog_request *)(msg + 1);
- 
-+	if (!cap_raised(nsp->eff_cap, CAP_SYS_ADMIN))
-+		return;
-+
- 	spin_lock(&receiving_list_lock);
- 	if (msg->len == 0)
- 		fill_pkg(msg, NULL);
--- 
-1.6.0.4
+So, assume I know nothing about the connector architecture, what does
+this mean in a security context?
 
+> I know, there are not many out there that like connector, but as
+> long as it is in the kernel, we have to fix the security issues it has!
+
+And what specifically are the security issues?
+
+> Please either drop connector, or someone who feels a bit responsible
+> and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take 
+> this into your tree, and send the pull request to Linus.
+> 
+> Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
+> Patches 5 to 7 are the obvious fixes to the connector user's code.
+
+Obvious in what way?
+
+thanks,
+
+greg k-h

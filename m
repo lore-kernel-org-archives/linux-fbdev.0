@@ -1,45 +1,42 @@
-From: Alessio Sangalli <alesan@manoweb.com>
-Subject: probing the supported resolution list
-Date: Thu, 01 Oct 2009 00:41:41 -0700
-Message-ID: <4AC45D35.3020600@manoweb.com>
-Mime-Version: 1.0
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Subject: [PATCH 3/8] connector/dm: Fixed a compilation warning
+Date: Fri,  2 Oct 2009 14:40:06 +0200
+Message-ID: <1254487211-11810-4-git-send-email-philipp.reisner@linbit.com>
+References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
+ <1254487211-11810-2-git-send-email-philipp.reisner@linbit.com>
+ <1254487211-11810-3-git-send-email-philipp.reisner@linbit.com>
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <1254487211-11810-3-git-send-email-philipp.reisner@linbit.com>
+Sender: netdev-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <alesan@manoweb.com>) id 1MtGIX-0002eN-6j
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Oct 2009 07:41:57 +0000
-Received: from moutng.kundenserver.de ([212.227.126.177])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MtGIS-0001YY-3z for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 01 Oct 2009 07:41:57 +0000
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Greg KH <greg@kroah.com>
+Cc: dm-devel@redhat.com, Evgeniy Polyakov <zbr@ioremap.net>, linux-fbdev-devel@lists.sourceforge.net, Philipp Reisner <philipp.reisner@linbit.com>
 
-Hi, is there a standard way for a userspace program to "probe" the 
-supported display sizes/refresh rates/bit depths? The display I'm 
-writing a driver for only supports a few specific resolutions, and I'm 
-wondering how a userspace program can discover those.
+Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
+Acked-by: Lars Ellenberg <lars.ellenberg@linbit.com>
+Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
+---
+ drivers/md/dm-log-userspace-transfer.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Thank you
-Alessio
+diff --git a/drivers/md/dm-log-userspace-transfer.c b/drivers/md/dm-log-userspace-transfer.c
+index 556131f..1327e1a 100644
+--- a/drivers/md/dm-log-userspace-transfer.c
++++ b/drivers/md/dm-log-userspace-transfer.c
+@@ -129,9 +129,8 @@ static int fill_pkg(struct cn_msg *msg, struct dm_ulog_request *tfr)
+  * This is the connector callback that delivers data
+  * that was sent from userspace.
+  */
+-static void cn_ulog_callback(void *data, struct netlink_skb_parms *nsp)
++static void cn_ulog_callback(struct cn_msg *msg, struct netlink_skb_parms *nsp)
+ {
+-	struct cn_msg *msg = (struct cn_msg *)data;
+ 	struct dm_ulog_request *tfr = (struct dm_ulog_request *)(msg + 1);
+ 
+ 	spin_lock(&receiving_list_lock);
+-- 
+1.6.0.4
 
-
-
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
-http://p.sf.net/sfu/devconf

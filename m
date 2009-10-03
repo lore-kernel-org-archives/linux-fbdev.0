@@ -1,43 +1,62 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
-Date: Fri, 2 Oct 2009 11:15:05 -0700
-Message-ID: <20091002181505.GA27118@kroah.com>
-References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
- <20091002.105659.102583702.davem@davemloft.net>
- <20091002180022.GA22229@kroah.com>
- <20091002.110504.08207839.davem@davemloft.net>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: probing the supported resolution list
+Date: Sat, 3 Oct 2009 07:04:19 +0200
+Message-ID: <20091003070419.29e4ff82.krzysztof.h1@poczta.fm>
+References: <4AC45D35.3020600@manoweb.com>
 Mime-Version: 1.0
-Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20091002.110504.08207839.davem@davemloft.net>
-Sender: netdev-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Miller <davem@davemloft.net>
-Cc: philipp.reisner@linbit.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org, akpm@linux-foundation.org, dm-devel@redhat.com, zbr@ioremap.net, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1MtwXQ-0008JW-E2
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 03 Oct 2009 04:48:08 +0000
+Received: from smtp240.poczta.interia.pl ([217.74.64.240])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MtwXI-0006zR-RS for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 03 Oct 2009 04:48:07 +0000
+In-Reply-To: <4AC45D35.3020600@manoweb.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Alessio Sangalli <alesan@manoweb.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Oct 02, 2009 at 11:05:04AM -0700, David Miller wrote:
-> From: Greg KH <greg@kroah.com>
-> Date: Fri, 2 Oct 2009 11:00:22 -0700
+On Thu, 01 Oct 2009 00:41:41 -0700
+Alessio Sangalli <alesan@manoweb.com> wrote:
+
+> Hi, is there a standard way for a userspace program to "probe" the 
+> supported display sizes/refresh rates/bit depths? The display I'm 
+> writing a driver for only supports a few specific resolutions, and I'm 
+> wondering how a userspace program can discover those.
 > 
-> > On Fri, Oct 02, 2009 at 10:56:59AM -0700, David Miller wrote:
-> >> All applied to net-2.6, I'll push this out to Linus later
-> >> today.
-> > 
-> > Should it also go to -stable?  If so, I can pick it up once it hits
-> > Linus's tree.
-> 
-> Yes, please take it into -stable.
 
-Will do.
+I am not aware of such a probe function.
 
-> Greg, I'll also send you a batch of other networking bits
-> for -stable later this afternoon as well, just FYI...
+E.g. the xorg fbdev driver just tries to select list of defined resolutions and 
+select only the available ones. If your list of resolutions and depths is limited 
+to few entries you can try this approach as well.
 
-Great, I'll queue it up for the next -stable releases, these are full
-enough as it is already :)
+Regards,
+Krzysztof
 
-thanks,
 
-greg k-h
+----------------------------------------------------------------------
+Afera Hazardowa- O co tu chodzi?
+Sprawdz >>> http://link.interia.pl/f238e
+
+
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry&reg; Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9&#45;12, 2009. Register now&#33;
+http://p.sf.net/sfu/devconf

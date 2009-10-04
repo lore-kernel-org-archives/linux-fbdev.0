@@ -1,25 +1,62 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 3/3] drivers/video: Correct use of
-	request_region/request_mem_region
-Date: Wed, 14 Oct 2009 15:40:37 +0200
-Message-ID: <20091014134037.GA13681@linux-mips.org>
-References: <Pine.LNX.4.64.0908090943560.13271@ask.diku.dk> <10f740e80908090224p13d2119do9e4f4d7730ed001e@mail.gmail.com> <Pine.LNX.4.64.0908091141150.13271@ask.diku.dk> <20091012002907.GA835@linux-mips.org>
+From: Evgeniy Polyakov <zbr@ioremap.net>
+Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
+Date: Sun, 4 Oct 2009 14:24:50 +0400
+Message-ID: <20091004102450.GB2569@ioremap.net>
+References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
 Mime-Version: 1.0
-Return-path: <linux-mips-bounce@linux-mips.org>
-Content-Disposition: inline
-In-Reply-To: <20091012002907.GA835@linux-mips.org>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <julia@diku.dk>
-Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-mips@linux-mips.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <zbr@ioremap.net>) id 1MuOk2-0008PF-SA
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 04 Oct 2009 10:55:02 +0000
+Received: from intermatrixgroup.ru ([195.178.208.66] helo=tservice.net.ru)
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MuOjw-00022s-CH for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 04 Oct 2009 10:55:02 +0000
+Content-Disposition: inline
+In-Reply-To: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dm-devel@redhat.com, Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>
 
-On Mon, Oct 12, 2009 at 02:29:07AM +0200, Ralf Baechle wrote:
+On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner (philipp.reisner@linbit.com) wrote:
+> Affected: All code that uses connector, in kernel and out of mainline
+> 
+> The connector, as it is today, does not allow the in kernel receiving
+> parts to do any checks on privileges of a message's sender.
+> 
+> I know, there are not many out there that like connector, but as
+> long as it is in the kernel, we have to fix the security issues it has!
+> 
+> Please either drop connector, or someone who feels a bit responsible
+> and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take 
+> this into your tree, and send the pull request to Linus.
 
-> Any reason this still hasn't been applied?
+How expressive! :)
 
-So applied then.
+> Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
+> Patches 5 to 7 are the obvious fixes to the connector user's code.
 
-  Ralf
+I ack those changes either since they do not affect logic of the user.
+
+-- 
+	Evgeniy Polyakov
+
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry(R) Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9 - 12, 2009. Register now!
+http://p.sf.net/sfu/devconference

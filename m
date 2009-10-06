@@ -1,26 +1,21 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: Ati Mobility FireGL V5250 support?
-Date: Tue, 6 Oct 2009 10:27:01 -0400
-Message-ID: <a728f9f90910060727q46c96f4bsb93fe7d5ae3351d4@mail.gmail.com>
-References: <20091006142017.GA31290@OpenWrt>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH] Fix colors in mach64 accelerator (fwd)
+Date: Tue, 6 Oct 2009 12:21:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.64.0910061219510.16200@hs20-bc2-1.build.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
 	helo=mx.sourceforge.net)
 	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <alexdeucher@gmail.com>) id 1MvB0U-0008VB-9P
+	(envelope-from <mpatocka@redhat.com>) id 1MvCnY-0000YR-MA
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Oct 2009 14:27:14 +0000
-Received: from mail-fx0-f221.google.com ([209.85.220.221])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MvB0O-00027S-0W for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Oct 2009 14:27:14 +0000
-Received: by fxm21 with SMTP id 21so3263797fxm.33
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 06 Oct 2009 07:27:02 -0700 (PDT)
-In-Reply-To: <20091006142017.GA31290@OpenWrt>
+	Tue, 06 Oct 2009 16:22:00 +0000
+Received: from mx1.redhat.com ([209.132.183.28])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MvCnT-0006Ki-Ox for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 06 Oct 2009 16:22:00 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,25 +25,66 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jurriaan <thunder7@xs4all.nl>
+To: paulus@samba.org
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Oct 6, 2009 at 10:20 AM, Jurriaan <thunder7@xs4all.nl> wrote:
-> I'm wondering who I have to send pizza, beer or flowers to to get
-> support for the videocard in my Thinkpad T60p - an Ati Mobility FireGL
-> V5250. X.org works flawlessly with this card (using the opensource
-> driver). Compiling in radeonfb leads to a dmesg output without any
-> messages, since the pci-id is missing in the source core and the card is
-> not recognized.
->
-> Is anybody working on this?
+Hi
 
-radeonfb doesn't support any avivo-based radeons and never will.  If
-you want hi-res consoles, use the the new radeon drm with modesetting.
- It's available in 2.6.31 and supports all r1xx-r5xx radeons.  Support
-for r6xx-r7xx is available in 2.6.32.
+In the previous kernel cycle I sent you this patch, you acknowledged it 
+but didn't put it to the kernel.
 
-Alex
+Did you forget it? Do you want to add it in this cycle?
+
+The patch fixes mach64 fill rect routine for 15 and 16-bit modes.
+
+Mikulas
+
+---------- Forwarded message ----------
+Date: Wed, 17 Jun 2009 06:00:53 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: paulus@samba.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] Fix colors in mach64 accelerator
+
+Use the same color-calculating algorithm as in atyfb_imageblit in this driver
+or in generic cfb_fillrect.
+
+This patch fixes bad colors when using an accelerator in 15-bit and 16-bit
+modes.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com
+
+---
+ drivers/video/aty/mach64_accel.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.30-fast/drivers/video/aty/mach64_accel.c
+===================================================================
+--- linux-2.6.30-fast.orig/drivers/video/aty/mach64_accel.c	2009-06-15 21:42:10.000000000 +0200
++++ linux-2.6.30-fast/drivers/video/aty/mach64_accel.c	2009-06-17 08:49:01.000000000 +0200
+@@ -239,7 +239,7 @@ void atyfb_copyarea(struct fb_info *info
+ void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+-	u32 color = rect->color, dx = rect->dx, width = rect->width, rotation = 0;
++	u32 color, dx = rect->dx, width = rect->width, rotation = 0;
+ 
+ 	if (par->asleep)
+ 		return;
+@@ -250,8 +250,11 @@ void atyfb_fillrect(struct fb_info *info
+ 		return;
+ 	}
+ 
+-	color |= (rect->color << 8);
+-	color |= (rect->color << 16);
++	if (info->fix.visual == FB_VISUAL_TRUECOLOR ||
++	    info->fix.visual == FB_VISUAL_DIRECTCOLOR)
++		color = ((u32 *)(info->pseudo_palette))[rect->color];
++	else
++		color = rect->color;
+ 
+ 	if (info->var.bits_per_pixel == 24) {
+ 		/* In 24 bpp, the engine is in 8 bpp - this requires that all */
 
 ------------------------------------------------------------------------------
 Come build with us! The BlackBerry&reg; Developer Conference in SF, CA

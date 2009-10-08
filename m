@@ -1,68 +1,67 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: [PATCH] Fix colors in mach64 accelerator
-	(fwd)
-Date: Wed, 7 Oct 2009 08:13:41 -0400 (EDT)
-Message-ID: <Pine.LNX.4.64.0910070808170.29225@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0910061219510.16200@hs20-bc2-1.build.redhat.com>
-	<19148.5908.101231.251201@cargo.ozlabs.ibm.com>
+From: Claudio Scordino <claudio@evidence.eu.com>
+Subject: [PATCH 1/1] atmel_lcdfb.c: Fix sinfo->irqbase from %lu to %d in dev_info()
+Date: Thu, 08 Oct 2009 11:02:12 +0200
+Message-ID: <4ACDAA94.8010305@evidence.eu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/mixed;
+ boundary="------------020604020007030706020408"
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756203AbZJHJIx@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+To: nicolas.ferre@atmel.com
+Cc: hong.xu@atmel.com, krzysztof.h1@wp.pl, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
+This is a multi-part message in MIME format.
+--------------020604020007030706020408
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <mpatocka@redhat.com>) id 1MvVom-0002VC-Rc
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Oct 2009 12:40:32 +0000
-Received: from mx1.redhat.com ([209.132.183.28])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MvVog-00017b-Fe for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Oct 2009 12:40:32 +0000
-In-Reply-To: <19148.5908.101231.251201@cargo.ozlabs.ibm.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 7 Oct 2009, Paul Mackerras wrote:
+Hi Nicolas,
 
-> Mikulas Patocka writes:
-> 
-> > In the previous kernel cycle I sent you this patch, you acknowledged it 
-> > but didn't put it to the kernel.
-> > 
-> > Did you forget it? Do you want to add it in this cycle?
-> > 
-> > The patch fixes mach64 fill rect routine for 15 and 16-bit modes.
-> 
-> Huh?  Are you talking to me?  Why did you think I was responsible for
-> this driver?
->
-> Paul.
+   this patch fixes a type mismatch when calling dev_info() in the 
+atmel_lcdfb.c driver.
 
-There's a line in the MAINTAINERS file:
+Please commit.
 
-RAGE128 FRAMEBUFFER DISPLAY DRIVER
-M:      Paul Mackerras <paulus@samba.org>
-L:      linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers) S:      Maintained
-F:      drivers/video/aty/aty128fb.c
+Best regards,
 
-This patch is for aty/mach64.c but you're closest to that, there is no 
-entry for aty/mach64.c in Maintainers.
+                Claudio
 
-Mikulas
 
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-http://p.sf.net/sfu/devconference
+--------------020604020007030706020408
+Content-Type: text/x-patch;
+ name="0001-atmel_lcdfb.c-Fix-sinfo-irqbase-from-lu-to-d-in.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-atmel_lcdfb.c-Fix-sinfo-irqbase-from-lu-to-d-in.patch"
+
+From: Claudio Scordino <claudio@evidence.eu.com>
+Date: Thu, 8 Oct 2009 10:51:33 +0200
+Subject: [PATCH 1/1] atmel_lcdfb.c: Fix sinfo->irqbase from %lu to %d in dev_info()
+
+atmel_lcdfb.c: Fix sinfo->irqbase from %lu to %d in dev_info().
+
+
+Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+---
+ drivers/video/atmel_lcdfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 2830ffd..317afab 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -959,7 +959,7 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(1);
+ 
+-	dev_info(dev, "fb%d: Atmel LCDC at 0x%08lx (mapped at %p), irq %lu\n",
++	dev_info(dev, "fb%d: Atmel LCDC at 0x%08lx (mapped at %p), irq %d\n",
+ 		       info->node, info->fix.mmio_start, sinfo->mmio, sinfo->irq_base);
+ 
+ 	return 0;
+-- 
+1.6.0.4
+
+
+--------------020604020007030706020408--

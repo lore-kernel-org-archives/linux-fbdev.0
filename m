@@ -1,49 +1,59 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
-Date: Fri, 9 Oct 2009 15:25:05 -0700
-Message-ID: <20091009222505.GA28979@kroah.com>
-References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
-Reply-To: device-mapper development <dm-devel@redhat.com>
+From: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 3/3] drivers/video: Correct use of
+	request_region/request_mem_region
+Date: Mon, 12 Oct 2009 02:29:07 +0200
+Message-ID: <20091012002907.GA835@linux-mips.org>
+References: <Pine.LNX.4.64.0908090943560.13271@ask.diku.dk> <10f740e80908090224p13d2119do9e4f4d7730ed001e@mail.gmail.com> <Pine.LNX.4.64.0908091141150.13271@ask.diku.dk>
 Mime-Version: 1.0
-Return-path: <dm-devel-bounces@redhat.com>
+Return-path: <linux-mips-bounce@linux-mips.org>
 Content-Disposition: inline
-In-Reply-To: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://www.redhat.com/mailman/listinfo/dm-devel>,
-	<mailto:dm-devel-request@redhat.com?subject=unsubscribe>
-List-Archive: <https://www.redhat.com/archives/dm-devel>
-List-Post: <mailto:dm-devel@redhat.com>
-List-Help: <mailto:dm-devel-request@redhat.com?subject=help>
-List-Subscribe: <https://www.redhat.com/mailman/listinfo/dm-devel>,
-	<mailto:dm-devel-request@redhat.com?subject=subscribe>
-Sender: dm-devel-bounces@redhat.com
-Errors-To: dm-devel-bounces@redhat.com
+In-Reply-To: <Pine.LNX.4.64.0908091141150.13271@ask.diku.dk>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Reisner <philipp.reisner@linbit.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dm-devel@redhat.com, Evgeniy Polyakov <zbr@ioremap.net>, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>
+To: Julia Lawall <julia@diku.dk>
+Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-mips@linux-mips.org
 
-On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner wrote:
-> Affected: All code that uses connector, in kernel and out of mainline
+On Sun, Aug 09, 2009 at 11:42:32AM +0200, Julia Lawall wrote:
+
+> From: Julia Lawall <julia@diku.dk>
 > 
-> The connector, as it is today, does not allow the in kernel receiving
-> parts to do any checks on privileges of a message's sender.
+> request_region should be used with release_region, not request_mem_region.
 > 
-> I know, there are not many out there that like connector, but as
-> long as it is in the kernel, we have to fix the security issues it has!
+> Geert Uytterhoeven pointed out that in the case of drivers/video/gbefb.c,
+> the problem is actually the other way around; request_mem_region should be
+> used instead of request_region.
 > 
-> Please either drop connector, or someone who feels a bit responsible
-> and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take 
-> this into your tree, and send the pull request to Linus.
+> The semantic patch that finds/fixes this problem is as follows:
+> (http://coccinelle.lip6.fr/)
 > 
-> Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
-> Patches 5 to 7 are the obvious fixes to the connector user's code.
+> // <smpl>
+> @r1@
+> expression start;
+> @@
+> 
+> request_region(start,...)
+> 
+> @b1@
+> expression r1.start;
+> @@
+> 
+> request_mem_region(start,...)
+> 
+> @depends on !b1@
+> expression r1.start;
+> expression E;
+> @@
+> 
+> - release_mem_region
+> + release_region
+>   (start,E)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-These don't apply to the 2.6.31-stable tree at all.
+Any reason this still hasn't been applied?
 
-Could you provide them backported to that tree if you want to see them
-go into a .31-stable release?
-
-thanks,
-
-greg k-h
+  Ralf

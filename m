@@ -1,62 +1,33 @@
-From: Evgeniy Polyakov <zbr@ioremap.net>
-Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
-Date: Sun, 4 Oct 2009 14:24:50 +0400
-Message-ID: <20091004102450.GB2569@ioremap.net>
-References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
-Mime-Version: 1.0
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH 2/8] trivial: fix typo s/complied-in/compiled-in/
+Date: Thu, 15 Oct 2009 16:45:25 -0300
+Message-ID: <1255635925-5738-1-git-send-email-cascardo@holoscopio.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S935342AbZJOTqO@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <zbr@ioremap.net>) id 1MuOk2-0008PF-SA
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Oct 2009 10:55:02 +0000
-Received: from intermatrixgroup.ru ([195.178.208.66] helo=tservice.net.ru)
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1MuOjw-00022s-CH for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Oct 2009 10:55:02 +0000
-Content-Disposition: inline
-In-Reply-To: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Philipp Reisner <philipp.reisner@linbit.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dm-devel@redhat.com, Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>
+To: trivial@kernel.org
+Cc: jayalk@intworks.biz, lethal@linux-sh.org, damm@igel.co.jp, akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner (philipp.reisner@linbit.com) wrote:
-> Affected: All code that uses connector, in kernel and out of mainline
-> 
-> The connector, as it is today, does not allow the in kernel receiving
-> parts to do any checks on privileges of a message's sender.
-> 
-> I know, there are not many out there that like connector, but as
-> long as it is in the kernel, we have to fix the security issues it has!
-> 
-> Please either drop connector, or someone who feels a bit responsible
-> and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take 
-> this into your tree, and send the pull request to Linus.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/video/fb_defio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-How expressive! :)
-
-> Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
-> Patches 5 to 7 are the obvious fixes to the connector user's code.
-
-I ack those changes either since they do not affect logic of the user.
-
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index c27ab1e..e59c083 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -71,7 +71,7 @@ int fb_deferred_io_fsync(struct file *file, struct dentry *dentry, int datasync)
+ {
+ 	struct fb_info *info = file->private_data;
+ 
+-	/* Skip if deferred io is complied-in but disabled on this fbdev */
++	/* Skip if deferred io is compiled-in but disabled on this fbdev */
+ 	if (!info->fbdefio)
+ 		return 0;
+ 
 -- 
-	Evgeniy Polyakov
-
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-http://p.sf.net/sfu/devconference
+1.6.3.3

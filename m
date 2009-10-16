@@ -1,71 +1,68 @@
-From: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Subject: RE: [PATCH] omapfb: Wrong test on unsigned?
-Date: Fri, 16 Oct 2009 15:56:57 -0500
-Message-ID: <A24693684029E5489D1D202277BE89444CEFEAF5@dlee02.ent.ti.com>
-References: <4AD8BA2F.9090307@gmail.com>
+From: Roel Kluin <roel.kluin@gmail.com>
+Subject: [PATCH] fbdev: Fix test on unsigned in
+	fb_do_show_logo()
+Date: Sat, 17 Oct 2009 00:45:14 +0200
+Message-ID: <4AD8F77A.3010802@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <4AD8BA2F.9090307@gmail.com>
-Content-Language: en-US
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Roel Kluin <roel.kluin@gmail.com>, Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, linux-omap@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <roel.kluin@gmail.com>) id 1MyvOk-0008AS-PK
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 16 Oct 2009 22:35:46 +0000
+Received: from ey-out-1920.google.com ([74.125.78.149])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1MyvOe-0005s0-41 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 16 Oct 2009 22:35:46 +0000
+Received: by ey-out-1920.google.com with SMTP id 3so492436eyh.40
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 16 Oct 2009 15:35:33 -0700 (PDT)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
 
- 
+image->d[xy] are unsigned so the check was wrong.
 
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org 
-> [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Roel Kluin
-> Sent: Friday, October 16, 2009 1:24 PM
-> To: Imre Deak; linux-fbdev-devel@lists.sourceforge.net; 
-> linux-omap@vger.kernel.org; Andrew Morton
-> Subject: [PATCH] omapfb: Wrong test on unsigned?
-> 
-> Only if the test is signed negative values can be spotted.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> Is this correct? please review.
-> 
-> diff --git a/drivers/video/omap/omapfb_main.c 
-> b/drivers/video/omap/omapfb_main.c
-> index 0d0c8c8..cc7dd93 100644
-> --- a/drivers/video/omap/omapfb_main.c
-> +++ b/drivers/video/omap/omapfb_main.c
-> @@ -286,7 +286,7 @@ static int _setcolreg(struct fb_info 
-> *info, u_int regno, u_int red, u_int green,
->  		if (r != 0)
->  			break;
->  
-> -		if (regno < 0) {
-> +		if ((int)regno < 0) {
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 99bbd28..9f20641 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -403,7 +403,8 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dx += image->width + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_UD) {
+-		for (x = 0; x < num && image->dx >= 0; x++) {
++		for (x = 0; x < num && image->dx + image->width + 8 >= 0;
++				x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dx -= image->width + 8;
+ 		}
+@@ -415,7 +416,8 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_CCW) {
+-		for (x = 0; x < num && image->dy >= 0; x++) {
++		for (x = 0; x < num && image->dy + image->height + 8 >= 0;
++				x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dy -= image->height + 8;
+ 		}
 
-Hmm...
-
-Isn't regno unsigned integer from the start?
-
-2 things here:
-
-- regno will never be negative.
-- Casting won't make a difference in the meaning., it'll make a negative only when:
-
-	regno > ((2^32) / 2)
-
-Which doesn't make any sense IMHO.
-
-Isn't it?
-
-Regards,
-Sergio
->  			r = -EINVAL;
->  			break;
->  		}
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry(R) Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9 - 12, 2009. Register now!
+http://p.sf.net/sfu/devconference

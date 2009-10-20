@@ -1,201 +1,125 @@
-From: Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [PATCH] mb862xxfb: add acceleration support for
- Coral-P/Coral-PA. * imageblt * copyarea * fillrect
-Date: Mon, 19 Oct 2009 05:47:25 -0700
-Message-ID: <1255956445.23353.38.camel@desktop>
-References: <1255949573-15937-1-git-send-email-valentin.sitdikov@siemens.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756068AbZJSMrZ@vger.kernel.org>
-In-Reply-To: <1255949573-15937-1-git-send-email-valentin.sitdikov@siemens.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
+From: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
+Subject: [PATCH] davinci: fb: Calculate the clock divider from pixel clock
+	info
+Date: Tue, 20 Oct 2009 15:48:07 +0530
+Message-ID: <1256033887-1582-1-git-send-email-chaithrika@ti.com>
+Return-path: <davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
+List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
+List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
+Sender: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+Errors-To: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Valentin Sitdikov <valentin.sitdikov@siemens.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
 
+The clock divider value can be calculated from the pixel clock
+value for the panel. This gives more flexiblity to the driver
+to change the divider value on the fly as in the case of cpufreq
+feature- support for which will be added shortly.
 
-Your code has lots of style issues .. I commented below in some of the
-areas of code with some errors messages from scripts/checkpatch.pl
+Signed-off-by: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
+---
+This patch applies on Linus' kernel tree.
+Resending this patch as missed out marking fbdev list previously.
 
-On Mon, 2009-10-19 at 14:52 +0400, Valentin Sitdikov wrote:
-> Signed-off-by: Valentin Sitdikov <valentin.sitdikov@siemens.com>
-> ---
->  drivers/video/mb862xx/Makefile          |    2 +-
->  drivers/video/mb862xx/mb862xxfb.c       |   16 ++-
->  drivers/video/mb862xx/mb862xxfb.h       |    2 +
->  drivers/video/mb862xx/mb862xxfb_accel.c |  318 +++++++++++++++++++++++++++++++
->  drivers/video/mb862xx/mb862xxfb_accel.h |  203 ++++++++++++++++++++
->  5 files changed, 539 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/video/mb862xx/mb862xxfb_accel.c
->  create mode 100644 drivers/video/mb862xx/mb862xxfb_accel.h
-> 
-> diff --git a/drivers/video/mb862xx/Makefile b/drivers/video/mb862xx/Makefile
-> index 0766481..d777771 100644
-> --- a/drivers/video/mb862xx/Makefile
-> +++ b/drivers/video/mb862xx/Makefile
-> @@ -2,4 +2,4 @@
->  # Makefile for the MB862xx framebuffer driver
->  #
->  
-> -obj-$(CONFIG_FB_MB862XX)	:= mb862xxfb.o
-> +obj-$(CONFIG_FB_MB862XX)	:= mb862xxfb.o mb862xxfb_accel.o
-> diff --git a/drivers/video/mb862xx/mb862xxfb.c b/drivers/video/mb862xx/mb862xxfb.c
-> index a28e3cf..2cd7456 100644
-> --- a/drivers/video/mb862xx/mb862xxfb.c
-> +++ b/drivers/video/mb862xx/mb862xxfb.c
-> @@ -214,7 +214,9 @@ static int mb862xxfb_set_par(struct fb_info *fbi)
->  	unsigned long reg, sc;
->  
->  	dev_dbg(par->dev, "%s\n", __func__);
-> -
-> +	if ( par->type == BT_CORALP ) {
-> +		mb862xxfb_init_accel(fbi, fbi->var.xres);
-> +	}
+ drivers/video/da8xx-fb.c |   28 ++++++++++++++++++++--------
+ 1 files changed, 20 insertions(+), 8 deletions(-)
 
-ERROR: space prohibited after that open parenthesis '('
-#69: FILE: drivers/video/mb862xx/mb862xxfb.c:217:
-+       if ( par->type == BT_CORALP ) {
-
-This line should be
-
-	if (par->type == BT_CORALP) {
-
-
-> +static void mb862xxfb_write_fifo(u32 count, u32 *data, struct fb_info *info)
-> +{
-> +	struct mb862xxfb_par *par = info->par;
-> +	static u32 free = 0;
-
-ERROR: do not initialise statics to 0 or NULL
-#143: FILE: drivers/video/mb862xx/mb862xxfb_accel.c:31:
-+       static u32 free = 0;
-
-Pretty clean, no need to initialized this.
-
-> +	u32 total = 0;
-> +		while ( total < count) {
-> +		if ( free ) {
-> +			outreg(geo, GDC_GEO_REG_INPUT_FIFO, data[total] );
-> +			total++;
-> +			free--;
-> +		}
-> +		else {
-> +			 free = (u32)inreg(draw, GDC_REG_FIFO_COUNT);
-> +		}
-
-ERROR: else should follow close brace '}'
-#152: FILE: drivers/video/mb862xx/mb862xxfb_accel.c:40:
-+               }
-+               else {
-
-Should be,
-		} else {
-
-
-
-> +	}
-> +}
-> +
-> +static void mb86290fb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
-> +{
-> +	__u32 cmd[6];
-> +
-> +	cmd[0] = (GDC_TYPE_SETREGISTER << 24) | (1 << 16) | GDC_REG_MODE_BITMAP;
-> +	cmd[1] = (2 << 7) | (GDC_ROP_COPY << 9); /* Set raster operation */
-> +	cmd[2] = GDC_TYPE_BLTCOPYP << 24;
-> +
-> +	if (area->sx >= area->dx && area->sy >= area->dy)
-> +	cmd[2] |= GDC_CMD_BLTCOPY_TOP_LEFT << 16;
-> +	else if (area->sx >= area->dx && area->sy <= area->dy)
-> +	cmd[2] |= GDC_CMD_BLTCOPY_BOTTOM_LEFT << 16;
-> +	else if (area->sx <= area->dx && area->sy >= area->dy)
-> +	cmd[2] |= GDC_CMD_BLTCOPY_TOP_RIGHT << 16;
-> +	else
-> +	cmd[2] |= GDC_CMD_BLTCOPY_BOTTOM_RIGHT << 16;
-
-WARNING: suspect code indent for conditional statements (8, 8)
-#166: FILE: drivers/video/mb862xx/mb862xxfb_accel.c:54:
-+       if (area->sx >= area->dx && area->sy >= area->dy)
-+       cmd[2] |= GDC_CMD_BLTCOPY_TOP_LEFT << 16;
-
-The above lines need tabs added like this,
-
-	if (area->sx >= area->dx && area->sy >= area->dy)
-		cmd[2] |= GDC_CMD_BLTCOPY_TOP_LEFT << 16;
-	else if (area->sx >= area->dx && area->sy <= area->dy)
-		cmd[2] |= GDC_CMD_BLTCOPY_BOTTOM_LEFT << 16;
-	else ...
-
-> +	cmd[3] =  (area->sy << 16) | area->sx;
-> +	cmd[4] =  (area->dy << 16) | area->dx ;
-> +	cmd[5] =  (area->height << 16) | area->width;
-> +	mb862xxfb_write_fifo(6, cmd, info);
-> +}
-> +
-> +/* Fill in the cmd array /GDC FIFO commands/ to draw a 1bit image.
-> + * Make sure cmd has enough room! */
-> +static void mb86290fb_imageblit1(u32 *cmd, u16 step, u16 dx, u16 dy,
-> +		u16 width, u16 height, u32 fgcolor, u32 bgcolor,
-> +		const struct fb_image *image, struct fb_info *info)
-> +{
-> +	int i;
-> +	unsigned const char *line;
-> +	u16 bytes;
-> +
-> +
-> +	/* set colors and raster operation regs */
-> +	cmd[0] = (GDC_TYPE_SETREGISTER << 24) | (1 << 16) | GDC_REG_MODE_BITMAP;
-> +	cmd[1] = (2 << 7) | (GDC_ROP_COPY << 9); /* Set raster operation */
-> +
-> +	cmd[2] = (GDC_TYPE_SETCOLORREGISTER << 24) | (GDC_CMD_BODY_FORE_COLOR << 16);
-> +	cmd[3] = fgcolor;
-> +	cmd[4] = (GDC_TYPE_SETCOLORREGISTER << 24) | (GDC_CMD_BODY_BACK_COLOR << 16);
-> +	cmd[5] = bgcolor;
-> +
-> +	i = 0;
-> +	line = image->data;
-> +	bytes = (image->width + 7) >> 3;
-> +
-> +	/* and the image */
-> +	cmd[6] = (GDC_TYPE_DRAWBITMAPP << 24) |
-> +		(GDC_CMD_BITMAP << 16) |
-> +		(2 + (step * height));
-> +	cmd[7] = (dy << 16) | dx;
-> +	cmd[8] = (height << 16) | width;
-> +
-> +	while (i < height) {
-> +		memcpy(&cmd[9 + i * step], line, step << 2);
-> +#ifdef __LITTLE_ENDIAN
-> +		{
-> +			int k=0;
-> +			for (k=0; k<step;k++)
-
-ERROR: spaces required around that '=' (ctx:VxV)
-#216: FILE: drivers/video/mb862xx/mb862xxfb_accel.c:104:
-+                       int k=0;
-                             ^
-
-ERROR: spaces required around that '=' (ctx:VxV)
-#217: FILE: drivers/video/mb862xx/mb862xxfb_accel.c:105:
-+                       for (k=0; k<step;k++)
-                              ^
-ERROR: spaces required around that '<' (ctx:VxV)
-#217: FILE: drivers/video/mb862xx/mb862xxfb_accel.c:105:
-+                       for (k=0; k<step;k++)
-                                   ^
-
-ERROR: space required after that ';' (ctx:VxV)
-#217: FILE: drivers/video/mb862xx/mb862xxfb_accel.c:105:
-+                       for (k=0; k<step;k++)
-                                        ^
-You just need to add spaces around the equals and other operators like
-this,
-
-			for (k = 0; k < step; k++)
-
-
-Your code has some other errors, 23 total. You can run
-scripts/checkpatch.pl for a full list of the errors.
-
-Daniel
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index d065894..d9ab839 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -113,6 +113,7 @@ struct da8xx_fb_par {
+ 	unsigned short pseudo_palette[16];
+ 	unsigned int databuf_sz;
+ 	unsigned int palette_sz;
++	unsigned int pxl_clk;
+ };
+ 
+ /* Variable Screen Information */
+@@ -155,7 +156,7 @@ struct da8xx_panel {
+ 	int		vfp;		/* Vertical front porch */
+ 	int		vbp;		/* Vertical back porch */
+ 	int		vsw;		/* Vertical Sync Pulse Width */
+-	int		pxl_clk;	/* Pixel clock */
++	unsigned int	pxl_clk;	/* Pixel clock */
+ 	unsigned char	invert_pxl_clk;	/* Invert Pixel clock */
+ };
+ 
+@@ -171,7 +172,7 @@ static struct da8xx_panel known_lcd_panels[] = {
+ 		.vfp = 2,
+ 		.vbp = 2,
+ 		.vsw = 0,
+-		.pxl_clk = 0x10,
++		.pxl_clk = 4608000,
+ 		.invert_pxl_clk = 1,
+ 	},
+ 	/* Sharp LK043T1DG01 */
+@@ -185,7 +186,7 @@ static struct da8xx_panel known_lcd_panels[] = {
+ 		.vfp = 2,
+ 		.vbp = 2,
+ 		.vsw = 10,
+-		.pxl_clk = 0x12,
++		.pxl_clk = 7833600,
+ 		.invert_pxl_clk = 0,
+ 	},
+ };
+@@ -451,6 +452,18 @@ static void lcd_reset(struct da8xx_fb_par *par)
+ 	lcdc_write(0, LCD_RASTER_CTRL_REG);
+ }
+ 
++static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
++{
++	unsigned int lcd_clk, div;
++
++	lcd_clk = clk_get_rate(par->lcdc_clk);
++	div = lcd_clk / par->pxl_clk;
++
++	/* Configure the LCD clock divisor. */
++	lcdc_write(LCD_CLK_DIVISOR(div) |
++			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
++}
++
+ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 		struct da8xx_panel *panel)
+ {
+@@ -459,9 +472,8 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 
+ 	lcd_reset(par);
+ 
+-	/* Configure the LCD clock divisor. */
+-	lcdc_write(LCD_CLK_DIVISOR(panel->pxl_clk) |
+-			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
++	/* Calculate the divider */
++	lcd_calc_clk_divider(par);
+ 
+ 	if (panel->invert_pxl_clk)
+ 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
+@@ -721,6 +733,8 @@ static int __init fb_probe(struct platform_device *device)
+ 	}
+ 
+ 	par = da8xx_fb_info->par;
++	par->lcdc_clk = fb_clk;
++	par->pxl_clk = lcdc_info->pxl_clk;
+ 
+ 	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
+ 		dev_err(&device->dev, "lcd_init failed\n");
+@@ -753,8 +767,6 @@ static int __init fb_probe(struct platform_device *device)
+ 	da8xx_fb_fix.smem_len = par->databuf_sz - par->palette_sz;
+ 	da8xx_fb_fix.line_length = (lcdc_info->width * lcd_cfg->bpp) / 8;
+ 
+-	par->lcdc_clk = fb_clk;
+-
+ 	par->irq = platform_get_irq(device, 0);
+ 	if (par->irq < 0) {
+ 		ret = -ENOENT;
+-- 
+1.5.6

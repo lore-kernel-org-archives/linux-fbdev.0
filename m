@@ -1,60 +1,87 @@
 From: Roel Kluin <roel.kluin@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Wrong test on unsigned in
- fb_set_user_cmap()?
-Date: Wed, 21 Oct 2009 17:10:01 +0200
-Message-ID: <4ADF2449.7090902@gmail.com>
-References: <20091021065018.7625046CCF3@f46.poczta.interia.pl>
+Subject: Re: [PATCH] omapfb: Wrong test on unsigned?
+Date: Wed, 21 Oct 2009 17:43:44 +0200
+Message-ID: <4ADF2C30.3030401@gmail.com>
+References: <4AD8BA2F.9090307@gmail.com> <A24693684029E5489D1D202277BE89444CEFEAF5@dlee02.ent.ti.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753849AbZJUO7x@vger.kernel.org>
-In-Reply-To: <20091021065018.7625046CCF3@f46.poczta.interia.pl>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <A24693684029E5489D1D202277BE89444CEFEAF5@dlee02.ent.ti.com>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: krzysztof.h1@poczta.fm
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
+Cc: Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 
-struct fb_cmap_user member start is unsigned. The same condition
-is already checked in fb_set_cmap(), so this should be safe.
+regno is unsigned so the test didn't work. If regno
+can't be used return an error.
 
 Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
->> Is this required?
+>> Is this correct? please review.
+>>
+>> diff --git a/drivers/video/omap/omapfb_main.c 
+>> b/drivers/video/omap/omapfb_main.c
+>> index 0d0c8c8..cc7dd93 100644
+>> --- a/drivers/video/omap/omapfb_main.c
+>> +++ b/drivers/video/omap/omapfb_main.c
+>> @@ -286,7 +286,7 @@ static int _setcolreg(struct fb_info 
+>> *info, u_int regno, u_int red, u_int green,
+>>  		if (r != 0)
+>>  			break;
+>>  
+>> -		if (regno < 0) {
+>> +		if ((int)regno < 0) {
 > 
-> Drop the whole if() as exactly the same condition is checked in the
-> fb_set_cmap() again.
-
-Ok
-
-> Anyway, the check of the cmap->start < 0 does
-> not make any sense as the start is u32 value (most userspace
-> addresses will be lower then 2GB on 32 bit system so the error cannot
-> be caught by the check). I vote for removing the (cmap->start < 0) in
-> the fb_set_cmap as well as most drivers check the start value already
-> in driver's fb_setcolreg() function.
-
-In fb_set_cmap() this is not `cmap->start' but `start' which has type
-int. Therefore I think the test makes some sense there, so I left it.
-
+> Hmm...
 > 
-> Best regards,
-> Krzysztof
+> Isn't regno unsigned integer from the start?
 
-Thanks, here:
+yes
 
-diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-index f53b9f1..f46d617 100644
---- a/drivers/video/fbcmap.c
-+++ b/drivers/video/fbcmap.c
-@@ -266,11 +266,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 		rc = -ENODEV;
- 		goto out;
- 	}
--	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
--				!info->fbops->fb_setcmap)) {
--		rc = -EINVAL;
--		goto out1;
--	}
- 	rc = fb_set_cmap(&umap, info);
- out1:
- 	unlock_fb_info(info);
+> 2 things here:
+> 
+> - regno will never be negative.
+> - Casting won't make a difference in the meaning., it'll make a negative only when:
+> 
+> 	regno > ((2^32) / 2)
+> 
+> Which doesn't make any sense IMHO.
+
+I think it is strange that _setcolreg() accepts a regno that is invalid,
+ignores it and just returns as if all was OK. If you agree then you may
+like the patch below.
+
+> Regards,
+> Sergio
+
+Thanks,
+
+Roel
+
+diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+index 0d0c8c8..4da94d0 100644
+--- a/drivers/video/omap/omapfb_main.c
++++ b/drivers/video/omap/omapfb_main.c
+@@ -285,12 +285,6 @@ static int _setcolreg(struct fb_info *info, u_int regno, u_int red, u_int green,
+ 	case OMAPFB_COLOR_RGB444:
+ 		if (r != 0)
+ 			break;
+-
+-		if (regno < 0) {
+-			r = -EINVAL;
+-			break;
+-		}
+-
+ 		if (regno < 16) {
+ 			u16 pal;
+ 			pal = ((red >> (16 - var->red.length)) <<
+@@ -299,6 +293,8 @@ static int _setcolreg(struct fb_info *info, u_int regno, u_int red, u_int green,
+ 					var->green.offset) |
+ 			      (blue >> (16 - var->blue.length));
+ 			((u32 *)(info->pseudo_palette))[regno] = pal;
++		} else {
++			r = -EINVAL;
+ 		}
+ 		break;
+ 	default:

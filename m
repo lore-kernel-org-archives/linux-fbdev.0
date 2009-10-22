@@ -1,82 +1,157 @@
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: Wrong test on unsigned in
- fb_set_user_cmap()?
-Date: Wed, 21 Oct 2009 20:47:22 +0200
-Message-ID: <20091021204722.20ccb7a9.krzysztof.h1@poczta.fm>
-References: <20091021065018.7625046CCF3@f46.poczta.interia.pl>
-	<4ADF2449.7090902@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: drivers/video/msm: update to new kernel
+Date: Thu, 22 Oct 2009 10:56:39 +0200
+Message-ID: <20091022085639.GA30548@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754732AbZJUSaq@vger.kernel.org>
-In-Reply-To: <4ADF2449.7090902@gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754524AbZJVI4p@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Andrew Morton <akpm@osdl.org>, Arve
 
-On Wed, 21 Oct 2009 17:10:01 +0200
-Roel Kluin <roel.kluin@gmail.com> wrote:
+TASK_INTERRUPTIBLE and friends are now only available after including
+<linux/sched.h>, so include it when needed.
 
-> struct fb_cmap_user member start is unsigned. The same condition
-> is already checked in fb_set_cmap(), so this should be safe.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> >> Is this required?
-> > 
+bus_id is no longer available/neccessary, so remove that.
 
-> 
-> > Anyway, the check of the cmap->start < 0 does
-> > not make any sense as the start is u32 value (most userspace
-> > addresses will be lower then 2GB on 32 bit system so the error cannot
-> > be caught by the check). I vote for removing the (cmap->start < 0) in
-> > the fb_set_cmap as well as most drivers check the start value already
-> > in driver's fb_setcolreg() function.
-> 
-> In fb_set_cmap() this is not `cmap->start' but `start' which has type
-> int. Therefore I think the test makes some sense there, so I left it.
-> 
+Android pmem driver is not available in mainline, so remove its hooks
+from drivers/video.
 
-No, it does not. If one converts u32 value to int it must be over 2GB to be negative. 
-The value is not in most cases as the user space is mapped below 3GB. On the other hand,
-each driver receives unsigned value of the start (converted back to unsigned). It means that the
-start here should be unsigned int.
-Each driver should check the value it receives. I have checked and there are only 3 drivers 
-which do not check properly the start value:
-atafb
-ep93xxfb
-maxinefb
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-The fixes are very easy.
+index 5c5a1ad..474421f 100644
+--- a/drivers/video/msm/mddi.c
++++ b/drivers/video/msm/mddi.c
+@@ -24,6 +24,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
++#include <linux/sched.h>
+ #include <mach/msm_iomap.h>
+ #include <mach/irqs.h>
+ #include <mach/board.h>
+diff --git a/drivers/video/msm/mddi_client_nt35399.c b/drivers/video/msm/mddi_client_nt35399.c
+index 9c78050..c9e9349 100644
+--- a/drivers/video/msm/mddi_client_nt35399.c
++++ b/drivers/video/msm/mddi_client_nt35399.c
+@@ -19,6 +19,7 @@
+ #include <linux/kernel.h>
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
++#include <linux/sched.h>
+ #include <linux/gpio.h>
+ #include <mach/msm_fb.h>
+ 
+diff --git a/drivers/video/msm/mddi_client_toshiba.c b/drivers/video/msm/mddi_client_toshiba.c
+index 80d0f5f..71048e7 100644
+--- a/drivers/video/msm/mddi_client_toshiba.c
++++ b/drivers/video/msm/mddi_client_toshiba.c
+@@ -20,6 +20,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/interrupt.h>
+ #include <linux/gpio.h>
++#include <linux/sched.h>
+ #include <mach/msm_fb.h>
+ 
+ 
+diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
+index 99636a2..6c519e2 100644
+--- a/drivers/video/msm/mdp.c
++++ b/drivers/video/msm/mdp.c
+@@ -22,9 +22,6 @@
+ #include <linux/wait.h>
+ #include <linux/clk.h>
+ #include <linux/file.h>
+-#ifdef CONFIG_ANDROID_PMEM
+-#include <linux/android_pmem.h>
+-#endif
+ #include <linux/major.h>
+ 
+ #include <mach/msm_iomap.h>
+@@ -262,11 +259,6 @@ int get_img(struct mdp_img *img, struct fb_info *info,
+ 	struct file *file;
+ 	unsigned long vstart;
+ 
+-#ifdef CONFIG_ANDROID_PMEM
+-	if (!get_pmem_file(img->memory_id, start, &vstart, len, filep))
+-		return 0;
+-#endif
+-
+ 	file = fget_light(img->memory_id, &put_needed);
+ 	if (file == NULL)
+ 		return -1;
+@@ -283,12 +275,6 @@ int get_img(struct mdp_img *img, struct fb_info *info,
+ 
+ void put_img(struct file *src_file, struct file *dst_file)
+ {
+-#ifdef CONFIG_ANDROID_PMEM
+-	if (src_file)
+-		put_pmem_file(src_file);
+-	if (dst_file)
+-		put_pmem_file(dst_file);
+-#endif
+ }
+ 
+ int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
+@@ -320,9 +306,6 @@ int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
+ 	if (unlikely(get_img(&req->dst, fb, &dst_start, &dst_len, &dst_file))) {
+ 		printk(KERN_ERR "mpd_ppp: could not retrieve dst image from "
+ 				"memory\n");
+-#ifdef CONFIG_ANDROID_PMEM
+-		put_pmem_file(src_file);
+-#endif
+ 		return -EINVAL;
+ 	}
+ 	mutex_lock(&mdp_mutex);
+@@ -499,7 +482,6 @@ int mdp_probe(struct platform_device *pdev)
+ 	/* register mdp device */
+ 	mdp->mdp_dev.dev.parent = &pdev->dev;
+ 	mdp->mdp_dev.dev.class = mdp_class;
+-	snprintf(mdp->mdp_dev.dev.bus_id, BUS_ID_SIZE, "mdp%d", pdev->id);
+ 
+ 	/* if you can remove the platform device you'd have to implement
+ 	 * this:
+diff --git a/drivers/video/msm/mdp_ppp.c b/drivers/video/msm/mdp_ppp.c
+index ba2c467..4ff001f 100644
+--- a/drivers/video/msm/mdp_ppp.c
++++ b/drivers/video/msm/mdp_ppp.c
+@@ -16,7 +16,6 @@
+ #include <linux/file.h>
+ #include <linux/delay.h>
+ #include <linux/msm_mdp.h>
+-#include <linux/android_pmem.h>
+ #include <mach/msm_fb.h>
+ 
+ #include "mdp_hw.h"
+@@ -579,25 +578,6 @@ static int valid_src_dst(unsigned long src_start, unsigned long src_len,
+ static void flush_imgs(struct mdp_blit_req *req, struct mdp_regs *regs,
+ 		       struct file *src_file, struct file *dst_file)
+ {
+-#ifdef CONFIG_ANDROID_PMEM
+-	uint32_t src0_len, src1_len, dst0_len, dst1_len;
+-
+-	/* flush src images to memory before dma to mdp */
+-	get_len(&req->src, &req->src_rect, regs->src_bpp, &src0_len,
+-		&src1_len);
+-	flush_pmem_file(src_file, req->src.offset, src0_len);
+-	if (IS_PSEUDOPLNR(req->src.format))
+-		flush_pmem_file(src_file, req->src.offset + src0_len,
+-				src1_len);
+-
+-	/* flush dst images */
+-	get_len(&req->dst, &req->dst_rect, regs->dst_bpp, &dst0_len,
+-		&dst1_len);
+-	flush_pmem_file(dst_file, req->dst.offset, dst0_len);
+-	if (IS_PSEUDOPLNR(req->dst.format))
+-		flush_pmem_file(dst_file, req->dst.offset + dst0_len,
+-				dst1_len);
+-#endif
+ }
+ 
+ static void get_chroma_addr(struct mdp_img *img, struct mdp_rect *rect,
 
-> > 
-> > Best regards,
-> > Krzysztof
-> 
-> Thanks, here:
-> 
-> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-> index f53b9f1..f46d617 100644
-> --- a/drivers/video/fbcmap.c
-> +++ b/drivers/video/fbcmap.c
-> @@ -266,11 +266,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
->  		rc = -ENODEV;
->  		goto out;
->  	}
-> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-> -				!info->fbops->fb_setcmap)) {
-> -		rc = -EINVAL;
-> -		goto out1;
-> -	}
->  	rc = fb_set_cmap(&umap, info);
->  out1:
->  	unlock_fb_info(info);
-
-
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-
-----------------------------------------------------------------------
-Zobacz najlepsze walki Adamka.
-Ogladaj >>> http://link.interia.pl/f23e8
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

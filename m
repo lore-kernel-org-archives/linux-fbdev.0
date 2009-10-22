@@ -1,157 +1,128 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: drivers/video/msm: update to new kernel
-Date: Thu, 22 Oct 2009 10:56:39 +0200
-Message-ID: <20091022085639.GA30548@elf.ucw.cz>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] omapfb: Wrong test on unsigned?
+Date: Thu, 22 Oct 2009 11:22:37 -0700
+Message-ID: <20091022182236.GQ16230@atomide.com>
+References: <4AD8BA2F.9090307@gmail.com> <A24693684029E5489D1D202277BE89444CEFEAF5@dlee02.ent.ti.com> <4ADF2C30.3030401@gmail.com> <A24693684029E5489D1D202277BE89444D06EB0E@dlee02.ent.ti.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754524AbZJVI4p@vger.kernel.org>
+Return-path: <linux-omap-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <A24693684029E5489D1D202277BE89444D06EB0E@dlee02.ent.ti.com>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Andrew Morton <akpm@osdl.org>, Arve
+To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
+Cc: Roel Kluin <roel.kluin@gmail.com>, Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 
-TASK_INTERRUPTIBLE and friends are now only available after including
-<linux/sched.h>, so include it when needed.
+* Aguirre Rodriguez, Sergio Alberto <saaguirre@ti.com> [091021 08:41]:
+>  
+> 
+> > -----Original Message-----
+> > From: linux-omap-owner@vger.kernel.org 
+> > [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Roel Kluin
+> > Sent: Wednesday, October 21, 2009 10:44 AM
+> > To: Aguirre Rodriguez, Sergio Alberto
+> > Cc: Imre Deak; linux-fbdev-devel@lists.sourceforge.net; 
+> > linux-omap@vger.kernel.org; Andrew Morton
+> > Subject: Re: [PATCH] omapfb: Wrong test on unsigned?
+> > 
+> > regno is unsigned so the test didn't work. If regno
+> > can't be used return an error.
+> > 
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > ---
+> > >> Is this correct? please review.
+> > >>
+> > >> diff --git a/drivers/video/omap/omapfb_main.c 
+> > >> b/drivers/video/omap/omapfb_main.c
+> > >> index 0d0c8c8..cc7dd93 100644
+> > >> --- a/drivers/video/omap/omapfb_main.c
+> > >> +++ b/drivers/video/omap/omapfb_main.c
+> > >> @@ -286,7 +286,7 @@ static int _setcolreg(struct fb_info 
+> > >> *info, u_int regno, u_int red, u_int green,
+> > >>  		if (r != 0)
+> > >>  			break;
+> > >>  
+> > >> -		if (regno < 0) {
+> > >> +		if ((int)regno < 0) {
+> > > 
+> > > Hmm...
+> > > 
+> > > Isn't regno unsigned integer from the start?
+> > 
+> > yes
+> > 
+> > > 2 things here:
+> > > 
+> > > - regno will never be negative.
+> > > - Casting won't make a difference in the meaning., it'll 
+> > make a negative only when:
+> > > 
+> > > 	regno > ((2^32) / 2)
+> > > 
+> > > Which doesn't make any sense IMHO.
+> > 
+> > I think it is strange that _setcolreg() accepts a regno that 
+> > is invalid,
+> > ignores it and just returns as if all was OK. If you agree 
+> > then you may
+> > like the patch below.
+> 
+> Yep. Looks nicer to me ;)
+> 
+> Acked-by: Sergio Aguirre <saaguirre@ti.com>
 
-bus_id is no longer available/neccessary, so remove that.
+Looks good to me too.
 
-Android pmem driver is not available in mainline, so remove its hooks
-from drivers/video.
+Acked-by: Tony Lindgren <tony@atomide.com>
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-index 5c5a1ad..474421f 100644
---- a/drivers/video/msm/mddi.c
-+++ b/drivers/video/msm/mddi.c
-@@ -24,6 +24,7 @@
- #include <linux/spinlock.h>
- #include <linux/clk.h>
- #include <linux/io.h>
-+#include <linux/sched.h>
- #include <mach/msm_iomap.h>
- #include <mach/irqs.h>
- #include <mach/board.h>
-diff --git a/drivers/video/msm/mddi_client_nt35399.c b/drivers/video/msm/mddi_client_nt35399.c
-index 9c78050..c9e9349 100644
---- a/drivers/video/msm/mddi_client_nt35399.c
-+++ b/drivers/video/msm/mddi_client_nt35399.c
-@@ -19,6 +19,7 @@
- #include <linux/kernel.h>
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
-+#include <linux/sched.h>
- #include <linux/gpio.h>
- #include <mach/msm_fb.h>
- 
-diff --git a/drivers/video/msm/mddi_client_toshiba.c b/drivers/video/msm/mddi_client_toshiba.c
-index 80d0f5f..71048e7 100644
---- a/drivers/video/msm/mddi_client_toshiba.c
-+++ b/drivers/video/msm/mddi_client_toshiba.c
-@@ -20,6 +20,7 @@
- #include <linux/platform_device.h>
- #include <linux/interrupt.h>
- #include <linux/gpio.h>
-+#include <linux/sched.h>
- #include <mach/msm_fb.h>
- 
- 
-diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-index 99636a2..6c519e2 100644
---- a/drivers/video/msm/mdp.c
-+++ b/drivers/video/msm/mdp.c
-@@ -22,9 +22,6 @@
- #include <linux/wait.h>
- #include <linux/clk.h>
- #include <linux/file.h>
--#ifdef CONFIG_ANDROID_PMEM
--#include <linux/android_pmem.h>
--#endif
- #include <linux/major.h>
- 
- #include <mach/msm_iomap.h>
-@@ -262,11 +259,6 @@ int get_img(struct mdp_img *img, struct fb_info *info,
- 	struct file *file;
- 	unsigned long vstart;
- 
--#ifdef CONFIG_ANDROID_PMEM
--	if (!get_pmem_file(img->memory_id, start, &vstart, len, filep))
--		return 0;
--#endif
--
- 	file = fget_light(img->memory_id, &put_needed);
- 	if (file == NULL)
- 		return -1;
-@@ -283,12 +275,6 @@ int get_img(struct mdp_img *img, struct fb_info *info,
- 
- void put_img(struct file *src_file, struct file *dst_file)
- {
--#ifdef CONFIG_ANDROID_PMEM
--	if (src_file)
--		put_pmem_file(src_file);
--	if (dst_file)
--		put_pmem_file(dst_file);
--#endif
- }
- 
- int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
-@@ -320,9 +306,6 @@ int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
- 	if (unlikely(get_img(&req->dst, fb, &dst_start, &dst_len, &dst_file))) {
- 		printk(KERN_ERR "mpd_ppp: could not retrieve dst image from "
- 				"memory\n");
--#ifdef CONFIG_ANDROID_PMEM
--		put_pmem_file(src_file);
--#endif
- 		return -EINVAL;
- 	}
- 	mutex_lock(&mdp_mutex);
-@@ -499,7 +482,6 @@ int mdp_probe(struct platform_device *pdev)
- 	/* register mdp device */
- 	mdp->mdp_dev.dev.parent = &pdev->dev;
- 	mdp->mdp_dev.dev.class = mdp_class;
--	snprintf(mdp->mdp_dev.dev.bus_id, BUS_ID_SIZE, "mdp%d", pdev->id);
- 
- 	/* if you can remove the platform device you'd have to implement
- 	 * this:
-diff --git a/drivers/video/msm/mdp_ppp.c b/drivers/video/msm/mdp_ppp.c
-index ba2c467..4ff001f 100644
---- a/drivers/video/msm/mdp_ppp.c
-+++ b/drivers/video/msm/mdp_ppp.c
-@@ -16,7 +16,6 @@
- #include <linux/file.h>
- #include <linux/delay.h>
- #include <linux/msm_mdp.h>
--#include <linux/android_pmem.h>
- #include <mach/msm_fb.h>
- 
- #include "mdp_hw.h"
-@@ -579,25 +578,6 @@ static int valid_src_dst(unsigned long src_start, unsigned long src_len,
- static void flush_imgs(struct mdp_blit_req *req, struct mdp_regs *regs,
- 		       struct file *src_file, struct file *dst_file)
- {
--#ifdef CONFIG_ANDROID_PMEM
--	uint32_t src0_len, src1_len, dst0_len, dst1_len;
--
--	/* flush src images to memory before dma to mdp */
--	get_len(&req->src, &req->src_rect, regs->src_bpp, &src0_len,
--		&src1_len);
--	flush_pmem_file(src_file, req->src.offset, src0_len);
--	if (IS_PSEUDOPLNR(req->src.format))
--		flush_pmem_file(src_file, req->src.offset + src0_len,
--				src1_len);
--
--	/* flush dst images */
--	get_len(&req->dst, &req->dst_rect, regs->dst_bpp, &dst0_len,
--		&dst1_len);
--	flush_pmem_file(dst_file, req->dst.offset, dst0_len);
--	if (IS_PSEUDOPLNR(req->dst.format))
--		flush_pmem_file(dst_file, req->dst.offset + dst0_len,
--				dst1_len);
--#endif
- }
- 
- static void get_chroma_addr(struct mdp_img *img, struct mdp_rect *rect,
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
+> Regards,
+> Sergio
+> > 
+> > > Regards,
+> > > Sergio
+> > 
+> > Thanks,
+> > 
+> > Roel
+> > 
+> > diff --git a/drivers/video/omap/omapfb_main.c 
+> > b/drivers/video/omap/omapfb_main.c
+> > index 0d0c8c8..4da94d0 100644
+> > --- a/drivers/video/omap/omapfb_main.c
+> > +++ b/drivers/video/omap/omapfb_main.c
+> > @@ -285,12 +285,6 @@ static int _setcolreg(struct fb_info 
+> > *info, u_int regno, u_int red, u_int green,
+> >  	case OMAPFB_COLOR_RGB444:
+> >  		if (r != 0)
+> >  			break;
+> > -
+> > -		if (regno < 0) {
+> > -			r = -EINVAL;
+> > -			break;
+> > -		}
+> > -
+> >  		if (regno < 16) {
+> >  			u16 pal;
+> >  			pal = ((red >> (16 - var->red.length)) <<
+> > @@ -299,6 +293,8 @@ static int _setcolreg(struct fb_info 
+> > *info, u_int regno, u_int red, u_int green,
+> >  					var->green.offset) |
+> >  			      (blue >> (16 - var->blue.length));
+> >  			((u32 *)(info->pseudo_palette))[regno] = pal;
+> > +		} else {
+> > +			r = -EINVAL;
+> >  		}
+> >  		break;
+> >  	default:
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe 
+> > linux-omap" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> > --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

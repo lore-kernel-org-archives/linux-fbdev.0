@@ -1,128 +1,75 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] omapfb: Wrong test on unsigned?
-Date: Thu, 22 Oct 2009 11:22:37 -0700
-Message-ID: <20091022182236.GQ16230@atomide.com>
-References: <4AD8BA2F.9090307@gmail.com> <A24693684029E5489D1D202277BE89444CEFEAF5@dlee02.ent.ti.com> <4ADF2C30.3030401@gmail.com> <A24693684029E5489D1D202277BE89444D06EB0E@dlee02.ent.ti.com>
+From: Woon Liang Soh <woonliang.soh@gmail.com>
+Subject: vesafb BIOS interface
+Date: Fri, 23 Oct 2009 10:49:51 +0800
+Message-ID: <1dcc0f750910221949r6933b0d0v580f8279af73e0f9@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <A24693684029E5489D1D202277BE89444D06EB0E@dlee02.ent.ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: multipart/mixed; boundary="===============3016621019901914243=="
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <woonliang.soh@gmail.com>) id 1N1AE8-0006fA-Ha
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Oct 2009 02:50:04 +0000
+Received: from mail-pz0-f188.google.com ([209.85.222.188])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N1AE2-0003GX-8w for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Oct 2009 02:50:04 +0000
+Received: by pzk26 with SMTP id 26so5953703pzk.4
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 22 Oct 2009 19:49:52 -0700 (PDT)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+
+--===============3016621019901914243==
+Content-Type: multipart/alternative; boundary=001636e1f9381ef1ef04769144e9
+
+--001636e1f9381ef1ef04769144e9
+Content-Type: text/plain; charset=ISO-8859-1
+
+Is there any way in either user-space or kernel-space to make calls to the
+VBIOS to get it to call the INT routines?
+
+TIA,
+Terence.
+
+--001636e1f9381ef1ef04769144e9
+Content-Type: text/html; charset=ISO-8859-1
+
+Is there any way in either user-space or kernel-space to make calls to the VBIOS to get it to call the INT routines?<br><br>TIA,<br>Terence.<br>
+
+--001636e1f9381ef1ef04769144e9--
+
+
+--===============3016621019901914243==
 Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Cc: Roel Kluin <roel.kluin@gmail.com>, Imre Deak <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Content-Disposition: inline
 
-* Aguirre Rodriguez, Sergio Alberto <saaguirre@ti.com> [091021 08:41]:
->  
-> 
-> > -----Original Message-----
-> > From: linux-omap-owner@vger.kernel.org 
-> > [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Roel Kluin
-> > Sent: Wednesday, October 21, 2009 10:44 AM
-> > To: Aguirre Rodriguez, Sergio Alberto
-> > Cc: Imre Deak; linux-fbdev-devel@lists.sourceforge.net; 
-> > linux-omap@vger.kernel.org; Andrew Morton
-> > Subject: Re: [PATCH] omapfb: Wrong test on unsigned?
-> > 
-> > regno is unsigned so the test didn't work. If regno
-> > can't be used return an error.
-> > 
-> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> > ---
-> > >> Is this correct? please review.
-> > >>
-> > >> diff --git a/drivers/video/omap/omapfb_main.c 
-> > >> b/drivers/video/omap/omapfb_main.c
-> > >> index 0d0c8c8..cc7dd93 100644
-> > >> --- a/drivers/video/omap/omapfb_main.c
-> > >> +++ b/drivers/video/omap/omapfb_main.c
-> > >> @@ -286,7 +286,7 @@ static int _setcolreg(struct fb_info 
-> > >> *info, u_int regno, u_int red, u_int green,
-> > >>  		if (r != 0)
-> > >>  			break;
-> > >>  
-> > >> -		if (regno < 0) {
-> > >> +		if ((int)regno < 0) {
-> > > 
-> > > Hmm...
-> > > 
-> > > Isn't regno unsigned integer from the start?
-> > 
-> > yes
-> > 
-> > > 2 things here:
-> > > 
-> > > - regno will never be negative.
-> > > - Casting won't make a difference in the meaning., it'll 
-> > make a negative only when:
-> > > 
-> > > 	regno > ((2^32) / 2)
-> > > 
-> > > Which doesn't make any sense IMHO.
-> > 
-> > I think it is strange that _setcolreg() accepts a regno that 
-> > is invalid,
-> > ignores it and just returns as if all was OK. If you agree 
-> > then you may
-> > like the patch below.
-> 
-> Yep. Looks nicer to me ;)
-> 
-> Acked-by: Sergio Aguirre <saaguirre@ti.com>
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry(R) Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9 - 12, 2009. Register now!
+http://p.sf.net/sfu/devconference
+--===============3016621019901914243==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Looks good to me too.
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
-Acked-by: Tony Lindgren <tony@atomide.com>
-
-> 
-> Regards,
-> Sergio
-> > 
-> > > Regards,
-> > > Sergio
-> > 
-> > Thanks,
-> > 
-> > Roel
-> > 
-> > diff --git a/drivers/video/omap/omapfb_main.c 
-> > b/drivers/video/omap/omapfb_main.c
-> > index 0d0c8c8..4da94d0 100644
-> > --- a/drivers/video/omap/omapfb_main.c
-> > +++ b/drivers/video/omap/omapfb_main.c
-> > @@ -285,12 +285,6 @@ static int _setcolreg(struct fb_info 
-> > *info, u_int regno, u_int red, u_int green,
-> >  	case OMAPFB_COLOR_RGB444:
-> >  		if (r != 0)
-> >  			break;
-> > -
-> > -		if (regno < 0) {
-> > -			r = -EINVAL;
-> > -			break;
-> > -		}
-> > -
-> >  		if (regno < 16) {
-> >  			u16 pal;
-> >  			pal = ((red >> (16 - var->red.length)) <<
-> > @@ -299,6 +293,8 @@ static int _setcolreg(struct fb_info 
-> > *info, u_int regno, u_int red, u_int green,
-> >  					var->green.offset) |
-> >  			      (blue >> (16 - var->blue.length));
-> >  			((u32 *)(info->pseudo_palette))[regno] = pal;
-> > +		} else {
-> > +			r = -EINVAL;
-> >  		}
-> >  		break;
-> >  	default:
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe 
-> > linux-omap" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> > --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--===============3016621019901914243==--

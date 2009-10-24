@@ -1,137 +1,57 @@
-From: "Chaithrika U S" <chaithrika-l0cyMroinI0@public.gmane.org>
-Subject: RE: [PATCH] davinci: fb: Calculate the clock divider from pixel
-	clock info
-Date: Fri, 23 Oct 2009 10:41:07 +0530
-Message-ID: <032201ca539f$3a879530$af96bf90$@com>
-References: <1256033887-1582-1-git-send-email-chaithrika@ti.com>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: vesafb BIOS interface
+Date: Sat, 24 Oct 2009 15:37:13 +0200
+Message-ID: <20091024153713.8e4d6e36.krzysztof.h1@poczta.fm>
+References: <1dcc0f750910221949r6933b0d0v580f8279af73e0f9@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: <1256033887-1582-1-git-send-email-chaithrika-l0cyMroinI0@public.gmane.org>
-Content-Language: en-us
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
 Content-Type: text/plain; charset="us-ascii"
-To: 'Chaithrika U S' <chaithrika-l0cyMroinI0@public.gmane.org>, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1N1gWq-0005Jm-4t
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 24 Oct 2009 13:19:32 +0000
+Received: from smtp240.poczta.interia.pl ([217.74.64.240])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N1gWl-0004ZZ-Uu for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 24 Oct 2009 13:19:32 +0000
+In-Reply-To: <1dcc0f750910221949r6933b0d0v580f8279af73e0f9@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Woon Liang Soh <woonliang.soh@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-All,
+On Fri, 23 Oct 2009 10:49:51 +0800
+Woon Liang Soh <woonliang.soh@gmail.com> wrote:
 
-Any comments/suggestions on this patch?
+> Is there any way in either user-space or kernel-space to make calls to the
+> VBIOS to get it to call the INT routines?
+> 
 
-Regards, 
-Chaithrika
+No. The closest thing is uvesa fb driver as it just does calls to the VESA bios through 
+user-space daemon (if I understand how it works).
 
-On Tue, Oct 20, 2009 at 15:48:07, Chaithrika U S wrote:
-> The clock divider value can be calculated from the pixel clock
-> value for the panel. This gives more flexiblity to the driver
-> to change the divider value on the fly as in the case of cpufreq
-> feature- support for which will be added shortly.
-> 
-> Signed-off-by: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
-> ---
-> This patch applies on Linus' kernel tree.
-> Resending this patch as missed out marking fbdev list previously.
-> 
->  drivers/video/da8xx-fb.c |   28 ++++++++++++++++++++--------
->  1 files changed, 20 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index d065894..d9ab839 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -113,6 +113,7 @@ struct da8xx_fb_par {
->  	unsigned short pseudo_palette[16];
->  	unsigned int databuf_sz;
->  	unsigned int palette_sz;
-> +	unsigned int pxl_clk;
->  };
->  
->  /* Variable Screen Information */
-> @@ -155,7 +156,7 @@ struct da8xx_panel {
->  	int		vfp;		/* Vertical front porch */
->  	int		vbp;		/* Vertical back porch */
->  	int		vsw;		/* Vertical Sync Pulse Width */
-> -	int		pxl_clk;	/* Pixel clock */
-> +	unsigned int	pxl_clk;	/* Pixel clock */
->  	unsigned char	invert_pxl_clk;	/* Invert Pixel clock */
->  };
->  
-> @@ -171,7 +172,7 @@ static struct da8xx_panel known_lcd_panels[] = {
->  		.vfp = 2,
->  		.vbp = 2,
->  		.vsw = 0,
-> -		.pxl_clk = 0x10,
-> +		.pxl_clk = 4608000,
->  		.invert_pxl_clk = 1,
->  	},
->  	/* Sharp LK043T1DG01 */
-> @@ -185,7 +186,7 @@ static struct da8xx_panel known_lcd_panels[] = {
->  		.vfp = 2,
->  		.vbp = 2,
->  		.vsw = 10,
-> -		.pxl_clk = 0x12,
-> +		.pxl_clk = 7833600,
->  		.invert_pxl_clk = 0,
->  	},
->  };
-> @@ -451,6 +452,18 @@ static void lcd_reset(struct da8xx_fb_par *par)
->  	lcdc_write(0, LCD_RASTER_CTRL_REG);
->  }
->  
-> +static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
-> +{
-> +	unsigned int lcd_clk, div;
-> +
-> +	lcd_clk = clk_get_rate(par->lcdc_clk);
-> +	div = lcd_clk / par->pxl_clk;
-> +
-> +	/* Configure the LCD clock divisor. */
-> +	lcdc_write(LCD_CLK_DIVISOR(div) |
-> +			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
-> +}
-> +
->  static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
->  		struct da8xx_panel *panel)
->  {
-> @@ -459,9 +472,8 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
->  
->  	lcd_reset(par);
->  
-> -	/* Configure the LCD clock divisor. */
-> -	lcdc_write(LCD_CLK_DIVISOR(panel->pxl_clk) |
-> -			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
-> +	/* Calculate the divider */
-> +	lcd_calc_clk_divider(par);
->  
->  	if (panel->invert_pxl_clk)
->  		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) |
-> @@ -721,6 +733,8 @@ static int __init fb_probe(struct platform_device *device)
->  	}
->  
->  	par = da8xx_fb_info->par;
-> +	par->lcdc_clk = fb_clk;
-> +	par->pxl_clk = lcdc_info->pxl_clk;
->  
->  	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
->  		dev_err(&device->dev, "lcd_init failed\n");
-> @@ -753,8 +767,6 @@ static int __init fb_probe(struct platform_device *device)
->  	da8xx_fb_fix.smem_len = par->databuf_sz - par->palette_sz;
->  	da8xx_fb_fix.line_length = (lcdc_info->width * lcd_cfg->bpp) / 8;
->  
-> -	par->lcdc_clk = fb_clk;
-> -
->  	par->irq = platform_get_irq(device, 0);
->  	if (par->irq < 0) {
->  		ret = -ENOENT;
-> -- 
-> 1.5.6
-> 
+Regards,
+Krzysztof
+
+
+----------------------------------------------------------------------
+Afera Hazardowa- O co tu chodzi?
+Sprawdz >>> http://link.interia.pl/f238e
+
+
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry(R) Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9 - 12, 2009. Register now!
+http://p.sf.net/sfu/devconference

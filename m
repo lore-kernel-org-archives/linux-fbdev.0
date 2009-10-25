@@ -1,21 +1,22 @@
 From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [PATCH] add palette register check
-Date: Sat, 24 Oct 2009 17:18:23 +0200
-Message-ID: <20091024171823.27896031.krzysztof.h1@poczta.fm>
+Subject: [PATCH] savagefb: fix blanking mode on CRT
+	display
+Date: Sun, 25 Oct 2009 11:17:04 +0100
+Message-ID: <20091025111704.3b0fe81d.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <krzysztof.h1@poczta.fm>) id 1N1i7N-0005TK-Tc
+	by 335xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1N1ztF-0000fm-7M
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 24 Oct 2009 15:01:21 +0000
+	Sun, 25 Oct 2009 09:59:57 +0000
 Received: from smtp240.poczta.interia.pl ([217.74.64.240])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1N1i7I-0000sr-3c for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 24 Oct 2009 15:01:21 +0000
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N1ztA-0005wF-Sm for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 25 Oct 2009 09:59:57 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,91 +31,32 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 
 From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Add check if palette register number is in correct range
-for few drivers which miss it. The regno value comes
-indirectly from user space.
-
-Two drivers has converted check from BUG_ON() macro
-to just return an error (non-zero value).
+Fix wrong bit mask for blanking register.  Due to the error a CRT monitor blanks
+off due to wrong frequency (out of range) instead of PM signal (vertical and horizontal
+frequencies cut off).
 
 Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
 ---
+Just compare the mask with bits set in the switch(blank) clause below the changed line.
 
-diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
-index 8cd279b..2682938 100644
---- a/drivers/video/atafb.c
-+++ b/drivers/video/atafb.c
-@@ -2248,6 +2248,9 @@ static int ext_setcolreg(unsigned int regno, unsigned int red,
- 	if (!external_vgaiobase)
- 		return 1;
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+index 37b135d..5ad7c79 100644
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -1565,7 +1565,7 @@ static int savagefb_blank(int blank, struct fb_info *info)
+ 		vga_out8(0x3c5, sr8, par);
+ 		vga_out8(0x3c4, 0x0d, par);
+ 		srd = vga_in8(0x3c5, par);
+-		srd &= 0x03;
++		srd &= 0x50;
  
-+	if (regno > 255)
-+		return 1;
-+
- 	switch (external_card_type) {
- 	case IS_VGA:
- 		OUTB(0x3c8, regno);
-diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
-index bd9d46f..27aab4a 100644
---- a/drivers/video/ep93xx-fb.c
-+++ b/drivers/video/ep93xx-fb.c
-@@ -358,6 +358,8 @@ static int ep93xxfb_setcolreg(unsigned int regno, unsigned int red,
- 
- 	switch (info->fix.visual) {
- 	case FB_VISUAL_PSEUDOCOLOR:
-+		if (regno > 255)
-+			return 1;
- 		rgb = ((red & 0xff00) << 8) | (green & 0xff00) |
- 			((blue & 0xff00) >> 8);
- 
-diff --git a/drivers/video/maxinefb.c b/drivers/video/maxinefb.c
-index 5e91c2b..7854c7a 100644
---- a/drivers/video/maxinefb.c
-+++ b/drivers/video/maxinefb.c
-@@ -92,6 +92,9 @@ static int maxinefb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 	/* value to be written into the palette reg. */
- 	unsigned long hw_colorvalue = 0;
- 
-+	if (regno > 255)
-+		return 1;
-+
- 	red   >>= 8;    /* The cmap fields are 16 bits    */
- 	green >>= 8;    /* wide, but the harware colormap */
- 	blue  >>= 8;    /* registers are only 8 bits wide */
-diff --git a/drivers/video/pmag-ba-fb.c b/drivers/video/pmag-ba-fb.c
-index 0573ec6..0f361b6 100644
---- a/drivers/video/pmag-ba-fb.c
-+++ b/drivers/video/pmag-ba-fb.c
-@@ -98,7 +98,8 @@ static int pmagbafb_setcolreg(unsigned int regno, unsigned int red,
- {
- 	struct pmagbafb_par *par = info->par;
- 
--	BUG_ON(regno >= info->cmap.len);
-+	if (regno >= info->cmap.len)
-+		return 1;
- 
- 	red   >>= 8;	/* The cmap fields are 16 bits    */
- 	green >>= 8;	/* wide, but the hardware colormap */
-diff --git a/drivers/video/pmagb-b-fb.c b/drivers/video/pmagb-b-fb.c
-index 9874872..2de0806 100644
---- a/drivers/video/pmagb-b-fb.c
-+++ b/drivers/video/pmagb-b-fb.c
-@@ -102,7 +102,8 @@ static int pmagbbfb_setcolreg(unsigned int regno, unsigned int red,
- {
- 	struct pmagbbfb_par *par = info->par;
- 
--	BUG_ON(regno >= info->cmap.len);
-+	if (regno >= info->cmap.len)
-+		return 1;
- 
- 	red   >>= 8;	/* The cmap fields are 16 bits    */
- 	green >>= 8;	/* wide, but the hardware colormap */
+ 		switch (blank) {
+ 		case FB_BLANK_UNBLANK:
 
- 
 ----------------------------------------------------------------------
-Nie dla nich ciepla praca za biurkiem.
-Sprawdz >>> http://link.interia.pl/f2383
+Opony do 30% taniej, dostawa gratis!
+http://link.interia.pl/f23c9
+
 
 
 ------------------------------------------------------------------------------

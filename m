@@ -1,30 +1,27 @@
-From: Clemens Ladisch <clemens@ladisch.de>
-Subject: FBIOPUT_VSCREENINFO: invalid vs. "none" value
-	of pixclock?
-Date: Wed, 28 Oct 2009 10:51:03 +0100
-Message-ID: <4AE81407.4050601@ladisch.de>
+From: Michal Januszewski <michalj@gmail.com>
+Subject: Re: vesafb BIOS interface
+Date: Wed, 28 Oct 2009 18:22:06 +0100
+Message-ID: <5d9b736f0910281022m355e4ceeiee82f895cae418f@mail.gmail.com>
+References: <1dcc0f750910221949r6933b0d0v580f8279af73e0f9@mail.gmail.com>
+	<20091024153713.8e4d6e36.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <clemens@ladisch.de>) id 1N35BV-0000q3-9K
+	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <michalj@gmail.com>) id 1N3CDx-0001MF-2b
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Oct 2009 09:51:17 +0000
-Received: from out4.smtp.messagingengine.com ([66.111.4.28])
-	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1N35BP-0002wk-3s for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Oct 2009 09:51:17 +0000
-Received: from compute2.internal (compute2.internal [10.202.2.42])
-	by gateway1.messagingengine.com (Postfix) with ESMTP id 79C05B8017
+	Wed, 28 Oct 2009 17:22:17 +0000
+Received: from qw-out-1920.google.com ([74.125.92.146])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N3CDs-0003nQ-84 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 28 Oct 2009 17:22:17 +0000
+Received: by qw-out-1920.google.com with SMTP id 5so263827qwc.4
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 28 Oct 2009 05:51:05 -0400 (EDT)
-Received: from [10.1.2.136] (srv004.schk01.int.dmc-one.com [85.232.8.141])
-	by mail.messagingengine.com (Postfix) with ESMTPSA id F35CD16E9D
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 28 Oct 2009 05:51:04 -0400 (EDT)
+	Wed, 28 Oct 2009 10:22:06 -0700 (PDT)
+In-Reply-To: <20091024153713.8e4d6e36.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,31 +31,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Woon Liang Soh <woonliang.soh@gmail.com>
 
-Hi,
+On Sat, Oct 24, 2009 at 14:37, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-what should the pixclock field for the FBIOPUT_VSCREENINFO ioctl be set
-to when an application doesn't care about the timing?
+>> Is there any way in either user-space or kernel-space to make calls to the
+>> VBIOS to get it to call the INT routines?
+>
+> No. The closest thing is uvesa fb driver as it just does calls to the VESA bios through
+> user-space daemon (if I understand how it works).
 
-The fbset tool and Xorg's fbdevhw driver set it to zero when they have
-no timing.  Other programs (like links or xine) set it to the value
-returned by FBIOGET_VSCREENINFO.
+That's correct.  You will probably be interested in the v86d code
+(i.e. the userspace daemon mentioned above), which does all the heavy
+lifting re VBIOS calls.  Have a look at testvbe.c from the v86d
+tarball which demonstrates how to use the v86d code to call the VBIOS
+to get some info about the graphics adapter and supported video modes.
 
-However, this seems to be different from the actual DRM helpers
-implementation:
-
-drm_fb_helper_single_fb_probe() initializes pixclock to -1, and this is
-the value returned by FBIOGET_VSCREENINFO.  (Many programs treat this
-as a valid value, 0xffffffff = 4 ms.)
-
-drm_fb_helper_check_var() explicitly rejects both values, 0 or -1.
-
-drm_fb_helper_set_par() refuses to work with any value except -1.
-
-
-Best regards,
-Clemens
+-- 
+Michal Januszewski, Gentoo Linux Developer
+http://people.gentoo.org/spock
 
 ------------------------------------------------------------------------------
 Come build with us! The BlackBerry(R) Developer Conference in SF, CA

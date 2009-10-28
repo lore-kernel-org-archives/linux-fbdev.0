@@ -1,60 +1,133 @@
-From: Michal Januszewski <michalj@gmail.com>
-Subject: Re: vesafb BIOS interface
-Date: Wed, 28 Oct 2009 18:22:06 +0100
-Message-ID: <5d9b736f0910281022m355e4ceeiee82f895cae418f@mail.gmail.com>
-References: <1dcc0f750910221949r6933b0d0v580f8279af73e0f9@mail.gmail.com>
-	<20091024153713.8e4d6e36.krzysztof.h1@poczta.fm>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Add missing header for HTC Dream framebuffer
+Date: Wed, 28 Oct 2009 23:11:31 +0100
+Message-ID: <20091028221131.GC8053@elf.ucw.cz>
+References: <20090629111029.GA15514@elf.ucw.cz>
+ <20091026221129.GB23415@game.jcrosoft.org>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753671AbZJ1WLf@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20091026221129.GB23415@game.jcrosoft.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <michalj@gmail.com>) id 1N3CDx-0001MF-2b
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Oct 2009 17:22:17 +0000
-Received: from qw-out-1920.google.com ([74.125.92.146])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1N3CDs-0003nQ-84 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 28 Oct 2009 17:22:17 +0000
-Received: by qw-out-1920.google.com with SMTP id 5so263827qwc.4
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 28 Oct 2009 10:22:06 -0700 (PDT)
-In-Reply-To: <20091024153713.8e4d6e36.krzysztof.h1@poczta.fm>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Woon Liang Soh <woonliang.soh@gmail.com>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>, Brian Swetland <swetland@google.com>
 
-On Sat, Oct 24, 2009 at 14:37, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
->> Is there any way in either user-space or kernel-space to make calls to the
->> VBIOS to get it to call the INT routines?
->
-> No. The closest thing is uvesa fb driver as it just does calls to the VESA bios through
-> user-space daemon (if I understand how it works).
+> > I cleaned up dead code, a lot of debugging infastructure and horrific
+> > logo code. I had to remove earlysuspend support, because neccessary
+> > headers are not in mainline. The driver still works :-).
+> > 
+> > I'd like to see it applied, working framebuffer is quite important for
+> > debugging / getting other drivers into working state.
+> > 
+> the include/linux/msm_mdp.h is missing
+> 
+> could you send a patch to add it?
 
-That's correct.  You will probably be interested in the v86d code
-(i.e. the userspace daemon mentioned above), which does all the heavy
-lifting re VBIOS calls.  Have a look at testvbe.c from the v86d
-tarball which demonstrates how to use the v86d code to call the VBIOS
-to get some info about the graphics adapter and supported video modes.
+---
+
+This should fix compilation by adding missing include/linux/msm_mdp.h
+file.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+diff --git a/include/linux/msm_mdp.h b/include/linux/msm_mdp.h
+new file mode 100644
+index 0000000..228e46e
+--- /dev/null
++++ b/include/linux/msm_mdp.h
+@@ -0,0 +1,86 @@
++/* include/linux/msm_mdp.h
++ *
++ * Copyright (C) 2007 Google Incorporated
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++#ifndef _MSM_MDP_H_
++#define _MSM_MDP_H_
++
++#include <linux/types.h>
++
++#define MSMFB_IOCTL_MAGIC 'm'
++#define MSMFB_GRP_DISP          _IOW(MSMFB_IOCTL_MAGIC, 1, unsigned int)
++#define MSMFB_BLIT              _IOW(MSMFB_IOCTL_MAGIC, 2, unsigned int)
++
++enum {
++	MDP_RGB_565,      /* RGB 565 planer */
++	MDP_XRGB_8888,    /* RGB 888 padded */
++	MDP_Y_CBCR_H2V2,  /* Y and CbCr, pseudo planer w/ Cb is in MSB */
++	MDP_ARGB_8888,    /* ARGB 888 */
++	MDP_RGB_888,      /* RGB 888 planer */
++	MDP_Y_CRCB_H2V2,  /* Y and CrCb, pseudo planer w/ Cr is in MSB */
++	MDP_YCRYCB_H2V1,  /* YCrYCb interleave */
++	MDP_Y_CRCB_H2V1,  /* Y and CrCb, pseduo planer w/ Cr is in MSB */
++	MDP_Y_CBCR_H2V1,  /* Y and CrCb, pseduo planer w/ Cr is in MSB */
++	MDP_RGBA_8888,    /* ARGB 888 */
++	MDP_BGRA_8888,    /* ARGB 888 */
++	MDP_IMGTYPE_LIMIT /* Non valid image type after this enum */
++};
++
++enum {
++	PMEM_IMG,
++	FB_IMG,
++};
++
++/* flag values */
++#define MDP_ROT_NOP 0
++#define MDP_FLIP_LR 0x1
++#define MDP_FLIP_UD 0x2
++#define MDP_ROT_90 0x4
++#define MDP_ROT_180 (MDP_FLIP_UD|MDP_FLIP_LR)
++#define MDP_ROT_270 (MDP_ROT_90|MDP_FLIP_UD|MDP_FLIP_LR)
++#define MDP_DITHER 0x8
++#define MDP_BLUR 0x10
++
++#define MDP_TRANSP_NOP 0xffffffff
++#define MDP_ALPHA_NOP 0xff
++
++struct mdp_rect {
++	uint32_t x;
++	uint32_t y;
++	uint32_t w;
++	uint32_t h;
++};
++
++struct mdp_img {
++	uint32_t width;
++	uint32_t height;
++	uint32_t format;
++	uint32_t offset;
++	int memory_id;		/* the file descriptor */
++};
++
++struct mdp_blit_req {
++	struct mdp_img src;
++	struct mdp_img dst;
++	struct mdp_rect src_rect;
++	struct mdp_rect dst_rect;
++	uint32_t alpha;
++	uint32_t transp_mask;
++	uint32_t flags;
++};
++
++struct mdp_blit_req_list {
++	uint32_t count;
++	struct mdp_blit_req req[];
++};
++
++#endif
+
 
 -- 
-Michal Januszewski, Gentoo Linux Developer
-http://people.gentoo.org/spock
-
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-http://p.sf.net/sfu/devconference
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

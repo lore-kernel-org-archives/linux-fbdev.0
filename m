@@ -1,94 +1,73 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: [PATCH] atoi: Drop custom atoi from drivers/video/modedb.c
-Date: Thu, 29 Oct 2009 16:54:43 +0200
-Message-ID: <1256828083-19002-1-git-send-email-andy.shevchenko@gmail.com>
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754952AbZJ2Oz0@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
+From: Paulius Zaleckas <paulius.zaleckas@gmail.com>
+Subject: [RFC] intelfb + DirectFB + laptop issue
+Date: Thu, 29 Oct 2009 14:42:41 +0200
+Message-ID: <4AE98DC1.3070301@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <paulius.zaleckas@gmail.com>) id 1N3Uvf-0005oS-Md
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 29 Oct 2009 13:20:39 +0000
+Received: from darkstar.wilibox.com ([195.14.175.138])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N3UvX-0002Fc-FE for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 29 Oct 2009 13:20:38 +0000
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sf.net
+Cc: sylvain.meyer@worldonline.fr
 
-From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Hi,
 
-Kernel has simple_strtol() implementation which could be used as atoi().
+After failing to start DirectFB (tries to get and then set current
+resolution) on my asus eeePC I investigated problem and I found out
+that it is caused by:
 
-Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
----
- drivers/video/modedb.c |   24 +++++-------------------
- 1 files changed, 5 insertions(+), 19 deletions(-)
+static int intelfb_check_var(struct fb_var_screeninfo *var,
+                              struct fb_info *info)
+{
+...
+	if (FIXED_MODE(dinfo) &&
+	    (change_var ||
+	     var->yres_virtual > dinfo->initial_var.yres_virtual ||
+	     var->yres_virtual < dinfo->initial_var.yres ||
+	     var->xoffset || var->nonstd)) {
+		if (first) {
+			ERR_MSG("Changing the video mode is not supported.\n");
+			first = 0;
+		}
+		return -EINVAL;
+	}
+...
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 34e4e79..0129f1b 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -13,6 +13,7 @@
- 
- #include <linux/module.h>
- #include <linux/fb.h>
-+#include <linux/kernel.h>
- 
- #undef DEBUG
- 
-@@ -402,21 +403,6 @@ const struct fb_videomode vesa_modes[] = {
- EXPORT_SYMBOL(vesa_modes);
- #endif /* CONFIG_FB_MODE_HELPERS */
- 
--static int my_atoi(const char *name)
--{
--    int val = 0;
--
--    for (;; name++) {
--	switch (*name) {
--	    case '0' ... '9':
--		val = 10*val+(*name-'0');
--		break;
--	    default:
--		return val;
--	}
--    }
--}
--
- /**
-  *	fb_try_mode - test a video mode
-  *	@var: frame buffer user defined part of display
-@@ -539,7 +525,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		    namelen = i;
- 		    if (!refresh_specified && !bpp_specified &&
- 			!yres_specified) {
--			refresh = my_atoi(&name[i+1]);
-+			refresh = simple_strtol(&name[i+1], NULL, 10);
- 			refresh_specified = 1;
- 			if (cvt || rb)
- 			    cvt = 0;
-@@ -549,7 +535,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		case '-':
- 		    namelen = i;
- 		    if (!bpp_specified && !yres_specified) {
--			bpp = my_atoi(&name[i+1]);
-+			bpp = simple_strtol(&name[i+1], NULL, 10);
- 			bpp_specified = 1;
- 			if (cvt || rb)
- 			    cvt = 0;
-@@ -558,7 +544,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		    break;
- 		case 'x':
- 		    if (!yres_specified) {
--			yres = my_atoi(&name[i+1]);
-+			yres = simple_strtol(&name[i+1], NULL, 10);
- 			yres_specified = 1;
- 		    } else
- 			goto done;
-@@ -586,7 +572,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 	    }
- 	}
- 	if (i < 0 && yres_specified) {
--	    xres = my_atoi(name);
-+	    xres = simple_strtol(name, NULL, 10);
- 	    res_specified = 1;
- 	}
- done:
--- 
-1.5.6.5
+I my situation FIXED_MODE(dinfo) = true, but change_var = false
+It still fails since dinfo->initial_var.yres_virtual is initialized
+only once as 0, so var->yres_virtual is always bigger value.
+
+Do we need these checks? chnage_var already does size chekings...
+
+fbset -accel [true|false] also fails because of this check.
+
+Please help me to resolve this issue and we should send patch for stable
+also.
+
+BR,
+Paulius Zaleckas
+
+------------------------------------------------------------------------------
+Come build with us! The BlackBerry(R) Developer Conference in SF, CA
+is the only developer event you need to attend this year. Jumpstart your
+developing skills, take BlackBerry mobile applications to market and stay 
+ahead of the curve. Join us from November 9 - 12, 2009. Register now!
+http://p.sf.net/sfu/devconference

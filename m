@@ -1,69 +1,34 @@
 From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Subject: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when PM set
-Date: Thu, 29 Oct 2009 23:39:44 +0100
-Message-ID: <200910292339.48610.jkrzyszt@tis.icnet.pl>
+Subject: Re: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when PM set
+Date: Fri, 30 Oct 2009 00:47:17 +0100
+Message-ID: <200910300047.20049.jkrzyszt@tis.icnet.pl>
+References: <200910292339.48610.jkrzyszt@tis.icnet.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <200910292339.48610.jkrzyszt@tis.icnet.pl>
 Content-Disposition: inline
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="windows-1252"
 To: Kevin Hilman <khilman@deeprootsystems.com>
 Cc: Jonathan McDowell <noodles@earth.li>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net, Paul Walmsley <paul@pwsan.com>
 
-With CONFIG_PM=y, the omapfb/lcd device on Amstrad Delta, after initially
-starting correctly, breaks with the following error messages:
+Thursday 29 October 2009 23:39:44 Janusz Krzysztofik napisa=C5=82(a):
+>
+> Since PM area is quite new to me, I am not sure if there may be a bet=
+ter
+> solution. AFAICS, the standard way to prevent an ARM_CLKCT1 bit being
 
-omapfb omapfb: resetting (status 0xffffff96,reset count 1)
-...
-omapfb omapfb: resetting (status 0xffffff96,reset count 100)
-omapfb omapfb: too many reset attempts, giving up.
+s/ARM_CLKCT1/ARM_IDLECT1/
 
-Looking closer at this I have found that it had been broken almost 2 years ago
-with commit 2418996e3b100114edb2ae110d5d4acb928909d2, PM fixes for OMAP1.
+> switched to idle is to enable a clock that uses it (tipb_ck, dma_ck, =
+or
+> tc_ck or one of its children in this case, right?).
 
-The definite reason for broken omapfb/lcd_ams_delta in PM mode appeared to be
-ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle. The patch below fixes it.
-
-Created and tested against linux-2.6.32-rc5
-
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-
----
-Hi,
-
-I already reported this issue a few months ago, when
-drivers/video/omap/lcd_ams_delta.c was proposed to get into mainline - see
-http://www.spinics.net/lists/linux-omap/msg14546.html. Now I've found some
-time to look at it again.
-
-Since PM area is quite new to me, I am not sure if there may be a better
-solution. AFAICS, the standard way to prevent an ARM_CLKCT1 bit being switched
-to idle is to enable a clock that uses it (tipb_ck, dma_ck, or tc_ck or one of
-its children in this case, right?).
-
-I assume there is no bug in omapfb nor lcdc, as that would be already
-detected. Maybe it would be better to fix drivers/video/omap/lcd_ams_delta.c
-(or arch/arm/mach-omap1/board-ams-delta), but I don't know what clock should I
-enable, if any.
-
---- linux-2.6.32-rc5/arch/arm/mach-omap1/pm.c.orig	2009-10-16 02:41:50.000000000 +0200
-+++ linux-2.6.32-rc5/arch/arm/mach-omap1/pm.c	2009-10-29 22:07:58.000000000 +0100
-@@ -45,6 +45,7 @@
- 
- #include <asm/irq.h>
- #include <asm/atomic.h>
-+#include <asm/mach-types.h>
- #include <asm/mach/time.h>
- #include <asm/mach/irq.h>
- 
-@@ -139,7 +140,7 @@ void omap1_pm_idle(void)
- 	use_idlect1 = omap_dm_timer_modify_idlect_mask(use_idlect1);
- #endif
- 
--	if (omap_dma_running())
-+	if ((omap_dma_running()) || (machine_is_ams_delta()))
- 		use_idlect1 &= ~(1 << 6);
- 
- 	/* We should be able to remove the do_sleep variable and multiple
+Janusz
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

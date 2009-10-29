@@ -1,62 +1,69 @@
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-Subject: Re: [PATCH] atmel_lcdfb: silence compiler
- warning in device info printk
-Date: Thu, 29 Oct 2009 14:25:22 +0100
-Message-ID: <20091029142522.7030f634@hcegtvedt.norway.atmel.com>
-References: <1256818234-16955-1-git-send-email-hans-christian.egtvedt@atmel.com>
-	<4AE995F1.6010307@atmel.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Subject: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when PM set
+Date: Thu, 29 Oct 2009 23:39:44 +0100
+Message-ID: <200910292339.48610.jkrzyszt@tis.icnet.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <hans-christian.egtvedt@atmel.com>)
-	id 1N3V0c-00069R-Dd for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 29 Oct 2009 13:25:46 +0000
-Received: from relay.atmel.no ([80.232.32.139])
-	by 1b2kzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1N3V0T-0007HX-NS
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 29 Oct 2009 13:25:46 +0000
-In-Reply-To: <4AE995F1.6010307@atmel.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Jonathan McDowell <noodles@earth.li>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net, Paul Walmsley <paul@pwsan.com>
 
-On Thu, 29 Oct 2009 14:17:37 +0100
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+With CONFIG_PM=y, the omapfb/lcd device on Amstrad Delta, after initially
+starting correctly, breaks with the following error messages:
 
-> Hans-Christian Egtvedt :
-> > This patch will tell printk the format for irq_base is a decimal and not an
-> > unsigned long. The irq_base is defined as an int in the struct
-> > atmel_lcdfb_info.
-> 
-> Hi Hans-Christian,
-> 
-> I guess this patch is already submitted using the name:
-> 
->     atmel_lcdfb.c: fix printk() type mismatch
-> 
+omapfb omapfb: resetting (status 0xffffff96,reset count 1)
+...
+omapfb omapfb: resetting (status 0xffffff96,reset count 100)
+omapfb omapfb: too many reset attempts, giving up.
 
-Okay, thanks, sorry for the noise.
+Looking closer at this I have found that it had been broken almost 2 years ago
+with commit 2418996e3b100114edb2ae110d5d4acb928909d2, PM fixes for OMAP1.
 
--- 
-Best regards,
-Hans-Christian Egtvedt
+The definite reason for broken omapfb/lcd_ams_delta in PM mode appeared to be
+ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle. The patch below fixes it.
 
-------------------------------------------------------------------------------
-Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-is the only developer event you need to attend this year. Jumpstart your
-developing skills, take BlackBerry mobile applications to market and stay 
-ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-http://p.sf.net/sfu/devconference
+Created and tested against linux-2.6.32-rc5
+
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+
+---
+Hi,
+
+I already reported this issue a few months ago, when
+drivers/video/omap/lcd_ams_delta.c was proposed to get into mainline - see
+http://www.spinics.net/lists/linux-omap/msg14546.html. Now I've found some
+time to look at it again.
+
+Since PM area is quite new to me, I am not sure if there may be a better
+solution. AFAICS, the standard way to prevent an ARM_CLKCT1 bit being switched
+to idle is to enable a clock that uses it (tipb_ck, dma_ck, or tc_ck or one of
+its children in this case, right?).
+
+I assume there is no bug in omapfb nor lcdc, as that would be already
+detected. Maybe it would be better to fix drivers/video/omap/lcd_ams_delta.c
+(or arch/arm/mach-omap1/board-ams-delta), but I don't know what clock should I
+enable, if any.
+
+--- linux-2.6.32-rc5/arch/arm/mach-omap1/pm.c.orig	2009-10-16 02:41:50.000000000 +0200
++++ linux-2.6.32-rc5/arch/arm/mach-omap1/pm.c	2009-10-29 22:07:58.000000000 +0100
+@@ -45,6 +45,7 @@
+ 
+ #include <asm/irq.h>
+ #include <asm/atomic.h>
++#include <asm/mach-types.h>
+ #include <asm/mach/time.h>
+ #include <asm/mach/irq.h>
+ 
+@@ -139,7 +140,7 @@ void omap1_pm_idle(void)
+ 	use_idlect1 = omap_dm_timer_modify_idlect_mask(use_idlect1);
+ #endif
+ 
+-	if (omap_dma_running())
++	if ((omap_dma_running()) || (machine_is_ams_delta()))
+ 		use_idlect1 &= ~(1 << 6);
+ 
+ 	/* We should be able to remove the do_sleep variable and multiple

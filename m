@@ -1,37 +1,111 @@
 From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Date: Mon, 23 Nov 2009 18:11:22 +0000
-Subject: [PATCH 2/2] OMAP: ams_delta_defconfig: enable LCD class device support
-Message-Id: <200911231911.27418.jkrzyszt@tis.icnet.pl>
-List-Id: <linux-fbdev.vger.kernel.org>
-References: <200911231857.55566.jkrzyszt@tis.icnet.pl>
-In-Reply-To: <200911231857.55566.jkrzyszt@tis.icnet.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when PM set
+Date: Sun, 1 Nov 2009 02:18:26 +0100
+Message-ID: <200911010218.29347.jkrzyszt@tis.icnet.pl>
+References: <200910292339.48610.jkrzyszt@tis.icnet.pl> <200910301542.27206.jkrzyszt@tis.icnet.pl> <20091030173317.GX7180@atomide.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20091030173317.GX7180@atomide.com>
+Content-Disposition: inline
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="utf-8"
+To: Tony Lindgren <tony@atomide.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, Jonathan McDowell <noodles@earth.li>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net, Paul Walmsley <paul@pwsan.com>
 
-The patch enables LCD class device support in ams_delta_defconfig in order to
-get optional contrast control functional.
+=46riday 30 October 2009 18:33:18 Tony Lindgren napisa=C5=82(a):
+> * Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091030 07:43]:
+> > Thursday 29 October 2009 23:39:44 Janusz Krzysztofik napisa=C5=82(a=
+):
+> > > With CONFIG_PM=3Dy, the omapfb/lcd device on Amstrad Delta, after
+> > > initially starting correctly, breaks with the following error mes=
+sages:
+> > >
+> > > omapfb omapfb: resetting (status 0xffffff96,reset count 1)
+> > > ...
+> > > omapfb omapfb: resetting (status 0xffffff96,reset count 100)
+> > > omapfb omapfb: too many reset attempts, giving up.
+> > >
+> > > Looking closer at this I have found that it had been broken almos=
+t 2
+> > > years ago with commit 2418996e3b100114edb2ae110d5d4acb928909d2, P=
+M
+> > > fixes for OMAP1.
+> > >
+> > > The definite reason for broken omapfb/lcd_ams_delta in PM mode ap=
+peared
+> > > to be ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle. The patch belo=
+w
+> > > fixes it.
+> > >
+> > > Since PM area is quite new to me, I am not sure if there may be a
+> > > better solution. AFAICS, the standard way to prevent an ARM_CLKCT=
+1 bit
+> > > being switched to idle is to enable a clock that uses it (tipb_ck=
+,
+> > > dma_ck, or tc_ck or one of its children in this case, right?).
+> > >
+> > > I assume there is no bug in omapfb nor lcdc, as that would be alr=
+eady
+> > > detected. Maybe it would be better to fix
+> > > drivers/video/omap/lcd_ams_delta.c (or
+> > > arch/arm/mach-omap1/board-ams-delta), but I don't know what clock
+> > > should I enable, if any.
+> >
+> > More looking at it, I found that might be omap_dma_running() from
+> > arch/arm/plat-omap/dma.c that needs correction. It already checks f=
+or LCD
+> > dma running for OMAP1610, but does nothing similiar for 1510. I hav=
+e
+> > revisited http://focus.ti.com/lit/ug/spru674/spru674.pdf, but found=
+ no
+> > hint how to do that in a 1610 similiar way.
+>
+> Hmm to me it looks like the OMAP_DMA_CCR_EN should be set in one of t=
+he
+> channels if enabled. Maybe you need add a similar check somewhere in
+> the *_lcd_dma_* functions too in dma.c?
 
-Created and tested against linux-omap for-next,
-commit 155a75d9725e66e5ec8a383822957dee52427057.
+Tony,
+It sounds reasonable, but the problem is that in the OMAP5910 documenta=
+tion I=20
+can find no DMA_CCR equivalent in the LCD dedicated DMA channel registe=
+r set,=20
+nor EN equivalent in the DMA_LCD_CTRL register.
 
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+I have had a look at *_lcd_dma_*, as you suggested, and found this:
 
----
---- a/arch/arm/configs/ams_delta_defconfig	2009-11-14 23:48:40.000000000 +0100
-+++ b/arch/arm/configs/ams_delta_defconfig	2009-11-16 01:06:12.000000000 +0100
-@@ -836,7 +836,8 @@
- #
- # Graphics support
- #
--# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-+CONFIG_BACKLIGHT_LCD_SUPPORT=y
-+CONFIG_LCD_CLASS_DEVICE=y
- 
- #
- # Display device support
+        /*
+         * Set the Enable bit only if an external controller is
+         * connected. Otherwise the OMAP internal controller will
+         * start the transfer when it gets enabled.
+         */
+        if (enable_1510_mode || !lcd_dma.ext_ctrl)
+                return;
 
+That may suggest checking for LCD controller, not DMA channel, enable b=
+it=20
+could give an answer if LCD DMA is likely to be running or not. So mayb=
+e=20
+adding a function to drivers/video/omap/lcdc.c that would check for=20
+OMAP_LCDC_CONTROL:OMAP_LCDC_CTRL_LCD_EN, then invoke that function from=
+=20
+omap_dma_running() in case of omap1510 could be a proper solution.
 
+However, that would affect not only Amstrad Delta, but all 1510 based=20
+machines. Since there were no reports about broken LCD DMA on 1510, I'd=
+=20
+rather get a confirmation from omap guys, more experienced than me, tha=
+t the=20
+solution proposed is correct and should work not only for my Amstrad De=
+lta=20
+before I get that way.
 
+Thanks,
+Janusz
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

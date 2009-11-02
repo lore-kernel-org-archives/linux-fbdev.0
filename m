@@ -1,95 +1,41 @@
-From: InKi Dae <daeinki@gmail.com>
-Subject: [patch] added brightness feature to lcd class.
-Date: Mon, 2 Nov 2009 17:50:02 +0900
-Message-ID: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH 3/3] drm/i915: allocate framebuffer cmap
+Date: Mon, 2 Nov 2009 14:33:52 +0000 (GMT)
+Message-ID: <alpine.LFD.2.00.0911021431360.30135@casper.infradead.org>
+References: <4AEE8CDD.10600@ladisch.de> <4AEE8D6F.60209@ladisch.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=0015177411469e53b204775f7660
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754081AbZKBIt7@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755285AbZKBOeB@vger.kernel.org>
+In-Reply-To: <4AEE8D6F.60209@ladisch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: Kyungmin Park <kmpark@infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: Dave Airlie <airlied@redhat.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
---0015177411469e53b204775f7660
-Content-Type: text/plain; charset=ISO-8859-1
 
-This patch adds brightness feature to lcd class.
-(kernel/driver/video/backlight/lcd.c)
 
-In the past, most of the lcd panels for embedded system was TFT-LCD
-Panel needing backlight device.
-But now AMOLED LCD Panel appeared so we should consider brightness
-control for AMOLED Panel.
+> Without an allocated colormap, FBIOGETCMAP fails.  This would make
+> programs restore an all-black colormap ("links -g") or fail to work
+> altogether ("mplayer -vo fbdev2").
+> 
+> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+> ---
+> Untested.
+> 
+> --- linux-2.6/drivers/gpu/drm/i915/intel_fb.c
+> +++ linux-2.6/drivers/gpu/drm/i915/intel_fb.c
+> @@ -227,6 +227,10 @@ static int intelfb_create(struct drm_dev
+>  
+>  	fb->fbdev = info;
+>  
+> +	ret = fb_alloc_cmap(&info->cmap, 256, 0);
+> +	if (ret)
+> +		goto out_unpin;
+> +
+>  	par->intel_fb = intel_fb;
+>  
+>  	/* To allow resizeing without swapping buffers */
 
-For the time being, I used backlight fake driver for brightness
-control of AMOLED LCD Panel.
-But this way is not good, so I propose to add brightness feature to lcd class.
-
-For this, I attached patch file and if my proposal is approved
-Then I will send s6e63m0 and tl2796 AMOLED lcd panel driver based on
-lcd class modified soon.
-
-signed-off-by : InKi Dae <inki.dae@samsung.com>
-
-Best Regards,
-InKi Dae.
-
---0015177411469e53b204775f7660
-Content-Type: application/octet-stream; name="lcd.patch"
-Content-Disposition: attachment; filename="lcd.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g1iz2s3l0
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2xjZC5jIGIvZHJpdmVycy92aWRl
-by9iYWNrbGlnaHQvbGNkLmMKaW5kZXggYjY0NDk0Ny4uY2MxOWVlOSAxMDA2NDQKLS0tIGEvZHJp
-dmVycy92aWRlby9iYWNrbGlnaHQvbGNkLmMKKysrIGIvZHJpdmVycy92aWRlby9iYWNrbGlnaHQv
-bGNkLmMKQEAgLTE2NCw2ICsxNjQsNTMgQEAgc3RhdGljIHNzaXplX3QgbGNkX3Nob3dfbWF4X2Nv
-bnRyYXN0KHN0cnVjdCBkZXZpY2UgKmRldiwKIAlyZXR1cm4gc3ByaW50ZihidWYsICIlZFxuIiwg
-bGQtPnByb3BzLm1heF9jb250cmFzdCk7CiB9CiAKK3N0YXRpYyBzc2l6ZV90IGxjZF9zaG93X2Jy
-aWdodG5lc3Moc3RydWN0IGRldmljZSAqZGV2LAorCQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAq
-YXR0ciwgY2hhciAqYnVmKQoreworCWludCByYyA9IC1FTlhJTzsKKwlzdHJ1Y3QgbGNkX2Rldmlj
-ZSAqbGQgPSB0b19sY2RfZGV2aWNlKGRldik7CisKKwltdXRleF9sb2NrKCZsZC0+b3BzX2xvY2sp
-OworCWlmIChsZC0+b3BzICYmIGxkLT5vcHMtPmdldF9icmlnaHRuZXNzKQorCQlyYyA9IHNwcmlu
-dGYoYnVmLCAiJWRcbiIsIGxkLT5vcHMtPmdldF9icmlnaHRuZXNzKGxkKSk7CisJbXV0ZXhfdW5s
-b2NrKCZsZC0+b3BzX2xvY2spOworCisJcmV0dXJuIHJjOworfQorCitzdGF0aWMgc3NpemVfdCBs
-Y2Rfc3RvcmVfYnJpZ2h0bmVzcyhzdHJ1Y3QgZGV2aWNlICpkZXYsCisJCXN0cnVjdCBkZXZpY2Vf
-YXR0cmlidXRlICphdHRyLCBjb25zdCBjaGFyICpidWYsIHNpemVfdCBjb3VudCkKK3sKKwlpbnQg
-cmMgPSAtRU5YSU87CisJY2hhciAqZW5kcDsKKwlzdHJ1Y3QgbGNkX2RldmljZSAqbGQgPSB0b19s
-Y2RfZGV2aWNlKGRldik7CisJaW50IGJyaWdodG5lc3MgPSBzaW1wbGVfc3RydG91bChidWYsICZl
-bmRwLCAwKTsKKwlzaXplX3Qgc2l6ZSA9IGVuZHAgLSBidWY7CisKKwlpZiAoKmVuZHAgJiYgaXNz
-cGFjZSgqZW5kcCkpCisJCXNpemUrKzsKKwlpZiAoc2l6ZSAhPSBjb3VudCkKKwkJcmV0dXJuIC1F
-SU5WQUw7CisKKwltdXRleF9sb2NrKCZsZC0+b3BzX2xvY2spOworCWlmIChsZC0+b3BzICYmIGxk
-LT5vcHMtPnNldF9icmlnaHRuZXNzKSB7CisJCXByX2RlYnVnKCJsY2Q6IHNldCBicmlnaHRuZXNz
-IHRvICVkXG4iLCBicmlnaHRuZXNzKTsKKwkJbGQtPm9wcy0+c2V0X2JyaWdodG5lc3MobGQsIGJy
-aWdodG5lc3MpOworCQlyYyA9IGNvdW50OworCX0KKwltdXRleF91bmxvY2soJmxkLT5vcHNfbG9j
-ayk7CisKKwlyZXR1cm4gcmM7Cit9CisKK3N0YXRpYyBzc2l6ZV90IGxjZF9zaG93X21heF9icmln
-aHRuZXNzKHN0cnVjdCBkZXZpY2UgKmRldiwKKwkJc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0
-dHIsIGNoYXIgKmJ1ZikKK3sKKwlzdHJ1Y3QgbGNkX2RldmljZSAqbGQgPSB0b19sY2RfZGV2aWNl
-KGRldik7CisKKwlyZXR1cm4gc3ByaW50ZihidWYsICIlZFxuIiwgbGQtPnByb3BzLm1heF9icmln
-aHRuZXNzKTsKK30KKwogc3RhdGljIHN0cnVjdCBjbGFzcyAqbGNkX2NsYXNzOwogCiBzdGF0aWMg
-dm9pZCBsY2RfZGV2aWNlX3JlbGVhc2Uoc3RydWN0IGRldmljZSAqZGV2KQpAQCAtMTc2LDYgKzIy
-Myw4IEBAIHN0YXRpYyBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSBsY2RfZGV2aWNlX2F0dHJpYnV0
-ZXNbXSA9IHsKIAlfX0FUVFIobGNkX3Bvd2VyLCAwNjQ0LCBsY2Rfc2hvd19wb3dlciwgbGNkX3N0
-b3JlX3Bvd2VyKSwKIAlfX0FUVFIoY29udHJhc3QsIDA2NDQsIGxjZF9zaG93X2NvbnRyYXN0LCBs
-Y2Rfc3RvcmVfY29udHJhc3QpLAogCV9fQVRUUihtYXhfY29udHJhc3QsIDA0NDQsIGxjZF9zaG93
-X21heF9jb250cmFzdCwgTlVMTCksCisJX19BVFRSKGJyaWdodG5lc3MsIDA2NDQsIGxjZF9zaG93
-X2JyaWdodG5lc3MsIGxjZF9zdG9yZV9icmlnaHRuZXNzKSwKKwlfX0FUVFIobWF4X2JyaWdodG5l
-c3MsIDA0NDQsIGxjZF9zaG93X21heF9icmlnaHRuZXNzLCBOVUxMKSwKIAlfX0FUVFJfTlVMTCwK
-IH07CiAKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbGNkLmggYi9pbmNsdWRlL2xpbnV4L2xj
-ZC5oCmluZGV4IGM2N2ZlY2EuLjUxNDVmYzYgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvbGNk
-LmgKKysrIGIvaW5jbHVkZS9saW51eC9sY2QuaApAQCAtMzQsNiArMzQsOSBAQCBzdHJ1Y3QgZmJf
-aW5mbzsKIHN0cnVjdCBsY2RfcHJvcGVydGllcyB7CiAJLyogVGhlIG1heGltdW0gdmFsdWUgZm9y
-IGNvbnRyYXN0IChyZWFkLW9ubHkpICovCiAJaW50IG1heF9jb250cmFzdDsKKworCS8qIFRoZSBt
-YXhpbXVtIHZhbHVlIGZvciBicmlnaHRuZXNzIChyZWFkLW9ubHkpICovCisJaW50IG1heF9icmln
-aHRuZXNzOwogfTsKIAogc3RydWN0IGxjZF9vcHMgewpAQCAtNDYsNiArNDksMTAgQEAgc3RydWN0
-IGxjZF9vcHMgewogCWludCAoKmdldF9jb250cmFzdCkoc3RydWN0IGxjZF9kZXZpY2UgKik7CiAJ
-LyogU2V0IExDRCBwYW5lbCBjb250cmFzdCAqLwogICAgICAgICBpbnQgKCpzZXRfY29udHJhc3Qp
-KHN0cnVjdCBsY2RfZGV2aWNlICosIGludCBjb250cmFzdCk7CisJLyogR2V0IHRoZSBjdXJyZW50
-IGJyaWdobmVzcyBzZXR0aW5nIChvbmx5IEFNT0xFRCBsY2QgcGFuZWwpICovCisJaW50ICgqZ2V0
-X2JyaWdodG5lc3MpKHN0cnVjdCBsY2RfZGV2aWNlICopOworCS8qIFNldCBMQ0QgcGFuZWwgYnJp
-Z2h0bmVzcyAob25seSBBTU9MRUQgbGNkIHBhbmVsKSAqLworCWludCAoKnNldF9icmlnaHRuZXNz
-KShzdHJ1Y3QgbGNkX2RldmljZSAqLCBpbnQgYnJpZ2h0bmVzcyk7CiAJLyogU2V0IExDRCBwYW5l
-bCBtb2RlIChyZXNvbHV0aW9ucyAuLi4pICovCiAJaW50ICgqc2V0X21vZGUpKHN0cnVjdCBsY2Rf
-ZGV2aWNlICosIHN0cnVjdCBmYl92aWRlb21vZGUgKik7CiAJLyogQ2hlY2sgaWYgZ2l2ZW4gZnJh
-bWVidWZmZXIgZGV2aWNlIGlzIHRoZSBvbmUgTENEIGlzIGJvdW5kIHRvOwo=
---0015177411469e53b204775f7660--
+It would be better to place that code in drm_fb_helper_single_fb_probe.
+Also instead of 256 I would recommend using crtc->gamma_size.

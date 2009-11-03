@@ -1,55 +1,122 @@
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] Add VirtIO Frame Buffer Support
-Date: Tue, 3 Nov 2009 07:39:34 +0100
-Message-ID: <87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de>
-References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com> <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de> <4AEFCCBA.9050408@redhat.com> <8BA1853F-11C9-44B1-9FDB-1DFDAED40E1B@suse.de> <4AEFCEDA.4030308@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v1076)
+From: Jun Nie <niej0001@gmail.com>
+Subject: [PATCH 5/6] pxa: add gpio expander on pxa168 aspenite platform
+Date: Tue, 3 Nov 2009 14:45:44 +0800
+Message-ID: <7c34ac520911022245l758dabfah85c6d68eae15e5c7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <kvm-owner@vger.kernel.org>
-In-Reply-To: <4AEFCEDA.4030308@redhat.com>
-Sender: kvm-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"; delsp="yes"
-To: Avi Kivity <avi@redhat.com>
-Cc: kvm@vger.kernel.org, qemu-devel@nongnu.org, linux-fbdev-devel@lists.sourceforge.net, anthony@codemonkey.ws
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, linux-fbdev-devel@lists.sourceforge.net
 
+pxa: add gpio expander on pxa168 aspenite platform
 
-On 03.11.2009, at 07:34, Avi Kivity wrote:
+Signed-off-by: Jun Nie <njun@marvell.com>
+---
+ arch/arm/mach-mmp/aspenite.c |   45 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/gpio/pca953x.c       |    1 +
+ 2 files changed, 46 insertions(+), 0 deletions(-)
 
-> On 11/03/2009 08:27 AM, Alexander Graf wrote:
->>
->>> How does it work today?
->>
->> You boot into a TERM=dumb line based emulation on 3270 (worst thing  
->> haunting people's nightmares ever), trying to get out of that mode  
->> as quickly as possible and off into SSH / VNC.
->
-> Despite the coolness factor, IMO a few minutes during install time  
-> do not justify a new hardware model and a new driver.
+diff --git a/arch/arm/mach-mmp/aspenite.c b/arch/arm/mach-mmp/aspenite.c
+index 115f728..b422bb5 100644
+--- a/arch/arm/mach-mmp/aspenite.c
++++ b/arch/arm/mach-mmp/aspenite.c
+@@ -16,6 +16,7 @@
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/mtd/nand.h>
++#include <linux/i2c/pca953x.h>
 
-It's more than just coolness factor. There are use cases out there (www.susestudio.com 
-) that don't want to rely on the guest exporting a VNC server to the  
-outside just to access graphics. You also want to see boot messages,  
-have a console login screen, be able to debug things without switching  
-between virtio-console and vnc, etc. etc.
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+@@ -24,9 +25,14 @@
+ #include <mach/pxa168.h>
+ #include <mach/gpio.h>
+ #include <plat/pxa3xx_nand.h>
++#include <video/pxa168fb.h>
 
-The hardware model isn't exactly new either. It's just the next  
-logical step to a full PV machine using virtio. If the virtio-fb stuff  
-turns out to be really fast and reliable, I could even imagine it  
-being the default target for kvm on ppc as well, as we can't switch  
-resolutions on the fly there atm.
+ #include "common.h"
 
->>> Does installation over vnc work?
->>
->> Yes, but it requires a working network setup. That's a pretty  
->> requirement on guests IMHO.
->
-> Why?  the guest will typically have networking when it's set up, so  
-> it should have network access during install.  You can easily use  
-> slirp redirection and the built-in dhcp server to set this up with  
-> relatively few hassles.
++/*used by expander max7312, 16 pins gpio expander */
++#define GPIO_EXT0(x)           (NR_BUILTIN_GPIO + (x))
++#define GPIO_EXT1(x)           (NR_BUILTIN_GPIO + 16 + (x))
++
+ static unsigned long common_pin_config[] __initdata = {
+        /* Data Flash Interface */
+        GPIO0_DFI_D15,
+@@ -134,6 +140,44 @@ static void __init apn_init_nand(void)
+ static void __init apn_init_nand(void) {}
+ #endif
 
-That's how I use it right now. It's no fun.
++static struct i2c_pxa_platform_data pwri2c_info __initdata = {
++	.use_pio		= 1,
++};
++
++#if defined(CONFIG_GPIO_PCA953X)
++/* GPIO expander max7312 could reuse PCA953X */
++static struct pca953x_platform_data max7312_data[] = {
++	/* two max7312 in system */
++
++	[0] = {
++		.gpio_base      = GPIO_EXT0(0),
++	},
++
++	[1] = {
++		.gpio_base      = GPIO_EXT1(0),
++	},
++};
++#endif
++
++static struct i2c_board_info aspenite_i2c_board_info[] = {
++
++#if defined(CONFIG_GPIO_PCA953X)
++	{
++		.type           = "max7312",
++		.addr           = 0x10,                 /* 0x20/0x21 */
++		.irq            = IRQ_GPIO(122),
++		.platform_data  = &max7312_data[0],
++	},
++
++	{
++		.type           = "max7312",
++		.addr           = 0x20,                 /* 0x40/0x41 */
++		.irq            = IRQ_GPIO(120),
++		.platform_data  = &max7312_data[1],
++	},
++#endif
++};
++
+ static void __init common_init(void)
+ {
+ 	mfp_config(ARRAY_AND_SIZE(common_pin_config));
+@@ -142,6 +186,7 @@ static void __init common_init(void)
+ 	pxa168_add_uart(1);
 
+ 	apn_init_nand();
++	pxa168_add_twsi(0, &pwri2c_info, ARRAY_AND_SIZE(aspenite_i2c_board_info));
 
-Alex
+ 	/* off-chip devices */
+ 	platform_device_register(&smc91x_device);
+diff --git a/drivers/gpio/pca953x.c b/drivers/gpio/pca953x.c
+index 6a2fb3f..7822684 100644
+--- a/drivers/gpio/pca953x.c
++++ b/drivers/gpio/pca953x.c
+@@ -39,6 +39,7 @@ static const struct i2c_device_id pca953x_id[] = {
+ 	{ "pca9557", 8, },
+
+ 	{ "max7310", 8, },
++	{ "max7312", 16, },
+ 	{ "max7315", 8, },
+ 	{ "pca6107", 8, },
+ 	{ "tca6408", 8, },
+-- 
+1.5.4.3

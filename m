@@ -1,37 +1,37 @@
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 1/2] Add emulation for VirtIO Frame Buffer device
-Date: Tue, 3 Nov 2009 07:23:58 +0100
-Message-ID: <FBC9ADBF-F50B-4A55-9C7F-826AD95C38A3@suse.de>
-References: <1257199910-3197-1-git-send-email-agraf@suse.de> <4AEFCC18.8030408@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v1076)
+From: Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH] Add VirtIO Frame Buffer Support
+Date: Tue, 03 Nov 2009 08:24:58 +0200
+Message-ID: <4AEFCCBA.9050408@redhat.com>
+References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com> <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <kvm-owner@vger.kernel.org>
-In-Reply-To: <4AEFCC18.8030408@redhat.com>
+In-Reply-To: <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de>
 Sender: kvm-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"; delsp="yes"
-To: Avi Kivity <avi@redhat.com>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Alexander Graf <agraf@suse.de>
 Cc: kvm@vger.kernel.org, qemu-devel@nongnu.org, linux-fbdev-devel@lists.sourceforge.net, anthony@codemonkey.ws
 
-
-On 03.11.2009, at 07:22, Avi Kivity wrote:
-
-> On 11/03/2009 12:11 AM, Alexander Graf wrote:
->> Since Linux now understands how to talk to us graphics over VirtIO,  
->> let's
->> add support for it in qemu.
->>
->> The good part about graphics over VirtIO is that you don't need PCI  
->> to use
->> it. So if there's any platform out there trying to use graphics,  
->> but not
->> capable of MMIO, it can use this one!
->>
+On 11/03/2009 08:22 AM, Alexander Graf wrote:
 >
-> Which platforms are these?
+>>> This is especially important on machines that can't do MMIO, as all 
+>>> current
+>>> graphics implementations qemu emulates I'm aware of so far fail here.
+>>>
+>>
+>> s390 virtual desktops?
+>
+> Well - have you ever tried installing SLES / RHEL on an S390? If not, 
+> give it a shot and comment again :-)
+>
 
-For now S390 comes to mind first ... :-). I'd use and improve the  
-spice stuff, but that hasn't exactly been open-source friendly so far...
+I won't be able to until qemu support s390.
 
-Alex
+How does it work today?
+
+Does installation over vnc work?
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 

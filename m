@@ -1,80 +1,56 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [RFC] [PATCH v2] OMAP: DMA: Fix omapfb/lcdc on Amstrad Delta
- broken when PM set
-Date: Tue, 3 Nov 2009 12:10:48 -0800
-Message-ID: <20091103201048.GP8981@atomide.com>
-References: <200911032024.47741.jkrzyszt@tis.icnet.pl>
- <200911032104.33049.jkrzyszt@tis.icnet.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fbdev: Wrong test on unsigned in fb_set_user_cmap()?
+Date: Tue, 3 Nov 2009 14:59:14 -0800
+Message-ID: <20091103145914.84094e8e.akpm@linux-foundation.org>
+References: <4ADE0FDE.5070101@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200911032104.33049.jkrzyszt@tis.icnet.pl>
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751415AbZKCW70@vger.kernel.org>
+In-Reply-To: <4ADE0FDE.5070101@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="windows-1252"
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
 
-* Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091103 12:05]:
-> Tuesday 03 November 2009 20:24:38 Janusz Krzysztofik napisa=C5=82(a):
-> > If there are still no comments, especially on the bug possible impa=
-ct on
-> > other OMAP1510 boards (or even OMAP1610 with internal LCD controlle=
-r), then
-> > Tony, please apply it as is. Until it is accepted, I am stuck with =
-new
-> > ams_delta_defconfig.
->=20
-> Tony,
-> Sorry, I've not checked for new mail before posting this one and miss=
-ed your=20
-> acceptance for my idea of fixing all omap1510, not only ams_delta. If=
- there=20
-> are no more comments, I'll submit v3 with cpu_is_omap1510() replacing=
-=20
-> machine_is_ams_delta().
+On Tue, 20 Oct 2009 21:30:38 +0200
+Roel Kluin <roel.kluin@gmail.com> wrote:
 
-Sounds good to me.
+> struct fb_cmap_user member start is unsigned.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Is this required?
+> 
+> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+> index f53b9f1..f46f05f 100644
+> --- a/drivers/video/fbcmap.c
+> +++ b/drivers/video/fbcmap.c
+> @@ -266,7 +266,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+>  		rc = -ENODEV;
+>  		goto out;
+>  	}
+> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+> +	if ((int)cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+>  				!info->fbops->fb_setcmap)) {
+>  		rc = -EINVAL;
+>  		goto out1;
 
-Tony
-=20
-> Thanks,
-> Janusz
->=20
-> > --- linux-2.6.32-rc5/arch/arm/plat-omap/dma.c.orig	2009-10-16
-> > 02:41:50.000000000 +0200 +++
-> > linux-2.6.32-rc5/arch/arm/plat-omap/dma.c	2009-11-03 20:15:35.00000=
-0000
-> > +0100 @@ -30,6 +30,7 @@
-> >  #include <linux/irq.h>
-> >  #include <linux/io.h>
-> >
-> > +#include <asm/mach-types.h>
-> >  #include <asm/system.h>
-> >  #include <mach/hardware.h>
-> >  #include <mach/dma.h>
-> > @@ -1110,6 +1111,14 @@ int omap_dma_running(void)
-> >  {
-> >  	int lch;
-> >
-> > +	/*
-> > +	 * On Amstrad Delta, the OMAP internal LCD controller will start =
-the
-> > +	 * transfer when it gets enabled, so assume DMA running if LCD en=
-abled.
-> > +	 */
-> > +	if (machine_is_ams_delta())
-> > +		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
-> > +			return 1;
-> > +
-> >  	/* Check if LCD DMA is running */
-> >  	if (cpu_is_omap16xx())
-> >  		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)
->=20
->=20
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I think the test _is_ needed, as `start' is passed in direct from
+userspace, via do_fb_ioctl():FBIOPUTCMAP.
+
+However fb_set_user_cmap() calls fb_set_cmap() which also checks
+`start', only this time it does it correctly.
+
+So overall the code is OK and the check which you've identified
+is unneeded.
+
+In fact, all of
+
+	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
+				!info->fbops->fb_setcmap)) {
+		rc = -EINVAL;
+		goto out1;
+	}
+
+can be removed.

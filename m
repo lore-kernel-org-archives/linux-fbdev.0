@@ -1,51 +1,70 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [Linux-fbdev-devel] Re: [PATCH] Add VirtIO Frame
-	Buffer Support
-Date: Tue, 03 Nov 2009 18:33:06 +0100
-Message-ID: <hcpt12$8tb$1@ger.gmane.org>
-References: <1257199759-2941-1-git-send-email-agraf@suse.de>
-	<4AEFCBED.50804@redhat.com>
-	<DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de>
-	<4AEFCCBA.9050408@redhat.com>
-	<8BA1853F-11C9-44B1-9FDB-1DFDAED40E1B@suse.de>
-	<4AEFCEDA.4030308@redhat.com>
-	<87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de>
-	<20091103112543.GA24834@snarc.org>
-	<4AEFFA0A.4040105@redhat.com> <20091103152911.GA8266@localhost>
-	<4AF054B9.9060204@redhat.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Subject: [RFC] [PATCH v2] OMAP: DMA: Fix omapfb/lcdc on Amstrad Delta broken when PM set
+Date: Tue, 3 Nov 2009 20:24:38 +0100
+Message-ID: <200911032024.47741.jkrzyszt@tis.icnet.pl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org>
-In-Reply-To: <4AF054B9.9060204@redhat.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.nongnu.org/mailman/listinfo/qemu-devel>,
-	<mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
-List-Archive: <http://lists.gnu.org/pipermail/qemu-devel>
-List-Post: <mailto:qemu-devel@nongnu.org>
-List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
-List-Subscribe: <http://lists.nongnu.org/mailman/listinfo/qemu-devel>,
-	<mailto:qemu-devel-request@nongnu.org?subject=subscribe>
-Sender: qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org
-Errors-To: qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-Cc: linux-fbdev-devel@lists.sourceforge.net, qemu-devel@nongnu.org, kvm@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754280AbZKCT0W@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-omap@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 11/03/2009 05:05 PM, Avi Kivity wrote:
-> On 11/03/2009 05:29 PM, Ondrej Zajicek wrote:
->> On Tue, Nov 03, 2009 at 11:38:18AM +0200, Avi Kivity wrote:
->>> On 11/03/2009 01:25 PM, Vincent Hanquez wrote:
->>>> not sure if i'm missing the point here, but couldn't it be
->>>> hypothetically
->>>> extended to stuff 3d (or video& more 2d accel ?) commands too ? I can't
->>>> imagine the cirrus or stdvga driver be able to do that ever ;)
->>>>
->>> cirrus has pretty good 2d acceleration. 3D is a mega-project though.
->> Cirrus has no blending/compositing hardware support.
->> Paravirtualized graphics can easily support full XRender-style
->> 2D acceleration.
->
-> What do that entail? 3/4 operand raster ops?
+With CONFIG_PM=y, the omapfb/lcdc device on Amstrad Delta, after initially
+starting correctly, breaks with the following error messages:
 
-With alpha compositing.
+omapfb omapfb: resetting (status 0xffffff96,reset count 1)
+...
+omapfb omapfb: resetting (status 0xffffff96,reset count 100)
+omapfb omapfb: too many reset attempts, giving up.
 
-Paolo
+Looking closer at this I have found that it had been broken almost 2 years ago
+with commit 2418996e3b100114edb2ae110d5d4acb928909d2, PM fixes for OMAP1.
+
+The definite reason for broken omapfb/lcdc behavoiur in PM mode
+appeared to be ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle regardless of LCD
+DMA possibly running. The bit were set based on return value of the
+omap_dma_running() function that did not check for dedicated LCD DMA
+channel status. The patch below fixes this.
+
+Created and tested against linux-2.6.32-rc5
+
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+
+---
+Hi,
+If there are still no comments, especially on the bug possible impact on other 
+OMAP1510 boards (or even OMAP1610 with internal LCD controller), then Tony, 
+please apply it as is. Until it is accepted, I am stuck with new 
+ams_delta_defconfig.
+
+Thanks,
+Janusz
+
+--- linux-2.6.32-rc5/arch/arm/plat-omap/dma.c.orig	2009-10-16 02:41:50.000000000 +0200
++++ linux-2.6.32-rc5/arch/arm/plat-omap/dma.c	2009-11-03 20:15:35.000000000 +0100
+@@ -30,6 +30,7 @@
+ #include <linux/irq.h>
+ #include <linux/io.h>
+ 
++#include <asm/mach-types.h>
+ #include <asm/system.h>
+ #include <mach/hardware.h>
+ #include <mach/dma.h>
+@@ -1110,6 +1111,14 @@ int omap_dma_running(void)
+ {
+ 	int lch;
+ 
++	/*
++	 * On Amstrad Delta, the OMAP internal LCD controller will start the
++	 * transfer when it gets enabled, so assume DMA running if LCD enabled.
++	 */
++	if (machine_is_ams_delta())
++		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
++			return 1;
++
+ 	/* Check if LCD DMA is running */
+ 	if (cpu_is_omap16xx())
+ 		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)

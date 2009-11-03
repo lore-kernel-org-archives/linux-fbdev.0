@@ -1,102 +1,129 @@
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] Add VirtIO Frame Buffer Support
-Date: Tue, 3 Nov 2009 08:50:13 +0100
-Message-ID: <8EA2855E-4209-4CCA-9E87-1D652A72F8FE@suse.de>
-References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com> <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de> <4AEFCCBA.9050408@redhat.com> <8BA1853F-11C9-44B1-9FDB-1DFDAED40E1B@suse.de> <4AEFCEDA.4030308@redhat.com> <87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de> <4AEFDF35.3020806@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v1076)
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mb862xxfb: add acceleration support for
+ Coral-P/Coral-PA. * imageblt * copyarea * fillrect
+Date: Mon, 2 Nov 2009 23:58:08 -0800
+Message-ID: <20091102235808.6ccc1bcd.akpm@linux-foundation.org>
+References: <1256041745-21128-1-git-send-email-valentin.sitdikov@siemens.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <kvm-owner@vger.kernel.org>
-In-Reply-To: <4AEFDF35.3020806@redhat.com>
-Sender: kvm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756233AbZKCH7C@vger.kernel.org>
+In-Reply-To: <1256041745-21128-1-git-send-email-valentin.sitdikov@siemens.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"; delsp="yes"
-To: Avi Kivity <avi@redhat.com>
-Cc: kvm@vger.kernel.org, qemu-devel@nongnu.org, linux-fbdev-devel@lists.sourceforge.net, anthony@codemonkey.ws
+Content-Type: text/plain; charset="us-ascii"
+To: Valentin Sitdikov <valentin.sitdikov@siemens.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
+On Tue, 20 Oct 2009 16:29:05 +0400 Valentin Sitdikov <valentin.sitdikov@siemens.com> wrote:
 
-On 03.11.2009, at 08:43, Avi Kivity wrote:
-
-> On 11/03/2009 08:39 AM, Alexander Graf wrote:
->>
->> On 03.11.2009, at 07:34, Avi Kivity wrote:
->>
->>> On 11/03/2009 08:27 AM, Alexander Graf wrote:
->>>>
->>>>> How does it work today?
->>>>
->>>> You boot into a TERM=dumb line based emulation on 3270 (worst  
->>>> thing haunting people's nightmares ever), trying to get out of  
->>>> that mode as quickly as possible and off into SSH / VNC.
->>>
->>> Despite the coolness factor, IMO a few minutes during install time  
->>> do not justify a new hardware model and a new driver.
->>
->> It's more than just coolness factor. There are use cases out there (www.susestudio.com 
->> ) that don't want to rely on the guest exporting a VNC server to  
->> the outside just to access graphics.
+> 
+> ...
 >
-> Instead you rely on the guest using virtio-fb. Since we have to make  
-> guest modifications, why not go for the simpler ones?
+> +/* Fill in the cmd array /GDC FIFO commands/ to draw a 1bit image.
+> + * Make sure cmd has enough room! */
 
-Ok, imagine this was not this unloved S390 odd architecture but X86.  
-The only output choices you have are:
+The comment layout is sicky-looking.
 
-1) virtio-console
-2) VNC / SSH over network
-3) virtio-fb
+> +static void mb86290fb_imageblit(struct fb_info *info,
+> +				const struct fb_image *image)
+> +{
+> +	int mdr;
+> +	u32 *cmd = NULL;
+> +	void (*cmdfn) (u32 *, u16, u16, u16, u16, u16, u32, u32,
+> +		       const struct fb_image *, struct fb_info *) = NULL;
+> +	u32 cmdlen;
+> +	u32 fgcolor = 0, bgcolor = 0;
+> +	u16 step;
+> +
+> +	u16 width = image->width, height = image->height;
+> +	u16 dx = image->dx, dy = image->dy;
+> +	int x2, y2, vxres, vyres;
+> +
+> +	mdr = (GDC_ROP_COPY << 9);
+> +	x2 = image->dx + image->width;
+> +	y2 = image->dy + image->height;
+> +	dx = image->dx > 0 ? image->dx : 0;
+> +	dy = image->dy > 0 ? image->dy : 0;
 
-Now you want to configure a server, probably using yast and all those  
-nice graphical utilities, but still enable a firewall so people  
-outside don't intrude your machine. Well, you managed to configure the  
-firewall by luck to allow VNC, but now you reconfigured it and  
-something broke - but VNC was your only chance to access the machine.  
-Oops...
+image->dz and image->dy are unsigned, so the above two statements
+have no effect.
 
->> You also want to see boot messages, have a console login screen,
->
-> virtio-console does that, except for the penguins.  Better, since  
-> you can scroll back.
+> +	vxres = info->var.xres_virtual;
+> +	vyres = info->var.yres_virtual;
+> +	x2 = x2 < vxres ? x2 : vxres;
+> +	y2 = y2 < vyres ? y2 : vyres;
 
-It doesn't do graphics. Ever used yast in text mode?
+We have nice helper macros for this - please don't open code them.
 
->> be able to debug things without switching between virtio-console  
->> and vnc, etc. etc.
->
-> Render virtio-console on your vnc session.  We do that already, no?  
-> (well, the host's vnc session, not the guest's).
 
-Yes, we do that. Still doesn't buy you graphics.
+Please review:
 
->> The hardware model isn't exactly new either. It's just the next  
->> logical step to a full PV machine using virtio. If the virtio-fb  
->> stuff turns out to be really fast and reliable, I could even  
->> imagine it being the default target for kvm on ppc as well, as we  
->> can't switch resolutions on the fly there atm.
->>
->
-> We could with vmware-vga.
-
-The vmware-port stuff is pretty much tied onto X86. I don't think  
-modifying EAX is that easy on PPC ;-).
-
->>> Why?  the guest will typically have networking when it's set up,  
->>> so it should have network access during install.  You can easily  
->>> use slirp redirection and the built-in dhcp server to set this up  
->>> with relatively few hassles.
->>
->> That's how I use it right now. It's no fun.
->>
->
-> The toolstack should hide the unfun parts.
-
-You can't hide guest configuration. We as a distribution control the  
-kernel. We don't control the user's configuration as that's by design  
-the user's choice. The only thing we can do is give users meaningful  
-choices to choose from - and having graphics available is definitely  
-one of them.
-
-Seriously, try to ask someone internally to get access to an S390. I  
-think you'll understand my motivations a lot better after having used  
-it for a bit.
-
-Alex
+--- a/drivers/video/mb862xx/mb862xxfb_accel.c~mb862xxfb-add-acceleration-support-for-coral-p-coral-pa-imageblt-copyarea-fillrect-fix
++++ a/drivers/video/mb862xx/mb862xxfb_accel.c
+@@ -66,8 +66,10 @@ static void mb86290fb_copyarea(struct fb
+ 	mb862xxfb_write_fifo(6, cmd, info);
+ }
+ 
+-/* Fill in the cmd array /GDC FIFO commands/ to draw a 1bit image.
+- * Make sure cmd has enough room! */
++/*
++ * Fill in the cmd array /GDC FIFO commands/ to draw a 1bit image.
++ * Make sure cmd has enough room!
++ */
+ static void mb86290fb_imageblit1(u32 *cmd, u16 step, u16 dx, u16 dy,
+ 				 u16 width, u16 height, u32 fgcolor,
+ 				 u32 bgcolor, const struct fb_image *image,
+@@ -113,8 +115,10 @@ static void mb86290fb_imageblit1(u32 *cm
+ 	}
+ }
+ 
+-/* Fill in the cmd array /GDC FIFO commands/ to draw a 8bit image.
+- * Make sure cmd has enough room! */
++/*
++ * Fill in the cmd array /GDC FIFO commands/ to draw a 8bit image.
++ * Make sure cmd has enough room!
++ */
+ static void mb86290fb_imageblit8(u32 *cmd, u16 step, u16 dx, u16 dy,
+ 				 u16 width, u16 height, u32 fgcolor,
+ 				 u32 bgcolor, const struct fb_image *image,
+@@ -150,8 +154,10 @@ static void mb86290fb_imageblit8(u32 *cm
+ 	}
+ }
+ 
+-/* Fill in the cmd array /GDC FIFO commands/ to draw a 16bit image.
+- * Make sure cmd has enough room! */
++/*
++ * Fill in the cmd array /GDC FIFO commands/ to draw a 16bit image.
++ * Make sure cmd has enough room!
++ */
+ static void mb86290fb_imageblit16(u32 *cmd, u16 step, u16 dx, u16 dy,
+ 				  u16 width, u16 height, u32 fgcolor,
+ 				  u32 bgcolor, const struct fb_image *image,
+@@ -195,12 +201,10 @@ static void mb86290fb_imageblit(struct f
+ 	mdr = (GDC_ROP_COPY << 9);
+ 	x2 = image->dx + image->width;
+ 	y2 = image->dy + image->height;
+-	dx = image->dx > 0 ? image->dx : 0;
+-	dy = image->dy > 0 ? image->dy : 0;
+ 	vxres = info->var.xres_virtual;
+ 	vyres = info->var.yres_virtual;
+-	x2 = x2 < vxres ? x2 : vxres;
+-	y2 = y2 < vyres ? y2 : vyres;
++	x2 = min(x2, vxres);
++	y2 = min(y2, vyres);
+ 	width = x2 - dx;
+ 	height = y2 - dy;
+ 
+@@ -265,8 +269,8 @@ static void mb86290fb_fillrect(struct fb
+ 	 * hardware clipping by writing to framebuffer directly. */
+ 	x2 = rect->dx + rect->width;
+ 	y2 = rect->dy + rect->height;
+-	x2 = x2 < vxres ? x2 : vxres;
+-	y2 = y2 < vyres ? y2 : vyres;
++	x2 = min(x2, vxres);
++	y2 = min(y2, vyres);
+ 	width = x2 - rect->dx;
+ 	height = y2 - rect->dy;
+ 	if (info->fix.visual == FB_VISUAL_TRUECOLOR ||
+diff -puN drivers/video/mb862xx/mb862xxfb_accel.h~mb862xxfb-add-acceleration-support-for-coral-p-coral-pa-imageblt-copyarea-fillrect-fix drivers/video/mb862xx/mb862xxfb_accel.h
+_

@@ -1,27 +1,25 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH] Add VirtIO Frame Buffer Support
-Date: Tue, 3 Nov 2009 00:58:28 +0100
-Message-ID: <20091102235827.GC28292@localhost>
-References: <1257199759-2941-1-git-send-email-agraf@suse.de>
-	<20091102223249.GC22301@localhost>
-	<D295329B-4DE0-4935-8C6B-D45042E72826@suse.de>
-	<20091102235116.GA28292@localhost>
-	<6C8638F3-7AC7-44CC-A86E-C26E29350BD8@suse.de>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fbdev: Fix test on unsigned in
+	fb_do_show_logo()
+Date: Mon, 2 Nov 2009 16:32:52 -0800
+Message-ID: <20091102163252.e76491e6.akpm@linux-foundation.org>
+References: <4AD8F77A.3010802@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8840275844883887895=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
 	helo=mx.sourceforge.net)
 	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <santiago@crfreenet.org>) id 1N56oG-00049m-69
+	(envelope-from <akpm@linux-foundation.org>) id 1N57L9-0005sS-0x
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Nov 2009 23:59:40 +0000
-Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.10])
+	Tue, 03 Nov 2009 00:33:39 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
 	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1N56mE-0004pb-4B
+	(Exim 4.69) id 1N57L2-0005fB-AQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 02 Nov 2009 23:59:40 +0000
-In-Reply-To: <6C8638F3-7AC7-44CC-A86E-C26E29350BD8@suse.de>
+	Tue, 03 Nov 2009 00:33:37 +0000
+In-Reply-To: <4AD8F77A.3010802@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,59 +29,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alexander Graf <agraf@suse.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@gmail.com>
 
+On Sat, 17 Oct 2009 00:45:14 +0200
+Roel Kluin <roel.kluin@gmail.com> wrote:
 
---===============8840275844883887895==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="QRj9sO5tAVLaXnSD"
-Content-Disposition: inline
+> image->d[xy] are unsigned so the check was wrong.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 99bbd28..9f20641 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -403,7 +403,8 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+>  			image->dx += image->width + 8;
+>  		}
+>  	} else if (rotate == FB_ROTATE_UD) {
+> -		for (x = 0; x < num && image->dx >= 0; x++) {
+> +		for (x = 0; x < num && image->dx + image->width + 8 >= 0;
+> +				x++) {
+>  			info->fbops->fb_imageblit(info, image);
+>  			image->dx -= image->width + 8;
+>  		}
+> @@ -415,7 +416,8 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+>  			image->dy += image->height + 8;
+>  		}
+>  	} else if (rotate == FB_ROTATE_CCW) {
+> -		for (x = 0; x < num && image->dy >= 0; x++) {
+> +		for (x = 0; x < num && image->dy + image->height + 8 >= 0;
+> +				x++) {
+>  			info->fbops->fb_imageblit(info, image);
+>  			image->dy -= image->height + 8;
+>  		}
 
-
---QRj9sO5tAVLaXnSD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Nov 03, 2009 at 12:53:08AM +0100, Alexander Graf wrote:
->> Advantages might be on Qemu side (like ability to run in text-only
->> mode without need to change console on virtualized sytem).
->
-> Oh, so we could use the curses frontend. That's a neat idea.
->
-> But that also means we'll lose the penguin, right?
-
-Yes :-)
-
---=20
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
-
---QRj9sO5tAVLaXnSD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrvciIACgkQw1GB2RHercPvjgCfXTdpfxZG80DvP5KH2PQ5JWQ0
-j5sAniqLRAS7klvq4hw7Ns8C/4f6xr3g
-=Nxp9
------END PGP SIGNATURE-----
-
---QRj9sO5tAVLaXnSD--
-
-
---===============8840275844883887895==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Presumably that test isn't needed at all?
 
 ------------------------------------------------------------------------------
 Come build with us! The BlackBerry(R) Developer Conference in SF, CA
@@ -91,15 +72,3 @@ is the only developer event you need to attend this year. Jumpstart your
 developing skills, take BlackBerry mobile applications to market and stay 
 ahead of the curve. Join us from November 9 - 12, 2009. Register now!
 http://p.sf.net/sfu/devconference
---===============8840275844883887895==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---===============8840275844883887895==--

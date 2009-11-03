@@ -1,49 +1,134 @@
-From: Vincent Hanquez <tab@snarc.org>
-Subject: Re: [Qemu-devel] Re: [PATCH] Add VirtIO Frame Buffer Support
-Date: Tue, 3 Nov 2009 11:25:43 +0000
-Message-ID: <20091103112543.GA24834@snarc.org>
-References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com> <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de> <4AEFCCBA.9050408@redhat.com> <8BA1853F-11C9-44B1-9FDB-1DFDAED40E1B@suse.de> <4AEFCEDA.4030308@redhat.com> <87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de>
-Mime-Version: 1.0
-Return-path: <kvm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de>
-Sender: kvm-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
+From: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
+Subject: [PATCH v2] davinci: fb: Add cpufreq support
+Date: Tue,  3 Nov 2009 17:18:32 +0530
+Message-ID: <1257248912-8397-1-git-send-email-chaithrika@ti.com>
+Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://linux.omap.com/pipermail/davinci-linux-open-source>
+List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
+List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
+Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Graf <agraf@suse.de>
-Cc: Avi Kivity <avi@redhat.com>, linux-fbdev-devel@lists.sourceforge.net, qemu-devel@nongnu.org, kvm@vger.kernel.org
+To: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Cc: akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org, davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
 
-On Tue, Nov 03, 2009 at 07:39:34AM +0100, Alexander Graf wrote:
->
-> On 03.11.2009, at 07:34, Avi Kivity wrote:
->
->> On 11/03/2009 08:27 AM, Alexander Graf wrote:
->>>
->>>> How does it work today?
->>>
->>> You boot into a TERM=dumb line based emulation on 3270 (worst thing  
->>> haunting people's nightmares ever), trying to get out of that mode  
->>> as quickly as possible and off into SSH / VNC.
->>
->> Despite the coolness factor, IMO a few minutes during install time do 
->> not justify a new hardware model and a new driver.
->
-> It's more than just coolness factor. There are use cases out there 
-> (www.susestudio.com) that don't want to rely on the guest exporting a VNC 
-> server to the outside just to access graphics. You also want to see boot 
-> messages, have a console login screen, be able to debug things without 
-> switching between virtio-console and vnc, etc. etc.
->
-> The hardware model isn't exactly new either. It's just the next logical 
-> step to a full PV machine using virtio. If the virtio-fb stuff turns out 
-> to be really fast and reliable, I could even imagine it being the default 
-> target for kvm on ppc as well, as we can't switch resolutions on the fly 
-> there atm.
+Add cpufreq support for DA8xx/OMAP-L1xx frame buffer driver
 
-not sure if i'm missing the point here, but couldn't it be hypothetically
-extended to stuff 3d (or video & more 2d accel ?) commands too ? I can't
-imagine the cirrus or stdvga driver be able to do that ever ;)
+Signed-off-by: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
+---
+This patch applies to Linus' kernel tree. In this version, a macro name
+has been corrected. This patch is dependent on the 'davinci: fb:
+Calculate the clock divider from pixel clock info' patch submitted earlier.
 
+ drivers/video/da8xx-fb.c |   55 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 55 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index d9ab839..93842c8 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -28,6 +28,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/interrupt.h>
+ #include <linux/clk.h>
++#include <linux/cpufreq.h>
+ #include <video/da8xx-fb.h>
+ 
+ #define DRIVER_NAME "da8xx_lcdc"
+@@ -114,6 +115,9 @@ struct da8xx_fb_par {
+ 	unsigned int databuf_sz;
+ 	unsigned int palette_sz;
+ 	unsigned int pxl_clk;
++#ifdef CONFIG_CPU_FREQ
++	struct notifier_block	freq_transition;
++#endif
+ };
+ 
+ /* Variable Screen Information */
+@@ -586,6 +590,41 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 	return err;
+ }
+ 
++#ifdef CONFIG_CPU_FREQ
++static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
++				     unsigned long val, void *data)
++{
++	struct da8xx_fb_par *par;
++	unsigned int reg;
++
++	par = container_of(nb, struct da8xx_fb_par, freq_transition);
++	if (val == CPUFREQ_PRECHANGE) {
++		reg = lcdc_read(LCD_RASTER_CTRL_REG);
++		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
++	} else if (val == CPUFREQ_POSTCHANGE) {
++		lcd_calc_clk_divider(par);
++		reg = lcdc_read(LCD_RASTER_CTRL_REG);
++		lcdc_write(reg | LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
++	}
++
++	return 0;
++}
++
++static inline int lcd_da8xx_cpufreq_register(struct da8xx_fb_par *par)
++{
++	par->freq_transition.notifier_call = lcd_da8xx_cpufreq_transition;
++
++	return cpufreq_register_notifier(&par->freq_transition,
++					 CPUFREQ_TRANSITION_NOTIFIER);
++}
++
++static inline void lcd_da8xx_cpufreq_deregister(struct da8xx_fb_par *par)
++{
++	cpufreq_unregister_notifier(&par->freq_transition,
++				    CPUFREQ_TRANSITION_NOTIFIER);
++}
++#endif
++
+ static int __devexit fb_remove(struct platform_device *dev)
+ {
+ 	struct fb_info *info = dev_get_drvdata(&dev->dev);
+@@ -593,6 +632,9 @@ static int __devexit fb_remove(struct platform_device *dev)
+ 	if (info) {
+ 		struct da8xx_fb_par *par = info->par;
+ 
++#ifdef CONFIG_CPU_FREQ
++		lcd_da8xx_cpufreq_deregister(par);
++#endif
+ 		if (lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE)
+ 			lcd_disable_raster(par);
+ 		lcdc_write(0, LCD_RASTER_CTRL_REG);
+@@ -823,12 +865,25 @@ static int __init fb_probe(struct platform_device *device)
+ 		goto err_dealloc_cmap;
+ 	}
+ 
++#ifdef CONFIG_CPU_FREQ
++	ret = lcd_da8xx_cpufreq_register(par);
++	if (ret) {
++		dev_err(&device->dev, "failed to register cpufreq\n");
++		goto err_cpu_freq;
++	}
++#endif
++
+ 	/* enable raster engine */
+ 	lcdc_write(lcdc_read(LCD_RASTER_CTRL_REG) |
+ 			LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
+ 
+ 	return 0;
+ 
++#ifdef CONFIG_CPU_FREQ
++err_cpu_freq:
++	unregister_framebuffer(da8xx_fb_info);
++#endif
++
+ err_dealloc_cmap:
+ 	fb_dealloc_cmap(&da8xx_fb_info->cmap);
+ 
 -- 
-Vincent
+1.5.6

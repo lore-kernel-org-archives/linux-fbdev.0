@@ -1,69 +1,51 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH v2 3/3] drm/kms: allocate framebuffer cmap
-Date: Tue, 3 Nov 2009 17:19:05 +0000 (GMT)
-Message-ID: <alpine.LFD.2.00.0911031718160.14442@casper.infradead.org>
-References: <4AEE8CDD.10600@ladisch.de> <4AEE8D6F.60209@ladisch.de> <alpine.LFD.2.00.0911021431360.30135@casper.infradead.org> <4AF01F72.2030605@ladisch.de> <4AF01FFD.50409@ladisch.de>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [Linux-fbdev-devel] Re: [PATCH] Add VirtIO Frame
+	Buffer Support
+Date: Tue, 03 Nov 2009 18:33:06 +0100
+Message-ID: <hcpt12$8tb$1@ger.gmane.org>
+References: <1257199759-2941-1-git-send-email-agraf@suse.de>
+	<4AEFCBED.50804@redhat.com>
+	<DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de>
+	<4AEFCCBA.9050408@redhat.com>
+	<8BA1853F-11C9-44B1-9FDB-1DFDAED40E1B@suse.de>
+	<4AEFCEDA.4030308@redhat.com>
+	<87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de>
+	<20091103112543.GA24834@snarc.org>
+	<4AEFFA0A.4040105@redhat.com> <20091103152911.GA8266@localhost>
+	<4AF054B9.9060204@redhat.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753642AbZKCRTO@vger.kernel.org>
-In-Reply-To: <4AF01FFD.50409@ladisch.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-path: <qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org>
+In-Reply-To: <4AF054B9.9060204@redhat.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+	<mailto:qemu-devel-request@nongnu.org?subject=unsubscribe>
+List-Archive: <http://lists.gnu.org/pipermail/qemu-devel>
+List-Post: <mailto:qemu-devel@nongnu.org>
+List-Help: <mailto:qemu-devel-request@nongnu.org?subject=help>
+List-Subscribe: <http://lists.nongnu.org/mailman/listinfo/qemu-devel>,
+	<mailto:qemu-devel-request@nongnu.org?subject=subscribe>
+Sender: qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org
+Errors-To: qemu-devel-bounces+gceq-qemu-devel=gmane.org@nongnu.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Cc: linux-fbdev-devel@lists.sourceforge.net, qemu-devel@nongnu.org, kvm@vger.kernel.org
 
+On 11/03/2009 05:05 PM, Avi Kivity wrote:
+> On 11/03/2009 05:29 PM, Ondrej Zajicek wrote:
+>> On Tue, Nov 03, 2009 at 11:38:18AM +0200, Avi Kivity wrote:
+>>> On 11/03/2009 01:25 PM, Vincent Hanquez wrote:
+>>>> not sure if i'm missing the point here, but couldn't it be
+>>>> hypothetically
+>>>> extended to stuff 3d (or video& more 2d accel ?) commands too ? I can't
+>>>> imagine the cirrus or stdvga driver be able to do that ever ;)
+>>>>
+>>> cirrus has pretty good 2d acceleration. 3D is a mega-project though.
+>> Cirrus has no blending/compositing hardware support.
+>> Paravirtualized graphics can easily support full XRender-style
+>> 2D acceleration.
+>
+> What do that entail? 3/4 operand raster ops?
 
-> Without an allocated colormap, FBIOGETCMAP fails.  This would make
-> programs restore an all-black colormap ("links -g") or fail to work
-> altogether ("mplayer -vo fbdev2").
-> 
-> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-> ---
-> v2: implemented suggestions by James Simmons
-> 
->  drivers/gpu/drm/drm_fb_helper.c |   4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> --- linux-2.6/drivers/gpu/drm/drm_fb_helper.c
-> +++ linux-2.6/drivers/gpu/drm/drm_fb_helper.c
-> @@ -905,6 +905,9 @@ int drm_fb_helper_single_fb_probe(struct
->  
->  	if (new_fb) {
->  		info->var.pixclock = 0;
-> +		ret = fb_alloc_cmap(&info->cmap, crtc->gamma_size, 0);
-> +		if (ret)
-> +			return ret;
+With alpha compositing.
 
-
->  		if (register_framebuffer(info) < 0) {
-			fb_dealloc_cmap(info->cmap);	
->  			return -EINVAL;
-		}
-
-Plug memory leak.
-
-
->  	} else {
-> @@ -936,6 +939,7 @@ void drm_fb_helper_free(struct drm_fb_he
->  		unregister_sysrq_key('v', &sysrq_drm_fb_helper_restore_op);
->  	}
->  	drm_fb_helper_crtc_free(helper);
-> +	fb_dealloc_cmap(&helper->fb->fbdev->cmap);
->  }
->  EXPORT_SYMBOL(drm_fb_helper_free);
->  
-> 
-> 
-> ------------------------------------------------------------------------------
-> Come build with us! The BlackBerry(R) Developer Conference in SF, CA
-> is the only developer event you need to attend this year. Jumpstart your
-> developing skills, take BlackBerry mobile applications to market and stay 
-> ahead of the curve. Join us from November 9 - 12, 2009. Register now!
-> http://p.sf.net/sfu/devconference
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
-> 
+Paolo

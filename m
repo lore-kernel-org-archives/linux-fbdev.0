@@ -1,29 +1,47 @@
-From: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH 1/2] Add emulation for VirtIO Frame Buffer device
-Date: Tue, 03 Nov 2009 08:22:16 +0200
-Message-ID: <4AEFCC18.8030408@redhat.com>
-References: <1257199910-3197-1-git-send-email-agraf@suse.de>
-Mime-Version: 1.0
+From: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] Add VirtIO Frame Buffer Support
+Date: Tue, 3 Nov 2009 07:22:54 +0100
+Message-ID: <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de>
+References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v1076)
 Content-Transfer-Encoding: 7bit
 Return-path: <kvm-owner@vger.kernel.org>
-In-Reply-To: <1257199910-3197-1-git-send-email-agraf@suse.de>
+In-Reply-To: <4AEFCBED.50804@redhat.com>
 Sender: kvm-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Alexander Graf <agraf@suse.de>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"; delsp="yes"
+To: Avi Kivity <avi@redhat.com>
 Cc: kvm@vger.kernel.org, qemu-devel@nongnu.org, linux-fbdev-devel@lists.sourceforge.net, anthony@codemonkey.ws
 
-On 11/03/2009 12:11 AM, Alexander Graf wrote:
-> Since Linux now understands how to talk to us graphics over VirtIO, let's
-> add support for it in qemu.
+
+On 03.11.2009, at 07:21, Avi Kivity wrote:
+
+> On 11/03/2009 12:09 AM, Alexander Graf wrote:
+>> When we want to create a full VirtIO based machine, we're still  
+>> missing
+>> graphics output. Fortunately, Linux provides us with most of the  
+>> frameworks
+>> to render text and everything, we only need to implement a transport.
+>>
+>> So this is a frame buffer backend written for VirtIO. Using this  
+>> and my
+>> patch to qemu, you can use paravirtualized graphics.
+>>
+>>
 >
-> The good part about graphics over VirtIO is that you don't need PCI to use
-> it. So if there's any platform out there trying to use graphics, but not
-> capable of MMIO, it can use this one!
->    
+> What does this do that cirrus and/or vmware-vga don't?
 
-Which platforms are these?
+Work on non-MMIO machines.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+>> This is especially important on machines that can't do MMIO, as all  
+>> current
+>> graphics implementations qemu emulates I'm aware of so far fail here.
+>>
+>
+> s390 virtual desktops?
+
+Well - have you ever tried installing SLES / RHEL on an S390? If not,  
+give it a shot and comment again :-)
+
+Alex
 

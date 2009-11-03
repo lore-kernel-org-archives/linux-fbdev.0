@@ -1,73 +1,26 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Subject: Re: [PATCH 2/6] pxa: frame buffer support both
-	pxa168 and pxa910
-Date: Tue, 3 Nov 2009 17:32:26 +0800
-Message-ID: <f17812d70911030132o1a3d5022o9b166898b29285c@mail.gmail.com>
-References: <7c34ac520911022245o4c8fd276vcaf0d8d106b77da3@mail.gmail.com>
+From: Avi Kivity <avi@redhat.com>
+Subject: Re: [Qemu-devel] Re: [PATCH] Add VirtIO Frame Buffer Support
+Date: Tue, 03 Nov 2009 11:38:18 +0200
+Message-ID: <4AEFFA0A.4040105@redhat.com>
+References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com> <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de> <4AEFCCBA.9050408@redhat.com> <8BA1853F-11C9-44B1-9FDB-1DFDAED40E1B@suse.de> <4AEFCEDA.4030308@redhat.com> <87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de> <20091103112543.GA24834@snarc.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
-	helo=mx.sourceforge.net)
-	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1N5Fl3-0003k3-43
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Nov 2009 09:32:57 +0000
-Received: from mail-pw0-f43.google.com ([209.85.160.43])
-	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1N5Fky-0008KI-Ba for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 03 Nov 2009 09:32:57 +0000
-Received: by pwj6 with SMTP id 6so2504100pwj.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 03 Nov 2009 01:32:46 -0800 (PST)
-In-Reply-To: <7c34ac520911022245o4c8fd276vcaf0d8d106b77da3@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jun Nie <niej0001@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7bit
+Return-path: <kvm-owner@vger.kernel.org>
+In-Reply-To: <20091103112543.GA24834@snarc.org>
+Sender: kvm-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Vincent Hanquez <tab@snarc.org>
+Cc: Alexander Graf <agraf@suse.de>, linux-fbdev-devel@lists.sourceforge.net, qemu-devel@nongnu.org, kvm@vger.kernel.org
 
-T24gVHVlLCBOb3YgMywgMjAwOSBhdCAyOjQ1IFBNLCBKdW4gTmllIDxuaWVqMDAwMUBnbWFpbC5j
-b20+IHdyb3RlOgo+IHB4YTogZnJhbWUgYnVmZmVyIHN1cHBvcnQgYm90aCBweGExNjggYW5kIHB4
-YTkxMAo+Cj4gU2lnbmVkLW9mZi1ieTogSnVuIE5pZSA8bmp1bkBtYXJ2ZWxsLmNvbT4KPiAtLS0K
-PiDCoGRyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYyB8IMKgIMKgNiArKysrKysKPiDCoDEgZmlsZXMg
-Y2hhbmdlZCwgNiBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQo+Cj4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYyBiL2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYwo+IGlu
-ZGV4IDI3YmRmMmIuLjJiYTE0NDQgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy92aWRlby9weGExNjhm
-Yi5jCj4gKysrIGIvZHJpdmVycy92aWRlby9weGExNjhmYi5jCj4gQEAgLTg3NSwxMiArODc1LDE4
-IEBAIGZhaWxlZDoKPiDCoCDCoCDCoCDCoHJldHVybiByZXQ7Cj4gwqB9Cj4KPiArIHN0YXRpYyBj
-b25zdCBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlX2lkIG1tcGZiX2lkX3RhYmxlW10gPSB7Cj4gKyDC
-oCDCoCDCoCDCoHsicHhhMTY4LWZiIiwgMH0sCj4gKyDCoCDCoCDCoCDCoHsicHhhOTEwLWZiIiwg
-MX0sCj4gKyB9Owo+ICsKCk5vdCBzdXJlICcwJyBhbmQgJzEnIG1lYW5zIGFueXRoaW5nIGhlcmU/
-IE90aGVyd2lzZSBjYW4ganVzdCBiZSAnMCcuCkludGVuZGVkIHVzYWdlIGNvdWxkIGJlIHNvbWUg
-ZmxhZ3MgZGlmZmVyZW5jZSBiZXR3ZWVuIHByb2Nlc3NvcnMsCmxldCdzIHNheSBweGE5MTAtZmIg
-c3VwcG9ydHMgWVVWLCBvbmUgY2FuIGhhdmUgc29tZXRoaW5nIGxpa2U6Cgp7ICJweGExNjgtZmIi
-LCBGQl9TVVBQT1JUX1JHQiB9LAp7ICJweGE5MTAtZmIiLCBGQl9TVVBQT1JUX1JHQiB8IEZCX1NV
-UFBPUlRfWVVWIH0sCgpKdXN0IGV4YW1wbGVzLgoKPiDCoHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1f
-ZHJpdmVyIHB4YTE2OGZiX2RyaXZlciA9IHsKPiDCoCDCoCDCoCDCoC5kcml2ZXIgwqAgwqAgwqAg
-wqAgPSB7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAubmFtZSDCoCA9ICJweGExNjgtZmIiLAo+
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLm93bmVyIMKgPSBUSElTX01PRFVMRSwKPiDCoCDCoCDC
-oCDCoH0sCj4gwqAgwqAgwqAgwqAucHJvYmUgwqAgwqAgwqAgwqAgwqA9IHB4YTE2OGZiX3Byb2Jl
-LAo+ICsgwqAgwqAgwqAgLmlkX3RhYmxlIMKgIMKgIMKgID0gbW1wZmJfaWRfdGFibGUsCj4gwqB9
-Owo+Cj4gwqBzdGF0aWMgaW50IF9fZGV2aW5pdCBweGExNjhmYl9pbml0KHZvaWQpCj4gLS0KPiAx
-LjUuNC4zCj4KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-Xwo+IGxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0Cj4gbGludXgtYXJtLWtlcm5lbEBsaXN0
-cy5pbmZyYWRlYWQub3JnCj4gaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1hcm0ta2VybmVsCj4KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpDb21lIGJ1aWxk
-IHdpdGggdXMhIFRoZSBCbGFja0JlcnJ5KFIpIERldmVsb3BlciBDb25mZXJlbmNlIGluIFNGLCBD
-QQppcyB0aGUgb25seSBkZXZlbG9wZXIgZXZlbnQgeW91IG5lZWQgdG8gYXR0ZW5kIHRoaXMgeWVh
-ci4gSnVtcHN0YXJ0IHlvdXIKZGV2ZWxvcGluZyBza2lsbHMsIHRha2UgQmxhY2tCZXJyeSBtb2Jp
-bGUgYXBwbGljYXRpb25zIHRvIG1hcmtldCBhbmQgc3RheSAKYWhlYWQgb2YgdGhlIGN1cnZlLiBK
-b2luIHVzIGZyb20gTm92ZW1iZXIgOSAtIDEyLCAyMDA5LiBSZWdpc3RlciBub3chCmh0dHA6Ly9w
-LnNmLm5ldC9zZnUvZGV2Y29uZmVyZW5jZQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJk
-ZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2Uu
-bmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+On 11/03/2009 01:25 PM, Vincent Hanquez wrote:
+> not sure if i'm missing the point here, but couldn't it be hypothetically
+> extended to stuff 3d (or video&  more 2d accel ?) commands too ? I can't
+> imagine the cirrus or stdvga driver be able to do that ever ;)
+>    
+
+cirrus has pretty good 2d acceleration.  3D is a mega-project though.
+
+-- 
+error compiling committee.c: too many arguments to function
+

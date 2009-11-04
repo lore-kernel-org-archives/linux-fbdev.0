@@ -1,51 +1,40 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Subject: Re: [PATCH 3/6] pxa: fix pxa168 lcd controller vsync/hsync timing 
-	error
-Date: Wed, 4 Nov 2009 15:20:28 +0800
-Message-ID: <f17812d70911032320k379dc7laab1979a3b452969@mail.gmail.com>
-References: <7c34ac520911022245x7f002a7at846a835dfded550c@mail.gmail.com>
+From: Clemens Ladisch <clemens@ladisch.de>
+Subject: [PATCH v3 0/3] DRM/KMS framebuffer fixes
+Date: Wed, 04 Nov 2009 09:40:36 +0100
+Message-ID: <4AF13E04.8000005@ladisch.de>
+References: <4AEE8CDD.10600@ladisch.de> <4AEE8D6F.60209@ladisch.de> <alpine.LFD.2.00.0911021431360.30135@casper.infradead.org> <4AF01F72.2030605@ladisch.de> <4AF01FFD.50409@ladisch.de> <alpine.LFD.2.00.0911031718160.14442@casper.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <7c34ac520911022245x7f002a7at846a835dfded550c@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jun Nie <niej0001@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753145AbZKDIkf@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0911031718160.14442@casper.infradead.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-T24gVHVlLCBOb3YgMywgMjAwOSBhdCAyOjQ1IFBNLCBKdW4gTmllIDxuaWVqMDAwMUBnbWFpbC5j
-b20+IHdyb3RlOgo+IHB4YTogZml4IHB4YTE2OCBsY2QgY29udHJvbGxlciB2c3luYy9oc3luYyB0
-aW1pbmcgZXJyb3IKPgo+IFNpZ25lZC1vZmYtYnk6IEp1biBOaWUgPG5qdW5AbWFydmVsbC5jb20+
-Cj4gLS0tCj4gwqBkcml2ZXJzL3ZpZGVvL3B4YTE2OGZiLmMgfCDCoCDCoDQgKystLQo+IMKgaW5j
-bHVkZS92aWRlby9weGExNjhmYi5oIHwgwqAgwqAyIC0tCj4gwqAyIGZpbGVzIGNoYW5nZWQsIDIg
-aW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Zp
-ZGVvL3B4YTE2OGZiLmMgYi9kcml2ZXJzL3ZpZGVvL3B4YTE2OGZiLmMKPiBpbmRleCAyYmExNDQ0
-Li5iZGQ1MjRjIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYwo+ICsrKyBi
-L2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYwo+IEBAIC00NTksOCArNDU5LDggQEAgc3RhdGljIHZv
-aWQgc2V0X2R1bWJfcGFuZWxfY29udHJvbChzdHJ1Y3QgZmJfaW5mbyAqaW5mbykKPiDCoCDCoCDC
-oCDCoHggfD0gbWktPmludmVydF9jb21wb3NpdGVfYmxhbmsgPyAweDAwMDAwMDQwIDogMDsKPiDC
-oCDCoCDCoCDCoHggfD0gKGluZm8tPnZhci5zeW5jICYgRkJfU1lOQ19DT01QX0hJR0hfQUNUKSA/
-IDB4MDAwMDAwMjAgOiAwOwo+IMKgIMKgIMKgIMKgeCB8PSBtaS0+aW52ZXJ0X3BpeF92YWxfZW5h
-ID8gMHgwMDAwMDAxMCA6IDA7Cj4gLSDCoCDCoCDCoCB4IHw9IChpbmZvLT52YXIuc3luYyAmIEZC
-X1NZTkNfVkVSVF9ISUdIX0FDVCkgPyAwIDogMHgwMDAwMDAwODsKPiAtIMKgIMKgIMKgIHggfD0g
-KGluZm8tPnZhci5zeW5jICYgRkJfU1lOQ19IT1JfSElHSF9BQ1QpID8gMCA6IDB4MDAwMDAwMDQ7
-Cj4gKyDCoCDCoCDCoCB4IHw9IChpbmZvLT52YXIuc3luYyAmIEZCX1NZTkNfVkVSVF9ISUdIX0FD
-VCkgPyAweDAwMDAwMDA4IDogMDsKPiArIMKgIMKgIMKgIHggfD0gKGluZm8tPnZhci5zeW5jICYg
-RkJfU1lOQ19IT1JfSElHSF9BQ1QpID8gMHgwMDAwMDAwNCA6IDA7CgpIaSBKdW4sCgpDb3VsZCB5
-b3UgcGxlYXNlIGhlbHAgZG91YmxlIGNoZWNrIHRoaXM/IE15IHVuZGVyc3RhbmRpbmcgaXMKRkJf
-U1lOQ19WRVJUX0hJR0hfQUNUIG1lYW5zIGl0J3MgYSBwb3NpdGl2ZSBwdWxzZSBjb3ZlcmluZyBh
-bGwgdGhlCnZhbGlkIEhTWU5DcywgYW5kIGEgcmlzaW5nIGVkZ2Ugb2YgVlNZTkMgbWVhbnMgYSBz
-dGFydCBvZiB0aGUgZnJhbWUuCgpIb3dldmVyLCBDRkdfSU5WX1ZTWU5DIGlzICcxJyBtZWFucyB0
-aGUgb3Bwb3NpdGUuCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3Rz
-LmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9saW51eC1hcm0ta2VybmVsCg==
+James Simmons wrote:
+> > @@ -905,6 +905,9 @@ int drm_fb_helper_single_fb_probe(struct
+> >  
+> >  	if (new_fb) {
+> >  		info->var.pixclock = 0;
+> > +		ret = fb_alloc_cmap(&info->cmap, crtc->gamma_size, 0);
+> > +		if (ret)
+> > +			return ret;
+> 
+> >  		if (register_framebuffer(info) < 0) {
+> 			fb_dealloc_cmap(info->cmap);	
+> >  			return -EINVAL;
+> 		}
+> 
+> Plug memory leak.
+
+Oops.  Thanks again.
+New patch set follows:
+
+ include/drm/drm_crtc.h          |    2 +-
+ drivers/gpu/drm/drm_fb_helper.c |   14 ++++++++++----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
+
+v2: incorporated suggestions by James Simmons
+v3: bugfix by James Simmons

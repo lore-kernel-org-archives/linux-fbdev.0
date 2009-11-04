@@ -1,39 +1,39 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: drivers/video/msm: update to new kernel
-Date: Tue, 3 Nov 2009 16:17:33 -0800
-Message-ID: <20091103161733.970b885f.akpm@linux-foundation.org>
-References: <20091022085639.GA30548@elf.ucw.cz>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: Re: [PATCH 8/13] fbdev: mac_var_to_mode() fix
+Date: Wed, 4 Nov 2009 11:48:36 +1100 (EST)
+Message-ID: <alpine.OSX.2.00.0911041052180.369@silk.local>
+References: <alpine.OSX.2.00.0911031449170.483@silk.local> <282725.7401.qm@web110813.mail.gq1.yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-m68k-owner@vger.kernel.org>
+In-Reply-To: <282725.7401.qm@web110813.mail.gq1.yahoo.com>
+Sender: linux-m68k-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20091022085639.GA30548@elf.ucw.cz>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>, Arve Hj?nnev?g <arve@android.com>, linux-fbdev-devel@lists.sourceforge.net, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: "David D. Kilzer" <ddkilzer@kilzer.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net, linux-m68k@vger.kernel.org
 
-On Thu, 22 Oct 2009 10:56:39 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
 
-> TASK_INTERRUPTIBLE and friends are now only available after including
-> <linux/sched.h>, so include it when needed.
+On Tue, 3 Nov 2009, David D. Kilzer wrote:
+
+> On Tue, November 3, 2009 at 5:43:16 AM, Finn Thain wrote:
 > 
-> bus_id is no longer available/neccessary, so remove that.
+> >      /* 800x600 */
+> > +    { VMODE_800_600_56, &mac_modedb[2] },
+> > +    { VMODE_800_600_60, &mac_modedb[3] },
+> >      { VMODE_800_600_75, &mac_modedb[5] },
+> >      { VMODE_800_600_72, &mac_modedb[4] },
+> > -    { VMODE_800_600_60, &mac_modedb[3] },
+> > -    { VMODE_800_600_56, &mac_modedb[2] },
 > 
-> Android pmem driver is not available in mainline, so remove its hooks
-> from drivers/video.
 > 
+> I believe you want to swap VMODE_800_600_75 and VMODE_800_600_72 here as well.
 
-What is the impact of these changes?
+In this case, the mode with the faster vertical refresh frequency actually 
+has the higher pixel clock period. So I think the patch is correct.
 
-#2 looks like it's a build fix.  #3 looks like it isn't a build fix. 
-#1 is a mystery.
+Finn
+
+> 
+> Dave
+> 

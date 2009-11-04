@@ -1,39 +1,51 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: Re: [PATCH 8/13] fbdev: mac_var_to_mode() fix
-Date: Wed, 4 Nov 2009 11:48:36 +1100 (EST)
-Message-ID: <alpine.OSX.2.00.0911041052180.369@silk.local>
-References: <alpine.OSX.2.00.0911031449170.483@silk.local> <282725.7401.qm@web110813.mail.gq1.yahoo.com>
+From: Eric Miao <eric.y.miao@gmail.com>
+Subject: Re: [PATCH 3/6] pxa: fix pxa168 lcd controller vsync/hsync timing 
+	error
+Date: Wed, 4 Nov 2009 15:20:28 +0800
+Message-ID: <f17812d70911032320k379dc7laab1979a3b452969@mail.gmail.com>
+References: <7c34ac520911022245x7f002a7at846a835dfded550c@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-m68k-owner@vger.kernel.org>
-In-Reply-To: <282725.7401.qm@web110813.mail.gq1.yahoo.com>
-Sender: linux-m68k-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "David D. Kilzer" <ddkilzer@kilzer.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net, linux-m68k@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <7c34ac520911022245x7f002a7at846a835dfded550c@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Jun Nie <niej0001@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org
 
-
-On Tue, 3 Nov 2009, David D. Kilzer wrote:
-
-> On Tue, November 3, 2009 at 5:43:16 AM, Finn Thain wrote:
-> 
-> >      /* 800x600 */
-> > +    { VMODE_800_600_56, &mac_modedb[2] },
-> > +    { VMODE_800_600_60, &mac_modedb[3] },
-> >      { VMODE_800_600_75, &mac_modedb[5] },
-> >      { VMODE_800_600_72, &mac_modedb[4] },
-> > -    { VMODE_800_600_60, &mac_modedb[3] },
-> > -    { VMODE_800_600_56, &mac_modedb[2] },
-> 
-> 
-> I believe you want to swap VMODE_800_600_75 and VMODE_800_600_72 here as well.
-
-In this case, the mode with the faster vertical refresh frequency actually 
-has the higher pixel clock period. So I think the patch is correct.
-
-Finn
-
-> 
-> Dave
-> 
+T24gVHVlLCBOb3YgMywgMjAwOSBhdCAyOjQ1IFBNLCBKdW4gTmllIDxuaWVqMDAwMUBnbWFpbC5j
+b20+IHdyb3RlOgo+IHB4YTogZml4IHB4YTE2OCBsY2QgY29udHJvbGxlciB2c3luYy9oc3luYyB0
+aW1pbmcgZXJyb3IKPgo+IFNpZ25lZC1vZmYtYnk6IEp1biBOaWUgPG5qdW5AbWFydmVsbC5jb20+
+Cj4gLS0tCj4gwqBkcml2ZXJzL3ZpZGVvL3B4YTE2OGZiLmMgfCDCoCDCoDQgKystLQo+IMKgaW5j
+bHVkZS92aWRlby9weGExNjhmYi5oIHwgwqAgwqAyIC0tCj4gwqAyIGZpbGVzIGNoYW5nZWQsIDIg
+aW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Zp
+ZGVvL3B4YTE2OGZiLmMgYi9kcml2ZXJzL3ZpZGVvL3B4YTE2OGZiLmMKPiBpbmRleCAyYmExNDQ0
+Li5iZGQ1MjRjIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYwo+ICsrKyBi
+L2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYwo+IEBAIC00NTksOCArNDU5LDggQEAgc3RhdGljIHZv
+aWQgc2V0X2R1bWJfcGFuZWxfY29udHJvbChzdHJ1Y3QgZmJfaW5mbyAqaW5mbykKPiDCoCDCoCDC
+oCDCoHggfD0gbWktPmludmVydF9jb21wb3NpdGVfYmxhbmsgPyAweDAwMDAwMDQwIDogMDsKPiDC
+oCDCoCDCoCDCoHggfD0gKGluZm8tPnZhci5zeW5jICYgRkJfU1lOQ19DT01QX0hJR0hfQUNUKSA/
+IDB4MDAwMDAwMjAgOiAwOwo+IMKgIMKgIMKgIMKgeCB8PSBtaS0+aW52ZXJ0X3BpeF92YWxfZW5h
+ID8gMHgwMDAwMDAxMCA6IDA7Cj4gLSDCoCDCoCDCoCB4IHw9IChpbmZvLT52YXIuc3luYyAmIEZC
+X1NZTkNfVkVSVF9ISUdIX0FDVCkgPyAwIDogMHgwMDAwMDAwODsKPiAtIMKgIMKgIMKgIHggfD0g
+KGluZm8tPnZhci5zeW5jICYgRkJfU1lOQ19IT1JfSElHSF9BQ1QpID8gMCA6IDB4MDAwMDAwMDQ7
+Cj4gKyDCoCDCoCDCoCB4IHw9IChpbmZvLT52YXIuc3luYyAmIEZCX1NZTkNfVkVSVF9ISUdIX0FD
+VCkgPyAweDAwMDAwMDA4IDogMDsKPiArIMKgIMKgIMKgIHggfD0gKGluZm8tPnZhci5zeW5jICYg
+RkJfU1lOQ19IT1JfSElHSF9BQ1QpID8gMHgwMDAwMDAwNCA6IDA7CgpIaSBKdW4sCgpDb3VsZCB5
+b3UgcGxlYXNlIGhlbHAgZG91YmxlIGNoZWNrIHRoaXM/IE15IHVuZGVyc3RhbmRpbmcgaXMKRkJf
+U1lOQ19WRVJUX0hJR0hfQUNUIG1lYW5zIGl0J3MgYSBwb3NpdGl2ZSBwdWxzZSBjb3ZlcmluZyBh
+bGwgdGhlCnZhbGlkIEhTWU5DcywgYW5kIGEgcmlzaW5nIGVkZ2Ugb2YgVlNZTkMgbWVhbnMgYSBz
+dGFydCBvZiB0aGUgZnJhbWUuCgpIb3dldmVyLCBDRkdfSU5WX1ZTWU5DIGlzICcxJyBtZWFucyB0
+aGUgb3Bwb3NpdGUuCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3Rz
+LmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9saW51eC1hcm0ta2VybmVsCg==

@@ -1,56 +1,39 @@
 From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fbdev: Wrong test on unsigned in fb_set_user_cmap()?
-Date: Tue, 3 Nov 2009 14:59:14 -0800
-Message-ID: <20091103145914.84094e8e.akpm@linux-foundation.org>
-References: <4ADE0FDE.5070101@gmail.com>
+Subject: Re: drivers/video/msm: update to new kernel
+Date: Tue, 3 Nov 2009 16:17:33 -0800
+Message-ID: <20091103161733.970b885f.akpm@linux-foundation.org>
+References: <20091022085639.GA30548@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751415AbZKCW70@vger.kernel.org>
-In-Reply-To: <4ADE0FDE.5070101@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20091022085639.GA30548@elf.ucw.cz>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Swetland <swetland@google.com>, Arve Hj?nnev?g <arve@android.com>, linux-fbdev-devel@lists.sourceforge.net, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-On Tue, 20 Oct 2009 21:30:38 +0200
-Roel Kluin <roel.kluin@gmail.com> wrote:
+On Thu, 22 Oct 2009 10:56:39 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-> struct fb_cmap_user member start is unsigned.
+> TASK_INTERRUPTIBLE and friends are now only available after including
+> <linux/sched.h>, so include it when needed.
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> Is this required?
+> bus_id is no longer available/neccessary, so remove that.
 > 
-> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-> index f53b9f1..f46f05f 100644
-> --- a/drivers/video/fbcmap.c
-> +++ b/drivers/video/fbcmap.c
-> @@ -266,7 +266,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
->  		rc = -ENODEV;
->  		goto out;
->  	}
-> -	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-> +	if ((int)cmap->start < 0 || (!info->fbops->fb_setcolreg &&
->  				!info->fbops->fb_setcmap)) {
->  		rc = -EINVAL;
->  		goto out1;
+> Android pmem driver is not available in mainline, so remove its hooks
+> from drivers/video.
+> 
 
-I think the test _is_ needed, as `start' is passed in direct from
-userspace, via do_fb_ioctl():FBIOPUTCMAP.
+What is the impact of these changes?
 
-However fb_set_user_cmap() calls fb_set_cmap() which also checks
-`start', only this time it does it correctly.
-
-So overall the code is OK and the check which you've identified
-is unneeded.
-
-In fact, all of
-
-	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-				!info->fbops->fb_setcmap)) {
-		rc = -EINVAL;
-		goto out1;
-	}
-
-can be removed.
+#2 looks like it's a build fix.  #3 looks like it isn't a build fix. 
+#1 is a mystery.
